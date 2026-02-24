@@ -541,6 +541,7 @@ public class EditBox extends AbstractWidget {
             this.focusedTime = Util.getMillis();
          }
 
+         Minecraft.getInstance().getWindow().onTextInputFocusChange(focused);
       }
    }
 

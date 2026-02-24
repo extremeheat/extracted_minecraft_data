@@ -13,10 +13,12 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
+import net.minecraft.util.Mth;
 import org.jspecify.annotations.Nullable;
 
 public class VertexFormat {
    public static final int UNKNOWN_ELEMENT = -1;
+   private static final int VERTEX_ALIGNMENT = 4;
    private final List<VertexFormatElement> elements;
    private final List<String> names;
    private final int vertexSize;
@@ -167,7 +169,12 @@ public class VertexFormat {
          ImmutableMap<String, VertexFormatElement> elementMap = this.elements.buildOrThrow();
          ImmutableList<VertexFormatElement> elements = elementMap.values().asList();
          ImmutableList<String> names = elementMap.keySet().asList();
-         return new VertexFormat(elements, names, this.offsets, this.offset);
+         int vertexSize = this.offset;
+         if (!Mth.isMultipleOf(vertexSize, 4)) {
+            throw new IllegalStateException("Vertex size must be a multiple of 4, was " + vertexSize);
+         } else {
+            return new VertexFormat(elements, names, this.offsets, vertexSize);
+         }
       }
    }
 

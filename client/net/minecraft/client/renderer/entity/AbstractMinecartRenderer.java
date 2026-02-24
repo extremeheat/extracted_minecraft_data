@@ -6,6 +6,8 @@ import java.util.Objects;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.object.cart.MinecartModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.block.BlockModelRenderState;
+import net.minecraft.client.renderer.block.BlockModelResolver;
 import net.minecraft.client.renderer.entity.state.MinecartRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.state.CameraRenderState;
@@ -16,8 +18,6 @@ import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.minecart.MinecartBehavior;
 import net.minecraft.world.entity.vehicle.minecart.NewMinecartBehavior;
 import net.minecraft.world.entity.vehicle.minecart.OldMinecartBehavior;
-import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
@@ -26,11 +26,13 @@ public abstract class AbstractMinecartRenderer<T extends AbstractMinecart, S ext
    private static final Identifier MINECART_LOCATION = Identifier.withDefaultNamespace("textures/entity/minecart/minecart.png");
    private static final float DISPLAY_BLOCK_SCALE = 0.75F;
    protected final MinecartModel model;
+   private final BlockModelResolver blockModelResolver;
 
    public AbstractMinecartRenderer(final EntityRendererProvider.Context context, final ModelLayerLocation model) {
       super(context);
       this.shadowRadius = 0.7F;
       this.model = new MinecartModel(context.bakeLayer(model));
+      this.blockModelResolver = context.getBlockModelResolver();
    }
 
    public void submit(final S state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
@@ -52,13 +54,13 @@ public abstract class AbstractMinecartRenderer<T extends AbstractMinecart, S ext
          poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(Mth.sin((double)hurt) * hurt * state.damageTime / 10.0F * (float)state.hurtDir));
       }
 
-      BlockState blockState = state.displayBlockState;
-      if (blockState.getRenderShape() != RenderShape.INVISIBLE) {
+      BlockModelRenderState displayBlockModel = state.displayBlockModel;
+      if (!displayBlockModel.isEmpty()) {
          poseStack.pushPose();
          poseStack.scale(0.75F, 0.75F, 0.75F);
          poseStack.translate(-0.5F, (float)(state.displayOffset - 8) / 16.0F, 0.5F);
          poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(90.0F));
-         this.submitMinecartContents(state, blockState, poseStack, submitNodeCollector, state.lightCoords);
+         this.submitMinecartContents(state, displayBlockModel, poseStack, submitNodeCollector, state.lightCoords);
          poseStack.popPose();
       }
 
@@ -116,7 +118,7 @@ public abstract class AbstractMinecartRenderer<T extends AbstractMinecart, S ext
       state.hurtDir = entity.getHurtDir();
       state.damageTime = Math.max(entity.getDamage() - partialTicks, 0.0F);
       state.displayOffset = entity.getDisplayOffset();
-      state.displayBlockState = entity.getDisplayBlockState();
+      this.blockModelResolver.update(state.displayBlockModel, entity.getDisplayBlockState());
    }
 
    private static <T extends AbstractMinecart, S extends MinecartRenderState> void newExtractState(final T entity, final NewMinecartBehavior behavior, final S state, final float partialTicks) {
@@ -154,8 +156,8 @@ public abstract class AbstractMinecartRenderer<T extends AbstractMinecart, S ext
 
    }
 
-   protected void submitMinecartContents(final S state, final BlockState blockState, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords) {
-      submitNodeCollector.submitBlock(poseStack, blockState, lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
+   protected void submitMinecartContents(final S state, final BlockModelRenderState blockModel, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords) {
+      blockModel.submit(poseStack, submitNodeCollector, lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
    }
 
    protected AABB getBoundingBoxForCulling(final T entity) {

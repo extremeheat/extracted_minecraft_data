@@ -5,15 +5,11 @@ import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MapRenderer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.client.renderer.block.BlockModelResolver;
 import net.minecraft.client.renderer.entity.state.ItemFrameRenderState;
 import net.minecraft.client.renderer.item.ItemModelResolver;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.client.resources.model.BlockStateDefinitions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -21,7 +17,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.phys.Vec3;
@@ -30,15 +25,15 @@ import org.joml.Quaternionfc;
 public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T, ItemFrameRenderState> {
    public static final int GLOW_FRAME_BRIGHTNESS = 5;
    public static final int BRIGHT_MAP_LIGHT_ADJUSTMENT = 30;
+   private final BlockModelResolver blockModelResolver;
    private final ItemModelResolver itemModelResolver;
    private final MapRenderer mapRenderer;
-   private final BlockRenderDispatcher blockRenderer;
 
    public ItemFrameRenderer(final EntityRendererProvider.Context context) {
       super(context);
+      this.blockModelResolver = context.getBlockModelResolver();
       this.itemModelResolver = context.getItemModelResolver();
       this.mapRenderer = context.getMapRenderer();
-      this.blockRenderer = context.getBlockRenderDispatcher();
    }
 
    protected int getBlockLightLevel(final T entity, final BlockPos blockPos) {
@@ -65,12 +60,10 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T, It
 
       poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(xRot));
       poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(yRot));
-      if (!state.isInvisible) {
-         BlockState fakeBlockState = BlockStateDefinitions.getItemFrameFakeState(state.isGlowFrame, state.mapId != null);
-         BlockStateModel blockModel = this.blockRenderer.getBlockModel(fakeBlockState);
+      if (!state.frameModel.isEmpty()) {
          poseStack.pushPose();
          poseStack.translate(-0.5F, -0.5F, -0.5F);
-         submitNodeCollector.submitBlockModel(poseStack, RenderTypes.entitySolidZOffsetForward(TextureAtlas.LOCATION_BLOCKS), blockModel, -1, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
+         state.frameModel.submitWithZOffset(poseStack, submitNodeCollector, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
          poseStack.popPose();
       }
 
@@ -123,6 +116,12 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T, It
    public void extractRenderState(final T entity, final ItemFrameRenderState state, final float partialTicks) {
       super.extractRenderState(entity, state, partialTicks);
       state.direction = entity.getDirection();
+      if (!state.isInvisible) {
+         this.blockModelResolver.updateForItemFrame(state.frameModel, state.isGlowFrame, state.mapId != null);
+      } else {
+         state.frameModel.clear();
+      }
+
       ItemStack itemStack = entity.getItem();
       this.itemModelResolver.updateForNonLiving(state.item, itemStack, ItemDisplayContext.FIXED, entity);
       state.rotation = entity.getRotation();

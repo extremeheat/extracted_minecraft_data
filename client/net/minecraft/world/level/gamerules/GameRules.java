@@ -86,10 +86,6 @@ public class GameRules {
       return GameRuleMap.CODEC.xmap((map) -> new GameRules(enabledFeatures, map), (gameRules) -> gameRules.rules);
    }
 
-   public GameRules(final FeatureFlagSet enabledFeatures, final Stream<GameRule<?>> rules) {
-      this(enabledFeatures, GameRuleMap.of(rules));
-   }
-
    public GameRules(final FeatureFlagSet enabledFeatures, final GameRuleMap map) {
       super();
       BuiltInRegistries.GAME_RULE.stream().forEach((gameRule) -> {
@@ -141,7 +137,7 @@ public class GameRules {
    }
 
    public GameRules copy(final FeatureFlagSet enabledFeatures) {
-      return new GameRules(enabledFeatures, this.rules);
+      return new GameRules(enabledFeatures, GameRuleMap.copyOf(this.rules));
    }
 
    public void setAll(final GameRules other, final @Nullable MinecraftServer server) {

@@ -112,7 +112,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    private final Thread thread;
    private final boolean isDebug;
    private int skyDarken;
-   protected int randValue = RandomSource.create().nextInt();
+   protected int randValue = RandomSource.createThreadLocalInstance().nextInt();
    protected final int addend = 1013904223;
    protected float oRainLevel;
    protected float rainLevel;

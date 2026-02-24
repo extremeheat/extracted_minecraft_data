@@ -2,6 +2,7 @@ package net.minecraft.client.renderer.chunk;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -13,7 +14,7 @@ public class RenderRegionCache {
       super();
    }
 
-   public RenderSectionRegion createRegion(final Level level, final long sectionNode) {
+   public RenderSectionRegion createRegion(final ClientLevel level, final long sectionNode) {
       int sectionX = SectionPos.x(sectionNode);
       int sectionY = SectionPos.y(sectionNode);
       int sectionZ = SectionPos.z(sectionNode);

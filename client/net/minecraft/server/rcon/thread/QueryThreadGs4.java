@@ -282,7 +282,7 @@ public class QueryThreadGs4 extends GenericThread {
          this.identBytes[2] = buf[5];
          this.identBytes[3] = buf[6];
          this.ident = new String(this.identBytes, StandardCharsets.UTF_8);
-         this.challenge = RandomSource.create().nextInt(16777216);
+         this.challenge = RandomSource.createThreadLocalInstance().nextInt(16777216);
          this.challengeBytes = String.format(Locale.ROOT, "\t%s%d\u0000", this.ident, this.challenge).getBytes(StandardCharsets.UTF_8);
       }
 

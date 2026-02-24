@@ -1,19 +1,15 @@
 package net.minecraft.client.model.animal.feline;
 
-import java.util.Set;
-import net.minecraft.client.model.BabyModelTransform;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
-import net.minecraft.client.model.geom.builders.MeshTransformer;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.entity.state.FelineRenderState;
 import net.minecraft.util.Mth;
 
 public class AdultFelineModel<T extends FelineRenderState> extends AbstractFelineModel<T> {
-   public static final MeshTransformer BABY_TRANSFORMER = new BabyModelTransform(true, 10.0F, 4.0F, Set.of("head"));
    private static final float XO = 0.0F;
    private static final float YO = 16.0F;
    private static final float ZO = -9.0F;

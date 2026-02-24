@@ -6,6 +6,7 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.Lifecycle;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -42,6 +43,7 @@ import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtException;
@@ -195,16 +197,22 @@ public class LevelStorageSource {
 
    public static void writeGameRules(final WorldData worldData, final Path worldFolder, final GameRules gameRules) throws IOException {
       Codec<GameRules> codec = GameRules.codec(worldData.enabledFeatures());
-      DataResult<Tag> encoded = codec.encodeStart(NbtOps.INSTANCE, gameRules);
-      if (encoded.isSuccess()) {
-         CompoundTag fullTag = new CompoundTag();
-         fullTag.put("data", (Tag)encoded.getOrThrow());
-         NbtUtils.addCurrentDataVersion(fullTag);
-         Path gameRulesPath = GameRuleMap.TYPE.id().withSuffix(".dat").resolveAgainst(worldFolder.resolve("data"));
-         FileUtil.createDirectoriesSafe(gameRulesPath.getParent());
-         NbtIo.writeCompressed(fullTag, gameRulesPath);
-      }
+      writeSavedData(worldFolder, NbtOps.INSTANCE, GameRuleMap.TYPE, codec, gameRules);
+   }
 
+   public static void writeWorldGenSettings(final RegistryAccess registryAccess, final Path worldFolder, final WorldGenSettings worldGenSettings) throws IOException {
+      RegistryOps<Tag> ops = RegistryOps.create(NbtOps.INSTANCE, (HolderLookup.Provider)registryAccess);
+      writeSavedData(worldFolder, ops, WorldGenSettings.TYPE, WorldGenSettings.CODEC, worldGenSettings);
+   }
+
+   private static <T> void writeSavedData(final Path worldFolder, final DynamicOps<Tag> ops, final SavedDataType<?> type, final Codec<T> codec, final T data) throws IOException {
+      Tag encoded = (Tag)codec.encodeStart(ops, data).getOrThrow();
+      CompoundTag fullTag = new CompoundTag();
+      fullTag.put("data", encoded);
+      NbtUtils.addCurrentDataVersion(fullTag);
+      Path path = type.id().withSuffix(".dat").resolveAgainst(worldFolder.resolve("data"));
+      FileUtil.createDirectoriesSafe(path.getParent());
+      NbtIo.writeCompressed(fullTag, path);
    }
 
    public String getName() {

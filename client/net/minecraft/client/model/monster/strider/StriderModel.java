@@ -1,5 +1,6 @@
 package net.minecraft.client.model.monster.strider;
 
+import java.util.function.BiConsumer;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.entity.state.StriderRenderState;
@@ -39,4 +40,13 @@ public abstract class StriderModel extends EntityModel<StriderRenderState> {
    }
 
    protected abstract void customAnimations(final float animationPos, final float animationSpeed, final float ageInTicks);
+
+   public void animateBristle(float ageInTicks, float bristleFlow, final ModelPart firstBristle, final ModelPart secondBristle, final ModelPart thirdBristle, final BiConsumer<ModelPart, Float> addRotationFunction) {
+      addRotationFunction.accept(firstBristle, bristleFlow * 0.6F);
+      addRotationFunction.accept(secondBristle, bristleFlow * 1.2F);
+      addRotationFunction.accept(thirdBristle, bristleFlow * 1.3F);
+      addRotationFunction.accept(firstBristle, 0.1F * Mth.sin((double)(ageInTicks * 0.4F)));
+      addRotationFunction.accept(secondBristle, 0.1F * Mth.sin((double)(ageInTicks * 0.2F)));
+      addRotationFunction.accept(thirdBristle, 0.05F * Mth.sin((double)(ageInTicks * -0.4F)));
+   }
 }

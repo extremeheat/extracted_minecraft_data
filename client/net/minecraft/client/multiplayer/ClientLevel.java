@@ -34,6 +34,7 @@ import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.client.renderer.EndFlashState;
 import net.minecraft.client.renderer.LevelEventHandler;
 import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.resources.sounds.DirectionalSoundInstance;
 import net.minecraft.client.resources.sounds.EntityBoundSoundInstance;
@@ -85,6 +86,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.component.FireworkExplosion;
 import net.minecraft.world.item.crafting.RecipeAccess;
+import net.minecraft.world.level.CardinalLighting;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.ExplosionDamageCalculator;
@@ -121,7 +123,7 @@ import net.minecraft.world.ticks.LevelTickAccess;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel> {
+public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.Cleaner<ClientLevel> {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final Component DEFAULT_QUIT_MESSAGE = Component.translatable("multiplayer.status.quitting");
    private static final double FLUID_PARTICLE_SPAWN_OFFSET = 0.05;
@@ -406,7 +408,7 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
 
    public void animateTick(final int xt, final int yt, final int zt) {
       int r = 32;
-      RandomSource animateRandom = RandomSource.create();
+      RandomSource animateRandom = RandomSource.createThreadLocalInstance();
       Block markerParticleTarget = this.getMarkerParticleTarget();
       BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 
@@ -713,33 +715,8 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       this.skyFlashTime = skyFlashTime;
    }
 
-   public float getShade(final Direction direction, final boolean shade) {
-      DimensionType.CardinalLightType type = this.dimensionType().cardinalLightType();
-      if (!shade) {
-         return type == DimensionType.CardinalLightType.NETHER ? 0.9F : 1.0F;
-      } else {
-         float var10000;
-         switch (direction) {
-            case DOWN:
-               var10000 = type == DimensionType.CardinalLightType.NETHER ? 0.9F : 0.5F;
-               break;
-            case UP:
-               var10000 = type == DimensionType.CardinalLightType.NETHER ? 0.9F : 1.0F;
-               break;
-            case NORTH:
-            case SOUTH:
-               var10000 = 0.8F;
-               break;
-            case WEST:
-            case EAST:
-               var10000 = 0.6F;
-               break;
-            default:
-               throw new MatchException((String)null, (Throwable)null);
-         }
-
-         return var10000;
-      }
+   public CardinalLighting cardinalLighting() {
+      return this.dimensionType().cardinalLightType().get();
    }
 
    public int getBlockTint(final BlockPos pos, final ColorResolver resolver) {
@@ -776,10 +753,6 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
 
    public LevelData.RespawnData getRespawnData() {
       return this.levelData.getRespawnData();
-   }
-
-   public boolean isThundering() {
-      return false;
    }
 
    public String toString() {

@@ -45,7 +45,7 @@ public class RenderType {
    }
 
    public boolean hasBlending() {
-      return this.state.pipeline.getBlendFunction().isPresent();
+      return this.state.pipeline.getColorTargetState().blendFunction().isPresent();
    }
 
    public OutputTarget outputTarget() {

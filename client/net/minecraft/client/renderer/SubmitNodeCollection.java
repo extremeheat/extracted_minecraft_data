@@ -3,7 +3,6 @@ package net.minecraft.client.renderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
@@ -22,7 +21,6 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -34,7 +32,6 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
    private final NameTagFeatureRenderer.Storage nameTagSubmits = new NameTagFeatureRenderer.Storage();
    private final List<SubmitNodeStorage.TextSubmit> textSubmits = new ArrayList();
    private final List<SubmitNodeStorage.LeashSubmit> leashSubmits = new ArrayList();
-   private final List<SubmitNodeStorage.BlockSubmit> blockSubmits = new ArrayList();
    private final List<SubmitNodeStorage.MovingBlockSubmit> movingBlockSubmits = new ArrayList();
    private final List<SubmitNodeStorage.BlockModelSubmit> blockModelSubmits = new ArrayList();
    private final List<SubmitNodeStorage.ItemSubmit> itemSubmits = new ArrayList();
@@ -87,20 +84,14 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
       this.modelPartSubmits.add(renderType, new SubmitNodeStorage.ModelPartSubmit(poseStack.last().copy(), modelPart, lightCoords, overlayCoords, sprite, sheeted, hasFoil, tintedColor, crumblingOverlay, outlineColor));
    }
 
-   public void submitBlock(final PoseStack poseStack, final BlockState state, final int lightCoords, final int overlayCoords, final int outlineColor) {
-      this.wasUsed = true;
-      this.blockSubmits.add(new SubmitNodeStorage.BlockSubmit(poseStack.last().copy(), state, lightCoords, overlayCoords, outlineColor));
-      Minecraft.getInstance().getModelManager().specialBlockModelRenderer().renderByBlock(state.getBlock(), ItemDisplayContext.NONE, poseStack, this.submitNodeStorage, lightCoords, overlayCoords, outlineColor);
-   }
-
    public void submitMovingBlock(final PoseStack poseStack, final MovingBlockRenderState movingBlockRenderState) {
       this.wasUsed = true;
       this.movingBlockSubmits.add(new SubmitNodeStorage.MovingBlockSubmit(new Matrix4f(poseStack.last().pose()), movingBlockRenderState));
    }
 
-   public void submitBlockModel(final PoseStack poseStack, final RenderType renderType, final BlockStateModel model, final int tintColor, final int lightCoords, final int overlayCoords, final int outlineColor) {
+   public void submitBlockModel(final PoseStack poseStack, final RenderType renderType, final BlockStateModel model, final int[] tintLayers, final int lightCoords, final int overlayCoords, final int outlineColor) {
       this.wasUsed = true;
-      this.blockModelSubmits.add(new SubmitNodeStorage.BlockModelSubmit(poseStack.last().copy(), renderType, model, tintColor, lightCoords, overlayCoords, outlineColor));
+      this.blockModelSubmits.add(new SubmitNodeStorage.BlockModelSubmit(poseStack.last().copy(), renderType, model, tintLayers, lightCoords, overlayCoords, outlineColor));
    }
 
    public void submitItem(final PoseStack poseStack, final ItemDisplayContext displayContext, final int lightCoords, final int overlayCoords, final int outlineColor, final int[] tintLayers, final List<BakedQuad> quads, final ItemStackRenderState.FoilType foilType) {
@@ -136,10 +127,6 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
 
    public List<SubmitNodeStorage.LeashSubmit> getLeashSubmits() {
       return this.leashSubmits;
-   }
-
-   public List<SubmitNodeStorage.BlockSubmit> getBlockSubmits() {
-      return this.blockSubmits;
    }
 
    public List<SubmitNodeStorage.MovingBlockSubmit> getMovingBlockSubmits() {
@@ -180,7 +167,6 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
       this.nameTagSubmits.clear();
       this.textSubmits.clear();
       this.leashSubmits.clear();
-      this.blockSubmits.clear();
       this.movingBlockSubmits.clear();
       this.blockModelSubmits.clear();
       this.itemSubmits.clear();

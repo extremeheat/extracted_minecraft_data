@@ -3,6 +3,7 @@ package net.minecraft.client.renderer.entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.block.BlockModelResolver;
 import net.minecraft.client.renderer.entity.state.TntRenderState;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.util.Mth;
@@ -10,9 +11,12 @@ import net.minecraft.world.entity.item.PrimedTnt;
 import org.joml.Quaternionfc;
 
 public class TntRenderer extends EntityRenderer<PrimedTnt, TntRenderState> {
+   private final BlockModelResolver blockModelResolver;
+
    public TntRenderer(final EntityRendererProvider.Context context) {
       super(context);
       this.shadowRadius = 0.5F;
+      this.blockModelResolver = context.getBlockModelResolver();
    }
 
    public void submit(final TntRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
@@ -31,7 +35,7 @@ public class TntRenderer extends EntityRenderer<PrimedTnt, TntRenderState> {
       poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-90.0F));
       poseStack.translate(-0.5F, -0.5F, 0.5F);
       poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(90.0F));
-      if (state.blockState != null) {
+      if (!state.blockState.isEmpty()) {
          TntMinecartRenderer.submitWhiteSolidBlock(state.blockState, poseStack, submitNodeCollector, state.lightCoords, (int)fuse / 5 % 2 == 0, state.outlineColor);
       }
 
@@ -46,6 +50,6 @@ public class TntRenderer extends EntityRenderer<PrimedTnt, TntRenderState> {
    public void extractRenderState(final PrimedTnt entity, final TntRenderState state, final float partialTicks) {
       super.extractRenderState(entity, state, partialTicks);
       state.fuseRemainingInTicks = (float)entity.getFuse() - partialTicks + 1.0F;
-      state.blockState = entity.getBlockState();
+      this.blockModelResolver.update(state.blockState, entity.getBlockState());
    }
 }

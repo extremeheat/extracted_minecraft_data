@@ -30,7 +30,7 @@ public class GhastModel extends EntityModel<GhastRenderState> {
       MeshDefinition mesh = new MeshDefinition();
       PartDefinition root = mesh.getRoot();
       root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 0).addBox(-8.0F, -8.0F, -8.0F, 16.0F, 16.0F, 16.0F), PartPose.offset(0.0F, 17.6F, 0.0F));
-      RandomSource random = RandomSource.create(1660L);
+      RandomSource random = RandomSource.createThreadLocalInstance(1660L);
 
       for(int i = 0; i < 9; ++i) {
          float xo = (((float)(i % 3) - (float)(i / 3 % 2) * 0.5F + 0.25F) / 2.0F * 2.0F - 1.0F) * 5.0F;

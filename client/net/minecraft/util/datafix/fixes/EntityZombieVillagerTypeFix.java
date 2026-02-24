@@ -18,7 +18,7 @@ public class EntityZombieVillagerTypeFix extends NamedEntityFix {
          if (input.get("ZombieType").result().isEmpty()) {
             int type = this.getVillagerProfession(input.get("VillagerProfession").asInt(-1));
             if (type == -1) {
-               type = this.getVillagerProfession(RandomSource.create().nextInt(6));
+               type = this.getVillagerProfession(RandomSource.createThreadLocalInstance().nextInt(6));
             }
 
             input = input.set("ZombieType", input.createInt(type));

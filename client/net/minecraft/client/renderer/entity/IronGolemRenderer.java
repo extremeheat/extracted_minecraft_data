@@ -4,18 +4,22 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.model.animal.golem.IronGolemModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.renderer.block.BlockModelResolver;
 import net.minecraft.client.renderer.entity.layers.IronGolemCrackinessLayer;
 import net.minecraft.client.renderer.entity.layers.IronGolemFlowerLayer;
 import net.minecraft.client.renderer.entity.state.IronGolemRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.golem.IronGolem;
+import net.minecraft.world.level.block.Blocks;
 import org.joml.Quaternionfc;
 
 public class IronGolemRenderer extends MobRenderer<IronGolem, IronGolemRenderState, IronGolemModel> {
    private static final Identifier GOLEM_LOCATION = Identifier.withDefaultNamespace("textures/entity/iron_golem/iron_golem.png");
+   private final BlockModelResolver blockModelResolver;
 
    public IronGolemRenderer(final EntityRendererProvider.Context context) {
       super(context, new IronGolemModel(context.bakeLayer(ModelLayers.IRON_GOLEM)), 0.7F);
+      this.blockModelResolver = context.getBlockModelResolver();
       this.addLayer(new IronGolemCrackinessLayer(this));
       this.addLayer(new IronGolemFlowerLayer(this));
    }
@@ -32,6 +36,12 @@ public class IronGolemRenderer extends MobRenderer<IronGolem, IronGolemRenderSta
       super.extractRenderState(entity, state, partialTicks);
       state.attackTicksRemaining = (float)entity.getAttackAnimationTick() > 0.0F ? (float)entity.getAttackAnimationTick() - partialTicks : 0.0F;
       state.offerFlowerTick = entity.getOfferFlowerTick();
+      if (state.offerFlowerTick > 0) {
+         this.blockModelResolver.update(state.flowerBlock, Blocks.POPPY.defaultBlockState());
+      } else {
+         state.flowerBlock.clear();
+      }
+
       state.crackiness = entity.getCrackiness();
    }
 

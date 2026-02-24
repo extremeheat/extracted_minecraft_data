@@ -21,6 +21,7 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWCharCallbackI;
 import org.lwjgl.glfw.GLFWCursorPosCallbackI;
 import org.lwjgl.glfw.GLFWDropCallbackI;
+import org.lwjgl.glfw.GLFWIMEStatusCallbackI;
 import org.lwjgl.glfw.GLFWKeyCallbackI;
 import org.lwjgl.glfw.GLFWMouseButtonCallbackI;
 import org.lwjgl.glfw.GLFWPreeditCallbackI;
@@ -196,10 +197,11 @@ public class InputConstants {
       return GLFW.glfwGetKey(window.handle(), key) == 1;
    }
 
-   public static void setupKeyboardCallbacks(final Window window, final GLFWKeyCallbackI keyPressCallback, final GLFWCharCallbackI charTypedCallback, final GLFWPreeditCallbackI preeditCallback) {
+   public static void setupKeyboardCallbacks(final Window window, final GLFWKeyCallbackI keyPressCallback, final GLFWCharCallbackI charTypedCallback, final GLFWPreeditCallbackI preeditCallback, final GLFWIMEStatusCallbackI imeStatusCallback) {
       GLFW.glfwSetKeyCallback(window.handle(), keyPressCallback);
       GLFW.glfwSetCharCallback(window.handle(), charTypedCallback);
       GLFW.glfwSetPreeditCallback(window.handle(), preeditCallback);
+      GLFW.glfwSetIMEStatusCallback(window.handle(), imeStatusCallback);
    }
 
    public static void setupMouseCallbacks(final Window window, final GLFWCursorPosCallbackI onMoveCallback, final GLFWMouseButtonCallbackI onPressCallback, final GLFWScrollCallbackI onScrollCallback, final GLFWDropCallbackI onDropCallback) {

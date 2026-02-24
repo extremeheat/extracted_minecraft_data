@@ -3699,6 +3699,10 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
       return this.position.y + (double)this.getBbHeight() * progress;
    }
 
+   public double getRandomY(final double spread) {
+      return this.getY((2.0 * this.random.nextDouble() - 1.0) * spread);
+   }
+
    public double getRandomY() {
       return this.getY(this.random.nextDouble());
    }

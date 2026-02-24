@@ -11,6 +11,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.PlayerSkinRenderCache;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.block.BlockModelResolver;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
@@ -32,15 +33,17 @@ public class BlockEntityRenderDispatcher implements ResourceManagerReloadListene
    private final Supplier<EntityModelSet> entityModelSet;
    private Vec3 cameraPos;
    private final BlockRenderDispatcher blockRenderDispatcher;
+   private final BlockModelResolver blockModelResolver;
    private final ItemModelResolver itemModelResolver;
    private final ItemRenderer itemRenderer;
    private final EntityRenderDispatcher entityRenderer;
    private final SpriteGetter sprites;
    private final PlayerSkinRenderCache playerSkinRenderCache;
 
-   public BlockEntityRenderDispatcher(final Font font, final Supplier<EntityModelSet> entityModelSet, final BlockRenderDispatcher blockRenderDispatcher, final ItemModelResolver itemModelResolver, final ItemRenderer itemRenderer, final EntityRenderDispatcher entityRenderer, final SpriteGetter sprites, final PlayerSkinRenderCache playerSkinRenderCache) {
+   public BlockEntityRenderDispatcher(final Font font, final Supplier<EntityModelSet> entityModelSet, final BlockRenderDispatcher blockRenderDispatcher, final BlockModelResolver blockModelResolver, final ItemModelResolver itemModelResolver, final ItemRenderer itemRenderer, final EntityRenderDispatcher entityRenderer, final SpriteGetter sprites, final PlayerSkinRenderCache playerSkinRenderCache) {
       super();
       this.itemRenderer = itemRenderer;
+      this.blockModelResolver = blockModelResolver;
       this.itemModelResolver = itemModelResolver;
       this.entityRenderer = entityRenderer;
       this.font = font;
@@ -95,7 +98,7 @@ public class BlockEntityRenderDispatcher implements ResourceManagerReloadListene
    }
 
    public void onResourceManagerReload(final ResourceManager resourceManager) {
-      BlockEntityRendererProvider.Context context = new BlockEntityRendererProvider.Context(this, this.blockRenderDispatcher, this.itemModelResolver, this.itemRenderer, this.entityRenderer, (EntityModelSet)this.entityModelSet.get(), this.font, this.sprites, this.playerSkinRenderCache);
+      BlockEntityRendererProvider.Context context = new BlockEntityRendererProvider.Context(this, this.blockRenderDispatcher, this.blockModelResolver, this.itemModelResolver, this.itemRenderer, this.entityRenderer, (EntityModelSet)this.entityModelSet.get(), this.font, this.sprites, this.playerSkinRenderCache);
       this.renderers = BlockEntityRenderers.createEntityRenderers(context);
    }
 }

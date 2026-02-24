@@ -37,9 +37,8 @@ public class UnderwaterMagmaFeature extends Feature<UnderwaterMagmaConfiguration
          Vec3i radius = new Vec3i(config.placementRadiusAroundFloor, config.placementRadiusAroundFloor, config.placementRadiusAroundFloor);
          BoundingBox bounds = BoundingBox.fromCorners(floorPos.subtract(radius), floorPos.offset(radius));
          return BlockPos.betweenClosedStream(bounds).filter((pos) -> random.nextFloat() < config.placementProbabilityPerValidPosition).filter((pos) -> this.isValidPlacement(level, pos)).mapToInt((pos) -> {
-            BlockState state = Blocks.MAGMA_BLOCK.defaultBlockState();
-            level.setBlock(pos, state, 2);
-            level.neighborShapeChanged(Direction.DOWN, pos.above(), pos, state, 3, 512);
+            level.setBlock(pos, Blocks.MAGMA_BLOCK.defaultBlockState(), 2);
+            markForPostProcessing(level, pos.above());
             return 1;
          }).sum() > 0;
       }

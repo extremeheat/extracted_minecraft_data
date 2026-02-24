@@ -175,7 +175,7 @@ public class WinScreen extends Screen {
 
    private void addPoemFile(final Reader inputReader) throws IOException {
       BufferedReader reader = new BufferedReader(inputReader);
-      RandomSource random = RandomSource.create(8124371L);
+      RandomSource random = RandomSource.createThreadLocalInstance(8124371L);
 
       String line;
       while((line = reader.readLine()) != null) {

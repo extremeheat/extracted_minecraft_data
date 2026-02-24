@@ -181,7 +181,7 @@ public class SkyRenderer implements AutoCloseable {
    }
 
    private GpuBuffer buildStars() {
-      RandomSource random = RandomSource.create(10842L);
+      RandomSource random = RandomSource.createThreadLocalInstance(10842L);
       float starDistance = 100.0F;
 
       GpuBuffer var19;

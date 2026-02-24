@@ -77,7 +77,7 @@ public class Goat extends Animal {
    }
 
    public ItemStack createHorn() {
-      RandomSource random = RandomSource.create((long)this.getUUID().hashCode());
+      RandomSource random = RandomSource.createThreadLocalInstance((long)this.getUUID().hashCode());
       TagKey<Instrument> key = this.isScreamingGoat() ? InstrumentTags.SCREAMING_GOAT_HORNS : InstrumentTags.REGULAR_GOAT_HORNS;
       return (ItemStack)this.level().registryAccess().lookupOrThrow(Registries.INSTRUMENT).getRandomElementOf(key, random).map((instrument) -> InstrumentItem.create(Items.GOAT_HORN, instrument)).orElseGet(() -> new ItemStack(Items.GOAT_HORN));
    }

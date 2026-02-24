@@ -23,6 +23,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public abstract class AgeableMob extends PathfinderMob {
@@ -30,6 +31,7 @@ public abstract class AgeableMob extends PathfinderMob {
    private static final EntityDataAccessor<Boolean> AGE_LOCKED;
    public static final int BABY_START_AGE = -24000;
    public static final int AGE_LOCK_COOLDOWN_TICKS = 40;
+   public static final float AGE_LOCK_DOWNWARDS_MOVING_PARTICLE_Y_OFFSET = 0.2F;
    private static final int FORCED_AGE_PARTICLE_TICKS = 40;
    protected static final int DEFAULT_AGE = 0;
    protected static final int DEFAULT_FORCED_AGE = 0;
@@ -192,13 +194,15 @@ public abstract class AgeableMob extends PathfinderMob {
          }
       }
 
-      this.ageLockParticleTimer = makeAgeLockedParticle(this.level(), this, this.ageLockParticleTimer);
+      this.ageLockParticleTimer = makeAgeLockedParticle(this.level(), this, this.ageLockParticleTimer, this.isAgeLocked());
    }
 
-   public static int makeAgeLockedParticle(final Level level, final Mob mob, int ageLockParticleTimer) {
+   public static int makeAgeLockedParticle(final Level level, final Mob mob, int ageLockParticleTimer, final boolean isAgeLocked) {
       if (ageLockParticleTimer > 0) {
-         if (level.isClientSide() && ageLockParticleTimer % 4 == 0) {
-            level.addParticle(ParticleTypes.HAPPY_VILLAGER, mob.getRandomX(1.0), mob.getRandomY() + 0.5, mob.getRandomZ(1.0), 0.0, 0.0, 0.0);
+         if (level.isClientSide() && ageLockParticleTimer % 2 == 0) {
+            float yParticleOffset = isAgeLocked ? 0.2F : 0.0F;
+            Vec3 spawnPosition = new Vec3(mob.getRandomX(1.0), mob.getRandomY(0.2) + (double)mob.getBbHeight() + (double)yParticleOffset, mob.getRandomZ(1.0));
+            level.addParticle(isAgeLocked ? ParticleTypes.PAUSE_MOB_GROWTH : ParticleTypes.RESET_MOB_GROWTH, spawnPosition.x, spawnPosition.y, spawnPosition.z, 0.0, 0.0, 0.0);
          }
 
          --ageLockParticleTimer;

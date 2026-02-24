@@ -532,8 +532,12 @@ public class SoundEngine {
 
    }
 
-   public String getDebugString() {
-      return this.library.getDebugString();
+   public String getChannelDebugString() {
+      return this.library.getChannelDebugString();
+   }
+
+   public void getSoundCacheDebugStats(final SoundBufferLibrary.DebugOutput output) {
+      this.soundBuffers.enumerate(output);
    }
 
    public List<String> getAvailableSoundDevices() {

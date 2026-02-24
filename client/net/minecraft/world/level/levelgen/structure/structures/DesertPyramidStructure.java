@@ -41,7 +41,7 @@ public class DesertPyramidStructure extends SinglePieceStructure {
       }
 
       ObjectArrayList<BlockPos> shuffledSandPlacements = new ObjectArrayList(uniqueSandPlacements.stream().toList());
-      RandomSource positionalRandom = RandomSource.create(level.getSeed()).forkPositional().at(pieces.calculateBoundingBox().getCenter());
+      RandomSource positionalRandom = RandomSource.createThreadLocalInstance(level.getSeed()).forkPositional().at(pieces.calculateBoundingBox().getCenter());
       Util.shuffle(shuffledSandPlacements, positionalRandom);
       int suspiciousSandToPlace = Math.min(uniqueSandPlacements.size(), positionalRandom.nextInt(5, 8));
       ObjectListIterator var12 = shuffledSandPlacements.iterator();

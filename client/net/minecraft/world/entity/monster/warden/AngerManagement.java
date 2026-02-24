@@ -33,7 +33,7 @@ public class AngerManagement {
    @VisibleForTesting
    protected static final int MAX_ANGER = 150;
    private static final int DEFAULT_ANGER_DECREASE = 1;
-   private int conversionDelay = Mth.randomBetweenInclusive(RandomSource.create(), 0, 2);
+   private int conversionDelay = Mth.randomBetweenInclusive(RandomSource.createThreadLocalInstance(), 0, 2);
    private int highestAnger;
    private static final Codec<Pair<UUID, Integer>> SUSPECT_ANGER_PAIR = RecordCodecBuilder.create((i) -> i.group(UUIDUtil.CODEC.fieldOf("uuid").forGetter(Pair::getFirst), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("anger").forGetter(Pair::getSecond)).apply(i, Pair::of));
    private final Predicate<Entity> filter;

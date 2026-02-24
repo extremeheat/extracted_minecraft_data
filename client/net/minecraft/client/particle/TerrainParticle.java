@@ -20,7 +20,7 @@ public class TerrainParticle extends SingleQuadParticle {
    }
 
    public TerrainParticle(final ClientLevel level, final double x, final double y, final double z, final double xa, final double ya, final double za, final BlockState blockState, final BlockPos pos) {
-      super(level, x, y, z, xa, ya, za, Minecraft.getInstance().getBlockRenderer().getBlockModelShaper().getParticleMaterial(blockState).sprite());
+      super(level, x, y, z, xa, ya, za, Minecraft.getInstance().getModelManager().getBlockModelSet().getParticleMaterial(blockState).sprite());
       this.pos = pos;
       this.gravity = 1.0F;
       this.rCol = 0.6F;

@@ -26,8 +26,6 @@ import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.RenderBuffers;
 import net.minecraft.client.renderer.SectionBufferBuilderPack;
 import net.minecraft.client.renderer.SectionBufferBuilderPool;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
@@ -50,11 +48,11 @@ public class SectionRenderDispatcher {
    private ClientLevel level;
    private final LevelRenderer renderer;
    private final AtomicReference<Vec3> cameraPosition;
-   private final SectionCompiler sectionCompiler;
+   private SectionCompiler sectionCompiler;
    private final Map<ChunkSectionLayer, SectionUberBuffers> chunkUberBuffers;
    private final ReentrantLock copyLock;
 
-   public SectionRenderDispatcher(final ClientLevel level, final LevelRenderer renderer, final TracingExecutor executor, final RenderBuffers renderBuffers, final BlockRenderDispatcher blockRenderer, final BlockEntityRenderDispatcher blockEntityRenderDispatcher) {
+   public SectionRenderDispatcher(final ClientLevel level, final LevelRenderer renderer, final TracingExecutor executor, final RenderBuffers renderBuffers, final SectionCompiler sectionCompiler) {
       super();
       this.cameraPosition = new AtomicReference(Vec3.ZERO);
       this.copyLock = new ReentrantLock();
@@ -63,7 +61,7 @@ public class SectionRenderDispatcher {
       this.fixedBuffers = renderBuffers.fixedBufferPack();
       this.bufferPool = renderBuffers.sectionBufferPool();
       this.executor = executor;
-      this.sectionCompiler = new SectionCompiler(blockRenderer, blockEntityRenderDispatcher);
+      this.sectionCompiler = sectionCompiler;
       int vertexBufferHeapSize = 134217728;
       int indexBufferHeapSize = 33554432;
       int vertexStagingBufferSize = 33554432;
@@ -78,8 +76,9 @@ public class SectionRenderDispatcher {
       });
    }
 
-   public void setLevel(final ClientLevel level) {
+   public void setLevel(final ClientLevel level, final SectionCompiler sectionCompiler) {
       this.level = level;
+      this.sectionCompiler = sectionCompiler;
    }
 
    private void runTask() {

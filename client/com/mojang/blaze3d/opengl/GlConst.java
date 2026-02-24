@@ -1,7 +1,7 @@
 package com.mojang.blaze3d.opengl;
 
 import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.platform.DepthTestFunction;
+import com.mojang.blaze3d.platform.CompareOp;
 import com.mojang.blaze3d.platform.DestFactor;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.PolygonMode;
@@ -142,14 +142,18 @@ public class GlConst {
       super();
    }
 
-   public static int toGl(final DepthTestFunction depthTestFunction) {
+   public static int toGl(final CompareOp compareOp) {
       short var10000;
-      switch (depthTestFunction) {
-         case NO_DEPTH_TEST -> var10000 = 519;
-         case EQUAL_DEPTH_TEST -> var10000 = 514;
-         case LESS_DEPTH_TEST -> var10000 = 513;
-         case GREATER_DEPTH_TEST -> var10000 = 516;
-         default -> var10000 = 515;
+      switch (compareOp) {
+         case ALWAYS_PASS -> var10000 = 519;
+         case LESS_THAN -> var10000 = 513;
+         case LESS_THAN_OR_EQUAL -> var10000 = 515;
+         case EQUAL -> var10000 = 514;
+         case NOT_EQUAL -> var10000 = 517;
+         case GREATER_THAN_OR_EQUAL -> var10000 = 518;
+         case GREATER_THAN -> var10000 = 516;
+         case NEVER_PASS -> var10000 = 512;
+         default -> throw new MatchException((String)null, (Throwable)null);
       }
 
       return var10000;

@@ -243,7 +243,7 @@ public class Horse extends AbstractHorse {
 
    static {
       DATA_ID_TYPE_VARIANT = SynchedEntityData.<Integer>defineId(Horse.class, EntityDataSerializers.INT);
-      BABY_DIMENSIONS = EntityType.HORSE.getDimensions().withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, EntityType.HORSE.getHeight() + 0.125F, 0.0F)).scale(0.7F);
+      BABY_DIMENSIONS = EntityType.HORSE.getDimensions().withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, EntityType.HORSE.getHeight() - 0.125F, 0.0F)).scale(0.7F);
    }
 
    public static class HorseGroupData extends AgeableMob.AgeableMobGroupData {

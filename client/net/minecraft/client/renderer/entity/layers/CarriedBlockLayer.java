@@ -4,10 +4,10 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.model.monster.enderman.EndermanModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.block.BlockModelRenderState;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.EndermanRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.world.level.block.state.BlockState;
 import org.joml.Quaternionfc;
 
 public class CarriedBlockLayer extends RenderLayer<EndermanRenderState, EndermanModel<EndermanRenderState>> {
@@ -16,8 +16,8 @@ public class CarriedBlockLayer extends RenderLayer<EndermanRenderState, Enderman
    }
 
    public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final EndermanRenderState state, final float yRot, final float xRot) {
-      BlockState blockState = state.carriedBlock;
-      if (blockState != null) {
+      BlockModelRenderState carriedBlock = state.carriedBlock;
+      if (!carriedBlock.isEmpty()) {
          poseStack.pushPose();
          poseStack.translate(0.0F, 0.6875F, -0.75F);
          poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(20.0F));
@@ -26,7 +26,7 @@ public class CarriedBlockLayer extends RenderLayer<EndermanRenderState, Enderman
          float s = 0.5F;
          poseStack.scale(-0.5F, -0.5F, 0.5F);
          poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(90.0F));
-         submitNodeCollector.submitBlock(poseStack, blockState, lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
+         carriedBlock.submit(poseStack, submitNodeCollector, lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
          poseStack.popPose();
       }
    }

@@ -1,11 +1,9 @@
 package net.minecraft.client.renderer.block;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.CardinalLighting;
 import net.minecraft.world.level.ColorResolver;
-import net.minecraft.world.level.EmptyBlockAndTintGetter;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -19,22 +17,24 @@ public class MovingBlockRenderState implements BlockAndTintGetter {
    public BlockPos blockPos;
    public BlockState blockState;
    public @Nullable Holder<Biome> biome;
-   public BlockAndTintGetter level;
+   public CardinalLighting cardinalLighting;
+   public LevelLightEngine lightEngine;
 
    public MovingBlockRenderState() {
       super();
       this.randomSeedPos = BlockPos.ZERO;
       this.blockPos = BlockPos.ZERO;
       this.blockState = Blocks.AIR.defaultBlockState();
-      this.level = EmptyBlockAndTintGetter.INSTANCE;
+      this.cardinalLighting = CardinalLighting.DEFAULT;
+      this.lightEngine = LevelLightEngine.EMPTY;
    }
 
-   public float getShade(final Direction direction, final boolean shade) {
-      return this.level.getShade(direction, shade);
+   public CardinalLighting cardinalLighting() {
+      return this.cardinalLighting;
    }
 
    public LevelLightEngine getLightEngine() {
-      return this.level.getLightEngine();
+      return this.lightEngine;
    }
 
    public int getBlockTint(final BlockPos pos, final ColorResolver color) {

@@ -86,7 +86,7 @@ public class WeatherEffectRenderer {
          int cameraBlockY = Mth.floor(cameraPos.y);
          int cameraBlockZ = Mth.floor(cameraPos.z);
          BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
-         RandomSource random = RandomSource.create();
+         RandomSource random = RandomSource.createThreadLocalInstance();
 
          for(int z = cameraBlockZ - renderState.radius; z <= cameraBlockZ + renderState.radius; ++z) {
             for(int x = cameraBlockX - renderState.radius; x <= cameraBlockX + renderState.radius; ++x) {
@@ -214,7 +214,7 @@ public class WeatherEffectRenderer {
    public void tickRainParticles(final ClientLevel level, final Camera camera, final int ticks, final ParticleStatus particleStatus, final int weatherRadius) {
       float rainLevel = level.getRainLevel(1.0F);
       if (!(rainLevel <= 0.0F)) {
-         RandomSource random = RandomSource.create((long)ticks * 312987231L);
+         RandomSource random = RandomSource.createThreadLocalInstance((long)ticks * 312987231L);
          BlockPos cameraPosition = BlockPos.containing(camera.position());
          BlockPos rainParticlePosition = null;
          int weatherDiameter = 2 * weatherRadius + 1;

@@ -1,8 +1,7 @@
 package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.QuadBrightness;
-import com.mojang.blaze3d.vertex.QuadLightmapCoords;
+import com.mojang.blaze3d.vertex.QuadInstance;
 import com.mojang.blaze3d.vertex.SheetedDecalTextureGenerator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexMultiConsumer;
@@ -34,17 +33,19 @@ public class ItemRenderer {
    public static void renderItem(final ItemDisplayContext type, final PoseStack poseStack, final MultiBufferSource bufferSource, final int lightCoords, final int overlayCoords, final int[] tintLayers, final List<BakedQuad> quads, final ItemStackRenderState.FoilType foilType) {
       PoseStack.Pose pose = poseStack.last();
       PoseStack.Pose foilDecalPose = foilType == ItemStackRenderState.FoilType.SPECIAL ? computeFoilDecalPose(type, pose) : null;
-      QuadLightmapCoords wrappedLightmapCoords = QuadLightmapCoords.create(lightCoords);
+      QuadInstance quadInstance = new QuadInstance();
+      quadInstance.setLightCoords(lightCoords);
+      quadInstance.setOverlayCoords(overlayCoords);
 
       for(BakedQuad quad : quads) {
          RenderType renderType = quad.spriteInfo().itemRenderType();
-         int tintColor = getLayerColorSafe(tintLayers, quad);
+         quadInstance.setColor(getLayerColorSafe(tintLayers, quad));
          if (foilType != ItemStackRenderState.FoilType.NONE) {
             VertexConsumer foilBuffer = getFoilBuffer(bufferSource, renderType, foilDecalPose);
-            foilBuffer.putBulkData(pose, quad, QuadBrightness.ALL_BRIGHT, tintColor, wrappedLightmapCoords, overlayCoords);
+            foilBuffer.putBakedQuad(pose, quad, quadInstance);
          }
 
-         bufferSource.getBuffer(renderType).putBulkData(pose, quad, QuadBrightness.ALL_BRIGHT, tintColor, wrappedLightmapCoords, overlayCoords);
+         bufferSource.getBuffer(renderType).putBakedQuad(pose, quad, quadInstance);
       }
 
    }

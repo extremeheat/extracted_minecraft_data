@@ -180,6 +180,11 @@ public class ARGB {
       return alpha << 24;
    }
 
+   public static int gray(final float brightness) {
+      int channel = as8BitChannel(brightness);
+      return color(channel, channel, channel);
+   }
+
    public static int colorFromFloat(final float alpha, final float red, final float green, final float blue) {
       return color(as8BitChannel(alpha), as8BitChannel(red), as8BitChannel(green), as8BitChannel(blue));
    }

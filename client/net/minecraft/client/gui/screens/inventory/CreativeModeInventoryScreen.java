@@ -21,6 +21,7 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.input.PreeditEvent;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.player.LocalPlayer;
@@ -351,6 +352,14 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
          } else {
             return false;
          }
+      }
+   }
+
+   public boolean preeditUpdated(final @Nullable PreeditEvent event) {
+      if (this.ignoreTextInput) {
+         return false;
+      } else {
+         return selectedTab.getType() != CreativeModeTab.Type.SEARCH ? false : this.searchBox.preeditUpdated(event);
       }
    }
 

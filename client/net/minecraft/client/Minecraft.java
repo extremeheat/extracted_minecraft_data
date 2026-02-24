@@ -140,8 +140,9 @@ import net.minecraft.client.renderer.MapRenderer;
 import net.minecraft.client.renderer.PlayerSkinRenderCache;
 import net.minecraft.client.renderer.RenderBuffers;
 import net.minecraft.client.renderer.ShaderManager;
-import net.minecraft.client.renderer.block.BlockModelShaper;
+import net.minecraft.client.renderer.block.BlockModelResolver;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.renderer.block.BlockStateModelSet;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
@@ -167,6 +168,7 @@ import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.client.resources.server.DownloadedPackSource;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.client.sounds.MusicManager;
+import net.minecraft.client.sounds.SoundBufferLibrary;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.client.telemetry.ClientTelemetryManager;
 import net.minecraft.client.telemetry.TelemetryProperty;
@@ -287,6 +289,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private final RenderBuffers renderBuffers;
    public final LevelRenderer levelRenderer;
    private final EntityRenderDispatcher entityRenderDispatcher;
+   private final BlockModelResolver blockModelResolver;
    private final ItemModelResolver itemModelResolver;
    private final ItemRenderer itemRenderer;
    private final MapRenderer mapRenderer;
@@ -344,6 +347,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private final QuickPlayLog quickPlayLog;
    private final Services services;
    private final PlayerSkinRenderCache playerSkinRenderCache;
+   private volatile boolean imeStatusChanged;
    public @Nullable MultiPlayerGameMode gameMode;
    public @Nullable ClientLevel level;
    public @Nullable LocalPlayer player;
@@ -538,6 +542,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.resourceManager.registerReloadListener(this.modelManager);
       EquipmentAssetManager equipmentAssets = new EquipmentAssetManager();
       this.resourceManager.registerReloadListener(equipmentAssets);
+      this.blockModelResolver = new BlockModelResolver(this.modelManager, this.blockColors);
       this.itemModelResolver = new ItemModelResolver(this.modelManager);
       this.itemRenderer = new ItemRenderer();
       this.mapTextureManager = new MapTextureManager(this.textureManager);
@@ -553,11 +558,11 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       }
 
       this.playerSocialManager = new PlayerSocialManager(this, this.userApiService);
-      this.blockRenderer = new BlockRenderDispatcher(this.modelManager.getBlockModelShaper(), this.atlasManager, this.blockColors);
+      this.blockRenderer = new BlockRenderDispatcher(this.modelManager, this.atlasManager, this.blockColors);
       this.resourceManager.registerReloadListener(this.blockRenderer);
-      this.entityRenderDispatcher = new EntityRenderDispatcher(this, this.textureManager, this.itemModelResolver, this.mapRenderer, this.blockRenderer, this.atlasManager, this.font, this.options, this.modelManager.entityModels(), equipmentAssets, this.playerSkinRenderCache);
+      this.entityRenderDispatcher = new EntityRenderDispatcher(this, this.textureManager, this.blockModelResolver, this.itemModelResolver, this.mapRenderer, this.atlasManager, this.font, this.options, this.modelManager.entityModels(), equipmentAssets, this.playerSkinRenderCache);
       this.resourceManager.registerReloadListener(this.entityRenderDispatcher);
-      this.blockEntityRenderDispatcher = new BlockEntityRenderDispatcher(this.font, this.modelManager.entityModels(), this.blockRenderer, this.itemModelResolver, this.itemRenderer, this.entityRenderDispatcher, this.atlasManager, this.playerSkinRenderCache);
+      this.blockEntityRenderDispatcher = new BlockEntityRenderDispatcher(this.font, this.modelManager.entityModels(), this.blockRenderer, this.blockModelResolver, this.itemModelResolver, this.itemRenderer, this.entityRenderDispatcher, this.atlasManager, this.playerSkinRenderCache);
       this.resourceManager.registerReloadListener(this.blockEntityRenderDispatcher);
       this.particleResources = new ParticleResources();
       this.resourceManager.registerReloadListener(this.particleResources);
@@ -1011,8 +1016,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
    private void selfTest() {
       boolean error = false;
-      BlockModelShaper blockModelShaper = this.getBlockRenderer().getBlockModelShaper();
-      BlockStateModel missingModel = blockModelShaper.getModelManager().getMissingBlockStateModel();
+      BlockStateModelSet blockModelSet = this.getModelManager().getBlockModelSet();
+      BlockStateModel missingModel = blockModelSet.missingModel();
 
       for(Block block : BuiltInRegistries.BLOCK) {
          UnmodifiableIterator var6 = block.getStateDefinition().getPossibleStates().iterator();
@@ -1020,7 +1025,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          while(var6.hasNext()) {
             BlockState state = (BlockState)var6.next();
             if (state.getRenderShape() == RenderShape.MODEL) {
-               BlockStateModel model = blockModelShaper.getBlockModel(state);
+               BlockStateModel model = blockModelSet.get(state);
                if (model == missingModel) {
                   LOGGER.debug("Missing model for: {}", state);
                   error = true;
@@ -1036,7 +1041,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
          while(var15.hasNext()) {
             BlockState state = (BlockState)var15.next();
-            TextureAtlasSprite particleIcon = blockModelShaper.getParticleMaterial(state).sprite();
+            TextureAtlasSprite particleIcon = blockModelSet.getParticleMaterial(state).sprite();
             if (!state.isAir() && particleIcon == missingIcon) {
                LOGGER.debug("Missing particle icon for: {}", state);
             }
@@ -1110,6 +1115,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          screen.init(this.window.getGuiScaledWidth(), this.window.getGuiScaledHeight());
          this.noRender = false;
       } else {
+         this.window.stopTextInput();
          if (this.level != null) {
             KeyMapping.restoreToggleStatesOnScreenClosed();
          }
@@ -1774,6 +1780,9 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             this.screen.fillCrashDetails(report);
             throw new ReportedException(report);
          }
+      } else if (this.imeStatusChanged) {
+         this.imeStatusChanged = false;
+         this.window.toggleIME(false);
       }
 
       if (this.overlay != null) {
@@ -2304,10 +2313,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       return !instance.gameRenderer.getLevelRenderState().cameraRenderState.isPanoramicMode && (Boolean)instance.options.improvedTransparency().get();
    }
 
-   public static boolean useAmbientOcclusion() {
-      return (Boolean)instance.options.ambientOcclusion().get();
-   }
-
    private void pickBlockOrEntity() {
       if (this.hitResult != null && this.hitResult.getType() != HitResult.Type.MISS) {
          boolean includeData = this.hasControlDown();
@@ -2407,6 +2412,11 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
       if (minecraft != null) {
          systemReport.setDetail("Resource Packs", (Supplier)(() -> PackRepository.displayPackList(minecraft.getResourcePackRepository().getSelectedPacks())));
+         systemReport.setDetail("Sound Cache", (Supplier)(() -> {
+            SoundBufferLibrary.DebugOutput.Counter counter = new SoundBufferLibrary.DebugOutput.Counter();
+            minecraft.getSoundManager().getSoundCacheDebugStats(counter);
+            return String.format(Locale.ROOT, "%d bytes in %d buffers", counter.totalSize(), counter.totalCount());
+         }));
       }
 
       if (languageManager != null) {
@@ -2856,6 +2866,10 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
    public Collection<SimpleGizmoCollector.GizmoInstance> getPerTickGizmos() {
       return this.drainedLatestTickGizmos;
+   }
+
+   public void notifyIMEChanged() {
+      this.imeStatusChanged = true;
    }
 
    static {

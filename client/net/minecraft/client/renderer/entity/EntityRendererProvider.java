@@ -6,7 +6,7 @@ import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MapRenderer;
 import net.minecraft.client.renderer.PlayerSkinRenderCache;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.renderer.block.BlockModelResolver;
 import net.minecraft.client.renderer.entity.layers.EquipmentLayerRenderer;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.texture.TextureAtlas;
@@ -24,9 +24,9 @@ public interface EntityRendererProvider<T extends Entity> {
 
    public static class Context {
       private final EntityRenderDispatcher entityRenderDispatcher;
+      private final BlockModelResolver blockModelResolver;
       private final ItemModelResolver itemModelResolver;
       private final MapRenderer mapRenderer;
-      private final BlockRenderDispatcher blockRenderDispatcher;
       private final ResourceManager resourceManager;
       private final EntityModelSet modelSet;
       private final EquipmentAssetManager equipmentAssets;
@@ -35,12 +35,12 @@ public interface EntityRendererProvider<T extends Entity> {
       private final AtlasManager atlasManager;
       private final PlayerSkinRenderCache playerSkinRenderCache;
 
-      public Context(final EntityRenderDispatcher entityRenderDispatcher, final ItemModelResolver itemModelResolver, final MapRenderer mapRenderer, final BlockRenderDispatcher blockRenderDispatcher, final ResourceManager resourceManager, final EntityModelSet modelSet, final EquipmentAssetManager equipmentAssets, final AtlasManager atlasManager, final Font font, final PlayerSkinRenderCache playerSkinRenderCache) {
+      public Context(final EntityRenderDispatcher entityRenderDispatcher, final BlockModelResolver blockModelResolver, final ItemModelResolver itemModelResolver, final MapRenderer mapRenderer, final ResourceManager resourceManager, final EntityModelSet modelSet, final EquipmentAssetManager equipmentAssets, final AtlasManager atlasManager, final Font font, final PlayerSkinRenderCache playerSkinRenderCache) {
          super();
          this.entityRenderDispatcher = entityRenderDispatcher;
+         this.blockModelResolver = blockModelResolver;
          this.itemModelResolver = itemModelResolver;
          this.mapRenderer = mapRenderer;
-         this.blockRenderDispatcher = blockRenderDispatcher;
          this.resourceManager = resourceManager;
          this.modelSet = modelSet;
          this.equipmentAssets = equipmentAssets;
@@ -54,16 +54,16 @@ public interface EntityRendererProvider<T extends Entity> {
          return this.entityRenderDispatcher;
       }
 
+      public BlockModelResolver getBlockModelResolver() {
+         return this.blockModelResolver;
+      }
+
       public ItemModelResolver getItemModelResolver() {
          return this.itemModelResolver;
       }
 
       public MapRenderer getMapRenderer() {
          return this.mapRenderer;
-      }
-
-      public BlockRenderDispatcher getBlockRenderDispatcher() {
-         return this.blockRenderDispatcher;
       }
 
       public ResourceManager getResourceManager() {

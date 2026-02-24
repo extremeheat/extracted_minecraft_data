@@ -63,7 +63,7 @@ public class ScreenEffectRenderer {
          if (!player.noPhysics) {
             BlockState blockState = getViewBlockingState(player);
             if (blockState != null) {
-               renderTex(this.minecraft.getBlockRenderer().getBlockModelShaper().getParticleMaterial(blockState).sprite(), poseStack, this.bufferSource);
+               renderTex(this.minecraft.getModelManager().getBlockModelSet().getParticleMaterial(blockState).sprite(), poseStack, this.bufferSource);
             }
          }
 

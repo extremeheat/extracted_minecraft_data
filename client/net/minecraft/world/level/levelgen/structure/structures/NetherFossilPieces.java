@@ -63,7 +63,7 @@ public class NetherFossilPieces {
       }
 
       private void placeDriedGhast(final WorldGenLevel level, final RandomSource random, final BoundingBox fossilBB, final BoundingBox chunkBB) {
-         RandomSource positionalRandom = RandomSource.create(level.getSeed()).forkPositional().at(fossilBB.getCenter());
+         RandomSource positionalRandom = RandomSource.createThreadLocalInstance(level.getSeed()).forkPositional().at(fossilBB.getCenter());
          if (positionalRandom.nextFloat() < 0.5F) {
             int x = fossilBB.minX() + positionalRandom.nextInt(fossilBB.getXSpan());
             int y = fossilBB.minY();

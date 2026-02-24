@@ -23,7 +23,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import org.jspecify.annotations.Nullable;
 
-public interface LevelReader extends BlockAndTintGetter, CollisionGetter, SignalGetter, BiomeManager.NoiseBiomeSource {
+public interface LevelReader extends BlockAndLightGetter, CollisionGetter, SignalGetter, BiomeManager.NoiseBiomeSource {
    @Nullable ChunkAccess getChunk(final int chunkX, final int chunkZ, final ChunkStatus targetStatus, final boolean loadOrGenerate);
 
    /** @deprecated */
@@ -52,10 +52,6 @@ public interface LevelReader extends BlockAndTintGetter, CollisionGetter, Signal
       int z0 = Mth.floor(box.minZ);
       int z1 = Mth.floor(box.maxZ);
       return this.hasChunksAt(x0, y0, z0, x1, y1, z1) ? this.getBlockStates(box) : Stream.empty();
-   }
-
-   default int getBlockTint(final BlockPos pos, final ColorResolver resolver) {
-      return resolver.getColor((Biome)this.getBiome(pos).value(), (double)pos.getX(), (double)pos.getZ());
    }
 
    default Holder<Biome> getNoiseBiome(final int quartX, final int quartY, final int quartZ) {

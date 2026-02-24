@@ -1,5 +1,6 @@
 package com.mojang.blaze3d.opengl;
 
+import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.platform.MacosUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.jtracy.Plot;
@@ -34,7 +35,7 @@ public class GlStateManager {
    private static int activeTexture;
    private static final int TEXTURE_COUNT = 12;
    private static final TextureState[] TEXTURES = (TextureState[])IntStream.range(0, 12).mapToObj((i) -> new TextureState()).toArray((x$0) -> new TextureState[x$0]);
-   private static final ColorMask COLOR_MASK = new ColorMask();
+   private static @ColorTargetState.WriteMask int COLOR_MASK = 15;
    private static int readFbo;
    private static int writeFbo;
 
@@ -451,14 +452,11 @@ public class GlStateManager {
       GL11.glViewport(x, y, width, height);
    }
 
-   public static void _colorMask(final boolean red, final boolean green, final boolean blue, final boolean alpha) {
+   public static void _colorMask(final @ColorTargetState.WriteMask int writeMask) {
       RenderSystem.assertOnRenderThread();
-      if (red != COLOR_MASK.red || green != COLOR_MASK.green || blue != COLOR_MASK.blue || alpha != COLOR_MASK.alpha) {
-         COLOR_MASK.red = red;
-         COLOR_MASK.green = green;
-         COLOR_MASK.blue = blue;
-         COLOR_MASK.alpha = alpha;
-         GL11.glColorMask(red, green, blue, alpha);
+      if (writeMask != COLOR_MASK) {
+         COLOR_MASK = writeMask;
+         GL11.glColorMask((writeMask & 1) != 0, (writeMask & 2) != 0, (writeMask & 4) != 0, (writeMask & 8) != 0);
       }
 
    }
@@ -606,17 +604,6 @@ public class GlStateManager {
       public final BooleanState mode = new BooleanState(3089);
 
       private ScissorState() {
-         super();
-      }
-   }
-
-   private static class ColorMask {
-      public boolean red = true;
-      public boolean green = true;
-      public boolean blue = true;
-      public boolean alpha = true;
-
-      private ColorMask() {
          super();
       }
    }

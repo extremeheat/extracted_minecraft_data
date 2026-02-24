@@ -11,6 +11,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.block.BlockModelResolver;
 import net.minecraft.client.renderer.entity.state.BlockDisplayEntityRenderState;
 import net.minecraft.client.renderer.entity.state.DisplayEntityRenderState;
 import net.minecraft.client.renderer.entity.state.ItemDisplayEntityRenderState;
@@ -31,10 +32,12 @@ import org.joml.Quaternionfc;
 
 public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEntityRenderState> extends EntityRenderer<T, ST> {
    private final EntityRenderDispatcher entityRenderDispatcher;
+   protected final BlockModelResolver blockModelResolver;
 
    protected DisplayRenderer(final EntityRendererProvider.Context context) {
       super(context);
       this.entityRenderDispatcher = context.getEntityRenderDispatcher();
+      this.blockModelResolver = context.getBlockModelResolver();
    }
 
    protected AABB getBoundingBoxForCulling(final T entity) {
@@ -137,11 +140,17 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
 
       public void extractRenderState(final Display.BlockDisplay entity, final BlockDisplayEntityRenderState state, final float partialTicks) {
          super.extractRenderState(entity, state, partialTicks);
-         state.blockRenderState = entity.blockRenderState();
+         Display.BlockDisplay.BlockRenderState blockRenderState = entity.blockRenderState();
+         if (blockRenderState != null) {
+            this.blockModelResolver.update(state.blockModel, blockRenderState.blockState());
+         } else {
+            state.blockModel.clear();
+         }
+
       }
 
       public void submitInner(final BlockDisplayEntityRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final float interpolationProgress) {
-         submitNodeCollector.submitBlock(poseStack, state.blockRenderState.blockState(), lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
+         state.blockModel.submit(poseStack, submitNodeCollector, lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
       }
    }
 

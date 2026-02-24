@@ -26,7 +26,7 @@ import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.PlayerSkinRenderCache;
 import net.minecraft.client.renderer.SpecialBlockModelRenderer;
-import net.minecraft.client.renderer.block.BlockModelShaper;
+import net.minecraft.client.renderer.block.BlockStateModelSet;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.block.model.ItemModelGenerator;
@@ -59,11 +59,11 @@ public class ModelManager implements PreparableReloadListener {
    private Map<Identifier, ClientItem.Properties> itemProperties = Map.of();
    private final AtlasManager atlasManager;
    private final PlayerSkinRenderCache playerSkinRenderCache;
-   private final BlockModelShaper blockModelShaper;
    private final BlockColors blockColors;
    private EntityModelSet entityModelSet;
    private SpecialBlockModelRenderer specialBlockModelRenderer;
    private ModelBakery.MissingModels missingModels;
+   private @Nullable BlockStateModelSet blockModelSet;
    private Object2IntMap<BlockState> modelGroups;
 
    public ModelManager(final BlockColors blockColors, final AtlasManager atlasManager, final PlayerSkinRenderCache playerSkinRenderCache) {
@@ -74,11 +74,6 @@ public class ModelManager implements PreparableReloadListener {
       this.blockColors = blockColors;
       this.atlasManager = atlasManager;
       this.playerSkinRenderCache = playerSkinRenderCache;
-      this.blockModelShaper = new BlockModelShaper(this);
-   }
-
-   public BlockStateModel getMissingBlockStateModel() {
-      return this.missingModels.block();
    }
 
    public ItemModel getItemModel(final Identifier id) {
@@ -89,8 +84,8 @@ public class ModelManager implements PreparableReloadListener {
       return (ClientItem.Properties)this.itemProperties.getOrDefault(id, ClientItem.Properties.DEFAULT);
    }
 
-   public BlockModelShaper getBlockModelShaper() {
-      return this.blockModelShaper;
+   public BlockStateModelSet getBlockModelSet() {
+      return (BlockStateModelSet)Objects.requireNonNull(this.blockModelSet, "Block models not yet initialized");
    }
 
    public final CompletableFuture<Void> reload(final PreparableReloadListener.SharedState currentReload, final Executor taskExecutor, final PreparableReloadListener.PreparationBarrier preparationBarrier, final Executor reloadExecutor) {
@@ -245,7 +240,7 @@ public class ModelManager implements PreparableReloadListener {
       this.itemProperties = bakedModels.itemProperties();
       this.modelGroups = preparations.modelGroups;
       this.missingModels = bakedModels.missingModels();
-      this.blockModelShaper.replaceCache(preparations.modelCache);
+      this.blockModelSet = new BlockStateModelSet(preparations.modelCache, this.missingModels.block());
       this.specialBlockModelRenderer = preparations.specialBlockModelRenderer;
       this.entityModelSet = preparations.entityModelSet;
    }

@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.decoration;
 
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -116,16 +117,24 @@ public class LeashFenceKnotEntity extends BlockAttachedEntity {
    }
 
    public static LeashFenceKnotEntity getOrCreateKnot(final Level level, final BlockPos pos) {
+      return (LeashFenceKnotEntity)getKnot(level, pos).orElseGet(() -> createKnot(level, pos));
+   }
+
+   public static Optional<LeashFenceKnotEntity> getKnot(final Level level, final BlockPos pos) {
       int x = pos.getX();
       int y = pos.getY();
       int z = pos.getZ();
 
       for(LeashFenceKnotEntity knot : level.getEntitiesOfClass(LeashFenceKnotEntity.class, new AABB((double)x - 1.0, (double)y - 1.0, (double)z - 1.0, (double)x + 1.0, (double)y + 1.0, (double)z + 1.0))) {
          if (knot.getPos().equals(pos)) {
-            return knot;
+            return Optional.of(knot);
          }
       }
 
+      return Optional.empty();
+   }
+
+   public static LeashFenceKnotEntity createKnot(final Level level, final BlockPos pos) {
       LeashFenceKnotEntity knot = new LeashFenceKnotEntity(level, pos);
       level.addFreshEntity(knot);
       return knot;

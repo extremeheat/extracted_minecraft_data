@@ -21,7 +21,7 @@ public class LightningBoltRenderer extends EntityRenderer<LightningBolt, Lightni
       float[] zOffs = new float[8];
       float xOff = 0.0F;
       float zOff = 0.0F;
-      RandomSource random = RandomSource.create(state.seed);
+      RandomSource random = RandomSource.createThreadLocalInstance(state.seed);
 
       for(int h = 7; h >= 0; --h) {
          xOffs[h] = xOff;
@@ -34,7 +34,7 @@ public class LightningBoltRenderer extends EntityRenderer<LightningBolt, Lightni
          Matrix4f poseMatrix = pose.pose();
 
          for(int r = 0; r < 4; ++r) {
-            RandomSource random = RandomSource.create(state.seed);
+            RandomSource random = RandomSource.createThreadLocalInstance(state.seed);
 
             for(int p = 0; p < 3; ++p) {
                int hs = 7;

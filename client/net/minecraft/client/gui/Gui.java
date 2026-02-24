@@ -1059,7 +1059,7 @@ public class Gui {
       }
 
       int color = ARGB.white(alpha);
-      TextureAtlasSprite slot = this.minecraft.getBlockRenderer().getBlockModelShaper().getParticleMaterial(Blocks.NETHER_PORTAL.defaultBlockState()).sprite();
+      TextureAtlasSprite slot = this.minecraft.getModelManager().getBlockModelSet().getParticleMaterial(Blocks.NETHER_PORTAL.defaultBlockState()).sprite();
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (TextureAtlasSprite)slot, 0, 0, graphics.guiWidth(), graphics.guiHeight(), color);
    }
 

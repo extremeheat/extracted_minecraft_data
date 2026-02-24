@@ -362,7 +362,7 @@ public class PiglinAi {
       if (!killedTarget.is(EntityType.HOGLIN)) {
          return false;
       } else {
-         return RandomSource.create(body.level().getGameTime()).nextFloat() < 0.1F;
+         return RandomSource.createThreadLocalInstance(body.level().getGameTime()).nextFloat() < 0.1F;
       }
    }
 

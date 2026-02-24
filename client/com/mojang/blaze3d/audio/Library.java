@@ -257,7 +257,7 @@ public class Library {
       }
    }
 
-   public String getDebugString() {
+   public String getChannelDebugString() {
       return String.format(Locale.ROOT, "Sounds: %d/%d + %d/%d", this.staticChannels.getUsedCount(), this.staticChannels.getMaxCount(), this.streamingChannels.getUsedCount(), this.streamingChannels.getMaxCount());
    }
 

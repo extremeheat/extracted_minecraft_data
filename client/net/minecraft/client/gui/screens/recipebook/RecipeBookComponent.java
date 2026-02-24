@@ -27,6 +27,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.input.PreeditEvent;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.language.LanguageInfo;
@@ -464,6 +465,16 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements G
          } else {
             return GuiEventListener.super.charTyped(event);
          }
+      } else {
+         return false;
+      }
+   }
+
+   public boolean preeditUpdated(final @Nullable PreeditEvent event) {
+      if (this.ignoreTextInput) {
+         return false;
+      } else if (this.isVisible() && !this.minecraft.player.isSpectator()) {
+         return this.searchBox.preeditUpdated(event) ? true : GuiEventListener.super.preeditUpdated(event);
       } else {
          return false;
       }

@@ -79,7 +79,7 @@ public class CaveWorldCarver extends WorldCarver<CaveCarverConfiguration> {
    }
 
    protected void createTunnel(final CarvingContext context, final CaveCarverConfiguration configuration, final ChunkAccess chunk, final Function<BlockPos, Holder<Biome>> biomeGetter, final long tunnelSeed, final Aquifer aquifer, double x, double y, double z, final double horizontalRadiusMultiplier, final double verticalRadiusMultiplier, final float thickness, float horizontalRotation, float verticalRotation, final int step, final int dist, final double yScale, final CarvingMask mask, final WorldCarver.CarveSkipChecker skipChecker) {
-      RandomSource random = RandomSource.create(tunnelSeed);
+      RandomSource random = RandomSource.createThreadLocalInstance(tunnelSeed);
       int splitPoint = random.nextInt(dist / 2) + dist / 4;
       boolean steep = random.nextInt(6) == 0;
       float yRota = 0.0F;

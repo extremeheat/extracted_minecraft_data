@@ -9,7 +9,8 @@ public class BlockBreakingRenderState extends MovingBlockRenderState {
 
    public BlockBreakingRenderState(final ClientLevel level, final BlockPos pos, final int progress) {
       super();
-      this.level = level;
+      this.cardinalLighting = level.cardinalLighting();
+      this.lightEngine = level.getLightEngine();
       this.blockPos = pos;
       this.blockState = level.getBlockState(pos);
       this.progress = progress;

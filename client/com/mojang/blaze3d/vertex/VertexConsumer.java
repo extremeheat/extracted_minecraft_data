@@ -47,7 +47,23 @@ public interface VertexConsumer {
       return this.setUv1(packedOverlayCoords & '\uffff', packedOverlayCoords >> 16 & '\uffff');
    }
 
-   default void putBulkData(final PoseStack.Pose pose, final BakedQuad quad, final QuadBrightness brightness, final int color, final QuadLightmapCoords lightmapCoord, final int overlayCoords) {
+   default void putBlockBakedQuad(final float x, final float y, final float z, final BakedQuad quad, final QuadInstance instance) {
+      Vector3fc normal = quad.direction().getUnitVec3f();
+      int lightEmission = quad.lightEmission();
+
+      for(int vertex = 0; vertex < 4; ++vertex) {
+         Vector3fc pos = quad.position(vertex);
+         long packedUv = quad.packedUV(vertex);
+         int vertexColor = instance.getColor(vertex);
+         int light = instance.getLightCoordsWithEmission(vertex, lightEmission);
+         float u = UVPair.unpackU(packedUv);
+         float v = UVPair.unpackV(packedUv);
+         this.addVertex(pos.x() + x, pos.y() + y, pos.z() + z, vertexColor, u, v, instance.overlayCoords(), light, normal.x(), normal.y(), normal.z());
+      }
+
+   }
+
+   default void putBakedQuad(final PoseStack.Pose pose, final BakedQuad quad, final QuadInstance instance) {
       Vector3fc normalVec = quad.direction().getUnitVec3f();
       Matrix4f matrix = pose.pose();
       Vector3f normal = pose.transformNormal(normalVec, new Vector3f());
@@ -56,12 +72,12 @@ public interface VertexConsumer {
       for(int vertex = 0; vertex < 4; ++vertex) {
          Vector3fc position = quad.position(vertex);
          long packedUv = quad.packedUV(vertex);
-         int vertexColor = brightness.scaleColor(vertex, color);
-         int light = lightmapCoord.composeWithEmission(vertex, lightEmission);
+         int vertexColor = instance.getColor(vertex);
+         int light = instance.getLightCoordsWithEmission(vertex, lightEmission);
          Vector3f pos = matrix.transformPosition(position, new Vector3f());
          float u = UVPair.unpackU(packedUv);
          float v = UVPair.unpackV(packedUv);
-         this.addVertex(pos.x(), pos.y(), pos.z(), vertexColor, u, v, overlayCoords, light, normal.x(), normal.y(), normal.z());
+         this.addVertex(pos.x(), pos.y(), pos.z(), vertexColor, u, v, instance.overlayCoords(), light, normal.x(), normal.y(), normal.z());
       }
 
    }

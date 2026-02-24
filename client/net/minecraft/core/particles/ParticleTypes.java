@@ -61,6 +61,8 @@ public class ParticleTypes {
    public static final ParticleType<ItemParticleOption> ITEM = register("item", false, ItemParticleOption::codec, ItemParticleOption::streamCodec);
    public static final ParticleType<VibrationParticleOption> VIBRATION = register("vibration", true, (t) -> VibrationParticleOption.CODEC, (t) -> VibrationParticleOption.STREAM_CODEC);
    public static final ParticleType<TrailParticleOption> TRAIL = register("trail", false, (t) -> TrailParticleOption.CODEC, (t) -> TrailParticleOption.STREAM_CODEC);
+   public static final SimpleParticleType PAUSE_MOB_GROWTH = register("pause_mob_growth", false);
+   public static final SimpleParticleType RESET_MOB_GROWTH = register("reset_mob_growth", false);
    public static final SimpleParticleType ITEM_SLIME = register("item_slime", false);
    public static final SimpleParticleType ITEM_COBWEB = register("item_cobweb", false);
    public static final SimpleParticleType ITEM_SNOWBALL = register("item_snowball", false);

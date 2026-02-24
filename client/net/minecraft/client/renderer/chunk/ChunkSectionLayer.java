@@ -2,6 +2,7 @@ package net.minecraft.client.renderer.chunk;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.Transparency;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.Locale;
 import net.minecraft.client.renderer.RenderPipelines;
 
@@ -44,6 +45,10 @@ public enum ChunkSectionLayer {
 
    public boolean translucent() {
       return this.translucent;
+   }
+
+   public VertexFormat vertexFormat() {
+      return this.pipeline.getVertexFormat();
    }
 
    // $FF: synthetic method

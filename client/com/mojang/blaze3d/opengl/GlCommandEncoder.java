@@ -4,8 +4,8 @@ import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.GpuFence;
 import com.mojang.blaze3d.pipeline.BlendFunction;
+import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.DepthTestFunction;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.systems.CommandEncoderBackend;
@@ -78,7 +78,7 @@ class GlCommandEncoder implements CommandEncoderBackend {
       if (clearMask != 0) {
          GlStateManager._disableScissorTest();
          GlStateManager._depthMask(true);
-         GlStateManager._colorMask(true, true, true, true);
+         GlStateManager._colorMask(15);
          GlStateManager._clear(clearMask);
       }
 
@@ -95,7 +95,7 @@ class GlCommandEncoder implements CommandEncoderBackend {
       this.device.directStateAccess().bindFrameBufferTextures(this.drawFbo, ((GlTexture)colorTexture).id, 0, 0, 36160);
       GL11.glClearColor(ARGB.redFloat(clearColor), ARGB.greenFloat(clearColor), ARGB.blueFloat(clearColor), ARGB.alphaFloat(clearColor));
       GlStateManager._disableScissorTest();
-      GlStateManager._colorMask(true, true, true, true);
+      GlStateManager._colorMask(15);
       GlStateManager._clear(16384);
       GlStateManager._glFramebufferTexture2D(36160, 36064, 3553, 0, 0);
       GlStateManager._glBindFramebuffer(36160, 0);
@@ -108,7 +108,7 @@ class GlCommandEncoder implements CommandEncoderBackend {
       GL11.glClearDepth(clearDepth);
       GL11.glClearColor(ARGB.redFloat(clearColor), ARGB.greenFloat(clearColor), ARGB.blueFloat(clearColor), ARGB.alphaFloat(clearColor));
       GlStateManager._depthMask(true);
-      GlStateManager._colorMask(true, true, true, true);
+      GlStateManager._colorMask(15);
       GlStateManager._clear(16640);
       GlStateManager._glBindFramebuffer(36160, 0);
    }
@@ -121,7 +121,7 @@ class GlCommandEncoder implements CommandEncoderBackend {
       GL11.glClearDepth(clearDepth);
       GL11.glClearColor(ARGB.redFloat(clearColor), ARGB.greenFloat(clearColor), ARGB.blueFloat(clearColor), ARGB.alphaFloat(clearColor));
       GlStateManager._depthMask(true);
-      GlStateManager._colorMask(true, true, true, true);
+      GlStateManager._colorMask(15);
       GlStateManager._clear(16640);
       GlStateManager._glBindFramebuffer(36160, 0);
    }
@@ -251,7 +251,7 @@ class GlCommandEncoder implements CommandEncoderBackend {
       GlStateManager._disableScissorTest();
       GlStateManager._viewport(0, 0, textureView.getWidth(0), textureView.getHeight(0));
       GlStateManager._depthMask(true);
-      GlStateManager._colorMask(true, true, true, true);
+      GlStateManager._colorMask(15);
       this.device.directStateAccess().bindFrameBufferTextures(this.drawFbo, ((GlTexture)textureView.texture()).glId(), 0, 0, 0);
       this.device.directStateAccess().blitFrameBuffers(this.drawFbo, 0, 0, 0, textureView.getWidth(0), textureView.getHeight(0), 0, 0, textureView.getWidth(0), textureView.getHeight(0), 16384, 9728);
    }
@@ -627,11 +627,21 @@ class GlCommandEncoder implements CommandEncoderBackend {
    private void applyPipelineState(final RenderPipeline pipeline) {
       if (this.lastPipeline != pipeline) {
          this.lastPipeline = pipeline;
-         if (pipeline.getDepthTestFunction() != DepthTestFunction.NO_DEPTH_TEST) {
+         DepthStencilState depthStencilState = pipeline.getDepthStencilState();
+         if (depthStencilState != null) {
             GlStateManager._enableDepthTest();
-            GlStateManager._depthFunc(GlConst.toGl(pipeline.getDepthTestFunction()));
+            GlStateManager._depthFunc(GlConst.toGl(depthStencilState.depthTest()));
+            GlStateManager._depthMask(depthStencilState.writeDepth());
+            if (depthStencilState.depthBiasConstant() == 0.0F && depthStencilState.depthBiasScaleFactor() == 0.0F) {
+               GlStateManager._disablePolygonOffset();
+            } else {
+               GlStateManager._polygonOffset(depthStencilState.depthBiasScaleFactor(), depthStencilState.depthBiasConstant());
+               GlStateManager._enablePolygonOffset();
+            }
          } else {
             GlStateManager._disableDepthTest();
+            GlStateManager._depthMask(false);
+            GlStateManager._disablePolygonOffset();
          }
 
          if (pipeline.isCull()) {
@@ -640,33 +650,16 @@ class GlCommandEncoder implements CommandEncoderBackend {
             GlStateManager._disableCull();
          }
 
-         if (pipeline.getBlendFunction().isPresent()) {
+         if (pipeline.getColorTargetState().blendFunction().isPresent()) {
             GlStateManager._enableBlend();
-            BlendFunction blendFunction = (BlendFunction)pipeline.getBlendFunction().get();
+            BlendFunction blendFunction = (BlendFunction)pipeline.getColorTargetState().blendFunction().get();
             GlStateManager._blendFuncSeparate(GlConst.toGl(blendFunction.sourceColor()), GlConst.toGl(blendFunction.destColor()), GlConst.toGl(blendFunction.sourceAlpha()), GlConst.toGl(blendFunction.destAlpha()));
          } else {
             GlStateManager._disableBlend();
          }
 
          GlStateManager._polygonMode(1032, GlConst.toGl(pipeline.getPolygonMode()));
-         GlStateManager._depthMask(pipeline.isWriteDepth());
-         GlStateManager._colorMask(pipeline.isWriteColor(), pipeline.isWriteColor(), pipeline.isWriteColor(), pipeline.isWriteAlpha());
-         if (pipeline.getDepthBiasConstant() == 0.0F && pipeline.getDepthBiasScaleFactor() == 0.0F) {
-            GlStateManager._disablePolygonOffset();
-         } else {
-            GlStateManager._polygonOffset(pipeline.getDepthBiasScaleFactor(), pipeline.getDepthBiasConstant());
-            GlStateManager._enablePolygonOffset();
-         }
-
-         switch (pipeline.getColorLogic()) {
-            case NONE:
-               GlStateManager._disableColorLogicOp();
-               break;
-            case OR_REVERSE:
-               GlStateManager._enableColorLogicOp();
-               GlStateManager._logicOp(5387);
-         }
-
+         GlStateManager._colorMask(pipeline.getColorTargetState().writeMask());
       }
    }
 

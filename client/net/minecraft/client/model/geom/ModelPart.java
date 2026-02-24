@@ -14,6 +14,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -183,7 +184,7 @@ public final class ModelPart {
    }
 
    public Cube getRandomCube(final RandomSource random) {
-      return (Cube)this.cubes.get(random.nextInt(this.cubes.size()));
+      return (Cube)Util.getRandom(this.cubes, random);
    }
 
    public boolean isEmpty() {

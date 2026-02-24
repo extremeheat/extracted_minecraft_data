@@ -34,7 +34,7 @@ public class CappedProcessor extends StructureProcessor {
             Util.logAndPauseIfInIde("Original block info list not in sync with processed list, skipping processing. Original size: " + var10000 + ", Processed size: " + processedBlockInfoList.size());
             return processedBlockInfoList;
          } else {
-            RandomSource random = RandomSource.create(level.getLevel().getSeed()).forkPositional().at(position);
+            RandomSource random = RandomSource.createThreadLocalInstance(level.getLevel().getSeed()).forkPositional().at(position);
             int maxToReplace = Math.min(this.limit.sample(random), processedBlockInfoList.size());
             if (maxToReplace < 1) {
                return processedBlockInfoList;

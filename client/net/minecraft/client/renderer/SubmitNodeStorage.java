@@ -18,7 +18,6 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -64,16 +63,12 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
       this.order(0).submitModelPart(modelPart, poseStack, renderType, lightCoords, overlayCoords, sprite, sheeted, hasFoil, tintedColor, crumblingOverlay, outlineColor);
    }
 
-   public void submitBlock(final PoseStack poseStack, final BlockState state, final int lightCoords, final int overlayCoords, final int outlineColor) {
-      this.order(0).submitBlock(poseStack, state, lightCoords, overlayCoords, outlineColor);
-   }
-
    public void submitMovingBlock(final PoseStack poseStack, final MovingBlockRenderState movingBlockRenderState) {
       this.order(0).submitMovingBlock(poseStack, movingBlockRenderState);
    }
 
-   public void submitBlockModel(final PoseStack poseStack, final RenderType renderType, final BlockStateModel model, final int tintColor, final int lightCoords, final int overlayCoords, final int outlineColor) {
-      this.order(0).submitBlockModel(poseStack, renderType, model, tintColor, lightCoords, overlayCoords, outlineColor);
+   public void submitBlockModel(final PoseStack poseStack, final RenderType renderType, final BlockStateModel model, final int[] tintLayers, final int lightCoords, final int overlayCoords, final int outlineColor) {
+      this.order(0).submitBlockModel(poseStack, renderType, model, tintLayers, lightCoords, overlayCoords, outlineColor);
    }
 
    public void submitItem(final PoseStack poseStack, final ItemDisplayContext displayContext, final int lightCoords, final int overlayCoords, final int outlineColor, final int[] tintLayers, final List<BakedQuad> quads, final ItemStackRenderState.FoilType foilType) {
@@ -149,19 +144,13 @@ public class SubmitNodeStorage implements SubmitNodeCollector {
       }
    }
 
-   public static record BlockSubmit(PoseStack.Pose pose, BlockState state, int lightCoords, int overlayCoords, int outlineColor) {
-      public BlockSubmit {
-         super();
-      }
-   }
-
    public static record MovingBlockSubmit(Matrix4f pose, MovingBlockRenderState movingBlockRenderState) {
       public MovingBlockSubmit {
          super();
       }
    }
 
-   public static record BlockModelSubmit(PoseStack.Pose pose, RenderType renderType, BlockStateModel model, int tintColor, int lightCoords, int overlayCoords, int outlineColor) {
+   public static record BlockModelSubmit(PoseStack.Pose pose, RenderType renderType, BlockStateModel model, int[] tintLayers, int lightCoords, int overlayCoords, int outlineColor) {
       public BlockModelSubmit {
          super();
       }

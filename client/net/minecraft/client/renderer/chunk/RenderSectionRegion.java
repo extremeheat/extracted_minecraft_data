@@ -1,11 +1,11 @@
 package net.minecraft.client.renderer.chunk;
 
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
-import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.CardinalLighting;
 import net.minecraft.world.level.ColorResolver;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.lighting.LevelLightEngine;
@@ -19,15 +19,19 @@ public class RenderSectionRegion implements BlockAndTintGetter {
    private final int minSectionY;
    private final int minSectionZ;
    private final SectionCopy[] sections;
-   private final Level level;
+   private final ClientLevel level;
+   private final CardinalLighting cardinalLighting;
+   private final LevelLightEngine lightEngine;
 
-   RenderSectionRegion(final Level level, final int minSectionX, final int minSectionY, final int minSectionZ, final SectionCopy[] sections) {
+   RenderSectionRegion(final ClientLevel level, final int minSectionX, final int minSectionY, final int minSectionZ, final SectionCopy[] sections) {
       super();
       this.level = level;
       this.minSectionX = minSectionX;
       this.minSectionY = minSectionY;
       this.minSectionZ = minSectionZ;
       this.sections = sections;
+      this.cardinalLighting = level.cardinalLighting();
+      this.lightEngine = level.getLightEngine();
    }
 
    public BlockState getBlockState(final BlockPos pos) {
@@ -38,12 +42,12 @@ public class RenderSectionRegion implements BlockAndTintGetter {
       return this.getSection(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getY()), SectionPos.blockToSectionCoord(pos.getZ())).getBlockState(pos).getFluidState();
    }
 
-   public float getShade(final Direction direction, final boolean shade) {
-      return this.level.getShade(direction, shade);
+   public CardinalLighting cardinalLighting() {
+      return this.cardinalLighting;
    }
 
    public LevelLightEngine getLightEngine() {
-      return this.level.getLightEngine();
+      return this.lightEngine;
    }
 
    public @Nullable BlockEntity getBlockEntity(final BlockPos pos) {

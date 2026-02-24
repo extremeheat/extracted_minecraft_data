@@ -286,7 +286,7 @@ public class Strider extends Animal implements ItemSteerable {
             Entity var6 = this.getVehicle();
             if (var6 instanceof Strider) {
                Strider strider = (Strider)var6;
-               if (strider.isSuffocating()) {
+               if (!strider.isSuffocating()) {
                   var10000 = true;
                   break label36;
                }
@@ -295,8 +295,8 @@ public class Strider extends Animal implements ItemSteerable {
             var10000 = false;
          }
 
-         boolean vehicleSuffocating = var10000;
-         this.setSuffocating(!inWarmBlocks || vehicleSuffocating);
+         boolean onWarmStrider = var10000;
+         this.setSuffocating(!inWarmBlocks && !onWarmStrider);
       }
 
       super.tick();

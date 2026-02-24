@@ -161,9 +161,11 @@ public class LayerDefinitions {
    private static final CubeDeformation FISH_PATTERN_DEFORMATION = new CubeDeformation(0.008F);
    private static final CubeDeformation OUTER_ARMOR_DEFORMATION = new CubeDeformation(1.0F);
    private static final CubeDeformation INNER_ARMOR_DEFORMATION = new CubeDeformation(0.5F);
-   private static final CubeDeformation BABY_OUTER_ARMOR_DEFORMATION = new CubeDeformation(0.5F);
-   private static final CubeDeformation BABY_INNER_ARMOR_DEFORMATION = new CubeDeformation(0.3F);
-   private static final PartPose BABY_PIGLIN_ARMOR_ARM_OFFSET = new PartPose(1.0F, -0.5F, -1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
+   private static final CubeDeformation BABY_OUTER_ARMOR_DEFORMATION = new CubeDeformation(-0.1F, 0.5F, 0.3F);
+   private static final CubeDeformation BABY_INNER_ARMOR_DEFORMATION = new CubeDeformation(-0.1F, 0.3F, 0.3F);
+   private static final CubeDeformation BABY_PIGLIN_INNER_ARMOR_DEFORMATION = new CubeDeformation(0.7F);
+   private static final CubeDeformation BABY_PIGLIN_OUTER_ARMOR_DEFORMATION = new CubeDeformation(0.7F);
+   private static final PartPose BABY_PIGLIN_ARMOR_ARM_OFFSET = new PartPose(0.5F, -0.5F, -1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
 
    public LayerDefinitions() {
       super();
@@ -176,7 +178,7 @@ public class LayerDefinitions {
       ArmorModelSet<LayerDefinition> humanoidBabyArmor = HumanoidModel.createBabyArmorMeshSet(BABY_INNER_ARMOR_DEFORMATION, BABY_OUTER_ARMOR_DEFORMATION, PartPose.ZERO).<LayerDefinition>map((mesh) -> LayerDefinition.create(mesh, 64, 64));
       ArmorModelSet<LayerDefinition> playerArmor = PlayerModel.createArmorMeshSet(INNER_ARMOR_DEFORMATION, OUTER_ARMOR_DEFORMATION).<LayerDefinition>map((mesh) -> LayerDefinition.create(mesh, 64, 32));
       ArmorModelSet<LayerDefinition> piglinArmor = PiglinModel.createArmorMeshSet(INNER_ARMOR_DEFORMATION, new CubeDeformation(1.02F)).<LayerDefinition>map((mesh) -> LayerDefinition.create(mesh, 64, 32));
-      ArmorModelSet<LayerDefinition> piglinBabyArmor = AbstractPiglinModel.createBabyArmorMeshSet(BABY_INNER_ARMOR_DEFORMATION, BABY_OUTER_ARMOR_DEFORMATION, BABY_PIGLIN_ARMOR_ARM_OFFSET).<LayerDefinition>map((mesh) -> LayerDefinition.create(mesh, 64, 64));
+      ArmorModelSet<LayerDefinition> piglinBabyArmor = AbstractPiglinModel.createBabyArmorMeshSet(BABY_PIGLIN_INNER_ARMOR_DEFORMATION, BABY_PIGLIN_OUTER_ARMOR_DEFORMATION, BABY_PIGLIN_ARMOR_ARM_OFFSET).<LayerDefinition>map((mesh) -> LayerDefinition.create(mesh, 64, 64));
       LayerDefinition minecartBodyLayer = MinecartModel.createBodyLayer();
       LayerDefinition mobHeadLayer = SkullModel.createMobHeadLayer();
       LayerDefinition horseBodyLayer = LayerDefinition.create(AbstractEquineModel.createBodyMesh(CubeDeformation.NONE), 64, 64);
@@ -206,9 +208,9 @@ public class LayerDefinitions {
       LayerDefinition hoglinBabyLayer = BabyHoglinModel.createBodyLayer();
       LayerDefinition skeletonBodyLayer = SkeletonModel.createBodyLayer();
       LayerDefinition villagerBodyLayer = LayerDefinition.create(VillagerModel.createBodyModel(), 64, 64).apply(villagerLikeScale);
-      LayerDefinition villagerBabyLayer = LayerDefinition.create(BabyVillagerModel.createBodyModel(), 64, 64).apply(villagerLikeScale);
+      LayerDefinition villagerBabyLayer = LayerDefinition.create(BabyVillagerModel.createBodyModel(), 64, 64);
       LayerDefinition villagerNoHatLayer = LayerDefinition.create(VillagerModel.createNoHatModel(), 64, 64).apply(villagerLikeScale);
-      LayerDefinition villagerBabyNoHatLayer = LayerDefinition.create(BabyVillagerModel.createNoHatModel(), 64, 64).apply(villagerLikeScale);
+      LayerDefinition villagerBabyNoHatLayer = LayerDefinition.create(BabyVillagerModel.createNoHatModel(), 64, 64);
       LayerDefinition spiderBodyLayer = SpiderModel.createSpiderBodyLayer();
       LayerDefinition camelBodyLayer = AdultCamelModel.createBodyLayer();
       LayerDefinition camelBabyBodyLayer = BabyCamelModel.createBodyLayer();
@@ -275,9 +277,9 @@ public class LayerDefinitions {
       result.put(ModelLayers.BREEZE_WIND, BreezeModel.createWindLayer());
       result.put(ModelLayers.BREEZE_EYES, BreezeModel.createEyesLayer());
       result.put(ModelLayers.CAT, felineBodyLayer.apply(AdultCatModel.CAT_TRANSFORMER));
-      result.put(ModelLayers.CAT_BABY, felineBabyBodyLayer);
+      result.put(ModelLayers.CAT_BABY, felineBabyBodyLayer.apply(AdultCatModel.CAT_TRANSFORMER));
       result.put(ModelLayers.CAT_COLLAR, felineCollarLayer.apply(AdultCatModel.CAT_TRANSFORMER));
-      result.put(ModelLayers.CAT_BABY_COLLAR, felineBabyBodyLayer.apply(BabyCatModel.COLLAR_TRANSFORMER));
+      result.put(ModelLayers.CAT_BABY_COLLAR, felineBabyBodyLayer.apply(AdultCatModel.CAT_TRANSFORMER).apply(BabyCatModel.COLLAR_TRANSFORMER));
       result.put(ModelLayers.CAMEL, camelBodyLayer);
       result.put(ModelLayers.CAMEL_BABY, camelBabyBodyLayer);
       result.put(ModelLayers.CAMEL_SADDLE, camelSaddleLayer);
@@ -364,8 +366,8 @@ public class LayerDefinitions {
       MeshTransformer huskScale = MeshTransformer.scaling(1.0625F);
       result.put(ModelLayers.HUSK, humanoidBodyLayer.apply(huskScale));
       ModelLayers.HUSK_ARMOR.putFrom(humanoidArmor.map((layer) -> layer.apply(huskScale)), result);
-      result.put(ModelLayers.HUSK_BABY, babyZombieLayer.apply(huskScale));
-      ModelLayers.HUSK_BABY_ARMOR.putFrom(humanoidBabyArmor.map((layer) -> layer.apply(huskScale)), result);
+      result.put(ModelLayers.HUSK_BABY, babyZombieLayer);
+      ModelLayers.HUSK_BABY_ARMOR.putFrom(humanoidBabyArmor, result);
       result.put(ModelLayers.ILLUSIONER, illagerBodyLayer);
       result.put(ModelLayers.IRON_GOLEM, IronGolemModel.createBodyLayer());
       result.put(ModelLayers.LEASH_KNOT, LeashKnotModel.createBodyLayer());

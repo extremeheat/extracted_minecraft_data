@@ -187,6 +187,13 @@ public abstract class Feature<FC extends FeatureConfiguration> {
 
    }
 
+   public static void markForPostProcessing(final WorldGenLevel level, final BlockPos pos) {
+      if (!level.getBlockState(pos).isAir()) {
+         level.getChunk(pos).markPosForPostprocessing(pos);
+      }
+
+   }
+
    static {
       NO_OP = register("no_op", new NoOpFeature(NoneFeatureConfiguration.CODEC));
       TREE = register("tree", new TreeFeature(TreeConfiguration.CODEC));

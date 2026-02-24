@@ -226,7 +226,7 @@ public class CreateWorldScreen extends Screen {
          gameRules = (GameRules)MinecraftServer.DEFAULT_GAME_RULES.get();
          gameRules.set(GameRules.ADVANCE_TIME, false, (MinecraftServer)null);
       } else {
-         gameRules = new GameRules(enabledFeatures, this.uiState.getGameRules().availableRules());
+         gameRules = this.uiState.getGameRules().copy(enabledFeatures);
       }
 
       PrimaryLevelData worldData = new PrimaryLevelData(levelSettings, finalDimensions.specialWorldProperty(), lifecycle);

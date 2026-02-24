@@ -2,27 +2,27 @@ package net.minecraft.client.renderer.chunk;
 
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.MeshData;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexSorting;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.CrashReport;
+import net.minecraft.CrashReportCategory;
+import net.minecraft.ReportedException;
+import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.renderer.SectionBufferBuilderPack;
-import net.minecraft.client.renderer.block.BakedQuadOutput;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.renderer.block.BlockModelLighter;
+import net.minecraft.client.renderer.block.BlockQuadOutput;
+import net.minecraft.client.renderer.block.BlockStateModelSet;
+import net.minecraft.client.renderer.block.LiquidBlockRenderer;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
-import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -30,12 +30,20 @@ import net.minecraft.world.level.material.FluidState;
 import org.jspecify.annotations.Nullable;
 
 public class SectionCompiler {
-   private final BlockRenderDispatcher blockRenderer;
+   private final boolean ambientOcclusion;
+   private final boolean cutoutLeaves;
+   private final BlockStateModelSet blockModelSet;
+   private final LiquidBlockRenderer liquidRenderer;
+   private final BlockColors blockColors;
    private final BlockEntityRenderDispatcher blockEntityRenderer;
 
-   public SectionCompiler(final BlockRenderDispatcher blockRenderer, final BlockEntityRenderDispatcher blockEntityRenderer) {
+   public SectionCompiler(final boolean ambientOcclusion, final boolean cutoutLeaves, final BlockStateModelSet blockModelSet, final LiquidBlockRenderer liquidRenderer, final BlockColors blockColors, final BlockEntityRenderDispatcher blockEntityRenderer) {
       super();
-      this.blockRenderer = blockRenderer;
+      this.ambientOcclusion = ambientOcclusion;
+      this.cutoutLeaves = cutoutLeaves;
+      this.blockModelSet = blockModelSet;
+      this.liquidRenderer = liquidRenderer;
+      this.blockColors = blockColors;
       this.blockEntityRenderer = blockEntityRenderer;
    }
 
@@ -44,49 +52,49 @@ public class SectionCompiler {
       BlockPos minPos = sectionPos.origin();
       BlockPos maxPos = minPos.offset(15, 15, 15);
       VisGraph visGraph = new VisGraph();
-      PoseStack poseStack = new PoseStack();
-      ModelBlockRenderer.enableCaching();
+      BlockModelLighter.enableCaching();
+      ModelBlockRenderer blockRenderer = new ModelBlockRenderer(this.ambientOcclusion, true, this.blockColors);
       Map<ChunkSectionLayer, BufferBuilder> startedLayers = new EnumMap(ChunkSectionLayer.class);
-      BakedQuadOutput quadOutput = (pose, quad, brightness, color, lightmapCoord, overlayCoords) -> {
+      BlockQuadOutput quadOutput = (x, y, z, quad, instance) -> {
          BufferBuilder builder = this.getOrBeginLayer(startedLayers, builders, quad.spriteInfo().layer());
-         builder.putBulkData(pose, quad, brightness, color, lightmapCoord, overlayCoords);
+         builder.putBlockBakedQuad(x, y, z, quad, instance);
       };
-      BakedQuadOutput opaqueQuadOutput = (pose, quad, brightness, color, lightmapCoord, overlayCoords) -> {
+      BlockQuadOutput opaqueQuadOutput = (x, y, z, quad, instance) -> {
          BufferBuilder builder = this.getOrBeginLayer(startedLayers, builders, ChunkSectionLayer.SOLID);
-         builder.putBulkData(pose, quad, brightness, color, lightmapCoord, overlayCoords);
+         builder.putBlockBakedQuad(x, y, z, quad, instance);
       };
-      RandomSource random = RandomSource.create();
-      List<BlockModelPart> parts = new ObjectArrayList();
 
       for(BlockPos pos : BlockPos.betweenClosed(minPos, maxPos)) {
          BlockState blockState = region.getBlockState(pos);
-         if (blockState.isSolidRender()) {
-            visGraph.setOpaque(pos);
-         }
+         if (!blockState.isAir()) {
+            try {
+               if (blockState.isSolidRender()) {
+                  visGraph.setOpaque(pos);
+               }
 
-         if (blockState.hasBlockEntity()) {
-            BlockEntity blockEntity = region.getBlockEntity(pos);
-            if (blockEntity != null) {
-               this.handleBlockEntity(results, blockEntity);
+               if (blockState.hasBlockEntity()) {
+                  BlockEntity blockEntity = region.getBlockEntity(pos);
+                  if (blockEntity != null) {
+                     this.handleBlockEntity(results, blockEntity);
+                  }
+               }
+
+               FluidState fluidState = blockState.getFluidState();
+               if (!fluidState.isEmpty()) {
+                  ChunkSectionLayer layer = this.liquidRenderer.getRenderLayer(fluidState);
+                  BufferBuilder builder = this.getOrBeginLayer(startedLayers, builders, layer);
+                  this.liquidRenderer.tesselate(region, pos, builder, blockState, fluidState);
+               }
+
+               if (blockState.getRenderShape() == RenderShape.MODEL) {
+                  blockRenderer.tesselateBlock(ModelBlockRenderer.forceOpaque(this.cutoutLeaves, blockState) ? opaqueQuadOutput : quadOutput, (float)SectionPos.sectionRelative(pos.getX()), (float)SectionPos.sectionRelative(pos.getY()), (float)SectionPos.sectionRelative(pos.getZ()), region, pos, blockState, this.blockModelSet.get(blockState), blockState.getSeed(pos));
+               }
+            } catch (Throwable t) {
+               CrashReport report = CrashReport.forThrowable(t, "Tesselating block in world");
+               CrashReportCategory category = report.addCategory("Block being tesselated");
+               CrashReportCategory.populateBlockDetails(category, region, pos, blockState);
+               throw new ReportedException(report);
             }
-         }
-
-         FluidState fluidState = blockState.getFluidState();
-         if (!fluidState.isEmpty()) {
-            ChunkSectionLayer layer = ItemBlockRenderTypes.getRenderLayer(fluidState);
-            BufferBuilder builder = this.getOrBeginLayer(startedLayers, builders, layer);
-            this.blockRenderer.renderLiquid(pos, region, builder, blockState, fluidState);
-         }
-
-         if (blockState.getRenderShape() == RenderShape.MODEL) {
-            boolean forceOpaque = ItemBlockRenderTypes.forceOpaque(blockState);
-            random.setSeed(blockState.getSeed(pos));
-            this.blockRenderer.getBlockModel(blockState).collectParts(random, parts);
-            poseStack.pushPose();
-            poseStack.translate((float)SectionPos.sectionRelative(pos.getX()), (float)SectionPos.sectionRelative(pos.getY()), (float)SectionPos.sectionRelative(pos.getZ()));
-            this.blockRenderer.renderBatched(blockState, pos, region, poseStack, forceOpaque ? opaqueQuadOutput : quadOutput, true, parts);
-            poseStack.popPose();
-            parts.clear();
          }
       }
 
@@ -102,17 +110,17 @@ public class SectionCompiler {
          }
       }
 
-      ModelBlockRenderer.clearCache();
+      BlockModelLighter.clearCache();
       results.visibilitySet = visGraph.resolve();
       return results;
    }
 
-   private BufferBuilder getOrBeginLayer(final Map<ChunkSectionLayer, BufferBuilder> startedLayers, final SectionBufferBuilderPack buffers, final ChunkSectionLayer renderType) {
-      BufferBuilder builder = (BufferBuilder)startedLayers.get(renderType);
+   private BufferBuilder getOrBeginLayer(final Map<ChunkSectionLayer, BufferBuilder> startedLayers, final SectionBufferBuilderPack buffers, final ChunkSectionLayer layer) {
+      BufferBuilder builder = (BufferBuilder)startedLayers.get(layer);
       if (builder == null) {
-         ByteBufferBuilder buffer = buffers.buffer(renderType);
-         builder = new BufferBuilder(buffer, VertexFormat.Mode.QUADS, DefaultVertexFormat.BLOCK);
-         startedLayers.put(renderType, builder);
+         ByteBufferBuilder buffer = buffers.buffer(layer);
+         builder = new BufferBuilder(buffer, VertexFormat.Mode.QUADS, layer.vertexFormat());
+         startedLayers.put(layer, builder);
       }
 
       return builder;

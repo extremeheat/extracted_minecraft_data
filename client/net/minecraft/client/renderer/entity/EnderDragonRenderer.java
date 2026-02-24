@@ -86,7 +86,7 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
          float overDrive = Math.min(deathTime > 0.8F ? (deathTime - 0.8F) / 0.2F : 0.0F, 1.0F);
          int innerColor = ARGB.colorFromFloat(1.0F - overDrive, 1.0F, 1.0F, 1.0F);
          int outerColor = 16711935;
-         RandomSource random = RandomSource.create(432L);
+         RandomSource random = RandomSource.createThreadLocalInstance(432L);
          Vector3f origin = new Vector3f();
          Vector3f outerLeft = new Vector3f();
          Vector3f outerRight = new Vector3f();

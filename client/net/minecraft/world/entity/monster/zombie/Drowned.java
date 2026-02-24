@@ -17,6 +17,8 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityAttachment;
+import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -65,7 +67,7 @@ import org.jspecify.annotations.Nullable;
 public class Drowned extends Zombie implements RangedAttackMob {
    public static final float NAUTILUS_SHELL_CHANCE = 0.03F;
    private static final float ZOMBIE_NAUTILUS_JOCKEY_CHANCE = 0.5F;
-   private static final EntityDimensions BABY_DIMENSIONS = EntityDimensions.scalable(0.49F, 0.99F).withEyeHeight(0.775F);
+   private static final EntityDimensions BABY_DIMENSIONS;
    private boolean searchingForLand;
 
    public Drowned(final EntityType<? extends Drowned> type, final Level level) {
@@ -288,6 +290,10 @@ public class Drowned extends Zombie implements RangedAttackMob {
 
    public boolean wantsToPickUp(final ServerLevel level, final ItemStack itemStack) {
       return itemStack.is(ItemTags.SPEARS) ? false : super.wantsToPickUp(level, itemStack);
+   }
+
+   static {
+      BABY_DIMENSIONS = EntityDimensions.scalable(0.49F, 0.99F).withEyeHeight(0.775F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.VEHICLE, 0.0F, 0.1875F, 0.0F));
    }
 
    private static class DrownedTridentAttackGoal extends RangedAttackGoal {

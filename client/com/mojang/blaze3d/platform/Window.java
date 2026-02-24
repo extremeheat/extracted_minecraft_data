@@ -578,6 +578,32 @@ public final class Window implements AutoCloseable {
       GLFW.glfwSetPreeditCursorRectangle(this.handle, x0 * this.guiScale, y0 * this.guiScale, (x1 - x0) * this.guiScale, (y1 - y0) * this.guiScale);
    }
 
+   public void startTextInput() {
+      this.toggleIME(true);
+   }
+
+   public void stopTextInput() {
+      this.toggleIME(false);
+   }
+
+   public void onTextInputFocusChange(final boolean focused) {
+      if (focused) {
+         this.startTextInput();
+      } else {
+         this.stopTextInput();
+      }
+
+   }
+
+   public void toggleIME(final boolean enable) {
+      int from = enable ? 0 : 1;
+      int to = enable ? 1 : 0;
+      if (GLFW.glfwGetInputMode(this.handle, 208903) == from) {
+         GLFW.glfwSetInputMode(this.handle, 208903, to);
+      }
+
+   }
+
    public static class WindowInitFailed extends SilentInitException {
       private WindowInitFailed(final String message) {
          super(message);

@@ -20,7 +20,7 @@ public class LogoRenderer {
    private static final int EDITION_TEXTURE_HEIGHT = 16;
    public static final int DEFAULT_HEIGHT_OFFSET = 30;
    private static final int EDITION_LOGO_OVERLAP = 7;
-   private final boolean showEasterEgg = (double)RandomSource.create().nextFloat() < 1.0E-4;
+   private final boolean showEasterEgg = (double)RandomSource.createThreadLocalInstance().nextFloat() < 1.0E-4;
    private final boolean keepLogoThroughFade;
 
    public LogoRenderer(final boolean keepLogoThroughFade) {

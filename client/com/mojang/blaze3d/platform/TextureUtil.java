@@ -84,11 +84,7 @@ public class TextureUtil {
    return ARGB.color(luminance, luminance, luminance);
 };
                   case RGBA8 -> var10000 = (byteOffset) -> data.getInt(byteOffset);
-                  case DEPTH32 -> var10000 = (byteOffset) -> {
-   float depth = data.getFloat(byteOffset);
-   int luminance = ARGB.as8BitChannel(depth);
-   return ARGB.color(luminance, luminance, luminance);
-};
+                  case DEPTH32 -> var10000 = (byteOffset) -> ARGB.gray(data.getFloat(byteOffset));
                   default -> throw new MatchException((String)null, (Throwable)null);
                }
 

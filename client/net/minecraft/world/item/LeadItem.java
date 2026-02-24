@@ -1,6 +1,7 @@
 package net.minecraft.world.item;
 
 import java.util.List;
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionResult;
@@ -34,27 +35,32 @@ public class LeadItem extends Item {
    }
 
    public static InteractionResult bindPlayerMobs(final Player player, final Level level, final BlockPos pos) {
-      LeashFenceKnotEntity activeKnot = null;
       List<Leashable> entitiesToLeash = Leashable.leashableInArea(level, Vec3.atCenterOf(pos), (l) -> l.getLeashHolder() == player);
-      boolean anyLeashed = false;
-
-      for(Leashable leashable : entitiesToLeash) {
-         if (activeKnot == null) {
-            activeKnot = LeashFenceKnotEntity.getOrCreateKnot(level, pos);
-            activeKnot.playPlacementSound();
-         }
-
-         if (leashable.canHaveALeashAttachedTo(activeKnot)) {
-            leashable.setLeashedTo(activeKnot, true);
-            anyLeashed = true;
-         }
-      }
-
-      if (anyLeashed) {
-         level.gameEvent(GameEvent.BLOCK_ATTACH, pos, GameEvent.Context.of((Entity)player));
-         return InteractionResult.SUCCESS_SERVER;
-      } else {
+      if (entitiesToLeash.isEmpty()) {
          return InteractionResult.PASS;
+      } else {
+         Optional<LeashFenceKnotEntity> existingKnot = LeashFenceKnotEntity.getKnot(level, pos);
+         LeashFenceKnotEntity activeKnot = (LeashFenceKnotEntity)existingKnot.orElseGet(() -> LeashFenceKnotEntity.createKnot(level, pos));
+         boolean anyLeashed = false;
+
+         for(Leashable leashable : entitiesToLeash) {
+            if (leashable.canHaveALeashAttachedTo(activeKnot)) {
+               leashable.setLeashedTo(activeKnot, true);
+               anyLeashed = true;
+            }
+         }
+
+         if (anyLeashed) {
+            activeKnot.playPlacementSound();
+            level.gameEvent(GameEvent.BLOCK_ATTACH, pos, GameEvent.Context.of((Entity)player));
+            return InteractionResult.SUCCESS_SERVER;
+         } else {
+            if (existingKnot.isEmpty()) {
+               activeKnot.discard();
+            }
+
+            return InteractionResult.PASS;
+         }
       }
    }
 }

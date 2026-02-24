@@ -130,12 +130,17 @@ public class LiquidBlock extends Block implements BucketPickup {
          level.scheduleTick(pos, state.getFluidState().getType(), this.fluid.getTickDelay(level));
       }
 
-      this.tryScheduleBubbleColumn(level, state, pos, level.getBlockState(pos.below()));
+      if (shouldBubbleColumnOccupy(state)) {
+         BlockState stateBelow = level.getBlockState(pos.below());
+         this.tryScheduleBubbleBlockColumn(level, pos, stateBelow);
+      }
+
    }
 
    protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
       if (shouldBubbleColumnOccupy(state)) {
-         BubbleColumnBlock.updateColumn(Blocks.BUBBLE_COLUMN, level, pos, level.getBlockState(pos.below()));
+         BlockState stateBelow = level.getBlockState(pos.below());
+         BubbleColumnBlock.updateColumn(Blocks.BUBBLE_COLUMN, level, pos, stateBelow);
       }
 
    }
@@ -145,8 +150,8 @@ public class LiquidBlock extends Block implements BucketPickup {
          ticks.scheduleTick(pos, state.getFluidState().getType(), this.fluid.getTickDelay(level));
       }
 
-      if (directionToNeighbour == Direction.DOWN) {
-         this.tryScheduleBubbleColumn(ticks, state, pos, neighbourState);
+      if (directionToNeighbour == Direction.DOWN && shouldBubbleColumnOccupy(state)) {
+         this.tryScheduleBubbleBlockColumn(ticks, pos, neighbourState);
       }
 
       return super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
@@ -161,11 +166,15 @@ public class LiquidBlock extends Block implements BucketPickup {
          level.scheduleTick(pos, state.getFluidState().getType(), this.fluid.getTickDelay(level));
       }
 
-      this.tryScheduleBubbleColumn(level, state, pos, level.getBlockState(pos.below()));
+      if (shouldBubbleColumnOccupy(state)) {
+         BlockState stateBelow = level.getBlockState(pos.below());
+         this.tryScheduleBubbleBlockColumn(level, pos, stateBelow);
+      }
+
    }
 
-   private void tryScheduleBubbleColumn(final ScheduledTickAccess ticks, final BlockState state, final BlockPos pos, final BlockState stateBelow) {
-      if (shouldBubbleColumnOccupy(state) && (stateBelow.is(BlockTags.ENABLES_BUBBLE_COLUMN_DRAG_DOWN) || stateBelow.is(BlockTags.ENABLES_BUBBLE_COLUMN_PUSH_UP))) {
+   private void tryScheduleBubbleBlockColumn(final ScheduledTickAccess ticks, final BlockPos pos, final BlockState stateBelow) {
+      if (stateBelow.is(BlockTags.ENABLES_BUBBLE_COLUMN_DRAG_DOWN) || stateBelow.is(BlockTags.ENABLES_BUBBLE_COLUMN_PUSH_UP)) {
          ticks.scheduleTick(pos, (Block)this, 20);
       }
 

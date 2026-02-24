@@ -13,7 +13,6 @@ import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
@@ -170,10 +169,6 @@ public class WorldGenRegion implements WorldGenLevel {
 
    public Holder<Biome> getUncachedNoiseBiome(final int quartX, final int quartY, final int quartZ) {
       return this.level.getUncachedNoiseBiome(quartX, quartY, quartZ);
-   }
-
-   public float getShade(final Direction direction, final boolean shade) {
-      return 1.0F;
    }
 
    public LevelLightEngine getLightEngine() {

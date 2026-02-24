@@ -1,16 +1,15 @@
 package net.minecraft.client.renderer.entity.state;
 
-import net.minecraft.world.entity.Display;
-import org.jspecify.annotations.Nullable;
+import net.minecraft.client.renderer.block.BlockModelRenderState;
 
 public class BlockDisplayEntityRenderState extends DisplayEntityRenderState {
-   public Display.BlockDisplay.@Nullable BlockRenderState blockRenderState;
+   public final BlockModelRenderState blockModel = new BlockModelRenderState();
 
    public BlockDisplayEntityRenderState() {
       super();
    }
 
    public boolean hasSubState() {
-      return this.blockRenderState != null;
+      return !this.blockModel.isEmpty();
    }
 }

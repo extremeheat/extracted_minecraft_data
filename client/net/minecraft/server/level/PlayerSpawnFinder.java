@@ -48,7 +48,7 @@ public class PlayerSpawnFinder {
       long squareSide = (long)radius * 2L + 1L;
       this.candidateCount = (int)Math.min(1024L, squareSide * squareSide);
       this.coprime = getCoprime(this.candidateCount);
-      this.offset = RandomSource.create().nextInt(this.candidateCount);
+      this.offset = RandomSource.createThreadLocalInstance().nextInt(this.candidateCount);
    }
 
    public static CompletableFuture<Vec3> findSpawn(final ServerLevel level, final BlockPos spawnSuggestion) {

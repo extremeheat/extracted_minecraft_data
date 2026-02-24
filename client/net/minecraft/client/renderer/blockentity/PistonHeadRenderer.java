@@ -1,6 +1,7 @@
 package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.MovingBlockRenderState;
 import net.minecraft.client.renderer.blockentity.state.PistonHeadRenderState;
@@ -37,23 +38,25 @@ public class PistonHeadRenderer implements BlockEntityRenderer<PistonMovingBlock
       state.block = null;
       state.base = null;
       BlockState blockState = blockEntity.getMovedState();
-      Level level = blockEntity.getLevel();
-      if (level != null && !blockState.isAir()) {
-         BlockPos pos = blockEntity.getBlockPos().relative(blockEntity.getMovementDirection().getOpposite());
-         Holder<Biome> biome = level.getBiome(pos);
-         if (blockState.is(Blocks.PISTON_HEAD) && blockEntity.getProgress(partialTicks) <= 4.0F) {
-            blockState = (BlockState)blockState.setValue(PistonHeadBlock.SHORT, blockEntity.getProgress(partialTicks) <= 0.5F);
-            state.block = createMovingBlock(pos, blockState, biome, level);
-         } else if (blockEntity.isSourcePiston() && !blockEntity.isExtending()) {
-            PistonType value = blockState.is(Blocks.STICKY_PISTON) ? PistonType.STICKY : PistonType.DEFAULT;
-            BlockState pistonHeadState = (BlockState)((BlockState)Blocks.PISTON_HEAD.defaultBlockState().setValue(PistonHeadBlock.TYPE, value)).setValue(PistonHeadBlock.FACING, (Direction)blockState.getValue(PistonBaseBlock.FACING));
-            pistonHeadState = (BlockState)pistonHeadState.setValue(PistonHeadBlock.SHORT, blockEntity.getProgress(partialTicks) >= 0.5F);
-            state.block = createMovingBlock(pos, pistonHeadState, biome, level);
-            BlockPos basePos = pos.relative(blockEntity.getMovementDirection());
-            blockState = (BlockState)blockState.setValue(PistonBaseBlock.EXTENDED, true);
-            state.base = createMovingBlock(basePos, blockState, biome, level);
-         } else {
-            state.block = createMovingBlock(pos, blockState, biome, level);
+      Level var8 = blockEntity.getLevel();
+      if (var8 instanceof ClientLevel level) {
+         if (!blockState.isAir()) {
+            BlockPos pos = blockEntity.getBlockPos().relative(blockEntity.getMovementDirection().getOpposite());
+            Holder<Biome> biome = level.getBiome(pos);
+            if (blockState.is(Blocks.PISTON_HEAD) && blockEntity.getProgress(partialTicks) <= 4.0F) {
+               blockState = (BlockState)blockState.setValue(PistonHeadBlock.SHORT, blockEntity.getProgress(partialTicks) <= 0.5F);
+               state.block = createMovingBlock(pos, blockState, biome, level);
+            } else if (blockEntity.isSourcePiston() && !blockEntity.isExtending()) {
+               PistonType value = blockState.is(Blocks.STICKY_PISTON) ? PistonType.STICKY : PistonType.DEFAULT;
+               BlockState pistonHeadState = (BlockState)((BlockState)Blocks.PISTON_HEAD.defaultBlockState().setValue(PistonHeadBlock.TYPE, value)).setValue(PistonHeadBlock.FACING, (Direction)blockState.getValue(PistonBaseBlock.FACING));
+               pistonHeadState = (BlockState)pistonHeadState.setValue(PistonHeadBlock.SHORT, blockEntity.getProgress(partialTicks) >= 0.5F);
+               state.block = createMovingBlock(pos, pistonHeadState, biome, level);
+               BlockPos basePos = pos.relative(blockEntity.getMovementDirection());
+               blockState = (BlockState)blockState.setValue(PistonBaseBlock.EXTENDED, true);
+               state.base = createMovingBlock(basePos, blockState, biome, level);
+            } else {
+               state.block = createMovingBlock(pos, blockState, biome, level);
+            }
          }
       }
 
@@ -72,13 +75,14 @@ public class PistonHeadRenderer implements BlockEntityRenderer<PistonMovingBlock
       }
    }
 
-   private static MovingBlockRenderState createMovingBlock(final BlockPos pos, final BlockState blockState, final Holder<Biome> biome, final Level level) {
+   private static MovingBlockRenderState createMovingBlock(final BlockPos pos, final BlockState blockState, final Holder<Biome> biome, final ClientLevel level) {
       MovingBlockRenderState movingBlockRenderState = new MovingBlockRenderState();
       movingBlockRenderState.randomSeedPos = pos;
       movingBlockRenderState.blockPos = pos;
       movingBlockRenderState.blockState = blockState;
       movingBlockRenderState.biome = biome;
-      movingBlockRenderState.level = level;
+      movingBlockRenderState.cardinalLighting = level.cardinalLighting();
+      movingBlockRenderState.lightEngine = level.getLightEngine();
       return movingBlockRenderState;
    }
 

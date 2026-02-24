@@ -26,8 +26,12 @@ public interface RandomSource {
       return new LegacyRandomSource(seed);
    }
 
-   static RandomSource createNewThreadLocalInstance() {
+   static RandomSource createThreadLocalInstance() {
       return new SingleThreadedRandomSource(ThreadLocalRandom.current().nextLong());
+   }
+
+   static RandomSource createThreadLocalInstance(final long seed) {
+      return new SingleThreadedRandomSource(seed);
    }
 
    RandomSource fork();

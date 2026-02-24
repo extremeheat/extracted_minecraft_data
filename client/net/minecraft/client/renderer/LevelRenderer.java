@@ -19,7 +19,6 @@ import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.SheetedDecalTextureGenerator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -43,11 +42,11 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.CloudStatus;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.Options;
 import net.minecraft.client.PrioritizeChunkUpdates;
 import net.minecraft.client.TextureFilteringMethod;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
@@ -55,6 +54,7 @@ import net.minecraft.client.renderer.chunk.ChunkSectionLayerGroup;
 import net.minecraft.client.renderer.chunk.ChunkSectionsToRender;
 import net.minecraft.client.renderer.chunk.CompiledSectionMesh;
 import net.minecraft.client.renderer.chunk.RenderRegionCache;
+import net.minecraft.client.renderer.chunk.SectionCompiler;
 import net.minecraft.client.renderer.chunk.SectionMesh;
 import net.minecraft.client.renderer.chunk.SectionRenderDispatcher;
 import net.minecraft.client.renderer.chunk.TranslucencyPointOfView;
@@ -66,7 +66,6 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.gizmos.DrawableGizmoPrimitives;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.BlockBreakingRenderState;
 import net.minecraft.client.renderer.state.BlockOutlineRenderState;
@@ -75,7 +74,6 @@ import net.minecraft.client.renderer.state.LevelRenderState;
 import net.minecraft.client.renderer.state.ParticlesRenderState;
 import net.minecraft.client.renderer.state.SkyRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Position;
@@ -99,7 +97,7 @@ import net.minecraft.world.TickRateManager;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.BlockAndLightGetter;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LightLayer;
@@ -157,6 +155,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
    private double prevCamZ = 4.9E-324;
    private double prevCamRotX = 4.9E-324;
    private double prevCamRotY = 4.9E-324;
+   private boolean lastSmartCull = true;
    private @Nullable SectionRenderDispatcher sectionRenderDispatcher;
    private int lastViewDistance = -1;
    private @Nullable BlockPos lastTranslucentSortBlockPos;
@@ -271,22 +270,25 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
    public void allChanged() {
       if (this.level != null) {
          this.level.clearTintCaches();
+         Options options = this.minecraft.options;
+         boolean ambientOcclusion = (Boolean)options.ambientOcclusion().get();
+         boolean cutoutLeaves = (Boolean)options.cutoutLeaves().get();
+         SectionCompiler sectionCompiler = new SectionCompiler(ambientOcclusion, cutoutLeaves, this.minecraft.getBlockRenderer().getModelSet(), this.minecraft.getBlockRenderer().getLiquidRenderer(), this.minecraft.getBlockColors(), this.minecraft.getBlockEntityRenderDispatcher());
          if (this.sectionRenderDispatcher == null) {
-            this.sectionRenderDispatcher = new SectionRenderDispatcher(this.level, this, Util.backgroundExecutor(), this.renderBuffers, this.minecraft.getBlockRenderer(), this.minecraft.getBlockEntityRenderDispatcher());
+            this.sectionRenderDispatcher = new SectionRenderDispatcher(this.level, this, Util.backgroundExecutor(), this.renderBuffers, sectionCompiler);
          } else {
-            this.sectionRenderDispatcher.setLevel(this.level);
+            this.sectionRenderDispatcher.setLevel(this.level, sectionCompiler);
          }
 
          this.cloudRenderer.markForRebuild();
-         ItemBlockRenderTypes.setCutoutLeaves((Boolean)this.minecraft.options.cutoutLeaves().get());
-         LeavesBlock.setCutoutLeaves((Boolean)this.minecraft.options.cutoutLeaves().get());
-         this.lastViewDistance = this.minecraft.options.getEffectiveRenderDistance();
+         LeavesBlock.setCutoutLeaves(cutoutLeaves);
+         this.lastViewDistance = options.getEffectiveRenderDistance();
          if (this.viewArea != null) {
             this.viewArea.releaseAllBuffers();
          }
 
          this.sectionRenderDispatcher.clearCompileQueue();
-         this.viewArea = new ViewArea(this.sectionRenderDispatcher, this.level, this.minecraft.options.getEffectiveRenderDistance(), this);
+         this.viewArea = new ViewArea(this.sectionRenderDispatcher, this.level, options.getEffectiveRenderDistance(), this);
          this.sectionOcclusionGraph.waitAndReset(this.viewArea);
          this.clearVisibleSections();
          Camera camera = this.minecraft.gameRenderer.getMainCamera();
@@ -392,6 +394,11 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
             smartCull = false;
          }
 
+         if (smartCull != this.lastSmartCull) {
+            this.sectionOcclusionGraph.invalidate();
+         }
+
+         this.lastSmartCull = smartCull;
          profiler.push("updateSOG");
          this.sectionOcclusionGraph.update(smartCull, camera, frustum, this.visibleSections, this.level.getChunkSource().getLoadedEmptySections());
          profiler.pop();
@@ -851,12 +858,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          poseStack.pushPose();
          BlockPos pos = state.blockPos;
          poseStack.translate((double)pos.getX() - camX, (double)pos.getY() - camY, (double)pos.getZ() - camZ);
-         PoseStack.Pose cameraPose = poseStack.last();
-         VertexConsumer buffer = new SheetedDecalTextureGenerator(bufferSource.getBuffer((RenderType)ModelBakery.DESTROY_TYPES.get(state.progress)), cameraPose, 1.0F);
-         BlockRenderDispatcher var10000 = this.minecraft.getBlockRenderer();
-         BlockState var10001 = state.blockState;
-         Objects.requireNonNull(buffer);
-         var10000.renderBreakingTexture(var10001, pos, state, poseStack, buffer::putBulkData);
+         this.minecraft.getBlockRenderer().renderBreakingTexture(state.blockState, pos, poseStack, bufferSource, state.progress);
          poseStack.popPose();
       }
 
@@ -1294,11 +1296,11 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       this.cloudRenderer.markForRebuild();
    }
 
-   public static int getLightCoords(final BlockAndTintGetter level, final BlockPos pos) {
+   public static int getLightCoords(final BlockAndLightGetter level, final BlockPos pos) {
       return getLightCoords(LevelRenderer.BrightnessGetter.DEFAULT, level, level.getBlockState(pos), pos);
    }
 
-   public static int getLightCoords(final BrightnessGetter brightnessGetter, final BlockAndTintGetter level, final BlockState state, final BlockPos pos) {
+   public static int getLightCoords(final BrightnessGetter brightnessGetter, final BlockAndLightGetter level, final BlockState state, final BlockPos pos) {
       if (state.emissiveRendering(level, pos)) {
          return 15728880;
       } else {
@@ -1386,7 +1388,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          return LightCoordsUtil.pack(block, sky);
       };
 
-      int packedBrightness(BlockAndTintGetter level, BlockPos pos);
+      int packedBrightness(BlockAndLightGetter level, BlockPos pos);
    }
 
    private static record FinalizedGizmos(DrawableGizmoPrimitives standardPrimitives, DrawableGizmoPrimitives alwaysOnTopPrimitives) {

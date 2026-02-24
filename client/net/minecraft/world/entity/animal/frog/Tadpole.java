@@ -96,7 +96,7 @@ public class Tadpole extends AbstractFish {
          this.setAge(this.age + 1);
       }
 
-      this.ageLockParticleTimer = AgeableMob.makeAgeLockedParticle(this.level(), this, this.ageLockParticleTimer);
+      this.ageLockParticleTimer = AgeableMob.makeAgeLockedParticle(this.level(), this, this.ageLockParticleTimer, this.isAgeLocked());
    }
 
    protected void addAdditionalSaveData(final ValueOutput output) {

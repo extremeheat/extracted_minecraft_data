@@ -357,7 +357,7 @@ public class DesertPyramidPiece extends ScatteredFeaturePiece {
          }
       }
 
-      RandomSource random = RandomSource.create(level.getSeed()).forkPositional().at(this.getWorldPos(x0, y0, z0));
+      RandomSource random = RandomSource.createThreadLocalInstance(level.getSeed()).forkPositional().at(this.getWorldPos(x0, y0, z0));
       int roofPosX = random.nextIntBetweenInclusive(x0, x1);
       int roofPosZ = random.nextIntBetweenInclusive(z0, z1);
       this.randomCollapsedRoofPos = new BlockPos(this.getWorldX(roofPosX, roofPosZ), this.getWorldY(y0), this.getWorldZ(roofPosX, roofPosZ));

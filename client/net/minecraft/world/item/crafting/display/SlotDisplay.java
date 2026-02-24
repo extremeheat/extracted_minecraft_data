@@ -297,7 +297,7 @@ public interface SlotDisplay {
       }
 
       public <T> Stream<T> resolve(final ContextMap context, final DisplayContentsFactory<T> factory) {
-         RandomSource randomSource = RandomSource.create((long)System.identityHashCode(this));
+         RandomSource randomSource = RandomSource.createThreadLocalInstance((long)System.identityHashCode(this));
          BinaryOperator<ItemStack> tranformation = (base, material) -> SmithingTrimRecipe.applyTrim(base, material, this.pattern);
          return SlotDisplay.<T>applyDemoTransformation(context, factory, this.base, this.material, randomSource, tranformation);
       }

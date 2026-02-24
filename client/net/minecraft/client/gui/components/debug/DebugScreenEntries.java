@@ -33,6 +33,7 @@ public class DebugScreenEntries {
    public static final Identifier DAY_COUNT = register((String)"day_count", new DebugEntryDayCount());
    public static final Identifier ENTITY_SPAWN_COUNTS = register((String)"entity_spawn_counts", new DebugEntrySpawnCounts());
    public static final Identifier SOUND_MOOD = register((String)"sound_mood", new DebugEntrySoundMood());
+   public static final Identifier SOUND_CACHE = register((String)"sound_cache", new DebugEntrySoundCache());
    public static final Identifier POST_EFFECT = register((String)"post_effect", new DebugEntryPostEffect());
    public static final Identifier ENTITY_HITBOXES = register((String)"entity_hitboxes", new DebugEntryNoop());
    public static final Identifier CHUNK_BORDERS = register((String)"chunk_borders", new DebugEntryNoop());

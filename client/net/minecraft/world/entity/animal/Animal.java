@@ -27,7 +27,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.DismountHelper;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.BlockAndLightGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -108,7 +108,7 @@ public abstract class Animal extends AgeableMob {
       return level.getBlockState(pos.below()).is(BlockTags.ANIMALS_SPAWNABLE_ON) && brightEnoughToSpawn;
    }
 
-   protected static boolean isBrightEnoughToSpawn(final BlockAndTintGetter level, final BlockPos pos) {
+   protected static boolean isBrightEnoughToSpawn(final BlockAndLightGetter level, final BlockPos pos) {
       return level.getRawBrightness(pos, 0) > 8;
    }
 

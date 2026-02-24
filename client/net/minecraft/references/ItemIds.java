@@ -5,11 +5,11 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
 
-public class Items {
+public class ItemIds {
    public static final ResourceKey<Item> PUMPKIN_SEEDS = createKey("pumpkin_seeds");
    public static final ResourceKey<Item> MELON_SEEDS = createKey("melon_seeds");
 
-   public Items() {
+   public ItemIds() {
       super();
    }
 

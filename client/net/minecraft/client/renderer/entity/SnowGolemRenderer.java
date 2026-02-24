@@ -2,17 +2,21 @@ package net.minecraft.client.renderer.entity;
 
 import net.minecraft.client.model.animal.golem.SnowGolemModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.renderer.block.BlockModelResolver;
 import net.minecraft.client.renderer.entity.layers.SnowGolemHeadLayer;
 import net.minecraft.client.renderer.entity.state.SnowGolemRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.golem.SnowGolem;
+import net.minecraft.world.level.block.Blocks;
 
 public class SnowGolemRenderer extends MobRenderer<SnowGolem, SnowGolemRenderState, SnowGolemModel> {
    private static final Identifier SNOW_GOLEM_LOCATION = Identifier.withDefaultNamespace("textures/entity/snow_golem/snow_golem.png");
+   private final BlockModelResolver blockModelResolver;
 
    public SnowGolemRenderer(final EntityRendererProvider.Context context) {
       super(context, new SnowGolemModel(context.bakeLayer(ModelLayers.SNOW_GOLEM)), 0.5F);
-      this.addLayer(new SnowGolemHeadLayer(this, context.getBlockRenderDispatcher()));
+      this.blockModelResolver = context.getBlockModelResolver();
+      this.addLayer(new SnowGolemHeadLayer(this));
    }
 
    public Identifier getTextureLocation(final SnowGolemRenderState state) {
@@ -25,6 +29,11 @@ public class SnowGolemRenderer extends MobRenderer<SnowGolem, SnowGolemRenderSta
 
    public void extractRenderState(final SnowGolem entity, final SnowGolemRenderState state, final float partialTicks) {
       super.extractRenderState(entity, state, partialTicks);
-      state.hasPumpkin = entity.hasPumpkin();
+      if (entity.hasPumpkin()) {
+         this.blockModelResolver.update(state.headBlock, Blocks.CARVED_PUMPKIN.defaultBlockState());
+      } else {
+         state.headBlock.clear();
+      }
+
    }
 }

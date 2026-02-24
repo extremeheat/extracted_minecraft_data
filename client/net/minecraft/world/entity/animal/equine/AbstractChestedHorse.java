@@ -38,7 +38,7 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
    protected AbstractChestedHorse(final EntityType<? extends AbstractChestedHorse> type, final Level level) {
       super(type, level);
       this.canGallop = false;
-      this.babyDimensions = type.getDimensions().withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, type.getHeight() - 0.15625F, 0.0F)).scale(0.5F);
+      this.babyDimensions = type.getDimensions().withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, type.getHeight() + 0.03125F, -0.3125F)).scale(0.5F);
    }
 
    protected void randomizeAttributes(final RandomSource random) {

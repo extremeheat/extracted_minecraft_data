@@ -53,7 +53,7 @@ public class SpreadPlayersCommand {
       if (maxHeight < minY) {
          throw ERROR_INVALID_MAX_HEIGHT.create(maxHeight, minY);
       } else {
-         RandomSource random = RandomSource.create();
+         RandomSource random = RandomSource.createThreadLocalInstance();
          double minX = (double)(center.x - maxRange);
          double minZ = (double)(center.y - maxRange);
          double maxX = (double)(center.x + maxRange);

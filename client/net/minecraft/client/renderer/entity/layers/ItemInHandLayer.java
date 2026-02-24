@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.ArmedEntityRenderState;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SwingAnimationType;
@@ -32,9 +33,9 @@ public class ItemInHandLayer<S extends ArmedEntityRenderState, M extends EntityM
          poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-90.0F));
          poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F));
          boolean isLeftHand = arm == HumanoidArm.LEFT;
-         float offsetX = state.isBaby ? 0.0F : 1.0F;
-         float offsetY = state.isBaby ? 1.0F : 2.0F;
-         float offsetZ = state.isBaby ? -4.5F : -10.0F;
+         float offsetX = this.useBabyOffset(state) ? 0.0F : 1.0F;
+         float offsetY = this.useBabyOffset(state) ? 1.0F : 2.0F;
+         float offsetZ = this.useBabyOffset(state) ? -4.5F : -10.0F;
          poseStack.translate((float)(isLeftHand ? -1 : 1) * offsetX / 16.0F, offsetY / 16.0F, offsetZ / 16.0F);
          if (state.attackTime > 0.0F && state.attackArm == arm && state.swingAnimationType == SwingAnimationType.STAB) {
             SpearAnimations.thirdPersonAttackItem(state, poseStack);
@@ -48,5 +49,9 @@ public class ItemInHandLayer<S extends ArmedEntityRenderState, M extends EntityM
          item.submit(poseStack, submitNodeCollector, lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
          poseStack.popPose();
       }
+   }
+
+   private boolean useBabyOffset(final S state) {
+      return state.isBaby && state.entityType != EntityType.ARMOR_STAND;
    }
 }

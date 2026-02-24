@@ -10,6 +10,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.references.ItemIds;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvents;
@@ -2721,8 +2722,8 @@ public class Items {
       SHEARS = registerItem("shears", ShearsItem::new, (new Item.Properties()).durability(238).component(DataComponents.TOOL, ShearsItem.createToolProperties()));
       MELON_SLICE = registerItem("melon_slice", (new Item.Properties()).food(Foods.MELON_SLICE));
       DRIED_KELP = registerItem("dried_kelp", (new Item.Properties()).food(Foods.DRIED_KELP, Consumables.DRIED_KELP));
-      PUMPKIN_SEEDS = registerItem(net.minecraft.references.Items.PUMPKIN_SEEDS, createBlockItemWithCustomItemName(Blocks.PUMPKIN_STEM));
-      MELON_SEEDS = registerItem(net.minecraft.references.Items.MELON_SEEDS, createBlockItemWithCustomItemName(Blocks.MELON_STEM));
+      PUMPKIN_SEEDS = registerItem(ItemIds.PUMPKIN_SEEDS, createBlockItemWithCustomItemName(Blocks.PUMPKIN_STEM));
+      MELON_SEEDS = registerItem(ItemIds.MELON_SEEDS, createBlockItemWithCustomItemName(Blocks.MELON_STEM));
       BEEF = registerItem("beef", (new Item.Properties()).food(Foods.BEEF));
       COOKED_BEEF = registerItem("cooked_beef", (new Item.Properties()).food(Foods.COOKED_BEEF));
       CHICKEN = registerItem("chicken", (new Item.Properties()).food(Foods.CHICKEN, Consumables.CHICKEN));

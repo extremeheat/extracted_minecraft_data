@@ -38,7 +38,7 @@ public class EndSpikeFeature extends Feature<EndSpikeConfiguration> {
    }
 
    public static List<EndSpike> getSpikesForLevel(final WorldGenLevel level) {
-      RandomSource random = RandomSource.create(level.getSeed());
+      RandomSource random = RandomSource.createThreadLocalInstance(level.getSeed());
       long key = random.nextLong() & 65535L;
       return (List)SPIKE_CACHE.getUnchecked(key);
    }
@@ -167,7 +167,7 @@ public class EndSpikeFeature extends Feature<EndSpikeConfiguration> {
       }
 
       public List<EndSpike> load(final Long seed) {
-         IntArrayList sizes = Util.toShuffledList(IntStream.range(0, 10), RandomSource.create(seed));
+         IntArrayList sizes = Util.toShuffledList(IntStream.range(0, 10), RandomSource.createThreadLocalInstance(seed));
          List<EndSpike> result = Lists.newArrayList();
 
          for(int i = 0; i < 10; ++i) {

@@ -37,7 +37,7 @@ public class CanyonWorldCarver extends WorldCarver<CanyonCarverConfiguration> {
    }
 
    private void doCarve(final CarvingContext context, final CanyonCarverConfiguration configuration, final ChunkAccess chunk, final Function<BlockPos, Holder<Biome>> biomeGetter, final long tunnelSeed, final Aquifer aquifer, double x, double y, double z, final float thickness, float horizontalRotation, float verticalRotation, final int step, final int distance, final double yScale, final CarvingMask mask) {
-      RandomSource random = RandomSource.create(tunnelSeed);
+      RandomSource random = RandomSource.createThreadLocalInstance(tunnelSeed);
       float[] widthFactorPerHeight = this.initWidthFactors(context, configuration, random);
       float yRota = 0.0F;
       float xRota = 0.0F;

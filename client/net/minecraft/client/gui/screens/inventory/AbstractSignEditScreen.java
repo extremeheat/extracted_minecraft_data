@@ -52,6 +52,7 @@ public abstract class AbstractSignEditScreen extends Screen {
    }
 
    protected void init() {
+      this.minecraft.getWindow().startTextInput();
       this.cursorBlinkStartTime = Util.getMillis();
       this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (button) -> this.onDone()).bounds(this.width / 2 - 100, this.height / 4 + 144, 200, 20).build());
       this.signField = new TextFieldHelper(() -> this.messages[this.line], this::setMessage, TextFieldHelper.createClipboardGetter(this.minecraft), TextFieldHelper.createClipboardSetter(this.minecraft), (s) -> this.minecraft.font.width(s) <= this.sign.getMaxTextLineWidth());
@@ -108,6 +109,7 @@ public abstract class AbstractSignEditScreen extends Screen {
          connection.send(new ServerboundSignUpdatePacket(this.sign.getBlockPos(), this.isFrontText, this.messages[0], this.messages[1], this.messages[2], this.messages[3]));
       }
 
+      this.minecraft.getWindow().stopTextInput();
    }
 
    public boolean isPauseScreen() {

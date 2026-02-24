@@ -1,10 +1,10 @@
 package net.minecraft.client.renderer.entity;
 
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Function;
 import net.minecraft.client.model.animal.golem.CopperGolemModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.renderer.block.BlockModelResolver;
 import net.minecraft.client.renderer.entity.layers.BlockDecorationLayer;
 import net.minecraft.client.renderer.entity.layers.CustomHeadLayer;
 import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
@@ -18,11 +18,16 @@ import net.minecraft.world.entity.animal.golem.CopperGolem;
 import net.minecraft.world.entity.animal.golem.CopperGolemOxidationLevels;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.BlockItemStateProperties;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class CopperGolemRenderer extends MobRenderer<CopperGolem, CopperGolemRenderState, CopperGolemModel> {
+   private final BlockModelResolver blockModelResolver;
+
    public CopperGolemRenderer(final EntityRendererProvider.Context context) {
       super(context, new CopperGolemModel(context.bakeLayer(ModelLayers.COPPER_GOLEM)), 0.5F);
+      this.blockModelResolver = context.getBlockModelResolver();
       this.addLayer(new LivingEntityEmissiveLayer(this, getEyeTextureLocationProvider(), (copperGolem, ageInTicks) -> 1.0F, new CopperGolemModel(context.bakeLayer(ModelLayers.COPPER_GOLEM)), RenderTypes::eyes, false));
       this.addLayer(new ItemInHandLayer(this));
       Function var10004 = (s) -> s.blockOnAntenna;
@@ -54,14 +59,15 @@ public class CopperGolemRenderer extends MobRenderer<CopperGolem, CopperGolemRen
       state.interactionGetNoItem.copyFrom(entity.getInteractionGetNoItemAnimationState());
       state.interactionDropItem.copyFrom(entity.getInteractionDropItemAnimationState());
       state.interactionDropNoItem.copyFrom(entity.getInteractionDropNoItemAnimationState());
-      state.blockOnAntenna = Optional.of(entity.getItemBySlot(CopperGolem.EQUIPMENT_SLOT_ANTENNA)).flatMap((itemStack) -> {
-         Item patt0$temp = itemStack.getItem();
-         if (patt0$temp instanceof BlockItem blockItem) {
-            BlockItemStateProperties blockItemState = (BlockItemStateProperties)itemStack.getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY);
-            return Optional.of(blockItemState.apply(blockItem.getBlock().defaultBlockState()));
-         } else {
-            return Optional.empty();
-         }
-      });
+      ItemStack antennaItem = entity.getItemBySlot(CopperGolem.EQUIPMENT_SLOT_ANTENNA);
+      Item var6 = antennaItem.getItem();
+      if (var6 instanceof BlockItem blockItem) {
+         BlockItemStateProperties blockItemState = (BlockItemStateProperties)antennaItem.getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY);
+         BlockState blockState = blockItemState.apply(blockItem.getBlock().defaultBlockState());
+         this.blockModelResolver.update(state.blockOnAntenna, blockState);
+      } else {
+         state.blockOnAntenna.clear();
+      }
+
    }
 }

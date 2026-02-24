@@ -21,11 +21,12 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.attribute.EnvironmentAttributeMap;
 import net.minecraft.world.clock.WorldClock;
+import net.minecraft.world.level.CardinalLighting;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.timeline.Timeline;
 
-public record DimensionType(boolean hasFixedTime, boolean hasSkyLight, boolean hasCeiling, boolean hasEnderDragonFight, double coordinateScale, int minY, int height, int logicalHeight, TagKey<Block> infiniburn, float ambientLight, MonsterSettings monsterSettings, Skybox skybox, CardinalLightType cardinalLightType, EnvironmentAttributeMap attributes, HolderSet<Timeline> timelines, Optional<Holder<WorldClock>> defaultClock) {
+public record DimensionType(boolean hasFixedTime, boolean hasSkyLight, boolean hasCeiling, boolean hasEnderDragonFight, double coordinateScale, int minY, int height, int logicalHeight, TagKey<Block> infiniburn, float ambientLight, MonsterSettings monsterSettings, Skybox skybox, CardinalLighting.Type cardinalLightType, EnvironmentAttributeMap attributes, HolderSet<Timeline> timelines, Optional<Holder<WorldClock>> defaultClock) {
    public static final int BITS_FOR_Y;
    public static final int MIN_HEIGHT = 16;
    public static final int Y_SIZE;
@@ -55,7 +56,7 @@ public record DimensionType(boolean hasFixedTime, boolean hasSkyLight, boolean h
    }
 
    private static Codec<DimensionType> createDirectCodec(final Codec<EnvironmentAttributeMap> attributeMapCodec) {
-      return ExtraCodecs.<DimensionType>catchDecoderException(RecordCodecBuilder.create((i) -> i.group(Codec.BOOL.optionalFieldOf("has_fixed_time", false).forGetter(DimensionType::hasFixedTime), Codec.BOOL.fieldOf("has_skylight").forGetter(DimensionType::hasSkyLight), Codec.BOOL.fieldOf("has_ceiling").forGetter(DimensionType::hasCeiling), Codec.BOOL.fieldOf("has_ender_dragon_fight").forGetter(DimensionType::hasEnderDragonFight), Codec.doubleRange(9.999999747378752E-6, 3.0E7).fieldOf("coordinate_scale").forGetter(DimensionType::coordinateScale), Codec.intRange(MIN_Y, MAX_Y).fieldOf("min_y").forGetter(DimensionType::minY), Codec.intRange(16, Y_SIZE).fieldOf("height").forGetter(DimensionType::height), Codec.intRange(0, Y_SIZE).fieldOf("logical_height").forGetter(DimensionType::logicalHeight), TagKey.hashedCodec(Registries.BLOCK).fieldOf("infiniburn").forGetter(DimensionType::infiniburn), Codec.FLOAT.fieldOf("ambient_light").forGetter(DimensionType::ambientLight), DimensionType.MonsterSettings.CODEC.forGetter(DimensionType::monsterSettings), DimensionType.Skybox.CODEC.optionalFieldOf("skybox", DimensionType.Skybox.OVERWORLD).forGetter(DimensionType::skybox), DimensionType.CardinalLightType.CODEC.optionalFieldOf("cardinal_light", DimensionType.CardinalLightType.DEFAULT).forGetter(DimensionType::cardinalLightType), attributeMapCodec.optionalFieldOf("attributes", EnvironmentAttributeMap.EMPTY).forGetter(DimensionType::attributes), RegistryCodecs.homogeneousList(Registries.TIMELINE).optionalFieldOf("timelines", HolderSet.empty()).forGetter(DimensionType::timelines), WorldClock.CODEC.optionalFieldOf("default_clock").forGetter(DimensionType::defaultClock)).apply(i, DimensionType::new)));
+      return ExtraCodecs.<DimensionType>catchDecoderException(RecordCodecBuilder.create((i) -> i.group(Codec.BOOL.optionalFieldOf("has_fixed_time", false).forGetter(DimensionType::hasFixedTime), Codec.BOOL.fieldOf("has_skylight").forGetter(DimensionType::hasSkyLight), Codec.BOOL.fieldOf("has_ceiling").forGetter(DimensionType::hasCeiling), Codec.BOOL.fieldOf("has_ender_dragon_fight").forGetter(DimensionType::hasEnderDragonFight), Codec.doubleRange(9.999999747378752E-6, 3.0E7).fieldOf("coordinate_scale").forGetter(DimensionType::coordinateScale), Codec.intRange(MIN_Y, MAX_Y).fieldOf("min_y").forGetter(DimensionType::minY), Codec.intRange(16, Y_SIZE).fieldOf("height").forGetter(DimensionType::height), Codec.intRange(0, Y_SIZE).fieldOf("logical_height").forGetter(DimensionType::logicalHeight), TagKey.hashedCodec(Registries.BLOCK).fieldOf("infiniburn").forGetter(DimensionType::infiniburn), Codec.FLOAT.fieldOf("ambient_light").forGetter(DimensionType::ambientLight), DimensionType.MonsterSettings.CODEC.forGetter(DimensionType::monsterSettings), DimensionType.Skybox.CODEC.optionalFieldOf("skybox", DimensionType.Skybox.OVERWORLD).forGetter(DimensionType::skybox), CardinalLighting.Type.CODEC.optionalFieldOf("cardinal_light", CardinalLighting.Type.DEFAULT).forGetter(DimensionType::cardinalLightType), attributeMapCodec.optionalFieldOf("attributes", EnvironmentAttributeMap.EMPTY).forGetter(DimensionType::attributes), RegistryCodecs.homogeneousList(Registries.TIMELINE).optionalFieldOf("timelines", HolderSet.empty()).forGetter(DimensionType::timelines), WorldClock.CODEC.optionalFieldOf("default_clock").forGetter(DimensionType::defaultClock)).apply(i, DimensionType::new)));
    }
 
    public static double getTeleportationScale(final DimensionType lastDimensionType, final DimensionType newDimensionType) {
@@ -121,27 +122,6 @@ public record DimensionType(boolean hasFixedTime, boolean hasSkyLight, boolean h
       // $FF: synthetic method
       private static Skybox[] $values() {
          return new Skybox[]{NONE, OVERWORLD, END};
-      }
-   }
-
-   public static enum CardinalLightType implements StringRepresentable {
-      DEFAULT("default"),
-      NETHER("nether");
-
-      public static final Codec<CardinalLightType> CODEC = StringRepresentable.<CardinalLightType>fromEnum(CardinalLightType::values);
-      private final String name;
-
-      private CardinalLightType(final String name) {
-         this.name = name;
-      }
-
-      public String getSerializedName() {
-         return this.name;
-      }
-
-      // $FF: synthetic method
-      private static CardinalLightType[] $values() {
-         return new CardinalLightType[]{DEFAULT, NETHER};
       }
    }
 }

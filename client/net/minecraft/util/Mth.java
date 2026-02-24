@@ -639,7 +639,7 @@ public class Mth {
    }
 
    public static double wobble(final double coord) {
-      return coord + (2.0 * RandomSource.create((long)floor(coord * 3000.0)).nextDouble() - 1.0) * 1.0E-7 / 2.0;
+      return coord + (2.0 * RandomSource.createThreadLocalInstance((long)floor(coord * 3000.0)).nextDouble() - 1.0) * 1.0E-7 / 2.0;
    }
 
    public static int roundToward(final int input, final int multiple) {

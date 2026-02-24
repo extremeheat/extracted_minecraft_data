@@ -567,7 +567,9 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
                   fluidState.tick(level, blockPos, blockState);
                }
 
-               if (!(blockState.getBlock() instanceof LiquidBlock)) {
+               if (blockState.getBlock() instanceof LiquidBlock) {
+                  blockState.tick(level, blockPos, level.getRandom());
+               } else {
                   BlockState blockStateNew = Block.updateFromNeighbourShapes(blockState, level, blockPos);
                   if (blockStateNew != blockState) {
                      level.setBlock(blockPos, blockStateNew, 276);

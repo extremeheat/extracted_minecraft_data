@@ -646,7 +646,7 @@ public class KeyboardHandler {
       }, (window1, preeditSize, preeditPtr, blockCount, blockSizesPtr, focusedBlock, caret) -> {
          PreeditEvent event = PreeditEvent.createFromCallback(preeditSize, preeditPtr, blockCount, blockSizesPtr, focusedBlock, caret);
          this.minecraft.execute(() -> this.preeditCallback(window1, event));
-      });
+      }, (window1) -> this.minecraft.notifyIMEChanged());
    }
 
    public String getClipboard() {

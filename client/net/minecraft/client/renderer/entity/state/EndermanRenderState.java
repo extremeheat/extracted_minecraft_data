@@ -1,11 +1,10 @@
 package net.minecraft.client.renderer.entity.state;
 
-import net.minecraft.world.level.block.state.BlockState;
-import org.jspecify.annotations.Nullable;
+import net.minecraft.client.renderer.block.BlockModelRenderState;
 
 public class EndermanRenderState extends HumanoidRenderState {
    public boolean isCreepy;
-   public @Nullable BlockState carriedBlock;
+   public final BlockModelRenderState carriedBlock = new BlockModelRenderState();
 
    public EndermanRenderState() {
       super();

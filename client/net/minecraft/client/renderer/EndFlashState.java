@@ -30,7 +30,7 @@ public class EndFlashState {
    private void calculateFlashParameters(final long clockTime) {
       long newSeed = clockTime / 600L;
       if (newSeed != this.flashSeed) {
-         RandomSource randomSource = RandomSource.create(newSeed);
+         RandomSource randomSource = RandomSource.createThreadLocalInstance(newSeed);
          randomSource.nextFloat();
          this.offset = Mth.randomBetweenInclusive(randomSource, 0, 200);
          this.duration = Mth.randomBetweenInclusive(randomSource, 100, Math.min(380, 600 - this.offset));

@@ -1580,10 +1580,6 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
       this.blockEvents.removeIf((e) -> bb.isInside(e.pos()));
    }
 
-   public float getShade(final Direction direction, final boolean shade) {
-      return 1.0F;
-   }
-
    public Iterable<Entity> getAllEntities() {
       return this.getEntities().getAll();
    }

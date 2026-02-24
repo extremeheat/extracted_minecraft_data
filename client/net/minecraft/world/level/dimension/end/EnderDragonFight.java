@@ -127,7 +127,7 @@ public class EnderDragonFight extends SavedData {
       this.validPlayer = EntitySelector.ENTITY_STILL_ALIVE.and(EntitySelector.withinDistance((double)origin.getX(), (double)(128 + origin.getY()), (double)origin.getZ(), 192.0));
       if (this.gateways.isEmpty()) {
          ObjectArrayList<Integer> newGateways = new ObjectArrayList(ContiguousSet.create(Range.closedOpen(0, 20), DiscreteDomain.integers()));
-         Util.shuffle(newGateways, RandomSource.create(seed));
+         Util.shuffle(newGateways, RandomSource.createThreadLocalInstance(seed));
          this.gateways.addAll(newGateways);
          this.setDirty();
       }

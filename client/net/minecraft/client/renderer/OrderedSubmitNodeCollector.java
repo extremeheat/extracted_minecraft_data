@@ -17,7 +17,6 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
 import org.jspecify.annotations.Nullable;
@@ -53,11 +52,9 @@ public interface OrderedSubmitNodeCollector {
 
    void submitModelPart(ModelPart modelPart, PoseStack poseStack, RenderType renderType, int lightCoords, int overlayCoords, @Nullable TextureAtlasSprite sprite, boolean sheeted, boolean hasFoil, int tintedColor, final ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay, final int outlineColor);
 
-   void submitBlock(PoseStack poseStack, BlockState state, int lightCoords, int overlayCoords, int outlineColor);
-
    void submitMovingBlock(PoseStack poseStack, MovingBlockRenderState movingBlockRenderState);
 
-   void submitBlockModel(PoseStack poseStack, RenderType renderType, BlockStateModel model, int tintColor, int lightCoords, int overlayCoords, int outlineColor);
+   void submitBlockModel(PoseStack poseStack, RenderType renderType, BlockStateModel model, int[] tintLayers, int lightCoords, int overlayCoords, int outlineColor);
 
    void submitItem(PoseStack poseStack, ItemDisplayContext displayContext, int lightCoords, int overlayCoords, int outlineColor, int[] tintLayers, List<BakedQuad> quads, ItemStackRenderState.FoilType foilType);
 

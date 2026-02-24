@@ -61,50 +61,52 @@ public class TridentItem extends Item implements ProjectileItem {
             return false;
          } else {
             float riptideStrength = EnchantmentHelper.getTridentSpinAttackStrength(itemStack, player);
-            if (riptideStrength > 0.0F && !player.isInWaterOrRain()) {
-               return false;
-            } else if (itemStack.nextDamageWillBreak()) {
-               return false;
-            } else {
-               Holder<SoundEvent> sound = (Holder)EnchantmentHelper.pickHighestLevel(itemStack, EnchantmentEffectComponents.TRIDENT_SOUND).orElse(SoundEvents.TRIDENT_THROW);
-               player.awardStat(Stats.ITEM_USED.get(this));
-               if (level instanceof ServerLevel) {
-                  ServerLevel serverLevel = (ServerLevel)level;
-                  itemStack.hurtWithoutBreaking(1, player);
-                  if (riptideStrength == 0.0F) {
-                     ItemStack thrownItemStack = itemStack.consumeAndReturn(1, player);
-                     ThrownTrident trident = (ThrownTrident)Projectile.spawnProjectileFromRotation(ThrownTrident::new, serverLevel, thrownItemStack, player, 0.0F, 2.5F, 1.0F);
-                     if (player.hasInfiniteMaterials()) {
-                        trident.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
+            if (!(riptideStrength > 0.0F) || player.isInWaterOrRain() && !player.isPassenger()) {
+               if (itemStack.nextDamageWillBreak()) {
+                  return false;
+               } else {
+                  Holder<SoundEvent> sound = (Holder)EnchantmentHelper.pickHighestLevel(itemStack, EnchantmentEffectComponents.TRIDENT_SOUND).orElse(SoundEvents.TRIDENT_THROW);
+                  player.awardStat(Stats.ITEM_USED.get(this));
+                  if (level instanceof ServerLevel) {
+                     ServerLevel serverLevel = (ServerLevel)level;
+                     itemStack.hurtWithoutBreaking(1, player);
+                     if (riptideStrength == 0.0F) {
+                        ItemStack thrownItemStack = itemStack.consumeAndReturn(1, player);
+                        ThrownTrident trident = (ThrownTrident)Projectile.spawnProjectileFromRotation(ThrownTrident::new, serverLevel, thrownItemStack, player, 0.0F, 2.5F, 1.0F);
+                        if (player.hasInfiniteMaterials()) {
+                           trident.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
+                        }
+
+                        level.playSound((Entity)null, (Entity)trident, sound.value(), SoundSource.PLAYERS, 1.0F, 1.0F);
+                        return true;
+                     }
+                  }
+
+                  if (riptideStrength > 0.0F) {
+                     float yRot = player.getYRot();
+                     float xRot = player.getXRot();
+                     float xd = -Mth.sin((double)(yRot * 0.017453292F)) * Mth.cos((double)(xRot * 0.017453292F));
+                     float yd = -Mth.sin((double)(xRot * 0.017453292F));
+                     float zd = Mth.cos((double)(yRot * 0.017453292F)) * Mth.cos((double)(xRot * 0.017453292F));
+                     float dist = Mth.sqrt(xd * xd + yd * yd + zd * zd);
+                     xd *= riptideStrength / dist;
+                     yd *= riptideStrength / dist;
+                     zd *= riptideStrength / dist;
+                     player.push((double)xd, (double)yd, (double)zd);
+                     player.startAutoSpinAttack(20, 8.0F, itemStack);
+                     if (player.onGround()) {
+                        float heightDifference = 1.1999999F;
+                        player.move(MoverType.SELF, new Vec3(0.0, 1.1999999284744263, 0.0));
                      }
 
-                     level.playSound((Entity)null, (Entity)trident, sound.value(), SoundSource.PLAYERS, 1.0F, 1.0F);
+                     level.playSound((Entity)null, (Entity)player, sound.value(), SoundSource.PLAYERS, 1.0F, 1.0F);
                      return true;
+                  } else {
+                     return false;
                   }
                }
-
-               if (riptideStrength > 0.0F) {
-                  float yRot = player.getYRot();
-                  float xRot = player.getXRot();
-                  float xd = -Mth.sin((double)(yRot * 0.017453292F)) * Mth.cos((double)(xRot * 0.017453292F));
-                  float yd = -Mth.sin((double)(xRot * 0.017453292F));
-                  float zd = Mth.cos((double)(yRot * 0.017453292F)) * Mth.cos((double)(xRot * 0.017453292F));
-                  float dist = Mth.sqrt(xd * xd + yd * yd + zd * zd);
-                  xd *= riptideStrength / dist;
-                  yd *= riptideStrength / dist;
-                  zd *= riptideStrength / dist;
-                  player.push((double)xd, (double)yd, (double)zd);
-                  player.startAutoSpinAttack(20, 8.0F, itemStack);
-                  if (player.onGround()) {
-                     float heightDifference = 1.1999999F;
-                     player.move(MoverType.SELF, new Vec3(0.0, 1.1999999284744263, 0.0));
-                  }
-
-                  level.playSound((Entity)null, (Entity)player, sound.value(), SoundSource.PLAYERS, 1.0F, 1.0F);
-                  return true;
-               } else {
-                  return false;
-               }
+            } else {
+               return false;
             }
          }
       } else {

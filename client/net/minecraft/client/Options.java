@@ -823,7 +823,7 @@ public class Options {
       this.improvedTransparency = OptionInstance.createBoolean("options.improvedTransparency", OptionInstance.cachedConstantTooltip(GRAPHICS_TOOLTIP_IMPROVED_TRANSPARENCY), false, (value) -> {
          Minecraft minecraft = Minecraft.getInstance();
          GpuWarnlistManager gpuWarnlistManager = minecraft.getGpuWarnlistManager();
-         if (value && gpuWarnlistManager.willShowWarning()) {
+         if (!this.isApplyingGraphicsPreset && value && gpuWarnlistManager.willShowWarning()) {
             gpuWarnlistManager.showWarning();
          } else {
             operateOnLevelRenderer(LevelRenderer::allChanged);

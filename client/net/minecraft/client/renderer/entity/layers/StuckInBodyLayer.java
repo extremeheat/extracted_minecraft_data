@@ -43,7 +43,7 @@ public abstract class StuckInBodyLayer<M extends PlayerModel, S> extends RenderL
    public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final AvatarRenderState state, final float yRot, final float xRot) {
       int count = this.numStuck(state);
       if (count > 0) {
-         RandomSource random = RandomSource.create((long)state.id);
+         RandomSource random = RandomSource.createThreadLocalInstance((long)state.id);
 
          for(int i = 0; i < count; ++i) {
             poseStack.pushPose();

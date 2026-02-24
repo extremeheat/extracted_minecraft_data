@@ -358,7 +358,7 @@ public class NetherFortressPieces {
       }
 
       public void postProcess(final WorldGenLevel level, final StructureManager structureManager, final ChunkGenerator generator, final RandomSource random, final BoundingBox chunkBB, final ChunkPos chunkPos, final BlockPos referencePos) {
-         RandomSource selfRandom = RandomSource.create((long)this.selfSeed);
+         RandomSource selfRandom = RandomSource.createThreadLocalInstance((long)this.selfSeed);
 
          for(int x = 0; x <= 4; ++x) {
             for(int y = 3; y <= 4; ++y) {

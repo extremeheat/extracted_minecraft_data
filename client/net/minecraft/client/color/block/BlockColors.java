@@ -5,11 +5,11 @@ import com.google.common.collect.Maps;
 import java.util.Map;
 import java.util.Set;
 import net.minecraft.client.renderer.BiomeColors;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.IdMapper;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.ARGB;
-import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.GrassColor;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -24,6 +24,7 @@ import net.minecraft.world.level.material.MapColor;
 import org.jspecify.annotations.Nullable;
 
 public class BlockColors {
+   public static final int MAX_TINT_INDEX = 2;
    private static final int DEFAULT = -1;
    public static final int LILY_PAD_IN_WORLD = -14647248;
    public static final int LILY_PAD_DEFAULT = -9321636;

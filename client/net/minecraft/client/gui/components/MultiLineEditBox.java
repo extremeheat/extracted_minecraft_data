@@ -3,6 +3,7 @@ package net.minecraft.client.gui.components;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import java.util.Objects;
 import java.util.function.Consumer;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarratedElementType;
@@ -270,6 +271,7 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
          this.focusedTime = Util.getMillis();
       }
 
+      Minecraft.getInstance().getWindow().onTextInputFocusChange(focused);
    }
 
    public static Builder builder() {
