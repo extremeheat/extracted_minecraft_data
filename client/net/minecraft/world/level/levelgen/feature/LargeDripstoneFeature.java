@@ -38,8 +38,8 @@ public class LargeDripstoneFeature extends Feature<LargeDripstoneConfiguration> 
                return false;
             } else {
                int maxColumnRadiusBasedOnColumnHeight = (int)((float)columnRange.height() * config.maxColumnRadiusToCaveHeightRatio);
-               int maxColumnRadius = Mth.clamp(maxColumnRadiusBasedOnColumnHeight, config.columnRadius.getMinValue(), config.columnRadius.getMaxValue());
-               int radius = Mth.randomBetweenInclusive(random, config.columnRadius.getMinValue(), maxColumnRadius);
+               int maxColumnRadius = Mth.clamp(maxColumnRadiusBasedOnColumnHeight, config.columnRadius.minInclusive(), config.columnRadius.maxInclusive());
+               int radius = Mth.randomBetweenInclusive(random, config.columnRadius.minInclusive(), maxColumnRadius);
                LargeDripstone stalactite = makeDripstone(origin.atY(columnRange.ceiling() - 1), false, random, radius, config.stalactiteBluntness, config.heightScale);
                LargeDripstone stalagmite = makeDripstone(origin.atY(columnRange.floor() + 1), true, random, radius, config.stalagmiteBluntness, config.heightScale);
                WindOffsetter wind;

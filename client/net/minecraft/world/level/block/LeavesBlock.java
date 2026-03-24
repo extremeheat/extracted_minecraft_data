@@ -76,7 +76,7 @@ public abstract class LeavesBlock extends Block implements SimpleWaterloggedBloc
       level.setBlock(pos, updateDistance(state, level, pos), 3);
    }
 
-   protected int getLightBlock(final BlockState state) {
+   protected int getLightDampening(final BlockState state) {
       return 1;
    }
 
@@ -113,7 +113,7 @@ public abstract class LeavesBlock extends Block implements SimpleWaterloggedBloc
    }
 
    public static OptionalInt getOptionalDistanceAt(final BlockState state) {
-      if (state.is(BlockTags.LOGS)) {
+      if (state.is(BlockTags.PREVENTS_NEARBY_LEAF_DECAY)) {
          return OptionalInt.of(0);
       } else {
          return state.hasProperty(DISTANCE) ? OptionalInt.of((Integer)state.getValue(DISTANCE)) : OptionalInt.empty();

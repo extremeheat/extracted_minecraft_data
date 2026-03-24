@@ -6,17 +6,20 @@ import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.BoatRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
 import org.joml.Quaternionf;
 import org.joml.Quaternionfc;
 
 public abstract class AbstractBoatRenderer extends EntityRenderer<AbstractBoat, BoatRenderState> {
-   public AbstractBoatRenderer(final EntityRendererProvider.Context context) {
+   protected final Identifier texture;
+
+   public AbstractBoatRenderer(final EntityRendererProvider.Context context, final Identifier texture) {
       super(context);
+      this.texture = texture;
       this.shadowRadius = 0.8F;
    }
 
@@ -35,7 +38,7 @@ public abstract class AbstractBoatRenderer extends EntityRenderer<AbstractBoat, 
 
       poseStack.scale(-1.0F, -1.0F, 1.0F);
       poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(90.0F));
-      submitNodeCollector.submitModel(this.model(), state, poseStack, this.renderType(), state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+      submitNodeCollector.submitModel(this.model(), state, poseStack, this.texture, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       this.submitTypeAdditions(state, poseStack, submitNodeCollector, state.lightCoords);
       poseStack.popPose();
       super.submit(state, poseStack, submitNodeCollector, camera);
@@ -45,8 +48,6 @@ public abstract class AbstractBoatRenderer extends EntityRenderer<AbstractBoat, 
    }
 
    protected abstract EntityModel<BoatRenderState> model();
-
-   protected abstract RenderType renderType();
 
    public BoatRenderState createRenderState() {
       return new BoatRenderState();

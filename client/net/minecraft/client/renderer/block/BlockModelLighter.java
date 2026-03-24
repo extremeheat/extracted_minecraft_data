@@ -5,7 +5,7 @@ import it.unimi.dsi.fastutil.longs.Long2FloatLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2IntLinkedOpenHashMap;
 import java.util.Objects;
 import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.ARGB;
@@ -58,13 +58,13 @@ public class BlockModelLighter {
       int light3 = this.cache.getLightCoords(state3, level, pos);
       float shade3 = this.cache.getShadeBrightness(state3, level, pos);
       BlockState corner0 = level.getBlockState(pos.setWithOffset(basePosition, (Direction)info.corners[0]).move(direction));
-      boolean translucent0 = !corner0.isViewBlocking(level, pos) || corner0.getLightBlock() == 0;
+      boolean translucent0 = !corner0.isViewBlocking(level, pos) || corner0.getLightDampening() == 0;
       BlockState corner1 = level.getBlockState(pos.setWithOffset(basePosition, (Direction)info.corners[1]).move(direction));
-      boolean translucent1 = !corner1.isViewBlocking(level, pos) || corner1.getLightBlock() == 0;
+      boolean translucent1 = !corner1.isViewBlocking(level, pos) || corner1.getLightDampening() == 0;
       BlockState corner2 = level.getBlockState(pos.setWithOffset(basePosition, (Direction)info.corners[2]).move(direction));
-      boolean translucent2 = !corner2.isViewBlocking(level, pos) || corner2.getLightBlock() == 0;
+      boolean translucent2 = !corner2.isViewBlocking(level, pos) || corner2.getLightDampening() == 0;
       BlockState corner3 = level.getBlockState(pos.setWithOffset(basePosition, (Direction)info.corners[3]).move(direction));
-      boolean translucent3 = !corner3.isViewBlocking(level, pos) || corner3.getLightBlock() == 0;
+      boolean translucent3 = !corner3.isViewBlocking(level, pos) || corner3.getLightDampening() == 0;
       float shadeCorner02;
       int lightCorner02;
       if (!translucent2 && !translucent0) {
@@ -171,7 +171,7 @@ public class BlockModelLighter {
       }
 
       CardinalLighting cardinalLighting = level.cardinalLighting();
-      outputInstance.scaleColor(quad.shade() ? cardinalLighting.byFace(direction) : cardinalLighting.up());
+      outputInstance.scaleColor(quad.materialInfo().shade() ? cardinalLighting.byFace(direction) : cardinalLighting.up());
    }
 
    public void prepareQuadFlat(final BlockAndTintGetter level, final BlockState state, final BlockPos pos, final int lightCoords, final BakedQuad quad, final QuadInstance outputInstance) {
@@ -184,7 +184,7 @@ public class BlockModelLighter {
       }
 
       CardinalLighting cardinalLighting = level.cardinalLighting();
-      float directionalBrightness = quad.shade() ? cardinalLighting.byFace(quad.direction()) : cardinalLighting.up();
+      float directionalBrightness = quad.materialInfo().shade() ? cardinalLighting.byFace(quad.direction()) : cardinalLighting.up();
       outputInstance.setColor(ARGB.gray(directionalBrightness));
    }
 

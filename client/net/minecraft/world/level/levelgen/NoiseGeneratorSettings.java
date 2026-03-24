@@ -72,7 +72,7 @@ public record NoiseGeneratorSettings(NoiseSettings noiseSettings, BlockState def
    }
 
    private static NoiseGeneratorSettings caves(final BootstrapContext<?> context) {
-      return new NoiseGeneratorSettings(NoiseSettings.CAVES_NOISE_SETTINGS, Blocks.STONE.defaultBlockState(), Blocks.WATER.defaultBlockState(), NoiseRouterData.caves(context.lookup(Registries.DENSITY_FUNCTION), context.lookup(Registries.NOISE)), SurfaceRuleData.overworldLike(false, true, true), List.of(), 32, false, false, false, true);
+      return new NoiseGeneratorSettings(NoiseSettings.CAVES_NOISE_SETTINGS, Blocks.STONE.defaultBlockState(), Blocks.WATER.defaultBlockState(), NoiseRouterData.caves(context.lookup(Registries.DENSITY_FUNCTION)), SurfaceRuleData.overworldLike(false, true, true), List.of(), 32, false, false, false, true);
    }
 
    private static NoiseGeneratorSettings floatingIslands(final BootstrapContext<?> context) {

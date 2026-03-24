@@ -367,7 +367,7 @@ public class Item implements ItemLike, FeatureElement {
       return true;
    }
 
-   public FeatureFlagSet requiredFeatures() {
+   public final FeatureFlagSet requiredFeatures() {
       return this.requiredFeatures;
    }
 
@@ -443,7 +443,7 @@ public class Item implements ItemLike, FeatureElement {
       }
 
       public Properties fireResistant() {
-         return this.component(DataComponents.DAMAGE_RESISTANT, new DamageResistant(DamageTypeTags.IS_FIRE));
+         return this.delayedComponent(DataComponents.DAMAGE_RESISTANT, (context) -> new DamageResistant(context.getOrThrow(DamageTypeTags.IS_FIRE)));
       }
 
       public Properties jukeboxPlayable(final ResourceKey<JukeboxSong> song) {
@@ -500,7 +500,7 @@ public class Item implements ItemLike, FeatureElement {
       }
 
       public Properties spawnEgg(final EntityType<?> type) {
-         return this.component(DataComponents.ENTITY_DATA, TypedEntityData.of(type, new CompoundTag()));
+         return this.component(DataComponents.ENTITY_DATA, TypedEntityData.of(type, new CompoundTag())).requiredFeatures(type.requiredFeatures());
       }
 
       public Properties humanoidArmor(final ArmorMaterial material, final ArmorType type) {
@@ -528,6 +528,15 @@ public class Item implements ItemLike, FeatureElement {
       public Properties requiredFeatures(final FeatureFlag... flags) {
          this.requiredFeatures = FeatureFlags.REGISTRY.subset(flags);
          return this;
+      }
+
+      public Properties requiredFeatures(final FeatureFlagSet flags) {
+         if (!FeatureFlags.REGISTRY.isSubset(flags)) {
+            throw new IllegalArgumentException("Mismatched flag sets");
+         } else {
+            this.requiredFeatures = flags;
+            return this;
+         }
       }
 
       public Properties setId(final ResourceKey<Item> id) {

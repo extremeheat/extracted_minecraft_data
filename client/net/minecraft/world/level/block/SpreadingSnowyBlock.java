@@ -33,7 +33,7 @@ public abstract class SpreadingSnowyBlock extends SnowyBlock {
       } else if (aboveState.getFluidState().isFull()) {
          return false;
       } else {
-         int lightBlockInto = LightEngine.getLightBlockInto(state, aboveState, Direction.UP, aboveState.getLightBlock());
+         int lightBlockInto = LightEngine.getLightBlockInto(state, aboveState, Direction.UP, aboveState.getLightDampening());
          return lightBlockInto < 15;
       }
    }

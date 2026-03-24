@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ActiveTextCollector;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
@@ -136,9 +136,9 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
             this.splitMessage = splitMessage;
          }
 
-         public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+         public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
             ActiveTextCollector textRenderer = graphics.textRenderer();
-            graphics.drawString(DetailsScreen.this.minecraft.font, (Component)this.packId, this.getContentX(), this.getContentY(), -1);
+            graphics.text(DetailsScreen.this.minecraft.font, (Component)this.packId, this.getContentX(), this.getContentY(), -1);
             MultiLineLabel var10000 = this.splitMessage;
             TextAlignment var10001 = TextAlignment.LEFT;
             int var10002 = this.getContentX();

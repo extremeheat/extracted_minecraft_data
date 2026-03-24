@@ -3,6 +3,7 @@ package net.minecraft.util.random;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import io.netty.buffer.ByteBuf;
 import java.util.Arrays;
@@ -12,7 +13,6 @@ import java.util.Optional;
 import java.util.function.Function;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import org.jspecify.annotations.Nullable;
 
@@ -58,7 +58,7 @@ public final class WeightedList<E> {
    }
 
    public boolean isEmpty() {
-      return this.items.isEmpty();
+      return this.selector == null;
    }
 
    public <T> WeightedList<T> map(final Function<E, T> mapper) {
@@ -87,20 +87,28 @@ public final class WeightedList<E> {
       return this.items;
    }
 
+   private static <E> Codec<WeightedList<E>> entryToListCodec(final Codec<Weighted<E>> weightedElementCodec) {
+      return weightedElementCodec.listOf().xmap(WeightedList::of, WeightedList::unwrap);
+   }
+
    public static <E> Codec<WeightedList<E>> codec(final Codec<E> elementCodec) {
-      return Weighted.codec(elementCodec).listOf().xmap(WeightedList::of, WeightedList::unwrap);
+      return entryToListCodec(Weighted.codec(elementCodec));
    }
 
    public static <E> Codec<WeightedList<E>> codec(final MapCodec<E> elementCodec) {
-      return Weighted.codec(elementCodec).listOf().xmap(WeightedList::of, WeightedList::unwrap);
+      return entryToListCodec(Weighted.codec(elementCodec));
+   }
+
+   private static <E> Codec<WeightedList<E>> entryToNonEmptyListCodec(final Codec<Weighted<E>> weightedElementCodec) {
+      return entryToListCodec(weightedElementCodec).validate((list) -> list.isEmpty() ? DataResult.error(() -> "Weighted list must contain at least one entry with non-zero weight") : DataResult.success(list));
    }
 
    public static <E> Codec<WeightedList<E>> nonEmptyCodec(final Codec<E> elementCodec) {
-      return ExtraCodecs.nonEmptyList(Weighted.codec(elementCodec).listOf()).xmap(WeightedList::of, WeightedList::unwrap);
+      return entryToNonEmptyListCodec(Weighted.codec(elementCodec));
    }
 
    public static <E> Codec<WeightedList<E>> nonEmptyCodec(final MapCodec<E> elementCodec) {
-      return ExtraCodecs.nonEmptyList(Weighted.codec(elementCodec).listOf()).xmap(WeightedList::of, WeightedList::unwrap);
+      return entryToNonEmptyListCodec(Weighted.codec(elementCodec));
    }
 
    public static <E, B extends ByteBuf> StreamCodec<B, WeightedList<E>> streamCodec(final StreamCodec<B, E> elementCodec) {

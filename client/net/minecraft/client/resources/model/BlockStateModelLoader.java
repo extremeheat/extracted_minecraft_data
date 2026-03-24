@@ -12,8 +12,8 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Function;
-import net.minecraft.client.renderer.block.model.BlockModelDefinition;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelDispatcher;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
@@ -47,7 +47,7 @@ public class BlockStateModelLoader {
                   return null;
                } else {
                   List<Resource> stack = (List)resourceStack.getValue();
-                  List<LoadedBlockModelDefinition> loadedStack = new ArrayList(stack.size());
+                  List<LoadedBlockStateModelDispatcher> loadedStack = new ArrayList(stack.size());
 
                   for(Resource resource : stack) {
                      try {
@@ -55,8 +55,8 @@ public class BlockStateModelLoader {
 
                         try {
                            JsonElement element = StrictJsonParser.parse(reader);
-                           BlockModelDefinition definition = (BlockModelDefinition)BlockModelDefinition.CODEC.parse(JsonOps.INSTANCE, element).getOrThrow(JsonParseException::new);
-                           loadedStack.add(new LoadedBlockModelDefinition(resource.sourcePackId(), definition));
+                           BlockStateModelDispatcher definition = (BlockStateModelDispatcher)BlockStateModelDispatcher.CODEC.parse(JsonOps.INSTANCE, element).getOrThrow(JsonParseException::new);
+                           loadedStack.add(new LoadedBlockStateModelDispatcher(resource.sourcePackId(), definition));
                         } catch (Throwable var13) {
                            if (reader != null) {
                               try {
@@ -101,10 +101,10 @@ public class BlockStateModelLoader {
       });
    }
 
-   private static LoadedModels loadBlockStateDefinitionStack(final Identifier stateDefinitionId, final StateDefinition<Block, BlockState> stateDefinition, final List<LoadedBlockModelDefinition> definitionStack) {
+   private static LoadedModels loadBlockStateDefinitionStack(final Identifier stateDefinitionId, final StateDefinition<Block, BlockState> stateDefinition, final List<LoadedBlockStateModelDispatcher> definitionStack) {
       Map<BlockState, BlockStateModel.UnbakedRoot> result = new IdentityHashMap();
 
-      for(LoadedBlockModelDefinition definition : definitionStack) {
+      for(LoadedBlockStateModelDispatcher definition : definitionStack) {
          result.putAll(definition.contents.instantiate(stateDefinition, () -> {
             String var10000 = String.valueOf(stateDefinitionId);
             return var10000 + "/" + definition.source;
@@ -114,8 +114,8 @@ public class BlockStateModelLoader {
       return new LoadedModels(result);
    }
 
-   private static record LoadedBlockModelDefinition(String source, BlockModelDefinition contents) {
-      private LoadedBlockModelDefinition {
+   private static record LoadedBlockStateModelDispatcher(String source, BlockStateModelDispatcher contents) {
+      private LoadedBlockStateModelDispatcher {
          super();
       }
    }

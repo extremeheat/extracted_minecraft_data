@@ -10,13 +10,13 @@ import net.minecraft.data.worldgen.placement.VegetationPlacements;
 import net.minecraft.references.BlockIds;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.Util;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
-import net.minecraft.world.level.levelgen.feature.configurations.RandomPatchConfiguration;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 public class GrassBlock extends SpreadingSnowyBlock implements BonemealableBlock {
@@ -43,14 +43,14 @@ public class GrassBlock extends SpreadingSnowyBlock implements BonemealableBlock
       BlockState grass = Blocks.SHORT_GRASS.defaultBlockState();
       Optional<Holder.Reference<PlacedFeature>> grassFeature = level.registryAccess().lookupOrThrow(Registries.PLACED_FEATURE).get(VegetationPlacements.GRASS_BONEMEAL);
 
-      label54:
+      label48:
       for(int j = 0; j < 128; ++j) {
          BlockPos testPos = above;
 
          for(int i = 0; i < j / 16; ++i) {
             testPos = testPos.offset(random.nextInt(3) - 1, (random.nextInt(3) - 1) * random.nextInt(3) / 2, random.nextInt(3) - 1);
             if (!level.getBlockState(testPos.below()).is(this) || level.getBlockState(testPos).isCollisionShapeFullBlock(level, testPos)) {
-               continue label54;
+               continue label48;
             }
          }
 
@@ -63,24 +63,15 @@ public class GrassBlock extends SpreadingSnowyBlock implements BonemealableBlock
          }
 
          if (testState.isAir() && !level.isOutsideBuildHeight(testPos)) {
-            Holder<PlacedFeature> placementFeature;
             if (random.nextInt(8) == 0) {
-               List<ConfiguredFeature<?, ?>> features = ((Biome)level.getBiome(testPos).value()).getGenerationSettings().getFlowerFeatures();
-               if (features.isEmpty()) {
-                  continue;
+               List<ConfiguredFeature<?, ?>> features = ((Biome)level.getBiome(testPos).value()).getGenerationSettings().getBoneMealFeatures();
+               if (!features.isEmpty()) {
+                  ConfiguredFeature<?, ?> placementFeature = (ConfiguredFeature)Util.getRandom(features, random);
+                  placementFeature.place(level, level.getChunkSource().getGenerator(), random, testPos);
                }
-
-               int randomFlowerFeature = random.nextInt(features.size());
-               placementFeature = ((RandomPatchConfiguration)((ConfiguredFeature)features.get(randomFlowerFeature)).config()).feature();
-            } else {
-               if (!grassFeature.isPresent()) {
-                  continue;
-               }
-
-               placementFeature = (Holder)grassFeature.get();
+            } else if (grassFeature.isPresent()) {
+               ((PlacedFeature)((Holder.Reference)grassFeature.get()).value()).place(level, level.getChunkSource().getGenerator(), random, testPos);
             }
-
-            ((PlacedFeature)placementFeature.value()).place(level, level.getChunkSource().getGenerator(), random, testPos);
          }
       }
 

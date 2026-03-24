@@ -102,6 +102,7 @@ public class Cow extends AbstractCow {
 
    protected void applyImplicitComponents(final DataComponentGetter components) {
       this.applyImplicitComponentIfPresent(components, DataComponents.COW_VARIANT);
+      this.applyImplicitComponentIfPresent(components, DataComponents.COW_SOUND_VARIANT);
       super.applyImplicitComponents(components);
    }
 

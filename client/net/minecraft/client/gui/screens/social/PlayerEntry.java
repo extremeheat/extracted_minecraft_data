@@ -10,12 +10,12 @@ import java.util.function.Supplier;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.ImageButton;
-import net.minecraft.client.gui.components.PlayerFaceRenderer;
+import net.minecraft.client.gui.components.PlayerFaceExtractor;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -143,7 +143,7 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
       return !this.reportingEnabled ? Tooltip.create(REPORT_DISABLED_TOOLTIP) : Tooltip.create(REPORT_PLAYER_TOOLTIP, Component.translatable("gui.socialInteractions.narration.report", this.playerName));
    }
 
-   public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+   public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
       int skinX = this.getContentX() + 4;
       int skinY = this.getContentY() + (this.getContentHeight() - 24) / 2;
       int textStartX = skinX + 24 + 4;
@@ -162,11 +162,11 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
          Objects.requireNonNull(this.minecraft.font);
          Objects.requireNonNull(this.minecraft.font);
          textStartY = var12 + (var13 - (9 + 9)) / 2;
-         graphics.drawString(this.minecraft.font, status, textStartX, textStartY + 12, PLAYER_STATUS_COLOR);
+         graphics.text(this.minecraft.font, status, textStartX, textStartY + 12, PLAYER_STATUS_COLOR);
       }
 
-      PlayerFaceRenderer.draw(graphics, (PlayerSkin)this.skinGetter.get(), skinX, skinY, 24);
-      graphics.drawString(this.minecraft.font, this.playerName, textStartX, textStartY, PLAYERNAME_COLOR);
+      PlayerFaceExtractor.extractRenderState(graphics, (PlayerSkin)this.skinGetter.get(), skinX, skinY, 24);
+      graphics.text(this.minecraft.font, this.playerName, textStartX, textStartY, PLAYERNAME_COLOR);
       if (this.isRemoved) {
          graphics.fill(skinX, skinY, skinX + 24, skinY + 24, SKIN_SHADE);
       }
@@ -175,13 +175,13 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
          float lastHoverTime = this.tooltipHoverTime;
          this.hideButton.setX(this.getContentX() + (this.getContentWidth() - this.hideButton.getWidth() - 4) - 20 - 4);
          this.hideButton.setY(this.getContentY() + (this.getContentHeight() - this.hideButton.getHeight()) / 2);
-         this.hideButton.render(graphics, mouseX, mouseY, a);
+         this.hideButton.extractRenderState(graphics, mouseX, mouseY, a);
          this.showButton.setX(this.getContentX() + (this.getContentWidth() - this.showButton.getWidth() - 4) - 20 - 4);
          this.showButton.setY(this.getContentY() + (this.getContentHeight() - this.showButton.getHeight()) / 2);
-         this.showButton.render(graphics, mouseX, mouseY, a);
+         this.showButton.extractRenderState(graphics, mouseX, mouseY, a);
          this.reportButton.setX(this.getContentX() + (this.getContentWidth() - this.showButton.getWidth() - 4));
          this.reportButton.setY(this.getContentY() + (this.getContentHeight() - this.showButton.getHeight()) / 2);
-         this.reportButton.render(graphics, mouseX, mouseY, a);
+         this.reportButton.extractRenderState(graphics, mouseX, mouseY, a);
          if (lastHoverTime == this.tooltipHoverTime) {
             this.tooltipHoverTime = 0.0F;
          }

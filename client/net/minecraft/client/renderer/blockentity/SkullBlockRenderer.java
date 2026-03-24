@@ -2,6 +2,8 @@ package net.minecraft.client.renderer.blockentity;
 
 import com.google.common.collect.Maps;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
+import com.mojang.math.Transformation;
 import java.util.Map;
 import java.util.function.Function;
 import net.minecraft.client.model.geom.EntityModelSet;
@@ -16,7 +18,7 @@ import net.minecraft.client.renderer.blockentity.state.SkullBlockRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.core.Direction;
@@ -30,9 +32,13 @@ import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RotationSegment;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix4f;
+import org.joml.Quaternionfc;
+import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 
 public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity, SkullBlockRenderState> {
+   public static final WallAndGroundTransformations<Transformation> TRANSFORMATIONS = new WallAndGroundTransformations<Transformation>(SkullBlockRenderer::createWallTransformation, SkullBlockRenderer::createGroundTransformation, 16);
    private final Function<SkullBlock.Type, SkullModelBase> modelByType;
    private static final Map<SkullBlock.Type, Identifier> SKIN_BY_TYPE = (Map)Util.make(Maps.newHashMap(), (map) -> {
       map.put(SkullBlock.Types.SKELETON, Identifier.withDefaultNamespace("textures/entity/skeleton/skeleton.png"));
@@ -81,34 +87,29 @@ public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity,
       BlockEntityRenderer.super.extractRenderState(blockEntity, state, partialTicks, cameraPosition, breakProgress);
       state.animationProgress = blockEntity.getAnimation(partialTicks);
       BlockState blockState = blockEntity.getBlockState();
-      boolean isWallSkull = blockState.getBlock() instanceof WallSkullBlock;
-      state.direction = isWallSkull ? (Direction)blockState.getValue(WallSkullBlock.FACING) : null;
-      int rotationSegment = isWallSkull ? RotationSegment.convertToSegment(state.direction.getOpposite()) : (Integer)blockState.getValue(SkullBlock.ROTATION);
-      state.rotationDegrees = RotationSegment.convertToDegrees(rotationSegment);
+      if (blockState.getBlock() instanceof WallSkullBlock) {
+         Direction facing = (Direction)blockState.getValue(WallSkullBlock.FACING);
+         state.transformation = TRANSFORMATIONS.wallTransformation(facing);
+      } else {
+         state.transformation = TRANSFORMATIONS.freeTransformations((Integer)blockState.getValue(SkullBlock.ROTATION));
+      }
+
       state.skullType = ((AbstractSkullBlock)blockState.getBlock()).getType();
       state.renderType = this.resolveSkullRenderType(state.skullType, blockEntity);
    }
 
    public void submit(final SkullBlockRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
       SkullModelBase model = (SkullModelBase)this.modelByType.apply(state.skullType);
-      submitSkull(state.direction, state.rotationDegrees, state.animationProgress, poseStack, submitNodeCollector, state.lightCoords, model, state.renderType, 0, state.breakProgress);
+      poseStack.pushPose();
+      poseStack.mulPose(state.transformation);
+      submitSkull(state.animationProgress, poseStack, submitNodeCollector, state.lightCoords, model, state.renderType, 0, state.breakProgress);
+      poseStack.popPose();
    }
 
-   public static void submitSkull(final @Nullable Direction direction, final float rot, final float animationValue, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final SkullModelBase model, final RenderType renderType, final int outlineColor, final ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
-      poseStack.pushPose();
-      if (direction == null) {
-         poseStack.translate(0.5F, 0.0F, 0.5F);
-      } else {
-         float offset = 0.25F;
-         poseStack.translate(0.5F - (float)direction.getStepX() * 0.25F, 0.25F, 0.5F - (float)direction.getStepZ() * 0.25F);
-      }
-
-      poseStack.scale(-1.0F, -1.0F, 1.0F);
+   public static void submitSkull(final float animationValue, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final SkullModelBase model, final RenderType renderType, final int outlineColor, final ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
       SkullModelBase.State modelState = new SkullModelBase.State();
       modelState.animationPos = animationValue;
-      modelState.yRot = rot;
       submitNodeCollector.submitModel(model, modelState, poseStack, renderType, lightCoords, OverlayTexture.NO_OVERLAY, outlineColor, breakProgress);
-      poseStack.popPose();
    }
 
    private RenderType resolveSkullRenderType(final SkullBlock.Type type, final SkullBlockEntity entity) {
@@ -128,5 +129,14 @@ public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity,
 
    public static RenderType getPlayerSkinRenderType(final Identifier texture) {
       return RenderTypes.entityTranslucent(texture);
+   }
+
+   private static Transformation createWallTransformation(final Direction wallDirection) {
+      float offset = 0.25F;
+      return new Transformation(new Vector3f(0.5F - (float)wallDirection.getStepX() * 0.25F, 0.25F, 0.5F - (float)wallDirection.getStepZ() * 0.25F), Axis.YP.rotationDegrees(-wallDirection.getOpposite().toYRot()), new Vector3f(-1.0F, -1.0F, 1.0F), (Quaternionfc)null);
+   }
+
+   private static Transformation createGroundTransformation(final int segment) {
+      return new Transformation((new Matrix4f()).translation(0.5F, 0.0F, 0.5F).rotate(Axis.YP.rotationDegrees(-RotationSegment.convertToDegrees(segment))).scale(-1.0F, -1.0F, 1.0F));
    }
 }

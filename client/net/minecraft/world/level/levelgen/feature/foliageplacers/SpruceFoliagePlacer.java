@@ -5,11 +5,12 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
-import net.minecraft.world.level.LevelSimulatedReader;
+import net.minecraft.util.valueproviders.IntProviders;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 
 public class SpruceFoliagePlacer extends FoliagePlacer {
-   public static final MapCodec<SpruceFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((i) -> foliagePlacerParts(i).and(IntProvider.codec(0, 24).fieldOf("trunk_height").forGetter((p) -> p.trunkHeight)).apply(i, SpruceFoliagePlacer::new));
+   public static final MapCodec<SpruceFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((i) -> foliagePlacerParts(i).and(IntProviders.codec(0, 24).fieldOf("trunk_height").forGetter((p) -> p.trunkHeight)).apply(i, SpruceFoliagePlacer::new));
    private final IntProvider trunkHeight;
 
    public SpruceFoliagePlacer(final IntProvider radius, final IntProvider offset, final IntProvider trunkHeight) {
@@ -21,7 +22,7 @@ public class SpruceFoliagePlacer extends FoliagePlacer {
       return FoliagePlacerType.SPRUCE_FOLIAGE_PLACER;
    }
 
-   protected void createFoliage(final LevelSimulatedReader level, final FoliagePlacer.FoliageSetter foliageSetter, final RandomSource random, final TreeConfiguration config, final int treeHeight, final FoliagePlacer.FoliageAttachment foliageAttachment, final int foliageHeight, final int leafRadius, final int offset) {
+   protected void createFoliage(final WorldGenLevel level, final FoliagePlacer.FoliageSetter foliageSetter, final RandomSource random, final TreeConfiguration config, final int treeHeight, final FoliagePlacer.FoliageAttachment foliageAttachment, final int foliageHeight, final int leafRadius, final int offset) {
       BlockPos foliagePos = foliageAttachment.pos();
       int currentRadius = random.nextInt(2);
       int maxRadius = 1;

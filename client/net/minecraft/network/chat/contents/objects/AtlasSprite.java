@@ -26,7 +26,7 @@ public record AtlasSprite(Identifier atlas, Identifier sprite) implements Object
       return id.getNamespace().equals("minecraft") ? id.getPath() : id.toString();
    }
 
-   public String description() {
+   public String defaultFallback() {
       String shortName = toShortName(this.sprite);
       return this.atlas.equals(DEFAULT_ATLAS) ? "[" + shortName + "]" : "[" + shortName + "@" + toShortName(this.atlas) + "]";
    }

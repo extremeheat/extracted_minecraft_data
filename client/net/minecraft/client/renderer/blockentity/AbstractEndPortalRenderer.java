@@ -1,25 +1,34 @@
 package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import java.util.Set;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+import net.minecraft.client.renderer.FaceInfo;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.EndPortalRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.Util;
 import net.minecraft.world.level.block.entity.TheEndPortalBlockEntity;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Matrix4f;
-import org.joml.Matrix4fc;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractEndPortalRenderer<T extends TheEndPortalBlockEntity, S extends EndPortalRenderState> implements BlockEntityRenderer<T, S> {
+   private static final Vector3fc FROM = new Vector3f(0.0F, 0.0F, 0.0F);
+   private static final Vector3fc TO = new Vector3f(1.0F, 1.0F, 1.0F);
+   private static final Map<Direction, List<Vector3fc>> FACES = Util.<Direction, List<Vector3fc>>makeEnumMap(Direction.class, (direction) -> {
+      FaceInfo faceInfo = FaceInfo.fromFacing(direction);
+      return List.of(faceInfo.getVertexInfo(0).select(FROM, TO), faceInfo.getVertexInfo(1).select(FROM, TO), faceInfo.getVertexInfo(2).select(FROM, TO), faceInfo.getVertexInfo(3).select(FROM, TO));
+   });
    public static final Identifier END_SKY_LOCATION = Identifier.withDefaultNamespace("textures/environment/end_sky.png");
    public static final Identifier END_PORTAL_LOCATION = Identifier.withDefaultNamespace("textures/entity/end_portal/end_portal.png");
+   private static final List<Direction> ALL_FACES = List.of(Direction.values());
 
    public AbstractEndPortalRenderer() {
       super();
@@ -37,40 +46,24 @@ public abstract class AbstractEndPortalRenderer<T extends TheEndPortalBlockEntit
 
    }
 
-   public void submit(final S state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
-      submitNodeCollector.submitCustomGeometry(poseStack, this.renderType(), (pose1, buffer) -> this.renderCube(state.facesToShow, pose1.pose(), buffer));
-   }
+   protected static void submitCube(final Collection<Direction> facesToShow, final RenderType renderType, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector) {
+      if (!facesToShow.isEmpty()) {
+         submitNodeCollector.submitCustomGeometry(poseStack, renderType, (pose, buffer) -> {
+            for(Direction direction : facesToShow) {
+               for(Vector3fc faceVertex : (List)FACES.get(direction)) {
+                  buffer.addVertex(pose, faceVertex);
+               }
+            }
 
-   private void renderCube(final Set<Direction> facesToShow, final Matrix4f pose, final VertexConsumer builder) {
-      float offsetDown = this.getOffsetDown();
-      float offsetUp = this.getOffsetUp();
-      renderFace(facesToShow, pose, builder, 0.0F, 1.0F, 0.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, Direction.SOUTH);
-      renderFace(facesToShow, pose, builder, 0.0F, 1.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, Direction.NORTH);
-      renderFace(facesToShow, pose, builder, 1.0F, 1.0F, 1.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.0F, Direction.EAST);
-      renderFace(facesToShow, pose, builder, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 1.0F, 1.0F, 0.0F, Direction.WEST);
-      renderFace(facesToShow, pose, builder, 0.0F, 1.0F, offsetDown, offsetDown, 0.0F, 0.0F, 1.0F, 1.0F, Direction.DOWN);
-      renderFace(facesToShow, pose, builder, 0.0F, 1.0F, offsetUp, offsetUp, 1.0F, 1.0F, 0.0F, 0.0F, Direction.UP);
-   }
-
-   private static void renderFace(final Set<Direction> facesToShow, final Matrix4f pose, final VertexConsumer builder, final float x1, final float x2, final float y1, final float y2, final float z1, final float z2, final float z3, final float z4, final Direction face) {
-      if (facesToShow.contains(face)) {
-         builder.addVertex((Matrix4fc)pose, x1, y1, z1);
-         builder.addVertex((Matrix4fc)pose, x2, y1, z2);
-         builder.addVertex((Matrix4fc)pose, x2, y2, z3);
-         builder.addVertex((Matrix4fc)pose, x1, y2, z4);
+         });
       }
-
    }
 
-   protected float getOffsetUp() {
-      return 0.75F;
+   public static void submitSpecial(final RenderType renderType, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector) {
+      submitCube(ALL_FACES, renderType, poseStack, submitNodeCollector);
    }
 
-   protected float getOffsetDown() {
-      return 0.375F;
-   }
-
-   protected RenderType renderType() {
-      return RenderTypes.endPortal();
+   public static void getExtents(final Consumer<Vector3fc> output) {
+      FACES.values().forEach((vertices) -> vertices.forEach(output));
    }
 }

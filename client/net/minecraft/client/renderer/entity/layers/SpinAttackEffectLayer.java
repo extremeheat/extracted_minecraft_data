@@ -23,7 +23,7 @@ public class SpinAttackEffectLayer extends RenderLayer<AvatarRenderState, Player
 
    public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final AvatarRenderState state, final float yRot, final float xRot) {
       if (state.isAutoSpinAttack) {
-         submitNodeCollector.submitModel(this.model, state, poseStack, this.model.renderType(TEXTURE), lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+         submitNodeCollector.submitModel(this.model, state, poseStack, TEXTURE, lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       }
    }
 }

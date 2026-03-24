@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Objects;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
@@ -64,15 +64,15 @@ public class UnsupportedGraphicsWarningScreen extends Screen {
 
    }
 
-   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-      super.render(graphics, mouseX, mouseY, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
       ActiveTextCollector textRenderer = graphics.textRenderer();
       Font var10001 = this.font;
       Component var10002 = this.title;
       int var10003 = this.width / 2;
       int var10004 = this.contentTop;
       Objects.requireNonNull(this.font);
-      graphics.drawCenteredString(var10001, (Component)var10002, var10003, var10004 - 9 * 2, -1);
+      graphics.centeredText(var10001, (Component)var10002, var10003, var10004 - 9 * 2, -1);
       MultiLineLabel var10000 = this.messageLines;
       TextAlignment var6 = TextAlignment.CENTER;
       int var7 = this.width / 2;

@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.multiplayer.ClientHandshakePacketListenerImpl;
 import net.minecraft.client.multiplayer.LevelLoadTracker;
@@ -216,14 +216,14 @@ public class ConnectScreen extends Screen {
       }).bounds(this.width / 2 - 100, this.height / 4 + 120 + 12, 200, 20).build());
    }
 
-   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-      super.render(graphics, mouseX, mouseY, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
       long current = Util.getMillis();
       if (current - this.lastNarration > 2000L) {
          this.lastNarration = current;
          this.minecraft.getNarrator().saySystemNow((Component)Component.translatable("narrator.joining"));
       }
 
-      graphics.drawCenteredString(this.font, (Component)this.status, this.width / 2, this.height / 2 - 50, -1);
+      graphics.centeredText(this.font, (Component)this.status, this.width / 2, this.height / 2 - 50, -1);
    }
 }

@@ -15,9 +15,14 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.function.Function;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
-import net.minecraft.client.renderer.block.model.Material;
-import net.minecraft.client.renderer.block.model.TextureSlots;
+import net.minecraft.client.renderer.block.dispatch.BlockModelRotation;
+import net.minecraft.client.renderer.block.dispatch.ModelState;
+import net.minecraft.client.resources.model.cuboid.ItemTransforms;
+import net.minecraft.client.resources.model.cuboid.MissingCuboidModel;
+import net.minecraft.client.resources.model.geometry.QuadCollection;
+import net.minecraft.client.resources.model.geometry.UnbakedGeometry;
+import net.minecraft.client.resources.model.sprite.Material;
+import net.minecraft.client.resources.model.sprite.TextureSlots;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -32,8 +37,8 @@ public class ModelDiscovery {
 
    public ModelDiscovery(final Map<Identifier, UnbakedModel> unbakedModels, final UnbakedModel missingUnbakedModel) {
       super();
-      this.missingModel = new ModelWrapper(MissingBlockModel.LOCATION, missingUnbakedModel, true);
-      this.modelWrappers.put(MissingBlockModel.LOCATION, this.missingModel);
+      this.missingModel = new ModelWrapper(MissingCuboidModel.LOCATION, missingUnbakedModel, true);
+      this.modelWrappers.put(MissingCuboidModel.LOCATION, this.missingModel);
       this.uncachedResolver = (rawId) -> {
          Identifier id = (Identifier)rawId;
          UnbakedModel rawModel = (UnbakedModel)unbakedModels.get(id);

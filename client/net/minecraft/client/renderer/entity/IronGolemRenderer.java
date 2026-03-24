@@ -5,6 +5,7 @@ import com.mojang.math.Axis;
 import net.minecraft.client.model.animal.golem.IronGolemModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.block.BlockModelResolver;
+import net.minecraft.client.renderer.block.model.BlockDisplayContext;
 import net.minecraft.client.renderer.entity.layers.IronGolemCrackinessLayer;
 import net.minecraft.client.renderer.entity.layers.IronGolemFlowerLayer;
 import net.minecraft.client.renderer.entity.state.IronGolemRenderState;
@@ -14,6 +15,7 @@ import net.minecraft.world.level.block.Blocks;
 import org.joml.Quaternionfc;
 
 public class IronGolemRenderer extends MobRenderer<IronGolem, IronGolemRenderState, IronGolemModel> {
+   public static final BlockDisplayContext BLOCK_DISPLAY_CONTEXT = BlockDisplayContext.create();
    private static final Identifier GOLEM_LOCATION = Identifier.withDefaultNamespace("textures/entity/iron_golem/iron_golem.png");
    private final BlockModelResolver blockModelResolver;
 
@@ -37,7 +39,7 @@ public class IronGolemRenderer extends MobRenderer<IronGolem, IronGolemRenderSta
       state.attackTicksRemaining = (float)entity.getAttackAnimationTick() > 0.0F ? (float)entity.getAttackAnimationTick() - partialTicks : 0.0F;
       state.offerFlowerTick = entity.getOfferFlowerTick();
       if (state.offerFlowerTick > 0) {
-         this.blockModelResolver.update(state.flowerBlock, Blocks.POPPY.defaultBlockState());
+         this.blockModelResolver.update(state.flowerBlock, Blocks.POPPY.defaultBlockState(), BLOCK_DISPLAY_CONTEXT);
       } else {
          state.flowerBlock.clear();
       }

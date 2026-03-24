@@ -416,8 +416,8 @@ public class ExecuteCommand {
       BoundingBox from = BoundingBox.fromCorners(startPos, endPos);
       BoundingBox destination = BoundingBox.fromCorners(destPos, destPos.offset(from.getLength()));
       BlockPos offset = new BlockPos(destination.minX() - from.minX(), destination.minY() - from.minY(), destination.minZ() - from.minZ());
-      int area = from.getXSpan() * from.getYSpan() * from.getZSpan();
-      if (area > 32768) {
+      long area = (long)from.getXSpan() * (long)from.getYSpan() * (long)from.getZSpan();
+      if (area > 32768L) {
          throw ERROR_AREA_TOO_LARGE.create(32768, area);
       } else {
          int count = 0;

@@ -48,7 +48,7 @@ public class BookModel extends Model<State> {
 
    public void setupAnim(final State state) {
       super.setupAnim(state);
-      float openness = (Mth.sin((double)(state.animationPos * 0.02F)) * 0.1F + 1.25F) * state.open;
+      float openness = state.openness;
       this.leftLid.yRot = 3.1415927F + openness;
       this.rightLid.yRot = -openness;
       this.leftPages.yRot = openness;
@@ -61,9 +61,13 @@ public class BookModel extends Model<State> {
       this.flipPage2.x = Mth.sin((double)openness);
    }
 
-   public static record State(float animationPos, float pageFlip1, float pageFlip2, float open) {
+   public static record State(float openness, float pageFlip1, float pageFlip2) {
       public State {
          super();
+      }
+
+      public static State forAnimation(final float progress, final float pageFlip1, final float pageFlip2, final float openness) {
+         return new State((Mth.sin((double)(progress * 0.02F)) * 0.1F + 1.25F) * openness, pageFlip1, pageFlip2);
       }
    }
 }

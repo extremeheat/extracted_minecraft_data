@@ -1,6 +1,7 @@
 package com.mojang.blaze3d.vertex;
 
 import com.mojang.math.MatrixUtil;
+import com.mojang.math.Transformation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -80,6 +81,10 @@ public class PoseStack {
       this.last().mulPose(matrix);
    }
 
+   public void mulPose(final Transformation matrix) {
+      this.last().mulPose(matrix);
+   }
+
    public static final class Pose {
       private final Matrix4f pose = new Matrix4f();
       private final Matrix3f normal = new Matrix3f();
@@ -153,13 +158,17 @@ public class PoseStack {
       public void mulPose(final Matrix4fc matrix) {
          this.pose.mul(matrix);
          if (!MatrixUtil.isPureTranslation(matrix)) {
-            if (MatrixUtil.isOrthonormal(matrix)) {
+            if (MatrixUtil.checkPropertyRaw(matrix, 16)) {
                this.normal.mul(new Matrix3f(matrix));
             } else {
                this.computeNormalMatrix();
             }
          }
 
+      }
+
+      public void mulPose(final Transformation transformation) {
+         this.mulPose(transformation.getMatrix());
       }
 
       public Pose copy() {

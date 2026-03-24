@@ -29,8 +29,8 @@ public record PigSoundVariant(PigSoundSet adultSounds, PigSoundSet babySounds) {
       STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.PIG_SOUND_VARIANT);
    }
 
-   public static record PigSoundSet(Holder<SoundEvent> ambientSound, Holder<SoundEvent> hurtSound, Holder<SoundEvent> deathSound, Holder<SoundEvent> stepSound) {
-      public static final Codec<PigSoundSet> CODEC = RecordCodecBuilder.create((i) -> i.group(SoundEvent.CODEC.fieldOf("ambient_sound").forGetter(PigSoundSet::ambientSound), SoundEvent.CODEC.fieldOf("hurt_sound").forGetter(PigSoundSet::hurtSound), SoundEvent.CODEC.fieldOf("death_sound").forGetter(PigSoundSet::deathSound), SoundEvent.CODEC.fieldOf("step_sound").forGetter(PigSoundSet::stepSound)).apply(i, PigSoundSet::new));
+   public static record PigSoundSet(Holder<SoundEvent> ambientSound, Holder<SoundEvent> hurtSound, Holder<SoundEvent> deathSound, Holder<SoundEvent> stepSound, Holder<SoundEvent> eatSound) {
+      public static final Codec<PigSoundSet> CODEC = RecordCodecBuilder.create((i) -> i.group(SoundEvent.CODEC.fieldOf("ambient_sound").forGetter(PigSoundSet::ambientSound), SoundEvent.CODEC.fieldOf("hurt_sound").forGetter(PigSoundSet::hurtSound), SoundEvent.CODEC.fieldOf("death_sound").forGetter(PigSoundSet::deathSound), SoundEvent.CODEC.fieldOf("step_sound").forGetter(PigSoundSet::stepSound), SoundEvent.CODEC.fieldOf("eat_sound").forGetter(PigSoundSet::eatSound)).apply(i, PigSoundSet::new));
 
       public PigSoundSet {
          super();

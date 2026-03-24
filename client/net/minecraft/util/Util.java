@@ -42,6 +42,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Arrays;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -596,6 +597,10 @@ public class Util {
       return Maps.transformValues(map, valueMapper);
    }
 
+   public static <T extends Enum<T>> Set<T> allOfEnumExcept(final T value) {
+      return EnumSet.complementOf(EnumSet.of(value));
+   }
+
    public static <V extends @Nullable Object> CompletableFuture<List<V>> sequence(final List<? extends CompletableFuture<V>> futures) {
       if (futures.isEmpty()) {
          return CompletableFuture.completedFuture(List.of());
@@ -1101,6 +1106,10 @@ public class Util {
 
    public static <T> List<T> copyAndAdd(final List<T> list, final T element) {
       return ImmutableList.builderWithExpectedSize(list.size() + 1).addAll(list).add(element).build();
+   }
+
+   public static <T> List<T> copyAndAdd(final List<T> list, final T... elements) {
+      return ImmutableList.builderWithExpectedSize(list.size() + elements.length).addAll(list).add(elements).build();
    }
 
    public static <T> List<T> copyAndAdd(final T element, final List<T> list) {

@@ -5,10 +5,9 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.LightningBoltRenderState;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LightningBolt;
-import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 
 public class LightningBoltRenderer extends EntityRenderer<LightningBolt, LightningBoltRenderState> {
@@ -31,7 +30,7 @@ public class LightningBoltRenderer extends EntityRenderer<LightningBolt, Lightni
       }
 
       submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.lightning(), (pose, buffer) -> {
-         Matrix4f poseMatrix = pose.pose();
+         Matrix4fc poseMatrix = pose.pose();
 
          for(int r = 0; r < 4; ++r) {
             RandomSource random = RandomSource.createThreadLocalInstance(state.seed);
@@ -86,11 +85,11 @@ public class LightningBoltRenderer extends EntityRenderer<LightningBolt, Lightni
       });
    }
 
-   private static void quad(final Matrix4f pose, final VertexConsumer buffer, final float xo0, final float zo0, final int h, final float xo1, final float zo1, final float boltRed, final float boltGreen, final float boltBlue, final float rr1, final float rr2, final boolean px1, final boolean pz1, final boolean px2, final boolean pz2) {
-      buffer.addVertex((Matrix4fc)pose, xo0 + (px1 ? rr2 : -rr2), (float)(h * 16), zo0 + (pz1 ? rr2 : -rr2)).setColor(boltRed, boltGreen, boltBlue, 0.3F);
-      buffer.addVertex((Matrix4fc)pose, xo1 + (px1 ? rr1 : -rr1), (float)((h + 1) * 16), zo1 + (pz1 ? rr1 : -rr1)).setColor(boltRed, boltGreen, boltBlue, 0.3F);
-      buffer.addVertex((Matrix4fc)pose, xo1 + (px2 ? rr1 : -rr1), (float)((h + 1) * 16), zo1 + (pz2 ? rr1 : -rr1)).setColor(boltRed, boltGreen, boltBlue, 0.3F);
-      buffer.addVertex((Matrix4fc)pose, xo0 + (px2 ? rr2 : -rr2), (float)(h * 16), zo0 + (pz2 ? rr2 : -rr2)).setColor(boltRed, boltGreen, boltBlue, 0.3F);
+   private static void quad(final Matrix4fc pose, final VertexConsumer buffer, final float xo0, final float zo0, final int h, final float xo1, final float zo1, final float boltRed, final float boltGreen, final float boltBlue, final float rr1, final float rr2, final boolean px1, final boolean pz1, final boolean px2, final boolean pz2) {
+      buffer.addVertex(pose, xo0 + (px1 ? rr2 : -rr2), (float)(h * 16), zo0 + (pz1 ? rr2 : -rr2)).setColor(boltRed, boltGreen, boltBlue, 0.3F);
+      buffer.addVertex(pose, xo1 + (px1 ? rr1 : -rr1), (float)((h + 1) * 16), zo1 + (pz1 ? rr1 : -rr1)).setColor(boltRed, boltGreen, boltBlue, 0.3F);
+      buffer.addVertex(pose, xo1 + (px2 ? rr1 : -rr1), (float)((h + 1) * 16), zo1 + (pz2 ? rr1 : -rr1)).setColor(boltRed, boltGreen, boltBlue, 0.3F);
+      buffer.addVertex(pose, xo0 + (px2 ? rr2 : -rr2), (float)(h * 16), zo0 + (pz2 ? rr2 : -rr2)).setColor(boltRed, boltGreen, boltBlue, 0.3F);
    }
 
    public LightningBoltRenderState createRenderState() {

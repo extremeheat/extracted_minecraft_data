@@ -4,7 +4,7 @@ import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import java.util.List;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
@@ -81,7 +81,8 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
       return Mth.positiveCeilDiv(((LoomMenu)this.menu).getSelectablePatterns().size(), 4);
    }
 
-   protected void renderBg(final GuiGraphics graphics, final float a, final int xm, final int ym) {
+   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractBackground(graphics, mouseX, mouseY, a);
       int xo = this.leftPos;
       int yo = this.topPos;
       graphics.blit(RenderPipelines.GUI_TEXTURED, BG_LOCATION, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
@@ -102,19 +103,23 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
       }
 
       int sy = (int)(41.0F * this.scrollOffs);
-      Identifier sprite = this.displayPatterns ? SCROLLER_SPRITE : SCROLLER_DISABLED_SPRITE;
+      Identifier sprite = this.isScrollBarActive() ? SCROLLER_SPRITE : SCROLLER_DISABLED_SPRITE;
       int scrollerX = xo + 119;
-      int scrollerY = yo + 13 + sy;
-      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)sprite, scrollerX, scrollerY, 12, 15);
-      if (xm >= scrollerX && xm < scrollerX + 12 && ym >= scrollerY && ym < scrollerY + 15) {
-         graphics.requestCursor(this.scrolling ? CursorTypes.RESIZE_NS : CursorTypes.POINTING_HAND);
+      int scrollerY = yo + 13;
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)sprite, scrollerX, scrollerY + sy, 12, 15);
+      if (mouseX >= scrollerX && mouseX < scrollerX + 12 && mouseY >= scrollerY && mouseY < scrollerY + 56) {
+         if (this.isScrollBarActive()) {
+            graphics.requestCursor(this.scrolling ? CursorTypes.RESIZE_NS : CursorTypes.POINTING_HAND);
+         } else {
+            graphics.requestCursor(CursorTypes.NOT_ALLOWED);
+         }
       }
 
       if (this.resultBannerPatterns != null && !this.hasMaxPatterns) {
          DyeColor baseColor = ((BannerItem)resultSlot.getItem().getItem()).getColor();
          int x0 = xo + 141;
          int y0 = yo + 8;
-         graphics.submitBannerPatternRenderState(this.flag, baseColor, this.resultBannerPatterns, x0, y0, x0 + 20, y0 + 40);
+         graphics.bannerPattern(this.flag, baseColor, this.resultBannerPatterns, x0, y0, x0 + 20, y0 + 40);
       } else if (this.hasMaxPatterns) {
          graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ERROR_SPRITE, xo + resultSlot.x - 5, yo + resultSlot.y - 5, 26, 26);
       }
@@ -124,19 +129,19 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
          int y = yo + 13;
          List<Holder<BannerPattern>> selectablePatterns = ((LoomMenu)this.menu).getSelectablePatterns();
 
-         label79:
+         label82:
          for(int row = 0; row < 4; ++row) {
             for(int column = 0; column < 4; ++column) {
                int actualRow = row + this.startRow;
                int index = actualRow * 4 + column;
                if (index >= selectablePatterns.size()) {
-                  break label79;
+                  break label82;
                }
 
                int posX = x + column * 14;
                int posY = y + row * 14;
                Holder<BannerPattern> pattern = (Holder)selectablePatterns.get(index);
-               boolean isHighlighted = xm >= posX && ym >= posY && xm < posX + 14 && ym < posY + 14;
+               boolean isHighlighted = mouseX >= posX && mouseY >= posY && mouseX < posX + 14 && mouseY < posY + 14;
                Identifier buttonSprite;
                if (index == ((LoomMenu)this.menu).getSelectedBannerPatternIndex()) {
                   buttonSprite = PATTERN_SELECTED_SPRITE;
@@ -144,7 +149,7 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
                   buttonSprite = PATTERN_HIGHLIGHTED_SPRITE;
                   DyeColor patternColor = (DyeColor)this.dyeStack.getOrDefault(DataComponents.DYE, DyeColor.WHITE);
                   String var10001 = ((BannerPattern)pattern.value()).translationKey();
-                  graphics.setTooltipForNextFrame(Component.translatable(var10001 + "." + patternColor.getName()), xm, ym);
+                  graphics.setTooltipForNextFrame(Component.translatable(var10001 + "." + patternColor.getName()), mouseX, mouseY);
                   graphics.requestCursor(CursorTypes.POINTING_HAND);
                } else {
                   buttonSprite = PATTERN_SPRITE;
@@ -152,7 +157,7 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
 
                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)buttonSprite, posX, posY, 14, 14);
                TextureAtlasSprite bannerPatternSprite = graphics.getSprite(Sheets.getBannerSprite(pattern));
-               this.renderBannerOnButton(graphics, posX, posY, bannerPatternSprite);
+               this.extractBannerOnButton(graphics, posX, posY, bannerPatternSprite);
             }
          }
       }
@@ -160,7 +165,11 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
       Minecraft.getInstance().gameRenderer.getLighting().setupFor(Lighting.Entry.ITEMS_3D);
    }
 
-   private void renderBannerOnButton(final GuiGraphics graphics, final int posX, final int posY, final TextureAtlasSprite bannerPatternSprite) {
+   private boolean isScrollBarActive() {
+      return this.displayPatterns && ((LoomMenu)this.menu).getSelectablePatterns().size() > 16;
+   }
+
+   private void extractBannerOnButton(final GuiGraphicsExtractor graphics, final int posX, final int posY, final TextureAtlasSprite bannerPatternSprite) {
       graphics.pose().pushMatrix();
       graphics.pose().translate((float)(posX + 4), (float)(posY + 2));
       float patternU0 = bannerPatternSprite.getU0();

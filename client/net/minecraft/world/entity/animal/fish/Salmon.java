@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.animal.fish;
 
+import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import java.util.function.IntFunction;
 import net.minecraft.core.component.DataComponentGetter;
@@ -145,7 +146,7 @@ public class Salmon extends AbstractSchoolingFish {
       LARGE("large", 2, 1.5F);
 
       public static final Variant DEFAULT = MEDIUM;
-      public static final StringRepresentable.EnumCodec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
+      public static final Codec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
       private static final IntFunction<Variant> BY_ID = ByIdMap.<Variant>continuous(Variant::id, values(), ByIdMap.OutOfBoundsStrategy.CLAMP);
       public static final StreamCodec<ByteBuf, Variant> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Variant::id);
       private final String name;

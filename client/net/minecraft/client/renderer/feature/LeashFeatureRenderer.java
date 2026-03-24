@@ -46,7 +46,7 @@ public class LeashFeatureRenderer {
 
    }
 
-   private static void addVertexPair(final VertexConsumer builder, final Matrix4f pose, final float dx, final float dy, final float dz, final float fudge, final float dxOff, final float dzOff, final int k, final boolean backwards, final EntityRenderState.LeashState state) {
+   private static void addVertexPair(final VertexConsumer builder, final Matrix4fc pose, final float dx, final float dy, final float dz, final float fudge, final float dxOff, final float dzOff, final int k, final boolean backwards, final EntityRenderState.LeashState state) {
       float progress = (float)k / 24.0F;
       int block = (int)Mth.lerp(progress, (float)state.startBlockLight, (float)state.endBlockLight);
       int sky = (int)Mth.lerp(progress, (float)state.startSkyLight, (float)state.endSkyLight);
@@ -64,7 +64,7 @@ public class LeashFeatureRenderer {
       }
 
       float z = dz * progress;
-      builder.addVertex((Matrix4fc)pose, x - dxOff, y + fudge, z + dzOff).setColor(r, g, b, 1.0F).setLight(lightCoords);
-      builder.addVertex((Matrix4fc)pose, x + dxOff, y + 0.05F - fudge, z - dzOff).setColor(r, g, b, 1.0F).setLight(lightCoords);
+      builder.addVertex(pose, x - dxOff, y + fudge, z + dzOff).setColor(r, g, b, 1.0F).setLight(lightCoords);
+      builder.addVertex(pose, x + dxOff, y + 0.05F - fudge, z - dzOff).setColor(r, g, b, 1.0F).setLight(lightCoords);
    }
 }

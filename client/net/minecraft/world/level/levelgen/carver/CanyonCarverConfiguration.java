@@ -5,12 +5,13 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.valueproviders.FloatProvider;
+import net.minecraft.util.valueproviders.FloatProviders;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.levelgen.VerticalAnchor;
 import net.minecraft.world.level.levelgen.heightproviders.HeightProvider;
 
 public class CanyonCarverConfiguration extends CarverConfiguration {
-   public static final Codec<CanyonCarverConfiguration> CODEC = RecordCodecBuilder.create((i) -> i.group(CarverConfiguration.CODEC.forGetter((c) -> c), FloatProvider.CODEC.fieldOf("vertical_rotation").forGetter((c) -> c.verticalRotation), CanyonCarverConfiguration.CanyonShapeConfiguration.CODEC.fieldOf("shape").forGetter((c) -> c.shape)).apply(i, CanyonCarverConfiguration::new));
+   public static final Codec<CanyonCarverConfiguration> CODEC = RecordCodecBuilder.create((i) -> i.group(CarverConfiguration.CODEC.forGetter((c) -> c), FloatProviders.CODEC.fieldOf("vertical_rotation").forGetter((c) -> c.verticalRotation), CanyonCarverConfiguration.CanyonShapeConfiguration.CODEC.fieldOf("shape").forGetter((c) -> c.shape)).apply(i, CanyonCarverConfiguration::new));
    public final FloatProvider verticalRotation;
    public final CanyonShapeConfiguration shape;
 
@@ -25,7 +26,7 @@ public class CanyonCarverConfiguration extends CarverConfiguration {
    }
 
    public static class CanyonShapeConfiguration {
-      public static final Codec<CanyonShapeConfiguration> CODEC = RecordCodecBuilder.create((i) -> i.group(FloatProvider.CODEC.fieldOf("distance_factor").forGetter((c) -> c.distanceFactor), FloatProvider.CODEC.fieldOf("thickness").forGetter((c) -> c.thickness), ExtraCodecs.POSITIVE_INT.fieldOf("width_smoothness").forGetter((c) -> c.widthSmoothness), FloatProvider.CODEC.fieldOf("horizontal_radius_factor").forGetter((c) -> c.horizontalRadiusFactor), Codec.FLOAT.fieldOf("vertical_radius_default_factor").forGetter((c) -> c.verticalRadiusDefaultFactor), Codec.FLOAT.fieldOf("vertical_radius_center_factor").forGetter((c) -> c.verticalRadiusCenterFactor)).apply(i, CanyonShapeConfiguration::new));
+      public static final Codec<CanyonShapeConfiguration> CODEC = RecordCodecBuilder.create((i) -> i.group(FloatProviders.CODEC.fieldOf("distance_factor").forGetter((c) -> c.distanceFactor), FloatProviders.CODEC.fieldOf("thickness").forGetter((c) -> c.thickness), ExtraCodecs.POSITIVE_INT.fieldOf("width_smoothness").forGetter((c) -> c.widthSmoothness), FloatProviders.CODEC.fieldOf("horizontal_radius_factor").forGetter((c) -> c.horizontalRadiusFactor), Codec.FLOAT.fieldOf("vertical_radius_default_factor").forGetter((c) -> c.verticalRadiusDefaultFactor), Codec.FLOAT.fieldOf("vertical_radius_center_factor").forGetter((c) -> c.verticalRadiusCenterFactor)).apply(i, CanyonShapeConfiguration::new));
       public final FloatProvider distanceFactor;
       public final FloatProvider thickness;
       public final int widthSmoothness;

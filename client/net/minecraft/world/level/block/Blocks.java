@@ -1251,6 +1251,14 @@ public class Blocks {
       return false;
    }
 
+   private static BlockPos postProcessSelf(final BlockState state, final BlockGetter blockGetter, final BlockPos blockPos) {
+      return blockPos;
+   }
+
+   private static BlockPos postProcessAbove(final BlockState state, final BlockGetter blockGetter, final BlockPos blockPos) {
+      return blockPos.above();
+   }
+
    private static Block registerStainedGlass(final String id, final DyeColor color) {
       return register(id, (p) -> new StainedGlassBlock(color, p), BlockBehaviour.Properties.of().mapColor(color).instrument(NoteBlockInstrument.HAT).strength(0.3F).sound(SoundType.GLASS).noOcclusion().isValidSpawn(Blocks::never).isRedstoneConductor(Blocks::never).isSuffocating(Blocks::never).isViewBlocking(Blocks::never));
    }
@@ -1491,8 +1499,8 @@ public class Blocks {
       CORNFLOWER = register("cornflower", (p) -> new FlowerBlock(MobEffects.JUMP_BOOST, 5.0F, p), BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollision().instabreak().sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.DESTROY));
       WITHER_ROSE = register("wither_rose", (p) -> new WitherRoseBlock(MobEffects.WITHER, 7.0F, p), BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollision().instabreak().sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.DESTROY));
       LILY_OF_THE_VALLEY = register("lily_of_the_valley", (p) -> new FlowerBlock(MobEffects.POISON, 11.0F, p), BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollision().instabreak().sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.DESTROY));
-      BROWN_MUSHROOM = register("brown_mushroom", (p) -> new MushroomBlock(TreeFeatures.HUGE_BROWN_MUSHROOM, p), BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BROWN).noCollision().randomTicks().instabreak().sound(SoundType.GRASS).lightLevel((statex) -> 1).hasPostProcess(Blocks::always).pushReaction(PushReaction.DESTROY));
-      RED_MUSHROOM = register("red_mushroom", (p) -> new MushroomBlock(TreeFeatures.HUGE_RED_MUSHROOM, p), BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).noCollision().randomTicks().instabreak().sound(SoundType.GRASS).hasPostProcess(Blocks::always).pushReaction(PushReaction.DESTROY));
+      BROWN_MUSHROOM = register("brown_mushroom", (p) -> new MushroomBlock(TreeFeatures.HUGE_BROWN_MUSHROOM, p), BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BROWN).noCollision().randomTicks().instabreak().sound(SoundType.GRASS).lightLevel((statex) -> 1).postProcess(Blocks::postProcessSelf).pushReaction(PushReaction.DESTROY));
+      RED_MUSHROOM = register("red_mushroom", (p) -> new MushroomBlock(TreeFeatures.HUGE_RED_MUSHROOM, p), BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).noCollision().randomTicks().instabreak().sound(SoundType.GRASS).postProcess(Blocks::postProcessSelf).pushReaction(PushReaction.DESTROY));
       GOLD_BLOCK = register("gold_block", BlockBehaviour.Properties.of().mapColor(MapColor.GOLD).instrument(NoteBlockInstrument.BELL).requiresCorrectToolForDrops().strength(3.0F, 6.0F).sound(SoundType.METAL));
       IRON_BLOCK = register("iron_block", BlockBehaviour.Properties.of().mapColor(MapColor.METAL).instrument(NoteBlockInstrument.IRON_XYLOPHONE).requiresCorrectToolForDrops().strength(5.0F, 6.0F).sound(SoundType.IRON));
       BRICKS = register("bricks", BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(2.0F, 6.0F));
@@ -1605,7 +1613,7 @@ public class Blocks {
       JUKEBOX = register("jukebox", JukeboxBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.DIRT).instrument(NoteBlockInstrument.BASS).strength(2.0F, 6.0F).sound(SoundType.WOOD).ignitedByLava());
       OAK_FENCE = register("oak_fence", FenceBlock::new, BlockBehaviour.Properties.of().mapColor(OAK_PLANKS.defaultMapColor()).forceSolidOn().instrument(NoteBlockInstrument.BASS).strength(2.0F, 3.0F).sound(SoundType.WOOD).ignitedByLava());
       NETHERRACK = register("netherrack", NetherrackBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.NETHER).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(0.4F).sound(SoundType.NETHERRACK));
-      SOUL_SAND = register("soul_sand", SoulSandBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BROWN).instrument(NoteBlockInstrument.COW_BELL).strength(0.5F).speedFactor(0.4F).sound(SoundType.SOUL_SAND).isValidSpawn(Blocks::always).isRedstoneConductor(Blocks::always).isViewBlocking(Blocks::always).isSuffocating(Blocks::always));
+      SOUL_SAND = register("soul_sand", SoulSandBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BROWN).instrument(NoteBlockInstrument.COW_BELL).strength(0.5F).speedFactor(0.4F).sound(SoundType.SOUL_SAND).isValidSpawn(Blocks::always).isRedstoneConductor(Blocks::always).isViewBlocking(Blocks::always).isSuffocating(Blocks::always).postProcess(Blocks::postProcessAbove));
       SOUL_SOIL = register("soul_soil", BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BROWN).strength(0.5F).sound(SoundType.SOUL_SOIL));
       BASALT = register("basalt", RotatedPillarBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F).sound(SoundType.BASALT));
       POLISHED_BASALT = register("polished_basalt", RotatedPillarBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F).sound(SoundType.BASALT));
@@ -1976,7 +1984,7 @@ public class Blocks {
       REPEATING_COMMAND_BLOCK = register("repeating_command_block", (p) -> new CommandBlock(false, p), BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_PURPLE).requiresCorrectToolForDrops().strength(-1.0F, 3600000.0F).noLootTable());
       CHAIN_COMMAND_BLOCK = register("chain_command_block", (p) -> new CommandBlock(true, p), BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GREEN).requiresCorrectToolForDrops().strength(-1.0F, 3600000.0F).noLootTable());
       FROSTED_ICE = register("frosted_ice", FrostedIceBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.ICE).friction(0.98F).strength(0.5F).sound(SoundType.GLASS).noOcclusion().isValidSpawn((statex, blockGetter, blockPos, entityType) -> entityType == EntityType.POLAR_BEAR).isRedstoneConductor(Blocks::never));
-      MAGMA_BLOCK = register("magma_block", MagmaBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.NETHER).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().lightLevel((statex) -> 3).strength(0.5F).isValidSpawn((statex, blockGetter, blockPos, entityType) -> entityType.fireImmune()).hasPostProcess(Blocks::always).emissiveRendering(Blocks::always));
+      MAGMA_BLOCK = register("magma_block", MagmaBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.NETHER).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().lightLevel((statex) -> 3).strength(0.5F).isValidSpawn((statex, blockGetter, blockPos, entityType) -> entityType.fireImmune()).postProcess(Blocks::postProcessAbove).emissiveRendering(Blocks::always));
       NETHER_WART_BLOCK = register("nether_wart_block", BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).strength(1.0F).sound(SoundType.WART_BLOCK));
       RED_NETHER_BRICKS = register("red_nether_bricks", BlockBehaviour.Properties.of().mapColor(MapColor.NETHER).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(2.0F, 6.0F).sound(SoundType.NETHER_BRICKS));
       BONE_BLOCK = register("bone_block", RotatedPillarBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.SAND).instrument(NoteBlockInstrument.XYLOPHONE).requiresCorrectToolForDrops().strength(2.0F).sound(SoundType.BONE_BLOCK));

@@ -16,6 +16,7 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.state.WindowRenderState;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.CubeMapTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
@@ -43,8 +44,10 @@ public class CubeMap implements AutoCloseable {
       this.vertexBuffer = initializeVertices();
    }
 
-   public void render(final Minecraft minecraft, final float rotXInDegrees, final float rotYInDegrees) {
-      this.projection.setupPerspective(0.05F, 10.0F, 85.0F, (float)minecraft.getWindow().getWidth(), (float)minecraft.getWindow().getHeight());
+   public void render(final float rotXInDegrees, final float rotYInDegrees) {
+      Minecraft minecraft = Minecraft.getInstance();
+      WindowRenderState windowState = minecraft.gameRenderer.getGameRenderState().windowRenderState;
+      this.projection.setupPerspective(0.05F, 10.0F, 85.0F, (float)windowState.width, (float)windowState.height);
       RenderSystem.setProjectionMatrix(this.projectionMatrixUbo.getBuffer(this.projection), ProjectionType.PERSPECTIVE);
       RenderPipeline renderPipeline = RenderPipelines.PANORAMA;
       RenderTarget mainRenderTarget = Minecraft.getInstance().getMainRenderTarget();

@@ -14,6 +14,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.Holder;
@@ -487,30 +488,27 @@ public class BlockStateParser {
    }
 
    public static String serialize(final BlockState state) {
-      StringBuilder result = new StringBuilder((String)state.typeHolder().unwrapKey().map((r) -> r.identifier().toString()).orElse("air"));
-      if (!state.getProperties().isEmpty()) {
+      final StringBuilder result = new StringBuilder((String)state.typeHolder().unwrapKey().map((r) -> r.identifier().toString()).orElse("air"));
+      if (!state.isSingletonState()) {
          result.append('[');
-         boolean separate = false;
+         state.getValues().forEach(new Consumer<Property.Value<?>>() {
+            private boolean separate = false;
 
-         for(Map.Entry<Property<?>, Comparable<?>> entry : state.getValues().entrySet()) {
-            if (separate) {
-               result.append(',');
+            public void accept(final Property.Value<?> value) {
+               if (this.separate) {
+                  result.append(',');
+               }
+
+               result.append(value.property().getName());
+               result.append('=');
+               result.append(value.valueName());
+               this.separate = true;
             }
-
-            appendProperty(result, (Property)entry.getKey(), (Comparable)entry.getValue());
-            separate = true;
-         }
-
+         });
          result.append(']');
       }
 
       return result.toString();
-   }
-
-   private static <T extends Comparable<T>> void appendProperty(final StringBuilder builder, final Property<T> property, final Comparable<?> value) {
-      builder.append(property.getName());
-      builder.append('=');
-      builder.append(property.getName(value));
    }
 
    public static record BlockResult(BlockState blockState, Map<Property<?>, Comparable<?>> properties, @Nullable CompoundTag nbt) {

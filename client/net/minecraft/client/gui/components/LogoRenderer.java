@@ -1,6 +1,6 @@
 package net.minecraft.client.gui.components;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
@@ -28,11 +28,11 @@ public class LogoRenderer {
       this.keepLogoThroughFade = keepLogoThroughFade;
    }
 
-   public void renderLogo(final GuiGraphics graphics, final int width, final float alpha) {
-      this.renderLogo(graphics, width, alpha, 30);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int width, final float alpha) {
+      this.extractRenderState(graphics, width, alpha, 30);
    }
 
-   public void renderLogo(final GuiGraphics graphics, final int width, final float alpha, final int heightOffset) {
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int width, final float alpha, final int heightOffset) {
       int logoX = width / 2 - 128;
       float effectiveAlpha = this.keepLogoThroughFade ? 1.0F : alpha;
       int color = ARGB.white(effectiveAlpha);

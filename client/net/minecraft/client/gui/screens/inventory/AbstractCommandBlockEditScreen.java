@@ -2,7 +2,7 @@ package net.minecraft.client.gui.screens.inventory;
 
 import java.util.Objects;
 import net.minecraft.client.GameNarrator;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CommandSuggestions;
 import net.minecraft.client.gui.components.CycleButton;
@@ -137,19 +137,19 @@ public abstract class AbstractCommandBlockEditScreen extends Screen {
       return this.commandSuggestions.mouseClicked(event) ? true : super.mouseClicked(event, doubleClick);
    }
 
-   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-      super.render(graphics, mouseX, mouseY, a);
-      graphics.drawCenteredString(this.font, (Component)SET_COMMAND_LABEL, this.width / 2, 20, -1);
-      graphics.drawString(this.font, (Component)COMMAND_LABEL, this.width / 2 - 150 + 1, 40, -6250336);
-      this.commandEdit.render(graphics, mouseX, mouseY, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
+      graphics.centeredText(this.font, (Component)SET_COMMAND_LABEL, this.width / 2, 20, -1);
+      graphics.text(this.font, (Component)COMMAND_LABEL, this.width / 2 - 150 + 1, 40, -6250336);
+      this.commandEdit.extractRenderState(graphics, mouseX, mouseY, a);
       int y = 75;
       if (!this.previousEdit.getValue().isEmpty()) {
          Objects.requireNonNull(this.font);
          y += 5 * 9 + 1 + this.getPreviousY() - 135;
-         graphics.drawString(this.font, PREVIOUS_OUTPUT_LABEL, this.width / 2 - 150 + 1, y + 4, -6250336);
-         this.previousEdit.render(graphics, mouseX, mouseY, a);
+         graphics.text(this.font, PREVIOUS_OUTPUT_LABEL, this.width / 2 - 150 + 1, y + 4, -6250336);
+         this.previousEdit.extractRenderState(graphics, mouseX, mouseY, a);
       }
 
-      this.commandSuggestions.render(graphics, mouseX, mouseY);
+      this.commandSuggestions.extractRenderState(graphics, mouseX, mouseY);
    }
 }

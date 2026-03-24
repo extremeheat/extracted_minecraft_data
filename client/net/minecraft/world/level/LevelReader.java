@@ -93,7 +93,7 @@ public interface LevelReader extends BlockAndLightGetter, CollisionGetter, Signa
          } else {
             for(BlockPos var4 = scanPoint.below(); var4.getY() > pos.getY(); var4 = var4.below()) {
                BlockState state = this.getBlockState(var4);
-               if (state.getLightBlock() > 0 && !state.liquid()) {
+               if (state.getLightDampening() > 0 && !state.liquid()) {
                   return false;
                }
             }

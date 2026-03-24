@@ -1,48 +1,27 @@
 package net.minecraft.client.renderer.block;
 
-import java.util.Arrays;
-import net.minecraft.client.color.block.BlockColors;
+import net.minecraft.client.renderer.block.model.BlockDisplayContext;
+import net.minecraft.client.renderer.entity.ItemFrameRenderer;
 import net.minecraft.client.resources.model.BlockStateDefinitions;
 import net.minecraft.client.resources.model.ModelManager;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class BlockModelResolver {
+   private static final long MODEL_SEED = 42L;
    private final ModelManager modelManager;
-   private final BlockColors blockColors;
 
-   public BlockModelResolver(final ModelManager modelManager, final BlockColors blockColors) {
+   public BlockModelResolver(final ModelManager modelManager) {
       super();
       this.modelManager = modelManager;
-      this.blockColors = blockColors;
    }
 
-   public void update(final BlockModelRenderState renderState, final BlockState blockState) {
-      renderState.block = blockState.getBlock();
-      renderState.specialRenderer = this.modelManager.specialBlockModelRenderer().getSpecialRenderer(blockState.getBlock());
-      if (blockState.getRenderShape() == RenderShape.MODEL) {
-         renderState.model = this.modelManager.getBlockModelSet().get(blockState);
-         this.updateTints(renderState, blockState);
-      } else {
-         renderState.model = null;
-         Arrays.fill(renderState.tintLayers, -1);
-      }
-
-   }
-
-   private void updateTints(final BlockModelRenderState renderState, final BlockState blockState) {
-      for(int tintIndex = 0; tintIndex <= 2; ++tintIndex) {
-         renderState.tintLayers[tintIndex] = this.blockColors.getColor(blockState, (BlockAndTintGetter)null, (BlockPos)null, tintIndex);
-      }
-
+   public void update(final BlockModelRenderState renderState, final BlockState blockState, final BlockDisplayContext displayContext) {
+      renderState.clear();
+      this.modelManager.getBlockModelSet().get(blockState).update(renderState, blockState, displayContext, 42L);
    }
 
    public void updateForItemFrame(final BlockModelRenderState renderState, final boolean isGlowing, final boolean map) {
       BlockState fakeState = BlockStateDefinitions.getItemFrameFakeState(isGlowing, map);
-      renderState.block = fakeState.getBlock();
-      renderState.model = this.modelManager.getBlockModelSet().get(fakeState);
-      renderState.specialRenderer = null;
-      Arrays.fill(renderState.tintLayers, -1);
+      this.update(renderState, fakeState, ItemFrameRenderer.BLOCK_DISPLAY_CONTEXT);
    }
 }

@@ -18,7 +18,7 @@ import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 
-public class StandingSignBlock extends SignBlock {
+public class StandingSignBlock extends SignBlock implements PlainSignBlock {
    public static final MapCodec<StandingSignBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(WoodType.CODEC.fieldOf("wood_type").forGetter(SignBlock::type), propertiesCodec()).apply(i, StandingSignBlock::new));
    public static final IntegerProperty ROTATION;
 
@@ -28,7 +28,7 @@ public class StandingSignBlock extends SignBlock {
 
    public StandingSignBlock(final WoodType type, final BlockBehaviour.Properties properties) {
       super(type, properties.sound(type.soundType()));
-      this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(ROTATION, 0)).setValue(WATERLOGGED, false));
+      this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(ROTATION, 8)).setValue(WATERLOGGED, false));
    }
 
    protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
@@ -58,6 +58,10 @@ public class StandingSignBlock extends SignBlock {
 
    protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
       builder.add(ROTATION, WATERLOGGED);
+   }
+
+   public PlainSignBlock.Attachment attachmentPoint(final BlockState state) {
+      return PlainSignBlock.Attachment.GROUND;
    }
 
    static {

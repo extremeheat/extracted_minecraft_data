@@ -332,9 +332,10 @@ public class Dolphin extends AgeableWaterCreature {
    private class PlayWithItemsGoal extends Goal {
       private int cooldown;
 
-      private PlayWithItemsGoal() {
+      PlayWithItemsGoal() {
          Objects.requireNonNull(Dolphin.this);
          super();
+         this.setFlags(EnumSet.of(Goal.Flag.MOVE));
       }
 
       public boolean canUse() {

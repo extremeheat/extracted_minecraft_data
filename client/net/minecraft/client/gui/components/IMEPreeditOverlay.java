@@ -3,7 +3,7 @@ package net.minecraft.client.gui.components;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.PreeditEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
@@ -46,7 +46,7 @@ public class IMEPreeditOverlay implements Renderable {
       this.inputTop = inputTop;
    }
 
-   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       int preeditLeft = this.inputLeft;
       int preeditRight = preeditLeft + this.preEditTextWidth;
       if (preeditRight > graphics.guiWidth()) {
@@ -66,15 +66,15 @@ public class IMEPreeditOverlay implements Renderable {
 
       Objects.requireNonNull(this.font);
       int preeditTop = preeditBottom - 9;
-      Minecraft.getInstance().getWindow().setIMEPreeditArea(Math.min(preeditLeft, this.inputLeft) - 2, Math.min(preeditTop, this.inputTop) - 2, preeditRight + 2, Math.max(preeditBottom, inputBottom) + 2);
+      Minecraft.getInstance().textInputManager().setTextInputArea(Math.min(preeditLeft, this.inputLeft) - 2, Math.min(preeditTop, this.inputTop) - 2, preeditRight + 2, Math.max(preeditBottom, inputBottom) + 2);
       int backgroundWidth = preeditRight - preeditLeft + 10;
       int backgroundHeight = preeditBottom - preeditTop + 10;
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BACKGROUND, preeditLeft - 5, preeditTop - 5, backgroundWidth, backgroundHeight);
-      graphics.drawString(this.font, this.preEditText, preeditLeft, preeditTop, -16777216, false);
+      graphics.text(this.font, this.preEditText, preeditLeft, preeditTop, -16777216, false);
       if (TextCursorUtils.isCursorVisible(Util.getMillis() - this.initTimeMs)) {
          int var10001 = preeditLeft + this.caretPos;
          Objects.requireNonNull(this.font);
-         TextCursorUtils.drawInsertCursor(graphics, var10001, preeditTop, -16777216, 9 + 1);
+         TextCursorUtils.extractInsertCursor(graphics, var10001, preeditTop, -16777216, 9 + 1);
       }
 
    }

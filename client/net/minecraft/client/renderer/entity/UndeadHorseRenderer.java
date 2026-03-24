@@ -2,6 +2,7 @@ package net.minecraft.client.renderer.entity;
 
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.animal.equine.AbstractEquineModel;
+import net.minecraft.client.model.animal.equine.BabyHorseModel;
 import net.minecraft.client.model.animal.equine.EquineSaddleModel;
 import net.minecraft.client.model.animal.equine.HorseModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
@@ -17,7 +18,7 @@ public class UndeadHorseRenderer extends AbstractHorseRenderer<AbstractHorse, Eq
    private final Identifier babyTexture;
 
    public UndeadHorseRenderer(final EntityRendererProvider.Context context, final EquipmentClientInfo.LayerType saddleLayer, final ModelLayerLocation saddleModel, final Type adult, final Type baby) {
-      super(context, new HorseModel(context.bakeLayer(adult.model)), new HorseModel(context.bakeLayer(baby.model)));
+      super(context, new HorseModel(context.bakeLayer(adult.model)), new BabyHorseModel(context.bakeLayer(baby.model)));
       this.adultTexture = adult.texture;
       this.babyTexture = baby.texture;
       this.addLayer(new SimpleEquipmentLayer(this, context.getEquipmentRenderer(), EquipmentClientInfo.LayerType.HORSE_BODY, (state) -> state.bodyArmorItem, new HorseModel(context.bakeLayer(ModelLayers.UNDEAD_HORSE_ARMOR)), (EntityModel)null));

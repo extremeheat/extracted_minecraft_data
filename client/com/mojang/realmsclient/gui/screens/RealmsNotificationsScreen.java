@@ -7,7 +7,7 @@ import com.mojang.realmsclient.gui.task.DataFetcher;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.client.GameNarrator;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.realms.RealmsScreen;
@@ -108,18 +108,18 @@ public class RealmsNotificationsScreen extends RealmsScreen {
       return this.minecraft.screen instanceof TitleScreen;
    }
 
-   public void render(final GuiGraphics graphics, final int xm, final int ym, final float a) {
-      super.render(graphics, xm, ym, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int xm, final int ym, final float a) {
+      super.extractRenderState(graphics, xm, ym, a);
       if ((Boolean)this.validClient.getNow(false)) {
-         this.drawIcons(graphics);
+         this.extractIcons(graphics);
       }
 
    }
 
-   public void renderBackground(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
    }
 
-   private void drawIcons(final GuiGraphics graphics) {
+   private void extractIcons(final GuiGraphicsExtractor graphics) {
       int pendingInvitesCount = this.numberOfPendingInvites;
       int spacing = 24;
       int topPos = this.height / 4 + 48;

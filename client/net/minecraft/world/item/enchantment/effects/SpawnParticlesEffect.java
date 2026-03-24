@@ -12,12 +12,13 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.valueproviders.ConstantFloat;
 import net.minecraft.util.valueproviders.FloatProvider;
+import net.minecraft.util.valueproviders.FloatProviders;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.enchantment.EnchantedItemInUse;
 import net.minecraft.world.phys.Vec3;
 
 public record SpawnParticlesEffect(ParticleOptions particle, PositionSource horizontalPosition, PositionSource verticalPosition, VelocitySource horizontalVelocity, VelocitySource verticalVelocity, FloatProvider speed) implements EnchantmentEntityEffect {
-   public static final MapCodec<SpawnParticlesEffect> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ParticleTypes.CODEC.fieldOf("particle").forGetter(SpawnParticlesEffect::particle), SpawnParticlesEffect.PositionSource.CODEC.fieldOf("horizontal_position").forGetter(SpawnParticlesEffect::horizontalPosition), SpawnParticlesEffect.PositionSource.CODEC.fieldOf("vertical_position").forGetter(SpawnParticlesEffect::verticalPosition), SpawnParticlesEffect.VelocitySource.CODEC.fieldOf("horizontal_velocity").forGetter(SpawnParticlesEffect::horizontalVelocity), SpawnParticlesEffect.VelocitySource.CODEC.fieldOf("vertical_velocity").forGetter(SpawnParticlesEffect::verticalVelocity), FloatProvider.CODEC.optionalFieldOf("speed", ConstantFloat.ZERO).forGetter(SpawnParticlesEffect::speed)).apply(i, SpawnParticlesEffect::new));
+   public static final MapCodec<SpawnParticlesEffect> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ParticleTypes.CODEC.fieldOf("particle").forGetter(SpawnParticlesEffect::particle), SpawnParticlesEffect.PositionSource.CODEC.fieldOf("horizontal_position").forGetter(SpawnParticlesEffect::horizontalPosition), SpawnParticlesEffect.PositionSource.CODEC.fieldOf("vertical_position").forGetter(SpawnParticlesEffect::verticalPosition), SpawnParticlesEffect.VelocitySource.CODEC.fieldOf("horizontal_velocity").forGetter(SpawnParticlesEffect::horizontalVelocity), SpawnParticlesEffect.VelocitySource.CODEC.fieldOf("vertical_velocity").forGetter(SpawnParticlesEffect::verticalVelocity), FloatProviders.CODEC.optionalFieldOf("speed", ConstantFloat.ZERO).forGetter(SpawnParticlesEffect::speed)).apply(i, SpawnParticlesEffect::new));
 
    public SpawnParticlesEffect {
       super();
@@ -96,7 +97,7 @@ public record SpawnParticlesEffect(ParticleOptions particle, PositionSource hori
    }
 
    public static record VelocitySource(float movementScale, FloatProvider base) {
-      public static final MapCodec<VelocitySource> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.FLOAT.optionalFieldOf("movement_scale", 0.0F).forGetter(VelocitySource::movementScale), FloatProvider.CODEC.optionalFieldOf("base", ConstantFloat.ZERO).forGetter(VelocitySource::base)).apply(i, VelocitySource::new));
+      public static final MapCodec<VelocitySource> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.FLOAT.optionalFieldOf("movement_scale", 0.0F).forGetter(VelocitySource::movementScale), FloatProviders.CODEC.optionalFieldOf("base", ConstantFloat.ZERO).forGetter(VelocitySource::base)).apply(i, VelocitySource::new));
 
       public VelocitySource {
          super();

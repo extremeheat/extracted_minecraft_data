@@ -879,6 +879,10 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
       this.applyEffectsFromBlocks(this.finalMovementsThisTick);
    }
 
+   protected void applyEffectsFromBlocksForLastMovements() {
+      this.applyEffectsFromBlocks(this.finalMovementsThisTick);
+   }
+
    private void addMovementThisTick(final Movement movement) {
       if (this.movementThisTick.size() >= 100) {
          Movement first = (Movement)this.movementThisTick.removeFirst();

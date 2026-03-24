@@ -7,9 +7,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.state.EndCrystalRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
@@ -19,7 +17,6 @@ import net.minecraft.world.phys.Vec3;
 
 public class EndCrystalRenderer extends EntityRenderer<EndCrystal, EndCrystalRenderState> {
    private static final Identifier END_CRYSTAL_LOCATION = Identifier.withDefaultNamespace("textures/entity/end_crystal/end_crystal.png");
-   private static final RenderType RENDER_TYPE;
    private final EndCrystalModel model;
 
    public EndCrystalRenderer(final EntityRendererProvider.Context context) {
@@ -32,7 +29,7 @@ public class EndCrystalRenderer extends EntityRenderer<EndCrystal, EndCrystalRen
       poseStack.pushPose();
       poseStack.scale(2.0F, 2.0F, 2.0F);
       poseStack.translate(0.0F, -0.5F, 0.0F);
-      submitNodeCollector.submitModel(this.model, state, poseStack, RENDER_TYPE, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+      submitNodeCollector.submitModel(this.model, state, poseStack, END_CRYSTAL_LOCATION, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       poseStack.popPose();
       Vec3 beamOffset = state.beamOffset;
       if (beamOffset != null) {
@@ -72,9 +69,5 @@ public class EndCrystalRenderer extends EntityRenderer<EndCrystal, EndCrystalRen
 
    public boolean shouldRender(final EndCrystal entity, final Frustum culler, final double camX, final double camY, final double camZ) {
       return super.shouldRender(entity, culler, camX, camY, camZ) || entity.getBeamTarget() != null;
-   }
-
-   static {
-      RENDER_TYPE = RenderTypes.entityCutout(END_CRYSTAL_LOCATION);
    }
 }

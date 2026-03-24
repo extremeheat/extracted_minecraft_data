@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.components.toasts;
 
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.sounds.SoundEvent;
@@ -22,7 +22,7 @@ public interface Toast {
       return null;
    }
 
-   void render(final GuiGraphics graphics, final Font font, final long fullyVisibleForMs);
+   void extractRenderState(final GuiGraphicsExtractor graphics, final Font font, final long fullyVisibleForMs);
 
    default Object getToken() {
       return NO_TOKEN;

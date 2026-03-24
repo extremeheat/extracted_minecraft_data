@@ -133,7 +133,7 @@ public class TradeSets {
       register(context, LIBRARIAN_LEVEL_2, VillagerTradeTags.LIBRARIAN_LEVEL_2);
       register(context, LIBRARIAN_LEVEL_3, VillagerTradeTags.LIBRARIAN_LEVEL_3);
       register(context, LIBRARIAN_LEVEL_4, VillagerTradeTags.LIBRARIAN_LEVEL_4);
-      register(context, LIBRARIAN_LEVEL_5, VillagerTradeTags.LIBRARIAN_LEVEL_5);
+      register(context, LIBRARIAN_LEVEL_5, VillagerTradeTags.LIBRARIAN_LEVEL_5, ConstantValue.exactly(3.0F));
       register(context, MASON_LEVEL_1, VillagerTradeTags.MASON_LEVEL_1);
       register(context, MASON_LEVEL_2, VillagerTradeTags.MASON_LEVEL_2);
       register(context, MASON_LEVEL_3, VillagerTradeTags.MASON_LEVEL_3);

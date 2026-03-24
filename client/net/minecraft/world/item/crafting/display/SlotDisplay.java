@@ -270,11 +270,11 @@ public interface SlotDisplay {
       }
 
       public <T> Stream<T> resolve(final ContextMap context, final DisplayContentsFactory<T> factory) {
-         BinaryOperator<ItemStack> tranformation = (target, dye) -> {
+         BinaryOperator<ItemStack> transformation = (target, dye) -> {
             DyeColor dyeValue = (DyeColor)dye.getOrDefault(DataComponents.DYE, DyeColor.WHITE);
             return DyedItemColor.applyDyes(target.copy(), List.of(dyeValue));
          };
-         return SlotDisplay.<T>applyDemoTransformation(context, factory, this.target, this.dye, tranformation);
+         return SlotDisplay.<T>applyDemoTransformation(context, factory, this.target, this.dye, transformation);
       }
 
       static {
@@ -298,8 +298,8 @@ public interface SlotDisplay {
 
       public <T> Stream<T> resolve(final ContextMap context, final DisplayContentsFactory<T> factory) {
          RandomSource randomSource = RandomSource.createThreadLocalInstance((long)System.identityHashCode(this));
-         BinaryOperator<ItemStack> tranformation = (base, material) -> SmithingTrimRecipe.applyTrim(base, material, this.pattern);
-         return SlotDisplay.<T>applyDemoTransformation(context, factory, this.base, this.material, randomSource, tranformation);
+         BinaryOperator<ItemStack> transformation = (base, material) -> SmithingTrimRecipe.applyTrim(base, material, this.pattern);
+         return SlotDisplay.<T>applyDemoTransformation(context, factory, this.base, this.material, randomSource, transformation);
       }
 
       static {

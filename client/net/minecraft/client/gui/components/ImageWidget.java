@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.components;
 
 import net.minecraft.client.gui.ComponentPath;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -47,7 +47,7 @@ public abstract class ImageWidget extends AbstractWidget {
          this.sprite = sprite;
       }
 
-      public void renderWidget(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+      public void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
          graphics.blitSprite(RenderPipelines.GUI_TEXTURED, this.sprite, this.getX(), this.getY(), this.getWidth(), this.getHeight());
       }
 
@@ -68,7 +68,7 @@ public abstract class ImageWidget extends AbstractWidget {
          this.textureHeight = textureHeight;
       }
 
-      protected void renderWidget(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+      protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
          graphics.blit(RenderPipelines.GUI_TEXTURED, this.texture, this.getX(), this.getY(), 0.0F, 0.0F, this.getWidth(), this.getHeight(), this.textureWidth, this.textureHeight);
       }
 

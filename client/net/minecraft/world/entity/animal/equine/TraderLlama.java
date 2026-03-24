@@ -36,7 +36,12 @@ public class TraderLlama extends Llama {
    }
 
    protected @Nullable Llama makeNewLlama() {
-      return EntityType.TRADER_LLAMA.create(this.level(), EntitySpawnReason.BREEDING);
+      TraderLlama baby = EntityType.TRADER_LLAMA.create(this.level(), EntitySpawnReason.BREEDING);
+      if (baby != null) {
+         baby.setPersistenceRequired();
+      }
+
+      return baby;
    }
 
    protected void addAdditionalSaveData(final ValueOutput output) {
@@ -88,7 +93,7 @@ public class TraderLlama extends Llama {
    }
 
    private boolean canDespawn() {
-      return !this.isTamed() && !this.isLeashedToSomethingOtherThanTheWanderingTrader() && !this.hasExactlyOnePlayerPassenger();
+      return !this.isTamed() && !this.isLeashedToSomethingOtherThanTheWanderingTrader() && !this.hasExactlyOnePlayerPassenger() && !this.isAgeLocked() && !this.isPersistenceRequired();
    }
 
    private boolean isLeashedToWanderingTrader() {

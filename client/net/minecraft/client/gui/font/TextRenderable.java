@@ -5,10 +5,10 @@ import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 
 public interface TextRenderable {
-   void render(Matrix4f pose, VertexConsumer buffer, int packedLightCoords, boolean flat);
+   void render(Matrix4fc pose, VertexConsumer buffer, int packedLightCoords, boolean flat);
 
    RenderType renderType(Font.DisplayMode displayMode);
 

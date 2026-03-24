@@ -1345,7 +1345,9 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                   } else if (pos.getY() < minY) {
                      this.player.sendBuildLimitMessage(false, minY);
                   } else {
-                     if (this.awaitingPositionFromClient == null && level.mayInteract(this.player, pos)) {
+                     if (this.server.isUnderSpawnProtection(level, pos, this.player)) {
+                        this.player.sendSpawnProtectionMessage(pos);
+                     } else if (this.awaitingPositionFromClient == null && level.mayInteract(this.player, pos)) {
                         InteractionResult interactionResult = this.player.gameMode.useItemOn(this.player, level, itemStack, hand, blockHit);
                         if (interactionResult.consumesAction()) {
                            CriteriaTriggers.ANY_BLOCK_USE.trigger(this.player, blockHit.getBlockPos(), itemStack);
@@ -1767,32 +1769,34 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
          this.player.resetLastActionTime();
          if (target != null && level.getWorldBorder().isWithinBounds(target.blockPosition())) {
             AABB targetBounds = target.getBoundingBox();
-            if (this.player.isWithinAttackRange(this.player.getMainHandItem(), targetBounds, 3.0)) {
-               if (!(target instanceof ItemEntity) && !(target instanceof ExperienceOrb) && target != this.player) {
-                  label51: {
-                     if (target instanceof AbstractArrow) {
-                        AbstractArrow abstractArrow = (AbstractArrow)target;
-                        if (!abstractArrow.isAttackable()) {
-                           break label51;
+            ItemStack mainHandItem = this.player.getMainHandItem();
+            if (this.player.isWithinAttackRange(mainHandItem, targetBounds, 3.0)) {
+               if (!mainHandItem.has(DataComponents.PIERCING_WEAPON)) {
+                  if (!(target instanceof ItemEntity) && !(target instanceof ExperienceOrb) && target != this.player) {
+                     label55: {
+                        if (target instanceof AbstractArrow) {
+                           AbstractArrow abstractArrow = (AbstractArrow)target;
+                           if (!abstractArrow.isAttackable()) {
+                              break label55;
+                           }
                         }
-                     }
 
-                     ItemStack heldItem = this.player.getItemInHand(InteractionHand.MAIN_HAND);
-                     if (!heldItem.isItemEnabled(level.enabledFeatures())) {
+                        if (!mainHandItem.isItemEnabled(level.enabledFeatures())) {
+                           return;
+                        }
+
+                        if (this.player.cannotAttackWithItem(mainHandItem, 5)) {
+                           return;
+                        }
+
+                        this.player.attack(target);
                         return;
                      }
-
-                     if (this.player.cannotAttackWithItem(heldItem, 5)) {
-                        return;
-                     }
-
-                     this.player.attack(target);
-                     return;
                   }
-               }
 
-               this.disconnect(Component.translatable("multiplayer.disconnect.invalid_entity_attacked"));
-               LOGGER.warn("Player {} tried to attack an invalid entity", this.player.getPlainTextName());
+                  this.disconnect(Component.translatable("multiplayer.disconnect.invalid_entity_attacked"));
+                  LOGGER.warn("Player {} tried to attack an invalid entity", this.player.getPlainTextName());
+               }
             }
          }
       }

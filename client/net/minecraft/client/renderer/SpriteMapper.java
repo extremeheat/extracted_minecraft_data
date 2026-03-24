@@ -1,6 +1,6 @@
 package net.minecraft.client.renderer;
 
-import net.minecraft.client.resources.model.SpriteId;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.resources.Identifier;
 
 public record SpriteMapper(Identifier sheet, String prefix) {

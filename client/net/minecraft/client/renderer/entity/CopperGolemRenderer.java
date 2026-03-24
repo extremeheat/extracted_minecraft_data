@@ -5,6 +5,7 @@ import java.util.function.Function;
 import net.minecraft.client.model.animal.golem.CopperGolemModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.block.BlockModelResolver;
+import net.minecraft.client.renderer.block.model.BlockDisplayContext;
 import net.minecraft.client.renderer.entity.layers.BlockDecorationLayer;
 import net.minecraft.client.renderer.entity.layers.CustomHeadLayer;
 import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
@@ -23,6 +24,7 @@ import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class CopperGolemRenderer extends MobRenderer<CopperGolem, CopperGolemRenderState, CopperGolemModel> {
+   public static final BlockDisplayContext BLOCK_DISPLAY_CONTEXT = BlockDisplayContext.create();
    private final BlockModelResolver blockModelResolver;
 
    public CopperGolemRenderer(final EntityRendererProvider.Context context) {
@@ -64,7 +66,7 @@ public class CopperGolemRenderer extends MobRenderer<CopperGolem, CopperGolemRen
       if (var6 instanceof BlockItem blockItem) {
          BlockItemStateProperties blockItemState = (BlockItemStateProperties)antennaItem.getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY);
          BlockState blockState = blockItemState.apply(blockItem.getBlock().defaultBlockState());
-         this.blockModelResolver.update(state.blockOnAntenna, blockState);
+         this.blockModelResolver.update(state.blockOnAntenna, blockState, BLOCK_DISPLAY_CONTEXT);
       } else {
          state.blockOnAntenna.clear();
       }

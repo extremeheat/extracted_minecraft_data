@@ -7,7 +7,6 @@ import java.util.function.Consumer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.DecoratedPotRenderer;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.PotDecorations;
 import org.joml.Vector3fc;
@@ -25,7 +24,7 @@ public class DecoratedPotSpecialRenderer implements SpecialModelRenderer<PotDeco
       return (PotDecorations)stack.get(DataComponents.POT_DECORATIONS);
    }
 
-   public void submit(final @Nullable PotDecorations decorations, final ItemDisplayContext type, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final boolean hasFoil, final int outlineColor) {
+   public void submit(final @Nullable PotDecorations decorations, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final boolean hasFoil, final int outlineColor) {
       this.decoratedPotRenderer.submit(poseStack, submitNodeCollector, lightCoords, overlayCoords, (PotDecorations)Objects.requireNonNullElse(decorations, PotDecorations.EMPTY), outlineColor);
    }
 
@@ -33,7 +32,7 @@ public class DecoratedPotSpecialRenderer implements SpecialModelRenderer<PotDeco
       this.decoratedPotRenderer.getExtents(output);
    }
 
-   public static record Unbaked() implements SpecialModelRenderer.Unbaked {
+   public static record Unbaked() implements SpecialModelRenderer.Unbaked<PotDecorations> {
       public static final MapCodec<Unbaked> MAP_CODEC = MapCodec.unit(new Unbaked());
 
       public Unbaked() {
@@ -44,7 +43,7 @@ public class DecoratedPotSpecialRenderer implements SpecialModelRenderer<PotDeco
          return MAP_CODEC;
       }
 
-      public SpecialModelRenderer<?> bake(final SpecialModelRenderer.BakingContext context) {
+      public DecoratedPotSpecialRenderer bake(final SpecialModelRenderer.BakingContext context) {
          return new DecoratedPotSpecialRenderer(new DecoratedPotRenderer(context));
       }
    }

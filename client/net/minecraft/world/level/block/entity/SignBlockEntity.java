@@ -13,6 +13,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
+import net.minecraft.network.chat.ResolutionContext;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
@@ -21,7 +22,6 @@ import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -121,7 +121,7 @@ public class SignBlockEntity extends BlockEntity {
       Level var3 = this.level;
       if (var3 instanceof ServerLevel serverLevel) {
          try {
-            return ComponentUtils.updateForEntity(createCommandSourceStack((Player)null, serverLevel, this.worldPosition), component, (Entity)null, 0);
+            return ComponentUtils.resolve(ResolutionContext.create(createCommandSourceStack((Player)null, serverLevel, this.worldPosition)), component);
          } catch (CommandSyntaxException var4) {
          }
       }

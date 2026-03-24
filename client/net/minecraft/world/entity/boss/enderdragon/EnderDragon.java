@@ -526,7 +526,7 @@ public class EnderDragon extends Mob implements Enemy {
          dragonPart.setPos(dragonPart.position().add(deathMove));
       }
 
-      if (this.dragonDeathTime == 200) {
+      if (this.dragonDeathTime >= 200) {
          Level var13 = this.level();
          if (var13 instanceof ServerLevel) {
             ServerLevel level = (ServerLevel)var13;

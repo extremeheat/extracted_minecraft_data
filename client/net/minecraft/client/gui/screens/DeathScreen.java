@@ -5,7 +5,7 @@ import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.ActiveTextCollector;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -83,9 +83,9 @@ public class DeathScreen extends Screen {
       this.minecraft.setScreen(new TitleScreen());
    }
 
-   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-      super.render(graphics, mouseX, mouseY, a);
-      this.visitText(graphics.textRenderer(GuiGraphics.HoveredTextEffects.TOOLTIP_AND_CURSOR));
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
+      this.visitText(graphics.textRenderer(GuiGraphicsExtractor.HoveredTextEffects.TOOLTIP_AND_CURSOR));
       if (this.exitToTitleButton != null && this.minecraft.getReportingContext().hasDraftReport()) {
          graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)DRAFT_REPORT_SPRITE, this.exitToTitleButton.getX() + this.exitToTitleButton.getWidth() - 17, this.exitToTitleButton.getY() + 3, 15, 15);
       }
@@ -105,11 +105,11 @@ public class DeathScreen extends Screen {
       output.accept(TextAlignment.CENTER, middleLine, 100, (Component)this.deathScore);
    }
 
-   public void renderBackground(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-      renderDeathBackground(graphics, this.width, this.height);
+   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      extractDeathBackground(graphics, this.width, this.height);
    }
 
-   private static void renderDeathBackground(final GuiGraphics graphics, final int width, final int height) {
+   private static void extractDeathBackground(final GuiGraphicsExtractor graphics, final int width, final int height) {
       graphics.fillGradient(0, 0, width, height, 1615855616, -1602211792);
    }
 
@@ -157,8 +157,8 @@ public class DeathScreen extends Screen {
          super(callback, title, message, yesButton, noButton);
       }
 
-      public void renderBackground(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-         DeathScreen.renderDeathBackground(graphics, this.width, this.height);
+      public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+         DeathScreen.extractDeathBackground(graphics, this.width, this.height);
       }
    }
 }

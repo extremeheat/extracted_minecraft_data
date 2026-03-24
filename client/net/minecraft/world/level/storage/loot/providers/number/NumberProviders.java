@@ -21,7 +21,8 @@ public class NumberProviders {
       Registry.register(registry, (String)"score", ScoreboardValue.MAP_CODEC);
       Registry.register(registry, (String)"storage", StorageValue.MAP_CODEC);
       Registry.register(registry, (String)"sum", Sum.MAP_CODEC);
-      return (MapCodec)Registry.register(registry, (String)"enchantment_level", EnchantmentLevelProvider.MAP_CODEC);
+      Registry.register(registry, (String)"enchantment_level", EnchantmentLevelProvider.MAP_CODEC);
+      return (MapCodec)Registry.register(registry, (String)"environment_attribute", EnvironmentAttributeValue.MAP_CODEC);
    }
 
    static {

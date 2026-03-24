@@ -4,7 +4,7 @@ import com.mojang.text2speech.Narrator;
 import java.util.function.Consumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CommonButtons;
@@ -116,8 +116,8 @@ public class AccessibilityOnboardingScreen extends Screen {
       runnable.run();
    }
 
-   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-      super.render(graphics, mouseX, mouseY, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
       this.handleInitialNarrationDelay();
       if (this.fadeInStart == 0.0F && this.fadingIn) {
          this.fadeInStart = (float)Util.getMillis();
@@ -151,7 +151,7 @@ public class AccessibilityOnboardingScreen extends Screen {
          this.fadeWidgets(widgetAlpha);
       }
 
-      this.logoRenderer.renderLogo(graphics, this.width, 1.0F);
+      this.logoRenderer.extractRenderState(graphics, this.width, 1.0F);
    }
 
    protected boolean panoramaShouldSpin() {

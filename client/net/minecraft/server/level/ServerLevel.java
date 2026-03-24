@@ -201,7 +201,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
    private final ServerLevelData serverLevelData;
    private final EntityTickList entityTickList = new EntityTickList();
    private final ServerWaypointManager waypointManager;
-   private final EnvironmentAttributeSystem environmentAttributes;
+   private EnvironmentAttributeSystem environmentAttributes;
    private final PersistentEntitySectionManager<Entity> entityManager;
    private final GameEventDispatcher gameEventDispatcher;
    public boolean noSave;
@@ -291,6 +291,15 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
 
    public EnvironmentAttributeSystem environmentAttributes() {
       return this.environmentAttributes;
+   }
+
+   /** @deprecated */
+   @Deprecated
+   @VisibleForTesting
+   public EnvironmentAttributeSystem setEnvironmentAttributes(final EnvironmentAttributeSystem environmentAttributes) {
+      EnvironmentAttributeSystem previous = this.environmentAttributes;
+      this.environmentAttributes = environmentAttributes;
+      return previous;
    }
 
    public void tick(final BooleanSupplier haveTime) {

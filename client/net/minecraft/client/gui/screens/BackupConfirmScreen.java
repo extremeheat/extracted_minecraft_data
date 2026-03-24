@@ -2,12 +2,11 @@ package net.minecraft.client.gui.screens;
 
 import java.util.Objects;
 import net.minecraft.client.gui.ActiveTextCollector;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Checkbox;
 import net.minecraft.client.gui.components.MultiLineLabel;
-import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -23,13 +22,12 @@ public class BackupConfirmScreen extends Screen {
    final Component confirmation;
    protected int id;
    private Checkbox eraseCache;
-   private boolean forceBackup;
 
-   public BackupConfirmScreen(final Runnable onCancel, final Listener onProceed, final Component title, final Component description, final boolean promptForCacheErase, final boolean forceBackup) {
-      this(onCancel, onProceed, title, description, BACKUP_AND_JOIN, promptForCacheErase, forceBackup);
+   public BackupConfirmScreen(final Runnable onCancel, final Listener onProceed, final Component title, final Component description, final boolean promptForCacheErase) {
+      this(onCancel, onProceed, title, description, BACKUP_AND_JOIN, promptForCacheErase);
    }
 
-   public BackupConfirmScreen(final Runnable onCancel, final Listener onProceed, final Component title, final Component description, final Component confirmation, final boolean promptForCacheErase, final boolean forceBackup) {
+   public BackupConfirmScreen(final Runnable onCancel, final Listener onProceed, final Component title, final Component description, final Component confirmation, final boolean promptForCacheErase) {
       super(title);
       this.message = MultiLineLabel.EMPTY;
       this.onCancel = onCancel;
@@ -37,7 +35,6 @@ public class BackupConfirmScreen extends Screen {
       this.description = description;
       this.promptForCacheErase = promptForCacheErase;
       this.confirmation = confirmation;
-      this.forceBackup = forceBackup;
    }
 
    protected void init() {
@@ -53,19 +50,14 @@ public class BackupConfirmScreen extends Screen {
 
       this.addRenderableWidget(Button.builder(this.confirmation, (button) -> this.onProceed.proceed(true, this.eraseCache.selected())).bounds(this.width / 2 - 155, 100 + textSize, 150, 20).build());
       Button skipAndJoinButton = Button.builder(SKIP_AND_JOIN, (button) -> this.onProceed.proceed(false, this.eraseCache.selected())).bounds(this.width / 2 - 155 + 160, 100 + textSize, 150, 20).build();
-      if (this.forceBackup) {
-         skipAndJoinButton.active = false;
-         skipAndJoinButton.setTooltip(Tooltip.create(Component.translatable("selectWorld.backupRequiredTooltip")));
-      }
-
       this.addRenderableWidget(skipAndJoinButton);
       this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (button) -> this.onCancel.run()).bounds(this.width / 2 - 155 + 80, 124 + textSize, 150, 20).build());
    }
 
-   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-      super.render(graphics, mouseX, mouseY, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
       ActiveTextCollector textRenderer = graphics.textRenderer();
-      graphics.drawCenteredString(this.font, (Component)this.title, this.width / 2, 50, -1);
+      graphics.centeredText(this.font, (Component)this.title, this.width / 2, 50, -1);
       MultiLineLabel var10000 = this.message;
       TextAlignment var10001 = TextAlignment.CENTER;
       int var10002 = this.width / 2;

@@ -4,13 +4,15 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.BlockModelResolver;
+import net.minecraft.client.renderer.block.model.BlockDisplayContext;
 import net.minecraft.client.renderer.entity.state.TntRenderState;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.item.PrimedTnt;
 import org.joml.Quaternionfc;
 
 public class TntRenderer extends EntityRenderer<PrimedTnt, TntRenderState> {
+   public static final BlockDisplayContext BLOCK_DISPLAY_CONTEXT = BlockDisplayContext.create();
    private final BlockModelResolver blockModelResolver;
 
    public TntRenderer(final EntityRendererProvider.Context context) {
@@ -50,6 +52,6 @@ public class TntRenderer extends EntityRenderer<PrimedTnt, TntRenderState> {
    public void extractRenderState(final PrimedTnt entity, final TntRenderState state, final float partialTicks) {
       super.extractRenderState(entity, state, partialTicks);
       state.fuseRemainingInTicks = (float)entity.getFuse() - partialTicks + 1.0F;
-      this.blockModelResolver.update(state.blockState, entity.getBlockState());
+      this.blockModelResolver.update(state.blockState, entity.getBlockState(), BLOCK_DISPLAY_CONTEXT);
    }
 }

@@ -5,13 +5,13 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.gui.render.state.GuiItemRenderState;
-import net.minecraft.client.gui.render.state.GuiRenderState;
-import net.minecraft.client.gui.render.state.pip.OversizedItemRenderState;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
+import net.minecraft.client.renderer.state.gui.GuiItemRenderState;
+import net.minecraft.client.renderer.state.gui.GuiRenderState;
+import net.minecraft.client.renderer.state.gui.pip.OversizedItemRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import org.jspecify.annotations.Nullable;
 

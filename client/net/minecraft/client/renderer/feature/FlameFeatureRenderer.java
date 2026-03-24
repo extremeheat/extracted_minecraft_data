@@ -8,8 +8,8 @@ import net.minecraft.client.renderer.SubmitNodeCollection;
 import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.AtlasManager;
 import net.minecraft.client.resources.model.ModelBakery;
+import net.minecraft.client.resources.model.sprite.AtlasManager;
 import net.minecraft.util.LightCoordsUtil;
 import org.joml.Quaternionf;
 

@@ -42,7 +42,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
    private static final int LIFETIME = 6000;
    private static final int INFINITE_PICKUP_DELAY = 32767;
    private static final int INFINITE_LIFETIME = -32768;
-   private static final int DEFAULT_HEALTH = 5;
+   public static final int DEFAULT_HEALTH = 5;
    private static final short DEFAULT_AGE = 0;
    private static final short DEFAULT_PICKUP_DELAY = 0;
    private int age;
@@ -133,7 +133,9 @@ public class ItemEntity extends Entity implements TraceableEntity {
             }
          }
 
-         if (!this.onGround() || this.getDeltaMovement().horizontalDistanceSqr() > 9.999999747378752E-6 || (this.tickCount + this.getId()) % 4 == 0) {
+         if (this.onGround() && !(this.getDeltaMovement().horizontalDistanceSqr() > 9.999999747378752E-6) && (this.tickCount + this.getId()) % 4 != 0) {
+            this.applyEffectsFromBlocksForLastMovements();
+         } else {
             this.move(MoverType.SELF, this.getDeltaMovement());
             this.applyEffectsFromBlocks();
             float friction = 0.98F;

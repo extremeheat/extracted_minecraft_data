@@ -12,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
+import net.minecraft.util.valueproviders.IntProviders;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.RotatedPillarBlock;
@@ -33,7 +34,7 @@ public class CherryTrunkPlacer extends TrunkPlacer {
       this.branchCount = branchCount;
       this.branchHorizontalLength = branchHorizontalLength;
       this.branchStartOffsetFromTop = branchStartOffsetFromTop;
-      this.secondBranchStartOffsetFromTop = UniformInt.of(branchStartOffsetFromTop.getMinValue(), branchStartOffsetFromTop.getMaxValue() - 1);
+      this.secondBranchStartOffsetFromTop = UniformInt.of(branchStartOffsetFromTop.minInclusive(), branchStartOffsetFromTop.maxInclusive() - 1);
       this.branchEndOffsetFromTop = branchEndOffsetFromTop;
    }
 
@@ -109,7 +110,7 @@ public class CherryTrunkPlacer extends TrunkPlacer {
    }
 
    static {
-      BRANCH_START_CODEC = UniformInt.CODEC.codec().validate((u) -> u.getMaxValue() - u.getMinValue() < 1 ? DataResult.error(() -> "Need at least 2 blocks variation for the branch starts to fit both branches") : DataResult.success(u));
-      CODEC = RecordCodecBuilder.mapCodec((i) -> trunkPlacerParts(i).and(i.group(IntProvider.codec(1, 3).fieldOf("branch_count").forGetter((t) -> t.branchCount), IntProvider.codec(2, 16).fieldOf("branch_horizontal_length").forGetter((t) -> t.branchHorizontalLength), IntProvider.validateCodec(-16, 0, BRANCH_START_CODEC).fieldOf("branch_start_offset_from_top").forGetter((t) -> t.branchStartOffsetFromTop), IntProvider.codec(-16, 16).fieldOf("branch_end_offset_from_top").forGetter((t) -> t.branchEndOffsetFromTop))).apply(i, CherryTrunkPlacer::new));
+      BRANCH_START_CODEC = UniformInt.MAP_CODEC.codec().validate((u) -> u.maxInclusive() - u.minInclusive() < 1 ? DataResult.error(() -> "Need at least 2 blocks variation for the branch starts to fit both branches") : DataResult.success(u));
+      CODEC = RecordCodecBuilder.mapCodec((i) -> trunkPlacerParts(i).and(i.group(IntProviders.codec(1, 3).fieldOf("branch_count").forGetter((t) -> t.branchCount), IntProviders.codec(2, 16).fieldOf("branch_horizontal_length").forGetter((t) -> t.branchHorizontalLength), IntProviders.validateCodec(-16, 0, BRANCH_START_CODEC).fieldOf("branch_start_offset_from_top").forGetter((t) -> t.branchStartOffsetFromTop), IntProviders.codec(-16, 16).fieldOf("branch_end_offset_from_top").forGetter((t) -> t.branchEndOffsetFromTop))).apply(i, CherryTrunkPlacer::new));
    }
 }

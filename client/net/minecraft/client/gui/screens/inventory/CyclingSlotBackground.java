@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.screens.inventory;
 
 import java.util.List;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
@@ -34,21 +34,21 @@ public class CyclingSlotBackground {
 
    }
 
-   public void render(final AbstractContainerMenu menu, final GuiGraphics graphics, final float a, final int left, final int top) {
+   public void extractRenderState(final AbstractContainerMenu menu, final GuiGraphicsExtractor graphics, final float a, final int left, final int top) {
       Slot slot = menu.getSlot(this.slotIndex);
       if (!this.icons.isEmpty() && !slot.hasItem()) {
          boolean shouldTransition = this.icons.size() > 1 && this.tick >= 30;
          float alphaProgress = shouldTransition ? this.getIconTransitionTransparency(a) : 1.0F;
          if (alphaProgress < 1.0F) {
             int previousIconIndex = Math.floorMod(this.iconIndex - 1, this.icons.size());
-            this.renderIcon(slot, (Identifier)this.icons.get(previousIconIndex), 1.0F - alphaProgress, graphics, left, top);
+            this.extractIcon(slot, (Identifier)this.icons.get(previousIconIndex), 1.0F - alphaProgress, graphics, left, top);
          }
 
-         this.renderIcon(slot, (Identifier)this.icons.get(this.iconIndex), alphaProgress, graphics, left, top);
+         this.extractIcon(slot, (Identifier)this.icons.get(this.iconIndex), alphaProgress, graphics, left, top);
       }
    }
 
-   private void renderIcon(final Slot slot, final Identifier iconIdentifier, final float alphaProgress, final GuiGraphics graphics, final int left, final int top) {
+   private void extractIcon(final Slot slot, final Identifier iconIdentifier, final float alphaProgress, final GuiGraphicsExtractor graphics, final int left, final int top) {
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)iconIdentifier, left + slot.x, top + slot.y, 16, 16, ARGB.white(alphaProgress));
    }
 

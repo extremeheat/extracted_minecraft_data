@@ -10,7 +10,7 @@ import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
@@ -129,7 +129,7 @@ public class AdvancementWidget {
       }
    }
 
-   public void drawConnectivity(final GuiGraphics graphics, final int xo, final int yo, final boolean background) {
+   public void extractConnectivity(final GuiGraphicsExtractor graphics, final int xo, final int yo, final boolean background) {
       if (this.parent != null) {
          int depX = xo + this.parent.x + 13;
          int splitX = xo + this.parent.x + 26 + 4;
@@ -138,28 +138,28 @@ public class AdvancementWidget {
          int myY = yo + this.y + 13;
          int col = background ? -16777216 : -1;
          if (background) {
-            graphics.hLine(splitX, depX, depY - 1, col);
-            graphics.hLine(splitX + 1, depX, depY, col);
-            graphics.hLine(splitX, depX, depY + 1, col);
-            graphics.hLine(myX, splitX - 1, myY - 1, col);
-            graphics.hLine(myX, splitX - 1, myY, col);
-            graphics.hLine(myX, splitX - 1, myY + 1, col);
-            graphics.vLine(splitX - 1, myY, depY, col);
-            graphics.vLine(splitX + 1, myY, depY, col);
+            graphics.horizontalLine(splitX, depX, depY - 1, col);
+            graphics.horizontalLine(splitX + 1, depX, depY, col);
+            graphics.horizontalLine(splitX, depX, depY + 1, col);
+            graphics.horizontalLine(myX, splitX - 1, myY - 1, col);
+            graphics.horizontalLine(myX, splitX - 1, myY, col);
+            graphics.horizontalLine(myX, splitX - 1, myY + 1, col);
+            graphics.verticalLine(splitX - 1, myY, depY, col);
+            graphics.verticalLine(splitX + 1, myY, depY, col);
          } else {
-            graphics.hLine(splitX, depX, depY, col);
-            graphics.hLine(myX, splitX, myY, col);
-            graphics.vLine(splitX, myY, depY, col);
+            graphics.horizontalLine(splitX, depX, depY, col);
+            graphics.horizontalLine(myX, splitX, myY, col);
+            graphics.verticalLine(splitX, myY, depY, col);
          }
       }
 
       for(AdvancementWidget child : this.children) {
-         child.drawConnectivity(graphics, xo, yo, background);
+         child.extractConnectivity(graphics, xo, yo, background);
       }
 
    }
 
-   public void draw(final GuiGraphics graphics, final int xo, final int yo) {
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int xo, final int yo) {
       if (!this.display.isHidden() || this.progress != null && this.progress.isDone()) {
          float amount = this.progress == null ? 0.0F : this.progress.getPercent();
          AdvancementWidgetType iconFrame;
@@ -170,11 +170,11 @@ public class AdvancementWidget {
          }
 
          graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)iconFrame.frameSprite(this.display.getType()), xo + this.x + 3, yo + this.y, 26, 26);
-         graphics.renderFakeItem(this.icon, xo + this.x + 8, yo + this.y + 5);
+         graphics.fakeItem(this.icon, xo + this.x + 8, yo + this.y + 5);
       }
 
       for(AdvancementWidget child : this.children) {
-         child.draw(graphics, xo, yo);
+         child.extractRenderState(graphics, xo, yo);
       }
 
    }
@@ -191,7 +191,7 @@ public class AdvancementWidget {
       this.children.add(widget);
    }
 
-   public void drawHover(final GuiGraphics graphics, final int xo, final int yo, final float fade, final int screenxo, final int screenyo) {
+   public void extractHover(final GuiGraphicsExtractor graphics, final int xo, final int yo, final float fade, final int screenxo, final int screenyo) {
       Font font = this.minecraft.font;
       Objects.requireNonNull(font);
       int titleBarHeight = 9 * this.titleLines.size() + 9 + 8;
@@ -258,33 +258,33 @@ public class AdvancementWidget {
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)iconFrame.frameSprite(this.display.getType()), xo + this.x + 3, yo + this.y, 26, 26);
       int descriptionLeft = titleLeft + 5;
       if (leftSide) {
-         this.drawMultilineText(graphics, this.titleLines, descriptionLeft, titleTop + 9, -1);
+         this.extractMultilineText(graphics, this.titleLines, descriptionLeft, titleTop + 9, -1);
          if (progressText != null) {
-            graphics.drawString(font, (Component)progressText, xo + this.x - progressWidth, titleTop + 9, -1);
+            graphics.text(font, (Component)progressText, xo + this.x - progressWidth, titleTop + 9, -1);
          }
       } else {
-         this.drawMultilineText(graphics, this.titleLines, xo + this.x + 32, titleTop + 9, -1);
+         this.extractMultilineText(graphics, this.titleLines, xo + this.x + 32, titleTop + 9, -1);
          if (progressText != null) {
-            graphics.drawString(font, (Component)progressText, xo + this.x + this.width - progressWidth - 5, titleTop + 9, -1);
+            graphics.text(font, (Component)progressText, xo + this.x + this.width - progressWidth - 5, titleTop + 9, -1);
          }
       }
 
       if (topSide) {
-         this.drawMultilineText(graphics, this.description, descriptionLeft, titleTop - descriptionTextHeight + 1, -16711936);
+         this.extractMultilineText(graphics, this.description, descriptionLeft, titleTop - descriptionTextHeight + 1, -16711936);
       } else {
-         this.drawMultilineText(graphics, this.description, descriptionLeft, titleBarBottom, -16711936);
+         this.extractMultilineText(graphics, this.description, descriptionLeft, titleBarBottom, -16711936);
       }
 
-      graphics.renderFakeItem(this.icon, xo + this.x + 8, yo + this.y + 5);
+      graphics.fakeItem(this.icon, xo + this.x + 8, yo + this.y + 5);
    }
 
-   private void drawMultilineText(final GuiGraphics graphics, final List<FormattedCharSequence> lines, final int x, final int y, final int color) {
+   private void extractMultilineText(final GuiGraphicsExtractor graphics, final List<FormattedCharSequence> lines, final int x, final int y, final int color) {
       Font font = this.minecraft.font;
 
       for(int i = 0; i < lines.size(); ++i) {
          FormattedCharSequence var10002 = (FormattedCharSequence)lines.get(i);
          Objects.requireNonNull(font);
-         graphics.drawString(font, var10002, x, y + i * 9, color);
+         graphics.text(font, var10002, x, y + i * 9, color);
       }
 
    }

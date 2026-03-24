@@ -3,9 +3,9 @@ package net.minecraft.client.model.geom;
 import com.google.common.collect.Sets;
 import java.util.Set;
 import java.util.stream.Stream;
-import net.minecraft.client.renderer.blockentity.HangingSignRenderer;
 import net.minecraft.client.renderer.entity.ArmorModelSet;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.block.HangingSignBlock;
 import net.minecraft.world.level.block.state.properties.WoodType;
 
 public class ModelLayers {
@@ -332,7 +332,7 @@ public class ModelLayers {
       return createLocation("sign/wall/" + type.name(), "main");
    }
 
-   public static ModelLayerLocation createHangingSignModelName(final WoodType type, final HangingSignRenderer.AttachmentType attachmentType) {
+   public static ModelLayerLocation createHangingSignModelName(final WoodType type, final HangingSignBlock.Attachment attachmentType) {
       return createLocation("hanging_sign/" + type.name() + "/" + attachmentType.getSerializedName(), "main");
    }
 

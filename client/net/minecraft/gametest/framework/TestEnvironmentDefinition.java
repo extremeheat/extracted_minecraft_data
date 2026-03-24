@@ -22,10 +22,12 @@ import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.Unit;
+import net.minecraft.world.attribute.EnvironmentAttributeSystem;
 import net.minecraft.world.clock.WorldClock;
 import net.minecraft.world.level.gamerules.GameRule;
 import net.minecraft.world.level.gamerules.GameRuleMap;
 import net.minecraft.world.level.gamerules.GameRules;
+import net.minecraft.world.timeline.Timeline;
 import org.slf4j.Logger;
 
 public interface TestEnvironmentDefinition<SavedDataType> {
@@ -36,6 +38,7 @@ public interface TestEnvironmentDefinition<SavedDataType> {
       Registry.register(registry, (String)"all_of", TestEnvironmentDefinition.AllOf.CODEC);
       Registry.register(registry, (String)"game_rules", TestEnvironmentDefinition.SetGameRules.CODEC);
       Registry.register(registry, (String)"clock_time", TestEnvironmentDefinition.ClockTime.CODEC);
+      Registry.register(registry, (String)"timeline_attributes", TestEnvironmentDefinition.Timelines.CODEC);
       Registry.register(registry, (String)"weather", TestEnvironmentDefinition.Weather.CODEC);
       return (MapCodec)Registry.register(registry, (String)"function", TestEnvironmentDefinition.Functions.CODEC);
    }
@@ -243,6 +246,32 @@ public interface TestEnvironmentDefinition<SavedDataType> {
       }
 
       public MapCodec<AllOf> codec() {
+         return CODEC;
+      }
+   }
+
+   public static record Timelines(List<Holder<Timeline>> timelines) implements TestEnvironmentDefinition<EnvironmentAttributeSystem> {
+      public static final MapCodec<Timelines> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Timeline.CODEC.listOf().fieldOf("timelines").forGetter(Timelines::timelines)).apply(i, Timelines::new));
+
+      public Timelines {
+         super();
+      }
+
+      public EnvironmentAttributeSystem setup(final ServerLevel level) {
+         EnvironmentAttributeSystem.Builder builder = EnvironmentAttributeSystem.builder().addDefaultLayers(level);
+
+         for(Holder<Timeline> timeline : this.timelines) {
+            builder.addTimelineLayer(timeline, level.clockManager());
+         }
+
+         return level.setEnvironmentAttributes(builder.build());
+      }
+
+      public void teardown(final ServerLevel level, final EnvironmentAttributeSystem saveData) {
+         level.setEnvironmentAttributes(saveData);
+      }
+
+      public MapCodec<Timelines> codec() {
          return CODEC;
       }
    }

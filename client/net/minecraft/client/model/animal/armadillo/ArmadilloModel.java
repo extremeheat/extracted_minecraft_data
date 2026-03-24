@@ -58,7 +58,10 @@ public abstract class ArmadilloModel extends EntityModel<ArmadilloRenderState> {
          this.head.yRot = Mth.clamp(state.yRot, -32.5F, 32.5F) * 0.017453292F;
       }
 
-      this.walkAnimation.applyWalk(state.walkAnimationPos, state.walkAnimationSpeed, 16.5F, 2.5F);
+      if (!state.isHidingInShell) {
+         this.walkAnimation.applyWalk(state.walkAnimationPos, state.walkAnimationSpeed, 16.5F, 2.5F);
+      }
+
       this.rollOutAnimation.apply(state.rollOutAnimationState, state.ageInTicks);
       this.rollUpAnimation.apply(state.rollUpAnimationState, state.ageInTicks);
       this.peekAnimation.apply(state.peekAnimationState, state.ageInTicks);

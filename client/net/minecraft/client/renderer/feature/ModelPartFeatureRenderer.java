@@ -13,7 +13,6 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.OutlineBufferSource;
 import net.minecraft.client.renderer.SubmitNodeCollection;
 import net.minecraft.client.renderer.SubmitNodeStorage;
-import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.resources.model.ModelBakery;
 
@@ -44,12 +43,12 @@ public class ModelPartFeatureRenderer {
             VertexConsumer actualBuffer;
             if (modelPartSubmit.sprite() != null) {
                if (modelPartSubmit.hasFoil()) {
-                  actualBuffer = modelPartSubmit.sprite().wrap(ItemRenderer.getFoilBuffer(bufferSource, renderType, modelPartSubmit.sheeted(), true));
+                  actualBuffer = modelPartSubmit.sprite().wrap(ItemFeatureRenderer.getFoilBuffer(bufferSource, renderType, modelPartSubmit.sheeted(), true));
                } else {
                   actualBuffer = modelPartSubmit.sprite().wrap(buffer);
                }
             } else if (modelPartSubmit.hasFoil()) {
-               actualBuffer = ItemRenderer.getFoilBuffer(bufferSource, renderType, modelPartSubmit.sheeted(), true);
+               actualBuffer = ItemFeatureRenderer.getFoilBuffer(bufferSource, renderType, modelPartSubmit.sheeted(), true);
             } else {
                actualBuffer = buffer;
             }

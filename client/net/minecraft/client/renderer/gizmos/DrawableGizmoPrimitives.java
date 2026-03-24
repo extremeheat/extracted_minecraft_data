@@ -8,13 +8,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.gizmos.GizmoPrimitives;
 import net.minecraft.gizmos.TextGizmo;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.Quaternionfc;
 import org.joml.Vector4f;
 
@@ -56,7 +56,7 @@ public class DrawableGizmoPrimitives implements GizmoPrimitives {
       this.isEmpty = false;
    }
 
-   public void render(final PoseStack poseStack, final MultiBufferSource bufferSource, final CameraRenderState camera, final Matrix4f modelViewMatrix) {
+   public void render(final PoseStack poseStack, final MultiBufferSource bufferSource, final CameraRenderState camera, final Matrix4fc modelViewMatrix) {
       this.opaque.render(poseStack, bufferSource, camera, modelViewMatrix);
       this.translucent.render(poseStack, bufferSource, camera, modelViewMatrix);
    }
@@ -104,7 +104,7 @@ public class DrawableGizmoPrimitives implements GizmoPrimitives {
          super();
       }
 
-      public void render(final PoseStack poseStack, final MultiBufferSource bufferSource, final CameraRenderState camera, final Matrix4f modelViewMatrix) {
+      public void render(final PoseStack poseStack, final MultiBufferSource bufferSource, final CameraRenderState camera, final Matrix4fc modelViewMatrix) {
          this.renderQuads(poseStack, bufferSource, camera);
          this.renderTriangleFans(poseStack, bufferSource, camera);
          this.renderLines(poseStack, bufferSource, camera, modelViewMatrix);
@@ -139,7 +139,7 @@ public class DrawableGizmoPrimitives implements GizmoPrimitives {
          }
       }
 
-      private void renderLines(final PoseStack poseStack, final MultiBufferSource bufferSource, final CameraRenderState camera, final Matrix4f modelViewMatrix) {
+      private void renderLines(final PoseStack poseStack, final MultiBufferSource bufferSource, final CameraRenderState camera, final Matrix4fc modelViewMatrix) {
          VertexConsumer builder = bufferSource.getBuffer(this.opaque ? RenderTypes.lines() : RenderTypes.linesTranslucent());
          PoseStack.Pose pose = poseStack.last();
          Vector4f start = new Vector4f();

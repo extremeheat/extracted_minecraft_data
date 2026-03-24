@@ -1,6 +1,8 @@
 package net.minecraft.world.attribute;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
@@ -26,4 +28,8 @@ public interface EnvironmentAttributeReader {
    }
 
    <Value> Value getValue(EnvironmentAttribute<Value> attribute, Vec3 pos, @Nullable SpatialAttributeInterpolator biomeInterpolator);
+
+   default <Value> Value getValue(final LootContext context, final EnvironmentAttribute<Value> attribute) {
+      return (Value)(attribute.isPositional() ? this.getValue(attribute, (Vec3)context.getParameter(LootContextParams.ORIGIN)) : this.getDimensionValue(attribute));
+   }
 }

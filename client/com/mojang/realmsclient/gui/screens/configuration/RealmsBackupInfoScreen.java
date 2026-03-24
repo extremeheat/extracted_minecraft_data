@@ -5,7 +5,7 @@ import com.mojang.realmsclient.dto.RealmsServer;
 import java.util.Locale;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
@@ -108,9 +108,9 @@ public class RealmsBackupInfoScreen extends RealmsScreen {
          this.valueComponent = RealmsBackupInfoScreen.this.checkForSpecificMetadata(key, value);
       }
 
-      public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
-         graphics.drawString(RealmsBackupInfoScreen.this.font, this.keyComponent, this.getContentX(), this.getContentY(), -6250336);
-         graphics.drawString(RealmsBackupInfoScreen.this.font, (Component)this.valueComponent, this.getContentX(), this.getContentY() + 12, -1);
+      public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+         graphics.text(RealmsBackupInfoScreen.this.font, this.keyComponent, this.getContentX(), this.getContentY(), -6250336);
+         graphics.text(RealmsBackupInfoScreen.this.font, (Component)this.valueComponent, this.getContentX(), this.getContentY() + 12, -1);
       }
 
       private Component translateKey(final String key) {

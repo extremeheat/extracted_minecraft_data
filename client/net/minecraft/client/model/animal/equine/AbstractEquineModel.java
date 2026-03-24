@@ -19,10 +19,10 @@ public abstract class AbstractEquineModel<T extends EquineRenderState> extends E
    protected static final String HEAD_PARTS = "head_parts";
    protected final ModelPart body;
    protected final ModelPart headParts;
-   private final ModelPart rightHindLeg;
-   private final ModelPart leftHindLeg;
-   private final ModelPart rightFrontLeg;
-   private final ModelPart leftFrontLeg;
+   protected final ModelPart rightHindLeg;
+   protected final ModelPart leftHindLeg;
+   protected final ModelPart rightFrontLeg;
+   protected final ModelPart leftFrontLeg;
    private final ModelPart tail;
 
    public AbstractEquineModel(final ModelPart root) {
@@ -34,6 +34,17 @@ public abstract class AbstractEquineModel<T extends EquineRenderState> extends E
       this.rightFrontLeg = root.getChild("right_front_leg");
       this.leftFrontLeg = root.getChild("left_front_leg");
       this.tail = this.body.getChild("tail");
+   }
+
+   public AbstractEquineModel(final ModelPart root, final ModelPart headParts, final ModelPart rightHindLeg, final ModelPart rightFrontLeg, final ModelPart leftHindLeg, final ModelPart leftFrontLeg, final ModelPart tail) {
+      super(root);
+      this.body = root.getChild("body");
+      this.headParts = headParts;
+      this.rightHindLeg = rightHindLeg;
+      this.leftHindLeg = leftHindLeg;
+      this.rightFrontLeg = rightFrontLeg;
+      this.leftFrontLeg = leftFrontLeg;
+      this.tail = tail;
    }
 
    public static MeshDefinition createBodyMesh(final CubeDeformation g) {
@@ -51,22 +62,6 @@ public abstract class AbstractEquineModel<T extends EquineRenderState> extends E
       body.addOrReplaceChild("tail", CubeListBuilder.create().texOffs(42, 36).addBox(-1.5F, 0.0F, 0.0F, 3.0F, 14.0F, 4.0F, g), PartPose.offsetAndRotation(0.0F, -5.0F, 2.0F, 0.5235988F, 0.0F, 0.0F));
       head.addOrReplaceChild("left_ear", CubeListBuilder.create().texOffs(19, 16).addBox(0.55F, -13.0F, 4.0F, 2.0F, 3.0F, 1.0F, new CubeDeformation(-0.001F)), PartPose.ZERO);
       head.addOrReplaceChild("right_ear", CubeListBuilder.create().texOffs(19, 16).addBox(-2.55F, -13.0F, 4.0F, 2.0F, 3.0F, 1.0F, new CubeDeformation(-0.001F)), PartPose.ZERO);
-      return mesh;
-   }
-
-   public static MeshDefinition createBabyMesh(final CubeDeformation g) {
-      MeshDefinition mesh = new MeshDefinition();
-      PartDefinition root = mesh.getRoot();
-      PartDefinition Body = root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 13).addBox(-4.0F, -3.5F, -7.0F, 8.0F, 7.0F, 14.0F, g), PartPose.offset(0.0F, 12.5F, 0.0F));
-      Body.addOrReplaceChild("tail", CubeListBuilder.create().texOffs(24, 34).addBox(-1.5F, -1.5F, -1.0F, 3.0F, 3.0F, 8.0F, g), PartPose.offsetAndRotation(0.0F, -1.0F, 7.0F, -0.7418F, 0.0F, 0.0F));
-      root.addOrReplaceChild("left_hind_leg", CubeListBuilder.create().texOffs(12, 46).addBox(-1.5F, -1.0F, -1.5F, 3.0F, 9.0F, 3.0F, g), PartPose.offset(2.4F, 16.0F, 5.4F));
-      root.addOrReplaceChild("right_hind_leg", CubeListBuilder.create().texOffs(0, 46).addBox(-1.5F, -1.0F, -1.5F, 3.0F, 9.0F, 3.0F, g), PartPose.offset(-2.4F, 16.0F, 5.4F));
-      root.addOrReplaceChild("left_front_leg", CubeListBuilder.create().texOffs(12, 34).addBox(-1.5F, -1.0F, -1.5F, 3.0F, 9.0F, 3.0F, g), PartPose.offset(2.4F, 16.0F, -5.4F));
-      root.addOrReplaceChild("right_front_leg", CubeListBuilder.create().texOffs(0, 34).addBox(-1.5F, -1.0F, -1.5F, 3.0F, 9.0F, 3.0F, g), PartPose.offset(-2.4F, 16.0F, -5.4F));
-      PartDefinition neck = root.addOrReplaceChild("head_parts", CubeListBuilder.create().texOffs(30, 0).addBox(-2.0F, -6.0F, -2.0F, 4.0F, 8.0F, 4.0F, g), PartPose.offsetAndRotation(0.0F, 10.0F, -6.0F, 0.6109F, 0.0F, 0.0F));
-      PartDefinition head = neck.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-3.0F, -3.9484F, -6.705F, 6.0F, 4.0F, 9.0F, g), PartPose.offset(0.0F, -6.0516F, -0.2951F));
-      head.addOrReplaceChild("left_ear", CubeListBuilder.create().texOffs(0, 4).addBox(-1.0F, -2.5F, -0.8F, 2.0F, 3.0F, 1.0F, g), PartPose.offsetAndRotation(2.0F, -4.2484F, 1.9451F, 0.0F, 0.0F, 0.2618F));
-      head.addOrReplaceChild("right_ear", CubeListBuilder.create().texOffs(0, 0).addBox(-1.0F, -2.5F, -0.5F, 2.0F, 3.0F, 1.0F, g), PartPose.offsetAndRotation(-2.0F, -4.2484F, 1.645F, 0.0F, 0.0F, -0.2618F));
       return mesh;
    }
 
@@ -93,33 +88,26 @@ public abstract class AbstractEquineModel<T extends EquineRenderState> extends E
       float baseHeadAngle = (1.0F - Math.max(standing, eating)) * (0.5235988F + headRotXRad + feedingAnim * Mth.sin((double)state.ageInTicks) * 0.05F);
       this.headParts.xRot = standing * (0.2617994F + headRotXRad) + eating * (2.1816616F + Mth.sin((double)state.ageInTicks) * 0.05F) + baseHeadAngle;
       this.headParts.yRot = standing * clampedYRot * 0.017453292F + (1.0F - Math.max(standing, eating)) * this.headParts.yRot;
-      float ageScale = state.ageScale;
-      ModelPart var10000 = this.headParts;
-      var10000.y += Mth.lerp(eating, Mth.lerp(standing, 0.0F, -8.0F * ageScale), 7.0F * ageScale);
-      this.headParts.z = Mth.lerp(standing, this.headParts.z, -4.0F * ageScale);
+      this.animateHeadPartsPlacement(eating, standing);
       this.body.xRot = standing * -0.7853982F + iStanding * this.body.xRot;
-      float standAngle = 0.2617994F * standing;
-      float bobValue = Mth.cos((double)(state.ageInTicks * 0.6F + 3.1415927F));
-      float standingLegYOffset = state.isBaby ? 4.0F : 12.0F;
-      float standingLegZOffset = state.isBaby ? 0.0F : 4.0F;
+      ModelPart var10000 = this.leftFrontLeg;
+      var10000.y -= this.getLegStandingYOffset() * standing;
       var10000 = this.leftFrontLeg;
-      var10000.y -= standingLegYOffset * standing;
-      var10000 = this.leftFrontLeg;
-      var10000.z += standingLegZOffset * standing;
+      var10000.z += this.getLegStandingZOffset() * standing;
       this.rightFrontLeg.y = this.leftFrontLeg.y;
       this.rightFrontLeg.z = this.leftFrontLeg.z;
-      float rlegRot = (-1.0471976F + bobValue) * standing + legXRotAnim * iStanding;
-      float llegRot = (-1.0471976F - bobValue) * standing - legXRotAnim * iStanding;
+      float standAngle = this.getLegStandAngle() * standing;
+      float bobValue = Mth.cos((double)(state.ageInTicks * 0.6F + 3.1415927F));
+      float legStandingXRotOffset = this.getLegStandingXRotOffset();
+      float rlegRot = (legStandingXRotOffset + bobValue) * standing + legXRotAnim * iStanding;
+      float llegRot = (legStandingXRotOffset - bobValue) * standing - legXRotAnim * iStanding;
       this.leftHindLeg.xRot = standAngle - legAnim1 * 0.5F * animationSpeed * iStanding;
       this.rightHindLeg.xRot = standAngle + legAnim1 * 0.5F * animationSpeed * iStanding;
       this.leftFrontLeg.xRot = rlegRot;
       this.rightFrontLeg.xRot = llegRot;
-      if (state.isBaby) {
-         this.tail.xRot = -1.0471976F + animationSpeed * 0.75F;
-      } else {
-         this.tail.xRot = 0.5235988F + animationSpeed * 0.75F;
-      }
-
+      this.offsetLegPositionWhenStanding(standing);
+      float ageScale = state.ageScale;
+      this.tail.xRot = this.getTailXRotOffset() + 0.5235988F + animationSpeed * 0.75F;
       var10000 = this.tail;
       var10000.y += animationSpeed * ageScale;
       var10000 = this.tail;
@@ -130,5 +118,34 @@ public abstract class AbstractEquineModel<T extends EquineRenderState> extends E
          this.tail.yRot = 0.0F;
       }
 
+   }
+
+   protected void offsetLegPositionWhenStanding(final float standing) {
+   }
+
+   protected float getLegStandAngle() {
+      return 0.2617994F;
+   }
+
+   protected float getLegStandingYOffset() {
+      return 12.0F;
+   }
+
+   protected float getLegStandingZOffset() {
+      return 4.0F;
+   }
+
+   protected float getLegStandingXRotOffset() {
+      return -1.0471976F;
+   }
+
+   protected float getTailXRotOffset() {
+      return 0.0F;
+   }
+
+   protected void animateHeadPartsPlacement(final float eating, final float standing) {
+      ModelPart var10000 = this.headParts;
+      var10000.y += Mth.lerp(eating, Mth.lerp(standing, 0.0F, -8.0F), 7.0F);
+      this.headParts.z = Mth.lerp(standing, this.headParts.z, -4.0F);
    }
 }

@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.function.Consumer;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.ObjectSelectionList;
@@ -132,8 +132,8 @@ public class CreateBuffetWorldScreen extends Screen {
             return Component.translatable("narrator.select", this.name);
          }
 
-         public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
-            graphics.drawString(CreateBuffetWorldScreen.this.font, (Component)this.name, this.getContentX() + 5, this.getContentY() + 2, -1);
+         public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+            graphics.text(CreateBuffetWorldScreen.this.font, (Component)this.name, this.getContentX() + 5, this.getContentY() + 2, -1);
          }
 
          public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {

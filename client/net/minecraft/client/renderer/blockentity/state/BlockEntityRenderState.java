@@ -13,7 +13,7 @@ import org.jspecify.annotations.Nullable;
 
 public class BlockEntityRenderState {
    public BlockPos blockPos;
-   public BlockState blockState;
+   private BlockState blockState;
    public BlockEntityType<?> blockEntityType;
    public int lightCoords;
    public ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress;

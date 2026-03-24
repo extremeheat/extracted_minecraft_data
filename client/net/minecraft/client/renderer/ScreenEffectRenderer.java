@@ -7,10 +7,11 @@ import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.state.WindowRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.ModelBakery;
-import net.minecraft.client.resources.model.SpriteGetter;
+import net.minecraft.client.resources.model.sprite.SpriteGetter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.FluidTags;
@@ -56,14 +57,14 @@ public class ScreenEffectRenderer {
 
    }
 
-   public void renderScreenEffect(final boolean isSleeping, final float partialTicks, final SubmitNodeCollector submitNodeCollector) {
+   public void renderScreenEffect(final boolean isFirstPerson, final boolean isSleeping, final float partialTicks, final SubmitNodeCollector submitNodeCollector, final boolean hideGui) {
       PoseStack poseStack = new PoseStack();
       Player player = this.minecraft.player;
-      if (this.minecraft.options.getCameraType().isFirstPerson() && !isSleeping) {
+      if (isFirstPerson && !isSleeping) {
          if (!player.noPhysics) {
             BlockState blockState = getViewBlockingState(player);
             if (blockState != null) {
-               renderTex(this.minecraft.getModelManager().getBlockModelSet().getParticleMaterial(blockState).sprite(), poseStack, this.bufferSource);
+               renderTex(this.minecraft.getModelManager().getBlockStateModelSet().getParticleMaterial(blockState).sprite(), poseStack, this.bufferSource);
             }
          }
 
@@ -79,7 +80,7 @@ public class ScreenEffectRenderer {
          }
       }
 
-      if (!this.minecraft.options.hideGui) {
+      if (!hideGui) {
          this.renderItemActivationAnimation(poseStack, partialTicks, submitNodeCollector);
       }
 
@@ -93,7 +94,8 @@ public class ScreenEffectRenderer {
          float tc = scale * ts;
          float smoothScale = 10.25F * tc * ts - 24.95F * ts * ts + 25.5F * tc - 13.8F * ts + 4.0F * scale;
          float piScale = smoothScale * 3.1415927F;
-         float aspectRatio = (float)this.minecraft.getWindow().getWidth() / (float)this.minecraft.getWindow().getHeight();
+         WindowRenderState windowState = this.minecraft.gameRenderer.getGameRenderState().windowRenderState;
+         float aspectRatio = (float)windowState.width / (float)windowState.height;
          float offX = this.itemActivationOffX * 0.3F * aspectRatio;
          float offY = this.itemActivationOffY * 0.3F;
          poseStack.pushPose();

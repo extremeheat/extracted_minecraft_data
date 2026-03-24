@@ -2,6 +2,7 @@ package net.minecraft.world.level.levelgen;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.MapCodec;
@@ -9,6 +10,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -36,7 +38,6 @@ import net.minecraft.world.level.storage.PrimaryLevelData;
 public record WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> dimensions) {
    public static final MapCodec<WorldDimensions> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.unboundedMap(ResourceKey.codec(Registries.LEVEL_STEM), LevelStem.CODEC).fieldOf("dimensions").forGetter(WorldDimensions::dimensions)).apply(i, i.stable(WorldDimensions::new)));
    private static final Set<ResourceKey<LevelStem>> BUILTIN_ORDER;
-   private static final int VANILLA_DIMENSION_COUNT;
 
    public WorldDimensions {
       super();
@@ -50,8 +51,10 @@ public record WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> dimensions)
       this((Map)registry.listElements().collect(Collectors.toMap(Holder.Reference::key, Holder.Reference::value)));
    }
 
-   public static Stream<ResourceKey<LevelStem>> keysInOrder(final Stream<ResourceKey<LevelStem>> knownKeys) {
-      return Stream.concat(BUILTIN_ORDER.stream(), knownKeys.filter((k) -> !BUILTIN_ORDER.contains(k)));
+   public static Stream<ResourceKey<LevelStem>> keysInOrder(final Set<ResourceKey<LevelStem>> knownKeys) {
+      Stream var10000 = BUILTIN_ORDER.stream();
+      Objects.requireNonNull(knownKeys);
+      return Stream.concat(var10000.filter(knownKeys::contains), knownKeys.stream().filter((k) -> !BUILTIN_ORDER.contains(k)));
    }
 
    public WorldDimensions replaceOverworldGenerator(final HolderLookup.Provider registries, final ChunkGenerator generator) {
@@ -177,7 +180,7 @@ public record WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> dimensions)
    }
 
    public Complete bake(final Registry<LevelStem> baseDimensions) {
-      Stream<ResourceKey<LevelStem>> knownDimensions = Stream.concat(baseDimensions.registryKeySet().stream(), this.dimensions.keySet().stream()).distinct();
+      Set<ResourceKey<LevelStem>> knownDimensions = Sets.union(baseDimensions.registryKeySet(), this.dimensions.keySet());
       List<Entry> results = new ArrayList();
       keysInOrder(knownDimensions).forEach((key) -> baseDimensions.getOptional(key).or(() -> Optional.ofNullable((LevelStem)this.dimensions.get(key))).ifPresent((levelStem) -> {
             record Entry(ResourceKey<LevelStem> key, LevelStem value) {
@@ -192,7 +195,7 @@ public record WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> dimensions)
 
             results.add(new Entry(key, levelStem));
          }));
-      Lifecycle initialStability = results.size() == VANILLA_DIMENSION_COUNT ? Lifecycle.stable() : Lifecycle.experimental();
+      Lifecycle initialStability = knownDimensions.containsAll(BUILTIN_ORDER) ? Lifecycle.stable() : Lifecycle.experimental();
       WritableRegistry<LevelStem> writableDimensions = new MappedRegistry<LevelStem>(Registries.LEVEL_STEM, initialStability);
       results.forEach((entry) -> writableDimensions.register(entry.key, entry.value, entry.registrationInfo()));
       Registry<LevelStem> newDimensions = writableDimensions.freeze();
@@ -202,7 +205,6 @@ public record WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> dimensions)
 
    static {
       BUILTIN_ORDER = ImmutableSet.of(LevelStem.OVERWORLD, LevelStem.NETHER, LevelStem.END);
-      VANILLA_DIMENSION_COUNT = BUILTIN_ORDER.size();
    }
 
    public static record Complete(Registry<LevelStem> dimensions, PrimaryLevelData.SpecialWorldProperty specialWorldProperty) {

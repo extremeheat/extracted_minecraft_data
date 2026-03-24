@@ -4,7 +4,7 @@ import com.mojang.realmsclient.client.RealmsError;
 import com.mojang.realmsclient.exception.RealmsServiceException;
 import java.util.Objects;
 import net.minecraft.client.gui.ActiveTextCollector;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
@@ -53,9 +53,9 @@ public class RealmsGenericErrorScreen extends RealmsScreen {
       return CommonComponents.joinForNarration(super.getNarrationMessage(), this.detail);
    }
 
-   public void render(final GuiGraphics graphics, final int xm, final int ym, final float a) {
-      super.render(graphics, xm, ym, a);
-      graphics.drawCenteredString(this.font, (Component)this.title, this.width / 2, 80, -1);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int xm, final int ym, final float a) {
+      super.extractRenderState(graphics, xm, ym, a);
+      graphics.centeredText(this.font, (Component)this.title, this.width / 2, 80, -1);
       ActiveTextCollector textRenderer = graphics.textRenderer();
       MultiLineLabel var10000 = this.splitDetail;
       TextAlignment var10001 = TextAlignment.CENTER;

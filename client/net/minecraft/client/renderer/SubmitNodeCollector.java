@@ -4,7 +4,7 @@ import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.feature.ParticleFeatureRenderer;
-import net.minecraft.client.renderer.state.QuadParticleRenderState;
+import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
 import net.minecraft.client.renderer.texture.TextureManager;
 import org.jspecify.annotations.Nullable;
 

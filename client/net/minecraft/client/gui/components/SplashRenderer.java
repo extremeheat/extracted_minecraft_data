@@ -2,7 +2,7 @@ package net.minecraft.client.gui.components;
 
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.client.resources.SplashManager;
 import net.minecraft.network.chat.Component;
@@ -25,7 +25,7 @@ public class SplashRenderer {
       this.splash = splash;
    }
 
-   public void render(final GuiGraphics graphics, final int screenWidth, final Font font, final float alpha) {
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int screenWidth, final Font font, final float alpha) {
       int textWidth = font.width((FormattedText)this.splash);
       ActiveTextCollector textRenderer = graphics.textRenderer();
       float textPhase = 1.8F - Mth.abs(Mth.sin((double)((float)(Util.getMillis() % 1000L) / 1000.0F * 6.2831855F)) * 0.1F);

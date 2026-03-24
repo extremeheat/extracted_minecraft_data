@@ -8,9 +8,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 import net.minecraft.client.data.models.MultiVariant;
-import net.minecraft.client.renderer.block.model.BlockModelDefinition;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
-import net.minecraft.client.renderer.block.model.VariantMutator;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelDispatcher;
+import net.minecraft.client.renderer.block.dispatch.VariantMutator;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.properties.Property;
 
@@ -53,14 +53,14 @@ public class MultiVariantGenerator implements BlockModelDefinitionGenerator {
       return new MultiVariantGenerator(this.block, newEntries, this.seenProperties);
    }
 
-   public BlockModelDefinition create() {
+   public BlockStateModelDispatcher create() {
       Map<String, BlockStateModel.Unbaked> variants = new HashMap();
 
       for(Entry entry : this.entries) {
          variants.put(entry.properties.getKey(), entry.variant.toUnbaked());
       }
 
-      return new BlockModelDefinition(Optional.of(new BlockModelDefinition.SimpleModelSelectors(variants)), Optional.empty());
+      return new BlockStateModelDispatcher(Optional.of(new BlockStateModelDispatcher.SimpleModelSelectors(variants)), Optional.empty());
    }
 
    public Block block() {

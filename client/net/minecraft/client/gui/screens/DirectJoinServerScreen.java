@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.screens;
 
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.input.KeyEvent;
@@ -73,10 +73,10 @@ public class DirectJoinServerScreen extends Screen {
       this.selectButton.active = ServerAddress.isValidAddress(this.ipEdit.getValue());
    }
 
-   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-      super.render(graphics, mouseX, mouseY, a);
-      graphics.drawCenteredString(this.font, (Component)this.title, this.width / 2, 20, -1);
-      graphics.drawString(this.font, (Component)ENTER_IP_LABEL, this.width / 2 - 100 + 1, 100, -6250336);
-      this.ipEdit.render(graphics, mouseX, mouseY, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
+      graphics.centeredText(this.font, (Component)this.title, this.width / 2, 20, -1);
+      graphics.text(this.font, (Component)ENTER_IP_LABEL, this.width / 2 - 100 + 1, 100, -6250336);
+      this.ipEdit.extractRenderState(graphics, mouseX, mouseY, a);
    }
 }

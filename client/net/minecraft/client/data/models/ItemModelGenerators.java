@@ -15,7 +15,6 @@ import net.minecraft.client.data.models.model.ModelLocationUtils;
 import net.minecraft.client.data.models.model.ModelTemplate;
 import net.minecraft.client.data.models.model.ModelTemplates;
 import net.minecraft.client.data.models.model.TextureMapping;
-import net.minecraft.client.renderer.block.model.Material;
 import net.minecraft.client.renderer.item.BundleSelectedItemSpecialRenderer;
 import net.minecraft.client.renderer.item.ClientItem;
 import net.minecraft.client.renderer.item.ItemModel;
@@ -36,6 +35,7 @@ import net.minecraft.client.renderer.item.properties.select.DisplayContext;
 import net.minecraft.client.renderer.item.properties.select.TrimMaterialProperty;
 import net.minecraft.client.renderer.special.ShieldSpecialRenderer;
 import net.minecraft.client.renderer.special.TridentSpecialRenderer;
+import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
@@ -260,7 +260,7 @@ public class ItemModelGenerators {
    private void generateShield(final Item item) {
       ItemModel.Unbaked normal = ItemModelUtils.specialModel(ModelLocationUtils.getModelLocation(item), new ShieldSpecialRenderer.Unbaked());
       ItemModel.Unbaked blocking = ItemModelUtils.specialModel(ModelLocationUtils.getModelLocation(item, "_blocking"), new ShieldSpecialRenderer.Unbaked());
-      this.generateBooleanDispatch(item, ItemModelUtils.isUsingItem(), blocking, normal);
+      this.itemModelOutput.accept(item, ItemModelUtils.conditional(ShieldSpecialRenderer.DEFAULT_TRANSFORMATION, ItemModelUtils.isUsingItem(), blocking, normal));
    }
 
    private static ItemModel.Unbaked createFlatModelDispatch(final ItemModel.Unbaked flatModel, final ItemModel.Unbaked inHandModel) {
@@ -277,7 +277,7 @@ public class ItemModelGenerators {
       ItemModel.Unbaked flatModel = ItemModelUtils.plainModel(this.createFlatItemModel(item, ModelTemplates.FLAT_ITEM));
       ItemModel.Unbaked inHandNormalModel = ItemModelUtils.specialModel(ModelLocationUtils.getModelLocation(item, "_in_hand"), new TridentSpecialRenderer.Unbaked());
       ItemModel.Unbaked inHandThrowingModel = ItemModelUtils.specialModel(ModelLocationUtils.getModelLocation(item, "_throwing"), new TridentSpecialRenderer.Unbaked());
-      ItemModel.Unbaked inHandModel = ItemModelUtils.conditional(ItemModelUtils.isUsingItem(), inHandThrowingModel, inHandNormalModel);
+      ItemModel.Unbaked inHandModel = ItemModelUtils.conditional(TridentSpecialRenderer.DEFAULT_TRANSFORMATION, ItemModelUtils.isUsingItem(), inHandThrowingModel, inHandNormalModel);
       this.itemModelOutput.accept(item, createFlatModelDispatch(flatModel, inHandModel));
    }
 

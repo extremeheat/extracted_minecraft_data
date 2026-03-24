@@ -27,6 +27,7 @@ import net.minecraft.client.model.animal.dolphin.BabyDolphinModel;
 import net.minecraft.client.model.animal.dolphin.DolphinModel;
 import net.minecraft.client.model.animal.equine.AbstractEquineModel;
 import net.minecraft.client.model.animal.equine.BabyDonkeyModel;
+import net.minecraft.client.model.animal.equine.BabyHorseModel;
 import net.minecraft.client.model.animal.equine.DonkeyModel;
 import net.minecraft.client.model.animal.equine.EquineSaddleModel;
 import net.minecraft.client.model.animal.feline.AdultCatModel;
@@ -152,9 +153,10 @@ import net.minecraft.client.renderer.blockentity.BedRenderer;
 import net.minecraft.client.renderer.blockentity.ConduitRenderer;
 import net.minecraft.client.renderer.blockentity.DecoratedPotRenderer;
 import net.minecraft.client.renderer.blockentity.HangingSignRenderer;
-import net.minecraft.client.renderer.blockentity.SignRenderer;
+import net.minecraft.client.renderer.blockentity.StandingSignRenderer;
 import net.minecraft.client.renderer.entity.ArmorModelSet;
 import net.minecraft.client.renderer.entity.WitherSkullRenderer;
+import net.minecraft.world.level.block.HangingSignBlock;
 import net.minecraft.world.level.block.state.properties.WoodType;
 
 public class LayerDefinitions {
@@ -165,7 +167,7 @@ public class LayerDefinitions {
    private static final CubeDeformation BABY_INNER_ARMOR_DEFORMATION = new CubeDeformation(-0.1F, 0.3F, 0.3F);
    private static final CubeDeformation BABY_PIGLIN_INNER_ARMOR_DEFORMATION = new CubeDeformation(0.7F);
    private static final CubeDeformation BABY_PIGLIN_OUTER_ARMOR_DEFORMATION = new CubeDeformation(0.7F);
-   private static final PartPose BABY_PIGLIN_ARMOR_ARM_OFFSET = new PartPose(0.5F, -0.5F, -1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
+   private static final PartPose BABY_PIGLIN_ARMOR_ARM_OFFSET = new PartPose(0.5F, -0.5F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
 
    public LayerDefinitions() {
       super();
@@ -182,7 +184,7 @@ public class LayerDefinitions {
       LayerDefinition minecartBodyLayer = MinecartModel.createBodyLayer();
       LayerDefinition mobHeadLayer = SkullModel.createMobHeadLayer();
       LayerDefinition horseBodyLayer = LayerDefinition.create(AbstractEquineModel.createBodyMesh(CubeDeformation.NONE), 64, 64);
-      LayerDefinition horseBabyLayer = LayerDefinition.create(AbstractEquineModel.createBabyMesh(CubeDeformation.NONE), 64, 64);
+      LayerDefinition horseBabyLayer = LayerDefinition.create(BabyHorseModel.createBabyMesh(CubeDeformation.NONE), 64, 64);
       LayerDefinition horseSaddleLayer = EquineSaddleModel.createSaddleLayer();
       MeshTransformer villagerLikeScale = MeshTransformer.scaling(0.9375F);
       LayerDefinition illagerBodyLayer = IllagerModel.createBodyLayer().apply(villagerLikeScale);
@@ -217,7 +219,7 @@ public class LayerDefinitions {
       LayerDefinition camelSaddleLayer = CamelSaddleModel.createSaddleLayer();
       LayerDefinition chickenBodyLayer = AdultChickenModel.createBodyLayer();
       LayerDefinition pandaBodyLayer = PandaModel.createBodyLayer();
-      LayerDefinition pandababyBodyLayer = BabyPandaModel.createBodyLayer();
+      LayerDefinition pandaBabyBodyLayer = BabyPandaModel.createBodyLayer();
       LayerDefinition pigBodyLayer = PigModel.createBodyLayer(CubeDeformation.NONE);
       LayerDefinition pigSaddleLayer = PigModel.createBodyLayer(new CubeDeformation(0.5F));
       LayerDefinition sheepBodyLayer = SheepModel.createBodyLayer();
@@ -277,9 +279,9 @@ public class LayerDefinitions {
       result.put(ModelLayers.BREEZE_WIND, BreezeModel.createWindLayer());
       result.put(ModelLayers.BREEZE_EYES, BreezeModel.createEyesLayer());
       result.put(ModelLayers.CAT, felineBodyLayer.apply(AdultCatModel.CAT_TRANSFORMER));
-      result.put(ModelLayers.CAT_BABY, felineBabyBodyLayer.apply(AdultCatModel.CAT_TRANSFORMER));
+      result.put(ModelLayers.CAT_BABY, felineBabyBodyLayer);
       result.put(ModelLayers.CAT_COLLAR, felineCollarLayer.apply(AdultCatModel.CAT_TRANSFORMER));
-      result.put(ModelLayers.CAT_BABY_COLLAR, felineBabyBodyLayer.apply(AdultCatModel.CAT_TRANSFORMER).apply(BabyCatModel.COLLAR_TRANSFORMER));
+      result.put(ModelLayers.CAT_BABY_COLLAR, felineBabyBodyLayer.apply(BabyCatModel.COLLAR_TRANSFORMER));
       result.put(ModelLayers.CAMEL, camelBodyLayer);
       result.put(ModelLayers.CAMEL_BABY, camelBabyBodyLayer);
       result.put(ModelLayers.CAMEL_SADDLE, camelSaddleLayer);
@@ -360,7 +362,7 @@ public class LayerDefinitions {
       result.put(ModelLayers.HOPPER_MINECART, minecartBodyLayer);
       MeshTransformer livingHorseScale = MeshTransformer.scaling(1.1F);
       result.put(ModelLayers.HORSE, horseBodyLayer.apply(livingHorseScale));
-      result.put(ModelLayers.HORSE_BABY, horseBabyLayer.apply(livingHorseScale));
+      result.put(ModelLayers.HORSE_BABY, horseBabyLayer);
       result.put(ModelLayers.HORSE_ARMOR, LayerDefinition.create(AbstractEquineModel.createBodyMesh(new CubeDeformation(0.1F)), 64, 64).apply(livingHorseScale));
       result.put(ModelLayers.HORSE_SADDLE, horseSaddleLayer.apply(livingHorseScale));
       MeshTransformer huskScale = MeshTransformer.scaling(1.0625F);
@@ -392,7 +394,7 @@ public class LayerDefinitions {
       result.put(ModelLayers.OCELOT, felineBodyLayer);
       result.put(ModelLayers.OCELOT_BABY, felineBabyBodyLayer);
       result.put(ModelLayers.PANDA, pandaBodyLayer);
-      result.put(ModelLayers.PANDA_BABY, pandababyBodyLayer);
+      result.put(ModelLayers.PANDA_BABY, pandaBabyBodyLayer);
       result.put(ModelLayers.PARCHED, SkeletonModel.createSingleModelDualBodyLayer());
       ModelLayers.PARCHED_ARMOR.putFrom(humanoidArmor, result);
       result.put(ModelLayers.PARCHED_OUTER_LAYER, LayerDefinition.create(HumanoidModel.createMesh(new CubeDeformation(0.25F), 0.0F), 64, 32));
@@ -540,13 +542,13 @@ public class LayerDefinitions {
       result.put(ModelLayers.PALE_OAK_CHEST_BOAT, chestBoatModel);
       result.put(ModelLayers.MANGROVE_BOAT, boatModel);
       result.put(ModelLayers.MANGROVE_CHEST_BOAT, chestBoatModel);
-      LayerDefinition standingSignModel = SignRenderer.createSignLayer(true);
-      LayerDefinition wallSignModel = SignRenderer.createSignLayer(false);
+      LayerDefinition standingSignModel = StandingSignRenderer.createSignLayer(true);
+      LayerDefinition wallSignModel = StandingSignRenderer.createSignLayer(false);
       WoodType.values().forEach((woodType) -> {
          result.put(ModelLayers.createStandingSignModelName(woodType), standingSignModel);
          result.put(ModelLayers.createWallSignModelName(woodType), wallSignModel);
 
-         for(HangingSignRenderer.AttachmentType attachmentType : HangingSignRenderer.AttachmentType.values()) {
+         for(HangingSignBlock.Attachment attachmentType : HangingSignBlock.Attachment.values()) {
             LayerDefinition hangingSignModel = HangingSignRenderer.createHangingSignLayer(attachmentType);
             result.put(ModelLayers.createHangingSignModelName(woodType, attachmentType), hangingSignModel);
          }

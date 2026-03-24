@@ -2,7 +2,7 @@ package net.minecraft.client.gui.components;
 
 import java.util.Objects;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.sounds.SoundManager;
@@ -33,7 +33,7 @@ public class FocusableTextWidget extends MultiLineTextWidget {
       output.add(NarratedElementType.TITLE, this.getMessage());
    }
 
-   public void renderWidget(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       int borderColor = this.alwaysShowBorder && !this.isFocused() ? ARGB.color(this.alpha, -6250336) : ARGB.white(this.alpha);
       switch (this.backgroundFill.ordinal()) {
          case 0:
@@ -47,10 +47,10 @@ public class FocusableTextWidget extends MultiLineTextWidget {
       }
 
       if (this.isFocused() || this.alwaysShowBorder) {
-         graphics.renderOutline(this.getX(), this.getY(), this.getWidth(), this.getHeight(), borderColor);
+         graphics.outline(this.getX(), this.getY(), this.getWidth(), this.getHeight(), borderColor);
       }
 
-      super.renderWidget(graphics, mouseX, mouseY, a);
+      super.extractWidgetRenderState(graphics, mouseX, mouseY, a);
    }
 
    protected int getTextX() {

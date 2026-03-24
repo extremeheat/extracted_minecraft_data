@@ -3,7 +3,7 @@ package net.minecraft.client.gui.components.debugchart;
 import java.util.Locale;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.debugchart.SampleStorage;
 
 public class FpsDebugChart extends AbstractDebugChart {
@@ -14,13 +14,13 @@ public class FpsDebugChart extends AbstractDebugChart {
       super(font, sampleStorage);
    }
 
-   protected void renderAdditionalLinesAndLabels(final GuiGraphics graphics, final int left, final int width, final int bottom) {
-      this.drawStringWithShade(graphics, "30 FPS", left + 1, bottom - 60 + 1);
-      this.drawStringWithShade(graphics, "60 FPS", left + 1, bottom - 30 + 1);
-      graphics.hLine(left, left + width - 1, bottom - 30, -1);
+   protected void extractAdditionalLinesAndLabels(final GuiGraphicsExtractor graphics, final int left, final int width, final int bottom) {
+      this.extractStringWithShade(graphics, "30 FPS", left + 1, bottom - 60 + 1);
+      this.extractStringWithShade(graphics, "60 FPS", left + 1, bottom - 30 + 1);
+      graphics.horizontalLine(left, left + width - 1, bottom - 30, -1);
       int framerateLimit = (Integer)Minecraft.getInstance().options.framerateLimit().get();
       if (framerateLimit > 0 && framerateLimit <= 250) {
-         graphics.hLine(left, left + width - 1, bottom - this.getSampleHeight(1.0E9 / (double)framerateLimit) - 1, -16711681);
+         graphics.horizontalLine(left, left + width - 1, bottom - this.getSampleHeight(1.0E9 / (double)framerateLimit) - 1, -16711681);
       }
 
    }

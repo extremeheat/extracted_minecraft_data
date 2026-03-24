@@ -94,18 +94,6 @@ public class QuadInstance {
       this.overlayCoords = overlayCoords;
    }
 
-   public void copyFrom(final QuadInstance from) {
-      this.color0 = from.color0;
-      this.color1 = from.color1;
-      this.color2 = from.color2;
-      this.color3 = from.color3;
-      this.lightCoords0 = from.lightCoords0;
-      this.lightCoords1 = from.lightCoords1;
-      this.lightCoords2 = from.lightCoords2;
-      this.lightCoords3 = from.lightCoords3;
-      this.overlayCoords = from.overlayCoords;
-   }
-
    public void multiplyColor(final int color) {
       this.color0 = ARGB.multiply(this.color0, color);
       this.color1 = ARGB.multiply(this.color1, color);

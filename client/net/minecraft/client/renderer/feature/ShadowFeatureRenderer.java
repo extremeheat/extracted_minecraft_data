@@ -11,7 +11,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.phys.AABB;
-import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.Vector3f;
 
 public class ShadowFeatureRenderer {
@@ -47,7 +47,7 @@ public class ShadowFeatureRenderer {
 
    }
 
-   private static void shadowVertex(final Matrix4f pose, final VertexConsumer buffer, final int color, final float x, final float y, final float z, final float u, final float v) {
+   private static void shadowVertex(final Matrix4fc pose, final VertexConsumer buffer, final int color, final float x, final float y, final float z, final float u, final float v) {
       Vector3f position = pose.transformPosition(x, y, z, new Vector3f());
       buffer.addVertex(position.x(), position.y(), position.z(), color, u, v, OverlayTexture.NO_OVERLAY, 15728880, 0.0F, 1.0F, 0.0F);
    }

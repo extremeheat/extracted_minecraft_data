@@ -2,7 +2,7 @@ package com.mojang.realmsclient.gui.screens;
 
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import net.minecraft.client.GameNarrator;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -25,9 +25,9 @@ public class RealmsConfirmScreen extends RealmsScreen {
       this.addRenderableWidget(Button.builder(CommonComponents.GUI_NO, (button) -> this.callback.accept(false)).bounds(this.width / 2 + 5, row(9), 100, 20).build());
    }
 
-   public void render(final GuiGraphics graphics, final int xm, final int ym, final float a) {
-      super.render(graphics, xm, ym, a);
-      graphics.drawCenteredString(this.font, (Component)this.title1, this.width / 2, row(3), -1);
-      graphics.drawCenteredString(this.font, (Component)this.title2, this.width / 2, row(5), -1);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int xm, final int ym, final float a) {
+      super.extractRenderState(graphics, xm, ym, a);
+      graphics.centeredText(this.font, (Component)this.title1, this.width / 2, row(3), -1);
+      graphics.centeredText(this.font, (Component)this.title2, this.width / 2, row(5), -1);
    }
 }

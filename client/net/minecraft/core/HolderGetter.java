@@ -36,5 +36,13 @@ public interface HolderGetter<T> {
       default <T> Holder.Reference<T> getOrThrow(final ResourceKey<T> id) {
          return (Holder.Reference)this.lookup(id.registryKey()).flatMap((l) -> l.get(id)).orElseThrow(() -> new IllegalStateException("Missing element " + String.valueOf(id)));
       }
+
+      default <T> Optional<HolderSet.Named<T>> get(final TagKey<T> id) {
+         return this.lookup(id.registry()).flatMap((l) -> l.get(id));
+      }
+
+      default <T> HolderSet.Named<T> getOrThrow(final TagKey<T> id) {
+         return (HolderSet.Named)this.lookup(id.registry()).flatMap((l) -> l.get(id)).orElseThrow(() -> new IllegalStateException("Missing tag " + String.valueOf(id)));
+      }
    }
 }

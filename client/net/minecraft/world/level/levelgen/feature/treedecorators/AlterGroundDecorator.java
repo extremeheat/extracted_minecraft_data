@@ -5,13 +5,13 @@ import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.TreeFeature;
-import net.minecraft.world.level.levelgen.feature.stateproviders.RuleBasedBlockStateProvider;
+import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 
 public class AlterGroundDecorator extends TreeDecorator {
    public static final MapCodec<AlterGroundDecorator> CODEC;
-   private final RuleBasedBlockStateProvider provider;
+   private final BlockStateProvider provider;
 
-   public AlterGroundDecorator(final RuleBasedBlockStateProvider provider) {
+   public AlterGroundDecorator(final BlockStateProvider provider) {
       super();
       this.provider = provider;
    }
@@ -57,7 +57,7 @@ public class AlterGroundDecorator extends TreeDecorator {
    private void placeBlockAt(final TreeDecorator.Context context, final BlockPos pos) {
       for(int dy = 2; dy >= -3; --dy) {
          BlockPos cursor = pos.above(dy);
-         BlockState replaceWith = this.provider.getState(context.level(), context.random(), cursor);
+         BlockState replaceWith = this.provider.getOptionalState(context.level(), context.random(), cursor);
          if (replaceWith != null) {
             context.setBlock(cursor, replaceWith);
             break;
@@ -71,6 +71,6 @@ public class AlterGroundDecorator extends TreeDecorator {
    }
 
    static {
-      CODEC = RuleBasedBlockStateProvider.CODEC.fieldOf("provider").xmap(AlterGroundDecorator::new, (d) -> d.provider);
+      CODEC = BlockStateProvider.CODEC.fieldOf("provider").xmap(AlterGroundDecorator::new, (d) -> d.provider);
    }
 }

@@ -42,7 +42,6 @@ import net.minecraft.world.level.levelgen.feature.configurations.PointedDripston
 import net.minecraft.world.level.levelgen.feature.configurations.ProbabilityFeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.RandomBooleanFeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.RandomFeatureConfiguration;
-import net.minecraft.world.level.levelgen.feature.configurations.RandomPatchConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.ReplaceBlockConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.ReplaceSphereConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.RootSystemConfiguration;
@@ -60,9 +59,6 @@ public abstract class Feature<FC extends FeatureConfiguration> {
    public static final Feature<NoneFeatureConfiguration> NO_OP;
    public static final Feature<TreeConfiguration> TREE;
    public static final Feature<FallenTreeConfiguration> FALLEN_TREE;
-   public static final Feature<RandomPatchConfiguration> FLOWER;
-   public static final Feature<RandomPatchConfiguration> NO_BONEMEAL_FLOWER;
-   public static final Feature<RandomPatchConfiguration> RANDOM_PATCH;
    public static final Feature<BlockPileConfiguration> BLOCK_PILE;
    public static final Feature<SpringConfiguration> SPRING;
    public static final Feature<NoneFeatureConfiguration> CHORUS_PLANT;
@@ -187,20 +183,10 @@ public abstract class Feature<FC extends FeatureConfiguration> {
 
    }
 
-   public static void markForPostProcessing(final WorldGenLevel level, final BlockPos pos) {
-      if (!level.getBlockState(pos).isAir()) {
-         level.getChunk(pos).markPosForPostprocessing(pos);
-      }
-
-   }
-
    static {
       NO_OP = register("no_op", new NoOpFeature(NoneFeatureConfiguration.CODEC));
       TREE = register("tree", new TreeFeature(TreeConfiguration.CODEC));
       FALLEN_TREE = register("fallen_tree", new FallenTreeFeature(FallenTreeConfiguration.CODEC));
-      FLOWER = register("flower", new RandomPatchFeature(RandomPatchConfiguration.CODEC));
-      NO_BONEMEAL_FLOWER = register("no_bonemeal_flower", new RandomPatchFeature(RandomPatchConfiguration.CODEC));
-      RANDOM_PATCH = register("random_patch", new RandomPatchFeature(RandomPatchConfiguration.CODEC));
       BLOCK_PILE = register("block_pile", new BlockPileFeature(BlockPileConfiguration.CODEC));
       SPRING = register("spring_feature", new SpringFeature(SpringConfiguration.CODEC));
       CHORUS_PLANT = register("chorus_plant", new ChorusPlantFeature(NoneFeatureConfiguration.CODEC));

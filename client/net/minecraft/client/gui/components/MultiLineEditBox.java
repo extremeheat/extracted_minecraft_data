@@ -5,7 +5,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.CharacterEvent;
@@ -115,10 +115,10 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
       return true;
    }
 
-   protected void renderContents(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+   protected void extractContents(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       String value = this.textField.value();
       if (value.isEmpty() && !this.isFocused()) {
-         graphics.drawWordWrap(this.font, this.placeholder, this.getInnerLeft(), this.getInnerTop(), this.width - this.totalInnerPadding(), PLACEHOLDER_TEXT_COLOR);
+         graphics.textWithWordWrap(this.font, this.placeholder, this.getInnerLeft(), this.getInnerTop(), this.width - this.totalInnerPadding(), PLACEHOLDER_TEXT_COLOR);
       } else {
          int cursor = this.textField.cursor();
          boolean showCursor = this.isFocused() && TextCursorUtils.isCursorVisible(Util.getMillis() - this.focusedTime);
@@ -138,21 +138,21 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
                   String textBeforeCursor = value.substring(lineView.beginIndex(), cursor);
                   int textBeforeCursorPosRight = innerLeft + this.font.width(textBeforeCursor);
                   String textAfterCursor = value.substring(cursor, lineView.endIndex());
-                  graphics.drawString(this.font, textBeforeCursor, innerLeft, drawTop, this.textColor, this.textShadow);
-                  graphics.drawString(this.font, textAfterCursor, textBeforeCursorPosRight, drawTop, this.textColor, this.textShadow);
+                  graphics.text(this.font, textBeforeCursor, innerLeft, drawTop, this.textColor, this.textShadow);
+                  graphics.text(this.font, textAfterCursor, textBeforeCursorPosRight, drawTop, this.textColor, this.textShadow);
                   cursorX = textBeforeCursorPosRight;
                   cursorY = drawTop;
                   if (showCursor) {
                      int var10003 = this.cursorColor;
                      Objects.requireNonNull(this.font);
-                     TextCursorUtils.drawInsertCursor(graphics, textBeforeCursorPosRight, drawTop, var10003, 9 + 1);
+                     TextCursorUtils.extractInsertCursor(graphics, textBeforeCursorPosRight, drawTop, var10003, 9 + 1);
                   }
 
                   hasDrawnCursor = true;
                }
             } else if (lineWithinVisibleBounds) {
                String substring = value.substring(lineView.beginIndex(), lineView.endIndex());
-               graphics.drawString(this.font, substring, innerLeft, drawTop, this.textColor, this.textShadow);
+               graphics.text(this.font, substring, innerLeft, drawTop, this.textColor, this.textShadow);
                if ((needsValidCursorPos || showCursor) && !insertCursor) {
                   cursorX = innerLeft + this.font.width(substring);
                   cursorY = drawTop;
@@ -166,7 +166,7 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
          if (showCursor && !insertCursor) {
             Objects.requireNonNull(this.font);
             if (this.withinContentAreaTopBottom(cursorY, cursorY + 9)) {
-               TextCursorUtils.drawAppendCursor(graphics, this.font, cursorX, cursorY, this.cursorColor, this.textShadow);
+               TextCursorUtils.extractAppendCursor(graphics, this.font, cursorX, cursorY, this.cursorColor, this.textShadow);
             }
          }
 
@@ -218,12 +218,12 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
       }
    }
 
-   protected void renderDecorations(final GuiGraphics graphics) {
-      super.renderDecorations(graphics);
+   protected void extractDecorations(final GuiGraphicsExtractor graphics) {
+      super.extractDecorations(graphics);
       if (this.textField.hasCharacterLimit()) {
          int characterLimit = this.textField.characterLimit();
          Component countText = Component.translatable("gui.multiLineEditBox.character_limit", this.textField.value().length(), characterLimit);
-         graphics.drawString(this.font, countText, this.getX() + this.width - this.font.width((FormattedText)countText), this.getY() + this.height + 4, -6250336);
+         graphics.text(this.font, countText, this.getX() + this.width - this.font.width((FormattedText)countText), this.getY() + this.height + 4, -6250336);
       }
 
    }
@@ -271,7 +271,7 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
          this.focusedTime = Util.getMillis();
       }
 
-      Minecraft.getInstance().getWindow().onTextInputFocusChange(focused);
+      Minecraft.getInstance().onTextInputFocusChange(this, focused);
    }
 
    public static Builder builder() {

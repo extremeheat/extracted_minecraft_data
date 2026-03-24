@@ -8,7 +8,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
-import net.minecraft.world.level.LevelSimulatedReader;
+import net.minecraft.util.valueproviders.IntProviders;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.levelgen.feature.TreeFeature;
@@ -21,7 +22,7 @@ public abstract class FoliagePlacer {
    protected final IntProvider offset;
 
    protected static <P extends FoliagePlacer> Products.P2<RecordCodecBuilder.Mu<P>, IntProvider, IntProvider> foliagePlacerParts(final RecordCodecBuilder.Instance<P> instance) {
-      return instance.group(IntProvider.codec(0, 16).fieldOf("radius").forGetter((p) -> p.radius), IntProvider.codec(0, 16).fieldOf("offset").forGetter((p) -> p.offset));
+      return instance.group(IntProviders.codec(0, 16).fieldOf("radius").forGetter((p) -> p.radius), IntProviders.codec(0, 16).fieldOf("offset").forGetter((p) -> p.offset));
    }
 
    public FoliagePlacer(final IntProvider radius, final IntProvider offset) {
@@ -32,11 +33,11 @@ public abstract class FoliagePlacer {
 
    protected abstract FoliagePlacerType<?> type();
 
-   public void createFoliage(final LevelSimulatedReader level, final FoliageSetter foliageSetter, final RandomSource random, final TreeConfiguration config, final int treeHeight, final FoliageAttachment foliageAttachment, final int foliageHeight, final int leafRadius) {
+   public void createFoliage(final WorldGenLevel level, final FoliageSetter foliageSetter, final RandomSource random, final TreeConfiguration config, final int treeHeight, final FoliageAttachment foliageAttachment, final int foliageHeight, final int leafRadius) {
       this.createFoliage(level, foliageSetter, random, config, treeHeight, foliageAttachment, foliageHeight, leafRadius, this.offset(random));
    }
 
-   protected abstract void createFoliage(final LevelSimulatedReader level, final FoliageSetter foliageSetter, final RandomSource random, final TreeConfiguration config, final int treeHeight, final FoliageAttachment foliageAttachment, final int foliageHeight, final int leafRadius, final int offset);
+   protected abstract void createFoliage(final WorldGenLevel level, final FoliageSetter foliageSetter, final RandomSource random, final TreeConfiguration config, final int treeHeight, final FoliageAttachment foliageAttachment, final int foliageHeight, final int leafRadius, final int offset);
 
    public abstract int foliageHeight(final RandomSource random, final int treeHeight, final TreeConfiguration config);
 
@@ -64,7 +65,7 @@ public abstract class FoliagePlacer {
       return this.shouldSkipLocation(random, minDx, y, minDz, currentRadius, doubleTrunk);
    }
 
-   protected void placeLeavesRow(final LevelSimulatedReader level, final FoliageSetter foliageSetter, final RandomSource random, final TreeConfiguration config, final BlockPos origin, final int currentRadius, final int y, final boolean doubleTrunk) {
+   protected void placeLeavesRow(final WorldGenLevel level, final FoliageSetter foliageSetter, final RandomSource random, final TreeConfiguration config, final BlockPos origin, final int currentRadius, final int y, final boolean doubleTrunk) {
       int offset = doubleTrunk ? 1 : 0;
       BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 
@@ -79,7 +80,7 @@ public abstract class FoliagePlacer {
 
    }
 
-   protected final void placeLeavesRowWithHangingLeavesBelow(final LevelSimulatedReader level, final FoliageSetter foliageSetter, final RandomSource random, final TreeConfiguration config, final BlockPos origin, final int currentRadius, final int y, final boolean doubleTrunk, final float hangingLeavesChance, final float hangingLeavesExtensionChance) {
+   protected final void placeLeavesRowWithHangingLeavesBelow(final WorldGenLevel level, final FoliageSetter foliageSetter, final RandomSource random, final TreeConfiguration config, final BlockPos origin, final int currentRadius, final int y, final boolean doubleTrunk, final float hangingLeavesChance, final float hangingLeavesExtensionChance) {
       this.placeLeavesRow(level, foliageSetter, random, config, origin, currentRadius, y, doubleTrunk);
       int offset = doubleTrunk ? 1 : 0;
       BlockPos logPos = origin.below();
@@ -107,7 +108,7 @@ public abstract class FoliagePlacer {
 
    }
 
-   private static boolean tryPlaceExtension(final LevelSimulatedReader level, final FoliageSetter foliageSetter, final RandomSource random, final TreeConfiguration config, final float chance, final BlockPos logPos, final BlockPos.MutableBlockPos pos) {
+   private static boolean tryPlaceExtension(final WorldGenLevel level, final FoliageSetter foliageSetter, final RandomSource random, final TreeConfiguration config, final float chance, final BlockPos logPos, final BlockPos.MutableBlockPos pos) {
       if (pos.distManhattan(logPos) >= 7) {
          return false;
       } else {
@@ -115,10 +116,10 @@ public abstract class FoliagePlacer {
       }
    }
 
-   protected static boolean tryPlaceLeaf(final LevelSimulatedReader level, final FoliageSetter foliageSetter, final RandomSource random, final TreeConfiguration config, final BlockPos pos) {
+   protected static boolean tryPlaceLeaf(final WorldGenLevel level, final FoliageSetter foliageSetter, final RandomSource random, final TreeConfiguration config, final BlockPos pos) {
       boolean isPersistent = level.isStateAtPosition(pos, (state) -> (Boolean)state.getValueOrElse(BlockStateProperties.PERSISTENT, false));
       if (!isPersistent && TreeFeature.validTreePos(level, pos)) {
-         BlockState foliageState = config.foliageProvider.getState(random, pos);
+         BlockState foliageState = config.foliageProvider.getState(level, random, pos);
          if (foliageState.hasProperty(BlockStateProperties.WATERLOGGED)) {
             foliageState = (BlockState)foliageState.setValue(BlockStateProperties.WATERLOGGED, level.isFluidAtPosition(pos, (fluidState) -> fluidState.isSourceOfType(Fluids.WATER)));
          }

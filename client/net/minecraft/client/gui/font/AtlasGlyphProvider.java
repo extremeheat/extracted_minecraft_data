@@ -16,7 +16,6 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.Identifier;
-import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 
 public class AtlasGlyphProvider {
@@ -64,15 +63,15 @@ public class AtlasGlyphProvider {
          super();
       }
 
-      public void renderSprite(final Matrix4f pose, final VertexConsumer buffer, final int packedLightCoords, final float offsetX, final float offsetY, final float z, final int color) {
+      public void renderSprite(final Matrix4fc pose, final VertexConsumer buffer, final int packedLightCoords, final float offsetX, final float offsetY, final float z, final int color) {
          float x0 = offsetX + this.left();
          float x1 = offsetX + this.right();
          float y0 = offsetY + this.top();
          float y1 = offsetY + this.bottom();
-         buffer.addVertex((Matrix4fc)pose, x0, y0, z).setUv(this.sprite.getU0(), this.sprite.getV0()).setColor(color).setLight(packedLightCoords);
-         buffer.addVertex((Matrix4fc)pose, x0, y1, z).setUv(this.sprite.getU0(), this.sprite.getV1()).setColor(color).setLight(packedLightCoords);
-         buffer.addVertex((Matrix4fc)pose, x1, y1, z).setUv(this.sprite.getU1(), this.sprite.getV1()).setColor(color).setLight(packedLightCoords);
-         buffer.addVertex((Matrix4fc)pose, x1, y0, z).setUv(this.sprite.getU1(), this.sprite.getV0()).setColor(color).setLight(packedLightCoords);
+         buffer.addVertex(pose, x0, y0, z).setUv(this.sprite.getU0(), this.sprite.getV0()).setColor(color).setLight(packedLightCoords);
+         buffer.addVertex(pose, x0, y1, z).setUv(this.sprite.getU0(), this.sprite.getV1()).setColor(color).setLight(packedLightCoords);
+         buffer.addVertex(pose, x1, y1, z).setUv(this.sprite.getU1(), this.sprite.getV1()).setColor(color).setLight(packedLightCoords);
+         buffer.addVertex(pose, x1, y0, z).setUv(this.sprite.getU1(), this.sprite.getV0()).setColor(color).setLight(packedLightCoords);
       }
 
       public RenderType renderType(final Font.DisplayMode displayMode) {

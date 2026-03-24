@@ -16,7 +16,6 @@ import net.minecraft.client.renderer.PlayerSkinRenderCache;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.network.chat.FontDescription;
 import net.minecraft.network.chat.Style;
-import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 
 public class PlayerGlyphProvider {
@@ -61,7 +60,7 @@ public class PlayerGlyphProvider {
          super();
       }
 
-      public void renderSprite(final Matrix4f pose, final VertexConsumer buffer, final int packedLightCoords, final float offsetX, final float offsetY, final float z, final int color) {
+      public void renderSprite(final Matrix4fc pose, final VertexConsumer buffer, final int packedLightCoords, final float offsetX, final float offsetY, final float z, final int color) {
          float x0 = offsetX + this.left();
          float x1 = offsetX + this.right();
          float y0 = offsetY + this.top();
@@ -73,15 +72,15 @@ public class PlayerGlyphProvider {
 
       }
 
-      private static void renderQuad(final Matrix4f pose, final VertexConsumer buffer, final int packedLightCoords, final float x0, final float x1, final float y0, final float y1, final float z, final int color, final float u, final float v, final int srcWidth, final int srcHeight, final int textureWidth, final int textureHeight) {
+      private static void renderQuad(final Matrix4fc pose, final VertexConsumer buffer, final int packedLightCoords, final float x0, final float x1, final float y0, final float y1, final float z, final int color, final float u, final float v, final int srcWidth, final int srcHeight, final int textureWidth, final int textureHeight) {
          float u0 = (u + 0.0F) / (float)textureWidth;
          float u1 = (u + (float)srcWidth) / (float)textureWidth;
          float v0 = (v + 0.0F) / (float)textureHeight;
          float v1 = (v + (float)srcHeight) / (float)textureHeight;
-         buffer.addVertex((Matrix4fc)pose, x0, y0, z).setUv(u0, v0).setColor(color).setLight(packedLightCoords);
-         buffer.addVertex((Matrix4fc)pose, x0, y1, z).setUv(u0, v1).setColor(color).setLight(packedLightCoords);
-         buffer.addVertex((Matrix4fc)pose, x1, y1, z).setUv(u1, v1).setColor(color).setLight(packedLightCoords);
-         buffer.addVertex((Matrix4fc)pose, x1, y0, z).setUv(u1, v0).setColor(color).setLight(packedLightCoords);
+         buffer.addVertex(pose, x0, y0, z).setUv(u0, v0).setColor(color).setLight(packedLightCoords);
+         buffer.addVertex(pose, x0, y1, z).setUv(u0, v1).setColor(color).setLight(packedLightCoords);
+         buffer.addVertex(pose, x1, y1, z).setUv(u1, v1).setColor(color).setLight(packedLightCoords);
+         buffer.addVertex(pose, x1, y0, z).setUv(u1, v0).setColor(color).setLight(packedLightCoords);
       }
 
       public RenderType renderType(final Font.DisplayMode displayMode) {

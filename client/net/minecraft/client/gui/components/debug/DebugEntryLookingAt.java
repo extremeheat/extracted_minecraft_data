@@ -2,7 +2,6 @@ package net.minecraft.client.gui.components.debug;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 import net.minecraft.ChatFormatting;
@@ -11,7 +10,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.TypedInstance;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -80,26 +78,21 @@ public abstract class DebugEntryLookingAt implements DebugScreenEntry {
       }
 
       private static void addStateProperties(final List<String> result, final StateHolder<?, ?> stateHolder) {
-         for(Map.Entry<Property<?>, Comparable<?>> entry : stateHolder.getValues().entrySet()) {
-            result.add(getPropertyValueString(entry));
-         }
-
+         stateHolder.getValues().forEach((entry) -> result.add(getPropertyValueString(entry)));
       }
 
-      private static String getPropertyValueString(final Map.Entry<Property<?>, Comparable<?>> entry) {
-         Property<?> property = (Property)entry.getKey();
-         Comparable<?> value = (Comparable)entry.getValue();
-         String valueString = Util.getPropertyName(property, value);
-         if (Boolean.TRUE.equals(value)) {
+      private static String getPropertyValueString(final Property.Value<?> entry) {
+         String valueString = entry.valueName();
+         if (Boolean.TRUE.equals(entry.value())) {
             String var10000 = String.valueOf(ChatFormatting.GREEN);
             valueString = var10000 + valueString;
-         } else if (Boolean.FALSE.equals(value)) {
-            String var4 = String.valueOf(ChatFormatting.RED);
-            valueString = var4 + valueString;
+         } else if (Boolean.FALSE.equals(entry.value())) {
+            String var2 = String.valueOf(ChatFormatting.RED);
+            valueString = var2 + valueString;
          }
 
-         String var5 = property.getName();
-         return var5 + ": " + valueString;
+         String var3 = entry.property().getName();
+         return var3 + ": " + valueString;
       }
    }
 

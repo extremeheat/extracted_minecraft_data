@@ -7,36 +7,30 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
-public class ClampedInt extends IntProvider {
-   public static final MapCodec<ClampedInt> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(IntProvider.CODEC.fieldOf("source").forGetter((u) -> u.source), Codec.INT.fieldOf("min_inclusive").forGetter((u) -> u.minInclusive), Codec.INT.fieldOf("max_inclusive").forGetter((u) -> u.maxInclusive)).apply(i, ClampedInt::new)).validate((u) -> u.maxInclusive < u.minInclusive ? DataResult.error(() -> "Max must be at least min, min_inclusive: " + u.minInclusive + ", max_inclusive: " + u.maxInclusive) : DataResult.success(u));
-   private final IntProvider source;
-   private final int minInclusive;
-   private final int maxInclusive;
+public record ClampedInt(IntProvider source, int minInclusive, int maxInclusive) implements IntProvider {
+   public static final MapCodec<ClampedInt> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(IntProviders.CODEC.fieldOf("source").forGetter(ClampedInt::source), Codec.INT.fieldOf("min_inclusive").forGetter(ClampedInt::minInclusive), Codec.INT.fieldOf("max_inclusive").forGetter(ClampedInt::maxInclusive)).apply(i, ClampedInt::new)).validate((u) -> u.maxInclusive < u.minInclusive ? DataResult.error(() -> "Max must be at least min, min_inclusive: " + u.minInclusive + ", max_inclusive: " + u.maxInclusive) : DataResult.success(u));
+
+   public ClampedInt {
+      super();
+   }
 
    public static ClampedInt of(final IntProvider source, final int minInclusive, final int maxInclusive) {
       return new ClampedInt(source, minInclusive, maxInclusive);
-   }
-
-   public ClampedInt(final IntProvider source, final int minInclusive, final int maxInclusive) {
-      super();
-      this.source = source;
-      this.minInclusive = minInclusive;
-      this.maxInclusive = maxInclusive;
    }
 
    public int sample(final RandomSource random) {
       return Mth.clamp(this.source.sample(random), this.minInclusive, this.maxInclusive);
    }
 
-   public int getMinValue() {
-      return Math.max(this.minInclusive, this.source.getMinValue());
+   public int minInclusive() {
+      return Math.max(this.minInclusive, this.source.minInclusive());
    }
 
-   public int getMaxValue() {
-      return Math.min(this.maxInclusive, this.source.getMaxValue());
+   public int maxInclusive() {
+      return Math.min(this.maxInclusive, this.source.maxInclusive());
    }
 
-   public IntProviderType<?> getType() {
-      return IntProviderType.CLAMPED;
+   public MapCodec<ClampedInt> codec() {
+      return MAP_CODEC;
    }
 }

@@ -5,11 +5,12 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.util.valueproviders.IntProvider;
+import net.minecraft.util.valueproviders.IntProviders;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 import net.minecraft.world.level.levelgen.feature.treedecorators.TreeDecorator;
 
 public class FallenTreeConfiguration implements FeatureConfiguration {
-   public static final Codec<FallenTreeConfiguration> CODEC = RecordCodecBuilder.create((i) -> i.group(BlockStateProvider.CODEC.fieldOf("trunk_provider").forGetter((c) -> c.trunkProvider), IntProvider.codec(0, 16).fieldOf("log_length").forGetter((t) -> t.logLength), TreeDecorator.CODEC.listOf().fieldOf("stump_decorators").forGetter((c) -> c.stumpDecorators), TreeDecorator.CODEC.listOf().fieldOf("log_decorators").forGetter((c) -> c.logDecorators)).apply(i, FallenTreeConfiguration::new));
+   public static final Codec<FallenTreeConfiguration> CODEC = RecordCodecBuilder.create((i) -> i.group(BlockStateProvider.CODEC.fieldOf("trunk_provider").forGetter((c) -> c.trunkProvider), IntProviders.codec(0, 16).fieldOf("log_length").forGetter((t) -> t.logLength), TreeDecorator.CODEC.listOf().fieldOf("stump_decorators").forGetter((c) -> c.stumpDecorators), TreeDecorator.CODEC.listOf().fieldOf("log_decorators").forGetter((c) -> c.logDecorators)).apply(i, FallenTreeConfiguration::new));
    public final BlockStateProvider trunkProvider;
    public final IntProvider logLength;
    public final List<TreeDecorator> stumpDecorators;

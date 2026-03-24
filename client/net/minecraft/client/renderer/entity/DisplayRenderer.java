@@ -12,13 +12,14 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.BlockModelResolver;
+import net.minecraft.client.renderer.block.model.BlockDisplayContext;
 import net.minecraft.client.renderer.entity.state.BlockDisplayEntityRenderState;
 import net.minecraft.client.renderer.entity.state.DisplayEntityRenderState;
 import net.minecraft.client.renderer.entity.state.ItemDisplayEntityRenderState;
 import net.minecraft.client.renderer.entity.state.TextDisplayEntityRenderState;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -31,6 +32,7 @@ import org.joml.Quaternionf;
 import org.joml.Quaternionfc;
 
 public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEntityRenderState> extends EntityRenderer<T, ST> {
+   public static final BlockDisplayContext BLOCK_DISPLAY_CONTEXT = BlockDisplayContext.create();
    private final EntityRenderDispatcher entityRenderDispatcher;
    protected final BlockModelResolver blockModelResolver;
 
@@ -81,7 +83,7 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
          poseStack.pushPose();
          poseStack.mulPose((Quaternionfc)this.calculateOrientation(renderState, state, new Quaternionf()));
          Transformation transformation = (Transformation)renderState.transformation().get(interpolationProgress);
-         poseStack.mulPose(transformation.getMatrix());
+         poseStack.mulPose(transformation);
          this.submitInner(state, poseStack, submitNodeCollector, state.lightCoords, interpolationProgress);
          poseStack.popPose();
       }
@@ -142,7 +144,7 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
          super.extractRenderState(entity, state, partialTicks);
          Display.BlockDisplay.BlockRenderState blockRenderState = entity.blockRenderState();
          if (blockRenderState != null) {
-            this.blockModelResolver.update(state.blockModel, blockRenderState.blockState());
+            this.blockModelResolver.update(state.blockModel, blockRenderState.blockState(), BLOCK_DISPLAY_CONTEXT);
          } else {
             state.blockModel.clear();
          }
@@ -227,7 +229,7 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
          byte textOpacity = (byte)renderState.textOpacity().get(interpolationProgress);
          int backgroundColor;
          if (useDefaultBackground) {
-            float backgroundAlpha = Minecraft.getInstance().options.getBackgroundOpacity(0.25F);
+            float backgroundAlpha = Minecraft.getInstance().gameRenderer.getGameRenderState().optionsRenderState.getBackgroundOpacity(0.25F);
             backgroundColor = (int)(backgroundAlpha * 255.0F) << 24;
          } else {
             backgroundColor = renderState.backgroundColor().get(interpolationProgress);

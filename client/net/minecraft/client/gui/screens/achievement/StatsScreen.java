@@ -11,7 +11,7 @@ import java.util.Objects;
 import java.util.Set;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -155,14 +155,14 @@ public class StatsScreen extends Screen {
       return this.tabNavigationBar != null && this.tabNavigationBar.keyPressed(event) ? true : super.keyPressed(event);
    }
 
-   public void render(final GuiGraphics graphics, final int xm, final int ym, final float a) {
-      super.render(graphics, xm, ym, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int xm, final int ym, final float a) {
+      super.extractRenderState(graphics, xm, ym, a);
       graphics.blit(RenderPipelines.GUI_TEXTURED, Screen.FOOTER_SEPARATOR, 0, this.height - this.layout.getFooterHeight(), 0.0F, 0.0F, this.width, 2, 32, 2);
    }
 
-   protected void renderMenuBackground(final GuiGraphics graphics) {
+   protected void extractMenuBackground(final GuiGraphicsExtractor graphics) {
       graphics.blit(RenderPipelines.GUI_TEXTURED, CreateWorldScreen.TAB_HEADER_BACKGROUND, 0, 0, 0.0F, 0.0F, this.width, this.layout.getHeaderHeight(), 16, 16);
-      this.renderMenuBackground(graphics, 0, this.layout.getHeaderHeight(), this.width, this.height);
+      this.extractMenuBackground(graphics, 0, this.layout.getHeaderHeight(), this.width, this.height);
    }
 
    public void onClose() {
@@ -209,10 +209,10 @@ public class StatsScreen extends Screen {
          return 280;
       }
 
-      protected void renderListBackground(final GuiGraphics graphics) {
+      protected void extractListBackground(final GuiGraphicsExtractor graphics) {
       }
 
-      protected void renderListSeparators(final GuiGraphics graphics) {
+      protected void extractListSeparators(final GuiGraphicsExtractor graphics) {
       }
 
       private class Entry extends ObjectSelectionList.Entry<Entry> {
@@ -230,15 +230,15 @@ public class StatsScreen extends Screen {
             return this.stat.format(StatsScreen.this.stats.getValue(this.stat));
          }
 
-         public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+         public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
             int var10000 = this.getContentYMiddle();
             Objects.requireNonNull(StatsScreen.this.font);
             int y = var10000 - 9 / 2;
             int index = GeneralStatisticsList.this.children().indexOf(this);
             int color = index % 2 == 0 ? -1 : -4539718;
-            graphics.drawString(StatsScreen.this.font, this.statDisplay, this.getContentX() + 2, y, color);
+            graphics.text(StatsScreen.this.font, this.statDisplay, this.getContentX() + 2, y, color);
             String msg = this.getValueText();
-            graphics.drawString(StatsScreen.this.font, msg, this.getContentRight() - StatsScreen.this.font.width(msg) - 4, y, color);
+            graphics.text(StatsScreen.this.font, msg, this.getContentRight() - StatsScreen.this.font.width(msg) - 4, y, color);
          }
 
          public Component getNarration() {
@@ -308,7 +308,7 @@ public class StatsScreen extends Screen {
 
       }
 
-      protected void renderListBackground(final GuiGraphics graphics) {
+      protected void extractListBackground(final GuiGraphicsExtractor graphics) {
       }
 
       private int getColumnX(final int col) {
@@ -369,7 +369,7 @@ public class StatsScreen extends Screen {
          return itemRows;
       }
 
-      protected void renderListSeparators(final GuiGraphics graphics) {
+      protected void extractListSeparators(final GuiGraphicsExtractor graphics) {
       }
 
       private class ItemRowComparator implements Comparator<ItemRow> {
@@ -421,9 +421,9 @@ public class StatsScreen extends Screen {
             return this.item;
          }
 
-         public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+         public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
             this.itemRowWidget.setPosition(this.getContentX(), this.getContentY());
-            this.itemRowWidget.render(graphics, mouseX, mouseY, a);
+            this.itemRowWidget.extractRenderState(graphics, mouseX, mouseY, a);
             ItemStatisticsList itemStatsList = ItemStatisticsList.this;
             int index = itemStatsList.children().indexOf(this);
 
@@ -439,7 +439,7 @@ public class StatsScreen extends Screen {
                int var10003 = this.getContentX() + ItemStatisticsList.this.getColumnX(col);
                int var10004 = this.getContentYMiddle();
                Objects.requireNonNull(StatsScreen.this.font);
-               this.renderStat(graphics, stat, var10003, var10004 - 9 / 2, index % 2 == 0);
+               this.extractStat(graphics, stat, var10003, var10004 - 9 / 2, index % 2 == 0);
             }
 
             for(int col = 0; col < itemStatsList.itemColumns.size(); ++col) {
@@ -447,14 +447,14 @@ public class StatsScreen extends Screen {
                int var13 = this.getContentX() + ItemStatisticsList.this.getColumnX(col + itemStatsList.blockColumns.size());
                int var14 = this.getContentYMiddle();
                Objects.requireNonNull(StatsScreen.this.font);
-               this.renderStat(graphics, var10002, var13, var14 - 9 / 2, index % 2 == 0);
+               this.extractStat(graphics, var10002, var13, var14 - 9 / 2, index % 2 == 0);
             }
 
          }
 
-         protected void renderStat(final GuiGraphics graphics, final @Nullable Stat<?> stat, final int x, final int y, final boolean shaded) {
+         protected void extractStat(final GuiGraphicsExtractor graphics, final @Nullable Stat<?> stat, final int x, final int y, final boolean shaded) {
             Component msg = (Component)(stat == null ? StatsScreen.NO_VALUE_DISPLAY : Component.literal(stat.format(StatsScreen.this.stats.getValue(stat))));
-            graphics.drawString(StatsScreen.this.font, msg, x - StatsScreen.this.font.width((FormattedText)msg), y, shaded ? -1 : -4539718);
+            graphics.text(StatsScreen.this.font, msg, x - StatsScreen.this.font.width((FormattedText)msg), y, shaded ? -1 : -4539718);
          }
 
          public List<? extends NarratableEntry> narratables() {
@@ -471,13 +471,13 @@ public class StatsScreen extends Screen {
                super(ItemStatisticsList.this.minecraft, 1, 1, 18, 18, itemStack.getHoverName(), itemStack, false, true);
             }
 
-            protected void renderWidget(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+            protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)StatsScreen.SLOT_SPRITE, ItemRow.this.getContentX(), ItemRow.this.getContentY(), 18, 18);
-               super.renderWidget(graphics, mouseX, mouseY, a);
+               super.extractWidgetRenderState(graphics, mouseX, mouseY, a);
             }
 
-            protected void renderTooltip(final GuiGraphics graphics, final int x, final int y) {
-               super.renderTooltip(graphics, ItemRow.this.getContentX() + 18, ItemRow.this.getContentY() + 18);
+            protected void extractTooltip(final GuiGraphicsExtractor graphics, final int x, final int y) {
+               super.extractTooltip(graphics, ItemRow.this.getContentX() + 18, ItemRow.this.getContentY() + 18);
             }
          }
       }
@@ -510,19 +510,19 @@ public class StatsScreen extends Screen {
             this.children.addAll(List.of(this.blockMined, this.itemBroken, this.itemCrafted, this.itemUsed, this.itemPickedUp, this.itemDropped));
          }
 
-         public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+         public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
             this.blockMined.setPosition(this.getContentX() + ItemStatisticsList.this.getColumnX(0) - 18, this.getContentY() + 1);
-            this.blockMined.render(graphics, mouseX, mouseY, a);
+            this.blockMined.extractRenderState(graphics, mouseX, mouseY, a);
             this.itemBroken.setPosition(this.getContentX() + ItemStatisticsList.this.getColumnX(1) - 18, this.getContentY() + 1);
-            this.itemBroken.render(graphics, mouseX, mouseY, a);
+            this.itemBroken.extractRenderState(graphics, mouseX, mouseY, a);
             this.itemCrafted.setPosition(this.getContentX() + ItemStatisticsList.this.getColumnX(2) - 18, this.getContentY() + 1);
-            this.itemCrafted.render(graphics, mouseX, mouseY, a);
+            this.itemCrafted.extractRenderState(graphics, mouseX, mouseY, a);
             this.itemUsed.setPosition(this.getContentX() + ItemStatisticsList.this.getColumnX(3) - 18, this.getContentY() + 1);
-            this.itemUsed.render(graphics, mouseX, mouseY, a);
+            this.itemUsed.extractRenderState(graphics, mouseX, mouseY, a);
             this.itemPickedUp.setPosition(this.getContentX() + ItemStatisticsList.this.getColumnX(4) - 18, this.getContentY() + 1);
-            this.itemPickedUp.render(graphics, mouseX, mouseY, a);
+            this.itemPickedUp.extractRenderState(graphics, mouseX, mouseY, a);
             this.itemDropped.setPosition(this.getContentX() + ItemStatisticsList.this.getColumnX(5) - 18, this.getContentY() + 1);
-            this.itemDropped.render(graphics, mouseX, mouseY, a);
+            this.itemDropped.extractRenderState(graphics, mouseX, mouseY, a);
             if (ItemStatisticsList.this.sortColumn != null) {
                int offset = ItemStatisticsList.this.getColumnX(ItemStatisticsList.this.getColumnIndex(ItemStatisticsList.this.sortColumn)) - 36;
                Identifier sprite = ItemStatisticsList.this.sortOrder == 1 ? StatsScreen.SORT_UP_SPRITE : StatsScreen.SORT_DOWN_SPRITE;
@@ -549,7 +549,7 @@ public class StatsScreen extends Screen {
                this.setTooltip(Tooltip.create(this.getMessage()));
             }
 
-            public void renderContents(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+            public void extractContents(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
                Identifier background = this.sprites.get(this.isActive(), this.isHoveredOrFocused());
                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, background, this.getX(), this.getY(), this.width, this.height);
                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, this.sprite, this.getX(), this.getY(), this.width, this.height);
@@ -578,10 +578,10 @@ public class StatsScreen extends Screen {
          return 280;
       }
 
-      protected void renderListBackground(final GuiGraphics graphics) {
+      protected void extractListBackground(final GuiGraphicsExtractor graphics) {
       }
 
-      protected void renderListSeparators(final GuiGraphics graphics) {
+      protected void extractListSeparators(final GuiGraphicsExtractor graphics) {
       }
 
       private class MobRow extends ObjectSelectionList.Entry<MobRow> {
@@ -615,20 +615,20 @@ public class StatsScreen extends Screen {
 
          }
 
-         public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
-            graphics.drawString(StatsScreen.this.font, (Component)this.mobName, this.getContentX() + 2, this.getContentY() + 1, -1);
+         public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+            graphics.text(StatsScreen.this.font, (Component)this.mobName, this.getContentX() + 2, this.getContentY() + 1, -1);
             Font var10001 = StatsScreen.this.font;
             Component var10002 = this.kills;
             int var10003 = this.getContentX() + 2 + 10;
             int var10004 = this.getContentY() + 1;
             Objects.requireNonNull(StatsScreen.this.font);
-            graphics.drawString(var10001, var10002, var10003, var10004 + 9, this.hasKills ? -4539718 : -8355712);
+            graphics.text(var10001, var10002, var10003, var10004 + 9, this.hasKills ? -4539718 : -8355712);
             var10001 = StatsScreen.this.font;
             var10002 = this.killedBy;
             var10003 = this.getContentX() + 2 + 10;
             var10004 = this.getContentY() + 1;
             Objects.requireNonNull(StatsScreen.this.font);
-            graphics.drawString(var10001, var10002, var10003, var10004 + 9 * 2, this.wasKilledBy ? -4539718 : -8355712);
+            graphics.text(var10001, var10002, var10003, var10004 + 9 * 2, this.wasKilledBy ? -4539718 : -8355712);
          }
 
          public Component getNarration() {

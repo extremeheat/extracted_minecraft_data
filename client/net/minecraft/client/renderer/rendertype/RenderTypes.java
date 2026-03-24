@@ -1,22 +1,20 @@
 package net.minecraft.client.renderer.rendertype;
 
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.AddressMode;
 import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.GpuSampler;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.blockentity.AbstractEndPortalRenderer;
-import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.renderer.feature.ItemFeatureRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Util;
 
 public class RenderTypes {
    static final BiFunction<Identifier, Boolean, RenderType> OUTLINE = Util.memoize((BiFunction)((texture, cullState) -> RenderType.create("outline", RenderSetup.builder(cullState ? RenderPipelines.OUTLINE_CULL : RenderPipelines.OUTLINE_NO_CULL).withTexture("Sampler0", texture).setOutputTarget(OutputTarget.OUTLINE_TARGET).setOutline(RenderSetup.OutlineProperty.IS_OUTLINE).createRenderSetup())));
-   public static final Supplier<GpuSampler> MOVING_BLOCK_SAMPLER = () -> RenderSystem.getSamplerCache().getSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, FilterMode.LINEAR, FilterMode.NEAREST, true);
    private static final RenderType SOLID_MOVING_BLOCK;
    private static final RenderType CUTOUT_MOVING_BLOCK;
    private static final RenderType TRANSLUCENT_MOVING_BLOCK;
@@ -35,6 +33,7 @@ public class RenderTypes {
    private static final BiFunction<Identifier, Boolean, RenderType> ENTITY_TRANSLUCENT_EMISSIVE;
    private static final Function<Identifier, RenderType> END_CRYSTAL_BEAM;
    private static final BiFunction<Identifier, Boolean, RenderType> BEACON_BEAM;
+   private static final Function<Identifier, RenderType> BANNER_PATTERN;
    private static final Function<Identifier, RenderType> ENTITY_SHADOW;
    private static final Function<Identifier, RenderType> EYES;
    private static final RenderType LEASH;
@@ -69,6 +68,16 @@ public class RenderTypes {
 
    public RenderTypes() {
       super();
+   }
+
+   private static RenderSetup createMovingBlockSetup(final RenderPipeline pipeline, final boolean translucent) {
+      RenderSetup.RenderSetupBuilder setup = RenderSetup.builder(pipeline).useLightmap().withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS, () -> RenderSystem.getSamplerCache().getSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, FilterMode.LINEAR, FilterMode.NEAREST, true)).affectsCrumbling().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE);
+      if (translucent) {
+         setup.sortOnUpload();
+         setup.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET);
+      }
+
+      return setup.createRenderSetup();
    }
 
    public static RenderType solidMovingBlock() {
@@ -162,6 +171,10 @@ public class RenderTypes {
 
    public static RenderType beaconBeam(final Identifier texture, final boolean translucent) {
       return (RenderType)BEACON_BEAM.apply(texture, translucent);
+   }
+
+   public static RenderType bannerPattern(final Identifier texture) {
+      return (RenderType)BANNER_PATTERN.apply(texture);
    }
 
    public static RenderType entityShadow(final Identifier texture) {
@@ -305,9 +318,9 @@ public class RenderTypes {
    }
 
    static {
-      SOLID_MOVING_BLOCK = RenderType.create("solid_moving_block", RenderSetup.builder(RenderPipelines.SOLID_BLOCK).useLightmap().withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS, MOVING_BLOCK_SAMPLER).affectsCrumbling().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup());
-      CUTOUT_MOVING_BLOCK = RenderType.create("cutout_moving_block", RenderSetup.builder(RenderPipelines.CUTOUT_BLOCK).useLightmap().withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS, MOVING_BLOCK_SAMPLER).affectsCrumbling().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup());
-      TRANSLUCENT_MOVING_BLOCK = RenderType.create("translucent_moving_block", RenderSetup.builder(RenderPipelines.TRANSLUCENT_MOVING_BLOCK).useLightmap().withTexture("Sampler0", TextureAtlas.LOCATION_BLOCKS, MOVING_BLOCK_SAMPLER).setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET).sortOnUpload().bufferSize(786432).setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup());
+      SOLID_MOVING_BLOCK = RenderType.create("solid_moving_block", createMovingBlockSetup(RenderPipelines.SOLID_BLOCK, false));
+      CUTOUT_MOVING_BLOCK = RenderType.create("cutout_moving_block", createMovingBlockSetup(RenderPipelines.CUTOUT_BLOCK, false));
+      TRANSLUCENT_MOVING_BLOCK = RenderType.create("translucent_moving_block", createMovingBlockSetup(RenderPipelines.TRANSLUCENT_BLOCK, true));
       ARMOR_CUTOUT_NO_CULL = Util.memoize((Function)((texture) -> {
          RenderSetup state = RenderSetup.builder(RenderPipelines.ARMOR_CUTOUT_NO_CULL).withTexture("Sampler0", texture).useLightmap().useOverlay().setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING).affectsCrumbling().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup();
          return RenderType.create("armor_cutout_no_cull", state);
@@ -368,6 +381,10 @@ public class RenderTypes {
          RenderSetup state = RenderSetup.builder(translucent ? RenderPipelines.BEACON_BEAM_TRANSLUCENT : RenderPipelines.BEACON_BEAM_OPAQUE).withTexture("Sampler0", texture).sortOnUpload().createRenderSetup();
          return RenderType.create("beacon_beam", state);
       }));
+      BANNER_PATTERN = Util.memoize((Function)((texture) -> {
+         RenderSetup state = RenderSetup.builder(RenderPipelines.BANNER_PATTERN).withTexture("Sampler0", texture).useLightmap().sortOnUpload().createRenderSetup();
+         return RenderType.create("banner_pattern", state);
+      }));
       ENTITY_SHADOW = Util.memoize((Function)((texture) -> {
          RenderSetup state = RenderSetup.builder(RenderPipelines.ENTITY_SHADOW).withTexture("Sampler0", texture).useLightmap().useOverlay().setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING).createRenderSetup();
          return RenderType.create("entity_shadow", state);
@@ -375,10 +392,10 @@ public class RenderTypes {
       EYES = Util.memoize((Function)((texture) -> RenderType.create("eyes", RenderSetup.builder(RenderPipelines.EYES).withTexture("Sampler0", texture).sortOnUpload().createRenderSetup())));
       LEASH = RenderType.create("leash", RenderSetup.builder(RenderPipelines.LEASH).useLightmap().createRenderSetup());
       WATER_MASK = RenderType.create("water_mask", RenderSetup.builder(RenderPipelines.WATER_MASK).createRenderSetup());
-      ARMOR_ENTITY_GLINT = RenderType.create("armor_entity_glint", RenderSetup.builder(RenderPipelines.GLINT).withTexture("Sampler0", ItemRenderer.ENCHANTED_GLINT_ARMOR).setTextureTransform(TextureTransform.ARMOR_ENTITY_GLINT_TEXTURING).setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING).createRenderSetup());
-      GLINT_TRANSLUCENT = RenderType.create("glint_translucent", RenderSetup.builder(RenderPipelines.GLINT).withTexture("Sampler0", ItemRenderer.ENCHANTED_GLINT_ITEM).setTextureTransform(TextureTransform.GLINT_TEXTURING).setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET).createRenderSetup());
-      GLINT = RenderType.create("glint", RenderSetup.builder(RenderPipelines.GLINT).withTexture("Sampler0", ItemRenderer.ENCHANTED_GLINT_ITEM).setTextureTransform(TextureTransform.GLINT_TEXTURING).createRenderSetup());
-      ENTITY_GLINT = RenderType.create("entity_glint", RenderSetup.builder(RenderPipelines.GLINT).withTexture("Sampler0", ItemRenderer.ENCHANTED_GLINT_ITEM).setTextureTransform(TextureTransform.ENTITY_GLINT_TEXTURING).createRenderSetup());
+      ARMOR_ENTITY_GLINT = RenderType.create("armor_entity_glint", RenderSetup.builder(RenderPipelines.GLINT).withTexture("Sampler0", ItemFeatureRenderer.ENCHANTED_GLINT_ARMOR).setTextureTransform(TextureTransform.ARMOR_ENTITY_GLINT_TEXTURING).setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING).createRenderSetup());
+      GLINT_TRANSLUCENT = RenderType.create("glint_translucent", RenderSetup.builder(RenderPipelines.GLINT).withTexture("Sampler0", ItemFeatureRenderer.ENCHANTED_GLINT_ITEM).setTextureTransform(TextureTransform.GLINT_TEXTURING).setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET).createRenderSetup());
+      GLINT = RenderType.create("glint", RenderSetup.builder(RenderPipelines.GLINT).withTexture("Sampler0", ItemFeatureRenderer.ENCHANTED_GLINT_ITEM).setTextureTransform(TextureTransform.GLINT_TEXTURING).createRenderSetup());
+      ENTITY_GLINT = RenderType.create("entity_glint", RenderSetup.builder(RenderPipelines.GLINT).withTexture("Sampler0", ItemFeatureRenderer.ENCHANTED_GLINT_ITEM).setTextureTransform(TextureTransform.ENTITY_GLINT_TEXTURING).createRenderSetup());
       CRUMBLING = Util.memoize((Function)((texture) -> RenderType.create("crumbling", RenderSetup.builder(RenderPipelines.CRUMBLING).withTexture("Sampler0", texture).sortOnUpload().createRenderSetup())));
       TEXT = Util.memoize((Function)((texture) -> RenderType.create("text", RenderSetup.builder(RenderPipelines.TEXT).withTexture("Sampler0", texture).useLightmap().bufferSize(786432).createRenderSetup())));
       TEXT_BACKGROUND = RenderType.create("text_background", RenderSetup.builder(RenderPipelines.TEXT_BACKGROUND).useLightmap().sortOnUpload().createRenderSetup());

@@ -1,23 +1,26 @@
 package net.minecraft.client.renderer.item;
 
 import com.google.common.base.Suppliers;
+import com.mojang.math.Transformation;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.block.model.TextureSlots;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.renderer.special.SpecialModelRenderers;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ResolvableModel;
 import net.minecraft.client.resources.model.ResolvedModel;
+import net.minecraft.client.resources.model.sprite.TextureSlots;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import org.joml.Matrix4fc;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
@@ -25,8 +28,9 @@ public class SpecialModelWrapper<T> implements ItemModel {
    private final SpecialModelRenderer<T> specialRenderer;
    private final ModelRenderProperties properties;
    private final Supplier<Vector3fc[]> extents;
+   private final Matrix4fc transformation;
 
-   public SpecialModelWrapper(final SpecialModelRenderer<T> specialRenderer, final ModelRenderProperties properties) {
+   public SpecialModelWrapper(final SpecialModelRenderer<T> specialRenderer, final ModelRenderProperties properties, final Matrix4fc transformation) {
       super();
       this.specialRenderer = specialRenderer;
       this.properties = properties;
@@ -36,6 +40,7 @@ public class SpecialModelWrapper<T> implements ItemModel {
          specialRenderer.getExtents(results::add);
          return (Vector3fc[])results.toArray(new Vector3fc[0]);
       });
+      this.transformation = transformation;
    }
 
    public void update(final ItemStackRenderState output, final ItemStack item, final ItemModelResolver resolver, final ItemDisplayContext displayContext, final @Nullable ClientLevel level, final @Nullable ItemOwner owner, final int seed) {
@@ -50,6 +55,7 @@ public class SpecialModelWrapper<T> implements ItemModel {
 
       T argument = this.specialRenderer.extractArgument(item);
       layer.setExtents(this.extents);
+      layer.setLocalTransform(this.transformation);
       layer.setupSpecialModel(this.specialRenderer, argument);
       if (argument != null) {
          output.appendModelIdentityElement(argument);
@@ -58,8 +64,8 @@ public class SpecialModelWrapper<T> implements ItemModel {
       this.properties.applyToLayer(layer, displayContext);
    }
 
-   public static record Unbaked(Identifier base, SpecialModelRenderer.Unbaked specialModel) implements ItemModel.Unbaked {
-      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Identifier.CODEC.fieldOf("base").forGetter(Unbaked::base), SpecialModelRenderers.CODEC.fieldOf("model").forGetter(Unbaked::specialModel)).apply(i, Unbaked::new));
+   public static record Unbaked(Identifier base, Optional<Transformation> transformation, SpecialModelRenderer.Unbaked<?> specialModel) implements ItemModel.Unbaked {
+      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Identifier.CODEC.fieldOf("base").forGetter(Unbaked::base), Transformation.EXTENDED_CODEC.optionalFieldOf("transformation").forGetter(Unbaked::transformation), SpecialModelRenderers.CODEC.fieldOf("model").forGetter(Unbaked::specialModel)).apply(i, Unbaked::new));
 
       public Unbaked {
          super();
@@ -69,13 +75,14 @@ public class SpecialModelWrapper<T> implements ItemModel {
          resolver.markDependency(this.base);
       }
 
-      public ItemModel bake(final ItemModel.BakingContext context) {
+      public ItemModel bake(final ItemModel.BakingContext context, final Matrix4fc transformation) {
+         Matrix4fc modelTransform = Transformation.compose(transformation, this.transformation);
          SpecialModelRenderer<?> bakedSpecialModel = this.specialModel.bake(context);
          if (bakedSpecialModel == null) {
-            return context.missingItemModel();
+            return context.missingItemModel(modelTransform);
          } else {
             ModelRenderProperties properties = this.getProperties(context);
-            return new SpecialModelWrapper(bakedSpecialModel, properties);
+            return new SpecialModelWrapper(bakedSpecialModel, properties, modelTransform);
          }
       }
 

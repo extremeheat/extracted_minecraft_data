@@ -7,7 +7,7 @@ import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementType;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -55,21 +55,21 @@ public class AdvancementToast implements Toast {
       return displayInfo.isPresent() && ((DisplayInfo)displayInfo.get()).getType().equals(AdvancementType.CHALLENGE);
    }
 
-   public void render(final GuiGraphics graphics, final Font font, final long fullyVisibleForMs) {
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final Font font, final long fullyVisibleForMs) {
       DisplayInfo display = (DisplayInfo)this.advancement.value().display().orElse((Object)null);
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
       if (display != null) {
          List<FormattedCharSequence> lines = font.split(display.getTitle(), 125);
          int titleColor = display.getType() == AdvancementType.CHALLENGE ? -30465 : -256;
          if (lines.size() == 1) {
-            graphics.drawString(font, (Component)display.getType().getDisplayName(), 30, 7, titleColor, false);
-            graphics.drawString(font, (FormattedCharSequence)((FormattedCharSequence)lines.get(0)), 30, 18, -1, false);
+            graphics.text(font, (Component)display.getType().getDisplayName(), 30, 7, titleColor, false);
+            graphics.text(font, (FormattedCharSequence)((FormattedCharSequence)lines.get(0)), 30, 18, -1, false);
          } else {
             int unlockTextTime = 1500;
             float unlockFadeTime = 300.0F;
             if (fullyVisibleForMs < 1500L) {
                int alpha = Mth.floor(Mth.clamp((float)(1500L - fullyVisibleForMs) / 300.0F, 0.0F, 1.0F) * 255.0F);
-               graphics.drawString(font, (Component)display.getType().getDisplayName(), 30, 11, ARGB.color(alpha, titleColor), false);
+               graphics.text(font, (Component)display.getType().getDisplayName(), 30, 11, ARGB.color(alpha, titleColor), false);
             } else {
                int alpha = Mth.floor(Mth.clamp((float)(fullyVisibleForMs - 1500L) / 300.0F, 0.0F, 1.0F) * 252.0F);
                int var10000 = this.height() / 2;
@@ -78,14 +78,14 @@ public class AdvancementToast implements Toast {
                int y = var10000 - var10001 * 9 / 2;
 
                for(FormattedCharSequence line : lines) {
-                  graphics.drawString(font, (FormattedCharSequence)line, 30, y, ARGB.white(alpha), false);
+                  graphics.text(font, (FormattedCharSequence)line, 30, y, ARGB.white(alpha), false);
                   Objects.requireNonNull(font);
                   y += 9;
                }
             }
          }
 
-         graphics.renderFakeItem(this.iconItem, 8, 8);
+         graphics.fakeItem(this.iconItem, 8, 8);
       }
    }
 }

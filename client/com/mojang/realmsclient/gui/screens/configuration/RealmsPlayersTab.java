@@ -13,7 +13,7 @@ import java.util.UUID;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.FocusableTextWidget;
@@ -91,10 +91,10 @@ class RealmsPlayersTab extends GridLayoutTab implements RealmsConfigurationTab {
 
       }
 
-      protected void renderListBackground(final GuiGraphics graphics) {
+      protected void extractListBackground(final GuiGraphicsExtractor graphics) {
       }
 
-      protected void renderListSeparators(final GuiGraphics graphics) {
+      protected void extractListSeparators(final GuiGraphicsExtractor graphics) {
       }
 
       public int getRowWidth() {
@@ -193,7 +193,7 @@ class RealmsPlayersTab extends GridLayoutTab implements RealmsConfigurationTab {
          return ImmutableList.of(this.activeOpButton(), this.removeButton);
       }
 
-      public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+      public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
          int inviteColor;
          if (!this.playerInfo.accepted) {
             inviteColor = -6250336;
@@ -204,20 +204,20 @@ class RealmsPlayersTab extends GridLayoutTab implements RealmsConfigurationTab {
          }
 
          int skinYPos = this.getContentYMiddle() - 16;
-         RealmsUtil.renderPlayerFace(graphics, this.getContentX(), skinYPos, 32, this.playerInfo.uuid);
+         RealmsUtil.extractPlayerFace(graphics, this.getContentX(), skinYPos, 32, this.playerInfo.uuid);
          int var10000 = this.getContentYMiddle();
          Objects.requireNonNull(RealmsPlayersTab.this.font);
          int textYPos = var10000 - 9 / 2;
-         graphics.drawString(RealmsPlayersTab.this.font, this.playerInfo.name, this.getContentX() + 8 + 32, textYPos, inviteColor);
+         graphics.text(RealmsPlayersTab.this.font, this.playerInfo.name, this.getContentX() + 8 + 32, textYPos, inviteColor);
          int iconYPos = this.getContentYMiddle() - 10;
          int removeButtonXPos = this.getContentRight() - this.removeButton.getWidth();
          this.removeButton.setPosition(removeButtonXPos, iconYPos);
-         this.removeButton.render(graphics, mouseX, mouseY, a);
+         this.removeButton.extractRenderState(graphics, mouseX, mouseY, a);
          int opButtonXPos = removeButtonXPos - this.activeOpButton().getWidth() - 8;
          this.makeOpButton.setPosition(opButtonXPos, iconYPos);
-         this.makeOpButton.render(graphics, mouseX, mouseY, a);
+         this.makeOpButton.extractRenderState(graphics, mouseX, mouseY, a);
          this.removeOpButton.setPosition(opButtonXPos, iconYPos);
-         this.removeOpButton.render(graphics, mouseX, mouseY, a);
+         this.removeOpButton.extractRenderState(graphics, mouseX, mouseY, a);
       }
    }
 
@@ -233,7 +233,7 @@ class RealmsPlayersTab extends GridLayoutTab implements RealmsConfigurationTab {
          this.invitedWidget = FocusableTextWidget.builder(invitedText, RealmsPlayersTab.this.font).alwaysShowBorder(false).backgroundFill(FocusableTextWidget.BackgroundFill.ON_FOCUS).build();
       }
 
-      public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+      public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
          String numberOfInvites = RealmsPlayersTab.this.serverData.players != null ? Integer.toString(RealmsPlayersTab.this.serverData.players.size()) : "0";
          if (!numberOfInvites.equals(this.cachedNumberOfInvites)) {
             this.cachedNumberOfInvites = numberOfInvites;
@@ -242,7 +242,7 @@ class RealmsPlayersTab extends GridLayoutTab implements RealmsConfigurationTab {
          }
 
          this.invitedWidget.setPosition(RealmsPlayersTab.this.invitedList.getRowLeft() + RealmsPlayersTab.this.invitedList.getRowWidth() / 2 - this.invitedWidget.getWidth() / 2, this.getY() + this.getHeight() / 2 - this.invitedWidget.getHeight() / 2);
-         this.invitedWidget.render(graphics, mouseX, mouseY, a);
+         this.invitedWidget.extractRenderState(graphics, mouseX, mouseY, a);
       }
 
       private int height(final int lineHeight) {

@@ -36,7 +36,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
-public class WallHangingSignBlock extends SignBlock {
+public class WallHangingSignBlock extends SignBlock implements HangingSignBlock {
    public static final MapCodec<WallHangingSignBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(WoodType.CODEC.fieldOf("wood_type").forGetter(SignBlock::type), propertiesCodec()).apply(i, WallHangingSignBlock::new));
    public static final EnumProperty<Direction> FACING;
    private static final Map<Direction.Axis, VoxelShape> SHAPES_PLANK;
@@ -142,6 +142,10 @@ public class WallHangingSignBlock extends SignBlock {
 
    public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(final Level level, final BlockState blockState, final BlockEntityType<T> type) {
       return createTickerHelper(type, BlockEntityType.HANGING_SIGN, SignBlockEntity::tick);
+   }
+
+   public HangingSignBlock.Attachment attachmentPoint(final BlockState state) {
+      return HangingSignBlock.Attachment.WALL;
    }
 
    static {

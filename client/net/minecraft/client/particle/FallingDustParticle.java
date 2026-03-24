@@ -1,11 +1,13 @@
 package net.minecraft.client.particle;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.color.block.BlockTintSource;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
@@ -72,14 +74,23 @@ public class FallingDustParticle extends SingleQuadParticle {
             return null;
          } else {
             BlockPos pos = BlockPos.containing(x, y, z);
-            int col = Minecraft.getInstance().getBlockColors().getColor(blockState, level, pos);
-            if (blockState.getBlock() instanceof FallingBlock) {
-               col = ((FallingBlock)blockState.getBlock()).getDustColor(blockState, level, pos);
+            Block var20 = blockState.getBlock();
+            int tintColor;
+            if (var20 instanceof FallingBlock) {
+               FallingBlock fallingBlock = (FallingBlock)var20;
+               tintColor = fallingBlock.getDustColor(blockState, level, pos);
+            } else {
+               BlockTintSource tintSource = Minecraft.getInstance().getBlockColors().getTintSource(blockState, 0);
+               if (tintSource != null) {
+                  tintColor = tintSource.colorAsTerrainParticle(blockState, level, pos);
+               } else {
+                  tintColor = blockState.getMapColor(level, pos).col;
+               }
             }
 
-            float r = (float)(col >> 16 & 255) / 255.0F;
-            float g = (float)(col >> 8 & 255) / 255.0F;
-            float b = (float)(col & 255) / 255.0F;
+            float r = (float)(tintColor >> 16 & 255) / 255.0F;
+            float g = (float)(tintColor >> 8 & 255) / 255.0F;
+            float b = (float)(tintColor & 255) / 255.0F;
             return new FallingDustParticle(level, x, y, z, r, g, b, this.sprite);
          }
       }

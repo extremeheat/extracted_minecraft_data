@@ -4,6 +4,7 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.AABB;
 import org.joml.FrustumIntersection;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.Vector4f;
 
 public class Frustum {
@@ -15,7 +16,7 @@ public class Frustum {
    private double camY;
    private double camZ;
 
-   public Frustum(final Matrix4f modelView, final Matrix4f projection) {
+   public Frustum(final Matrix4fc modelView, final Matrix4f projection) {
       super();
       this.calculateFrustum(modelView, projection);
    }
@@ -62,7 +63,7 @@ public class Frustum {
       this.camZ = camZ;
    }
 
-   private void calculateFrustum(final Matrix4f modelView, final Matrix4f projection) {
+   private void calculateFrustum(final Matrix4fc modelView, final Matrix4f projection) {
       projection.mul(modelView, this.matrix);
       this.intersection.set(this.matrix);
       this.viewVector = this.matrix.transformTranspose(new Vector4f(0.0F, 0.0F, 1.0F, 0.0F));

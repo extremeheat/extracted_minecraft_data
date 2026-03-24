@@ -157,48 +157,27 @@ public final class NbtUtils {
       }
    }
 
-   public static CompoundTag writeBlockState(final BlockState state) {
-      CompoundTag tag = new CompoundTag();
-      tag.putString("Name", BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString());
-      Map<Property<?>, Comparable<?>> values = state.getValues();
-      if (!values.isEmpty()) {
+   private static void writeStateProperties(final StateHolder<?, ?> state, final CompoundTag tag) {
+      if (!state.isSingletonState()) {
          CompoundTag properties = new CompoundTag();
-
-         for(Map.Entry<Property<?>, Comparable<?>> entry : values.entrySet()) {
-            Property<?> key = (Property)entry.getKey();
-            properties.putString(key.getName(), getName(key, (Comparable)entry.getValue()));
-         }
-
+         state.getValues().forEach((value) -> properties.putString(value.property().getName(), value.valueName()));
          tag.put("Properties", properties);
       }
 
+   }
+
+   public static CompoundTag writeBlockState(final BlockState state) {
+      CompoundTag tag = new CompoundTag();
+      tag.putString("Name", BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString());
+      writeStateProperties(state, tag);
       return tag;
    }
 
    public static CompoundTag writeFluidState(final FluidState state) {
       CompoundTag tag = new CompoundTag();
       tag.putString("Name", BuiltInRegistries.FLUID.getKey(state.getType()).toString());
-      Map<Property<?>, Comparable<?>> values = state.getValues();
-      if (!values.isEmpty()) {
-         CompoundTag properties = new CompoundTag();
-
-         for(Map.Entry<Property<?>, Comparable<?>> entry : values.entrySet()) {
-            Property<?> key = (Property)entry.getKey();
-            properties.putString(key.getName(), getName(key, (Comparable)entry.getValue()));
-         }
-
-         tag.put("Properties", properties);
-      }
-
+      writeStateProperties(state, tag);
       return tag;
-   }
-
-   private static <T extends Comparable<T>> String getName(final Property<T> key, final Comparable<?> value) {
-      return key.getName(value);
-   }
-
-   public static String prettyPrint(final Tag tag) {
-      return prettyPrint(tag, false);
    }
 
    public static String prettyPrint(final Tag tag, final boolean withBinaryBlobs) {

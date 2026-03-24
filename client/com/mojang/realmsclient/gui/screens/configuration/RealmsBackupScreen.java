@@ -21,7 +21,7 @@ import java.util.Objects;
 import java.util.function.Supplier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
@@ -76,15 +76,15 @@ public class RealmsBackupScreen extends RealmsScreen {
       this.fetchRealmsBackups();
    }
 
-   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-      super.render(graphics, mouseX, mouseY, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
       if (this.noBackups && this.backupList != null) {
          Font var10001 = this.font;
          Component var10002 = NO_BACKUPS_LABEL;
          int var10003 = this.width / 2 - this.font.width((FormattedText)NO_BACKUPS_LABEL) / 2;
          int var10004 = this.backupList.getY() + this.backupList.getHeight() / 2;
          Objects.requireNonNull(this.font);
-         graphics.drawString(var10001, (Component)var10002, var10003, var10004 - 9 / 2, -1);
+         graphics.text(var10001, (Component)var10002, var10003, var10004 - 9 / 2, -1);
       }
 
    }
@@ -238,28 +238,28 @@ public class RealmsBackupScreen extends RealmsScreen {
          return this.children;
       }
 
-      public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+      public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
          int middle = this.getContentYMiddle();
          Objects.requireNonNull(RealmsBackupScreen.this.font);
          int firstLineYPos = middle - 9 - 2;
          int secondLineYPos = middle + 2;
          int color = this.backup.uploadedVersion ? -8388737 : -1;
-         graphics.drawString(RealmsBackupScreen.this.font, (Component)Component.translatable("mco.backup.entry", RealmsUtil.convertToAgePresentationFromInstant(this.backup.lastModified)), this.getContentX(), firstLineYPos, color);
-         graphics.drawString(RealmsBackupScreen.this.font, RealmsBackupScreen.SHORT_DATE_FORMAT.format(this.backup.lastModifiedDate()), this.getContentX(), secondLineYPos, -11776948);
+         graphics.text(RealmsBackupScreen.this.font, (Component)Component.translatable("mco.backup.entry", RealmsUtil.convertToAgePresentationFromInstant(this.backup.lastModified)), this.getContentX(), firstLineYPos, color);
+         graphics.text(RealmsBackupScreen.this.font, RealmsBackupScreen.SHORT_DATE_FORMAT.format(this.backup.lastModifiedDate()), this.getContentX(), secondLineYPos, -11776948);
          int iconXOffet = 0;
          int iconYPos = this.getContentYMiddle() - 10;
          if (this.restoreButton != null) {
             iconXOffet += this.restoreButton.getWidth() + 8;
             this.restoreButton.setX(this.getContentRight() - iconXOffet);
             this.restoreButton.setY(iconYPos);
-            this.restoreButton.render(graphics, mouseX, mouseY, a);
+            this.restoreButton.extractRenderState(graphics, mouseX, mouseY, a);
          }
 
          if (this.changesButton != null) {
             iconXOffet += this.changesButton.getWidth() + 8;
             this.changesButton.setX(this.getContentRight() - iconXOffet);
             this.changesButton.setY(iconYPos);
-            this.changesButton.render(graphics, mouseX, mouseY, a);
+            this.changesButton.extractRenderState(graphics, mouseX, mouseY, a);
          }
 
       }

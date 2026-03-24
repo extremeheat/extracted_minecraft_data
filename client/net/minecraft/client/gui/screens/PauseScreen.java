@@ -8,7 +8,7 @@ import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MusicToastDisplayState;
 import net.minecraft.client.Options;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.Tooltip;
@@ -149,10 +149,10 @@ public class PauseScreen extends Screen {
 
    }
 
-   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-      super.render(graphics, mouseX, mouseY, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
       if (this.rendersNowPlayingToast()) {
-         NowPlayingToast.renderToast(graphics, this.font);
+         NowPlayingToast.extractToast(graphics, this.font);
       }
 
       if (this.showPauseMenu && this.minecraft.getReportingContext().hasDraftReport() && this.disconnectButton != null) {
@@ -161,9 +161,9 @@ public class PauseScreen extends Screen {
 
    }
 
-   public void renderBackground(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       if (this.showPauseMenu) {
-         super.renderBackground(graphics, mouseX, mouseY, a);
+         super.extractBackground(graphics, mouseX, mouseY, a);
       }
 
    }

@@ -17,11 +17,11 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.FeatureTags;
 import net.minecraft.util.Util;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
-import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import org.slf4j.Logger;
 
@@ -40,14 +40,14 @@ public class BiomeGenerationSettings {
    });
    private final HolderSet<ConfiguredWorldCarver<?>> carvers;
    private final List<HolderSet<PlacedFeature>> features;
-   private final Supplier<List<ConfiguredFeature<?, ?>>> flowerFeatures;
+   private final Supplier<List<ConfiguredFeature<?, ?>>> boneMealFeatures;
    private final Supplier<Set<PlacedFeature>> featureSet;
 
    private BiomeGenerationSettings(final HolderSet<ConfiguredWorldCarver<?>> carvers, final List<HolderSet<PlacedFeature>> features) {
       super();
       this.carvers = carvers;
       this.features = features;
-      this.flowerFeatures = Suppliers.memoize(() -> (List)features.stream().flatMap(HolderSet::stream).map(Holder::value).flatMap(PlacedFeature::getFeatures).filter((f) -> f.feature() == Feature.FLOWER).collect(ImmutableList.toImmutableList()));
+      this.boneMealFeatures = Suppliers.memoize(() -> (List)features.stream().flatMap(HolderSet::stream).flatMap((feature) -> ((PlacedFeature)feature.value()).getFeatures()).filter((feature) -> feature.is(FeatureTags.CAN_SPAWN_FROM_BONE_MEAL)).map(Holder::value).collect(ImmutableList.toImmutableList()));
       this.featureSet = Suppliers.memoize(() -> (Set)features.stream().flatMap(HolderSet::stream).map(Holder::value).collect(Collectors.toSet()));
    }
 
@@ -55,8 +55,8 @@ public class BiomeGenerationSettings {
       return this.carvers;
    }
 
-   public List<ConfiguredFeature<?, ?>> getFlowerFeatures() {
-      return (List)this.flowerFeatures.get();
+   public List<ConfiguredFeature<?, ?>> getBoneMealFeatures() {
+      return (List)this.boneMealFeatures.get();
    }
 
    public List<HolderSet<PlacedFeature>> features() {

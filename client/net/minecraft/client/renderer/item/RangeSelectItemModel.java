@@ -1,5 +1,6 @@
 package net.minecraft.client.renderer.item;
 
+import com.mojang.math.Transformation;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -15,6 +16,7 @@ import net.minecraft.client.resources.model.ResolvableModel;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import org.joml.Matrix4fc;
 import org.jspecify.annotations.Nullable;
 
 public class RangeSelectItemModel implements ItemModel {
@@ -68,8 +70,8 @@ public class RangeSelectItemModel implements ItemModel {
       selectedModel.update(output, item, resolver, displayContext, level, owner, seed);
    }
 
-   public static record Unbaked(RangeSelectItemModelProperty property, float scale, List<Entry> entries, Optional<ItemModel.Unbaked> fallback) implements ItemModel.Unbaked {
-      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(RangeSelectItemModelProperties.MAP_CODEC.forGetter(Unbaked::property), Codec.FLOAT.optionalFieldOf("scale", 1.0F).forGetter(Unbaked::scale), RangeSelectItemModel.Entry.CODEC.listOf().fieldOf("entries").forGetter(Unbaked::entries), ItemModels.CODEC.optionalFieldOf("fallback").forGetter(Unbaked::fallback)).apply(i, Unbaked::new));
+   public static record Unbaked(Optional<Transformation> transformation, RangeSelectItemModelProperty property, float scale, List<Entry> entries, Optional<ItemModel.Unbaked> fallback) implements ItemModel.Unbaked {
+      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Transformation.EXTENDED_CODEC.optionalFieldOf("transformation").forGetter(Unbaked::transformation), RangeSelectItemModelProperties.MAP_CODEC.forGetter(Unbaked::property), Codec.FLOAT.optionalFieldOf("scale", 1.0F).forGetter(Unbaked::scale), RangeSelectItemModel.Entry.CODEC.listOf().fieldOf("entries").forGetter(Unbaked::entries), ItemModels.CODEC.optionalFieldOf("fallback").forGetter(Unbaked::fallback)).apply(i, Unbaked::new));
 
       public Unbaked {
          super();
@@ -79,7 +81,8 @@ public class RangeSelectItemModel implements ItemModel {
          return MAP_CODEC;
       }
 
-      public ItemModel bake(final ItemModel.BakingContext context) {
+      public ItemModel bake(final ItemModel.BakingContext context, final Matrix4fc transformation) {
+         Matrix4fc childTransform = Transformation.compose(transformation, this.transformation);
          float[] thresholds = new float[this.entries.size()];
          ItemModel[] models = new ItemModel[this.entries.size()];
          List<Entry> mutableEntries = new ArrayList(this.entries);
@@ -88,10 +91,10 @@ public class RangeSelectItemModel implements ItemModel {
          for(int i = 0; i < mutableEntries.size(); ++i) {
             Entry entry = (Entry)mutableEntries.get(i);
             thresholds[i] = entry.threshold;
-            models[i] = entry.model.bake(context);
+            models[i] = entry.model.bake(context, childTransform);
          }
 
-         ItemModel bakedFallback = (ItemModel)this.fallback.map((m) -> m.bake(context)).orElse(context.missingItemModel());
+         ItemModel bakedFallback = (ItemModel)this.fallback.map((m) -> m.bake(context, childTransform)).orElseGet(() -> context.missingItemModel(childTransform));
          return new RangeSelectItemModel(this.property, this.scale, thresholds, models, bakedFallback);
       }
 

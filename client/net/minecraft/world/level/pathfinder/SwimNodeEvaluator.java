@@ -108,7 +108,8 @@ public class SwimNodeEvaluator extends NodeEvaluator {
             for(int zz = z; zz < z + this.entityDepth; ++zz) {
                BlockState blockState = context.getBlockState(pos.set(xx, yy, zz));
                FluidState fluidState = blockState.getFluidState();
-               if (fluidState.isEmpty() && blockState.isPathfindable(PathComputationType.WATER) && blockState.isAir()) {
+               BlockState belowState = context.getBlockState(pos.below());
+               if (fluidState.isEmpty() && belowState.isPathfindable(PathComputationType.WATER) && blockState.isAir()) {
                   return PathType.BREACH;
                }
 

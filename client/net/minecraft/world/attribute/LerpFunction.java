@@ -8,6 +8,10 @@ public interface LerpFunction<T> {
       return Mth::lerp;
    }
 
+   static LerpFunction<Integer> ofInteger() {
+      return Mth::lerpInt;
+   }
+
    static LerpFunction<Float> ofDegrees(final float maxDelta) {
       return (alpha, from, to) -> {
          float delta = Mth.wrapDegrees(to - from);

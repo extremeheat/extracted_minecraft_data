@@ -59,25 +59,16 @@ public final class RandomState {
 
          public DensityFunction.NoiseHolder visitNoise(final DensityFunction.NoiseHolder noise) {
             Holder<NormalNoise.NoiseParameters> noiseData = noise.noiseData();
-            if (useLegacyInit) {
-               if (noiseData.is(Noises.TEMPERATURE)) {
-                  NormalNoise newNoise = NormalNoise.createLegacyNetherBiome(this.newLegacyInstance(0L), new NormalNoise.NoiseParameters(-7, 1.0, new double[]{1.0}));
-                  return new DensityFunction.NoiseHolder(noiseData, newNoise);
-               }
-
-               if (noiseData.is(Noises.VEGETATION)) {
-                  NormalNoise newNoise = NormalNoise.createLegacyNetherBiome(this.newLegacyInstance(1L), new NormalNoise.NoiseParameters(-7, 1.0, new double[]{1.0}));
-                  return new DensityFunction.NoiseHolder(noiseData, newNoise);
-               }
-
-               if (noiseData.is(Noises.SHIFT)) {
-                  NormalNoise newOffsetNoise = NormalNoise.create(RandomState.this.random.fromHashOf(Noises.SHIFT.identifier()), new NormalNoise.NoiseParameters(0, 0.0, new double[0]));
-                  return new DensityFunction.NoiseHolder(noiseData, newOffsetNoise);
-               }
+            if (noiseData.is(Noises.TEMPERATURE_NETHER)) {
+               NormalNoise newNoise = NormalNoise.createLegacyNetherBiome(this.newLegacyInstance(0L), noiseData.value());
+               return new DensityFunction.NoiseHolder(noiseData, newNoise);
+            } else if (noiseData.is(Noises.VEGETATION_NETHER)) {
+               NormalNoise newNoise = NormalNoise.createLegacyNetherBiome(this.newLegacyInstance(1L), noiseData.value());
+               return new DensityFunction.NoiseHolder(noiseData, newNoise);
+            } else {
+               NormalNoise instantiate = RandomState.this.getOrCreateNoise((ResourceKey)noiseData.unwrapKey().orElseThrow());
+               return new DensityFunction.NoiseHolder(noiseData, instantiate);
             }
-
-            NormalNoise instantiate = RandomState.this.getOrCreateNoise((ResourceKey)noiseData.unwrapKey().orElseThrow());
-            return new DensityFunction.NoiseHolder(noiseData, instantiate);
          }
 
          private DensityFunction wrapNew(final DensityFunction function) {

@@ -1,8 +1,8 @@
 package net.minecraft.client.gui.spectator;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.PlayerFaceRenderer;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.PlayerFaceExtractor;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundTeleportToEntityPacket;
@@ -26,8 +26,8 @@ public class PlayerMenuItem implements SpectatorMenuItem {
       return this.name;
    }
 
-   public void renderIcon(final GuiGraphics graphics, final float brightness, final float alpha) {
-      PlayerFaceRenderer.draw(graphics, this.playerInfo.getSkin(), 2, 2, 12, ARGB.white(alpha));
+   public void extractIcon(final GuiGraphicsExtractor graphics, final float brightness, final float alpha) {
+      PlayerFaceExtractor.extractRenderState(graphics, this.playerInfo.getSkin(), 2, 2, 12, ARGB.white(alpha));
    }
 
    public boolean isEnabled() {

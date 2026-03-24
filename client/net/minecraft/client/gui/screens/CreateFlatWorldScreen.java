@@ -5,7 +5,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ObjectSelectionList;
@@ -194,14 +194,14 @@ public class CreateFlatWorldScreen extends Screen {
             this.index = index;
          }
 
-         public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+         public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
             BlockState blockState = this.layerInfo.getBlockState();
             ItemStack itemStack = this.getDisplayItem(blockState);
             this.blitSlot(graphics, this.getContentX(), this.getContentY(), itemStack);
             int var10000 = this.getContentYMiddle();
             Objects.requireNonNull(CreateFlatWorldScreen.this.font);
             int y = var10000 - 9 / 2;
-            graphics.drawString(CreateFlatWorldScreen.this.font, (Component)itemStack.getHoverName(), this.getContentX() + 18 + 5, y, -1);
+            graphics.text(CreateFlatWorldScreen.this.font, (Component)itemStack.getHoverName(), this.getContentX() + 18 + 5, y, -1);
             Component height;
             if (this.index == 0) {
                height = Component.translatable("createWorld.customize.flat.layer.top", this.layerInfo.getHeight());
@@ -211,7 +211,7 @@ public class CreateFlatWorldScreen extends Screen {
                height = Component.translatable("createWorld.customize.flat.layer", this.layerInfo.getHeight());
             }
 
-            graphics.drawString(CreateFlatWorldScreen.this.font, (Component)height, this.getContentRight() - CreateFlatWorldScreen.this.font.width((FormattedText)height), y, -1);
+            graphics.text(CreateFlatWorldScreen.this.font, (Component)height, this.getContentRight() - CreateFlatWorldScreen.this.font.width((FormattedText)height), y, -1);
          }
 
          private ItemStack getDisplayItem(final BlockState blockState) {
@@ -237,15 +237,15 @@ public class CreateFlatWorldScreen extends Screen {
             return super.mouseClicked(event, doubleClick);
          }
 
-         private void blitSlot(final GuiGraphics graphics, final int x, final int y, final ItemStack itemStack) {
+         private void blitSlot(final GuiGraphicsExtractor graphics, final int x, final int y, final ItemStack itemStack) {
             this.blitSlotBg(graphics, x + 1, y + 1);
             if (!itemStack.isEmpty()) {
-               graphics.renderFakeItem(itemStack, x + 2, y + 2);
+               graphics.fakeItem(itemStack, x + 2, y + 2);
             }
 
          }
 
-         private void blitSlotBg(final GuiGraphics graphics, final int x, final int y) {
+         private void blitSlotBg(final GuiGraphicsExtractor graphics, final int x, final int y) {
             graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)CreateFlatWorldScreen.SLOT_SPRITE, x, y, 18, 18);
          }
       }
@@ -258,9 +258,9 @@ public class CreateFlatWorldScreen extends Screen {
             this.font = font;
          }
 
-         public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
-            graphics.drawString(this.font, (Component)CreateFlatWorldScreen.DetailsList.LAYER_MATERIAL_TITLE, this.getContentX(), this.getContentY(), -1);
-            graphics.drawString(this.font, (Component)CreateFlatWorldScreen.DetailsList.HEIGHT_TITLE, this.getContentRight() - this.font.width((FormattedText)CreateFlatWorldScreen.DetailsList.HEIGHT_TITLE), this.getContentY(), -1);
+         public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+            graphics.text(this.font, (Component)CreateFlatWorldScreen.DetailsList.LAYER_MATERIAL_TITLE, this.getContentX(), this.getContentY(), -1);
+            graphics.text(this.font, (Component)CreateFlatWorldScreen.DetailsList.HEIGHT_TITLE, this.getContentRight() - this.font.width((FormattedText)CreateFlatWorldScreen.DetailsList.HEIGHT_TITLE), this.getContentY(), -1);
          }
 
          public Component getNarration() {

@@ -17,7 +17,7 @@ public record PlayerSprite(ResolvableProfile player, boolean hat) implements Obj
       return new FontDescription.PlayerSprite(this.player, this.hat);
    }
 
-   public String description() {
+   public String defaultFallback() {
       return (String)this.player.name().map((name) -> "[" + name + " head]").orElse("[unknown player head]");
    }
 

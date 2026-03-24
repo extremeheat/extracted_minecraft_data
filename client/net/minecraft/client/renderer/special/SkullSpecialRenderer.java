@@ -12,9 +12,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.level.block.SkullBlock;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
@@ -31,22 +29,19 @@ public class SkullSpecialRenderer implements NoDataSpecialModelRenderer {
       this.renderType = renderType;
    }
 
-   public void submit(final ItemDisplayContext type, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final boolean hasFoil, final int outlineColor) {
-      SkullBlockRenderer.submitSkull((Direction)null, 180.0F, this.animation, poseStack, submitNodeCollector, lightCoords, this.model, this.renderType, outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+   public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final boolean hasFoil, final int outlineColor) {
+      SkullBlockRenderer.submitSkull(this.animation, poseStack, submitNodeCollector, lightCoords, this.model, this.renderType, outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
    }
 
    public void getExtents(final Consumer<Vector3fc> output) {
       PoseStack poseStack = new PoseStack();
-      poseStack.translate(0.5F, 0.0F, 0.5F);
-      poseStack.scale(-1.0F, -1.0F, 1.0F);
       SkullModelBase.State modelState = new SkullModelBase.State();
       modelState.animationPos = this.animation;
-      modelState.yRot = 180.0F;
       this.model.setupAnim(modelState);
       this.model.root().getExtentsForGui(poseStack, output);
    }
 
-   public static record Unbaked(SkullBlock.Type kind, Optional<Identifier> textureOverride, float animation) implements SpecialModelRenderer.Unbaked {
+   public static record Unbaked(SkullBlock.Type kind, Optional<Identifier> textureOverride, float animation) implements NoDataSpecialModelRenderer.Unbaked {
       public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(SkullBlock.Type.CODEC.fieldOf("kind").forGetter(Unbaked::kind), Identifier.CODEC.optionalFieldOf("texture").forGetter(Unbaked::textureOverride), Codec.FLOAT.optionalFieldOf("animation", 0.0F).forGetter(Unbaked::animation)).apply(i, Unbaked::new));
 
       public Unbaked(final SkullBlock.Type kind) {
@@ -61,7 +56,7 @@ public class SkullSpecialRenderer implements NoDataSpecialModelRenderer {
          return MAP_CODEC;
       }
 
-      public @Nullable SpecialModelRenderer<?> bake(final SpecialModelRenderer.BakingContext context) {
+      public @Nullable SkullSpecialRenderer bake(final SpecialModelRenderer.BakingContext context) {
          SkullModelBase model = SkullBlockRenderer.createModel(context.entityModelSet(), this.kind);
          Identifier textureOverride = (Identifier)this.textureOverride.map((t) -> t.withPath((UnaryOperator)((p) -> "textures/entity/" + p + ".png"))).orElse((Object)null);
          if (model == null) {

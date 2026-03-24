@@ -6,6 +6,7 @@ import net.minecraft.client.resources.model.ResolvableModel;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import org.joml.Matrix4fc;
 import org.jspecify.annotations.Nullable;
 
 public class EmptyModel implements ItemModel {
@@ -29,7 +30,7 @@ public class EmptyModel implements ItemModel {
       public void resolveDependencies(final ResolvableModel.Resolver resolver) {
       }
 
-      public ItemModel bake(final ItemModel.BakingContext context) {
+      public ItemModel bake(final ItemModel.BakingContext context, final Matrix4fc transformation) {
          return EmptyModel.INSTANCE;
       }
 

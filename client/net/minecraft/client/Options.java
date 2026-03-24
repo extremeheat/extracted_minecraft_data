@@ -26,6 +26,7 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.Iterator;
@@ -89,6 +90,7 @@ public class Options {
    public static final int RENDER_DISTANCE_EXTREME = 32;
    private static final Splitter OPTION_SPLITTER = Splitter.on(':').limit(2);
    private static final String DEFAULT_SOUND_DEVICE = "";
+   private static final Component TOOLTIP_NEEDS_RESTART = Component.translatable("options.needsRestart");
    private static final Component ACCESSIBILITY_TOOLTIP_DARK_MOJANG_BACKGROUND = Component.translatable("options.darkMojangStudiosBackgroundColor.tooltip");
    private final OptionInstance<Boolean> darkMojangStudiosBackground;
    private static final Component ACCESSIBILITY_TOOLTIP_HIDE_LIGHTNING_FLASHES = Component.translatable("options.hideLightningFlashes.tooltip");
@@ -200,6 +202,9 @@ public class Options {
    private final OptionInstance<Boolean> backgroundForChatOnly;
    private final OptionInstance<Boolean> touchscreen;
    private final OptionInstance<Boolean> fullscreen;
+   private boolean initialExclusiveFullscreen;
+   private static final Component TOOLTIP_EXCLUSIVE_FULLSCREEN_WARNING = Component.translatable("options.exclusiveFullscreen.warningTooltip");
+   private final OptionInstance<Boolean> exclusiveFullscreen;
    private final OptionInstance<Boolean> bobView;
    private static final Component KEY_TOGGLE = Component.translatable("options.key.toggle");
    private static final Component KEY_HOLD = Component.translatable("options.key.hold");
@@ -575,7 +580,7 @@ public class Options {
       Minecraft instance = Minecraft.getInstance();
       if (instance.getWindow() != null) {
          instance.updateFontOptions();
-         instance.resizeDisplay();
+         instance.resizeGui();
       }
 
    }
@@ -662,6 +667,10 @@ public class Options {
 
    public OptionInstance<Boolean> fullscreen() {
       return this.fullscreen;
+   }
+
+   public OptionInstance<Boolean> exclusiveFullscreen() {
+      return this.exclusiveFullscreen;
    }
 
    public OptionInstance<Boolean> bobView() {
@@ -977,6 +986,22 @@ public class Options {
          }
 
       });
+      this.exclusiveFullscreen = OptionInstance.createBoolean("options.exclusiveFullscreen", (value) -> {
+         List<Component> tooltipLines = new ArrayList();
+         if (value != this.initialExclusiveFullscreen) {
+            tooltipLines.add(TOOLTIP_NEEDS_RESTART);
+         }
+
+         if (value) {
+            if (!tooltipLines.isEmpty()) {
+               tooltipLines.add(CommonComponents.EMPTY);
+            }
+
+            tooltipLines.add(TOOLTIP_EXCLUSIVE_FULLSCREEN_WARNING);
+         }
+
+         return !tooltipLines.isEmpty() ? Tooltip.create(CommonComponents.joinLines((Collection)tooltipLines)) : null;
+      }, false);
       this.bobView = OptionInstance.createBoolean("options.viewBobbing", true);
       this.toggleCrouch = new OptionInstance<Boolean>("key.sneak", OptionInstance.noTooltip(), (caption, value) -> value ? KEY_TOGGLE : KEY_HOLD, OptionInstance.BOOLEAN_VALUES, false, (value) -> {
       });
@@ -1107,7 +1132,7 @@ public class Options {
       this.guiScale = new OptionInstance<Integer>("options.guiScale", OptionInstance.noTooltip(), (caption, value) -> value == 0 ? Component.translatable("options.guiScale.auto") : Component.literal(Integer.toString(value)), new OptionInstance.ClampingLazyMaxIntRange(0, () -> {
          Minecraft minecraft = Minecraft.getInstance();
          return !minecraft.isRunning() ? 2147483646 : minecraft.getWindow().calculateScale(0, minecraft.isEnforceUnicode());
-      }, 2147483646), 0, (value) -> this.minecraft.resizeDisplay());
+      }, 2147483646), 0, (value) -> this.minecraft.resizeGui());
       this.particles = new OptionInstance<ParticleStatus>("options.particles", OptionInstance.noTooltip(), (caption, value) -> value.caption(), new OptionInstance.Enum(Arrays.asList(ParticleStatus.values()), ParticleStatus.LEGACY_CODEC), ParticleStatus.ALL, (value) -> this.setGraphicsPresetToCustom());
       this.narrator = new OptionInstance<NarratorStatus>("options.narrator", OptionInstance.noTooltip(), (caption, value) -> (Component)(this.minecraft.getNarrator().isActive() ? value.getName() : Component.translatable("options.narrator.notavailable")), new OptionInstance.Enum(Arrays.asList(NarratorStatus.values()), NarratorStatus.LEGACY_CODEC), NarratorStatus.OFF, (value) -> this.minecraft.getNarrator().updateNarratorStatus(value));
       this.languageCode = "en_us";
@@ -1136,6 +1161,7 @@ public class Options {
       this.simulationDistance = new OptionInstance<Integer>("options.simulationDistance", OptionInstance.noTooltip(), (caption, value) -> genericValueLabel(caption, Component.translatable("options.chunks", value)), new OptionInstance.IntRange(SharedConstants.DEBUG_ALLOW_LOW_SIM_DISTANCE ? 2 : 5, largeDistances ? 32 : 16, false), 12, (value) -> this.setGraphicsPresetToCustom());
       this.syncWrites = Util.getPlatform() == Util.OS.WINDOWS;
       this.load();
+      this.initialExclusiveFullscreen = (Boolean)this.exclusiveFullscreen.get();
    }
 
    public float getBackgroundOpacity(final float defaultOpacity) {
@@ -1168,6 +1194,7 @@ public class Options {
       access.process("graphicsPreset", this.graphicsPreset);
       access.process("prioritizeChunkUpdates", this.prioritizeChunkUpdates);
       access.process("fullscreen", this.fullscreen);
+      access.process("exclusiveFullscreen", this.exclusiveFullscreen);
       access.process("gamma", this.gamma);
       access.process("guiScale", this.guiScale);
       access.process("maxAnisotropyBit", this.maxAnisotropyBit);
@@ -1555,7 +1582,7 @@ public class Options {
       return this.modelParts.contains(part);
    }
 
-   public CloudStatus getCloudsType() {
+   public CloudStatus getCloudStatus() {
       return this.cloudStatus.get();
    }
 

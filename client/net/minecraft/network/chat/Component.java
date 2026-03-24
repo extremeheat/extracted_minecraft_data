@@ -192,7 +192,11 @@ public interface Component extends Message, FormattedText {
    }
 
    static MutableComponent object(final ObjectInfo info) {
-      return MutableComponent.create(new ObjectContents(info));
+      return MutableComponent.create(new ObjectContents(info, Optional.empty()));
+   }
+
+   static MutableComponent object(final ObjectInfo info, final Component fallback) {
+      return MutableComponent.create(new ObjectContents(info, Optional.of(fallback)));
    }
 
    static Component translationArg(final Date date) {

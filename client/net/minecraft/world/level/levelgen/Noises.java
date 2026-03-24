@@ -18,6 +18,8 @@ public class Noises {
    public static final ResourceKey<NormalNoise.NoiseParameters> EROSION_LARGE = createKey("erosion_large");
    public static final ResourceKey<NormalNoise.NoiseParameters> RIDGE = createKey("ridge");
    public static final ResourceKey<NormalNoise.NoiseParameters> SHIFT = createKey("offset");
+   public static final ResourceKey<NormalNoise.NoiseParameters> TEMPERATURE_NETHER = createKey("nether/temperature");
+   public static final ResourceKey<NormalNoise.NoiseParameters> VEGETATION_NETHER = createKey("nether/vegetation");
    public static final ResourceKey<NormalNoise.NoiseParameters> AQUIFER_BARRIER = createKey("aquifer_barrier");
    public static final ResourceKey<NormalNoise.NoiseParameters> AQUIFER_FLUID_LEVEL_FLOODEDNESS = createKey("aquifer_fluid_level_floodedness");
    public static final ResourceKey<NormalNoise.NoiseParameters> AQUIFER_LAVA = createKey("aquifer_lava");
@@ -79,6 +81,6 @@ public class Noises {
 
    public static NormalNoise instantiate(final HolderGetter<NormalNoise.NoiseParameters> noises, final PositionalRandomFactory context, final ResourceKey<NormalNoise.NoiseParameters> name) {
       Holder<NormalNoise.NoiseParameters> holder = noises.getOrThrow(name);
-      return NormalNoise.create(context.fromHashOf(((ResourceKey)holder.unwrapKey().orElseThrow()).identifier()), holder.value());
+      return NormalNoise.create(context.fromHashOf(name.identifier()), holder.value());
    }
 }

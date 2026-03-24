@@ -38,7 +38,6 @@ public class UnderwaterMagmaFeature extends Feature<UnderwaterMagmaConfiguration
          BoundingBox bounds = BoundingBox.fromCorners(floorPos.subtract(radius), floorPos.offset(radius));
          return BlockPos.betweenClosedStream(bounds).filter((pos) -> random.nextFloat() < config.placementProbabilityPerValidPosition).filter((pos) -> this.isValidPlacement(level, pos)).mapToInt((pos) -> {
             level.setBlock(pos, Blocks.MAGMA_BLOCK.defaultBlockState(), 2);
-            markForPostProcessing(level, pos.above());
             return 1;
          }).sum() > 0;
       }

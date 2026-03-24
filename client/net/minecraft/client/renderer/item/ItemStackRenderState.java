@@ -1,6 +1,8 @@
 package net.minecraft.client.renderer.item;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -8,14 +10,16 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.ItemTransform;
-import net.minecraft.client.renderer.block.model.Material;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
+import net.minecraft.client.resources.model.cuboid.ItemTransform;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
@@ -98,7 +102,7 @@ public class ItemStackRenderState {
 
       for(int i = 0; i < this.activeLayerCount; ++i) {
          LayerRenderState layer = this.layers[i];
-         layer.transform.apply(this.displayContext.leftHand(), pose);
+         layer.applyTransform(pose);
          Matrix4f poseTransform = pose.pose();
          Vector3fc[] layerExtents = (Vector3fc[])layer.extents.get();
 
@@ -125,7 +129,7 @@ public class ItemStackRenderState {
          AABB.Builder collector = new AABB.Builder();
          Objects.requireNonNull(collector);
          this.visitExtents(collector::include);
-         AABB aabb = collector.build();
+         AABB aabb = collector.isDefined() ? collector.build() : AABB.ofSize(Vec3.ZERO, 0.0, 0.0, 0.0);
          this.cachedModelBoundingBox = aabb;
          return aabb;
       }
@@ -156,12 +160,14 @@ public class ItemStackRenderState {
    public class LayerRenderState {
       private static final Vector3fc[] NO_EXTENTS = new Vector3fc[0];
       public static final Supplier<Vector3fc[]> NO_EXTENTS_SUPPLIER = () -> NO_EXTENTS;
+      public static final int[] EMPTY_TINTS = new int[0];
       private final List<BakedQuad> quads;
       private boolean usesBlockLight;
       private Material.@Nullable Baked particleMaterial;
-      private ItemTransform transform;
+      private ItemTransform itemTransform;
+      private final Matrix4f localTransform;
       private FoilType foilType;
-      private int[] tintLayers;
+      private @Nullable IntList tintLayers;
       private @Nullable SpecialModelRenderer<Object> specialRenderer;
       private @Nullable Object argumentForSpecialRendering;
       private Supplier<Vector3fc[]> extents;
@@ -170,9 +176,9 @@ public class ItemStackRenderState {
          Objects.requireNonNull(ItemStackRenderState.this);
          super();
          this.quads = new ArrayList();
-         this.transform = ItemTransform.NO_TRANSFORM;
+         this.itemTransform = ItemTransform.NO_TRANSFORM;
+         this.localTransform = new Matrix4f();
          this.foilType = ItemStackRenderState.FoilType.NONE;
-         this.tintLayers = new int[0];
          this.extents = NO_EXTENTS_SUPPLIER;
       }
 
@@ -181,10 +187,14 @@ public class ItemStackRenderState {
          this.foilType = ItemStackRenderState.FoilType.NONE;
          this.specialRenderer = null;
          this.argumentForSpecialRendering = null;
-         Arrays.fill(this.tintLayers, -1);
+         if (this.tintLayers != null) {
+            this.tintLayers.clear();
+         }
+
          this.usesBlockLight = false;
          this.particleMaterial = null;
-         this.transform = ItemTransform.NO_TRANSFORM;
+         this.itemTransform = ItemTransform.NO_TRANSFORM;
+         this.localTransform.identity();
          this.extents = NO_EXTENTS_SUPPLIER;
       }
 
@@ -204,8 +214,12 @@ public class ItemStackRenderState {
          this.particleMaterial = particleMaterial;
       }
 
-      public void setTransform(final ItemTransform transform) {
-         this.transform = transform;
+      public void setItemTransform(final ItemTransform transform) {
+         this.itemTransform = transform;
+      }
+
+      public void setLocalTransform(final Matrix4fc transform) {
+         this.localTransform.set(transform);
       }
 
       public <T> void setupSpecialModel(final SpecialModelRenderer<T> renderer, final @Nullable T argument) {
@@ -221,10 +235,9 @@ public class ItemStackRenderState {
          this.foilType = foilType;
       }
 
-      public int[] prepareTintLayers(final int activeTints) {
-         if (activeTints > this.tintLayers.length) {
-            this.tintLayers = new int[activeTints];
-            Arrays.fill(this.tintLayers, -1);
+      public IntList tintLayers() {
+         if (this.tintLayers == null) {
+            this.tintLayers = new IntArrayList();
          }
 
          return this.tintLayers;
@@ -232,14 +245,20 @@ public class ItemStackRenderState {
 
       private void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final int outlineColor) {
          poseStack.pushPose();
-         this.transform.apply(ItemStackRenderState.this.displayContext.leftHand(), poseStack.last());
+         this.applyTransform(poseStack.last());
          if (this.specialRenderer != null) {
-            this.specialRenderer.submit(this.argumentForSpecialRendering, ItemStackRenderState.this.displayContext, poseStack, submitNodeCollector, lightCoords, overlayCoords, this.foilType != ItemStackRenderState.FoilType.NONE, outlineColor);
+            this.specialRenderer.submit(this.argumentForSpecialRendering, poseStack, submitNodeCollector, lightCoords, overlayCoords, this.foilType != ItemStackRenderState.FoilType.NONE, outlineColor);
          } else {
-            submitNodeCollector.submitItem(poseStack, ItemStackRenderState.this.displayContext, lightCoords, overlayCoords, outlineColor, this.tintLayers, this.quads, this.foilType);
+            int[] tints = this.tintLayers != null ? this.tintLayers.toArray(EMPTY_TINTS) : EMPTY_TINTS;
+            submitNodeCollector.submitItem(poseStack, ItemStackRenderState.this.displayContext, lightCoords, overlayCoords, outlineColor, tints, this.quads, this.foilType);
          }
 
          poseStack.popPose();
+      }
+
+      private void applyTransform(final PoseStack.Pose localPose) {
+         this.itemTransform.apply(ItemStackRenderState.this.displayContext.leftHand(), localPose);
+         localPose.mulPose((Matrix4fc)this.localTransform);
       }
    }
 }

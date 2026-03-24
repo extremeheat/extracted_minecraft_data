@@ -109,5 +109,9 @@ public abstract class Property<T extends Comparable<T>> {
          String var10000 = this.property.getName();
          return var10000 + "=" + this.property.getName(this.value);
       }
+
+      public String valueName() {
+         return this.property.getName(this.value);
+      }
    }
 }

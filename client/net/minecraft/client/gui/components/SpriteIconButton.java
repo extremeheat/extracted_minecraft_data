@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.components;
 
 import net.minecraft.client.gui.ActiveTextCollector;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -23,7 +23,7 @@ public abstract class SpriteIconButton extends Button {
       this.sprite = sprite;
    }
 
-   protected void renderSprite(final GuiGraphics graphics, final int x, final int y) {
+   protected void extractSprite(final GuiGraphicsExtractor graphics, final int x, final int y) {
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, this.sprite.get(this.isActive(), this.isHoveredOrFocused()), x, y, this.spriteWidth, this.spriteHeight, this.alpha);
    }
 
@@ -36,11 +36,11 @@ public abstract class SpriteIconButton extends Button {
          super(width, height, message, spriteWidth, spriteHeight, sprite, onPress, tooltip, narration);
       }
 
-      public void renderContents(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-         this.renderDefaultSprite(graphics);
+      public void extractContents(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+         this.extractDefaultSprite(graphics);
          int x = this.getX() + this.getWidth() / 2 - this.spriteWidth / 2;
          int y = this.getY() + this.getHeight() / 2 - this.spriteHeight / 2;
-         this.renderSprite(graphics, x, y);
+         this.extractSprite(graphics, x, y);
       }
    }
 
@@ -49,16 +49,16 @@ public abstract class SpriteIconButton extends Button {
          super(width, height, message, spriteWidth, spriteHeight, sprite, onPress, tooltip, narration);
       }
 
-      public void renderContents(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-         this.renderDefaultSprite(graphics);
+      public void extractContents(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+         this.extractDefaultSprite(graphics);
          int left = this.getX() + 2;
          int right = this.getX() + this.getWidth() - this.spriteWidth - 4;
          int centerX = this.getX() + this.getWidth() / 2;
-         ActiveTextCollector output = graphics.textRendererForWidget(this, GuiGraphics.HoveredTextEffects.NONE);
+         ActiveTextCollector output = graphics.textRendererForWidget(this, GuiGraphicsExtractor.HoveredTextEffects.NONE);
          output.acceptScrolling(this.getMessage(), centerX, left, right, this.getY(), this.getY() + this.getHeight());
          int x = this.getX() + this.getWidth() - this.spriteWidth - 2;
          int y = this.getY() + this.getHeight() / 2 - this.spriteHeight / 2;
-         this.renderSprite(graphics, x, y);
+         this.extractSprite(graphics, x, y);
       }
    }
 

@@ -169,7 +169,7 @@ public class CopperGolemModel extends EntityModel<CopperGolemRenderState> implem
       this.root.translateAndRotate(poseStack);
       this.body.translateAndRotate(poseStack);
       this.head.translateAndRotate(poseStack);
-      poseStack.translate(0.0, -2.25, 0.0);
+      poseStack.translate(0.0, -1.75, 0.0);
    }
 
    private void poseHeldItemArmsIfStill() {

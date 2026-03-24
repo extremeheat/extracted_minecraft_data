@@ -2,7 +2,7 @@ package net.minecraft.client.gui.screens.inventory;
 
 import java.util.Objects;
 import net.minecraft.client.GameNarrator;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
@@ -186,22 +186,22 @@ public class JigsawBlockEditScreen extends Screen {
       }
    }
 
-   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-      super.render(graphics, mouseX, mouseY, a);
-      graphics.drawString(this.font, (Component)POOL_LABEL, this.width / 2 - 153, 10, -6250336);
-      this.poolEdit.render(graphics, mouseX, mouseY, a);
-      graphics.drawString(this.font, (Component)NAME_LABEL, this.width / 2 - 153, 45, -6250336);
-      this.nameEdit.render(graphics, mouseX, mouseY, a);
-      graphics.drawString(this.font, (Component)TARGET_LABEL, this.width / 2 - 153, 80, -6250336);
-      this.targetEdit.render(graphics, mouseX, mouseY, a);
-      graphics.drawString(this.font, (Component)FINAL_STATE_LABEL, this.width / 2 - 153, 115, -6250336);
-      this.finalStateEdit.render(graphics, mouseX, mouseY, a);
-      graphics.drawString(this.font, (Component)SELECTION_PRIORITY_LABEL, this.width / 2 - 153, 150, -6250336);
-      this.placementPriorityEdit.render(graphics, mouseX, mouseY, a);
-      graphics.drawString(this.font, (Component)PLACEMENT_PRIORITY_LABEL, this.width / 2 - 50, 150, -6250336);
-      this.selectionPriorityEdit.render(graphics, mouseX, mouseY, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
+      graphics.text(this.font, (Component)POOL_LABEL, this.width / 2 - 153, 10, -6250336);
+      this.poolEdit.extractRenderState(graphics, mouseX, mouseY, a);
+      graphics.text(this.font, (Component)NAME_LABEL, this.width / 2 - 153, 45, -6250336);
+      this.nameEdit.extractRenderState(graphics, mouseX, mouseY, a);
+      graphics.text(this.font, (Component)TARGET_LABEL, this.width / 2 - 153, 80, -6250336);
+      this.targetEdit.extractRenderState(graphics, mouseX, mouseY, a);
+      graphics.text(this.font, (Component)FINAL_STATE_LABEL, this.width / 2 - 153, 115, -6250336);
+      this.finalStateEdit.extractRenderState(graphics, mouseX, mouseY, a);
+      graphics.text(this.font, (Component)SELECTION_PRIORITY_LABEL, this.width / 2 - 153, 150, -6250336);
+      this.placementPriorityEdit.extractRenderState(graphics, mouseX, mouseY, a);
+      graphics.text(this.font, (Component)PLACEMENT_PRIORITY_LABEL, this.width / 2 - 50, 150, -6250336);
+      this.selectionPriorityEdit.extractRenderState(graphics, mouseX, mouseY, a);
       if (JigsawBlock.getFrontFacing(this.jigsawEntity.getBlockState()).getAxis().isVertical()) {
-         graphics.drawString(this.font, (Component)JOINT_LABEL, this.width / 2 + 53, 150, -6250336);
+         graphics.text(this.font, (Component)JOINT_LABEL, this.width / 2 + 53, 150, -6250336);
       }
 
    }

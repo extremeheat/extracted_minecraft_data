@@ -1,8 +1,8 @@
 package net.minecraft.client.renderer.block;
 
 import java.util.Map;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
-import net.minecraft.client.renderer.block.model.Material;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class BlockStateModelSet {

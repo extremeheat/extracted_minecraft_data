@@ -2,7 +2,9 @@ package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import com.mojang.math.Transformation;
 import java.util.EnumSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import net.minecraft.client.model.geom.EntityModelSet;
@@ -21,23 +23,25 @@ import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.SpriteGetter;
-import net.minecraft.client.resources.model.SpriteId;
+import net.minecraft.client.resources.model.sprite.SpriteGetter;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Util;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.entity.DecoratedPotBlockEntity;
 import net.minecraft.world.level.block.entity.DecoratedPotPatterns;
 import net.minecraft.world.level.block.entity.PotDecorations;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Quaternionfc;
+import org.joml.Matrix4f;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
 public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlockEntity, DecoratedPotRenderState> {
+   private static final Map<Direction, Transformation> TRANSFORMATIONS = Util.<Direction, Transformation>makeEnumMap(Direction.class, DecoratedPotRenderer::createModelTransformation);
    private final SpriteGetter sprites;
    private static final String NECK = "neck";
    private static final String FRONT = "front";
@@ -130,10 +134,7 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
 
    public void submit(final DecoratedPotRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
       poseStack.pushPose();
-      Direction entityDirection = state.direction;
-      poseStack.translate(0.5, 0.0, 0.5);
-      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - entityDirection.toYRot()));
-      poseStack.translate(-0.5, 0.0, -0.5);
+      poseStack.mulPose(modelTransformation(state.direction));
       if (state.wobbleProgress >= 0.0F && state.wobbleProgress <= 1.0F) {
          if (state.wobbleStyle == DecoratedPotBlockEntity.WobbleStyle.POSITIVE) {
             float amplitude = 0.015625F;
@@ -151,6 +152,14 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
 
       this.submit(poseStack, submitNodeCollector, state.lightCoords, OverlayTexture.NO_OVERLAY, state.decorations, 0);
       poseStack.popPose();
+   }
+
+   public static Transformation modelTransformation(final Direction facing) {
+      return (Transformation)TRANSFORMATIONS.get(facing);
+   }
+
+   private static Transformation createModelTransformation(final Direction entityDirection) {
+      return new Transformation((new Matrix4f()).rotateAround(Axis.YP.rotationDegrees(180.0F - entityDirection.toYRot()), 0.5F, 0.5F, 0.5F));
    }
 
    public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final PotDecorations decorations, final int outlineColor) {

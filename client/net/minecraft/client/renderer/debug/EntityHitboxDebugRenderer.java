@@ -31,13 +31,14 @@ public class EntityHitboxDebugRenderer implements DebugRenderer.SimpleDebugRende
       if (this.minecraft.level != null) {
          for(Entity entity : this.minecraft.level.entitiesForRendering()) {
             if (!entity.isInvisible() && frustum.isVisible(entity.getBoundingBox()) && (entity != this.minecraft.getCameraEntity() || this.minecraft.options.getCameraType() != CameraType.FIRST_PERSON)) {
-               this.showHitboxes(entity, partialTicks, false);
+               float entityPartialTicks = this.minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(!this.minecraft.level.tickRateManager().isEntityFrozen(entity));
+               this.showHitboxes(entity, entityPartialTicks, false);
                if (SharedConstants.DEBUG_SHOW_LOCAL_SERVER_ENTITY_HIT_BOXES) {
                   Entity serverEntity = this.getServerEntity(entity);
                   if (serverEntity != null) {
-                     this.showHitboxes(entity, partialTicks, true);
+                     this.showHitboxes(entity, entityPartialTicks, true);
                   } else {
-                     Gizmos.billboardText("Missing Server Entity", entity.getPosition(partialTicks).add(0.0, entity.getBoundingBox().getYsize() + 1.5, 0.0), TextGizmo.Style.forColorAndCentered(-65536));
+                     Gizmos.billboardText("Missing Server Entity", entity.getPosition(entityPartialTicks).add(0.0, entity.getBoundingBox().getYsize() + 1.5, 0.0), TextGizmo.Style.forColorAndCentered(-65536));
                   }
                }
             }

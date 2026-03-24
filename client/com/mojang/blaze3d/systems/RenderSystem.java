@@ -6,6 +6,7 @@ import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.GpuFence;
 import com.mojang.blaze3d.buffers.Std140SizeCalculator;
+import com.mojang.blaze3d.platform.BackendOptions;
 import com.mojang.blaze3d.platform.GLX;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.Tesselator;
@@ -38,7 +39,6 @@ public class RenderSystem {
    public static final int PROJECTION_MATRIX_UBO_SIZE = (new Std140SizeCalculator()).putMat4f().get();
    private static @Nullable Thread renderThread;
    private static @Nullable GpuDevice DEVICE;
-   private static double lastDrawTime = 4.9E-324;
    private static final AutoStorageIndexBuffer sharedSequential = new AutoStorageIndexBuffer(1, 1, IntConsumer::accept);
    private static final AutoStorageIndexBuffer sharedSequentialQuad = new AutoStorageIndexBuffer(4, 6, (c, i) -> {
       c.accept(i);
@@ -126,17 +126,6 @@ public class RenderSystem {
       Minecraft.getInstance().levelRenderer.endFrame();
    }
 
-   public static void limitDisplayFPS(final int framerateLimit) {
-      double targetTime = lastDrawTime + 1.0 / (double)framerateLimit;
-
-      double drawTime;
-      for(drawTime = GLFW.glfwGetTime(); drawTime < targetTime; drawTime = GLFW.glfwGetTime()) {
-         GLFW.glfwWaitEventsTimeout(targetTime - drawTime);
-      }
-
-      lastDrawTime = drawTime;
-   }
-
    public static void setShaderFog(final GpuBufferSlice fog) {
       shaderFog = fog;
    }
@@ -173,8 +162,8 @@ public class RenderSystem {
       return apiDescription;
    }
 
-   public static TimeSource.NanoTimeSource initBackendSystem() {
-      LongSupplier var10000 = GLX._initGlfw();
+   public static TimeSource.NanoTimeSource initBackendSystem(final BackendOptions options) {
+      LongSupplier var10000 = GLX._initGlfw(options);
       Objects.requireNonNull(var10000);
       return var10000::getAsLong;
    }

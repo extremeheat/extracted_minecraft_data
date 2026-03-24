@@ -16,7 +16,7 @@ import net.minecraft.client.data.models.blockstates.BlockModelDefinitionGenerato
 import net.minecraft.client.data.models.model.ItemModelUtils;
 import net.minecraft.client.data.models.model.ModelInstance;
 import net.minecraft.client.data.models.model.ModelLocationUtils;
-import net.minecraft.client.renderer.block.model.BlockModelDefinition;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelDispatcher;
 import net.minecraft.client.renderer.item.ClientItem;
 import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -99,9 +99,9 @@ public class ModelProvider implements DataProvider {
       }
 
       public CompletableFuture<?> save(final CachedOutput cache, final PackOutput.PathProvider pathProvider) {
-         Map<Block, BlockModelDefinition> definitions = Maps.transformValues(this.generators, BlockModelDefinitionGenerator::create);
+         Map<Block, BlockStateModelDispatcher> definitions = Maps.transformValues(this.generators, BlockModelDefinitionGenerator::create);
          Function<Block, Path> pathGetter = (block) -> pathProvider.json(block.builtInRegistryHolder().key().identifier());
-         return DataProvider.saveAll(cache, BlockModelDefinition.CODEC, pathGetter, definitions);
+         return DataProvider.saveAll(cache, BlockStateModelDispatcher.CODEC, pathGetter, definitions);
       }
    }
 

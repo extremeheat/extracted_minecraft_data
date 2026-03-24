@@ -6,7 +6,7 @@ import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.Screen;
@@ -133,9 +133,9 @@ public class OptionsList extends ContainerObjectSelectionList<AbstractEntry> {
          return List.of(this.widget);
       }
 
-      public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+      public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
          this.widget.setPosition(this.screen.width / 2 - 155, this.getContentY() + this.paddingTop);
-         this.widget.render(graphics, mouseX, mouseY, a);
+         this.widget.extractRenderState(graphics, mouseX, mouseY, a);
       }
 
       public List<? extends GuiEventListener> children() {
@@ -171,13 +171,13 @@ public class OptionsList extends ContainerObjectSelectionList<AbstractEntry> {
          return optionB == null ? new Entry(List.of(new OptionInstanceWidget(buttonA, optionA)), screen) : new Entry(List.of(new OptionInstanceWidget(buttonA, optionA), new OptionInstanceWidget(optionB.createButton(options), optionB)), screen);
       }
 
-      public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+      public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
          int xOffset = 0;
          int x = this.screen.width / 2 - 155;
 
          for(OptionInstanceWidget optionInstanceWidget : this.children) {
             optionInstanceWidget.widget().setPosition(x + xOffset, this.getContentY());
-            optionInstanceWidget.widget().render(graphics, mouseX, mouseY, a);
+            optionInstanceWidget.widget().extractRenderState(graphics, mouseX, mouseY, a);
             xOffset += 160;
          }
 

@@ -20,7 +20,7 @@ import net.minecraft.client.renderer.texture.atlas.sources.DirectoryLister;
 import net.minecraft.client.renderer.texture.atlas.sources.PalettedPermutations;
 import net.minecraft.client.renderer.texture.atlas.sources.SingleFile;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
-import net.minecraft.client.resources.model.SpriteId;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;

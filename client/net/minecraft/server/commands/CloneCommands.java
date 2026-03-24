@@ -88,9 +88,9 @@ public class CloneCommands {
       if (!mode.canOverlap() && fromDimension == toDimension && destination.intersects(from)) {
          throw ERROR_OVERLAP.create();
       } else {
-         int area = from.getXSpan() * from.getYSpan() * from.getZSpan();
+         long area = (long)from.getXSpan() * (long)from.getYSpan() * (long)from.getZSpan();
          int limit = (Integer)source.getLevel().getGameRules().get(GameRules.MAX_BLOCK_MODIFICATIONS);
-         if (area > limit) {
+         if (area > (long)limit) {
             throw ERROR_AREA_TOO_LARGE.create(limit, area);
          } else if (fromDimension.hasChunksAt(startPos, endPos) && toDimension.hasChunksAt(destPos, destEndPos)) {
             if (toDimension.isDebug()) {
@@ -180,14 +180,14 @@ public class CloneCommands {
                   }
 
                   toDimension.getBlockTicks().copyAreaFrom(fromDimension.getBlockTicks(), from, offset);
-               } catch (Throwable var35) {
+               } catch (Throwable var36) {
                   try {
                      reporter.close();
-                  } catch (Throwable var34) {
-                     var35.addSuppressed(var34);
+                  } catch (Throwable var35) {
+                     var36.addSuppressed(var35);
                   }
 
-                  throw var35;
+                  throw var36;
                }
 
                reporter.close();

@@ -13,6 +13,7 @@ import net.minecraft.commands.arguments.selector.EntitySelector;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentContents;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.ResolutionContext;
 import net.minecraft.network.chat.numbers.StyledFormat;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.CompilableString;
@@ -21,7 +22,6 @@ import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.ReadOnlyScoreInfo;
 import net.minecraft.world.scores.ScoreHolder;
 import net.minecraft.world.scores.Scoreboard;
-import org.jspecify.annotations.Nullable;
 
 public record ScoreContents(Either<CompilableString<EntitySelector>, String> name, String objective) implements ComponentContents {
    public static final MapCodec<ScoreContents> INNER_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.either(EntitySelector.COMPILABLE_CODEC, Codec.STRING).fieldOf("name").forGetter(ScoreContents::name), Codec.STRING.fieldOf("objective").forGetter(ScoreContents::objective)).apply(i, ScoreContents::new));
@@ -69,11 +69,13 @@ public record ScoreContents(Either<CompilableString<EntitySelector>, String> nam
       return Component.empty();
    }
 
-   public MutableComponent resolve(final @Nullable CommandSourceStack source, final @Nullable Entity entity, final int recursionDepth) throws CommandSyntaxException {
+   public MutableComponent resolve(final ResolutionContext context, final int recursionDepth) throws CommandSyntaxException {
+      CommandSourceStack source = context.source();
       if (source == null) {
          return Component.empty();
       } else {
          ScoreHolder scoreHolder = this.findTargetName(source);
+         Entity entity = context.defaultScoreboardEntity();
          ScoreHolder scoreName = (ScoreHolder)(entity != null && scoreHolder.equals(ScoreHolder.WILDCARD) ? entity : scoreHolder);
          return this.getScore(scoreName, source);
       }

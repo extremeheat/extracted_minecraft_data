@@ -2,7 +2,7 @@ package net.minecraft.client.gui.screens.recipebook;
 
 import java.util.List;
 import net.minecraft.client.ClientRecipeBook;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.WidgetSprites;
@@ -40,7 +40,7 @@ public class RecipeBookTabButton extends ImageButton {
 
    }
 
-   public void renderContents(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractContents(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       if (this.animationTime > 0.0F) {
          float squeeze = 1.0F + 0.1F * (float)Math.sin((double)(this.animationTime / 15.0F * 3.1415927F));
          graphics.pose().pushMatrix();
@@ -56,7 +56,7 @@ public class RecipeBookTabButton extends ImageButton {
       }
 
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, xPos, this.getY(), this.width, this.height);
-      this.renderIcon(graphics);
+      this.extractIcon(graphics);
       if (this.animationTime > 0.0F) {
          graphics.pose().popMatrix();
          this.animationTime -= a;
@@ -64,20 +64,20 @@ public class RecipeBookTabButton extends ImageButton {
 
    }
 
-   protected void handleCursor(final GuiGraphics graphics) {
+   protected void handleCursor(final GuiGraphicsExtractor graphics) {
       if (!this.selected) {
          super.handleCursor(graphics);
       }
 
    }
 
-   private void renderIcon(final GuiGraphics graphics) {
+   private void extractIcon(final GuiGraphicsExtractor graphics) {
       int moveLeft = this.selected ? -2 : 0;
       if (this.tabInfo.secondaryIcon().isPresent()) {
-         graphics.renderFakeItem(this.tabInfo.primaryIcon(), this.getX() + 3 + moveLeft, this.getY() + 5);
-         graphics.renderFakeItem((ItemStack)this.tabInfo.secondaryIcon().get(), this.getX() + 14 + moveLeft, this.getY() + 5);
+         graphics.fakeItem(this.tabInfo.primaryIcon(), this.getX() + 3 + moveLeft, this.getY() + 5);
+         graphics.fakeItem((ItemStack)this.tabInfo.secondaryIcon().get(), this.getX() + 14 + moveLeft, this.getY() + 5);
       } else {
-         graphics.renderFakeItem(this.tabInfo.primaryIcon(), this.getX() + 9 + moveLeft, this.getY() + 5);
+         graphics.fakeItem(this.tabInfo.primaryIcon(), this.getX() + 9 + moveLeft, this.getY() + 5);
       }
 
    }

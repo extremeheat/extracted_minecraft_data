@@ -8,9 +8,10 @@ import net.minecraft.client.model.object.cart.MinecartModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.BlockModelRenderState;
 import net.minecraft.client.renderer.block.BlockModelResolver;
+import net.minecraft.client.renderer.block.model.BlockDisplayContext;
 import net.minecraft.client.renderer.entity.state.MinecartRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -25,6 +26,7 @@ import org.joml.Quaternionfc;
 public abstract class AbstractMinecartRenderer<T extends AbstractMinecart, S extends MinecartRenderState> extends EntityRenderer<T, S> {
    private static final Identifier MINECART_LOCATION = Identifier.withDefaultNamespace("textures/entity/minecart/minecart.png");
    private static final float DISPLAY_BLOCK_SCALE = 0.75F;
+   public static final BlockDisplayContext BLOCK_DISPLAY_CONTEXT = BlockDisplayContext.create();
    protected final MinecartModel model;
    private final BlockModelResolver blockModelResolver;
 
@@ -65,7 +67,7 @@ public abstract class AbstractMinecartRenderer<T extends AbstractMinecart, S ext
       }
 
       poseStack.scale(-1.0F, -1.0F, 1.0F);
-      submitNodeCollector.submitModel(this.model, state, poseStack, this.model.renderType(MINECART_LOCATION), state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+      submitNodeCollector.submitModel(this.model, state, poseStack, MINECART_LOCATION, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       poseStack.popPose();
    }
 
@@ -118,7 +120,7 @@ public abstract class AbstractMinecartRenderer<T extends AbstractMinecart, S ext
       state.hurtDir = entity.getHurtDir();
       state.damageTime = Math.max(entity.getDamage() - partialTicks, 0.0F);
       state.displayOffset = entity.getDisplayOffset();
-      this.blockModelResolver.update(state.displayBlockModel, entity.getDisplayBlockState());
+      this.blockModelResolver.update(state.displayBlockModel, entity.getDisplayBlockState(), BLOCK_DISPLAY_CONTEXT);
    }
 
    private static <T extends AbstractMinecart, S extends MinecartRenderState> void newExtractState(final T entity, final NewMinecartBehavior behavior, final S state, final float partialTicks) {

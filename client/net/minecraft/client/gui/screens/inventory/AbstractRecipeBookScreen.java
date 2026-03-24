@@ -1,6 +1,6 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.navigation.ScreenPosition;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
@@ -49,25 +49,25 @@ public abstract class AbstractRecipeBookScreen<T extends RecipeBookMenu> extends
    protected void onRecipeBookButtonClick() {
    }
 
-   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       if (this.recipeBookComponent.isVisible() && this.widthTooNarrow) {
-         this.renderBackground(graphics, mouseX, mouseY, a);
+         this.extractBackground(graphics, mouseX, mouseY, a);
       } else {
-         super.renderContents(graphics, mouseX, mouseY, a);
+         super.extractContents(graphics, mouseX, mouseY, a);
       }
 
       graphics.nextStratum();
-      this.recipeBookComponent.render(graphics, mouseX, mouseY, a);
+      this.recipeBookComponent.extractRenderState(graphics, mouseX, mouseY, a);
       graphics.nextStratum();
-      this.renderCarriedItem(graphics, mouseX, mouseY);
-      this.renderSnapbackItem(graphics);
-      this.renderTooltip(graphics, mouseX, mouseY);
-      this.recipeBookComponent.renderTooltip(graphics, mouseX, mouseY, this.hoveredSlot);
+      this.extractCarriedItem(graphics, mouseX, mouseY);
+      this.extractSnapbackItem(graphics);
+      this.extractTooltip(graphics, mouseX, mouseY);
+      this.recipeBookComponent.extractTooltip(graphics, mouseX, mouseY, this.hoveredSlot);
    }
 
-   protected void renderSlots(final GuiGraphics graphics, final int mouseX, final int mouseY) {
-      super.renderSlots(graphics, mouseX, mouseY);
-      this.recipeBookComponent.renderGhostRecipe(graphics, this.isBiggerResultSlot());
+   protected void extractSlots(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY) {
+      super.extractSlots(graphics, mouseX, mouseY);
+      this.recipeBookComponent.extractGhostRecipe(graphics, this.isBiggerResultSlot());
    }
 
    protected boolean isBiggerResultSlot() {

@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.components.spectator;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.spectator.SpectatorMenu;
 import net.minecraft.client.gui.spectator.SpectatorMenuItem;
 import net.minecraft.client.gui.spectator.SpectatorMenuListener;
@@ -44,7 +44,7 @@ public class SpectatorGui implements SpectatorMenuListener {
       return Mth.clamp((float)delta / 2000.0F, 0.0F, 1.0F);
    }
 
-   public void renderHotbar(final GuiGraphics graphics) {
+   public void extractHotbar(final GuiGraphicsExtractor graphics) {
       if (this.menu != null) {
          float alpha = this.getHotbarAlpha();
          if (alpha <= 0.0F) {
@@ -53,12 +53,12 @@ public class SpectatorGui implements SpectatorMenuListener {
             int screenCenter = graphics.guiWidth() / 2;
             int y = Mth.floor((float)graphics.guiHeight() - 22.0F * alpha);
             SpectatorPage page = this.menu.getCurrentPage();
-            this.renderPage(graphics, alpha, screenCenter, y, page);
+            this.extractPage(graphics, alpha, screenCenter, y, page);
          }
       }
    }
 
-   protected void renderPage(final GuiGraphics graphics, final float alpha, final int screenCenter, final int y, final SpectatorPage page) {
+   protected void extractPage(final GuiGraphicsExtractor graphics, final float alpha, final int screenCenter, final int y, final SpectatorPage page) {
       int color = ARGB.white(alpha);
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)HOTBAR_SPRITE, screenCenter - 91, y, 182, 22, color);
       if (page.getSelectedSlot() >= 0) {
@@ -66,27 +66,27 @@ public class SpectatorGui implements SpectatorMenuListener {
       }
 
       for(int slot = 0; slot < 9; ++slot) {
-         this.renderSlot(graphics, slot, graphics.guiWidth() / 2 - 90 + slot * 20 + 2, (float)(y + 3), alpha, page.getItem(slot));
+         this.extractSlot(graphics, slot, graphics.guiWidth() / 2 - 90 + slot * 20 + 2, (float)(y + 3), alpha, page.getItem(slot));
       }
 
    }
 
-   private void renderSlot(final GuiGraphics graphics, final int slot, final int x, final float y, final float alpha, final SpectatorMenuItem item) {
+   private void extractSlot(final GuiGraphicsExtractor graphics, final int slot, final int x, final float y, final float alpha, final SpectatorMenuItem item) {
       if (item != SpectatorMenu.EMPTY_SLOT) {
          graphics.pose().pushMatrix();
          graphics.pose().translate((float)x, y);
          float brightness = item.isEnabled() ? 1.0F : 0.25F;
-         item.renderIcon(graphics, brightness, alpha);
+         item.extractIcon(graphics, brightness, alpha);
          graphics.pose().popMatrix();
          if (alpha > 0.0F && item.isEnabled()) {
             Component key = this.minecraft.options.keyHotbarSlots[slot].getTranslatedKeyMessage();
-            graphics.drawString(this.minecraft.font, key, x + 19 - 2 - this.minecraft.font.width((FormattedText)key), (int)y + 6 + 3, ARGB.white(alpha));
+            graphics.text(this.minecraft.font, key, x + 19 - 2 - this.minecraft.font.width((FormattedText)key), (int)y + 6 + 3, ARGB.white(alpha));
          }
       }
 
    }
 
-   public void renderAction(final GuiGraphics graphics) {
+   public void extractAction(final GuiGraphicsExtractor graphics) {
       float alpha = this.getHotbarAlpha();
       if (alpha > 0.0F && this.menu != null) {
          SpectatorMenuItem item = this.menu.getSelectedItem();
@@ -94,7 +94,7 @@ public class SpectatorGui implements SpectatorMenuListener {
          int strWidth = this.minecraft.font.width((FormattedText)action);
          int x = (graphics.guiWidth() - strWidth) / 2;
          int y = graphics.guiHeight() - 35;
-         graphics.drawStringWithBackdrop(this.minecraft.font, action, x, y, strWidth, ARGB.white(alpha));
+         graphics.textWithBackdrop(this.minecraft.font, action, x, y, strWidth, ARGB.white(alpha));
       }
 
    }

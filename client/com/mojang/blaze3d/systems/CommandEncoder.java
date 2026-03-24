@@ -246,7 +246,7 @@ public class CommandEncoder {
       if (this.backend.isInRenderPass()) {
          throw new IllegalStateException("Close the existing render pass before performing additional commands");
       } else if (mipLevel >= 0 && mipLevel < source.getMipLevels()) {
-         if ((long)(source.getWidth(mipLevel) * source.getHeight(mipLevel) * source.getFormat().pixelSize()) + offset > destination.size()) {
+         if ((long)width * (long)height * (long)source.getFormat().pixelSize() + offset > destination.size()) {
             long var10002 = destination.size();
             throw new IllegalArgumentException("Buffer of size " + var10002 + " is not large enough to hold " + width + "x" + height + " pixels (" + source.getFormat().pixelSize() + " bytes each) starting from offset " + offset);
          } else if ((source.usage() & 2) == 0) {

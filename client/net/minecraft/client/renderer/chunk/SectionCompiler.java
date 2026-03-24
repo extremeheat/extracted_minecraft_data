@@ -17,7 +17,8 @@ import net.minecraft.client.renderer.SectionBufferBuilderPack;
 import net.minecraft.client.renderer.block.BlockModelLighter;
 import net.minecraft.client.renderer.block.BlockQuadOutput;
 import net.minecraft.client.renderer.block.BlockStateModelSet;
-import net.minecraft.client.renderer.block.LiquidBlockRenderer;
+import net.minecraft.client.renderer.block.FluidRenderer;
+import net.minecraft.client.renderer.block.FluidStateModelSet;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
@@ -33,16 +34,16 @@ public class SectionCompiler {
    private final boolean ambientOcclusion;
    private final boolean cutoutLeaves;
    private final BlockStateModelSet blockModelSet;
-   private final LiquidBlockRenderer liquidRenderer;
+   private final FluidStateModelSet fluidModelSet;
    private final BlockColors blockColors;
    private final BlockEntityRenderDispatcher blockEntityRenderer;
 
-   public SectionCompiler(final boolean ambientOcclusion, final boolean cutoutLeaves, final BlockStateModelSet blockModelSet, final LiquidBlockRenderer liquidRenderer, final BlockColors blockColors, final BlockEntityRenderDispatcher blockEntityRenderer) {
+   public SectionCompiler(final boolean ambientOcclusion, final boolean cutoutLeaves, final BlockStateModelSet blockModelSet, final FluidStateModelSet fluidModelSet, final BlockColors blockColors, final BlockEntityRenderDispatcher blockEntityRenderer) {
       super();
       this.ambientOcclusion = ambientOcclusion;
       this.cutoutLeaves = cutoutLeaves;
       this.blockModelSet = blockModelSet;
-      this.liquidRenderer = liquidRenderer;
+      this.fluidModelSet = fluidModelSet;
       this.blockColors = blockColors;
       this.blockEntityRenderer = blockEntityRenderer;
    }
@@ -54,15 +55,17 @@ public class SectionCompiler {
       VisGraph visGraph = new VisGraph();
       BlockModelLighter.enableCaching();
       ModelBlockRenderer blockRenderer = new ModelBlockRenderer(this.ambientOcclusion, true, this.blockColors);
+      FluidRenderer fluidRenderer = new FluidRenderer(this.fluidModelSet);
       Map<ChunkSectionLayer, BufferBuilder> startedLayers = new EnumMap(ChunkSectionLayer.class);
       BlockQuadOutput quadOutput = (x, y, z, quad, instance) -> {
-         BufferBuilder builder = this.getOrBeginLayer(startedLayers, builders, quad.spriteInfo().layer());
+         BufferBuilder builder = this.getOrBeginLayer(startedLayers, builders, quad.materialInfo().layer());
          builder.putBlockBakedQuad(x, y, z, quad, instance);
       };
       BlockQuadOutput opaqueQuadOutput = (x, y, z, quad, instance) -> {
          BufferBuilder builder = this.getOrBeginLayer(startedLayers, builders, ChunkSectionLayer.SOLID);
          builder.putBlockBakedQuad(x, y, z, quad, instance);
       };
+      FluidRenderer.Output fluidOutput = (layerx) -> this.getOrBeginLayer(startedLayers, builders, layerx);
 
       for(BlockPos pos : BlockPos.betweenClosed(minPos, maxPos)) {
          BlockState blockState = region.getBlockState(pos);
@@ -81,9 +84,7 @@ public class SectionCompiler {
 
                FluidState fluidState = blockState.getFluidState();
                if (!fluidState.isEmpty()) {
-                  ChunkSectionLayer layer = this.liquidRenderer.getRenderLayer(fluidState);
-                  BufferBuilder builder = this.getOrBeginLayer(startedLayers, builders, layer);
-                  this.liquidRenderer.tesselate(region, pos, builder, blockState, fluidState);
+                  fluidRenderer.tesselate(region, pos, fluidOutput, blockState, fluidState);
                }
 
                if (blockState.getRenderShape() == RenderShape.MODEL) {

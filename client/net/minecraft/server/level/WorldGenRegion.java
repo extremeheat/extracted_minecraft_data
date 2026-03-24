@@ -264,8 +264,11 @@ public class WorldGenRegion implements WorldGenLevel {
             chunk.removeBlockEntity(pos);
          }
 
-         if (blockState.hasPostProcess(this, pos) && (updateFlags & 16) == 0) {
-            this.markPosForPostprocessing(pos);
+         if ((updateFlags & 16) == 0) {
+            BlockPos postProcessPos = blockState.getPostProcessPos(this, pos);
+            if (postProcessPos != null) {
+               this.markPosForPostprocessing(postProcessPos);
+            }
          }
 
          return true;

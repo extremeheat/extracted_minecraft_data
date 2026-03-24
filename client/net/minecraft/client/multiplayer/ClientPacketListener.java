@@ -59,6 +59,7 @@ import net.minecraft.client.gui.screens.inventory.HorseInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.NautilusInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.TestInstanceBlockEditScreen;
 import net.minecraft.client.gui.screens.multiplayer.ServerReconfigScreen;
+import net.minecraft.client.gui.screens.options.HasDifficultyReaction;
 import net.minecraft.client.gui.screens.options.InWorldGameRulesScreen;
 import net.minecraft.client.gui.screens.recipebook.RecipeUpdateListener;
 import net.minecraft.client.particle.ItemPickupParticle;
@@ -81,7 +82,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.RegistrySynchronization;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
@@ -757,6 +757,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
       this.connection.send(new ServerboundAcceptTeleportationPacket(packet.id()));
       this.connection.send(new ServerboundMovePlayerPacket.PosRot(player.getX(), player.getY(), player.getZ(), player.getYRot(), player.getXRot(), false, false));
+      this.minecraft.level.getBlockStatePredictionHandler().onTeleport();
    }
 
    private static boolean setValuesFromPositionPacket(final PositionMoveRotation change, final Set<Relative> relatives, final Entity entity, final boolean interpolate) {
@@ -1035,6 +1036,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       this.level.setTimeFromServer(gameTime);
       this.telemetryManager.setTime(gameTime);
       this.clockManager.handleUpdates(gameTime, packet.clockUpdates());
+      this.level.environmentAttributes().invalidateTickCache();
    }
 
    public void handleSetSpawn(final ClientboundSetDefaultSpawnPositionPacket packet) {
@@ -1651,14 +1653,11 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    public void handleUpdateTags(final ClientboundUpdateTagsPacket packet) {
       PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
       List<Registry.PendingTags<?>> pendingTags = new ArrayList(packet.getTags().size());
-      boolean ignoreSharedTags = this.connection.isMemoryConnection();
-      packet.getTags().forEach((key, networkPayload) -> {
-         if (!ignoreSharedTags || RegistrySynchronization.isNetworkable(key)) {
-            pendingTags.add(this.updateTags(key, networkPayload));
-         }
+      packet.getTags().forEach((key, networkPayload) -> pendingTags.add(this.updateTags(key, networkPayload)));
+      if (!this.connection.isMemoryConnection()) {
+         pendingTags.forEach(Registry.PendingTags::apply);
+      }
 
-      });
-      pendingTags.forEach(Registry.PendingTags::apply);
       this.fuelValues = FuelValues.vanillaBurnTimes(this.registryAccess, this.enabledFeatures);
       List<ItemStack> searchItems = List.copyOf(CreativeModeTabs.searchTab().getDisplayItems());
       this.searchTrees.updateCreativeTags(searchItems);
@@ -1687,6 +1686,11 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
       this.levelData.setDifficulty(packet.difficulty());
       this.levelData.setDifficultyLocked(packet.locked());
+      Screen var3 = this.minecraft.screen;
+      if (var3 instanceof HasDifficultyReaction screen) {
+         screen.onDifficultyChanged();
+      }
+
    }
 
    public void handleSetCamera(final ClientboundSetCameraPacket packet) {

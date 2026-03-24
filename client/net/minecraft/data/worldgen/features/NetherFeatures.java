@@ -1,6 +1,5 @@
 package net.minecraft.data.worldgen.features;
 
-import java.util.List;
 import net.minecraft.core.HolderSet;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
@@ -38,13 +37,13 @@ public class NetherFeatures {
    public static final ResourceKey<ConfiguredFeature<?, ?>> TWISTING_VINES = FeatureUtils.createKey("twisting_vines");
    public static final ResourceKey<ConfiguredFeature<?, ?>> TWISTING_VINES_BONEMEAL = FeatureUtils.createKey("twisting_vines_bonemeal");
    public static final ResourceKey<ConfiguredFeature<?, ?>> WEEPING_VINES = FeatureUtils.createKey("weeping_vines");
-   public static final ResourceKey<ConfiguredFeature<?, ?>> PATCH_CRIMSON_ROOTS = FeatureUtils.createKey("patch_crimson_roots");
+   public static final ResourceKey<ConfiguredFeature<?, ?>> CRIMSON_ROOTS = FeatureUtils.createKey("crimson_roots");
    public static final ResourceKey<ConfiguredFeature<?, ?>> BASALT_PILLAR = FeatureUtils.createKey("basalt_pillar");
    public static final ResourceKey<ConfiguredFeature<?, ?>> SPRING_LAVA_NETHER = FeatureUtils.createKey("spring_lava_nether");
    public static final ResourceKey<ConfiguredFeature<?, ?>> SPRING_NETHER_CLOSED = FeatureUtils.createKey("spring_nether_closed");
    public static final ResourceKey<ConfiguredFeature<?, ?>> SPRING_NETHER_OPEN = FeatureUtils.createKey("spring_nether_open");
-   public static final ResourceKey<ConfiguredFeature<?, ?>> PATCH_FIRE = FeatureUtils.createKey("patch_fire");
-   public static final ResourceKey<ConfiguredFeature<?, ?>> PATCH_SOUL_FIRE = FeatureUtils.createKey("patch_soul_fire");
+   public static final ResourceKey<ConfiguredFeature<?, ?>> FIRE = FeatureUtils.createKey("patch_fire");
+   public static final ResourceKey<ConfiguredFeature<?, ?>> SOUL_FIRE = FeatureUtils.createKey("patch_soul_fire");
 
    public NetherFeatures() {
       super();
@@ -68,12 +67,12 @@ public class NetherFeatures {
       FeatureUtils.register(context, TWISTING_VINES, Feature.TWISTING_VINES, new TwistingVinesConfig(8, 4, 8));
       FeatureUtils.register(context, TWISTING_VINES_BONEMEAL, Feature.TWISTING_VINES, new TwistingVinesConfig(3, 1, 2));
       FeatureUtils.register(context, WEEPING_VINES, Feature.WEEPING_VINES);
-      FeatureUtils.register(context, PATCH_CRIMSON_ROOTS, Feature.RANDOM_PATCH, FeatureUtils.simplePatchConfiguration(Feature.SIMPLE_BLOCK, new SimpleBlockConfiguration(BlockStateProvider.simple(Blocks.CRIMSON_ROOTS))));
+      FeatureUtils.register(context, CRIMSON_ROOTS, Feature.SIMPLE_BLOCK, new SimpleBlockConfiguration(BlockStateProvider.simple(Blocks.CRIMSON_ROOTS)));
       FeatureUtils.register(context, BASALT_PILLAR, Feature.BASALT_PILLAR);
       FeatureUtils.register(context, SPRING_LAVA_NETHER, Feature.SPRING, new SpringConfiguration(Fluids.LAVA.defaultFluidState(), true, 4, 1, HolderSet.direct(Block::builtInRegistryHolder, Blocks.NETHERRACK, Blocks.SOUL_SAND, Blocks.GRAVEL, Blocks.MAGMA_BLOCK, Blocks.BLACKSTONE)));
       FeatureUtils.register(context, SPRING_NETHER_CLOSED, Feature.SPRING, new SpringConfiguration(Fluids.LAVA.defaultFluidState(), false, 5, 0, HolderSet.direct(Block::builtInRegistryHolder, Blocks.NETHERRACK)));
       FeatureUtils.register(context, SPRING_NETHER_OPEN, Feature.SPRING, new SpringConfiguration(Fluids.LAVA.defaultFluidState(), false, 4, 1, HolderSet.direct(Block::builtInRegistryHolder, Blocks.NETHERRACK)));
-      FeatureUtils.register(context, PATCH_FIRE, Feature.RANDOM_PATCH, FeatureUtils.simplePatchConfiguration(Feature.SIMPLE_BLOCK, new SimpleBlockConfiguration(BlockStateProvider.simple(Blocks.FIRE)), List.of(Blocks.NETHERRACK)));
-      FeatureUtils.register(context, PATCH_SOUL_FIRE, Feature.RANDOM_PATCH, FeatureUtils.simplePatchConfiguration(Feature.SIMPLE_BLOCK, new SimpleBlockConfiguration(BlockStateProvider.simple(Blocks.SOUL_FIRE)), List.of(Blocks.SOUL_SOIL)));
+      FeatureUtils.register(context, FIRE, Feature.SIMPLE_BLOCK, new SimpleBlockConfiguration(BlockStateProvider.simple(Blocks.FIRE)));
+      FeatureUtils.register(context, SOUL_FIRE, Feature.SIMPLE_BLOCK, new SimpleBlockConfiguration(BlockStateProvider.simple(Blocks.SOUL_FIRE)));
    }
 }

@@ -3,7 +3,7 @@ package net.minecraft.client.gui.screens;
 import java.util.Objects;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.ActiveTextCollector;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.gui.components.CommandSuggestions;
 import net.minecraft.client.gui.components.EditBox;
@@ -276,14 +276,14 @@ public class ChatScreen extends Screen {
       return this.isDraft ? FormattedCharSequence.forward(text, Style.EMPTY.withColor(ChatFormatting.GRAY).withItalic(true)) : null;
    }
 
-   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       graphics.fill(2, this.height - 14, this.width - 2, this.height - 2, this.minecraft.options.getBackgroundColor(-2147483648));
-      this.minecraft.gui.getChat().render(graphics, this.font, this.minecraft.gui.getGuiTicks(), mouseX, mouseY, this.displayMode, this.insertionClickMode());
-      super.render(graphics, mouseX, mouseY, a);
-      this.commandSuggestions.render(graphics, mouseX, mouseY);
+      this.minecraft.gui.getChat().extractRenderState(graphics, this.font, this.minecraft.gui.getGuiTicks(), mouseX, mouseY, this.displayMode, this.insertionClickMode());
+      super.extractRenderState(graphics, mouseX, mouseY, a);
+      this.commandSuggestions.extractRenderState(graphics, mouseX, mouseY);
    }
 
-   public void renderBackground(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
    }
 
    public boolean isPauseScreen() {

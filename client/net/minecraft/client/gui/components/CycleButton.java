@@ -8,7 +8,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.InputWithModifiers;
@@ -51,16 +51,16 @@ public class CycleButton<T> extends AbstractButton implements ResettableOptionWi
       this.updateTooltip();
    }
 
-   protected void renderContents(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+   protected void extractContents(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       Identifier sprite = this.spriteSupplier.apply(this, this.getValue());
       if (sprite != null) {
          graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, this.getX(), this.getY(), this.getWidth(), this.getHeight());
       } else {
-         this.renderDefaultSprite(graphics);
+         this.extractDefaultSprite(graphics);
       }
 
       if (this.displayState != CycleButton.DisplayState.HIDE) {
-         this.renderDefaultLabel(graphics.textRendererForWidget(this, GuiGraphics.HoveredTextEffects.NONE));
+         this.extractDefaultLabel(graphics.textRendererForWidget(this, GuiGraphicsExtractor.HoveredTextEffects.NONE));
       }
 
    }

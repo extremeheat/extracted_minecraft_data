@@ -1,6 +1,6 @@
 package net.minecraft.client.gui.spectator;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 
 public interface SpectatorMenuItem {
@@ -8,7 +8,7 @@ public interface SpectatorMenuItem {
 
    Component getName();
 
-   void renderIcon(final GuiGraphics graphics, float brightness, float alpha);
+   void extractIcon(final GuiGraphicsExtractor graphics, float brightness, float alpha);
 
    boolean isEnabled();
 }

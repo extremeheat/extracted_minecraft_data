@@ -16,6 +16,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.ComponentUtils;
+import net.minecraft.network.chat.ResolutionContext;
 import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.context.ContextKey;
@@ -53,9 +54,10 @@ public class SetNameFunction extends LootItemConditionalFunction {
          Entity entity = (Entity)context.getOptionalParameter(entityTarget.contextParam());
          if (entity != null) {
             CommandSourceStack commandSourceStack = entity.createCommandSourceStackForNameResolution(context.getLevel()).withPermission(LevelBasedPermissionSet.GAMEMASTER);
+            ResolutionContext resolutionContext = ResolutionContext.create(commandSourceStack);
             return (line) -> {
                try {
-                  return ComponentUtils.updateForEntity(commandSourceStack, line, entity, 0);
+                  return ComponentUtils.resolve(resolutionContext, line);
                } catch (CommandSyntaxException e) {
                   LOGGER.warn("Failed to resolve text component", e);
                   return line;

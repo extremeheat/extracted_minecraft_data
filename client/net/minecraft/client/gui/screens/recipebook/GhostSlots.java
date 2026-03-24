@@ -4,7 +4,7 @@ import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import java.util.List;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.Identifier;
@@ -43,7 +43,7 @@ public class GhostSlots {
       this.setSlot(slot, context, contents, true);
    }
 
-   public void render(final GuiGraphics graphics, final Minecraft minecraft, final boolean isResultSlotBig) {
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final Minecraft minecraft, final boolean isResultSlotBig) {
       this.ingredients.forEach((slot, ingredient) -> {
          int x = slot.x;
          int y = slot.y;
@@ -54,16 +54,16 @@ public class GhostSlots {
          }
 
          ItemStack itemStack = ingredient.getItem(this.slotSelectTime.currentIndex());
-         graphics.renderFakeItem(itemStack, x, y);
+         graphics.fakeItem(itemStack, x, y);
          graphics.fill(x, y, x + 16, y + 16, 822083583);
          if (ingredient.isResultSlot) {
-            graphics.renderItemDecorations(minecraft.font, itemStack, x, y);
+            graphics.itemDecorations(minecraft.font, itemStack, x, y);
          }
 
       });
    }
 
-   public void renderTooltip(final GuiGraphics graphics, final Minecraft minecraft, final int mouseX, final int mouseY, final @Nullable Slot hoveredSlot) {
+   public void extractTooltip(final GuiGraphicsExtractor graphics, final Minecraft minecraft, final int mouseX, final int mouseY, final @Nullable Slot hoveredSlot) {
       if (hoveredSlot != null) {
          GhostSlot hoveredGhostSlot = (GhostSlot)this.ingredients.get(hoveredSlot);
          if (hoveredGhostSlot != null) {

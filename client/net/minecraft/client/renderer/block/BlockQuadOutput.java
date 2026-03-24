@@ -1,7 +1,7 @@
 package net.minecraft.client.renderer.block;
 
 import com.mojang.blaze3d.vertex.QuadInstance;
-import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 
 @FunctionalInterface
 public interface BlockQuadOutput {

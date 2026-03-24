@@ -497,22 +497,26 @@ public final class NativeImage implements AutoCloseable {
       if (this.format != NativeImage.Format.RGBA) {
          return Transparency.NONE;
       } else if (x0 >= 0 && y0 >= 0 && x1 <= this.width && y1 <= this.height) {
-         boolean hasTransparentPixel = false;
-         boolean hasTranslucentPixel = false;
-         IntBuffer buffer = MemoryUtil.memIntBuffer(this.pixels, this.width * this.height * 4);
+         if ((long)this.width * (long)this.height * 4L > 2147483647L) {
+            throw new IllegalArgumentException("Image of size " + this.width + "x" + this.height + " is too large to compute translucency");
+         } else {
+            boolean hasTransparentPixel = false;
+            boolean hasTranslucentPixel = false;
+            IntBuffer buffer = MemoryUtil.memIntBuffer(this.pixels, this.width * this.height);
 
-         for(int y = y0; y < y1; ++y) {
-            for(int x = x0; x < x1; ++x) {
-               int alpha = ARGB.alpha(buffer.get(x + y * this.width));
-               if (alpha == 0) {
-                  hasTransparentPixel = true;
-               } else if (alpha != 255) {
-                  hasTranslucentPixel = true;
+            for(int y = y0; y < y1; ++y) {
+               for(int x = x0; x < x1; ++x) {
+                  int alpha = ARGB.alpha(buffer.get(x + y * this.width));
+                  if (alpha == 0) {
+                     hasTransparentPixel = true;
+                  } else if (alpha != 255) {
+                     hasTranslucentPixel = true;
+                  }
                }
             }
-         }
 
-         return Transparency.of(hasTransparentPixel, hasTranslucentPixel);
+            return Transparency.of(hasTransparentPixel, hasTranslucentPixel);
+         }
       } else {
          throw new IllegalArgumentException("Cannot compute translucency out of bounds: [" + x0 + ", " + y0 + ", " + x1 + ", " + y1 + "] in " + this.width + "x" + this.height + " image");
       }

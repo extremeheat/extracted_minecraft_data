@@ -5,7 +5,7 @@ import java.util.stream.Stream;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.components.ObjectSelectionList;
@@ -111,7 +111,7 @@ public class TransferableSelectionList extends ObjectSelectionList<Entry> {
          return Component.translatable("narrator.select", this.pack.getTitle());
       }
 
-      public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+      public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
          PackCompatibility compatibility = this.pack.getCompatibility();
          if (!compatibility.isCompatible()) {
             int x0 = this.getContentX() - 1;
@@ -178,10 +178,10 @@ public class TransferableSelectionList extends ObjectSelectionList<Entry> {
 
          this.nameWidget.setMaxWidth(157 - (TransferableSelectionList.this.scrollable() ? 6 : 0));
          this.nameWidget.setPosition(this.getContentX() + 32 + 2, this.getContentY() + 1);
-         this.nameWidget.render(graphics, mouseX, mouseY, a);
+         this.nameWidget.extractRenderState(graphics, mouseX, mouseY, a);
          this.descriptionWidget.setMaxWidth(157 - (TransferableSelectionList.this.scrollable() ? 6 : 0));
          this.descriptionWidget.setPosition(this.getContentX() + 32 + 2, this.getContentY() + 12);
-         this.descriptionWidget.render(graphics, mouseX, mouseY, a);
+         this.descriptionWidget.extractRenderState(graphics, mouseX, mouseY, a);
       }
 
       public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
@@ -296,13 +296,13 @@ public class TransferableSelectionList extends ObjectSelectionList<Entry> {
          this.text = text;
       }
 
-      public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+      public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
          Font var10001 = this.font;
          Component var10002 = this.text;
          int var10003 = this.getX() + this.getWidth() / 2;
          int var10004 = this.getContentYMiddle();
          Objects.requireNonNull(this.font);
-         graphics.drawCenteredString(var10001, (Component)var10002, var10003, var10004 - 9 / 2, -1);
+         graphics.centeredText(var10001, (Component)var10002, var10003, var10004 - 9 / 2, -1);
       }
 
       public Component getNarration() {

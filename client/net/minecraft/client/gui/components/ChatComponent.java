@@ -15,7 +15,7 @@ import net.minecraft.Optionull;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.Screen;
@@ -24,6 +24,8 @@ import net.minecraft.client.multiplayer.chat.GuiMessageSource;
 import net.minecraft.client.multiplayer.chat.GuiMessageTag;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentUtils;
+import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MessageSignature;
 import net.minecraft.network.chat.Style;
@@ -52,6 +54,7 @@ public class ChatComponent {
    private static final Style QUEUE_EXPAND_TEXT_STYLE;
    public static final Identifier GO_TO_RESTRICTIONS_SCREEN;
    private static final Component RESTRICTED_CHAT_MESSAGE;
+   private static final Component RESTRICTED_CHAT_MESSAGE_WITH_HOVER;
    private final Minecraft minecraft;
    private final ArrayListDeque<String> recentChat = new ArrayListDeque<String>(100);
    private final List<GuiMessage> allMessages = Lists.newArrayList();
@@ -98,17 +101,17 @@ public class ChatComponent {
       return count;
    }
 
-   public void render(final GuiGraphics graphics, final Font font, final int ticks, final int mouseX, final int mouseY, final DisplayMode displayMode, final boolean changeCursorOnInsertions) {
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final Font font, final int ticks, final int mouseX, final int mouseY, final DisplayMode displayMode, final boolean changeCursorOnInsertions) {
       graphics.pose().pushMatrix();
-      this.render((ChatGraphicsAccess)(displayMode.foreground ? new DrawingFocusedGraphicsAccess(graphics, font, mouseX, mouseY, changeCursorOnInsertions) : new DrawingBackgroundGraphicsAccess(graphics)), graphics.guiHeight(), ticks, displayMode);
+      this.extractRenderState((ChatGraphicsAccess)(displayMode.foreground ? new DrawingFocusedGraphicsAccess(graphics, font, mouseX, mouseY, changeCursorOnInsertions) : new DrawingBackgroundGraphicsAccess(graphics)), graphics.guiHeight(), ticks, displayMode);
       graphics.pose().popMatrix();
    }
 
    public void captureClickableText(final ActiveTextCollector activeTextCollector, final int screenHeight, final int ticks, final DisplayMode displayMode) {
-      this.render(new ClickableTextOnlyGraphicsAccess(activeTextCollector), screenHeight, ticks, displayMode);
+      this.extractRenderState(new ClickableTextOnlyGraphicsAccess(activeTextCollector), screenHeight, ticks, displayMode);
    }
 
-   private void render(final ChatGraphicsAccess graphics, final int screenHeight, final int ticks, final DisplayMode displayMode) {
+   private void extractRenderState(final ChatGraphicsAccess graphics, final int screenHeight, final int ticks, final DisplayMode displayMode) {
       boolean isForeground = displayMode.foreground;
       boolean isRestricted = displayMode.showRestrictedPrompt;
       int total = this.trimmedMessages.size();
@@ -143,7 +146,7 @@ public class ChatComponent {
          }
 
          if (isRestricted) {
-            graphics.fill(-2, lineAboveMessagesY, maxWidth + 4 + 4, lineAboveMessagesY + messageHeight, ARGB.black(backgroundOpacity));
+            graphics.fill(-2, lineAboveMessagesY, maxWidth + 4 + 4, lineAboveMessagesY + entryHeight, ARGB.black(backgroundOpacity));
          }
 
          this.forEachLine(alphaCalculator, new LineConsumer() {
@@ -186,7 +189,9 @@ public class ChatComponent {
          }
 
          if (isRestricted) {
-            graphics.handleMessage(lineAboveMessagesY, textOpacity, RESTRICTED_CHAT_MESSAGE.getVisualOrderText());
+            int restrictedMessageWidth = this.minecraft.font.width((FormattedText)RESTRICTED_CHAT_MESSAGE);
+            FormattedCharSequence restrictedMessage = restrictedMessageWidth > maxWidth ? ComponentRenderUtils.clipText(RESTRICTED_CHAT_MESSAGE_WITH_HOVER, this.minecraft.font, maxWidth) : RESTRICTED_CHAT_MESSAGE.getVisualOrderText();
+            graphics.handleMessage(lineAboveMessagesY + entryHeight - entryBottomToMessageY - 1, textOpacity, restrictedMessage);
          }
 
          if (total > 0 && isForeground) {
@@ -475,6 +480,7 @@ public class ChatComponent {
       QUEUE_EXPAND_TEXT_STYLE = Style.EMPTY.withClickEvent(new ClickEvent.Custom(QUEUE_EXPAND_ID, Optional.empty())).withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.queue.tooltip")));
       GO_TO_RESTRICTIONS_SCREEN = Identifier.withDefaultNamespace("internal/go_to_restrictions_screen");
       RESTRICTED_CHAT_MESSAGE = Component.translatable("chat_screen.restricted").withStyle(Style.EMPTY.withColor(ChatFormatting.RED).withUnderlined(true).withClickEvent(new ClickEvent.Custom(GO_TO_RESTRICTIONS_SCREEN, Optional.empty())));
+      RESTRICTED_CHAT_MESSAGE_WITH_HOVER = ComponentUtils.mergeStyles(RESTRICTED_CHAT_MESSAGE, Style.EMPTY.withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat_screen.restricted"))));
    }
 
    private static record DelayedMessageDeletion(MessageSignature signature, int deletableAfter) {
@@ -552,14 +558,14 @@ public class ChatComponent {
    }
 
    private static class DrawingBackgroundGraphicsAccess implements ChatGraphicsAccess {
-      private final GuiGraphics graphics;
+      private final GuiGraphicsExtractor graphics;
       private final ActiveTextCollector textRenderer;
       private ActiveTextCollector.Parameters parameters;
 
-      public DrawingBackgroundGraphicsAccess(final GuiGraphics graphics) {
+      public DrawingBackgroundGraphicsAccess(final GuiGraphicsExtractor graphics) {
          super();
          this.graphics = graphics;
-         this.textRenderer = graphics.textRenderer(GuiGraphics.HoveredTextEffects.NONE, (Consumer)null);
+         this.textRenderer = graphics.textRenderer(GuiGraphicsExtractor.HoveredTextEffects.NONE, (Consumer)null);
          this.parameters = this.textRenderer.defaultParameters();
       }
 
@@ -587,7 +593,7 @@ public class ChatComponent {
    }
 
    private static class DrawingFocusedGraphicsAccess implements ChatGraphicsAccess, Consumer<Style> {
-      private final GuiGraphics graphics;
+      private final GuiGraphicsExtractor graphics;
       private final Font font;
       private final ActiveTextCollector textRenderer;
       private ActiveTextCollector.Parameters parameters;
@@ -597,11 +603,11 @@ public class ChatComponent {
       private @Nullable Style hoveredStyle;
       private final boolean changeCursorOnInsertions;
 
-      public DrawingFocusedGraphicsAccess(final GuiGraphics graphics, final Font font, final int mouseX, final int mouseY, final boolean changeCursorOnInsertions) {
+      public DrawingFocusedGraphicsAccess(final GuiGraphicsExtractor graphics, final Font font, final int mouseX, final int mouseY, final boolean changeCursorOnInsertions) {
          super();
          this.graphics = graphics;
          this.font = font;
-         this.textRenderer = graphics.textRenderer(GuiGraphics.HoveredTextEffects.TOOLTIP_AND_CURSOR, this);
+         this.textRenderer = graphics.textRenderer(GuiGraphicsExtractor.HoveredTextEffects.TOOLTIP_AND_CURSOR, this);
          this.globalMouseX = mouseX;
          this.globalMouseY = mouseY;
          this.changeCursorOnInsertions = changeCursorOnInsertions;
@@ -659,7 +665,7 @@ public class ChatComponent {
          }
 
          if (forceVisible || isMouseOver) {
-            icon.draw(this.graphics, left, top);
+            icon.extractRenderState(this.graphics, left, top);
          }
 
       }

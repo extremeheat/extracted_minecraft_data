@@ -1,10 +1,12 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -30,7 +32,7 @@ public class BannerBlock extends AbstractBannerBlock {
 
    public BannerBlock(final DyeColor color, final BlockBehaviour.Properties properties) {
       super(color, properties);
-      this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(ROTATION, 0));
+      this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(ROTATION, 8));
    }
 
    protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
@@ -64,5 +66,26 @@ public class BannerBlock extends AbstractBannerBlock {
    static {
       ROTATION = BlockStateProperties.ROTATION_16;
       SHAPE = Block.column(8.0, 0.0, 16.0);
+   }
+
+   public static enum AttachmentType implements StringRepresentable {
+      WALL("wall"),
+      GROUND("ground");
+
+      public static final Codec<AttachmentType> CODEC = StringRepresentable.<AttachmentType>fromEnum(AttachmentType::values);
+      private final String name;
+
+      private AttachmentType(final String name) {
+         this.name = name;
+      }
+
+      public String getSerializedName() {
+         return this.name;
+      }
+
+      // $FF: synthetic method
+      private static AttachmentType[] $values() {
+         return new AttachmentType[]{WALL, GROUND};
+      }
    }
 }

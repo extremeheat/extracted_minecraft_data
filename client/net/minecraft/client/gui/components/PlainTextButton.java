@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.components;
 
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.Style;
@@ -19,8 +19,8 @@ public class PlainTextButton extends Button {
       this.underlinedMessage = ComponentUtils.mergeStyles(message, Style.EMPTY.withUnderlined(true));
    }
 
-   public void renderContents(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractContents(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       Component messageToRender = this.isHoveredOrFocused() ? this.underlinedMessage : this.message;
-      graphics.drawString(this.font, messageToRender, this.getX(), this.getY(), 16777215 | Mth.ceil(this.alpha * 255.0F) << 24);
+      graphics.text(this.font, messageToRender, this.getX(), this.getY(), 16777215 | Mth.ceil(this.alpha * 255.0F) << 24);
    }
 }

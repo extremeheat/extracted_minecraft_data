@@ -1594,7 +1594,7 @@ public class Items {
    }
 
    private static Item registerBlock(final Block block, final BiFunction<Block, Item.Properties, Item> itemFactory, final Item.Properties properties) {
-      return registerItem((ResourceKey)blockIdToItemId(block.builtInRegistryHolder().key()), (p) -> (Item)itemFactory.apply(block, p), properties.useBlockDescriptionPrefix());
+      return registerItem((ResourceKey)blockIdToItemId(block.builtInRegistryHolder().key()), (p) -> (Item)itemFactory.apply(block, p), properties.useBlockDescriptionPrefix().requiredFeatures(block.requiredFeatures()));
    }
 
    private static Item registerItem(final String name, final Function<Item.Properties, Item> itemFactory) {
@@ -2854,7 +2854,7 @@ public class Items {
       CREEPER_HEAD = registerBlock(Blocks.CREEPER_HEAD, (b, p) -> new StandingAndWallBlockItem(b, Blocks.CREEPER_WALL_HEAD, Direction.DOWN, Waypoint.addHideAttribute(p)), (new Item.Properties()).rarity(Rarity.UNCOMMON).equippableUnswappable(EquipmentSlot.HEAD));
       DRAGON_HEAD = registerBlock(Blocks.DRAGON_HEAD, (b, p) -> new StandingAndWallBlockItem(b, Blocks.DRAGON_WALL_HEAD, Direction.DOWN, Waypoint.addHideAttribute(p)), (new Item.Properties()).rarity(Rarity.EPIC).equippableUnswappable(EquipmentSlot.HEAD));
       PIGLIN_HEAD = registerBlock(Blocks.PIGLIN_HEAD, (b, p) -> new StandingAndWallBlockItem(b, Blocks.PIGLIN_WALL_HEAD, Direction.DOWN, Waypoint.addHideAttribute(p)), (new Item.Properties()).rarity(Rarity.UNCOMMON).equippableUnswappable(EquipmentSlot.HEAD));
-      NETHER_STAR = registerItem("nether_star", (new Item.Properties()).rarity(Rarity.RARE).component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true).component(DataComponents.DAMAGE_RESISTANT, new DamageResistant(DamageTypeTags.IS_EXPLOSION)));
+      NETHER_STAR = registerItem("nether_star", (new Item.Properties()).rarity(Rarity.RARE).component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true).delayedComponent(DataComponents.DAMAGE_RESISTANT, (context) -> new DamageResistant(context.getOrThrow(DamageTypeTags.IS_EXPLOSION))));
       PUMPKIN_PIE = registerItem("pumpkin_pie", (new Item.Properties()).food(Foods.PUMPKIN_PIE));
       FIREWORK_ROCKET = registerItem("firework_rocket", FireworkRocketItem::new, (new Item.Properties()).component(DataComponents.FIREWORKS, new Fireworks(1, List.of())));
       FIREWORK_STAR = registerItem("firework_star");
@@ -2909,14 +2909,14 @@ public class Items {
       SPECTRAL_ARROW = registerItem("spectral_arrow", SpectralArrowItem::new);
       TIPPED_ARROW = registerItem("tipped_arrow", TippedArrowItem::new, (new Item.Properties()).component(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).component(DataComponents.POTION_DURATION_SCALE, 0.125F));
       LINGERING_POTION = registerItem("lingering_potion", LingeringPotionItem::new, (new Item.Properties()).stacksTo(1).component(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).component(DataComponents.POTION_DURATION_SCALE, 0.25F));
-      SHIELD = registerItem("shield", ShieldItem::new, (new Item.Properties()).durability(336).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY).repairable(ItemTags.WOODEN_TOOL_MATERIALS).equippableUnswappable(EquipmentSlot.OFFHAND).component(DataComponents.BLOCKS_ATTACKS, new BlocksAttacks(0.25F, 1.0F, List.of(new BlocksAttacks.DamageReduction(90.0F, Optional.empty(), 0.0F, 1.0F)), new BlocksAttacks.ItemDamageFunction(3.0F, 1.0F, 1.0F), Optional.of(DamageTypeTags.BYPASSES_SHIELD), Optional.of(SoundEvents.SHIELD_BLOCK), Optional.of(SoundEvents.SHIELD_BREAK))).component(DataComponents.BREAK_SOUND, SoundEvents.SHIELD_BREAK));
+      SHIELD = registerItem("shield", ShieldItem::new, (new Item.Properties()).durability(336).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY).repairable(ItemTags.WOODEN_TOOL_MATERIALS).equippableUnswappable(EquipmentSlot.OFFHAND).delayedComponent(DataComponents.BLOCKS_ATTACKS, (context) -> new BlocksAttacks(0.25F, 1.0F, List.of(new BlocksAttacks.DamageReduction(90.0F, Optional.empty(), 0.0F, 1.0F)), new BlocksAttacks.ItemDamageFunction(3.0F, 1.0F, 1.0F), Optional.of(context.getOrThrow(DamageTypeTags.BYPASSES_SHIELD)), Optional.of(SoundEvents.SHIELD_BLOCK), Optional.of(SoundEvents.SHIELD_BREAK))).component(DataComponents.BREAK_SOUND, SoundEvents.SHIELD_BREAK));
       WOODEN_SPEAR = registerItem("wooden_spear", (new Item.Properties()).spear(ToolMaterial.WOOD, 0.65F, 0.7F, 0.75F, 5.0F, 14.0F, 10.0F, 5.1F, 15.0F, 4.6F));
-      STONE_SPEAR = registerItem("stone_spear", (new Item.Properties()).spear(ToolMaterial.STONE, 0.75F, 0.82F, 0.7F, 4.5F, 10.0F, 9.0F, 5.1F, 13.75F, 4.6F));
-      COPPER_SPEAR = registerItem("copper_spear", (new Item.Properties()).spear(ToolMaterial.COPPER, 0.85F, 0.82F, 0.65F, 4.0F, 9.0F, 8.25F, 5.1F, 12.5F, 4.6F));
-      IRON_SPEAR = registerItem("iron_spear", (new Item.Properties()).spear(ToolMaterial.IRON, 0.95F, 0.95F, 0.6F, 2.5F, 8.0F, 6.75F, 5.1F, 11.25F, 4.6F));
-      GOLDEN_SPEAR = registerItem("golden_spear", (new Item.Properties()).spear(ToolMaterial.GOLD, 0.95F, 0.7F, 0.7F, 3.5F, 10.0F, 8.5F, 5.1F, 13.75F, 4.6F));
-      DIAMOND_SPEAR = registerItem("diamond_spear", (new Item.Properties()).spear(ToolMaterial.DIAMOND, 1.05F, 1.075F, 0.5F, 3.0F, 7.5F, 6.5F, 5.1F, 10.0F, 4.6F));
-      NETHERITE_SPEAR = registerItem("netherite_spear", (new Item.Properties()).spear(ToolMaterial.NETHERITE, 1.15F, 1.2F, 0.4F, 2.5F, 7.0F, 5.5F, 5.1F, 8.75F, 4.6F).fireResistant());
+      STONE_SPEAR = registerItem("stone_spear", (new Item.Properties()).spear(ToolMaterial.STONE, 0.75F, 0.82F, 0.7F, 4.5F, 13.0F, 9.0F, 5.1F, 13.75F, 4.6F));
+      COPPER_SPEAR = registerItem("copper_spear", (new Item.Properties()).spear(ToolMaterial.COPPER, 0.85F, 0.82F, 0.65F, 4.0F, 12.0F, 8.25F, 5.1F, 12.5F, 4.6F));
+      IRON_SPEAR = registerItem("iron_spear", (new Item.Properties()).spear(ToolMaterial.IRON, 0.95F, 0.95F, 0.6F, 2.5F, 11.0F, 6.75F, 5.1F, 11.25F, 4.6F));
+      GOLDEN_SPEAR = registerItem("golden_spear", (new Item.Properties()).spear(ToolMaterial.GOLD, 0.95F, 0.7F, 0.7F, 3.5F, 13.0F, 8.5F, 5.1F, 13.75F, 4.6F));
+      DIAMOND_SPEAR = registerItem("diamond_spear", (new Item.Properties()).spear(ToolMaterial.DIAMOND, 1.05F, 1.075F, 0.5F, 3.0F, 10.0F, 6.5F, 5.1F, 10.0F, 4.6F));
+      NETHERITE_SPEAR = registerItem("netherite_spear", (new Item.Properties()).spear(ToolMaterial.NETHERITE, 1.15F, 1.2F, 0.4F, 2.5F, 9.0F, 5.5F, 5.1F, 8.75F, 4.6F).fireResistant());
       TOTEM_OF_UNDYING = registerItem("totem_of_undying", (new Item.Properties()).stacksTo(1).rarity(Rarity.UNCOMMON).component(DataComponents.DEATH_PROTECTION, DeathProtection.TOTEM_OF_UNDYING));
       SHULKER_SHELL = registerItem("shulker_shell");
       IRON_NUGGET = registerItem("iron_nugget");
@@ -2956,16 +2956,16 @@ public class Items {
       CROSSBOW = registerItem("crossbow", CrossbowItem::new, (new Item.Properties()).stacksTo(1).durability(465).component(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY).enchantable(1));
       SUSPICIOUS_STEW = registerItem("suspicious_stew", (new Item.Properties()).stacksTo(1).food(Foods.SUSPICIOUS_STEW).component(DataComponents.SUSPICIOUS_STEW_EFFECTS, SuspiciousStewEffects.EMPTY).usingConvertsTo(BOWL));
       LOOM = registerBlock(Blocks.LOOM);
-      FLOWER_BANNER_PATTERN = registerItem("flower_banner_pattern", (new Item.Properties()).stacksTo(1).component(DataComponents.PROVIDES_BANNER_PATTERNS, BannerPatternTags.PATTERN_ITEM_FLOWER));
-      CREEPER_BANNER_PATTERN = registerItem("creeper_banner_pattern", (new Item.Properties()).stacksTo(1).rarity(Rarity.UNCOMMON).component(DataComponents.PROVIDES_BANNER_PATTERNS, BannerPatternTags.PATTERN_ITEM_CREEPER));
-      SKULL_BANNER_PATTERN = registerItem("skull_banner_pattern", (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).component(DataComponents.PROVIDES_BANNER_PATTERNS, BannerPatternTags.PATTERN_ITEM_SKULL));
-      MOJANG_BANNER_PATTERN = registerItem("mojang_banner_pattern", (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).component(DataComponents.PROVIDES_BANNER_PATTERNS, BannerPatternTags.PATTERN_ITEM_MOJANG));
-      GLOBE_BANNER_PATTERN = registerItem("globe_banner_pattern", (new Item.Properties()).stacksTo(1).component(DataComponents.PROVIDES_BANNER_PATTERNS, BannerPatternTags.PATTERN_ITEM_GLOBE));
-      PIGLIN_BANNER_PATTERN = registerItem("piglin_banner_pattern", (new Item.Properties()).stacksTo(1).rarity(Rarity.UNCOMMON).component(DataComponents.PROVIDES_BANNER_PATTERNS, BannerPatternTags.PATTERN_ITEM_PIGLIN));
-      FLOW_BANNER_PATTERN = registerItem("flow_banner_pattern", (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).component(DataComponents.PROVIDES_BANNER_PATTERNS, BannerPatternTags.PATTERN_ITEM_FLOW));
-      GUSTER_BANNER_PATTERN = registerItem("guster_banner_pattern", (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).component(DataComponents.PROVIDES_BANNER_PATTERNS, BannerPatternTags.PATTERN_ITEM_GUSTER));
-      FIELD_MASONED_BANNER_PATTERN = registerItem("field_masoned_banner_pattern", (new Item.Properties()).stacksTo(1).component(DataComponents.PROVIDES_BANNER_PATTERNS, BannerPatternTags.PATTERN_ITEM_FIELD_MASONED));
-      BORDURE_INDENTED_BANNER_PATTERN = registerItem("bordure_indented_banner_pattern", (new Item.Properties()).stacksTo(1).component(DataComponents.PROVIDES_BANNER_PATTERNS, BannerPatternTags.PATTERN_ITEM_BORDURE_INDENTED));
+      FLOWER_BANNER_PATTERN = registerItem("flower_banner_pattern", (new Item.Properties()).stacksTo(1).delayedComponent(DataComponents.PROVIDES_BANNER_PATTERNS, (context) -> context.getOrThrow(BannerPatternTags.PATTERN_ITEM_FLOWER)));
+      CREEPER_BANNER_PATTERN = registerItem("creeper_banner_pattern", (new Item.Properties()).stacksTo(1).rarity(Rarity.UNCOMMON).delayedComponent(DataComponents.PROVIDES_BANNER_PATTERNS, (context) -> context.getOrThrow(BannerPatternTags.PATTERN_ITEM_CREEPER)));
+      SKULL_BANNER_PATTERN = registerItem("skull_banner_pattern", (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).delayedComponent(DataComponents.PROVIDES_BANNER_PATTERNS, (context) -> context.getOrThrow(BannerPatternTags.PATTERN_ITEM_SKULL)));
+      MOJANG_BANNER_PATTERN = registerItem("mojang_banner_pattern", (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).delayedComponent(DataComponents.PROVIDES_BANNER_PATTERNS, (context) -> context.getOrThrow(BannerPatternTags.PATTERN_ITEM_MOJANG)));
+      GLOBE_BANNER_PATTERN = registerItem("globe_banner_pattern", (new Item.Properties()).stacksTo(1).delayedComponent(DataComponents.PROVIDES_BANNER_PATTERNS, (context) -> context.getOrThrow(BannerPatternTags.PATTERN_ITEM_GLOBE)));
+      PIGLIN_BANNER_PATTERN = registerItem("piglin_banner_pattern", (new Item.Properties()).stacksTo(1).rarity(Rarity.UNCOMMON).delayedComponent(DataComponents.PROVIDES_BANNER_PATTERNS, (context) -> context.getOrThrow(BannerPatternTags.PATTERN_ITEM_PIGLIN)));
+      FLOW_BANNER_PATTERN = registerItem("flow_banner_pattern", (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).delayedComponent(DataComponents.PROVIDES_BANNER_PATTERNS, (context) -> context.getOrThrow(BannerPatternTags.PATTERN_ITEM_FLOW)));
+      GUSTER_BANNER_PATTERN = registerItem("guster_banner_pattern", (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).delayedComponent(DataComponents.PROVIDES_BANNER_PATTERNS, (context) -> context.getOrThrow(BannerPatternTags.PATTERN_ITEM_GUSTER)));
+      FIELD_MASONED_BANNER_PATTERN = registerItem("field_masoned_banner_pattern", (new Item.Properties()).stacksTo(1).delayedComponent(DataComponents.PROVIDES_BANNER_PATTERNS, (context) -> context.getOrThrow(BannerPatternTags.PATTERN_ITEM_FIELD_MASONED)));
+      BORDURE_INDENTED_BANNER_PATTERN = registerItem("bordure_indented_banner_pattern", (new Item.Properties()).stacksTo(1).delayedComponent(DataComponents.PROVIDES_BANNER_PATTERNS, (context) -> context.getOrThrow(BannerPatternTags.PATTERN_ITEM_BORDURE_INDENTED)));
       GOAT_HORN = registerItem("goat_horn", InstrumentItem::new, (new Item.Properties()).rarity(Rarity.UNCOMMON).stacksTo(1).delayedComponent(DataComponents.INSTRUMENT, (context) -> new InstrumentComponent(context.getOrThrow(Instruments.PONDER_GOAT_HORN))));
       COMPOSTER = registerBlock(Blocks.COMPOSTER);
       BARREL = registerBlock(Blocks.BARREL, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));

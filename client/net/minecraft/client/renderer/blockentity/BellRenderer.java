@@ -7,12 +7,10 @@ import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.BellRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.SpriteGetter;
-import net.minecraft.client.resources.model.SpriteId;
+import net.minecraft.client.resources.model.sprite.SpriteGetter;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.world.level.block.entity.BellBlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
@@ -41,8 +39,7 @@ public class BellRenderer implements BlockEntityRenderer<BellBlockEntity, BellRe
    public void submit(final BellRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
       BellModel.State modelState = new BellModel.State(state.ticks, state.shakeDirection);
       this.model.setupAnim(modelState);
-      RenderType renderType = BELL_TEXTURE.renderType(RenderTypes::entitySolid);
-      submitNodeCollector.submitModel(this.model, modelState, poseStack, renderType, state.lightCoords, OverlayTexture.NO_OVERLAY, -1, this.sprites.get(BELL_TEXTURE), 0, state.breakProgress);
+      submitNodeCollector.submitModel(this.model, modelState, poseStack, state.lightCoords, OverlayTexture.NO_OVERLAY, -1, BELL_TEXTURE, this.sprites, 0, state.breakProgress);
    }
 
    static {

@@ -4,47 +4,53 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.realmsclient.dto.RealmsServer;
 import com.mojang.realmsclient.dto.RealmsSlot;
 import com.mojang.realmsclient.dto.RealmsWorldOptions;
-import com.mojang.realmsclient.gui.screens.RealmsPopups;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Consumer;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.StringWidget;
+import net.minecraft.client.gui.layouts.CommonLayouts;
+import net.minecraft.client.gui.layouts.GridLayout;
+import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
+import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.FormattedText;
-import net.minecraft.realms.RealmsLabel;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.GameType;
+import org.jspecify.annotations.Nullable;
 
 public class RealmsSlotOptionsScreen extends RealmsScreen {
    private static final int DEFAULT_DIFFICULTY = 2;
    public static final List<Difficulty> DIFFICULTIES;
    private static final int DEFAULT_GAME_MODE = 0;
    public static final List<GameType> GAME_MODES;
-   private static final Component NAME_LABEL;
+   private static final Component TITLE;
+   private static final Component WORLD_NAME_EDIT_LABEL;
    private static final Component SPAWN_PROTECTION_TEXT;
-   private EditBox nameEdit;
-   protected final RealmsConfigureWorldScreen parentScreen;
-   private int column1X;
-   private int columnWidth;
+   private static final Component GAME_MODE_BUTTON;
+   private static final Component DIFFICULTY_BUTTON;
+   private static final Component FORCE_GAME_MODE_BUTTON;
+   private static final int SPACING = 8;
+   private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
+   private final RealmsConfigureWorldScreen parentScreen;
    private final RealmsSlot slot;
    private final RealmsServer.WorldType worldType;
-   private Difficulty difficulty;
-   private GameType gameMode;
    private final String defaultSlotName;
-   private String worldName;
    private int spawnProtection;
    private boolean forceGameMode;
-   private SettingsSlider spawnProtectionButton;
+   private Difficulty difficulty;
+   private GameType gameMode;
+   private String worldName;
+   private @Nullable StringWidget warningHeader;
+   private @Nullable SettingsSlider spawnProtectionButton;
 
    public RealmsSlotOptionsScreen(final RealmsConfigureWorldScreen configureWorldScreen, final RealmsSlot slot, final RealmsServer.WorldType worldType, final int activeSlot) {
-      super(Component.translatable("mco.configure.world.buttons.options"));
+      super(TITLE);
       this.parentScreen = configureWorldScreen;
       this.slot = slot;
       this.worldType = worldType;
@@ -62,47 +68,37 @@ public class RealmsSlotOptionsScreen extends RealmsScreen {
 
    }
 
-   public void onClose() {
-      this.minecraft.setScreen(this.parentScreen);
-   }
-
-   private static <T> T findByIndex(final List<T> values, final int index, final int defaultIndex) {
-      try {
-         return (T)values.get(index);
-      } catch (IndexOutOfBoundsException var4) {
-         return (T)values.get(defaultIndex);
-      }
-   }
-
-   private static <T> int findIndex(final List<T> values, final T value, final int defaultIndex) {
-      int result = values.indexOf(value);
-      return result == -1 ? defaultIndex : result;
-   }
-
    public void init() {
-      this.columnWidth = 170;
-      this.column1X = this.width / 2 - this.columnWidth;
-      int column2X = this.width / 2 + 10;
-      if (this.worldType != RealmsServer.WorldType.NORMAL) {
-         Component warning;
-         if (this.worldType == RealmsServer.WorldType.ADVENTUREMAP) {
-            warning = Component.translatable("mco.configure.world.edit.subscreen.adventuremap");
-         } else if (this.worldType == RealmsServer.WorldType.INSPIRATION) {
-            warning = Component.translatable("mco.configure.world.edit.subscreen.inspiration");
-         } else {
-            warning = Component.translatable("mco.configure.world.edit.subscreen.experience");
-         }
-
-         this.addLabel(new RealmsLabel(warning, this.width / 2, 26, -65536));
+      LinearLayout header = (LinearLayout)this.layout.addToHeader(LinearLayout.vertical().spacing(8));
+      header.defaultCellSetting().alignHorizontallyCenter();
+      header.addChild(new StringWidget(TITLE, this.minecraft.font));
+      MutableComponent var10000;
+      switch (this.worldType) {
+         case ADVENTUREMAP -> var10000 = Component.translatable("mco.configure.world.edit.subscreen.adventuremap").withColor(-65536);
+         case INSPIRATION -> var10000 = Component.translatable("mco.configure.world.edit.subscreen.inspiration").withColor(-65536);
+         case EXPERIENCE -> var10000 = Component.translatable("mco.configure.world.edit.subscreen.experience").withColor(-65536);
+         default -> var10000 = null;
       }
 
-      this.nameEdit = (EditBox)this.addWidget(new EditBox(this.minecraft.font, this.column1X, row(1), this.columnWidth, 20, (EditBox)null, Component.translatable("mco.configure.world.edit.slot.name")));
-      this.nameEdit.setValue(this.worldName);
-      this.nameEdit.setResponder(this::setWorldName);
-      CycleButton<Difficulty> difficultyCycleButton = (CycleButton)this.addRenderableWidget(CycleButton.builder(Difficulty::getDisplayName, this.difficulty).withValues(DIFFICULTIES).create(column2X, row(1), this.columnWidth, 20, Component.translatable("options.difficulty"), (button, value) -> this.difficulty = value));
-      CycleButton<GameType> gameTypeCycleButton = (CycleButton)this.addRenderableWidget(CycleButton.builder(GameType::getShortDisplayName, this.gameMode).withValues(GAME_MODES).create(this.column1X, row(3), this.columnWidth, 20, Component.translatable("selectWorld.gameMode"), (button, value) -> this.gameMode = value));
-      CycleButton<Boolean> forceGameModeButton = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(this.forceGameMode).create(column2X, row(3), this.columnWidth, 20, Component.translatable("mco.configure.world.forceGameMode"), (button, value) -> this.forceGameMode = value));
-      this.spawnProtectionButton = (SettingsSlider)this.addRenderableWidget(new SettingsSlider(this.column1X, row(5), this.columnWidth, this.spawnProtection, 0.0F, 16.0F));
+      Component warning = var10000;
+      if (warning != null) {
+         HeaderAndFooterLayout var11 = this.layout;
+         Objects.requireNonNull(this.font);
+         var11.setHeaderHeight(41 + 9 + 8);
+         this.warningHeader = (StringWidget)header.addChild(new StringWidget(warning, this.font));
+      }
+
+      GridLayout contentGrid = (GridLayout)this.layout.addToContents((new GridLayout()).spacing(8));
+      contentGrid.defaultCellSetting().alignHorizontallyCenter();
+      GridLayout.RowHelper rowHelper = contentGrid.createRowHelper(2);
+      EditBox worldNameEdit = new EditBox(this.minecraft.font, 0, 0, 150, 20, (EditBox)null, WORLD_NAME_EDIT_LABEL);
+      worldNameEdit.setValue(this.worldName);
+      worldNameEdit.setResponder(this::setWorldName);
+      rowHelper.addChild(CommonLayouts.labeledElement(this.font, worldNameEdit, WORLD_NAME_EDIT_LABEL), 2);
+      CycleButton<Difficulty> difficultyCycleButton = (CycleButton)rowHelper.addChild(CycleButton.builder(Difficulty::getDisplayName, this.difficulty).withValues(DIFFICULTIES).create(0, 0, 150, 20, DIFFICULTY_BUTTON, (var1, value) -> this.difficulty = value));
+      CycleButton<GameType> gameTypeCycleButton = (CycleButton)rowHelper.addChild(CycleButton.builder(GameType::getShortDisplayName, this.gameMode).withValues(GAME_MODES).create(0, 0, 150, 20, GAME_MODE_BUTTON, (var1, value) -> this.gameMode = value));
+      CycleButton<Boolean> forceGameModeButton = (CycleButton)rowHelper.addChild(CycleButton.onOffBuilder(this.forceGameMode).create(0, 0, 150, 20, FORCE_GAME_MODE_BUTTON, (var1, value) -> this.forceGameMode = value));
+      this.spawnProtectionButton = (SettingsSlider)rowHelper.addChild(new SettingsSlider(0, 0, 150, this.spawnProtection, 0.0F, 16.0F));
       if (this.worldType != RealmsServer.WorldType.NORMAL) {
          this.spawnProtectionButton.active = false;
          forceGameModeButton.active = false;
@@ -114,33 +110,32 @@ public class RealmsSlotOptionsScreen extends RealmsScreen {
          forceGameModeButton.active = false;
       }
 
-      this.addRenderableWidget(Button.builder(Component.translatable("mco.configure.world.buttons.done"), (button) -> this.saveSettings()).bounds(this.column1X, row(13), this.columnWidth, 20).build());
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (button) -> this.onClose()).bounds(column2X, row(13), this.columnWidth, 20).build());
+      LinearLayout footer = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
+      footer.addChild(Button.builder(CommonComponents.GUI_CONTINUE, (var1) -> this.saveSettings()).build());
+      footer.addChild(Button.builder(CommonComponents.GUI_CANCEL, (var1) -> this.onClose()).build());
+      this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
+      this.repositionElements();
    }
 
-   private CycleButton.OnValueChange<Boolean> confirmDangerousOption(final Component message, final Consumer<Boolean> setter) {
-      return (button, value) -> {
-         if (value) {
-            setter.accept(true);
-         } else {
-            this.minecraft.setScreen(RealmsPopups.warningPopupScreen(this, message, (popupScreen) -> {
-               setter.accept(false);
-               popupScreen.onClose();
-            }));
-         }
+   protected void repositionElements() {
+      this.layout.arrangeElements();
+   }
 
-      };
+   public void onClose() {
+      this.minecraft.setScreen(this.parentScreen);
+   }
+
+   private static <T> T findByIndex(final List<T> values, final int index, final int defaultIndex) {
+      return (T)(index >= 0 && index < values.size() ? values.get(index) : values.get(defaultIndex));
+   }
+
+   private static <T> int findIndex(final List<T> values, final T value, final int defaultIndex) {
+      int result = values.indexOf(value);
+      return result == -1 ? defaultIndex : result;
    }
 
    public Component getNarrationMessage() {
-      return CommonComponents.joinForNarration(this.getTitle(), this.createLabelNarration());
-   }
-
-   public void render(final GuiGraphics graphics, final int xm, final int ym, final float a) {
-      super.render(graphics, xm, ym, a);
-      graphics.drawCenteredString(this.font, (Component)this.title, this.width / 2, 17, -1);
-      graphics.drawString(this.font, (Component)NAME_LABEL, this.column1X + this.columnWidth / 2 - this.font.width((FormattedText)NAME_LABEL) / 2, row(0) - 5, -1);
-      this.nameEdit.render(graphics, xm, ym, a);
+      return (Component)(this.warningHeader == null ? super.getNarrationMessage() : CommonComponents.joinForNarration(this.getTitle(), this.warningHeader.getMessage()));
    }
 
    private void setWorldName(final String value) {
@@ -166,8 +161,12 @@ public class RealmsSlotOptionsScreen extends RealmsScreen {
    static {
       DIFFICULTIES = ImmutableList.of(Difficulty.PEACEFUL, Difficulty.EASY, Difficulty.NORMAL, Difficulty.HARD);
       GAME_MODES = ImmutableList.of(GameType.SURVIVAL, GameType.CREATIVE, GameType.ADVENTURE);
-      NAME_LABEL = Component.translatable("mco.configure.world.edit.slot.name");
+      TITLE = Component.translatable("mco.configure.world.buttons.options");
+      WORLD_NAME_EDIT_LABEL = Component.translatable("mco.configure.world.edit.slot.name");
       SPAWN_PROTECTION_TEXT = Component.translatable("mco.configure.world.spawnProtection");
+      GAME_MODE_BUTTON = Component.translatable("selectWorld.gameMode");
+      DIFFICULTY_BUTTON = Component.translatable("options.difficulty");
+      FORCE_GAME_MODE_BUTTON = Component.translatable("mco.configure.world.forceGameMode");
    }
 
    private class SettingsSlider extends AbstractSliderButton {

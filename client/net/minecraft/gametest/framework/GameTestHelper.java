@@ -6,6 +6,8 @@ import com.mojang.datafixers.util.Either;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -46,11 +48,14 @@ import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.npc.InventoryCarrier;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -390,6 +395,24 @@ public class GameTestHelper {
       BlockState blockState = this.getLevel().getBlockState(absolutePos);
       LeverBlock leverBlock = (LeverBlock)blockState.getBlock();
       leverBlock.pull(blockState, this.getLevel(), absolutePos, (Player)null);
+   }
+
+   public void placeBlock(final BlockPos relativePos, final Block block, final Direction relativePlaceDirection) {
+      BlockPos pos = this.absolutePos(relativePos);
+      Direction placeDirection = this.getAbsoluteDirection(relativePlaceDirection);
+      Item item = block.asItem();
+      if (item instanceof BlockItem blockItem) {
+         BlockHitResult hitResult = new BlockHitResult(Vec3.atCenterOf(pos), Direction.DOWN, pos, true);
+         BlockPlaceContext context = new TestBlockPlaceContext(this.getLevel(), InteractionHand.MAIN_HAND, item.getDefaultInstance(), hitResult, placeDirection);
+         blockItem.place(context);
+      } else {
+         this.fail((Component)Component.translatable("test.error.not_a_block_item"));
+      }
+
+   }
+
+   public void placeBlock(final int x, final int y, final int z, final Block block, final Direction placeDirection) {
+      this.placeBlock(new BlockPos(x, y, z), block, placeDirection);
    }
 
    public void pulseRedstone(final BlockPos pos, final long duration) {
@@ -961,8 +984,8 @@ public class GameTestHelper {
 
    public BlockPos absolutePos(final BlockPos relativePos) {
       BlockPos testPos = this.testInfo.getTestOrigin();
-      BlockPos absolutePosBeforeTranform = testPos.offset(relativePos);
-      return StructureTemplate.transform(absolutePosBeforeTranform, Mirror.NONE, this.testInfo.getRotation(), testPos);
+      BlockPos absolutePosBeforeTransform = testPos.offset(relativePos);
+      return StructureTemplate.transform(absolutePosBeforeTransform, Mirror.NONE, this.testInfo.getRotation(), testPos);
    }
 
    public BlockPos relativePos(final BlockPos absolutePos) {
@@ -1090,5 +1113,25 @@ public class GameTestHelper {
 
    private static Component getItemName(final Item itemType) {
       return (Component)itemType.components().getOrDefault(DataComponents.ITEM_NAME, CommonComponents.EMPTY);
+   }
+
+   private class TestBlockPlaceContext extends BlockPlaceContext {
+      private final Direction placeDirection;
+
+      public TestBlockPlaceContext(final Level level, final InteractionHand hand, final ItemStack itemStackInHand, final BlockHitResult hitResult, final Direction placeDirection) {
+         Objects.requireNonNull(GameTestHelper.this);
+         super(level, (Player)null, hand, itemStackInHand, hitResult);
+         this.placeDirection = placeDirection;
+      }
+
+      public Direction getNearestLookingDirection() {
+         return this.placeDirection;
+      }
+
+      public Direction[] getNearestLookingDirections() {
+         Direction[] directions = Direction.values();
+         Arrays.sort(directions, Comparator.comparingDouble((d) -> d.getUnitVec3().distanceTo(this.placeDirection.getUnitVec3())));
+         return directions;
+      }
    }
 }

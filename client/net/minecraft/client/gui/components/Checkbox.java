@@ -4,7 +4,7 @@ import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.InputWithModifiers;
@@ -84,7 +84,7 @@ public class Checkbox extends AbstractButton {
 
    }
 
-   public void renderContents(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractContents(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       Minecraft minecraft = Minecraft.getInstance();
       Font font = minecraft.font;
       Identifier sprite;
@@ -99,7 +99,7 @@ public class Checkbox extends AbstractButton {
       int textX = this.getX() + boxSize + 4;
       int textY = this.getY() + boxSize / 2 - this.textWidget.getHeight() / 2;
       this.textWidget.setPosition(textX, textY);
-      this.textWidget.visitLines(graphics.textRendererForWidget(this, GuiGraphics.HoveredTextEffects.notClickable(this.isHovered())));
+      this.textWidget.visitLines(graphics.textRendererForWidget(this, GuiGraphicsExtractor.HoveredTextEffects.notClickable(this.isHovered())));
    }
 
    public interface OnValueChange {

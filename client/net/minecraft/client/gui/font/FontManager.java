@@ -38,7 +38,7 @@ import net.minecraft.client.gui.font.glyphs.EffectGlyph;
 import net.minecraft.client.gui.font.providers.GlyphProviderDefinition;
 import net.minecraft.client.renderer.PlayerSkinRenderCache;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.client.resources.model.AtlasManager;
+import net.minecraft.client.resources.model.sprite.AtlasManager;
 import net.minecraft.network.chat.FontDescription;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.Identifier;

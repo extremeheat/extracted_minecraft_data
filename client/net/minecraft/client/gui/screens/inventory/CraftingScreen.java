@@ -1,6 +1,6 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenPosition;
 import net.minecraft.client.gui.screens.recipebook.CraftingRecipeBookComponent;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -25,7 +25,8 @@ public class CraftingScreen extends AbstractRecipeBookScreen<CraftingMenu> {
       return new ScreenPosition(this.leftPos + 5, this.height / 2 - 49);
    }
 
-   protected void renderBg(final GuiGraphics graphics, final float a, final int xm, final int ym) {
+   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractBackground(graphics, mouseX, mouseY, a);
       int xo = this.leftPos;
       int yo = (this.height - this.imageHeight) / 2;
       graphics.blit(RenderPipelines.GUI_TEXTURED, CRAFTING_TABLE_LOCATION, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);

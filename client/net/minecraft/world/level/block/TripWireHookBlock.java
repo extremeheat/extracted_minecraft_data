@@ -138,6 +138,11 @@ public class TripWireHookBlock extends Block {
             Direction opposite = direction.getOpposite();
             level.setBlock(testPos, (BlockState)newState.setValue(FACING, opposite), 3);
             notifyNeighbors(block, level, testPos, opposite);
+            if (!level.getBlockState(pos).is(Blocks.TRIPWIRE_HOOK)) {
+               onRemoved(newState, level, pos);
+               return;
+            }
+
             emitState(level, testPos, attached, powered, wasAttached, wasPowered);
          }
 
@@ -195,17 +200,21 @@ public class TripWireHookBlock extends Block {
 
    protected void affectNeighborsAfterRemoval(final BlockState state, final ServerLevel level, final BlockPos pos, final boolean movedByPiston) {
       if (!movedByPiston) {
-         boolean attached = (Boolean)state.getValue(ATTACHED);
-         boolean powered = (Boolean)state.getValue(POWERED);
-         if (attached || powered) {
-            calculateState(level, pos, state, true, false, -1, (BlockState)null);
-         }
-
-         if (powered) {
-            notifyNeighbors(this, level, pos, (Direction)state.getValue(FACING));
-         }
-
+         onRemoved(state, level, pos);
       }
+   }
+
+   private static void onRemoved(final BlockState state, final Level level, final BlockPos pos) {
+      boolean attached = (Boolean)state.getValue(ATTACHED);
+      boolean powered = (Boolean)state.getValue(POWERED);
+      if (attached || powered) {
+         calculateState(level, pos, state, true, false, -1, (BlockState)null);
+      }
+
+      if (powered) {
+         notifyNeighbors(state.getBlock(), level, pos, (Direction)state.getValue(FACING));
+      }
+
    }
 
    protected int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {

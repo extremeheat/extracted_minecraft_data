@@ -9,7 +9,7 @@ import java.util.Objects;
 import java.util.function.ToIntFunction;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.RegistryAccess;
@@ -88,6 +88,10 @@ public class OptimizeWorldScreen extends Screen {
 
    }
 
+   public boolean shouldCloseOnEsc() {
+      return false;
+   }
+
    public void onClose() {
       this.callback.accept(false);
    }
@@ -97,9 +101,9 @@ public class OptimizeWorldScreen extends Screen {
       this.upgrader.close();
    }
 
-   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-      super.render(graphics, mouseX, mouseY, a);
-      graphics.drawCenteredString(this.font, (Component)this.title, this.width / 2, 20, -1);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
+      graphics.centeredText(this.font, (Component)this.title, this.width / 2, 20, -1);
       int x0 = this.width / 2 - 150;
       int x1 = this.width / 2 + 150;
       int y0 = this.height / 4 + 100;
@@ -108,18 +112,18 @@ public class OptimizeWorldScreen extends Screen {
       Component var10002 = this.upgrader.getStatus();
       int var10003 = this.width / 2;
       Objects.requireNonNull(this.font);
-      graphics.drawCenteredString(var10001, var10002, var10003, y0 - 9 - 2, -6250336);
+      graphics.centeredText(var10001, var10002, var10003, y0 - 9 - 2, -6250336);
       if (this.upgrader.getTotalChunks() > 0) {
          graphics.fill(x0 - 1, y0 - 1, x1 + 1, y1 + 1, -16777216);
-         graphics.drawString(this.font, (Component)Component.translatable("optimizeWorld.info.converted", this.upgrader.getConverted()), x0, 40, -6250336);
+         graphics.text(this.font, (Component)Component.translatable("optimizeWorld.info.converted", this.upgrader.getConverted()), x0, 40, -6250336);
          var10001 = this.font;
          MutableComponent var20 = Component.translatable("optimizeWorld.info.skipped", this.upgrader.getSkipped());
          Objects.requireNonNull(this.font);
-         graphics.drawString(var10001, (Component)var20, x0, 40 + 9 + 3, -6250336);
+         graphics.text(var10001, (Component)var20, x0, 40 + 9 + 3, -6250336);
          var10001 = this.font;
          var20 = Component.translatable("optimizeWorld.info.total", this.upgrader.getTotalChunks());
          Objects.requireNonNull(this.font);
-         graphics.drawString(var10001, (Component)var20, x0, 40 + (9 + 3) * 2, -6250336);
+         graphics.text(var10001, (Component)var20, x0, 40 + (9 + 3) * 2, -6250336);
          int progress = 0;
 
          for(ResourceKey<Level> dimension : this.upgrader.levels()) {
@@ -134,12 +138,12 @@ public class OptimizeWorldScreen extends Screen {
          var10001 = this.font;
          var10003 = this.width / 2;
          Objects.requireNonNull(this.font);
-         graphics.drawCenteredString(var10001, countStr, var10003, y0 + 2 * 9 + 2, -6250336);
+         graphics.centeredText(var10001, countStr, var10003, y0 + 2 * 9 + 2, -6250336);
          var10001 = this.font;
          var10003 = this.width / 2;
          int var10004 = y0 + (y1 - y0) / 2;
          Objects.requireNonNull(this.font);
-         graphics.drawCenteredString(var10001, progressStr, var10003, var10004 - 9 / 2, -6250336);
+         graphics.centeredText(var10001, progressStr, var10003, var10004 - 9 / 2, -6250336);
       }
 
    }

@@ -46,9 +46,9 @@ public class BlockPileFeature extends Feature<BlockPileConfiguration> {
       return belowState.is(Blocks.DIRT_PATH) ? random.nextBoolean() : belowState.isFaceSturdy(level, below, Direction.UP);
    }
 
-   private void tryPlaceBlock(final LevelAccessor level, final BlockPos blockPos, final RandomSource random, final BlockPileConfiguration config) {
+   private void tryPlaceBlock(final WorldGenLevel level, final BlockPos blockPos, final RandomSource random, final BlockPileConfiguration config) {
       if (level.isEmptyBlock(blockPos) && this.mayPlaceOn(level, blockPos, random)) {
-         level.setBlock(blockPos, config.stateProvider.getState(random, blockPos), 260);
+         level.setBlock(blockPos, config.stateProvider.getState(level, random, blockPos), 260);
       }
 
    }

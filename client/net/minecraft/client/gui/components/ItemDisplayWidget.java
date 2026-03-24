@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.components;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
@@ -25,23 +25,23 @@ public class ItemDisplayWidget extends AbstractWidget {
       this.tooltip = tooltip;
    }
 
-   protected void renderWidget(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-      graphics.renderItem(this.itemStack, this.getX() + this.offsetX, this.getY() + this.offsetY, 0);
+   protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      graphics.item(this.itemStack, this.getX() + this.offsetX, this.getY() + this.offsetY, 0);
       if (this.decorations) {
-         graphics.renderItemDecorations(this.minecraft.font, this.itemStack, this.getX() + this.offsetX, this.getY() + this.offsetY, (String)null);
+         graphics.itemDecorations(this.minecraft.font, this.itemStack, this.getX() + this.offsetX, this.getY() + this.offsetY, (String)null);
       }
 
       if (this.isFocused()) {
-         graphics.renderOutline(this.getX(), this.getY(), this.getWidth(), this.getHeight(), -1);
+         graphics.outline(this.getX(), this.getY(), this.getWidth(), this.getHeight(), -1);
       }
 
-      if (this.tooltip && this.isHoveredOrFocused()) {
-         this.renderTooltip(graphics, mouseX, mouseY);
+      if (this.tooltip && this.isHovered()) {
+         this.extractTooltip(graphics, mouseX, mouseY);
       }
 
    }
 
-   protected void renderTooltip(final GuiGraphics graphics, final int x, final int y) {
+   protected void extractTooltip(final GuiGraphicsExtractor graphics, final int x, final int y) {
       graphics.setTooltipForNextFrame(this.minecraft.font, this.itemStack, x, y);
    }
 

@@ -1,9 +1,9 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.model.Model;
-import net.minecraft.client.renderer.blockentity.SignRenderer;
-import net.minecraft.world.level.block.StandingSignBlock;
+import net.minecraft.client.renderer.blockentity.StandingSignRenderer;
+import net.minecraft.world.level.block.PlainSignBlock;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
@@ -20,22 +20,22 @@ public class SignEditScreen extends AbstractSignEditScreen {
 
    protected void init() {
       super.init();
-      boolean standing = this.sign.getBlockState().getBlock() instanceof StandingSignBlock;
-      this.signModel = SignRenderer.createSignModel(this.minecraft.getEntityModels(), this.woodType, standing);
+      PlainSignBlock.Attachment attachment = PlainSignBlock.getAttachmentPoint(this.sign.getBlockState());
+      this.signModel = StandingSignRenderer.createSignModel(this.minecraft.getEntityModels(), this.woodType, attachment);
    }
 
    protected float getSignYOffset() {
       return 90.0F;
    }
 
-   protected void renderSignBackground(final GuiGraphics graphics) {
+   protected void extractSignBackground(final GuiGraphicsExtractor graphics) {
       if (this.signModel != null) {
          int centerX = this.width / 2;
          int x0 = centerX - 48;
          int y0 = 66;
          int x1 = centerX + 48;
          int y1 = 168;
-         graphics.submitSignRenderState(this.signModel, 62.500004F, this.woodType, x0, 66, x1, 168);
+         graphics.sign(this.signModel, 62.500004F, this.woodType, x0, 66, x1, 168);
       }
    }
 

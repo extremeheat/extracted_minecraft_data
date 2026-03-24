@@ -19,7 +19,7 @@ public class TintedGlassBlock extends TransparentBlock {
       return false;
    }
 
-   protected int getLightBlock(final BlockState state) {
+   protected int getLightDampening(final BlockState state) {
       return 15;
    }
 }

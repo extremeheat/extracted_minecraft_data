@@ -2,7 +2,7 @@ package net.minecraft.client.gui.components;
 
 import java.util.function.Supplier;
 import net.minecraft.client.gui.ComponentPath;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -36,12 +36,12 @@ public class PlayerSkinWidget extends AbstractWidget {
       this.skin = skin;
    }
 
-   protected void renderWidget(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+   protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       float scale = 0.97F * (float)this.getHeight() / 2.125F;
       float pivotY = -1.0625F;
       PlayerSkin skin = (PlayerSkin)this.skin.get();
       PlayerModel model = skin.model() == PlayerModelType.SLIM ? this.slimModel : this.wideModel;
-      graphics.submitSkinRenderState(model, skin.body().texturePath(), scale, this.rotationX, this.rotationY, -1.0625F, this.getX(), this.getY(), this.getRight(), this.getBottom());
+      graphics.skin(model, skin.body().texturePath(), scale, this.rotationX, this.rotationY, -1.0625F, this.getX(), this.getY(), this.getRight(), this.getBottom());
    }
 
    protected void onDrag(final MouseButtonEvent event, final double dx, final double dy) {

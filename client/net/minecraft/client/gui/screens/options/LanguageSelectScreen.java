@@ -7,7 +7,7 @@ import java.util.SortedMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -155,13 +155,13 @@ public class LanguageSelectScreen extends OptionsSubScreen {
             this.language = language.toComponent();
          }
 
-         public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+         public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
             Font var10001 = LanguageSelectScreen.this.font;
             Component var10002 = this.language;
             int var10003 = LanguageSelectionList.this.width / 2;
             int var10004 = this.getContentYMiddle();
             Objects.requireNonNull(LanguageSelectScreen.this.font);
-            graphics.drawCenteredString(var10001, (Component)var10002, var10003, var10004 - 9 / 2, -1);
+            graphics.centeredText(var10001, (Component)var10002, var10003, var10004 - 9 / 2, -1);
          }
 
          public boolean keyPressed(final KeyEvent event) {

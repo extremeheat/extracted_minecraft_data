@@ -8,7 +8,7 @@ import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementNode;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.core.ClientAsset;
@@ -72,21 +72,21 @@ public class AdvancementTab {
       return this.display;
    }
 
-   public void drawTab(final GuiGraphics graphics, final int xo, final int yo, final int mouseX, final int mouseY, final boolean selected) {
+   public void extractTab(final GuiGraphicsExtractor graphics, final int xo, final int yo, final int mouseX, final int mouseY, final boolean selected) {
       int tabX = xo + this.type.getX(this.index);
       int tabY = yo + this.type.getY(this.index);
-      this.type.draw(graphics, tabX, tabY, selected, this.index);
+      this.type.extractRenderState(graphics, tabX, tabY, selected, this.index);
       if (!selected && mouseX > tabX && mouseY > tabY && mouseX < tabX + this.type.getWidth() && mouseY < tabY + this.type.getHeight()) {
          graphics.requestCursor(CursorTypes.POINTING_HAND);
       }
 
    }
 
-   public void drawIcon(final GuiGraphics graphics, final int xo, final int yo) {
-      this.type.drawIcon(graphics, xo, yo, this.index, this.icon);
+   public void extractIcon(final GuiGraphicsExtractor graphics, final int xo, final int yo) {
+      this.type.extractIcon(graphics, xo, yo, this.index, this.icon);
    }
 
-   public void drawContents(final GuiGraphics graphics, final int windowLeft, final int windowTop) {
+   public void extractContents(final GuiGraphicsExtractor graphics, final int windowLeft, final int windowTop) {
       if (!this.centered) {
          this.scrollX = (double)(117 - (this.maxX + this.minX) / 2);
          this.scrollY = (double)(56 - (this.maxY + this.minY) / 2);
@@ -108,14 +108,14 @@ public class AdvancementTab {
          }
       }
 
-      this.root.drawConnectivity(graphics, intScrollX, intScrollY, true);
-      this.root.drawConnectivity(graphics, intScrollX, intScrollY, false);
-      this.root.draw(graphics, intScrollX, intScrollY);
+      this.root.extractConnectivity(graphics, intScrollX, intScrollY, true);
+      this.root.extractConnectivity(graphics, intScrollX, intScrollY, false);
+      this.root.extractRenderState(graphics, intScrollX, intScrollY);
       graphics.pose().popMatrix();
       graphics.disableScissor();
    }
 
-   public void drawTooltips(final GuiGraphics graphics, final int mouseX, final int mouseY, final int xo, final int yo) {
+   public void extractTooltips(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final int xo, final int yo) {
       graphics.fill(0, 0, 234, 113, Mth.floor(this.fade * 255.0F) << 24);
       boolean hovering = false;
       int intScrollX = Mth.floor(this.scrollX);
@@ -124,7 +124,7 @@ public class AdvancementTab {
          for(AdvancementWidget widget : this.widgets.values()) {
             if (widget.isMouseOver(intScrollX, intScrollY, mouseX, mouseY)) {
                hovering = true;
-               widget.drawHover(graphics, intScrollX, intScrollY, this.fade, xo, yo);
+               widget.extractHover(graphics, intScrollX, intScrollY, this.fade, xo, yo);
                break;
             }
          }

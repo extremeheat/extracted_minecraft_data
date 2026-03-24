@@ -133,7 +133,7 @@ public class MatrixUtil {
       return Triple.of(u, scale, v.conjugate());
    }
 
-   private static boolean checkPropertyRaw(final Matrix4fc matrix, final int property) {
+   public static boolean checkPropertyRaw(final Matrix4fc matrix, final int property) {
       return (matrix.properties() & property) != 0;
    }
 
@@ -142,7 +142,9 @@ public class MatrixUtil {
          return true;
       } else if (matrix instanceof Matrix4f) {
          Matrix4f mutableMatrix = (Matrix4f)matrix;
+         int currentProperties = mutableMatrix.properties();
          mutableMatrix.determineProperties();
+         mutableMatrix.assume(mutableMatrix.properties() | currentProperties);
          return checkPropertyRaw(matrix, property);
       } else {
          return false;
@@ -155,9 +157,5 @@ public class MatrixUtil {
 
    public static boolean isPureTranslation(final Matrix4fc matrix) {
       return checkProperty(matrix, 8);
-   }
-
-   public static boolean isOrthonormal(final Matrix4fc matrix) {
-      return checkProperty(matrix, 16);
    }
 }

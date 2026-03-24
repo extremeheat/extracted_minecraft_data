@@ -698,7 +698,7 @@ public class Fox extends Animal {
       SNOW(1, "snow");
 
       public static final Variant DEFAULT = RED;
-      public static final StringRepresentable.EnumCodec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
+      public static final Codec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
       private static final IntFunction<Variant> BY_ID = ByIdMap.<Variant>continuous(Variant::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
       public static final StreamCodec<ByteBuf, Variant> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Variant::getId);
       private final int id;

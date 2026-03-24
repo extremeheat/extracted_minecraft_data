@@ -44,6 +44,7 @@ public final class BlockTags {
    public static final TagKey<Block> ANVIL = create("anvil");
    public static final TagKey<Block> RAILS = create("rails");
    public static final TagKey<Block> LEAVES = create("leaves");
+   public static final TagKey<Block> PREVENTS_NEARBY_LEAF_DECAY = create("prevents_nearby_leaf_decay");
    public static final TagKey<Block> WOODEN_TRAPDOORS = create("wooden_trapdoors");
    public static final TagKey<Block> TRAPDOORS = create("trapdoors");
    public static final TagKey<Block> SMALL_FLOWERS = create("small_flowers");

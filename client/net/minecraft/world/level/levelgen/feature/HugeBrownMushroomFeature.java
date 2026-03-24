@@ -3,7 +3,7 @@ package net.minecraft.world.level.levelgen.feature;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.HugeMushroomBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.configurations.HugeMushroomFeatureConfiguration;
@@ -13,7 +13,7 @@ public class HugeBrownMushroomFeature extends AbstractHugeMushroomFeature {
       super(codec);
    }
 
-   protected void makeCap(final LevelAccessor level, final RandomSource random, final BlockPos origin, final int treeHeight, final BlockPos.MutableBlockPos blockPos, final HugeMushroomFeatureConfiguration config) {
+   protected void makeCap(final WorldGenLevel level, final RandomSource random, final BlockPos origin, final int treeHeight, final BlockPos.MutableBlockPos blockPos, final HugeMushroomFeatureConfiguration config) {
       int radius = config.foliageRadius();
 
       for(int dx = -radius; dx <= radius; ++dx) {
@@ -30,7 +30,7 @@ public class HugeBrownMushroomFeature extends AbstractHugeMushroomFeature {
                boolean east = maxX || zEdge && dx == radius - 1;
                boolean north = minZ || xEdge && dz == 1 - radius;
                boolean south = maxZ || xEdge && dz == radius - 1;
-               BlockState state = config.capProvider().getState(random, origin);
+               BlockState state = config.capProvider().getState(level, random, origin);
                if (state.hasProperty(HugeMushroomBlock.WEST) && state.hasProperty(HugeMushroomBlock.EAST) && state.hasProperty(HugeMushroomBlock.NORTH) && state.hasProperty(HugeMushroomBlock.SOUTH)) {
                   state = (BlockState)((BlockState)((BlockState)((BlockState)state.setValue(HugeMushroomBlock.WEST, west)).setValue(HugeMushroomBlock.EAST, east)).setValue(HugeMushroomBlock.NORTH, north)).setValue(HugeMushroomBlock.SOUTH, south);
                }

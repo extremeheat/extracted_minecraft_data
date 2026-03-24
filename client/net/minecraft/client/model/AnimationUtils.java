@@ -4,6 +4,7 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.entity.state.UndeadRenderState;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SwingAnimationType;
 
 public class AnimationUtils {
@@ -65,22 +66,24 @@ public class AnimationUtils {
    }
 
    public static <T extends UndeadRenderState> void animateZombieArms(final ModelPart leftArm, final ModelPart rightArm, final boolean aggressive, final T state) {
-      boolean animateAttack = state.swingAnimationType != SwingAnimationType.STAB;
-      if (animateAttack) {
-         float attackTime = state.attackTime;
-         float armDrop = -3.1415927F / (aggressive ? 1.5F : 2.25F);
-         float attackYRotModifier = Mth.sin((double)(attackTime * 3.1415927F));
-         float attackXRotModifier = Mth.sin((double)((1.0F - (1.0F - attackTime) * (1.0F - attackTime)) * 3.1415927F));
-         rightArm.zRot = 0.0F;
-         rightArm.yRot = -(0.1F - attackYRotModifier * 0.6F);
-         rightArm.xRot = armDrop;
-         rightArm.xRot += attackYRotModifier * 1.2F - attackXRotModifier * 0.4F;
-         leftArm.zRot = 0.0F;
-         leftArm.yRot = 0.1F - attackYRotModifier * 0.6F;
-         leftArm.xRot = armDrop;
-         leftArm.xRot += attackYRotModifier * 1.2F - attackXRotModifier * 0.4F;
-      }
+      if (!state.isBaby || state.getMainHandItemStack() == ItemStack.EMPTY) {
+         boolean animateAttack = state.swingAnimationType != SwingAnimationType.STAB;
+         if (animateAttack) {
+            float attackTime = state.attackTime;
+            float armDrop = -3.1415927F / (aggressive ? 1.5F : 2.25F);
+            float attackYRotModifier = Mth.sin((double)(attackTime * 3.1415927F));
+            float attackXRotModifier = Mth.sin((double)((1.0F - (1.0F - attackTime) * (1.0F - attackTime)) * 3.1415927F));
+            rightArm.zRot = 0.0F;
+            rightArm.yRot = -(0.1F - attackYRotModifier * 0.6F);
+            rightArm.xRot = armDrop;
+            rightArm.xRot += attackYRotModifier * 1.2F - attackXRotModifier * 0.4F;
+            leftArm.zRot = 0.0F;
+            leftArm.yRot = 0.1F - attackYRotModifier * 0.6F;
+            leftArm.xRot = armDrop;
+            leftArm.xRot += attackYRotModifier * 1.2F - attackXRotModifier * 0.4F;
+         }
 
-      bobArms(rightArm, leftArm, state.ageInTicks);
+         bobArms(rightArm, leftArm, state.ageInTicks);
+      }
    }
 }

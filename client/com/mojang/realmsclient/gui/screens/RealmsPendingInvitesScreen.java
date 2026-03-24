@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
@@ -83,10 +83,10 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
       this.minecraft.setScreen(this.lastScreen);
    }
 
-   public void render(final GuiGraphics graphics, final int xm, final int ym, final float a) {
-      super.render(graphics, xm, ym, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int xm, final int ym, final float a) {
+      super.extractRenderState(graphics, xm, ym, a);
       if (this.pendingInvites.isDone() && this.pendingInvitationSelectionList.hasPendingInvites()) {
-         graphics.drawCenteredString(this.font, (Component)NO_PENDING_INVITES_TEXT, this.width / 2, this.height / 2 - 20, -1);
+         graphics.centeredText(this.font, (Component)NO_PENDING_INVITES_TEXT, this.width / 2, this.height / 2 - 20, -1);
       }
 
    }
@@ -158,22 +158,22 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
          return this.children;
       }
 
-      public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+      public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
          int x = this.getContentX();
          int y = this.getContentY();
          int textX = x + 38;
-         RealmsUtil.renderPlayerFace(graphics, x, y, 32, this.pendingInvite.realmOwnerUuid());
+         RealmsUtil.extractPlayerFace(graphics, x, y, 32, this.pendingInvite.realmOwnerUuid());
          this.realmName.setPosition(textX, y + 1);
-         this.realmName.renderWidget(graphics, mouseX, mouseY, (float)x);
+         this.realmName.extractWidgetRenderState(graphics, mouseX, mouseY, (float)x);
          this.realmOwnerName.setPosition(textX, y + 12);
-         this.realmOwnerName.renderWidget(graphics, mouseX, mouseY, (float)x);
+         this.realmOwnerName.extractWidgetRenderState(graphics, mouseX, mouseY, (float)x);
          this.inviteDate.setPosition(textX, y + 24);
-         this.inviteDate.renderWidget(graphics, mouseX, mouseY, (float)x);
+         this.inviteDate.extractWidgetRenderState(graphics, mouseX, mouseY, (float)x);
          int buttonY = y + this.getContentHeight() / 2 - 10;
          this.acceptButton.setPosition(x + this.getContentWidth() - 16 - 42, buttonY);
-         this.acceptButton.render(graphics, mouseX, mouseY, a);
+         this.acceptButton.extractRenderState(graphics, mouseX, mouseY, a);
          this.rejectButton.setPosition(x + this.getContentWidth() - 8 - 21, buttonY);
-         this.rejectButton.render(graphics, mouseX, mouseY, a);
+         this.rejectButton.extractRenderState(graphics, mouseX, mouseY, a);
       }
 
       private void handleInvitation(final boolean accept) {

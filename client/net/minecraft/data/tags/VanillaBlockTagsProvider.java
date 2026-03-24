@@ -147,6 +147,7 @@ public class VanillaBlockTagsProvider extends IntrinsicHolderTagsProvider<Block>
       this.tag(BlockTags.REPLACEABLE_BY_MUSHROOMS).addTag(BlockTags.LEAVES).addTag(BlockTags.SMALL_FLOWERS).add(Blocks.PALE_MOSS_CARPET).add(Blocks.SHORT_GRASS, Blocks.FERN, Blocks.DEAD_BUSH, Blocks.VINE, Blocks.GLOW_LICHEN, Blocks.SUNFLOWER, Blocks.LILAC, Blocks.ROSE_BUSH, Blocks.PEONY, Blocks.TALL_GRASS, Blocks.LARGE_FERN, Blocks.HANGING_ROOTS, Blocks.PITCHER_PLANT).add(Blocks.WATER, Blocks.SEAGRASS, Blocks.TALL_SEAGRASS).add(Blocks.BROWN_MUSHROOM, Blocks.RED_MUSHROOM, Blocks.BROWN_MUSHROOM_BLOCK, Blocks.RED_MUSHROOM_BLOCK).add(Blocks.WARPED_ROOTS, Blocks.NETHER_SPROUTS, Blocks.CRIMSON_ROOTS, Blocks.LEAF_LITTER, Blocks.SHORT_DRY_GRASS, Blocks.TALL_DRY_GRASS, Blocks.BUSH, Blocks.FIREFLY_BUSH);
       this.tag(BlockTags.ENABLES_BUBBLE_COLUMN_DRAG_DOWN).add(Blocks.MAGMA_BLOCK);
       this.tag(BlockTags.ENABLES_BUBBLE_COLUMN_PUSH_UP).add(Blocks.SOUL_SAND);
+      this.tag(BlockTags.PREVENTS_NEARBY_LEAF_DECAY).addTag(BlockTags.LOGS);
       this.tag(BlockTags.SUPPORTS_VEGETATION).addTag(BlockTags.SUBSTRATE_OVERWORLD).add(Blocks.FARMLAND);
       this.tag(BlockTags.SUPPORTS_DRY_VEGETATION).addTag(BlockTags.SAND).addTag(BlockTags.TERRACOTTA).addTag(BlockTags.SUPPORTS_VEGETATION);
       this.tag(BlockTags.SUPPORTS_CROPS).add(Blocks.FARMLAND);

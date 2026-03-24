@@ -46,7 +46,7 @@ public class EndermanModel<T extends EndermanRenderState> extends HumanoidModel<
       this.leftArm.xRot = Mth.clamp(this.leftArm.xRot, -0.4F, 0.4F);
       this.rightLeg.xRot = Mth.clamp(this.rightLeg.xRot, -0.4F, 0.4F);
       this.leftLeg.xRot = Mth.clamp(this.leftLeg.xRot, -0.4F, 0.4F);
-      if (state.carriedBlock != null) {
+      if (!state.carriedBlock.isEmpty()) {
          this.rightArm.xRot = -0.5F;
          this.leftArm.xRot = -0.5F;
          this.rightArm.zRot = 0.05F;

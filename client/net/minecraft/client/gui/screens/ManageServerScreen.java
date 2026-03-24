@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.screens;
 
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
@@ -72,12 +72,12 @@ public class ManageServerScreen extends Screen {
       this.addButton.active = ServerAddress.isValidAddress(this.ipEdit.getValue());
    }
 
-   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-      super.render(graphics, mouseX, mouseY, a);
-      graphics.drawCenteredString(this.font, (Component)this.title, this.width / 2, 17, -1);
-      graphics.drawString(this.font, (Component)NAME_LABEL, this.width / 2 - 100 + 1, 53, -6250336);
-      graphics.drawString(this.font, (Component)IP_LABEL, this.width / 2 - 100 + 1, 94, -6250336);
-      this.nameEdit.render(graphics, mouseX, mouseY, a);
-      this.ipEdit.render(graphics, mouseX, mouseY, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
+      graphics.centeredText(this.font, (Component)this.title, this.width / 2, 17, -1);
+      graphics.text(this.font, (Component)NAME_LABEL, this.width / 2 - 100 + 1, 53, -6250336);
+      graphics.text(this.font, (Component)IP_LABEL, this.width / 2 - 100 + 1, 94, -6250336);
+      this.nameEdit.extractRenderState(graphics, mouseX, mouseY, a);
+      this.ipEdit.extractRenderState(graphics, mouseX, mouseY, a);
    }
 }

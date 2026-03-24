@@ -4,7 +4,7 @@ import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
@@ -145,14 +145,14 @@ public class TestInstanceBlockEditScreen extends Screen {
       return (float)(316 - (count - 1) * 8) / (float)count;
    }
 
-   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-      super.render(graphics, mouseX, mouseY, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
       int leftEdge = this.width / 2 - 158;
-      graphics.drawCenteredString(this.font, (Component)this.title, this.width / 2, 10, -1);
-      graphics.drawString(this.font, (Component)ID_LABEL, leftEdge, 30, -6250336);
-      graphics.drawString(this.font, (Component)SIZE_LABEL, leftEdge, 150, -6250336);
-      graphics.drawString(this.font, (Component)ROTATION_LABEL, this.rotationButton.getX(), 150, -6250336);
-      graphics.drawString(this.font, (Component)INCLUDE_ENTITIES_LABEL, this.includeEntitiesButton.getX(), 150, -6250336);
+      graphics.centeredText(this.font, (Component)this.title, this.width / 2, 10, -1);
+      graphics.text(this.font, (Component)ID_LABEL, leftEdge, 30, -6250336);
+      graphics.text(this.font, (Component)SIZE_LABEL, leftEdge, 150, -6250336);
+      graphics.text(this.font, (Component)ROTATION_LABEL, this.rotationButton.getX(), 150, -6250336);
+      graphics.text(this.font, (Component)INCLUDE_ENTITIES_LABEL, this.includeEntitiesButton.getX(), 150, -6250336);
    }
 
    private void updateTestInfo(final boolean isInit) {

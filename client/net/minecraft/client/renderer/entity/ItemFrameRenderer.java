@@ -6,9 +6,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MapRenderer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.block.BlockModelResolver;
+import net.minecraft.client.renderer.block.model.BlockDisplayContext;
 import net.minecraft.client.renderer.entity.state.ItemFrameRenderState;
 import net.minecraft.client.renderer.item.ItemModelResolver;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -23,6 +24,7 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
 
 public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T, ItemFrameRenderState> {
+   public static final BlockDisplayContext BLOCK_DISPLAY_CONTEXT = BlockDisplayContext.create();
    public static final int GLOW_FRAME_BRIGHTNESS = 5;
    public static final int BRIGHT_MAP_LIGHT_ADJUSTMENT = 30;
    private final BlockModelResolver blockModelResolver;
@@ -116,12 +118,6 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T, It
    public void extractRenderState(final T entity, final ItemFrameRenderState state, final float partialTicks) {
       super.extractRenderState(entity, state, partialTicks);
       state.direction = entity.getDirection();
-      if (!state.isInvisible) {
-         this.blockModelResolver.updateForItemFrame(state.frameModel, state.isGlowFrame, state.mapId != null);
-      } else {
-         state.frameModel.clear();
-      }
-
       ItemStack itemStack = entity.getItem();
       this.itemModelResolver.updateForNonLiving(state.item, itemStack, ItemDisplayContext.FIXED, entity);
       state.rotation = entity.getRotation();
@@ -136,6 +132,12 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T, It
                state.mapId = framedMapId;
             }
          }
+      }
+
+      if (!state.isInvisible) {
+         this.blockModelResolver.updateForItemFrame(state.frameModel, state.isGlowFrame, state.mapId != null);
+      } else {
+         state.frameModel.clear();
       }
 
    }

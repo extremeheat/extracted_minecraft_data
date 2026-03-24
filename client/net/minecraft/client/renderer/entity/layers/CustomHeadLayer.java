@@ -15,7 +15,6 @@ import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.world.item.component.ResolvableProfile;
@@ -49,12 +48,11 @@ public class CustomHeadLayer<S extends LivingEntityRenderState, M extends Entity
          ((HeadedModel)parentModel).translateToHead(poseStack);
          if (state.wornHeadType != null) {
             poseStack.translate(0.0F, this.transforms.skullYOffset(), 0.0F);
-            poseStack.scale(1.1875F, -1.1875F, -1.1875F);
-            poseStack.translate(-0.5, 0.0, -0.5);
+            poseStack.scale(1.1875F, 1.1875F, 1.1875F);
             SkullBlock.Type type = state.wornHeadType;
             SkullModelBase skullModel = (SkullModelBase)this.skullModels.apply(type);
             RenderType renderType = this.resolveSkullRenderType(state, type);
-            SkullBlockRenderer.submitSkull((Direction)null, 180.0F, state.wornHeadAnimationPos, poseStack, submitNodeCollector, lightCoords, skullModel, renderType, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+            SkullBlockRenderer.submitSkull(state.wornHeadAnimationPos, poseStack, submitNodeCollector, lightCoords, skullModel, renderType, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
          } else {
             translateToHead(poseStack, this.transforms);
             state.headItem.submit(poseStack, submitNodeCollector, lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);

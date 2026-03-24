@@ -53,7 +53,7 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
    private int prevCellX = -2147483648;
    private int prevCellZ = -2147483648;
    private RelativeCameraPos prevRelativeCameraPos;
-   private @Nullable CloudStatus prevType;
+   private @Nullable CloudStatus prevCloudStatus;
    private @Nullable TextureData texture;
    private int quadCount;
    private final MappableRingBuffer ubo;
@@ -151,9 +151,9 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
       return (cellData >> 0 & 1L) != 0L;
    }
 
-   public void render(final int color, final CloudStatus type, final float bottomY, final Vec3 cameraPosition, final long gameTime, final float partialTicks) {
+   public void render(final int color, final CloudStatus cloudStatus, final float bottomY, final int range, final Vec3 cameraPosition, final long gameTime, final float partialTicks) {
       if (this.texture != null) {
-         int radiusBlocks = (Integer)Minecraft.getInstance().options.cloudRange().get() * 16;
+         int radiusBlocks = range * 16;
          int radiusCells = Mth.ceil((float)radiusBlocks / 12.0F);
          int utbSize = getSizeForCloudDistance(radiusCells);
          if (this.utb == null || this.utb.currentBuffer().size() != (long)utbSize) {
@@ -186,14 +186,14 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
          int cellZ = Mth.floor(cloudZ / 12.0);
          float xInCell = (float)(cloudX - (double)((float)cellX * 12.0F));
          float zInCell = (float)(cloudZ - (double)((float)cellZ * 12.0F));
-         boolean fancyClouds = type == CloudStatus.FANCY;
+         boolean fancyClouds = cloudStatus == CloudStatus.FANCY;
          RenderPipeline renderPipeline = fancyClouds ? RenderPipelines.CLOUDS : RenderPipelines.FLAT_CLOUDS;
-         if (this.needsRebuild || cellX != this.prevCellX || cellZ != this.prevCellZ || relativeCameraPos != this.prevRelativeCameraPos || type != this.prevType) {
+         if (this.needsRebuild || cellX != this.prevCellX || cellZ != this.prevCellZ || relativeCameraPos != this.prevRelativeCameraPos || cloudStatus != this.prevCloudStatus) {
             this.needsRebuild = false;
             this.prevCellX = cellX;
             this.prevCellZ = cellZ;
             this.prevRelativeCameraPos = relativeCameraPos;
-            this.prevType = type;
+            this.prevCloudStatus = cloudStatus;
             this.utb.rotate();
 
             try (GpuBuffer.MappedView view = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.utb.currentBuffer(), false, true)) {

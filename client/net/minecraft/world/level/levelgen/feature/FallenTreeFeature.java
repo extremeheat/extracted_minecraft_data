@@ -106,7 +106,7 @@ public class FallenTreeFeature extends Feature<FallenTreeConfiguration> {
    }
 
    private BlockPos placeLogBlock(final FallenTreeConfiguration config, final WorldGenLevel level, final RandomSource random, final BlockPos.MutableBlockPos blockPos, final Function<BlockState, BlockState> sidewaysStateModifier) {
-      level.setBlock(blockPos, (BlockState)sidewaysStateModifier.apply(config.trunkProvider.getState(random, blockPos)), 3);
+      level.setBlock(blockPos, (BlockState)sidewaysStateModifier.apply(config.trunkProvider.getState(level, random, blockPos)), 3);
       this.markAboveForPostProcessing(level, blockPos);
       return blockPos.immutable();
    }

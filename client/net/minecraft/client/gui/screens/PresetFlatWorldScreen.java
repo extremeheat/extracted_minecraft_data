@@ -10,7 +10,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.ObjectSelectionList;
@@ -205,12 +205,12 @@ public class PresetFlatWorldScreen extends Screen {
       this.minecraft.setScreen(this.parent);
    }
 
-   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-      super.render(graphics, mouseX, mouseY, a);
-      graphics.drawCenteredString(this.font, (Component)this.title, this.width / 2, 8, -1);
-      graphics.drawString(this.font, (Component)this.shareText, 51, 30, -6250336);
-      graphics.drawString(this.font, (Component)this.listText, 51, 68, -6250336);
-      this.export.render(graphics, mouseX, mouseY, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
+      graphics.centeredText(this.font, (Component)this.title, this.width / 2, 8, -1);
+      graphics.text(this.font, (Component)this.shareText, 51, 30, -6250336);
+      graphics.text(this.font, (Component)this.listText, 51, 68, -6250336);
+      this.export.extractRenderState(graphics, mouseX, mouseY, a);
    }
 
    public void updateButtonValidity(final boolean hasSelected) {
@@ -266,9 +266,9 @@ public class PresetFlatWorldScreen extends Screen {
             this.name = (Component)preset.unwrapKey().map((key) -> Component.translatable(key.identifier().toLanguageKey("flat_world_preset"))).orElse(PresetFlatWorldScreen.UNKNOWN_PRESET);
          }
 
-         public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+         public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
             this.blitSlot(graphics, this.getContentX(), this.getContentY(), (Item)this.preset.displayItem().value());
-            graphics.drawString(PresetFlatWorldScreen.this.font, (Component)this.name, this.getContentX() + 18 + 5, this.getContentY() + 6, -1);
+            graphics.text(PresetFlatWorldScreen.this.font, (Component)this.name, this.getContentX() + 18 + 5, this.getContentY() + 6, -1);
          }
 
          public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
@@ -283,12 +283,12 @@ public class PresetFlatWorldScreen extends Screen {
             PresetFlatWorldScreen.this.export.moveCursorToStart(false);
          }
 
-         private void blitSlot(final GuiGraphics graphics, final int x, final int y, final Item item) {
+         private void blitSlot(final GuiGraphicsExtractor graphics, final int x, final int y, final Item item) {
             this.blitSlotBg(graphics, x + 1, y + 1);
-            graphics.renderFakeItem(new ItemStack(item), x + 2, y + 2);
+            graphics.fakeItem(new ItemStack(item), x + 2, y + 2);
          }
 
-         private void blitSlotBg(final GuiGraphics graphics, final int x, final int y) {
+         private void blitSlotBg(final GuiGraphicsExtractor graphics, final int x, final int y) {
             graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)PresetFlatWorldScreen.SLOT_SPRITE, x, y, 18, 18);
          }
 

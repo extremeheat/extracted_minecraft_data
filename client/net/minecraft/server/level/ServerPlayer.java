@@ -52,6 +52,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.OutgoingChatMessage;
 import net.minecraft.network.chat.RemoteChatSession;
+import net.minecraft.network.chat.ResolutionContext;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.common.ClientboundShowDialogPacket;
 import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
@@ -1344,7 +1345,7 @@ public class ServerPlayer extends Player {
 
    public void openItemGui(final ItemStack itemStack, final InteractionHand hand) {
       if (itemStack.has(DataComponents.WRITTEN_BOOK_CONTENT)) {
-         if (WrittenBookContent.resolveForItem(itemStack, this.createCommandSourceStack(), this)) {
+         if (WrittenBookContent.resolveForItem(itemStack, ResolutionContext.create(this.createCommandSourceStack()), this.registryAccess())) {
             this.containerMenu.broadcastChanges();
          }
 
@@ -1710,6 +1711,10 @@ public class ServerPlayer extends Player {
 
    public void sendBuildLimitMessage(final boolean isTooHigh, final int limit) {
       this.sendOverlayMessage(Component.translatable(isTooHigh ? "build.tooHigh" : "build.tooLow", limit).withStyle(ChatFormatting.RED));
+   }
+
+   public void sendSpawnProtectionMessage(final BlockPos pos) {
+      this.sendOverlayMessage(Component.translatable("build.spawn_protection", pos.toShortString()).withStyle(ChatFormatting.RED));
    }
 
    public void sendSystemMessage(final Component message, final boolean overlay) {

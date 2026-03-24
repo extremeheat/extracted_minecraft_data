@@ -16,7 +16,7 @@ import java.util.Map.Entry;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
@@ -157,8 +157,8 @@ public abstract class AbstractGameRulesScreen extends Screen {
          this.label = label;
       }
 
-      public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
-         graphics.drawCenteredString(AbstractGameRulesScreen.this.minecraft.font, (Component)this.label, this.getContentXMiddle(), this.getContentY() + 5, -1);
+      public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+         graphics.centeredText(AbstractGameRulesScreen.this.minecraft.font, (Component)this.label, this.getContentXMiddle(), this.getContentY() + 5, -1);
       }
 
       public List<? extends GuiEventListener> children() {
@@ -190,7 +190,7 @@ public abstract class AbstractGameRulesScreen extends Screen {
          Objects.requireNonNull(AbstractGameRulesScreen.this);
          super(tooltip);
          this.children = Lists.newArrayList();
-         this.label = AbstractGameRulesScreen.this.minecraft.font.split(label, 175);
+         this.label = AbstractGameRulesScreen.this.minecraft.font.split(label, 170);
       }
 
       public List<? extends GuiEventListener> children() {
@@ -201,12 +201,12 @@ public abstract class AbstractGameRulesScreen extends Screen {
          return this.children;
       }
 
-      protected void renderLabel(final GuiGraphics graphics, final int rowTop, final int rowLeft) {
+      protected void extractLabel(final GuiGraphicsExtractor graphics, final int rowTop, final int rowLeft) {
          if (this.label.size() == 1) {
-            graphics.drawString(AbstractGameRulesScreen.this.minecraft.font, (FormattedCharSequence)((FormattedCharSequence)this.label.get(0)), rowLeft, rowTop + 5, -1);
+            graphics.text(AbstractGameRulesScreen.this.minecraft.font, (FormattedCharSequence)((FormattedCharSequence)this.label.get(0)), rowLeft, rowTop + 5, -1);
          } else if (this.label.size() >= 2) {
-            graphics.drawString(AbstractGameRulesScreen.this.minecraft.font, (FormattedCharSequence)((FormattedCharSequence)this.label.get(0)), rowLeft, rowTop, -1);
-            graphics.drawString(AbstractGameRulesScreen.this.minecraft.font, (FormattedCharSequence)((FormattedCharSequence)this.label.get(1)), rowLeft, rowTop + 10, -1);
+            graphics.text(AbstractGameRulesScreen.this.minecraft.font, (FormattedCharSequence)((FormattedCharSequence)this.label.get(0)), rowLeft, rowTop, -1);
+            graphics.text(AbstractGameRulesScreen.this.minecraft.font, (FormattedCharSequence)((FormattedCharSequence)this.label.get(1)), rowLeft, rowTop + 10, -1);
          }
 
       }
@@ -222,11 +222,11 @@ public abstract class AbstractGameRulesScreen extends Screen {
          this.children.add(this.checkbox);
       }
 
-      public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
-         this.renderLabel(graphics, this.getContentY(), this.getContentX());
+      public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+         this.extractLabel(graphics, this.getContentY(), this.getContentX());
          this.checkbox.setX(this.getContentRight() - 45);
          this.checkbox.setY(this.getContentY());
-         this.checkbox.render(graphics, mouseX, mouseY, a);
+         this.checkbox.extractRenderState(graphics, mouseX, mouseY, a);
       }
    }
 
@@ -253,11 +253,11 @@ public abstract class AbstractGameRulesScreen extends Screen {
          this.children.add(this.input);
       }
 
-      public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
-         this.renderLabel(graphics, this.getContentY(), this.getContentX());
+      public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+         this.extractLabel(graphics, this.getContentY(), this.getContentX());
          this.input.setX(this.getContentRight() - 45);
          this.input.setY(this.getContentY());
-         this.input.render(graphics, mouseX, mouseY, a);
+         this.input.extractRenderState(graphics, mouseX, mouseY, a);
       }
    }
 
@@ -329,8 +329,8 @@ public abstract class AbstractGameRulesScreen extends Screen {
          return gameRuleId.toLowerCase(Locale.ROOT).contains(lowerCaseFilter);
       }
 
-      public void renderWidget(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-         super.renderWidget(graphics, mouseX, mouseY, a);
+      public void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+         super.extractWidgetRenderState(graphics, mouseX, mouseY, a);
          RuleEntry hovered = (RuleEntry)this.getHovered();
          if (hovered != null && hovered.tooltip != null) {
             graphics.setTooltipForNextFrame(hovered.tooltip, mouseX, mouseY);

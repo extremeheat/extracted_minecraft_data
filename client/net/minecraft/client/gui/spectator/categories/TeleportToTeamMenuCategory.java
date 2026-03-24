@@ -6,8 +6,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.PlayerFaceRenderer;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.PlayerFaceExtractor;
 import net.minecraft.client.gui.spectator.SpectatorMenu;
 import net.minecraft.client.gui.spectator.SpectatorMenuCategory;
 import net.minecraft.client.gui.spectator.SpectatorMenuItem;
@@ -54,7 +54,7 @@ public class TeleportToTeamMenuCategory implements SpectatorMenuCategory, Specta
       return TELEPORT_TEXT;
    }
 
-   public void renderIcon(final GuiGraphics graphics, final float brightness, final float alpha) {
+   public void extractIcon(final GuiGraphicsExtractor graphics, final float brightness, final float alpha) {
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)TELEPORT_TO_TEAM_SPRITE, 0, 0, 16, 16, ARGB.colorFromFloat(alpha, brightness, brightness, brightness));
    }
 
@@ -101,7 +101,7 @@ public class TeleportToTeamMenuCategory implements SpectatorMenuCategory, Specta
          return this.team.getDisplayName();
       }
 
-      public void renderIcon(final GuiGraphics graphics, final float brightness, final float alpha) {
+      public void extractIcon(final GuiGraphicsExtractor graphics, final float brightness, final float alpha) {
          Integer teamColor = this.team.getColor().getColor();
          if (teamColor != null) {
             float red = (float)(teamColor >> 16 & 255) / 255.0F;
@@ -110,7 +110,7 @@ public class TeleportToTeamMenuCategory implements SpectatorMenuCategory, Specta
             graphics.fill(1, 1, 15, 15, ARGB.colorFromFloat(alpha, red * brightness, green * brightness, blue * brightness));
          }
 
-         PlayerFaceRenderer.draw(graphics, (PlayerSkin)this.iconSkin.get(), 2, 2, 12, ARGB.colorFromFloat(alpha, brightness, brightness, brightness));
+         PlayerFaceExtractor.extractRenderState(graphics, (PlayerSkin)this.iconSkin.get(), 2, 2, 12, ARGB.colorFromFloat(alpha, brightness, brightness, brightness));
       }
 
       public boolean isEnabled() {

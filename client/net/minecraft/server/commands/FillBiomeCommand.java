@@ -78,9 +78,9 @@ public class FillBiomeCommand {
       BlockPos from = quantize(rawFrom);
       BlockPos to = quantize(rawTo);
       BoundingBox region = BoundingBox.fromCorners(from, to);
-      int volume = region.getXSpan() * region.getYSpan() * region.getZSpan();
+      long volume = (long)region.getXSpan() * (long)region.getYSpan() * (long)region.getZSpan();
       int limit = (Integer)level.getGameRules().get(GameRules.MAX_BLOCK_MODIFICATIONS);
-      if (volume > limit) {
+      if (volume > (long)limit) {
          return Either.right(ERROR_VOLUME_TOO_LARGE.create(limit, volume));
       } else {
          List<ChunkAccess> chunks = new ArrayList();

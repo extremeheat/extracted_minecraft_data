@@ -34,6 +34,7 @@ public class BreathAirGoal extends Goal {
 
    public void start() {
       this.findAirPosition();
+      this.mob.getNavigation().stop();
    }
 
    private void findAirPosition() {

@@ -2,7 +2,7 @@ package net.minecraft.client.gui.screens;
 
 import java.util.Objects;
 import net.minecraft.client.gui.ActiveTextCollector;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
@@ -76,14 +76,14 @@ public class GenericWaitingScreen extends Screen {
 
    }
 
-   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-      super.render(graphics, mouseX, mouseY, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
       ActiveTextCollector textRenderer = graphics.textRenderer();
-      graphics.drawCenteredString(this.font, (Component)this.title, this.width / 2, 80, -1);
+      graphics.centeredText(this.font, (Component)this.title, this.width / 2, 80, -1);
       int messageY = 120;
       if (this.showLoadingDots) {
          String loadingDots = LoadingDotsText.get(Util.getMillis());
-         graphics.drawCenteredString(this.font, loadingDots, this.width / 2, messageY, -6250336);
+         graphics.centeredText(this.font, loadingDots, this.width / 2, messageY, -6250336);
          Objects.requireNonNull(this.font);
          messageY += 9 + 3;
       }

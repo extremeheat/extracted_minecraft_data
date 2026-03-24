@@ -1,11 +1,11 @@
 package net.minecraft.client.data.models;
 
 import java.util.List;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
-import net.minecraft.client.renderer.block.model.SingleVariant;
-import net.minecraft.client.renderer.block.model.Variant;
-import net.minecraft.client.renderer.block.model.VariantMutator;
-import net.minecraft.client.resources.model.WeightedVariants;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.SingleVariant;
+import net.minecraft.client.renderer.block.dispatch.Variant;
+import net.minecraft.client.renderer.block.dispatch.VariantMutator;
+import net.minecraft.client.renderer.block.dispatch.WeightedVariants;
 import net.minecraft.util.random.Weighted;
 import net.minecraft.util.random.WeightedList;
 

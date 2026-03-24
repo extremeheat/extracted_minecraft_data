@@ -12,13 +12,13 @@ import net.minecraft.world.level.levelgen.feature.featuresize.FeatureSize;
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
 import net.minecraft.world.level.levelgen.feature.rootplacers.RootPlacer;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
-import net.minecraft.world.level.levelgen.feature.stateproviders.RuleBasedBlockStateProvider;
+import net.minecraft.world.level.levelgen.feature.stateproviders.RuleBasedStateProvider;
 import net.minecraft.world.level.levelgen.feature.treedecorators.TreeDecorator;
 import net.minecraft.world.level.levelgen.feature.trunkplacers.TrunkPlacer;
 
 public class TreeConfiguration implements FeatureConfiguration {
    public static final BlockPredicate CAN_PLACE_BELOW_OVERWORLD_TRUNKS;
-   public static final RuleBasedBlockStateProvider PLACE_BELOW_OVERWORLD_TRUNKS;
+   public static final RuleBasedStateProvider PLACE_BELOW_OVERWORLD_TRUNKS;
    public static final Codec<TreeConfiguration> CODEC;
    public final BlockStateProvider trunkProvider;
    public final TrunkPlacer trunkPlacer;
@@ -28,9 +28,9 @@ public class TreeConfiguration implements FeatureConfiguration {
    public final FeatureSize minimumSize;
    public final List<TreeDecorator> decorators;
    public final boolean ignoreVines;
-   public final RuleBasedBlockStateProvider belowTrunkProvider;
+   public final BlockStateProvider belowTrunkProvider;
 
-   protected TreeConfiguration(final BlockStateProvider trunkProvider, final TrunkPlacer trunkPlacer, final BlockStateProvider foliageProvider, final FoliagePlacer foliagePlacer, final Optional<RootPlacer> rootPlacer, final FeatureSize minimumSize, final List<TreeDecorator> decorators, final boolean ignoreVines, final RuleBasedBlockStateProvider belowTrunkProvider) {
+   protected TreeConfiguration(final BlockStateProvider trunkProvider, final TrunkPlacer trunkPlacer, final BlockStateProvider foliageProvider, final FoliagePlacer foliagePlacer, final Optional<RootPlacer> rootPlacer, final FeatureSize minimumSize, final List<TreeDecorator> decorators, final boolean ignoreVines, final BlockStateProvider belowTrunkProvider) {
       super();
       this.trunkProvider = trunkProvider;
       this.trunkPlacer = trunkPlacer;
@@ -45,8 +45,8 @@ public class TreeConfiguration implements FeatureConfiguration {
 
    static {
       CAN_PLACE_BELOW_OVERWORLD_TRUNKS = BlockPredicate.not(BlockPredicate.matchesTag(BlockTags.CANNOT_REPLACE_BELOW_TREE_TRUNK));
-      PLACE_BELOW_OVERWORLD_TRUNKS = RuleBasedBlockStateProvider.ifTrueThenProvide(CAN_PLACE_BELOW_OVERWORLD_TRUNKS, Blocks.DIRT);
-      CODEC = RecordCodecBuilder.create((i) -> i.group(BlockStateProvider.CODEC.fieldOf("trunk_provider").forGetter((c) -> c.trunkProvider), TrunkPlacer.CODEC.fieldOf("trunk_placer").forGetter((c) -> c.trunkPlacer), BlockStateProvider.CODEC.fieldOf("foliage_provider").forGetter((c) -> c.foliageProvider), FoliagePlacer.CODEC.fieldOf("foliage_placer").forGetter((c) -> c.foliagePlacer), RootPlacer.CODEC.optionalFieldOf("root_placer").forGetter((c) -> c.rootPlacer), FeatureSize.CODEC.fieldOf("minimum_size").forGetter((c) -> c.minimumSize), TreeDecorator.CODEC.listOf().fieldOf("decorators").forGetter((c) -> c.decorators), Codec.BOOL.fieldOf("ignore_vines").orElse(false).forGetter((c) -> c.ignoreVines), RuleBasedBlockStateProvider.CODEC.optionalFieldOf("below_trunk_provider", PLACE_BELOW_OVERWORLD_TRUNKS).forGetter((c) -> c.belowTrunkProvider)).apply(i, TreeConfiguration::new));
+      PLACE_BELOW_OVERWORLD_TRUNKS = RuleBasedStateProvider.ifTrueThenProvide(CAN_PLACE_BELOW_OVERWORLD_TRUNKS, Blocks.DIRT);
+      CODEC = RecordCodecBuilder.create((i) -> i.group(BlockStateProvider.CODEC.fieldOf("trunk_provider").forGetter((c) -> c.trunkProvider), TrunkPlacer.CODEC.fieldOf("trunk_placer").forGetter((c) -> c.trunkPlacer), BlockStateProvider.CODEC.fieldOf("foliage_provider").forGetter((c) -> c.foliageProvider), FoliagePlacer.CODEC.fieldOf("foliage_placer").forGetter((c) -> c.foliagePlacer), RootPlacer.CODEC.optionalFieldOf("root_placer").forGetter((c) -> c.rootPlacer), FeatureSize.CODEC.fieldOf("minimum_size").forGetter((c) -> c.minimumSize), TreeDecorator.CODEC.listOf().fieldOf("decorators").forGetter((c) -> c.decorators), Codec.BOOL.fieldOf("ignore_vines").orElse(false).forGetter((c) -> c.ignoreVines), BlockStateProvider.CODEC.fieldOf("below_trunk_provider").orElse(PLACE_BELOW_OVERWORLD_TRUNKS).forGetter((c) -> c.belowTrunkProvider)).apply(i, TreeConfiguration::new));
    }
 
    public static class TreeConfigurationBuilder {
@@ -58,9 +58,9 @@ public class TreeConfiguration implements FeatureConfiguration {
       private final FeatureSize minimumSize;
       private List<TreeDecorator> decorators;
       private boolean ignoreVines;
-      private RuleBasedBlockStateProvider belowTrunkProvider;
+      private BlockStateProvider belowTrunkProvider;
 
-      public TreeConfigurationBuilder(final BlockStateProvider trunkProvider, final TrunkPlacer trunkPlacer, final BlockStateProvider foliageProvider, final FoliagePlacer foliagePlacer, final Optional<RootPlacer> rootPlacer, final FeatureSize minimumSize, final RuleBasedBlockStateProvider belowTrunkProvider) {
+      public TreeConfigurationBuilder(final BlockStateProvider trunkProvider, final TrunkPlacer trunkPlacer, final BlockStateProvider foliageProvider, final FoliagePlacer foliagePlacer, final Optional<RootPlacer> rootPlacer, final FeatureSize minimumSize, final BlockStateProvider belowTrunkProvider) {
          super();
          this.decorators = ImmutableList.of();
          this.trunkProvider = trunkProvider;
@@ -76,7 +76,7 @@ public class TreeConfiguration implements FeatureConfiguration {
          this(trunkProvider, trunkPlacer, foliageProvider, foliagePlacer, Optional.empty(), minimumSize, TreeConfiguration.PLACE_BELOW_OVERWORLD_TRUNKS);
       }
 
-      public TreeConfigurationBuilder belowTrunkProvider(final RuleBasedBlockStateProvider belowTrunkProvider) {
+      public TreeConfigurationBuilder belowTrunkProvider(final BlockStateProvider belowTrunkProvider) {
          this.belowTrunkProvider = belowTrunkProvider;
          return this;
       }

@@ -14,42 +14,47 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import net.minecraft.client.color.block.BlockTintSource;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.PlayerSkinRenderCache;
 import net.minecraft.client.renderer.Sheets;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.BlockModelPart;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
-import net.minecraft.client.renderer.block.model.Material;
-import net.minecraft.client.renderer.block.model.SimpleModelWrapper;
-import net.minecraft.client.renderer.block.model.SingleVariant;
-import net.minecraft.client.renderer.block.model.TextureSlots;
+import net.minecraft.client.renderer.block.FluidModel;
+import net.minecraft.client.renderer.block.dispatch.BlockModelRotation;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
+import net.minecraft.client.renderer.block.dispatch.SingleVariant;
+import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.item.ClientItem;
 import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.renderer.item.MissingItemModel;
 import net.minecraft.client.renderer.item.ModelRenderProperties;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.resources.model.cuboid.ItemTransforms;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.resources.model.geometry.QuadCollection;
+import net.minecraft.client.resources.model.sprite.Material;
+import net.minecraft.client.resources.model.sprite.MaterialBaker;
+import net.minecraft.client.resources.model.sprite.SpriteGetter;
+import net.minecraft.client.resources.model.sprite.SpriteId;
+import net.minecraft.client.resources.model.sprite.TextureSlots;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.thread.ParallelMapTransform;
 import net.minecraft.world.level.block.state.BlockState;
+import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.Vector3fc;
 import org.slf4j.Logger;
 
 public class ModelBakery {
+   private static final Logger LOGGER = LogUtils.getLogger();
    public static final SpriteId FIRE_0;
    public static final SpriteId FIRE_1;
-   public static final SpriteId LAVA_STILL;
-   public static final SpriteId LAVA_FLOW;
-   public static final SpriteId WATER_STILL;
-   public static final SpriteId WATER_FLOW;
-   public static final SpriteId WATER_OVERLAY;
    public static final int DESTROY_STAGE_COUNT = 10;
    public static final List<Identifier> DESTROY_STAGES;
    public static final List<Identifier> BREAKING_LOCATIONS;
    public static final List<RenderType> DESTROY_TYPES;
-   private static final Logger LOGGER;
+   private static final Matrix4fc IDENTITY;
    private final EntityModelSet entityModelSet;
    private final SpriteGetter sprites;
    private final PlayerSkinRenderCache playerSkinRenderCache;
@@ -83,7 +88,7 @@ public class ModelBakery {
       }, taskExecutor);
       CompletableFuture<Map<Identifier, ItemModel>> bakedItemStackModelFuture = ParallelMapTransform.schedule(this.clientInfos, (location, clientInfo) -> {
          try {
-            return clientInfo.model().bake(new ItemModel.BakingContext(baker, this.entityModelSet, this.sprites, this.playerSkinRenderCache, missingModels.item, clientInfo.registrySwapper()));
+            return clientInfo.model().bake(new ItemModel.BakingContext(baker, this.entityModelSet, this.sprites, this.playerSkinRenderCache, missingModels.item, clientInfo.registrySwapper()), IDENTITY);
          } catch (Exception e) {
             LOGGER.warn("Unable to bake item model: '{}'", location, e);
             return null;
@@ -103,18 +108,13 @@ public class ModelBakery {
    static {
       FIRE_0 = Sheets.BLOCKS_MAPPER.defaultNamespaceApply("fire_0");
       FIRE_1 = Sheets.BLOCKS_MAPPER.defaultNamespaceApply("fire_1");
-      LAVA_STILL = Sheets.BLOCKS_MAPPER.defaultNamespaceApply("lava_still");
-      LAVA_FLOW = Sheets.BLOCKS_MAPPER.defaultNamespaceApply("lava_flow");
-      WATER_STILL = Sheets.BLOCKS_MAPPER.defaultNamespaceApply("water_still");
-      WATER_FLOW = Sheets.BLOCKS_MAPPER.defaultNamespaceApply("water_flow");
-      WATER_OVERLAY = Sheets.BLOCKS_MAPPER.defaultNamespaceApply("water_overlay");
       DESTROY_STAGES = (List)IntStream.range(0, 10).mapToObj((i) -> Identifier.withDefaultNamespace("block/destroy_stage_" + i)).collect(Collectors.toList());
       BREAKING_LOCATIONS = (List)DESTROY_STAGES.stream().map((location) -> location.withPath((UnaryOperator)((path) -> "textures/" + path + ".png"))).collect(Collectors.toList());
       DESTROY_TYPES = (List)BREAKING_LOCATIONS.stream().map(RenderTypes::crumbling).collect(Collectors.toList());
-      LOGGER = LogUtils.getLogger();
+      IDENTITY = new Matrix4f();
    }
 
-   public static record MissingModels(BlockModelPart blockPart, BlockStateModel block, ItemModel item) {
+   public static record MissingModels(BlockStateModelPart blockPart, BlockStateModel block, MissingItemModel item, FluidModel fluid) {
       public MissingModels {
          super();
       }
@@ -125,7 +125,7 @@ public class ModelBakery {
                throw new IllegalStateException("Missing model can't have dependencies, but asked for " + String.valueOf(location));
             }
 
-            public BlockModelPart missingBlockModelPart() {
+            public BlockStateModelPart missingBlockModelPart() {
                throw new IllegalStateException();
             }
 
@@ -147,10 +147,11 @@ public class ModelBakery {
          ItemTransforms transforms = unbaked.getTopTransforms();
          QuadCollection geometry = unbaked.bakeTopGeometry(textureSlots, missingModelBakery, BlockModelRotation.IDENTITY);
          Material.Baked particleMaterial = unbaked.resolveParticleMaterial(textureSlots, missingModelBakery);
-         SimpleModelWrapper missingModelPart = new SimpleModelWrapper(geometry, hasAmbientOcclusion, particleMaterial, false);
+         SimpleModelWrapper missingModelPart = new SimpleModelWrapper(geometry, hasAmbientOcclusion, particleMaterial);
          BlockStateModel bakedBlockModel = new SingleVariant(missingModelPart);
-         ItemModel bakedItemModel = new MissingItemModel(geometry.getAll(), new ModelRenderProperties(usesBlockLight, particleMaterial, transforms));
-         return new MissingModels(missingModelPart, bakedBlockModel, bakedItemModel);
+         MissingItemModel bakedItemModel = new MissingItemModel(geometry.getAll(), new ModelRenderProperties(usesBlockLight, particleMaterial, transforms));
+         FluidModel bakedFluidModel = new FluidModel(ChunkSectionLayer.SOLID, particleMaterial, particleMaterial, (Material.Baked)null, (BlockTintSource)null);
+         return new MissingModels(missingModelPart, bakedBlockModel, bakedItemModel, bakedFluidModel);
       }
    }
 
@@ -171,7 +172,7 @@ public class ModelBakery {
          this.missingModels = missingModels;
       }
 
-      public BlockModelPart missingBlockModelPart() {
+      public BlockStateModelPart missingBlockModelPart() {
          return this.missingModels.blockPart;
       }
 
@@ -202,11 +203,15 @@ public class ModelBakery {
       public BakingResult {
          super();
       }
+
+      public BlockStateModel getBlockStateModel(final BlockState blockState) {
+         return (BlockStateModel)this.blockStateModels.getOrDefault(blockState, this.missingModels.block);
+      }
    }
 
    private static class InternerImpl implements ModelBaker.Interner {
       private final Interner<Vector3fc> vectors = Interners.newStrongInterner();
-      private final Interner<BakedQuad.SpriteInfo> spriteInfos = Interners.newStrongInterner();
+      private final Interner<BakedQuad.MaterialInfo> materialInfos = Interners.newStrongInterner();
 
       private InternerImpl() {
          super();
@@ -216,8 +221,8 @@ public class ModelBakery {
          return (Vector3fc)this.vectors.intern(v);
       }
 
-      public BakedQuad.SpriteInfo spriteInfo(final BakedQuad.SpriteInfo sprite) {
-         return (BakedQuad.SpriteInfo)this.spriteInfos.intern(sprite);
+      public BakedQuad.MaterialInfo materialInfo(final BakedQuad.MaterialInfo material) {
+         return (BakedQuad.MaterialInfo)this.materialInfos.intern(material);
       }
    }
 }

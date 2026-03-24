@@ -7,6 +7,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.mojang.blaze3d.audio.Channel;
 import com.mojang.blaze3d.audio.DeviceList;
+import com.mojang.blaze3d.audio.DeviceTracker;
 import com.mojang.blaze3d.audio.Library;
 import com.mojang.blaze3d.audio.Listener;
 import com.mojang.blaze3d.audio.ListenerTransform;

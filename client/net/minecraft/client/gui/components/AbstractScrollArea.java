@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.components;
 
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
@@ -100,7 +100,7 @@ public abstract class AbstractScrollArea extends AbstractWidget {
       return this.maxScrollAmount() == 0 ? this.getY() : Math.max(this.getY(), (int)this.scrollAmount * (this.height - this.scrollerHeight()) / this.maxScrollAmount() + this.getY());
    }
 
-   protected void renderScrollbar(final GuiGraphics graphics, final int mouseX, final int mouseY) {
+   protected void extractScrollbar(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY) {
       int scrollbarX = this.scrollBarX();
       int scrollerHeight = this.scrollerHeight();
       int scrollerY = this.scrollBarY();

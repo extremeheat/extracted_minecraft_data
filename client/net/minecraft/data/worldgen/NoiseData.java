@@ -16,6 +16,8 @@ public class NoiseData {
    public static void bootstrap(final BootstrapContext<NormalNoise.NoiseParameters> context) {
       registerBiomeNoises(context, 0, Noises.TEMPERATURE, Noises.VEGETATION, Noises.CONTINENTALNESS, Noises.EROSION);
       registerBiomeNoises(context, -2, Noises.TEMPERATURE_LARGE, Noises.VEGETATION_LARGE, Noises.CONTINENTALNESS_LARGE, Noises.EROSION_LARGE);
+      register(context, Noises.TEMPERATURE_NETHER, -7, 1.0, 1.0);
+      register(context, Noises.VEGETATION_NETHER, -7, 1.0, 1.0);
       register(context, Noises.RIDGE, -7, 1.0, 2.0, 1.0, 0.0, 0.0, 0.0);
       context.register(Noises.SHIFT, DEFAULT_SHIFT);
       register(context, Noises.AQUIFER_BARRIER, -3, 1.0);

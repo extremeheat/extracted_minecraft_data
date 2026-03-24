@@ -8,7 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.client.sounds.SoundEventListener;
 import net.minecraft.client.sounds.SoundManager;
@@ -33,7 +33,7 @@ public class SubtitleOverlay implements SoundEventListener {
       this.minecraft = minecraft;
    }
 
-   public void render(final GuiGraphics graphics) {
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
       SoundManager soundManager = this.minecraft.getSoundManager();
       if (!this.isListening && (Boolean)this.minecraft.options.showSubtitles().get()) {
          soundManager.addListener(this);
@@ -100,13 +100,13 @@ public class SubtitleOverlay implements SoundEventListener {
                   int textColor = ARGB.color(255, brightness, brightness, brightness);
                   if (!inView) {
                      if (rightness > 0.0) {
-                        graphics.drawString(this.minecraft.font, ">", halfWidth - this.minecraft.font.width(">"), -halfHeight, textColor);
+                        graphics.text(this.minecraft.font, ">", halfWidth - this.minecraft.font.width(">"), -halfHeight, textColor);
                      } else if (rightness < 0.0) {
-                        graphics.drawString(this.minecraft.font, "<", -halfWidth, -halfHeight, textColor);
+                        graphics.text(this.minecraft.font, "<", -halfWidth, -halfHeight, textColor);
                      }
                   }
 
-                  graphics.drawString(this.minecraft.font, text, -textWidth / 2, -halfHeight, textColor);
+                  graphics.text(this.minecraft.font, text, -textWidth / 2, -halfHeight, textColor);
                   graphics.pose().popMatrix();
                   ++row;
                }

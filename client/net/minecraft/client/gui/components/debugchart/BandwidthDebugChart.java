@@ -2,7 +2,7 @@ package net.minecraft.client.gui.components.debugchart;
 
 import java.util.Locale;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.Mth;
 import net.minecraft.util.debugchart.SampleStorage;
 
@@ -18,20 +18,20 @@ public class BandwidthDebugChart extends AbstractDebugChart {
       super(font, sampleStorage);
    }
 
-   protected void renderAdditionalLinesAndLabels(final GuiGraphics graphics, final int left, final int width, final int bottom) {
-      this.drawLabeledLineAtValue(graphics, left, width, bottom, 64);
-      this.drawLabeledLineAtValue(graphics, left, width, bottom, 1024);
-      this.drawLabeledLineAtValue(graphics, left, width, bottom, 16384);
-      this.drawStringWithShade(graphics, toDisplayStringInternal(1048576.0), left + 1, bottom - getSampleHeightInternal(1048576.0) + 1);
+   protected void extractAdditionalLinesAndLabels(final GuiGraphicsExtractor graphics, final int left, final int width, final int bottom) {
+      this.extractLabeledLineAtValue(graphics, left, width, bottom, 64);
+      this.extractLabeledLineAtValue(graphics, left, width, bottom, 1024);
+      this.extractLabeledLineAtValue(graphics, left, width, bottom, 16384);
+      this.extractStringWithShade(graphics, toDisplayStringInternal(1048576.0), left + 1, bottom - getSampleHeightInternal(1048576.0) + 1);
    }
 
-   private void drawLabeledLineAtValue(final GuiGraphics graphics, final int left, final int width, final int bottom, final int bytesPerSecond) {
-      this.drawLineWithLabel(graphics, left, width, bottom - getSampleHeightInternal((double)bytesPerSecond), toDisplayStringInternal((double)bytesPerSecond));
+   private void extractLabeledLineAtValue(final GuiGraphicsExtractor graphics, final int left, final int width, final int bottom, final int bytesPerSecond) {
+      this.extractLineWithLabel(graphics, left, width, bottom - getSampleHeightInternal((double)bytesPerSecond), toDisplayStringInternal((double)bytesPerSecond));
    }
 
-   private void drawLineWithLabel(final GuiGraphics graphics, final int x, final int width, final int y, final String label) {
-      this.drawStringWithShade(graphics, label, x + 1, y + 1);
-      graphics.hLine(x, x + width - 1, y, -1);
+   private void extractLineWithLabel(final GuiGraphicsExtractor graphics, final int x, final int width, final int y, final String label) {
+      this.extractStringWithShade(graphics, label, x + 1, y + 1);
+      graphics.horizontalLine(x, x + width - 1, y, -1);
    }
 
    protected String toDisplayString(final double bytesPerTick) {

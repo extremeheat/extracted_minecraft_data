@@ -51,12 +51,7 @@ public class PandaModel extends QuadrupedModel<PandaRenderState> {
       }
 
       if (state.sitAmount > 0.0F) {
-         this.body.xRot = Mth.rotLerpRad(state.sitAmount, this.body.xRot, 1.7407963F);
-         this.head.xRot = Mth.rotLerpRad(state.sitAmount, this.head.xRot, 1.5707964F);
-         this.rightFrontLeg.zRot = -0.27079642F;
-         this.leftFrontLeg.zRot = 0.27079642F;
-         this.rightHindLeg.zRot = 0.5707964F;
-         this.leftHindLeg.zRot = -0.5707964F;
+         this.animateSitting(state);
          if (state.isEating) {
             this.head.xRot = 1.5707964F + 0.2F * Mth.sin((double)(state.ageInTicks * 0.6F));
             this.rightFrontLeg.xRot = -0.4F - 0.2F * Mth.sin((double)(state.ageInTicks * 0.6F));
@@ -91,5 +86,14 @@ public class PandaModel extends QuadrupedModel<PandaRenderState> {
          this.leftFrontLeg.xRot = -0.5F * Mth.sin((double)(state.ageInTicks * 0.5F));
       }
 
+   }
+
+   protected void animateSitting(PandaRenderState state) {
+      this.body.xRot = Mth.rotLerpRad(state.sitAmount, this.body.xRot, 1.7407963F);
+      this.head.xRot = Mth.rotLerpRad(state.sitAmount, this.head.xRot, 1.5707964F);
+      this.rightFrontLeg.zRot = -0.27079642F;
+      this.leftFrontLeg.zRot = 0.27079642F;
+      this.rightHindLeg.zRot = 0.5707964F;
+      this.leftHindLeg.zRot = -0.5707964F;
    }
 }

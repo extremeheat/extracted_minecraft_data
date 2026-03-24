@@ -29,7 +29,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.debug.DebugScreenDisplayer;
 import net.minecraft.client.gui.components.debug.DebugScreenEntries;
 import net.minecraft.client.gui.components.debug.DebugScreenEntry;
@@ -41,7 +41,7 @@ import net.minecraft.client.gui.components.debugchart.ProfilerPieChart;
 import net.minecraft.client.gui.components.debugchart.TpsDebugChart;
 import net.minecraft.client.gui.screens.LevelLoadingScreen;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
@@ -135,7 +135,7 @@ public class DebugScreenOverlay {
       this.clientChunk = null;
    }
 
-   public void render(final GuiGraphics graphics) {
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
       Options options = this.minecraft.options;
       if (this.minecraft.isGameLoadFinished() && (!options.hideGui || this.minecraft.screen != null)) {
          Collection<Identifier> visibleEntries = this.minecraft.debugEntries.getCurrentlyEnabled();
@@ -243,17 +243,17 @@ public class DebugScreenOverlay {
                leftLines.add("To edit: press " + var10001);
             }
 
-            this.renderLines(graphics, leftLines, true);
-            this.renderLines(graphics, rightLines, false);
+            this.extractLines(graphics, leftLines, true);
+            this.extractLines(graphics, rightLines, false);
             graphics.nextStratum();
             this.profilerPieChart.setBottomOffset(10);
             if (this.showFpsCharts()) {
                int scaledWidth = graphics.guiWidth();
                int maxWidth = scaledWidth / 2;
-               this.fpsChart.drawChart(graphics, 0, this.fpsChart.getWidth(maxWidth));
+               this.fpsChart.extractRenderState(graphics, 0, this.fpsChart.getWidth(maxWidth));
                if (this.tickTimeLogger.size() > 0) {
                   int width = this.tpsChart.getWidth(maxWidth);
-                  this.tpsChart.drawChart(graphics, scaledWidth - width, width);
+                  this.tpsChart.extractRenderState(graphics, scaledWidth - width, width);
                }
 
                this.profilerPieChart.setBottomOffset(this.tpsChart.getFullHeight());
@@ -263,11 +263,11 @@ public class DebugScreenOverlay {
                int scaledWidth = graphics.guiWidth();
                int maxWidth = scaledWidth / 2;
                if (!this.minecraft.isLocalServer()) {
-                  this.bandwidthChart.drawChart(graphics, 0, this.bandwidthChart.getWidth(maxWidth));
+                  this.bandwidthChart.extractRenderState(graphics, 0, this.bandwidthChart.getWidth(maxWidth));
                }
 
                int width = this.pingChart.getWidth(maxWidth);
-               this.pingChart.drawChart(graphics, scaledWidth - width, width);
+               this.pingChart.extractRenderState(graphics, scaledWidth - width, width);
                this.profilerPieChart.setBottomOffset(this.pingChart.getFullHeight());
             }
 
@@ -285,12 +285,12 @@ public class DebugScreenOverlay {
                if (singleplayerServer != null && this.minecraft.player != null) {
                   ChunkLoadStatusView statusView = singleplayerServer.createChunkLoadStatusView(16 + ChunkLevel.RADIUS_AROUND_FULL_CHUNK);
                   statusView.moveTo(this.minecraft.player.level().dimension(), this.minecraft.player.chunkPosition());
-                  LevelLoadingScreen.renderChunks(graphics, graphics.guiWidth() / 2, graphics.guiHeight() / 2, 4, 1, statusView);
+                  LevelLoadingScreen.extractChunksForRendering(graphics, graphics.guiWidth() / 2, graphics.guiHeight() / 2, 4, 1, statusView);
                }
             }
 
             try (Zone ignored = profiler.zone("profilerPie")) {
-               this.profilerPieChart.render(graphics);
+               this.profilerPieChart.extractRenderState(graphics);
             }
 
             profiler.pop();
@@ -307,7 +307,7 @@ public class DebugScreenOverlay {
       return "[" + var10000 + keybind.getTranslatedKeyMessage().getString() + "]";
    }
 
-   private void renderLines(final GuiGraphics graphics, final List<String> lines, final boolean alignLeft) {
+   private void extractLines(final GuiGraphicsExtractor graphics, final List<String> lines, final boolean alignLeft) {
       Objects.requireNonNull(this.font);
       int height = 9;
 
@@ -327,7 +327,7 @@ public class DebugScreenOverlay {
             int width = this.font.width(line);
             int left = alignLeft ? 2 : graphics.guiWidth() - 2 - width;
             int top = 2 + height * i;
-            graphics.drawString(this.font, line, left, top, -2039584, false);
+            graphics.text(this.font, line, left, top, -2039584, false);
          }
       }
 
@@ -468,13 +468,13 @@ public class DebugScreenOverlay {
       this.bandwidthLogger.reset();
    }
 
-   public void render3dCrosshair(final CameraRenderState cameraState) {
+   public void render3dCrosshair(final CameraRenderState cameraState, final int guiScale) {
       Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
       modelViewStack.pushMatrix();
       modelViewStack.translate(0.0F, 0.0F, -1.0F);
       modelViewStack.rotateX(cameraState.xRot * 0.017453292F);
       modelViewStack.rotateY(cameraState.yRot * 0.017453292F);
-      float crosshairScale = 0.01F * (float)this.minecraft.getWindow().getGuiScale();
+      float crosshairScale = 0.01F * (float)guiScale;
       modelViewStack.scale(-crosshairScale, crosshairScale, -crosshairScale);
       RenderPipeline renderPipelineOutline = RenderPipelines.LINES;
       RenderPipeline renderPipelineFill = RenderPipelines.LINES_DEPTH_BIAS;

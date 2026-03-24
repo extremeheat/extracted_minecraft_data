@@ -1,13 +1,16 @@
 package net.minecraft.client.renderer.item;
 
+import com.mojang.math.Transformation;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
+import java.util.Optional;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.resources.model.ResolvableModel;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import org.joml.Matrix4fc;
 import org.jspecify.annotations.Nullable;
 
 public class CompositeModel implements ItemModel {
@@ -28,8 +31,8 @@ public class CompositeModel implements ItemModel {
 
    }
 
-   public static record Unbaked(List<ItemModel.Unbaked> models) implements ItemModel.Unbaked {
-      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ItemModels.CODEC.listOf().fieldOf("models").forGetter(Unbaked::models)).apply(i, Unbaked::new));
+   public static record Unbaked(List<ItemModel.Unbaked> models, Optional<Transformation> transformation) implements ItemModel.Unbaked {
+      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ItemModels.CODEC.listOf().fieldOf("models").forGetter(Unbaked::models), Transformation.EXTENDED_CODEC.optionalFieldOf("transformation").forGetter(Unbaked::transformation)).apply(i, Unbaked::new));
 
       public Unbaked {
          super();
@@ -46,8 +49,13 @@ public class CompositeModel implements ItemModel {
 
       }
 
-      public ItemModel bake(final ItemModel.BakingContext context) {
-         return new CompositeModel(this.models.stream().map((m) -> m.bake(context)).toList());
+      public ItemModel bake(final ItemModel.BakingContext context, final Matrix4fc transformation) {
+         if (this.models.isEmpty()) {
+            return EmptyModel.INSTANCE;
+         } else {
+            Matrix4fc childTransform = Transformation.compose(transformation, this.transformation);
+            return (ItemModel)(this.models.size() == 1 ? ((ItemModel.Unbaked)this.models.getFirst()).bake(context, childTransform) : new CompositeModel(this.models.stream().map((m) -> m.bake(context, childTransform)).toList()));
+         }
       }
    }
 }

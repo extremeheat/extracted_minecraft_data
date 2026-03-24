@@ -2,7 +2,7 @@ package net.minecraft.client.gui.screens.inventory;
 
 import java.util.List;
 import java.util.Optional;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.renderer.entity.state.ArmorStandRenderState;
@@ -89,21 +89,21 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
       return Optional.empty();
    }
 
-   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-      super.render(graphics, mouseX, mouseY, a);
-      this.renderOnboardingTooltips(graphics, mouseX, mouseY);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
+      this.extractOnboardingTooltips(graphics, mouseX, mouseY);
    }
 
-   protected void renderBg(final GuiGraphics graphics, final float a, final int xMouse, final int yMouse) {
-      super.renderBg(graphics, a, xMouse, yMouse);
-      this.templateIcon.render(this.menu, graphics, a, this.leftPos, this.topPos);
-      this.baseIcon.render(this.menu, graphics, a, this.leftPos, this.topPos);
-      this.additionalIcon.render(this.menu, graphics, a, this.leftPos, this.topPos);
+   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractBackground(graphics, mouseX, mouseY, a);
+      this.templateIcon.extractRenderState(this.menu, graphics, a, this.leftPos, this.topPos);
+      this.baseIcon.extractRenderState(this.menu, graphics, a, this.leftPos, this.topPos);
+      this.additionalIcon.extractRenderState(this.menu, graphics, a, this.leftPos, this.topPos);
       int x0 = this.leftPos + 121;
       int y0 = this.topPos + 20;
       int x1 = this.leftPos + 161;
       int y1 = this.topPos + 80;
-      graphics.submitEntityRenderState(this.armorStandPreview, 25.0F, ARMOR_STAND_TRANSLATION, ARMOR_STAND_ANGLE, (Quaternionf)null, x0, y0, x1, y1);
+      graphics.entity(this.armorStandPreview, 25.0F, ARMOR_STAND_TRANSLATION, ARMOR_STAND_ANGLE, (Quaternionf)null, x0, y0, x1, y1);
    }
 
    public void slotChanged(final AbstractContainerMenu container, final int slotIndex, final ItemStack itemStack) {
@@ -157,14 +157,14 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
 
    }
 
-   protected void renderErrorIcon(final GuiGraphics graphics, final int xo, final int yo) {
+   protected void extractErrorIcon(final GuiGraphicsExtractor graphics, final int xo, final int yo) {
       if (this.hasRecipeError()) {
          graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ERROR_SPRITE, xo + 65, yo + 46, 28, 21);
       }
 
    }
 
-   private void renderOnboardingTooltips(final GuiGraphics graphics, final int mouseX, final int mouseY) {
+   private void extractOnboardingTooltips(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY) {
       Optional<Component> tooltip = Optional.empty();
       if (this.hasRecipeError() && this.isHovering(65, 46, 28, 21, (double)mouseX, (double)mouseY)) {
          tooltip = Optional.of(ERROR_TOOLTIP);

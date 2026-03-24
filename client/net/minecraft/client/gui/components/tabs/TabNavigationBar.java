@@ -8,7 +8,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.client.gui.ComponentPath;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.TabButton;
@@ -132,7 +132,7 @@ public class TabNavigationBar extends AbstractContainerEventHandler implements N
 
    }
 
-   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       graphics.blit(RenderPipelines.GUI_TEXTURED, Screen.HEADER_SEPARATOR, 0, this.layout.getY() + this.layout.getHeight() - 2, 0.0F, 0.0F, ((TabButton)this.tabButtons.get(0)).getX(), 2, 32, 2);
       int afterLastTab = ((TabButton)this.tabButtons.get(this.tabButtons.size() - 1)).getRight();
       graphics.blit(RenderPipelines.GUI_TEXTURED, Screen.HEADER_SEPARATOR, afterLastTab, this.layout.getY() + this.layout.getHeight() - 2, 0.0F, 0.0F, this.width, 2, 32, 2);
@@ -140,7 +140,7 @@ public class TabNavigationBar extends AbstractContainerEventHandler implements N
 
       while(var6.hasNext()) {
          TabButton value = (TabButton)var6.next();
-         value.render(graphics, mouseX, mouseY, a);
+         value.extractRenderState(graphics, mouseX, mouseY, a);
       }
 
    }

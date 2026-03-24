@@ -19,7 +19,7 @@ public record RandomGroupPoolAlias(WeightedList<List<PoolAliasBinding>> groups) 
    }
 
    public void forEachResolved(final RandomSource random, final BiConsumer<ResourceKey<StructureTemplatePool>, ResourceKey<StructureTemplatePool>> aliasAndTargetConsumer) {
-      this.groups.getRandom(random).ifPresent((combination) -> combination.forEach((binding) -> binding.forEachResolved(random, aliasAndTargetConsumer)));
+      ((List)this.groups.getRandomOrThrow(random)).forEach((binding) -> binding.forEachResolved(random, aliasAndTargetConsumer));
    }
 
    public Stream<ResourceKey<StructureTemplatePool>> allTargets() {

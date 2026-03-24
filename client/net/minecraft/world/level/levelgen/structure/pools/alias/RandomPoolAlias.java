@@ -19,7 +19,7 @@ public record RandomPoolAlias(ResourceKey<StructureTemplatePool> alias, Weighted
    }
 
    public void forEachResolved(final RandomSource random, final BiConsumer<ResourceKey<StructureTemplatePool>, ResourceKey<StructureTemplatePool>> aliasAndTargetConsumer) {
-      this.targets.getRandom(random).ifPresent((target) -> aliasAndTargetConsumer.accept(this.alias, target));
+      aliasAndTargetConsumer.accept(this.alias, this.targets.getRandomOrThrow(random));
    }
 
    public Stream<ResourceKey<StructureTemplatePool>> allTargets() {

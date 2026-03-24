@@ -1,8 +1,6 @@
 package net.minecraft.world.level.material;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -28,8 +26,8 @@ public final class FluidState extends StateHolder<Fluid, FluidState> implements 
    public static final int AMOUNT_MAX = 9;
    public static final int AMOUNT_FULL = 8;
 
-   public FluidState(final Fluid owner, final Reference2ObjectArrayMap<Property<?>, Comparable<?>> values, final MapCodec<FluidState> propertiesCodec) {
-      super(owner, values, propertiesCodec);
+   public FluidState(final Fluid owner, final Property<?>[] propertyKeys, final Comparable<?>[] propertyValues) {
+      super(owner, propertyKeys, propertyValues);
    }
 
    public Fluid getType() {
@@ -131,6 +129,6 @@ public final class FluidState extends StateHolder<Fluid, FluidState> implements 
    }
 
    static {
-      CODEC = codec(BuiltInRegistries.FLUID.byNameCodec(), Fluid::defaultFluidState).stable();
+      CODEC = codec(BuiltInRegistries.FLUID.byNameCodec(), Fluid::defaultFluidState, Fluid::getStateDefinition).stable();
    }
 }

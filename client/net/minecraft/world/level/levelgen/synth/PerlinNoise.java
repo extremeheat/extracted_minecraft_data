@@ -142,12 +142,12 @@ public class PerlinNoise {
    }
 
    public double getValue(final double x, final double y, final double z) {
-      return this.getValue(x, y, z, 0.0, 0.0, false);
+      return this.getValue(x, y, z, 0.0, 0.0);
    }
 
    /** @deprecated */
    @Deprecated
-   public double getValue(final double x, final double y, final double z, final double yScale, final double yFudge, final boolean yFlatHack) {
+   public double getValue(final double x, final double y, final double z, final double yScale, final double yFudge) {
       double value = 0.0;
       double factor = this.lowestFreqInputFactor;
       double valueFactor = this.lowestFreqValueFactor;
@@ -155,7 +155,7 @@ public class PerlinNoise {
       for(int i = 0; i < this.noiseLevels.length; ++i) {
          ImprovedNoise noise = this.noiseLevels[i];
          if (noise != null) {
-            double noiseVal = noise.noise(wrap(x * factor), yFlatHack ? -noise.yo : wrap(y * factor), wrap(z * factor), yScale * factor, yFudge * factor);
+            double noiseVal = noise.noise(wrap(x * factor), wrap(y * factor), wrap(z * factor), yScale * factor, yFudge * factor);
             value += this.amplitudes.getDouble(i) * noiseVal * valueFactor;
          }
 

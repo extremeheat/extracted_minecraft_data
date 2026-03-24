@@ -227,6 +227,7 @@ public class Chicken extends Animal {
 
    protected void applyImplicitComponents(final DataComponentGetter components) {
       this.applyImplicitComponentIfPresent(components, DataComponents.CHICKEN_VARIANT);
+      this.applyImplicitComponentIfPresent(components, DataComponents.CHICKEN_SOUND_VARIANT);
       super.applyImplicitComponents(components);
    }
 

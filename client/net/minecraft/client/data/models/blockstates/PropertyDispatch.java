@@ -11,7 +11,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import net.minecraft.client.data.models.MultiVariant;
-import net.minecraft.client.renderer.block.model.VariantMutator;
+import net.minecraft.client.renderer.block.dispatch.VariantMutator;
 import net.minecraft.world.level.block.state.properties.Property;
 
 public abstract class PropertyDispatch<V> {

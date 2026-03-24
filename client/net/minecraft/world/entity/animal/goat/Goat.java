@@ -53,6 +53,8 @@ import org.jspecify.annotations.Nullable;
 
 public class Goat extends Animal {
    public static final EntityDimensions LONG_JUMPING_DIMENSIONS = EntityDimensions.scalable(0.9F, 1.3F).scale(0.7F);
+   public static final float BABY_DEFAULT_X_HEAD_ROT = 22.5F;
+   public static final float MAX_ADDED_RAMMING_X_HEAD_ROT = 30.0F;
    private static final float BABY_SCALE = 0.55F;
    private static final int ADULT_ATTACK_DAMAGE = 2;
    private static final int BABY_ATTACK_DAMAGE = 1;
@@ -312,7 +314,8 @@ public class Goat extends Animal {
    }
 
    public float getRammingXHeadRot() {
-      return (float)this.lowerHeadTick / 20.0F * 30.0F * 0.017453292F;
+      float maxRammingXHeadRot = this.isBaby() ? 52.5F : 30.0F;
+      return (float)this.lowerHeadTick / 20.0F * maxRammingXHeadRot * 0.017453292F;
    }
 
    public static boolean checkGoatSpawnRules(final EntityType<? extends Animal> type, final LevelAccessor level, final EntitySpawnReason spawnReason, final BlockPos pos, final RandomSource random) {

@@ -159,6 +159,12 @@ public class ServerPlayerGameMode {
          this.debugLogging(pos, false, sequence, "too high");
       } else {
          if (action == ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK) {
+            if (this.level.getServer().isUnderSpawnProtection(this.level, pos, this.player)) {
+               this.player.sendSpawnProtectionMessage(pos);
+               this.debugLogging(pos, false, sequence, "spawn protection");
+               return;
+            }
+
             if (!this.level.mayInteract(this.player, pos)) {
                this.player.connection.send(new ClientboundBlockUpdatePacket(pos, this.level.getBlockState(pos)));
                this.debugLogging(pos, false, sequence, "may not interact");

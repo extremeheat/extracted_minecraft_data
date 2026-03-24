@@ -1,7 +1,7 @@
 package com.mojang.blaze3d.vertex;
 
 import net.minecraft.client.model.geom.builders.UVPair;
-import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import org.joml.Matrix3x2fc;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
@@ -49,7 +49,7 @@ public interface VertexConsumer {
 
    default void putBlockBakedQuad(final float x, final float y, final float z, final BakedQuad quad, final QuadInstance instance) {
       Vector3fc normal = quad.direction().getUnitVec3f();
-      int lightEmission = quad.lightEmission();
+      int lightEmission = quad.materialInfo().lightEmission();
 
       for(int vertex = 0; vertex < 4; ++vertex) {
          Vector3fc pos = quad.position(vertex);
@@ -67,7 +67,7 @@ public interface VertexConsumer {
       Vector3fc normalVec = quad.direction().getUnitVec3f();
       Matrix4f matrix = pose.pose();
       Vector3f normal = pose.transformNormal(normalVec, new Vector3f());
-      int lightEmission = quad.lightEmission();
+      int lightEmission = quad.materialInfo().lightEmission();
 
       for(int vertex = 0; vertex < 4; ++vertex) {
          Vector3fc position = quad.position(vertex);
@@ -86,7 +86,7 @@ public interface VertexConsumer {
       return this.addVertex(position.x(), position.y(), position.z());
    }
 
-   default VertexConsumer addVertex(final PoseStack.Pose pose, final Vector3f position) {
+   default VertexConsumer addVertex(final PoseStack.Pose pose, final Vector3fc position) {
       return this.addVertex(pose, position.x(), position.y(), position.z());
    }
 
@@ -109,7 +109,7 @@ public interface VertexConsumer {
       return this.setNormal(normal.x(), normal.y(), normal.z());
    }
 
-   default VertexConsumer setNormal(final PoseStack.Pose pose, final Vector3f normal) {
+   default VertexConsumer setNormal(final PoseStack.Pose pose, final Vector3fc normal) {
       return this.setNormal(pose, normal.x(), normal.y(), normal.z());
    }
 }

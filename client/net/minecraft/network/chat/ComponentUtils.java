@@ -11,10 +11,8 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import javax.annotation.CheckReturnValue;
 import net.minecraft.ChatFormatting;
-import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.contents.TranslatableContents;
-import net.minecraft.world.entity.Entity;
 import org.jspecify.annotations.Nullable;
 
 public class ComponentUtils {
@@ -54,37 +52,48 @@ public class ComponentUtils {
       }
    }
 
-   public static Optional<MutableComponent> updateForEntity(final @Nullable CommandSourceStack source, final Optional<Component> component, final @Nullable Entity entity, final int recursionDepth) throws CommandSyntaxException {
-      return component.isPresent() ? Optional.of(updateForEntity(source, (Component)component.get(), entity, recursionDepth)) : Optional.empty();
+   public static Optional<MutableComponent> resolve(final ResolutionContext context, final Optional<Component> component, final int recursionDepth) throws CommandSyntaxException {
+      return component.isPresent() ? Optional.of(resolve(context, (Component)component.get(), recursionDepth)) : Optional.empty();
    }
 
-   public static MutableComponent updateForEntity(final @Nullable CommandSourceStack source, final Component component, final @Nullable Entity entity, final int recursionDepth) throws CommandSyntaxException {
-      if (recursionDepth > 100) {
-         return component.copy();
-      } else {
-         MutableComponent result = component.getContents().resolve(source, entity, recursionDepth + 1);
+   public static MutableComponent resolve(final ResolutionContext context, final Component component) throws CommandSyntaxException {
+      return resolve(context, component, 0);
+   }
 
-         for(Component sibling : component.getSiblings()) {
-            result.append((Component)updateForEntity(source, sibling, entity, recursionDepth + 1));
+   public static MutableComponent resolve(final ResolutionContext context, final Component component, final int recursionDepth) throws CommandSyntaxException {
+      if (recursionDepth > context.depthLimit()) {
+         MutableComponent var10000;
+         switch (context.depthLimitBehavior()) {
+            case DISCARD_REMAINING -> var10000 = CommonComponents.ELLIPSIS.copy();
+            case STOP_PROCESSING_AND_COPY_REMAINING -> var10000 = component.copy();
+            default -> throw new MatchException((String)null, (Throwable)null);
          }
 
-         return result.withStyle(resolveStyle(source, component.getStyle(), entity, recursionDepth));
+         return var10000;
+      } else {
+         MutableComponent result = component.getContents().resolve(context, recursionDepth + 1);
+
+         for(Component sibling : component.getSiblings()) {
+            result.append((Component)resolve(context, sibling, recursionDepth + 1));
+         }
+
+         return result.withStyle(resolveStyle(context, component.getStyle(), recursionDepth));
       }
    }
 
-   private static Style resolveStyle(final @Nullable CommandSourceStack source, final Style style, final @Nullable Entity entity, final int recursionDepth) throws CommandSyntaxException {
+   private static Style resolveStyle(final ResolutionContext context, final Style style, final int recursionDepth) throws CommandSyntaxException {
       HoverEvent hoverEvent = style.getHoverEvent();
-      if (hoverEvent instanceof HoverEvent.ShowText var5) {
-         HoverEvent.ShowText var10000 = var5;
+      if (hoverEvent instanceof HoverEvent.ShowText var4) {
+         HoverEvent.ShowText var10000 = var4;
 
          try {
-            var10 = var10000.value();
-         } catch (Throwable var8) {
-            throw new MatchException(var8.toString(), var8);
+            var9 = var10000.value();
+         } catch (Throwable var7) {
+            throw new MatchException(var7.toString(), var7);
          }
 
-         HoverEvent resolved = var10;
-         resolved = new HoverEvent.ShowText(updateForEntity(source, resolved, entity, recursionDepth + 1));
+         HoverEvent resolved = var9;
+         resolved = new HoverEvent.ShowText(resolve(context, resolved, recursionDepth + 1));
          return style.withHoverEvent(resolved);
       } else {
          return style;

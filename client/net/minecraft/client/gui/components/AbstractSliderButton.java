@@ -3,7 +3,7 @@ package net.minecraft.client.gui.components;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import net.minecraft.client.InputType;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.KeyEvent;
@@ -62,12 +62,16 @@ public abstract class AbstractSliderButton extends AbstractWidget.WithInactiveMe
 
    }
 
-   public void renderWidget(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, this.getSprite(), this.getX(), this.getY(), this.getWidth(), this.getHeight(), ARGB.white(this.alpha));
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)this.getHandleSprite(), this.getX() + (int)(this.value * (double)(this.width - 8)), this.getY(), 8, this.getHeight(), ARGB.white(this.alpha));
-      this.renderScrollingStringOverContents(graphics.textRendererForWidget(this, GuiGraphics.HoveredTextEffects.NONE), this.getMessage(), 2);
+      this.extractScrollingStringOverContents(graphics.textRendererForWidget(this, GuiGraphicsExtractor.HoveredTextEffects.NONE), this.getMessage(), 2);
+      this.handleCursor(graphics);
+   }
+
+   protected void handleCursor(final GuiGraphicsExtractor graphics) {
       if (this.isHovered()) {
-         graphics.requestCursor(this.dragging ? CursorTypes.RESIZE_EW : CursorTypes.POINTING_HAND);
+         graphics.requestCursor(this.isActive() ? (this.dragging ? CursorTypes.RESIZE_EW : CursorTypes.POINTING_HAND) : CursorTypes.NOT_ALLOWED);
       }
 
    }

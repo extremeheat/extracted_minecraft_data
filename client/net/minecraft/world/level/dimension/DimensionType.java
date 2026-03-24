@@ -19,6 +19,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.valueproviders.IntProvider;
+import net.minecraft.util.valueproviders.IntProviders;
 import net.minecraft.world.attribute.EnvironmentAttributeMap;
 import net.minecraft.world.clock.WorldClock;
 import net.minecraft.world.level.CardinalLighting;
@@ -96,7 +97,7 @@ public record DimensionType(boolean hasFixedTime, boolean hasSkyLight, boolean h
    }
 
    public static record MonsterSettings(IntProvider monsterSpawnLightTest, int monsterSpawnBlockLightLimit) {
-      public static final MapCodec<MonsterSettings> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(IntProvider.codec(0, 15).fieldOf("monster_spawn_light_level").forGetter(MonsterSettings::monsterSpawnLightTest), Codec.intRange(0, 15).fieldOf("monster_spawn_block_light_limit").forGetter(MonsterSettings::monsterSpawnBlockLightLimit)).apply(i, MonsterSettings::new));
+      public static final MapCodec<MonsterSettings> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(IntProviders.codec(0, 15).fieldOf("monster_spawn_light_level").forGetter(MonsterSettings::monsterSpawnLightTest), Codec.intRange(0, 15).fieldOf("monster_spawn_block_light_limit").forGetter(MonsterSettings::monsterSpawnBlockLightLimit)).apply(i, MonsterSettings::new));
 
       public MonsterSettings {
          super();

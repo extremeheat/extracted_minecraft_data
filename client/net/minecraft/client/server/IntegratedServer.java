@@ -83,6 +83,7 @@ public class IntegratedServer extends MinecraftServer {
       GameProfile host = this.getSingleplayerProfile();
       String levelName = this.getWorldData().getLevelName();
       this.setMotd(host != null ? host.name() + " - " + levelName : levelName);
+      this.saveEverything(false, true, true);
       return true;
    }
 

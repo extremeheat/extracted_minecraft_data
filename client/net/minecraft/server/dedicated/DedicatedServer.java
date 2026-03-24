@@ -305,6 +305,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
             LOGGER.info("JMX monitoring enabled");
          }
 
+         this.saveEverything(false, true, true);
          this.notificationManager().serverStarted();
          return true;
       }

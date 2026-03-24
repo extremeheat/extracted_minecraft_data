@@ -31,6 +31,7 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -458,6 +459,15 @@ public class Zombie extends Monster {
 
       this.handleAttributes(difficultyModifier, spawnReason);
       return groupData;
+   }
+
+   protected void onOffspringSpawnedFromEgg(final Player spawner, final Mob offspring) {
+      Level var4 = this.level();
+      if (var4 instanceof ServerLevel serverLevel) {
+         float difficultyModifier = serverLevel.getCurrentDifficultyAt(offspring.blockPosition()).getSpecialMultiplier();
+         offspring.setCanPickUpLoot(this.random.nextFloat() < 0.55F * difficultyModifier);
+      }
+
    }
 
    @VisibleForTesting

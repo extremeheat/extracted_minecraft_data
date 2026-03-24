@@ -423,6 +423,7 @@ public class AABB {
       private float maxX = -1.0F / 0.0F;
       private float maxY = -1.0F / 0.0F;
       private float maxZ = -1.0F / 0.0F;
+      private boolean defined;
 
       public Builder() {
          super();
@@ -435,10 +436,19 @@ public class AABB {
          this.maxX = Math.max(this.maxX, v.x());
          this.maxY = Math.max(this.maxY, v.y());
          this.maxZ = Math.max(this.maxZ, v.z());
+         this.defined = true;
+      }
+
+      public boolean isDefined() {
+         return this.defined;
       }
 
       public AABB build() {
-         return new AABB((double)this.minX, (double)this.minY, (double)this.minZ, (double)this.maxX, (double)this.maxY, (double)this.maxZ);
+         if (!this.defined) {
+            throw new IllegalStateException("Cannot build an undefined AABB. Include at least one point.");
+         } else {
+            return new AABB((double)this.minX, (double)this.minY, (double)this.minZ, (double)this.maxX, (double)this.maxY, (double)this.maxZ);
+         }
       }
    }
 }

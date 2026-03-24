@@ -49,7 +49,7 @@ public class IceBlock extends HalfTransparentBlock {
    }
 
    protected void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
-      if (level.getBrightness(LightLayer.BLOCK, pos) > 11 - state.getLightBlock()) {
+      if (level.getBrightness(LightLayer.BLOCK, pos) > 11 - state.getLightDampening()) {
          this.melt(state, level, pos);
       }
 

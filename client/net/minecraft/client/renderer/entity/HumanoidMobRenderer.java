@@ -92,6 +92,6 @@ public abstract class HumanoidMobRenderer<T extends Mob, S extends HumanoidRende
 
    private static HumanoidArm getAttackArm(final LivingEntity entity) {
       HumanoidArm mainArm = entity.getMainArm();
-      return entity.swingingArm == InteractionHand.MAIN_HAND ? mainArm : mainArm.getOpposite();
+      return entity.swingingArm != InteractionHand.OFF_HAND ? mainArm : mainArm.getOpposite();
    }
 }

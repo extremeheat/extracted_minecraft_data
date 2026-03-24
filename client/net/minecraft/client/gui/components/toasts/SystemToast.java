@@ -7,7 +7,7 @@ import java.util.stream.Stream;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -83,15 +83,15 @@ public class SystemToast implements Toast {
       this.wantedVisibility = !this.forceHide && (double)timeSinceUpdate < timeToDisplayUpdate ? Toast.Visibility.SHOW : Toast.Visibility.HIDE;
    }
 
-   public void render(final GuiGraphics graphics, final Font font, final long fullyVisibleForMs) {
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final Font font, final long fullyVisibleForMs) {
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
       if (this.messageLines.isEmpty()) {
-         graphics.drawString(font, (Component)this.title, 18, 12, -256, false);
+         graphics.text(font, (Component)this.title, 18, 12, -256, false);
       } else {
-         graphics.drawString(font, (Component)this.title, 18, 7, -256, false);
+         graphics.text(font, (Component)this.title, 18, 7, -256, false);
 
          for(int i = 0; i < this.messageLines.size(); ++i) {
-            graphics.drawString(font, (FormattedCharSequence)((FormattedCharSequence)this.messageLines.get(i)), 18, 18 + i * 12, -1, false);
+            graphics.text(font, (FormattedCharSequence)((FormattedCharSequence)this.messageLines.get(i)), 18, 18 + i * 12, -1, false);
          }
       }
 

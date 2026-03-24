@@ -42,7 +42,7 @@ public class VideoSettingsScreen extends OptionsSubScreen {
    }
 
    private static OptionInstance<?>[] displayOptions(final Options options) {
-      return new OptionInstance[]{options.framerateLimit(), options.enableVsync(), options.inactivityFpsLimit(), options.guiScale(), options.fullscreen(), options.gamma()};
+      return new OptionInstance[]{options.framerateLimit(), options.enableVsync(), options.inactivityFpsLimit(), options.guiScale(), options.fullscreen(), options.exclusiveFullscreen(), options.gamma()};
    }
 
    private static OptionInstance<?>[] preferenceOptions(final Options options) {

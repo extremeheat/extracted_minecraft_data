@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.tabs.LoadingTab;
@@ -158,8 +158,8 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
 
    }
 
-   public void render(final GuiGraphics graphics, final int xm, final int ym, final float a) {
-      super.render(graphics, xm, ym, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int xm, final int ym, final float a) {
+      super.extractRenderState(graphics, xm, ym, a);
       graphics.blit(RenderPipelines.GUI_TEXTURED, Screen.FOOTER_SEPARATOR, 0, this.height - this.layout.getFooterHeight() - 2, 0.0F, 0.0F, this.width, 2, 32, 2);
    }
 
@@ -167,9 +167,9 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
       return this.tabNavigationBar.keyPressed(event) ? true : super.keyPressed(event);
    }
 
-   protected void renderMenuBackground(final GuiGraphics graphics) {
+   protected void extractMenuBackground(final GuiGraphicsExtractor graphics) {
       graphics.blit(RenderPipelines.GUI_TEXTURED, CreateWorldScreen.TAB_HEADER_BACKGROUND, 0, 0, 0.0F, 0.0F, this.width, this.layout.getHeaderHeight(), 16, 16);
-      this.renderMenuBackground(graphics, 0, this.layout.getHeaderHeight(), this.width, this.height);
+      this.extractMenuBackground(graphics, 0, this.layout.getHeaderHeight(), this.width, this.height);
    }
 
    public void onClose() {

@@ -6,11 +6,12 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
-import net.minecraft.world.level.LevelSimulatedReader;
+import net.minecraft.util.valueproviders.IntProviders;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 
 public class CherryFoliagePlacer extends FoliagePlacer {
-   public static final MapCodec<CherryFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((i) -> foliagePlacerParts(i).and(i.group(IntProvider.codec(4, 16).fieldOf("height").forGetter((p) -> p.height), Codec.floatRange(0.0F, 1.0F).fieldOf("wide_bottom_layer_hole_chance").forGetter((p) -> p.wideBottomLayerHoleChance), Codec.floatRange(0.0F, 1.0F).fieldOf("corner_hole_chance").forGetter((p) -> p.wideBottomLayerHoleChance), Codec.floatRange(0.0F, 1.0F).fieldOf("hanging_leaves_chance").forGetter((p) -> p.hangingLeavesChance), Codec.floatRange(0.0F, 1.0F).fieldOf("hanging_leaves_extension_chance").forGetter((p) -> p.hangingLeavesExtensionChance))).apply(i, CherryFoliagePlacer::new));
+   public static final MapCodec<CherryFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((i) -> foliagePlacerParts(i).and(i.group(IntProviders.codec(4, 16).fieldOf("height").forGetter((p) -> p.height), Codec.floatRange(0.0F, 1.0F).fieldOf("wide_bottom_layer_hole_chance").forGetter((p) -> p.wideBottomLayerHoleChance), Codec.floatRange(0.0F, 1.0F).fieldOf("corner_hole_chance").forGetter((p) -> p.wideBottomLayerHoleChance), Codec.floatRange(0.0F, 1.0F).fieldOf("hanging_leaves_chance").forGetter((p) -> p.hangingLeavesChance), Codec.floatRange(0.0F, 1.0F).fieldOf("hanging_leaves_extension_chance").forGetter((p) -> p.hangingLeavesExtensionChance))).apply(i, CherryFoliagePlacer::new));
    private final IntProvider height;
    private final float wideBottomLayerHoleChance;
    private final float cornerHoleChance;
@@ -30,7 +31,7 @@ public class CherryFoliagePlacer extends FoliagePlacer {
       return FoliagePlacerType.CHERRY_FOLIAGE_PLACER;
    }
 
-   protected void createFoliage(final LevelSimulatedReader level, final FoliagePlacer.FoliageSetter foliageSetter, final RandomSource random, final TreeConfiguration config, final int treeHeight, final FoliagePlacer.FoliageAttachment foliageAttachment, final int foliageHeight, final int leafRadius, final int offset) {
+   protected void createFoliage(final WorldGenLevel level, final FoliagePlacer.FoliageSetter foliageSetter, final RandomSource random, final TreeConfiguration config, final int treeHeight, final FoliagePlacer.FoliageAttachment foliageAttachment, final int foliageHeight, final int leafRadius, final int offset) {
       boolean doubleTrunk = foliageAttachment.doubleTrunk();
       BlockPos foliagePos = foliageAttachment.pos().above(offset);
       int currentRadius = leafRadius + foliageAttachment.radiusOffset() - 1;

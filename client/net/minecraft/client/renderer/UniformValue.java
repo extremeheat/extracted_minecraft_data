@@ -30,7 +30,7 @@ public interface UniformValue {
       VEC4("vec4", UniformValue.Vec4Uniform.CODEC),
       MATRIX4X4("matrix4x4", UniformValue.Matrix4x4Uniform.CODEC);
 
-      public static final StringRepresentable.EnumCodec<Type> CODEC = StringRepresentable.<Type>fromEnum(Type::values);
+      public static final Codec<Type> CODEC = StringRepresentable.<Type>fromEnum(Type::values);
       private final String name;
       private final MapCodec<? extends UniformValue> valueCodec;
 

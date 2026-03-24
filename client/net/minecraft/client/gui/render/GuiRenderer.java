@@ -6,7 +6,6 @@ import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -38,13 +37,7 @@ import net.minecraft.client.gui.font.TextRenderable;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.pip.OversizedItemRenderer;
 import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
-import net.minecraft.client.gui.render.state.BlitRenderState;
-import net.minecraft.client.gui.render.state.GlyphRenderState;
-import net.minecraft.client.gui.render.state.GuiElementRenderState;
-import net.minecraft.client.gui.render.state.GuiItemRenderState;
-import net.minecraft.client.gui.render.state.GuiRenderState;
-import net.minecraft.client.gui.render.state.pip.OversizedItemRenderState;
-import net.minecraft.client.gui.render.state.pip.PictureInPictureRenderState;
+import net.minecraft.client.renderer.CubeMap;
 import net.minecraft.client.renderer.MappableRingBuffer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.Projection;
@@ -53,6 +46,18 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
+import net.minecraft.client.renderer.state.WindowRenderState;
+import net.minecraft.client.renderer.state.gui.BlitRenderState;
+import net.minecraft.client.renderer.state.gui.GlyphRenderState;
+import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
+import net.minecraft.client.renderer.state.gui.GuiItemRenderState;
+import net.minecraft.client.renderer.state.gui.GuiRenderState;
+import net.minecraft.client.renderer.state.gui.pip.OversizedItemRenderState;
+import net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState;
+import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.joml.Matrix3x2fc;
 import org.joml.Matrix4f;
@@ -89,6 +94,7 @@ public class GuiRenderer implements AutoCloseable {
    private final Map<Class<? extends PictureInPictureRenderState>, PictureInPictureRenderer<?>> pictureInPictureRenderers;
    private @Nullable GuiItemAtlas itemAtlas;
    private int cachedGuiScale;
+   private final CubeMap cubeMap = new CubeMap(Identifier.withDefaultNamespace("textures/gui/title/background/panorama"));
    private @Nullable ScreenRectangle previousScissorArea = null;
    private @Nullable RenderPipeline previousPipeline = null;
    private @Nullable TextureSetup previousTextureSetup = null;
@@ -117,13 +123,22 @@ public class GuiRenderer implements AutoCloseable {
    }
 
    public void render(final GpuBufferSlice fogBuffer) {
+      ProfilerFiller profiler = Profiler.get();
+      if (this.renderState.panoramaRenderState != null) {
+         this.cubeMap.render(10.0F, this.renderState.panoramaRenderState.spin());
+      }
+
+      profiler.push("prepare");
       this.prepare();
+      profiler.popPush("draw");
       this.draw(fogBuffer);
+      profiler.popPush("vertexBufferRotate");
 
       for(MappableRingBuffer buffer : this.vertexBuffers.values()) {
          buffer.rotate();
       }
 
+      profiler.pop();
       this.draws.clear();
       this.meshesToDraw.clear();
       this.renderState.reset();
@@ -179,8 +194,8 @@ public class GuiRenderer implements AutoCloseable {
    private void draw(final GpuBufferSlice fogBuffer) {
       if (!this.draws.isEmpty()) {
          Minecraft minecraft = Minecraft.getInstance();
-         Window window = minecraft.getWindow();
-         this.guiProjection.setupOrtho(1000.0F, 11000.0F, (float)window.getWidth() / (float)window.getGuiScale(), (float)window.getHeight() / (float)window.getGuiScale(), true);
+         WindowRenderState windowState = minecraft.gameRenderer.getGameRenderState().windowRenderState;
+         this.guiProjection.setupOrtho(1000.0F, 11000.0F, (float)windowState.width / (float)windowState.guiScale, (float)windowState.height / (float)windowState.guiScale, true);
          RenderSystem.setProjectionMatrix(this.guiProjectionMatrixBuffer.getBuffer(this.guiProjection), ProjectionType.ORTHOGRAPHIC);
          RenderTarget mainRenderTarget = minecraft.getMainRenderTarget();
          int maxIndexCount = 0;
@@ -257,7 +272,7 @@ public class GuiRenderer implements AutoCloseable {
             }
 
             private void accept(final TextRenderable glyph) {
-               GuiRenderer.this.renderState.submitGlyphToCurrentLayer(new GlyphRenderState(pose, glyph, scissor));
+               GuiRenderer.this.renderState.addGlyphToCurrentLayer(new GlyphRenderState(pose, glyph, scissor));
             }
          });
       });
@@ -297,7 +312,7 @@ public class GuiRenderer implements AutoCloseable {
    }
 
    private void preparePictureInPicture() {
-      int guiScale = Minecraft.getInstance().getWindow().getGuiScale();
+      int guiScale = Minecraft.getInstance().gameRenderer.getGameRenderState().windowRenderState.guiScale;
       this.renderState.forEachPictureInPicture((pictureInPictureState) -> this.preparePictureInPictureState(pictureInPictureState, guiScale));
    }
 
@@ -310,7 +325,7 @@ public class GuiRenderer implements AutoCloseable {
    }
 
    private void submitBlitFromItemAtlas(final GuiItemRenderState itemState, final GuiItemAtlas.SlotView slotView) {
-      this.renderState.submitBlitToCurrentLayer(new BlitRenderState(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, TextureSetup.singleTexture(slotView.textureView(), RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST)), itemState.pose(), itemState.x(), itemState.y(), itemState.x() + 16, itemState.y() + 16, slotView.u0(), slotView.u1(), slotView.v0(), slotView.v1(), -1, itemState.scissorArea(), (ScreenRectangle)null));
+      this.renderState.addBlitToCurrentLayer(new BlitRenderState(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, TextureSetup.singleTexture(slotView.textureView(), RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST)), itemState.pose(), itemState.x(), itemState.y(), itemState.x() + 16, itemState.y() + 16, slotView.u0(), slotView.u1(), slotView.v0(), slotView.v1(), -1, itemState.scissorArea(), (ScreenRectangle)null));
    }
 
    private GuiItemAtlas prepareItemAtlas(final Set<Object> itemsInFrame, final int slotTextureSize) {
@@ -333,7 +348,7 @@ public class GuiRenderer implements AutoCloseable {
    }
 
    private int getGuiScaleInvalidatingItemAtlasIfChanged() {
-      int guiScale = Minecraft.getInstance().getWindow().getGuiScale();
+      int guiScale = Minecraft.getInstance().gameRenderer.getGameRenderState().windowRenderState.guiScale;
       if (guiScale != this.cachedGuiScale) {
          this.invalidateItemAtlas();
 
@@ -470,14 +485,18 @@ public class GuiRenderer implements AutoCloseable {
    }
 
    private void enableScissor(final ScreenRectangle rectangle, final RenderPass renderPass) {
-      Window window = Minecraft.getInstance().getWindow();
-      int windowHeight = window.getHeight();
-      int guiScale = window.getGuiScale();
+      WindowRenderState windowState = Minecraft.getInstance().gameRenderer.getGameRenderState().windowRenderState;
+      int windowHeight = windowState.height;
+      int guiScale = windowState.guiScale;
       double left = (double)(rectangle.left() * guiScale);
       double bottom = (double)(windowHeight - rectangle.bottom() * guiScale);
       double width = (double)(rectangle.width() * guiScale);
       double height = (double)(rectangle.height() * guiScale);
       renderPass.enableScissor((int)left, (int)bottom, Math.max(0, (int)width), Math.max(0, (int)height));
+   }
+
+   public void registerPanoramaTextures(final TextureManager textureManager) {
+      this.cubeMap.registerTextures(textureManager);
    }
 
    public void close() {
@@ -495,6 +514,7 @@ public class GuiRenderer implements AutoCloseable {
       }
 
       this.oversizedItemRenderers.values().forEach(PictureInPictureRenderer::close);
+      this.cubeMap.close();
    }
 
    static {

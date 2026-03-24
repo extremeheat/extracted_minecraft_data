@@ -43,10 +43,10 @@ public class Lightmap implements AutoCloseable {
       this.ubo.close();
    }
 
-   public void update(final LightmapRenderState renderState) {
+   public void render(final LightmapRenderState renderState) {
       if (renderState.needsUpdate) {
          ProfilerFiller profiler = Profiler.get();
-         profiler.push("lightmapUpdate");
+         profiler.push("lightmap");
          CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
 
          try (GpuBuffer.MappedView view = commandEncoder.mapBuffer(this.ubo.currentBuffer(), false, true)) {

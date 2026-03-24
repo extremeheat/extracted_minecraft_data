@@ -14,7 +14,7 @@ import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.LogoRenderer;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.input.KeyEvent;
@@ -258,9 +258,9 @@ public class WinScreen extends Screen {
 
    }
 
-   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-      super.render(graphics, mouseX, mouseY, a);
-      this.renderVignette(graphics);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
+      this.extractVignette(graphics);
       this.scroll = Math.max(0.0F, this.scroll + a * this.scrollSpeed);
       int logoX = this.width / 2 - 128;
       int logoY = this.height + 50;
@@ -268,7 +268,7 @@ public class WinScreen extends Screen {
       graphics.pose().pushMatrix();
       graphics.pose().translate(0.0F, yOffs);
       graphics.nextStratum();
-      this.logoRenderer.renderLogo(graphics, this.width, 1.0F, logoY);
+      this.logoRenderer.extractRenderState(graphics, this.width, 1.0F, logoY);
       int yPos = logoY + 100;
 
       for(int i = 0; i < this.lines.size(); ++i) {
@@ -282,9 +282,9 @@ public class WinScreen extends Screen {
          if ((float)yPos + yOffs + 12.0F + 8.0F > 0.0F && (float)yPos + yOffs < (float)this.height) {
             FormattedCharSequence line = (FormattedCharSequence)this.lines.get(i);
             if (this.centeredLines.contains(i)) {
-               graphics.drawCenteredString(this.font, (FormattedCharSequence)line, logoX + 128, yPos, -1);
+               graphics.centeredText(this.font, (FormattedCharSequence)line, logoX + 128, yPos, -1);
             } else {
-               graphics.drawString(this.font, (FormattedCharSequence)line, logoX, yPos, -1);
+               graphics.text(this.font, (FormattedCharSequence)line, logoX, yPos, -1);
             }
          }
 
@@ -294,11 +294,11 @@ public class WinScreen extends Screen {
       graphics.pose().popMatrix();
    }
 
-   private void renderVignette(final GuiGraphics graphics) {
+   private void extractVignette(final GuiGraphicsExtractor graphics) {
       graphics.blit(RenderPipelines.VIGNETTE, VIGNETTE_LOCATION, 0, 0, 0.0F, 0.0F, this.width, this.height, this.width, this.height);
    }
 
-   public void renderBackground(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       if (this.poem) {
          TextureManager textureManager = Minecraft.getInstance().getTextureManager();
          AbstractTexture skyTexture = textureManager.getTexture(AbstractEndPortalRenderer.END_SKY_LOCATION);
@@ -306,14 +306,14 @@ public class WinScreen extends Screen {
          TextureSetup textureSetup = TextureSetup.doubleTexture(skyTexture.getTextureView(), skyTexture.getSampler(), portalTexture.getTextureView(), portalTexture.getSampler());
          graphics.fill(RenderPipelines.END_PORTAL, textureSetup, 0, 0, this.width, this.height);
       } else {
-         super.renderBackground(graphics, mouseX, mouseY, a);
+         super.extractBackground(graphics, mouseX, mouseY, a);
       }
 
    }
 
-   protected void renderMenuBackground(final GuiGraphics graphics, final int x, final int y, final int width, final int height) {
+   protected void extractMenuBackground(final GuiGraphicsExtractor graphics, final int x, final int y, final int width, final int height) {
       float v = this.scroll * 0.5F;
-      Screen.renderMenuBackgroundTexture(graphics, Screen.MENU_BACKGROUND, 0, 0, 0.0F, v, width, height);
+      Screen.extractMenuBackgroundTexture(graphics, Screen.MENU_BACKGROUND, 0, 0, 0.0F, v, width, height);
    }
 
    public boolean isPauseScreen() {

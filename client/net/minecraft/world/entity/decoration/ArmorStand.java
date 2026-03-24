@@ -33,6 +33,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
@@ -376,7 +378,7 @@ public class ArmorStand extends LivingEntity {
 
       for(EquipmentSlot slot : EquipmentSlot.VALUES) {
          ItemStack itemStack = this.equipment.set(slot, ItemStack.EMPTY);
-         if (!itemStack.isEmpty()) {
+         if (!itemStack.isEmpty() && !EnchantmentHelper.has(itemStack, EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
             Block.popResource(this.level(), this.blockPosition().above(), itemStack);
          }
       }

@@ -17,8 +17,10 @@ public class SimpleBlockFeature extends Feature<SimpleBlockConfiguration> {
       SimpleBlockConfiguration config = context.config();
       WorldGenLevel level = context.level();
       BlockPos origin = context.origin();
-      BlockState stateToPlace = config.toPlace().getState(context.random(), origin);
-      if (stateToPlace.canSurvive(level, origin)) {
+      BlockState stateToPlace = config.toPlace().getOptionalState(level, context.random(), origin);
+      if (stateToPlace == null) {
+         return false;
+      } else if (stateToPlace.canSurvive(level, origin)) {
          if (stateToPlace.getBlock() instanceof DoublePlantBlock) {
             if (!level.isEmptyBlock(origin.above())) {
                return false;

@@ -27,7 +27,7 @@ import net.minecraft.util.FormattedCharSink;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringDecomposer;
-import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.jspecify.annotations.Nullable;
 
 public class Font {
@@ -60,22 +60,22 @@ public class Font {
       }
    }
 
-   public void drawInBatch(final String str, final float x, final float y, final int color, final boolean dropShadow, final Matrix4f pose, final MultiBufferSource bufferSource, final DisplayMode displayMode, final int backgroundColor, final int packedLightCoords) {
+   public void drawInBatch(final String str, final float x, final float y, final int color, final boolean dropShadow, final Matrix4fc pose, final MultiBufferSource bufferSource, final DisplayMode displayMode, final int backgroundColor, final int packedLightCoords) {
       PreparedText preparedText = this.prepareText(str, x, y, color, dropShadow, backgroundColor);
       preparedText.visit(Font.GlyphVisitor.forMultiBufferSource(bufferSource, pose, displayMode, packedLightCoords));
    }
 
-   public void drawInBatch(final Component str, final float x, final float y, final int color, final boolean dropShadow, final Matrix4f pose, final MultiBufferSource bufferSource, final DisplayMode displayMode, final int backgroundColor, final int packedLightCoords) {
+   public void drawInBatch(final Component str, final float x, final float y, final int color, final boolean dropShadow, final Matrix4fc pose, final MultiBufferSource bufferSource, final DisplayMode displayMode, final int backgroundColor, final int packedLightCoords) {
       PreparedText preparedText = this.prepareText(str.getVisualOrderText(), x, y, color, dropShadow, false, backgroundColor);
       preparedText.visit(Font.GlyphVisitor.forMultiBufferSource(bufferSource, pose, displayMode, packedLightCoords));
    }
 
-   public void drawInBatch(final FormattedCharSequence str, final float x, final float y, final int color, final boolean dropShadow, final Matrix4f pose, final MultiBufferSource bufferSource, final DisplayMode displayMode, final int backgroundColor, final int packedLightCoords) {
+   public void drawInBatch(final FormattedCharSequence str, final float x, final float y, final int color, final boolean dropShadow, final Matrix4fc pose, final MultiBufferSource bufferSource, final DisplayMode displayMode, final int backgroundColor, final int packedLightCoords) {
       PreparedText preparedText = this.prepareText(str, x, y, color, dropShadow, false, backgroundColor);
       preparedText.visit(Font.GlyphVisitor.forMultiBufferSource(bufferSource, pose, displayMode, packedLightCoords));
    }
 
-   public void drawInBatch8xOutline(final FormattedCharSequence str, final float x, final float y, final int color, final int outlineColor, final Matrix4f pose, final MultiBufferSource bufferSource, final int packedLightCoords) {
+   public void drawInBatch8xOutline(final FormattedCharSequence str, final float x, final float y, final int color, final int outlineColor, final Matrix4fc pose, final MultiBufferSource bufferSource, final int packedLightCoords) {
       PreparedTextBuilder outlineOutput = new PreparedTextBuilder(0.0F, 0.0F, outlineColor, false, false);
 
       for(int xo = -1; xo <= 1; ++xo) {
@@ -366,7 +366,7 @@ public class Font {
    }
 
    public interface GlyphVisitor {
-      static GlyphVisitor forMultiBufferSource(final MultiBufferSource bufferSource, final Matrix4f pose, final DisplayMode displayMode, final int lightCoords) {
+      static GlyphVisitor forMultiBufferSource(final MultiBufferSource bufferSource, final Matrix4fc pose, final DisplayMode displayMode, final int lightCoords) {
          return new GlyphVisitor() {
             public void acceptGlyph(final TextRenderable.Styled glyph) {
                this.render(glyph);

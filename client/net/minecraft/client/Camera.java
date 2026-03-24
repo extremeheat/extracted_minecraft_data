@@ -8,7 +8,7 @@ import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.Projection;
 import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.FluidTags;
@@ -31,6 +31,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.waypoints.TrackedWaypoint;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
@@ -199,7 +200,7 @@ public class Camera implements TrackedWaypoint.Camera {
       return this.cullFrustum;
    }
 
-   private void prepareCullFrustum(final Matrix4f modelViewMatrix, final Matrix4f projectionMatrixForCulling, final Vec3 cameraPos) {
+   private void prepareCullFrustum(final Matrix4fc modelViewMatrix, final Matrix4f projectionMatrixForCulling, final Vec3 cameraPos) {
       if (this.capturedFrustum != null && !this.captureFrustum) {
          this.cullFrustum = this.capturedFrustum;
       } else {

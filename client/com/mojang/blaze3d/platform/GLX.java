@@ -42,14 +42,14 @@ public class GLX {
       return Version.getVersion();
    }
 
-   public static LongSupplier _initGlfw() {
+   public static LongSupplier _initGlfw(final BackendOptions options) {
       Window.checkGlfwError((errorx, description) -> {
          throw new IllegalStateException(String.format(Locale.ROOT, "GLFW error before init: [0x%X]%s", errorx, description));
       });
       GLFWErrorCapture collectedErrors = new GLFWErrorCapture();
 
       LongSupplier timeSource;
-      try (GLFWErrorScope var2 = new GLFWErrorScope(collectedErrors)) {
+      try (GLFWErrorScope var3 = new GLFWErrorScope(collectedErrors)) {
          if (GLFW.glfwPlatformSupported(393219) && GLFW.glfwPlatformSupported(393220) && !SharedConstants.DEBUG_PREFER_WAYLAND) {
             GLFW.glfwInitHint(327683, 393220);
          }
@@ -60,7 +60,7 @@ public class GLX {
 
          timeSource = () -> (long)(GLFW.glfwGetTime() * 1.0E9);
          GLFW.glfwDefaultWindowHints();
-         GLFW.glfwWindowHint(131088, 1);
+         GLFW.glfwWindowHint(131088, glfwBool(!options.exclusiveFullScreen()));
       }
 
       for(GLFWErrorCapture.Error error : collectedErrors) {
@@ -98,5 +98,9 @@ public class GLX {
 
    public static <T> T make(final Supplier<T> factory) {
       return (T)factory.get();
+   }
+
+   public static int glfwBool(final boolean value) {
+      return value ? 1 : 0;
    }
 }

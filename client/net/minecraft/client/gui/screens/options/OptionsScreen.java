@@ -1,5 +1,6 @@
 package net.minecraft.client.gui.screens.options;
 
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import net.minecraft.client.Options;
@@ -20,8 +21,10 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.permissions.Permissions;
+import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 
-public class OptionsScreen extends Screen implements HasGamemasterPermissionReaction {
+public class OptionsScreen extends Screen implements HasGamemasterPermissionReaction, HasDifficultyReaction {
    private static final Component TITLE = Component.translatable("options.title");
    private static final Component SKIN_CUSTOMIZATION = Component.translatable("options.skinCustomisation");
    private static final Component SOUNDS = Component.translatable("options.sounds");
@@ -39,6 +42,7 @@ public class OptionsScreen extends Screen implements HasGamemasterPermissionReac
    private final Screen lastScreen;
    private final Options options;
    private final boolean inWorld;
+   private @Nullable DifficultyButtons difficultyButtons;
 
    public OptionsScreen(final Screen lastScreen, final Options options, final boolean inWorld) {
       super(TITLE);
@@ -52,7 +56,12 @@ public class OptionsScreen extends Screen implements HasGamemasterPermissionReac
       header.addChild(new StringWidget(TITLE, this.font), (Consumer)(LayoutSettings::alignHorizontallyCenter));
       LinearLayout subHeader = ((LinearLayout)header.addChild(LinearLayout.horizontal())).spacing(8);
       subHeader.addChild(this.options.fov().createButton(this.minecraft.options));
-      subHeader.addChild(this.inWorld ? this.createWorldOptionsButtonOrDifficultyButton() : this.createOnlineButton());
+      if (this.inWorld) {
+         subHeader.addChild(this.createWorldOptionsButtonOrDifficultyButton((Level)Objects.requireNonNull(this.minecraft.level)));
+      } else {
+         subHeader.addChild(this.createOnlineButton());
+      }
+
       GridLayout gridLayout = new GridLayout();
       gridLayout.defaultCellSetting().paddingHorizontal(4).paddingBottom(4).alignHorizontallyCenter();
       GridLayout.RowHelper helper = gridLayout.createRowHelper(2);
@@ -98,8 +107,13 @@ public class OptionsScreen extends Screen implements HasGamemasterPermissionReac
       return Button.builder(Component.translatable("options.online"), (button) -> this.minecraft.setScreen(new OnlineOptionsScreen(this, this.options))).bounds(this.width / 2 + 5, this.height / 6 - 12 + 24, 150, 20).build();
    }
 
-   private LayoutElement createWorldOptionsButtonOrDifficultyButton() {
-      return (LayoutElement)(!this.canShowWorldOptions() ? DifficultyButtons.create(this.minecraft, this) : Button.builder(Component.translatable("options.worldOptions.button"), (button) -> this.minecraft.setScreen(new WorldOptionsScreen(this))).build());
+   private LayoutElement createWorldOptionsButtonOrDifficultyButton(final Level level) {
+      if (!this.canShowWorldOptions()) {
+         this.difficultyButtons = DifficultyButtons.create(this.minecraft, level, this);
+         return this.difficultyButtons.layout();
+      } else {
+         return Button.builder(Component.translatable("options.worldOptions.button"), (button) -> this.minecraft.setScreen(new WorldOptionsScreen(this, level))).build();
+      }
    }
 
    private boolean canShowWorldOptions() {
@@ -120,5 +134,19 @@ public class OptionsScreen extends Screen implements HasGamemasterPermissionReac
 
    public void onGamemasterPermissionChanged(final boolean hasGamemasterPermission) {
       this.minecraft.setScreen(new OptionsScreen(this.lastScreen, this.minecraft.options, true));
+   }
+
+   public void added() {
+      if (this.difficultyButtons != null) {
+         this.difficultyButtons.refresh(this.minecraft);
+      }
+
+   }
+
+   public void onDifficultyChanged() {
+      if (this.difficultyButtons != null) {
+         this.difficultyButtons.refresh(this.minecraft);
+      }
+
    }
 }

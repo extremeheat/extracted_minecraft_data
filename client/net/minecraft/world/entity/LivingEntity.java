@@ -194,7 +194,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    private final Map<EquipmentSlot, ItemStack> lastEquipmentItems = Util.<EquipmentSlot, ItemStack>makeEnumMap(EquipmentSlot.class, (slot) -> ItemStack.EMPTY);
    public boolean swinging;
    private boolean discardFriction = false;
-   public InteractionHand swingingArm;
+   public @Nullable InteractionHand swingingArm;
    public int swingTime;
    public int removeArrowTime;
    public int removeStingerTime;
@@ -304,7 +304,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    }
 
    public static AttributeSupplier.Builder createLivingAttributes() {
-      return AttributeSupplier.builder().add(Attributes.MAX_HEALTH).add(Attributes.KNOCKBACK_RESISTANCE).add(Attributes.MOVEMENT_SPEED).add(Attributes.ARMOR).add(Attributes.ARMOR_TOUGHNESS).add(Attributes.MAX_ABSORPTION).add(Attributes.STEP_HEIGHT).add(Attributes.SCALE).add(Attributes.GRAVITY).add(Attributes.SAFE_FALL_DISTANCE).add(Attributes.FALL_DAMAGE_MULTIPLIER).add(Attributes.JUMP_STRENGTH).add(Attributes.OXYGEN_BONUS).add(Attributes.BURNING_TIME).add(Attributes.EXPLOSION_KNOCKBACK_RESISTANCE).add(Attributes.WATER_MOVEMENT_EFFICIENCY).add(Attributes.MOVEMENT_EFFICIENCY).add(Attributes.ATTACK_KNOCKBACK).add(Attributes.CAMERA_DISTANCE).add(Attributes.WAYPOINT_TRANSMIT_RANGE);
+      return AttributeSupplier.builder().add(Attributes.MAX_HEALTH).add(Attributes.KNOCKBACK_RESISTANCE).add(Attributes.MOVEMENT_SPEED).add(Attributes.ARMOR).add(Attributes.ARMOR_TOUGHNESS).add(Attributes.MAX_ABSORPTION).add(Attributes.STEP_HEIGHT).add(Attributes.SCALE).add(Attributes.GRAVITY).add(Attributes.SAFE_FALL_DISTANCE).add(Attributes.FALL_DAMAGE_MULTIPLIER).add(Attributes.JUMP_STRENGTH).add(Attributes.ENTITY_INTERACTION_RANGE).add(Attributes.OXYGEN_BONUS).add(Attributes.BURNING_TIME).add(Attributes.EXPLOSION_KNOCKBACK_RESISTANCE).add(Attributes.WATER_MOVEMENT_EFFICIENCY).add(Attributes.MOVEMENT_EFFICIENCY).add(Attributes.ATTACK_KNOCKBACK).add(Attributes.CAMERA_DISTANCE).add(Attributes.WAYPOINT_TRANSMIT_RANGE);
    }
 
    protected void checkFallDamage(final double ya, final boolean onGround, final BlockState onState, final BlockPos pos) {
@@ -1260,44 +1260,40 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
             return 0.0F;
          } else {
             BlocksAttacks blocksAttacks = (BlocksAttacks)blockingWith.get(DataComponents.BLOCKS_ATTACKS);
-            if (blocksAttacks != null) {
-               Optional var10000 = blocksAttacks.bypassedBy();
-               java.util.Objects.requireNonNull(source);
-               if (!(Boolean)var10000.map(source::is).orElse(false)) {
-                  Entity var7 = source.getDirectEntity();
-                  if (var7 instanceof AbstractArrow) {
-                     AbstractArrow abstractArrow = (AbstractArrow)var7;
-                     if (abstractArrow.getPierceLevel() > 0) {
-                        return 0.0F;
-                     }
+            if (blocksAttacks != null && !(Boolean)blocksAttacks.bypassedBy().map((t) -> t.contains(source.typeHolder())).orElse(false)) {
+               Entity var7 = source.getDirectEntity();
+               if (var7 instanceof AbstractArrow) {
+                  AbstractArrow abstractArrow = (AbstractArrow)var7;
+                  if (abstractArrow.getPierceLevel() > 0) {
+                     return 0.0F;
                   }
-
-                  Vec3 sourcePosition = source.getSourcePosition();
-                  double angle;
-                  if (sourcePosition != null) {
-                     Vec3 viewVector = this.calculateViewVector(0.0F, this.getYHeadRot());
-                     Vec3 vectorTo = sourcePosition.subtract(this.position());
-                     vectorTo = (new Vec3(vectorTo.x, 0.0, vectorTo.z)).normalize();
-                     angle = Math.acos(vectorTo.dot(viewVector));
-                  } else {
-                     angle = 3.1415927410125732;
-                  }
-
-                  float damageBlocked = blocksAttacks.resolveBlockedDamage(source, damage, angle);
-                  blocksAttacks.hurtBlockingItem(this.level(), blockingWith, this, this.getUsedItemHand(), damageBlocked);
-                  if (damageBlocked > 0.0F && !source.is(DamageTypeTags.IS_PROJECTILE)) {
-                     Entity directEntity = source.getDirectEntity();
-                     if (directEntity instanceof LivingEntity) {
-                        LivingEntity livingEntity = (LivingEntity)directEntity;
-                        this.blockUsingItem(level, livingEntity);
-                     }
-                  }
-
-                  return damageBlocked;
                }
-            }
 
-            return 0.0F;
+               Vec3 sourcePosition = source.getSourcePosition();
+               double angle;
+               if (sourcePosition != null) {
+                  Vec3 viewVector = this.calculateViewVector(0.0F, this.getYHeadRot());
+                  Vec3 vectorTo = sourcePosition.subtract(this.position());
+                  vectorTo = (new Vec3(vectorTo.x, 0.0, vectorTo.z)).normalize();
+                  angle = Math.acos(vectorTo.dot(viewVector));
+               } else {
+                  angle = 3.1415927410125732;
+               }
+
+               float damageBlocked = blocksAttacks.resolveBlockedDamage(source, damage, angle);
+               blocksAttacks.hurtBlockingItem(this.level(), blockingWith, this, this.getUsedItemHand(), damageBlocked);
+               if (damageBlocked > 0.0F && !source.is(DamageTypeTags.IS_PROJECTILE)) {
+                  Entity directEntity = source.getDirectEntity();
+                  if (directEntity instanceof LivingEntity) {
+                     LivingEntity livingEntity = (LivingEntity)directEntity;
+                     this.blockUsingItem(level, livingEntity);
+                  }
+               }
+
+               return damageBlocked;
+            } else {
+               return 0.0F;
+            }
          }
       }
    }

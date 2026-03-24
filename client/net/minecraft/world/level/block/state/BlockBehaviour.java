@@ -3,7 +3,6 @@ package net.minecraft.world.level.block.state;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -276,7 +275,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       return Shapes.empty();
    }
 
-   protected int getLightBlock(final BlockState state) {
+   protected int getLightDampening(final BlockState state) {
       if (state.isSolidRender()) {
          return 15;
       } else {
@@ -444,7 +443,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       private StatePredicate isRedstoneConductor;
       private StatePredicate isSuffocating;
       private StatePredicate isViewBlocking;
-      private StatePredicate hasPostProcess;
+      private PostProcess postProcess;
       private StatePredicate emissiveRendering;
       private boolean dynamicShape;
       private FeatureFlagSet requiredFeatures;
@@ -464,10 +463,10 @@ public abstract class BlockBehaviour implements FeatureElement {
          this.spawnTerrainParticles = true;
          this.instrument = NoteBlockInstrument.HARP;
          this.isValidSpawn = (state, level, pos, entityType) -> state.isFaceSturdy(level, pos, Direction.UP) && state.getLightEmission() < 14;
-         this.isRedstoneConductor = (state, level, pos) -> state.isCollisionShapeFullBlock(level, pos);
+         this.isRedstoneConductor = BlockStateBase::isCollisionShapeFullBlock;
          this.isSuffocating = (state, level, pos) -> state.blocksMotion() && state.isCollisionShapeFullBlock(level, pos);
          this.isViewBlocking = this.isSuffocating;
-         this.hasPostProcess = (state, level, pos) -> false;
+         this.postProcess = (state, level, pos) -> null;
          this.emissiveRendering = (state, level, pos) -> false;
          this.requiredFeatures = FeatureFlags.VANILLA_SET;
       }
@@ -482,7 +481,7 @@ public abstract class BlockBehaviour implements FeatureElement {
          copyTo.jumpFactor = copyFrom.jumpFactor;
          copyTo.isRedstoneConductor = copyFrom.isRedstoneConductor;
          copyTo.isValidSpawn = copyFrom.isValidSpawn;
-         copyTo.hasPostProcess = copyFrom.hasPostProcess;
+         copyTo.postProcess = copyFrom.postProcess;
          copyTo.isSuffocating = copyFrom.isSuffocating;
          copyTo.isViewBlocking = copyFrom.isViewBlocking;
          copyTo.drops = copyFrom.drops;
@@ -662,8 +661,8 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this;
       }
 
-      public Properties hasPostProcess(final StatePredicate hasPostProcess) {
-         this.hasPostProcess = hasPostProcess;
+      public Properties postProcess(final PostProcess postProcess) {
+         this.postProcess = postProcess;
          return this;
       }
 
@@ -772,7 +771,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       private final StatePredicate isRedstoneConductor;
       private final StatePredicate isSuffocating;
       private final StatePredicate isViewBlocking;
-      private final StatePredicate hasPostProcess;
+      private final PostProcess postProcess;
       private final StatePredicate emissiveRendering;
       private final @Nullable OffsetFunction offsetFunction;
       private final boolean spawnTerrainParticles;
@@ -785,10 +784,10 @@ public abstract class BlockBehaviour implements FeatureElement {
       private VoxelShape occlusionShape;
       private VoxelShape[] occlusionShapesByFace;
       private boolean propagatesSkylightDown;
-      private int lightBlock;
+      private int lightDampening;
 
-      protected BlockStateBase(final Block owner, final Reference2ObjectArrayMap<Property<?>, Comparable<?>> values, final MapCodec<BlockState> propertiesCodec) {
-         super(owner, values, propertiesCodec);
+      protected BlockStateBase(final Block owner, final Property<?>[] propertyKeys, final Comparable<?>[] propertyValues) {
+         super(owner, propertyKeys, propertyValues);
          this.fluidState = Fluids.EMPTY.defaultFluidState();
          Properties properties = owner.properties;
          this.lightEmission = properties.lightEmission.applyAsInt(this.asState());
@@ -804,7 +803,7 @@ public abstract class BlockBehaviour implements FeatureElement {
          this.isRedstoneConductor = properties.isRedstoneConductor;
          this.isSuffocating = properties.isSuffocating;
          this.isViewBlocking = properties.isViewBlocking;
-         this.hasPostProcess = properties.hasPostProcess;
+         this.postProcess = properties.postProcess;
          this.emissiveRendering = properties.emissiveRendering;
          this.offsetFunction = properties.offsetFunction;
          this.spawnTerrainParticles = properties.spawnTerrainParticles;
@@ -857,7 +856,7 @@ public abstract class BlockBehaviour implements FeatureElement {
          }
 
          this.propagatesSkylightDown = ((Block)this.owner).propagatesSkylightDown(this.asState());
-         this.lightBlock = ((Block)this.owner).getLightBlock(this.asState());
+         this.lightDampening = ((Block)this.owner).getLightDampening(this.asState());
       }
 
       public Block getBlock() {
@@ -889,8 +888,8 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this.propagatesSkylightDown;
       }
 
-      public int getLightBlock() {
-         return this.lightBlock;
+      public int getLightDampening() {
+         return this.lightDampening;
       }
 
       public VoxelShape getFaceOcclusionShape(final Direction direction) {
@@ -1154,8 +1153,8 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this.getBlock().canSurvive(this.asState(), level, pos);
       }
 
-      public boolean hasPostProcess(final BlockGetter level, final BlockPos pos) {
-         return this.hasPostProcess.test(this.asState(), level, pos);
+      public @Nullable BlockPos getPostProcessPos(final BlockGetter level, final BlockPos pos) {
+         return this.postProcess.getPostProcessPos(this.asState(), level, pos);
       }
 
       public @Nullable MenuProvider getMenuProvider(final Level level, final BlockPos pos) {
@@ -1274,6 +1273,11 @@ public abstract class BlockBehaviour implements FeatureElement {
    @FunctionalInterface
    public interface OffsetFunction {
       Vec3 evaluate(BlockState state, BlockPos pos);
+   }
+
+   @FunctionalInterface
+   public interface PostProcess {
+      @Nullable BlockPos getPostProcessPos(BlockState state, BlockGetter level, BlockPos pos);
    }
 
    @FunctionalInterface

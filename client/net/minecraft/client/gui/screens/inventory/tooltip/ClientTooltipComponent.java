@@ -2,7 +2,7 @@ package net.minecraft.client.gui.screens.inventory.tooltip;
 
 import java.util.Objects;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.inventory.tooltip.BundleTooltip;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
@@ -43,9 +43,9 @@ public interface ClientTooltipComponent {
       return false;
    }
 
-   default void renderText(final GuiGraphics guiGraphics, final Font font, final int x, final int y) {
+   default void extractText(final GuiGraphicsExtractor graphics, final Font font, final int x, final int y) {
    }
 
-   default void renderImage(final Font font, final int x, final int y, final int w, final int h, final GuiGraphics graphics) {
+   default void extractImage(final Font font, final int x, final int y, final int w, final int h, final GuiGraphicsExtractor graphics) {
    }
 }

@@ -47,9 +47,9 @@ public class FillCommand {
    }
 
    private static int fillBlocks(final CommandSourceStack source, final BoundingBox region, final BlockInput target, final Mode mode, final @Nullable Predicate<BlockInWorld> predicate, final boolean strict) throws CommandSyntaxException {
-      int area = region.getXSpan() * region.getYSpan() * region.getZSpan();
+      long area = (long)region.getXSpan() * (long)region.getYSpan() * (long)region.getZSpan();
       int limit = (Integer)source.getLevel().getGameRules().get(GameRules.MAX_BLOCK_MODIFICATIONS);
-      if (area > limit) {
+      if (area > (long)limit) {
          throw ERROR_AREA_TOO_LARGE.create(limit, area);
       } else {
          record UpdatedPosition(BlockPos pos, BlockState oldState) {

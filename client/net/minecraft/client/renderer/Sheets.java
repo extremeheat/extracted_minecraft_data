@@ -12,8 +12,9 @@ import java.util.stream.Collectors;
 import net.minecraft.client.renderer.blockentity.state.ChestRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.special.ChestSpecialRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.client.resources.model.SpriteId;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -72,28 +73,14 @@ public class Sheets {
    public static final SpriteId DECORATED_POT_BASE;
    public static final SpriteId DECORATED_POT_SIDE;
    private static final SpriteId[] BED_TEXTURES;
-   public static final SpriteId CHEST_TRAP_LOCATION;
-   public static final SpriteId CHEST_TRAP_LOCATION_LEFT;
-   public static final SpriteId CHEST_TRAP_LOCATION_RIGHT;
-   public static final SpriteId CHEST_XMAS_LOCATION;
-   public static final SpriteId CHEST_XMAS_LOCATION_LEFT;
-   public static final SpriteId CHEST_XMAS_LOCATION_RIGHT;
-   public static final SpriteId CHEST_LOCATION;
-   public static final SpriteId CHEST_LOCATION_LEFT;
-   public static final SpriteId CHEST_LOCATION_RIGHT;
    public static final SpriteId ENDER_CHEST_LOCATION;
-   public static final SpriteId COPPER_CHEST_LOCATION;
-   public static final SpriteId COPPER_CHEST_LOCATION_LEFT;
-   public static final SpriteId COPPER_CHEST_LOCATION_RIGHT;
-   public static final SpriteId EXPOSED_COPPER_CHEST_LOCATION;
-   public static final SpriteId EXPOSED_COPPER_CHEST_LOCATION_LEFT;
-   public static final SpriteId EXPOSED_COPPER_CHEST_LOCATION_RIGHT;
-   public static final SpriteId WEATHERED_COPPER_CHEST_LOCATION;
-   public static final SpriteId WEATHERED_COPPER_CHEST_LOCATION_LEFT;
-   public static final SpriteId WEATHERED_COPPER_CHEST_LOCATION_RIGHT;
-   public static final SpriteId OXIDIZED_COPPER_CHEST_LOCATION;
-   public static final SpriteId OXIDIZED_COPPER_CHEST_LOCATION_LEFT;
-   public static final SpriteId OXIDIZED_COPPER_CHEST_LOCATION_RIGHT;
+   public static final MultiblockChestResources<SpriteId> CHEST_REGULAR;
+   public static final MultiblockChestResources<SpriteId> CHEST_TRAPPED;
+   public static final MultiblockChestResources<SpriteId> CHEST_CHRISTMAS;
+   public static final MultiblockChestResources<SpriteId> CHEST_COPPER_UNAFFECTED;
+   public static final MultiblockChestResources<SpriteId> CHEST_COPPER_EXPOSED;
+   public static final MultiblockChestResources<SpriteId> CHEST_COPPER_WEATHERED;
+   public static final MultiblockChestResources<SpriteId> CHEST_COPPER_OXIDIZED;
 
    public Sheets() {
       super();
@@ -191,29 +178,17 @@ public class Sheets {
       SpriteId var10000;
       switch (materialType) {
          case ENDER_CHEST -> var10000 = ENDER_CHEST_LOCATION;
-         case CHRISTMAS -> var10000 = chooseSprite(type, CHEST_XMAS_LOCATION, CHEST_XMAS_LOCATION_LEFT, CHEST_XMAS_LOCATION_RIGHT);
-         case TRAPPED -> var10000 = chooseSprite(type, CHEST_TRAP_LOCATION, CHEST_TRAP_LOCATION_LEFT, CHEST_TRAP_LOCATION_RIGHT);
-         case COPPER_UNAFFECTED -> var10000 = chooseSprite(type, COPPER_CHEST_LOCATION, COPPER_CHEST_LOCATION_LEFT, COPPER_CHEST_LOCATION_RIGHT);
-         case COPPER_EXPOSED -> var10000 = chooseSprite(type, EXPOSED_COPPER_CHEST_LOCATION, EXPOSED_COPPER_CHEST_LOCATION_LEFT, EXPOSED_COPPER_CHEST_LOCATION_RIGHT);
-         case COPPER_WEATHERED -> var10000 = chooseSprite(type, WEATHERED_COPPER_CHEST_LOCATION, WEATHERED_COPPER_CHEST_LOCATION_LEFT, WEATHERED_COPPER_CHEST_LOCATION_RIGHT);
-         case COPPER_OXIDIZED -> var10000 = chooseSprite(type, OXIDIZED_COPPER_CHEST_LOCATION, OXIDIZED_COPPER_CHEST_LOCATION_LEFT, OXIDIZED_COPPER_CHEST_LOCATION_RIGHT);
-         case REGULAR -> var10000 = chooseSprite(type, CHEST_LOCATION, CHEST_LOCATION_LEFT, CHEST_LOCATION_RIGHT);
+         case REGULAR -> var10000 = CHEST_REGULAR.select(type);
+         case CHRISTMAS -> var10000 = CHEST_CHRISTMAS.select(type);
+         case TRAPPED -> var10000 = CHEST_TRAPPED.select(type);
+         case COPPER_UNAFFECTED -> var10000 = CHEST_COPPER_UNAFFECTED.select(type);
+         case COPPER_EXPOSED -> var10000 = CHEST_COPPER_EXPOSED.select(type);
+         case COPPER_WEATHERED -> var10000 = CHEST_COPPER_WEATHERED.select(type);
+         case COPPER_OXIDIZED -> var10000 = CHEST_COPPER_OXIDIZED.select(type);
          default -> throw new MatchException((String)null, (Throwable)null);
       }
 
       return var10000;
-   }
-
-   private static SpriteId chooseSprite(final ChestType type, final SpriteId single, final SpriteId left, final SpriteId right) {
-      switch (type) {
-         case LEFT:
-            return left;
-         case RIGHT:
-            return right;
-         case SINGLE:
-         default:
-            return single;
-      }
    }
 
    static {
@@ -251,27 +226,34 @@ public class Sheets {
       DECORATED_POT_BASE = DECORATED_POT_MAPPER.defaultNamespaceApply("decorated_pot_base");
       DECORATED_POT_SIDE = DECORATED_POT_MAPPER.defaultNamespaceApply("decorated_pot_side");
       BED_TEXTURES = (SpriteId[])Arrays.stream(DyeColor.values()).sorted(Comparator.comparingInt(DyeColor::getId)).map(Sheets::createBedSprite).toArray((x$0) -> new SpriteId[x$0]);
-      CHEST_TRAP_LOCATION = CHEST_MAPPER.defaultNamespaceApply("trapped");
-      CHEST_TRAP_LOCATION_LEFT = CHEST_MAPPER.defaultNamespaceApply("trapped_left");
-      CHEST_TRAP_LOCATION_RIGHT = CHEST_MAPPER.defaultNamespaceApply("trapped_right");
-      CHEST_XMAS_LOCATION = CHEST_MAPPER.defaultNamespaceApply("christmas");
-      CHEST_XMAS_LOCATION_LEFT = CHEST_MAPPER.defaultNamespaceApply("christmas_left");
-      CHEST_XMAS_LOCATION_RIGHT = CHEST_MAPPER.defaultNamespaceApply("christmas_right");
-      CHEST_LOCATION = CHEST_MAPPER.defaultNamespaceApply("normal");
-      CHEST_LOCATION_LEFT = CHEST_MAPPER.defaultNamespaceApply("normal_left");
-      CHEST_LOCATION_RIGHT = CHEST_MAPPER.defaultNamespaceApply("normal_right");
       ENDER_CHEST_LOCATION = CHEST_MAPPER.defaultNamespaceApply("ender");
-      COPPER_CHEST_LOCATION = CHEST_MAPPER.defaultNamespaceApply("copper");
-      COPPER_CHEST_LOCATION_LEFT = CHEST_MAPPER.defaultNamespaceApply("copper_left");
-      COPPER_CHEST_LOCATION_RIGHT = CHEST_MAPPER.defaultNamespaceApply("copper_right");
-      EXPOSED_COPPER_CHEST_LOCATION = CHEST_MAPPER.defaultNamespaceApply("copper_exposed");
-      EXPOSED_COPPER_CHEST_LOCATION_LEFT = CHEST_MAPPER.defaultNamespaceApply("copper_exposed_left");
-      EXPOSED_COPPER_CHEST_LOCATION_RIGHT = CHEST_MAPPER.defaultNamespaceApply("copper_exposed_right");
-      WEATHERED_COPPER_CHEST_LOCATION = CHEST_MAPPER.defaultNamespaceApply("copper_weathered");
-      WEATHERED_COPPER_CHEST_LOCATION_LEFT = CHEST_MAPPER.defaultNamespaceApply("copper_weathered_left");
-      WEATHERED_COPPER_CHEST_LOCATION_RIGHT = CHEST_MAPPER.defaultNamespaceApply("copper_weathered_right");
-      OXIDIZED_COPPER_CHEST_LOCATION = CHEST_MAPPER.defaultNamespaceApply("copper_oxidized");
-      OXIDIZED_COPPER_CHEST_LOCATION_LEFT = CHEST_MAPPER.defaultNamespaceApply("copper_oxidized_left");
-      OXIDIZED_COPPER_CHEST_LOCATION_RIGHT = CHEST_MAPPER.defaultNamespaceApply("copper_oxidized_right");
+      MultiblockChestResources var10000 = ChestSpecialRenderer.REGULAR;
+      SpriteMapper var10001 = CHEST_MAPPER;
+      Objects.requireNonNull(var10001);
+      CHEST_REGULAR = var10000.<SpriteId>map(var10001::apply);
+      var10000 = ChestSpecialRenderer.TRAPPED;
+      var10001 = CHEST_MAPPER;
+      Objects.requireNonNull(var10001);
+      CHEST_TRAPPED = var10000.<SpriteId>map(var10001::apply);
+      var10000 = ChestSpecialRenderer.CHRISTMAS;
+      var10001 = CHEST_MAPPER;
+      Objects.requireNonNull(var10001);
+      CHEST_CHRISTMAS = var10000.<SpriteId>map(var10001::apply);
+      var10000 = ChestSpecialRenderer.COPPER_UNAFFECTED;
+      var10001 = CHEST_MAPPER;
+      Objects.requireNonNull(var10001);
+      CHEST_COPPER_UNAFFECTED = var10000.<SpriteId>map(var10001::apply);
+      var10000 = ChestSpecialRenderer.COPPER_EXPOSED;
+      var10001 = CHEST_MAPPER;
+      Objects.requireNonNull(var10001);
+      CHEST_COPPER_EXPOSED = var10000.<SpriteId>map(var10001::apply);
+      var10000 = ChestSpecialRenderer.COPPER_WEATHERED;
+      var10001 = CHEST_MAPPER;
+      Objects.requireNonNull(var10001);
+      CHEST_COPPER_WEATHERED = var10000.<SpriteId>map(var10001::apply);
+      var10000 = ChestSpecialRenderer.COPPER_OXIDIZED;
+      var10001 = CHEST_MAPPER;
+      Objects.requireNonNull(var10001);
+      CHEST_COPPER_OXIDIZED = var10000.<SpriteId>map(var10001::apply);
    }
 }

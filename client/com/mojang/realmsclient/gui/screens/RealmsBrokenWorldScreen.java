@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -92,20 +92,20 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
       ++this.animTick;
    }
 
-   public void render(final GuiGraphics graphics, final int xm, final int ym, final float a) {
-      super.render(graphics, xm, ym, a);
-      graphics.drawCenteredString(this.font, (Component)this.title, this.width / 2, 17, -1);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int xm, final int ym, final float a) {
+      super.extractRenderState(graphics, xm, ym, a);
+      graphics.centeredText(this.font, (Component)this.title, this.width / 2, 17, -1);
 
       for(int i = 0; i < this.message.length; ++i) {
-         graphics.drawCenteredString(this.font, this.message[i], this.width / 2, row(-1) + 3 + i * 12, -6250336);
+         graphics.centeredText(this.font, this.message[i], this.width / 2, row(-1) + 3 + i * 12, -6250336);
       }
 
       if (this.serverData != null) {
          for(Map.Entry<Integer, RealmsSlot> entry : this.serverData.slots.entrySet()) {
             if (((RealmsSlot)entry.getValue()).options.templateImage != null && ((RealmsSlot)entry.getValue()).options.templateId != -1L) {
-               this.drawSlotFrame(graphics, this.getFramePositionX((Integer)entry.getKey()), row(1) + 5, xm, ym, this.serverData.activeSlot == (Integer)entry.getKey() && !this.isMinigame(), ((RealmsSlot)entry.getValue()).options.getSlotName((Integer)entry.getKey()), (Integer)entry.getKey(), ((RealmsSlot)entry.getValue()).options.templateId, ((RealmsSlot)entry.getValue()).options.templateImage, ((RealmsSlot)entry.getValue()).options.empty);
+               this.extractSlotFrame(graphics, this.getFramePositionX((Integer)entry.getKey()), row(1) + 5, xm, ym, this.serverData.activeSlot == (Integer)entry.getKey() && !this.isMinigame(), ((RealmsSlot)entry.getValue()).options.getSlotName((Integer)entry.getKey()), (Integer)entry.getKey(), ((RealmsSlot)entry.getValue()).options.templateId, ((RealmsSlot)entry.getValue()).options.templateImage, ((RealmsSlot)entry.getValue()).options.empty);
             } else {
-               this.drawSlotFrame(graphics, this.getFramePositionX((Integer)entry.getKey()), row(1) + 5, xm, ym, this.serverData.activeSlot == (Integer)entry.getKey() && !this.isMinigame(), ((RealmsSlot)entry.getValue()).options.getSlotName((Integer)entry.getKey()), (Integer)entry.getKey(), -1L, (String)null, ((RealmsSlot)entry.getValue()).options.empty);
+               this.extractSlotFrame(graphics, this.getFramePositionX((Integer)entry.getKey()), row(1) + 5, xm, ym, this.serverData.activeSlot == (Integer)entry.getKey() && !this.isMinigame(), ((RealmsSlot)entry.getValue()).options.getSlotName((Integer)entry.getKey()), (Integer)entry.getKey(), -1L, (String)null, ((RealmsSlot)entry.getValue()).options.empty);
             }
          }
 
@@ -176,7 +176,7 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
       return this.serverData != null && this.serverData.isMinigameActive();
    }
 
-   private void drawSlotFrame(final GuiGraphics graphics, final int x, final int y, final int xm, final int ym, final boolean active, final String text, final int i, final long imageId, final @Nullable String image, final boolean empty) {
+   private void extractSlotFrame(final GuiGraphicsExtractor graphics, final int x, final int y, final int xm, final int ym, final boolean active, final String text, final int i, final long imageId, final @Nullable String image, final boolean empty) {
       Identifier texture;
       if (empty) {
          texture = RealmsWorldSlotButton.EMPTY_SLOT_LOCATION;
@@ -202,6 +202,6 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
          graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SLOT_FRAME_SPRITE, x, y, 80, 80, color);
       }
 
-      graphics.drawCenteredString(this.font, (String)text, x + 40, y + 66, -1);
+      graphics.centeredText(this.font, (String)text, x + 40, y + 66, -1);
    }
 }

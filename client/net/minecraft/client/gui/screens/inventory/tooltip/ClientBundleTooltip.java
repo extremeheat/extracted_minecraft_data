@@ -4,7 +4,7 @@ import com.mojang.serialization.DataResult;
 import java.util.List;
 import java.util.Objects;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -78,25 +78,25 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
       return Math.min(12, this.contents.size());
    }
 
-   public void renderImage(final Font font, final int x, final int y, final int w, final int h, final GuiGraphics graphics) {
+   public void extractImage(final Font font, final int x, final int y, final int w, final int h, final GuiGraphicsExtractor graphics) {
       DataResult<Fraction> weight = this.contents.weight();
       if (!weight.isError()) {
          if (this.contents.isEmpty()) {
-            renderEmptyBundleTooltip(font, x, y, w, h, graphics);
+            extractEmptyBundleTooltip(font, x, y, w, h, graphics);
          } else {
-            this.renderBundleWithItemsTooltip(font, x, y, w, h, graphics, (Fraction)weight.getOrThrow());
+            this.extractBundleWithItemsTooltip(font, x, y, w, h, graphics, (Fraction)weight.getOrThrow());
          }
       }
 
    }
 
-   private static void renderEmptyBundleTooltip(final Font font, final int x, final int y, final int w, final int h, final GuiGraphics graphics) {
+   private static void extractEmptyBundleTooltip(final Font font, final int x, final int y, final int w, final int h, final GuiGraphicsExtractor graphics) {
       int left = x + getContentXOffset(w);
-      drawEmptyBundleDescriptionText(left, y, font, graphics);
-      drawProgressbar(left, y + getEmptyBundleDescriptionTextHeight(font) + 4, font, graphics, Fraction.ZERO);
+      extractEmptyBundleDescriptionText(left, y, font, graphics);
+      extractProgressbar(left, y + getEmptyBundleDescriptionTextHeight(font) + 4, font, graphics, Fraction.ZERO);
    }
 
-   private void renderBundleWithItemsTooltip(final Font font, final int x, final int y, final int w, final int h, final GuiGraphics graphics, final Fraction weight) {
+   private void extractBundleWithItemsTooltip(final Font font, final int x, final int y, final int w, final int h, final GuiGraphicsExtractor graphics, final Fraction weight) {
       boolean isOverflowing = this.contents.size() > 12;
       List<ItemStackTemplate> shownItems = this.getShownItems(this.contents.getNumberOfItemsToShow());
       int xStartPos = x + getContentXOffset(w) + 96;
@@ -108,16 +108,16 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
             int drawX = xStartPos - columnNumber * 24;
             int drawY = yStartPos - rowNumber * 24;
             if (shouldRenderSurplusText(isOverflowing, columnNumber, rowNumber)) {
-               renderCount(drawX, drawY, this.getAmountOfHiddenItems(shownItems), font, graphics);
+               extractCount(drawX, drawY, this.getAmountOfHiddenItems(shownItems), font, graphics);
             } else if (shouldRenderItemSlot(shownItems, slotNumber)) {
-               this.renderSlot(slotNumber, drawX, drawY, shownItems, slotNumber, font, graphics);
+               this.extractSlot(slotNumber, drawX, drawY, shownItems, slotNumber, font, graphics);
                ++slotNumber;
             }
          }
       }
 
-      this.drawSelectedItemTooltip(font, graphics, x, y, w);
-      drawProgressbar(x + getContentXOffset(w), y + this.itemGridHeight() + 4, font, graphics, weight);
+      this.extractSelectedItemTooltip(font, graphics, x, y, w);
+      extractProgressbar(x + getContentXOffset(w), y + this.itemGridHeight() + 4, font, graphics, weight);
    }
 
    private List<ItemStackTemplate> getShownItems(final int amountOfItemsToShow) {
@@ -137,7 +137,7 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
       return this.contents.items().stream().skip((long)shownItems.size()).mapToInt(ItemInstance::count).sum();
    }
 
-   private void renderSlot(final int slotNumber, final int drawX, final int drawY, final List<ItemStackTemplate> shownItems, final int slotIndex, final Font font, final GuiGraphics graphics) {
+   private void extractSlot(final int slotNumber, final int drawX, final int drawY, final List<ItemStackTemplate> shownItems, final int slotIndex, final Font font, final GuiGraphicsExtractor graphics) {
       int itemVisualOrderIndex = shownItems.size() - slotNumber;
       boolean hasHighlight = itemVisualOrderIndex == this.contents.getSelectedItemIndex();
       ItemStack item = ((ItemStackTemplate)shownItems.get(itemVisualOrderIndex)).create();
@@ -147,19 +147,19 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
          graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SLOT_BACKGROUND_SPRITE, drawX, drawY, 24, 24);
       }
 
-      graphics.renderItem(item, drawX + 4, drawY + 4, slotIndex);
-      graphics.renderItemDecorations(font, item, drawX + 4, drawY + 4);
+      graphics.item(item, drawX + 4, drawY + 4, slotIndex);
+      graphics.itemDecorations(font, item, drawX + 4, drawY + 4);
       if (hasHighlight) {
          graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SLOT_HIGHLIGHT_FRONT_SPRITE, drawX, drawY, 24, 24);
       }
 
    }
 
-   private static void renderCount(final int drawX, final int drawY, final int hiddenItemCount, final Font font, final GuiGraphics graphics) {
-      graphics.drawCenteredString(font, (String)("+" + hiddenItemCount), drawX + 12, drawY + 10, -1);
+   private static void extractCount(final int drawX, final int drawY, final int hiddenItemCount, final Font font, final GuiGraphicsExtractor graphics) {
+      graphics.centeredText(font, (String)("+" + hiddenItemCount), drawX + 12, drawY + 10, -1);
    }
 
-   private void drawSelectedItemTooltip(final Font font, final GuiGraphics graphics, final int x, final int y, final int w) {
+   private void extractSelectedItemTooltip(final Font font, final GuiGraphicsExtractor graphics, final int x, final int y, final int w) {
       ItemStackTemplate selectedItem = this.contents.getSelectedItem();
       if (selectedItem != null) {
          ItemStack itemStack = selectedItem.create();
@@ -167,23 +167,23 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
          int textWidth = font.width(selectedItemName.getVisualOrderText());
          int centerTooltip = x + w / 2 - 12;
          ClientTooltipComponent selectedItemNameTooltip = ClientTooltipComponent.create(selectedItemName.getVisualOrderText());
-         graphics.renderTooltip(font, List.of(selectedItemNameTooltip), centerTooltip - textWidth / 2, y - 15, DefaultTooltipPositioner.INSTANCE, (Identifier)itemStack.get(DataComponents.TOOLTIP_STYLE));
+         graphics.tooltip(font, List.of(selectedItemNameTooltip), centerTooltip - textWidth / 2, y - 15, DefaultTooltipPositioner.INSTANCE, (Identifier)itemStack.get(DataComponents.TOOLTIP_STYLE));
       }
 
    }
 
-   private static void drawProgressbar(final int x, final int y, final Font font, final GuiGraphics graphics, final Fraction weight) {
+   private static void extractProgressbar(final int x, final int y, final Font font, final GuiGraphicsExtractor graphics, final Fraction weight) {
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)getProgressBarTexture(weight), x + 1, y, getProgressBarFill(weight), 13);
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)PROGRESSBAR_BORDER_SPRITE, x, y, 96, 13);
       Component progressBarFillText = getProgressBarFillText(weight);
       if (progressBarFillText != null) {
-         graphics.drawCenteredString(font, (Component)progressBarFillText, x + 48, y + 3, -1);
+         graphics.centeredText(font, (Component)progressBarFillText, x + 48, y + 3, -1);
       }
 
    }
 
-   private static void drawEmptyBundleDescriptionText(final int x, final int y, final Font font, final GuiGraphics graphics) {
-      graphics.drawWordWrap(font, BUNDLE_EMPTY_DESCRIPTION, x, y, 96, -5592406);
+   private static void extractEmptyBundleDescriptionText(final int x, final int y, final Font font, final GuiGraphicsExtractor graphics) {
+      graphics.textWithWordWrap(font, BUNDLE_EMPTY_DESCRIPTION, x, y, 96, -5592406);
    }
 
    private static int getEmptyBundleDescriptionTextHeight(final Font font) {

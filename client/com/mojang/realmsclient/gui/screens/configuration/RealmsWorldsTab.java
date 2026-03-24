@@ -109,6 +109,7 @@ class RealmsWorldsTab extends GridLayoutTab implements RealmsConfigurationTab {
          }
       }
 
+      ((RealmsWorldSlotButton)this.slotButtonList.get(serverData.activeSlot - 1)).updateSlotState(serverData);
    }
 
    private RealmsWorldSlotButton createSlotButton(final int i) {

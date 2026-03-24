@@ -114,13 +114,36 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
       return (NoiseColumn)result.get();
    }
 
+   @VisibleForTesting
+   public double getInterpolatedNoiseValue(final RandomState randomState, final DensityFunction.FunctionContext context) {
+      NoiseSettings noiseSettings = ((NoiseGeneratorSettings)this.settings.value()).noiseSettings();
+      int cellWidth = noiseSettings.getCellWidth();
+      int cellHeight = noiseSettings.getCellHeight();
+      int minY = noiseSettings.minY();
+      int blockX = context.blockX();
+      int blockY = context.blockY();
+      int blockZ = context.blockZ();
+      if (blockY >= minY && blockY < minY + noiseSettings.height()) {
+         NoiseChunk noiseChunk = new NoiseChunk(1, randomState, blockX - Math.floorMod(blockX, cellWidth), blockZ - Math.floorMod(blockZ, cellWidth), noiseSettings, DensityFunctions.BeardifierMarker.INSTANCE, this.settings.value(), (Aquifer.FluidPicker)this.globalFluidPicker.get(), context.getBlender());
+         noiseChunk.initializeForFirstCellX();
+         noiseChunk.advanceCellX(0);
+         noiseChunk.selectCellYZ(Math.floorDiv(blockY - minY, cellHeight), 0);
+         noiseChunk.updateForY(blockY, (double)Math.floorMod(blockY - minY, cellHeight) / (double)cellHeight);
+         noiseChunk.updateForX(blockX, (double)Math.floorMod(blockX, cellWidth) / (double)cellWidth);
+         noiseChunk.updateForZ(blockZ, (double)Math.floorMod(blockZ, cellWidth) / (double)cellWidth);
+         return noiseChunk.getInterpolatedDensity();
+      } else {
+         return 0.0 / 0.0;
+      }
+   }
+
    public void addDebugScreenInfo(final List<String> result, final RandomState randomState, final BlockPos feetPos) {
       DecimalFormat format = new DecimalFormat("0.000", DecimalFormatSymbols.getInstance(Locale.ROOT));
       NoiseRouter router = randomState.router();
       DensityFunction.SinglePointContext context = new DensityFunction.SinglePointContext(feetPos.getX(), feetPos.getY(), feetPos.getZ());
       double weirdness = router.ridges().compute(context);
-      String var10001 = format.format(router.temperature().compute(context));
-      result.add("NoiseRouter T: " + var10001 + " V: " + format.format(router.vegetation().compute(context)) + " C: " + format.format(router.continents().compute(context)) + " E: " + format.format(router.erosion().compute(context)) + " D: " + format.format(router.depth().compute(context)) + " W: " + format.format(weirdness) + " PV: " + format.format((double)NoiseRouterData.peaksAndValleys((float)weirdness)) + " PS: " + format.format(router.preliminarySurfaceLevel().compute(context)) + " N: " + format.format(router.finalDensity().compute(context)));
+      String var10001 = format.format(this.getInterpolatedNoiseValue(randomState, context));
+      result.add("NoiseRouter N: " + var10001 + " T: " + format.format(router.temperature().compute(context)) + " V: " + format.format(router.vegetation().compute(context)) + " C: " + format.format(router.continents().compute(context)) + " E: " + format.format(router.erosion().compute(context)) + " D: " + format.format(router.depth().compute(context)) + " W: " + format.format(weirdness) + " PV: " + format.format((double)NoiseRouterData.peaksAndValleys((float)weirdness)) + " PS: " + format.format(router.preliminarySurfaceLevel().compute(context)));
    }
 
    private OptionalInt iterateNoiseColumn(final LevelHeightAccessor heightAccessor, final RandomState randomState, final int blockX, final int blockZ, final @Nullable MutableObject<NoiseColumn> columnReference, final @Nullable Predicate<BlockState> tester) {

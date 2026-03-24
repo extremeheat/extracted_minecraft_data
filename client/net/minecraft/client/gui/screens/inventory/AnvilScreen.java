@@ -1,6 +1,6 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -86,8 +86,8 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
       }
    }
 
-   protected void renderLabels(final GuiGraphics graphics, final int xm, final int ym) {
-      super.renderLabels(graphics, xm, ym);
+   protected void extractLabels(final GuiGraphicsExtractor graphics, final int xm, final int ym) {
+      super.extractLabels(graphics, xm, ym);
       int cost = ((AnvilMenu)this.menu).getCost();
       if (cost > 0) {
          int color = -8323296;
@@ -108,18 +108,18 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
             int tx = this.imageWidth - 8 - this.font.width((FormattedText)line) - 2;
             int ty = 69;
             graphics.fill(tx - 2, 67, this.imageWidth - 8, 79, 1325400064);
-            graphics.drawString(this.font, (Component)line, tx, 69, color);
+            graphics.text(this.font, (Component)line, tx, 69, color);
          }
       }
 
    }
 
-   protected void renderBg(final GuiGraphics graphics, final float a, final int xm, final int ym) {
-      super.renderBg(graphics, a, xm, ym);
+   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractBackground(graphics, mouseX, mouseY, a);
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)(((AnvilMenu)this.menu).getSlot(0).hasItem() ? TEXT_FIELD_SPRITE : TEXT_FIELD_DISABLED_SPRITE), this.leftPos + 59, this.topPos + 20, 110, 16);
    }
 
-   protected void renderErrorIcon(final GuiGraphics graphics, final int xo, final int yo) {
+   protected void extractErrorIcon(final GuiGraphicsExtractor graphics, final int xo, final int yo) {
       if ((((AnvilMenu)this.menu).getSlot(0).hasItem() || ((AnvilMenu)this.menu).getSlot(1).hasItem()) && !((AnvilMenu)this.menu).getSlot(((AnvilMenu)this.menu).getResultSlot()).hasItem()) {
          graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ERROR_SPRITE, xo + 99, yo + 45, 28, 21);
       }

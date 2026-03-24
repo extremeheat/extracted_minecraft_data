@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.screens.inventory;
 
 import java.util.List;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenPosition;
 import net.minecraft.client.gui.screens.recipebook.FurnaceRecipeBookComponent;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
@@ -34,7 +34,8 @@ public abstract class AbstractFurnaceScreen<T extends AbstractFurnaceMenu> exten
       return new ScreenPosition(this.leftPos + 20, this.height / 2 - 49);
    }
 
-   protected void renderBg(final GuiGraphics graphics, final float a, final int xm, final int ym) {
+   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractBackground(graphics, mouseX, mouseY, a);
       int xo = this.leftPos;
       int yo = this.topPos;
       graphics.blit(RenderPipelines.GUI_TEXTURED, this.texture, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);

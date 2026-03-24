@@ -57,7 +57,7 @@ public class LakeFeature extends Feature<Configuration> {
             }
          }
 
-         BlockState fluid = config.fluid().getState(random, origin);
+         BlockState fluid = config.fluid().getState(level, random, origin);
 
          for(int xx = 0; xx < 16; ++xx) {
             for(int zz = 0; zz < 16; ++zz) {
@@ -95,7 +95,7 @@ public class LakeFeature extends Feature<Configuration> {
             }
          }
 
-         BlockState barrier = config.barrier().getState(random, origin);
+         BlockState barrier = config.barrier().getState(level, random, origin);
          if (!barrier.isAir()) {
             for(int xx = 0; xx < 16; ++xx) {
                for(int zz = 0; zz < 16; ++zz) {

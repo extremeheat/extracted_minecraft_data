@@ -9,18 +9,14 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.object.statue.CopperGolemStatueModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.Unit;
 import net.minecraft.world.entity.animal.golem.CopperGolemOxidationLevels;
-import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.level.block.CopperGolemStatueBlock;
 import net.minecraft.world.level.block.WeatheringCopper;
 import org.joml.Vector3fc;
 
 public class CopperGolemStatueSpecialRenderer implements NoDataSpecialModelRenderer {
-   private static final Direction MODEL_STATE;
    private final CopperGolemStatueModel model;
    private final Identifier texture;
 
@@ -30,28 +26,17 @@ public class CopperGolemStatueSpecialRenderer implements NoDataSpecialModelRende
       this.texture = texture;
    }
 
-   public void submit(final ItemDisplayContext type, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final boolean hasFoil, final int outlineColor) {
-      positionModel(poseStack);
-      submitNodeCollector.submitModel(this.model, Direction.SOUTH, poseStack, RenderTypes.entityCutout(this.texture), lightCoords, overlayCoords, -1, (TextureAtlasSprite)null, outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+   public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final boolean hasFoil, final int outlineColor) {
+      submitNodeCollector.submitModel(this.model, Unit.INSTANCE, poseStack, this.texture, lightCoords, overlayCoords, outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
    }
 
    public void getExtents(final Consumer<Vector3fc> output) {
       PoseStack poseStack = new PoseStack();
-      positionModel(poseStack);
-      this.model.setupAnim(MODEL_STATE);
+      this.model.setupAnim(Unit.INSTANCE);
       this.model.root().getExtentsForGui(poseStack, output);
    }
 
-   private static void positionModel(final PoseStack poseStack) {
-      poseStack.translate(0.5F, 1.5F, 0.5F);
-      poseStack.scale(-1.0F, -1.0F, 1.0F);
-   }
-
-   static {
-      MODEL_STATE = Direction.SOUTH;
-   }
-
-   public static record Unbaked(Identifier texture, CopperGolemStatueBlock.Pose pose) implements SpecialModelRenderer.Unbaked {
+   public static record Unbaked(Identifier texture, CopperGolemStatueBlock.Pose pose) implements NoDataSpecialModelRenderer.Unbaked {
       public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Identifier.CODEC.fieldOf("texture").forGetter(Unbaked::texture), CopperGolemStatueBlock.Pose.CODEC.fieldOf("pose").forGetter(Unbaked::pose)).apply(i, Unbaked::new));
 
       public Unbaked(final WeatheringCopper.WeatherState state, final CopperGolemStatueBlock.Pose pose) {
@@ -66,7 +51,7 @@ public class CopperGolemStatueSpecialRenderer implements NoDataSpecialModelRende
          return MAP_CODEC;
       }
 
-      public SpecialModelRenderer<?> bake(final SpecialModelRenderer.BakingContext context) {
+      public CopperGolemStatueSpecialRenderer bake(final SpecialModelRenderer.BakingContext context) {
          CopperGolemStatueModel model = new CopperGolemStatueModel(context.entityModelSet().bakeLayer(getModel(this.pose)));
          return new CopperGolemStatueSpecialRenderer(model, this.texture);
       }

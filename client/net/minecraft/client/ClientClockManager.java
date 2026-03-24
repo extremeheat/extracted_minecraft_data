@@ -3,8 +3,9 @@ package net.minecraft.client;
 import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.core.Holder;
+import net.minecraft.util.Mth;
 import net.minecraft.world.clock.ClockManager;
-import net.minecraft.world.clock.ClockState;
+import net.minecraft.world.clock.ClockNetworkState;
 import net.minecraft.world.clock.WorldClock;
 
 public class ClientClockManager implements ClockManager {
@@ -16,7 +17,7 @@ public class ClientClockManager implements ClockManager {
    }
 
    private ClockInstance getInstance(final Holder<WorldClock> definition) {
-      return (ClockInstance)this.clocks.computeIfAbsent(definition, (d) -> new ClockInstance());
+      return (ClockInstance)this.clocks.computeIfAbsent(definition, (var0) -> new ClockInstance());
    }
 
    public void tick(final long gameTime) {
@@ -24,19 +25,21 @@ public class ClientClockManager implements ClockManager {
       this.lastTickGameTime = gameTime;
 
       for(ClockInstance instance : this.clocks.values()) {
-         if (!instance.paused) {
-            instance.totalTicks += gameTimeDelta;
-         }
+         double newPartialTicks = (double)instance.partialTick + (double)gameTimeDelta * (double)instance.rate;
+         long fullTicks = (long)Mth.floor(newPartialTicks);
+         instance.partialTick = (float)(newPartialTicks - (double)fullTicks);
+         instance.totalTicks += fullTicks;
       }
 
    }
 
-   public void handleUpdates(final long gameTime, final Map<Holder<WorldClock>, ClockState> updates) {
+   public void handleUpdates(final long gameTime, final Map<Holder<WorldClock>, ClockNetworkState> updates) {
       this.tick(gameTime);
       updates.forEach((definition, state) -> {
          ClockInstance clock = this.getInstance(definition);
          clock.totalTicks = state.totalTicks();
-         clock.paused = state.paused();
+         clock.partialTick = state.partialTick();
+         clock.rate = state.rate();
       });
    }
 
@@ -46,7 +49,8 @@ public class ClientClockManager implements ClockManager {
 
    private static class ClockInstance {
       private long totalTicks;
-      private boolean paused;
+      private float partialTick;
+      private float rate = 1.0F;
 
       private ClockInstance() {
          super();

@@ -1,6 +1,6 @@
 package net.minecraft.client.gui.screens.advancements;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
@@ -37,7 +37,7 @@ enum AdvancementTabType {
       return this.max;
    }
 
-   public void draw(final GuiGraphics graphics, final int tabX, final int tabY, final boolean selected, final int index) {
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int tabX, final int tabY, final boolean selected, final int index) {
       Sprites sprites = selected ? this.selectedSprites : this.unselectedSprites;
       Identifier sprite;
       if (index == 0) {
@@ -51,7 +51,7 @@ enum AdvancementTabType {
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, tabX, tabY, this.width, this.height);
    }
 
-   public void drawIcon(final GuiGraphics graphics, final int xo, final int yo, final int index, final ItemStack icon) {
+   public void extractIcon(final GuiGraphicsExtractor graphics, final int xo, final int yo, final int index, final ItemStack icon) {
       int x = xo + this.getX(index);
       int y = yo + this.getY(index);
       switch (this.ordinal()) {
@@ -72,7 +72,7 @@ enum AdvancementTabType {
             y += 5;
       }
 
-      graphics.renderFakeItem(icon, x, y);
+      graphics.fakeItem(icon, x, y);
    }
 
    public int getX(final int index) {

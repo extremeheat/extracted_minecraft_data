@@ -17,7 +17,7 @@ import java.util.Collections;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.state.WorldBorderRenderState;
+import net.minecraft.client.renderer.state.level.WorldBorderRenderState;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.Identifier;

@@ -1,7 +1,5 @@
 package net.minecraft.client.renderer.item;
 
-import java.util.Objects;
-import java.util.function.Function;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.core.component.DataComponents;
@@ -15,15 +13,19 @@ import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
 
 public class ItemModelResolver {
-   private final Function<Identifier, ItemModel> modelGetter;
-   private final Function<Identifier, ClientItem.Properties> clientProperties;
+   private final ModelManager modelManager;
 
    public ItemModelResolver(final ModelManager modelManager) {
       super();
-      Objects.requireNonNull(modelManager);
-      this.modelGetter = modelManager::getItemModel;
-      Objects.requireNonNull(modelManager);
-      this.clientProperties = modelManager::getItemProperties;
+      this.modelManager = modelManager;
+   }
+
+   private ClientItem.Properties getItemProperties(final Identifier modelId) {
+      return this.modelManager.getItemProperties(modelId);
+   }
+
+   private ItemModel getItemModel(final Identifier modelId) {
+      return this.modelManager.getItemModel(modelId);
    }
 
    public void updateForLiving(final ItemStackRenderState output, final ItemStack item, final ItemDisplayContext displayContext, final LivingEntity entity) {
@@ -46,8 +48,8 @@ public class ItemModelResolver {
    public void appendItemLayers(final ItemStackRenderState output, final ItemStack item, final ItemDisplayContext displayContext, final @Nullable Level level, final @Nullable ItemOwner owner, final int seed) {
       Identifier modelId = (Identifier)item.get(DataComponents.ITEM_MODEL);
       if (modelId != null) {
-         output.setOversizedInGui(((ClientItem.Properties)this.clientProperties.apply(modelId)).oversizedInGui());
-         ItemModel var10000 = (ItemModel)this.modelGetter.apply(modelId);
+         output.setOversizedInGui(this.getItemProperties(modelId).oversizedInGui());
+         ItemModel var10000 = this.getItemModel(modelId);
          ClientLevel var10005;
          if (level instanceof ClientLevel) {
             ClientLevel clientLevel = (ClientLevel)level;
@@ -62,11 +64,11 @@ public class ItemModelResolver {
 
    public boolean shouldPlaySwapAnimation(final ItemStack stack) {
       Identifier modelId = (Identifier)stack.get(DataComponents.ITEM_MODEL);
-      return modelId == null ? true : ((ClientItem.Properties)this.clientProperties.apply(modelId)).handAnimationOnSwap();
+      return modelId == null ? true : this.getItemProperties(modelId).handAnimationOnSwap();
    }
 
    public float swapAnimationScale(final ItemStack stack) {
       Identifier modelId = (Identifier)stack.get(DataComponents.ITEM_MODEL);
-      return modelId == null ? 1.0F : ((ClientItem.Properties)this.clientProperties.apply(modelId)).swapAnimationScale();
+      return modelId == null ? 1.0F : this.getItemProperties(modelId).swapAnimationScale();
    }
 }

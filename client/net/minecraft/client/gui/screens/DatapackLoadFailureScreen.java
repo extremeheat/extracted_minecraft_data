@@ -2,7 +2,7 @@ package net.minecraft.client.gui.screens;
 
 import java.util.Objects;
 import net.minecraft.client.gui.ActiveTextCollector;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
@@ -28,8 +28,8 @@ public class DatapackLoadFailureScreen extends Screen {
       this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, (button) -> this.cancelCallback.run()).bounds(this.width / 2 - 155 + 160, this.height / 6 + 96, 150, 20).build());
    }
 
-   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-      super.render(graphics, mouseX, mouseY, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
       ActiveTextCollector textRenderer = graphics.textRenderer();
       MultiLineLabel var10000 = this.message;
       TextAlignment var10001 = TextAlignment.CENTER;

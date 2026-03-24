@@ -51,7 +51,7 @@ public abstract class AgeableMob extends PathfinderMob {
 
       AgeableMobGroupData ageableMobGroupData = (AgeableMobGroupData)groupData;
       if (ageableMobGroupData.isShouldSpawnBaby() && ageableMobGroupData.getGroupSize() > 0 && level.getRandom().nextFloat() <= ageableMobGroupData.getBabySpawnChance()) {
-         this.setAge(-24000);
+         this.setAge(this.getBabyStartAge());
       }
 
       ageableMobGroupData.increaseGroupSizeByOne();
@@ -76,7 +76,7 @@ public abstract class AgeableMob extends PathfinderMob {
 
    private void setAgeLockedData() {
       this.setAgeLocked(!this.isAgeLocked());
-      this.setAge(-24000);
+      this.setAge(this.getBabyStartAge());
       this.ageLockParticleTimer = 40;
    }
 
@@ -84,7 +84,10 @@ public abstract class AgeableMob extends PathfinderMob {
       setAgeLockData.accept(mob);
       itemInHand.consume(1, player);
       boolean isAgeLocked = (Boolean)isAgedLocked.get();
-      mob.setPersistenceRequired(isAgeLocked);
+      if (isAgeLocked) {
+         mob.setPersistenceRequired();
+      }
+
       mob.level().playSound((Entity)null, (BlockPos)mob.blockPosition(), isAgeLocked ? SoundEvents.GOLDEN_DANDELION_USE : SoundEvents.GOLDEN_DANDELION_UNUSE, SoundSource.PLAYERS, 1.0F, 1.0F);
    }
 
@@ -104,10 +107,6 @@ public abstract class AgeableMob extends PathfinderMob {
       } else {
          return this.age;
       }
-   }
-
-   public boolean canAgeUp() {
-      return this.isBaby() && !this.isAgeLocked();
    }
 
    public void ageUp(final int seconds, final boolean forced) {
@@ -183,9 +182,9 @@ public abstract class AgeableMob extends PathfinderMob {
 
             --this.forcedAgeTimer;
          }
-      } else if (this.isAlive() && !this.isAgeLocked()) {
+      } else if (this.isAlive()) {
          int age = this.getAge();
-         if (age < 0) {
+         if (this.canAgeUp()) {
             ++age;
             this.setAge(age);
          } else if (age > 0) {
@@ -195,6 +194,10 @@ public abstract class AgeableMob extends PathfinderMob {
       }
 
       this.ageLockParticleTimer = makeAgeLockedParticle(this.level(), this, this.ageLockParticleTimer, this.isAgeLocked());
+   }
+
+   public boolean canAgeUp() {
+      return this.isBaby() && !this.isAgeLocked();
    }
 
    public static int makeAgeLockedParticle(final Level level, final Mob mob, int ageLockParticleTimer, final boolean isAgeLocked) {
@@ -224,12 +227,16 @@ public abstract class AgeableMob extends PathfinderMob {
 
    }
 
+   protected int getBabyStartAge() {
+      return -24000;
+   }
+
    public boolean isBaby() {
       return this.getAge() < 0;
    }
 
    public void setBaby(final boolean baby) {
-      this.setAge(baby ? -24000 : 0);
+      this.setAge(baby ? this.getBabyStartAge() : 0);
    }
 
    public static int getSpeedUpSecondsWhenFeeding(final int ticksUntilAdult) {

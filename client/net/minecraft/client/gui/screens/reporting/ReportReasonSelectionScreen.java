@@ -5,7 +5,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import net.minecraft.Optionull;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
@@ -75,11 +75,11 @@ public class ReportReasonSelectionScreen extends Screen {
 
    }
 
-   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-      super.render(graphics, mouseX, mouseY, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
       graphics.fill(this.descriptionLeft(), this.descriptionTop(), this.descriptionRight(), this.descriptionBottom(), -16777216);
-      graphics.renderOutline(this.descriptionLeft(), this.descriptionTop(), this.descriptionWidth(), this.descriptionHeight(), -1);
-      graphics.drawString(this.font, (Component)REASON_DESCRIPTION, this.descriptionLeft() + 4, this.descriptionTop() + 4, -1);
+      graphics.outline(this.descriptionLeft(), this.descriptionTop(), this.descriptionWidth(), this.descriptionHeight(), -1);
+      graphics.text(this.font, (Component)REASON_DESCRIPTION, this.descriptionLeft() + 4, this.descriptionTop() + 4, -1);
       ReasonSelectionList.Entry selectedEntry = (ReasonSelectionList.Entry)this.reasonSelectionList.getSelected();
       if (selectedEntry != null) {
          int textLeft = this.descriptionLeft() + 4 + 16;
@@ -91,7 +91,7 @@ public class ReportReasonSelectionScreen extends Screen {
          int textWidth = textRight - textLeft;
          int textHeight = textBottom - textTop;
          int contentHeight = this.font.wordWrapHeight(selectedEntry.reason.description(), textWidth);
-         graphics.drawWordWrap(this.font, selectedEntry.reason.description(), textLeft, textTop + (textHeight - contentHeight) / 2, textWidth, -1);
+         graphics.textWithWordWrap(this.font, selectedEntry.reason.description(), textLeft, textTop + (textHeight - contentHeight) / 2, textWidth, -1);
       }
 
    }
@@ -163,13 +163,13 @@ public class ReportReasonSelectionScreen extends Screen {
             this.reason = reason;
          }
 
-         public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+         public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
             int textX = this.getContentX() + 1;
             int var10000 = this.getContentY();
             int var10001 = this.getContentHeight();
             Objects.requireNonNull(ReportReasonSelectionScreen.this.font);
             int textY = var10000 + (var10001 - 9) / 2 + 1;
-            graphics.drawString(ReportReasonSelectionScreen.this.font, (Component)this.reason.title(), textX, textY, -1);
+            graphics.text(ReportReasonSelectionScreen.this.font, (Component)this.reason.title(), textX, textY, -1);
          }
 
          public Component getNarration() {

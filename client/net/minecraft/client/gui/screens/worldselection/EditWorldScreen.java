@@ -10,7 +10,7 @@ import java.util.concurrent.CompletableFuture;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.StringWidget;
@@ -92,7 +92,7 @@ public class EditWorldScreen extends Screen {
 
          Util.getPlatform().openPath(path);
       }).width(200).build());
-      this.layout.addChild(Button.builder(OPTIMIZE_BUTTON, (button) -> minecraft.setScreen(new BackupConfirmScreen(() -> minecraft.setScreen(this), (backup, eraseCache) -> conditionallyMakeBackupAndShowToast(backup, levelAccess).thenAcceptAsync((var4) -> minecraft.setScreen(OptimizeWorldScreen.create(minecraft, this.callback, minecraft.getFixerUpper(), levelAccess, eraseCache)), minecraft), OPTIMIZE_TITLE, OPTIMIZE_DESCRIPTION, OPTIMIZE_CONFIRMATION, true, false))).width(200).build());
+      this.layout.addChild(Button.builder(OPTIMIZE_BUTTON, (button) -> minecraft.setScreen(new BackupConfirmScreen(() -> minecraft.setScreen(this), (backup, eraseCache) -> conditionallyMakeBackupAndShowToast(backup, levelAccess).thenAcceptAsync((var4) -> minecraft.setScreen(OptimizeWorldScreen.create(minecraft, this.callback, minecraft.getFixerUpper(), levelAccess, eraseCache)), minecraft), OPTIMIZE_TITLE, OPTIMIZE_DESCRIPTION, OPTIMIZE_CONFIRMATION, true))).width(200).build());
       this.layout.addChild(new SpacerElement(200, 20));
       this.layout.addChild(bottomButtonRow);
       this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
@@ -152,19 +152,19 @@ public class EditWorldScreen extends Screen {
       }, Util.backgroundExecutor()).thenApplyAsync((size) -> {
          Component title = Component.translatable("selectWorld.edit.backupCreated", access.getLevelId());
          Component message = Component.translatable("selectWorld.edit.backupSize", Mth.ceil((double)size / 1048576.0));
-         minecraft.getToastManager().addToast(new SystemToast(SystemToast.SystemToastId.WORLD_BACKUP, title, message));
+         minecraft.getToastManager().addToast(SystemToast.multiline(minecraft, SystemToast.SystemToastId.WORLD_BACKUP, title, message));
          return true;
       }, minecraft).exceptionallyAsync((exception) -> {
          Component title = Component.translatable("selectWorld.edit.backupFailed");
          Component message = Component.literal(exception.getMessage());
-         minecraft.getToastManager().addToast(new SystemToast(SystemToast.SystemToastId.WORLD_BACKUP, title, message));
+         minecraft.getToastManager().addToast(SystemToast.multiline(minecraft, SystemToast.SystemToastId.WORLD_BACKUP, title, message));
          return false;
       }, minecraft);
    }
 
-   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-      super.render(graphics, mouseX, mouseY, a);
-      graphics.drawCenteredString(this.font, (Component)this.title, this.width / 2, 15, -1);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
+      graphics.centeredText(this.font, (Component)this.title, this.width / 2, 15, -1);
    }
 
    static {

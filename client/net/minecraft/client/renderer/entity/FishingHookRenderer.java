@@ -8,7 +8,7 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.state.FishingHookRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -47,7 +47,7 @@ public class FishingHookRenderer extends EntityRenderer<FishingHook, FishingHook
       float xa = (float)state.lineOriginOffset.x;
       float ya = (float)state.lineOriginOffset.y;
       float za = (float)state.lineOriginOffset.z;
-      float width = Minecraft.getInstance().getWindow().getAppropriateLineWidth();
+      float width = Minecraft.getInstance().gameRenderer.getGameRenderState().windowRenderState.appropriateLineWidth;
       submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.lines(), (pose, buffer) -> {
          int steps = 16;
 
@@ -70,8 +70,9 @@ public class FishingHookRenderer extends EntityRenderer<FishingHook, FishingHook
    private Vec3 getPlayerHandPos(final Player owner, final float swing, final float partialTicks) {
       int invert = getHoldingArm(owner) == HumanoidArm.RIGHT ? 1 : -1;
       if (this.entityRenderDispatcher.options.getCameraType().isFirstPerson() && owner == Minecraft.getInstance().player) {
-         double viewBobbingScale = 960.0 / (double)(Integer)this.entityRenderDispatcher.options.fov().get();
-         Vec3 viewVec = this.entityRenderDispatcher.camera.getNearPlane((float)(Integer)this.entityRenderDispatcher.options.fov().get()).getPointOnPlane((float)invert * 0.525F, -0.1F).scale(viewBobbingScale).yRot(swing * 0.5F).xRot(-swing * 0.7F);
+         float fov = (float)(Integer)this.entityRenderDispatcher.options.fov().get();
+         double viewBobbingScale = 960.0 / (double)fov;
+         Vec3 viewVec = this.entityRenderDispatcher.camera.getNearPlane(fov).getPointOnPlane((float)invert * 0.525F, -0.1F).scale(viewBobbingScale).yRot(swing * 0.5F).xRot(-swing * 0.7F);
          return owner.getEyePosition(partialTicks).add(viewVec);
       } else {
          float ownerYRot = Mth.lerp(partialTicks, owner.yBodyRotO, owner.yBodyRot) * 0.017453292F;

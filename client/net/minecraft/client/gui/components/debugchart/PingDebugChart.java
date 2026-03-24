@@ -2,7 +2,7 @@ package net.minecraft.client.gui.components.debugchart;
 
 import java.util.Locale;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.debugchart.SampleStorage;
 
 public class PingDebugChart extends AbstractDebugChart {
@@ -12,8 +12,8 @@ public class PingDebugChart extends AbstractDebugChart {
       super(font, sampleStorage);
    }
 
-   protected void renderAdditionalLinesAndLabels(final GuiGraphics graphics, final int left, final int width, final int bottom) {
-      this.drawStringWithShade(graphics, "500 ms", left + 1, bottom - 60 + 1);
+   protected void extractAdditionalLinesAndLabels(final GuiGraphicsExtractor graphics, final int left, final int width, final int bottom) {
+      this.extractStringWithShade(graphics, "500 ms", left + 1, bottom - 60 + 1);
    }
 
    protected String toDisplayString(final double millis) {

@@ -6,13 +6,13 @@ import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BannerPatternTags;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.Entity;
@@ -161,8 +161,8 @@ public class LoomMenu extends AbstractContainerMenu {
       if (patternStack.isEmpty()) {
          return (List)this.patternGetter.get(BannerPatternTags.NO_ITEM_REQUIRED).map(ImmutableList::copyOf).orElse(ImmutableList.of());
       } else {
-         TagKey<BannerPattern> providedPatterns = (TagKey)patternStack.get(DataComponents.PROVIDES_BANNER_PATTERNS);
-         return providedPatterns != null ? (List)this.patternGetter.get(providedPatterns).map(ImmutableList::copyOf).orElse(ImmutableList.of()) : List.of();
+         HolderSet<BannerPattern> itemPatterns = (HolderSet)patternStack.get(DataComponents.PROVIDES_BANNER_PATTERNS);
+         return itemPatterns != null ? ImmutableList.copyOf(itemPatterns) : ImmutableList.of();
       }
    }
 

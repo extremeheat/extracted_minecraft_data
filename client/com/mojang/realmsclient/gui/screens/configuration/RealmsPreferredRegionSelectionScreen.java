@@ -6,7 +6,7 @@ import com.mojang.realmsclient.dto.ServiceQuality;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.StringWidget;
@@ -126,8 +126,8 @@ public class RealmsPreferredRegionSelectionScreen extends Screen {
             return Component.translatable("narrator.select", this.name);
          }
 
-         public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
-            graphics.drawString(RealmsPreferredRegionSelectionScreen.this.font, (Component)this.name, this.getContentX() + 5, this.getContentY() + 2, -1);
+         public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+            graphics.text(RealmsPreferredRegionSelectionScreen.this.font, (Component)this.name, this.getContentX() + 5, this.getContentY() + 2, -1);
             if (this.regionSelection.region() != null && RealmsPreferredRegionSelectionScreen.this.regionServiceQuality.containsKey(this.regionSelection.region())) {
                ServiceQuality serviceQuality = (ServiceQuality)RealmsPreferredRegionSelectionScreen.this.regionServiceQuality.getOrDefault(this.regionSelection.region(), ServiceQuality.UNKNOWN);
                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)serviceQuality.getIcon(), this.getContentRight() - 18, this.getContentY() + 2, 10, 8);

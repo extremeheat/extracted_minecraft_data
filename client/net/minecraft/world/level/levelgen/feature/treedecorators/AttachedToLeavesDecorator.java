@@ -47,7 +47,7 @@ public class AttachedToLeavesDecorator extends TreeDecorator {
                propaguleBlacklist.add(inPos.immutable());
             }
 
-            context.setBlock(placementPos, this.blockProvider.getState(random, placementPos));
+            context.setBlock(placementPos, this.blockProvider.getState(context.level(), random, placementPos));
          }
       }
 

@@ -24,6 +24,7 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.ClientClockManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockTintCache;
+import net.minecraft.client.color.block.BlockTintSource;
 import net.minecraft.client.gui.screens.WinScreen;
 import net.minecraft.client.multiplayer.prediction.BlockStatePredictionHandler;
 import net.minecraft.client.particle.FireworkParticles;
@@ -186,12 +187,12 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
 
    }
 
-   public void syncBlockState(final BlockPos pos, final BlockState state, final Vec3 playerPos) {
+   public void syncBlockState(final BlockPos pos, final BlockState state, final @Nullable Vec3 playerPos) {
       BlockState oldState = this.getBlockState(pos);
       if (oldState != state) {
          this.setBlock(pos, state, 19);
          Player player = this.minecraft.player;
-         if (this == player.level() && player.isColliding(pos, state)) {
+         if (playerPos != null && this == player.level() && player.isColliding(pos, state)) {
             player.absSnapTo(playerPos.x, playerPos.y, playerPos.z);
          }
       }
@@ -350,6 +351,15 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
       } else {
          entity.stopRiding();
       }
+   }
+
+   public void update() {
+      ProfilerFiller profiler = Profiler.get();
+      profiler.push("populateLightUpdates");
+      this.pollLightUpdates();
+      profiler.popPush("runLightUpdates");
+      this.getChunkSource().getLightEngine().runLightUpdates();
+      profiler.pop();
    }
 
    public void unload(final LevelChunk levelChunk) {
@@ -880,7 +890,9 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
    }
 
    public int getClientLeafTintColor(final BlockPos pos) {
-      return Minecraft.getInstance().getBlockColors().getColor(this.getBlockState(pos), this, pos, 0);
+      BlockState state = this.getBlockState(pos);
+      BlockTintSource tintSource = Minecraft.getInstance().getBlockColors().getTintSource(state, 0);
+      return tintSource != null ? tintSource.colorInWorld(state, this, pos) : -1;
    }
 
    public void registerForCleaning(final CacheSlot<ClientLevel, ?> slot) {

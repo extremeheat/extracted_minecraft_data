@@ -8,6 +8,8 @@ import net.minecraft.client.ComponentCollector;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.locale.Language;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
@@ -35,6 +37,11 @@ public class ComponentRenderUtils {
          result.add(wrapped ? FormattedCharSequence.composite(INDENT, reorderedText) : reorderedText);
       });
       return (List<FormattedCharSequence>)(result.isEmpty() ? Lists.newArrayList(new FormattedCharSequence[]{FormattedCharSequence.EMPTY}) : result);
+   }
+
+   public static FormattedCharSequence clipText(final Component text, final Font font, final int width) {
+      FormattedText clippedText = font.substrByWidth(text, width - font.width((FormattedText)CommonComponents.ELLIPSIS));
+      return Language.getInstance().getVisualOrder(FormattedText.composite(clippedText, CommonComponents.ELLIPSIS));
    }
 
    static {

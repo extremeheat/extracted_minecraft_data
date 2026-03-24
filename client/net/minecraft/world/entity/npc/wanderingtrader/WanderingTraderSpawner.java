@@ -18,7 +18,6 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.CustomSpawner;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.gamerules.GameRules;
-import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.saveddata.WanderingTraderData;
 import net.minecraft.world.level.storage.SavedDataStorage;
 import org.jspecify.annotations.Nullable;
@@ -126,7 +125,7 @@ public class WanderingTraderSpawner implements CustomSpawner {
       for(int i = 0; i < 10; ++i) {
          int xPosition = referencePosition.getX() + this.random.nextInt(radius * 2) - radius;
          int zPosition = referencePosition.getZ() + this.random.nextInt(radius * 2) - radius;
-         int yPosition = level.getHeight(Heightmap.Types.WORLD_SURFACE, xPosition, zPosition);
+         int yPosition = level.getHeight(SpawnPlacements.getHeightmapType(EntityType.WANDERING_TRADER), xPosition, zPosition);
          BlockPos spawnPos = new BlockPos(xPosition, yPosition, zPosition);
          if (wanderingTraderSpawnType.isSpawnPositionOk(level, spawnPos, EntityType.WANDERING_TRADER)) {
             spawnPosition = spawnPos;

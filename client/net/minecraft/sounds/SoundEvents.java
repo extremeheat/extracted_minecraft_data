@@ -1247,6 +1247,7 @@ public class SoundEvents {
    public static final Holder.Reference<SoundEvent> PIG_STEP = registerForHolder("entity.pig.step");
    public static final Holder.Reference<SoundEvent> PIG_STEP_BABY = registerForHolder("entity.baby_pig.step");
    public static final Holder.Reference<SoundEvent> PIG_AMBIENT_BABY = registerForHolder("entity.baby_pig.ambient");
+   public static final Holder.Reference<SoundEvent> PIG_EAT_BABY = registerForHolder("entity.baby_pig.eat");
    public static final Holder.Reference<SoundEvent> PIG_HURT_BABY = registerForHolder("entity.baby_pig.hurt");
    public static final Holder.Reference<SoundEvent> PIG_DEATH_BABY = registerForHolder("entity.baby_pig.death");
    public static final Map<PigSoundVariants.SoundSet, PigSoundVariant> PIG_SOUNDS = registerPigSoundVariants();
@@ -1900,8 +1901,8 @@ public class SoundEvents {
    private static Map<PigSoundVariants.SoundSet, PigSoundVariant> registerPigSoundVariants() {
       return (Map)Stream.of(PigSoundVariants.SoundSet.values()).collect(Collectors.toMap((soundSet) -> soundSet, (soundSet) -> {
          String soundEventIdentifier = soundSet.getSoundEventIdentifier();
-         PigSoundVariant.PigSoundSet adultSoundSet = new PigSoundVariant.PigSoundSet(registerForHolder("entity." + soundEventIdentifier + ".ambient"), registerForHolder("entity." + soundEventIdentifier + ".hurt"), registerForHolder("entity." + soundEventIdentifier + ".death"), PIG_STEP);
-         PigSoundVariant.PigSoundSet babySoundSet = new PigSoundVariant.PigSoundSet(PIG_AMBIENT_BABY, PIG_HURT_BABY, PIG_DEATH_BABY, PIG_STEP_BABY);
+         PigSoundVariant.PigSoundSet adultSoundSet = new PigSoundVariant.PigSoundSet(registerForHolder("entity." + soundEventIdentifier + ".ambient"), registerForHolder("entity." + soundEventIdentifier + ".hurt"), registerForHolder("entity." + soundEventIdentifier + ".death"), PIG_STEP, registerForHolder("entity." + soundEventIdentifier + ".eat"));
+         PigSoundVariant.PigSoundSet babySoundSet = new PigSoundVariant.PigSoundSet(PIG_AMBIENT_BABY, PIG_HURT_BABY, PIG_DEATH_BABY, PIG_STEP_BABY, PIG_EAT_BABY);
          return new PigSoundVariant(adultSoundSet, babySoundSet);
       }));
    }

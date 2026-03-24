@@ -33,15 +33,17 @@ public class RegistryComponentsReport implements DataProvider {
          BuiltInRegistries.DATA_COMPONENT_INITIALIZERS.build(registries).forEach((pendingComponents) -> {
             PackOutput.PathProvider registryPathProvider = this.output.createRegistryComponentPathProvider(pendingComponents.key());
             pendingComponents.forEach((element, components) -> {
-               Identifier elementId = element.key().identifier();
-               Path elementPath = registryPathProvider.json(elementId);
-               DataComponentPatch patch = DataComponentPatch.builder().set(components).build();
-               JsonObject root = new JsonObject();
-               root.add("components", (JsonElement)DataComponentPatch.CODEC.encodeStart(registryOps, patch).getOrThrow((err) -> {
-                  String var10002 = String.valueOf(elementId);
-                  return new IllegalStateException("Failed to encode components for item " + var10002 + ": " + err);
-               }));
-               writes.add(DataProvider.saveStable(cache, root, elementPath));
+               if (!components.isEmpty()) {
+                  Identifier elementId = element.key().identifier();
+                  Path elementPath = registryPathProvider.json(elementId);
+                  DataComponentPatch patch = DataComponentPatch.builder().set(components).build();
+                  JsonObject root = new JsonObject();
+                  root.add("components", (JsonElement)DataComponentPatch.CODEC.encodeStart(registryOps, patch).getOrThrow((err) -> {
+                     String var10002 = String.valueOf(elementId);
+                     return new IllegalStateException("Failed to encode components for item " + var10002 + ": " + err);
+                  }));
+                  writes.add(DataProvider.saveStable(cache, root, elementPath));
+               }
             });
          });
          return CompletableFuture.allOf((CompletableFuture[])writes.toArray((x$0) -> new CompletableFuture[x$0]));

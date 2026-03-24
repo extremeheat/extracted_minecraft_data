@@ -34,6 +34,9 @@ public class BabyGoatModel extends GoatModel {
 
    public void setupAnim(final GoatRenderState state) {
       super.setupAnim(state);
-      this.head.xRot = 0.3926991F;
+      if (state.rammingXHeadRot == 0.0F) {
+         this.head.xRot = 0.3926991F;
+      }
+
    }
 }

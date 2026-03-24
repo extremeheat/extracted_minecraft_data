@@ -92,10 +92,6 @@ public class RealmsSelectFileToUploadScreen extends RealmsScreen {
       this.minecraft.setScreen(new RealmsUploadScreen(this.realmCreationTask, this.realmId, this.slotId, this.lastScreen, worldListEntry.getLevelSummary()));
    }
 
-   public Component getNarrationMessage() {
-      return CommonComponents.joinForNarration(this.getTitle(), this.createLabelNarration());
-   }
-
    public void onClose() {
       this.minecraft.setScreen(this.lastScreen);
    }

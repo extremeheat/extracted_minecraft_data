@@ -1,6 +1,7 @@
 package net.minecraft.client.particle;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.color.block.BlockTintSource;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
@@ -20,14 +21,15 @@ public class TerrainParticle extends SingleQuadParticle {
    }
 
    public TerrainParticle(final ClientLevel level, final double x, final double y, final double z, final double xa, final double ya, final double za, final BlockState blockState, final BlockPos pos) {
-      super(level, x, y, z, xa, ya, za, Minecraft.getInstance().getModelManager().getBlockModelSet().getParticleMaterial(blockState).sprite());
+      super(level, x, y, z, xa, ya, za, Minecraft.getInstance().getModelManager().getBlockStateModelSet().getParticleMaterial(blockState).sprite());
       this.pos = pos;
       this.gravity = 1.0F;
       this.rCol = 0.6F;
       this.gCol = 0.6F;
       this.bCol = 0.6F;
-      if (!blockState.is(Blocks.GRASS_BLOCK)) {
-         int col = Minecraft.getInstance().getBlockColors().getColor(blockState, level, pos, 0);
+      BlockTintSource tintSource = Minecraft.getInstance().getBlockColors().getTintSource(blockState, 0);
+      if (tintSource != null) {
+         int col = tintSource.colorAsTerrainParticle(blockState, level, pos);
          this.rCol *= (float)(col >> 16 & 255) / 255.0F;
          this.gCol *= (float)(col >> 8 & 255) / 255.0F;
          this.bCol *= (float)(col & 255) / 255.0F;

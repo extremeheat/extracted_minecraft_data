@@ -118,7 +118,7 @@ public class SkeletonHorse extends AbstractHorse {
 
    public void aiStep() {
       super.aiStep();
-      if (this.isTrap() && this.trapTime++ >= 18000) {
+      if (!this.isPersistenceRequired() && this.isTrap() && this.trapTime++ >= 18000) {
          this.discard();
       }
 

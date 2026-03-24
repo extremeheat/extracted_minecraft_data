@@ -1,6 +1,6 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.state.MapRenderState;
 import net.minecraft.core.component.DataComponents;
@@ -29,7 +29,8 @@ public class CartographyTableScreen extends AbstractContainerScreen<CartographyT
       this.titleLabelY -= 2;
    }
 
-   protected void renderBg(final GuiGraphics graphics, final float a, final int xm, final int ym) {
+   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractBackground(graphics, mouseX, mouseY, a);
       int xo = this.leftPos;
       int yo = this.topPos;
       graphics.blit(RenderPipelines.GUI_TEXTURED, BG_LOCATION, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
@@ -60,39 +61,39 @@ public class CartographyTableScreen extends AbstractContainerScreen<CartographyT
          mapData = null;
       }
 
-      this.renderResultingMap(graphics, mapId, mapData, isDuplication, isScaling, isLocking, locked);
+      this.extractResultingMap(graphics, mapId, mapData, isDuplication, isScaling, isLocking, locked);
    }
 
-   private void renderResultingMap(final GuiGraphics graphics, final @Nullable MapId id, final @Nullable MapItemSavedData data, final boolean isDuplication, final boolean isScaling, final boolean isLocking, final boolean locked) {
+   private void extractResultingMap(final GuiGraphicsExtractor graphics, final @Nullable MapId id, final @Nullable MapItemSavedData data, final boolean isDuplication, final boolean isScaling, final boolean isLocking, final boolean locked) {
       int xo = this.leftPos;
       int yo = this.topPos;
       if (isScaling && !locked) {
          graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SCALED_MAP_SPRITE, xo + 67, yo + 13, 66, 66);
-         this.renderMap(graphics, id, data, xo + 85, yo + 31, 0.226F);
+         this.extractMap(graphics, id, data, xo + 85, yo + 31, 0.226F);
       } else if (isDuplication) {
          graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)DUPLICATED_MAP_SPRITE, xo + 67 + 16, yo + 13, 50, 66);
-         this.renderMap(graphics, id, data, xo + 86, yo + 16, 0.34F);
+         this.extractMap(graphics, id, data, xo + 86, yo + 16, 0.34F);
          graphics.nextStratum();
          graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)DUPLICATED_MAP_SPRITE, xo + 67, yo + 13 + 16, 50, 66);
-         this.renderMap(graphics, id, data, xo + 70, yo + 32, 0.34F);
+         this.extractMap(graphics, id, data, xo + 70, yo + 32, 0.34F);
       } else if (isLocking) {
          graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)MAP_SPRITE, xo + 67, yo + 13, 66, 66);
-         this.renderMap(graphics, id, data, xo + 71, yo + 17, 0.45F);
+         this.extractMap(graphics, id, data, xo + 71, yo + 17, 0.45F);
          graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)LOCKED_SPRITE, xo + 118, yo + 60, 10, 14);
       } else {
          graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)MAP_SPRITE, xo + 67, yo + 13, 66, 66);
-         this.renderMap(graphics, id, data, xo + 71, yo + 17, 0.45F);
+         this.extractMap(graphics, id, data, xo + 71, yo + 17, 0.45F);
       }
 
    }
 
-   private void renderMap(final GuiGraphics graphics, final @Nullable MapId id, final @Nullable MapItemSavedData data, final int x, final int y, final float scale) {
+   private void extractMap(final GuiGraphicsExtractor graphics, final @Nullable MapId id, final @Nullable MapItemSavedData data, final int x, final int y, final float scale) {
       if (id != null && data != null) {
          graphics.pose().pushMatrix();
          graphics.pose().translate((float)x, (float)y);
          graphics.pose().scale(scale, scale);
          this.minecraft.getMapRenderer().extractRenderState(id, data, this.mapRenderState);
-         graphics.submitMapRenderState(this.mapRenderState);
+         graphics.map(this.mapRenderState);
          graphics.pose().popMatrix();
       }
 

@@ -18,7 +18,7 @@ public class RandomBooleanFeatureConfiguration implements FeatureConfiguration {
       this.featureFalse = featureFalse;
    }
 
-   public Stream<ConfiguredFeature<?, ?>> getFeatures() {
+   public Stream<Holder<ConfiguredFeature<?, ?>>> getSubFeatures() {
       return Stream.concat((this.featureTrue.value()).getFeatures(), (this.featureFalse.value()).getFeatures());
    }
 }

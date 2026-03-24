@@ -6,7 +6,7 @@ import java.util.function.Consumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.ComponentPath;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.LayoutElement;
 import net.minecraft.client.gui.narration.NarratableEntry;
@@ -53,15 +53,15 @@ public abstract class AbstractWidget implements LayoutElement, Renderable, GuiEv
       return this.height;
    }
 
-   public final void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+   public final void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       if (this.visible) {
          this.isHovered = graphics.containsPointInScissor(mouseX, mouseY) && this.areCoordinatesInRectangle((double)mouseX, (double)mouseY);
-         this.renderWidget(graphics, mouseX, mouseY, a);
+         this.extractWidgetRenderState(graphics, mouseX, mouseY, a);
          this.tooltip.refreshTooltipForNextRenderPass(graphics, mouseX, mouseY, this.isHovered(), this.isFocused(), this.getRectangle());
       }
    }
 
-   protected void handleCursor(final GuiGraphics graphics) {
+   protected void handleCursor(final GuiGraphicsExtractor graphics) {
       if (this.isHovered()) {
          graphics.requestCursor(this.isActive() ? CursorTypes.POINTING_HAND : CursorTypes.NOT_ALLOWED);
       }
@@ -84,9 +84,9 @@ public abstract class AbstractWidget implements LayoutElement, Renderable, GuiEv
       return Component.translatable("gui.narrate.button", message);
    }
 
-   protected abstract void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float a);
+   protected abstract void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a);
 
-   protected void renderScrollingStringOverContents(final ActiveTextCollector output, final Component message, final int margin) {
+   protected void extractScrollingStringOverContents(final ActiveTextCollector output, final Component message, final int margin) {
       int left = this.getX() + margin;
       int right = this.getX() + this.getWidth() - margin;
       int top = this.getY();

@@ -16,7 +16,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.HotbarManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
@@ -443,9 +443,9 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
       var10000.forEach(var10001::add);
    }
 
-   protected void renderLabels(final GuiGraphics graphics, final int xm, final int ym) {
+   protected void extractLabels(final GuiGraphicsExtractor graphics, final int xm, final int ym) {
       if (selectedTab.showTitle()) {
-         graphics.drawString(this.font, (Component)selectedTab.getDisplayName(), 8, 6, -12566464, false);
+         graphics.text(this.font, (Component)selectedTab.getDisplayName(), 8, 6, -12566464, false);
       }
 
    }
@@ -615,7 +615,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
       int yscr = yo + 18;
       int xscr2 = xscr + 14;
       int yscr2 = yscr + 112;
-      return xm >= (double)xscr && ym >= (double)yscr && xm < (double)xscr2 && ym < (double)yscr2;
+      return xm >= (double)xscr && ym >= (double)yscr && xm < (double)xscr2 && ym < (double)yscr2 && selectedTab.canScroll();
    }
 
    public boolean mouseDragged(final MouseButtonEvent event, final double dx, final double dy) {
@@ -631,9 +631,9 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
       }
    }
 
-   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-      this.effects.render(graphics, mouseX, mouseY);
-      super.render(graphics, mouseX, mouseY, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      this.effects.extractRenderState(graphics, mouseX, mouseY);
+      super.extractRenderState(graphics, mouseX, mouseY, a);
 
       for(CreativeModeTab tab : CreativeModeTabs.tabs()) {
          if (this.checkTabHovering(graphics, tab, mouseX, mouseY)) {
@@ -685,19 +685,25 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
       }
    }
 
-   protected void renderBg(final GuiGraphics graphics, final float a, final int xm, final int ym) {
+   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractBackground(graphics, mouseX, mouseY, a);
+
       for(CreativeModeTab tab : CreativeModeTabs.tabs()) {
          if (tab != selectedTab) {
-            this.renderTabButton(graphics, xm, ym, tab);
+            this.extractTabButton(graphics, mouseX, mouseY, tab);
          }
       }
 
       graphics.blit(RenderPipelines.GUI_TEXTURED, selectedTab.getBackgroundTexture(), this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
-      if (this.insideScrollbar((double)xm, (double)ym) && this.canScroll()) {
-         graphics.requestCursor(this.scrolling ? CursorTypes.RESIZE_NS : CursorTypes.POINTING_HAND);
+      if (this.insideScrollbar((double)mouseX, (double)mouseY)) {
+         if (this.canScroll()) {
+            graphics.requestCursor(this.scrolling ? CursorTypes.RESIZE_NS : CursorTypes.POINTING_HAND);
+         } else {
+            graphics.requestCursor(CursorTypes.NOT_ALLOWED);
+         }
       }
 
-      this.searchBox.render(graphics, xm, ym, a);
+      this.searchBox.extractRenderState(graphics, mouseX, mouseY, a);
       int xscr = this.leftPos + 175;
       int yscr = this.topPos + 18;
       int yscr2 = yscr + 112;
@@ -706,9 +712,9 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
          graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)sprite, xscr, yscr + (int)((float)(yscr2 - yscr - 17) * this.scrollOffs), 12, 15);
       }
 
-      this.renderTabButton(graphics, xm, ym, selectedTab);
+      this.extractTabButton(graphics, mouseX, mouseY, selectedTab);
       if (selectedTab.getType() == CreativeModeTab.Type.INVENTORY) {
-         InventoryScreen.renderEntityInInventoryFollowsMouse(graphics, this.leftPos + 73, this.topPos + 6, this.leftPos + 105, this.topPos + 49, 20, 0.0625F, (float)xm, (float)ym, this.minecraft.player);
+         InventoryScreen.extractEntityInInventoryFollowsMouse(graphics, this.leftPos + 73, this.topPos + 6, this.leftPos + 105, this.topPos + 49, 20, 0.0625F, (float)mouseX, (float)mouseY, this.minecraft.player);
       }
 
    }
@@ -741,7 +747,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
       return xm >= (double)x && xm <= (double)(x + 26) && ym >= (double)y && ym <= (double)(y + 32);
    }
 
-   protected boolean checkTabHovering(final GuiGraphics graphics, final CreativeModeTab tab, final int xm, final int ym) {
+   protected boolean checkTabHovering(final GuiGraphicsExtractor graphics, final CreativeModeTab tab, final int xm, final int ym) {
       int x = this.getTabX(tab);
       int y = this.getTabY(tab);
       if (this.isHovering(x + 3, y + 3, 21, 27, (double)xm, (double)ym)) {
@@ -752,7 +758,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
       }
    }
 
-   protected void renderTabButton(final GuiGraphics graphics, final int mouseX, final int mouseY, final CreativeModeTab tab) {
+   protected void extractTabButton(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final CreativeModeTab tab) {
       boolean selected = tab == selectedTab;
       boolean isTop = tab.row() == CreativeModeTab.Row.TOP;
       int pos = tab.column();
@@ -772,7 +778,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)sprites[Mth.clamp(pos, 0, sprites.length)], x, y, 26, 32);
       int iconX = x + 13 - 8;
       int iconY = y + 16 - 8 + (isTop ? 1 : -1);
-      graphics.renderItem(tab.getIconItem(), iconX, iconY);
+      graphics.item(tab.getIconItem(), iconX, iconY);
    }
 
    public boolean isInventoryOpen() {

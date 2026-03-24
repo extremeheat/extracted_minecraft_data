@@ -8,7 +8,6 @@ import java.util.Locale;
 import java.util.OptionalLong;
 import java.util.Set;
 import net.minecraft.SharedConstants;
-import net.minecraft.client.sounds.DeviceTracker;
 import net.minecraft.util.Mth;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.openal.AL;

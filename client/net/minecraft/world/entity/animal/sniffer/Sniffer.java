@@ -66,7 +66,7 @@ public class Sniffer extends Animal {
    private static final int DIGGING_PARTICLES_DURATION_TICKS = 6000;
    private static final int DIGGING_PARTICLES_AMOUNT = 30;
    private static final int DIGGING_DROP_SEED_OFFSET_TICKS = 120;
-   private static final int SNIFFER_BABY_AGE_TICKS = 48000;
+   private static final int SNIFFER_BABY_START_AGE = -48000;
    private static final float DIGGING_BB_HEIGHT_OFFSET = 0.4F;
    private static final EntityDimensions DIGGING_DIMENSIONS;
    private static final EntityDataAccessor<State> DATA_STATE;
@@ -105,6 +105,10 @@ public class Sniffer extends Animal {
 
    public void onPathfindingDone() {
       this.setPathfindingMalus(PathType.WATER, -1.0F);
+   }
+
+   public int getBabyStartAge() {
+      return -48000;
    }
 
    public EntityDimensions getDefaultDimensions(final Pose pose) {
@@ -378,10 +382,6 @@ public class Sniffer extends Animal {
 
    public int getMaxHeadYRot() {
       return 50;
-   }
-
-   public void setBaby(final boolean baby) {
-      this.setAge(baby ? -48000 : 0);
    }
 
    public AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {

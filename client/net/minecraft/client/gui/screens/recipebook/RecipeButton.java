@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -82,7 +82,7 @@ public class RecipeButton extends AbstractWidget {
       return this.collection;
    }
 
-   public void renderWidget(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       Identifier sprite;
       if (this.collection.hasCraftable()) {
          if (this.hasMultipleRecipes()) {
@@ -110,11 +110,11 @@ public class RecipeButton extends AbstractWidget {
       ItemStack currentItemStack = this.getDisplayStack();
       int offset = 4;
       if (this.hasMultipleRecipes() && this.allRecipesHaveSameResultDisplay) {
-         graphics.renderItem(currentItemStack, this.getX() + offset + 1, this.getY() + offset + 1, 0);
+         graphics.item(currentItemStack, this.getX() + offset + 1, this.getY() + offset + 1, 0);
          --offset;
       }
 
-      graphics.renderFakeItem(currentItemStack, this.getX() + offset, this.getY() + offset);
+      graphics.fakeItem(currentItemStack, this.getX() + offset, this.getY() + offset);
       if (shouldAnimate) {
          graphics.pose().popMatrix();
       }

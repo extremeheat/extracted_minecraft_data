@@ -5,7 +5,7 @@ import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
@@ -68,10 +68,10 @@ public class GameModeSwitcherScreen extends Screen {
 
    }
 
-   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-      graphics.drawCenteredString(this.font, (Component)this.currentlyHovered.name, this.width / 2, this.height / 2 - 31 - 20, -1);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      graphics.centeredText(this.font, (Component)this.currentlyHovered.name, this.width / 2, this.height / 2 - 31 - 20, -1);
       MutableComponent selectKey = Component.translatable("debug.gamemodes.select_next", this.minecraft.options.keyDebugSwitchGameMode.getTranslatedKeyMessage().copy().withStyle(ChatFormatting.AQUA));
-      graphics.drawCenteredString(this.font, (Component)selectKey, this.width / 2, this.height / 2 + 5, -1);
+      graphics.centeredText(this.font, (Component)selectKey, this.width / 2, this.height / 2 + 5, -1);
       if (!this.setFirstMousePos) {
          this.firstMouseX = mouseX;
          this.firstMouseY = mouseY;
@@ -81,7 +81,7 @@ public class GameModeSwitcherScreen extends Screen {
       boolean sameAsFirstMousePos = this.firstMouseX == mouseX && this.firstMouseY == mouseY;
 
       for(GameModeSlot slot : this.slots) {
-         slot.render(graphics, mouseX, mouseY, a);
+         slot.extractRenderState(graphics, mouseX, mouseY, a);
          slot.setSelected(this.currentlyHovered == slot.icon);
          if (!sameAsFirstMousePos && slot.isHoveredOrFocused()) {
             this.currentlyHovered = slot.icon;
@@ -90,7 +90,7 @@ public class GameModeSwitcherScreen extends Screen {
 
    }
 
-   public void renderBackground(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       int xo = this.width / 2 - 62;
       int yo = this.height / 2 - 31 - 27;
       graphics.blit(RenderPipelines.GUI_TEXTURED, GAMEMODE_SWITCHER_LOCATION, xo, yo, 0.0F, 0.0F, 125, 75, 128, 128);
@@ -163,8 +163,8 @@ public class GameModeSwitcherScreen extends Screen {
          this.renderStack = renderStack;
       }
 
-      private void drawIcon(final GuiGraphics graphics, final int x, final int y) {
-         graphics.renderItem(this.renderStack, x, y);
+      private void extractIcon(final GuiGraphicsExtractor graphics, final int x, final int y) {
+         graphics.item(this.renderStack, x, y);
       }
 
       private GameModeIcon getNext() {
@@ -208,13 +208,13 @@ public class GameModeSwitcherScreen extends Screen {
          this.icon = icon;
       }
 
-      public void renderWidget(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-         this.drawSlot(graphics);
+      public void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+         this.extractSlot(graphics);
          if (this.isSelected) {
-            this.drawSelection(graphics);
+            this.extractSelection(graphics);
          }
 
-         this.icon.drawIcon(graphics, this.getX() + 5, this.getY() + 5);
+         this.icon.extractIcon(graphics, this.getX() + 5, this.getY() + 5);
       }
 
       public void updateWidgetNarration(final NarrationElementOutput output) {
@@ -229,11 +229,11 @@ public class GameModeSwitcherScreen extends Screen {
          this.isSelected = isSelected;
       }
 
-      private void drawSlot(final GuiGraphics graphics) {
+      private void extractSlot(final GuiGraphicsExtractor graphics) {
          graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)GameModeSwitcherScreen.SLOT_SPRITE, this.getX(), this.getY(), 26, 26);
       }
 
-      private void drawSelection(final GuiGraphics graphics) {
+      private void extractSelection(final GuiGraphicsExtractor graphics) {
          graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)GameModeSwitcherScreen.SELECTION_SPRITE, this.getX(), this.getY(), 26, 26);
       }
    }

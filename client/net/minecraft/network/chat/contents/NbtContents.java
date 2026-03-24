@@ -20,12 +20,11 @@ import net.minecraft.network.chat.ComponentContents;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.ResolutionContext;
 import net.minecraft.network.chat.contents.data.DataSource;
 import net.minecraft.network.chat.contents.data.DataSources;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.util.CompilableString;
-import net.minecraft.world.entity.Entity;
-import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public record NbtContents(CompilableString<NbtPathArgument.NbtPath> nbtPath, boolean interpreting, boolean plain, Optional<Component> separator, DataSource dataSource) implements ComponentContents {
@@ -45,7 +44,8 @@ public record NbtContents(CompilableString<NbtPathArgument.NbtPath> nbtPath, boo
       super();
    }
 
-   public MutableComponent resolve(final @Nullable CommandSourceStack source, final @Nullable Entity entity, final int recursionDepth) throws CommandSyntaxException {
+   public MutableComponent resolve(final ResolutionContext context, final int recursionDepth) throws CommandSyntaxException {
+      CommandSourceStack source = context.source();
       if (source == null) {
          return Component.empty();
       } else {
@@ -56,13 +56,13 @@ public record NbtContents(CompilableString<NbtPathArgument.NbtPath> nbtPath, boo
                return Stream.empty();
             }
          });
-         Component resolvedSeparator = (Component)DataFixUtils.orElse(ComponentUtils.updateForEntity(source, this.separator, entity, recursionDepth), ComponentUtils.DEFAULT_NO_STYLE_SEPARATOR);
+         Component resolvedSeparator = (Component)DataFixUtils.orElse(ComponentUtils.resolve(context, this.separator, recursionDepth), ComponentUtils.DEFAULT_NO_STYLE_SEPARATOR);
          if (this.interpreting) {
             RegistryOps<Tag> registryOps = source.registryAccess().createSerializationContext(NbtOps.INSTANCE);
             return (MutableComponent)elements.flatMap((tag) -> {
                try {
                   Component component = (Component)ComponentSerialization.CODEC.parse(registryOps, tag).getOrThrow();
-                  return Stream.of(ComponentUtils.updateForEntity(source, component, entity, recursionDepth));
+                  return Stream.of(ComponentUtils.resolve(context, component, recursionDepth));
                } catch (Exception e) {
                   LOGGER.warn("Failed to parse component: {}", tag, e);
                   return Stream.of();

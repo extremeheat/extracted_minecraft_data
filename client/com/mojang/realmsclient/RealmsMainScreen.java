@@ -40,7 +40,7 @@ import java.util.function.Supplier;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -51,7 +51,7 @@ import net.minecraft.client.gui.components.ImageWidget;
 import net.minecraft.client.gui.components.LoadingDotsWidget;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.components.ObjectSelectionList;
-import net.minecraft.client.gui.components.PlayerFaceRenderer;
+import net.minecraft.client.gui.components.PlayerFaceExtractor;
 import net.minecraft.client.gui.components.PopupScreen;
 import net.minecraft.client.gui.components.SpriteIconButton;
 import net.minecraft.client.gui.components.Tooltip;
@@ -558,19 +558,19 @@ public class RealmsMainScreen extends RealmsScreen {
       return (Component)var10000;
    }
 
-   public void render(final GuiGraphics graphics, final int xm, final int ym, final float a) {
-      super.render(graphics, xm, ym, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int xm, final int ym, final float a) {
+      super.extractRenderState(graphics, xm, ym, a);
       if (isSnapshot()) {
-         graphics.drawString(this.font, (String)("Minecraft " + SharedConstants.getCurrentVersion().name()), 2, this.height - 10, -1);
+         graphics.text(this.font, (String)("Minecraft " + SharedConstants.getCurrentVersion().name()), 2, this.height - 10, -1);
       }
 
       if (this.trialsAvailable && this.addRealmButton.active) {
-         AddRealmPopupScreen.renderDiamond(graphics, this.addRealmButton);
+         AddRealmPopupScreen.extractDiamond(graphics, this.addRealmButton);
       }
 
       switch (RealmsClient.ENVIRONMENT) {
-         case STAGE -> this.renderEnvironment(graphics, "STAGE!", -256);
-         case LOCAL -> this.renderEnvironment(graphics, "LOCAL!", -8388737);
+         case STAGE -> this.extractEnvironment(graphics, "STAGE!", -256);
+         case LOCAL -> this.extractEnvironment(graphics, "LOCAL!", -8388737);
       }
 
    }
@@ -638,12 +638,12 @@ public class RealmsMainScreen extends RealmsScreen {
       return isSelfOwnedServer(serverData) && !serverData.expired;
    }
 
-   private void renderEnvironment(final GuiGraphics graphics, final String text, final int color) {
+   private void extractEnvironment(final GuiGraphicsExtractor graphics, final String text, final int color) {
       graphics.pose().pushMatrix();
       graphics.pose().translate((float)(this.width / 2 - 25), 20.0F);
       graphics.pose().rotate(-0.34906584F);
       graphics.pose().scale(1.5F, 1.5F);
-      graphics.drawString(this.font, (String)text, 0, 0, color);
+      graphics.text(this.font, (String)text, 0, 0, color);
       graphics.pose().popMatrix();
    }
 
@@ -740,15 +740,15 @@ public class RealmsMainScreen extends RealmsScreen {
          super();
       }
 
-      protected void renderStatusLights(final RealmsServer serverData, final GuiGraphics graphics, final int rowRight, final int rowTop, final int mouseX, final int mouseY) {
+      protected void extractStatusLights(final RealmsServer serverData, final GuiGraphicsExtractor graphics, final int rowRight, final int rowTop, final int mouseX, final int mouseY) {
          int x = rowRight - 10 - 7;
          int y = rowTop + 2;
          if (serverData.expired) {
-            this.drawRealmStatus(graphics, x, y, mouseX, mouseY, RealmsMainScreen.EXPIRED_SPRITE, () -> RealmsMainScreen.SERVER_EXPIRED_TOOLTIP);
+            this.extractRealmStatus(graphics, x, y, mouseX, mouseY, RealmsMainScreen.EXPIRED_SPRITE, () -> RealmsMainScreen.SERVER_EXPIRED_TOOLTIP);
          } else if (serverData.state == RealmsServer.State.CLOSED) {
-            this.drawRealmStatus(graphics, x, y, mouseX, mouseY, RealmsMainScreen.CLOSED_SPRITE, () -> RealmsMainScreen.SERVER_CLOSED_TOOLTIP);
+            this.extractRealmStatus(graphics, x, y, mouseX, mouseY, RealmsMainScreen.CLOSED_SPRITE, () -> RealmsMainScreen.SERVER_CLOSED_TOOLTIP);
          } else if (RealmsMainScreen.isSelfOwnedServer(serverData) && serverData.daysLeft < 7) {
-            this.drawRealmStatus(graphics, x, y, mouseX, mouseY, RealmsMainScreen.EXPIRES_SOON_SPRITE, () -> {
+            this.extractRealmStatus(graphics, x, y, mouseX, mouseY, RealmsMainScreen.EXPIRES_SOON_SPRITE, () -> {
                if (serverData.daysLeft <= 0) {
                   return RealmsMainScreen.SERVER_EXPIRES_SOON_TOOLTIP;
                } else {
@@ -756,12 +756,12 @@ public class RealmsMainScreen extends RealmsScreen {
                }
             });
          } else if (serverData.state == RealmsServer.State.OPEN) {
-            this.drawRealmStatus(graphics, x, y, mouseX, mouseY, RealmsMainScreen.OPEN_SPRITE, () -> RealmsMainScreen.SERVER_OPEN_TOOLTIP);
+            this.extractRealmStatus(graphics, x, y, mouseX, mouseY, RealmsMainScreen.OPEN_SPRITE, () -> RealmsMainScreen.SERVER_OPEN_TOOLTIP);
          }
 
       }
 
-      private void drawRealmStatus(final GuiGraphics graphics, final int x, final int y, final int xm, final int ym, final Identifier sprite, final Supplier<Component> tooltip) {
+      private void extractRealmStatus(final GuiGraphicsExtractor graphics, final int x, final int y, final int xm, final int ym, final Identifier sprite, final Supplier<Component> tooltip) {
          graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)sprite, x, y, 10, 28);
          if (RealmsMainScreen.this.realmSelectionList.isMouseOver((double)xm, (double)ym) && xm >= x && xm <= x + 10 && ym >= y && ym <= y + 28) {
             graphics.setTooltipForNextFrame((Component)tooltip.get(), xm, ym);
@@ -769,19 +769,19 @@ public class RealmsMainScreen extends RealmsScreen {
 
       }
 
-      protected void renderFirstLine(final GuiGraphics graphics, final int rowTop, final int rowLeft, final int rowWidth, final int serverNameColor, final RealmsServer serverData) {
+      protected void extractFirstLine(final GuiGraphicsExtractor graphics, final int rowTop, final int rowLeft, final int rowWidth, final int serverNameColor, final RealmsServer serverData) {
          int textX = this.textX(rowLeft);
          int firstLineY = this.firstLineY(rowTop);
          Component versionComponent = RealmsMainScreen.getVersionComponent(serverData.activeVersion, serverData.isCompatible());
          int versionTextX = this.versionTextX(rowLeft, rowWidth, versionComponent);
-         this.renderClampedString(graphics, serverData.getName(), textX, firstLineY, versionTextX, serverNameColor);
+         this.extractClampedString(graphics, serverData.getName(), textX, firstLineY, versionTextX, serverNameColor);
          if (versionComponent != CommonComponents.EMPTY && !serverData.isMinigameActive()) {
-            graphics.drawString(RealmsMainScreen.this.font, versionComponent, versionTextX, firstLineY, -8355712);
+            graphics.text(RealmsMainScreen.this.font, versionComponent, versionTextX, firstLineY, -8355712);
          }
 
       }
 
-      protected void renderSecondLine(final GuiGraphics graphics, final int rowTop, final int rowLeft, final int rowWidth, final RealmsServer serverData) {
+      protected void extractSecondLine(final GuiGraphicsExtractor graphics, final int rowTop, final int rowLeft, final int rowWidth, final RealmsServer serverData) {
          int textX = this.textX(rowLeft);
          int firstLineY = this.firstLineY(rowTop);
          int secondLineY = this.secondLineY(firstLineY);
@@ -789,35 +789,35 @@ public class RealmsMainScreen extends RealmsScreen {
          boolean minigameActive = serverData.isMinigameActive();
          if (minigameActive && minigameName != null) {
             Component minigameNameComponent = Component.literal(minigameName).withStyle(ChatFormatting.GRAY);
-            graphics.drawString(RealmsMainScreen.this.font, (Component)Component.translatable("mco.selectServer.minigameName", minigameNameComponent).withColor(-171), textX, secondLineY, -1);
+            graphics.text(RealmsMainScreen.this.font, (Component)Component.translatable("mco.selectServer.minigameName", minigameNameComponent).withColor(-171), textX, secondLineY, -1);
          } else {
-            int maxX = this.renderGameMode(serverData, graphics, rowLeft, rowWidth, firstLineY);
-            this.renderClampedString(graphics, serverData.getDescription(), textX, this.secondLineY(firstLineY), maxX, -8355712);
+            int maxX = this.extractGameMode(serverData, graphics, rowLeft, rowWidth, firstLineY);
+            this.extractClampedString(graphics, serverData.getDescription(), textX, this.secondLineY(firstLineY), maxX, -8355712);
          }
 
       }
 
-      protected void renderThirdLine(final GuiGraphics graphics, final int rowTop, final int rowLeft, final RealmsServer server) {
+      protected void extractThirdLine(final GuiGraphicsExtractor graphics, final int rowTop, final int rowLeft, final RealmsServer server) {
          int textX = this.textX(rowLeft);
          int firstLineY = this.firstLineY(rowTop);
          int thirdLineY = this.thirdLineY(firstLineY);
          if (!RealmsMainScreen.isSelfOwnedServer(server)) {
-            graphics.drawString(RealmsMainScreen.this.font, server.owner, textX, this.thirdLineY(firstLineY), -8355712);
+            graphics.text(RealmsMainScreen.this.font, server.owner, textX, this.thirdLineY(firstLineY), -8355712);
          } else if (server.expired) {
             Component expirationText = server.expiredTrial ? RealmsMainScreen.TRIAL_EXPIRED_TEXT : RealmsMainScreen.SUBSCRIPTION_EXPIRED_TEXT;
-            graphics.drawString(RealmsMainScreen.this.font, expirationText, textX, thirdLineY, -2142128);
+            graphics.text(RealmsMainScreen.this.font, expirationText, textX, thirdLineY, -2142128);
          }
 
       }
 
-      protected void renderClampedString(final GuiGraphics graphics, final @Nullable String string, final int x, final int y, final int maxX, final int color) {
+      protected void extractClampedString(final GuiGraphicsExtractor graphics, final @Nullable String string, final int x, final int y, final int maxX, final int color) {
          if (string != null) {
             int availableSpace = maxX - x;
             if (RealmsMainScreen.this.font.width(string) > availableSpace) {
                String clampedName = RealmsMainScreen.this.font.plainSubstrByWidth(string, availableSpace - RealmsMainScreen.this.font.width("... "));
-               graphics.drawString(RealmsMainScreen.this.font, clampedName + "...", x, y, color);
+               graphics.text(RealmsMainScreen.this.font, clampedName + "...", x, y, color);
             } else {
-               graphics.drawString(RealmsMainScreen.this.font, string, x, y, color);
+               graphics.text(RealmsMainScreen.this.font, string, x, y, color);
             }
 
          }
@@ -831,14 +831,14 @@ public class RealmsMainScreen extends RealmsScreen {
          return rowLeft + rowWidth - RealmsMainScreen.this.font.width((FormattedText)versionComponent) - 20;
       }
 
-      protected int renderGameMode(final RealmsServer server, final GuiGraphics graphics, final int rowLeft, final int rowWidth, final int firstLineY) {
+      protected int extractGameMode(final RealmsServer server, final GuiGraphicsExtractor graphics, final int rowLeft, final int rowWidth, final int firstLineY) {
          boolean hardcore = server.isHardcore;
          int gameMode = server.gameMode;
          int x = rowLeft;
          if (GameType.isValidId(gameMode)) {
             Component gameModeComponent = RealmsMainScreen.getGameModeComponent(gameMode, hardcore);
             x = this.gameModeTextX(rowLeft, rowWidth, gameModeComponent);
-            graphics.drawString(RealmsMainScreen.this.font, gameModeComponent, x, this.secondLineY(firstLineY), -8355712);
+            graphics.text(RealmsMainScreen.this.font, gameModeComponent, x, this.secondLineY(firstLineY), -8355712);
          }
 
          if (hardcore) {
@@ -938,10 +938,10 @@ public class RealmsMainScreen extends RealmsScreen {
          return rowWidth - 80;
       }
 
-      public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+      public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
          this.gridLayout.setPosition(this.getContentX(), this.getContentY());
          this.updateEntryWidth();
-         this.children.forEach((child) -> child.render(graphics, mouseX, mouseY, a));
+         this.children.forEach((child) -> child.extractRenderState(graphics, mouseX, mouseY, a));
       }
 
       public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
@@ -975,13 +975,13 @@ public class RealmsMainScreen extends RealmsScreen {
          this.tooltip.set(Tooltip.create(Component.translatable("mco.snapshot.tooltip")));
       }
 
-      public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+      public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
          graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)RealmsMainScreen.NEW_REALM_SPRITE, this.getContentX() - 5, this.getContentYMiddle() - 10, 40, 20);
          int var10000 = this.getContentYMiddle();
          Objects.requireNonNull(RealmsMainScreen.this.font);
          int textYPos = var10000 - 9 / 2;
-         graphics.drawString(RealmsMainScreen.this.font, START_SNAPSHOT_REALM, this.getContentX() + 40 - 2, textYPos - 5, -8388737);
-         graphics.drawString(RealmsMainScreen.this.font, (Component)Component.translatable("mco.snapshot.description", Objects.requireNonNullElse(this.parent.name, "unknown server")), this.getContentX() + 40 - 2, textYPos + 5, -8355712);
+         graphics.text(RealmsMainScreen.this.font, START_SNAPSHOT_REALM, this.getContentX() + 40 - 2, textYPos - 5, -8388737);
+         graphics.text(RealmsMainScreen.this.font, (Component)Component.translatable("mco.snapshot.description", Objects.requireNonNullElse(this.parent.name, "unknown server")), this.getContentX() + 40 - 2, textYPos + 5, -8355712);
          this.tooltip.refreshTooltipForNextRenderPass(graphics, mouseX, mouseY, hovered, this.isFocused(), new ScreenRectangle(this.getContentX(), this.getContentY(), this.getContentWidth(), this.getContentHeight()));
       }
 
@@ -1024,12 +1024,12 @@ public class RealmsMainScreen extends RealmsScreen {
 
       }
 
-      public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
-         this.renderStatusLights(this.server, graphics, this.getContentRight(), this.getContentY(), mouseX, mouseY);
-         RealmsUtil.renderPlayerFace(graphics, this.getContentX(), this.getContentY(), 32, this.server.ownerUUID);
-         this.renderFirstLine(graphics, this.getContentY(), this.getContentX(), this.getContentWidth(), -8355712, this.server);
-         this.renderSecondLine(graphics, this.getContentY(), this.getContentX(), this.getContentWidth(), this.server);
-         this.renderThirdLine(graphics, this.getContentY(), this.getContentX(), this.server);
+      public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+         this.extractStatusLights(this.server, graphics, this.getContentRight(), this.getContentY(), mouseX, mouseY);
+         RealmsUtil.extractPlayerFace(graphics, this.getContentX(), this.getContentY(), 32, this.server.ownerUUID);
+         this.extractFirstLine(graphics, this.getContentY(), this.getContentX(), this.getContentWidth(), -8355712, this.server);
+         this.extractSecondLine(graphics, this.getContentY(), this.getContentX(), this.getContentWidth(), this.server);
+         this.extractThirdLine(graphics, this.getContentY(), this.getContentX(), this.server);
          this.tooltip.refreshTooltipForNextRenderPass(graphics, mouseX, mouseY, hovered, this.isFocused(), new ScreenRectangle(this.getContentX(), this.getContentY(), this.getContentWidth(), this.getContentHeight()));
       }
 
@@ -1060,28 +1060,28 @@ public class RealmsMainScreen extends RealmsScreen {
 
       }
 
-      public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+      public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
          if (this.serverData.state == RealmsServer.State.UNINITIALIZED) {
             graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)RealmsMainScreen.NEW_REALM_SPRITE, this.getContentX() - 5, this.getContentYMiddle() - 10, 40, 20);
             int var10000 = this.getContentYMiddle();
             Objects.requireNonNull(RealmsMainScreen.this.font);
             int textYPos = var10000 - 9 / 2;
-            graphics.drawString(RealmsMainScreen.this.font, RealmsMainScreen.SERVER_UNITIALIZED_TEXT, this.getContentX() + 40 - 2, textYPos, -8388737);
+            graphics.text(RealmsMainScreen.this.font, RealmsMainScreen.SERVER_UNITIALIZED_TEXT, this.getContentX() + 40 - 2, textYPos, -8388737);
          } else {
-            RealmsUtil.renderPlayerFace(graphics, this.getContentX(), this.getContentY(), 32, this.serverData.ownerUUID);
-            this.renderFirstLine(graphics, this.getContentY(), this.getContentX(), this.getContentWidth(), -1, this.serverData);
-            this.renderSecondLine(graphics, this.getContentY(), this.getContentX(), this.getContentWidth(), this.serverData);
-            this.renderThirdLine(graphics, this.getContentY(), this.getContentX(), this.serverData);
-            this.renderStatusLights(this.serverData, graphics, this.getContentRight(), this.getContentY(), mouseX, mouseY);
-            boolean hasRenderedTooltip = this.renderOnlinePlayers(graphics, this.getContentY(), this.getContentX(), this.getContentWidth(), this.getContentHeight(), mouseX, mouseY, a);
-            if (!hasRenderedTooltip) {
+            RealmsUtil.extractPlayerFace(graphics, this.getContentX(), this.getContentY(), 32, this.serverData.ownerUUID);
+            this.extractFirstLine(graphics, this.getContentY(), this.getContentX(), this.getContentWidth(), -1, this.serverData);
+            this.extractSecondLine(graphics, this.getContentY(), this.getContentX(), this.getContentWidth(), this.serverData);
+            this.extractThirdLine(graphics, this.getContentY(), this.getContentX(), this.serverData);
+            this.extractStatusLights(this.serverData, graphics, this.getContentRight(), this.getContentY(), mouseX, mouseY);
+            boolean hasTooltip = this.extractOnlinePlayers(graphics, this.getContentY(), this.getContentX(), this.getContentWidth(), this.getContentHeight(), mouseX, mouseY, a);
+            if (!hasTooltip) {
                this.tooltip.refreshTooltipForNextRenderPass(graphics, mouseX, mouseY, hovered, this.isFocused(), new ScreenRectangle(this.getContentX(), this.getContentY(), this.getContentWidth(), this.getContentHeight()));
             }
 
          }
       }
 
-      private boolean renderOnlinePlayers(final GuiGraphics graphics, final int rowTop, final int rowLeft, final int rowWidth, final int rowHeight, final int mouseX, final int mouseY, final float a) {
+      private boolean extractOnlinePlayers(final GuiGraphicsExtractor graphics, final int rowTop, final int rowLeft, final int rowWidth, final int rowHeight, final int mouseX, final int mouseY, final float a) {
          List<ResolvableProfile> profileResults = RealmsMainScreen.this.onlinePlayersPerRealm.getProfileResultsFor(this.serverData.id);
          int playerCount = profileResults.size();
          if (playerCount > 0) {
@@ -1102,7 +1102,7 @@ public class RealmsMainScreen extends RealmsScreen {
                ResolvableProfile profile = (ResolvableProfile)profileResults.get(i);
                PlayerSkinRenderCache.RenderInfo profileRenderInfo = skinCache.getOrDefault(profile);
                int xPos = playersOnlineXStart + 12 * i;
-               PlayerFaceRenderer.draw(graphics, profileRenderInfo.playerSkin(), xPos, playersOnlineY, 9);
+               PlayerFaceExtractor.extractRenderState(graphics, profileRenderInfo.playerSkin(), xPos, playersOnlineY, 9);
                if (tooltipEntries != null) {
                   tooltipEntries.add(profileRenderInfo);
                }
@@ -1182,15 +1182,15 @@ public class RealmsMainScreen extends RealmsScreen {
          this.notificationCount = notificationCount;
       }
 
-      public void renderContents(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-         super.renderContents(graphics, mouseX, mouseY, a);
+      public void extractContents(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+         super.extractContents(graphics, mouseX, mouseY, a);
          if (this.active && this.notificationCount != 0) {
-            this.drawNotificationCounter(graphics);
+            this.extractNotificationCounter(graphics);
          }
 
       }
 
-      private void drawNotificationCounter(final GuiGraphics graphics) {
+      private void extractNotificationCounter(final GuiGraphicsExtractor graphics) {
          graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)NOTIFICATION_ICONS[Math.min(this.notificationCount, 6) - 1], this.getX() + this.getWidth() - 5, this.getY() - 3, 8, 8);
       }
    }

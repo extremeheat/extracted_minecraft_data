@@ -9,7 +9,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.SubmitNodeCollection;
 import net.minecraft.client.renderer.SubmitNodeStorage;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.util.LightCoordsUtil;
@@ -54,7 +54,7 @@ public class NameTagFeatureRenderer {
             poseStack.scale(0.025F, -0.025F, 0.025F);
             Matrix4f pose = new Matrix4f(poseStack.last().pose());
             float x = (float)(-minecraft.font.width((FormattedText)name)) / 2.0F;
-            int backgroundColor = (int)(minecraft.options.getBackgroundOpacity(0.25F) * 255.0F) << 24;
+            int backgroundColor = (int)(minecraft.gameRenderer.getGameRenderState().optionsRenderState.getBackgroundOpacity(0.25F) * 255.0F) << 24;
             if (seeThrough) {
                this.nameTagSubmitsNormal.add(new SubmitNodeStorage.NameTagSubmit(pose, x, (float)offset, name, LightCoordsUtil.lightCoordsWithEmission(lightCoords, 2), -1, 0, distanceToCameraSq));
                this.nameTagSubmitsSeethrough.add(new SubmitNodeStorage.NameTagSubmit(pose, x, (float)offset, name, lightCoords, -2130706433, backgroundColor, distanceToCameraSq));

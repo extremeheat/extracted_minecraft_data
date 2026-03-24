@@ -8,7 +8,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.FocusableTextWidget;
@@ -80,9 +80,9 @@ public class KeyBindsList extends ContainerObjectSelectionList<Entry> {
          this.categoryName = FocusableTextWidget.builder(category.label(), KeyBindsList.this.minecraft.font).alwaysShowBorder(false).backgroundFill(FocusableTextWidget.BackgroundFill.ON_FOCUS).build();
       }
 
-      public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+      public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
          this.categoryName.setPosition(KeyBindsList.this.width / 2 - this.categoryName.getWidth() / 2, this.getContentBottom() - this.categoryName.getHeight());
-         this.categoryName.render(graphics, mouseX, mouseY, a);
+         this.categoryName.extractRenderState(graphics, mouseX, mouseY, a);
       }
 
       public List<? extends GuiEventListener> children() {
@@ -123,20 +123,20 @@ public class KeyBindsList extends ContainerObjectSelectionList<Entry> {
          this.refreshEntry();
       }
 
-      public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+      public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
          int resetButtonX = KeyBindsList.this.scrollBarX() - this.resetButton.getWidth() - 10;
          int buttonY = this.getContentY() - 2;
          this.resetButton.setPosition(resetButtonX, buttonY);
-         this.resetButton.render(graphics, mouseX, mouseY, a);
+         this.resetButton.extractRenderState(graphics, mouseX, mouseY, a);
          int changeButtonX = resetButtonX - 5 - this.changeButton.getWidth();
          this.changeButton.setPosition(changeButtonX, buttonY);
-         this.changeButton.render(graphics, mouseX, mouseY, a);
+         this.changeButton.extractRenderState(graphics, mouseX, mouseY, a);
          Font var10001 = KeyBindsList.this.minecraft.font;
          Component var10002 = this.name;
          int var10003 = this.getContentX();
          int var10004 = this.getContentYMiddle();
          Objects.requireNonNull(KeyBindsList.this.minecraft.font);
-         graphics.drawString(var10001, (Component)var10002, var10003, var10004 - 9 / 2, -1);
+         graphics.text(var10001, (Component)var10002, var10003, var10004 - 9 / 2, -1);
          if (this.hasCollision) {
             int stripeWidth = 3;
             int stripeLeft = this.changeButton.getX() - 6;

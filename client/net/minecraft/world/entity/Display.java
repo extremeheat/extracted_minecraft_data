@@ -11,6 +11,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.ComponentUtils;
+import net.minecraft.network.chat.ResolutionContext;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -192,7 +193,7 @@ public abstract class Display extends Entity {
    }
 
    protected void readAdditionalSaveData(final ValueInput input) {
-      this.setTransformation((Transformation)input.read("transformation", Transformation.EXTENDED_CODEC).orElse(Transformation.identity()));
+      this.setTransformation((Transformation)input.read("transformation", Transformation.EXTENDED_CODEC).orElse(Transformation.IDENTITY));
       this.setTransformationInterpolationDuration(input.getIntOr("interpolation_duration", 0));
       this.setTransformationInterpolationDelay(input.getIntOr("start_interpolation", 0));
       int teleportDuration = input.getIntOr("teleport_duration", 0);
@@ -208,10 +209,10 @@ public abstract class Display extends Entity {
    }
 
    private void setTransformation(final Transformation transformation) {
-      this.entityData.set(DATA_TRANSLATION_ID, transformation.getTranslation());
-      this.entityData.set(DATA_LEFT_ROTATION_ID, transformation.getLeftRotation());
-      this.entityData.set(DATA_SCALE_ID, transformation.getScale());
-      this.entityData.set(DATA_RIGHT_ROTATION_ID, transformation.getRightRotation());
+      this.entityData.set(DATA_TRANSLATION_ID, transformation.translation());
+      this.entityData.set(DATA_LEFT_ROTATION_ID, transformation.leftRotation());
+      this.entityData.set(DATA_SCALE_ID, transformation.scale());
+      this.entityData.set(DATA_RIGHT_ROTATION_ID, transformation.rightRotation());
    }
 
    protected void addAdditionalSaveData(final ValueOutput output) {
@@ -706,7 +707,7 @@ public abstract class Display extends Entity {
                if (var6 instanceof ServerLevel) {
                   ServerLevel serverLevel = (ServerLevel)var6;
                   CommandSourceStack context = this.createCommandSourceStackForNameResolution(serverLevel).withPermission(LevelBasedPermissionSet.GAMEMASTER);
-                  Component resolvedText = ComponentUtils.updateForEntity(context, (Component)text.get(), this, 0);
+                  Component resolvedText = ComponentUtils.resolve(ResolutionContext.create(context), (Component)text.get());
                   this.setText(resolvedText);
                } else {
                   this.setText(Component.empty());

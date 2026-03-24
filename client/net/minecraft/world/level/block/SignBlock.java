@@ -157,14 +157,14 @@ public abstract class SignBlock extends BaseEntityBlock implements SimpleWaterlo
    }
 
    public static WoodType getWoodType(final Block block) {
-      WoodType type;
-      if (block instanceof SignBlock) {
-         type = ((SignBlock)block).type();
+      WoodType var10000;
+      if (block instanceof SignBlock signBlock) {
+         var10000 = signBlock.type();
       } else {
-         type = WoodType.OAK;
+         var10000 = WoodType.OAK;
       }
 
-      return type;
+      return var10000;
    }
 
    public void openTextEdit(final Player player, final SignBlockEntity sign, final boolean isFrontText) {

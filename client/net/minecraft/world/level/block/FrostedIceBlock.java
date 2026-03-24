@@ -42,7 +42,7 @@ public class FrostedIceBlock extends IceBlock {
    protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
       if (random.nextInt(3) == 0 || this.fewerNeigboursThan(level, pos, 4)) {
          int brightness = level.dimension() == Level.END ? level.getBrightness(LightLayer.BLOCK, pos) : level.getMaxLocalRawBrightness(pos);
-         if (brightness > 11 - (Integer)state.getValue(AGE) - state.getLightBlock() && this.slightlyMelt(state, level, pos)) {
+         if (brightness > 11 - (Integer)state.getValue(AGE) - state.getLightDampening() && this.slightlyMelt(state, level, pos)) {
             BlockPos.MutableBlockPos neighborPos = new BlockPos.MutableBlockPos();
 
             for(Direction direction : Direction.values()) {

@@ -9,8 +9,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.PlayerFaceRenderer;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.PlayerFaceExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.PlayerSkinRenderCache;
 import net.minecraft.network.chat.Component;
@@ -54,9 +54,9 @@ public class RealmsUtil {
       return convertToAgePresentation(System.currentTimeMillis() - date.toEpochMilli());
    }
 
-   public static void renderPlayerFace(final GuiGraphics graphics, final int x, final int y, final int size, final UUID playerId) {
+   public static void extractPlayerFace(final GuiGraphicsExtractor graphics, final int x, final int y, final int size, final UUID playerId) {
       PlayerSkinRenderCache.RenderInfo renderInfo = Minecraft.getInstance().playerSkinRenderCache().getOrDefault(ResolvableProfile.createUnresolved(playerId));
-      PlayerFaceRenderer.draw(graphics, renderInfo.playerSkin(), x, y, size);
+      PlayerFaceExtractor.extractRenderState(graphics, renderInfo.playerSkin(), x, y, size);
    }
 
    public static <T> CompletableFuture<T> supplyAsync(final RealmsIoFunction<T> function, final @Nullable Consumer<RealmsServiceException> onFailure) {

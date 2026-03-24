@@ -2,7 +2,7 @@ package net.minecraft.client.gui.components;
 
 import java.util.Objects;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
@@ -32,18 +32,18 @@ public class FittingMultiLineTextWidget extends AbstractTextAreaWidget {
 
    }
 
-   protected void renderBackground(final GuiGraphics graphics) {
-      super.renderBackground(graphics);
+   protected void extractBackground(final GuiGraphicsExtractor graphics) {
+      super.extractBackground(graphics);
    }
 
    public boolean showingScrollBar() {
       return super.scrollable();
    }
 
-   protected void renderContents(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+   protected void extractContents(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       graphics.pose().pushMatrix();
       graphics.pose().translate((float)this.getInnerLeft(), (float)this.getInnerTop());
-      this.multilineWidget.render(graphics, mouseX, mouseY, a);
+      this.multilineWidget.extractRenderState(graphics, mouseX, mouseY, a);
       graphics.pose().popMatrix();
    }
 

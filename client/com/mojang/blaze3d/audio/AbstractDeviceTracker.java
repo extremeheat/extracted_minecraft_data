@@ -1,7 +1,6 @@
 package com.mojang.blaze3d.audio;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-import net.minecraft.client.sounds.DeviceTracker;
 import net.minecraft.util.Util;
 
 public abstract class AbstractDeviceTracker implements DeviceTracker {

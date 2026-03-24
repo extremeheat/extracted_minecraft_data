@@ -10,6 +10,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
+import net.minecraft.util.valueproviders.IntProviders;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.TreeFeature;
@@ -17,7 +18,7 @@ import net.minecraft.world.level.levelgen.feature.configurations.TreeConfigurati
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
 
 public class BendingTrunkPlacer extends TrunkPlacer {
-   public static final MapCodec<BendingTrunkPlacer> CODEC = RecordCodecBuilder.mapCodec((i) -> trunkPlacerParts(i).and(i.group(ExtraCodecs.POSITIVE_INT.optionalFieldOf("min_height_for_leaves", 1).forGetter((c) -> c.minHeightForLeaves), IntProvider.codec(1, 64).fieldOf("bend_length").forGetter((c) -> c.bendLength))).apply(i, BendingTrunkPlacer::new));
+   public static final MapCodec<BendingTrunkPlacer> CODEC = RecordCodecBuilder.mapCodec((i) -> trunkPlacerParts(i).and(i.group(ExtraCodecs.POSITIVE_INT.optionalFieldOf("min_height_for_leaves", 1).forGetter((c) -> c.minHeightForLeaves), IntProviders.codec(1, 64).fieldOf("bend_length").forGetter((c) -> c.bendLength))).apply(i, BendingTrunkPlacer::new));
    private final int minHeightForLeaves;
    private final IntProvider bendLength;
 

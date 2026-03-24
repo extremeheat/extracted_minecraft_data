@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.screens.inventory.tooltip;
 
 import java.util.function.UnaryOperator;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
@@ -21,7 +21,7 @@ public class TooltipRenderUtil {
       super();
    }
 
-   public static void renderTooltipBackground(final GuiGraphics graphics, final int x, final int y, final int w, final int h, final @Nullable Identifier style) {
+   public static void extractTooltipBackground(final GuiGraphicsExtractor graphics, final int x, final int y, final int w, final int h, final @Nullable Identifier style) {
       int x0 = x - 3 - 9;
       int y0 = y - 3 - 9;
       int paddedWidth = w + 3 + 3 + 18;

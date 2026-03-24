@@ -49,7 +49,7 @@ public class SetEntityLookTargetSometimes {
 
       public Ticker(final UniformInt interval) {
          super();
-         if (interval.getMinValue() <= 1) {
+         if (interval.minInclusive() <= 1) {
             throw new IllegalArgumentException();
          } else {
             this.interval = interval;

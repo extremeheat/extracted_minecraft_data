@@ -11,7 +11,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.item.component.TypedEntityData;
@@ -203,9 +202,5 @@ public class BlockItem extends Item {
          stack.set(DataComponents.BLOCK_ENTITY_DATA, TypedEntityData.of(type, output.buildResult()));
       }
 
-   }
-
-   public FeatureFlagSet requiredFeatures() {
-      return this.getBlock().requiredFeatures();
    }
 }

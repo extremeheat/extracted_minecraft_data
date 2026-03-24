@@ -36,6 +36,7 @@ public class NoiseChunk implements DensityFunction.FunctionContext, DensityFunct
    private final Long2IntMap preliminarySurfaceLevelCache = new Long2IntOpenHashMap();
    private final Aquifer aquifer;
    private final DensityFunction preliminarySurfaceLevel;
+   private final DensityFunction fullNoiseDensity;
    private final BlockStateFiller blockStateRule;
    private final Blender blender;
    private final FlatCache blendAlpha;
@@ -141,6 +142,7 @@ public class NoiseChunk implements DensityFunction.FunctionContext, DensityFunct
 
       List<BlockStateFiller> builder = new ArrayList();
       DensityFunction fullNoiseValue = DensityFunctions.cacheAllInCell(DensityFunctions.add(wrappedRouter.finalDensity(), DensityFunctions.BeardifierMarker.INSTANCE)).mapAll(this::wrap);
+      this.fullNoiseDensity = fullNoiseValue;
       builder.add((BlockStateFiller)(context) -> this.aquifer.computeSubstance(context, fullNoiseValue.compute(context)));
       if (settings.oreVeinsEnabled()) {
          builder.add(OreVeinifier.create(wrappedRouter.veinToggle(), wrappedRouter.veinRidged(), wrappedRouter.veinGap(), randomState.oreRandom()));
@@ -155,6 +157,10 @@ public class NoiseChunk implements DensityFunction.FunctionContext, DensityFunct
 
    protected @Nullable BlockState getInterpolatedState() {
       return this.blockStateRule.calculate(this);
+   }
+
+   protected double getInterpolatedDensity() {
+      return this.fullNoiseDensity.compute(this);
    }
 
    public int blockX() {

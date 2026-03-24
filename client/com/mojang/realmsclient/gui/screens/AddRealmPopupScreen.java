@@ -3,7 +3,7 @@ package com.mojang.realmsclient.gui.screens;
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.FittingMultiLineTextWidget;
 import net.minecraft.client.gui.components.ImageButton;
@@ -80,25 +80,25 @@ public class AddRealmPopupScreen extends RealmsScreen {
 
    }
 
-   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-      super.render(graphics, mouseX, mouseY, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
       if (this.createTrialButton != null) {
-         renderDiamond(graphics, this.createTrialButton);
+         extractDiamond(graphics, this.createTrialButton);
       }
 
    }
 
-   public static void renderDiamond(final GuiGraphics graphics, final Button button) {
+   public static void extractDiamond(final GuiGraphicsExtractor graphics, final Button button) {
       int size = 8;
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)TRIAL_AVAILABLE_SPRITE, button.getX() + button.getWidth() - 8 - 4, button.getY() + button.getHeight() / 2 - 4, 8, 8);
    }
 
-   public void renderBackground(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-      this.backgroundScreen.renderBackground(graphics, -1, -1, a);
+   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      this.backgroundScreen.extractBackground(graphics, -1, -1, a);
       graphics.nextStratum();
-      this.backgroundScreen.render(graphics, -1, -1, a);
+      this.backgroundScreen.extractRenderState(graphics, -1, -1, a);
       graphics.nextStratum();
-      this.renderTransparentBackground(graphics);
+      this.extractTransparentBackground(graphics);
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)BACKGROUND_SPRITE, this.left(), this.top(), 320, 172);
       if (!carouselImages.isEmpty()) {
          graphics.blit(RenderPipelines.GUI_TEXTURED, (Identifier)carouselImages.get(this.carouselIndex), this.left() + 10, this.top() + 10, 0.0F, 0.0F, 195, 152, 195, 152);

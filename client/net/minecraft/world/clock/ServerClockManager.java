@@ -11,6 +11,8 @@ import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.gamerules.GameRules;
@@ -67,7 +69,10 @@ public class ServerClockManager extends SavedData implements ClockManager {
    }
 
    public void setTotalTicks(final Holder<WorldClock> clock, final long totalTicks) {
-      this.modifyClock(clock, (instance) -> instance.totalTicks = totalTicks);
+      this.modifyClock(clock, (instance) -> {
+         instance.totalTicks = totalTicks;
+         instance.partialTick = 0.0F;
+      });
    }
 
    public boolean moveToTimeMarker(final Holder<WorldClock> clock, final ResourceKey<ClockTimeMarker> timeMarkerId) {
@@ -76,6 +81,7 @@ public class ServerClockManager extends SavedData implements ClockManager {
          ClockTimeMarker timeMarker = (ClockTimeMarker)instance.timeMarkers.get(timeMarkerId);
          if (timeMarker != null) {
             instance.totalTicks = timeMarker.resolveTimeToMoveTo(instance.totalTicks);
+            instance.partialTick = 0.0F;
             set.setTrue();
          }
       });
@@ -90,12 +96,21 @@ public class ServerClockManager extends SavedData implements ClockManager {
       this.modifyClock(clock, (instance) -> instance.paused = paused);
    }
 
+   public void setRate(final Holder<WorldClock> clock, final float rate) {
+      this.modifyClock(clock, (instance) -> instance.rate = rate);
+   }
+
    private void modifyClock(final Holder<WorldClock> clock, final Consumer<? super ClockInstance> action) {
       ClockInstance instance = this.getInstance(clock);
       action.accept(instance);
-      Map<Holder<WorldClock>, ClockState> updates = Map.of(clock, instance.packNetworkState(this.server));
+      Map<Holder<WorldClock>, ClockNetworkState> updates = Map.of(clock, instance.packNetworkState(this.server));
       this.server.getPlayerList().broadcastAll(new ClientboundSetTimePacket(this.getGameTime(), updates));
       this.setDirty();
+
+      for(ServerLevel level : this.server.getAllLevels()) {
+         level.environmentAttributes().invalidateTickCache();
+      }
+
    }
 
    public long getTotalTicks(final Holder<WorldClock> definition) {
@@ -127,6 +142,8 @@ public class ServerClockManager extends SavedData implements ClockManager {
    private static class ClockInstance {
       private final Map<ResourceKey<ClockTimeMarker>, ClockTimeMarker> timeMarkers = new Reference2ObjectOpenHashMap();
       private long totalTicks;
+      private float partialTick;
+      private float rate = 1.0F;
       private boolean paused;
 
       private ClockInstance() {
@@ -135,23 +152,29 @@ public class ServerClockManager extends SavedData implements ClockManager {
 
       public void loadFrom(final ClockState state) {
          this.totalTicks = state.totalTicks();
+         this.partialTick = state.partialTick();
+         this.rate = state.rate();
          this.paused = state.paused();
       }
 
       public void tick() {
          if (!this.paused) {
-            ++this.totalTicks;
+            this.partialTick += this.rate;
+            int fullTicks = Mth.floor(this.partialTick);
+            this.partialTick -= (float)fullTicks;
+            this.totalTicks += (long)fullTicks;
          }
 
       }
 
       public ClockState packState() {
-         return new ClockState(this.totalTicks, this.paused);
+         return new ClockState(this.totalTicks, this.partialTick, this.rate, this.paused);
       }
 
-      public ClockState packNetworkState(final MinecraftServer server) {
+      public ClockNetworkState packNetworkState(final MinecraftServer server) {
          boolean advanceTime = (Boolean)server.getGlobalGameRules().get(GameRules.ADVANCE_TIME);
-         return new ClockState(this.totalTicks, this.paused || !advanceTime);
+         boolean paused = this.paused || !advanceTime;
+         return new ClockNetworkState(this.totalTicks, this.partialTick, paused ? 0.0F : this.rate);
       }
    }
 }

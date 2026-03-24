@@ -16,7 +16,7 @@ import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.LoadingDotsWidget;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.SelectableEntry;
@@ -171,9 +171,9 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
          this.loadingDotsWidget = new LoadingDotsWidget(this.minecraft.font, ServerSelectionList.SCANNING_LABEL);
       }
 
-      public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+      public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
          this.loadingDotsWidget.setPosition(this.getContentXMiddle() - this.minecraft.font.width((FormattedText)ServerSelectionList.SCANNING_LABEL) / 2, this.getContentY());
-         this.loadingDotsWidget.render(graphics, mouseX, mouseY, a);
+         this.loadingDotsWidget.extractRenderState(graphics, mouseX, mouseY, a);
       }
 
       public Component getNarration() {
@@ -203,13 +203,13 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
          this.minecraft = Minecraft.getInstance();
       }
 
-      public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
-         graphics.drawString(this.minecraft.font, (Component)LAN_SERVER_HEADER, this.getContentX() + 32 + 3, this.getContentY() + 1, -1);
-         graphics.drawString(this.minecraft.font, this.serverData.getMotd(), this.getContentX() + 32 + 3, this.getContentY() + 12, -8355712);
+      public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+         graphics.text(this.minecraft.font, (Component)LAN_SERVER_HEADER, this.getContentX() + 32 + 3, this.getContentY() + 1, -1);
+         graphics.text(this.minecraft.font, this.serverData.getMotd(), this.getContentX() + 32 + 3, this.getContentY() + 12, -8355712);
          if (this.minecraft.options.hideServerAddress) {
-            graphics.drawString(this.minecraft.font, HIDDEN_ADDRESS_TEXT, this.getContentX() + 32 + 3, this.getContentY() + 12 + 11, -8355712);
+            graphics.text(this.minecraft.font, HIDDEN_ADDRESS_TEXT, this.getContentX() + 32 + 3, this.getContentY() + 12 + 11, -8355712);
          } else {
-            graphics.drawString(this.minecraft.font, this.serverData.getAddress(), this.getContentX() + 32 + 3, this.getContentY() + 12 + 11, -8355712);
+            graphics.text(this.minecraft.font, this.serverData.getAddress(), this.getContentX() + 32 + 3, this.getContentY() + 12 + 11, -8355712);
          }
 
       }
@@ -281,7 +281,7 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
          this.refreshStatus();
       }
 
-      public void renderContent(final GuiGraphics graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+      public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
          if (this.serverData.state() == ServerData.State.INITIAL) {
             this.serverData.setState(ServerData.State.PINGING);
             this.serverData.motd = CommonComponents.EMPTY;
@@ -305,7 +305,7 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
             });
          }
 
-         graphics.drawString(this.minecraft.font, (String)this.serverData.name, this.getContentX() + 32 + 3, this.getContentY() + 1, -1);
+         graphics.text(this.minecraft.font, (String)this.serverData.name, this.getContentX() + 32 + 3, this.getContentY() + 1, -1);
          List<FormattedCharSequence> lines = this.minecraft.font.split(this.serverData.motd, this.getContentWidth() - 32 - 2);
 
          for(int i = 0; i < Math.min(lines.size(), 2); ++i) {
@@ -314,10 +314,10 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
             int var10003 = this.getContentX() + 32 + 3;
             int var10004 = this.getContentY() + 12;
             Objects.requireNonNull(this.minecraft.font);
-            graphics.drawString(var10001, var10002, var10003, var10004 + 9 * i, -8355712);
+            graphics.text(var10001, var10002, var10003, var10004 + 9 * i, -8355712);
          }
 
-         this.drawIcon(graphics, this.getContentX(), this.getContentY(), this.icon.textureLocation());
+         this.extractIcon(graphics, this.getContentX(), this.getContentY(), this.icon.textureLocation());
          int index = ServerSelectionList.this.children().indexOf(this);
          if (this.serverData.state() == ServerData.State.PINGING) {
             int iconIndex = (int)(Util.getMillis() / 100L + (long)(index * 2) & 7L);
@@ -355,7 +355,7 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
          Component status = (Component)(this.serverData.state() == ServerData.State.INCOMPATIBLE ? this.serverData.version.copy().withStyle(ChatFormatting.RED) : this.serverData.status);
          int statusWidth = this.minecraft.font.width((FormattedText)status);
          int statusX = statusIconX - statusWidth - 5;
-         graphics.drawString(this.minecraft.font, status, statusX, this.getContentY() + 1, -8355712);
+         graphics.text(this.minecraft.font, status, statusX, this.getContentY() + 1, -8355712);
          if (this.statusIconTooltip != null && mouseX >= statusIconX && mouseX <= statusIconX + 10 && mouseY >= this.getContentY() && mouseY <= this.getContentY() + 8) {
             graphics.setTooltipForNextFrame(this.statusIconTooltip, mouseX, mouseY);
          } else if (this.onlinePlayersTooltip != null && mouseX >= statusX && mouseX <= statusX + statusWidth && mouseY >= this.getContentY()) {
@@ -438,7 +438,7 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
          this.screen.getServers().save();
       }
 
-      protected void drawIcon(final GuiGraphics graphics, final int rowLeft, final int rowTop, final Identifier location) {
+      protected void extractIcon(final GuiGraphicsExtractor graphics, final int rowLeft, final int rowTop, final Identifier location) {
          graphics.blit(RenderPipelines.GUI_TEXTURED, location, rowLeft, rowTop, 0.0F, 0.0F, 32, 32, 32, 32);
       }
 

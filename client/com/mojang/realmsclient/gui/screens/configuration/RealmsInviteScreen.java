@@ -2,7 +2,7 @@ package com.mojang.realmsclient.gui.screens.configuration;
 
 import com.mojang.realmsclient.dto.RealmsServer;
 import java.util.concurrent.CompletableFuture;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.layouts.CommonLayouts;
@@ -91,10 +91,10 @@ public class RealmsInviteScreen extends RealmsScreen {
       this.minecraft.setScreen(this.configureScreen);
    }
 
-   public void render(final GuiGraphics graphics, final int xm, final int ym, final float a) {
-      super.render(graphics, xm, ym, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int xm, final int ym, final float a) {
+      super.extractRenderState(graphics, xm, ym, a);
       if (this.message != null && this.inviteButton != null) {
-         graphics.drawCenteredString(this.font, (Component)this.message, this.width / 2, this.inviteButton.getY() + this.inviteButton.getHeight() + 8, -1);
+         graphics.centeredText(this.font, (Component)this.message, this.width / 2, this.inviteButton.getY() + this.inviteButton.getHeight() + 8, -1);
       }
 
    }

@@ -143,6 +143,10 @@ public class Pig extends Animal implements ItemSteerable {
       return (SoundEvent)this.getSoundSet().deathSound().value();
    }
 
+   protected void playEatingSound() {
+      this.makeSound((SoundEvent)this.getSoundSet().eatSound().value());
+   }
+
    protected void playStepSound(final BlockPos pos, final BlockState blockState) {
       this.playSound((SoundEvent)this.getSoundSet().stepSound().value(), 0.15F, 1.0F);
    }

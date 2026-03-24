@@ -48,7 +48,7 @@ public class LightmapRenderStateExtractor {
          LocalPlayer player = this.minecraft.player;
          if (level != null && player != null) {
             ProfilerFiller profiler = Profiler.get();
-            profiler.push("lightmapExtract");
+            profiler.push("lightmap");
             Camera camera = this.renderer.getMainCamera();
             renderState.blockFactor = this.blockLightFlicker + 1.4F;
             renderState.blockLightTint = ARGB.vector3fFromRGB24((Integer)camera.attributeProbe().getValue(EnvironmentAttributes.BLOCK_LIGHT_TINT, partialTicks));

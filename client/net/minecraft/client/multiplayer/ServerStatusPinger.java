@@ -1,6 +1,7 @@
 package net.minecraft.client.multiplayer;
 
 import com.google.common.collect.Lists;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -26,6 +27,9 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.DisconnectionDetails;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentUtils;
+import net.minecraft.network.chat.ResolutionContext;
+import net.minecraft.network.chat.contents.objects.PlayerSprite;
 import net.minecraft.network.protocol.ping.ClientboundPongResponsePacket;
 import net.minecraft.network.protocol.ping.ServerboundPingRequestPacket;
 import net.minecraft.network.protocol.status.ClientStatusPacketListener;
@@ -42,6 +46,7 @@ import org.slf4j.Logger;
 public class ServerStatusPinger {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Component CANT_CONNECT_MESSAGE = Component.translatable("multiplayer.status.cannot_connect").withColor(-65536);
+   private static final ResolutionContext DESCRIPTION_SANITIZE_CONTEXT;
    private final List<Connection> connections = Collections.synchronizedList(Lists.newArrayList());
 
    public ServerStatusPinger() {
@@ -74,7 +79,7 @@ public class ServerStatusPinger {
                } else {
                   this.receivedPing = true;
                   ServerStatus status = packet.status();
-                  data.motd = status.description();
+                  data.motd = sanitizeDescription(status.description());
                   status.version().ifPresentOrElse((version) -> {
                      data.version = Component.literal(version.name());
                      data.protocol = version.protocol();
@@ -119,6 +124,15 @@ public class ServerStatusPinger {
                   this.pingStart = Util.getMillis();
                   connection.send(new ServerboundPingRequestPacket(this.pingStart));
                   this.success = true;
+               }
+            }
+
+            private static Component sanitizeDescription(final Component original) {
+               try {
+                  return ComponentUtils.resolve(ServerStatusPinger.DESCRIPTION_SANITIZE_CONTEXT, original);
+               } catch (CommandSyntaxException e) {
+                  ServerStatusPinger.LOGGER.warn("Failed to sanitize status {}", original, e);
+                  return Component.empty();
                }
             }
 
@@ -218,5 +232,9 @@ public class ServerStatusPinger {
          }
 
       }
+   }
+
+   static {
+      DESCRIPTION_SANITIZE_CONTEXT = ResolutionContext.builder().withObjectInfoValidator((description) -> !(description instanceof PlayerSprite)).setDepthLimit(16).setDepthLimitBehavior(ResolutionContext.LimitBehavior.DISCARD_REMAINING).build();
    }
 }

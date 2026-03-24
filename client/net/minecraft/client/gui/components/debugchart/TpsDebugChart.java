@@ -3,7 +3,7 @@ package net.minecraft.client.gui.components.debugchart;
 import java.util.Locale;
 import java.util.function.Supplier;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.TimeUtil;
 import net.minecraft.util.debugchart.SampleStorage;
 import net.minecraft.util.debugchart.TpsDebugDimensions;
@@ -19,12 +19,12 @@ public class TpsDebugChart extends AbstractDebugChart {
       this.msptSupplier = msptSupplier;
    }
 
-   protected void renderAdditionalLinesAndLabels(final GuiGraphics graphics, final int left, final int width, final int bottom) {
+   protected void extractAdditionalLinesAndLabels(final GuiGraphicsExtractor graphics, final int left, final int width, final int bottom) {
       float tps = (float)TimeUtil.MILLISECONDS_PER_SECOND / (Float)this.msptSupplier.get();
-      this.drawStringWithShade(graphics, String.format(Locale.ROOT, "%.1f TPS", tps), left + 1, bottom - 60 + 1);
+      this.extractStringWithShade(graphics, String.format(Locale.ROOT, "%.1f TPS", tps), left + 1, bottom - 60 + 1);
    }
 
-   protected void drawAdditionalDimensions(final GuiGraphics graphics, final int bottom, final int currentX, final int sampleIndex) {
+   protected void extractAdditionalSampleBars(final GuiGraphicsExtractor graphics, final int bottom, final int currentX, final int sampleIndex) {
       long tickMethodTime = this.sampleStorage.get(sampleIndex, TpsDebugDimensions.TICK_SERVER_METHOD.ordinal());
       int tickMethodHeight = this.getSampleHeight((double)tickMethodTime);
       graphics.fill(currentX, bottom - tickMethodHeight, currentX + 1, bottom, -6745839);

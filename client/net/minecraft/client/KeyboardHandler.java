@@ -18,6 +18,7 @@ import net.minecraft.ReportedException;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.debug.DebugScreenEntries;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.debug.DebugOptionsScreen;
@@ -70,6 +71,7 @@ public class KeyboardHandler {
    private long debugCrashKeyReportedTime = -1L;
    private long debugCrashKeyReportedCount = -1L;
    private boolean usedDebugKeyAsModifier;
+   private @Nullable PreeditEvent lastPreeditEvent;
 
    public KeyboardHandler(final Minecraft minecraft) {
       super();
@@ -522,22 +524,22 @@ public class KeyboardHandler {
          InputConstants.Key key;
          boolean handlesGameInput;
          boolean var10000;
-         label204: {
+         label186: {
             key = InputConstants.getKey(event);
             handlesGameInput = this.minecraft.screen == null;
             if (!handlesGameInput) {
-               label202: {
+               label184: {
                   Screen var15 = this.minecraft.screen;
                   if (var15 instanceof PauseScreen) {
                      PauseScreen pauseScreen = (PauseScreen)var15;
                      if (!pauseScreen.showsPauseMenu()) {
-                        break label202;
+                        break label184;
                      }
                   }
 
                   if (!(this.minecraft.screen instanceof GameModeSwitcherScreen)) {
                      var10000 = false;
-                     break label204;
+                     break label186;
                   }
                }
             }
@@ -572,10 +574,6 @@ public class KeyboardHandler {
                      optionList.children().forEach(DebugOptionsScreen.AbstractOptionEntry::refreshEntry);
                   }
                }
-            } else if (handlesGlobalInput && options.keyToggleGui.matches(event)) {
-               options.hideGui = !options.hideGui;
-            } else if (handlesGlobalInput && options.keyToggleSpectatorShaderEffects.matches(event)) {
-               this.minecraft.gameRenderer.togglePostEffect();
             }
 
             if (modifierAndOverlayIsSame) {
@@ -621,18 +619,30 @@ public class KeyboardHandler {
 
    private void preeditCallback(final long handle, final @Nullable PreeditEvent event) {
       if (handle == this.minecraft.getWindow().handle()) {
+         this.lastPreeditEvent = event;
          Screen screen = this.minecraft.screen;
          if (screen != null && this.minecraft.getOverlay() == null) {
-            try {
-               screen.preeditUpdated(event);
-            } catch (Throwable t) {
-               CrashReport report = CrashReport.forThrowable(t, "IME pre-edit event handler");
-               screen.fillCrashDetails(report);
-               CrashReportCategory keyDetails = report.addCategory("Event");
-               keyDetails.setDetail("Contents", (CrashReportDetail)(() -> String.valueOf(event)));
-               throw new ReportedException(report);
-            }
+            submitPreeditEvent(screen, event);
          }
+      }
+   }
+
+   public void resubmitLastPreeditEvent(final GuiEventListener screen) {
+      submitPreeditEvent(screen, this.lastPreeditEvent);
+   }
+
+   public static void submitPreeditEvent(final GuiEventListener element, final @Nullable PreeditEvent event) {
+      try {
+         element.preeditUpdated(event);
+      } catch (Throwable t) {
+         CrashReport report = CrashReport.forThrowable(t, "IME pre-edit event handler");
+         if (element instanceof Screen screen) {
+            screen.fillCrashDetails(report);
+         }
+
+         CrashReportCategory keyDetails = report.addCategory("Event");
+         keyDetails.setDetail("Contents", (CrashReportDetail)(() -> String.valueOf(event)));
+         throw new ReportedException(report);
       }
    }
 
@@ -646,7 +656,7 @@ public class KeyboardHandler {
       }, (window1, preeditSize, preeditPtr, blockCount, blockSizesPtr, focusedBlock, caret) -> {
          PreeditEvent event = PreeditEvent.createFromCallback(preeditSize, preeditPtr, blockCount, blockSizesPtr, focusedBlock, caret);
          this.minecraft.execute(() -> this.preeditCallback(window1, event));
-      }, (window1) -> this.minecraft.notifyIMEChanged());
+      }, (window1) -> this.minecraft.textInputManager().notifyIMEChanged());
    }
 
    public String getClipboard() {

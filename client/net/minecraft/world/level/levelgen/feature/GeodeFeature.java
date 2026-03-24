@@ -44,7 +44,7 @@ public class GeodeFeature extends Feature<GeodeConfiguration> {
       WorldgenRandom random1 = new WorldgenRandom(new LegacyRandomSource(level.getSeed()));
       NormalNoise noise = NormalNoise.create(random1, -4, 1.0);
       List<BlockPos> crackPoints = Lists.newLinkedList();
-      double crackSizeAdjustment = (double)numPoints / (double)config.outerWallDistance.getMaxValue();
+      double crackSizeAdjustment = (double)numPoints / (double)config.outerWallDistance.maxInclusive();
       GeodeLayerSettings layerSettings = config.geodeLayerSettings;
       GeodeBlockSettings blockSettings = config.geodeBlockSettings;
       GeodeCrackSettings crackSettings = config.geodeCrackSettings;
@@ -122,22 +122,22 @@ public class GeodeFeature extends Feature<GeodeConfiguration> {
                   }
                }
             } else if (distSumShell >= innerAir) {
-               this.safeSetBlock(level, pointInside, blockSettings.fillingProvider.getState(random, pointInside), canReplace);
+               this.safeSetBlock(level, pointInside, blockSettings.fillingProvider.getState(level, random, pointInside), canReplace);
             } else if (distSumShell >= innermostBlockLayer) {
                boolean useAlternateLayer = (double)random.nextFloat() < config.useAlternateLayer0Chance;
                if (useAlternateLayer) {
-                  this.safeSetBlock(level, pointInside, blockSettings.alternateInnerLayerProvider.getState(random, pointInside), canReplace);
+                  this.safeSetBlock(level, pointInside, blockSettings.alternateInnerLayerProvider.getState(level, random, pointInside), canReplace);
                } else {
-                  this.safeSetBlock(level, pointInside, blockSettings.innerLayerProvider.getState(random, pointInside), canReplace);
+                  this.safeSetBlock(level, pointInside, blockSettings.innerLayerProvider.getState(level, random, pointInside), canReplace);
                }
 
                if ((!config.placementsRequireLayer0Alternate || useAlternateLayer) && (double)random.nextFloat() < config.usePotentialPlacementsChance) {
                   potentialCrystalPlacements.add(pointInside.immutable());
                }
             } else if (distSumShell >= innerCrust) {
-               this.safeSetBlock(level, pointInside, blockSettings.middleLayerProvider.getState(random, pointInside), canReplace);
+               this.safeSetBlock(level, pointInside, blockSettings.middleLayerProvider.getState(level, random, pointInside), canReplace);
             } else if (distSumShell >= outerCrust) {
-               this.safeSetBlock(level, pointInside, blockSettings.outerLayerProvider.getState(random, pointInside), canReplace);
+               this.safeSetBlock(level, pointInside, blockSettings.outerLayerProvider.getState(level, random, pointInside), canReplace);
             }
          }
       }

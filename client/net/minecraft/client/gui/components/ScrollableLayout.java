@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.Layout;
 import net.minecraft.client.gui.layouts.LayoutElement;
@@ -115,15 +115,15 @@ public class ScrollableLayout implements Layout {
          return ScrollableLayout.this.content.getHeight();
       }
 
-      protected void renderWidget(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+      protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
          graphics.enableScissor(this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height);
 
          for(AbstractWidget child : this.children) {
-            child.render(graphics, mouseX, mouseY, a);
+            child.extractRenderState(graphics, mouseX, mouseY, a);
          }
 
          graphics.disableScissor();
-         this.renderScrollbar(graphics, mouseX, mouseY);
+         this.extractScrollbar(graphics, mouseX, mouseY);
       }
 
       protected void updateWidgetNarration(final NarrationElementOutput output) {

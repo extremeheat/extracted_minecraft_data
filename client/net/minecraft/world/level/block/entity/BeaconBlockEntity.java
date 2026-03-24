@@ -154,7 +154,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
                }
             }
          } else {
-            if (lastBeamSection == null || state.getLightBlock() >= 15 && !state.is(Blocks.BEDROCK)) {
+            if (lastBeamSection == null || state.getLightDampening() >= 15 && !state.is(Blocks.BEDROCK)) {
                entity.checkingBeamSections.clear();
                entity.lastCheckY = lastSetBlock;
                break;

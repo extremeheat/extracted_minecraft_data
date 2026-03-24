@@ -53,7 +53,7 @@ public class ArmedEntityRenderState extends LivingEntityRenderState {
 
    public static void extractArmedEntityRenderState(final LivingEntity entity, final ArmedEntityRenderState state, final ItemModelResolver itemModelResolver, final float partialTicks) {
       state.mainArm = entity.getMainArm();
-      state.attackArm = entity.swingingArm == InteractionHand.MAIN_HAND ? state.mainArm : state.mainArm.getOpposite();
+      state.attackArm = entity.swingingArm != InteractionHand.OFF_HAND ? state.mainArm : state.mainArm.getOpposite();
       ItemStack itemStack = entity.getItemHeldByArm(state.attackArm);
       state.swingAnimationType = itemStack.getSwingAnimation().type();
       state.attackTime = entity.getAttackAnim(partialTicks);

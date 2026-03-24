@@ -222,7 +222,7 @@ public class InputConstants {
 
    public static void updateRawMouseInput(final Window window, final boolean value) {
       if (isRawMouseInputSupported()) {
-         GLFW.glfwSetInputMode(window.handle(), 208901, value ? 1 : 0);
+         GLFW.glfwSetInputMode(window.handle(), 208901, GLX.glfwBool(value));
       }
 
    }

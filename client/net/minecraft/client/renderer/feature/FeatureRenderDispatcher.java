@@ -6,17 +6,19 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.OutlineBufferSource;
 import net.minecraft.client.renderer.SubmitNodeCollection;
 import net.minecraft.client.renderer.SubmitNodeStorage;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
-import net.minecraft.client.resources.model.AtlasManager;
+import net.minecraft.client.renderer.state.GameRenderState;
+import net.minecraft.client.resources.model.ModelManager;
+import net.minecraft.client.resources.model.sprite.AtlasManager;
 
 public class FeatureRenderDispatcher implements AutoCloseable {
    private final SubmitNodeStorage submitNodeStorage;
-   private final BlockRenderDispatcher blockRenderDispatcher;
+   private final ModelManager modelManager;
    private final MultiBufferSource.BufferSource bufferSource;
    private final AtlasManager atlasManager;
    private final OutlineBufferSource outlineBufferSource;
    private final MultiBufferSource.BufferSource crumblingBufferSource;
    private final Font font;
+   private final GameRenderState gameRenderState;
    private final ShadowFeatureRenderer shadowFeatureRenderer = new ShadowFeatureRenderer();
    private final FlameFeatureRenderer flameFeatureRenderer = new FlameFeatureRenderer();
    private final ModelFeatureRenderer modelFeatureRenderer = new ModelFeatureRenderer();
@@ -29,15 +31,16 @@ public class FeatureRenderDispatcher implements AutoCloseable {
    private final BlockFeatureRenderer blockFeatureRenderer = new BlockFeatureRenderer();
    private final ParticleFeatureRenderer particleFeatureRenderer = new ParticleFeatureRenderer();
 
-   public FeatureRenderDispatcher(final SubmitNodeStorage submitNodeStorage, final BlockRenderDispatcher blockRenderDispatcher, final MultiBufferSource.BufferSource bufferSource, final AtlasManager atlasManager, final OutlineBufferSource outlineBufferSource, final MultiBufferSource.BufferSource crumblingBufferSource, final Font font) {
+   public FeatureRenderDispatcher(final SubmitNodeStorage submitNodeStorage, final ModelManager modelManager, final MultiBufferSource.BufferSource bufferSource, final AtlasManager atlasManager, final OutlineBufferSource outlineBufferSource, final MultiBufferSource.BufferSource crumblingBufferSource, final Font font, final GameRenderState gameRenderState) {
       super();
       this.submitNodeStorage = submitNodeStorage;
-      this.blockRenderDispatcher = blockRenderDispatcher;
+      this.modelManager = modelManager;
       this.bufferSource = bufferSource;
       this.atlasManager = atlasManager;
       this.outlineBufferSource = outlineBufferSource;
       this.crumblingBufferSource = crumblingBufferSource;
       this.font = font;
+      this.gameRenderState = gameRenderState;
    }
 
    public void renderSolidFeatures() {
@@ -50,7 +53,7 @@ public class FeatureRenderDispatcher implements AutoCloseable {
          this.flameFeatureRenderer.renderSolid(collection, this.bufferSource, this.atlasManager);
          this.leashFeatureRenderer.renderSolid(collection, this.bufferSource);
          this.itemFeatureRenderer.renderSolid(collection, this.bufferSource, this.outlineBufferSource);
-         this.blockFeatureRenderer.renderSolid(collection, this.bufferSource, this.blockRenderDispatcher, this.outlineBufferSource);
+         this.blockFeatureRenderer.renderSolid(collection, this.bufferSource, this.modelManager.getBlockStateModelSet(), this.outlineBufferSource, this.gameRenderState.optionsRenderState);
          this.customFeatureRenderer.renderSolid(collection, this.bufferSource);
          this.particleFeatureRenderer.renderSolid(collection);
       }
@@ -68,7 +71,7 @@ public class FeatureRenderDispatcher implements AutoCloseable {
          this.nameTagFeatureRenderer.renderTranslucent(collection, this.bufferSource, this.font);
          this.textFeatureRenderer.renderTranslucent(collection, this.bufferSource);
          this.itemFeatureRenderer.renderTranslucent(collection, this.bufferSource, this.outlineBufferSource);
-         this.blockFeatureRenderer.renderTranslucent(collection, this.bufferSource, this.blockRenderDispatcher, this.outlineBufferSource);
+         this.blockFeatureRenderer.renderTranslucent(collection, this.bufferSource, this.modelManager.getBlockStateModelSet(), this.outlineBufferSource, this.crumblingBufferSource, this.gameRenderState.optionsRenderState);
          this.customFeatureRenderer.renderTranslucent(collection, this.bufferSource);
       }
 

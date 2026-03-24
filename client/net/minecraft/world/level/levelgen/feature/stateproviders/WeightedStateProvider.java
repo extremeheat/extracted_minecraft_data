@@ -1,23 +1,24 @@
 package net.minecraft.world.level.levelgen.feature.stateproviders;
 
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.random.WeightedList;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class WeightedStateProvider extends BlockStateProvider {
-   public static final MapCodec<WeightedStateProvider> CODEC;
+   public static final MapCodec<WeightedStateProvider> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(WeightedList.nonEmptyCodec(BlockState.CODEC).fieldOf("entries").forGetter((o) -> o.weightedList)).apply(i, WeightedStateProvider::new));
    private final WeightedList<BlockState> weightedList;
-
-   private static DataResult<WeightedStateProvider> create(final WeightedList<BlockState> weightedList) {
-      return weightedList.isEmpty() ? DataResult.error(() -> "WeightedStateProvider with no states") : DataResult.success(new WeightedStateProvider(weightedList));
-   }
 
    public WeightedStateProvider(final WeightedList<BlockState> weightedList) {
       super();
-      this.weightedList = weightedList;
+      if (weightedList.isEmpty()) {
+         throw new IllegalArgumentException("Weighted list must have at least one entry");
+      } else {
+         this.weightedList = weightedList;
+      }
    }
 
    public WeightedStateProvider(final WeightedList.Builder<BlockState> weightedList) {
@@ -28,11 +29,7 @@ public class WeightedStateProvider extends BlockStateProvider {
       return BlockStateProviderType.WEIGHTED_STATE_PROVIDER;
    }
 
-   public BlockState getState(final RandomSource random, final BlockPos pos) {
+   public BlockState getState(final WorldGenLevel level, final RandomSource random, final BlockPos pos) {
       return this.weightedList.getRandomOrThrow(random);
-   }
-
-   static {
-      CODEC = WeightedList.nonEmptyCodec(BlockState.CODEC).comapFlatMap(WeightedStateProvider::create, (p) -> p.weightedList).fieldOf("entries");
    }
 }

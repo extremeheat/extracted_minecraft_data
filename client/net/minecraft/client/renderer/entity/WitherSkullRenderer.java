@@ -11,7 +11,7 @@ import net.minecraft.client.model.object.skull.SkullModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.WitherSkullRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
@@ -41,7 +41,7 @@ public class WitherSkullRenderer extends EntityRenderer<WitherSkull, WitherSkull
    public void submit(final WitherSkullRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
       poseStack.pushPose();
       poseStack.scale(-1.0F, -1.0F, 1.0F);
-      submitNodeCollector.submitModel(this.model, state.modelState, poseStack, this.model.renderType(this.getTextureLocation(state)), state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+      submitNodeCollector.submitModel(this.model, state.modelState, poseStack, this.getTextureLocation(state), state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       poseStack.popPose();
       super.submit(state, poseStack, submitNodeCollector, camera);
    }

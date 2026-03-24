@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.screens.inventory;
 
 import java.util.stream.IntStream;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.IMEPreeditOverlay;
 import net.minecraft.client.gui.components.TextCursorUtils;
@@ -52,7 +52,7 @@ public abstract class AbstractSignEditScreen extends Screen {
    }
 
    protected void init() {
-      this.minecraft.getWindow().startTextInput();
+      this.minecraft.textInputManager().startTextInput();
       this.cursorBlinkStartTime = Util.getMillis();
       this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (button) -> this.onDone()).bounds(this.width / 2 - 100, this.height / 4 + 144, 200, 20).build());
       this.signField = new TextFieldHelper(() -> this.messages[this.line], this::setMessage, TextFieldHelper.createClipboardGetter(this.minecraft), TextFieldHelper.createClipboardSetter(this.minecraft), (s) -> this.minecraft.font.width(s) <= this.sign.getMaxTextLineWidth());
@@ -93,10 +93,10 @@ public abstract class AbstractSignEditScreen extends Screen {
       return true;
    }
 
-   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-      super.render(graphics, mouseX, mouseY, a);
-      graphics.drawCenteredString(this.font, (Component)this.title, this.width / 2, 40, -1);
-      this.renderSign(graphics);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
+      graphics.centeredText(this.font, (Component)this.title, this.width / 2, 40, -1);
+      this.extractSign(graphics);
    }
 
    public void onClose() {
@@ -109,7 +109,7 @@ public abstract class AbstractSignEditScreen extends Screen {
          connection.send(new ServerboundSignUpdatePacket(this.sign.getBlockPos(), this.isFrontText, this.messages[0], this.messages[1], this.messages[2], this.messages[3]));
       }
 
-      this.minecraft.getWindow().stopTextInput();
+      this.minecraft.textInputManager().stopTextInput();
    }
 
    public boolean isPauseScreen() {
@@ -120,24 +120,24 @@ public abstract class AbstractSignEditScreen extends Screen {
       return true;
    }
 
-   protected abstract void renderSignBackground(GuiGraphics graphics);
+   protected abstract void extractSignBackground(GuiGraphicsExtractor graphics);
 
    protected abstract Vector3f getSignTextScale();
 
    protected abstract float getSignYOffset();
 
-   private void renderSign(final GuiGraphics graphics) {
+   private void extractSign(final GuiGraphicsExtractor graphics) {
       graphics.pose().pushMatrix();
       float offsetX = (float)this.width / 2.0F;
       float offsetY = this.getSignYOffset();
       graphics.pose().translate(offsetX, offsetY);
       graphics.pose().pushMatrix();
-      this.renderSignBackground(graphics);
+      this.extractSignBackground(graphics);
       graphics.pose().popMatrix();
       Vector3f textScale = this.getSignTextScale();
       graphics.pose().scale(textScale.x(), textScale.y());
       this.cursorPosScratch.zero();
-      this.renderSignText(graphics, this.cursorPosScratch);
+      this.extractSignText(graphics, this.cursorPosScratch);
       graphics.pose().popMatrix();
       if (this.preeditOverlay != null) {
          this.cursorPosScratch.mul(textScale.x(), textScale.y()).add(offsetX, offsetY);
@@ -147,7 +147,7 @@ public abstract class AbstractSignEditScreen extends Screen {
 
    }
 
-   private void renderSignText(final GuiGraphics graphics, final Vector2f cursorPosOutput) {
+   private void extractSignText(final GuiGraphicsExtractor graphics, final Vector2f cursorPosOutput) {
       int color = this.text.hasGlowingText() ? this.text.getColor().getTextColor() : AbstractSignRenderer.getDarkColor(this.text);
       boolean showCursor = TextCursorUtils.isCursorVisible(Util.getMillis() - this.cursorBlinkStartTime);
       boolean needsValidCursorPos = this.preeditOverlay != null;
@@ -164,13 +164,13 @@ public abstract class AbstractSignEditScreen extends Screen {
             }
 
             int x1 = -this.font.width(line) / 2;
-            graphics.drawString(this.font, line, x1, i * this.sign.getTextLineHeight() - signMidpoint, color, false);
+            graphics.text(this.font, line, x1, i * this.sign.getTextLineHeight() - signMidpoint, color, false);
             if (i == this.line && cursorPos >= 0 && (showCursor || needsValidCursorPos)) {
                int cursorPosition = this.font.width(line.substring(0, Math.max(Math.min(cursorPos, line.length()), 0)));
                int cursorX = cursorPosition - this.font.width(line) / 2;
                if (cursorPos >= line.length()) {
                   if (showCursor) {
-                     TextCursorUtils.drawAppendCursor(graphics, this.font, cursorX, cursorY, color, false);
+                     TextCursorUtils.extractAppendCursor(graphics, this.font, cursorX, cursorY, color, false);
                   }
 
                   cursorPosOutput.set((float)cursorX, (float)cursorY);
@@ -186,7 +186,7 @@ public abstract class AbstractSignEditScreen extends Screen {
             int cursorX = cursorPosition - this.font.width(line) / 2;
             if (cursorPos < line.length()) {
                if (showCursor) {
-                  TextCursorUtils.drawInsertCursor(graphics, cursorX, cursorY, ARGB.opaque(color), this.sign.getTextLineHeight());
+                  TextCursorUtils.extractInsertCursor(graphics, cursorX, cursorY, ARGB.opaque(color), this.sign.getTextLineHeight());
                }
 
                cursorPosOutput.set((float)cursorX, (float)cursorY);

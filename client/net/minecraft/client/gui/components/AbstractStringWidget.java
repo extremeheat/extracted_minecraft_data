@@ -3,7 +3,7 @@ package net.minecraft.client.gui.components;
 import java.util.function.Consumer;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
@@ -21,16 +21,16 @@ public abstract class AbstractStringWidget extends AbstractWidget {
 
    public abstract void visitLines(ActiveTextCollector output);
 
-   public void renderWidget(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-      GuiGraphics.HoveredTextEffects effects;
+   public void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      GuiGraphicsExtractor.HoveredTextEffects effects;
       if (this.isHovered()) {
          if (this.componentClickHandler != null) {
-            effects = GuiGraphics.HoveredTextEffects.TOOLTIP_AND_CURSOR;
+            effects = GuiGraphicsExtractor.HoveredTextEffects.TOOLTIP_AND_CURSOR;
          } else {
-            effects = GuiGraphics.HoveredTextEffects.TOOLTIP_ONLY;
+            effects = GuiGraphicsExtractor.HoveredTextEffects.TOOLTIP_ONLY;
          }
       } else {
-         effects = GuiGraphics.HoveredTextEffects.NONE;
+         effects = GuiGraphicsExtractor.HoveredTextEffects.NONE;
       }
 
       this.visitLines(graphics.textRendererForWidget(this, effects));

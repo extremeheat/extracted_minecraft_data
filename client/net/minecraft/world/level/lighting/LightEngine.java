@@ -43,7 +43,7 @@ public abstract class LightEngine<M extends DataLayerStorageMap<M>, S extends La
       if (newState == oldState) {
          return false;
       } else {
-         return newState.getLightBlock() != oldState.getLightBlock() || newState.getLightEmission() != oldState.getLightEmission() || newState.useShapeForLightOcclusion() || oldState.useShapeForLightOcclusion();
+         return newState.getLightDampening() != oldState.getLightDampening() || newState.getLightEmission() != oldState.getLightEmission() || newState.useShapeForLightOcclusion() || oldState.useShapeForLightOcclusion();
       }
    }
 
@@ -75,7 +75,7 @@ public abstract class LightEngine<M extends DataLayerStorageMap<M>, S extends La
    }
 
    protected int getOpacity(final BlockState state) {
-      return Math.max(1, state.getLightBlock());
+      return Math.max(1, state.getLightDampening());
    }
 
    protected boolean shapeOccludes(final BlockState fromState, final BlockState toState, final Direction direction) {

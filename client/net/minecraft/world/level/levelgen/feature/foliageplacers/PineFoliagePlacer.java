@@ -4,11 +4,12 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
-import net.minecraft.world.level.LevelSimulatedReader;
+import net.minecraft.util.valueproviders.IntProviders;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 
 public class PineFoliagePlacer extends FoliagePlacer {
-   public static final MapCodec<PineFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((i) -> foliagePlacerParts(i).and(IntProvider.codec(0, 24).fieldOf("height").forGetter((p) -> p.height)).apply(i, PineFoliagePlacer::new));
+   public static final MapCodec<PineFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((i) -> foliagePlacerParts(i).and(IntProviders.codec(0, 24).fieldOf("height").forGetter((p) -> p.height)).apply(i, PineFoliagePlacer::new));
    private final IntProvider height;
 
    public PineFoliagePlacer(final IntProvider radius, final IntProvider offset, final IntProvider height) {
@@ -20,7 +21,7 @@ public class PineFoliagePlacer extends FoliagePlacer {
       return FoliagePlacerType.PINE_FOLIAGE_PLACER;
    }
 
-   protected void createFoliage(final LevelSimulatedReader level, final FoliagePlacer.FoliageSetter foliageSetter, final RandomSource random, final TreeConfiguration config, final int treeHeight, final FoliagePlacer.FoliageAttachment foliageAttachment, final int foliageHeight, final int leafRadius, final int offset) {
+   protected void createFoliage(final WorldGenLevel level, final FoliagePlacer.FoliageSetter foliageSetter, final RandomSource random, final TreeConfiguration config, final int treeHeight, final FoliagePlacer.FoliageAttachment foliageAttachment, final int foliageHeight, final int leafRadius, final int offset) {
       int currentRadius = 0;
 
       for(int yo = offset; yo >= offset - foliageHeight; --yo) {

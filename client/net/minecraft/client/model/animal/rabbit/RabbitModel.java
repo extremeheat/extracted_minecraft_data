@@ -24,8 +24,11 @@ public abstract class RabbitModel extends EntityModel<RabbitRenderState> {
 
    public void setupAnim(final RabbitRenderState state) {
       super.setupAnim(state);
-      this.head.yRot = state.yRot * 0.017453292F;
-      this.head.xRot = state.xRot * 0.017453292F;
+      if (!state.idleHeadTiltAnimationState.isStarted()) {
+         this.head.yRot = state.yRot * 0.017453292F;
+         this.head.xRot = state.xRot * 0.017453292F;
+      }
+
       this.hopAnimation.apply(state.hopAnimationState, state.ageInTicks);
       this.idleHeadTiltAnimation.apply(state.idleHeadTiltAnimationState, state.ageInTicks);
    }

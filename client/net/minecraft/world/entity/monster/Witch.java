@@ -211,7 +211,7 @@ public class Witch extends Raider implements RangedAttackMob {
          if (var14 instanceof ServerLevel) {
             ServerLevel serverLevel = (ServerLevel)var14;
             ItemStack itemStack = PotionContents.createItemStack(Items.SPLASH_POTION, potion);
-            Projectile.spawnProjectileUsingShoot(ThrownSplashPotion::new, serverLevel, itemStack, this, xd, yd + dist * 0.2, zd, 0.75F, 8.0F);
+            Projectile.spawnProjectileUsingShoot(ThrownSplashPotion::new, serverLevel, itemStack, this, xd, yd + dist * 0.2, zd, dist <= 2.0 ? 0.45F : 0.75F, 8.0F);
          }
 
          if (!this.isSilent()) {

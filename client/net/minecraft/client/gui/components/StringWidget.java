@@ -3,11 +3,8 @@ package net.minecraft.client.gui.components;
 import java.util.Objects;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.Font;
-import net.minecraft.locale.Language;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
-import net.minecraft.util.FormattedCharSequence;
 
 public class StringWidget extends AbstractStringWidget {
    private static final int TEXT_MARGIN = 2;
@@ -76,18 +73,13 @@ public class StringWidget extends AbstractStringWidget {
       boolean textOverflow = textWidth > maxWidth;
       if (textOverflow) {
          switch (this.textOverflow.ordinal()) {
-            case 0 -> output.accept(x, y, clipText(message, font, maxWidth));
-            case 1 -> this.renderScrollingStringOverContents(output, message, 2);
+            case 0 -> output.accept(x, y, ComponentRenderUtils.clipText(message, font, maxWidth));
+            case 1 -> this.extractScrollingStringOverContents(output, message, 2);
          }
       } else {
          output.accept(x, y, message.getVisualOrderText());
       }
 
-   }
-
-   public static FormattedCharSequence clipText(final Component text, final Font font, final int width) {
-      FormattedText clippedText = font.substrByWidth(text, width - font.width((FormattedText)CommonComponents.ELLIPSIS));
-      return Language.getInstance().getVisualOrder(FormattedText.composite(clippedText, CommonComponents.ELLIPSIS));
    }
 
    public static enum TextOverflow {

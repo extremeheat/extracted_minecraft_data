@@ -3,7 +3,7 @@ package net.minecraft.client.gui.components;
 import java.util.function.Supplier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ActiveTextCollector;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -24,18 +24,18 @@ public abstract class AbstractButton extends AbstractWidget.WithInactiveMessage 
 
    public abstract void onPress(InputWithModifiers input);
 
-   protected final void renderWidget(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-      this.renderContents(graphics, mouseX, mouseY, a);
+   protected final void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      this.extractContents(graphics, mouseX, mouseY, a);
       this.handleCursor(graphics);
    }
 
-   protected abstract void renderContents(GuiGraphics graphics, int mouseX, int mouseY, float a);
+   protected abstract void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a);
 
-   protected void renderDefaultLabel(final ActiveTextCollector output) {
-      this.renderScrollingStringOverContents(output, this.getMessage(), 2);
+   protected void extractDefaultLabel(final ActiveTextCollector output) {
+      this.extractScrollingStringOverContents(output, this.getMessage(), 2);
    }
 
-   protected final void renderDefaultSprite(final GuiGraphics graphics) {
+   protected final void extractDefaultSprite(final GuiGraphicsExtractor graphics) {
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SPRITES.get(this.active, this.overrideRenderHighlightedSprite != null ? (Boolean)this.overrideRenderHighlightedSprite.get() : this.isHoveredOrFocused()), this.getX(), this.getY(), this.getWidth(), this.getHeight(), ARGB.white(this.alpha));
    }
 

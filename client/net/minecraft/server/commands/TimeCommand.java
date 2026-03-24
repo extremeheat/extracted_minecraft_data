@@ -1,6 +1,7 @@
 package net.minecraft.server.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -35,6 +36,7 @@ public class TimeCommand {
    private static final DynamicCommandExceptionType ERROR_NO_DEFAULT_CLOCK = new DynamicCommandExceptionType((dimension) -> Component.translatableEscape("commands.time.no_default_clock", dimension));
    private static final Dynamic2CommandExceptionType ERROR_NO_TIME_MARKER_FOUND = new Dynamic2CommandExceptionType((clock, timeMarker) -> Component.translatableEscape("commands.time.no_time_marker_found", timeMarker, clock));
    private static final Dynamic2CommandExceptionType ERROR_WRONG_TIMELINE_FOR_CLOCK = new Dynamic2CommandExceptionType((clock, timeline) -> Component.translatableEscape("commands.time.wrong_timeline_for_clock", timeline, clock));
+   private static final int MAX_CLOCK_RATE = 1000;
 
    public TimeCommand() {
       super();
@@ -47,7 +49,7 @@ public class TimeCommand {
    }
 
    private static <A extends ArgumentBuilder<CommandSourceStack, A>> A addClockNodes(final CommandBuildContext context, final A node, final ClockGetter clockGetter) {
-      return (A)node.then(((LiteralArgumentBuilder)Commands.literal("set").then(Commands.argument("time", TimeArgument.time()).executes((c) -> setTotalTicks((CommandSourceStack)c.getSource(), clockGetter.getClock(c), IntegerArgumentType.getInteger(c, "time"))))).then(Commands.argument("timemarker", IdentifierArgument.id()).suggests((c, p) -> suggestTimeMarkers((CommandSourceStack)c.getSource(), p, clockGetter.getClock(c))).executes((c) -> setTimeToTimeMarker((CommandSourceStack)c.getSource(), clockGetter.getClock(c), ResourceKey.create(ClockTimeMarkers.ROOT_ID, IdentifierArgument.getId(c, "timemarker")))))).then(Commands.literal("add").then(Commands.argument("time", TimeArgument.time(-2147483648)).executes((c) -> addTime((CommandSourceStack)c.getSource(), clockGetter.getClock(c), IntegerArgumentType.getInteger(c, "time"))))).then(Commands.literal("pause").executes((c) -> setPaused((CommandSourceStack)c.getSource(), clockGetter.getClock(c), true))).then(Commands.literal("resume").executes((c) -> setPaused((CommandSourceStack)c.getSource(), clockGetter.getClock(c), false))).then(((LiteralArgumentBuilder)Commands.literal("query").then(Commands.literal("time").executes((c) -> queryTime((CommandSourceStack)c.getSource(), clockGetter.getClock(c))))).then(((RequiredArgumentBuilder)Commands.argument("timeline", ResourceArgument.resource(context, Registries.TIMELINE)).suggests((c, p) -> suggestTimelines((CommandSourceStack)c.getSource(), p, clockGetter.getClock(c))).executes((c) -> queryTimelineTicks((CommandSourceStack)c.getSource(), clockGetter.getClock(c), ResourceArgument.getTimeline(c, "timeline")))).then(Commands.literal("repetition").executes((c) -> queryTimelineRepetitions((CommandSourceStack)c.getSource(), clockGetter.getClock(c), ResourceArgument.getTimeline(c, "timeline"))))));
+      return (A)node.then(((LiteralArgumentBuilder)Commands.literal("set").then(Commands.argument("time", TimeArgument.time()).executes((c) -> setTotalTicks((CommandSourceStack)c.getSource(), clockGetter.getClock(c), IntegerArgumentType.getInteger(c, "time"))))).then(Commands.argument("timemarker", IdentifierArgument.id()).suggests((c, p) -> suggestTimeMarkers((CommandSourceStack)c.getSource(), p, clockGetter.getClock(c))).executes((c) -> setTimeToTimeMarker((CommandSourceStack)c.getSource(), clockGetter.getClock(c), ResourceKey.create(ClockTimeMarkers.ROOT_ID, IdentifierArgument.getId(c, "timemarker")))))).then(Commands.literal("add").then(Commands.argument("time", TimeArgument.time(-2147483648)).executes((c) -> addTime((CommandSourceStack)c.getSource(), clockGetter.getClock(c), IntegerArgumentType.getInteger(c, "time"))))).then(Commands.literal("pause").executes((c) -> setPaused((CommandSourceStack)c.getSource(), clockGetter.getClock(c), true))).then(Commands.literal("resume").executes((c) -> setPaused((CommandSourceStack)c.getSource(), clockGetter.getClock(c), false))).then(Commands.literal("rate").then(Commands.argument("rate", FloatArgumentType.floatArg(1.0E-5F, 1000.0F)).executes((c) -> setRate((CommandSourceStack)c.getSource(), clockGetter.getClock(c), FloatArgumentType.getFloat(c, "rate"))))).then(((LiteralArgumentBuilder)Commands.literal("query").then(Commands.literal("time").executes((c) -> queryTime((CommandSourceStack)c.getSource(), clockGetter.getClock(c))))).then(((RequiredArgumentBuilder)Commands.argument("timeline", ResourceArgument.resource(context, Registries.TIMELINE)).suggests((c, p) -> suggestTimelines((CommandSourceStack)c.getSource(), p, clockGetter.getClock(c))).executes((c) -> queryTimelineTicks((CommandSourceStack)c.getSource(), clockGetter.getClock(c), ResourceArgument.getTimeline(c, "timeline")))).then(Commands.literal("repetition").executes((c) -> queryTimelineRepetitions((CommandSourceStack)c.getSource(), clockGetter.getClock(c), ResourceArgument.getTimeline(c, "timeline"))))));
    }
 
    private static CompletableFuture<Suggestions> suggestTimeMarkers(final CommandSourceStack source, final SuggestionsBuilder builder, final Holder<WorldClock> clock) {
@@ -122,6 +124,12 @@ public class TimeCommand {
    private static int setPaused(final CommandSourceStack source, final Holder<WorldClock> clock, final boolean paused) {
       source.getServer().clockManager().setPaused(clock, paused);
       source.sendSuccess(() -> Component.translatable(paused ? "commands.time.pause" : "commands.time.resume", clock.getRegisteredName()), true);
+      return 1;
+   }
+
+   private static int setRate(final CommandSourceStack source, final Holder<WorldClock> clock, final float rate) {
+      source.getServer().clockManager().setRate(clock, rate);
+      source.sendSuccess(() -> Component.translatable("commands.time.rate", clock.getRegisteredName(), rate), true);
       return 1;
    }
 

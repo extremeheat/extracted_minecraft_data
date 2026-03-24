@@ -8,7 +8,7 @@ import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.CharacterEvent;
@@ -407,7 +407,7 @@ public class EditBox extends AbstractWidget {
    public void playDownSound(final SoundManager soundManager) {
    }
 
-   public void renderWidget(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       if (this.isVisible()) {
          if (this.isBordered()) {
             Identifier sprite = SPRITES.get(this.isActive(), this.isFocused());
@@ -424,7 +424,7 @@ public class EditBox extends AbstractWidget {
          if (!displayed.isEmpty()) {
             String half = cursorOnScreen ? displayed.substring(0, relCursorPos) : displayed;
             FormattedCharSequence charSequence = this.applyFormat(half, this.displayPos);
-            graphics.drawString(this.font, charSequence, drawX, this.textY, color, this.textShadow);
+            graphics.text(this.font, charSequence, drawX, this.textY, color, this.textShadow);
             drawX += this.font.width(charSequence) + 1;
          }
 
@@ -438,15 +438,15 @@ public class EditBox extends AbstractWidget {
          }
 
          if (!displayed.isEmpty() && cursorOnScreen && relCursorPos < displayed.length()) {
-            graphics.drawString(this.font, this.applyFormat(displayed.substring(relCursorPos), this.cursorPos), drawX, this.textY, color, this.textShadow);
+            graphics.text(this.font, this.applyFormat(displayed.substring(relCursorPos), this.cursorPos), drawX, this.textY, color, this.textShadow);
          }
 
          if (this.hint != null && displayed.isEmpty() && !this.isFocused()) {
-            graphics.drawString(this.font, this.hint, drawX, this.textY, color);
+            graphics.text(this.font, this.hint, drawX, this.textY, color);
          }
 
          if (!insert && this.suggestion != null) {
-            graphics.drawString(this.font, this.suggestion, cursorX - 1, this.textY, -8355712, this.textShadow);
+            graphics.text(this.font, this.suggestion, cursorX - 1, this.textY, -8355712, this.textShadow);
          }
 
          if (relHighlightPos != relCursorPos) {
@@ -463,9 +463,9 @@ public class EditBox extends AbstractWidget {
             if (insert) {
                int var18 = this.textY;
                Objects.requireNonNull(this.font);
-               TextCursorUtils.drawInsertCursor(graphics, cursorX, var18, color, 9 + 1);
+               TextCursorUtils.extractInsertCursor(graphics, cursorX, var18, color, 9 + 1);
             } else {
-               TextCursorUtils.drawAppendCursor(graphics, this.font, cursorX, this.textY, color, this.textShadow);
+               TextCursorUtils.extractAppendCursor(graphics, this.font, cursorX, this.textY, color, this.textShadow);
             }
          }
 
@@ -541,7 +541,10 @@ public class EditBox extends AbstractWidget {
             this.focusedTime = Util.getMillis();
          }
 
-         Minecraft.getInstance().getWindow().onTextInputFocusChange(focused);
+         if (this.isEditable()) {
+            Minecraft.getInstance().onTextInputFocusChange(this, focused);
+         }
+
       }
    }
 
@@ -550,6 +553,10 @@ public class EditBox extends AbstractWidget {
    }
 
    public void setEditable(final boolean isEditable) {
+      if (this.isFocused()) {
+         Minecraft.getInstance().onTextInputFocusChange(this, isEditable);
+      }
+
       this.isEditable = isEditable;
    }
 

@@ -36,6 +36,7 @@ import net.minecraft.data.tags.BiomeTagsProvider;
 import net.minecraft.data.tags.DamageTypeTagsProvider;
 import net.minecraft.data.tags.DialogTagsProvider;
 import net.minecraft.data.tags.EntityTypeTagsProvider;
+import net.minecraft.data.tags.FeatureTagsProvider;
 import net.minecraft.data.tags.FlatLevelGeneratorPresetTagsProvider;
 import net.minecraft.data.tags.FluidTagsProvider;
 import net.minecraft.data.tags.GameEventTagsProvider;
@@ -138,6 +139,7 @@ public class Main {
       serverVanillaPack.addProvider(bindRegistries(TimelineTagsProvider::new, vanillaRegistries));
       serverVanillaPack.addProvider(bindRegistries(PotionTagsProvider::new, vanillaRegistries));
       serverVanillaPack.addProvider(bindRegistries(VillagerTradesTagsProvider::new, vanillaRegistries));
+      serverVanillaPack.addProvider(bindRegistries(FeatureTagsProvider::new, vanillaRegistries));
       serverVanillaPack = generator.getVanillaPack(reports);
       serverVanillaPack.addProvider(bindRegistries(BiomeParametersDumpReport::new, vanillaRegistries));
       serverVanillaPack.addProvider(bindRegistries(RegistryComponentsReport::new, vanillaRegistries));

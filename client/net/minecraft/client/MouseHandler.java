@@ -15,7 +15,7 @@ import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.InputQuirks;
@@ -422,12 +422,12 @@ public class MouseHandler {
       this.ignoreFirstMove = true;
    }
 
-   public void drawDebugMouseInfo(final Font font, final GuiGraphics graphics) {
+   public void drawDebugMouseInfo(final Font font, final GuiGraphicsExtractor graphics) {
       Window window = this.minecraft.getWindow();
       double x = this.getScaledXPos(window);
       double y = this.getScaledYPos(window) - 8.0;
       String text = String.format(Locale.ROOT, "%.0f,%.0f", x, y);
-      graphics.drawString(font, (String)text, (int)x, (int)y, -1);
+      graphics.text(font, (String)text, (int)x, (int)y, -1);
    }
 
    private static record LastClick(long time, Screen screen) {

@@ -42,7 +42,7 @@ public class DiskFeature extends Feature<DiskConfiguration> {
       for(int y = top; y > bottom; --y) {
          pos.setY(y);
          if (config.target().test(level, pos)) {
-            BlockState state = config.stateProvider().getState(level, random, pos);
+            BlockState state = config.stateProvider().getOptionalState(level, random, pos);
             if (state != null) {
                level.setBlock(pos, state, 2);
                if (!placedAbove) {

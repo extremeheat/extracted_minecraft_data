@@ -2,19 +2,12 @@ package net.minecraft.world.clock;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.netty.buffer.ByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.ExtraCodecs;
 
-public record ClockState(long totalTicks, boolean paused) {
-   public static final Codec<ClockState> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.LONG.fieldOf("total_ticks").forGetter(ClockState::totalTicks), Codec.BOOL.optionalFieldOf("paused", false).forGetter(ClockState::paused)).apply(i, ClockState::new));
-   public static final StreamCodec<ByteBuf, ClockState> STREAM_CODEC;
+public record ClockState(long totalTicks, float partialTick, float rate, boolean paused) {
+   public static final Codec<ClockState> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.LONG.fieldOf("total_ticks").forGetter(ClockState::totalTicks), Codec.FLOAT.optionalFieldOf("partial_tick", 0.0F).forGetter(ClockState::partialTick), ExtraCodecs.POSITIVE_FLOAT.optionalFieldOf("rate", 1.0F).forGetter(ClockState::rate), Codec.BOOL.optionalFieldOf("paused", false).forGetter(ClockState::paused)).apply(i, ClockState::new));
 
    public ClockState {
       super();
-   }
-
-   static {
-      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_LONG, ClockState::totalTicks, ByteBufCodecs.BOOL, ClockState::paused, ClockState::new);
    }
 }

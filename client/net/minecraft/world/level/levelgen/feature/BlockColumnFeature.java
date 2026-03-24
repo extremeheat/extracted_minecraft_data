@@ -45,7 +45,7 @@ public class BlockColumnFeature extends Feature<BlockColumnConfiguration> {
                BlockColumnConfiguration.Layer layer = (BlockColumnConfiguration.Layer)config.layers().get(i);
 
                for(int y = 0; y < count; ++y) {
-                  level.setBlock(placePos, layer.state().getState(random, placePos), 2);
+                  level.setBlock(placePos, layer.state().getState(level, random, placePos), 2);
                   placePos.move(config.direction());
                }
             }

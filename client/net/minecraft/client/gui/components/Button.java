@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.components;
 
 import java.util.function.Supplier;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.network.chat.Component;
@@ -45,9 +45,9 @@ public abstract class Button extends AbstractButton {
          super(x, y, width, height, message, onPress, createNarration);
       }
 
-      protected void renderContents(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
-         this.renderDefaultSprite(graphics);
-         this.renderDefaultLabel(graphics.textRendererForWidget(this, GuiGraphics.HoveredTextEffects.NONE));
+      protected void extractContents(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+         this.extractDefaultSprite(graphics);
+         this.extractDefaultLabel(graphics.textRendererForWidget(this, GuiGraphicsExtractor.HoveredTextEffects.NONE));
       }
    }
 

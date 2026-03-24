@@ -25,6 +25,12 @@ public class DonkeyModel extends AbstractEquineModel<DonkeyRenderState> {
       this.rightChest = this.body.getChild("right_chest");
    }
 
+   public DonkeyModel(final ModelPart root, final ModelPart headParts, final ModelPart rightHindLeg, final ModelPart rightFrontLeg, final ModelPart leftHindLeg, final ModelPart leftFrontLeg, final ModelPart tail) {
+      super(root, headParts, rightHindLeg, rightFrontLeg, leftHindLeg, leftFrontLeg, tail);
+      this.leftChest = this.body.getChild("left_chest");
+      this.rightChest = this.body.getChild("right_chest");
+   }
+
    public static LayerDefinition createBodyLayer(final float scale) {
       return LayerDefinition.create(AbstractEquineModel.createBodyMesh(CubeDeformation.NONE), 64, 64).apply(DONKEY_TRANSFORMER).apply(MeshTransformer.scaling(scale));
    }

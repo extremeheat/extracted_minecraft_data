@@ -6,6 +6,8 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.entity.state.PandaRenderState;
+import net.minecraft.util.Mth;
 
 public class BabyPandaModel extends PandaModel {
    public BabyPandaModel(final ModelPart root) {
@@ -22,5 +24,20 @@ public class BabyPandaModel extends PandaModel {
       root.addOrReplaceChild("right_front_leg", CubeListBuilder.create().texOffs(0, 29).addBox(-1.5F, 0.0F, -1.5F, 3.0F, 2.0F, 3.0F), PartPose.offset(-3.0F, 22.0F, -1.5F));
       root.addOrReplaceChild("left_front_leg", CubeListBuilder.create().texOffs(12, 29).addBox(-1.5F, 0.0F, -1.5F, 3.0F, 2.0F, 3.0F), PartPose.offset(3.0F, 22.0F, -1.5F));
       return LayerDefinition.create(mesh, 64, 64);
+   }
+
+   protected void animateSitting(PandaRenderState state) {
+      this.body.xRot = Mth.rotLerpRad(state.sitAmount, this.body.xRot, 0.17453292F);
+      this.body.z = Mth.lerp(state.sitAmount, this.body.z, -1.5F);
+      this.head.z = Mth.lerp(state.sitAmount, this.head.z, -11.5F);
+      this.head.y = Mth.lerp(state.sitAmount, this.head.y, 17.5F);
+      this.rightFrontLeg.z = Mth.lerp(state.sitAmount, this.rightFrontLeg.z, -5.0F);
+      this.leftFrontLeg.z = Mth.lerp(state.sitAmount, this.leftFrontLeg.z, -5.0F);
+      this.rightHindLeg.z = Mth.lerp(state.sitAmount, this.rightHindLeg.z, 3.0F);
+      this.leftHindLeg.z = Mth.lerp(state.sitAmount, this.leftHindLeg.z, 3.0F);
+      this.rightFrontLeg.zRot = -0.27079642F;
+      this.leftFrontLeg.zRot = 0.27079642F;
+      this.rightHindLeg.zRot = 0.5707964F;
+      this.leftHindLeg.zRot = -0.5707964F;
    }
 }

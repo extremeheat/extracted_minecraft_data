@@ -27,6 +27,7 @@ public class LootItemConditions {
       Registry.register(registry, (String)"reference", ConditionReference.MAP_CODEC);
       Registry.register(registry, (String)"time_check", TimeCheck.MAP_CODEC);
       Registry.register(registry, (String)"value_check", ValueCheckCondition.MAP_CODEC);
-      return (MapCodec)Registry.register(registry, (String)"enchantment_active_check", EnchantmentActiveCheck.MAP_CODEC);
+      Registry.register(registry, (String)"enchantment_active_check", EnchantmentActiveCheck.MAP_CODEC);
+      return (MapCodec)Registry.register(registry, (String)"environment_attribute_check", EnvironmentAttributeCheck.MAP_CODEC);
    }
 }

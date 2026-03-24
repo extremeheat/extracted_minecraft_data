@@ -200,7 +200,7 @@ public class WorldOpenFlows {
          backupWarning = Component.translatable("selectWorld.backupWarning.experimental");
       }
 
-      this.minecraft.setScreen(new BackupConfirmScreen(cancelCallback, (backup, eraseCache) -> EditWorldScreen.conditionallyMakeBackupAndShowToast(backup, levelAccess).thenAcceptAsync((var1) -> proceedCallback.run(), this.minecraft), backupQuestion, backupWarning, false, false));
+      this.minecraft.setScreen(new BackupConfirmScreen(cancelCallback, (backup, eraseCache) -> EditWorldScreen.conditionallyMakeBackupAndShowToast(backup, levelAccess).thenAcceptAsync((var1) -> proceedCallback.run(), this.minecraft), backupQuestion, backupWarning, false));
    }
 
    public static void confirmWorldCreation(final Minecraft minecraft, final CreateWorldScreen parent, final Lifecycle lifecycle, final Runnable task, final boolean skipWarning) {
@@ -273,11 +273,10 @@ public class WorldOpenFlows {
       } else {
          LevelSummary.BackupStatus backupStatus = summary.backupStatus();
          if (backupStatus.shouldBackup()) {
-            boolean forceBackup = backupStatus == LevelSummary.BackupStatus.FILE_FIXING_REQUIRED && !SharedConstants.getCurrentVersion().stable();
             String questionKey = "selectWorld.backupQuestion." + backupStatus.getTranslationKey();
             String warningKey = "selectWorld.backupWarning." + backupStatus.getTranslationKey();
             MutableComponent backupQuestion = Component.translatable(questionKey);
-            if (backupStatus.isSevere() || forceBackup) {
+            if (backupStatus.isSevere()) {
                backupQuestion.withColor(-2142128);
             }
 
@@ -285,7 +284,7 @@ public class WorldOpenFlows {
             this.minecraft.setScreen(new BackupConfirmScreen(() -> {
                worldAccess.safeClose();
                onCancel.run();
-            }, (backup, eraseCache) -> this.createBackupAndOpenWorld(worldAccess, levelDataTag, onCancel, backup), backupQuestion, backupWarning, false, forceBackup && !SharedConstants.IS_RUNNING_IN_IDE));
+            }, (backup, eraseCache) -> this.createBackupAndOpenWorld(worldAccess, levelDataTag, onCancel, backup), backupQuestion, backupWarning, false));
          } else {
             this.upgradeAndOpenWorld(worldAccess, levelDataTag, onCancel);
          }
@@ -348,14 +347,10 @@ public class WorldOpenFlows {
                this.minecraft.setScreenAndShow(new FileFixerAbortedScreen(cleanup, Component.translatable("upgradeWorld.aborted.message")));
             }
 
-            throw e.makeReportedException();
          });
          return null;
       } catch (FailedCleanupFileFixException e) {
-         this.minecraft.execute(() -> {
-            this.minecraft.setScreenAndShow(new AlertScreen(cleanup, Component.translatable("upgradeWorld.failed_cleanup.title"), Component.translatable("upgradeWorld.failed_cleanup.message", Component.literal(e.newWorldFolderName()).withColor(-8355712))));
-            throw e.makeReportedException();
-         });
+         this.minecraft.execute(() -> this.minecraft.setScreenAndShow(new AlertScreen(cleanup, Component.translatable("upgradeWorld.failed_cleanup.title"), Component.translatable("upgradeWorld.failed_cleanup.message", Component.literal(e.newWorldFolderName()).withColor(-8355712)))));
          return null;
       } catch (FileFixException e) {
          this.minecraft.delayCrash(e.makeReportedException().getReport());

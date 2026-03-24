@@ -3,16 +3,15 @@ package net.minecraft.client.model.object.statue;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.core.Direction;
+import net.minecraft.util.Unit;
 
-public class CopperGolemStatueModel extends Model<Direction> {
+public class CopperGolemStatueModel extends Model<Unit> {
    public CopperGolemStatueModel(final ModelPart root) {
       super(root, RenderTypes::entityCutout);
    }
 
-   public void setupAnim(final Direction direction) {
+   public void setupAnim(final Unit ignored) {
       this.root.y = 0.0F;
-      this.root.yRot = direction.getOpposite().toYRot() * 0.017453292F;
       this.root.zRot = 3.1415927F;
    }
 }

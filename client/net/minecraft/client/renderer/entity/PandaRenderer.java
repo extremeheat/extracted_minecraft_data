@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import java.util.Map;
+import net.minecraft.client.model.animal.panda.BabyPandaModel;
 import net.minecraft.client.model.animal.panda.PandaModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.PandaHoldsItemLayer;
@@ -19,7 +20,7 @@ public class PandaRenderer extends AgeableMobRenderer<Panda, PandaRenderState, P
    private static final Map<Panda.Gene, Identifier> BABY_TEXTURES;
 
    public PandaRenderer(final EntityRendererProvider.Context context) {
-      super(context, new PandaModel(context.bakeLayer(ModelLayers.PANDA)), new PandaModel(context.bakeLayer(ModelLayers.PANDA_BABY)), 0.9F);
+      super(context, new PandaModel(context.bakeLayer(ModelLayers.PANDA)), new BabyPandaModel(context.bakeLayer(ModelLayers.PANDA_BABY)), 0.9F);
       this.addLayer(new PandaHoldsItemLayer(this));
    }
 

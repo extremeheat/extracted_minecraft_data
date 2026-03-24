@@ -2,7 +2,7 @@ package net.minecraft.client.gui.contextualbar;
 
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
@@ -17,7 +17,7 @@ public class ExperienceBarRenderer implements ContextualBarRenderer {
       this.minecraft = minecraft;
    }
 
-   public void renderBackground(final GuiGraphics graphics, final DeltaTracker deltaTracker) {
+   public void extractBackground(final GuiGraphicsExtractor graphics, final DeltaTracker deltaTracker) {
       LocalPlayer player = this.minecraft.player;
       int left = this.left(this.minecraft.getWindow());
       int top = this.top(this.minecraft.getWindow());
@@ -32,6 +32,6 @@ public class ExperienceBarRenderer implements ContextualBarRenderer {
 
    }
 
-   public void render(final GuiGraphics graphics, final DeltaTracker deltaTracker) {
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final DeltaTracker deltaTracker) {
    }
 }

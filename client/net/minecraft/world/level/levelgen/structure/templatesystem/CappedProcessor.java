@@ -10,10 +10,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
 import net.minecraft.util.valueproviders.IntProvider;
+import net.minecraft.util.valueproviders.IntProviders;
 import net.minecraft.world.level.ServerLevelAccessor;
 
 public class CappedProcessor extends StructureProcessor {
-   public static final MapCodec<CappedProcessor> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(StructureProcessorType.SINGLE_CODEC.fieldOf("delegate").forGetter((c) -> c.delegate), IntProvider.POSITIVE_CODEC.fieldOf("limit").forGetter((c) -> c.limit)).apply(i, CappedProcessor::new));
+   public static final MapCodec<CappedProcessor> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(StructureProcessorType.SINGLE_CODEC.fieldOf("delegate").forGetter((c) -> c.delegate), IntProviders.POSITIVE_CODEC.fieldOf("limit").forGetter((c) -> c.limit)).apply(i, CappedProcessor::new));
    private final StructureProcessor delegate;
    private final IntProvider limit;
 
@@ -28,7 +29,7 @@ public class CappedProcessor extends StructureProcessor {
    }
 
    public final List<StructureTemplate.StructureBlockInfo> finalizeProcessing(final ServerLevelAccessor level, final BlockPos position, final BlockPos referencePos, final List<StructureTemplate.StructureBlockInfo> originalBlockInfoList, final List<StructureTemplate.StructureBlockInfo> processedBlockInfoList, final StructurePlaceSettings settings) {
-      if (this.limit.getMaxValue() != 0 && !processedBlockInfoList.isEmpty()) {
+      if (this.limit.maxInclusive() != 0 && !processedBlockInfoList.isEmpty()) {
          if (originalBlockInfoList.size() != processedBlockInfoList.size()) {
             int var10000 = originalBlockInfoList.size();
             Util.logAndPauseIfInIde("Original block info list not in sync with processed list, skipping processing. Original size: " + var10000 + ", Processed size: " + processedBlockInfoList.size());

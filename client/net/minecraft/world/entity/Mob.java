@@ -680,7 +680,7 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
    }
 
    public boolean requiresCustomPersistence() {
-      return this.isPassenger();
+      return this.isPassenger() || this.isLeashed();
    }
 
    public void checkDespawn() {
@@ -1091,10 +1091,6 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
 
       this.setLeftHanded(random.nextFloat() < 0.05F);
       return groupData;
-   }
-
-   public void setPersistenceRequired(final boolean persistenceRequired) {
-      this.persistenceRequired = persistenceRequired;
    }
 
    public void setPersistenceRequired() {

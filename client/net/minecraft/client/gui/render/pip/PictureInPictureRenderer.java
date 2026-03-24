@@ -11,13 +11,13 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.function.Supplier;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
-import net.minecraft.client.gui.render.state.BlitRenderState;
-import net.minecraft.client.gui.render.state.GuiRenderState;
-import net.minecraft.client.gui.render.state.pip.PictureInPictureRenderState;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.Projection;
 import net.minecraft.client.renderer.ProjectionMatrixBuffer;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.state.gui.BlitRenderState;
+import net.minecraft.client.renderer.state.gui.GuiRenderState;
+import net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState;
 import org.jspecify.annotations.Nullable;
 
 public abstract class PictureInPictureRenderer<T extends PictureInPictureRenderState> implements AutoCloseable {
@@ -57,7 +57,7 @@ public abstract class PictureInPictureRenderer<T extends PictureInPictureRenderS
    }
 
    protected void blitTexture(final T renderState, final GuiRenderState guiRenderState) {
-      guiRenderState.submitBlitToCurrentLayer(new BlitRenderState(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, TextureSetup.singleTexture(this.textureView, RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST)), renderState.pose(), renderState.x0(), renderState.y0(), renderState.x1(), renderState.y1(), 0.0F, 1.0F, 1.0F, 0.0F, -1, renderState.scissorArea(), (ScreenRectangle)null));
+      guiRenderState.addBlitToCurrentLayer(new BlitRenderState(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, TextureSetup.singleTexture(this.textureView, RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST)), renderState.pose(), renderState.x0(), renderState.y0(), renderState.x1(), renderState.y1(), 0.0F, 1.0F, 1.0F, 0.0F, -1, renderState.scissorArea(), (ScreenRectangle)null));
    }
 
    private void prepareTexturesAndProjection(final boolean needsAResize, final int width, final int height) {

@@ -4,8 +4,8 @@ import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
-import net.minecraft.client.renderer.block.model.multipart.Condition;
-import net.minecraft.client.renderer.block.model.multipart.KeyValueCondition;
+import net.minecraft.client.renderer.block.dispatch.multipart.Condition;
+import net.minecraft.client.renderer.block.dispatch.multipart.KeyValueCondition;
 import net.minecraft.world.level.block.state.properties.Property;
 
 public class ConditionBuilder {

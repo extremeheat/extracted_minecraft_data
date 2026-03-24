@@ -3,6 +3,7 @@ package net.minecraft.client.renderer.entity;
 import com.google.common.collect.Maps;
 import java.util.Map;
 import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.model.animal.equine.BabyHorseModel;
 import net.minecraft.client.model.animal.equine.EquineSaddleModel;
 import net.minecraft.client.model.animal.equine.HorseModel;
 import net.minecraft.client.model.geom.ModelLayers;
@@ -18,7 +19,7 @@ public final class HorseRenderer extends AbstractHorseRenderer<Horse, HorseRende
    private static final Map<Variant, HorseTextures> LOCATION_BY_VARIANT;
 
    public HorseRenderer(final EntityRendererProvider.Context context) {
-      super(context, new HorseModel(context.bakeLayer(ModelLayers.HORSE)), new HorseModel(context.bakeLayer(ModelLayers.HORSE_BABY)));
+      super(context, new HorseModel(context.bakeLayer(ModelLayers.HORSE)), new BabyHorseModel(context.bakeLayer(ModelLayers.HORSE_BABY)));
       this.addLayer(new HorseMarkingLayer(this));
       this.addLayer(new SimpleEquipmentLayer(this, context.getEquipmentRenderer(), EquipmentClientInfo.LayerType.HORSE_BODY, (state) -> state.bodyArmorItem, new HorseModel(context.bakeLayer(ModelLayers.HORSE_ARMOR)), (EntityModel)null, 2));
       this.addLayer(new SimpleEquipmentLayer(this, context.getEquipmentRenderer(), EquipmentClientInfo.LayerType.HORSE_SADDLE, (state) -> state.saddle, new EquineSaddleModel(context.bakeLayer(ModelLayers.HORSE_SADDLE)), (EntityModel)null, 2));

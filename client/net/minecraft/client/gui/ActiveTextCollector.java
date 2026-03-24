@@ -6,7 +6,7 @@ import net.minecraft.client.gui.font.ActiveArea;
 import net.minecraft.client.gui.font.EmptyArea;
 import net.minecraft.client.gui.font.TextRenderable;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.gui.render.state.GuiTextRenderState;
+import net.minecraft.client.renderer.state.gui.GuiTextRenderState;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;

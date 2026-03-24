@@ -13,7 +13,7 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import net.minecraft.client.GameNarrator;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
@@ -125,45 +125,45 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
       this.minecraft.setScreen(this.lastScreen);
    }
 
-   public void render(final GuiGraphics graphics, final int xm, final int ym, final float a) {
-      super.render(graphics, xm, ym, a);
-      graphics.drawCenteredString(this.font, (Component)this.downloadTitle, this.width / 2, 20, -1);
-      graphics.drawCenteredString(this.font, (Component)this.status, this.width / 2, 50, -1);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int xm, final int ym, final float a) {
+      super.extractRenderState(graphics, xm, ym, a);
+      graphics.centeredText(this.font, (Component)this.downloadTitle, this.width / 2, 20, -1);
+      graphics.centeredText(this.font, (Component)this.status, this.width / 2, 50, -1);
       if (this.showDots) {
-         this.drawDots(graphics);
+         this.extractDots(graphics);
       }
 
       if (this.downloadStatus.bytesWritten != 0L && !this.cancelled) {
-         this.drawProgressBar(graphics);
-         this.drawDownloadSpeed(graphics);
+         this.extractProgressBar(graphics);
+         this.extractDownloadSpeed(graphics);
       }
 
       if (this.errorMessage != null) {
-         graphics.drawCenteredString(this.font, (Component)this.errorMessage, this.width / 2, 110, -65536);
+         graphics.centeredText(this.font, (Component)this.errorMessage, this.width / 2, 110, -65536);
       }
 
    }
 
-   private void drawDots(final GuiGraphics graphics) {
+   private void extractDots(final GuiGraphicsExtractor graphics) {
       int statusWidth = this.font.width((FormattedText)this.status);
       if (this.animTick != 0 && this.animTick % 10 == 0) {
          ++this.dotIndex;
       }
 
-      graphics.drawString(this.font, (String)DOTS[this.dotIndex % DOTS.length], this.width / 2 + statusWidth / 2 + 5, 50, -1);
+      graphics.text(this.font, (String)DOTS[this.dotIndex % DOTS.length], this.width / 2 + statusWidth / 2 + 5, 50, -1);
    }
 
-   private void drawProgressBar(final GuiGraphics graphics) {
+   private void extractProgressBar(final GuiGraphicsExtractor graphics) {
       double percentage = Math.min((double)this.downloadStatus.bytesWritten / (double)this.downloadStatus.totalBytes, 1.0);
       this.progress = String.format(Locale.ROOT, "%.1f", percentage * 100.0);
       int left = (this.width - 200) / 2;
       int right = left + (int)Math.round(200.0 * percentage);
       graphics.fill(left - 1, 79, right + 1, 96, -1);
       graphics.fill(left, 80, right, 95, -8355712);
-      graphics.drawCenteredString(this.font, (Component)Component.translatable("mco.download.percent", this.progress), this.width / 2, 84, -1);
+      graphics.centeredText(this.font, (Component)Component.translatable("mco.download.percent", this.progress), this.width / 2, 84, -1);
    }
 
-   private void drawDownloadSpeed(final GuiGraphics graphics) {
+   private void extractDownloadSpeed(final GuiGraphicsExtractor graphics) {
       if (this.animTick % 20 == 0) {
          if (this.previousWrittenBytes != null) {
             long timeElapsed = Util.getMillis() - this.previousTimeSnapshot;
@@ -172,21 +172,21 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
             }
 
             this.bytesPersSecond = 1000L * (this.downloadStatus.bytesWritten - this.previousWrittenBytes) / timeElapsed;
-            this.drawDownloadSpeed0(graphics, this.bytesPersSecond);
+            this.extractDownloadSpeed0(graphics, this.bytesPersSecond);
          }
 
          this.previousWrittenBytes = this.downloadStatus.bytesWritten;
          this.previousTimeSnapshot = Util.getMillis();
       } else {
-         this.drawDownloadSpeed0(graphics, this.bytesPersSecond);
+         this.extractDownloadSpeed0(graphics, this.bytesPersSecond);
       }
 
    }
 
-   private void drawDownloadSpeed0(final GuiGraphics graphics, final long bytesPerSecond) {
+   private void extractDownloadSpeed0(final GuiGraphicsExtractor graphics, final long bytesPerSecond) {
       if (bytesPerSecond > 0L) {
          int progressLength = this.font.width(this.progress);
-         graphics.drawString(this.font, (Component)Component.translatable("mco.download.speed", Unit.humanReadable(bytesPerSecond)), this.width / 2 + progressLength / 2 + 15, 84, -1);
+         graphics.text(this.font, (Component)Component.translatable("mco.download.speed", Unit.humanReadable(bytesPerSecond)), this.width / 2 + progressLength / 2 + 15, 84, -1);
       }
 
    }

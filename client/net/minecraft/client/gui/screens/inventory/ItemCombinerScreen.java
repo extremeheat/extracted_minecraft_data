@@ -1,6 +1,6 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -32,12 +32,13 @@ public abstract class ItemCombinerScreen<T extends ItemCombinerMenu> extends Abs
       ((ItemCombinerMenu)this.menu).removeSlotListener(this);
    }
 
-   protected void renderBg(final GuiGraphics graphics, final float a, final int xm, final int ym) {
+   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractBackground(graphics, mouseX, mouseY, a);
       graphics.blit(RenderPipelines.GUI_TEXTURED, this.menuResource, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
-      this.renderErrorIcon(graphics, this.leftPos, this.topPos);
+      this.extractErrorIcon(graphics, this.leftPos, this.topPos);
    }
 
-   protected abstract void renderErrorIcon(final GuiGraphics graphics, final int xo, final int yo);
+   protected abstract void extractErrorIcon(final GuiGraphicsExtractor graphics, final int xo, final int yo);
 
    public void dataChanged(final AbstractContainerMenu container, final int id, final int value) {
    }

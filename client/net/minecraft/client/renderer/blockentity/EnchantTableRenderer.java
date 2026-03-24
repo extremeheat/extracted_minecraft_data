@@ -8,11 +8,10 @@ import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.EnchantTableRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.SpriteGetter;
-import net.minecraft.client.resources.model.SpriteId;
+import net.minecraft.client.resources.model.sprite.SpriteGetter;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.EnchantingTableBlockEntity;
 import net.minecraft.world.phys.Vec3;
@@ -60,8 +59,8 @@ public class EnchantTableRenderer implements BlockEntityRenderer<EnchantingTable
       poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(80.0F));
       float ff1 = Mth.frac(state.flip + 0.25F) * 1.6F - 0.3F;
       float ff2 = Mth.frac(state.flip + 0.75F) * 1.6F - 0.3F;
-      BookModel.State bookState = new BookModel.State(state.time, Mth.clamp(ff1, 0.0F, 1.0F), Mth.clamp(ff2, 0.0F, 1.0F), state.open);
-      submitNodeCollector.submitModel(this.bookModel, bookState, poseStack, BOOK_TEXTURE.renderType(RenderTypes::entitySolid), state.lightCoords, OverlayTexture.NO_OVERLAY, -1, this.sprites.get(BOOK_TEXTURE), 0, state.breakProgress);
+      BookModel.State bookState = BookModel.State.forAnimation(state.time, Mth.clamp(ff1, 0.0F, 1.0F), Mth.clamp(ff2, 0.0F, 1.0F), state.open);
+      submitNodeCollector.submitModel(this.bookModel, bookState, poseStack, state.lightCoords, OverlayTexture.NO_OVERLAY, -1, BOOK_TEXTURE, this.sprites, 0, state.breakProgress);
       poseStack.popPose();
    }
 

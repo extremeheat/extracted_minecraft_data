@@ -17,10 +17,10 @@ public abstract class AbstractHugeMushroomFeature extends Feature<HugeMushroomFe
       super(codec);
    }
 
-   protected void placeTrunk(final LevelAccessor level, final RandomSource random, final BlockPos origin, final HugeMushroomFeatureConfiguration config, final int treeHeight, final BlockPos.MutableBlockPos blockPos) {
+   protected void placeTrunk(final WorldGenLevel level, final RandomSource random, final BlockPos origin, final HugeMushroomFeatureConfiguration config, final int treeHeight, final BlockPos.MutableBlockPos blockPos) {
       for(int dy = 0; dy < treeHeight; ++dy) {
          blockPos.set(origin).move(Direction.UP, dy);
-         this.placeMushroomBlock(level, blockPos, config.stemProvider().getState(random, origin));
+         this.placeMushroomBlock(level, blockPos, config.stemProvider().getState(level, random, origin));
       }
 
    }
@@ -86,5 +86,5 @@ public abstract class AbstractHugeMushroomFeature extends Feature<HugeMushroomFe
 
    protected abstract int getTreeRadiusForHeight(final int trunkHeight, final int treeHeight, final int leafRadius, final int yo);
 
-   protected abstract void makeCap(final LevelAccessor level, final RandomSource random, final BlockPos origin, final int treeHeight, final BlockPos.MutableBlockPos blockPos, final HugeMushroomFeatureConfiguration config);
+   protected abstract void makeCap(final WorldGenLevel level, final RandomSource random, final BlockPos origin, final int treeHeight, final BlockPos.MutableBlockPos blockPos, final HugeMushroomFeatureConfiguration config);
 }

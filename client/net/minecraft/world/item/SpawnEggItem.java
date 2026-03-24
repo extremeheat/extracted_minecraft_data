@@ -21,7 +21,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.ClipContext;
@@ -135,10 +134,6 @@ public class SpawnEggItem extends Item {
    public static @Nullable EntityType<?> getType(final ItemStack itemStack) {
       TypedEntityData<EntityType<?>> entityData = (TypedEntityData)itemStack.get(DataComponents.ENTITY_DATA);
       return entityData != null ? (EntityType)entityData.type() : null;
-   }
-
-   public FeatureFlagSet requiredFeatures() {
-      return (FeatureFlagSet)Optional.ofNullable((TypedEntityData)this.components().get(DataComponents.ENTITY_DATA)).map(TypedEntityData::type).map(EntityType::requiredFeatures).orElseGet(FeatureFlagSet::of);
    }
 
    public static Optional<Mob> spawnOffspringFromSpawnEgg(final Player player, final Mob parent, final EntityType<? extends Mob> type, final ServerLevel level, final Vec3 pos, final ItemStack spawnEggStack) {

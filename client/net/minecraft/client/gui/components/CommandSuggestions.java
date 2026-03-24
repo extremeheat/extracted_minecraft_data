@@ -31,7 +31,7 @@ import java.util.stream.Stream;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -408,29 +408,29 @@ public class CommandSuggestions {
       return FormattedCharSequence.composite(parts);
    }
 
-   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY) {
-      if (!this.renderSuggestions(graphics, mouseX, mouseY)) {
-         this.renderUsage(graphics);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY) {
+      if (!this.extractSuggestions(graphics, mouseX, mouseY)) {
+         this.extractUsage(graphics);
       }
 
    }
 
-   public boolean renderSuggestions(final GuiGraphics graphics, final int mouseX, final int mouseY) {
+   public boolean extractSuggestions(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY) {
       if (this.suggestions != null) {
-         this.suggestions.render(graphics, mouseX, mouseY);
+         this.suggestions.extractRenderState(graphics, mouseX, mouseY);
          return true;
       } else {
          return false;
       }
    }
 
-   public void renderUsage(final GuiGraphics graphics) {
+   public void extractUsage(final GuiGraphicsExtractor graphics) {
       int y = 0;
 
       for(FormattedCharSequence line : this.commandUsage) {
          int lineY = this.anchorToBottom ? this.screen.height - 27 - 12 * y : 72 + 12 * y;
          graphics.fill(this.commandUsagePosition - 1, lineY, this.commandUsagePosition + this.commandUsageWidth + 1, lineY + 12, this.fillColor);
-         graphics.drawString(this.font, (FormattedCharSequence)line, this.commandUsagePosition, lineY + 2, -1);
+         graphics.text(this.font, (FormattedCharSequence)line, this.commandUsagePosition, lineY + 2, -1);
          ++y;
       }
 
@@ -483,7 +483,7 @@ public class CommandSuggestions {
          this.select(0);
       }
 
-      public void render(final GuiGraphics graphics, final int mouseX, final int mouseY) {
+      public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY) {
          int limit = Math.min(this.suggestionList.size(), CommandSuggestions.this.suggestionLineLimit);
          int unselectedColor = -5592406;
          boolean hasPrevious = this.offset > 0;
@@ -527,7 +527,7 @@ public class CommandSuggestions {
                hovered = true;
             }
 
-            graphics.drawString(CommandSuggestions.this.font, suggestion.getText(), this.rect.getX() + 1, this.rect.getY() + 2 + 12 * i, i + this.offset == this.current ? -256 : -5592406);
+            graphics.text(CommandSuggestions.this.font, suggestion.getText(), this.rect.getX() + 1, this.rect.getY() + 2 + 12 * i, i + this.offset == this.current ? -256 : -5592406);
          }
 
          if (hovered) {

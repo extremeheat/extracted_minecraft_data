@@ -9,7 +9,7 @@ import java.util.function.DoubleConsumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractScrollArea;
 import net.minecraft.client.gui.components.AbstractTextAreaWidget;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
@@ -86,12 +86,12 @@ public class TelemetryEventWidget extends AbstractTextAreaWidget {
       return this.content.container().getHeight();
    }
 
-   protected void renderContents(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+   protected void extractContents(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       int top = this.getInnerTop();
       int left = this.getInnerLeft();
       graphics.pose().pushMatrix();
       graphics.pose().translate((float)left, (float)top);
-      this.content.container().visitWidgets((widget) -> widget.render(graphics, mouseX, mouseY, a));
+      this.content.container().visitWidgets((widget) -> widget.extractRenderState(graphics, mouseX, mouseY, a));
       graphics.pose().popMatrix();
    }
 

@@ -34,7 +34,8 @@ public record AttackRange(float minReach, float maxReach, float minCreativeReach
    }
 
    public static AttackRange defaultFor(final LivingEntity livingEntity) {
-      return new AttackRange(0.0F, (float)livingEntity.getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE), 0.0F, (float)livingEntity.getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE), 0.0F, 1.0F);
+      float interactionRange = (float)livingEntity.getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE);
+      return new AttackRange(0.0F, interactionRange, 0.0F, interactionRange, 0.0F, 1.0F);
    }
 
    public HitResult getClosesetHit(final Entity attacker, final float partial, final Predicate<Entity> matching) {

@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.layouts.FrameLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
@@ -88,15 +88,15 @@ public class PopupScreen extends Screen {
       FrameLayout.centerInRectangle(this.layout, this.getRectangle());
    }
 
-   public void renderBackground(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       if (this.backgroundScreen != null) {
-         this.backgroundScreen.renderBackground(graphics, mouseX, mouseY, a);
+         this.backgroundScreen.extractBackground(graphics, mouseX, mouseY, a);
          graphics.nextStratum();
-         this.backgroundScreen.render(graphics, -1, -1, a);
+         this.backgroundScreen.extractRenderState(graphics, -1, -1, a);
          graphics.nextStratum();
-         this.renderTransparentBackground(graphics);
+         this.extractTransparentBackground(graphics);
       } else {
-         super.renderBackground(graphics, mouseX, mouseY, a);
+         super.extractBackground(graphics, mouseX, mouseY, a);
       }
 
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BACKGROUND_SPRITE, this.layout.getX() - 18, this.layout.getY() - 18, this.layout.getWidth() + 36, this.layout.getHeight() + 36);

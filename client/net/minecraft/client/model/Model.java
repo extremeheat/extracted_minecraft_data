@@ -21,8 +21,12 @@ public abstract class Model<S> {
       this.allParts = root.getAllParts();
    }
 
+   public final Function<Identifier, RenderType> renderType() {
+      return this.renderType;
+   }
+
    public final RenderType renderType(final Identifier texture) {
-      return (RenderType)this.renderType.apply(texture);
+      return (RenderType)this.renderType().apply(texture);
    }
 
    public final void renderToBuffer(final PoseStack poseStack, final VertexConsumer buffer, final int lightCoords, final int overlayCoords, final int color) {

@@ -31,7 +31,7 @@ public class SwingCommand {
 
       for(Entity entity : targets) {
          if (entity instanceof LivingEntity livingEntity) {
-            livingEntity.swing(hand);
+            livingEntity.swing(hand, true);
             ++livingEntitiesCount;
          }
       }

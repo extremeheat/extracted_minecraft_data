@@ -1,6 +1,7 @@
 package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Transformation;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -11,25 +12,27 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.SpriteMapper;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.blockentity.state.CondiutRenderState;
+import net.minecraft.client.renderer.blockentity.state.ConduitRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.SpriteGetter;
-import net.minecraft.client.resources.model.SpriteId;
+import net.minecraft.client.resources.model.sprite.SpriteGetter;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.ConduitBlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
 import org.joml.Quaternionfc;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
-public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity, CondiutRenderState> {
+public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity, ConduitRenderState> {
+   public static final Transformation DEFAULT_TRANSFORMATION = new Transformation(new Vector3f(0.5F, 0.5F, 0.5F), (Quaternionfc)null, (Vector3fc)null, (Quaternionfc)null);
    public static final SpriteMapper MAPPER;
    public static final SpriteId SHELL_TEXTURE;
    public static final SpriteId ACTIVE_SHELL_TEXTURE;
@@ -80,11 +83,11 @@ public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity, 
       return LayerDefinition.create(mesh, 32, 16);
    }
 
-   public CondiutRenderState createRenderState() {
-      return new CondiutRenderState();
+   public ConduitRenderState createRenderState() {
+      return new ConduitRenderState();
    }
 
-   public void extractRenderState(final ConduitBlockEntity blockEntity, final CondiutRenderState state, final float partialTicks, final Vec3 cameraPosition, final ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
+   public void extractRenderState(final ConduitBlockEntity blockEntity, final ConduitRenderState state, final float partialTicks, final Vec3 cameraPosition, final ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
       BlockEntityRenderer.super.extractRenderState(blockEntity, state, partialTicks, cameraPosition, breakProgress);
       state.isActive = blockEntity.isActive();
       state.activeRotation = blockEntity.getActiveRotation(blockEntity.isActive() ? partialTicks : 0.0F);
@@ -93,7 +96,7 @@ public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity, 
       state.isHunting = blockEntity.isHunting();
    }
 
-   public void submit(final CondiutRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
+   public void submit(final ConduitRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
       if (!state.isActive) {
          poseStack.pushPose();
          poseStack.translate(0.5F, 0.5F, 0.5F);

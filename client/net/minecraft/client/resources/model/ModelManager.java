@@ -25,17 +25,24 @@ import java.util.stream.Collectors;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.PlayerSkinRenderCache;
-import net.minecraft.client.renderer.SpecialBlockModelRenderer;
+import net.minecraft.client.renderer.block.BlockModelSet;
 import net.minecraft.client.renderer.block.BlockStateModelSet;
+import net.minecraft.client.renderer.block.BuiltInBlockModels;
+import net.minecraft.client.renderer.block.FluidModel;
+import net.minecraft.client.renderer.block.FluidStateModelSet;
+import net.minecraft.client.renderer.block.LoadedBlockModels;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.client.renderer.block.model.BlockModel;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
-import net.minecraft.client.renderer.block.model.ItemModelGenerator;
-import net.minecraft.client.renderer.block.model.Material;
 import net.minecraft.client.renderer.item.ClientItem;
 import net.minecraft.client.renderer.item.ItemModel;
-import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.renderer.texture.SpriteLoader;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.cuboid.CuboidModel;
+import net.minecraft.client.resources.model.cuboid.ItemModelGenerator;
+import net.minecraft.client.resources.model.cuboid.MissingCuboidModel;
+import net.minecraft.client.resources.model.sprite.AtlasManager;
+import net.minecraft.client.resources.model.sprite.Material;
+import net.minecraft.client.resources.model.sprite.MaterialBaker;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.FileToIdConverter;
@@ -48,6 +55,7 @@ import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.Zone;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -61,15 +69,15 @@ public class ModelManager implements PreparableReloadListener {
    private final PlayerSkinRenderCache playerSkinRenderCache;
    private final BlockColors blockColors;
    private EntityModelSet entityModelSet;
-   private SpecialBlockModelRenderer specialBlockModelRenderer;
    private ModelBakery.MissingModels missingModels;
-   private @Nullable BlockStateModelSet blockModelSet;
+   private @Nullable BlockStateModelSet blockStateModelSet;
+   private @Nullable BlockModelSet blockModelSet;
+   private @Nullable FluidStateModelSet fluidStateModelSet;
    private Object2IntMap<BlockState> modelGroups;
 
    public ModelManager(final BlockColors blockColors, final AtlasManager atlasManager, final PlayerSkinRenderCache playerSkinRenderCache) {
       super();
       this.entityModelSet = EntityModelSet.EMPTY;
-      this.specialBlockModelRenderer = SpecialBlockModelRenderer.EMPTY;
       this.modelGroups = Object2IntMaps.emptyMap();
       this.blockColors = blockColors;
       this.atlasManager = atlasManager;
@@ -84,23 +92,32 @@ public class ModelManager implements PreparableReloadListener {
       return (ClientItem.Properties)this.itemProperties.getOrDefault(id, ClientItem.Properties.DEFAULT);
    }
 
-   public BlockStateModelSet getBlockModelSet() {
-      return (BlockStateModelSet)Objects.requireNonNull(this.blockModelSet, "Block models not yet initialized");
+   public BlockStateModelSet getBlockStateModelSet() {
+      return (BlockStateModelSet)Objects.requireNonNull(this.blockStateModelSet, "Block models not yet initialized");
+   }
+
+   public BlockModelSet getBlockModelSet() {
+      return (BlockModelSet)Objects.requireNonNull(this.blockModelSet, "Block models not yet initialized");
+   }
+
+   public FluidStateModelSet getFluidStateModelSet() {
+      return (FluidStateModelSet)Objects.requireNonNull(this.fluidStateModelSet, "Fluid models not yet initialized");
    }
 
    public final CompletableFuture<Void> reload(final PreparableReloadListener.SharedState currentReload, final Executor taskExecutor, final PreparableReloadListener.PreparationBarrier preparationBarrier, final Executor reloadExecutor) {
       ResourceManager manager = currentReload.resourceManager();
       CompletableFuture<EntityModelSet> entityModelSet = CompletableFuture.supplyAsync(EntityModelSet::vanilla, taskExecutor);
-      CompletableFuture<SpecialBlockModelRenderer> specialBlockModelRenderer = entityModelSet.thenApplyAsync((entityModels) -> SpecialBlockModelRenderer.vanilla(new SpecialModelRenderer.BakingContext.Simple(entityModels, this.atlasManager, this.playerSkinRenderCache)), taskExecutor);
       CompletableFuture<Map<Identifier, UnbakedModel>> modelCache = loadBlockModels(manager, taskExecutor);
       CompletableFuture<BlockStateModelLoader.LoadedModels> blockStateModels = BlockStateModelLoader.loadBlockStates(manager, taskExecutor);
+      CompletableFuture<Map<BlockState, BlockModel.Unbaked>> blockModelContents = CompletableFuture.supplyAsync(() -> BuiltInBlockModels.createBlockModels(this.blockColors), taskExecutor);
       CompletableFuture<ClientItemInfoLoader.LoadedClientInfos> itemStackModels = ClientItemInfoLoader.scheduleLoad(manager, taskExecutor);
-      CompletableFuture<ResolvedModels> modelDiscovery = CompletableFuture.allOf(modelCache, blockStateModels, itemStackModels).thenApplyAsync((unused) -> discoverModelDependencies((Map)modelCache.join(), (BlockStateModelLoader.LoadedModels)blockStateModels.join(), (ClientItemInfoLoader.LoadedClientInfos)itemStackModels.join()), taskExecutor);
+      CompletableFuture<ResolvedModels> modelDiscovery = CompletableFuture.allOf(modelCache, blockStateModels, itemStackModels).thenApplyAsync((var3) -> discoverModelDependencies((Map)modelCache.join(), (BlockStateModelLoader.LoadedModels)blockStateModels.join(), (ClientItemInfoLoader.LoadedClientInfos)itemStackModels.join()), taskExecutor);
       CompletableFuture<Object2IntMap<BlockState>> modelGroups = blockStateModels.thenApplyAsync((models) -> buildModelGroups(this.blockColors, models), taskExecutor);
       AtlasManager.PendingStitchResults pendingStitches = (AtlasManager.PendingStitchResults)currentReload.get(AtlasManager.PENDING_STITCH);
       CompletableFuture<SpriteLoader.Preparations> pendingBlockAtlasSprites = pendingStitches.get(AtlasIds.BLOCKS);
       CompletableFuture<SpriteLoader.Preparations> pendingItemAtlasSprites = pendingStitches.get(AtlasIds.ITEMS);
-      CompletableFuture var10000 = CompletableFuture.allOf(pendingBlockAtlasSprites, pendingItemAtlasSprites, modelDiscovery, modelGroups, blockStateModels, itemStackModels, entityModelSet, specialBlockModelRenderer, modelCache).thenComposeAsync((unused) -> {
+      CompletableFuture<LoadedBlockModels> blockModels = CompletableFuture.allOf(blockModelContents, entityModelSet).thenApplyAsync((var3) -> new LoadedBlockModels((Map)blockModelContents.join(), (EntityModelSet)entityModelSet.join(), this.atlasManager, this.playerSkinRenderCache));
+      CompletableFuture var10000 = CompletableFuture.allOf(pendingBlockAtlasSprites, pendingItemAtlasSprites, modelDiscovery, modelGroups, blockStateModels, itemStackModels, entityModelSet, blockModels, modelCache).thenComposeAsync((var11) -> {
          SpriteLoader.Preparations blockAtlasSprites = (SpriteLoader.Preparations)pendingBlockAtlasSprites.join();
          SpriteLoader.Preparations itemAtlasSprites = (SpriteLoader.Preparations)pendingItemAtlasSprites.join();
          ResolvedModels resolvedModels = (ResolvedModels)modelDiscovery.join();
@@ -111,7 +128,7 @@ public class ModelManager implements PreparableReloadListener {
          }
 
          ModelBakery bakery = new ModelBakery((EntityModelSet)entityModelSet.join(), this.atlasManager, this.playerSkinRenderCache, ((BlockStateModelLoader.LoadedModels)blockStateModels.join()).models(), ((ClientItemInfoLoader.LoadedClientInfos)itemStackModels.join()).contents(), resolvedModels.models(), resolvedModels.missing());
-         return loadModels(blockAtlasSprites, itemAtlasSprites, bakery, groups, (EntityModelSet)entityModelSet.join(), (SpecialBlockModelRenderer)specialBlockModelRenderer.join(), taskExecutor);
+         return loadModels(blockAtlasSprites, itemAtlasSprites, bakery, (LoadedBlockModels)blockModels.join(), groups, (EntityModelSet)entityModelSet.join(), taskExecutor);
       }, taskExecutor);
       Objects.requireNonNull(preparationBarrier);
       return var10000.thenCompose(preparationBarrier::wait).thenAcceptAsync(this::apply, reloadExecutor);
@@ -119,7 +136,7 @@ public class ModelManager implements PreparableReloadListener {
 
    private static CompletableFuture<Map<Identifier, UnbakedModel>> loadBlockModels(final ResourceManager manager, final Executor executor) {
       return CompletableFuture.supplyAsync(() -> MODEL_LISTER.listMatchingResources(manager), executor).thenCompose((resources) -> {
-         List<CompletableFuture<Pair<Identifier, BlockModel>>> result = new ArrayList(resources.size());
+         List<CompletableFuture<Pair<Identifier, CuboidModel>>> result = new ArrayList(resources.size());
 
          for(Map.Entry<Identifier, Resource> resource : resources.entrySet()) {
             result.add(CompletableFuture.supplyAsync(() -> {
@@ -130,7 +147,7 @@ public class ModelManager implements PreparableReloadListener {
 
                   Pair var3;
                   try {
-                     var3 = Pair.of(modelId, BlockModel.fromStream(reader));
+                     var3 = Pair.of(modelId, CuboidModel.fromStream(reader));
                   } catch (Throwable var6) {
                      if (reader != null) {
                         try {
@@ -161,7 +178,7 @@ public class ModelManager implements PreparableReloadListener {
 
    private static ResolvedModels discoverModelDependencies(final Map<Identifier, UnbakedModel> allModels, final BlockStateModelLoader.LoadedModels blockStateModels, final ClientItemInfoLoader.LoadedClientInfos itemInfos) {
       try (Zone ignored = Profiler.get().zone("dependencies")) {
-         ModelDiscovery result = new ModelDiscovery(allModels, MissingBlockModel.missingModel());
+         ModelDiscovery result = new ModelDiscovery(allModels, MissingCuboidModel.missingModel());
          result.addSpecialModel(ItemModelGenerator.GENERATED_ITEM_MODEL_ID, new ItemModelGenerator());
          Collection var10000 = blockStateModels.models().values();
          Objects.requireNonNull(result);
@@ -171,10 +188,10 @@ public class ModelManager implements PreparableReloadListener {
       }
    }
 
-   private static CompletableFuture<ReloadState> loadModels(final SpriteLoader.Preparations blockAtlas, final SpriteLoader.Preparations itemAtlas, final ModelBakery bakery, final Object2IntMap<BlockState> modelGroups, final EntityModelSet entityModelSet, final SpecialBlockModelRenderer specialBlockModelRenderer, final Executor taskExecutor) {
+   private static CompletableFuture<ReloadState> loadModels(final SpriteLoader.Preparations blockAtlas, final SpriteLoader.Preparations itemAtlas, final ModelBakery bakery, final LoadedBlockModels blockModels, final Object2IntMap<BlockState> modelGroups, final EntityModelSet entityModelSet, final Executor taskExecutor) {
       final Multimap<String, Identifier> missingSprites = Multimaps.synchronizedMultimap(HashMultimap.create());
       final Multimap<String, String> missingReferences = Multimaps.synchronizedMultimap(HashMultimap.create());
-      return bakery.bakeModels(new MaterialBaker() {
+      MaterialBaker materialBaker = new MaterialBaker() {
          private final Material.Baked blockMissing = new Material.Baked(blockAtlas.missing(), false);
          private final Map<Material, @Nullable Material.Baked> bakedMaterials = new ConcurrentHashMap();
          private final Function<Material, @Nullable Material.Baked> bakerFunction = this::bake;
@@ -203,11 +220,18 @@ public class ModelManager implements PreparableReloadListener {
             missingReferences.put(responsibleModel.debugName(), reference);
             return this.blockMissing;
          }
-      }, taskExecutor).thenApply((bakingResult) -> {
+      };
+      CompletableFuture<ModelBakery.BakingResult> bakedStateResults = bakery.bakeModels(materialBaker, taskExecutor);
+      CompletableFuture<Map<BlockState, BlockModel>> bakedModelsFuture = bakedStateResults.thenCompose((bakingResult) -> {
+         Objects.requireNonNull(bakingResult);
+         return blockModels.bake(bakingResult::getBlockStateModel, bakingResult.missingModels().block(), taskExecutor);
+      });
+      return bakedStateResults.thenCombine(bakedModelsFuture, (bakingResult, bakedModels) -> {
+         Map<Fluid, FluidModel> fluidModels = FluidStateModelSet.bake(materialBaker);
          missingSprites.asMap().forEach((location, sprites) -> LOGGER.warn("Missing textures in model {}:\n{}", location, sprites.stream().sorted().map((sprite) -> "    " + String.valueOf(sprite)).collect(Collectors.joining("\n"))));
          missingReferences.asMap().forEach((location, references) -> LOGGER.warn("Missing texture references in model {}:\n{}", location, references.stream().sorted().map((reference) -> "    " + reference).collect(Collectors.joining("\n"))));
          Map<BlockState, BlockStateModel> modelByStateCache = createBlockStateToModelDispatch(bakingResult.blockStateModels(), bakingResult.missingModels().block());
-         return new ReloadState(bakingResult, modelGroups, modelByStateCache, entityModelSet, specialBlockModelRenderer);
+         return new ReloadState(bakingResult, modelGroups, modelByStateCache, bakedModels, fluidModels, entityModelSet);
       });
    }
 
@@ -240,8 +264,9 @@ public class ModelManager implements PreparableReloadListener {
       this.itemProperties = bakedModels.itemProperties();
       this.modelGroups = preparations.modelGroups;
       this.missingModels = bakedModels.missingModels();
-      this.blockModelSet = new BlockStateModelSet(preparations.modelCache, this.missingModels.block());
-      this.specialBlockModelRenderer = preparations.specialBlockModelRenderer;
+      this.blockStateModelSet = new BlockStateModelSet(preparations.blockStateModels, this.missingModels.block());
+      this.blockModelSet = new BlockModelSet(this.blockStateModelSet, preparations.blockModels, this.blockColors);
+      this.fluidStateModelSet = new FluidStateModelSet(preparations.fluidModels, this.missingModels.fluid());
       this.entityModelSet = preparations.entityModelSet;
    }
 
@@ -263,10 +288,6 @@ public class ModelManager implements PreparableReloadListener {
       }
    }
 
-   public SpecialBlockModelRenderer specialBlockModelRenderer() {
-      return this.specialBlockModelRenderer;
-   }
-
    public Supplier<EntityModelSet> entityModels() {
       return () -> this.entityModelSet;
    }
@@ -277,7 +298,7 @@ public class ModelManager implements PreparableReloadListener {
       }
    }
 
-   private static record ReloadState(ModelBakery.BakingResult bakedModels, Object2IntMap<BlockState> modelGroups, Map<BlockState, BlockStateModel> modelCache, EntityModelSet entityModelSet, SpecialBlockModelRenderer specialBlockModelRenderer) {
+   private static record ReloadState(ModelBakery.BakingResult bakedModels, Object2IntMap<BlockState> modelGroups, Map<BlockState, BlockStateModel> blockStateModels, Map<BlockState, BlockModel> blockModels, Map<Fluid, FluidModel> fluidModels, EntityModelSet entityModelSet) {
       private ReloadState {
          super();
       }

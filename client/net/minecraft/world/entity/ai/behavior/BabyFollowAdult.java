@@ -22,8 +22,8 @@ public class BabyFollowAdult {
                   return false;
                } else {
                   LivingEntity adult = (LivingEntity)i.get(nearestAdult);
-                  if (body.closerThan(adult, (double)(followRange.getMaxValue() + 1)) && !body.closerThan(adult, (double)followRange.getMinValue())) {
-                     WalkTarget target = new WalkTarget(new EntityTracker(adult, targetEye, targetEye), (Float)speedModifier.apply(body), followRange.getMinValue() - 1);
+                  if (body.closerThan(adult, (double)(followRange.maxInclusive() + 1)) && !body.closerThan(adult, (double)followRange.minInclusive())) {
+                     WalkTarget target = new WalkTarget(new EntityTracker(adult, targetEye, targetEye), (Float)speedModifier.apply(body), followRange.minInclusive() - 1);
                      lookTarget.set(new EntityTracker(adult, true, targetEye));
                      walkTarget.set(target);
                      return true;

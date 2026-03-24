@@ -18,7 +18,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.NarratorStatus;
 import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.Renderable;
@@ -112,17 +112,17 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       return this.getTitle();
    }
 
-   public final void renderWithTooltipAndSubtitles(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+   public final void extractRenderStateWithTooltipAndSubtitles(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       graphics.nextStratum();
-      this.renderBackground(graphics, mouseX, mouseY, a);
+      this.extractBackground(graphics, mouseX, mouseY, a);
       graphics.nextStratum();
-      this.render(graphics, mouseX, mouseY, a);
-      graphics.renderDeferredElements(mouseX, mouseY, a);
+      this.extractRenderState(graphics, mouseX, mouseY, a);
+      graphics.extractDeferredElements(mouseX, mouseY, a);
    }
 
-   public void render(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       for(Renderable renderable : this.renderables) {
-         renderable.render(graphics, mouseX, mouseY, a);
+         renderable.extractRenderState(graphics, mouseX, mouseY, a);
       }
 
    }
@@ -456,22 +456,22 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    public void added() {
    }
 
-   public void renderBackground(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       if (this.isInGameUi()) {
-         this.renderTransparentBackground(graphics);
+         this.extractTransparentBackground(graphics);
       } else {
          if (this.minecraft.level == null) {
-            this.renderPanorama(graphics, a);
+            this.extractPanorama(graphics, a);
          }
 
-         this.renderBlurredBackground(graphics);
-         this.renderMenuBackground(graphics);
+         this.extractBlurredBackground(graphics);
+         this.extractMenuBackground(graphics);
       }
 
-      this.minecraft.gui.renderDeferredSubtitles();
+      this.minecraft.gui.extractDeferredSubtitles();
    }
 
-   protected void renderBlurredBackground(final GuiGraphics graphics) {
+   protected void extractBlurredBackground(final GuiGraphicsExtractor graphics) {
       float blurRadius = (float)this.minecraft.options.getMenuBackgroundBlurriness();
       if (blurRadius >= 1.0F) {
          graphics.blurBeforeThisStratum();
@@ -479,24 +479,24 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
 
    }
 
-   protected void renderPanorama(final GuiGraphics graphics, final float a) {
-      this.minecraft.gameRenderer.getPanorama().render(graphics, this.width, this.height, this.panoramaShouldSpin());
+   protected void extractPanorama(final GuiGraphicsExtractor graphics, final float a) {
+      this.minecraft.gameRenderer.getPanorama().extractRenderState(graphics, this.width, this.height, this.panoramaShouldSpin());
    }
 
-   protected void renderMenuBackground(final GuiGraphics graphics) {
-      this.renderMenuBackground(graphics, 0, 0, this.width, this.height);
+   protected void extractMenuBackground(final GuiGraphicsExtractor graphics) {
+      this.extractMenuBackground(graphics, 0, 0, this.width, this.height);
    }
 
-   protected void renderMenuBackground(final GuiGraphics graphics, final int x, final int y, final int width, final int height) {
-      renderMenuBackgroundTexture(graphics, this.minecraft.level == null ? MENU_BACKGROUND : INWORLD_MENU_BACKGROUND, x, y, 0.0F, 0.0F, width, height);
+   protected void extractMenuBackground(final GuiGraphicsExtractor graphics, final int x, final int y, final int width, final int height) {
+      extractMenuBackgroundTexture(graphics, this.minecraft.level == null ? MENU_BACKGROUND : INWORLD_MENU_BACKGROUND, x, y, 0.0F, 0.0F, width, height);
    }
 
-   public static void renderMenuBackgroundTexture(final GuiGraphics graphics, final Identifier menuBackground, final int x, final int y, final float u, final float v, final int width, final int height) {
+   public static void extractMenuBackgroundTexture(final GuiGraphicsExtractor graphics, final Identifier menuBackground, final int x, final int y, final float u, final float v, final int width, final int height) {
       int size = 32;
       graphics.blit(RenderPipelines.GUI_TEXTURED, menuBackground, x, y, u, v, width, height, 32, 32);
    }
 
-   public void renderTransparentBackground(final GuiGraphics graphics) {
+   public void extractTransparentBackground(final GuiGraphicsExtractor graphics) {
       graphics.fillGradient(0, 0, this.width, this.height, -1072689136, -804253680);
    }
 
