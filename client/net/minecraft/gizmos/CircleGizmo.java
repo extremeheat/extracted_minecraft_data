@@ -6,34 +6,31 @@ public record CircleGizmo(Vec3 pos, float radius, GizmoStyle style) implements G
    private static final int CIRCLE_VERTICES = 20;
    private static final float SEGMENT_SIZE_RADIANS = 0.31415927F;
 
-   public CircleGizmo(Vec3 var1, float var2, GizmoStyle var3) {
+   public CircleGizmo {
       super();
-      this.pos = var1;
-      this.radius = var2;
-      this.style = var3;
    }
 
-   public void emit(GizmoPrimitives var1, float var2) {
+   public void emit(final GizmoPrimitives primitives, final float alphaMultiplier) {
       if (this.style.hasStroke() || this.style.hasFill()) {
-         Vec3[] var3 = new Vec3[21];
+         Vec3[] points = new Vec3[21];
 
-         for(int var4 = 0; var4 < 20; ++var4) {
-            float var5 = (float)var4 * 0.31415927F;
-            Vec3 var6 = this.pos.add((double)((float)((double)this.radius * Math.cos((double)var5))), 0.0, (double)((float)((double)this.radius * Math.sin((double)var5))));
-            var3[var4] = var6;
+         for(int i = 0; i < 20; ++i) {
+            float theta = (float)i * 0.31415927F;
+            Vec3 point = this.pos.add((double)((float)((double)this.radius * Math.cos((double)theta))), 0.0, (double)((float)((double)this.radius * Math.sin((double)theta))));
+            points[i] = point;
          }
 
-         var3[20] = var3[0];
+         points[20] = points[0];
          if (this.style.hasFill()) {
-            int var7 = this.style.multipliedFill(var2);
-            var1.addTriangleFan(var3, var7);
+            int color = this.style.multipliedFill(alphaMultiplier);
+            primitives.addTriangleFan(points, color);
          }
 
          if (this.style.hasStroke()) {
-            int var8 = this.style.multipliedStroke(var2);
+            int color = this.style.multipliedStroke(alphaMultiplier);
 
-            for(int var9 = 0; var9 < 20; ++var9) {
-               var1.addLine(var3[var9], var3[var9 + 1], var8, this.style.strokeWidth());
+            for(int i = 0; i < 20; ++i) {
+               primitives.addLine(points[i], points[i + 1], color, this.style.strokeWidth());
             }
          }
 

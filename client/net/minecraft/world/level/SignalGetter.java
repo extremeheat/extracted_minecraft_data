@@ -10,34 +10,34 @@ import net.minecraft.world.level.block.state.BlockState;
 public interface SignalGetter extends BlockGetter {
    Direction[] DIRECTIONS = Direction.values();
 
-   default int getDirectSignal(BlockPos var1, Direction var2) {
-      return this.getBlockState(var1).getDirectSignal(this, var1, var2);
+   default int getDirectSignal(final BlockPos pos, final Direction direction) {
+      return this.getBlockState(pos).getDirectSignal(this, pos, direction);
    }
 
-   default int getDirectSignalTo(BlockPos var1) {
-      int var2 = 0;
-      var2 = Math.max(var2, this.getDirectSignal(var1.below(), Direction.DOWN));
-      if (var2 >= 15) {
-         return var2;
+   default int getDirectSignalTo(final BlockPos pos) {
+      int result = 0;
+      result = Math.max(result, this.getDirectSignal(pos.below(), Direction.DOWN));
+      if (result >= 15) {
+         return result;
       } else {
-         var2 = Math.max(var2, this.getDirectSignal(var1.above(), Direction.UP));
-         if (var2 >= 15) {
-            return var2;
+         result = Math.max(result, this.getDirectSignal(pos.above(), Direction.UP));
+         if (result >= 15) {
+            return result;
          } else {
-            var2 = Math.max(var2, this.getDirectSignal(var1.north(), Direction.NORTH));
-            if (var2 >= 15) {
-               return var2;
+            result = Math.max(result, this.getDirectSignal(pos.north(), Direction.NORTH));
+            if (result >= 15) {
+               return result;
             } else {
-               var2 = Math.max(var2, this.getDirectSignal(var1.south(), Direction.SOUTH));
-               if (var2 >= 15) {
-                  return var2;
+               result = Math.max(result, this.getDirectSignal(pos.south(), Direction.SOUTH));
+               if (result >= 15) {
+                  return result;
                } else {
-                  var2 = Math.max(var2, this.getDirectSignal(var1.west(), Direction.WEST));
-                  if (var2 >= 15) {
-                     return var2;
+                  result = Math.max(result, this.getDirectSignal(pos.west(), Direction.WEST));
+                  if (result >= 15) {
+                     return result;
                   } else {
-                     var2 = Math.max(var2, this.getDirectSignal(var1.east(), Direction.EAST));
-                     return var2 >= 15 ? var2 : var2;
+                     result = Math.max(result, this.getDirectSignal(pos.east(), Direction.EAST));
+                     return result >= 15 ? result : result;
                   }
                }
             }
@@ -45,59 +45,59 @@ public interface SignalGetter extends BlockGetter {
       }
    }
 
-   default int getControlInputSignal(BlockPos var1, Direction var2, boolean var3) {
-      BlockState var4 = this.getBlockState(var1);
-      if (var3) {
-         return DiodeBlock.isDiode(var4) ? this.getDirectSignal(var1, var2) : 0;
-      } else if (var4.is(Blocks.REDSTONE_BLOCK)) {
+   default int getControlInputSignal(final BlockPos pos, final Direction direction, final boolean onlyDiodes) {
+      BlockState blockState = this.getBlockState(pos);
+      if (onlyDiodes) {
+         return DiodeBlock.isDiode(blockState) ? this.getDirectSignal(pos, direction) : 0;
+      } else if (blockState.is(Blocks.REDSTONE_BLOCK)) {
          return 15;
-      } else if (var4.is(Blocks.REDSTONE_WIRE)) {
-         return (Integer)var4.getValue(RedStoneWireBlock.POWER);
+      } else if (blockState.is(Blocks.REDSTONE_WIRE)) {
+         return (Integer)blockState.getValue(RedStoneWireBlock.POWER);
       } else {
-         return var4.isSignalSource() ? this.getDirectSignal(var1, var2) : 0;
+         return blockState.isSignalSource() ? this.getDirectSignal(pos, direction) : 0;
       }
    }
 
-   default boolean hasSignal(BlockPos var1, Direction var2) {
-      return this.getSignal(var1, var2) > 0;
+   default boolean hasSignal(final BlockPos pos, final Direction direction) {
+      return this.getSignal(pos, direction) > 0;
    }
 
-   default int getSignal(BlockPos var1, Direction var2) {
-      BlockState var3 = this.getBlockState(var1);
-      int var4 = var3.getSignal(this, var1, var2);
-      return var3.isRedstoneConductor(this, var1) ? Math.max(var4, this.getDirectSignalTo(var1)) : var4;
+   default int getSignal(final BlockPos pos, final Direction direction) {
+      BlockState state = this.getBlockState(pos);
+      int signal = state.getSignal(this, pos, direction);
+      return state.isRedstoneConductor(this, pos) ? Math.max(signal, this.getDirectSignalTo(pos)) : signal;
    }
 
-   default boolean hasNeighborSignal(BlockPos var1) {
-      if (this.getSignal(var1.below(), Direction.DOWN) > 0) {
+   default boolean hasNeighborSignal(final BlockPos blockPos) {
+      if (this.getSignal(blockPos.below(), Direction.DOWN) > 0) {
          return true;
-      } else if (this.getSignal(var1.above(), Direction.UP) > 0) {
+      } else if (this.getSignal(blockPos.above(), Direction.UP) > 0) {
          return true;
-      } else if (this.getSignal(var1.north(), Direction.NORTH) > 0) {
+      } else if (this.getSignal(blockPos.north(), Direction.NORTH) > 0) {
          return true;
-      } else if (this.getSignal(var1.south(), Direction.SOUTH) > 0) {
+      } else if (this.getSignal(blockPos.south(), Direction.SOUTH) > 0) {
          return true;
-      } else if (this.getSignal(var1.west(), Direction.WEST) > 0) {
+      } else if (this.getSignal(blockPos.west(), Direction.WEST) > 0) {
          return true;
       } else {
-         return this.getSignal(var1.east(), Direction.EAST) > 0;
+         return this.getSignal(blockPos.east(), Direction.EAST) > 0;
       }
    }
 
-   default int getBestNeighborSignal(BlockPos var1) {
-      int var2 = 0;
+   default int getBestNeighborSignal(final BlockPos pos) {
+      int best = 0;
 
-      for(Direction var6 : DIRECTIONS) {
-         int var7 = this.getSignal(var1.relative(var6), var6);
-         if (var7 >= 15) {
+      for(Direction direction : DIRECTIONS) {
+         int signal = this.getSignal(pos.relative(direction), direction);
+         if (signal >= 15) {
             return 15;
          }
 
-         if (var7 > var2) {
-            var2 = var7;
+         if (signal > best) {
+            best = signal;
          }
       }
 
-      return var2;
+      return best;
    }
 }

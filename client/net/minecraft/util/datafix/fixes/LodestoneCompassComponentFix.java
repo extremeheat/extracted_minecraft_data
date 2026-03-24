@@ -5,18 +5,18 @@ import com.mojang.serialization.Dynamic;
 import java.util.Optional;
 
 public class LodestoneCompassComponentFix extends DataComponentRemainderFix {
-   public LodestoneCompassComponentFix(Schema var1) {
-      super(var1, "LodestoneCompassComponentFix", "minecraft:lodestone_target", "minecraft:lodestone_tracker");
+   public LodestoneCompassComponentFix(final Schema outputSchema) {
+      super(outputSchema, "LodestoneCompassComponentFix", "minecraft:lodestone_target", "minecraft:lodestone_tracker");
    }
 
-   protected <T> Dynamic<T> fixComponent(Dynamic<T> var1) {
-      Optional var2 = var1.get("pos").result();
-      Optional var3 = var1.get("dimension").result();
-      var1 = var1.remove("pos").remove("dimension");
-      if (var2.isPresent() && var3.isPresent()) {
-         var1 = var1.set("target", var1.emptyMap().set("pos", (Dynamic)var2.get()).set("dimension", (Dynamic)var3.get()));
+   protected <T> Dynamic<T> fixComponent(Dynamic<T> input) {
+      Optional<Dynamic<T>> pos = input.get("pos").result();
+      Optional<Dynamic<T>> dimension = input.get("dimension").result();
+      input = input.remove("pos").remove("dimension");
+      if (pos.isPresent() && dimension.isPresent()) {
+         input = input.set("target", input.emptyMap().set("pos", (Dynamic)pos.get()).set("dimension", (Dynamic)dimension.get()));
       }
 
-      return var1;
+      return input;
    }
 }

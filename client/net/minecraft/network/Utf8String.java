@@ -11,49 +11,49 @@ public class Utf8String {
       super();
    }
 
-   public static String read(ByteBuf var0, int var1) {
-      int var2 = ByteBufUtil.utf8MaxBytes(var1);
-      int var3 = VarInt.read(var0);
-      if (var3 > var2) {
-         throw new DecoderException("The received encoded string buffer length is longer than maximum allowed (" + var3 + " > " + var2 + ")");
-      } else if (var3 < 0) {
+   public static String read(final ByteBuf input, final int maxLength) {
+      int maxEncodedLength = ByteBufUtil.utf8MaxBytes(maxLength);
+      int bufferLength = VarInt.read(input);
+      if (bufferLength > maxEncodedLength) {
+         throw new DecoderException("The received encoded string buffer length is longer than maximum allowed (" + bufferLength + " > " + maxEncodedLength + ")");
+      } else if (bufferLength < 0) {
          throw new DecoderException("The received encoded string buffer length is less than zero! Weird string!");
       } else {
-         int var4 = var0.readableBytes();
-         if (var3 > var4) {
-            throw new DecoderException("Not enough bytes in buffer, expected " + var3 + ", but got " + var4);
+         int availableBytes = input.readableBytes();
+         if (bufferLength > availableBytes) {
+            throw new DecoderException("Not enough bytes in buffer, expected " + bufferLength + ", but got " + availableBytes);
          } else {
-            String var5 = var0.toString(var0.readerIndex(), var3, StandardCharsets.UTF_8);
-            var0.readerIndex(var0.readerIndex() + var3);
-            if (var5.length() > var1) {
-               int var10002 = var5.length();
-               throw new DecoderException("The received string length is longer than maximum allowed (" + var10002 + " > " + var1 + ")");
+            String result = input.toString(input.readerIndex(), bufferLength, StandardCharsets.UTF_8);
+            input.readerIndex(input.readerIndex() + bufferLength);
+            if (result.length() > maxLength) {
+               int var10002 = result.length();
+               throw new DecoderException("The received string length is longer than maximum allowed (" + var10002 + " > " + maxLength + ")");
             } else {
-               return var5;
+               return result;
             }
          }
       }
    }
 
-   public static void write(ByteBuf var0, CharSequence var1, int var2) {
-      if (var1.length() > var2) {
-         int var10002 = var1.length();
-         throw new EncoderException("String too big (was " + var10002 + " characters, max " + var2 + ")");
+   public static void write(final ByteBuf output, final CharSequence value, final int maxLength) {
+      if (value.length() > maxLength) {
+         int var10002 = value.length();
+         throw new EncoderException("String too big (was " + var10002 + " characters, max " + maxLength + ")");
       } else {
-         int var3 = ByteBufUtil.utf8MaxBytes(var1);
-         ByteBuf var4 = var0.alloc().buffer(var3);
+         int maxEncodedValueLength = ByteBufUtil.utf8MaxBytes(value);
+         ByteBuf tmp = output.alloc().buffer(maxEncodedValueLength);
 
          try {
-            int var5 = ByteBufUtil.writeUtf8(var4, var1);
-            int var6 = ByteBufUtil.utf8MaxBytes(var2);
-            if (var5 > var6) {
-               throw new EncoderException("String too big (was " + var5 + " bytes encoded, max " + var6 + ")");
+            int bytesWritten = ByteBufUtil.writeUtf8(tmp, value);
+            int maxAllowedEncodedLength = ByteBufUtil.utf8MaxBytes(maxLength);
+            if (bytesWritten > maxAllowedEncodedLength) {
+               throw new EncoderException("String too big (was " + bytesWritten + " bytes encoded, max " + maxAllowedEncodedLength + ")");
             }
 
-            VarInt.write(var0, var5);
-            var0.writeBytes(var4);
+            VarInt.write(output, bytesWritten);
+            output.writeBytes(tmp);
          } finally {
-            var4.release();
+            tmp.release();
          }
 
       }

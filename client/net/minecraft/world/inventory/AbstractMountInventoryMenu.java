@@ -15,72 +15,72 @@ public abstract class AbstractMountInventoryMenu extends AbstractContainerMenu {
    protected final int SLOT_INVENTORY_START = 2;
    protected static final int INVENTORY_ROWS = 3;
 
-   protected AbstractMountInventoryMenu(int var1, Inventory var2, Container var3, LivingEntity var4) {
-      super((MenuType)null, var1);
-      this.mountContainer = var3;
-      this.mount = var4;
-      var3.startOpen(var2.player);
+   protected AbstractMountInventoryMenu(final int containerId, final Inventory playerInventory, final Container mountInventory, final LivingEntity mount) {
+      super((MenuType)null, containerId);
+      this.mountContainer = mountInventory;
+      this.mount = mount;
+      mountInventory.startOpen(playerInventory.player);
    }
 
-   protected abstract boolean hasInventoryChanged(Container var1);
+   protected abstract boolean hasInventoryChanged(final Container container);
 
-   public boolean stillValid(Player var1) {
-      return !this.hasInventoryChanged(this.mountContainer) && this.mountContainer.stillValid(var1) && this.mount.isAlive() && var1.isWithinEntityInteractionRange((Entity)this.mount, 4.0);
+   public boolean stillValid(final Player player) {
+      return !this.hasInventoryChanged(this.mountContainer) && this.mountContainer.stillValid(player) && this.mount.isAlive() && player.isWithinEntityInteractionRange((Entity)this.mount, 4.0);
    }
 
-   public void removed(Player var1) {
-      super.removed(var1);
-      this.mountContainer.stopOpen(var1);
+   public void removed(final Player player) {
+      super.removed(player);
+      this.mountContainer.stopOpen(player);
    }
 
-   public ItemStack quickMoveStack(Player var1, int var2) {
-      ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = this.slots.get(var2);
-      if (var4 != null && var4.hasItem()) {
-         ItemStack var5 = var4.getItem();
-         var3 = var5.copy();
-         int var6 = 2 + this.mountContainer.getContainerSize();
-         if (var2 < var6) {
-            if (!this.moveItemStackTo(var5, var6, this.slots.size(), true)) {
+   public ItemStack quickMoveStack(final Player player, final int slotIndex) {
+      ItemStack clicked = ItemStack.EMPTY;
+      Slot slot = this.slots.get(slotIndex);
+      if (slot != null && slot.hasItem()) {
+         ItemStack stack = slot.getItem();
+         clicked = stack.copy();
+         int playerContainerStart = 2 + this.mountContainer.getContainerSize();
+         if (slotIndex < playerContainerStart) {
+            if (!this.moveItemStackTo(stack, playerContainerStart, this.slots.size(), true)) {
                return ItemStack.EMPTY;
             }
-         } else if (this.getSlot(1).mayPlace(var5) && !this.getSlot(1).hasItem()) {
-            if (!this.moveItemStackTo(var5, 1, 2, false)) {
+         } else if (this.getSlot(1).mayPlace(stack) && !this.getSlot(1).hasItem()) {
+            if (!this.moveItemStackTo(stack, 1, 2, false)) {
                return ItemStack.EMPTY;
             }
-         } else if (this.getSlot(0).mayPlace(var5) && !this.getSlot(0).hasItem()) {
-            if (!this.moveItemStackTo(var5, 0, 1, false)) {
+         } else if (this.getSlot(0).mayPlace(stack) && !this.getSlot(0).hasItem()) {
+            if (!this.moveItemStackTo(stack, 0, 1, false)) {
                return ItemStack.EMPTY;
             }
-         } else if (this.mountContainer.getContainerSize() == 0 || !this.moveItemStackTo(var5, 2, var6, false)) {
-            int var7 = var6 + 27;
-            int var9 = var7 + 9;
-            if (var2 >= var7 && var2 < var9) {
-               if (!this.moveItemStackTo(var5, var6, var7, false)) {
+         } else if (this.mountContainer.getContainerSize() == 0 || !this.moveItemStackTo(stack, 2, playerContainerStart, false)) {
+            int playerContainerEnd = playerContainerStart + 27;
+            int playerHotBarEnd = playerContainerEnd + 9;
+            if (slotIndex >= playerContainerEnd && slotIndex < playerHotBarEnd) {
+               if (!this.moveItemStackTo(stack, playerContainerStart, playerContainerEnd, false)) {
                   return ItemStack.EMPTY;
                }
-            } else if (var2 >= var6 && var2 < var7) {
-               if (!this.moveItemStackTo(var5, var7, var9, false)) {
+            } else if (slotIndex >= playerContainerStart && slotIndex < playerContainerEnd) {
+               if (!this.moveItemStackTo(stack, playerContainerEnd, playerHotBarEnd, false)) {
                   return ItemStack.EMPTY;
                }
-            } else if (!this.moveItemStackTo(var5, var7, var7, false)) {
+            } else if (!this.moveItemStackTo(stack, playerContainerEnd, playerContainerEnd, false)) {
                return ItemStack.EMPTY;
             }
 
             return ItemStack.EMPTY;
          }
 
-         if (var5.isEmpty()) {
-            var4.setByPlayer(ItemStack.EMPTY);
+         if (stack.isEmpty()) {
+            slot.setByPlayer(ItemStack.EMPTY);
          } else {
-            var4.setChanged();
+            slot.setChanged();
          }
       }
 
-      return var3;
+      return clicked;
    }
 
-   public static int getInventorySize(int var0) {
-      return var0 * 3;
+   public static int getInventorySize(final int inventoryColumns) {
+      return inventoryColumns * 3;
    }
 }

@@ -28,63 +28,63 @@ public class PlayerSafetyServiceTextFilter extends ServerTextFilter {
    private final Set<String> fullyFilteredEvents;
    private final int connectionReadTimeoutMs;
 
-   private PlayerSafetyServiceTextFilter(URL var1, ServerTextFilter.MessageEncoder var2, ServerTextFilter.IgnoreStrategy var3, ExecutorService var4, ConfidentialClientApplication var5, ClientCredentialParameters var6, Set<String> var7, int var8) {
-      super(var1, var2, var3, var4);
-      this.client = var5;
-      this.clientParameters = var6;
-      this.fullyFilteredEvents = var7;
-      this.connectionReadTimeoutMs = var8;
+   private PlayerSafetyServiceTextFilter(final URL chatEndpoint, final ServerTextFilter.MessageEncoder chatEncoder, final ServerTextFilter.IgnoreStrategy chatIgnoreStrategy, final ExecutorService workerPool, final ConfidentialClientApplication client, final ClientCredentialParameters clientParameters, final Set<String> fullyFilteredEvents, final int connectionReadTimeoutMs) {
+      super(chatEndpoint, chatEncoder, chatIgnoreStrategy, workerPool);
+      this.client = client;
+      this.clientParameters = clientParameters;
+      this.fullyFilteredEvents = fullyFilteredEvents;
+      this.connectionReadTimeoutMs = connectionReadTimeoutMs;
    }
 
-   public static @Nullable ServerTextFilter createTextFilterFromConfig(String var0) {
-      JsonObject var1 = GsonHelper.parse(var0);
-      URI var2 = URI.create(GsonHelper.getAsString(var1, "apiServer"));
-      String var3 = GsonHelper.getAsString(var1, "apiPath");
-      String var4 = GsonHelper.getAsString(var1, "scope");
-      String var5 = GsonHelper.getAsString(var1, "serverId", "");
-      String var6 = GsonHelper.getAsString(var1, "applicationId");
-      String var7 = GsonHelper.getAsString(var1, "tenantId");
-      String var8 = GsonHelper.getAsString(var1, "roomId", "Java:Chat");
-      String var9 = GsonHelper.getAsString(var1, "certificatePath");
-      String var10 = GsonHelper.getAsString(var1, "certificatePassword", "");
-      int var11 = GsonHelper.getAsInt(var1, "hashesToDrop", -1);
-      int var12 = GsonHelper.getAsInt(var1, "maxConcurrentRequests", 7);
-      JsonArray var13 = GsonHelper.getAsJsonArray(var1, "fullyFilteredEvents");
-      HashSet var14 = new HashSet();
-      var13.forEach((var1x) -> var14.add(GsonHelper.convertToString(var1x, "filteredEvent")));
-      int var15 = GsonHelper.getAsInt(var1, "connectionReadTimeoutMs", 2000);
+   public static @Nullable ServerTextFilter createTextFilterFromConfig(final String textFilteringConfig) {
+      JsonObject parsedConfig = GsonHelper.parse(textFilteringConfig);
+      URI host = URI.create(GsonHelper.getAsString(parsedConfig, "apiServer"));
+      String apiPath = GsonHelper.getAsString(parsedConfig, "apiPath");
+      String scope = GsonHelper.getAsString(parsedConfig, "scope");
+      String serverId = GsonHelper.getAsString(parsedConfig, "serverId", "");
+      String applicationId = GsonHelper.getAsString(parsedConfig, "applicationId");
+      String tenantId = GsonHelper.getAsString(parsedConfig, "tenantId");
+      String roomId = GsonHelper.getAsString(parsedConfig, "roomId", "Java:Chat");
+      String certificatePath = GsonHelper.getAsString(parsedConfig, "certificatePath");
+      String certificatePassword = GsonHelper.getAsString(parsedConfig, "certificatePassword", "");
+      int hashesToDrop = GsonHelper.getAsInt(parsedConfig, "hashesToDrop", -1);
+      int maxConcurrentRequests = GsonHelper.getAsInt(parsedConfig, "maxConcurrentRequests", 7);
+      JsonArray fullyFilteredEvents = GsonHelper.getAsJsonArray(parsedConfig, "fullyFilteredEvents");
+      Set<String> fullyFilteredEventsSet = new HashSet();
+      fullyFilteredEvents.forEach((elements) -> fullyFilteredEventsSet.add(GsonHelper.convertToString(elements, "filteredEvent")));
+      int connectionReadTimeoutMs = GsonHelper.getAsInt(parsedConfig, "connectionReadTimeoutMs", 2000);
 
-      URL var16;
+      URL chatEndpoint;
       try {
-         var16 = var2.resolve(var3).toURL();
-      } catch (MalformedURLException var26) {
-         throw new RuntimeException(var26);
+         chatEndpoint = host.resolve(apiPath).toURL();
+      } catch (MalformedURLException e) {
+         throw new RuntimeException(e);
       }
 
-      ServerTextFilter.MessageEncoder var17 = (var2x, var3x) -> {
-         JsonObject var4 = new JsonObject();
-         var4.addProperty("userId", var2x.id().toString());
-         var4.addProperty("userDisplayName", var2x.name());
-         var4.addProperty("server", var5);
-         var4.addProperty("room", var8);
-         var4.addProperty("area", "JavaChatRealms");
-         var4.addProperty("data", var3x);
-         var4.addProperty("language", "*");
-         return var4;
+      ServerTextFilter.MessageEncoder chatEncoder = (sender, message) -> {
+         JsonObject object = new JsonObject();
+         object.addProperty("userId", sender.id().toString());
+         object.addProperty("userDisplayName", sender.name());
+         object.addProperty("server", serverId);
+         object.addProperty("room", roomId);
+         object.addProperty("area", "JavaChatRealms");
+         object.addProperty("data", message);
+         object.addProperty("language", "*");
+         return object;
       };
-      ServerTextFilter.IgnoreStrategy var18 = ServerTextFilter.IgnoreStrategy.select(var11);
-      ExecutorService var19 = createWorkerPool(var12);
+      ServerTextFilter.IgnoreStrategy ignoreStrategy = ServerTextFilter.IgnoreStrategy.select(hashesToDrop);
+      ExecutorService workerPool = createWorkerPool(maxConcurrentRequests);
 
-      IClientCertificate var20;
+      IClientCertificate certificate;
       try {
-         InputStream var21 = Files.newInputStream(Path.of(var9));
+         InputStream inputStream = Files.newInputStream(Path.of(certificatePath));
 
          try {
-            var20 = ClientCredentialFactory.createFromCertificate(var21, var10);
+            certificate = ClientCredentialFactory.createFromCertificate(inputStream, certificatePassword);
          } catch (Throwable var27) {
-            if (var21 != null) {
+            if (inputStream != null) {
                try {
-                  var21.close();
+                  inputStream.close();
                } catch (Throwable var24) {
                   var27.addSuppressed(var24);
                }
@@ -93,54 +93,54 @@ public class PlayerSafetyServiceTextFilter extends ServerTextFilter {
             throw var27;
          }
 
-         if (var21 != null) {
-            var21.close();
+         if (inputStream != null) {
+            inputStream.close();
          }
       } catch (Exception var28) {
          LOGGER.warn("Failed to open certificate file");
          return null;
       }
 
-      ConfidentialClientApplication var29;
+      ConfidentialClientApplication client;
       try {
-         var29 = ((ConfidentialClientApplication.Builder)((ConfidentialClientApplication.Builder)ConfidentialClientApplication.builder(var6, var20).sendX5c(true).executorService(var19)).authority(String.format(Locale.ROOT, "https://login.microsoftonline.com/%s/", var7))).build();
+         client = ((ConfidentialClientApplication.Builder)((ConfidentialClientApplication.Builder)ConfidentialClientApplication.builder(applicationId, certificate).sendX5c(true).executorService(workerPool)).authority(String.format(Locale.ROOT, "https://login.microsoftonline.com/%s/", tenantId))).build();
       } catch (Exception var25) {
          LOGGER.warn("Failed to create confidential client application");
          return null;
       }
 
-      ClientCredentialParameters var22 = ClientCredentialParameters.builder(Set.of(var4)).build();
-      return new PlayerSafetyServiceTextFilter(var16, var17, var18, var19, var29, var22, var14, var15);
+      ClientCredentialParameters parameters = ClientCredentialParameters.builder(Set.of(scope)).build();
+      return new PlayerSafetyServiceTextFilter(chatEndpoint, chatEncoder, ignoreStrategy, workerPool, client, parameters, fullyFilteredEventsSet, connectionReadTimeoutMs);
    }
 
    private IAuthenticationResult aquireIAuthenticationResult() {
       return (IAuthenticationResult)this.client.acquireToken(this.clientParameters).join();
    }
 
-   protected void setAuthorizationProperty(HttpURLConnection var1) {
-      IAuthenticationResult var2 = this.aquireIAuthenticationResult();
-      var1.setRequestProperty("Authorization", "Bearer " + var2.accessToken());
+   protected void setAuthorizationProperty(final HttpURLConnection connection) {
+      IAuthenticationResult authenticationResult = this.aquireIAuthenticationResult();
+      connection.setRequestProperty("Authorization", "Bearer " + authenticationResult.accessToken());
    }
 
-   protected FilteredText filterText(String var1, ServerTextFilter.IgnoreStrategy var2, JsonObject var3) {
-      JsonObject var4 = GsonHelper.getAsJsonObject(var3, "result", (JsonObject)null);
-      if (var4 == null) {
-         return FilteredText.fullyFiltered(var1);
+   protected FilteredText filterText(final String message, final ServerTextFilter.IgnoreStrategy ignoreStrategy, final JsonObject response) {
+      JsonObject result = GsonHelper.getAsJsonObject(response, "result", (JsonObject)null);
+      if (result == null) {
+         return FilteredText.fullyFiltered(message);
       } else {
-         boolean var5 = GsonHelper.getAsBoolean(var4, "filtered", true);
-         if (!var5) {
-            return FilteredText.passThrough(var1);
+         boolean filtered = GsonHelper.getAsBoolean(result, "filtered", true);
+         if (!filtered) {
+            return FilteredText.passThrough(message);
          } else {
-            for(JsonElement var8 : GsonHelper.getAsJsonArray(var4, "events", new JsonArray())) {
-               JsonObject var9 = var8.getAsJsonObject();
-               String var10 = GsonHelper.getAsString(var9, "id", "");
-               if (this.fullyFilteredEvents.contains(var10)) {
-                  return FilteredText.fullyFiltered(var1);
+            for(JsonElement element : GsonHelper.getAsJsonArray(result, "events", new JsonArray())) {
+               JsonObject object = element.getAsJsonObject();
+               String event = GsonHelper.getAsString(object, "id", "");
+               if (this.fullyFilteredEvents.contains(event)) {
+                  return FilteredText.fullyFiltered(message);
                }
             }
 
-            JsonArray var11 = GsonHelper.getAsJsonArray(var4, "redactedTextIndex", new JsonArray());
-            return new FilteredText(var1, this.parseMask(var1, var11, var2));
+            JsonArray redactedTextIndices = GsonHelper.getAsJsonArray(result, "redactedTextIndex", new JsonArray());
+            return new FilteredText(message, this.parseMask(message, redactedTextIndices, ignoreStrategy));
          }
       }
    }

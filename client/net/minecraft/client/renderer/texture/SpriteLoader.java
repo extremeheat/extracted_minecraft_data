@@ -35,97 +35,91 @@ public class SpriteLoader {
    private final Identifier location;
    private final int maxSupportedTextureSize;
 
-   public SpriteLoader(Identifier var1, int var2) {
+   public SpriteLoader(final Identifier location, final int maxSupportedTextureSize) {
       super();
-      this.location = var1;
-      this.maxSupportedTextureSize = var2;
+      this.location = location;
+      this.maxSupportedTextureSize = maxSupportedTextureSize;
    }
 
-   public static SpriteLoader create(TextureAtlas var0) {
-      return new SpriteLoader(var0.location(), var0.maxSupportedTextureSize());
+   public static SpriteLoader create(final TextureAtlas atlas) {
+      return new SpriteLoader(atlas.location(), atlas.maxSupportedTextureSize());
    }
 
-   private Preparations stitch(List<SpriteContents> var1, int var2, Executor var3) {
-      try (Zone var4 = Profiler.get().zone((Supplier)(() -> "stitch " + String.valueOf(this.location)))) {
-         int var5 = this.maxSupportedTextureSize;
-         int var6 = 2147483647;
-         int var7 = 1 << var2;
+   private Preparations stitch(final List<SpriteContents> sprites, final int maxMipmapLevels, final Executor executor) {
+      try (Zone ignored = Profiler.get().zone((Supplier)(() -> "stitch " + String.valueOf(this.location)))) {
+         int maxTextureSize = this.maxSupportedTextureSize;
+         int minTexelSize = 2147483647;
+         int lowestOneBit = 1 << maxMipmapLevels;
 
-         for(SpriteContents var9 : var1) {
-            var6 = Math.min(var6, Math.min(var9.width(), var9.height()));
-            int var10 = Math.min(Integer.lowestOneBit(var9.width()), Integer.lowestOneBit(var9.height()));
-            if (var10 < var7) {
-               LOGGER.warn("Texture {} with size {}x{} limits mip level from {} to {}", new Object[]{var9.name(), var9.width(), var9.height(), Mth.log2(var7), Mth.log2(var10)});
-               var7 = var10;
+         for(SpriteContents spriteInfo : sprites) {
+            minTexelSize = Math.min(minTexelSize, Math.min(spriteInfo.width(), spriteInfo.height()));
+            int lowestTextureBit = Math.min(Integer.lowestOneBit(spriteInfo.width()), Integer.lowestOneBit(spriteInfo.height()));
+            if (lowestTextureBit < lowestOneBit) {
+               LOGGER.warn("Texture {} with size {}x{} limits mip level from {} to {}", new Object[]{spriteInfo.name(), spriteInfo.width(), spriteInfo.height(), Mth.log2(lowestOneBit), Mth.log2(lowestTextureBit)});
+               lowestOneBit = lowestTextureBit;
             }
          }
 
-         int var23 = Math.min(var6, var7);
-         int var24 = Mth.log2(var23);
-         int var25;
-         if (var24 < var2) {
-            LOGGER.warn("{}: dropping miplevel from {} to {}, because of minimum power of two: {}", new Object[]{this.location, var2, var24, var23});
-            var25 = var24;
+         int minSize = Math.min(minTexelSize, lowestOneBit);
+         int minPowerOfTwo = Mth.log2(minSize);
+         int mipLevel;
+         if (minPowerOfTwo < maxMipmapLevels) {
+            LOGGER.warn("{}: dropping miplevel from {} to {}, because of minimum power of two: {}", new Object[]{this.location, maxMipmapLevels, minPowerOfTwo, minSize});
+            mipLevel = minPowerOfTwo;
          } else {
-            var25 = var2;
+            mipLevel = maxMipmapLevels;
          }
 
-         Options var11 = Minecraft.getInstance().options;
-         int var12 = var25 != 0 && var11.textureFiltering().get() == TextureFilteringMethod.ANISOTROPIC ? (Integer)var11.maxAnisotropyBit().get() : 0;
-         Stitcher var13 = new Stitcher(var5, var5, var25, var12);
+         Options options = Minecraft.getInstance().options;
+         int anisotropyBit = options.textureFiltering().get() != TextureFilteringMethod.ANISOTROPIC ? 0 : (Integer)options.maxAnisotropyBit().get();
+         Stitcher<SpriteContents> stitcher = new Stitcher<SpriteContents>(maxTextureSize, maxTextureSize, mipLevel, anisotropyBit);
 
-         for(SpriteContents var15 : var1) {
-            var13.registerSprite(var15);
+         for(SpriteContents spriteInfo : sprites) {
+            stitcher.registerSprite(spriteInfo);
          }
 
          try {
-            var13.stitch();
-         } catch (StitcherException var21) {
-            CrashReport var27 = CrashReport.forThrowable(var21, "Stitching");
-            CrashReportCategory var16 = var27.addCategory("Stitcher");
-            var16.setDetail("Sprites", var21.getAllSprites().stream().map((var0) -> String.format(Locale.ROOT, "%s[%dx%d]", var0.name(), var0.width(), var0.height())).collect(Collectors.joining(",")));
-            var16.setDetail("Max Texture Size", var5);
-            throw new ReportedException(var27);
+            stitcher.stitch();
+         } catch (StitcherException e) {
+            CrashReport report = CrashReport.forThrowable(e, "Stitching");
+            CrashReportCategory category = report.addCategory("Stitcher");
+            category.setDetail("Sprites", e.getAllSprites().stream().map((s) -> String.format(Locale.ROOT, "%s[%dx%d]", s.name(), s.width(), s.height())).collect(Collectors.joining(",")));
+            category.setDetail("Max Texture Size", maxTextureSize);
+            throw new ReportedException(report);
          }
 
-         int var26 = var13.getWidth();
-         int var28 = var13.getHeight();
-         Map var29 = this.getStitchedSprites(var13, var26, var28);
-         TextureAtlasSprite var17 = (TextureAtlasSprite)var29.get(MissingTextureAtlasSprite.getLocation());
-         CompletableFuture var18 = CompletableFuture.runAsync(() -> var29.values().forEach((var1) -> var1.contents().increaseMipLevel(var25)), var3);
-         return new Preparations(var26, var28, var25, var17, var29, var18);
+         int width = stitcher.getWidth();
+         int height = stitcher.getHeight();
+         Map<Identifier, TextureAtlasSprite> result = this.getStitchedSprites(stitcher, width, height);
+         TextureAtlasSprite missingSprite = (TextureAtlasSprite)result.get(MissingTextureAtlasSprite.getLocation());
+         CompletableFuture<Void> readyForUpload = CompletableFuture.runAsync(() -> result.values().forEach((s) -> s.contents().increaseMipLevel(mipLevel)), executor);
+         return new Preparations(width, height, mipLevel, missingSprite, result, readyForUpload);
       }
    }
 
-   private static CompletableFuture<List<SpriteContents>> runSpriteSuppliers(SpriteResourceLoader var0, List<SpriteSource.Loader> var1, Executor var2) {
-      List var3 = var1.stream().map((var2x) -> CompletableFuture.supplyAsync(() -> var2x.get(var0), var2)).toList();
-      return Util.sequence(var3).thenApply((var0x) -> var0x.stream().filter(Objects::nonNull).toList());
+   private static CompletableFuture<List<SpriteContents>> runSpriteSuppliers(final SpriteResourceLoader resourceLoader, final List<SpriteSource.Loader> sprites, final Executor executor) {
+      List<CompletableFuture<SpriteContents>> spriteFutures = sprites.stream().map((supplier) -> CompletableFuture.supplyAsync(() -> supplier.get(resourceLoader), executor)).toList();
+      return Util.sequence(spriteFutures).thenApply((l) -> l.stream().filter(Objects::nonNull).toList());
    }
 
-   public CompletableFuture<Preparations> loadAndStitch(ResourceManager var1, Identifier var2, int var3, Executor var4, Set<MetadataSectionType<?>> var5) {
-      SpriteResourceLoader var6 = SpriteResourceLoader.create(var5);
-      return CompletableFuture.supplyAsync(() -> SpriteSourceList.load(var1, var2).list(var1), var4).thenCompose((var2x) -> runSpriteSuppliers(var6, var2x, var4)).thenApply((var3x) -> this.stitch(var3x, var3, var4));
+   public CompletableFuture<Preparations> loadAndStitch(final ResourceManager manager, final Identifier atlasInfoLocation, final int maxMipmapLevels, final Executor taskExecutor, final Set<MetadataSectionType<?>> additionalMetadata) {
+      SpriteResourceLoader spriteResourceLoader = SpriteResourceLoader.create(additionalMetadata);
+      return CompletableFuture.supplyAsync(() -> SpriteSourceList.load(manager, atlasInfoLocation).list(manager), taskExecutor).thenCompose((sprites) -> runSpriteSuppliers(spriteResourceLoader, sprites, taskExecutor)).thenApply((resources) -> this.stitch(resources, maxMipmapLevels, taskExecutor));
    }
 
-   private Map<Identifier, TextureAtlasSprite> getStitchedSprites(Stitcher<SpriteContents> var1, int var2, int var3) {
-      HashMap var4 = new HashMap();
-      var1.gatherSprites((var4x, var5, var6, var7) -> var4.put(var4x.name(), new TextureAtlasSprite(this.location, var4x, var2, var3, var5, var6, var7)));
-      return var4;
+   private Map<Identifier, TextureAtlasSprite> getStitchedSprites(final Stitcher<SpriteContents> stitcher, final int atlasWidth, final int atlasHeight) {
+      Map<Identifier, TextureAtlasSprite> result = new HashMap();
+      stitcher.gatherSprites((contents, x, y, padding) -> result.put(contents.name(), new TextureAtlasSprite(this.location, contents, atlasWidth, atlasHeight, x, y, padding)));
+      return result;
    }
 
    public static record Preparations(int width, int height, int mipLevel, TextureAtlasSprite missing, Map<Identifier, TextureAtlasSprite> regions, CompletableFuture<Void> readyForUpload) {
-      public Preparations(int var1, int var2, int var3, TextureAtlasSprite var4, Map<Identifier, TextureAtlasSprite> var5, CompletableFuture<Void> var6) {
+      public Preparations {
          super();
-         this.width = var1;
-         this.height = var2;
-         this.mipLevel = var3;
-         this.missing = var4;
-         this.regions = var5;
-         this.readyForUpload = var6;
       }
 
-      public @Nullable TextureAtlasSprite getSprite(Identifier var1) {
-         return (TextureAtlasSprite)this.regions.get(var1);
+      public @Nullable TextureAtlasSprite getSprite(final Identifier id) {
+         return (TextureAtlasSprite)this.regions.get(id);
       }
    }
 }

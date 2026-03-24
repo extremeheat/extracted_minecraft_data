@@ -11,43 +11,43 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 
 public class KelpFeature extends Feature<NoneFeatureConfiguration> {
-   public KelpFeature(Codec<NoneFeatureConfiguration> var1) {
-      super(var1);
+   public KelpFeature(final Codec<NoneFeatureConfiguration> codec) {
+      super(codec);
    }
 
-   public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> var1) {
-      int var2 = 0;
-      WorldGenLevel var3 = var1.level();
-      BlockPos var4 = var1.origin();
-      RandomSource var5 = var1.random();
-      int var6 = var3.getHeight(Heightmap.Types.OCEAN_FLOOR, var4.getX(), var4.getZ());
-      BlockPos var7 = new BlockPos(var4.getX(), var6, var4.getZ());
-      if (var3.getBlockState(var7).is(Blocks.WATER)) {
-         BlockState var8 = Blocks.KELP.defaultBlockState();
-         BlockState var9 = Blocks.KELP_PLANT.defaultBlockState();
-         int var10 = 1 + var5.nextInt(10);
+   public boolean place(final FeaturePlaceContext<NoneFeatureConfiguration> context) {
+      int placed = 0;
+      WorldGenLevel level = context.level();
+      BlockPos origin = context.origin();
+      RandomSource random = context.random();
+      int y = level.getHeight(Heightmap.Types.OCEAN_FLOOR, origin.getX(), origin.getZ());
+      BlockPos kelpPos = new BlockPos(origin.getX(), y, origin.getZ());
+      if (level.getBlockState(kelpPos).is(Blocks.WATER)) {
+         BlockState stateTop = Blocks.KELP.defaultBlockState();
+         BlockState state = Blocks.KELP_PLANT.defaultBlockState();
+         int height = 1 + random.nextInt(10);
 
-         for(int var11 = 0; var11 <= var10; ++var11) {
-            if (var3.getBlockState(var7).is(Blocks.WATER) && var3.getBlockState(var7.above()).is(Blocks.WATER) && var9.canSurvive(var3, var7)) {
-               if (var11 == var10) {
-                  var3.setBlock(var7, (BlockState)var8.setValue(KelpBlock.AGE, var5.nextInt(4) + 20), 2);
-                  ++var2;
+         for(int h = 0; h <= height; ++h) {
+            if (level.getBlockState(kelpPos).is(Blocks.WATER) && level.getBlockState(kelpPos.above()).is(Blocks.WATER) && state.canSurvive(level, kelpPos)) {
+               if (h == height) {
+                  level.setBlock(kelpPos, (BlockState)stateTop.setValue(KelpBlock.AGE, random.nextInt(4) + 20), 2);
+                  ++placed;
                } else {
-                  var3.setBlock(var7, var9, 2);
+                  level.setBlock(kelpPos, state, 2);
                }
-            } else if (var11 > 0) {
-               BlockPos var12 = var7.below();
-               if (var8.canSurvive(var3, var12) && !var3.getBlockState(var12.below()).is(Blocks.KELP)) {
-                  var3.setBlock(var12, (BlockState)var8.setValue(KelpBlock.AGE, var5.nextInt(4) + 20), 2);
-                  ++var2;
+            } else if (h > 0) {
+               BlockPos below = kelpPos.below();
+               if (stateTop.canSurvive(level, below) && !level.getBlockState(below.below()).is(Blocks.KELP)) {
+                  level.setBlock(below, (BlockState)stateTop.setValue(KelpBlock.AGE, random.nextInt(4) + 20), 2);
+                  ++placed;
                }
                break;
             }
 
-            var7 = var7.above();
+            kelpPos = kelpPos.above();
          }
       }
 
-      return var2 > 0;
+      return placed > 0;
    }
 }

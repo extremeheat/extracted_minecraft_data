@@ -13,12 +13,12 @@ public class SayCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("say").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.argument("message", MessageArgument.message()).executes((var0x) -> {
-         MessageArgument.resolveChatMessage(var0x, "message", (var1) -> {
-            CommandSourceStack var2 = (CommandSourceStack)var0x.getSource();
-            PlayerList var3 = var2.getServer().getPlayerList();
-            var3.broadcastChatMessage(var1, var2, ChatType.bind(ChatType.SAY_COMMAND, var2));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("say").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.argument("message", MessageArgument.message()).executes((c) -> {
+         MessageArgument.resolveChatMessage(c, "message", (message) -> {
+            CommandSourceStack source = (CommandSourceStack)c.getSource();
+            PlayerList playerList = source.getServer().getPlayerList();
+            playerList.broadcastChatMessage(message, source, ChatType.bind(ChatType.SAY_COMMAND, source));
          });
          return 1;
       })));

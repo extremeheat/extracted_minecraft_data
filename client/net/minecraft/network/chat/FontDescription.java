@@ -6,35 +6,30 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.component.ResolvableProfile;
 
 public interface FontDescription {
-   Codec<FontDescription> CODEC = Identifier.CODEC.flatComapMap(Resource::new, (var0) -> {
-      if (var0 instanceof Resource var1) {
-         return DataResult.success(var1.id());
+   Codec<FontDescription> CODEC = Identifier.CODEC.flatComapMap(Resource::new, (fontDescription) -> {
+      if (fontDescription instanceof Resource resource) {
+         return DataResult.success(resource.id());
       } else {
-         return DataResult.error(() -> "Unsupported font description type: " + String.valueOf(var0));
+         return DataResult.error(() -> "Unsupported font description type: " + String.valueOf(fontDescription));
       }
    });
    Resource DEFAULT = new Resource(Identifier.withDefaultNamespace("default"));
 
    public static record Resource(Identifier id) implements FontDescription {
-      public Resource(Identifier var1) {
+      public Resource {
          super();
-         this.id = var1;
       }
    }
 
    public static record AtlasSprite(Identifier atlasId, Identifier spriteId) implements FontDescription {
-      public AtlasSprite(Identifier var1, Identifier var2) {
+      public AtlasSprite {
          super();
-         this.atlasId = var1;
-         this.spriteId = var2;
       }
    }
 
    public static record PlayerSprite(ResolvableProfile profile, boolean hat) implements FontDescription {
-      public PlayerSprite(ResolvableProfile var1, boolean var2) {
+      public PlayerSprite {
          super();
-         this.profile = var1;
-         this.hat = var2;
       }
    }
 }

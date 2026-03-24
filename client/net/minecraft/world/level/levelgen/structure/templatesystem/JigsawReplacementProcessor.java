@@ -23,28 +23,28 @@ public class JigsawReplacementProcessor extends StructureProcessor {
       super();
    }
 
-   public StructureTemplate.@Nullable StructureBlockInfo processBlock(LevelReader var1, BlockPos var2, BlockPos var3, StructureTemplate.StructureBlockInfo var4, StructureTemplate.StructureBlockInfo var5, StructurePlaceSettings var6) {
-      BlockState var7 = var5.state();
-      if (var7.is(Blocks.JIGSAW) && !SharedConstants.DEBUG_KEEP_JIGSAW_BLOCKS_DURING_STRUCTURE_GEN) {
-         if (var5.nbt() == null) {
-            LOGGER.warn("Jigsaw block at {} is missing nbt, will not replace", var2);
-            return var5;
+   public StructureTemplate.@Nullable StructureBlockInfo processBlock(final LevelReader level, final BlockPos targetPosition, final BlockPos referencePos, final StructureTemplate.StructureBlockInfo originalBlockInfo, final StructureTemplate.StructureBlockInfo processedBlockInfo, final StructurePlaceSettings settings) {
+      BlockState state = processedBlockInfo.state();
+      if (state.is(Blocks.JIGSAW) && !SharedConstants.DEBUG_KEEP_JIGSAW_BLOCKS_DURING_STRUCTURE_GEN) {
+         if (processedBlockInfo.nbt() == null) {
+            LOGGER.warn("Jigsaw block at {} is missing nbt, will not replace", targetPosition);
+            return processedBlockInfo;
          } else {
-            String var8 = var5.nbt().getStringOr("final_state", "minecraft:air");
+            String stateString = processedBlockInfo.nbt().getStringOr("final_state", "minecraft:air");
 
-            BlockState var9;
+            BlockState blockState;
             try {
-               BlockStateParser.BlockResult var10 = BlockStateParser.parseForBlock(var1.holderLookup(Registries.BLOCK), var8, true);
-               var9 = var10.blockState();
-            } catch (CommandSyntaxException var11) {
-               LOGGER.error("Failed to parse jigsaw replacement state '{}' at {}: {}", new Object[]{var8, var2, var11.getMessage()});
+               BlockStateParser.BlockResult result = BlockStateParser.parseForBlock(level.holderLookup(Registries.BLOCK), stateString, true);
+               blockState = result.blockState();
+            } catch (CommandSyntaxException e) {
+               LOGGER.error("Failed to parse jigsaw replacement state '{}' at {}: {}", new Object[]{stateString, targetPosition, e.getMessage()});
                return null;
             }
 
-            return var9.is(Blocks.STRUCTURE_VOID) ? null : new StructureTemplate.StructureBlockInfo(var5.pos(), var9, (CompoundTag)null);
+            return blockState.is(Blocks.STRUCTURE_VOID) ? null : new StructureTemplate.StructureBlockInfo(processedBlockInfo.pos(), blockState, (CompoundTag)null);
          }
       } else {
-         return var5;
+         return processedBlockInfo;
       }
    }
 

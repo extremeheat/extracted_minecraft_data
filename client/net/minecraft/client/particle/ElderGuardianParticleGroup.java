@@ -9,8 +9,8 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.state.CameraRenderState;
-import net.minecraft.client.renderer.state.ParticleGroupRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.client.renderer.state.level.ParticleGroupRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.ARGB;
@@ -19,54 +19,44 @@ import net.minecraft.util.Unit;
 import org.joml.Quaternionfc;
 
 public class ElderGuardianParticleGroup extends ParticleGroup<ElderGuardianParticle> {
-   public ElderGuardianParticleGroup(ParticleEngine var1) {
-      super(var1);
+   public ElderGuardianParticleGroup(final ParticleEngine engine) {
+      super(engine);
    }
 
-   public ParticleGroupRenderState extractRenderState(Frustum var1, Camera var2, float var3) {
-      return new State(this.particles.stream().map((var2x) -> ElderGuardianParticleGroup.ElderGuardianParticleRenderState.fromParticle(var2x, var2, var3)).toList());
+   public ParticleGroupRenderState extractRenderState(final Frustum frustum, final Camera camera, final float partialTickTime) {
+      return new State(this.particles.stream().map((particle) -> ElderGuardianParticleGroup.ElderGuardianParticleRenderState.fromParticle(particle, camera, partialTickTime)).toList());
    }
 
-   static record State(List<ElderGuardianParticleRenderState> states) implements ParticleGroupRenderState {
-      State(List<ElderGuardianParticleRenderState> var1) {
+   private static record State(List<ElderGuardianParticleRenderState> states) implements ParticleGroupRenderState {
+      private State {
          super();
-         this.states = var1;
       }
 
-      public void submit(SubmitNodeCollector var1, CameraRenderState var2) {
-         for(ElderGuardianParticleRenderState var4 : this.states) {
-            var1.submitModel(var4.model, Unit.INSTANCE, var4.poseStack, var4.renderType, 15728880, OverlayTexture.NO_OVERLAY, var4.color, (TextureAtlasSprite)null, 0, (ModelFeatureRenderer.CrumblingOverlay)null);
+      public void submit(final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
+         for(ElderGuardianParticleRenderState state : this.states) {
+            submitNodeCollector.submitModel(state.model, Unit.INSTANCE, state.poseStack, state.renderType, 15728880, OverlayTexture.NO_OVERLAY, state.color, (TextureAtlasSprite)null, 0, (ModelFeatureRenderer.CrumblingOverlay)null);
          }
 
       }
    }
 
-   static record ElderGuardianParticleRenderState(Model<Unit> model, PoseStack poseStack, RenderType renderType, int color) {
-      final Model<Unit> model;
-      final PoseStack poseStack;
-      final RenderType renderType;
-      final int color;
-
-      private ElderGuardianParticleRenderState(Model<Unit> var1, PoseStack var2, RenderType var3, int var4) {
+   private static record ElderGuardianParticleRenderState(Model<Unit> model, PoseStack poseStack, RenderType renderType, int color) {
+      private ElderGuardianParticleRenderState {
          super();
-         this.model = var1;
-         this.poseStack = var2;
-         this.renderType = var3;
-         this.color = var4;
       }
 
-      public static ElderGuardianParticleRenderState fromParticle(ElderGuardianParticle var0, Camera var1, float var2) {
-         float var3 = ((float)var0.age + var2) / (float)var0.lifetime;
-         float var4 = 0.05F + 0.5F * Mth.sin((double)(var3 * 3.1415927F));
-         int var5 = ARGB.colorFromFloat(var4, 1.0F, 1.0F, 1.0F);
-         PoseStack var6 = new PoseStack();
-         var6.pushPose();
-         var6.mulPose((Quaternionfc)var1.rotation());
-         var6.mulPose((Quaternionfc)Axis.XP.rotationDegrees(60.0F - 150.0F * var3));
-         float var7 = 0.42553192F;
-         var6.scale(0.42553192F, -0.42553192F, -0.42553192F);
-         var6.translate(0.0F, -0.56F, 3.5F);
-         return new ElderGuardianParticleRenderState(var0.model, var6, var0.renderType, var5);
+      public static ElderGuardianParticleRenderState fromParticle(final ElderGuardianParticle particle, final Camera camera, final float partialTickTime) {
+         float ageScale = ((float)particle.age + partialTickTime) / (float)particle.lifetime;
+         float alpha = 0.05F + 0.5F * Mth.sin((double)(ageScale * 3.1415927F));
+         int color = ARGB.colorFromFloat(alpha, 1.0F, 1.0F, 1.0F);
+         PoseStack poseStack = new PoseStack();
+         poseStack.pushPose();
+         poseStack.mulPose((Quaternionfc)camera.rotation());
+         poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(60.0F - 150.0F * ageScale));
+         float scale = 0.42553192F;
+         poseStack.scale(0.42553192F, -0.42553192F, -0.42553192F);
+         poseStack.translate(0.0F, -0.56F, 3.5F);
+         return new ElderGuardianParticleRenderState(particle.model, poseStack, particle.renderType, color);
       }
    }
 }

@@ -10,38 +10,38 @@ import org.jspecify.annotations.Nullable;
 public abstract class RedstoneWireEvaluator {
    protected final RedStoneWireBlock wireBlock;
 
-   protected RedstoneWireEvaluator(RedStoneWireBlock var1) {
+   protected RedstoneWireEvaluator(final RedStoneWireBlock wireBlock) {
       super();
-      this.wireBlock = var1;
+      this.wireBlock = wireBlock;
    }
 
-   public abstract void updatePowerStrength(Level var1, BlockPos var2, BlockState var3, @Nullable Orientation var4, boolean var5);
+   public abstract void updatePowerStrength(final Level level, final BlockPos pos, final BlockState state, final @Nullable Orientation orientation, final boolean skipShapeUpdates);
 
-   protected int getBlockSignal(Level var1, BlockPos var2) {
-      return this.wireBlock.getBlockSignal(var1, var2);
+   protected int getBlockSignal(final Level level, final BlockPos pos) {
+      return this.wireBlock.getBlockSignal(level, pos);
    }
 
-   protected int getWireSignal(BlockPos var1, BlockState var2) {
-      return var2.is(this.wireBlock) ? (Integer)var2.getValue(RedStoneWireBlock.POWER) : 0;
+   protected int getWireSignal(final BlockPos pos, final BlockState state) {
+      return state.is(this.wireBlock) ? (Integer)state.getValue(RedStoneWireBlock.POWER) : 0;
    }
 
-   protected int getIncomingWireSignal(Level var1, BlockPos var2) {
-      int var3 = 0;
+   protected int getIncomingWireSignal(final Level level, final BlockPos pos) {
+      int wireSignal = 0;
 
-      for(Direction var5 : Direction.Plane.HORIZONTAL) {
-         BlockPos var6 = var2.relative(var5);
-         BlockState var7 = var1.getBlockState(var6);
-         var3 = Math.max(var3, this.getWireSignal(var6, var7));
-         BlockPos var8 = var2.above();
-         if (var7.isRedstoneConductor(var1, var6) && !var1.getBlockState(var8).isRedstoneConductor(var1, var8)) {
-            BlockPos var10 = var6.above();
-            var3 = Math.max(var3, this.getWireSignal(var10, var1.getBlockState(var10)));
-         } else if (!var7.isRedstoneConductor(var1, var6)) {
-            BlockPos var9 = var6.below();
-            var3 = Math.max(var3, this.getWireSignal(var9, var1.getBlockState(var9)));
+      for(Direction direction : Direction.Plane.HORIZONTAL) {
+         BlockPos neighborPos = pos.relative(direction);
+         BlockState neighborState = level.getBlockState(neighborPos);
+         wireSignal = Math.max(wireSignal, this.getWireSignal(neighborPos, neighborState));
+         BlockPos abovePos = pos.above();
+         if (neighborState.isRedstoneConductor(level, neighborPos) && !level.getBlockState(abovePos).isRedstoneConductor(level, abovePos)) {
+            BlockPos aboveNeighborPos = neighborPos.above();
+            wireSignal = Math.max(wireSignal, this.getWireSignal(aboveNeighborPos, level.getBlockState(aboveNeighborPos)));
+         } else if (!neighborState.isRedstoneConductor(level, neighborPos)) {
+            BlockPos belowNeighborPos = neighborPos.below();
+            wireSignal = Math.max(wireSignal, this.getWireSignal(belowNeighborPos, level.getBlockState(belowNeighborPos)));
          }
       }
 
-      return Math.max(0, var3 - 1);
+      return Math.max(0, wireSignal - 1);
    }
 }

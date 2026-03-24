@@ -13,69 +13,69 @@ public class PerlinSimplexNoise {
    private final double highestFreqValueFactor;
    private final double highestFreqInputFactor;
 
-   public PerlinSimplexNoise(RandomSource var1, List<Integer> var2) {
-      this(var1, new IntRBTreeSet(var2));
+   public PerlinSimplexNoise(final RandomSource random, final List<Integer> octaveSet) {
+      this(random, new IntRBTreeSet(octaveSet));
    }
 
-   private PerlinSimplexNoise(RandomSource var1, IntSortedSet var2) {
+   private PerlinSimplexNoise(final RandomSource random, final IntSortedSet octaveSet) {
       super();
-      if (var2.isEmpty()) {
+      if (octaveSet.isEmpty()) {
          throw new IllegalArgumentException("Need some octaves!");
       } else {
-         int var3 = -var2.firstInt();
-         int var4 = var2.lastInt();
-         int var5 = var3 + var4 + 1;
-         if (var5 < 1) {
+         int lowFreqOctaves = -octaveSet.firstInt();
+         int highFreqOctaves = octaveSet.lastInt();
+         int octaves = lowFreqOctaves + highFreqOctaves + 1;
+         if (octaves < 1) {
             throw new IllegalArgumentException("Total number of octaves needs to be >= 1");
          } else {
-            SimplexNoise var6 = new SimplexNoise(var1);
-            int var7 = var4;
-            this.noiseLevels = new SimplexNoise[var5];
-            if (var4 >= 0 && var4 < var5 && var2.contains(0)) {
-               this.noiseLevels[var4] = var6;
+            SimplexNoise zeroOctave = new SimplexNoise(random);
+            int zeroOctaveIndex = highFreqOctaves;
+            this.noiseLevels = new SimplexNoise[octaves];
+            if (highFreqOctaves >= 0 && highFreqOctaves < octaves && octaveSet.contains(0)) {
+               this.noiseLevels[highFreqOctaves] = zeroOctave;
             }
 
-            for(int var8 = var4 + 1; var8 < var5; ++var8) {
-               if (var8 >= 0 && var2.contains(var7 - var8)) {
-                  this.noiseLevels[var8] = new SimplexNoise(var1);
+            for(int i = highFreqOctaves + 1; i < octaves; ++i) {
+               if (i >= 0 && octaveSet.contains(zeroOctaveIndex - i)) {
+                  this.noiseLevels[i] = new SimplexNoise(random);
                } else {
-                  var1.consumeCount(262);
+                  random.consumeCount(262);
                }
             }
 
-            if (var4 > 0) {
-               long var12 = (long)(var6.getValue(var6.xo, var6.yo, var6.zo) * 9.223372036854776E18);
-               WorldgenRandom var10 = new WorldgenRandom(new LegacyRandomSource(var12));
+            if (highFreqOctaves > 0) {
+               long positiveOctaveSeed = (long)(zeroOctave.getValue(zeroOctave.xo, zeroOctave.yo, zeroOctave.zo) * 9.223372036854776E18);
+               RandomSource highFreqRandom = new WorldgenRandom(new LegacyRandomSource(positiveOctaveSeed));
 
-               for(int var11 = var7 - 1; var11 >= 0; --var11) {
-                  if (var11 < var5 && var2.contains(var7 - var11)) {
-                     this.noiseLevels[var11] = new SimplexNoise(var10);
+               for(int i = zeroOctaveIndex - 1; i >= 0; --i) {
+                  if (i < octaves && octaveSet.contains(zeroOctaveIndex - i)) {
+                     this.noiseLevels[i] = new SimplexNoise(highFreqRandom);
                   } else {
-                     var10.consumeCount(262);
+                     highFreqRandom.consumeCount(262);
                   }
                }
             }
 
-            this.highestFreqInputFactor = Math.pow(2.0, (double)var4);
-            this.highestFreqValueFactor = 1.0 / (Math.pow(2.0, (double)var5) - 1.0);
+            this.highestFreqInputFactor = Math.pow(2.0, (double)highFreqOctaves);
+            this.highestFreqValueFactor = 1.0 / (Math.pow(2.0, (double)octaves) - 1.0);
          }
       }
    }
 
-   public double getValue(double var1, double var3, boolean var5) {
-      double var6 = 0.0;
-      double var8 = this.highestFreqInputFactor;
-      double var10 = this.highestFreqValueFactor;
+   public double getValue(final double x, final double y, final boolean useNoiseStart) {
+      double value = 0.0;
+      double factor = this.highestFreqInputFactor;
+      double valueFactor = this.highestFreqValueFactor;
 
-      for(SimplexNoise var15 : this.noiseLevels) {
-         if (var15 != null) {
-            var6 += var15.getValue(var1 * var8 + (var5 ? var15.xo : 0.0), var3 * var8 + (var5 ? var15.yo : 0.0)) * var10;
+      for(SimplexNoise noiseLevel : this.noiseLevels) {
+         if (noiseLevel != null) {
+            value += noiseLevel.getValue(x * factor + (useNoiseStart ? noiseLevel.xo : 0.0), y * factor + (useNoiseStart ? noiseLevel.yo : 0.0)) * valueFactor;
          }
 
-         var8 /= 2.0;
-         var10 *= 2.0;
+         factor /= 2.0;
+         valueFactor *= 2.0;
       }
 
-      return var6;
+      return value;
    }
 }

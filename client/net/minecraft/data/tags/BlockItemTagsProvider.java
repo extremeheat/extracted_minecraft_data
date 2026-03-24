@@ -13,8 +13,8 @@ public abstract class BlockItemTagsProvider {
    }
 
    protected void run() {
-      Block[] var1 = new Block[]{Blocks.DANDELION, Blocks.OPEN_EYEBLOSSOM, Blocks.POPPY, Blocks.BLUE_ORCHID, Blocks.ALLIUM, Blocks.AZURE_BLUET, Blocks.RED_TULIP, Blocks.ORANGE_TULIP, Blocks.WHITE_TULIP, Blocks.PINK_TULIP, Blocks.OXEYE_DAISY, Blocks.CORNFLOWER, Blocks.LILY_OF_THE_VALLEY, Blocks.WITHER_ROSE, Blocks.TORCHFLOWER};
-      Block[] var2 = new Block[]{Blocks.SUNFLOWER, Blocks.LILAC, Blocks.PEONY, Blocks.ROSE_BUSH, Blocks.PITCHER_PLANT, Blocks.FLOWERING_AZALEA_LEAVES, Blocks.FLOWERING_AZALEA, Blocks.MANGROVE_PROPAGULE, Blocks.CHERRY_LEAVES, Blocks.PINK_PETALS, Blocks.WILDFLOWERS, Blocks.CHORUS_FLOWER, Blocks.SPORE_BLOSSOM, Blocks.CACTUS_FLOWER};
+      Block[] smallFlowersInteractingWithBees = new Block[]{Blocks.DANDELION, Blocks.OPEN_EYEBLOSSOM, Blocks.POPPY, Blocks.BLUE_ORCHID, Blocks.ALLIUM, Blocks.AZURE_BLUET, Blocks.RED_TULIP, Blocks.ORANGE_TULIP, Blocks.WHITE_TULIP, Blocks.PINK_TULIP, Blocks.OXEYE_DAISY, Blocks.CORNFLOWER, Blocks.LILY_OF_THE_VALLEY, Blocks.WITHER_ROSE, Blocks.TORCHFLOWER};
+      Block[] otherFlowers = new Block[]{Blocks.SUNFLOWER, Blocks.LILAC, Blocks.PEONY, Blocks.ROSE_BUSH, Blocks.PITCHER_PLANT, Blocks.FLOWERING_AZALEA_LEAVES, Blocks.FLOWERING_AZALEA, Blocks.MANGROVE_PROPAGULE, Blocks.CHERRY_LEAVES, Blocks.PINK_PETALS, Blocks.WILDFLOWERS, Blocks.CHORUS_FLOWER, Blocks.SPORE_BLOSSOM, Blocks.CACTUS_FLOWER};
       this.tag(BlockTags.WOOL, ItemTags.WOOL).add(Blocks.WHITE_WOOL, Blocks.ORANGE_WOOL, Blocks.MAGENTA_WOOL, Blocks.LIGHT_BLUE_WOOL, Blocks.YELLOW_WOOL, Blocks.LIME_WOOL, Blocks.PINK_WOOL, Blocks.GRAY_WOOL, Blocks.LIGHT_GRAY_WOOL, Blocks.CYAN_WOOL, Blocks.PURPLE_WOOL, Blocks.BLUE_WOOL, Blocks.BROWN_WOOL, Blocks.GREEN_WOOL, Blocks.RED_WOOL, Blocks.BLACK_WOOL);
       this.tag(BlockTags.PLANKS, ItemTags.PLANKS).add(Blocks.OAK_PLANKS, Blocks.SPRUCE_PLANKS, Blocks.BIRCH_PLANKS, Blocks.JUNGLE_PLANKS, Blocks.ACACIA_PLANKS, Blocks.DARK_OAK_PLANKS, Blocks.PALE_OAK_PLANKS, Blocks.CRIMSON_PLANKS, Blocks.WARPED_PLANKS, Blocks.MANGROVE_PLANKS, Blocks.BAMBOO_PLANKS, Blocks.CHERRY_PLANKS);
       this.tag(BlockTags.STONE_BRICKS, ItemTags.STONE_BRICKS).add(Blocks.STONE_BRICKS, Blocks.MOSSY_STONE_BRICKS, Blocks.CRACKED_STONE_BRICKS, Blocks.CHISELED_STONE_BRICKS);
@@ -55,8 +55,8 @@ public abstract class BlockItemTagsProvider {
       this.tag(BlockTags.LEAVES, ItemTags.LEAVES).add(Blocks.JUNGLE_LEAVES, Blocks.OAK_LEAVES, Blocks.SPRUCE_LEAVES, Blocks.PALE_OAK_LEAVES, Blocks.DARK_OAK_LEAVES, Blocks.ACACIA_LEAVES, Blocks.BIRCH_LEAVES, Blocks.AZALEA_LEAVES, Blocks.FLOWERING_AZALEA_LEAVES, Blocks.MANGROVE_LEAVES, Blocks.CHERRY_LEAVES);
       this.tag(BlockTags.WOODEN_TRAPDOORS, ItemTags.WOODEN_TRAPDOORS).add(Blocks.ACACIA_TRAPDOOR, Blocks.BIRCH_TRAPDOOR, Blocks.DARK_OAK_TRAPDOOR, Blocks.PALE_OAK_TRAPDOOR, Blocks.JUNGLE_TRAPDOOR, Blocks.OAK_TRAPDOOR, Blocks.SPRUCE_TRAPDOOR, Blocks.CRIMSON_TRAPDOOR, Blocks.WARPED_TRAPDOOR, Blocks.MANGROVE_TRAPDOOR, Blocks.BAMBOO_TRAPDOOR, Blocks.CHERRY_TRAPDOOR);
       this.tag(BlockTags.TRAPDOORS, ItemTags.TRAPDOORS).addTag(BlockTags.WOODEN_TRAPDOORS).add(Blocks.IRON_TRAPDOOR, Blocks.COPPER_TRAPDOOR, Blocks.EXPOSED_COPPER_TRAPDOOR, Blocks.WEATHERED_COPPER_TRAPDOOR, Blocks.OXIDIZED_COPPER_TRAPDOOR, Blocks.WAXED_COPPER_TRAPDOOR, Blocks.WAXED_EXPOSED_COPPER_TRAPDOOR, Blocks.WAXED_WEATHERED_COPPER_TRAPDOOR, Blocks.WAXED_OXIDIZED_COPPER_TRAPDOOR);
-      this.tag(BlockTags.SMALL_FLOWERS, ItemTags.SMALL_FLOWERS).add(var1).add(Blocks.CLOSED_EYEBLOSSOM);
-      this.tag(BlockTags.FLOWERS, ItemTags.FLOWERS).addTag(BlockTags.SMALL_FLOWERS).add(var2);
+      this.tag(BlockTags.SMALL_FLOWERS, ItemTags.SMALL_FLOWERS).add(smallFlowersInteractingWithBees).add(Blocks.CLOSED_EYEBLOSSOM, Blocks.GOLDEN_DANDELION);
+      this.tag(BlockTags.FLOWERS, ItemTags.FLOWERS).addTag(BlockTags.SMALL_FLOWERS).add(otherFlowers);
       this.tag(BlockTags.BEDS, ItemTags.BEDS).add(Blocks.RED_BED, Blocks.BLACK_BED, Blocks.BLUE_BED, Blocks.BROWN_BED, Blocks.CYAN_BED, Blocks.GRAY_BED, Blocks.GREEN_BED, Blocks.LIGHT_BLUE_BED, Blocks.LIGHT_GRAY_BED, Blocks.LIME_BED, Blocks.MAGENTA_BED, Blocks.ORANGE_BED, Blocks.PINK_BED, Blocks.PURPLE_BED, Blocks.WHITE_BED, Blocks.YELLOW_BED);
       this.tag(BlockTags.FENCES, ItemTags.FENCES).addTag(BlockTags.WOODEN_FENCES).add(Blocks.NETHER_BRICK_FENCE);
       this.tag(BlockTags.SOUL_FIRE_BASE_BLOCKS, ItemTags.SOUL_FIRE_BASE_BLOCKS).add(Blocks.SOUL_SAND, Blocks.SOUL_SOIL);
@@ -70,7 +70,10 @@ public abstract class BlockItemTagsProvider {
       this.tag(BlockTags.COAL_ORES, ItemTags.COAL_ORES).add(Blocks.COAL_ORE, Blocks.DEEPSLATE_COAL_ORE);
       this.tag(BlockTags.EMERALD_ORES, ItemTags.EMERALD_ORES).add(Blocks.EMERALD_ORE, Blocks.DEEPSLATE_EMERALD_ORE);
       this.tag(BlockTags.COPPER_ORES, ItemTags.COPPER_ORES).add(Blocks.COPPER_ORE, Blocks.DEEPSLATE_COPPER_ORE);
-      this.tag(BlockTags.DIRT, ItemTags.DIRT).add(Blocks.DIRT, Blocks.GRASS_BLOCK, Blocks.PODZOL, Blocks.COARSE_DIRT, Blocks.MYCELIUM, Blocks.ROOTED_DIRT, Blocks.MOSS_BLOCK, Blocks.PALE_MOSS_BLOCK, Blocks.MUD, Blocks.MUDDY_MANGROVE_ROOTS);
+      this.tag(BlockTags.DIRT, ItemTags.DIRT).add(Blocks.DIRT, Blocks.COARSE_DIRT, Blocks.ROOTED_DIRT);
+      this.tag(BlockTags.MUD, ItemTags.MUD).add(Blocks.MUD, Blocks.MUDDY_MANGROVE_ROOTS);
+      this.tag(BlockTags.MOSS_BLOCKS, ItemTags.MOSS_BLOCKS).add(Blocks.MOSS_BLOCK, Blocks.PALE_MOSS_BLOCK);
+      this.tag(BlockTags.GRASS_BLOCKS, ItemTags.GRASS_BLOCKS).add(Blocks.GRASS_BLOCK, Blocks.PODZOL, Blocks.MYCELIUM);
       this.tag(BlockTags.TERRACOTTA, ItemTags.TERRACOTTA).add(Blocks.TERRACOTTA, Blocks.WHITE_TERRACOTTA, Blocks.ORANGE_TERRACOTTA, Blocks.MAGENTA_TERRACOTTA, Blocks.LIGHT_BLUE_TERRACOTTA, Blocks.YELLOW_TERRACOTTA, Blocks.LIME_TERRACOTTA, Blocks.PINK_TERRACOTTA, Blocks.GRAY_TERRACOTTA, Blocks.LIGHT_GRAY_TERRACOTTA, Blocks.CYAN_TERRACOTTA, Blocks.PURPLE_TERRACOTTA, Blocks.BLUE_TERRACOTTA, Blocks.BROWN_TERRACOTTA, Blocks.GREEN_TERRACOTTA, Blocks.RED_TERRACOTTA, Blocks.BLACK_TERRACOTTA);
       this.tag(BlockTags.COMPLETES_FIND_TREE_TUTORIAL, ItemTags.COMPLETES_FIND_TREE_TUTORIAL).addTag(BlockTags.LOGS).addTag(BlockTags.LEAVES).addTag(BlockTags.WART_BLOCKS);
       this.tag(BlockTags.SHULKER_BOXES, ItemTags.SHULKER_BOXES).add(Blocks.SHULKER_BOX, Blocks.BLACK_SHULKER_BOX, Blocks.BLUE_SHULKER_BOX, Blocks.BROWN_SHULKER_BOX, Blocks.CYAN_SHULKER_BOX, Blocks.GRAY_SHULKER_BOX, Blocks.GREEN_SHULKER_BOX, Blocks.LIGHT_BLUE_SHULKER_BOX, Blocks.LIGHT_GRAY_SHULKER_BOX, Blocks.LIME_SHULKER_BOX, Blocks.MAGENTA_SHULKER_BOX, Blocks.ORANGE_SHULKER_BOX, Blocks.PINK_SHULKER_BOX, Blocks.PURPLE_SHULKER_BOX, Blocks.RED_SHULKER_BOX, Blocks.WHITE_SHULKER_BOX, Blocks.YELLOW_SHULKER_BOX);
@@ -84,8 +87,8 @@ public abstract class BlockItemTagsProvider {
       this.tag(BlockTags.BARS, ItemTags.BARS).add(Blocks.IRON_BARS).addAll(Blocks.COPPER_BARS.asList());
       this.tag(BlockTags.STANDING_SIGNS, ItemTags.SIGNS).add(Blocks.OAK_SIGN, Blocks.SPRUCE_SIGN, Blocks.BIRCH_SIGN, Blocks.ACACIA_SIGN, Blocks.JUNGLE_SIGN, Blocks.DARK_OAK_SIGN, Blocks.PALE_OAK_SIGN, Blocks.CRIMSON_SIGN, Blocks.WARPED_SIGN, Blocks.MANGROVE_SIGN, Blocks.BAMBOO_SIGN, Blocks.CHERRY_SIGN);
       this.tag(BlockTags.CEILING_HANGING_SIGNS, ItemTags.HANGING_SIGNS).add(Blocks.OAK_HANGING_SIGN, Blocks.SPRUCE_HANGING_SIGN, Blocks.BIRCH_HANGING_SIGN, Blocks.ACACIA_HANGING_SIGN, Blocks.CHERRY_HANGING_SIGN, Blocks.JUNGLE_HANGING_SIGN, Blocks.DARK_OAK_HANGING_SIGN, Blocks.PALE_OAK_HANGING_SIGN, Blocks.CRIMSON_HANGING_SIGN, Blocks.WARPED_HANGING_SIGN, Blocks.MANGROVE_HANGING_SIGN, Blocks.BAMBOO_HANGING_SIGN);
-      this.tag(BlockTags.BEE_ATTRACTIVE, ItemTags.BEE_FOOD).add(var1).add(var2);
+      this.tag(BlockTags.BEE_ATTRACTIVE, ItemTags.BEE_FOOD).add(smallFlowersInteractingWithBees).add(otherFlowers);
    }
 
-   protected abstract TagAppender<Block, Block> tag(TagKey<Block> var1, TagKey<Item> var2);
+   protected abstract TagAppender<Block, Block> tag(TagKey<Block> blockTag, TagKey<Item> itemTag);
 }

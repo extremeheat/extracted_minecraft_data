@@ -12,26 +12,26 @@ public class DismountOrSkipMounting {
       super();
    }
 
-   public static <E extends LivingEntity> BehaviorControl<E> create(int var0, BiPredicate<E, Entity> var1) {
-      return BehaviorBuilder.create((Function)((var2) -> var2.group(var2.registered(MemoryModuleType.RIDE_TARGET)).apply(var2, (var3) -> (var4, var5, var6) -> {
-               Entity var8 = var5.getVehicle();
-               Entity var9 = (Entity)var2.tryGet(var3).orElse((Object)null);
-               if (var8 == null && var9 == null) {
+   public static <E extends LivingEntity> BehaviorControl<E> create(final int maxWalkDistToRideTarget, final BiPredicate<E, Entity> dontRideIf) {
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.registered(MemoryModuleType.RIDE_TARGET)).apply(i, (rideTarget) -> (level, body, timestamp) -> {
+               Entity currentVehicle = body.getVehicle();
+               Entity targetVehicle = (Entity)i.tryGet(rideTarget).orElse((Object)null);
+               if (currentVehicle == null && targetVehicle == null) {
                   return false;
                } else {
-                  Entity var10 = var8 == null ? var9 : var8;
-                  if (isVehicleValid(var5, var10, var0) && !var1.test(var5, var10)) {
+                  Entity vehicle = currentVehicle == null ? targetVehicle : currentVehicle;
+                  if (isVehicleValid(body, vehicle, maxWalkDistToRideTarget) && !dontRideIf.test(body, vehicle)) {
                      return false;
                   } else {
-                     var5.stopRiding();
-                     var3.erase();
+                     body.stopRiding();
+                     rideTarget.erase();
                      return true;
                   }
                }
             })));
    }
 
-   private static boolean isVehicleValid(LivingEntity var0, Entity var1, int var2) {
-      return var1.isAlive() && var1.closerThan(var0, (double)var2) && var1.level() == var0.level();
+   private static boolean isVehicleValid(final LivingEntity body, final Entity vehicle, final int maxWalkDistToRideTarget) {
+      return vehicle.isAlive() && vehicle.closerThan(body, (double)maxWalkDistToRideTarget) && vehicle.level() == body.level();
    }
 }

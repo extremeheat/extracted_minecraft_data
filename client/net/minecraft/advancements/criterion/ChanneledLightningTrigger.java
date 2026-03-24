@@ -11,6 +11,8 @@ import net.minecraft.advancements.Criterion;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.Validatable;
+import net.minecraft.world.level.storage.loot.ValidationContextSource;
 
 public class ChanneledLightningTrigger extends SimpleCriterionTrigger<TriggerInstance> {
    public ChanneledLightningTrigger() {
@@ -21,36 +23,34 @@ public class ChanneledLightningTrigger extends SimpleCriterionTrigger<TriggerIns
       return ChanneledLightningTrigger.TriggerInstance.CODEC;
    }
 
-   public void trigger(ServerPlayer var1, Collection<? extends Entity> var2) {
-      List var3 = (List)var2.stream().map((var1x) -> EntityPredicate.createContext(var1, var1x)).collect(Collectors.toList());
-      this.trigger(var1, (var1x) -> var1x.matches(var3));
+   public void trigger(final ServerPlayer player, final Collection<? extends Entity> victims) {
+      List<LootContext> victimsContexts = (List)victims.stream().map((v) -> EntityPredicate.createContext(player, v)).collect(Collectors.toList());
+      this.trigger(player, (t) -> t.matches(victimsContexts));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, List<ContextAwarePredicate> victims) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), EntityPredicate.ADVANCEMENT_CODEC.listOf().optionalFieldOf("victims", List.of()).forGetter(TriggerInstance::victims)).apply(var0, TriggerInstance::new));
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((i) -> i.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), EntityPredicate.ADVANCEMENT_CODEC.listOf().optionalFieldOf("victims", List.of()).forGetter(TriggerInstance::victims)).apply(i, TriggerInstance::new));
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, List<ContextAwarePredicate> var2) {
+      public TriggerInstance {
          super();
-         this.player = var1;
-         this.victims = var2;
       }
 
-      public static Criterion<TriggerInstance> channeledLightning(EntityPredicate.Builder... var0) {
-         return CriteriaTriggers.CHANNELED_LIGHTNING.createCriterion(new TriggerInstance(Optional.empty(), EntityPredicate.wrap(var0)));
+      public static Criterion<TriggerInstance> channeledLightning(final EntityPredicate.Builder... victims) {
+         return CriteriaTriggers.CHANNELED_LIGHTNING.createCriterion(new TriggerInstance(Optional.empty(), EntityPredicate.wrap(victims)));
       }
 
-      public boolean matches(Collection<? extends LootContext> var1) {
-         for(ContextAwarePredicate var3 : this.victims) {
-            boolean var4 = false;
+      public boolean matches(final Collection<? extends LootContext> victims) {
+         for(ContextAwarePredicate predicate : this.victims) {
+            boolean found = false;
 
-            for(LootContext var6 : var1) {
-               if (var3.matches(var6)) {
-                  var4 = true;
+            for(LootContext victim : victims) {
+               if (predicate.matches(victim)) {
+                  found = true;
                   break;
                }
             }
 
-            if (!var4) {
+            if (!found) {
                return false;
             }
          }
@@ -58,9 +58,9 @@ public class ChanneledLightningTrigger extends SimpleCriterionTrigger<TriggerIns
          return true;
       }
 
-      public void validate(CriterionValidator var1) {
-         SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
-         var1.validateEntities(this.victims, "victims");
+      public void validate(final ValidationContextSource validator) {
+         SimpleCriterionTrigger.SimpleInstance.super.validate(validator);
+         Validatable.validate(validator.entityContext(), "victims", this.victims);
       }
    }
 }

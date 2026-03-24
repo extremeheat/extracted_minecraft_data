@@ -44,62 +44,63 @@ public enum TrialSpawnerState implements StringRepresentable {
    private final ParticleEmission particleEmission;
    private final boolean isCapableOfSpawning;
 
-   private TrialSpawnerState(final String var3, final int var4, final ParticleEmission var5, final double var6, final boolean var8) {
-      this.name = var3;
-      this.lightLevel = var4;
-      this.particleEmission = var5;
-      this.spinningMobSpeed = var6;
-      this.isCapableOfSpawning = var8;
+   private TrialSpawnerState(final String name, final int lightLevel, final ParticleEmission particleEmission, final double spinningMobSpeed, final boolean isCapableOfSpawning) {
+      this.name = name;
+      this.lightLevel = lightLevel;
+      this.particleEmission = particleEmission;
+      this.spinningMobSpeed = spinningMobSpeed;
+      this.isCapableOfSpawning = isCapableOfSpawning;
    }
 
-   TrialSpawnerState tickAndGetNext(BlockPos var1, TrialSpawner var2, ServerLevel var3) {
-      TrialSpawnerStateData var4 = var2.getStateData();
-      TrialSpawnerConfig var5 = var2.activeConfig();
+   TrialSpawnerState tickAndGetNext(final BlockPos spawnerPos, final TrialSpawner trialSpawner, final ServerLevel serverLevel) {
+      TrialSpawnerStateData data = trialSpawner.getStateData();
+      TrialSpawnerConfig config = trialSpawner.activeConfig();
+      RandomSource random = serverLevel.getRandom();
       TrialSpawnerState var10000;
       switch (this.ordinal()) {
          case 0:
-            var10000 = var4.getOrCreateDisplayEntity(var2, var3, WAITING_FOR_PLAYERS) == null ? this : WAITING_FOR_PLAYERS;
+            var10000 = data.getOrCreateDisplayEntity(trialSpawner, serverLevel, WAITING_FOR_PLAYERS) == null ? this : WAITING_FOR_PLAYERS;
             break;
          case 1:
-            if (!var2.canSpawnInLevel(var3)) {
-               var4.resetStatistics();
+            if (!trialSpawner.canSpawnInLevel(serverLevel)) {
+               data.resetStatistics();
                var10000 = this;
-            } else if (!var4.hasMobToSpawn(var2, var3.random)) {
+            } else if (!data.hasMobToSpawn(trialSpawner, random)) {
                var10000 = INACTIVE;
             } else {
-               var4.tryDetectPlayers(var3, var1, var2);
-               var10000 = var4.detectedPlayers.isEmpty() ? this : ACTIVE;
+               data.tryDetectPlayers(serverLevel, spawnerPos, trialSpawner);
+               var10000 = data.detectedPlayers.isEmpty() ? this : ACTIVE;
             }
             break;
          case 2:
-            if (!var2.canSpawnInLevel(var3)) {
-               var4.resetStatistics();
+            if (!trialSpawner.canSpawnInLevel(serverLevel)) {
+               data.resetStatistics();
                var10000 = WAITING_FOR_PLAYERS;
-            } else if (!var4.hasMobToSpawn(var2, var3.random)) {
+            } else if (!data.hasMobToSpawn(trialSpawner, random)) {
                var10000 = INACTIVE;
             } else {
-               int var6 = var4.countAdditionalPlayers(var1);
-               var4.tryDetectPlayers(var3, var1, var2);
-               if (var2.isOminous()) {
-                  this.spawnOminousOminousItemSpawner(var3, var1, var2);
+               int additionalPlayers = data.countAdditionalPlayers(spawnerPos);
+               data.tryDetectPlayers(serverLevel, spawnerPos, trialSpawner);
+               if (trialSpawner.isOminous()) {
+                  this.spawnOminousOminousItemSpawner(serverLevel, spawnerPos, trialSpawner);
                }
 
-               if (var4.hasFinishedSpawningAllMobs(var5, var6)) {
-                  if (var4.haveAllCurrentMobsDied()) {
-                     var4.cooldownEndsAt = var3.getGameTime() + (long)var2.getTargetCooldownLength();
-                     var4.totalMobsSpawned = 0;
-                     var4.nextMobSpawnsAt = 0L;
+               if (data.hasFinishedSpawningAllMobs(config, additionalPlayers)) {
+                  if (data.haveAllCurrentMobsDied()) {
+                     data.cooldownEndsAt = serverLevel.getGameTime() + (long)trialSpawner.getTargetCooldownLength();
+                     data.totalMobsSpawned = 0;
+                     data.nextMobSpawnsAt = 0L;
                      var10000 = WAITING_FOR_REWARD_EJECTION;
                      break;
                   }
-               } else if (var4.isReadyToSpawnNextMob(var3, var5, var6)) {
-                  var2.spawnMob(var3, var1).ifPresent((var4x) -> {
-                     var4.currentMobs.add(var4x);
-                     ++var4.totalMobsSpawned;
-                     var4.nextMobSpawnsAt = var3.getGameTime() + (long)var5.ticksBetweenSpawn();
-                     var5.spawnPotentialsDefinition().getRandom(var3.getRandom()).ifPresent((var2x) -> {
-                        var4.nextSpawnData = Optional.of(var2x);
-                        var2.markUpdated();
+               } else if (data.isReadyToSpawnNextMob(serverLevel, config, additionalPlayers)) {
+                  trialSpawner.spawnMob(serverLevel, spawnerPos).ifPresent((entityId) -> {
+                     data.currentMobs.add(entityId);
+                     ++data.totalMobsSpawned;
+                     data.nextMobSpawnsAt = serverLevel.getGameTime() + (long)config.ticksBetweenSpawn();
+                     config.spawnPotentialsDefinition().getRandom(random).ifPresent((entry) -> {
+                        data.nextSpawnData = Optional.of(entry);
+                        trialSpawner.markUpdated();
                      });
                   });
                }
@@ -108,39 +109,39 @@ public enum TrialSpawnerState implements StringRepresentable {
             }
             break;
          case 3:
-            if (var4.isReadyToOpenShutter(var3, 40.0F, var2.getTargetCooldownLength())) {
-               var3.playSound((Entity)null, var1, SoundEvents.TRIAL_SPAWNER_OPEN_SHUTTER, SoundSource.BLOCKS);
+            if (data.isReadyToOpenShutter(serverLevel, 40.0F, trialSpawner.getTargetCooldownLength())) {
+               serverLevel.playSound((Entity)null, spawnerPos, SoundEvents.TRIAL_SPAWNER_OPEN_SHUTTER, SoundSource.BLOCKS);
                var10000 = EJECTING_REWARD;
             } else {
                var10000 = this;
             }
             break;
          case 4:
-            if (!var4.isReadyToEjectItems(var3, (float)TIME_BETWEEN_EACH_EJECTION, var2.getTargetCooldownLength())) {
+            if (!data.isReadyToEjectItems(serverLevel, (float)TIME_BETWEEN_EACH_EJECTION, trialSpawner.getTargetCooldownLength())) {
                var10000 = this;
-            } else if (var4.detectedPlayers.isEmpty()) {
-               var3.playSound((Entity)null, var1, SoundEvents.TRIAL_SPAWNER_CLOSE_SHUTTER, SoundSource.BLOCKS);
-               var4.ejectingLootTable = Optional.empty();
+            } else if (data.detectedPlayers.isEmpty()) {
+               serverLevel.playSound((Entity)null, spawnerPos, SoundEvents.TRIAL_SPAWNER_CLOSE_SHUTTER, SoundSource.BLOCKS);
+               data.ejectingLootTable = Optional.empty();
                var10000 = COOLDOWN;
             } else {
-               if (var4.ejectingLootTable.isEmpty()) {
-                  var4.ejectingLootTable = var5.lootTablesToEject().getRandom(var3.getRandom());
+               if (data.ejectingLootTable.isEmpty()) {
+                  data.ejectingLootTable = config.lootTablesToEject().getRandom(random);
                }
 
-               var4.ejectingLootTable.ifPresent((var3x) -> var2.ejectReward(var3, var1, var3x));
-               var4.detectedPlayers.remove(var4.detectedPlayers.iterator().next());
+               data.ejectingLootTable.ifPresent((lootTable) -> trialSpawner.ejectReward(serverLevel, spawnerPos, lootTable));
+               data.detectedPlayers.remove(data.detectedPlayers.iterator().next());
                var10000 = this;
             }
             break;
          case 5:
-            var4.tryDetectPlayers(var3, var1, var2);
-            if (!var4.detectedPlayers.isEmpty()) {
-               var4.totalMobsSpawned = 0;
-               var4.nextMobSpawnsAt = 0L;
+            data.tryDetectPlayers(serverLevel, spawnerPos, trialSpawner);
+            if (!data.detectedPlayers.isEmpty()) {
+               data.totalMobsSpawned = 0;
+               data.nextMobSpawnsAt = 0L;
                var10000 = ACTIVE;
-            } else if (var4.isCooldownFinished(var3)) {
-               var2.removeOminous(var3, var1);
-               var4.reset();
+            } else if (data.isCooldownFinished(serverLevel)) {
+               trialSpawner.removeOminous(serverLevel, spawnerPos);
+               data.reset();
                var10000 = WAITING_FOR_PLAYERS;
             } else {
                var10000 = this;
@@ -153,60 +154,61 @@ public enum TrialSpawnerState implements StringRepresentable {
       return var10000;
    }
 
-   private void spawnOminousOminousItemSpawner(ServerLevel var1, BlockPos var2, TrialSpawner var3) {
-      TrialSpawnerStateData var4 = var3.getStateData();
-      TrialSpawnerConfig var5 = var3.activeConfig();
-      ItemStack var6 = (ItemStack)var4.getDispensingItems(var1, var5, var2).getRandom(var1.random).orElse(ItemStack.EMPTY);
-      if (!var6.isEmpty()) {
-         if (this.timeToSpawnItemSpawner(var1, var4)) {
-            calculatePositionToSpawnSpawner(var1, var2, var3, var4).ifPresent((var4x) -> {
-               OminousItemSpawner var5 = OminousItemSpawner.create(var1, var6);
-               var5.snapTo(var4x);
-               var1.addFreshEntity(var5);
-               float var6x = (var1.getRandom().nextFloat() - var1.getRandom().nextFloat()) * 0.2F + 1.0F;
-               var1.playSound((Entity)null, BlockPos.containing(var4x), SoundEvents.TRIAL_SPAWNER_SPAWN_ITEM_BEGIN, SoundSource.BLOCKS, 1.0F, var6x);
-               var4.cooldownEndsAt = var1.getGameTime() + var3.ominousConfig().ticksBetweenItemSpawners();
+   private void spawnOminousOminousItemSpawner(final ServerLevel level, final BlockPos trialSpawnerPos, final TrialSpawner trialSpawner) {
+      TrialSpawnerStateData data = trialSpawner.getStateData();
+      TrialSpawnerConfig config = trialSpawner.activeConfig();
+      ItemStack itemToDispense = (ItemStack)data.getDispensingItems(level, config, trialSpawnerPos).getRandom(level.getRandom()).orElse(ItemStack.EMPTY);
+      if (!itemToDispense.isEmpty()) {
+         if (this.timeToSpawnItemSpawner(level, data)) {
+            calculatePositionToSpawnSpawner(level, trialSpawnerPos, trialSpawner, data).ifPresent((pos) -> {
+               OminousItemSpawner itemSpawner = OminousItemSpawner.create(level, itemToDispense);
+               itemSpawner.snapTo(pos);
+               level.addFreshEntity(itemSpawner);
+               float pitch = (level.getRandom().nextFloat() - level.getRandom().nextFloat()) * 0.2F + 1.0F;
+               level.playSound((Entity)null, BlockPos.containing(pos), SoundEvents.TRIAL_SPAWNER_SPAWN_ITEM_BEGIN, SoundSource.BLOCKS, 1.0F, pitch);
+               data.cooldownEndsAt = level.getGameTime() + trialSpawner.ominousConfig().ticksBetweenItemSpawners();
             });
          }
 
       }
    }
 
-   private static Optional<Vec3> calculatePositionToSpawnSpawner(ServerLevel var0, BlockPos var1, TrialSpawner var2, TrialSpawnerStateData var3) {
-      Stream var10000 = var3.detectedPlayers.stream();
-      Objects.requireNonNull(var0);
-      List var4 = var10000.map(var0::getPlayerByUUID).filter(Objects::nonNull).filter((var2x) -> !var2x.isCreative() && !var2x.isSpectator() && var2x.isAlive() && var2x.distanceToSqr(var1.getCenter()) <= (double)Mth.square(var2.getRequiredPlayerRange())).toList();
-      if (var4.isEmpty()) {
+   private static Optional<Vec3> calculatePositionToSpawnSpawner(final ServerLevel level, final BlockPos trialSpawnerPos, final TrialSpawner trialSpawner, final TrialSpawnerStateData data) {
+      Stream var10000 = data.detectedPlayers.stream();
+      Objects.requireNonNull(level);
+      List<Player> nearbyPlayers = var10000.map(level::getPlayerByUUID).filter(Objects::nonNull).filter((player) -> !player.isCreative() && !player.isSpectator() && player.isAlive() && player.distanceToSqr(trialSpawnerPos.getCenter()) <= (double)Mth.square(trialSpawner.getRequiredPlayerRange())).toList();
+      if (nearbyPlayers.isEmpty()) {
          return Optional.empty();
       } else {
-         Entity var5 = selectEntityToSpawnItemAbove(var4, var3.currentMobs, var2, var1, var0);
-         return var5 == null ? Optional.empty() : calculatePositionAbove(var5, var0);
+         Entity entity = selectEntityToSpawnItemAbove(nearbyPlayers, data.currentMobs, trialSpawner, trialSpawnerPos, level);
+         return entity == null ? Optional.empty() : calculatePositionAbove(entity, level);
       }
    }
 
-   private static Optional<Vec3> calculatePositionAbove(Entity var0, ServerLevel var1) {
-      Vec3 var2 = var0.position();
-      Vec3 var3 = var2.relative(Direction.UP, (double)(var0.getBbHeight() + 2.0F + (float)var1.random.nextInt(4)));
-      BlockHitResult var4 = var1.clip(new ClipContext(var2, var3, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, CollisionContext.empty()));
-      Vec3 var5 = var4.getBlockPos().getCenter().relative(Direction.DOWN, 1.0);
-      BlockPos var6 = BlockPos.containing(var5);
-      return !var1.getBlockState(var6).getCollisionShape(var1, var6).isEmpty() ? Optional.empty() : Optional.of(var5);
+   private static Optional<Vec3> calculatePositionAbove(final Entity entityToSpawnItemAbove, final ServerLevel level) {
+      Vec3 entityPos = entityToSpawnItemAbove.position();
+      Vec3 trySpawnPos = entityPos.relative(Direction.UP, (double)(entityToSpawnItemAbove.getBbHeight() + 2.0F + (float)level.getRandom().nextInt(4)));
+      BlockHitResult hitResult = level.clip(new ClipContext(entityPos, trySpawnPos, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, CollisionContext.empty()));
+      Vec3 down = hitResult.getBlockPos().getCenter().relative(Direction.DOWN, 1.0);
+      BlockPos blockPosDown = BlockPos.containing(down);
+      return !level.getBlockState(blockPosDown).getCollisionShape(level, blockPosDown).isEmpty() ? Optional.empty() : Optional.of(down);
    }
 
-   private static @Nullable Entity selectEntityToSpawnItemAbove(List<Player> var0, Set<UUID> var1, TrialSpawner var2, BlockPos var3, ServerLevel var4) {
-      Stream var10000 = var1.stream();
-      Objects.requireNonNull(var4);
-      Stream var5 = var10000.map(var4::getEntity).filter(Objects::nonNull).filter((var2x) -> var2x.isAlive() && var2x.distanceToSqr(var3.getCenter()) <= (double)Mth.square(var2.getRequiredPlayerRange()));
-      List var6 = var4.random.nextBoolean() ? var5.toList() : var0;
-      if (var6.isEmpty()) {
+   private static @Nullable Entity selectEntityToSpawnItemAbove(final List<Player> nearbyPlayers, final Set<UUID> mobIds, final TrialSpawner trialSpawner, final BlockPos spawnerPos, final ServerLevel level) {
+      Stream var10000 = mobIds.stream();
+      Objects.requireNonNull(level);
+      Stream<Entity> nearbyMobs = var10000.map(level::getEntity).filter(Objects::nonNull).filter((target) -> target.isAlive() && target.distanceToSqr(spawnerPos.getCenter()) <= (double)Mth.square(trialSpawner.getRequiredPlayerRange()));
+      RandomSource random = level.getRandom();
+      List<? extends Entity> eligibleEntities = random.nextBoolean() ? nearbyMobs.toList() : nearbyPlayers;
+      if (eligibleEntities.isEmpty()) {
          return null;
       } else {
-         return var6.size() == 1 ? (Entity)var6.getFirst() : (Entity)Util.getRandom(var6, var4.random);
+         return eligibleEntities.size() == 1 ? (Entity)eligibleEntities.getFirst() : (Entity)Util.getRandom(eligibleEntities, random);
       }
    }
 
-   private boolean timeToSpawnItemSpawner(ServerLevel var1, TrialSpawnerStateData var2) {
-      return var1.getGameTime() >= var2.cooldownEndsAt;
+   private boolean timeToSpawnItemSpawner(final ServerLevel serverLevel, final TrialSpawnerStateData data) {
+      return serverLevel.getGameTime() >= data.cooldownEndsAt;
    }
 
    public int lightLevel() {
@@ -225,8 +227,8 @@ public enum TrialSpawnerState implements StringRepresentable {
       return this.isCapableOfSpawning;
    }
 
-   public void emitParticles(Level var1, BlockPos var2, boolean var3) {
-      this.particleEmission.emit(var1, var1.getRandom(), var2, var3);
+   public void emitParticles(final Level level, final BlockPos blockPos, final boolean isOminous) {
+      this.particleEmission.emit(level, level.getRandom(), blockPos, isOminous);
    }
 
    public String getSerializedName() {
@@ -238,7 +240,7 @@ public enum TrialSpawnerState implements StringRepresentable {
       return new TrialSpawnerState[]{INACTIVE, WAITING_FOR_PLAYERS, ACTIVE, WAITING_FOR_REWARD_EJECTION, EJECTING_REWARD, COOLDOWN};
    }
 
-   static class LightLevel {
+   private static class LightLevel {
       private static final int UNLIT = 0;
       private static final int HALF_LIT = 4;
       private static final int LIT = 8;
@@ -248,7 +250,7 @@ public enum TrialSpawnerState implements StringRepresentable {
       }
    }
 
-   static class SpinningMob {
+   private static class SpinningMob {
       private static final double NONE = -1.0;
       private static final double SLOW = 200.0;
       private static final double FAST = 1000.0;
@@ -258,42 +260,42 @@ public enum TrialSpawnerState implements StringRepresentable {
       }
    }
 
-   interface ParticleEmission {
-      ParticleEmission NONE = (var0, var1, var2, var3) -> {
+   private interface ParticleEmission {
+      ParticleEmission NONE = (level, random, pos, isOminous) -> {
       };
-      ParticleEmission SMALL_FLAMES = (var0, var1, var2, var3) -> {
-         if (var1.nextInt(2) == 0) {
-            Vec3 var4 = var2.getCenter().offsetRandom(var1, 0.9F);
-            addParticle(var3 ? ParticleTypes.SOUL_FIRE_FLAME : ParticleTypes.SMALL_FLAME, var4, var0);
+      ParticleEmission SMALL_FLAMES = (level, random, pos, isOminous) -> {
+         if (random.nextInt(2) == 0) {
+            Vec3 vec = pos.getCenter().offsetRandom(random, 0.9F);
+            addParticle(isOminous ? ParticleTypes.SOUL_FIRE_FLAME : ParticleTypes.SMALL_FLAME, vec, level);
          }
 
       };
-      ParticleEmission FLAMES_AND_SMOKE = (var0, var1, var2, var3) -> {
-         Vec3 var4 = var2.getCenter().offsetRandom(var1, 1.0F);
-         addParticle(ParticleTypes.SMOKE, var4, var0);
-         addParticle(var3 ? ParticleTypes.SOUL_FIRE_FLAME : ParticleTypes.FLAME, var4, var0);
+      ParticleEmission FLAMES_AND_SMOKE = (level, random, pos, isOminous) -> {
+         Vec3 vec = pos.getCenter().offsetRandom(random, 1.0F);
+         addParticle(ParticleTypes.SMOKE, vec, level);
+         addParticle(isOminous ? ParticleTypes.SOUL_FIRE_FLAME : ParticleTypes.FLAME, vec, level);
       };
-      ParticleEmission SMOKE_INSIDE_AND_TOP_FACE = (var0, var1, var2, var3) -> {
-         Vec3 var4 = var2.getCenter().offsetRandom(var1, 0.9F);
-         if (var1.nextInt(3) == 0) {
-            addParticle(ParticleTypes.SMOKE, var4, var0);
+      ParticleEmission SMOKE_INSIDE_AND_TOP_FACE = (level, random, pos, isOminous) -> {
+         Vec3 vec = pos.getCenter().offsetRandom(random, 0.9F);
+         if (random.nextInt(3) == 0) {
+            addParticle(ParticleTypes.SMOKE, vec, level);
          }
 
-         if (var0.getGameTime() % 20L == 0L) {
-            Vec3 var5 = var2.getCenter().add(0.0, 0.5, 0.0);
-            int var6 = var0.getRandom().nextInt(4) + 20;
+         if (level.getGameTime() % 20L == 0L) {
+            Vec3 topFaceVec = pos.getCenter().add(0.0, 0.5, 0.0);
+            int smokeCount = level.getRandom().nextInt(4) + 20;
 
-            for(int var7 = 0; var7 < var6; ++var7) {
-               addParticle(ParticleTypes.SMOKE, var5, var0);
+            for(int i = 0; i < smokeCount; ++i) {
+               addParticle(ParticleTypes.SMOKE, topFaceVec, level);
             }
          }
 
       };
 
-      private static void addParticle(SimpleParticleType var0, Vec3 var1, Level var2) {
-         var2.addParticle(var0, var1.x(), var1.y(), var1.z(), 0.0, 0.0, 0.0);
+      private static void addParticle(final SimpleParticleType smoke, final Vec3 vec, final Level level) {
+         level.addParticle(smoke, vec.x(), vec.y(), vec.z(), 0.0, 0.0, 0.0);
       }
 
-      void emit(Level var1, RandomSource var2, BlockPos var3, boolean var4);
+      void emit(final Level level, final RandomSource random, final BlockPos blockPos, final boolean isOminous);
    }
 }

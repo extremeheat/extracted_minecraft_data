@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.entity.player.StackedItemContents;
@@ -26,32 +27,32 @@ public class ServerPlaceRecipe<R extends Recipe<?>> {
    private final List<Slot> inputGridSlots;
    private final List<Slot> slotsToClear;
 
-   public static <I extends RecipeInput, R extends Recipe<I>> RecipeBookMenu.PostPlaceAction placeRecipe(CraftingMenuAccess<R> var0, int var1, int var2, List<Slot> var3, List<Slot> var4, Inventory var5, RecipeHolder<R> var6, boolean var7, boolean var8) {
-      ServerPlaceRecipe var9 = new ServerPlaceRecipe(var0, var5, var7, var1, var2, var3, var4);
-      if (!var8 && !var9.testClearGrid()) {
+   public static <I extends RecipeInput, R extends Recipe<I>> RecipeBookMenu.PostPlaceAction placeRecipe(final CraftingMenuAccess<R> menu, final int gridWidth, final int gridHeight, final List<Slot> inputGridSlots, final List<Slot> slotsToClear, final Inventory inventory, final RecipeHolder<R> recipe, final boolean useMaxItems, final boolean allowDroppingItemsToClear) {
+      ServerPlaceRecipe<R> placer = new ServerPlaceRecipe<R>(menu, inventory, useMaxItems, gridWidth, gridHeight, inputGridSlots, slotsToClear);
+      if (!allowDroppingItemsToClear && !placer.testClearGrid()) {
          return RecipeBookMenu.PostPlaceAction.NOTHING;
       } else {
-         StackedItemContents var10 = new StackedItemContents();
-         var5.fillStackedContents(var10);
-         var0.fillCraftSlotsStackedContents(var10);
-         return var9.tryPlaceRecipe(var6, var10);
+         StackedItemContents availableItems = new StackedItemContents();
+         inventory.fillStackedContents(availableItems);
+         menu.fillCraftSlotsStackedContents(availableItems);
+         return placer.tryPlaceRecipe(recipe, availableItems);
       }
    }
 
-   private ServerPlaceRecipe(CraftingMenuAccess<R> var1, Inventory var2, boolean var3, int var4, int var5, List<Slot> var6, List<Slot> var7) {
+   private ServerPlaceRecipe(final CraftingMenuAccess<R> menu, final Inventory inventory, final boolean useMaxItems, final int gridWidth, final int gridHeight, final List<Slot> inputGridSlots, final List<Slot> slotsToClear) {
       super();
-      this.menu = var1;
-      this.inventory = var2;
-      this.useMaxItems = var3;
-      this.gridWidth = var4;
-      this.gridHeight = var5;
-      this.inputGridSlots = var6;
-      this.slotsToClear = var7;
+      this.menu = menu;
+      this.inventory = inventory;
+      this.useMaxItems = useMaxItems;
+      this.gridWidth = gridWidth;
+      this.gridHeight = gridHeight;
+      this.inputGridSlots = inputGridSlots;
+      this.slotsToClear = slotsToClear;
    }
 
-   private RecipeBookMenu.PostPlaceAction tryPlaceRecipe(RecipeHolder<R> var1, StackedItemContents var2) {
-      if (var2.canCraft(var1.value(), (StackedContents.Output)null)) {
-         this.placeRecipe(var1, var2);
+   private RecipeBookMenu.PostPlaceAction tryPlaceRecipe(final RecipeHolder<R> recipe, final StackedItemContents availableItems) {
+      if (availableItems.canCraft(recipe.value(), (StackedContents.Output)null)) {
+         this.placeRecipe(recipe, availableItems);
          this.inventory.setChanged();
          return RecipeBookMenu.PostPlaceAction.NOTHING;
       } else {
@@ -62,52 +63,52 @@ public class ServerPlaceRecipe<R extends Recipe<?>> {
    }
 
    private void clearGrid() {
-      for(Slot var2 : this.slotsToClear) {
-         ItemStack var3 = var2.getItem().copy();
-         this.inventory.placeItemBackInInventory(var3, false);
-         var2.set(var3);
+      for(Slot slot : this.slotsToClear) {
+         ItemStack itemStackCopy = slot.getItem().copy();
+         this.inventory.placeItemBackInInventory(itemStackCopy, false);
+         slot.set(itemStackCopy);
       }
 
       this.menu.clearCraftingContent();
    }
 
-   private void placeRecipe(RecipeHolder<R> var1, StackedItemContents var2) {
-      boolean var3 = this.menu.recipeMatches(var1);
-      int var4 = var2.getBiggestCraftableStack(var1.value(), (StackedContents.Output)null);
-      if (var3) {
-         for(Slot var6 : this.inputGridSlots) {
-            ItemStack var7 = var6.getItem();
-            if (!var7.isEmpty() && Math.min(var4, var7.getMaxStackSize()) < var7.getCount() + 1) {
+   private void placeRecipe(final RecipeHolder<R> recipe, final StackedItemContents availableItems) {
+      boolean recipeMatchesPlaced = this.menu.recipeMatches(recipe);
+      int biggestCraftableStack = availableItems.getBiggestCraftableStack(recipe.value(), (StackedContents.Output)null);
+      if (recipeMatchesPlaced) {
+         for(Slot inputSlot : this.inputGridSlots) {
+            ItemStack itemStack = inputSlot.getItem();
+            if (!itemStack.isEmpty() && Math.min(biggestCraftableStack, itemStack.getMaxStackSize()) < itemStack.getCount() + 1) {
                return;
             }
          }
       }
 
-      int var8 = this.calculateAmountToCraft(var4, var3);
-      ArrayList var9 = new ArrayList();
-      Recipe var10001 = var1.value();
-      Objects.requireNonNull(var9);
-      if (var2.canCraft(var10001, var8, var9::add)) {
-         int var10 = clampToMaxStackSize(var8, var9);
-         if (var10 != var8) {
-            var9.clear();
-            var10001 = var1.value();
-            Objects.requireNonNull(var9);
-            if (!var2.canCraft(var10001, var10, var9::add)) {
+      int amountToCraft = this.calculateAmountToCraft(biggestCraftableStack, recipeMatchesPlaced);
+      List<Holder<Item>> itemsUsedPerIngredient = new ArrayList();
+      Recipe var10001 = recipe.value();
+      Objects.requireNonNull(itemsUsedPerIngredient);
+      if (availableItems.canCraft(var10001, amountToCraft, itemsUsedPerIngredient::add)) {
+         int adjustedAmountToCraft = clampToMaxStackSize(amountToCraft, itemsUsedPerIngredient);
+         if (adjustedAmountToCraft != amountToCraft) {
+            itemsUsedPerIngredient.clear();
+            var10001 = recipe.value();
+            Objects.requireNonNull(itemsUsedPerIngredient);
+            if (!availableItems.canCraft(var10001, adjustedAmountToCraft, itemsUsedPerIngredient::add)) {
                return;
             }
          }
 
          this.clearGrid();
-         PlaceRecipeHelper.placeRecipe(this.gridWidth, this.gridHeight, var1.value(), var1.value().placementInfo().slotsToIngredientIndex(), (var3x, var4x, var5, var6x) -> {
-            if (var3x != -1) {
-               Slot var7 = (Slot)this.inputGridSlots.get(var4x);
-               Holder var8 = (Holder)var9.get(var3x);
-               int var9x = var10;
+         PlaceRecipeHelper.placeRecipe(this.gridWidth, this.gridHeight, recipe.value(), recipe.value().placementInfo().slotsToIngredientIndex(), (ingredientIndex, gridIndex, gridXPos, gridYPos) -> {
+            if (ingredientIndex != -1) {
+               Slot targetGridSlot = (Slot)this.inputGridSlots.get(gridIndex);
+               Holder<Item> itemUsed = (Holder)itemsUsedPerIngredient.get(ingredientIndex);
+               int remainingCount = adjustedAmountToCraft;
 
-               while(var9x > 0) {
-                  var9x = this.moveItemToGrid(var7, var8, var9x);
-                  if (var9x == -1) {
+               while(remainingCount > 0) {
+                  remainingCount = this.moveItemToGrid(targetGridSlot, itemUsed, remainingCount);
+                  if (remainingCount == -1) {
                      return;
                   }
                }
@@ -117,87 +118,87 @@ public class ServerPlaceRecipe<R extends Recipe<?>> {
       }
    }
 
-   private static int clampToMaxStackSize(int var0, List<Holder<Item>> var1) {
-      for(Holder var3 : var1) {
-         var0 = Math.min(var0, ((Item)var3.value()).getDefaultMaxStackSize());
+   private static int clampToMaxStackSize(int value, final List<Holder<Item>> items) {
+      for(Holder<Item> item : items) {
+         value = Math.min(value, (Integer)item.components().getOrDefault(DataComponents.MAX_STACK_SIZE, 1));
       }
 
-      return var0;
+      return value;
    }
 
-   private int calculateAmountToCraft(int var1, boolean var2) {
+   private int calculateAmountToCraft(final int biggestCraftableStack, final boolean recipeMatchesPlaced) {
       if (this.useMaxItems) {
-         return var1;
-      } else if (var2) {
-         int var3 = 2147483647;
+         return biggestCraftableStack;
+      } else if (recipeMatchesPlaced) {
+         int smallestStackSize = 2147483647;
 
-         for(Slot var5 : this.inputGridSlots) {
-            ItemStack var6 = var5.getItem();
-            if (!var6.isEmpty() && var3 > var6.getCount()) {
-               var3 = var6.getCount();
+         for(Slot inputSlot : this.inputGridSlots) {
+            ItemStack itemStack = inputSlot.getItem();
+            if (!itemStack.isEmpty() && smallestStackSize > itemStack.getCount()) {
+               smallestStackSize = itemStack.getCount();
             }
          }
 
-         if (var3 != 2147483647) {
-            ++var3;
+         if (smallestStackSize != 2147483647) {
+            ++smallestStackSize;
          }
 
-         return var3;
+         return smallestStackSize;
       } else {
          return 1;
       }
    }
 
-   private int moveItemToGrid(Slot var1, Holder<Item> var2, int var3) {
-      ItemStack var4 = var1.getItem();
-      int var5 = this.inventory.findSlotMatchingCraftingIngredient(var2, var4);
-      if (var5 == -1) {
+   private int moveItemToGrid(final Slot targetSlot, final Holder<Item> itemInInventory, final int count) {
+      ItemStack itemInTargetSlot = targetSlot.getItem();
+      int inventorySlotId = this.inventory.findSlotMatchingCraftingIngredient(itemInInventory, itemInTargetSlot);
+      if (inventorySlotId == -1) {
          return -1;
       } else {
-         ItemStack var6 = this.inventory.getItem(var5);
-         ItemStack var7;
-         if (var3 < var6.getCount()) {
-            var7 = this.inventory.removeItem(var5, var3);
+         ItemStack inventoryItem = this.inventory.getItem(inventorySlotId);
+         ItemStack takenStack;
+         if (count < inventoryItem.getCount()) {
+            takenStack = this.inventory.removeItem(inventorySlotId, count);
          } else {
-            var7 = this.inventory.removeItemNoUpdate(var5);
+            takenStack = this.inventory.removeItemNoUpdate(inventorySlotId);
          }
 
-         int var8 = var7.getCount();
-         if (var4.isEmpty()) {
-            var1.set(var7);
+         int takenCount = takenStack.getCount();
+         if (itemInTargetSlot.isEmpty()) {
+            targetSlot.set(takenStack);
          } else {
-            var4.grow(var8);
+            itemInTargetSlot.grow(takenCount);
          }
 
-         return var3 - var8;
+         return count - takenCount;
       }
    }
 
    private boolean testClearGrid() {
-      ArrayList var1 = Lists.newArrayList();
-      int var2 = this.getAmountOfFreeSlotsInInventory();
+      List<ItemStack> freeSlots = Lists.newArrayList();
+      int freeSlotsInInventory = this.getAmountOfFreeSlotsInInventory();
 
-      for(Slot var4 : this.inputGridSlots) {
-         ItemStack var5 = var4.getItem().copy();
-         if (!var5.isEmpty()) {
-            int var6 = this.inventory.getSlotWithRemainingSpace(var5);
-            if (var6 == -1 && var1.size() <= var2) {
-               for(ItemStack var8 : var1) {
-                  if (ItemStack.isSameItem(var8, var5) && var8.getCount() != var8.getMaxStackSize() && var8.getCount() + var5.getCount() <= var8.getMaxStackSize()) {
-                     var8.grow(var5.getCount());
-                     var5.setCount(0);
+      for(Slot inputSlot : this.inputGridSlots) {
+         ItemStack itemStack = inputSlot.getItem().copy();
+         if (!itemStack.isEmpty()) {
+            int slotId = this.inventory.getSlotWithRemainingSpace(itemStack);
+            if (slotId == -1 && freeSlots.size() <= freeSlotsInInventory) {
+               for(ItemStack itemStackInList : freeSlots) {
+                  if (ItemStack.isSameItem(itemStackInList, itemStack) && itemStackInList.getCount() != itemStackInList.getMaxStackSize() && itemStackInList.getCount() + itemStack.getCount() <= itemStackInList.getMaxStackSize()) {
+                     itemStackInList.grow(itemStack.getCount());
+                     itemStack.setCount(0);
                      break;
                   }
                }
 
-               if (!var5.isEmpty()) {
-                  if (var1.size() >= var2) {
+               if (!itemStack.isEmpty()) {
+                  if (freeSlots.size() >= freeSlotsInInventory) {
                      return false;
                   }
 
-                  var1.add(var5);
+                  freeSlots.add(itemStack);
                }
-            } else if (var6 == -1) {
+            } else if (slotId == -1) {
                return false;
             }
          }
@@ -207,22 +208,22 @@ public class ServerPlaceRecipe<R extends Recipe<?>> {
    }
 
    private int getAmountOfFreeSlotsInInventory() {
-      int var1 = 0;
+      int freeSlots = 0;
 
-      for(ItemStack var3 : this.inventory.getNonEquipmentItems()) {
-         if (var3.isEmpty()) {
-            ++var1;
+      for(ItemStack item : this.inventory.getNonEquipmentItems()) {
+         if (item.isEmpty()) {
+            ++freeSlots;
          }
       }
 
-      return var1;
+      return freeSlots;
    }
 
    public interface CraftingMenuAccess<T extends Recipe<?>> {
-      void fillCraftSlotsStackedContents(StackedItemContents var1);
+      void fillCraftSlotsStackedContents(StackedItemContents stackedContents);
 
       void clearCraftingContent();
 
-      boolean recipeMatches(RecipeHolder<T> var1);
+      boolean recipeMatches(RecipeHolder<T> recipe);
    }
 }

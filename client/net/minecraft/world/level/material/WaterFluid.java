@@ -46,13 +46,13 @@ public abstract class WaterFluid extends FlowingFluid {
       return Items.WATER_BUCKET;
    }
 
-   public void animateTick(Level var1, BlockPos var2, FluidState var3, RandomSource var4) {
-      if (!var3.isSource() && !(Boolean)var3.getValue(FALLING)) {
-         if (var4.nextInt(64) == 0) {
-            var1.playLocalSound((double)var2.getX() + 0.5, (double)var2.getY() + 0.5, (double)var2.getZ() + 0.5, SoundEvents.WATER_AMBIENT, SoundSource.AMBIENT, var4.nextFloat() * 0.25F + 0.75F, var4.nextFloat() + 0.5F, false);
+   public void animateTick(final Level level, final BlockPos pos, final FluidState fluidState, final RandomSource random) {
+      if (!fluidState.isSource() && !(Boolean)fluidState.getValue(FALLING)) {
+         if (random.nextInt(64) == 0) {
+            level.playLocalSound((double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5, SoundEvents.WATER_AMBIENT, SoundSource.AMBIENT, random.nextFloat() * 0.25F + 0.75F, random.nextFloat() + 0.5F, false);
          }
-      } else if (var4.nextInt(10) == 0) {
-         var1.addParticle(ParticleTypes.UNDERWATER, (double)var2.getX() + var4.nextDouble(), (double)var2.getY() + var4.nextDouble(), (double)var2.getZ() + var4.nextDouble(), 0.0, 0.0, 0.0);
+      } else if (random.nextInt(10) == 0) {
+         level.addParticle(ParticleTypes.UNDERWATER, (double)pos.getX() + random.nextDouble(), (double)pos.getY() + random.nextDouble(), (double)pos.getZ() + random.nextDouble(), 0.0, 0.0, 0.0);
       }
 
    }
@@ -61,41 +61,41 @@ public abstract class WaterFluid extends FlowingFluid {
       return ParticleTypes.DRIPPING_WATER;
    }
 
-   protected boolean canConvertToSource(ServerLevel var1) {
-      return (Boolean)var1.getGameRules().get(GameRules.WATER_SOURCE_CONVERSION);
+   protected boolean canConvertToSource(final ServerLevel level) {
+      return (Boolean)level.getGameRules().get(GameRules.WATER_SOURCE_CONVERSION);
    }
 
-   protected void beforeDestroyingBlock(LevelAccessor var1, BlockPos var2, BlockState var3) {
-      BlockEntity var4 = var3.hasBlockEntity() ? var1.getBlockEntity(var2) : null;
-      Block.dropResources(var3, var1, var2, var4);
+   protected void beforeDestroyingBlock(final LevelAccessor level, final BlockPos pos, final BlockState state) {
+      BlockEntity blockEntity = state.hasBlockEntity() ? level.getBlockEntity(pos) : null;
+      Block.dropResources(state, level, pos, blockEntity);
    }
 
-   protected void entityInside(Level var1, BlockPos var2, Entity var3, InsideBlockEffectApplier var4) {
-      var4.apply(InsideBlockEffectType.EXTINGUISH);
+   protected void entityInside(final Level level, final BlockPos pos, final Entity entity, final InsideBlockEffectApplier effectApplier) {
+      effectApplier.apply(InsideBlockEffectType.EXTINGUISH);
    }
 
-   public int getSlopeFindDistance(LevelReader var1) {
+   public int getSlopeFindDistance(final LevelReader level) {
       return 4;
    }
 
-   public BlockState createLegacyBlock(FluidState var1) {
-      return (BlockState)Blocks.WATER.defaultBlockState().setValue(LiquidBlock.LEVEL, getLegacyLevel(var1));
+   public BlockState createLegacyBlock(final FluidState fluidState) {
+      return (BlockState)Blocks.WATER.defaultBlockState().setValue(LiquidBlock.LEVEL, getLegacyLevel(fluidState));
    }
 
-   public boolean isSame(Fluid var1) {
-      return var1 == Fluids.WATER || var1 == Fluids.FLOWING_WATER;
+   public boolean isSame(final Fluid other) {
+      return other == Fluids.WATER || other == Fluids.FLOWING_WATER;
    }
 
-   public int getDropOff(LevelReader var1) {
+   public int getDropOff(final LevelReader level) {
       return 1;
    }
 
-   public int getTickDelay(LevelReader var1) {
+   public int getTickDelay(final LevelReader level) {
       return 5;
    }
 
-   public boolean canBeReplacedWith(FluidState var1, BlockGetter var2, BlockPos var3, Fluid var4, Direction var5) {
-      return var5 == Direction.DOWN && !var4.is(FluidTags.WATER);
+   public boolean canBeReplacedWith(final FluidState state, final BlockGetter level, final BlockPos pos, final Fluid other, final Direction direction) {
+      return direction == Direction.DOWN && !other.is(FluidTags.WATER);
    }
 
    protected float getExplosionResistance() {
@@ -111,11 +111,11 @@ public abstract class WaterFluid extends FlowingFluid {
          super();
       }
 
-      public int getAmount(FluidState var1) {
+      public int getAmount(final FluidState fluidState) {
          return 8;
       }
 
-      public boolean isSource(FluidState var1) {
+      public boolean isSource(final FluidState fluidState) {
          return true;
       }
    }
@@ -125,16 +125,16 @@ public abstract class WaterFluid extends FlowingFluid {
          super();
       }
 
-      protected void createFluidStateDefinition(StateDefinition.Builder<Fluid, FluidState> var1) {
-         super.createFluidStateDefinition(var1);
-         var1.add(LEVEL);
+      protected void createFluidStateDefinition(final StateDefinition.Builder<Fluid, FluidState> builder) {
+         super.createFluidStateDefinition(builder);
+         builder.add(LEVEL);
       }
 
-      public int getAmount(FluidState var1) {
-         return (Integer)var1.getValue(LEVEL);
+      public int getAmount(final FluidState fluidState) {
+         return (Integer)fluidState.getValue(LEVEL);
       }
 
-      public boolean isSource(FluidState var1) {
+      public boolean isSource(final FluidState fluidState) {
          return false;
       }
    }

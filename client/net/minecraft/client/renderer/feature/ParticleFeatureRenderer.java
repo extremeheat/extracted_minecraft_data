@@ -6,6 +6,7 @@ import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MappableRingBuffer;
 import net.minecraft.client.renderer.SubmitNodeCollection;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.state.QuadParticleRenderState;
+import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
 import net.minecraft.client.renderer.texture.TextureManager;
 import org.jspecify.annotations.Nullable;
 
@@ -29,35 +30,39 @@ public class ParticleFeatureRenderer implements AutoCloseable {
       super();
    }
 
-   public void render(SubmitNodeCollection var1) {
-      if (!var1.getParticleGroupRenderers().isEmpty()) {
-         GpuDevice var2 = RenderSystem.getDevice();
-         Minecraft var3 = Minecraft.getInstance();
-         TextureManager var4 = var3.getTextureManager();
-         RenderTarget var5 = var3.getMainRenderTarget();
-         RenderTarget var6 = var3.levelRenderer.getParticlesTarget();
+   public void renderSolid(final SubmitNodeCollection nodeCollection) {
+      this.render(nodeCollection, false);
+   }
 
-         for(SubmitNodeCollector.ParticleGroupRenderer var8 : var1.getParticleGroupRenderers()) {
-            ParticleBufferCache var9 = (ParticleBufferCache)this.availableBuffers.poll();
-            if (var9 == null) {
-               var9 = new ParticleBufferCache();
-            }
+   public void renderTranslucent(final SubmitNodeCollection nodeCollection) {
+      this.render(nodeCollection, true);
+   }
 
-            this.usedBuffers.add(var9);
-            QuadParticleRenderState.PreparedBuffers var10 = var8.prepare(var9);
-            if (var10 != null) {
-               try (RenderPass var11 = var2.createCommandEncoder().createRenderPass(() -> "Particles - Main", var5.getColorTextureView(), OptionalInt.empty(), var5.getDepthTextureView(), OptionalDouble.empty())) {
-                  this.prepareRenderPass(var11);
-                  var8.render(var10, var9, var11, var4, false);
-                  if (var6 == null) {
-                     var8.render(var10, var9, var11, var4, true);
-                  }
+   private void render(final SubmitNodeCollection nodeCollection, final boolean translucent) {
+      if (!nodeCollection.getParticleGroupRenderers().isEmpty()) {
+         GpuDevice device = RenderSystem.getDevice();
+         Minecraft minecraft = Minecraft.getInstance();
+         TextureManager textureManager = minecraft.getTextureManager();
+         RenderTarget mainTarget = minecraft.getMainRenderTarget();
+         RenderTarget particleTarget = minecraft.levelRenderer.getParticlesTarget();
+
+         for(SubmitNodeCollector.ParticleGroupRenderer particleGroupRenderer : nodeCollection.getParticleGroupRenderers()) {
+            if (!particleGroupRenderer.isEmpty()) {
+               ParticleBufferCache buffer = (ParticleBufferCache)this.availableBuffers.poll();
+               if (buffer == null) {
+                  buffer = new ParticleBufferCache();
                }
 
-               if (var6 != null) {
-                  try (RenderPass var18 = var2.createCommandEncoder().createRenderPass(() -> "Particles - Transparent", var6.getColorTextureView(), OptionalInt.empty(), var6.getDepthTextureView(), OptionalDouble.empty())) {
-                     this.prepareRenderPass(var18);
-                     var8.render(var10, var9, var18, var4, true);
+               this.usedBuffers.add(buffer);
+               QuadParticleRenderState.PreparedBuffers prepared = particleGroupRenderer.prepare(buffer, translucent);
+               if (prepared != null) {
+                  boolean useParticleTarget = particleTarget != null && translucent;
+                  GpuTextureView colorTextureView = useParticleTarget ? particleTarget.getColorTextureView() : mainTarget.getColorTextureView();
+                  GpuTextureView depthTextureView = useParticleTarget ? particleTarget.getDepthTextureView() : mainTarget.getDepthTextureView();
+
+                  try (RenderPass renderPass = device.createCommandEncoder().createRenderPass(() -> "Particles - " + (translucent ? "Translucent" : "Solid"), colorTextureView, OptionalInt.empty(), depthTextureView, OptionalDouble.empty())) {
+                     this.prepareRenderPass(renderPass);
+                     particleGroupRenderer.render(prepared, buffer, renderPass, textureManager);
                   }
                }
             }
@@ -67,18 +72,18 @@ public class ParticleFeatureRenderer implements AutoCloseable {
    }
 
    public void endFrame() {
-      for(ParticleBufferCache var2 : this.usedBuffers) {
-         var2.rotate();
+      for(ParticleBufferCache usedBuffer : this.usedBuffers) {
+         usedBuffer.rotate();
       }
 
       this.availableBuffers.addAll(this.usedBuffers);
       this.usedBuffers.clear();
    }
 
-   private void prepareRenderPass(RenderPass var1) {
-      var1.setUniform("Projection", RenderSystem.getProjectionMatrixBuffer());
-      var1.setUniform("Fog", RenderSystem.getShaderFog());
-      var1.bindTexture("Sampler2", Minecraft.getInstance().gameRenderer.lightTexture().getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
+   private void prepareRenderPass(final RenderPass renderPass) {
+      renderPass.setUniform("Projection", RenderSystem.getProjectionMatrixBuffer());
+      renderPass.setUniform("Fog", RenderSystem.getShaderFog());
+      renderPass.bindTexture("Sampler2", Minecraft.getInstance().gameRenderer.lightmap(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
    }
 
    public void close() {
@@ -92,17 +97,17 @@ public class ParticleFeatureRenderer implements AutoCloseable {
          super();
       }
 
-      public void write(ByteBuffer var1) {
-         if (this.ringBuffer == null || this.ringBuffer.size() < var1.remaining()) {
+      public void write(final ByteBuffer byteBuffer) {
+         if (this.ringBuffer == null || this.ringBuffer.size() < byteBuffer.remaining()) {
             if (this.ringBuffer != null) {
                this.ringBuffer.close();
             }
 
-            this.ringBuffer = new MappableRingBuffer(() -> "Particle Vertices", 34, var1.remaining());
+            this.ringBuffer = new MappableRingBuffer(() -> "Particle Vertices", 34, byteBuffer.remaining());
          }
 
-         try (GpuBuffer.MappedView var2 = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.ringBuffer.currentBuffer().slice(), false, true)) {
-            var2.data().put(var1);
+         try (GpuBuffer.MappedView view = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.ringBuffer.currentBuffer().slice(), false, true)) {
+            view.data().put(byteBuffer);
          }
 
       }

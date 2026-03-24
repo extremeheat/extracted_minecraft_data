@@ -21,25 +21,25 @@ public class Vec3i implements Comparable<Vec3i> {
    private int y;
    private int z;
 
-   public static Codec<Vec3i> offsetCodec(int var0) {
-      return CODEC.validate((var1) -> Math.abs(var1.getX()) < var0 && Math.abs(var1.getY()) < var0 && Math.abs(var1.getZ()) < var0 ? DataResult.success(var1) : DataResult.error(() -> "Position out of range, expected at most " + var0 + ": " + String.valueOf(var1)));
+   public static Codec<Vec3i> offsetCodec(final int maxOffsetPerAxis) {
+      return CODEC.validate((value) -> Math.abs(value.getX()) < maxOffsetPerAxis && Math.abs(value.getY()) < maxOffsetPerAxis && Math.abs(value.getZ()) < maxOffsetPerAxis ? DataResult.success(value) : DataResult.error(() -> "Position out of range, expected at most " + maxOffsetPerAxis + ": " + String.valueOf(value)));
    }
 
-   public Vec3i(int var1, int var2, int var3) {
+   public Vec3i(final int x, final int y, final int z) {
       super();
-      this.x = var1;
-      this.y = var2;
-      this.z = var3;
+      this.x = x;
+      this.y = y;
+      this.z = z;
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
+   public boolean equals(final Object o) {
+      if (this == o) {
          return true;
-      } else if (!(var1 instanceof Vec3i)) {
+      } else if (!(o instanceof Vec3i)) {
          return false;
       } else {
-         Vec3i var2 = (Vec3i)var1;
-         return this.getX() == var2.getX() && this.getY() == var2.getY() && this.getZ() == var2.getZ();
+         Vec3i vec3i = (Vec3i)o;
+         return this.getX() == vec3i.getX() && this.getY() == vec3i.getY() && this.getZ() == vec3i.getZ();
       }
    }
 
@@ -47,11 +47,11 @@ public class Vec3i implements Comparable<Vec3i> {
       return (this.getY() + this.getZ() * 31) * 31 + this.getX();
    }
 
-   public int compareTo(Vec3i var1) {
-      if (this.getY() == var1.getY()) {
-         return this.getZ() == var1.getZ() ? this.getX() - var1.getX() : this.getZ() - var1.getZ();
+   public int compareTo(final Vec3i pos) {
+      if (this.getY() == pos.getY()) {
+         return this.getZ() == pos.getZ() ? this.getX() - pos.getX() : this.getZ() - pos.getZ();
       } else {
-         return this.getY() - var1.getY();
+         return this.getY() - pos.getY();
       }
    }
 
@@ -67,162 +67,162 @@ public class Vec3i implements Comparable<Vec3i> {
       return this.z;
    }
 
-   protected Vec3i setX(int var1) {
-      this.x = var1;
+   protected Vec3i setX(final int x) {
+      this.x = x;
       return this;
    }
 
-   protected Vec3i setY(int var1) {
-      this.y = var1;
+   protected Vec3i setY(final int y) {
+      this.y = y;
       return this;
    }
 
-   protected Vec3i setZ(int var1) {
-      this.z = var1;
+   protected Vec3i setZ(final int z) {
+      this.z = z;
       return this;
    }
 
-   public Vec3i offset(int var1, int var2, int var3) {
-      return var1 == 0 && var2 == 0 && var3 == 0 ? this : new Vec3i(this.getX() + var1, this.getY() + var2, this.getZ() + var3);
+   public Vec3i offset(final int x, final int y, final int z) {
+      return x == 0 && y == 0 && z == 0 ? this : new Vec3i(this.getX() + x, this.getY() + y, this.getZ() + z);
    }
 
-   public Vec3i offset(Vec3i var1) {
-      return this.offset(var1.getX(), var1.getY(), var1.getZ());
+   public Vec3i offset(final Vec3i vec) {
+      return this.offset(vec.getX(), vec.getY(), vec.getZ());
    }
 
-   public Vec3i subtract(Vec3i var1) {
-      return this.offset(-var1.getX(), -var1.getY(), -var1.getZ());
+   public Vec3i subtract(final Vec3i vec) {
+      return this.offset(-vec.getX(), -vec.getY(), -vec.getZ());
    }
 
-   public Vec3i multiply(int var1) {
-      if (var1 == 1) {
+   public Vec3i multiply(final int scale) {
+      if (scale == 1) {
          return this;
       } else {
-         return var1 == 0 ? ZERO : new Vec3i(this.getX() * var1, this.getY() * var1, this.getZ() * var1);
+         return scale == 0 ? ZERO : new Vec3i(this.getX() * scale, this.getY() * scale, this.getZ() * scale);
       }
    }
 
-   public Vec3i multiply(int var1, int var2, int var3) {
-      return new Vec3i(this.getX() * var1, this.getY() * var2, this.getZ() * var3);
+   public Vec3i multiply(final int xScale, final int yScale, final int zScale) {
+      return new Vec3i(this.getX() * xScale, this.getY() * yScale, this.getZ() * zScale);
    }
 
    public Vec3i above() {
       return this.above(1);
    }
 
-   public Vec3i above(int var1) {
-      return this.relative(Direction.UP, var1);
+   public Vec3i above(final int steps) {
+      return this.relative(Direction.UP, steps);
    }
 
    public Vec3i below() {
       return this.below(1);
    }
 
-   public Vec3i below(int var1) {
-      return this.relative(Direction.DOWN, var1);
+   public Vec3i below(final int steps) {
+      return this.relative(Direction.DOWN, steps);
    }
 
    public Vec3i north() {
       return this.north(1);
    }
 
-   public Vec3i north(int var1) {
-      return this.relative(Direction.NORTH, var1);
+   public Vec3i north(final int steps) {
+      return this.relative(Direction.NORTH, steps);
    }
 
    public Vec3i south() {
       return this.south(1);
    }
 
-   public Vec3i south(int var1) {
-      return this.relative(Direction.SOUTH, var1);
+   public Vec3i south(final int steps) {
+      return this.relative(Direction.SOUTH, steps);
    }
 
    public Vec3i west() {
       return this.west(1);
    }
 
-   public Vec3i west(int var1) {
-      return this.relative(Direction.WEST, var1);
+   public Vec3i west(final int steps) {
+      return this.relative(Direction.WEST, steps);
    }
 
    public Vec3i east() {
       return this.east(1);
    }
 
-   public Vec3i east(int var1) {
-      return this.relative(Direction.EAST, var1);
+   public Vec3i east(final int steps) {
+      return this.relative(Direction.EAST, steps);
    }
 
-   public Vec3i relative(Direction var1) {
-      return this.relative((Direction)var1, 1);
+   public Vec3i relative(final Direction direction) {
+      return this.relative((Direction)direction, 1);
    }
 
-   public Vec3i relative(Direction var1, int var2) {
-      return var2 == 0 ? this : new Vec3i(this.getX() + var1.getStepX() * var2, this.getY() + var1.getStepY() * var2, this.getZ() + var1.getStepZ() * var2);
+   public Vec3i relative(final Direction direction, final int steps) {
+      return steps == 0 ? this : new Vec3i(this.getX() + direction.getStepX() * steps, this.getY() + direction.getStepY() * steps, this.getZ() + direction.getStepZ() * steps);
    }
 
-   public Vec3i relative(Direction.Axis var1, int var2) {
-      if (var2 == 0) {
+   public Vec3i relative(final Direction.Axis axis, final int steps) {
+      if (steps == 0) {
          return this;
       } else {
-         int var3 = var1 == Direction.Axis.X ? var2 : 0;
-         int var4 = var1 == Direction.Axis.Y ? var2 : 0;
-         int var5 = var1 == Direction.Axis.Z ? var2 : 0;
-         return new Vec3i(this.getX() + var3, this.getY() + var4, this.getZ() + var5);
+         int xStep = axis == Direction.Axis.X ? steps : 0;
+         int yStep = axis == Direction.Axis.Y ? steps : 0;
+         int zStep = axis == Direction.Axis.Z ? steps : 0;
+         return new Vec3i(this.getX() + xStep, this.getY() + yStep, this.getZ() + zStep);
       }
    }
 
-   public Vec3i cross(Vec3i var1) {
-      return new Vec3i(this.getY() * var1.getZ() - this.getZ() * var1.getY(), this.getZ() * var1.getX() - this.getX() * var1.getZ(), this.getX() * var1.getY() - this.getY() * var1.getX());
+   public Vec3i cross(final Vec3i upVector) {
+      return new Vec3i(this.getY() * upVector.getZ() - this.getZ() * upVector.getY(), this.getZ() * upVector.getX() - this.getX() * upVector.getZ(), this.getX() * upVector.getY() - this.getY() * upVector.getX());
    }
 
-   public boolean closerThan(Vec3i var1, double var2) {
-      return this.distSqr(var1) < Mth.square(var2);
+   public boolean closerThan(final Vec3i pos, final double distance) {
+      return this.distSqr(pos) < Mth.square(distance);
    }
 
-   public boolean closerToCenterThan(Position var1, double var2) {
-      return this.distToCenterSqr(var1) < Mth.square(var2);
+   public boolean closerToCenterThan(final Position pos, final double distance) {
+      return this.distToCenterSqr(pos) < Mth.square(distance);
    }
 
-   public double distSqr(Vec3i var1) {
-      return this.distToLowCornerSqr((double)var1.getX(), (double)var1.getY(), (double)var1.getZ());
+   public double distSqr(final Vec3i pos) {
+      return this.distToLowCornerSqr((double)pos.getX(), (double)pos.getY(), (double)pos.getZ());
    }
 
-   public double distToCenterSqr(Position var1) {
-      return this.distToCenterSqr(var1.x(), var1.y(), var1.z());
+   public double distToCenterSqr(final Position pos) {
+      return this.distToCenterSqr(pos.x(), pos.y(), pos.z());
    }
 
-   public double distToCenterSqr(double var1, double var3, double var5) {
-      double var7 = (double)this.getX() + 0.5 - var1;
-      double var9 = (double)this.getY() + 0.5 - var3;
-      double var11 = (double)this.getZ() + 0.5 - var5;
-      return var7 * var7 + var9 * var9 + var11 * var11;
+   public double distToCenterSqr(final double x, final double y, final double z) {
+      double dx = (double)this.getX() + 0.5 - x;
+      double dy = (double)this.getY() + 0.5 - y;
+      double dz = (double)this.getZ() + 0.5 - z;
+      return dx * dx + dy * dy + dz * dz;
    }
 
-   public double distToLowCornerSqr(double var1, double var3, double var5) {
-      double var7 = (double)this.getX() - var1;
-      double var9 = (double)this.getY() - var3;
-      double var11 = (double)this.getZ() - var5;
-      return var7 * var7 + var9 * var9 + var11 * var11;
+   public double distToLowCornerSqr(final double x, final double y, final double z) {
+      double dx = (double)this.getX() - x;
+      double dy = (double)this.getY() - y;
+      double dz = (double)this.getZ() - z;
+      return dx * dx + dy * dy + dz * dz;
    }
 
-   public int distManhattan(Vec3i var1) {
-      float var2 = (float)Math.abs(var1.getX() - this.getX());
-      float var3 = (float)Math.abs(var1.getY() - this.getY());
-      float var4 = (float)Math.abs(var1.getZ() - this.getZ());
-      return (int)(var2 + var3 + var4);
+   public int distManhattan(final Vec3i pos) {
+      float xd = (float)Math.abs(pos.getX() - this.getX());
+      float yd = (float)Math.abs(pos.getY() - this.getY());
+      float zd = (float)Math.abs(pos.getZ() - this.getZ());
+      return (int)(xd + yd + zd);
    }
 
-   public int distChessboard(Vec3i var1) {
-      int var2 = Math.abs(this.getX() - var1.getX());
-      int var3 = Math.abs(this.getY() - var1.getY());
-      int var4 = Math.abs(this.getZ() - var1.getZ());
-      return Math.max(Math.max(var2, var3), var4);
+   public int distChessboard(final Vec3i pos) {
+      int xd = Math.abs(this.getX() - pos.getX());
+      int yd = Math.abs(this.getY() - pos.getY());
+      int zd = Math.abs(this.getZ() - pos.getZ());
+      return Math.max(Math.max(xd, yd), zd);
    }
 
-   public int get(Direction.Axis var1) {
-      return var1.choose(this.x, this.y, this.z);
+   public int get(final Direction.Axis axis) {
+      return axis.choose(this.x, this.y, this.z);
    }
 
    public Vector3i toMutable() {
@@ -238,13 +238,8 @@ public class Vec3i implements Comparable<Vec3i> {
       return var10000 + ", " + this.getY() + ", " + this.getZ();
    }
 
-   // $FF: synthetic method
-   public int compareTo(final Object var1) {
-      return this.compareTo((Vec3i)var1);
-   }
-
    static {
-      CODEC = Codec.INT_STREAM.comapFlatMap((var0) -> Util.fixedSize((IntStream)var0, 3).map((var0x) -> new Vec3i(var0x[0], var0x[1], var0x[2])), (var0) -> IntStream.of(new int[]{var0.getX(), var0.getY(), var0.getZ()}));
+      CODEC = Codec.INT_STREAM.comapFlatMap((input) -> Util.fixedSize((IntStream)input, 3).map((ints) -> new Vec3i(ints[0], ints[1], ints[2])), (pos) -> IntStream.of(new int[]{pos.getX(), pos.getY(), pos.getZ()}));
       STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, Vec3i::getX, ByteBufCodecs.VAR_INT, Vec3i::getY, ByteBufCodecs.VAR_INT, Vec3i::getZ, Vec3i::new);
       ZERO = new Vec3i(0, 0, 0);
    }

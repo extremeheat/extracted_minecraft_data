@@ -17,15 +17,15 @@ public class Minecart extends AbstractMinecart {
    private float rotationOffset;
    private float playerRotationOffset;
 
-   public Minecart(EntityType<?> var1, Level var2) {
-      super(var1, var2);
+   public Minecart(final EntityType<?> type, final Level level) {
+      super(type, level);
    }
 
-   public InteractionResult interact(Player var1, InteractionHand var2) {
-      if (!var1.isSecondaryUseActive() && !this.isVehicle() && (this.level().isClientSide() || var1.startRiding(this))) {
+   public InteractionResult interact(final Player player, final InteractionHand hand, final Vec3 location) {
+      if (!player.isSecondaryUseActive() && !this.isVehicle() && (this.level().isClientSide() || player.startRiding(this))) {
          this.playerRotationOffset = this.rotationOffset;
          if (!this.level().isClientSide()) {
-            return (InteractionResult)(var1.startRiding(this) ? InteractionResult.CONSUME : InteractionResult.PASS);
+            return (InteractionResult)(player.startRiding(this) ? InteractionResult.CONSUME : InteractionResult.PASS);
          } else {
             return InteractionResult.SUCCESS;
          }
@@ -42,8 +42,8 @@ public class Minecart extends AbstractMinecart {
       return new ItemStack(Items.MINECART);
    }
 
-   public void activateMinecart(ServerLevel var1, int var2, int var3, int var4, boolean var5) {
-      if (var5) {
+   public void activateMinecart(final ServerLevel level, final int xt, final int yt, final int zt, final boolean state) {
+      if (state) {
          if (this.isVehicle()) {
             this.ejectPassengers();
          }
@@ -63,24 +63,24 @@ public class Minecart extends AbstractMinecart {
    }
 
    public void tick() {
-      double var1 = (double)this.getYRot();
-      Vec3 var3 = this.position();
+      double lastKnownYRot = (double)this.getYRot();
+      Vec3 lastKnownPos = this.position();
       super.tick();
-      double var4 = ((double)this.getYRot() - var1) % 360.0;
-      if (this.level().isClientSide() && var3.distanceTo(this.position()) > 0.01) {
-         this.rotationOffset += (float)var4;
+      double tickDiff = ((double)this.getYRot() - lastKnownYRot) % 360.0;
+      if (this.level().isClientSide() && lastKnownPos.distanceTo(this.position()) > 0.01) {
+         this.rotationOffset += (float)tickDiff;
          this.rotationOffset %= 360.0F;
       }
 
    }
 
-   protected void positionRider(Entity var1, Entity.MoveFunction var2) {
-      super.positionRider(var1, var2);
-      if (this.level().isClientSide() && var1 instanceof Player var3) {
-         if (var3.shouldRotateWithMinecart() && useExperimentalMovement(this.level())) {
-            float var4 = (float)Mth.rotLerp(0.5, (double)this.playerRotationOffset, (double)this.rotationOffset);
-            var3.setYRot(var3.getYRot() - (var4 - this.playerRotationOffset));
-            this.playerRotationOffset = var4;
+   protected void positionRider(final Entity passenger, final Entity.MoveFunction moveFunction) {
+      super.positionRider(passenger, moveFunction);
+      if (this.level().isClientSide() && passenger instanceof Player player) {
+         if (player.shouldRotateWithMinecart() && useExperimentalMovement(this.level())) {
+            float yRot = (float)Mth.rotLerp(0.5, (double)this.playerRotationOffset, (double)this.rotationOffset);
+            player.setYRot(player.getYRot() - (yRot - this.playerRotationOffset));
+            this.playerRotationOffset = yRot;
          }
       }
 

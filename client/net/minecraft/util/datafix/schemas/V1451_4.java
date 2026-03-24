@@ -8,12 +8,12 @@ import java.util.function.Supplier;
 import net.minecraft.util.datafix.fixes.References;
 
 public class V1451_4 extends NamespacedSchema {
-   public V1451_4(int var1, Schema var2) {
-      super(var1, var2);
+   public V1451_4(final int versionKey, final Schema parent) {
+      super(versionKey, parent);
    }
 
-   public void registerTypes(Schema var1, Map<String, Supplier<TypeTemplate>> var2, Map<String, Supplier<TypeTemplate>> var3) {
-      super.registerTypes(var1, var2, var3);
-      var1.registerType(false, References.BLOCK_NAME, () -> DSL.constType(namespacedString()));
+   public void registerTypes(final Schema schema, final Map<String, Supplier<TypeTemplate>> entityTypes, final Map<String, Supplier<TypeTemplate>> blockEntityTypes) {
+      super.registerTypes(schema, entityTypes, blockEntityTypes);
+      schema.registerType(false, References.BLOCK_NAME, () -> DSL.constType(namespacedString()));
    }
 }

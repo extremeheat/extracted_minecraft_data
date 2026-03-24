@@ -1,5 +1,6 @@
 package net.minecraft.data.tags;
 
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -12,20 +13,24 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
 public class VanillaBlockTagsProvider extends IntrinsicHolderTagsProvider<Block> {
-   public VanillaBlockTagsProvider(PackOutput var1, CompletableFuture<HolderLookup.Provider> var2) {
-      super(var1, Registries.BLOCK, var2, (var0) -> var0.builtInRegistryHolder().key());
+   public VanillaBlockTagsProvider(final PackOutput output, final CompletableFuture<HolderLookup.Provider> lookupProvider) {
+      super(output, Registries.BLOCK, lookupProvider, (e) -> e.builtInRegistryHolder().key());
    }
 
-   protected void addTags(HolderLookup.Provider var1) {
+   protected void addTags(final HolderLookup.Provider registries) {
       (new BlockItemTagsProvider() {
-         protected TagAppender<Block, Block> tag(TagKey<Block> var1, TagKey<Item> var2) {
-            return VanillaBlockTagsProvider.this.tag(var1);
+         {
+            Objects.requireNonNull(VanillaBlockTagsProvider.this);
+         }
+
+         protected TagAppender<Block, Block> tag(final TagKey<Block> blockTag, final TagKey<Item> itemTag) {
+            return VanillaBlockTagsProvider.this.tag(blockTag);
          }
       }).run();
       this.tag(BlockTags.MOB_INTERACTABLE_DOORS).addTag(BlockTags.WOODEN_DOORS).add(Blocks.COPPER_DOOR, Blocks.EXPOSED_COPPER_DOOR, Blocks.WEATHERED_COPPER_DOOR, Blocks.OXIDIZED_COPPER_DOOR, Blocks.WAXED_COPPER_DOOR, Blocks.WAXED_EXPOSED_COPPER_DOOR, Blocks.WAXED_WEATHERED_COPPER_DOOR, Blocks.WAXED_OXIDIZED_COPPER_DOOR);
       this.tag(BlockTags.OVERWORLD_NATURAL_LOGS).add(Blocks.ACACIA_LOG).add(Blocks.BIRCH_LOG).add(Blocks.OAK_LOG).add(Blocks.JUNGLE_LOG).add(Blocks.SPRUCE_LOG).add(Blocks.DARK_OAK_LOG).add(Blocks.PALE_OAK_LOG).add(Blocks.MANGROVE_LOG).add(Blocks.CHERRY_LOG);
-      this.tag(BlockTags.ENDERMAN_HOLDABLE).addTag(BlockTags.SMALL_FLOWERS).addTag(BlockTags.DIRT).add(Blocks.SAND, Blocks.RED_SAND, Blocks.GRAVEL, Blocks.BROWN_MUSHROOM, Blocks.RED_MUSHROOM, Blocks.TNT, Blocks.CACTUS, Blocks.CLAY, Blocks.PUMPKIN, Blocks.CARVED_PUMPKIN, Blocks.MELON, Blocks.CRIMSON_FUNGUS, Blocks.CRIMSON_NYLIUM, Blocks.CRIMSON_ROOTS, Blocks.WARPED_FUNGUS, Blocks.WARPED_NYLIUM, Blocks.WARPED_ROOTS, Blocks.CACTUS_FLOWER);
-      this.tag(BlockTags.FLOWER_POTS).add(Blocks.FLOWER_POT, Blocks.POTTED_OPEN_EYEBLOSSOM, Blocks.POTTED_CLOSED_EYEBLOSSOM, Blocks.POTTED_POPPY, Blocks.POTTED_BLUE_ORCHID, Blocks.POTTED_ALLIUM, Blocks.POTTED_AZURE_BLUET, Blocks.POTTED_RED_TULIP, Blocks.POTTED_ORANGE_TULIP, Blocks.POTTED_WHITE_TULIP, Blocks.POTTED_PINK_TULIP, Blocks.POTTED_OXEYE_DAISY, Blocks.POTTED_DANDELION, Blocks.POTTED_OAK_SAPLING, Blocks.POTTED_SPRUCE_SAPLING, Blocks.POTTED_BIRCH_SAPLING, Blocks.POTTED_JUNGLE_SAPLING, Blocks.POTTED_ACACIA_SAPLING, Blocks.POTTED_DARK_OAK_SAPLING, Blocks.POTTED_PALE_OAK_SAPLING, Blocks.POTTED_RED_MUSHROOM, Blocks.POTTED_BROWN_MUSHROOM, Blocks.POTTED_DEAD_BUSH, Blocks.POTTED_FERN, Blocks.POTTED_CACTUS, Blocks.POTTED_CORNFLOWER, Blocks.POTTED_LILY_OF_THE_VALLEY, Blocks.POTTED_WITHER_ROSE, Blocks.POTTED_BAMBOO, Blocks.POTTED_CRIMSON_FUNGUS, Blocks.POTTED_WARPED_FUNGUS, Blocks.POTTED_CRIMSON_ROOTS, Blocks.POTTED_WARPED_ROOTS, Blocks.POTTED_AZALEA, Blocks.POTTED_FLOWERING_AZALEA, Blocks.POTTED_MANGROVE_PROPAGULE, Blocks.POTTED_CHERRY_SAPLING, Blocks.POTTED_TORCHFLOWER);
+      this.tag(BlockTags.ENDERMAN_HOLDABLE).addTag(BlockTags.SMALL_FLOWERS).addTag(BlockTags.DIRT).addTag(BlockTags.MUD).addTag(BlockTags.MOSS_BLOCKS).addTag(BlockTags.GRASS_BLOCKS).add(Blocks.SAND, Blocks.RED_SAND, Blocks.GRAVEL, Blocks.BROWN_MUSHROOM, Blocks.RED_MUSHROOM, Blocks.TNT, Blocks.CACTUS, Blocks.CLAY, Blocks.PUMPKIN, Blocks.CARVED_PUMPKIN, Blocks.MELON, Blocks.CRIMSON_FUNGUS, Blocks.CRIMSON_NYLIUM, Blocks.CRIMSON_ROOTS, Blocks.WARPED_FUNGUS, Blocks.WARPED_NYLIUM, Blocks.WARPED_ROOTS, Blocks.CACTUS_FLOWER);
+      this.tag(BlockTags.FLOWER_POTS).add(Blocks.FLOWER_POT, Blocks.POTTED_OPEN_EYEBLOSSOM, Blocks.POTTED_CLOSED_EYEBLOSSOM, Blocks.POTTED_POPPY, Blocks.POTTED_BLUE_ORCHID, Blocks.POTTED_ALLIUM, Blocks.POTTED_AZURE_BLUET, Blocks.POTTED_RED_TULIP, Blocks.POTTED_ORANGE_TULIP, Blocks.POTTED_WHITE_TULIP, Blocks.POTTED_PINK_TULIP, Blocks.POTTED_OXEYE_DAISY, Blocks.POTTED_DANDELION, Blocks.POTTED_OAK_SAPLING, Blocks.POTTED_SPRUCE_SAPLING, Blocks.POTTED_BIRCH_SAPLING, Blocks.POTTED_JUNGLE_SAPLING, Blocks.POTTED_ACACIA_SAPLING, Blocks.POTTED_DARK_OAK_SAPLING, Blocks.POTTED_PALE_OAK_SAPLING, Blocks.POTTED_RED_MUSHROOM, Blocks.POTTED_BROWN_MUSHROOM, Blocks.POTTED_DEAD_BUSH, Blocks.POTTED_FERN, Blocks.POTTED_CACTUS, Blocks.POTTED_CORNFLOWER, Blocks.POTTED_LILY_OF_THE_VALLEY, Blocks.POTTED_WITHER_ROSE, Blocks.POTTED_BAMBOO, Blocks.POTTED_CRIMSON_FUNGUS, Blocks.POTTED_WARPED_FUNGUS, Blocks.POTTED_CRIMSON_ROOTS, Blocks.POTTED_WARPED_ROOTS, Blocks.POTTED_AZALEA, Blocks.POTTED_FLOWERING_AZALEA, Blocks.POTTED_MANGROVE_PROPAGULE, Blocks.POTTED_CHERRY_SAPLING, Blocks.POTTED_TORCHFLOWER, Blocks.POTTED_GOLDEN_DANDELION);
       this.tag(BlockTags.BANNERS).add(Blocks.WHITE_BANNER, Blocks.ORANGE_BANNER, Blocks.MAGENTA_BANNER, Blocks.LIGHT_BLUE_BANNER, Blocks.YELLOW_BANNER, Blocks.LIME_BANNER, Blocks.PINK_BANNER, Blocks.GRAY_BANNER, Blocks.LIGHT_GRAY_BANNER, Blocks.CYAN_BANNER, Blocks.PURPLE_BANNER, Blocks.BLUE_BANNER, Blocks.BROWN_BANNER, Blocks.GREEN_BANNER, Blocks.RED_BANNER, Blocks.BLACK_BANNER, Blocks.WHITE_WALL_BANNER, Blocks.ORANGE_WALL_BANNER, Blocks.MAGENTA_WALL_BANNER, Blocks.LIGHT_BLUE_WALL_BANNER, Blocks.YELLOW_WALL_BANNER, Blocks.LIME_WALL_BANNER, Blocks.PINK_WALL_BANNER, Blocks.GRAY_WALL_BANNER, Blocks.LIGHT_GRAY_WALL_BANNER, Blocks.CYAN_WALL_BANNER, Blocks.PURPLE_WALL_BANNER, Blocks.BLUE_WALL_BANNER, Blocks.BROWN_WALL_BANNER, Blocks.GREEN_WALL_BANNER, Blocks.RED_WALL_BANNER, Blocks.BLACK_WALL_BANNER);
       this.tag(BlockTags.STONE_PRESSURE_PLATES).add(Blocks.STONE_PRESSURE_PLATE, Blocks.POLISHED_BLACKSTONE_PRESSURE_PLATE);
       this.tag(BlockTags.PRESSURE_PLATES).add(Blocks.LIGHT_WEIGHTED_PRESSURE_PLATE, Blocks.HEAVY_WEIGHTED_PRESSURE_PLATE).addTag(BlockTags.WOODEN_PRESSURE_PLATES).addTag(BlockTags.STONE_PRESSURE_PLATES);
@@ -37,7 +42,6 @@ public class VanillaBlockTagsProvider extends IntrinsicHolderTagsProvider<Block>
       this.tag(BlockTags.VALID_SPAWN).add(Blocks.GRASS_BLOCK, Blocks.PODZOL);
       this.tag(BlockTags.IMPERMEABLE).add(Blocks.GLASS, Blocks.WHITE_STAINED_GLASS, Blocks.ORANGE_STAINED_GLASS, Blocks.MAGENTA_STAINED_GLASS, Blocks.LIGHT_BLUE_STAINED_GLASS, Blocks.YELLOW_STAINED_GLASS, Blocks.LIME_STAINED_GLASS, Blocks.PINK_STAINED_GLASS, Blocks.GRAY_STAINED_GLASS, Blocks.LIGHT_GRAY_STAINED_GLASS, Blocks.CYAN_STAINED_GLASS, Blocks.PURPLE_STAINED_GLASS, Blocks.BLUE_STAINED_GLASS, Blocks.BROWN_STAINED_GLASS, Blocks.GREEN_STAINED_GLASS, Blocks.RED_STAINED_GLASS, Blocks.BLACK_STAINED_GLASS, Blocks.TINTED_GLASS, Blocks.BARRIER);
       this.tag(BlockTags.UNDERWATER_BONEMEALS).add(Blocks.SEAGRASS).addTag(BlockTags.CORALS).addTag(BlockTags.WALL_CORALS);
-      this.tag(BlockTags.BAMBOO_PLANTABLE_ON).addTag(BlockTags.SAND).addTag(BlockTags.DIRT).add(Blocks.BAMBOO, Blocks.BAMBOO_SAPLING, Blocks.GRAVEL, Blocks.SUSPICIOUS_GRAVEL);
       this.tag(BlockTags.WALL_SIGNS).add(Blocks.OAK_WALL_SIGN, Blocks.SPRUCE_WALL_SIGN, Blocks.BIRCH_WALL_SIGN, Blocks.ACACIA_WALL_SIGN, Blocks.JUNGLE_WALL_SIGN, Blocks.DARK_OAK_WALL_SIGN, Blocks.PALE_OAK_WALL_SIGN, Blocks.CRIMSON_WALL_SIGN, Blocks.WARPED_WALL_SIGN, Blocks.MANGROVE_WALL_SIGN, Blocks.BAMBOO_WALL_SIGN, Blocks.CHERRY_WALL_SIGN);
       this.tag(BlockTags.SIGNS).addTag(BlockTags.STANDING_SIGNS).addTag(BlockTags.WALL_SIGNS);
       this.tag(BlockTags.WALL_HANGING_SIGNS).add(Blocks.OAK_WALL_HANGING_SIGN, Blocks.SPRUCE_WALL_HANGING_SIGN, Blocks.BIRCH_WALL_HANGING_SIGN, Blocks.ACACIA_WALL_HANGING_SIGN, Blocks.CHERRY_WALL_HANGING_SIGN, Blocks.JUNGLE_WALL_HANGING_SIGN, Blocks.DARK_OAK_WALL_HANGING_SIGN, Blocks.PALE_OAK_WALL_HANGING_SIGN, Blocks.CRIMSON_WALL_HANGING_SIGN, Blocks.WARPED_WALL_HANGING_SIGN, Blocks.MANGROVE_WALL_HANGING_SIGN, Blocks.BAMBOO_WALL_HANGING_SIGN);
@@ -65,7 +69,6 @@ public class VanillaBlockTagsProvider extends IntrinsicHolderTagsProvider<Block>
       this.tag(BlockTags.GUARDED_BY_PIGLINS).addTag(BlockTags.COPPER_CHESTS).add(Blocks.GOLD_BLOCK, Blocks.BARREL, Blocks.CHEST, Blocks.ENDER_CHEST, Blocks.GILDED_BLACKSTONE, Blocks.TRAPPED_CHEST, Blocks.RAW_GOLD_BLOCK).addTag(BlockTags.SHULKER_BOXES).addTag(BlockTags.GOLD_ORES);
       this.tag(BlockTags.PREVENT_MOB_SPAWNING_INSIDE).addTag(BlockTags.RAILS);
       this.tag(BlockTags.UNSTABLE_BOTTOM_CENTER).addTag(BlockTags.FENCE_GATES);
-      this.tag(BlockTags.MUSHROOM_GROW_BLOCK).add(Blocks.MYCELIUM).add(Blocks.PODZOL).add(Blocks.CRIMSON_NYLIUM).add(Blocks.WARPED_NYLIUM);
       this.tag(BlockTags.EDIBLE_FOR_SHEEP).add(Blocks.SHORT_GRASS).add(Blocks.SHORT_DRY_GRASS).add(Blocks.TALL_DRY_GRASS).add(Blocks.FERN);
       this.tag(BlockTags.CAN_GLIDE_THROUGH).add(Blocks.VINE).add(Blocks.TWISTING_VINES, Blocks.TWISTING_VINES_PLANT).add(Blocks.WEEPING_VINES, Blocks.WEEPING_VINES_PLANT).addTag(BlockTags.CAVE_VINES);
       this.tag(BlockTags.INFINIBURN_OVERWORLD).add(Blocks.NETHERRACK, Blocks.MAGMA_BLOCK);
@@ -73,10 +76,14 @@ public class VanillaBlockTagsProvider extends IntrinsicHolderTagsProvider<Block>
       this.tag(BlockTags.INFINIBURN_END).addTag(BlockTags.INFINIBURN_OVERWORLD).add(Blocks.BEDROCK);
       this.tag(BlockTags.STONE_ORE_REPLACEABLES).add(Blocks.STONE).add(Blocks.GRANITE).add(Blocks.DIORITE).add(Blocks.ANDESITE);
       this.tag(BlockTags.DEEPSLATE_ORE_REPLACEABLES).add(Blocks.DEEPSLATE).add(Blocks.TUFF);
+      this.tag(BlockTags.SUBSTRATE_OVERWORLD).addTag(BlockTags.DIRT).addTag(BlockTags.MUD).addTag(BlockTags.MOSS_BLOCKS).addTag(BlockTags.GRASS_BLOCKS);
       this.tag(BlockTags.BASE_STONE_OVERWORLD).add(Blocks.STONE).add(Blocks.GRANITE).add(Blocks.DIORITE).add(Blocks.ANDESITE).add(Blocks.TUFF).add(Blocks.DEEPSLATE);
       this.tag(BlockTags.BASE_STONE_NETHER).add(Blocks.NETHERRACK).add(Blocks.BASALT).add(Blocks.BLACKSTONE);
-      this.tag(BlockTags.OVERWORLD_CARVER_REPLACEABLES).addTag(BlockTags.BASE_STONE_OVERWORLD).addTag(BlockTags.DIRT).addTag(BlockTags.SAND).addTag(BlockTags.TERRACOTTA).addTag(BlockTags.IRON_ORES).addTag(BlockTags.COPPER_ORES).addTag(BlockTags.SNOW).add(Blocks.WATER, Blocks.GRAVEL, Blocks.SUSPICIOUS_GRAVEL, Blocks.SANDSTONE, Blocks.RED_SANDSTONE, Blocks.CALCITE, Blocks.PACKED_ICE, Blocks.RAW_IRON_BLOCK, Blocks.RAW_COPPER_BLOCK);
-      this.tag(BlockTags.NETHER_CARVER_REPLACEABLES).addTag(BlockTags.BASE_STONE_OVERWORLD).addTag(BlockTags.BASE_STONE_NETHER).addTag(BlockTags.DIRT).addTag(BlockTags.NYLIUM).addTag(BlockTags.WART_BLOCKS).add(Blocks.SOUL_SAND, Blocks.SOUL_SOIL);
+      this.tag(BlockTags.OVERWORLD_CARVER_REPLACEABLES).addTag(BlockTags.BASE_STONE_OVERWORLD).addTag(BlockTags.SUBSTRATE_OVERWORLD).addTag(BlockTags.SAND).addTag(BlockTags.TERRACOTTA).addTag(BlockTags.IRON_ORES).addTag(BlockTags.COPPER_ORES).addTag(BlockTags.SNOW).add(Blocks.WATER, Blocks.GRAVEL, Blocks.SUSPICIOUS_GRAVEL, Blocks.SANDSTONE, Blocks.RED_SANDSTONE, Blocks.CALCITE, Blocks.PACKED_ICE, Blocks.RAW_IRON_BLOCK, Blocks.RAW_COPPER_BLOCK);
+      this.tag(BlockTags.NETHER_CARVER_REPLACEABLES).addTag(BlockTags.BASE_STONE_OVERWORLD).addTag(BlockTags.BASE_STONE_NETHER).addTag(BlockTags.SUBSTRATE_OVERWORLD).addTag(BlockTags.NYLIUM).addTag(BlockTags.WART_BLOCKS).add(Blocks.SOUL_SAND, Blocks.SOUL_SOIL);
+      this.tag(BlockTags.BENEATH_TREE_PODZOL_REPLACEABLE).addTag(BlockTags.SUBSTRATE_OVERWORLD);
+      this.tag(BlockTags.BENEATH_BAMBOO_PODZOL_REPLACEABLE).addTag(BlockTags.SUBSTRATE_OVERWORLD);
+      this.tag(BlockTags.CANNOT_REPLACE_BELOW_TREE_TRUNK).addTag(BlockTags.DIRT).addTag(BlockTags.MUD).addTag(BlockTags.MOSS_BLOCKS).add(Blocks.PODZOL);
       this.tag(BlockTags.CANDLE_CAKES).add(Blocks.CANDLE_CAKE, Blocks.WHITE_CANDLE_CAKE, Blocks.ORANGE_CANDLE_CAKE, Blocks.MAGENTA_CANDLE_CAKE, Blocks.LIGHT_BLUE_CANDLE_CAKE, Blocks.YELLOW_CANDLE_CAKE, Blocks.LIME_CANDLE_CAKE, Blocks.PINK_CANDLE_CAKE, Blocks.GRAY_CANDLE_CAKE, Blocks.LIGHT_GRAY_CANDLE_CAKE, Blocks.CYAN_CANDLE_CAKE, Blocks.PURPLE_CANDLE_CAKE, Blocks.BLUE_CANDLE_CAKE, Blocks.BROWN_CANDLE_CAKE, Blocks.GREEN_CANDLE_CAKE, Blocks.RED_CANDLE_CAKE, Blocks.BLACK_CANDLE_CAKE);
       this.tag(BlockTags.CRYSTAL_SOUND_BLOCKS).add(Blocks.AMETHYST_BLOCK, Blocks.BUDDING_AMETHYST);
       this.tag(BlockTags.CAULDRONS).add(Blocks.CAULDRON, Blocks.WATER_CAULDRON, Blocks.LAVA_CAULDRON, Blocks.POWDER_SNOW_CAULDRON);
@@ -84,11 +91,13 @@ public class VanillaBlockTagsProvider extends IntrinsicHolderTagsProvider<Block>
       this.tag(BlockTags.COMBINATION_STEP_SOUND_BLOCKS).addTag(BlockTags.WOOL_CARPETS).add(Blocks.MOSS_CARPET, Blocks.PALE_MOSS_CARPET, Blocks.SNOW, Blocks.NETHER_SPROUTS, Blocks.WARPED_ROOTS, Blocks.CRIMSON_ROOTS, Blocks.RESIN_CLUMP);
       this.tag(BlockTags.DRIPSTONE_REPLACEABLE).addTag(BlockTags.BASE_STONE_OVERWORLD);
       this.tag(BlockTags.CAVE_VINES).add(Blocks.CAVE_VINES_PLANT).add(Blocks.CAVE_VINES);
-      this.tag(BlockTags.MOSS_REPLACEABLE).addTag(BlockTags.BASE_STONE_OVERWORLD).addTag(BlockTags.CAVE_VINES).addTag(BlockTags.DIRT);
+      this.tag(BlockTags.MOSS_REPLACEABLE).addTag(BlockTags.BASE_STONE_OVERWORLD).addTag(BlockTags.CAVE_VINES).addTag(BlockTags.DIRT).addTag(BlockTags.MUD).addTag(BlockTags.MOSS_BLOCKS).addTag(BlockTags.GRASS_BLOCKS);
       this.tag(BlockTags.LUSH_GROUND_REPLACEABLE).addTag(BlockTags.MOSS_REPLACEABLE).add(Blocks.CLAY).add(Blocks.GRAVEL).add(Blocks.SAND);
-      this.tag(BlockTags.AZALEA_ROOT_REPLACEABLE).addTag(BlockTags.BASE_STONE_OVERWORLD).addTag(BlockTags.DIRT).addTag(BlockTags.TERRACOTTA).add(Blocks.RED_SAND).add(Blocks.CLAY).add(Blocks.GRAVEL).add(Blocks.SAND).add(Blocks.SNOW_BLOCK).add(Blocks.POWDER_SNOW);
-      this.tag(BlockTags.SMALL_DRIPLEAF_PLACEABLE).add(Blocks.CLAY).add(Blocks.MOSS_BLOCK);
-      this.tag(BlockTags.BIG_DRIPLEAF_PLACEABLE).addTag(BlockTags.SMALL_DRIPLEAF_PLACEABLE).add(Blocks.DIRT, Blocks.GRASS_BLOCK, Blocks.PODZOL, Blocks.COARSE_DIRT, Blocks.MYCELIUM, Blocks.ROOTED_DIRT, Blocks.MOSS_BLOCK, Blocks.MUD, Blocks.MUDDY_MANGROVE_ROOTS, Blocks.FARMLAND);
+      this.tag(BlockTags.AZALEA_ROOT_REPLACEABLE).addTag(BlockTags.BASE_STONE_OVERWORLD).addTag(BlockTags.SUBSTRATE_OVERWORLD).addTag(BlockTags.TERRACOTTA).add(Blocks.RED_SAND).add(Blocks.CLAY).add(Blocks.GRAVEL).add(Blocks.SAND).add(Blocks.SNOW_BLOCK).add(Blocks.POWDER_SNOW);
+      this.tag(BlockTags.ICE_SPIKE_REPLACEABLE).addTag(BlockTags.SUBSTRATE_OVERWORLD).add(Blocks.SNOW_BLOCK).add(Blocks.ICE);
+      this.tag(BlockTags.FOREST_ROCK_CAN_PLACE_ON).addTag(BlockTags.SUBSTRATE_OVERWORLD).addTag(BlockTags.BASE_STONE_OVERWORLD);
+      this.tag(BlockTags.HUGE_BROWN_MUSHROOM_CAN_PLACE_ON).addTag(BlockTags.SUBSTRATE_OVERWORLD).add(Blocks.MYCELIUM).add(Blocks.PODZOL).add(Blocks.CRIMSON_NYLIUM).add(Blocks.WARPED_NYLIUM);
+      this.tag(BlockTags.HUGE_RED_MUSHROOM_CAN_PLACE_ON).addTag(BlockTags.SUBSTRATE_OVERWORLD).add(Blocks.MYCELIUM).add(Blocks.PODZOL).add(Blocks.CRIMSON_NYLIUM).add(Blocks.WARPED_NYLIUM);
       this.tag(BlockTags.OCCLUDES_VIBRATION_SIGNALS).addTag(BlockTags.WOOL);
       this.tag(BlockTags.SNOW).add(Blocks.SNOW, Blocks.SNOW_BLOCK, Blocks.POWDER_SNOW);
       this.tag(BlockTags.MINEABLE_WITH_AXE).add(Blocks.NOTE_BLOCK, Blocks.BAMBOO, Blocks.BARREL, Blocks.BEE_NEST, Blocks.BEEHIVE, Blocks.BIG_DRIPLEAF_STEM, Blocks.BIG_DRIPLEAF, Blocks.BOOKSHELF, Blocks.BROWN_MUSHROOM_BLOCK, Blocks.CAMPFIRE, Blocks.CARTOGRAPHY_TABLE, Blocks.CARVED_PUMPKIN, Blocks.CHEST, Blocks.CHORUS_FLOWER, Blocks.CHORUS_PLANT, Blocks.COCOA, Blocks.COMPOSTER, Blocks.CRAFTING_TABLE, Blocks.DAYLIGHT_DETECTOR, Blocks.FLETCHING_TABLE, Blocks.GLOW_LICHEN, Blocks.JACK_O_LANTERN, Blocks.JUKEBOX, Blocks.LADDER, Blocks.LECTERN, Blocks.LOOM, Blocks.MELON, Blocks.MUSHROOM_STEM, Blocks.PUMPKIN, Blocks.RED_MUSHROOM_BLOCK, Blocks.SMITHING_TABLE, Blocks.SOUL_CAMPFIRE, Blocks.TRAPPED_CHEST, Blocks.VINE).addTag(BlockTags.BANNERS).addTag(BlockTags.FENCE_GATES).addTag(BlockTags.LOGS).addTag(BlockTags.PLANKS).addTag(BlockTags.SIGNS).addTag(BlockTags.WOODEN_BUTTONS).addTag(BlockTags.WOODEN_DOORS).addTag(BlockTags.WOODEN_FENCES).addTag(BlockTags.WOODEN_PRESSURE_PLATES).addTag(BlockTags.WOODEN_SLABS).addTag(BlockTags.WOODEN_STAIRS).addTag(BlockTags.WOODEN_TRAPDOORS).add(Blocks.MANGROVE_ROOTS).addTag(BlockTags.ALL_HANGING_SIGNS).add(Blocks.BAMBOO_MOSAIC, Blocks.BAMBOO_MOSAIC_SLAB, Blocks.BAMBOO_MOSAIC_STAIRS).addTag(BlockTags.BAMBOO_BLOCKS).add(Blocks.CHISELED_BOOKSHELF).addTag(BlockTags.WOODEN_SHELVES).add(Blocks.CREAKING_HEART);
@@ -125,29 +134,66 @@ public class VanillaBlockTagsProvider extends IntrinsicHolderTagsProvider<Block>
       this.tag(BlockTags.CAMELS_SPAWNABLE_ON).addTag(BlockTags.SAND);
       this.tag(BlockTags.BADLANDS_TERRACOTTA).add(Blocks.TERRACOTTA).add(Blocks.WHITE_TERRACOTTA, Blocks.YELLOW_TERRACOTTA, Blocks.ORANGE_TERRACOTTA, Blocks.RED_TERRACOTTA, Blocks.BROWN_TERRACOTTA, Blocks.LIGHT_GRAY_TERRACOTTA);
       this.tag(BlockTags.CONCRETE_POWDER).add(Blocks.WHITE_CONCRETE_POWDER, Blocks.ORANGE_CONCRETE_POWDER, Blocks.MAGENTA_CONCRETE_POWDER, Blocks.LIGHT_BLUE_CONCRETE_POWDER, Blocks.YELLOW_CONCRETE_POWDER, Blocks.LIME_CONCRETE_POWDER, Blocks.PINK_CONCRETE_POWDER, Blocks.GRAY_CONCRETE_POWDER, Blocks.LIGHT_GRAY_CONCRETE_POWDER, Blocks.CYAN_CONCRETE_POWDER, Blocks.PURPLE_CONCRETE_POWDER, Blocks.BLUE_CONCRETE_POWDER, Blocks.BROWN_CONCRETE_POWDER, Blocks.GREEN_CONCRETE_POWDER, Blocks.RED_CONCRETE_POWDER, Blocks.BLACK_CONCRETE_POWDER);
-      this.tag(BlockTags.AZALEA_GROWS_ON).addTag(BlockTags.DIRT).addTag(BlockTags.SAND).addTag(BlockTags.TERRACOTTA).add(Blocks.SNOW_BLOCK).add(Blocks.POWDER_SNOW);
+      this.tag(BlockTags.AZALEA_GROWS_ON).addTag(BlockTags.SUBSTRATE_OVERWORLD).addTag(BlockTags.SAND).addTag(BlockTags.TERRACOTTA).add(Blocks.SNOW_BLOCK).add(Blocks.POWDER_SNOW);
       this.tag(BlockTags.FROG_PREFER_JUMP_TO).add(Blocks.LILY_PAD, Blocks.BIG_DRIPLEAF);
-      this.tag(BlockTags.SCULK_REPLACEABLE).addTag(BlockTags.BASE_STONE_OVERWORLD).addTag(BlockTags.DIRT).addTag(BlockTags.TERRACOTTA).addTag(BlockTags.NYLIUM).addTag(BlockTags.BASE_STONE_NETHER).add(Blocks.SAND, Blocks.RED_SAND).add(Blocks.GRAVEL).add(Blocks.SOUL_SAND).add(Blocks.SOUL_SOIL).add(Blocks.CALCITE).add(Blocks.SMOOTH_BASALT).add(Blocks.CLAY).add(Blocks.DRIPSTONE_BLOCK).add(Blocks.END_STONE).add(Blocks.RED_SANDSTONE).add(Blocks.SANDSTONE);
+      this.tag(BlockTags.SCULK_REPLACEABLE).addTag(BlockTags.BASE_STONE_OVERWORLD).addTag(BlockTags.SUBSTRATE_OVERWORLD).addTag(BlockTags.TERRACOTTA).addTag(BlockTags.NYLIUM).addTag(BlockTags.BASE_STONE_NETHER).add(Blocks.SAND, Blocks.RED_SAND).add(Blocks.GRAVEL).add(Blocks.SOUL_SAND).add(Blocks.SOUL_SOIL).add(Blocks.CALCITE).add(Blocks.SMOOTH_BASALT).add(Blocks.CLAY).add(Blocks.DRIPSTONE_BLOCK).add(Blocks.END_STONE).add(Blocks.RED_SANDSTONE).add(Blocks.SANDSTONE);
       this.tag(BlockTags.SCULK_REPLACEABLE_WORLD_GEN).addTag(BlockTags.SCULK_REPLACEABLE).add(Blocks.DEEPSLATE_BRICKS).add(Blocks.DEEPSLATE_TILES).add(Blocks.COBBLED_DEEPSLATE).add(Blocks.CRACKED_DEEPSLATE_BRICKS).add(Blocks.CRACKED_DEEPSLATE_TILES).add(Blocks.POLISHED_DEEPSLATE);
       this.tag(BlockTags.VIBRATION_RESONATORS).add(Blocks.AMETHYST_BLOCK);
       this.tag(BlockTags.CONVERTABLE_TO_MUD).add(Blocks.DIRT, Blocks.COARSE_DIRT, Blocks.ROOTED_DIRT);
       this.tag(BlockTags.ANCIENT_CITY_REPLACEABLE).add(Blocks.DEEPSLATE).add(Blocks.DEEPSLATE_BRICKS).add(Blocks.DEEPSLATE_TILES).add(Blocks.DEEPSLATE_BRICK_SLAB).add(Blocks.DEEPSLATE_TILE_SLAB).add(Blocks.DEEPSLATE_BRICK_STAIRS).add(Blocks.DEEPSLATE_TILE_WALL).add(Blocks.DEEPSLATE_BRICK_WALL).add(Blocks.COBBLED_DEEPSLATE).add(Blocks.CRACKED_DEEPSLATE_BRICKS).add(Blocks.CRACKED_DEEPSLATE_TILES).add(Blocks.GRAY_WOOL);
       this.tag(BlockTags.MANGROVE_LOGS_CAN_GROW_THROUGH).add(Blocks.MUD, Blocks.MUDDY_MANGROVE_ROOTS, Blocks.MANGROVE_ROOTS, Blocks.MANGROVE_LEAVES, Blocks.MANGROVE_LOG, Blocks.MANGROVE_PROPAGULE, Blocks.MOSS_CARPET, Blocks.VINE);
       this.tag(BlockTags.MANGROVE_ROOTS_CAN_GROW_THROUGH).add(Blocks.MUD, Blocks.MUDDY_MANGROVE_ROOTS, Blocks.MANGROVE_ROOTS, Blocks.MOSS_CARPET, Blocks.VINE, Blocks.MANGROVE_PROPAGULE, Blocks.SNOW);
-      this.tag(BlockTags.DRY_VEGETATION_MAY_PLACE_ON).addTag(BlockTags.SAND).addTag(BlockTags.TERRACOTTA).addTag(BlockTags.DIRT).add(Blocks.FARMLAND);
-      this.tag(BlockTags.SNOW_LAYER_CANNOT_SURVIVE_ON).add(Blocks.ICE).add(Blocks.PACKED_ICE).add(Blocks.BARRIER);
-      this.tag(BlockTags.SNOW_LAYER_CAN_SURVIVE_ON).add(Blocks.HONEY_BLOCK).add(Blocks.SOUL_SAND).add(Blocks.MUD);
       this.tag(BlockTags.REPLACEABLE_BY_TREES).addTag(BlockTags.LEAVES).addTag(BlockTags.SMALL_FLOWERS).add(Blocks.PALE_MOSS_CARPET).add(Blocks.SHORT_GRASS, Blocks.FERN, Blocks.DEAD_BUSH, Blocks.VINE, Blocks.GLOW_LICHEN, Blocks.SUNFLOWER, Blocks.LILAC, Blocks.ROSE_BUSH, Blocks.PEONY, Blocks.TALL_GRASS, Blocks.LARGE_FERN, Blocks.HANGING_ROOTS, Blocks.PITCHER_PLANT).add(Blocks.WATER, Blocks.SEAGRASS, Blocks.TALL_SEAGRASS, Blocks.BUSH, Blocks.FIREFLY_BUSH).add(Blocks.WARPED_ROOTS, Blocks.NETHER_SPROUTS, Blocks.CRIMSON_ROOTS, Blocks.LEAF_LITTER, Blocks.SHORT_DRY_GRASS, Blocks.TALL_DRY_GRASS);
       this.tag(BlockTags.REPLACEABLE_BY_MUSHROOMS).addTag(BlockTags.LEAVES).addTag(BlockTags.SMALL_FLOWERS).add(Blocks.PALE_MOSS_CARPET).add(Blocks.SHORT_GRASS, Blocks.FERN, Blocks.DEAD_BUSH, Blocks.VINE, Blocks.GLOW_LICHEN, Blocks.SUNFLOWER, Blocks.LILAC, Blocks.ROSE_BUSH, Blocks.PEONY, Blocks.TALL_GRASS, Blocks.LARGE_FERN, Blocks.HANGING_ROOTS, Blocks.PITCHER_PLANT).add(Blocks.WATER, Blocks.SEAGRASS, Blocks.TALL_SEAGRASS).add(Blocks.BROWN_MUSHROOM, Blocks.RED_MUSHROOM, Blocks.BROWN_MUSHROOM_BLOCK, Blocks.RED_MUSHROOM_BLOCK).add(Blocks.WARPED_ROOTS, Blocks.NETHER_SPROUTS, Blocks.CRIMSON_ROOTS, Blocks.LEAF_LITTER, Blocks.SHORT_DRY_GRASS, Blocks.TALL_DRY_GRASS, Blocks.BUSH, Blocks.FIREFLY_BUSH);
+      this.tag(BlockTags.ENABLES_BUBBLE_COLUMN_DRAG_DOWN).add(Blocks.MAGMA_BLOCK);
+      this.tag(BlockTags.ENABLES_BUBBLE_COLUMN_PUSH_UP).add(Blocks.SOUL_SAND);
+      this.tag(BlockTags.PREVENTS_NEARBY_LEAF_DECAY).addTag(BlockTags.LOGS);
+      this.tag(BlockTags.SUPPORTS_VEGETATION).addTag(BlockTags.SUBSTRATE_OVERWORLD).add(Blocks.FARMLAND);
+      this.tag(BlockTags.SUPPORTS_DRY_VEGETATION).addTag(BlockTags.SAND).addTag(BlockTags.TERRACOTTA).addTag(BlockTags.SUPPORTS_VEGETATION);
+      this.tag(BlockTags.SUPPORTS_CROPS).add(Blocks.FARMLAND);
+      this.tag(BlockTags.SUPPORTS_STEM_CROPS).addTag(BlockTags.SUPPORTS_CROPS);
+      this.tag(BlockTags.SUPPORTS_STEM_FRUIT).addTag(BlockTags.SUPPORTS_VEGETATION);
+      this.tag(BlockTags.SUPPORTS_PUMPKIN_STEM).addTag(BlockTags.SUPPORTS_STEM_CROPS);
+      this.tag(BlockTags.SUPPORTS_MELON_STEM).addTag(BlockTags.SUPPORTS_STEM_CROPS);
+      this.tag(BlockTags.SUPPORTS_PUMPKIN_STEM_FRUIT).addTag(BlockTags.SUPPORTS_STEM_FRUIT);
+      this.tag(BlockTags.SUPPORTS_MELON_STEM_FRUIT).addTag(BlockTags.SUPPORTS_STEM_FRUIT);
+      this.tag(BlockTags.SUPPORTS_SUGAR_CANE).addTag(BlockTags.SUBSTRATE_OVERWORLD).addTag(BlockTags.SAND);
+      this.tag(BlockTags.SUPPORTS_SUGAR_CANE_ADJACENTLY).add(Blocks.FROSTED_ICE);
+      this.tag(BlockTags.SUPPORTS_BAMBOO).addTag(BlockTags.SAND).addTag(BlockTags.SUBSTRATE_OVERWORLD).add(Blocks.BAMBOO, Blocks.BAMBOO_SAPLING, Blocks.GRAVEL, Blocks.SUSPICIOUS_GRAVEL);
+      this.tag(BlockTags.SUPPORTS_SMALL_DRIPLEAF).add(Blocks.CLAY).add(Blocks.MOSS_BLOCK);
+      this.tag(BlockTags.SUPPORTS_BIG_DRIPLEAF).addTag(BlockTags.SUPPORTS_SMALL_DRIPLEAF).add(Blocks.DIRT, Blocks.GRASS_BLOCK, Blocks.PODZOL, Blocks.COARSE_DIRT, Blocks.MYCELIUM, Blocks.ROOTED_DIRT, Blocks.MOSS_BLOCK, Blocks.MUD, Blocks.MUDDY_MANGROVE_ROOTS, Blocks.FARMLAND);
+      this.tag(BlockTags.SUPPORTS_CACTUS).addTag(BlockTags.SAND);
+      this.tag(BlockTags.SUPPORTS_CHORUS_PLANT).add(Blocks.END_STONE);
+      this.tag(BlockTags.SUPPORTS_CHORUS_FLOWER).add(Blocks.END_STONE);
+      this.tag(BlockTags.SUPPORTS_NETHER_SPROUTS).addTag(BlockTags.SUPPORTS_VEGETATION).addTag(BlockTags.NYLIUM).add(Blocks.SOUL_SOIL);
+      this.tag(BlockTags.SUPPORTS_AZALEA).addTag(BlockTags.SUPPORTS_VEGETATION).add(Blocks.CLAY);
+      this.tag(BlockTags.SUPPORTS_WARPED_FUNGUS).addTag(BlockTags.SUPPORTS_VEGETATION).addTag(BlockTags.NYLIUM).add(Blocks.MYCELIUM).add(Blocks.SOUL_SOIL);
+      this.tag(BlockTags.SUPPORTS_CRIMSON_FUNGUS).addTag(BlockTags.SUPPORTS_WARPED_FUNGUS);
+      this.tag(BlockTags.SUPPORTS_MANGROVE_PROPAGULE).addTag(BlockTags.SUPPORTS_VEGETATION).add(Blocks.CLAY);
+      this.tag(BlockTags.SUPPORTS_HANGING_MANGROVE_PROPAGULE).add(Blocks.MANGROVE_LEAVES);
+      this.tag(BlockTags.SUPPORTS_NETHER_WART).add(Blocks.SOUL_SAND);
+      this.tag(BlockTags.SUPPORTS_WARPED_ROOTS).addTag(BlockTags.SUPPORTS_VEGETATION).addTag(BlockTags.NYLIUM).add(Blocks.SOUL_SOIL);
+      this.tag(BlockTags.SUPPORTS_CRIMSON_ROOTS).addTag(BlockTags.SUPPORTS_WARPED_ROOTS);
+      this.tag(BlockTags.SUPPORTS_WITHER_ROSE).addTag(BlockTags.SUPPORTS_VEGETATION).add(Blocks.NETHERRACK).add(Blocks.SOUL_SAND).add(Blocks.SOUL_SOIL);
+      this.tag(BlockTags.SUPPORTS_COCOA).addTag(BlockTags.JUNGLE_LOGS);
+      this.tag(BlockTags.SUPPORTS_LILY_PAD).add(Blocks.ICE).add(Blocks.FROSTED_ICE);
+      this.tag(BlockTags.SUPPORTS_FROGSPAWN);
+      this.tag(BlockTags.SUPPORT_OVERRIDE_CACTUS_FLOWER).add(Blocks.CACTUS).add(Blocks.FARMLAND);
+      this.tag(BlockTags.SUPPORT_OVERRIDE_SNOW_LAYER).add(Blocks.HONEY_BLOCK).add(Blocks.SOUL_SAND).add(Blocks.MUD);
+      this.tag(BlockTags.CANNOT_SUPPORT_SEAGRASS).add(Blocks.MAGMA_BLOCK);
+      this.tag(BlockTags.CANNOT_SUPPORT_KELP).add(Blocks.MAGMA_BLOCK);
+      this.tag(BlockTags.CANNOT_SUPPORT_SNOW_LAYER).add(Blocks.ICE).add(Blocks.PACKED_ICE).add(Blocks.BARRIER);
+      this.tag(BlockTags.OVERRIDES_MUSHROOM_LIGHT_REQUIREMENT).add(Blocks.MYCELIUM).add(Blocks.PODZOL).add(Blocks.CRIMSON_NYLIUM).add(Blocks.WARPED_NYLIUM);
+      this.tag(BlockTags.GROWS_CROPS).add(Blocks.FARMLAND);
       this.tag(BlockTags.SNAPS_GOAT_HORN).addTag(BlockTags.OVERWORLD_NATURAL_LOGS).add(Blocks.STONE).add(Blocks.PACKED_ICE).add(Blocks.IRON_ORE).add(Blocks.COAL_ORE).add(Blocks.COPPER_ORE).add(Blocks.EMERALD_ORE);
       this.tag(BlockTags.INVALID_SPAWN_INSIDE).add(Blocks.END_PORTAL, Blocks.END_GATEWAY);
       this.tag(BlockTags.TRAIL_RUINS_REPLACEABLE).add(Blocks.GRAVEL);
-      this.tag(BlockTags.SNIFFER_DIGGABLE_BLOCK).add(Blocks.DIRT, Blocks.GRASS_BLOCK, Blocks.PODZOL, Blocks.COARSE_DIRT, Blocks.ROOTED_DIRT, Blocks.MOSS_BLOCK, Blocks.PALE_MOSS_BLOCK, Blocks.MUD, Blocks.MUDDY_MANGROVE_ROOTS);
+      this.tag(BlockTags.SNIFFER_DIGGABLE_BLOCK).addTag(BlockTags.DIRT).addTag(BlockTags.MUD).addTag(BlockTags.MOSS_BLOCKS).add(Blocks.GRASS_BLOCK, Blocks.PODZOL);
       this.tag(BlockTags.SNIFFER_EGG_HATCH_BOOST).add(Blocks.MOSS_BLOCK);
-      this.tag(BlockTags.REPLACEABLE).addAll(var1.lookupOrThrow(Registries.BLOCK).listElements().map(Holder.Reference::value).filter((var0) -> var0.defaultBlockState().canBeReplaced()));
+      this.tag(BlockTags.REPLACEABLE).addAll(registries.lookupOrThrow(Registries.BLOCK).listElements().map(Holder.Reference::value).filter((b) -> b.defaultBlockState().canBeReplaced()));
       this.tag(BlockTags.ENCHANTMENT_POWER_PROVIDER).add(Blocks.BOOKSHELF);
       this.tag(BlockTags.ENCHANTMENT_POWER_TRANSMITTER).addTag(BlockTags.REPLACEABLE);
-      this.tag(BlockTags.MAINTAINS_FARMLAND).add(Blocks.PUMPKIN_STEM, Blocks.ATTACHED_PUMPKIN_STEM, Blocks.MELON_STEM, Blocks.ATTACHED_MELON_STEM, Blocks.BEETROOTS, Blocks.CARROTS, Blocks.POTATOES, Blocks.TORCHFLOWER_CROP, Blocks.TORCHFLOWER, Blocks.PITCHER_CROP, Blocks.WHEAT);
+      this.tag(BlockTags.MAINTAINS_FARMLAND).add(Blocks.PUMPKIN_STEM, Blocks.ATTACHED_PUMPKIN_STEM, Blocks.MELON_STEM, Blocks.ATTACHED_MELON_STEM, Blocks.BEETROOTS, Blocks.CARROTS, Blocks.POTATOES, Blocks.TORCHFLOWER_CROP, Blocks.TORCHFLOWER, Blocks.PITCHER_CROP, Blocks.WHEAT, Blocks.MOVING_PISTON).addTag(BlockTags.FENCE_GATES);
       this.tag(BlockTags.CAMEL_SAND_STEP_SOUND_BLOCKS).addTag(BlockTags.SAND).addTag(BlockTags.CONCRETE_POWDER);
       this.tag(BlockTags.HAPPY_GHAST_AVOIDS).add(Blocks.SWEET_BERRY_BUSH, Blocks.CACTUS, Blocks.WITHER_ROSE, Blocks.MAGMA_BLOCK, Blocks.FIRE, Blocks.POINTED_DRIPSTONE);
       this.tag(BlockTags.DOES_NOT_BLOCK_HOPPERS).addTag(BlockTags.BEEHIVES);

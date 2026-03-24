@@ -12,15 +12,23 @@ public class References {
    public static final DSL.TypeReference STRUCTURE = reference("structure");
    public static final DSL.TypeReference STATS = reference("stats");
    public static final DSL.TypeReference SAVED_DATA_COMMAND_STORAGE = reference("saved_data/command_storage");
+   public static final DSL.TypeReference SAVED_DATA_CUSTOM_BOSS_EVENTS = reference("saved_data/custom_boss_events");
+   public static final DSL.TypeReference SAVED_DATA_ENDER_DRAGON_FIGHT = reference("saved_data/ender_dragon_fight");
+   public static final DSL.TypeReference SAVED_DATA_GAME_RULES = reference("saved_data/game_rules");
    public static final DSL.TypeReference SAVED_DATA_TICKETS = reference("saved_data/tickets");
    public static final DSL.TypeReference SAVED_DATA_MAP_DATA = reference("saved_data/map_data");
    public static final DSL.TypeReference SAVED_DATA_MAP_INDEX = reference("saved_data/idcounts");
    public static final DSL.TypeReference SAVED_DATA_RAIDS = reference("saved_data/raids");
    public static final DSL.TypeReference SAVED_DATA_RANDOM_SEQUENCES = reference("saved_data/random_sequences");
+   public static final DSL.TypeReference SAVED_DATA_SCHEDULED_EVENTS = reference("saved_data/scheduled_events");
    public static final DSL.TypeReference SAVED_DATA_SCOREBOARD = reference("saved_data/scoreboard");
    public static final DSL.TypeReference SAVED_DATA_STOPWATCHES = reference("saved_data/stopwatches");
    public static final DSL.TypeReference SAVED_DATA_STRUCTURE_FEATURE_INDICES = reference("saved_data/structure_feature_indices");
+   public static final DSL.TypeReference SAVED_DATA_WANDERING_TRADER = reference("saved_data/wandering_trader");
+   public static final DSL.TypeReference SAVED_DATA_WEATHER = reference("saved_data/weather");
    public static final DSL.TypeReference SAVED_DATA_WORLD_BORDER = reference("saved_data/world_border");
+   public static final DSL.TypeReference SAVED_DATA_WORLD_CLOCKS = reference("saved_data/world_clocks");
+   public static final DSL.TypeReference SAVED_DATA_WORLD_GEN_SETTINGS = reference("saved_data/world_gen_settings");
    public static final DSL.TypeReference ADVANCEMENTS = reference("advancements");
    public static final DSL.TypeReference POI_CHUNK = reference("poi_chunk");
    public static final DSL.TypeReference ENTITY_CHUNK = reference("entity_chunk");
@@ -53,14 +61,14 @@ public class References {
       super();
    }
 
-   public static DSL.TypeReference reference(final String var0) {
+   public static DSL.TypeReference reference(final String id) {
       return new DSL.TypeReference() {
          public String typeName() {
-            return var0;
+            return id;
          }
 
          public String toString() {
-            return "@" + var0;
+            return "@" + id;
          }
       };
    }

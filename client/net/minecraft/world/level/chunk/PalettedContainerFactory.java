@@ -12,23 +12,17 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 public record PalettedContainerFactory(Strategy<BlockState> blockStatesStrategy, BlockState defaultBlockState, Codec<PalettedContainer<BlockState>> blockStatesContainerCodec, Strategy<Holder<Biome>> biomeStrategy, Holder<Biome> defaultBiome, Codec<PalettedContainerRO<Holder<Biome>>> biomeContainerCodec) {
-   public PalettedContainerFactory(Strategy<BlockState> var1, BlockState var2, Codec<PalettedContainer<BlockState>> var3, Strategy<Holder<Biome>> var4, Holder<Biome> var5, Codec<PalettedContainerRO<Holder<Biome>>> var6) {
+   public PalettedContainerFactory {
       super();
-      this.blockStatesStrategy = var1;
-      this.defaultBlockState = var2;
-      this.blockStatesContainerCodec = var3;
-      this.biomeStrategy = var4;
-      this.defaultBiome = var5;
-      this.biomeContainerCodec = var6;
    }
 
-   public static PalettedContainerFactory create(RegistryAccess var0) {
-      Strategy var1 = Strategy.createForBlockStates(Block.BLOCK_STATE_REGISTRY);
-      BlockState var2 = Blocks.AIR.defaultBlockState();
-      Registry var3 = var0.lookupOrThrow(Registries.BIOME);
-      Strategy var4 = Strategy.createForBiomes(var3.asHolderIdMap());
-      Holder.Reference var5 = var3.getOrThrow(Biomes.PLAINS);
-      return new PalettedContainerFactory(var1, var2, PalettedContainer.codecRW(BlockState.CODEC, var1, var2), var4, var5, PalettedContainer.codecRO(var3.holderByNameCodec(), var4, var5));
+   public static PalettedContainerFactory create(final RegistryAccess registries) {
+      Strategy<BlockState> blockStateStrategy = Strategy.<BlockState>createForBlockStates(Block.BLOCK_STATE_REGISTRY);
+      BlockState defaultBlockState = Blocks.AIR.defaultBlockState();
+      Registry<Biome> biomes = registries.lookupOrThrow(Registries.BIOME);
+      Strategy<Holder<Biome>> biomeStrategy = Strategy.<Holder<Biome>>createForBiomes(biomes.asHolderIdMap());
+      Holder.Reference<Biome> defaultBiome = biomes.getOrThrow(Biomes.PLAINS);
+      return new PalettedContainerFactory(blockStateStrategy, defaultBlockState, PalettedContainer.codecRW(BlockState.CODEC, blockStateStrategy, defaultBlockState), biomeStrategy, defaultBiome, PalettedContainer.codecRO(biomes.holderByNameCodec(), biomeStrategy, defaultBiome));
    }
 
    public PalettedContainer<BlockState> createForBlockStates() {

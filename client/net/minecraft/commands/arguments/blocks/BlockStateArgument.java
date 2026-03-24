@@ -19,34 +19,29 @@ public class BlockStateArgument implements ArgumentType<BlockInput> {
    private static final Collection<String> EXAMPLES = Arrays.asList("stone", "minecraft:stone", "stone[foo=bar]", "foo{bar=baz}");
    private final HolderLookup<Block> blocks;
 
-   public BlockStateArgument(CommandBuildContext var1) {
+   public BlockStateArgument(final CommandBuildContext context) {
       super();
-      this.blocks = var1.lookupOrThrow(Registries.BLOCK);
+      this.blocks = context.lookupOrThrow(Registries.BLOCK);
    }
 
-   public static BlockStateArgument block(CommandBuildContext var0) {
-      return new BlockStateArgument(var0);
+   public static BlockStateArgument block(final CommandBuildContext context) {
+      return new BlockStateArgument(context);
    }
 
-   public BlockInput parse(StringReader var1) throws CommandSyntaxException {
-      BlockStateParser.BlockResult var2 = BlockStateParser.parseForBlock(this.blocks, var1, true);
-      return new BlockInput(var2.blockState(), var2.properties().keySet(), var2.nbt());
+   public BlockInput parse(final StringReader reader) throws CommandSyntaxException {
+      BlockStateParser.BlockResult result = BlockStateParser.parseForBlock(this.blocks, reader, true);
+      return new BlockInput(result.blockState(), result.properties().keySet(), result.nbt());
    }
 
-   public static BlockInput getBlock(CommandContext<CommandSourceStack> var0, String var1) {
-      return (BlockInput)var0.getArgument(var1, BlockInput.class);
+   public static BlockInput getBlock(final CommandContext<CommandSourceStack> context, final String name) {
+      return (BlockInput)context.getArgument(name, BlockInput.class);
    }
 
-   public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      return BlockStateParser.fillSuggestions(this.blocks, var2, false, true);
+   public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
+      return BlockStateParser.fillSuggestions(this.blocks, builder, false, true);
    }
 
    public Collection<String> getExamples() {
       return EXAMPLES;
-   }
-
-   // $FF: synthetic method
-   public Object parse(final StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1);
    }
 }

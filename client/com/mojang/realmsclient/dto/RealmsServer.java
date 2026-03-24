@@ -109,84 +109,84 @@ public class RealmsServer extends ValueObject implements ReflectionBasedSerializ
       return this.minigameName;
    }
 
-   public void setName(String var1) {
-      this.name = var1;
+   public void setName(final String name) {
+      this.name = name;
    }
 
-   public void setDescription(String var1) {
-      this.motd = var1;
+   public void setDescription(final String motd) {
+      this.motd = motd;
    }
 
-   public static RealmsServer parse(GuardedSerializer var0, String var1) {
+   public static RealmsServer parse(final GuardedSerializer gson, final String json) {
       try {
-         RealmsServer var2 = (RealmsServer)var0.fromJson(var1, RealmsServer.class);
-         if (var2 == null) {
-            LOGGER.error("Could not parse McoServer: {}", var1);
+         RealmsServer server = (RealmsServer)gson.fromJson(json, RealmsServer.class);
+         if (server == null) {
+            LOGGER.error("Could not parse McoServer: {}", json);
             return new RealmsServer();
          } else {
-            finalize(var2);
-            return var2;
+            finalize(server);
+            return server;
          }
-      } catch (Exception var3) {
-         LOGGER.error("Could not parse McoServer", var3);
+      } catch (Exception e) {
+         LOGGER.error("Could not parse McoServer", e);
          return new RealmsServer();
       }
    }
 
-   public static void finalize(RealmsServer var0) {
-      if (var0.players == null) {
-         var0.players = Lists.newArrayList();
+   public static void finalize(final RealmsServer server) {
+      if (server.players == null) {
+         server.players = Lists.newArrayList();
       }
 
-      if (var0.slotList == null) {
-         var0.slotList = createEmptySlots();
+      if (server.slotList == null) {
+         server.slotList = createEmptySlots();
       }
 
-      if (var0.slots == null) {
-         var0.slots = new HashMap();
+      if (server.slots == null) {
+         server.slots = new HashMap();
       }
 
-      if (var0.worldType == null) {
-         var0.worldType = RealmsServer.WorldType.NORMAL;
+      if (server.worldType == null) {
+         server.worldType = RealmsServer.WorldType.NORMAL;
       }
 
-      if (var0.activeVersion == null) {
-         var0.activeVersion = "";
+      if (server.activeVersion == null) {
+         server.activeVersion = "";
       }
 
-      if (var0.compatibility == null) {
-         var0.compatibility = RealmsServer.Compatibility.UNVERIFIABLE;
+      if (server.compatibility == null) {
+         server.compatibility = RealmsServer.Compatibility.UNVERIFIABLE;
       }
 
-      if (var0.regionSelectionPreference == null) {
-         var0.regionSelectionPreference = RegionSelectionPreferenceDto.DEFAULT;
+      if (server.regionSelectionPreference == null) {
+         server.regionSelectionPreference = RegionSelectionPreferenceDto.DEFAULT;
       }
 
-      sortInvited(var0);
-      finalizeSlots(var0);
+      sortInvited(server);
+      finalizeSlots(server);
    }
 
-   private static void sortInvited(RealmsServer var0) {
-      var0.players.sort((var0x, var1) -> ComparisonChain.start().compareFalseFirst(var1.accepted, var0x.accepted).compare(var0x.name.toLowerCase(Locale.ROOT), var1.name.toLowerCase(Locale.ROOT)).result());
+   private static void sortInvited(final RealmsServer server) {
+      server.players.sort((o1, o2) -> ComparisonChain.start().compareFalseFirst(o2.accepted, o1.accepted).compare(o1.name.toLowerCase(Locale.ROOT), o2.name.toLowerCase(Locale.ROOT)).result());
    }
 
-   private static void finalizeSlots(RealmsServer var0) {
-      var0.slotList.forEach((var1x) -> var0.slots.put(var1x.slotId, var1x));
+   private static void finalizeSlots(final RealmsServer server) {
+      server.slotList.forEach((s) -> server.slots.put(s.slotId, s));
 
-      for(int var1 = 1; var1 <= 3; ++var1) {
-         if (!var0.slots.containsKey(var1)) {
-            var0.slots.put(var1, RealmsSlot.defaults(var1));
+      for(int i = 1; i <= 3; ++i) {
+         if (!server.slots.containsKey(i)) {
+            server.slots.put(i, RealmsSlot.defaults(i));
          }
       }
 
    }
 
    private static List<RealmsSlot> createEmptySlots() {
-      ArrayList var0 = new ArrayList();
-      var0.add(RealmsSlot.defaults(1));
-      var0.add(RealmsSlot.defaults(2));
-      var0.add(RealmsSlot.defaults(3));
-      return var0;
+      List<RealmsSlot> slots = new ArrayList();
+      slots.add(RealmsSlot.defaults(1));
+      slots.add(RealmsSlot.defaults(2));
+      slots.add(RealmsSlot.defaults(3));
+      return slots;
    }
 
    public boolean isCompatible() {
@@ -202,8 +202,8 @@ public class RealmsServer extends ValueObject implements ReflectionBasedSerializ
    }
 
    public boolean shouldPlayButtonBeActive() {
-      boolean var1 = !this.expired && this.state == RealmsServer.State.OPEN;
-      return var1 && (this.isCompatible() || this.needsUpgrade() || this.isSelfOwnedServer());
+      boolean active = !this.expired && this.state == RealmsServer.State.OPEN;
+      return active && (this.isCompatible() || this.needsUpgrade() || this.isSelfOwnedServer());
    }
 
    private boolean isSelfOwnedServer() {
@@ -214,57 +214,57 @@ public class RealmsServer extends ValueObject implements ReflectionBasedSerializ
       return Objects.hash(new Object[]{this.id, this.name, this.motd, this.state, this.owner, this.expired});
    }
 
-   public boolean equals(Object var1) {
-      if (var1 == null) {
+   public boolean equals(final Object obj) {
+      if (obj == null) {
          return false;
-      } else if (var1 == this) {
+      } else if (obj == this) {
          return true;
-      } else if (var1.getClass() != this.getClass()) {
+      } else if (obj.getClass() != this.getClass()) {
          return false;
       } else {
-         RealmsServer var2 = (RealmsServer)var1;
-         return (new EqualsBuilder()).append(this.id, var2.id).append(this.name, var2.name).append(this.motd, var2.motd).append(this.state, var2.state).append(this.owner, var2.owner).append(this.expired, var2.expired).append(this.worldType, this.worldType).isEquals();
+         RealmsServer rhs = (RealmsServer)obj;
+         return (new EqualsBuilder()).append(this.id, rhs.id).append(this.name, rhs.name).append(this.motd, rhs.motd).append(this.state, rhs.state).append(this.owner, rhs.owner).append(this.expired, rhs.expired).append(this.worldType, this.worldType).isEquals();
       }
    }
 
    public RealmsServer copy() {
-      RealmsServer var1 = new RealmsServer();
-      var1.id = this.id;
-      var1.remoteSubscriptionId = this.remoteSubscriptionId;
-      var1.name = this.name;
-      var1.motd = this.motd;
-      var1.state = this.state;
-      var1.owner = this.owner;
-      var1.players = this.players;
-      var1.slotList = this.slotList.stream().map(RealmsSlot::copy).toList();
-      var1.slots = this.cloneSlots(this.slots);
-      var1.expired = this.expired;
-      var1.expiredTrial = this.expiredTrial;
-      var1.daysLeft = this.daysLeft;
-      var1.worldType = this.worldType;
-      var1.isHardcore = this.isHardcore;
-      var1.gameMode = this.gameMode;
-      var1.ownerUUID = this.ownerUUID;
-      var1.minigameName = this.minigameName;
-      var1.activeSlot = this.activeSlot;
-      var1.minigameId = this.minigameId;
-      var1.minigameImage = this.minigameImage;
-      var1.parentWorldName = this.parentWorldName;
-      var1.parentRealmId = this.parentRealmId;
-      var1.activeVersion = this.activeVersion;
-      var1.compatibility = this.compatibility;
-      var1.regionSelectionPreference = this.regionSelectionPreference != null ? this.regionSelectionPreference.copy() : null;
-      return var1;
+      RealmsServer server = new RealmsServer();
+      server.id = this.id;
+      server.remoteSubscriptionId = this.remoteSubscriptionId;
+      server.name = this.name;
+      server.motd = this.motd;
+      server.state = this.state;
+      server.owner = this.owner;
+      server.players = this.players;
+      server.slotList = this.slotList.stream().map(RealmsSlot::copy).toList();
+      server.slots = this.cloneSlots(this.slots);
+      server.expired = this.expired;
+      server.expiredTrial = this.expiredTrial;
+      server.daysLeft = this.daysLeft;
+      server.worldType = this.worldType;
+      server.isHardcore = this.isHardcore;
+      server.gameMode = this.gameMode;
+      server.ownerUUID = this.ownerUUID;
+      server.minigameName = this.minigameName;
+      server.activeSlot = this.activeSlot;
+      server.minigameId = this.minigameId;
+      server.minigameImage = this.minigameImage;
+      server.parentWorldName = this.parentWorldName;
+      server.parentRealmId = this.parentRealmId;
+      server.activeVersion = this.activeVersion;
+      server.compatibility = this.compatibility;
+      server.regionSelectionPreference = this.regionSelectionPreference != null ? this.regionSelectionPreference.copy() : null;
+      return server;
    }
 
-   public Map<Integer, RealmsSlot> cloneSlots(Map<Integer, RealmsSlot> var1) {
-      HashMap var2 = Maps.newHashMap();
+   public Map<Integer, RealmsSlot> cloneSlots(final Map<Integer, RealmsSlot> slots) {
+      Map<Integer, RealmsSlot> newSlots = Maps.newHashMap();
 
-      for(Map.Entry var4 : var1.entrySet()) {
-         var2.put((Integer)var4.getKey(), new RealmsSlot((Integer)var4.getKey(), ((RealmsSlot)var4.getValue()).options.copy(), ((RealmsSlot)var4.getValue()).settings));
+      for(Map.Entry<Integer, RealmsSlot> entry : slots.entrySet()) {
+         newSlots.put((Integer)entry.getKey(), new RealmsSlot((Integer)entry.getKey(), ((RealmsSlot)entry.getValue()).options.copy(), ((RealmsSlot)entry.getValue()).settings));
       }
 
-      return var2;
+      return newSlots;
    }
 
    public boolean isSnapshotRealm() {
@@ -275,34 +275,29 @@ public class RealmsServer extends ValueObject implements ReflectionBasedSerializ
       return this.worldType == RealmsServer.WorldType.MINIGAME;
    }
 
-   public String getWorldName(int var1) {
+   public String getWorldName(final int slotId) {
       if (this.name == null) {
-         return ((RealmsSlot)this.slots.get(var1)).options.getSlotName(var1);
+         return ((RealmsSlot)this.slots.get(slotId)).options.getSlotName(slotId);
       } else {
          String var10000 = this.name;
-         return var10000 + " (" + ((RealmsSlot)this.slots.get(var1)).options.getSlotName(var1) + ")";
+         return var10000 + " (" + ((RealmsSlot)this.slots.get(slotId)).options.getSlotName(slotId) + ")";
       }
    }
 
-   public ServerData toServerData(String var1) {
-      return new ServerData((String)Objects.requireNonNullElse(this.name, "unknown server"), var1, ServerData.Type.REALM);
+   public ServerData toServerData(final String ip) {
+      return new ServerData((String)Objects.requireNonNullElse(this.name, "unknown server"), ip, ServerData.Type.REALM);
    }
 
    public static class McoServerComparator implements Comparator<RealmsServer> {
       private final String refOwner;
 
-      public McoServerComparator(String var1) {
+      public McoServerComparator(final String owner) {
          super();
-         this.refOwner = var1;
+         this.refOwner = owner;
       }
 
-      public int compare(RealmsServer var1, RealmsServer var2) {
-         return ComparisonChain.start().compareTrueFirst(var1.isSnapshotRealm(), var2.isSnapshotRealm()).compareTrueFirst(var1.state == RealmsServer.State.UNINITIALIZED, var2.state == RealmsServer.State.UNINITIALIZED).compareTrueFirst(var1.expiredTrial, var2.expiredTrial).compareTrueFirst(Objects.equals(var1.owner, this.refOwner), Objects.equals(var2.owner, this.refOwner)).compareFalseFirst(var1.expired, var2.expired).compareTrueFirst(var1.state == RealmsServer.State.OPEN, var2.state == RealmsServer.State.OPEN).compare(var1.id, var2.id).result();
-      }
-
-      // $FF: synthetic method
-      public int compare(final Object var1, final Object var2) {
-         return this.compare((RealmsServer)var1, (RealmsServer)var2);
+      public int compare(final RealmsServer server1, final RealmsServer server2) {
+         return ComparisonChain.start().compareTrueFirst(server1.isSnapshotRealm(), server2.isSnapshotRealm()).compareTrueFirst(server1.state == RealmsServer.State.UNINITIALIZED, server2.state == RealmsServer.State.UNINITIALIZED).compareTrueFirst(server1.expiredTrial, server2.expiredTrial).compareTrueFirst(Objects.equals(server1.owner, this.refOwner), Objects.equals(server2.owner, this.refOwner)).compareFalseFirst(server1.expired, server2.expired).compareTrueFirst(server1.state == RealmsServer.State.OPEN, server2.state == RealmsServer.State.OPEN).compare(server1.id, server2.id).result();
       }
    }
 
@@ -331,8 +326,8 @@ public class RealmsServer extends ValueObject implements ReflectionBasedSerializ
       private static final String TRANSLATION_PREFIX = "mco.backup.entry.worldType.";
       private final Component displayName;
 
-      private WorldType(final String var3) {
-         this.displayName = Component.translatable("mco.backup.entry.worldType." + var3);
+      private WorldType(final String translationKey) {
+         this.displayName = Component.translatable("mco.backup.entry.worldType." + translationKey);
       }
 
       public Component getDisplayName() {

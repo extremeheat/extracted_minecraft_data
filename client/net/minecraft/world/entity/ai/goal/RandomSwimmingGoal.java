@@ -6,8 +6,8 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class RandomSwimmingGoal extends RandomStrollGoal {
-   public RandomSwimmingGoal(PathfinderMob var1, double var2, int var4) {
-      super(var1, var2, var4);
+   public RandomSwimmingGoal(final PathfinderMob mob, final double speedModifier, final int interval) {
+      super(mob, speedModifier, interval);
    }
 
    protected @Nullable Vec3 getPosition() {

@@ -21,69 +21,69 @@ public enum SymmetricGroup3 {
    private final int p2;
    private final Matrix3fc transformation;
    private static final SymmetricGroup3[][] CAYLEY_TABLE = (SymmetricGroup3[][])Util.make(() -> {
-      SymmetricGroup3[] var0 = values();
-      SymmetricGroup3[][] var1 = new SymmetricGroup3[var0.length][var0.length];
+      SymmetricGroup3[] values = values();
+      SymmetricGroup3[][] table = new SymmetricGroup3[values.length][values.length];
 
-      for(SymmetricGroup3 var5 : var0) {
-         for(SymmetricGroup3 var9 : var0) {
-            int var10 = var5.permute(var9.p0);
-            int var11 = var5.permute(var9.p1);
-            int var12 = var5.permute(var9.p2);
-            SymmetricGroup3 var13 = (SymmetricGroup3)Arrays.stream(var0).filter((var3) -> var3.p0 == var10 && var3.p1 == var11 && var3.p2 == var12).findFirst().get();
-            var1[var5.ordinal()][var9.ordinal()] = var13;
+      for(SymmetricGroup3 first : values) {
+         for(SymmetricGroup3 second : values) {
+            int p0 = first.permute(second.p0);
+            int p1 = first.permute(second.p1);
+            int p2 = first.permute(second.p2);
+            SymmetricGroup3 result = (SymmetricGroup3)Arrays.stream(values).filter((p) -> p.p0 == p0 && p.p1 == p1 && p.p2 == p2).findFirst().get();
+            table[first.ordinal()][second.ordinal()] = result;
          }
       }
 
-      return var1;
+      return table;
    });
    private static final SymmetricGroup3[] INVERSE_TABLE = (SymmetricGroup3[])Util.make(() -> {
-      SymmetricGroup3[] var0 = values();
-      return (SymmetricGroup3[])Arrays.stream(var0).map((var0x) -> (SymmetricGroup3)Arrays.stream(values()).filter((var1) -> var0x.compose(var1) == P123).findAny().get()).toArray((var0x) -> new SymmetricGroup3[var0x]);
+      SymmetricGroup3[] values = values();
+      return (SymmetricGroup3[])Arrays.stream(values).map((f) -> (SymmetricGroup3)Arrays.stream(values()).filter((s) -> f.compose(s) == P123).findAny().get()).toArray((x$0) -> new SymmetricGroup3[x$0]);
    });
 
-   private SymmetricGroup3(final int var3, final int var4, final int var5) {
-      this.p0 = var3;
-      this.p1 = var4;
-      this.p2 = var5;
+   private SymmetricGroup3(final int p0, final int p1, final int p2) {
+      this.p0 = p0;
+      this.p1 = p1;
+      this.p2 = p2;
       this.transformation = (new Matrix3f()).zero().set(this.permute(0), 0, 1.0F).set(this.permute(1), 1, 1.0F).set(this.permute(2), 2, 1.0F);
    }
 
-   public SymmetricGroup3 compose(SymmetricGroup3 var1) {
-      return CAYLEY_TABLE[this.ordinal()][var1.ordinal()];
+   public SymmetricGroup3 compose(final SymmetricGroup3 that) {
+      return CAYLEY_TABLE[this.ordinal()][that.ordinal()];
    }
 
    public SymmetricGroup3 inverse() {
       return INVERSE_TABLE[this.ordinal()];
    }
 
-   public int permute(int var1) {
+   public int permute(final int i) {
       int var10000;
-      switch (var1) {
+      switch (i) {
          case 0 -> var10000 = this.p0;
          case 1 -> var10000 = this.p1;
          case 2 -> var10000 = this.p2;
-         default -> throw new IllegalArgumentException("Must be 0, 1 or 2, but got " + var1);
+         default -> throw new IllegalArgumentException("Must be 0, 1 or 2, but got " + i);
       }
 
       return var10000;
    }
 
-   public Direction.Axis permuteAxis(Direction.Axis var1) {
-      return Direction.Axis.VALUES[this.permute(var1.ordinal())];
+   public Direction.Axis permuteAxis(final Direction.Axis axis) {
+      return Direction.Axis.VALUES[this.permute(axis.ordinal())];
    }
 
-   public Vector3f permuteVector(Vector3f var1) {
-      float var2 = var1.get(this.p0);
-      float var3 = var1.get(this.p1);
-      float var4 = var1.get(this.p2);
-      return var1.set(var2, var3, var4);
+   public Vector3f permuteVector(final Vector3f v) {
+      float v0 = v.get(this.p0);
+      float v1 = v.get(this.p1);
+      float v2 = v.get(this.p2);
+      return v.set(v0, v1, v2);
    }
 
-   public Vector3i permuteVector(Vector3i var1) {
-      int var2 = var1.get(this.p0);
-      int var3 = var1.get(this.p1);
-      int var4 = var1.get(this.p2);
-      return var1.set(var2, var3, var4);
+   public Vector3i permuteVector(final Vector3i v) {
+      int v0 = v.get(this.p0);
+      int v1 = v.get(this.p1);
+      int v2 = v.get(this.p2);
+      return v.set(v0, v1, v2);
    }
 
    public Matrix3fc transformation() {

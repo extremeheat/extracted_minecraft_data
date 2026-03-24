@@ -11,26 +11,25 @@ import org.slf4j.Logger;
 public record Ops(Set<String> ops) {
    private static final Logger LOGGER = LogUtils.getLogger();
 
-   public Ops(Set<String> var1) {
+   public Ops {
       super();
-      this.ops = var1;
    }
 
-   public static Ops parse(String var0) {
-      HashSet var1 = new HashSet();
+   public static Ops parse(final String json) {
+      Set<String> ops = new HashSet();
 
       try {
-         JsonObject var2 = LenientJsonParser.parse(var0).getAsJsonObject();
-         JsonElement var3 = var2.get("ops");
-         if (var3.isJsonArray()) {
-            for(JsonElement var5 : var3.getAsJsonArray()) {
-               var1.add(var5.getAsString());
+         JsonObject jsonObject = LenientJsonParser.parse(json).getAsJsonObject();
+         JsonElement opsArray = jsonObject.get("ops");
+         if (opsArray.isJsonArray()) {
+            for(JsonElement opsElement : opsArray.getAsJsonArray()) {
+               ops.add(opsElement.getAsString());
             }
          }
-      } catch (Exception var6) {
-         LOGGER.error("Could not parse Ops", var6);
+      } catch (Exception e) {
+         LOGGER.error("Could not parse Ops", e);
       }
 
-      return new Ops(var1);
+      return new Ops(ops);
    }
 }

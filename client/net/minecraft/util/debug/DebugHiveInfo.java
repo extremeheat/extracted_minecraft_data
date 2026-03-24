@@ -10,16 +10,12 @@ import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
 public record DebugHiveInfo(Block type, int occupantCount, int honeyLevel, boolean sedated) {
    public static final StreamCodec<RegistryFriendlyByteBuf, DebugHiveInfo> STREAM_CODEC;
 
-   public DebugHiveInfo(Block var1, int var2, int var3, boolean var4) {
+   public DebugHiveInfo {
       super();
-      this.type = var1;
-      this.occupantCount = var2;
-      this.honeyLevel = var3;
-      this.sedated = var4;
    }
 
-   public static DebugHiveInfo pack(BeehiveBlockEntity var0) {
-      return new DebugHiveInfo(var0.getBlockState().getBlock(), var0.getOccupantCount(), BeehiveBlockEntity.getHoneyLevel(var0.getBlockState()), var0.isSedated());
+   public static DebugHiveInfo pack(final BeehiveBlockEntity beehive) {
+      return new DebugHiveInfo(beehive.getBlockState().getBlock(), beehive.getOccupantCount(), BeehiveBlockEntity.getHoneyLevel(beehive.getBlockState()), beehive.isSedated());
    }
 
    static {

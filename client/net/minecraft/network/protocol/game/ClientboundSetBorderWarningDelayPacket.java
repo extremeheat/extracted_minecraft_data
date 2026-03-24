@@ -10,26 +10,26 @@ public class ClientboundSetBorderWarningDelayPacket implements Packet<ClientGame
    public static final StreamCodec<FriendlyByteBuf, ClientboundSetBorderWarningDelayPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundSetBorderWarningDelayPacket>codec(ClientboundSetBorderWarningDelayPacket::write, ClientboundSetBorderWarningDelayPacket::new);
    private final int warningDelay;
 
-   public ClientboundSetBorderWarningDelayPacket(WorldBorder var1) {
+   public ClientboundSetBorderWarningDelayPacket(final WorldBorder border) {
       super();
-      this.warningDelay = var1.getWarningTime();
+      this.warningDelay = border.getWarningTime();
    }
 
-   private ClientboundSetBorderWarningDelayPacket(FriendlyByteBuf var1) {
+   private ClientboundSetBorderWarningDelayPacket(final FriendlyByteBuf input) {
       super();
-      this.warningDelay = var1.readVarInt();
+      this.warningDelay = input.readVarInt();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeVarInt(this.warningDelay);
+   private void write(final FriendlyByteBuf output) {
+      output.writeVarInt(this.warningDelay);
    }
 
    public PacketType<ClientboundSetBorderWarningDelayPacket> type() {
       return GamePacketTypes.CLIENTBOUND_SET_BORDER_WARNING_DELAY;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleSetBorderWarningDelay(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleSetBorderWarningDelay(this);
    }
 
    public int getWarningDelay() {

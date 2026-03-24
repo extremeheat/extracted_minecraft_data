@@ -10,16 +10,16 @@ public final class IntegerProperty extends Property<Integer> {
    private final int min;
    private final int max;
 
-   private IntegerProperty(String var1, int var2, int var3) {
-      super(var1, Integer.class);
-      if (var2 < 0) {
-         throw new IllegalArgumentException("Min value of " + var1 + " must be 0 or greater");
-      } else if (var3 <= var2) {
-         throw new IllegalArgumentException("Max value of " + var1 + " must be greater than min (" + var2 + ")");
+   private IntegerProperty(final String name, final int min, final int max) {
+      super(name, Integer.class);
+      if (min < 0) {
+         throw new IllegalArgumentException("Min value of " + name + " must be 0 or greater");
+      } else if (max <= min) {
+         throw new IllegalArgumentException("Max value of " + name + " must be greater than min (" + min + ")");
       } else {
-         this.min = var2;
-         this.max = var3;
-         this.values = IntImmutableList.toList(IntStream.range(var2, var3 + 1));
+         this.min = min;
+         this.max = max;
+         this.values = IntImmutableList.toList(IntStream.range(min, max + 1));
       }
    }
 
@@ -27,14 +27,14 @@ public final class IntegerProperty extends Property<Integer> {
       return this.values;
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
+   public boolean equals(final Object o) {
+      if (this == o) {
          return true;
       } else {
-         if (var1 instanceof IntegerProperty) {
-            IntegerProperty var2 = (IntegerProperty)var1;
-            if (super.equals(var1)) {
-               return this.values.equals(var2.values);
+         if (o instanceof IntegerProperty) {
+            IntegerProperty that = (IntegerProperty)o;
+            if (super.equals(o)) {
+               return this.values.equals(that.values);
             }
          }
 
@@ -46,34 +46,24 @@ public final class IntegerProperty extends Property<Integer> {
       return 31 * super.generateHashCode() + this.values.hashCode();
    }
 
-   public static IntegerProperty create(String var0, int var1, int var2) {
-      return new IntegerProperty(var0, var1, var2);
+   public static IntegerProperty create(final String name, final int min, final int max) {
+      return new IntegerProperty(name, min, max);
    }
 
-   public Optional<Integer> getValue(String var1) {
+   public Optional<Integer> getValue(final String name) {
       try {
-         int var2 = Integer.parseInt(var1);
-         return var2 >= this.min && var2 <= this.max ? Optional.of(var2) : Optional.empty();
+         int value = Integer.parseInt(name);
+         return value >= this.min && value <= this.max ? Optional.of(value) : Optional.empty();
       } catch (NumberFormatException var3) {
          return Optional.empty();
       }
    }
 
-   public String getName(Integer var1) {
-      return var1.toString();
+   public String getName(final Integer value) {
+      return value.toString();
    }
 
-   public int getInternalIndex(Integer var1) {
-      return var1 <= this.max ? var1 - this.min : -1;
-   }
-
-   // $FF: synthetic method
-   public int getInternalIndex(final Comparable var1) {
-      return this.getInternalIndex((Integer)var1);
-   }
-
-   // $FF: synthetic method
-   public String getName(final Comparable var1) {
-      return this.getName((Integer)var1);
+   public int getInternalIndex(final Integer value) {
+      return value <= this.max ? value - this.min : -1;
    }
 }

@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.animal.happyghast;
 
-import com.mojang.serialization.Dynamic;
+import java.util.List;
+import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ClientboundEntityPositionSyncPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -34,6 +35,7 @@ import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.TemptGoal;
 import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
+import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.monster.Ghast;
 import net.minecraft.world.entity.player.Player;
@@ -60,6 +62,7 @@ public class HappyGhast extends Animal {
    public static final int MAX_PASSANGERS = 4;
    private static final int STILL_TIMEOUT_ON_LOAD_GRACE_PERIOD = 60;
    private static final int MAX_STILL_TIMEOUT = 10;
+   private static final Brain.Provider<HappyGhast> BRAIN_PROVIDER;
    public static final float SPEED_MULTIPLIER_WHEN_PANICKING = 2.0F;
    private int leashHolderTime = 0;
    private int serverStillTimeout;
@@ -67,33 +70,33 @@ public class HappyGhast extends Animal {
    private static final EntityDataAccessor<Boolean> STAYS_STILL;
    private static final float MAX_SCALE = 1.0F;
 
-   public HappyGhast(EntityType<? extends HappyGhast> var1, Level var2) {
-      super(var1, var2);
+   public HappyGhast(final EntityType<? extends HappyGhast> type, final Level level) {
+      super(type, level);
       this.moveControl = new Ghast.GhastMoveControl(this, true, this::isOnStillTimeout);
       this.lookControl = new HappyGhastLookControl();
    }
 
-   private void setServerStillTimeout(int var1) {
-      if (this.serverStillTimeout <= 0 && var1 > 0) {
+   private void setServerStillTimeout(final int serverStillTimeout) {
+      if (this.serverStillTimeout <= 0 && serverStillTimeout > 0) {
          Level var3 = this.level();
          if (var3 instanceof ServerLevel) {
-            ServerLevel var2 = (ServerLevel)var3;
+            ServerLevel serverLevel = (ServerLevel)var3;
             this.syncPacketPositionCodec(this.getX(), this.getY(), this.getZ());
-            var2.getChunkSource().chunkMap.sendToTrackingPlayers(this, ClientboundEntityPositionSyncPacket.of(this));
+            serverLevel.getChunkSource().chunkMap.sendToTrackingPlayers(this, ClientboundEntityPositionSyncPacket.of(this));
          }
       }
 
-      this.serverStillTimeout = var1;
+      this.serverStillTimeout = serverStillTimeout;
       this.syncStayStillFlag();
    }
 
-   private PathNavigation createBabyNavigation(Level var1) {
-      return new BabyFlyingPathNavigation(this, var1);
+   private PathNavigation createBabyNavigation(final Level level) {
+      return new BabyFlyingPathNavigation(this, level);
    }
 
    protected void registerGoals() {
       this.goalSelector.addGoal(3, new HappyGhastFloatGoal());
-      this.goalSelector.addGoal(4, new TemptGoal.ForNonPathfinders(this, 1.0, (var1) -> !this.isWearingBodyArmor() && !this.isBaby() ? var1.is(ItemTags.HAPPY_GHAST_TEMPT_ITEMS) : var1.is(ItemTags.HAPPY_GHAST_FOOD), false, 7.0));
+      this.goalSelector.addGoal(4, new TemptGoal.ForNonPathfinders(this, 1.0, (itemStack) -> !this.isWearingBodyArmor() && !this.isBaby() ? itemStack.is(ItemTags.HAPPY_GHAST_TEMPT_ITEMS) : itemStack.is(ItemTags.HAPPY_GHAST_FOOD), false, 7.0));
       this.goalSelector.addGoal(5, new Ghast.RandomFloatAroundGoal(this, 16));
    }
 
@@ -102,10 +105,10 @@ public class HappyGhast extends Animal {
       this.lookControl = new HappyGhastLookControl();
       this.navigation = this.createNavigation(this.level());
       Level var2 = this.level();
-      if (var2 instanceof ServerLevel var1) {
-         this.removeAllGoals((var0) -> true);
+      if (var2 instanceof ServerLevel serverLevel) {
+         this.removeAllGoals((goal) -> true);
          this.registerGoals();
-         this.brain.stopAll(var1, this);
+         this.getBrain().stopAll(serverLevel, this);
          this.brain.clearMemories();
       }
 
@@ -116,7 +119,7 @@ public class HappyGhast extends Animal {
       this.lookControl = new LookControl(this);
       this.navigation = this.createBabyNavigation(this.level());
       this.setServerStillTimeout(0);
-      this.removeAllGoals((var0) -> true);
+      this.removeAllGoals((goal) -> true);
    }
 
    protected void ageBoundaryReached() {
@@ -133,27 +136,27 @@ public class HappyGhast extends Animal {
       return Animal.createAnimalAttributes().add(Attributes.MAX_HEALTH, 20.0).add(Attributes.TEMPT_RANGE, 16.0).add(Attributes.FLYING_SPEED, 0.05).add(Attributes.MOVEMENT_SPEED, 0.05).add(Attributes.FOLLOW_RANGE, 16.0).add(Attributes.CAMERA_DISTANCE, 8.0);
    }
 
-   protected float sanitizeScale(float var1) {
-      return Math.min(var1, 1.0F);
+   protected float sanitizeScale(final float scale) {
+      return Math.min(scale, 1.0F);
    }
 
-   protected void checkFallDamage(double var1, boolean var3, BlockState var4, BlockPos var5) {
+   protected void checkFallDamage(final double ya, final boolean onGround, final BlockState onState, final BlockPos pos) {
    }
 
    public boolean onClimbable() {
       return false;
    }
 
-   public void travel(Vec3 var1) {
-      float var2 = (float)this.getAttributeValue(Attributes.FLYING_SPEED) * 5.0F / 3.0F;
-      this.travelFlying(var1, var2, var2, var2);
+   public void travel(final Vec3 input) {
+      float speed = (float)this.getAttributeValue(Attributes.FLYING_SPEED) * 5.0F / 3.0F;
+      this.travelFlying(input, speed, speed, speed);
    }
 
-   public float getWalkTargetValue(BlockPos var1, LevelReader var2) {
-      if (!var2.isEmptyBlock(var1)) {
+   public float getWalkTargetValue(final BlockPos pos, final LevelReader level) {
+      if (!level.isEmptyBlock(pos)) {
          return 0.0F;
       } else {
-         return var2.isEmptyBlock(var1.below()) && !var2.isEmptyBlock(var1.below(2)) ? 10.0F : 5.0F;
+         return level.isEmptyBlock(pos.below()) && !level.isEmptyBlock(pos.below(2)) ? 10.0F : 5.0F;
       }
    }
 
@@ -165,7 +168,7 @@ public class HappyGhast extends Animal {
       return false;
    }
 
-   protected void playStepSound(BlockPos var1, BlockState var2) {
+   protected void playStepSound(final BlockPos pos, final BlockState blockState) {
    }
 
    public float getVoicePitch() {
@@ -177,15 +180,15 @@ public class HappyGhast extends Animal {
    }
 
    public int getAmbientSoundInterval() {
-      int var1 = super.getAmbientSoundInterval();
-      return this.isVehicle() ? var1 * 6 : var1;
+      int interval = super.getAmbientSoundInterval();
+      return this.isVehicle() ? interval * 6 : interval;
    }
 
    protected SoundEvent getAmbientSound() {
       return this.isBaby() ? SoundEvents.GHASTLING_AMBIENT : SoundEvents.HAPPY_GHAST_AMBIENT;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return this.isBaby() ? SoundEvents.GHASTLING_HURT : SoundEvents.HAPPY_GHAST_HURT;
    }
 
@@ -201,8 +204,8 @@ public class HappyGhast extends Animal {
       return 1;
    }
 
-   public @Nullable AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return EntityType.HAPPY_GHAST.create(var1, EntitySpawnReason.BREEDING);
+   public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
+      return EntityType.HAPPY_GHAST.create(level, EntitySpawnReason.BREEDING);
    }
 
    public boolean canFallInLove() {
@@ -213,56 +216,56 @@ public class HappyGhast extends Animal {
       return this.isBaby() ? 0.2375F : 1.0F;
    }
 
-   public boolean isFood(ItemStack var1) {
-      return var1.is(ItemTags.HAPPY_GHAST_FOOD);
+   public boolean isFood(final ItemStack itemStack) {
+      return itemStack.is(ItemTags.HAPPY_GHAST_FOOD);
    }
 
-   public boolean canUseSlot(EquipmentSlot var1) {
-      if (var1 != EquipmentSlot.BODY) {
-         return super.canUseSlot(var1);
+   public boolean canUseSlot(final EquipmentSlot slot) {
+      if (slot != EquipmentSlot.BODY) {
+         return super.canUseSlot(slot);
       } else {
          return this.isAlive() && !this.isBaby();
       }
    }
 
-   protected boolean canDispenserEquipIntoSlot(EquipmentSlot var1) {
-      return var1 == EquipmentSlot.BODY;
+   protected boolean canDispenserEquipIntoSlot(final EquipmentSlot slot) {
+      return slot == EquipmentSlot.BODY;
    }
 
-   public InteractionResult mobInteract(Player var1, InteractionHand var2) {
+   public InteractionResult mobInteract(final Player player, final InteractionHand hand) {
       if (this.isBaby()) {
-         return super.mobInteract(var1, var2);
+         return super.mobInteract(player, hand);
       } else {
-         ItemStack var3 = var1.getItemInHand(var2);
-         if (!var3.isEmpty()) {
-            InteractionResult var4 = var3.interactLivingEntity(var1, this, var2);
-            if (var4.consumesAction()) {
-               return var4;
+         ItemStack itemStack = player.getItemInHand(hand);
+         if (!itemStack.isEmpty()) {
+            InteractionResult interactionResult = itemStack.interactLivingEntity(player, this, hand);
+            if (interactionResult.consumesAction()) {
+               return interactionResult;
             }
          }
 
-         if (this.isWearingBodyArmor() && !var1.isSecondaryUseActive()) {
-            this.doPlayerRide(var1);
+         if (this.isWearingBodyArmor() && !player.isSecondaryUseActive()) {
+            this.doPlayerRide(player);
             return InteractionResult.SUCCESS;
          } else {
-            return super.mobInteract(var1, var2);
+            return super.mobInteract(player, hand);
          }
       }
    }
 
-   private void doPlayerRide(Player var1) {
+   private void doPlayerRide(final Player player) {
       if (!this.level().isClientSide()) {
-         var1.startRiding(this);
+         player.startRiding(this);
       }
 
    }
 
-   protected void addPassenger(Entity var1) {
+   protected void addPassenger(final Entity passenger) {
       if (!this.isVehicle()) {
          this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.HARNESS_GOGGLES_DOWN, this.getSoundSource(), 1.0F, 1.0F);
       }
 
-      super.addPassenger(var1);
+      super.addPassenger(passenger);
       if (!this.level().isClientSide()) {
          if (!this.scanPlayerAboveGhast()) {
             this.setServerStillTimeout(0);
@@ -273,8 +276,8 @@ public class HappyGhast extends Animal {
 
    }
 
-   protected void removePassenger(Entity var1) {
-      super.removePassenger(var1);
+   protected void removePassenger(final Entity passenger) {
+      super.removePassenger(passenger);
       if (!this.level().isClientSide()) {
          this.setServerStillTimeout(10);
       }
@@ -286,78 +289,78 @@ public class HappyGhast extends Animal {
 
    }
 
-   protected boolean canAddPassenger(Entity var1) {
+   protected boolean canAddPassenger(final Entity passenger) {
       return this.getPassengers().size() < 4;
    }
 
    public @Nullable LivingEntity getControllingPassenger() {
-      Entity var1 = this.getFirstPassenger();
-      if (this.isWearingBodyArmor() && !this.isOnStillTimeout() && var1 instanceof Player var2) {
-         return var2;
+      Entity firstPassenger = this.getFirstPassenger();
+      if (this.isWearingBodyArmor() && !this.isOnStillTimeout() && firstPassenger instanceof Player player) {
+         return player;
       } else {
          return super.getControllingPassenger();
       }
    }
 
-   protected Vec3 getRiddenInput(Player var1, Vec3 var2) {
-      float var3 = var1.xxa;
-      float var4 = 0.0F;
-      float var5 = 0.0F;
-      if (var1.zza != 0.0F) {
-         float var6 = Mth.cos((double)(var1.getXRot() * 0.017453292F));
-         float var7 = -Mth.sin((double)(var1.getXRot() * 0.017453292F));
-         if (var1.zza < 0.0F) {
-            var6 *= -0.5F;
-            var7 *= -0.5F;
+   protected Vec3 getRiddenInput(final Player controller, final Vec3 selfInput) {
+      float strafe = controller.xxa;
+      float forward = 0.0F;
+      float up = 0.0F;
+      if (controller.zza != 0.0F) {
+         float forwardLook = Mth.cos((double)(controller.getXRot() * 0.017453292F));
+         float upLook = -Mth.sin((double)(controller.getXRot() * 0.017453292F));
+         if (controller.zza < 0.0F) {
+            forwardLook *= -0.5F;
+            upLook *= -0.5F;
          }
 
-         var5 = var7;
-         var4 = var6;
+         up = upLook;
+         forward = forwardLook;
       }
 
-      if (var1.isJumping()) {
-         var5 += 0.5F;
+      if (controller.isJumping()) {
+         up += 0.5F;
       }
 
-      return (new Vec3((double)var3, (double)var5, (double)var4)).scale(3.9000000953674316 * this.getAttributeValue(Attributes.FLYING_SPEED));
+      return (new Vec3((double)strafe, (double)up, (double)forward)).scale(3.9000000953674316 * this.getAttributeValue(Attributes.FLYING_SPEED));
    }
 
-   protected Vec2 getRiddenRotation(LivingEntity var1) {
-      return new Vec2(var1.getXRot() * 0.5F, var1.getYRot());
+   protected Vec2 getRiddenRotation(final LivingEntity controller) {
+      return new Vec2(controller.getXRot() * 0.5F, controller.getYRot());
    }
 
-   protected void tickRidden(Player var1, Vec3 var2) {
-      super.tickRidden(var1, var2);
-      Vec2 var3 = this.getRiddenRotation(var1);
-      float var4 = this.getYRot();
-      float var5 = Mth.wrapDegrees(var3.y - var4);
-      float var6 = 0.08F;
-      var4 += var5 * 0.08F;
-      this.setRot(var4, var3.x);
-      this.yRotO = this.yBodyRot = this.yHeadRot = var4;
+   protected void tickRidden(final Player controller, final Vec3 riddenInput) {
+      super.tickRidden(controller, riddenInput);
+      Vec2 rotation = this.getRiddenRotation(controller);
+      float yRot = this.getYRot();
+      float diff = Mth.wrapDegrees(rotation.y - yRot);
+      float turnSpeed = 0.08F;
+      yRot += diff * 0.08F;
+      this.setRot(yRot, rotation.x);
+      this.yRotO = this.yBodyRot = this.yHeadRot = yRot;
    }
 
-   protected Brain.Provider<HappyGhast> brainProvider() {
-      return HappyGhastAi.brainProvider();
+   protected Brain<HappyGhast> makeBrain(final Brain.Packed packedBrain) {
+      return BRAIN_PROVIDER.makeBrain(this, packedBrain);
    }
 
-   protected Brain<?> makeBrain(Dynamic<?> var1) {
-      return HappyGhastAi.makeBrain(this.brainProvider().makeBrain(var1));
+   public Brain<HappyGhast> getBrain() {
+      return super.getBrain();
    }
 
-   protected void customServerAiStep(ServerLevel var1) {
+   protected void customServerAiStep(final ServerLevel level) {
       if (this.isBaby()) {
-         ProfilerFiller var2 = Profiler.get();
-         var2.push("happyGhastBrain");
-         this.brain.tick(var1, this);
-         var2.pop();
-         var2.push("happyGhastActivityUpdate");
+         ProfilerFiller profiler = Profiler.get();
+         profiler.push("happyGhastBrain");
+         this.getBrain().tick(level, this);
+         profiler.pop();
+         profiler.push("happyGhastActivityUpdate");
          HappyGhastAi.updateActivity(this);
-         var2.pop();
+         profiler.pop();
       }
 
       this.checkRestriction();
-      super.customServerAiStep(var1);
+      super.customServerAiStep(level);
    }
 
    public void tick() {
@@ -398,19 +401,19 @@ public class HappyGhast extends Animal {
 
    private void checkRestriction() {
       if (!this.isLeashed() && !this.isVehicle()) {
-         int var1 = this.getHappyGhastRestrictionRadius();
-         if (!this.hasHome() || !this.getHomePosition().closerThan(this.blockPosition(), (double)(var1 + 16)) || var1 != this.getHomeRadius()) {
-            this.setHomeTo(this.blockPosition(), var1);
+         int radius = this.getHappyGhastRestrictionRadius();
+         if (!this.hasHome() || !this.getHomePosition().closerThan(this.blockPosition(), (double)(radius + 16)) || radius != this.getHomeRadius()) {
+            this.setHomeTo(this.blockPosition(), radius);
          }
       }
    }
 
    private void continuousHeal() {
       Level var2 = this.level();
-      if (var2 instanceof ServerLevel var1) {
+      if (var2 instanceof ServerLevel level) {
          if (this.isAlive() && this.deathTime == 0 && this.getMaxHealth() != this.getHealth()) {
-            boolean var3 = this.isInClouds() || var1.precipitationAt(this.blockPosition()) != Biome.Precipitation.NONE;
-            if (this.tickCount % (var3 ? 20 : 600) == 0) {
+            boolean isFastHealing = this.isInClouds() || level.precipitationAt(this.blockPosition()) != Biome.Precipitation.NONE;
+            if (this.tickCount % (isFastHealing ? 20 : 600) == 0) {
                this.heal(1.0F);
             }
 
@@ -420,14 +423,14 @@ public class HappyGhast extends Animal {
 
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(IS_LEASH_HOLDER, false);
-      var1.define(STAYS_STILL, false);
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(IS_LEASH_HOLDER, false);
+      entityData.define(STAYS_STILL, false);
    }
 
-   private void setLeashHolder(boolean var1) {
-      this.entityData.set(IS_LEASH_HOLDER, var1);
+   private void setLeashHolder(final boolean isLeashHolder) {
+      this.entityData.set(IS_LEASH_HOLDER, isLeashHolder);
    }
 
    public boolean isLeashHolder() {
@@ -467,21 +470,21 @@ public class HappyGhast extends Animal {
       this.getMoveControl().setWait();
    }
 
-   public void notifyLeashHolder(Leashable var1) {
-      if (var1.supportQuadLeash()) {
+   public void notifyLeashHolder(final Leashable entity) {
+      if (entity.supportQuadLeash()) {
          this.leashHolderTime = 5;
       }
 
    }
 
-   public void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.putInt("still_timeout", this.serverStillTimeout);
+   public void addAdditionalSaveData(final ValueOutput tag) {
+      super.addAdditionalSaveData(tag);
+      tag.putInt("still_timeout", this.serverStillTimeout);
    }
 
-   public void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.setServerStillTimeout(var1.getIntOr("still_timeout", 0));
+   public void readAdditionalSaveData(final ValueInput tag) {
+      super.readAdditionalSaveData(tag);
+      this.setServerStillTimeout(tag.getIntOr("still_timeout", 0));
    }
 
    public boolean isOnStillTimeout() {
@@ -489,13 +492,13 @@ public class HappyGhast extends Animal {
    }
 
    private boolean scanPlayerAboveGhast() {
-      AABB var1 = this.getBoundingBox();
-      AABB var2 = new AABB(var1.minX - 1.0, var1.maxY - 9.999999747378752E-6, var1.minZ - 1.0, var1.maxX + 1.0, var1.maxY + var1.getYsize() / 2.0, var1.maxZ + 1.0);
+      AABB happyGhastBb = this.getBoundingBox();
+      AABB ghastDetectionBox = new AABB(happyGhastBb.minX - 1.0, happyGhastBb.maxY - 9.999999747378752E-6, happyGhastBb.minZ - 1.0, happyGhastBb.maxX + 1.0, happyGhastBb.maxY + happyGhastBb.getYsize() / 2.0, happyGhastBb.maxZ + 1.0);
 
-      for(Player var4 : this.level().players()) {
-         if (!var4.isSpectator()) {
-            Entity var5 = var4.getRootVehicle();
-            if (!(var5 instanceof HappyGhast) && var2.contains(var5.position())) {
+      for(Player player : this.level().players()) {
+         if (!player.isSpectator()) {
+            Entity rootVehicle = player.getRootVehicle();
+            if (!(rootVehicle instanceof HappyGhast) && ghastDetectionBox.contains(rootVehicle.position())) {
                return true;
             }
          }
@@ -508,12 +511,12 @@ public class HappyGhast extends Animal {
       return new HappyGhastBodyRotationControl();
    }
 
-   public boolean canBeCollidedWith(@Nullable Entity var1) {
+   public boolean canBeCollidedWith(final @Nullable Entity other) {
       if (!this.isBaby() && this.isAlive()) {
-         if (this.level().isClientSide() && var1 instanceof Player && var1.position().y >= this.getBoundingBox().maxY) {
+         if (this.level().isClientSide() && other instanceof Player && other.position().y >= this.getBoundingBox().maxY) {
             return true;
          } else {
-            return this.isVehicle() && var1 instanceof HappyGhast ? true : this.isOnStillTimeout();
+            return this.isVehicle() && other instanceof HappyGhast ? true : this.isOnStillTimeout();
          }
       } else {
          return false;
@@ -524,30 +527,32 @@ public class HappyGhast extends Animal {
       return !this.isBaby();
    }
 
-   public Vec3 getDismountLocationForPassenger(LivingEntity var1) {
+   public Vec3 getDismountLocationForPassenger(final LivingEntity passenger) {
       return new Vec3(this.getX(), this.getBoundingBox().maxY, this.getZ());
    }
 
    static {
+      BRAIN_PROVIDER = Brain.<HappyGhast>provider(List.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.HURT_BY, SensorType.FOOD_TEMPTATIONS, SensorType.NEAREST_ADULT_ANY_TYPE, SensorType.NEAREST_PLAYERS), (var0) -> HappyGhastAi.getActivities());
       IS_LEASH_HOLDER = SynchedEntityData.<Boolean>defineId(HappyGhast.class, EntityDataSerializers.BOOLEAN);
       STAYS_STILL = SynchedEntityData.<Boolean>defineId(HappyGhast.class, EntityDataSerializers.BOOLEAN);
    }
 
-   static class BabyFlyingPathNavigation extends FlyingPathNavigation {
-      public BabyFlyingPathNavigation(HappyGhast var1, Level var2) {
-         super(var1, var2);
+   private static class BabyFlyingPathNavigation extends FlyingPathNavigation {
+      public BabyFlyingPathNavigation(final HappyGhast mob, final Level level) {
+         super(mob, level);
          this.setCanOpenDoors(false);
          this.setCanFloat(true);
          this.setRequiredPathLength(48.0F);
       }
 
-      protected boolean canMoveDirectly(Vec3 var1, Vec3 var2) {
-         return isClearForMovementBetween(this.mob, var1, var2, false);
+      protected boolean canMoveDirectly(final Vec3 startPos, final Vec3 stopPos) {
+         return isClearForMovementBetween(this.mob, startPos, stopPos, false);
       }
    }
 
-   class HappyGhastFloatGoal extends FloatGoal {
+   private class HappyGhastFloatGoal extends FloatGoal {
       public HappyGhastFloatGoal() {
+         Objects.requireNonNull(HappyGhast.this);
          super(HappyGhast.this);
       }
 
@@ -556,21 +561,22 @@ public class HappyGhast extends Animal {
       }
    }
 
-   class HappyGhastLookControl extends LookControl {
-      HappyGhastLookControl() {
+   private class HappyGhastLookControl extends LookControl {
+      private HappyGhastLookControl() {
+         Objects.requireNonNull(HappyGhast.this);
          super(HappyGhast.this);
       }
 
       public void tick() {
          if (HappyGhast.this.isOnStillTimeout()) {
-            float var5 = wrapDegrees90(HappyGhast.this.getYRot());
-            HappyGhast.this.setYRot(HappyGhast.this.getYRot() - var5);
+            float closeAngle = wrapDegrees90(HappyGhast.this.getYRot());
+            HappyGhast.this.setYRot(HappyGhast.this.getYRot() - closeAngle);
             HappyGhast.this.setYHeadRot(HappyGhast.this.getYRot());
          } else if (this.lookAtCooldown > 0) {
             --this.lookAtCooldown;
-            double var1 = this.wantedX - HappyGhast.this.getX();
-            double var3 = this.wantedZ - HappyGhast.this.getZ();
-            HappyGhast.this.setYRot(-((float)Mth.atan2(var1, var3)) * 57.295776F);
+            double xdd = this.wantedX - HappyGhast.this.getX();
+            double zdd = this.wantedZ - HappyGhast.this.getZ();
+            HappyGhast.this.setYRot(-((float)Mth.atan2(xdd, zdd)) * 57.295776F);
             HappyGhast.this.yBodyRot = HappyGhast.this.getYRot();
             HappyGhast.this.yHeadRot = HappyGhast.this.yBodyRot;
          } else {
@@ -578,22 +584,23 @@ public class HappyGhast extends Animal {
          }
       }
 
-      public static float wrapDegrees90(float var0) {
-         float var1 = var0 % 90.0F;
-         if (var1 >= 45.0F) {
-            var1 -= 90.0F;
+      public static float wrapDegrees90(final float angle) {
+         float normalizedAngle = angle % 90.0F;
+         if (normalizedAngle >= 45.0F) {
+            normalizedAngle -= 90.0F;
          }
 
-         if (var1 < -45.0F) {
-            var1 += 90.0F;
+         if (normalizedAngle < -45.0F) {
+            normalizedAngle += 90.0F;
          }
 
-         return var1;
+         return normalizedAngle;
       }
    }
 
-   class HappyGhastBodyRotationControl extends BodyRotationControl {
+   private class HappyGhastBodyRotationControl extends BodyRotationControl {
       public HappyGhastBodyRotationControl() {
+         Objects.requireNonNull(HappyGhast.this);
          super(HappyGhast.this);
       }
 

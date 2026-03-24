@@ -1,14 +1,15 @@
 package net.minecraft.world.level.storage.loot.providers.number;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootContextUser;
 
 public interface NumberProvider extends LootContextUser {
-   float getFloat(LootContext var1);
+   float getFloat(LootContext context);
 
-   default int getInt(LootContext var1) {
-      return Math.round(this.getFloat(var1));
+   default int getInt(final LootContext context) {
+      return Math.round(this.getFloat(context));
    }
 
-   LootNumberProviderType getType();
+   MapCodec<? extends NumberProvider> codec();
 }

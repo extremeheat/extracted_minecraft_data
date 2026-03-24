@@ -7,14 +7,14 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
 public class WrittenBookItem extends Item {
-   public WrittenBookItem(Item.Properties var1) {
-      super(var1);
+   public WrittenBookItem(final Item.Properties properties) {
+      super(properties);
    }
 
-   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
-      ItemStack var4 = var2.getItemInHand(var3);
-      var2.openItemGui(var4, var3);
-      var2.awardStat(Stats.ITEM_USED.get(this));
+   public InteractionResult use(final Level level, final Player player, final InteractionHand hand) {
+      ItemStack itemStack = player.getItemInHand(hand);
+      player.openItemGui(itemStack, hand);
+      player.awardStat(Stats.ITEM_USED.get(this));
       return InteractionResult.SUCCESS;
    }
 }

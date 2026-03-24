@@ -17,30 +17,30 @@ public class RaidDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    private static final float TEXT_SCALE = 0.64F;
    private final Minecraft minecraft;
 
-   public RaidDebugRenderer(Minecraft var1) {
+   public RaidDebugRenderer(final Minecraft minecraft) {
       super();
-      this.minecraft = var1;
+      this.minecraft = minecraft;
    }
 
-   public void emitGizmos(double var1, double var3, double var5, DebugValueAccess var7, Frustum var8, float var9) {
-      BlockPos var10 = this.getCamera().blockPosition();
-      var7.forEachChunk(DebugSubscriptions.RAIDS, (var1x, var2) -> {
-         for(BlockPos var4 : var2) {
-            if (var10.closerThan(var4, 160.0)) {
-               highlightRaidCenter(var4);
+   public void emitGizmos(final double camX, final double camY, final double camZ, final DebugValueAccess debugValues, final Frustum frustum, final float partialTicks) {
+      BlockPos playerPos = this.getCamera().blockPosition();
+      debugValues.forEachChunk(DebugSubscriptions.RAIDS, (chunkPos, raidCenters) -> {
+         for(BlockPos raidCenter : raidCenters) {
+            if (playerPos.closerThan(raidCenter, 160.0)) {
+               highlightRaidCenter(raidCenter);
             }
          }
 
       });
    }
 
-   private static void highlightRaidCenter(BlockPos var0) {
-      Gizmos.cuboid(var0, GizmoStyle.fill(ARGB.colorFromFloat(0.15F, 1.0F, 0.0F, 0.0F)));
-      renderTextOverBlock("Raid center", var0, -65536);
+   private static void highlightRaidCenter(final BlockPos raidCenter) {
+      Gizmos.cuboid(raidCenter, GizmoStyle.fill(ARGB.colorFromFloat(0.15F, 1.0F, 0.0F, 0.0F)));
+      renderTextOverBlock("Raid center", raidCenter, -65536);
    }
 
-   private static void renderTextOverBlock(String var0, BlockPos var1, int var2) {
-      Gizmos.billboardText(var0, Vec3.atLowerCornerWithOffset(var1, 0.5, 1.3, 0.5), TextGizmo.Style.forColor(var2).withScale(0.64F)).setAlwaysOnTop();
+   private static void renderTextOverBlock(final String text, final BlockPos pos, final int color) {
+      Gizmos.billboardText(text, Vec3.atLowerCornerWithOffset(pos, 0.5, 1.3, 0.5), TextGizmo.Style.forColor(color).withScale(0.64F)).setAlwaysOnTop();
    }
 
    private Camera getCamera() {

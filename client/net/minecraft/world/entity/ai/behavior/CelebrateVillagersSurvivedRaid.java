@@ -22,43 +22,43 @@ import org.jspecify.annotations.Nullable;
 public class CelebrateVillagersSurvivedRaid extends Behavior<Villager> {
    private @Nullable Raid currentRaid;
 
-   public CelebrateVillagersSurvivedRaid(int var1, int var2) {
-      super(ImmutableMap.of(), var1, var2);
+   public CelebrateVillagersSurvivedRaid(final int minDuration, final int maxDuration) {
+      super(ImmutableMap.of(), minDuration, maxDuration);
    }
 
-   protected boolean checkExtraStartConditions(ServerLevel var1, Villager var2) {
-      BlockPos var3 = var2.blockPosition();
-      this.currentRaid = var1.getRaidAt(var3);
-      return this.currentRaid != null && this.currentRaid.isVictory() && MoveToSkySeeingSpot.hasNoBlocksAbove(var1, var2, var3);
+   protected boolean checkExtraStartConditions(final ServerLevel level, final Villager body) {
+      BlockPos testPos = body.blockPosition();
+      this.currentRaid = level.getRaidAt(testPos);
+      return this.currentRaid != null && this.currentRaid.isVictory() && MoveToSkySeeingSpot.hasNoBlocksAbove(level, body, testPos);
    }
 
-   protected boolean canStillUse(ServerLevel var1, Villager var2, long var3) {
+   protected boolean canStillUse(final ServerLevel level, final Villager body, final long timestamp) {
       return this.currentRaid != null && !this.currentRaid.isStopped();
    }
 
-   protected void stop(ServerLevel var1, Villager var2, long var3) {
+   protected void stop(final ServerLevel level, final Villager body, final long timestamp) {
       this.currentRaid = null;
-      var2.getBrain().updateActivityFromSchedule(var1.environmentAttributes(), var1.getGameTime(), var2.position());
+      body.getBrain().updateActivityFromSchedule(level.environmentAttributes(), level.getGameTime(), body.position());
    }
 
-   protected void tick(ServerLevel var1, Villager var2, long var3) {
-      RandomSource var5 = var2.getRandom();
-      if (var5.nextInt(100) == 0) {
-         var2.playCelebrateSound();
+   protected void tick(final ServerLevel level, final Villager body, final long timestamp) {
+      RandomSource random = body.getRandom();
+      if (random.nextInt(100) == 0) {
+         body.playCelebrateSound();
       }
 
-      if (var5.nextInt(200) == 0 && MoveToSkySeeingSpot.hasNoBlocksAbove(var1, var2, var2.blockPosition())) {
-         DyeColor var6 = (DyeColor)Util.getRandom(DyeColor.values(), var5);
-         int var7 = var5.nextInt(3);
-         ItemStack var8 = this.getFirework(var6, var7);
-         Projectile.spawnProjectile(new FireworkRocketEntity(var2.level(), var2, var2.getX(), var2.getEyeY(), var2.getZ(), var8), var1, var8);
+      if (random.nextInt(200) == 0 && MoveToSkySeeingSpot.hasNoBlocksAbove(level, body, body.blockPosition())) {
+         DyeColor color = (DyeColor)Util.getRandom(DyeColor.values(), random);
+         int flightDuration = random.nextInt(3);
+         ItemStack firework = this.getFirework(color, flightDuration);
+         Projectile.spawnProjectile(new FireworkRocketEntity(body.level(), body, body.getX(), body.getEyeY(), body.getZ(), firework), level, firework);
       }
 
    }
 
-   private ItemStack getFirework(DyeColor var1, int var2) {
-      ItemStack var3 = new ItemStack(Items.FIREWORK_ROCKET);
-      var3.set(DataComponents.FIREWORKS, new Fireworks((byte)var2, List.of(new FireworkExplosion(FireworkExplosion.Shape.BURST, IntList.of(var1.getFireworkColor()), IntList.of(), false, false))));
-      return var3;
+   private ItemStack getFirework(final DyeColor color, final int flightDuration) {
+      ItemStack rocket = new ItemStack(Items.FIREWORK_ROCKET);
+      rocket.set(DataComponents.FIREWORKS, new Fireworks((byte)flightDuration, List.of(new FireworkExplosion(FireworkExplosion.Shape.BURST, IntList.of(color.getFireworkColor()), IntList.of(), false, false))));
+      return rocket;
    }
 }

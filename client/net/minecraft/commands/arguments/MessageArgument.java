@@ -5,9 +5,9 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import net.minecraft.commands.CommandSigningContext;
@@ -26,7 +26,7 @@ import org.jspecify.annotations.Nullable;
 
 public class MessageArgument implements SignedArgument<Message> {
    private static final Collection<String> EXAMPLES = Arrays.asList("Hello world!", "foo", "@e", "Hello @p :)");
-   static final Dynamic2CommandExceptionType TOO_LONG = new Dynamic2CommandExceptionType((var0, var1) -> Component.translatableEscape("argument.message.too_long", var0, var1));
+   private static final Dynamic2CommandExceptionType TOO_LONG = new Dynamic2CommandExceptionType((length, maxLength) -> Component.translatableEscape("argument.message.too_long", length, maxLength));
 
    public MessageArgument() {
       super();
@@ -36,146 +36,132 @@ public class MessageArgument implements SignedArgument<Message> {
       return new MessageArgument();
    }
 
-   public static Component getMessage(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
-      Message var2 = (Message)var0.getArgument(var1, Message.class);
-      return var2.resolveComponent((CommandSourceStack)var0.getSource());
+   public static Component getMessage(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
+      Message message = (Message)context.getArgument(name, Message.class);
+      return message.resolveComponent((CommandSourceStack)context.getSource());
    }
 
-   public static void resolveChatMessage(CommandContext<CommandSourceStack> var0, String var1, Consumer<PlayerChatMessage> var2) throws CommandSyntaxException {
-      Message var3 = (Message)var0.getArgument(var1, Message.class);
-      CommandSourceStack var4 = (CommandSourceStack)var0.getSource();
-      Component var5 = var3.resolveComponent(var4);
-      CommandSigningContext var6 = var4.getSigningContext();
-      PlayerChatMessage var7 = var6.getArgument(var1);
-      if (var7 != null) {
-         resolveSignedMessage(var2, var4, var7.withUnsignedContent(var5));
+   public static void resolveChatMessage(final CommandContext<CommandSourceStack> context, final String name, final Consumer<PlayerChatMessage> task) throws CommandSyntaxException {
+      Message message = (Message)context.getArgument(name, Message.class);
+      CommandSourceStack sender = (CommandSourceStack)context.getSource();
+      Component formatted = message.resolveComponent(sender);
+      CommandSigningContext signingContext = sender.getSigningContext();
+      PlayerChatMessage signedArgument = signingContext.getArgument(name);
+      if (signedArgument != null) {
+         resolveSignedMessage(task, sender, signedArgument.withUnsignedContent(formatted));
       } else {
-         resolveDisguisedMessage(var2, var4, PlayerChatMessage.system(var3.text).withUnsignedContent(var5));
+         resolveDisguisedMessage(task, sender, PlayerChatMessage.system(message.text).withUnsignedContent(formatted));
       }
 
    }
 
-   private static void resolveSignedMessage(Consumer<PlayerChatMessage> var0, CommandSourceStack var1, PlayerChatMessage var2) {
-      MinecraftServer var3 = var1.getServer();
-      CompletableFuture var4 = filterPlainText(var1, var2);
-      Component var5 = var3.getChatDecorator().decorate(var1.getPlayer(), var2.decoratedContent());
-      var1.getChatMessageChainer().append(var4, (var3x) -> {
-         PlayerChatMessage var4 = var2.withUnsignedContent(var5).filter(var3x.mask());
-         var0.accept(var4);
+   private static void resolveSignedMessage(final Consumer<PlayerChatMessage> task, final CommandSourceStack sender, final PlayerChatMessage signedArgument) {
+      MinecraftServer server = sender.getServer();
+      CompletableFuture<FilteredText> filteredFuture = filterPlainText(sender, signedArgument);
+      Component decorated = server.getChatDecorator().decorate(sender.getPlayer(), signedArgument.decoratedContent());
+      sender.getChatMessageChainer().append(filteredFuture, (filtered) -> {
+         PlayerChatMessage filteredMessage = signedArgument.withUnsignedContent(decorated).filter(filtered.mask());
+         task.accept(filteredMessage);
       });
    }
 
-   private static void resolveDisguisedMessage(Consumer<PlayerChatMessage> var0, CommandSourceStack var1, PlayerChatMessage var2) {
-      ChatDecorator var3 = var1.getServer().getChatDecorator();
-      Component var4 = var3.decorate(var1.getPlayer(), var2.decoratedContent());
-      var0.accept(var2.withUnsignedContent(var4));
+   private static void resolveDisguisedMessage(final Consumer<PlayerChatMessage> task, final CommandSourceStack sender, final PlayerChatMessage argument) {
+      ChatDecorator decorator = sender.getServer().getChatDecorator();
+      Component decorated = decorator.decorate(sender.getPlayer(), argument.decoratedContent());
+      task.accept(argument.withUnsignedContent(decorated));
    }
 
-   private static CompletableFuture<FilteredText> filterPlainText(CommandSourceStack var0, PlayerChatMessage var1) {
-      ServerPlayer var2 = var0.getPlayer();
-      return var2 != null && var1.hasSignatureFrom(var2.getUUID()) ? var2.getTextFilter().processStreamMessage(var1.signedContent()) : CompletableFuture.completedFuture(FilteredText.passThrough(var1.signedContent()));
+   private static CompletableFuture<FilteredText> filterPlainText(final CommandSourceStack sender, final PlayerChatMessage message) {
+      ServerPlayer player = sender.getPlayer();
+      return player != null && message.hasSignatureFrom(player.getUUID()) ? player.getTextFilter().processStreamMessage(message.signedContent()) : CompletableFuture.completedFuture(FilteredText.passThrough(message.signedContent()));
    }
 
-   public Message parse(StringReader var1) throws CommandSyntaxException {
-      return MessageArgument.Message.parseText(var1, true);
+   public Message parse(final StringReader reader) throws CommandSyntaxException {
+      return MessageArgument.Message.parseText(reader, true);
    }
 
-   public <S> Message parse(StringReader var1, @Nullable S var2) throws CommandSyntaxException {
-      return MessageArgument.Message.parseText(var1, EntitySelectorParser.allowSelectors(var2));
+   public <S> Message parse(final StringReader reader, final @Nullable S source) throws CommandSyntaxException {
+      return MessageArgument.Message.parseText(reader, EntitySelectorParser.allowSelectors(source));
    }
 
    public Collection<String> getExamples() {
       return EXAMPLES;
    }
 
-   // $FF: synthetic method
-   public Object parse(final StringReader var1, final @Nullable Object var2) throws CommandSyntaxException {
-      return this.parse(var1, var2);
-   }
-
-   // $FF: synthetic method
-   public Object parse(final StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1);
-   }
-
    public static record Message(String text, Part[] parts) {
-      final String text;
-
-      public Message(String var1, Part[] var2) {
+      public Message {
          super();
-         this.text = var1;
-         this.parts = var2;
       }
 
-      Component resolveComponent(CommandSourceStack var1) throws CommandSyntaxException {
-         return this.toComponent(var1, var1.permissions().hasPermission(Permissions.COMMANDS_ENTITY_SELECTORS));
+      private Component resolveComponent(final CommandSourceStack sender) throws CommandSyntaxException {
+         return this.toComponent(sender, sender.permissions().hasPermission(Permissions.COMMANDS_ENTITY_SELECTORS));
       }
 
-      public Component toComponent(CommandSourceStack var1, boolean var2) throws CommandSyntaxException {
-         if (this.parts.length != 0 && var2) {
-            MutableComponent var3 = Component.literal(this.text.substring(0, this.parts[0].start()));
-            int var4 = this.parts[0].start();
+      public Component toComponent(final CommandSourceStack sender, final boolean allowSelectors) throws CommandSyntaxException {
+         if (this.parts.length != 0 && allowSelectors) {
+            MutableComponent result = Component.literal(this.text.substring(0, this.parts[0].start()));
+            int readTo = this.parts[0].start();
 
-            for(Part var8 : this.parts) {
-               Component var9 = var8.toComponent(var1);
-               if (var4 < var8.start()) {
-                  var3.append(this.text.substring(var4, var8.start()));
+            for(Part part : this.parts) {
+               Component component = part.toComponent(sender);
+               if (readTo < part.start()) {
+                  result.append(this.text.substring(readTo, part.start()));
                }
 
-               var3.append(var9);
-               var4 = var8.end();
+               result.append(component);
+               readTo = part.end();
             }
 
-            if (var4 < this.text.length()) {
-               var3.append(this.text.substring(var4));
+            if (readTo < this.text.length()) {
+               result.append(this.text.substring(readTo));
             }
 
-            return var3;
+            return result;
          } else {
             return Component.literal(this.text);
          }
       }
 
-      public static Message parseText(StringReader var0, boolean var1) throws CommandSyntaxException {
-         if (var0.getRemainingLength() > 256) {
-            throw MessageArgument.TOO_LONG.create(var0.getRemainingLength(), 256);
+      public static Message parseText(final StringReader reader, final boolean allowSelectors) throws CommandSyntaxException {
+         if (reader.getRemainingLength() > 256) {
+            throw MessageArgument.TOO_LONG.create(reader.getRemainingLength(), 256);
          } else {
-            String var2 = var0.getRemaining();
-            if (!var1) {
-               var0.setCursor(var0.getTotalLength());
-               return new Message(var2, new Part[0]);
+            String text = reader.getRemaining();
+            if (!allowSelectors) {
+               reader.setCursor(reader.getTotalLength());
+               return new Message(text, new Part[0]);
             } else {
-               ArrayList var3 = Lists.newArrayList();
-               int var4 = var0.getCursor();
+               List<Part> result = Lists.newArrayList();
+               int offset = reader.getCursor();
 
                while(true) {
-                  int var5;
-                  EntitySelector var6;
+                  int start;
+                  EntitySelector parse;
                   while(true) {
-                     if (!var0.canRead()) {
-                        return new Message(var2, (Part[])var3.toArray(new Part[0]));
+                     if (!reader.canRead()) {
+                        return new Message(text, (Part[])result.toArray(new Part[0]));
                      }
 
-                     if (var0.peek() == '@') {
-                        var5 = var0.getCursor();
+                     if (reader.peek() == '@') {
+                        start = reader.getCursor();
 
                         try {
-                           EntitySelectorParser var7 = new EntitySelectorParser(var0, true);
-                           var6 = var7.parse();
+                           EntitySelectorParser parser = new EntitySelectorParser(reader, true);
+                           parse = parser.parse();
                            break;
-                        } catch (CommandSyntaxException var8) {
-                           if (var8.getType() != EntitySelectorParser.ERROR_MISSING_SELECTOR_TYPE && var8.getType() != EntitySelectorParser.ERROR_UNKNOWN_SELECTOR_TYPE) {
-                              throw var8;
+                        } catch (CommandSyntaxException ex) {
+                           if (ex.getType() != EntitySelectorParser.ERROR_MISSING_SELECTOR_TYPE && ex.getType() != EntitySelectorParser.ERROR_UNKNOWN_SELECTOR_TYPE) {
+                              throw ex;
                            }
 
-                           var0.setCursor(var5 + 1);
+                           reader.setCursor(start + 1);
                         }
                      } else {
-                        var0.skip();
+                        reader.skip();
                      }
                   }
 
-                  var3.add(new Part(var5 - var4, var0.getCursor() - var4, var6));
+                  result.add(new Part(start - offset, reader.getCursor() - offset, parse));
                }
             }
          }
@@ -183,15 +169,12 @@ public class MessageArgument implements SignedArgument<Message> {
    }
 
    public static record Part(int start, int end, EntitySelector selector) {
-      public Part(int var1, int var2, EntitySelector var3) {
+      public Part {
          super();
-         this.start = var1;
-         this.end = var2;
-         this.selector = var3;
       }
 
-      public Component toComponent(CommandSourceStack var1) throws CommandSyntaxException {
-         return EntitySelector.joinNames(this.selector.findEntities(var1));
+      public Component toComponent(final CommandSourceStack sender) throws CommandSyntaxException {
+         return EntitySelector.joinNames(this.selector.findEntities(sender));
       }
    }
 }

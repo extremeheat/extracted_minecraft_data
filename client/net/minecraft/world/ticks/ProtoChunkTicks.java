@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
 
-public class ProtoChunkTicks<T> implements SerializableTickContainer<T>, TickContainerAccess<T> {
+public class ProtoChunkTicks<T> implements TickContainerAccess<T>, SerializableTickContainer<T> {
    private final List<SavedTick<T>> ticks = Lists.newArrayList();
    private final Set<SavedTick<?>> ticksPerPosition;
 
@@ -16,27 +16,27 @@ public class ProtoChunkTicks<T> implements SerializableTickContainer<T>, TickCon
       this.ticksPerPosition = new ObjectOpenCustomHashSet(SavedTick.UNIQUE_TICK_HASH);
    }
 
-   public void schedule(ScheduledTick<T> var1) {
-      SavedTick var2 = new SavedTick(var1.type(), var1.pos(), 0, var1.priority());
-      this.schedule(var2);
+   public void schedule(final ScheduledTick<T> tick) {
+      SavedTick<T> newTick = new SavedTick<T>(tick.type(), tick.pos(), 0, tick.priority());
+      this.schedule(newTick);
    }
 
-   private void schedule(SavedTick<T> var1) {
-      if (this.ticksPerPosition.add(var1)) {
-         this.ticks.add(var1);
+   private void schedule(final SavedTick<T> newTick) {
+      if (this.ticksPerPosition.add(newTick)) {
+         this.ticks.add(newTick);
       }
 
    }
 
-   public boolean hasScheduledTick(BlockPos var1, T var2) {
-      return this.ticksPerPosition.contains(SavedTick.probe(var2, var1));
+   public boolean hasScheduledTick(final BlockPos pos, final T type) {
+      return this.ticksPerPosition.contains(SavedTick.probe(type, pos));
    }
 
    public int count() {
       return this.ticks.size();
    }
 
-   public List<SavedTick<T>> pack(long var1) {
+   public List<SavedTick<T>> pack(final long currentTick) {
       return this.ticks;
    }
 
@@ -44,10 +44,10 @@ public class ProtoChunkTicks<T> implements SerializableTickContainer<T>, TickCon
       return List.copyOf(this.ticks);
    }
 
-   public static <T> ProtoChunkTicks<T> load(List<SavedTick<T>> var0) {
-      ProtoChunkTicks var1 = new ProtoChunkTicks();
-      Objects.requireNonNull(var1);
-      var0.forEach(var1::schedule);
-      return var1;
+   public static <T> ProtoChunkTicks<T> load(final List<SavedTick<T>> ticks) {
+      ProtoChunkTicks<T> result = new ProtoChunkTicks<T>();
+      Objects.requireNonNull(result);
+      ticks.forEach(result::schedule);
+      return result;
    }
 }

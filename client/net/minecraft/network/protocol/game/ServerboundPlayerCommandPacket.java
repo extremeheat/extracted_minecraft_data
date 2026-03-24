@@ -12,36 +12,36 @@ public class ServerboundPlayerCommandPacket implements Packet<ServerGamePacketLi
    private final Action action;
    private final int data;
 
-   public ServerboundPlayerCommandPacket(Entity var1, Action var2) {
-      this(var1, var2, 0);
+   public ServerboundPlayerCommandPacket(final Entity entity, final Action action) {
+      this(entity, action, 0);
    }
 
-   public ServerboundPlayerCommandPacket(Entity var1, Action var2, int var3) {
+   public ServerboundPlayerCommandPacket(final Entity entity, final Action action, final int data) {
       super();
-      this.id = var1.getId();
-      this.action = var2;
-      this.data = var3;
+      this.id = entity.getId();
+      this.action = action;
+      this.data = data;
    }
 
-   private ServerboundPlayerCommandPacket(FriendlyByteBuf var1) {
+   private ServerboundPlayerCommandPacket(final FriendlyByteBuf input) {
       super();
-      this.id = var1.readVarInt();
-      this.action = (Action)var1.readEnum(Action.class);
-      this.data = var1.readVarInt();
+      this.id = input.readVarInt();
+      this.action = (Action)input.readEnum(Action.class);
+      this.data = input.readVarInt();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeVarInt(this.id);
-      var1.writeEnum(this.action);
-      var1.writeVarInt(this.data);
+   private void write(final FriendlyByteBuf output) {
+      output.writeVarInt(this.id);
+      output.writeEnum(this.action);
+      output.writeVarInt(this.data);
    }
 
    public PacketType<ServerboundPlayerCommandPacket> type() {
       return GamePacketTypes.SERVERBOUND_PLAYER_COMMAND;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handlePlayerCommand(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handlePlayerCommand(this);
    }
 
    public int getId() {

@@ -8,7 +8,7 @@ public class LocalFrameDecoder extends ChannelInboundHandlerAdapter {
       super();
    }
 
-   public void channelRead(ChannelHandlerContext var1, Object var2) {
-      var1.fireChannelRead(HiddenByteBuf.unpack(var2));
+   public void channelRead(final ChannelHandlerContext ctx, final Object msg) {
+      ctx.fireChannelRead(HiddenByteBuf.unpack(msg));
    }
 }

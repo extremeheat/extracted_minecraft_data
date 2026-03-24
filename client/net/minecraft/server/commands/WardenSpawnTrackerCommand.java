@@ -16,35 +16,35 @@ public class WardenSpawnTrackerCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("warden_spawn_tracker").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("clear").executes((var0x) -> resetTracker((CommandSourceStack)var0x.getSource(), ImmutableList.of(((CommandSourceStack)var0x.getSource()).getPlayerOrException()))))).then(Commands.literal("set").then(Commands.argument("warning_level", IntegerArgumentType.integer(0, 4)).executes((var0x) -> setWarningLevel((CommandSourceStack)var0x.getSource(), ImmutableList.of(((CommandSourceStack)var0x.getSource()).getPlayerOrException()), IntegerArgumentType.getInteger(var0x, "warning_level"))))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("warden_spawn_tracker").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("clear").executes((c) -> resetTracker((CommandSourceStack)c.getSource(), ImmutableList.of(((CommandSourceStack)c.getSource()).getPlayerOrException()))))).then(Commands.literal("set").then(Commands.argument("warning_level", IntegerArgumentType.integer(0, 4)).executes((c) -> setWarningLevel((CommandSourceStack)c.getSource(), ImmutableList.of(((CommandSourceStack)c.getSource()).getPlayerOrException()), IntegerArgumentType.getInteger(c, "warning_level"))))));
    }
 
-   private static int setWarningLevel(CommandSourceStack var0, Collection<? extends Player> var1, int var2) {
-      for(Player var4 : var1) {
-         var4.getWardenSpawnTracker().ifPresent((var1x) -> var1x.setWarningLevel(var2));
+   private static int setWarningLevel(final CommandSourceStack source, final Collection<? extends Player> players, final int warningLevel) {
+      for(Player player : players) {
+         player.getWardenSpawnTracker().ifPresent((wardenSpawnTracker) -> wardenSpawnTracker.setWarningLevel(warningLevel));
       }
 
-      if (var1.size() == 1) {
-         var0.sendSuccess(() -> Component.translatable("commands.warden_spawn_tracker.set.success.single", ((Player)var1.iterator().next()).getDisplayName()), true);
+      if (players.size() == 1) {
+         source.sendSuccess(() -> Component.translatable("commands.warden_spawn_tracker.set.success.single", ((Player)players.iterator().next()).getDisplayName()), true);
       } else {
-         var0.sendSuccess(() -> Component.translatable("commands.warden_spawn_tracker.set.success.multiple", var1.size()), true);
+         source.sendSuccess(() -> Component.translatable("commands.warden_spawn_tracker.set.success.multiple", players.size()), true);
       }
 
-      return var1.size();
+      return players.size();
    }
 
-   private static int resetTracker(CommandSourceStack var0, Collection<? extends Player> var1) {
-      for(Player var3 : var1) {
-         var3.getWardenSpawnTracker().ifPresent(WardenSpawnTracker::reset);
+   private static int resetTracker(final CommandSourceStack source, final Collection<? extends Player> players) {
+      for(Player player : players) {
+         player.getWardenSpawnTracker().ifPresent(WardenSpawnTracker::reset);
       }
 
-      if (var1.size() == 1) {
-         var0.sendSuccess(() -> Component.translatable("commands.warden_spawn_tracker.clear.success.single", ((Player)var1.iterator().next()).getDisplayName()), true);
+      if (players.size() == 1) {
+         source.sendSuccess(() -> Component.translatable("commands.warden_spawn_tracker.clear.success.single", ((Player)players.iterator().next()).getDisplayName()), true);
       } else {
-         var0.sendSuccess(() -> Component.translatable("commands.warden_spawn_tracker.clear.success.multiple", var1.size()), true);
+         source.sendSuccess(() -> Component.translatable("commands.warden_spawn_tracker.clear.success.multiple", players.size()), true);
       }
 
-      return var1.size();
+      return players.size();
    }
 }

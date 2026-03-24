@@ -15,14 +15,14 @@ public class FeaturePlaceContext<FC extends FeatureConfiguration> {
    private final BlockPos origin;
    private final FC config;
 
-   public FeaturePlaceContext(Optional<ConfiguredFeature<?, ?>> var1, WorldGenLevel var2, ChunkGenerator var3, RandomSource var4, BlockPos var5, FC var6) {
+   public FeaturePlaceContext(final Optional<ConfiguredFeature<?, ?>> topFeature, final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin, final FC config) {
       super();
-      this.topFeature = var1;
-      this.level = var2;
-      this.chunkGenerator = var3;
-      this.random = var4;
-      this.origin = var5;
-      this.config = var6;
+      this.topFeature = topFeature;
+      this.level = level;
+      this.chunkGenerator = chunkGenerator;
+      this.random = random;
+      this.origin = origin;
+      this.config = config;
    }
 
    public Optional<ConfiguredFeature<?, ?>> topFeature() {

@@ -7,35 +7,23 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
-public class UniformInt extends IntProvider {
-   public static final MapCodec<UniformInt> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.INT.fieldOf("min_inclusive").forGetter((var0x) -> var0x.minInclusive), Codec.INT.fieldOf("max_inclusive").forGetter((var0x) -> var0x.maxInclusive)).apply(var0, UniformInt::new)).validate((var0) -> var0.maxInclusive < var0.minInclusive ? DataResult.error(() -> "Max must be at least min, min_inclusive: " + var0.minInclusive + ", max_inclusive: " + var0.maxInclusive) : DataResult.success(var0));
-   private final int minInclusive;
-   private final int maxInclusive;
+public record UniformInt(int minInclusive, int maxInclusive) implements IntProvider {
+   public static final MapCodec<UniformInt> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.INT.fieldOf("min_inclusive").forGetter(UniformInt::minInclusive), Codec.INT.fieldOf("max_inclusive").forGetter(UniformInt::maxInclusive)).apply(i, UniformInt::new)).validate((u) -> u.maxInclusive < u.minInclusive ? DataResult.error(() -> "Max must be at least min, min_inclusive: " + u.minInclusive + ", max_inclusive: " + u.maxInclusive) : DataResult.success(u));
 
-   private UniformInt(int var1, int var2) {
+   public UniformInt {
       super();
-      this.minInclusive = var1;
-      this.maxInclusive = var2;
    }
 
-   public static UniformInt of(int var0, int var1) {
-      return new UniformInt(var0, var1);
+   public static UniformInt of(final int minInclusive, final int maxInclusive) {
+      return new UniformInt(minInclusive, maxInclusive);
    }
 
-   public int sample(RandomSource var1) {
-      return Mth.randomBetweenInclusive(var1, this.minInclusive, this.maxInclusive);
+   public int sample(final RandomSource random) {
+      return Mth.randomBetweenInclusive(random, this.minInclusive, this.maxInclusive);
    }
 
-   public int getMinValue() {
-      return this.minInclusive;
-   }
-
-   public int getMaxValue() {
-      return this.maxInclusive;
-   }
-
-   public IntProviderType<?> getType() {
-      return IntProviderType.UNIFORM;
+   public MapCodec<UniformInt> codec() {
+      return MAP_CODEC;
    }
 
    public String toString() {

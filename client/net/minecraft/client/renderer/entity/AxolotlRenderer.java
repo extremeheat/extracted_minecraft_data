@@ -3,51 +3,56 @@ package net.minecraft.client.renderer.entity;
 import com.google.common.collect.Maps;
 import java.util.Locale;
 import java.util.Map;
-import net.minecraft.client.model.animal.axolotl.AxolotlModel;
+import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.model.animal.axolotl.AdultAxolotlModel;
+import net.minecraft.client.model.animal.axolotl.BabyAxolotlModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.state.AxolotlRenderState;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.animal.axolotl.Axolotl;
 
-public class AxolotlRenderer extends AgeableMobRenderer<Axolotl, AxolotlRenderState, AxolotlModel> {
-   private static final Map<Axolotl.Variant, Identifier> TEXTURE_BY_TYPE = (Map)Util.make(Maps.newHashMap(), (var0) -> {
-      for(Axolotl.Variant var4 : Axolotl.Variant.values()) {
-         var0.put(var4, Identifier.withDefaultNamespace(String.format(Locale.ROOT, "textures/entity/axolotl/axolotl_%s.png", var4.getName())));
+public class AxolotlRenderer extends AgeableMobRenderer<Axolotl, AxolotlRenderState, EntityModel<AxolotlRenderState>> {
+   private static final Map<Axolotl.Variant, AxolotlTextures> TEXTURE_BY_TYPE = (Map)Util.make(Maps.newHashMap(), (map) -> {
+      for(Axolotl.Variant variant : Axolotl.Variant.values()) {
+         AxolotlTextures textures = new AxolotlTextures(Identifier.withDefaultNamespace(String.format(Locale.ROOT, "textures/entity/axolotl/axolotl_%s.png", variant.getName())), Identifier.withDefaultNamespace(String.format(Locale.ROOT, "textures/entity/axolotl/axolotl_%s_baby.png", variant.getName())));
+         map.put(variant, textures);
       }
 
    });
 
-   public AxolotlRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new AxolotlModel(var1.bakeLayer(ModelLayers.AXOLOTL)), new AxolotlModel(var1.bakeLayer(ModelLayers.AXOLOTL_BABY)), 0.5F);
+   public AxolotlRenderer(final EntityRendererProvider.Context context) {
+      super(context, new AdultAxolotlModel(context.bakeLayer(ModelLayers.AXOLOTL)), new BabyAxolotlModel(context.bakeLayer(ModelLayers.AXOLOTL_BABY)), 0.5F);
    }
 
-   public Identifier getTextureLocation(AxolotlRenderState var1) {
-      return (Identifier)TEXTURE_BY_TYPE.get(var1.variant);
+   public Identifier getTextureLocation(final AxolotlRenderState state) {
+      AxolotlTextures textures = (AxolotlTextures)TEXTURE_BY_TYPE.get(state.variant);
+      return state.isBaby ? textures.baby : textures.adult;
    }
 
    public AxolotlRenderState createRenderState() {
       return new AxolotlRenderState();
    }
 
-   public void extractRenderState(Axolotl var1, AxolotlRenderState var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      var2.variant = var1.getVariant();
-      var2.playingDeadFactor = var1.playingDeadAnimator.getFactor(var3);
-      var2.inWaterFactor = var1.inWaterAnimator.getFactor(var3);
-      var2.onGroundFactor = var1.onGroundAnimator.getFactor(var3);
-      var2.movingFactor = var1.movingAnimator.getFactor(var3);
+   public void extractRenderState(final Axolotl entity, final AxolotlRenderState state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      state.variant = entity.getVariant();
+      state.playingDeadFactor = entity.playingDeadAnimator.getFactor(partialTicks);
+      state.inWaterFactor = entity.inWaterAnimator.getFactor(partialTicks);
+      state.onGroundFactor = entity.onGroundAnimator.getFactor(partialTicks);
+      state.movingFactor = entity.movingAnimator.getFactor(partialTicks);
+      state.swimAnimation.copyFrom(entity.swimAnimationState);
+      state.walkAnimationState.copyFrom(entity.walkAnimationState);
+      state.walkUnderWaterAnimationState.copyFrom(entity.walkUnderWaterAnimationState);
+      state.idleOnGroundAnimationState.copyFrom(entity.idleOnGroundAnimationState);
+      state.idleUnderWaterOnGroundAnimationState.copyFrom(entity.idleUnderWaterOnGroundAnimationState);
+      state.idleUnderWaterAnimationState.copyFrom(entity.idleUnderWaterAnimationState);
+      state.playDeadAnimationState.copyFrom(entity.playDeadAnimationState);
    }
 
-   // $FF: synthetic method
-   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
-      return this.getTextureLocation((AxolotlRenderState)var1);
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
+   private static record AxolotlTextures(Identifier adult, Identifier baby) {
+      private AxolotlTextures {
+         super();
+      }
    }
 }

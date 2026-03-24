@@ -2,9 +2,8 @@ package net.minecraft.client.gui.spectator;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.Lists;
-import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.spectator.categories.SpectatorPage;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
@@ -13,26 +12,26 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 
 public class SpectatorMenu {
-   static final Identifier CLOSE_SPRITE = Identifier.withDefaultNamespace("spectator/close");
-   static final Identifier SCROLL_LEFT_SPRITE = Identifier.withDefaultNamespace("spectator/scroll_left");
-   static final Identifier SCROLL_RIGHT_SPRITE = Identifier.withDefaultNamespace("spectator/scroll_right");
+   private static final Identifier CLOSE_SPRITE = Identifier.withDefaultNamespace("spectator/close");
+   private static final Identifier SCROLL_LEFT_SPRITE = Identifier.withDefaultNamespace("spectator/scroll_left");
+   private static final Identifier SCROLL_RIGHT_SPRITE = Identifier.withDefaultNamespace("spectator/scroll_right");
    private static final SpectatorMenuItem CLOSE_ITEM = new CloseSpectatorItem();
    private static final SpectatorMenuItem SCROLL_LEFT = new ScrollMenuItem(-1, true);
    private static final SpectatorMenuItem SCROLL_RIGHT_ENABLED = new ScrollMenuItem(1, true);
    private static final SpectatorMenuItem SCROLL_RIGHT_DISABLED = new ScrollMenuItem(1, false);
    private static final int MAX_PER_PAGE = 8;
-   static final Component CLOSE_MENU_TEXT = Component.translatable("spectatorMenu.close");
-   static final Component PREVIOUS_PAGE_TEXT = Component.translatable("spectatorMenu.previous_page");
-   static final Component NEXT_PAGE_TEXT = Component.translatable("spectatorMenu.next_page");
+   private static final Component CLOSE_MENU_TEXT = Component.translatable("spectatorMenu.close");
+   private static final Component PREVIOUS_PAGE_TEXT = Component.translatable("spectatorMenu.previous_page");
+   private static final Component NEXT_PAGE_TEXT = Component.translatable("spectatorMenu.next_page");
    public static final SpectatorMenuItem EMPTY_SLOT = new SpectatorMenuItem() {
-      public void selectItem(SpectatorMenu var1) {
+      public void selectItem(final SpectatorMenu menu) {
       }
 
       public Component getName() {
          return CommonComponents.EMPTY;
       }
 
-      public void renderIcon(GuiGraphics var1, float var2, float var3) {
+      public void extractIcon(final GuiGraphicsExtractor graphics, final float brightness, final float alpha) {
       }
 
       public boolean isEnabled() {
@@ -42,34 +41,34 @@ public class SpectatorMenu {
    private final SpectatorMenuListener listener;
    private SpectatorMenuCategory category = new RootSpectatorMenuCategory();
    private int selectedSlot = -1;
-   int page;
+   private int page;
 
-   public SpectatorMenu(SpectatorMenuListener var1) {
+   public SpectatorMenu(final SpectatorMenuListener listener) {
       super();
-      this.listener = var1;
+      this.listener = listener;
    }
 
-   public SpectatorMenuItem getItem(int var1) {
-      int var2 = var1 + this.page * 6;
-      if (this.page > 0 && var1 == 0) {
+   public SpectatorMenuItem getItem(final int slot) {
+      int index = slot + this.page * 6;
+      if (this.page > 0 && slot == 0) {
          return SCROLL_LEFT;
-      } else if (var1 == 7) {
-         return var2 < this.category.getItems().size() ? SCROLL_RIGHT_ENABLED : SCROLL_RIGHT_DISABLED;
-      } else if (var1 == 8) {
+      } else if (slot == 7) {
+         return index < this.category.getItems().size() ? SCROLL_RIGHT_ENABLED : SCROLL_RIGHT_DISABLED;
+      } else if (slot == 8) {
          return CLOSE_ITEM;
       } else {
-         return var2 >= 0 && var2 < this.category.getItems().size() ? (SpectatorMenuItem)MoreObjects.firstNonNull((SpectatorMenuItem)this.category.getItems().get(var2), EMPTY_SLOT) : EMPTY_SLOT;
+         return index >= 0 && index < this.category.getItems().size() ? (SpectatorMenuItem)MoreObjects.firstNonNull((SpectatorMenuItem)this.category.getItems().get(index), EMPTY_SLOT) : EMPTY_SLOT;
       }
    }
 
    public List<SpectatorMenuItem> getItems() {
-      ArrayList var1 = Lists.newArrayList();
+      List<SpectatorMenuItem> items = Lists.newArrayList();
 
-      for(int var2 = 0; var2 <= 8; ++var2) {
-         var1.add(this.getItem(var2));
+      for(int i = 0; i <= 8; ++i) {
+         items.add(this.getItem(i));
       }
 
-      return var1;
+      return items;
    }
 
    public SpectatorMenuItem getSelectedItem() {
@@ -80,13 +79,13 @@ public class SpectatorMenu {
       return this.category;
    }
 
-   public void selectSlot(int var1) {
-      SpectatorMenuItem var2 = this.getItem(var1);
-      if (var2 != EMPTY_SLOT) {
-         if (this.selectedSlot == var1 && var2.isEnabled()) {
-            var2.selectItem(this);
+   public void selectSlot(final int slot) {
+      SpectatorMenuItem item = this.getItem(slot);
+      if (item != EMPTY_SLOT) {
+         if (this.selectedSlot == slot && item.isEnabled()) {
+            item.selectItem(this);
          } else {
-            this.selectedSlot = var1;
+            this.selectedSlot = slot;
          }
       }
 
@@ -100,8 +99,8 @@ public class SpectatorMenu {
       return this.selectedSlot;
    }
 
-   public void selectCategory(SpectatorMenuCategory var1) {
-      this.category = var1;
+   public void selectCategory(final SpectatorMenuCategory category) {
+      this.category = category;
       this.selectedSlot = -1;
       this.page = 0;
    }
@@ -110,21 +109,21 @@ public class SpectatorMenu {
       return new SpectatorPage(this.getItems(), this.selectedSlot);
    }
 
-   static class CloseSpectatorItem implements SpectatorMenuItem {
-      CloseSpectatorItem() {
+   private static class CloseSpectatorItem implements SpectatorMenuItem {
+      private CloseSpectatorItem() {
          super();
       }
 
-      public void selectItem(SpectatorMenu var1) {
-         var1.exit();
+      public void selectItem(final SpectatorMenu menu) {
+         menu.exit();
       }
 
       public Component getName() {
          return SpectatorMenu.CLOSE_MENU_TEXT;
       }
 
-      public void renderIcon(GuiGraphics var1, float var2, float var3) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SpectatorMenu.CLOSE_SPRITE, 0, 0, 16, 16, ARGB.colorFromFloat(var3, var2, var2, var2));
+      public void extractIcon(final GuiGraphicsExtractor graphics, final float brightness, final float alpha) {
+         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SpectatorMenu.CLOSE_SPRITE, 0, 0, 16, 16, ARGB.colorFromFloat(alpha, brightness, brightness, brightness));
       }
 
       public boolean isEnabled() {
@@ -132,30 +131,30 @@ public class SpectatorMenu {
       }
    }
 
-   static class ScrollMenuItem implements SpectatorMenuItem {
+   private static class ScrollMenuItem implements SpectatorMenuItem {
       private final int direction;
       private final boolean enabled;
 
-      public ScrollMenuItem(int var1, boolean var2) {
+      public ScrollMenuItem(final int direction, final boolean enabled) {
          super();
-         this.direction = var1;
-         this.enabled = var2;
+         this.direction = direction;
+         this.enabled = enabled;
       }
 
-      public void selectItem(SpectatorMenu var1) {
-         var1.page += this.direction;
+      public void selectItem(final SpectatorMenu menu) {
+         menu.page += this.direction;
       }
 
       public Component getName() {
          return this.direction < 0 ? SpectatorMenu.PREVIOUS_PAGE_TEXT : SpectatorMenu.NEXT_PAGE_TEXT;
       }
 
-      public void renderIcon(GuiGraphics var1, float var2, float var3) {
-         int var4 = ARGB.colorFromFloat(var3, var2, var2, var2);
+      public void extractIcon(final GuiGraphicsExtractor graphics, final float brightness, final float alpha) {
+         int color = ARGB.colorFromFloat(alpha, brightness, brightness, brightness);
          if (this.direction < 0) {
-            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SpectatorMenu.SCROLL_LEFT_SPRITE, 0, 0, 16, 16, var4);
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SpectatorMenu.SCROLL_LEFT_SPRITE, 0, 0, 16, 16, color);
          } else {
-            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SpectatorMenu.SCROLL_RIGHT_SPRITE, 0, 0, 16, 16, var4);
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SpectatorMenu.SCROLL_RIGHT_SPRITE, 0, 0, 16, 16, color);
          }
 
       }

@@ -9,21 +9,21 @@ import com.mojang.serialization.Dynamic;
 import java.util.Objects;
 
 public class BlockEntityBannerColorFix extends NamedEntityFix {
-   public BlockEntityBannerColorFix(Schema var1, boolean var2) {
-      super(var1, var2, "BlockEntityBannerColorFix", References.BLOCK_ENTITY, "minecraft:banner");
+   public BlockEntityBannerColorFix(final Schema outputSchema, final boolean changesType) {
+      super(outputSchema, changesType, "BlockEntityBannerColorFix", References.BLOCK_ENTITY, "minecraft:banner");
    }
 
-   public Dynamic<?> fixTag(Dynamic<?> var1) {
-      var1 = var1.update("Base", (var0) -> var0.createInt(15 - var0.asInt(0)));
-      var1 = var1.update("Patterns", (var0) -> {
-         DataResult var10000 = var0.asStreamOpt().map((var0x) -> var0x.map((var0) -> var0.update("Color", (var0x) -> var0x.createInt(15 - var0x.asInt(0)))));
-         Objects.requireNonNull(var0);
-         return (Dynamic)DataFixUtils.orElse(var10000.map(var0::createList).result(), var0);
+   public Dynamic<?> fixTag(Dynamic<?> input) {
+      input = input.update("Base", (base) -> base.createInt(15 - base.asInt(0)));
+      input = input.update("Patterns", (list) -> {
+         DataResult var10000 = list.asStreamOpt().map((stream) -> stream.map((pattern) -> pattern.update("Color", (color) -> color.createInt(15 - color.asInt(0)))));
+         Objects.requireNonNull(list);
+         return (Dynamic)DataFixUtils.orElse(var10000.map(list::createList).result(), list);
       });
-      return var1;
+      return input;
    }
 
-   protected Typed<?> fix(Typed<?> var1) {
-      return var1.update(DSL.remainderFinder(), this::fixTag);
+   protected Typed<?> fix(final Typed<?> entity) {
+      return entity.update(DSL.remainderFinder(), this::fixTag);
    }
 }

@@ -9,46 +9,46 @@ import net.minecraft.world.entity.player.Player;
 public class PlayerCloudParticle extends SingleQuadParticle {
    private final SpriteSet sprites;
 
-   PlayerCloudParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, SpriteSet var14) {
-      super(var1, var2, var4, var6, 0.0, 0.0, 0.0, var14.first());
+   private PlayerCloudParticle(final ClientLevel level, final double x, final double y, final double z, final double xa, final double ya, final double za, final SpriteSet sprites) {
+      super(level, x, y, z, 0.0, 0.0, 0.0, sprites.first());
       this.friction = 0.96F;
-      this.sprites = var14;
-      float var15 = 2.5F;
+      this.sprites = sprites;
+      float scale = 2.5F;
       this.xd *= 0.10000000149011612;
       this.yd *= 0.10000000149011612;
       this.zd *= 0.10000000149011612;
-      this.xd += var8;
-      this.yd += var10;
-      this.zd += var12;
-      float var16 = 1.0F - this.random.nextFloat() * 0.3F;
-      this.rCol = var16;
-      this.gCol = var16;
-      this.bCol = var16;
+      this.xd += xa;
+      this.yd += ya;
+      this.zd += za;
+      float col = 1.0F - this.random.nextFloat() * 0.3F;
+      this.rCol = col;
+      this.gCol = col;
+      this.bCol = col;
       this.quadSize *= 1.875F;
-      int var17 = (int)(8.0 / ((double)this.random.nextFloat() * 0.8 + 0.3));
-      this.lifetime = (int)Math.max((float)var17 * 2.5F, 1.0F);
+      int baseLifetime = (int)(8.0 / ((double)this.random.nextFloat() * 0.8 + 0.3));
+      this.lifetime = (int)Math.max((float)baseLifetime * 2.5F, 1.0F);
       this.hasPhysics = false;
-      this.setSpriteFromAge(var14);
+      this.setSpriteFromAge(sprites);
    }
 
    public SingleQuadParticle.Layer getLayer() {
       return SingleQuadParticle.Layer.TRANSLUCENT;
    }
 
-   public float getQuadSize(float var1) {
-      return this.quadSize * Mth.clamp(((float)this.age + var1) / (float)this.lifetime * 32.0F, 0.0F, 1.0F);
+   public float getQuadSize(final float a) {
+      return this.quadSize * Mth.clamp(((float)this.age + a) / (float)this.lifetime * 32.0F, 0.0F, 1.0F);
    }
 
    public void tick() {
       super.tick();
       if (!this.removed) {
          this.setSpriteFromAge(this.sprites);
-         Player var1 = this.level.getNearestPlayer(this.x, this.y, this.z, 2.0, false);
-         if (var1 != null) {
-            double var2 = var1.getY();
-            if (this.y > var2) {
-               this.y += (var2 - this.y) * 0.2;
-               this.yd += (var1.getDeltaMovement().y - this.yd) * 0.2;
+         Player player = this.level.getNearestPlayer(this.x, this.y, this.z, 2.0, false);
+         if (player != null) {
+            double playerY = player.getY();
+            if (this.y > playerY) {
+               this.y += (playerY - this.y) * 0.2;
+               this.yd += (player.getDeltaMovement().y - this.yd) * 0.2;
                this.setPos(this.x, this.y, this.z);
             }
          }
@@ -59,29 +59,29 @@ public class PlayerCloudParticle extends SingleQuadParticle {
    public static class Provider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprites;
 
-      public Provider(SpriteSet var1) {
+      public Provider(final SpriteSet sprites) {
          super();
-         this.sprites = var1;
+         this.sprites = sprites;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         return new PlayerCloudParticle(var2, var3, var5, var7, var9, var11, var13, this.sprites);
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         return new PlayerCloudParticle(level, x, y, z, xAux, yAux, zAux, this.sprites);
       }
    }
 
    public static class SneezeProvider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprites;
 
-      public SneezeProvider(SpriteSet var1) {
+      public SneezeProvider(final SpriteSet sprites) {
          super();
-         this.sprites = var1;
+         this.sprites = sprites;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         PlayerCloudParticle var16 = new PlayerCloudParticle(var2, var3, var5, var7, var9, var11, var13, this.sprites);
-         var16.setColor(0.22F, 1.0F, 0.53F);
-         var16.setAlpha(0.4F);
-         return var16;
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         PlayerCloudParticle particle = new PlayerCloudParticle(level, x, y, z, xAux, yAux, zAux, this.sprites);
+         particle.setColor(0.22F, 1.0F, 0.53F);
+         particle.setAlpha(0.4F);
+         return particle;
       }
    }
 }

@@ -39,55 +39,55 @@ public class TntBlock extends Block {
       return CODEC;
    }
 
-   public TntBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public TntBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)this.defaultBlockState().setValue(UNSTABLE, false));
    }
 
-   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var4.is(var1.getBlock())) {
-         if (var2.hasNeighborSignal(var3) && prime(var2, var3)) {
-            var2.removeBlock(var3, false);
+   protected void onPlace(final BlockState state, final Level level, final BlockPos pos, final BlockState oldState, final boolean movedByPiston) {
+      if (!oldState.is(state.getBlock())) {
+         if (level.hasNeighborSignal(pos) && prime(level, pos)) {
+            level.removeBlock(pos, false);
          }
 
       }
    }
 
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
-      if (var2.hasNeighborSignal(var3) && prime(var2, var3)) {
-         var2.removeBlock(var3, false);
+   protected void neighborChanged(final BlockState state, final Level level, final BlockPos pos, final Block block, final @Nullable Orientation orientation, final boolean movedByPiston) {
+      if (level.hasNeighborSignal(pos) && prime(level, pos)) {
+         level.removeBlock(pos, false);
       }
 
    }
 
-   public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
-      if (!var1.isClientSide() && !var4.getAbilities().instabuild && (Boolean)var3.getValue(UNSTABLE)) {
-         prime(var1, var2);
+   public BlockState playerWillDestroy(final Level level, final BlockPos pos, final BlockState state, final Player player) {
+      if (!level.isClientSide() && !player.getAbilities().instabuild && (Boolean)state.getValue(UNSTABLE)) {
+         prime(level, pos);
       }
 
-      return super.playerWillDestroy(var1, var2, var3, var4);
+      return super.playerWillDestroy(level, pos, state, player);
    }
 
-   public void wasExploded(ServerLevel var1, BlockPos var2, Explosion var3) {
-      if ((Boolean)var1.getGameRules().get(GameRules.TNT_EXPLODES)) {
-         PrimedTnt var4 = new PrimedTnt(var1, (double)var2.getX() + 0.5, (double)var2.getY(), (double)var2.getZ() + 0.5, var3.getIndirectSourceEntity());
-         int var5 = var4.getFuse();
-         var4.setFuse((short)(var1.random.nextInt(var5 / 4) + var5 / 8));
-         var1.addFreshEntity(var4);
+   public void wasExploded(final ServerLevel level, final BlockPos pos, final Explosion explosion) {
+      if ((Boolean)level.getGameRules().get(GameRules.TNT_EXPLODES)) {
+         PrimedTnt primed = new PrimedTnt(level, (double)pos.getX() + 0.5, (double)pos.getY(), (double)pos.getZ() + 0.5, explosion.getIndirectSourceEntity());
+         int fuse = primed.getFuse();
+         primed.setFuse((short)(level.getRandom().nextInt(fuse / 4) + fuse / 8));
+         level.addFreshEntity(primed);
       }
    }
 
-   public static boolean prime(Level var0, BlockPos var1) {
-      return prime(var0, var1, (LivingEntity)null);
+   public static boolean prime(final Level level, final BlockPos pos) {
+      return prime(level, pos, (LivingEntity)null);
    }
 
-   private static boolean prime(Level var0, BlockPos var1, @Nullable LivingEntity var2) {
-      if (var0 instanceof ServerLevel var3) {
-         if ((Boolean)var3.getGameRules().get(GameRules.TNT_EXPLODES)) {
-            PrimedTnt var4 = new PrimedTnt(var0, (double)var1.getX() + 0.5, (double)var1.getY(), (double)var1.getZ() + 0.5, var2);
-            var0.addFreshEntity(var4);
-            var0.playSound((Entity)null, var4.getX(), var4.getY(), var4.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
-            var0.gameEvent(var2, GameEvent.PRIME_FUSE, var1);
+   private static boolean prime(final Level level, final BlockPos pos, final @Nullable LivingEntity source) {
+      if (level instanceof ServerLevel serverLevel) {
+         if ((Boolean)serverLevel.getGameRules().get(GameRules.TNT_EXPLODES)) {
+            PrimedTnt tnt = new PrimedTnt(level, (double)pos.getX() + 0.5, (double)pos.getY(), (double)pos.getZ() + 0.5, source);
+            level.addFreshEntity(tnt);
+            level.playSound((Entity)null, tnt.getX(), tnt.getY(), tnt.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
+            level.gameEvent(source, GameEvent.PRIME_FUSE, pos);
             return true;
          }
       }
@@ -95,24 +95,24 @@ public class TntBlock extends Block {
       return false;
    }
 
-   protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
-      if (!var1.is(Items.FLINT_AND_STEEL) && !var1.is(Items.FIRE_CHARGE)) {
-         return super.useItemOn(var1, var2, var3, var4, var5, var6, var7);
+   protected InteractionResult useItemOn(final ItemStack itemStack, final BlockState state, final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final BlockHitResult hitResult) {
+      if (!itemStack.is(Items.FLINT_AND_STEEL) && !itemStack.is(Items.FIRE_CHARGE)) {
+         return super.useItemOn(itemStack, state, level, pos, player, hand, hitResult);
       } else {
-         if (prime(var3, var4, var5)) {
-            var3.setBlock(var4, Blocks.AIR.defaultBlockState(), 11);
-            Item var9 = var1.getItem();
-            if (var1.is(Items.FLINT_AND_STEEL)) {
-               var1.hurtAndBreak(1, var5, (EquipmentSlot)var6.asEquipmentSlot());
+         if (prime(level, pos, player)) {
+            level.setBlock(pos, Blocks.AIR.defaultBlockState(), 11);
+            Item item = itemStack.getItem();
+            if (itemStack.is(Items.FLINT_AND_STEEL)) {
+               itemStack.hurtAndBreak(1, player, (EquipmentSlot)hand.asEquipmentSlot());
             } else {
-               var1.consume(1, var5);
+               itemStack.consume(1, player);
             }
 
-            var5.awardStat(Stats.ITEM_USED.get(var9));
-         } else if (var3 instanceof ServerLevel) {
-            ServerLevel var8 = (ServerLevel)var3;
-            if (!(Boolean)var8.getGameRules().get(GameRules.TNT_EXPLODES)) {
-               var5.displayClientMessage(Component.translatable("block.minecraft.tnt.disabled"), true);
+            player.awardStat(Stats.ITEM_USED.get(item));
+         } else if (level instanceof ServerLevel) {
+            ServerLevel serverLevel = (ServerLevel)level;
+            if (!(Boolean)serverLevel.getGameRules().get(GameRules.TNT_EXPLODES)) {
+               player.sendOverlayMessage(Component.translatable("block.minecraft.tnt.disabled"));
                return InteractionResult.PASS;
             }
          }
@@ -121,23 +121,23 @@ public class TntBlock extends Block {
       }
    }
 
-   protected void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
-      if (var1 instanceof ServerLevel var5) {
-         BlockPos var6 = var3.getBlockPos();
-         Entity var7 = var4.getOwner();
-         if (var4.isOnFire() && var4.mayInteract(var5, var6) && prime(var1, var6, var7 instanceof LivingEntity ? (LivingEntity)var7 : null)) {
-            var1.removeBlock(var6, false);
+   protected void onProjectileHit(final Level level, final BlockState state, final BlockHitResult blockHit, final Projectile projectile) {
+      if (level instanceof ServerLevel serverLevel) {
+         BlockPos pos = blockHit.getBlockPos();
+         Entity owner = projectile.getOwner();
+         if (projectile.isOnFire() && projectile.mayInteract(serverLevel, pos) && prime(level, pos, owner instanceof LivingEntity ? (LivingEntity)owner : null)) {
+            level.removeBlock(pos, false);
          }
       }
 
    }
 
-   public boolean dropFromExplosion(Explosion var1) {
+   public boolean dropFromExplosion(final Explosion explosion) {
       return false;
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(UNSTABLE);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(UNSTABLE);
    }
 
    static {

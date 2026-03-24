@@ -21,23 +21,23 @@ public abstract class AbstractSkullBlock extends BaseEntityBlock {
    public static final BooleanProperty POWERED;
    private final SkullBlock.Type type;
 
-   public AbstractSkullBlock(SkullBlock.Type var1, BlockBehaviour.Properties var2) {
-      super(var2);
-      this.type = var1;
+   public AbstractSkullBlock(final SkullBlock.Type type, final BlockBehaviour.Properties properties) {
+      super(properties);
+      this.type = type;
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(POWERED, false));
    }
 
    protected abstract MapCodec<? extends AbstractSkullBlock> codec();
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new SkullBlockEntity(var1, var2);
+   public BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      return new SkullBlockEntity(worldPosition, blockState);
    }
 
-   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      if (var1.isClientSide()) {
-         boolean var4 = var2.is(Blocks.DRAGON_HEAD) || var2.is(Blocks.DRAGON_WALL_HEAD) || var2.is(Blocks.PIGLIN_HEAD) || var2.is(Blocks.PIGLIN_WALL_HEAD);
-         if (var4) {
-            return createTickerHelper(var3, BlockEntityType.SKULL, SkullBlockEntity::animation);
+   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(final Level level, final BlockState blockState, final BlockEntityType<T> type) {
+      if (level.isClientSide()) {
+         boolean isAnimated = blockState.is(Blocks.DRAGON_HEAD) || blockState.is(Blocks.DRAGON_WALL_HEAD) || blockState.is(Blocks.PIGLIN_HEAD) || blockState.is(Blocks.PIGLIN_WALL_HEAD);
+         if (isAnimated) {
+            return createTickerHelper(type, BlockEntityType.SKULL, SkullBlockEntity::animation);
          }
       }
 
@@ -48,23 +48,23 @@ public abstract class AbstractSkullBlock extends BaseEntityBlock {
       return this.type;
    }
 
-   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
+   protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
       return false;
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(POWERED);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(POWERED);
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return (BlockState)this.defaultBlockState().setValue(POWERED, var1.getLevel().hasNeighborSignal(var1.getClickedPos()));
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      return (BlockState)this.defaultBlockState().setValue(POWERED, context.getLevel().hasNeighborSignal(context.getClickedPos()));
    }
 
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
-      if (!var2.isClientSide()) {
-         boolean var7 = var2.hasNeighborSignal(var3);
-         if (var7 != (Boolean)var1.getValue(POWERED)) {
-            var2.setBlock(var3, (BlockState)var1.setValue(POWERED, var7), 2);
+   protected void neighborChanged(final BlockState state, final Level level, final BlockPos pos, final Block block, final @Nullable Orientation orientation, final boolean movedByPiston) {
+      if (!level.isClientSide()) {
+         boolean signal = level.hasNeighborSignal(pos);
+         if (signal != (Boolean)state.getValue(POWERED)) {
+            level.setBlock(pos, (BlockState)state.setValue(POWERED, signal), 2);
          }
 
       }

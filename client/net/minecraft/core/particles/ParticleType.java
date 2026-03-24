@@ -7,9 +7,9 @@ import net.minecraft.network.codec.StreamCodec;
 public abstract class ParticleType<T extends ParticleOptions> {
    private final boolean overrideLimiter;
 
-   protected ParticleType(boolean var1) {
+   protected ParticleType(final boolean overrideLimiter) {
       super();
-      this.overrideLimiter = var1;
+      this.overrideLimiter = overrideLimiter;
    }
 
    public boolean getOverrideLimiter() {

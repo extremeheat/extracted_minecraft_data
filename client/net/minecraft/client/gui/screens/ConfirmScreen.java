@@ -13,7 +13,7 @@ import org.jspecify.annotations.Nullable;
 
 public class ConfirmScreen extends Screen {
    private final Component message;
-   protected LinearLayout layout;
+   protected final LinearLayout layout;
    protected Component yesButtonComponent;
    protected Component noButtonComponent;
    protected @Nullable Button yesButton;
@@ -21,17 +21,17 @@ public class ConfirmScreen extends Screen {
    private int delayTicker;
    protected final BooleanConsumer callback;
 
-   public ConfirmScreen(BooleanConsumer var1, Component var2, Component var3) {
-      this(var1, var2, var3, CommonComponents.GUI_YES, CommonComponents.GUI_NO);
+   public ConfirmScreen(final BooleanConsumer callback, final Component title, final Component message) {
+      this(callback, title, message, CommonComponents.GUI_YES, CommonComponents.GUI_NO);
    }
 
-   public ConfirmScreen(BooleanConsumer var1, Component var2, Component var3, Component var4, Component var5) {
-      super(var2);
+   public ConfirmScreen(final BooleanConsumer callback, final Component title, final Component message, final Component yesButtonComponent, final Component noButtonComponent) {
+      super(title);
       this.layout = LinearLayout.vertical().spacing(8);
-      this.callback = var1;
-      this.message = var3;
-      this.yesButtonComponent = var4;
-      this.noButtonComponent = var5;
+      this.callback = callback;
+      this.message = message;
+      this.yesButtonComponent = yesButtonComponent;
+      this.noButtonComponent = noButtonComponent;
    }
 
    public Component getNarrationMessage() {
@@ -44,9 +44,9 @@ public class ConfirmScreen extends Screen {
       this.layout.addChild(new StringWidget(this.title, this.font));
       this.layout.addChild((new MultiLineTextWidget(this.message, this.font)).setMaxWidth(this.width - 50).setMaxRows(15).setCentered(true));
       this.addAdditionalText();
-      LinearLayout var1 = (LinearLayout)this.layout.addChild(LinearLayout.horizontal().spacing(4));
-      var1.defaultCellSetting().paddingTop(16);
-      this.addButtons(var1);
+      LinearLayout buttonLayout = (LinearLayout)this.layout.addChild(LinearLayout.horizontal().spacing(4));
+      buttonLayout.defaultCellSetting().paddingTop(16);
+      this.addButtons(buttonLayout);
       this.layout.visitWidgets(this::addRenderableWidget);
       this.repositionElements();
    }
@@ -59,13 +59,13 @@ public class ConfirmScreen extends Screen {
    protected void addAdditionalText() {
    }
 
-   protected void addButtons(LinearLayout var1) {
-      this.yesButton = (Button)var1.addChild(Button.builder(this.yesButtonComponent, (var1x) -> this.callback.accept(true)).build());
-      this.noButton = (Button)var1.addChild(Button.builder(this.noButtonComponent, (var1x) -> this.callback.accept(false)).build());
+   protected void addButtons(final LinearLayout buttonLayout) {
+      this.yesButton = (Button)buttonLayout.addChild(Button.builder(this.yesButtonComponent, (button) -> this.callback.accept(true)).build());
+      this.noButton = (Button)buttonLayout.addChild(Button.builder(this.noButtonComponent, (button) -> this.callback.accept(false)).build());
    }
 
-   public void setDelay(int var1) {
-      this.delayTicker = var1;
+   public void setDelay(final int delay) {
+      this.delayTicker = delay;
       this.yesButton.active = false;
       this.noButton.active = false;
    }
@@ -83,12 +83,12 @@ public class ConfirmScreen extends Screen {
       return false;
    }
 
-   public boolean keyPressed(KeyEvent var1) {
-      if (this.delayTicker <= 0 && var1.key() == 256) {
+   public boolean keyPressed(final KeyEvent event) {
+      if (this.delayTicker <= 0 && event.isEscape()) {
          this.callback.accept(false);
          return true;
       } else {
-         return super.keyPressed(var1);
+         return super.keyPressed(event);
       }
    }
 }

@@ -7,42 +7,42 @@ class LoadingChunkTracker extends ChunkTracker {
    private final DistanceManager distanceManager;
    private final TicketStorage ticketStorage;
 
-   public LoadingChunkTracker(DistanceManager var1, TicketStorage var2) {
+   public LoadingChunkTracker(final DistanceManager distanceManager, final TicketStorage ticketStorage) {
       super(MAX_LEVEL + 1, 16, 256);
-      this.distanceManager = var1;
-      this.ticketStorage = var2;
-      var2.setLoadingChunkUpdatedListener(this::update);
+      this.distanceManager = distanceManager;
+      this.ticketStorage = ticketStorage;
+      ticketStorage.setLoadingChunkUpdatedListener(this::update);
    }
 
-   protected int getLevelFromSource(long var1) {
-      return this.ticketStorage.getTicketLevelAt(var1, false);
+   protected int getLevelFromSource(final long to) {
+      return this.ticketStorage.getTicketLevelAt(to, false);
    }
 
-   protected int getLevel(long var1) {
-      if (!this.distanceManager.isChunkToRemove(var1)) {
-         ChunkHolder var3 = this.distanceManager.getChunk(var1);
-         if (var3 != null) {
-            return var3.getTicketLevel();
+   protected int getLevel(final long node) {
+      if (!this.distanceManager.isChunkToRemove(node)) {
+         ChunkHolder chunk = this.distanceManager.getChunk(node);
+         if (chunk != null) {
+            return chunk.getTicketLevel();
          }
       }
 
       return MAX_LEVEL;
    }
 
-   protected void setLevel(long var1, int var3) {
-      ChunkHolder var4 = this.distanceManager.getChunk(var1);
-      int var5 = var4 == null ? MAX_LEVEL : var4.getTicketLevel();
-      if (var5 != var3) {
-         var4 = this.distanceManager.updateChunkScheduling(var1, var3, var4, var5);
-         if (var4 != null) {
-            this.distanceManager.chunksToUpdateFutures.add(var4);
+   protected void setLevel(final long node, final int level) {
+      ChunkHolder chunk = this.distanceManager.getChunk(node);
+      int oldLevel = chunk == null ? MAX_LEVEL : chunk.getTicketLevel();
+      if (oldLevel != level) {
+         chunk = this.distanceManager.updateChunkScheduling(node, level, chunk, oldLevel);
+         if (chunk != null) {
+            this.distanceManager.chunksToUpdateFutures.add(chunk);
          }
 
       }
    }
 
-   public int runDistanceUpdates(int var1) {
-      return this.runUpdates(var1);
+   public int runDistanceUpdates(final int count) {
+      return this.runUpdates(count);
    }
 
    static {

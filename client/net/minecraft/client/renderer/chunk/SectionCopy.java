@@ -24,18 +24,18 @@ class SectionCopy {
    private final boolean debug;
    private final LevelHeightAccessor levelHeightAccessor;
 
-   SectionCopy(LevelChunk var1, int var2) {
+   SectionCopy(final LevelChunk levelChunk, final int sectionIndex) {
       super();
-      this.levelHeightAccessor = var1;
-      this.debug = var1.getLevel().isDebug();
-      this.blockEntities = ImmutableMap.copyOf(var1.getBlockEntities());
-      if (var1 instanceof EmptyLevelChunk) {
+      this.levelHeightAccessor = levelChunk;
+      this.debug = levelChunk.getLevel().isDebug();
+      this.blockEntities = ImmutableMap.copyOf(levelChunk.getBlockEntities());
+      if (levelChunk instanceof EmptyLevelChunk) {
          this.section = null;
       } else {
-         LevelChunkSection[] var3 = var1.getSections();
-         if (var2 >= 0 && var2 < var3.length) {
-            LevelChunkSection var4 = var3[var2];
-            this.section = var4.hasOnlyAir() ? null : var4.getStates().copy();
+         LevelChunkSection[] sections = levelChunk.getSections();
+         if (sectionIndex >= 0 && sectionIndex < sections.length) {
+            LevelChunkSection levelChunkSection = sections[sectionIndex];
+            this.section = levelChunkSection.hasOnlyAir() ? null : levelChunkSection.getStates().copy();
          } else {
             this.section = null;
          }
@@ -43,35 +43,35 @@ class SectionCopy {
 
    }
 
-   public @Nullable BlockEntity getBlockEntity(BlockPos var1) {
-      return (BlockEntity)this.blockEntities.get(var1);
+   public @Nullable BlockEntity getBlockEntity(final BlockPos pos) {
+      return (BlockEntity)this.blockEntities.get(pos);
    }
 
-   public BlockState getBlockState(BlockPos var1) {
-      int var2 = var1.getX();
-      int var3 = var1.getY();
-      int var4 = var1.getZ();
+   public BlockState getBlockState(final BlockPos pos) {
+      int x = pos.getX();
+      int y = pos.getY();
+      int z = pos.getZ();
       if (this.debug) {
-         BlockState var5 = null;
-         if (var3 == 60) {
-            var5 = Blocks.BARRIER.defaultBlockState();
+         BlockState blockState = null;
+         if (y == 60) {
+            blockState = Blocks.BARRIER.defaultBlockState();
          }
 
-         if (var3 == 70) {
-            var5 = DebugLevelSource.getBlockStateFor(var2, var4);
+         if (y == 70) {
+            blockState = DebugLevelSource.getBlockStateFor(x, z);
          }
 
-         return var5 == null ? Blocks.AIR.defaultBlockState() : var5;
+         return blockState == null ? Blocks.AIR.defaultBlockState() : blockState;
       } else if (this.section == null) {
          return Blocks.AIR.defaultBlockState();
       } else {
          try {
-            return this.section.get(var2 & 15, var3 & 15, var4 & 15);
-         } catch (Throwable var8) {
-            CrashReport var6 = CrashReport.forThrowable(var8, "Getting block state");
-            CrashReportCategory var7 = var6.addCategory("Block being got");
-            var7.setDetail("Location", (CrashReportDetail)(() -> CrashReportCategory.formatLocation(this.levelHeightAccessor, var2, var3, var4)));
-            throw new ReportedException(var6);
+            return this.section.get(x & 15, y & 15, z & 15);
+         } catch (Throwable t) {
+            CrashReport report = CrashReport.forThrowable(t, "Getting block state");
+            CrashReportCategory category = report.addCategory("Block being got");
+            category.setDetail("Location", (CrashReportDetail)(() -> CrashReportCategory.formatLocation(this.levelHeightAccessor, x, y, z)));
+            throw new ReportedException(report);
          }
       }
    }

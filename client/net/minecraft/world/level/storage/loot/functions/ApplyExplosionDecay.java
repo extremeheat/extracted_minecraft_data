@@ -10,34 +10,34 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class ApplyExplosionDecay extends LootItemConditionalFunction {
-   public static final MapCodec<ApplyExplosionDecay> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).apply(var0, ApplyExplosionDecay::new));
+   public static final MapCodec<ApplyExplosionDecay> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).apply(i, ApplyExplosionDecay::new));
 
-   private ApplyExplosionDecay(List<LootItemCondition> var1) {
-      super(var1);
+   private ApplyExplosionDecay(final List<LootItemCondition> predicates) {
+      super(predicates);
    }
 
-   public LootItemFunctionType<ApplyExplosionDecay> getType() {
-      return LootItemFunctions.EXPLOSION_DECAY;
+   public MapCodec<ApplyExplosionDecay> codec() {
+      return MAP_CODEC;
    }
 
-   public ItemStack run(ItemStack var1, LootContext var2) {
-      Float var3 = (Float)var2.getOptionalParameter(LootContextParams.EXPLOSION_RADIUS);
-      if (var3 != null) {
-         RandomSource var4 = var2.getRandom();
-         float var5 = 1.0F / var3;
-         int var6 = var1.getCount();
-         int var7 = 0;
+   public ItemStack run(final ItemStack itemStack, final LootContext context) {
+      Float explosionRadius = (Float)context.getOptionalParameter(LootContextParams.EXPLOSION_RADIUS);
+      if (explosionRadius != null) {
+         RandomSource random = context.getRandom();
+         float probability = 1.0F / explosionRadius;
+         int currentCount = itemStack.getCount();
+         int resultCount = 0;
 
-         for(int var8 = 0; var8 < var6; ++var8) {
-            if (var4.nextFloat() <= var5) {
-               ++var7;
+         for(int i = 0; i < currentCount; ++i) {
+            if (random.nextFloat() <= probability) {
+               ++resultCount;
             }
          }
 
-         var1.setCount(var7);
+         itemStack.setCount(resultCount);
       }
 
-      return var1;
+      return itemStack;
    }
 
    public static LootItemConditionalFunction.Builder<?> explosionDecay() {

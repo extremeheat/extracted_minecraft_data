@@ -15,6 +15,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
+import net.minecraft.core.component.DataComponentInitializers;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
@@ -67,7 +68,6 @@ import net.minecraft.world.item.component.DamageResistant;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.KineticWeapon;
 import net.minecraft.world.item.component.PiercingWeapon;
-import net.minecraft.world.item.component.ProvidesTrimMaterial;
 import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.item.component.TooltipDisplay;
@@ -95,9 +95,10 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-public class Item implements FeatureElement, ItemLike {
+public class Item implements ItemLike, FeatureElement {
    public static final Codec<Holder<Item>> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<Item>> STREAM_CODEC;
+   public static final Codec<Holder<Item>> CODEC_WITH_BOUND_COMPONENTS;
    private static final Logger LOGGER;
    public static final Map<Block, Item> BY_BLOCK;
    public static final Identifier BASE_ATTACK_DAMAGE_ID;
@@ -107,36 +108,36 @@ public class Item implements FeatureElement, ItemLike {
    public static final int MAX_BAR_WIDTH = 13;
    protected static final int APPROXIMATELY_INFINITE_USE_DURATION = 72000;
    private final Holder.Reference<Item> builtInRegistryHolder;
-   private final DataComponentMap components;
-   private final @Nullable Item craftingRemainingItem;
+   private final @Nullable ItemStackTemplate craftingRemainingItem;
    protected final String descriptionId;
    private final FeatureFlagSet requiredFeatures;
 
-   public static int getId(Item var0) {
-      return var0 == null ? 0 : BuiltInRegistries.ITEM.getId(var0);
+   public static int getId(final Item item) {
+      return item == null ? 0 : BuiltInRegistries.ITEM.getId(item);
    }
 
-   public static Item byId(int var0) {
-      return BuiltInRegistries.ITEM.byId(var0);
+   public static Item byId(final int id) {
+      return BuiltInRegistries.ITEM.byId(id);
    }
 
    /** @deprecated */
    @Deprecated
-   public static Item byBlock(Block var0) {
-      return (Item)BY_BLOCK.getOrDefault(var0, Items.AIR);
+   public static Item byBlock(final Block block) {
+      return (Item)BY_BLOCK.getOrDefault(block, Items.AIR);
    }
 
-   public Item(Properties var1) {
+   public Item(final Properties properties) {
       super();
       this.builtInRegistryHolder = BuiltInRegistries.ITEM.createIntrusiveHolder(this);
-      this.descriptionId = var1.effectiveDescriptionId();
-      this.components = var1.buildAndValidateComponents(Component.translatable(this.descriptionId), var1.effectiveModel());
-      this.craftingRemainingItem = var1.craftingRemainingItem;
-      this.requiredFeatures = var1.requiredFeatures;
+      this.descriptionId = properties.effectiveDescriptionId();
+      DataComponentInitializers.Initializer<Item> componentInitializer = properties.finalizeInitializer(Component.translatable(this.descriptionId), properties.effectiveModel());
+      BuiltInRegistries.DATA_COMPONENT_INITIALIZERS.add(properties.itemIdOrThrow(), componentInitializer);
+      this.craftingRemainingItem = properties.craftingRemainingItem;
+      this.requiredFeatures = properties.requiredFeatures;
       if (SharedConstants.IS_RUNNING_IN_IDE) {
-         String var2 = this.getClass().getSimpleName();
-         if (!var2.endsWith("Item")) {
-            LOGGER.error("Item classes should end with Item and {} doesn't.", var2);
+         String className = this.getClass().getSimpleName();
+         if (!className.endsWith("Item")) {
+            LOGGER.error("Item classes should end with Item and {} doesn't.", className);
          }
       }
 
@@ -149,26 +150,26 @@ public class Item implements FeatureElement, ItemLike {
    }
 
    public DataComponentMap components() {
-      return this.components;
+      return this.builtInRegistryHolder.components();
    }
 
    public int getDefaultMaxStackSize() {
-      return (Integer)this.components.getOrDefault(DataComponents.MAX_STACK_SIZE, 1);
+      return (Integer)this.components().getOrDefault(DataComponents.MAX_STACK_SIZE, 1);
    }
 
-   public void onUseTick(Level var1, LivingEntity var2, ItemStack var3, int var4) {
+   public void onUseTick(final Level level, final LivingEntity livingEntity, final ItemStack itemStack, final int ticksRemaining) {
    }
 
-   public void onDestroyed(ItemEntity var1) {
+   public void onDestroyed(final ItemEntity itemEntity) {
    }
 
-   public boolean canDestroyBlock(ItemStack var1, BlockState var2, Level var3, BlockPos var4, LivingEntity var5) {
-      Tool var6 = (Tool)var1.get(DataComponents.TOOL);
-      if (var6 != null && !var6.canDestroyBlocksInCreative()) {
+   public boolean canDestroyBlock(final ItemStack itemStack, final BlockState state, final Level level, final BlockPos pos, final LivingEntity user) {
+      Tool tool = (Tool)itemStack.get(DataComponents.TOOL);
+      if (tool != null && !tool.canDestroyBlocksInCreative()) {
          boolean var10000;
-         if (var5 instanceof Player) {
-            Player var7 = (Player)var5;
-            if (var7.getAbilities().instabuild) {
+         if (user instanceof Player) {
+            Player player = (Player)user;
+            if (player.getAbilities().instabuild) {
                var10000 = false;
                return var10000;
             }
@@ -185,32 +186,32 @@ public class Item implements FeatureElement, ItemLike {
       return this;
    }
 
-   public InteractionResult useOn(UseOnContext var1) {
+   public InteractionResult useOn(final UseOnContext context) {
       return InteractionResult.PASS;
    }
 
-   public float getDestroySpeed(ItemStack var1, BlockState var2) {
-      Tool var3 = (Tool)var1.get(DataComponents.TOOL);
-      return var3 != null ? var3.getMiningSpeed(var2) : 1.0F;
+   public float getDestroySpeed(final ItemStack itemStack, final BlockState state) {
+      Tool tool = (Tool)itemStack.get(DataComponents.TOOL);
+      return tool != null ? tool.getMiningSpeed(state) : 1.0F;
    }
 
-   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
-      ItemStack var4 = var2.getItemInHand(var3);
-      Consumable var5 = (Consumable)var4.get(DataComponents.CONSUMABLE);
-      if (var5 != null) {
-         return var5.startConsuming(var2, var4, var3);
+   public InteractionResult use(final Level level, final Player player, final InteractionHand hand) {
+      ItemStack stack = player.getItemInHand(hand);
+      Consumable consumable = (Consumable)stack.get(DataComponents.CONSUMABLE);
+      if (consumable != null) {
+         return consumable.startConsuming(player, stack, hand);
       } else {
-         Equippable var6 = (Equippable)var4.get(DataComponents.EQUIPPABLE);
-         if (var6 != null && var6.swappable()) {
-            return var6.swapWithEquipmentSlot(var4, var2);
-         } else if (var4.has(DataComponents.BLOCKS_ATTACKS)) {
-            var2.startUsingItem(var3);
+         Equippable equippable = (Equippable)stack.get(DataComponents.EQUIPPABLE);
+         if (equippable != null && equippable.swappable()) {
+            return equippable.swapWithEquipmentSlot(stack, player);
+         } else if (stack.has(DataComponents.BLOCKS_ATTACKS)) {
+            player.startUsingItem(hand);
             return InteractionResult.CONSUME;
          } else {
-            KineticWeapon var7 = (KineticWeapon)var4.get(DataComponents.KINETIC_WEAPON);
-            if (var7 != null) {
-               var2.startUsingItem(var3);
-               var7.makeSound(var2);
+            KineticWeapon kineticWeapon = (KineticWeapon)stack.get(DataComponents.KINETIC_WEAPON);
+            if (kineticWeapon != null) {
+               player.startUsingItem(hand);
+               kineticWeapon.makeSound(player);
                return InteractionResult.CONSUME;
             } else {
                return InteractionResult.PASS;
@@ -219,68 +220,68 @@ public class Item implements FeatureElement, ItemLike {
       }
    }
 
-   public ItemStack finishUsingItem(ItemStack var1, Level var2, LivingEntity var3) {
-      Consumable var4 = (Consumable)var1.get(DataComponents.CONSUMABLE);
-      return var4 != null ? var4.onConsume(var2, var3, var1) : var1;
+   public ItemStack finishUsingItem(final ItemStack itemStack, final Level level, final LivingEntity entity) {
+      Consumable consumable = (Consumable)itemStack.get(DataComponents.CONSUMABLE);
+      return consumable != null ? consumable.onConsume(level, entity, itemStack) : itemStack;
    }
 
-   public boolean isBarVisible(ItemStack var1) {
-      return var1.isDamaged();
+   public boolean isBarVisible(final ItemStack stack) {
+      return stack.isDamaged();
    }
 
-   public int getBarWidth(ItemStack var1) {
-      return Mth.clamp(Math.round(13.0F - (float)var1.getDamageValue() * 13.0F / (float)var1.getMaxDamage()), 0, 13);
+   public int getBarWidth(final ItemStack stack) {
+      return Mth.clamp(Math.round(13.0F - (float)stack.getDamageValue() * 13.0F / (float)stack.getMaxDamage()), 0, 13);
    }
 
-   public int getBarColor(ItemStack var1) {
-      int var2 = var1.getMaxDamage();
-      float var3 = Math.max(0.0F, ((float)var2 - (float)var1.getDamageValue()) / (float)var2);
-      return Mth.hsvToRgb(var3 / 3.0F, 1.0F, 1.0F);
+   public int getBarColor(final ItemStack stack) {
+      int maxDamage = stack.getMaxDamage();
+      float healthPercentage = Math.max(0.0F, ((float)maxDamage - (float)stack.getDamageValue()) / (float)maxDamage);
+      return Mth.hsvToRgb(healthPercentage / 3.0F, 1.0F, 1.0F);
    }
 
-   public boolean overrideStackedOnOther(ItemStack var1, Slot var2, ClickAction var3, Player var4) {
+   public boolean overrideStackedOnOther(final ItemStack self, final Slot slot, final ClickAction clickAction, final Player player) {
       return false;
    }
 
-   public boolean overrideOtherStackedOnMe(ItemStack var1, ItemStack var2, Slot var3, ClickAction var4, Player var5, SlotAccess var6) {
+   public boolean overrideOtherStackedOnMe(final ItemStack self, final ItemStack other, final Slot slot, final ClickAction clickAction, final Player player, final SlotAccess carriedItem) {
       return false;
    }
 
-   public float getAttackDamageBonus(Entity var1, float var2, DamageSource var3) {
+   public float getAttackDamageBonus(final Entity victim, final float damage, final DamageSource damageSource) {
       return 0.0F;
    }
 
    /** @deprecated */
    @Deprecated
-   public @Nullable DamageSource getItemDamageSource(LivingEntity var1) {
+   public @Nullable DamageSource getItemDamageSource(final LivingEntity attacker) {
       return null;
    }
 
-   public void hurtEnemy(ItemStack var1, LivingEntity var2, LivingEntity var3) {
+   public void hurtEnemy(final ItemStack itemStack, final LivingEntity mob, final LivingEntity attacker) {
    }
 
-   public void postHurtEnemy(ItemStack var1, LivingEntity var2, LivingEntity var3) {
+   public void postHurtEnemy(final ItemStack itemStack, final LivingEntity mob, final LivingEntity attacker) {
    }
 
-   public boolean mineBlock(ItemStack var1, Level var2, BlockState var3, BlockPos var4, LivingEntity var5) {
-      Tool var6 = (Tool)var1.get(DataComponents.TOOL);
-      if (var6 == null) {
+   public boolean mineBlock(final ItemStack itemStack, final Level level, final BlockState state, final BlockPos pos, final LivingEntity owner) {
+      Tool tool = (Tool)itemStack.get(DataComponents.TOOL);
+      if (tool == null) {
          return false;
       } else {
-         if (!var2.isClientSide() && var3.getDestroySpeed(var2, var4) != 0.0F && var6.damagePerBlock() > 0) {
-            var1.hurtAndBreak(var6.damagePerBlock(), var5, EquipmentSlot.MAINHAND);
+         if (!level.isClientSide() && state.getDestroySpeed(level, pos) != 0.0F && tool.damagePerBlock() > 0) {
+            itemStack.hurtAndBreak(tool.damagePerBlock(), owner, EquipmentSlot.MAINHAND);
          }
 
          return true;
       }
    }
 
-   public boolean isCorrectToolForDrops(ItemStack var1, BlockState var2) {
-      Tool var3 = (Tool)var1.get(DataComponents.TOOL);
-      return var3 != null && var3.isCorrectForDrops(var2);
+   public boolean isCorrectToolForDrops(final ItemStack itemStack, final BlockState state) {
+      Tool tool = (Tool)itemStack.get(DataComponents.TOOL);
+      return tool != null && tool.isCorrectForDrops(state);
    }
 
-   public InteractionResult interactLivingEntity(ItemStack var1, Player var2, LivingEntity var3, InteractionHand var4) {
+   public InteractionResult interactLivingEntity(final ItemStack itemStack, final Player player, final LivingEntity target, final InteractionHand type) {
       return InteractionResult.PASS;
    }
 
@@ -288,50 +289,50 @@ public class Item implements FeatureElement, ItemLike {
       return BuiltInRegistries.ITEM.wrapAsHolder(this).getRegisteredName();
    }
 
-   public final ItemStack getCraftingRemainder() {
-      return this.craftingRemainingItem == null ? ItemStack.EMPTY : new ItemStack(this.craftingRemainingItem);
+   public final @Nullable ItemStackTemplate getCraftingRemainder() {
+      return this.craftingRemainingItem;
    }
 
-   public void inventoryTick(ItemStack var1, ServerLevel var2, Entity var3, @Nullable EquipmentSlot var4) {
+   public void inventoryTick(final ItemStack itemStack, final ServerLevel level, final Entity owner, final @Nullable EquipmentSlot slot) {
    }
 
-   public void onCraftedBy(ItemStack var1, Player var2) {
-      this.onCraftedPostProcess(var1, var2.level());
+   public void onCraftedBy(final ItemStack itemStack, final Player player) {
+      this.onCraftedPostProcess(itemStack, player.level());
    }
 
-   public void onCraftedPostProcess(ItemStack var1, Level var2) {
+   public void onCraftedPostProcess(final ItemStack itemStack, final Level level) {
    }
 
-   public ItemUseAnimation getUseAnimation(ItemStack var1) {
-      Consumable var2 = (Consumable)var1.get(DataComponents.CONSUMABLE);
-      if (var2 != null) {
-         return var2.animation();
-      } else if (var1.has(DataComponents.BLOCKS_ATTACKS)) {
+   public ItemUseAnimation getUseAnimation(final ItemStack itemStack) {
+      Consumable consumable = (Consumable)itemStack.get(DataComponents.CONSUMABLE);
+      if (consumable != null) {
+         return consumable.animation();
+      } else if (itemStack.has(DataComponents.BLOCKS_ATTACKS)) {
          return ItemUseAnimation.BLOCK;
       } else {
-         return var1.has(DataComponents.KINETIC_WEAPON) ? ItemUseAnimation.SPEAR : ItemUseAnimation.NONE;
+         return itemStack.has(DataComponents.KINETIC_WEAPON) ? ItemUseAnimation.SPEAR : ItemUseAnimation.NONE;
       }
    }
 
-   public int getUseDuration(ItemStack var1, LivingEntity var2) {
-      Consumable var3 = (Consumable)var1.get(DataComponents.CONSUMABLE);
-      if (var3 != null) {
-         return var3.consumeTicks();
+   public int getUseDuration(final ItemStack itemStack, final LivingEntity user) {
+      Consumable consumable = (Consumable)itemStack.get(DataComponents.CONSUMABLE);
+      if (consumable != null) {
+         return consumable.consumeTicks();
       } else {
-         return !var1.has(DataComponents.BLOCKS_ATTACKS) && !var1.has(DataComponents.KINETIC_WEAPON) ? 0 : 72000;
+         return !itemStack.has(DataComponents.BLOCKS_ATTACKS) && !itemStack.has(DataComponents.KINETIC_WEAPON) ? 0 : 72000;
       }
    }
 
-   public boolean releaseUsing(ItemStack var1, Level var2, LivingEntity var3, int var4) {
+   public boolean releaseUsing(final ItemStack itemStack, final Level level, final LivingEntity entity, final int remainingTime) {
       return false;
    }
 
    /** @deprecated */
    @Deprecated
-   public void appendHoverText(ItemStack var1, TooltipContext var2, TooltipDisplay var3, Consumer<Component> var4, TooltipFlag var5) {
+   public void appendHoverText(final ItemStack itemStack, final TooltipContext context, final TooltipDisplay display, final Consumer<Component> builder, final TooltipFlag tooltipFlag) {
    }
 
-   public Optional<TooltipComponent> getTooltipImage(ItemStack var1) {
+   public Optional<TooltipComponent> getTooltipImage(final ItemStack itemStack) {
       return Optional.empty();
    }
 
@@ -340,25 +341,21 @@ public class Item implements FeatureElement, ItemLike {
       return this.descriptionId;
    }
 
-   public final Component getName() {
-      return (Component)this.components.getOrDefault(DataComponents.ITEM_NAME, CommonComponents.EMPTY);
+   public Component getName(final ItemStack itemStack) {
+      return (Component)itemStack.getComponents().getOrDefault(DataComponents.ITEM_NAME, CommonComponents.EMPTY);
    }
 
-   public Component getName(ItemStack var1) {
-      return (Component)var1.getComponents().getOrDefault(DataComponents.ITEM_NAME, CommonComponents.EMPTY);
+   public boolean isFoil(final ItemStack itemStack) {
+      return itemStack.isEnchanted();
    }
 
-   public boolean isFoil(ItemStack var1) {
-      return var1.isEnchanted();
+   protected static BlockHitResult getPlayerPOVHitResult(final Level level, final Player player, final ClipContext.Fluid fluid) {
+      Vec3 from = player.getEyePosition();
+      Vec3 to = from.add(player.calculateViewVector(player.getXRot(), player.getYRot()).scale(player.blockInteractionRange()));
+      return level.clip(new ClipContext(from, to, ClipContext.Block.OUTLINE, fluid, player));
    }
 
-   protected static BlockHitResult getPlayerPOVHitResult(Level var0, Player var1, ClipContext.Fluid var2) {
-      Vec3 var3 = var1.getEyePosition();
-      Vec3 var4 = var3.add(var1.calculateViewVector(var1.getXRot(), var1.getYRot()).scale(var1.blockInteractionRange()));
-      return var0.clip(new ClipContext(var3, var4, ClipContext.Block.OUTLINE, var2, var1));
-   }
-
-   public boolean useOnRelease(ItemStack var1) {
+   public boolean useOnRelease(final ItemStack itemStack) {
       return false;
    }
 
@@ -370,17 +367,18 @@ public class Item implements FeatureElement, ItemLike {
       return true;
    }
 
-   public FeatureFlagSet requiredFeatures() {
+   public final FeatureFlagSet requiredFeatures() {
       return this.requiredFeatures;
    }
 
-   public boolean shouldPrintOpWarning(ItemStack var1, @Nullable Player var2) {
+   public boolean shouldPrintOpWarning(final ItemStack stack, final @Nullable Player player) {
       return false;
    }
 
    static {
-      CODEC = BuiltInRegistries.ITEM.holderByNameCodec().validate((var0) -> var0.is((Holder)Items.AIR.builtInRegistryHolder()) ? DataResult.error(() -> "Item must not be minecraft:air") : DataResult.success(var0));
+      CODEC = BuiltInRegistries.ITEM.holderByNameCodec().validate((item) -> item.is((Holder)Items.AIR.builtInRegistryHolder()) ? DataResult.error(() -> "Item must not be minecraft:air") : DataResult.success(item));
       STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.ITEM);
+      CODEC_WITH_BOUND_COMPONENTS = CODEC.validate((item) -> !item.areComponentsBound() ? DataResult.error(() -> "Item " + item.getRegisteredName() + " does not have components yet") : DataResult.success(item));
       LOGGER = LogUtils.getLogger();
       BY_BLOCK = Maps.newHashMap();
       BASE_ATTACK_DAMAGE_ID = Identifier.withDefaultNamespace("base_attack_damage");
@@ -388,154 +386,166 @@ public class Item implements FeatureElement, ItemLike {
    }
 
    public static class Properties {
-      private static final DependantName<Item, String> BLOCK_DESCRIPTION_ID = (var0) -> Util.makeDescriptionId("block", var0.identifier());
-      private static final DependantName<Item, String> ITEM_DESCRIPTION_ID = (var0) -> Util.makeDescriptionId("item", var0.identifier());
-      private final DataComponentMap.Builder components;
-      @Nullable Item craftingRemainingItem;
-      FeatureFlagSet requiredFeatures;
+      private static final DependantName<Item, String> BLOCK_DESCRIPTION_ID = (id) -> Util.makeDescriptionId("block", id.identifier());
+      private static final DependantName<Item, String> ITEM_DESCRIPTION_ID = (id) -> Util.makeDescriptionId("item", id.identifier());
+      private DataComponentInitializers.Initializer<Item> componentInitializer = (builder, context, id) -> builder.addAll(DataComponents.COMMON_ITEM_COMPONENTS);
+      private @Nullable ItemStackTemplate craftingRemainingItem;
+      private FeatureFlagSet requiredFeatures;
       private @Nullable ResourceKey<Item> id;
       private DependantName<Item, String> descriptionId;
       private final DependantName<Item, Identifier> model;
 
       public Properties() {
          super();
-         this.components = DataComponentMap.builder().addAll(DataComponents.COMMON_ITEM_COMPONENTS);
          this.requiredFeatures = FeatureFlags.VANILLA_SET;
          this.descriptionId = ITEM_DESCRIPTION_ID;
          this.model = ResourceKey::identifier;
       }
 
-      public Properties food(FoodProperties var1) {
-         return this.food(var1, Consumables.DEFAULT_FOOD);
+      public Properties food(final FoodProperties foodProperties) {
+         return this.food(foodProperties, Consumables.DEFAULT_FOOD);
       }
 
-      public Properties food(FoodProperties var1, Consumable var2) {
-         return this.component(DataComponents.FOOD, var1).component(DataComponents.CONSUMABLE, var2);
+      public Properties food(final FoodProperties foodProperties, final Consumable consumable) {
+         return this.component(DataComponents.FOOD, foodProperties).component(DataComponents.CONSUMABLE, consumable);
       }
 
-      public Properties usingConvertsTo(Item var1) {
-         return this.component(DataComponents.USE_REMAINDER, new UseRemainder(new ItemStack(var1)));
+      public Properties usingConvertsTo(final Item item) {
+         return this.component(DataComponents.USE_REMAINDER, new UseRemainder(new ItemStackTemplate(item)));
       }
 
-      public Properties useCooldown(float var1) {
-         return this.component(DataComponents.USE_COOLDOWN, new UseCooldown(var1));
+      public Properties useCooldown(final float seconds) {
+         return this.component(DataComponents.USE_COOLDOWN, new UseCooldown(seconds));
       }
 
-      public Properties stacksTo(int var1) {
-         return this.component(DataComponents.MAX_STACK_SIZE, var1);
+      public Properties stacksTo(final int max) {
+         return this.component(DataComponents.MAX_STACK_SIZE, max);
       }
 
-      public Properties durability(int var1) {
-         this.component(DataComponents.MAX_DAMAGE, var1);
+      public Properties durability(final int maxDamage) {
+         this.component(DataComponents.MAX_DAMAGE, maxDamage);
          this.component(DataComponents.MAX_STACK_SIZE, 1);
          this.component(DataComponents.DAMAGE, 0);
          return this;
       }
 
-      public Properties craftRemainder(Item var1) {
-         this.craftingRemainingItem = var1;
+      public Properties craftRemainder(final Item craftingRemainingItem) {
+         return this.craftRemainder(new ItemStackTemplate(craftingRemainingItem));
+      }
+
+      public Properties craftRemainder(final ItemStackTemplate craftingRemainingItem) {
+         this.craftingRemainingItem = craftingRemainingItem;
          return this;
       }
 
-      public Properties rarity(Rarity var1) {
-         return this.component(DataComponents.RARITY, var1);
+      public Properties rarity(final Rarity rarity) {
+         return this.component(DataComponents.RARITY, rarity);
       }
 
       public Properties fireResistant() {
-         return this.component(DataComponents.DAMAGE_RESISTANT, new DamageResistant(DamageTypeTags.IS_FIRE));
+         return this.delayedComponent(DataComponents.DAMAGE_RESISTANT, (context) -> new DamageResistant(context.getOrThrow(DamageTypeTags.IS_FIRE)));
       }
 
-      public Properties jukeboxPlayable(ResourceKey<JukeboxSong> var1) {
-         return this.component(DataComponents.JUKEBOX_PLAYABLE, new JukeboxPlayable(new EitherHolder(var1)));
+      public Properties jukeboxPlayable(final ResourceKey<JukeboxSong> song) {
+         return this.delayedComponent(DataComponents.JUKEBOX_PLAYABLE, (context) -> new JukeboxPlayable(context.getOrThrow(song)));
       }
 
-      public Properties enchantable(int var1) {
-         return this.component(DataComponents.ENCHANTABLE, new Enchantable(var1));
+      public Properties enchantable(final int value) {
+         return this.component(DataComponents.ENCHANTABLE, new Enchantable(value));
       }
 
-      public Properties repairable(Item var1) {
-         return this.component(DataComponents.REPAIRABLE, new Repairable(HolderSet.direct(var1.builtInRegistryHolder())));
+      public Properties repairable(final Item repairItem) {
+         return this.component(DataComponents.REPAIRABLE, new Repairable(HolderSet.direct(repairItem.builtInRegistryHolder())));
       }
 
-      public Properties repairable(TagKey<Item> var1) {
-         HolderGetter var2 = BuiltInRegistries.acquireBootstrapRegistrationLookup(BuiltInRegistries.ITEM);
-         return this.component(DataComponents.REPAIRABLE, new Repairable(var2.getOrThrow(var1)));
+      public Properties repairable(final TagKey<Item> repairItems) {
+         HolderGetter<Item> registrationLookup = BuiltInRegistries.<Item>acquireBootstrapRegistrationLookup(BuiltInRegistries.ITEM);
+         return this.component(DataComponents.REPAIRABLE, new Repairable(registrationLookup.getOrThrow(repairItems)));
       }
 
-      public Properties equippable(EquipmentSlot var1) {
-         return this.component(DataComponents.EQUIPPABLE, Equippable.builder(var1).build());
+      public Properties equippable(final EquipmentSlot slot) {
+         return this.component(DataComponents.EQUIPPABLE, Equippable.builder(slot).build());
       }
 
-      public Properties equippableUnswappable(EquipmentSlot var1) {
-         return this.component(DataComponents.EQUIPPABLE, Equippable.builder(var1).setSwappable(false).build());
+      public Properties equippableUnswappable(final EquipmentSlot slot) {
+         return this.component(DataComponents.EQUIPPABLE, Equippable.builder(slot).setSwappable(false).build());
       }
 
-      public Properties tool(ToolMaterial var1, TagKey<Block> var2, float var3, float var4, float var5) {
-         return var1.applyToolProperties(this, var2, var3, var4, var5);
+      public Properties tool(final ToolMaterial material, final TagKey<Block> minesEfficiently, final float attackDamageBaseline, final float attackSpeedBaseline, final float disableBlockingSeconds) {
+         return material.applyToolProperties(this, minesEfficiently, attackDamageBaseline, attackSpeedBaseline, disableBlockingSeconds);
       }
 
-      public Properties pickaxe(ToolMaterial var1, float var2, float var3) {
-         return this.tool(var1, BlockTags.MINEABLE_WITH_PICKAXE, var2, var3, 0.0F);
+      public Properties pickaxe(final ToolMaterial material, final float attackDamageBaseline, final float attackSpeedBaseline) {
+         return this.tool(material, BlockTags.MINEABLE_WITH_PICKAXE, attackDamageBaseline, attackSpeedBaseline, 0.0F);
       }
 
-      public Properties axe(ToolMaterial var1, float var2, float var3) {
-         return this.tool(var1, BlockTags.MINEABLE_WITH_AXE, var2, var3, 5.0F);
+      public Properties axe(final ToolMaterial material, final float attackDamageBaseline, final float attackSpeedBaseline) {
+         return this.tool(material, BlockTags.MINEABLE_WITH_AXE, attackDamageBaseline, attackSpeedBaseline, 5.0F);
       }
 
-      public Properties hoe(ToolMaterial var1, float var2, float var3) {
-         return this.tool(var1, BlockTags.MINEABLE_WITH_HOE, var2, var3, 0.0F);
+      public Properties hoe(final ToolMaterial material, final float attackDamageBaseline, final float attackSpeedBaseline) {
+         return this.tool(material, BlockTags.MINEABLE_WITH_HOE, attackDamageBaseline, attackSpeedBaseline, 0.0F);
       }
 
-      public Properties shovel(ToolMaterial var1, float var2, float var3) {
-         return this.tool(var1, BlockTags.MINEABLE_WITH_SHOVEL, var2, var3, 0.0F);
+      public Properties shovel(final ToolMaterial material, final float attackDamageBaseline, final float attackSpeedBaseline) {
+         return this.tool(material, BlockTags.MINEABLE_WITH_SHOVEL, attackDamageBaseline, attackSpeedBaseline, 0.0F);
       }
 
-      public Properties sword(ToolMaterial var1, float var2, float var3) {
-         return var1.applySwordProperties(this, var2, var3);
+      public Properties sword(final ToolMaterial material, final float attackDamageBaseline, final float attackSpeedBaseline) {
+         return material.applySwordProperties(this, attackDamageBaseline, attackSpeedBaseline);
       }
 
-      public Properties spear(ToolMaterial var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9, float var10) {
-         return this.durability(var1.durability()).repairable(var1.repairItems()).enchantable(var1.enchantmentValue()).component(DataComponents.DAMAGE_TYPE, new EitherHolder(DamageTypes.SPEAR)).component(DataComponents.KINETIC_WEAPON, new KineticWeapon(10, (int)(var4 * 20.0F), KineticWeapon.Condition.ofAttackerSpeed((int)(var5 * 20.0F), var6), KineticWeapon.Condition.ofAttackerSpeed((int)(var7 * 20.0F), var8), KineticWeapon.Condition.ofRelativeSpeed((int)(var9 * 20.0F), var10), 0.38F, var3, Optional.of(var1 == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_USE : SoundEvents.SPEAR_USE), Optional.of(var1 == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_HIT : SoundEvents.SPEAR_HIT))).component(DataComponents.PIERCING_WEAPON, new PiercingWeapon(true, false, Optional.of(var1 == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_ATTACK : SoundEvents.SPEAR_ATTACK), Optional.of(var1 == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_HIT : SoundEvents.SPEAR_HIT))).component(DataComponents.ATTACK_RANGE, new AttackRange(2.0F, 4.5F, 2.0F, 6.5F, 0.125F, 0.5F)).component(DataComponents.MINIMUM_ATTACK_CHARGE, 1.0F).component(DataComponents.SWING_ANIMATION, new SwingAnimation(SwingAnimationType.STAB, (int)(var2 * 20.0F))).attributes(ItemAttributeModifiers.builder().add(Attributes.ATTACK_DAMAGE, new AttributeModifier(Item.BASE_ATTACK_DAMAGE_ID, (double)(0.0F + var1.attackDamageBonus()), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).add(Attributes.ATTACK_SPEED, new AttributeModifier(Item.BASE_ATTACK_SPEED_ID, (double)(1.0F / var2) - 4.0, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).build()).component(DataComponents.USE_EFFECTS, new UseEffects(true, false, 1.0F)).component(DataComponents.WEAPON, new Weapon(1));
+      public Properties spear(final ToolMaterial material, final float attackDuration, final float damageMultiplier, final float delay, final float dismountTime, final float dismountThreshold, final float knockbackTime, final float knockbackThreshold, final float damageTime, final float damageThreshold) {
+         return this.durability(material.durability()).repairable(material.repairItems()).enchantable(material.enchantmentValue()).delayedHolderComponent(DataComponents.DAMAGE_TYPE, DamageTypes.SPEAR).component(DataComponents.KINETIC_WEAPON, new KineticWeapon(10, (int)(delay * 20.0F), KineticWeapon.Condition.ofAttackerSpeed((int)(dismountTime * 20.0F), dismountThreshold), KineticWeapon.Condition.ofAttackerSpeed((int)(knockbackTime * 20.0F), knockbackThreshold), KineticWeapon.Condition.ofRelativeSpeed((int)(damageTime * 20.0F), damageThreshold), 0.38F, damageMultiplier, Optional.of(material == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_USE : SoundEvents.SPEAR_USE), Optional.of(material == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_HIT : SoundEvents.SPEAR_HIT))).component(DataComponents.PIERCING_WEAPON, new PiercingWeapon(true, false, Optional.of(material == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_ATTACK : SoundEvents.SPEAR_ATTACK), Optional.of(material == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_HIT : SoundEvents.SPEAR_HIT))).component(DataComponents.ATTACK_RANGE, new AttackRange(2.0F, 4.5F, 2.0F, 6.5F, 0.125F, 0.5F)).component(DataComponents.MINIMUM_ATTACK_CHARGE, 1.0F).component(DataComponents.SWING_ANIMATION, new SwingAnimation(SwingAnimationType.STAB, (int)(attackDuration * 20.0F))).attributes(ItemAttributeModifiers.builder().add(Attributes.ATTACK_DAMAGE, new AttributeModifier(Item.BASE_ATTACK_DAMAGE_ID, (double)(0.0F + material.attackDamageBonus()), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).add(Attributes.ATTACK_SPEED, new AttributeModifier(Item.BASE_ATTACK_SPEED_ID, (double)(1.0F / attackDuration) - 4.0, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).build()).component(DataComponents.USE_EFFECTS, new UseEffects(true, false, 1.0F)).component(DataComponents.WEAPON, new Weapon(1));
       }
 
-      public Properties spawnEgg(EntityType<?> var1) {
-         return this.component(DataComponents.ENTITY_DATA, TypedEntityData.of(var1, new CompoundTag()));
+      public Properties spawnEgg(final EntityType<?> type) {
+         return this.component(DataComponents.ENTITY_DATA, TypedEntityData.of(type, new CompoundTag())).requiredFeatures(type.requiredFeatures());
       }
 
-      public Properties humanoidArmor(ArmorMaterial var1, ArmorType var2) {
-         return this.durability(var2.getDurability(var1.durability())).attributes(var1.createAttributes(var2)).enchantable(var1.enchantmentValue()).component(DataComponents.EQUIPPABLE, Equippable.builder(var2.getSlot()).setEquipSound(var1.equipSound()).setAsset(var1.assetId()).build()).repairable(var1.repairIngredient());
+      public Properties humanoidArmor(final ArmorMaterial material, final ArmorType type) {
+         return this.durability(type.getDurability(material.durability())).attributes(material.createAttributes(type)).enchantable(material.enchantmentValue()).component(DataComponents.EQUIPPABLE, Equippable.builder(type.getSlot()).setEquipSound(material.equipSound()).setAsset(material.assetId()).build()).repairable(material.repairIngredient());
       }
 
-      public Properties wolfArmor(ArmorMaterial var1) {
-         return this.durability(ArmorType.BODY.getDurability(var1.durability())).attributes(var1.createAttributes(ArmorType.BODY)).repairable(var1.repairIngredient()).component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.BODY).setEquipSound(var1.equipSound()).setAsset(var1.assetId()).setAllowedEntities(HolderSet.direct(EntityType.WOLF.builtInRegistryHolder())).setCanBeSheared(true).setShearingSound(BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.ARMOR_UNEQUIP_WOLF)).build()).component(DataComponents.BREAK_SOUND, SoundEvents.WOLF_ARMOR_BREAK).stacksTo(1);
+      public Properties wolfArmor(final ArmorMaterial material) {
+         return this.durability(ArmorType.BODY.getDurability(material.durability())).attributes(material.createAttributes(ArmorType.BODY)).repairable(material.repairIngredient()).component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.BODY).setEquipSound(material.equipSound()).setAsset(material.assetId()).setAllowedEntities(HolderSet.direct(EntityType.WOLF.builtInRegistryHolder())).setCanBeSheared(true).setShearingSound(BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.ARMOR_UNEQUIP_WOLF)).build()).component(DataComponents.BREAK_SOUND, SoundEvents.WOLF_ARMOR_BREAK).stacksTo(1);
       }
 
-      public Properties horseArmor(ArmorMaterial var1) {
-         HolderGetter var2 = BuiltInRegistries.acquireBootstrapRegistrationLookup(BuiltInRegistries.ENTITY_TYPE);
-         return this.attributes(var1.createAttributes(ArmorType.BODY)).component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.BODY).setEquipSound(SoundEvents.HORSE_ARMOR).setAsset(var1.assetId()).setAllowedEntities(var2.getOrThrow(EntityTypeTags.CAN_WEAR_HORSE_ARMOR)).setDamageOnHurt(false).setCanBeSheared(true).setShearingSound(SoundEvents.HORSE_ARMOR_UNEQUIP).build()).stacksTo(1);
+      public Properties horseArmor(final ArmorMaterial material) {
+         HolderGetter<EntityType<?>> entityGetter = BuiltInRegistries.<EntityType<?>>acquireBootstrapRegistrationLookup(BuiltInRegistries.ENTITY_TYPE);
+         return this.attributes(material.createAttributes(ArmorType.BODY)).component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.BODY).setEquipSound(SoundEvents.HORSE_ARMOR).setAsset(material.assetId()).setAllowedEntities(entityGetter.getOrThrow(EntityTypeTags.CAN_WEAR_HORSE_ARMOR)).setDamageOnHurt(false).setCanBeSheared(true).setShearingSound(SoundEvents.HORSE_ARMOR_UNEQUIP).build()).stacksTo(1);
       }
 
-      public Properties nautilusArmor(ArmorMaterial var1) {
-         HolderGetter var2 = BuiltInRegistries.acquireBootstrapRegistrationLookup(BuiltInRegistries.ENTITY_TYPE);
-         return this.attributes(var1.createAttributes(ArmorType.BODY)).component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.BODY).setEquipSound(SoundEvents.ARMOR_EQUIP_NAUTILUS).setAsset(var1.assetId()).setAllowedEntities(var2.getOrThrow(EntityTypeTags.CAN_WEAR_NAUTILUS_ARMOR)).setDamageOnHurt(false).setEquipOnInteract(true).setCanBeSheared(true).setShearingSound(SoundEvents.ARMOR_UNEQUIP_NAUTILUS).build()).stacksTo(1);
+      public Properties nautilusArmor(final ArmorMaterial material) {
+         HolderGetter<EntityType<?>> entityGetter = BuiltInRegistries.<EntityType<?>>acquireBootstrapRegistrationLookup(BuiltInRegistries.ENTITY_TYPE);
+         return this.attributes(material.createAttributes(ArmorType.BODY)).component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.BODY).setEquipSound(SoundEvents.ARMOR_EQUIP_NAUTILUS).setAsset(material.assetId()).setAllowedEntities(entityGetter.getOrThrow(EntityTypeTags.CAN_WEAR_NAUTILUS_ARMOR)).setDamageOnHurt(false).setEquipOnInteract(true).setCanBeSheared(true).setShearingSound(SoundEvents.ARMOR_UNEQUIP_NAUTILUS).build()).stacksTo(1);
       }
 
-      public Properties trimMaterial(ResourceKey<TrimMaterial> var1) {
-         return this.component(DataComponents.PROVIDES_TRIM_MATERIAL, new ProvidesTrimMaterial(var1));
+      public Properties trimMaterial(final ResourceKey<TrimMaterial> material) {
+         return this.delayedHolderComponent(DataComponents.PROVIDES_TRIM_MATERIAL, material);
       }
 
-      public Properties requiredFeatures(FeatureFlag... var1) {
-         this.requiredFeatures = FeatureFlags.REGISTRY.subset(var1);
+      public Properties requiredFeatures(final FeatureFlag... flags) {
+         this.requiredFeatures = FeatureFlags.REGISTRY.subset(flags);
          return this;
       }
 
-      public Properties setId(ResourceKey<Item> var1) {
-         this.id = var1;
+      public Properties requiredFeatures(final FeatureFlagSet flags) {
+         if (!FeatureFlags.REGISTRY.isSubset(flags)) {
+            throw new IllegalArgumentException("Mismatched flag sets");
+         } else {
+            this.requiredFeatures = flags;
+            return this;
+         }
+      }
+
+      public Properties setId(final ResourceKey<Item> id) {
+         this.id = id;
          return this;
       }
 
-      public Properties overrideDescription(String var1) {
-         this.descriptionId = DependantName.<Item, String>fixed(var1);
+      public Properties overrideDescription(final String descriptionId) {
+         this.descriptionId = DependantName.<Item, String>fixed(descriptionId);
          return this;
       }
 
@@ -549,30 +559,43 @@ public class Item implements FeatureElement, ItemLike {
          return this;
       }
 
+      private ResourceKey<Item> itemIdOrThrow() {
+         return (ResourceKey)Objects.requireNonNull(this.id, "Item id not set");
+      }
+
       protected String effectiveDescriptionId() {
-         return this.descriptionId.get((ResourceKey)Objects.requireNonNull(this.id, "Item id not set"));
+         return this.descriptionId.get(this.itemIdOrThrow());
       }
 
       public Identifier effectiveModel() {
-         return this.model.get((ResourceKey)Objects.requireNonNull(this.id, "Item id not set"));
+         return this.model.get(this.itemIdOrThrow());
       }
 
-      public <T> Properties component(DataComponentType<T> var1, T var2) {
-         this.components.set(var1, var2);
+      public <T> Properties component(final DataComponentType<T> type, final T value) {
+         this.componentInitializer = this.componentInitializer.add(type, value);
          return this;
       }
 
-      public Properties attributes(ItemAttributeModifiers var1) {
-         return this.component(DataComponents.ATTRIBUTE_MODIFIERS, var1);
+      public <T> Properties delayedComponent(final DataComponentType<T> type, final DataComponentInitializers.SingleComponentInitializer<T> initializer) {
+         this.componentInitializer = this.componentInitializer.andThen(initializer.asInitializer(type));
+         return this;
       }
 
-      DataComponentMap buildAndValidateComponents(Component var1, Identifier var2) {
-         DataComponentMap var3 = this.components.set(DataComponents.ITEM_NAME, var1).set(DataComponents.ITEM_MODEL, var2).build();
-         if (var3.has(DataComponents.DAMAGE) && (Integer)var3.getOrDefault(DataComponents.MAX_STACK_SIZE, 1) > 1) {
-            throw new IllegalStateException("Item cannot have both durability and be stackable");
-         } else {
-            return var3;
-         }
+      public <T> Properties delayedHolderComponent(final DataComponentType<Holder<T>> type, final ResourceKey<T> valueKey) {
+         this.componentInitializer = this.componentInitializer.andThen((components, context, key) -> components.set(type, context.getOrThrow(valueKey)));
+         return this;
+      }
+
+      public Properties attributes(final ItemAttributeModifiers attributes) {
+         return this.component(DataComponents.ATTRIBUTE_MODIFIERS, attributes);
+      }
+
+      private DataComponentInitializers.Initializer<Item> finalizeInitializer(final Component name, final Identifier model) {
+         return this.componentInitializer.andThen((components, context, key) -> components.set(DataComponents.ITEM_NAME, name).set(DataComponents.ITEM_MODEL, model).addValidator((c) -> {
+               if (c.has(DataComponents.DAMAGE) && (Integer)c.getOrDefault(DataComponents.MAX_STACK_SIZE, 1) > 1) {
+                  throw new IllegalStateException("Item cannot have both durability and be stackable");
+               }
+            }));
       }
    }
 
@@ -586,7 +609,7 @@ public class Item implements FeatureElement, ItemLike {
             return 20.0F;
          }
 
-         public @Nullable MapItemSavedData mapData(MapId var1) {
+         public @Nullable MapItemSavedData mapData(final MapId id) {
             return null;
          }
 
@@ -599,41 +622,41 @@ public class Item implements FeatureElement, ItemLike {
 
       float tickRate();
 
-      @Nullable MapItemSavedData mapData(MapId var1);
+      @Nullable MapItemSavedData mapData(MapId id);
 
       boolean isPeaceful();
 
-      static TooltipContext of(final @Nullable Level var0) {
-         return var0 == null ? EMPTY : new TooltipContext() {
+      static TooltipContext of(final @Nullable Level level) {
+         return level == null ? EMPTY : new TooltipContext() {
             public HolderLookup.Provider registries() {
-               return var0.registryAccess();
+               return level.registryAccess();
             }
 
             public float tickRate() {
-               return var0.tickRateManager().tickrate();
+               return level.tickRateManager().tickrate();
             }
 
-            public MapItemSavedData mapData(MapId var1) {
-               return var0.getMapData(var1);
+            public MapItemSavedData mapData(final MapId id) {
+               return level.getMapData(id);
             }
 
             public boolean isPeaceful() {
-               return var0.getDifficulty() == Difficulty.PEACEFUL;
+               return level.getDifficulty() == Difficulty.PEACEFUL;
             }
          };
       }
 
-      static TooltipContext of(final HolderLookup.Provider var0) {
+      static TooltipContext of(final HolderLookup.Provider registries) {
          return new TooltipContext() {
             public HolderLookup.Provider registries() {
-               return var0;
+               return registries;
             }
 
             public float tickRate() {
                return 20.0F;
             }
 
-            public @Nullable MapItemSavedData mapData(MapId var1) {
+            public @Nullable MapItemSavedData mapData(final MapId id) {
                return null;
             }
 

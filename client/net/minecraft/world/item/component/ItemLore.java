@@ -24,26 +24,23 @@ public record ItemLore(List<Component> lines, List<Component> styledLines) imple
    public static final Codec<ItemLore> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, ItemLore> STREAM_CODEC;
 
-   public ItemLore(List<Component> var1) {
-      this(var1, Lists.transform(var1, (var0) -> ComponentUtils.mergeStyles(var0, LORE_STYLE)));
+   public ItemLore(final List<Component> lines) {
+      this(lines, Lists.transform(lines, (component) -> ComponentUtils.mergeStyles(component, LORE_STYLE)));
    }
 
-   public ItemLore(List<Component> var1, List<Component> var2) {
+   public ItemLore {
       super();
-      if (var1.size() > 256) {
-         throw new IllegalArgumentException("Got " + var1.size() + " lines, but maximum is 256");
-      } else {
-         this.lines = var1;
-         this.styledLines = var2;
+      if (lines.size() > 256) {
+         throw new IllegalArgumentException("Got " + lines.size() + " lines, but maximum is 256");
       }
    }
 
-   public ItemLore withLineAdded(Component var1) {
-      return new ItemLore(Util.copyAndAdd(this.lines, var1));
+   public ItemLore withLineAdded(final Component component) {
+      return new ItemLore(Util.copyAndAdd(this.lines, component));
    }
 
-   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
-      this.styledLines.forEach(var2);
+   public void addToTooltip(final Item.TooltipContext context, final Consumer<Component> consumer, final TooltipFlag flag, final DataComponentGetter components) {
+      this.styledLines.forEach(consumer);
    }
 
    static {

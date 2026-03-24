@@ -25,41 +25,41 @@ public class ServerAdvancementManager extends SimpleJsonResourceReloadListener<A
    private AdvancementTree tree = new AdvancementTree();
    private final HolderLookup.Provider registries;
 
-   public ServerAdvancementManager(HolderLookup.Provider var1) {
-      super(var1, Advancement.CODEC, Registries.ADVANCEMENT);
-      this.registries = var1;
+   public ServerAdvancementManager(final HolderLookup.Provider registries) {
+      super(registries, Advancement.CODEC, Registries.ADVANCEMENT);
+      this.registries = registries;
    }
 
-   protected void apply(Map<Identifier, Advancement> var1, ResourceManager var2, ProfilerFiller var3) {
-      ImmutableMap.Builder var4 = ImmutableMap.builder();
-      var1.forEach((var2x, var3x) -> {
-         this.validate(var2x, var3x);
-         var4.put(var2x, new AdvancementHolder(var2x, var3x));
+   protected void apply(final Map<Identifier, Advancement> preparations, final ResourceManager manager, final ProfilerFiller profiler) {
+      ImmutableMap.Builder<Identifier, AdvancementHolder> builder = ImmutableMap.builder();
+      preparations.forEach((id, advancement) -> {
+         this.validate(id, advancement);
+         builder.put(id, new AdvancementHolder(id, advancement));
       });
-      this.advancements = var4.buildOrThrow();
-      AdvancementTree var5 = new AdvancementTree();
-      var5.addAll(this.advancements.values());
+      this.advancements = builder.buildOrThrow();
+      AdvancementTree tree = new AdvancementTree();
+      tree.addAll(this.advancements.values());
 
-      for(AdvancementNode var7 : var5.roots()) {
-         if (var7.holder().value().display().isPresent()) {
-            TreeNodePosition.run(var7);
+      for(AdvancementNode root : tree.roots()) {
+         if (root.holder().value().display().isPresent()) {
+            TreeNodePosition.run(root);
          }
       }
 
-      this.tree = var5;
+      this.tree = tree;
    }
 
-   private void validate(Identifier var1, Advancement var2) {
-      ProblemReporter.Collector var3 = new ProblemReporter.Collector();
-      var2.validate(var3, this.registries);
-      if (!var3.isEmpty()) {
-         LOGGER.warn("Found validation problems in advancement {}: \n{}", var1, var3.getReport());
+   private void validate(final Identifier id, final Advancement advancement) {
+      ProblemReporter.Collector problemCollector = new ProblemReporter.Collector();
+      advancement.validate(problemCollector, this.registries);
+      if (!problemCollector.isEmpty()) {
+         LOGGER.warn("Found validation problems in advancement {}: \n{}", id, problemCollector.getReport());
       }
 
    }
 
-   public @Nullable AdvancementHolder get(Identifier var1) {
-      return (AdvancementHolder)this.advancements.get(var1);
+   public @Nullable AdvancementHolder get(final Identifier id) {
+      return (AdvancementHolder)this.advancements.get(id);
    }
 
    public AdvancementTree tree() {

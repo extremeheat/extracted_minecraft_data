@@ -7,9 +7,9 @@ import com.mojang.brigadier.Message;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
@@ -33,7 +33,7 @@ public interface SharedSuggestionProvider extends PermissionSetSupplier {
 
    Collection<String> getOnlinePlayerNames();
 
-   default Collection<String> getCustomTabSugggestions() {
+   default Collection<String> getCustomTabSuggestions() {
       return this.getOnlinePlayerNames();
    }
 
@@ -45,7 +45,7 @@ public interface SharedSuggestionProvider extends PermissionSetSupplier {
 
    Stream<Identifier> getAvailableSounds();
 
-   CompletableFuture<Suggestions> customSuggestion(CommandContext<?> var1);
+   CompletableFuture<Suggestions> customSuggestion(CommandContext<?> context);
 
    default Collection<TextCoordinates> getRelevantCoordinates() {
       return Collections.singleton(SharedSuggestionProvider.TextCoordinates.DEFAULT_GLOBAL);
@@ -61,200 +61,200 @@ public interface SharedSuggestionProvider extends PermissionSetSupplier {
 
    FeatureFlagSet enabledFeatures();
 
-   default void suggestRegistryElements(HolderLookup<?> var1, ElementSuggestionType var2, SuggestionsBuilder var3) {
-      if (var2.shouldSuggestTags()) {
-         suggestResource(var1.listTagIds().map(TagKey::location), var3, "#");
+   default void suggestRegistryElements(final HolderLookup<?> registry, final ElementSuggestionType elements, final SuggestionsBuilder builder) {
+      if (elements.shouldSuggestTags()) {
+         suggestResource(registry.listTagIds().map(TagKey::location), builder, "#");
       }
 
-      if (var2.shouldSuggestElements()) {
-         suggestResource(var1.listElementIds().map(ResourceKey::identifier), var3);
+      if (elements.shouldSuggestElements()) {
+         suggestResource(registry.listElementIds().map(ResourceKey::identifier), builder);
       }
 
    }
 
-   static <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var0, SuggestionsBuilder var1, ResourceKey<? extends Registry<?>> var2, ElementSuggestionType var3) {
-      Object var5 = var0.getSource();
-      if (var5 instanceof SharedSuggestionProvider var4) {
-         return var4.suggestRegistryElements(var2, var3, var1, var0);
+   static <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder, final ResourceKey<? extends Registry<?>> registryKey, final ElementSuggestionType type) {
+      Object var5 = context.getSource();
+      if (var5 instanceof SharedSuggestionProvider suggestionProvider) {
+         return suggestionProvider.suggestRegistryElements(registryKey, type, builder, context);
       } else {
-         return var1.buildFuture();
+         return builder.buildFuture();
       }
    }
 
-   CompletableFuture<Suggestions> suggestRegistryElements(ResourceKey<? extends Registry<?>> var1, ElementSuggestionType var2, SuggestionsBuilder var3, CommandContext<?> var4);
+   CompletableFuture<Suggestions> suggestRegistryElements(final ResourceKey<? extends Registry<?>> key, final ElementSuggestionType elements, final SuggestionsBuilder builder, final CommandContext<?> context);
 
-   static <T> void filterResources(Iterable<T> var0, String var1, Function<T, Identifier> var2, Consumer<T> var3) {
-      boolean var4 = var1.indexOf(58) > -1;
+   static <T> void filterResources(final Iterable<T> values, final String contents, final Function<T, Identifier> converter, final Consumer<T> consumer) {
+      boolean hasNamespace = contents.indexOf(58) > -1;
 
-      for(Object var6 : var0) {
-         Identifier var7 = (Identifier)var2.apply(var6);
-         if (var4) {
-            String var8 = var7.toString();
-            if (matchesSubStr(var1, var8)) {
-               var3.accept(var6);
+      for(T value : values) {
+         Identifier id = (Identifier)converter.apply(value);
+         if (hasNamespace) {
+            String name = id.toString();
+            if (matchesSubStr(contents, name)) {
+               consumer.accept(value);
             }
-         } else if (matchesSubStr(var1, var7.getNamespace()) || matchesSubStr(var1, var7.getPath())) {
-            var3.accept(var6);
+         } else if (matchesSubStr(contents, id.getNamespace()) || matchesSubStr(contents, id.getPath())) {
+            consumer.accept(value);
          }
       }
 
    }
 
-   static <T> void filterResources(Iterable<T> var0, String var1, String var2, Function<T, Identifier> var3, Consumer<T> var4) {
-      if (var1.isEmpty()) {
-         var0.forEach(var4);
+   static <T> void filterResources(final Iterable<T> values, final String contents, final String prefix, final Function<T, Identifier> converter, final Consumer<T> consumer) {
+      if (contents.isEmpty()) {
+         values.forEach(consumer);
       } else {
-         String var5 = Strings.commonPrefix(var1, var2);
-         if (!var5.isEmpty()) {
-            String var6 = var1.substring(var5.length());
-            filterResources(var0, var6, var3, var4);
+         String commonPrefix = Strings.commonPrefix(contents, prefix);
+         if (!commonPrefix.isEmpty()) {
+            String strippedContents = contents.substring(commonPrefix.length());
+            filterResources(values, strippedContents, converter, consumer);
          }
       }
 
    }
 
-   static CompletableFuture<Suggestions> suggestResource(Iterable<Identifier> var0, SuggestionsBuilder var1, String var2) {
-      String var3 = var1.getRemaining().toLowerCase(Locale.ROOT);
-      filterResources(var0, var3, var2, (var0x) -> var0x, (var2x) -> var1.suggest(var2 + String.valueOf(var2x)));
-      return var1.buildFuture();
+   static CompletableFuture<Suggestions> suggestResource(final Iterable<Identifier> values, final SuggestionsBuilder builder, final String prefix) {
+      String contents = builder.getRemaining().toLowerCase(Locale.ROOT);
+      filterResources(values, contents, prefix, (t) -> t, (v) -> builder.suggest(prefix + String.valueOf(v)));
+      return builder.buildFuture();
    }
 
-   static CompletableFuture<Suggestions> suggestResource(Stream<Identifier> var0, SuggestionsBuilder var1, String var2) {
-      Objects.requireNonNull(var0);
-      return suggestResource(var0::iterator, var1, var2);
+   static CompletableFuture<Suggestions> suggestResource(final Stream<Identifier> values, final SuggestionsBuilder builder, final String prefix) {
+      Objects.requireNonNull(values);
+      return suggestResource(values::iterator, builder, prefix);
    }
 
-   static CompletableFuture<Suggestions> suggestResource(Iterable<Identifier> var0, SuggestionsBuilder var1) {
-      String var2 = var1.getRemaining().toLowerCase(Locale.ROOT);
-      filterResources(var0, var2, (var0x) -> var0x, (var1x) -> var1.suggest(var1x.toString()));
-      return var1.buildFuture();
+   static CompletableFuture<Suggestions> suggestResource(final Iterable<Identifier> values, final SuggestionsBuilder builder) {
+      String contents = builder.getRemaining().toLowerCase(Locale.ROOT);
+      filterResources(values, contents, (t) -> t, (v) -> builder.suggest(v.toString()));
+      return builder.buildFuture();
    }
 
-   static <T> CompletableFuture<Suggestions> suggestResource(Iterable<T> var0, SuggestionsBuilder var1, Function<T, Identifier> var2, Function<T, Message> var3) {
-      String var4 = var1.getRemaining().toLowerCase(Locale.ROOT);
-      filterResources(var0, var4, var2, (var3x) -> var1.suggest(((Identifier)var2.apply(var3x)).toString(), (Message)var3.apply(var3x)));
-      return var1.buildFuture();
+   static <T> CompletableFuture<Suggestions> suggestResource(final Iterable<T> values, final SuggestionsBuilder builder, final Function<T, Identifier> id, final Function<T, Message> tooltip) {
+      String contents = builder.getRemaining().toLowerCase(Locale.ROOT);
+      filterResources(values, contents, id, (v) -> builder.suggest(((Identifier)id.apply(v)).toString(), (Message)tooltip.apply(v)));
+      return builder.buildFuture();
    }
 
-   static CompletableFuture<Suggestions> suggestResource(Stream<Identifier> var0, SuggestionsBuilder var1) {
-      Objects.requireNonNull(var0);
-      return suggestResource(var0::iterator, var1);
+   static CompletableFuture<Suggestions> suggestResource(final Stream<Identifier> values, final SuggestionsBuilder builder) {
+      Objects.requireNonNull(values);
+      return suggestResource(values::iterator, builder);
    }
 
-   static <T> CompletableFuture<Suggestions> suggestResource(Stream<T> var0, SuggestionsBuilder var1, Function<T, Identifier> var2, Function<T, Message> var3) {
-      Objects.requireNonNull(var0);
-      return suggestResource(var0::iterator, var1, var2, var3);
+   static <T> CompletableFuture<Suggestions> suggestResource(final Stream<T> values, final SuggestionsBuilder builder, final Function<T, Identifier> id, final Function<T, Message> tooltip) {
+      Objects.requireNonNull(values);
+      return suggestResource(values::iterator, builder, id, tooltip);
    }
 
-   static CompletableFuture<Suggestions> suggestCoordinates(String var0, Collection<TextCoordinates> var1, SuggestionsBuilder var2, Predicate<String> var3) {
-      ArrayList var4 = Lists.newArrayList();
-      if (Strings.isNullOrEmpty(var0)) {
-         for(TextCoordinates var6 : var1) {
-            String var7 = var6.x + " " + var6.y + " " + var6.z;
-            if (var3.test(var7)) {
-               var4.add(var6.x);
-               var4.add(var6.x + " " + var6.y);
-               var4.add(var7);
+   static CompletableFuture<Suggestions> suggestCoordinates(final String currentInput, final Collection<TextCoordinates> allSuggestions, final SuggestionsBuilder builder, final Predicate<String> validator) {
+      List<String> result = Lists.newArrayList();
+      if (Strings.isNullOrEmpty(currentInput)) {
+         for(TextCoordinates coordinate : allSuggestions) {
+            String fullValue = coordinate.x + " " + coordinate.y + " " + coordinate.z;
+            if (validator.test(fullValue)) {
+               result.add(coordinate.x);
+               result.add(coordinate.x + " " + coordinate.y);
+               result.add(fullValue);
             }
          }
       } else {
-         String[] var9 = var0.split(" ");
-         if (var9.length == 1) {
-            for(TextCoordinates var12 : var1) {
-               String var8 = var9[0] + " " + var12.y + " " + var12.z;
-               if (var3.test(var8)) {
-                  var4.add(var9[0] + " " + var12.y);
-                  var4.add(var8);
+         String[] fields = currentInput.split(" ");
+         if (fields.length == 1) {
+            for(TextCoordinates coordinate : allSuggestions) {
+               String fullValue = fields[0] + " " + coordinate.y + " " + coordinate.z;
+               if (validator.test(fullValue)) {
+                  result.add(fields[0] + " " + coordinate.y);
+                  result.add(fullValue);
                }
             }
-         } else if (var9.length == 2) {
-            for(TextCoordinates var13 : var1) {
-               String var14 = var9[0] + " " + var9[1] + " " + var13.z;
-               if (var3.test(var14)) {
-                  var4.add(var14);
-               }
-            }
-         }
-      }
-
-      return suggest(var4, var2);
-   }
-
-   static CompletableFuture<Suggestions> suggest2DCoordinates(String var0, Collection<TextCoordinates> var1, SuggestionsBuilder var2, Predicate<String> var3) {
-      ArrayList var4 = Lists.newArrayList();
-      if (Strings.isNullOrEmpty(var0)) {
-         for(TextCoordinates var6 : var1) {
-            String var7 = var6.x + " " + var6.z;
-            if (var3.test(var7)) {
-               var4.add(var6.x);
-               var4.add(var7);
-            }
-         }
-      } else {
-         String[] var9 = var0.split(" ");
-         if (var9.length == 1) {
-            for(TextCoordinates var11 : var1) {
-               String var8 = var9[0] + " " + var11.z;
-               if (var3.test(var8)) {
-                  var4.add(var8);
+         } else if (fields.length == 2) {
+            for(TextCoordinates coordinate : allSuggestions) {
+               String fullValue = fields[0] + " " + fields[1] + " " + coordinate.z;
+               if (validator.test(fullValue)) {
+                  result.add(fullValue);
                }
             }
          }
       }
 
-      return suggest(var4, var2);
+      return suggest(result, builder);
    }
 
-   static CompletableFuture<Suggestions> suggest(Iterable<String> var0, SuggestionsBuilder var1) {
-      String var2 = var1.getRemaining().toLowerCase(Locale.ROOT);
-
-      for(String var4 : var0) {
-         if (matchesSubStr(var2, var4.toLowerCase(Locale.ROOT))) {
-            var1.suggest(var4);
+   static CompletableFuture<Suggestions> suggest2DCoordinates(final String currentInput, final Collection<TextCoordinates> allSuggestions, final SuggestionsBuilder builder, final Predicate<String> validator) {
+      List<String> result = Lists.newArrayList();
+      if (Strings.isNullOrEmpty(currentInput)) {
+         for(TextCoordinates coordinate : allSuggestions) {
+            String fullValue = coordinate.x + " " + coordinate.z;
+            if (validator.test(fullValue)) {
+               result.add(coordinate.x);
+               result.add(fullValue);
+            }
+         }
+      } else {
+         String[] fields = currentInput.split(" ");
+         if (fields.length == 1) {
+            for(TextCoordinates coordinate : allSuggestions) {
+               String fullValue = fields[0] + " " + coordinate.z;
+               if (validator.test(fullValue)) {
+                  result.add(fullValue);
+               }
+            }
          }
       }
 
-      return var1.buildFuture();
+      return suggest(result, builder);
    }
 
-   static CompletableFuture<Suggestions> suggest(Stream<String> var0, SuggestionsBuilder var1) {
-      String var2 = var1.getRemaining().toLowerCase(Locale.ROOT);
-      Stream var10000 = var0.filter((var1x) -> matchesSubStr(var2, var1x.toLowerCase(Locale.ROOT)));
-      Objects.requireNonNull(var1);
-      var10000.forEach(var1::suggest);
-      return var1.buildFuture();
-   }
+   static CompletableFuture<Suggestions> suggest(final Iterable<String> values, final SuggestionsBuilder builder) {
+      String lowerPrefix = builder.getRemaining().toLowerCase(Locale.ROOT);
 
-   static CompletableFuture<Suggestions> suggest(String[] var0, SuggestionsBuilder var1) {
-      String var2 = var1.getRemaining().toLowerCase(Locale.ROOT);
-
-      for(String var6 : var0) {
-         if (matchesSubStr(var2, var6.toLowerCase(Locale.ROOT))) {
-            var1.suggest(var6);
+      for(String name : values) {
+         if (matchesSubStr(lowerPrefix, name.toLowerCase(Locale.ROOT))) {
+            builder.suggest(name);
          }
       }
 
-      return var1.buildFuture();
+      return builder.buildFuture();
    }
 
-   static <T> CompletableFuture<Suggestions> suggest(Iterable<T> var0, SuggestionsBuilder var1, Function<T, String> var2, Function<T, Message> var3) {
-      String var4 = var1.getRemaining().toLowerCase(Locale.ROOT);
+   static CompletableFuture<Suggestions> suggest(final Stream<String> values, final SuggestionsBuilder builder) {
+      String lowerPrefix = builder.getRemaining().toLowerCase(Locale.ROOT);
+      Stream var10000 = values.filter((v) -> matchesSubStr(lowerPrefix, v.toLowerCase(Locale.ROOT)));
+      Objects.requireNonNull(builder);
+      var10000.forEach(builder::suggest);
+      return builder.buildFuture();
+   }
 
-      for(Object var6 : var0) {
-         String var7 = (String)var2.apply(var6);
-         if (matchesSubStr(var4, var7.toLowerCase(Locale.ROOT))) {
-            var1.suggest(var7, (Message)var3.apply(var6));
+   static CompletableFuture<Suggestions> suggest(final String[] values, final SuggestionsBuilder builder) {
+      String lowerPrefix = builder.getRemaining().toLowerCase(Locale.ROOT);
+
+      for(String name : values) {
+         if (matchesSubStr(lowerPrefix, name.toLowerCase(Locale.ROOT))) {
+            builder.suggest(name);
          }
       }
 
-      return var1.buildFuture();
+      return builder.buildFuture();
    }
 
-   static boolean matchesSubStr(String var0, String var1) {
-      int var3;
-      for(int var2 = 0; !var1.startsWith(var0, var2); var2 = var3 + 1) {
-         var3 = MATCH_SPLITTER.indexIn(var1, var2);
-         if (var3 < 0) {
+   static <T> CompletableFuture<Suggestions> suggest(final Iterable<T> values, final SuggestionsBuilder builder, final Function<T, String> toString, final Function<T, Message> tooltip) {
+      String lowerPrefix = builder.getRemaining().toLowerCase(Locale.ROOT);
+
+      for(T value : values) {
+         String name = (String)toString.apply(value);
+         if (matchesSubStr(lowerPrefix, name.toLowerCase(Locale.ROOT))) {
+            builder.suggest(name, (Message)tooltip.apply(value));
+         }
+      }
+
+      return builder.buildFuture();
+   }
+
+   static boolean matchesSubStr(final String pattern, final String input) {
+      int indexOfSplitter;
+      for(int index = 0; !input.startsWith(pattern, index); index = indexOfSplitter + 1) {
+         indexOfSplitter = MATCH_SPLITTER.indexIn(input, index);
+         if (indexOfSplitter < 0) {
             return false;
          }
       }
@@ -269,11 +269,11 @@ public interface SharedSuggestionProvider extends PermissionSetSupplier {
       public final String y;
       public final String z;
 
-      public TextCoordinates(String var1, String var2, String var3) {
+      public TextCoordinates(final String x, final String y, final String z) {
          super();
-         this.x = var1;
-         this.y = var2;
-         this.z = var3;
+         this.x = x;
+         this.y = y;
+         this.z = z;
       }
    }
 

@@ -8,18 +8,18 @@ public final class ChunkDependencies {
    private final ImmutableList<ChunkStatus> dependencyByRadius;
    private final int[] radiusByDependency;
 
-   public ChunkDependencies(ImmutableList<ChunkStatus> var1) {
+   public ChunkDependencies(final ImmutableList<ChunkStatus> dependencyByRadius) {
       super();
-      this.dependencyByRadius = var1;
-      int var2 = var1.isEmpty() ? 0 : ((ChunkStatus)var1.getFirst()).getIndex() + 1;
-      this.radiusByDependency = new int[var2];
+      this.dependencyByRadius = dependencyByRadius;
+      int size = dependencyByRadius.isEmpty() ? 0 : ((ChunkStatus)dependencyByRadius.getFirst()).getIndex() + 1;
+      this.radiusByDependency = new int[size];
 
-      for(int var3 = 0; var3 < var1.size(); ++var3) {
-         ChunkStatus var4 = (ChunkStatus)var1.get(var3);
-         int var5 = var4.getIndex();
+      for(int radius = 0; radius < dependencyByRadius.size(); ++radius) {
+         ChunkStatus dependency = (ChunkStatus)dependencyByRadius.get(radius);
+         int index = dependency.getIndex();
 
-         for(int var6 = 0; var6 <= var5; ++var6) {
-            this.radiusByDependency[var6] = var3;
+         for(int statusIndex = 0; statusIndex <= index; ++statusIndex) {
+            this.radiusByDependency[statusIndex] = radius;
          }
       }
 
@@ -34,12 +34,12 @@ public final class ChunkDependencies {
       return this.dependencyByRadius.size();
    }
 
-   public int getRadiusOf(ChunkStatus var1) {
-      int var2 = var1.getIndex();
-      if (var2 >= this.radiusByDependency.length) {
-         throw new IllegalArgumentException(String.format(Locale.ROOT, "Requesting a ChunkStatus(%s) outside of dependency range(%s)", var1, this.dependencyByRadius));
+   public int getRadiusOf(final ChunkStatus status) {
+      int index = status.getIndex();
+      if (index >= this.radiusByDependency.length) {
+         throw new IllegalArgumentException(String.format(Locale.ROOT, "Requesting a ChunkStatus(%s) outside of dependency range(%s)", status, this.dependencyByRadius));
       } else {
-         return this.radiusByDependency[var2];
+         return this.radiusByDependency[index];
       }
    }
 
@@ -47,8 +47,8 @@ public final class ChunkDependencies {
       return Math.max(0, this.dependencyByRadius.size() - 1);
    }
 
-   public ChunkStatus get(int var1) {
-      return (ChunkStatus)this.dependencyByRadius.get(var1);
+   public ChunkStatus get(final int distance) {
+      return (ChunkStatus)this.dependencyByRadius.get(distance);
    }
 
    public String toString() {

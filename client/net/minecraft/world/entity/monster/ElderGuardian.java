@@ -3,6 +3,7 @@ package net.minecraft.world.entity.monster;
 import java.util.List;
 import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
@@ -22,8 +23,8 @@ public class ElderGuardian extends Guardian {
    private static final int EFFECT_AMPLIFIER = 2;
    private static final int EFFECT_DISPLAY_LIMIT = 1200;
 
-   public ElderGuardian(EntityType<? extends ElderGuardian> var1, Level var2) {
-      super(var1, var2);
+   public ElderGuardian(final EntityType<? extends ElderGuardian> type, final Level level) {
+      super(type, level);
       this.setPersistenceRequired();
       if (this.randomStrollGoal != null) {
          this.randomStrollGoal.setInterval(400);
@@ -43,7 +44,7 @@ public class ElderGuardian extends Guardian {
       return this.isInWater() ? SoundEvents.ELDER_GUARDIAN_AMBIENT : SoundEvents.ELDER_GUARDIAN_AMBIENT_LAND;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return this.isInWater() ? SoundEvents.ELDER_GUARDIAN_HURT : SoundEvents.ELDER_GUARDIAN_HURT_LAND;
    }
 
@@ -55,12 +56,12 @@ public class ElderGuardian extends Guardian {
       return SoundEvents.ELDER_GUARDIAN_FLOP;
    }
 
-   protected void customServerAiStep(ServerLevel var1) {
-      super.customServerAiStep(var1);
+   protected void customServerAiStep(final ServerLevel level) {
+      super.customServerAiStep(level);
       if ((this.tickCount + this.getId()) % 1200 == 0) {
-         MobEffectInstance var2 = new MobEffectInstance(MobEffects.MINING_FATIGUE, 6000, 2);
-         List var3 = MobEffectUtil.addEffectToPlayersAround(var1, this, this.position(), 50.0, var2, 1200);
-         var3.forEach((var1x) -> var1x.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.GUARDIAN_ELDER_EFFECT, this.isSilent() ? 0.0F : 1.0F)));
+         MobEffectInstance miningFatigue = new MobEffectInstance(MobEffects.MINING_FATIGUE, 6000, 2);
+         List<ServerPlayer> affectedPlayers = MobEffectUtil.addEffectToPlayersAround(level, this, this.position(), 50.0, miningFatigue, 1200);
+         affectedPlayers.forEach((player) -> player.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.GUARDIAN_ELDER_EFFECT, this.isSilent() ? 0.0F : 1.0F)));
       }
 
       if (!this.hasHome()) {

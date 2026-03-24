@@ -7,15 +7,15 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
 
 public class OptionsProgrammerArtFix extends DataFix {
-   public OptionsProgrammerArtFix(Schema var1) {
-      super(var1, false);
+   public OptionsProgrammerArtFix(final Schema outputSchema) {
+      super(outputSchema, false);
    }
 
    public TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped("OptionsProgrammerArtFix", this.getInputSchema().getType(References.OPTIONS), (var1) -> var1.update(DSL.remainderFinder(), (var1x) -> var1x.update("resourcePacks", this::fixList).update("incompatibleResourcePacks", this::fixList)));
+      return this.fixTypeEverywhereTyped("OptionsProgrammerArtFix", this.getInputSchema().getType(References.OPTIONS), (input) -> input.update(DSL.remainderFinder(), (tag) -> tag.update("resourcePacks", this::fixList).update("incompatibleResourcePacks", this::fixList)));
    }
 
-   private <T> Dynamic<T> fixList(Dynamic<T> var1) {
-      return (Dynamic)var1.asString().result().map((var1x) -> var1.createString(var1x.replace("\"programer_art\"", "\"programmer_art\""))).orElse(var1);
+   private <T> Dynamic<T> fixList(final Dynamic<T> entry) {
+      return (Dynamic)entry.asString().result().map((s) -> entry.createString(s.replace("\"programer_art\"", "\"programmer_art\""))).orElse(entry);
    }
 }

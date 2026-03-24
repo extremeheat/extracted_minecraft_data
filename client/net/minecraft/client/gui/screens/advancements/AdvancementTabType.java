@@ -1,6 +1,6 @@
 package net.minecraft.client.gui.screens.advancements;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
@@ -17,12 +17,12 @@ enum AdvancementTabType {
    private final int height;
    private final int max;
 
-   private AdvancementTabType(final Sprites var3, final Sprites var4, final int var5, final int var6, final int var7) {
-      this.selectedSprites = var3;
-      this.unselectedSprites = var4;
-      this.width = var5;
-      this.height = var6;
-      this.max = var7;
+   private AdvancementTabType(final Sprites selectedSprites, final Sprites unselectedSprites, final int width, final int height, final int max) {
+      this.selectedSprites = selectedSprites;
+      this.unselectedSprites = unselectedSprites;
+      this.width = width;
+      this.height = height;
+      this.max = max;
    }
 
    public int getWidth() {
@@ -37,51 +37,51 @@ enum AdvancementTabType {
       return this.max;
    }
 
-   public void draw(GuiGraphics var1, int var2, int var3, boolean var4, int var5) {
-      Sprites var6 = var4 ? this.selectedSprites : this.unselectedSprites;
-      Identifier var7;
-      if (var5 == 0) {
-         var7 = var6.first();
-      } else if (var5 == this.max - 1) {
-         var7 = var6.last();
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int tabX, final int tabY, final boolean selected, final int index) {
+      Sprites sprites = selected ? this.selectedSprites : this.unselectedSprites;
+      Identifier sprite;
+      if (index == 0) {
+         sprite = sprites.first();
+      } else if (index == this.max - 1) {
+         sprite = sprites.last();
       } else {
-         var7 = var6.middle();
+         sprite = sprites.middle();
       }
 
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, var7, var2, var3, this.width, this.height);
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, tabX, tabY, this.width, this.height);
    }
 
-   public void drawIcon(GuiGraphics var1, int var2, int var3, int var4, ItemStack var5) {
-      int var6 = var2 + this.getX(var4);
-      int var7 = var3 + this.getY(var4);
+   public void extractIcon(final GuiGraphicsExtractor graphics, final int xo, final int yo, final int index, final ItemStack icon) {
+      int x = xo + this.getX(index);
+      int y = yo + this.getY(index);
       switch (this.ordinal()) {
          case 0:
-            var6 += 6;
-            var7 += 9;
+            x += 6;
+            y += 9;
             break;
          case 1:
-            var6 += 6;
-            var7 += 6;
+            x += 6;
+            y += 6;
             break;
          case 2:
-            var6 += 10;
-            var7 += 5;
+            x += 10;
+            y += 5;
             break;
          case 3:
-            var6 += 6;
-            var7 += 5;
+            x += 6;
+            y += 5;
       }
 
-      var1.renderFakeItem(var5, var6, var7);
+      graphics.fakeItem(icon, x, y);
    }
 
-   public int getX(int var1) {
+   public int getX(final int index) {
       switch (this.ordinal()) {
          case 0 -> {
-            return (this.width + 4) * var1;
+            return (this.width + 4) * index;
          }
          case 1 -> {
-            return (this.width + 4) * var1;
+            return (this.width + 4) * index;
          }
          case 2 -> {
             return -this.width + 4;
@@ -93,7 +93,7 @@ enum AdvancementTabType {
       }
    }
 
-   public int getY(int var1) {
+   public int getY(final int index) {
       switch (this.ordinal()) {
          case 0 -> {
             return -this.height + 4;
@@ -102,19 +102,19 @@ enum AdvancementTabType {
             return 136;
          }
          case 2 -> {
-            return this.height * var1;
+            return this.height * index;
          }
          case 3 -> {
-            return this.height * var1;
+            return this.height * index;
          }
          default -> throw new UnsupportedOperationException("Don't know what this tab type is!" + String.valueOf(this));
       }
    }
 
-   public boolean isMouseOver(int var1, int var2, int var3, double var4, double var6) {
-      int var8 = var1 + this.getX(var3);
-      int var9 = var2 + this.getY(var3);
-      return var4 > (double)var8 && var4 < (double)(var8 + this.width) && var6 > (double)var9 && var6 < (double)(var9 + this.height);
+   public boolean isMouseOver(final int xo, final int yo, final int index, final double mx, final double my) {
+      int x = xo + this.getX(index);
+      int y = yo + this.getY(index);
+      return mx > (double)x && mx < (double)(x + this.width) && my > (double)y && my < (double)(y + this.height);
    }
 
    // $FF: synthetic method
@@ -122,12 +122,9 @@ enum AdvancementTabType {
       return new AdvancementTabType[]{ABOVE, BELOW, LEFT, RIGHT};
    }
 
-   static record Sprites(Identifier first, Identifier middle, Identifier last) {
-      Sprites(Identifier var1, Identifier var2, Identifier var3) {
+   private static record Sprites(Identifier first, Identifier middle, Identifier last) {
+      private Sprites {
          super();
-         this.first = var1;
-         this.middle = var2;
-         this.last = var3;
       }
    }
 }

@@ -8,15 +8,15 @@ import com.mojang.serialization.Dynamic;
 public class VillagerSetCanPickUpLootFix extends NamedEntityFix {
    private static final String CAN_PICK_UP_LOOT = "CanPickUpLoot";
 
-   public VillagerSetCanPickUpLootFix(Schema var1) {
-      super(var1, true, "Villager CanPickUpLoot default value", References.ENTITY, "Villager");
+   public VillagerSetCanPickUpLootFix(final Schema outputSchema) {
+      super(outputSchema, true, "Villager CanPickUpLoot default value", References.ENTITY, "Villager");
    }
 
-   protected Typed<?> fix(Typed<?> var1) {
-      return var1.update(DSL.remainderFinder(), VillagerSetCanPickUpLootFix::fixValue);
+   protected Typed<?> fix(final Typed<?> entity) {
+      return entity.update(DSL.remainderFinder(), VillagerSetCanPickUpLootFix::fixValue);
    }
 
-   private static Dynamic<?> fixValue(Dynamic<?> var0) {
-      return var0.set("CanPickUpLoot", var0.createBoolean(true));
+   private static Dynamic<?> fixValue(final Dynamic<?> tag) {
+      return tag.set("CanPickUpLoot", tag.createBoolean(true));
    }
 }

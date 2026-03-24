@@ -18,19 +18,17 @@ public abstract class OptionsSubScreen extends Screen {
    protected @Nullable OptionsList list;
    public final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
 
-   public OptionsSubScreen(Screen var1, Options var2, Component var3) {
-      super(var3);
-      this.lastScreen = var1;
-      this.options = var2;
+   public OptionsSubScreen(final Screen lastScreen, final Options options, final Component title) {
+      super(title);
+      this.lastScreen = lastScreen;
+      this.options = options;
    }
 
    protected void init() {
       this.addTitle();
       this.addContents();
       this.addFooter();
-      this.layout.visitWidgets((var1) -> {
-         AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1);
-      });
+      this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
       this.repositionElements();
    }
 
@@ -42,8 +40,8 @@ public abstract class OptionsSubScreen extends Screen {
       this.list = (OptionsList)this.layout.addToContents(new OptionsList(this.minecraft, this.width, this));
       this.addOptions();
       AbstractWidget var2 = this.list.findOption(this.options.narrator());
-      if (var2 instanceof CycleButton var1) {
-         this.narratorButton = var1;
+      if (var2 instanceof CycleButton<?> cycleButton) {
+         this.narratorButton = cycleButton;
          this.narratorButton.active = this.minecraft.getNarrator().isActive();
       }
 
@@ -52,7 +50,7 @@ public abstract class OptionsSubScreen extends Screen {
    protected abstract void addOptions();
 
    protected void addFooter() {
-      this.layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, (var1) -> this.onClose()).width(200).build());
+      this.layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, (button) -> this.onClose()).width(200).build());
    }
 
    protected void repositionElements() {
@@ -75,9 +73,9 @@ public abstract class OptionsSubScreen extends Screen {
       this.minecraft.setScreen(this.lastScreen);
    }
 
-   public void resetOption(OptionInstance<?> var1) {
+   public void resetOption(final OptionInstance<?> option) {
       if (this.list != null) {
-         this.list.resetOption(var1);
+         this.list.resetOption(option);
       }
 
    }

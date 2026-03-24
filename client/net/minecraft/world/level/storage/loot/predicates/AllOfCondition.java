@@ -6,37 +6,37 @@ import java.util.List;
 import net.minecraft.util.Util;
 
 public class AllOfCondition extends CompositeLootItemCondition {
-   public static final MapCodec<AllOfCondition> CODEC = createCodec(AllOfCondition::new);
+   public static final MapCodec<AllOfCondition> MAP_CODEC = createCodec(AllOfCondition::new);
    public static final Codec<AllOfCondition> INLINE_CODEC = createInlineCodec(AllOfCondition::new);
 
-   AllOfCondition(List<LootItemCondition> var1) {
-      super(var1, Util.allOf(var1));
+   private AllOfCondition(final List<LootItemCondition> terms) {
+      super(terms, Util.allOf(terms));
    }
 
-   public static AllOfCondition allOf(List<LootItemCondition> var0) {
-      return new AllOfCondition(List.copyOf(var0));
+   public static AllOfCondition allOf(final List<LootItemCondition> terms) {
+      return new AllOfCondition(List.copyOf(terms));
    }
 
-   public LootItemConditionType getType() {
-      return LootItemConditions.ALL_OF;
+   public MapCodec<AllOfCondition> codec() {
+      return MAP_CODEC;
    }
 
-   public static Builder allOf(LootItemCondition.Builder... var0) {
-      return new Builder(var0);
+   public static Builder allOf(final LootItemCondition.Builder... terms) {
+      return new Builder(terms);
    }
 
    public static class Builder extends CompositeLootItemCondition.Builder {
-      public Builder(LootItemCondition.Builder... var1) {
-         super(var1);
+      public Builder(final LootItemCondition.Builder... terms) {
+         super(terms);
       }
 
-      public Builder and(LootItemCondition.Builder var1) {
-         this.addTerm(var1);
+      public Builder and(final LootItemCondition.Builder term) {
+         this.addTerm(term);
          return this;
       }
 
-      protected LootItemCondition create(List<LootItemCondition> var1) {
-         return new AllOfCondition(var1);
+      protected LootItemCondition create(final List<LootItemCondition> terms) {
+         return new AllOfCondition(terms);
       }
    }
 }

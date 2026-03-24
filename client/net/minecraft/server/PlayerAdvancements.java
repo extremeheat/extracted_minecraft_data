@@ -9,8 +9,6 @@ import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
@@ -63,29 +61,29 @@ public class PlayerAdvancements {
    private boolean isFirstPacket = true;
    private final Codec<Data> codec;
 
-   public PlayerAdvancements(DataFixer var1, PlayerList var2, ServerAdvancementManager var3, Path var4, ServerPlayer var5) {
+   public PlayerAdvancements(final DataFixer dataFixer, final PlayerList playerList, final ServerAdvancementManager manager, final Path playerSavePath, final ServerPlayer player) {
       super();
-      this.playerList = var2;
-      this.playerSavePath = var4;
-      this.player = var5;
-      this.tree = var3.tree();
-      boolean var6 = true;
-      this.codec = DataFixTypes.ADVANCEMENTS.<Data>wrapCodec(PlayerAdvancements.Data.CODEC, var1, 1343);
-      this.load(var3);
+      this.playerList = playerList;
+      this.playerSavePath = playerSavePath;
+      this.player = player;
+      this.tree = manager.tree();
+      int defaultVersion = 1343;
+      this.codec = DataFixTypes.ADVANCEMENTS.<Data>wrapCodec(PlayerAdvancements.Data.CODEC, dataFixer, 1343);
+      this.load(manager);
    }
 
-   public void setPlayer(ServerPlayer var1) {
-      this.player = var1;
+   public void setPlayer(final ServerPlayer player) {
+      this.player = player;
    }
 
    public void stopListening() {
-      for(CriterionTrigger var2 : BuiltInRegistries.TRIGGER_TYPES) {
-         var2.removePlayerListeners(this);
+      for(CriterionTrigger<?> trigger : BuiltInRegistries.TRIGGER_TYPES) {
+         trigger.removePlayerListeners(this);
       }
 
    }
 
-   public void reload(ServerAdvancementManager var1) {
+   public void reload(final ServerAdvancementManager manager) {
       this.stopListening();
       this.progress.clear();
       this.visible.clear();
@@ -93,41 +91,41 @@ public class PlayerAdvancements {
       this.progressChanged.clear();
       this.isFirstPacket = true;
       this.lastSelectedTab = null;
-      this.tree = var1.tree();
-      this.load(var1);
+      this.tree = manager.tree();
+      this.load(manager);
    }
 
-   private void registerListeners(ServerAdvancementManager var1) {
-      for(AdvancementHolder var3 : var1.getAllAdvancements()) {
-         this.registerListeners(var3);
+   private void registerListeners(final ServerAdvancementManager manager) {
+      for(AdvancementHolder advancement : manager.getAllAdvancements()) {
+         this.registerListeners(advancement);
       }
 
    }
 
-   private void checkForAutomaticTriggers(ServerAdvancementManager var1) {
-      for(AdvancementHolder var3 : var1.getAllAdvancements()) {
-         Advancement var4 = var3.value();
-         if (var4.criteria().isEmpty()) {
-            this.award(var3, "");
-            var4.rewards().grant(this.player);
+   private void checkForAutomaticTriggers(final ServerAdvancementManager manager) {
+      for(AdvancementHolder holder : manager.getAllAdvancements()) {
+         Advancement advancement = holder.value();
+         if (advancement.criteria().isEmpty()) {
+            this.award(holder, "");
+            advancement.rewards().grant(this.player);
          }
       }
 
    }
 
-   private void load(ServerAdvancementManager var1) {
+   private void load(final ServerAdvancementManager manager) {
       if (Files.isRegularFile(this.playerSavePath, new LinkOption[0])) {
          try {
-            BufferedReader var2 = Files.newBufferedReader(this.playerSavePath, StandardCharsets.UTF_8);
+            Reader reader = Files.newBufferedReader(this.playerSavePath, StandardCharsets.UTF_8);
 
             try {
-               JsonElement var3 = StrictJsonParser.parse((Reader)var2);
-               Data var4 = (Data)this.codec.parse(JsonOps.INSTANCE, var3).getOrThrow(JsonParseException::new);
-               this.applyFrom(var1, var4);
+               JsonElement json = StrictJsonParser.parse(reader);
+               Data data = (Data)this.codec.parse(JsonOps.INSTANCE, json).getOrThrow(JsonParseException::new);
+               this.applyFrom(manager, data);
             } catch (Throwable var6) {
-               if (var2 != null) {
+               if (reader != null) {
                   try {
-                     ((Reader)var2).close();
+                     reader.close();
                   } catch (Throwable var5) {
                      var6.addSuppressed(var5);
                   }
@@ -136,33 +134,33 @@ public class PlayerAdvancements {
                throw var6;
             }
 
-            if (var2 != null) {
-               ((Reader)var2).close();
+            if (reader != null) {
+               reader.close();
             }
-         } catch (JsonIOException | IOException var7) {
-            LOGGER.error("Couldn't access player advancements in {}", this.playerSavePath, var7);
-         } catch (JsonParseException var8) {
-            LOGGER.error("Couldn't parse player advancements in {}", this.playerSavePath, var8);
+         } catch (JsonIOException | IOException e) {
+            LOGGER.error("Couldn't access player advancements in {}", this.playerSavePath, e);
+         } catch (JsonParseException e) {
+            LOGGER.error("Couldn't parse player advancements in {}", this.playerSavePath, e);
          }
       }
 
-      this.checkForAutomaticTriggers(var1);
-      this.registerListeners(var1);
+      this.checkForAutomaticTriggers(manager);
+      this.registerListeners(manager);
    }
 
    public void save() {
-      JsonElement var1 = (JsonElement)this.codec.encodeStart(JsonOps.INSTANCE, this.asData()).getOrThrow();
+      JsonElement json = (JsonElement)this.codec.encodeStart(JsonOps.INSTANCE, this.asData()).getOrThrow();
 
       try {
          FileUtil.createDirectoriesSafe(this.playerSavePath.getParent());
-         BufferedWriter var2 = Files.newBufferedWriter(this.playerSavePath, StandardCharsets.UTF_8);
+         Writer outputWriter = Files.newBufferedWriter(this.playerSavePath, StandardCharsets.UTF_8);
 
          try {
-            GSON.toJson(var1, GSON.newJsonWriter(var2));
+            GSON.toJson(json, GSON.newJsonWriter(outputWriter));
          } catch (Throwable var6) {
-            if (var2 != null) {
+            if (outputWriter != null) {
                try {
-                  ((Writer)var2).close();
+                  outputWriter.close();
                } catch (Throwable var5) {
                   var6.addSuppressed(var5);
                }
@@ -171,206 +169,205 @@ public class PlayerAdvancements {
             throw var6;
          }
 
-         if (var2 != null) {
-            ((Writer)var2).close();
+         if (outputWriter != null) {
+            outputWriter.close();
          }
-      } catch (JsonIOException | IOException var7) {
-         LOGGER.error("Couldn't save player advancements to {}", this.playerSavePath, var7);
+      } catch (JsonIOException | IOException e) {
+         LOGGER.error("Couldn't save player advancements to {}", this.playerSavePath, e);
       }
 
    }
 
-   private void applyFrom(ServerAdvancementManager var1, Data var2) {
-      var2.forEach((var2x, var3) -> {
-         AdvancementHolder var4 = var1.get(var2x);
-         if (var4 == null) {
-            LOGGER.warn("Ignored advancement '{}' in progress file {} - it doesn't exist anymore?", var2x, this.playerSavePath);
+   private void applyFrom(final ServerAdvancementManager manager, final Data data) {
+      data.forEach((id, progress) -> {
+         AdvancementHolder advancement = manager.get(id);
+         if (advancement == null) {
+            LOGGER.warn("Ignored advancement '{}' in progress file {} - it doesn't exist anymore?", id, this.playerSavePath);
          } else {
-            this.startProgress(var4, var3);
-            this.progressChanged.add(var4);
-            this.markForVisibilityUpdate(var4);
+            this.startProgress(advancement, progress);
+            this.progressChanged.add(advancement);
+            this.markForVisibilityUpdate(advancement);
          }
       });
    }
 
    private Data asData() {
-      LinkedHashMap var1 = new LinkedHashMap();
-      this.progress.forEach((var1x, var2) -> {
-         if (var2.hasProgress()) {
-            var1.put(var1x.id(), var2);
+      Map<Identifier, AdvancementProgress> map = new LinkedHashMap();
+      this.progress.forEach((advancement, progress) -> {
+         if (progress.hasProgress()) {
+            map.put(advancement.id(), progress);
          }
 
       });
-      return new Data(var1);
+      return new Data(map);
    }
 
-   public boolean award(AdvancementHolder var1, String var2) {
-      boolean var3 = false;
-      AdvancementProgress var4 = this.getOrStartProgress(var1);
-      boolean var5 = var4.isDone();
-      if (var4.grantProgress(var2)) {
-         this.unregisterListeners(var1);
-         this.progressChanged.add(var1);
-         var3 = true;
-         if (!var5 && var4.isDone()) {
-            var1.value().rewards().grant(this.player);
-            var1.value().display().ifPresent((var2x) -> {
-               if (var2x.shouldAnnounceChat() && (Boolean)this.player.level().getGameRules().get(GameRules.SHOW_ADVANCEMENT_MESSAGES)) {
-                  this.playerList.broadcastSystemMessage(var2x.getType().createAnnouncement(var1, this.player), false);
+   public boolean award(final AdvancementHolder holder, final String criterion) {
+      boolean result = false;
+      AdvancementProgress progress = this.getOrStartProgress(holder);
+      boolean wasDone = progress.isDone();
+      if (progress.grantProgress(criterion)) {
+         this.unregisterListeners(holder);
+         this.progressChanged.add(holder);
+         result = true;
+         if (!wasDone && progress.isDone()) {
+            holder.value().rewards().grant(this.player);
+            holder.value().display().ifPresent((display) -> {
+               if (display.shouldAnnounceChat() && (Boolean)this.player.level().getGameRules().get(GameRules.SHOW_ADVANCEMENT_MESSAGES)) {
+                  this.playerList.broadcastSystemMessage(display.getType().createAnnouncement(holder, this.player), false);
                }
 
             });
          }
       }
 
-      if (!var5 && var4.isDone()) {
-         this.markForVisibilityUpdate(var1);
+      if (!wasDone && progress.isDone()) {
+         this.markForVisibilityUpdate(holder);
       }
 
-      return var3;
+      return result;
    }
 
-   public boolean revoke(AdvancementHolder var1, String var2) {
-      boolean var3 = false;
-      AdvancementProgress var4 = this.getOrStartProgress(var1);
-      boolean var5 = var4.isDone();
-      if (var4.revokeProgress(var2)) {
-         this.registerListeners(var1);
-         this.progressChanged.add(var1);
-         var3 = true;
+   public boolean revoke(final AdvancementHolder advancement, final String criterion) {
+      boolean result = false;
+      AdvancementProgress progress = this.getOrStartProgress(advancement);
+      boolean wasDone = progress.isDone();
+      if (progress.revokeProgress(criterion)) {
+         this.registerListeners(advancement);
+         this.progressChanged.add(advancement);
+         result = true;
       }
 
-      if (var5 && !var4.isDone()) {
-         this.markForVisibilityUpdate(var1);
+      if (wasDone && !progress.isDone()) {
+         this.markForVisibilityUpdate(advancement);
       }
 
-      return var3;
+      return result;
    }
 
-   private void markForVisibilityUpdate(AdvancementHolder var1) {
-      AdvancementNode var2 = this.tree.get(var1);
-      if (var2 != null) {
-         this.rootsToUpdate.add(var2.root());
+   private void markForVisibilityUpdate(final AdvancementHolder advancement) {
+      AdvancementNode node = this.tree.get(advancement);
+      if (node != null) {
+         this.rootsToUpdate.add(node.root());
       }
 
    }
 
-   private void registerListeners(AdvancementHolder var1) {
-      AdvancementProgress var2 = this.getOrStartProgress(var1);
-      if (!var2.isDone()) {
-         for(Map.Entry var4 : var1.value().criteria().entrySet()) {
-            CriterionProgress var5 = var2.getCriterion((String)var4.getKey());
-            if (var5 != null && !var5.isDone()) {
-               this.registerListener(var1, (String)var4.getKey(), (Criterion)var4.getValue());
+   private void registerListeners(final AdvancementHolder holder) {
+      AdvancementProgress advancementProgress = this.getOrStartProgress(holder);
+      if (!advancementProgress.isDone()) {
+         for(Map.Entry<String, Criterion<?>> entry : holder.value().criteria().entrySet()) {
+            CriterionProgress criterionProgress = advancementProgress.getCriterion((String)entry.getKey());
+            if (criterionProgress != null && !criterionProgress.isDone()) {
+               this.registerListener(holder, (String)entry.getKey(), (Criterion)entry.getValue());
             }
          }
 
       }
    }
 
-   private <T extends CriterionTriggerInstance> void registerListener(AdvancementHolder var1, String var2, Criterion<T> var3) {
-      var3.trigger().addPlayerListener(this, new CriterionTrigger.Listener(var3.triggerInstance(), var1, var2));
+   private <T extends CriterionTriggerInstance> void registerListener(final AdvancementHolder holder, final String key, final Criterion<T> criterion) {
+      criterion.trigger().addPlayerListener(this, new CriterionTrigger.Listener(criterion.triggerInstance(), holder, key));
    }
 
-   private void unregisterListeners(AdvancementHolder var1) {
-      AdvancementProgress var2 = this.getOrStartProgress(var1);
+   private void unregisterListeners(final AdvancementHolder holder) {
+      AdvancementProgress advancementProgress = this.getOrStartProgress(holder);
 
-      for(Map.Entry var4 : var1.value().criteria().entrySet()) {
-         CriterionProgress var5 = var2.getCriterion((String)var4.getKey());
-         if (var5 != null && (var5.isDone() || var2.isDone())) {
-            this.removeListener(var1, (String)var4.getKey(), (Criterion)var4.getValue());
+      for(Map.Entry<String, Criterion<?>> entry : holder.value().criteria().entrySet()) {
+         CriterionProgress criterionProgress = advancementProgress.getCriterion((String)entry.getKey());
+         if (criterionProgress != null && (criterionProgress.isDone() || advancementProgress.isDone())) {
+            this.removeListener(holder, (String)entry.getKey(), (Criterion)entry.getValue());
          }
       }
 
    }
 
-   private <T extends CriterionTriggerInstance> void removeListener(AdvancementHolder var1, String var2, Criterion<T> var3) {
-      var3.trigger().removePlayerListener(this, new CriterionTrigger.Listener(var3.triggerInstance(), var1, var2));
+   private <T extends CriterionTriggerInstance> void removeListener(final AdvancementHolder holder, final String key, final Criterion<T> criterion) {
+      criterion.trigger().removePlayerListener(this, new CriterionTrigger.Listener(criterion.triggerInstance(), holder, key));
    }
 
-   public void flushDirty(ServerPlayer var1, boolean var2) {
+   public void flushDirty(final ServerPlayer player, final boolean showAdvancements) {
       if (this.isFirstPacket || !this.rootsToUpdate.isEmpty() || !this.progressChanged.isEmpty()) {
-         HashMap var3 = new HashMap();
-         HashSet var4 = new HashSet();
-         HashSet var5 = new HashSet();
+         Map<Identifier, AdvancementProgress> progress = new HashMap();
+         Set<AdvancementHolder> added = new HashSet();
+         Set<Identifier> removed = new HashSet();
 
-         for(AdvancementNode var7 : this.rootsToUpdate) {
-            this.updateTreeVisibility(var7, var4, var5);
+         for(AdvancementNode root : this.rootsToUpdate) {
+            this.updateTreeVisibility(root, added, removed);
          }
 
          this.rootsToUpdate.clear();
 
-         for(AdvancementHolder var9 : this.progressChanged) {
-            if (this.visible.contains(var9)) {
-               var3.put(var9.id(), (AdvancementProgress)this.progress.get(var9));
+         for(AdvancementHolder holder : this.progressChanged) {
+            if (this.visible.contains(holder)) {
+               progress.put(holder.id(), (AdvancementProgress)this.progress.get(holder));
             }
          }
 
          this.progressChanged.clear();
-         if (!var3.isEmpty() || !var4.isEmpty() || !var5.isEmpty()) {
-            var1.connection.send(new ClientboundUpdateAdvancementsPacket(this.isFirstPacket, var4, var5, var3, var2));
+         if (!progress.isEmpty() || !added.isEmpty() || !removed.isEmpty()) {
+            player.connection.send(new ClientboundUpdateAdvancementsPacket(this.isFirstPacket, added, removed, progress, showAdvancements));
          }
       }
 
       this.isFirstPacket = false;
    }
 
-   public void setSelectedTab(@Nullable AdvancementHolder var1) {
-      AdvancementHolder var2 = this.lastSelectedTab;
-      if (var1 != null && var1.value().isRoot() && var1.value().display().isPresent()) {
-         this.lastSelectedTab = var1;
+   public void setSelectedTab(final @Nullable AdvancementHolder holder) {
+      AdvancementHolder old = this.lastSelectedTab;
+      if (holder != null && holder.value().isRoot() && holder.value().display().isPresent()) {
+         this.lastSelectedTab = holder;
       } else {
          this.lastSelectedTab = null;
       }
 
-      if (var2 != this.lastSelectedTab) {
+      if (old != this.lastSelectedTab) {
          this.player.connection.send(new ClientboundSelectAdvancementsTabPacket(this.lastSelectedTab == null ? null : this.lastSelectedTab.id()));
       }
 
    }
 
-   public AdvancementProgress getOrStartProgress(AdvancementHolder var1) {
-      AdvancementProgress var2 = (AdvancementProgress)this.progress.get(var1);
-      if (var2 == null) {
-         var2 = new AdvancementProgress();
-         this.startProgress(var1, var2);
+   public AdvancementProgress getOrStartProgress(final AdvancementHolder advancement) {
+      AdvancementProgress progress = (AdvancementProgress)this.progress.get(advancement);
+      if (progress == null) {
+         progress = new AdvancementProgress();
+         this.startProgress(advancement, progress);
       }
 
-      return var2;
+      return progress;
    }
 
-   private void startProgress(AdvancementHolder var1, AdvancementProgress var2) {
-      var2.update(var1.value().requirements());
-      this.progress.put(var1, var2);
+   private void startProgress(final AdvancementHolder holder, final AdvancementProgress progress) {
+      progress.update(holder.value().requirements());
+      this.progress.put(holder, progress);
    }
 
-   private void updateTreeVisibility(AdvancementNode var1, Set<AdvancementHolder> var2, Set<Identifier> var3) {
-      AdvancementVisibilityEvaluator.evaluateVisibility(var1, (var1x) -> this.getOrStartProgress(var1x.holder()).isDone(), (var3x, var4) -> {
-         AdvancementHolder var5 = var3x.holder();
-         if (var4) {
-            if (this.visible.add(var5)) {
-               var2.add(var5);
-               if (this.progress.containsKey(var5)) {
-                  this.progressChanged.add(var5);
+   private void updateTreeVisibility(final AdvancementNode root, final Set<AdvancementHolder> added, final Set<Identifier> removed) {
+      AdvancementVisibilityEvaluator.evaluateVisibility(root, (node) -> this.getOrStartProgress(node.holder()).isDone(), (node, shouldBeVisible) -> {
+         AdvancementHolder advancement = node.holder();
+         if (shouldBeVisible) {
+            if (this.visible.add(advancement)) {
+               added.add(advancement);
+               if (this.progress.containsKey(advancement)) {
+                  this.progressChanged.add(advancement);
                }
             }
-         } else if (this.visible.remove(var5)) {
-            var3.add(var5.id());
+         } else if (this.visible.remove(advancement)) {
+            removed.add(advancement.id());
          }
 
       });
    }
 
-   static record Data(Map<Identifier, AdvancementProgress> map) {
+   private static record Data(Map<Identifier, AdvancementProgress> map) {
       public static final Codec<Data> CODEC;
 
-      Data(Map<Identifier, AdvancementProgress> var1) {
+      private Data {
          super();
-         this.map = var1;
       }
 
-      public void forEach(BiConsumer<Identifier, AdvancementProgress> var1) {
-         this.map.entrySet().stream().sorted(Entry.comparingByValue()).forEach((var1x) -> var1.accept((Identifier)var1x.getKey(), (AdvancementProgress)var1x.getValue()));
+      public void forEach(final BiConsumer<Identifier, AdvancementProgress> consumer) {
+         this.map.entrySet().stream().sorted(Entry.comparingByValue()).forEach((entry) -> consumer.accept((Identifier)entry.getKey(), (AdvancementProgress)entry.getValue()));
       }
 
       static {

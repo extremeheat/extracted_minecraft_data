@@ -16,15 +16,15 @@ public class AirBlock extends Block {
       return CODEC;
    }
 
-   public AirBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public AirBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
-   protected RenderShape getRenderShape(BlockState var1) {
+   protected RenderShape getRenderShape(final BlockState state) {
       return RenderShape.INVISIBLE;
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return Shapes.empty();
    }
 }

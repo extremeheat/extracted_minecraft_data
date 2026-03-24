@@ -6,9 +6,9 @@ public class JumpControl implements Control {
    private final Mob mob;
    protected boolean jump;
 
-   public JumpControl(Mob var1) {
+   public JumpControl(final Mob mob) {
       super();
-      this.mob = var1;
+      this.mob = mob;
    }
 
    public void jump() {

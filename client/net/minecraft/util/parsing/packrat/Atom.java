@@ -1,16 +1,15 @@
 package net.minecraft.util.parsing.packrat;
 
 public record Atom<T>(String name) {
-   public Atom(String var1) {
+   public Atom {
       super();
-      this.name = var1;
    }
 
    public String toString() {
       return "<" + this.name + ">";
    }
 
-   public static <T> Atom<T> of(String var0) {
-      return new Atom<T>(var0);
+   public static <T> Atom<T> of(final String name) {
+      return new Atom<T>(name);
    }
 }

@@ -8,65 +8,65 @@ import net.minecraft.util.Unit;
 public interface FormattedText {
    Optional<Unit> STOP_ITERATION = Optional.of(Unit.INSTANCE);
    FormattedText EMPTY = new FormattedText() {
-      public <T> Optional<T> visit(ContentConsumer<T> var1) {
+      public <T> Optional<T> visit(final ContentConsumer<T> output) {
          return Optional.empty();
       }
 
-      public <T> Optional<T> visit(StyledContentConsumer<T> var1, Style var2) {
+      public <T> Optional<T> visit(final StyledContentConsumer<T> output, final Style parentStyle) {
          return Optional.empty();
       }
    };
 
-   <T> Optional<T> visit(ContentConsumer<T> var1);
+   <T> Optional<T> visit(final ContentConsumer<T> output);
 
-   <T> Optional<T> visit(StyledContentConsumer<T> var1, Style var2);
+   <T> Optional<T> visit(final StyledContentConsumer<T> output, final Style parentStyle);
 
-   static FormattedText of(final String var0) {
+   static FormattedText of(final String text) {
       return new FormattedText() {
-         public <T> Optional<T> visit(ContentConsumer<T> var1) {
-            return var1.accept(var0);
+         public <T> Optional<T> visit(final ContentConsumer<T> output) {
+            return output.accept(text);
          }
 
-         public <T> Optional<T> visit(StyledContentConsumer<T> var1, Style var2) {
-            return var1.accept(var2, var0);
+         public <T> Optional<T> visit(final StyledContentConsumer<T> output, final Style parentStyle) {
+            return output.accept(parentStyle, text);
          }
       };
    }
 
-   static FormattedText of(final String var0, final Style var1) {
+   static FormattedText of(final String text, final Style style) {
       return new FormattedText() {
-         public <T> Optional<T> visit(ContentConsumer<T> var1x) {
-            return var1x.accept(var0);
+         public <T> Optional<T> visit(final ContentConsumer<T> output) {
+            return output.accept(text);
          }
 
-         public <T> Optional<T> visit(StyledContentConsumer<T> var1x, Style var2) {
-            return var1x.accept(var1.applyTo(var2), var0);
+         public <T> Optional<T> visit(final StyledContentConsumer<T> output, final Style parentStyle) {
+            return output.accept(style.applyTo(parentStyle), text);
          }
       };
    }
 
-   static FormattedText composite(FormattedText... var0) {
-      return composite((List)ImmutableList.copyOf(var0));
+   static FormattedText composite(final FormattedText... parts) {
+      return composite((List)ImmutableList.copyOf(parts));
    }
 
-   static FormattedText composite(final List<? extends FormattedText> var0) {
+   static FormattedText composite(final List<? extends FormattedText> parts) {
       return new FormattedText() {
-         public <T> Optional<T> visit(ContentConsumer<T> var1) {
-            for(FormattedText var3 : var0) {
-               Optional var4 = var3.visit(var1);
-               if (var4.isPresent()) {
-                  return var4;
+         public <T> Optional<T> visit(final ContentConsumer<T> output) {
+            for(FormattedText part : parts) {
+               Optional<T> result = part.<T>visit(output);
+               if (result.isPresent()) {
+                  return result;
                }
             }
 
             return Optional.empty();
          }
 
-         public <T> Optional<T> visit(StyledContentConsumer<T> var1, Style var2) {
-            for(FormattedText var4 : var0) {
-               Optional var5 = var4.visit(var1, var2);
-               if (var5.isPresent()) {
-                  return var5;
+         public <T> Optional<T> visit(final StyledContentConsumer<T> output, final Style parentStyle) {
+            for(FormattedText part : parts) {
+               Optional<T> result = part.<T>visit(output, parentStyle);
+               if (result.isPresent()) {
+                  return result;
                }
             }
 
@@ -76,19 +76,19 @@ public interface FormattedText {
    }
 
    default String getString() {
-      StringBuilder var1 = new StringBuilder();
-      this.visit((var1x) -> {
-         var1.append(var1x);
+      StringBuilder builder = new StringBuilder();
+      this.visit((contents) -> {
+         builder.append(contents);
          return Optional.empty();
       });
-      return var1.toString();
+      return builder.toString();
    }
 
    public interface ContentConsumer<T> {
-      Optional<T> accept(String var1);
+      Optional<T> accept(final String contents);
    }
 
    public interface StyledContentConsumer<T> {
-      Optional<T> accept(Style var1, String var2);
+      Optional<T> accept(final Style style, final String contents);
    }
 }

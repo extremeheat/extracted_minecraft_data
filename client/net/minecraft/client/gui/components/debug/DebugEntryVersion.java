@@ -12,12 +12,12 @@ class DebugEntryVersion implements DebugScreenEntry {
       super();
    }
 
-   public void display(DebugScreenDisplayer var1, @Nullable Level var2, @Nullable LevelChunk var3, @Nullable LevelChunk var4) {
+   public void display(final DebugScreenDisplayer displayer, final @Nullable Level level, final @Nullable LevelChunk clientChunk, final @Nullable LevelChunk serverChunk) {
       String var10001 = SharedConstants.getCurrentVersion().name();
-      var1.addPriorityLine("Minecraft " + var10001 + " (" + Minecraft.getInstance().getLaunchedVersion() + "/" + ClientBrandRetriever.getClientModName() + ")");
+      displayer.addPriorityLine("Minecraft " + var10001 + " (" + Minecraft.getInstance().getLaunchedVersion() + "/" + ClientBrandRetriever.getClientModName() + ")");
    }
 
-   public boolean isAllowed(boolean var1) {
+   public boolean isAllowed(final boolean reducedDebugInfo) {
       return true;
    }
 }

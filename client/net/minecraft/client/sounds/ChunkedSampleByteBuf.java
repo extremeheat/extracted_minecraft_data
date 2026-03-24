@@ -14,21 +14,21 @@ public class ChunkedSampleByteBuf implements FloatConsumer {
    private int byteCount;
    private ByteBuffer currentBuffer;
 
-   public ChunkedSampleByteBuf(int var1) {
+   public ChunkedSampleByteBuf(final int bufferSize) {
       super();
-      this.bufferSize = var1 + 1 & -2;
-      this.currentBuffer = BufferUtils.createByteBuffer(var1);
+      this.bufferSize = bufferSize + 1 & -2;
+      this.currentBuffer = BufferUtils.createByteBuffer(bufferSize);
    }
 
-   public void accept(float var1) {
+   public void accept(final float sample) {
       if (this.currentBuffer.remaining() == 0) {
          this.currentBuffer.flip();
          this.buffers.add(this.currentBuffer);
          this.currentBuffer = BufferUtils.createByteBuffer(this.bufferSize);
       }
 
-      int var2 = Mth.clamp((int)(var1 * 32767.5F - 0.5F), -32768, 32767);
-      this.currentBuffer.putShort((short)var2);
+      int intVal = Mth.clamp((int)(sample * 32767.5F - 0.5F), -32768, 32767);
+      this.currentBuffer.putShort((short)intVal);
       this.byteCount += 2;
    }
 
@@ -37,13 +37,13 @@ public class ChunkedSampleByteBuf implements FloatConsumer {
       if (this.buffers.isEmpty()) {
          return this.currentBuffer;
       } else {
-         ByteBuffer var1 = BufferUtils.createByteBuffer(this.byteCount);
+         ByteBuffer result = BufferUtils.createByteBuffer(this.byteCount);
          List var10000 = this.buffers;
-         Objects.requireNonNull(var1);
-         var10000.forEach(var1::put);
-         var1.put(this.currentBuffer);
-         var1.flip();
-         return var1;
+         Objects.requireNonNull(result);
+         var10000.forEach(result::put);
+         result.put(this.currentBuffer);
+         result.flip();
+         return result;
       }
    }
 

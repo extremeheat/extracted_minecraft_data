@@ -8,10 +8,10 @@ public class GameTestAssertPosException extends GameTestAssertException {
    private final BlockPos absolutePos;
    private final BlockPos relativePos;
 
-   public GameTestAssertPosException(Component var1, BlockPos var2, BlockPos var3, int var4) {
-      super(var1, var4);
-      this.absolutePos = var2;
-      this.relativePos = var3;
+   public GameTestAssertPosException(final Component baseMessage, final BlockPos absolutePos, final BlockPos relativePos, final int tick) {
+      super(baseMessage, tick);
+      this.absolutePos = absolutePos;
+      this.relativePos = relativePos;
    }
 
    public Component getDescription() {

@@ -21,40 +21,40 @@ public class PatrolSpawner implements CustomSpawner {
       super();
    }
 
-   public void tick(ServerLevel var1, boolean var2) {
-      if (var2) {
-         if ((Boolean)var1.getGameRules().get(GameRules.SPAWN_PATROLS)) {
-            RandomSource var3 = var1.random;
+   public void tick(final ServerLevel level, final boolean spawnEnemies) {
+      if (spawnEnemies) {
+         if ((Boolean)level.getGameRules().get(GameRules.SPAWN_PATROLS)) {
+            RandomSource random = level.getRandom();
             --this.nextTick;
             if (this.nextTick <= 0) {
-               this.nextTick += 12000 + var3.nextInt(1200);
-               if (var1.isBrightOutside()) {
-                  if (var3.nextInt(5) == 0) {
-                     int var4 = var1.players().size();
-                     if (var4 >= 1) {
-                        Player var5 = (Player)var1.players().get(var3.nextInt(var4));
-                        if (!var5.isSpectator()) {
-                           if (!var1.isCloseToVillage(var5.blockPosition(), 2)) {
-                              int var6 = (24 + var3.nextInt(24)) * (var3.nextBoolean() ? -1 : 1);
-                              int var7 = (24 + var3.nextInt(24)) * (var3.nextBoolean() ? -1 : 1);
-                              BlockPos.MutableBlockPos var8 = var5.blockPosition().mutable().move(var6, 0, var7);
-                              boolean var9 = true;
-                              if (var1.hasChunksAt(var8.getX() - 10, var8.getZ() - 10, var8.getX() + 10, var8.getZ() + 10)) {
-                                 if ((Boolean)var1.environmentAttributes().getValue(EnvironmentAttributes.CAN_PILLAGER_PATROL_SPAWN, var8)) {
-                                    int var10 = (int)Math.ceil((double)var1.getCurrentDifficultyAt(var8).getEffectiveDifficulty()) + 1;
+               this.nextTick += 12000 + random.nextInt(1200);
+               if (level.isBrightOutside()) {
+                  if (random.nextInt(5) == 0) {
+                     int playerCount = level.players().size();
+                     if (playerCount >= 1) {
+                        Player player = (Player)level.players().get(random.nextInt(playerCount));
+                        if (!player.isSpectator()) {
+                           if (!level.isCloseToVillage(player.blockPosition(), 2)) {
+                              int x = (24 + random.nextInt(24)) * (random.nextBoolean() ? -1 : 1);
+                              int z = (24 + random.nextInt(24)) * (random.nextBoolean() ? -1 : 1);
+                              BlockPos.MutableBlockPos spawnPos = player.blockPosition().mutable().move(x, 0, z);
+                              int delta = 10;
+                              if (level.hasChunksAt(spawnPos.getX() - 10, spawnPos.getZ() - 10, spawnPos.getX() + 10, spawnPos.getZ() + 10)) {
+                                 if ((Boolean)level.environmentAttributes().getValue(EnvironmentAttributes.CAN_PILLAGER_PATROL_SPAWN, spawnPos)) {
+                                    int groupSize = (int)Math.ceil((double)level.getCurrentDifficultyAt(spawnPos).getEffectiveDifficulty()) + 1;
 
-                                    for(int var11 = 0; var11 < var10; ++var11) {
-                                       var8.setY(var1.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, var8).getY());
-                                       if (var11 == 0) {
-                                          if (!this.spawnPatrolMember(var1, var8, var3, true)) {
+                                    for(int i = 0; i < groupSize; ++i) {
+                                       spawnPos.setY(level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, spawnPos).getY());
+                                       if (i == 0) {
+                                          if (!this.spawnPatrolMember(level, spawnPos, random, true)) {
                                              break;
                                           }
                                        } else {
-                                          this.spawnPatrolMember(var1, var8, var3, false);
+                                          this.spawnPatrolMember(level, spawnPos, random, false);
                                        }
 
-                                       var8.setX(var8.getX() + var3.nextInt(5) - var3.nextInt(5));
-                                       var8.setZ(var8.getZ() + var3.nextInt(5) - var3.nextInt(5));
+                                       spawnPos.setX(spawnPos.getX() + random.nextInt(5) - random.nextInt(5));
+                                       spawnPos.setZ(spawnPos.getZ() + random.nextInt(5) - random.nextInt(5));
                                     }
 
                                  }
@@ -69,23 +69,23 @@ public class PatrolSpawner implements CustomSpawner {
       }
    }
 
-   private boolean spawnPatrolMember(ServerLevel var1, BlockPos var2, RandomSource var3, boolean var4) {
-      BlockState var5 = var1.getBlockState(var2);
-      if (!NaturalSpawner.isValidEmptySpawnBlock(var1, var2, var5, var5.getFluidState(), EntityType.PILLAGER)) {
+   private boolean spawnPatrolMember(final ServerLevel level, final BlockPos pos, final RandomSource random, final boolean isLeader) {
+      BlockState state = level.getBlockState(pos);
+      if (!NaturalSpawner.isValidEmptySpawnBlock(level, pos, state, state.getFluidState(), EntityType.PILLAGER)) {
          return false;
-      } else if (!PatrollingMonster.checkPatrollingMonsterSpawnRules(EntityType.PILLAGER, var1, EntitySpawnReason.PATROL, var2, var3)) {
+      } else if (!PatrollingMonster.checkPatrollingMonsterSpawnRules(EntityType.PILLAGER, level, EntitySpawnReason.PATROL, pos, random)) {
          return false;
       } else {
-         PatrollingMonster var6 = EntityType.PILLAGER.create(var1, EntitySpawnReason.PATROL);
-         if (var6 != null) {
-            if (var4) {
-               var6.setPatrolLeader(true);
-               var6.findPatrolTarget();
+         PatrollingMonster mob = EntityType.PILLAGER.create(level, EntitySpawnReason.PATROL);
+         if (mob != null) {
+            if (isLeader) {
+               mob.setPatrolLeader(true);
+               mob.findPatrolTarget();
             }
 
-            var6.setPos((double)var2.getX(), (double)var2.getY(), (double)var2.getZ());
-            var6.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var2), EntitySpawnReason.PATROL, (SpawnGroupData)null);
-            var1.addFreshEntityWithPassengers(var6);
+            mob.setPos((double)pos.getX(), (double)pos.getY(), (double)pos.getZ());
+            mob.finalizeSpawn(level, level.getCurrentDifficultyAt(pos), EntitySpawnReason.PATROL, (SpawnGroupData)null);
+            level.addFreshEntityWithPassengers(mob);
             return true;
          } else {
             return false;

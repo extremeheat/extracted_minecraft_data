@@ -19,25 +19,25 @@ public class ServerPackCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("serverpack").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("push").then(((RequiredArgumentBuilder)Commands.argument("url", StringArgumentType.string()).then(((RequiredArgumentBuilder)Commands.argument("uuid", UuidArgument.uuid()).then(Commands.argument("hash", StringArgumentType.word()).executes((var0x) -> pushPack((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "url"), Optional.of(UuidArgument.getUuid(var0x, "uuid")), Optional.of(StringArgumentType.getString(var0x, "hash")))))).executes((var0x) -> pushPack((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "url"), Optional.of(UuidArgument.getUuid(var0x, "uuid")), Optional.empty())))).executes((var0x) -> pushPack((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "url"), Optional.empty(), Optional.empty()))))).then(Commands.literal("pop").then(Commands.argument("uuid", UuidArgument.uuid()).executes((var0x) -> popPack((CommandSourceStack)var0x.getSource(), UuidArgument.getUuid(var0x, "uuid"))))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("serverpack").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("push").then(((RequiredArgumentBuilder)Commands.argument("url", StringArgumentType.string()).then(((RequiredArgumentBuilder)Commands.argument("uuid", UuidArgument.uuid()).then(Commands.argument("hash", StringArgumentType.word()).executes((c) -> pushPack((CommandSourceStack)c.getSource(), StringArgumentType.getString(c, "url"), Optional.of(UuidArgument.getUuid(c, "uuid")), Optional.of(StringArgumentType.getString(c, "hash")))))).executes((c) -> pushPack((CommandSourceStack)c.getSource(), StringArgumentType.getString(c, "url"), Optional.of(UuidArgument.getUuid(c, "uuid")), Optional.empty())))).executes((c) -> pushPack((CommandSourceStack)c.getSource(), StringArgumentType.getString(c, "url"), Optional.empty(), Optional.empty()))))).then(Commands.literal("pop").then(Commands.argument("uuid", UuidArgument.uuid()).executes((c) -> popPack((CommandSourceStack)c.getSource(), UuidArgument.getUuid(c, "uuid"))))));
    }
 
-   private static void sendToAllConnections(CommandSourceStack var0, Packet<?> var1) {
-      var0.getServer().getConnection().getConnections().forEach((var1x) -> var1x.send(var1));
+   private static void sendToAllConnections(final CommandSourceStack source, final Packet<?> packet) {
+      source.getServer().getConnection().getConnections().forEach((connection) -> connection.send(packet));
    }
 
-   private static int pushPack(CommandSourceStack var0, String var1, Optional<UUID> var2, Optional<String> var3) {
-      UUID var4 = (UUID)var2.orElseGet(() -> UUID.nameUUIDFromBytes(var1.getBytes(StandardCharsets.UTF_8)));
-      String var5 = (String)var3.orElse("");
-      ClientboundResourcePackPushPacket var6 = new ClientboundResourcePackPushPacket(var4, var1, var5, false, (Optional)null);
-      sendToAllConnections(var0, var6);
+   private static int pushPack(final CommandSourceStack source, final String url, final Optional<UUID> maybeId, final Optional<String> maybeHash) {
+      UUID id = (UUID)maybeId.orElseGet(() -> UUID.nameUUIDFromBytes(url.getBytes(StandardCharsets.UTF_8)));
+      String hash = (String)maybeHash.orElse("");
+      ClientboundResourcePackPushPacket packet = new ClientboundResourcePackPushPacket(id, url, hash, false, (Optional)null);
+      sendToAllConnections(source, packet);
       return 0;
    }
 
-   private static int popPack(CommandSourceStack var0, UUID var1) {
-      ClientboundResourcePackPopPacket var2 = new ClientboundResourcePackPopPacket(Optional.of(var1));
-      sendToAllConnections(var0, var2);
+   private static int popPack(final CommandSourceStack source, final UUID uuid) {
+      ClientboundResourcePackPopPacket packet = new ClientboundResourcePackPopPacket(Optional.of(uuid));
+      sendToAllConnections(source, packet);
       return 0;
    }
 }

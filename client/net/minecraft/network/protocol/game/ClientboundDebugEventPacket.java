@@ -9,17 +9,16 @@ import net.minecraft.util.debug.DebugSubscription;
 public record ClientboundDebugEventPacket(DebugSubscription.Event<?> event) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundDebugEventPacket> STREAM_CODEC;
 
-   public ClientboundDebugEventPacket(DebugSubscription.Event<?> var1) {
+   public ClientboundDebugEventPacket {
       super();
-      this.event = var1;
    }
 
    public PacketType<ClientboundDebugEventPacket> type() {
       return GamePacketTypes.CLIENTBOUND_DEBUG_EVENT;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleDebugEvent(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleDebugEvent(this);
    }
 
    static {

@@ -14,8 +14,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -32,56 +32,56 @@ public abstract class StoredUserList<K, V extends StoredUserEntry<K>> {
    private final Map<String, V> map = Maps.newHashMap();
    protected final NotificationService notificationService;
 
-   public StoredUserList(File var1, NotificationService var2) {
+   public StoredUserList(final File file, final NotificationService notificationService) {
       super();
-      this.file = var1;
-      this.notificationService = var2;
+      this.file = file;
+      this.notificationService = notificationService;
    }
 
    public File getFile() {
       return this.file;
    }
 
-   public boolean add(V var1) {
-      String var2 = this.getKeyForUser(var1.getUser());
-      StoredUserEntry var3 = (StoredUserEntry)this.map.get(var2);
-      if (var1.equals(var3)) {
+   public boolean add(final V infos) {
+      String keyForUser = this.getKeyForUser(((StoredUserEntry)infos).getUser());
+      V previous = (V)(this.map.get(keyForUser));
+      if (infos.equals(previous)) {
          return false;
       } else {
-         this.map.put(var2, var1);
+         this.map.put(keyForUser, infos);
 
          try {
             this.save();
-         } catch (IOException var5) {
-            LOGGER.warn("Could not save the list after adding a user.", var5);
+         } catch (IOException e) {
+            LOGGER.warn("Could not save the list after adding a user.", e);
          }
 
          return true;
       }
    }
 
-   public @Nullable V get(K var1) {
+   public @Nullable V get(final K user) {
       this.removeExpired();
-      return (V)(this.map.get(this.getKeyForUser(var1)));
+      return (V)(this.map.get(this.getKeyForUser(user)));
    }
 
-   public boolean remove(K var1) {
-      StoredUserEntry var2 = (StoredUserEntry)this.map.remove(this.getKeyForUser(var1));
-      if (var2 == null) {
+   public boolean remove(final K user) {
+      V removed = (V)(this.map.remove(this.getKeyForUser(user)));
+      if (removed == null) {
          return false;
       } else {
          try {
             this.save();
-         } catch (IOException var4) {
-            LOGGER.warn("Could not save the list after removing a user.", var4);
+         } catch (IOException e) {
+            LOGGER.warn("Could not save the list after removing a user.", e);
          }
 
          return true;
       }
    }
 
-   public boolean remove(StoredUserEntry<K> var1) {
-      return this.remove(Objects.requireNonNull(var1.getUser()));
+   public boolean remove(final StoredUserEntry<K> infos) {
+      return this.remove(Objects.requireNonNull(infos.getUser()));
    }
 
    public void clear() {
@@ -89,8 +89,8 @@ public abstract class StoredUserList<K, V extends StoredUserEntry<K>> {
 
       try {
          this.save();
-      } catch (IOException var2) {
-         LOGGER.warn("Could not save the list after removing a user.", var2);
+      } catch (IOException e) {
+         LOGGER.warn("Could not save the list after removing a user.", e);
       }
 
    }
@@ -103,52 +103,52 @@ public abstract class StoredUserList<K, V extends StoredUserEntry<K>> {
       return this.map.isEmpty();
    }
 
-   protected String getKeyForUser(K var1) {
-      return var1.toString();
+   protected String getKeyForUser(final K user) {
+      return user.toString();
    }
 
-   protected boolean contains(K var1) {
-      return this.map.containsKey(this.getKeyForUser(var1));
+   protected boolean contains(final K user) {
+      return this.map.containsKey(this.getKeyForUser(user));
    }
 
    private void removeExpired() {
-      ArrayList var1 = Lists.newArrayList();
+      List<K> toRemove = Lists.newArrayList();
 
-      for(StoredUserEntry var3 : this.map.values()) {
-         if (var3.hasExpired()) {
-            var1.add(var3.getUser());
+      for(V entry : this.map.values()) {
+         if (entry.hasExpired()) {
+            toRemove.add(((StoredUserEntry)entry).getUser());
          }
       }
 
-      for(Object var5 : var1) {
-         this.map.remove(this.getKeyForUser(var5));
+      for(K user : toRemove) {
+         this.map.remove(this.getKeyForUser(user));
       }
 
    }
 
-   protected abstract StoredUserEntry<K> createEntry(JsonObject var1);
+   protected abstract StoredUserEntry<K> createEntry(final JsonObject object);
 
    public Collection<V> getEntries() {
       return this.map.values();
    }
 
    public void save() throws IOException {
-      JsonArray var1 = new JsonArray();
-      Stream var10000 = this.map.values().stream().map((var0) -> {
+      JsonArray result = new JsonArray();
+      Stream var10000 = this.map.values().stream().map((entry) -> {
          JsonObject var10000 = new JsonObject();
-         Objects.requireNonNull(var0);
-         return (JsonObject)Util.make(var10000, var0::serialize);
+         Objects.requireNonNull(entry);
+         return (JsonObject)Util.make(var10000, entry::serialize);
       });
-      Objects.requireNonNull(var1);
-      var10000.forEach(var1::add);
-      BufferedWriter var2 = Files.newWriter(this.file, StandardCharsets.UTF_8);
+      Objects.requireNonNull(result);
+      var10000.forEach(result::add);
+      BufferedWriter writer = Files.newWriter(this.file, StandardCharsets.UTF_8);
 
       try {
-         GSON.toJson(var1, GSON.newJsonWriter(var2));
+         GSON.toJson(result, GSON.newJsonWriter(writer));
       } catch (Throwable var6) {
-         if (var2 != null) {
+         if (writer != null) {
             try {
-               var2.close();
+               writer.close();
             } catch (Throwable var5) {
                var6.addSuppressed(var5);
             }
@@ -157,35 +157,35 @@ public abstract class StoredUserList<K, V extends StoredUserEntry<K>> {
          throw var6;
       }
 
-      if (var2 != null) {
-         var2.close();
+      if (writer != null) {
+         writer.close();
       }
 
    }
 
    public void load() throws IOException {
       if (this.file.exists()) {
-         BufferedReader var1 = Files.newReader(this.file, StandardCharsets.UTF_8);
+         BufferedReader reader = Files.newReader(this.file, StandardCharsets.UTF_8);
 
          label54: {
             try {
                this.map.clear();
-               JsonArray var2 = (JsonArray)GSON.fromJson(var1, JsonArray.class);
-               if (var2 == null) {
+               JsonArray contents = (JsonArray)GSON.fromJson(reader, JsonArray.class);
+               if (contents == null) {
                   break label54;
                }
 
-               for(JsonElement var4 : var2) {
-                  JsonObject var5 = GsonHelper.convertToJsonObject(var4, "entry");
-                  StoredUserEntry var6 = this.createEntry(var5);
-                  if (var6.getUser() != null) {
-                     this.map.put(this.getKeyForUser(var6.getUser()), var6);
+               for(JsonElement element : contents) {
+                  JsonObject object = GsonHelper.convertToJsonObject(element, "entry");
+                  StoredUserEntry<K> entry = this.createEntry(object);
+                  if (entry.getUser() != null) {
+                     this.map.put(this.getKeyForUser(entry.getUser()), entry);
                   }
                }
             } catch (Throwable var8) {
-               if (var1 != null) {
+               if (reader != null) {
                   try {
-                     var1.close();
+                     reader.close();
                   } catch (Throwable var7) {
                      var8.addSuppressed(var7);
                   }
@@ -194,15 +194,15 @@ public abstract class StoredUserList<K, V extends StoredUserEntry<K>> {
                throw var8;
             }
 
-            if (var1 != null) {
-               var1.close();
+            if (reader != null) {
+               reader.close();
             }
 
             return;
          }
 
-         if (var1 != null) {
-            var1.close();
+         if (reader != null) {
+            reader.close();
          }
 
       }

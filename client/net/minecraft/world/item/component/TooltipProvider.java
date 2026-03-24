@@ -7,5 +7,5 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.TooltipFlag;
 
 public interface TooltipProvider {
-   void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4);
+   void addToTooltip(Item.TooltipContext context, Consumer<Component> consumer, TooltipFlag flag, DataComponentGetter components);
 }

@@ -11,8 +11,8 @@ public enum DamageScaling implements StringRepresentable {
    public static final Codec<DamageScaling> CODEC = StringRepresentable.<DamageScaling>fromEnum(DamageScaling::values);
    private final String id;
 
-   private DamageScaling(final String var3) {
-      this.id = var3;
+   private DamageScaling(final String id) {
+      this.id = id;
    }
 
    public String getSerializedName() {

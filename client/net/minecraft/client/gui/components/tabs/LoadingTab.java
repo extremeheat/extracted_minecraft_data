@@ -14,13 +14,13 @@ public class LoadingTab implements Tab {
    private final Component loadingTitle;
    protected final LinearLayout layout = LinearLayout.vertical();
 
-   public LoadingTab(Font var1, Component var2, Component var3) {
+   public LoadingTab(final Font font, final Component title, final Component loadingTitle) {
       super();
-      this.title = var2;
-      this.loadingTitle = var3;
-      LoadingDotsWidget var4 = new LoadingDotsWidget(var1, var3);
+      this.title = title;
+      this.loadingTitle = loadingTitle;
+      LoadingDotsWidget loadingDotsWidget = new LoadingDotsWidget(font, loadingTitle);
       this.layout.defaultCellSetting().alignVerticallyMiddle().alignHorizontallyCenter();
-      this.layout.addChild(var4, (Consumer)((var0) -> var0.paddingBottom(30)));
+      this.layout.addChild(loadingDotsWidget, (Consumer)((layoutSettings) -> layoutSettings.paddingBottom(30)));
    }
 
    public Component getTabTitle() {
@@ -31,12 +31,12 @@ public class LoadingTab implements Tab {
       return this.loadingTitle;
    }
 
-   public void visitChildren(Consumer<AbstractWidget> var1) {
-      this.layout.visitWidgets(var1);
+   public void visitChildren(final Consumer<AbstractWidget> childrenConsumer) {
+      this.layout.visitWidgets(childrenConsumer);
    }
 
-   public void doLayout(ScreenRectangle var1) {
+   public void doLayout(final ScreenRectangle screenRectangle) {
       this.layout.arrangeElements();
-      FrameLayout.alignInRectangle(this.layout, var1, 0.5F, 0.5F);
+      FrameLayout.alignInRectangle(this.layout, screenRectangle, 0.5F, 0.5F);
    }
 }

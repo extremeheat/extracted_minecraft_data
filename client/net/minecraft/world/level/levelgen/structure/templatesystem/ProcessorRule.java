@@ -19,37 +19,37 @@ public class ProcessorRule {
    private final BlockState outputState;
    private final RuleBlockEntityModifier blockEntityModifier;
 
-   public ProcessorRule(RuleTest var1, RuleTest var2, BlockState var3) {
-      this(var1, var2, PosAlwaysTrueTest.INSTANCE, var3);
+   public ProcessorRule(final RuleTest inputPredicate, final RuleTest locPredicate, final BlockState outputState) {
+      this(inputPredicate, locPredicate, PosAlwaysTrueTest.INSTANCE, outputState);
    }
 
-   public ProcessorRule(RuleTest var1, RuleTest var2, PosRuleTest var3, BlockState var4) {
-      this(var1, var2, var3, var4, DEFAULT_BLOCK_ENTITY_MODIFIER);
+   public ProcessorRule(final RuleTest inputPredicate, final RuleTest locPredicate, final PosRuleTest posPredicate, final BlockState outputState) {
+      this(inputPredicate, locPredicate, posPredicate, outputState, DEFAULT_BLOCK_ENTITY_MODIFIER);
    }
 
-   public ProcessorRule(RuleTest var1, RuleTest var2, PosRuleTest var3, BlockState var4, RuleBlockEntityModifier var5) {
+   public ProcessorRule(final RuleTest inputPredicate, final RuleTest locPredicate, final PosRuleTest posPredicate, final BlockState outputState, final RuleBlockEntityModifier blockEntityModifier) {
       super();
-      this.inputPredicate = var1;
-      this.locPredicate = var2;
-      this.posPredicate = var3;
-      this.outputState = var4;
-      this.blockEntityModifier = var5;
+      this.inputPredicate = inputPredicate;
+      this.locPredicate = locPredicate;
+      this.posPredicate = posPredicate;
+      this.outputState = outputState;
+      this.blockEntityModifier = blockEntityModifier;
    }
 
-   public boolean test(BlockState var1, BlockState var2, BlockPos var3, BlockPos var4, BlockPos var5, RandomSource var6) {
-      return this.inputPredicate.test(var1, var6) && this.locPredicate.test(var2, var6) && this.posPredicate.test(var3, var4, var5, var6);
+   public boolean test(final BlockState inputState, final BlockState locState, final BlockPos inTemplatePos, final BlockPos worldPos, final BlockPos reference, final RandomSource random) {
+      return this.inputPredicate.test(inputState, random) && this.locPredicate.test(locState, random) && this.posPredicate.test(inTemplatePos, worldPos, reference, random);
    }
 
    public BlockState getOutputState() {
       return this.outputState;
    }
 
-   public @Nullable CompoundTag getOutputTag(RandomSource var1, @Nullable CompoundTag var2) {
-      return this.blockEntityModifier.apply(var1, var2);
+   public @Nullable CompoundTag getOutputTag(final RandomSource random, final @Nullable CompoundTag existingTag) {
+      return this.blockEntityModifier.apply(random, existingTag);
    }
 
    static {
       DEFAULT_BLOCK_ENTITY_MODIFIER = Passthrough.INSTANCE;
-      CODEC = RecordCodecBuilder.create((var0) -> var0.group(RuleTest.CODEC.fieldOf("input_predicate").forGetter((var0x) -> var0x.inputPredicate), RuleTest.CODEC.fieldOf("location_predicate").forGetter((var0x) -> var0x.locPredicate), PosRuleTest.CODEC.lenientOptionalFieldOf("position_predicate", PosAlwaysTrueTest.INSTANCE).forGetter((var0x) -> var0x.posPredicate), BlockState.CODEC.fieldOf("output_state").forGetter((var0x) -> var0x.outputState), RuleBlockEntityModifier.CODEC.lenientOptionalFieldOf("block_entity_modifier", DEFAULT_BLOCK_ENTITY_MODIFIER).forGetter((var0x) -> var0x.blockEntityModifier)).apply(var0, ProcessorRule::new));
+      CODEC = RecordCodecBuilder.create((i) -> i.group(RuleTest.CODEC.fieldOf("input_predicate").forGetter((r) -> r.inputPredicate), RuleTest.CODEC.fieldOf("location_predicate").forGetter((r) -> r.locPredicate), PosRuleTest.CODEC.lenientOptionalFieldOf("position_predicate", PosAlwaysTrueTest.INSTANCE).forGetter((r) -> r.posPredicate), BlockState.CODEC.fieldOf("output_state").forGetter((r) -> r.outputState), RuleBlockEntityModifier.CODEC.lenientOptionalFieldOf("block_entity_modifier", DEFAULT_BLOCK_ENTITY_MODIFIER).forGetter((r) -> r.blockEntityModifier)).apply(i, ProcessorRule::new));
    }
 }

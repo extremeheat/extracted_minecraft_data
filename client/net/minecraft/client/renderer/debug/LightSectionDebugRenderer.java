@@ -28,16 +28,16 @@ public class LightSectionDebugRenderer implements DebugRenderer.SimpleDebugRende
    private Instant lastUpdateTime = Instant.now();
    private @Nullable SectionData data;
 
-   public LightSectionDebugRenderer(Minecraft var1, LightLayer var2) {
+   public LightSectionDebugRenderer(final Minecraft minecraft, final LightLayer lightLayer) {
       super();
-      this.minecraft = var1;
-      this.lightLayer = var2;
+      this.minecraft = minecraft;
+      this.lightLayer = lightLayer;
    }
 
-   public void emitGizmos(double var1, double var3, double var5, DebugValueAccess var7, Frustum var8, float var9) {
-      Instant var10 = Instant.now();
-      if (this.data == null || Duration.between(this.lastUpdateTime, var10).compareTo(REFRESH_INTERVAL) > 0) {
-         this.lastUpdateTime = var10;
+   public void emitGizmos(final double camX, final double camY, final double camZ, final DebugValueAccess debugValues, final Frustum frustum, final float partialTicks) {
+      Instant time = Instant.now();
+      if (this.data == null || Duration.between(this.lastUpdateTime, time).compareTo(REFRESH_INTERVAL) > 0) {
+         this.lastUpdateTime = time;
          this.data = new SectionData(this.minecraft.level.getLightEngine(), SectionPos.of(this.minecraft.player.blockPosition()), 10, this.lightLayer);
       }
 
@@ -47,71 +47,71 @@ public class LightSectionDebugRenderer implements DebugRenderer.SimpleDebugRende
       renderFaces(this.data.lightShape, this.data.minPos, LIGHT_ONLY_COLOR);
    }
 
-   private static void renderFaces(DiscreteVoxelShape var0, SectionPos var1, int var2) {
-      var0.forAllFaces((var2x, var3, var4, var5) -> {
-         int var6 = var3 + var1.getX();
-         int var7 = var4 + var1.getY();
-         int var8 = var5 + var1.getZ();
-         renderFace(var2x, var6, var7, var8, var2);
+   private static void renderFaces(final DiscreteVoxelShape shape, final SectionPos minSection, final int color) {
+      shape.forAllFaces((direction, x, y, z) -> {
+         int sectionX = x + minSection.getX();
+         int sectionY = y + minSection.getY();
+         int sectionZ = z + minSection.getZ();
+         renderFace(direction, sectionX, sectionY, sectionZ, color);
       });
    }
 
-   private static void renderEdges(DiscreteVoxelShape var0, SectionPos var1, int var2) {
-      var0.forAllEdges((var2x, var3, var4, var5, var6, var7) -> {
-         int var8 = var2x + var1.getX();
-         int var9 = var3 + var1.getY();
-         int var10 = var4 + var1.getZ();
-         int var11 = var5 + var1.getX();
-         int var12 = var6 + var1.getY();
-         int var13 = var7 + var1.getZ();
-         renderEdge(var8, var9, var10, var11, var12, var13, var2);
+   private static void renderEdges(final DiscreteVoxelShape shape, final SectionPos minSection, final int color) {
+      shape.forAllEdges((x0, y0, z0, x1, y1, z1) -> {
+         int sectionX0 = x0 + minSection.getX();
+         int sectionY0 = y0 + minSection.getY();
+         int sectionZ0 = z0 + minSection.getZ();
+         int sectionX1 = x1 + minSection.getX();
+         int sectionY1 = y1 + minSection.getY();
+         int sectionZ1 = z1 + minSection.getZ();
+         renderEdge(sectionX0, sectionY0, sectionZ0, sectionX1, sectionY1, sectionZ1, color);
       }, true);
    }
 
-   private static void renderFace(Direction var0, int var1, int var2, int var3, int var4) {
-      Vec3 var5 = new Vec3((double)SectionPos.sectionToBlockCoord(var1), (double)SectionPos.sectionToBlockCoord(var2), (double)SectionPos.sectionToBlockCoord(var3));
-      Vec3 var6 = var5.add(16.0, 16.0, 16.0);
-      Gizmos.rect(var5, var6, var0, GizmoStyle.fill(var4));
+   private static void renderFace(final Direction direction, final int sectionX, final int sectionY, final int sectionZ, final int color) {
+      Vec3 cuboidCornerA = new Vec3((double)SectionPos.sectionToBlockCoord(sectionX), (double)SectionPos.sectionToBlockCoord(sectionY), (double)SectionPos.sectionToBlockCoord(sectionZ));
+      Vec3 cuboidCornerB = cuboidCornerA.add(16.0, 16.0, 16.0);
+      Gizmos.rect(cuboidCornerA, cuboidCornerB, direction, GizmoStyle.fill(color));
    }
 
-   private static void renderEdge(int var0, int var1, int var2, int var3, int var4, int var5, int var6) {
-      double var7 = (double)SectionPos.sectionToBlockCoord(var0);
-      double var9 = (double)SectionPos.sectionToBlockCoord(var1);
-      double var11 = (double)SectionPos.sectionToBlockCoord(var2);
-      double var13 = (double)SectionPos.sectionToBlockCoord(var3);
-      double var15 = (double)SectionPos.sectionToBlockCoord(var4);
-      double var17 = (double)SectionPos.sectionToBlockCoord(var5);
-      int var19 = ARGB.opaque(var6);
-      Gizmos.line(new Vec3(var7, var9, var11), new Vec3(var13, var15, var17), var19);
+   private static void renderEdge(final int sectionX0, final int sectionY0, final int sectionZ0, final int sectionX1, final int sectionY1, final int sectionZ1, final int color) {
+      double x0 = (double)SectionPos.sectionToBlockCoord(sectionX0);
+      double y0 = (double)SectionPos.sectionToBlockCoord(sectionY0);
+      double z0 = (double)SectionPos.sectionToBlockCoord(sectionZ0);
+      double x1 = (double)SectionPos.sectionToBlockCoord(sectionX1);
+      double y1 = (double)SectionPos.sectionToBlockCoord(sectionY1);
+      double z1 = (double)SectionPos.sectionToBlockCoord(sectionZ1);
+      int opaqueColor = ARGB.opaque(color);
+      Gizmos.line(new Vec3(x0, y0, z0), new Vec3(x1, y1, z1), opaqueColor);
    }
 
-   static final class SectionData {
-      final DiscreteVoxelShape lightAndBlocksShape;
-      final DiscreteVoxelShape lightShape;
-      final SectionPos minPos;
+   private static final class SectionData {
+      private final DiscreteVoxelShape lightAndBlocksShape;
+      private final DiscreteVoxelShape lightShape;
+      private final SectionPos minPos;
 
-      SectionData(LevelLightEngine var1, SectionPos var2, int var3, LightLayer var4) {
+      private SectionData(final LevelLightEngine engine, final SectionPos centerPos, final int radius, final LightLayer lightLayer) {
          super();
-         int var5 = var3 * 2 + 1;
-         this.lightAndBlocksShape = new BitSetDiscreteVoxelShape(var5, var5, var5);
-         this.lightShape = new BitSetDiscreteVoxelShape(var5, var5, var5);
+         int size = radius * 2 + 1;
+         this.lightAndBlocksShape = new BitSetDiscreteVoxelShape(size, size, size);
+         this.lightShape = new BitSetDiscreteVoxelShape(size, size, size);
 
-         for(int var6 = 0; var6 < var5; ++var6) {
-            for(int var7 = 0; var7 < var5; ++var7) {
-               for(int var8 = 0; var8 < var5; ++var8) {
-                  SectionPos var9 = SectionPos.of(var2.x() + var8 - var3, var2.y() + var7 - var3, var2.z() + var6 - var3);
-                  LayerLightSectionStorage.SectionType var10 = var1.getDebugSectionType(var4, var9);
-                  if (var10 == LayerLightSectionStorage.SectionType.LIGHT_AND_DATA) {
-                     this.lightAndBlocksShape.fill(var8, var7, var6);
-                     this.lightShape.fill(var8, var7, var6);
-                  } else if (var10 == LayerLightSectionStorage.SectionType.LIGHT_ONLY) {
-                     this.lightShape.fill(var8, var7, var6);
+         for(int z = 0; z < size; ++z) {
+            for(int y = 0; y < size; ++y) {
+               for(int x = 0; x < size; ++x) {
+                  SectionPos pos = SectionPos.of(centerPos.x() + x - radius, centerPos.y() + y - radius, centerPos.z() + z - radius);
+                  LayerLightSectionStorage.SectionType type = engine.getDebugSectionType(lightLayer, pos);
+                  if (type == LayerLightSectionStorage.SectionType.LIGHT_AND_DATA) {
+                     this.lightAndBlocksShape.fill(x, y, z);
+                     this.lightShape.fill(x, y, z);
+                  } else if (type == LayerLightSectionStorage.SectionType.LIGHT_ONLY) {
+                     this.lightShape.fill(x, y, z);
                   }
                }
             }
          }
 
-         this.minPos = SectionPos.of(var2.x() - var3, var2.y() - var3, var2.z() - var3);
+         this.minPos = SectionPos.of(centerPos.x() - radius, centerPos.y() - radius, centerPos.z() - radius);
       }
    }
 }

@@ -9,21 +9,19 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
 
 public record ModelAndTexture<T>(T model, ClientAsset.ResourceTexture asset) {
-   public ModelAndTexture(T var1, Identifier var2) {
-      this(var1, (ClientAsset.ResourceTexture)(new ClientAsset.ResourceTexture(var2)));
+   public ModelAndTexture(final T model, final Identifier assetId) {
+      this(model, new ClientAsset.ResourceTexture(assetId));
    }
 
-   public ModelAndTexture(T var1, ClientAsset.ResourceTexture var2) {
+   public ModelAndTexture {
       super();
-      this.model = var1;
-      this.asset = var2;
    }
 
-   public static <T> MapCodec<ModelAndTexture<T>> codec(Codec<T> var0, T var1) {
-      return RecordCodecBuilder.mapCodec((var2) -> var2.group(var0.optionalFieldOf("model", var1).forGetter(ModelAndTexture::model), ClientAsset.ResourceTexture.DEFAULT_FIELD_CODEC.forGetter(ModelAndTexture::asset)).apply(var2, ModelAndTexture::new));
+   public static <T> MapCodec<ModelAndTexture<T>> codec(final Codec<T> modelCodec, final T defaultModel) {
+      return RecordCodecBuilder.mapCodec((i) -> i.group(modelCodec.optionalFieldOf("model", defaultModel).forGetter(ModelAndTexture::model), ClientAsset.ResourceTexture.DEFAULT_FIELD_CODEC.forGetter(ModelAndTexture::asset)).apply(i, ModelAndTexture::new));
    }
 
-   public static <T> StreamCodec<RegistryFriendlyByteBuf, ModelAndTexture<T>> streamCodec(StreamCodec<? super RegistryFriendlyByteBuf, T> var0) {
-      return StreamCodec.composite(var0, ModelAndTexture::model, ClientAsset.ResourceTexture.STREAM_CODEC, ModelAndTexture::asset, ModelAndTexture::new);
+   public static <T> StreamCodec<RegistryFriendlyByteBuf, ModelAndTexture<T>> streamCodec(final StreamCodec<? super RegistryFriendlyByteBuf, T> modelCodec) {
+      return StreamCodec.composite(modelCodec, ModelAndTexture::model, ClientAsset.ResourceTexture.STREAM_CODEC, ModelAndTexture::asset, ModelAndTexture::new);
    }
 }

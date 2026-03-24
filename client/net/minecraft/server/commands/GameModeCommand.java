@@ -11,7 +11,6 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.GameModeArgument;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.PermissionCheck;
 import net.minecraft.server.permissions.Permissions;
@@ -25,43 +24,43 @@ public class GameModeCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("gamemode").requires(Commands.hasPermission(PERMISSION_CHECK))).then(((RequiredArgumentBuilder)Commands.argument("gamemode", GameModeArgument.gameMode()).executes((var0x) -> setMode(var0x, Collections.singleton(((CommandSourceStack)var0x.getSource()).getPlayerOrException()), GameModeArgument.getGameMode(var0x, "gamemode")))).then(Commands.argument("target", EntityArgument.players()).executes((var0x) -> setMode(var0x, EntityArgument.getPlayers(var0x, "target"), GameModeArgument.getGameMode(var0x, "gamemode"))))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("gamemode").requires(Commands.hasPermission(PERMISSION_CHECK))).then(((RequiredArgumentBuilder)Commands.argument("gamemode", GameModeArgument.gameMode()).executes((c) -> setMode(c, Collections.singleton(((CommandSourceStack)c.getSource()).getPlayerOrException()), GameModeArgument.getGameMode(c, "gamemode")))).then(Commands.argument("target", EntityArgument.players()).executes((c) -> setMode(c, EntityArgument.getPlayers(c, "target"), GameModeArgument.getGameMode(c, "gamemode"))))));
    }
 
-   private static void logGamemodeChange(CommandSourceStack var0, ServerPlayer var1, GameType var2) {
-      MutableComponent var3 = Component.translatable("gameMode." + var2.getName());
-      if (var0.getEntity() == var1) {
-         var0.sendSuccess(() -> Component.translatable("commands.gamemode.success.self", var3), true);
+   private static void logGamemodeChange(final CommandSourceStack source, final ServerPlayer target, final GameType newType) {
+      Component mode = Component.translatable("gameMode." + newType.getName());
+      if (source.getEntity() == target) {
+         source.sendSuccess(() -> Component.translatable("commands.gamemode.success.self", mode), true);
       } else {
-         if ((Boolean)var0.getLevel().getGameRules().get(GameRules.SEND_COMMAND_FEEDBACK)) {
-            var1.sendSystemMessage(Component.translatable("gameMode.changed", var3));
+         if ((Boolean)source.getLevel().getGameRules().get(GameRules.SEND_COMMAND_FEEDBACK)) {
+            target.sendSystemMessage(Component.translatable("gameMode.changed", mode));
          }
 
-         var0.sendSuccess(() -> Component.translatable("commands.gamemode.success.other", var1.getDisplayName(), var3), true);
+         source.sendSuccess(() -> Component.translatable("commands.gamemode.success.other", target.getDisplayName(), mode), true);
       }
 
    }
 
-   private static int setMode(CommandContext<CommandSourceStack> var0, Collection<ServerPlayer> var1, GameType var2) {
-      int var3 = 0;
+   private static int setMode(final CommandContext<CommandSourceStack> context, final Collection<ServerPlayer> players, final GameType type) {
+      int count = 0;
 
-      for(ServerPlayer var5 : var1) {
-         if (setGameMode((CommandSourceStack)var0.getSource(), var5, var2)) {
-            ++var3;
+      for(ServerPlayer player : players) {
+         if (setGameMode((CommandSourceStack)context.getSource(), player, type)) {
+            ++count;
          }
       }
 
-      return var3;
+      return count;
    }
 
-   public static void setGameMode(ServerPlayer var0, GameType var1) {
-      setGameMode(var0.createCommandSourceStack(), var0, var1);
+   public static void setGameMode(final ServerPlayer player, final GameType type) {
+      setGameMode(player.createCommandSourceStack(), player, type);
    }
 
-   private static boolean setGameMode(CommandSourceStack var0, ServerPlayer var1, GameType var2) {
-      if (var1.setGameMode(var2)) {
-         logGamemodeChange(var0, var1, var2);
+   private static boolean setGameMode(final CommandSourceStack source, final ServerPlayer player, final GameType type) {
+      if (player.setGameMode(type)) {
+         logGamemodeChange(source, player, type);
          return true;
       } else {
          return false;

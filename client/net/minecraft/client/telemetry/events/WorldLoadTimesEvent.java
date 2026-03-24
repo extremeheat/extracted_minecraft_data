@@ -10,17 +10,17 @@ public class WorldLoadTimesEvent {
    private final boolean newWorld;
    private final @Nullable Duration worldLoadDuration;
 
-   public WorldLoadTimesEvent(boolean var1, @Nullable Duration var2) {
+   public WorldLoadTimesEvent(final boolean newWorld, final @Nullable Duration worldLoadDuration) {
       super();
-      this.worldLoadDuration = var2;
-      this.newWorld = var1;
+      this.worldLoadDuration = worldLoadDuration;
+      this.newWorld = newWorld;
    }
 
-   public void send(TelemetryEventSender var1) {
+   public void send(final TelemetryEventSender eventSender) {
       if (this.worldLoadDuration != null) {
-         var1.send(TelemetryEventType.WORLD_LOAD_TIMES, (var1x) -> {
-            var1x.put(TelemetryProperty.WORLD_LOAD_TIME_MS, (int)this.worldLoadDuration.toMillis());
-            var1x.put(TelemetryProperty.NEW_WORLD, this.newWorld);
+         eventSender.send(TelemetryEventType.WORLD_LOAD_TIMES, (event) -> {
+            event.put(TelemetryProperty.WORLD_LOAD_TIME_MS, (int)this.worldLoadDuration.toMillis());
+            event.put(TelemetryProperty.NEW_WORLD, this.newWorld);
          });
       }
 

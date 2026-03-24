@@ -12,12 +12,12 @@ public class CopyMemoryWithExpiry {
       super();
    }
 
-   public static <E extends LivingEntity, T> BehaviorControl<E> create(Predicate<E> var0, MemoryModuleType<? extends T> var1, MemoryModuleType<T> var2, UniformInt var3) {
-      return BehaviorBuilder.create((Function)((var4) -> var4.group(var4.present(var1), var4.absent(var2)).apply(var4, (var3x, var4x) -> (var5, var6, var7) -> {
-               if (!var0.test(var6)) {
+   public static <E extends LivingEntity, T> BehaviorControl<E> create(final Predicate<E> copyIfTrue, final MemoryModuleType<? extends T> sourceMemory, final MemoryModuleType<T> targetMemory, final UniformInt durationOfCopy) {
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.present(sourceMemory), i.absent(targetMemory)).apply(i, (source, target) -> (level, body, timestamp) -> {
+               if (!copyIfTrue.test(body)) {
                   return false;
                } else {
-                  var4x.setWithExpiry(var4.get(var3x), (long)var3.sample(var5.random));
+                  target.setWithExpiry(i.get(source), (long)durationOfCopy.sample(level.getRandom()));
                   return true;
                }
             })));

@@ -25,37 +25,37 @@ public class SmokerBlock extends AbstractFurnaceBlock {
       return CODEC;
    }
 
-   protected SmokerBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   protected SmokerBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new SmokerBlockEntity(var1, var2);
+   public BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      return new SmokerBlockEntity(worldPosition, blockState);
    }
 
-   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return createFurnaceTicker(var1, var3, BlockEntityType.SMOKER);
+   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(final Level level, final BlockState blockState, final BlockEntityType<T> type) {
+      return createFurnaceTicker(level, type, BlockEntityType.SMOKER);
    }
 
-   protected void openContainer(Level var1, BlockPos var2, Player var3) {
-      BlockEntity var4 = var1.getBlockEntity(var2);
-      if (var4 instanceof SmokerBlockEntity) {
-         var3.openMenu((MenuProvider)var4);
-         var3.awardStat(Stats.INTERACT_WITH_SMOKER);
+   protected void openContainer(final Level level, final BlockPos pos, final Player player) {
+      BlockEntity blockEntity = level.getBlockEntity(pos);
+      if (blockEntity instanceof SmokerBlockEntity) {
+         player.openMenu((MenuProvider)blockEntity);
+         player.awardStat(Stats.INTERACT_WITH_SMOKER);
       }
 
    }
 
-   public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
-      if ((Boolean)var1.getValue(LIT)) {
-         double var5 = (double)var3.getX() + 0.5;
-         double var7 = (double)var3.getY();
-         double var9 = (double)var3.getZ() + 0.5;
-         if (var4.nextDouble() < 0.1) {
-            var2.playLocalSound(var5, var7, var9, SoundEvents.SMOKER_SMOKE, SoundSource.BLOCKS, 1.0F, 1.0F, false);
+   public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {
+      if ((Boolean)state.getValue(LIT)) {
+         double x = (double)pos.getX() + 0.5;
+         double y = (double)pos.getY();
+         double z = (double)pos.getZ() + 0.5;
+         if (random.nextDouble() < 0.1) {
+            level.playLocalSound(x, y, z, SoundEvents.SMOKER_SMOKE, SoundSource.BLOCKS, 1.0F, 1.0F, false);
          }
 
-         var2.addParticle(ParticleTypes.SMOKE, var5, var7 + 1.1, var9, 0.0, 0.0, 0.0);
+         level.addParticle(ParticleTypes.SMOKE, x, y + 1.1, z, 0.0, 0.0, 0.0);
       }
    }
 }

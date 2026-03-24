@@ -20,9 +20,9 @@ import org.jspecify.annotations.Nullable;
 public class SkeletonTrapGoal extends Goal {
    private final SkeletonHorse horse;
 
-   public SkeletonTrapGoal(SkeletonHorse var1) {
+   public SkeletonTrapGoal(final SkeletonHorse horse) {
       super();
-      this.horse = var1;
+      this.horse = horse;
    }
 
    public boolean canUse() {
@@ -30,29 +30,29 @@ public class SkeletonTrapGoal extends Goal {
    }
 
    public void tick() {
-      ServerLevel var1 = (ServerLevel)this.horse.level();
-      DifficultyInstance var2 = var1.getCurrentDifficultyAt(this.horse.blockPosition());
+      ServerLevel level = (ServerLevel)this.horse.level();
+      DifficultyInstance difficulty = level.getCurrentDifficultyAt(this.horse.blockPosition());
       this.horse.setTrap(false);
       this.horse.setTamed(true);
       this.horse.setAge(0);
-      LightningBolt var3 = EntityType.LIGHTNING_BOLT.create(var1, EntitySpawnReason.TRIGGERED);
-      if (var3 != null) {
-         var3.snapTo(this.horse.getX(), this.horse.getY(), this.horse.getZ());
-         var3.setVisualOnly(true);
-         var1.addFreshEntity(var3);
-         Skeleton var4 = this.createSkeleton(var2, this.horse);
-         if (var4 != null) {
-            var4.startRiding(this.horse);
-            var1.addFreshEntityWithPassengers(var4);
+      LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(level, EntitySpawnReason.TRIGGERED);
+      if (bolt != null) {
+         bolt.snapTo(this.horse.getX(), this.horse.getY(), this.horse.getZ());
+         bolt.setVisualOnly(true);
+         level.addFreshEntity(bolt);
+         Skeleton skeleton = this.createSkeleton(difficulty, this.horse);
+         if (skeleton != null) {
+            skeleton.startRiding(this.horse);
+            level.addFreshEntityWithPassengers(skeleton);
 
-            for(int var5 = 0; var5 < 3; ++var5) {
-               AbstractHorse var6 = this.createHorse(var2);
-               if (var6 != null) {
-                  Skeleton var7 = this.createSkeleton(var2, var6);
-                  if (var7 != null) {
-                     var7.startRiding(var6);
-                     var6.push(this.horse.getRandom().triangle(0.0, 1.1485), 0.0, this.horse.getRandom().triangle(0.0, 1.1485));
-                     var1.addFreshEntityWithPassengers(var6);
+            for(int i = 0; i < 3; ++i) {
+               AbstractHorse otherHorse = this.createHorse(difficulty);
+               if (otherHorse != null) {
+                  Skeleton otherSkeleton = this.createSkeleton(difficulty, otherHorse);
+                  if (otherSkeleton != null) {
+                     otherSkeleton.startRiding(otherHorse);
+                     otherHorse.push(this.horse.getRandom().triangle(0.0, 1.1485), 0.0, this.horse.getRandom().triangle(0.0, 1.1485));
+                     level.addFreshEntityWithPassengers(otherHorse);
                   }
                }
             }
@@ -61,42 +61,42 @@ public class SkeletonTrapGoal extends Goal {
       }
    }
 
-   private @Nullable AbstractHorse createHorse(DifficultyInstance var1) {
-      SkeletonHorse var2 = EntityType.SKELETON_HORSE.create(this.horse.level(), EntitySpawnReason.TRIGGERED);
-      if (var2 != null) {
-         var2.finalizeSpawn((ServerLevel)this.horse.level(), var1, EntitySpawnReason.TRIGGERED, (SpawnGroupData)null);
-         var2.setPos(this.horse.getX(), this.horse.getY(), this.horse.getZ());
-         var2.invulnerableTime = 60;
-         var2.setPersistenceRequired();
-         var2.setTamed(true);
-         var2.setAge(0);
+   private @Nullable AbstractHorse createHorse(final DifficultyInstance difficulty) {
+      SkeletonHorse horse = EntityType.SKELETON_HORSE.create(this.horse.level(), EntitySpawnReason.TRIGGERED);
+      if (horse != null) {
+         horse.finalizeSpawn((ServerLevel)this.horse.level(), difficulty, EntitySpawnReason.TRIGGERED, (SpawnGroupData)null);
+         horse.setPos(this.horse.getX(), this.horse.getY(), this.horse.getZ());
+         horse.invulnerableTime = 60;
+         horse.setPersistenceRequired();
+         horse.setTamed(true);
+         horse.setAge(0);
       }
 
-      return var2;
+      return horse;
    }
 
-   private @Nullable Skeleton createSkeleton(DifficultyInstance var1, AbstractHorse var2) {
-      Skeleton var3 = EntityType.SKELETON.create(var2.level(), EntitySpawnReason.TRIGGERED);
-      if (var3 != null) {
-         var3.finalizeSpawn((ServerLevel)var2.level(), var1, EntitySpawnReason.TRIGGERED, (SpawnGroupData)null);
-         var3.setPos(var2.getX(), var2.getY(), var2.getZ());
-         var3.invulnerableTime = 60;
-         var3.setPersistenceRequired();
-         if (var3.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
-            var3.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.IRON_HELMET));
+   private @Nullable Skeleton createSkeleton(final DifficultyInstance difficulty, final AbstractHorse horse) {
+      Skeleton skeleton = EntityType.SKELETON.create(horse.level(), EntitySpawnReason.TRIGGERED);
+      if (skeleton != null) {
+         skeleton.finalizeSpawn((ServerLevel)horse.level(), difficulty, EntitySpawnReason.TRIGGERED, (SpawnGroupData)null);
+         skeleton.setPos(horse.getX(), horse.getY(), horse.getZ());
+         skeleton.invulnerableTime = 60;
+         skeleton.setPersistenceRequired();
+         if (skeleton.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
+            skeleton.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.IRON_HELMET));
          }
 
-         this.enchant(var3, EquipmentSlot.MAINHAND, var1);
-         this.enchant(var3, EquipmentSlot.HEAD, var1);
+         this.enchant(skeleton, EquipmentSlot.MAINHAND, difficulty);
+         this.enchant(skeleton, EquipmentSlot.HEAD, difficulty);
       }
 
-      return var3;
+      return skeleton;
    }
 
-   private void enchant(Skeleton var1, EquipmentSlot var2, DifficultyInstance var3) {
-      ItemStack var4 = var1.getItemBySlot(var2);
-      var4.set(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
-      EnchantmentHelper.enchantItemFromProvider(var4, var1.level().registryAccess(), VanillaEnchantmentProviders.MOB_SPAWN_EQUIPMENT, var3, var1.getRandom());
-      var1.setItemSlot(var2, var4);
+   private void enchant(final Skeleton skeleton, final EquipmentSlot slot, final DifficultyInstance difficulty) {
+      ItemStack stack = skeleton.getItemBySlot(slot);
+      stack.set(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
+      EnchantmentHelper.enchantItemFromProvider(stack, skeleton.level().registryAccess(), VanillaEnchantmentProviders.MOB_SPAWN_EQUIPMENT, difficulty, skeleton.getRandom());
+      skeleton.setItemSlot(slot, stack);
    }
 }

@@ -7,21 +7,21 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.raid.Raid;
 
 class BadOmenMobEffect extends MobEffect {
-   protected BadOmenMobEffect(MobEffectCategory var1, int var2) {
-      super(var1, var2);
+   protected BadOmenMobEffect(final MobEffectCategory category, final int color) {
+      super(category, color);
    }
 
-   public boolean shouldApplyEffectTickThisTick(int var1, int var2) {
+   public boolean shouldApplyEffectTickThisTick(final int remainingDuration, final int amplification) {
       return true;
    }
 
-   public boolean applyEffectTick(ServerLevel var1, LivingEntity var2, int var3) {
-      if (var2 instanceof ServerPlayer var4) {
-         if (!var4.isSpectator() && var1.getDifficulty() != Difficulty.PEACEFUL && var1.isVillage(var4.blockPosition())) {
-            Raid var5 = var1.getRaidAt(var4.blockPosition());
-            if (var5 == null || var5.getRaidOmenLevel() < var5.getMaxRaidOmenLevel()) {
-               var4.addEffect(new MobEffectInstance(MobEffects.RAID_OMEN, 600, var3));
-               var4.setRaidOmenPosition(var4.blockPosition());
+   public boolean applyEffectTick(final ServerLevel level, final LivingEntity mob, final int amplification) {
+      if (mob instanceof ServerPlayer player) {
+         if (!player.isSpectator() && level.getDifficulty() != Difficulty.PEACEFUL && level.isVillage(player.blockPosition())) {
+            Raid raid = level.getRaidAt(player.blockPosition());
+            if (raid == null || raid.getRaidOmenLevel() < raid.getMaxRaidOmenLevel()) {
+               player.addEffect(new MobEffectInstance(MobEffects.RAID_OMEN, 600, amplification));
+               player.setRaidOmenPosition(player.blockPosition());
                return false;
             }
          }

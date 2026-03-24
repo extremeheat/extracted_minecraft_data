@@ -23,74 +23,69 @@ import org.jspecify.annotations.Nullable;
 
 public class EntityAnchorArgument implements ArgumentType<Anchor> {
    private static final Collection<String> EXAMPLES = Arrays.asList("eyes", "feet");
-   private static final DynamicCommandExceptionType ERROR_INVALID = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.anchor.invalid", var0));
+   private static final DynamicCommandExceptionType ERROR_INVALID = new DynamicCommandExceptionType((name) -> Component.translatableEscape("argument.anchor.invalid", name));
 
    public EntityAnchorArgument() {
       super();
    }
 
-   public static Anchor getAnchor(CommandContext<CommandSourceStack> var0, String var1) {
-      return (Anchor)var0.getArgument(var1, Anchor.class);
+   public static Anchor getAnchor(final CommandContext<CommandSourceStack> context, final String name) {
+      return (Anchor)context.getArgument(name, Anchor.class);
    }
 
    public static EntityAnchorArgument anchor() {
       return new EntityAnchorArgument();
    }
 
-   public Anchor parse(StringReader var1) throws CommandSyntaxException {
-      int var2 = var1.getCursor();
-      String var3 = var1.readUnquotedString();
-      Anchor var4 = EntityAnchorArgument.Anchor.getByName(var3);
-      if (var4 == null) {
-         var1.setCursor(var2);
-         throw ERROR_INVALID.createWithContext(var1, var3);
+   public Anchor parse(final StringReader reader) throws CommandSyntaxException {
+      int start = reader.getCursor();
+      String name = reader.readUnquotedString();
+      Anchor anchor = EntityAnchorArgument.Anchor.getByName(name);
+      if (anchor == null) {
+         reader.setCursor(start);
+         throw ERROR_INVALID.createWithContext(reader, name);
       } else {
-         return var4;
+         return anchor;
       }
    }
 
-   public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      return SharedSuggestionProvider.suggest(EntityAnchorArgument.Anchor.BY_NAME.keySet(), var2);
+   public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
+      return SharedSuggestionProvider.suggest(EntityAnchorArgument.Anchor.BY_NAME.keySet(), builder);
    }
 
    public Collection<String> getExamples() {
       return EXAMPLES;
    }
 
-   // $FF: synthetic method
-   public Object parse(final StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1);
-   }
-
    public static enum Anchor {
-      FEET("feet", (var0, var1) -> var0),
-      EYES("eyes", (var0, var1) -> new Vec3(var0.x, var0.y + (double)var1.getEyeHeight(), var0.z));
+      FEET("feet", (p, e) -> p),
+      EYES("eyes", (p, e) -> new Vec3(p.x, p.y + (double)e.getEyeHeight(), p.z));
 
-      static final Map<String, Anchor> BY_NAME = (Map)Util.make(Maps.newHashMap(), (var0) -> {
-         for(Anchor var4 : values()) {
-            var0.put(var4.name, var4);
+      private static final Map<String, Anchor> BY_NAME = (Map)Util.make(Maps.newHashMap(), (map) -> {
+         for(Anchor anchor : values()) {
+            map.put(anchor.name, anchor);
          }
 
       });
       private final String name;
       private final BiFunction<Vec3, Entity, Vec3> transform;
 
-      private Anchor(final String var3, final BiFunction<Vec3, Entity, Vec3> var4) {
-         this.name = var3;
-         this.transform = var4;
+      private Anchor(final String name, final BiFunction<Vec3, Entity, Vec3> transform) {
+         this.name = name;
+         this.transform = transform;
       }
 
-      public static @Nullable Anchor getByName(String var0) {
-         return (Anchor)BY_NAME.get(var0);
+      public static @Nullable Anchor getByName(final String name) {
+         return (Anchor)BY_NAME.get(name);
       }
 
-      public Vec3 apply(Entity var1) {
-         return (Vec3)this.transform.apply(var1.position(), var1);
+      public Vec3 apply(final Entity entity) {
+         return (Vec3)this.transform.apply(entity.position(), entity);
       }
 
-      public Vec3 apply(CommandSourceStack var1) {
-         Entity var2 = var1.getEntity();
-         return var2 == null ? var1.getPosition() : (Vec3)this.transform.apply(var1.getPosition(), var2);
+      public Vec3 apply(final CommandSourceStack source) {
+         Entity entity = source.getEntity();
+         return entity == null ? source.getPosition() : (Vec3)this.transform.apply(source.getPosition(), entity);
       }
 
       // $FF: synthetic method

@@ -10,18 +10,16 @@ import net.minecraft.resources.Identifier;
 public record ClientboundCooldownPacket(Identifier cooldownGroup, int duration) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundCooldownPacket> STREAM_CODEC;
 
-   public ClientboundCooldownPacket(Identifier var1, int var2) {
+   public ClientboundCooldownPacket {
       super();
-      this.cooldownGroup = var1;
-      this.duration = var2;
    }
 
    public PacketType<ClientboundCooldownPacket> type() {
       return GamePacketTypes.CLIENTBOUND_COOLDOWN;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleItemCooldown(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleItemCooldown(this);
    }
 
    static {

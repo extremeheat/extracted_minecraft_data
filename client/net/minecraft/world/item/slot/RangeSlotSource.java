@@ -11,14 +11,14 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootContextArg;
 
 public class RangeSlotSource implements SlotSource {
-   public static final MapCodec<RangeSlotSource> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(LootContextArg.ENTITY_OR_BLOCK.fieldOf("source").forGetter((var0x) -> var0x.source), SlotRanges.CODEC.fieldOf("slots").forGetter((var0x) -> var0x.slotRange)).apply(var0, RangeSlotSource::new));
+   public static final MapCodec<RangeSlotSource> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(LootContextArg.ENTITY_OR_BLOCK.fieldOf("source").forGetter((t) -> t.source), SlotRanges.CODEC.fieldOf("slots").forGetter((t) -> t.slotRange)).apply(i, RangeSlotSource::new));
    private final LootContextArg<Object> source;
    private final SlotRange slotRange;
 
-   private RangeSlotSource(LootContextArg<Object> var1, SlotRange var2) {
+   private RangeSlotSource(final LootContextArg<Object> source, final SlotRange slotRange) {
       super();
-      this.source = var1;
-      this.slotRange = var2;
+      this.source = source;
+      this.slotRange = slotRange;
    }
 
    public MapCodec<RangeSlotSource> codec() {
@@ -29,10 +29,10 @@ public class RangeSlotSource implements SlotSource {
       return Set.of(this.source.contextParam());
    }
 
-   public final SlotCollection provide(LootContext var1) {
-      Object var2 = this.source.get(var1);
-      if (var2 instanceof SlotProvider var3) {
-         return var3.getSlotsFromRange(this.slotRange.slots());
+   public final SlotCollection provide(final LootContext context) {
+      Object maybeProvider = this.source.get(context);
+      if (maybeProvider instanceof SlotProvider slotProvider) {
+         return slotProvider.getSlotsFromRange(this.slotRange.slots());
       } else {
          return SlotCollection.EMPTY;
       }

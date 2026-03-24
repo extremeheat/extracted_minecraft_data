@@ -14,15 +14,15 @@ public class OverlayTexture implements AutoCloseable {
 
    public OverlayTexture() {
       super();
-      NativeImage var1 = this.texture.getPixels();
+      NativeImage pixels = this.texture.getPixels();
 
-      for(int var2 = 0; var2 < 16; ++var2) {
-         for(int var3 = 0; var3 < 16; ++var3) {
-            if (var2 < 8) {
-               var1.setPixel(var3, var2, -1291911168);
+      for(int y = 0; y < 16; ++y) {
+         for(int x = 0; x < 16; ++x) {
+            if (y < 8) {
+               pixels.setPixel(x, y, -1291911168);
             } else {
-               int var4 = (int)((1.0F - (float)var3 / 15.0F * 0.75F) * 255.0F);
-               var1.setPixel(var3, var2, ARGB.white(var4));
+               int a = (int)((1.0F - (float)x / 15.0F * 0.75F) * 255.0F);
+               pixels.setPixel(x, y, ARGB.white(a));
             }
          }
       }
@@ -34,20 +34,20 @@ public class OverlayTexture implements AutoCloseable {
       this.texture.close();
    }
 
-   public static int u(float var0) {
-      return (int)(var0 * 15.0F);
+   public static int u(final float whiteOverlayProgress) {
+      return (int)(whiteOverlayProgress * 15.0F);
    }
 
-   public static int v(boolean var0) {
-      return var0 ? 3 : 10;
+   public static int v(final boolean hurtOverlay) {
+      return hurtOverlay ? 3 : 10;
    }
 
-   public static int pack(int var0, int var1) {
-      return var0 | var1 << 16;
+   public static int pack(final int u, final int v) {
+      return u | v << 16;
    }
 
-   public static int pack(float var0, boolean var1) {
-      return pack(u(var0), v(var1));
+   public static int pack(final float whiteOverlayProgress, final boolean redOverlay) {
+      return pack(u(whiteOverlayProgress), v(redOverlay));
    }
 
    public GpuTextureView getTextureView() {

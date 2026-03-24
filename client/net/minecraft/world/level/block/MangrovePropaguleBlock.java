@@ -5,6 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -26,7 +27,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class MangrovePropaguleBlock extends SaplingBlock implements SimpleWaterloggedBlock {
-   public static final MapCodec<MangrovePropaguleBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(TreeGrower.CODEC.fieldOf("tree").forGetter((var0x) -> var0x.treeGrower), propertiesCodec()).apply(var0, MangrovePropaguleBlock::new));
+   public static final MapCodec<MangrovePropaguleBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(TreeGrower.CODEC.fieldOf("tree").forGetter((b) -> b.treeGrower), propertiesCodec()).apply(i, MangrovePropaguleBlock::new));
    public static final IntegerProperty AGE;
    public static final int MAX_AGE = 4;
    private static final int[] SHAPE_MIN_Y;
@@ -38,97 +39,97 @@ public class MangrovePropaguleBlock extends SaplingBlock implements SimpleWaterl
       return CODEC;
    }
 
-   public MangrovePropaguleBlock(TreeGrower var1, BlockBehaviour.Properties var2) {
-      super(var1, var2);
+   public MangrovePropaguleBlock(final TreeGrower treeGrower, final BlockBehaviour.Properties properties) {
+      super(treeGrower, properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(STAGE, 0)).setValue(AGE, 0)).setValue(WATERLOGGED, false)).setValue(HANGING, false));
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(STAGE).add(AGE).add(WATERLOGGED).add(HANGING);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(STAGE).add(AGE).add(WATERLOGGED).add(HANGING);
    }
 
-   protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return super.mayPlaceOn(var1, var2, var3) || var1.is(Blocks.CLAY);
+   protected boolean mayPlaceOn(final BlockState state, final BlockGetter level, final BlockPos pos) {
+      return state.is(BlockTags.SUPPORTS_MANGROVE_PROPAGULE);
    }
 
-   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
-      FluidState var2 = var1.getLevel().getFluidState(var1.getClickedPos());
-      boolean var3 = var2.getType() == Fluids.WATER;
-      return (BlockState)((BlockState)super.getStateForPlacement(var1).setValue(WATERLOGGED, var3)).setValue(AGE, 4);
+   public @Nullable BlockState getStateForPlacement(final BlockPlaceContext context) {
+      FluidState replacedFluidState = context.getLevel().getFluidState(context.getClickedPos());
+      boolean isWaterSource = replacedFluidState.is(Fluids.WATER);
+      return (BlockState)((BlockState)super.getStateForPlacement(context).setValue(WATERLOGGED, isWaterSource)).setValue(AGE, 4);
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      int var5 = (Boolean)var1.getValue(HANGING) ? (Integer)var1.getValue(AGE) : 4;
-      return SHAPE_PER_AGE[var5].move(var1.getOffset(var3));
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      int age = (Boolean)state.getValue(HANGING) ? (Integer)state.getValue(AGE) : 4;
+      return SHAPE_PER_AGE[age].move(state.getOffset(pos));
    }
 
-   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      return isHanging(var1) ? var2.getBlockState(var3.above()).is(Blocks.MANGROVE_LEAVES) : super.canSurvive(var1, var2, var3);
+   protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
+      return isHanging(state) ? level.getBlockState(pos.above()).is(BlockTags.SUPPORTS_HANGING_MANGROVE_PROPAGULE) : super.canSurvive(state, level, pos);
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      if ((Boolean)var1.getValue(WATERLOGGED)) {
-         var3.scheduleTick(var4, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var2));
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      if ((Boolean)state.getValue(WATERLOGGED)) {
+         ticks.scheduleTick(pos, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(level));
       }
 
-      return var5 == Direction.UP && !var1.canSurvive(var2, var4) ? Blocks.AIR.defaultBlockState() : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+      return directionToNeighbour == Direction.UP && !state.canSurvive(level, pos) ? Blocks.AIR.defaultBlockState() : super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   protected FluidState getFluidState(BlockState var1) {
-      return (Boolean)var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
+   protected FluidState getFluidState(final BlockState state) {
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
    }
 
-   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (!isHanging(var1)) {
-         if (var4.nextInt(7) == 0) {
-            this.advanceTree(var2, var3, var1, var4);
+   protected void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if (!isHanging(state)) {
+         if (random.nextInt(7) == 0) {
+            this.advanceTree(level, pos, state, random);
          }
 
       } else {
-         if (!isFullyGrown(var1)) {
-            var2.setBlock(var3, (BlockState)var1.cycle(AGE), 2);
+         if (!isFullyGrown(state)) {
+            level.setBlock(pos, (BlockState)state.cycle(AGE), 2);
          }
 
       }
    }
 
-   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
-      return !isHanging(var3) || !isFullyGrown(var3);
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+      return !isHanging(state) || !isFullyGrown(state);
    }
 
-   public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      return isHanging(var4) ? !isFullyGrown(var4) : super.isBonemealSuccess(var1, var2, var3, var4);
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+      return isHanging(state) ? !isFullyGrown(state) : super.isBonemealSuccess(level, random, pos, state);
    }
 
-   public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      if (isHanging(var4) && !isFullyGrown(var4)) {
-         var1.setBlock(var3, (BlockState)var4.cycle(AGE), 2);
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+      if (isHanging(state) && !isFullyGrown(state)) {
+         level.setBlock(pos, (BlockState)state.cycle(AGE), 2);
       } else {
-         super.performBonemeal(var1, var2, var3, var4);
+         super.performBonemeal(level, random, pos, state);
       }
 
    }
 
-   private static boolean isHanging(BlockState var0) {
-      return (Boolean)var0.getValue(HANGING);
+   private static boolean isHanging(final BlockState state) {
+      return (Boolean)state.getValue(HANGING);
    }
 
-   private static boolean isFullyGrown(BlockState var0) {
-      return (Integer)var0.getValue(AGE) == 4;
+   private static boolean isFullyGrown(final BlockState state) {
+      return (Integer)state.getValue(AGE) == 4;
    }
 
    public static BlockState createNewHangingPropagule() {
       return createNewHangingPropagule(0);
    }
 
-   public static BlockState createNewHangingPropagule(int var0) {
-      return (BlockState)((BlockState)Blocks.MANGROVE_PROPAGULE.defaultBlockState().setValue(HANGING, true)).setValue(AGE, var0);
+   public static BlockState createNewHangingPropagule(final int age) {
+      return (BlockState)((BlockState)Blocks.MANGROVE_PROPAGULE.defaultBlockState().setValue(HANGING, true)).setValue(AGE, age);
    }
 
    static {
       AGE = BlockStateProperties.AGE_4;
       SHAPE_MIN_Y = new int[]{13, 10, 7, 3, 0};
-      SHAPE_PER_AGE = Block.boxes(4, (var0) -> Block.column(2.0, (double)SHAPE_MIN_Y[var0], 16.0));
+      SHAPE_PER_AGE = Block.boxes(4, (age) -> Block.column(2.0, (double)SHAPE_MIN_Y[age], 16.0));
       WATERLOGGED = BlockStateProperties.WATERLOGGED;
       HANGING = BlockStateProperties.HANGING;
    }

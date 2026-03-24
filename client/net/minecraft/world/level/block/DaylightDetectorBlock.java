@@ -9,7 +9,6 @@ import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -36,78 +35,78 @@ public class DaylightDetectorBlock extends BaseEntityBlock {
       return CODEC;
    }
 
-   public DaylightDetectorBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public DaylightDetectorBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(POWER, 0)).setValue(INVERTED, false));
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return SHAPE;
    }
 
-   protected boolean useShapeForLightOcclusion(BlockState var1) {
+   protected boolean useShapeForLightOcclusion(final BlockState state) {
       return true;
    }
 
-   protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
-      return (Integer)var1.getValue(POWER);
+   protected int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
+      return (Integer)state.getValue(POWER);
    }
 
-   private static void updateSignalStrength(BlockState var0, Level var1, BlockPos var2) {
-      int var3 = var1.getBrightness(LightLayer.SKY, var2) - var1.getSkyDarken();
-      float var4 = (Float)var1.environmentAttributes().getValue(EnvironmentAttributes.SUN_ANGLE, var2) * 0.017453292F;
-      boolean var5 = (Boolean)var0.getValue(INVERTED);
-      if (var5) {
-         var3 = 15 - var3;
-      } else if (var3 > 0) {
-         float var6 = var4 < 3.1415927F ? 0.0F : 6.2831855F;
-         var4 += (var6 - var4) * 0.2F;
-         var3 = Math.round((float)var3 * Mth.cos((double)var4));
+   private static void updateSignalStrength(final BlockState state, final Level level, final BlockPos pos) {
+      int target = level.getEffectiveSkyBrightness(pos);
+      float sunAngle = (Float)level.environmentAttributes().getValue(EnvironmentAttributes.SUN_ANGLE, pos) * 0.017453292F;
+      boolean isInverted = (Boolean)state.getValue(INVERTED);
+      if (isInverted) {
+         target = 15 - target;
+      } else if (target > 0) {
+         float offset = sunAngle < 3.1415927F ? 0.0F : 6.2831855F;
+         sunAngle += (offset - sunAngle) * 0.2F;
+         target = Math.round((float)target * Mth.cos((double)sunAngle));
       }
 
-      var3 = Mth.clamp(var3, 0, 15);
-      if ((Integer)var0.getValue(POWER) != var3) {
-         var1.setBlock(var2, (BlockState)var0.setValue(POWER, var3), 3);
+      target = Mth.clamp(target, 0, 15);
+      if ((Integer)state.getValue(POWER) != target) {
+         level.setBlock(pos, (BlockState)state.setValue(POWER, target), 3);
       }
 
    }
 
-   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (!var4.mayBuild()) {
-         return super.useWithoutItem(var1, var2, var3, var4, var5);
+   protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
+      if (!player.mayBuild()) {
+         return super.useWithoutItem(state, level, pos, player, hitResult);
       } else {
-         if (!var2.isClientSide()) {
-            BlockState var6 = (BlockState)var1.cycle(INVERTED);
-            var2.setBlock(var3, var6, 2);
-            var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var4, var6));
-            updateSignalStrength(var6, var2, var3);
+         if (!level.isClientSide()) {
+            BlockState newState = (BlockState)state.cycle(INVERTED);
+            level.setBlock(pos, newState, 2);
+            level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(player, newState));
+            updateSignalStrength(newState, level, pos);
          }
 
          return InteractionResult.SUCCESS;
       }
    }
 
-   protected boolean isSignalSource(BlockState var1) {
+   protected boolean isSignalSource(final BlockState state) {
       return true;
    }
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new DaylightDetectorBlockEntity(var1, var2);
+   public BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      return new DaylightDetectorBlockEntity(worldPosition, blockState);
    }
 
-   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return !var1.isClientSide() && var1.dimensionType().hasSkyLight() ? createTickerHelper(var3, BlockEntityType.DAYLIGHT_DETECTOR, DaylightDetectorBlock::tickEntity) : null;
+   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(final Level level, final BlockState blockState, final BlockEntityType<T> type) {
+      return !level.isClientSide() && level.dimensionType().hasSkyLight() ? createTickerHelper(type, BlockEntityType.DAYLIGHT_DETECTOR, DaylightDetectorBlock::tickEntity) : null;
    }
 
-   private static void tickEntity(Level var0, BlockPos var1, BlockState var2, DaylightDetectorBlockEntity var3) {
-      if (var0.getGameTime() % 20L == 0L) {
-         updateSignalStrength(var2, var0, var1);
+   private static void tickEntity(final Level level, final BlockPos blockPos, final BlockState blockState, final DaylightDetectorBlockEntity blockEntity) {
+      if (level.getGameTime() % 20L == 0L) {
+         updateSignalStrength(blockState, level, blockPos);
       }
 
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(POWER, INVERTED);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(POWER, INVERTED);
    }
 
    static {

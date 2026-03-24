@@ -10,64 +10,63 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.debug.DebugGameEventInfo;
 import net.minecraft.util.debug.DebugSubscriptions;
 import net.minecraft.world.level.chunk.ChunkAccess;
-import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.Vec3;
 
 public class GameEventDispatcher {
    private final ServerLevel level;
 
-   public GameEventDispatcher(ServerLevel var1) {
+   public GameEventDispatcher(final ServerLevel level) {
       super();
-      this.level = var1;
+      this.level = level;
    }
 
-   public void post(Holder<GameEvent> var1, Vec3 var2, GameEvent.Context var3) {
-      int var4 = ((GameEvent)var1.value()).notificationRadius();
-      BlockPos var5 = BlockPos.containing(var2);
-      int var6 = SectionPos.blockToSectionCoord(var5.getX() - var4);
-      int var7 = SectionPos.blockToSectionCoord(var5.getY() - var4);
-      int var8 = SectionPos.blockToSectionCoord(var5.getZ() - var4);
-      int var9 = SectionPos.blockToSectionCoord(var5.getX() + var4);
-      int var10 = SectionPos.blockToSectionCoord(var5.getY() + var4);
-      int var11 = SectionPos.blockToSectionCoord(var5.getZ() + var4);
-      ArrayList var12 = new ArrayList();
-      GameEventListenerRegistry.ListenerVisitor var13 = (var5x, var6x) -> {
-         if (var5x.getDeliveryMode() == GameEventListener.DeliveryMode.BY_DISTANCE) {
-            var12.add(new GameEvent.ListenerInfo(var1, var2, var3, var5x, var6x));
+   public void post(final Holder<GameEvent> gameEvent, final Vec3 position, final GameEvent.Context context) {
+      int radius = ((GameEvent)gameEvent.value()).notificationRadius();
+      BlockPos center = BlockPos.containing(position);
+      int sectionMinX = SectionPos.blockToSectionCoord(center.getX() - radius);
+      int sectionMinY = SectionPos.blockToSectionCoord(center.getY() - radius);
+      int sectionMinZ = SectionPos.blockToSectionCoord(center.getZ() - radius);
+      int sectionMaxX = SectionPos.blockToSectionCoord(center.getX() + radius);
+      int sectionMaxY = SectionPos.blockToSectionCoord(center.getY() + radius);
+      int sectionMaxZ = SectionPos.blockToSectionCoord(center.getZ() + radius);
+      List<GameEvent.ListenerInfo> toHandleByDistance = new ArrayList();
+      GameEventListenerRegistry.ListenerVisitor visitListeners = (listener, pos) -> {
+         if (listener.getDeliveryMode() == GameEventListener.DeliveryMode.BY_DISTANCE) {
+            toHandleByDistance.add(new GameEvent.ListenerInfo(gameEvent, position, context, listener, pos));
          } else {
-            var5x.handleGameEvent(this.level, var1, var3, var2);
+            listener.handleGameEvent(this.level, gameEvent, context, position);
          }
 
       };
-      boolean var14 = false;
+      boolean applicable = false;
 
-      for(int var15 = var6; var15 <= var9; ++var15) {
-         for(int var16 = var8; var16 <= var11; ++var16) {
-            LevelChunk var17 = this.level.getChunkSource().getChunkNow(var15, var16);
-            if (var17 != null) {
-               for(int var18 = var7; var18 <= var10; ++var18) {
-                  var14 |= ((ChunkAccess)var17).getListenerRegistry(var18).visitInRangeListeners(var1, var2, var3, var13);
+      for(int chunkX = sectionMinX; chunkX <= sectionMaxX; ++chunkX) {
+         for(int chunkZ = sectionMinZ; chunkZ <= sectionMaxZ; ++chunkZ) {
+            ChunkAccess chunk = this.level.getChunkSource().getChunkNow(chunkX, chunkZ);
+            if (chunk != null) {
+               for(int section = sectionMinY; section <= sectionMaxY; ++section) {
+                  applicable |= chunk.getListenerRegistry(section).visitInRangeListeners(gameEvent, position, context, visitListeners);
                }
             }
          }
       }
 
-      if (!var12.isEmpty()) {
-         this.handleGameEventMessagesInQueue(var12);
+      if (!toHandleByDistance.isEmpty()) {
+         this.handleGameEventMessagesInQueue(toHandleByDistance);
       }
 
-      if (var14) {
-         this.level.debugSynchronizers().broadcastEventToTracking(BlockPos.containing(var2), DebugSubscriptions.GAME_EVENTS, new DebugGameEventInfo(var1, var2));
+      if (applicable) {
+         this.level.debugSynchronizers().broadcastEventToTracking(BlockPos.containing(position), DebugSubscriptions.GAME_EVENTS, new DebugGameEventInfo(gameEvent, position));
       }
 
    }
 
-   private void handleGameEventMessagesInQueue(List<GameEvent.ListenerInfo> var1) {
-      Collections.sort(var1);
+   private void handleGameEventMessagesInQueue(final List<GameEvent.ListenerInfo> listenerInfos) {
+      Collections.sort(listenerInfos);
 
-      for(GameEvent.ListenerInfo var3 : var1) {
-         GameEventListener var4 = var3.recipient();
-         var4.handleGameEvent(this.level, var3.gameEvent(), var3.context(), var3.source());
+      for(GameEvent.ListenerInfo listenerInfo : listenerInfos) {
+         GameEventListener listener = listenerInfo.recipient();
+         listener.handleGameEvent(this.level, listenerInfo.gameEvent(), listenerInfo.context(), listenerInfo.source());
       }
 
    }

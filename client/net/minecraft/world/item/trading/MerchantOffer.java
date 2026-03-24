@@ -9,7 +9,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 
 public class MerchantOffer {
-   public static final Codec<MerchantOffer> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ItemCost.CODEC.fieldOf("buy").forGetter((var0x) -> var0x.baseCostA), ItemCost.CODEC.lenientOptionalFieldOf("buyB").forGetter((var0x) -> var0x.costB), ItemStack.CODEC.fieldOf("sell").forGetter((var0x) -> var0x.result), Codec.INT.lenientOptionalFieldOf("uses", 0).forGetter((var0x) -> var0x.uses), Codec.INT.lenientOptionalFieldOf("maxUses", 4).forGetter((var0x) -> var0x.maxUses), Codec.BOOL.lenientOptionalFieldOf("rewardExp", true).forGetter((var0x) -> var0x.rewardExp), Codec.INT.lenientOptionalFieldOf("specialPrice", 0).forGetter((var0x) -> var0x.specialPriceDiff), Codec.INT.lenientOptionalFieldOf("demand", 0).forGetter((var0x) -> var0x.demand), Codec.FLOAT.lenientOptionalFieldOf("priceMultiplier", 0.0F).forGetter((var0x) -> var0x.priceMultiplier), Codec.INT.lenientOptionalFieldOf("xp", 1).forGetter((var0x) -> var0x.xp)).apply(var0, MerchantOffer::new));
+   public static final Codec<MerchantOffer> CODEC = RecordCodecBuilder.create((i) -> i.group(ItemCost.CODEC.fieldOf("buy").forGetter((o) -> o.baseCostA), ItemCost.CODEC.lenientOptionalFieldOf("buyB").forGetter((o) -> o.costB), ItemStack.CODEC.fieldOf("sell").forGetter((o) -> o.result), Codec.INT.lenientOptionalFieldOf("uses", 0).forGetter((o) -> o.uses), Codec.INT.lenientOptionalFieldOf("maxUses", 4).forGetter((o) -> o.maxUses), Codec.BOOL.lenientOptionalFieldOf("rewardExp", true).forGetter((o) -> o.rewardExp), Codec.INT.lenientOptionalFieldOf("specialPrice", 0).forGetter((o) -> o.specialPriceDiff), Codec.INT.lenientOptionalFieldOf("demand", 0).forGetter((o) -> o.demand), Codec.FLOAT.lenientOptionalFieldOf("priceMultiplier", 0.0F).forGetter((o) -> o.priceMultiplier), Codec.INT.lenientOptionalFieldOf("xp", 1).forGetter((o) -> o.xp)).apply(i, MerchantOffer::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, MerchantOffer> STREAM_CODEC = StreamCodec.<RegistryFriendlyByteBuf, MerchantOffer>of(MerchantOffer::writeToStream, MerchantOffer::createFromStream);
    private final ItemCost baseCostA;
    private final Optional<ItemCost> costB;
@@ -22,38 +22,38 @@ public class MerchantOffer {
    private final float priceMultiplier;
    private final int xp;
 
-   private MerchantOffer(ItemCost var1, Optional<ItemCost> var2, ItemStack var3, int var4, int var5, boolean var6, int var7, int var8, float var9, int var10) {
+   private MerchantOffer(final ItemCost baseCostA, final Optional<ItemCost> costB, final ItemStack result, final int uses, final int maxUses, final boolean rewardExp, final int specialPriceDiff, final int demand, final float priceMultiplier, final int xp) {
       super();
-      this.baseCostA = var1;
-      this.costB = var2;
-      this.result = var3;
-      this.uses = var4;
-      this.maxUses = var5;
-      this.rewardExp = var6;
-      this.specialPriceDiff = var7;
-      this.demand = var8;
-      this.priceMultiplier = var9;
-      this.xp = var10;
+      this.baseCostA = baseCostA;
+      this.costB = costB;
+      this.result = result;
+      this.uses = uses;
+      this.maxUses = maxUses;
+      this.rewardExp = rewardExp;
+      this.specialPriceDiff = specialPriceDiff;
+      this.demand = demand;
+      this.priceMultiplier = priceMultiplier;
+      this.xp = xp;
    }
 
-   public MerchantOffer(ItemCost var1, ItemStack var2, int var3, int var4, float var5) {
-      this(var1, Optional.empty(), var2, var3, var4, var5);
+   public MerchantOffer(final ItemCost buy, final ItemStack result, final int maxUses, final int xp, final float priceMultiplier) {
+      this(buy, Optional.empty(), result, maxUses, xp, priceMultiplier);
    }
 
-   public MerchantOffer(ItemCost var1, Optional<ItemCost> var2, ItemStack var3, int var4, int var5, float var6) {
-      this(var1, var2, var3, 0, var4, var5, var6);
+   public MerchantOffer(final ItemCost baseCostA, final Optional<ItemCost> costB, final ItemStack result, final int maxUses, final int xp, final float priceMultiplier) {
+      this(baseCostA, costB, result, 0, maxUses, xp, priceMultiplier);
    }
 
-   public MerchantOffer(ItemCost var1, Optional<ItemCost> var2, ItemStack var3, int var4, int var5, int var6, float var7) {
-      this(var1, var2, var3, var4, var5, var6, var7, 0);
+   public MerchantOffer(final ItemCost baseCostA, final Optional<ItemCost> costB, final ItemStack result, final int uses, final int maxUses, final int xp, final float priceMultiplier) {
+      this(baseCostA, costB, result, uses, maxUses, xp, priceMultiplier, 0);
    }
 
-   public MerchantOffer(ItemCost var1, Optional<ItemCost> var2, ItemStack var3, int var4, int var5, int var6, float var7, int var8) {
-      this(var1, var2, var3, var4, var5, true, 0, var8, var7, var6);
+   public MerchantOffer(final ItemCost baseCostA, final Optional<ItemCost> costB, final ItemStack result, final int uses, final int maxUses, final int xp, final float priceMultiplier, final int demand) {
+      this(baseCostA, costB, result, uses, maxUses, true, 0, demand, priceMultiplier, xp);
    }
 
-   private MerchantOffer(MerchantOffer var1) {
-      this(var1.baseCostA, var1.costB, var1.result.copy(), var1.uses, var1.maxUses, var1.rewardExp, var1.specialPriceDiff, var1.demand, var1.priceMultiplier, var1.xp);
+   private MerchantOffer(final MerchantOffer offer) {
+      this(offer.baseCostA, offer.costB, offer.result.copy(), offer.uses, offer.maxUses, offer.rewardExp, offer.specialPriceDiff, offer.demand, offer.priceMultiplier, offer.xp);
    }
 
    public ItemStack getBaseCostA() {
@@ -64,10 +64,10 @@ public class MerchantOffer {
       return this.baseCostA.itemStack().copyWithCount(this.getModifiedCostCount(this.baseCostA));
    }
 
-   private int getModifiedCostCount(ItemCost var1) {
-      int var2 = var1.count();
-      int var3 = Math.max(0, Mth.floor((float)(var2 * this.demand) * this.priceMultiplier));
-      return Mth.clamp(var2 + var3 + this.specialPriceDiff, 1, var1.itemStack().getMaxStackSize());
+   private int getModifiedCostCount(final ItemCost cost) {
+      int basePrice = cost.count();
+      int demandDiff = Math.max(0, Mth.floor((float)(basePrice * this.demand) * this.priceMultiplier));
+      return Mth.clamp(basePrice + demandDiff + this.specialPriceDiff, 1, cost.itemStack().getMaxStackSize());
    }
 
    public ItemStack getCostB() {
@@ -114,8 +114,8 @@ public class MerchantOffer {
       return this.demand;
    }
 
-   public void addToSpecialPriceDiff(int var1) {
-      this.specialPriceDiff += var1;
+   public void addToSpecialPriceDiff(final int add) {
+      this.specialPriceDiff += add;
    }
 
    public void resetSpecialPriceDiff() {
@@ -126,8 +126,8 @@ public class MerchantOffer {
       return this.specialPriceDiff;
    }
 
-   public void setSpecialPriceDiff(int var1) {
-      this.specialPriceDiff = var1;
+   public void setSpecialPriceDiff(final int value) {
+      this.specialPriceDiff = value;
    }
 
    public float getPriceMultiplier() {
@@ -154,25 +154,25 @@ public class MerchantOffer {
       return this.rewardExp;
    }
 
-   public boolean satisfiedBy(ItemStack var1, ItemStack var2) {
-      if (this.baseCostA.test(var1) && var1.getCount() >= this.getModifiedCostCount(this.baseCostA)) {
+   public boolean satisfiedBy(final ItemStack buyA, final ItemStack buyB) {
+      if (this.baseCostA.test(buyA) && buyA.getCount() >= this.getModifiedCostCount(this.baseCostA)) {
          if (!this.costB.isPresent()) {
-            return var2.isEmpty();
+            return buyB.isEmpty();
          } else {
-            return ((ItemCost)this.costB.get()).test(var2) && var2.getCount() >= ((ItemCost)this.costB.get()).count();
+            return ((ItemCost)this.costB.get()).test(buyB) && buyB.getCount() >= ((ItemCost)this.costB.get()).count();
          }
       } else {
          return false;
       }
    }
 
-   public boolean take(ItemStack var1, ItemStack var2) {
-      if (!this.satisfiedBy(var1, var2)) {
+   public boolean take(final ItemStack buyA, final ItemStack buyB) {
+      if (!this.satisfiedBy(buyA, buyB)) {
          return false;
       } else {
-         var1.shrink(this.getCostA().getCount());
+         buyA.shrink(this.getCostA().getCount());
          if (!this.getCostB().isEmpty()) {
-            var2.shrink(this.getCostB().getCount());
+            buyB.shrink(this.getCostB().getCount());
          }
 
          return true;
@@ -183,36 +183,36 @@ public class MerchantOffer {
       return new MerchantOffer(this);
    }
 
-   private static void writeToStream(RegistryFriendlyByteBuf var0, MerchantOffer var1) {
-      ItemCost.STREAM_CODEC.encode(var0, var1.getItemCostA());
-      ItemStack.STREAM_CODEC.encode(var0, var1.getResult());
-      ItemCost.OPTIONAL_STREAM_CODEC.encode(var0, var1.getItemCostB());
-      var0.writeBoolean(var1.isOutOfStock());
-      var0.writeInt(var1.getUses());
-      var0.writeInt(var1.getMaxUses());
-      var0.writeInt(var1.getXp());
-      var0.writeInt(var1.getSpecialPriceDiff());
-      var0.writeFloat(var1.getPriceMultiplier());
-      var0.writeInt(var1.getDemand());
+   private static void writeToStream(final RegistryFriendlyByteBuf output, final MerchantOffer offer) {
+      ItemCost.STREAM_CODEC.encode(output, offer.getItemCostA());
+      ItemStack.STREAM_CODEC.encode(output, offer.getResult());
+      ItemCost.OPTIONAL_STREAM_CODEC.encode(output, offer.getItemCostB());
+      output.writeBoolean(offer.isOutOfStock());
+      output.writeInt(offer.getUses());
+      output.writeInt(offer.getMaxUses());
+      output.writeInt(offer.getXp());
+      output.writeInt(offer.getSpecialPriceDiff());
+      output.writeFloat(offer.getPriceMultiplier());
+      output.writeInt(offer.getDemand());
    }
 
-   public static MerchantOffer createFromStream(RegistryFriendlyByteBuf var0) {
-      ItemCost var1 = (ItemCost)ItemCost.STREAM_CODEC.decode(var0);
-      ItemStack var2 = (ItemStack)ItemStack.STREAM_CODEC.decode(var0);
-      Optional var3 = (Optional)ItemCost.OPTIONAL_STREAM_CODEC.decode(var0);
-      boolean var4 = var0.readBoolean();
-      int var5 = var0.readInt();
-      int var6 = var0.readInt();
-      int var7 = var0.readInt();
-      int var8 = var0.readInt();
-      float var9 = var0.readFloat();
-      int var10 = var0.readInt();
-      MerchantOffer var11 = new MerchantOffer(var1, var3, var2, var5, var6, var7, var9, var10);
-      if (var4) {
-         var11.setToOutOfStock();
+   public static MerchantOffer createFromStream(final RegistryFriendlyByteBuf input) {
+      ItemCost buy = (ItemCost)ItemCost.STREAM_CODEC.decode(input);
+      ItemStack sell = (ItemStack)ItemStack.STREAM_CODEC.decode(input);
+      Optional<ItemCost> buyB = (Optional)ItemCost.OPTIONAL_STREAM_CODEC.decode(input);
+      boolean isExhausted = input.readBoolean();
+      int uses = input.readInt();
+      int maxUses = input.readInt();
+      int xp = input.readInt();
+      int specialPriceDiff = input.readInt();
+      float priceMultiplier = input.readFloat();
+      int demand = input.readInt();
+      MerchantOffer offer = new MerchantOffer(buy, buyB, sell, uses, maxUses, xp, priceMultiplier, demand);
+      if (isExhausted) {
+         offer.setToOutOfStock();
       }
 
-      var11.setSpecialPriceDiff(var8);
-      return var11;
+      offer.setSpecialPriceDiff(specialPriceDiff);
+      return offer;
    }
 }

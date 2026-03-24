@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -31,73 +32,73 @@ public abstract class BuiltInPackSource implements RepositorySource {
    private final Identifier packDir;
    private final DirectoryValidator validator;
 
-   public BuiltInPackSource(PackType var1, VanillaPackResources var2, Identifier var3, DirectoryValidator var4) {
+   public BuiltInPackSource(final PackType packType, final VanillaPackResources vanillaPack, final Identifier packDir, final DirectoryValidator validator) {
       super();
-      this.packType = var1;
-      this.vanillaPack = var2;
-      this.packDir = var3;
-      this.validator = var4;
+      this.packType = packType;
+      this.vanillaPack = vanillaPack;
+      this.packDir = packDir;
+      this.validator = validator;
    }
 
-   public void loadPacks(Consumer<Pack> var1) {
-      Pack var2 = this.createVanillaPack(this.vanillaPack);
-      if (var2 != null) {
-         var1.accept(var2);
+   public void loadPacks(final Consumer<Pack> result) {
+      Pack vanilla = this.createVanillaPack(this.vanillaPack);
+      if (vanilla != null) {
+         result.accept(vanilla);
       }
 
-      this.listBundledPacks(var1);
+      this.listBundledPacks(result);
    }
 
-   protected abstract @Nullable Pack createVanillaPack(PackResources var1);
+   protected abstract @Nullable Pack createVanillaPack(final PackResources resources);
 
-   protected abstract Component getPackTitle(String var1);
+   protected abstract Component getPackTitle(final String id);
 
    public VanillaPackResources getVanillaPack() {
       return this.vanillaPack;
    }
 
-   private void listBundledPacks(Consumer<Pack> var1) {
-      HashMap var2 = new HashMap();
-      Objects.requireNonNull(var2);
-      this.populatePackList(var2::put);
-      var2.forEach((var1x, var2x) -> {
-         Pack var3 = (Pack)var2x.apply(var1x);
-         if (var3 != null) {
-            var1.accept(var3);
+   private void listBundledPacks(final Consumer<Pack> packConsumer) {
+      Map<String, Function<String, Pack>> discoveredPacks = new HashMap();
+      Objects.requireNonNull(discoveredPacks);
+      this.populatePackList(discoveredPacks::put);
+      discoveredPacks.forEach((id, packSupplier) -> {
+         Pack pack = (Pack)packSupplier.apply(id);
+         if (pack != null) {
+            packConsumer.accept(pack);
          }
 
       });
    }
 
-   protected void populatePackList(BiConsumer<String, Function<String, Pack>> var1) {
-      this.vanillaPack.listRawPaths(this.packType, this.packDir, (var2) -> this.discoverPacksInPath(var2, var1));
+   protected void populatePackList(final BiConsumer<String, Function<String, Pack>> discoveredPacks) {
+      this.vanillaPack.listRawPaths(this.packType, this.packDir, (path) -> this.discoverPacksInPath(path, discoveredPacks));
    }
 
-   protected void discoverPacksInPath(@Nullable Path var1, BiConsumer<String, Function<String, @Nullable Pack>> var2) {
-      if (var1 != null && Files.isDirectory(var1, new LinkOption[0])) {
+   protected void discoverPacksInPath(final @Nullable Path targetDir, final BiConsumer<String, Function<String, @Nullable Pack>> discoveredPacks) {
+      if (targetDir != null && Files.isDirectory(targetDir, new LinkOption[0])) {
          try {
-            FolderRepositorySource.discoverPacks(var1, this.validator, (var2x, var3) -> var2.accept(pathToId(var2x), (Function)(var2xx) -> this.createBuiltinPack(var2xx, var3, this.getPackTitle(var2xx))));
-         } catch (IOException var4) {
-            LOGGER.warn("Failed to discover packs in {}", var1, var4);
+            FolderRepositorySource.discoverPacks(targetDir, this.validator, (path, resources) -> discoveredPacks.accept(pathToId(path), (Function)(id) -> this.createBuiltinPack(id, resources, this.getPackTitle(id))));
+         } catch (IOException e) {
+            LOGGER.warn("Failed to discover packs in {}", targetDir, e);
          }
       }
 
    }
 
-   private static String pathToId(Path var0) {
-      return StringUtils.removeEnd(var0.getFileName().toString(), ".zip");
+   private static String pathToId(final Path path) {
+      return StringUtils.removeEnd(path.getFileName().toString(), ".zip");
    }
 
-   protected abstract @Nullable Pack createBuiltinPack(String var1, Pack.ResourcesSupplier var2, Component var3);
+   protected abstract @Nullable Pack createBuiltinPack(final String id, final Pack.ResourcesSupplier resources, final Component name);
 
-   protected static Pack.ResourcesSupplier fixedResources(final PackResources var0) {
+   protected static Pack.ResourcesSupplier fixedResources(final PackResources instance) {
       return new Pack.ResourcesSupplier() {
-         public PackResources openPrimary(PackLocationInfo var1) {
-            return var0;
+         public PackResources openPrimary(final PackLocationInfo location) {
+            return instance;
          }
 
-         public PackResources openFull(PackLocationInfo var1, Pack.Metadata var2) {
-            return var0;
+         public PackResources openFull(final PackLocationInfo location, final Pack.Metadata metadata) {
+            return instance;
          }
       };
    }

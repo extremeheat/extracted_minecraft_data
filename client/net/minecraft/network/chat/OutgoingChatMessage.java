@@ -5,39 +5,37 @@ import net.minecraft.server.level.ServerPlayer;
 public interface OutgoingChatMessage {
    Component content();
 
-   void sendToPlayer(ServerPlayer var1, boolean var2, ChatType.Bound var3);
+   void sendToPlayer(ServerPlayer player, boolean filtered, ChatType.Bound chatType);
 
-   static OutgoingChatMessage create(PlayerChatMessage var0) {
-      return (OutgoingChatMessage)(var0.isSystem() ? new Disguised(var0.decoratedContent()) : new Player(var0));
+   static OutgoingChatMessage create(final PlayerChatMessage message) {
+      return (OutgoingChatMessage)(message.isSystem() ? new Disguised(message.decoratedContent()) : new Player(message));
    }
 
    public static record Player(PlayerChatMessage message) implements OutgoingChatMessage {
-      public Player(PlayerChatMessage var1) {
+      public Player {
          super();
-         this.message = var1;
       }
 
       public Component content() {
          return this.message.decoratedContent();
       }
 
-      public void sendToPlayer(ServerPlayer var1, boolean var2, ChatType.Bound var3) {
-         PlayerChatMessage var4 = this.message.filter(var2);
-         if (!var4.isFullyFiltered()) {
-            var1.connection.sendPlayerChatMessage(var4, var3);
+      public void sendToPlayer(final ServerPlayer player, final boolean filtered, final ChatType.Bound chatType) {
+         PlayerChatMessage filteredMessage = this.message.filter(filtered);
+         if (!filteredMessage.isFullyFiltered()) {
+            player.connection.sendPlayerChatMessage(filteredMessage, chatType);
          }
 
       }
    }
 
    public static record Disguised(Component content) implements OutgoingChatMessage {
-      public Disguised(Component var1) {
+      public Disguised {
          super();
-         this.content = var1;
       }
 
-      public void sendToPlayer(ServerPlayer var1, boolean var2, ChatType.Bound var3) {
-         var1.connection.sendDisguisedChatMessage(this.content, var3);
+      public void sendToPlayer(final ServerPlayer player, final boolean filtered, final ChatType.Bound chatType) {
+         player.connection.sendDisguisedChatMessage(this.content, chatType);
       }
    }
 }

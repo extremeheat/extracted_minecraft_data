@@ -21,27 +21,27 @@ public class ShortDryGrassBlock extends DryVegetationBlock implements Bonemealab
       return CODEC;
    }
 
-   protected ShortDryGrassBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   protected ShortDryGrassBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return SHAPE;
    }
 
-   public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
-      AmbientDesertBlockSoundsPlayer.playAmbientDryGrassSounds(var2, var3, var4);
+   public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {
+      AmbientDesertBlockSoundsPlayer.playAmbientDryGrassSounds(level, pos, random);
    }
 
-   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+      return level.getBlockState(pos.above()).isAir() && level.isInsideBuildHeight(pos.above());
+   }
+
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
       return true;
    }
 
-   public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      return true;
-   }
-
-   public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      var1.setBlockAndUpdate(var3, Blocks.TALL_DRY_GRASS.defaultBlockState());
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+      level.setBlockAndUpdate(pos, Blocks.TALL_DRY_GRASS.defaultBlockState());
    }
 }

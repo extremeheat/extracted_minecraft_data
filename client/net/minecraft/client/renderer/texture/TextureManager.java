@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -31,88 +32,88 @@ public class TextureManager implements PreparableReloadListener, AutoCloseable {
    private final Set<TickableTexture> tickableTextures = new HashSet();
    private final ResourceManager resourceManager;
 
-   public TextureManager(ResourceManager var1) {
+   public TextureManager(final ResourceManager resourceManager) {
       super();
-      this.resourceManager = var1;
-      NativeImage var2 = MissingTextureAtlasSprite.generateMissingImage();
-      this.register(MissingTextureAtlasSprite.getLocation(), new DynamicTexture(() -> "(intentionally-)Missing Texture", var2));
+      this.resourceManager = resourceManager;
+      NativeImage checkerboard = MissingTextureAtlasSprite.generateMissingImage();
+      this.register(MissingTextureAtlasSprite.getLocation(), new DynamicTexture(() -> "(intentionally-)Missing Texture", checkerboard));
    }
 
-   public void registerAndLoad(Identifier var1, ReloadableTexture var2) {
+   public void registerAndLoad(final Identifier textureId, final ReloadableTexture texture) {
       try {
-         var2.apply(this.loadContentsSafe(var1, var2));
-      } catch (Throwable var6) {
-         CrashReport var4 = CrashReport.forThrowable(var6, "Uploading texture");
-         CrashReportCategory var5 = var4.addCategory("Uploaded texture");
-         var5.setDetail("Resource location", var2.resourceId());
-         var5.setDetail("Texture id", var1);
-         throw new ReportedException(var4);
+         texture.apply(this.loadContentsSafe(textureId, texture));
+      } catch (Throwable t) {
+         CrashReport report = CrashReport.forThrowable(t, "Uploading texture");
+         CrashReportCategory category = report.addCategory("Uploaded texture");
+         category.setDetail("Resource location", texture.resourceId());
+         category.setDetail("Texture id", textureId);
+         throw new ReportedException(report);
       }
 
-      this.register(var1, var2);
+      this.register(textureId, texture);
    }
 
-   private TextureContents loadContentsSafe(Identifier var1, ReloadableTexture var2) {
+   private TextureContents loadContentsSafe(final Identifier textureId, final ReloadableTexture texture) {
       try {
-         return loadContents(this.resourceManager, var1, var2);
-      } catch (Exception var4) {
-         LOGGER.error("Failed to load texture {} into slot {}", new Object[]{var2.resourceId(), var1, var4});
+         return loadContents(this.resourceManager, textureId, texture);
+      } catch (Exception e) {
+         LOGGER.error("Failed to load texture {} into slot {}", new Object[]{texture.resourceId(), textureId, e});
          return TextureContents.createMissing();
       }
    }
 
-   public void registerForNextReload(Identifier var1) {
-      this.register(var1, new SimpleTexture(var1));
+   public void registerForNextReload(final Identifier location) {
+      this.register(location, new SimpleTexture(location));
    }
 
-   public void register(Identifier var1, AbstractTexture var2) {
-      AbstractTexture var3 = (AbstractTexture)this.byPath.put(var1, var2);
-      if (var3 != var2) {
-         if (var3 != null) {
-            this.safeClose(var1, var3);
+   public void register(final Identifier location, final AbstractTexture texture) {
+      AbstractTexture prev = (AbstractTexture)this.byPath.put(location, texture);
+      if (prev != texture) {
+         if (prev != null) {
+            this.safeClose(location, prev);
          }
 
-         if (var2 instanceof TickableTexture) {
-            TickableTexture var4 = (TickableTexture)var2;
-            this.tickableTextures.add(var4);
+         if (texture instanceof TickableTexture) {
+            TickableTexture tickableTexture = (TickableTexture)texture;
+            this.tickableTextures.add(tickableTexture);
          }
       }
 
    }
 
-   private void safeClose(Identifier var1, AbstractTexture var2) {
-      this.tickableTextures.remove(var2);
+   private void safeClose(final Identifier id, final AbstractTexture texture) {
+      this.tickableTextures.remove(texture);
 
       try {
-         var2.close();
-      } catch (Exception var4) {
-         LOGGER.warn("Failed to close texture {}", var1, var4);
+         texture.close();
+      } catch (Exception e) {
+         LOGGER.warn("Failed to close texture {}", id, e);
       }
 
    }
 
-   public AbstractTexture getTexture(Identifier var1) {
-      AbstractTexture var2 = (AbstractTexture)this.byPath.get(var1);
-      if (var2 != null) {
-         return var2;
+   public AbstractTexture getTexture(final Identifier location) {
+      AbstractTexture textureObject = (AbstractTexture)this.byPath.get(location);
+      if (textureObject != null) {
+         return textureObject;
       } else {
-         SimpleTexture var3 = new SimpleTexture(var1);
-         this.registerAndLoad(var1, var3);
-         return var3;
+         SimpleTexture texture = new SimpleTexture(location);
+         this.registerAndLoad(location, texture);
+         return texture;
       }
    }
 
    public void tick() {
-      for(TickableTexture var2 : this.tickableTextures) {
-         var2.tick();
+      for(TickableTexture tickableTexture : this.tickableTextures) {
+         tickableTexture.tick();
       }
 
    }
 
-   public void release(Identifier var1) {
-      AbstractTexture var2 = (AbstractTexture)this.byPath.remove(var1);
-      if (var2 != null) {
-         this.safeClose(var1, var2);
+   public void release(final Identifier location) {
+      AbstractTexture texture = (AbstractTexture)this.byPath.remove(location);
+      if (texture != null) {
+         this.safeClose(location, texture);
       }
 
    }
@@ -123,77 +124,72 @@ public class TextureManager implements PreparableReloadListener, AutoCloseable {
       this.tickableTextures.clear();
    }
 
-   public CompletableFuture<Void> reload(PreparableReloadListener.SharedState var1, Executor var2, PreparableReloadListener.PreparationBarrier var3, Executor var4) {
-      ResourceManager var5 = var1.resourceManager();
-      ArrayList var6 = new ArrayList();
-      this.byPath.forEach((var3x, var4x) -> {
-         if (var4x instanceof ReloadableTexture var5x) {
-            var6.add(scheduleLoad(var5, var3x, var5x, var2));
+   public CompletableFuture<Void> reload(final PreparableReloadListener.SharedState currentReload, final Executor taskExecutor, final PreparableReloadListener.PreparationBarrier preparationBarrier, final Executor reloadExecutor) {
+      ResourceManager manager = currentReload.resourceManager();
+      List<PendingReload> reloads = new ArrayList();
+      this.byPath.forEach((id, texture) -> {
+         if (texture instanceof ReloadableTexture reloadableTexture) {
+            reloads.add(scheduleLoad(manager, id, reloadableTexture, taskExecutor));
          }
 
       });
-      CompletableFuture var10000 = CompletableFuture.allOf((CompletableFuture[])var6.stream().map(PendingReload::newContents).toArray((var0) -> new CompletableFuture[var0]));
-      Objects.requireNonNull(var3);
-      return var10000.thenCompose(var3::wait).thenAcceptAsync((var2x) -> {
+      CompletableFuture var10000 = CompletableFuture.allOf((CompletableFuture[])reloads.stream().map(PendingReload::newContents).toArray((x$0) -> new CompletableFuture[x$0]));
+      Objects.requireNonNull(preparationBarrier);
+      return var10000.thenCompose(preparationBarrier::wait).thenAcceptAsync((unused) -> {
          AddRealmPopupScreen.updateCarouselImages(this.resourceManager);
 
-         for(PendingReload var4 : var6) {
-            var4.texture.apply((TextureContents)var4.newContents.join());
+         for(PendingReload reload : reloads) {
+            reload.texture.apply((TextureContents)reload.newContents.join());
          }
 
-      }, var4);
+      }, reloadExecutor);
    }
 
-   public void dumpAllSheets(Path var1) {
+   public void dumpAllSheets(final Path targetDir) {
       try {
-         Files.createDirectories(var1);
-      } catch (IOException var3) {
-         LOGGER.error("Failed to create directory {}", var1, var3);
+         Files.createDirectories(targetDir);
+      } catch (IOException e) {
+         LOGGER.error("Failed to create directory {}", targetDir, e);
          return;
       }
 
-      this.byPath.forEach((var1x, var2) -> {
-         if (var2 instanceof Dumpable var3) {
+      this.byPath.forEach((location, texture) -> {
+         if (texture instanceof Dumpable dumpable) {
             try {
-               var3.dumpContents(var1x, var1);
-            } catch (Exception var5) {
-               LOGGER.error("Failed to dump texture {}", var1x, var5);
+               dumpable.dumpContents(location, targetDir);
+            } catch (Exception e) {
+               LOGGER.error("Failed to dump texture {}", location, e);
             }
          }
 
       });
    }
 
-   private static TextureContents loadContents(ResourceManager var0, Identifier var1, ReloadableTexture var2) throws IOException {
+   private static TextureContents loadContents(final ResourceManager manager, final Identifier location, final ReloadableTexture texture) throws IOException {
       try {
-         return var2.loadContents(var0);
+         return texture.loadContents(manager);
       } catch (FileNotFoundException var4) {
-         if (var1 != INTENTIONAL_MISSING_TEXTURE) {
-            LOGGER.warn("Missing resource {} referenced from {}", var2.resourceId(), var1);
+         if (location != INTENTIONAL_MISSING_TEXTURE) {
+            LOGGER.warn("Missing resource {} referenced from {}", texture.resourceId(), location);
          }
 
          return TextureContents.createMissing();
       }
    }
 
-   private static PendingReload scheduleLoad(ResourceManager var0, Identifier var1, ReloadableTexture var2, Executor var3) {
-      return new PendingReload(var2, CompletableFuture.supplyAsync(() -> {
+   private static PendingReload scheduleLoad(final ResourceManager manager, final Identifier location, final ReloadableTexture texture, final Executor executor) {
+      return new PendingReload(texture, CompletableFuture.supplyAsync(() -> {
          try {
-            return loadContents(var0, var1, var2);
-         } catch (IOException var4) {
-            throw new UncheckedIOException(var4);
+            return loadContents(manager, location, texture);
+         } catch (IOException e) {
+            throw new UncheckedIOException(e);
          }
-      }, var3));
+      }, executor));
    }
 
-   static record PendingReload(ReloadableTexture texture, CompletableFuture<TextureContents> newContents) {
-      final ReloadableTexture texture;
-      final CompletableFuture<TextureContents> newContents;
-
-      PendingReload(ReloadableTexture var1, CompletableFuture<TextureContents> var2) {
+   private static record PendingReload(ReloadableTexture texture, CompletableFuture<TextureContents> newContents) {
+      private PendingReload {
          super();
-         this.texture = var1;
-         this.newContents = var2;
       }
    }
 }

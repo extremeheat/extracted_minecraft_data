@@ -35,41 +35,41 @@ public class EndPortalFrameBlock extends Block {
       return CODEC;
    }
 
-   public EndPortalFrameBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public EndPortalFrameBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(HAS_EYE, false));
    }
 
-   protected boolean useShapeForLightOcclusion(BlockState var1) {
+   protected boolean useShapeForLightOcclusion(final BlockState state) {
       return true;
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (Boolean)var1.getValue(HAS_EYE) ? SHAPE_FULL : SHAPE_EMPTY;
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return (Boolean)state.getValue(HAS_EYE) ? SHAPE_FULL : SHAPE_EMPTY;
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return (BlockState)((BlockState)this.defaultBlockState().setValue(FACING, var1.getHorizontalDirection().getOpposite())).setValue(HAS_EYE, false);
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      return (BlockState)((BlockState)this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite())).setValue(HAS_EYE, false);
    }
 
-   protected boolean hasAnalogOutputSignal(BlockState var1) {
+   protected boolean hasAnalogOutputSignal(final BlockState state) {
       return true;
    }
 
-   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
-      return (Boolean)var1.getValue(HAS_EYE) ? 15 : 0;
+   protected int getAnalogOutputSignal(final BlockState state, final Level level, final BlockPos pos, final Direction direction) {
+      return (Boolean)state.getValue(HAS_EYE) ? 15 : 0;
    }
 
-   protected BlockState rotate(BlockState var1, Rotation var2) {
-      return (BlockState)var1.setValue(FACING, var2.rotate((Direction)var1.getValue(FACING)));
+   protected BlockState rotate(final BlockState state, final Rotation rotation) {
+      return (BlockState)state.setValue(FACING, rotation.rotate((Direction)state.getValue(FACING)));
    }
 
-   protected BlockState mirror(BlockState var1, Mirror var2) {
-      return var1.rotate(var2.getRotation((Direction)var1.getValue(FACING)));
+   protected BlockState mirror(final BlockState state, final Mirror mirror) {
+      return state.rotate(mirror.getRotation((Direction)state.getValue(FACING)));
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(FACING, HAS_EYE);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(FACING, HAS_EYE);
    }
 
    public static BlockPattern getOrCreatePortalShape() {
@@ -80,7 +80,7 @@ public class EndPortalFrameBlock extends Block {
       return portalShape;
    }
 
-   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
+   protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
       return false;
    }
 

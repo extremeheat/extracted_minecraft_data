@@ -12,20 +12,18 @@ import net.minecraft.world.item.component.CustomModelData;
 import org.jspecify.annotations.Nullable;
 
 public record CustomModelDataSource(int index, int defaultColor) implements ItemTintSource {
-   public static final MapCodec<CustomModelDataSource> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("index", 0).forGetter(CustomModelDataSource::index), ExtraCodecs.RGB_COLOR_CODEC.fieldOf("default").forGetter(CustomModelDataSource::defaultColor)).apply(var0, CustomModelDataSource::new));
+   public static final MapCodec<CustomModelDataSource> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("index", 0).forGetter(CustomModelDataSource::index), ExtraCodecs.RGB_COLOR_CODEC.fieldOf("default").forGetter(CustomModelDataSource::defaultColor)).apply(i, CustomModelDataSource::new));
 
-   public CustomModelDataSource(int var1, int var2) {
+   public CustomModelDataSource {
       super();
-      this.index = var1;
-      this.defaultColor = var2;
    }
 
-   public int calculate(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3) {
-      CustomModelData var4 = (CustomModelData)var1.get(DataComponents.CUSTOM_MODEL_DATA);
-      if (var4 != null) {
-         Integer var5 = var4.getColor(this.index);
-         if (var5 != null) {
-            return ARGB.opaque(var5);
+   public int calculate(final ItemStack itemStack, final @Nullable ClientLevel level, final @Nullable LivingEntity owner) {
+      CustomModelData customModelData = (CustomModelData)itemStack.get(DataComponents.CUSTOM_MODEL_DATA);
+      if (customModelData != null) {
+         Integer value = customModelData.getColor(this.index);
+         if (value != null) {
+            return ARGB.opaque(value);
          }
       }
 

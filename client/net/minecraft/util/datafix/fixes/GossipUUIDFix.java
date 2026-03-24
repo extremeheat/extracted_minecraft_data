@@ -9,15 +9,15 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class GossipUUIDFix extends NamedEntityFix {
-   public GossipUUIDFix(Schema var1, String var2) {
-      super(var1, false, "Gossip for for " + var2, References.ENTITY, var2);
+   public GossipUUIDFix(final Schema outputSchema, final String entityName) {
+      super(outputSchema, false, "Gossip for for " + entityName, References.ENTITY, entityName);
    }
 
-   protected Typed<?> fix(Typed<?> var1) {
-      return var1.update(DSL.remainderFinder(), (var0) -> var0.update("Gossips", (var0x) -> {
-            Optional var10000 = var0x.asStreamOpt().result().map((var0) -> var0.map((var0x) -> (Dynamic)AbstractUUIDFix.replaceUUIDLeastMost(var0x, "Target", "Target").orElse(var0x)));
-            Objects.requireNonNull(var0x);
-            return (Dynamic)DataFixUtils.orElse(var10000.map(var0x::createList), var0x);
+   protected Typed<?> fix(final Typed<?> entity) {
+      return entity.update(DSL.remainderFinder(), (tag) -> tag.update("Gossips", (gossips) -> {
+            Optional var10000 = gossips.asStreamOpt().result().map((s) -> s.map((gossip) -> (Dynamic)AbstractUUIDFix.replaceUUIDLeastMost(gossip, "Target", "Target").orElse(gossip)));
+            Objects.requireNonNull(gossips);
+            return (Dynamic)DataFixUtils.orElse(var10000.map(gossips::createList), gossips);
          }));
    }
 }

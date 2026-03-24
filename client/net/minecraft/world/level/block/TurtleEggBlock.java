@@ -46,69 +46,69 @@ public class TurtleEggBlock extends Block {
       return CODEC;
    }
 
-   public TurtleEggBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public TurtleEggBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(HATCH, 0)).setValue(EGGS, 1));
    }
 
-   public void stepOn(Level var1, BlockPos var2, BlockState var3, Entity var4) {
-      if (!var4.isSteppingCarefully()) {
-         this.destroyEgg(var1, var3, var2, var4, 100);
+   public void stepOn(final Level level, final BlockPos pos, final BlockState onState, final Entity entity) {
+      if (!entity.isSteppingCarefully()) {
+         this.destroyEgg(level, onState, pos, entity, 100);
       }
 
-      super.stepOn(var1, var2, var3, var4);
+      super.stepOn(level, pos, onState, entity);
    }
 
-   public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, double var5) {
-      if (!(var4 instanceof Zombie)) {
-         this.destroyEgg(var1, var2, var3, var4, 3);
+   public void fallOn(final Level level, final BlockState state, final BlockPos pos, final Entity entity, final double fallDistance) {
+      if (!(entity instanceof Zombie)) {
+         this.destroyEgg(level, state, pos, entity, 3);
       }
 
-      super.fallOn(var1, var2, var3, var4, var5);
+      super.fallOn(level, state, pos, entity, fallDistance);
    }
 
-   private void destroyEgg(Level var1, BlockState var2, BlockPos var3, Entity var4, int var5) {
-      if (var2.is(Blocks.TURTLE_EGG) && var1 instanceof ServerLevel var6) {
-         if (this.canDestroyEgg(var6, var4) && var1.random.nextInt(var5) == 0) {
-            this.decreaseEggs(var6, var3, var2);
+   private void destroyEgg(final Level level, final BlockState state, final BlockPos pos, final Entity entity, final int randomness) {
+      if (state.is(Blocks.TURTLE_EGG) && level instanceof ServerLevel serverLevel) {
+         if (this.canDestroyEgg(serverLevel, entity) && level.getRandom().nextInt(randomness) == 0) {
+            this.decreaseEggs(serverLevel, pos, state);
          }
       }
 
    }
 
-   private void decreaseEggs(Level var1, BlockPos var2, BlockState var3) {
-      var1.playSound((Entity)null, (BlockPos)var2, SoundEvents.TURTLE_EGG_BREAK, SoundSource.BLOCKS, 0.7F, 0.9F + var1.random.nextFloat() * 0.2F);
-      int var4 = (Integer)var3.getValue(EGGS);
-      if (var4 <= 1) {
-         var1.destroyBlock(var2, false);
+   private void decreaseEggs(final Level level, final BlockPos pos, final BlockState state) {
+      level.playSound((Entity)null, (BlockPos)pos, SoundEvents.TURTLE_EGG_BREAK, SoundSource.BLOCKS, 0.7F, 0.9F + level.getRandom().nextFloat() * 0.2F);
+      int numberOfEggs = (Integer)state.getValue(EGGS);
+      if (numberOfEggs <= 1) {
+         level.destroyBlock(pos, false);
       } else {
-         var1.setBlock(var2, (BlockState)var3.setValue(EGGS, var4 - 1), 2);
-         var1.gameEvent(GameEvent.BLOCK_DESTROY, var2, GameEvent.Context.of(var3));
-         var1.levelEvent(2001, var2, Block.getId(var3));
+         level.setBlock(pos, (BlockState)state.setValue(EGGS, numberOfEggs - 1), 2);
+         level.gameEvent(GameEvent.BLOCK_DESTROY, pos, GameEvent.Context.of(state));
+         level.levelEvent(2001, pos, Block.getId(state));
       }
 
    }
 
-   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (this.shouldUpdateHatchLevel(var2, var3) && onSand(var2, var3)) {
-         int var5 = (Integer)var1.getValue(HATCH);
-         if (var5 < 2) {
-            var2.playSound((Entity)null, var3, SoundEvents.TURTLE_EGG_CRACK, SoundSource.BLOCKS, 0.7F, 0.9F + var4.nextFloat() * 0.2F);
-            var2.setBlock(var3, (BlockState)var1.setValue(HATCH, var5 + 1), 2);
-            var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var1));
+   protected void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if (this.shouldUpdateHatchLevel(level, pos) && onSand(level, pos)) {
+         int hatch = (Integer)state.getValue(HATCH);
+         if (hatch < 2) {
+            level.playSound((Entity)null, pos, SoundEvents.TURTLE_EGG_CRACK, SoundSource.BLOCKS, 0.7F, 0.9F + random.nextFloat() * 0.2F);
+            level.setBlock(pos, (BlockState)state.setValue(HATCH, hatch + 1), 2);
+            level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(state));
          } else {
-            var2.playSound((Entity)null, var3, SoundEvents.TURTLE_EGG_HATCH, SoundSource.BLOCKS, 0.7F, 0.9F + var4.nextFloat() * 0.2F);
-            var2.removeBlock(var3, false);
-            var2.gameEvent(GameEvent.BLOCK_DESTROY, var3, GameEvent.Context.of(var1));
+            level.playSound((Entity)null, pos, SoundEvents.TURTLE_EGG_HATCH, SoundSource.BLOCKS, 0.7F, 0.9F + random.nextFloat() * 0.2F);
+            level.removeBlock(pos, false);
+            level.gameEvent(GameEvent.BLOCK_DESTROY, pos, GameEvent.Context.of(state));
 
-            for(int var6 = 0; var6 < (Integer)var1.getValue(EGGS); ++var6) {
-               var2.levelEvent(2001, var3, Block.getId(var1));
-               Turtle var7 = EntityType.TURTLE.create(var2, EntitySpawnReason.BREEDING);
-               if (var7 != null) {
-                  var7.setAge(-24000);
-                  var7.setHomePos(var3);
-                  var7.snapTo((double)var3.getX() + 0.3 + (double)var6 * 0.2, (double)var3.getY(), (double)var3.getZ() + 0.3, 0.0F, 0.0F);
-                  var2.addFreshEntity(var7);
+            for(int i = 0; i < (Integer)state.getValue(EGGS); ++i) {
+               level.levelEvent(2001, pos, Block.getId(state));
+               Turtle turtle = EntityType.TURTLE.create(level, EntitySpawnReason.BREEDING);
+               if (turtle != null) {
+                  turtle.setAge(-24000);
+                  turtle.setHomePos(pos);
+                  turtle.snapTo((double)pos.getX() + 0.3 + (double)i * 0.2, (double)pos.getY(), (double)pos.getZ() + 0.3, 0.0F, 0.0F);
+                  level.addFreshEntity(turtle);
                }
             }
          }
@@ -116,54 +116,54 @@ public class TurtleEggBlock extends Block {
 
    }
 
-   public static boolean onSand(BlockGetter var0, BlockPos var1) {
-      return isSand(var0, var1.below());
+   public static boolean onSand(final BlockGetter level, final BlockPos pos) {
+      return isSand(level, pos.below());
    }
 
-   public static boolean isSand(BlockGetter var0, BlockPos var1) {
-      return var0.getBlockState(var1).is(BlockTags.SAND);
+   public static boolean isSand(final BlockGetter level, final BlockPos pos) {
+      return level.getBlockState(pos).is(BlockTags.SAND);
    }
 
-   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (onSand(var2, var3) && !var2.isClientSide()) {
-         var2.levelEvent(2012, var3, 15);
+   protected void onPlace(final BlockState state, final Level level, final BlockPos pos, final BlockState oldState, final boolean movedByPiston) {
+      if (onSand(level, pos) && !level.isClientSide()) {
+         level.levelEvent(2012, pos, 15);
       }
 
    }
 
-   private boolean shouldUpdateHatchLevel(Level var1, BlockPos var2) {
-      float var3 = (Float)var1.environmentAttributes().getValue(EnvironmentAttributes.TURTLE_EGG_HATCH_CHANCE, var2);
-      return var3 > 0.0F && var1.random.nextFloat() < var3;
+   private boolean shouldUpdateHatchLevel(final Level level, final BlockPos pos) {
+      float chance = (Float)level.environmentAttributes().getValue(EnvironmentAttributes.TURTLE_EGG_HATCH_CHANCE, pos);
+      return chance > 0.0F && level.getRandom().nextFloat() < chance;
    }
 
-   public void playerDestroy(Level var1, Player var2, BlockPos var3, BlockState var4, @Nullable BlockEntity var5, ItemStack var6) {
-      super.playerDestroy(var1, var2, var3, var4, var5, var6);
-      this.decreaseEggs(var1, var3, var4);
+   public void playerDestroy(final Level level, final Player player, final BlockPos pos, final BlockState state, final @Nullable BlockEntity blockEntity, final ItemStack destroyedWith) {
+      super.playerDestroy(level, player, pos, state, blockEntity, destroyedWith);
+      this.decreaseEggs(level, pos, state);
    }
 
-   protected boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
-      return !var2.isSecondaryUseActive() && var2.getItemInHand().is(this.asItem()) && (Integer)var1.getValue(EGGS) < 4 ? true : super.canBeReplaced(var1, var2);
+   protected boolean canBeReplaced(final BlockState state, final BlockPlaceContext context) {
+      return !context.isSecondaryUseActive() && context.getItemInHand().is(this.asItem()) && (Integer)state.getValue(EGGS) < 4 ? true : super.canBeReplaced(state, context);
    }
 
-   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
-      BlockState var2 = var1.getLevel().getBlockState(var1.getClickedPos());
-      return var2.is(this) ? (BlockState)var2.setValue(EGGS, Math.min(4, (Integer)var2.getValue(EGGS) + 1)) : super.getStateForPlacement(var1);
+   public @Nullable BlockState getStateForPlacement(final BlockPlaceContext context) {
+      BlockState state = context.getLevel().getBlockState(context.getClickedPos());
+      return state.is(this) ? (BlockState)state.setValue(EGGS, Math.min(4, (Integer)state.getValue(EGGS) + 1)) : super.getStateForPlacement(context);
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (Integer)var1.getValue(EGGS) == 1 ? SHAPE_SINGLE : SHAPE_MULTIPLE;
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return (Integer)state.getValue(EGGS) == 1 ? SHAPE_SINGLE : SHAPE_MULTIPLE;
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(HATCH, EGGS);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(HATCH, EGGS);
    }
 
-   private boolean canDestroyEgg(ServerLevel var1, Entity var2) {
-      if (!(var2 instanceof Turtle) && !(var2 instanceof Bat)) {
-         if (!(var2 instanceof LivingEntity)) {
+   private boolean canDestroyEgg(final ServerLevel level, final Entity entity) {
+      if (!(entity instanceof Turtle) && !(entity instanceof Bat)) {
+         if (!(entity instanceof LivingEntity)) {
             return false;
          } else {
-            return var2 instanceof Player || (Boolean)var1.getGameRules().get(GameRules.MOB_GRIEFING);
+            return entity instanceof Player || (Boolean)level.getGameRules().get(GameRules.MOB_GRIEFING);
          }
       } else {
          return false;

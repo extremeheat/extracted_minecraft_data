@@ -10,22 +10,22 @@ import com.mojang.serialization.Dynamic;
 import java.util.Objects;
 
 public class ChunkStatusFix extends DataFix {
-   public ChunkStatusFix(Schema var1, boolean var2) {
-      super(var1, var2);
+   public ChunkStatusFix(final Schema schema, final boolean changesType) {
+      super(schema, changesType);
    }
 
    protected TypeRewriteRule makeRule() {
-      Type var1 = this.getInputSchema().getType(References.CHUNK);
-      Type var2 = var1.findFieldType("Level");
-      OpticFinder var3 = DSL.fieldFinder("Level", var2);
-      return this.fixTypeEverywhereTyped("ChunkStatusFix", var1, this.getOutputSchema().getType(References.CHUNK), (var1x) -> var1x.updateTyped(var3, (var0) -> {
-            Dynamic var1 = (Dynamic)var0.get(DSL.remainderFinder());
-            String var2 = var1.get("Status").asString("empty");
-            if (Objects.equals(var2, "postprocessed")) {
-               var1 = var1.set("Status", var1.createString("fullchunk"));
+      Type<?> chunkType = this.getInputSchema().getType(References.CHUNK);
+      Type<?> levelType = chunkType.findFieldType("Level");
+      OpticFinder<?> levelF = DSL.fieldFinder("Level", levelType);
+      return this.fixTypeEverywhereTyped("ChunkStatusFix", chunkType, this.getOutputSchema().getType(References.CHUNK), (input) -> input.updateTyped(levelF, (level) -> {
+            Dynamic<?> tag = (Dynamic)level.get(DSL.remainderFinder());
+            String status = tag.get("Status").asString("empty");
+            if (Objects.equals(status, "postprocessed")) {
+               tag = tag.set("Status", tag.createString("fullchunk"));
             }
 
-            return var0.set(DSL.remainderFinder(), var1);
+            return level.set(DSL.remainderFinder(), tag);
          }));
    }
 }

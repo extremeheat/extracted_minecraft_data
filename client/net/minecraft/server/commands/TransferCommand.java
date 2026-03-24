@@ -23,25 +23,25 @@ public class TransferCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("transfer").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).then(((RequiredArgumentBuilder)Commands.argument("hostname", StringArgumentType.string()).executes((var0x) -> transfer((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "hostname"), 25565, List.of(((CommandSourceStack)var0x.getSource()).getPlayerOrException())))).then(((RequiredArgumentBuilder)Commands.argument("port", IntegerArgumentType.integer(1, 65535)).executes((var0x) -> transfer((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "hostname"), IntegerArgumentType.getInteger(var0x, "port"), List.of(((CommandSourceStack)var0x.getSource()).getPlayerOrException())))).then(Commands.argument("players", EntityArgument.players()).executes((var0x) -> transfer((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "hostname"), IntegerArgumentType.getInteger(var0x, "port"), EntityArgument.getPlayers(var0x, "players")))))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("transfer").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).then(((RequiredArgumentBuilder)Commands.argument("hostname", StringArgumentType.string()).executes((c) -> transfer((CommandSourceStack)c.getSource(), StringArgumentType.getString(c, "hostname"), 25565, List.of(((CommandSourceStack)c.getSource()).getPlayerOrException())))).then(((RequiredArgumentBuilder)Commands.argument("port", IntegerArgumentType.integer(1, 65535)).executes((c) -> transfer((CommandSourceStack)c.getSource(), StringArgumentType.getString(c, "hostname"), IntegerArgumentType.getInteger(c, "port"), List.of(((CommandSourceStack)c.getSource()).getPlayerOrException())))).then(Commands.argument("players", EntityArgument.players()).executes((c) -> transfer((CommandSourceStack)c.getSource(), StringArgumentType.getString(c, "hostname"), IntegerArgumentType.getInteger(c, "port"), EntityArgument.getPlayers(c, "players")))))));
    }
 
-   private static int transfer(CommandSourceStack var0, String var1, int var2, Collection<ServerPlayer> var3) throws CommandSyntaxException {
-      if (var3.isEmpty()) {
+   private static int transfer(final CommandSourceStack source, final String hostname, final int port, final Collection<ServerPlayer> players) throws CommandSyntaxException {
+      if (players.isEmpty()) {
          throw ERROR_NO_PLAYERS.create();
       } else {
-         for(ServerPlayer var5 : var3) {
-            var5.connection.send(new ClientboundTransferPacket(var1, var2));
+         for(ServerPlayer player : players) {
+            player.connection.send(new ClientboundTransferPacket(hostname, port));
          }
 
-         if (var3.size() == 1) {
-            var0.sendSuccess(() -> Component.translatable("commands.transfer.success.single", ((ServerPlayer)var3.iterator().next()).getDisplayName(), var1, var2), true);
+         if (players.size() == 1) {
+            source.sendSuccess(() -> Component.translatable("commands.transfer.success.single", ((ServerPlayer)players.iterator().next()).getDisplayName(), hostname, port), true);
          } else {
-            var0.sendSuccess(() -> Component.translatable("commands.transfer.success.multiple", var3.size(), var1, var2), true);
+            source.sendSuccess(() -> Component.translatable("commands.transfer.success.multiple", players.size(), hostname, port), true);
          }
 
-         return var3.size();
+         return players.size();
       }
    }
 }

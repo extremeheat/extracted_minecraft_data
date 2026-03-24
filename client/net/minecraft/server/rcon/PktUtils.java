@@ -10,30 +10,30 @@ public class PktUtils {
       super();
    }
 
-   public static String stringFromByteArray(byte[] var0, int var1, int var2) {
-      int var3 = var2 - 1;
+   public static String stringFromByteArray(final byte[] b, final int offset, final int length) {
+      int max = length - 1;
 
-      int var4;
-      for(var4 = var1 > var3 ? var3 : var1; 0 != var0[var4] && var4 < var3; ++var4) {
+      int i;
+      for(i = offset > max ? max : offset; 0 != b[i] && i < max; ++i) {
       }
 
-      return new String(var0, var1, var4 - var1, StandardCharsets.UTF_8);
+      return new String(b, offset, i - offset, StandardCharsets.UTF_8);
    }
 
-   public static int intFromByteArray(byte[] var0, int var1) {
-      return intFromByteArray(var0, var1, var0.length);
+   public static int intFromByteArray(final byte[] b, final int offset) {
+      return intFromByteArray(b, offset, b.length);
    }
 
-   public static int intFromByteArray(byte[] var0, int var1, int var2) {
-      return 0 > var2 - var1 - 4 ? 0 : var0[var1 + 3] << 24 | (var0[var1 + 2] & 255) << 16 | (var0[var1 + 1] & 255) << 8 | var0[var1] & 255;
+   public static int intFromByteArray(final byte[] b, final int offset, final int length) {
+      return 0 > length - offset - 4 ? 0 : b[offset + 3] << 24 | (b[offset + 2] & 255) << 16 | (b[offset + 1] & 255) << 8 | b[offset] & 255;
    }
 
-   public static int intFromNetworkByteArray(byte[] var0, int var1, int var2) {
-      return 0 > var2 - var1 - 4 ? 0 : var0[var1] << 24 | (var0[var1 + 1] & 255) << 16 | (var0[var1 + 2] & 255) << 8 | var0[var1 + 3] & 255;
+   public static int intFromNetworkByteArray(final byte[] b, final int offset, final int length) {
+      return 0 > length - offset - 4 ? 0 : b[offset] << 24 | (b[offset + 1] & 255) << 16 | (b[offset + 2] & 255) << 8 | b[offset + 3] & 255;
    }
 
-   public static String toHexString(byte var0) {
-      char var10000 = HEX_CHAR[(var0 & 240) >>> 4];
-      return "" + var10000 + HEX_CHAR[var0 & 15];
+   public static String toHexString(final byte b) {
+      char var10000 = HEX_CHAR[(b & 240) >>> 4];
+      return "" + var10000 + HEX_CHAR[b & 15];
    }
 }

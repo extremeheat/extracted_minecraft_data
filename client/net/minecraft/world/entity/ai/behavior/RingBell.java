@@ -20,16 +20,16 @@ public class RingBell {
    }
 
    public static BehaviorControl<LivingEntity> create() {
-      return BehaviorBuilder.create((Function)((var0) -> var0.group(var0.present(MemoryModuleType.MEETING_POINT)).apply(var0, (var1) -> (var2, var3, var4) -> {
-               if (var2.random.nextFloat() <= 0.95F) {
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.present(MemoryModuleType.MEETING_POINT)).apply(i, (meetingPoint) -> (level, body, timestamp) -> {
+               if (level.getRandom().nextFloat() <= 0.95F) {
                   return false;
                } else {
-                  BlockPos var6 = ((GlobalPos)var0.get(var1)).pos();
-                  if (var6.closerThan(var3.blockPosition(), 3.0)) {
-                     BlockState var7 = var2.getBlockState(var6);
-                     if (var7.is(Blocks.BELL)) {
-                        BellBlock var8 = (BellBlock)var7.getBlock();
-                        var8.attemptToRing(var3, var2, var6, (Direction)null);
+                  BlockPos pos = ((GlobalPos)i.get(meetingPoint)).pos();
+                  if (pos.closerThan(body.blockPosition(), 3.0)) {
+                     BlockState state = level.getBlockState(pos);
+                     if (state.is(Blocks.BELL)) {
+                        BellBlock bellBlock = (BellBlock)state.getBlock();
+                        bellBlock.attemptToRing(body, level, pos, (Direction)null);
                      }
                   }
 

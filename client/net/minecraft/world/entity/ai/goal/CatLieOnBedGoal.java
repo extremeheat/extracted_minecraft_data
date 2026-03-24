@@ -10,9 +10,9 @@ import net.minecraft.world.level.LevelReader;
 public class CatLieOnBedGoal extends MoveToBlockGoal {
    private final Cat cat;
 
-   public CatLieOnBedGoal(Cat var1, double var2, int var4) {
-      super(var1, var2, var4, 6);
-      this.cat = var1;
+   public CatLieOnBedGoal(final Cat cat, final double speedModifier, final int searchRange) {
+      super(cat, speedModifier, searchRange, 6);
+      this.cat = cat;
       this.verticalSearchStart = -2;
       this.setFlags(EnumSet.of(Goal.Flag.JUMP, Goal.Flag.MOVE));
    }
@@ -26,7 +26,7 @@ public class CatLieOnBedGoal extends MoveToBlockGoal {
       this.cat.setInSittingPose(false);
    }
 
-   protected int nextStartTick(PathfinderMob var1) {
+   protected int nextStartTick(final PathfinderMob mob) {
       return 40;
    }
 
@@ -46,7 +46,7 @@ public class CatLieOnBedGoal extends MoveToBlockGoal {
 
    }
 
-   protected boolean isValidTarget(LevelReader var1, BlockPos var2) {
-      return var1.isEmptyBlock(var2.above()) && var1.getBlockState(var2).is(BlockTags.BEDS);
+   protected boolean isValidTarget(final LevelReader level, final BlockPos pos) {
+      return level.isEmptyBlock(pos.above()) && level.getBlockState(pos).is(BlockTags.BEDS);
    }
 }

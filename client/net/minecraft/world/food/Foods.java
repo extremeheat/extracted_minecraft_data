@@ -46,7 +46,7 @@ public class Foods {
       super();
    }
 
-   private static FoodProperties.Builder stew(int var0) {
-      return (new FoodProperties.Builder()).nutrition(var0).saturationModifier(0.6F);
+   private static FoodProperties.Builder stew(final int nutrition) {
+      return (new FoodProperties.Builder()).nutrition(nutrition).saturationModifier(0.6F);
    }
 }

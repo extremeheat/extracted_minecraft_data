@@ -10,7 +10,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.LevelSimulatedReader;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -25,50 +25,50 @@ public abstract class TreeDecorator {
 
    protected abstract TreeDecoratorType<?> type();
 
-   public abstract void place(Context var1);
+   public abstract void place(final Context context);
 
    static {
       CODEC = BuiltInRegistries.TREE_DECORATOR_TYPE.byNameCodec().dispatch(TreeDecorator::type, TreeDecoratorType::codec);
    }
 
    public static final class Context {
-      private final LevelSimulatedReader level;
+      private final WorldGenLevel level;
       private final BiConsumer<BlockPos, BlockState> decorationSetter;
       private final RandomSource random;
       private final ObjectArrayList<BlockPos> logs;
       private final ObjectArrayList<BlockPos> leaves;
       private final ObjectArrayList<BlockPos> roots;
 
-      public Context(LevelSimulatedReader var1, BiConsumer<BlockPos, BlockState> var2, RandomSource var3, Set<BlockPos> var4, Set<BlockPos> var5, Set<BlockPos> var6) {
+      public Context(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> decorationSetter, final RandomSource random, final Set<BlockPos> trunkSet, final Set<BlockPos> foliageSet, final Set<BlockPos> rootSet) {
          super();
-         this.level = var1;
-         this.decorationSetter = var2;
-         this.random = var3;
-         this.roots = new ObjectArrayList(var6);
-         this.logs = new ObjectArrayList(var4);
-         this.leaves = new ObjectArrayList(var5);
+         this.level = level;
+         this.decorationSetter = decorationSetter;
+         this.random = random;
+         this.roots = new ObjectArrayList(rootSet);
+         this.logs = new ObjectArrayList(trunkSet);
+         this.leaves = new ObjectArrayList(foliageSet);
          this.logs.sort(Comparator.comparingInt(Vec3i::getY));
          this.leaves.sort(Comparator.comparingInt(Vec3i::getY));
          this.roots.sort(Comparator.comparingInt(Vec3i::getY));
       }
 
-      public void placeVine(BlockPos var1, BooleanProperty var2) {
-         this.setBlock(var1, (BlockState)Blocks.VINE.defaultBlockState().setValue(var2, true));
+      public void placeVine(final BlockPos pos, final BooleanProperty direction) {
+         this.setBlock(pos, (BlockState)Blocks.VINE.defaultBlockState().setValue(direction, true));
       }
 
-      public void setBlock(BlockPos var1, BlockState var2) {
-         this.decorationSetter.accept(var1, var2);
+      public void setBlock(final BlockPos pos, final BlockState state) {
+         this.decorationSetter.accept(pos, state);
       }
 
-      public boolean isAir(BlockPos var1) {
-         return this.level.isStateAtPosition(var1, BlockBehaviour.BlockStateBase::isAir);
+      public boolean isAir(final BlockPos pos) {
+         return this.level.isStateAtPosition(pos, BlockBehaviour.BlockStateBase::isAir);
       }
 
-      public boolean checkBlock(BlockPos var1, Predicate<BlockState> var2) {
-         return this.level.isStateAtPosition(var1, var2);
+      public boolean checkBlock(final BlockPos pos, final Predicate<BlockState> predicate) {
+         return this.level.isStateAtPosition(pos, predicate);
       }
 
-      public LevelSimulatedReader level() {
+      public WorldGenLevel level() {
          return this.level;
       }
 

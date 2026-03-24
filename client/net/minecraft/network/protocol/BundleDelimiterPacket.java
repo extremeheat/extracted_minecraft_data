@@ -7,7 +7,7 @@ public abstract class BundleDelimiterPacket<T extends PacketListener> implements
       super();
    }
 
-   public final void handle(T var1) {
+   public final void handle(final T listener) {
       throw new AssertionError("This packet should be handled by pipeline");
    }
 

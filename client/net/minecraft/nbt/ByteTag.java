@@ -7,17 +7,17 @@ import java.io.IOException;
 public record ByteTag(byte value) implements NumericTag {
    private static final int SELF_SIZE_IN_BYTES = 9;
    public static final TagType<ByteTag> TYPE = new TagType.StaticSize<ByteTag>() {
-      public ByteTag load(DataInput var1, NbtAccounter var2) throws IOException {
-         return ByteTag.valueOf(readAccounted(var1, var2));
+      public ByteTag load(final DataInput input, final NbtAccounter accounter) throws IOException {
+         return ByteTag.valueOf(readAccounted(input, accounter));
       }
 
-      public StreamTagVisitor.ValueResult parse(DataInput var1, StreamTagVisitor var2, NbtAccounter var3) throws IOException {
-         return var2.visit(readAccounted(var1, var3));
+      public StreamTagVisitor.ValueResult parse(final DataInput input, final StreamTagVisitor output, final NbtAccounter accounter) throws IOException {
+         return output.visit(readAccounted(input, accounter));
       }
 
-      private static byte readAccounted(DataInput var0, NbtAccounter var1) throws IOException {
-         var1.accountBytes(9L);
-         return var0.readByte();
+      private static byte readAccounted(final DataInput input, final NbtAccounter accounter) throws IOException {
+         accounter.accountBytes(9L);
+         return input.readByte();
       }
 
       public int size() {
@@ -31,11 +31,6 @@ public record ByteTag(byte value) implements NumericTag {
       public String getPrettyName() {
          return "TAG_Byte";
       }
-
-      // $FF: synthetic method
-      public Tag load(final DataInput var1, final NbtAccounter var2) throws IOException {
-         return this.load(var1, var2);
-      }
    };
    public static final ByteTag ZERO = valueOf((byte)0);
    public static final ByteTag ONE = valueOf((byte)1);
@@ -44,21 +39,21 @@ public record ByteTag(byte value) implements NumericTag {
    @Deprecated(
       forRemoval = true
    )
-   public ByteTag(byte var1) {
+   public ByteTag(byte value) {
       super();
-      this.value = var1;
+      this.value = value;
    }
 
-   public static ByteTag valueOf(byte var0) {
-      return ByteTag.Cache.cache[128 + var0];
+   public static ByteTag valueOf(final byte data) {
+      return ByteTag.Cache.cache[128 + data];
    }
 
-   public static ByteTag valueOf(boolean var0) {
-      return var0 ? ONE : ZERO;
+   public static ByteTag valueOf(final boolean data) {
+      return data ? ONE : ZERO;
    }
 
-   public void write(DataOutput var1) throws IOException {
-      var1.writeByte(this.value);
+   public void write(final DataOutput output) throws IOException {
+      output.writeByte(this.value);
    }
 
    public int sizeInBytes() {
@@ -77,8 +72,8 @@ public record ByteTag(byte value) implements NumericTag {
       return this;
    }
 
-   public void accept(TagVisitor var1) {
-      var1.visitByte(this);
+   public void accept(final TagVisitor visitor) {
+      visitor.visitByte(this);
    }
 
    public long longValue() {
@@ -109,31 +104,26 @@ public record ByteTag(byte value) implements NumericTag {
       return this.value;
    }
 
-   public StreamTagVisitor.ValueResult accept(StreamTagVisitor var1) {
-      return var1.visit(this.value);
+   public StreamTagVisitor.ValueResult accept(final StreamTagVisitor visitor) {
+      return visitor.visit(this.value);
    }
 
    public String toString() {
-      StringTagVisitor var1 = new StringTagVisitor();
-      var1.visitByte(this);
-      return var1.build();
+      StringTagVisitor visitor = new StringTagVisitor();
+      visitor.visitByte(this);
+      return visitor.build();
    }
 
-   // $FF: synthetic method
-   public Tag copy() {
-      return this.copy();
-   }
-
-   static class Cache {
-      static final ByteTag[] cache = new ByteTag[256];
+   private static class Cache {
+      private static final ByteTag[] cache = new ByteTag[256];
 
       private Cache() {
          super();
       }
 
       static {
-         for(int var0 = 0; var0 < cache.length; ++var0) {
-            cache[var0] = new ByteTag((byte)(var0 - 128));
+         for(int i = 0; i < cache.length; ++i) {
+            cache[i] = new ByteTag((byte)(i - 128));
          }
 
       }

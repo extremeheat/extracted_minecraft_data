@@ -7,15 +7,12 @@ import java.util.Map;
 import net.minecraft.client.model.geom.ModelPart;
 
 public record AnimationDefinition(float lengthInSeconds, boolean looping, Map<String, List<AnimationChannel>> boneAnimations) {
-   public AnimationDefinition(float var1, boolean var2, Map<String, List<AnimationChannel>> var3) {
+   public AnimationDefinition {
       super();
-      this.lengthInSeconds = var1;
-      this.looping = var2;
-      this.boneAnimations = var3;
    }
 
-   public KeyframeAnimation bake(ModelPart var1) {
-      return KeyframeAnimation.bake(var1, this);
+   public KeyframeAnimation bake(final ModelPart root) {
+      return KeyframeAnimation.bake(root, this);
    }
 
    public static class Builder {
@@ -23,13 +20,13 @@ public record AnimationDefinition(float lengthInSeconds, boolean looping, Map<St
       private final Map<String, List<AnimationChannel>> animationByBone = Maps.newHashMap();
       private boolean looping;
 
-      public static Builder withLength(float var0) {
-         return new Builder(var0);
+      public static Builder withLength(final float lengthInSeconds) {
+         return new Builder(lengthInSeconds);
       }
 
-      private Builder(float var1) {
+      private Builder(final float length) {
          super();
-         this.length = var1;
+         this.length = length;
       }
 
       public Builder looping() {
@@ -37,8 +34,8 @@ public record AnimationDefinition(float lengthInSeconds, boolean looping, Map<St
          return this;
       }
 
-      public Builder addAnimation(String var1, AnimationChannel var2) {
-         ((List)this.animationByBone.computeIfAbsent(var1, (var0) -> new ArrayList())).add(var2);
+      public Builder addAnimation(final String boneName, final AnimationChannel animation) {
+         ((List)this.animationByBone.computeIfAbsent(boneName, (k) -> new ArrayList())).add(animation);
          return this;
       }
 

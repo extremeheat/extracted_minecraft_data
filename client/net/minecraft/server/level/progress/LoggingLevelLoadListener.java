@@ -17,10 +17,10 @@ public class LoggingLevelLoadListener implements LevelLoadListener {
    private long startTime = 9223372036854775807L;
    private long nextLogTime = 9223372036854775807L;
 
-   public LoggingLevelLoadListener(boolean var1) {
+   public LoggingLevelLoadListener(final boolean includePlayerChunks) {
       super();
-      this.includePlayerChunks = var1;
-      this.progressTracker = new LevelLoadProgressTracker(var1);
+      this.includePlayerChunks = includePlayerChunks;
+      this.progressTracker = new LevelLoadProgressTracker(includePlayerChunks);
    }
 
    public static LoggingLevelLoadListener forDedicatedServer() {
@@ -31,41 +31,41 @@ public class LoggingLevelLoadListener implements LevelLoadListener {
       return new LoggingLevelLoadListener(true);
    }
 
-   public void start(LevelLoadListener.Stage var1, int var2) {
+   public void start(final LevelLoadListener.Stage stage, final int totalChunks) {
       if (!this.closed) {
          if (this.startTime == 9223372036854775807L) {
-            long var3 = Util.getMillis();
-            this.startTime = var3;
-            this.nextLogTime = var3;
+            long now = Util.getMillis();
+            this.startTime = now;
+            this.nextLogTime = now;
          }
 
-         this.progressTracker.start(var1, var2);
-         switch (var1) {
+         this.progressTracker.start(stage, totalChunks);
+         switch (stage) {
             case PREPARE_GLOBAL_SPAWN -> LOGGER.info("Selecting global world spawn...");
-            case LOAD_INITIAL_CHUNKS -> LOGGER.info("Loading {} persistent chunks...", var2);
-            case LOAD_PLAYER_CHUNKS -> LOGGER.info("Loading {} chunks for player spawn...", var2);
+            case LOAD_INITIAL_CHUNKS -> LOGGER.info("Loading {} persistent chunks...", totalChunks);
+            case LOAD_PLAYER_CHUNKS -> LOGGER.info("Loading {} chunks for player spawn...", totalChunks);
          }
 
       }
    }
 
-   public void update(LevelLoadListener.Stage var1, int var2, int var3) {
+   public void update(final LevelLoadListener.Stage stage, final int currentChunks, final int totalChunks) {
       if (!this.closed) {
-         this.progressTracker.update(var1, var2, var3);
+         this.progressTracker.update(stage, currentChunks, totalChunks);
          if (Util.getMillis() > this.nextLogTime) {
             this.nextLogTime += 500L;
-            int var4 = Mth.floor(this.progressTracker.get() * 100.0F);
-            LOGGER.info(Component.translatable("menu.preparingSpawn", var4).getString());
+            int percent = Mth.floor(this.progressTracker.get() * 100.0F);
+            LOGGER.info(Component.translatable("menu.preparingSpawn", percent).getString());
          }
 
       }
    }
 
-   public void finish(LevelLoadListener.Stage var1) {
+   public void finish(final LevelLoadListener.Stage stage) {
       if (!this.closed) {
-         this.progressTracker.finish(var1);
-         LevelLoadListener.Stage var2 = this.includePlayerChunks ? LevelLoadListener.Stage.LOAD_PLAYER_CHUNKS : LevelLoadListener.Stage.LOAD_INITIAL_CHUNKS;
-         if (var1 == var2) {
+         this.progressTracker.finish(stage);
+         LevelLoadListener.Stage finalStage = this.includePlayerChunks ? LevelLoadListener.Stage.LOAD_PLAYER_CHUNKS : LevelLoadListener.Stage.LOAD_INITIAL_CHUNKS;
+         if (stage == finalStage) {
             LOGGER.info("Time elapsed: {} ms", Util.getMillis() - this.startTime);
             this.nextLogTime = 9223372036854775807L;
             this.closed = true;
@@ -74,6 +74,6 @@ public class LoggingLevelLoadListener implements LevelLoadListener {
       }
    }
 
-   public void updateFocus(ResourceKey<Level> var1, ChunkPos var2) {
+   public void updateFocus(final ResourceKey<Level> dimension, final ChunkPos chunkPos) {
    }
 }

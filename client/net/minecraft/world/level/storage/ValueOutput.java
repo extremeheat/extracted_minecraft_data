@@ -5,44 +5,44 @@ import com.mojang.serialization.MapCodec;
 import org.jspecify.annotations.Nullable;
 
 public interface ValueOutput {
-   <T> void store(String var1, Codec<T> var2, T var3);
+   <T> void store(String name, Codec<T> codec, T value);
 
-   <T> void storeNullable(String var1, Codec<T> var2, @Nullable T var3);
+   <T> void storeNullable(String name, Codec<T> codec, @Nullable T value);
 
    /** @deprecated */
    @Deprecated
-   <T> void store(MapCodec<T> var1, T var2);
+   <T> void store(MapCodec<T> codec, T value);
 
-   void putBoolean(String var1, boolean var2);
+   void putBoolean(String name, boolean value);
 
-   void putByte(String var1, byte var2);
+   void putByte(String name, byte value);
 
-   void putShort(String var1, short var2);
+   void putShort(String name, short value);
 
-   void putInt(String var1, int var2);
+   void putInt(String name, int value);
 
-   void putLong(String var1, long var2);
+   void putLong(String name, long value);
 
-   void putFloat(String var1, float var2);
+   void putFloat(String name, float value);
 
-   void putDouble(String var1, double var2);
+   void putDouble(String name, double value);
 
-   void putString(String var1, String var2);
+   void putString(String name, String value);
 
-   void putIntArray(String var1, int[] var2);
+   void putIntArray(String name, int[] value);
 
-   ValueOutput child(String var1);
+   ValueOutput child(String name);
 
-   ValueOutputList childrenList(String var1);
+   ValueOutputList childrenList(String name);
 
-   <T> TypedOutputList<T> list(String var1, Codec<T> var2);
+   <T> TypedOutputList<T> list(String name, Codec<T> codec);
 
-   void discard(String var1);
+   void discard(String name);
 
    boolean isEmpty();
 
    public interface TypedOutputList<T> {
-      void add(T var1);
+      void add(T value);
 
       boolean isEmpty();
    }

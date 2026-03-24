@@ -23,12 +23,16 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.animal.armadillo.Armadillo;
+import net.minecraft.world.entity.animal.chicken.ChickenSoundVariant;
 import net.minecraft.world.entity.animal.chicken.ChickenVariant;
+import net.minecraft.world.entity.animal.cow.CowSoundVariant;
 import net.minecraft.world.entity.animal.cow.CowVariant;
+import net.minecraft.world.entity.animal.feline.CatSoundVariant;
 import net.minecraft.world.entity.animal.feline.CatVariant;
 import net.minecraft.world.entity.animal.frog.FrogVariant;
 import net.minecraft.world.entity.animal.golem.CopperGolemState;
 import net.minecraft.world.entity.animal.nautilus.ZombieNautilusVariant;
+import net.minecraft.world.entity.animal.pig.PigSoundVariant;
 import net.minecraft.world.entity.animal.pig.PigVariant;
 import net.minecraft.world.entity.animal.sniffer.Sniffer;
 import net.minecraft.world.entity.animal.wolf.WolfSoundVariant;
@@ -71,12 +75,16 @@ public class EntityDataSerializers {
    public static final EntityDataSerializer<OptionalInt> OPTIONAL_UNSIGNED_INT;
    public static final EntityDataSerializer<Pose> POSE;
    public static final EntityDataSerializer<Holder<CatVariant>> CAT_VARIANT;
+   public static final EntityDataSerializer<Holder<CatSoundVariant>> CAT_SOUND_VARIANT;
    public static final EntityDataSerializer<Holder<ChickenVariant>> CHICKEN_VARIANT;
+   public static final EntityDataSerializer<Holder<ChickenSoundVariant>> CHICKEN_SOUND_VARIANT;
    public static final EntityDataSerializer<Holder<CowVariant>> COW_VARIANT;
+   public static final EntityDataSerializer<Holder<CowSoundVariant>> COW_SOUND_VARIANT;
    public static final EntityDataSerializer<Holder<WolfVariant>> WOLF_VARIANT;
    public static final EntityDataSerializer<Holder<WolfSoundVariant>> WOLF_SOUND_VARIANT;
    public static final EntityDataSerializer<Holder<FrogVariant>> FROG_VARIANT;
    public static final EntityDataSerializer<Holder<PigVariant>> PIG_VARIANT;
+   public static final EntityDataSerializer<Holder<PigSoundVariant>> PIG_SOUND_VARIANT;
    public static final EntityDataSerializer<Holder<ZombieNautilusVariant>> ZOMBIE_NAUTILUS_VARIANT;
    public static final EntityDataSerializer<Holder<PaintingVariant>> PAINTING_VARIANT;
    public static final EntityDataSerializer<Armadillo.ArmadilloState> ARMADILLO_STATE;
@@ -88,16 +96,16 @@ public class EntityDataSerializers {
    public static final EntityDataSerializer<ResolvableProfile> RESOLVABLE_PROFILE;
    public static final EntityDataSerializer<HumanoidArm> HUMANOID_ARM;
 
-   public static void registerSerializer(EntityDataSerializer<?> var0) {
-      SERIALIZERS.add(var0);
+   public static void registerSerializer(final EntityDataSerializer<?> serializer) {
+      SERIALIZERS.add(serializer);
    }
 
-   public static @Nullable EntityDataSerializer<?> getSerializer(int var0) {
-      return SERIALIZERS.byId(var0);
+   public static @Nullable EntityDataSerializer<?> getSerializer(final int id) {
+      return SERIALIZERS.byId(id);
    }
 
-   public static int getSerializedId(EntityDataSerializer<?> var0) {
-      return SERIALIZERS.getId(var0);
+   public static int getSerializedId(final EntityDataSerializer<?> serializer) {
+      return SERIALIZERS.getId(serializer);
    }
 
    private EntityDataSerializers() {
@@ -117,39 +125,24 @@ public class EntityDataSerializers {
             return ItemStack.OPTIONAL_STREAM_CODEC;
          }
 
-         public ItemStack copy(ItemStack var1) {
-            return var1.copy();
-         }
-
-         // $FF: synthetic method
-         public Object copy(final Object var1) {
-            return this.copy((ItemStack)var1);
+         public ItemStack copy(final ItemStack value) {
+            return value.copy();
          }
       };
       BLOCK_STATE = EntityDataSerializer.<BlockState>forValueType(ByteBufCodecs.idMapper(Block.BLOCK_STATE_REGISTRY));
       OPTIONAL_BLOCK_STATE_CODEC = new StreamCodec<ByteBuf, Optional<BlockState>>() {
-         public void encode(ByteBuf var1, Optional<BlockState> var2) {
-            if (var2.isPresent()) {
-               VarInt.write(var1, Block.getId((BlockState)var2.get()));
+         public void encode(final ByteBuf output, final Optional<BlockState> value) {
+            if (value.isPresent()) {
+               VarInt.write(output, Block.getId((BlockState)value.get()));
             } else {
-               VarInt.write(var1, 0);
+               VarInt.write(output, 0);
             }
 
          }
 
-         public Optional<BlockState> decode(ByteBuf var1) {
-            int var2 = VarInt.read(var1);
-            return var2 == 0 ? Optional.empty() : Optional.of(Block.stateById(var2));
-         }
-
-         // $FF: synthetic method
-         public void encode(final Object var1, final Object var2) {
-            this.encode((ByteBuf)var1, (Optional)var2);
-         }
-
-         // $FF: synthetic method
-         public Object decode(final Object var1) {
-            return this.decode((ByteBuf)var1);
+         public Optional<BlockState> decode(final ByteBuf input) {
+            int id = VarInt.read(input);
+            return id == 0 ? Optional.empty() : Optional.of(Block.stateById(id));
          }
       };
       OPTIONAL_BLOCK_STATE = EntityDataSerializer.<Optional<BlockState>>forValueType(OPTIONAL_BLOCK_STATE_CODEC);
@@ -164,34 +157,28 @@ public class EntityDataSerializers {
       OPTIONAL_GLOBAL_POS = EntityDataSerializer.<Optional<GlobalPos>>forValueType(GlobalPos.STREAM_CODEC.apply(ByteBufCodecs::optional));
       VILLAGER_DATA = EntityDataSerializer.<VillagerData>forValueType(VillagerData.STREAM_CODEC);
       OPTIONAL_UNSIGNED_INT_CODEC = new StreamCodec<ByteBuf, OptionalInt>() {
-         public OptionalInt decode(ByteBuf var1) {
-            int var2 = VarInt.read(var1);
-            return var2 == 0 ? OptionalInt.empty() : OptionalInt.of(var2 - 1);
+         public OptionalInt decode(final ByteBuf input) {
+            int v = VarInt.read(input);
+            return v == 0 ? OptionalInt.empty() : OptionalInt.of(v - 1);
          }
 
-         public void encode(ByteBuf var1, OptionalInt var2) {
-            VarInt.write(var1, var2.orElse(-1) + 1);
-         }
-
-         // $FF: synthetic method
-         public void encode(final Object var1, final Object var2) {
-            this.encode((ByteBuf)var1, (OptionalInt)var2);
-         }
-
-         // $FF: synthetic method
-         public Object decode(final Object var1) {
-            return this.decode((ByteBuf)var1);
+         public void encode(final ByteBuf output, final OptionalInt value) {
+            VarInt.write(output, value.orElse(-1) + 1);
          }
       };
       OPTIONAL_UNSIGNED_INT = EntityDataSerializer.<OptionalInt>forValueType(OPTIONAL_UNSIGNED_INT_CODEC);
       POSE = EntityDataSerializer.<Pose>forValueType(Pose.STREAM_CODEC);
       CAT_VARIANT = EntityDataSerializer.<Holder<CatVariant>>forValueType(CatVariant.STREAM_CODEC);
+      CAT_SOUND_VARIANT = EntityDataSerializer.<Holder<CatSoundVariant>>forValueType(CatSoundVariant.STREAM_CODEC);
       CHICKEN_VARIANT = EntityDataSerializer.<Holder<ChickenVariant>>forValueType(ChickenVariant.STREAM_CODEC);
+      CHICKEN_SOUND_VARIANT = EntityDataSerializer.<Holder<ChickenSoundVariant>>forValueType(ChickenSoundVariant.STREAM_CODEC);
       COW_VARIANT = EntityDataSerializer.<Holder<CowVariant>>forValueType(CowVariant.STREAM_CODEC);
+      COW_SOUND_VARIANT = EntityDataSerializer.<Holder<CowSoundVariant>>forValueType(CowSoundVariant.STREAM_CODEC);
       WOLF_VARIANT = EntityDataSerializer.<Holder<WolfVariant>>forValueType(WolfVariant.STREAM_CODEC);
       WOLF_SOUND_VARIANT = EntityDataSerializer.<Holder<WolfSoundVariant>>forValueType(WolfSoundVariant.STREAM_CODEC);
       FROG_VARIANT = EntityDataSerializer.<Holder<FrogVariant>>forValueType(FrogVariant.STREAM_CODEC);
       PIG_VARIANT = EntityDataSerializer.<Holder<PigVariant>>forValueType(PigVariant.STREAM_CODEC);
+      PIG_SOUND_VARIANT = EntityDataSerializer.<Holder<PigSoundVariant>>forValueType(PigSoundVariant.STREAM_CODEC);
       ZOMBIE_NAUTILUS_VARIANT = EntityDataSerializer.<Holder<ZombieNautilusVariant>>forValueType(ZombieNautilusVariant.STREAM_CODEC);
       PAINTING_VARIANT = EntityDataSerializer.<Holder<PaintingVariant>>forValueType(PaintingVariant.STREAM_CODEC);
       ARMADILLO_STATE = EntityDataSerializer.<Armadillo.ArmadilloState>forValueType(Armadillo.ArmadilloState.STREAM_CODEC);
@@ -224,12 +211,16 @@ public class EntityDataSerializers {
       registerSerializer(OPTIONAL_UNSIGNED_INT);
       registerSerializer(POSE);
       registerSerializer(CAT_VARIANT);
+      registerSerializer(CAT_SOUND_VARIANT);
       registerSerializer(COW_VARIANT);
+      registerSerializer(COW_SOUND_VARIANT);
       registerSerializer(WOLF_VARIANT);
       registerSerializer(WOLF_SOUND_VARIANT);
       registerSerializer(FROG_VARIANT);
       registerSerializer(PIG_VARIANT);
+      registerSerializer(PIG_SOUND_VARIANT);
       registerSerializer(CHICKEN_VARIANT);
+      registerSerializer(CHICKEN_SOUND_VARIANT);
       registerSerializer(ZOMBIE_NAUTILUS_VARIANT);
       registerSerializer(OPTIONAL_GLOBAL_POS);
       registerSerializer(PAINTING_VARIANT);

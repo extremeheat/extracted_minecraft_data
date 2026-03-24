@@ -12,15 +12,15 @@ import net.minecraft.server.dialog.action.StaticAction;
 import org.jspecify.annotations.Nullable;
 
 public class ServerLinksDialogScreen extends ButtonListDialogScreen<ServerLinksDialog> {
-   public ServerLinksDialogScreen(@Nullable Screen var1, ServerLinksDialog var2, DialogConnectionAccess var3) {
-      super(var1, var2, var3);
+   public ServerLinksDialogScreen(final @Nullable Screen previousScreen, final ServerLinksDialog dialog, final DialogConnectionAccess connectionAccess) {
+      super(previousScreen, dialog, connectionAccess);
    }
 
-   protected Stream<ActionButton> createListActions(ServerLinksDialog var1, DialogConnectionAccess var2) {
-      return var2.serverLinks().entries().stream().map((var1x) -> createDialogClickAction(var1, var1x));
+   protected Stream<ActionButton> createListActions(final ServerLinksDialog dialog, final DialogConnectionAccess connectionAccess) {
+      return connectionAccess.serverLinks().entries().stream().map((entry) -> createDialogClickAction(dialog, entry));
    }
 
-   private static ActionButton createDialogClickAction(ServerLinksDialog var0, ServerLinks.Entry var1) {
-      return new ActionButton(new CommonButtonData(var1.displayName(), var0.buttonWidth()), Optional.of(new StaticAction(new ClickEvent.OpenUrl(var1.link()))));
+   private static ActionButton createDialogClickAction(final ServerLinksDialog data, final ServerLinks.Entry entry) {
+      return new ActionButton(new CommonButtonData(entry.displayName(), data.buttonWidth()), Optional.of(new StaticAction(new ClickEvent.OpenUrl(entry.link()))));
    }
 }

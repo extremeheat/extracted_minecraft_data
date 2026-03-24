@@ -15,20 +15,20 @@ public class RemapChunkStatusFix extends DataFix {
    private final String name;
    private final UnaryOperator<String> mapper;
 
-   public RemapChunkStatusFix(Schema var1, String var2, UnaryOperator<String> var3) {
-      super(var1, false);
-      this.name = var2;
-      this.mapper = var3;
+   public RemapChunkStatusFix(final Schema schema, final String name, final UnaryOperator<String> mapper) {
+      super(schema, false);
+      this.name = name;
+      this.mapper = mapper;
    }
 
    protected TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped(this.name, this.getInputSchema().getType(References.CHUNK), (var1) -> var1.update(DSL.remainderFinder(), (var1x) -> var1x.update("Status", this::fixStatus).update("below_zero_retrogen", (var1) -> var1.update("target_status", this::fixStatus))));
+      return this.fixTypeEverywhereTyped(this.name, this.getInputSchema().getType(References.CHUNK), (input) -> input.update(DSL.remainderFinder(), (data) -> data.update("Status", this::fixStatus).update("below_zero_retrogen", (belowZeroRetrogen) -> belowZeroRetrogen.update("target_status", this::fixStatus))));
    }
 
-   private <T> Dynamic<T> fixStatus(Dynamic<T> var1) {
-      Optional var10000 = var1.asString().result().map(NamespacedSchema::ensureNamespaced).map(this.mapper);
-      Objects.requireNonNull(var1);
-      Optional var2 = var10000.map(var1::createString);
-      return (Dynamic)DataFixUtils.orElse(var2, var1);
+   private <T> Dynamic<T> fixStatus(final Dynamic<T> dynamic) {
+      Optional var10000 = dynamic.asString().result().map(NamespacedSchema::ensureNamespaced).map(this.mapper);
+      Objects.requireNonNull(dynamic);
+      Optional<Dynamic<T>> remapped = var10000.map(dynamic::createString);
+      return (Dynamic)DataFixUtils.orElse(remapped, dynamic);
    }
 }

@@ -10,25 +10,20 @@ import net.minecraft.world.level.WorldGenLevel;
 public class HasSturdyFacePredicate implements BlockPredicate {
    private final Vec3i offset;
    private final Direction direction;
-   public static final MapCodec<HasSturdyFacePredicate> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Vec3i.offsetCodec(16).optionalFieldOf("offset", Vec3i.ZERO).forGetter((var0x) -> var0x.offset), Direction.CODEC.fieldOf("direction").forGetter((var0x) -> var0x.direction)).apply(var0, HasSturdyFacePredicate::new));
+   public static final MapCodec<HasSturdyFacePredicate> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Vec3i.offsetCodec(16).optionalFieldOf("offset", Vec3i.ZERO).forGetter((c) -> c.offset), Direction.CODEC.fieldOf("direction").forGetter((c) -> c.direction)).apply(i, HasSturdyFacePredicate::new));
 
-   public HasSturdyFacePredicate(Vec3i var1, Direction var2) {
+   public HasSturdyFacePredicate(final Vec3i offset, final Direction direction) {
       super();
-      this.offset = var1;
-      this.direction = var2;
+      this.offset = offset;
+      this.direction = direction;
    }
 
-   public boolean test(WorldGenLevel var1, BlockPos var2) {
-      BlockPos var3 = var2.offset(this.offset);
-      return var1.getBlockState(var3).isFaceSturdy(var1, var3, this.direction);
+   public boolean test(final WorldGenLevel level, final BlockPos origin) {
+      BlockPos testPosition = origin.offset(this.offset);
+      return level.getBlockState(testPosition).isFaceSturdy(level, testPosition, this.direction);
    }
 
    public BlockPredicateType<?> type() {
       return BlockPredicateType.HAS_STURDY_FACE;
-   }
-
-   // $FF: synthetic method
-   public boolean test(final Object var1, final Object var2) {
-      return this.test((WorldGenLevel)var1, (BlockPos)var2);
    }
 }

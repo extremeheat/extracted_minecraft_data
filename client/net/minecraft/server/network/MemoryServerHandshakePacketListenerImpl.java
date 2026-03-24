@@ -12,22 +12,22 @@ public class MemoryServerHandshakePacketListenerImpl implements ServerHandshakeP
    private final MinecraftServer server;
    private final Connection connection;
 
-   public MemoryServerHandshakePacketListenerImpl(MinecraftServer var1, Connection var2) {
+   public MemoryServerHandshakePacketListenerImpl(final MinecraftServer server, final Connection connection) {
       super();
-      this.server = var1;
-      this.connection = var2;
+      this.server = server;
+      this.connection = connection;
    }
 
-   public void handleIntention(ClientIntentionPacket var1) {
-      if (var1.intention() != ClientIntent.LOGIN) {
-         throw new UnsupportedOperationException("Invalid intention " + String.valueOf(var1.intention()));
+   public void handleIntention(final ClientIntentionPacket packet) {
+      if (packet.intention() != ClientIntent.LOGIN) {
+         throw new UnsupportedOperationException("Invalid intention " + String.valueOf(packet.intention()));
       } else {
          this.connection.setupInboundProtocol(LoginProtocols.SERVERBOUND, new ServerLoginPacketListenerImpl(this.server, this.connection, false));
          this.connection.setupOutboundProtocol(LoginProtocols.CLIENTBOUND);
       }
    }
 
-   public void onDisconnect(DisconnectionDetails var1) {
+   public void onDisconnect(final DisconnectionDetails details) {
    }
 
    public boolean isAcceptingMessages() {

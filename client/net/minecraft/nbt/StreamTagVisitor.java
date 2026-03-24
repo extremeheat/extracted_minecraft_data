@@ -3,37 +3,37 @@ package net.minecraft.nbt;
 public interface StreamTagVisitor {
    ValueResult visitEnd();
 
-   ValueResult visit(String var1);
+   ValueResult visit(final String value);
 
-   ValueResult visit(byte var1);
+   ValueResult visit(final byte value);
 
-   ValueResult visit(short var1);
+   ValueResult visit(final short value);
 
-   ValueResult visit(int var1);
+   ValueResult visit(final int value);
 
-   ValueResult visit(long var1);
+   ValueResult visit(final long value);
 
-   ValueResult visit(float var1);
+   ValueResult visit(final float value);
 
-   ValueResult visit(double var1);
+   ValueResult visit(final double value);
 
-   ValueResult visit(byte[] var1);
+   ValueResult visit(final byte[] value);
 
-   ValueResult visit(int[] var1);
+   ValueResult visit(final int[] value);
 
-   ValueResult visit(long[] var1);
+   ValueResult visit(final long[] value);
 
-   ValueResult visitList(TagType<?> var1, int var2);
+   ValueResult visitList(final TagType<?> elementType, final int size);
 
-   EntryResult visitEntry(TagType<?> var1);
+   EntryResult visitEntry(final TagType<?> type);
 
-   EntryResult visitEntry(TagType<?> var1, String var2);
+   EntryResult visitEntry(final TagType<?> type, final String id);
 
-   EntryResult visitElement(TagType<?> var1, int var2);
+   EntryResult visitElement(final TagType<?> type, final int index);
 
    ValueResult visitContainerEnd();
 
-   ValueResult visitRootEntry(TagType<?> var1);
+   ValueResult visitRootEntry(final TagType<?> type);
 
    public static enum ValueResult {
       CONTINUE,

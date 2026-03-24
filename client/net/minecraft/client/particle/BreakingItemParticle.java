@@ -3,8 +3,8 @@ package net.minecraft.client.particle;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.SimpleParticleType;
@@ -12,7 +12,7 @@ import net.minecraft.data.AtlasIds;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 
 public class BreakingItemParticle extends SingleQuadParticle {
@@ -20,23 +20,23 @@ public class BreakingItemParticle extends SingleQuadParticle {
    private final float vo;
    private final SingleQuadParticle.Layer layer;
 
-   BreakingItemParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, TextureAtlasSprite var14) {
-      this(var1, var2, var4, var6, var14);
+   private BreakingItemParticle(final ClientLevel level, final double x, final double y, final double z, final double xa, final double ya, final double za, final TextureAtlasSprite sprite) {
+      this(level, x, y, z, sprite);
       this.xd *= 0.10000000149011612;
       this.yd *= 0.10000000149011612;
       this.zd *= 0.10000000149011612;
-      this.xd += var8;
-      this.yd += var10;
-      this.zd += var12;
+      this.xd += xa;
+      this.yd += ya;
+      this.zd += za;
    }
 
-   protected BreakingItemParticle(ClientLevel var1, double var2, double var4, double var6, TextureAtlasSprite var8) {
-      super(var1, var2, var4, var6, 0.0, 0.0, 0.0, var8);
+   protected BreakingItemParticle(final ClientLevel level, final double x, final double y, final double z, final TextureAtlasSprite sprite) {
+      super(level, x, y, z, 0.0, 0.0, 0.0, sprite);
       this.gravity = 1.0F;
       this.quadSize /= 2.0F;
       this.uo = this.random.nextFloat() * 3.0F;
       this.vo = this.random.nextFloat() * 3.0F;
-      this.layer = var8.atlasLocation().equals(TextureAtlas.LOCATION_BLOCKS) ? SingleQuadParticle.Layer.TERRAIN : SingleQuadParticle.Layer.ITEMS;
+      this.layer = SingleQuadParticle.Layer.bySprite(sprite);
    }
 
    protected float getU0() {
@@ -66,10 +66,10 @@ public class BreakingItemParticle extends SingleQuadParticle {
          super();
       }
 
-      protected TextureAtlasSprite getSprite(ItemStack var1, ClientLevel var2, RandomSource var3) {
-         Minecraft.getInstance().getItemModelResolver().updateForTopItem(this.scratchRenderState, var1, ItemDisplayContext.GROUND, var2, (ItemOwner)null, 0);
-         TextureAtlasSprite var4 = this.scratchRenderState.pickParticleIcon(var3);
-         return var4 != null ? var4 : Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.ITEMS).missingSprite();
+      protected TextureAtlasSprite getSprite(final ItemStackTemplate item, final ClientLevel level, final RandomSource random) {
+         Minecraft.getInstance().getItemModelResolver().updateForTopItem(this.scratchRenderState, item.create(), ItemDisplayContext.GROUND, level, (ItemOwner)null, 0);
+         Material.Baked material = this.scratchRenderState.pickParticleMaterial(random);
+         return material != null ? material.sprite() : Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.ITEMS).missingSprite();
       }
    }
 
@@ -78,8 +78,8 @@ public class BreakingItemParticle extends SingleQuadParticle {
          super();
       }
 
-      public Particle createParticle(ItemParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         return new BreakingItemParticle(var2, var3, var5, var7, var9, var11, var13, this.getSprite(var1.getItem(), var2, var15));
+      public Particle createParticle(final ItemParticleOption options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         return new BreakingItemParticle(level, x, y, z, xAux, yAux, zAux, this.getSprite(options.getItem(), level, random));
       }
    }
 
@@ -88,8 +88,8 @@ public class BreakingItemParticle extends SingleQuadParticle {
          super();
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         return new BreakingItemParticle(var2, var3, var5, var7, this.getSprite(new ItemStack(Items.SLIME_BALL), var2, var15));
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         return new BreakingItemParticle(level, x, y, z, this.getSprite(new ItemStackTemplate(Items.SLIME_BALL), level, random));
       }
    }
 
@@ -98,8 +98,8 @@ public class BreakingItemParticle extends SingleQuadParticle {
          super();
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         return new BreakingItemParticle(var2, var3, var5, var7, this.getSprite(new ItemStack(Items.COBWEB), var2, var15));
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         return new BreakingItemParticle(level, x, y, z, this.getSprite(new ItemStackTemplate(Items.COBWEB), level, random));
       }
    }
 
@@ -108,8 +108,8 @@ public class BreakingItemParticle extends SingleQuadParticle {
          super();
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         return new BreakingItemParticle(var2, var3, var5, var7, this.getSprite(new ItemStack(Items.SNOWBALL), var2, var15));
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         return new BreakingItemParticle(level, x, y, z, this.getSprite(new ItemStackTemplate(Items.SNOWBALL), level, random));
       }
    }
 }

@@ -6,48 +6,41 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.Validatable;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 import org.slf4j.Logger;
 
 public record ConditionReference(ResourceKey<LootItemCondition> name) implements LootItemCondition {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final MapCodec<ConditionReference> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceKey.codec(Registries.PREDICATE).fieldOf("name").forGetter(ConditionReference::name)).apply(var0, ConditionReference::new));
+   public static final MapCodec<ConditionReference> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ResourceKey.codec(Registries.PREDICATE).fieldOf("name").forGetter(ConditionReference::name)).apply(i, ConditionReference::new));
 
-   public ConditionReference(ResourceKey<LootItemCondition> var1) {
+   public ConditionReference {
       super();
-      this.name = var1;
    }
 
-   public LootItemConditionType getType() {
-      return LootItemConditions.REFERENCE;
+   public MapCodec<ConditionReference> codec() {
+      return MAP_CODEC;
    }
 
-   public void validate(ValidationContext var1) {
-      if (!var1.allowsReferences()) {
-         var1.reportProblem(new ValidationContext.ReferenceNotAllowedProblem(this.name));
-      } else if (var1.hasVisitedElement(this.name)) {
-         var1.reportProblem(new ValidationContext.RecursiveReferenceProblem(this.name));
-      } else {
-         LootItemCondition.super.validate(var1);
-         var1.resolver().get(this.name).ifPresentOrElse((var2) -> ((LootItemCondition)var2.value()).validate(var1.enterElement(new ProblemReporter.ElementReferencePathElement(this.name), this.name)), () -> var1.reportProblem(new ValidationContext.MissingReferenceProblem(this.name)));
-      }
+   public void validate(final ValidationContext context) {
+      LootItemCondition.super.validate(context);
+      Validatable.validateReference(context, this.name);
    }
 
-   public boolean test(LootContext var1) {
-      LootItemCondition var2 = (LootItemCondition)var1.getResolver().get(this.name).map(Holder.Reference::value).orElse((Object)null);
-      if (var2 == null) {
+   public boolean test(final LootContext lootContext) {
+      LootItemCondition condition = (LootItemCondition)lootContext.getResolver().get(this.name).map(Holder.Reference::value).orElse((Object)null);
+      if (condition == null) {
          LOGGER.warn("Tried using unknown condition table called {}", this.name.identifier());
          return false;
       } else {
-         LootContext.VisitedEntry var3 = LootContext.createVisitedEntry(var2);
-         if (var1.pushVisitedElement(var3)) {
+         LootContext.VisitedEntry<?> breadcrumb = LootContext.createVisitedEntry(condition);
+         if (lootContext.pushVisitedElement(breadcrumb)) {
             boolean var4;
             try {
-               var4 = var2.test(var1);
+               var4 = condition.test(lootContext);
             } finally {
-               var1.popVisitedElement(var3);
+               lootContext.popVisitedElement(breadcrumb);
             }
 
             return var4;
@@ -58,12 +51,7 @@ public record ConditionReference(ResourceKey<LootItemCondition> name) implements
       }
    }
 
-   public static LootItemCondition.Builder conditionReference(ResourceKey<LootItemCondition> var0) {
-      return () -> new ConditionReference(var0);
-   }
-
-   // $FF: synthetic method
-   public boolean test(final Object var1) {
-      return this.test((LootContext)var1);
+   public static LootItemCondition.Builder conditionReference(final ResourceKey<LootItemCondition> name) {
+      return () -> new ConditionReference(name);
    }
 }

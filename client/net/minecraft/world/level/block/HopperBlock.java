@@ -49,106 +49,106 @@ public class HopperBlock extends BaseEntityBlock {
       return CODEC;
    }
 
-   public HopperBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public HopperBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.DOWN)).setValue(ENABLED, true));
-      VoxelShape var2 = Block.column(12.0, 11.0, 16.0);
-      this.shapes = this.makeShapes(var2);
-      this.interactionShapes = ImmutableMap.builderWithExpectedSize(5).putAll(Shapes.rotateHorizontal(Shapes.or(var2, Block.boxZ(4.0, 8.0, 10.0, 0.0, 4.0)))).put(Direction.DOWN, var2).build();
+      VoxelShape inside = Block.column(12.0, 11.0, 16.0);
+      this.shapes = this.makeShapes(inside);
+      this.interactionShapes = ImmutableMap.builderWithExpectedSize(5).putAll(Shapes.rotateHorizontal(Shapes.or(inside, Block.boxZ(4.0, 8.0, 10.0, 0.0, 4.0)))).put(Direction.DOWN, inside).build();
    }
 
-   private Function<BlockState, VoxelShape> makeShapes(VoxelShape var1) {
-      VoxelShape var2 = Shapes.or(Block.column(16.0, 10.0, 16.0), Block.column(8.0, 4.0, 10.0));
-      VoxelShape var3 = Shapes.join(var2, var1, BooleanOp.ONLY_FIRST);
-      Map var4 = Shapes.rotateAll(Block.boxZ(4.0, 4.0, 8.0, 0.0, 8.0), (new Vec3(8.0, 6.0, 8.0)).scale(0.0625));
-      return this.getShapeForEachState((var2x) -> Shapes.or(var3, Shapes.join((VoxelShape)var4.get(var2x.getValue(FACING)), Shapes.block(), BooleanOp.AND)), new Property[]{ENABLED});
+   private Function<BlockState, VoxelShape> makeShapes(final VoxelShape inside) {
+      VoxelShape spoutlessHopperOutline = Shapes.or(Block.column(16.0, 10.0, 16.0), Block.column(8.0, 4.0, 10.0));
+      VoxelShape spoutlessHopper = Shapes.join(spoutlessHopperOutline, inside, BooleanOp.ONLY_FIRST);
+      Map<Direction, VoxelShape> spouts = Shapes.rotateAll(Block.boxZ(4.0, 4.0, 8.0, 0.0, 8.0), (new Vec3(8.0, 6.0, 8.0)).scale(0.0625));
+      return this.getShapeForEachState((state) -> Shapes.or(spoutlessHopper, Shapes.join((VoxelShape)spouts.get(state.getValue(FACING)), Shapes.block(), BooleanOp.AND)), new Property[]{ENABLED});
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (VoxelShape)this.shapes.apply(var1);
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return (VoxelShape)this.shapes.apply(state);
    }
 
-   protected VoxelShape getInteractionShape(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return (VoxelShape)this.interactionShapes.get(var1.getValue(FACING));
+   protected VoxelShape getInteractionShape(final BlockState state, final BlockGetter level, final BlockPos pos) {
+      return (VoxelShape)this.interactionShapes.get(state.getValue(FACING));
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      Direction var2 = var1.getClickedFace().getOpposite();
-      return (BlockState)((BlockState)this.defaultBlockState().setValue(FACING, var2.getAxis() == Direction.Axis.Y ? Direction.DOWN : var2)).setValue(ENABLED, true);
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      Direction direction = context.getClickedFace().getOpposite();
+      return (BlockState)((BlockState)this.defaultBlockState().setValue(FACING, direction.getAxis() == Direction.Axis.Y ? Direction.DOWN : direction)).setValue(ENABLED, true);
    }
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new HopperBlockEntity(var1, var2);
+   public BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      return new HopperBlockEntity(worldPosition, blockState);
    }
 
-   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return var1.isClientSide() ? null : createTickerHelper(var3, BlockEntityType.HOPPER, HopperBlockEntity::pushItemsTick);
+   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(final Level level, final BlockState blockState, final BlockEntityType<T> type) {
+      return level.isClientSide() ? null : createTickerHelper(type, BlockEntityType.HOPPER, HopperBlockEntity::pushItemsTick);
    }
 
-   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var4.is(var1.getBlock())) {
-         this.checkPoweredState(var2, var3, var1);
+   protected void onPlace(final BlockState state, final Level level, final BlockPos pos, final BlockState oldState, final boolean movedByPiston) {
+      if (!oldState.is(state.getBlock())) {
+         this.checkPoweredState(level, pos, state);
       }
    }
 
-   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (!var2.isClientSide()) {
-         BlockEntity var7 = var2.getBlockEntity(var3);
+   protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
+      if (!level.isClientSide()) {
+         BlockEntity var7 = level.getBlockEntity(pos);
          if (var7 instanceof HopperBlockEntity) {
-            HopperBlockEntity var6 = (HopperBlockEntity)var7;
-            var4.openMenu(var6);
-            var4.awardStat(Stats.INSPECT_HOPPER);
+            HopperBlockEntity hopper = (HopperBlockEntity)var7;
+            player.openMenu(hopper);
+            player.awardStat(Stats.INSPECT_HOPPER);
          }
       }
 
       return InteractionResult.SUCCESS;
    }
 
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
-      this.checkPoweredState(var2, var3, var1);
+   protected void neighborChanged(final BlockState state, final Level level, final BlockPos pos, final Block block, final @Nullable Orientation orientation, final boolean movedByPiston) {
+      this.checkPoweredState(level, pos, state);
    }
 
-   private void checkPoweredState(Level var1, BlockPos var2, BlockState var3) {
-      boolean var4 = !var1.hasNeighborSignal(var2);
-      if (var4 != (Boolean)var3.getValue(ENABLED)) {
-         var1.setBlock(var2, (BlockState)var3.setValue(ENABLED, var4), 2);
+   private void checkPoweredState(final Level level, final BlockPos pos, final BlockState state) {
+      boolean shouldBeOn = !level.hasNeighborSignal(pos);
+      if (shouldBeOn != (Boolean)state.getValue(ENABLED)) {
+         level.setBlock(pos, (BlockState)state.setValue(ENABLED, shouldBeOn), 2);
       }
 
    }
 
-   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
-      Containers.updateNeighboursAfterDestroy(var1, var2, var3);
+   protected void affectNeighborsAfterRemoval(final BlockState state, final ServerLevel level, final BlockPos pos, final boolean movedByPiston) {
+      Containers.updateNeighboursAfterDestroy(state, level, pos);
    }
 
-   protected boolean hasAnalogOutputSignal(BlockState var1) {
+   protected boolean hasAnalogOutputSignal(final BlockState state) {
       return true;
    }
 
-   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
-      return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(var2.getBlockEntity(var3));
+   protected int getAnalogOutputSignal(final BlockState state, final Level level, final BlockPos pos, final Direction direction) {
+      return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(level.getBlockEntity(pos));
    }
 
-   protected BlockState rotate(BlockState var1, Rotation var2) {
-      return (BlockState)var1.setValue(FACING, var2.rotate((Direction)var1.getValue(FACING)));
+   protected BlockState rotate(final BlockState state, final Rotation rotation) {
+      return (BlockState)state.setValue(FACING, rotation.rotate((Direction)state.getValue(FACING)));
    }
 
-   protected BlockState mirror(BlockState var1, Mirror var2) {
-      return var1.rotate(var2.getRotation((Direction)var1.getValue(FACING)));
+   protected BlockState mirror(final BlockState state, final Mirror mirror) {
+      return state.rotate(mirror.getRotation((Direction)state.getValue(FACING)));
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(FACING, ENABLED);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(FACING, ENABLED);
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
-      BlockEntity var7 = var2.getBlockEntity(var3);
-      if (var7 instanceof HopperBlockEntity) {
-         HopperBlockEntity.entityInside(var2, var3, var1, var4, (HopperBlockEntity)var7);
+   protected void entityInside(final BlockState state, final Level level, final BlockPos pos, final Entity entity, final InsideBlockEffectApplier effectApplier, final boolean isPrecise) {
+      BlockEntity blockEntity = level.getBlockEntity(pos);
+      if (blockEntity instanceof HopperBlockEntity) {
+         HopperBlockEntity.entityInside(level, pos, state, entity, (HopperBlockEntity)blockEntity);
       }
 
    }
 
-   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
+   protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
       return false;
    }
 

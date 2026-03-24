@@ -19,10 +19,10 @@ public class ClientMetricsSamplersProvider implements MetricsSamplerProvider {
    private final Set<MetricSampler> samplers = new ObjectOpenHashSet();
    private final ProfilerSamplerAdapter samplerFactory = new ProfilerSamplerAdapter();
 
-   public ClientMetricsSamplersProvider(LongSupplier var1, LevelRenderer var2) {
+   public ClientMetricsSamplersProvider(final LongSupplier wallTimeSource, final LevelRenderer levelRenderer) {
       super();
-      this.levelRenderer = var2;
-      this.samplers.add(ServerMetricsSamplersProvider.tickTimeSampler(var1));
+      this.levelRenderer = levelRenderer;
+      this.samplers.add(ServerMetricsSamplersProvider.tickTimeSampler(wallTimeSource));
       this.registerStaticSamplers();
    }
 
@@ -31,18 +31,17 @@ public class ClientMetricsSamplersProvider implements MetricsSamplerProvider {
       this.samplers.add(MetricSampler.create("totalChunks", MetricCategory.CHUNK_RENDERING, this.levelRenderer, LevelRenderer::getTotalSections));
       this.samplers.add(MetricSampler.create("renderedChunks", MetricCategory.CHUNK_RENDERING, this.levelRenderer, LevelRenderer::countRenderedSections));
       this.samplers.add(MetricSampler.create("lastViewDistance", MetricCategory.CHUNK_RENDERING, this.levelRenderer, LevelRenderer::getLastViewDistance));
-      SectionRenderDispatcher var1 = this.levelRenderer.getSectionRenderDispatcher();
-      if (var1 != null) {
-         this.samplers.add(MetricSampler.create("toUpload", MetricCategory.CHUNK_RENDERING_DISPATCHING, var1, SectionRenderDispatcher::getToUpload));
-         this.samplers.add(MetricSampler.create("freeBufferCount", MetricCategory.CHUNK_RENDERING_DISPATCHING, var1, SectionRenderDispatcher::getFreeBufferCount));
-         this.samplers.add(MetricSampler.create("compileQueueSize", MetricCategory.CHUNK_RENDERING_DISPATCHING, var1, SectionRenderDispatcher::getCompileQueueSize));
+      SectionRenderDispatcher sectionRenderDispatcher = this.levelRenderer.getSectionRenderDispatcher();
+      if (sectionRenderDispatcher != null) {
+         this.samplers.add(MetricSampler.create("freeBufferCount", MetricCategory.CHUNK_RENDERING_DISPATCHING, sectionRenderDispatcher, SectionRenderDispatcher::getFreeBufferCount));
+         this.samplers.add(MetricSampler.create("compileQueueSize", MetricCategory.CHUNK_RENDERING_DISPATCHING, sectionRenderDispatcher, SectionRenderDispatcher::getCompileQueueSize));
       }
 
       this.samplers.add(MetricSampler.create("gpuUtilization", MetricCategory.GPU, Minecraft.getInstance(), Minecraft::getGpuUtilization));
    }
 
-   public Set<MetricSampler> samplers(Supplier<ProfileCollector> var1) {
-      this.samplers.addAll(this.samplerFactory.newSamplersFoundInProfiler(var1));
+   public Set<MetricSampler> samplers(final Supplier<ProfileCollector> singleTickProfiler) {
+      this.samplers.addAll(this.samplerFactory.newSamplersFoundInProfiler(singleTickProfiler));
       return this.samplers;
    }
 }

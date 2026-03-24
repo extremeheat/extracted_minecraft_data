@@ -4,11 +4,14 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.SectionPos;
+import net.minecraft.core.TypedInstance;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentPatch;
@@ -37,7 +40,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-public abstract class BlockEntity implements DebugValueSource {
+public abstract class BlockEntity implements DebugValueSource, TypedInstance<BlockEntityType<?>> {
    private static final Codec<BlockEntityType<?>> TYPE_CODEC;
    private static final Logger LOGGER;
    private final BlockEntityType<?> type;
@@ -47,145 +50,145 @@ public abstract class BlockEntity implements DebugValueSource {
    private BlockState blockState;
    private DataComponentMap components;
 
-   public BlockEntity(BlockEntityType<?> var1, BlockPos var2, BlockState var3) {
+   public BlockEntity(final BlockEntityType<?> type, final BlockPos worldPosition, final BlockState blockState) {
       super();
       this.components = DataComponentMap.EMPTY;
-      this.type = var1;
-      this.worldPosition = var2.immutable();
-      this.validateBlockState(var3);
-      this.blockState = var3;
+      this.type = type;
+      this.worldPosition = worldPosition.immutable();
+      this.validateBlockState(blockState);
+      this.blockState = blockState;
    }
 
-   private void validateBlockState(BlockState var1) {
-      if (!this.isValidBlockState(var1)) {
+   private void validateBlockState(final BlockState blockState) {
+      if (!this.isValidBlockState(blockState)) {
          String var10002 = this.getNameForReporting();
-         throw new IllegalStateException("Invalid block entity " + var10002 + " state at " + String.valueOf(this.worldPosition) + ", got " + String.valueOf(var1));
+         throw new IllegalStateException("Invalid block entity " + var10002 + " state at " + String.valueOf(this.worldPosition) + ", got " + String.valueOf(blockState));
       }
    }
 
-   public boolean isValidBlockState(BlockState var1) {
-      return this.type.isValid(var1);
+   public boolean isValidBlockState(final BlockState blockState) {
+      return this.type.isValid(blockState);
    }
 
-   public static BlockPos getPosFromTag(ChunkPos var0, CompoundTag var1) {
-      int var2 = var1.getIntOr("x", 0);
-      int var3 = var1.getIntOr("y", 0);
-      int var4 = var1.getIntOr("z", 0);
-      int var5 = SectionPos.blockToSectionCoord(var2);
-      int var6 = SectionPos.blockToSectionCoord(var4);
-      if (var5 != var0.x || var6 != var0.z) {
-         LOGGER.warn("Block entity {} found in a wrong chunk, expected position from chunk {}", var1, var0);
-         var2 = var0.getBlockX(SectionPos.sectionRelative(var2));
-         var4 = var0.getBlockZ(SectionPos.sectionRelative(var4));
+   public static BlockPos getPosFromTag(final ChunkPos base, final CompoundTag entityTag) {
+      int x = entityTag.getIntOr("x", 0);
+      int y = entityTag.getIntOr("y", 0);
+      int z = entityTag.getIntOr("z", 0);
+      int sectionX = SectionPos.blockToSectionCoord(x);
+      int sectionZ = SectionPos.blockToSectionCoord(z);
+      if (sectionX != base.x() || sectionZ != base.z()) {
+         LOGGER.warn("Block entity {} found in a wrong chunk, expected position from chunk {}", entityTag, base);
+         x = base.getBlockX(SectionPos.sectionRelative(x));
+         z = base.getBlockZ(SectionPos.sectionRelative(z));
       }
 
-      return new BlockPos(var2, var3, var4);
+      return new BlockPos(x, y, z);
    }
 
    public @Nullable Level getLevel() {
       return this.level;
    }
 
-   public void setLevel(Level var1) {
-      this.level = var1;
+   public void setLevel(final Level level) {
+      this.level = level;
    }
 
    public boolean hasLevel() {
       return this.level != null;
    }
 
-   protected void loadAdditional(ValueInput var1) {
+   protected void loadAdditional(final ValueInput input) {
    }
 
-   public final void loadWithComponents(ValueInput var1) {
-      this.loadAdditional(var1);
-      this.components = (DataComponentMap)var1.read("components", DataComponentMap.CODEC).orElse(DataComponentMap.EMPTY);
+   public final void loadWithComponents(final ValueInput input) {
+      this.loadAdditional(input);
+      this.components = (DataComponentMap)input.read("components", DataComponentMap.CODEC).orElse(DataComponentMap.EMPTY);
    }
 
-   public final void loadCustomOnly(ValueInput var1) {
-      this.loadAdditional(var1);
+   public final void loadCustomOnly(final ValueInput input) {
+      this.loadAdditional(input);
    }
 
-   protected void saveAdditional(ValueOutput var1) {
+   protected void saveAdditional(final ValueOutput output) {
    }
 
-   public final CompoundTag saveWithFullMetadata(HolderLookup.Provider var1) {
-      try (ProblemReporter.ScopedCollector var2 = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
-         TagValueOutput var3 = TagValueOutput.createWithContext(var2, var1);
-         this.saveWithFullMetadata((ValueOutput)var3);
-         return var3.buildResult();
+   public final CompoundTag saveWithFullMetadata(final HolderLookup.Provider registries) {
+      try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
+         TagValueOutput output = TagValueOutput.createWithContext(reporter, registries);
+         this.saveWithFullMetadata((ValueOutput)output);
+         return output.buildResult();
       }
    }
 
-   public void saveWithFullMetadata(ValueOutput var1) {
-      this.saveWithoutMetadata(var1);
-      this.saveMetadata(var1);
+   public void saveWithFullMetadata(final ValueOutput output) {
+      this.saveWithoutMetadata(output);
+      this.saveMetadata(output);
    }
 
-   public void saveWithId(ValueOutput var1) {
-      this.saveWithoutMetadata(var1);
-      this.saveId(var1);
+   public void saveWithId(final ValueOutput output) {
+      this.saveWithoutMetadata(output);
+      this.saveId(output);
    }
 
-   public final CompoundTag saveWithoutMetadata(HolderLookup.Provider var1) {
-      try (ProblemReporter.ScopedCollector var2 = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
-         TagValueOutput var3 = TagValueOutput.createWithContext(var2, var1);
-         this.saveWithoutMetadata((ValueOutput)var3);
-         return var3.buildResult();
+   public final CompoundTag saveWithoutMetadata(final HolderLookup.Provider registries) {
+      try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
+         TagValueOutput output = TagValueOutput.createWithContext(reporter, registries);
+         this.saveWithoutMetadata((ValueOutput)output);
+         return output.buildResult();
       }
    }
 
-   public void saveWithoutMetadata(ValueOutput var1) {
-      this.saveAdditional(var1);
-      var1.store("components", DataComponentMap.CODEC, this.components);
+   public void saveWithoutMetadata(final ValueOutput output) {
+      this.saveAdditional(output);
+      output.store("components", DataComponentMap.CODEC, this.components);
    }
 
-   public final CompoundTag saveCustomOnly(HolderLookup.Provider var1) {
-      try (ProblemReporter.ScopedCollector var2 = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
-         TagValueOutput var3 = TagValueOutput.createWithContext(var2, var1);
-         this.saveCustomOnly((ValueOutput)var3);
-         return var3.buildResult();
+   public final CompoundTag saveCustomOnly(final HolderLookup.Provider registries) {
+      try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
+         TagValueOutput output = TagValueOutput.createWithContext(reporter, registries);
+         this.saveCustomOnly((ValueOutput)output);
+         return output.buildResult();
       }
    }
 
-   public void saveCustomOnly(ValueOutput var1) {
-      this.saveAdditional(var1);
+   public void saveCustomOnly(final ValueOutput output) {
+      this.saveAdditional(output);
    }
 
-   private void saveId(ValueOutput var1) {
-      addEntityType(var1, this.getType());
+   private void saveId(final ValueOutput output) {
+      addEntityType(output, this.getType());
    }
 
-   public static void addEntityType(ValueOutput var0, BlockEntityType<?> var1) {
-      var0.store("id", TYPE_CODEC, var1);
+   public static void addEntityType(final ValueOutput output, final BlockEntityType<?> type) {
+      output.store("id", TYPE_CODEC, type);
    }
 
-   private void saveMetadata(ValueOutput var1) {
-      this.saveId(var1);
-      var1.putInt("x", this.worldPosition.getX());
-      var1.putInt("y", this.worldPosition.getY());
-      var1.putInt("z", this.worldPosition.getZ());
+   private void saveMetadata(final ValueOutput output) {
+      this.saveId(output);
+      output.putInt("x", this.worldPosition.getX());
+      output.putInt("y", this.worldPosition.getY());
+      output.putInt("z", this.worldPosition.getZ());
    }
 
-   public static @Nullable BlockEntity loadStatic(BlockPos var0, BlockState var1, CompoundTag var2, HolderLookup.Provider var3) {
-      BlockEntityType var4 = (BlockEntityType)var2.read("id", TYPE_CODEC).orElse((Object)null);
-      if (var4 == null) {
-         LOGGER.error("Skipping block entity with invalid type: {}", var2.get("id"));
+   public static @Nullable BlockEntity loadStatic(final BlockPos pos, final BlockState state, final CompoundTag tag, final HolderLookup.Provider registries) {
+      BlockEntityType<?> type = (BlockEntityType)tag.read("id", TYPE_CODEC).orElse((Object)null);
+      if (type == null) {
+         LOGGER.error("Skipping block entity with invalid type: {}", tag.get("id"));
          return null;
       } else {
-         BlockEntity var5;
+         BlockEntity entity;
          try {
-            var5 = var4.create(var0, var1);
-         } catch (Throwable var12) {
-            LOGGER.error("Failed to create block entity {} for block {} at position {} ", new Object[]{var4, var0, var1, var12});
+            entity = type.create(pos, state);
+         } catch (Throwable t) {
+            LOGGER.error("Failed to create block entity {} for block {} at position {} ", new Object[]{type, pos, state, t});
             return null;
          }
 
-         try (ProblemReporter.ScopedCollector var6 = new ProblemReporter.ScopedCollector(var5.problemPath(), LOGGER)) {
-            var5.loadWithComponents(TagValueInput.create(var6, var3, var2));
-            return var5;
-         } catch (Throwable var11) {
-            LOGGER.error("Failed to load data for block entity {} for block {} at position {}", new Object[]{var4, var0, var1, var11});
+         try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(entity.problemPath(), LOGGER)) {
+            entity.loadWithComponents(TagValueInput.create(reporter, registries, tag));
+            return entity;
+         } catch (Throwable t) {
+            LOGGER.error("Failed to load data for block entity {} for block {} at position {}", new Object[]{type, pos, state, t});
             return null;
          }
       }
@@ -198,10 +201,10 @@ public abstract class BlockEntity implements DebugValueSource {
 
    }
 
-   protected static void setChanged(Level var0, BlockPos var1, BlockState var2) {
-      var0.blockEntityChanged(var1);
-      if (!var2.isAir()) {
-         var0.updateNeighbourForOutputSignal(var1, var2.getBlock());
+   protected static void setChanged(final Level level, final BlockPos worldPosition, final BlockState blockState) {
+      level.blockEntityChanged(worldPosition);
+      if (!blockState.isAir()) {
+         level.updateNeighbourForOutputSignal(worldPosition, blockState.getBlock());
       }
 
    }
@@ -218,7 +221,7 @@ public abstract class BlockEntity implements DebugValueSource {
       return null;
    }
 
-   public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
+   public CompoundTag getUpdateTag(final HolderLookup.Provider registries) {
       return new CompoundTag();
    }
 
@@ -234,37 +237,37 @@ public abstract class BlockEntity implements DebugValueSource {
       this.remove = false;
    }
 
-   public void preRemoveSideEffects(BlockPos var1, BlockState var2) {
-      if (this instanceof Container var3) {
+   public void preRemoveSideEffects(final BlockPos pos, final BlockState state) {
+      if (this instanceof Container container) {
          if (this.level != null) {
-            Containers.dropContents(this.level, var1, var3);
+            Containers.dropContents(this.level, pos, container);
          }
       }
 
    }
 
-   public boolean triggerEvent(int var1, int var2) {
+   public boolean triggerEvent(final int b0, final int b1) {
       return false;
    }
 
-   public void fillCrashReportCategory(CrashReportCategory var1) {
-      var1.setDetail("Name", this::getNameForReporting);
+   public void fillCrashReportCategory(final CrashReportCategory category) {
+      category.setDetail("Name", this::getNameForReporting);
       BlockState var10002 = this.getBlockState();
       Objects.requireNonNull(var10002);
-      var1.setDetail("Cached block", var10002::toString);
+      category.setDetail("Cached block", var10002::toString);
       if (this.level == null) {
-         var1.setDetail("Block location", (CrashReportDetail)(() -> String.valueOf(this.worldPosition) + " (world missing)"));
+         category.setDetail("Block location", (CrashReportDetail)(() -> String.valueOf(this.worldPosition) + " (world missing)"));
       } else {
          var10002 = this.level.getBlockState(this.worldPosition);
          Objects.requireNonNull(var10002);
-         var1.setDetail("Actual block", var10002::toString);
-         CrashReportCategory.populateBlockLocationDetails(var1, this.level, this.worldPosition);
+         category.setDetail("Actual block", var10002::toString);
+         CrashReportCategory.populateBlockLocationDetails(category, this.level, this.worldPosition);
       }
 
    }
 
    public String getNameForReporting() {
-      String var10000 = String.valueOf(BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(this.getType()));
+      String var10000 = this.typeHolder().getRegisteredName();
       return var10000 + " // " + this.getClass().getCanonicalName();
    }
 
@@ -272,73 +275,81 @@ public abstract class BlockEntity implements DebugValueSource {
       return this.type;
    }
 
+   public Holder<BlockEntityType<?>> typeHolder() {
+      return this.type.builtInRegistryHolder();
+   }
+
    /** @deprecated */
    @Deprecated
-   public void setBlockState(BlockState var1) {
-      this.validateBlockState(var1);
-      this.blockState = var1;
+   public void setBlockState(final BlockState blockState) {
+      this.validateBlockState(blockState);
+      this.blockState = blockState;
    }
 
-   protected void applyImplicitComponents(DataComponentGetter var1) {
+   protected void applyImplicitComponents(final DataComponentGetter components) {
    }
 
-   public final void applyComponentsFromItemStack(ItemStack var1) {
-      this.applyComponents(var1.getPrototype(), var1.getComponentsPatch());
+   public final void applyComponentsFromItemStack(final ItemStack stack) {
+      this.applyComponents(stack.getPrototype(), stack.getComponentsPatch());
    }
 
-   public final void applyComponents(DataComponentMap var1, DataComponentPatch var2) {
-      final HashSet var3 = new HashSet();
-      var3.add(DataComponents.BLOCK_ENTITY_DATA);
-      var3.add(DataComponents.BLOCK_STATE);
-      final PatchedDataComponentMap var4 = PatchedDataComponentMap.fromPatch(var1, var2);
+   public final void applyComponents(final DataComponentMap prototype, final DataComponentPatch patch) {
+      final Set<DataComponentType<?>> implicitComponents = new HashSet();
+      implicitComponents.add(DataComponents.BLOCK_ENTITY_DATA);
+      implicitComponents.add(DataComponents.BLOCK_STATE);
+      final DataComponentMap fullView = PatchedDataComponentMap.fromPatch(prototype, patch);
       this.applyImplicitComponents(new DataComponentGetter() {
-         public <T> @Nullable T get(DataComponentType<? extends T> var1) {
-            var3.add(var1);
-            return (T)var4.get(var1);
+         {
+            Objects.requireNonNull(BlockEntity.this);
          }
 
-         public <T> T getOrDefault(DataComponentType<? extends T> var1, T var2) {
-            var3.add(var1);
-            return (T)var4.getOrDefault(var1, var2);
+         public <T> @Nullable T get(final DataComponentType<? extends T> type) {
+            implicitComponents.add(type);
+            return (T)fullView.get(type);
+         }
+
+         public <T> T getOrDefault(final DataComponentType<? extends T> type, final T defaultValue) {
+            implicitComponents.add(type);
+            return (T)fullView.getOrDefault(type, defaultValue);
          }
       });
-      Objects.requireNonNull(var3);
-      DataComponentPatch var5 = var2.forget(var3::contains);
-      this.components = var5.split().added();
+      Objects.requireNonNull(implicitComponents);
+      DataComponentPatch newPatch = patch.forget(implicitComponents::contains);
+      this.components = newPatch.split().added();
    }
 
-   protected void collectImplicitComponents(DataComponentMap.Builder var1) {
+   protected void collectImplicitComponents(final DataComponentMap.Builder components) {
    }
 
    /** @deprecated */
    @Deprecated
-   public void removeComponentsFromTag(ValueOutput var1) {
+   public void removeComponentsFromTag(final ValueOutput output) {
    }
 
    public final DataComponentMap collectComponents() {
-      DataComponentMap.Builder var1 = DataComponentMap.builder();
-      var1.addAll(this.components);
-      this.collectImplicitComponents(var1);
-      return var1.build();
+      DataComponentMap.Builder result = DataComponentMap.builder();
+      result.addAll(this.components);
+      this.collectImplicitComponents(result);
+      return result.build();
    }
 
    public DataComponentMap components() {
       return this.components;
    }
 
-   public void setComponents(DataComponentMap var1) {
-      this.components = var1;
+   public void setComponents(final DataComponentMap components) {
+      this.components = components;
    }
 
-   public static @Nullable Component parseCustomNameSafe(ValueInput var0, String var1) {
-      return (Component)var0.read(var1, ComponentSerialization.CODEC).orElse((Object)null);
+   public static @Nullable Component parseCustomNameSafe(final ValueInput input, final String name) {
+      return (Component)input.read(name, ComponentSerialization.CODEC).orElse((Object)null);
    }
 
    public ProblemReporter.PathElement problemPath() {
       return new BlockEntityPathElement(this);
    }
 
-   public void registerDebugValues(ServerLevel var1, DebugValueSource.Registration var2) {
+   public void registerDebugValues(final ServerLevel level, final DebugValueSource.Registration registration) {
    }
 
    static {
@@ -346,10 +357,9 @@ public abstract class BlockEntity implements DebugValueSource {
       LOGGER = LogUtils.getLogger();
    }
 
-   static record BlockEntityPathElement(BlockEntity blockEntity) implements ProblemReporter.PathElement {
-      BlockEntityPathElement(BlockEntity var1) {
+   private static record BlockEntityPathElement(BlockEntity blockEntity) implements ProblemReporter.PathElement {
+      private BlockEntityPathElement {
          super();
-         this.blockEntity = var1;
       }
 
       public String get() {

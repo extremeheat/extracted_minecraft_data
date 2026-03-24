@@ -8,7 +8,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import net.minecraft.resources.Identifier;
@@ -24,60 +23,55 @@ public class SoundEventRegistrationSerializer implements JsonDeserializer<SoundE
       super();
    }
 
-   public SoundEventRegistration deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
-      JsonObject var4 = GsonHelper.convertToJsonObject(var1, "entry");
-      boolean var5 = GsonHelper.getAsBoolean(var4, "replace", false);
-      String var6 = GsonHelper.getAsString(var4, "subtitle", (String)null);
-      List var7 = this.getSounds(var4);
-      return new SoundEventRegistration(var7, var5, var6);
+   public SoundEventRegistration deserialize(final JsonElement json, final Type typeOfT, final JsonDeserializationContext context) throws JsonParseException {
+      JsonObject object = GsonHelper.convertToJsonObject(json, "entry");
+      boolean replace = GsonHelper.getAsBoolean(object, "replace", false);
+      String subtitle = GsonHelper.getAsString(object, "subtitle", (String)null);
+      List<Sound> sounds = this.getSounds(object);
+      return new SoundEventRegistration(sounds, replace, subtitle);
    }
 
-   private List<Sound> getSounds(JsonObject var1) {
-      ArrayList var2 = Lists.newArrayList();
-      if (var1.has("sounds")) {
-         JsonArray var3 = GsonHelper.getAsJsonArray(var1, "sounds");
+   private List<Sound> getSounds(final JsonObject object) {
+      List<Sound> result = Lists.newArrayList();
+      if (object.has("sounds")) {
+         JsonArray array = GsonHelper.getAsJsonArray(object, "sounds");
 
-         for(int var4 = 0; var4 < var3.size(); ++var4) {
-            JsonElement var5 = var3.get(var4);
-            if (GsonHelper.isStringValue(var5)) {
-               Identifier var6 = Identifier.parse(GsonHelper.convertToString(var5, "sound"));
-               var2.add(new Sound(var6, DEFAULT_FLOAT, DEFAULT_FLOAT, 1, Sound.Type.FILE, false, false, 16));
+         for(int i = 0; i < array.size(); ++i) {
+            JsonElement element = array.get(i);
+            if (GsonHelper.isStringValue(element)) {
+               Identifier name = Identifier.parse(GsonHelper.convertToString(element, "sound"));
+               result.add(new Sound(name, DEFAULT_FLOAT, DEFAULT_FLOAT, 1, Sound.Type.FILE, false, false, 16));
             } else {
-               var2.add(this.getSound(GsonHelper.convertToJsonObject(var5, "sound")));
+               result.add(this.getSound(GsonHelper.convertToJsonObject(element, "sound")));
             }
          }
       }
 
-      return var2;
+      return result;
    }
 
-   private Sound getSound(JsonObject var1) {
-      Identifier var2 = Identifier.parse(GsonHelper.getAsString(var1, "name"));
-      Sound.Type var3 = this.getType(var1, Sound.Type.FILE);
-      float var4 = GsonHelper.getAsFloat(var1, "volume", 1.0F);
-      Validate.isTrue(var4 > 0.0F, "Invalid volume", new Object[0]);
-      float var5 = GsonHelper.getAsFloat(var1, "pitch", 1.0F);
-      Validate.isTrue(var5 > 0.0F, "Invalid pitch", new Object[0]);
-      int var6 = GsonHelper.getAsInt(var1, "weight", 1);
-      Validate.isTrue(var6 > 0, "Invalid weight", new Object[0]);
-      boolean var7 = GsonHelper.getAsBoolean(var1, "preload", false);
-      boolean var8 = GsonHelper.getAsBoolean(var1, "stream", false);
-      int var9 = GsonHelper.getAsInt(var1, "attenuation_distance", 16);
-      return new Sound(var2, ConstantFloat.of(var4), ConstantFloat.of(var5), var6, var3, var8, var7, var9);
+   private Sound getSound(final JsonObject object) {
+      Identifier name = Identifier.parse(GsonHelper.getAsString(object, "name"));
+      Sound.Type type = this.getType(object, Sound.Type.FILE);
+      float volume = GsonHelper.getAsFloat(object, "volume", 1.0F);
+      Validate.isTrue(volume > 0.0F, "Invalid volume", new Object[0]);
+      float pitch = GsonHelper.getAsFloat(object, "pitch", 1.0F);
+      Validate.isTrue(pitch > 0.0F, "Invalid pitch", new Object[0]);
+      int weight = GsonHelper.getAsInt(object, "weight", 1);
+      Validate.isTrue(weight > 0, "Invalid weight", new Object[0]);
+      boolean preload = GsonHelper.getAsBoolean(object, "preload", false);
+      boolean stream = GsonHelper.getAsBoolean(object, "stream", false);
+      int attenuationDistance = GsonHelper.getAsInt(object, "attenuation_distance", 16);
+      return new Sound(name, ConstantFloat.of(volume), ConstantFloat.of(pitch), weight, type, stream, preload, attenuationDistance);
    }
 
-   private Sound.Type getType(JsonObject var1, Sound.Type var2) {
-      Sound.Type var3 = var2;
-      if (var1.has("type")) {
-         var3 = Sound.Type.getByName(GsonHelper.getAsString(var1, "type"));
-         Objects.requireNonNull(var3, "Invalid type");
+   private Sound.Type getType(final JsonObject sound, final Sound.Type fallback) {
+      Sound.Type type = fallback;
+      if (sound.has("type")) {
+         type = Sound.Type.getByName(GsonHelper.getAsString(sound, "type"));
+         Objects.requireNonNull(type, "Invalid type");
       }
 
-      return var3;
-   }
-
-   // $FF: synthetic method
-   public Object deserialize(final JsonElement var1, final Type var2, final JsonDeserializationContext var3) throws JsonParseException {
-      return this.deserialize(var1, var2, var3);
+      return type;
    }
 }

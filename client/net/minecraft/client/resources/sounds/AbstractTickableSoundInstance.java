@@ -7,8 +7,8 @@ import net.minecraft.util.RandomSource;
 public abstract class AbstractTickableSoundInstance extends AbstractSoundInstance implements TickableSoundInstance {
    private boolean stopped;
 
-   protected AbstractTickableSoundInstance(SoundEvent var1, SoundSource var2, RandomSource var3) {
-      super(var1, var2, var3);
+   protected AbstractTickableSoundInstance(final SoundEvent event, final SoundSource source, final RandomSource random) {
+      super(event, source, random);
    }
 
    public boolean isStopped() {

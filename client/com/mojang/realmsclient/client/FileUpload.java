@@ -39,17 +39,17 @@ public class FileUpload implements AutoCloseable {
    private final UploadStatus uploadStatus;
    private final HttpClient client;
 
-   public FileUpload(File var1, long var2, int var4, UploadInfo var5, User var6, String var7, String var8, UploadStatus var9) {
+   public FileUpload(final File file, final long realmId, final int slotId, final UploadInfo uploadInfo, final User user, final String clientVersion, final String worldVersion, final UploadStatus uploadStatus) {
       super();
-      this.file = var1;
-      this.realmId = var2;
-      this.slotId = var4;
-      this.uploadInfo = var5;
-      this.sessionId = var6.getSessionId();
-      this.username = var6.getName();
-      this.clientVersion = var7;
-      this.worldVersion = var8;
-      this.uploadStatus = var9;
+      this.file = file;
+      this.realmId = realmId;
+      this.slotId = slotId;
+      this.uploadInfo = uploadInfo;
+      this.sessionId = user.getSessionId();
+      this.username = user.getName();
+      this.clientVersion = clientVersion;
+      this.worldVersion = worldVersion;
+      this.uploadStatus = uploadStatus;
       this.client = HttpClient.newBuilder().executor(Util.nonCriticalIoPool()).connectTimeout(Duration.ofSeconds(15L)).build();
    }
 
@@ -58,40 +58,40 @@ public class FileUpload implements AutoCloseable {
    }
 
    public CompletableFuture<UploadResult> startUpload() {
-      long var1 = this.file.length();
-      this.uploadStatus.setTotalBytes(var1);
-      return this.requestUpload(0, var1);
+      long fileSize = this.file.length();
+      this.uploadStatus.setTotalBytes(fileSize);
+      return this.requestUpload(0, fileSize);
    }
 
-   private CompletableFuture<UploadResult> requestUpload(int var1, long var2) {
-      HttpRequest.BodyPublisher var4 = inputStreamPublisherWithSize(() -> {
+   private CompletableFuture<UploadResult> requestUpload(final int currentAttempt, final long fileSize) {
+      HttpRequest.BodyPublisher publisher = inputStreamPublisherWithSize(() -> {
          try {
             return new UploadCountingInputStream(new FileInputStream(this.file), this.uploadStatus);
-         } catch (IOException var2) {
-            LOGGER.warn("Failed to open file {}", this.file, var2);
+         } catch (IOException e) {
+            LOGGER.warn("Failed to open file {}", this.file, e);
             return null;
          }
-      }, var2);
-      HttpRequest var5 = HttpRequest.newBuilder(this.uploadInfo.uploadEndpoint().resolve("/upload/" + this.realmId + "/" + this.slotId)).timeout(Duration.ofMinutes(10L)).setHeader("Cookie", this.uploadCookie()).setHeader("Content-Type", "application/octet-stream").POST(var4).build();
-      return this.client.sendAsync(var5, BodyHandlers.ofString(StandardCharsets.UTF_8)).thenCompose((var4x) -> {
-         long var5 = this.getRetryDelaySeconds(var4x);
-         if (this.shouldRetry(var5, var1)) {
+      }, fileSize);
+      HttpRequest request = HttpRequest.newBuilder(this.uploadInfo.uploadEndpoint().resolve("/upload/" + this.realmId + "/" + this.slotId)).timeout(Duration.ofMinutes(10L)).setHeader("Cookie", this.uploadCookie()).setHeader("Content-Type", "application/octet-stream").POST(publisher).build();
+      return this.client.sendAsync(request, BodyHandlers.ofString(StandardCharsets.UTF_8)).thenCompose((response) -> {
+         long retryDelaySeconds = this.getRetryDelaySeconds(response);
+         if (this.shouldRetry(retryDelaySeconds, currentAttempt)) {
             this.uploadStatus.restart();
 
             try {
-               Thread.sleep(Duration.ofSeconds(var5));
+               Thread.sleep(Duration.ofSeconds(retryDelaySeconds));
             } catch (InterruptedException var8) {
             }
 
-            return this.requestUpload(var1 + 1, var2);
+            return this.requestUpload(currentAttempt + 1, fileSize);
          } else {
-            return CompletableFuture.completedFuture(this.handleResponse(var4x));
+            return CompletableFuture.completedFuture(this.handleResponse(response));
          }
       });
    }
 
-   private static HttpRequest.BodyPublisher inputStreamPublisherWithSize(Supplier<@Nullable InputStream> var0, long var1) {
-      return BodyPublishers.fromPublisher(BodyPublishers.ofInputStream(var0), var1);
+   private static HttpRequest.BodyPublisher inputStreamPublisherWithSize(final Supplier<@Nullable InputStream> inputStreamSupplier, final long fileSize) {
+      return BodyPublishers.fromPublisher(BodyPublishers.ofInputStream(inputStreamSupplier), fileSize);
    }
 
    private String uploadCookie() {
@@ -99,46 +99,46 @@ public class FileUpload implements AutoCloseable {
       return "sid=" + var10000 + ";token=" + this.uploadInfo.token() + ";user=" + this.username + ";version=" + this.clientVersion + ";worldVersion=" + this.worldVersion;
    }
 
-   private UploadResult handleResponse(HttpResponse<String> var1) {
-      int var2 = var1.statusCode();
-      if (var2 == 401) {
-         LOGGER.debug("Realms server returned 401: {}", var1.headers().firstValue("WWW-Authenticate"));
+   private UploadResult handleResponse(final HttpResponse<String> response) {
+      int statusCode = response.statusCode();
+      if (statusCode == 401) {
+         LOGGER.debug("Realms server returned 401: {}", response.headers().firstValue("WWW-Authenticate"));
       }
 
-      String var3 = null;
-      String var4 = (String)var1.body();
-      if (var4 != null && !var4.isBlank()) {
+      String errorMessage = null;
+      String body = (String)response.body();
+      if (body != null && !body.isBlank()) {
          try {
-            JsonElement var5 = LenientJsonParser.parse(var4).getAsJsonObject().get("errorMsg");
-            if (var5 != null) {
-               var3 = var5.getAsString();
+            JsonElement errorMsgElement = LenientJsonParser.parse(body).getAsJsonObject().get("errorMsg");
+            if (errorMsgElement != null) {
+               errorMessage = errorMsgElement.getAsString();
             }
-         } catch (Exception var6) {
-            LOGGER.warn("Failed to parse response {}", var4, var6);
+         } catch (Exception e) {
+            LOGGER.warn("Failed to parse response {}", body, e);
          }
       }
 
-      return new UploadResult(var2, var3);
+      return new UploadResult(statusCode, errorMessage);
    }
 
-   private boolean shouldRetry(long var1, int var3) {
-      return var1 > 0L && var3 + 1 < 5;
+   private boolean shouldRetry(final long retryDelaySeconds, final int currentAttempt) {
+      return retryDelaySeconds > 0L && currentAttempt + 1 < 5;
    }
 
-   private long getRetryDelaySeconds(HttpResponse<?> var1) {
-      return var1.headers().firstValueAsLong("Retry-After").orElse(0L);
+   private long getRetryDelaySeconds(final HttpResponse<?> response) {
+      return response.headers().firstValueAsLong("Retry-After").orElse(0L);
    }
 
-   static class UploadCountingInputStream extends CountingInputStream {
+   private static class UploadCountingInputStream extends CountingInputStream {
       private final UploadStatus uploadStatus;
 
-      UploadCountingInputStream(InputStream var1, UploadStatus var2) {
-         super(var1);
-         this.uploadStatus = var2;
+      private UploadCountingInputStream(final InputStream proxy, final UploadStatus uploadStatus) {
+         super(proxy);
+         this.uploadStatus = uploadStatus;
       }
 
-      protected void afterRead(int var1) throws IOException {
-         super.afterRead(var1);
+      protected void afterRead(final int n) throws IOException {
+         super.afterRead(n);
          this.uploadStatus.onWrite(this.getByteCount());
       }
    }

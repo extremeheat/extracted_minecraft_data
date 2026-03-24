@@ -9,18 +9,18 @@ public class SmoothDouble {
       super();
    }
 
-   public double getNewDeltaValue(double var1, double var3) {
-      this.targetValue += var1;
-      double var5 = this.targetValue - this.remainingValue;
-      double var7 = Mth.lerp(0.5, this.lastAmount, var5);
-      double var9 = Math.signum(var5);
-      if (var9 * var5 > var9 * this.lastAmount) {
-         var5 = var7;
+   public double getNewDeltaValue(final double targetDelta, final double time) {
+      this.targetValue += targetDelta;
+      double delta = this.targetValue - this.remainingValue;
+      double newLastAmount = Mth.lerp(0.5, this.lastAmount, delta);
+      double deltaSign = Math.signum(delta);
+      if (deltaSign * delta > deltaSign * this.lastAmount) {
+         delta = newLastAmount;
       }
 
-      this.lastAmount = var7;
-      this.remainingValue += var5 * var3;
-      return var5 * var3;
+      this.lastAmount = newLastAmount;
+      this.remainingValue += delta * time;
+      return delta * time;
    }
 
    public void reset() {

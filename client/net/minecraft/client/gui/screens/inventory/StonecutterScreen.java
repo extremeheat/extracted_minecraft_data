@@ -2,7 +2,7 @@ package net.minecraft.client.gui.screens.inventory;
 
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -14,6 +14,7 @@ import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.StonecutterMenu;
 import net.minecraft.world.item.crafting.SelectableRecipe;
+import net.minecraft.world.item.crafting.StonecutterRecipe;
 import net.minecraft.world.item.crafting.display.SlotDisplay;
 import net.minecraft.world.item.crafting.display.SlotDisplayContext;
 
@@ -38,152 +39,152 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
    private int startIndex;
    private boolean displayRecipes;
 
-   public StonecutterScreen(StonecutterMenu var1, Inventory var2, Component var3) {
-      super(var1, var2, var3);
-      var1.registerUpdateListener(this::containerChanged);
+   public StonecutterScreen(final StonecutterMenu menu, final Inventory inventory, final Component title) {
+      super(menu, inventory, title);
+      menu.registerUpdateListener(this::containerChanged);
       --this.titleLabelY;
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      this.renderTooltip(var1, var2, var3);
-   }
-
-   protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
-      int var5 = this.leftPos;
-      int var6 = this.topPos;
-      var1.blit(RenderPipelines.GUI_TEXTURED, BG_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
-      int var7 = (int)(41.0F * this.scrollOffs);
-      Identifier var8 = this.isScrollBarActive() ? SCROLLER_SPRITE : SCROLLER_DISABLED_SPRITE;
-      int var9 = var5 + 119;
-      int var10 = var6 + 15 + var7;
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var8, var9, var10, 12, 15);
-      if (var3 >= var9 && var3 < var9 + 12 && var4 >= var10 && var4 < var10 + 15) {
-         var1.requestCursor(this.scrolling ? CursorTypes.RESIZE_NS : CursorTypes.POINTING_HAND);
+   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractBackground(graphics, mouseX, mouseY, a);
+      int xo = this.leftPos;
+      int yo = this.topPos;
+      graphics.blit(RenderPipelines.GUI_TEXTURED, BG_LOCATION, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+      int sy = (int)(41.0F * this.scrollOffs);
+      Identifier sprite = this.isScrollBarActive() ? SCROLLER_SPRITE : SCROLLER_DISABLED_SPRITE;
+      int scrollerXStart = xo + 119;
+      int scrollerYStart = yo + 15;
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)sprite, scrollerXStart, scrollerYStart + sy, 12, 15);
+      if (mouseX >= scrollerXStart && mouseY >= scrollerYStart && mouseX < scrollerXStart + 12 && mouseY < scrollerYStart + 54) {
+         if (this.isScrollBarActive()) {
+            graphics.requestCursor(this.scrolling ? CursorTypes.RESIZE_NS : CursorTypes.POINTING_HAND);
+         } else {
+            graphics.requestCursor(CursorTypes.NOT_ALLOWED);
+         }
       }
 
-      int var11 = this.leftPos + 52;
-      int var12 = this.topPos + 14;
-      int var13 = this.startIndex + 12;
-      this.renderButtons(var1, var3, var4, var11, var12, var13);
-      this.renderRecipes(var1, var11, var12, var13);
+      int x = this.leftPos + 52;
+      int y = this.topPos + 14;
+      int endIndex = this.startIndex + 12;
+      this.extractButtons(graphics, mouseX, mouseY, x, y, endIndex);
+      this.extractRecipes(graphics, x, y, endIndex);
    }
 
-   protected void renderTooltip(GuiGraphics var1, int var2, int var3) {
-      super.renderTooltip(var1, var2, var3);
+   protected void extractTooltip(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY) {
+      super.extractTooltip(graphics, mouseX, mouseY);
       if (this.displayRecipes) {
-         int var4 = this.leftPos + 52;
-         int var5 = this.topPos + 14;
-         int var6 = this.startIndex + 12;
-         SelectableRecipe.SingleInputSet var7 = (this.menu).getVisibleRecipes();
+         int edgeLeft = this.leftPos + 52;
+         int edgeTop = this.topPos + 14;
+         int endIndex = this.startIndex + 12;
+         SelectableRecipe.SingleInputSet<StonecutterRecipe> visibleRecipes = ((StonecutterMenu)this.menu).getVisibleRecipes();
 
-         for(int var8 = this.startIndex; var8 < var6 && var8 < var7.size(); ++var8) {
-            int var9 = var8 - this.startIndex;
-            int var10 = var4 + var9 % 4 * 16;
-            int var11 = var5 + var9 / 4 * 18 + 2;
-            if (var2 >= var10 && var2 < var10 + 16 && var3 >= var11 && var3 < var11 + 18) {
-               ContextMap var12 = SlotDisplayContext.fromLevel(this.minecraft.level);
-               SlotDisplay var13 = ((SelectableRecipe.SingleInputEntry)var7.entries().get(var8)).recipe().optionDisplay();
-               var1.setTooltipForNextFrame(this.font, var13.resolveForFirstStack(var12), var2, var3);
+         for(int index = this.startIndex; index < endIndex && index < visibleRecipes.size(); ++index) {
+            int posIndex = index - this.startIndex;
+            int itemLeft = edgeLeft + posIndex % 4 * 16;
+            int itemRight = edgeTop + posIndex / 4 * 18 + 2;
+            if (mouseX >= itemLeft && mouseX < itemLeft + 16 && mouseY >= itemRight && mouseY < itemRight + 18) {
+               ContextMap context = SlotDisplayContext.fromLevel(this.minecraft.level);
+               SlotDisplay buttonIcon = ((SelectableRecipe.SingleInputEntry)visibleRecipes.entries().get(index)).recipe().optionDisplay();
+               graphics.setTooltipForNextFrame(this.font, buttonIcon.resolveForFirstStack(context), mouseX, mouseY);
             }
          }
       }
 
    }
 
-   private void renderButtons(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6) {
-      for(int var7 = this.startIndex; var7 < var6 && var7 < ((StonecutterMenu)this.menu).getNumberOfVisibleRecipes(); ++var7) {
-         int var8 = var7 - this.startIndex;
-         int var9 = var4 + var8 % 4 * 16;
-         int var10 = var8 / 4;
-         int var11 = var5 + var10 * 18 + 2;
-         Identifier var12;
-         if (var7 == ((StonecutterMenu)this.menu).getSelectedRecipeIndex()) {
-            var12 = RECIPE_SELECTED_SPRITE;
-         } else if (var2 >= var9 && var3 >= var11 && var2 < var9 + 16 && var3 < var11 + 18) {
-            var12 = RECIPE_HIGHLIGHTED_SPRITE;
+   private void extractButtons(final GuiGraphicsExtractor graphics, final int xm, final int ym, final int x, final int y, final int endIndex) {
+      for(int index = this.startIndex; index < endIndex && index < ((StonecutterMenu)this.menu).getNumberOfVisibleRecipes(); ++index) {
+         int posIndex = index - this.startIndex;
+         int posX = x + posIndex % 4 * 16;
+         int row = posIndex / 4;
+         int posY = y + row * 18 + 2;
+         Identifier sprite;
+         if (index == ((StonecutterMenu)this.menu).getSelectedRecipeIndex()) {
+            sprite = RECIPE_SELECTED_SPRITE;
+         } else if (xm >= posX && ym >= posY && xm < posX + 16 && ym < posY + 18) {
+            sprite = RECIPE_HIGHLIGHTED_SPRITE;
          } else {
-            var12 = RECIPE_SPRITE;
+            sprite = RECIPE_SPRITE;
          }
 
-         int var13 = var11 - 1;
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var12, var9, var13, 16, 18);
-         if (var2 >= var9 && var3 >= var13 && var2 < var9 + 16 && var3 < var13 + 18) {
-            var1.requestCursor(CursorTypes.POINTING_HAND);
+         int textureY = posY - 1;
+         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)sprite, posX, textureY, 16, 18);
+         if (xm >= posX && ym >= textureY && xm < posX + 16 && ym < textureY + 18) {
+            graphics.requestCursor(CursorTypes.POINTING_HAND);
          }
       }
 
    }
 
-   private void renderRecipes(GuiGraphics var1, int var2, int var3, int var4) {
-      SelectableRecipe.SingleInputSet var5 = (this.menu).getVisibleRecipes();
-      ContextMap var6 = SlotDisplayContext.fromLevel(this.minecraft.level);
+   private void extractRecipes(final GuiGraphicsExtractor graphics, final int x, final int y, final int endIndex) {
+      SelectableRecipe.SingleInputSet<StonecutterRecipe> visibleRecipes = ((StonecutterMenu)this.menu).getVisibleRecipes();
+      ContextMap context = SlotDisplayContext.fromLevel(this.minecraft.level);
 
-      for(int var7 = this.startIndex; var7 < var4 && var7 < var5.size(); ++var7) {
-         int var8 = var7 - this.startIndex;
-         int var9 = var2 + var8 % 4 * 16;
-         int var10 = var8 / 4;
-         int var11 = var3 + var10 * 18 + 2;
-         SlotDisplay var12 = ((SelectableRecipe.SingleInputEntry)var5.entries().get(var7)).recipe().optionDisplay();
-         var1.renderItem(var12.resolveForFirstStack(var6), var9, var11);
+      for(int index = this.startIndex; index < endIndex && index < visibleRecipes.size(); ++index) {
+         int posIndex = index - this.startIndex;
+         int posX = x + posIndex % 4 * 16;
+         int row = posIndex / 4;
+         int posY = y + row * 18 + 2;
+         SlotDisplay buttonIcon = ((SelectableRecipe.SingleInputEntry)visibleRecipes.entries().get(index)).recipe().optionDisplay();
+         graphics.item(buttonIcon.resolveForFirstStack(context), posX, posY);
       }
 
    }
 
-   public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+   public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
       if (this.displayRecipes) {
-         int var3 = this.leftPos + 52;
-         int var4 = this.topPos + 14;
-         int var5 = this.startIndex + 12;
+         int xo = this.leftPos + 52;
+         int yo = this.topPos + 14;
+         int endIndex = this.startIndex + 12;
 
-         for(int var6 = this.startIndex; var6 < var5; ++var6) {
-            int var7 = var6 - this.startIndex;
-            double var8 = var1.x() - (double)(var3 + var7 % 4 * 16);
-            double var10 = var1.y() - (double)(var4 + var7 / 4 * 18);
-            if (var8 >= 0.0 && var10 >= 0.0 && var8 < 16.0 && var10 < 18.0 && ((StonecutterMenu)this.menu).clickMenuButton(this.minecraft.player, var6)) {
+         for(int index = this.startIndex; index < endIndex; ++index) {
+            int posIndex = index - this.startIndex;
+            double xx = event.x() - (double)(xo + posIndex % 4 * 16);
+            double yy = event.y() - (double)(yo + posIndex / 4 * 18);
+            if (xx >= 0.0 && yy >= 0.0 && xx < 16.0 && yy < 18.0 && ((StonecutterMenu)this.menu).clickMenuButton(this.minecraft.player, index)) {
                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_STONECUTTER_SELECT_RECIPE, 1.0F));
-               this.minecraft.gameMode.handleInventoryButtonClick((this.menu).containerId, var6);
+               this.minecraft.gameMode.handleInventoryButtonClick((this.menu).containerId, index);
                return true;
             }
          }
 
-         var3 = this.leftPos + 119;
-         var4 = this.topPos + 9;
-         if (var1.x() >= (double)var3 && var1.x() < (double)(var3 + 12) && var1.y() >= (double)var4 && var1.y() < (double)(var4 + 54)) {
+         xo = this.leftPos + 119;
+         yo = this.topPos + 9;
+         if (event.x() >= (double)xo && event.x() < (double)(xo + 12) && event.y() >= (double)yo && event.y() < (double)(yo + 54)) {
             this.scrolling = true;
          }
       }
 
-      return super.mouseClicked(var1, var2);
+      return super.mouseClicked(event, doubleClick);
    }
 
-   public boolean mouseDragged(MouseButtonEvent var1, double var2, double var4) {
+   public boolean mouseDragged(final MouseButtonEvent event, final double dx, final double dy) {
       if (this.scrolling && this.isScrollBarActive()) {
-         int var6 = this.topPos + 14;
-         int var7 = var6 + 54;
-         this.scrollOffs = ((float)var1.y() - (float)var6 - 7.5F) / ((float)(var7 - var6) - 15.0F);
+         int yscr = this.topPos + 14;
+         int yscr2 = yscr + 54;
+         this.scrollOffs = ((float)event.y() - (float)yscr - 7.5F) / ((float)(yscr2 - yscr) - 15.0F);
          this.scrollOffs = Mth.clamp(this.scrollOffs, 0.0F, 1.0F);
          this.startIndex = (int)((double)(this.scrollOffs * (float)this.getOffscreenRows()) + 0.5) * 4;
          return true;
       } else {
-         return super.mouseDragged(var1, var2, var4);
+         return super.mouseDragged(event, dx, dy);
       }
    }
 
-   public boolean mouseReleased(MouseButtonEvent var1) {
+   public boolean mouseReleased(final MouseButtonEvent event) {
       this.scrolling = false;
-      return super.mouseReleased(var1);
+      return super.mouseReleased(event);
    }
 
-   public boolean mouseScrolled(double var1, double var3, double var5, double var7) {
-      if (super.mouseScrolled(var1, var3, var5, var7)) {
+   public boolean mouseScrolled(final double x, final double y, final double scrollX, final double scrollY) {
+      if (super.mouseScrolled(x, y, scrollX, scrollY)) {
          return true;
       } else {
          if (this.isScrollBarActive()) {
-            int var9 = this.getOffscreenRows();
-            float var10 = (float)var7 / (float)var9;
-            this.scrollOffs = Mth.clamp(this.scrollOffs - var10, 0.0F, 1.0F);
-            this.startIndex = (int)((double)(this.scrollOffs * (float)var9) + 0.5) * 4;
+            int offscreenRows = this.getOffscreenRows();
+            float scrolledDelta = (float)scrollY / (float)offscreenRows;
+            this.scrollOffs = Mth.clamp(this.scrollOffs - scrolledDelta, 0.0F, 1.0F);
+            this.startIndex = (int)((double)(this.scrollOffs * (float)offscreenRows) + 0.5) * 4;
          }
 
          return true;
@@ -200,10 +201,7 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
 
    private void containerChanged() {
       this.displayRecipes = ((StonecutterMenu)this.menu).hasInputItem();
-      if (!this.displayRecipes) {
-         this.scrollOffs = 0.0F;
-         this.startIndex = 0;
-      }
-
+      this.scrollOffs = 0.0F;
+      this.startIndex = 0;
    }
 }

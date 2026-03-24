@@ -10,94 +10,94 @@ public class ChestMenu extends AbstractContainerMenu {
    private final Container container;
    private final int containerRows;
 
-   private ChestMenu(MenuType<?> var1, int var2, Inventory var3, int var4) {
-      this(var1, var2, var3, new SimpleContainer(9 * var4), var4);
+   private ChestMenu(final MenuType<?> menuType, final int containerId, final Inventory inventory, final int rows) {
+      this(menuType, containerId, inventory, new SimpleContainer(9 * rows), rows);
    }
 
-   public static ChestMenu oneRow(int var0, Inventory var1) {
-      return new ChestMenu(MenuType.GENERIC_9x1, var0, var1, 1);
+   public static ChestMenu oneRow(final int containerId, final Inventory inventory) {
+      return new ChestMenu(MenuType.GENERIC_9x1, containerId, inventory, 1);
    }
 
-   public static ChestMenu twoRows(int var0, Inventory var1) {
-      return new ChestMenu(MenuType.GENERIC_9x2, var0, var1, 2);
+   public static ChestMenu twoRows(final int containerId, final Inventory inventory) {
+      return new ChestMenu(MenuType.GENERIC_9x2, containerId, inventory, 2);
    }
 
-   public static ChestMenu threeRows(int var0, Inventory var1) {
-      return new ChestMenu(MenuType.GENERIC_9x3, var0, var1, 3);
+   public static ChestMenu threeRows(final int containerId, final Inventory inventory) {
+      return new ChestMenu(MenuType.GENERIC_9x3, containerId, inventory, 3);
    }
 
-   public static ChestMenu fourRows(int var0, Inventory var1) {
-      return new ChestMenu(MenuType.GENERIC_9x4, var0, var1, 4);
+   public static ChestMenu fourRows(final int containerId, final Inventory inventory) {
+      return new ChestMenu(MenuType.GENERIC_9x4, containerId, inventory, 4);
    }
 
-   public static ChestMenu fiveRows(int var0, Inventory var1) {
-      return new ChestMenu(MenuType.GENERIC_9x5, var0, var1, 5);
+   public static ChestMenu fiveRows(final int containerId, final Inventory inventory) {
+      return new ChestMenu(MenuType.GENERIC_9x5, containerId, inventory, 5);
    }
 
-   public static ChestMenu sixRows(int var0, Inventory var1) {
-      return new ChestMenu(MenuType.GENERIC_9x6, var0, var1, 6);
+   public static ChestMenu sixRows(final int containerId, final Inventory inventory) {
+      return new ChestMenu(MenuType.GENERIC_9x6, containerId, inventory, 6);
    }
 
-   public static ChestMenu threeRows(int var0, Inventory var1, Container var2) {
-      return new ChestMenu(MenuType.GENERIC_9x3, var0, var1, var2, 3);
+   public static ChestMenu threeRows(final int containerId, final Inventory inventory, final Container container) {
+      return new ChestMenu(MenuType.GENERIC_9x3, containerId, inventory, container, 3);
    }
 
-   public static ChestMenu sixRows(int var0, Inventory var1, Container var2) {
-      return new ChestMenu(MenuType.GENERIC_9x6, var0, var1, var2, 6);
+   public static ChestMenu sixRows(final int containerId, final Inventory inventory, final Container container) {
+      return new ChestMenu(MenuType.GENERIC_9x6, containerId, inventory, container, 6);
    }
 
-   public ChestMenu(MenuType<?> var1, int var2, Inventory var3, Container var4, int var5) {
-      super(var1, var2);
-      checkContainerSize(var4, var5 * 9);
-      this.container = var4;
-      this.containerRows = var5;
-      var4.startOpen(var3.player);
-      boolean var6 = true;
-      this.addChestGrid(var4, 8, 18);
-      int var7 = 18 + this.containerRows * 18 + 13;
-      this.addStandardInventorySlots(var3, 8, var7);
+   public ChestMenu(final MenuType<?> menuType, final int containerId, final Inventory inventory, final Container container, final int rows) {
+      super(menuType, containerId);
+      checkContainerSize(container, rows * 9);
+      this.container = container;
+      this.containerRows = rows;
+      container.startOpen(inventory.player);
+      int chestGridTop = 18;
+      this.addChestGrid(container, 8, 18);
+      int inventoryTop = 18 + this.containerRows * 18 + 13;
+      this.addStandardInventorySlots(inventory, 8, inventoryTop);
    }
 
-   private void addChestGrid(Container var1, int var2, int var3) {
-      for(int var4 = 0; var4 < this.containerRows; ++var4) {
-         for(int var5 = 0; var5 < 9; ++var5) {
-            this.addSlot(new Slot(var1, var5 + var4 * 9, var2 + var5 * 18, var3 + var4 * 18));
+   private void addChestGrid(final Container container, final int left, final int top) {
+      for(int y = 0; y < this.containerRows; ++y) {
+         for(int x = 0; x < 9; ++x) {
+            this.addSlot(new Slot(container, x + y * 9, left + x * 18, top + y * 18));
          }
       }
 
    }
 
-   public boolean stillValid(Player var1) {
-      return this.container.stillValid(var1);
+   public boolean stillValid(final Player player) {
+      return this.container.stillValid(player);
    }
 
-   public ItemStack quickMoveStack(Player var1, int var2) {
-      ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = this.slots.get(var2);
-      if (var4 != null && var4.hasItem()) {
-         ItemStack var5 = var4.getItem();
-         var3 = var5.copy();
-         if (var2 < this.containerRows * 9) {
-            if (!this.moveItemStackTo(var5, this.containerRows * 9, this.slots.size(), true)) {
+   public ItemStack quickMoveStack(final Player player, final int slotIndex) {
+      ItemStack clicked = ItemStack.EMPTY;
+      Slot slot = this.slots.get(slotIndex);
+      if (slot != null && slot.hasItem()) {
+         ItemStack stack = slot.getItem();
+         clicked = stack.copy();
+         if (slotIndex < this.containerRows * 9) {
+            if (!this.moveItemStackTo(stack, this.containerRows * 9, this.slots.size(), true)) {
                return ItemStack.EMPTY;
             }
-         } else if (!this.moveItemStackTo(var5, 0, this.containerRows * 9, false)) {
+         } else if (!this.moveItemStackTo(stack, 0, this.containerRows * 9, false)) {
             return ItemStack.EMPTY;
          }
 
-         if (var5.isEmpty()) {
-            var4.setByPlayer(ItemStack.EMPTY);
+         if (stack.isEmpty()) {
+            slot.setByPlayer(ItemStack.EMPTY);
          } else {
-            var4.setChanged();
+            slot.setChanged();
          }
       }
 
-      return var3;
+      return clicked;
    }
 
-   public void removed(Player var1) {
-      super.removed(var1);
-      this.container.stopOpen(var1);
+   public void removed(final Player player) {
+      super.removed(player);
+      this.container.stopOpen(player);
    }
 
    public Container getContainer() {

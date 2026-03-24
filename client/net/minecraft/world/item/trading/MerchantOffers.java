@@ -19,23 +19,23 @@ public class MerchantOffers extends ArrayList<MerchantOffer> {
       super();
    }
 
-   private MerchantOffers(int var1) {
-      super(var1);
+   private MerchantOffers(final int initialCapacity) {
+      super(initialCapacity);
    }
 
-   private MerchantOffers(Collection<MerchantOffer> var1) {
-      super(var1);
+   private MerchantOffers(final Collection<MerchantOffer> offers) {
+      super(offers);
    }
 
-   public @Nullable MerchantOffer getRecipeFor(ItemStack var1, ItemStack var2, int var3) {
-      if (var3 > 0 && var3 < this.size()) {
-         MerchantOffer var6 = (MerchantOffer)this.get(var3);
-         return var6.satisfiedBy(var1, var2) ? var6 : null;
+   public @Nullable MerchantOffer getRecipeFor(final ItemStack buyA, final ItemStack buyB, final int selectionHint) {
+      if (selectionHint > 0 && selectionHint < this.size()) {
+         MerchantOffer offer = (MerchantOffer)this.get(selectionHint);
+         return offer.satisfiedBy(buyA, buyB) ? offer : null;
       } else {
-         for(int var4 = 0; var4 < this.size(); ++var4) {
-            MerchantOffer var5 = (MerchantOffer)this.get(var4);
-            if (var5.satisfiedBy(var1, var2)) {
-               return var5;
+         for(int i = 0; i < this.size(); ++i) {
+            MerchantOffer offer = (MerchantOffer)this.get(i);
+            if (offer.satisfiedBy(buyA, buyB)) {
+               return offer;
             }
          }
 
@@ -44,13 +44,13 @@ public class MerchantOffers extends ArrayList<MerchantOffer> {
    }
 
    public MerchantOffers copy() {
-      MerchantOffers var1 = new MerchantOffers(this.size());
+      MerchantOffers offers = new MerchantOffers(this.size());
 
-      for(MerchantOffer var3 : this) {
-         var1.add(var3.copy());
+      for(MerchantOffer offer : this) {
+         offers.add(offer.copy());
       }
 
-      return var1;
+      return offers;
    }
 
    static {

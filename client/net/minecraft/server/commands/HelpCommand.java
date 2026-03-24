@@ -7,6 +7,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.ParsedCommandNode;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import com.mojang.brigadier.tree.CommandNode;
 import java.util.Map;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -19,30 +20,30 @@ public class HelpCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("help").executes((var1) -> {
-         Map var2 = var0.getSmartUsage(var0.getRoot(), (CommandSourceStack)var1.getSource());
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("help").executes((s) -> {
+         Map<CommandNode<CommandSourceStack>, String> usage = dispatcher.getSmartUsage(dispatcher.getRoot(), (CommandSourceStack)s.getSource());
 
-         for(String var4 : var2.values()) {
-            ((CommandSourceStack)var1.getSource()).sendSuccess(() -> Component.literal("/" + var4), false);
+         for(String line : usage.values()) {
+            ((CommandSourceStack)s.getSource()).sendSuccess(() -> Component.literal("/" + line), false);
          }
 
-         return var2.size();
-      })).then(Commands.argument("command", StringArgumentType.greedyString()).executes((var1) -> {
-         ParseResults var2 = var0.parse(StringArgumentType.getString(var1, "command"), (CommandSourceStack)var1.getSource());
-         if (var2.getContext().getNodes().isEmpty()) {
+         return usage.size();
+      })).then(Commands.argument("command", StringArgumentType.greedyString()).executes((s) -> {
+         ParseResults<CommandSourceStack> command = dispatcher.parse(StringArgumentType.getString(s, "command"), (CommandSourceStack)s.getSource());
+         if (command.getContext().getNodes().isEmpty()) {
             throw ERROR_FAILED.create();
          } else {
-            Map var3 = var0.getSmartUsage(((ParsedCommandNode)Iterables.getLast(var2.getContext().getNodes())).getNode(), (CommandSourceStack)var1.getSource());
+            Map<CommandNode<CommandSourceStack>, String> usage = dispatcher.getSmartUsage(((ParsedCommandNode)Iterables.getLast(command.getContext().getNodes())).getNode(), (CommandSourceStack)s.getSource());
 
-            for(String var5 : var3.values()) {
-               ((CommandSourceStack)var1.getSource()).sendSuccess(() -> {
-                  String var10000 = var2.getReader().getString();
-                  return Component.literal("/" + var10000 + " " + var5);
+            for(String line : usage.values()) {
+               ((CommandSourceStack)s.getSource()).sendSuccess(() -> {
+                  String var10000 = command.getReader().getString();
+                  return Component.literal("/" + var10000 + " " + line);
                }, false);
             }
 
-            return var3.size();
+            return usage.size();
          }
       })));
    }

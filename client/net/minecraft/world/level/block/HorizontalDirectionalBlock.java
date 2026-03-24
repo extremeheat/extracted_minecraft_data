@@ -10,18 +10,18 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 public abstract class HorizontalDirectionalBlock extends Block {
    public static final EnumProperty<Direction> FACING;
 
-   protected HorizontalDirectionalBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   protected HorizontalDirectionalBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
    protected abstract MapCodec<? extends HorizontalDirectionalBlock> codec();
 
-   protected BlockState rotate(BlockState var1, Rotation var2) {
-      return (BlockState)var1.setValue(FACING, var2.rotate((Direction)var1.getValue(FACING)));
+   protected BlockState rotate(final BlockState state, final Rotation rotation) {
+      return (BlockState)state.setValue(FACING, rotation.rotate((Direction)state.getValue(FACING)));
    }
 
-   protected BlockState mirror(BlockState var1, Mirror var2) {
-      return var1.rotate(var2.getRotation((Direction)var1.getValue(FACING)));
+   protected BlockState mirror(final BlockState state, final Mirror mirror) {
+      return state.rotate(mirror.getRotation((Direction)state.getValue(FACING)));
    }
 
    static {

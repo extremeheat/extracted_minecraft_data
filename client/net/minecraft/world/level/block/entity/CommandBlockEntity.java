@@ -1,5 +1,6 @@
 package net.minecraft.world.level.block.entity;
 
+import java.util.Objects;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
@@ -29,19 +30,23 @@ public class CommandBlockEntity extends BlockEntity {
    private boolean auto = false;
    private boolean conditionMet = false;
    private final BaseCommandBlock commandBlock = new BaseCommandBlock() {
-      public void setCommand(String var1) {
-         super.setCommand(var1);
+      {
+         Objects.requireNonNull(CommandBlockEntity.this);
+      }
+
+      public void setCommand(final String command) {
+         super.setCommand(command);
          CommandBlockEntity.this.setChanged();
       }
 
-      public void onUpdated(ServerLevel var1) {
-         BlockState var2 = var1.getBlockState(CommandBlockEntity.this.worldPosition);
-         var1.sendBlockUpdated(CommandBlockEntity.this.worldPosition, var2, var2, 3);
+      public void onUpdated(final ServerLevel level) {
+         BlockState state = level.getBlockState(CommandBlockEntity.this.worldPosition);
+         level.sendBlockUpdated(CommandBlockEntity.this.worldPosition, state, state, 3);
       }
 
-      public CommandSourceStack createCommandSourceStack(ServerLevel var1, CommandSource var2) {
-         Direction var3 = (Direction)CommandBlockEntity.this.getBlockState().getValue(CommandBlock.FACING);
-         return new CommandSourceStack(var2, Vec3.atCenterOf(CommandBlockEntity.this.worldPosition), new Vec2(0.0F, var3.toYRot()), var1, LevelBasedPermissionSet.GAMEMASTER, this.getName().getString(), this.getName(), var1.getServer(), (Entity)null);
+      public CommandSourceStack createCommandSourceStack(final ServerLevel level, final CommandSource source) {
+         Direction facing = (Direction)CommandBlockEntity.this.getBlockState().getValue(CommandBlock.FACING);
+         return new CommandSourceStack(source, Vec3.atCenterOf(CommandBlockEntity.this.worldPosition), new Vec2(0.0F, facing.toYRot()), level, LevelBasedPermissionSet.GAMEMASTER, this.getName().getString(), this.getName(), level.getServer(), (Entity)null);
       }
 
       public boolean isValid() {
@@ -49,32 +54,32 @@ public class CommandBlockEntity extends BlockEntity {
       }
    };
 
-   public CommandBlockEntity(BlockPos var1, BlockState var2) {
-      super(BlockEntityType.COMMAND_BLOCK, var1, var2);
+   public CommandBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      super(BlockEntityType.COMMAND_BLOCK, worldPosition, blockState);
    }
 
-   protected void saveAdditional(ValueOutput var1) {
-      super.saveAdditional(var1);
-      this.commandBlock.save(var1);
-      var1.putBoolean("powered", this.isPowered());
-      var1.putBoolean("conditionMet", this.wasConditionMet());
-      var1.putBoolean("auto", this.isAutomatic());
+   protected void saveAdditional(final ValueOutput output) {
+      super.saveAdditional(output);
+      this.commandBlock.save(output);
+      output.putBoolean("powered", this.isPowered());
+      output.putBoolean("conditionMet", this.wasConditionMet());
+      output.putBoolean("auto", this.isAutomatic());
    }
 
-   protected void loadAdditional(ValueInput var1) {
-      super.loadAdditional(var1);
-      this.commandBlock.load(var1);
-      this.powered = var1.getBooleanOr("powered", false);
-      this.conditionMet = var1.getBooleanOr("conditionMet", false);
-      this.setAutomatic(var1.getBooleanOr("auto", false));
+   protected void loadAdditional(final ValueInput input) {
+      super.loadAdditional(input);
+      this.commandBlock.load(input);
+      this.powered = input.getBooleanOr("powered", false);
+      this.conditionMet = input.getBooleanOr("conditionMet", false);
+      this.setAutomatic(input.getBooleanOr("auto", false));
    }
 
    public BaseCommandBlock getCommandBlock() {
       return this.commandBlock;
    }
 
-   public void setPowered(boolean var1) {
-      this.powered = var1;
+   public void setPowered(final boolean powered) {
+      this.powered = powered;
    }
 
    public boolean isPowered() {
@@ -85,28 +90,28 @@ public class CommandBlockEntity extends BlockEntity {
       return this.auto;
    }
 
-   public void setAutomatic(boolean var1) {
-      boolean var2 = this.auto;
-      this.auto = var1;
-      if (!var2 && var1 && !this.powered && this.level != null && this.getMode() != CommandBlockEntity.Mode.SEQUENCE) {
+   public void setAutomatic(final boolean auto) {
+      boolean previousAuto = this.auto;
+      this.auto = auto;
+      if (!previousAuto && auto && !this.powered && this.level != null && this.getMode() != CommandBlockEntity.Mode.SEQUENCE) {
          this.scheduleTick();
       }
 
    }
 
    public void onModeSwitch() {
-      Mode var1 = this.getMode();
-      if (var1 == CommandBlockEntity.Mode.AUTO && (this.powered || this.auto) && this.level != null) {
+      Mode newMode = this.getMode();
+      if (newMode == CommandBlockEntity.Mode.AUTO && (this.powered || this.auto) && this.level != null) {
          this.scheduleTick();
       }
 
    }
 
    private void scheduleTick() {
-      Block var1 = this.getBlockState().getBlock();
-      if (var1 instanceof CommandBlock) {
+      Block commandBlock = this.getBlockState().getBlock();
+      if (commandBlock instanceof CommandBlock) {
          this.markConditionMet();
-         this.level.scheduleTick(this.worldPosition, var1, 1);
+         this.level.scheduleTick(this.worldPosition, commandBlock, 1);
       }
 
    }
@@ -118,10 +123,10 @@ public class CommandBlockEntity extends BlockEntity {
    public boolean markConditionMet() {
       this.conditionMet = true;
       if (this.isConditional()) {
-         BlockPos var1 = this.worldPosition.relative(((Direction)this.level.getBlockState(this.worldPosition).getValue(CommandBlock.FACING)).getOpposite());
-         if (this.level.getBlockState(var1).getBlock() instanceof CommandBlock) {
-            BlockEntity var2 = this.level.getBlockEntity(var1);
-            this.conditionMet = var2 instanceof CommandBlockEntity && ((CommandBlockEntity)var2).getCommandBlock().getSuccessCount() > 0;
+         BlockPos relative = this.worldPosition.relative(((Direction)this.level.getBlockState(this.worldPosition).getValue(CommandBlock.FACING)).getOpposite());
+         if (this.level.getBlockState(relative).getBlock() instanceof CommandBlock) {
+            BlockEntity backsideCommandBlock = this.level.getBlockEntity(relative);
+            this.conditionMet = backsideCommandBlock instanceof CommandBlockEntity && ((CommandBlockEntity)backsideCommandBlock).getCommandBlock().getSuccessCount() > 0;
          } else {
             this.conditionMet = false;
          }
@@ -131,36 +136,36 @@ public class CommandBlockEntity extends BlockEntity {
    }
 
    public Mode getMode() {
-      BlockState var1 = this.getBlockState();
-      if (var1.is(Blocks.COMMAND_BLOCK)) {
+      BlockState state = this.getBlockState();
+      if (state.is(Blocks.COMMAND_BLOCK)) {
          return CommandBlockEntity.Mode.REDSTONE;
-      } else if (var1.is(Blocks.REPEATING_COMMAND_BLOCK)) {
+      } else if (state.is(Blocks.REPEATING_COMMAND_BLOCK)) {
          return CommandBlockEntity.Mode.AUTO;
       } else {
-         return var1.is(Blocks.CHAIN_COMMAND_BLOCK) ? CommandBlockEntity.Mode.SEQUENCE : CommandBlockEntity.Mode.REDSTONE;
+         return state.is(Blocks.CHAIN_COMMAND_BLOCK) ? CommandBlockEntity.Mode.SEQUENCE : CommandBlockEntity.Mode.REDSTONE;
       }
    }
 
    public boolean isConditional() {
-      BlockState var1 = this.level.getBlockState(this.getBlockPos());
-      return var1.getBlock() instanceof CommandBlock ? (Boolean)var1.getValue(CommandBlock.CONDITIONAL) : false;
+      BlockState blockState = this.level.getBlockState(this.getBlockPos());
+      return blockState.getBlock() instanceof CommandBlock ? (Boolean)blockState.getValue(CommandBlock.CONDITIONAL) : false;
    }
 
-   protected void applyImplicitComponents(DataComponentGetter var1) {
-      super.applyImplicitComponents(var1);
-      this.commandBlock.setCustomName((Component)var1.get(DataComponents.CUSTOM_NAME));
+   protected void applyImplicitComponents(final DataComponentGetter components) {
+      super.applyImplicitComponents(components);
+      this.commandBlock.setCustomName((Component)components.get(DataComponents.CUSTOM_NAME));
    }
 
-   protected void collectImplicitComponents(DataComponentMap.Builder var1) {
-      super.collectImplicitComponents(var1);
-      var1.set(DataComponents.CUSTOM_NAME, this.commandBlock.getCustomName());
+   protected void collectImplicitComponents(final DataComponentMap.Builder components) {
+      super.collectImplicitComponents(components);
+      components.set(DataComponents.CUSTOM_NAME, this.commandBlock.getCustomName());
    }
 
-   public void removeComponentsFromTag(ValueOutput var1) {
-      super.removeComponentsFromTag(var1);
-      var1.discard("CustomName");
-      var1.discard("conditionMet");
-      var1.discard("powered");
+   public void removeComponentsFromTag(final ValueOutput output) {
+      super.removeComponentsFromTag(output);
+      output.discard("CustomName");
+      output.discard("conditionMet");
+      output.discard("powered");
    }
 
    public static enum Mode {

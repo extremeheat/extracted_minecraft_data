@@ -19,44 +19,44 @@ public class HappyGhastModel extends EntityModel<HappyGhastRenderState> {
    private final ModelPart[] tentacles = new ModelPart[9];
    private final ModelPart body;
 
-   public HappyGhastModel(ModelPart var1) {
-      super(var1);
-      this.body = var1.getChild("body");
+   public HappyGhastModel(final ModelPart root) {
+      super(root);
+      this.body = root.getChild("body");
 
-      for(int var2 = 0; var2 < this.tentacles.length; ++var2) {
-         this.tentacles[var2] = this.body.getChild(PartNames.tentacle(var2));
+      for(int i = 0; i < this.tentacles.length; ++i) {
+         this.tentacles[i] = this.body.getChild(PartNames.tentacle(i));
       }
 
    }
 
-   public static LayerDefinition createBodyLayer(boolean var0, CubeDeformation var1) {
-      MeshDefinition var2 = new MeshDefinition();
-      PartDefinition var3 = var2.getRoot();
-      PartDefinition var4 = var3.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 0).addBox(-8.0F, -8.0F, -8.0F, 16.0F, 16.0F, 16.0F, var1), PartPose.offset(0.0F, 16.0F, 0.0F));
-      if (var0) {
-         var4.addOrReplaceChild("inner_body", CubeListBuilder.create().texOffs(0, 32).addBox(-8.0F, -16.0F, -8.0F, 16.0F, 16.0F, 16.0F, var1.extend(-0.5F)), PartPose.offset(0.0F, 8.0F, 0.0F));
+   public static LayerDefinition createBodyLayer(final boolean isBaby, final CubeDeformation deformation) {
+      MeshDefinition mesh = new MeshDefinition();
+      PartDefinition root = mesh.getRoot();
+      PartDefinition body = root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 0).addBox(-8.0F, -8.0F, -8.0F, 16.0F, 16.0F, 16.0F, deformation), PartPose.offset(0.0F, 16.0F, 0.0F));
+      if (isBaby) {
+         body.addOrReplaceChild("inner_body", CubeListBuilder.create().texOffs(0, 32).addBox(-8.0F, -16.0F, -8.0F, 16.0F, 16.0F, 16.0F, deformation.extend(-0.5F)), PartPose.offset(0.0F, 8.0F, 0.0F));
       }
 
-      var4.addOrReplaceChild(PartNames.tentacle(0), CubeListBuilder.create().texOffs(0, 0).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 5.0F, 2.0F, var1), PartPose.offset(-3.75F, 7.0F, -5.0F));
-      var4.addOrReplaceChild(PartNames.tentacle(1), CubeListBuilder.create().texOffs(0, 0).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 7.0F, 2.0F, var1), PartPose.offset(1.25F, 7.0F, -5.0F));
-      var4.addOrReplaceChild(PartNames.tentacle(2), CubeListBuilder.create().texOffs(0, 0).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 4.0F, 2.0F, var1), PartPose.offset(6.25F, 7.0F, -5.0F));
-      var4.addOrReplaceChild(PartNames.tentacle(3), CubeListBuilder.create().texOffs(0, 0).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 5.0F, 2.0F, var1), PartPose.offset(-6.25F, 7.0F, 0.0F));
-      var4.addOrReplaceChild(PartNames.tentacle(4), CubeListBuilder.create().texOffs(0, 0).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 5.0F, 2.0F, var1), PartPose.offset(-1.25F, 7.0F, 0.0F));
-      var4.addOrReplaceChild(PartNames.tentacle(5), CubeListBuilder.create().texOffs(0, 0).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 7.0F, 2.0F, var1), PartPose.offset(3.75F, 7.0F, 0.0F));
-      var4.addOrReplaceChild(PartNames.tentacle(6), CubeListBuilder.create().texOffs(0, 0).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 8.0F, 2.0F, var1), PartPose.offset(-3.75F, 7.0F, 5.0F));
-      var4.addOrReplaceChild(PartNames.tentacle(7), CubeListBuilder.create().texOffs(0, 0).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 8.0F, 2.0F, var1), PartPose.offset(1.25F, 7.0F, 5.0F));
-      var4.addOrReplaceChild(PartNames.tentacle(8), CubeListBuilder.create().texOffs(0, 0).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 5.0F, 2.0F, var1), PartPose.offset(6.25F, 7.0F, 5.0F));
-      return LayerDefinition.create(var2, 64, 64).apply(MeshTransformer.scaling(4.0F));
+      body.addOrReplaceChild(PartNames.tentacle(0), CubeListBuilder.create().texOffs(0, 0).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 5.0F, 2.0F, deformation), PartPose.offset(-3.75F, 7.0F, -5.0F));
+      body.addOrReplaceChild(PartNames.tentacle(1), CubeListBuilder.create().texOffs(0, 0).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 7.0F, 2.0F, deformation), PartPose.offset(1.25F, 7.0F, -5.0F));
+      body.addOrReplaceChild(PartNames.tentacle(2), CubeListBuilder.create().texOffs(0, 0).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 4.0F, 2.0F, deformation), PartPose.offset(6.25F, 7.0F, -5.0F));
+      body.addOrReplaceChild(PartNames.tentacle(3), CubeListBuilder.create().texOffs(0, 0).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 5.0F, 2.0F, deformation), PartPose.offset(-6.25F, 7.0F, 0.0F));
+      body.addOrReplaceChild(PartNames.tentacle(4), CubeListBuilder.create().texOffs(0, 0).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 5.0F, 2.0F, deformation), PartPose.offset(-1.25F, 7.0F, 0.0F));
+      body.addOrReplaceChild(PartNames.tentacle(5), CubeListBuilder.create().texOffs(0, 0).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 7.0F, 2.0F, deformation), PartPose.offset(3.75F, 7.0F, 0.0F));
+      body.addOrReplaceChild(PartNames.tentacle(6), CubeListBuilder.create().texOffs(0, 0).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 8.0F, 2.0F, deformation), PartPose.offset(-3.75F, 7.0F, 5.0F));
+      body.addOrReplaceChild(PartNames.tentacle(7), CubeListBuilder.create().texOffs(0, 0).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 8.0F, 2.0F, deformation), PartPose.offset(1.25F, 7.0F, 5.0F));
+      body.addOrReplaceChild(PartNames.tentacle(8), CubeListBuilder.create().texOffs(0, 0).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 5.0F, 2.0F, deformation), PartPose.offset(6.25F, 7.0F, 5.0F));
+      return LayerDefinition.create(mesh, 64, 64).apply(MeshTransformer.scaling(4.0F));
    }
 
-   public void setupAnim(HappyGhastRenderState var1) {
-      super.setupAnim(var1);
-      if (!var1.bodyItem.isEmpty()) {
+   public void setupAnim(final HappyGhastRenderState state) {
+      super.setupAnim(state);
+      if (!state.bodyItem.isEmpty()) {
          this.body.xScale = 0.9375F;
          this.body.yScale = 0.9375F;
          this.body.zScale = 0.9375F;
       }
 
-      GhastModel.animateTentacles(var1, this.tentacles);
+      GhastModel.animateTentacles(state, this.tentacles);
    }
 }

@@ -31,7 +31,7 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.gamerules.GameRuleType;
 
 public record Schema<T>(Optional<URI> reference, List<String> type, Optional<Schema<?>> items, Map<String, Schema<?>> properties, List<String> enumValues, Codec<T> codec) {
-   public static final Codec<? extends Schema<?>> CODEC = Codec.recursive("Schema", (var0) -> RecordCodecBuilder.create((var1) -> var1.group(ReferenceUtil.REFERENCE_CODEC.optionalFieldOf("$ref").forGetter(Schema::reference), ExtraCodecs.compactListCodec(Codec.STRING).optionalFieldOf("type", List.of()).forGetter(Schema::type), var0.optionalFieldOf("items").forGetter(Schema::items), Codec.unboundedMap(Codec.STRING, var0).optionalFieldOf("properties", Map.of()).forGetter(Schema::properties), Codec.STRING.listOf().optionalFieldOf("enum", List.of()).forGetter(Schema::enumValues)).apply(var1, (var0x, var1x, var2, var3, var4) -> null))).validate((var0) -> var0 == null ? DataResult.error(() -> "Should not deserialize schema") : DataResult.success(var0));
+   public static final Codec<? extends Schema<?>> CODEC = Codec.recursive("Schema", (subCodec) -> RecordCodecBuilder.create((i) -> i.group(ReferenceUtil.REFERENCE_CODEC.optionalFieldOf("$ref").forGetter(Schema::reference), ExtraCodecs.compactListCodec(Codec.STRING).optionalFieldOf("type", List.of()).forGetter(Schema::type), subCodec.optionalFieldOf("items").forGetter(Schema::items), Codec.unboundedMap(Codec.STRING, subCodec).optionalFieldOf("properties", Map.of()).forGetter(Schema::properties), Codec.STRING.listOf().optionalFieldOf("enum", List.of()).forGetter(Schema::enumValues)).apply(i, (ref, type, items, properties, enumValues) -> null))).validate((schema) -> schema == null ? DataResult.error(() -> "Should not deserialize schema") : DataResult.success(schema));
    private static final List<SchemaComponent<?>> SCHEMA_REGISTRY = new ArrayList();
    public static final Schema<Boolean> BOOL_SCHEMA;
    public static final Schema<Integer> INT_SCHEMA;
@@ -57,14 +57,8 @@ public record Schema<T>(Optional<URI> reference, List<String> type, Optional<Sch
    public static final SchemaComponent<IpBanlistService.IpBanDto> IP_BAN_SCHEMA;
    public static final SchemaComponent<BanlistService.UserBanDto> PLAYER_BAN_SCHEMA;
 
-   public Schema(Optional<URI> var1, List<String> var2, Optional<Schema<?>> var3, Map<String, Schema<?>> var4, List<String> var5, Codec<T> var6) {
+   public Schema {
       super();
-      this.reference = var1;
-      this.type = var2;
-      this.items = var3;
-      this.properties = var4;
-      this.enumValues = var5;
-      this.codec = var6;
    }
 
    public static <T> Codec<Schema<T>> typedCodec() {
@@ -72,60 +66,60 @@ public record Schema<T>(Optional<URI> reference, List<String> type, Optional<Sch
    }
 
    public Schema<T> info() {
-      return new Schema<T>(this.reference, this.type, this.items.map(Schema::info), (Map)this.properties.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, (var0) -> ((Schema)var0.getValue()).info())), this.enumValues, this.codec);
+      return new Schema<T>(this.reference, this.type, this.items.map(Schema::info), (Map)this.properties.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, (b) -> ((Schema)b.getValue()).info())), this.enumValues, this.codec);
    }
 
-   private static <T> SchemaComponent<T> registerSchema(String var0, Schema<T> var1) {
-      SchemaComponent var2 = new SchemaComponent(var0, ReferenceUtil.createLocalReference(var0), var1);
-      SCHEMA_REGISTRY.add(var2);
-      return var2;
+   private static <T> SchemaComponent<T> registerSchema(final String name, final Schema<T> schema) {
+      SchemaComponent<T> entry = new SchemaComponent<T>(name, ReferenceUtil.createLocalReference(name), schema);
+      SCHEMA_REGISTRY.add(entry);
+      return entry;
    }
 
    public static List<SchemaComponent<?>> getSchemaRegistry() {
       return SCHEMA_REGISTRY;
    }
 
-   public static <T> Schema<T> ofRef(URI var0, Codec<T> var1) {
-      return new Schema<T>(Optional.of(var0), List.of(), Optional.empty(), Map.of(), List.of(), var1);
+   public static <T> Schema<T> ofRef(final URI ref, final Codec<T> codec) {
+      return new Schema<T>(Optional.of(ref), List.of(), Optional.empty(), Map.of(), List.of(), codec);
    }
 
-   public static <T> Schema<T> ofType(String var0, Codec<T> var1) {
-      return ofTypes(List.of(var0), var1);
+   public static <T> Schema<T> ofType(final String type, final Codec<T> codec) {
+      return ofTypes(List.of(type), codec);
    }
 
-   public static <T> Schema<T> ofTypes(List<String> var0, Codec<T> var1) {
-      return new Schema<T>(Optional.empty(), var0, Optional.empty(), Map.of(), List.of(), var1);
+   public static <T> Schema<T> ofTypes(final List<String> types, final Codec<T> codec) {
+      return new Schema<T>(Optional.empty(), types, Optional.empty(), Map.of(), List.of(), codec);
    }
 
-   public static <E extends Enum<E> & StringRepresentable> Schema<E> ofEnum(Supplier<E[]> var0) {
-      return ofEnum(var0, StringRepresentable.fromEnum(var0));
+   public static <E extends Enum<E> & StringRepresentable> Schema<E> ofEnum(final Supplier<E[]> values) {
+      return ofEnum(values, StringRepresentable.fromEnum(values));
    }
 
-   public static <E extends Enum<E> & StringRepresentable> Schema<E> ofEnum(Supplier<E[]> var0, Codec<E> var1) {
-      List var2 = Stream.of((Enum[])var0.get()).map((var0x) -> ((StringRepresentable)var0x).getSerializedName()).toList();
-      return ofEnum(var2, var1);
+   public static <E extends Enum<E> & StringRepresentable> Schema<E> ofEnum(final Supplier<E[]> values, final Codec<E> codec) {
+      List<String> enumValues = Stream.of((Enum[])values.get()).map((rec$) -> ((StringRepresentable)rec$).getSerializedName()).toList();
+      return ofEnum(enumValues, codec);
    }
 
-   public static <T> Schema<T> ofEnum(List<String> var0, Codec<T> var1) {
-      return new Schema<T>(Optional.empty(), List.of("string"), Optional.empty(), Map.of(), var0, var1);
+   public static <T> Schema<T> ofEnum(final List<String> enumValues, final Codec<T> codec) {
+      return new Schema<T>(Optional.empty(), List.of("string"), Optional.empty(), Map.of(), enumValues, codec);
    }
 
-   public static <T> Schema<List<T>> arrayOf(Schema<?> var0, Codec<T> var1) {
-      return new Schema<List<T>>(Optional.empty(), List.of("array"), Optional.of(var0), Map.of(), List.of(), var1.listOf());
+   public static <T> Schema<List<T>> arrayOf(final Schema<?> item, final Codec<T> codec) {
+      return new Schema<List<T>>(Optional.empty(), List.of("array"), Optional.of(item), Map.of(), List.of(), codec.listOf());
    }
 
-   public static <T> Schema<T> record(Codec<T> var0) {
-      return new Schema<T>(Optional.empty(), List.of("object"), Optional.empty(), Map.of(), List.of(), var0);
+   public static <T> Schema<T> record(final Codec<T> codec) {
+      return new Schema<T>(Optional.empty(), List.of("object"), Optional.empty(), Map.of(), List.of(), codec);
    }
 
-   private static <T> Schema<T> record(Map<String, Schema<?>> var0, Codec<T> var1) {
-      return new Schema<T>(Optional.empty(), List.of("object"), Optional.empty(), var0, List.of(), var1);
+   private static <T> Schema<T> record(final Map<String, Schema<?>> properties, final Codec<T> codec) {
+      return new Schema<T>(Optional.empty(), List.of("object"), Optional.empty(), properties, List.of(), codec);
    }
 
-   public Schema<T> withField(String var1, Schema<?> var2) {
-      HashMap var3 = new HashMap(this.properties);
-      var3.put(var1, var2);
-      return record(var3, this.codec);
+   public Schema<T> withField(final String name, final Schema<?> field) {
+      HashMap<String, Schema<?>> properties = new HashMap(this.properties);
+      properties.put(name, field);
+      return record(properties, this.codec);
    }
 
    public Schema<List<T>> asArray() {

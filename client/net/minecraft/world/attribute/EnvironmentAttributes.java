@@ -29,8 +29,11 @@ public interface EnvironmentAttributes {
    EnvironmentAttribute<Float> STAR_ANGLE = register("visual/star_angle", EnvironmentAttribute.builder(AttributeTypes.ANGLE_DEGREES).defaultValue(0.0F).spatiallyInterpolated().syncable());
    EnvironmentAttribute<MoonPhase> MOON_PHASE = register("visual/moon_phase", EnvironmentAttribute.builder(AttributeTypes.MOON_PHASE).defaultValue(MoonPhase.FULL_MOON).syncable());
    EnvironmentAttribute<Float> STAR_BRIGHTNESS = register("visual/star_brightness", EnvironmentAttribute.builder(AttributeTypes.FLOAT).defaultValue(0.0F).valueRange(AttributeRange.UNIT_FLOAT).spatiallyInterpolated().syncable());
+   EnvironmentAttribute<Integer> BLOCK_LIGHT_TINT = register("visual/block_light_tint", EnvironmentAttribute.builder(AttributeTypes.RGB_COLOR).defaultValue(-10100).spatiallyInterpolated().syncable());
    EnvironmentAttribute<Integer> SKY_LIGHT_COLOR = register("visual/sky_light_color", EnvironmentAttribute.builder(AttributeTypes.RGB_COLOR).defaultValue(-1).spatiallyInterpolated().syncable());
    EnvironmentAttribute<Float> SKY_LIGHT_FACTOR = register("visual/sky_light_factor", EnvironmentAttribute.builder(AttributeTypes.FLOAT).defaultValue(1.0F).valueRange(AttributeRange.UNIT_FLOAT).spatiallyInterpolated().syncable());
+   EnvironmentAttribute<Integer> NIGHT_VISION_COLOR = register("visual/night_vision_color", EnvironmentAttribute.builder(AttributeTypes.RGB_COLOR).defaultValue(-6710887).spatiallyInterpolated().syncable());
+   EnvironmentAttribute<Integer> AMBIENT_LIGHT_COLOR = register("visual/ambient_light_color", EnvironmentAttribute.builder(AttributeTypes.RGB_COLOR).defaultValue(-16777216).spatiallyInterpolated().syncable());
    EnvironmentAttribute<ParticleOptions> DEFAULT_DRIPSTONE_PARTICLE = register("visual/default_dripstone_particle", EnvironmentAttribute.builder(AttributeTypes.PARTICLE).defaultValue(ParticleTypes.DRIPPING_DRIPSTONE_WATER).syncable());
    EnvironmentAttribute<List<AmbientParticle>> AMBIENT_PARTICLES = register("visual/ambient_particles", EnvironmentAttribute.builder(AttributeTypes.AMBIENT_PARTICLES).defaultValue(List.of()).syncable());
    EnvironmentAttribute<BackgroundMusic> BACKGROUND_MUSIC = register("audio/background_music", EnvironmentAttribute.builder(AttributeTypes.BACKGROUND_MUSIC).defaultValue(BackgroundMusic.EMPTY).syncable());
@@ -46,7 +49,7 @@ public interface EnvironmentAttributes {
    EnvironmentAttribute<Boolean> FAST_LAVA = register("gameplay/fast_lava", EnvironmentAttribute.builder(AttributeTypes.BOOLEAN).defaultValue(false).notPositional().syncable());
    EnvironmentAttribute<Boolean> INCREASED_FIRE_BURNOUT = register("gameplay/increased_fire_burnout", EnvironmentAttribute.builder(AttributeTypes.BOOLEAN).defaultValue(false));
    EnvironmentAttribute<TriState> EYEBLOSSOM_OPEN = register("gameplay/eyeblossom_open", EnvironmentAttribute.builder(AttributeTypes.TRI_STATE).defaultValue(TriState.DEFAULT));
-   EnvironmentAttribute<Float> TURTLE_EGG_HATCH_CHANCE = register("gameplay/turtle_egg_hatch_chance", EnvironmentAttribute.builder(AttributeTypes.FLOAT).defaultValue(0.0F).valueRange(AttributeRange.UNIT_FLOAT));
+   EnvironmentAttribute<Float> TURTLE_EGG_HATCH_CHANCE = register("gameplay/turtle_egg_hatch_chance", EnvironmentAttribute.builder(AttributeTypes.FLOAT).defaultValue(0.002F).valueRange(AttributeRange.UNIT_FLOAT));
    EnvironmentAttribute<Boolean> PIGLINS_ZOMBIFY = register("gameplay/piglins_zombify", EnvironmentAttribute.builder(AttributeTypes.BOOLEAN).defaultValue(true).syncable());
    EnvironmentAttribute<Boolean> SNOW_GOLEM_MELTS = register("gameplay/snow_golem_melts", EnvironmentAttribute.builder(AttributeTypes.BOOLEAN).defaultValue(false));
    EnvironmentAttribute<Boolean> CREAKING_ACTIVE = register("gameplay/creaking_active", EnvironmentAttribute.builder(AttributeTypes.BOOLEAN).defaultValue(false).syncable());
@@ -59,13 +62,13 @@ public interface EnvironmentAttributes {
    EnvironmentAttribute<Activity> BABY_VILLAGER_ACTIVITY = register("gameplay/baby_villager_activity", EnvironmentAttribute.builder(AttributeTypes.ACTIVITY).defaultValue(Activity.IDLE));
    Codec<EnvironmentAttribute<?>> CODEC = BuiltInRegistries.ENVIRONMENT_ATTRIBUTE.byNameCodec();
 
-   static EnvironmentAttribute<?> bootstrap(Registry<EnvironmentAttribute<?>> var0) {
+   static EnvironmentAttribute<?> bootstrap(final Registry<EnvironmentAttribute<?>> registry) {
       return RESPAWN_ANCHOR_WORKS;
    }
 
-   private static <Value> EnvironmentAttribute<Value> register(String var0, EnvironmentAttribute.Builder<Value> var1) {
-      EnvironmentAttribute var2 = var1.build();
-      Registry.register(BuiltInRegistries.ENVIRONMENT_ATTRIBUTE, (Identifier)Identifier.withDefaultNamespace(var0), var2);
-      return var2;
+   private static <Value> EnvironmentAttribute<Value> register(final String id, final EnvironmentAttribute.Builder<Value> attributeBuilder) {
+      EnvironmentAttribute<Value> attribute = attributeBuilder.build();
+      Registry.register(BuiltInRegistries.ENVIRONMENT_ATTRIBUTE, (Identifier)Identifier.withDefaultNamespace(id), attribute);
+      return attribute;
    }
 }

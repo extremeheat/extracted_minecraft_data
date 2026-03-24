@@ -20,11 +20,11 @@ public class ConfigurationPacketTypes {
       super();
    }
 
-   private static <T extends Packet<ClientConfigurationPacketListener>> PacketType<T> createClientbound(String var0) {
-      return new PacketType<T>(PacketFlow.CLIENTBOUND, Identifier.withDefaultNamespace(var0));
+   private static <T extends Packet<ClientConfigurationPacketListener>> PacketType<T> createClientbound(final String id) {
+      return new PacketType<T>(PacketFlow.CLIENTBOUND, Identifier.withDefaultNamespace(id));
    }
 
-   private static <T extends Packet<ServerConfigurationPacketListener>> PacketType<T> createServerbound(String var0) {
-      return new PacketType<T>(PacketFlow.SERVERBOUND, Identifier.withDefaultNamespace(var0));
+   private static <T extends Packet<ServerConfigurationPacketListener>> PacketType<T> createServerbound(final String id) {
+      return new PacketType<T>(PacketFlow.SERVERBOUND, Identifier.withDefaultNamespace(id));
    }
 }

@@ -7,16 +7,16 @@ import net.minecraft.server.dedicated.DedicatedServer;
 public class MinecraftExecutorServiceImpl implements MinecraftExecutorService {
    private final DedicatedServer server;
 
-   public MinecraftExecutorServiceImpl(DedicatedServer var1) {
+   public MinecraftExecutorServiceImpl(final DedicatedServer server) {
       super();
-      this.server = var1;
+      this.server = server;
    }
 
-   public <V> CompletableFuture<V> submit(Supplier<V> var1) {
-      return this.server.submit(var1);
+   public <V> CompletableFuture<V> submit(final Supplier<V> supplier) {
+      return this.server.submit(supplier);
    }
 
-   public CompletableFuture<Void> submit(Runnable var1) {
-      return this.server.submit(var1);
+   public CompletableFuture<Void> submit(final Runnable runnable) {
+      return this.server.submit(runnable);
    }
 }

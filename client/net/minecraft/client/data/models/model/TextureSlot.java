@@ -51,18 +51,18 @@ public final class TextureSlot {
    private final String id;
    private final @Nullable TextureSlot parent;
 
-   private static TextureSlot create(String var0) {
-      return new TextureSlot(var0, (TextureSlot)null);
+   private static TextureSlot create(final String id) {
+      return new TextureSlot(id, (TextureSlot)null);
    }
 
-   private static TextureSlot create(String var0, TextureSlot var1) {
-      return new TextureSlot(var0, var1);
+   private static TextureSlot create(final String id, final TextureSlot parent) {
+      return new TextureSlot(id, parent);
    }
 
-   private TextureSlot(String var1, @Nullable TextureSlot var2) {
+   private TextureSlot(final String id, final @Nullable TextureSlot parent) {
       super();
-      this.id = var1;
-      this.parent = var2;
+      this.id = id;
+      this.parent = parent;
    }
 
    public String getId() {

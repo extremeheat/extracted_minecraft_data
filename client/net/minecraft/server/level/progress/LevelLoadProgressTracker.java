@@ -15,20 +15,20 @@ public class LevelLoadProgressTracker implements LevelLoadListener {
    private float segmentFraction;
    private volatile float progress;
 
-   public LevelLoadProgressTracker(boolean var1) {
+   public LevelLoadProgressTracker(final boolean includePlayerChunks) {
       super();
-      this.includePlayerChunks = var1;
+      this.includePlayerChunks = includePlayerChunks;
    }
 
-   public void start(LevelLoadListener.Stage var1, int var2) {
-      if (this.tracksStage(var1)) {
-         switch (var1) {
+   public void start(final LevelLoadListener.Stage stage, final int totalChunks) {
+      if (this.tracksStage(stage)) {
+         switch (stage) {
             case LOAD_INITIAL_CHUNKS:
-               int var3 = this.includePlayerChunks ? EXPECTED_PLAYER_CHUNKS : 0;
-               this.totalWeight = 10 + var2 + var3;
+               int playerChunksWeight = this.includePlayerChunks ? EXPECTED_PLAYER_CHUNKS : 0;
+               this.totalWeight = 10 + totalChunks + playerChunksWeight;
                this.beginSegment(10);
                this.finishSegment();
-               this.beginSegment(var2);
+               this.beginSegment(totalChunks);
                break;
             case LOAD_PLAYER_CHUNKS:
                this.beginSegment(EXPECTED_PLAYER_CHUNKS);
@@ -37,22 +37,22 @@ public class LevelLoadProgressTracker implements LevelLoadListener {
       }
    }
 
-   private void beginSegment(int var1) {
-      this.segmentWeight = var1;
+   private void beginSegment(final int weight) {
+      this.segmentWeight = weight;
       this.segmentFraction = 0.0F;
       this.updateProgress();
    }
 
-   public void update(LevelLoadListener.Stage var1, int var2, int var3) {
-      if (this.tracksStage(var1)) {
-         this.segmentFraction = var3 == 0 ? 0.0F : (float)var2 / (float)var3;
+   public void update(final LevelLoadListener.Stage stage, final int currentChunks, final int totalChunks) {
+      if (this.tracksStage(stage)) {
+         this.segmentFraction = totalChunks == 0 ? 0.0F : (float)currentChunks / (float)totalChunks;
          this.updateProgress();
       }
 
    }
 
-   public void finish(LevelLoadListener.Stage var1) {
-      if (this.tracksStage(var1)) {
+   public void finish(final LevelLoadListener.Stage stage) {
+      if (this.tracksStage(stage)) {
          this.finishSegment();
       }
 
@@ -64,9 +64,9 @@ public class LevelLoadProgressTracker implements LevelLoadListener {
       this.updateProgress();
    }
 
-   private boolean tracksStage(LevelLoadListener.Stage var1) {
+   private boolean tracksStage(final LevelLoadListener.Stage stage) {
       boolean var10000;
-      switch (var1) {
+      switch (stage) {
          case LOAD_INITIAL_CHUNKS -> var10000 = true;
          case LOAD_PLAYER_CHUNKS -> var10000 = this.includePlayerChunks;
          default -> var10000 = false;
@@ -79,8 +79,8 @@ public class LevelLoadProgressTracker implements LevelLoadListener {
       if (this.totalWeight == 0) {
          this.progress = 0.0F;
       } else {
-         float var1 = (float)this.finalizedWeight + this.segmentFraction * (float)this.segmentWeight;
-         this.progress = var1 / (float)this.totalWeight;
+         float currentWeight = (float)this.finalizedWeight + this.segmentFraction * (float)this.segmentWeight;
+         this.progress = currentWeight / (float)this.totalWeight;
       }
 
    }
@@ -89,6 +89,6 @@ public class LevelLoadProgressTracker implements LevelLoadListener {
       return this.progress;
    }
 
-   public void updateFocus(ResourceKey<Level> var1, ChunkPos var2) {
+   public void updateFocus(final ResourceKey<Level> dimension, final ChunkPos chunkPos) {
    }
 }

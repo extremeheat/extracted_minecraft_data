@@ -10,40 +10,40 @@ public class FurnaceResultSlot extends Slot {
    private final Player player;
    private int removeCount;
 
-   public FurnaceResultSlot(Player var1, Container var2, int var3, int var4, int var5) {
-      super(var2, var3, var4, var5);
-      this.player = var1;
+   public FurnaceResultSlot(final Player player, final Container container, final int slot, final int x, final int y) {
+      super(container, slot, x, y);
+      this.player = player;
    }
 
-   public boolean mayPlace(ItemStack var1) {
+   public boolean mayPlace(final ItemStack itemStack) {
       return false;
    }
 
-   public ItemStack remove(int var1) {
+   public ItemStack remove(final int amount) {
       if (this.hasItem()) {
-         this.removeCount += Math.min(var1, this.getItem().getCount());
+         this.removeCount += Math.min(amount, this.getItem().getCount());
       }
 
-      return super.remove(var1);
+      return super.remove(amount);
    }
 
-   public void onTake(Player var1, ItemStack var2) {
-      this.checkTakeAchievements(var2);
-      super.onTake(var1, var2);
+   public void onTake(final Player player, final ItemStack carried) {
+      this.checkTakeAchievements(carried);
+      super.onTake(player, carried);
    }
 
-   protected void onQuickCraft(ItemStack var1, int var2) {
-      this.removeCount += var2;
-      this.checkTakeAchievements(var1);
+   protected void onQuickCraft(final ItemStack picked, final int count) {
+      this.removeCount += count;
+      this.checkTakeAchievements(picked);
    }
 
-   protected void checkTakeAchievements(ItemStack var1) {
-      var1.onCraftedBy(this.player, this.removeCount);
+   protected void checkTakeAchievements(final ItemStack carried) {
+      carried.onCraftedBy(this.player, this.removeCount);
       Player var4 = this.player;
-      if (var4 instanceof ServerPlayer var2) {
+      if (var4 instanceof ServerPlayer serverPlayer) {
          Container var5 = this.container;
-         if (var5 instanceof AbstractFurnaceBlockEntity var3) {
-            var3.awardUsedRecipesAndPopExperience(var2);
+         if (var5 instanceof AbstractFurnaceBlockEntity abstractFurnaceBlockEntity) {
+            abstractFurnaceBlockEntity.awardUsedRecipesAndPopExperience(serverPlayer);
          }
       }
 

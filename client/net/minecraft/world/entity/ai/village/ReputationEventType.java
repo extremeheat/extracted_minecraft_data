@@ -7,10 +7,10 @@ public interface ReputationEventType {
    ReputationEventType VILLAGER_KILLED = register("villager_killed");
    ReputationEventType TRADE = register("trade");
 
-   static ReputationEventType register(final String var0) {
+   static ReputationEventType register(final String name) {
       return new ReputationEventType() {
          public String toString() {
-            return var0;
+            return name;
          }
       };
    }

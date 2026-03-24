@@ -10,10 +10,14 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityAttachment;
+import net.minecraft.world.entity.EntityAttachments;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.animal.camel.CamelHusk;
 import net.minecraft.world.entity.monster.skeleton.Parched;
@@ -24,8 +28,10 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import org.jspecify.annotations.Nullable;
 
 public class Husk extends Zombie {
-   public Husk(EntityType<? extends Husk> var1, Level var2) {
-      super(var1, var2);
+   private static final EntityDimensions BABY_DIMENSIONS;
+
+   public Husk(final EntityType<? extends Husk> type, final Level level) {
+      super(type, level);
    }
 
    protected boolean isSunSensitive() {
@@ -36,7 +42,7 @@ public class Husk extends Zombie {
       return SoundEvents.HUSK_AMBIENT;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return SoundEvents.HUSK_HURT;
    }
 
@@ -48,60 +54,60 @@ public class Husk extends Zombie {
       return SoundEvents.HUSK_STEP;
    }
 
-   public boolean doHurtTarget(ServerLevel var1, Entity var2) {
-      boolean var3 = super.doHurtTarget(var1, var2);
-      if (var3 && this.getMainHandItem().isEmpty() && var2 instanceof LivingEntity) {
-         float var4 = var1.getCurrentDifficultyAt(this.blockPosition()).getEffectiveDifficulty();
-         ((LivingEntity)var2).addEffect(new MobEffectInstance(MobEffects.HUNGER, 140 * (int)var4), this);
+   public boolean doHurtTarget(final ServerLevel level, final Entity target) {
+      boolean result = super.doHurtTarget(level, target);
+      if (result && this.getMainHandItem().isEmpty() && target instanceof LivingEntity) {
+         float difficulty = level.getCurrentDifficultyAt(this.blockPosition()).getEffectiveDifficulty();
+         ((LivingEntity)target).addEffect(new MobEffectInstance(MobEffects.HUNGER, 140 * (int)difficulty), this);
       }
 
-      return var3;
+      return result;
    }
 
    protected boolean convertsInWater() {
       return true;
    }
 
-   protected void doUnderWaterConversion(ServerLevel var1) {
-      this.convertToZombieType(var1, EntityType.ZOMBIE);
+   protected void doUnderWaterConversion(final ServerLevel level) {
+      this.convertToZombieType(level, EntityType.ZOMBIE);
       if (!this.isSilent()) {
-         var1.levelEvent((Entity)null, 1041, this.blockPosition(), 0);
+         level.levelEvent((Entity)null, 1041, this.blockPosition(), 0);
       }
 
    }
 
-   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      RandomSource var5 = var1.getRandom();
-      var4 = super.finalizeSpawn(var1, var2, var3, var4);
-      float var6 = var2.getSpecialMultiplier();
-      if (var3 != EntitySpawnReason.CONVERSION) {
-         this.setCanPickUpLoot(var5.nextFloat() < 0.55F * var6);
+   public @Nullable SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, @Nullable SpawnGroupData groupData) {
+      RandomSource random = level.getRandom();
+      groupData = super.finalizeSpawn(level, difficulty, spawnReason, groupData);
+      float difficultyModifier = difficulty.getSpecialMultiplier();
+      if (spawnReason != EntitySpawnReason.CONVERSION) {
+         this.setCanPickUpLoot(random.nextFloat() < 0.55F * difficultyModifier);
       }
 
-      if (var4 != null) {
-         var4 = new HuskGroupData((Zombie.ZombieGroupData)var4);
-         ((HuskGroupData)var4).triedToSpawnCamelHusk = var3 != EntitySpawnReason.NATURAL;
+      if (groupData != null) {
+         groupData = new HuskGroupData((Zombie.ZombieGroupData)groupData);
+         ((HuskGroupData)groupData).triedToSpawnCamelHusk = spawnReason != EntitySpawnReason.NATURAL;
       }
 
-      if (var4 instanceof HuskGroupData var7) {
-         if (!var7.triedToSpawnCamelHusk) {
-            BlockPos var8 = this.blockPosition();
-            if (var1.noCollision(EntityType.CAMEL_HUSK.getSpawnAABB((double)var8.getX() + 0.5, (double)var8.getY(), (double)var8.getZ() + 0.5))) {
-               var7.triedToSpawnCamelHusk = true;
-               if (var5.nextFloat() < 0.1F) {
+      if (groupData instanceof HuskGroupData huskGroupData) {
+         if (!huskGroupData.triedToSpawnCamelHusk) {
+            BlockPos pos = this.blockPosition();
+            if (level.noCollision(EntityType.CAMEL_HUSK.getSpawnAABB((double)pos.getX() + 0.5, (double)pos.getY(), (double)pos.getZ() + 0.5))) {
+               huskGroupData.triedToSpawnCamelHusk = true;
+               if (random.nextFloat() < 0.1F) {
                   this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_SPEAR));
-                  CamelHusk var9 = EntityType.CAMEL_HUSK.create(this.level(), EntitySpawnReason.NATURAL);
-                  if (var9 != null) {
-                     var9.setPos(this.getX(), this.getY(), this.getZ());
-                     var9.finalizeSpawn(var1, var2, var3, (SpawnGroupData)null);
-                     this.startRiding(var9, true, true);
-                     var1.addFreshEntity(var9);
-                     Parched var10 = EntityType.PARCHED.create(this.level(), EntitySpawnReason.NATURAL);
-                     if (var10 != null) {
-                        var10.snapTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
-                        var10.finalizeSpawn(var1, var2, var3, (SpawnGroupData)null);
-                        var10.startRiding(var9, false, false);
-                        var1.addFreshEntityWithPassengers(var10);
+                  CamelHusk camelHusk = EntityType.CAMEL_HUSK.create(this.level(), EntitySpawnReason.NATURAL);
+                  if (camelHusk != null) {
+                     camelHusk.setPos(this.getX(), this.getY(), this.getZ());
+                     camelHusk.finalizeSpawn(level, difficulty, spawnReason, (SpawnGroupData)null);
+                     this.startRiding(camelHusk, true, true);
+                     level.addFreshEntity(camelHusk);
+                     Parched parched = EntityType.PARCHED.create(this.level(), EntitySpawnReason.NATURAL);
+                     if (parched != null) {
+                        parched.snapTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
+                        parched.finalizeSpawn(level, difficulty, spawnReason, (SpawnGroupData)null);
+                        parched.startRiding(camelHusk, false, false);
+                        level.addFreshEntityWithPassengers(parched);
                      }
                   }
                }
@@ -109,14 +115,22 @@ public class Husk extends Zombie {
          }
       }
 
-      return var4;
+      return groupData;
+   }
+
+   public EntityDimensions getDefaultDimensions(final Pose pose) {
+      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(pose);
+   }
+
+   static {
+      BABY_DIMENSIONS = EntityDimensions.scalable(0.49F, 0.99F).withEyeHeight(0.825F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.VEHICLE, 0.0F, 0.1875F, 0.0F));
    }
 
    public static class HuskGroupData extends Zombie.ZombieGroupData {
       public boolean triedToSpawnCamelHusk = false;
 
-      public HuskGroupData(Zombie.ZombieGroupData var1) {
-         super(var1.isBaby, var1.canSpawnJockey);
+      public HuskGroupData(final Zombie.ZombieGroupData groupData) {
+         super(groupData.isBaby, groupData.canSpawnJockey);
       }
    }
 }

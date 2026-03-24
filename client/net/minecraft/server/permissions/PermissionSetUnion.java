@@ -8,33 +8,33 @@ import it.unimi.dsi.fastutil.objects.ReferenceSet;
 public class PermissionSetUnion implements PermissionSet {
    private final ReferenceSet<PermissionSet> permissions = new ReferenceArraySet();
 
-   PermissionSetUnion(PermissionSet var1, PermissionSet var2) {
+   PermissionSetUnion(final PermissionSet first, final PermissionSet second) {
       super();
-      this.permissions.add(var1);
-      this.permissions.add(var2);
+      this.permissions.add(first);
+      this.permissions.add(second);
       this.ensureNoUnionsWithinUnions();
    }
 
-   private PermissionSetUnion(ReferenceSet<PermissionSet> var1, PermissionSet var2) {
+   private PermissionSetUnion(final ReferenceSet<PermissionSet> oldPermissions, final PermissionSet other) {
       super();
-      this.permissions.addAll(var1);
-      this.permissions.add(var2);
+      this.permissions.addAll(oldPermissions);
+      this.permissions.add(other);
       this.ensureNoUnionsWithinUnions();
    }
 
-   private PermissionSetUnion(ReferenceSet<PermissionSet> var1, ReferenceSet<PermissionSet> var2) {
+   private PermissionSetUnion(final ReferenceSet<PermissionSet> oldPermissions, final ReferenceSet<PermissionSet> other) {
       super();
-      this.permissions.addAll(var1);
-      this.permissions.addAll(var2);
+      this.permissions.addAll(oldPermissions);
+      this.permissions.addAll(other);
       this.ensureNoUnionsWithinUnions();
    }
 
-   public boolean hasPermission(Permission var1) {
+   public boolean hasPermission(final Permission permission) {
       ObjectIterator var2 = this.permissions.iterator();
 
       while(var2.hasNext()) {
-         PermissionSet var3 = (PermissionSet)var2.next();
-         if (var3.hasPermission(var1)) {
+         PermissionSet set = (PermissionSet)var2.next();
+         if (set.hasPermission(permission)) {
             return true;
          }
       }
@@ -42,11 +42,11 @@ public class PermissionSetUnion implements PermissionSet {
       return false;
    }
 
-   public PermissionSet union(PermissionSet var1) {
-      if (var1 instanceof PermissionSetUnion var2) {
-         return new PermissionSetUnion(this.permissions, var2.permissions);
+   public PermissionSet union(final PermissionSet other) {
+      if (other instanceof PermissionSetUnion otherUnion) {
+         return new PermissionSetUnion(this.permissions, otherUnion.permissions);
       } else {
-         return new PermissionSetUnion(this.permissions, var1);
+         return new PermissionSetUnion(this.permissions, other);
       }
    }
 
@@ -59,8 +59,8 @@ public class PermissionSetUnion implements PermissionSet {
       ObjectIterator var1 = this.permissions.iterator();
 
       while(var1.hasNext()) {
-         PermissionSet var2 = (PermissionSet)var1.next();
-         if (var2 instanceof PermissionSetUnion) {
+         PermissionSet set = (PermissionSet)var1.next();
+         if (set instanceof PermissionSetUnion) {
             throw new IllegalArgumentException("Cannot have PermissionSetUnion within another PermissionSetUnion");
          }
       }

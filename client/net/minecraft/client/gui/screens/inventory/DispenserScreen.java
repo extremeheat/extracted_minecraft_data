@@ -1,6 +1,6 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -11,8 +11,8 @@ import net.minecraft.world.inventory.DispenserMenu;
 public class DispenserScreen extends AbstractContainerScreen<DispenserMenu> {
    private static final Identifier CONTAINER_LOCATION = Identifier.withDefaultNamespace("textures/gui/container/dispenser.png");
 
-   public DispenserScreen(DispenserMenu var1, Inventory var2, Component var3) {
-      super(var1, var2, var3);
+   public DispenserScreen(final DispenserMenu menu, final Inventory inventory, final Component title) {
+      super(menu, inventory, title);
    }
 
    protected void init() {
@@ -20,14 +20,10 @@ public class DispenserScreen extends AbstractContainerScreen<DispenserMenu> {
       this.titleLabelX = (this.imageWidth - this.font.width((FormattedText)this.title)) / 2;
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      this.renderTooltip(var1, var2, var3);
-   }
-
-   protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
-      int var5 = (this.width - this.imageWidth) / 2;
-      int var6 = (this.height - this.imageHeight) / 2;
-      var1.blit(RenderPipelines.GUI_TEXTURED, CONTAINER_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractBackground(graphics, mouseX, mouseY, a);
+      int xo = (this.width - this.imageWidth) / 2;
+      int yo = (this.height - this.imageHeight) / 2;
+      graphics.blit(RenderPipelines.GUI_TEXTURED, CONTAINER_LOCATION, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
    }
 }

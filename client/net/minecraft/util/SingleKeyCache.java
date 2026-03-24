@@ -9,15 +9,15 @@ public class SingleKeyCache<K, V> {
    private @Nullable K cacheKey = null;
    private @Nullable V cachedValue;
 
-   public SingleKeyCache(Function<K, V> var1) {
+   public SingleKeyCache(final Function<K, V> computeValue) {
       super();
-      this.computeValue = var1;
+      this.computeValue = computeValue;
    }
 
-   public V getValue(K var1) {
-      if (this.cachedValue == null || !Objects.equals(this.cacheKey, var1)) {
-         this.cachedValue = (V)this.computeValue.apply(var1);
-         this.cacheKey = var1;
+   public V getValue(final K cacheKey) {
+      if (this.cachedValue == null || !Objects.equals(this.cacheKey, cacheKey)) {
+         this.cachedValue = (V)this.computeValue.apply(cacheKey);
+         this.cacheKey = cacheKey;
       }
 
       return this.cachedValue;

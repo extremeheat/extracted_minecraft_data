@@ -8,25 +8,23 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 
 public record TagPredicate<T>(TagKey<T> tag, boolean expected) {
-   public TagPredicate(TagKey<T> var1, boolean var2) {
+   public TagPredicate {
       super();
-      this.tag = var1;
-      this.expected = var2;
    }
 
-   public static <T> Codec<TagPredicate<T>> codec(ResourceKey<? extends Registry<T>> var0) {
-      return RecordCodecBuilder.create((var1) -> var1.group(TagKey.codec(var0).fieldOf("id").forGetter(TagPredicate::tag), Codec.BOOL.fieldOf("expected").forGetter(TagPredicate::expected)).apply(var1, TagPredicate::new));
+   public static <T> Codec<TagPredicate<T>> codec(final ResourceKey<? extends Registry<T>> registryKey) {
+      return RecordCodecBuilder.create((i) -> i.group(TagKey.codec(registryKey).fieldOf("id").forGetter(TagPredicate::tag), Codec.BOOL.fieldOf("expected").forGetter(TagPredicate::expected)).apply(i, TagPredicate::new));
    }
 
-   public static <T> TagPredicate<T> is(TagKey<T> var0) {
-      return new TagPredicate<T>(var0, true);
+   public static <T> TagPredicate<T> is(final TagKey<T> tag) {
+      return new TagPredicate<T>(tag, true);
    }
 
-   public static <T> TagPredicate<T> isNot(TagKey<T> var0) {
-      return new TagPredicate<T>(var0, false);
+   public static <T> TagPredicate<T> isNot(final TagKey<T> tag) {
+      return new TagPredicate<T>(tag, false);
    }
 
-   public boolean matches(Holder<T> var1) {
-      return var1.is(this.tag) == this.expected;
+   public boolean matches(final Holder<T> holder) {
+      return holder.is(this.tag) == this.expected;
    }
 }

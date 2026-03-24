@@ -16,17 +16,16 @@ public record ClientboundLoginDisconnectPacket(Component reason) implements Pack
    private static final RegistryOps<JsonElement> OPS;
    public static final StreamCodec<ByteBuf, ClientboundLoginDisconnectPacket> STREAM_CODEC;
 
-   public ClientboundLoginDisconnectPacket(Component var1) {
+   public ClientboundLoginDisconnectPacket {
       super();
-      this.reason = var1;
    }
 
    public PacketType<ClientboundLoginDisconnectPacket> type() {
       return LoginPacketTypes.CLIENTBOUND_LOGIN_DISCONNECT;
    }
 
-   public void handle(ClientLoginPacketListener var1) {
-      var1.handleDisconnect(this);
+   public void handle(final ClientLoginPacketListener listener) {
+      listener.handleDisconnect(this);
    }
 
    static {

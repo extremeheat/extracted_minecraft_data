@@ -9,38 +9,38 @@ import net.minecraft.world.level.block.entity.TheEndGatewayBlockEntity;
 import net.minecraft.world.level.levelgen.feature.configurations.EndGatewayConfiguration;
 
 public class EndGatewayFeature extends Feature<EndGatewayConfiguration> {
-   public EndGatewayFeature(Codec<EndGatewayConfiguration> var1) {
-      super(var1);
+   public EndGatewayFeature(final Codec<EndGatewayConfiguration> codec) {
+      super(codec);
    }
 
-   public boolean place(FeaturePlaceContext<EndGatewayConfiguration> var1) {
-      BlockPos var2 = var1.origin();
-      WorldGenLevel var3 = var1.level();
-      EndGatewayConfiguration var4 = (EndGatewayConfiguration)var1.config();
+   public boolean place(final FeaturePlaceContext<EndGatewayConfiguration> context) {
+      BlockPos origin = context.origin();
+      WorldGenLevel level = context.level();
+      EndGatewayConfiguration config = context.config();
 
-      for(BlockPos var6 : BlockPos.betweenClosed(var2.offset(-1, -2, -1), var2.offset(1, 2, 1))) {
-         boolean var7 = var6.getX() == var2.getX();
-         boolean var8 = var6.getY() == var2.getY();
-         boolean var9 = var6.getZ() == var2.getZ();
-         boolean var10 = Math.abs(var6.getY() - var2.getY()) == 2;
-         if (var7 && var8 && var9) {
-            BlockPos var11 = var6.immutable();
-            this.setBlock(var3, var11, Blocks.END_GATEWAY.defaultBlockState());
-            var4.getExit().ifPresent((var3x) -> {
-               BlockEntity var4x = var3.getBlockEntity(var11);
-               if (var4x instanceof TheEndGatewayBlockEntity var5) {
-                  var5.setExitPosition(var3x, var4.isExitExact());
+      for(BlockPos pos : BlockPos.betweenClosed(origin.offset(-1, -2, -1), origin.offset(1, 2, 1))) {
+         boolean sameX = pos.getX() == origin.getX();
+         boolean sameY = pos.getY() == origin.getY();
+         boolean sameZ = pos.getZ() == origin.getZ();
+         boolean end = Math.abs(pos.getY() - origin.getY()) == 2;
+         if (sameX && sameY && sameZ) {
+            BlockPos immutable = pos.immutable();
+            this.setBlock(level, immutable, Blocks.END_GATEWAY.defaultBlockState());
+            config.getExit().ifPresent((targetPos) -> {
+               BlockEntity exitEntity = level.getBlockEntity(immutable);
+               if (exitEntity instanceof TheEndGatewayBlockEntity exitGateway) {
+                  exitGateway.setExitPosition(targetPos, config.isExitExact());
                }
 
             });
-         } else if (var8) {
-            this.setBlock(var3, var6, Blocks.AIR.defaultBlockState());
-         } else if (var10 && var7 && var9) {
-            this.setBlock(var3, var6, Blocks.BEDROCK.defaultBlockState());
-         } else if ((var7 || var9) && !var10) {
-            this.setBlock(var3, var6, Blocks.BEDROCK.defaultBlockState());
+         } else if (sameY) {
+            this.setBlock(level, pos, Blocks.AIR.defaultBlockState());
+         } else if (end && sameX && sameZ) {
+            this.setBlock(level, pos, Blocks.BEDROCK.defaultBlockState());
+         } else if ((sameX || sameZ) && !end) {
+            this.setBlock(level, pos, Blocks.BEDROCK.defaultBlockState());
          } else {
-            this.setBlock(var3, var6, Blocks.AIR.defaultBlockState());
+            this.setBlock(level, pos, Blocks.AIR.defaultBlockState());
          }
       }
 

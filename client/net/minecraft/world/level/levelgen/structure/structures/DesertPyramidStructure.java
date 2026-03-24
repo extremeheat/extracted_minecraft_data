@@ -3,6 +3,7 @@ package net.minecraft.world.level.levelgen.structure.structures;
 import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
+import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.util.RandomSource;
@@ -25,42 +26,42 @@ import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 public class DesertPyramidStructure extends SinglePieceStructure {
    public static final MapCodec<DesertPyramidStructure> CODEC = simpleCodec(DesertPyramidStructure::new);
 
-   public DesertPyramidStructure(Structure.StructureSettings var1) {
-      super(DesertPyramidPiece::new, 21, 21, var1);
+   public DesertPyramidStructure(final Structure.StructureSettings settings) {
+      super(DesertPyramidPiece::new, 21, 21, settings);
    }
 
-   public void afterPlace(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, PiecesContainer var7) {
-      SortedArraySet var8 = SortedArraySet.create(Vec3i::compareTo);
+   public void afterPlace(final WorldGenLevel level, final StructureManager structureManager, final ChunkGenerator generator, final RandomSource random, final BoundingBox chunkBB, final ChunkPos chunkPos, final PiecesContainer pieces) {
+      Set<BlockPos> uniqueSandPlacements = SortedArraySet.<BlockPos>create(Vec3i::compareTo);
 
-      for(StructurePiece var10 : var7.pieces()) {
-         if (var10 instanceof DesertPyramidPiece var11) {
-            var8.addAll(var11.getPotentialSuspiciousSandWorldPositions());
-            placeSuspiciousSand(var5, var1, var11.getRandomCollapsedRoofPos());
+      for(StructurePiece piece : pieces.pieces()) {
+         if (piece instanceof DesertPyramidPiece desertPyramidPiece) {
+            uniqueSandPlacements.addAll(desertPyramidPiece.getPotentialSuspiciousSandWorldPositions());
+            placeSuspiciousSand(chunkBB, level, desertPyramidPiece.getRandomCollapsedRoofPos());
          }
       }
 
-      ObjectArrayList var14 = new ObjectArrayList(var8.stream().toList());
-      RandomSource var15 = RandomSource.create(var1.getSeed()).forkPositional().at(var7.calculateBoundingBox().getCenter());
-      Util.shuffle(var14, var15);
-      int var16 = Math.min(var8.size(), var15.nextInt(5, 8));
-      ObjectListIterator var12 = var14.iterator();
+      ObjectArrayList<BlockPos> shuffledSandPlacements = new ObjectArrayList(uniqueSandPlacements.stream().toList());
+      RandomSource positionalRandom = RandomSource.createThreadLocalInstance(level.getSeed()).forkPositional().at(pieces.calculateBoundingBox().getCenter());
+      Util.shuffle(shuffledSandPlacements, positionalRandom);
+      int suspiciousSandToPlace = Math.min(uniqueSandPlacements.size(), positionalRandom.nextInt(5, 8));
+      ObjectListIterator var12 = shuffledSandPlacements.iterator();
 
       while(var12.hasNext()) {
-         BlockPos var13 = (BlockPos)var12.next();
-         if (var16 > 0) {
-            --var16;
-            placeSuspiciousSand(var5, var1, var13);
-         } else if (var5.isInside(var13)) {
-            var1.setBlock(var13, Blocks.SAND.defaultBlockState(), 2);
+         BlockPos blockPos = (BlockPos)var12.next();
+         if (suspiciousSandToPlace > 0) {
+            --suspiciousSandToPlace;
+            placeSuspiciousSand(chunkBB, level, blockPos);
+         } else if (chunkBB.isInside(blockPos)) {
+            level.setBlock(blockPos, Blocks.SAND.defaultBlockState(), 2);
          }
       }
 
    }
 
-   private static void placeSuspiciousSand(BoundingBox var0, WorldGenLevel var1, BlockPos var2) {
-      if (var0.isInside(var2)) {
-         var1.setBlock(var2, Blocks.SUSPICIOUS_SAND.defaultBlockState(), 2);
-         var1.getBlockEntity(var2, BlockEntityType.BRUSHABLE_BLOCK).ifPresent((var1x) -> var1x.setLootTable(BuiltInLootTables.DESERT_PYRAMID_ARCHAEOLOGY, var2.asLong()));
+   private static void placeSuspiciousSand(final BoundingBox chunkBB, final WorldGenLevel level, final BlockPos blockPos) {
+      if (chunkBB.isInside(blockPos)) {
+         level.setBlock(blockPos, Blocks.SUSPICIOUS_SAND.defaultBlockState(), 2);
+         level.getBlockEntity(blockPos, BlockEntityType.BRUSHABLE_BLOCK).ifPresent((entity) -> entity.setLootTable(BuiltInLootTables.DESERT_PYRAMID_ARCHAEOLOGY, blockPos.asLong()));
       }
 
    }

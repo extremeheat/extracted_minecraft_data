@@ -13,16 +13,16 @@ public class LegacyStuffWrapper {
 
    /** @deprecated */
    @Deprecated
-   public static int[] getPixels(ResourceManager var0, Identifier var1) throws IOException {
-      InputStream var2 = var0.open(var1);
+   public static int[] getPixels(final ResourceManager resourceManager, final Identifier location) throws IOException {
+      InputStream resource = resourceManager.open(location);
 
       int[] var4;
-      try (NativeImage var3 = NativeImage.read(var2)) {
-         var4 = var3.makePixelArray();
+      try (NativeImage image = NativeImage.read(resource)) {
+         var4 = image.makePixelArray();
       } catch (Throwable var9) {
-         if (var2 != null) {
+         if (resource != null) {
             try {
-               var2.close();
+               resource.close();
             } catch (Throwable var6) {
                var9.addSuppressed(var6);
             }
@@ -31,8 +31,8 @@ public class LegacyStuffWrapper {
          throw var9;
       }
 
-      if (var2 != null) {
-         var2.close();
+      if (resource != null) {
+         resource.close();
       }
 
       return var4;

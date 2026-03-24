@@ -7,7 +7,7 @@ import com.mojang.realmsclient.exception.RealmsServiceException;
 import com.mojang.realmsclient.util.task.GetServerDetailsTask;
 import com.mojang.realmsclient.util.task.LongRunningTask;
 import java.util.Objects;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
@@ -30,46 +30,46 @@ public class RealmsTermsScreen extends RealmsScreen {
    private final RealmsServer realmsServer;
    private boolean onLink;
 
-   public RealmsTermsScreen(Screen var1, RealmsServer var2) {
+   public RealmsTermsScreen(final Screen lastScreen, final RealmsServer realmsServer) {
       super(TITLE);
-      this.lastScreen = var1;
-      this.realmsServer = var2;
+      this.lastScreen = lastScreen;
+      this.realmsServer = realmsServer;
    }
 
    public void init() {
-      int var1 = this.width / 4 - 2;
-      this.addRenderableWidget(Button.builder(Component.translatable("mco.terms.buttons.agree"), (var1x) -> this.agreedToTos()).bounds(this.width / 4, row(12), var1, 20).build());
-      this.addRenderableWidget(Button.builder(Component.translatable("mco.terms.buttons.disagree"), (var1x) -> this.minecraft.setScreen(this.lastScreen)).bounds(this.width / 2 + 4, row(12), var1, 20).build());
+      int columnWidth = this.width / 4 - 2;
+      this.addRenderableWidget(Button.builder(Component.translatable("mco.terms.buttons.agree"), (button) -> this.agreedToTos()).bounds(this.width / 4, row(12), columnWidth, 20).build());
+      this.addRenderableWidget(Button.builder(Component.translatable("mco.terms.buttons.disagree"), (button) -> this.minecraft.setScreen(this.lastScreen)).bounds(this.width / 2 + 4, row(12), columnWidth, 20).build());
    }
 
-   public boolean keyPressed(KeyEvent var1) {
-      if (var1.key() == 256) {
+   public boolean keyPressed(final KeyEvent event) {
+      if (event.isEscape()) {
          this.minecraft.setScreen(this.lastScreen);
          return true;
       } else {
-         return super.keyPressed(var1);
+         return super.keyPressed(event);
       }
    }
 
    private void agreedToTos() {
-      RealmsClient var1 = RealmsClient.getOrCreate();
+      RealmsClient client = RealmsClient.getOrCreate();
 
       try {
-         var1.agreeToTos();
+         client.agreeToTos();
          this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(this.lastScreen, new LongRunningTask[]{new GetServerDetailsTask(this.lastScreen, this.realmsServer)}));
-      } catch (RealmsServiceException var3) {
-         LOGGER.error("Couldn't agree to TOS", var3);
+      } catch (RealmsServiceException e) {
+         LOGGER.error("Couldn't agree to TOS", e);
       }
 
    }
 
-   public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+   public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
       if (this.onLink) {
          this.minecraft.keyboardHandler.setClipboard(CommonLinks.REALMS_TERMS.toString());
          Util.getPlatform().openUri(CommonLinks.REALMS_TERMS);
          return true;
       } else {
-         return super.mouseClicked(var1, var2);
+         return super.mouseClicked(event, doubleClick);
       }
    }
 
@@ -77,19 +77,19 @@ public class RealmsTermsScreen extends RealmsScreen {
       return CommonComponents.joinForNarration(super.getNarrationMessage(), TERMS_STATIC_TEXT).append(CommonComponents.SPACE).append(TERMS_LINK_TEXT);
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 17, -1);
-      var1.drawString(this.font, (Component)TERMS_STATIC_TEXT, this.width / 2 - 120, row(5), -1);
-      int var5 = this.font.width((FormattedText)TERMS_STATIC_TEXT);
-      int var6 = this.width / 2 - 121 + var5;
-      int var7 = row(5);
-      int var8 = var6 + this.font.width((FormattedText)TERMS_LINK_TEXT) + 1;
-      int var10000 = var7 + 1;
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int xm, final int ym, final float a) {
+      super.extractRenderState(graphics, xm, ym, a);
+      graphics.centeredText(this.font, (Component)this.title, this.width / 2, 17, -1);
+      graphics.text(this.font, (Component)TERMS_STATIC_TEXT, this.width / 2 - 120, row(5), -1);
+      int firstPartWidth = this.font.width((FormattedText)TERMS_STATIC_TEXT);
+      int x1 = this.width / 2 - 121 + firstPartWidth;
+      int y1 = row(5);
+      int x2 = x1 + this.font.width((FormattedText)TERMS_LINK_TEXT) + 1;
+      int var10000 = y1 + 1;
       Objects.requireNonNull(this.font);
-      int var9 = var10000 + 9;
-      this.onLink = var6 <= var2 && var2 <= var8 && var7 <= var3 && var3 <= var9;
-      var1.drawString(this.font, TERMS_LINK_TEXT, this.width / 2 - 120 + var5, row(5), this.onLink ? -9670204 : -13408581);
+      int y2 = var10000 + 9;
+      this.onLink = x1 <= xm && xm <= x2 && y1 <= ym && ym <= y2;
+      graphics.text(this.font, TERMS_LINK_TEXT, this.width / 2 - 120 + firstPartWidth, row(5), this.onLink ? -9670204 : -13408581);
    }
 
    static {

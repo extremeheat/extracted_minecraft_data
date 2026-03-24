@@ -3,6 +3,7 @@ package net.minecraft.core;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.Lifecycle;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -31,22 +32,26 @@ public interface HolderLookup<T> extends HolderGetter<T> {
 
       Lifecycle registryLifecycle();
 
-      default RegistryLookup<T> filterFeatures(FeatureFlagSet var1) {
-         return FeatureElement.FILTERED_REGISTRIES.contains(this.key()) ? this.filterElements((var1x) -> ((FeatureElement)var1x).isEnabled(var1)) : this;
+      default RegistryLookup<T> filterFeatures(final FeatureFlagSet enabledFeatures) {
+         return FeatureElement.FILTERED_REGISTRIES.contains(this.key()) ? this.filterElements((t) -> ((FeatureElement)t).isEnabled(enabledFeatures)) : this;
       }
 
-      default RegistryLookup<T> filterElements(final Predicate<T> var1) {
+      default RegistryLookup<T> filterElements(final Predicate<T> filter) {
          return new Delegate<T>() {
+            {
+               Objects.requireNonNull(RegistryLookup.this);
+            }
+
             public RegistryLookup<T> parent() {
                return RegistryLookup.this;
             }
 
-            public Optional<Holder.Reference<T>> get(ResourceKey<T> var1x) {
-               return this.parent().get(var1x).filter((var1xx) -> var1.test(var1xx.value()));
+            public Optional<Holder.Reference<T>> get(final ResourceKey<T> id) {
+               return this.parent().get(id).filter((holder) -> filter.test(holder.value()));
             }
 
             public Stream<Holder.Reference<T>> listElements() {
-               return this.parent().listElements().filter((var1x) -> var1.test(var1x.value()));
+               return this.parent().listElements().filter((e) -> filter.test(e.value()));
             }
          };
       }
@@ -62,16 +67,16 @@ public interface HolderLookup<T> extends HolderGetter<T> {
             return this.parent().registryLifecycle();
          }
 
-         default Optional<Holder.Reference<T>> get(ResourceKey<T> var1) {
-            return this.parent().get(var1);
+         default Optional<Holder.Reference<T>> get(final ResourceKey<T> id) {
+            return this.parent().get(id);
          }
 
          default Stream<Holder.Reference<T>> listElements() {
             return this.parent().listElements();
          }
 
-         default Optional<HolderSet.Named<T>> get(TagKey<T> var1) {
-            return this.parent().get(var1);
+         default Optional<HolderSet.Named<T>> get(final TagKey<T> id) {
+            return this.parent().get(id);
          }
 
          default Stream<HolderSet.Named<T>> listTags() {
@@ -87,36 +92,31 @@ public interface HolderLookup<T> extends HolderGetter<T> {
          return this.listRegistryKeys().map(this::lookupOrThrow);
       }
 
-      <T> Optional<? extends RegistryLookup<T>> lookup(ResourceKey<? extends Registry<? extends T>> var1);
+      <T> Optional<? extends RegistryLookup<T>> lookup(final ResourceKey<? extends Registry<? extends T>> key);
 
-      default <T> RegistryLookup<T> lookupOrThrow(ResourceKey<? extends Registry<? extends T>> var1) {
-         return (RegistryLookup)this.lookup(var1).orElseThrow(() -> new IllegalStateException("Registry " + String.valueOf(var1.identifier()) + " not found"));
+      default <T> RegistryLookup<T> lookupOrThrow(final ResourceKey<? extends Registry<? extends T>> key) {
+         return (RegistryLookup)this.lookup(key).orElseThrow(() -> new IllegalStateException("Registry " + String.valueOf(key.identifier()) + " not found"));
       }
 
-      default <V> RegistryOps<V> createSerializationContext(DynamicOps<V> var1) {
-         return RegistryOps.create(var1, this);
+      default <V> RegistryOps<V> createSerializationContext(final DynamicOps<V> parent) {
+         return RegistryOps.create(parent, this);
       }
 
-      static Provider create(Stream<RegistryLookup<?>> var0) {
-         final Map var1 = (Map)var0.collect(Collectors.toUnmodifiableMap(RegistryLookup::key, (var0x) -> var0x));
+      static Provider create(final Stream<RegistryLookup<?>> lookups) {
+         final Map<ResourceKey<? extends Registry<?>>, RegistryLookup<?>> map = (Map)lookups.collect(Collectors.toUnmodifiableMap(RegistryLookup::key, (e) -> e));
          return new Provider() {
             public Stream<ResourceKey<? extends Registry<?>>> listRegistryKeys() {
-               return var1.keySet().stream();
+               return map.keySet().stream();
             }
 
-            public <T> Optional<RegistryLookup<T>> lookup(ResourceKey<? extends Registry<? extends T>> var1x) {
-               return Optional.ofNullable((RegistryLookup)var1.get(var1x));
+            public <T> Optional<RegistryLookup<T>> lookup(final ResourceKey<? extends Registry<? extends T>> key) {
+               return Optional.ofNullable((RegistryLookup)map.get(key));
             }
          };
       }
 
       default Lifecycle allRegistriesLifecycle() {
          return (Lifecycle)this.listRegistries().map(RegistryLookup::registryLifecycle).reduce(Lifecycle.stable(), Lifecycle::add);
-      }
-
-      // $FF: synthetic method
-      default HolderGetter lookupOrThrow(final ResourceKey var1) {
-         return this.lookupOrThrow(var1);
       }
    }
 }

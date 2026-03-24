@@ -11,11 +11,9 @@ import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
 import net.minecraft.client.renderer.entity.layers.WingsLayer;
 import net.minecraft.client.renderer.entity.state.ArmorStandRenderState;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.decoration.ArmorStand;
@@ -23,20 +21,20 @@ import org.joml.Quaternionfc;
 import org.jspecify.annotations.Nullable;
 
 public class ArmorStandRenderer extends LivingEntityRenderer<ArmorStand, ArmorStandRenderState, ArmorStandArmorModel> {
-   public static final Identifier DEFAULT_SKIN_LOCATION = Identifier.withDefaultNamespace("textures/entity/armorstand/wood.png");
+   public static final Identifier DEFAULT_SKIN_LOCATION = Identifier.withDefaultNamespace("textures/entity/armorstand/armorstand.png");
    private final ArmorStandArmorModel bigModel = (ArmorStandArmorModel)this.getModel();
    private final ArmorStandArmorModel smallModel;
 
-   public ArmorStandRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new ArmorStandModel(var1.bakeLayer(ModelLayers.ARMOR_STAND)), 0.0F);
-      this.smallModel = new ArmorStandModel(var1.bakeLayer(ModelLayers.ARMOR_STAND_SMALL));
-      this.addLayer(new HumanoidArmorLayer(this, ArmorModelSet.bake(ModelLayers.ARMOR_STAND_ARMOR, var1.getModelSet(), ArmorStandArmorModel::new), ArmorModelSet.bake(ModelLayers.ARMOR_STAND_SMALL_ARMOR, var1.getModelSet(), ArmorStandArmorModel::new), var1.getEquipmentRenderer()));
+   public ArmorStandRenderer(final EntityRendererProvider.Context context) {
+      super(context, new ArmorStandModel(context.bakeLayer(ModelLayers.ARMOR_STAND)), 0.0F);
+      this.smallModel = new ArmorStandModel(context.bakeLayer(ModelLayers.ARMOR_STAND_SMALL));
+      this.addLayer(new HumanoidArmorLayer(this, ArmorModelSet.bake(ModelLayers.ARMOR_STAND_ARMOR, context.getModelSet(), ArmorStandArmorModel::new), ArmorModelSet.bake(ModelLayers.ARMOR_STAND_SMALL_ARMOR, context.getModelSet(), ArmorStandArmorModel::new), context.getEquipmentRenderer()));
       this.addLayer(new ItemInHandLayer(this));
-      this.addLayer(new WingsLayer(this, var1.getModelSet(), var1.getEquipmentRenderer()));
-      this.addLayer(new CustomHeadLayer(this, var1.getModelSet(), var1.getPlayerSkinRenderCache()));
+      this.addLayer(new WingsLayer(this, context.getModelSet(), context.getEquipmentRenderer()));
+      this.addLayer(new CustomHeadLayer(this, context.getModelSet(), context.getPlayerSkinRenderCache()));
    }
 
-   public Identifier getTextureLocation(ArmorStandRenderState var1) {
+   public Identifier getTextureLocation(final ArmorStandRenderState state) {
       return DEFAULT_SKIN_LOCATION;
    }
 
@@ -44,60 +42,50 @@ public class ArmorStandRenderer extends LivingEntityRenderer<ArmorStand, ArmorSt
       return new ArmorStandRenderState();
    }
 
-   public void extractRenderState(ArmorStand var1, ArmorStandRenderState var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      HumanoidMobRenderer.extractHumanoidRenderState(var1, var2, var3, this.itemModelResolver);
-      var2.yRot = Mth.rotLerp(var3, var1.yRotO, var1.getYRot());
-      var2.isMarker = var1.isMarker();
-      var2.isSmall = var1.isSmall();
-      var2.showArms = var1.showArms();
-      var2.showBasePlate = var1.showBasePlate();
-      var2.bodyPose = var1.getBodyPose();
-      var2.headPose = var1.getHeadPose();
-      var2.leftArmPose = var1.getLeftArmPose();
-      var2.rightArmPose = var1.getRightArmPose();
-      var2.leftLegPose = var1.getLeftLegPose();
-      var2.rightLegPose = var1.getRightLegPose();
-      var2.wiggle = (float)(var1.level().getGameTime() - var1.lastHit) + var3;
+   public void extractRenderState(final ArmorStand entity, final ArmorStandRenderState state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      HumanoidMobRenderer.extractHumanoidRenderState(entity, state, partialTicks, this.itemModelResolver);
+      state.yRot = Mth.rotLerp(partialTicks, entity.yRotO, entity.getYRot());
+      state.isMarker = entity.isMarker();
+      state.isSmall = entity.isSmall();
+      state.showArms = entity.showArms();
+      state.showBasePlate = entity.showBasePlate();
+      state.bodyPose = entity.getBodyPose();
+      state.headPose = entity.getHeadPose();
+      state.leftArmPose = entity.getLeftArmPose();
+      state.rightArmPose = entity.getRightArmPose();
+      state.leftLegPose = entity.getLeftLegPose();
+      state.rightLegPose = entity.getRightLegPose();
+      state.wiggle = (float)(entity.level().getGameTime() - entity.lastHit) + partialTicks;
    }
 
-   public void submit(ArmorStandRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
-      this.model = var1.isSmall ? this.smallModel : this.bigModel;
-      super.submit(var1, var2, var3, var4);
+   public void submit(final ArmorStandRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
+      this.model = state.isSmall ? this.smallModel : this.bigModel;
+      super.submit(state, poseStack, submitNodeCollector, camera);
    }
 
-   protected void setupRotations(ArmorStandRenderState var1, PoseStack var2, float var3, float var4) {
-      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - var3));
-      if (var1.wiggle < 5.0F) {
-         var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(Mth.sin((double)(var1.wiggle / 1.5F * 3.1415927F)) * 3.0F));
+   protected void setupRotations(final ArmorStandRenderState state, final PoseStack poseStack, final float bodyRot, final float entityScale) {
+      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - bodyRot));
+      if (state.wiggle < 5.0F) {
+         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(Mth.sin((double)(state.wiggle / 1.5F * 3.1415927F)) * 3.0F));
       }
 
    }
 
-   protected boolean shouldShowName(ArmorStand var1, double var2) {
-      return var1.isCustomNameVisible();
+   protected boolean shouldShowName(final ArmorStand entity, final double distanceToCameraSq) {
+      return entity.isCustomNameVisible();
    }
 
-   protected @Nullable RenderType getRenderType(ArmorStandRenderState var1, boolean var2, boolean var3, boolean var4) {
-      if (!var1.isMarker) {
-         return super.getRenderType(var1, var2, var3, var4);
+   protected @Nullable RenderType getRenderType(final ArmorStandRenderState state, final boolean isBodyVisible, final boolean forceTransparent, final boolean appearGlowing) {
+      if (!state.isMarker) {
+         return super.getRenderType(state, isBodyVisible, forceTransparent, appearGlowing);
       } else {
-         Identifier var5 = this.getTextureLocation(var1);
-         if (var3) {
-            return RenderTypes.entityTranslucent(var5, false);
+         Identifier texture = this.getTextureLocation(state);
+         if (forceTransparent) {
+            return RenderTypes.entityTranslucent(texture, false);
          } else {
-            return var2 ? RenderTypes.entityCutoutNoCull(var5, false) : null;
+            return isBodyVisible ? RenderTypes.entityCutout(texture, false) : null;
          }
       }
-   }
-
-   // $FF: synthetic method
-   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
-      return this.getTextureLocation((ArmorStandRenderState)var1);
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
    }
 }

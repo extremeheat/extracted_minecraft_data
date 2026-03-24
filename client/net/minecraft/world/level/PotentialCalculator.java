@@ -11,40 +11,40 @@ public class PotentialCalculator {
       super();
    }
 
-   public void addCharge(BlockPos var1, double var2) {
-      if (var2 != 0.0) {
-         this.charges.add(new PointCharge(var1, var2));
+   public void addCharge(final BlockPos pos, final double charge) {
+      if (charge != 0.0) {
+         this.charges.add(new PointCharge(pos, charge));
       }
 
    }
 
-   public double getPotentialEnergyChange(BlockPos var1, double var2) {
-      if (var2 == 0.0) {
+   public double getPotentialEnergyChange(final BlockPos pos, final double charge) {
+      if (charge == 0.0) {
          return 0.0;
       } else {
-         double var4 = 0.0;
+         double potentialChange = 0.0;
 
-         for(PointCharge var7 : this.charges) {
-            var4 += var7.getPotentialChange(var1);
+         for(PointCharge point : this.charges) {
+            potentialChange += point.getPotentialChange(pos);
          }
 
-         return var4 * var2;
+         return potentialChange * charge;
       }
    }
 
-   static class PointCharge {
+   private static class PointCharge {
       private final BlockPos pos;
       private final double charge;
 
-      public PointCharge(BlockPos var1, double var2) {
+      public PointCharge(final BlockPos pos, final double charge) {
          super();
-         this.pos = var1;
-         this.charge = var2;
+         this.pos = pos;
+         this.charge = charge;
       }
 
-      public double getPotentialChange(BlockPos var1) {
-         double var2 = this.pos.distSqr(var1);
-         return var2 == 0.0 ? 1.0 / 0.0 : this.charge / Math.sqrt(var2);
+      public double getPotentialChange(final BlockPos pos) {
+         double distSqr = this.pos.distSqr(pos);
+         return distSqr == 0.0 ? 1.0 / 0.0 : this.charge / Math.sqrt(distSqr);
       }
    }
 }

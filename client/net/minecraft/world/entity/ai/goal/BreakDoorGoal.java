@@ -13,16 +13,16 @@ public class BreakDoorGoal extends DoorInteractGoal {
    protected int lastBreakProgress;
    protected int doorBreakTime;
 
-   public BreakDoorGoal(Mob var1, Predicate<Difficulty> var2) {
-      super(var1);
+   public BreakDoorGoal(final Mob mob, final Predicate<Difficulty> validDifficulties) {
+      super(mob);
       this.lastBreakProgress = -1;
       this.doorBreakTime = -1;
-      this.validDifficulties = var2;
+      this.validDifficulties = validDifficulties;
    }
 
-   public BreakDoorGoal(Mob var1, int var2, Predicate<Difficulty> var3) {
-      this(var1, var3);
-      this.doorBreakTime = var2;
+   public BreakDoorGoal(final Mob mob, final int seconds, final Predicate<Difficulty> validDifficulties) {
+      this(mob, validDifficulties);
+      this.doorBreakTime = seconds;
    }
 
    protected int getDoorBreakTime() {
@@ -63,10 +63,10 @@ public class BreakDoorGoal extends DoorInteractGoal {
       }
 
       ++this.breakTime;
-      int var1 = (int)((float)this.breakTime / (float)this.getDoorBreakTime() * 10.0F);
-      if (var1 != this.lastBreakProgress) {
-         this.mob.level().destroyBlockProgress(this.mob.getId(), this.doorPos, var1);
-         this.lastBreakProgress = var1;
+      int progress = (int)((float)this.breakTime / (float)this.getDoorBreakTime() * 10.0F);
+      if (progress != this.lastBreakProgress) {
+         this.mob.level().destroyBlockProgress(this.mob.getId(), this.doorPos, progress);
+         this.lastBreakProgress = progress;
       }
 
       if (this.breakTime == this.getDoorBreakTime() && this.isValidDifficulty(this.mob.level().getDifficulty())) {
@@ -77,7 +77,7 @@ public class BreakDoorGoal extends DoorInteractGoal {
 
    }
 
-   private boolean isValidDifficulty(Difficulty var1) {
-      return this.validDifficulties.test(var1);
+   private boolean isValidDifficulty(final Difficulty difficulty) {
+      return this.validDifficulties.test(difficulty);
    }
 }

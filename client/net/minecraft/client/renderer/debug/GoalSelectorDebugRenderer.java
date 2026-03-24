@@ -15,23 +15,23 @@ public class GoalSelectorDebugRenderer implements DebugRenderer.SimpleDebugRende
    private static final int MAX_RENDER_DIST = 160;
    private final Minecraft minecraft;
 
-   public GoalSelectorDebugRenderer(Minecraft var1) {
+   public GoalSelectorDebugRenderer(final Minecraft minecraft) {
       super();
-      this.minecraft = var1;
+      this.minecraft = minecraft;
    }
 
-   public void emitGizmos(double var1, double var3, double var5, DebugValueAccess var7, Frustum var8, float var9) {
-      Camera var10 = this.minecraft.gameRenderer.getMainCamera();
-      BlockPos var11 = BlockPos.containing(var10.position().x, 0.0, var10.position().z);
-      var7.forEachEntity(DebugSubscriptions.GOAL_SELECTORS, (var1x, var2) -> {
-         if (var11.closerThan(var1x.blockPosition(), 160.0)) {
-            for(int var3 = 0; var3 < var2.goals().size(); ++var3) {
-               DebugGoalInfo.DebugGoal var4 = (DebugGoalInfo.DebugGoal)var2.goals().get(var3);
-               double var5 = (double)var1x.getBlockX() + 0.5;
-               double var7 = var1x.getY() + 2.0 + (double)var3 * 0.25;
-               double var9 = (double)var1x.getBlockZ() + 0.5;
-               int var11x = var4.isRunning() ? -16711936 : -3355444;
-               Gizmos.billboardText(var4.name(), new Vec3(var5, var7, var9), TextGizmo.Style.forColorAndCentered(var11x));
+   public void emitGizmos(final double camX, final double camY, final double camZ, final DebugValueAccess debugValues, final Frustum frustum, final float partialTicks) {
+      Camera camera = this.minecraft.gameRenderer.getMainCamera();
+      BlockPos playerPos = BlockPos.containing(camera.position().x, 0.0, camera.position().z);
+      debugValues.forEachEntity(DebugSubscriptions.GOAL_SELECTORS, (entity, goalInfo) -> {
+         if (playerPos.closerThan(entity.blockPosition(), 160.0)) {
+            for(int i = 0; i < goalInfo.goals().size(); ++i) {
+               DebugGoalInfo.DebugGoal goal = (DebugGoalInfo.DebugGoal)goalInfo.goals().get(i);
+               double x = (double)entity.getBlockX() + 0.5;
+               double y = entity.getY() + 2.0 + (double)i * 0.25;
+               double z = (double)entity.getBlockZ() + 0.5;
+               int color = goal.isRunning() ? -16711936 : -3355444;
+               Gizmos.billboardText(goal.name(), new Vec3(x, y, z), TextGizmo.Style.forColorAndCentered(color));
             }
          }
 

@@ -23,63 +23,58 @@ public class Vec2Argument implements ArgumentType<Coordinates> {
    public static final SimpleCommandExceptionType ERROR_NOT_COMPLETE = new SimpleCommandExceptionType(Component.translatable("argument.pos2d.incomplete"));
    private final boolean centerCorrect;
 
-   public Vec2Argument(boolean var1) {
+   public Vec2Argument(final boolean centerCorrect) {
       super();
-      this.centerCorrect = var1;
+      this.centerCorrect = centerCorrect;
    }
 
    public static Vec2Argument vec2() {
       return new Vec2Argument(true);
    }
 
-   public static Vec2Argument vec2(boolean var0) {
-      return new Vec2Argument(var0);
+   public static Vec2Argument vec2(final boolean centerCorrect) {
+      return new Vec2Argument(centerCorrect);
    }
 
-   public static Vec2 getVec2(CommandContext<CommandSourceStack> var0, String var1) {
-      Vec3 var2 = ((Coordinates)var0.getArgument(var1, Coordinates.class)).getPosition((CommandSourceStack)var0.getSource());
-      return new Vec2((float)var2.x, (float)var2.z);
+   public static Vec2 getVec2(final CommandContext<CommandSourceStack> context, final String name) {
+      Vec3 vec3 = ((Coordinates)context.getArgument(name, Coordinates.class)).getPosition((CommandSourceStack)context.getSource());
+      return new Vec2((float)vec3.x, (float)vec3.z);
    }
 
-   public Coordinates parse(StringReader var1) throws CommandSyntaxException {
-      int var2 = var1.getCursor();
-      if (!var1.canRead()) {
-         throw ERROR_NOT_COMPLETE.createWithContext(var1);
+   public Coordinates parse(final StringReader reader) throws CommandSyntaxException {
+      int start = reader.getCursor();
+      if (!reader.canRead()) {
+         throw ERROR_NOT_COMPLETE.createWithContext(reader);
       } else {
-         WorldCoordinate var3 = WorldCoordinate.parseDouble(var1, this.centerCorrect);
-         if (var1.canRead() && var1.peek() == ' ') {
-            var1.skip();
-            WorldCoordinate var4 = WorldCoordinate.parseDouble(var1, this.centerCorrect);
-            return new WorldCoordinates(var3, new WorldCoordinate(true, 0.0), var4);
+         WorldCoordinate x = WorldCoordinate.parseDouble(reader, this.centerCorrect);
+         if (reader.canRead() && reader.peek() == ' ') {
+            reader.skip();
+            WorldCoordinate z = WorldCoordinate.parseDouble(reader, this.centerCorrect);
+            return new WorldCoordinates(x, new WorldCoordinate(true, 0.0), z);
          } else {
-            var1.setCursor(var2);
-            throw ERROR_NOT_COMPLETE.createWithContext(var1);
+            reader.setCursor(start);
+            throw ERROR_NOT_COMPLETE.createWithContext(reader);
          }
       }
    }
 
-   public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      if (!(var1.getSource() instanceof SharedSuggestionProvider)) {
+   public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
+      if (!(context.getSource() instanceof SharedSuggestionProvider)) {
          return Suggestions.empty();
       } else {
-         String var3 = var2.getRemaining();
-         Object var4;
-         if (!var3.isEmpty() && var3.charAt(0) == '^') {
-            var4 = Collections.singleton(SharedSuggestionProvider.TextCoordinates.DEFAULT_LOCAL);
+         String remainder = builder.getRemaining();
+         Collection<SharedSuggestionProvider.TextCoordinates> suggestedCoordinates;
+         if (!remainder.isEmpty() && remainder.charAt(0) == '^') {
+            suggestedCoordinates = Collections.singleton(SharedSuggestionProvider.TextCoordinates.DEFAULT_LOCAL);
          } else {
-            var4 = ((SharedSuggestionProvider)var1.getSource()).getAbsoluteCoordinates();
+            suggestedCoordinates = ((SharedSuggestionProvider)context.getSource()).getAbsoluteCoordinates();
          }
 
-         return SharedSuggestionProvider.suggest2DCoordinates(var3, (Collection)var4, var2, Commands.createValidator(this::parse));
+         return SharedSuggestionProvider.suggest2DCoordinates(remainder, suggestedCoordinates, builder, Commands.createValidator(this::parse));
       }
    }
 
    public Collection<String> getExamples() {
       return EXAMPLES;
-   }
-
-   // $FF: synthetic method
-   public Object parse(final StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1);
    }
 }

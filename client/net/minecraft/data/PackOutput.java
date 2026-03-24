@@ -1,6 +1,7 @@
 package net.minecraft.data;
 
 import java.nio.file.Path;
+import java.util.function.UnaryOperator;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
@@ -9,29 +10,33 @@ import net.minecraft.resources.ResourceKey;
 public class PackOutput {
    private final Path outputFolder;
 
-   public PackOutput(Path var1) {
+   public PackOutput(final Path outputFolder) {
       super();
-      this.outputFolder = var1;
+      this.outputFolder = outputFolder;
    }
 
    public Path getOutputFolder() {
       return this.outputFolder;
    }
 
-   public Path getOutputFolder(Target var1) {
-      return this.getOutputFolder().resolve(var1.directory);
+   public Path getOutputFolder(final Target target) {
+      return this.getOutputFolder().resolve(target.directory);
    }
 
-   public PathProvider createPathProvider(Target var1, String var2) {
-      return new PathProvider(this, var1, var2);
+   public PathProvider createPathProvider(final Target target, final String kind) {
+      return new PathProvider(this, target, kind);
    }
 
-   public PathProvider createRegistryElementsPathProvider(ResourceKey<? extends Registry<?>> var1) {
-      return this.createPathProvider(PackOutput.Target.DATA_PACK, Registries.elementsDirPath(var1));
+   public PathProvider createRegistryElementsPathProvider(final ResourceKey<? extends Registry<?>> registryKey) {
+      return this.createPathProvider(PackOutput.Target.DATA_PACK, Registries.elementsDirPath(registryKey));
    }
 
-   public PathProvider createRegistryTagsPathProvider(ResourceKey<? extends Registry<?>> var1) {
-      return this.createPathProvider(PackOutput.Target.DATA_PACK, Registries.tagsDirPath(var1));
+   public PathProvider createRegistryTagsPathProvider(final ResourceKey<? extends Registry<?>> registryKey) {
+      return this.createPathProvider(PackOutput.Target.DATA_PACK, Registries.tagsDirPath(registryKey));
+   }
+
+   public PathProvider createRegistryComponentPathProvider(final ResourceKey<? extends Registry<?>> registryKey) {
+      return this.createPathProvider(PackOutput.Target.REPORTS, Registries.componentsDirPath(registryKey));
    }
 
    public static enum Target {
@@ -39,10 +44,10 @@ public class PackOutput {
       RESOURCE_PACK("assets"),
       REPORTS("reports");
 
-      final String directory;
+      private final String directory;
 
-      private Target(final String var3) {
-         this.directory = var3;
+      private Target(final String directory) {
+         this.directory = directory;
       }
 
       // $FF: synthetic method
@@ -55,24 +60,22 @@ public class PackOutput {
       private final Path root;
       private final String kind;
 
-      PathProvider(PackOutput var1, Target var2, String var3) {
+      private PathProvider(final PackOutput output, final Target target, final String kind) {
          super();
-         this.root = var1.getOutputFolder(var2);
-         this.kind = var3;
+         this.root = output.getOutputFolder(target);
+         this.kind = kind;
       }
 
-      public Path file(Identifier var1, String var2) {
-         Path var10000 = this.root.resolve(var1.getNamespace()).resolve(this.kind);
-         String var10001 = var1.getPath();
-         return var10000.resolve(var10001 + "." + var2);
+      public Path file(final Identifier element, final String extension) {
+         return element.withPath((UnaryOperator)((path) -> this.kind + "/" + path + "." + extension)).resolveAgainst(this.root);
       }
 
-      public Path json(Identifier var1) {
-         return this.root.resolve(var1.getNamespace()).resolve(this.kind).resolve(var1.getPath() + ".json");
+      public Path json(final Identifier element) {
+         return element.withPath((UnaryOperator)((path) -> this.kind + "/" + path + ".json")).resolveAgainst(this.root);
       }
 
-      public Path json(ResourceKey<?> var1) {
-         return this.root.resolve(var1.identifier().getNamespace()).resolve(this.kind).resolve(var1.identifier().getPath() + ".json");
+      public Path json(final ResourceKey<?> element) {
+         return this.json(element.identifier());
       }
    }
 }

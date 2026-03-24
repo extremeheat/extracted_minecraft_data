@@ -19,24 +19,24 @@ public class FallingLeavesParticle extends SingleQuadParticle {
    private final double zaFlowScale;
    private final double swirlPeriod;
 
-   protected FallingLeavesParticle(ClientLevel var1, double var2, double var4, double var6, TextureAtlasSprite var8, float var9, float var10, boolean var11, boolean var12, float var13, float var14) {
-      super(var1, var2, var4, var6, var8);
+   protected FallingLeavesParticle(final ClientLevel level, final double x, final double y, final double z, final TextureAtlasSprite sprite, final float fallAcceleration, final float sideAcceleration, final boolean swirl, final boolean flowAway, final float scale, final float startVelocity) {
+      super(level, x, y, z, sprite);
       this.rotSpeed = (float)Math.toRadians(this.random.nextBoolean() ? -30.0 : 30.0);
       this.spinAcceleration = (float)Math.toRadians(this.random.nextBoolean() ? -5.0 : 5.0);
-      this.windBig = var10;
-      this.swirl = var11;
-      this.flowAway = var12;
+      this.windBig = sideAcceleration;
+      this.swirl = swirl;
+      this.flowAway = flowAway;
       this.lifetime = 300;
-      this.gravity = var9 * 1.2F * 0.0025F;
-      float var15 = var13 * (this.random.nextBoolean() ? 0.05F : 0.075F);
-      this.quadSize = var15;
-      this.setSize(var15, var15);
+      this.gravity = fallAcceleration * 1.2F * 0.0025F;
+      float size = scale * (this.random.nextBoolean() ? 0.05F : 0.075F);
+      this.quadSize = size;
+      this.setSize(size, size);
       this.friction = 1.0F;
-      this.yd = (double)(-var14);
-      float var16 = this.random.nextFloat();
-      this.xaFlowScale = Math.cos(Math.toRadians((double)(var16 * 60.0F))) * (double)this.windBig;
-      this.zaFlowScale = Math.sin(Math.toRadians((double)(var16 * 60.0F))) * (double)this.windBig;
-      this.swirlPeriod = Math.toRadians((double)(1000.0F + var16 * 3000.0F));
+      this.yd = (double)(-startVelocity);
+      float particleRandom = this.random.nextFloat();
+      this.xaFlowScale = Math.cos(Math.toRadians((double)(particleRandom * 60.0F))) * (double)this.windBig;
+      this.zaFlowScale = Math.sin(Math.toRadians((double)(particleRandom * 60.0F))) * (double)this.windBig;
+      this.swirlPeriod = Math.toRadians((double)(1000.0F + particleRandom * 3000.0F));
    }
 
    public SingleQuadParticle.Layer getLayer() {
@@ -52,22 +52,22 @@ public class FallingLeavesParticle extends SingleQuadParticle {
       }
 
       if (!this.removed) {
-         float var1 = (float)(300 - this.lifetime);
-         float var2 = Math.min(var1 / 300.0F, 1.0F);
-         double var3 = 0.0;
-         double var5 = 0.0;
+         float aliveTicks = (float)(300 - this.lifetime);
+         float relativeAge = Math.min(aliveTicks / 300.0F, 1.0F);
+         double xa = 0.0;
+         double za = 0.0;
          if (this.flowAway) {
-            var3 += this.xaFlowScale * Math.pow((double)var2, 1.25);
-            var5 += this.zaFlowScale * Math.pow((double)var2, 1.25);
+            xa += this.xaFlowScale * Math.pow((double)relativeAge, 1.25);
+            za += this.zaFlowScale * Math.pow((double)relativeAge, 1.25);
          }
 
          if (this.swirl) {
-            var3 += (double)var2 * Math.cos((double)var2 * this.swirlPeriod) * (double)this.windBig;
-            var5 += (double)var2 * Math.sin((double)var2 * this.swirlPeriod) * (double)this.windBig;
+            xa += (double)relativeAge * Math.cos((double)relativeAge * this.swirlPeriod) * (double)this.windBig;
+            za += (double)relativeAge * Math.sin((double)relativeAge * this.swirlPeriod) * (double)this.windBig;
          }
 
-         this.xd += var3 * 0.0024999999441206455;
-         this.zd += var5 * 0.0024999999441206455;
+         this.xd += xa * 0.0024999999441206455;
+         this.zd += za * 0.0024999999441206455;
          this.yd -= (double)this.gravity;
          this.rotSpeed += this.spinAcceleration / 20.0F;
          this.oRoll = this.roll;
@@ -88,41 +88,41 @@ public class FallingLeavesParticle extends SingleQuadParticle {
    public static class CherryProvider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprites;
 
-      public CherryProvider(SpriteSet var1) {
+      public CherryProvider(final SpriteSet sprites) {
          super();
-         this.sprites = var1;
+         this.sprites = sprites;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         return new FallingLeavesParticle(var2, var3, var5, var7, this.sprites.get(var15), 0.25F, 2.0F, false, true, 1.0F, 0.0F);
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         return new FallingLeavesParticle(level, x, y, z, this.sprites.get(random), 0.25F, 2.0F, false, true, 1.0F, 0.0F);
       }
    }
 
    public static class PaleOakProvider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprites;
 
-      public PaleOakProvider(SpriteSet var1) {
+      public PaleOakProvider(final SpriteSet sprites) {
          super();
-         this.sprites = var1;
+         this.sprites = sprites;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         return new FallingLeavesParticle(var2, var3, var5, var7, this.sprites.get(var15), 0.07F, 10.0F, true, false, 2.0F, 0.021F);
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         return new FallingLeavesParticle(level, x, y, z, this.sprites.get(random), 0.07F, 10.0F, true, false, 2.0F, 0.021F);
       }
    }
 
    public static class TintedLeavesProvider implements ParticleProvider<ColorParticleOption> {
       private final SpriteSet sprites;
 
-      public TintedLeavesProvider(SpriteSet var1) {
+      public TintedLeavesProvider(final SpriteSet sprites) {
          super();
-         this.sprites = var1;
+         this.sprites = sprites;
       }
 
-      public Particle createParticle(ColorParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         FallingLeavesParticle var16 = new FallingLeavesParticle(var2, var3, var5, var7, this.sprites.get(var15), 0.07F, 10.0F, true, false, 2.0F, 0.021F);
-         var16.setColor(var1.getRed(), var1.getGreen(), var1.getBlue());
-         return var16;
+      public Particle createParticle(final ColorParticleOption options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         FallingLeavesParticle particle = new FallingLeavesParticle(level, x, y, z, this.sprites.get(random), 0.07F, 10.0F, true, false, 2.0F, 0.021F);
+         particle.setColor(options.getRed(), options.getGreen(), options.getBlue());
+         return particle;
       }
    }
 }

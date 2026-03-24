@@ -32,11 +32,11 @@ public enum GameType implements StringRepresentable {
    private final Component shortName;
    private final Component longName;
 
-   private GameType(final int var3, final String var4) {
-      this.id = var3;
-      this.name = var4;
-      this.shortName = Component.translatable("selectWorld.gameMode." + var4);
-      this.longName = Component.translatable("gameMode." + var4);
+   private GameType(final int id, final String name) {
+      this.id = id;
+      this.name = name;
+      this.shortName = Component.translatable("selectWorld.gameMode." + name);
+      this.longName = Component.translatable("gameMode." + name);
    }
 
    public int getId() {
@@ -59,24 +59,24 @@ public enum GameType implements StringRepresentable {
       return this.shortName;
    }
 
-   public void updatePlayerAbilities(Abilities var1) {
+   public void updatePlayerAbilities(final Abilities abilities) {
       if (this == CREATIVE) {
-         var1.mayfly = true;
-         var1.instabuild = true;
-         var1.invulnerable = true;
+         abilities.mayfly = true;
+         abilities.instabuild = true;
+         abilities.invulnerable = true;
       } else if (this == SPECTATOR) {
-         var1.mayfly = true;
-         var1.instabuild = false;
-         var1.invulnerable = true;
-         var1.flying = true;
+         abilities.mayfly = true;
+         abilities.instabuild = false;
+         abilities.invulnerable = true;
+         abilities.flying = true;
       } else {
-         var1.mayfly = false;
-         var1.instabuild = false;
-         var1.invulnerable = false;
-         var1.flying = false;
+         abilities.mayfly = false;
+         abilities.instabuild = false;
+         abilities.invulnerable = false;
+         abilities.flying = false;
       }
 
-      var1.mayBuild = !this.isBlockPlacingRestricted();
+      abilities.mayBuild = !this.isBlockPlacingRestricted();
    }
 
    public boolean isBlockPlacingRestricted() {
@@ -91,30 +91,30 @@ public enum GameType implements StringRepresentable {
       return this == SURVIVAL || this == ADVENTURE;
    }
 
-   public static GameType byId(int var0) {
-      return (GameType)BY_ID.apply(var0);
+   public static GameType byId(final int id) {
+      return (GameType)BY_ID.apply(id);
    }
 
-   public static GameType byName(String var0) {
-      return byName(var0, SURVIVAL);
+   public static GameType byName(final String name) {
+      return byName(name, SURVIVAL);
    }
 
    @Contract("_,!null->!null;_,null->_")
-   public static @Nullable GameType byName(String var0, @Nullable GameType var1) {
-      GameType var2 = CODEC.byName(var0);
-      return var2 != null ? var2 : var1;
+   public static @Nullable GameType byName(final String name, final @Nullable GameType defaultMode) {
+      GameType result = CODEC.byName(name);
+      return result != null ? result : defaultMode;
    }
 
-   public static int getNullableId(@Nullable GameType var0) {
-      return var0 != null ? var0.id : -1;
+   public static int getNullableId(final @Nullable GameType gameType) {
+      return gameType != null ? gameType.id : -1;
    }
 
-   public static @Nullable GameType byNullableId(int var0) {
-      return var0 == -1 ? null : byId(var0);
+   public static @Nullable GameType byNullableId(final int id) {
+      return id == -1 ? null : byId(id);
    }
 
-   public static boolean isValidId(int var0) {
-      return Arrays.stream(values()).anyMatch((var1) -> var1.id == var0);
+   public static boolean isValidId(final int id) {
+      return Arrays.stream(values()).anyMatch((gameType) -> gameType.id == id);
    }
 
    // $FF: synthetic method

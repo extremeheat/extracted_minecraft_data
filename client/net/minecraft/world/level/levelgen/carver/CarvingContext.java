@@ -21,18 +21,18 @@ public class CarvingContext extends WorldGenerationContext {
    private final RandomState randomState;
    private final SurfaceRules.RuleSource surfaceRule;
 
-   public CarvingContext(NoiseBasedChunkGenerator var1, RegistryAccess var2, LevelHeightAccessor var3, NoiseChunk var4, RandomState var5, SurfaceRules.RuleSource var6) {
-      super(var1, var3);
-      this.registryAccess = var2;
-      this.noiseChunk = var4;
-      this.randomState = var5;
-      this.surfaceRule = var6;
+   public CarvingContext(final NoiseBasedChunkGenerator generator, final RegistryAccess registryAccess, final LevelHeightAccessor heightAccessor, final NoiseChunk noiseChunk, final RandomState randomState, final SurfaceRules.RuleSource surfaceRule) {
+      super(generator, heightAccessor);
+      this.registryAccess = registryAccess;
+      this.noiseChunk = noiseChunk;
+      this.randomState = randomState;
+      this.surfaceRule = surfaceRule;
    }
 
    /** @deprecated */
    @Deprecated
-   public Optional<BlockState> topMaterial(Function<BlockPos, Holder<Biome>> var1, ChunkAccess var2, BlockPos var3, boolean var4) {
-      return this.randomState.surfaceSystem().topMaterial(this.surfaceRule, this, var1, var2, this.noiseChunk, var3, var4);
+   public Optional<BlockState> topMaterial(final Function<BlockPos, Holder<Biome>> biomeGetter, final ChunkAccess chunk, final BlockPos pos, final boolean underFluid) {
+      return this.randomState.surfaceSystem().topMaterial(this.surfaceRule, this, biomeGetter, chunk, this.noiseChunk, pos, underFluid);
    }
 
    /** @deprecated */

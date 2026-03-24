@@ -8,16 +8,16 @@ import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.Dynamic;
 
 public class StructureReferenceCountFix extends DataFix {
-   public StructureReferenceCountFix(Schema var1, boolean var2) {
-      super(var1, var2);
+   public StructureReferenceCountFix(final Schema outputSchema, final boolean changesType) {
+      super(outputSchema, changesType);
    }
 
    protected TypeRewriteRule makeRule() {
-      Type var1 = this.getInputSchema().getType(References.STRUCTURE_FEATURE);
-      return this.fixTypeEverywhereTyped("Structure Reference Fix", var1, (var0) -> var0.update(DSL.remainderFinder(), StructureReferenceCountFix::setCountToAtLeastOne));
+      Type<?> structureInfo = this.getInputSchema().getType(References.STRUCTURE_FEATURE);
+      return this.fixTypeEverywhereTyped("Structure Reference Fix", structureInfo, (input) -> input.update(DSL.remainderFinder(), StructureReferenceCountFix::setCountToAtLeastOne));
    }
 
-   private static <T> Dynamic<T> setCountToAtLeastOne(Dynamic<T> var0) {
-      return var0.update("references", (var0x) -> var0x.createInt((Integer)var0x.asNumber().map(Number::intValue).result().filter((var0) -> var0 > 0).orElse(1)));
+   private static <T> Dynamic<T> setCountToAtLeastOne(final Dynamic<T> structureTag) {
+      return structureTag.update("references", (references) -> references.createInt((Integer)references.asNumber().map(Number::intValue).result().filter((number) -> number > 0).orElse(1)));
    }
 }

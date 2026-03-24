@@ -6,76 +6,92 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
+import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import org.slf4j.Logger;
 
 public class EnchantRandomlyFunction extends LootItemConditionalFunction {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final MapCodec<EnchantRandomlyFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(var0.group(RegistryCodecs.homogeneousList(Registries.ENCHANTMENT).optionalFieldOf("options").forGetter((var0x) -> var0x.options), Codec.BOOL.optionalFieldOf("only_compatible", true).forGetter((var0x) -> var0x.onlyCompatible))).apply(var0, EnchantRandomlyFunction::new));
+   public static final MapCodec<EnchantRandomlyFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(RegistryCodecs.homogeneousList(Registries.ENCHANTMENT).optionalFieldOf("options").forGetter((f) -> f.options), Codec.BOOL.optionalFieldOf("only_compatible", true).forGetter((f) -> f.onlyCompatible), Codec.BOOL.optionalFieldOf("include_additional_cost_component", false).forGetter((f) -> f.includeAdditionalCostComponent))).apply(i, EnchantRandomlyFunction::new));
    private final Optional<HolderSet<Enchantment>> options;
    private final boolean onlyCompatible;
+   private final boolean includeAdditionalCostComponent;
 
-   EnchantRandomlyFunction(List<LootItemCondition> var1, Optional<HolderSet<Enchantment>> var2, boolean var3) {
-      super(var1);
-      this.options = var2;
-      this.onlyCompatible = var3;
+   private EnchantRandomlyFunction(final List<LootItemCondition> predicates, final Optional<HolderSet<Enchantment>> options, final boolean onlyCompatible, final boolean includeAdditionalCostComponent) {
+      super(predicates);
+      this.options = options;
+      this.onlyCompatible = onlyCompatible;
+      this.includeAdditionalCostComponent = includeAdditionalCostComponent;
    }
 
-   public LootItemFunctionType<EnchantRandomlyFunction> getType() {
-      return LootItemFunctions.ENCHANT_RANDOMLY;
+   public MapCodec<EnchantRandomlyFunction> codec() {
+      return MAP_CODEC;
    }
 
-   public ItemStack run(ItemStack var1, LootContext var2) {
-      RandomSource var3 = var2.getRandom();
-      boolean var4 = var1.is(Items.BOOK);
-      boolean var5 = !var4 && this.onlyCompatible;
-      Stream var6 = ((Stream)this.options.map(HolderSet::stream).orElseGet(() -> var2.getLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT).listElements().map(Function.identity()))).filter((var2x) -> !var5 || ((Enchantment)var2x.value()).canEnchant(var1));
-      List var7 = var6.toList();
-      Optional var8 = Util.getRandomSafe(var7, var3);
-      if (var8.isEmpty()) {
-         LOGGER.warn("Couldn't find a compatible enchantment for {}", var1);
-         return var1;
+   public Set<ContextKey<?>> getReferencedContextParams() {
+      return this.includeAdditionalCostComponent ? Set.of(LootContextParams.ADDITIONAL_COST_COMPONENT_ALLOWED) : Set.of();
+   }
+
+   public ItemStack run(final ItemStack itemStack, final LootContext context) {
+      RandomSource random = context.getRandom();
+      boolean targetIsBook = itemStack.is(Items.BOOK);
+      boolean shouldCheckCompatibility = !targetIsBook && this.onlyCompatible;
+      Stream<Holder<Enchantment>> compatibleEnchantmentsStream = ((Stream)this.options.map(HolderSet::stream).orElseGet(() -> context.getLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT).listElements().map(Function.identity()))).filter((candidate) -> !shouldCheckCompatibility || ((Enchantment)candidate.value()).canEnchant(itemStack));
+      List<Holder<Enchantment>> compatibleEnchantments = compatibleEnchantmentsStream.toList();
+      Optional<Holder<Enchantment>> enchantment = Util.<Holder<Enchantment>>getRandomSafe(compatibleEnchantments, random);
+      if (enchantment.isEmpty()) {
+         LOGGER.warn("Couldn't find a compatible enchantment for {}", itemStack);
+         return itemStack;
       } else {
-         return enchantItem(var1, (Holder)var8.get(), var3);
+         return this.enchantItem(itemStack, (Holder)enchantment.get(), context);
       }
    }
 
-   private static ItemStack enchantItem(ItemStack var0, Holder<Enchantment> var1, RandomSource var2) {
-      int var3 = Mth.nextInt(var2, ((Enchantment)var1.value()).getMinLevel(), ((Enchantment)var1.value()).getMaxLevel());
-      if (var0.is(Items.BOOK)) {
-         var0 = new ItemStack(Items.ENCHANTED_BOOK);
+   private ItemStack enchantItem(ItemStack itemStack, final Holder<Enchantment> enchantment, final LootContext context) {
+      RandomSource random = context.getRandom();
+      int level = Mth.nextInt(random, ((Enchantment)enchantment.value()).getMinLevel(), ((Enchantment)enchantment.value()).getMaxLevel());
+      if (itemStack.is(Items.BOOK)) {
+         itemStack = new ItemStack(Items.ENCHANTED_BOOK);
       }
 
-      var0.enchant(var1, var3);
-      return var0;
+      itemStack.enchant(enchantment, level);
+      if (this.includeAdditionalCostComponent && context.hasParameter(LootContextParams.ADDITIONAL_COST_COMPONENT_ALLOWED)) {
+         itemStack.set(DataComponents.ADDITIONAL_TRADE_COST, 2 + random.nextInt(5 + level * 10) + 3 * level);
+      }
+
+      return itemStack;
    }
 
    public static Builder randomEnchantment() {
       return new Builder();
    }
 
-   public static Builder randomApplicableEnchantment(HolderLookup.Provider var0) {
-      return randomEnchantment().withOneOf(var0.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(EnchantmentTags.ON_RANDOM_LOOT));
+   public static Builder randomApplicableEnchantment(final HolderLookup.Provider registries) {
+      return randomEnchantment().withOneOf(registries.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(EnchantmentTags.ON_RANDOM_LOOT));
    }
 
    public static class Builder extends LootItemConditionalFunction.Builder<Builder> {
       private Optional<HolderSet<Enchantment>> options = Optional.empty();
       private boolean onlyCompatible = true;
+      private boolean includeAdditionalCostComponent = false;
 
       public Builder() {
          super();
@@ -85,13 +101,18 @@ public class EnchantRandomlyFunction extends LootItemConditionalFunction {
          return this;
       }
 
-      public Builder withEnchantment(Holder<Enchantment> var1) {
-         this.options = Optional.of(HolderSet.direct(var1));
+      public Builder withEnchantment(final Holder<Enchantment> enchantment) {
+         this.options = Optional.of(HolderSet.direct(enchantment));
          return this;
       }
 
-      public Builder withOneOf(HolderSet<Enchantment> var1) {
-         this.options = Optional.of(var1);
+      public Builder withOneOf(final HolderSet<Enchantment> enchantments) {
+         this.options = Optional.of(enchantments);
+         return this;
+      }
+
+      public Builder withOptions(final Optional<HolderSet<Enchantment>> enchantments) {
+         this.options = enchantments;
          return this;
       }
 
@@ -100,13 +121,13 @@ public class EnchantRandomlyFunction extends LootItemConditionalFunction {
          return this;
       }
 
-      public LootItemFunction build() {
-         return new EnchantRandomlyFunction(this.getConditions(), this.options, this.onlyCompatible);
+      public Builder includeAdditionalCostComponent() {
+         this.includeAdditionalCostComponent = true;
+         return this;
       }
 
-      // $FF: synthetic method
-      protected LootItemConditionalFunction.Builder getThis() {
-         return this.getThis();
+      public LootItemFunction build() {
+         return new EnchantRandomlyFunction(this.getConditions(), this.options, this.onlyCompatible, this.includeAdditionalCostComponent);
       }
    }
 }

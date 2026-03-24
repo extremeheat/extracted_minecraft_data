@@ -1,26 +1,26 @@
 package net.minecraft.client.gui.font;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 
 public interface PlainTextRenderable extends TextRenderable.Styled {
    float DEFAULT_WIDTH = 8.0F;
    float DEFAULT_HEIGHT = 8.0F;
    float DEFUAULT_ASCENT = 8.0F;
 
-   default void render(Matrix4f var1, VertexConsumer var2, int var3, boolean var4) {
-      float var5 = 0.0F;
+   default void render(final Matrix4fc pose, final VertexConsumer buffer, final int packedLightCoords, final boolean flat) {
+      float frontDepth = 0.0F;
       if (this.shadowColor() != 0) {
-         this.renderSprite(var1, var2, var3, this.shadowOffset(), this.shadowOffset(), 0.0F, this.shadowColor());
-         if (!var4) {
-            var5 += 0.03F;
+         this.renderSprite(pose, buffer, packedLightCoords, this.shadowOffset(), this.shadowOffset(), 0.0F, this.shadowColor());
+         if (!flat) {
+            frontDepth += 0.03F;
          }
       }
 
-      this.renderSprite(var1, var2, var3, 0.0F, 0.0F, var5, this.color());
+      this.renderSprite(pose, buffer, packedLightCoords, 0.0F, 0.0F, frontDepth, this.color());
    }
 
-   void renderSprite(Matrix4f var1, VertexConsumer var2, int var3, float var4, float var5, float var6, int var7);
+   void renderSprite(Matrix4fc pose, VertexConsumer buffer, int packedLightCoords, float offsetX, float offsetY, float z, int color);
 
    float x();
 

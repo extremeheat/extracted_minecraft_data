@@ -14,20 +14,20 @@ public class DebugEntrySimplePerformanceImpactors implements DebugScreenEntry {
       super();
    }
 
-   public void display(DebugScreenDisplayer var1, @Nullable Level var2, @Nullable LevelChunk var3, @Nullable LevelChunk var4) {
-      Minecraft var5 = Minecraft.getInstance();
-      Options var6 = var5.options;
-      var1.addLine(String.format(Locale.ROOT, "%s%s B: %d", (Boolean)var6.improvedTransparency().get() ? "improved-transparency" : "", var6.cloudStatus().get() == CloudStatus.OFF ? "" : (var6.cloudStatus().get() == CloudStatus.FAST ? " fast-clouds" : " fancy-clouds"), var6.biomeBlendRadius().get()));
-      TextureFilteringMethod var7 = (TextureFilteringMethod)var6.textureFiltering().get();
-      if (var7 == TextureFilteringMethod.ANISOTROPIC) {
-         var1.addLine(String.format(Locale.ROOT, "Filtering: %s %dx", var7.caption().getString(), var6.maxAnisotropyValue()));
+   public void display(final DebugScreenDisplayer displayer, final @Nullable Level serverOrClientLevel, final @Nullable LevelChunk clientChunk, final @Nullable LevelChunk serverChunk) {
+      Minecraft minecraft = Minecraft.getInstance();
+      Options options = minecraft.options;
+      displayer.addLine(String.format(Locale.ROOT, "%s%sB: %d", (Boolean)options.improvedTransparency().get() ? "improved-transparency " : "", options.cloudStatus().get() == CloudStatus.OFF ? "" : (options.cloudStatus().get() == CloudStatus.FAST ? "fast-clouds " : "fancy-clouds "), options.biomeBlendRadius().get()));
+      TextureFilteringMethod filteringMethod = (TextureFilteringMethod)options.textureFiltering().get();
+      if (filteringMethod == TextureFilteringMethod.ANISOTROPIC) {
+         displayer.addLine(String.format(Locale.ROOT, "Filtering: %s %dx", filteringMethod.caption().getString(), options.maxAnisotropyValue()));
       } else {
-         var1.addLine(String.format(Locale.ROOT, "Filtering: %s", var7.caption().getString()));
+         displayer.addLine(String.format(Locale.ROOT, "Filtering: %s", filteringMethod.caption().getString()));
       }
 
    }
 
-   public boolean isAllowed(boolean var1) {
+   public boolean isAllowed(final boolean reducedDebugInfo) {
       return true;
    }
 }

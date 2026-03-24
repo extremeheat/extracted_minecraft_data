@@ -14,28 +14,28 @@ public class FoodOnAStickItem<T extends Entity & ItemSteerable> extends Item {
    private final EntityType<T> canInteractWith;
    private final int consumeItemDamage;
 
-   public FoodOnAStickItem(EntityType<T> var1, int var2, Item.Properties var3) {
-      super(var3);
-      this.canInteractWith = var1;
-      this.consumeItemDamage = var2;
+   public FoodOnAStickItem(final EntityType<T> canInteractWith, final int consumeItemDamage, final Item.Properties properties) {
+      super(properties);
+      this.canInteractWith = canInteractWith;
+      this.consumeItemDamage = consumeItemDamage;
    }
 
-   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
-      ItemStack var4 = var2.getItemInHand(var3);
-      if (var1.isClientSide()) {
+   public InteractionResult use(final Level level, final Player player, final InteractionHand hand) {
+      ItemStack itemStack = player.getItemInHand(hand);
+      if (level.isClientSide()) {
          return InteractionResult.PASS;
       } else {
-         Entity var5 = var2.getControlledVehicle();
-         if (var2.isPassenger() && var5 instanceof ItemSteerable) {
-            ItemSteerable var6 = (ItemSteerable)var5;
-            if (var5.getType() == this.canInteractWith && var6.boost()) {
-               EquipmentSlot var7 = var3.asEquipmentSlot();
-               ItemStack var8 = var4.hurtAndConvertOnBreak(this.consumeItemDamage, Items.FISHING_ROD, var2, var7);
-               return InteractionResult.SUCCESS_SERVER.heldItemTransformedTo(var8);
+         Entity vehicle = player.getControlledVehicle();
+         if (player.isPassenger() && vehicle instanceof ItemSteerable) {
+            ItemSteerable steerable = (ItemSteerable)vehicle;
+            if (vehicle.is(this.canInteractWith) && steerable.boost()) {
+               EquipmentSlot slot = hand.asEquipmentSlot();
+               ItemStack result = itemStack.hurtAndConvertOnBreak(this.consumeItemDamage, Items.FISHING_ROD, player, slot);
+               return InteractionResult.SUCCESS_SERVER.heldItemTransformedTo(result);
             }
          }
 
-         var2.awardStat(Stats.ITEM_USED.get(this));
+         player.awardStat(Stats.ITEM_USED.get(this));
          return InteractionResult.PASS;
       }
    }

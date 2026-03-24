@@ -39,7 +39,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class TrapDoorBlock extends HorizontalDirectionalBlock implements SimpleWaterloggedBlock {
-   public static final MapCodec<TrapDoorBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BlockSetType.CODEC.fieldOf("block_set_type").forGetter((var0x) -> var0x.type), propertiesCodec()).apply(var0, TrapDoorBlock::new));
+   public static final MapCodec<TrapDoorBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockSetType.CODEC.fieldOf("block_set_type").forGetter((b) -> b.type), propertiesCodec()).apply(i, TrapDoorBlock::new));
    public static final BooleanProperty OPEN;
    public static final EnumProperty<Half> HALF;
    public static final BooleanProperty POWERED;
@@ -51,26 +51,26 @@ public class TrapDoorBlock extends HorizontalDirectionalBlock implements SimpleW
       return CODEC;
    }
 
-   protected TrapDoorBlock(BlockSetType var1, BlockBehaviour.Properties var2) {
-      super(var2.sound(var1.soundType()));
-      this.type = var1;
+   protected TrapDoorBlock(final BlockSetType type, final BlockBehaviour.Properties properties) {
+      super(properties.sound(type.soundType()));
+      this.type = type;
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(OPEN, false)).setValue(HALF, Half.BOTTOM)).setValue(POWERED, false)).setValue(WATERLOGGED, false));
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (VoxelShape)SHAPES.get((Boolean)var1.getValue(OPEN) ? var1.getValue(FACING) : (var1.getValue(HALF) == Half.TOP ? Direction.DOWN : Direction.UP));
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return (VoxelShape)SHAPES.get((Boolean)state.getValue(OPEN) ? state.getValue(FACING) : (state.getValue(HALF) == Half.TOP ? Direction.DOWN : Direction.UP));
    }
 
-   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
-      switch (var2) {
+   protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
+      switch (type) {
          case LAND -> {
-            return (Boolean)var1.getValue(OPEN);
+            return (Boolean)state.getValue(OPEN);
          }
          case WATER -> {
-            return (Boolean)var1.getValue(WATERLOGGED);
+            return (Boolean)state.getValue(WATERLOGGED);
          }
          case AIR -> {
-            return (Boolean)var1.getValue(OPEN);
+            return (Boolean)state.getValue(OPEN);
          }
          default -> {
             return false;
@@ -78,87 +78,87 @@ public class TrapDoorBlock extends HorizontalDirectionalBlock implements SimpleW
       }
    }
 
-   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
+   protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
       if (!this.type.canOpenByHand()) {
          return InteractionResult.PASS;
       } else {
-         this.toggle(var1, var2, var3, var4);
+         this.toggle(state, level, pos, player);
          return InteractionResult.SUCCESS;
       }
    }
 
-   protected void onExplosionHit(BlockState var1, ServerLevel var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
-      if (var4.canTriggerBlocks() && this.type.canOpenByWindCharge() && !(Boolean)var1.getValue(POWERED)) {
-         this.toggle(var1, var2, var3, (Player)null);
+   protected void onExplosionHit(final BlockState state, final ServerLevel level, final BlockPos pos, final Explosion explosion, final BiConsumer<ItemStack, BlockPos> onHit) {
+      if (explosion.canTriggerBlocks() && this.type.canOpenByWindCharge() && !(Boolean)state.getValue(POWERED)) {
+         this.toggle(state, level, pos, (Player)null);
       }
 
-      super.onExplosionHit(var1, var2, var3, var4, var5);
+      super.onExplosionHit(state, level, pos, explosion, onHit);
    }
 
-   private void toggle(BlockState var1, Level var2, BlockPos var3, @Nullable Player var4) {
-      BlockState var5 = (BlockState)var1.cycle(OPEN);
-      var2.setBlock(var3, var5, 2);
-      if ((Boolean)var5.getValue(WATERLOGGED)) {
-         var2.scheduleTick(var3, Fluids.WATER, Fluids.WATER.getTickDelay(var2));
+   private void toggle(final BlockState state, final Level level, final BlockPos pos, final @Nullable Player player) {
+      BlockState updated = (BlockState)state.cycle(OPEN);
+      level.setBlock(pos, updated, 2);
+      if ((Boolean)updated.getValue(WATERLOGGED)) {
+         level.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
       }
 
-      this.playSound(var4, var2, var3, (Boolean)var5.getValue(OPEN));
+      this.playSound(player, level, pos, (Boolean)updated.getValue(OPEN));
    }
 
-   protected void playSound(@Nullable Player var1, Level var2, BlockPos var3, boolean var4) {
-      var2.playSound(var1, (BlockPos)var3, var4 ? this.type.trapdoorOpen() : this.type.trapdoorClose(), SoundSource.BLOCKS, 1.0F, var2.getRandom().nextFloat() * 0.1F + 0.9F);
-      var2.gameEvent(var1, var4 ? GameEvent.BLOCK_OPEN : GameEvent.BLOCK_CLOSE, var3);
+   protected void playSound(final @Nullable Player player, final Level level, final BlockPos pos, final boolean opening) {
+      level.playSound(player, (BlockPos)pos, opening ? this.type.trapdoorOpen() : this.type.trapdoorClose(), SoundSource.BLOCKS, 1.0F, level.getRandom().nextFloat() * 0.1F + 0.9F);
+      level.gameEvent(player, opening ? GameEvent.BLOCK_OPEN : GameEvent.BLOCK_CLOSE, pos);
    }
 
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
-      if (!var2.isClientSide()) {
-         boolean var7 = var2.hasNeighborSignal(var3);
-         if (var7 != (Boolean)var1.getValue(POWERED)) {
-            if ((Boolean)var1.getValue(OPEN) != var7) {
-               var1 = (BlockState)var1.setValue(OPEN, var7);
-               this.playSound((Player)null, var2, var3, var7);
+   protected void neighborChanged(BlockState state, final Level level, final BlockPos pos, final Block block, final @Nullable Orientation orientation, final boolean movedByPiston) {
+      if (!level.isClientSide()) {
+         boolean signal = level.hasNeighborSignal(pos);
+         if (signal != (Boolean)state.getValue(POWERED)) {
+            if ((Boolean)state.getValue(OPEN) != signal) {
+               state = (BlockState)state.setValue(OPEN, signal);
+               this.playSound((Player)null, level, pos, signal);
             }
 
-            var2.setBlock(var3, (BlockState)var1.setValue(POWERED, var7), 2);
-            if ((Boolean)var1.getValue(WATERLOGGED)) {
-               var2.scheduleTick(var3, Fluids.WATER, Fluids.WATER.getTickDelay(var2));
+            level.setBlock(pos, (BlockState)state.setValue(POWERED, signal), 2);
+            if ((Boolean)state.getValue(WATERLOGGED)) {
+               level.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
             }
          }
 
       }
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      BlockState var2 = this.defaultBlockState();
-      FluidState var3 = var1.getLevel().getFluidState(var1.getClickedPos());
-      Direction var4 = var1.getClickedFace();
-      if (!var1.replacingClickedOnBlock() && var4.getAxis().isHorizontal()) {
-         var2 = (BlockState)((BlockState)var2.setValue(FACING, var4)).setValue(HALF, var1.getClickLocation().y - (double)var1.getClickedPos().getY() > 0.5 ? Half.TOP : Half.BOTTOM);
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      BlockState state = this.defaultBlockState();
+      FluidState replacedFluidState = context.getLevel().getFluidState(context.getClickedPos());
+      Direction clickedFace = context.getClickedFace();
+      if (!context.replacingClickedOnBlock() && clickedFace.getAxis().isHorizontal()) {
+         state = (BlockState)((BlockState)state.setValue(FACING, clickedFace)).setValue(HALF, context.getClickLocation().y - (double)context.getClickedPos().getY() > 0.5 ? Half.TOP : Half.BOTTOM);
       } else {
-         var2 = (BlockState)((BlockState)var2.setValue(FACING, var1.getHorizontalDirection().getOpposite())).setValue(HALF, var4 == Direction.UP ? Half.BOTTOM : Half.TOP);
+         state = (BlockState)((BlockState)state.setValue(FACING, context.getHorizontalDirection().getOpposite())).setValue(HALF, clickedFace == Direction.UP ? Half.BOTTOM : Half.TOP);
       }
 
-      if (var1.getLevel().hasNeighborSignal(var1.getClickedPos())) {
-         var2 = (BlockState)((BlockState)var2.setValue(OPEN, true)).setValue(POWERED, true);
+      if (context.getLevel().hasNeighborSignal(context.getClickedPos())) {
+         state = (BlockState)((BlockState)state.setValue(OPEN, true)).setValue(POWERED, true);
       }
 
-      return (BlockState)var2.setValue(WATERLOGGED, var3.getType() == Fluids.WATER);
+      return (BlockState)state.setValue(WATERLOGGED, replacedFluidState.is(Fluids.WATER));
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(FACING, OPEN, HALF, POWERED, WATERLOGGED);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(FACING, OPEN, HALF, POWERED, WATERLOGGED);
    }
 
-   protected FluidState getFluidState(BlockState var1) {
-      return (Boolean)var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
+   protected FluidState getFluidState(final BlockState state) {
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      if ((Boolean)var1.getValue(WATERLOGGED)) {
-         var3.scheduleTick(var4, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var2));
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      if ((Boolean)state.getValue(WATERLOGGED)) {
+         ticks.scheduleTick(pos, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(level));
       }
 
-      return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+      return super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
    protected BlockSetType getType() {

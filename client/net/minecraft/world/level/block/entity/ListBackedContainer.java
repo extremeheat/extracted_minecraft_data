@@ -25,38 +25,38 @@ public interface ListBackedContainer extends Container {
       return this.getItems().stream().allMatch(ItemStack::isEmpty);
    }
 
-   default ItemStack getItem(int var1) {
-      return (ItemStack)this.getItems().get(var1);
+   default ItemStack getItem(final int slot) {
+      return (ItemStack)this.getItems().get(slot);
    }
 
-   default ItemStack removeItem(int var1, int var2) {
-      ItemStack var3 = ContainerHelper.removeItem(this.getItems(), var1, var2);
-      if (!var3.isEmpty()) {
+   default ItemStack removeItem(final int slot, final int count) {
+      ItemStack result = ContainerHelper.removeItem(this.getItems(), slot, count);
+      if (!result.isEmpty()) {
          this.setChanged();
       }
 
-      return var3;
+      return result;
    }
 
-   default ItemStack removeItemNoUpdate(int var1) {
-      return ContainerHelper.removeItem(this.getItems(), var1, this.getMaxStackSize());
+   default ItemStack removeItemNoUpdate(final int slot) {
+      return ContainerHelper.removeItem(this.getItems(), slot, this.getMaxStackSize());
    }
 
-   default boolean canPlaceItem(int var1, ItemStack var2) {
-      return this.acceptsItemType(var2) && (this.getItem(var1).isEmpty() || this.getItem(var1).getCount() < this.getMaxStackSize(var2));
+   default boolean canPlaceItem(final int slot, final ItemStack itemStack) {
+      return this.acceptsItemType(itemStack) && (this.getItem(slot).isEmpty() || this.getItem(slot).getCount() < this.getMaxStackSize(itemStack));
    }
 
-   default boolean acceptsItemType(ItemStack var1) {
+   default boolean acceptsItemType(final ItemStack itemStack) {
       return true;
    }
 
-   default void setItem(int var1, ItemStack var2) {
-      this.setItemNoUpdate(var1, var2);
+   default void setItem(final int slot, final ItemStack itemStack) {
+      this.setItemNoUpdate(slot, itemStack);
       this.setChanged();
    }
 
-   default void setItemNoUpdate(int var1, ItemStack var2) {
-      this.getItems().set(var1, var2);
-      var2.limitSize(this.getMaxStackSize(var2));
+   default void setItemNoUpdate(final int slot, final ItemStack itemStack) {
+      this.getItems().set(slot, itemStack);
+      itemStack.limitSize(this.getMaxStackSize(itemStack));
    }
 }

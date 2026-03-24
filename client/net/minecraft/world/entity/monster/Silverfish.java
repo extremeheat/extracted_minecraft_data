@@ -34,8 +34,8 @@ import org.jspecify.annotations.Nullable;
 public class Silverfish extends Monster {
    private @Nullable SilverfishWakeUpFriendsGoal friendsGoal;
 
-   public Silverfish(EntityType<? extends Silverfish> var1, Level var2) {
-      super(var1, var2);
+   public Silverfish(final EntityType<? extends Silverfish> type, final Level level) {
+      super(type, level);
    }
 
    protected void registerGoals() {
@@ -61,7 +61,7 @@ public class Silverfish extends Monster {
       return SoundEvents.SILVERFISH_AMBIENT;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return SoundEvents.SILVERFISH_HURT;
    }
 
@@ -69,19 +69,19 @@ public class Silverfish extends Monster {
       return SoundEvents.SILVERFISH_DEATH;
    }
 
-   protected void playStepSound(BlockPos var1, BlockState var2) {
+   protected void playStepSound(final BlockPos pos, final BlockState blockState) {
       this.playSound(SoundEvents.SILVERFISH_STEP, 0.15F, 1.0F);
    }
 
-   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
-      if (this.isInvulnerableTo(var1, var2)) {
+   public boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {
+      if (this.isInvulnerableTo(level, source)) {
          return false;
       } else {
-         if ((var2.getEntity() != null || var2.is(DamageTypeTags.ALWAYS_TRIGGERS_SILVERFISH)) && this.friendsGoal != null) {
+         if ((source.getEntity() != null || source.is(DamageTypeTags.ALWAYS_TRIGGERS_SILVERFISH)) && this.friendsGoal != null) {
             this.friendsGoal.notifyHurt();
          }
 
-         return super.hurtServer(var1, var2, var3);
+         return super.hurtServer(level, source, damage);
       }
    }
 
@@ -90,33 +90,33 @@ public class Silverfish extends Monster {
       super.tick();
    }
 
-   public void setYBodyRot(float var1) {
-      this.setYRot(var1);
-      super.setYBodyRot(var1);
+   public void setYBodyRot(final float yBodyRot) {
+      this.setYRot(yBodyRot);
+      super.setYBodyRot(yBodyRot);
    }
 
-   public float getWalkTargetValue(BlockPos var1, LevelReader var2) {
-      return InfestedBlock.isCompatibleHostBlock(var2.getBlockState(var1.below())) ? 10.0F : super.getWalkTargetValue(var1, var2);
+   public float getWalkTargetValue(final BlockPos pos, final LevelReader level) {
+      return InfestedBlock.isCompatibleHostBlock(level.getBlockState(pos.below())) ? 10.0F : super.getWalkTargetValue(pos, level);
    }
 
-   public static boolean checkSilverfishSpawnRules(EntityType<Silverfish> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
-      if (!checkAnyLightMonsterSpawnRules(var0, var1, var2, var3, var4)) {
+   public static boolean checkSilverfishSpawnRules(final EntityType<Silverfish> type, final LevelAccessor level, final EntitySpawnReason spawnReason, final BlockPos pos, final RandomSource random) {
+      if (!checkAnyLightMonsterSpawnRules(type, level, spawnReason, pos, random)) {
          return false;
-      } else if (EntitySpawnReason.isSpawner(var2)) {
+      } else if (EntitySpawnReason.isSpawner(spawnReason)) {
          return true;
       } else {
-         Player var5 = var1.getNearestPlayer((double)var3.getX() + 0.5, (double)var3.getY() + 0.5, (double)var3.getZ() + 0.5, 5.0, true);
-         return var5 == null;
+         Player nearestPlayer = level.getNearestPlayer((double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5, 5.0, true);
+         return nearestPlayer == null;
       }
    }
 
-   static class SilverfishWakeUpFriendsGoal extends Goal {
+   private static class SilverfishWakeUpFriendsGoal extends Goal {
       private final Silverfish silverfish;
       private int lookForFriends;
 
-      public SilverfishWakeUpFriendsGoal(Silverfish var1) {
+      public SilverfishWakeUpFriendsGoal(final Silverfish silverfish) {
          super();
-         this.silverfish = var1;
+         this.silverfish = silverfish;
       }
 
       public void notifyHurt() {
@@ -133,24 +133,24 @@ public class Silverfish extends Monster {
       public void tick() {
          --this.lookForFriends;
          if (this.lookForFriends <= 0) {
-            Level var1 = this.silverfish.level();
-            RandomSource var2 = this.silverfish.getRandom();
-            BlockPos var3 = this.silverfish.blockPosition();
+            Level level = this.silverfish.level();
+            RandomSource random = this.silverfish.getRandom();
+            BlockPos basePos = this.silverfish.blockPosition();
 
-            for(int var4 = 0; var4 <= 5 && var4 >= -5; var4 = (var4 <= 0 ? 1 : 0) - var4) {
-               for(int var5 = 0; var5 <= 10 && var5 >= -10; var5 = (var5 <= 0 ? 1 : 0) - var5) {
-                  for(int var6 = 0; var6 <= 10 && var6 >= -10; var6 = (var6 <= 0 ? 1 : 0) - var6) {
-                     BlockPos var7 = var3.offset(var5, var4, var6);
-                     BlockState var8 = var1.getBlockState(var7);
-                     Block var9 = var8.getBlock();
-                     if (var9 instanceof InfestedBlock) {
-                        if ((Boolean)getServerLevel(var1).getGameRules().get(GameRules.MOB_GRIEFING)) {
-                           var1.destroyBlock(var7, true, this.silverfish);
+            for(int yOff = 0; yOff <= 5 && yOff >= -5; yOff = (yOff <= 0 ? 1 : 0) - yOff) {
+               for(int xOff = 0; xOff <= 10 && xOff >= -10; xOff = (xOff <= 0 ? 1 : 0) - xOff) {
+                  for(int zOff = 0; zOff <= 10 && zOff >= -10; zOff = (zOff <= 0 ? 1 : 0) - zOff) {
+                     BlockPos testPos = basePos.offset(xOff, yOff, zOff);
+                     BlockState blockState = level.getBlockState(testPos);
+                     Block block = blockState.getBlock();
+                     if (block instanceof InfestedBlock) {
+                        if ((Boolean)getServerLevel(level).getGameRules().get(GameRules.MOB_GRIEFING)) {
+                           level.destroyBlock(testPos, true, this.silverfish);
                         } else {
-                           var1.setBlock(var7, ((InfestedBlock)var9).hostStateByInfested(var1.getBlockState(var7)), 3);
+                           level.setBlock(testPos, ((InfestedBlock)block).hostStateByInfested(level.getBlockState(testPos)), 3);
                         }
 
-                        if (var2.nextBoolean()) {
+                        if (random.nextBoolean()) {
                            return;
                         }
                      }
@@ -162,12 +162,12 @@ public class Silverfish extends Monster {
       }
    }
 
-   static class SilverfishMergeWithStoneGoal extends RandomStrollGoal {
+   private static class SilverfishMergeWithStoneGoal extends RandomStrollGoal {
       private @Nullable Direction selectedDirection;
       private boolean doMerge;
 
-      public SilverfishMergeWithStoneGoal(Silverfish var1) {
-         super(var1, 1.0, 10);
+      public SilverfishMergeWithStoneGoal(final Silverfish silverfish) {
+         super(silverfish, 1.0, 10);
          this.setFlags(EnumSet.of(Goal.Flag.MOVE));
       }
 
@@ -177,12 +177,12 @@ public class Silverfish extends Monster {
          } else if (!this.mob.getNavigation().isDone()) {
             return false;
          } else {
-            RandomSource var1 = this.mob.getRandom();
-            if ((Boolean)getServerLevel(this.mob).getGameRules().get(GameRules.MOB_GRIEFING) && var1.nextInt(reducedTickDelay(10)) == 0) {
-               this.selectedDirection = Direction.getRandom(var1);
-               BlockPos var2 = BlockPos.containing(this.mob.getX(), this.mob.getY() + 0.5, this.mob.getZ()).relative(this.selectedDirection);
-               BlockState var3 = this.mob.level().getBlockState(var2);
-               if (InfestedBlock.isCompatibleHostBlock(var3)) {
+            RandomSource random = this.mob.getRandom();
+            if ((Boolean)getServerLevel(this.mob).getGameRules().get(GameRules.MOB_GRIEFING) && random.nextInt(reducedTickDelay(10)) == 0) {
+               this.selectedDirection = Direction.getRandom(random);
+               BlockPos pos = BlockPos.containing(this.mob.getX(), this.mob.getY() + 0.5, this.mob.getZ()).relative(this.selectedDirection);
+               BlockState blockState = this.mob.level().getBlockState(pos);
+               if (InfestedBlock.isCompatibleHostBlock(blockState)) {
                   this.doMerge = true;
                   return true;
                }
@@ -201,11 +201,11 @@ public class Silverfish extends Monster {
          if (!this.doMerge) {
             super.start();
          } else {
-            Level var1 = this.mob.level();
-            BlockPos var2 = BlockPos.containing(this.mob.getX(), this.mob.getY() + 0.5, this.mob.getZ()).relative(this.selectedDirection);
-            BlockState var3 = var1.getBlockState(var2);
-            if (InfestedBlock.isCompatibleHostBlock(var3)) {
-               var1.setBlock(var2, InfestedBlock.infestedStateByHost(var3), 3);
+            LevelAccessor level = this.mob.level();
+            BlockPos pos = BlockPos.containing(this.mob.getX(), this.mob.getY() + 0.5, this.mob.getZ()).relative(this.selectedDirection);
+            BlockState blockState = level.getBlockState(pos);
+            if (InfestedBlock.isCompatibleHostBlock(blockState)) {
+               level.setBlock(pos, InfestedBlock.infestedStateByHost(blockState), 3);
                this.mob.spawnAnim();
                this.mob.discard();
             }

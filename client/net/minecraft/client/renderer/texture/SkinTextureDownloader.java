@@ -31,39 +31,39 @@ public class SkinTextureDownloader {
    private final TextureManager textureManager;
    private final Executor mainThreadExecutor;
 
-   public SkinTextureDownloader(Proxy var1, TextureManager var2, Executor var3) {
+   public SkinTextureDownloader(final Proxy proxy, final TextureManager textureManager, final Executor mainThreadExecutor) {
       super();
-      this.proxy = var1;
-      this.textureManager = var2;
-      this.mainThreadExecutor = var3;
+      this.proxy = proxy;
+      this.textureManager = textureManager;
+      this.mainThreadExecutor = mainThreadExecutor;
    }
 
-   public CompletableFuture<ClientAsset.Texture> downloadAndRegisterSkin(Identifier var1, Path var2, String var3, boolean var4) {
-      ClientAsset.DownloadedTexture var5 = new ClientAsset.DownloadedTexture(var1, var3);
+   public CompletableFuture<ClientAsset.Texture> downloadAndRegisterSkin(final Identifier textureId, final Path localCopy, final String url, final boolean processLegacySkin) {
+      ClientAsset.DownloadedTexture texture = new ClientAsset.DownloadedTexture(textureId, url);
       return CompletableFuture.supplyAsync(() -> {
-         NativeImage var4x;
+         NativeImage loadedSkin;
          try {
-            var4x = this.downloadSkin(var2, var5.url());
-         } catch (IOException var6) {
-            throw new UncheckedIOException(var6);
+            loadedSkin = this.downloadSkin(localCopy, texture.url());
+         } catch (IOException e) {
+            throw new UncheckedIOException(e);
          }
 
-         return var4 ? processLegacySkin(var4x, var5.url()) : var4x;
-      }, Util.nonCriticalIoPool().forName("downloadTexture")).thenCompose((var2x) -> this.registerTextureInManager(var5, var2x));
+         return processLegacySkin ? processLegacySkin(loadedSkin, texture.url()) : loadedSkin;
+      }, Util.nonCriticalIoPool().forName("downloadTexture")).thenCompose((fixedSkin) -> this.registerTextureInManager(texture, fixedSkin));
    }
 
-   private NativeImage downloadSkin(Path var1, String var2) throws IOException {
-      if (Files.isRegularFile(var1, new LinkOption[0])) {
-         LOGGER.debug("Loading HTTP texture from local cache ({})", var1);
-         InputStream var17 = Files.newInputStream(var1);
+   private NativeImage downloadSkin(final Path localCopy, final String url) throws IOException {
+      if (Files.isRegularFile(localCopy, new LinkOption[0])) {
+         LOGGER.debug("Loading HTTP texture from local cache ({})", localCopy);
+         InputStream inputStream = Files.newInputStream(localCopy);
 
          NativeImage var18;
          try {
-            var18 = NativeImage.read(var17);
+            var18 = NativeImage.read(inputStream);
          } catch (Throwable var15) {
-            if (var17 != null) {
+            if (inputStream != null) {
                try {
-                  var17.close();
+                  inputStream.close();
                } catch (Throwable var13) {
                   var15.addSuppressed(var13);
                }
@@ -72,120 +72,120 @@ public class SkinTextureDownloader {
             throw var15;
          }
 
-         if (var17 != null) {
-            var17.close();
+         if (inputStream != null) {
+            inputStream.close();
          }
 
          return var18;
       } else {
-         HttpURLConnection var3 = null;
-         LOGGER.debug("Downloading HTTP texture from {} to {}", var2, var1);
-         URI var4 = URI.create(var2);
+         HttpURLConnection connection = null;
+         LOGGER.debug("Downloading HTTP texture from {} to {}", url, localCopy);
+         URI uri = URI.create(url);
 
-         NativeImage var7;
+         NativeImage e;
          try {
-            var3 = (HttpURLConnection)var4.toURL().openConnection(this.proxy);
-            var3.setDoInput(true);
-            var3.setDoOutput(false);
-            var3.connect();
-            int var5 = var3.getResponseCode();
-            if (var5 / 100 != 2) {
-               String var10002 = String.valueOf(var4);
-               throw new IOException("Failed to open " + var10002 + ", HTTP error code: " + var5);
+            connection = (HttpURLConnection)uri.toURL().openConnection(this.proxy);
+            connection.setDoInput(true);
+            connection.setDoOutput(false);
+            connection.connect();
+            int responseCode = connection.getResponseCode();
+            if (responseCode / 100 != 2) {
+               String var10002 = String.valueOf(uri);
+               throw new IOException("Failed to open " + var10002 + ", HTTP error code: " + responseCode);
             }
 
-            byte[] var6 = var3.getInputStream().readAllBytes();
+            byte[] imageContents = connection.getInputStream().readAllBytes();
 
             try {
-               FileUtil.createDirectoriesSafe(var1.getParent());
-               Files.write(var1, var6, new OpenOption[0]);
+               FileUtil.createDirectoriesSafe(localCopy.getParent());
+               Files.write(localCopy, imageContents, new OpenOption[0]);
             } catch (IOException var14) {
-               LOGGER.warn("Failed to cache texture {} in {}", var2, var1);
+               LOGGER.warn("Failed to cache texture {} in {}", url, localCopy);
             }
 
-            var7 = NativeImage.read(var6);
+            e = NativeImage.read(imageContents);
          } finally {
-            if (var3 != null) {
-               var3.disconnect();
+            if (connection != null) {
+               connection.disconnect();
             }
 
          }
 
-         return var7;
+         return e;
       }
    }
 
-   private CompletableFuture<ClientAsset.Texture> registerTextureInManager(ClientAsset.Texture var1, NativeImage var2) {
+   private CompletableFuture<ClientAsset.Texture> registerTextureInManager(final ClientAsset.Texture textureId, final NativeImage contents) {
       return CompletableFuture.supplyAsync(() -> {
-         Identifier var10002 = var1.texturePath();
+         Identifier var10002 = textureId.texturePath();
          Objects.requireNonNull(var10002);
-         DynamicTexture var3 = new DynamicTexture(var10002::toString, var2);
-         this.textureManager.register(var1.texturePath(), var3);
-         return var1;
+         DynamicTexture texture = new DynamicTexture(var10002::toString, contents);
+         this.textureManager.register(textureId.texturePath(), texture);
+         return textureId;
       }, this.mainThreadExecutor);
    }
 
-   private static NativeImage processLegacySkin(NativeImage var0, String var1) {
-      int var2 = var0.getHeight();
-      int var3 = var0.getWidth();
-      if (var3 == 64 && (var2 == 32 || var2 == 64)) {
-         boolean var4 = var2 == 32;
-         if (var4) {
-            NativeImage var5 = new NativeImage(64, 64, true);
-            var5.copyFrom(var0);
-            var0.close();
-            var0 = var5;
-            var5.fillRect(0, 32, 64, 32, 0);
-            var5.copyRect(4, 16, 16, 32, 4, 4, true, false);
-            var5.copyRect(8, 16, 16, 32, 4, 4, true, false);
-            var5.copyRect(0, 20, 24, 32, 4, 12, true, false);
-            var5.copyRect(4, 20, 16, 32, 4, 12, true, false);
-            var5.copyRect(8, 20, 8, 32, 4, 12, true, false);
-            var5.copyRect(12, 20, 16, 32, 4, 12, true, false);
-            var5.copyRect(44, 16, -8, 32, 4, 4, true, false);
-            var5.copyRect(48, 16, -8, 32, 4, 4, true, false);
-            var5.copyRect(40, 20, 0, 32, 4, 12, true, false);
-            var5.copyRect(44, 20, -8, 32, 4, 12, true, false);
-            var5.copyRect(48, 20, -16, 32, 4, 12, true, false);
-            var5.copyRect(52, 20, -8, 32, 4, 12, true, false);
+   private static NativeImage processLegacySkin(NativeImage image, final String url) {
+      int height = image.getHeight();
+      int width = image.getWidth();
+      if (width == 64 && (height == 32 || height == 64)) {
+         boolean isLegacy = height == 32;
+         if (isLegacy) {
+            NativeImage newImage = new NativeImage(64, 64, true);
+            newImage.copyFrom(image);
+            image.close();
+            image = newImage;
+            newImage.fillRect(0, 32, 64, 32, 0);
+            newImage.copyRect(4, 16, 16, 32, 4, 4, true, false);
+            newImage.copyRect(8, 16, 16, 32, 4, 4, true, false);
+            newImage.copyRect(0, 20, 24, 32, 4, 12, true, false);
+            newImage.copyRect(4, 20, 16, 32, 4, 12, true, false);
+            newImage.copyRect(8, 20, 8, 32, 4, 12, true, false);
+            newImage.copyRect(12, 20, 16, 32, 4, 12, true, false);
+            newImage.copyRect(44, 16, -8, 32, 4, 4, true, false);
+            newImage.copyRect(48, 16, -8, 32, 4, 4, true, false);
+            newImage.copyRect(40, 20, 0, 32, 4, 12, true, false);
+            newImage.copyRect(44, 20, -8, 32, 4, 12, true, false);
+            newImage.copyRect(48, 20, -16, 32, 4, 12, true, false);
+            newImage.copyRect(52, 20, -8, 32, 4, 12, true, false);
          }
 
-         setNoAlpha(var0, 0, 0, 32, 16);
-         if (var4) {
-            doNotchTransparencyHack(var0, 32, 0, 64, 32);
+         setNoAlpha(image, 0, 0, 32, 16);
+         if (isLegacy) {
+            doNotchTransparencyHack(image, 32, 0, 64, 32);
          }
 
-         setNoAlpha(var0, 0, 16, 64, 32);
-         setNoAlpha(var0, 16, 48, 48, 64);
-         return var0;
+         setNoAlpha(image, 0, 16, 64, 32);
+         setNoAlpha(image, 16, 48, 48, 64);
+         return image;
       } else {
-         var0.close();
-         throw new IllegalStateException("Discarding incorrectly sized (" + var3 + "x" + var2 + ") skin texture from " + var1);
+         image.close();
+         throw new IllegalStateException("Discarding incorrectly sized (" + width + "x" + height + ") skin texture from " + url);
       }
    }
 
-   private static void doNotchTransparencyHack(NativeImage var0, int var1, int var2, int var3, int var4) {
-      for(int var5 = var1; var5 < var3; ++var5) {
-         for(int var6 = var2; var6 < var4; ++var6) {
-            int var7 = var0.getPixel(var5, var6);
-            if (ARGB.alpha(var7) < 128) {
+   private static void doNotchTransparencyHack(final NativeImage image, final int x0, final int y0, final int x1, final int y1) {
+      for(int x = x0; x < x1; ++x) {
+         for(int y = y0; y < y1; ++y) {
+            int pix = image.getPixel(x, y);
+            if (ARGB.alpha(pix) < 128) {
                return;
             }
          }
       }
 
-      for(int var8 = var1; var8 < var3; ++var8) {
-         for(int var9 = var2; var9 < var4; ++var9) {
-            var0.setPixel(var8, var9, var0.getPixel(var8, var9) & 16777215);
+      for(int x = x0; x < x1; ++x) {
+         for(int y = y0; y < y1; ++y) {
+            image.setPixel(x, y, image.getPixel(x, y) & 16777215);
          }
       }
 
    }
 
-   private static void setNoAlpha(NativeImage var0, int var1, int var2, int var3, int var4) {
-      for(int var5 = var1; var5 < var3; ++var5) {
-         for(int var6 = var2; var6 < var4; ++var6) {
-            var0.setPixel(var5, var6, ARGB.opaque(var0.getPixel(var5, var6)));
+   private static void setNoAlpha(final NativeImage image, final int x0, final int y0, final int x1, final int y1) {
+      for(int x = x0; x < x1; ++x) {
+         for(int y = y0; y < y1; ++y) {
+            image.setPixel(x, y, ARGB.opaque(image.getPixel(x, y)));
          }
       }
 

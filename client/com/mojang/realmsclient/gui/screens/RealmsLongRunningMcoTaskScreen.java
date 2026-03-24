@@ -7,7 +7,6 @@ import java.time.Duration;
 import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.client.GameNarrator;
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.LoadingDotsWidget;
 import net.minecraft.client.gui.layouts.FrameLayout;
@@ -30,31 +29,31 @@ public class RealmsLongRunningMcoTaskScreen extends RealmsScreen {
    private volatile Component title;
    private @Nullable LoadingDotsWidget loadingDotsWidget;
 
-   public RealmsLongRunningMcoTaskScreen(Screen var1, LongRunningTask... var2) {
+   public RealmsLongRunningMcoTaskScreen(final Screen lastScreen, final LongRunningTask... tasks) {
       super(GameNarrator.NO_TITLE);
-      this.lastScreen = var1;
-      this.queuedTasks = List.of(var2);
+      this.lastScreen = lastScreen;
+      this.queuedTasks = List.of(tasks);
       if (this.queuedTasks.isEmpty()) {
          throw new IllegalArgumentException("No tasks added");
       } else {
          this.title = ((LongRunningTask)this.queuedTasks.get(0)).getTitle();
-         Runnable var3 = () -> {
-            for(LongRunningTask var5 : var2) {
-               this.setTitle(var5.getTitle());
-               if (var5.aborted()) {
+         Runnable runnable = () -> {
+            for(LongRunningTask task : tasks) {
+               this.setTitle(task.getTitle());
+               if (task.aborted()) {
                   break;
                }
 
-               var5.run();
-               if (var5.aborted()) {
+               task.run();
+               if (task.aborted()) {
                   return;
                }
             }
 
          };
-         Thread var4 = new Thread(var3, "Realms-long-running-task");
-         var4.setUncaughtExceptionHandler(new RealmsDefaultUncaughtExceptionHandler(LOGGER));
-         var4.start();
+         Thread thread = new Thread(runnable, "Realms-long-running-task");
+         thread.setUncaughtExceptionHandler(new RealmsDefaultUncaughtExceptionHandler(LOGGER));
+         thread.start();
       }
    }
 
@@ -70,12 +69,12 @@ public class RealmsLongRunningMcoTaskScreen extends RealmsScreen {
 
    }
 
-   public boolean keyPressed(KeyEvent var1) {
-      if (var1.key() == 256) {
+   public boolean keyPressed(final KeyEvent event) {
+      if (event.isEscape()) {
          this.cancel();
          return true;
       } else {
-         return super.keyPressed(var1);
+         return super.keyPressed(event);
       }
    }
 
@@ -83,11 +82,9 @@ public class RealmsLongRunningMcoTaskScreen extends RealmsScreen {
       this.layout.defaultCellSetting().alignHorizontallyCenter();
       this.layout.addChild(realmsLogo());
       this.loadingDotsWidget = new LoadingDotsWidget(this.font, this.title);
-      this.layout.addChild(this.loadingDotsWidget, (Consumer)((var0) -> var0.paddingTop(10).paddingBottom(30)));
-      this.layout.addChild(Button.builder(CommonComponents.GUI_CANCEL, (var1) -> this.cancel()).build());
-      this.layout.visitWidgets((var1) -> {
-         AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1);
-      });
+      this.layout.addChild(this.loadingDotsWidget, (Consumer)((layoutSettings) -> layoutSettings.paddingTop(10).paddingBottom(30)));
+      this.layout.addChild(Button.builder(CommonComponents.GUI_CANCEL, (button) -> this.cancel()).build());
+      this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
       this.repositionElements();
    }
 
@@ -97,18 +94,18 @@ public class RealmsLongRunningMcoTaskScreen extends RealmsScreen {
    }
 
    protected void cancel() {
-      for(LongRunningTask var2 : this.queuedTasks) {
-         var2.abortTask();
+      for(LongRunningTask queuedTask : this.queuedTasks) {
+         queuedTask.abortTask();
       }
 
       this.minecraft.setScreen(this.lastScreen);
    }
 
-   public void setTitle(Component var1) {
+   public void setTitle(final Component title) {
       if (this.loadingDotsWidget != null) {
-         this.loadingDotsWidget.setMessage(var1);
+         this.loadingDotsWidget.setMessage(title);
       }
 
-      this.title = var1;
+      this.title = title;
    }
 }

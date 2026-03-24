@@ -15,15 +15,14 @@ import org.jspecify.annotations.Nullable;
 public record MobEffectsPredicate(Map<Holder<MobEffect>, MobEffectInstancePredicate> effectMap) {
    public static final Codec<MobEffectsPredicate> CODEC;
 
-   public MobEffectsPredicate(Map<Holder<MobEffect>, MobEffectInstancePredicate> var1) {
+   public MobEffectsPredicate {
       super();
-      this.effectMap = var1;
    }
 
-   public boolean matches(Entity var1) {
+   public boolean matches(final Entity entity) {
       boolean var10000;
-      if (var1 instanceof LivingEntity var2) {
-         if (this.matches(var2.getActiveEffectsMap())) {
+      if (entity instanceof LivingEntity living) {
+         if (this.matches(living.getActiveEffectsMap())) {
             var10000 = true;
             return var10000;
          }
@@ -33,14 +32,14 @@ public record MobEffectsPredicate(Map<Holder<MobEffect>, MobEffectInstancePredic
       return var10000;
    }
 
-   public boolean matches(LivingEntity var1) {
-      return this.matches(var1.getActiveEffectsMap());
+   public boolean matches(final LivingEntity entity) {
+      return this.matches(entity.getActiveEffectsMap());
    }
 
-   public boolean matches(Map<Holder<MobEffect>, MobEffectInstance> var1) {
-      for(Map.Entry var3 : this.effectMap.entrySet()) {
-         MobEffectInstance var4 = (MobEffectInstance)var1.get(var3.getKey());
-         if (!((MobEffectInstancePredicate)var3.getValue()).matches(var4)) {
+   public boolean matches(final Map<Holder<MobEffect>, MobEffectInstance> effects) {
+      for(Map.Entry<Holder<MobEffect>, MobEffectInstancePredicate> entry : this.effectMap.entrySet()) {
+         MobEffectInstance instance = (MobEffectInstance)effects.get(entry.getKey());
+         if (!((MobEffectInstancePredicate)entry.getValue()).matches(instance)) {
             return false;
          }
       }
@@ -63,13 +62,13 @@ public record MobEffectsPredicate(Map<Holder<MobEffect>, MobEffectInstancePredic
          return new Builder();
       }
 
-      public Builder and(Holder<MobEffect> var1) {
-         this.effectMap.put(var1, new MobEffectInstancePredicate());
+      public Builder and(final Holder<MobEffect> effect) {
+         this.effectMap.put(effect, new MobEffectInstancePredicate());
          return this;
       }
 
-      public Builder and(Holder<MobEffect> var1, MobEffectInstancePredicate var2) {
-         this.effectMap.put(var1, var2);
+      public Builder and(final Holder<MobEffect> effect, final MobEffectInstancePredicate predicate) {
+         this.effectMap.put(effect, predicate);
          return this;
       }
 
@@ -79,31 +78,27 @@ public record MobEffectsPredicate(Map<Holder<MobEffect>, MobEffectInstancePredic
    }
 
    public static record MobEffectInstancePredicate(MinMaxBounds.Ints amplifier, MinMaxBounds.Ints duration, Optional<Boolean> ambient, Optional<Boolean> visible) {
-      public static final Codec<MobEffectInstancePredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(MinMaxBounds.Ints.CODEC.optionalFieldOf("amplifier", MinMaxBounds.Ints.ANY).forGetter(MobEffectInstancePredicate::amplifier), MinMaxBounds.Ints.CODEC.optionalFieldOf("duration", MinMaxBounds.Ints.ANY).forGetter(MobEffectInstancePredicate::duration), Codec.BOOL.optionalFieldOf("ambient").forGetter(MobEffectInstancePredicate::ambient), Codec.BOOL.optionalFieldOf("visible").forGetter(MobEffectInstancePredicate::visible)).apply(var0, MobEffectInstancePredicate::new));
+      public static final Codec<MobEffectInstancePredicate> CODEC = RecordCodecBuilder.create((i) -> i.group(MinMaxBounds.Ints.CODEC.optionalFieldOf("amplifier", MinMaxBounds.Ints.ANY).forGetter(MobEffectInstancePredicate::amplifier), MinMaxBounds.Ints.CODEC.optionalFieldOf("duration", MinMaxBounds.Ints.ANY).forGetter(MobEffectInstancePredicate::duration), Codec.BOOL.optionalFieldOf("ambient").forGetter(MobEffectInstancePredicate::ambient), Codec.BOOL.optionalFieldOf("visible").forGetter(MobEffectInstancePredicate::visible)).apply(i, MobEffectInstancePredicate::new));
 
       public MobEffectInstancePredicate() {
          this(MinMaxBounds.Ints.ANY, MinMaxBounds.Ints.ANY, Optional.empty(), Optional.empty());
       }
 
-      public MobEffectInstancePredicate(MinMaxBounds.Ints var1, MinMaxBounds.Ints var2, Optional<Boolean> var3, Optional<Boolean> var4) {
+      public MobEffectInstancePredicate {
          super();
-         this.amplifier = var1;
-         this.duration = var2;
-         this.ambient = var3;
-         this.visible = var4;
       }
 
-      public boolean matches(@Nullable MobEffectInstance var1) {
-         if (var1 == null) {
+      public boolean matches(final @Nullable MobEffectInstance instance) {
+         if (instance == null) {
             return false;
-         } else if (!this.amplifier.matches(var1.getAmplifier())) {
+         } else if (!this.amplifier.matches(instance.getAmplifier())) {
             return false;
-         } else if (!this.duration.matches(var1.getDuration())) {
+         } else if (!this.duration.matches(instance.getDuration())) {
             return false;
-         } else if (this.ambient.isPresent() && (Boolean)this.ambient.get() != var1.isAmbient()) {
+         } else if (this.ambient.isPresent() && (Boolean)this.ambient.get() != instance.isAmbient()) {
             return false;
          } else {
-            return !this.visible.isPresent() || (Boolean)this.visible.get() == var1.isVisible();
+            return !this.visible.isPresent() || (Boolean)this.visible.get() == instance.isVisible();
          }
       }
    }

@@ -17,5 +17,5 @@ public interface ServerInterface extends ServerInfo {
 
    String getPluginNames();
 
-   String runCommand(String var1);
+   String runCommand(String command);
 }

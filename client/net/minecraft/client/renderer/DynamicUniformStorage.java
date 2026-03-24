@@ -22,14 +22,14 @@ public class DynamicUniformStorage<T extends DynamicUniformStorage.DynamicUnifor
    private @Nullable T lastUniform;
    private final String label;
 
-   public DynamicUniformStorage(String var1, int var2, int var3) {
+   public DynamicUniformStorage(final String label, final int uboSize, final int initialCapacity) {
       super();
-      GpuDevice var4 = RenderSystem.getDevice();
-      this.blockSize = Mth.roundToward(var2, var4.getUniformOffsetAlignment());
-      this.capacity = Mth.smallestEncompassingPowerOfTwo(var3);
+      GpuDevice device = RenderSystem.getDevice();
+      this.blockSize = Mth.roundToward(uboSize, device.getUniformOffsetAlignment());
+      this.capacity = Mth.smallestEncompassingPowerOfTwo(initialCapacity);
       this.nextBlock = 0;
-      this.ringBuffer = new MappableRingBuffer(() -> var1 + " x" + this.blockSize, 130, this.blockSize * this.capacity);
-      this.label = var1;
+      this.ringBuffer = new MappableRingBuffer(() -> label + " x" + this.blockSize, 130, this.blockSize * this.capacity);
+      this.label = label;
    }
 
    public void endFrame() {
@@ -37,8 +37,8 @@ public class DynamicUniformStorage<T extends DynamicUniformStorage.DynamicUnifor
       this.lastUniform = null;
       this.ringBuffer.rotate();
       if (!this.oldBuffers.isEmpty()) {
-         for(MappableRingBuffer var2 : this.oldBuffers) {
-            var2.close();
+         for(MappableRingBuffer oldBuffer : this.oldBuffers) {
+            oldBuffer.close();
          }
 
          this.oldBuffers.clear();
@@ -46,75 +46,75 @@ public class DynamicUniformStorage<T extends DynamicUniformStorage.DynamicUnifor
 
    }
 
-   private void resizeBuffers(int var1) {
-      this.capacity = var1;
+   private void resizeBuffers(final int newCapacity) {
+      this.capacity = newCapacity;
       this.nextBlock = 0;
       this.lastUniform = null;
       this.oldBuffers.add(this.ringBuffer);
       this.ringBuffer = new MappableRingBuffer(() -> this.label + " x" + this.blockSize, 130, this.blockSize * this.capacity);
    }
 
-   public GpuBufferSlice writeUniform(T var1) {
-      if (this.lastUniform != null && this.lastUniform.equals(var1)) {
+   public GpuBufferSlice writeUniform(final T uniform) {
+      if (this.lastUniform != null && this.lastUniform.equals(uniform)) {
          return this.ringBuffer.currentBuffer().slice((long)((this.nextBlock - 1) * this.blockSize), (long)this.blockSize);
       } else {
          if (this.nextBlock >= this.capacity) {
-            int var2 = this.capacity * 2;
-            LOGGER.info("Resizing {}, capacity limit of {} reached during a single frame. New capacity will be {}.", new Object[]{this.label, this.capacity, var2});
-            this.resizeBuffers(var2);
+            int newCapacity = this.capacity * 2;
+            LOGGER.info("Resizing {}, capacity limit of {} reached during a single frame. New capacity will be {}.", new Object[]{this.label, this.capacity, newCapacity});
+            this.resizeBuffers(newCapacity);
          }
 
-         int var8 = this.nextBlock * this.blockSize;
+         int offset = this.nextBlock * this.blockSize;
 
-         try (GpuBuffer.MappedView var3 = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.ringBuffer.currentBuffer().slice((long)var8, (long)this.blockSize), false, true)) {
-            var1.write(var3.data());
+         try (GpuBuffer.MappedView view = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.ringBuffer.currentBuffer().slice((long)offset, (long)this.blockSize), false, true)) {
+            uniform.write(view.data());
          }
 
          ++this.nextBlock;
-         this.lastUniform = var1;
-         return this.ringBuffer.currentBuffer().slice((long)var8, (long)this.blockSize);
+         this.lastUniform = uniform;
+         return this.ringBuffer.currentBuffer().slice((long)offset, (long)this.blockSize);
       }
    }
 
-   public GpuBufferSlice[] writeUniforms(T[] var1) {
-      if (var1.length == 0) {
+   public GpuBufferSlice[] writeUniforms(final T[] uniforms) {
+      if (uniforms.length == 0) {
          return new GpuBufferSlice[0];
       } else {
-         if (this.nextBlock + var1.length > this.capacity) {
-            int var2 = Mth.smallestEncompassingPowerOfTwo(Math.max(this.capacity + 1, var1.length));
-            LOGGER.info("Resizing {}, capacity limit of {} reached during a single frame. New capacity will be {}.", new Object[]{this.label, this.capacity, var2});
-            this.resizeBuffers(var2);
+         if (this.nextBlock + uniforms.length > this.capacity) {
+            int newCapacity = Mth.smallestEncompassingPowerOfTwo(Math.max(this.capacity + 1, uniforms.length));
+            LOGGER.info("Resizing {}, capacity limit of {} reached during a single frame. New capacity will be {}.", new Object[]{this.label, this.capacity, newCapacity});
+            this.resizeBuffers(newCapacity);
          }
 
-         int var10 = this.nextBlock * this.blockSize;
-         GpuBufferSlice[] var3 = new GpuBufferSlice[var1.length];
+         int firstOffset = this.nextBlock * this.blockSize;
+         GpuBufferSlice[] result = new GpuBufferSlice[uniforms.length];
 
-         try (GpuBuffer.MappedView var4 = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.ringBuffer.currentBuffer().slice((long)var10, (long)(var1.length * this.blockSize)), false, true)) {
-            ByteBuffer var5 = var4.data();
+         try (GpuBuffer.MappedView view = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.ringBuffer.currentBuffer().slice((long)firstOffset, (long)(uniforms.length * this.blockSize)), false, true)) {
+            ByteBuffer byteBuffer = view.data();
 
-            for(int var6 = 0; var6 < var1.length; ++var6) {
-               DynamicUniform var7 = var1[var6];
-               var3[var6] = this.ringBuffer.currentBuffer().slice((long)(var10 + var6 * this.blockSize), (long)this.blockSize);
-               var5.position(var6 * this.blockSize);
-               var7.write(var5);
+            for(int i = 0; i < uniforms.length; ++i) {
+               T uniform = uniforms[i];
+               result[i] = this.ringBuffer.currentBuffer().slice((long)(firstOffset + i * this.blockSize), (long)this.blockSize);
+               byteBuffer.position(i * this.blockSize);
+               uniform.write(byteBuffer);
             }
          }
 
-         this.nextBlock += var1.length;
-         this.lastUniform = var1[var1.length - 1];
-         return var3;
+         this.nextBlock += uniforms.length;
+         this.lastUniform = uniforms[uniforms.length - 1];
+         return result;
       }
    }
 
    public void close() {
-      for(MappableRingBuffer var2 : this.oldBuffers) {
-         var2.close();
+      for(MappableRingBuffer oldBuffer : this.oldBuffers) {
+         oldBuffer.close();
       }
 
       this.ringBuffer.close();
    }
 
    public interface DynamicUniform {
-      void write(ByteBuffer var1);
+      void write(ByteBuffer byteBuffer);
    }
 }

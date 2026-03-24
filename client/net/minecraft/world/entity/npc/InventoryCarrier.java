@@ -13,33 +13,33 @@ public interface InventoryCarrier {
 
    SimpleContainer getInventory();
 
-   static void pickUpItem(ServerLevel var0, Mob var1, InventoryCarrier var2, ItemEntity var3) {
-      ItemStack var4 = var3.getItem();
-      if (var1.wantsToPickUp(var0, var4)) {
-         SimpleContainer var5 = var2.getInventory();
-         boolean var6 = var5.canAddItem(var4);
-         if (!var6) {
+   static void pickUpItem(final ServerLevel level, final Mob mob, final InventoryCarrier inventoryCarrier, final ItemEntity itemEntity) {
+      ItemStack itemStack = itemEntity.getItem();
+      if (mob.wantsToPickUp(level, itemStack)) {
+         SimpleContainer inventory = inventoryCarrier.getInventory();
+         boolean hasSpace = inventory.canAddItem(itemStack);
+         if (!hasSpace) {
             return;
          }
 
-         var1.onItemPickup(var3);
-         int var7 = var4.getCount();
-         ItemStack var8 = var5.addItem(var4);
-         var1.take(var3, var7 - var8.getCount());
-         if (var8.isEmpty()) {
-            var3.discard();
+         mob.onItemPickup(itemEntity);
+         int count = itemStack.getCount();
+         ItemStack remainder = inventory.addItem(itemStack);
+         mob.take(itemEntity, count - remainder.getCount());
+         if (remainder.isEmpty()) {
+            itemEntity.discard();
          } else {
-            var4.setCount(var8.getCount());
+            itemStack.setCount(remainder.getCount());
          }
       }
 
    }
 
-   default void readInventoryFromTag(ValueInput var1) {
-      var1.list("Inventory", ItemStack.CODEC).ifPresent((var1x) -> this.getInventory().fromItemList(var1x));
+   default void readInventoryFromTag(final ValueInput input) {
+      input.list("Inventory", ItemStack.CODEC).ifPresent((list) -> this.getInventory().fromItemList(list));
    }
 
-   default void writeInventoryToTag(ValueOutput var1) {
-      this.getInventory().storeAsItemList(var1.list("Inventory", ItemStack.CODEC));
+   default void writeInventoryToTag(final ValueOutput output) {
+      this.getInventory().storeAsItemList(output.list("Inventory", ItemStack.CODEC));
    }
 }

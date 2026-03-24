@@ -18,12 +18,12 @@ public class BegGoal extends Goal {
    private int lookTime;
    private final TargetingConditions begTargeting;
 
-   public BegGoal(Wolf var1, float var2) {
+   public BegGoal(final Wolf wolf, final float lookDistance) {
       super();
-      this.wolf = var1;
-      this.level = getServerLevel(var1);
-      this.lookDistance = var2;
-      this.begTargeting = TargetingConditions.forNonCombat().range((double)var2);
+      this.wolf = wolf;
+      this.level = getServerLevel(wolf);
+      this.lookDistance = lookDistance;
+      this.begTargeting = TargetingConditions.forNonCombat().range((double)lookDistance);
       this.setFlags(EnumSet.of(Goal.Flag.LOOK));
    }
 
@@ -57,10 +57,10 @@ public class BegGoal extends Goal {
       --this.lookTime;
    }
 
-   private boolean playerHoldingInteresting(Player var1) {
-      for(InteractionHand var5 : InteractionHand.values()) {
-         ItemStack var6 = var1.getItemInHand(var5);
-         if (var6.is(Items.BONE) || this.wolf.isFood(var6)) {
+   private boolean playerHoldingInteresting(final Player player) {
+      for(InteractionHand hand : InteractionHand.values()) {
+         ItemStack itemStack = player.getItemInHand(hand);
+         if (itemStack.is(Items.BONE) || this.wolf.isFood(itemStack)) {
             return true;
          }
       }

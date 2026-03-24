@@ -22,44 +22,44 @@ public class ClientLanguage extends Language {
    private final Map<String, String> storage;
    private final boolean defaultRightToLeft;
 
-   private ClientLanguage(Map<String, String> var1, boolean var2) {
+   private ClientLanguage(final Map<String, String> storage, final boolean defaultRightToLeft) {
       super();
-      this.storage = var1;
-      this.defaultRightToLeft = var2;
+      this.storage = storage;
+      this.defaultRightToLeft = defaultRightToLeft;
    }
 
-   public static ClientLanguage loadFrom(ResourceManager var0, List<String> var1, boolean var2) {
-      HashMap var3 = new HashMap();
+   public static ClientLanguage loadFrom(final ResourceManager resourceManager, final List<String> languageStack, final boolean defaultRightToLeft) {
+      Map<String, String> translations = new HashMap();
 
-      for(String var5 : var1) {
-         String var6 = String.format(Locale.ROOT, "lang/%s.json", var5);
+      for(String languageCode : languageStack) {
+         String path = String.format(Locale.ROOT, "lang/%s.json", languageCode);
 
-         for(String var8 : var0.getNamespaces()) {
+         for(String namespace : resourceManager.getNamespaces()) {
             try {
-               Identifier var9 = Identifier.fromNamespaceAndPath(var8, var6);
-               appendFrom(var5, var0.getResourceStack(var9), var3);
-            } catch (Exception var10) {
-               LOGGER.warn("Skipped language file: {}:{} ({})", new Object[]{var8, var6, var10.toString()});
+               Identifier location = Identifier.fromNamespaceAndPath(namespace, path);
+               appendFrom(languageCode, resourceManager.getResourceStack(location), translations);
+            } catch (Exception e) {
+               LOGGER.warn("Skipped language file: {}:{} ({})", new Object[]{namespace, path, e.toString()});
             }
          }
       }
 
-      DeprecatedTranslationsInfo.loadFromDefaultResource().applyToMap(var3);
-      return new ClientLanguage(Map.copyOf(var3), var2);
+      DeprecatedTranslationsInfo.loadFromDefaultResource().applyToMap(translations);
+      return new ClientLanguage(Map.copyOf(translations), defaultRightToLeft);
    }
 
-   private static void appendFrom(String var0, List<Resource> var1, Map<String, String> var2) {
-      for(Resource var4 : var1) {
+   private static void appendFrom(final String languageCode, final List<Resource> resources, final Map<String, String> translations) {
+      for(Resource resource : resources) {
          try {
-            InputStream var5 = var4.open();
+            InputStream inputStream = resource.open();
 
             try {
-               Objects.requireNonNull(var2);
-               Language.loadFromJson(var5, var2::put);
+               Objects.requireNonNull(translations);
+               Language.loadFromJson(inputStream, translations::put);
             } catch (Throwable var9) {
-               if (var5 != null) {
+               if (inputStream != null) {
                   try {
-                     var5.close();
+                     inputStream.close();
                   } catch (Throwable var8) {
                      var9.addSuppressed(var8);
                   }
@@ -68,29 +68,29 @@ public class ClientLanguage extends Language {
                throw var9;
             }
 
-            if (var5 != null) {
-               var5.close();
+            if (inputStream != null) {
+               inputStream.close();
             }
-         } catch (IOException var10) {
-            LOGGER.warn("Failed to load translations for {} from pack {}", new Object[]{var0, var4.sourcePackId(), var10});
+         } catch (IOException e) {
+            LOGGER.warn("Failed to load translations for {} from pack {}", new Object[]{languageCode, resource.sourcePackId(), e});
          }
       }
 
    }
 
-   public String getOrDefault(String var1, String var2) {
-      return (String)this.storage.getOrDefault(var1, var2);
+   public String getOrDefault(final String key, final String defaultValue) {
+      return (String)this.storage.getOrDefault(key, defaultValue);
    }
 
-   public boolean has(String var1) {
-      return this.storage.containsKey(var1);
+   public boolean has(final String key) {
+      return this.storage.containsKey(key);
    }
 
    public boolean isDefaultRightToLeft() {
       return this.defaultRightToLeft;
    }
 
-   public FormattedCharSequence getVisualOrder(FormattedText var1) {
-      return FormattedBidiReorder.reorder(var1, this.defaultRightToLeft);
+   public FormattedCharSequence getVisualOrder(final FormattedText logicalOrderText) {
+      return FormattedBidiReorder.reorder(logicalOrderText, this.defaultRightToLeft);
    }
 }

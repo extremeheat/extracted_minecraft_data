@@ -32,47 +32,47 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.scores.ScoreHolder;
 
 public class ScoreHolderArgument implements ArgumentType<Result> {
-   public static final SuggestionProvider<CommandSourceStack> SUGGEST_SCORE_HOLDERS = (var0, var1) -> {
-      StringReader var2 = new StringReader(var1.getInput());
-      var2.setCursor(var1.getStart());
-      EntitySelectorParser var3 = new EntitySelectorParser(var2, ((CommandSourceStack)var0.getSource()).permissions().hasPermission(Permissions.COMMANDS_ENTITY_SELECTORS));
+   public static final SuggestionProvider<CommandSourceStack> SUGGEST_SCORE_HOLDERS = (context, builder) -> {
+      StringReader reader = new StringReader(builder.getInput());
+      reader.setCursor(builder.getStart());
+      EntitySelectorParser parser = new EntitySelectorParser(reader, ((CommandSourceStack)context.getSource()).permissions().hasPermission(Permissions.COMMANDS_ENTITY_SELECTORS));
 
       try {
-         var3.parse();
+         parser.parse();
       } catch (CommandSyntaxException var5) {
       }
 
-      return var3.fillSuggestions(var1, (var1x) -> SharedSuggestionProvider.suggest(((CommandSourceStack)var0.getSource()).getOnlinePlayerNames(), var1x));
+      return parser.fillSuggestions(builder, (suggestions) -> SharedSuggestionProvider.suggest(((CommandSourceStack)context.getSource()).getOnlinePlayerNames(), suggestions));
    };
    private static final Collection<String> EXAMPLES = Arrays.asList("Player", "0123", "*", "@e");
    private static final SimpleCommandExceptionType ERROR_NO_RESULTS = new SimpleCommandExceptionType(Component.translatable("argument.scoreHolder.empty"));
-   final boolean multiple;
+   private final boolean multiple;
 
-   public ScoreHolderArgument(boolean var1) {
+   public ScoreHolderArgument(final boolean multiple) {
       super();
-      this.multiple = var1;
+      this.multiple = multiple;
    }
 
-   public static ScoreHolder getName(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
-      return (ScoreHolder)getNames(var0, var1).iterator().next();
+   public static ScoreHolder getName(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
+      return (ScoreHolder)getNames(context, name).iterator().next();
    }
 
-   public static Collection<ScoreHolder> getNames(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
-      return getNames(var0, var1, Collections::emptyList);
+   public static Collection<ScoreHolder> getNames(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
+      return getNames(context, name, Collections::emptyList);
    }
 
-   public static Collection<ScoreHolder> getNamesWithDefaultWildcard(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
-      ServerScoreboard var10002 = ((CommandSourceStack)var0.getSource()).getServer().getScoreboard();
+   public static Collection<ScoreHolder> getNamesWithDefaultWildcard(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
+      ServerScoreboard var10002 = ((CommandSourceStack)context.getSource()).getServer().getScoreboard();
       Objects.requireNonNull(var10002);
-      return getNames(var0, var1, var10002::getTrackedPlayers);
+      return getNames(context, name, var10002::getTrackedPlayers);
    }
 
-   public static Collection<ScoreHolder> getNames(CommandContext<CommandSourceStack> var0, String var1, Supplier<Collection<ScoreHolder>> var2) throws CommandSyntaxException {
-      Collection var3 = ((Result)var0.getArgument(var1, Result.class)).getNames((CommandSourceStack)var0.getSource(), var2);
-      if (var3.isEmpty()) {
+   public static Collection<ScoreHolder> getNames(final CommandContext<CommandSourceStack> context, final String name, final Supplier<Collection<ScoreHolder>> wildcard) throws CommandSyntaxException {
+      Collection<ScoreHolder> result = ((Result)context.getArgument(name, Result.class)).getNames((CommandSourceStack)context.getSource(), wildcard);
+      if (result.isEmpty()) {
          throw EntityArgument.NO_ENTITIES_FOUND.create();
       } else {
-         return var3;
+         return result;
       }
    }
 
@@ -84,81 +84,81 @@ public class ScoreHolderArgument implements ArgumentType<Result> {
       return new ScoreHolderArgument(true);
    }
 
-   public Result parse(StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1, true);
+   public Result parse(final StringReader reader) throws CommandSyntaxException {
+      return this.parse(reader, true);
    }
 
-   public <S> Result parse(StringReader var1, S var2) throws CommandSyntaxException {
-      return this.parse(var1, EntitySelectorParser.allowSelectors(var2));
+   public <S> Result parse(final StringReader reader, final S source) throws CommandSyntaxException {
+      return this.parse(reader, EntitySelectorParser.allowSelectors(source));
    }
 
-   private Result parse(StringReader var1, boolean var2) throws CommandSyntaxException {
-      if (var1.canRead() && var1.peek() == '@') {
-         EntitySelectorParser var8 = new EntitySelectorParser(var1, var2);
-         EntitySelector var9 = var8.parse();
-         if (!this.multiple && var9.getMaxResults() > 1) {
-            throw EntityArgument.ERROR_NOT_SINGLE_ENTITY.createWithContext(var1);
+   private Result parse(final StringReader reader, final boolean allowSelectors) throws CommandSyntaxException {
+      if (reader.canRead() && reader.peek() == '@') {
+         EntitySelectorParser parser = new EntitySelectorParser(reader, allowSelectors);
+         EntitySelector selector = parser.parse();
+         if (!this.multiple && selector.getMaxResults() > 1) {
+            throw EntityArgument.ERROR_NOT_SINGLE_ENTITY.createWithContext(reader);
          } else {
-            return new SelectorResult(var9);
+            return new SelectorResult(selector);
          }
       } else {
-         int var3 = var1.getCursor();
+         int start = reader.getCursor();
 
-         while(var1.canRead() && var1.peek() != ' ') {
-            var1.skip();
+         while(reader.canRead() && reader.peek() != ' ') {
+            reader.skip();
          }
 
-         String var4 = var1.getString().substring(var3, var1.getCursor());
-         if (var4.equals("*")) {
-            return (var0, var1x) -> {
-               Collection var2 = (Collection)var1x.get();
-               if (var2.isEmpty()) {
+         String text = reader.getString().substring(start, reader.getCursor());
+         if (text.equals("*")) {
+            return (sender, wildcard) -> {
+               Collection<ScoreHolder> results = (Collection)wildcard.get();
+               if (results.isEmpty()) {
                   throw ERROR_NO_RESULTS.create();
                } else {
-                  return var2;
+                  return results;
                }
             };
          } else {
-            List var5 = List.of(ScoreHolder.forNameOnly(var4));
-            if (var4.startsWith("#")) {
-               return (var1x, var2x) -> var5;
+            List<ScoreHolder> nameOnlyHolder = List.of(ScoreHolder.forNameOnly(text));
+            if (text.startsWith("#")) {
+               return (sender, wildcard) -> nameOnlyHolder;
             } else {
                try {
-                  UUID var6 = UUID.fromString(var4);
-                  return (var2x, var3x) -> {
-                     MinecraftServer var4 = var2x.getServer();
-                     Entity var5x = null;
-                     ArrayList var6x = null;
+                  UUID uuid = UUID.fromString(text);
+                  return (sender, wildcard) -> {
+                     MinecraftServer server = sender.getServer();
+                     ScoreHolder firstResult = null;
+                     List<ScoreHolder> moreResults = null;
 
-                     for(ServerLevel var8 : var4.getAllLevels()) {
-                        Entity var9 = var8.getEntity(var6);
-                        if (var9 != null) {
-                           if (var5x == null) {
-                              var5x = var9;
+                     for(ServerLevel level : server.getAllLevels()) {
+                        Entity entity = level.getEntity(uuid);
+                        if (entity != null) {
+                           if (firstResult == null) {
+                              firstResult = entity;
                            } else {
-                              if (var6x == null) {
-                                 var6x = new ArrayList();
-                                 var6x.add(var5x);
+                              if (moreResults == null) {
+                                 moreResults = new ArrayList();
+                                 moreResults.add(firstResult);
                               }
 
-                              var6x.add(var9);
+                              moreResults.add(entity);
                            }
                         }
                      }
 
-                     if (var6x != null) {
-                        return var6x;
-                     } else if (var5x != null) {
-                        return List.of(var5x);
+                     if (moreResults != null) {
+                        return moreResults;
+                     } else if (firstResult != null) {
+                        return List.of(firstResult);
                      } else {
-                        return var5;
+                        return nameOnlyHolder;
                      }
                   };
                } catch (IllegalArgumentException var7) {
-                  return (var2x, var3x) -> {
-                     MinecraftServer var4x = var2x.getServer();
-                     ServerPlayer var5x = var4x.getPlayerList().getPlayerByName(var4);
-                     return var5x != null ? List.of(var5x) : var5;
+                  return (sender, wildcard) -> {
+                     MinecraftServer server = sender.getServer();
+                     ServerPlayer player = server.getPlayerList().getPlayerByName(text);
+                     return player != null ? List.of(player) : nameOnlyHolder;
                   };
                }
             }
@@ -170,30 +170,20 @@ public class ScoreHolderArgument implements ArgumentType<Result> {
       return EXAMPLES;
    }
 
-   // $FF: synthetic method
-   public Object parse(final StringReader var1, final Object var2) throws CommandSyntaxException {
-      return this.parse(var1, var2);
-   }
-
-   // $FF: synthetic method
-   public Object parse(final StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1);
-   }
-
    public static class SelectorResult implements Result {
       private final EntitySelector selector;
 
-      public SelectorResult(EntitySelector var1) {
+      public SelectorResult(final EntitySelector selector) {
          super();
-         this.selector = var1;
+         this.selector = selector;
       }
 
-      public Collection<ScoreHolder> getNames(CommandSourceStack var1, Supplier<Collection<ScoreHolder>> var2) throws CommandSyntaxException {
-         List var3 = this.selector.findEntities(var1);
-         if (var3.isEmpty()) {
+      public Collection<ScoreHolder> getNames(final CommandSourceStack sender, final Supplier<Collection<ScoreHolder>> wildcard) throws CommandSyntaxException {
+         List<? extends Entity> entities = this.selector.findEntities(sender);
+         if (entities.isEmpty()) {
             throw EntityArgument.NO_ENTITIES_FOUND.create();
          } else {
-            return List.copyOf(var3);
+            return List.copyOf(entities);
          }
       }
    }
@@ -205,59 +195,50 @@ public class ScoreHolderArgument implements ArgumentType<Result> {
          super();
       }
 
-      public void serializeToNetwork(Template var1, FriendlyByteBuf var2) {
-         int var3 = 0;
-         if (var1.multiple) {
-            var3 |= 1;
+      public void serializeToNetwork(final Template template, final FriendlyByteBuf out) {
+         int flags = 0;
+         if (template.multiple) {
+            flags |= 1;
          }
 
-         var2.writeByte(var3);
+         out.writeByte(flags);
       }
 
-      public Template deserializeFromNetwork(FriendlyByteBuf var1) {
-         byte var2 = var1.readByte();
-         boolean var3 = (var2 & 1) != 0;
-         return new Template(var3);
+      public Template deserializeFromNetwork(final FriendlyByteBuf in) {
+         byte flags = in.readByte();
+         boolean multiple = (flags & 1) != 0;
+         return new Template(multiple);
       }
 
-      public void serializeToJson(Template var1, JsonObject var2) {
-         var2.addProperty("amount", var1.multiple ? "multiple" : "single");
+      public void serializeToJson(final Template template, final JsonObject out) {
+         out.addProperty("amount", template.multiple ? "multiple" : "single");
       }
 
-      public Template unpack(ScoreHolderArgument var1) {
-         return new Template(var1.multiple);
-      }
-
-      // $FF: synthetic method
-      public ArgumentTypeInfo.Template deserializeFromNetwork(final FriendlyByteBuf var1) {
-         return this.deserializeFromNetwork(var1);
+      public Template unpack(final ScoreHolderArgument argument) {
+         return new Template(argument.multiple);
       }
 
       public final class Template implements ArgumentTypeInfo.Template<ScoreHolderArgument> {
-         final boolean multiple;
+         private final boolean multiple;
 
-         Template(final boolean var2) {
+         private Template(final boolean multiple) {
+            Objects.requireNonNull(Info.this);
             super();
-            this.multiple = var2;
+            this.multiple = multiple;
          }
 
-         public ScoreHolderArgument instantiate(CommandBuildContext var1) {
+         public ScoreHolderArgument instantiate(final CommandBuildContext context) {
             return new ScoreHolderArgument(this.multiple);
          }
 
          public ArgumentTypeInfo<ScoreHolderArgument, ?> type() {
             return Info.this;
          }
-
-         // $FF: synthetic method
-         public ArgumentType instantiate(final CommandBuildContext var1) {
-            return this.instantiate(var1);
-         }
       }
    }
 
    @FunctionalInterface
    public interface Result {
-      Collection<ScoreHolder> getNames(CommandSourceStack var1, Supplier<Collection<ScoreHolder>> var2) throws CommandSyntaxException;
+      Collection<ScoreHolder> getNames(final CommandSourceStack sender, Supplier<Collection<ScoreHolder>> wildcard) throws CommandSyntaxException;
    }
 }

@@ -6,10 +6,7 @@ import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorPreset;
 import org.jspecify.annotations.Nullable;
 
 public record InitialWorldCreationOptions(WorldCreationUiState.SelectedGameMode selectedGameMode, GameRuleMap gameRuleOverwrites, @Nullable ResourceKey<FlatLevelGeneratorPreset> flatLevelPreset) {
-   public InitialWorldCreationOptions(WorldCreationUiState.SelectedGameMode var1, GameRuleMap var2, @Nullable ResourceKey<FlatLevelGeneratorPreset> var3) {
+   public InitialWorldCreationOptions {
       super();
-      this.selectedGameMode = var1;
-      this.gameRuleOverwrites = var2;
-      this.flatLevelPreset = var3;
    }
 }

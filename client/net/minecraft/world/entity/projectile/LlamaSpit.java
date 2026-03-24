@@ -19,14 +19,14 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 public class LlamaSpit extends Projectile {
-   public LlamaSpit(EntityType<? extends LlamaSpit> var1, Level var2) {
-      super(var1, var2);
+   public LlamaSpit(final EntityType<? extends LlamaSpit> type, final Level level) {
+      super(type, level);
    }
 
-   public LlamaSpit(Level var1, Llama var2) {
-      this(EntityType.LLAMA_SPIT, var1);
-      this.setOwner(var2);
-      this.setPos(var2.getX() - (double)(var2.getBbWidth() + 1.0F) * 0.5 * (double)Mth.sin((double)(var2.yBodyRot * 0.017453292F)), var2.getEyeY() - 0.10000000149011612, var2.getZ() + (double)(var2.getBbWidth() + 1.0F) * 0.5 * (double)Mth.cos((double)(var2.yBodyRot * 0.017453292F)));
+   public LlamaSpit(final Level level, final Llama owner) {
+      this(EntityType.LLAMA_SPIT, level);
+      this.setOwner(owner);
+      this.setPos(owner.getX() - (double)(owner.getBbWidth() + 1.0F) * 0.5 * (double)Mth.sin((double)(owner.yBodyRot * 0.017453292F)), owner.getEyeY() - 0.10000000149011612, owner.getZ() + (double)(owner.getBbWidth() + 1.0F) * 0.5 * (double)Mth.cos((double)(owner.yBodyRot * 0.017453292F)));
    }
 
    protected double getDefaultGravity() {
@@ -35,61 +35,61 @@ public class LlamaSpit extends Projectile {
 
    public void tick() {
       super.tick();
-      Vec3 var1 = this.getDeltaMovement();
-      HitResult var2 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
-      this.hitTargetOrDeflectSelf(var2);
-      double var3 = this.getX() + var1.x;
-      double var5 = this.getY() + var1.y;
-      double var7 = this.getZ() + var1.z;
+      Vec3 movement = this.getDeltaMovement();
+      HitResult hitResult = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
+      this.hitTargetOrDeflectSelf(hitResult);
+      double x = this.getX() + movement.x;
+      double y = this.getY() + movement.y;
+      double z = this.getZ() + movement.z;
       this.updateRotation();
-      float var9 = 0.99F;
+      float inertia = 0.99F;
       if (this.level().getBlockStates(this.getBoundingBox()).noneMatch(BlockBehaviour.BlockStateBase::isAir)) {
          this.discard();
       } else if (this.isInWater()) {
          this.discard();
       } else {
-         this.setDeltaMovement(var1.scale(0.9900000095367432));
+         this.setDeltaMovement(movement.scale(0.9900000095367432));
          this.applyGravity();
-         this.setPos(var3, var5, var7);
+         this.setPos(x, y, z);
       }
    }
 
-   protected void onHitEntity(EntityHitResult var1) {
-      super.onHitEntity(var1);
-      Entity var3 = this.getOwner();
-      if (var3 instanceof LivingEntity var2) {
-         var3 = var1.getEntity();
-         DamageSource var4 = this.damageSources().spit(this, var2);
+   protected void onHitEntity(final EntityHitResult hitResult) {
+      super.onHitEntity(hitResult);
+      Entity target = this.getOwner();
+      if (target instanceof LivingEntity livingOwner) {
+         target = hitResult.getEntity();
+         DamageSource damageSource = this.damageSources().spit(this, livingOwner);
          Level var6 = this.level();
-         if (var6 instanceof ServerLevel var5) {
-            if (var3.hurtServer(var5, var4, 1.0F)) {
-               EnchantmentHelper.doPostAttackEffects(var5, var3, var4);
+         if (var6 instanceof ServerLevel serverLevel) {
+            if (target.hurtServer(serverLevel, damageSource, 1.0F)) {
+               EnchantmentHelper.doPostAttackEffects(serverLevel, target, damageSource);
             }
          }
       }
 
    }
 
-   protected void onHitBlock(BlockHitResult var1) {
-      super.onHitBlock(var1);
+   protected void onHitBlock(final BlockHitResult hitResult) {
+      super.onHitBlock(hitResult);
       if (!this.level().isClientSide()) {
          this.discard();
       }
 
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
    }
 
-   public void recreateFromPacket(ClientboundAddEntityPacket var1) {
-      super.recreateFromPacket(var1);
-      Vec3 var2 = var1.getMovement();
+   public void recreateFromPacket(final ClientboundAddEntityPacket packet) {
+      super.recreateFromPacket(packet);
+      Vec3 movement = packet.getMovement();
 
-      for(int var3 = 0; var3 < 7; ++var3) {
-         double var4 = 0.4 + 0.1 * (double)var3;
-         this.level().addParticle(ParticleTypes.SPIT, this.getX(), this.getY(), this.getZ(), var2.x * var4, var2.y, var2.z * var4);
+      for(int i = 0; i < 7; ++i) {
+         double k = 0.4 + 0.1 * (double)i;
+         this.level().addParticle(ParticleTypes.SPIT, this.getX(), this.getY(), this.getZ(), movement.x * k, movement.y, movement.z * k);
       }
 
-      this.setDeltaMovement(var2);
+      this.setDeltaMovement(movement);
    }
 }

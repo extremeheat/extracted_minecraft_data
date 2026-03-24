@@ -15,39 +15,39 @@ public class SwitchMinigameTask extends LongRunningTask {
    private final WorldTemplate worldTemplate;
    private final RealmsConfigureWorldScreen nextScreen;
 
-   public SwitchMinigameTask(long var1, WorldTemplate var3, RealmsConfigureWorldScreen var4) {
+   public SwitchMinigameTask(final long realmId, final WorldTemplate worldTemplate, final RealmsConfigureWorldScreen nextScreen) {
       super();
-      this.realmId = var1;
-      this.worldTemplate = var3;
-      this.nextScreen = var4;
+      this.realmId = realmId;
+      this.worldTemplate = worldTemplate;
+      this.nextScreen = nextScreen;
    }
 
    public void run() {
-      RealmsClient var1 = RealmsClient.getOrCreate();
+      RealmsClient client = RealmsClient.getOrCreate();
 
-      for(int var2 = 0; var2 < 25; ++var2) {
+      for(int i = 0; i < 25; ++i) {
          try {
             if (this.aborted()) {
                return;
             }
 
-            if (var1.putIntoMinigameMode(this.realmId, this.worldTemplate.id())) {
+            if (client.putIntoMinigameMode(this.realmId, this.worldTemplate.id())) {
                setScreen(this.nextScreen);
                break;
             }
-         } catch (RetryCallException var4) {
+         } catch (RetryCallException e) {
             if (this.aborted()) {
                return;
             }
 
-            pause((long)var4.delaySeconds);
-         } catch (Exception var5) {
+            pause((long)e.delaySeconds);
+         } catch (Exception e) {
             if (this.aborted()) {
                return;
             }
 
             LOGGER.error("Couldn't start mini game!");
-            this.error(var5);
+            this.error(e);
          }
       }
 

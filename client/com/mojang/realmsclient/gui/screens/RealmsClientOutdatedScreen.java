@@ -1,7 +1,6 @@
 package com.mojang.realmsclient.gui.screens;
 
 import net.minecraft.SharedConstants;
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
@@ -18,18 +17,16 @@ public class RealmsClientOutdatedScreen extends RealmsScreen {
    private final Screen lastScreen;
    private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
 
-   public RealmsClientOutdatedScreen(Screen var1) {
+   public RealmsClientOutdatedScreen(final Screen lastScreen) {
       super(INCOMPATIBLE_TITLE);
-      this.lastScreen = var1;
+      this.lastScreen = lastScreen;
    }
 
    public void init() {
       this.layout.addTitleHeader(INCOMPATIBLE_TITLE, this.font);
       this.layout.addToContents((new MultiLineTextWidget(this.getErrorMessage(), this.font)).setCentered(true));
-      this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, (var1) -> this.onClose()).width(200).build());
-      this.layout.visitWidgets((var1) -> {
-         AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1);
-      });
+      this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, (button) -> this.onClose()).width(200).build());
+      this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
       this.repositionElements();
    }
 

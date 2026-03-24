@@ -13,20 +13,19 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 public record PlaySoundConsumeEffect(Holder<SoundEvent> sound) implements ConsumeEffect {
-   public static final MapCodec<PlaySoundConsumeEffect> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(SoundEvent.CODEC.fieldOf("sound").forGetter(PlaySoundConsumeEffect::sound)).apply(var0, PlaySoundConsumeEffect::new));
+   public static final MapCodec<PlaySoundConsumeEffect> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(SoundEvent.CODEC.fieldOf("sound").forGetter(PlaySoundConsumeEffect::sound)).apply(i, PlaySoundConsumeEffect::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, PlaySoundConsumeEffect> STREAM_CODEC;
 
-   public PlaySoundConsumeEffect(Holder<SoundEvent> var1) {
+   public PlaySoundConsumeEffect {
       super();
-      this.sound = var1;
    }
 
    public ConsumeEffect.Type<PlaySoundConsumeEffect> getType() {
       return ConsumeEffect.Type.PLAY_SOUND;
    }
 
-   public boolean apply(Level var1, ItemStack var2, LivingEntity var3) {
-      var1.playSound((Entity)null, (BlockPos)var3.blockPosition(), this.sound.value(), var3.getSoundSource(), 1.0F, 1.0F);
+   public boolean apply(final Level level, final ItemStack stack, final LivingEntity user) {
+      level.playSound((Entity)null, (BlockPos)user.blockPosition(), this.sound.value(), user.getSoundSource(), 1.0F, 1.0F);
       return true;
    }
 

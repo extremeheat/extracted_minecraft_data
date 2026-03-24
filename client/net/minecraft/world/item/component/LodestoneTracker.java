@@ -12,22 +12,20 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.village.poi.PoiTypes;
 
 public record LodestoneTracker(Optional<GlobalPos> target, boolean tracked) {
-   public static final Codec<LodestoneTracker> CODEC = RecordCodecBuilder.create((var0) -> var0.group(GlobalPos.CODEC.optionalFieldOf("target").forGetter(LodestoneTracker::target), Codec.BOOL.optionalFieldOf("tracked", true).forGetter(LodestoneTracker::tracked)).apply(var0, LodestoneTracker::new));
+   public static final Codec<LodestoneTracker> CODEC = RecordCodecBuilder.create((i) -> i.group(GlobalPos.CODEC.optionalFieldOf("target").forGetter(LodestoneTracker::target), Codec.BOOL.optionalFieldOf("tracked", true).forGetter(LodestoneTracker::tracked)).apply(i, LodestoneTracker::new));
    public static final StreamCodec<ByteBuf, LodestoneTracker> STREAM_CODEC;
 
-   public LodestoneTracker(Optional<GlobalPos> var1, boolean var2) {
+   public LodestoneTracker {
       super();
-      this.target = var1;
-      this.tracked = var2;
    }
 
-   public LodestoneTracker tick(ServerLevel var1) {
+   public LodestoneTracker tick(final ServerLevel level) {
       if (this.tracked && !this.target.isEmpty()) {
-         if (((GlobalPos)this.target.get()).dimension() != var1.dimension()) {
+         if (((GlobalPos)this.target.get()).dimension() != level.dimension()) {
             return this;
          } else {
-            BlockPos var2 = ((GlobalPos)this.target.get()).pos();
-            return var1.isInWorldBounds(var2) && var1.getPoiManager().existsAtPosition(PoiTypes.LODESTONE, var2) ? this : new LodestoneTracker(Optional.empty(), true);
+            BlockPos blockPos = ((GlobalPos)this.target.get()).pos();
+            return level.isInWorldBounds(blockPos) && level.getPoiManager().existsAtPosition(PoiTypes.LODESTONE, blockPos) ? this : new LodestoneTracker(Optional.empty(), true);
          }
       } else {
          return this;

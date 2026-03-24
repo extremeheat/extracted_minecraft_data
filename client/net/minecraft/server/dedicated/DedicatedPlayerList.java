@@ -3,7 +3,6 @@ package net.minecraft.server.dedicated;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import net.minecraft.core.LayeredRegistryAccess;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.RegistryLayer;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.PlayerList;
@@ -13,10 +12,10 @@ import org.slf4j.Logger;
 public class DedicatedPlayerList extends PlayerList {
    private static final Logger LOGGER = LogUtils.getLogger();
 
-   public DedicatedPlayerList(DedicatedServer var1, LayeredRegistryAccess<RegistryLayer> var2, PlayerDataStorage var3) {
-      super(var1, var2, var3, var1.notificationManager());
-      this.setViewDistance(var1.viewDistance());
-      this.setSimulationDistance(var1.simulationDistance());
+   public DedicatedPlayerList(final DedicatedServer server, final LayeredRegistryAccess<RegistryLayer> registries, final PlayerDataStorage playerDataStorage) {
+      super(server, registries, playerDataStorage, server.notificationManager());
+      this.setViewDistance(server.viewDistance());
+      this.setSimulationDistance(server.simulationDistance());
       this.loadUserBanList();
       this.saveUserBanList();
       this.loadIpBanList();
@@ -37,8 +36,8 @@ public class DedicatedPlayerList extends PlayerList {
    private void saveIpBanList() {
       try {
          this.getIpBans().save();
-      } catch (IOException var2) {
-         LOGGER.warn("Failed to save ip banlist: ", var2);
+      } catch (IOException e) {
+         LOGGER.warn("Failed to save ip banlist: ", e);
       }
 
    }
@@ -46,8 +45,8 @@ public class DedicatedPlayerList extends PlayerList {
    private void saveUserBanList() {
       try {
          this.getBans().save();
-      } catch (IOException var2) {
-         LOGGER.warn("Failed to save user banlist: ", var2);
+      } catch (IOException e) {
+         LOGGER.warn("Failed to save user banlist: ", e);
       }
 
    }
@@ -55,8 +54,8 @@ public class DedicatedPlayerList extends PlayerList {
    private void loadIpBanList() {
       try {
          this.getIpBans().load();
-      } catch (IOException var2) {
-         LOGGER.warn("Failed to load ip banlist: ", var2);
+      } catch (IOException e) {
+         LOGGER.warn("Failed to load ip banlist: ", e);
       }
 
    }
@@ -64,8 +63,8 @@ public class DedicatedPlayerList extends PlayerList {
    private void loadUserBanList() {
       try {
          this.getBans().load();
-      } catch (IOException var2) {
-         LOGGER.warn("Failed to load user banlist: ", var2);
+      } catch (IOException e) {
+         LOGGER.warn("Failed to load user banlist: ", e);
       }
 
    }
@@ -73,8 +72,8 @@ public class DedicatedPlayerList extends PlayerList {
    private void loadOps() {
       try {
          this.getOps().load();
-      } catch (Exception var2) {
-         LOGGER.warn("Failed to load operators list: ", var2);
+      } catch (Exception e) {
+         LOGGER.warn("Failed to load operators list: ", e);
       }
 
    }
@@ -82,8 +81,8 @@ public class DedicatedPlayerList extends PlayerList {
    private void saveOps() {
       try {
          this.getOps().save();
-      } catch (Exception var2) {
-         LOGGER.warn("Failed to save operators list: ", var2);
+      } catch (Exception e) {
+         LOGGER.warn("Failed to save operators list: ", e);
       }
 
    }
@@ -91,8 +90,8 @@ public class DedicatedPlayerList extends PlayerList {
    private void loadWhiteList() {
       try {
          this.getWhiteList().load();
-      } catch (Exception var2) {
-         LOGGER.warn("Failed to load white-list: ", var2);
+      } catch (Exception e) {
+         LOGGER.warn("Failed to load white-list: ", e);
       }
 
    }
@@ -100,26 +99,21 @@ public class DedicatedPlayerList extends PlayerList {
    private void saveWhiteList() {
       try {
          this.getWhiteList().save();
-      } catch (Exception var2) {
-         LOGGER.warn("Failed to save white-list: ", var2);
+      } catch (Exception e) {
+         LOGGER.warn("Failed to save white-list: ", e);
       }
 
    }
 
-   public boolean isWhiteListed(NameAndId var1) {
-      return !this.isUsingWhitelist() || this.isOp(var1) || this.getWhiteList().isWhiteListed(var1);
+   public boolean isWhiteListed(final NameAndId nameAndId) {
+      return !this.isUsingWhitelist() || this.isOp(nameAndId) || this.getWhiteList().isWhiteListed(nameAndId);
    }
 
    public DedicatedServer getServer() {
       return (DedicatedServer)super.getServer();
    }
 
-   public boolean canBypassPlayerLimit(NameAndId var1) {
-      return this.getOps().canBypassPlayerLimit(var1);
-   }
-
-   // $FF: synthetic method
-   public MinecraftServer getServer() {
-      return this.getServer();
+   public boolean canBypassPlayerLimit(final NameAndId nameAndId) {
+      return this.getOps().canBypassPlayerLimit(nameAndId);
    }
 }

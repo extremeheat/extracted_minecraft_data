@@ -10,18 +10,16 @@ import net.minecraft.world.item.ItemStack;
 public record ClientboundSetPlayerInventoryPacket(int slot, ItemStack contents) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSetPlayerInventoryPacket> STREAM_CODEC;
 
-   public ClientboundSetPlayerInventoryPacket(int var1, ItemStack var2) {
+   public ClientboundSetPlayerInventoryPacket {
       super();
-      this.slot = var1;
-      this.contents = var2;
    }
 
    public PacketType<ClientboundSetPlayerInventoryPacket> type() {
       return GamePacketTypes.CLIENTBOUND_SET_PLAYER_INVENTORY;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleSetPlayerInventory(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleSetPlayerInventory(this);
    }
 
    static {

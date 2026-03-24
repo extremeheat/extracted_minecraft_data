@@ -19,16 +19,16 @@ public class Sound implements Weighted<Sound> {
    private final boolean preload;
    private final int attenuationDistance;
 
-   public Sound(Identifier var1, SampledFloat var2, SampledFloat var3, int var4, Type var5, boolean var6, boolean var7, int var8) {
+   public Sound(final Identifier location, final SampledFloat volume, final SampledFloat pitch, final int weight, final Type type, final boolean stream, final boolean preload, final int attenuationDistance) {
       super();
-      this.location = var1;
-      this.volume = var2;
-      this.pitch = var3;
-      this.weight = var4;
-      this.type = var5;
-      this.stream = var6;
-      this.preload = var7;
-      this.attenuationDistance = var8;
+      this.location = location;
+      this.volume = volume;
+      this.pitch = pitch;
+      this.weight = weight;
+      this.type = type;
+      this.stream = stream;
+      this.preload = preload;
+      this.attenuationDistance = attenuationDistance;
    }
 
    public Identifier getLocation() {
@@ -51,13 +51,13 @@ public class Sound implements Weighted<Sound> {
       return this.weight;
    }
 
-   public Sound getSound(RandomSource var1) {
+   public Sound getSound(final RandomSource random) {
       return this;
    }
 
-   public void preloadIfRequired(SoundEngine var1) {
+   public void preloadIfRequired(final SoundEngine soundEngine) {
       if (this.preload) {
-         var1.requestPreload(this);
+         soundEngine.requestPreload(this);
       }
 
    }
@@ -82,25 +82,20 @@ public class Sound implements Weighted<Sound> {
       return "Sound[" + String.valueOf(this.location) + "]";
    }
 
-   // $FF: synthetic method
-   public Object getSound(final RandomSource var1) {
-      return this.getSound(var1);
-   }
-
    public static enum Type {
       FILE("file"),
       SOUND_EVENT("event");
 
       private final String name;
 
-      private Type(final String var3) {
-         this.name = var3;
+      private Type(final String name) {
+         this.name = name;
       }
 
-      public static @Nullable Type getByName(String var0) {
-         for(Type var4 : values()) {
-            if (var4.name.equals(var0)) {
-               return var4;
+      public static @Nullable Type getByName(final String name) {
+         for(Type type : values()) {
+            if (type.name.equals(name)) {
+               return type;
             }
          }
 

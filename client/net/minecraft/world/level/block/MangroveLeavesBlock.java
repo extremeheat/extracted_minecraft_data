@@ -12,29 +12,29 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class MangroveLeavesBlock extends TintedParticleLeavesBlock implements BonemealableBlock {
-   public static final MapCodec<MangroveLeavesBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.floatRange(0.0F, 1.0F).fieldOf("leaf_particle_chance").forGetter((var0x) -> var0x.leafParticleChance), propertiesCodec()).apply(var0, MangroveLeavesBlock::new));
+   public static final MapCodec<MangroveLeavesBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ExtraCodecs.floatRange(0.0F, 1.0F).fieldOf("leaf_particle_chance").forGetter((e) -> e.leafParticleChance), propertiesCodec()).apply(i, MangroveLeavesBlock::new));
 
    public MapCodec<MangroveLeavesBlock> codec() {
       return CODEC;
    }
 
-   public MangroveLeavesBlock(float var1, BlockBehaviour.Properties var2) {
-      super(var1, var2);
+   public MangroveLeavesBlock(final float leafParticleChance, final BlockBehaviour.Properties properties) {
+      super(leafParticleChance, properties);
    }
 
-   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
-      return var1.getBlockState(var2.below()).isAir();
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+      return level.getBlockState(pos.below()).isAir();
    }
 
-   public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
       return true;
    }
 
-   public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      var1.setBlock(var3.below(), MangrovePropaguleBlock.createNewHangingPropagule(), 2);
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+      level.setBlock(pos.below(), MangrovePropaguleBlock.createNewHangingPropagule(), 2);
    }
 
-   public BlockPos getParticlePos(BlockPos var1) {
-      return var1.below();
+   public BlockPos getParticlePos(final BlockPos blockPos) {
+      return blockPos.below();
    }
 }

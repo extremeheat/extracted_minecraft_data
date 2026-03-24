@@ -6,8 +6,8 @@ public enum UniformType {
 
    final String name;
 
-   private UniformType(final String var3) {
-      this.name = var3;
+   private UniformType(final String name) {
+      this.name = name;
    }
 
    // $FF: synthetic method

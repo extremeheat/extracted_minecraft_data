@@ -17,29 +17,29 @@ public class RenameEnchantmentsFix extends DataFix {
    final String name;
    final Map<String, String> renames;
 
-   public RenameEnchantmentsFix(Schema var1, String var2, Map<String, String> var3) {
-      super(var1, false);
-      this.name = var2;
-      this.renames = var3;
+   public RenameEnchantmentsFix(final Schema outputSchema, final String name, final Map<String, String> renames) {
+      super(outputSchema, false);
+      this.name = name;
+      this.renames = renames;
    }
 
    protected TypeRewriteRule makeRule() {
-      Type var1 = this.getInputSchema().getType(References.ITEM_STACK);
-      OpticFinder var2 = var1.findField("tag");
-      return this.fixTypeEverywhereTyped(this.name, var1, (var2x) -> var2x.updateTyped(var2, (var1) -> var1.update(DSL.remainderFinder(), this::fixTag)));
+      Type<?> item = this.getInputSchema().getType(References.ITEM_STACK);
+      OpticFinder<?> tagFinder = item.findField("tag");
+      return this.fixTypeEverywhereTyped(this.name, item, (input) -> input.updateTyped(tagFinder, (tag) -> tag.update(DSL.remainderFinder(), this::fixTag)));
    }
 
-   private Dynamic<?> fixTag(Dynamic<?> var1) {
-      var1 = this.fixEnchantmentList(var1, "Enchantments");
-      var1 = this.fixEnchantmentList(var1, "StoredEnchantments");
-      return var1;
+   private Dynamic<?> fixTag(Dynamic<?> tag) {
+      tag = this.fixEnchantmentList(tag, "Enchantments");
+      tag = this.fixEnchantmentList(tag, "StoredEnchantments");
+      return tag;
    }
 
-   private Dynamic<?> fixEnchantmentList(Dynamic<?> var1, String var2) {
-      return var1.update(var2, (var1x) -> {
-         DataResult var10000 = var1x.asStreamOpt().map((var1) -> var1.map((var1x) -> var1x.update("id", (var2) -> (Dynamic)var2.asString().map((var2x) -> var1x.createString((String)this.renames.getOrDefault(NamespacedSchema.ensureNamespaced(var2x), var2x))).mapOrElse(Function.identity(), (var1) -> var2))));
-         Objects.requireNonNull(var1x);
-         return (Dynamic)var10000.map(var1x::createList).mapOrElse(Function.identity(), (var1) -> var1x);
+   private Dynamic<?> fixEnchantmentList(final Dynamic<?> itemStack, final String field) {
+      return itemStack.update(field, (tag) -> {
+         DataResult var10000 = tag.asStreamOpt().map((s) -> s.map((element) -> element.update("id", (id) -> (Dynamic)id.asString().map((stringId) -> element.createString((String)this.renames.getOrDefault(NamespacedSchema.ensureNamespaced(stringId), stringId))).mapOrElse(Function.identity(), (fail) -> id))));
+         Objects.requireNonNull(tag);
+         return (Dynamic)var10000.map(tag::createList).mapOrElse(Function.identity(), (fail) -> tag);
       });
    }
 }

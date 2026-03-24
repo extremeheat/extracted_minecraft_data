@@ -19,7 +19,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 
 public class PaleMossDecorator extends TreeDecorator {
-   public static final MapCodec<PaleMossDecorator> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.floatRange(0.0F, 1.0F).fieldOf("leaves_probability").forGetter((var0x) -> var0x.leavesProbability), Codec.floatRange(0.0F, 1.0F).fieldOf("trunk_probability").forGetter((var0x) -> var0x.trunkProbability), Codec.floatRange(0.0F, 1.0F).fieldOf("ground_probability").forGetter((var0x) -> var0x.groundProbability)).apply(var0, PaleMossDecorator::new));
+   public static final MapCodec<PaleMossDecorator> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.floatRange(0.0F, 1.0F).fieldOf("leaves_probability").forGetter((p) -> p.leavesProbability), Codec.floatRange(0.0F, 1.0F).fieldOf("trunk_probability").forGetter((p) -> p.trunkProbability), Codec.floatRange(0.0F, 1.0F).fieldOf("ground_probability").forGetter((p) -> p.groundProbability)).apply(i, PaleMossDecorator::new));
    private final float leavesProbability;
    private final float trunkProbability;
    private final float groundProbability;
@@ -28,37 +28,37 @@ public class PaleMossDecorator extends TreeDecorator {
       return TreeDecoratorType.PALE_MOSS;
    }
 
-   public PaleMossDecorator(float var1, float var2, float var3) {
+   public PaleMossDecorator(final float leavesProbability, final float trunkProbability, final float groundProbability) {
       super();
-      this.leavesProbability = var1;
-      this.trunkProbability = var2;
-      this.groundProbability = var3;
+      this.leavesProbability = leavesProbability;
+      this.trunkProbability = trunkProbability;
+      this.groundProbability = groundProbability;
    }
 
-   public void place(TreeDecorator.Context var1) {
-      RandomSource var2 = var1.random();
-      WorldGenLevel var3 = (WorldGenLevel)var1.level();
-      List var4 = Util.shuffledCopy(var1.logs(), var2);
-      if (!var4.isEmpty()) {
-         BlockPos var5 = (BlockPos)Collections.min(var4, Comparator.comparingInt(Vec3i::getY));
-         if (var2.nextFloat() < this.groundProbability) {
-            var3.registryAccess().lookup(Registries.CONFIGURED_FEATURE).flatMap((var0) -> var0.get(VegetationFeatures.PALE_MOSS_PATCH)).ifPresent((var3x) -> ((ConfiguredFeature)var3x.value()).place(var3, var3.getLevel().getChunkSource().getGenerator(), var2, var5.above()));
+   public void place(final TreeDecorator.Context context) {
+      RandomSource random = context.random();
+      WorldGenLevel level = context.level();
+      List<BlockPos> logs = Util.shuffledCopy(context.logs(), random);
+      if (!logs.isEmpty()) {
+         BlockPos origin = (BlockPos)Collections.min(logs, Comparator.comparingInt(Vec3i::getY));
+         if (random.nextFloat() < this.groundProbability) {
+            level.registryAccess().lookup(Registries.CONFIGURED_FEATURE).flatMap((registry) -> registry.get(VegetationFeatures.PALE_MOSS_PATCH)).ifPresent((mossPatch) -> ((ConfiguredFeature)mossPatch.value()).place(level, level.getLevel().getChunkSource().getGenerator(), random, origin.above()));
          }
 
-         var1.logs().forEach((var3x) -> {
-            if (var2.nextFloat() < this.trunkProbability) {
-               BlockPos var4 = var3x.below();
-               if (var1.isAir(var4)) {
-                  addMossHanger(var4, var1);
+         context.logs().forEach((pos) -> {
+            if (random.nextFloat() < this.trunkProbability) {
+               BlockPos down = pos.below();
+               if (context.isAir(down)) {
+                  addMossHanger(down, context);
                }
             }
 
          });
-         var1.leaves().forEach((var3x) -> {
-            if (var2.nextFloat() < this.leavesProbability) {
-               BlockPos var4 = var3x.below();
-               if (var1.isAir(var4)) {
-                  addMossHanger(var4, var1);
+         context.leaves().forEach((pos) -> {
+            if (random.nextFloat() < this.leavesProbability) {
+               BlockPos down = pos.below();
+               if (context.isAir(down)) {
+                  addMossHanger(down, context);
                }
             }
 
@@ -66,12 +66,12 @@ public class PaleMossDecorator extends TreeDecorator {
       }
    }
 
-   private static void addMossHanger(BlockPos var0, TreeDecorator.Context var1) {
-      while(var1.isAir(var0.below()) && !((double)var1.random().nextFloat() < 0.5)) {
-         var1.setBlock(var0, (BlockState)Blocks.PALE_HANGING_MOSS.defaultBlockState().setValue(HangingMossBlock.TIP, false));
-         var0 = var0.below();
+   private static void addMossHanger(BlockPos pos, final TreeDecorator.Context context) {
+      while(context.isAir(pos.below()) && !((double)context.random().nextFloat() < 0.5)) {
+         context.setBlock(pos, (BlockState)Blocks.PALE_HANGING_MOSS.defaultBlockState().setValue(HangingMossBlock.TIP, false));
+         pos = pos.below();
       }
 
-      var1.setBlock(var0, (BlockState)Blocks.PALE_HANGING_MOSS.defaultBlockState().setValue(HangingMossBlock.TIP, true));
+      context.setBlock(pos, (BlockState)Blocks.PALE_HANGING_MOSS.defaultBlockState().setValue(HangingMossBlock.TIP, true));
    }
 }

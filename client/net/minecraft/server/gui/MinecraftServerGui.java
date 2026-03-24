@@ -16,6 +16,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
@@ -40,107 +41,111 @@ public class MinecraftServerGui extends JComponent {
    private final DedicatedServer server;
    private Thread logAppenderThread;
    private final Collection<Runnable> finalizers = Lists.newArrayList();
-   final AtomicBoolean isClosing = new AtomicBoolean();
+   private final AtomicBoolean isClosing = new AtomicBoolean();
 
-   public static MinecraftServerGui showFrameFor(final DedicatedServer var0) {
+   public static MinecraftServerGui showFrameFor(final DedicatedServer server) {
       try {
          UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
       } catch (Exception var3) {
       }
 
-      final JFrame var1 = new JFrame("Minecraft server");
-      final MinecraftServerGui var2 = new MinecraftServerGui(var0);
-      var1.setDefaultCloseOperation(2);
-      var1.add(var2);
-      var1.pack();
-      var1.setLocationRelativeTo((Component)null);
-      var1.setVisible(true);
-      var1.addWindowListener(new WindowAdapter() {
-         public void windowClosing(WindowEvent var1x) {
-            if (!var2.isClosing.getAndSet(true)) {
-               var1.setTitle("Minecraft server - shutting down!");
-               var0.halt(true);
-               var2.runFinalizers();
+      final JFrame frame = new JFrame("Minecraft server");
+      final MinecraftServerGui gui = new MinecraftServerGui(server);
+      frame.setDefaultCloseOperation(2);
+      frame.add(gui);
+      frame.pack();
+      frame.setLocationRelativeTo((Component)null);
+      frame.setVisible(true);
+      frame.addWindowListener(new WindowAdapter() {
+         public void windowClosing(final WindowEvent event) {
+            if (!gui.isClosing.getAndSet(true)) {
+               frame.setTitle("Minecraft server - shutting down!");
+               server.halt(true);
+               gui.runFinalizers();
             }
 
          }
       });
-      Objects.requireNonNull(var1);
-      var2.addFinalizer(var1::dispose);
-      var2.start();
-      return var2;
+      Objects.requireNonNull(frame);
+      gui.addFinalizer(frame::dispose);
+      gui.start();
+      return gui;
    }
 
-   private MinecraftServerGui(DedicatedServer var1) {
+   private MinecraftServerGui(final DedicatedServer server) {
       super();
-      this.server = var1;
+      this.server = server;
       this.setPreferredSize(new Dimension(854, 480));
       this.setLayout(new BorderLayout());
 
       try {
          this.add(this.buildChatPanel(), "Center");
          this.add(this.buildInfoPanel(), "West");
-      } catch (Exception var3) {
-         LOGGER.error("Couldn't build server GUI", var3);
+      } catch (Exception e) {
+         LOGGER.error("Couldn't build server GUI", e);
       }
 
    }
 
-   public void addFinalizer(Runnable var1) {
-      this.finalizers.add(var1);
+   public void addFinalizer(final Runnable finalizer) {
+      this.finalizers.add(finalizer);
    }
 
    private JComponent buildInfoPanel() {
-      JPanel var1 = new JPanel(new BorderLayout());
-      StatsComponent var2 = new StatsComponent(this.server);
+      JPanel panel = new JPanel(new BorderLayout());
+      StatsComponent comp = new StatsComponent(this.server);
       Collection var10000 = this.finalizers;
-      Objects.requireNonNull(var2);
-      var10000.add(var2::close);
-      var1.add(var2, "North");
-      var1.add(this.buildPlayerPanel(), "Center");
-      var1.setBorder(new TitledBorder(new EtchedBorder(), "Stats"));
-      return var1;
+      Objects.requireNonNull(comp);
+      var10000.add(comp::close);
+      panel.add(comp, "North");
+      panel.add(this.buildPlayerPanel(), "Center");
+      panel.setBorder(new TitledBorder(new EtchedBorder(), "Stats"));
+      return panel;
    }
 
    private JComponent buildPlayerPanel() {
-      PlayerListComponent var1 = new PlayerListComponent(this.server);
-      JScrollPane var2 = new JScrollPane(var1, 22, 30);
-      var2.setBorder(new TitledBorder(new EtchedBorder(), "Players"));
-      return var2;
+      JList<?> playerList = new PlayerListComponent(this.server);
+      JScrollPane scrollPane = new JScrollPane(playerList, 22, 30);
+      scrollPane.setBorder(new TitledBorder(new EtchedBorder(), "Players"));
+      return scrollPane;
    }
 
    private JComponent buildChatPanel() {
-      JPanel var1 = new JPanel(new BorderLayout());
-      JTextArea var2 = new JTextArea();
-      JScrollPane var3 = new JScrollPane(var2, 22, 30);
-      var2.setEditable(false);
-      var2.setFont(MONOSPACED);
-      JTextField var4 = new JTextField();
-      var4.addActionListener((var2x) -> {
-         String var3 = var4.getText().trim();
-         if (!var3.isEmpty()) {
-            this.server.handleConsoleInput(var3, this.server.createCommandSourceStack());
+      JPanel panel = new JPanel(new BorderLayout());
+      JTextArea chatArea = new JTextArea();
+      JScrollPane scrollPane = new JScrollPane(chatArea, 22, 30);
+      chatArea.setEditable(false);
+      chatArea.setFont(MONOSPACED);
+      JTextField chatField = new JTextField();
+      chatField.addActionListener((event) -> {
+         String text = chatField.getText().trim();
+         if (!text.isEmpty()) {
+            this.server.handleConsoleInput(text, this.server.createCommandSourceStack());
          }
 
-         var4.setText("");
+         chatField.setText("");
       });
-      var2.addFocusListener(new FocusAdapter() {
-         public void focusGained(FocusEvent var1) {
+      chatArea.addFocusListener(new FocusAdapter() {
+         {
+            Objects.requireNonNull(MinecraftServerGui.this);
+         }
+
+         public void focusGained(final FocusEvent arg0) {
          }
       });
-      var1.add(var3, "Center");
-      var1.add(var4, "South");
-      var1.setBorder(new TitledBorder(new EtchedBorder(), "Log and chat"));
+      panel.add(scrollPane, "Center");
+      panel.add(chatField, "South");
+      panel.setBorder(new TitledBorder(new EtchedBorder(), "Log and chat"));
       this.logAppenderThread = new Thread(() -> {
-         String var3x;
-         while((var3x = LogQueues.getNextLogEvent("ServerGuiConsole")) != null) {
-            this.print(var2, var3, var3x);
+         String line;
+         while((line = LogQueues.getNextLogEvent("ServerGuiConsole")) != null) {
+            this.print(chatArea, scrollPane, line);
          }
 
       });
       this.logAppenderThread.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
       this.logAppenderThread.setDaemon(true);
-      return var1;
+      return panel;
    }
 
    public void start() {
@@ -154,28 +159,28 @@ public class MinecraftServerGui extends JComponent {
 
    }
 
-   void runFinalizers() {
+   private void runFinalizers() {
       this.finalizers.forEach(Runnable::run);
    }
 
-   public void print(JTextArea var1, JScrollPane var2, String var3) {
+   public void print(final JTextArea console, final JScrollPane scrollPane, final String line) {
       if (!SwingUtilities.isEventDispatchThread()) {
-         SwingUtilities.invokeLater(() -> this.print(var1, var2, var3));
+         SwingUtilities.invokeLater(() -> this.print(console, scrollPane, line));
       } else {
-         Document var4 = var1.getDocument();
-         JScrollBar var5 = var2.getVerticalScrollBar();
-         boolean var6 = false;
-         if (var2.getViewport().getView() == var1) {
-            var6 = (double)var5.getValue() + var5.getSize().getHeight() + (double)(MONOSPACED.getSize() * 4) > (double)var5.getMaximum();
+         Document document = console.getDocument();
+         JScrollBar scrollBar = scrollPane.getVerticalScrollBar();
+         boolean shouldScroll = false;
+         if (scrollPane.getViewport().getView() == console) {
+            shouldScroll = (double)scrollBar.getValue() + scrollBar.getSize().getHeight() + (double)(MONOSPACED.getSize() * 4) > (double)scrollBar.getMaximum();
          }
 
          try {
-            var4.insertString(var4.getLength(), var3, (AttributeSet)null);
+            document.insertString(document.getLength(), line, (AttributeSet)null);
          } catch (BadLocationException var8) {
          }
 
-         if (var6) {
-            var5.setValue(2147483647);
+         if (shouldScroll) {
+            scrollBar.setValue(2147483647);
          }
 
       }

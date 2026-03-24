@@ -4,8 +4,8 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.world.entity.Entity;
 
 public class NoopRenderer<T extends Entity> extends EntityRenderer<T, EntityRenderState> {
-   public NoopRenderer(EntityRendererProvider.Context var1) {
-      super(var1);
+   public NoopRenderer(final EntityRendererProvider.Context context) {
+      super(context);
    }
 
    public EntityRenderState createRenderState() {

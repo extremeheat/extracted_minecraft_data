@@ -19,36 +19,40 @@ public class MultipleTestTracker {
       super();
    }
 
-   public MultipleTestTracker(Collection<GameTestInfo> var1) {
+   public MultipleTestTracker(final Collection<GameTestInfo> tests) {
       super();
-      this.tests.addAll(var1);
+      this.tests.addAll(tests);
    }
 
-   public void addTestToTrack(GameTestInfo var1) {
-      this.tests.add(var1);
+   public void addTestToTrack(final GameTestInfo testInfo) {
+      this.tests.add(testInfo);
       Collection var10000 = this.listeners;
-      Objects.requireNonNull(var1);
-      var10000.forEach(var1::addListener);
+      Objects.requireNonNull(testInfo);
+      var10000.forEach(testInfo::addListener);
    }
 
-   public void addListener(GameTestListener var1) {
-      this.listeners.add(var1);
-      this.tests.forEach((var1x) -> var1x.addListener(var1));
+   public void addListener(final GameTestListener listener) {
+      this.listeners.add(listener);
+      this.tests.forEach((testInfo) -> testInfo.addListener(listener));
    }
 
-   public void addFailureListener(final Consumer<GameTestInfo> var1) {
+   public void addFailureListener(final Consumer<GameTestInfo> listener) {
       this.addListener(new GameTestListener() {
-         public void testStructureLoaded(GameTestInfo var1x) {
+         {
+            Objects.requireNonNull(MultipleTestTracker.this);
          }
 
-         public void testPassed(GameTestInfo var1x, GameTestRunner var2) {
+         public void testStructureLoaded(final GameTestInfo testInfo) {
          }
 
-         public void testFailed(GameTestInfo var1x, GameTestRunner var2) {
-            var1.accept(var1x);
+         public void testPassed(final GameTestInfo testInfo, final GameTestRunner runner) {
          }
 
-         public void testAddedForRerun(GameTestInfo var1x, GameTestInfo var2, GameTestRunner var3) {
+         public void testFailed(final GameTestInfo testInfo, final GameTestRunner runner) {
+            listener.accept(testInfo);
+         }
+
+         public void testAddedForRerun(final GameTestInfo original, final GameTestInfo copy, final GameTestRunner runner) {
          }
       });
    }
@@ -90,29 +94,29 @@ public class MultipleTestTracker {
    }
 
    public String getProgressBar() {
-      StringBuffer var1 = new StringBuffer();
-      var1.append('[');
-      this.tests.forEach((var1x) -> {
-         if (!var1x.hasStarted()) {
-            var1.append(' ');
-         } else if (var1x.hasSucceeded()) {
-            var1.append('+');
-         } else if (var1x.hasFailed()) {
-            var1.append((char)(var1x.isRequired() ? 'X' : 'x'));
+      StringBuffer buf = new StringBuffer();
+      buf.append('[');
+      this.tests.forEach((test) -> {
+         if (!test.hasStarted()) {
+            buf.append(' ');
+         } else if (test.hasSucceeded()) {
+            buf.append('+');
+         } else if (test.hasFailed()) {
+            buf.append((char)(test.isRequired() ? 'X' : 'x'));
          } else {
-            var1.append('_');
+            buf.append('_');
          }
 
       });
-      var1.append(']');
-      return var1.toString();
+      buf.append(']');
+      return buf.toString();
    }
 
    public String toString() {
       return this.getProgressBar();
    }
 
-   public void remove(GameTestInfo var1) {
-      this.tests.remove(var1);
+   public void remove(final GameTestInfo testInfo) {
+      this.tests.remove(testInfo);
    }
 }

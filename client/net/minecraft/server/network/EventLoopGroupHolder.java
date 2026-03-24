@@ -49,8 +49,8 @@ public abstract class EventLoopGroupHolder {
    private final Class<? extends ServerChannel> serverChannelCls;
    private volatile @Nullable EventLoopGroup group;
 
-   public static EventLoopGroupHolder remote(boolean var0) {
-      if (var0) {
+   public static EventLoopGroupHolder remote(final boolean allowNativeTransport) {
+      if (allowNativeTransport) {
          if (KQueue.isAvailable()) {
             return KQUEUE;
          }
@@ -67,11 +67,11 @@ public abstract class EventLoopGroupHolder {
       return LOCAL;
    }
 
-   EventLoopGroupHolder(String var1, Class<? extends Channel> var2, Class<? extends ServerChannel> var3) {
+   private EventLoopGroupHolder(final String type, final Class<? extends Channel> channelCls, final Class<? extends ServerChannel> serverChannelCls) {
       super();
-      this.type = var1;
-      this.channelCls = var2;
-      this.serverChannelCls = var3;
+      this.type = type;
+      this.channelCls = channelCls;
+      this.serverChannelCls = serverChannelCls;
    }
 
    private ThreadFactory createThreadFactory() {
@@ -85,18 +85,18 @@ public abstract class EventLoopGroupHolder {
    }
 
    public EventLoopGroup eventLoopGroup() {
-      EventLoopGroup var1 = this.group;
-      if (var1 == null) {
+      EventLoopGroup result = this.group;
+      if (result == null) {
          synchronized(this) {
-            var1 = this.group;
-            if (var1 == null) {
-               var1 = this.createEventLoopGroup();
-               this.group = var1;
+            result = this.group;
+            if (result == null) {
+               result = this.createEventLoopGroup();
+               this.group = result;
             }
          }
       }
 
-      return var1;
+      return result;
    }
 
    public Class<? extends Channel> channelCls() {

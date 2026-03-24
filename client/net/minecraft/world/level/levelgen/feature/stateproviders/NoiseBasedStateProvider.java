@@ -15,19 +15,19 @@ public abstract class NoiseBasedStateProvider extends BlockStateProvider {
    protected final float scale;
    protected final NormalNoise noise;
 
-   protected static <P extends NoiseBasedStateProvider> Products.P3<RecordCodecBuilder.Mu<P>, Long, NormalNoise.NoiseParameters, Float> noiseCodec(RecordCodecBuilder.Instance<P> var0) {
-      return var0.group(Codec.LONG.fieldOf("seed").forGetter((var0x) -> var0x.seed), NormalNoise.NoiseParameters.DIRECT_CODEC.fieldOf("noise").forGetter((var0x) -> var0x.parameters), ExtraCodecs.POSITIVE_FLOAT.fieldOf("scale").forGetter((var0x) -> var0x.scale));
+   protected static <P extends NoiseBasedStateProvider> Products.P3<RecordCodecBuilder.Mu<P>, Long, NormalNoise.NoiseParameters, Float> noiseCodec(final RecordCodecBuilder.Instance<P> instance) {
+      return instance.group(Codec.LONG.fieldOf("seed").forGetter((p) -> p.seed), NormalNoise.NoiseParameters.DIRECT_CODEC.fieldOf("noise").forGetter((p) -> p.parameters), ExtraCodecs.POSITIVE_FLOAT.fieldOf("scale").forGetter((p) -> p.scale));
    }
 
-   protected NoiseBasedStateProvider(long var1, NormalNoise.NoiseParameters var3, float var4) {
+   protected NoiseBasedStateProvider(final long seed, final NormalNoise.NoiseParameters parameters, final float scale) {
       super();
-      this.seed = var1;
-      this.parameters = var3;
-      this.scale = var4;
-      this.noise = NormalNoise.create(new WorldgenRandom(new LegacyRandomSource(var1)), var3);
+      this.seed = seed;
+      this.parameters = parameters;
+      this.scale = scale;
+      this.noise = NormalNoise.create(new WorldgenRandom(new LegacyRandomSource(seed)), parameters);
    }
 
-   protected double getNoiseValue(BlockPos var1, double var2) {
-      return this.noise.getValue((double)var1.getX() * var2, (double)var1.getY() * var2, (double)var1.getZ() * var2);
+   protected double getNoiseValue(final BlockPos pos, final double scale) {
+      return this.noise.getValue((double)pos.getX() * scale, (double)pos.getY() * scale, (double)pos.getZ() * scale);
    }
 }

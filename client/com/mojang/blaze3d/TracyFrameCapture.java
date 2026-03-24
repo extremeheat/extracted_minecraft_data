@@ -34,59 +34,59 @@ public class TracyFrameCapture implements AutoCloseable {
       this.status = TracyFrameCapture.Status.WAITING_FOR_CAPTURE;
       this.width = 320;
       this.height = 180;
-      GpuDevice var1 = RenderSystem.getDevice();
-      this.frameBuffer = var1.createTexture("Tracy Frame Capture", 10, TextureFormat.RGBA8, this.width, this.height, 1, 1);
-      this.frameBufferView = var1.createTextureView(this.frameBuffer);
-      this.pixelbuffer = var1.createBuffer(() -> "Tracy Frame Capture buffer", 9, (long)(this.width * this.height) * 4L);
+      GpuDevice device = RenderSystem.getDevice();
+      this.frameBuffer = device.createTexture("Tracy Frame Capture", 10, TextureFormat.RGBA8, this.width, this.height, 1, 1);
+      this.frameBufferView = device.createTextureView(this.frameBuffer);
+      this.pixelbuffer = device.createBuffer(() -> "Tracy Frame Capture buffer", 9, (long)(this.width * this.height) * 4L);
    }
 
-   private void resize(int var1, int var2) {
-      float var3 = (float)var1 / (float)var2;
-      if (var1 > 320) {
-         var1 = 320;
-         var2 = (int)(320.0F / var3);
+   private void resize(int width, int height) {
+      float aspectRatio = (float)width / (float)height;
+      if (width > 320) {
+         width = 320;
+         height = (int)(320.0F / aspectRatio);
       }
 
-      if (var2 > 180) {
-         var1 = (int)(180.0F * var3);
-         var2 = 180;
+      if (height > 180) {
+         width = (int)(180.0F * aspectRatio);
+         height = 180;
       }
 
-      var1 = var1 / 4 * 4;
-      var2 = var2 / 4 * 4;
-      if (this.width != var1 || this.height != var2) {
-         this.width = var1;
-         this.height = var2;
-         GpuDevice var4 = RenderSystem.getDevice();
+      width = width / 4 * 4;
+      height = height / 4 * 4;
+      if (this.width != width || this.height != height) {
+         this.width = width;
+         this.height = height;
+         GpuDevice device = RenderSystem.getDevice();
          this.frameBuffer.close();
-         this.frameBuffer = var4.createTexture("Tracy Frame Capture", 10, TextureFormat.RGBA8, var1, var2, 1, 1);
+         this.frameBuffer = device.createTexture("Tracy Frame Capture", 10, TextureFormat.RGBA8, width, height, 1, 1);
          this.frameBufferView.close();
-         this.frameBufferView = var4.createTextureView(this.frameBuffer);
+         this.frameBufferView = device.createTextureView(this.frameBuffer);
          this.pixelbuffer.close();
-         this.pixelbuffer = var4.createBuffer(() -> "Tracy Frame Capture buffer", 9, (long)(var1 * var2) * 4L);
+         this.pixelbuffer = device.createBuffer(() -> "Tracy Frame Capture buffer", 9, (long)(width * height) * 4L);
       }
 
    }
 
-   public void capture(RenderTarget var1) {
-      if (this.status == TracyFrameCapture.Status.WAITING_FOR_CAPTURE && !this.capturedThisFrame && var1.getColorTexture() != null) {
+   public void capture(final RenderTarget captureTarget) {
+      if (this.status == TracyFrameCapture.Status.WAITING_FOR_CAPTURE && !this.capturedThisFrame && captureTarget.getColorTexture() != null) {
          this.capturedThisFrame = true;
-         if (var1.width != this.targetWidth || var1.height != this.targetHeight) {
-            this.targetWidth = var1.width;
-            this.targetHeight = var1.height;
+         if (captureTarget.width != this.targetWidth || captureTarget.height != this.targetHeight) {
+            this.targetWidth = captureTarget.width;
+            this.targetHeight = captureTarget.height;
             this.resize(this.targetWidth, this.targetHeight);
          }
 
          this.status = TracyFrameCapture.Status.WAITING_FOR_COPY;
-         CommandEncoder var2 = RenderSystem.getDevice().createCommandEncoder();
+         CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
 
-         try (RenderPass var3 = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Tracy blit", this.frameBufferView, OptionalInt.empty())) {
-            var3.setPipeline(RenderPipelines.TRACY_BLIT);
-            var3.bindTexture("InSampler", var1.getColorTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
-            var3.draw(0, 3);
+         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Tracy blit", this.frameBufferView, OptionalInt.empty())) {
+            renderPass.setPipeline(RenderPipelines.TRACY_BLIT);
+            renderPass.bindTexture("InSampler", captureTarget.getColorTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
+            renderPass.draw(0, 3);
          }
 
-         var2.copyTextureToBuffer(this.frameBuffer, this.pixelbuffer, 0L, () -> this.status = TracyFrameCapture.Status.WAITING_FOR_UPLOAD, 0);
+         commandEncoder.copyTextureToBuffer(this.frameBuffer, this.pixelbuffer, 0L, () -> this.status = TracyFrameCapture.Status.WAITING_FOR_UPLOAD, 0);
          this.lastCaptureDelay = 0;
       }
    }
@@ -95,8 +95,8 @@ public class TracyFrameCapture implements AutoCloseable {
       if (this.status == TracyFrameCapture.Status.WAITING_FOR_UPLOAD) {
          this.status = TracyFrameCapture.Status.WAITING_FOR_CAPTURE;
 
-         try (GpuBuffer.MappedView var1 = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.pixelbuffer, true, false)) {
-            TracyClient.frameImage(var1.data(), this.width, this.height, this.lastCaptureDelay, true);
+         try (GpuBuffer.MappedView view = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.pixelbuffer, true, false)) {
+            TracyClient.frameImage(view.data(), this.width, this.height, this.lastCaptureDelay, true);
          }
 
       }

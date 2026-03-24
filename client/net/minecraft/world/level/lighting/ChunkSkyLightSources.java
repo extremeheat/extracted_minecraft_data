@@ -23,52 +23,52 @@ public class ChunkSkyLightSources {
    private final BlockPos.MutableBlockPos mutablePos1 = new BlockPos.MutableBlockPos();
    private final BlockPos.MutableBlockPos mutablePos2 = new BlockPos.MutableBlockPos();
 
-   public ChunkSkyLightSources(LevelHeightAccessor var1) {
+   public ChunkSkyLightSources(final LevelHeightAccessor level) {
       super();
-      this.minY = var1.getMinY() - 1;
-      int var2 = var1.getMaxY() + 1;
-      int var3 = Mth.ceillog2(var2 - this.minY + 1);
-      this.heightmap = new SimpleBitStorage(var3, 256);
+      this.minY = level.getMinY() - 1;
+      int maxY = level.getMaxY() + 1;
+      int bits = Mth.ceillog2(maxY - this.minY + 1);
+      this.heightmap = new SimpleBitStorage(bits, 256);
    }
 
-   public void fillFrom(ChunkAccess var1) {
-      int var2 = var1.getHighestFilledSectionIndex();
-      if (var2 == -1) {
+   public void fillFrom(final ChunkAccess chunk) {
+      int maxSectionIndex = chunk.getHighestFilledSectionIndex();
+      if (maxSectionIndex == -1) {
          this.fill(this.minY);
       } else {
-         for(int var3 = 0; var3 < 16; ++var3) {
-            for(int var4 = 0; var4 < 16; ++var4) {
-               int var5 = Math.max(this.findLowestSourceY(var1, var2, var4, var3), this.minY);
-               this.set(index(var4, var3), var5);
+         for(int z = 0; z < 16; ++z) {
+            for(int x = 0; x < 16; ++x) {
+               int initialEdgeY = Math.max(this.findLowestSourceY(chunk, maxSectionIndex, x, z), this.minY);
+               this.set(index(x, z), initialEdgeY);
             }
          }
 
       }
    }
 
-   private int findLowestSourceY(ChunkAccess var1, int var2, int var3, int var4) {
-      int var5 = SectionPos.sectionToBlockCoord(var1.getSectionYFromSectionIndex(var2) + 1);
-      BlockPos.MutableBlockPos var6 = this.mutablePos1.set(var3, var5, var4);
-      BlockPos.MutableBlockPos var7 = this.mutablePos2.setWithOffset(var6, (Direction)Direction.DOWN);
-      BlockState var8 = Blocks.AIR.defaultBlockState();
+   private int findLowestSourceY(final ChunkAccess chunk, final int topSectionIndex, final int x, final int z) {
+      int topY = SectionPos.sectionToBlockCoord(chunk.getSectionYFromSectionIndex(topSectionIndex) + 1);
+      BlockPos.MutableBlockPos topPos = this.mutablePos1.set(x, topY, z);
+      BlockPos.MutableBlockPos bottomPos = this.mutablePos2.setWithOffset(topPos, (Direction)Direction.DOWN);
+      BlockState topState = Blocks.AIR.defaultBlockState();
 
-      for(int var9 = var2; var9 >= 0; --var9) {
-         LevelChunkSection var10 = var1.getSection(var9);
-         if (var10.hasOnlyAir()) {
-            var8 = Blocks.AIR.defaultBlockState();
-            int var13 = var1.getSectionYFromSectionIndex(var9);
-            var6.setY(SectionPos.sectionToBlockCoord(var13));
-            var7.setY(var6.getY() - 1);
+      for(int sectionIndex = topSectionIndex; sectionIndex >= 0; --sectionIndex) {
+         LevelChunkSection section = chunk.getSection(sectionIndex);
+         if (section.hasOnlyAir()) {
+            topState = Blocks.AIR.defaultBlockState();
+            int sectionY = chunk.getSectionYFromSectionIndex(sectionIndex);
+            topPos.setY(SectionPos.sectionToBlockCoord(sectionY));
+            bottomPos.setY(topPos.getY() - 1);
          } else {
-            for(int var11 = 15; var11 >= 0; --var11) {
-               BlockState var12 = var10.getBlockState(var3, var11, var4);
-               if (isEdgeOccluded(var8, var12)) {
-                  return var6.getY();
+            for(int y = 15; y >= 0; --y) {
+               BlockState bottomState = section.getBlockState(x, y, z);
+               if (isEdgeOccluded(topState, bottomState)) {
+                  return topPos.getY();
                }
 
-               var8 = var12;
-               var6.set(var7);
-               var7.move(Direction.DOWN);
+               topState = bottomState;
+               topPos.set(bottomPos);
+               bottomPos.move(Direction.DOWN);
             }
          }
       }
@@ -76,111 +76,111 @@ public class ChunkSkyLightSources {
       return this.minY;
    }
 
-   public boolean update(BlockGetter var1, int var2, int var3, int var4) {
-      int var5 = var3 + 1;
-      int var6 = index(var2, var4);
-      int var7 = this.get(var6);
-      if (var5 < var7) {
+   public boolean update(final BlockGetter level, final int x, final int y, final int z) {
+      int upperEdgeY = y + 1;
+      int index = index(x, z);
+      int currentLowestSourceY = this.get(index);
+      if (upperEdgeY < currentLowestSourceY) {
          return false;
       } else {
-         BlockPos.MutableBlockPos var8 = this.mutablePos1.set(var2, var3 + 1, var4);
-         BlockState var9 = var1.getBlockState(var8);
-         BlockPos.MutableBlockPos var10 = this.mutablePos2.set(var2, var3, var4);
-         BlockState var11 = var1.getBlockState(var10);
-         if (this.updateEdge(var1, var6, var7, var8, var9, var10, var11)) {
+         BlockPos topPos = this.mutablePos1.set(x, y + 1, z);
+         BlockState topState = level.getBlockState(topPos);
+         BlockPos middlePos = this.mutablePos2.set(x, y, z);
+         BlockState middleState = level.getBlockState(middlePos);
+         if (this.updateEdge(level, index, currentLowestSourceY, topPos, topState, middlePos, middleState)) {
             return true;
          } else {
-            BlockPos.MutableBlockPos var12 = this.mutablePos1.set(var2, var3 - 1, var4);
-            BlockState var13 = var1.getBlockState(var12);
-            return this.updateEdge(var1, var6, var7, var10, var11, var12, var13);
+            BlockPos bottomPos = this.mutablePos1.set(x, y - 1, z);
+            BlockState bottomState = level.getBlockState(bottomPos);
+            return this.updateEdge(level, index, currentLowestSourceY, middlePos, middleState, bottomPos, bottomState);
          }
       }
    }
 
-   private boolean updateEdge(BlockGetter var1, int var2, int var3, BlockPos var4, BlockState var5, BlockPos var6, BlockState var7) {
-      int var8 = var4.getY();
-      if (isEdgeOccluded(var5, var7)) {
-         if (var8 > var3) {
-            this.set(var2, var8);
+   private boolean updateEdge(final BlockGetter level, final int index, final int oldTopEdgeY, final BlockPos topPos, final BlockState topState, final BlockPos bottomPos, final BlockState bottomState) {
+      int checkedEdgeY = topPos.getY();
+      if (isEdgeOccluded(topState, bottomState)) {
+         if (checkedEdgeY > oldTopEdgeY) {
+            this.set(index, checkedEdgeY);
             return true;
          }
-      } else if (var8 == var3) {
-         this.set(var2, this.findLowestSourceBelow(var1, var6, var7));
+      } else if (checkedEdgeY == oldTopEdgeY) {
+         this.set(index, this.findLowestSourceBelow(level, bottomPos, bottomState));
          return true;
       }
 
       return false;
    }
 
-   private int findLowestSourceBelow(BlockGetter var1, BlockPos var2, BlockState var3) {
-      BlockPos.MutableBlockPos var4 = this.mutablePos1.set(var2);
-      BlockPos.MutableBlockPos var5 = this.mutablePos2.setWithOffset(var2, (Direction)Direction.DOWN);
-      BlockState var6 = var3;
+   private int findLowestSourceBelow(final BlockGetter level, final BlockPos startPos, final BlockState startState) {
+      BlockPos.MutableBlockPos topPos = this.mutablePos1.set(startPos);
+      BlockPos.MutableBlockPos bottomPos = this.mutablePos2.setWithOffset(startPos, (Direction)Direction.DOWN);
+      BlockState topState = startState;
 
-      while(var5.getY() >= this.minY) {
-         BlockState var7 = var1.getBlockState(var5);
-         if (isEdgeOccluded(var6, var7)) {
-            return var4.getY();
+      while(bottomPos.getY() >= this.minY) {
+         BlockState bottomState = level.getBlockState(bottomPos);
+         if (isEdgeOccluded(topState, bottomState)) {
+            return topPos.getY();
          }
 
-         var6 = var7;
-         var4.set(var5);
-         var5.move(Direction.DOWN);
+         topState = bottomState;
+         topPos.set(bottomPos);
+         bottomPos.move(Direction.DOWN);
       }
 
       return this.minY;
    }
 
-   private static boolean isEdgeOccluded(BlockState var0, BlockState var1) {
-      if (var1.getLightBlock() != 0) {
+   private static boolean isEdgeOccluded(final BlockState topState, final BlockState bottomState) {
+      if (bottomState.getLightDampening() != 0) {
          return true;
       } else {
-         VoxelShape var2 = LightEngine.getOcclusionShape(var0, Direction.DOWN);
-         VoxelShape var3 = LightEngine.getOcclusionShape(var1, Direction.UP);
-         return Shapes.faceShapeOccludes(var2, var3);
+         VoxelShape topShape = LightEngine.getOcclusionShape(topState, Direction.DOWN);
+         VoxelShape bottomShape = LightEngine.getOcclusionShape(bottomState, Direction.UP);
+         return Shapes.faceShapeOccludes(topShape, bottomShape);
       }
    }
 
-   public int getLowestSourceY(int var1, int var2) {
-      int var3 = this.get(index(var1, var2));
-      return this.extendSourcesBelowWorld(var3);
+   public int getLowestSourceY(final int x, final int z) {
+      int value = this.get(index(x, z));
+      return this.extendSourcesBelowWorld(value);
    }
 
    public int getHighestLowestSourceY() {
-      int var1 = -2147483648;
+      int maxValue = -2147483648;
 
-      for(int var2 = 0; var2 < this.heightmap.getSize(); ++var2) {
-         int var3 = this.heightmap.get(var2);
-         if (var3 > var1) {
-            var1 = var3;
+      for(int i = 0; i < this.heightmap.getSize(); ++i) {
+         int value = this.heightmap.get(i);
+         if (value > maxValue) {
+            maxValue = value;
          }
       }
 
-      return this.extendSourcesBelowWorld(var1 + this.minY);
+      return this.extendSourcesBelowWorld(maxValue + this.minY);
    }
 
-   private void fill(int var1) {
-      int var2 = var1 - this.minY;
+   private void fill(final int lowestSourceY) {
+      int value = lowestSourceY - this.minY;
 
-      for(int var3 = 0; var3 < this.heightmap.getSize(); ++var3) {
-         this.heightmap.set(var3, var2);
+      for(int i = 0; i < this.heightmap.getSize(); ++i) {
+         this.heightmap.set(i, value);
       }
 
    }
 
-   private void set(int var1, int var2) {
-      this.heightmap.set(var1, var2 - this.minY);
+   private void set(final int index, final int value) {
+      this.heightmap.set(index, value - this.minY);
    }
 
-   private int get(int var1) {
-      return this.heightmap.get(var1) + this.minY;
+   private int get(final int index) {
+      return this.heightmap.get(index) + this.minY;
    }
 
-   private int extendSourcesBelowWorld(int var1) {
-      return var1 == this.minY ? -2147483648 : var1;
+   private int extendSourcesBelowWorld(final int value) {
+      return value == this.minY ? -2147483648 : value;
    }
 
-   private static int index(int var0, int var1) {
-      return var0 + var1 * 16;
+   private static int index(final int x, final int z) {
+      return x + z * 16;
    }
 }

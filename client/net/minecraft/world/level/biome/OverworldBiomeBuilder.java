@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Pair;
 import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.SharedConstants;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.RegistrySetBuilder;
@@ -76,389 +77,389 @@ public final class OverworldBiomeBuilder {
    }
 
    public List<Climate.ParameterPoint> spawnTarget() {
-      Climate.Parameter var1 = Climate.Parameter.point(0.0F);
-      float var2 = 0.16F;
-      return List.of(new Climate.ParameterPoint(this.FULL_RANGE, this.FULL_RANGE, Climate.Parameter.span(this.inlandContinentalness, this.FULL_RANGE), this.FULL_RANGE, var1, Climate.Parameter.span(-1.0F, -0.16F), 0L), new Climate.ParameterPoint(this.FULL_RANGE, this.FULL_RANGE, Climate.Parameter.span(this.inlandContinentalness, this.FULL_RANGE), this.FULL_RANGE, var1, Climate.Parameter.span(0.16F, 1.0F), 0L));
+      Climate.Parameter surfaceDepth = Climate.Parameter.point(0.0F);
+      float riverClearance = 0.16F;
+      return List.of(new Climate.ParameterPoint(this.FULL_RANGE, this.FULL_RANGE, Climate.Parameter.span(this.inlandContinentalness, this.FULL_RANGE), this.FULL_RANGE, surfaceDepth, Climate.Parameter.span(-1.0F, -0.16F), 0L), new Climate.ParameterPoint(this.FULL_RANGE, this.FULL_RANGE, Climate.Parameter.span(this.inlandContinentalness, this.FULL_RANGE), this.FULL_RANGE, surfaceDepth, Climate.Parameter.span(0.16F, 1.0F), 0L));
    }
 
-   protected void addBiomes(Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> var1) {
+   protected void addBiomes(final Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> biomes) {
       if (SharedConstants.debugGenerateSquareTerrainWithoutNoise) {
-         this.addDebugBiomes(var1);
+         this.addDebugBiomes(biomes);
       } else {
-         this.addOffCoastBiomes(var1);
-         this.addInlandBiomes(var1);
-         this.addUndergroundBiomes(var1);
+         this.addOffCoastBiomes(biomes);
+         this.addInlandBiomes(biomes);
+         this.addUndergroundBiomes(biomes);
       }
    }
 
-   private void addDebugBiomes(Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> var1) {
-      HolderLookup.Provider var2 = (new RegistrySetBuilder()).add(Registries.DENSITY_FUNCTION, NoiseRouterData::bootstrap).add(Registries.NOISE, NoiseData::bootstrap).build(RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY));
-      HolderLookup.RegistryLookup var3 = var2.lookupOrThrow(Registries.DENSITY_FUNCTION);
-      DensityFunctions.Spline.Coordinate var4 = new DensityFunctions.Spline.Coordinate(var3.getOrThrow(NoiseRouterData.CONTINENTS));
-      DensityFunctions.Spline.Coordinate var5 = new DensityFunctions.Spline.Coordinate(var3.getOrThrow(NoiseRouterData.EROSION));
-      DensityFunctions.Spline.Coordinate var6 = new DensityFunctions.Spline.Coordinate(var3.getOrThrow(NoiseRouterData.RIDGES_FOLDED));
-      var1.accept(Pair.of(Climate.parameters(this.FULL_RANGE, this.FULL_RANGE, this.FULL_RANGE, this.FULL_RANGE, Climate.Parameter.point(0.0F), this.FULL_RANGE, 0.01F), Biomes.PLAINS));
-      CubicSpline var7 = TerrainProvider.buildErosionOffsetSpline(var5, var6, -0.15F, 0.0F, 0.0F, 0.1F, 0.0F, -0.03F, false, false, BoundedFloatFunction.IDENTITY);
-      if (var7 instanceof CubicSpline.Multipoint var8) {
-         ResourceKey var9 = Biomes.DESERT;
+   private void addDebugBiomes(final Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> biomes) {
+      HolderLookup.Provider builtIns = (new RegistrySetBuilder()).add(Registries.DENSITY_FUNCTION, NoiseRouterData::bootstrap).add(Registries.NOISE, NoiseData::bootstrap).build(RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY));
+      HolderGetter<DensityFunction> densityFunctions = builtIns.lookupOrThrow(Registries.DENSITY_FUNCTION);
+      DensityFunctions.Spline.Coordinate continents = new DensityFunctions.Spline.Coordinate(densityFunctions.getOrThrow(NoiseRouterData.CONTINENTS));
+      DensityFunctions.Spline.Coordinate erosion = new DensityFunctions.Spline.Coordinate(densityFunctions.getOrThrow(NoiseRouterData.EROSION));
+      DensityFunctions.Spline.Coordinate ridges = new DensityFunctions.Spline.Coordinate(densityFunctions.getOrThrow(NoiseRouterData.RIDGES_FOLDED));
+      biomes.accept(Pair.of(Climate.parameters(this.FULL_RANGE, this.FULL_RANGE, this.FULL_RANGE, this.FULL_RANGE, Climate.Parameter.point(0.0F), this.FULL_RANGE, 0.01F), Biomes.PLAINS));
+      CubicSpline<?, ?> erosionOffsetSpline = TerrainProvider.buildErosionOffsetSpline(erosion, ridges, -0.15F, 0.0F, 0.0F, 0.1F, 0.0F, -0.03F, false, false, BoundedFloatFunction.IDENTITY);
+      if (erosionOffsetSpline instanceof CubicSpline.Multipoint<?, ?> multipoint) {
+         ResourceKey<Biome> biome = Biomes.DESERT;
 
-         for(float var13 : var8.locations()) {
-            var1.accept(Pair.of(Climate.parameters(this.FULL_RANGE, this.FULL_RANGE, this.FULL_RANGE, Climate.Parameter.point(var13), Climate.Parameter.point(0.0F), this.FULL_RANGE, 0.0F), var9));
-            var9 = var9 == Biomes.DESERT ? Biomes.BADLANDS : Biomes.DESERT;
+         for(float location : multipoint.locations()) {
+            biomes.accept(Pair.of(Climate.parameters(this.FULL_RANGE, this.FULL_RANGE, this.FULL_RANGE, Climate.Parameter.point(location), Climate.Parameter.point(0.0F), this.FULL_RANGE, 0.0F), biome));
+            biome = biome == Biomes.DESERT ? Biomes.BADLANDS : Biomes.DESERT;
          }
       }
 
-      CubicSpline var14 = TerrainProvider.overworldOffset(var4, var5, var6, false);
-      if (var14 instanceof CubicSpline.Multipoint var15) {
-         for(float var19 : var15.locations()) {
-            var1.accept(Pair.of(Climate.parameters(this.FULL_RANGE, this.FULL_RANGE, Climate.Parameter.point(var19), this.FULL_RANGE, Climate.Parameter.point(0.0F), this.FULL_RANGE, 0.0F), Biomes.SNOWY_TAIGA));
-         }
-      }
-
-   }
-
-   private void addOffCoastBiomes(Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> var1) {
-      this.addSurfaceBiome(var1, this.FULL_RANGE, this.FULL_RANGE, this.mushroomFieldsContinentalness, this.FULL_RANGE, this.FULL_RANGE, 0.0F, Biomes.MUSHROOM_FIELDS);
-
-      for(int var2 = 0; var2 < this.temperatures.length; ++var2) {
-         Climate.Parameter var3 = this.temperatures[var2];
-         this.addSurfaceBiome(var1, var3, this.FULL_RANGE, this.deepOceanContinentalness, this.FULL_RANGE, this.FULL_RANGE, 0.0F, this.OCEANS[0][var2]);
-         this.addSurfaceBiome(var1, var3, this.FULL_RANGE, this.oceanContinentalness, this.FULL_RANGE, this.FULL_RANGE, 0.0F, this.OCEANS[1][var2]);
-      }
-
-   }
-
-   private void addInlandBiomes(Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> var1) {
-      this.addMidSlice(var1, Climate.Parameter.span(-1.0F, -0.93333334F));
-      this.addHighSlice(var1, Climate.Parameter.span(-0.93333334F, -0.7666667F));
-      this.addPeaks(var1, Climate.Parameter.span(-0.7666667F, -0.56666666F));
-      this.addHighSlice(var1, Climate.Parameter.span(-0.56666666F, -0.4F));
-      this.addMidSlice(var1, Climate.Parameter.span(-0.4F, -0.26666668F));
-      this.addLowSlice(var1, Climate.Parameter.span(-0.26666668F, -0.05F));
-      this.addValleys(var1, Climate.Parameter.span(-0.05F, 0.05F));
-      this.addLowSlice(var1, Climate.Parameter.span(0.05F, 0.26666668F));
-      this.addMidSlice(var1, Climate.Parameter.span(0.26666668F, 0.4F));
-      this.addHighSlice(var1, Climate.Parameter.span(0.4F, 0.56666666F));
-      this.addPeaks(var1, Climate.Parameter.span(0.56666666F, 0.7666667F));
-      this.addHighSlice(var1, Climate.Parameter.span(0.7666667F, 0.93333334F));
-      this.addMidSlice(var1, Climate.Parameter.span(0.93333334F, 1.0F));
-   }
-
-   private void addPeaks(Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> var1, Climate.Parameter var2) {
-      for(int var3 = 0; var3 < this.temperatures.length; ++var3) {
-         Climate.Parameter var4 = this.temperatures[var3];
-
-         for(int var5 = 0; var5 < this.humidities.length; ++var5) {
-            Climate.Parameter var6 = this.humidities[var5];
-            ResourceKey var7 = this.pickMiddleBiome(var3, var5, var2);
-            ResourceKey var8 = this.pickMiddleBiomeOrBadlandsIfHot(var3, var5, var2);
-            ResourceKey var9 = this.pickMiddleBiomeOrBadlandsIfHotOrSlopeIfCold(var3, var5, var2);
-            ResourceKey var10 = this.pickPlateauBiome(var3, var5, var2);
-            ResourceKey var11 = this.pickShatteredBiome(var3, var5, var2);
-            ResourceKey var12 = this.maybePickWindsweptSavannaBiome(var3, var5, var2, var11);
-            ResourceKey var13 = this.pickPeakBiome(var3, var5, var2);
-            this.addSurfaceBiome(var1, var4, var6, Climate.Parameter.span(this.coastContinentalness, this.farInlandContinentalness), this.erosions[0], var2, 0.0F, var13);
-            this.addSurfaceBiome(var1, var4, var6, Climate.Parameter.span(this.coastContinentalness, this.nearInlandContinentalness), this.erosions[1], var2, 0.0F, var9);
-            this.addSurfaceBiome(var1, var4, var6, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), this.erosions[1], var2, 0.0F, var13);
-            this.addSurfaceBiome(var1, var4, var6, Climate.Parameter.span(this.coastContinentalness, this.nearInlandContinentalness), Climate.Parameter.span(this.erosions[2], this.erosions[3]), var2, 0.0F, var7);
-            this.addSurfaceBiome(var1, var4, var6, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), this.erosions[2], var2, 0.0F, var10);
-            this.addSurfaceBiome(var1, var4, var6, this.midInlandContinentalness, this.erosions[3], var2, 0.0F, var8);
-            this.addSurfaceBiome(var1, var4, var6, this.farInlandContinentalness, this.erosions[3], var2, 0.0F, var10);
-            this.addSurfaceBiome(var1, var4, var6, Climate.Parameter.span(this.coastContinentalness, this.farInlandContinentalness), this.erosions[4], var2, 0.0F, var7);
-            this.addSurfaceBiome(var1, var4, var6, Climate.Parameter.span(this.coastContinentalness, this.nearInlandContinentalness), this.erosions[5], var2, 0.0F, var12);
-            this.addSurfaceBiome(var1, var4, var6, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), this.erosions[5], var2, 0.0F, var11);
-            this.addSurfaceBiome(var1, var4, var6, Climate.Parameter.span(this.coastContinentalness, this.farInlandContinentalness), this.erosions[6], var2, 0.0F, var7);
+      CubicSpline<?, ?> overworldOffset = TerrainProvider.overworldOffset(continents, erosion, ridges, false);
+      if (overworldOffset instanceof CubicSpline.Multipoint<?, ?> multipoint) {
+         for(float location : multipoint.locations()) {
+            biomes.accept(Pair.of(Climate.parameters(this.FULL_RANGE, this.FULL_RANGE, Climate.Parameter.point(location), this.FULL_RANGE, Climate.Parameter.point(0.0F), this.FULL_RANGE, 0.0F), Biomes.SNOWY_TAIGA));
          }
       }
 
    }
 
-   private void addHighSlice(Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> var1, Climate.Parameter var2) {
-      for(int var3 = 0; var3 < this.temperatures.length; ++var3) {
-         Climate.Parameter var4 = this.temperatures[var3];
+   private void addOffCoastBiomes(final Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> biomes) {
+      this.addSurfaceBiome(biomes, this.FULL_RANGE, this.FULL_RANGE, this.mushroomFieldsContinentalness, this.FULL_RANGE, this.FULL_RANGE, 0.0F, Biomes.MUSHROOM_FIELDS);
 
-         for(int var5 = 0; var5 < this.humidities.length; ++var5) {
-            Climate.Parameter var6 = this.humidities[var5];
-            ResourceKey var7 = this.pickMiddleBiome(var3, var5, var2);
-            ResourceKey var8 = this.pickMiddleBiomeOrBadlandsIfHot(var3, var5, var2);
-            ResourceKey var9 = this.pickMiddleBiomeOrBadlandsIfHotOrSlopeIfCold(var3, var5, var2);
-            ResourceKey var10 = this.pickPlateauBiome(var3, var5, var2);
-            ResourceKey var11 = this.pickShatteredBiome(var3, var5, var2);
-            ResourceKey var12 = this.maybePickWindsweptSavannaBiome(var3, var5, var2, var7);
-            ResourceKey var13 = this.pickSlopeBiome(var3, var5, var2);
-            ResourceKey var14 = this.pickPeakBiome(var3, var5, var2);
-            this.addSurfaceBiome(var1, var4, var6, this.coastContinentalness, Climate.Parameter.span(this.erosions[0], this.erosions[1]), var2, 0.0F, var7);
-            this.addSurfaceBiome(var1, var4, var6, this.nearInlandContinentalness, this.erosions[0], var2, 0.0F, var13);
-            this.addSurfaceBiome(var1, var4, var6, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), this.erosions[0], var2, 0.0F, var14);
-            this.addSurfaceBiome(var1, var4, var6, this.nearInlandContinentalness, this.erosions[1], var2, 0.0F, var9);
-            this.addSurfaceBiome(var1, var4, var6, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), this.erosions[1], var2, 0.0F, var13);
-            this.addSurfaceBiome(var1, var4, var6, Climate.Parameter.span(this.coastContinentalness, this.nearInlandContinentalness), Climate.Parameter.span(this.erosions[2], this.erosions[3]), var2, 0.0F, var7);
-            this.addSurfaceBiome(var1, var4, var6, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), this.erosions[2], var2, 0.0F, var10);
-            this.addSurfaceBiome(var1, var4, var6, this.midInlandContinentalness, this.erosions[3], var2, 0.0F, var8);
-            this.addSurfaceBiome(var1, var4, var6, this.farInlandContinentalness, this.erosions[3], var2, 0.0F, var10);
-            this.addSurfaceBiome(var1, var4, var6, Climate.Parameter.span(this.coastContinentalness, this.farInlandContinentalness), this.erosions[4], var2, 0.0F, var7);
-            this.addSurfaceBiome(var1, var4, var6, Climate.Parameter.span(this.coastContinentalness, this.nearInlandContinentalness), this.erosions[5], var2, 0.0F, var12);
-            this.addSurfaceBiome(var1, var4, var6, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), this.erosions[5], var2, 0.0F, var11);
-            this.addSurfaceBiome(var1, var4, var6, Climate.Parameter.span(this.coastContinentalness, this.farInlandContinentalness), this.erosions[6], var2, 0.0F, var7);
+      for(int temperatureIndex = 0; temperatureIndex < this.temperatures.length; ++temperatureIndex) {
+         Climate.Parameter temperature = this.temperatures[temperatureIndex];
+         this.addSurfaceBiome(biomes, temperature, this.FULL_RANGE, this.deepOceanContinentalness, this.FULL_RANGE, this.FULL_RANGE, 0.0F, this.OCEANS[0][temperatureIndex]);
+         this.addSurfaceBiome(biomes, temperature, this.FULL_RANGE, this.oceanContinentalness, this.FULL_RANGE, this.FULL_RANGE, 0.0F, this.OCEANS[1][temperatureIndex]);
+      }
+
+   }
+
+   private void addInlandBiomes(final Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> biomes) {
+      this.addMidSlice(biomes, Climate.Parameter.span(-1.0F, -0.93333334F));
+      this.addHighSlice(biomes, Climate.Parameter.span(-0.93333334F, -0.7666667F));
+      this.addPeaks(biomes, Climate.Parameter.span(-0.7666667F, -0.56666666F));
+      this.addHighSlice(biomes, Climate.Parameter.span(-0.56666666F, -0.4F));
+      this.addMidSlice(biomes, Climate.Parameter.span(-0.4F, -0.26666668F));
+      this.addLowSlice(biomes, Climate.Parameter.span(-0.26666668F, -0.05F));
+      this.addValleys(biomes, Climate.Parameter.span(-0.05F, 0.05F));
+      this.addLowSlice(biomes, Climate.Parameter.span(0.05F, 0.26666668F));
+      this.addMidSlice(biomes, Climate.Parameter.span(0.26666668F, 0.4F));
+      this.addHighSlice(biomes, Climate.Parameter.span(0.4F, 0.56666666F));
+      this.addPeaks(biomes, Climate.Parameter.span(0.56666666F, 0.7666667F));
+      this.addHighSlice(biomes, Climate.Parameter.span(0.7666667F, 0.93333334F));
+      this.addMidSlice(biomes, Climate.Parameter.span(0.93333334F, 1.0F));
+   }
+
+   private void addPeaks(final Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> biomes, final Climate.Parameter weirdness) {
+      for(int temperatureIndex = 0; temperatureIndex < this.temperatures.length; ++temperatureIndex) {
+         Climate.Parameter temperature = this.temperatures[temperatureIndex];
+
+         for(int humidityIndex = 0; humidityIndex < this.humidities.length; ++humidityIndex) {
+            Climate.Parameter humidity = this.humidities[humidityIndex];
+            ResourceKey<Biome> middleBiome = this.pickMiddleBiome(temperatureIndex, humidityIndex, weirdness);
+            ResourceKey<Biome> middleBiomeOrBadlandsIfHot = this.pickMiddleBiomeOrBadlandsIfHot(temperatureIndex, humidityIndex, weirdness);
+            ResourceKey<Biome> middleBiomeOrBadlandsIfHotOrSlopeIfCold = this.pickMiddleBiomeOrBadlandsIfHotOrSlopeIfCold(temperatureIndex, humidityIndex, weirdness);
+            ResourceKey<Biome> plateauBiome = this.pickPlateauBiome(temperatureIndex, humidityIndex, weirdness);
+            ResourceKey<Biome> shatteredBiome = this.pickShatteredBiome(temperatureIndex, humidityIndex, weirdness);
+            ResourceKey<Biome> shatteredBiomeOrWindsweptSavanna = this.maybePickWindsweptSavannaBiome(temperatureIndex, humidityIndex, weirdness, shatteredBiome);
+            ResourceKey<Biome> peakBiome = this.pickPeakBiome(temperatureIndex, humidityIndex, weirdness);
+            this.addSurfaceBiome(biomes, temperature, humidity, Climate.Parameter.span(this.coastContinentalness, this.farInlandContinentalness), this.erosions[0], weirdness, 0.0F, peakBiome);
+            this.addSurfaceBiome(biomes, temperature, humidity, Climate.Parameter.span(this.coastContinentalness, this.nearInlandContinentalness), this.erosions[1], weirdness, 0.0F, middleBiomeOrBadlandsIfHotOrSlopeIfCold);
+            this.addSurfaceBiome(biomes, temperature, humidity, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), this.erosions[1], weirdness, 0.0F, peakBiome);
+            this.addSurfaceBiome(biomes, temperature, humidity, Climate.Parameter.span(this.coastContinentalness, this.nearInlandContinentalness), Climate.Parameter.span(this.erosions[2], this.erosions[3]), weirdness, 0.0F, middleBiome);
+            this.addSurfaceBiome(biomes, temperature, humidity, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), this.erosions[2], weirdness, 0.0F, plateauBiome);
+            this.addSurfaceBiome(biomes, temperature, humidity, this.midInlandContinentalness, this.erosions[3], weirdness, 0.0F, middleBiomeOrBadlandsIfHot);
+            this.addSurfaceBiome(biomes, temperature, humidity, this.farInlandContinentalness, this.erosions[3], weirdness, 0.0F, plateauBiome);
+            this.addSurfaceBiome(biomes, temperature, humidity, Climate.Parameter.span(this.coastContinentalness, this.farInlandContinentalness), this.erosions[4], weirdness, 0.0F, middleBiome);
+            this.addSurfaceBiome(biomes, temperature, humidity, Climate.Parameter.span(this.coastContinentalness, this.nearInlandContinentalness), this.erosions[5], weirdness, 0.0F, shatteredBiomeOrWindsweptSavanna);
+            this.addSurfaceBiome(biomes, temperature, humidity, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), this.erosions[5], weirdness, 0.0F, shatteredBiome);
+            this.addSurfaceBiome(biomes, temperature, humidity, Climate.Parameter.span(this.coastContinentalness, this.farInlandContinentalness), this.erosions[6], weirdness, 0.0F, middleBiome);
          }
       }
 
    }
 
-   private void addMidSlice(Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> var1, Climate.Parameter var2) {
-      this.addSurfaceBiome(var1, this.FULL_RANGE, this.FULL_RANGE, this.coastContinentalness, Climate.Parameter.span(this.erosions[0], this.erosions[2]), var2, 0.0F, Biomes.STONY_SHORE);
-      this.addSurfaceBiome(var1, Climate.Parameter.span(this.temperatures[1], this.temperatures[2]), this.FULL_RANGE, Climate.Parameter.span(this.nearInlandContinentalness, this.farInlandContinentalness), this.erosions[6], var2, 0.0F, Biomes.SWAMP);
-      this.addSurfaceBiome(var1, Climate.Parameter.span(this.temperatures[3], this.temperatures[4]), this.FULL_RANGE, Climate.Parameter.span(this.nearInlandContinentalness, this.farInlandContinentalness), this.erosions[6], var2, 0.0F, Biomes.MANGROVE_SWAMP);
+   private void addHighSlice(final Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> biomes, final Climate.Parameter weirdness) {
+      for(int temperatureIndex = 0; temperatureIndex < this.temperatures.length; ++temperatureIndex) {
+         Climate.Parameter temperature = this.temperatures[temperatureIndex];
 
-      for(int var3 = 0; var3 < this.temperatures.length; ++var3) {
-         Climate.Parameter var4 = this.temperatures[var3];
+         for(int humidityIndex = 0; humidityIndex < this.humidities.length; ++humidityIndex) {
+            Climate.Parameter humidity = this.humidities[humidityIndex];
+            ResourceKey<Biome> middleBiome = this.pickMiddleBiome(temperatureIndex, humidityIndex, weirdness);
+            ResourceKey<Biome> middleBiomeOrBadlandsIfHot = this.pickMiddleBiomeOrBadlandsIfHot(temperatureIndex, humidityIndex, weirdness);
+            ResourceKey<Biome> middleBiomeOrBadlandsIfHotOrSlopeIfCold = this.pickMiddleBiomeOrBadlandsIfHotOrSlopeIfCold(temperatureIndex, humidityIndex, weirdness);
+            ResourceKey<Biome> plateauBiome = this.pickPlateauBiome(temperatureIndex, humidityIndex, weirdness);
+            ResourceKey<Biome> shatteredBiome = this.pickShatteredBiome(temperatureIndex, humidityIndex, weirdness);
+            ResourceKey<Biome> middleBiomeOrWindsweptSavanna = this.maybePickWindsweptSavannaBiome(temperatureIndex, humidityIndex, weirdness, middleBiome);
+            ResourceKey<Biome> slopeBiome = this.pickSlopeBiome(temperatureIndex, humidityIndex, weirdness);
+            ResourceKey<Biome> peakBiome = this.pickPeakBiome(temperatureIndex, humidityIndex, weirdness);
+            this.addSurfaceBiome(biomes, temperature, humidity, this.coastContinentalness, Climate.Parameter.span(this.erosions[0], this.erosions[1]), weirdness, 0.0F, middleBiome);
+            this.addSurfaceBiome(biomes, temperature, humidity, this.nearInlandContinentalness, this.erosions[0], weirdness, 0.0F, slopeBiome);
+            this.addSurfaceBiome(biomes, temperature, humidity, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), this.erosions[0], weirdness, 0.0F, peakBiome);
+            this.addSurfaceBiome(biomes, temperature, humidity, this.nearInlandContinentalness, this.erosions[1], weirdness, 0.0F, middleBiomeOrBadlandsIfHotOrSlopeIfCold);
+            this.addSurfaceBiome(biomes, temperature, humidity, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), this.erosions[1], weirdness, 0.0F, slopeBiome);
+            this.addSurfaceBiome(biomes, temperature, humidity, Climate.Parameter.span(this.coastContinentalness, this.nearInlandContinentalness), Climate.Parameter.span(this.erosions[2], this.erosions[3]), weirdness, 0.0F, middleBiome);
+            this.addSurfaceBiome(biomes, temperature, humidity, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), this.erosions[2], weirdness, 0.0F, plateauBiome);
+            this.addSurfaceBiome(biomes, temperature, humidity, this.midInlandContinentalness, this.erosions[3], weirdness, 0.0F, middleBiomeOrBadlandsIfHot);
+            this.addSurfaceBiome(biomes, temperature, humidity, this.farInlandContinentalness, this.erosions[3], weirdness, 0.0F, plateauBiome);
+            this.addSurfaceBiome(biomes, temperature, humidity, Climate.Parameter.span(this.coastContinentalness, this.farInlandContinentalness), this.erosions[4], weirdness, 0.0F, middleBiome);
+            this.addSurfaceBiome(biomes, temperature, humidity, Climate.Parameter.span(this.coastContinentalness, this.nearInlandContinentalness), this.erosions[5], weirdness, 0.0F, middleBiomeOrWindsweptSavanna);
+            this.addSurfaceBiome(biomes, temperature, humidity, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), this.erosions[5], weirdness, 0.0F, shatteredBiome);
+            this.addSurfaceBiome(biomes, temperature, humidity, Climate.Parameter.span(this.coastContinentalness, this.farInlandContinentalness), this.erosions[6], weirdness, 0.0F, middleBiome);
+         }
+      }
 
-         for(int var5 = 0; var5 < this.humidities.length; ++var5) {
-            Climate.Parameter var6 = this.humidities[var5];
-            ResourceKey var7 = this.pickMiddleBiome(var3, var5, var2);
-            ResourceKey var8 = this.pickMiddleBiomeOrBadlandsIfHot(var3, var5, var2);
-            ResourceKey var9 = this.pickMiddleBiomeOrBadlandsIfHotOrSlopeIfCold(var3, var5, var2);
-            ResourceKey var10 = this.pickShatteredBiome(var3, var5, var2);
-            ResourceKey var11 = this.pickPlateauBiome(var3, var5, var2);
-            ResourceKey var12 = this.pickBeachBiome(var3, var5);
-            ResourceKey var13 = this.maybePickWindsweptSavannaBiome(var3, var5, var2, var7);
-            ResourceKey var14 = this.pickShatteredCoastBiome(var3, var5, var2);
-            ResourceKey var15 = this.pickSlopeBiome(var3, var5, var2);
-            this.addSurfaceBiome(var1, var4, var6, Climate.Parameter.span(this.nearInlandContinentalness, this.farInlandContinentalness), this.erosions[0], var2, 0.0F, var15);
-            this.addSurfaceBiome(var1, var4, var6, Climate.Parameter.span(this.nearInlandContinentalness, this.midInlandContinentalness), this.erosions[1], var2, 0.0F, var9);
-            this.addSurfaceBiome(var1, var4, var6, this.farInlandContinentalness, this.erosions[1], var2, 0.0F, var3 == 0 ? var15 : var11);
-            this.addSurfaceBiome(var1, var4, var6, this.nearInlandContinentalness, this.erosions[2], var2, 0.0F, var7);
-            this.addSurfaceBiome(var1, var4, var6, this.midInlandContinentalness, this.erosions[2], var2, 0.0F, var8);
-            this.addSurfaceBiome(var1, var4, var6, this.farInlandContinentalness, this.erosions[2], var2, 0.0F, var11);
-            this.addSurfaceBiome(var1, var4, var6, Climate.Parameter.span(this.coastContinentalness, this.nearInlandContinentalness), this.erosions[3], var2, 0.0F, var7);
-            this.addSurfaceBiome(var1, var4, var6, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), this.erosions[3], var2, 0.0F, var8);
-            if (var2.max() < 0L) {
-               this.addSurfaceBiome(var1, var4, var6, this.coastContinentalness, this.erosions[4], var2, 0.0F, var12);
-               this.addSurfaceBiome(var1, var4, var6, Climate.Parameter.span(this.nearInlandContinentalness, this.farInlandContinentalness), this.erosions[4], var2, 0.0F, var7);
+   }
+
+   private void addMidSlice(final Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> biomes, final Climate.Parameter weirdness) {
+      this.addSurfaceBiome(biomes, this.FULL_RANGE, this.FULL_RANGE, this.coastContinentalness, Climate.Parameter.span(this.erosions[0], this.erosions[2]), weirdness, 0.0F, Biomes.STONY_SHORE);
+      this.addSurfaceBiome(biomes, Climate.Parameter.span(this.temperatures[1], this.temperatures[2]), this.FULL_RANGE, Climate.Parameter.span(this.nearInlandContinentalness, this.farInlandContinentalness), this.erosions[6], weirdness, 0.0F, Biomes.SWAMP);
+      this.addSurfaceBiome(biomes, Climate.Parameter.span(this.temperatures[3], this.temperatures[4]), this.FULL_RANGE, Climate.Parameter.span(this.nearInlandContinentalness, this.farInlandContinentalness), this.erosions[6], weirdness, 0.0F, Biomes.MANGROVE_SWAMP);
+
+      for(int temperatureIndex = 0; temperatureIndex < this.temperatures.length; ++temperatureIndex) {
+         Climate.Parameter temperature = this.temperatures[temperatureIndex];
+
+         for(int humidityIndex = 0; humidityIndex < this.humidities.length; ++humidityIndex) {
+            Climate.Parameter humidity = this.humidities[humidityIndex];
+            ResourceKey<Biome> middleBiome = this.pickMiddleBiome(temperatureIndex, humidityIndex, weirdness);
+            ResourceKey<Biome> middleBiomeOrBadlandsIfHot = this.pickMiddleBiomeOrBadlandsIfHot(temperatureIndex, humidityIndex, weirdness);
+            ResourceKey<Biome> middleBiomeOrBadlandsIfHotOrSlopeIfCold = this.pickMiddleBiomeOrBadlandsIfHotOrSlopeIfCold(temperatureIndex, humidityIndex, weirdness);
+            ResourceKey<Biome> shatteredBiome = this.pickShatteredBiome(temperatureIndex, humidityIndex, weirdness);
+            ResourceKey<Biome> plateauBiome = this.pickPlateauBiome(temperatureIndex, humidityIndex, weirdness);
+            ResourceKey<Biome> beachBiome = this.pickBeachBiome(temperatureIndex, humidityIndex);
+            ResourceKey<Biome> middleBiomeOrWindsweptSavanna = this.maybePickWindsweptSavannaBiome(temperatureIndex, humidityIndex, weirdness, middleBiome);
+            ResourceKey<Biome> shatteredCoastBiome = this.pickShatteredCoastBiome(temperatureIndex, humidityIndex, weirdness);
+            ResourceKey<Biome> slopeBiome = this.pickSlopeBiome(temperatureIndex, humidityIndex, weirdness);
+            this.addSurfaceBiome(biomes, temperature, humidity, Climate.Parameter.span(this.nearInlandContinentalness, this.farInlandContinentalness), this.erosions[0], weirdness, 0.0F, slopeBiome);
+            this.addSurfaceBiome(biomes, temperature, humidity, Climate.Parameter.span(this.nearInlandContinentalness, this.midInlandContinentalness), this.erosions[1], weirdness, 0.0F, middleBiomeOrBadlandsIfHotOrSlopeIfCold);
+            this.addSurfaceBiome(biomes, temperature, humidity, this.farInlandContinentalness, this.erosions[1], weirdness, 0.0F, temperatureIndex == 0 ? slopeBiome : plateauBiome);
+            this.addSurfaceBiome(biomes, temperature, humidity, this.nearInlandContinentalness, this.erosions[2], weirdness, 0.0F, middleBiome);
+            this.addSurfaceBiome(biomes, temperature, humidity, this.midInlandContinentalness, this.erosions[2], weirdness, 0.0F, middleBiomeOrBadlandsIfHot);
+            this.addSurfaceBiome(biomes, temperature, humidity, this.farInlandContinentalness, this.erosions[2], weirdness, 0.0F, plateauBiome);
+            this.addSurfaceBiome(biomes, temperature, humidity, Climate.Parameter.span(this.coastContinentalness, this.nearInlandContinentalness), this.erosions[3], weirdness, 0.0F, middleBiome);
+            this.addSurfaceBiome(biomes, temperature, humidity, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), this.erosions[3], weirdness, 0.0F, middleBiomeOrBadlandsIfHot);
+            if (weirdness.max() < 0L) {
+               this.addSurfaceBiome(biomes, temperature, humidity, this.coastContinentalness, this.erosions[4], weirdness, 0.0F, beachBiome);
+               this.addSurfaceBiome(biomes, temperature, humidity, Climate.Parameter.span(this.nearInlandContinentalness, this.farInlandContinentalness), this.erosions[4], weirdness, 0.0F, middleBiome);
             } else {
-               this.addSurfaceBiome(var1, var4, var6, Climate.Parameter.span(this.coastContinentalness, this.farInlandContinentalness), this.erosions[4], var2, 0.0F, var7);
+               this.addSurfaceBiome(biomes, temperature, humidity, Climate.Parameter.span(this.coastContinentalness, this.farInlandContinentalness), this.erosions[4], weirdness, 0.0F, middleBiome);
             }
 
-            this.addSurfaceBiome(var1, var4, var6, this.coastContinentalness, this.erosions[5], var2, 0.0F, var14);
-            this.addSurfaceBiome(var1, var4, var6, this.nearInlandContinentalness, this.erosions[5], var2, 0.0F, var13);
-            this.addSurfaceBiome(var1, var4, var6, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), this.erosions[5], var2, 0.0F, var10);
-            if (var2.max() < 0L) {
-               this.addSurfaceBiome(var1, var4, var6, this.coastContinentalness, this.erosions[6], var2, 0.0F, var12);
+            this.addSurfaceBiome(biomes, temperature, humidity, this.coastContinentalness, this.erosions[5], weirdness, 0.0F, shatteredCoastBiome);
+            this.addSurfaceBiome(biomes, temperature, humidity, this.nearInlandContinentalness, this.erosions[5], weirdness, 0.0F, middleBiomeOrWindsweptSavanna);
+            this.addSurfaceBiome(biomes, temperature, humidity, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), this.erosions[5], weirdness, 0.0F, shatteredBiome);
+            if (weirdness.max() < 0L) {
+               this.addSurfaceBiome(biomes, temperature, humidity, this.coastContinentalness, this.erosions[6], weirdness, 0.0F, beachBiome);
             } else {
-               this.addSurfaceBiome(var1, var4, var6, this.coastContinentalness, this.erosions[6], var2, 0.0F, var7);
+               this.addSurfaceBiome(biomes, temperature, humidity, this.coastContinentalness, this.erosions[6], weirdness, 0.0F, middleBiome);
             }
 
-            if (var3 == 0) {
-               this.addSurfaceBiome(var1, var4, var6, Climate.Parameter.span(this.nearInlandContinentalness, this.farInlandContinentalness), this.erosions[6], var2, 0.0F, var7);
-            }
-         }
-      }
-
-   }
-
-   private void addLowSlice(Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> var1, Climate.Parameter var2) {
-      this.addSurfaceBiome(var1, this.FULL_RANGE, this.FULL_RANGE, this.coastContinentalness, Climate.Parameter.span(this.erosions[0], this.erosions[2]), var2, 0.0F, Biomes.STONY_SHORE);
-      this.addSurfaceBiome(var1, Climate.Parameter.span(this.temperatures[1], this.temperatures[2]), this.FULL_RANGE, Climate.Parameter.span(this.nearInlandContinentalness, this.farInlandContinentalness), this.erosions[6], var2, 0.0F, Biomes.SWAMP);
-      this.addSurfaceBiome(var1, Climate.Parameter.span(this.temperatures[3], this.temperatures[4]), this.FULL_RANGE, Climate.Parameter.span(this.nearInlandContinentalness, this.farInlandContinentalness), this.erosions[6], var2, 0.0F, Biomes.MANGROVE_SWAMP);
-
-      for(int var3 = 0; var3 < this.temperatures.length; ++var3) {
-         Climate.Parameter var4 = this.temperatures[var3];
-
-         for(int var5 = 0; var5 < this.humidities.length; ++var5) {
-            Climate.Parameter var6 = this.humidities[var5];
-            ResourceKey var7 = this.pickMiddleBiome(var3, var5, var2);
-            ResourceKey var8 = this.pickMiddleBiomeOrBadlandsIfHot(var3, var5, var2);
-            ResourceKey var9 = this.pickMiddleBiomeOrBadlandsIfHotOrSlopeIfCold(var3, var5, var2);
-            ResourceKey var10 = this.pickBeachBiome(var3, var5);
-            ResourceKey var11 = this.maybePickWindsweptSavannaBiome(var3, var5, var2, var7);
-            ResourceKey var12 = this.pickShatteredCoastBiome(var3, var5, var2);
-            this.addSurfaceBiome(var1, var4, var6, this.nearInlandContinentalness, Climate.Parameter.span(this.erosions[0], this.erosions[1]), var2, 0.0F, var8);
-            this.addSurfaceBiome(var1, var4, var6, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), Climate.Parameter.span(this.erosions[0], this.erosions[1]), var2, 0.0F, var9);
-            this.addSurfaceBiome(var1, var4, var6, this.nearInlandContinentalness, Climate.Parameter.span(this.erosions[2], this.erosions[3]), var2, 0.0F, var7);
-            this.addSurfaceBiome(var1, var4, var6, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), Climate.Parameter.span(this.erosions[2], this.erosions[3]), var2, 0.0F, var8);
-            this.addSurfaceBiome(var1, var4, var6, this.coastContinentalness, Climate.Parameter.span(this.erosions[3], this.erosions[4]), var2, 0.0F, var10);
-            this.addSurfaceBiome(var1, var4, var6, Climate.Parameter.span(this.nearInlandContinentalness, this.farInlandContinentalness), this.erosions[4], var2, 0.0F, var7);
-            this.addSurfaceBiome(var1, var4, var6, this.coastContinentalness, this.erosions[5], var2, 0.0F, var12);
-            this.addSurfaceBiome(var1, var4, var6, this.nearInlandContinentalness, this.erosions[5], var2, 0.0F, var11);
-            this.addSurfaceBiome(var1, var4, var6, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), this.erosions[5], var2, 0.0F, var7);
-            this.addSurfaceBiome(var1, var4, var6, this.coastContinentalness, this.erosions[6], var2, 0.0F, var10);
-            if (var3 == 0) {
-               this.addSurfaceBiome(var1, var4, var6, Climate.Parameter.span(this.nearInlandContinentalness, this.farInlandContinentalness), this.erosions[6], var2, 0.0F, var7);
+            if (temperatureIndex == 0) {
+               this.addSurfaceBiome(biomes, temperature, humidity, Climate.Parameter.span(this.nearInlandContinentalness, this.farInlandContinentalness), this.erosions[6], weirdness, 0.0F, middleBiome);
             }
          }
       }
 
    }
 
-   private void addValleys(Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> var1, Climate.Parameter var2) {
-      this.addSurfaceBiome(var1, this.FROZEN_RANGE, this.FULL_RANGE, this.coastContinentalness, Climate.Parameter.span(this.erosions[0], this.erosions[1]), var2, 0.0F, var2.max() < 0L ? Biomes.STONY_SHORE : Biomes.FROZEN_RIVER);
-      this.addSurfaceBiome(var1, this.UNFROZEN_RANGE, this.FULL_RANGE, this.coastContinentalness, Climate.Parameter.span(this.erosions[0], this.erosions[1]), var2, 0.0F, var2.max() < 0L ? Biomes.STONY_SHORE : Biomes.RIVER);
-      this.addSurfaceBiome(var1, this.FROZEN_RANGE, this.FULL_RANGE, this.nearInlandContinentalness, Climate.Parameter.span(this.erosions[0], this.erosions[1]), var2, 0.0F, Biomes.FROZEN_RIVER);
-      this.addSurfaceBiome(var1, this.UNFROZEN_RANGE, this.FULL_RANGE, this.nearInlandContinentalness, Climate.Parameter.span(this.erosions[0], this.erosions[1]), var2, 0.0F, Biomes.RIVER);
-      this.addSurfaceBiome(var1, this.FROZEN_RANGE, this.FULL_RANGE, Climate.Parameter.span(this.coastContinentalness, this.farInlandContinentalness), Climate.Parameter.span(this.erosions[2], this.erosions[5]), var2, 0.0F, Biomes.FROZEN_RIVER);
-      this.addSurfaceBiome(var1, this.UNFROZEN_RANGE, this.FULL_RANGE, Climate.Parameter.span(this.coastContinentalness, this.farInlandContinentalness), Climate.Parameter.span(this.erosions[2], this.erosions[5]), var2, 0.0F, Biomes.RIVER);
-      this.addSurfaceBiome(var1, this.FROZEN_RANGE, this.FULL_RANGE, this.coastContinentalness, this.erosions[6], var2, 0.0F, Biomes.FROZEN_RIVER);
-      this.addSurfaceBiome(var1, this.UNFROZEN_RANGE, this.FULL_RANGE, this.coastContinentalness, this.erosions[6], var2, 0.0F, Biomes.RIVER);
-      this.addSurfaceBiome(var1, Climate.Parameter.span(this.temperatures[1], this.temperatures[2]), this.FULL_RANGE, Climate.Parameter.span(this.inlandContinentalness, this.farInlandContinentalness), this.erosions[6], var2, 0.0F, Biomes.SWAMP);
-      this.addSurfaceBiome(var1, Climate.Parameter.span(this.temperatures[3], this.temperatures[4]), this.FULL_RANGE, Climate.Parameter.span(this.inlandContinentalness, this.farInlandContinentalness), this.erosions[6], var2, 0.0F, Biomes.MANGROVE_SWAMP);
-      this.addSurfaceBiome(var1, this.FROZEN_RANGE, this.FULL_RANGE, Climate.Parameter.span(this.inlandContinentalness, this.farInlandContinentalness), this.erosions[6], var2, 0.0F, Biomes.FROZEN_RIVER);
+   private void addLowSlice(final Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> biomes, final Climate.Parameter weirdness) {
+      this.addSurfaceBiome(biomes, this.FULL_RANGE, this.FULL_RANGE, this.coastContinentalness, Climate.Parameter.span(this.erosions[0], this.erosions[2]), weirdness, 0.0F, Biomes.STONY_SHORE);
+      this.addSurfaceBiome(biomes, Climate.Parameter.span(this.temperatures[1], this.temperatures[2]), this.FULL_RANGE, Climate.Parameter.span(this.nearInlandContinentalness, this.farInlandContinentalness), this.erosions[6], weirdness, 0.0F, Biomes.SWAMP);
+      this.addSurfaceBiome(biomes, Climate.Parameter.span(this.temperatures[3], this.temperatures[4]), this.FULL_RANGE, Climate.Parameter.span(this.nearInlandContinentalness, this.farInlandContinentalness), this.erosions[6], weirdness, 0.0F, Biomes.MANGROVE_SWAMP);
 
-      for(int var3 = 0; var3 < this.temperatures.length; ++var3) {
-         Climate.Parameter var4 = this.temperatures[var3];
+      for(int temperatureIndex = 0; temperatureIndex < this.temperatures.length; ++temperatureIndex) {
+         Climate.Parameter temperature = this.temperatures[temperatureIndex];
 
-         for(int var5 = 0; var5 < this.humidities.length; ++var5) {
-            Climate.Parameter var6 = this.humidities[var5];
-            ResourceKey var7 = this.pickMiddleBiomeOrBadlandsIfHot(var3, var5, var2);
-            this.addSurfaceBiome(var1, var4, var6, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), Climate.Parameter.span(this.erosions[0], this.erosions[1]), var2, 0.0F, var7);
+         for(int humidityIndex = 0; humidityIndex < this.humidities.length; ++humidityIndex) {
+            Climate.Parameter humidity = this.humidities[humidityIndex];
+            ResourceKey<Biome> middleBiome = this.pickMiddleBiome(temperatureIndex, humidityIndex, weirdness);
+            ResourceKey<Biome> middleBiomeOrBadlandsIfHot = this.pickMiddleBiomeOrBadlandsIfHot(temperatureIndex, humidityIndex, weirdness);
+            ResourceKey<Biome> middleBiomeOrBadlandsIfHotOrSlopeIfCold = this.pickMiddleBiomeOrBadlandsIfHotOrSlopeIfCold(temperatureIndex, humidityIndex, weirdness);
+            ResourceKey<Biome> beachBiome = this.pickBeachBiome(temperatureIndex, humidityIndex);
+            ResourceKey<Biome> middleBiomeOrWindsweptSavanna = this.maybePickWindsweptSavannaBiome(temperatureIndex, humidityIndex, weirdness, middleBiome);
+            ResourceKey<Biome> shatteredCoastBiome = this.pickShatteredCoastBiome(temperatureIndex, humidityIndex, weirdness);
+            this.addSurfaceBiome(biomes, temperature, humidity, this.nearInlandContinentalness, Climate.Parameter.span(this.erosions[0], this.erosions[1]), weirdness, 0.0F, middleBiomeOrBadlandsIfHot);
+            this.addSurfaceBiome(biomes, temperature, humidity, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), Climate.Parameter.span(this.erosions[0], this.erosions[1]), weirdness, 0.0F, middleBiomeOrBadlandsIfHotOrSlopeIfCold);
+            this.addSurfaceBiome(biomes, temperature, humidity, this.nearInlandContinentalness, Climate.Parameter.span(this.erosions[2], this.erosions[3]), weirdness, 0.0F, middleBiome);
+            this.addSurfaceBiome(biomes, temperature, humidity, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), Climate.Parameter.span(this.erosions[2], this.erosions[3]), weirdness, 0.0F, middleBiomeOrBadlandsIfHot);
+            this.addSurfaceBiome(biomes, temperature, humidity, this.coastContinentalness, Climate.Parameter.span(this.erosions[3], this.erosions[4]), weirdness, 0.0F, beachBiome);
+            this.addSurfaceBiome(biomes, temperature, humidity, Climate.Parameter.span(this.nearInlandContinentalness, this.farInlandContinentalness), this.erosions[4], weirdness, 0.0F, middleBiome);
+            this.addSurfaceBiome(biomes, temperature, humidity, this.coastContinentalness, this.erosions[5], weirdness, 0.0F, shatteredCoastBiome);
+            this.addSurfaceBiome(biomes, temperature, humidity, this.nearInlandContinentalness, this.erosions[5], weirdness, 0.0F, middleBiomeOrWindsweptSavanna);
+            this.addSurfaceBiome(biomes, temperature, humidity, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), this.erosions[5], weirdness, 0.0F, middleBiome);
+            this.addSurfaceBiome(biomes, temperature, humidity, this.coastContinentalness, this.erosions[6], weirdness, 0.0F, beachBiome);
+            if (temperatureIndex == 0) {
+               this.addSurfaceBiome(biomes, temperature, humidity, Climate.Parameter.span(this.nearInlandContinentalness, this.farInlandContinentalness), this.erosions[6], weirdness, 0.0F, middleBiome);
+            }
          }
       }
 
    }
 
-   private void addUndergroundBiomes(Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> var1) {
-      this.addUndergroundBiome(var1, this.FULL_RANGE, this.FULL_RANGE, Climate.Parameter.span(0.8F, 1.0F), this.FULL_RANGE, this.FULL_RANGE, 0.0F, Biomes.DRIPSTONE_CAVES);
-      this.addUndergroundBiome(var1, this.FULL_RANGE, Climate.Parameter.span(0.7F, 1.0F), this.FULL_RANGE, this.FULL_RANGE, this.FULL_RANGE, 0.0F, Biomes.LUSH_CAVES);
-      this.addBottomBiome(var1, this.FULL_RANGE, this.FULL_RANGE, this.FULL_RANGE, Climate.Parameter.span(this.erosions[0], this.erosions[1]), this.FULL_RANGE, 0.0F, Biomes.DEEP_DARK);
+   private void addValleys(final Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> biomes, final Climate.Parameter weirdness) {
+      this.addSurfaceBiome(biomes, this.FROZEN_RANGE, this.FULL_RANGE, this.coastContinentalness, Climate.Parameter.span(this.erosions[0], this.erosions[1]), weirdness, 0.0F, weirdness.max() < 0L ? Biomes.STONY_SHORE : Biomes.FROZEN_RIVER);
+      this.addSurfaceBiome(biomes, this.UNFROZEN_RANGE, this.FULL_RANGE, this.coastContinentalness, Climate.Parameter.span(this.erosions[0], this.erosions[1]), weirdness, 0.0F, weirdness.max() < 0L ? Biomes.STONY_SHORE : Biomes.RIVER);
+      this.addSurfaceBiome(biomes, this.FROZEN_RANGE, this.FULL_RANGE, this.nearInlandContinentalness, Climate.Parameter.span(this.erosions[0], this.erosions[1]), weirdness, 0.0F, Biomes.FROZEN_RIVER);
+      this.addSurfaceBiome(biomes, this.UNFROZEN_RANGE, this.FULL_RANGE, this.nearInlandContinentalness, Climate.Parameter.span(this.erosions[0], this.erosions[1]), weirdness, 0.0F, Biomes.RIVER);
+      this.addSurfaceBiome(biomes, this.FROZEN_RANGE, this.FULL_RANGE, Climate.Parameter.span(this.coastContinentalness, this.farInlandContinentalness), Climate.Parameter.span(this.erosions[2], this.erosions[5]), weirdness, 0.0F, Biomes.FROZEN_RIVER);
+      this.addSurfaceBiome(biomes, this.UNFROZEN_RANGE, this.FULL_RANGE, Climate.Parameter.span(this.coastContinentalness, this.farInlandContinentalness), Climate.Parameter.span(this.erosions[2], this.erosions[5]), weirdness, 0.0F, Biomes.RIVER);
+      this.addSurfaceBiome(biomes, this.FROZEN_RANGE, this.FULL_RANGE, this.coastContinentalness, this.erosions[6], weirdness, 0.0F, Biomes.FROZEN_RIVER);
+      this.addSurfaceBiome(biomes, this.UNFROZEN_RANGE, this.FULL_RANGE, this.coastContinentalness, this.erosions[6], weirdness, 0.0F, Biomes.RIVER);
+      this.addSurfaceBiome(biomes, Climate.Parameter.span(this.temperatures[1], this.temperatures[2]), this.FULL_RANGE, Climate.Parameter.span(this.inlandContinentalness, this.farInlandContinentalness), this.erosions[6], weirdness, 0.0F, Biomes.SWAMP);
+      this.addSurfaceBiome(biomes, Climate.Parameter.span(this.temperatures[3], this.temperatures[4]), this.FULL_RANGE, Climate.Parameter.span(this.inlandContinentalness, this.farInlandContinentalness), this.erosions[6], weirdness, 0.0F, Biomes.MANGROVE_SWAMP);
+      this.addSurfaceBiome(biomes, this.FROZEN_RANGE, this.FULL_RANGE, Climate.Parameter.span(this.inlandContinentalness, this.farInlandContinentalness), this.erosions[6], weirdness, 0.0F, Biomes.FROZEN_RIVER);
+
+      for(int temperatureIndex = 0; temperatureIndex < this.temperatures.length; ++temperatureIndex) {
+         Climate.Parameter temperature = this.temperatures[temperatureIndex];
+
+         for(int humidityIndex = 0; humidityIndex < this.humidities.length; ++humidityIndex) {
+            Climate.Parameter humidity = this.humidities[humidityIndex];
+            ResourceKey<Biome> middleBiomeOrBadlandsIfHot = this.pickMiddleBiomeOrBadlandsIfHot(temperatureIndex, humidityIndex, weirdness);
+            this.addSurfaceBiome(biomes, temperature, humidity, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), Climate.Parameter.span(this.erosions[0], this.erosions[1]), weirdness, 0.0F, middleBiomeOrBadlandsIfHot);
+         }
+      }
+
    }
 
-   private ResourceKey<Biome> pickMiddleBiome(int var1, int var2, Climate.Parameter var3) {
-      if (var3.max() < 0L) {
-         return this.MIDDLE_BIOMES[var1][var2];
+   private void addUndergroundBiomes(final Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> biomes) {
+      this.addUndergroundBiome(biomes, this.FULL_RANGE, this.FULL_RANGE, Climate.Parameter.span(0.8F, 1.0F), this.FULL_RANGE, this.FULL_RANGE, 0.0F, Biomes.DRIPSTONE_CAVES);
+      this.addUndergroundBiome(biomes, this.FULL_RANGE, Climate.Parameter.span(0.7F, 1.0F), this.FULL_RANGE, this.FULL_RANGE, this.FULL_RANGE, 0.0F, Biomes.LUSH_CAVES);
+      this.addBottomBiome(biomes, this.FULL_RANGE, this.FULL_RANGE, this.FULL_RANGE, Climate.Parameter.span(this.erosions[0], this.erosions[1]), this.FULL_RANGE, 0.0F, Biomes.DEEP_DARK);
+   }
+
+   private ResourceKey<Biome> pickMiddleBiome(final int temperatureIndex, final int humidityIndex, final Climate.Parameter weirdness) {
+      if (weirdness.max() < 0L) {
+         return this.MIDDLE_BIOMES[temperatureIndex][humidityIndex];
       } else {
-         ResourceKey var4 = this.MIDDLE_BIOMES_VARIANT[var1][var2];
-         return var4 == null ? this.MIDDLE_BIOMES[var1][var2] : var4;
+         ResourceKey<Biome> variant = this.MIDDLE_BIOMES_VARIANT[temperatureIndex][humidityIndex];
+         return variant == null ? this.MIDDLE_BIOMES[temperatureIndex][humidityIndex] : variant;
       }
    }
 
-   private ResourceKey<Biome> pickMiddleBiomeOrBadlandsIfHot(int var1, int var2, Climate.Parameter var3) {
-      return var1 == 4 ? this.pickBadlandsBiome(var2, var3) : this.pickMiddleBiome(var1, var2, var3);
+   private ResourceKey<Biome> pickMiddleBiomeOrBadlandsIfHot(final int temperatureIndex, final int humidityIndex, final Climate.Parameter weirdness) {
+      return temperatureIndex == 4 ? this.pickBadlandsBiome(humidityIndex, weirdness) : this.pickMiddleBiome(temperatureIndex, humidityIndex, weirdness);
    }
 
-   private ResourceKey<Biome> pickMiddleBiomeOrBadlandsIfHotOrSlopeIfCold(int var1, int var2, Climate.Parameter var3) {
-      return var1 == 0 ? this.pickSlopeBiome(var1, var2, var3) : this.pickMiddleBiomeOrBadlandsIfHot(var1, var2, var3);
+   private ResourceKey<Biome> pickMiddleBiomeOrBadlandsIfHotOrSlopeIfCold(final int temperatureIndex, final int humidityIndex, final Climate.Parameter weirdness) {
+      return temperatureIndex == 0 ? this.pickSlopeBiome(temperatureIndex, humidityIndex, weirdness) : this.pickMiddleBiomeOrBadlandsIfHot(temperatureIndex, humidityIndex, weirdness);
    }
 
-   private ResourceKey<Biome> maybePickWindsweptSavannaBiome(int var1, int var2, Climate.Parameter var3, ResourceKey<Biome> var4) {
-      return var1 > 1 && var2 < 4 && var3.max() >= 0L ? Biomes.WINDSWEPT_SAVANNA : var4;
+   private ResourceKey<Biome> maybePickWindsweptSavannaBiome(final int temperatureIndex, final int humidityIndex, final Climate.Parameter weirdness, final ResourceKey<Biome> underlyingBiome) {
+      return temperatureIndex > 1 && humidityIndex < 4 && weirdness.max() >= 0L ? Biomes.WINDSWEPT_SAVANNA : underlyingBiome;
    }
 
-   private ResourceKey<Biome> pickShatteredCoastBiome(int var1, int var2, Climate.Parameter var3) {
-      ResourceKey var4 = var3.max() >= 0L ? this.pickMiddleBiome(var1, var2, var3) : this.pickBeachBiome(var1, var2);
-      return this.maybePickWindsweptSavannaBiome(var1, var2, var3, var4);
+   private ResourceKey<Biome> pickShatteredCoastBiome(final int temperatureIndex, final int humidityIndex, final Climate.Parameter weirdness) {
+      ResourceKey<Biome> beachOrMiddleBiome = weirdness.max() >= 0L ? this.pickMiddleBiome(temperatureIndex, humidityIndex, weirdness) : this.pickBeachBiome(temperatureIndex, humidityIndex);
+      return this.maybePickWindsweptSavannaBiome(temperatureIndex, humidityIndex, weirdness, beachOrMiddleBiome);
    }
 
-   private ResourceKey<Biome> pickBeachBiome(int var1, int var2) {
-      if (var1 == 0) {
+   private ResourceKey<Biome> pickBeachBiome(final int temperatureIndex, final int humidityIndex) {
+      if (temperatureIndex == 0) {
          return Biomes.SNOWY_BEACH;
       } else {
-         return var1 == 4 ? Biomes.DESERT : Biomes.BEACH;
+         return temperatureIndex == 4 ? Biomes.DESERT : Biomes.BEACH;
       }
    }
 
-   private ResourceKey<Biome> pickBadlandsBiome(int var1, Climate.Parameter var2) {
-      if (var1 < 2) {
-         return var2.max() < 0L ? Biomes.BADLANDS : Biomes.ERODED_BADLANDS;
+   private ResourceKey<Biome> pickBadlandsBiome(final int humidityIndex, final Climate.Parameter weirdness) {
+      if (humidityIndex < 2) {
+         return weirdness.max() < 0L ? Biomes.BADLANDS : Biomes.ERODED_BADLANDS;
       } else {
-         return var1 < 3 ? Biomes.BADLANDS : Biomes.WOODED_BADLANDS;
+         return humidityIndex < 3 ? Biomes.BADLANDS : Biomes.WOODED_BADLANDS;
       }
    }
 
-   private ResourceKey<Biome> pickPlateauBiome(int var1, int var2, Climate.Parameter var3) {
-      if (var3.max() >= 0L) {
-         ResourceKey var4 = this.PLATEAU_BIOMES_VARIANT[var1][var2];
-         if (var4 != null) {
-            return var4;
+   private ResourceKey<Biome> pickPlateauBiome(final int temperatureIndex, final int humidityIndex, final Climate.Parameter weirdness) {
+      if (weirdness.max() >= 0L) {
+         ResourceKey<Biome> variant = this.PLATEAU_BIOMES_VARIANT[temperatureIndex][humidityIndex];
+         if (variant != null) {
+            return variant;
          }
       }
 
-      return this.PLATEAU_BIOMES[var1][var2];
+      return this.PLATEAU_BIOMES[temperatureIndex][humidityIndex];
    }
 
-   private ResourceKey<Biome> pickPeakBiome(int var1, int var2, Climate.Parameter var3) {
-      if (var1 <= 2) {
-         return var3.max() < 0L ? Biomes.JAGGED_PEAKS : Biomes.FROZEN_PEAKS;
+   private ResourceKey<Biome> pickPeakBiome(final int temperatureIndex, final int humidityIndex, final Climate.Parameter weirdness) {
+      if (temperatureIndex <= 2) {
+         return weirdness.max() < 0L ? Biomes.JAGGED_PEAKS : Biomes.FROZEN_PEAKS;
       } else {
-         return var1 == 3 ? Biomes.STONY_PEAKS : this.pickBadlandsBiome(var2, var3);
+         return temperatureIndex == 3 ? Biomes.STONY_PEAKS : this.pickBadlandsBiome(humidityIndex, weirdness);
       }
    }
 
-   private ResourceKey<Biome> pickSlopeBiome(int var1, int var2, Climate.Parameter var3) {
-      if (var1 >= 3) {
-         return this.pickPlateauBiome(var1, var2, var3);
+   private ResourceKey<Biome> pickSlopeBiome(final int temperatureIndex, final int humidityIndex, final Climate.Parameter weirdness) {
+      if (temperatureIndex >= 3) {
+         return this.pickPlateauBiome(temperatureIndex, humidityIndex, weirdness);
       } else {
-         return var2 <= 1 ? Biomes.SNOWY_SLOPES : Biomes.GROVE;
+         return humidityIndex <= 1 ? Biomes.SNOWY_SLOPES : Biomes.GROVE;
       }
    }
 
-   private ResourceKey<Biome> pickShatteredBiome(int var1, int var2, Climate.Parameter var3) {
-      ResourceKey var4 = this.SHATTERED_BIOMES[var1][var2];
-      return var4 == null ? this.pickMiddleBiome(var1, var2, var3) : var4;
+   private ResourceKey<Biome> pickShatteredBiome(final int temperatureIndex, final int humidityIndex, final Climate.Parameter weirdness) {
+      ResourceKey<Biome> biome = this.SHATTERED_BIOMES[temperatureIndex][humidityIndex];
+      return biome == null ? this.pickMiddleBiome(temperatureIndex, humidityIndex, weirdness) : biome;
    }
 
-   private void addSurfaceBiome(Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> var1, Climate.Parameter var2, Climate.Parameter var3, Climate.Parameter var4, Climate.Parameter var5, Climate.Parameter var6, float var7, ResourceKey<Biome> var8) {
-      var1.accept(Pair.of(Climate.parameters(var2, var3, var4, var5, Climate.Parameter.point(0.0F), var6, var7), var8));
-      var1.accept(Pair.of(Climate.parameters(var2, var3, var4, var5, Climate.Parameter.point(1.0F), var6, var7), var8));
+   private void addSurfaceBiome(final Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> biomes, final Climate.Parameter temperature, final Climate.Parameter humidity, final Climate.Parameter continentalness, final Climate.Parameter erosion, final Climate.Parameter weirdness, final float offset, final ResourceKey<Biome> second) {
+      biomes.accept(Pair.of(Climate.parameters(temperature, humidity, continentalness, erosion, Climate.Parameter.point(0.0F), weirdness, offset), second));
+      biomes.accept(Pair.of(Climate.parameters(temperature, humidity, continentalness, erosion, Climate.Parameter.point(1.0F), weirdness, offset), second));
    }
 
-   private void addUndergroundBiome(Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> var1, Climate.Parameter var2, Climate.Parameter var3, Climate.Parameter var4, Climate.Parameter var5, Climate.Parameter var6, float var7, ResourceKey<Biome> var8) {
-      var1.accept(Pair.of(Climate.parameters(var2, var3, var4, var5, Climate.Parameter.span(0.2F, 0.9F), var6, var7), var8));
+   private void addUndergroundBiome(final Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> biomes, final Climate.Parameter temperature, final Climate.Parameter humidity, final Climate.Parameter continentalness, final Climate.Parameter erosion, final Climate.Parameter weirdness, final float offset, final ResourceKey<Biome> biome) {
+      biomes.accept(Pair.of(Climate.parameters(temperature, humidity, continentalness, erosion, Climate.Parameter.span(0.2F, 0.9F), weirdness, offset), biome));
    }
 
-   private void addBottomBiome(Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> var1, Climate.Parameter var2, Climate.Parameter var3, Climate.Parameter var4, Climate.Parameter var5, Climate.Parameter var6, float var7, ResourceKey<Biome> var8) {
-      var1.accept(Pair.of(Climate.parameters(var2, var3, var4, var5, Climate.Parameter.point(1.1F), var6, var7), var8));
+   private void addBottomBiome(final Consumer<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> biomes, final Climate.Parameter temperature, final Climate.Parameter humidity, final Climate.Parameter continentalness, final Climate.Parameter erosion, final Climate.Parameter weirdness, final float offset, final ResourceKey<Biome> biome) {
+      biomes.accept(Pair.of(Climate.parameters(temperature, humidity, continentalness, erosion, Climate.Parameter.point(1.1F), weirdness, offset), biome));
    }
 
-   public static boolean isDeepDarkRegion(DensityFunction var0, DensityFunction var1, DensityFunction.FunctionContext var2) {
-      return var0.compute(var2) < -0.22499999403953552 && var1.compute(var2) > 0.8999999761581421;
+   public static boolean isDeepDarkRegion(final DensityFunction erosion, final DensityFunction depth, final DensityFunction.FunctionContext context) {
+      return erosion.compute(context) < -0.22499999403953552 && depth.compute(context) > 0.8999999761581421;
    }
 
-   public static String getDebugStringForPeaksAndValleys(double var0) {
-      if (var0 < (double)NoiseRouterData.peaksAndValleys(0.05F)) {
+   public static String getDebugStringForPeaksAndValleys(final double peaksAndValleys) {
+      if (peaksAndValleys < (double)NoiseRouterData.peaksAndValleys(0.05F)) {
          return "Valley";
-      } else if (var0 < (double)NoiseRouterData.peaksAndValleys(0.26666668F)) {
+      } else if (peaksAndValleys < (double)NoiseRouterData.peaksAndValleys(0.26666668F)) {
          return "Low";
-      } else if (var0 < (double)NoiseRouterData.peaksAndValleys(0.4F)) {
+      } else if (peaksAndValleys < (double)NoiseRouterData.peaksAndValleys(0.4F)) {
          return "Mid";
       } else {
-         return var0 < (double)NoiseRouterData.peaksAndValleys(0.56666666F) ? "High" : "Peak";
+         return peaksAndValleys < (double)NoiseRouterData.peaksAndValleys(0.56666666F) ? "High" : "Peak";
       }
    }
 
-   public String getDebugStringForContinentalness(double var1) {
-      double var3 = (double)Climate.quantizeCoord((float)var1);
-      if (var3 < (double)this.mushroomFieldsContinentalness.max()) {
+   public String getDebugStringForContinentalness(final double continentalness) {
+      double continentalnessQuantized = (double)Climate.quantizeCoord((float)continentalness);
+      if (continentalnessQuantized < (double)this.mushroomFieldsContinentalness.max()) {
          return "Mushroom fields";
-      } else if (var3 < (double)this.deepOceanContinentalness.max()) {
+      } else if (continentalnessQuantized < (double)this.deepOceanContinentalness.max()) {
          return "Deep ocean";
-      } else if (var3 < (double)this.oceanContinentalness.max()) {
+      } else if (continentalnessQuantized < (double)this.oceanContinentalness.max()) {
          return "Ocean";
-      } else if (var3 < (double)this.coastContinentalness.max()) {
+      } else if (continentalnessQuantized < (double)this.coastContinentalness.max()) {
          return "Coast";
-      } else if (var3 < (double)this.nearInlandContinentalness.max()) {
+      } else if (continentalnessQuantized < (double)this.nearInlandContinentalness.max()) {
          return "Near inland";
       } else {
-         return var3 < (double)this.midInlandContinentalness.max() ? "Mid inland" : "Far inland";
+         return continentalnessQuantized < (double)this.midInlandContinentalness.max() ? "Mid inland" : "Far inland";
       }
    }
 
-   public String getDebugStringForErosion(double var1) {
-      return getDebugStringForNoiseValue(var1, this.erosions);
+   public String getDebugStringForErosion(final double erosion) {
+      return getDebugStringForNoiseValue(erosion, this.erosions);
    }
 
-   public String getDebugStringForTemperature(double var1) {
-      return getDebugStringForNoiseValue(var1, this.temperatures);
+   public String getDebugStringForTemperature(final double temperature) {
+      return getDebugStringForNoiseValue(temperature, this.temperatures);
    }
 
-   public String getDebugStringForHumidity(double var1) {
-      return getDebugStringForNoiseValue(var1, this.humidities);
+   public String getDebugStringForHumidity(final double humidity) {
+      return getDebugStringForNoiseValue(humidity, this.humidities);
    }
 
-   private static String getDebugStringForNoiseValue(double var0, Climate.Parameter[] var2) {
-      double var3 = (double)Climate.quantizeCoord((float)var0);
+   private static String getDebugStringForNoiseValue(final double noiseValue, final Climate.Parameter[] array) {
+      double noiseValueQuantized = (double)Climate.quantizeCoord((float)noiseValue);
 
-      for(int var5 = 0; var5 < var2.length; ++var5) {
-         if (var3 < (double)var2[var5].max()) {
-            return "" + var5;
+      for(int i = 0; i < array.length; ++i) {
+         if (noiseValueQuantized < (double)array[i].max()) {
+            return "" + i;
          }
       }
 

@@ -11,17 +11,17 @@ import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilde
 public class BuriedTreasureStructure extends Structure {
    public static final MapCodec<BuriedTreasureStructure> CODEC = simpleCodec(BuriedTreasureStructure::new);
 
-   public BuriedTreasureStructure(Structure.StructureSettings var1) {
-      super(var1);
+   public BuriedTreasureStructure(final Structure.StructureSettings settings) {
+      super(settings);
    }
 
-   public Optional<Structure.GenerationStub> findGenerationPoint(Structure.GenerationContext var1) {
-      return onTopOfChunkCenter(var1, Heightmap.Types.OCEAN_FLOOR_WG, (var1x) -> generatePieces(var1x, var1));
+   public Optional<Structure.GenerationStub> findGenerationPoint(final Structure.GenerationContext context) {
+      return onTopOfChunkCenter(context, Heightmap.Types.OCEAN_FLOOR_WG, (builder) -> generatePieces(builder, context));
    }
 
-   private static void generatePieces(StructurePiecesBuilder var0, Structure.GenerationContext var1) {
-      BlockPos var2 = new BlockPos(var1.chunkPos().getBlockX(9), 90, var1.chunkPos().getBlockZ(9));
-      var0.addPiece(new BuriedTreasurePieces.BuriedTreasurePiece(var2));
+   private static void generatePieces(final StructurePiecesBuilder builder, final Structure.GenerationContext context) {
+      BlockPos offset = new BlockPos(context.chunkPos().getBlockX(9), 90, context.chunkPos().getBlockZ(9));
+      builder.addPiece(new BuriedTreasurePieces.BuriedTreasurePiece(offset));
    }
 
    public StructureType<?> type() {

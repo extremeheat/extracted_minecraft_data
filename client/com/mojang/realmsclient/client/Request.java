@@ -22,54 +22,54 @@ public abstract class Request<T extends Request<T>> {
    private static final String IS_SNAPSHOT_KEY = "Is-Prerelease";
    private static final String COOKIE_KEY = "Cookie";
 
-   public Request(String var1, int var2, int var3) {
+   public Request(final String url, final int connectTimeout, final int readTimeout) {
       super();
 
       try {
-         this.url = var1;
-         Proxy var4 = RealmsClientConfig.getProxy();
-         if (var4 != null) {
-            this.connection = (HttpURLConnection)(new URL(var1)).openConnection(var4);
+         this.url = url;
+         Proxy proxy = RealmsClientConfig.getProxy();
+         if (proxy != null) {
+            this.connection = (HttpURLConnection)(new URL(url)).openConnection(proxy);
          } else {
-            this.connection = (HttpURLConnection)(new URL(var1)).openConnection();
+            this.connection = (HttpURLConnection)(new URL(url)).openConnection();
          }
 
-         this.connection.setConnectTimeout(var2);
-         this.connection.setReadTimeout(var3);
-      } catch (MalformedURLException var5) {
-         throw new RealmsHttpException(var5.getMessage(), var5);
-      } catch (IOException var6) {
-         throw new RealmsHttpException(var6.getMessage(), var6);
+         this.connection.setConnectTimeout(connectTimeout);
+         this.connection.setReadTimeout(readTimeout);
+      } catch (MalformedURLException e) {
+         throw new RealmsHttpException(e.getMessage(), e);
+      } catch (IOException e) {
+         throw new RealmsHttpException(e.getMessage(), e);
       }
    }
 
-   public void cookie(String var1, String var2) {
-      cookie(this.connection, var1, var2);
+   public void cookie(final String key, final String value) {
+      cookie(this.connection, key, value);
    }
 
-   public static void cookie(HttpURLConnection var0, String var1, String var2) {
-      String var3 = var0.getRequestProperty("Cookie");
-      if (var3 == null) {
-         var0.setRequestProperty("Cookie", var1 + "=" + var2);
+   public static void cookie(final HttpURLConnection connection, final String key, final String value) {
+      String cookie = connection.getRequestProperty("Cookie");
+      if (cookie == null) {
+         connection.setRequestProperty("Cookie", key + "=" + value);
       } else {
-         var0.setRequestProperty("Cookie", var3 + ";" + var1 + "=" + var2);
+         connection.setRequestProperty("Cookie", cookie + ";" + key + "=" + value);
       }
 
    }
 
-   public void addSnapshotHeader(boolean var1) {
-      this.connection.addRequestProperty("Is-Prerelease", String.valueOf(var1));
+   public void addSnapshotHeader(final boolean isSnapshot) {
+      this.connection.addRequestProperty("Is-Prerelease", String.valueOf(isSnapshot));
    }
 
    public int getRetryAfterHeader() {
       return getRetryAfterHeader(this.connection);
    }
 
-   public static int getRetryAfterHeader(HttpURLConnection var0) {
-      String var1 = var0.getHeaderField("Retry-After");
+   public static int getRetryAfterHeader(final HttpURLConnection connection) {
+      String pauseTime = connection.getHeaderField("Retry-After");
 
       try {
-         return Integer.valueOf(var1);
+         return Integer.valueOf(pauseTime);
       } catch (Exception var3) {
          return 5;
       }
@@ -79,62 +79,62 @@ public abstract class Request<T extends Request<T>> {
       try {
          this.connect();
          return this.connection.getResponseCode();
-      } catch (Exception var2) {
-         throw new RealmsHttpException(var2.getMessage(), var2);
+      } catch (Exception e) {
+         throw new RealmsHttpException(e.getMessage(), e);
       }
    }
 
    public String text() {
       try {
          this.connect();
-         String var1;
+         String result;
          if (this.responseCode() >= 400) {
-            var1 = this.read(this.connection.getErrorStream());
+            result = this.read(this.connection.getErrorStream());
          } else {
-            var1 = this.read(this.connection.getInputStream());
+            result = this.read(this.connection.getInputStream());
          }
 
          this.dispose();
-         return var1;
-      } catch (IOException var2) {
-         throw new RealmsHttpException(var2.getMessage(), var2);
+         return result;
+      } catch (IOException e) {
+         throw new RealmsHttpException(e.getMessage(), e);
       }
    }
 
-   private String read(@Nullable InputStream var1) throws IOException {
-      if (var1 == null) {
+   private String read(final @Nullable InputStream in) throws IOException {
+      if (in == null) {
          return "";
       } else {
-         InputStreamReader var2 = new InputStreamReader(var1, StandardCharsets.UTF_8);
-         StringBuilder var3 = new StringBuilder();
+         InputStreamReader streamReader = new InputStreamReader(in, StandardCharsets.UTF_8);
+         StringBuilder sb = new StringBuilder();
 
-         for(int var4 = var2.read(); var4 != -1; var4 = var2.read()) {
-            var3.append((char)var4);
+         for(int x = streamReader.read(); x != -1; x = streamReader.read()) {
+            sb.append((char)x);
          }
 
-         return var3.toString();
+         return sb.toString();
       }
    }
 
    private void dispose() {
-      byte[] var1 = new byte[1024];
+      byte[] bytes = new byte[1024];
 
       try {
-         InputStream var2 = this.connection.getInputStream();
+         InputStream in = this.connection.getInputStream();
 
-         while(var2.read(var1) > 0) {
+         while(in.read(bytes) > 0) {
          }
 
-         var2.close();
+         in.close();
          return;
       } catch (Exception var9) {
          try {
-            InputStream var3 = this.connection.getErrorStream();
-            if (var3 != null) {
-               while(var3.read(var1) > 0) {
+            InputStream errorStream = this.connection.getErrorStream();
+            if (errorStream != null) {
+               while(errorStream.read(bytes) > 0) {
                }
 
-               var3.close();
+               errorStream.close();
                return;
             }
          } catch (IOException var8) {
@@ -153,57 +153,57 @@ public abstract class Request<T extends Request<T>> {
       if (this.connected) {
          return (T)this;
       } else {
-         Request var1 = this.doConnect();
+         T t = this.doConnect();
          this.connected = true;
-         return (T)var1;
+         return t;
       }
    }
 
    protected abstract T doConnect();
 
-   public static Request<?> get(String var0) {
-      return new Get(var0, 5000, 60000);
+   public static Request<?> get(final String url) {
+      return new Get(url, 5000, 60000);
    }
 
-   public static Request<?> get(String var0, int var1, int var2) {
-      return new Get(var0, var1, var2);
+   public static Request<?> get(final String url, final int connectTimeoutMillis, final int readTimeoutMillis) {
+      return new Get(url, connectTimeoutMillis, readTimeoutMillis);
    }
 
-   public static Request<?> post(String var0, String var1) {
-      return new Post(var0, var1, 5000, 60000);
+   public static Request<?> post(final String uri, final String content) {
+      return new Post(uri, content, 5000, 60000);
    }
 
-   public static Request<?> post(String var0, String var1, int var2, int var3) {
-      return new Post(var0, var1, var2, var3);
+   public static Request<?> post(final String uri, final String content, final int connectTimeoutMillis, final int readTimeoutMillis) {
+      return new Post(uri, content, connectTimeoutMillis, readTimeoutMillis);
    }
 
-   public static Request<?> delete(String var0) {
-      return new Delete(var0, 5000, 60000);
+   public static Request<?> delete(final String url) {
+      return new Delete(url, 5000, 60000);
    }
 
-   public static Request<?> put(String var0, String var1) {
-      return new Put(var0, var1, 5000, 60000);
+   public static Request<?> put(final String url, final String content) {
+      return new Put(url, content, 5000, 60000);
    }
 
-   public static Request<?> put(String var0, String var1, int var2, int var3) {
-      return new Put(var0, var1, var2, var3);
+   public static Request<?> put(final String url, final String content, final int connectTimeoutMillis, final int readTimeoutMillis) {
+      return new Put(url, content, connectTimeoutMillis, readTimeoutMillis);
    }
 
-   public String getHeader(String var1) {
-      return getHeader(this.connection, var1);
+   public String getHeader(final String header) {
+      return getHeader(this.connection, header);
    }
 
-   public static String getHeader(HttpURLConnection var0, String var1) {
+   public static String getHeader(final HttpURLConnection connection, final String header) {
       try {
-         return var0.getHeaderField(var1);
+         return connection.getHeaderField(header);
       } catch (Exception var3) {
          return "";
       }
    }
 
    public static class Delete extends Request<Delete> {
-      public Delete(String var1, int var2, int var3) {
-         super(var1, var2, var3);
+      public Delete(final String uri, final int connectTimeout, final int readTimeout) {
+         super(uri, connectTimeout, readTimeout);
       }
 
       public Delete doConnect() {
@@ -212,20 +212,15 @@ public abstract class Request<T extends Request<T>> {
             this.connection.setRequestMethod("DELETE");
             this.connection.connect();
             return this;
-         } catch (Exception var2) {
-            throw new RealmsHttpException(var2.getMessage(), var2);
+         } catch (Exception e) {
+            throw new RealmsHttpException(e.getMessage(), e);
          }
-      }
-
-      // $FF: synthetic method
-      public Request doConnect() {
-         return this.doConnect();
       }
    }
 
    public static class Get extends Request<Get> {
-      public Get(String var1, int var2, int var3) {
-         super(var1, var2, var3);
+      public Get(final String uri, final int connectTimeout, final int readTimeout) {
+         super(uri, connectTimeout, readTimeout);
       }
 
       public Get doConnect() {
@@ -235,23 +230,18 @@ public abstract class Request<T extends Request<T>> {
             this.connection.setUseCaches(false);
             this.connection.setRequestMethod("GET");
             return this;
-         } catch (Exception var2) {
-            throw new RealmsHttpException(var2.getMessage(), var2);
+         } catch (Exception e) {
+            throw new RealmsHttpException(e.getMessage(), e);
          }
-      }
-
-      // $FF: synthetic method
-      public Request doConnect() {
-         return this.doConnect();
       }
    }
 
    public static class Put extends Request<Put> {
       private final String content;
 
-      public Put(String var1, String var2, int var3, int var4) {
-         super(var1, var3, var4);
-         this.content = var2;
+      public Put(final String uri, final String content, final int connectTimeout, final int readTimeout) {
+         super(uri, connectTimeout, readTimeout);
+         this.content = content;
       }
 
       public Put doConnect() {
@@ -263,29 +253,24 @@ public abstract class Request<T extends Request<T>> {
             this.connection.setDoOutput(true);
             this.connection.setDoInput(true);
             this.connection.setRequestMethod("PUT");
-            OutputStream var1 = this.connection.getOutputStream();
-            OutputStreamWriter var2 = new OutputStreamWriter(var1, StandardCharsets.UTF_8);
-            var2.write(this.content);
-            var2.close();
-            var1.flush();
+            OutputStream out = this.connection.getOutputStream();
+            OutputStreamWriter writer = new OutputStreamWriter(out, StandardCharsets.UTF_8);
+            writer.write(this.content);
+            writer.close();
+            out.flush();
             return this;
-         } catch (Exception var3) {
-            throw new RealmsHttpException(var3.getMessage(), var3);
+         } catch (Exception e) {
+            throw new RealmsHttpException(e.getMessage(), e);
          }
-      }
-
-      // $FF: synthetic method
-      public Request doConnect() {
-         return this.doConnect();
       }
    }
 
    public static class Post extends Request<Post> {
       private final String content;
 
-      public Post(String var1, String var2, int var3, int var4) {
-         super(var1, var3, var4);
-         this.content = var2;
+      public Post(final String uri, final String content, final int connectTimeout, final int readTimeout) {
+         super(uri, connectTimeout, readTimeout);
+         this.content = content;
       }
 
       public Post doConnect() {
@@ -298,20 +283,15 @@ public abstract class Request<T extends Request<T>> {
             this.connection.setDoOutput(true);
             this.connection.setUseCaches(false);
             this.connection.setRequestMethod("POST");
-            OutputStream var1 = this.connection.getOutputStream();
-            OutputStreamWriter var2 = new OutputStreamWriter(var1, StandardCharsets.UTF_8);
-            var2.write(this.content);
-            var2.close();
-            var1.flush();
+            OutputStream out = this.connection.getOutputStream();
+            OutputStreamWriter writer = new OutputStreamWriter(out, StandardCharsets.UTF_8);
+            writer.write(this.content);
+            writer.close();
+            out.flush();
             return this;
-         } catch (Exception var3) {
-            throw new RealmsHttpException(var3.getMessage(), var3);
+         } catch (Exception e) {
+            throw new RealmsHttpException(e.getMessage(), e);
          }
-      }
-
-      // $FF: synthetic method
-      public Request doConnect() {
-         return this.doConnect();
       }
    }
 }

@@ -10,26 +10,26 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 
 public class InfestedRotatedPillarBlock extends InfestedBlock {
-   public static final MapCodec<InfestedRotatedPillarBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("host").forGetter(InfestedBlock::getHostBlock), propertiesCodec()).apply(var0, InfestedRotatedPillarBlock::new));
+   public static final MapCodec<InfestedRotatedPillarBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("host").forGetter(InfestedBlock::getHostBlock), propertiesCodec()).apply(i, InfestedRotatedPillarBlock::new));
 
    public MapCodec<InfestedRotatedPillarBlock> codec() {
       return CODEC;
    }
 
-   public InfestedRotatedPillarBlock(Block var1, BlockBehaviour.Properties var2) {
-      super(var1, var2);
+   public InfestedRotatedPillarBlock(final Block hostBlock, final BlockBehaviour.Properties properties) {
+      super(hostBlock, properties);
       this.registerDefaultState((BlockState)this.defaultBlockState().setValue(RotatedPillarBlock.AXIS, Direction.Axis.Y));
    }
 
-   protected BlockState rotate(BlockState var1, Rotation var2) {
-      return RotatedPillarBlock.rotatePillar(var1, var2);
+   protected BlockState rotate(final BlockState state, final Rotation rotation) {
+      return RotatedPillarBlock.rotatePillar(state, rotation);
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(RotatedPillarBlock.AXIS);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(RotatedPillarBlock.AXIS);
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return (BlockState)this.defaultBlockState().setValue(RotatedPillarBlock.AXIS, var1.getClickedFace().getAxis());
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      return (BlockState)this.defaultBlockState().setValue(RotatedPillarBlock.AXIS, context.getClickedFace().getAxis());
    }
 }

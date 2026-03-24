@@ -6,5 +6,5 @@ import net.minecraft.server.ReloadableServerResources;
 
 @FunctionalInterface
 public interface WorldCreationContextMapper {
-   WorldCreationContext apply(ReloadableServerResources var1, LayeredRegistryAccess<RegistryLayer> var2, DataPackReloadCookie var3);
+   WorldCreationContext apply(final ReloadableServerResources managers, final LayeredRegistryAccess<RegistryLayer> registries, final DataPackReloadCookie cookie);
 }

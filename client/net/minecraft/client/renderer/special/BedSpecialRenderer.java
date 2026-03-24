@@ -7,48 +7,50 @@ import java.util.function.Consumer;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BedRenderer;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.level.block.state.properties.BedPart;
 import org.joml.Vector3fc;
 
 public class BedSpecialRenderer implements NoDataSpecialModelRenderer {
    private final BedRenderer bedRenderer;
-   private final Material material;
+   private final SpriteId sprite;
+   private final BedPart part;
 
-   public BedSpecialRenderer(BedRenderer var1, Material var2) {
+   public BedSpecialRenderer(final BedRenderer bedRenderer, final SpriteId sprite, final BedPart part) {
       super();
-      this.bedRenderer = var1;
-      this.material = var2;
+      this.bedRenderer = bedRenderer;
+      this.sprite = sprite;
+      this.part = part;
    }
 
-   public void submit(ItemDisplayContext var1, PoseStack var2, SubmitNodeCollector var3, int var4, int var5, boolean var6, int var7) {
-      this.bedRenderer.submitSpecial(var2, var3, var4, var5, this.material, var7);
+   public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final boolean hasFoil, final int outlineColor) {
+      this.bedRenderer.submitPiece(this.part, this.sprite, poseStack, submitNodeCollector, lightCoords, overlayCoords, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
    }
 
-   public void getExtents(Consumer<Vector3fc> var1) {
-      this.bedRenderer.getExtents(var1);
+   public void getExtents(final Consumer<Vector3fc> output) {
+      this.bedRenderer.getExtents(this.part, output);
    }
 
-   public static record Unbaked(Identifier texture) implements SpecialModelRenderer.Unbaked {
-      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("texture").forGetter(Unbaked::texture)).apply(var0, Unbaked::new));
+   public static record Unbaked(Identifier texture, BedPart part) implements NoDataSpecialModelRenderer.Unbaked {
+      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Identifier.CODEC.fieldOf("texture").forGetter(Unbaked::texture), BedPart.CODEC.fieldOf("part").forGetter(Unbaked::part)).apply(i, Unbaked::new));
 
-      public Unbaked(DyeColor var1) {
-         this(Sheets.colorToResourceMaterial(var1));
+      public Unbaked(final DyeColor dyeColor, final BedPart part) {
+         this(Sheets.colorToResourceSprite(dyeColor), part);
       }
 
-      public Unbaked(Identifier var1) {
+      public Unbaked {
          super();
-         this.texture = var1;
       }
 
       public MapCodec<Unbaked> type() {
          return MAP_CODEC;
       }
 
-      public SpecialModelRenderer<?> bake(SpecialModelRenderer.BakingContext var1) {
-         return new BedSpecialRenderer(new BedRenderer(var1), Sheets.BED_MAPPER.apply(this.texture));
+      public BedSpecialRenderer bake(final SpecialModelRenderer.BakingContext context) {
+         return new BedSpecialRenderer(new BedRenderer(context), Sheets.BED_MAPPER.apply(this.texture), this.part);
       }
    }
 }

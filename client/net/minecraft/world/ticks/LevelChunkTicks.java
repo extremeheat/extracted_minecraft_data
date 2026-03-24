@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import org.jspecify.annotations.Nullable;
 
-public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickContainerAccess<T> {
+public class LevelChunkTicks<T> implements TickContainerAccess<T>, SerializableTickContainer<T> {
    private final Queue<ScheduledTick<T>> tickQueue;
    private @Nullable List<SavedTick<T>> pendingTicks;
    private final Set<ScheduledTick<?>> ticksPerPosition;
@@ -25,20 +25,20 @@ public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickCon
       this.ticksPerPosition = new ObjectOpenCustomHashSet(ScheduledTick.UNIQUE_TICK_HASH);
    }
 
-   public LevelChunkTicks(List<SavedTick<T>> var1) {
+   public LevelChunkTicks(final List<SavedTick<T>> pendingTicks) {
       super();
       this.tickQueue = new PriorityQueue(ScheduledTick.DRAIN_ORDER);
       this.ticksPerPosition = new ObjectOpenCustomHashSet(ScheduledTick.UNIQUE_TICK_HASH);
-      this.pendingTicks = var1;
+      this.pendingTicks = pendingTicks;
 
-      for(SavedTick var3 : var1) {
-         this.ticksPerPosition.add(ScheduledTick.probe(var3.type(), var3.pos()));
+      for(SavedTick<T> pendingTick : pendingTicks) {
+         this.ticksPerPosition.add(ScheduledTick.probe(pendingTick.type(), pendingTick.pos()));
       }
 
    }
 
-   public void setOnTickAdded(@Nullable BiConsumer<LevelChunkTicks<T>, ScheduledTick<T>> var1) {
-      this.onTickAdded = var1;
+   public void setOnTickAdded(final @Nullable BiConsumer<LevelChunkTicks<T>, ScheduledTick<T>> onTickAdded) {
+      this.onTickAdded = onTickAdded;
    }
 
    public @Nullable ScheduledTick<T> peek() {
@@ -46,41 +46,41 @@ public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickCon
    }
 
    public @Nullable ScheduledTick<T> poll() {
-      ScheduledTick var1 = (ScheduledTick)this.tickQueue.poll();
-      if (var1 != null) {
-         this.ticksPerPosition.remove(var1);
+      ScheduledTick<T> result = (ScheduledTick)this.tickQueue.poll();
+      if (result != null) {
+         this.ticksPerPosition.remove(result);
       }
 
-      return var1;
+      return result;
    }
 
-   public void schedule(ScheduledTick<T> var1) {
-      if (this.ticksPerPosition.add(var1)) {
-         this.scheduleUnchecked(var1);
+   public void schedule(final ScheduledTick<T> tick) {
+      if (this.ticksPerPosition.add(tick)) {
+         this.scheduleUnchecked(tick);
       }
 
    }
 
-   private void scheduleUnchecked(ScheduledTick<T> var1) {
-      this.tickQueue.add(var1);
+   private void scheduleUnchecked(final ScheduledTick<T> tick) {
+      this.tickQueue.add(tick);
       if (this.onTickAdded != null) {
-         this.onTickAdded.accept(this, var1);
+         this.onTickAdded.accept(this, tick);
       }
 
    }
 
-   public boolean hasScheduledTick(BlockPos var1, T var2) {
-      return this.ticksPerPosition.contains(ScheduledTick.probe(var2, var1));
+   public boolean hasScheduledTick(final BlockPos pos, final T type) {
+      return this.ticksPerPosition.contains(ScheduledTick.probe(type, pos));
    }
 
-   public void removeIf(Predicate<ScheduledTick<T>> var1) {
-      Iterator var2 = this.tickQueue.iterator();
+   public void removeIf(final Predicate<ScheduledTick<T>> test) {
+      Iterator<ScheduledTick<T>> iterator = this.tickQueue.iterator();
 
-      while(var2.hasNext()) {
-         ScheduledTick var3 = (ScheduledTick)var2.next();
-         if (var1.test(var3)) {
-            var2.remove();
-            this.ticksPerPosition.remove(var3);
+      while(iterator.hasNext()) {
+         ScheduledTick<T> tick = (ScheduledTick)iterator.next();
+         if (test.test(tick)) {
+            iterator.remove();
+            this.ticksPerPosition.remove(tick);
          }
       }
 
@@ -94,25 +94,25 @@ public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickCon
       return this.tickQueue.size() + (this.pendingTicks != null ? this.pendingTicks.size() : 0);
    }
 
-   public List<SavedTick<T>> pack(long var1) {
-      ArrayList var3 = new ArrayList(this.tickQueue.size());
+   public List<SavedTick<T>> pack(final long currentTick) {
+      List<SavedTick<T>> ticks = new ArrayList(this.tickQueue.size());
       if (this.pendingTicks != null) {
-         var3.addAll(this.pendingTicks);
+         ticks.addAll(this.pendingTicks);
       }
 
-      for(ScheduledTick var5 : this.tickQueue) {
-         var3.add(var5.toSavedTick(var1));
+      for(ScheduledTick<T> tick : this.tickQueue) {
+         ticks.add(tick.toSavedTick(currentTick));
       }
 
-      return var3;
+      return ticks;
    }
 
-   public void unpack(long var1) {
+   public void unpack(final long currentTick) {
       if (this.pendingTicks != null) {
-         int var3 = -this.pendingTicks.size();
+         int subTickBase = -this.pendingTicks.size();
 
-         for(SavedTick var5 : this.pendingTicks) {
-            this.scheduleUnchecked(var5.unpack(var1, (long)(var3++)));
+         for(SavedTick<T> pendingTick : this.pendingTicks) {
+            this.scheduleUnchecked(pendingTick.unpack(currentTick, (long)(subTickBase++)));
          }
       }
 

@@ -10,6 +10,7 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import net.minecraft.network.chat.FilterMask;
@@ -18,89 +19,93 @@ import org.jspecify.annotations.Nullable;
 
 public class LegacyTextFilter extends ServerTextFilter {
    private static final String ENDPOINT = "v1/chat";
-   final URL joinEndpoint;
-   final JoinOrLeaveEncoder joinEncoder;
-   final URL leaveEndpoint;
-   final JoinOrLeaveEncoder leaveEncoder;
+   private final URL joinEndpoint;
+   private final JoinOrLeaveEncoder joinEncoder;
+   private final URL leaveEndpoint;
+   private final JoinOrLeaveEncoder leaveEncoder;
    private final String authKey;
 
-   private LegacyTextFilter(URL var1, ServerTextFilter.MessageEncoder var2, URL var3, JoinOrLeaveEncoder var4, URL var5, JoinOrLeaveEncoder var6, String var7, ServerTextFilter.IgnoreStrategy var8, ExecutorService var9) {
-      super(var1, var2, var8, var9);
-      this.joinEndpoint = var3;
-      this.joinEncoder = var4;
-      this.leaveEndpoint = var5;
-      this.leaveEncoder = var6;
-      this.authKey = var7;
+   private LegacyTextFilter(final URL chatEndpoint, final ServerTextFilter.MessageEncoder chatEncoder, final URL joinEndpoint, final JoinOrLeaveEncoder joinEncoder, final URL leaveEndpoint, final JoinOrLeaveEncoder leaveEncoder, final String authKey, final ServerTextFilter.IgnoreStrategy chatIgnoreStrategy, final ExecutorService workerPool) {
+      super(chatEndpoint, chatEncoder, chatIgnoreStrategy, workerPool);
+      this.joinEndpoint = joinEndpoint;
+      this.joinEncoder = joinEncoder;
+      this.leaveEndpoint = leaveEndpoint;
+      this.leaveEncoder = leaveEncoder;
+      this.authKey = authKey;
    }
 
-   public static @Nullable ServerTextFilter createTextFilterFromConfig(String var0) {
+   public static @Nullable ServerTextFilter createTextFilterFromConfig(final String config) {
       try {
-         JsonObject var1 = GsonHelper.parse(var0);
-         URI var2 = new URI(GsonHelper.getAsString(var1, "apiServer"));
-         String var3 = GsonHelper.getAsString(var1, "apiKey");
-         if (var3.isEmpty()) {
+         JsonObject parsedConfig = GsonHelper.parse(config);
+         URI host = new URI(GsonHelper.getAsString(parsedConfig, "apiServer"));
+         String key = GsonHelper.getAsString(parsedConfig, "apiKey");
+         if (key.isEmpty()) {
             throw new IllegalArgumentException("Missing API key");
          } else {
-            int var4 = GsonHelper.getAsInt(var1, "ruleId", 1);
-            String var5 = GsonHelper.getAsString(var1, "serverId", "");
-            String var6 = GsonHelper.getAsString(var1, "roomId", "Java:Chat");
-            int var7 = GsonHelper.getAsInt(var1, "hashesToDrop", -1);
-            int var8 = GsonHelper.getAsInt(var1, "maxConcurrentRequests", 7);
-            JsonObject var9 = GsonHelper.getAsJsonObject(var1, "endpoints", (JsonObject)null);
-            String var10 = getEndpointFromConfig(var9, "chat", "v1/chat");
-            boolean var11 = var10.equals("v1/chat");
-            URL var12 = var2.resolve("/" + var10).toURL();
-            URL var13 = getEndpoint(var2, var9, "join", "v1/join");
-            URL var14 = getEndpoint(var2, var9, "leave", "v1/leave");
-            JoinOrLeaveEncoder var15 = (var2x) -> {
-               JsonObject var3 = new JsonObject();
-               var3.addProperty("server", var5);
-               var3.addProperty("room", var6);
-               var3.addProperty("user_id", var2x.id().toString());
-               var3.addProperty("user_display_name", var2x.name());
-               return var3;
+            int ruleId = GsonHelper.getAsInt(parsedConfig, "ruleId", 1);
+            String serverId = GsonHelper.getAsString(parsedConfig, "serverId", "");
+            String roomId = GsonHelper.getAsString(parsedConfig, "roomId", "Java:Chat");
+            int hashesToDrop = GsonHelper.getAsInt(parsedConfig, "hashesToDrop", -1);
+            int maxConcurrentRequests = GsonHelper.getAsInt(parsedConfig, "maxConcurrentRequests", 7);
+            JsonObject endpoints = GsonHelper.getAsJsonObject(parsedConfig, "endpoints", (JsonObject)null);
+            String chatEndpointConfig = getEndpointFromConfig(endpoints, "chat", "v1/chat");
+            boolean isLegacyChatEndpoint = chatEndpointConfig.equals("v1/chat");
+            URL chatEndpoint = host.resolve("/" + chatEndpointConfig).toURL();
+            URL joinEndpoint = getEndpoint(host, endpoints, "join", "v1/join");
+            URL leaveEndpoint = getEndpoint(host, endpoints, "leave", "v1/leave");
+            JoinOrLeaveEncoder commonJoinOrLeaveEncoder = (user) -> {
+               JsonObject object = new JsonObject();
+               object.addProperty("server", serverId);
+               object.addProperty("room", roomId);
+               object.addProperty("user_id", user.id().toString());
+               object.addProperty("user_display_name", user.name());
+               return object;
             };
-            ServerTextFilter.MessageEncoder var16;
-            if (var11) {
-               var16 = (var3x, var4x) -> {
-                  JsonObject var5x = new JsonObject();
-                  var5x.addProperty("rule", var4);
-                  var5x.addProperty("server", var5);
-                  var5x.addProperty("room", var6);
-                  var5x.addProperty("player", var3x.id().toString());
-                  var5x.addProperty("player_display_name", var3x.name());
-                  var5x.addProperty("text", var4x);
-                  var5x.addProperty("language", "*");
-                  return var5x;
+            ServerTextFilter.MessageEncoder chatEncoder;
+            if (isLegacyChatEndpoint) {
+               chatEncoder = (sender, message) -> {
+                  JsonObject object = new JsonObject();
+                  object.addProperty("rule", ruleId);
+                  object.addProperty("server", serverId);
+                  object.addProperty("room", roomId);
+                  object.addProperty("player", sender.id().toString());
+                  object.addProperty("player_display_name", sender.name());
+                  object.addProperty("text", message);
+                  object.addProperty("language", "*");
+                  return object;
                };
             } else {
-               String var17 = String.valueOf(var4);
-               var16 = (var3x, var4x) -> {
-                  JsonObject var5x = new JsonObject();
-                  var5x.addProperty("rule_id", var17);
-                  var5x.addProperty("category", var5);
-                  var5x.addProperty("subcategory", var6);
-                  var5x.addProperty("user_id", var3x.id().toString());
-                  var5x.addProperty("user_display_name", var3x.name());
-                  var5x.addProperty("text", var4x);
-                  var5x.addProperty("language", "*");
-                  return var5x;
+               String ruleIdStr = String.valueOf(ruleId);
+               chatEncoder = (sender, message) -> {
+                  JsonObject object = new JsonObject();
+                  object.addProperty("rule_id", ruleIdStr);
+                  object.addProperty("category", serverId);
+                  object.addProperty("subcategory", roomId);
+                  object.addProperty("user_id", sender.id().toString());
+                  object.addProperty("user_display_name", sender.name());
+                  object.addProperty("text", message);
+                  object.addProperty("language", "*");
+                  return object;
                };
             }
 
-            ServerTextFilter.IgnoreStrategy var21 = ServerTextFilter.IgnoreStrategy.select(var7);
-            ExecutorService var18 = createWorkerPool(var8);
-            String var19 = Base64.getEncoder().encodeToString(var3.getBytes(StandardCharsets.US_ASCII));
-            return new LegacyTextFilter(var12, var16, var13, var15, var14, var15, var19, var21, var18);
+            ServerTextFilter.IgnoreStrategy ignoreStrategy = ServerTextFilter.IgnoreStrategy.select(hashesToDrop);
+            ExecutorService workerPool = createWorkerPool(maxConcurrentRequests);
+            String encodedKey = Base64.getEncoder().encodeToString(key.getBytes(StandardCharsets.US_ASCII));
+            return new LegacyTextFilter(chatEndpoint, chatEncoder, joinEndpoint, commonJoinOrLeaveEncoder, leaveEndpoint, commonJoinOrLeaveEncoder, encodedKey, ignoreStrategy, workerPool);
          }
-      } catch (Exception var20) {
-         LOGGER.warn("Failed to parse chat filter config {}", var0, var20);
+      } catch (Exception e) {
+         LOGGER.warn("Failed to parse chat filter config {}", config, e);
          return null;
       }
    }
 
-   public TextFilter createContext(GameProfile var1) {
-      return new ServerTextFilter.PlayerContext(var1) {
+   public TextFilter createContext(final GameProfile gameProfile) {
+      return new ServerTextFilter.PlayerContext(gameProfile) {
+         {
+            Objects.requireNonNull(LegacyTextFilter.this);
+         }
+
          public void join() {
             LegacyTextFilter.this.processJoinOrLeave(this.profile, LegacyTextFilter.this.joinEndpoint, LegacyTextFilter.this.joinEncoder, this.streamExecutor);
          }
@@ -111,29 +116,29 @@ public class LegacyTextFilter extends ServerTextFilter {
       };
    }
 
-   void processJoinOrLeave(GameProfile var1, URL var2, JoinOrLeaveEncoder var3, Executor var4) {
-      var4.execute(() -> {
-         JsonObject var4 = var3.encode(var1);
+   private void processJoinOrLeave(final GameProfile user, final URL endpoint, final JoinOrLeaveEncoder encoder, final Executor executor) {
+      executor.execute(() -> {
+         JsonObject object = encoder.encode(user);
 
          try {
-            this.processRequest(var4, var2);
-         } catch (Exception var6) {
-            LOGGER.warn("Failed to send join/leave packet to {} for player {}", new Object[]{var2, var1, var6});
+            this.processRequest(object, endpoint);
+         } catch (Exception e) {
+            LOGGER.warn("Failed to send join/leave packet to {} for player {}", new Object[]{endpoint, user, e});
          }
 
       });
    }
 
-   private void processRequest(JsonObject var1, URL var2) throws IOException {
-      HttpURLConnection var3 = this.makeRequest(var1, var2);
-      InputStream var4 = var3.getInputStream();
+   private void processRequest(final JsonObject payload, final URL url) throws IOException {
+      HttpURLConnection connection = this.makeRequest(payload, url);
+      InputStream is = connection.getInputStream();
 
       try {
-         this.drainStream(var4);
+         this.drainStream(is);
       } catch (Throwable var8) {
-         if (var4 != null) {
+         if (is != null) {
             try {
-               var4.close();
+               is.close();
             } catch (Throwable var7) {
                var8.addSuppressed(var7);
             }
@@ -142,34 +147,34 @@ public class LegacyTextFilter extends ServerTextFilter {
          throw var8;
       }
 
-      if (var4 != null) {
-         var4.close();
+      if (is != null) {
+         is.close();
       }
 
    }
 
-   protected void setAuthorizationProperty(HttpURLConnection var1) {
-      var1.setRequestProperty("Authorization", "Basic " + this.authKey);
+   protected void setAuthorizationProperty(final HttpURLConnection connection) {
+      connection.setRequestProperty("Authorization", "Basic " + this.authKey);
    }
 
-   protected FilteredText filterText(String var1, ServerTextFilter.IgnoreStrategy var2, JsonObject var3) {
-      boolean var4 = GsonHelper.getAsBoolean(var3, "response", false);
-      if (var4) {
-         return FilteredText.passThrough(var1);
+   protected FilteredText filterText(final String message, final ServerTextFilter.IgnoreStrategy ignoreStrategy, final JsonObject result) {
+      boolean response = GsonHelper.getAsBoolean(result, "response", false);
+      if (response) {
+         return FilteredText.passThrough(message);
       } else {
-         String var5 = GsonHelper.getAsString(var3, "hashed", (String)null);
-         if (var5 == null) {
-            return FilteredText.fullyFiltered(var1);
+         String filteredMessage = GsonHelper.getAsString(result, "hashed", (String)null);
+         if (filteredMessage == null) {
+            return FilteredText.fullyFiltered(message);
          } else {
-            JsonArray var6 = GsonHelper.getAsJsonArray(var3, "hashes");
-            FilterMask var7 = this.parseMask(var1, var6, var2);
-            return new FilteredText(var1, var7);
+            JsonArray removedChars = GsonHelper.getAsJsonArray(result, "hashes");
+            FilterMask mask = this.parseMask(message, removedChars, ignoreStrategy);
+            return new FilteredText(message, mask);
          }
       }
    }
 
    @FunctionalInterface
-   interface JoinOrLeaveEncoder {
-      JsonObject encode(GameProfile var1);
+   private interface JoinOrLeaveEncoder {
+      JsonObject encode(GameProfile profile);
    }
 }

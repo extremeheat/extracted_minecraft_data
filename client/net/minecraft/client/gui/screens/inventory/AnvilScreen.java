@@ -1,6 +1,6 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -25,16 +25,16 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
    private EditBox name;
    private final Player player;
 
-   public AnvilScreen(AnvilMenu var1, Inventory var2, Component var3) {
-      super(var1, var2, var3, ANVIL_LOCATION);
-      this.player = var2.player;
+   public AnvilScreen(final AnvilMenu menu, final Inventory inventory, final Component title) {
+      super(menu, inventory, title, ANVIL_LOCATION);
+      this.player = inventory.player;
       this.titleLabelX = 60;
    }
 
    protected void subInit() {
-      int var1 = (this.width - this.imageWidth) / 2;
-      int var2 = (this.height - this.imageHeight) / 2;
-      this.name = new EditBox(this.font, var1 + 62, var2 + 24, 103, 12, Component.translatable("container.repair"));
+      int xo = (this.width - this.imageWidth) / 2;
+      int yo = (this.height - this.imageHeight) / 2;
+      this.name = new EditBox(this.font, xo + 62, yo + 24, 103, 12, Component.translatable("container.repair"));
       this.name.setCanLoseFocus(false);
       this.name.setTextColor(-1);
       this.name.setTextColorUneditable(-1);
@@ -56,80 +56,80 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
       this.setInitialFocus(this.name);
    }
 
-   public void resize(int var1, int var2) {
-      String var3 = this.name.getValue();
-      this.init(var1, var2);
-      this.name.setValue(var3);
+   public void resize(final int width, final int height) {
+      String oldEdit = this.name.getValue();
+      this.init(width, height);
+      this.name.setValue(oldEdit);
    }
 
-   public boolean keyPressed(KeyEvent var1) {
-      if (var1.isEscape()) {
+   public boolean keyPressed(final KeyEvent event) {
+      if (event.isEscape()) {
          this.minecraft.player.closeContainer();
          return true;
       } else {
-         return !this.name.keyPressed(var1) && !this.name.canConsumeInput() ? super.keyPressed(var1) : true;
+         return !this.name.keyPressed(event) && !this.name.canConsumeInput() ? super.keyPressed(event) : true;
       }
    }
 
-   private void onNameChanged(String var1) {
-      Slot var2 = ((AnvilMenu)this.menu).getSlot(0);
-      if (var2.hasItem()) {
-         String var3 = var1;
-         if (!var2.getItem().has(DataComponents.CUSTOM_NAME) && var1.equals(var2.getItem().getHoverName().getString())) {
-            var3 = "";
+   private void onNameChanged(final String name) {
+      Slot slot = ((AnvilMenu)this.menu).getSlot(0);
+      if (slot.hasItem()) {
+         String newName = name;
+         if (!slot.getItem().has(DataComponents.CUSTOM_NAME) && name.equals(slot.getItem().getHoverName().getString())) {
+            newName = "";
          }
 
-         if (((AnvilMenu)this.menu).setItemName(var3)) {
-            this.minecraft.player.connection.send(new ServerboundRenameItemPacket(var3));
+         if (((AnvilMenu)this.menu).setItemName(newName)) {
+            this.minecraft.player.connection.send(new ServerboundRenameItemPacket(newName));
          }
 
       }
    }
 
-   protected void renderLabels(GuiGraphics var1, int var2, int var3) {
-      super.renderLabels(var1, var2, var3);
-      int var4 = ((AnvilMenu)this.menu).getCost();
-      if (var4 > 0) {
-         int var5 = -8323296;
-         Object var6;
-         if (var4 >= 40 && !this.minecraft.player.hasInfiniteMaterials()) {
-            var6 = TOO_EXPENSIVE_TEXT;
-            var5 = -40864;
+   protected void extractLabels(final GuiGraphicsExtractor graphics, final int xm, final int ym) {
+      super.extractLabels(graphics, xm, ym);
+      int cost = ((AnvilMenu)this.menu).getCost();
+      if (cost > 0) {
+         int color = -8323296;
+         Component line;
+         if (cost >= 40 && !this.minecraft.player.hasInfiniteMaterials()) {
+            line = TOO_EXPENSIVE_TEXT;
+            color = -40864;
          } else if (!((AnvilMenu)this.menu).getSlot(2).hasItem()) {
-            var6 = null;
+            line = null;
          } else {
-            var6 = Component.translatable("container.repair.cost", var4);
+            line = Component.translatable("container.repair.cost", cost);
             if (!((AnvilMenu)this.menu).getSlot(2).mayPickup(this.player)) {
-               var5 = -40864;
+               color = -40864;
             }
          }
 
-         if (var6 != null) {
-            int var7 = this.imageWidth - 8 - this.font.width((FormattedText)var6) - 2;
-            boolean var8 = true;
-            var1.fill(var7 - 2, 67, this.imageWidth - 8, 79, 1325400064);
-            var1.drawString(this.font, (Component)var6, var7, 69, var5);
+         if (line != null) {
+            int tx = this.imageWidth - 8 - this.font.width((FormattedText)line) - 2;
+            int ty = 69;
+            graphics.fill(tx - 2, 67, this.imageWidth - 8, 79, 1325400064);
+            graphics.text(this.font, (Component)line, tx, 69, color);
          }
       }
 
    }
 
-   protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
-      super.renderBg(var1, var2, var3, var4);
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)(((AnvilMenu)this.menu).getSlot(0).hasItem() ? TEXT_FIELD_SPRITE : TEXT_FIELD_DISABLED_SPRITE), this.leftPos + 59, this.topPos + 20, 110, 16);
+   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractBackground(graphics, mouseX, mouseY, a);
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)(((AnvilMenu)this.menu).getSlot(0).hasItem() ? TEXT_FIELD_SPRITE : TEXT_FIELD_DISABLED_SPRITE), this.leftPos + 59, this.topPos + 20, 110, 16);
    }
 
-   protected void renderErrorIcon(GuiGraphics var1, int var2, int var3) {
+   protected void extractErrorIcon(final GuiGraphicsExtractor graphics, final int xo, final int yo) {
       if ((((AnvilMenu)this.menu).getSlot(0).hasItem() || ((AnvilMenu)this.menu).getSlot(1).hasItem()) && !((AnvilMenu)this.menu).getSlot(((AnvilMenu)this.menu).getResultSlot()).hasItem()) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ERROR_SPRITE, var2 + 99, var3 + 45, 28, 21);
+         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ERROR_SPRITE, xo + 99, yo + 45, 28, 21);
       }
 
    }
 
-   public void slotChanged(AbstractContainerMenu var1, int var2, ItemStack var3) {
-      if (var2 == 0) {
-         this.name.setValue(var3.isEmpty() ? "" : var3.getHoverName().getString());
-         this.name.setEditable(!var3.isEmpty());
+   public void slotChanged(final AbstractContainerMenu container, final int slotIndex, final ItemStack itemStack) {
+      if (slotIndex == 0) {
+         this.name.setValue(itemStack.isEmpty() ? "" : itemStack.getHoverName().getString());
+         this.name.setEditable(!itemStack.isEmpty());
          this.setFocused(this.name);
       }
 

@@ -4,11 +4,12 @@ import com.google.common.base.Suppliers;
 import java.util.List;
 import java.util.function.Supplier;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.Sheets;
-import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
@@ -16,20 +17,30 @@ public class MissingItemModel implements ItemModel {
    private final List<BakedQuad> quads;
    private final Supplier<Vector3fc[]> extents;
    private final ModelRenderProperties properties;
+   private final Matrix4fc transform;
 
-   public MissingItemModel(List<BakedQuad> var1, ModelRenderProperties var2) {
-      super();
-      this.quads = var1;
-      this.properties = var2;
-      this.extents = Suppliers.memoize(() -> BlockModelWrapper.computeExtents(this.quads));
+   public MissingItemModel(final List<BakedQuad> quads, final ModelRenderProperties properties) {
+      this(quads, Suppliers.memoize(() -> CuboidItemModelWrapper.computeExtents(quads)), properties, new Matrix4f());
    }
 
-   public void update(ItemStackRenderState var1, ItemStack var2, ItemModelResolver var3, ItemDisplayContext var4, @Nullable ClientLevel var5, @Nullable ItemOwner var6, int var7) {
-      var1.appendModelIdentityElement(this);
-      ItemStackRenderState.LayerRenderState var8 = var1.newLayer();
-      var8.setRenderType(Sheets.cutoutBlockSheet());
-      this.properties.applyToLayer(var8, var4);
-      var8.setExtents(this.extents);
-      var8.prepareQuadList().addAll(this.quads);
+   private MissingItemModel(final List<BakedQuad> quads, final Supplier<Vector3fc[]> extents, final ModelRenderProperties properties, final Matrix4fc transform) {
+      super();
+      this.quads = quads;
+      this.extents = extents;
+      this.properties = properties;
+      this.transform = transform;
+   }
+
+   public void update(final ItemStackRenderState output, final ItemStack item, final ItemModelResolver resolver, final ItemDisplayContext displayContext, final @Nullable ClientLevel level, final @Nullable ItemOwner owner, final int seed) {
+      output.appendModelIdentityElement(this);
+      ItemStackRenderState.LayerRenderState layer = output.newLayer();
+      this.properties.applyToLayer(layer, displayContext);
+      layer.setExtents(this.extents);
+      layer.setLocalTransform(this.transform);
+      layer.prepareQuadList().addAll(this.quads);
+   }
+
+   public MissingItemModel withTransform(final Matrix4fc transform) {
+      return transform.equals(this.transform) ? this : new MissingItemModel(this.quads, this.extents, this.properties, transform);
    }
 }

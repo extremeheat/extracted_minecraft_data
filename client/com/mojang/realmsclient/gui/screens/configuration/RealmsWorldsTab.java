@@ -32,27 +32,27 @@ class RealmsWorldsTab extends GridLayoutTab implements RealmsConfigurationTab {
    private final Button resetWorldButton;
    private final List<RealmsWorldSlotButton> slotButtonList = Lists.newArrayList();
 
-   RealmsWorldsTab(RealmsConfigureWorldScreen var1, Minecraft var2, RealmsServer var3) {
+   RealmsWorldsTab(final RealmsConfigureWorldScreen configurationScreen, final Minecraft minecraft, final RealmsServer serverData) {
       super(TITLE);
-      this.configurationScreen = var1;
-      this.minecraft = var2;
-      this.serverData = var3;
-      GridLayout.RowHelper var4 = this.layout.spacing(20).createRowHelper(1);
-      GridLayout.RowHelper var5 = (new GridLayout()).spacing(16).createRowHelper(4);
+      this.configurationScreen = configurationScreen;
+      this.minecraft = minecraft;
+      this.serverData = serverData;
+      GridLayout.RowHelper helper = this.layout.spacing(20).createRowHelper(1);
+      GridLayout.RowHelper slots = (new GridLayout()).spacing(16).createRowHelper(4);
       this.slotButtonList.clear();
 
-      for(int var6 = 1; var6 < 5; ++var6) {
-         this.slotButtonList.add((RealmsWorldSlotButton)var5.addChild(this.createSlotButton(var6), LayoutSettings.defaults().alignVerticallyBottom()));
+      for(int i = 1; i < 5; ++i) {
+         this.slotButtonList.add((RealmsWorldSlotButton)slots.addChild(this.createSlotButton(i), LayoutSettings.defaults().alignVerticallyBottom()));
       }
 
-      var4.addChild(var5.getGrid());
-      GridLayout.RowHelper var7 = (new GridLayout()).spacing(8).createRowHelper(1);
-      this.optionsButton = (Button)var7.addChild(Button.builder(Component.translatable("mco.configure.world.buttons.options"), (var3x) -> var2.setScreen(new RealmsSlotOptionsScreen(var1, ((RealmsSlot)var3.slots.get(var3.activeSlot)).copy(), var3.worldType, var3.activeSlot))).bounds(0, 0, 150, 20).build());
-      this.backupButton = (Button)var7.addChild(Button.builder(Component.translatable("mco.configure.world.backup"), (var3x) -> var2.setScreen(new RealmsBackupScreen(var1, var3.copy(), var3.activeSlot))).bounds(0, 0, 150, 20).build());
-      this.resetWorldButton = (Button)var7.addChild(Button.builder(Component.empty(), (var1x) -> this.resetButtonPressed()).bounds(0, 0, 150, 20).build());
-      var4.addChild(var7.getGrid(), LayoutSettings.defaults().alignHorizontallyCenter());
+      helper.addChild(slots.getGrid());
+      GridLayout.RowHelper buttons = (new GridLayout()).spacing(8).createRowHelper(1);
+      this.optionsButton = (Button)buttons.addChild(Button.builder(Component.translatable("mco.configure.world.buttons.options"), (button) -> minecraft.setScreen(new RealmsSlotOptionsScreen(configurationScreen, ((RealmsSlot)serverData.slots.get(serverData.activeSlot)).copy(), serverData.worldType, serverData.activeSlot))).bounds(0, 0, 150, 20).build());
+      this.backupButton = (Button)buttons.addChild(Button.builder(Component.translatable("mco.configure.world.backup"), (button) -> minecraft.setScreen(new RealmsBackupScreen(configurationScreen, serverData.copy(), serverData.activeSlot))).bounds(0, 0, 150, 20).build());
+      this.resetWorldButton = (Button)buttons.addChild(Button.builder(Component.empty(), (button) -> this.resetButtonPressed()).bounds(0, 0, 150, 20).build());
+      helper.addChild(buttons.getGrid(), LayoutSettings.defaults().alignHorizontallyCenter());
       this.backupButton.active = true;
-      this.updateData(var3);
+      this.updateData(serverData);
    }
 
    private void resetButtonPressed() {
@@ -64,11 +64,11 @@ class RealmsWorldsTab extends GridLayoutTab implements RealmsConfigurationTab {
 
    }
 
-   private void templateSelectionCallback(@Nullable WorldTemplate var1) {
-      if (var1 != null && WorldTemplate.WorldTemplateType.MINIGAME == var1.type()) {
+   private void templateSelectionCallback(final @Nullable WorldTemplate worldTemplate) {
+      if (worldTemplate != null && WorldTemplate.WorldTemplateType.MINIGAME == worldTemplate.type()) {
          this.configurationScreen.stateChanged();
-         RealmsConfigureWorldScreen var2 = this.configurationScreen.getNewScreen();
-         this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(var2, new LongRunningTask[]{new SwitchMinigameTask(this.serverData.id, var1, var2)}));
+         RealmsConfigureWorldScreen newScreen = this.configurationScreen.getNewScreen();
+         this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(newScreen, new LongRunningTask[]{new SwitchMinigameTask(this.serverData.id, worldTemplate, newScreen)}));
       } else {
          this.minecraft.setScreen(this.configurationScreen);
       }
@@ -79,19 +79,19 @@ class RealmsWorldsTab extends GridLayoutTab implements RealmsConfigurationTab {
       return this.serverData.isMinigameActive();
    }
 
-   public void onSelected(RealmsServer var1) {
-      this.updateData(var1);
+   public void onSelected(final RealmsServer serverData) {
+      this.updateData(serverData);
    }
 
-   public void updateData(RealmsServer var1) {
-      this.serverData = var1;
-      this.optionsButton.active = !var1.expired && !this.isMinigame();
-      this.resetWorldButton.active = !var1.expired;
+   public void updateData(final RealmsServer serverData) {
+      this.serverData = serverData;
+      this.optionsButton.active = !serverData.expired && !this.isMinigame();
+      this.resetWorldButton.active = !serverData.expired;
       if (this.isMinigame()) {
          this.resetWorldButton.setMessage(Component.translatable("mco.configure.world.buttons.switchminigame"));
       } else {
-         boolean var2 = var1.slots.containsKey(var1.activeSlot) && ((RealmsSlot)var1.slots.get(var1.activeSlot)).options.empty;
-         if (var2) {
+         boolean emptySlot = serverData.slots.containsKey(serverData.activeSlot) && ((RealmsSlot)serverData.slots.get(serverData.activeSlot)).options.empty;
+         if (emptySlot) {
             this.resetWorldButton.setMessage(Component.translatable("mco.configure.world.buttons.newworld"));
          } else {
             this.resetWorldButton.setMessage(Component.translatable("mco.configure.world.buttons.resetworld"));
@@ -100,55 +100,56 @@ class RealmsWorldsTab extends GridLayoutTab implements RealmsConfigurationTab {
 
       this.backupButton.active = !this.isMinigame();
 
-      for(RealmsWorldSlotButton var3 : this.slotButtonList) {
-         RealmsWorldSlotButton.State var4 = var3.setServerData(var1);
-         if (var4.activeSlot) {
-            var3.setSize(80, 80);
+      for(RealmsWorldSlotButton realmsWorldSlotButton : this.slotButtonList) {
+         RealmsWorldSlotButton.State state = realmsWorldSlotButton.setServerData(serverData);
+         if (state.activeSlot) {
+            realmsWorldSlotButton.setSize(80, 80);
          } else {
-            var3.setSize(50, 50);
+            realmsWorldSlotButton.setSize(50, 50);
          }
       }
 
+      ((RealmsWorldSlotButton)this.slotButtonList.get(serverData.activeSlot - 1)).updateSlotState(serverData);
    }
 
-   private RealmsWorldSlotButton createSlotButton(int var1) {
-      return new RealmsWorldSlotButton(0, 0, 80, 80, var1, this.serverData, (var2) -> {
-         RealmsWorldSlotButton.State var3 = ((RealmsWorldSlotButton)var2).getState();
-         switch (var3.action) {
+   private RealmsWorldSlotButton createSlotButton(final int i) {
+      return new RealmsWorldSlotButton(0, 0, 80, 80, i, this.serverData, (button) -> {
+         RealmsWorldSlotButton.State state = ((RealmsWorldSlotButton)button).getState();
+         switch (state.action) {
             case SWITCH_SLOT:
-               if (var3.minigame) {
+               if (state.minigame) {
                   this.switchToMinigame();
-               } else if (var3.empty) {
-                  this.switchToEmptySlot(var1, this.serverData);
+               } else if (state.empty) {
+                  this.switchToEmptySlot(i, this.serverData);
                } else {
-                  this.switchToFullSlot(var1, this.serverData);
+                  this.switchToFullSlot(i, this.serverData);
                }
             case NOTHING:
                return;
             default:
-               throw new IllegalStateException("Unknown action " + String.valueOf(var3.action));
+               throw new IllegalStateException("Unknown action " + String.valueOf(state.action));
          }
       });
    }
 
    private void switchToMinigame() {
-      RealmsSelectWorldTemplateScreen var1 = new RealmsSelectWorldTemplateScreen(Component.translatable("mco.template.title.minigame"), this::templateSelectionCallback, RealmsServer.WorldType.MINIGAME, (WorldTemplatePaginatedList)null, List.of(Component.translatable("mco.minigame.world.info.line1").withColor(-4539718), Component.translatable("mco.minigame.world.info.line2").withColor(-4539718)));
-      this.minecraft.setScreen(var1);
+      RealmsSelectWorldTemplateScreen screen = new RealmsSelectWorldTemplateScreen(Component.translatable("mco.template.title.minigame"), this::templateSelectionCallback, RealmsServer.WorldType.MINIGAME, (WorldTemplatePaginatedList)null, List.of(Component.translatable("mco.minigame.world.info.line1").withColor(-4539718), Component.translatable("mco.minigame.world.info.line2").withColor(-4539718)));
+      this.minecraft.setScreen(screen);
    }
 
-   private void switchToFullSlot(int var1, RealmsServer var2) {
-      this.minecraft.setScreen(RealmsPopups.infoPopupScreen(this.configurationScreen, Component.translatable("mco.configure.world.slot.switch.question.line1"), (var3) -> {
-         RealmsConfigureWorldScreen var4 = this.configurationScreen.getNewScreen();
+   private void switchToFullSlot(final int selectedSlot, final RealmsServer serverData) {
+      this.minecraft.setScreen(RealmsPopups.infoPopupScreen(this.configurationScreen, Component.translatable("mco.configure.world.slot.switch.question.line1"), (popup) -> {
+         RealmsConfigureWorldScreen newScreen = this.configurationScreen.getNewScreen();
          this.configurationScreen.stateChanged();
-         this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(var4, new LongRunningTask[]{new SwitchSlotTask(var2.id, var1, () -> this.minecraft.execute(() -> this.minecraft.setScreen(var4)))}));
+         this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(newScreen, new LongRunningTask[]{new SwitchSlotTask(serverData.id, selectedSlot, () -> this.minecraft.execute(() -> this.minecraft.setScreen(newScreen)))}));
       }));
    }
 
-   private void switchToEmptySlot(int var1, RealmsServer var2) {
-      this.minecraft.setScreen(RealmsPopups.infoPopupScreen(this.configurationScreen, Component.translatable("mco.configure.world.slot.switch.question.line1"), (var3) -> {
+   private void switchToEmptySlot(final int selectedSlot, final RealmsServer serverData) {
+      this.minecraft.setScreen(RealmsPopups.infoPopupScreen(this.configurationScreen, Component.translatable("mco.configure.world.slot.switch.question.line1"), (popups) -> {
          this.configurationScreen.stateChanged();
-         RealmsResetWorldScreen var4 = RealmsResetWorldScreen.forEmptySlot(this.configurationScreen, var1, var2, () -> this.minecraft.execute(() -> this.minecraft.setScreen(this.configurationScreen.getNewScreen())));
-         this.minecraft.setScreen(var4);
+         RealmsResetWorldScreen resetWorldScreen = RealmsResetWorldScreen.forEmptySlot(this.configurationScreen, selectedSlot, serverData, () -> this.minecraft.execute(() -> this.minecraft.setScreen(this.configurationScreen.getNewScreen())));
+         this.minecraft.setScreen(resetWorldScreen);
       }));
    }
 }

@@ -7,10 +7,8 @@ public record ColumnPos(int x, int z) {
    private static final long COORD_BITS = 32L;
    private static final long COORD_MASK = 4294967295L;
 
-   public ColumnPos(int var1, int var2) {
+   public ColumnPos {
       super();
-      this.x = var1;
-      this.z = var2;
    }
 
    public ChunkPos toChunkPos() {
@@ -21,16 +19,16 @@ public record ColumnPos(int x, int z) {
       return asLong(this.x, this.z);
    }
 
-   public static long asLong(int var0, int var1) {
-      return (long)var0 & 4294967295L | ((long)var1 & 4294967295L) << 32;
+   public static long asLong(final int x, final int z) {
+      return (long)x & 4294967295L | ((long)z & 4294967295L) << 32;
    }
 
-   public static int getX(long var0) {
-      return (int)(var0 & 4294967295L);
+   public static int getX(final long pos) {
+      return (int)(pos & 4294967295L);
    }
 
-   public static int getZ(long var0) {
-      return (int)(var0 >>> 32 & 4294967295L);
+   public static int getZ(final long pos) {
+      return (int)(pos >>> 32 & 4294967295L);
    }
 
    public String toString() {

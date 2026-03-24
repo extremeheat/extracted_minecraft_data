@@ -50,38 +50,38 @@ public class EnderChestBlock extends AbstractChestBlock<EnderChestBlockEntity> i
       return CODEC;
    }
 
-   protected EnderChestBlock(BlockBehaviour.Properties var1) {
-      super(var1, () -> BlockEntityType.ENDER_CHEST);
+   protected EnderChestBlock(final BlockBehaviour.Properties properties) {
+      super(properties, () -> BlockEntityType.ENDER_CHEST);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(WATERLOGGED, false));
    }
 
-   public DoubleBlockCombiner.NeighborCombineResult<? extends ChestBlockEntity> combine(BlockState var1, Level var2, BlockPos var3, boolean var4) {
+   public DoubleBlockCombiner.NeighborCombineResult<? extends ChestBlockEntity> combine(final BlockState state, final Level level, final BlockPos pos, final boolean ignoreBeingBlocked) {
       return DoubleBlockCombiner.Combiner::acceptNone;
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return SHAPE;
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      FluidState var2 = var1.getLevel().getFluidState(var1.getClickedPos());
-      return (BlockState)((BlockState)this.defaultBlockState().setValue(FACING, var1.getHorizontalDirection().getOpposite())).setValue(WATERLOGGED, var2.getType() == Fluids.WATER);
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      FluidState replacedFluidState = context.getLevel().getFluidState(context.getClickedPos());
+      return (BlockState)((BlockState)this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite())).setValue(WATERLOGGED, replacedFluidState.is(Fluids.WATER));
    }
 
-   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      PlayerEnderChestContainer var6 = var4.getEnderChestInventory();
-      BlockEntity var7 = var2.getBlockEntity(var3);
-      if (var6 != null && var7 instanceof EnderChestBlockEntity var8) {
-         BlockPos var9 = var3.above();
-         if (var2.getBlockState(var9).isRedstoneConductor(var2, var9)) {
+   protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
+      PlayerEnderChestContainer container = player.getEnderChestInventory();
+      BlockEntity blockEntity = level.getBlockEntity(pos);
+      if (container != null && blockEntity instanceof EnderChestBlockEntity enderChest) {
+         BlockPos above = pos.above();
+         if (level.getBlockState(above).isRedstoneConductor(level, above)) {
             return InteractionResult.SUCCESS;
          } else {
-            if (var2 instanceof ServerLevel) {
-               ServerLevel var10 = (ServerLevel)var2;
-               var6.setActiveChest(var8);
-               var4.openMenu(new SimpleMenuProvider((var1x, var2x, var3x) -> ChestMenu.threeRows(var1x, var2x, var6), CONTAINER_TITLE));
-               var4.awardStat(Stats.OPEN_ENDERCHEST);
-               PiglinAi.angerNearbyPiglins(var10, var4, true);
+            if (level instanceof ServerLevel) {
+               ServerLevel serverLevel = (ServerLevel)level;
+               container.setActiveChest(enderChest);
+               player.openMenu(new SimpleMenuProvider((containerId, inventory, p) -> ChestMenu.threeRows(containerId, inventory, container), CONTAINER_TITLE));
+               player.awardStat(Stats.OPEN_ENDERCHEST);
+               PiglinAi.angerNearbyPiglins(serverLevel, player, true);
             }
 
             return InteractionResult.SUCCESS;
@@ -91,61 +91,61 @@ public class EnderChestBlock extends AbstractChestBlock<EnderChestBlockEntity> i
       }
    }
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new EnderChestBlockEntity(var1, var2);
+   public BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      return new EnderChestBlockEntity(worldPosition, blockState);
    }
 
-   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return var1.isClientSide() ? createTickerHelper(var3, BlockEntityType.ENDER_CHEST, EnderChestBlockEntity::lidAnimateTick) : null;
+   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(final Level level, final BlockState blockState, final BlockEntityType<T> type) {
+      return level.isClientSide() ? createTickerHelper(type, BlockEntityType.ENDER_CHEST, EnderChestBlockEntity::lidAnimateTick) : null;
    }
 
-   public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
-      for(int var5 = 0; var5 < 3; ++var5) {
-         int var6 = var4.nextInt(2) * 2 - 1;
-         int var7 = var4.nextInt(2) * 2 - 1;
-         double var8 = (double)var3.getX() + 0.5 + 0.25 * (double)var6;
-         double var10 = (double)((float)var3.getY() + var4.nextFloat());
-         double var12 = (double)var3.getZ() + 0.5 + 0.25 * (double)var7;
-         double var14 = (double)(var4.nextFloat() * (float)var6);
-         double var16 = ((double)var4.nextFloat() - 0.5) * 0.125;
-         double var18 = (double)(var4.nextFloat() * (float)var7);
-         var2.addParticle(ParticleTypes.PORTAL, var8, var10, var12, var14, var16, var18);
+   public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {
+      for(int i = 0; i < 3; ++i) {
+         int flipX = random.nextInt(2) * 2 - 1;
+         int flipZ = random.nextInt(2) * 2 - 1;
+         double x = (double)pos.getX() + 0.5 + 0.25 * (double)flipX;
+         double y = (double)((float)pos.getY() + random.nextFloat());
+         double z = (double)pos.getZ() + 0.5 + 0.25 * (double)flipZ;
+         double xa = (double)(random.nextFloat() * (float)flipX);
+         double ya = ((double)random.nextFloat() - 0.5) * 0.125;
+         double za = (double)(random.nextFloat() * (float)flipZ);
+         level.addParticle(ParticleTypes.PORTAL, x, y, z, xa, ya, za);
       }
 
    }
 
-   protected BlockState rotate(BlockState var1, Rotation var2) {
-      return (BlockState)var1.setValue(FACING, var2.rotate((Direction)var1.getValue(FACING)));
+   protected BlockState rotate(final BlockState state, final Rotation rotation) {
+      return (BlockState)state.setValue(FACING, rotation.rotate((Direction)state.getValue(FACING)));
    }
 
-   protected BlockState mirror(BlockState var1, Mirror var2) {
-      return var1.rotate(var2.getRotation((Direction)var1.getValue(FACING)));
+   protected BlockState mirror(final BlockState state, final Mirror mirror) {
+      return state.rotate(mirror.getRotation((Direction)state.getValue(FACING)));
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(FACING, WATERLOGGED);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(FACING, WATERLOGGED);
    }
 
-   protected FluidState getFluidState(BlockState var1) {
-      return (Boolean)var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
+   protected FluidState getFluidState(final BlockState state) {
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      if ((Boolean)var1.getValue(WATERLOGGED)) {
-         var3.scheduleTick(var4, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var2));
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      if ((Boolean)state.getValue(WATERLOGGED)) {
+         ticks.scheduleTick(pos, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(level));
       }
 
-      return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+      return super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
+   protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
       return false;
    }
 
-   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      BlockEntity var5 = var2.getBlockEntity(var3);
-      if (var5 instanceof EnderChestBlockEntity) {
-         ((EnderChestBlockEntity)var5).recheckOpen();
+   protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      BlockEntity blockEntity = level.getBlockEntity(pos);
+      if (blockEntity instanceof EnderChestBlockEntity) {
+         ((EnderChestBlockEntity)blockEntity).recheckOpen();
       }
 
    }

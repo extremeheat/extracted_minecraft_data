@@ -15,16 +15,16 @@ public class LegacyProtocolUtils {
       super();
    }
 
-   public static void writeLegacyString(ByteBuf var0, String var1) {
-      var0.writeShort(var1.length());
-      var0.writeCharSequence(var1, StandardCharsets.UTF_16BE);
+   public static void writeLegacyString(final ByteBuf toSend, final String str) {
+      toSend.writeShort(str.length());
+      toSend.writeCharSequence(str, StandardCharsets.UTF_16BE);
    }
 
-   public static String readLegacyString(ByteBuf var0) {
-      short var1 = var0.readShort();
-      int var2 = var1 * 2;
-      String var3 = var0.toString(var0.readerIndex(), var2, StandardCharsets.UTF_16BE);
-      var0.skipBytes(var2);
-      return var3;
+   public static String readLegacyString(final ByteBuf msg) {
+      int charCount = msg.readShort();
+      int byteCount = charCount * 2;
+      String str = msg.toString(msg.readerIndex(), byteCount, StandardCharsets.UTF_16BE);
+      msg.skipBytes(byteCount);
+      return str;
    }
 }

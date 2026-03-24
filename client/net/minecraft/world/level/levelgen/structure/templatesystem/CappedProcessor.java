@@ -10,55 +10,56 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
 import net.minecraft.util.valueproviders.IntProvider;
+import net.minecraft.util.valueproviders.IntProviders;
 import net.minecraft.world.level.ServerLevelAccessor;
 
 public class CappedProcessor extends StructureProcessor {
-   public static final MapCodec<CappedProcessor> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(StructureProcessorType.SINGLE_CODEC.fieldOf("delegate").forGetter((var0x) -> var0x.delegate), IntProvider.POSITIVE_CODEC.fieldOf("limit").forGetter((var0x) -> var0x.limit)).apply(var0, CappedProcessor::new));
+   public static final MapCodec<CappedProcessor> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(StructureProcessorType.SINGLE_CODEC.fieldOf("delegate").forGetter((c) -> c.delegate), IntProviders.POSITIVE_CODEC.fieldOf("limit").forGetter((c) -> c.limit)).apply(i, CappedProcessor::new));
    private final StructureProcessor delegate;
    private final IntProvider limit;
 
-   public CappedProcessor(StructureProcessor var1, IntProvider var2) {
+   public CappedProcessor(final StructureProcessor delegate, final IntProvider limit) {
       super();
-      this.delegate = var1;
-      this.limit = var2;
+      this.delegate = delegate;
+      this.limit = limit;
    }
 
    protected StructureProcessorType<?> getType() {
       return StructureProcessorType.CAPPED;
    }
 
-   public final List<StructureTemplate.StructureBlockInfo> finalizeProcessing(ServerLevelAccessor var1, BlockPos var2, BlockPos var3, List<StructureTemplate.StructureBlockInfo> var4, List<StructureTemplate.StructureBlockInfo> var5, StructurePlaceSettings var6) {
-      if (this.limit.getMaxValue() != 0 && !var5.isEmpty()) {
-         if (var4.size() != var5.size()) {
-            int var10000 = var4.size();
-            Util.logAndPauseIfInIde("Original block info list not in sync with processed list, skipping processing. Original size: " + var10000 + ", Processed size: " + var5.size());
-            return var5;
+   public final List<StructureTemplate.StructureBlockInfo> finalizeProcessing(final ServerLevelAccessor level, final BlockPos position, final BlockPos referencePos, final List<StructureTemplate.StructureBlockInfo> originalBlockInfoList, final List<StructureTemplate.StructureBlockInfo> processedBlockInfoList, final StructurePlaceSettings settings) {
+      if (this.limit.maxInclusive() != 0 && !processedBlockInfoList.isEmpty()) {
+         if (originalBlockInfoList.size() != processedBlockInfoList.size()) {
+            int var10000 = originalBlockInfoList.size();
+            Util.logAndPauseIfInIde("Original block info list not in sync with processed list, skipping processing. Original size: " + var10000 + ", Processed size: " + processedBlockInfoList.size());
+            return processedBlockInfoList;
          } else {
-            RandomSource var7 = RandomSource.create(var1.getLevel().getSeed()).forkPositional().at(var2);
-            int var8 = Math.min(this.limit.sample(var7), var5.size());
-            if (var8 < 1) {
-               return var5;
+            RandomSource random = RandomSource.createThreadLocalInstance(level.getLevel().getSeed()).forkPositional().at(position);
+            int maxToReplace = Math.min(this.limit.sample(random), processedBlockInfoList.size());
+            if (maxToReplace < 1) {
+               return processedBlockInfoList;
             } else {
-               IntArrayList var9 = Util.toShuffledList(IntStream.range(0, var5.size()), var7);
-               IntIterator var10 = var9.intIterator();
-               int var11 = 0;
+               IntArrayList indices = Util.toShuffledList(IntStream.range(0, processedBlockInfoList.size()), random);
+               IntIterator indexIterator = indices.intIterator();
+               int replaced = 0;
 
-               while(var10.hasNext() && var11 < var8) {
-                  int var12 = var10.nextInt();
-                  StructureTemplate.StructureBlockInfo var13 = (StructureTemplate.StructureBlockInfo)var4.get(var12);
-                  StructureTemplate.StructureBlockInfo var14 = (StructureTemplate.StructureBlockInfo)var5.get(var12);
-                  StructureTemplate.StructureBlockInfo var15 = this.delegate.processBlock(var1, var2, var3, var13, var14, var6);
-                  if (var15 != null && !var14.equals(var15)) {
-                     ++var11;
-                     var5.set(var12, var15);
+               while(indexIterator.hasNext() && replaced < maxToReplace) {
+                  int index = indexIterator.nextInt();
+                  StructureTemplate.StructureBlockInfo originalBlockInfo = (StructureTemplate.StructureBlockInfo)originalBlockInfoList.get(index);
+                  StructureTemplate.StructureBlockInfo processedBlockInfo = (StructureTemplate.StructureBlockInfo)processedBlockInfoList.get(index);
+                  StructureTemplate.StructureBlockInfo maybeAltered = this.delegate.processBlock(level, position, referencePos, originalBlockInfo, processedBlockInfo, settings);
+                  if (maybeAltered != null && !processedBlockInfo.equals(maybeAltered)) {
+                     ++replaced;
+                     processedBlockInfoList.set(index, maybeAltered);
                   }
                }
 
-               return var5;
+               return processedBlockInfoList;
             }
          }
       } else {
-         return var5;
+         return processedBlockInfoList;
       }
    }
 }

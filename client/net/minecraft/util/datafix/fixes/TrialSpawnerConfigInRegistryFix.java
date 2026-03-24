@@ -21,93 +21,93 @@ import org.slf4j.Logger;
 public class TrialSpawnerConfigInRegistryFix extends NamedEntityFix {
    private static final Logger LOGGER = LogUtils.getLogger();
 
-   public TrialSpawnerConfigInRegistryFix(Schema var1) {
-      super(var1, false, "TrialSpawnerConfigInRegistryFix", References.BLOCK_ENTITY, "minecraft:trial_spawner");
+   public TrialSpawnerConfigInRegistryFix(final Schema outputSchema) {
+      super(outputSchema, false, "TrialSpawnerConfigInRegistryFix", References.BLOCK_ENTITY, "minecraft:trial_spawner");
    }
 
-   public Dynamic<?> fixTag(Dynamic<Tag> var1) {
-      Optional var2 = var1.get("normal_config").result();
-      if (var2.isEmpty()) {
-         return var1;
+   public Dynamic<?> fixTag(final Dynamic<Tag> input) {
+      Optional<Dynamic<Tag>> normalConfig = input.get("normal_config").result();
+      if (normalConfig.isEmpty()) {
+         return input;
       } else {
-         Optional var3 = var1.get("ominous_config").result();
-         if (var3.isEmpty()) {
-            return var1;
+         Optional<Dynamic<Tag>> ominousConfig = input.get("ominous_config").result();
+         if (ominousConfig.isEmpty()) {
+            return input;
          } else {
-            Identifier var4 = (Identifier)TrialSpawnerConfigInRegistryFix.VanillaTrialChambers.CONFIGS_TO_KEY.get(Pair.of((Dynamic)var2.get(), (Dynamic)var3.get()));
-            return var4 == null ? var1 : var1.set("normal_config", var1.createString(var4.withSuffix("/normal").toString())).set("ominous_config", var1.createString(var4.withSuffix("/ominous").toString()));
+            Identifier registryLocation = (Identifier)TrialSpawnerConfigInRegistryFix.VanillaTrialChambers.CONFIGS_TO_KEY.get(Pair.of((Dynamic)normalConfig.get(), (Dynamic)ominousConfig.get()));
+            return registryLocation == null ? input : input.set("normal_config", input.createString(registryLocation.withSuffix("/normal").toString())).set("ominous_config", input.createString(registryLocation.withSuffix("/ominous").toString()));
          }
       }
    }
 
-   protected Typed<?> fix(Typed<?> var1) {
-      return var1.update(DSL.remainderFinder(), (var1x) -> {
-         DynamicOps var2 = var1x.getOps();
-         Dynamic var3 = this.fixTag(var1x.convert(NbtOps.INSTANCE));
-         return var3.convert(var2);
+   protected Typed<?> fix(final Typed<?> entity) {
+      return entity.update(DSL.remainderFinder(), (input) -> {
+         DynamicOps<?> inputType = input.getOps();
+         Dynamic<?> result = this.fixTag(input.convert(NbtOps.INSTANCE));
+         return result.convert(inputType);
       });
    }
 
-   static final class VanillaTrialChambers {
+   private static final class VanillaTrialChambers {
       public static final Map<Pair<Dynamic<Tag>, Dynamic<Tag>>, Identifier> CONFIGS_TO_KEY = new HashMap();
 
       private VanillaTrialChambers() {
          super();
       }
 
-      private static void register(Identifier var0, String var1, String var2) {
+      private static void register(final Identifier location, final String normalNbt, final String ominousNbt) {
          try {
-            CompoundTag var3 = parse(var1);
-            CompoundTag var4 = parse(var2);
-            CompoundTag var5 = var3.copy().merge(var4);
-            CompoundTag var6 = removeDefaults(var5.copy());
-            Dynamic var7 = asDynamic(var3);
-            CONFIGS_TO_KEY.put(Pair.of(var7, asDynamic(var4)), var0);
-            CONFIGS_TO_KEY.put(Pair.of(var7, asDynamic(var5)), var0);
-            CONFIGS_TO_KEY.put(Pair.of(var7, asDynamic(var6)), var0);
-         } catch (RuntimeException var8) {
-            throw new IllegalStateException("Failed to parse NBT for " + String.valueOf(var0), var8);
+            CompoundTag normalTag = parse(normalNbt);
+            CompoundTag ominousTag = parse(ominousNbt);
+            CompoundTag ominousMergedTag = normalTag.copy().merge(ominousTag);
+            CompoundTag ominousMergedTagDefaultsOmitted = removeDefaults(ominousMergedTag.copy());
+            Dynamic<Tag> dynamicNormal = asDynamic(normalTag);
+            CONFIGS_TO_KEY.put(Pair.of(dynamicNormal, asDynamic(ominousTag)), location);
+            CONFIGS_TO_KEY.put(Pair.of(dynamicNormal, asDynamic(ominousMergedTag)), location);
+            CONFIGS_TO_KEY.put(Pair.of(dynamicNormal, asDynamic(ominousMergedTagDefaultsOmitted)), location);
+         } catch (RuntimeException e) {
+            throw new IllegalStateException("Failed to parse NBT for " + String.valueOf(location), e);
          }
       }
 
-      private static Dynamic<Tag> asDynamic(CompoundTag var0) {
-         return new Dynamic(NbtOps.INSTANCE, var0);
+      private static Dynamic<Tag> asDynamic(final CompoundTag normalTag) {
+         return new Dynamic(NbtOps.INSTANCE, normalTag);
       }
 
-      private static CompoundTag parse(String var0) {
+      private static CompoundTag parse(final String nbt) {
          try {
-            return TagParser.parseCompoundFully(var0);
-         } catch (CommandSyntaxException var2) {
-            throw new IllegalArgumentException("Failed to parse Trial Spawner NBT config: " + var0, var2);
+            return TagParser.parseCompoundFully(nbt);
+         } catch (CommandSyntaxException e) {
+            throw new IllegalArgumentException("Failed to parse Trial Spawner NBT config: " + nbt, e);
          }
       }
 
-      private static CompoundTag removeDefaults(CompoundTag var0) {
-         if (var0.getIntOr("spawn_range", 0) == 4) {
-            var0.remove("spawn_range");
+      private static CompoundTag removeDefaults(final CompoundTag tag) {
+         if (tag.getIntOr("spawn_range", 0) == 4) {
+            tag.remove("spawn_range");
          }
 
-         if (var0.getFloatOr("total_mobs", 0.0F) == 6.0F) {
-            var0.remove("total_mobs");
+         if (tag.getFloatOr("total_mobs", 0.0F) == 6.0F) {
+            tag.remove("total_mobs");
          }
 
-         if (var0.getFloatOr("simultaneous_mobs", 0.0F) == 2.0F) {
-            var0.remove("simultaneous_mobs");
+         if (tag.getFloatOr("simultaneous_mobs", 0.0F) == 2.0F) {
+            tag.remove("simultaneous_mobs");
          }
 
-         if (var0.getFloatOr("total_mobs_added_per_player", 0.0F) == 2.0F) {
-            var0.remove("total_mobs_added_per_player");
+         if (tag.getFloatOr("total_mobs_added_per_player", 0.0F) == 2.0F) {
+            tag.remove("total_mobs_added_per_player");
          }
 
-         if (var0.getFloatOr("simultaneous_mobs_added_per_player", 0.0F) == 1.0F) {
-            var0.remove("simultaneous_mobs_added_per_player");
+         if (tag.getFloatOr("simultaneous_mobs_added_per_player", 0.0F) == 1.0F) {
+            tag.remove("simultaneous_mobs_added_per_player");
          }
 
-         if (var0.getIntOr("ticks_between_spawn", 0) == 40) {
-            var0.remove("ticks_between_spawn");
+         if (tag.getIntOr("ticks_between_spawn", 0) == 40) {
+            tag.remove("ticks_between_spawn");
          }
 
-         return var0;
+         return tag;
       }
 
       static {

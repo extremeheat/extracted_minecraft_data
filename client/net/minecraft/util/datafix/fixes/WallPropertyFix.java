@@ -14,36 +14,36 @@ import java.util.Set;
 public class WallPropertyFix extends DataFix {
    private static final Set<String> WALL_BLOCKS = ImmutableSet.of("minecraft:andesite_wall", "minecraft:brick_wall", "minecraft:cobblestone_wall", "minecraft:diorite_wall", "minecraft:end_stone_brick_wall", "minecraft:granite_wall", new String[]{"minecraft:mossy_cobblestone_wall", "minecraft:mossy_stone_brick_wall", "minecraft:nether_brick_wall", "minecraft:prismarine_wall", "minecraft:red_nether_brick_wall", "minecraft:red_sandstone_wall", "minecraft:sandstone_wall", "minecraft:stone_brick_wall"});
 
-   public WallPropertyFix(Schema var1, boolean var2) {
-      super(var1, var2);
+   public WallPropertyFix(final Schema outputSchema, final boolean changesType) {
+      super(outputSchema, changesType);
    }
 
    public TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped("WallPropertyFix", this.getInputSchema().getType(References.BLOCK_STATE), (var0) -> var0.update(DSL.remainderFinder(), WallPropertyFix::upgradeBlockStateTag));
+      return this.fixTypeEverywhereTyped("WallPropertyFix", this.getInputSchema().getType(References.BLOCK_STATE), (input) -> input.update(DSL.remainderFinder(), WallPropertyFix::upgradeBlockStateTag));
    }
 
-   private static String mapProperty(String var0) {
-      return "true".equals(var0) ? "low" : "none";
+   private static String mapProperty(final String value) {
+      return "true".equals(value) ? "low" : "none";
    }
 
-   private static <T> Dynamic<T> fixWallProperty(Dynamic<T> var0, String var1) {
-      return var0.update(var1, (var0x) -> {
-         Optional var10000 = var0x.asString().result().map(WallPropertyFix::mapProperty);
-         Objects.requireNonNull(var0x);
-         return (Dynamic)DataFixUtils.orElse(var10000.map(var0x::createString), var0x);
+   private static <T> Dynamic<T> fixWallProperty(final Dynamic<T> state, final String property) {
+      return state.update(property, (value) -> {
+         Optional var10000 = value.asString().result().map(WallPropertyFix::mapProperty);
+         Objects.requireNonNull(value);
+         return (Dynamic)DataFixUtils.orElse(var10000.map(value::createString), value);
       });
    }
 
-   private static <T> Dynamic<T> upgradeBlockStateTag(Dynamic<T> var0) {
-      Optional var10000 = var0.get("Name").asString().result();
+   private static <T> Dynamic<T> upgradeBlockStateTag(final Dynamic<T> state) {
+      Optional var10000 = state.get("Name").asString().result();
       Set var10001 = WALL_BLOCKS;
       Objects.requireNonNull(var10001);
-      boolean var1 = var10000.filter(var10001::contains).isPresent();
-      return !var1 ? var0 : var0.update("Properties", (var0x) -> {
-         Dynamic var1 = fixWallProperty(var0x, "east");
-         var1 = fixWallProperty(var1, "west");
-         var1 = fixWallProperty(var1, "north");
-         return fixWallProperty(var1, "south");
+      boolean isWall = var10000.filter(var10001::contains).isPresent();
+      return !isWall ? state : state.update("Properties", (properties) -> {
+         Dynamic<?> newState = fixWallProperty(properties, "east");
+         newState = fixWallProperty(newState, "west");
+         newState = fixWallProperty(newState, "north");
+         return fixWallProperty(newState, "south");
       });
    }
 }

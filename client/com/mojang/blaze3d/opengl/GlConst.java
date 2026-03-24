@@ -1,8 +1,7 @@
 package com.mojang.blaze3d.opengl;
 
-import com.mojang.blaze3d.DontObfuscate;
 import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.platform.DepthTestFunction;
+import com.mojang.blaze3d.platform.CompareOp;
 import com.mojang.blaze3d.platform.DestFactor;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.PolygonMode;
@@ -13,7 +12,6 @@ import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
 
-@DontObfuscate
 public class GlConst {
    public static final int GL_READ_FRAMEBUFFER = 36008;
    public static final int GL_DRAW_FRAMEBUFFER = 36009;
@@ -144,22 +142,26 @@ public class GlConst {
       super();
    }
 
-   public static int toGl(DepthTestFunction var0) {
+   public static int toGl(final CompareOp compareOp) {
       short var10000;
-      switch (var0) {
-         case NO_DEPTH_TEST -> var10000 = 519;
-         case EQUAL_DEPTH_TEST -> var10000 = 514;
-         case LESS_DEPTH_TEST -> var10000 = 513;
-         case GREATER_DEPTH_TEST -> var10000 = 516;
-         default -> var10000 = 515;
+      switch (compareOp) {
+         case ALWAYS_PASS -> var10000 = 519;
+         case LESS_THAN -> var10000 = 513;
+         case LESS_THAN_OR_EQUAL -> var10000 = 515;
+         case EQUAL -> var10000 = 514;
+         case NOT_EQUAL -> var10000 = 517;
+         case GREATER_THAN_OR_EQUAL -> var10000 = 518;
+         case GREATER_THAN -> var10000 = 516;
+         case NEVER_PASS -> var10000 = 512;
+         default -> throw new MatchException((String)null, (Throwable)null);
       }
 
       return var10000;
    }
 
-   public static int toGl(PolygonMode var0) {
+   public static int toGl(final PolygonMode polygonMode) {
       short var10000;
-      switch (var0) {
+      switch (polygonMode) {
          case WIREFRAME -> var10000 = 6913;
          default -> var10000 = 6914;
       }
@@ -167,9 +169,9 @@ public class GlConst {
       return var10000;
    }
 
-   public static int toGl(DestFactor var0) {
+   public static int toGl(final DestFactor destFactor) {
       char var10000;
-      switch (var0) {
+      switch (destFactor) {
          case CONSTANT_ALPHA -> var10000 = '\u8003';
          case CONSTANT_COLOR -> var10000 = '\u8001';
          case DST_ALPHA -> var10000 = 772;
@@ -190,9 +192,9 @@ public class GlConst {
       return var10000;
    }
 
-   public static int toGl(SourceFactor var0) {
+   public static int toGl(final SourceFactor sourceFactor) {
       char var10000;
-      switch (var0) {
+      switch (sourceFactor) {
          case CONSTANT_ALPHA -> var10000 = '\u8003';
          case CONSTANT_COLOR -> var10000 = '\u8001';
          case DST_ALPHA -> var10000 = 772;
@@ -214,9 +216,9 @@ public class GlConst {
       return var10000;
    }
 
-   public static int toGl(VertexFormat.Mode var0) {
+   public static int toGl(final VertexFormat.Mode mode) {
       byte var10000;
-      switch (var0) {
+      switch (mode) {
          case LINES -> var10000 = 4;
          case DEBUG_LINES -> var10000 = 1;
          case DEBUG_LINE_STRIP -> var10000 = 3;
@@ -231,9 +233,9 @@ public class GlConst {
       return var10000;
    }
 
-   public static int toGl(VertexFormat.IndexType var0) {
+   public static int toGl(final VertexFormat.IndexType indexType) {
       short var10000;
-      switch (var0) {
+      switch (indexType) {
          case SHORT -> var10000 = 5123;
          case INT -> var10000 = 5125;
          default -> throw new MatchException((String)null, (Throwable)null);
@@ -242,9 +244,9 @@ public class GlConst {
       return var10000;
    }
 
-   public static int toGl(NativeImage.Format var0) {
+   public static int toGl(final NativeImage.Format format) {
       char var10000;
-      switch (var0) {
+      switch (format) {
          case RGBA -> var10000 = 6408;
          case RGB -> var10000 = 6407;
          case LUMINANCE_ALPHA -> var10000 = '\u8227';
@@ -255,9 +257,9 @@ public class GlConst {
       return var10000;
    }
 
-   public static int toGl(AddressMode var0) {
+   public static int toGl(final AddressMode addressMode) {
       char var10000;
-      switch (var0) {
+      switch (addressMode) {
          case REPEAT -> var10000 = 10497;
          case CLAMP_TO_EDGE -> var10000 = '\u812f';
          default -> throw new MatchException((String)null, (Throwable)null);
@@ -266,9 +268,9 @@ public class GlConst {
       return var10000;
    }
 
-   public static int toGl(VertexFormatElement.Type var0) {
+   public static int toGl(final VertexFormatElement.Type type) {
       short var10000;
-      switch (var0) {
+      switch (type) {
          case FLOAT -> var10000 = 5126;
          case UBYTE -> var10000 = 5121;
          case BYTE -> var10000 = 5120;
@@ -282,9 +284,9 @@ public class GlConst {
       return var10000;
    }
 
-   public static int toGlInternalId(TextureFormat var0) {
+   public static int toGlInternalId(final TextureFormat textureFormat) {
       char var10000;
-      switch (var0) {
+      switch (textureFormat) {
          case RGBA8 -> var10000 = '\u8058';
          case RED8 -> var10000 = '\u8229';
          case RED8I -> var10000 = '\u8231';
@@ -295,9 +297,9 @@ public class GlConst {
       return var10000;
    }
 
-   public static int toGlExternalId(TextureFormat var0) {
+   public static int toGlExternalId(final TextureFormat textureFormat) {
       short var10000;
-      switch (var0) {
+      switch (textureFormat) {
          case RGBA8 -> var10000 = 6408;
          case RED8 -> var10000 = 6403;
          case RED8I -> var10000 = 6403;
@@ -308,9 +310,9 @@ public class GlConst {
       return var10000;
    }
 
-   public static int toGlType(TextureFormat var0) {
+   public static int toGlType(final TextureFormat textureFormat) {
       short var10000;
-      switch (var0) {
+      switch (textureFormat) {
          case RGBA8 -> var10000 = 5121;
          case RED8 -> var10000 = 5121;
          case RED8I -> var10000 = 5121;
@@ -321,9 +323,9 @@ public class GlConst {
       return var10000;
    }
 
-   public static int toGl(ShaderType var0) {
+   public static int toGl(final ShaderType type) {
       char var10000;
-      switch (var0) {
+      switch (type) {
          case VERTEX -> var10000 = '\u8b31';
          case FRAGMENT -> var10000 = '\u8b30';
          default -> throw new MatchException((String)null, (Throwable)null);
@@ -332,33 +334,33 @@ public class GlConst {
       return var10000;
    }
 
-   public static int bufferUsageToGlFlag(@GpuBuffer.Usage int var0) {
-      int var1 = 0;
-      if ((var0 & 1) != 0) {
-         var1 |= 65;
+   public static int bufferUsageToGlFlag(final @GpuBuffer.Usage int usage) {
+      int result = 0;
+      if ((usage & 1) != 0) {
+         result |= 65;
       }
 
-      if ((var0 & 2) != 0) {
-         var1 |= 66;
+      if ((usage & 2) != 0) {
+         result |= 66;
       }
 
-      if ((var0 & 8) != 0) {
-         var1 |= 256;
+      if ((usage & 8) != 0) {
+         result |= 256;
       }
 
-      if ((var0 & 4) != 0) {
-         var1 |= 512;
+      if ((usage & 4) != 0) {
+         result |= 512;
       }
 
-      return var1;
+      return result;
    }
 
-   public static int bufferUsageToGlEnum(@GpuBuffer.Usage int var0) {
-      boolean var1 = (var0 & 4) != 0;
-      if ((var0 & 2) != 0) {
-         return var1 ? '\u88e0' : '\u88e4';
-      } else if ((var0 & 1) != 0) {
-         return var1 ? '\u88e1' : '\u88e5';
+   public static int bufferUsageToGlEnum(final @GpuBuffer.Usage int usage) {
+      boolean clientStorage = (usage & 4) != 0;
+      if ((usage & 2) != 0) {
+         return clientStorage ? '\u88e0' : '\u88e4';
+      } else if ((usage & 1) != 0) {
+         return clientStorage ? '\u88e1' : '\u88e5';
       } else {
          return 35044;
       }

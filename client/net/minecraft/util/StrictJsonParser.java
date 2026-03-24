@@ -17,24 +17,24 @@ public class StrictJsonParser {
       super();
    }
 
-   public static JsonElement parse(Reader var0) throws JsonIOException, JsonSyntaxException {
+   public static JsonElement parse(final Reader reader) throws JsonIOException, JsonSyntaxException {
       try {
-         JsonReader var1 = new JsonReader(var0);
-         var1.setStrictness(Strictness.STRICT);
-         JsonElement var2 = JsonParser.parseReader(var1);
-         if (!var2.isJsonNull() && var1.peek() != JsonToken.END_DOCUMENT) {
+         JsonReader jsonReader = new JsonReader(reader);
+         jsonReader.setStrictness(Strictness.STRICT);
+         JsonElement element = JsonParser.parseReader(jsonReader);
+         if (!element.isJsonNull() && jsonReader.peek() != JsonToken.END_DOCUMENT) {
             throw new JsonSyntaxException("Did not consume the entire document.");
          } else {
-            return var2;
+            return element;
          }
-      } catch (NumberFormatException | MalformedJsonException var3) {
-         throw new JsonSyntaxException(var3);
-      } catch (IOException var4) {
-         throw new JsonIOException(var4);
+      } catch (NumberFormatException | MalformedJsonException e) {
+         throw new JsonSyntaxException(e);
+      } catch (IOException e) {
+         throw new JsonIOException(e);
       }
    }
 
-   public static JsonElement parse(String var0) throws JsonSyntaxException {
-      return parse((Reader)(new StringReader(var0)));
+   public static JsonElement parse(final String json) throws JsonSyntaxException {
+      return parse((Reader)(new StringReader(json)));
    }
 }

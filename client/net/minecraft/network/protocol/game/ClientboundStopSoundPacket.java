@@ -15,44 +15,44 @@ public class ClientboundStopSoundPacket implements Packet<ClientGamePacketListen
    private final @Nullable Identifier name;
    private final @Nullable SoundSource source;
 
-   public ClientboundStopSoundPacket(@Nullable Identifier var1, @Nullable SoundSource var2) {
+   public ClientboundStopSoundPacket(final @Nullable Identifier name, final @Nullable SoundSource source) {
       super();
-      this.name = var1;
-      this.source = var2;
+      this.name = name;
+      this.source = source;
    }
 
-   private ClientboundStopSoundPacket(FriendlyByteBuf var1) {
+   private ClientboundStopSoundPacket(final FriendlyByteBuf input) {
       super();
-      byte var2 = var1.readByte();
-      if ((var2 & 1) > 0) {
-         this.source = (SoundSource)var1.readEnum(SoundSource.class);
+      int flags = input.readByte();
+      if ((flags & 1) > 0) {
+         this.source = (SoundSource)input.readEnum(SoundSource.class);
       } else {
          this.source = null;
       }
 
-      if ((var2 & 2) > 0) {
-         this.name = var1.readIdentifier();
+      if ((flags & 2) > 0) {
+         this.name = input.readIdentifier();
       } else {
          this.name = null;
       }
 
    }
 
-   private void write(FriendlyByteBuf var1) {
+   private void write(final FriendlyByteBuf output) {
       if (this.source != null) {
          if (this.name != null) {
-            var1.writeByte(3);
-            var1.writeEnum(this.source);
-            var1.writeIdentifier(this.name);
+            output.writeByte(3);
+            output.writeEnum(this.source);
+            output.writeIdentifier(this.name);
          } else {
-            var1.writeByte(1);
-            var1.writeEnum(this.source);
+            output.writeByte(1);
+            output.writeEnum(this.source);
          }
       } else if (this.name != null) {
-         var1.writeByte(2);
-         var1.writeIdentifier(this.name);
+         output.writeByte(2);
+         output.writeIdentifier(this.name);
       } else {
-         var1.writeByte(0);
+         output.writeByte(0);
       }
 
    }
@@ -61,8 +61,8 @@ public class ClientboundStopSoundPacket implements Packet<ClientGamePacketListen
       return GamePacketTypes.CLIENTBOUND_STOP_SOUND;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleStopSoundEvent(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleStopSoundEvent(this);
    }
 
    public @Nullable Identifier getName() {

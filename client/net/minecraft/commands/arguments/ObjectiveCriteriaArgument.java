@@ -8,9 +8,9 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -22,7 +22,7 @@ import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 
 public class ObjectiveCriteriaArgument implements ArgumentType<ObjectiveCriteria> {
    private static final Collection<String> EXAMPLES = Arrays.asList("foo", "foo.bar.baz", "minecraft:foo");
-   public static final DynamicCommandExceptionType ERROR_INVALID_VALUE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.criteria.invalid", var0));
+   public static final DynamicCommandExceptionType ERROR_INVALID_VALUE = new DynamicCommandExceptionType((value) -> Component.translatableEscape("argument.criteria.invalid", value));
 
    private ObjectiveCriteriaArgument() {
       super();
@@ -32,47 +32,42 @@ public class ObjectiveCriteriaArgument implements ArgumentType<ObjectiveCriteria
       return new ObjectiveCriteriaArgument();
    }
 
-   public static ObjectiveCriteria getCriteria(CommandContext<CommandSourceStack> var0, String var1) {
-      return (ObjectiveCriteria)var0.getArgument(var1, ObjectiveCriteria.class);
+   public static ObjectiveCriteria getCriteria(final CommandContext<CommandSourceStack> context, final String name) {
+      return (ObjectiveCriteria)context.getArgument(name, ObjectiveCriteria.class);
    }
 
-   public ObjectiveCriteria parse(StringReader var1) throws CommandSyntaxException {
-      int var2 = var1.getCursor();
+   public ObjectiveCriteria parse(final StringReader reader) throws CommandSyntaxException {
+      int start = reader.getCursor();
 
-      while(var1.canRead() && var1.peek() != ' ') {
-         var1.skip();
+      while(reader.canRead() && reader.peek() != ' ') {
+         reader.skip();
       }
 
-      String var3 = var1.getString().substring(var2, var1.getCursor());
-      return (ObjectiveCriteria)ObjectiveCriteria.byName(var3).orElseThrow(() -> {
-         var1.setCursor(var2);
-         return ERROR_INVALID_VALUE.createWithContext(var1, var3);
+      String id = reader.getString().substring(start, reader.getCursor());
+      return (ObjectiveCriteria)ObjectiveCriteria.byName(id).orElseThrow(() -> {
+         reader.setCursor(start);
+         return ERROR_INVALID_VALUE.createWithContext(reader, id);
       });
    }
 
-   public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      ArrayList var3 = Lists.newArrayList(ObjectiveCriteria.getCustomCriteriaNames());
+   public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
+      List<String> ids = Lists.newArrayList(ObjectiveCriteria.getCustomCriteriaNames());
 
-      for(StatType var5 : BuiltInRegistries.STAT_TYPE) {
-         for(Object var7 : var5.getRegistry()) {
-            String var8 = this.getName(var5, var7);
-            var3.add(var8);
+      for(StatType<?> type : BuiltInRegistries.STAT_TYPE) {
+         for(Object value : type.getRegistry()) {
+            String name = this.getName(type, value);
+            ids.add(name);
          }
       }
 
-      return SharedSuggestionProvider.suggest(var3, var2);
+      return SharedSuggestionProvider.suggest(ids, builder);
    }
 
-   public <T> String getName(StatType<T> var1, Object var2) {
-      return Stat.buildName(var1, var2);
+   public <T> String getName(final StatType<T> type, final Object value) {
+      return Stat.buildName(type, value);
    }
 
    public Collection<String> getExamples() {
       return EXAMPLES;
-   }
-
-   // $FF: synthetic method
-   public Object parse(final StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1);
    }
 }

@@ -24,23 +24,23 @@ public class EnchantmentNames {
       return INSTANCE;
    }
 
-   public FormattedText getRandomName(Font var1, int var2) {
-      StringBuilder var3 = new StringBuilder();
-      int var4 = this.random.nextInt(2) + 3;
+   public FormattedText getRandomName(final Font font, final int maxWidth) {
+      StringBuilder result = new StringBuilder();
+      int wordCount = this.random.nextInt(2) + 3;
 
-      for(int var5 = 0; var5 < var4; ++var5) {
-         if (var5 != 0) {
-            var3.append(" ");
+      for(int i = 0; i < wordCount; ++i) {
+         if (i != 0) {
+            result.append(" ");
          }
 
-         var3.append((String)Util.getRandom(this.words, this.random));
+         result.append((String)Util.getRandom(this.words, this.random));
       }
 
-      return var1.getSplitter().headByWidth(Component.literal(var3.toString()).withStyle(ROOT_STYLE), var2, Style.EMPTY);
+      return font.getSplitter().headByWidth(Component.literal(result.toString()).withStyle(ROOT_STYLE), maxWidth, Style.EMPTY);
    }
 
-   public void initSeed(long var1) {
-      this.random.setSeed(var1);
+   public void initSeed(final long seed) {
+      this.random.setSeed(seed);
    }
 
    static {

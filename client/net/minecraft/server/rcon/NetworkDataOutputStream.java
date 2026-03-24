@@ -9,35 +9,35 @@ public class NetworkDataOutputStream {
    private final ByteArrayOutputStream outputStream;
    private final DataOutputStream dataOutputStream;
 
-   public NetworkDataOutputStream(int var1) {
+   public NetworkDataOutputStream(final int size) {
       super();
-      this.outputStream = new ByteArrayOutputStream(var1);
+      this.outputStream = new ByteArrayOutputStream(size);
       this.dataOutputStream = new DataOutputStream(this.outputStream);
    }
 
-   public void writeBytes(byte[] var1) throws IOException {
-      this.dataOutputStream.write(var1, 0, var1.length);
+   public void writeBytes(final byte[] data) throws IOException {
+      this.dataOutputStream.write(data, 0, data.length);
    }
 
-   public void writeString(String var1) throws IOException {
-      this.dataOutputStream.write(var1.getBytes(StandardCharsets.UTF_8));
+   public void writeString(final String data) throws IOException {
+      this.dataOutputStream.write(data.getBytes(StandardCharsets.UTF_8));
       this.dataOutputStream.write(0);
    }
 
-   public void write(int var1) throws IOException {
-      this.dataOutputStream.write(var1);
+   public void write(final int data) throws IOException {
+      this.dataOutputStream.write(data);
    }
 
-   public void writeShort(short var1) throws IOException {
-      this.dataOutputStream.writeShort(Short.reverseBytes(var1));
+   public void writeShort(final short data) throws IOException {
+      this.dataOutputStream.writeShort(Short.reverseBytes(data));
    }
 
-   public void writeInt(int var1) throws IOException {
-      this.dataOutputStream.writeInt(Integer.reverseBytes(var1));
+   public void writeInt(final int data) throws IOException {
+      this.dataOutputStream.writeInt(Integer.reverseBytes(data));
    }
 
-   public void writeFloat(float var1) throws IOException {
-      this.dataOutputStream.writeInt(Integer.reverseBytes(Float.floatToIntBits(var1)));
+   public void writeFloat(final float data) throws IOException {
+      this.dataOutputStream.writeInt(Integer.reverseBytes(Float.floatToIntBits(data)));
    }
 
    public byte[] toByteArray() {

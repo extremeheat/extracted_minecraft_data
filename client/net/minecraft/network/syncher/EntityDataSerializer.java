@@ -6,19 +6,19 @@ import net.minecraft.network.codec.StreamCodec;
 public interface EntityDataSerializer<T> {
    StreamCodec<? super RegistryFriendlyByteBuf, T> codec();
 
-   default EntityDataAccessor<T> createAccessor(int var1) {
-      return new EntityDataAccessor<T>(var1, this);
+   default EntityDataAccessor<T> createAccessor(final int id) {
+      return new EntityDataAccessor<T>(id, this);
    }
 
-   T copy(T var1);
+   T copy(T value);
 
-   static <T> EntityDataSerializer<T> forValueType(StreamCodec<? super RegistryFriendlyByteBuf, T> var0) {
-      return () -> var0;
+   static <T> EntityDataSerializer<T> forValueType(final StreamCodec<? super RegistryFriendlyByteBuf, T> codec) {
+      return () -> codec;
    }
 
    public interface ForValueType<T> extends EntityDataSerializer<T> {
-      default T copy(T var1) {
-         return var1;
+      default T copy(final T value) {
+         return value;
       }
    }
 }

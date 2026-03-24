@@ -12,9 +12,9 @@ public class WakeUp {
    }
 
    public static BehaviorControl<LivingEntity> create() {
-      return BehaviorBuilder.create((Function)((var0) -> var0.point((Trigger)(var0x, var1, var2) -> {
-            if (!var1.getBrain().isActive(Activity.REST) && var1.isSleeping()) {
-               var1.stopSleeping();
+      return BehaviorBuilder.create((Function)((i) -> i.point((Trigger)(level, body, timestamp) -> {
+            if (!body.getBrain().isActive(Activity.REST) && body.isSleeping()) {
+               body.stopSleeping();
                return true;
             } else {
                return false;

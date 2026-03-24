@@ -17,29 +17,29 @@ public class WeatherCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("weather").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(((LiteralArgumentBuilder)Commands.literal("clear").executes((var0x) -> setClear((CommandSourceStack)var0x.getSource(), -1))).then(Commands.argument("duration", TimeArgument.time(1)).executes((var0x) -> setClear((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "duration")))))).then(((LiteralArgumentBuilder)Commands.literal("rain").executes((var0x) -> setRain((CommandSourceStack)var0x.getSource(), -1))).then(Commands.argument("duration", TimeArgument.time(1)).executes((var0x) -> setRain((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "duration")))))).then(((LiteralArgumentBuilder)Commands.literal("thunder").executes((var0x) -> setThunder((CommandSourceStack)var0x.getSource(), -1))).then(Commands.argument("duration", TimeArgument.time(1)).executes((var0x) -> setThunder((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "duration"))))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("weather").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(((LiteralArgumentBuilder)Commands.literal("clear").executes((c) -> setClear((CommandSourceStack)c.getSource(), -1))).then(Commands.argument("duration", TimeArgument.time(1)).executes((c) -> setClear((CommandSourceStack)c.getSource(), IntegerArgumentType.getInteger(c, "duration")))))).then(((LiteralArgumentBuilder)Commands.literal("rain").executes((c) -> setRain((CommandSourceStack)c.getSource(), -1))).then(Commands.argument("duration", TimeArgument.time(1)).executes((c) -> setRain((CommandSourceStack)c.getSource(), IntegerArgumentType.getInteger(c, "duration")))))).then(((LiteralArgumentBuilder)Commands.literal("thunder").executes((c) -> setThunder((CommandSourceStack)c.getSource(), -1))).then(Commands.argument("duration", TimeArgument.time(1)).executes((c) -> setThunder((CommandSourceStack)c.getSource(), IntegerArgumentType.getInteger(c, "duration"))))));
    }
 
-   private static int getDuration(CommandSourceStack var0, int var1, IntProvider var2) {
-      return var1 == -1 ? var2.sample(var0.getServer().overworld().getRandom()) : var1;
+   private static int getDuration(final CommandSourceStack source, final int input, final IntProvider defaultDistribution) {
+      return input == -1 ? defaultDistribution.sample(source.getLevel().getRandom()) : input;
    }
 
-   private static int setClear(CommandSourceStack var0, int var1) {
-      var0.getServer().overworld().setWeatherParameters(getDuration(var0, var1, ServerLevel.RAIN_DELAY), 0, false, false);
-      var0.sendSuccess(() -> Component.translatable("commands.weather.set.clear"), true);
-      return var1;
+   private static int setClear(final CommandSourceStack source, final int duration) {
+      source.getServer().setWeatherParameters(getDuration(source, duration, ServerLevel.RAIN_DELAY), 0, false, false);
+      source.sendSuccess(() -> Component.translatable("commands.weather.set.clear"), true);
+      return duration;
    }
 
-   private static int setRain(CommandSourceStack var0, int var1) {
-      var0.getServer().overworld().setWeatherParameters(0, getDuration(var0, var1, ServerLevel.RAIN_DURATION), true, false);
-      var0.sendSuccess(() -> Component.translatable("commands.weather.set.rain"), true);
-      return var1;
+   private static int setRain(final CommandSourceStack source, final int duration) {
+      source.getServer().setWeatherParameters(0, getDuration(source, duration, ServerLevel.RAIN_DURATION), true, false);
+      source.sendSuccess(() -> Component.translatable("commands.weather.set.rain"), true);
+      return duration;
    }
 
-   private static int setThunder(CommandSourceStack var0, int var1) {
-      var0.getServer().overworld().setWeatherParameters(0, getDuration(var0, var1, ServerLevel.THUNDER_DURATION), true, true);
-      var0.sendSuccess(() -> Component.translatable("commands.weather.set.thunder"), true);
-      return var1;
+   private static int setThunder(final CommandSourceStack source, final int duration) {
+      source.getServer().setWeatherParameters(0, getDuration(source, duration, ServerLevel.THUNDER_DURATION), true, true);
+      source.sendSuccess(() -> Component.translatable("commands.weather.set.thunder"), true);
+      return duration;
    }
 }

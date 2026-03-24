@@ -4,44 +4,45 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
-import java.util.Set;
-import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.Validatable;
+import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 
 public class SetItemCountFunction extends LootItemConditionalFunction {
-   public static final MapCodec<SetItemCountFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(var0.group(NumberProviders.CODEC.fieldOf("count").forGetter((var0x) -> var0x.value), Codec.BOOL.fieldOf("add").orElse(false).forGetter((var0x) -> var0x.add))).apply(var0, SetItemCountFunction::new));
-   private final NumberProvider value;
+   public static final MapCodec<SetItemCountFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(NumberProviders.CODEC.fieldOf("count").forGetter((f) -> f.count), Codec.BOOL.fieldOf("add").orElse(false).forGetter((f) -> f.add))).apply(i, SetItemCountFunction::new));
+   private final NumberProvider count;
    private final boolean add;
 
-   private SetItemCountFunction(List<LootItemCondition> var1, NumberProvider var2, boolean var3) {
-      super(var1);
-      this.value = var2;
-      this.add = var3;
+   private SetItemCountFunction(final List<LootItemCondition> predicates, final NumberProvider count, final boolean add) {
+      super(predicates);
+      this.count = count;
+      this.add = add;
    }
 
-   public LootItemFunctionType<SetItemCountFunction> getType() {
-      return LootItemFunctions.SET_COUNT;
+   public MapCodec<SetItemCountFunction> codec() {
+      return MAP_CODEC;
    }
 
-   public Set<ContextKey<?>> getReferencedContextParams() {
-      return this.value.getReferencedContextParams();
+   public void validate(final ValidationContext context) {
+      super.validate(context);
+      Validatable.validate(context, "count", this.count);
    }
 
-   public ItemStack run(ItemStack var1, LootContext var2) {
-      int var3 = this.add ? var1.getCount() : 0;
-      var1.setCount(var3 + this.value.getInt(var2));
-      return var1;
+   public ItemStack run(final ItemStack itemStack, final LootContext context) {
+      int base = this.add ? itemStack.getCount() : 0;
+      itemStack.setCount(base + this.count.getInt(context));
+      return itemStack;
    }
 
-   public static LootItemConditionalFunction.Builder<?> setCount(NumberProvider var0) {
-      return simpleBuilder((var1) -> new SetItemCountFunction(var1, var0, false));
+   public static LootItemConditionalFunction.Builder<?> setCount(final NumberProvider count) {
+      return simpleBuilder((conditions) -> new SetItemCountFunction(conditions, count, false));
    }
 
-   public static LootItemConditionalFunction.Builder<?> setCount(NumberProvider var0, boolean var1) {
-      return simpleBuilder((var2) -> new SetItemCountFunction(var2, var0, var1));
+   public static LootItemConditionalFunction.Builder<?> setCount(final NumberProvider count, final boolean add) {
+      return simpleBuilder((conditions) -> new SetItemCountFunction(conditions, count, add));
    }
 }

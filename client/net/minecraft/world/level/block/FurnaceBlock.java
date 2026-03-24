@@ -26,45 +26,45 @@ public class FurnaceBlock extends AbstractFurnaceBlock {
       return CODEC;
    }
 
-   protected FurnaceBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   protected FurnaceBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new FurnaceBlockEntity(var1, var2);
+   public BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      return new FurnaceBlockEntity(worldPosition, blockState);
    }
 
-   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return createFurnaceTicker(var1, var3, BlockEntityType.FURNACE);
+   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(final Level level, final BlockState blockState, final BlockEntityType<T> type) {
+      return createFurnaceTicker(level, type, BlockEntityType.FURNACE);
    }
 
-   protected void openContainer(Level var1, BlockPos var2, Player var3) {
-      BlockEntity var4 = var1.getBlockEntity(var2);
-      if (var4 instanceof FurnaceBlockEntity) {
-         var3.openMenu((MenuProvider)var4);
-         var3.awardStat(Stats.INTERACT_WITH_FURNACE);
+   protected void openContainer(final Level level, final BlockPos pos, final Player player) {
+      BlockEntity blockEntity = level.getBlockEntity(pos);
+      if (blockEntity instanceof FurnaceBlockEntity) {
+         player.openMenu((MenuProvider)blockEntity);
+         player.awardStat(Stats.INTERACT_WITH_FURNACE);
       }
 
    }
 
-   public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
-      if ((Boolean)var1.getValue(LIT)) {
-         double var5 = (double)var3.getX() + 0.5;
-         double var7 = (double)var3.getY();
-         double var9 = (double)var3.getZ() + 0.5;
-         if (var4.nextDouble() < 0.1) {
-            var2.playLocalSound(var5, var7, var9, SoundEvents.FURNACE_FIRE_CRACKLE, SoundSource.BLOCKS, 1.0F, 1.0F, false);
+   public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {
+      if ((Boolean)state.getValue(LIT)) {
+         double x = (double)pos.getX() + 0.5;
+         double y = (double)pos.getY();
+         double z = (double)pos.getZ() + 0.5;
+         if (random.nextDouble() < 0.1) {
+            level.playLocalSound(x, y, z, SoundEvents.FURNACE_FIRE_CRACKLE, SoundSource.BLOCKS, 1.0F, 1.0F, false);
          }
 
-         Direction var11 = (Direction)var1.getValue(FACING);
-         Direction.Axis var12 = var11.getAxis();
-         double var13 = 0.52;
-         double var15 = var4.nextDouble() * 0.6 - 0.3;
-         double var17 = var12 == Direction.Axis.X ? (double)var11.getStepX() * 0.52 : var15;
-         double var19 = var4.nextDouble() * 6.0 / 16.0;
-         double var21 = var12 == Direction.Axis.Z ? (double)var11.getStepZ() * 0.52 : var15;
-         var2.addParticle(ParticleTypes.SMOKE, var5 + var17, var7 + var19, var9 + var21, 0.0, 0.0, 0.0);
-         var2.addParticle(ParticleTypes.FLAME, var5 + var17, var7 + var19, var9 + var21, 0.0, 0.0, 0.0);
+         Direction direction = (Direction)state.getValue(FACING);
+         Direction.Axis axis = direction.getAxis();
+         double r = 0.52;
+         double ss = random.nextDouble() * 0.6 - 0.3;
+         double dx = axis == Direction.Axis.X ? (double)direction.getStepX() * 0.52 : ss;
+         double dy = random.nextDouble() * 6.0 / 16.0;
+         double dz = axis == Direction.Axis.Z ? (double)direction.getStepZ() * 0.52 : ss;
+         level.addParticle(ParticleTypes.SMOKE, x + dx, y + dy, z + dz, 0.0, 0.0, 0.0);
+         level.addParticle(ParticleTypes.FLAME, x + dx, y + dy, z + dz, 0.0, 0.0, 0.0);
       }
    }
 }

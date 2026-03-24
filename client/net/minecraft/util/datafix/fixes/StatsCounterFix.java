@@ -10,7 +10,6 @@ import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.Dynamic;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -31,39 +30,39 @@ public class StatsCounterFix extends DataFix {
    private static final Map<String, String> ENTITIES = ImmutableMap.builder().put("Bat", "minecraft:bat").put("Blaze", "minecraft:blaze").put("CaveSpider", "minecraft:cave_spider").put("Chicken", "minecraft:chicken").put("Cow", "minecraft:cow").put("Creeper", "minecraft:creeper").put("Donkey", "minecraft:donkey").put("ElderGuardian", "minecraft:elder_guardian").put("Enderman", "minecraft:enderman").put("Endermite", "minecraft:endermite").put("EvocationIllager", "minecraft:evocation_illager").put("Ghast", "minecraft:ghast").put("Guardian", "minecraft:guardian").put("Horse", "minecraft:horse").put("Husk", "minecraft:husk").put("Llama", "minecraft:llama").put("LavaSlime", "minecraft:magma_cube").put("MushroomCow", "minecraft:mooshroom").put("Mule", "minecraft:mule").put("Ozelot", "minecraft:ocelot").put("Parrot", "minecraft:parrot").put("Pig", "minecraft:pig").put("PolarBear", "minecraft:polar_bear").put("Rabbit", "minecraft:rabbit").put("Sheep", "minecraft:sheep").put("Shulker", "minecraft:shulker").put("Silverfish", "minecraft:silverfish").put("SkeletonHorse", "minecraft:skeleton_horse").put("Skeleton", "minecraft:skeleton").put("Slime", "minecraft:slime").put("Spider", "minecraft:spider").put("Squid", "minecraft:squid").put("Stray", "minecraft:stray").put("Vex", "minecraft:vex").put("Villager", "minecraft:villager").put("VindicationIllager", "minecraft:vindication_illager").put("Witch", "minecraft:witch").put("WitherSkeleton", "minecraft:wither_skeleton").put("Wolf", "minecraft:wolf").put("ZombieHorse", "minecraft:zombie_horse").put("PigZombie", "minecraft:zombie_pigman").put("ZombieVillager", "minecraft:zombie_villager").put("Zombie", "minecraft:zombie").build();
    private static final String NEW_CUSTOM_KEY = "minecraft:custom";
 
-   public StatsCounterFix(Schema var1, boolean var2) {
-      super(var1, var2);
+   public StatsCounterFix(final Schema outputSchema, final boolean changesType) {
+      super(outputSchema, changesType);
    }
 
-   private static @Nullable StatType unpackLegacyKey(String var0) {
-      if (SKIP.contains(var0)) {
+   private static @Nullable StatType unpackLegacyKey(final String key) {
+      if (SKIP.contains(key)) {
          return null;
       } else {
-         String var1 = (String)CUSTOM_MAP.get(var0);
-         if (var1 != null) {
-            return new StatType("minecraft:custom", var1);
+         String customKey = (String)CUSTOM_MAP.get(key);
+         if (customKey != null) {
+            return new StatType("minecraft:custom", customKey);
          } else {
-            int var2 = StringUtils.ordinalIndexOf(var0, ".", 2);
-            if (var2 < 0) {
+            int splitIndex = StringUtils.ordinalIndexOf(key, ".", 2);
+            if (splitIndex < 0) {
                return null;
             } else {
-               String var3 = var0.substring(0, var2);
-               if ("stat.mineBlock".equals(var3)) {
-                  String var8 = upgradeBlock(var0.substring(var2 + 1).replace('.', ':'));
-                  return new StatType("minecraft:mined", var8);
+               String prefix = key.substring(0, splitIndex);
+               if ("stat.mineBlock".equals(prefix)) {
+                  String newKey = upgradeBlock(key.substring(splitIndex + 1).replace('.', ':'));
+                  return new StatType("minecraft:mined", newKey);
                } else {
-                  String var4 = (String)ITEM_KEYS.get(var3);
-                  if (var4 != null) {
-                     String var9 = var0.substring(var2 + 1).replace('.', ':');
-                     String var10 = upgradeItem(var9);
-                     String var11 = var10 == null ? var9 : var10;
-                     return new StatType(var4, var11);
+                  String itemKey = (String)ITEM_KEYS.get(prefix);
+                  if (itemKey != null) {
+                     String oldItem = key.substring(splitIndex + 1).replace('.', ':');
+                     String newItem = upgradeItem(oldItem);
+                     String newKey = newItem == null ? oldItem : newItem;
+                     return new StatType(itemKey, newKey);
                   } else {
-                     String var5 = (String)ENTITY_KEYS.get(var3);
-                     if (var5 != null) {
-                        String var6 = var0.substring(var2 + 1).replace('.', ':');
-                        String var7 = (String)ENTITIES.getOrDefault(var6, var6);
-                        return new StatType(var5, var7);
+                     String entityKey = (String)ENTITY_KEYS.get(prefix);
+                     if (entityKey != null) {
+                        String oldEntity = key.substring(splitIndex + 1).replace('.', ':');
+                        String newKey = (String)ENTITIES.getOrDefault(oldEntity, oldEntity);
+                        return new StatType(entityKey, newKey);
                      } else {
                         return null;
                      }
@@ -79,72 +78,67 @@ public class StatsCounterFix extends DataFix {
    }
 
    private TypeRewriteRule makeStatFixer() {
-      Type var1 = this.getInputSchema().getType(References.STATS);
-      Type var2 = this.getOutputSchema().getType(References.STATS);
-      return this.fixTypeEverywhereTyped("StatsCounterFix", var1, var2, (var1x) -> {
-         Dynamic var2x = (Dynamic)var1x.get(DSL.remainderFinder());
-         HashMap var3 = Maps.newHashMap();
-         Optional var4 = var2x.getMapValues().result();
-         if (var4.isPresent()) {
-            for(Map.Entry var6 : ((Map)var4.get()).entrySet()) {
-               if (((Dynamic)var6.getValue()).asNumber().result().isPresent()) {
-                  String var7 = ((Dynamic)var6.getKey()).asString("");
-                  StatType var8 = unpackLegacyKey(var7);
-                  if (var8 != null) {
-                     Dynamic var9 = var2x.createString(var8.type());
-                     Dynamic var10 = (Dynamic)var3.computeIfAbsent(var9, (var1) -> var2x.emptyMap());
-                     var3.put(var9, var10.set(var8.typeKey(), (Dynamic)var6.getValue()));
+      Type<?> inputType = this.getInputSchema().getType(References.STATS);
+      Type<?> outputType = this.getOutputSchema().getType(References.STATS);
+      return this.fixTypeEverywhereTyped("StatsCounterFix", inputType, outputType, (input) -> {
+         Dynamic<?> tag = (Dynamic)input.get(DSL.remainderFinder());
+         Map<Dynamic<?>, Dynamic<?>> stats = Maps.newHashMap();
+         Optional<? extends Map<? extends Dynamic<?>, ? extends Dynamic<?>>> map = tag.getMapValues().result();
+         if (map.isPresent()) {
+            for(Map.Entry<? extends Dynamic<?>, ? extends Dynamic<?>> entry : ((Map)map.get()).entrySet()) {
+               if (((Dynamic)entry.getValue()).asNumber().result().isPresent()) {
+                  String key = ((Dynamic)entry.getKey()).asString("");
+                  StatType statType = unpackLegacyKey(key);
+                  if (statType != null) {
+                     Dynamic<?> newTypeKey = tag.createString(statType.type());
+                     Dynamic<?> element = (Dynamic)stats.computeIfAbsent(newTypeKey, (k) -> tag.emptyMap());
+                     stats.put(newTypeKey, element.set(statType.typeKey(), (Dynamic)entry.getValue()));
                   }
                }
             }
          }
 
-         return Util.readTypedOrThrow(var2, var2x.emptyMap().set("stats", var2x.createMap(var3)));
+         return Util.readTypedOrThrow(outputType, tag.emptyMap().set("stats", tag.createMap(stats)));
       });
    }
 
    private TypeRewriteRule makeObjectiveFixer() {
-      Type var1 = this.getInputSchema().getType(References.OBJECTIVE);
-      Type var2 = this.getOutputSchema().getType(References.OBJECTIVE);
-      return this.fixTypeEverywhereTyped("ObjectiveStatFix", var1, var2, (var1x) -> {
-         Dynamic var2x = (Dynamic)var1x.get(DSL.remainderFinder());
-         Dynamic var3 = var2x.update("CriteriaName", (var0) -> {
-            Optional var10000 = var0.asString().result().map((var0x) -> {
-               if (SPECIAL_OBJECTIVE_CRITERIA.contains(var0x)) {
-                  return var0x;
+      Type<?> inputType = this.getInputSchema().getType(References.OBJECTIVE);
+      Type<?> outputType = this.getOutputSchema().getType(References.OBJECTIVE);
+      return this.fixTypeEverywhereTyped("ObjectiveStatFix", inputType, outputType, (input) -> {
+         Dynamic<?> tag = (Dynamic)input.get(DSL.remainderFinder());
+         Dynamic<?> updatedTag = tag.update("CriteriaName", (name) -> {
+            Optional var10000 = name.asString().result().map((key) -> {
+               if (SPECIAL_OBJECTIVE_CRITERIA.contains(key)) {
+                  return key;
                } else {
-                  StatType var1 = unpackLegacyKey(var0x);
-                  if (var1 == null) {
+                  StatType statType = unpackLegacyKey(key);
+                  if (statType == null) {
                      return "dummy";
                   } else {
-                     String var10000 = V1451_6.packNamespacedWithDot(var1.type);
-                     return var10000 + ":" + V1451_6.packNamespacedWithDot(var1.typeKey);
+                     String var10000 = V1451_6.packNamespacedWithDot(statType.type);
+                     return var10000 + ":" + V1451_6.packNamespacedWithDot(statType.typeKey);
                   }
                }
             });
-            Objects.requireNonNull(var0);
-            return (Dynamic)DataFixUtils.orElse(var10000.map(var0::createString), var0);
+            Objects.requireNonNull(name);
+            return (Dynamic)DataFixUtils.orElse(var10000.map(name::createString), name);
          });
-         return Util.readTypedOrThrow(var2, var3);
+         return Util.readTypedOrThrow(outputType, updatedTag);
       });
    }
 
-   private static @Nullable String upgradeItem(String var0) {
-      return ItemStackTheFlatteningFix.updateItem(var0, 0);
+   private static @Nullable String upgradeItem(final String name) {
+      return ItemStackTheFlatteningFix.updateItem(name, 0);
    }
 
-   private static String upgradeBlock(String var0) {
-      return BlockStateData.upgradeBlock(var0);
+   private static String upgradeBlock(final String name) {
+      return BlockStateData.upgradeBlock(name);
    }
 
-   static record StatType(String type, String typeKey) {
-      final String type;
-      final String typeKey;
-
-      StatType(String var1, String var2) {
+   private static record StatType(String type, String typeKey) {
+      private StatType {
          super();
-         this.type = var1;
-         this.typeKey = var2;
       }
    }
 }

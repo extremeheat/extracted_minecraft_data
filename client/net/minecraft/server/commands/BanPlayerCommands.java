@@ -25,31 +25,31 @@ public class BanPlayerCommands {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("ban").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).then(((RequiredArgumentBuilder)Commands.argument("targets", GameProfileArgument.gameProfile()).executes((var0x) -> banPlayers((CommandSourceStack)var0x.getSource(), GameProfileArgument.getGameProfiles(var0x, "targets"), (Component)null))).then(Commands.argument("reason", MessageArgument.message()).executes((var0x) -> banPlayers((CommandSourceStack)var0x.getSource(), GameProfileArgument.getGameProfiles(var0x, "targets"), MessageArgument.getMessage(var0x, "reason"))))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("ban").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).then(((RequiredArgumentBuilder)Commands.argument("targets", GameProfileArgument.gameProfile()).executes((c) -> banPlayers((CommandSourceStack)c.getSource(), GameProfileArgument.getGameProfiles(c, "targets"), (Component)null))).then(Commands.argument("reason", MessageArgument.message()).executes((c) -> banPlayers((CommandSourceStack)c.getSource(), GameProfileArgument.getGameProfiles(c, "targets"), MessageArgument.getMessage(c, "reason"))))));
    }
 
-   private static int banPlayers(CommandSourceStack var0, Collection<NameAndId> var1, @Nullable Component var2) throws CommandSyntaxException {
-      UserBanList var3 = var0.getServer().getPlayerList().getBans();
-      int var4 = 0;
+   private static int banPlayers(final CommandSourceStack source, final Collection<NameAndId> players, final @Nullable Component reason) throws CommandSyntaxException {
+      UserBanList list = source.getServer().getPlayerList().getBans();
+      int count = 0;
 
-      for(NameAndId var6 : var1) {
-         if (!var3.isBanned(var6)) {
-            UserBanListEntry var7 = new UserBanListEntry(var6, (Date)null, var0.getTextName(), (Date)null, var2 == null ? null : var2.getString());
-            var3.add(var7);
-            ++var4;
-            var0.sendSuccess(() -> Component.translatable("commands.ban.success", Component.literal(var6.name()), var7.getReasonMessage()), true);
-            ServerPlayer var8 = var0.getServer().getPlayerList().getPlayer(var6.id());
-            if (var8 != null) {
-               var8.connection.disconnect(Component.translatable("multiplayer.disconnect.banned"));
+      for(NameAndId player : players) {
+         if (!list.isBanned(player)) {
+            UserBanListEntry entry = new UserBanListEntry(player, (Date)null, source.getTextName(), (Date)null, reason == null ? null : reason.getString());
+            list.add(entry);
+            ++count;
+            source.sendSuccess(() -> Component.translatable("commands.ban.success", Component.literal(player.name()), entry.getReasonMessage()), true);
+            ServerPlayer online = source.getServer().getPlayerList().getPlayer(player.id());
+            if (online != null) {
+               online.connection.disconnect(Component.translatable("multiplayer.disconnect.banned"));
             }
          }
       }
 
-      if (var4 == 0) {
+      if (count == 0) {
          throw ERROR_ALREADY_BANNED.create();
       } else {
-         return var4;
+         return count;
       }
    }
 }

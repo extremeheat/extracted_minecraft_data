@@ -24,22 +24,22 @@ public class ValidateNearbyPoi {
       super();
    }
 
-   public static BehaviorControl<LivingEntity> create(Predicate<Holder<PoiType>> var0, MemoryModuleType<GlobalPos> var1) {
-      return BehaviorBuilder.create((Function)((var2) -> var2.group(var2.present(var1)).apply(var2, (var2x) -> (var3, var4, var5) -> {
-               GlobalPos var7 = (GlobalPos)var2.get(var2x);
-               BlockPos var8 = var7.pos();
-               if (var3.dimension() == var7.dimension() && var8.closerToCenterThan(var4.position(), 16.0)) {
-                  ServerLevel var9 = var3.getServer().getLevel(var7.dimension());
-                  if (var9 != null && var9.getPoiManager().exists(var8, var0)) {
-                     if (bedIsOccupied(var9, var8, var4)) {
-                        var2x.erase();
-                        if (!bedIsOccupiedByVillager(var9, var8)) {
-                           var3.getPoiManager().release(var8);
-                           var3.debugSynchronizers().updatePoi(var8);
+   public static BehaviorControl<LivingEntity> create(final Predicate<Holder<PoiType>> poiType, final MemoryModuleType<GlobalPos> memoryType) {
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.present(memoryType)).apply(i, (memory) -> (level, body, timestamp) -> {
+               GlobalPos globalPos = (GlobalPos)i.get(memory);
+               BlockPos pos = globalPos.pos();
+               if (level.dimension() == globalPos.dimension() && pos.closerToCenterThan(body.position(), 16.0)) {
+                  ServerLevel poiLevel = level.getServer().getLevel(globalPos.dimension());
+                  if (poiLevel != null && poiLevel.getPoiManager().exists(pos, poiType)) {
+                     if (bedIsOccupied(poiLevel, pos, body)) {
+                        memory.erase();
+                        if (!bedIsOccupiedByVillager(poiLevel, pos)) {
+                           level.getPoiManager().release(pos);
+                           level.debugSynchronizers().updatePoi(pos);
                         }
                      }
                   } else {
-                     var2x.erase();
+                     memory.erase();
                   }
 
                   return true;
@@ -49,13 +49,13 @@ public class ValidateNearbyPoi {
             })));
    }
 
-   private static boolean bedIsOccupied(ServerLevel var0, BlockPos var1, LivingEntity var2) {
-      BlockState var3 = var0.getBlockState(var1);
-      return var3.is(BlockTags.BEDS) && (Boolean)var3.getValue(BedBlock.OCCUPIED) && !var2.isSleeping();
+   private static boolean bedIsOccupied(final ServerLevel poiLevel, final BlockPos poiPos, final LivingEntity body) {
+      BlockState blockState = poiLevel.getBlockState(poiPos);
+      return blockState.is(BlockTags.BEDS) && (Boolean)blockState.getValue(BedBlock.OCCUPIED) && !body.isSleeping();
    }
 
-   private static boolean bedIsOccupiedByVillager(ServerLevel var0, BlockPos var1) {
-      List var2 = var0.getEntitiesOfClass(Villager.class, new AABB(var1), LivingEntity::isSleeping);
-      return !var2.isEmpty();
+   private static boolean bedIsOccupiedByVillager(final ServerLevel poiLevel, final BlockPos poiPos) {
+      List<Villager> villagers = poiLevel.getEntitiesOfClass(Villager.class, new AABB(poiPos), LivingEntity::isSleeping);
+      return !villagers.isEmpty();
    }
 }

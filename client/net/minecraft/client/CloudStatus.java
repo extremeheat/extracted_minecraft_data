@@ -13,9 +13,9 @@ public enum CloudStatus implements StringRepresentable {
    private final String legacyName;
    private final Component caption;
 
-   private CloudStatus(final String var3, final String var4) {
-      this.legacyName = var3;
-      this.caption = Component.translatable(var4);
+   private CloudStatus(final String legacyName, final String key) {
+      this.legacyName = legacyName;
+      this.caption = Component.translatable(key);
    }
 
    public Component caption() {

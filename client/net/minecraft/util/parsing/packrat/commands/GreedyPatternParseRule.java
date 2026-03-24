@@ -12,27 +12,22 @@ public final class GreedyPatternParseRule implements Rule<StringReader, String> 
    private final Pattern pattern;
    private final DelayedException<CommandSyntaxException> error;
 
-   public GreedyPatternParseRule(Pattern var1, DelayedException<CommandSyntaxException> var2) {
+   public GreedyPatternParseRule(final Pattern pattern, final DelayedException<CommandSyntaxException> error) {
       super();
-      this.pattern = var1;
-      this.error = var2;
+      this.pattern = pattern;
+      this.error = error;
    }
 
-   public String parse(ParseState<StringReader> var1) {
-      StringReader var2 = (StringReader)var1.input();
-      String var3 = var2.getString();
-      Matcher var4 = this.pattern.matcher(var3).region(var2.getCursor(), var3.length());
-      if (!var4.lookingAt()) {
-         var1.errorCollector().store(var1.mark(), this.error);
+   public String parse(final ParseState<StringReader> state) {
+      StringReader input = state.input();
+      String fullString = input.getString();
+      Matcher matcher = this.pattern.matcher(fullString).region(input.getCursor(), fullString.length());
+      if (!matcher.lookingAt()) {
+         state.errorCollector().store(state.mark(), this.error);
          return null;
       } else {
-         var2.setCursor(var4.end());
-         return var4.group(0);
+         input.setCursor(matcher.end());
+         return matcher.group(0);
       }
-   }
-
-   // $FF: synthetic method
-   public Object parse(final ParseState var1) {
-      return this.parse(var1);
    }
 }

@@ -10,6 +10,7 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
@@ -26,72 +27,67 @@ import org.apache.commons.io.FilenameUtils;
 
 public class ResourceSelectorArgument<T> implements ArgumentType<Collection<Holder.Reference<T>>> {
    private static final Collection<String> EXAMPLES = List.of("minecraft:*", "*:asset", "*");
-   public static final Dynamic2CommandExceptionType ERROR_NO_MATCHES = new Dynamic2CommandExceptionType((var0, var1) -> Component.translatableEscape("argument.resource_selector.not_found", var0, var1));
-   final ResourceKey<? extends Registry<T>> registryKey;
+   public static final Dynamic2CommandExceptionType ERROR_NO_MATCHES = new Dynamic2CommandExceptionType((selector, registry) -> Component.translatableEscape("argument.resource_selector.not_found", selector, registry));
+   private final ResourceKey<? extends Registry<T>> registryKey;
    private final HolderLookup<T> registryLookup;
 
-   ResourceSelectorArgument(CommandBuildContext var1, ResourceKey<? extends Registry<T>> var2) {
+   private ResourceSelectorArgument(final CommandBuildContext context, final ResourceKey<? extends Registry<T>> registryKey) {
       super();
-      this.registryKey = var2;
-      this.registryLookup = var1.lookupOrThrow(var2);
+      this.registryKey = registryKey;
+      this.registryLookup = context.lookupOrThrow(registryKey);
    }
 
-   public Collection<Holder.Reference<T>> parse(StringReader var1) throws CommandSyntaxException {
-      String var2 = ensureNamespaced(readPattern(var1));
-      List var3 = this.registryLookup.listElements().filter((var1x) -> matches(var2, var1x.key().identifier())).toList();
-      if (var3.isEmpty()) {
-         throw ERROR_NO_MATCHES.createWithContext(var1, var2, this.registryKey.identifier());
+   public Collection<Holder.Reference<T>> parse(final StringReader reader) throws CommandSyntaxException {
+      String pattern = ensureNamespaced(readPattern(reader));
+      List<Holder.Reference<T>> results = this.registryLookup.listElements().filter((element) -> matches(pattern, element.key().identifier())).toList();
+      if (results.isEmpty()) {
+         throw ERROR_NO_MATCHES.createWithContext(reader, pattern, this.registryKey.identifier());
       } else {
-         return var3;
+         return results;
       }
    }
 
-   public static <T> Collection<Holder.Reference<T>> parse(StringReader var0, HolderLookup<T> var1) {
-      String var2 = ensureNamespaced(readPattern(var0));
-      return var1.listElements().filter((var1x) -> matches(var2, var1x.key().identifier())).toList();
+   public static <T> Collection<Holder.Reference<T>> parse(final StringReader reader, final HolderLookup<T> registry) {
+      String pattern = ensureNamespaced(readPattern(reader));
+      return registry.listElements().filter((element) -> matches(pattern, element.key().identifier())).toList();
    }
 
-   private static String readPattern(StringReader var0) {
-      int var1 = var0.getCursor();
+   private static String readPattern(final StringReader reader) {
+      int start = reader.getCursor();
 
-      while(var0.canRead() && isAllowedPatternCharacter(var0.peek())) {
-         var0.skip();
+      while(reader.canRead() && isAllowedPatternCharacter(reader.peek())) {
+         reader.skip();
       }
 
-      return var0.getString().substring(var1, var0.getCursor());
+      return reader.getString().substring(start, reader.getCursor());
    }
 
-   private static boolean isAllowedPatternCharacter(char var0) {
-      return Identifier.isAllowedInIdentifier(var0) || var0 == '*' || var0 == '?';
+   private static boolean isAllowedPatternCharacter(final char character) {
+      return Identifier.isAllowedInIdentifier(character) || character == '*' || character == '?';
    }
 
-   private static String ensureNamespaced(String var0) {
-      return !var0.contains(":") ? "minecraft:" + var0 : var0;
+   private static String ensureNamespaced(final String input) {
+      return !input.contains(":") ? "minecraft:" + input : input;
    }
 
-   private static boolean matches(String var0, Identifier var1) {
-      return FilenameUtils.wildcardMatch(var1.toString(), var0);
+   private static boolean matches(final String pattern, final Identifier key) {
+      return FilenameUtils.wildcardMatch(key.toString(), pattern);
    }
 
-   public static <T> ResourceSelectorArgument<T> resourceSelector(CommandBuildContext var0, ResourceKey<? extends Registry<T>> var1) {
-      return new ResourceSelectorArgument<T>(var0, var1);
+   public static <T> ResourceSelectorArgument<T> resourceSelector(final CommandBuildContext context, final ResourceKey<? extends Registry<T>> registry) {
+      return new ResourceSelectorArgument<T>(context, registry);
    }
 
-   public static <T> Collection<Holder.Reference<T>> getSelectedResources(CommandContext<CommandSourceStack> var0, String var1) {
-      return (Collection)var0.getArgument(var1, Collection.class);
+   public static <T> Collection<Holder.Reference<T>> getSelectedResources(final CommandContext<CommandSourceStack> context, final String name) {
+      return (Collection)context.getArgument(name, Collection.class);
    }
 
-   public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      return SharedSuggestionProvider.listSuggestions(var1, var2, this.registryKey, SharedSuggestionProvider.ElementSuggestionType.ELEMENTS);
+   public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
+      return SharedSuggestionProvider.listSuggestions(context, builder, this.registryKey, SharedSuggestionProvider.ElementSuggestionType.ELEMENTS);
    }
 
    public Collection<String> getExamples() {
       return EXAMPLES;
-   }
-
-   // $FF: synthetic method
-   public Object parse(final StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1);
    }
 
    public static class Info<T> implements ArgumentTypeInfo<ResourceSelectorArgument<T>, Info<T>.Template> {
@@ -99,46 +95,37 @@ public class ResourceSelectorArgument<T> implements ArgumentType<Collection<Hold
          super();
       }
 
-      public void serializeToNetwork(Info<T>.Template var1, FriendlyByteBuf var2) {
-         var2.writeResourceKey(var1.registryKey);
+      public void serializeToNetwork(final Info<T>.Template template, final FriendlyByteBuf out) {
+         out.writeResourceKey(template.registryKey);
       }
 
-      public Info<T>.Template deserializeFromNetwork(FriendlyByteBuf var1) {
-         return new Template(var1.readRegistryKey());
+      public Info<T>.Template deserializeFromNetwork(final FriendlyByteBuf in) {
+         return new Template(in.readRegistryKey());
       }
 
-      public void serializeToJson(Info<T>.Template var1, JsonObject var2) {
-         var2.addProperty("registry", var1.registryKey.identifier().toString());
+      public void serializeToJson(final Info<T>.Template template, final JsonObject out) {
+         out.addProperty("registry", template.registryKey.identifier().toString());
       }
 
-      public Info<T>.Template unpack(ResourceSelectorArgument<T> var1) {
-         return new Template(var1.registryKey);
-      }
-
-      // $FF: synthetic method
-      public ArgumentTypeInfo.Template deserializeFromNetwork(final FriendlyByteBuf var1) {
-         return this.deserializeFromNetwork(var1);
+      public Info<T>.Template unpack(final ResourceSelectorArgument<T> argument) {
+         return new Template(argument.registryKey);
       }
 
       public final class Template implements ArgumentTypeInfo.Template<ResourceSelectorArgument<T>> {
-         final ResourceKey<? extends Registry<T>> registryKey;
+         private final ResourceKey<? extends Registry<T>> registryKey;
 
-         Template(final ResourceKey<? extends Registry<T>> var2) {
+         private Template(final ResourceKey<? extends Registry<T>> registryKey) {
+            Objects.requireNonNull(Info.this);
             super();
-            this.registryKey = var2;
+            this.registryKey = registryKey;
          }
 
-         public ResourceSelectorArgument<T> instantiate(CommandBuildContext var1) {
-            return new ResourceSelectorArgument<T>(var1, this.registryKey);
+         public ResourceSelectorArgument<T> instantiate(final CommandBuildContext context) {
+            return new ResourceSelectorArgument<T>(context, this.registryKey);
          }
 
          public ArgumentTypeInfo<ResourceSelectorArgument<T>, ?> type() {
             return Info.this;
-         }
-
-         // $FF: synthetic method
-         public ArgumentType instantiate(final CommandBuildContext var1) {
-            return this.instantiate(var1);
          }
       }
    }

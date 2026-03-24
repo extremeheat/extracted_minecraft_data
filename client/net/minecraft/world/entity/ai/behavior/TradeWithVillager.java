@@ -23,99 +23,89 @@ public class TradeWithVillager extends Behavior<Villager> {
       super(ImmutableMap.of(MemoryModuleType.INTERACTION_TARGET, MemoryStatus.VALUE_PRESENT, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryStatus.VALUE_PRESENT));
    }
 
-   protected boolean checkExtraStartConditions(ServerLevel var1, Villager var2) {
-      return BehaviorUtils.targetIsValid(var2.getBrain(), MemoryModuleType.INTERACTION_TARGET, EntityType.VILLAGER);
+   protected boolean checkExtraStartConditions(final ServerLevel level, final Villager body) {
+      return BehaviorUtils.targetIsValid(body.getBrain(), MemoryModuleType.INTERACTION_TARGET, EntityType.VILLAGER);
    }
 
-   protected boolean canStillUse(ServerLevel var1, Villager var2, long var3) {
-      return this.checkExtraStartConditions(var1, var2);
+   protected boolean canStillUse(final ServerLevel level, final Villager body, final long timestamp) {
+      return this.checkExtraStartConditions(level, body);
    }
 
-   protected void start(ServerLevel var1, Villager var2, long var3) {
-      Villager var5 = (Villager)var2.getBrain().getMemory(MemoryModuleType.INTERACTION_TARGET).get();
-      BehaviorUtils.lockGazeAndWalkToEachOther(var2, var5, 0.5F, 2);
-      this.trades = figureOutWhatIAmWillingToTrade(var2, var5);
+   protected void start(final ServerLevel level, final Villager myBody, final long timestamp) {
+      Villager target = (Villager)myBody.getBrain().getMemory(MemoryModuleType.INTERACTION_TARGET).get();
+      BehaviorUtils.lockGazeAndWalkToEachOther(myBody, target, 0.5F, 2);
+      this.trades = figureOutWhatIAmWillingToTrade(myBody, target);
    }
 
-   protected void tick(ServerLevel var1, Villager var2, long var3) {
-      Villager var5 = (Villager)var2.getBrain().getMemory(MemoryModuleType.INTERACTION_TARGET).get();
-      if (!(var2.distanceToSqr(var5) > 5.0)) {
-         BehaviorUtils.lockGazeAndWalkToEachOther(var2, var5, 0.5F, 2);
-         var2.gossip(var1, var5, var3);
-         boolean var6 = var2.getVillagerData().profession().is(VillagerProfession.FARMER);
-         if (var2.hasExcessFood() && (var6 || var5.wantsMoreFood())) {
-            throwHalfStack(var2, Villager.FOOD_POINTS.keySet(), var5);
+   protected void tick(final ServerLevel level, final Villager body, final long timestamp) {
+      Villager target = (Villager)body.getBrain().getMemory(MemoryModuleType.INTERACTION_TARGET).get();
+      if (!(body.distanceToSqr(target) > 5.0)) {
+         BehaviorUtils.lockGazeAndWalkToEachOther(body, target, 0.5F, 2);
+         body.gossip(level, target, timestamp);
+         boolean isFarmer = body.getVillagerData().profession().is(VillagerProfession.FARMER);
+         if (body.hasExcessFood() && (isFarmer || target.wantsMoreFood())) {
+            throwHalfStack(body, Villager.FOOD_POINTS.keySet(), target);
          }
 
-         if (var6 && var2.getInventory().countItem(Items.WHEAT) > Items.WHEAT.getDefaultMaxStackSize() / 2) {
-            throwHalfStack(var2, ImmutableSet.of(Items.WHEAT), var5);
+         if (isFarmer && body.getInventory().countItem(Items.WHEAT) > Items.WHEAT.getDefaultMaxStackSize() / 2) {
+            throwHalfStack(body, ImmutableSet.of(Items.WHEAT), target);
          }
 
-         if (!this.trades.isEmpty() && var2.getInventory().hasAnyOf(this.trades)) {
-            throwHalfStack(var2, this.trades, var5);
+         if (!this.trades.isEmpty() && body.getInventory().hasAnyOf(this.trades)) {
+            throwHalfStack(body, this.trades, target);
          }
 
       }
    }
 
-   protected void stop(ServerLevel var1, Villager var2, long var3) {
-      var2.getBrain().eraseMemory(MemoryModuleType.INTERACTION_TARGET);
+   protected void stop(final ServerLevel level, final Villager body, final long timestamp) {
+      body.getBrain().eraseMemory(MemoryModuleType.INTERACTION_TARGET);
    }
 
-   private static Set<Item> figureOutWhatIAmWillingToTrade(Villager var0, Villager var1) {
-      ImmutableSet var2 = ((VillagerProfession)var1.getVillagerData().profession().value()).requestedItems();
-      ImmutableSet var3 = ((VillagerProfession)var0.getVillagerData().profession().value()).requestedItems();
-      return (Set)var2.stream().filter((var1x) -> !var3.contains(var1x)).collect(Collectors.toSet());
+   private static Set<Item> figureOutWhatIAmWillingToTrade(final Villager myBody, final Villager target) {
+      ImmutableSet<Item> targetItems = ((VillagerProfession)target.getVillagerData().profession().value()).requestedItems();
+      ImmutableSet<Item> selfItems = ((VillagerProfession)myBody.getVillagerData().profession().value()).requestedItems();
+      return (Set)targetItems.stream().filter((entry) -> !selfItems.contains(entry)).collect(Collectors.toSet());
    }
 
-   private static void throwHalfStack(Villager var0, Set<Item> var1, LivingEntity var2) {
-      SimpleContainer var3 = var0.getInventory();
-      ItemStack var4 = ItemStack.EMPTY;
-      int var5 = 0;
+   private static void throwHalfStack(final Villager villager, final Set<Item> items, final LivingEntity target) {
+      SimpleContainer inventory = villager.getInventory();
+      ItemStack toThrow = ItemStack.EMPTY;
+      int i = 0;
 
-      while(var5 < var3.getContainerSize()) {
-         ItemStack var6;
-         Item var7;
-         int var8;
+      while(i < inventory.getContainerSize()) {
+         ItemStack itemStack;
+         Item item;
+         int count;
          label28: {
-            var6 = var3.getItem(var5);
-            if (!var6.isEmpty()) {
-               var7 = var6.getItem();
-               if (var1.contains(var7)) {
-                  if (var6.getCount() > var6.getMaxStackSize() / 2) {
-                     var8 = var6.getCount() / 2;
+            itemStack = inventory.getItem(i);
+            if (!itemStack.isEmpty()) {
+               item = itemStack.getItem();
+               if (items.contains(item)) {
+                  if (itemStack.getCount() > itemStack.getMaxStackSize() / 2) {
+                     count = itemStack.getCount() / 2;
                      break label28;
                   }
 
-                  if (var6.getCount() > 24) {
-                     var8 = var6.getCount() - 24;
+                  if (itemStack.getCount() > 24) {
+                     count = itemStack.getCount() - 24;
                      break label28;
                   }
                }
             }
 
-            ++var5;
+            ++i;
             continue;
          }
 
-         var6.shrink(var8);
-         var4 = new ItemStack(var7, var8);
+         itemStack.shrink(count);
+         toThrow = new ItemStack(item, count);
          break;
       }
 
-      if (!var4.isEmpty()) {
-         BehaviorUtils.throwItem(var0, var4, var2.position());
+      if (!toThrow.isEmpty()) {
+         BehaviorUtils.throwItem(villager, toThrow, target.position());
       }
 
-   }
-
-   // $FF: synthetic method
-   protected void stop(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.stop(var1, (Villager)var2, var3);
-   }
-
-   // $FF: synthetic method
-   protected void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.start(var1, (Villager)var2, var3);
    }
 }

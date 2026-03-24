@@ -35,26 +35,26 @@ public class JukeboxBlock extends BaseEntityBlock {
       return CODEC;
    }
 
-   protected JukeboxBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   protected JukeboxBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(HAS_RECORD, false));
    }
 
-   public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, @Nullable LivingEntity var4, ItemStack var5) {
-      super.setPlacedBy(var1, var2, var3, var4, var5);
-      TypedEntityData var6 = (TypedEntityData)var5.get(DataComponents.BLOCK_ENTITY_DATA);
-      if (var6 != null && var6.contains("RecordItem")) {
-         var1.setBlock(var2, (BlockState)var3.setValue(HAS_RECORD, true), 2);
+   public void setPlacedBy(final Level level, final BlockPos pos, final BlockState state, final @Nullable LivingEntity by, final ItemStack itemStack) {
+      super.setPlacedBy(level, pos, state, by, itemStack);
+      TypedEntityData<BlockEntityType<?>> blockEntityData = (TypedEntityData)itemStack.get(DataComponents.BLOCK_ENTITY_DATA);
+      if (blockEntityData != null && blockEntityData.contains("RecordItem")) {
+         level.setBlock(pos, (BlockState)state.setValue(HAS_RECORD, true), 2);
       }
 
    }
 
-   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if ((Boolean)var1.getValue(HAS_RECORD)) {
-         BlockEntity var7 = var2.getBlockEntity(var3);
+   protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
+      if ((Boolean)state.getValue(HAS_RECORD)) {
+         BlockEntity var7 = level.getBlockEntity(pos);
          if (var7 instanceof JukeboxBlockEntity) {
-            JukeboxBlockEntity var6 = (JukeboxBlockEntity)var7;
-            var6.popOutTheItem();
+            JukeboxBlockEntity jukebox = (JukeboxBlockEntity)var7;
+            jukebox.popOutTheItem();
             return InteractionResult.SUCCESS;
          }
       }
@@ -62,32 +62,32 @@ public class JukeboxBlock extends BaseEntityBlock {
       return InteractionResult.PASS;
    }
 
-   protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
-      if ((Boolean)var2.getValue(HAS_RECORD)) {
+   protected InteractionResult useItemOn(final ItemStack itemStack, final BlockState state, final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final BlockHitResult hitResult) {
+      if ((Boolean)state.getValue(HAS_RECORD)) {
          return InteractionResult.TRY_WITH_EMPTY_HAND;
       } else {
-         ItemStack var8 = var5.getItemInHand(var6);
-         InteractionResult var9 = JukeboxPlayable.tryInsertIntoJukebox(var3, var4, var8, var5);
-         return (InteractionResult)(!var9.consumesAction() ? InteractionResult.TRY_WITH_EMPTY_HAND : var9);
+         ItemStack toInsert = player.getItemInHand(hand);
+         InteractionResult result = JukeboxPlayable.tryInsertIntoJukebox(level, pos, toInsert, player);
+         return (InteractionResult)(!result.consumesAction() ? InteractionResult.TRY_WITH_EMPTY_HAND : result);
       }
    }
 
-   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
-      Containers.updateNeighboursAfterDestroy(var1, var2, var3);
+   protected void affectNeighborsAfterRemoval(final BlockState state, final ServerLevel level, final BlockPos pos, final boolean movedByPiston) {
+      Containers.updateNeighboursAfterDestroy(state, level, pos);
    }
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new JukeboxBlockEntity(var1, var2);
+   public BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      return new JukeboxBlockEntity(worldPosition, blockState);
    }
 
-   public boolean isSignalSource(BlockState var1) {
+   public boolean isSignalSource(final BlockState state) {
       return true;
    }
 
-   public int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
-      BlockEntity var6 = var2.getBlockEntity(var3);
-      if (var6 instanceof JukeboxBlockEntity var5) {
-         if (var5.getSongPlayer().isPlaying()) {
+   public int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
+      BlockEntity var6 = level.getBlockEntity(pos);
+      if (var6 instanceof JukeboxBlockEntity jukebox) {
+         if (jukebox.getSongPlayer().isPlaying()) {
             return 15;
          }
       }
@@ -95,25 +95,25 @@ public class JukeboxBlock extends BaseEntityBlock {
       return 0;
    }
 
-   protected boolean hasAnalogOutputSignal(BlockState var1) {
+   protected boolean hasAnalogOutputSignal(final BlockState state) {
       return true;
    }
 
-   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
-      BlockEntity var6 = var2.getBlockEntity(var3);
-      if (var6 instanceof JukeboxBlockEntity var5) {
-         return var5.getComparatorOutput();
+   protected int getAnalogOutputSignal(final BlockState state, final Level level, final BlockPos pos, final Direction direction) {
+      BlockEntity var6 = level.getBlockEntity(pos);
+      if (var6 instanceof JukeboxBlockEntity jukebox) {
+         return jukebox.getComparatorOutput();
       } else {
          return 0;
       }
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(HAS_RECORD);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(HAS_RECORD);
    }
 
-   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return (Boolean)var2.getValue(HAS_RECORD) ? createTickerHelper(var3, BlockEntityType.JUKEBOX, JukeboxBlockEntity::tick) : null;
+   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(final Level level, final BlockState blockState, final BlockEntityType<T> type) {
+      return (Boolean)blockState.getValue(HAS_RECORD) ? createTickerHelper(type, BlockEntityType.JUKEBOX, JukeboxBlockEntity::tick) : null;
    }
 
    static {

@@ -24,14 +24,12 @@ public record TicketType(long timeout, @TicketType.Flags int flags) {
    public static final TicketType ENDER_PEARL = register("ender_pearl", 40L, 14);
    public static final TicketType UNKNOWN = register("unknown", 1L, 18);
 
-   public TicketType(long var1, @TicketType.Flags int var3) {
+   public TicketType {
       super();
-      this.timeout = var1;
-      this.flags = var3;
    }
 
-   private static TicketType register(String var0, long var1, @TicketType.Flags int var3) {
-      return (TicketType)Registry.register(BuiltInRegistries.TICKET_TYPE, (String)var0, new TicketType(var1, var3));
+   private static TicketType register(final String name, final long timeout, final @TicketType.Flags int flags) {
+      return (TicketType)Registry.register(BuiltInRegistries.TICKET_TYPE, (String)name, new TicketType(timeout, flags));
    }
 
    public boolean persist() {

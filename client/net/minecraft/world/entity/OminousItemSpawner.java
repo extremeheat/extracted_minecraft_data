@@ -30,37 +30,37 @@ public class OminousItemSpawner extends Entity {
    public static final int TICKS_BEFORE_ABOUT_TO_SPAWN_SOUND = 36;
    private long spawnItemAfterTicks;
 
-   public OminousItemSpawner(EntityType<? extends OminousItemSpawner> var1, Level var2) {
-      super(var1, var2);
+   public OminousItemSpawner(final EntityType<? extends OminousItemSpawner> type, final Level level) {
+      super(type, level);
       this.noPhysics = true;
    }
 
-   public static OminousItemSpawner create(Level var0, ItemStack var1) {
-      OminousItemSpawner var2 = new OminousItemSpawner(EntityType.OMINOUS_ITEM_SPAWNER, var0);
-      var2.spawnItemAfterTicks = (long)var0.random.nextIntBetweenInclusive(60, 120);
-      var2.setItem(var1);
-      return var2;
+   public static OminousItemSpawner create(final Level level, final ItemStack item) {
+      OminousItemSpawner itemSpawner = new OminousItemSpawner(EntityType.OMINOUS_ITEM_SPAWNER, level);
+      itemSpawner.spawnItemAfterTicks = (long)level.getRandom().nextIntBetweenInclusive(60, 120);
+      itemSpawner.setItem(item);
+      return itemSpawner;
    }
 
    public void tick() {
       super.tick();
       Level var2 = this.level();
-      if (var2 instanceof ServerLevel var1) {
-         this.tickServer(var1);
+      if (var2 instanceof ServerLevel serverLevel) {
+         this.tickServer(serverLevel);
       } else {
          this.tickClient();
       }
 
    }
 
-   private void tickServer(ServerLevel var1) {
+   private void tickServer(final ServerLevel level) {
       if ((long)this.tickCount == this.spawnItemAfterTicks - 36L) {
-         var1.playSound((Entity)null, this.blockPosition(), SoundEvents.TRIAL_SPAWNER_ABOUT_TO_SPAWN_ITEM, SoundSource.NEUTRAL);
+         level.playSound((Entity)null, this.blockPosition(), SoundEvents.TRIAL_SPAWNER_ABOUT_TO_SPAWN_ITEM, SoundSource.NEUTRAL);
       }
 
       if ((long)this.tickCount >= this.spawnItemAfterTicks) {
          this.spawnItem();
-         this.kill(var1);
+         this.kill(level);
       }
 
    }
@@ -74,53 +74,53 @@ public class OminousItemSpawner extends Entity {
 
    private void spawnItem() {
       Level var2 = this.level();
-      if (var2 instanceof ServerLevel var1) {
-         ItemStack var6 = this.getItem();
-         if (!var6.isEmpty()) {
-            Item var5 = var6.getItem();
-            Object var3;
+      if (var2 instanceof ServerLevel level) {
+         ItemStack item = this.getItem();
+         if (!item.isEmpty()) {
+            Item var5 = item.getItem();
+            Entity spawnedEntity;
             if (var5 instanceof ProjectileItem) {
-               ProjectileItem var4 = (ProjectileItem)var5;
-               var3 = this.spawnProjectile(var1, var4, var6);
+               ProjectileItem projectileItem = (ProjectileItem)var5;
+               spawnedEntity = this.spawnProjectile(level, projectileItem, item);
             } else {
-               var3 = new ItemEntity(var1, this.getX(), this.getY(), this.getZ(), var6);
-               var1.addFreshEntity((Entity)var3);
+               spawnedEntity = new ItemEntity(level, this.getX(), this.getY(), this.getZ(), item);
+               level.addFreshEntity(spawnedEntity);
             }
 
-            var1.levelEvent(3021, this.blockPosition(), 1);
-            var1.gameEvent((Entity)var3, GameEvent.ENTITY_PLACE, this.position());
+            level.levelEvent(3021, this.blockPosition(), 1);
+            level.gameEvent(spawnedEntity, GameEvent.ENTITY_PLACE, this.position());
             this.setItem(ItemStack.EMPTY);
          }
       }
    }
 
-   private Entity spawnProjectile(ServerLevel var1, ProjectileItem var2, ItemStack var3) {
-      ProjectileItem.DispenseConfig var4 = var2.createDispenseConfig();
-      var4.overrideDispenseEvent().ifPresent((var2x) -> var1.levelEvent(var2x, this.blockPosition(), 0));
-      Direction var5 = Direction.DOWN;
-      Projectile var6 = Projectile.spawnProjectileUsingShoot(var2.asProjectile(var1, this.position(), var3, var5), var1, var3, (double)var5.getStepX(), (double)var5.getStepY(), (double)var5.getStepZ(), var4.power(), var4.uncertainty());
-      var6.setOwner(this);
-      return var6;
+   private Entity spawnProjectile(final ServerLevel level, final ProjectileItem projectileItem, final ItemStack item) {
+      ProjectileItem.DispenseConfig dispenseConfig = projectileItem.createDispenseConfig();
+      dispenseConfig.overrideDispenseEvent().ifPresent((event) -> level.levelEvent(event, this.blockPosition(), 0));
+      Direction direction = Direction.DOWN;
+      Projectile projectile = Projectile.spawnProjectileUsingShoot(projectileItem.asProjectile(level, this.position(), item, direction), level, item, (double)direction.getStepX(), (double)direction.getStepY(), (double)direction.getStepZ(), dispenseConfig.power(), dispenseConfig.uncertainty());
+      projectile.setOwner(this);
+      return projectile;
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      var1.define(DATA_ITEM, ItemStack.EMPTY);
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      entityData.define(DATA_ITEM, ItemStack.EMPTY);
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      this.setItem((ItemStack)var1.read("item", ItemStack.CODEC).orElse(ItemStack.EMPTY));
-      this.spawnItemAfterTicks = var1.getLongOr("spawn_item_after_ticks", 0L);
+   protected void readAdditionalSaveData(final ValueInput input) {
+      this.setItem((ItemStack)input.read("item", ItemStack.CODEC).orElse(ItemStack.EMPTY));
+      this.spawnItemAfterTicks = input.getLongOr("spawn_item_after_ticks", 0L);
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
+   protected void addAdditionalSaveData(final ValueOutput output) {
       if (!this.getItem().isEmpty()) {
-         var1.store("item", ItemStack.CODEC, this.getItem());
+         output.store("item", ItemStack.CODEC, this.getItem());
       }
 
-      var1.putLong("spawn_item_after_ticks", this.spawnItemAfterTicks);
+      output.putLong("spawn_item_after_ticks", this.spawnItemAfterTicks);
    }
 
-   protected boolean canAddPassenger(Entity var1) {
+   protected boolean canAddPassenger(final Entity passenger) {
       return false;
    }
 
@@ -128,7 +128,7 @@ public class OminousItemSpawner extends Entity {
       return false;
    }
 
-   protected void addPassenger(Entity var1) {
+   protected void addPassenger(final Entity passenger) {
       throw new IllegalStateException("Should never addPassenger without checking couldAcceptPassenger()");
    }
 
@@ -141,14 +141,14 @@ public class OminousItemSpawner extends Entity {
    }
 
    public void addParticles() {
-      Vec3 var1 = this.position();
-      int var2 = this.random.nextIntBetweenInclusive(1, 3);
+      Vec3 flyTowards = this.position();
+      int particleCount = this.random.nextIntBetweenInclusive(1, 3);
 
-      for(int var3 = 0; var3 < var2; ++var3) {
-         double var4 = 0.4;
-         Vec3 var6 = new Vec3(this.getX() + 0.4 * (this.random.nextGaussian() - this.random.nextGaussian()), this.getY() + 0.4 * (this.random.nextGaussian() - this.random.nextGaussian()), this.getZ() + 0.4 * (this.random.nextGaussian() - this.random.nextGaussian()));
-         Vec3 var7 = var1.vectorTo(var6);
-         this.level().addParticle(ParticleTypes.OMINOUS_SPAWNING, var1.x(), var1.y(), var1.z(), var7.x(), var7.y(), var7.z());
+      for(int i = 0; i < particleCount; ++i) {
+         double radius = 0.4;
+         Vec3 flyFrom = new Vec3(this.getX() + 0.4 * (this.random.nextGaussian() - this.random.nextGaussian()), this.getY() + 0.4 * (this.random.nextGaussian() - this.random.nextGaussian()), this.getZ() + 0.4 * (this.random.nextGaussian() - this.random.nextGaussian()));
+         Vec3 randomDirection = flyTowards.vectorTo(flyFrom);
+         this.level().addParticle(ParticleTypes.OMINOUS_SPAWNING, flyTowards.x(), flyTowards.y(), flyTowards.z(), randomDirection.x(), randomDirection.y(), randomDirection.z());
       }
 
    }
@@ -157,11 +157,11 @@ public class OminousItemSpawner extends Entity {
       return (ItemStack)this.getEntityData().get(DATA_ITEM);
    }
 
-   private void setItem(ItemStack var1) {
-      this.getEntityData().set(DATA_ITEM, var1);
+   private void setItem(final ItemStack itemStack) {
+      this.getEntityData().set(DATA_ITEM, itemStack);
    }
 
-   public final boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+   public final boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {
       return false;
    }
 

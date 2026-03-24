@@ -1,65 +1,45 @@
 package net.minecraft.client.renderer.entity;
 
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.npc.BabyVillagerModel;
 import net.minecraft.client.model.npc.VillagerModel;
 import net.minecraft.client.renderer.entity.layers.CrossedArmsItemLayer;
 import net.minecraft.client.renderer.entity.layers.CustomHeadLayer;
 import net.minecraft.client.renderer.entity.layers.VillagerProfessionLayer;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.HoldingEntityRenderState;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.VillagerRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.npc.villager.Villager;
 
 public class VillagerRenderer extends AgeableMobRenderer<Villager, VillagerRenderState, VillagerModel> {
-   private static final Identifier VILLAGER_BASE_SKIN = Identifier.withDefaultNamespace("textures/entity/villager/villager.png");
+   private static final Identifier VILLAGER_BASE_LOCATION = Identifier.withDefaultNamespace("textures/entity/villager/villager.png");
+   private static final Identifier VILLAGER_BABY_LOCATION = Identifier.withDefaultNamespace("textures/entity/villager/villager_baby.png");
    public static final CustomHeadLayer.Transforms CUSTOM_HEAD_TRANSFORMS = new CustomHeadLayer.Transforms(-0.1171875F, -0.07421875F, 1.0F);
 
-   public VillagerRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new VillagerModel(var1.bakeLayer(ModelLayers.VILLAGER)), new VillagerModel(var1.bakeLayer(ModelLayers.VILLAGER_BABY)), 0.5F);
-      this.addLayer(new CustomHeadLayer(this, var1.getModelSet(), var1.getPlayerSkinRenderCache(), CUSTOM_HEAD_TRANSFORMS));
-      this.addLayer(new VillagerProfessionLayer(this, var1.getResourceManager(), "villager", new VillagerModel(var1.bakeLayer(ModelLayers.VILLAGER_NO_HAT)), new VillagerModel(var1.bakeLayer(ModelLayers.VILLAGER_BABY_NO_HAT))));
+   public VillagerRenderer(final EntityRendererProvider.Context context) {
+      super(context, new VillagerModel(context.bakeLayer(ModelLayers.VILLAGER)), new BabyVillagerModel(context.bakeLayer(ModelLayers.VILLAGER_BABY)), 0.5F);
+      this.addLayer(new CustomHeadLayer(this, context.getModelSet(), context.getPlayerSkinRenderCache(), CUSTOM_HEAD_TRANSFORMS));
+      this.addLayer(new VillagerProfessionLayer(this, context.getResourceManager(), "villager", new VillagerModel(context.bakeLayer(ModelLayers.VILLAGER_NO_HAT)), new BabyVillagerModel(context.bakeLayer(ModelLayers.VILLAGER_BABY_NO_HAT))));
       this.addLayer(new CrossedArmsItemLayer(this));
    }
 
-   public Identifier getTextureLocation(VillagerRenderState var1) {
-      return VILLAGER_BASE_SKIN;
+   public Identifier getTextureLocation(final VillagerRenderState state) {
+      return state.isBaby ? VILLAGER_BABY_LOCATION : VILLAGER_BASE_LOCATION;
    }
 
-   protected float getShadowRadius(VillagerRenderState var1) {
-      float var2 = super.getShadowRadius(var1);
-      return var1.isBaby ? var2 * 0.5F : var2;
+   protected float getShadowRadius(final VillagerRenderState state) {
+      float radius = super.getShadowRadius(state);
+      return state.isBaby ? radius * 0.5F : radius;
    }
 
    public VillagerRenderState createRenderState() {
       return new VillagerRenderState();
    }
 
-   public void extractRenderState(Villager var1, VillagerRenderState var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      HoldingEntityRenderState.extractHoldingEntityRenderState(var1, var2, this.itemModelResolver);
-      var2.isUnhappy = var1.getUnhappyCounter() > 0;
-      var2.villagerData = var1.getVillagerData();
-   }
-
-   // $FF: synthetic method
-   protected float getShadowRadius(final LivingEntityRenderState var1) {
-      return this.getShadowRadius((VillagerRenderState)var1);
-   }
-
-   // $FF: synthetic method
-   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
-      return this.getTextureLocation((VillagerRenderState)var1);
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
-   }
-
-   // $FF: synthetic method
-   protected float getShadowRadius(final EntityRenderState var1) {
-      return this.getShadowRadius((VillagerRenderState)var1);
+   public void extractRenderState(final Villager entity, final VillagerRenderState state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      HoldingEntityRenderState.extractHoldingEntityRenderState(entity, state, this.itemModelResolver);
+      state.isUnhappy = entity.getUnhappyCounter() > 0;
+      state.villagerData = entity.getVillagerData();
    }
 }

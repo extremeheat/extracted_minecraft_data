@@ -32,77 +32,77 @@ public abstract class LightEngine<M extends DataLayerStorageMap<M>, S extends La
    private final long[] lastChunkPos = new long[2];
    private final LightChunk[] lastChunk = new LightChunk[2];
 
-   protected LightEngine(LightChunkGetter var1, S var2) {
+   protected LightEngine(final LightChunkGetter chunkSource, final S storage) {
       super();
-      this.chunkSource = var1;
-      this.storage = var2;
+      this.chunkSource = chunkSource;
+      this.storage = storage;
       this.clearChunkCache();
    }
 
-   public static boolean hasDifferentLightProperties(BlockState var0, BlockState var1) {
-      if (var1 == var0) {
+   public static boolean hasDifferentLightProperties(final BlockState oldState, final BlockState newState) {
+      if (newState == oldState) {
          return false;
       } else {
-         return var1.getLightBlock() != var0.getLightBlock() || var1.getLightEmission() != var0.getLightEmission() || var1.useShapeForLightOcclusion() || var0.useShapeForLightOcclusion();
+         return newState.getLightDampening() != oldState.getLightDampening() || newState.getLightEmission() != oldState.getLightEmission() || newState.useShapeForLightOcclusion() || oldState.useShapeForLightOcclusion();
       }
    }
 
-   public static int getLightBlockInto(BlockState var0, BlockState var1, Direction var2, int var3) {
-      boolean var4 = isEmptyShape(var0);
-      boolean var5 = isEmptyShape(var1);
-      if (var4 && var5) {
-         return var3;
+   public static int getLightBlockInto(final BlockState fromState, final BlockState toState, final Direction direction, final int simpleOpacity) {
+      boolean fromEmpty = isEmptyShape(fromState);
+      boolean toEmpty = isEmptyShape(toState);
+      if (fromEmpty && toEmpty) {
+         return simpleOpacity;
       } else {
-         VoxelShape var6 = var4 ? Shapes.empty() : var0.getOcclusionShape();
-         VoxelShape var7 = var5 ? Shapes.empty() : var1.getOcclusionShape();
-         return Shapes.mergedFaceOccludes(var6, var7, var2) ? 16 : var3;
+         VoxelShape fromShape = fromEmpty ? Shapes.empty() : fromState.getOcclusionShape();
+         VoxelShape toShape = toEmpty ? Shapes.empty() : toState.getOcclusionShape();
+         return Shapes.mergedFaceOccludes(fromShape, toShape, direction) ? 16 : simpleOpacity;
       }
    }
 
-   public static VoxelShape getOcclusionShape(BlockState var0, Direction var1) {
-      return isEmptyShape(var0) ? Shapes.empty() : var0.getFaceOcclusionShape(var1);
+   public static VoxelShape getOcclusionShape(final BlockState state, final Direction direction) {
+      return isEmptyShape(state) ? Shapes.empty() : state.getFaceOcclusionShape(direction);
    }
 
-   protected static boolean isEmptyShape(BlockState var0) {
-      return !var0.canOcclude() || !var0.useShapeForLightOcclusion();
+   protected static boolean isEmptyShape(final BlockState state) {
+      return !state.canOcclude() || !state.useShapeForLightOcclusion();
    }
 
-   protected BlockState getState(BlockPos var1) {
-      int var2 = SectionPos.blockToSectionCoord(var1.getX());
-      int var3 = SectionPos.blockToSectionCoord(var1.getZ());
-      LightChunk var4 = this.getChunk(var2, var3);
-      return var4 == null ? Blocks.BEDROCK.defaultBlockState() : var4.getBlockState(var1);
+   protected BlockState getState(final BlockPos pos) {
+      int chunkX = SectionPos.blockToSectionCoord(pos.getX());
+      int chunkZ = SectionPos.blockToSectionCoord(pos.getZ());
+      LightChunk chunk = this.getChunk(chunkX, chunkZ);
+      return chunk == null ? Blocks.BEDROCK.defaultBlockState() : chunk.getBlockState(pos);
    }
 
-   protected int getOpacity(BlockState var1) {
-      return Math.max(1, var1.getLightBlock());
+   protected int getOpacity(final BlockState state) {
+      return Math.max(1, state.getLightDampening());
    }
 
-   protected boolean shapeOccludes(BlockState var1, BlockState var2, Direction var3) {
-      VoxelShape var4 = getOcclusionShape(var1, var3);
-      VoxelShape var5 = getOcclusionShape(var2, var3.getOpposite());
-      return Shapes.faceShapeOccludes(var4, var5);
+   protected boolean shapeOccludes(final BlockState fromState, final BlockState toState, final Direction direction) {
+      VoxelShape fromShape = getOcclusionShape(fromState, direction);
+      VoxelShape toShape = getOcclusionShape(toState, direction.getOpposite());
+      return Shapes.faceShapeOccludes(fromShape, toShape);
    }
 
-   protected @Nullable LightChunk getChunk(int var1, int var2) {
-      long var3 = ChunkPos.asLong(var1, var2);
+   protected @Nullable LightChunk getChunk(final int chunkX, final int chunkZ) {
+      long pos = ChunkPos.pack(chunkX, chunkZ);
 
-      for(int var5 = 0; var5 < 2; ++var5) {
-         if (var3 == this.lastChunkPos[var5]) {
-            return this.lastChunk[var5];
+      for(int i = 0; i < 2; ++i) {
+         if (pos == this.lastChunkPos[i]) {
+            return this.lastChunk[i];
          }
       }
 
-      LightChunk var7 = this.chunkSource.getChunkForLighting(var1, var2);
+      LightChunk chunk = this.chunkSource.getChunkForLighting(chunkX, chunkZ);
 
-      for(int var6 = 1; var6 > 0; --var6) {
-         this.lastChunkPos[var6] = this.lastChunkPos[var6 - 1];
-         this.lastChunk[var6] = this.lastChunk[var6 - 1];
+      for(int i = 1; i > 0; --i) {
+         this.lastChunkPos[i] = this.lastChunkPos[i - 1];
+         this.lastChunk[i] = this.lastChunk[i - 1];
       }
 
-      this.lastChunkPos[0] = var3;
-      this.lastChunk[0] = var7;
-      return var7;
+      this.lastChunkPos[0] = pos;
+      this.lastChunk[0] = chunk;
+      return chunk;
    }
 
    private void clearChunkCache() {
@@ -110,110 +110,110 @@ public abstract class LightEngine<M extends DataLayerStorageMap<M>, S extends La
       Arrays.fill(this.lastChunk, (Object)null);
    }
 
-   public void checkBlock(BlockPos var1) {
-      this.blockNodesToCheck.add(var1.asLong());
+   public void checkBlock(final BlockPos pos) {
+      this.blockNodesToCheck.add(pos.asLong());
    }
 
-   public void queueSectionData(long var1, @Nullable DataLayer var3) {
-      this.storage.queueSectionData(var1, var3);
+   public void queueSectionData(final long pos, final @Nullable DataLayer data) {
+      this.storage.queueSectionData(pos, data);
    }
 
-   public void retainData(ChunkPos var1, boolean var2) {
-      this.storage.retainData(SectionPos.getZeroNode(var1.x, var1.z), var2);
+   public void retainData(final ChunkPos pos, final boolean retain) {
+      this.storage.retainData(SectionPos.getZeroNode(pos.x(), pos.z()), retain);
    }
 
-   public void updateSectionStatus(SectionPos var1, boolean var2) {
-      this.storage.updateSectionStatus(var1.asLong(), var2);
+   public void updateSectionStatus(final SectionPos pos, final boolean sectionEmpty) {
+      this.storage.updateSectionStatus(pos.asLong(), sectionEmpty);
    }
 
-   public void setLightEnabled(ChunkPos var1, boolean var2) {
-      this.storage.setLightEnabled(SectionPos.getZeroNode(var1.x, var1.z), var2);
+   public void setLightEnabled(final ChunkPos pos, final boolean enable) {
+      this.storage.setLightEnabled(SectionPos.getZeroNode(pos.x(), pos.z()), enable);
    }
 
    public int runLightUpdates() {
-      LongIterator var1 = this.blockNodesToCheck.iterator();
+      LongIterator iterator = this.blockNodesToCheck.iterator();
 
-      while(var1.hasNext()) {
-         this.checkNode(var1.nextLong());
+      while(iterator.hasNext()) {
+         this.checkNode(iterator.nextLong());
       }
 
       this.blockNodesToCheck.clear();
       this.blockNodesToCheck.trim(512);
-      int var2 = 0;
-      var2 += this.propagateDecreases();
-      var2 += this.propagateIncreases();
+      int count = 0;
+      count += this.propagateDecreases();
+      count += this.propagateIncreases();
       this.clearChunkCache();
       this.storage.markNewInconsistencies(this);
       this.storage.swapSectionMap();
-      return var2;
+      return count;
    }
 
    private int propagateIncreases() {
-      int var1;
-      for(var1 = 0; !this.increaseQueue.isEmpty(); ++var1) {
-         long var2 = this.increaseQueue.dequeueLong();
-         long var4 = this.increaseQueue.dequeueLong();
-         int var6 = this.storage.getStoredLevel(var2);
-         int var7 = LightEngine.QueueEntry.getFromLevel(var4);
-         if (LightEngine.QueueEntry.isIncreaseFromEmission(var4) && var6 < var7) {
-            this.storage.setStoredLevel(var2, var7);
-            var6 = var7;
+      int count;
+      for(count = 0; !this.increaseQueue.isEmpty(); ++count) {
+         long fromNode = this.increaseQueue.dequeueLong();
+         long increaseData = this.increaseQueue.dequeueLong();
+         int fromLevel = this.storage.getStoredLevel(fromNode);
+         int fromTargetLevel = LightEngine.QueueEntry.getFromLevel(increaseData);
+         if (LightEngine.QueueEntry.isIncreaseFromEmission(increaseData) && fromLevel < fromTargetLevel) {
+            this.storage.setStoredLevel(fromNode, fromTargetLevel);
+            fromLevel = fromTargetLevel;
          }
 
-         if (var6 == var7) {
-            this.propagateIncrease(var2, var4, var6);
+         if (fromLevel == fromTargetLevel) {
+            this.propagateIncrease(fromNode, increaseData, fromLevel);
          }
       }
 
-      return var1;
+      return count;
    }
 
    private int propagateDecreases() {
-      int var1;
-      for(var1 = 0; !this.decreaseQueue.isEmpty(); ++var1) {
-         long var2 = this.decreaseQueue.dequeueLong();
-         long var4 = this.decreaseQueue.dequeueLong();
-         this.propagateDecrease(var2, var4);
+      int count;
+      for(count = 0; !this.decreaseQueue.isEmpty(); ++count) {
+         long fromNode = this.decreaseQueue.dequeueLong();
+         long decreaseData = this.decreaseQueue.dequeueLong();
+         this.propagateDecrease(fromNode, decreaseData);
       }
 
-      return var1;
+      return count;
    }
 
-   protected void enqueueDecrease(long var1, long var3) {
-      this.decreaseQueue.enqueue(var1);
-      this.decreaseQueue.enqueue(var3);
+   protected void enqueueDecrease(final long fromNode, final long decreaseData) {
+      this.decreaseQueue.enqueue(fromNode);
+      this.decreaseQueue.enqueue(decreaseData);
    }
 
-   protected void enqueueIncrease(long var1, long var3) {
-      this.increaseQueue.enqueue(var1);
-      this.increaseQueue.enqueue(var3);
+   protected void enqueueIncrease(final long fromNode, final long increaseData) {
+      this.increaseQueue.enqueue(fromNode);
+      this.increaseQueue.enqueue(increaseData);
    }
 
    public boolean hasLightWork() {
       return this.storage.hasInconsistencies() || !this.blockNodesToCheck.isEmpty() || !this.decreaseQueue.isEmpty() || !this.increaseQueue.isEmpty();
    }
 
-   public @Nullable DataLayer getDataLayerData(SectionPos var1) {
-      return this.storage.getDataLayerData(var1.asLong());
+   public @Nullable DataLayer getDataLayerData(final SectionPos pos) {
+      return this.storage.getDataLayerData(pos.asLong());
    }
 
-   public int getLightValue(BlockPos var1) {
-      return this.storage.getLightValue(var1.asLong());
+   public int getLightValue(final BlockPos pos) {
+      return this.storage.getLightValue(pos.asLong());
    }
 
-   public String getDebugData(long var1) {
-      return this.getDebugSectionType(var1).display();
+   public String getDebugData(final long sectionNode) {
+      return this.getDebugSectionType(sectionNode).display();
    }
 
-   public LayerLightSectionStorage.SectionType getDebugSectionType(long var1) {
-      return this.storage.getDebugSectionType(var1);
+   public LayerLightSectionStorage.SectionType getDebugSectionType(final long sectionNode) {
+      return this.storage.getDebugSectionType(sectionNode);
    }
 
-   protected abstract void checkNode(long var1);
+   protected abstract void checkNode(long blockNode);
 
-   protected abstract void propagateIncrease(long var1, long var3, int var5);
+   protected abstract void propagateIncrease(long fromNode, long increaseData, int fromLevel);
 
-   protected abstract void propagateDecrease(long var1, long var3);
+   protected abstract void propagateDecrease(long fromNode, long decreaseData);
 
    public static class QueueEntry {
       private static final int FROM_LEVEL_BITS = 4;
@@ -227,95 +227,95 @@ public abstract class LightEngine<M extends DataLayerStorageMap<M>, S extends La
          super();
       }
 
-      public static long decreaseSkipOneDirection(int var0, Direction var1) {
-         long var2 = withoutDirection(1008L, var1);
-         return withLevel(var2, var0);
+      public static long decreaseSkipOneDirection(final int oldFromLevel, final Direction skipDirection) {
+         long decreaseData = withoutDirection(1008L, skipDirection);
+         return withLevel(decreaseData, oldFromLevel);
       }
 
-      public static long decreaseAllDirections(int var0) {
-         return withLevel(1008L, var0);
+      public static long decreaseAllDirections(final int oldFromLevel) {
+         return withLevel(1008L, oldFromLevel);
       }
 
-      public static long increaseLightFromEmission(int var0, boolean var1) {
-         long var2 = 1008L;
-         var2 |= 2048L;
-         if (var1) {
-            var2 |= 1024L;
+      public static long increaseLightFromEmission(final int newFromLevel, final boolean fromEmptyShape) {
+         long increaseData = 1008L;
+         increaseData |= 2048L;
+         if (fromEmptyShape) {
+            increaseData |= 1024L;
          }
 
-         return withLevel(var2, var0);
+         return withLevel(increaseData, newFromLevel);
       }
 
-      public static long increaseSkipOneDirection(int var0, boolean var1, Direction var2) {
-         long var3 = withoutDirection(1008L, var2);
-         if (var1) {
-            var3 |= 1024L;
+      public static long increaseSkipOneDirection(final int newFromLevel, final boolean fromEmptyShape, final Direction skipDirection) {
+         long increaseData = withoutDirection(1008L, skipDirection);
+         if (fromEmptyShape) {
+            increaseData |= 1024L;
          }
 
-         return withLevel(var3, var0);
+         return withLevel(increaseData, newFromLevel);
       }
 
-      public static long increaseOnlyOneDirection(int var0, boolean var1, Direction var2) {
-         long var3 = 0L;
-         if (var1) {
-            var3 |= 1024L;
+      public static long increaseOnlyOneDirection(final int newFromLevel, final boolean fromEmptyShape, final Direction direction) {
+         long increaseData = 0L;
+         if (fromEmptyShape) {
+            increaseData |= 1024L;
          }
 
-         var3 = withDirection(var3, var2);
-         return withLevel(var3, var0);
+         increaseData = withDirection(increaseData, direction);
+         return withLevel(increaseData, newFromLevel);
       }
 
-      public static long increaseSkySourceInDirections(boolean var0, boolean var1, boolean var2, boolean var3, boolean var4) {
-         long var5 = withLevel(0L, 15);
-         if (var0) {
-            var5 = withDirection(var5, Direction.DOWN);
+      public static long increaseSkySourceInDirections(final boolean down, final boolean north, final boolean south, final boolean west, final boolean east) {
+         long increaseData = withLevel(0L, 15);
+         if (down) {
+            increaseData = withDirection(increaseData, Direction.DOWN);
          }
 
-         if (var1) {
-            var5 = withDirection(var5, Direction.NORTH);
+         if (north) {
+            increaseData = withDirection(increaseData, Direction.NORTH);
          }
 
-         if (var2) {
-            var5 = withDirection(var5, Direction.SOUTH);
+         if (south) {
+            increaseData = withDirection(increaseData, Direction.SOUTH);
          }
 
-         if (var3) {
-            var5 = withDirection(var5, Direction.WEST);
+         if (west) {
+            increaseData = withDirection(increaseData, Direction.WEST);
          }
 
-         if (var4) {
-            var5 = withDirection(var5, Direction.EAST);
+         if (east) {
+            increaseData = withDirection(increaseData, Direction.EAST);
          }
 
-         return var5;
+         return increaseData;
       }
 
-      public static int getFromLevel(long var0) {
-         return (int)(var0 & 15L);
+      public static int getFromLevel(final long entry) {
+         return (int)(entry & 15L);
       }
 
-      public static boolean isFromEmptyShape(long var0) {
-         return (var0 & 1024L) != 0L;
+      public static boolean isFromEmptyShape(final long entry) {
+         return (entry & 1024L) != 0L;
       }
 
-      public static boolean isIncreaseFromEmission(long var0) {
-         return (var0 & 2048L) != 0L;
+      public static boolean isIncreaseFromEmission(final long entry) {
+         return (entry & 2048L) != 0L;
       }
 
-      public static boolean shouldPropagateInDirection(long var0, Direction var2) {
-         return (var0 & 1L << var2.ordinal() + 4) != 0L;
+      public static boolean shouldPropagateInDirection(final long entry, final Direction direction) {
+         return (entry & 1L << direction.ordinal() + 4) != 0L;
       }
 
-      private static long withLevel(long var0, int var2) {
-         return var0 & -16L | (long)var2 & 15L;
+      private static long withLevel(final long entry, final int level) {
+         return entry & -16L | (long)level & 15L;
       }
 
-      private static long withDirection(long var0, Direction var2) {
-         return var0 | 1L << var2.ordinal() + 4;
+      private static long withDirection(final long entry, final Direction direction) {
+         return entry | 1L << direction.ordinal() + 4;
       }
 
-      private static long withoutDirection(long var0, Direction var2) {
-         return var0 & ~(1L << var2.ordinal() + 4);
+      private static long withoutDirection(final long entry, final Direction direction) {
+         return entry & ~(1L << direction.ordinal() + 4);
       }
    }
 }

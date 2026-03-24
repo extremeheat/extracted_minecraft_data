@@ -14,77 +14,79 @@ import net.minecraft.world.entity.EquipmentSlot;
 import org.jspecify.annotations.Nullable;
 
 public class SlotRanges {
-   private static final List<SlotRange> SLOTS = (List)Util.make(new ArrayList(), (var0) -> {
-      addSingleSlot(var0, "contents", 0);
-      addSlotRange(var0, "container.", 0, 54);
-      addSlotRange(var0, "hotbar.", 0, 9);
-      addSlotRange(var0, "inventory.", 9, 27);
-      addSlotRange(var0, "enderchest.", 200, 27);
-      addSlotRange(var0, "villager.", 300, 8);
-      addSlotRange(var0, "horse.", 500, 15);
-      int var1 = EquipmentSlot.MAINHAND.getIndex(98);
-      int var2 = EquipmentSlot.OFFHAND.getIndex(98);
-      addSingleSlot(var0, "weapon", var1);
-      addSingleSlot(var0, "weapon.mainhand", var1);
-      addSingleSlot(var0, "weapon.offhand", var2);
-      addSlots(var0, "weapon.*", var1, var2);
-      var1 = EquipmentSlot.HEAD.getIndex(100);
-      var2 = EquipmentSlot.CHEST.getIndex(100);
-      int var3 = EquipmentSlot.LEGS.getIndex(100);
-      int var4 = EquipmentSlot.FEET.getIndex(100);
-      int var5 = EquipmentSlot.BODY.getIndex(105);
-      addSingleSlot(var0, "armor.head", var1);
-      addSingleSlot(var0, "armor.chest", var2);
-      addSingleSlot(var0, "armor.legs", var3);
-      addSingleSlot(var0, "armor.feet", var4);
-      addSingleSlot(var0, "armor.body", var5);
-      addSlots(var0, "armor.*", var1, var2, var3, var4, var5);
-      addSingleSlot(var0, "saddle", EquipmentSlot.SADDLE.getIndex(106));
-      addSingleSlot(var0, "horse.chest", 499);
-      addSingleSlot(var0, "player.cursor", 499);
-      addSlotRange(var0, "player.crafting.", 500, 4);
+   public static final int MOB_INVENTORY_SLOT_OFFSET = 300;
+   public static final int MOB_INVENTORY_SIZE = 8;
+   private static final List<SlotRange> SLOTS = (List)Util.make(new ArrayList(), (values) -> {
+      addSingleSlot(values, "contents", 0);
+      addSlotRange(values, "container.", 0, 54);
+      addSlotRange(values, "hotbar.", 0, 9);
+      addSlotRange(values, "inventory.", 9, 27);
+      addSlotRange(values, "enderchest.", 200, 27);
+      addSlotRange(values, "mob.inventory.", 300, 8);
+      addSlotRange(values, "horse.", 500, 15);
+      int mainhand = EquipmentSlot.MAINHAND.getIndex(98);
+      int offhand = EquipmentSlot.OFFHAND.getIndex(98);
+      addSingleSlot(values, "weapon", mainhand);
+      addSingleSlot(values, "weapon.mainhand", mainhand);
+      addSingleSlot(values, "weapon.offhand", offhand);
+      addSlots(values, "weapon.*", mainhand, offhand);
+      mainhand = EquipmentSlot.HEAD.getIndex(100);
+      offhand = EquipmentSlot.CHEST.getIndex(100);
+      int legs = EquipmentSlot.LEGS.getIndex(100);
+      int feet = EquipmentSlot.FEET.getIndex(100);
+      int body = EquipmentSlot.BODY.getIndex(105);
+      addSingleSlot(values, "armor.head", mainhand);
+      addSingleSlot(values, "armor.chest", offhand);
+      addSingleSlot(values, "armor.legs", legs);
+      addSingleSlot(values, "armor.feet", feet);
+      addSingleSlot(values, "armor.body", body);
+      addSlots(values, "armor.*", mainhand, offhand, legs, feet, body);
+      addSingleSlot(values, "saddle", EquipmentSlot.SADDLE.getIndex(106));
+      addSingleSlot(values, "horse.chest", 499);
+      addSingleSlot(values, "player.cursor", 499);
+      addSlotRange(values, "player.crafting.", 500, 4);
    });
-   public static final Codec<SlotRange> CODEC = StringRepresentable.<SlotRange>fromValues(() -> (SlotRange[])SLOTS.toArray((var0) -> new SlotRange[var0]));
+   public static final Codec<SlotRange> CODEC = StringRepresentable.<SlotRange>fromValues(() -> (SlotRange[])SLOTS.toArray((x$0) -> new SlotRange[x$0]));
    private static final Function<String, @Nullable SlotRange> NAME_LOOKUP;
 
    public SlotRanges() {
       super();
    }
 
-   private static SlotRange create(String var0, int var1) {
-      return SlotRange.of(var0, IntLists.singleton(var1));
+   private static SlotRange create(final String name, final int id) {
+      return SlotRange.of(name, IntLists.singleton(id));
    }
 
-   private static SlotRange create(String var0, IntList var1) {
-      return SlotRange.of(var0, IntLists.unmodifiable(var1));
+   private static SlotRange create(final String name, final IntList ids) {
+      return SlotRange.of(name, IntLists.unmodifiable(ids));
    }
 
-   private static SlotRange create(String var0, int... var1) {
-      return SlotRange.of(var0, IntList.of(var1));
+   private static SlotRange create(final String name, final int... ids) {
+      return SlotRange.of(name, IntList.of(ids));
    }
 
-   private static void addSingleSlot(List<SlotRange> var0, String var1, int var2) {
-      var0.add(create(var1, var2));
+   private static void addSingleSlot(final List<SlotRange> output, final String name, final int id) {
+      output.add(create(name, id));
    }
 
-   private static void addSlotRange(List<SlotRange> var0, String var1, int var2, int var3) {
-      IntArrayList var4 = new IntArrayList(var3);
+   private static void addSlotRange(final List<SlotRange> output, final String prefix, final int offset, final int size) {
+      IntList allSlots = new IntArrayList(size);
 
-      for(int var5 = 0; var5 < var3; ++var5) {
-         int var6 = var2 + var5;
-         var0.add(create(var1 + var5, var6));
-         var4.add(var6);
+      for(int i = 0; i < size; ++i) {
+         int slotId = offset + i;
+         output.add(create(prefix + i, slotId));
+         allSlots.add(slotId);
       }
 
-      var0.add(create(var1 + "*", (IntList)var4));
+      output.add(create(prefix + "*", allSlots));
    }
 
-   private static void addSlots(List<SlotRange> var0, String var1, int... var2) {
-      var0.add(create(var1, var2));
+   private static void addSlots(final List<SlotRange> output, final String name, final int... values) {
+      output.add(create(name, values));
    }
 
-   public static @Nullable SlotRange nameToIds(String var0) {
-      return (SlotRange)NAME_LOOKUP.apply(var0);
+   public static @Nullable SlotRange nameToIds(final String name) {
+      return (SlotRange)NAME_LOOKUP.apply(name);
    }
 
    public static Stream<String> allNames() {
@@ -92,10 +94,10 @@ public class SlotRanges {
    }
 
    public static Stream<String> singleSlotNames() {
-      return SLOTS.stream().filter((var0) -> var0.size() == 1).map(StringRepresentable::getSerializedName);
+      return SLOTS.stream().filter((e) -> e.size() == 1).map(StringRepresentable::getSerializedName);
    }
 
    static {
-      NAME_LOOKUP = StringRepresentable.createNameLookup((SlotRange[])SLOTS.toArray((var0) -> new SlotRange[var0]));
+      NAME_LOOKUP = StringRepresentable.createNameLookup((SlotRange[])SLOTS.toArray((x$0) -> new SlotRange[x$0]));
    }
 }

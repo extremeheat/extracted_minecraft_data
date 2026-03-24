@@ -14,37 +14,37 @@ import net.minecraft.core.Registry;
 public final class RegistryFixedCodec<E> implements Codec<Holder<E>> {
    private final ResourceKey<? extends Registry<E>> registryKey;
 
-   public static <E> RegistryFixedCodec<E> create(ResourceKey<? extends Registry<E>> var0) {
-      return new RegistryFixedCodec<E>(var0);
+   public static <E> RegistryFixedCodec<E> create(final ResourceKey<? extends Registry<E>> registryKey) {
+      return new RegistryFixedCodec<E>(registryKey);
    }
 
-   private RegistryFixedCodec(ResourceKey<? extends Registry<E>> var1) {
+   private RegistryFixedCodec(final ResourceKey<? extends Registry<E>> registryKey) {
       super();
-      this.registryKey = var1;
+      this.registryKey = registryKey;
    }
 
-   public <T> DataResult<T> encode(Holder<E> var1, DynamicOps<T> var2, T var3) {
-      if (var2 instanceof RegistryOps var4) {
-         Optional var5 = var4.owner(this.registryKey);
-         if (var5.isPresent()) {
-            if (!var1.canSerializeIn((HolderOwner)var5.get())) {
-               return DataResult.error(() -> "Element " + String.valueOf(var1) + " is not valid in current registry set");
+   public <T> DataResult<T> encode(final Holder<E> input, final DynamicOps<T> ops, final T prefix) {
+      if (ops instanceof RegistryOps<?> registryOps) {
+         Optional<HolderOwner<E>> maybeOwner = registryOps.owner(this.registryKey);
+         if (maybeOwner.isPresent()) {
+            if (!input.canSerializeIn((HolderOwner)maybeOwner.get())) {
+               return DataResult.error(() -> "Element " + String.valueOf(input) + " is not valid in current registry set");
             }
 
-            return (DataResult)var1.unwrap().map((var2x) -> Identifier.CODEC.encode(var2x.identifier(), var2, var3), (var1x) -> DataResult.error(() -> "Elements from registry " + String.valueOf(this.registryKey) + " can't be serialized to a value"));
+            return (DataResult)input.unwrap().map((id) -> Identifier.CODEC.encode(id.identifier(), ops, prefix), (value) -> DataResult.error(() -> "Elements from registry " + String.valueOf(this.registryKey) + " can't be serialized to a value"));
          }
       }
 
       return DataResult.error(() -> "Can't access registry " + String.valueOf(this.registryKey));
    }
 
-   public <T> DataResult<Pair<Holder<E>, T>> decode(DynamicOps<T> var1, T var2) {
-      if (var1 instanceof RegistryOps var3) {
-         Optional var4 = var3.getter(this.registryKey);
-         if (var4.isPresent()) {
-            return Identifier.CODEC.decode(var1, var2).flatMap((var2x) -> {
-               Identifier var3 = (Identifier)var2x.getFirst();
-               return ((DataResult)((HolderGetter)var4.get()).get(ResourceKey.create(this.registryKey, var3)).map(DataResult::success).orElseGet(() -> DataResult.error(() -> "Failed to get element " + String.valueOf(var3)))).map((var1) -> Pair.of(var1, var2x.getSecond())).setLifecycle(Lifecycle.stable());
+   public <T> DataResult<Pair<Holder<E>, T>> decode(final DynamicOps<T> ops, final T input) {
+      if (ops instanceof RegistryOps<?> registryOps) {
+         Optional<HolderGetter<E>> lookup = registryOps.getter(this.registryKey);
+         if (lookup.isPresent()) {
+            return Identifier.CODEC.decode(ops, input).flatMap((pair) -> {
+               Identifier id = (Identifier)pair.getFirst();
+               return ((DataResult)((HolderGetter)lookup.get()).get(ResourceKey.create(this.registryKey, id)).map(DataResult::success).orElseGet(() -> DataResult.error(() -> "Failed to get element " + String.valueOf(id)))).map((h) -> Pair.of(h, pair.getSecond())).setLifecycle(Lifecycle.stable());
             });
          }
       }
@@ -54,10 +54,5 @@ public final class RegistryFixedCodec<E> implements Codec<Holder<E>> {
 
    public String toString() {
       return "RegistryFixedCodec[" + String.valueOf(this.registryKey) + "]";
-   }
-
-   // $FF: synthetic method
-   public DataResult encode(final Object var1, final DynamicOps var2, final Object var3) {
-      return this.encode((Holder)var1, var2, var3);
    }
 }

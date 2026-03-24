@@ -46,115 +46,115 @@ public class NoteBlock extends Block {
       return CODEC;
    }
 
-   public NoteBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public NoteBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(INSTRUMENT, NoteBlockInstrument.HARP)).setValue(NOTE, 0)).setValue(POWERED, false));
    }
 
-   private BlockState setInstrument(LevelReader var1, BlockPos var2, BlockState var3) {
-      NoteBlockInstrument var4 = var1.getBlockState(var2.above()).instrument();
-      if (var4.worksAboveNoteBlock()) {
-         return (BlockState)var3.setValue(INSTRUMENT, var4);
+   private BlockState setInstrument(final LevelReader level, final BlockPos position, final BlockState state) {
+      NoteBlockInstrument instrumentAbove = level.getBlockState(position.above()).instrument();
+      if (instrumentAbove.worksAboveNoteBlock()) {
+         return (BlockState)state.setValue(INSTRUMENT, instrumentAbove);
       } else {
-         NoteBlockInstrument var5 = var1.getBlockState(var2.below()).instrument();
-         NoteBlockInstrument var6 = var5.worksAboveNoteBlock() ? NoteBlockInstrument.HARP : var5;
-         return (BlockState)var3.setValue(INSTRUMENT, var6);
+         NoteBlockInstrument instrumentBelow = level.getBlockState(position.below()).instrument();
+         NoteBlockInstrument newBelow = instrumentBelow.worksAboveNoteBlock() ? NoteBlockInstrument.HARP : instrumentBelow;
+         return (BlockState)state.setValue(INSTRUMENT, newBelow);
       }
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return this.setInstrument(var1.getLevel(), var1.getClickedPos(), this.defaultBlockState());
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      return this.setInstrument(context.getLevel(), context.getClickedPos(), this.defaultBlockState());
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      boolean var9 = var5.getAxis() == Direction.Axis.Y;
-      return var9 ? this.setInstrument(var2, var4, var1) : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      boolean neighborDirectionSetsInstrument = directionToNeighbour.getAxis() == Direction.Axis.Y;
+      return neighborDirectionSetsInstrument ? this.setInstrument(level, pos, state) : super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
-      boolean var7 = var2.hasNeighborSignal(var3);
-      if (var7 != (Boolean)var1.getValue(POWERED)) {
-         if (var7) {
-            this.playNote((Entity)null, var1, var2, var3);
+   protected void neighborChanged(final BlockState state, final Level level, final BlockPos pos, final Block block, final @Nullable Orientation orientation, final boolean movedByPiston) {
+      boolean signal = level.hasNeighborSignal(pos);
+      if (signal != (Boolean)state.getValue(POWERED)) {
+         if (signal) {
+            this.playNote((Entity)null, state, level, pos);
          }
 
-         var2.setBlock(var3, (BlockState)var1.setValue(POWERED, var7), 3);
+         level.setBlock(pos, (BlockState)state.setValue(POWERED, signal), 3);
       }
 
    }
 
-   private void playNote(@Nullable Entity var1, BlockState var2, Level var3, BlockPos var4) {
-      if (((NoteBlockInstrument)var2.getValue(INSTRUMENT)).worksAboveNoteBlock() || var3.getBlockState(var4.above()).isAir()) {
-         var3.blockEvent(var4, this, 0, 0);
-         var3.gameEvent(var1, GameEvent.NOTE_BLOCK_PLAY, var4);
+   private void playNote(final @Nullable Entity source, final BlockState state, final Level level, final BlockPos pos) {
+      if (((NoteBlockInstrument)state.getValue(INSTRUMENT)).worksAboveNoteBlock() || level.getBlockState(pos.above()).isAir()) {
+         level.blockEvent(pos, this, 0, 0);
+         level.gameEvent(source, GameEvent.NOTE_BLOCK_PLAY, pos);
       }
 
    }
 
-   protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
-      return (InteractionResult)(var1.is(ItemTags.NOTE_BLOCK_TOP_INSTRUMENTS) && var7.getDirection() == Direction.UP ? InteractionResult.PASS : super.useItemOn(var1, var2, var3, var4, var5, var6, var7));
+   protected InteractionResult useItemOn(final ItemStack itemStack, final BlockState state, final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final BlockHitResult hitResult) {
+      return (InteractionResult)(itemStack.is(ItemTags.NOTE_BLOCK_TOP_INSTRUMENTS) && hitResult.getDirection() == Direction.UP ? InteractionResult.PASS : super.useItemOn(itemStack, state, level, pos, player, hand, hitResult));
    }
 
-   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (!var2.isClientSide()) {
-         var1 = (BlockState)var1.cycle(NOTE);
-         var2.setBlock(var3, var1, 3);
-         this.playNote(var4, var1, var2, var3);
-         var4.awardStat(Stats.TUNE_NOTEBLOCK);
+   protected InteractionResult useWithoutItem(BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
+      if (!level.isClientSide()) {
+         state = (BlockState)state.cycle(NOTE);
+         level.setBlock(pos, state, 3);
+         this.playNote(player, state, level, pos);
+         player.awardStat(Stats.TUNE_NOTEBLOCK);
       }
 
       return InteractionResult.SUCCESS;
    }
 
-   protected void attack(BlockState var1, Level var2, BlockPos var3, Player var4) {
-      if (!var2.isClientSide()) {
-         this.playNote(var4, var1, var2, var3);
-         var4.awardStat(Stats.PLAY_NOTEBLOCK);
+   protected void attack(final BlockState state, final Level level, final BlockPos pos, final Player player) {
+      if (!level.isClientSide()) {
+         this.playNote(player, state, level, pos);
+         player.awardStat(Stats.PLAY_NOTEBLOCK);
       }
    }
 
-   public static float getPitchFromNote(int var0) {
-      return (float)Math.pow(2.0, (double)(var0 - 12) / 12.0);
+   public static float getPitchFromNote(final int twoOctaveRangeNote) {
+      return (float)Math.pow(2.0, (double)(twoOctaveRangeNote - 12) / 12.0);
    }
 
-   protected boolean triggerEvent(BlockState var1, Level var2, BlockPos var3, int var4, int var5) {
-      NoteBlockInstrument var7 = (NoteBlockInstrument)var1.getValue(INSTRUMENT);
-      float var6;
-      if (var7.isTunable()) {
-         int var8 = (Integer)var1.getValue(NOTE);
-         var6 = getPitchFromNote(var8);
-         var2.addParticle(ParticleTypes.NOTE, (double)var3.getX() + 0.5, (double)var3.getY() + 1.2, (double)var3.getZ() + 0.5, (double)var8 / 24.0, 0.0, 0.0);
+   protected boolean triggerEvent(final BlockState state, final Level level, final BlockPos pos, final int b0, final int b1) {
+      NoteBlockInstrument instrument = (NoteBlockInstrument)state.getValue(INSTRUMENT);
+      float pitch;
+      if (instrument.isTunable()) {
+         int note = (Integer)state.getValue(NOTE);
+         pitch = getPitchFromNote(note);
+         level.addParticle(ParticleTypes.NOTE, (double)pos.getX() + 0.5, (double)pos.getY() + 1.2, (double)pos.getZ() + 0.5, (double)note / 24.0, 0.0, 0.0);
       } else {
-         var6 = 1.0F;
+         pitch = 1.0F;
       }
 
-      Holder var10;
-      if (var7.hasCustomSound()) {
-         Identifier var9 = this.getCustomSoundId(var2, var3);
-         if (var9 == null) {
+      Holder<SoundEvent> soundEvent;
+      if (instrument.hasCustomSound()) {
+         Identifier soundId = this.getCustomSoundId(level, pos);
+         if (soundId == null) {
             return false;
          }
 
-         var10 = Holder.direct(SoundEvent.createVariableRangeEvent(var9));
+         soundEvent = Holder.<SoundEvent>direct(SoundEvent.createVariableRangeEvent(soundId));
       } else {
-         var10 = var7.getSoundEvent();
+         soundEvent = instrument.getSoundEvent();
       }
 
-      var2.playSeededSound((Entity)null, (double)var3.getX() + 0.5, (double)var3.getY() + 0.5, (double)var3.getZ() + 0.5, var10, SoundSource.RECORDS, 3.0F, var6, var2.random.nextLong());
+      level.playSeededSound((Entity)null, (double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5, soundEvent, SoundSource.RECORDS, 3.0F, pitch, level.getRandom().nextLong());
       return true;
    }
 
-   private @Nullable Identifier getCustomSoundId(Level var1, BlockPos var2) {
-      BlockEntity var4 = var1.getBlockEntity(var2.above());
-      if (var4 instanceof SkullBlockEntity var3) {
-         return var3.getNoteBlockSound();
+   private @Nullable Identifier getCustomSoundId(final Level level, final BlockPos pos) {
+      BlockEntity var4 = level.getBlockEntity(pos.above());
+      if (var4 instanceof SkullBlockEntity head) {
+         return head.getNoteBlockSound();
       } else {
          return null;
       }
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(INSTRUMENT, POWERED, NOTE);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(INSTRUMENT, POWERED, NOTE);
    }
 
    static {

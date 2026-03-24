@@ -10,30 +10,30 @@ public class SimulationChunkTracker extends ChunkTracker {
    protected final Long2ByteMap chunks = new Long2ByteOpenHashMap();
    private final TicketStorage ticketStorage;
 
-   public SimulationChunkTracker(TicketStorage var1) {
+   public SimulationChunkTracker(final TicketStorage ticketStorage) {
       super(34, 16, 256);
-      this.ticketStorage = var1;
-      var1.setSimulationChunkUpdatedListener(this::update);
+      this.ticketStorage = ticketStorage;
+      ticketStorage.setSimulationChunkUpdatedListener(this::update);
       this.chunks.defaultReturnValue((byte)33);
    }
 
-   protected int getLevelFromSource(long var1) {
-      return this.ticketStorage.getTicketLevelAt(var1, true);
+   protected int getLevelFromSource(final long to) {
+      return this.ticketStorage.getTicketLevelAt(to, true);
    }
 
-   public int getLevel(ChunkPos var1) {
-      return this.getLevel(var1.toLong());
+   public int getLevel(final ChunkPos node) {
+      return this.getLevel(node.pack());
    }
 
-   protected int getLevel(long var1) {
-      return this.chunks.get(var1);
+   protected int getLevel(final long node) {
+      return this.chunks.get(node);
    }
 
-   protected void setLevel(long var1, int var3) {
-      if (var3 >= 33) {
-         this.chunks.remove(var1);
+   protected void setLevel(final long node, final int level) {
+      if (level >= 33) {
+         this.chunks.remove(node);
       } else {
-         this.chunks.put(var1, (byte)var3);
+         this.chunks.put(node, (byte)level);
       }
 
    }

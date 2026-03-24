@@ -9,24 +9,23 @@ import net.minecraft.world.level.ChunkPos;
 public record ClientboundForgetLevelChunkPacket(ChunkPos pos) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundForgetLevelChunkPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundForgetLevelChunkPacket>codec(ClientboundForgetLevelChunkPacket::write, ClientboundForgetLevelChunkPacket::new);
 
-   private ClientboundForgetLevelChunkPacket(FriendlyByteBuf var1) {
-      this(var1.readChunkPos());
+   private ClientboundForgetLevelChunkPacket(final FriendlyByteBuf input) {
+      this(input.readChunkPos());
    }
 
-   public ClientboundForgetLevelChunkPacket(ChunkPos var1) {
+   public ClientboundForgetLevelChunkPacket {
       super();
-      this.pos = var1;
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeChunkPos(this.pos);
+   private void write(final FriendlyByteBuf output) {
+      output.writeChunkPos(this.pos);
    }
 
    public PacketType<ClientboundForgetLevelChunkPacket> type() {
       return GamePacketTypes.CLIENTBOUND_FORGET_LEVEL_CHUNK;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleForgetLevelChunk(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleForgetLevelChunk(this);
    }
 }

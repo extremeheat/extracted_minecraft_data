@@ -18,36 +18,36 @@ public class OnlineOptionsScreen extends OptionsSubScreen {
    private static final Component TITLE = Component.translatable("options.online.title");
    private @Nullable OptionInstance<Unit> difficultyDisplay;
 
-   public OnlineOptionsScreen(Screen var1, Options var2) {
-      super(var1, var2, TITLE);
+   public OnlineOptionsScreen(final Screen lastScreen, final Options options) {
+      super(lastScreen, options, TITLE);
    }
 
    protected void init() {
       super.init();
       if (this.difficultyDisplay != null) {
-         AbstractWidget var1 = this.list.findOption(this.difficultyDisplay);
-         if (var1 != null) {
-            var1.active = false;
+         AbstractWidget difficultyButton = this.list.findOption(this.difficultyDisplay);
+         if (difficultyButton != null) {
+            difficultyButton.active = false;
          }
       }
 
    }
 
-   private OptionInstance<?>[] options(Options var1, Minecraft var2) {
-      ArrayList var3 = new ArrayList();
-      var3.add(var1.realmsNotifications());
-      var3.add(var1.allowServerListing());
-      OptionInstance var4 = (OptionInstance)Optionull.map(var2.level, (var0) -> {
-         Difficulty var1 = var0.getDifficulty();
-         return new OptionInstance("options.difficulty.online", OptionInstance.noTooltip(), (var1x, var2) -> var1.getDisplayName(), new OptionInstance.Enum(List.of(Unit.INSTANCE), Codec.EMPTY.codec()), Unit.INSTANCE, (var0x) -> {
+   private OptionInstance<?>[] options(final Options options, final Minecraft minecraft) {
+      List<OptionInstance<?>> optionList = new ArrayList();
+      optionList.add(options.realmsNotifications());
+      optionList.add(options.allowServerListing());
+      OptionInstance<Unit> difficultyDisplay = (OptionInstance)Optionull.map(minecraft.level, (level) -> {
+         Difficulty difficulty = level.getDifficulty();
+         return new OptionInstance("options.difficulty.online", OptionInstance.noTooltip(), (caption, value) -> difficulty.getDisplayName(), new OptionInstance.Enum(List.of(Unit.INSTANCE), Codec.EMPTY.codec()), Unit.INSTANCE, (value) -> {
          });
       });
-      if (var4 != null) {
-         this.difficultyDisplay = var4;
-         var3.add(var4);
+      if (difficultyDisplay != null) {
+         this.difficultyDisplay = difficultyDisplay;
+         optionList.add(difficultyDisplay);
       }
 
-      return (OptionInstance[])var3.toArray(new OptionInstance[0]);
+      return (OptionInstance[])optionList.toArray(new OptionInstance[0]);
    }
 
    protected void addOptions() {

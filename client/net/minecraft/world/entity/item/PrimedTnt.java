@@ -42,27 +42,27 @@ public class PrimedTnt extends Entity implements TraceableEntity {
    private boolean usedPortal;
    private float explosionPower;
 
-   public PrimedTnt(EntityType<? extends PrimedTnt> var1, Level var2) {
-      super(var1, var2);
+   public PrimedTnt(final EntityType<? extends PrimedTnt> type, final Level level) {
+      super(type, level);
       this.explosionPower = 4.0F;
       this.blocksBuilding = true;
    }
 
-   public PrimedTnt(Level var1, double var2, double var4, double var6, @Nullable LivingEntity var8) {
-      this(EntityType.TNT, var1);
-      this.setPos(var2, var4, var6);
-      double var9 = var1.random.nextDouble() * 6.2831854820251465;
-      this.setDeltaMovement(-Math.sin(var9) * 0.02, 0.20000000298023224, -Math.cos(var9) * 0.02);
+   public PrimedTnt(final Level level, final double x, final double y, final double z, final @Nullable LivingEntity owner) {
+      this(EntityType.TNT, level);
+      this.setPos(x, y, z);
+      double rot = level.getRandom().nextDouble() * 6.2831854820251465;
+      this.setDeltaMovement(-Math.sin(rot) * 0.02, 0.20000000298023224, -Math.cos(rot) * 0.02);
       this.setFuse(80);
-      this.xo = var2;
-      this.yo = var4;
-      this.zo = var6;
-      this.owner = EntityReference.of(var8);
+      this.xo = x;
+      this.yo = y;
+      this.zo = z;
+      this.owner = EntityReference.of(owner);
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      var1.define(DATA_FUSE_ID, 80);
-      var1.define(DATA_BLOCK_STATE_ID, DEFAULT_BLOCK_STATE);
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      entityData.define(DATA_FUSE_ID, 80);
+      entityData.define(DATA_BLOCK_STATE_ID, DEFAULT_BLOCK_STATE);
    }
 
    protected Entity.MovementEmission getMovementEmission() {
@@ -87,15 +87,15 @@ public class PrimedTnt extends Entity implements TraceableEntity {
          this.setDeltaMovement(this.getDeltaMovement().multiply(0.7, -0.5, 0.7));
       }
 
-      int var1 = this.getFuse() - 1;
-      this.setFuse(var1);
-      if (var1 <= 0) {
+      int fuse = this.getFuse() - 1;
+      this.setFuse(fuse);
+      if (fuse <= 0) {
          this.discard();
          if (!this.level().isClientSide()) {
             this.explode();
          }
       } else {
-         this.updateInWaterStateAndDoFluidPushing();
+         this.updateFluidInteraction();
          if (this.level().isClientSide()) {
             this.level().addParticle(ParticleTypes.SMOKE, this.getX(), this.getY() + 0.5, this.getZ(), 0.0, 0.0, 0.0);
          }
@@ -105,79 +105,74 @@ public class PrimedTnt extends Entity implements TraceableEntity {
 
    private void explode() {
       Level var2 = this.level();
-      if (var2 instanceof ServerLevel var1) {
-         if ((Boolean)var1.getGameRules().get(GameRules.TNT_EXPLODES)) {
+      if (var2 instanceof ServerLevel level) {
+         if ((Boolean)level.getGameRules().get(GameRules.TNT_EXPLODES)) {
             this.level().explode(this, Explosion.getDefaultDamageSource(this.level(), this), this.usedPortal ? USED_PORTAL_DAMAGE_CALCULATOR : null, this.getX(), this.getY(0.0625), this.getZ(), this.explosionPower, false, Level.ExplosionInteraction.TNT);
          }
       }
 
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      var1.putShort("fuse", (short)this.getFuse());
-      var1.store("block_state", BlockState.CODEC, this.getBlockState());
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      output.putShort("fuse", (short)this.getFuse());
+      output.store("block_state", BlockState.CODEC, this.getBlockState());
       if (this.explosionPower != 4.0F) {
-         var1.putFloat("explosion_power", this.explosionPower);
+         output.putFloat("explosion_power", this.explosionPower);
       }
 
-      EntityReference.store(this.owner, var1, "owner");
+      EntityReference.store(this.owner, output, "owner");
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      this.setFuse(var1.getShortOr("fuse", (short)80));
-      this.setBlockState((BlockState)var1.read("block_state", BlockState.CODEC).orElse(DEFAULT_BLOCK_STATE));
-      this.explosionPower = Mth.clamp(var1.getFloatOr("explosion_power", 4.0F), 0.0F, 128.0F);
-      this.owner = EntityReference.<LivingEntity>read(var1, "owner");
+   protected void readAdditionalSaveData(final ValueInput input) {
+      this.setFuse(input.getShortOr("fuse", (short)80));
+      this.setBlockState((BlockState)input.read("block_state", BlockState.CODEC).orElse(DEFAULT_BLOCK_STATE));
+      this.explosionPower = Mth.clamp(input.getFloatOr("explosion_power", 4.0F), 0.0F, 128.0F);
+      this.owner = EntityReference.<LivingEntity>read(input, "owner");
    }
 
    public @Nullable LivingEntity getOwner() {
       return EntityReference.getLivingEntity(this.owner, this.level());
    }
 
-   public void restoreFrom(Entity var1) {
-      super.restoreFrom(var1);
-      if (var1 instanceof PrimedTnt var2) {
-         this.owner = var2.owner;
+   public void restoreFrom(final Entity oldEntity) {
+      super.restoreFrom(oldEntity);
+      if (oldEntity instanceof PrimedTnt primedTnt) {
+         this.owner = primedTnt.owner;
       }
 
    }
 
-   public void setFuse(int var1) {
-      this.entityData.set(DATA_FUSE_ID, var1);
+   public void setFuse(final int time) {
+      this.entityData.set(DATA_FUSE_ID, time);
    }
 
    public int getFuse() {
       return (Integer)this.entityData.get(DATA_FUSE_ID);
    }
 
-   public void setBlockState(BlockState var1) {
-      this.entityData.set(DATA_BLOCK_STATE_ID, var1);
+   public void setBlockState(final BlockState blockState) {
+      this.entityData.set(DATA_BLOCK_STATE_ID, blockState);
    }
 
    public BlockState getBlockState() {
       return (BlockState)this.entityData.get(DATA_BLOCK_STATE_ID);
    }
 
-   private void setUsedPortal(boolean var1) {
-      this.usedPortal = var1;
+   private void setUsedPortal(final boolean usedPortal) {
+      this.usedPortal = usedPortal;
    }
 
-   public @Nullable Entity teleport(TeleportTransition var1) {
-      Entity var2 = super.teleport(var1);
-      if (var2 instanceof PrimedTnt var3) {
-         var3.setUsedPortal(true);
+   public @Nullable Entity teleport(final TeleportTransition transition) {
+      Entity newEntity = super.teleport(transition);
+      if (newEntity instanceof PrimedTnt tnt) {
+         tnt.setUsedPortal(true);
       }
 
-      return var2;
+      return newEntity;
    }
 
-   public final boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+   public final boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {
       return false;
-   }
-
-   // $FF: synthetic method
-   public @Nullable Entity getOwner() {
-      return this.getOwner();
    }
 
    static {
@@ -185,12 +180,12 @@ public class PrimedTnt extends Entity implements TraceableEntity {
       DATA_BLOCK_STATE_ID = SynchedEntityData.<BlockState>defineId(PrimedTnt.class, EntityDataSerializers.BLOCK_STATE);
       DEFAULT_BLOCK_STATE = Blocks.TNT.defaultBlockState();
       USED_PORTAL_DAMAGE_CALCULATOR = new ExplosionDamageCalculator() {
-         public boolean shouldBlockExplode(Explosion var1, BlockGetter var2, BlockPos var3, BlockState var4, float var5) {
-            return var4.is(Blocks.NETHER_PORTAL) ? false : super.shouldBlockExplode(var1, var2, var3, var4, var5);
+         public boolean shouldBlockExplode(final Explosion explosion, final BlockGetter level, final BlockPos pos, final BlockState state, final float power) {
+            return state.is(Blocks.NETHER_PORTAL) ? false : super.shouldBlockExplode(explosion, level, pos, state, power);
          }
 
-         public Optional<Float> getBlockExplosionResistance(Explosion var1, BlockGetter var2, BlockPos var3, BlockState var4, FluidState var5) {
-            return var4.is(Blocks.NETHER_PORTAL) ? Optional.empty() : super.getBlockExplosionResistance(var1, var2, var3, var4, var5);
+         public Optional<Float> getBlockExplosionResistance(final Explosion explosion, final BlockGetter level, final BlockPos pos, final BlockState block, final FluidState fluid) {
+            return block.is(Blocks.NETHER_PORTAL) ? Optional.empty() : super.getBlockExplosionResistance(explosion, level, pos, block, fluid);
          }
       };
    }

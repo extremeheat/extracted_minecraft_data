@@ -6,11 +6,9 @@ import java.util.Optional;
 import net.minecraft.server.dialog.action.Action;
 
 public record ActionButton(CommonButtonData button, Optional<Action> action) {
-   public static final Codec<ActionButton> CODEC = RecordCodecBuilder.create((var0) -> var0.group(CommonButtonData.MAP_CODEC.forGetter(ActionButton::button), Action.CODEC.optionalFieldOf("action").forGetter(ActionButton::action)).apply(var0, ActionButton::new));
+   public static final Codec<ActionButton> CODEC = RecordCodecBuilder.create((i) -> i.group(CommonButtonData.MAP_CODEC.forGetter(ActionButton::button), Action.CODEC.optionalFieldOf("action").forGetter(ActionButton::action)).apply(i, ActionButton::new));
 
-   public ActionButton(CommonButtonData var1, Optional<Action> var2) {
+   public ActionButton {
       super();
-      this.button = var1;
-      this.action = var2;
    }
 }

@@ -8,5 +8,5 @@ import org.jspecify.annotations.Nullable;
 
 @FunctionalInterface
 public interface ItemModelPropertyTest {
-   boolean get(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3, int var4, ItemDisplayContext var5);
+   boolean get(ItemStack itemStack, @Nullable ClientLevel level, @Nullable LivingEntity owner, int seed, ItemDisplayContext displayContext);
 }

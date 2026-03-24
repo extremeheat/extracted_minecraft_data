@@ -7,10 +7,10 @@ import org.jspecify.annotations.Nullable;
 public interface WorldGenLevel extends ServerLevelAccessor {
    long getSeed();
 
-   default boolean ensureCanWrite(BlockPos var1) {
+   default boolean ensureCanWrite(final BlockPos pos) {
       return true;
    }
 
-   default void setCurrentlyGenerating(@Nullable Supplier<String> var1) {
+   default void setCurrentlyGenerating(final @Nullable Supplier<String> currentlyGenerating) {
    }
 }

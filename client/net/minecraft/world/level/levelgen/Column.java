@@ -13,41 +13,41 @@ public abstract class Column {
       super();
    }
 
-   public static Range around(int var0, int var1) {
-      return new Range(var0 - 1, var1 + 1);
+   public static Range around(final int lowest, final int highest) {
+      return new Range(lowest - 1, highest + 1);
    }
 
-   public static Range inside(int var0, int var1) {
-      return new Range(var0, var1);
+   public static Range inside(final int floor, final int ceiling) {
+      return new Range(floor, ceiling);
    }
 
-   public static Column below(int var0) {
-      return new Ray(var0, false);
+   public static Column below(final int ceiling) {
+      return new Ray(ceiling, false);
    }
 
-   public static Column fromHighest(int var0) {
-      return new Ray(var0 + 1, false);
+   public static Column fromHighest(final int highest) {
+      return new Ray(highest + 1, false);
    }
 
-   public static Column above(int var0) {
-      return new Ray(var0, true);
+   public static Column above(final int floor) {
+      return new Ray(floor, true);
    }
 
-   public static Column fromLowest(int var0) {
-      return new Ray(var0 - 1, true);
+   public static Column fromLowest(final int lowest) {
+      return new Ray(lowest - 1, true);
    }
 
    public static Column line() {
       return Column.Line.INSTANCE;
    }
 
-   public static Column create(OptionalInt var0, OptionalInt var1) {
-      if (var0.isPresent() && var1.isPresent()) {
-         return inside(var0.getAsInt(), var1.getAsInt());
-      } else if (var0.isPresent()) {
-         return above(var0.getAsInt());
+   public static Column create(final OptionalInt floor, final OptionalInt ceiling) {
+      if (floor.isPresent() && ceiling.isPresent()) {
+         return inside(floor.getAsInt(), ceiling.getAsInt());
+      } else if (floor.isPresent()) {
+         return above(floor.getAsInt());
       } else {
-         return var1.isPresent() ? below(var1.getAsInt()) : line();
+         return ceiling.isPresent() ? below(ceiling.getAsInt()) : line();
       }
    }
 
@@ -57,44 +57,44 @@ public abstract class Column {
 
    public abstract OptionalInt getHeight();
 
-   public Column withFloor(OptionalInt var1) {
-      return create(var1, this.getCeiling());
+   public Column withFloor(final OptionalInt floor) {
+      return create(floor, this.getCeiling());
    }
 
-   public Column withCeiling(OptionalInt var1) {
-      return create(this.getFloor(), var1);
+   public Column withCeiling(final OptionalInt ceiling) {
+      return create(this.getFloor(), ceiling);
    }
 
-   public static Optional<Column> scan(LevelSimulatedReader var0, BlockPos var1, int var2, Predicate<BlockState> var3, Predicate<BlockState> var4) {
-      BlockPos.MutableBlockPos var5 = var1.mutable();
-      if (!var0.isStateAtPosition(var1, var3)) {
+   public static Optional<Column> scan(final LevelSimulatedReader level, final BlockPos pos, final int searchRange, final Predicate<BlockState> insideColumn, final Predicate<BlockState> validEdge) {
+      BlockPos.MutableBlockPos mutablePos = pos.mutable();
+      if (!level.isStateAtPosition(pos, insideColumn)) {
          return Optional.empty();
       } else {
-         int var6 = var1.getY();
-         OptionalInt var7 = scanDirection(var0, var2, var3, var4, var5, var6, Direction.UP);
-         OptionalInt var8 = scanDirection(var0, var2, var3, var4, var5, var6, Direction.DOWN);
-         return Optional.of(create(var8, var7));
+         int nearestEmptyY = pos.getY();
+         OptionalInt ceiling = scanDirection(level, searchRange, insideColumn, validEdge, mutablePos, nearestEmptyY, Direction.UP);
+         OptionalInt floor = scanDirection(level, searchRange, insideColumn, validEdge, mutablePos, nearestEmptyY, Direction.DOWN);
+         return Optional.of(create(floor, ceiling));
       }
    }
 
-   private static OptionalInt scanDirection(LevelSimulatedReader var0, int var1, Predicate<BlockState> var2, Predicate<BlockState> var3, BlockPos.MutableBlockPos var4, int var5, Direction var6) {
-      var4.setY(var5);
+   private static OptionalInt scanDirection(final LevelSimulatedReader level, final int searchRange, final Predicate<BlockState> insideColumn, final Predicate<BlockState> validEdge, final BlockPos.MutableBlockPos mutablePos, final int nearestEmptyY, final Direction direction) {
+      mutablePos.setY(nearestEmptyY);
 
-      for(int var7 = 1; var7 < var1 && var0.isStateAtPosition(var4, var2); ++var7) {
-         var4.move(var6);
+      for(int i = 1; i < searchRange && level.isStateAtPosition(mutablePos, insideColumn); ++i) {
+         mutablePos.move(direction);
       }
 
-      return var0.isStateAtPosition(var4, var3) ? OptionalInt.of(var4.getY()) : OptionalInt.empty();
+      return level.isStateAtPosition(mutablePos, validEdge) ? OptionalInt.of(mutablePos.getY()) : OptionalInt.empty();
    }
 
    public static final class Range extends Column {
       private final int floor;
       private final int ceiling;
 
-      protected Range(int var1, int var2) {
+      protected Range(final int floor, final int ceiling) {
          super();
-         this.floor = var1;
-         this.ceiling = var2;
+         this.floor = floor;
+         this.ceiling = ceiling;
          if (this.height() < 0) {
             throw new IllegalArgumentException("Column of negative height: " + String.valueOf(this));
          }
@@ -130,7 +130,7 @@ public abstract class Column {
    }
 
    public static final class Line extends Column {
-      static final Line INSTANCE = new Line();
+      private static final Line INSTANCE = new Line();
 
       private Line() {
          super();
@@ -157,10 +157,10 @@ public abstract class Column {
       private final int edge;
       private final boolean pointingUp;
 
-      public Ray(int var1, boolean var2) {
+      public Ray(final int edge, final boolean pointingUp) {
          super();
-         this.edge = var1;
-         this.pointingUp = var2;
+         this.edge = edge;
+         this.pointingUp = pointingUp;
       }
 
       public OptionalInt getCeiling() {

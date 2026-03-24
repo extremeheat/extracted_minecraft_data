@@ -23,17 +23,17 @@ public enum Variant implements StringRepresentable {
    private final int id;
    private final String name;
 
-   private Variant(final int var3, final String var4) {
-      this.id = var3;
-      this.name = var4;
+   private Variant(final int id, final String name) {
+      this.id = id;
+      this.name = name;
    }
 
    public int getId() {
       return this.id;
    }
 
-   public static Variant byId(int var0) {
-      return (Variant)BY_ID.apply(var0);
+   public static Variant byId(final int id) {
+      return (Variant)BY_ID.apply(id);
    }
 
    public String getSerializedName() {

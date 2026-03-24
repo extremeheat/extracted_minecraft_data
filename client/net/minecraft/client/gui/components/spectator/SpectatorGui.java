@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.components.spectator;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.spectator.SpectatorMenu;
 import net.minecraft.client.gui.spectator.SpectatorMenuItem;
 import net.minecraft.client.gui.spectator.SpectatorMenuListener;
@@ -24,15 +24,15 @@ public class SpectatorGui implements SpectatorMenuListener {
    private long lastSelectionTime;
    private @Nullable SpectatorMenu menu;
 
-   public SpectatorGui(Minecraft var1) {
+   public SpectatorGui(final Minecraft minecraft) {
       super();
-      this.minecraft = var1;
+      this.minecraft = minecraft;
    }
 
-   public void onHotbarSelected(int var1) {
+   public void onHotbarSelected(final int slot) {
       this.lastSelectionTime = Util.getMillis();
       if (this.menu != null) {
-         this.menu.selectSlot(var1);
+         this.menu.selectSlot(slot);
       } else {
          this.menu = new SpectatorMenu(this);
       }
@@ -40,66 +40,66 @@ public class SpectatorGui implements SpectatorMenuListener {
    }
 
    private float getHotbarAlpha() {
-      long var1 = this.lastSelectionTime - Util.getMillis() + 5000L;
-      return Mth.clamp((float)var1 / 2000.0F, 0.0F, 1.0F);
+      long delta = this.lastSelectionTime - Util.getMillis() + 5000L;
+      return Mth.clamp((float)delta / 2000.0F, 0.0F, 1.0F);
    }
 
-   public void renderHotbar(GuiGraphics var1) {
+   public void extractHotbar(final GuiGraphicsExtractor graphics) {
       if (this.menu != null) {
-         float var2 = this.getHotbarAlpha();
-         if (var2 <= 0.0F) {
+         float alpha = this.getHotbarAlpha();
+         if (alpha <= 0.0F) {
             this.menu.exit();
          } else {
-            int var3 = var1.guiWidth() / 2;
-            int var4 = Mth.floor((float)var1.guiHeight() - 22.0F * var2);
-            SpectatorPage var5 = this.menu.getCurrentPage();
-            this.renderPage(var1, var2, var3, var4, var5);
+            int screenCenter = graphics.guiWidth() / 2;
+            int y = Mth.floor((float)graphics.guiHeight() - 22.0F * alpha);
+            SpectatorPage page = this.menu.getCurrentPage();
+            this.extractPage(graphics, alpha, screenCenter, y, page);
          }
       }
    }
 
-   protected void renderPage(GuiGraphics var1, float var2, int var3, int var4, SpectatorPage var5) {
-      int var6 = ARGB.white(var2);
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)HOTBAR_SPRITE, var3 - 91, var4, 182, 22, var6);
-      if (var5.getSelectedSlot() >= 0) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)HOTBAR_SELECTION_SPRITE, var3 - 91 - 1 + var5.getSelectedSlot() * 20, var4 - 1, 24, 23, var6);
+   protected void extractPage(final GuiGraphicsExtractor graphics, final float alpha, final int screenCenter, final int y, final SpectatorPage page) {
+      int color = ARGB.white(alpha);
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)HOTBAR_SPRITE, screenCenter - 91, y, 182, 22, color);
+      if (page.getSelectedSlot() >= 0) {
+         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)HOTBAR_SELECTION_SPRITE, screenCenter - 91 - 1 + page.getSelectedSlot() * 20, y - 1, 24, 23, color);
       }
 
-      for(int var7 = 0; var7 < 9; ++var7) {
-         this.renderSlot(var1, var7, var1.guiWidth() / 2 - 90 + var7 * 20 + 2, (float)(var4 + 3), var2, var5.getItem(var7));
+      for(int slot = 0; slot < 9; ++slot) {
+         this.extractSlot(graphics, slot, graphics.guiWidth() / 2 - 90 + slot * 20 + 2, (float)(y + 3), alpha, page.getItem(slot));
       }
 
    }
 
-   private void renderSlot(GuiGraphics var1, int var2, int var3, float var4, float var5, SpectatorMenuItem var6) {
-      if (var6 != SpectatorMenu.EMPTY_SLOT) {
-         var1.pose().pushMatrix();
-         var1.pose().translate((float)var3, var4);
-         float var7 = var6.isEnabled() ? 1.0F : 0.25F;
-         var6.renderIcon(var1, var7, var5);
-         var1.pose().popMatrix();
-         if (var5 > 0.0F && var6.isEnabled()) {
-            Component var8 = this.minecraft.options.keyHotbarSlots[var2].getTranslatedKeyMessage();
-            var1.drawString(this.minecraft.font, var8, var3 + 19 - 2 - this.minecraft.font.width((FormattedText)var8), (int)var4 + 6 + 3, ARGB.white(var5));
+   private void extractSlot(final GuiGraphicsExtractor graphics, final int slot, final int x, final float y, final float alpha, final SpectatorMenuItem item) {
+      if (item != SpectatorMenu.EMPTY_SLOT) {
+         graphics.pose().pushMatrix();
+         graphics.pose().translate((float)x, y);
+         float brightness = item.isEnabled() ? 1.0F : 0.25F;
+         item.extractIcon(graphics, brightness, alpha);
+         graphics.pose().popMatrix();
+         if (alpha > 0.0F && item.isEnabled()) {
+            Component key = this.minecraft.options.keyHotbarSlots[slot].getTranslatedKeyMessage();
+            graphics.text(this.minecraft.font, key, x + 19 - 2 - this.minecraft.font.width((FormattedText)key), (int)y + 6 + 3, ARGB.white(alpha));
          }
       }
 
    }
 
-   public void renderAction(GuiGraphics var1) {
-      float var2 = this.getHotbarAlpha();
-      if (var2 > 0.0F && this.menu != null) {
-         SpectatorMenuItem var3 = this.menu.getSelectedItem();
-         Component var4 = var3 == SpectatorMenu.EMPTY_SLOT ? this.menu.getSelectedCategory().getPrompt() : var3.getName();
-         int var5 = this.minecraft.font.width((FormattedText)var4);
-         int var6 = (var1.guiWidth() - var5) / 2;
-         int var7 = var1.guiHeight() - 35;
-         var1.drawStringWithBackdrop(this.minecraft.font, var4, var6, var7, var5, ARGB.white(var2));
+   public void extractAction(final GuiGraphicsExtractor graphics) {
+      float alpha = this.getHotbarAlpha();
+      if (alpha > 0.0F && this.menu != null) {
+         SpectatorMenuItem item = this.menu.getSelectedItem();
+         Component action = item == SpectatorMenu.EMPTY_SLOT ? this.menu.getSelectedCategory().getPrompt() : item.getName();
+         int strWidth = this.minecraft.font.width((FormattedText)action);
+         int x = (graphics.guiWidth() - strWidth) / 2;
+         int y = graphics.guiHeight() - 35;
+         graphics.textWithBackdrop(this.minecraft.font, action, x, y, strWidth, ARGB.white(alpha));
       }
 
    }
 
-   public void onSpectatorMenuClosed(SpectatorMenu var1) {
+   public void onSpectatorMenuClosed(final SpectatorMenu menu) {
       this.menu = null;
       this.lastSelectionTime = 0L;
    }
@@ -108,13 +108,13 @@ public class SpectatorGui implements SpectatorMenuListener {
       return this.menu != null;
    }
 
-   public void onMouseScrolled(int var1) {
-      int var2;
-      for(var2 = this.menu.getSelectedSlot() + var1; var2 >= 0 && var2 <= 8 && (this.menu.getItem(var2) == SpectatorMenu.EMPTY_SLOT || !this.menu.getItem(var2).isEnabled()); var2 += var1) {
+   public void onMouseScrolled(final int wheel) {
+      int newSlot;
+      for(newSlot = this.menu.getSelectedSlot() + wheel; newSlot >= 0 && newSlot <= 8 && (this.menu.getItem(newSlot) == SpectatorMenu.EMPTY_SLOT || !this.menu.getItem(newSlot).isEnabled()); newSlot += wheel) {
       }
 
-      if (var2 >= 0 && var2 <= 8) {
-         this.menu.selectSlot(var2);
+      if (newSlot >= 0 && newSlot <= 8) {
+         this.menu.selectSlot(newSlot);
          this.lastSelectionTime = Util.getMillis();
       }
 
@@ -123,9 +123,9 @@ public class SpectatorGui implements SpectatorMenuListener {
    public void onHotbarActionKeyPressed() {
       this.lastSelectionTime = Util.getMillis();
       if (this.isMenuActive()) {
-         int var1 = this.menu.getSelectedSlot();
-         if (var1 != -1) {
-            this.menu.selectSlot(var1);
+         int selectedSlot = this.menu.getSelectedSlot();
+         if (selectedSlot != -1) {
+            this.menu.selectSlot(selectedSlot);
          }
       } else {
          this.menu = new SpectatorMenu(this);

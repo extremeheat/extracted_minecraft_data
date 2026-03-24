@@ -1,48 +1,38 @@
 package net.minecraft.client.renderer.entity;
 
+import net.minecraft.client.model.animal.sheep.BabySheepModel;
 import net.minecraft.client.model.animal.sheep.SheepModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.SheepWoolLayer;
 import net.minecraft.client.renderer.entity.layers.SheepWoolUndercoatLayer;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.SheepRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.sheep.Sheep;
 
 public class SheepRenderer extends AgeableMobRenderer<Sheep, SheepRenderState, SheepModel> {
    private static final Identifier SHEEP_LOCATION = Identifier.withDefaultNamespace("textures/entity/sheep/sheep.png");
+   private static final Identifier SHEEP_BABY_LOCATION = Identifier.withDefaultNamespace("textures/entity/sheep/sheep_baby.png");
 
-   public SheepRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new SheepModel(var1.bakeLayer(ModelLayers.SHEEP)), new SheepModel(var1.bakeLayer(ModelLayers.SHEEP_BABY)), 0.7F);
-      this.addLayer(new SheepWoolUndercoatLayer(this, var1.getModelSet()));
-      this.addLayer(new SheepWoolLayer(this, var1.getModelSet()));
+   public SheepRenderer(final EntityRendererProvider.Context context) {
+      super(context, new SheepModel(context.bakeLayer(ModelLayers.SHEEP)), new BabySheepModel(context.bakeLayer(ModelLayers.SHEEP_BABY)), 0.7F);
+      this.addLayer(new SheepWoolUndercoatLayer(this, context.getModelSet()));
+      this.addLayer(new SheepWoolLayer(this, context.getModelSet()));
    }
 
-   public Identifier getTextureLocation(SheepRenderState var1) {
-      return SHEEP_LOCATION;
+   public Identifier getTextureLocation(final SheepRenderState state) {
+      return state.isBaby ? SHEEP_BABY_LOCATION : SHEEP_LOCATION;
    }
 
    public SheepRenderState createRenderState() {
       return new SheepRenderState();
    }
 
-   public void extractRenderState(Sheep var1, SheepRenderState var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      var2.headEatAngleScale = var1.getHeadEatAngleScale(var3);
-      var2.headEatPositionScale = var1.getHeadEatPositionScale(var3);
-      var2.isSheared = var1.isSheared();
-      var2.woolColor = var1.getColor();
-      var2.isJebSheep = checkMagicName(var1, "jeb_");
-   }
-
-   // $FF: synthetic method
-   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
-      return this.getTextureLocation((SheepRenderState)var1);
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
+   public void extractRenderState(final Sheep entity, final SheepRenderState state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      state.headEatAngleScale = entity.getHeadEatAngleScale(partialTicks);
+      state.headEatPositionScale = entity.getHeadEatPositionScale(partialTicks);
+      state.isSheared = entity.isSheared();
+      state.woolColor = entity.getColor();
+      state.isJebSheep = checkMagicName(entity, "jeb_");
    }
 }

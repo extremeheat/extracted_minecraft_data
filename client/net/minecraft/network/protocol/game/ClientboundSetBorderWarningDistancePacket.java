@@ -10,26 +10,26 @@ public class ClientboundSetBorderWarningDistancePacket implements Packet<ClientG
    public static final StreamCodec<FriendlyByteBuf, ClientboundSetBorderWarningDistancePacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundSetBorderWarningDistancePacket>codec(ClientboundSetBorderWarningDistancePacket::write, ClientboundSetBorderWarningDistancePacket::new);
    private final int warningBlocks;
 
-   public ClientboundSetBorderWarningDistancePacket(WorldBorder var1) {
+   public ClientboundSetBorderWarningDistancePacket(final WorldBorder border) {
       super();
-      this.warningBlocks = var1.getWarningBlocks();
+      this.warningBlocks = border.getWarningBlocks();
    }
 
-   private ClientboundSetBorderWarningDistancePacket(FriendlyByteBuf var1) {
+   private ClientboundSetBorderWarningDistancePacket(final FriendlyByteBuf input) {
       super();
-      this.warningBlocks = var1.readVarInt();
+      this.warningBlocks = input.readVarInt();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeVarInt(this.warningBlocks);
+   private void write(final FriendlyByteBuf output) {
+      output.writeVarInt(this.warningBlocks);
    }
 
    public PacketType<ClientboundSetBorderWarningDistancePacket> type() {
       return GamePacketTypes.CLIENTBOUND_SET_BORDER_WARNING_DISTANCE;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleSetBorderWarningDistance(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleSetBorderWarningDistance(this);
    }
 
    public int getWarningBlocks() {

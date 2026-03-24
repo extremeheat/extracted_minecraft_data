@@ -15,17 +15,17 @@ import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
 
 public class Parched extends AbstractSkeleton {
-   public Parched(EntityType<? extends AbstractSkeleton> var1, Level var2) {
-      super(var1, var2);
+   public Parched(final EntityType<? extends AbstractSkeleton> type, final Level level) {
+      super(type, level);
    }
 
-   protected AbstractArrow getArrow(ItemStack var1, float var2, @Nullable ItemStack var3) {
-      AbstractArrow var4 = super.getArrow(var1, var2, var3);
-      if (var4 instanceof Arrow) {
-         ((Arrow)var4).addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 600));
+   protected AbstractArrow getArrow(final ItemStack projectile, final float power, final @Nullable ItemStack firingWeapon) {
+      AbstractArrow arrow = super.getArrow(projectile, power, firingWeapon);
+      if (arrow instanceof Arrow) {
+         ((Arrow)arrow).addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 600));
       }
 
-      return var4;
+      return arrow;
    }
 
    public static AttributeSupplier.Builder createAttributes() {
@@ -36,7 +36,7 @@ public class Parched extends AbstractSkeleton {
       return SoundEvents.PARCHED_AMBIENT;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return SoundEvents.PARCHED_HURT;
    }
 
@@ -56,7 +56,7 @@ public class Parched extends AbstractSkeleton {
       return 70;
    }
 
-   public boolean canBeAffected(MobEffectInstance var1) {
-      return var1.getEffect() == MobEffects.WEAKNESS ? false : super.canBeAffected(var1);
+   public boolean canBeAffected(final MobEffectInstance newEffect) {
+      return newEffect.getEffect() == MobEffects.WEAKNESS ? false : super.canBeAffected(newEffect);
    }
 }

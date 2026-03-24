@@ -20,10 +20,11 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.phys.Vec3;
 
 public class MinecartChest extends AbstractMinecartContainer {
-   public MinecartChest(EntityType<? extends MinecartChest> var1, Level var2) {
-      super(var1, var2);
+   public MinecartChest(final EntityType<? extends MinecartChest> type, final Level level) {
+      super(type, level);
    }
 
    protected Item getDropItem() {
@@ -46,25 +47,25 @@ public class MinecartChest extends AbstractMinecartContainer {
       return 8;
    }
 
-   public AbstractContainerMenu createMenu(int var1, Inventory var2) {
-      return ChestMenu.threeRows(var1, var2, this);
+   public AbstractContainerMenu createMenu(final int containerId, final Inventory inventory) {
+      return ChestMenu.threeRows(containerId, inventory, this);
    }
 
-   public void stopOpen(ContainerUser var1) {
-      this.level().gameEvent(GameEvent.CONTAINER_CLOSE, this.position(), GameEvent.Context.of((Entity)var1.getLivingEntity()));
+   public void stopOpen(final ContainerUser containerUser) {
+      this.level().gameEvent(GameEvent.CONTAINER_CLOSE, this.position(), GameEvent.Context.of((Entity)containerUser.getLivingEntity()));
    }
 
-   public InteractionResult interact(Player var1, InteractionHand var2) {
-      InteractionResult var3 = this.interactWithContainerVehicle(var1);
-      if (var3.consumesAction()) {
-         Level var5 = var1.level();
-         if (var5 instanceof ServerLevel) {
-            ServerLevel var4 = (ServerLevel)var5;
-            this.gameEvent(GameEvent.CONTAINER_OPEN, var1);
-            PiglinAi.angerNearbyPiglins(var4, var1, true);
+   public InteractionResult interact(final Player player, final InteractionHand hand, final Vec3 location) {
+      InteractionResult result = this.interactWithContainerVehicle(player);
+      if (result.consumesAction()) {
+         Level var6 = player.level();
+         if (var6 instanceof ServerLevel) {
+            ServerLevel serverLevel = (ServerLevel)var6;
+            this.gameEvent(GameEvent.CONTAINER_OPEN, player);
+            PiglinAi.angerNearbyPiglins(serverLevel, player, true);
          }
       }
 
-      return var3;
+      return result;
    }
 }

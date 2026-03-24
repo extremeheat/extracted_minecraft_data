@@ -18,14 +18,15 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class CamelHusk extends Camel {
-   public CamelHusk(EntityType<? extends Camel> var1, Level var2) {
-      super(var1, var2);
+   public CamelHusk(final EntityType<? extends Camel> type, final Level level) {
+      super(type, level);
    }
 
-   public boolean removeWhenFarAway(double var1) {
+   public boolean removeWhenFarAway(final double distSqr) {
       return true;
    }
 
@@ -33,28 +34,28 @@ public class CamelHusk extends Camel {
       return this.getFirstPassenger() instanceof Mob;
    }
 
-   public InteractionResult interact(Player var1, InteractionHand var2) {
+   public InteractionResult interact(final Player player, final InteractionHand hand, final Vec3 location) {
       this.setPersistenceRequired();
-      return super.interact(var1, var2);
+      return super.interact(player, hand, location);
    }
 
    public boolean canBeLeashed() {
       return !this.isMobControlled();
    }
 
-   public boolean isFood(ItemStack var1) {
-      return var1.is(ItemTags.CAMEL_HUSK_FOOD);
+   public boolean isFood(final ItemStack itemStack) {
+      return itemStack.is(ItemTags.CAMEL_HUSK_FOOD);
    }
 
    protected SoundEvent getAmbientSound() {
       return SoundEvents.CAMEL_HUSK_AMBIENT;
    }
 
-   public boolean canMate(Animal var1) {
+   public boolean canMate(final Animal partner) {
       return false;
    }
 
-   public @Nullable Camel getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public @Nullable Camel getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
       return null;
    }
 
@@ -62,16 +63,20 @@ public class CamelHusk extends Camel {
       return false;
    }
 
+   public boolean isBaby() {
+      return false;
+   }
+
    protected SoundEvent getDeathSound() {
       return SoundEvents.CAMEL_HUSK_DEATH;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return SoundEvents.CAMEL_HUSK_HURT;
    }
 
-   protected void playStepSound(BlockPos var1, BlockState var2) {
-      if (var2.is(BlockTags.CAMEL_SAND_STEP_SOUND_BLOCKS)) {
+   protected void playStepSound(final BlockPos pos, final BlockState blockState) {
+      if (blockState.is(BlockTags.CAMEL_SAND_STEP_SOUND_BLOCKS)) {
          this.playSound(SoundEvents.CAMEL_HUSK_STEP_SAND, 0.4F, 1.0F);
       } else {
          this.playSound(SoundEvents.CAMEL_HUSK_STEP, 0.4F, 1.0F);
@@ -105,10 +110,5 @@ public class CamelHusk extends Camel {
 
    public float chargeSpeedModifier() {
       return 4.0F;
-   }
-
-   // $FF: synthetic method
-   public @Nullable AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
-      return this.getBreedOffspring(var1, var2);
    }
 }

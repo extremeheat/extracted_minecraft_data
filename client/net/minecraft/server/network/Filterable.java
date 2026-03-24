@@ -9,47 +9,45 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
 public record Filterable<T>(T raw, Optional<T> filtered) {
-   public Filterable(T var1, Optional<T> var2) {
+   public Filterable {
       super();
-      this.raw = var1;
-      this.filtered = var2;
    }
 
-   public static <T> Codec<Filterable<T>> codec(Codec<T> var0) {
-      Codec var1 = RecordCodecBuilder.create((var1x) -> var1x.group(var0.fieldOf("raw").forGetter(Filterable::raw), var0.optionalFieldOf("filtered").forGetter(Filterable::filtered)).apply(var1x, Filterable::new));
-      Codec var2 = var0.xmap(Filterable::passThrough, Filterable::raw);
-      return Codec.withAlternative(var1, var2);
+   public static <T> Codec<Filterable<T>> codec(final Codec<T> valueCodec) {
+      Codec<Filterable<T>> fullCodec = RecordCodecBuilder.create((i) -> i.group(valueCodec.fieldOf("raw").forGetter(Filterable::raw), valueCodec.optionalFieldOf("filtered").forGetter(Filterable::filtered)).apply(i, Filterable::new));
+      Codec<Filterable<T>> simpleCodec = valueCodec.xmap(Filterable::passThrough, Filterable::raw);
+      return Codec.withAlternative(fullCodec, simpleCodec);
    }
 
-   public static <B extends ByteBuf, T> StreamCodec<B, Filterable<T>> streamCodec(StreamCodec<B, T> var0) {
-      return StreamCodec.composite(var0, Filterable::raw, var0.apply(ByteBufCodecs::optional), Filterable::filtered, Filterable::new);
+   public static <B extends ByteBuf, T> StreamCodec<B, Filterable<T>> streamCodec(final StreamCodec<B, T> valueCodec) {
+      return StreamCodec.composite(valueCodec, Filterable::raw, valueCodec.apply(ByteBufCodecs::optional), Filterable::filtered, Filterable::new);
    }
 
-   public static <T> Filterable<T> passThrough(T var0) {
-      return new Filterable<T>(var0, Optional.empty());
+   public static <T> Filterable<T> passThrough(final T value) {
+      return new Filterable<T>(value, Optional.empty());
    }
 
-   public static Filterable<String> from(FilteredText var0) {
-      return new Filterable<String>(var0.raw(), var0.isFiltered() ? Optional.of(var0.filteredOrEmpty()) : Optional.empty());
+   public static Filterable<String> from(final FilteredText text) {
+      return new Filterable<String>(text.raw(), text.isFiltered() ? Optional.of(text.filteredOrEmpty()) : Optional.empty());
    }
 
-   public T get(boolean var1) {
-      return (T)(var1 ? this.filtered.orElse(this.raw) : this.raw);
+   public T get(final boolean filterEnabled) {
+      return (T)(filterEnabled ? this.filtered.orElse(this.raw) : this.raw);
    }
 
-   public <U> Filterable<U> map(Function<T, U> var1) {
-      return new Filterable<U>(var1.apply(this.raw), this.filtered.map(var1));
+   public <U> Filterable<U> map(final Function<T, U> function) {
+      return new Filterable<U>(function.apply(this.raw), this.filtered.map(function));
    }
 
-   public <U> Optional<Filterable<U>> resolve(Function<T, Optional<U>> var1) {
-      Optional var2 = (Optional)var1.apply(this.raw);
-      if (var2.isEmpty()) {
+   public <U> Optional<Filterable<U>> resolve(final Function<T, Optional<U>> function) {
+      Optional<U> newRaw = (Optional)function.apply(this.raw);
+      if (newRaw.isEmpty()) {
          return Optional.empty();
       } else if (this.filtered.isPresent()) {
-         Optional var3 = (Optional)var1.apply(this.filtered.get());
-         return var3.isEmpty() ? Optional.empty() : Optional.of(new Filterable(var2.get(), var3));
+         Optional<U> newFiltered = (Optional)function.apply(this.filtered.get());
+         return newFiltered.isEmpty() ? Optional.empty() : Optional.of(new Filterable(newRaw.get(), newFiltered));
       } else {
-         return Optional.of(new Filterable(var2.get(), Optional.empty()));
+         return Optional.of(new Filterable(newRaw.get(), Optional.empty()));
       }
    }
 }

@@ -11,47 +11,47 @@ public class NarrationThunk<T> {
    private final BiConsumer<Consumer<String>, T> converter;
    public static final NarrationThunk<?> EMPTY;
 
-   private NarrationThunk(T var1, BiConsumer<Consumer<String>, T> var2) {
+   private NarrationThunk(final T contents, final BiConsumer<Consumer<String>, T> converter) {
       super();
-      this.contents = var1;
-      this.converter = var2;
+      this.contents = contents;
+      this.converter = converter;
    }
 
-   public static NarrationThunk<?> from(String var0) {
-      return new NarrationThunk(var0, Consumer::accept);
+   public static NarrationThunk<?> from(final String text) {
+      return new NarrationThunk(text, Consumer::accept);
    }
 
-   public static NarrationThunk<?> from(Component var0) {
-      return new NarrationThunk(var0, (var0x, var1) -> var0x.accept(var1.getString()));
+   public static NarrationThunk<?> from(final Component text) {
+      return new NarrationThunk(text, (o, c) -> o.accept(c.getString()));
    }
 
-   public static NarrationThunk<?> from(List<Component> var0) {
-      return new NarrationThunk(var0, (var1, var2) -> var0.stream().map(Component::getString).forEach(var1));
+   public static NarrationThunk<?> from(final List<Component> lines) {
+      return new NarrationThunk(lines, (o, c) -> lines.stream().map(Component::getString).forEach(o));
    }
 
-   public void getText(Consumer<String> var1) {
-      this.converter.accept(var1, this.contents);
+   public void getText(final Consumer<String> output) {
+      this.converter.accept(output, this.contents);
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
+   public boolean equals(final Object o) {
+      if (this == o) {
          return true;
-      } else if (!(var1 instanceof NarrationThunk)) {
+      } else if (!(o instanceof NarrationThunk)) {
          return false;
       } else {
-         NarrationThunk var2 = (NarrationThunk)var1;
-         return var2.converter == this.converter && var2.contents.equals(this.contents);
+         NarrationThunk<?> thunk = (NarrationThunk)o;
+         return thunk.converter == this.converter && thunk.contents.equals(this.contents);
       }
    }
 
    public int hashCode() {
-      int var1 = this.contents.hashCode();
-      var1 = 31 * var1 + this.converter.hashCode();
-      return var1;
+      int result = this.contents.hashCode();
+      result = 31 * result + this.converter.hashCode();
+      return result;
    }
 
    static {
-      EMPTY = new NarrationThunk(Unit.INSTANCE, (var0, var1) -> {
+      EMPTY = new NarrationThunk(Unit.INSTANCE, (o, c) -> {
       });
    }
 }

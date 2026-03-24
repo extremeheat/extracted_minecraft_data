@@ -28,12 +28,12 @@ public class DimensionArgument implements ArgumentType<Identifier> {
       super();
    }
 
-   public Identifier parse(StringReader var1) throws CommandSyntaxException {
-      return Identifier.read(var1);
+   public Identifier parse(final StringReader reader) throws CommandSyntaxException {
+      return Identifier.read(reader);
    }
 
-   public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      return var1.getSource() instanceof SharedSuggestionProvider ? SharedSuggestionProvider.suggestResource(((SharedSuggestionProvider)var1.getSource()).levels().stream().map(ResourceKey::identifier), var2) : Suggestions.empty();
+   public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
+      return context.getSource() instanceof SharedSuggestionProvider ? SharedSuggestionProvider.suggestResource(((SharedSuggestionProvider)context.getSource()).levels().stream().map(ResourceKey::identifier), builder) : Suggestions.empty();
    }
 
    public Collection<String> getExamples() {
@@ -44,24 +44,19 @@ public class DimensionArgument implements ArgumentType<Identifier> {
       return new DimensionArgument();
    }
 
-   public static ServerLevel getDimension(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
-      Identifier var2 = (Identifier)var0.getArgument(var1, Identifier.class);
-      ResourceKey var3 = ResourceKey.create(Registries.DIMENSION, var2);
-      ServerLevel var4 = ((CommandSourceStack)var0.getSource()).getServer().getLevel(var3);
-      if (var4 == null) {
-         throw ERROR_INVALID_VALUE.create(var2);
+   public static ServerLevel getDimension(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
+      Identifier location = (Identifier)context.getArgument(name, Identifier.class);
+      ResourceKey<Level> key = ResourceKey.create(Registries.DIMENSION, location);
+      ServerLevel level = ((CommandSourceStack)context.getSource()).getServer().getLevel(key);
+      if (level == null) {
+         throw ERROR_INVALID_VALUE.create(location);
       } else {
-         return var4;
+         return level;
       }
    }
 
-   // $FF: synthetic method
-   public Object parse(final StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1);
-   }
-
    static {
-      EXAMPLES = (Collection)Stream.of(Level.OVERWORLD, Level.NETHER).map((var0) -> var0.identifier().toString()).collect(Collectors.toList());
-      ERROR_INVALID_VALUE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.dimension.invalid", var0));
+      EXAMPLES = (Collection)Stream.of(Level.OVERWORLD, Level.NETHER).map((key) -> key.identifier().toString()).collect(Collectors.toList());
+      ERROR_INVALID_VALUE = new DynamicCommandExceptionType((value) -> Component.translatableEscape("argument.dimension.invalid", value));
    }
 }

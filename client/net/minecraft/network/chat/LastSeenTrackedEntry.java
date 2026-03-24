@@ -1,10 +1,8 @@
 package net.minecraft.network.chat;
 
 public record LastSeenTrackedEntry(MessageSignature signature, boolean pending) {
-   public LastSeenTrackedEntry(MessageSignature var1, boolean var2) {
+   public LastSeenTrackedEntry {
       super();
-      this.signature = var1;
-      this.pending = var2;
    }
 
    public LastSeenTrackedEntry acknowledge() {

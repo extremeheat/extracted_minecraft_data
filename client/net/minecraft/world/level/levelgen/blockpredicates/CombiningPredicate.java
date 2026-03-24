@@ -8,12 +8,12 @@ import java.util.function.Function;
 abstract class CombiningPredicate implements BlockPredicate {
    protected final List<BlockPredicate> predicates;
 
-   protected CombiningPredicate(List<BlockPredicate> var1) {
+   protected CombiningPredicate(final List<BlockPredicate> predicates) {
       super();
-      this.predicates = var1;
+      this.predicates = predicates;
    }
 
-   public static <T extends CombiningPredicate> MapCodec<T> codec(Function<List<BlockPredicate>, T> var0) {
-      return RecordCodecBuilder.mapCodec((var1) -> var1.group(BlockPredicate.CODEC.listOf().fieldOf("predicates").forGetter((var0x) -> var0x.predicates)).apply(var1, var0));
+   public static <T extends CombiningPredicate> MapCodec<T> codec(final Function<List<BlockPredicate>, T> constructor) {
+      return RecordCodecBuilder.mapCodec((i) -> i.group(BlockPredicate.CODEC.listOf().fieldOf("predicates").forGetter((p) -> p.predicates)).apply(i, constructor));
    }
 }

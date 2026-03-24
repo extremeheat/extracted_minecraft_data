@@ -15,7 +15,7 @@ public class GameEventTags {
       super();
    }
 
-   private static TagKey<GameEvent> create(String var0) {
-      return TagKey.<GameEvent>create(Registries.GAME_EVENT, Identifier.withDefaultNamespace(var0));
+   private static TagKey<GameEvent> create(final String name) {
+      return TagKey.<GameEvent>create(Registries.GAME_EVENT, Identifier.withDefaultNamespace(name));
    }
 }

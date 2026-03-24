@@ -1,11 +1,8 @@
 package net.minecraft.data.tags;
 
-import java.util.Comparator;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.tags.ItemTags;
@@ -15,14 +12,18 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 
 public class VanillaItemTagsProvider extends IntrinsicHolderTagsProvider<Item> {
-   public VanillaItemTagsProvider(PackOutput var1, CompletableFuture<HolderLookup.Provider> var2) {
-      super(var1, Registries.ITEM, var2, (var0) -> var0.builtInRegistryHolder().key());
+   public VanillaItemTagsProvider(final PackOutput output, final CompletableFuture<HolderLookup.Provider> lookupProvider) {
+      super(output, Registries.ITEM, lookupProvider, (e) -> e.builtInRegistryHolder().key());
    }
 
-   protected void addTags(HolderLookup.Provider var1) {
+   protected void addTags(final HolderLookup.Provider registries) {
       (new BlockItemTagsProvider() {
-         protected TagAppender<Block, Block> tag(TagKey<Block> var1, TagKey<Item> var2) {
-            return new BlockToItemConverter(VanillaItemTagsProvider.this.tag(var2));
+         {
+            Objects.requireNonNull(VanillaItemTagsProvider.this);
+         }
+
+         protected TagAppender<Block, Block> tag(final TagKey<Block> blockTag, final TagKey<Item> itemTag) {
+            return new BlockToItemConverter(VanillaItemTagsProvider.this.tag(itemTag));
          }
       }).run();
       this.tag(ItemTags.BANNERS).add(Items.WHITE_BANNER, Items.ORANGE_BANNER, Items.MAGENTA_BANNER, Items.LIGHT_BLUE_BANNER, Items.YELLOW_BANNER, Items.LIME_BANNER, Items.PINK_BANNER, Items.GRAY_BANNER, Items.LIGHT_GRAY_BANNER, Items.CYAN_BANNER, Items.PURPLE_BANNER, Items.BLUE_BANNER, Items.BROWN_BANNER, Items.GREEN_BANNER, Items.RED_BANNER, Items.BLACK_BANNER);
@@ -37,7 +38,7 @@ public class VanillaItemTagsProvider extends IntrinsicHolderTagsProvider<Item> {
       this.tag(ItemTags.LECTERN_BOOKS).add(Items.WRITTEN_BOOK, Items.WRITABLE_BOOK);
       this.tag(ItemTags.BEACON_PAYMENT_ITEMS).add(Items.NETHERITE_INGOT, Items.EMERALD, Items.DIAMOND, Items.GOLD_INGOT, Items.IRON_INGOT);
       this.tag(ItemTags.PIGLIN_REPELLENTS).add(Items.SOUL_TORCH).add(Items.SOUL_LANTERN).add(Items.SOUL_CAMPFIRE);
-      this.tag(ItemTags.PIGLIN_LOVED).addTag(ItemTags.GOLD_ORES).add(Items.GOLD_BLOCK, Items.GILDED_BLACKSTONE, Items.LIGHT_WEIGHTED_PRESSURE_PLATE, Items.GOLD_INGOT, Items.BELL, Items.CLOCK, Items.GOLDEN_CARROT, Items.GLISTERING_MELON_SLICE, Items.GOLDEN_APPLE, Items.ENCHANTED_GOLDEN_APPLE, Items.GOLDEN_HELMET, Items.GOLDEN_CHESTPLATE, Items.GOLDEN_LEGGINGS, Items.GOLDEN_BOOTS, Items.GOLDEN_HORSE_ARMOR, Items.GOLDEN_NAUTILUS_ARMOR, Items.GOLDEN_SWORD, Items.GOLDEN_SPEAR, Items.GOLDEN_PICKAXE, Items.GOLDEN_SHOVEL, Items.GOLDEN_AXE, Items.GOLDEN_HOE, Items.RAW_GOLD, Items.RAW_GOLD_BLOCK);
+      this.tag(ItemTags.PIGLIN_LOVED).addTag(ItemTags.GOLD_ORES).add(Items.GOLD_BLOCK, Items.GILDED_BLACKSTONE, Items.LIGHT_WEIGHTED_PRESSURE_PLATE, Items.GOLD_INGOT, Items.BELL, Items.CLOCK, Items.GOLDEN_CARROT, Items.GLISTERING_MELON_SLICE, Items.GOLDEN_APPLE, Items.ENCHANTED_GOLDEN_APPLE, Items.GOLDEN_HELMET, Items.GOLDEN_CHESTPLATE, Items.GOLDEN_LEGGINGS, Items.GOLDEN_BOOTS, Items.GOLDEN_HORSE_ARMOR, Items.GOLDEN_NAUTILUS_ARMOR, Items.GOLDEN_SWORD, Items.GOLDEN_SPEAR, Items.GOLDEN_PICKAXE, Items.GOLDEN_SHOVEL, Items.GOLDEN_AXE, Items.GOLDEN_HOE, Items.RAW_GOLD, Items.RAW_GOLD_BLOCK, Items.GOLDEN_DANDELION);
       this.tag(ItemTags.IGNORED_BY_PIGLIN_BABIES).add(Items.LEATHER);
       this.tag(ItemTags.PIGLIN_FOOD).add(Items.PORKCHOP, Items.COOKED_PORKCHOP);
       this.tag(ItemTags.PIGLIN_SAFE_ARMOR).add(Items.GOLDEN_HELMET, Items.GOLDEN_CHESTPLATE, Items.GOLDEN_LEGGINGS, Items.GOLDEN_BOOTS);
@@ -87,7 +88,7 @@ public class VanillaItemTagsProvider extends IntrinsicHolderTagsProvider<Item> {
       this.tag(ItemTags.HEAD_ARMOR).add(Items.LEATHER_HELMET, Items.COPPER_HELMET, Items.CHAINMAIL_HELMET, Items.GOLDEN_HELMET, Items.IRON_HELMET, Items.DIAMOND_HELMET, Items.NETHERITE_HELMET, Items.TURTLE_HELMET);
       this.tag(ItemTags.SKULLS).add(Items.PLAYER_HEAD, Items.CREEPER_HEAD, Items.ZOMBIE_HEAD, Items.SKELETON_SKULL, Items.WITHER_SKELETON_SKULL, Items.DRAGON_HEAD, Items.PIGLIN_HEAD);
       this.tag(ItemTags.TRIMMABLE_ARMOR).addTag(ItemTags.FOOT_ARMOR).addTag(ItemTags.LEG_ARMOR).addTag(ItemTags.CHEST_ARMOR).addTag(ItemTags.HEAD_ARMOR);
-      this.tag(ItemTags.TRIM_MATERIALS).addAll(var1.lookupOrThrow(Registries.ITEM).listElements().filter((var0) -> ((Item)var0.value()).components().has(DataComponents.PROVIDES_TRIM_MATERIAL)).sorted(Comparator.comparing((var0) -> var0.key().identifier())).map(Holder.Reference::value));
+      this.tag(ItemTags.TRIM_MATERIALS).add(Items.AMETHYST_SHARD, Items.COPPER_INGOT, Items.DIAMOND, Items.EMERALD, Items.GOLD_INGOT, Items.IRON_INGOT, Items.LAPIS_LAZULI, Items.NETHERITE_INGOT, Items.QUARTZ, Items.REDSTONE, Items.RESIN_BRICK);
       this.tag(ItemTags.BOOKSHELF_BOOKS).add(Items.BOOK, Items.WRITTEN_BOOK, Items.ENCHANTED_BOOK, Items.WRITABLE_BOOK, Items.KNOWLEDGE_BOOK);
       this.tag(ItemTags.NOTE_BLOCK_TOP_INSTRUMENTS).add(Items.ZOMBIE_HEAD, Items.SKELETON_SKULL, Items.CREEPER_HEAD, Items.DRAGON_HEAD, Items.WITHER_SKELETON_SKULL, Items.PIGLIN_HEAD, Items.PLAYER_HEAD);
       this.tag(ItemTags.SNIFFER_FOOD).add(Items.TORCHFLOWER_SEEDS);
@@ -115,7 +116,8 @@ public class VanillaItemTagsProvider extends IntrinsicHolderTagsProvider<Item> {
       this.tag(ItemTags.EQUIPPABLE_ENCHANTABLE).addTag(ItemTags.FOOT_ARMOR).addTag(ItemTags.LEG_ARMOR).addTag(ItemTags.CHEST_ARMOR).addTag(ItemTags.HEAD_ARMOR).add(Items.ELYTRA).addTag(ItemTags.SKULLS).add(Items.CARVED_PUMPKIN);
       this.tag(ItemTags.CROSSBOW_ENCHANTABLE).add(Items.CROSSBOW);
       this.tag(ItemTags.VANISHING_ENCHANTABLE).addTag(ItemTags.DURABILITY_ENCHANTABLE).add(Items.COMPASS).add(Items.CARVED_PUMPKIN).addTag(ItemTags.SKULLS);
-      this.tag(ItemTags.DYEABLE).add(Items.LEATHER_HELMET, Items.LEATHER_CHESTPLATE, Items.LEATHER_LEGGINGS, Items.LEATHER_BOOTS, Items.LEATHER_HORSE_ARMOR, Items.WOLF_ARMOR);
+      this.tag(ItemTags.DYES).add(Items.WHITE_DYE, Items.ORANGE_DYE, Items.MAGENTA_DYE, Items.LIGHT_BLUE_DYE, Items.YELLOW_DYE, Items.LIME_DYE, Items.PINK_DYE, Items.GRAY_DYE, Items.LIGHT_GRAY_DYE, Items.CYAN_DYE, Items.PURPLE_DYE, Items.BLUE_DYE, Items.BROWN_DYE, Items.GREEN_DYE, Items.RED_DYE, Items.BLACK_DYE);
+      this.tag(ItemTags.CAULDRON_CAN_REMOVE_DYE).add(Items.LEATHER_HELMET, Items.LEATHER_CHESTPLATE, Items.LEATHER_LEGGINGS, Items.LEATHER_BOOTS, Items.LEATHER_HORSE_ARMOR, Items.WOLF_ARMOR);
       this.tag(ItemTags.FURNACE_MINECART_FUEL).add(Items.COAL, Items.CHARCOAL);
       this.tag(ItemTags.MEAT).add(Items.BEEF, Items.CHICKEN, Items.COOKED_BEEF, Items.COOKED_CHICKEN, Items.COOKED_MUTTON, Items.COOKED_PORKCHOP, Items.COOKED_RABBIT, Items.MUTTON, Items.PORKCHOP, Items.RABBIT, Items.ROTTEN_FLESH);
       this.tag(ItemTags.WOLF_FOOD).addTag(ItemTags.MEAT).add(Items.COD, Items.COOKED_COD, Items.SALMON, Items.COOKED_SALMON, Items.TROPICAL_FISH, Items.PUFFERFISH, Items.RABBIT_STEW);
@@ -153,37 +155,42 @@ public class VanillaItemTagsProvider extends IntrinsicHolderTagsProvider<Item> {
       this.tag(ItemTags.MAP_INVISIBILITY_EQUIPMENT).add(Items.CARVED_PUMPKIN);
       this.tag(ItemTags.GAZE_DISGUISE_EQUIPMENT).add(Items.CARVED_PUMPKIN);
       this.tag(ItemTags.SHEARABLE_FROM_COPPER_GOLEM).add(Items.POPPY);
+      this.tag(ItemTags.METAL_NUGGETS).add(Items.COPPER_NUGGET, Items.IRON_NUGGET, Items.GOLD_NUGGET);
+      this.tag(ItemTags.LOOM_DYES).addTag(ItemTags.DYES);
+      this.tag(ItemTags.LOOM_PATTERNS).add(Items.FLOWER_BANNER_PATTERN, Items.CREEPER_BANNER_PATTERN, Items.SKULL_BANNER_PATTERN, Items.MOJANG_BANNER_PATTERN, Items.GLOBE_BANNER_PATTERN, Items.PIGLIN_BANNER_PATTERN, Items.FLOW_BANNER_PATTERN, Items.GUSTER_BANNER_PATTERN, Items.FIELD_MASONED_BANNER_PATTERN, Items.BORDURE_INDENTED_BANNER_PATTERN);
+      this.tag(ItemTags.CAT_COLLAR_DYES).addTag(ItemTags.DYES);
+      this.tag(ItemTags.WOLF_COLLAR_DYES).addTag(ItemTags.DYES);
    }
 
-   static class BlockToItemConverter implements TagAppender<Block, Block> {
+   private static class BlockToItemConverter implements TagAppender<Block, Block> {
       private final TagAppender<Item, Item> itemAppender;
 
-      public BlockToItemConverter(TagAppender<Item, Item> var1) {
+      public BlockToItemConverter(final TagAppender<Item, Item> itemAppender) {
          super();
-         this.itemAppender = var1;
+         this.itemAppender = itemAppender;
       }
 
-      public TagAppender<Block, Block> add(Block var1) {
-         this.itemAppender.add((Item)Objects.requireNonNull(var1.asItem()));
+      public TagAppender<Block, Block> add(final Block element) {
+         this.itemAppender.add((Item)Objects.requireNonNull(element.asItem()));
          return this;
       }
 
-      public TagAppender<Block, Block> addOptional(Block var1) {
-         this.itemAppender.addOptional((Item)Objects.requireNonNull(var1.asItem()));
+      public TagAppender<Block, Block> addOptional(final Block element) {
+         this.itemAppender.addOptional((Item)Objects.requireNonNull(element.asItem()));
          return this;
       }
 
-      private static TagKey<Item> blockTagToItemTag(TagKey<Block> var0) {
-         return TagKey.<Item>create(Registries.ITEM, var0.location());
+      private static TagKey<Item> blockTagToItemTag(final TagKey<Block> blockTag) {
+         return TagKey.<Item>create(Registries.ITEM, blockTag.location());
       }
 
-      public TagAppender<Block, Block> addTag(TagKey<Block> var1) {
-         this.itemAppender.addTag(blockTagToItemTag(var1));
+      public TagAppender<Block, Block> addTag(final TagKey<Block> tag) {
+         this.itemAppender.addTag(blockTagToItemTag(tag));
          return this;
       }
 
-      public TagAppender<Block, Block> addOptionalTag(TagKey<Block> var1) {
-         this.itemAppender.addOptionalTag(blockTagToItemTag(var1));
+      public TagAppender<Block, Block> addOptionalTag(final TagKey<Block> tag) {
+         this.itemAppender.addOptionalTag(blockTagToItemTag(tag));
          return this;
       }
    }

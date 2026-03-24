@@ -15,37 +15,37 @@ public class PacketDecoder<T extends PacketListener> extends ByteToMessageDecode
    private static final Logger LOGGER = LogUtils.getLogger();
    private final ProtocolInfo<T> protocolInfo;
 
-   public PacketDecoder(ProtocolInfo<T> var1) {
+   public PacketDecoder(final ProtocolInfo<T> protocolInfo) {
       super();
-      this.protocolInfo = var1;
+      this.protocolInfo = protocolInfo;
    }
 
-   protected void decode(ChannelHandlerContext var1, ByteBuf var2, List<Object> var3) throws Exception {
-      int var4 = var2.readableBytes();
+   protected void decode(final ChannelHandlerContext ctx, final ByteBuf input, final List<Object> out) throws Exception {
+      int readableBytes = input.readableBytes();
 
-      Packet var5;
+      Packet<? super T> packet;
       try {
-         var5 = (Packet)this.protocolInfo.codec().decode(var2);
-      } catch (Exception var7) {
-         if (var7 instanceof SkipPacketException) {
-            var2.skipBytes(var2.readableBytes());
+         packet = (Packet)this.protocolInfo.codec().decode(input);
+      } catch (Exception e) {
+         if (e instanceof SkipPacketException) {
+            input.skipBytes(input.readableBytes());
          }
 
-         throw var7;
+         throw e;
       }
 
-      PacketType var6 = var5.type();
-      JvmProfiler.INSTANCE.onPacketReceived(this.protocolInfo.id(), var6, var1.channel().remoteAddress(), var4);
-      if (var2.readableBytes() > 0) {
+      PacketType<? extends Packet<? super T>> packetId = packet.type();
+      JvmProfiler.INSTANCE.onPacketReceived(this.protocolInfo.id(), packetId, ctx.channel().remoteAddress(), readableBytes);
+      if (input.readableBytes() > 0) {
          String var10002 = this.protocolInfo.id().id();
-         throw new IOException("Packet " + var10002 + "/" + String.valueOf(var6) + " (" + var5.getClass().getSimpleName() + ") was larger than I expected, found " + var2.readableBytes() + " bytes extra whilst reading packet " + String.valueOf(var6));
+         throw new IOException("Packet " + var10002 + "/" + String.valueOf(packetId) + " (" + packet.getClass().getSimpleName() + ") was larger than I expected, found " + input.readableBytes() + " bytes extra whilst reading packet " + String.valueOf(packetId));
       } else {
-         var3.add(var5);
+         out.add(packet);
          if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(Connection.PACKET_RECEIVED_MARKER, " IN: [{}:{}] {} -> {} bytes", new Object[]{this.protocolInfo.id().id(), var6, var5.getClass().getName(), var4});
+            LOGGER.debug(Connection.PACKET_RECEIVED_MARKER, " IN: [{}:{}] {} -> {} bytes", new Object[]{this.protocolInfo.id().id(), packetId, packet.getClass().getName(), readableBytes});
          }
 
-         ProtocolSwapHandler.handleInboundTerminalPacket(var1, var5);
+         ProtocolSwapHandler.handleInboundTerminalPacket(ctx, packet);
       }
    }
 }

@@ -2,7 +2,7 @@ package net.minecraft.client.gui.components;
 
 import java.time.Duration;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.inventory.tooltip.BelowOrAboveWidgetTooltipPositioner;
@@ -22,46 +22,46 @@ public class WidgetTooltipHolder {
       this.delay = Duration.ZERO;
    }
 
-   public void setDelay(Duration var1) {
-      this.delay = var1;
+   public void setDelay(final Duration delay) {
+      this.delay = delay;
    }
 
-   public void set(@Nullable Tooltip var1) {
-      this.tooltip = var1;
+   public void set(final @Nullable Tooltip tooltip) {
+      this.tooltip = tooltip;
    }
 
    public @Nullable Tooltip get() {
       return this.tooltip;
    }
 
-   public void refreshTooltipForNextRenderPass(GuiGraphics var1, int var2, int var3, boolean var4, boolean var5, ScreenRectangle var6) {
+   public void refreshTooltipForNextRenderPass(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean isHovered, final boolean isFocused, final ScreenRectangle screenRectangle) {
       if (this.tooltip == null) {
          this.wasDisplayed = false;
       } else {
-         Minecraft var7 = Minecraft.getInstance();
-         boolean var8 = var4 || var5 && var7.getLastInputType().isKeyboard();
-         if (var8 != this.wasDisplayed) {
-            if (var8) {
+         Minecraft minecraft = Minecraft.getInstance();
+         boolean shouldDisplay = isHovered || isFocused && minecraft.getLastInputType().isKeyboard();
+         if (shouldDisplay != this.wasDisplayed) {
+            if (shouldDisplay) {
                this.displayStartTime = Util.getMillis();
             }
 
-            this.wasDisplayed = var8;
+            this.wasDisplayed = shouldDisplay;
          }
 
-         if (var8 && Util.getMillis() - this.displayStartTime > this.delay.toMillis()) {
-            var1.setTooltipForNextFrame(var7.font, this.tooltip.toCharSequence(var7), this.createTooltipPositioner(var6, var4, var5), var2, var3, var5);
+         if (shouldDisplay && Util.getMillis() - this.displayStartTime > this.delay.toMillis()) {
+            graphics.setTooltipForNextFrame(minecraft.font, this.tooltip.toCharSequence(minecraft), this.tooltip.component(), this.createTooltipPositioner(screenRectangle, isHovered, isFocused), mouseX, mouseY, isFocused, this.tooltip.style());
          }
 
       }
    }
 
-   private ClientTooltipPositioner createTooltipPositioner(ScreenRectangle var1, boolean var2, boolean var3) {
-      return (ClientTooltipPositioner)(!var2 && var3 && Minecraft.getInstance().getLastInputType().isKeyboard() ? new BelowOrAboveWidgetTooltipPositioner(var1) : new MenuTooltipPositioner(var1));
+   private ClientTooltipPositioner createTooltipPositioner(final ScreenRectangle screenRectangle, final boolean isHovered, final boolean isFocused) {
+      return (ClientTooltipPositioner)(!isHovered && isFocused && Minecraft.getInstance().getLastInputType().isKeyboard() ? new BelowOrAboveWidgetTooltipPositioner(screenRectangle) : new MenuTooltipPositioner(screenRectangle));
    }
 
-   public void updateNarration(NarrationElementOutput var1) {
+   public void updateNarration(final NarrationElementOutput output) {
       if (this.tooltip != null) {
-         this.tooltip.updateNarration(var1);
+         this.tooltip.updateNarration(output);
       }
 
    }

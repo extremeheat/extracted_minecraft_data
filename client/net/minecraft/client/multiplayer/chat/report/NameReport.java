@@ -14,9 +14,9 @@ import org.jspecify.annotations.Nullable;
 public class NameReport extends Report {
    private final String reportedName;
 
-   NameReport(UUID var1, Instant var2, UUID var3, String var4) {
-      super(var1, var2, var3);
-      this.reportedName = var4;
+   private NameReport(final UUID reportId, final Instant createdAt, final UUID reportedProfileId, final String reportedName) {
+      super(reportId, createdAt, reportedProfileId);
+      this.reportedName = reportedName;
    }
 
    public String getReportedName() {
@@ -24,28 +24,23 @@ public class NameReport extends Report {
    }
 
    public NameReport copy() {
-      NameReport var1 = new NameReport(this.reportId, this.createdAt, this.reportedProfileId, this.reportedName);
-      var1.comments = this.comments;
-      var1.attested = this.attested;
-      return var1;
+      NameReport result = new NameReport(this.reportId, this.createdAt, this.reportedProfileId, this.reportedName);
+      result.comments = this.comments;
+      result.attested = this.attested;
+      return result;
    }
 
-   public Screen createScreen(Screen var1, ReportingContext var2) {
-      return new NameReportScreen(var1, var2, this);
-   }
-
-   // $FF: synthetic method
-   public Report copy() {
-      return this.copy();
+   public Screen createScreen(final Screen lastScreen, final ReportingContext context) {
+      return new NameReportScreen(lastScreen, context, this);
    }
 
    public static class Builder extends Report.Builder<NameReport> {
-      public Builder(NameReport var1, AbuseReportLimits var2) {
-         super(var1, var2);
+      public Builder(final NameReport report, final AbuseReportLimits limits) {
+         super(report, limits);
       }
 
-      public Builder(UUID var1, String var2, AbuseReportLimits var3) {
-         super(new NameReport(UUID.randomUUID(), Instant.now(), var1, var2), var3);
+      public Builder(final UUID reportedProfileId, final String reportedName, final AbuseReportLimits limits) {
+         super(new NameReport(UUID.randomUUID(), Instant.now(), reportedProfileId, reportedName), limits);
       }
 
       public boolean hasContent() {
@@ -56,14 +51,14 @@ public class NameReport extends Report {
          return (this.report).comments.length() > this.limits.maxOpinionCommentsLength() ? Report.CannotBuildReason.COMMENT_TOO_LONG : super.checkBuildable();
       }
 
-      public Either<Report.Result, Report.CannotBuildReason> build(ReportingContext var1) {
-         Report.CannotBuildReason var2 = this.checkBuildable();
-         if (var2 != null) {
-            return Either.right(var2);
+      public Either<Report.Result, Report.CannotBuildReason> build(final ReportingContext reportingContext) {
+         Report.CannotBuildReason error = this.checkBuildable();
+         if (error != null) {
+            return Either.right(error);
          } else {
-            ReportedEntity var3 = new ReportedEntity((this.report).reportedProfileId);
-            AbuseReport var4 = AbuseReport.name((this.report).comments, var3, (this.report).createdAt);
-            return Either.left(new Report.Result((this.report).reportId, ReportType.USERNAME, var4));
+            ReportedEntity reportedEntity = new ReportedEntity((this.report).reportedProfileId);
+            AbuseReport abuseReport = AbuseReport.name((this.report).comments, reportedEntity, (this.report).createdAt);
+            return Either.left(new Report.Result((this.report).reportId, ReportType.USERNAME, abuseReport));
          }
       }
    }

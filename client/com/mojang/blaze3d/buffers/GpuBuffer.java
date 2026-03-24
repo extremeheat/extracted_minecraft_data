@@ -1,13 +1,11 @@
 package com.mojang.blaze3d.buffers;
 
-import com.mojang.blaze3d.DontObfuscate;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.nio.ByteBuffer;
 
-@DontObfuscate
 public abstract class GpuBuffer implements AutoCloseable {
    public static final int USAGE_MAP_READ = 1;
    public static final int USAGE_MAP_WRITE = 2;
@@ -21,10 +19,10 @@ public abstract class GpuBuffer implements AutoCloseable {
    private final @GpuBuffer.Usage int usage;
    private final long size;
 
-   public GpuBuffer(@GpuBuffer.Usage int var1, long var2) {
+   public GpuBuffer(final @GpuBuffer.Usage int usage, final long size) {
       super();
-      this.size = var2;
-      this.usage = var1;
+      this.size = size;
+      this.usage = usage;
    }
 
    public long size() {
@@ -39,11 +37,11 @@ public abstract class GpuBuffer implements AutoCloseable {
 
    public abstract void close();
 
-   public GpuBufferSlice slice(long var1, long var3) {
-      if (var1 >= 0L && var3 >= 0L && var1 + var3 <= this.size) {
-         return new GpuBufferSlice(this, var1, var3);
+   public GpuBufferSlice slice(final long offset, final long length) {
+      if (offset >= 0L && length >= 0L && offset + length <= this.size) {
+         return new GpuBufferSlice(this, offset, length);
       } else {
-         throw new IllegalArgumentException("Offset of " + var1 + " and length " + var3 + " would put new slice outside buffer's range (of 0," + var3 + ")");
+         throw new IllegalArgumentException("Offset of " + offset + " and length " + length + " would put new slice outside buffer's range (of 0," + length + ")");
       }
    }
 
@@ -51,7 +49,6 @@ public abstract class GpuBuffer implements AutoCloseable {
       return new GpuBufferSlice(this, 0L, this.size);
    }
 
-   @DontObfuscate
    public interface MappedView extends AutoCloseable {
       ByteBuffer data();
 

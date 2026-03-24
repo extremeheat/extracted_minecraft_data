@@ -9,8 +9,8 @@ import net.minecraft.world.level.levelgen.structure.pieces.PiecesContainer;
 
 @FunctionalInterface
 public interface PostPlacementProcessor {
-   PostPlacementProcessor NONE = (var0, var1, var2, var3, var4, var5, var6) -> {
+   PostPlacementProcessor NONE = (level, structureManager, generator, random, chunkBB, chunkPos, pieces) -> {
    };
 
-   void afterPlace(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, PiecesContainer var7);
+   void afterPlace(WorldGenLevel level, StructureManager structureManager, ChunkGenerator generator, RandomSource random, BoundingBox chunkBB, ChunkPos chunkPos, PiecesContainer pieces);
 }

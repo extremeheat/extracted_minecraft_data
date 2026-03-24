@@ -16,22 +16,22 @@ import net.minecraft.world.level.storage.ValueOutput;
 public abstract class ThrowableItemProjectile extends ThrowableProjectile implements ItemSupplier {
    private static final EntityDataAccessor<ItemStack> DATA_ITEM_STACK;
 
-   public ThrowableItemProjectile(EntityType<? extends ThrowableItemProjectile> var1, Level var2) {
-      super(var1, var2);
+   public ThrowableItemProjectile(final EntityType<? extends ThrowableItemProjectile> type, final Level level) {
+      super(type, level);
    }
 
-   public ThrowableItemProjectile(EntityType<? extends ThrowableItemProjectile> var1, double var2, double var4, double var6, Level var8, ItemStack var9) {
-      super(var1, var2, var4, var6, var8);
-      this.setItem(var9);
+   public ThrowableItemProjectile(final EntityType<? extends ThrowableItemProjectile> type, final double x, final double y, final double z, final Level level, final ItemStack itemStack) {
+      super(type, x, y, z, level);
+      this.setItem(itemStack);
    }
 
-   public ThrowableItemProjectile(EntityType<? extends ThrowableItemProjectile> var1, LivingEntity var2, Level var3, ItemStack var4) {
-      this(var1, var2.getX(), var2.getEyeY() - 0.10000000149011612, var2.getZ(), var3, var4);
-      this.setOwner(var2);
+   public ThrowableItemProjectile(final EntityType<? extends ThrowableItemProjectile> type, final LivingEntity owner, final Level level, final ItemStack itemStack) {
+      this(type, owner.getX(), owner.getEyeY() - 0.10000000149011612, owner.getZ(), level, itemStack);
+      this.setOwner(owner);
    }
 
-   public void setItem(ItemStack var1) {
-      this.getEntityData().set(DATA_ITEM_STACK, var1.copyWithCount(1));
+   public void setItem(final ItemStack source) {
+      this.getEntityData().set(DATA_ITEM_STACK, source.copyWithCount(1));
    }
 
    protected abstract Item getDefaultItem();
@@ -40,18 +40,18 @@ public abstract class ThrowableItemProjectile extends ThrowableProjectile implem
       return (ItemStack)this.getEntityData().get(DATA_ITEM_STACK);
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      var1.define(DATA_ITEM_STACK, new ItemStack(this.getDefaultItem()));
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      entityData.define(DATA_ITEM_STACK, new ItemStack(this.getDefaultItem()));
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.store("Item", ItemStack.CODEC, this.getItem());
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.store("Item", ItemStack.CODEC, this.getItem());
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.setItem((ItemStack)var1.read("Item", ItemStack.CODEC).orElseGet(() -> new ItemStack(this.getDefaultItem())));
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.setItem((ItemStack)input.read("Item", ItemStack.CODEC).orElseGet(() -> new ItemStack(this.getDefaultItem())));
    }
 
    static {

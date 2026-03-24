@@ -28,167 +28,167 @@ public abstract class DiodeBlock extends HorizontalDirectionalBlock {
    public static final BooleanProperty POWERED;
    private static final VoxelShape SHAPE;
 
-   protected DiodeBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   protected DiodeBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
    protected abstract MapCodec<? extends DiodeBlock> codec();
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return SHAPE;
    }
 
-   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      BlockPos var4 = var3.below();
-      return this.canSurviveOn(var2, var4, var2.getBlockState(var4));
+   protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
+      BlockPos belowPos = pos.below();
+      return this.canSurviveOn(level, belowPos, level.getBlockState(belowPos));
    }
 
-   protected boolean canSurviveOn(LevelReader var1, BlockPos var2, BlockState var3) {
-      return var3.isFaceSturdy(var1, var2, Direction.UP, SupportType.RIGID);
+   protected boolean canSurviveOn(final LevelReader level, final BlockPos neightborPos, final BlockState neighborState) {
+      return neighborState.isFaceSturdy(level, neightborPos, Direction.UP, SupportType.RIGID);
    }
 
-   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (!this.isLocked(var2, var3, var1)) {
-         boolean var5 = (Boolean)var1.getValue(POWERED);
-         boolean var6 = this.shouldTurnOn(var2, var3, var1);
-         if (var5 && !var6) {
-            var2.setBlock(var3, (BlockState)var1.setValue(POWERED, false), 2);
-         } else if (!var5) {
-            var2.setBlock(var3, (BlockState)var1.setValue(POWERED, true), 2);
-            if (!var6) {
-               var2.scheduleTick(var3, this, this.getDelay(var1), TickPriority.VERY_HIGH);
+   protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if (!this.isLocked(level, pos, state)) {
+         boolean on = (Boolean)state.getValue(POWERED);
+         boolean shouldTurnOn = this.shouldTurnOn(level, pos, state);
+         if (on && !shouldTurnOn) {
+            level.setBlock(pos, (BlockState)state.setValue(POWERED, false), 2);
+         } else if (!on) {
+            level.setBlock(pos, (BlockState)state.setValue(POWERED, true), 2);
+            if (!shouldTurnOn) {
+               level.scheduleTick(pos, this, this.getDelay(state), TickPriority.VERY_HIGH);
             }
          }
 
       }
    }
 
-   protected int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
-      return var1.getSignal(var2, var3, var4);
+   protected int getDirectSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
+      return state.getSignal(level, pos, direction);
    }
 
-   protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
-      if (!(Boolean)var1.getValue(POWERED)) {
+   protected int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
+      if (!(Boolean)state.getValue(POWERED)) {
          return 0;
       } else {
-         return var1.getValue(FACING) == var4 ? this.getOutputSignal(var2, var3, var1) : 0;
+         return state.getValue(FACING) == direction ? this.getOutputSignal(level, pos, state) : 0;
       }
    }
 
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
-      if (var1.canSurvive(var2, var3)) {
-         this.checkTickOnNeighbor(var2, var3, var1);
+   protected void neighborChanged(final BlockState state, final Level level, final BlockPos pos, final Block block, final @Nullable Orientation orientation, final boolean movedByPiston) {
+      if (state.canSurvive(level, pos)) {
+         this.checkTickOnNeighbor(level, pos, state);
       } else {
-         BlockEntity var7 = var1.hasBlockEntity() ? var2.getBlockEntity(var3) : null;
-         dropResources(var1, var2, var3, var7);
-         var2.removeBlock(var3, false);
+         BlockEntity blockEntity = state.hasBlockEntity() ? level.getBlockEntity(pos) : null;
+         dropResources(state, level, pos, blockEntity);
+         level.removeBlock(pos, false);
 
-         for(Direction var11 : Direction.values()) {
-            var2.updateNeighborsAt(var3.relative(var11), this);
+         for(Direction direction : Direction.values()) {
+            level.updateNeighborsAt(pos.relative(direction), this);
          }
 
       }
    }
 
-   protected void checkTickOnNeighbor(Level var1, BlockPos var2, BlockState var3) {
-      if (!this.isLocked(var1, var2, var3)) {
-         boolean var4 = (Boolean)var3.getValue(POWERED);
-         boolean var5 = this.shouldTurnOn(var1, var2, var3);
-         if (var4 != var5 && !var1.getBlockTicks().willTickThisTick(var2, this)) {
-            TickPriority var6 = TickPriority.HIGH;
-            if (this.shouldPrioritize(var1, var2, var3)) {
-               var6 = TickPriority.EXTREMELY_HIGH;
-            } else if (var4) {
-               var6 = TickPriority.VERY_HIGH;
+   protected void checkTickOnNeighbor(final Level level, final BlockPos pos, final BlockState state) {
+      if (!this.isLocked(level, pos, state)) {
+         boolean on = (Boolean)state.getValue(POWERED);
+         boolean shouldTurnOn = this.shouldTurnOn(level, pos, state);
+         if (on != shouldTurnOn && !level.getBlockTicks().willTickThisTick(pos, this)) {
+            TickPriority priority = TickPriority.HIGH;
+            if (this.shouldPrioritize(level, pos, state)) {
+               priority = TickPriority.EXTREMELY_HIGH;
+            } else if (on) {
+               priority = TickPriority.VERY_HIGH;
             }
 
-            var1.scheduleTick(var2, this, this.getDelay(var3), var6);
+            level.scheduleTick(pos, this, this.getDelay(state), priority);
          }
 
       }
    }
 
-   public boolean isLocked(LevelReader var1, BlockPos var2, BlockState var3) {
+   public boolean isLocked(final LevelReader level, final BlockPos pos, final BlockState state) {
       return false;
    }
 
-   protected boolean shouldTurnOn(Level var1, BlockPos var2, BlockState var3) {
-      return this.getInputSignal(var1, var2, var3) > 0;
+   protected boolean shouldTurnOn(final Level level, final BlockPos pos, final BlockState state) {
+      return this.getInputSignal(level, pos, state) > 0;
    }
 
-   protected int getInputSignal(Level var1, BlockPos var2, BlockState var3) {
-      Direction var4 = (Direction)var3.getValue(FACING);
-      BlockPos var5 = var2.relative(var4);
-      int var6 = var1.getSignal(var5, var4);
-      if (var6 >= 15) {
-         return var6;
+   protected int getInputSignal(final Level level, final BlockPos pos, final BlockState state) {
+      Direction direction = (Direction)state.getValue(FACING);
+      BlockPos targetPos = pos.relative(direction);
+      int input = level.getSignal(targetPos, direction);
+      if (input >= 15) {
+         return input;
       } else {
-         BlockState var7 = var1.getBlockState(var5);
-         return Math.max(var6, var7.is(Blocks.REDSTONE_WIRE) ? (Integer)var7.getValue(RedStoneWireBlock.POWER) : 0);
+         BlockState targetBlockState = level.getBlockState(targetPos);
+         return Math.max(input, targetBlockState.is(Blocks.REDSTONE_WIRE) ? (Integer)targetBlockState.getValue(RedStoneWireBlock.POWER) : 0);
       }
    }
 
-   protected int getAlternateSignal(SignalGetter var1, BlockPos var2, BlockState var3) {
-      Direction var4 = (Direction)var3.getValue(FACING);
-      Direction var5 = var4.getClockWise();
-      Direction var6 = var4.getCounterClockWise();
-      boolean var7 = this.sideInputDiodesOnly();
-      return Math.max(var1.getControlInputSignal(var2.relative(var5), var5, var7), var1.getControlInputSignal(var2.relative(var6), var6, var7));
+   protected int getAlternateSignal(final SignalGetter level, final BlockPos pos, final BlockState state) {
+      Direction direction = (Direction)state.getValue(FACING);
+      Direction clockWise = direction.getClockWise();
+      Direction counterClockWise = direction.getCounterClockWise();
+      boolean sideInputDiodesOnly = this.sideInputDiodesOnly();
+      return Math.max(level.getControlInputSignal(pos.relative(clockWise), clockWise, sideInputDiodesOnly), level.getControlInputSignal(pos.relative(counterClockWise), counterClockWise, sideInputDiodesOnly));
    }
 
-   protected boolean isSignalSource(BlockState var1) {
+   protected boolean isSignalSource(final BlockState state) {
       return true;
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return (BlockState)this.defaultBlockState().setValue(FACING, var1.getHorizontalDirection().getOpposite());
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      return (BlockState)this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
    }
 
-   public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, @Nullable LivingEntity var4, ItemStack var5) {
-      if (this.shouldTurnOn(var1, var2, var3)) {
-         var1.scheduleTick(var2, this, 1);
+   public void setPlacedBy(final Level level, final BlockPos pos, final BlockState state, final @Nullable LivingEntity by, final ItemStack itemStack) {
+      if (this.shouldTurnOn(level, pos, state)) {
+         level.scheduleTick(pos, this, 1);
       }
 
    }
 
-   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      this.updateNeighborsInFront(var2, var3, var1);
+   protected void onPlace(final BlockState state, final Level level, final BlockPos pos, final BlockState oldState, final boolean movedByPiston) {
+      this.updateNeighborsInFront(level, pos, state);
    }
 
-   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
-      if (!var4) {
-         this.updateNeighborsInFront(var2, var3, var1);
+   protected void affectNeighborsAfterRemoval(final BlockState state, final ServerLevel level, final BlockPos pos, final boolean movedByPiston) {
+      if (!movedByPiston) {
+         this.updateNeighborsInFront(level, pos, state);
       }
 
    }
 
-   protected void updateNeighborsInFront(Level var1, BlockPos var2, BlockState var3) {
-      Direction var4 = (Direction)var3.getValue(FACING);
-      BlockPos var5 = var2.relative(var4.getOpposite());
-      Orientation var6 = ExperimentalRedstoneUtils.initialOrientation(var1, var4.getOpposite(), Direction.UP);
-      var1.neighborChanged(var5, this, var6);
-      var1.updateNeighborsAtExceptFromFacing(var5, this, var4, var6);
+   protected void updateNeighborsInFront(final Level level, final BlockPos pos, final BlockState state) {
+      Direction direction = (Direction)state.getValue(FACING);
+      BlockPos oppositePos = pos.relative(direction.getOpposite());
+      Orientation orientation = ExperimentalRedstoneUtils.initialOrientation(level, direction.getOpposite(), Direction.UP);
+      level.neighborChanged(oppositePos, this, orientation);
+      level.updateNeighborsAtExceptFromFacing(oppositePos, this, direction, orientation);
    }
 
    protected boolean sideInputDiodesOnly() {
       return false;
    }
 
-   protected int getOutputSignal(BlockGetter var1, BlockPos var2, BlockState var3) {
+   protected int getOutputSignal(final BlockGetter level, final BlockPos pos, final BlockState state) {
       return 15;
    }
 
-   public static boolean isDiode(BlockState var0) {
-      return var0.getBlock() instanceof DiodeBlock;
+   public static boolean isDiode(final BlockState state) {
+      return state.getBlock() instanceof DiodeBlock;
    }
 
-   public boolean shouldPrioritize(BlockGetter var1, BlockPos var2, BlockState var3) {
-      Direction var4 = ((Direction)var3.getValue(FACING)).getOpposite();
-      BlockState var5 = var1.getBlockState(var2.relative(var4));
-      return isDiode(var5) && var5.getValue(FACING) != var4;
+   public boolean shouldPrioritize(final BlockGetter level, final BlockPos pos, final BlockState state) {
+      Direction direction = ((Direction)state.getValue(FACING)).getOpposite();
+      BlockState oppositeState = level.getBlockState(pos.relative(direction));
+      return isDiode(oppositeState) && oppositeState.getValue(FACING) != direction;
    }
 
-   protected abstract int getDelay(BlockState var1);
+   protected abstract int getDelay(BlockState state);
 
    static {
       POWERED = BlockStateProperties.POWERED;

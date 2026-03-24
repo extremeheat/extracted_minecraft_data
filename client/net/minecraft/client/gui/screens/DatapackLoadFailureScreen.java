@@ -2,7 +2,7 @@ package net.minecraft.client.gui.screens;
 
 import java.util.Objects;
 import net.minecraft.client.gui.ActiveTextCollector;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
@@ -14,28 +14,28 @@ public class DatapackLoadFailureScreen extends Screen {
    private final Runnable cancelCallback;
    private final Runnable safeModeCallback;
 
-   public DatapackLoadFailureScreen(Runnable var1, Runnable var2) {
+   public DatapackLoadFailureScreen(final Runnable cancelCallback, final Runnable safeModeCallback) {
       super(Component.translatable("datapackFailure.title"));
       this.message = MultiLineLabel.EMPTY;
-      this.cancelCallback = var1;
-      this.safeModeCallback = var2;
+      this.cancelCallback = cancelCallback;
+      this.safeModeCallback = safeModeCallback;
    }
 
    protected void init() {
       super.init();
       this.message = MultiLineLabel.create(this.font, this.getTitle(), this.width - 50);
-      this.addRenderableWidget(Button.builder(Component.translatable("datapackFailure.safeMode"), (var1) -> this.safeModeCallback.run()).bounds(this.width / 2 - 155, this.height / 6 + 96, 150, 20).build());
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, (var1) -> this.cancelCallback.run()).bounds(this.width / 2 - 155 + 160, this.height / 6 + 96, 150, 20).build());
+      this.addRenderableWidget(Button.builder(Component.translatable("datapackFailure.safeMode"), (button) -> this.safeModeCallback.run()).bounds(this.width / 2 - 155, this.height / 6 + 96, 150, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, (button) -> this.cancelCallback.run()).bounds(this.width / 2 - 155 + 160, this.height / 6 + 96, 150, 20).build());
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      ActiveTextCollector var5 = var1.textRenderer();
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
+      ActiveTextCollector textRenderer = graphics.textRenderer();
       MultiLineLabel var10000 = this.message;
       TextAlignment var10001 = TextAlignment.CENTER;
       int var10002 = this.width / 2;
       Objects.requireNonNull(this.font);
-      var10000.visitLines(var10001, var10002, 70, 9, var5);
+      var10000.visitLines(var10001, var10002, 70, 9, textRenderer);
    }
 
    public boolean shouldCloseOnEsc() {

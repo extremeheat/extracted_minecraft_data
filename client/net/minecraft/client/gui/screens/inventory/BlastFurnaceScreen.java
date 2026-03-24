@@ -17,8 +17,8 @@ public class BlastFurnaceScreen extends AbstractFurnaceScreen<BlastFurnaceMenu> 
    private static final Component FILTER_NAME = Component.translatable("gui.recipebook.toggleRecipes.blastable");
    private static final List<RecipeBookComponent.TabInfo> TABS;
 
-   public BlastFurnaceScreen(BlastFurnaceMenu var1, Inventory var2, Component var3) {
-      super(var1, var2, var3, FILTER_NAME, TEXTURE, LIT_PROGRESS_SPRITE, BURN_PROGRESS_SPRITE, TABS);
+   public BlastFurnaceScreen(final BlastFurnaceMenu menu, final Inventory inventory, final Component title) {
+      super(menu, inventory, title, FILTER_NAME, TEXTURE, LIT_PROGRESS_SPRITE, BURN_PROGRESS_SPRITE, TABS);
    }
 
    static {

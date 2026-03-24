@@ -15,21 +15,21 @@ public class KillCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("kill").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).executes((var0x) -> kill((CommandSourceStack)var0x.getSource(), ImmutableList.of(((CommandSourceStack)var0x.getSource()).getEntityOrException())))).then(Commands.argument("targets", EntityArgument.entities()).executes((var0x) -> kill((CommandSourceStack)var0x.getSource(), EntityArgument.getEntities(var0x, "targets")))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("kill").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).executes((c) -> kill((CommandSourceStack)c.getSource(), ImmutableList.of(((CommandSourceStack)c.getSource()).getEntityOrException())))).then(Commands.argument("targets", EntityArgument.entities()).executes((c) -> kill((CommandSourceStack)c.getSource(), EntityArgument.getEntities(c, "targets")))));
    }
 
-   private static int kill(CommandSourceStack var0, Collection<? extends Entity> var1) {
-      for(Entity var3 : var1) {
-         var3.kill(var0.getLevel());
+   private static int kill(final CommandSourceStack source, final Collection<? extends Entity> victims) {
+      for(Entity entity : victims) {
+         entity.kill(source.getLevel());
       }
 
-      if (var1.size() == 1) {
-         var0.sendSuccess(() -> Component.translatable("commands.kill.success.single", ((Entity)var1.iterator().next()).getDisplayName()), true);
+      if (victims.size() == 1) {
+         source.sendSuccess(() -> Component.translatable("commands.kill.success.single", ((Entity)victims.iterator().next()).getDisplayName()), true);
       } else {
-         var0.sendSuccess(() -> Component.translatable("commands.kill.success.multiple", var1.size()), true);
+         source.sendSuccess(() -> Component.translatable("commands.kill.success.multiple", victims.size()), true);
       }
 
-      return var1.size();
+      return victims.size();
    }
 }

@@ -14,27 +14,27 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 
 public class PressurePlateBlock extends BasePressurePlateBlock {
-   public static final MapCodec<PressurePlateBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BlockSetType.CODEC.fieldOf("block_set_type").forGetter((var0x) -> var0x.type), propertiesCodec()).apply(var0, PressurePlateBlock::new));
+   public static final MapCodec<PressurePlateBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockSetType.CODEC.fieldOf("block_set_type").forGetter((b) -> b.type), propertiesCodec()).apply(i, PressurePlateBlock::new));
    public static final BooleanProperty POWERED;
 
    public MapCodec<PressurePlateBlock> codec() {
       return CODEC;
    }
 
-   protected PressurePlateBlock(BlockSetType var1, BlockBehaviour.Properties var2) {
-      super(var2, var1);
+   protected PressurePlateBlock(final BlockSetType type, final BlockBehaviour.Properties properties) {
+      super(properties, type);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(POWERED, false));
    }
 
-   protected int getSignalForState(BlockState var1) {
-      return (Boolean)var1.getValue(POWERED) ? 15 : 0;
+   protected int getSignalForState(final BlockState state) {
+      return (Boolean)state.getValue(POWERED) ? 15 : 0;
    }
 
-   protected BlockState setSignalForState(BlockState var1, int var2) {
-      return (BlockState)var1.setValue(POWERED, var2 > 0);
+   protected BlockState setSignalForState(final BlockState state, final int signal) {
+      return (BlockState)state.setValue(POWERED, signal > 0);
    }
 
-   protected int getSignalStrength(Level var1, BlockPos var2) {
+   protected int getSignalStrength(final Level level, final BlockPos pos) {
       Class var10000;
       switch (this.type.pressurePlateSensitivity()) {
          case EVERYTHING -> var10000 = Entity.class;
@@ -42,12 +42,12 @@ public class PressurePlateBlock extends BasePressurePlateBlock {
          default -> throw new MatchException((String)null, (Throwable)null);
       }
 
-      Class var3 = var10000;
-      return getEntityCount(var1, TOUCH_AABB.move(var2), var3) > 0 ? 15 : 0;
+      Class<? extends Entity> entityClass = var10000;
+      return getEntityCount(level, TOUCH_AABB.move(pos), entityClass) > 0 ? 15 : 0;
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(POWERED);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(POWERED);
    }
 
    static {

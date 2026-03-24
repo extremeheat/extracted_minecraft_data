@@ -2,7 +2,6 @@ package net.minecraft.world.entity.animal.nautilus;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -43,7 +42,6 @@ import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.navigation.WaterBoundPathNavigation;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.inventory.AbstractMountInventoryMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUtils;
@@ -61,7 +59,7 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
-public abstract class AbstractNautilus extends TamableAnimal implements HasCustomInventoryScreen, PlayerRideableJumping {
+public abstract class AbstractNautilus extends TamableAnimal implements PlayerRideableJumping, HasCustomInventoryScreen {
    public static final int INVENTORY_SLOT_OFFSET = 500;
    public static final int INVENTORY_ROWS = 3;
    public static final int SMALL_RESTRICTION_RADIUS = 16;
@@ -88,23 +86,23 @@ public abstract class AbstractNautilus extends TamableAnimal implements HasCusto
    private static final float BUBBLE_PROBABILITY_MIN = 0.15F;
    private static final float BUBBLE_PROBABILITY_MAX = 1.0F;
 
-   protected AbstractNautilus(EntityType<? extends AbstractNautilus> var1, Level var2) {
-      super(var1, var2);
+   protected AbstractNautilus(final EntityType<? extends AbstractNautilus> type, final Level level) {
+      super(type, level);
       this.moveControl = new SmoothSwimmingMoveControl(this, 85, 10, 0.011F, 0.0F, true);
       this.lookControl = new SmoothSwimmingLookControl(this, 10);
       this.setPathfindingMalus(PathType.WATER, 0.0F);
       this.createInventory();
    }
 
-   public boolean isFood(ItemStack var1) {
-      return !this.isTame() && !this.isBaby() ? var1.is(ItemTags.NAUTILUS_TAMING_ITEMS) : var1.is(ItemTags.NAUTILUS_FOOD);
+   public boolean isFood(final ItemStack itemStack) {
+      return !this.isTame() && !this.isBaby() ? itemStack.is(ItemTags.NAUTILUS_TAMING_ITEMS) : itemStack.is(ItemTags.NAUTILUS_FOOD);
    }
 
-   protected void usePlayerItem(Player var1, InteractionHand var2, ItemStack var3) {
-      if (var3.is(ItemTags.NAUTILUS_BUCKET_FOOD)) {
-         var1.setItemInHand(var2, ItemUtils.createFilledResult(var3, var1, new ItemStack(Items.WATER_BUCKET)));
+   protected void usePlayerItem(final Player player, final InteractionHand hand, final ItemStack itemStack) {
+      if (itemStack.is(ItemTags.NAUTILUS_BUCKET_FOOD)) {
+         player.setItemInHand(hand, ItemUtils.createFilledResult(itemStack, player, new ItemStack(Items.WATER_BUCKET)));
       } else {
-         super.usePlayerItem(var1, var2, var3);
+         super.usePlayerItem(player, hand, itemStack);
       }
 
    }
@@ -117,84 +115,84 @@ public abstract class AbstractNautilus extends TamableAnimal implements HasCusto
       return false;
    }
 
-   protected PathNavigation createNavigation(Level var1) {
-      return new WaterBoundPathNavigation(this, var1);
+   protected PathNavigation createNavigation(final Level level) {
+      return new WaterBoundPathNavigation(this, level);
    }
 
-   public float getWalkTargetValue(BlockPos var1, LevelReader var2) {
+   public float getWalkTargetValue(final BlockPos pos, final LevelReader level) {
       return 0.0F;
    }
 
-   public static boolean checkNautilusSpawnRules(EntityType<? extends AbstractNautilus> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
-      int var5 = var1.getSeaLevel();
-      int var6 = var5 - 25;
-      return var3.getY() >= var6 && var3.getY() <= var5 - 5 && var1.getFluidState(var3.below()).is(FluidTags.WATER) && var1.getBlockState(var3.above()).is(Blocks.WATER);
+   public static boolean checkNautilusSpawnRules(final EntityType<? extends AbstractNautilus> type, final LevelAccessor level, final EntitySpawnReason spawnReason, final BlockPos pos, final RandomSource random) {
+      int seaLevel = level.getSeaLevel();
+      int minSpawnLevel = seaLevel - 25;
+      return pos.getY() >= minSpawnLevel && pos.getY() <= seaLevel - 5 && level.getFluidState(pos.below()).is(FluidTags.WATER) && level.getBlockState(pos.above()).is(Blocks.WATER);
    }
 
-   public boolean checkSpawnObstruction(LevelReader var1) {
-      return var1.isUnobstructed(this);
+   public boolean checkSpawnObstruction(final LevelReader level) {
+      return level.isUnobstructed(this);
    }
 
-   public boolean canUseSlot(EquipmentSlot var1) {
-      if (var1 != EquipmentSlot.SADDLE && var1 != EquipmentSlot.BODY) {
-         return super.canUseSlot(var1);
+   public boolean canUseSlot(final EquipmentSlot slot) {
+      if (slot != EquipmentSlot.SADDLE && slot != EquipmentSlot.BODY) {
+         return super.canUseSlot(slot);
       } else {
          return this.isAlive() && !this.isBaby() && this.isTame();
       }
    }
 
-   protected boolean canDispenserEquipIntoSlot(EquipmentSlot var1) {
-      return var1 == EquipmentSlot.BODY || var1 == EquipmentSlot.SADDLE || super.canDispenserEquipIntoSlot(var1);
+   protected boolean canDispenserEquipIntoSlot(final EquipmentSlot slot) {
+      return slot == EquipmentSlot.BODY || slot == EquipmentSlot.SADDLE || super.canDispenserEquipIntoSlot(slot);
    }
 
-   protected boolean canAddPassenger(Entity var1) {
+   protected boolean canAddPassenger(final Entity passenger) {
       return !this.isVehicle();
    }
 
    public @Nullable LivingEntity getControllingPassenger() {
-      Entity var1 = this.getFirstPassenger();
-      if (this.isSaddled() && var1 instanceof Player var2) {
-         return var2;
+      Entity firstPassenger = this.getFirstPassenger();
+      if (this.isSaddled() && firstPassenger instanceof Player player) {
+         return player;
       } else {
          return super.getControllingPassenger();
       }
    }
 
-   protected Vec3 getRiddenInput(Player var1, Vec3 var2) {
-      float var3 = var1.xxa;
-      float var4 = 0.0F;
-      float var5 = 0.0F;
-      if (var1.zza != 0.0F) {
-         float var6 = Mth.cos((double)(var1.getXRot() * 0.017453292F));
-         float var7 = -Mth.sin((double)(var1.getXRot() * 0.017453292F));
-         if (var1.zza < 0.0F) {
-            var6 *= -0.5F;
-            var7 *= -0.5F;
+   protected Vec3 getRiddenInput(final Player controller, final Vec3 selfInput) {
+      float strafe = controller.xxa;
+      float forward = 0.0F;
+      float up = 0.0F;
+      if (controller.zza != 0.0F) {
+         float forwardLook = Mth.cos((double)(controller.getXRot() * 0.017453292F));
+         float upLook = -Mth.sin((double)(controller.getXRot() * 0.017453292F));
+         if (controller.zza < 0.0F) {
+            forwardLook *= -0.5F;
+            upLook *= -0.5F;
          }
 
-         var5 = var7;
-         var4 = var6;
+         up = upLook;
+         forward = forwardLook;
       }
 
-      return new Vec3((double)var3, (double)var5, (double)var4);
+      return new Vec3((double)strafe, (double)up, (double)forward);
    }
 
-   protected Vec2 getRiddenRotation(LivingEntity var1) {
-      return new Vec2(var1.getXRot() * 0.5F, var1.getYRot());
+   protected Vec2 getRiddenRotation(final LivingEntity controller) {
+      return new Vec2(controller.getXRot() * 0.5F, controller.getYRot());
    }
 
-   protected void tickRidden(Player var1, Vec3 var2) {
-      super.tickRidden(var1, var2);
-      Vec2 var3 = this.getRiddenRotation(var1);
-      float var4 = this.getYRot();
-      float var5 = Mth.wrapDegrees(var3.y - var4);
-      float var6 = 0.5F;
-      var4 += var5 * 0.5F;
-      this.setRot(var4, var3.x);
-      this.yRotO = this.yBodyRot = this.yHeadRot = var4;
+   protected void tickRidden(final Player controller, final Vec3 riddenInput) {
+      super.tickRidden(controller, riddenInput);
+      Vec2 rotation = this.getRiddenRotation(controller);
+      float yRot = this.getYRot();
+      float diff = Mth.wrapDegrees(rotation.y - yRot);
+      float turnSpeed = 0.5F;
+      yRot += diff * 0.5F;
+      this.setRot(yRot, rotation.x);
+      this.yRotO = this.yBodyRot = this.yHeadRot = yRot;
       if (this.isLocalInstanceAuthoritative()) {
          if (this.playerJumpPendingScale > 0.0F && !this.isJumping()) {
-            this.executeRidersJump(this.playerJumpPendingScale, var1);
+            this.executeRidersJump(this.playerJumpPendingScale, controller);
          }
 
          this.playerJumpPendingScale = 0.0F;
@@ -202,20 +200,20 @@ public abstract class AbstractNautilus extends TamableAnimal implements HasCusto
 
    }
 
-   protected void travelInWater(Vec3 var1, double var2, boolean var4, double var5) {
-      float var7 = this.getSpeed();
-      this.moveRelative(var7, var1);
+   protected void travelInWater(final Vec3 input, final double baseGravity, final boolean isFalling, final double oldY) {
+      float speed = this.getSpeed();
+      this.moveRelative(speed, input);
       this.move(MoverType.SELF, this.getDeltaMovement());
       this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
    }
 
-   protected float getRiddenSpeed(Player var1) {
+   protected float getRiddenSpeed(final Player controller) {
       return this.isInWater() ? 0.0325F * (float)this.getAttributeValue(Attributes.MOVEMENT_SPEED) : 0.02F * (float)this.getAttributeValue(Attributes.MOVEMENT_SPEED);
    }
 
-   protected void doPlayerRide(Player var1) {
+   protected void doPlayerRide(final Player player) {
       if (!this.level().isClientSide()) {
-         var1.startRiding(this);
+         player.startRiding(this);
          if (!this.isVehicle()) {
             this.clearHome();
          }
@@ -229,42 +227,42 @@ public abstract class AbstractNautilus extends TamableAnimal implements HasCusto
 
    protected void checkRestriction() {
       if (!this.isLeashed() && !this.isVehicle() && this.isTame()) {
-         int var1 = this.getNautilusRestrictionRadius();
-         if (!this.hasHome() || !this.getHomePosition().closerThan(this.blockPosition(), (double)(var1 + 8)) || var1 != this.getHomeRadius()) {
-            this.setHomeTo(this.blockPosition(), var1);
+         int radius = this.getNautilusRestrictionRadius();
+         if (!this.hasHome() || !this.getHomePosition().closerThan(this.blockPosition(), (double)(radius + 8)) || radius != this.getHomeRadius()) {
+            this.setHomeTo(this.blockPosition(), radius);
          }
       }
    }
 
-   protected void customServerAiStep(ServerLevel var1) {
+   protected void customServerAiStep(final ServerLevel level) {
       this.checkRestriction();
-      super.customServerAiStep(var1);
+      super.customServerAiStep(level);
    }
 
-   private void applyEffects(Level var1) {
-      Entity var2 = this.getFirstPassenger();
-      if (var2 instanceof Player var3) {
-         boolean var4 = var3.hasEffect(MobEffects.BREATH_OF_THE_NAUTILUS);
-         boolean var5 = var1.getGameTime() % 40L == 0L;
-         if (!var4 || var5) {
-            var3.addEffect(new MobEffectInstance(MobEffects.BREATH_OF_THE_NAUTILUS, 60, 0, true, true, true));
+   private void applyEffects(final Level level) {
+      Entity passenger = this.getFirstPassenger();
+      if (passenger instanceof Player player) {
+         boolean hasEffect = player.hasEffect(MobEffects.BREATH_OF_THE_NAUTILUS);
+         boolean shouldRefresh = level.getGameTime() % 40L == 0L;
+         if (!hasEffect || shouldRefresh) {
+            player.addEffect(new MobEffectInstance(MobEffects.BREATH_OF_THE_NAUTILUS, 60, 0, true, true, true));
          }
       }
 
    }
 
    private void spawnBubbles() {
-      double var1 = this.getDeltaMovement().length();
-      double var3 = Mth.clamp(var1 * 2.0, 0.15000000596046448, 1.0);
-      if ((double)this.random.nextFloat() < var3) {
-         float var5 = this.getYRot();
-         float var6 = Mth.clamp(this.getXRot(), -10.0F, 10.0F);
-         Vec3 var7 = this.calculateViewVector(var6, var5);
-         double var8 = this.random.nextDouble() * 0.8 * (1.0 + var1);
-         double var10 = ((double)this.random.nextFloat() - 0.5) * var8;
-         double var12 = ((double)this.random.nextFloat() - 0.5) * var8;
-         double var14 = ((double)this.random.nextFloat() - 0.5) * var8;
-         this.level().addParticle(ParticleTypes.BUBBLE, this.getX() - var7.x * 1.1, this.getY() - var7.y + 0.25, this.getZ() - var7.z * 1.1, var10, var12, var14);
+      double speed = this.getDeltaMovement().length();
+      double bubbleProbability = Mth.clamp(speed * 2.0, 0.15000000596046448, 1.0);
+      if ((double)this.random.nextFloat() < bubbleProbability) {
+         float yRot = this.getYRot();
+         float xRot = Mth.clamp(this.getXRot(), -10.0F, 10.0F);
+         Vec3 mouthDirectionVector = this.calculateViewVector(xRot, yRot);
+         double spread = this.random.nextDouble() * 0.8 * (1.0 + speed);
+         double dx = ((double)this.random.nextFloat() - 0.5) * spread;
+         double dy = ((double)this.random.nextFloat() - 0.5) * spread;
+         double dz = ((double)this.random.nextFloat() - 0.5) * spread;
+         this.level().addParticle(ParticleTypes.BUBBLE, this.getX() - mouthDirectionVector.x * 1.1, this.getY() - mouthDirectionVector.y + 0.25, this.getZ() - mouthDirectionVector.z * 1.1, dx, dy, dz);
       }
 
    }
@@ -296,33 +294,33 @@ public abstract class AbstractNautilus extends TamableAnimal implements HasCusto
       return this.isSaddled();
    }
 
-   public void onPlayerJump(int var1) {
+   public void onPlayerJump(final int jumpAmount) {
       if (this.isSaddled() && this.dashCooldown <= 0) {
-         this.playerJumpPendingScale = this.getPlayerJumpPendingScale(var1);
+         this.playerJumpPendingScale = this.getPlayerJumpPendingScale(jumpAmount);
       }
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(DASH, false);
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(DASH, false);
    }
 
    public boolean isDashing() {
       return (Boolean)this.entityData.get(DASH);
    }
 
-   public void setDashing(boolean var1) {
-      this.entityData.set(DASH, var1);
+   public void setDashing(final boolean isDashing) {
+      this.entityData.set(DASH, isDashing);
    }
 
-   protected void executeRidersJump(float var1, Player var2) {
-      this.addDeltaMovement(var2.getLookAngle().scale((double)((this.isInWater() ? 1.2F : 0.5F) * var1) * this.getAttributeValue(Attributes.MOVEMENT_SPEED) * (double)this.getBlockSpeedFactor()));
+   protected void executeRidersJump(final float amount, final Player controller) {
+      this.addDeltaMovement(controller.getLookAngle().scale((double)((this.isInWater() ? 1.2F : 0.5F) * amount) * this.getAttributeValue(Attributes.MOVEMENT_SPEED) * (double)this.getBlockSpeedFactor()));
       this.dashCooldown = 40;
       this.setDashing(true);
       this.needsSync = true;
    }
 
-   public void handleStartJump(int var1) {
+   public void handleStartJump(final int jumpScale) {
       this.makeSound(this.getDashSound());
       this.gameEvent(GameEvent.ENTITY_ACTION);
       this.setDashing(true);
@@ -332,18 +330,18 @@ public abstract class AbstractNautilus extends TamableAnimal implements HasCusto
       return this.dashCooldown;
    }
 
-   public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
-      if (!this.firstTick && DASH.equals(var1)) {
+   public void onSyncedDataUpdated(final EntityDataAccessor<?> accessor) {
+      if (!this.firstTick && DASH.equals(accessor)) {
          this.dashCooldown = this.dashCooldown == 0 ? 40 : this.dashCooldown;
       }
 
-      super.onSyncedDataUpdated(var1);
+      super.onSyncedDataUpdated(accessor);
    }
 
    public void handleStopJump() {
    }
 
-   protected void playStepSound(BlockPos var1, BlockState var2) {
+   protected void playStepSound(final BlockPos pos, final BlockState blockState) {
    }
 
    protected @Nullable SoundEvent getDashSound() {
@@ -354,52 +352,49 @@ public abstract class AbstractNautilus extends TamableAnimal implements HasCusto
       return null;
    }
 
-   public InteractionResult interact(Player var1, InteractionHand var2) {
+   public InteractionResult interact(final Player player, final InteractionHand hand, final Vec3 location) {
       this.setPersistenceRequired();
-      return super.interact(var1, var2);
+      return super.interact(player, hand, location);
    }
 
-   public InteractionResult mobInteract(Player var1, InteractionHand var2) {
-      ItemStack var3 = var1.getItemInHand(var2);
+   public InteractionResult mobInteract(final Player player, final InteractionHand hand) {
+      ItemStack itemStack = player.getItemInHand(hand);
       if (this.isBaby()) {
-         return super.mobInteract(var1, var2);
-      } else if (this.isTame() && var1.isSecondaryUseActive()) {
-         this.openCustomInventoryScreen(var1);
+         return super.mobInteract(player, hand);
+      } else if (this.isTame() && player.isSecondaryUseActive()) {
+         this.openCustomInventoryScreen(player);
          return InteractionResult.SUCCESS;
       } else {
-         if (!var3.isEmpty()) {
-            if (!this.level().isClientSide() && !this.isTame() && this.isFood(var3)) {
-               this.usePlayerItem(var1, var2, var3);
-               this.tryToTame(var1);
+         if (!itemStack.isEmpty()) {
+            if (!this.level().isClientSide() && !this.isTame() && this.isFood(itemStack)) {
+               this.usePlayerItem(player, hand, itemStack);
+               this.tryToTame(player);
                return InteractionResult.SUCCESS_SERVER;
             }
 
-            if (this.isFood(var3) && this.getHealth() < this.getMaxHealth()) {
-               FoodProperties var5 = (FoodProperties)var3.get(DataComponents.FOOD);
-               this.heal(var5 != null ? (float)(2 * var5.nutrition()) : 1.0F);
-               this.usePlayerItem(var1, var2, var3);
-               this.playEatingSound();
+            if (this.isFood(itemStack) && this.getHealth() < this.getMaxHealth()) {
+               this.feed(player, hand, itemStack, 2.0F, 1.0F);
                return InteractionResult.SUCCESS;
             }
 
-            InteractionResult var4 = var3.interactLivingEntity(var1, this, var2);
-            if (var4.consumesAction()) {
-               return var4;
+            InteractionResult interactionResult = itemStack.interactLivingEntity(player, this, hand);
+            if (interactionResult.consumesAction()) {
+               return interactionResult;
             }
          }
 
-         if (this.isTame() && !var1.isSecondaryUseActive() && !this.isFood(var3)) {
-            this.doPlayerRide(var1);
+         if (this.isTame() && !player.isSecondaryUseActive() && !this.isFood(itemStack)) {
+            this.doPlayerRide(player);
             return InteractionResult.SUCCESS;
          } else {
-            return super.mobInteract(var1, var2);
+            return super.mobInteract(player, hand);
          }
       }
    }
 
-   private void tryToTame(Player var1) {
+   private void tryToTame(final Player player) {
       if (this.random.nextInt(3) == 0) {
-         this.tame(var1);
+         this.tame(player);
          this.navigation.stop();
          this.level().broadcastEntityEvent(this, (byte)7);
       } else {
@@ -409,38 +404,38 @@ public abstract class AbstractNautilus extends TamableAnimal implements HasCusto
       this.playEatingSound();
    }
 
-   public boolean removeWhenFarAway(double var1) {
+   public boolean removeWhenFarAway(final double distSqr) {
       return true;
    }
 
-   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
-      boolean var4 = super.hurtServer(var1, var2, var3);
-      if (var4) {
-         Entity var6 = var2.getEntity();
+   public boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {
+      boolean wasHurt = super.hurtServer(level, source, damage);
+      if (wasHurt) {
+         Entity var6 = source.getEntity();
          if (var6 instanceof LivingEntity) {
-            LivingEntity var5 = (LivingEntity)var6;
-            NautilusAi.setAngerTarget(var1, this, var5);
+            LivingEntity sourceEntity = (LivingEntity)var6;
+            NautilusAi.setAngerTarget(level, this, sourceEntity);
          }
       }
 
-      return var4;
+      return wasHurt;
    }
 
-   public boolean canBeAffected(MobEffectInstance var1) {
-      return var1.getEffect() == MobEffects.POISON ? false : super.canBeAffected(var1);
+   public boolean canBeAffected(final MobEffectInstance newEffect) {
+      return newEffect.getEffect() == MobEffects.POISON ? false : super.canBeAffected(newEffect);
    }
 
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      RandomSource var5 = var1.getRandom();
-      NautilusAi.initMemories(this, var5);
-      return super.finalizeSpawn(var1, var2, var3, var4);
+   public SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, final @Nullable SpawnGroupData groupData) {
+      RandomSource random = level.getRandom();
+      NautilusAi.initMemories(this, random);
+      return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
    }
 
-   protected Holder<SoundEvent> getEquipSound(EquipmentSlot var1, ItemStack var2, Equippable var3) {
-      if (var1 == EquipmentSlot.SADDLE && this.isUnderWater()) {
+   protected Holder<SoundEvent> getEquipSound(final EquipmentSlot slot, final ItemStack stack, final Equippable equippable) {
+      if (slot == EquipmentSlot.SADDLE && this.isUnderWater()) {
          return SoundEvents.NAUTILUS_SADDLE_UNDERWATER_EQUIP;
       } else {
-         return (Holder<SoundEvent>)(var1 == EquipmentSlot.SADDLE ? SoundEvents.NAUTILUS_SADDLE_EQUIP : super.getEquipSound(var1, var2, var3));
+         return (Holder<SoundEvent>)(slot == EquipmentSlot.SADDLE ? SoundEvents.NAUTILUS_SADDLE_EQUIP : super.getEquipSound(slot, stack, equippable));
       }
    }
 
@@ -449,35 +444,35 @@ public abstract class AbstractNautilus extends TamableAnimal implements HasCusto
    }
 
    protected void createInventory() {
-      SimpleContainer var1 = this.inventory;
+      SimpleContainer old = this.inventory;
       this.inventory = new SimpleContainer(this.getInventorySize());
-      if (var1 != null) {
-         int var2 = Math.min(var1.getContainerSize(), this.inventory.getContainerSize());
+      if (old != null) {
+         int max = Math.min(old.getContainerSize(), this.inventory.getContainerSize());
 
-         for(int var3 = 0; var3 < var2; ++var3) {
-            ItemStack var4 = var1.getItem(var3);
-            if (!var4.isEmpty()) {
-               this.inventory.setItem(var3, var4.copy());
+         for(int slot = 0; slot < max; ++slot) {
+            ItemStack itemStack = old.getItem(slot);
+            if (!itemStack.isEmpty()) {
+               this.inventory.setItem(slot, itemStack.copy());
             }
          }
       }
 
    }
 
-   public void openCustomInventoryScreen(Player var1) {
-      if (!this.level().isClientSide() && (!this.isVehicle() || this.hasPassenger(var1)) && this.isTame()) {
-         var1.openNautilusInventory(this, this.inventory);
+   public void openCustomInventoryScreen(final Player player) {
+      if (!this.level().isClientSide() && (!this.isVehicle() || this.hasPassenger(player)) && this.isTame()) {
+         player.openNautilusInventory(this, this.inventory);
       }
 
    }
 
-   public @Nullable SlotAccess getSlot(int var1) {
-      int var2 = var1 - 500;
-      return var2 >= 0 && var2 < this.inventory.getContainerSize() ? this.inventory.getSlot(var2) : super.getSlot(var1);
+   public @Nullable SlotAccess getSlot(final int slot) {
+      int inventorySlot = slot - 500;
+      return inventorySlot >= 0 && inventorySlot < this.inventory.getContainerSize() ? this.inventory.getSlot(inventorySlot) : super.getSlot(slot);
    }
 
-   public boolean hasInventoryChanged(Container var1) {
-      return this.inventory != var1;
+   public boolean hasInventoryChanged(final Container oldInventory) {
+      return this.inventory != oldInventory;
    }
 
    public int getInventoryColumns() {
@@ -490,6 +485,10 @@ public abstract class AbstractNautilus extends TamableAnimal implements HasCusto
 
    protected boolean isAggravated() {
       return this.getBrain().hasMemoryValue(MemoryModuleType.ANGRY_AT) || this.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_TARGET);
+   }
+
+   public boolean requiresCustomPersistence() {
+      return super.requiresCustomPersistence() || this.isTame();
    }
 
    static {

@@ -9,10 +9,8 @@ import net.minecraft.network.codec.StreamCodec;
 public record DebugBreezeInfo(Optional<Integer> attackTarget, Optional<BlockPos> jumpTarget) {
    public static final StreamCodec<ByteBuf, DebugBreezeInfo> STREAM_CODEC;
 
-   public DebugBreezeInfo(Optional<Integer> var1, Optional<BlockPos> var2) {
+   public DebugBreezeInfo {
       super();
-      this.attackTarget = var1;
-      this.jumpTarget = var2;
    }
 
    static {

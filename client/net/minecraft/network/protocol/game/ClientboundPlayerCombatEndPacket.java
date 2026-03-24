@@ -10,29 +10,29 @@ public class ClientboundPlayerCombatEndPacket implements Packet<ClientGamePacket
    public static final StreamCodec<FriendlyByteBuf, ClientboundPlayerCombatEndPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundPlayerCombatEndPacket>codec(ClientboundPlayerCombatEndPacket::write, ClientboundPlayerCombatEndPacket::new);
    private final int duration;
 
-   public ClientboundPlayerCombatEndPacket(CombatTracker var1) {
-      this(var1.getCombatDuration());
+   public ClientboundPlayerCombatEndPacket(final CombatTracker tracker) {
+      this(tracker.getCombatDuration());
    }
 
-   public ClientboundPlayerCombatEndPacket(int var1) {
+   public ClientboundPlayerCombatEndPacket(final int duration) {
       super();
-      this.duration = var1;
+      this.duration = duration;
    }
 
-   private ClientboundPlayerCombatEndPacket(FriendlyByteBuf var1) {
+   private ClientboundPlayerCombatEndPacket(final FriendlyByteBuf input) {
       super();
-      this.duration = var1.readVarInt();
+      this.duration = input.readVarInt();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeVarInt(this.duration);
+   private void write(final FriendlyByteBuf output) {
+      output.writeVarInt(this.duration);
    }
 
    public PacketType<ClientboundPlayerCombatEndPacket> type() {
       return GamePacketTypes.CLIENTBOUND_PLAYER_COMBAT_END;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handlePlayerCombatEnd(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handlePlayerCombatEnd(this);
    }
 }

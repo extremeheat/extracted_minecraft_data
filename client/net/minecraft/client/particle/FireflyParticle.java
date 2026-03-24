@@ -15,8 +15,8 @@ public class FireflyParticle extends SingleQuadParticle {
    private static final int PARTICLE_MIN_LIFETIME = 200;
    private static final int PARTICLE_MAX_LIFETIME = 300;
 
-   FireflyParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, TextureAtlasSprite var14) {
-      super(var1, var2, var4, var6, var8, var10, var12, var14);
+   private FireflyParticle(final ClientLevel level, final double x, final double y, final double z, final double xa, final double ya, final double za, final TextureAtlasSprite sprite) {
+      super(level, x, y, z, xa, ya, za, sprite);
       this.speedUpWhenYMotionIsBlocked = true;
       this.friction = 0.96F;
       this.quadSize *= 0.75F;
@@ -29,8 +29,8 @@ public class FireflyParticle extends SingleQuadParticle {
       return SingleQuadParticle.Layer.TRANSLUCENT;
    }
 
-   public int getLightColor(float var1) {
-      return (int)(255.0F * getFadeAmount(this.getLifetimeProgress((float)this.age + var1), 0.1F, 0.3F));
+   public int getLightCoords(final float a) {
+      return (int)(255.0F * getFadeAmount(this.getLifetimeProgress((float)this.age + a), 0.1F, 0.3F));
    }
 
    public void tick() {
@@ -46,32 +46,32 @@ public class FireflyParticle extends SingleQuadParticle {
       }
    }
 
-   private float getLifetimeProgress(float var1) {
-      return Mth.clamp(var1 / (float)this.lifetime, 0.0F, 1.0F);
+   private float getLifetimeProgress(final float currentAge) {
+      return Mth.clamp(currentAge / (float)this.lifetime, 0.0F, 1.0F);
    }
 
-   private static float getFadeAmount(float var0, float var1, float var2) {
-      if (var0 >= 1.0F - var1) {
-         return (1.0F - var0) / var1;
+   private static float getFadeAmount(final float lifetimeProgress, final float fadeInTime, final float fadeOutTime) {
+      if (lifetimeProgress >= 1.0F - fadeInTime) {
+         return (1.0F - lifetimeProgress) / fadeInTime;
       } else {
-         return var0 <= var2 ? var0 / var2 : 1.0F;
+         return lifetimeProgress <= fadeOutTime ? lifetimeProgress / fadeOutTime : 1.0F;
       }
    }
 
    public static class FireflyProvider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
 
-      public FireflyProvider(SpriteSet var1) {
+      public FireflyProvider(final SpriteSet sprite) {
          super();
-         this.sprite = var1;
+         this.sprite = sprite;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         FireflyParticle var16 = new FireflyParticle(var2, var3, var5, var7, 0.5 - var15.nextDouble(), var15.nextBoolean() ? var11 : -var11, 0.5 - var15.nextDouble(), this.sprite.get(var15));
-         var16.setLifetime(var15.nextIntBetweenInclusive(200, 300));
-         var16.scale(1.5F);
-         var16.setAlpha(0.0F);
-         return var16;
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         FireflyParticle particle = new FireflyParticle(level, x, y, z, 0.5 - random.nextDouble(), random.nextBoolean() ? yAux : -yAux, 0.5 - random.nextDouble(), this.sprite.get(random));
+         particle.setLifetime(random.nextIntBetweenInclusive(200, 300));
+         particle.scale(1.5F);
+         particle.setAlpha(0.0F);
+         return particle;
       }
    }
 }

@@ -13,17 +13,17 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 
 public class SpinAttackEffectLayer extends RenderLayer<AvatarRenderState, PlayerModel> {
-   public static final Identifier TEXTURE = Identifier.withDefaultNamespace("textures/entity/trident_riptide.png");
+   public static final Identifier TEXTURE = Identifier.withDefaultNamespace("textures/entity/trident/trident_riptide.png");
    private final SpinAttackEffectModel model;
 
-   public SpinAttackEffectLayer(RenderLayerParent<AvatarRenderState, PlayerModel> var1, EntityModelSet var2) {
-      super(var1);
-      this.model = new SpinAttackEffectModel(var2.bakeLayer(ModelLayers.PLAYER_SPIN_ATTACK));
+   public SpinAttackEffectLayer(final RenderLayerParent<AvatarRenderState, PlayerModel> renderer, final EntityModelSet modelSet) {
+      super(renderer);
+      this.model = new SpinAttackEffectModel(modelSet.bakeLayer(ModelLayers.PLAYER_SPIN_ATTACK));
    }
 
-   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, AvatarRenderState var4, float var5, float var6) {
-      if (var4.isAutoSpinAttack) {
-         var2.submitModel(this.model, var4, var1, this.model.renderType(TEXTURE), var3, OverlayTexture.NO_OVERLAY, var4.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+   public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final AvatarRenderState state, final float yRot, final float xRot) {
+      if (state.isAutoSpinAttack) {
+         submitNodeCollector.submitModel(this.model, state, poseStack, TEXTURE, lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       }
    }
 }

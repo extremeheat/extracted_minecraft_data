@@ -14,8 +14,8 @@ public class HorseInventoryScreen extends AbstractMountInventoryScreen<HorseInve
    private static final Identifier CHEST_SLOTS_SPRITE = Identifier.withDefaultNamespace("container/horse/chest_slots");
    private static final Identifier HORSE_INVENTORY_LOCATION = Identifier.withDefaultNamespace("textures/gui/container/horse.png");
 
-   public HorseInventoryScreen(HorseInventoryMenu var1, Inventory var2, AbstractHorse var3, int var4) {
-      super(var1, var2, var3.getDisplayName(), var4, var3);
+   public HorseInventoryScreen(final HorseInventoryMenu menu, final Inventory inventory, final AbstractHorse horse, final int inventoryColumns) {
+      super(menu, inventory, horse.getDisplayName(), inventoryColumns, horse);
    }
 
    protected Identifier getBackgroundTextureLocation() {
@@ -31,10 +31,10 @@ public class HorseInventoryScreen extends AbstractMountInventoryScreen<HorseInve
    }
 
    protected boolean shouldRenderSaddleSlot() {
-      return this.mount.canUseSlot(EquipmentSlot.SADDLE) && this.mount.getType().is(EntityTypeTags.CAN_EQUIP_SADDLE);
+      return this.mount.canUseSlot(EquipmentSlot.SADDLE) && this.mount.is(EntityTypeTags.CAN_EQUIP_SADDLE);
    }
 
    protected boolean shouldRenderArmorSlot() {
-      return this.mount.canUseSlot(EquipmentSlot.BODY) && (this.mount.getType().is(EntityTypeTags.CAN_WEAR_HORSE_ARMOR) || this.mount instanceof Llama);
+      return this.mount.canUseSlot(EquipmentSlot.BODY) && (this.mount.is(EntityTypeTags.CAN_WEAR_HORSE_ARMOR) || this.mount instanceof Llama);
    }
 }

@@ -22,11 +22,11 @@ public class WaypointStyleManager extends SimpleJsonResourceReloadListener<Waypo
       super(WaypointStyle.CODEC, ASSET_LISTER);
    }
 
-   protected void apply(Map<Identifier, WaypointStyle> var1, ResourceManager var2, ProfilerFiller var3) {
-      this.waypointStyles = (Map)var1.entrySet().stream().collect(Collectors.toUnmodifiableMap((var0) -> ResourceKey.create(WaypointStyleAssets.ROOT_ID, (Identifier)var0.getKey()), Map.Entry::getValue));
+   protected void apply(final Map<Identifier, WaypointStyle> preparations, final ResourceManager manager, final ProfilerFiller profiler) {
+      this.waypointStyles = (Map)preparations.entrySet().stream().collect(Collectors.toUnmodifiableMap((e) -> ResourceKey.create(WaypointStyleAssets.ROOT_ID, (Identifier)e.getKey()), Map.Entry::getValue));
    }
 
-   public WaypointStyle get(ResourceKey<WaypointStyleAsset> var1) {
-      return (WaypointStyle)this.waypointStyles.getOrDefault(var1, MISSING);
+   public WaypointStyle get(final ResourceKey<WaypointStyleAsset> id) {
+      return (WaypointStyle)this.waypointStyles.getOrDefault(id, MISSING);
    }
 }

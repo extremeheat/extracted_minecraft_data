@@ -16,30 +16,30 @@ import org.jspecify.annotations.Nullable;
 
 public class SpectateCommand {
    private static final SimpleCommandExceptionType ERROR_SELF = new SimpleCommandExceptionType(Component.translatable("commands.spectate.self"));
-   private static final DynamicCommandExceptionType ERROR_NOT_SPECTATOR = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.spectate.not_spectator", var0));
-   private static final DynamicCommandExceptionType ERROR_CANNOT_SPECTATE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.spectate.cannot_spectate", var0));
+   private static final DynamicCommandExceptionType ERROR_NOT_SPECTATOR = new DynamicCommandExceptionType((s) -> Component.translatableEscape("commands.spectate.not_spectator", s));
+   private static final DynamicCommandExceptionType ERROR_CANNOT_SPECTATE = new DynamicCommandExceptionType((s) -> Component.translatableEscape("commands.spectate.cannot_spectate", s));
 
    public SpectateCommand() {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("spectate").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).executes((var0x) -> spectate((CommandSourceStack)var0x.getSource(), (Entity)null, ((CommandSourceStack)var0x.getSource()).getPlayerOrException()))).then(((RequiredArgumentBuilder)Commands.argument("target", EntityArgument.entity()).executes((var0x) -> spectate((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), ((CommandSourceStack)var0x.getSource()).getPlayerOrException()))).then(Commands.argument("player", EntityArgument.player()).executes((var0x) -> spectate((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), EntityArgument.getPlayer(var0x, "player"))))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("spectate").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).executes((c) -> spectate((CommandSourceStack)c.getSource(), (Entity)null, ((CommandSourceStack)c.getSource()).getPlayerOrException()))).then(((RequiredArgumentBuilder)Commands.argument("target", EntityArgument.entity()).executes((c) -> spectate((CommandSourceStack)c.getSource(), EntityArgument.getEntity(c, "target"), ((CommandSourceStack)c.getSource()).getPlayerOrException()))).then(Commands.argument("player", EntityArgument.player()).executes((c) -> spectate((CommandSourceStack)c.getSource(), EntityArgument.getEntity(c, "target"), EntityArgument.getPlayer(c, "player"))))));
    }
 
-   private static int spectate(CommandSourceStack var0, @Nullable Entity var1, ServerPlayer var2) throws CommandSyntaxException {
-      if (var2 == var1) {
+   private static int spectate(final CommandSourceStack source, final @Nullable Entity target, final ServerPlayer player) throws CommandSyntaxException {
+      if (player == target) {
          throw ERROR_SELF.create();
-      } else if (!var2.isSpectator()) {
-         throw ERROR_NOT_SPECTATOR.create(var2.getDisplayName());
-      } else if (var1 != null && var1.getType().clientTrackingRange() == 0) {
-         throw ERROR_CANNOT_SPECTATE.create(var1.getDisplayName());
+      } else if (!player.isSpectator()) {
+         throw ERROR_NOT_SPECTATOR.create(player.getDisplayName());
+      } else if (target != null && target.getType().clientTrackingRange() == 0) {
+         throw ERROR_CANNOT_SPECTATE.create(target.getDisplayName());
       } else {
-         var2.setCamera(var1);
-         if (var1 != null) {
-            var0.sendSuccess(() -> Component.translatable("commands.spectate.success.started", var1.getDisplayName()), false);
+         player.setCamera(target);
+         if (target != null) {
+            source.sendSuccess(() -> Component.translatable("commands.spectate.success.started", target.getDisplayName()), false);
          } else {
-            var0.sendSuccess(() -> Component.translatable("commands.spectate.success.stopped"), false);
+            source.sendSuccess(() -> Component.translatable("commands.spectate.success.stopped"), false);
          }
 
          return 1;

@@ -4,23 +4,23 @@ import com.mojang.blaze3d.vertex.VertexSorting;
 import org.joml.Matrix4f;
 
 public enum ProjectionType {
-   PERSPECTIVE(VertexSorting.DISTANCE_TO_ORIGIN, (var0, var1) -> var0.scale(1.0F - var1 / 4096.0F)),
-   ORTHOGRAPHIC(VertexSorting.ORTHOGRAPHIC_Z, (var0, var1) -> var0.translate(0.0F, 0.0F, var1 / 512.0F));
+   PERSPECTIVE(VertexSorting.DISTANCE_TO_ORIGIN, (matrix, bias) -> matrix.scale(1.0F - bias / 4096.0F)),
+   ORTHOGRAPHIC(VertexSorting.ORTHOGRAPHIC_Z, (matrix, bias) -> matrix.translate(0.0F, 0.0F, bias / 512.0F));
 
    private final VertexSorting vertexSorting;
    private final LayeringTransform layeringTransform;
 
-   private ProjectionType(final VertexSorting var3, final LayeringTransform var4) {
-      this.vertexSorting = var3;
-      this.layeringTransform = var4;
+   private ProjectionType(final VertexSorting vertexSorting, final LayeringTransform layeringTransform) {
+      this.vertexSorting = vertexSorting;
+      this.layeringTransform = layeringTransform;
    }
 
    public VertexSorting vertexSorting() {
       return this.vertexSorting;
    }
 
-   public void applyLayeringTransform(Matrix4f var1, float var2) {
-      this.layeringTransform.apply(var1, var2);
+   public void applyLayeringTransform(final Matrix4f matrix, final float bias) {
+      this.layeringTransform.apply(matrix, bias);
    }
 
    // $FF: synthetic method
@@ -29,7 +29,7 @@ public enum ProjectionType {
    }
 
    @FunctionalInterface
-   interface LayeringTransform {
-      void apply(Matrix4f var1, float var2);
+   private interface LayeringTransform {
+      void apply(Matrix4f matrix, float bias);
    }
 }

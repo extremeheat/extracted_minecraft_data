@@ -1,52 +1,38 @@
 package net.minecraft.client.renderer.entity;
 
+import net.minecraft.client.model.animal.turtle.AdultTurtleModel;
+import net.minecraft.client.model.animal.turtle.BabyTurtleModel;
 import net.minecraft.client.model.animal.turtle.TurtleModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.TurtleRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.turtle.Turtle;
 
 public class TurtleRenderer extends AgeableMobRenderer<Turtle, TurtleRenderState, TurtleModel> {
-   private static final Identifier TURTLE_LOCATION = Identifier.withDefaultNamespace("textures/entity/turtle/big_sea_turtle.png");
+   private static final Identifier TURTLE_LOCATION = Identifier.withDefaultNamespace("textures/entity/turtle/turtle.png");
+   private static final Identifier BABY_TURTLE_LOCATION = Identifier.withDefaultNamespace("textures/entity/turtle/turtle_baby.png");
 
-   public TurtleRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new TurtleModel(var1.bakeLayer(ModelLayers.TURTLE)), new TurtleModel(var1.bakeLayer(ModelLayers.TURTLE_BABY)), 0.7F);
+   public TurtleRenderer(final EntityRendererProvider.Context context) {
+      super(context, new AdultTurtleModel(context.bakeLayer(ModelLayers.TURTLE)), new BabyTurtleModel(context.bakeLayer(ModelLayers.TURTLE_BABY)), 0.7F);
    }
 
-   protected float getShadowRadius(TurtleRenderState var1) {
-      float var2 = super.getShadowRadius(var1);
-      return var1.isBaby ? var2 * 0.83F : var2;
+   protected float getShadowRadius(final TurtleRenderState state) {
+      float radius = super.getShadowRadius(state);
+      return state.isBaby ? radius * 0.83F : radius;
    }
 
    public TurtleRenderState createRenderState() {
       return new TurtleRenderState();
    }
 
-   public void extractRenderState(Turtle var1, TurtleRenderState var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      var2.isOnLand = !var1.isInWater() && var1.onGround();
-      var2.isLayingEgg = var1.isLayingEgg();
-      var2.hasEgg = !var1.isBaby() && var1.hasEgg();
+   public void extractRenderState(final Turtle entity, final TurtleRenderState state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      state.isOnLand = !entity.isInWater() && entity.onGround();
+      state.isLayingEgg = entity.isLayingEgg();
+      state.hasEgg = !entity.isBaby() && entity.hasEgg();
    }
 
-   public Identifier getTextureLocation(TurtleRenderState var1) {
-      return TURTLE_LOCATION;
-   }
-
-   // $FF: synthetic method
-   protected float getShadowRadius(final LivingEntityRenderState var1) {
-      return this.getShadowRadius((TurtleRenderState)var1);
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
-   }
-
-   // $FF: synthetic method
-   protected float getShadowRadius(final EntityRenderState var1) {
-      return this.getShadowRadius((TurtleRenderState)var1);
+   public Identifier getTextureLocation(final TurtleRenderState state) {
+      return state.isBaby ? BABY_TURTLE_LOCATION : TURTLE_LOCATION;
    }
 }

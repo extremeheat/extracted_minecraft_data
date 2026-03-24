@@ -6,51 +6,52 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
-import net.minecraft.world.level.LevelSimulatedReader;
+import net.minecraft.util.valueproviders.IntProviders;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 
 public class MegaPineFoliagePlacer extends FoliagePlacer {
-   public static final MapCodec<MegaPineFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> foliagePlacerParts(var0).and(IntProvider.codec(0, 24).fieldOf("crown_height").forGetter((var0x) -> var0x.crownHeight)).apply(var0, MegaPineFoliagePlacer::new));
+   public static final MapCodec<MegaPineFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((i) -> foliagePlacerParts(i).and(IntProviders.codec(0, 24).fieldOf("crown_height").forGetter((p) -> p.crownHeight)).apply(i, MegaPineFoliagePlacer::new));
    private final IntProvider crownHeight;
 
-   public MegaPineFoliagePlacer(IntProvider var1, IntProvider var2, IntProvider var3) {
-      super(var1, var2);
-      this.crownHeight = var3;
+   public MegaPineFoliagePlacer(final IntProvider radius, final IntProvider offset, final IntProvider crownHeight) {
+      super(radius, offset);
+      this.crownHeight = crownHeight;
    }
 
    protected FoliagePlacerType<?> type() {
       return FoliagePlacerType.MEGA_PINE_FOLIAGE_PLACER;
    }
 
-   protected void createFoliage(LevelSimulatedReader var1, FoliagePlacer.FoliageSetter var2, RandomSource var3, TreeConfiguration var4, int var5, FoliagePlacer.FoliageAttachment var6, int var7, int var8, int var9) {
-      BlockPos var10 = var6.pos();
-      int var11 = 0;
+   protected void createFoliage(final WorldGenLevel level, final FoliagePlacer.FoliageSetter foliageSetter, final RandomSource random, final TreeConfiguration config, final int treeHeight, final FoliagePlacer.FoliageAttachment foliageAttachment, final int foliageHeight, final int leafRadius, final int offset) {
+      BlockPos foliagePos = foliageAttachment.pos();
+      int prevRadius = 0;
 
-      for(int var12 = var10.getY() - var7 + var9; var12 <= var10.getY() + var9; ++var12) {
-         int var13 = var10.getY() - var12;
-         int var14 = var8 + var6.radiusOffset() + Mth.floor((float)var13 / (float)var7 * 3.5F);
-         int var15;
-         if (var13 > 0 && var14 == var11 && (var12 & 1) == 0) {
-            var15 = var14 + 1;
+      for(int yy = foliagePos.getY() - foliageHeight + offset; yy <= foliagePos.getY() + offset; ++yy) {
+         int yo = foliagePos.getY() - yy;
+         int smoothRadius = leafRadius + foliageAttachment.radiusOffset() + Mth.floor((float)yo / (float)foliageHeight * 3.5F);
+         int jaggedRadius;
+         if (yo > 0 && smoothRadius == prevRadius && (yy & 1) == 0) {
+            jaggedRadius = smoothRadius + 1;
          } else {
-            var15 = var14;
+            jaggedRadius = smoothRadius;
          }
 
-         this.placeLeavesRow(var1, var2, var3, var4, new BlockPos(var10.getX(), var12, var10.getZ()), var15, 0, var6.doubleTrunk());
-         var11 = var14;
+         this.placeLeavesRow(level, foliageSetter, random, config, new BlockPos(foliagePos.getX(), yy, foliagePos.getZ()), jaggedRadius, 0, foliageAttachment.doubleTrunk());
+         prevRadius = smoothRadius;
       }
 
    }
 
-   public int foliageHeight(RandomSource var1, int var2, TreeConfiguration var3) {
-      return this.crownHeight.sample(var1);
+   public int foliageHeight(final RandomSource random, final int treeHeight, final TreeConfiguration config) {
+      return this.crownHeight.sample(random);
    }
 
-   protected boolean shouldSkipLocation(RandomSource var1, int var2, int var3, int var4, int var5, boolean var6) {
-      if (var2 + var4 >= 7) {
+   protected boolean shouldSkipLocation(final RandomSource random, final int dx, final int y, final int dz, final int currentRadius, final boolean doubleTrunk) {
+      if (dx + dz >= 7) {
          return true;
       } else {
-         return var2 * var2 + var4 * var4 > var5 * var5;
+         return dx * dx + dz * dz > currentRadius * currentRadius;
       }
    }
 }

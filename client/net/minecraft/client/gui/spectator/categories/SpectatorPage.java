@@ -10,14 +10,14 @@ public class SpectatorPage {
    private final List<SpectatorMenuItem> items;
    private final int selection;
 
-   public SpectatorPage(List<SpectatorMenuItem> var1, int var2) {
+   public SpectatorPage(final List<SpectatorMenuItem> items, final int selection) {
       super();
-      this.items = var1;
-      this.selection = var2;
+      this.items = items;
+      this.selection = selection;
    }
 
-   public SpectatorMenuItem getItem(int var1) {
-      return var1 >= 0 && var1 < this.items.size() ? (SpectatorMenuItem)MoreObjects.firstNonNull((SpectatorMenuItem)this.items.get(var1), SpectatorMenu.EMPTY_SLOT) : SpectatorMenu.EMPTY_SLOT;
+   public SpectatorMenuItem getItem(final int slot) {
+      return slot >= 0 && slot < this.items.size() ? (SpectatorMenuItem)MoreObjects.firstNonNull((SpectatorMenuItem)this.items.get(slot), SpectatorMenu.EMPTY_SLOT) : SpectatorMenu.EMPTY_SLOT;
    }
 
    public int getSelectedSlot() {

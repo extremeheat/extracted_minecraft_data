@@ -4,30 +4,27 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.enchantment.EnchantedItemInUse;
 import net.minecraft.world.item.enchantment.LevelBasedValue;
 import net.minecraft.world.phys.Vec3;
 
 public record ApplyEntityImpulse(Vec3 direction, Vec3 coordinateScale, LevelBasedValue magnitude) implements EnchantmentEntityEffect {
-   public static final MapCodec<ApplyEntityImpulse> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Vec3.CODEC.fieldOf("direction").forGetter(ApplyEntityImpulse::direction), Vec3.CODEC.fieldOf("coordinate_scale").forGetter(ApplyEntityImpulse::coordinateScale), LevelBasedValue.CODEC.fieldOf("magnitude").forGetter(ApplyEntityImpulse::magnitude)).apply(var0, ApplyEntityImpulse::new));
+   public static final MapCodec<ApplyEntityImpulse> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Vec3.CODEC.fieldOf("direction").forGetter(ApplyEntityImpulse::direction), Vec3.CODEC.fieldOf("coordinate_scale").forGetter(ApplyEntityImpulse::coordinateScale), LevelBasedValue.CODEC.fieldOf("magnitude").forGetter(ApplyEntityImpulse::magnitude)).apply(i, ApplyEntityImpulse::new));
    private static final int POST_IMPULSE_CONTEXT_RESET_GRACE_TIME_TICKS = 10;
 
-   public ApplyEntityImpulse(Vec3 var1, Vec3 var2, LevelBasedValue var3) {
+   public ApplyEntityImpulse {
       super();
-      this.direction = var1;
-      this.coordinateScale = var2;
-      this.magnitude = var3;
    }
 
-   public void apply(ServerLevel var1, int var2, EnchantedItemInUse var3, Entity var4, Vec3 var5) {
-      Vec3 var6 = var4.getLookAngle();
-      Vec3 var7 = var6.addLocalCoordinates(this.direction).multiply(this.coordinateScale).scale((double)this.magnitude.calculate(var2));
-      var4.addDeltaMovement(var7);
-      var4.hurtMarked = true;
-      var4.needsSync = true;
-      if (var4 instanceof Player var8) {
-         var8.applyPostImpulseGraceTime(10);
+   public void apply(final ServerLevel serverLevel, final int enchantmentLevel, final EnchantedItemInUse item, final Entity entity, final Vec3 position) {
+      Vec3 look = entity.getLookAngle();
+      Vec3 direction = look.addLocalCoordinates(this.direction).multiply(this.coordinateScale).scale((double)this.magnitude.calculate(enchantmentLevel));
+      entity.addDeltaMovement(direction);
+      entity.hurtMarked = true;
+      entity.needsSync = true;
+      if (entity instanceof LivingEntity livingEntity) {
+         livingEntity.applyPostImpulseGraceTime(10);
       }
 
    }

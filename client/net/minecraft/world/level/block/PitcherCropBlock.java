@@ -5,6 +5,7 @@ import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.InsideBlockEffectApplier;
@@ -44,19 +45,19 @@ public class PitcherCropBlock extends DoublePlantBlock implements BonemealableBl
       return CODEC;
    }
 
-   public PitcherCropBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public PitcherCropBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
    private Function<BlockState, VoxelShape> makeShapes() {
-      int[] var1 = new int[]{0, 9, 11, 22, 26};
-      return this.getShapeForEachState((var1x) -> {
-         int var2 = ((Integer)var1x.getValue(AGE) == 0 ? 4 : 6) + var1[(Integer)var1x.getValue(AGE)];
-         int var3 = (Integer)var1x.getValue(AGE) == 0 ? 6 : 10;
+      int[] plantHeights = new int[]{0, 9, 11, 22, 26};
+      return this.getShapeForEachState((state) -> {
+         int height = ((Integer)state.getValue(AGE) == 0 ? 4 : 6) + plantHeights[(Integer)state.getValue(AGE)];
+         int width = (Integer)state.getValue(AGE) == 0 ? 6 : 10;
          VoxelShape var10000;
-         switch ((DoubleBlockHalf)var1x.getValue(HALF)) {
-            case LOWER -> var10000 = Block.column((double)var3, -1.0, (double)Math.min(16, -1 + var2));
-            case UPPER -> var10000 = Block.column((double)var3, 0.0, (double)Math.max(0, -1 + var2 - 16));
+         switch ((DoubleBlockHalf)state.getValue(HALF)) {
+            case LOWER -> var10000 = Block.column((double)width, -1.0, (double)Math.min(16, -1 + height));
+            case UPPER -> var10000 = Block.column((double)width, 0.0, (double)Math.max(0, -1 + height - 16));
             default -> throw new MatchException((String)null, (Throwable)null);
          }
 
@@ -64,132 +65,132 @@ public class PitcherCropBlock extends DoublePlantBlock implements BonemealableBl
       });
    }
 
-   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
+   public @Nullable BlockState getStateForPlacement(final BlockPlaceContext context) {
       return this.defaultBlockState();
    }
 
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (VoxelShape)this.shapes.apply(var1);
+   public VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return (VoxelShape)this.shapes.apply(state);
    }
 
-   public VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      if (var1.getValue(HALF) == DoubleBlockHalf.LOWER) {
-         return (Integer)var1.getValue(AGE) == 0 ? SHAPE_BULB : SHAPE_CROP;
+   public VoxelShape getCollisionShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      if (state.getValue(HALF) == DoubleBlockHalf.LOWER) {
+         return (Integer)state.getValue(AGE) == 0 ? SHAPE_BULB : SHAPE_CROP;
       } else {
          return Shapes.empty();
       }
    }
 
-   public BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      if (isDouble((Integer)var1.getValue(AGE))) {
-         return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+   public BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      if (isDouble((Integer)state.getValue(AGE))) {
+         return super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
       } else {
-         return var1.canSurvive(var2, var4) ? var1 : Blocks.AIR.defaultBlockState();
+         return state.canSurvive(level, pos) ? state : Blocks.AIR.defaultBlockState();
       }
    }
 
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      return isLower(var1) && !sufficientLight(var2, var3) ? false : super.canSurvive(var1, var2, var3);
+   public boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
+      return isLower(state) && !sufficientLight(level, pos) ? false : super.canSurvive(state, level, pos);
    }
 
-   protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return var1.is(Blocks.FARMLAND);
+   protected boolean mayPlaceOn(final BlockState state, final BlockGetter level, final BlockPos pos) {
+      return state.is(BlockTags.SUPPORTS_CROPS);
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(AGE);
-      super.createBlockStateDefinition(var1);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(AGE);
+      super.createBlockStateDefinition(builder);
    }
 
-   public void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
-      if (var2 instanceof ServerLevel var7) {
-         if (var4 instanceof Ravager && (Boolean)var7.getGameRules().get(GameRules.MOB_GRIEFING)) {
-            var7.destroyBlock(var3, true, var4);
+   public void entityInside(final BlockState state, final Level level, final BlockPos pos, final Entity entity, final InsideBlockEffectApplier effectApplier, final boolean isPrecise) {
+      if (level instanceof ServerLevel serverLevel) {
+         if (entity instanceof Ravager && (Boolean)serverLevel.getGameRules().get(GameRules.MOB_GRIEFING)) {
+            serverLevel.destroyBlock(pos, true, entity);
          }
       }
 
    }
 
-   public boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
+   public boolean canBeReplaced(final BlockState state, final BlockPlaceContext context) {
       return false;
    }
 
-   public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, @Nullable LivingEntity var4, ItemStack var5) {
+   public void setPlacedBy(final Level level, final BlockPos pos, final BlockState state, final @Nullable LivingEntity by, final ItemStack itemStack) {
    }
 
-   public boolean isRandomlyTicking(BlockState var1) {
-      return var1.getValue(HALF) == DoubleBlockHalf.LOWER && !this.isMaxAge(var1);
+   public boolean isRandomlyTicking(final BlockState state) {
+      return state.getValue(HALF) == DoubleBlockHalf.LOWER && !this.isMaxAge(state);
    }
 
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      float var5 = CropBlock.getGrowthSpeed(this, var2, var3);
-      boolean var6 = var4.nextInt((int)(25.0F / var5) + 1) == 0;
-      if (var6) {
-         this.grow(var2, var1, var3, 1);
+   public void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      float growthSpeed = CropBlock.getGrowthSpeed(this, level, pos);
+      boolean shouldProgressGrowth = random.nextInt((int)(25.0F / growthSpeed) + 1) == 0;
+      if (shouldProgressGrowth) {
+         this.grow(level, state, pos, 1);
       }
 
    }
 
-   private void grow(ServerLevel var1, BlockState var2, BlockPos var3, int var4) {
-      int var5 = Math.min((Integer)var2.getValue(AGE) + var4, 4);
-      if (this.canGrow(var1, var3, var2, var5)) {
-         BlockState var6 = (BlockState)var2.setValue(AGE, var5);
-         var1.setBlock(var3, var6, 2);
-         if (isDouble(var5)) {
-            var1.setBlock(var3.above(), (BlockState)var6.setValue(HALF, DoubleBlockHalf.UPPER), 3);
+   private void grow(final ServerLevel level, final BlockState lowerState, final BlockPos lowerPos, final int increase) {
+      int updatedAge = Math.min((Integer)lowerState.getValue(AGE) + increase, 4);
+      if (this.canGrow(level, lowerPos, lowerState, updatedAge)) {
+         BlockState newLowerState = (BlockState)lowerState.setValue(AGE, updatedAge);
+         level.setBlock(lowerPos, newLowerState, 2);
+         if (isDouble(updatedAge)) {
+            level.setBlock(lowerPos.above(), (BlockState)newLowerState.setValue(HALF, DoubleBlockHalf.UPPER), 3);
          }
 
       }
    }
 
-   private static boolean canGrowInto(LevelReader var0, BlockPos var1) {
-      BlockState var2 = var0.getBlockState(var1);
-      return var2.isAir() || var2.is(Blocks.PITCHER_CROP);
+   private static boolean canGrowInto(final LevelReader level, final BlockPos pos) {
+      BlockState state = level.getBlockState(pos);
+      return state.isAir() || state.is(Blocks.PITCHER_CROP);
    }
 
-   private static boolean sufficientLight(LevelReader var0, BlockPos var1) {
-      return CropBlock.hasSufficientLight(var0, var1);
+   private static boolean sufficientLight(final LevelReader level, final BlockPos pos) {
+      return CropBlock.hasSufficientLight(level, pos);
    }
 
-   private static boolean isLower(BlockState var0) {
-      return var0.is(Blocks.PITCHER_CROP) && var0.getValue(HALF) == DoubleBlockHalf.LOWER;
+   private static boolean isLower(final BlockState state) {
+      return state.is(Blocks.PITCHER_CROP) && state.getValue(HALF) == DoubleBlockHalf.LOWER;
    }
 
-   private static boolean isDouble(int var0) {
-      return var0 >= 3;
+   private static boolean isDouble(final int age) {
+      return age >= 3;
    }
 
-   private boolean canGrow(LevelReader var1, BlockPos var2, BlockState var3, int var4) {
-      return !this.isMaxAge(var3) && sufficientLight(var1, var2) && (!isDouble(var4) || canGrowInto(var1, var2.above()));
+   private boolean canGrow(final LevelReader level, final BlockPos lowerPos, final BlockState lowerState, final int newAge) {
+      return !this.isMaxAge(lowerState) && sufficientLight(level, lowerPos) && level.isInsideBuildHeight(lowerPos.above()) && (!isDouble(newAge) || canGrowInto(level, lowerPos.above()));
    }
 
-   private boolean isMaxAge(BlockState var1) {
-      return (Integer)var1.getValue(AGE) >= 4;
+   private boolean isMaxAge(final BlockState state) {
+      return (Integer)state.getValue(AGE) >= 4;
    }
 
-   private @Nullable PosAndState getLowerHalf(LevelReader var1, BlockPos var2, BlockState var3) {
-      if (isLower(var3)) {
-         return new PosAndState(var2, var3);
+   private @Nullable PosAndState getLowerHalf(final LevelReader level, final BlockPos pos, final BlockState state) {
+      if (isLower(state)) {
+         return new PosAndState(pos, state);
       } else {
-         BlockPos var4 = var2.below();
-         BlockState var5 = var1.getBlockState(var4);
-         return isLower(var5) ? new PosAndState(var4, var5) : null;
+         BlockPos lowerPos = pos.below();
+         BlockState lowerState = level.getBlockState(lowerPos);
+         return isLower(lowerState) ? new PosAndState(lowerPos, lowerState) : null;
       }
    }
 
-   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
-      PosAndState var4 = this.getLowerHalf(var1, var2, var3);
-      return var4 == null ? false : this.canGrow(var1, var4.pos, var4.state, (Integer)var4.state.getValue(AGE) + 1);
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+      PosAndState lowerHalf = this.getLowerHalf(level, pos, state);
+      return lowerHalf == null ? false : this.canGrow(level, lowerHalf.pos, lowerHalf.state, (Integer)lowerHalf.state.getValue(AGE) + 1);
    }
 
-   public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
       return true;
    }
 
-   public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      PosAndState var5 = this.getLowerHalf(var1, var3, var4);
-      if (var5 != null) {
-         this.grow(var1, var5.state, var5.pos, 1);
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+      PosAndState lowerHalf = this.getLowerHalf(level, pos, state);
+      if (lowerHalf != null) {
+         this.grow(level, lowerHalf.state, lowerHalf.pos, 1);
       }
    }
 
@@ -200,14 +201,9 @@ public class PitcherCropBlock extends DoublePlantBlock implements BonemealableBl
       SHAPE_CROP = Block.column(10.0, -1.0, 5.0);
    }
 
-   static record PosAndState(BlockPos pos, BlockState state) {
-      final BlockPos pos;
-      final BlockState state;
-
-      PosAndState(BlockPos var1, BlockState var2) {
+   private static record PosAndState(BlockPos pos, BlockState state) {
+      private PosAndState {
          super();
-         this.pos = var1;
-         this.state = var2;
       }
    }
 }

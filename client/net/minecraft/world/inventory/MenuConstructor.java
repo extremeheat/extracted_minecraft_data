@@ -6,5 +6,5 @@ import org.jspecify.annotations.Nullable;
 
 @FunctionalInterface
 public interface MenuConstructor {
-   @Nullable AbstractContainerMenu createMenu(int var1, Inventory var2, Player var3);
+   @Nullable AbstractContainerMenu createMenu(int containerId, Inventory inventory, final Player player);
 }

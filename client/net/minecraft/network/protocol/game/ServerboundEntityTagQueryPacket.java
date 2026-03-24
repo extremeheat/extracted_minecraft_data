@@ -10,29 +10,29 @@ public class ServerboundEntityTagQueryPacket implements Packet<ServerGamePacketL
    private final int transactionId;
    private final int entityId;
 
-   public ServerboundEntityTagQueryPacket(int var1, int var2) {
+   public ServerboundEntityTagQueryPacket(final int transactionId, final int entityId) {
       super();
-      this.transactionId = var1;
-      this.entityId = var2;
+      this.transactionId = transactionId;
+      this.entityId = entityId;
    }
 
-   private ServerboundEntityTagQueryPacket(FriendlyByteBuf var1) {
+   private ServerboundEntityTagQueryPacket(final FriendlyByteBuf input) {
       super();
-      this.transactionId = var1.readVarInt();
-      this.entityId = var1.readVarInt();
+      this.transactionId = input.readVarInt();
+      this.entityId = input.readVarInt();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeVarInt(this.transactionId);
-      var1.writeVarInt(this.entityId);
+   private void write(final FriendlyByteBuf output) {
+      output.writeVarInt(this.transactionId);
+      output.writeVarInt(this.entityId);
    }
 
    public PacketType<ServerboundEntityTagQueryPacket> type() {
       return GamePacketTypes.SERVERBOUND_ENTITY_TAG_QUERY;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handleEntityTagQuery(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handleEntityTagQuery(this);
    }
 
    public int getTransactionId() {

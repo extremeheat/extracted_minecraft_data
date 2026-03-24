@@ -13,14 +13,14 @@ public class DebugQueryHandler {
    private int transactionId = -1;
    private @Nullable Consumer<CompoundTag> callback;
 
-   public DebugQueryHandler(ClientPacketListener var1) {
+   public DebugQueryHandler(final ClientPacketListener connection) {
       super();
-      this.connection = var1;
+      this.connection = connection;
    }
 
-   public boolean handleResponse(int var1, @Nullable CompoundTag var2) {
-      if (this.transactionId == var1 && this.callback != null) {
-         this.callback.accept(var2);
+   public boolean handleResponse(final int transactionId, final @Nullable CompoundTag tag) {
+      if (this.transactionId == transactionId && this.callback != null) {
+         this.callback.accept(tag);
          this.callback = null;
          return true;
       } else {
@@ -28,18 +28,18 @@ public class DebugQueryHandler {
       }
    }
 
-   private int startTransaction(Consumer<CompoundTag> var1) {
-      this.callback = var1;
+   private int startTransaction(final Consumer<CompoundTag> callback) {
+      this.callback = callback;
       return ++this.transactionId;
    }
 
-   public void queryEntityTag(int var1, Consumer<CompoundTag> var2) {
-      int var3 = this.startTransaction(var2);
-      this.connection.send(new ServerboundEntityTagQueryPacket(var3, var1));
+   public void queryEntityTag(final int entityId, final Consumer<CompoundTag> callback) {
+      int transactionId = this.startTransaction(callback);
+      this.connection.send(new ServerboundEntityTagQueryPacket(transactionId, entityId));
    }
 
-   public void queryBlockEntityTag(BlockPos var1, Consumer<CompoundTag> var2) {
-      int var3 = this.startTransaction(var2);
-      this.connection.send(new ServerboundBlockEntityTagQueryPacket(var3, var1));
+   public void queryBlockEntityTag(final BlockPos blockPos, final Consumer<CompoundTag> callback) {
+      int transactionId = this.startTransaction(callback);
+      this.connection.send(new ServerboundBlockEntityTagQueryPacket(transactionId, blockPos));
    }
 }

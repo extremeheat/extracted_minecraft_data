@@ -11,16 +11,16 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.util.Unit;
 
 public class BeeStingerModel extends Model<Unit> {
-   public BeeStingerModel(ModelPart var1) {
-      super(var1, RenderTypes::entityCutout);
+   public BeeStingerModel(final ModelPart root) {
+      super(root, RenderTypes::entityCutoutCull);
    }
 
    public static LayerDefinition createBodyLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      CubeListBuilder var2 = CubeListBuilder.create().texOffs(0, 0).addBox(-1.0F, -0.5F, 0.0F, 2.0F, 1.0F, 0.0F);
-      var1.addOrReplaceChild("cross_1", var2, PartPose.rotation(0.7853982F, 0.0F, 0.0F));
-      var1.addOrReplaceChild("cross_2", var2, PartPose.rotation(2.3561945F, 0.0F, 0.0F));
-      return LayerDefinition.create(var0, 16, 16);
+      MeshDefinition mesh = new MeshDefinition();
+      PartDefinition root = mesh.getRoot();
+      CubeListBuilder cross = CubeListBuilder.create().texOffs(0, 0).addBox(-1.0F, -0.5F, 0.0F, 2.0F, 1.0F, 0.0F);
+      root.addOrReplaceChild("cross_1", cross, PartPose.rotation(0.7853982F, 0.0F, 0.0F));
+      root.addOrReplaceChild("cross_2", cross, PartPose.rotation(2.3561945F, 0.0F, 0.0F));
+      return LayerDefinition.create(mesh, 16, 16);
    }
 }

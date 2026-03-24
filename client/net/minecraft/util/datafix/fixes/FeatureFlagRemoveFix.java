@@ -17,39 +17,39 @@ public class FeatureFlagRemoveFix extends DataFix {
    private final String name;
    private final Set<String> flagsToRemove;
 
-   public FeatureFlagRemoveFix(Schema var1, String var2, Set<String> var3) {
-      super(var1, false);
-      this.name = var2;
-      this.flagsToRemove = var3;
+   public FeatureFlagRemoveFix(final Schema outputSchema, final String name, final Set<String> flagsToRemove) {
+      super(outputSchema, false);
+      this.name = name;
+      this.flagsToRemove = flagsToRemove;
    }
 
    protected TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped(this.name, this.getInputSchema().getType(References.LIGHTWEIGHT_LEVEL), (var1) -> var1.update(DSL.remainderFinder(), this::fixTag));
+      return this.fixTypeEverywhereTyped(this.name, this.getInputSchema().getType(References.LIGHTWEIGHT_LEVEL), (input) -> input.update(DSL.remainderFinder(), this::fixTag));
    }
 
-   private <T> Dynamic<T> fixTag(Dynamic<T> var1) {
-      List var2 = (List)var1.get("removed_features").asStream().collect(Collectors.toCollection(ArrayList::new));
-      Dynamic var3 = var1.update("enabled_features", (var3x) -> {
-         Optional var10000 = var3x.asStreamOpt().result().map((var3) -> var3.filter((var3x) -> {
-               Optional var4 = var3x.asString().result();
-               if (var4.isEmpty()) {
+   private <T> Dynamic<T> fixTag(final Dynamic<T> tag) {
+      List<Dynamic<T>> inactiveFeatures = (List)tag.get("removed_features").asStream().collect(Collectors.toCollection(ArrayList::new));
+      Dynamic<T> result = tag.update("enabled_features", (features) -> {
+         Optional var10000 = features.asStreamOpt().result().map((s) -> s.filter((feature) -> {
+               Optional<String> asString = feature.asString().result();
+               if (asString.isEmpty()) {
                   return true;
                } else {
-                  boolean var5 = this.flagsToRemove.contains(var4.get());
-                  if (var5) {
-                     var2.add(var1.createString((String)var4.get()));
+                  boolean shouldRemove = this.flagsToRemove.contains(asString.get());
+                  if (shouldRemove) {
+                     inactiveFeatures.add(tag.createString((String)asString.get()));
                   }
 
-                  return !var5;
+                  return !shouldRemove;
                }
             }));
-         Objects.requireNonNull(var1);
-         return (Dynamic)DataFixUtils.orElse(var10000.map(var1::createList), var3x);
+         Objects.requireNonNull(tag);
+         return (Dynamic)DataFixUtils.orElse(var10000.map(tag::createList), features);
       });
-      if (!var2.isEmpty()) {
-         var3 = var3.set("removed_features", var1.createList(var2.stream()));
+      if (!inactiveFeatures.isEmpty()) {
+         result = result.set("removed_features", tag.createList(inactiveFeatures.stream()));
       }
 
-      return var3;
+      return result;
    }
 }

@@ -21,56 +21,56 @@ public class ClientboundLevelParticlesPacket implements Packet<ClientGamePacketL
    private final boolean alwaysShow;
    private final ParticleOptions particle;
 
-   public <T extends ParticleOptions> ClientboundLevelParticlesPacket(T var1, boolean var2, boolean var3, double var4, double var6, double var8, float var10, float var11, float var12, float var13, int var14) {
+   public <T extends ParticleOptions> ClientboundLevelParticlesPacket(final T particle, final boolean overrideLimiter, final boolean alwaysShow, final double x, final double y, final double z, final float xDist, final float yDist, final float zDist, final float maxSpeed, final int count) {
       super();
-      this.particle = var1;
-      this.overrideLimiter = var2;
-      this.alwaysShow = var3;
-      this.x = var4;
-      this.y = var6;
-      this.z = var8;
-      this.xDist = var10;
-      this.yDist = var11;
-      this.zDist = var12;
-      this.maxSpeed = var13;
-      this.count = var14;
+      this.particle = particle;
+      this.overrideLimiter = overrideLimiter;
+      this.alwaysShow = alwaysShow;
+      this.x = x;
+      this.y = y;
+      this.z = z;
+      this.xDist = xDist;
+      this.yDist = yDist;
+      this.zDist = zDist;
+      this.maxSpeed = maxSpeed;
+      this.count = count;
    }
 
-   private ClientboundLevelParticlesPacket(RegistryFriendlyByteBuf var1) {
+   private ClientboundLevelParticlesPacket(final RegistryFriendlyByteBuf input) {
       super();
-      this.overrideLimiter = var1.readBoolean();
-      this.alwaysShow = var1.readBoolean();
-      this.x = var1.readDouble();
-      this.y = var1.readDouble();
-      this.z = var1.readDouble();
-      this.xDist = var1.readFloat();
-      this.yDist = var1.readFloat();
-      this.zDist = var1.readFloat();
-      this.maxSpeed = var1.readFloat();
-      this.count = var1.readInt();
-      this.particle = (ParticleOptions)ParticleTypes.STREAM_CODEC.decode(var1);
+      this.overrideLimiter = input.readBoolean();
+      this.alwaysShow = input.readBoolean();
+      this.x = input.readDouble();
+      this.y = input.readDouble();
+      this.z = input.readDouble();
+      this.xDist = input.readFloat();
+      this.yDist = input.readFloat();
+      this.zDist = input.readFloat();
+      this.maxSpeed = input.readFloat();
+      this.count = input.readInt();
+      this.particle = (ParticleOptions)ParticleTypes.STREAM_CODEC.decode(input);
    }
 
-   private void write(RegistryFriendlyByteBuf var1) {
-      var1.writeBoolean(this.overrideLimiter);
-      var1.writeBoolean(this.alwaysShow);
-      var1.writeDouble(this.x);
-      var1.writeDouble(this.y);
-      var1.writeDouble(this.z);
-      var1.writeFloat(this.xDist);
-      var1.writeFloat(this.yDist);
-      var1.writeFloat(this.zDist);
-      var1.writeFloat(this.maxSpeed);
-      var1.writeInt(this.count);
-      ParticleTypes.STREAM_CODEC.encode(var1, this.particle);
+   private void write(final RegistryFriendlyByteBuf output) {
+      output.writeBoolean(this.overrideLimiter);
+      output.writeBoolean(this.alwaysShow);
+      output.writeDouble(this.x);
+      output.writeDouble(this.y);
+      output.writeDouble(this.z);
+      output.writeFloat(this.xDist);
+      output.writeFloat(this.yDist);
+      output.writeFloat(this.zDist);
+      output.writeFloat(this.maxSpeed);
+      output.writeInt(this.count);
+      ParticleTypes.STREAM_CODEC.encode(output, this.particle);
    }
 
    public PacketType<ClientboundLevelParticlesPacket> type() {
       return GamePacketTypes.CLIENTBOUND_LEVEL_PARTICLES;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleParticleEvent(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleParticleEvent(this);
    }
 
    public boolean isOverrideLimiter() {

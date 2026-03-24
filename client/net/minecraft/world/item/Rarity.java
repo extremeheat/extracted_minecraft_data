@@ -16,16 +16,16 @@ public enum Rarity implements StringRepresentable {
    EPIC(3, "epic", ChatFormatting.LIGHT_PURPLE);
 
    public static final Codec<Rarity> CODEC = StringRepresentable.<Rarity>fromValues(Rarity::values);
-   public static final IntFunction<Rarity> BY_ID = ByIdMap.<Rarity>continuous((var0) -> var0.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-   public static final StreamCodec<ByteBuf, Rarity> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (var0) -> var0.id);
+   public static final IntFunction<Rarity> BY_ID = ByIdMap.<Rarity>continuous((r) -> r.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+   public static final StreamCodec<ByteBuf, Rarity> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (r) -> r.id);
    private final int id;
    private final String name;
    private final ChatFormatting color;
 
-   private Rarity(final int var3, final String var4, final ChatFormatting var5) {
-      this.id = var3;
-      this.name = var4;
-      this.color = var5;
+   private Rarity(final int id, final String name, final ChatFormatting color) {
+      this.id = id;
+      this.name = name;
+      this.color = color;
    }
 
    public ChatFormatting color() {

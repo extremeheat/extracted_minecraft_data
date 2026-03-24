@@ -18,7 +18,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.MultifaceSpreadeableBlock;
 
 public class MultifaceGrowthConfiguration implements FeatureConfiguration {
-   public static final Codec<MultifaceGrowthConfiguration> CODEC = RecordCodecBuilder.create((var0) -> var0.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("block").flatXmap(MultifaceGrowthConfiguration::apply, DataResult::success).orElse((MultifaceSpreadeableBlock)Blocks.GLOW_LICHEN).forGetter((var0x) -> var0x.placeBlock), Codec.intRange(1, 64).fieldOf("search_range").orElse(10).forGetter((var0x) -> var0x.searchRange), Codec.BOOL.fieldOf("can_place_on_floor").orElse(false).forGetter((var0x) -> var0x.canPlaceOnFloor), Codec.BOOL.fieldOf("can_place_on_ceiling").orElse(false).forGetter((var0x) -> var0x.canPlaceOnCeiling), Codec.BOOL.fieldOf("can_place_on_wall").orElse(false).forGetter((var0x) -> var0x.canPlaceOnWall), Codec.floatRange(0.0F, 1.0F).fieldOf("chance_of_spreading").orElse(0.5F).forGetter((var0x) -> var0x.chanceOfSpreading), RegistryCodecs.homogeneousList(Registries.BLOCK).fieldOf("can_be_placed_on").forGetter((var0x) -> var0x.canBePlacedOn)).apply(var0, MultifaceGrowthConfiguration::new));
+   public static final Codec<MultifaceGrowthConfiguration> CODEC = RecordCodecBuilder.create((i) -> i.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("block").flatXmap(MultifaceGrowthConfiguration::apply, DataResult::success).orElse((MultifaceSpreadeableBlock)Blocks.GLOW_LICHEN).forGetter((c) -> c.placeBlock), Codec.intRange(1, 64).fieldOf("search_range").orElse(10).forGetter((c) -> c.searchRange), Codec.BOOL.fieldOf("can_place_on_floor").orElse(false).forGetter((c) -> c.canPlaceOnFloor), Codec.BOOL.fieldOf("can_place_on_ceiling").orElse(false).forGetter((c) -> c.canPlaceOnCeiling), Codec.BOOL.fieldOf("can_place_on_wall").orElse(false).forGetter((c) -> c.canPlaceOnWall), Codec.floatRange(0.0F, 1.0F).fieldOf("chance_of_spreading").orElse(0.5F).forGetter((c) -> c.chanceOfSpreading), RegistryCodecs.homogeneousList(Registries.BLOCK).fieldOf("can_be_placed_on").forGetter((c) -> c.canBePlacedOn)).apply(i, MultifaceGrowthConfiguration::new));
    public final MultifaceSpreadeableBlock placeBlock;
    public final int searchRange;
    public final boolean canPlaceOnFloor;
@@ -28,10 +28,10 @@ public class MultifaceGrowthConfiguration implements FeatureConfiguration {
    public final HolderSet<Block> canBePlacedOn;
    private final ObjectArrayList<Direction> validDirections;
 
-   private static DataResult<MultifaceSpreadeableBlock> apply(Block var0) {
+   private static DataResult<MultifaceSpreadeableBlock> apply(final Block block) {
       DataResult var10000;
-      if (var0 instanceof MultifaceSpreadeableBlock var1) {
-         var10000 = DataResult.success(var1);
+      if (block instanceof MultifaceSpreadeableBlock multifaceBlock) {
+         var10000 = DataResult.success(multifaceBlock);
       } else {
          var10000 = DataResult.error(() -> "Growth block should be a multiface spreadeable block");
       }
@@ -39,25 +39,25 @@ public class MultifaceGrowthConfiguration implements FeatureConfiguration {
       return var10000;
    }
 
-   public MultifaceGrowthConfiguration(MultifaceSpreadeableBlock var1, int var2, boolean var3, boolean var4, boolean var5, float var6, HolderSet<Block> var7) {
+   public MultifaceGrowthConfiguration(final MultifaceSpreadeableBlock placeBlock, final int searchRange, final boolean canPlaceOnFloor, final boolean canPlaceOnCeiling, final boolean canPlaceOnWall, final float chanceOfSpreading, final HolderSet<Block> canBePlacedOn) {
       super();
-      this.placeBlock = var1;
-      this.searchRange = var2;
-      this.canPlaceOnFloor = var3;
-      this.canPlaceOnCeiling = var4;
-      this.canPlaceOnWall = var5;
-      this.chanceOfSpreading = var6;
-      this.canBePlacedOn = var7;
+      this.placeBlock = placeBlock;
+      this.searchRange = searchRange;
+      this.canPlaceOnFloor = canPlaceOnFloor;
+      this.canPlaceOnCeiling = canPlaceOnCeiling;
+      this.canPlaceOnWall = canPlaceOnWall;
+      this.chanceOfSpreading = chanceOfSpreading;
+      this.canBePlacedOn = canBePlacedOn;
       this.validDirections = new ObjectArrayList(6);
-      if (var4) {
+      if (canPlaceOnCeiling) {
          this.validDirections.add(Direction.UP);
       }
 
-      if (var3) {
+      if (canPlaceOnFloor) {
          this.validDirections.add(Direction.DOWN);
       }
 
-      if (var5) {
+      if (canPlaceOnWall) {
          Direction.Plane var10000 = Direction.Plane.HORIZONTAL;
          ObjectArrayList var10001 = this.validDirections;
          Objects.requireNonNull(var10001);
@@ -66,11 +66,11 @@ public class MultifaceGrowthConfiguration implements FeatureConfiguration {
 
    }
 
-   public List<Direction> getShuffledDirectionsExcept(RandomSource var1, Direction var2) {
-      return Util.toShuffledList(this.validDirections.stream().filter((var1x) -> var1x != var2), var1);
+   public List<Direction> getShuffledDirectionsExcept(final RandomSource random, final Direction excludeDirection) {
+      return Util.toShuffledList(this.validDirections.stream().filter((direction) -> direction != excludeDirection), random);
    }
 
-   public List<Direction> getShuffledDirections(RandomSource var1) {
-      return Util.shuffledCopy(this.validDirections, var1);
+   public List<Direction> getShuffledDirections(final RandomSource random) {
+      return Util.shuffledCopy(this.validDirections, random);
    }
 }

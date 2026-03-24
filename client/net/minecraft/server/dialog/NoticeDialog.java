@@ -11,10 +11,8 @@ public record NoticeDialog(CommonDialogData common, ActionButton action) impleme
    public static final ActionButton DEFAULT_ACTION;
    public static final MapCodec<NoticeDialog> MAP_CODEC;
 
-   public NoticeDialog(CommonDialogData var1, ActionButton var2) {
+   public NoticeDialog {
       super();
-      this.common = var1;
-      this.action = var2;
    }
 
    public MapCodec<NoticeDialog> codec() {
@@ -31,6 +29,6 @@ public record NoticeDialog(CommonDialogData common, ActionButton action) impleme
 
    static {
       DEFAULT_ACTION = new ActionButton(new CommonButtonData(CommonComponents.GUI_OK, 150), Optional.empty());
-      MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(CommonDialogData.MAP_CODEC.forGetter(NoticeDialog::common), ActionButton.CODEC.optionalFieldOf("action", DEFAULT_ACTION).forGetter(NoticeDialog::action)).apply(var0, NoticeDialog::new));
+      MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(CommonDialogData.MAP_CODEC.forGetter(NoticeDialog::common), ActionButton.CODEC.optionalFieldOf("action", DEFAULT_ACTION).forGetter(NoticeDialog::action)).apply(i, NoticeDialog::new));
    }
 }

@@ -11,18 +11,16 @@ import net.minecraft.network.protocol.PacketType;
 public record ClientboundDisguisedChatPacket(Component message, ChatType.Bound chatType) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundDisguisedChatPacket> STREAM_CODEC;
 
-   public ClientboundDisguisedChatPacket(Component var1, ChatType.Bound var2) {
+   public ClientboundDisguisedChatPacket {
       super();
-      this.message = var1;
-      this.chatType = var2;
    }
 
    public PacketType<ClientboundDisguisedChatPacket> type() {
       return GamePacketTypes.CLIENTBOUND_DISGUISED_CHAT;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleDisguisedChat(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleDisguisedChat(this);
    }
 
    public boolean isSkippable() {

@@ -14,21 +14,18 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
 public record MapBanner(BlockPos pos, DyeColor color, Optional<Component> name) {
-   public static final Codec<MapBanner> CODEC = RecordCodecBuilder.create((var0) -> var0.group(BlockPos.CODEC.fieldOf("pos").forGetter(MapBanner::pos), DyeColor.CODEC.lenientOptionalFieldOf("color", DyeColor.WHITE).forGetter(MapBanner::color), ComponentSerialization.CODEC.lenientOptionalFieldOf("name").forGetter(MapBanner::name)).apply(var0, MapBanner::new));
+   public static final Codec<MapBanner> CODEC = RecordCodecBuilder.create((i) -> i.group(BlockPos.CODEC.fieldOf("pos").forGetter(MapBanner::pos), DyeColor.CODEC.lenientOptionalFieldOf("color", DyeColor.WHITE).forGetter(MapBanner::color), ComponentSerialization.CODEC.lenientOptionalFieldOf("name").forGetter(MapBanner::name)).apply(i, MapBanner::new));
 
-   public MapBanner(BlockPos var1, DyeColor var2, Optional<Component> var3) {
+   public MapBanner {
       super();
-      this.pos = var1;
-      this.color = var2;
-      this.name = var3;
    }
 
-   public static @Nullable MapBanner fromWorld(BlockGetter var0, BlockPos var1) {
-      BlockEntity var2 = var0.getBlockEntity(var1);
-      if (var2 instanceof BannerBlockEntity var3) {
-         DyeColor var4 = var3.getBaseColor();
-         Optional var5 = Optional.ofNullable(var3.getCustomName());
-         return new MapBanner(var1, var4, var5);
+   public static @Nullable MapBanner fromWorld(final BlockGetter level, final BlockPos pos) {
+      BlockEntity entity = level.getBlockEntity(pos);
+      if (entity instanceof BannerBlockEntity banner) {
+         DyeColor color = banner.getBaseColor();
+         Optional<Component> name = Optional.ofNullable(banner.getCustomName());
+         return new MapBanner(pos, color, name);
       } else {
          return null;
       }

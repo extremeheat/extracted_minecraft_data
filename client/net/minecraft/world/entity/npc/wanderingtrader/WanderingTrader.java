@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.npc.wanderingtrader;
 
 import java.util.EnumSet;
+import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -32,7 +33,6 @@ import net.minecraft.world.entity.monster.illager.Pillager;
 import net.minecraft.world.entity.monster.illager.Vindicator;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.npc.villager.AbstractVillager;
-import net.minecraft.world.entity.npc.villager.VillagerTrades;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -41,11 +41,11 @@ import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
+import net.minecraft.world.item.trading.TradeSets;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
-import org.apache.commons.lang3.tuple.Pair;
 import org.jspecify.annotations.Nullable;
 
 public class WanderingTrader extends AbstractVillager implements Consumable.OverrideConsumeSound {
@@ -53,14 +53,14 @@ public class WanderingTrader extends AbstractVillager implements Consumable.Over
    private @Nullable BlockPos wanderTarget;
    private int despawnDelay = 0;
 
-   public WanderingTrader(EntityType<? extends WanderingTrader> var1, Level var2) {
-      super(var1, var2);
+   public WanderingTrader(final EntityType<? extends WanderingTrader> type, final Level level) {
+      super(type, level);
    }
 
    protected void registerGoals() {
       this.goalSelector.addGoal(0, new FloatGoal(this));
-      this.goalSelector.addGoal(0, new UseItemGoal(this, PotionContents.createItemStack(Items.POTION, Potions.INVISIBILITY), SoundEvents.WANDERING_TRADER_DISAPPEARED, (var1) -> this.level().isDarkOutside() && !var1.isInvisible()));
-      this.goalSelector.addGoal(0, new UseItemGoal(this, new ItemStack(Items.MILK_BUCKET), SoundEvents.WANDERING_TRADER_REAPPEARED, (var1) -> this.level().isBrightOutside() && var1.isInvisible()));
+      this.goalSelector.addGoal(0, new UseItemGoal(this, PotionContents.createItemStack(Items.POTION, Potions.INVISIBILITY), SoundEvents.WANDERING_TRADER_DISAPPEARED, (e) -> this.level().isDarkOutside() && !e.isInvisible()));
+      this.goalSelector.addGoal(0, new UseItemGoal(this, new ItemStack(Items.MILK_BUCKET), SoundEvents.WANDERING_TRADER_REAPPEARED, (e) -> this.level().isBrightOutside() && e.isInvisible()));
       this.goalSelector.addGoal(1, new TradeWithPlayerGoal(this));
       this.goalSelector.addGoal(1, new AvoidEntityGoal(this, Zombie.class, 8.0F, 0.5, 0.5));
       this.goalSelector.addGoal(1, new AvoidEntityGoal(this, Evoker.class, 12.0F, 0.5, 0.5));
@@ -78,7 +78,7 @@ public class WanderingTrader extends AbstractVillager implements Consumable.Over
       this.goalSelector.addGoal(10, new LookAtPlayerGoal(this, Mob.class, 8.0F));
    }
 
-   public @Nullable AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
       return null;
    }
 
@@ -86,11 +86,11 @@ public class WanderingTrader extends AbstractVillager implements Consumable.Over
       return false;
    }
 
-   public InteractionResult mobInteract(Player var1, InteractionHand var2) {
-      ItemStack var3 = var1.getItemInHand(var2);
-      if (!var3.is(Items.VILLAGER_SPAWN_EGG) && this.isAlive() && !this.isTrading() && !this.isBaby()) {
-         if (var2 == InteractionHand.MAIN_HAND) {
-            var1.awardStat(Stats.TALKED_TO_VILLAGER);
+   public InteractionResult mobInteract(final Player player, final InteractionHand hand) {
+      ItemStack itemStack = player.getItemInHand(hand);
+      if (!itemStack.is(Items.VILLAGER_SPAWN_EGG) && this.isAlive() && !this.isTrading() && !this.isBaby()) {
+         if (hand == InteractionHand.MAIN_HAND) {
+            player.awardStat(Stats.TALKED_TO_VILLAGER);
          }
 
          if (!this.level().isClientSide()) {
@@ -98,47 +98,44 @@ public class WanderingTrader extends AbstractVillager implements Consumable.Over
                return InteractionResult.CONSUME;
             }
 
-            this.setTradingPlayer(var1);
-            this.openTradingScreen(var1, this.getDisplayName(), 1);
+            this.setTradingPlayer(player);
+            this.openTradingScreen(player, this.getDisplayName(), 1);
          }
 
          return InteractionResult.SUCCESS;
       } else {
-         return super.mobInteract(var1, var2);
+         return super.mobInteract(player, hand);
       }
    }
 
-   protected void updateTrades(ServerLevel var1) {
-      MerchantOffers var2 = this.getOffers();
-
-      for(Pair var4 : VillagerTrades.WANDERING_TRADER_TRADES) {
-         VillagerTrades.ItemListing[] var5 = (VillagerTrades.ItemListing[])var4.getLeft();
-         this.addOffersFromItemListings(var1, var2, var5, (Integer)var4.getRight());
-      }
-
+   protected void updateTrades(final ServerLevel level) {
+      MerchantOffers offers = this.getOffers();
+      this.addOffersFromTradeSet(level, offers, TradeSets.WANDERING_TRADER_BUYING);
+      this.addOffersFromTradeSet(level, offers, TradeSets.WANDERING_TRADER_UNCOMMON);
+      this.addOffersFromTradeSet(level, offers, TradeSets.WANDERING_TRADER_COMMON);
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.putInt("DespawnDelay", this.despawnDelay);
-      var1.storeNullable("wander_target", BlockPos.CODEC, this.wanderTarget);
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.putInt("DespawnDelay", this.despawnDelay);
+      output.storeNullable("wander_target", BlockPos.CODEC, this.wanderTarget);
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.despawnDelay = var1.getIntOr("DespawnDelay", 0);
-      this.wanderTarget = (BlockPos)var1.read("wander_target", BlockPos.CODEC).orElse((Object)null);
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.despawnDelay = input.getIntOr("DespawnDelay", 0);
+      this.wanderTarget = (BlockPos)input.read("wander_target", BlockPos.CODEC).orElse((Object)null);
       this.setAge(Math.max(0, this.getAge()));
    }
 
-   public boolean removeWhenFarAway(double var1) {
+   public boolean removeWhenFarAway(final double distSqr) {
       return false;
    }
 
-   protected void rewardTradeXp(MerchantOffer var1) {
-      if (var1.shouldRewardExp()) {
-         int var2 = 3 + this.random.nextInt(4);
-         this.level().addFreshEntity(new ExperienceOrb(this.level(), this.getX(), this.getY() + 0.5, this.getZ(), var2));
+   protected void rewardTradeXp(final MerchantOffer offer) {
+      if (offer.shouldRewardExp()) {
+         int popXp = 3 + this.random.nextInt(4);
+         this.level().addFreshEntity(new ExperienceOrb(this.level(), this.getX(), this.getY() + 0.5, this.getZ(), popXp));
       }
 
    }
@@ -147,7 +144,7 @@ public class WanderingTrader extends AbstractVillager implements Consumable.Over
       return this.isTrading() ? SoundEvents.WANDERING_TRADER_TRADE : SoundEvents.WANDERING_TRADER_AMBIENT;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return SoundEvents.WANDERING_TRADER_HURT;
    }
 
@@ -155,20 +152,20 @@ public class WanderingTrader extends AbstractVillager implements Consumable.Over
       return SoundEvents.WANDERING_TRADER_DEATH;
    }
 
-   public SoundEvent getConsumeSound(ItemStack var1) {
-      return var1.is(Items.MILK_BUCKET) ? SoundEvents.WANDERING_TRADER_DRINK_MILK : SoundEvents.WANDERING_TRADER_DRINK_POTION;
+   public SoundEvent getConsumeSound(final ItemStack itemStack) {
+      return itemStack.is(Items.MILK_BUCKET) ? SoundEvents.WANDERING_TRADER_DRINK_MILK : SoundEvents.WANDERING_TRADER_DRINK_POTION;
    }
 
-   protected SoundEvent getTradeUpdatedSound(boolean var1) {
-      return var1 ? SoundEvents.WANDERING_TRADER_YES : SoundEvents.WANDERING_TRADER_NO;
+   protected SoundEvent getTradeUpdatedSound(final boolean validTrade) {
+      return validTrade ? SoundEvents.WANDERING_TRADER_YES : SoundEvents.WANDERING_TRADER_NO;
    }
 
    public SoundEvent getNotifyTradeSound() {
       return SoundEvents.WANDERING_TRADER_YES;
    }
 
-   public void setDespawnDelay(int var1) {
-      this.despawnDelay = var1;
+   public void setDespawnDelay(final int despawnDelay) {
+      this.despawnDelay = despawnDelay;
    }
 
    public int getDespawnDelay() {
@@ -190,24 +187,25 @@ public class WanderingTrader extends AbstractVillager implements Consumable.Over
 
    }
 
-   public void setWanderTarget(@Nullable BlockPos var1) {
-      this.wanderTarget = var1;
+   public void setWanderTarget(final @Nullable BlockPos pos) {
+      this.wanderTarget = pos;
    }
 
-   @Nullable BlockPos getWanderTarget() {
+   private @Nullable BlockPos getWanderTarget() {
       return this.wanderTarget;
    }
 
-   class WanderToPositionGoal extends Goal {
+   private class WanderToPositionGoal extends Goal {
       final WanderingTrader trader;
       final double stopDistance;
       final double speedModifier;
 
-      WanderToPositionGoal(final WanderingTrader var2, final double var3, final double var5) {
+      WanderToPositionGoal(final WanderingTrader trader, final double stopDistance, final double speedModifier) {
+         Objects.requireNonNull(WanderingTrader.this);
          super();
-         this.trader = var2;
-         this.stopDistance = var3;
-         this.speedModifier = var5;
+         this.trader = trader;
+         this.stopDistance = stopDistance;
+         this.speedModifier = speedModifier;
          this.setFlags(EnumSet.of(Goal.Flag.MOVE));
       }
 
@@ -217,26 +215,26 @@ public class WanderingTrader extends AbstractVillager implements Consumable.Over
       }
 
       public boolean canUse() {
-         BlockPos var1 = this.trader.getWanderTarget();
-         return var1 != null && this.isTooFarAway(var1, this.stopDistance);
+         BlockPos wanderPosition = this.trader.getWanderTarget();
+         return wanderPosition != null && this.isTooFarAway(wanderPosition, this.stopDistance);
       }
 
       public void tick() {
-         BlockPos var1 = this.trader.getWanderTarget();
-         if (var1 != null && WanderingTrader.this.navigation.isDone()) {
-            if (this.isTooFarAway(var1, 10.0)) {
-               Vec3 var2 = (new Vec3((double)var1.getX() - this.trader.getX(), (double)var1.getY() - this.trader.getY(), (double)var1.getZ() - this.trader.getZ())).normalize();
-               Vec3 var3 = var2.scale(10.0).add(this.trader.getX(), this.trader.getY(), this.trader.getZ());
-               WanderingTrader.this.navigation.moveTo(var3.x, var3.y, var3.z, this.speedModifier);
+         BlockPos wanderPosition = this.trader.getWanderTarget();
+         if (wanderPosition != null && WanderingTrader.this.navigation.isDone()) {
+            if (this.isTooFarAway(wanderPosition, 10.0)) {
+               Vec3 dir = (new Vec3((double)wanderPosition.getX() - this.trader.getX(), (double)wanderPosition.getY() - this.trader.getY(), (double)wanderPosition.getZ() - this.trader.getZ())).normalize();
+               Vec3 targetPos = dir.scale(10.0).add(this.trader.getX(), this.trader.getY(), this.trader.getZ());
+               WanderingTrader.this.navigation.moveTo(targetPos.x, targetPos.y, targetPos.z, this.speedModifier);
             } else {
-               WanderingTrader.this.navigation.moveTo((double)var1.getX(), (double)var1.getY(), (double)var1.getZ(), this.speedModifier);
+               WanderingTrader.this.navigation.moveTo((double)wanderPosition.getX(), (double)wanderPosition.getY(), (double)wanderPosition.getZ(), this.speedModifier);
             }
          }
 
       }
 
-      private boolean isTooFarAway(BlockPos var1, double var2) {
-         return !var1.closerToCenterThan(this.trader.position(), var2);
+      private boolean isTooFarAway(final BlockPos pos, final double distance) {
+         return !pos.closerToCenterThan(this.trader.position(), distance);
       }
    }
 }

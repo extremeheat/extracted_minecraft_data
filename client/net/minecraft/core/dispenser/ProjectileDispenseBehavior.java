@@ -13,27 +13,27 @@ public class ProjectileDispenseBehavior extends DefaultDispenseItemBehavior {
    private final ProjectileItem projectileItem;
    private final ProjectileItem.DispenseConfig dispenseConfig;
 
-   public ProjectileDispenseBehavior(Item var1) {
+   public ProjectileDispenseBehavior(final Item item) {
       super();
-      if (var1 instanceof ProjectileItem var2) {
-         this.projectileItem = var2;
-         this.dispenseConfig = var2.createDispenseConfig();
+      if (item instanceof ProjectileItem projectileItem) {
+         this.projectileItem = projectileItem;
+         this.dispenseConfig = projectileItem.createDispenseConfig();
       } else {
-         String var10002 = String.valueOf(var1);
+         String var10002 = String.valueOf(item);
          throw new IllegalArgumentException(var10002 + " not instance of " + ProjectileItem.class.getSimpleName());
       }
    }
 
-   public ItemStack execute(BlockSource var1, ItemStack var2) {
-      ServerLevel var3 = var1.level();
-      Direction var4 = (Direction)var1.state().getValue(DispenserBlock.FACING);
-      Position var5 = this.dispenseConfig.positionFunction().getDispensePosition(var1, var4);
-      Projectile.spawnProjectileUsingShoot(this.projectileItem.asProjectile(var3, var5, var2, var4), var3, var2, (double)var4.getStepX(), (double)var4.getStepY(), (double)var4.getStepZ(), this.dispenseConfig.power(), this.dispenseConfig.uncertainty());
-      var2.shrink(1);
-      return var2;
+   public ItemStack execute(final BlockSource source, final ItemStack dispensed) {
+      ServerLevel level = source.level();
+      Direction direction = (Direction)source.state().getValue(DispenserBlock.FACING);
+      Position position = this.dispenseConfig.positionFunction().getDispensePosition(source, direction);
+      Projectile.spawnProjectileUsingShoot(this.projectileItem.asProjectile(level, position, dispensed, direction), level, dispensed, (double)direction.getStepX(), (double)direction.getStepY(), (double)direction.getStepZ(), this.dispenseConfig.power(), this.dispenseConfig.uncertainty());
+      dispensed.shrink(1);
+      return dispensed;
    }
 
-   protected void playSound(BlockSource var1) {
-      var1.level().levelEvent(this.dispenseConfig.overrideDispenseEvent().orElse(1002), var1.pos(), 0);
+   protected void playSound(final BlockSource source) {
+      source.level().levelEvent(this.dispenseConfig.overrideDispenseEvent().orElse(1002), source.pos(), 0);
    }
 }

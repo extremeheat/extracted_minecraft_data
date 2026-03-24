@@ -6,12 +6,12 @@ import java.util.Optional;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class VibrationSelector {
-   public static final Codec<VibrationSelector> CODEC = RecordCodecBuilder.create((var0) -> var0.group(VibrationInfo.CODEC.lenientOptionalFieldOf("event").forGetter((var0x) -> var0x.currentVibrationData.map(Pair::getLeft)), Codec.LONG.fieldOf("tick").forGetter((var0x) -> (Long)var0x.currentVibrationData.map(Pair::getRight).orElse(-1L))).apply(var0, VibrationSelector::new));
+   public static final Codec<VibrationSelector> CODEC = RecordCodecBuilder.create((i) -> i.group(VibrationInfo.CODEC.lenientOptionalFieldOf("event").forGetter((o) -> o.currentVibrationData.map(Pair::getLeft)), Codec.LONG.fieldOf("tick").forGetter((o) -> (Long)o.currentVibrationData.map(Pair::getRight).orElse(-1L))).apply(i, VibrationSelector::new));
    private Optional<Pair<VibrationInfo, Long>> currentVibrationData;
 
-   public VibrationSelector(Optional<VibrationInfo> var1, long var2) {
+   public VibrationSelector(final Optional<VibrationInfo> currentVibration, final long tick) {
       super();
-      this.currentVibrationData = var1.map((var2x) -> Pair.of(var2x, var2));
+      this.currentVibrationData = currentVibration.map((vibrationInfo) -> Pair.of(vibrationInfo, tick));
    }
 
    public VibrationSelector() {
@@ -19,39 +19,39 @@ public class VibrationSelector {
       this.currentVibrationData = Optional.empty();
    }
 
-   public void addCandidate(VibrationInfo var1, long var2) {
-      if (this.shouldReplaceVibration(var1, var2)) {
-         this.currentVibrationData = Optional.of(Pair.of(var1, var2));
+   public void addCandidate(final VibrationInfo newVibration, final long tickTime) {
+      if (this.shouldReplaceVibration(newVibration, tickTime)) {
+         this.currentVibrationData = Optional.of(Pair.of(newVibration, tickTime));
       }
 
    }
 
-   private boolean shouldReplaceVibration(VibrationInfo var1, long var2) {
+   private boolean shouldReplaceVibration(final VibrationInfo newVibration, final long tickTime) {
       if (this.currentVibrationData.isEmpty()) {
          return true;
       } else {
-         Pair var4 = (Pair)this.currentVibrationData.get();
-         long var5 = (Long)var4.getRight();
-         if (var2 != var5) {
+         Pair<VibrationInfo, Long> previousData = (Pair)this.currentVibrationData.get();
+         long previousTick = (Long)previousData.getRight();
+         if (tickTime != previousTick) {
             return false;
          } else {
-            VibrationInfo var7 = (VibrationInfo)var4.getLeft();
-            if (var1.distance() < var7.distance()) {
+            VibrationInfo previousVibration = (VibrationInfo)previousData.getLeft();
+            if (newVibration.distance() < previousVibration.distance()) {
                return true;
-            } else if (var1.distance() > var7.distance()) {
+            } else if (newVibration.distance() > previousVibration.distance()) {
                return false;
             } else {
-               return VibrationSystem.getGameEventFrequency(var1.gameEvent()) > VibrationSystem.getGameEventFrequency(var7.gameEvent());
+               return VibrationSystem.getGameEventFrequency(newVibration.gameEvent()) > VibrationSystem.getGameEventFrequency(previousVibration.gameEvent());
             }
          }
       }
    }
 
-   public Optional<VibrationInfo> chosenCandidate(long var1) {
+   public Optional<VibrationInfo> chosenCandidate(final long time) {
       if (this.currentVibrationData.isEmpty()) {
          return Optional.empty();
       } else {
-         return (Long)((Pair)this.currentVibrationData.get()).getRight() < var1 ? Optional.of((VibrationInfo)((Pair)this.currentVibrationData.get()).getLeft()) : Optional.empty();
+         return (Long)((Pair)this.currentVibrationData.get()).getRight() < time ? Optional.of((VibrationInfo)((Pair)this.currentVibrationData.get()).getLeft()) : Optional.empty();
       }
    }
 

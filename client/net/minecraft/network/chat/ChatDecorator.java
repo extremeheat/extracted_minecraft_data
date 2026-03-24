@@ -5,7 +5,7 @@ import org.jspecify.annotations.Nullable;
 
 @FunctionalInterface
 public interface ChatDecorator {
-   ChatDecorator PLAIN = (var0, var1) -> var1;
+   ChatDecorator PLAIN = (player, plain) -> plain;
 
-   Component decorate(@Nullable ServerPlayer var1, Component var2);
+   Component decorate(@Nullable ServerPlayer player, Component plain);
 }

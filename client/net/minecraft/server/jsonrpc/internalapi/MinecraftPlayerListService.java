@@ -13,28 +13,28 @@ import org.jspecify.annotations.Nullable;
 public interface MinecraftPlayerListService {
    List<ServerPlayer> getPlayers();
 
-   @Nullable ServerPlayer getPlayer(UUID var1);
+   @Nullable ServerPlayer getPlayer(UUID uuid);
 
-   default CompletableFuture<Optional<NameAndId>> getUser(Optional<UUID> var1, Optional<String> var2) {
-      if (var1.isPresent()) {
-         Optional var3 = this.getCachedUserById((UUID)var1.get());
-         return var3.isPresent() ? CompletableFuture.completedFuture(var3) : CompletableFuture.supplyAsync(() -> this.fetchUserById((UUID)var1.get()), Util.nonCriticalIoPool());
+   default CompletableFuture<Optional<NameAndId>> getUser(final Optional<UUID> id, final Optional<String> name) {
+      if (id.isPresent()) {
+         Optional<NameAndId> nameAndId = this.getCachedUserById((UUID)id.get());
+         return nameAndId.isPresent() ? CompletableFuture.completedFuture(nameAndId) : CompletableFuture.supplyAsync(() -> this.fetchUserById((UUID)id.get()), Util.nonCriticalIoPool());
       } else {
-         return var2.isPresent() ? CompletableFuture.supplyAsync(() -> this.fetchUserByName((String)var2.get()), Util.nonCriticalIoPool()) : CompletableFuture.completedFuture(Optional.empty());
+         return name.isPresent() ? CompletableFuture.supplyAsync(() -> this.fetchUserByName((String)name.get()), Util.nonCriticalIoPool()) : CompletableFuture.completedFuture(Optional.empty());
       }
    }
 
-   Optional<NameAndId> fetchUserByName(String var1);
+   Optional<NameAndId> fetchUserByName(String name);
 
-   Optional<NameAndId> fetchUserById(UUID var1);
+   Optional<NameAndId> fetchUserById(UUID id);
 
-   Optional<NameAndId> getCachedUserById(UUID var1);
+   Optional<NameAndId> getCachedUserById(UUID id);
 
-   Optional<ServerPlayer> getPlayer(Optional<UUID> var1, Optional<String> var2);
+   Optional<ServerPlayer> getPlayer(Optional<UUID> id, Optional<String> name);
 
-   List<ServerPlayer> getPlayersWithAddress(String var1);
+   List<ServerPlayer> getPlayersWithAddress(String ip);
 
-   @Nullable ServerPlayer getPlayerByName(String var1);
+   @Nullable ServerPlayer getPlayerByName(String name);
 
-   void remove(ServerPlayer var1, ClientInfo var2);
+   void remove(ServerPlayer player, ClientInfo clientInfo);
 }

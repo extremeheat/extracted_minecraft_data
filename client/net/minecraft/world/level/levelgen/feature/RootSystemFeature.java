@@ -13,35 +13,35 @@ import net.minecraft.world.level.levelgen.feature.configurations.RootSystemConfi
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 public class RootSystemFeature extends Feature<RootSystemConfiguration> {
-   public RootSystemFeature(Codec<RootSystemConfiguration> var1) {
-      super(var1);
+   public RootSystemFeature(final Codec<RootSystemConfiguration> codec) {
+      super(codec);
    }
 
-   public boolean place(FeaturePlaceContext<RootSystemConfiguration> var1) {
-      WorldGenLevel var2 = var1.level();
-      BlockPos var3 = var1.origin();
-      if (!var2.getBlockState(var3).isAir()) {
+   public boolean place(final FeaturePlaceContext<RootSystemConfiguration> context) {
+      WorldGenLevel level = context.level();
+      BlockPos origin = context.origin();
+      if (!level.getBlockState(origin).isAir()) {
          return false;
       } else {
-         RandomSource var4 = var1.random();
-         BlockPos var5 = var1.origin();
-         RootSystemConfiguration var6 = (RootSystemConfiguration)var1.config();
-         BlockPos.MutableBlockPos var7 = var5.mutable();
-         if (placeDirtAndTree(var2, var1.chunkGenerator(), var6, var4, var7, var5)) {
-            placeRoots(var2, var6, var4, var5, var7);
+         RandomSource random = context.random();
+         BlockPos pos = context.origin();
+         RootSystemConfiguration config = context.config();
+         BlockPos.MutableBlockPos workingPos = pos.mutable();
+         if (placeDirtAndTree(level, context.chunkGenerator(), config, random, workingPos, pos)) {
+            placeRoots(level, config, random, pos, workingPos);
          }
 
          return true;
       }
    }
 
-   private static boolean spaceForTree(WorldGenLevel var0, RootSystemConfiguration var1, BlockPos var2) {
-      BlockPos.MutableBlockPos var3 = var2.mutable();
+   private static boolean spaceForTree(final WorldGenLevel level, final RootSystemConfiguration config, final BlockPos pos) {
+      BlockPos.MutableBlockPos columnUpPos = pos.mutable();
 
-      for(int var4 = 1; var4 <= var1.requiredVerticalSpaceForTree; ++var4) {
-         var3.move(Direction.UP);
-         BlockState var5 = var0.getBlockState(var3);
-         if (!isAllowedTreeSpace(var5, var4, var1.allowedVerticalWaterForTree)) {
+      for(int i = 1; i <= config.requiredVerticalSpaceForTree; ++i) {
+         columnUpPos.move(Direction.UP);
+         BlockState state = level.getBlockState(columnUpPos);
+         if (!isAllowedTreeSpace(state, i, config.allowedVerticalWaterForTree)) {
             return false;
          }
       }
@@ -49,26 +49,26 @@ public class RootSystemFeature extends Feature<RootSystemConfiguration> {
       return true;
    }
 
-   private static boolean isAllowedTreeSpace(BlockState var0, int var1, int var2) {
-      if (var0.isAir()) {
+   private static boolean isAllowedTreeSpace(final BlockState state, final int blocksAboveOrigin, final int allowedVerticalWaterHeight) {
+      if (state.isAir()) {
          return true;
       } else {
-         int var3 = var1 + 1;
-         return var3 <= var2 && var0.getFluidState().is(FluidTags.WATER);
+         int blocksAboveGround = blocksAboveOrigin + 1;
+         return blocksAboveGround <= allowedVerticalWaterHeight && state.getFluidState().is(FluidTags.WATER);
       }
    }
 
-   private static boolean placeDirtAndTree(WorldGenLevel var0, ChunkGenerator var1, RootSystemConfiguration var2, RandomSource var3, BlockPos.MutableBlockPos var4, BlockPos var5) {
-      for(int var6 = 0; var6 < var2.rootColumnMaxHeight; ++var6) {
-         var4.move(Direction.UP);
-         if (var2.allowedTreePosition.test(var0, var4) && spaceForTree(var0, var2, var4)) {
-            BlockPos var7 = var4.below();
-            if (var0.getFluidState(var7).is(FluidTags.LAVA) || !var0.getBlockState(var7).isSolid()) {
+   private static boolean placeDirtAndTree(final WorldGenLevel level, final ChunkGenerator generator, final RootSystemConfiguration config, final RandomSource random, final BlockPos.MutableBlockPos workingPos, final BlockPos pos) {
+      for(int y = 0; y < config.rootColumnMaxHeight; ++y) {
+         workingPos.move(Direction.UP);
+         if (config.allowedTreePosition.test(level, workingPos) && spaceForTree(level, config, workingPos)) {
+            BlockPos belowPos = workingPos.below();
+            if (level.getFluidState(belowPos).is(FluidTags.LAVA) || !level.getBlockState(belowPos).isSolid()) {
                return false;
             }
 
-            if (((PlacedFeature)var2.treeFeature.value()).place(var0, var1, var3, var4)) {
-               placeDirt(var5, var5.getY() + var6, var0, var2, var3);
+            if (((PlacedFeature)config.treeFeature.value()).place(level, generator, random, workingPos)) {
+               placeDirt(pos, pos.getY() + y, level, config, random);
                return true;
             }
          }
@@ -77,43 +77,43 @@ public class RootSystemFeature extends Feature<RootSystemConfiguration> {
       return false;
    }
 
-   private static void placeDirt(BlockPos var0, int var1, WorldGenLevel var2, RootSystemConfiguration var3, RandomSource var4) {
-      int var5 = var0.getX();
-      int var6 = var0.getZ();
-      BlockPos.MutableBlockPos var7 = var0.mutable();
+   private static void placeDirt(final BlockPos origin, final int targetHeight, final WorldGenLevel level, final RootSystemConfiguration config, final RandomSource random) {
+      int originX = origin.getX();
+      int originZ = origin.getZ();
+      BlockPos.MutableBlockPos workingPos = origin.mutable();
 
-      for(int var8 = var0.getY(); var8 < var1; ++var8) {
-         placeRootedDirt(var2, var3, var4, var5, var6, var7.set(var5, var8, var6));
+      for(int y = origin.getY(); y < targetHeight; ++y) {
+         placeRootedDirt(level, config, random, originX, originZ, workingPos.set(originX, y, originZ));
       }
 
    }
 
-   private static void placeRootedDirt(WorldGenLevel var0, RootSystemConfiguration var1, RandomSource var2, int var3, int var4, BlockPos.MutableBlockPos var5) {
-      int var6 = var1.rootRadius;
-      Predicate var7 = (var1x) -> var1x.is(var1.rootReplaceable);
+   private static void placeRootedDirt(final WorldGenLevel level, final RootSystemConfiguration config, final RandomSource random, final int originX, final int originZ, final BlockPos.MutableBlockPos workingPos) {
+      int rootRadius = config.rootRadius;
+      Predicate<BlockState> stateTest = (s) -> s.is(config.rootReplaceable);
 
-      for(int var8 = 0; var8 < var1.rootPlacementAttempts; ++var8) {
-         var5.setWithOffset(var5, var2.nextInt(var6) - var2.nextInt(var6), 0, var2.nextInt(var6) - var2.nextInt(var6));
-         if (var7.test(var0.getBlockState(var5))) {
-            var0.setBlock(var5, var1.rootStateProvider.getState(var2, var5), 2);
+      for(int i = 0; i < config.rootPlacementAttempts; ++i) {
+         workingPos.setWithOffset(workingPos, random.nextInt(rootRadius) - random.nextInt(rootRadius), 0, random.nextInt(rootRadius) - random.nextInt(rootRadius));
+         if (stateTest.test(level.getBlockState(workingPos))) {
+            level.setBlock(workingPos, config.rootStateProvider.getState(level, random, workingPos), 2);
          }
 
-         var5.setX(var3);
-         var5.setZ(var4);
+         workingPos.setX(originX);
+         workingPos.setZ(originZ);
       }
 
    }
 
-   private static void placeRoots(WorldGenLevel var0, RootSystemConfiguration var1, RandomSource var2, BlockPos var3, BlockPos.MutableBlockPos var4) {
-      int var5 = var1.hangingRootRadius;
-      int var6 = var1.hangingRootsVerticalSpan;
+   private static void placeRoots(final WorldGenLevel level, final RootSystemConfiguration config, final RandomSource random, final BlockPos pos, final BlockPos.MutableBlockPos workingPos) {
+      int rootRadius = config.hangingRootRadius;
+      int verticalSpan = config.hangingRootsVerticalSpan;
 
-      for(int var7 = 0; var7 < var1.hangingRootPlacementAttempts; ++var7) {
-         var4.setWithOffset(var3, var2.nextInt(var5) - var2.nextInt(var5), var2.nextInt(var6) - var2.nextInt(var6), var2.nextInt(var5) - var2.nextInt(var5));
-         if (var0.isEmptyBlock(var4)) {
-            BlockState var8 = var1.hangingRootStateProvider.getState(var2, var4);
-            if (var8.canSurvive(var0, var4) && var0.getBlockState(var4.above()).isFaceSturdy(var0, var4, Direction.DOWN)) {
-               var0.setBlock(var4, var8, 2);
+      for(int i = 0; i < config.hangingRootPlacementAttempts; ++i) {
+         workingPos.setWithOffset(pos, random.nextInt(rootRadius) - random.nextInt(rootRadius), random.nextInt(verticalSpan) - random.nextInt(verticalSpan), random.nextInt(rootRadius) - random.nextInt(rootRadius));
+         if (level.isEmptyBlock(workingPos)) {
+            BlockState targetState = config.hangingRootStateProvider.getState(level, random, workingPos);
+            if (targetState.canSurvive(level, workingPos) && level.getBlockState(workingPos.above()).isFaceSturdy(level, workingPos, Direction.DOWN)) {
+               level.setBlock(workingPos, targetState, 2);
             }
          }
       }

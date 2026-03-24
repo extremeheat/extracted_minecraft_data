@@ -1,6 +1,7 @@
 package net.minecraft.server.level;
 
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
@@ -13,16 +14,16 @@ public class ChunkLoadCounter {
       super();
    }
 
-   public void track(ServerLevel var1, Runnable var2) {
-      ServerChunkCache var3 = var1.getChunkSource();
-      LongOpenHashSet var4 = new LongOpenHashSet();
-      var3.runDistanceManagerUpdates();
-      var3.chunkMap.allChunksWithAtLeastStatus(ChunkStatus.FULL).forEach((var1x) -> var4.add(var1x.getPos().toLong()));
-      var2.run();
-      var3.runDistanceManagerUpdates();
-      var3.chunkMap.allChunksWithAtLeastStatus(ChunkStatus.FULL).forEach((var2x) -> {
-         if (!var4.contains(var2x.getPos().toLong())) {
-            this.pendingChunks.add(var2x);
+   public void track(final ServerLevel level, final Runnable scheduler) {
+      ServerChunkCache chunkSource = level.getChunkSource();
+      LongSet alreadyLoadedChunks = new LongOpenHashSet();
+      chunkSource.runDistanceManagerUpdates();
+      chunkSource.chunkMap.allChunksWithAtLeastStatus(ChunkStatus.FULL).forEach((chunkHolder) -> alreadyLoadedChunks.add(chunkHolder.getPos().pack()));
+      scheduler.run();
+      chunkSource.runDistanceManagerUpdates();
+      chunkSource.chunkMap.allChunksWithAtLeastStatus(ChunkStatus.FULL).forEach((chunkHolder) -> {
+         if (!alreadyLoadedChunks.contains(chunkHolder.getPos().pack())) {
+            this.pendingChunks.add(chunkHolder);
             ++this.totalChunks;
          }
 
@@ -34,7 +35,7 @@ public class ChunkLoadCounter {
    }
 
    public int pendingChunks() {
-      this.pendingChunks.removeIf((var0) -> var0.getLatestStatus() == ChunkStatus.FULL);
+      this.pendingChunks.removeIf((chunkHolder) -> chunkHolder.getLatestStatus() == ChunkStatus.FULL);
       return this.pendingChunks.size();
    }
 

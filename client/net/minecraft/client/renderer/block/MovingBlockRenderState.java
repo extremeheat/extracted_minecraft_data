@@ -1,11 +1,9 @@
 package net.minecraft.client.renderer.block;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.CardinalLighting;
 import net.minecraft.world.level.ColorResolver;
-import net.minecraft.world.level.EmptyBlockAndTintGetter;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -19,38 +17,40 @@ public class MovingBlockRenderState implements BlockAndTintGetter {
    public BlockPos blockPos;
    public BlockState blockState;
    public @Nullable Holder<Biome> biome;
-   public BlockAndTintGetter level;
+   public CardinalLighting cardinalLighting;
+   public LevelLightEngine lightEngine;
 
    public MovingBlockRenderState() {
       super();
       this.randomSeedPos = BlockPos.ZERO;
       this.blockPos = BlockPos.ZERO;
       this.blockState = Blocks.AIR.defaultBlockState();
-      this.level = EmptyBlockAndTintGetter.INSTANCE;
+      this.cardinalLighting = CardinalLighting.DEFAULT;
+      this.lightEngine = LevelLightEngine.EMPTY;
    }
 
-   public float getShade(Direction var1, boolean var2) {
-      return this.level.getShade(var1, var2);
+   public CardinalLighting cardinalLighting() {
+      return this.cardinalLighting;
    }
 
    public LevelLightEngine getLightEngine() {
-      return this.level.getLightEngine();
+      return this.lightEngine;
    }
 
-   public int getBlockTint(BlockPos var1, ColorResolver var2) {
-      return this.biome == null ? -1 : var2.getColor(this.biome.value(), (double)var1.getX(), (double)var1.getZ());
+   public int getBlockTint(final BlockPos pos, final ColorResolver color) {
+      return this.biome == null ? -1 : color.getColor(this.biome.value(), (double)pos.getX(), (double)pos.getZ());
    }
 
-   public @Nullable BlockEntity getBlockEntity(BlockPos var1) {
+   public @Nullable BlockEntity getBlockEntity(final BlockPos pos) {
       return null;
    }
 
-   public BlockState getBlockState(BlockPos var1) {
-      return var1.equals(this.blockPos) ? this.blockState : Blocks.AIR.defaultBlockState();
+   public BlockState getBlockState(final BlockPos pos) {
+      return pos.equals(this.blockPos) ? this.blockState : Blocks.AIR.defaultBlockState();
    }
 
-   public FluidState getFluidState(BlockPos var1) {
-      return this.getBlockState(var1).getFluidState();
+   public FluidState getFluidState(final BlockPos pos) {
+      return this.getBlockState(pos).getFluidState();
    }
 
    public int getHeight() {

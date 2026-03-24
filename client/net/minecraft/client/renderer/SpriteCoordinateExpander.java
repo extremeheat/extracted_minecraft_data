@@ -7,46 +7,46 @@ public class SpriteCoordinateExpander implements VertexConsumer {
    private final VertexConsumer delegate;
    private final TextureAtlasSprite sprite;
 
-   public SpriteCoordinateExpander(VertexConsumer var1, TextureAtlasSprite var2) {
+   public SpriteCoordinateExpander(final VertexConsumer delegate, final TextureAtlasSprite sprite) {
       super();
-      this.delegate = var1;
-      this.sprite = var2;
+      this.delegate = delegate;
+      this.sprite = sprite;
    }
 
-   public VertexConsumer addVertex(float var1, float var2, float var3) {
-      return this.delegate.addVertex(var1, var2, var3);
+   public VertexConsumer addVertex(final float x, final float y, final float z) {
+      return this.delegate.addVertex(x, y, z);
    }
 
-   public VertexConsumer setColor(int var1, int var2, int var3, int var4) {
-      return this.delegate.setColor(var1, var2, var3, var4);
+   public VertexConsumer setColor(final int r, final int g, final int b, final int a) {
+      return this.delegate.setColor(r, g, b, a);
    }
 
-   public VertexConsumer setColor(int var1) {
-      return this.delegate.setColor(var1);
+   public VertexConsumer setColor(final int color) {
+      return this.delegate.setColor(color);
    }
 
-   public VertexConsumer setUv(float var1, float var2) {
-      return this.delegate.setUv(this.sprite.getU(var1), this.sprite.getV(var2));
+   public VertexConsumer setUv(final float u, final float v) {
+      return this.delegate.setUv(this.sprite.getU(u), this.sprite.getV(v));
    }
 
-   public VertexConsumer setUv1(int var1, int var2) {
-      return this.delegate.setUv1(var1, var2);
+   public VertexConsumer setUv1(final int u, final int v) {
+      return this.delegate.setUv1(u, v);
    }
 
-   public VertexConsumer setUv2(int var1, int var2) {
-      return this.delegate.setUv2(var1, var2);
+   public VertexConsumer setUv2(final int u, final int v) {
+      return this.delegate.setUv2(u, v);
    }
 
-   public VertexConsumer setNormal(float var1, float var2, float var3) {
-      return this.delegate.setNormal(var1, var2, var3);
+   public VertexConsumer setNormal(final float x, final float y, final float z) {
+      return this.delegate.setNormal(x, y, z);
    }
 
-   public VertexConsumer setLineWidth(float var1) {
-      this.delegate.setLineWidth(var1);
+   public VertexConsumer setLineWidth(final float width) {
+      this.delegate.setLineWidth(width);
       return this;
    }
 
-   public void addVertex(float var1, float var2, float var3, int var4, float var5, float var6, int var7, int var8, float var9, float var10, float var11) {
-      this.delegate.addVertex(var1, var2, var3, var4, this.sprite.getU(var5), this.sprite.getV(var6), var7, var8, var9, var10, var11);
+   public void addVertex(final float x, final float y, final float z, final int color, final float u, final float v, final int overlayCoords, final int lightCoords, final float nx, final float ny, final float nz) {
+      this.delegate.addVertex(x, y, z, color, this.sprite.getU(u), this.sprite.getV(v), overlayCoords, lightCoords, nx, ny, nz);
    }
 }

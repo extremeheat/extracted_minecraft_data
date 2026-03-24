@@ -45,76 +45,76 @@ public class PistonHeadBlock extends DirectionalBlock {
       return CODEC;
    }
 
-   public PistonHeadBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public PistonHeadBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(TYPE, PistonType.DEFAULT)).setValue(SHORT, false));
    }
 
-   protected boolean useShapeForLightOcclusion(BlockState var1) {
+   protected boolean useShapeForLightOcclusion(final BlockState state) {
       return true;
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (VoxelShape)((Boolean)var1.getValue(SHORT) ? SHAPES_SHORT : SHAPES).get(var1.getValue(FACING));
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return (VoxelShape)((Boolean)state.getValue(SHORT) ? SHAPES_SHORT : SHAPES).get(state.getValue(FACING));
    }
 
-   private boolean isFittingBase(BlockState var1, BlockState var2) {
-      Block var3 = var1.getValue(TYPE) == PistonType.DEFAULT ? Blocks.PISTON : Blocks.STICKY_PISTON;
-      return var2.is(var3) && (Boolean)var2.getValue(PistonBaseBlock.EXTENDED) && var2.getValue(FACING) == var1.getValue(FACING);
+   private boolean isFittingBase(final BlockState armState, final BlockState potentialBase) {
+      Block baseBlock = armState.getValue(TYPE) == PistonType.DEFAULT ? Blocks.PISTON : Blocks.STICKY_PISTON;
+      return potentialBase.is(baseBlock) && (Boolean)potentialBase.getValue(PistonBaseBlock.EXTENDED) && potentialBase.getValue(FACING) == armState.getValue(FACING);
    }
 
-   public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
-      if (!var1.isClientSide() && var4.preventsBlockDrops()) {
-         BlockPos var5 = var2.relative(((Direction)var3.getValue(FACING)).getOpposite());
-         if (this.isFittingBase(var3, var1.getBlockState(var5))) {
-            var1.destroyBlock(var5, false);
+   public BlockState playerWillDestroy(final Level level, final BlockPos pos, final BlockState state, final Player player) {
+      if (!level.isClientSide() && player.preventsBlockDrops()) {
+         BlockPos basePos = pos.relative(((Direction)state.getValue(FACING)).getOpposite());
+         if (this.isFittingBase(state, level.getBlockState(basePos))) {
+            level.destroyBlock(basePos, false);
          }
       }
 
-      return super.playerWillDestroy(var1, var2, var3, var4);
+      return super.playerWillDestroy(level, pos, state, player);
    }
 
-   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
-      BlockPos var5 = var3.relative(((Direction)var1.getValue(FACING)).getOpposite());
-      if (this.isFittingBase(var1, var2.getBlockState(var5))) {
-         var2.destroyBlock(var5, true);
+   protected void affectNeighborsAfterRemoval(final BlockState state, final ServerLevel level, final BlockPos pos, final boolean movedByPiston) {
+      BlockPos basePos = pos.relative(((Direction)state.getValue(FACING)).getOpposite());
+      if (this.isFittingBase(state, level.getBlockState(basePos))) {
+         level.destroyBlock(basePos, true);
       }
 
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      return var5.getOpposite() == var1.getValue(FACING) && !var1.canSurvive(var2, var4) ? Blocks.AIR.defaultBlockState() : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      return directionToNeighbour.getOpposite() == state.getValue(FACING) && !state.canSurvive(level, pos) ? Blocks.AIR.defaultBlockState() : super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      BlockState var4 = var2.getBlockState(var3.relative(((Direction)var1.getValue(FACING)).getOpposite()));
-      return this.isFittingBase(var1, var4) || var4.is(Blocks.MOVING_PISTON) && var4.getValue(FACING) == var1.getValue(FACING);
+   protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
+      BlockState base = level.getBlockState(pos.relative(((Direction)state.getValue(FACING)).getOpposite()));
+      return this.isFittingBase(state, base) || base.is(Blocks.MOVING_PISTON) && base.getValue(FACING) == state.getValue(FACING);
    }
 
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
-      if (var1.canSurvive(var2, var3)) {
-         var2.neighborChanged(var3.relative(((Direction)var1.getValue(FACING)).getOpposite()), var4, ExperimentalRedstoneUtils.withFront(var5, ((Direction)var1.getValue(FACING)).getOpposite()));
+   protected void neighborChanged(final BlockState state, final Level level, final BlockPos pos, final Block block, final @Nullable Orientation orientation, final boolean movedByPiston) {
+      if (state.canSurvive(level, pos)) {
+         level.neighborChanged(pos.relative(((Direction)state.getValue(FACING)).getOpposite()), block, ExperimentalRedstoneUtils.withFront(orientation, ((Direction)state.getValue(FACING)).getOpposite()));
       }
 
    }
 
-   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
-      return new ItemStack(var3.getValue(TYPE) == PistonType.STICKY ? Blocks.STICKY_PISTON : Blocks.PISTON);
+   protected ItemStack getCloneItemStack(final LevelReader level, final BlockPos pos, final BlockState state, final boolean includeData) {
+      return new ItemStack(state.getValue(TYPE) == PistonType.STICKY ? Blocks.STICKY_PISTON : Blocks.PISTON);
    }
 
-   protected BlockState rotate(BlockState var1, Rotation var2) {
-      return (BlockState)var1.setValue(FACING, var2.rotate((Direction)var1.getValue(FACING)));
+   protected BlockState rotate(final BlockState state, final Rotation rotation) {
+      return (BlockState)state.setValue(FACING, rotation.rotate((Direction)state.getValue(FACING)));
    }
 
-   protected BlockState mirror(BlockState var1, Mirror var2) {
-      return var1.rotate(var2.getRotation((Direction)var1.getValue(FACING)));
+   protected BlockState mirror(final BlockState state, final Mirror mirror) {
+      return state.rotate(mirror.getRotation((Direction)state.getValue(FACING)));
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(FACING, TYPE, SHORT);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(FACING, TYPE, SHORT);
    }
 
-   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
+   protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
       return false;
    }
 

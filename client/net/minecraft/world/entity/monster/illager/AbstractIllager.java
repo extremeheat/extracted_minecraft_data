@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.monster.illager;
 
+import java.util.Objects;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -10,8 +11,8 @@ import net.minecraft.world.entity.raid.Raider;
 import net.minecraft.world.level.Level;
 
 public abstract class AbstractIllager extends Raider {
-   protected AbstractIllager(EntityType<? extends AbstractIllager> var1, Level var2) {
-      super(var1, var2);
+   protected AbstractIllager(final EntityType<? extends AbstractIllager> type, final Level level) {
+      super(type, level);
    }
 
    protected void registerGoals() {
@@ -22,17 +23,17 @@ public abstract class AbstractIllager extends Raider {
       return AbstractIllager.IllagerArmPose.CROSSED;
    }
 
-   public boolean canAttack(LivingEntity var1) {
-      return var1 instanceof AbstractVillager && var1.isBaby() ? false : super.canAttack(var1);
+   public boolean canAttack(final LivingEntity target) {
+      return target instanceof AbstractVillager && target.isBaby() ? false : super.canAttack(target);
    }
 
-   protected boolean considersEntityAsAlly(Entity var1) {
-      if (super.considersEntityAsAlly(var1)) {
+   protected boolean considersEntityAsAlly(final Entity other) {
+      if (super.considersEntityAsAlly(other)) {
          return true;
-      } else if (!var1.getType().is(EntityTypeTags.ILLAGER_FRIENDS)) {
+      } else if (!other.is(EntityTypeTags.ILLAGER_FRIENDS)) {
          return false;
       } else {
-         return this.getTeam() == null && var1.getTeam() == null;
+         return this.getTeam() == null && other.getTeam() == null;
       }
    }
 
@@ -56,8 +57,9 @@ public abstract class AbstractIllager extends Raider {
    }
 
    protected class RaiderOpenDoorGoal extends OpenDoorGoal {
-      public RaiderOpenDoorGoal(final Raider var2) {
-         super(var2, false);
+      public RaiderOpenDoorGoal(final Raider raider) {
+         Objects.requireNonNull(AbstractIllager.this);
+         super(raider, false);
       }
 
       public boolean canUse() {

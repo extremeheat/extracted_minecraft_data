@@ -4,7 +4,6 @@ import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -25,29 +24,29 @@ public class TestBlockEntity extends BlockEntity {
    private boolean powered = false;
    private boolean triggered;
 
-   public TestBlockEntity(BlockPos var1, BlockState var2) {
-      super(BlockEntityType.TEST_BLOCK, var1, var2);
-      this.mode = (TestBlockMode)var2.getValue(TestBlock.MODE);
+   public TestBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      super(BlockEntityType.TEST_BLOCK, worldPosition, blockState);
+      this.mode = (TestBlockMode)blockState.getValue(TestBlock.MODE);
    }
 
-   protected void saveAdditional(ValueOutput var1) {
-      var1.store("mode", TestBlockMode.CODEC, this.mode);
-      var1.putString("message", this.message);
-      var1.putBoolean("powered", this.powered);
+   protected void saveAdditional(final ValueOutput output) {
+      output.store("mode", TestBlockMode.CODEC, this.mode);
+      output.putString("message", this.message);
+      output.putBoolean("powered", this.powered);
    }
 
-   protected void loadAdditional(ValueInput var1) {
-      this.mode = (TestBlockMode)var1.read("mode", TestBlockMode.CODEC).orElse(TestBlockMode.FAIL);
-      this.message = var1.getStringOr("message", "");
-      this.powered = var1.getBooleanOr("powered", false);
+   protected void loadAdditional(final ValueInput input) {
+      this.mode = (TestBlockMode)input.read("mode", TestBlockMode.CODEC).orElse(TestBlockMode.FAIL);
+      this.message = input.getStringOr("message", "");
+      this.powered = input.getBooleanOr("powered", false);
    }
 
    private void updateBlockState() {
       if (this.level != null) {
-         BlockPos var1 = this.getBlockPos();
-         BlockState var2 = this.level.getBlockState(var1);
-         if (var2.is(Blocks.TEST_BLOCK)) {
-            this.level.setBlock(var1, (BlockState)var2.setValue(TestBlock.MODE, this.mode), 2);
+         BlockPos pos = this.getBlockPos();
+         BlockState blockState = this.level.getBlockState(pos);
+         if (blockState.is(Blocks.TEST_BLOCK)) {
+            this.level.setBlock(pos, (BlockState)blockState.setValue(TestBlock.MODE, this.mode), 2);
          }
 
       }
@@ -57,24 +56,24 @@ public class TestBlockEntity extends BlockEntity {
       return ClientboundBlockEntityDataPacket.create(this);
    }
 
-   public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
-      return this.saveCustomOnly(var1);
+   public CompoundTag getUpdateTag(final HolderLookup.Provider registries) {
+      return this.saveCustomOnly(registries);
    }
 
    public boolean isPowered() {
       return this.powered;
    }
 
-   public void setPowered(boolean var1) {
-      this.powered = var1;
+   public void setPowered(final boolean powered) {
+      this.powered = powered;
    }
 
    public TestBlockMode getMode() {
       return this.mode;
    }
 
-   public void setMode(TestBlockMode var1) {
-      this.mode = var1;
+   public void setMode(final TestBlockMode mode) {
+      this.mode = mode;
       this.updateBlockState();
    }
 
@@ -94,9 +93,9 @@ public class TestBlockEntity extends BlockEntity {
    public void trigger() {
       if (this.mode == TestBlockMode.START && this.level != null) {
          this.setPowered(true);
-         BlockPos var1 = this.getBlockPos();
-         this.level.updateNeighborsAt(var1, this.getBlockType());
-         this.level.getBlockTicks().willTickThisTick(var1, this.getBlockType());
+         BlockPos pos = this.getBlockPos();
+         this.level.updateNeighborsAt(pos, this.getBlockType());
+         this.level.getBlockTicks().willTickThisTick(pos, this.getBlockType());
          this.log();
       } else {
          if (this.mode == TestBlockMode.LOG) {
@@ -122,12 +121,7 @@ public class TestBlockEntity extends BlockEntity {
       return this.message;
    }
 
-   public void setMessage(String var1) {
-      this.message = var1;
-   }
-
-   // $FF: synthetic method
-   public @Nullable Packet getUpdatePacket() {
-      return this.getUpdatePacket();
+   public void setMessage(final String message) {
+      this.message = message;
    }
 }

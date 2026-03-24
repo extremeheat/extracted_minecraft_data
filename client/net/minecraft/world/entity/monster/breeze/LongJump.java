@@ -28,7 +28,6 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
@@ -48,36 +47,36 @@ public class LongJump extends Behavior<Breeze> {
       super(Map.of(MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_PRESENT, MemoryModuleType.BREEZE_JUMP_COOLDOWN, MemoryStatus.VALUE_ABSENT, MemoryModuleType.BREEZE_JUMP_INHALING, MemoryStatus.REGISTERED, MemoryModuleType.BREEZE_JUMP_TARGET, MemoryStatus.REGISTERED, MemoryModuleType.BREEZE_SHOOT, MemoryStatus.VALUE_ABSENT, MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT, MemoryModuleType.BREEZE_LEAVING_WATER, MemoryStatus.REGISTERED), 200);
    }
 
-   public static boolean canRun(ServerLevel var0, Breeze var1) {
-      if (!var1.onGround() && !var1.isInWater()) {
+   public static boolean canRun(final ServerLevel level, final Breeze breeze) {
+      if (!breeze.onGround() && !breeze.isInWater()) {
          return false;
-      } else if (Swim.shouldSwim(var1)) {
+      } else if (Swim.shouldSwim(breeze)) {
          return false;
-      } else if (var1.getBrain().checkMemory(MemoryModuleType.BREEZE_JUMP_TARGET, MemoryStatus.VALUE_PRESENT)) {
+      } else if (breeze.getBrain().checkMemory(MemoryModuleType.BREEZE_JUMP_TARGET, MemoryStatus.VALUE_PRESENT)) {
          return true;
       } else {
-         LivingEntity var2 = (LivingEntity)var1.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse((Object)null);
-         if (var2 == null) {
+         LivingEntity attackTarget = (LivingEntity)breeze.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse((Object)null);
+         if (attackTarget == null) {
             return false;
-         } else if (outOfAggroRange(var1, var2)) {
-            var1.getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
+         } else if (outOfAggroRange(breeze, attackTarget)) {
+            breeze.getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
             return false;
-         } else if (tooCloseForJump(var1, var2)) {
+         } else if (tooCloseForJump(breeze, attackTarget)) {
             return false;
-         } else if (!canJumpFromCurrentPosition(var0, var1)) {
+         } else if (!canJumpFromCurrentPosition(level, breeze)) {
             return false;
          } else {
-            BlockPos var3 = snapToSurface(var1, BreezeUtil.randomPointBehindTarget(var2, var1.getRandom()));
-            if (var3 == null) {
+            BlockPos targetPos = snapToSurface(breeze, BreezeUtil.randomPointBehindTarget(attackTarget, breeze.getRandom()));
+            if (targetPos == null) {
                return false;
             } else {
-               BlockState var4 = var0.getBlockState(var3.below());
-               if (var1.getType().isBlockDangerous(var4)) {
+               BlockState bs = level.getBlockState(targetPos.below());
+               if (breeze.getType().isBlockDangerous(bs)) {
                   return false;
-               } else if (!BreezeUtil.hasLineOfSight(var1, var3.getCenter()) && !BreezeUtil.hasLineOfSight(var1, var3.above(4).getCenter())) {
+               } else if (!BreezeUtil.hasLineOfSight(breeze, targetPos.getCenter()) && !BreezeUtil.hasLineOfSight(breeze, targetPos.above(4).getCenter())) {
                   return false;
                } else {
-                  var1.getBrain().setMemory(MemoryModuleType.BREEZE_JUMP_TARGET, var3);
+                  breeze.getBrain().setMemory(MemoryModuleType.BREEZE_JUMP_TARGET, targetPos);
                   return true;
                }
             }
@@ -85,106 +84,106 @@ public class LongJump extends Behavior<Breeze> {
       }
    }
 
-   protected boolean checkExtraStartConditions(ServerLevel var1, Breeze var2) {
-      return canRun(var1, var2);
+   protected boolean checkExtraStartConditions(final ServerLevel level, final Breeze breeze) {
+      return canRun(level, breeze);
    }
 
-   protected boolean canStillUse(ServerLevel var1, Breeze var2, long var3) {
-      return var2.getPose() != Pose.STANDING && !var2.getBrain().hasMemoryValue(MemoryModuleType.BREEZE_JUMP_COOLDOWN);
+   protected boolean canStillUse(final ServerLevel level, final Breeze breeze, final long timestamp) {
+      return breeze.getPose() != Pose.STANDING && !breeze.getBrain().hasMemoryValue(MemoryModuleType.BREEZE_JUMP_COOLDOWN);
    }
 
-   protected void start(ServerLevel var1, Breeze var2, long var3) {
-      if (var2.getBrain().checkMemory(MemoryModuleType.BREEZE_JUMP_INHALING, MemoryStatus.VALUE_ABSENT)) {
-         var2.getBrain().setMemoryWithExpiry(MemoryModuleType.BREEZE_JUMP_INHALING, Unit.INSTANCE, (long)INHALING_DURATION_TICKS);
+   protected void start(final ServerLevel level, final Breeze breeze, final long timestamp) {
+      if (breeze.getBrain().checkMemory(MemoryModuleType.BREEZE_JUMP_INHALING, MemoryStatus.VALUE_ABSENT)) {
+         breeze.getBrain().setMemoryWithExpiry(MemoryModuleType.BREEZE_JUMP_INHALING, Unit.INSTANCE, (long)INHALING_DURATION_TICKS);
       }
 
-      var2.setPose(Pose.INHALING);
-      var1.playSound((Entity)null, var2, SoundEvents.BREEZE_CHARGE, SoundSource.HOSTILE, 1.0F, 1.0F);
-      var2.getBrain().getMemory(MemoryModuleType.BREEZE_JUMP_TARGET).ifPresent((var1x) -> var2.lookAt(EntityAnchorArgument.Anchor.EYES, var1x.getCenter()));
+      breeze.setPose(Pose.INHALING);
+      level.playSound((Entity)null, breeze, SoundEvents.BREEZE_CHARGE, SoundSource.HOSTILE, 1.0F, 1.0F);
+      breeze.getBrain().getMemory(MemoryModuleType.BREEZE_JUMP_TARGET).ifPresent((targetPos) -> breeze.lookAt(EntityAnchorArgument.Anchor.EYES, targetPos.getCenter()));
    }
 
-   protected void tick(ServerLevel var1, Breeze var2, long var3) {
-      boolean var5 = var2.isInWater();
-      if (!var5 && var2.getBrain().checkMemory(MemoryModuleType.BREEZE_LEAVING_WATER, MemoryStatus.VALUE_PRESENT)) {
-         var2.getBrain().eraseMemory(MemoryModuleType.BREEZE_LEAVING_WATER);
+   protected void tick(final ServerLevel level, final Breeze breeze, final long timestamp) {
+      boolean inWater = breeze.isInWater();
+      if (!inWater && breeze.getBrain().checkMemory(MemoryModuleType.BREEZE_LEAVING_WATER, MemoryStatus.VALUE_PRESENT)) {
+         breeze.getBrain().eraseMemory(MemoryModuleType.BREEZE_LEAVING_WATER);
       }
 
-      if (isFinishedInhaling(var2)) {
-         Vec3 var6 = (Vec3)var2.getBrain().getMemory(MemoryModuleType.BREEZE_JUMP_TARGET).flatMap((var1x) -> calculateOptimalJumpVector(var2, var2.getRandom(), Vec3.atBottomCenterOf(var1x))).orElse((Object)null);
-         if (var6 == null) {
-            var2.setPose(Pose.STANDING);
+      if (isFinishedInhaling(breeze)) {
+         Vec3 velocityVector = (Vec3)breeze.getBrain().getMemory(MemoryModuleType.BREEZE_JUMP_TARGET).flatMap((targetPos) -> calculateOptimalJumpVector(breeze, breeze.getRandom(), Vec3.atBottomCenterOf(targetPos))).orElse((Object)null);
+         if (velocityVector == null) {
+            breeze.setPose(Pose.STANDING);
             return;
          }
 
-         if (var5) {
-            var2.getBrain().setMemory(MemoryModuleType.BREEZE_LEAVING_WATER, Unit.INSTANCE);
+         if (inWater) {
+            breeze.getBrain().setMemory(MemoryModuleType.BREEZE_LEAVING_WATER, Unit.INSTANCE);
          }
 
-         var2.playSound(SoundEvents.BREEZE_JUMP, 1.0F, 1.0F);
-         var2.setPose(Pose.LONG_JUMPING);
-         var2.setYRot(var2.yBodyRot);
-         var2.setDiscardFriction(true);
-         var2.setDeltaMovement(var6);
-      } else if (isFinishedJumping(var2)) {
-         var2.playSound(SoundEvents.BREEZE_LAND, 1.0F, 1.0F);
-         var2.setPose(Pose.STANDING);
-         var2.setDiscardFriction(false);
-         boolean var7 = var2.getBrain().hasMemoryValue(MemoryModuleType.HURT_BY);
-         var2.getBrain().setMemoryWithExpiry(MemoryModuleType.BREEZE_JUMP_COOLDOWN, Unit.INSTANCE, var7 ? 2L : 10L);
-         var2.getBrain().setMemoryWithExpiry(MemoryModuleType.BREEZE_SHOOT, Unit.INSTANCE, 100L);
+         breeze.playSound(SoundEvents.BREEZE_JUMP, 1.0F, 1.0F);
+         breeze.setPose(Pose.LONG_JUMPING);
+         breeze.setYRot(breeze.yBodyRot);
+         breeze.setDiscardFriction(true);
+         breeze.setDeltaMovement(velocityVector);
+      } else if (isFinishedJumping(breeze)) {
+         breeze.playSound(SoundEvents.BREEZE_LAND, 1.0F, 1.0F);
+         breeze.setPose(Pose.STANDING);
+         breeze.setDiscardFriction(false);
+         boolean wasHurt = breeze.getBrain().hasMemoryValue(MemoryModuleType.HURT_BY);
+         breeze.getBrain().setMemoryWithExpiry(MemoryModuleType.BREEZE_JUMP_COOLDOWN, Unit.INSTANCE, wasHurt ? 2L : 10L);
+         breeze.getBrain().setMemoryWithExpiry(MemoryModuleType.BREEZE_SHOOT, Unit.INSTANCE, 100L);
       }
 
    }
 
-   protected void stop(ServerLevel var1, Breeze var2, long var3) {
-      if (var2.getPose() == Pose.LONG_JUMPING || var2.getPose() == Pose.INHALING) {
-         var2.setPose(Pose.STANDING);
+   protected void stop(final ServerLevel level, final Breeze breeze, final long timestamp) {
+      if (breeze.getPose() == Pose.LONG_JUMPING || breeze.getPose() == Pose.INHALING) {
+         breeze.setPose(Pose.STANDING);
       }
 
-      var2.getBrain().eraseMemory(MemoryModuleType.BREEZE_JUMP_TARGET);
-      var2.getBrain().eraseMemory(MemoryModuleType.BREEZE_JUMP_INHALING);
-      var2.getBrain().eraseMemory(MemoryModuleType.BREEZE_LEAVING_WATER);
+      breeze.getBrain().eraseMemory(MemoryModuleType.BREEZE_JUMP_TARGET);
+      breeze.getBrain().eraseMemory(MemoryModuleType.BREEZE_JUMP_INHALING);
+      breeze.getBrain().eraseMemory(MemoryModuleType.BREEZE_LEAVING_WATER);
    }
 
-   private static boolean isFinishedInhaling(Breeze var0) {
-      return var0.getBrain().getMemory(MemoryModuleType.BREEZE_JUMP_INHALING).isEmpty() && var0.getPose() == Pose.INHALING;
+   private static boolean isFinishedInhaling(final Breeze breeze) {
+      return breeze.getBrain().getMemory(MemoryModuleType.BREEZE_JUMP_INHALING).isEmpty() && breeze.getPose() == Pose.INHALING;
    }
 
-   private static boolean isFinishedJumping(Breeze var0) {
-      boolean var1 = var0.getPose() == Pose.LONG_JUMPING;
-      boolean var2 = var0.onGround();
-      boolean var3 = var0.isInWater() && var0.getBrain().checkMemory(MemoryModuleType.BREEZE_LEAVING_WATER, MemoryStatus.VALUE_ABSENT);
-      return var1 && (var2 || var3);
+   private static boolean isFinishedJumping(final Breeze breeze) {
+      boolean isJumping = breeze.getPose() == Pose.LONG_JUMPING;
+      boolean landedOnGround = breeze.onGround();
+      boolean landedInWater = breeze.isInWater() && breeze.getBrain().checkMemory(MemoryModuleType.BREEZE_LEAVING_WATER, MemoryStatus.VALUE_ABSENT);
+      return isJumping && (landedOnGround || landedInWater);
    }
 
-   private static @Nullable BlockPos snapToSurface(LivingEntity var0, Vec3 var1) {
-      ClipContext var2 = new ClipContext(var1, var1.relative(Direction.DOWN, 10.0), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, var0);
-      BlockHitResult var3 = var0.level().clip(var2);
-      if (((HitResult)var3).getType() == HitResult.Type.BLOCK) {
-         return BlockPos.containing(((HitResult)var3).getLocation()).above();
+   private static @Nullable BlockPos snapToSurface(final LivingEntity entity, final Vec3 target) {
+      ClipContext collisionBelow = new ClipContext(target, target.relative(Direction.DOWN, 10.0), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, entity);
+      HitResult surfaceBelow = entity.level().clip(collisionBelow);
+      if (surfaceBelow.getType() == HitResult.Type.BLOCK) {
+         return BlockPos.containing(surfaceBelow.getLocation()).above();
       } else {
-         ClipContext var4 = new ClipContext(var1, var1.relative(Direction.UP, 10.0), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, var0);
-         BlockHitResult var5 = var0.level().clip(var4);
-         return ((HitResult)var5).getType() == HitResult.Type.BLOCK ? BlockPos.containing(((HitResult)var5).getLocation()).above() : null;
+         ClipContext collisionAbove = new ClipContext(target, target.relative(Direction.UP, 10.0), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, entity);
+         HitResult surfaceAbove = entity.level().clip(collisionAbove);
+         return surfaceAbove.getType() == HitResult.Type.BLOCK ? BlockPos.containing(surfaceAbove.getLocation()).above() : null;
       }
    }
 
-   private static boolean outOfAggroRange(Breeze var0, LivingEntity var1) {
-      return !var1.closerThan(var0, var0.getAttributeValue(Attributes.FOLLOW_RANGE));
+   private static boolean outOfAggroRange(final Breeze breeze, final LivingEntity attackTarget) {
+      return !attackTarget.closerThan(breeze, breeze.getAttributeValue(Attributes.FOLLOW_RANGE));
    }
 
-   private static boolean tooCloseForJump(Breeze var0, LivingEntity var1) {
-      return var1.distanceTo(var0) - 4.0F <= 0.0F;
+   private static boolean tooCloseForJump(final Breeze breeze, final LivingEntity attackTarget) {
+      return attackTarget.distanceTo(breeze) - 4.0F <= 0.0F;
    }
 
-   private static boolean canJumpFromCurrentPosition(ServerLevel var0, Breeze var1) {
-      BlockPos var2 = var1.blockPosition();
-      if (var0.getBlockState(var2).is(Blocks.HONEY_BLOCK)) {
+   private static boolean canJumpFromCurrentPosition(final ServerLevel level, final Breeze breeze) {
+      BlockPos currentPos = breeze.blockPosition();
+      if (level.getBlockState(currentPos).is(Blocks.HONEY_BLOCK)) {
          return false;
       } else {
-         for(int var3 = 1; var3 <= 4; ++var3) {
-            BlockPos var4 = var2.relative(Direction.UP, var3);
-            if (!var0.getBlockState(var4).isAir() && !var0.getFluidState(var4).is(FluidTags.WATER)) {
+         for(int i = 1; i <= 4; ++i) {
+            BlockPos offsetPos = currentPos.relative(Direction.UP, i);
+            if (!level.getBlockState(offsetPos).isAir() && !level.getFluidState(offsetPos).is(FluidTags.WATER)) {
                return false;
             }
          }
@@ -193,35 +192,20 @@ public class LongJump extends Behavior<Breeze> {
       }
    }
 
-   private static Optional<Vec3> calculateOptimalJumpVector(Breeze var0, RandomSource var1, Vec3 var2) {
-      for(int var5 : Util.shuffledCopy(ALLOWED_ANGLES, var1)) {
-         float var6 = 0.058333334F * (float)var0.getAttributeValue(Attributes.FOLLOW_RANGE);
-         Optional var7 = LongJumpUtil.calculateJumpVectorForAngle(var0, var2, var6, var5, false);
-         if (var7.isPresent()) {
-            if (var0.hasEffect(MobEffects.JUMP_BOOST)) {
-               double var8 = ((Vec3)var7.get()).normalize().y * (double)var0.getJumpBoostPower();
-               return var7.map((var2x) -> var2x.add(0.0, var8, 0.0));
+   private static Optional<Vec3> calculateOptimalJumpVector(final Breeze body, final RandomSource random, final Vec3 targetPos) {
+      for(int angle : Util.shuffledCopy(ALLOWED_ANGLES, random)) {
+         float maxJumpVelocity = 0.058333334F * (float)body.getAttributeValue(Attributes.FOLLOW_RANGE);
+         Optional<Vec3> velocityVector = LongJumpUtil.calculateJumpVectorForAngle(body, targetPos, maxJumpVelocity, angle, false);
+         if (velocityVector.isPresent()) {
+            if (body.hasEffect(MobEffects.JUMP_BOOST)) {
+               double jumpEffectAmplifier = ((Vec3)velocityVector.get()).normalize().y * (double)body.getJumpBoostPower();
+               return velocityVector.map((v) -> v.add(0.0, jumpEffectAmplifier, 0.0));
             }
 
-            return var7;
+            return velocityVector;
          }
       }
 
       return Optional.empty();
-   }
-
-   // $FF: synthetic method
-   protected boolean checkExtraStartConditions(final ServerLevel var1, final LivingEntity var2) {
-      return this.checkExtraStartConditions(var1, (Breeze)var2);
-   }
-
-   // $FF: synthetic method
-   protected void stop(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.stop(var1, (Breeze)var2, var3);
-   }
-
-   // $FF: synthetic method
-   protected void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.start(var1, (Breeze)var2, var3);
    }
 }

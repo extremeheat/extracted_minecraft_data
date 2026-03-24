@@ -13,59 +13,59 @@ public class LandRandomPos {
       super();
    }
 
-   public static @Nullable Vec3 getPos(PathfinderMob var0, int var1, int var2) {
-      Objects.requireNonNull(var0);
-      return getPos(var0, var1, var2, var0::getWalkTargetValue);
+   public static @Nullable Vec3 getPos(final PathfinderMob mob, final int horizontalDist, final int verticalDist) {
+      Objects.requireNonNull(mob);
+      return getPos(mob, horizontalDist, verticalDist, mob::getWalkTargetValue);
    }
 
-   public static @Nullable Vec3 getPos(PathfinderMob var0, int var1, int var2, ToDoubleFunction<BlockPos> var3) {
-      boolean var4 = GoalUtils.mobRestricted(var0, (double)var1);
+   public static @Nullable Vec3 getPos(final PathfinderMob mob, final int horizontalDist, final int verticalDist, final ToDoubleFunction<BlockPos> positionWeight) {
+      boolean restrict = GoalUtils.mobRestricted(mob, (double)horizontalDist);
       return RandomPos.generateRandomPos((Supplier)(() -> {
-         BlockPos var4x = RandomPos.generateRandomDirection(var0.getRandom(), var1, var2);
-         BlockPos var5 = generateRandomPosTowardDirection(var0, (double)var1, var4, var4x);
-         return var5 == null ? null : movePosUpOutOfSolid(var0, var5);
-      }), var3);
+         BlockPos direction = RandomPos.generateRandomDirection(mob.getRandom(), horizontalDist, verticalDist);
+         BlockPos pos = generateRandomPosTowardDirection(mob, (double)horizontalDist, restrict, direction);
+         return pos == null ? null : movePosUpOutOfSolid(mob, pos);
+      }), positionWeight);
    }
 
-   public static @Nullable Vec3 getPosTowards(PathfinderMob var0, int var1, int var2, Vec3 var3) {
-      Vec3 var4 = var3.subtract(var0.getX(), var0.getY(), var0.getZ());
-      boolean var5 = GoalUtils.mobRestricted(var0, (double)var1);
-      return getPosInDirection(var0, 0.0, (double)var1, var2, var4, var5);
+   public static @Nullable Vec3 getPosTowards(final PathfinderMob mob, final int horizontalDist, final int verticalDist, final Vec3 towardsPos) {
+      Vec3 dir = towardsPos.subtract(mob.getX(), mob.getY(), mob.getZ());
+      boolean restrict = GoalUtils.mobRestricted(mob, (double)horizontalDist);
+      return getPosInDirection(mob, 0.0, (double)horizontalDist, verticalDist, dir, restrict);
    }
 
-   public static @Nullable Vec3 getPosAway(PathfinderMob var0, int var1, int var2, Vec3 var3) {
-      return getPosAway(var0, 0.0, (double)var1, var2, var3);
+   public static @Nullable Vec3 getPosAway(final PathfinderMob mob, final int horizontalDist, final int verticalDist, final Vec3 avoidPos) {
+      return getPosAway(mob, 0.0, (double)horizontalDist, verticalDist, avoidPos);
    }
 
-   public static @Nullable Vec3 getPosAway(PathfinderMob var0, double var1, double var3, int var5, Vec3 var6) {
-      Vec3 var7 = var0.position().subtract(var6);
-      if (var7.length() == 0.0) {
-         var7 = new Vec3(var0.getRandom().nextDouble() - 0.5, 0.0, var0.getRandom().nextDouble() - 0.5);
+   public static @Nullable Vec3 getPosAway(final PathfinderMob mob, final double minHorizontalDist, final double maxHorizontalDist, final int verticalDist, final Vec3 avoidPos) {
+      Vec3 dirAway = mob.position().subtract(avoidPos);
+      if (dirAway.length() == 0.0) {
+         dirAway = new Vec3(mob.getRandom().nextDouble() - 0.5, 0.0, mob.getRandom().nextDouble() - 0.5);
       }
 
-      boolean var8 = GoalUtils.mobRestricted(var0, var3);
-      return getPosInDirection(var0, var1, var3, var5, var7, var8);
+      boolean restrict = GoalUtils.mobRestricted(mob, maxHorizontalDist);
+      return getPosInDirection(mob, minHorizontalDist, maxHorizontalDist, verticalDist, dirAway, restrict);
    }
 
-   private static @Nullable Vec3 getPosInDirection(PathfinderMob var0, double var1, double var3, int var5, Vec3 var6, boolean var7) {
-      return RandomPos.generateRandomPos(var0, (Supplier)(() -> {
-         BlockPos var8 = RandomPos.generateRandomDirectionWithinRadians(var0.getRandom(), var1, var3, var5, 0, var6.x, var6.z, 1.5707963705062866);
-         if (var8 == null) {
+   private static @Nullable Vec3 getPosInDirection(final PathfinderMob mob, final double minHorizontalDist, final double maxHorizontalDist, final int verticalDist, final Vec3 dir, final boolean restrict) {
+      return RandomPos.generateRandomPos(mob, (Supplier)(() -> {
+         BlockPos direction = RandomPos.generateRandomDirectionWithinRadians(mob.getRandom(), minHorizontalDist, maxHorizontalDist, verticalDist, 0, dir.x, dir.z, 1.5707963705062866);
+         if (direction == null) {
             return null;
          } else {
-            BlockPos var9 = generateRandomPosTowardDirection(var0, var3, var7, var8);
-            return var9 == null ? null : movePosUpOutOfSolid(var0, var9);
+            BlockPos pos = generateRandomPosTowardDirection(mob, maxHorizontalDist, restrict, direction);
+            return pos == null ? null : movePosUpOutOfSolid(mob, pos);
          }
       }));
    }
 
-   public static @Nullable BlockPos movePosUpOutOfSolid(PathfinderMob var0, BlockPos var1) {
-      var1 = RandomPos.moveUpOutOfSolid(var1, var0.level().getMaxY(), (var1x) -> GoalUtils.isSolid(var0, var1x));
-      return !GoalUtils.isWater(var0, var1) && !GoalUtils.hasMalus(var0, var1) ? var1 : null;
+   public static @Nullable BlockPos movePosUpOutOfSolid(final PathfinderMob mob, BlockPos pos) {
+      pos = RandomPos.moveUpOutOfSolid(pos, mob.level().getMaxY(), (blockPos) -> GoalUtils.isSolid(mob, blockPos));
+      return !GoalUtils.isWater(mob, pos) && !GoalUtils.hasMalus(mob, pos) ? pos : null;
    }
 
-   public static @Nullable BlockPos generateRandomPosTowardDirection(PathfinderMob var0, double var1, boolean var3, BlockPos var4) {
-      BlockPos var5 = RandomPos.generateRandomPosTowardDirection(var0, var1, var0.getRandom(), var4);
-      return !GoalUtils.isOutsideLimits(var5, var0) && !GoalUtils.isRestricted(var3, var0, var5) && !GoalUtils.isNotStable(var0.getNavigation(), var5) ? var5 : null;
+   public static @Nullable BlockPos generateRandomPosTowardDirection(final PathfinderMob mob, final double horizontalDist, final boolean restrict, final BlockPos direction) {
+      BlockPos pos = RandomPos.generateRandomPosTowardDirection(mob, horizontalDist, mob.getRandom(), direction);
+      return !GoalUtils.isOutsideLimits(pos, mob) && !GoalUtils.isRestricted(restrict, mob, pos) && !GoalUtils.isNotStable(mob.getNavigation(), pos) ? pos : null;
    }
 }

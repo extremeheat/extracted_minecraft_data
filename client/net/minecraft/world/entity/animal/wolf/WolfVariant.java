@@ -15,20 +15,18 @@ import net.minecraft.world.entity.variant.SpawnCondition;
 import net.minecraft.world.entity.variant.SpawnContext;
 import net.minecraft.world.entity.variant.SpawnPrioritySelectors;
 
-public record WolfVariant(AssetInfo assetInfo, SpawnPrioritySelectors spawnConditions) implements PriorityProvider<SpawnContext, SpawnCondition> {
-   public static final Codec<WolfVariant> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(WolfVariant.AssetInfo.CODEC.fieldOf("assets").forGetter(WolfVariant::assetInfo), SpawnPrioritySelectors.CODEC.fieldOf("spawn_conditions").forGetter(WolfVariant::spawnConditions)).apply(var0, WolfVariant::new));
-   public static final Codec<WolfVariant> NETWORK_CODEC = RecordCodecBuilder.create((var0) -> var0.group(WolfVariant.AssetInfo.CODEC.fieldOf("assets").forGetter(WolfVariant::assetInfo)).apply(var0, WolfVariant::new));
+public record WolfVariant(AssetInfo adultInfo, AssetInfo babyInfo, SpawnPrioritySelectors spawnConditions) implements PriorityProvider<SpawnContext, SpawnCondition> {
+   public static final Codec<WolfVariant> DIRECT_CODEC = RecordCodecBuilder.create((i) -> i.group(WolfVariant.AssetInfo.CODEC.fieldOf("assets").forGetter(WolfVariant::adultInfo), WolfVariant.AssetInfo.CODEC.fieldOf("baby_assets").forGetter(WolfVariant::babyInfo), SpawnPrioritySelectors.CODEC.fieldOf("spawn_conditions").forGetter(WolfVariant::spawnConditions)).apply(i, WolfVariant::new));
+   public static final Codec<WolfVariant> NETWORK_CODEC = RecordCodecBuilder.create((i) -> i.group(WolfVariant.AssetInfo.CODEC.fieldOf("assets").forGetter(WolfVariant::adultInfo), WolfVariant.AssetInfo.CODEC.fieldOf("baby_assets").forGetter(WolfVariant::babyInfo)).apply(i, WolfVariant::new));
    public static final Codec<Holder<WolfVariant>> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<WolfVariant>> STREAM_CODEC;
 
-   private WolfVariant(AssetInfo var1) {
-      this(var1, SpawnPrioritySelectors.EMPTY);
+   private WolfVariant(final AssetInfo adultInfo, final AssetInfo babyInfo) {
+      this(adultInfo, babyInfo, SpawnPrioritySelectors.EMPTY);
    }
 
-   public WolfVariant(AssetInfo var1, SpawnPrioritySelectors var2) {
+   public WolfVariant {
       super();
-      this.assetInfo = var1;
-      this.spawnConditions = var2;
    }
 
    public List<PriorityProvider.Selector<SpawnContext, SpawnCondition>> selectors() {
@@ -41,13 +39,10 @@ public record WolfVariant(AssetInfo assetInfo, SpawnPrioritySelectors spawnCondi
    }
 
    public static record AssetInfo(ClientAsset.ResourceTexture wild, ClientAsset.ResourceTexture tame, ClientAsset.ResourceTexture angry) {
-      public static final Codec<AssetInfo> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ClientAsset.ResourceTexture.CODEC.fieldOf("wild").forGetter(AssetInfo::wild), ClientAsset.ResourceTexture.CODEC.fieldOf("tame").forGetter(AssetInfo::tame), ClientAsset.ResourceTexture.CODEC.fieldOf("angry").forGetter(AssetInfo::angry)).apply(var0, AssetInfo::new));
+      public static final Codec<AssetInfo> CODEC = RecordCodecBuilder.create((instance) -> instance.group(ClientAsset.ResourceTexture.CODEC.fieldOf("wild").forGetter(AssetInfo::wild), ClientAsset.ResourceTexture.CODEC.fieldOf("tame").forGetter(AssetInfo::tame), ClientAsset.ResourceTexture.CODEC.fieldOf("angry").forGetter(AssetInfo::angry)).apply(instance, AssetInfo::new));
 
-      public AssetInfo(ClientAsset.ResourceTexture var1, ClientAsset.ResourceTexture var2, ClientAsset.ResourceTexture var3) {
+      public AssetInfo {
          super();
-         this.wild = var1;
-         this.tame = var2;
-         this.angry = var3;
       }
    }
 }

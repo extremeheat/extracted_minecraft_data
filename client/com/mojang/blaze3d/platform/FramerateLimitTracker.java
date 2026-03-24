@@ -17,11 +17,11 @@ public class FramerateLimitTracker {
    private int framerateLimit;
    private long latestInputTime;
 
-   public FramerateLimitTracker(Options var1, Minecraft var2) {
+   public FramerateLimitTracker(final Options options, final Minecraft minecraft) {
       super();
-      this.options = var1;
-      this.minecraft = var2;
-      this.framerateLimit = (Integer)var1.framerateLimit().get();
+      this.options = options;
+      this.minecraft = minecraft;
+      this.framerateLimit = (Integer)options.framerateLimit().get();
    }
 
    public int getFramerateLimit() {
@@ -39,17 +39,17 @@ public class FramerateLimitTracker {
    }
 
    public FramerateThrottleReason getThrottleReason() {
-      InactivityFpsLimit var1 = (InactivityFpsLimit)this.options.inactivityFpsLimit().get();
+      InactivityFpsLimit inactivityFpsLimit = (InactivityFpsLimit)this.options.inactivityFpsLimit().get();
       if (this.minecraft.getWindow().isIconified()) {
          return FramerateLimitTracker.FramerateThrottleReason.WINDOW_ICONIFIED;
       } else {
-         if (var1 == InactivityFpsLimit.AFK) {
-            long var2 = Util.getMillis() - this.latestInputTime;
-            if (var2 > 600000L) {
+         if (inactivityFpsLimit == InactivityFpsLimit.AFK) {
+            long afkTimeMillis = Util.getMillis() - this.latestInputTime;
+            if (afkTimeMillis > 600000L) {
                return FramerateLimitTracker.FramerateThrottleReason.LONG_AFK;
             }
 
-            if (var2 > 60000L) {
+            if (afkTimeMillis > 60000L) {
                return FramerateLimitTracker.FramerateThrottleReason.SHORT_AFK;
             }
          }
@@ -59,12 +59,12 @@ public class FramerateLimitTracker {
    }
 
    public boolean isHeavilyThrottled() {
-      FramerateThrottleReason var1 = this.getThrottleReason();
-      return var1 == FramerateLimitTracker.FramerateThrottleReason.WINDOW_ICONIFIED || var1 == FramerateLimitTracker.FramerateThrottleReason.LONG_AFK;
+      FramerateThrottleReason reason = this.getThrottleReason();
+      return reason == FramerateLimitTracker.FramerateThrottleReason.WINDOW_ICONIFIED || reason == FramerateLimitTracker.FramerateThrottleReason.LONG_AFK;
    }
 
-   public void setFramerateLimit(int var1) {
-      this.framerateLimit = var1;
+   public void setFramerateLimit(final int value) {
+      this.framerateLimit = value;
    }
 
    public void onInputReceived() {

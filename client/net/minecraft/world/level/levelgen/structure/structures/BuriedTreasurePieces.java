@@ -23,53 +23,53 @@ public class BuriedTreasurePieces {
    }
 
    public static class BuriedTreasurePiece extends StructurePiece {
-      public BuriedTreasurePiece(BlockPos var1) {
-         super(StructurePieceType.BURIED_TREASURE_PIECE, 0, new BoundingBox(var1));
+      public BuriedTreasurePiece(final BlockPos offset) {
+         super(StructurePieceType.BURIED_TREASURE_PIECE, 0, new BoundingBox(offset));
       }
 
-      public BuriedTreasurePiece(CompoundTag var1) {
-         super(StructurePieceType.BURIED_TREASURE_PIECE, var1);
+      public BuriedTreasurePiece(final CompoundTag tag) {
+         super(StructurePieceType.BURIED_TREASURE_PIECE, tag);
       }
 
-      protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
+      protected void addAdditionalSaveData(final StructurePieceSerializationContext context, final CompoundTag tag) {
       }
 
-      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
-         int var8 = var1.getHeight(Heightmap.Types.OCEAN_FLOOR_WG, this.boundingBox.minX(), this.boundingBox.minZ());
-         BlockPos.MutableBlockPos var9 = new BlockPos.MutableBlockPos(this.boundingBox.minX(), var8, this.boundingBox.minZ());
+      public void postProcess(final WorldGenLevel level, final StructureManager structureManager, final ChunkGenerator generator, final RandomSource random, final BoundingBox chunkBB, final ChunkPos chunkPos, final BlockPos referencePos) {
+         int y = level.getHeight(Heightmap.Types.OCEAN_FLOOR_WG, this.boundingBox.minX(), this.boundingBox.minZ());
+         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(this.boundingBox.minX(), y, this.boundingBox.minZ());
 
-         while(var9.getY() > var1.getMinY()) {
-            BlockState var10 = var1.getBlockState(var9);
-            BlockState var11 = var1.getBlockState(var9.below());
-            if (var11 == Blocks.SANDSTONE.defaultBlockState() || var11 == Blocks.STONE.defaultBlockState() || var11 == Blocks.ANDESITE.defaultBlockState() || var11 == Blocks.GRANITE.defaultBlockState() || var11 == Blocks.DIORITE.defaultBlockState()) {
-               BlockState var12 = !var10.isAir() && !this.isLiquid(var10) ? var10 : Blocks.SAND.defaultBlockState();
+         while(pos.getY() > level.getMinY()) {
+            BlockState currentState = level.getBlockState(pos);
+            BlockState belowState = level.getBlockState(pos.below());
+            if (belowState.is(Blocks.SANDSTONE) || belowState.is(Blocks.STONE) || belowState.is(Blocks.ANDESITE) || belowState.is(Blocks.GRANITE) || belowState.is(Blocks.DIORITE)) {
+               BlockState softState = !currentState.isAir() && !isLiquid(currentState) ? currentState : Blocks.SAND.defaultBlockState();
 
-               for(Direction var16 : Direction.values()) {
-                  BlockPos var17 = var9.relative(var16);
-                  BlockState var18 = var1.getBlockState(var17);
-                  if (var18.isAir() || this.isLiquid(var18)) {
-                     BlockPos var19 = var17.below();
-                     BlockState var20 = var1.getBlockState(var19);
-                     if ((var20.isAir() || this.isLiquid(var20)) && var16 != Direction.UP) {
-                        var1.setBlock(var17, var11, 3);
+               for(Direction direction : Direction.values()) {
+                  BlockPos relativePos = pos.relative(direction);
+                  BlockState relativeState = level.getBlockState(relativePos);
+                  if (relativeState.isAir() || isLiquid(relativeState)) {
+                     BlockPos belowRelativePos = relativePos.below();
+                     BlockState belowRelativeState = level.getBlockState(belowRelativePos);
+                     if ((belowRelativeState.isAir() || isLiquid(belowRelativeState)) && direction != Direction.UP) {
+                        level.setBlock(relativePos, belowState, 3);
                      } else {
-                        var1.setBlock(var17, var12, 3);
+                        level.setBlock(relativePos, softState, 3);
                      }
                   }
                }
 
-               this.boundingBox = new BoundingBox(var9);
-               this.createChest(var1, var5, var4, var9, BuiltInLootTables.BURIED_TREASURE, (BlockState)null);
+               this.boundingBox = new BoundingBox(pos);
+               this.createChest(level, chunkBB, random, pos, BuiltInLootTables.BURIED_TREASURE, (BlockState)null);
                return;
             }
 
-            var9.move(0, -1, 0);
+            pos.move(0, -1, 0);
          }
 
       }
 
-      private boolean isLiquid(BlockState var1) {
-         return var1 == Blocks.WATER.defaultBlockState() || var1 == Blocks.LAVA.defaultBlockState();
+      private static boolean isLiquid(final BlockState blockState) {
+         return blockState.is(Blocks.WATER) || blockState.is(Blocks.LAVA);
       }
    }
 }

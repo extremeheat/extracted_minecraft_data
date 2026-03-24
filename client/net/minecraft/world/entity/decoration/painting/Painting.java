@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.decoration.painting;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
@@ -40,137 +41,137 @@ public class Painting extends HangingEntity {
    private static final EntityDataAccessor<Holder<PaintingVariant>> DATA_PAINTING_VARIANT_ID;
    public static final float DEPTH = 0.0625F;
 
-   public Painting(EntityType<? extends Painting> var1, Level var2) {
-      super(var1, var2);
+   public Painting(final EntityType<? extends Painting> type, final Level level) {
+      super(type, level);
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(DATA_PAINTING_VARIANT_ID, VariantUtils.getAny(this.registryAccess(), Registries.PAINTING_VARIANT));
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(DATA_PAINTING_VARIANT_ID, VariantUtils.getAny(this.registryAccess(), Registries.PAINTING_VARIANT));
    }
 
-   public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
-      super.onSyncedDataUpdated(var1);
-      if (DATA_PAINTING_VARIANT_ID.equals(var1)) {
+   public void onSyncedDataUpdated(final EntityDataAccessor<?> accessor) {
+      super.onSyncedDataUpdated(accessor);
+      if (DATA_PAINTING_VARIANT_ID.equals(accessor)) {
          this.recalculateBoundingBox();
       }
 
    }
 
-   private void setVariant(Holder<PaintingVariant> var1) {
-      this.entityData.set(DATA_PAINTING_VARIANT_ID, var1);
+   private void setVariant(final Holder<PaintingVariant> variant) {
+      this.entityData.set(DATA_PAINTING_VARIANT_ID, variant);
    }
 
    public Holder<PaintingVariant> getVariant() {
       return (Holder)this.entityData.get(DATA_PAINTING_VARIANT_ID);
    }
 
-   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
-      return (T)(var1 == DataComponents.PAINTING_VARIANT ? castComponentValue(var1, this.getVariant()) : super.get(var1));
+   public <T> @Nullable T get(final DataComponentType<? extends T> type) {
+      return (T)(type == DataComponents.PAINTING_VARIANT ? castComponentValue(type, this.getVariant()) : super.get(type));
    }
 
-   protected void applyImplicitComponents(DataComponentGetter var1) {
-      this.applyImplicitComponentIfPresent(var1, DataComponents.PAINTING_VARIANT);
-      super.applyImplicitComponents(var1);
+   protected void applyImplicitComponents(final DataComponentGetter components) {
+      this.applyImplicitComponentIfPresent(components, DataComponents.PAINTING_VARIANT);
+      super.applyImplicitComponents(components);
    }
 
-   protected <T> boolean applyImplicitComponent(DataComponentType<T> var1, T var2) {
-      if (var1 == DataComponents.PAINTING_VARIANT) {
-         this.setVariant((Holder)castComponentValue(DataComponents.PAINTING_VARIANT, var2));
+   protected <T> boolean applyImplicitComponent(final DataComponentType<T> type, final T value) {
+      if (type == DataComponents.PAINTING_VARIANT) {
+         this.setVariant((Holder)castComponentValue(DataComponents.PAINTING_VARIANT, value));
          return true;
       } else {
-         return super.applyImplicitComponent(var1, var2);
+         return super.applyImplicitComponent(type, value);
       }
    }
 
-   public static Optional<Painting> create(Level var0, BlockPos var1, Direction var2) {
-      Painting var3 = new Painting(var0, var1);
-      ArrayList var4 = new ArrayList();
-      Iterable var10000 = var0.registryAccess().lookupOrThrow(Registries.PAINTING_VARIANT).getTagOrEmpty(PaintingVariantTags.PLACEABLE);
-      Objects.requireNonNull(var4);
-      var10000.forEach(var4::add);
-      if (var4.isEmpty()) {
+   public static Optional<Painting> create(final Level level, final BlockPos pos, final Direction direction) {
+      Painting candidate = new Painting(level, pos);
+      List<Holder<PaintingVariant>> potentialVariants = new ArrayList();
+      Iterable var10000 = level.registryAccess().lookupOrThrow(Registries.PAINTING_VARIANT).getTagOrEmpty(PaintingVariantTags.PLACEABLE);
+      Objects.requireNonNull(potentialVariants);
+      var10000.forEach(potentialVariants::add);
+      if (potentialVariants.isEmpty()) {
          return Optional.empty();
       } else {
-         var3.setDirection(var2);
-         var4.removeIf((var1x) -> {
-            var3.setVariant(var1x);
-            return !var3.survives();
+         candidate.setDirection(direction);
+         potentialVariants.removeIf((variant) -> {
+            candidate.setVariant(variant);
+            return !candidate.survives();
          });
-         if (var4.isEmpty()) {
+         if (potentialVariants.isEmpty()) {
             return Optional.empty();
          } else {
-            int var5 = var4.stream().mapToInt(Painting::variantArea).max().orElse(0);
-            var4.removeIf((var1x) -> variantArea(var1x) < var5);
-            Optional var6 = Util.getRandomSafe(var4, var3.random);
-            if (var6.isEmpty()) {
+            int largestPaintingAreaSize = potentialVariants.stream().mapToInt(Painting::variantArea).max().orElse(0);
+            potentialVariants.removeIf((variant) -> variantArea(variant) < largestPaintingAreaSize);
+            Optional<Holder<PaintingVariant>> selectedVariant = Util.<Holder<PaintingVariant>>getRandomSafe(potentialVariants, candidate.random);
+            if (selectedVariant.isEmpty()) {
                return Optional.empty();
             } else {
-               var3.setVariant((Holder)var6.get());
-               var3.setDirection(var2);
-               return Optional.of(var3);
+               candidate.setVariant((Holder)selectedVariant.get());
+               candidate.setDirection(direction);
+               return Optional.of(candidate);
             }
          }
       }
    }
 
-   private static int variantArea(Holder<PaintingVariant> var0) {
-      return ((PaintingVariant)var0.value()).area();
+   private static int variantArea(final Holder<PaintingVariant> variant) {
+      return ((PaintingVariant)variant.value()).area();
    }
 
-   private Painting(Level var1, BlockPos var2) {
-      super(EntityType.PAINTING, var1, var2);
+   private Painting(final Level level, final BlockPos blockPos) {
+      super(EntityType.PAINTING, level, blockPos);
    }
 
-   public Painting(Level var1, BlockPos var2, Direction var3, Holder<PaintingVariant> var4) {
-      this(var1, var2);
-      this.setVariant(var4);
-      this.setDirection(var3);
+   public Painting(final Level level, final BlockPos blockPos, final Direction direction, final Holder<PaintingVariant> variant) {
+      this(level, blockPos);
+      this.setVariant(variant);
+      this.setDirection(direction);
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      var1.store("facing", Direction.LEGACY_ID_CODEC_2D, this.getDirection());
-      super.addAdditionalSaveData(var1);
-      VariantUtils.writeVariant(var1, this.getVariant());
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      output.store("facing", Direction.LEGACY_ID_CODEC_2D, this.getDirection());
+      super.addAdditionalSaveData(output);
+      VariantUtils.writeVariant(output, this.getVariant());
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      Direction var2 = (Direction)var1.read("facing", Direction.LEGACY_ID_CODEC_2D).orElse(Direction.SOUTH);
-      super.readAdditionalSaveData(var1);
-      this.setDirection(var2);
-      VariantUtils.readVariant(var1, Registries.PAINTING_VARIANT).ifPresent(this::setVariant);
+   protected void readAdditionalSaveData(final ValueInput input) {
+      Direction direction = (Direction)input.read("facing", Direction.LEGACY_ID_CODEC_2D).orElse(Direction.SOUTH);
+      super.readAdditionalSaveData(input);
+      this.setDirection(direction);
+      VariantUtils.readVariant(input, Registries.PAINTING_VARIANT).ifPresent(this::setVariant);
    }
 
-   protected AABB calculateBoundingBox(BlockPos var1, Direction var2) {
-      float var3 = 0.46875F;
-      Vec3 var4 = Vec3.atCenterOf(var1).relative(var2, -0.46875);
-      PaintingVariant var5 = (PaintingVariant)this.getVariant().value();
-      double var6 = this.offsetForPaintingSize(var5.width());
-      double var8 = this.offsetForPaintingSize(var5.height());
-      Direction var10 = var2.getCounterClockWise();
-      Vec3 var11 = var4.relative(var10, var6).relative(Direction.UP, var8);
-      Direction.Axis var12 = var2.getAxis();
-      double var13 = var12 == Direction.Axis.X ? 0.0625 : (double)var5.width();
-      double var15 = (double)var5.height();
-      double var17 = var12 == Direction.Axis.Z ? 0.0625 : (double)var5.width();
-      return AABB.ofSize(var11, var13, var15, var17);
+   protected AABB calculateBoundingBox(final BlockPos pos, final Direction direction) {
+      float shiftToBlockWall = 0.46875F;
+      Vec3 attachedToWall = Vec3.atCenterOf(pos).relative(direction, -0.46875);
+      PaintingVariant variant = (PaintingVariant)this.getVariant().value();
+      double horizontalOffset = this.offsetForPaintingSize(variant.width());
+      double verticalOffset = this.offsetForPaintingSize(variant.height());
+      Direction left = direction.getCounterClockWise();
+      Vec3 position = attachedToWall.relative(left, horizontalOffset).relative(Direction.UP, verticalOffset);
+      Direction.Axis axis = direction.getAxis();
+      double xSize = axis == Direction.Axis.X ? 0.0625 : (double)variant.width();
+      double ySize = (double)variant.height();
+      double zSize = axis == Direction.Axis.Z ? 0.0625 : (double)variant.width();
+      return AABB.ofSize(position, xSize, ySize, zSize);
    }
 
-   private double offsetForPaintingSize(int var1) {
-      return var1 % 2 == 0 ? 0.5 : 0.0;
+   private double offsetForPaintingSize(final int size) {
+      return size % 2 == 0 ? 0.5 : 0.0;
    }
 
-   public void dropItem(ServerLevel var1, @Nullable Entity var2) {
-      if ((Boolean)var1.getGameRules().get(GameRules.ENTITY_DROPS)) {
+   public void dropItem(final ServerLevel level, final @Nullable Entity causedBy) {
+      if ((Boolean)level.getGameRules().get(GameRules.ENTITY_DROPS)) {
          this.playSound(SoundEvents.PAINTING_BREAK, 1.0F, 1.0F);
-         if (var2 instanceof Player) {
-            Player var3 = (Player)var2;
-            if (var3.hasInfiniteMaterials()) {
+         if (causedBy instanceof Player) {
+            Player player = (Player)causedBy;
+            if (player.hasInfiniteMaterials()) {
                return;
             }
          }
 
-         this.spawnAtLocation(var1, Items.PAINTING);
+         this.spawnAtLocation(level, Items.PAINTING);
       }
    }
 
@@ -178,21 +179,21 @@ public class Painting extends HangingEntity {
       this.playSound(SoundEvents.PAINTING_PLACE, 1.0F, 1.0F);
    }
 
-   public void snapTo(double var1, double var3, double var5, float var7, float var8) {
-      this.setPos(var1, var3, var5);
+   public void snapTo(final double x, final double y, final double z, final float yRot, final float xRot) {
+      this.setPos(x, y, z);
    }
 
    public Vec3 trackingPosition() {
       return Vec3.atLowerCornerOf(this.pos);
    }
 
-   public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity var1) {
+   public Packet<ClientGamePacketListener> getAddEntityPacket(final ServerEntity serverEntity) {
       return new ClientboundAddEntityPacket(this, this.getDirection().get3DDataValue(), this.getPos());
    }
 
-   public void recreateFromPacket(ClientboundAddEntityPacket var1) {
-      super.recreateFromPacket(var1);
-      this.setDirection(Direction.from3DDataValue(var1.getData()));
+   public void recreateFromPacket(final ClientboundAddEntityPacket packet) {
+      super.recreateFromPacket(packet);
+      this.setDirection(Direction.from3DDataValue(packet.getData()));
    }
 
    public ItemStack getPickResult() {

@@ -21,31 +21,31 @@ public class BlindnessFogEnvironment extends MobEffectFogEnvironment {
       return MobEffects.BLINDNESS;
    }
 
-   public void setupFog(FogData var1, Camera var2, ClientLevel var3, float var4, DeltaTracker var5) {
-      Entity var7 = var2.entity();
-      if (var7 instanceof LivingEntity var6) {
-         MobEffectInstance var9 = var6.getEffect(this.getMobEffect());
-         if (var9 != null) {
-            float var8 = var9.isInfiniteDuration() ? 5.0F : Mth.lerp(Math.min(1.0F, (float)var9.getDuration() / 20.0F), var4, 5.0F);
-            var1.environmentalStart = var8 * 0.25F;
-            var1.environmentalEnd = var8;
-            var1.skyEnd = var8 * 0.8F;
-            var1.cloudEnd = var8 * 0.8F;
+   public void setupFog(final FogData fog, final Camera camera, final ClientLevel level, final float renderDistance, final DeltaTracker deltaTracker) {
+      Entity var7 = camera.entity();
+      if (var7 instanceof LivingEntity livingEntity) {
+         MobEffectInstance effect = livingEntity.getEffect(this.getMobEffect());
+         if (effect != null) {
+            float distance = effect.isInfiniteDuration() ? 5.0F : Mth.lerp(Math.min(1.0F, (float)effect.getDuration() / 20.0F), renderDistance, 5.0F);
+            fog.environmentalStart = distance * 0.25F;
+            fog.environmentalEnd = distance;
+            fog.skyEnd = distance * 0.8F;
+            fog.cloudEnd = distance * 0.8F;
          }
       }
 
    }
 
-   public float getModifiedDarkness(LivingEntity var1, float var2, float var3) {
-      MobEffectInstance var4 = var1.getEffect(this.getMobEffect());
-      if (var4 != null) {
-         if (var4.endsWithin(19)) {
-            var2 = Math.max((float)var4.getDuration() / 20.0F, var2);
+   public float getModifiedDarkness(final LivingEntity entity, float darkness, final float partialTickTime) {
+      MobEffectInstance instance = entity.getEffect(this.getMobEffect());
+      if (instance != null) {
+         if (instance.endsWithin(19)) {
+            darkness = Math.max((float)instance.getDuration() / 20.0F, darkness);
          } else {
-            var2 = 1.0F;
+            darkness = 1.0F;
          }
       }
 
-      return var2;
+      return darkness;
    }
 }

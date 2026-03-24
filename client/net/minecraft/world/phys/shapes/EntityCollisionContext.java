@@ -19,58 +19,58 @@ public class EntityCollisionContext implements CollisionContext {
    private final boolean alwaysCollideWithFluid;
    private final @Nullable Entity entity;
 
-   protected EntityCollisionContext(boolean var1, boolean var2, double var3, ItemStack var5, boolean var6, @Nullable Entity var7) {
+   protected EntityCollisionContext(final boolean descending, final boolean placement, final double entityBottom, final ItemStack heldItem, final boolean alwaysCollideWithFluid, final @Nullable Entity entity) {
       super();
-      this.descending = var1;
-      this.placement = var2;
-      this.entityBottom = var3;
-      this.heldItem = var5;
-      this.alwaysCollideWithFluid = var6;
-      this.entity = var7;
+      this.descending = descending;
+      this.placement = placement;
+      this.entityBottom = entityBottom;
+      this.heldItem = heldItem;
+      this.alwaysCollideWithFluid = alwaysCollideWithFluid;
+      this.entity = entity;
    }
 
    /** @deprecated */
    @Deprecated
-   protected EntityCollisionContext(Entity var1, boolean var2, boolean var3) {
-      boolean var10001 = var1.isDescending();
-      double var10003 = var1.getY();
+   protected EntityCollisionContext(final Entity entity, final boolean alwaysCollideWithFluid, final boolean placement) {
+      boolean var10001 = entity.isDescending();
+      double var10003 = entity.getY();
       ItemStack var10004;
-      if (var1 instanceof LivingEntity var4) {
-         var10004 = var4.getMainHandItem();
+      if (entity instanceof LivingEntity livingEntity) {
+         var10004 = livingEntity.getMainHandItem();
       } else {
          var10004 = ItemStack.EMPTY;
       }
 
-      this(var10001, var3, var10003, var10004, var2, var1);
+      this(var10001, placement, var10003, var10004, alwaysCollideWithFluid, entity);
    }
 
-   public boolean isHoldingItem(Item var1) {
-      return this.heldItem.is(var1);
+   public boolean isHoldingItem(final Item item) {
+      return this.heldItem.is(item);
    }
 
    public boolean alwaysCollideWithFluid() {
       return this.alwaysCollideWithFluid;
    }
 
-   public boolean canStandOnFluid(FluidState var1, FluidState var2) {
+   public boolean canStandOnFluid(final FluidState fluidStateAbove, final FluidState fluid) {
       Entity var4 = this.entity;
-      if (!(var4 instanceof LivingEntity var3)) {
+      if (!(var4 instanceof LivingEntity livingEntity)) {
          return false;
       } else {
-         return var3.canStandOnFluid(var2) && !var1.getType().isSame(var2.getType());
+         return livingEntity.canStandOnFluid(fluid) && !fluidStateAbove.getType().isSame(fluid.getType());
       }
    }
 
-   public VoxelShape getCollisionShape(BlockState var1, CollisionGetter var2, BlockPos var3) {
-      return var1.getCollisionShape(var2, var3, this);
+   public VoxelShape getCollisionShape(final BlockState state, final CollisionGetter collisionGetter, final BlockPos pos) {
+      return state.getCollisionShape(collisionGetter, pos, this);
    }
 
    public boolean isDescending() {
       return this.descending;
    }
 
-   public boolean isAbove(VoxelShape var1, BlockPos var2, boolean var3) {
-      return this.entityBottom > (double)var2.getY() + var1.max(Direction.Axis.Y) - 9.999999747378752E-6;
+   public boolean isAbove(final VoxelShape shape, final BlockPos pos, final boolean defaultValue) {
+      return this.entityBottom > (double)pos.getY() + shape.max(Direction.Axis.Y) - 9.999999747378752E-6;
    }
 
    public @Nullable Entity getEntity() {
@@ -85,12 +85,12 @@ public class EntityCollisionContext implements CollisionContext {
       protected static final CollisionContext WITHOUT_FLUID_COLLISIONS = new Empty(false);
       protected static final CollisionContext WITH_FLUID_COLLISIONS = new Empty(true);
 
-      public Empty(boolean var1) {
-         super(false, false, -1.7976931348623157E308, ItemStack.EMPTY, var1, (Entity)null);
+      public Empty(final boolean alwaysCollideWithFluid) {
+         super(false, false, -1.7976931348623157E308, ItemStack.EMPTY, alwaysCollideWithFluid, (Entity)null);
       }
 
-      public boolean isAbove(VoxelShape var1, BlockPos var2, boolean var3) {
-         return var3;
+      public boolean isAbove(final VoxelShape shape, final BlockPos pos, final boolean defaultValue) {
+         return defaultValue;
       }
    }
 }

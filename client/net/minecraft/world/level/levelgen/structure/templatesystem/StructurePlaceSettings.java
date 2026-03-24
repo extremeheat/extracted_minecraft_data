@@ -34,58 +34,58 @@ public class StructurePlaceSettings {
    }
 
    public StructurePlaceSettings copy() {
-      StructurePlaceSettings var1 = new StructurePlaceSettings();
-      var1.mirror = this.mirror;
-      var1.rotation = this.rotation;
-      var1.rotationPivot = this.rotationPivot;
-      var1.ignoreEntities = this.ignoreEntities;
-      var1.boundingBox = this.boundingBox;
-      var1.liquidSettings = this.liquidSettings;
-      var1.random = this.random;
-      var1.palette = this.palette;
-      var1.processors.addAll(this.processors);
-      var1.knownShape = this.knownShape;
-      var1.finalizeEntities = this.finalizeEntities;
-      return var1;
+      StructurePlaceSettings setting = new StructurePlaceSettings();
+      setting.mirror = this.mirror;
+      setting.rotation = this.rotation;
+      setting.rotationPivot = this.rotationPivot;
+      setting.ignoreEntities = this.ignoreEntities;
+      setting.boundingBox = this.boundingBox;
+      setting.liquidSettings = this.liquidSettings;
+      setting.random = this.random;
+      setting.palette = this.palette;
+      setting.processors.addAll(this.processors);
+      setting.knownShape = this.knownShape;
+      setting.finalizeEntities = this.finalizeEntities;
+      return setting;
    }
 
-   public StructurePlaceSettings setMirror(Mirror var1) {
-      this.mirror = var1;
+   public StructurePlaceSettings setMirror(final Mirror mirror) {
+      this.mirror = mirror;
       return this;
    }
 
-   public StructurePlaceSettings setRotation(Rotation var1) {
-      this.rotation = var1;
+   public StructurePlaceSettings setRotation(final Rotation rotation) {
+      this.rotation = rotation;
       return this;
    }
 
-   public StructurePlaceSettings setRotationPivot(BlockPos var1) {
-      this.rotationPivot = var1;
+   public StructurePlaceSettings setRotationPivot(final BlockPos rotationPivot) {
+      this.rotationPivot = rotationPivot;
       return this;
    }
 
-   public StructurePlaceSettings setIgnoreEntities(boolean var1) {
-      this.ignoreEntities = var1;
+   public StructurePlaceSettings setIgnoreEntities(final boolean ignoreEntities) {
+      this.ignoreEntities = ignoreEntities;
       return this;
    }
 
-   public StructurePlaceSettings setBoundingBox(BoundingBox var1) {
-      this.boundingBox = var1;
+   public StructurePlaceSettings setBoundingBox(final BoundingBox boundingBox) {
+      this.boundingBox = boundingBox;
       return this;
    }
 
-   public StructurePlaceSettings setRandom(@Nullable RandomSource var1) {
-      this.random = var1;
+   public StructurePlaceSettings setRandom(final @Nullable RandomSource random) {
+      this.random = random;
       return this;
    }
 
-   public StructurePlaceSettings setLiquidSettings(LiquidSettings var1) {
-      this.liquidSettings = var1;
+   public StructurePlaceSettings setLiquidSettings(final LiquidSettings liquidSettings) {
+      this.liquidSettings = liquidSettings;
       return this;
    }
 
-   public StructurePlaceSettings setKnownShape(boolean var1) {
-      this.knownShape = var1;
+   public StructurePlaceSettings setKnownShape(final boolean knownShape) {
+      this.knownShape = knownShape;
       return this;
    }
 
@@ -94,13 +94,13 @@ public class StructurePlaceSettings {
       return this;
    }
 
-   public StructurePlaceSettings addProcessor(StructureProcessor var1) {
-      this.processors.add(var1);
+   public StructurePlaceSettings addProcessor(final StructureProcessor processor) {
+      this.processors.add(processor);
       return this;
    }
 
-   public StructurePlaceSettings popProcessor(StructureProcessor var1) {
-      this.processors.remove(var1);
+   public StructurePlaceSettings popProcessor(final StructureProcessor processor) {
+      this.processors.remove(processor);
       return this;
    }
 
@@ -116,11 +116,11 @@ public class StructurePlaceSettings {
       return this.rotationPivot;
    }
 
-   public RandomSource getRandom(@Nullable BlockPos var1) {
+   public RandomSource getRandom(final @Nullable BlockPos pos) {
       if (this.random != null) {
          return this.random;
       } else {
-         return var1 == null ? RandomSource.create(Util.getMillis()) : RandomSource.create(Mth.getSeed(var1));
+         return pos == null ? RandomSource.create(Util.getMillis()) : RandomSource.create(Mth.getSeed(pos));
       }
    }
 
@@ -144,17 +144,17 @@ public class StructurePlaceSettings {
       return this.liquidSettings == LiquidSettings.APPLY_WATERLOGGING;
    }
 
-   public StructureTemplate.Palette getRandomPalette(List<StructureTemplate.Palette> var1, @Nullable BlockPos var2) {
-      int var3 = var1.size();
-      if (var3 == 0) {
+   public StructureTemplate.Palette getRandomPalette(final List<StructureTemplate.Palette> palettes, final @Nullable BlockPos pos) {
+      int paletteSize = palettes.size();
+      if (paletteSize == 0) {
          throw new IllegalStateException("No palettes");
       } else {
-         return (StructureTemplate.Palette)var1.get(this.getRandom(var2).nextInt(var3));
+         return (StructureTemplate.Palette)palettes.get(this.getRandom(pos).nextInt(paletteSize));
       }
    }
 
-   public StructurePlaceSettings setFinalizeEntities(boolean var1) {
-      this.finalizeEntities = var1;
+   public StructurePlaceSettings setFinalizeEntities(final boolean finalizeEntities) {
+      this.finalizeEntities = finalizeEntities;
       return this;
    }
 

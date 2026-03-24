@@ -3,11 +3,11 @@ package net.minecraft.util;
 import java.util.function.IntConsumer;
 
 public interface BitStorage {
-   int getAndSet(int var1, int var2);
+   int getAndSet(int index, int value);
 
-   void set(int var1, int var2);
+   void set(int index, int value);
 
-   int get(int var1);
+   int get(int index);
 
    long[] getRaw();
 
@@ -15,9 +15,9 @@ public interface BitStorage {
 
    int getBits();
 
-   void getAll(IntConsumer var1);
+   void getAll(IntConsumer output);
 
-   void unpack(int[] var1);
+   void unpack(int[] output);
 
    BitStorage copy();
 }

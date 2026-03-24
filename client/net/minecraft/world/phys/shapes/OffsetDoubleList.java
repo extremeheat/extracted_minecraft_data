@@ -7,14 +7,14 @@ public class OffsetDoubleList extends AbstractDoubleList {
    private final DoubleList delegate;
    private final double offset;
 
-   public OffsetDoubleList(DoubleList var1, double var2) {
+   public OffsetDoubleList(final DoubleList delegate, final double offset) {
       super();
-      this.delegate = var1;
-      this.offset = var2;
+      this.delegate = delegate;
+      this.offset = offset;
    }
 
-   public double getDouble(int var1) {
-      return this.delegate.getDouble(var1) + this.offset;
+   public double getDouble(final int index) {
+      return this.delegate.getDouble(index) + this.offset;
    }
 
    public int size() {

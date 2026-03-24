@@ -3,6 +3,7 @@ package net.minecraft.network.protocol;
 import io.netty.buffer.ByteBuf;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import net.minecraft.network.ClientboundPacketListener;
@@ -15,153 +16,152 @@ import net.minecraft.util.Unit;
 import org.jspecify.annotations.Nullable;
 
 public class ProtocolInfoBuilder<T extends PacketListener, B extends ByteBuf, C> {
-   final ConnectionProtocol protocol;
-   final PacketFlow flow;
+   private final ConnectionProtocol protocol;
+   private final PacketFlow flow;
    private final List<CodecEntry<T, ?, B, C>> codecs = new ArrayList();
    private @Nullable BundlerInfo bundlerInfo;
 
-   public ProtocolInfoBuilder(ConnectionProtocol var1, PacketFlow var2) {
+   public ProtocolInfoBuilder(final ConnectionProtocol protocol, final PacketFlow flow) {
       super();
-      this.protocol = var1;
-      this.flow = var2;
+      this.protocol = protocol;
+      this.flow = flow;
    }
 
-   public <P extends Packet<? super T>> ProtocolInfoBuilder<T, B, C> addPacket(PacketType<P> var1, StreamCodec<? super B, P> var2) {
-      this.codecs.add(new CodecEntry(var1, var2, (CodecModifier)null));
+   public <P extends Packet<? super T>> ProtocolInfoBuilder<T, B, C> addPacket(final PacketType<P> type, final StreamCodec<? super B, P> serializer) {
+      this.codecs.add(new CodecEntry(type, serializer, (CodecModifier)null));
       return this;
    }
 
-   public <P extends Packet<? super T>> ProtocolInfoBuilder<T, B, C> addPacket(PacketType<P> var1, StreamCodec<? super B, P> var2, CodecModifier<B, P, C> var3) {
-      this.codecs.add(new CodecEntry(var1, var2, var3));
+   public <P extends Packet<? super T>> ProtocolInfoBuilder<T, B, C> addPacket(final PacketType<P> type, final StreamCodec<? super B, P> serializer, final CodecModifier<B, P, C> modifier) {
+      this.codecs.add(new CodecEntry(type, serializer, modifier));
       return this;
    }
 
-   public <P extends BundlePacket<? super T>, D extends BundleDelimiterPacket<? super T>> ProtocolInfoBuilder<T, B, C> withBundlePacket(PacketType<P> var1, Function<Iterable<Packet<? super T>>, P> var2, D var3) {
-      StreamCodec var4 = StreamCodec.unit(var3);
-      PacketType var5 = var3.type();
-      this.codecs.add(new CodecEntry(var5, var4, (CodecModifier)null));
-      this.bundlerInfo = BundlerInfo.createForPacket(var1, var2, var3);
+   public <P extends BundlePacket<? super T>, D extends BundleDelimiterPacket<? super T>> ProtocolInfoBuilder<T, B, C> withBundlePacket(final PacketType<P> bundlerPacket, final Function<Iterable<Packet<? super T>>, P> constructor, final D delimiterPacket) {
+      StreamCodec<ByteBuf, D> delimitedCodec = StreamCodec.<ByteBuf, D>unit(delimiterPacket);
+      PacketType<D> delimiterType = ((BundleDelimiterPacket)delimiterPacket).type();
+      this.codecs.add(new CodecEntry(delimiterType, delimitedCodec, (CodecModifier)null));
+      this.bundlerInfo = BundlerInfo.createForPacket(bundlerPacket, constructor, delimiterPacket);
       return this;
    }
 
-   StreamCodec<ByteBuf, Packet<? super T>> buildPacketCodec(Function<ByteBuf, B> var1, List<CodecEntry<T, ?, B, C>> var2, C var3) {
-      ProtocolCodecBuilder var4 = new ProtocolCodecBuilder(this.flow);
+   private StreamCodec<ByteBuf, Packet<? super T>> buildPacketCodec(final Function<ByteBuf, B> contextWrapper, final List<CodecEntry<T, ?, B, C>> codecs, final C context) {
+      ProtocolCodecBuilder<ByteBuf, T> codecBuilder = new ProtocolCodecBuilder<ByteBuf, T>(this.flow);
 
-      for(CodecEntry var6 : var2) {
-         var6.addToBuilder(var4, var1, var3);
+      for(CodecEntry<T, ?, B, C> codec : codecs) {
+         codec.addToBuilder(codecBuilder, contextWrapper, context);
       }
 
-      return var4.build();
+      return codecBuilder.build();
    }
 
-   private static ProtocolInfo.Details buildDetails(final ConnectionProtocol var0, final PacketFlow var1, final List<? extends CodecEntry<?, ?, ?, ?>> var2) {
+   private static ProtocolInfo.Details buildDetails(final ConnectionProtocol protocol, final PacketFlow flow, final List<? extends CodecEntry<?, ?, ?, ?>> codecs) {
       return new ProtocolInfo.Details() {
          public ConnectionProtocol id() {
-            return var0;
+            return protocol;
          }
 
          public PacketFlow flow() {
-            return var1;
+            return flow;
          }
 
-         public void listPackets(ProtocolInfo.Details.PacketVisitor var1x) {
-            for(int var2x = 0; var2x < var2.size(); ++var2x) {
-               CodecEntry var3 = (CodecEntry)var2.get(var2x);
-               var1x.accept(var3.type, var2x);
+         public void listPackets(final ProtocolInfo.Details.PacketVisitor output) {
+            for(int i = 0; i < codecs.size(); ++i) {
+               CodecEntry<?, ?, ?, ?> entry = (CodecEntry)codecs.get(i);
+               output.accept(entry.type, i);
             }
 
          }
       };
    }
 
-   public SimpleUnboundProtocol<T, B> buildUnbound(final C var1) {
-      final List var2 = List.copyOf(this.codecs);
-      final BundlerInfo var3 = this.bundlerInfo;
-      final ProtocolInfo.Details var4 = buildDetails(this.protocol, this.flow, var2);
+   public SimpleUnboundProtocol<T, B> buildUnbound(final C context) {
+      final List<CodecEntry<T, ?, B, C>> codecs = List.copyOf(this.codecs);
+      final BundlerInfo bundlerInfo = this.bundlerInfo;
+      final ProtocolInfo.Details details = buildDetails(this.protocol, this.flow, codecs);
       return new SimpleUnboundProtocol<T, B>() {
-         public ProtocolInfo<T> bind(Function<ByteBuf, B> var1x) {
-            return new Implementation<T>(ProtocolInfoBuilder.this.protocol, ProtocolInfoBuilder.this.flow, ProtocolInfoBuilder.this.buildPacketCodec(var1x, var2, var1), var3);
+         {
+            Objects.requireNonNull(ProtocolInfoBuilder.this);
+         }
+
+         public ProtocolInfo<T> bind(final Function<ByteBuf, B> contextWrapper) {
+            return new Implementation<T>(ProtocolInfoBuilder.this.protocol, ProtocolInfoBuilder.this.flow, ProtocolInfoBuilder.this.buildPacketCodec(contextWrapper, codecs, context), bundlerInfo);
          }
 
          public ProtocolInfo.Details details() {
-            return var4;
+            return details;
          }
       };
    }
 
    public UnboundProtocol<T, B, C> buildUnbound() {
-      final List var1 = List.copyOf(this.codecs);
-      final BundlerInfo var2 = this.bundlerInfo;
-      final ProtocolInfo.Details var3 = buildDetails(this.protocol, this.flow, var1);
+      final List<CodecEntry<T, ?, B, C>> codecs = List.copyOf(this.codecs);
+      final BundlerInfo bundlerInfo = this.bundlerInfo;
+      final ProtocolInfo.Details details = buildDetails(this.protocol, this.flow, codecs);
       return new UnboundProtocol<T, B, C>() {
-         public ProtocolInfo<T> bind(Function<ByteBuf, B> var1x, C var2x) {
-            return new Implementation<T>(ProtocolInfoBuilder.this.protocol, ProtocolInfoBuilder.this.flow, ProtocolInfoBuilder.this.buildPacketCodec(var1x, var1, var2x), var2);
+         {
+            Objects.requireNonNull(ProtocolInfoBuilder.this);
+         }
+
+         public ProtocolInfo<T> bind(final Function<ByteBuf, B> contextWrapper, final C context) {
+            return new Implementation<T>(ProtocolInfoBuilder.this.protocol, ProtocolInfoBuilder.this.flow, ProtocolInfoBuilder.this.buildPacketCodec(contextWrapper, codecs, context), bundlerInfo);
          }
 
          public ProtocolInfo.Details details() {
-            return var3;
+            return details;
          }
       };
    }
 
-   private static <L extends PacketListener, B extends ByteBuf> SimpleUnboundProtocol<L, B> protocol(ConnectionProtocol var0, PacketFlow var1, Consumer<ProtocolInfoBuilder<L, B, Unit>> var2) {
-      ProtocolInfoBuilder var3 = new ProtocolInfoBuilder(var0, var1);
-      var2.accept(var3);
-      return var3.buildUnbound(Unit.INSTANCE);
+   private static <L extends PacketListener, B extends ByteBuf> SimpleUnboundProtocol<L, B> protocol(final ConnectionProtocol id, final PacketFlow flow, final Consumer<ProtocolInfoBuilder<L, B, Unit>> config) {
+      ProtocolInfoBuilder<L, B, Unit> builder = new ProtocolInfoBuilder<L, B, Unit>(id, flow);
+      config.accept(builder);
+      return builder.buildUnbound(Unit.INSTANCE);
    }
 
-   public static <T extends ServerboundPacketListener, B extends ByteBuf> SimpleUnboundProtocol<T, B> serverboundProtocol(ConnectionProtocol var0, Consumer<ProtocolInfoBuilder<T, B, Unit>> var1) {
-      return protocol(var0, PacketFlow.SERVERBOUND, var1);
+   public static <T extends ServerboundPacketListener, B extends ByteBuf> SimpleUnboundProtocol<T, B> serverboundProtocol(final ConnectionProtocol id, final Consumer<ProtocolInfoBuilder<T, B, Unit>> config) {
+      return protocol(id, PacketFlow.SERVERBOUND, config);
    }
 
-   public static <T extends ClientboundPacketListener, B extends ByteBuf> SimpleUnboundProtocol<T, B> clientboundProtocol(ConnectionProtocol var0, Consumer<ProtocolInfoBuilder<T, B, Unit>> var1) {
-      return protocol(var0, PacketFlow.CLIENTBOUND, var1);
+   public static <T extends ClientboundPacketListener, B extends ByteBuf> SimpleUnboundProtocol<T, B> clientboundProtocol(final ConnectionProtocol id, final Consumer<ProtocolInfoBuilder<T, B, Unit>> config) {
+      return protocol(id, PacketFlow.CLIENTBOUND, config);
    }
 
-   private static <L extends PacketListener, B extends ByteBuf, C> UnboundProtocol<L, B, C> contextProtocol(ConnectionProtocol var0, PacketFlow var1, Consumer<ProtocolInfoBuilder<L, B, C>> var2) {
-      ProtocolInfoBuilder var3 = new ProtocolInfoBuilder(var0, var1);
-      var2.accept(var3);
-      return var3.buildUnbound();
+   private static <L extends PacketListener, B extends ByteBuf, C> UnboundProtocol<L, B, C> contextProtocol(final ConnectionProtocol id, final PacketFlow flow, final Consumer<ProtocolInfoBuilder<L, B, C>> config) {
+      ProtocolInfoBuilder<L, B, C> builder = new ProtocolInfoBuilder<L, B, C>(id, flow);
+      config.accept(builder);
+      return builder.buildUnbound();
    }
 
-   public static <T extends ServerboundPacketListener, B extends ByteBuf, C> UnboundProtocol<T, B, C> contextServerboundProtocol(ConnectionProtocol var0, Consumer<ProtocolInfoBuilder<T, B, C>> var1) {
-      return contextProtocol(var0, PacketFlow.SERVERBOUND, var1);
+   public static <T extends ServerboundPacketListener, B extends ByteBuf, C> UnboundProtocol<T, B, C> contextServerboundProtocol(final ConnectionProtocol id, final Consumer<ProtocolInfoBuilder<T, B, C>> config) {
+      return contextProtocol(id, PacketFlow.SERVERBOUND, config);
    }
 
-   public static <T extends ClientboundPacketListener, B extends ByteBuf, C> UnboundProtocol<T, B, C> contextClientboundProtocol(ConnectionProtocol var0, Consumer<ProtocolInfoBuilder<T, B, C>> var1) {
-      return contextProtocol(var0, PacketFlow.CLIENTBOUND, var1);
+   public static <T extends ClientboundPacketListener, B extends ByteBuf, C> UnboundProtocol<T, B, C> contextClientboundProtocol(final ConnectionProtocol id, final Consumer<ProtocolInfoBuilder<T, B, C>> config) {
+      return contextProtocol(id, PacketFlow.CLIENTBOUND, config);
    }
 
-   static record CodecEntry<T extends PacketListener, P extends Packet<? super T>, B extends ByteBuf, C>(PacketType<P> type, StreamCodec<? super B, P> serializer, @Nullable CodecModifier<B, P, C> modifier) {
-      final PacketType<P> type;
-
-      CodecEntry(PacketType<P> var1, StreamCodec<? super B, P> var2, @Nullable CodecModifier<B, P, C> var3) {
+   private static record CodecEntry<T extends PacketListener, P extends Packet<? super T>, B extends ByteBuf, C>(PacketType<P> type, StreamCodec<? super B, P> serializer, @Nullable CodecModifier<B, P, C> modifier) {
+      private CodecEntry {
          super();
-         this.type = var1;
-         this.serializer = var2;
-         this.modifier = var3;
       }
 
-      public void addToBuilder(ProtocolCodecBuilder<ByteBuf, T> var1, Function<ByteBuf, B> var2, C var3) {
-         StreamCodec var4;
+      public void addToBuilder(final ProtocolCodecBuilder<ByteBuf, T> codecBuilder, final Function<ByteBuf, B> contextWrapper, final C context) {
+         StreamCodec<? super B, P> finalSerializer;
          if (this.modifier != null) {
-            var4 = this.modifier.apply(this.serializer, var3);
+            finalSerializer = this.modifier.apply(this.serializer, context);
          } else {
-            var4 = this.serializer;
+            finalSerializer = this.serializer;
          }
 
-         StreamCodec var5 = var4.mapStream(var2);
-         var1.add(this.type, var5);
+         StreamCodec<ByteBuf, P> baseCodec = finalSerializer.mapStream(contextWrapper);
+         codecBuilder.add(this.type, baseCodec);
       }
    }
 
-   static record Implementation<L extends PacketListener>(ConnectionProtocol id, PacketFlow flow, StreamCodec<ByteBuf, Packet<? super L>> codec, @Nullable BundlerInfo bundlerInfo) implements ProtocolInfo<L> {
-      Implementation(ConnectionProtocol var1, PacketFlow var2, StreamCodec<ByteBuf, Packet<? super L>> var3, @Nullable BundlerInfo var4) {
+   private static record Implementation<L extends PacketListener>(ConnectionProtocol id, PacketFlow flow, StreamCodec<ByteBuf, Packet<? super L>> codec, @Nullable BundlerInfo bundlerInfo) implements ProtocolInfo<L> {
+      private Implementation {
          super();
-         this.id = var1;
-         this.flow = var2;
-         this.codec = var3;
-         this.bundlerInfo = var4;
       }
    }
 }

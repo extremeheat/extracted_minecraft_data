@@ -3,7 +3,7 @@ package net.minecraft.client.gui.components.toasts;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -31,39 +31,39 @@ public class TutorialToast implements Toast {
    private final boolean progressable;
    private final int timeToDisplayMs;
 
-   public TutorialToast(Font var1, Icons var2, Component var3, @Nullable Component var4, boolean var5, int var6) {
+   public TutorialToast(final Font font, final Icons icon, final Component title, final @Nullable Component message, final boolean progressable, final int timeToDisplayMs) {
       super();
       this.visibility = Toast.Visibility.SHOW;
-      this.icon = var2;
+      this.icon = icon;
       this.lines = new ArrayList(2);
-      this.lines.addAll(var1.split(var3.copy().withColor(-11534256), 126));
-      if (var4 != null) {
-         this.lines.addAll(var1.split(var4, 126));
+      this.lines.addAll(font.split(title.copy().withColor(-11534256), 126));
+      if (message != null) {
+         this.lines.addAll(font.split(message, 126));
       }
 
-      this.progressable = var5;
-      this.timeToDisplayMs = var6;
+      this.progressable = progressable;
+      this.timeToDisplayMs = timeToDisplayMs;
    }
 
-   public TutorialToast(Font var1, Icons var2, Component var3, @Nullable Component var4, boolean var5) {
-      this(var1, var2, var3, var4, var5, 0);
+   public TutorialToast(final Font font, final Icons icon, final Component title, final @Nullable Component message, final boolean progressable) {
+      this(font, icon, title, message, progressable, 0);
    }
 
    public Toast.Visibility getWantedVisibility() {
       return this.visibility;
    }
 
-   public void update(ToastManager var1, long var2) {
+   public void update(final ToastManager manager, final long fullyVisibleForMs) {
       if (this.timeToDisplayMs > 0) {
-         this.progress = Math.min((float)var2 / (float)this.timeToDisplayMs, 1.0F);
+         this.progress = Math.min((float)fullyVisibleForMs / (float)this.timeToDisplayMs, 1.0F);
          this.smoothedProgress = this.progress;
-         this.lastSmoothingTime = var2;
-         if (var2 > (long)this.timeToDisplayMs) {
+         this.lastSmoothingTime = fullyVisibleForMs;
+         if (fullyVisibleForMs > (long)this.timeToDisplayMs) {
             this.hide();
          }
       } else if (this.progressable) {
-         this.smoothedProgress = Mth.clampedLerp((float)(var2 - this.lastSmoothingTime) / 100.0F, this.smoothedProgress, this.progress);
-         this.lastSmoothingTime = var2;
+         this.smoothedProgress = Mth.clampedLerp((float)(fullyVisibleForMs - this.lastSmoothingTime) / 100.0F, this.smoothedProgress, this.progress);
+         this.lastSmoothingTime = fullyVisibleForMs;
       }
 
    }
@@ -76,28 +76,28 @@ public class TutorialToast implements Toast {
       return Math.max(this.lines.size(), 2) * 11;
    }
 
-   public void render(GuiGraphics var1, Font var2, long var3) {
-      int var5 = this.height();
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)BACKGROUND_SPRITE, 0, 0, this.width(), var5);
-      this.icon.render(var1, 6, 6);
-      int var6 = this.lines.size() * 11;
-      int var7 = 7 + (this.contentHeight() - var6) / 2;
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final Font font, final long fullyVisibleForMs) {
+      int height = this.height();
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)BACKGROUND_SPRITE, 0, 0, this.width(), height);
+      this.icon.extractRenderState(graphics, 6, 6);
+      int textHeight = this.lines.size() * 11;
+      int textTop = 7 + (this.contentHeight() - textHeight) / 2;
 
-      for(int var8 = 0; var8 < this.lines.size(); ++var8) {
-         var1.drawString(var2, (FormattedCharSequence)((FormattedCharSequence)this.lines.get(var8)), 30, var7 + var8 * 11, -16777216, false);
+      for(int i = 0; i < this.lines.size(); ++i) {
+         graphics.text(font, (FormattedCharSequence)((FormattedCharSequence)this.lines.get(i)), 30, textTop + i * 11, -16777216, false);
       }
 
       if (this.progressable) {
-         int var10 = var5 - 4;
-         var1.fill(3, var10, 157, var10 + 1, -1);
-         int var9;
+         int progressBarY = height - 4;
+         graphics.fill(3, progressBarY, 157, progressBarY + 1, -1);
+         int col;
          if (this.progress >= this.smoothedProgress) {
-            var9 = -16755456;
+            col = -16755456;
          } else {
-            var9 = -11206656;
+            col = -11206656;
          }
 
-         var1.fill(3, var10, (int)(3.0F + 154.0F * this.smoothedProgress), var10 + 1, var9);
+         graphics.fill(3, progressBarY, (int)(3.0F + 154.0F * this.smoothedProgress), progressBarY + 1, col);
       }
 
    }
@@ -106,8 +106,8 @@ public class TutorialToast implements Toast {
       this.visibility = Toast.Visibility.HIDE;
    }
 
-   public void updateProgress(float var1) {
-      this.progress = var1;
+   public void updateProgress(final float progress) {
+      this.progress = progress;
    }
 
    public static enum Icons {
@@ -121,12 +121,12 @@ public class TutorialToast implements Toast {
 
       private final Identifier sprite;
 
-      private Icons(final Identifier var3) {
-         this.sprite = var3;
+      private Icons(final Identifier sprite) {
+         this.sprite = sprite;
       }
 
-      public void render(GuiGraphics var1, int var2, int var3) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)this.sprite, var2, var3, 20, 20);
+      public void extractRenderState(final GuiGraphicsExtractor graphics, final int x, final int y) {
+         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)this.sprite, x, y, 20, 20);
       }
 
       // $FF: synthetic method

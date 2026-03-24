@@ -42,51 +42,51 @@ public class BambooStalkBlock extends Block implements BonemealableBlock {
       return CODEC;
    }
 
-   public BambooStalkBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public BambooStalkBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(AGE, 0)).setValue(LEAVES, BambooLeaves.NONE)).setValue(STAGE, 0));
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(AGE, LEAVES, STAGE);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(AGE, LEAVES, STAGE);
    }
 
-   protected boolean propagatesSkylightDown(BlockState var1) {
+   protected boolean propagatesSkylightDown(final BlockState state) {
       return true;
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      VoxelShape var5 = var1.getValue(LEAVES) == BambooLeaves.LARGE ? SHAPE_LARGE : SHAPE_SMALL;
-      return var5.move(var1.getOffset(var3));
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      VoxelShape shape = state.getValue(LEAVES) == BambooLeaves.LARGE ? SHAPE_LARGE : SHAPE_SMALL;
+      return shape.move(state.getOffset(pos));
    }
 
-   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
+   protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
       return false;
    }
 
-   protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return SHAPE_COLLISION.move(var1.getOffset(var3));
+   protected VoxelShape getCollisionShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return SHAPE_COLLISION.move(state.getOffset(pos));
    }
 
-   protected boolean isCollisionShapeFullBlock(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected boolean isCollisionShapeFullBlock(final BlockState state, final BlockGetter level, final BlockPos pos) {
       return false;
    }
 
-   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
-      FluidState var2 = var1.getLevel().getFluidState(var1.getClickedPos());
-      if (!var2.isEmpty()) {
+   public @Nullable BlockState getStateForPlacement(final BlockPlaceContext context) {
+      FluidState fluidState = context.getLevel().getFluidState(context.getClickedPos());
+      if (!fluidState.isEmpty()) {
          return null;
       } else {
-         BlockState var3 = var1.getLevel().getBlockState(var1.getClickedPos().below());
-         if (var3.is(BlockTags.BAMBOO_PLANTABLE_ON)) {
-            if (var3.is(Blocks.BAMBOO_SAPLING)) {
+         BlockState belowState = context.getLevel().getBlockState(context.getClickedPos().below());
+         if (belowState.is(BlockTags.SUPPORTS_BAMBOO)) {
+            if (belowState.is(Blocks.BAMBOO_SAPLING)) {
                return (BlockState)this.defaultBlockState().setValue(AGE, 0);
-            } else if (var3.is(Blocks.BAMBOO)) {
-               int var5 = (Integer)var3.getValue(AGE) > 0 ? 1 : 0;
-               return (BlockState)this.defaultBlockState().setValue(AGE, var5);
+            } else if (belowState.is(Blocks.BAMBOO)) {
+               int age = (Integer)belowState.getValue(AGE) > 0 ? 1 : 0;
+               return (BlockState)this.defaultBlockState().setValue(AGE, age);
             } else {
-               BlockState var4 = var1.getLevel().getBlockState(var1.getClickedPos().above());
-               return var4.is(Blocks.BAMBOO) ? (BlockState)this.defaultBlockState().setValue(AGE, (Integer)var4.getValue(AGE)) : Blocks.BAMBOO_SAPLING.defaultBlockState();
+               BlockState aboveState = context.getLevel().getBlockState(context.getClickedPos().above());
+               return aboveState.is(Blocks.BAMBOO) ? (BlockState)this.defaultBlockState().setValue(AGE, (Integer)aboveState.getValue(AGE)) : Blocks.BAMBOO_SAPLING.defaultBlockState();
             }
          } else {
             return null;
@@ -94,109 +94,111 @@ public class BambooStalkBlock extends Block implements BonemealableBlock {
       }
    }
 
-   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (!var1.canSurvive(var2, var3)) {
-         var2.destroyBlock(var3, true);
+   protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if (!state.canSurvive(level, pos)) {
+         level.destroyBlock(pos, true);
       }
 
    }
 
-   protected boolean isRandomlyTicking(BlockState var1) {
-      return (Integer)var1.getValue(STAGE) == 0;
+   protected boolean isRandomlyTicking(final BlockState state) {
+      return (Integer)state.getValue(STAGE) == 0;
    }
 
-   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if ((Integer)var1.getValue(STAGE) == 0) {
-         if (var4.nextInt(3) == 0 && var2.isEmptyBlock(var3.above()) && var2.getRawBrightness(var3.above(), 0) >= 9) {
-            int var5 = this.getHeightBelowUpToMax(var2, var3) + 1;
-            if (var5 < 16) {
-               this.growBamboo(var1, var2, var3, var4, var5);
+   protected void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if ((Integer)state.getValue(STAGE) == 0) {
+         if (random.nextInt(3) == 0 && level.isEmptyBlock(pos.above()) && level.getRawBrightness(pos.above(), 0) >= 9) {
+            int height = this.getHeightBelowUpToMax(level, pos) + 1;
+            if (height < 16) {
+               this.growBamboo(state, level, pos, random, height);
             }
          }
 
       }
    }
 
-   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      return var2.getBlockState(var3.below()).is(BlockTags.BAMBOO_PLANTABLE_ON);
+   protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
+      return level.getBlockState(pos.below()).is(BlockTags.SUPPORTS_BAMBOO);
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      if (!var1.canSurvive(var2, var4)) {
-         var3.scheduleTick(var4, (Block)this, 1);
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      if (!state.canSurvive(level, pos)) {
+         ticks.scheduleTick(pos, (Block)this, 1);
       }
 
-      return var5 == Direction.UP && var7.is(Blocks.BAMBOO) && (Integer)var7.getValue(AGE) > (Integer)var1.getValue(AGE) ? (BlockState)var1.cycle(AGE) : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+      return directionToNeighbour == Direction.UP && neighbourState.is(Blocks.BAMBOO) && (Integer)neighbourState.getValue(AGE) > (Integer)state.getValue(AGE) ? (BlockState)state.cycle(AGE) : super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
-      int var4 = this.getHeightAboveUpToMax(var1, var2);
-      int var5 = this.getHeightBelowUpToMax(var1, var2);
-      return var4 + var5 + 1 < 16 && (Integer)var1.getBlockState(var2.above(var4)).getValue(STAGE) != 1;
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+      int heightAbove = this.getHeightAboveUpToMax(level, pos);
+      int heightBelow = this.getHeightBelowUpToMax(level, pos);
+      BlockPos growthPos = pos.above(heightAbove + 1);
+      return heightAbove + heightBelow + 1 < 16 && (Integer)level.getBlockState(pos.above(heightAbove)).getValue(STAGE) != 1 && level.isInsideBuildHeight(growthPos) && level.isEmptyBlock(growthPos);
    }
 
-   public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
       return true;
    }
 
-   public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      int var5 = this.getHeightAboveUpToMax(var1, var3);
-      int var6 = this.getHeightBelowUpToMax(var1, var3);
-      int var7 = var5 + var6 + 1;
-      int var8 = 1 + var2.nextInt(2);
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+      int heightAbove = this.getHeightAboveUpToMax(level, pos);
+      int heightBelow = this.getHeightBelowUpToMax(level, pos);
+      int totalHeight = heightAbove + heightBelow + 1;
+      int newBamboo = 1 + random.nextInt(2);
 
-      for(int var9 = 0; var9 < var8; ++var9) {
-         BlockPos var10 = var3.above(var5);
-         BlockState var11 = var1.getBlockState(var10);
-         if (var7 >= 16 || (Integer)var11.getValue(STAGE) == 1 || !var1.isEmptyBlock(var10.above())) {
+      for(int i = 0; i < newBamboo; ++i) {
+         BlockPos topPos = pos.above(heightAbove);
+         BlockState topState = level.getBlockState(topPos);
+         BlockPos growthPos = topPos.above();
+         if (totalHeight >= 16 || (Integer)topState.getValue(STAGE) == 1 || !level.isEmptyBlock(growthPos) || level.isOutsideBuildHeight(growthPos)) {
             return;
          }
 
-         this.growBamboo(var11, var1, var10, var2, var7);
-         ++var5;
-         ++var7;
+         this.growBamboo(topState, level, topPos, random, totalHeight);
+         ++heightAbove;
+         ++totalHeight;
       }
 
    }
 
-   protected void growBamboo(BlockState var1, Level var2, BlockPos var3, RandomSource var4, int var5) {
-      BlockState var6 = var2.getBlockState(var3.below());
-      BlockPos var7 = var3.below(2);
-      BlockState var8 = var2.getBlockState(var7);
-      BambooLeaves var9 = BambooLeaves.NONE;
-      if (var5 >= 1) {
-         if (var6.is(Blocks.BAMBOO) && var6.getValue(LEAVES) != BambooLeaves.NONE) {
-            if (var6.is(Blocks.BAMBOO) && var6.getValue(LEAVES) != BambooLeaves.NONE) {
-               var9 = BambooLeaves.LARGE;
-               if (var8.is(Blocks.BAMBOO)) {
-                  var2.setBlock(var3.below(), (BlockState)var6.setValue(LEAVES, BambooLeaves.SMALL), 3);
-                  var2.setBlock(var7, (BlockState)var8.setValue(LEAVES, BambooLeaves.NONE), 3);
+   protected void growBamboo(final BlockState state, final Level level, final BlockPos pos, final RandomSource random, final int height) {
+      BlockState belowState = level.getBlockState(pos.below());
+      BlockPos twoBelowPos = pos.below(2);
+      BlockState twoBelowState = level.getBlockState(twoBelowPos);
+      BambooLeaves leaves = BambooLeaves.NONE;
+      if (height >= 1) {
+         if (belowState.is(Blocks.BAMBOO) && belowState.getValue(LEAVES) != BambooLeaves.NONE) {
+            if (belowState.is(Blocks.BAMBOO) && belowState.getValue(LEAVES) != BambooLeaves.NONE) {
+               leaves = BambooLeaves.LARGE;
+               if (twoBelowState.is(Blocks.BAMBOO)) {
+                  level.setBlock(pos.below(), (BlockState)belowState.setValue(LEAVES, BambooLeaves.SMALL), 3);
+                  level.setBlock(twoBelowPos, (BlockState)twoBelowState.setValue(LEAVES, BambooLeaves.NONE), 3);
                }
             }
          } else {
-            var9 = BambooLeaves.SMALL;
+            leaves = BambooLeaves.SMALL;
          }
       }
 
-      int var10 = (Integer)var1.getValue(AGE) != 1 && !var8.is(Blocks.BAMBOO) ? 0 : 1;
-      int var11 = (var5 < 11 || !(var4.nextFloat() < 0.25F)) && var5 != 15 ? 0 : 1;
-      var2.setBlock(var3.above(), (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(AGE, var10)).setValue(LEAVES, var9)).setValue(STAGE, var11), 3);
+      int age = (Integer)state.getValue(AGE) != 1 && !twoBelowState.is(Blocks.BAMBOO) ? 0 : 1;
+      int stage = (height < 11 || !(random.nextFloat() < 0.25F)) && height != 15 ? 0 : 1;
+      level.setBlock(pos.above(), (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(AGE, age)).setValue(LEAVES, leaves)).setValue(STAGE, stage), 3);
    }
 
-   protected int getHeightAboveUpToMax(BlockGetter var1, BlockPos var2) {
-      int var3;
-      for(var3 = 0; var3 < 16 && var1.getBlockState(var2.above(var3 + 1)).is(Blocks.BAMBOO); ++var3) {
+   protected int getHeightAboveUpToMax(final BlockGetter level, final BlockPos pos) {
+      int height;
+      for(height = 0; height < 16 && level.getBlockState(pos.above(height + 1)).is(Blocks.BAMBOO); ++height) {
       }
 
-      return var3;
+      return height;
    }
 
-   protected int getHeightBelowUpToMax(BlockGetter var1, BlockPos var2) {
-      int var3;
-      for(var3 = 0; var3 < 16 && var1.getBlockState(var2.below(var3 + 1)).is(Blocks.BAMBOO); ++var3) {
+   protected int getHeightBelowUpToMax(final BlockGetter level, final BlockPos pos) {
+      int height;
+      for(height = 0; height < 16 && level.getBlockState(pos.below(height + 1)).is(Blocks.BAMBOO); ++height) {
       }
 
-      return var3;
+      return height;
    }
 
    static {

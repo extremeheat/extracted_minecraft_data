@@ -12,65 +12,62 @@ import java.util.Optional;
 import net.minecraft.world.attribute.LerpFunction;
 
 public record KeyframeTrack<T>(List<Keyframe<T>> keyframes, EasingType easingType) {
-   public KeyframeTrack(List<Keyframe<T>> var1, EasingType var2) {
+   public KeyframeTrack {
       super();
-      if (var1.isEmpty()) {
+      if (keyframes.isEmpty()) {
          throw new IllegalArgumentException("Track has no keyframes");
-      } else {
-         this.keyframes = var1;
-         this.easingType = var2;
       }
    }
 
-   public static <T> MapCodec<KeyframeTrack<T>> mapCodec(Codec<T> var0) {
-      Codec var1 = Keyframe.codec(var0).listOf().validate(KeyframeTrack::validateKeyframes);
-      return RecordCodecBuilder.mapCodec((var1x) -> var1x.group(var1.fieldOf("keyframes").forGetter(KeyframeTrack::keyframes), EasingType.CODEC.optionalFieldOf("ease", EasingType.LINEAR).forGetter(KeyframeTrack::easingType)).apply(var1x, KeyframeTrack::new));
+   public static <T> MapCodec<KeyframeTrack<T>> mapCodec(final Codec<T> valueCodec) {
+      Codec<List<Keyframe<T>>> keyframesCodec = Keyframe.codec(valueCodec).listOf().validate(KeyframeTrack::validateKeyframes);
+      return RecordCodecBuilder.mapCodec((i) -> i.group(keyframesCodec.fieldOf("keyframes").forGetter(KeyframeTrack::keyframes), EasingType.CODEC.optionalFieldOf("ease", EasingType.LINEAR).forGetter(KeyframeTrack::easingType)).apply(i, KeyframeTrack::new));
    }
 
-   static <T> DataResult<List<Keyframe<T>>> validateKeyframes(List<Keyframe<T>> var0) {
-      if (var0.isEmpty()) {
+   private static <T> DataResult<List<Keyframe<T>>> validateKeyframes(final List<Keyframe<T>> keyframes) {
+      if (keyframes.isEmpty()) {
          return DataResult.error(() -> "Keyframes must not be empty");
-      } else if (!Comparators.isInOrder(var0, Comparator.comparingInt(Keyframe::ticks))) {
+      } else if (!Comparators.isInOrder(keyframes, Comparator.comparingInt(Keyframe::ticks))) {
          return DataResult.error(() -> "Keyframes must be ordered by ticks field");
       } else {
-         if (var0.size() > 1) {
-            int var1 = 0;
-            int var2 = ((Keyframe)var0.getLast()).ticks();
+         if (keyframes.size() > 1) {
+            int repeatCount = 0;
+            int lastTicks = ((Keyframe)keyframes.getLast()).ticks();
 
-            for(Keyframe var4 : var0) {
-               if (var4.ticks() == var2) {
-                  ++var1;
-                  if (var1 > 2) {
-                     return DataResult.error(() -> "More than 2 keyframes on same tick: " + var4.ticks());
+            for(Keyframe<T> keyframe : keyframes) {
+               if (keyframe.ticks() == lastTicks) {
+                  ++repeatCount;
+                  if (repeatCount > 2) {
+                     return DataResult.error(() -> "More than 2 keyframes on same tick: " + keyframe.ticks());
                   }
                } else {
-                  var1 = 0;
+                  repeatCount = 0;
                }
 
-               var2 = var4.ticks();
+               lastTicks = keyframe.ticks();
             }
          }
 
-         return DataResult.success(var0);
+         return DataResult.success(keyframes);
       }
    }
 
-   public static DataResult<KeyframeTrack<?>> validatePeriod(KeyframeTrack<?> var0, int var1) {
-      for(Keyframe var3 : var0.keyframes()) {
-         int var4 = var3.ticks();
-         if (var4 < 0 || var4 > var1) {
+   public static DataResult<KeyframeTrack<?>> validatePeriod(final KeyframeTrack<?> track, final int periodTicks) {
+      for(Keyframe<?> keyframe : track.keyframes()) {
+         int tick = keyframe.ticks();
+         if (tick < 0 || tick > periodTicks) {
             return DataResult.error(() -> {
-               int var10000 = var3.ticks();
-               return "Keyframe at tick " + var10000 + " must be in range [0; " + var1 + "]";
+               int var10000 = keyframe.ticks();
+               return "Keyframe at tick " + var10000 + " must be in range [0; " + periodTicks + "]";
             });
          }
       }
 
-      return DataResult.success(var0);
+      return DataResult.success(track);
    }
 
-   public KeyframeTrackSampler<T> bakeSampler(Optional<Integer> var1, LerpFunction<T> var2) {
-      return new KeyframeTrackSampler<T>(this, var1, var2);
+   public KeyframeTrackSampler<T> bakeSampler(final Optional<Integer> periodTicks, final LerpFunction<T> lerp) {
+      return new KeyframeTrackSampler<T>(this, periodTicks, lerp);
    }
 
    public static class Builder<T> {
@@ -82,19 +79,19 @@ public record KeyframeTrack<T>(List<Keyframe<T>> keyframes, EasingType easingTyp
          this.easing = EasingType.LINEAR;
       }
 
-      public Builder<T> addKeyframe(int var1, T var2) {
-         this.keyframes.add(new Keyframe(var1, var2));
+      public Builder<T> addKeyframe(final int ticks, final T value) {
+         this.keyframes.add(new Keyframe(ticks, value));
          return this;
       }
 
-      public Builder<T> setEasing(EasingType var1) {
-         this.easing = var1;
+      public Builder<T> setEasing(final EasingType easing) {
+         this.easing = easing;
          return this;
       }
 
       public KeyframeTrack<T> build() {
-         List var1 = (List)KeyframeTrack.validateKeyframes(this.keyframes.build()).getOrThrow();
-         return new KeyframeTrack<T>(var1, this.easing);
+         List<Keyframe<T>> keyframes = (List)KeyframeTrack.validateKeyframes(this.keyframes.build()).getOrThrow();
+         return new KeyframeTrack<T>(keyframes, this.easing);
       }
    }
 }

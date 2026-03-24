@@ -14,36 +14,36 @@ public class Slot {
    public final int x;
    public final int y;
 
-   public Slot(Container var1, int var2, int var3, int var4) {
+   public Slot(final Container container, final int slot, final int x, final int y) {
       super();
-      this.container = var1;
-      this.slot = var2;
-      this.x = var3;
-      this.y = var4;
+      this.container = container;
+      this.slot = slot;
+      this.x = x;
+      this.y = y;
    }
 
-   public void onQuickCraft(ItemStack var1, ItemStack var2) {
-      int var3 = var2.getCount() - var1.getCount();
-      if (var3 > 0) {
-         this.onQuickCraft(var2, var3);
+   public void onQuickCraft(final ItemStack picked, final ItemStack original) {
+      int count = original.getCount() - picked.getCount();
+      if (count > 0) {
+         this.onQuickCraft(original, count);
       }
 
    }
 
-   protected void onQuickCraft(ItemStack var1, int var2) {
+   protected void onQuickCraft(final ItemStack picked, final int count) {
    }
 
-   protected void onSwapCraft(int var1) {
+   protected void onSwapCraft(final int count) {
    }
 
-   protected void checkTakeAchievements(ItemStack var1) {
+   protected void checkTakeAchievements(final ItemStack carried) {
    }
 
-   public void onTake(Player var1, ItemStack var2) {
+   public void onTake(final Player player, final ItemStack carried) {
       this.setChanged();
    }
 
-   public boolean mayPlace(ItemStack var1) {
+   public boolean mayPlace(final ItemStack itemStack) {
       return true;
    }
 
@@ -55,16 +55,16 @@ public class Slot {
       return !this.getItem().isEmpty();
    }
 
-   public void setByPlayer(ItemStack var1) {
-      this.setByPlayer(var1, this.getItem());
+   public void setByPlayer(final ItemStack itemStack) {
+      this.setByPlayer(itemStack, this.getItem());
    }
 
-   public void setByPlayer(ItemStack var1, ItemStack var2) {
-      this.set(var1);
+   public void setByPlayer(final ItemStack itemStack, final ItemStack previous) {
+      this.set(itemStack);
    }
 
-   public void set(ItemStack var1) {
-      this.container.setItem(this.slot, var1);
+   public void set(final ItemStack itemStack) {
+      this.container.setItem(this.slot, itemStack);
       this.setChanged();
    }
 
@@ -76,19 +76,19 @@ public class Slot {
       return this.container.getMaxStackSize();
    }
 
-   public int getMaxStackSize(ItemStack var1) {
-      return Math.min(this.getMaxStackSize(), var1.getMaxStackSize());
+   public int getMaxStackSize(final ItemStack itemStack) {
+      return Math.min(this.getMaxStackSize(), itemStack.getMaxStackSize());
    }
 
    public @Nullable Identifier getNoItemIcon() {
       return null;
    }
 
-   public ItemStack remove(int var1) {
-      return this.container.removeItem(this.slot, var1);
+   public ItemStack remove(final int amount) {
+      return this.container.removeItem(this.slot, amount);
    }
 
-   public boolean mayPickup(Player var1) {
+   public boolean mayPickup(final Player player) {
       return true;
    }
 
@@ -96,60 +96,60 @@ public class Slot {
       return true;
    }
 
-   public Optional<ItemStack> tryRemove(int var1, int var2, Player var3) {
-      if (!this.mayPickup(var3)) {
+   public Optional<ItemStack> tryRemove(int amount, final int maxAmount, final Player player) {
+      if (!this.mayPickup(player)) {
          return Optional.empty();
-      } else if (!this.allowModification(var3) && var2 < this.getItem().getCount()) {
+      } else if (!this.allowModification(player) && maxAmount < this.getItem().getCount()) {
          return Optional.empty();
       } else {
-         var1 = Math.min(var1, var2);
-         ItemStack var4 = this.remove(var1);
-         if (var4.isEmpty()) {
+         amount = Math.min(amount, maxAmount);
+         ItemStack result = this.remove(amount);
+         if (result.isEmpty()) {
             return Optional.empty();
          } else {
             if (this.getItem().isEmpty()) {
-               this.setByPlayer(ItemStack.EMPTY, var4);
+               this.setByPlayer(ItemStack.EMPTY, result);
             }
 
-            return Optional.of(var4);
+            return Optional.of(result);
          }
       }
    }
 
-   public ItemStack safeTake(int var1, int var2, Player var3) {
-      Optional var4 = this.tryRemove(var1, var2, var3);
-      var4.ifPresent((var2x) -> this.onTake(var3, var2x));
-      return (ItemStack)var4.orElse(ItemStack.EMPTY);
+   public ItemStack safeTake(final int amount, final int maxAmount, final Player player) {
+      Optional<ItemStack> result = this.tryRemove(amount, maxAmount, player);
+      result.ifPresent((item) -> this.onTake(player, item));
+      return (ItemStack)result.orElse(ItemStack.EMPTY);
    }
 
-   public ItemStack safeInsert(ItemStack var1) {
-      return this.safeInsert(var1, var1.getCount());
+   public ItemStack safeInsert(final ItemStack stack) {
+      return this.safeInsert(stack, stack.getCount());
    }
 
-   public ItemStack safeInsert(ItemStack var1, int var2) {
-      if (!var1.isEmpty() && this.mayPlace(var1)) {
-         ItemStack var3 = this.getItem();
-         int var4 = Math.min(Math.min(var2, var1.getCount()), this.getMaxStackSize(var1) - var3.getCount());
-         if (var4 <= 0) {
-            return var1;
+   public ItemStack safeInsert(final ItemStack inputStack, final int inputAmount) {
+      if (!inputStack.isEmpty() && this.mayPlace(inputStack)) {
+         ItemStack slotStack = this.getItem();
+         int transferableItemCount = Math.min(Math.min(inputAmount, inputStack.getCount()), this.getMaxStackSize(inputStack) - slotStack.getCount());
+         if (transferableItemCount <= 0) {
+            return inputStack;
          } else {
-            if (var3.isEmpty()) {
-               this.setByPlayer(var1.split(var4));
-            } else if (ItemStack.isSameItemSameComponents(var3, var1)) {
-               var1.shrink(var4);
-               var3.grow(var4);
-               this.setByPlayer(var3);
+            if (slotStack.isEmpty()) {
+               this.setByPlayer(inputStack.split(transferableItemCount));
+            } else if (ItemStack.isSameItemSameComponents(slotStack, inputStack)) {
+               inputStack.shrink(transferableItemCount);
+               slotStack.grow(transferableItemCount);
+               this.setByPlayer(slotStack);
             }
 
-            return var1;
+            return inputStack;
          }
       } else {
-         return var1;
+         return inputStack;
       }
    }
 
-   public boolean allowModification(Player var1) {
-      return this.mayPickup(var1) && this.mayPlace(this.getItem());
+   public boolean allowModification(final Player player) {
+      return this.mayPickup(player) && this.mayPlace(this.getItem());
    }
 
    public int getContainerSlot() {

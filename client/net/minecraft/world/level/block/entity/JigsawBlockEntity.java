@@ -10,7 +10,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.Pools;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
@@ -45,8 +44,8 @@ public class JigsawBlockEntity extends BlockEntity {
    private int placementPriority;
    private int selectionPriority;
 
-   public JigsawBlockEntity(BlockPos var1, BlockState var2) {
-      super(BlockEntityType.JIGSAW, var1, var2);
+   public JigsawBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      super(BlockEntityType.JIGSAW, worldPosition, blockState);
       this.name = EMPTY_ID;
       this.target = EMPTY_ID;
       this.pool = Pools.EMPTY;
@@ -84,74 +83,69 @@ public class JigsawBlockEntity extends BlockEntity {
       return this.selectionPriority;
    }
 
-   public void setName(Identifier var1) {
-      this.name = var1;
+   public void setName(final Identifier name) {
+      this.name = name;
    }
 
-   public void setTarget(Identifier var1) {
-      this.target = var1;
+   public void setTarget(final Identifier target) {
+      this.target = target;
    }
 
-   public void setPool(ResourceKey<StructureTemplatePool> var1) {
-      this.pool = var1;
+   public void setPool(final ResourceKey<StructureTemplatePool> pool) {
+      this.pool = pool;
    }
 
-   public void setFinalState(String var1) {
-      this.finalState = var1;
+   public void setFinalState(final String finalState) {
+      this.finalState = finalState;
    }
 
-   public void setJoint(JointType var1) {
-      this.joint = var1;
+   public void setJoint(final JointType joint) {
+      this.joint = joint;
    }
 
-   public void setPlacementPriority(int var1) {
-      this.placementPriority = var1;
+   public void setPlacementPriority(final int placementPriority) {
+      this.placementPriority = placementPriority;
    }
 
-   public void setSelectionPriority(int var1) {
-      this.selectionPriority = var1;
+   public void setSelectionPriority(final int selectionPriority) {
+      this.selectionPriority = selectionPriority;
    }
 
-   protected void saveAdditional(ValueOutput var1) {
-      super.saveAdditional(var1);
-      var1.store("name", Identifier.CODEC, this.name);
-      var1.store("target", Identifier.CODEC, this.target);
-      var1.store("pool", POOL_CODEC, this.pool);
-      var1.putString("final_state", this.finalState);
-      var1.store("joint", JigsawBlockEntity.JointType.CODEC, this.joint);
-      var1.putInt("placement_priority", this.placementPriority);
-      var1.putInt("selection_priority", this.selectionPriority);
+   protected void saveAdditional(final ValueOutput output) {
+      super.saveAdditional(output);
+      output.store("name", Identifier.CODEC, this.name);
+      output.store("target", Identifier.CODEC, this.target);
+      output.store("pool", POOL_CODEC, this.pool);
+      output.putString("final_state", this.finalState);
+      output.store("joint", JigsawBlockEntity.JointType.CODEC, this.joint);
+      output.putInt("placement_priority", this.placementPriority);
+      output.putInt("selection_priority", this.selectionPriority);
    }
 
-   protected void loadAdditional(ValueInput var1) {
-      super.loadAdditional(var1);
-      this.name = (Identifier)var1.read("name", Identifier.CODEC).orElse(EMPTY_ID);
-      this.target = (Identifier)var1.read("target", Identifier.CODEC).orElse(EMPTY_ID);
-      this.pool = (ResourceKey)var1.read("pool", POOL_CODEC).orElse(Pools.EMPTY);
-      this.finalState = var1.getStringOr("final_state", "minecraft:air");
-      this.joint = (JointType)var1.read("joint", JigsawBlockEntity.JointType.CODEC).orElseGet(() -> StructureTemplate.getDefaultJointType(this.getBlockState()));
-      this.placementPriority = var1.getIntOr("placement_priority", 0);
-      this.selectionPriority = var1.getIntOr("selection_priority", 0);
+   protected void loadAdditional(final ValueInput input) {
+      super.loadAdditional(input);
+      this.name = (Identifier)input.read("name", Identifier.CODEC).orElse(EMPTY_ID);
+      this.target = (Identifier)input.read("target", Identifier.CODEC).orElse(EMPTY_ID);
+      this.pool = (ResourceKey)input.read("pool", POOL_CODEC).orElse(Pools.EMPTY);
+      this.finalState = input.getStringOr("final_state", "minecraft:air");
+      this.joint = (JointType)input.read("joint", JigsawBlockEntity.JointType.CODEC).orElseGet(() -> StructureTemplate.getDefaultJointType(this.getBlockState()));
+      this.placementPriority = input.getIntOr("placement_priority", 0);
+      this.selectionPriority = input.getIntOr("selection_priority", 0);
    }
 
    public ClientboundBlockEntityDataPacket getUpdatePacket() {
       return ClientboundBlockEntityDataPacket.create(this);
    }
 
-   public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
-      return this.saveCustomOnly(var1);
+   public CompoundTag getUpdateTag(final HolderLookup.Provider registries) {
+      return this.saveCustomOnly(registries);
    }
 
-   public void generate(ServerLevel var1, int var2, boolean var3) {
-      BlockPos var4 = this.getBlockPos().relative(((FrontAndTop)this.getBlockState().getValue(JigsawBlock.ORIENTATION)).front());
-      Registry var5 = var1.registryAccess().lookupOrThrow(Registries.TEMPLATE_POOL);
-      Holder.Reference var6 = var5.getOrThrow(this.pool);
-      JigsawPlacement.generateJigsaw(var1, var6, this.target, var2, var4, var3);
-   }
-
-   // $FF: synthetic method
-   public Packet getUpdatePacket() {
-      return this.getUpdatePacket();
+   public void generate(final ServerLevel level, final int levels, final boolean keepJigsaws) {
+      BlockPos position = this.getBlockPos().relative(((FrontAndTop)this.getBlockState().getValue(JigsawBlock.ORIENTATION)).front());
+      Registry<StructureTemplatePool> poolRegistry = level.registryAccess().lookupOrThrow(Registries.TEMPLATE_POOL);
+      Holder<StructureTemplatePool> pool = poolRegistry.getOrThrow(this.pool);
+      JigsawPlacement.generateJigsaw(level, pool, this.target, levels, position, keepJigsaws);
    }
 
    static {
@@ -166,8 +160,8 @@ public class JigsawBlockEntity extends BlockEntity {
       public static final StringRepresentable.EnumCodec<JointType> CODEC = StringRepresentable.<JointType>fromEnum(JointType::values);
       private final String name;
 
-      private JointType(final String var3) {
-         this.name = var3;
+      private JointType(final String name) {
+         this.name = name;
       }
 
       public String getSerializedName() {

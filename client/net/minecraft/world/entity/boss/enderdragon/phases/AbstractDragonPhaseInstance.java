@@ -12,9 +12,9 @@ import org.jspecify.annotations.Nullable;
 public abstract class AbstractDragonPhaseInstance implements DragonPhaseInstance {
    protected final EnderDragon dragon;
 
-   public AbstractDragonPhaseInstance(EnderDragon var1) {
+   public AbstractDragonPhaseInstance(final EnderDragon dragon) {
       super();
-      this.dragon = var1;
+      this.dragon = dragon;
    }
 
    public boolean isSitting() {
@@ -24,10 +24,10 @@ public abstract class AbstractDragonPhaseInstance implements DragonPhaseInstance
    public void doClientTick() {
    }
 
-   public void doServerTick(ServerLevel var1) {
+   public void doServerTick(final ServerLevel level) {
    }
 
-   public void onCrystalDestroyed(EndCrystal var1, BlockPos var2, DamageSource var3, @Nullable Player var4) {
+   public void onCrystalDestroyed(final EndCrystal crystal, final BlockPos pos, final DamageSource source, final @Nullable Player player) {
    }
 
    public void begin() {
@@ -44,13 +44,13 @@ public abstract class AbstractDragonPhaseInstance implements DragonPhaseInstance
       return null;
    }
 
-   public float onHurt(DamageSource var1, float var2) {
-      return var2;
+   public float onHurt(final DamageSource source, final float damage) {
+      return damage;
    }
 
    public float getTurnSpeed() {
-      float var1 = (float)this.dragon.getDeltaMovement().horizontalDistance() + 1.0F;
-      float var2 = Math.min(var1, 40.0F);
-      return 0.7F / var2 / var1;
+      float rotSpeed = (float)this.dragon.getDeltaMovement().horizontalDistance() + 1.0F;
+      float dist = Math.min(rotSpeed, 40.0F);
+      return 0.7F / dist / rotSpeed;
    }
 }

@@ -12,17 +12,16 @@ import net.minecraft.world.item.component.CustomModelData;
 import org.jspecify.annotations.Nullable;
 
 public record CustomModelDataProperty(int index) implements ConditionalItemModelProperty {
-   public static final MapCodec<CustomModelDataProperty> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("index", 0).forGetter(CustomModelDataProperty::index)).apply(var0, CustomModelDataProperty::new));
+   public static final MapCodec<CustomModelDataProperty> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("index", 0).forGetter(CustomModelDataProperty::index)).apply(i, CustomModelDataProperty::new));
 
-   public CustomModelDataProperty(int var1) {
+   public CustomModelDataProperty {
       super();
-      this.index = var1;
    }
 
-   public boolean get(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3, int var4, ItemDisplayContext var5) {
-      CustomModelData var6 = (CustomModelData)var1.get(DataComponents.CUSTOM_MODEL_DATA);
-      if (var6 != null) {
-         return var6.getBoolean(this.index) == Boolean.TRUE;
+   public boolean get(final ItemStack itemStack, final @Nullable ClientLevel level, final @Nullable LivingEntity owner, final int seed, final ItemDisplayContext displayContext) {
+      CustomModelData customModelData = (CustomModelData)itemStack.get(DataComponents.CUSTOM_MODEL_DATA);
+      if (customModelData != null) {
+         return customModelData.getBoolean(this.index) == Boolean.TRUE;
       } else {
          return false;
       }

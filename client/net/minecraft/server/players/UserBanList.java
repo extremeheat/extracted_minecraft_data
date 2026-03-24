@@ -6,30 +6,30 @@ import java.util.Objects;
 import net.minecraft.server.notifications.NotificationService;
 
 public class UserBanList extends StoredUserList<NameAndId, UserBanListEntry> {
-   public UserBanList(File var1, NotificationService var2) {
-      super(var1, var2);
+   public UserBanList(final File file, final NotificationService notificationService) {
+      super(file, notificationService);
    }
 
-   protected StoredUserEntry<NameAndId> createEntry(JsonObject var1) {
-      return new UserBanListEntry(var1);
+   protected StoredUserEntry<NameAndId> createEntry(final JsonObject object) {
+      return new UserBanListEntry(object);
    }
 
-   public boolean isBanned(NameAndId var1) {
-      return this.contains(var1);
+   public boolean isBanned(final NameAndId user) {
+      return this.contains(user);
    }
 
    public String[] getUserList() {
-      return (String[])this.getEntries().stream().map(StoredUserEntry::getUser).filter(Objects::nonNull).map(NameAndId::name).toArray((var0) -> new String[var0]);
+      return (String[])this.getEntries().stream().map(StoredUserEntry::getUser).filter(Objects::nonNull).map(NameAndId::name).toArray((x$0) -> new String[x$0]);
    }
 
-   protected String getKeyForUser(NameAndId var1) {
-      return var1.id().toString();
+   protected String getKeyForUser(final NameAndId user) {
+      return user.id().toString();
    }
 
-   public boolean add(UserBanListEntry var1) {
-      if (super.add(var1)) {
-         if (var1.getUser() != null) {
-            this.notificationService.playerBanned(var1);
+   public boolean add(final UserBanListEntry infos) {
+      if (super.add(infos)) {
+         if (infos.getUser() != null) {
+            this.notificationService.playerBanned(infos);
          }
 
          return true;
@@ -38,9 +38,9 @@ public class UserBanList extends StoredUserList<NameAndId, UserBanListEntry> {
       }
    }
 
-   public boolean remove(NameAndId var1) {
-      if (super.remove(var1)) {
-         this.notificationService.playerUnbanned(var1);
+   public boolean remove(final NameAndId user) {
+      if (super.remove(user)) {
+         this.notificationService.playerUnbanned(user);
          return true;
       } else {
          return false;
@@ -48,17 +48,12 @@ public class UserBanList extends StoredUserList<NameAndId, UserBanListEntry> {
    }
 
    public void clear() {
-      for(UserBanListEntry var2 : this.getEntries()) {
-         if (var2.getUser() != null) {
-            this.notificationService.playerUnbanned((NameAndId)var2.getUser());
+      for(UserBanListEntry user : this.getEntries()) {
+         if (user.getUser() != null) {
+            this.notificationService.playerUnbanned((NameAndId)user.getUser());
          }
       }
 
       super.clear();
-   }
-
-   // $FF: synthetic method
-   public boolean remove(final Object var1) {
-      return this.remove((NameAndId)var1);
    }
 }

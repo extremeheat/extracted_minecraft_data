@@ -12,36 +12,35 @@ import net.minecraft.util.SignatureUpdater;
 
 public record LastSeenMessages(List<MessageSignature> entries) {
    public static final Codec<LastSeenMessages> CODEC;
-   public static LastSeenMessages EMPTY;
+   public static final LastSeenMessages EMPTY;
    public static final int LAST_SEEN_MESSAGES_MAX_LENGTH = 20;
 
-   public LastSeenMessages(List<MessageSignature> var1) {
+   public LastSeenMessages {
       super();
-      this.entries = var1;
    }
 
-   public void updateSignature(SignatureUpdater.Output var1) throws SignatureException {
-      var1.update(Ints.toByteArray(this.entries.size()));
+   public void updateSignature(final SignatureUpdater.Output output) throws SignatureException {
+      output.update(Ints.toByteArray(this.entries.size()));
 
-      for(MessageSignature var3 : this.entries) {
-         var1.update(var3.bytes());
+      for(MessageSignature entry : this.entries) {
+         output.update(entry.bytes());
       }
 
    }
 
-   public Packed pack(MessageSignatureCache var1) {
-      return new Packed(this.entries.stream().map((var1x) -> var1x.pack(var1)).toList());
+   public Packed pack(final MessageSignatureCache cache) {
+      return new Packed(this.entries.stream().map((entry) -> entry.pack(cache)).toList());
    }
 
    public byte computeChecksum() {
-      int var1 = 1;
+      int checksum = 1;
 
-      for(MessageSignature var3 : this.entries) {
-         var1 = 31 * var1 + var3.checksum();
+      for(MessageSignature entry : this.entries) {
+         checksum = 31 * checksum + entry.checksum();
       }
 
-      byte var4 = (byte)var1;
-      return var4 == 0 ? 1 : var4;
+      byte checksumByte = (byte)checksum;
+      return checksumByte == 0 ? 1 : checksumByte;
    }
 
    static {
@@ -52,57 +51,53 @@ public record LastSeenMessages(List<MessageSignature> entries) {
    public static record Packed(List<MessageSignature.Packed> entries) {
       public static final Packed EMPTY = new Packed(List.of());
 
-      public Packed(FriendlyByteBuf var1) {
-         this((List)var1.readCollection(FriendlyByteBuf.limitValue(ArrayList::new, 20), MessageSignature.Packed::read));
+      public Packed(final FriendlyByteBuf input) {
+         this((List)input.readCollection(FriendlyByteBuf.limitValue(ArrayList::new, 20), MessageSignature.Packed::read));
       }
 
-      public Packed(List<MessageSignature.Packed> var1) {
+      public Packed {
          super();
-         this.entries = var1;
       }
 
-      public void write(FriendlyByteBuf var1) {
-         var1.writeCollection(this.entries, MessageSignature.Packed::write);
+      public void write(final FriendlyByteBuf output) {
+         output.writeCollection(this.entries, MessageSignature.Packed::write);
       }
 
-      public Optional<LastSeenMessages> unpack(MessageSignatureCache var1) {
-         ArrayList var2 = new ArrayList(this.entries.size());
+      public Optional<LastSeenMessages> unpack(final MessageSignatureCache cache) {
+         List<MessageSignature> unpacked = new ArrayList(this.entries.size());
 
-         for(MessageSignature.Packed var4 : this.entries) {
-            Optional var5 = var4.unpack(var1);
-            if (var5.isEmpty()) {
+         for(MessageSignature.Packed packed : this.entries) {
+            Optional<MessageSignature> entry = packed.unpack(cache);
+            if (entry.isEmpty()) {
                return Optional.empty();
             }
 
-            var2.add((MessageSignature)var5.get());
+            unpacked.add((MessageSignature)entry.get());
          }
 
-         return Optional.of(new LastSeenMessages(var2));
+         return Optional.of(new LastSeenMessages(unpacked));
       }
    }
 
    public static record Update(int offset, BitSet acknowledged, byte checksum) {
       public static final byte IGNORE_CHECKSUM = 0;
 
-      public Update(FriendlyByteBuf var1) {
-         this(var1.readVarInt(), var1.readFixedBitSet(20), var1.readByte());
+      public Update(final FriendlyByteBuf input) {
+         this(input.readVarInt(), input.readFixedBitSet(20), input.readByte());
       }
 
-      public Update(int var1, BitSet var2, byte var3) {
+      public Update {
          super();
-         this.offset = var1;
-         this.acknowledged = var2;
-         this.checksum = var3;
       }
 
-      public void write(FriendlyByteBuf var1) {
-         var1.writeVarInt(this.offset);
-         var1.writeFixedBitSet(this.acknowledged, 20);
-         var1.writeByte(this.checksum);
+      public void write(final FriendlyByteBuf output) {
+         output.writeVarInt(this.offset);
+         output.writeFixedBitSet(this.acknowledged, 20);
+         output.writeByte(this.checksum);
       }
 
-      public boolean verifyChecksum(LastSeenMessages var1) {
-         return this.checksum == 0 || this.checksum == var1.computeChecksum();
+      public boolean verifyChecksum(final LastSeenMessages lastSeen) {
+         return this.checksum == 0 || this.checksum == lastSeen.computeChecksum();
       }
    }
 }

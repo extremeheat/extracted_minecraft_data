@@ -5,20 +5,20 @@ import org.joml.Vector3f;
 
 @FunctionalInterface
 public interface Axis {
-   Axis XN = (var0) -> (new Quaternionf()).rotationX(-var0);
-   Axis XP = (var0) -> (new Quaternionf()).rotationX(var0);
-   Axis YN = (var0) -> (new Quaternionf()).rotationY(-var0);
-   Axis YP = (var0) -> (new Quaternionf()).rotationY(var0);
-   Axis ZN = (var0) -> (new Quaternionf()).rotationZ(-var0);
-   Axis ZP = (var0) -> (new Quaternionf()).rotationZ(var0);
+   Axis XN = (angle) -> (new Quaternionf()).rotationX(-angle);
+   Axis XP = (angle) -> (new Quaternionf()).rotationX(angle);
+   Axis YN = (angle) -> (new Quaternionf()).rotationY(-angle);
+   Axis YP = (angle) -> (new Quaternionf()).rotationY(angle);
+   Axis ZN = (angle) -> (new Quaternionf()).rotationZ(-angle);
+   Axis ZP = (angle) -> (new Quaternionf()).rotationZ(angle);
 
-   static Axis of(Vector3f var0) {
-      return (var1) -> (new Quaternionf()).rotationAxis(var1, var0);
+   static Axis of(final Vector3f vector) {
+      return (angle) -> (new Quaternionf()).rotationAxis(angle, vector);
    }
 
-   Quaternionf rotation(float var1);
+   Quaternionf rotation(float angle);
 
-   default Quaternionf rotationDegrees(float var1) {
-      return this.rotation(var1 * 0.017453292F);
+   default Quaternionf rotationDegrees(final float angle) {
+      return this.rotation(angle * 0.017453292F);
    }
 }

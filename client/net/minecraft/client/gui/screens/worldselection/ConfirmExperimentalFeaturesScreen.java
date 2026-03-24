@@ -5,9 +5,8 @@ import java.util.Collection;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ActiveTextCollector;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.TextAlignment;
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
@@ -21,7 +20,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.world.flag.FeatureFlags;
@@ -33,13 +31,13 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
    private static final int COLUMN_SPACING = 10;
    private static final int DETAILS_BUTTON_WIDTH = 100;
    private final BooleanConsumer callback;
-   final Collection<Pack> enabledPacks;
+   private final Collection<Pack> enabledPacks;
    private final GridLayout layout = (new GridLayout()).columnSpacing(10).rowSpacing(20);
 
-   public ConfirmExperimentalFeaturesScreen(Collection<Pack> var1, BooleanConsumer var2) {
+   public ConfirmExperimentalFeaturesScreen(final Collection<Pack> enabledPacks, final BooleanConsumer callback) {
       super(TITLE);
-      this.enabledPacks = var1;
-      this.callback = var2;
+      this.enabledPacks = enabledPacks;
+      this.callback = callback;
    }
 
    public Component getNarrationMessage() {
@@ -48,17 +46,15 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
 
    protected void init() {
       super.init();
-      GridLayout.RowHelper var1 = this.layout.createRowHelper(2);
-      LayoutSettings var2 = var1.newCellSettings().alignHorizontallyCenter();
-      var1.addChild(new StringWidget(this.title, this.font), 2, var2);
-      MultiLineTextWidget var3 = (MultiLineTextWidget)var1.addChild((new MultiLineTextWidget(MESSAGE, this.font)).setCentered(true), 2, var2);
-      var3.setMaxWidth(310);
-      var1.addChild(Button.builder(DETAILS_BUTTON, (var1x) -> this.minecraft.setScreen(new DetailsScreen())).width(100).build(), 2, var2);
-      var1.addChild(Button.builder(CommonComponents.GUI_PROCEED, (var1x) -> this.callback.accept(true)).build());
-      var1.addChild(Button.builder(CommonComponents.GUI_BACK, (var1x) -> this.callback.accept(false)).build());
-      this.layout.visitWidgets((var1x) -> {
-         AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
-      });
+      GridLayout.RowHelper helper = this.layout.createRowHelper(2);
+      LayoutSettings centered = helper.newCellSettings().alignHorizontallyCenter();
+      helper.addChild(new StringWidget(this.title, this.font), 2, centered);
+      MultiLineTextWidget messageLabel = (MultiLineTextWidget)helper.addChild((new MultiLineTextWidget(MESSAGE, this.font)).setCentered(true), 2, centered);
+      messageLabel.setMaxWidth(310);
+      helper.addChild(Button.builder(DETAILS_BUTTON, (button) -> this.minecraft.setScreen(new DetailsScreen())).width(100).build(), 2, centered);
+      helper.addChild(Button.builder(CommonComponents.GUI_PROCEED, (button) -> this.callback.accept(true)).build());
+      helper.addChild(Button.builder(CommonComponents.GUI_BACK, (button) -> this.callback.accept(false)).build());
+      this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
       this.layout.arrangeElements();
       this.repositionElements();
    }
@@ -71,22 +67,22 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
       this.callback.accept(false);
    }
 
-   class DetailsScreen extends Screen {
+   private class DetailsScreen extends Screen {
       private static final Component TITLE = Component.translatable("selectWorld.experimental.details.title");
-      final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
+      private final HeaderAndFooterLayout layout;
       private PackList list;
 
-      DetailsScreen() {
+      private DetailsScreen() {
+         Objects.requireNonNull(ConfirmExperimentalFeaturesScreen.this);
          super(TITLE);
+         this.layout = new HeaderAndFooterLayout(this);
       }
 
       protected void init() {
          this.layout.addTitleHeader(TITLE, this.font);
          this.list = (PackList)this.layout.addToContents(new PackList(this.minecraft, ConfirmExperimentalFeaturesScreen.this.enabledPacks));
-         this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, (var1) -> this.onClose()).build());
-         this.layout.visitWidgets((var1) -> {
-            AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1);
-         });
+         this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, (button) -> this.onClose()).build());
+         this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
          this.repositionElements();
       }
 
@@ -102,20 +98,21 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
          this.minecraft.setScreen(ConfirmExperimentalFeaturesScreen.this);
       }
 
-      class PackList extends ObjectSelectionList<PackListEntry> {
-         public PackList(final Minecraft var2, final Collection<Pack> var3) {
+      private class PackList extends ObjectSelectionList<PackListEntry> {
+         public PackList(final Minecraft minecraft, final Collection<Pack> selectedPacks) {
+            Objects.requireNonNull(DetailsScreen.this);
             int var10002 = DetailsScreen.this.width;
             int var10003 = DetailsScreen.this.layout.getContentHeight();
             int var10004 = DetailsScreen.this.layout.getHeaderHeight();
-            Objects.requireNonNull(var2.font);
-            super(var2, var10002, var10003, var10004, (9 + 2) * 3);
+            Objects.requireNonNull(minecraft.font);
+            super(minecraft, var10002, var10003, var10004, (9 + 2) * 3);
 
-            for(Pack var5 : var3) {
-               String var6 = FeatureFlags.printMissingFlags(FeatureFlags.VANILLA_SET, var5.getRequestedFeatures());
-               if (!var6.isEmpty()) {
-                  Component var7 = ComponentUtils.mergeStyles(var5.getTitle(), Style.EMPTY.withBold(true));
-                  MutableComponent var8 = Component.translatable("selectWorld.experimental.details.entry", var6);
-                  this.addEntry(DetailsScreen.this.new PackListEntry(var7, var8, MultiLineLabel.create(DetailsScreen.this.font, var8, this.getRowWidth())));
+            for(Pack pack : selectedPacks) {
+               String nonVanillaFeatures = FeatureFlags.printMissingFlags(FeatureFlags.VANILLA_SET, pack.getRequestedFeatures());
+               if (!nonVanillaFeatures.isEmpty()) {
+                  Component title = ComponentUtils.mergeStyles(pack.getTitle(), Style.EMPTY.withBold(true));
+                  Component message = Component.translatable("selectWorld.experimental.details.entry", nonVanillaFeatures);
+                  this.addEntry(DetailsScreen.this.new PackListEntry(title, message, MultiLineLabel.create(DetailsScreen.this.font, message, this.getRowWidth())));
                }
             }
 
@@ -126,27 +123,28 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
          }
       }
 
-      class PackListEntry extends ObjectSelectionList.Entry<PackListEntry> {
+      private class PackListEntry extends ObjectSelectionList.Entry<PackListEntry> {
          private final Component packId;
          private final Component message;
          private final MultiLineLabel splitMessage;
 
-         PackListEntry(final Component var2, final Component var3, final MultiLineLabel var4) {
+         private PackListEntry(final Component packId, final Component message, final MultiLineLabel splitMessage) {
+            Objects.requireNonNull(DetailsScreen.this);
             super();
-            this.packId = var2;
-            this.message = var3;
-            this.splitMessage = var4;
+            this.packId = packId;
+            this.message = message;
+            this.splitMessage = splitMessage;
          }
 
-         public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
-            ActiveTextCollector var6 = var1.textRenderer();
-            var1.drawString(DetailsScreen.this.minecraft.font, (Component)this.packId, this.getContentX(), this.getContentY(), -1);
+         public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+            ActiveTextCollector textRenderer = graphics.textRenderer();
+            graphics.text(DetailsScreen.this.minecraft.font, (Component)this.packId, this.getContentX(), this.getContentY(), -1);
             MultiLineLabel var10000 = this.splitMessage;
             TextAlignment var10001 = TextAlignment.LEFT;
             int var10002 = this.getContentX();
             int var10003 = this.getContentY() + 12;
             Objects.requireNonNull(DetailsScreen.this.font);
-            var10000.visitLines(var10001, var10002, var10003, 9, var6);
+            var10000.visitLines(var10001, var10002, var10003, 9, textRenderer);
          }
 
          public Component getNarration() {

@@ -15,15 +15,15 @@ public interface PackResources extends AutoCloseable {
    String METADATA_EXTENSION = ".mcmeta";
    String PACK_META = "pack.mcmeta";
 
-   @Nullable IoSupplier<InputStream> getRootResource(String... var1);
+   @Nullable IoSupplier<InputStream> getRootResource(String... path);
 
-   @Nullable IoSupplier<InputStream> getResource(PackType var1, Identifier var2);
+   @Nullable IoSupplier<InputStream> getResource(PackType type, Identifier location);
 
-   void listResources(PackType var1, String var2, String var3, ResourceOutput var4);
+   void listResources(PackType type, String namespace, String directory, ResourceOutput output);
 
-   Set<String> getNamespaces(PackType var1);
+   Set<String> getNamespaces(PackType type);
 
-   <T> @Nullable T getMetadataSection(MetadataSectionType<T> var1) throws IOException;
+   <T> @Nullable T getMetadataSection(MetadataSectionType<T> metadataSerializer) throws IOException;
 
    PackLocationInfo location();
 

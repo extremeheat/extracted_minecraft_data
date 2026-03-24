@@ -9,25 +9,16 @@ import org.slf4j.Logger;
 public record WorldTemplate(String id, String name, String version, String author, String link, @Nullable String image, String trailer, String recommendedPlayers, WorldTemplateType type) {
    private static final Logger LOGGER = LogUtils.getLogger();
 
-   public WorldTemplate(String var1, String var2, String var3, String var4, String var5, @Nullable String var6, String var7, String var8, WorldTemplateType var9) {
+   public WorldTemplate {
       super();
-      this.id = var1;
-      this.name = var2;
-      this.version = var3;
-      this.author = var4;
-      this.link = var5;
-      this.image = var6;
-      this.trailer = var7;
-      this.recommendedPlayers = var8;
-      this.type = var9;
    }
 
-   public static @Nullable WorldTemplate parse(JsonObject var0) {
+   public static @Nullable WorldTemplate parse(final JsonObject node) {
       try {
-         String var1 = JsonUtils.getStringOr("type", var0, (String)null);
-         return new WorldTemplate(JsonUtils.getStringOr("id", var0, ""), JsonUtils.getStringOr("name", var0, ""), JsonUtils.getStringOr("version", var0, ""), JsonUtils.getStringOr("author", var0, ""), JsonUtils.getStringOr("link", var0, ""), JsonUtils.getStringOr("image", var0, (String)null), JsonUtils.getStringOr("trailer", var0, ""), JsonUtils.getStringOr("recommendedPlayers", var0, ""), var1 == null ? WorldTemplate.WorldTemplateType.WORLD_TEMPLATE : WorldTemplate.WorldTemplateType.valueOf(var1));
-      } catch (Exception var2) {
-         LOGGER.error("Could not parse WorldTemplate", var2);
+         String templateTypeName = JsonUtils.getStringOr("type", node, (String)null);
+         return new WorldTemplate(JsonUtils.getStringOr("id", node, ""), JsonUtils.getStringOr("name", node, ""), JsonUtils.getStringOr("version", node, ""), JsonUtils.getStringOr("author", node, ""), JsonUtils.getStringOr("link", node, ""), JsonUtils.getStringOr("image", node, (String)null), JsonUtils.getStringOr("trailer", node, ""), JsonUtils.getStringOr("recommendedPlayers", node, ""), templateTypeName == null ? WorldTemplate.WorldTemplateType.WORLD_TEMPLATE : WorldTemplate.WorldTemplateType.valueOf(templateTypeName));
+      } catch (Exception e) {
+         LOGGER.error("Could not parse WorldTemplate", e);
          return null;
       }
    }

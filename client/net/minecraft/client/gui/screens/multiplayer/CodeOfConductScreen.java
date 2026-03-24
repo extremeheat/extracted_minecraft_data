@@ -21,29 +21,29 @@ public class CodeOfConductScreen extends WarningScreen {
    private final BooleanConsumer resultConsumer;
    private final Screen parent;
 
-   private CodeOfConductScreen(@Nullable ServerData var1, Screen var2, Component var3, String var4, BooleanConsumer var5) {
-      super(TITLE, var3, CHECK, TITLE.copy().append("\n").append(var3));
-      this.serverData = var1;
-      this.parent = var2;
-      this.codeOfConductText = var4;
-      this.resultConsumer = var5;
+   private CodeOfConductScreen(final @Nullable ServerData serverData, final Screen parent, final Component contents, final String codeOfConductText, final BooleanConsumer resultConsumer) {
+      super(TITLE, contents, CHECK, TITLE.copy().append("\n").append(contents));
+      this.serverData = serverData;
+      this.parent = parent;
+      this.codeOfConductText = codeOfConductText;
+      this.resultConsumer = resultConsumer;
    }
 
-   public CodeOfConductScreen(@Nullable ServerData var1, Screen var2, String var3, BooleanConsumer var4) {
-      this(var1, var2, Component.literal(var3), var3, var4);
+   public CodeOfConductScreen(final @Nullable ServerData serverData, final Screen parent, final String codeOfConductText, final BooleanConsumer resultConsumer) {
+      this(serverData, parent, Component.literal(codeOfConductText), codeOfConductText, resultConsumer);
    }
 
    protected Layout addFooterButtons() {
-      LinearLayout var1 = LinearLayout.horizontal().spacing(8);
-      var1.addChild(Button.builder(CommonComponents.GUI_ACKNOWLEDGE, (var1x) -> this.onResult(true)).build());
-      var1.addChild(Button.builder(CommonComponents.GUI_DISCONNECT, (var1x) -> this.onResult(false)).build());
-      return var1;
+      LinearLayout footer = LinearLayout.horizontal().spacing(8);
+      footer.addChild(Button.builder(CommonComponents.GUI_ACKNOWLEDGE, (button) -> this.onResult(true)).build());
+      footer.addChild(Button.builder(CommonComponents.GUI_DISCONNECT, (button) -> this.onResult(false)).build());
+      return footer;
    }
 
-   private void onResult(boolean var1) {
-      this.resultConsumer.accept(var1);
+   private void onResult(final boolean accepted) {
+      this.resultConsumer.accept(accepted);
       if (this.serverData != null) {
-         if (var1 && this.stopShowing.selected()) {
+         if (accepted && this.stopShowing.selected()) {
             this.serverData.acceptCodeOfConduct(this.codeOfConductText);
          } else {
             this.serverData.clearCodeOfConduct();

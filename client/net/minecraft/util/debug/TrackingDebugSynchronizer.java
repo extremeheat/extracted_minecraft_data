@@ -29,71 +29,71 @@ public abstract class TrackingDebugSynchronizer<T> {
    protected final DebugSubscription<T> subscription;
    private final Set<UUID> subscribedPlayers = new ObjectOpenHashSet();
 
-   public TrackingDebugSynchronizer(DebugSubscription<T> var1) {
+   public TrackingDebugSynchronizer(final DebugSubscription<T> subscription) {
       super();
-      this.subscription = var1;
+      this.subscription = subscription;
    }
 
-   public final void tick(ServerLevel var1) {
-      for(ServerPlayer var3 : var1.players()) {
-         boolean var4 = this.subscribedPlayers.contains(var3.getUUID());
-         boolean var5 = var3.debugSubscriptions().contains(this.subscription);
-         if (var5 != var4) {
-            if (var5) {
-               this.addSubscriber(var3);
+   public final void tick(final ServerLevel level) {
+      for(ServerPlayer player : level.players()) {
+         boolean wasSubscribed = this.subscribedPlayers.contains(player.getUUID());
+         boolean isSubscribed = player.debugSubscriptions().contains(this.subscription);
+         if (isSubscribed != wasSubscribed) {
+            if (isSubscribed) {
+               this.addSubscriber(player);
             } else {
-               this.subscribedPlayers.remove(var3.getUUID());
+               this.subscribedPlayers.remove(player.getUUID());
             }
          }
       }
 
-      this.subscribedPlayers.removeIf((var1x) -> var1.getPlayerByUUID(var1x) == null);
+      this.subscribedPlayers.removeIf((id) -> level.getPlayerByUUID(id) == null);
       if (!this.subscribedPlayers.isEmpty()) {
-         this.pollAndSendUpdates(var1);
+         this.pollAndSendUpdates(level);
       }
 
    }
 
-   private void addSubscriber(ServerPlayer var1) {
-      this.subscribedPlayers.add(var1.getUUID());
-      var1.getChunkTrackingView().forEach((var2) -> {
-         if (!var1.connection.chunkSender.isPending(var2.toLong())) {
-            this.startTrackingChunk(var1, var2);
+   private void addSubscriber(final ServerPlayer player) {
+      this.subscribedPlayers.add(player.getUUID());
+      player.getChunkTrackingView().forEach((chunkPos) -> {
+         if (!player.connection.chunkSender.isPending(chunkPos.pack())) {
+            this.startTrackingChunk(player, chunkPos);
          }
 
       });
-      var1.level().getChunkSource().chunkMap.forEachEntityTrackedBy(var1, (var2) -> this.startTrackingEntity(var1, var2));
+      player.level().getChunkSource().chunkMap.forEachEntityTrackedBy(player, (entity) -> this.startTrackingEntity(player, entity));
    }
 
-   protected final void sendToPlayersTrackingChunk(ServerLevel var1, ChunkPos var2, Packet<? super ClientGamePacketListener> var3) {
-      ChunkMap var4 = var1.getChunkSource().chunkMap;
+   protected final void sendToPlayersTrackingChunk(final ServerLevel level, final ChunkPos trackedChunk, final Packet<? super ClientGamePacketListener> packet) {
+      ChunkMap chunkMap = level.getChunkSource().chunkMap;
 
-      for(UUID var6 : this.subscribedPlayers) {
-         Player var8 = var1.getPlayerByUUID(var6);
-         if (var8 instanceof ServerPlayer var7) {
-            if (var4.isChunkTracked(var7, var2.x, var2.z)) {
-               var7.connection.send(var3);
+      for(UUID playerId : this.subscribedPlayers) {
+         Player var8 = level.getPlayerByUUID(playerId);
+         if (var8 instanceof ServerPlayer player) {
+            if (chunkMap.isChunkTracked(player, trackedChunk.x(), trackedChunk.z())) {
+               player.connection.send(packet);
             }
          }
       }
 
    }
 
-   protected final void sendToPlayersTrackingEntity(ServerLevel var1, Entity var2, Packet<? super ClientGamePacketListener> var3) {
-      ChunkMap var4 = var1.getChunkSource().chunkMap;
-      var4.sendToTrackingPlayersFiltered(var2, var3, (var1x) -> this.subscribedPlayers.contains(var1x.getUUID()));
+   protected final void sendToPlayersTrackingEntity(final ServerLevel level, final Entity trackedEntity, final Packet<? super ClientGamePacketListener> packet) {
+      ChunkMap chunkMap = level.getChunkSource().chunkMap;
+      chunkMap.sendToTrackingPlayersFiltered(trackedEntity, packet, (player) -> this.subscribedPlayers.contains(player.getUUID()));
    }
 
-   public final void startTrackingChunk(ServerPlayer var1, ChunkPos var2) {
-      if (this.subscribedPlayers.contains(var1.getUUID())) {
-         this.sendInitialChunk(var1, var2);
+   public final void startTrackingChunk(final ServerPlayer player, final ChunkPos chunkPos) {
+      if (this.subscribedPlayers.contains(player.getUUID())) {
+         this.sendInitialChunk(player, chunkPos);
       }
 
    }
 
-   public final void startTrackingEntity(ServerPlayer var1, Entity var2) {
-      if (this.subscribedPlayers.contains(var1.getUUID())) {
-         this.sendInitialEntity(var1, var2);
+   public final void startTrackingEntity(final ServerPlayer player, final Entity entity) {
+      if (this.subscribedPlayers.contains(player.getUUID())) {
+         this.sendInitialEntity(player, entity);
       }
 
    }
@@ -101,13 +101,13 @@ public abstract class TrackingDebugSynchronizer<T> {
    protected void clear() {
    }
 
-   protected void pollAndSendUpdates(ServerLevel var1) {
+   protected void pollAndSendUpdates(final ServerLevel level) {
    }
 
-   protected void sendInitialChunk(ServerPlayer var1, ChunkPos var2) {
+   protected void sendInitialChunk(final ServerPlayer player, final ChunkPos chunkPos) {
    }
 
-   protected void sendInitialEntity(ServerPlayer var1, Entity var2) {
+   protected void sendInitialEntity(final ServerPlayer player, final Entity entity) {
    }
 
    public static class SourceSynchronizer<T> extends TrackingDebugSynchronizer<T> {
@@ -115,8 +115,8 @@ public abstract class TrackingDebugSynchronizer<T> {
       private final Map<BlockPos, ValueSource<T>> blockEntitySources = new HashMap();
       private final Map<UUID, ValueSource<T>> entitySources = new HashMap();
 
-      public SourceSynchronizer(DebugSubscription<T> var1) {
-         super(var1);
+      public SourceSynchronizer(final DebugSubscription<T> subscription) {
+         super(subscription);
       }
 
       protected void clear() {
@@ -125,107 +125,107 @@ public abstract class TrackingDebugSynchronizer<T> {
          this.entitySources.clear();
       }
 
-      protected void pollAndSendUpdates(ServerLevel var1) {
-         for(Map.Entry var3 : this.chunkSources.entrySet()) {
-            DebugSubscription.Update var4 = ((ValueSource)var3.getValue()).pollUpdate(this.subscription);
-            if (var4 != null) {
-               ChunkPos var5 = (ChunkPos)var3.getKey();
-               this.sendToPlayersTrackingChunk(var1, var5, new ClientboundDebugChunkValuePacket(var5, var4));
+      protected void pollAndSendUpdates(final ServerLevel level) {
+         for(Map.Entry<ChunkPos, ValueSource<T>> entry : this.chunkSources.entrySet()) {
+            DebugSubscription.Update<T> update = ((ValueSource)entry.getValue()).pollUpdate(this.subscription);
+            if (update != null) {
+               ChunkPos chunkPos = (ChunkPos)entry.getKey();
+               this.sendToPlayersTrackingChunk(level, chunkPos, new ClientboundDebugChunkValuePacket(chunkPos, update));
             }
          }
 
-         for(Map.Entry var9 : this.blockEntitySources.entrySet()) {
-            DebugSubscription.Update var11 = ((ValueSource)var9.getValue()).pollUpdate(this.subscription);
-            if (var11 != null) {
-               BlockPos var13 = (BlockPos)var9.getKey();
-               ChunkPos var6 = new ChunkPos(var13);
-               this.sendToPlayersTrackingChunk(var1, var6, new ClientboundDebugBlockValuePacket(var13, var11));
+         for(Map.Entry<BlockPos, ValueSource<T>> entry : this.blockEntitySources.entrySet()) {
+            DebugSubscription.Update<T> update = ((ValueSource)entry.getValue()).pollUpdate(this.subscription);
+            if (update != null) {
+               BlockPos blockPos = (BlockPos)entry.getKey();
+               ChunkPos chunkPos = ChunkPos.containing(blockPos);
+               this.sendToPlayersTrackingChunk(level, chunkPos, new ClientboundDebugBlockValuePacket(blockPos, update));
             }
          }
 
-         for(Map.Entry var10 : this.entitySources.entrySet()) {
-            DebugSubscription.Update var12 = ((ValueSource)var10.getValue()).pollUpdate(this.subscription);
-            if (var12 != null) {
-               Entity var14 = (Entity)Objects.requireNonNull(var1.getEntity((UUID)var10.getKey()));
-               this.sendToPlayersTrackingEntity(var1, var14, new ClientboundDebugEntityValuePacket(var14.getId(), var12));
+         for(Map.Entry<UUID, ValueSource<T>> entry : this.entitySources.entrySet()) {
+            DebugSubscription.Update<T> update = ((ValueSource)entry.getValue()).pollUpdate(this.subscription);
+            if (update != null) {
+               Entity entity = (Entity)Objects.requireNonNull(level.getEntity((UUID)entry.getKey()));
+               this.sendToPlayersTrackingEntity(level, entity, new ClientboundDebugEntityValuePacket(entity.getId(), update));
             }
          }
 
       }
 
-      public void registerChunk(ChunkPos var1, DebugValueSource.ValueGetter<T> var2) {
-         this.chunkSources.put(var1, new ValueSource(var2));
+      public void registerChunk(final ChunkPos chunkPos, final DebugValueSource.ValueGetter<T> getter) {
+         this.chunkSources.put(chunkPos, new ValueSource(getter));
       }
 
-      public void registerBlockEntity(BlockPos var1, DebugValueSource.ValueGetter<T> var2) {
-         this.blockEntitySources.put(var1, new ValueSource(var2));
+      public void registerBlockEntity(final BlockPos blockPos, final DebugValueSource.ValueGetter<T> getter) {
+         this.blockEntitySources.put(blockPos, new ValueSource(getter));
       }
 
-      public void registerEntity(UUID var1, DebugValueSource.ValueGetter<T> var2) {
-         this.entitySources.put(var1, new ValueSource(var2));
+      public void registerEntity(final UUID entityId, final DebugValueSource.ValueGetter<T> getter) {
+         this.entitySources.put(entityId, new ValueSource(getter));
       }
 
-      public void dropChunk(ChunkPos var1) {
-         this.chunkSources.remove(var1);
+      public void dropChunk(final ChunkPos chunkPos) {
+         this.chunkSources.remove(chunkPos);
          Set var10000 = this.blockEntitySources.keySet();
-         Objects.requireNonNull(var1);
-         var10000.removeIf(var1::contains);
+         Objects.requireNonNull(chunkPos);
+         var10000.removeIf(chunkPos::contains);
       }
 
-      public void dropBlockEntity(ServerLevel var1, BlockPos var2) {
-         ValueSource var3 = (ValueSource)this.blockEntitySources.remove(var2);
-         if (var3 != null) {
-            ChunkPos var4 = new ChunkPos(var2);
-            this.sendToPlayersTrackingChunk(var1, var4, new ClientboundDebugBlockValuePacket(var2, this.subscription.emptyUpdate()));
+      public void dropBlockEntity(final ServerLevel level, final BlockPos blockPos) {
+         ValueSource<T> source = (ValueSource)this.blockEntitySources.remove(blockPos);
+         if (source != null) {
+            ChunkPos chunkPos = ChunkPos.containing(blockPos);
+            this.sendToPlayersTrackingChunk(level, chunkPos, new ClientboundDebugBlockValuePacket(blockPos, this.subscription.emptyUpdate()));
          }
 
       }
 
-      public void dropEntity(Entity var1) {
-         this.entitySources.remove(var1.getUUID());
+      public void dropEntity(final Entity entity) {
+         this.entitySources.remove(entity.getUUID());
       }
 
-      protected void sendInitialChunk(ServerPlayer var1, ChunkPos var2) {
-         ValueSource var3 = (ValueSource)this.chunkSources.get(var2);
-         if (var3 != null && var3.lastSyncedValue != null) {
-            var1.connection.send(new ClientboundDebugChunkValuePacket(var2, this.subscription.packUpdate(var3.lastSyncedValue)));
+      protected void sendInitialChunk(final ServerPlayer player, final ChunkPos chunkPos) {
+         ValueSource<T> chunkSource = (ValueSource)this.chunkSources.get(chunkPos);
+         if (chunkSource != null && chunkSource.lastSyncedValue != null) {
+            player.connection.send(new ClientboundDebugChunkValuePacket(chunkPos, this.subscription.packUpdate(chunkSource.lastSyncedValue)));
          }
 
-         for(Map.Entry var5 : this.blockEntitySources.entrySet()) {
-            Object var6 = ((ValueSource)var5.getValue()).lastSyncedValue;
-            if (var6 != null) {
-               BlockPos var7 = (BlockPos)var5.getKey();
-               if (var2.contains(var7)) {
-                  var1.connection.send(new ClientboundDebugBlockValuePacket(var7, this.subscription.packUpdate(var6)));
+         for(Map.Entry<BlockPos, ValueSource<T>> entry : this.blockEntitySources.entrySet()) {
+            T lastValue = ((ValueSource)entry.getValue()).lastSyncedValue;
+            if (lastValue != null) {
+               BlockPos blockPos = (BlockPos)entry.getKey();
+               if (chunkPos.contains(blockPos)) {
+                  player.connection.send(new ClientboundDebugBlockValuePacket(blockPos, this.subscription.packUpdate(lastValue)));
                }
             }
          }
 
       }
 
-      protected void sendInitialEntity(ServerPlayer var1, Entity var2) {
-         ValueSource var3 = (ValueSource)this.entitySources.get(var2.getUUID());
-         if (var3 != null && var3.lastSyncedValue != null) {
-            var1.connection.send(new ClientboundDebugEntityValuePacket(var2.getId(), this.subscription.packUpdate(var3.lastSyncedValue)));
+      protected void sendInitialEntity(final ServerPlayer player, final Entity entity) {
+         ValueSource<T> source = (ValueSource)this.entitySources.get(entity.getUUID());
+         if (source != null && source.lastSyncedValue != null) {
+            player.connection.send(new ClientboundDebugEntityValuePacket(entity.getId(), this.subscription.packUpdate(source.lastSyncedValue)));
          }
 
       }
    }
 
-   static class ValueSource<T> {
+   private static class ValueSource<T> {
       private final DebugValueSource.ValueGetter<T> getter;
-      @Nullable T lastSyncedValue;
+      private @Nullable T lastSyncedValue;
 
-      ValueSource(DebugValueSource.ValueGetter<T> var1) {
+      private ValueSource(final DebugValueSource.ValueGetter<T> getter) {
          super();
-         this.getter = var1;
+         this.getter = getter;
       }
 
-      public DebugSubscription.@Nullable Update<T> pollUpdate(DebugSubscription<T> var1) {
-         Object var2 = this.getter.get();
-         if (!Objects.equals(var2, this.lastSyncedValue)) {
-            this.lastSyncedValue = (T)var2;
-            return var1.packUpdate(var2);
+      public DebugSubscription.@Nullable Update<T> pollUpdate(final DebugSubscription<T> subscription) {
+         T newValue = this.getter.get();
+         if (!Objects.equals(newValue, this.lastSyncedValue)) {
+            this.lastSyncedValue = newValue;
+            return subscription.packUpdate(newValue);
          } else {
             return null;
          }
@@ -237,22 +237,22 @@ public abstract class TrackingDebugSynchronizer<T> {
          super(DebugSubscriptions.POIS);
       }
 
-      protected void sendInitialChunk(ServerPlayer var1, ChunkPos var2) {
-         ServerLevel var3 = var1.level();
-         PoiManager var4 = var3.getPoiManager();
-         var4.getInChunk((var0) -> true, var2, PoiManager.Occupancy.ANY).forEach((var2x) -> var1.connection.send(new ClientboundDebugBlockValuePacket(var2x.getPos(), this.subscription.packUpdate(new DebugPoiInfo(var2x)))));
+      protected void sendInitialChunk(final ServerPlayer player, final ChunkPos chunkPos) {
+         ServerLevel level = player.level();
+         PoiManager poiManager = level.getPoiManager();
+         poiManager.getInChunk((t) -> true, chunkPos, PoiManager.Occupancy.ANY).forEach((record) -> player.connection.send(new ClientboundDebugBlockValuePacket(record.getPos(), this.subscription.packUpdate(new DebugPoiInfo(record)))));
       }
 
-      public void onPoiAdded(ServerLevel var1, PoiRecord var2) {
-         this.sendToPlayersTrackingChunk(var1, new ChunkPos(var2.getPos()), new ClientboundDebugBlockValuePacket(var2.getPos(), this.subscription.packUpdate(new DebugPoiInfo(var2))));
+      public void onPoiAdded(final ServerLevel level, final PoiRecord record) {
+         this.sendToPlayersTrackingChunk(level, ChunkPos.containing(record.getPos()), new ClientboundDebugBlockValuePacket(record.getPos(), this.subscription.packUpdate(new DebugPoiInfo(record))));
       }
 
-      public void onPoiRemoved(ServerLevel var1, BlockPos var2) {
-         this.sendToPlayersTrackingChunk(var1, new ChunkPos(var2), new ClientboundDebugBlockValuePacket(var2, this.subscription.emptyUpdate()));
+      public void onPoiRemoved(final ServerLevel level, final BlockPos poiPos) {
+         this.sendToPlayersTrackingChunk(level, ChunkPos.containing(poiPos), new ClientboundDebugBlockValuePacket(poiPos, this.subscription.emptyUpdate()));
       }
 
-      public void onPoiTicketCountChanged(ServerLevel var1, BlockPos var2) {
-         this.sendToPlayersTrackingChunk(var1, new ChunkPos(var2), new ClientboundDebugBlockValuePacket(var2, this.subscription.packUpdate(var1.getPoiManager().getDebugPoiInfo(var2))));
+      public void onPoiTicketCountChanged(final ServerLevel level, final BlockPos poiPos) {
+         this.sendToPlayersTrackingChunk(level, ChunkPos.containing(poiPos), new ClientboundDebugBlockValuePacket(poiPos, this.subscription.packUpdate(level.getPoiManager().getDebugPoiInfo(poiPos))));
       }
    }
 
@@ -261,47 +261,47 @@ public abstract class TrackingDebugSynchronizer<T> {
          super(DebugSubscriptions.VILLAGE_SECTIONS);
       }
 
-      protected void sendInitialChunk(ServerPlayer var1, ChunkPos var2) {
-         ServerLevel var3 = var1.level();
-         PoiManager var4 = var3.getPoiManager();
-         var4.getInChunk((var0) -> true, var2, PoiManager.Occupancy.ANY).forEach((var3x) -> {
-            SectionPos var4 = SectionPos.of(var3x.getPos());
-            forEachVillageSectionUpdate(var3, var4, (var2, var3xx) -> {
-               BlockPos var4 = var2.center();
-               var1.connection.send(new ClientboundDebugBlockValuePacket(var4, this.subscription.packUpdate(var3xx ? Unit.INSTANCE : null)));
+      protected void sendInitialChunk(final ServerPlayer player, final ChunkPos chunkPos) {
+         ServerLevel level = player.level();
+         PoiManager poiManager = level.getPoiManager();
+         poiManager.getInChunk((t) -> true, chunkPos, PoiManager.Occupancy.ANY).forEach((record) -> {
+            SectionPos centerSection = SectionPos.of(record.getPos());
+            forEachVillageSectionUpdate(level, centerSection, (sectionPos, isVillage) -> {
+               BlockPos sectionBlockPos = sectionPos.center();
+               player.connection.send(new ClientboundDebugBlockValuePacket(sectionBlockPos, this.subscription.packUpdate(isVillage ? Unit.INSTANCE : null)));
             });
          });
       }
 
-      public void onPoiAdded(ServerLevel var1, PoiRecord var2) {
-         this.sendVillageSectionsPacket(var1, var2.getPos());
+      public void onPoiAdded(final ServerLevel level, final PoiRecord record) {
+         this.sendVillageSectionsPacket(level, record.getPos());
       }
 
-      public void onPoiRemoved(ServerLevel var1, BlockPos var2) {
-         this.sendVillageSectionsPacket(var1, var2);
+      public void onPoiRemoved(final ServerLevel level, final BlockPos poiPos) {
+         this.sendVillageSectionsPacket(level, poiPos);
       }
 
-      private void sendVillageSectionsPacket(ServerLevel var1, BlockPos var2) {
-         forEachVillageSectionUpdate(var1, SectionPos.of(var2), (var2x, var3) -> {
-            BlockPos var4 = var2x.center();
-            if (var3) {
-               this.sendToPlayersTrackingChunk(var1, new ChunkPos(var4), new ClientboundDebugBlockValuePacket(var4, this.subscription.packUpdate(Unit.INSTANCE)));
+      private void sendVillageSectionsPacket(final ServerLevel level, final BlockPos poiPos) {
+         forEachVillageSectionUpdate(level, SectionPos.of(poiPos), (sectionPos, isVillage) -> {
+            BlockPos sectionBlockPos = sectionPos.center();
+            if (isVillage) {
+               this.sendToPlayersTrackingChunk(level, ChunkPos.containing(sectionBlockPos), new ClientboundDebugBlockValuePacket(sectionBlockPos, this.subscription.packUpdate(Unit.INSTANCE)));
             } else {
-               this.sendToPlayersTrackingChunk(var1, new ChunkPos(var4), new ClientboundDebugBlockValuePacket(var4, this.subscription.emptyUpdate()));
+               this.sendToPlayersTrackingChunk(level, ChunkPos.containing(sectionBlockPos), new ClientboundDebugBlockValuePacket(sectionBlockPos, this.subscription.emptyUpdate()));
             }
 
          });
       }
 
-      private static void forEachVillageSectionUpdate(ServerLevel var0, SectionPos var1, BiConsumer<SectionPos, Boolean> var2) {
-         for(int var3 = -1; var3 <= 1; ++var3) {
-            for(int var4 = -1; var4 <= 1; ++var4) {
-               for(int var5 = -1; var5 <= 1; ++var5) {
-                  SectionPos var6 = var1.offset(var4, var5, var3);
-                  if (var0.isVillage(var6.center())) {
-                     var2.accept(var6, true);
+      private static void forEachVillageSectionUpdate(final ServerLevel level, final SectionPos centerSection, final BiConsumer<SectionPos, Boolean> consumer) {
+         for(int offsetZ = -1; offsetZ <= 1; ++offsetZ) {
+            for(int offsetX = -1; offsetX <= 1; ++offsetX) {
+               for(int offsetY = -1; offsetY <= 1; ++offsetY) {
+                  SectionPos sectionPos = centerSection.offset(offsetX, offsetY, offsetZ);
+                  if (level.isVillage(sectionPos.center())) {
+                     consumer.accept(sectionPos, true);
                   } else {
-                     var2.accept(var6, false);
+                     consumer.accept(sectionPos, false);
                   }
                }
             }

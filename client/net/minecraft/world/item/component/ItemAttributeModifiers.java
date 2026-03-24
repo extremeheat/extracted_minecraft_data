@@ -39,74 +39,73 @@ public record ItemAttributeModifiers(List<Entry> modifiers) {
    public static final StreamCodec<RegistryFriendlyByteBuf, ItemAttributeModifiers> STREAM_CODEC;
    public static final DecimalFormat ATTRIBUTE_MODIFIER_FORMAT;
 
-   public ItemAttributeModifiers(List<Entry> var1) {
+   public ItemAttributeModifiers {
       super();
-      this.modifiers = var1;
    }
 
    public static Builder builder() {
       return new Builder();
    }
 
-   public ItemAttributeModifiers withModifierAdded(Holder<Attribute> var1, AttributeModifier var2, EquipmentSlotGroup var3) {
-      ImmutableList.Builder var4 = ImmutableList.builderWithExpectedSize(this.modifiers.size() + 1);
+   public ItemAttributeModifiers withModifierAdded(final Holder<Attribute> attribute, final AttributeModifier modifier, final EquipmentSlotGroup slot) {
+      ImmutableList.Builder<Entry> newModifiers = ImmutableList.builderWithExpectedSize(this.modifiers.size() + 1);
 
-      for(Entry var6 : this.modifiers) {
-         if (!var6.matches(var1, var2.id())) {
-            var4.add(var6);
+      for(Entry entry : this.modifiers) {
+         if (!entry.matches(attribute, modifier.id())) {
+            newModifiers.add(entry);
          }
       }
 
-      var4.add(new Entry(var1, var2, var3));
-      return new ItemAttributeModifiers(var4.build());
+      newModifiers.add(new Entry(attribute, modifier, slot));
+      return new ItemAttributeModifiers(newModifiers.build());
    }
 
-   public void forEach(EquipmentSlotGroup var1, TriConsumer<Holder<Attribute>, AttributeModifier, Display> var2) {
-      for(Entry var4 : this.modifiers) {
-         if (var4.slot.equals(var1)) {
-            var2.accept(var4.attribute, var4.modifier, var4.display);
-         }
-      }
-
-   }
-
-   public void forEach(EquipmentSlotGroup var1, BiConsumer<Holder<Attribute>, AttributeModifier> var2) {
-      for(Entry var4 : this.modifiers) {
-         if (var4.slot.equals(var1)) {
-            var2.accept(var4.attribute, var4.modifier);
+   public void forEach(final EquipmentSlotGroup slot, final TriConsumer<Holder<Attribute>, AttributeModifier, Display> consumer) {
+      for(Entry entry : this.modifiers) {
+         if (entry.slot.equals(slot)) {
+            consumer.accept(entry.attribute, entry.modifier, entry.display);
          }
       }
 
    }
 
-   public void forEach(EquipmentSlot var1, BiConsumer<Holder<Attribute>, AttributeModifier> var2) {
-      for(Entry var4 : this.modifiers) {
-         if (var4.slot.test(var1)) {
-            var2.accept(var4.attribute, var4.modifier);
+   public void forEach(final EquipmentSlotGroup slot, final BiConsumer<Holder<Attribute>, AttributeModifier> consumer) {
+      for(Entry entry : this.modifiers) {
+         if (entry.slot.equals(slot)) {
+            consumer.accept(entry.attribute, entry.modifier);
          }
       }
 
    }
 
-   public double compute(Holder<Attribute> var1, double var2, EquipmentSlot var4) {
-      double var5 = var2;
+   public void forEach(final EquipmentSlot slot, final BiConsumer<Holder<Attribute>, AttributeModifier> consumer) {
+      for(Entry entry : this.modifiers) {
+         if (entry.slot.test(slot)) {
+            consumer.accept(entry.attribute, entry.modifier);
+         }
+      }
 
-      for(Entry var8 : this.modifiers) {
-         if (var8.slot.test(var4) && var8.attribute == var1) {
-            double var9 = var8.modifier.amount();
+   }
+
+   public double compute(final Holder<Attribute> attribute, final double baseValue, final EquipmentSlot slot) {
+      double value = baseValue;
+
+      for(Entry entry : this.modifiers) {
+         if (entry.slot.test(slot) && entry.attribute == attribute) {
+            double amount = entry.modifier.amount();
             double var10001;
-            switch (var8.modifier.operation()) {
-               case ADD_VALUE -> var10001 = var9;
-               case ADD_MULTIPLIED_BASE -> var10001 = var9 * var2;
-               case ADD_MULTIPLIED_TOTAL -> var10001 = var9 * var5;
+            switch (entry.modifier.operation()) {
+               case ADD_VALUE -> var10001 = amount;
+               case ADD_MULTIPLIED_BASE -> var10001 = amount * baseValue;
+               case ADD_MULTIPLIED_TOTAL -> var10001 = amount * value;
                default -> throw new MatchException((String)null, (Throwable)null);
             }
 
-            var5 += var10001;
+            value += var10001;
          }
       }
 
-      return var5;
+      return value;
    }
 
    static {
@@ -116,7 +115,7 @@ public record ItemAttributeModifiers(List<Entry> modifiers) {
    }
 
    public interface Display {
-      Codec<Display> CODEC = ItemAttributeModifiers.Display.Type.CODEC.dispatch("type", Display::type, (var0) -> var0.codec);
+      Codec<Display> CODEC = ItemAttributeModifiers.Display.Type.CODEC.dispatch("type", Display::type, (type) -> type.codec);
       StreamCodec<RegistryFriendlyByteBuf, Display> STREAM_CODEC = ItemAttributeModifiers.Display.Type.STREAM_CODEC.cast().dispatch(Display::type, Type::streamCodec);
 
       static Display attributeModifiers() {
@@ -127,32 +126,32 @@ public record ItemAttributeModifiers(List<Entry> modifiers) {
          return ItemAttributeModifiers.Display.Hidden.INSTANCE;
       }
 
-      static Display override(Component var0) {
-         return new OverrideText(var0);
+      static Display override(final Component component) {
+         return new OverrideText(component);
       }
 
       Type type();
 
-      void apply(Consumer<Component> var1, @Nullable Player var2, Holder<Attribute> var3, AttributeModifier var4);
+      void apply(Consumer<Component> consumer, @Nullable Player player, Holder<Attribute> attribute, AttributeModifier modifier);
 
       public static enum Type implements StringRepresentable {
          DEFAULT("default", 0, ItemAttributeModifiers.Display.Default.CODEC, ItemAttributeModifiers.Display.Default.STREAM_CODEC),
          HIDDEN("hidden", 1, ItemAttributeModifiers.Display.Hidden.CODEC, ItemAttributeModifiers.Display.Hidden.STREAM_CODEC),
          OVERRIDE("override", 2, ItemAttributeModifiers.Display.OverrideText.CODEC, ItemAttributeModifiers.Display.OverrideText.STREAM_CODEC);
 
-         static final Codec<Type> CODEC = StringRepresentable.<Type>fromEnum(Type::values);
+         private static final Codec<Type> CODEC = StringRepresentable.<Type>fromEnum(Type::values);
          private static final IntFunction<Type> BY_ID = ByIdMap.<Type>continuous(Type::id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-         static final StreamCodec<ByteBuf, Type> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Type::id);
+         private static final StreamCodec<ByteBuf, Type> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Type::id);
          private final String name;
          private final int id;
-         final MapCodec<? extends Display> codec;
+         private final MapCodec<? extends Display> codec;
          private final StreamCodec<RegistryFriendlyByteBuf, ? extends Display> streamCodec;
 
-         private Type(final String var3, final int var4, final MapCodec<? extends Display> var5, final StreamCodec<RegistryFriendlyByteBuf, ? extends Display> var6) {
-            this.name = var3;
-            this.id = var4;
-            this.codec = var5;
-            this.streamCodec = var6;
+         private Type(final String name, final int id, final MapCodec<? extends Display> codec, final StreamCodec<RegistryFriendlyByteBuf, ? extends Display> streamCodec) {
+            this.name = name;
+            this.id = id;
+            this.codec = codec;
+            this.streamCodec = streamCodec;
          }
 
          public String getSerializedName() {
@@ -174,9 +173,9 @@ public record ItemAttributeModifiers(List<Entry> modifiers) {
       }
 
       public static record Default() implements Display {
-         static final Default INSTANCE = new Default();
-         static final MapCodec<Default> CODEC;
-         static final StreamCodec<RegistryFriendlyByteBuf, Default> STREAM_CODEC;
+         private static final Default INSTANCE = new Default();
+         private static final MapCodec<Default> CODEC;
+         private static final StreamCodec<RegistryFriendlyByteBuf, Default> STREAM_CODEC;
 
          public Default() {
             super();
@@ -186,36 +185,36 @@ public record ItemAttributeModifiers(List<Entry> modifiers) {
             return ItemAttributeModifiers.Display.Type.DEFAULT;
          }
 
-         public void apply(Consumer<Component> var1, @Nullable Player var2, Holder<Attribute> var3, AttributeModifier var4) {
-            double var5 = var4.amount();
-            boolean var7 = false;
-            if (var2 != null) {
-               if (var4.is(Item.BASE_ATTACK_DAMAGE_ID)) {
-                  var5 += var2.getAttributeBaseValue(Attributes.ATTACK_DAMAGE);
-                  var7 = true;
-               } else if (var4.is(Item.BASE_ATTACK_SPEED_ID)) {
-                  var5 += var2.getAttributeBaseValue(Attributes.ATTACK_SPEED);
-                  var7 = true;
+         public void apply(final Consumer<Component> consumer, final @Nullable Player player, final Holder<Attribute> attribute, final AttributeModifier modifier) {
+            double amount = modifier.amount();
+            boolean displayWithBase = false;
+            if (player != null) {
+               if (modifier.is(Item.BASE_ATTACK_DAMAGE_ID)) {
+                  amount += player.getAttributeBaseValue(Attributes.ATTACK_DAMAGE);
+                  displayWithBase = true;
+               } else if (modifier.is(Item.BASE_ATTACK_SPEED_ID)) {
+                  amount += player.getAttributeBaseValue(Attributes.ATTACK_SPEED);
+                  displayWithBase = true;
                }
             }
 
-            double var8;
-            if (var4.operation() != AttributeModifier.Operation.ADD_MULTIPLIED_BASE && var4.operation() != AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL) {
-               if (var3.is(Attributes.KNOCKBACK_RESISTANCE)) {
-                  var8 = var5 * 10.0;
+            double displayAmount;
+            if (modifier.operation() != AttributeModifier.Operation.ADD_MULTIPLIED_BASE && modifier.operation() != AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL) {
+               if (attribute.is(Attributes.KNOCKBACK_RESISTANCE)) {
+                  displayAmount = amount * 10.0;
                } else {
-                  var8 = var5;
+                  displayAmount = amount;
                }
             } else {
-               var8 = var5 * 100.0;
+               displayAmount = amount * 100.0;
             }
 
-            if (var7) {
-               var1.accept(CommonComponents.space().append((Component)Component.translatable("attribute.modifier.equals." + var4.operation().id(), ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(var8), Component.translatable(((Attribute)var3.value()).getDescriptionId()))).withStyle(ChatFormatting.DARK_GREEN));
-            } else if (var5 > 0.0) {
-               var1.accept(Component.translatable("attribute.modifier.plus." + var4.operation().id(), ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(var8), Component.translatable(((Attribute)var3.value()).getDescriptionId())).withStyle(((Attribute)var3.value()).getStyle(true)));
-            } else if (var5 < 0.0) {
-               var1.accept(Component.translatable("attribute.modifier.take." + var4.operation().id(), ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(-var8), Component.translatable(((Attribute)var3.value()).getDescriptionId())).withStyle(((Attribute)var3.value()).getStyle(false)));
+            if (displayWithBase) {
+               consumer.accept(CommonComponents.space().append((Component)Component.translatable("attribute.modifier.equals." + modifier.operation().id(), ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(displayAmount), Component.translatable(((Attribute)attribute.value()).getDescriptionId()))).withStyle(ChatFormatting.DARK_GREEN));
+            } else if (amount > 0.0) {
+               consumer.accept(Component.translatable("attribute.modifier.plus." + modifier.operation().id(), ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(displayAmount), Component.translatable(((Attribute)attribute.value()).getDescriptionId())).withStyle(((Attribute)attribute.value()).getStyle(true)));
+            } else if (amount < 0.0) {
+               consumer.accept(Component.translatable("attribute.modifier.take." + modifier.operation().id(), ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(-displayAmount), Component.translatable(((Attribute)attribute.value()).getDescriptionId())).withStyle(((Attribute)attribute.value()).getStyle(false)));
             }
 
          }
@@ -227,9 +226,9 @@ public record ItemAttributeModifiers(List<Entry> modifiers) {
       }
 
       public static record Hidden() implements Display {
-         static final Hidden INSTANCE = new Hidden();
-         static final MapCodec<Hidden> CODEC;
-         static final StreamCodec<RegistryFriendlyByteBuf, Hidden> STREAM_CODEC;
+         private static final Hidden INSTANCE = new Hidden();
+         private static final MapCodec<Hidden> CODEC;
+         private static final StreamCodec<RegistryFriendlyByteBuf, Hidden> STREAM_CODEC;
 
          public Hidden() {
             super();
@@ -239,7 +238,7 @@ public record ItemAttributeModifiers(List<Entry> modifiers) {
             return ItemAttributeModifiers.Display.Type.HIDDEN;
          }
 
-         public void apply(Consumer<Component> var1, @Nullable Player var2, Holder<Attribute> var3, AttributeModifier var4) {
+         public void apply(final Consumer<Component> consumer, final @Nullable Player player, final Holder<Attribute> attribute, final AttributeModifier modifier) {
          }
 
          static {
@@ -249,20 +248,19 @@ public record ItemAttributeModifiers(List<Entry> modifiers) {
       }
 
       public static record OverrideText(Component component) implements Display {
-         static final MapCodec<OverrideText> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ComponentSerialization.CODEC.fieldOf("value").forGetter(OverrideText::component)).apply(var0, OverrideText::new));
-         static final StreamCodec<RegistryFriendlyByteBuf, OverrideText> STREAM_CODEC;
+         private static final MapCodec<OverrideText> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ComponentSerialization.CODEC.fieldOf("value").forGetter(OverrideText::component)).apply(i, OverrideText::new));
+         private static final StreamCodec<RegistryFriendlyByteBuf, OverrideText> STREAM_CODEC;
 
-         public OverrideText(Component var1) {
+         public OverrideText {
             super();
-            this.component = var1;
          }
 
          public Type type() {
             return ItemAttributeModifiers.Display.Type.OVERRIDE;
          }
 
-         public void apply(Consumer<Component> var1, @Nullable Player var2, Holder<Attribute> var3, AttributeModifier var4) {
-            var1.accept(this.component);
+         public void apply(final Consumer<Component> consumer, final @Nullable Player player, final Holder<Attribute> attribute, final AttributeModifier modifier) {
+            consumer.accept(this.component);
          }
 
          static {
@@ -272,27 +270,19 @@ public record ItemAttributeModifiers(List<Entry> modifiers) {
    }
 
    public static record Entry(Holder<Attribute> attribute, AttributeModifier modifier, EquipmentSlotGroup slot, Display display) {
-      final Holder<Attribute> attribute;
-      final AttributeModifier modifier;
-      final EquipmentSlotGroup slot;
-      final Display display;
-      public static final Codec<Entry> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Attribute.CODEC.fieldOf("type").forGetter(Entry::attribute), AttributeModifier.MAP_CODEC.forGetter(Entry::modifier), EquipmentSlotGroup.CODEC.optionalFieldOf("slot", EquipmentSlotGroup.ANY).forGetter(Entry::slot), ItemAttributeModifiers.Display.CODEC.optionalFieldOf("display", ItemAttributeModifiers.Display.Default.INSTANCE).forGetter(Entry::display)).apply(var0, Entry::new));
+      public static final Codec<Entry> CODEC = RecordCodecBuilder.create((i) -> i.group(Attribute.CODEC.fieldOf("type").forGetter(Entry::attribute), AttributeModifier.MAP_CODEC.forGetter(Entry::modifier), EquipmentSlotGroup.CODEC.optionalFieldOf("slot", EquipmentSlotGroup.ANY).forGetter(Entry::slot), ItemAttributeModifiers.Display.CODEC.optionalFieldOf("display", ItemAttributeModifiers.Display.Default.INSTANCE).forGetter(Entry::display)).apply(i, Entry::new));
       public static final StreamCodec<RegistryFriendlyByteBuf, Entry> STREAM_CODEC;
 
-      public Entry(Holder<Attribute> var1, AttributeModifier var2, EquipmentSlotGroup var3) {
-         this(var1, var2, var3, ItemAttributeModifiers.Display.attributeModifiers());
+      public Entry(final Holder<Attribute> attribute, final AttributeModifier modifier, final EquipmentSlotGroup slot) {
+         this(attribute, modifier, slot, ItemAttributeModifiers.Display.attributeModifiers());
       }
 
-      public Entry(Holder<Attribute> var1, AttributeModifier var2, EquipmentSlotGroup var3, Display var4) {
+      public Entry {
          super();
-         this.attribute = var1;
-         this.modifier = var2;
-         this.slot = var3;
-         this.display = var4;
       }
 
-      public boolean matches(Holder<Attribute> var1, Identifier var2) {
-         return var1.equals(this.attribute) && this.modifier.is(var2);
+      public boolean matches(final Holder<Attribute> attribute, final Identifier id) {
+         return attribute.equals(this.attribute) && this.modifier.is(id);
       }
 
       static {
@@ -303,17 +293,17 @@ public record ItemAttributeModifiers(List<Entry> modifiers) {
    public static class Builder {
       private final ImmutableList.Builder<Entry> entries = ImmutableList.builder();
 
-      Builder() {
+      private Builder() {
          super();
       }
 
-      public Builder add(Holder<Attribute> var1, AttributeModifier var2, EquipmentSlotGroup var3) {
-         this.entries.add(new Entry(var1, var2, var3));
+      public Builder add(final Holder<Attribute> attribute, final AttributeModifier modifier, final EquipmentSlotGroup slot) {
+         this.entries.add(new Entry(attribute, modifier, slot));
          return this;
       }
 
-      public Builder add(Holder<Attribute> var1, AttributeModifier var2, EquipmentSlotGroup var3, Display var4) {
-         this.entries.add(new Entry(var1, var2, var3, var4));
+      public Builder add(final Holder<Attribute> attribute, final AttributeModifier modifier, final EquipmentSlotGroup slot, final Display display) {
+         this.entries.add(new Entry(attribute, modifier, slot, display));
          return this;
       }
 

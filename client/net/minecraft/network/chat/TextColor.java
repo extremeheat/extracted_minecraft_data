@@ -20,15 +20,15 @@ public final class TextColor {
    private final int value;
    private final @Nullable String name;
 
-   private TextColor(int var1, String var2) {
+   private TextColor(final int value, final String name) {
       super();
-      this.value = var1 & 16777215;
-      this.name = var2;
+      this.value = value & 16777215;
+      this.name = name;
    }
 
-   private TextColor(int var1) {
+   private TextColor(final int value) {
       super();
-      this.value = var1 & 16777215;
+      this.value = value & 16777215;
       this.name = null;
    }
 
@@ -44,12 +44,12 @@ public final class TextColor {
       return String.format(Locale.ROOT, "#%06X", this.value);
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
+   public boolean equals(final Object o) {
+      if (this == o) {
          return true;
-      } else if (var1 != null && this.getClass() == var1.getClass()) {
-         TextColor var2 = (TextColor)var1;
-         return this.value == var2.value;
+      } else if (o != null && this.getClass() == o.getClass()) {
+         TextColor other = (TextColor)o;
+         return this.value == other.value;
       } else {
          return false;
       }
@@ -63,31 +63,31 @@ public final class TextColor {
       return this.serialize();
    }
 
-   public static @Nullable TextColor fromLegacyFormat(ChatFormatting var0) {
-      return (TextColor)LEGACY_FORMAT_TO_COLOR.get(var0);
+   public static @Nullable TextColor fromLegacyFormat(final ChatFormatting format) {
+      return (TextColor)LEGACY_FORMAT_TO_COLOR.get(format);
    }
 
-   public static TextColor fromRgb(int var0) {
-      return new TextColor(var0);
+   public static TextColor fromRgb(final int rgb) {
+      return new TextColor(rgb);
    }
 
-   public static DataResult<TextColor> parseColor(String var0) {
-      if (var0.startsWith("#")) {
+   public static DataResult<TextColor> parseColor(final String color) {
+      if (color.startsWith("#")) {
          try {
-            int var3 = Integer.parseInt(var0.substring(1), 16);
-            return var3 >= 0 && var3 <= 16777215 ? DataResult.success(fromRgb(var3), Lifecycle.stable()) : DataResult.error(() -> "Color value out of range: " + var0);
+            int value = Integer.parseInt(color.substring(1), 16);
+            return value >= 0 && value <= 16777215 ? DataResult.success(fromRgb(value), Lifecycle.stable()) : DataResult.error(() -> "Color value out of range: " + color);
          } catch (NumberFormatException var2) {
-            return DataResult.error(() -> "Invalid color value: " + var0);
+            return DataResult.error(() -> "Invalid color value: " + color);
          }
       } else {
-         TextColor var1 = (TextColor)NAMED_COLORS.get(var0);
-         return var1 == null ? DataResult.error(() -> "Invalid color name: " + var0) : DataResult.success(var1, Lifecycle.stable());
+         TextColor predefinedColor = (TextColor)NAMED_COLORS.get(color);
+         return predefinedColor == null ? DataResult.error(() -> "Invalid color name: " + color) : DataResult.success(predefinedColor, Lifecycle.stable());
       }
    }
 
    static {
       CODEC = Codec.STRING.comapFlatMap(TextColor::parseColor, TextColor::serialize);
-      LEGACY_FORMAT_TO_COLOR = (Map)Stream.of(ChatFormatting.values()).filter(ChatFormatting::isColor).collect(ImmutableMap.toImmutableMap(Function.identity(), (var0) -> new TextColor(var0.getColor(), var0.getName())));
-      NAMED_COLORS = (Map)LEGACY_FORMAT_TO_COLOR.values().stream().collect(ImmutableMap.toImmutableMap((var0) -> var0.name, Function.identity()));
+      LEGACY_FORMAT_TO_COLOR = (Map)Stream.of(ChatFormatting.values()).filter(ChatFormatting::isColor).collect(ImmutableMap.toImmutableMap(Function.identity(), (f) -> new TextColor(f.getColor(), f.getName())));
+      NAMED_COLORS = (Map)LEGACY_FORMAT_TO_COLOR.values().stream().collect(ImmutableMap.toImmutableMap((e) -> e.name, Function.identity()));
    }
 }

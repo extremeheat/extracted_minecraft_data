@@ -1,11 +1,20 @@
 package net.minecraft.world.level.storage;
 
 import net.minecraft.world.level.levelgen.WorldDimensions;
+import net.minecraft.world.level.levelgen.WorldGenSettings;
 
-public record LevelDataAndDimensions(WorldData worldData, WorldDimensions.Complete dimensions) {
-   public LevelDataAndDimensions(WorldData var1, WorldDimensions.Complete var2) {
+public record LevelDataAndDimensions(WorldDataAndGenSettings worldDataAndGenSettings, WorldDimensions.Complete dimensions) {
+   public LevelDataAndDimensions {
       super();
-      this.worldData = var1;
-      this.dimensions = var2;
+   }
+
+   public static LevelDataAndDimensions create(final WorldData data, final WorldGenSettings genSettings, final WorldDimensions.Complete dimensions) {
+      return new LevelDataAndDimensions(new WorldDataAndGenSettings(data, genSettings), dimensions);
+   }
+
+   public static record WorldDataAndGenSettings(WorldData data, WorldGenSettings genSettings) {
+      public WorldDataAndGenSettings {
+         super();
+      }
    }
 }

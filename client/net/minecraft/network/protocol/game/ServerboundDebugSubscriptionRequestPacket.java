@@ -14,17 +14,16 @@ public record ServerboundDebugSubscriptionRequestPacket(Set<DebugSubscription<?>
    private static final StreamCodec<RegistryFriendlyByteBuf, Set<DebugSubscription<?>>> SET_STREAM_CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, ServerboundDebugSubscriptionRequestPacket> STREAM_CODEC;
 
-   public ServerboundDebugSubscriptionRequestPacket(Set<DebugSubscription<?>> var1) {
+   public ServerboundDebugSubscriptionRequestPacket {
       super();
-      this.subscriptions = var1;
    }
 
    public PacketType<ServerboundDebugSubscriptionRequestPacket> type() {
       return GamePacketTypes.SERVERBOUND_DEBUG_SUBSCRIPTION_REQUEST;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handleDebugSubscriptionRequest(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handleDebugSubscriptionRequest(this);
    }
 
    static {

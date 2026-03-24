@@ -12,14 +12,14 @@ public class DebugEntryFps implements DebugScreenEntry {
       super();
    }
 
-   public void display(DebugScreenDisplayer var1, @Nullable Level var2, @Nullable LevelChunk var3, @Nullable LevelChunk var4) {
-      Minecraft var5 = Minecraft.getInstance();
-      int var6 = var5.getFramerateLimitTracker().getFramerateLimit();
-      Options var7 = var5.options;
-      var1.addPriorityLine(String.format(Locale.ROOT, "%d fps T: %s%s", var5.getFps(), var6 == 260 ? "inf" : var6, (Boolean)var7.enableVsync().get() ? " vsync" : ""));
+   public void display(final DebugScreenDisplayer displayer, final @Nullable Level serverOrClientLevel, final @Nullable LevelChunk clientChunk, final @Nullable LevelChunk serverChunk) {
+      Minecraft minecraft = Minecraft.getInstance();
+      int framerateLimit = minecraft.getFramerateLimitTracker().getFramerateLimit();
+      Options options = minecraft.options;
+      displayer.addPriorityLine(String.format(Locale.ROOT, "%d fps T: %s%s", minecraft.getFps(), framerateLimit == 260 ? "inf" : framerateLimit, (Boolean)options.enableVsync().get() ? " vsync" : ""));
    }
 
-   public boolean isAllowed(boolean var1) {
+   public boolean isAllowed(final boolean reducedDebugInfo) {
       return true;
    }
 }

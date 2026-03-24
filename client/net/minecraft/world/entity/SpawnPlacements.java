@@ -52,30 +52,30 @@ public class SpawnPlacements {
       super();
    }
 
-   private static <T extends Mob> void register(EntityType<T> var0, SpawnPlacementType var1, Heightmap.Types var2, SpawnPredicate<T> var3) {
-      Data var4 = (Data)DATA_BY_TYPE.put(var0, new Data(var2, var1, var3));
-      if (var4 != null) {
-         throw new IllegalStateException("Duplicate registration for type " + String.valueOf(BuiltInRegistries.ENTITY_TYPE.getKey(var0)));
+   private static <T extends Mob> void register(final EntityType<T> type, final SpawnPlacementType placementType, final Heightmap.Types heightmap, final SpawnPredicate<T> spawnPredicate) {
+      Data previous = (Data)DATA_BY_TYPE.put(type, new Data(heightmap, placementType, spawnPredicate));
+      if (previous != null) {
+         throw new IllegalStateException("Duplicate registration for type " + String.valueOf(BuiltInRegistries.ENTITY_TYPE.getKey(type)));
       }
    }
 
-   public static SpawnPlacementType getPlacementType(EntityType<?> var0) {
-      Data var1 = (Data)DATA_BY_TYPE.get(var0);
-      return var1 == null ? SpawnPlacementTypes.NO_RESTRICTIONS : var1.placement;
+   public static SpawnPlacementType getPlacementType(final EntityType<?> type) {
+      Data data = (Data)DATA_BY_TYPE.get(type);
+      return data == null ? SpawnPlacementTypes.NO_RESTRICTIONS : data.placement;
    }
 
-   public static boolean isSpawnPositionOk(EntityType<?> var0, LevelReader var1, BlockPos var2) {
-      return getPlacementType(var0).isSpawnPositionOk(var1, var2, var0);
+   public static boolean isSpawnPositionOk(final EntityType<?> type, final LevelReader level, final BlockPos blockPos) {
+      return getPlacementType(type).isSpawnPositionOk(level, blockPos, type);
    }
 
-   public static Heightmap.Types getHeightmapType(@Nullable EntityType<?> var0) {
-      Data var1 = (Data)DATA_BY_TYPE.get(var0);
-      return var1 == null ? Heightmap.Types.MOTION_BLOCKING_NO_LEAVES : var1.heightMap;
+   public static Heightmap.Types getHeightmapType(final @Nullable EntityType<?> type) {
+      Data data = (Data)DATA_BY_TYPE.get(type);
+      return data == null ? Heightmap.Types.MOTION_BLOCKING_NO_LEAVES : data.heightMap;
    }
 
-   public static <T extends Entity> boolean checkSpawnRules(EntityType<T> var0, ServerLevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
-      Data var5 = (Data)DATA_BY_TYPE.get(var0);
-      return var5 == null || var5.predicate.test(var0, var1, var2, var3, var4);
+   public static <T extends Entity> boolean checkSpawnRules(final EntityType<T> type, final ServerLevelAccessor level, final EntitySpawnReason spawnReason, final BlockPos pos, final RandomSource random) {
+      Data data = (Data)DATA_BY_TYPE.get(type);
+      return data == null || data.predicate.test(type, level, spawnReason, pos, random);
    }
 
    static {
@@ -163,21 +163,14 @@ public class SpawnPlacements {
       register(EntityType.WARDEN, SpawnPlacementTypes.NO_RESTRICTIONS, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Monster::checkMonsterSpawnRules);
    }
 
-   static record Data(Heightmap.Types heightMap, SpawnPlacementType placement, SpawnPredicate<?> predicate) {
-      final Heightmap.Types heightMap;
-      final SpawnPlacementType placement;
-      final SpawnPredicate<?> predicate;
-
-      Data(Heightmap.Types var1, SpawnPlacementType var2, SpawnPredicate<?> var3) {
+   private static record Data(Heightmap.Types heightMap, SpawnPlacementType placement, SpawnPredicate<?> predicate) {
+      private Data {
          super();
-         this.heightMap = var1;
-         this.placement = var2;
-         this.predicate = var3;
       }
    }
 
    @FunctionalInterface
    public interface SpawnPredicate<T extends Entity> {
-      boolean test(EntityType<T> var1, ServerLevelAccessor var2, EntitySpawnReason var3, BlockPos var4, RandomSource var5);
+      boolean test(EntityType<T> type, ServerLevelAccessor level, EntitySpawnReason spawnReason, BlockPos pos, RandomSource random);
    }
 }

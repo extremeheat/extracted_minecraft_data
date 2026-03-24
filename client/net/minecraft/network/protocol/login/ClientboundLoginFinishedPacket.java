@@ -10,17 +10,16 @@ import net.minecraft.network.protocol.PacketType;
 public record ClientboundLoginFinishedPacket(GameProfile gameProfile) implements Packet<ClientLoginPacketListener> {
    public static final StreamCodec<ByteBuf, ClientboundLoginFinishedPacket> STREAM_CODEC;
 
-   public ClientboundLoginFinishedPacket(GameProfile var1) {
+   public ClientboundLoginFinishedPacket {
       super();
-      this.gameProfile = var1;
    }
 
    public PacketType<ClientboundLoginFinishedPacket> type() {
       return LoginPacketTypes.CLIENTBOUND_LOGIN_FINISHED;
    }
 
-   public void handle(ClientLoginPacketListener var1) {
-      var1.handleLoginFinished(this);
+   public void handle(final ClientLoginPacketListener listener) {
+      listener.handleLoginFinished(this);
    }
 
    public boolean isTerminal() {

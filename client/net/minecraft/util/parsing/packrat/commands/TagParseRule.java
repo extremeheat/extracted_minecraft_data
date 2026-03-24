@@ -11,25 +11,20 @@ import org.jspecify.annotations.Nullable;
 public class TagParseRule<T> implements Rule<StringReader, Dynamic<?>> {
    private final TagParser<T> parser;
 
-   public TagParseRule(DynamicOps<T> var1) {
+   public TagParseRule(final DynamicOps<T> ops) {
       super();
-      this.parser = TagParser.<T>create(var1);
+      this.parser = TagParser.<T>create(ops);
    }
 
-   public @Nullable Dynamic<T> parse(ParseState<StringReader> var1) {
-      ((StringReader)var1.input()).skipWhitespace();
-      int var2 = var1.mark();
+   public @Nullable Dynamic<T> parse(final ParseState<StringReader> state) {
+      ((StringReader)state.input()).skipWhitespace();
+      int mark = state.mark();
 
       try {
-         return new Dynamic(this.parser.getOps(), this.parser.parseAsArgument((StringReader)var1.input()));
-      } catch (Exception var4) {
-         var1.errorCollector().store(var2, var4);
+         return new Dynamic(this.parser.getOps(), this.parser.parseAsArgument(state.input()));
+      } catch (Exception e) {
+         state.errorCollector().store(mark, e);
          return null;
       }
-   }
-
-   // $FF: synthetic method
-   public @Nullable Object parse(final ParseState var1) {
-      return this.parse(var1);
    }
 }

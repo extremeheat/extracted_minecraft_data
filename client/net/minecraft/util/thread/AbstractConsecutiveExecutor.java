@@ -13,19 +13,19 @@ import net.minecraft.util.profiling.metrics.MetricsRegistry;
 import net.minecraft.util.profiling.metrics.ProfilerMeasured;
 import org.slf4j.Logger;
 
-public abstract class AbstractConsecutiveExecutor<T extends Runnable> implements ProfilerMeasured, TaskScheduler<T>, Runnable {
+public abstract class AbstractConsecutiveExecutor<T extends Runnable> implements Runnable, TaskScheduler<T>, ProfilerMeasured {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final AtomicReference<Status> status;
    private final StrictQueue<T> queue;
    private final Executor executor;
    private final String name;
 
-   public AbstractConsecutiveExecutor(StrictQueue<T> var1, Executor var2, String var3) {
+   public AbstractConsecutiveExecutor(final StrictQueue<T> queue, final Executor executor, final String name) {
       super();
       this.status = new AtomicReference(AbstractConsecutiveExecutor.Status.SLEEPING);
-      this.executor = var2;
-      this.queue = var1;
-      this.name = var3;
+      this.executor = executor;
+      this.queue = queue;
+      this.name = name;
       MetricsRegistry.INSTANCE.add(this);
    }
 
@@ -41,11 +41,11 @@ public abstract class AbstractConsecutiveExecutor<T extends Runnable> implements
       if (!this.isRunning()) {
          return false;
       } else {
-         Runnable var1 = this.queue.pop();
-         if (var1 == null) {
+         Runnable runnable = this.queue.pop();
+         if (runnable == null) {
             return false;
          } else {
-            Util.runNamed(var1, this.name);
+            Util.runNamed(runnable, this.name);
             return true;
          }
       }
@@ -72,8 +72,8 @@ public abstract class AbstractConsecutiveExecutor<T extends Runnable> implements
 
    }
 
-   public void schedule(T var1) {
-      this.queue.push(var1);
+   public void schedule(final T task) {
+      this.queue.push(task);
       this.registerForExecution();
    }
 
@@ -84,8 +84,8 @@ public abstract class AbstractConsecutiveExecutor<T extends Runnable> implements
          } catch (RejectedExecutionException var4) {
             try {
                this.executor.execute(this);
-            } catch (RejectedExecutionException var3) {
-               LOGGER.error("Could not schedule ConsecutiveExecutor", var3);
+            } catch (RejectedExecutionException e2) {
+               LOGGER.error("Could not schedule ConsecutiveExecutor", e2);
             }
          }
       }
@@ -129,7 +129,7 @@ public abstract class AbstractConsecutiveExecutor<T extends Runnable> implements
       return this.status.get() == AbstractConsecutiveExecutor.Status.CLOSED;
    }
 
-   static enum Status {
+   private static enum Status {
       SLEEPING,
       RUNNING,
       CLOSED;

@@ -1,11 +1,9 @@
 package com.mojang.blaze3d.shaders;
 
-import com.mojang.blaze3d.DontObfuscate;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
-@DontObfuscate
 public enum ShaderType {
    VERTEX("vertex", ".vsh"),
    FRAGMENT("fragment", ".fsh");
@@ -14,15 +12,15 @@ public enum ShaderType {
    private final String name;
    private final String extension;
 
-   private ShaderType(final String var3, final String var4) {
-      this.name = var3;
-      this.extension = var4;
+   private ShaderType(final String name, final String extension) {
+      this.name = name;
+      this.extension = extension;
    }
 
-   public static @Nullable ShaderType byLocation(Identifier var0) {
-      for(ShaderType var4 : TYPES) {
-         if (var0.getPath().endsWith(var4.extension)) {
-            return var4;
+   public static @Nullable ShaderType byLocation(final Identifier location) {
+      for(ShaderType type : TYPES) {
+         if (location.getPath().endsWith(type.extension)) {
+            return type;
          }
       }
 

@@ -7,7 +7,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -17,7 +16,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class WallSkullBlock extends AbstractSkullBlock {
-   public static final MapCodec<WallSkullBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(SkullBlock.Type.CODEC.fieldOf("kind").forGetter(AbstractSkullBlock::getType), propertiesCodec()).apply(var0, WallSkullBlock::new));
+   public static final MapCodec<WallSkullBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(SkullBlock.Type.CODEC.fieldOf("kind").forGetter(AbstractSkullBlock::getType), propertiesCodec()).apply(i, WallSkullBlock::new));
    public static final EnumProperty<Direction> FACING;
    private static final Map<Direction, VoxelShape> SHAPES;
 
@@ -25,27 +24,27 @@ public class WallSkullBlock extends AbstractSkullBlock {
       return CODEC;
    }
 
-   protected WallSkullBlock(SkullBlock.Type var1, BlockBehaviour.Properties var2) {
-      super(var1, var2);
+   protected WallSkullBlock(final SkullBlock.Type type, final BlockBehaviour.Properties properties) {
+      super(type, properties);
       this.registerDefaultState((BlockState)this.defaultBlockState().setValue(FACING, Direction.NORTH));
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (VoxelShape)SHAPES.get(var1.getValue(FACING));
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return (VoxelShape)SHAPES.get(state.getValue(FACING));
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      BlockState var2 = super.getStateForPlacement(var1);
-      Level var3 = var1.getLevel();
-      BlockPos var4 = var1.getClickedPos();
-      Direction[] var5 = var1.getNearestLookingDirections();
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      BlockState state = super.getStateForPlacement(context);
+      BlockGetter level = context.getLevel();
+      BlockPos pos = context.getClickedPos();
+      Direction[] directions = context.getNearestLookingDirections();
 
-      for(Direction var9 : var5) {
-         if (var9.getAxis().isHorizontal()) {
-            Direction var10 = var9.getOpposite();
-            var2 = (BlockState)var2.setValue(FACING, var10);
-            if (!var3.getBlockState(var4.relative(var9)).canBeReplaced(var1)) {
-               return var2;
+      for(Direction direction : directions) {
+         if (direction.getAxis().isHorizontal()) {
+            Direction facing = direction.getOpposite();
+            state = (BlockState)state.setValue(FACING, facing);
+            if (!level.getBlockState(pos.relative(direction)).canBeReplaced(context)) {
+               return state;
             }
          }
       }
@@ -53,17 +52,17 @@ public class WallSkullBlock extends AbstractSkullBlock {
       return null;
    }
 
-   protected BlockState rotate(BlockState var1, Rotation var2) {
-      return (BlockState)var1.setValue(FACING, var2.rotate((Direction)var1.getValue(FACING)));
+   protected BlockState rotate(final BlockState state, final Rotation rotation) {
+      return (BlockState)state.setValue(FACING, rotation.rotate((Direction)state.getValue(FACING)));
    }
 
-   protected BlockState mirror(BlockState var1, Mirror var2) {
-      return var1.rotate(var2.getRotation((Direction)var1.getValue(FACING)));
+   protected BlockState mirror(final BlockState state, final Mirror mirror) {
+      return state.rotate(mirror.getRotation((Direction)state.getValue(FACING)));
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      super.createBlockStateDefinition(var1);
-      var1.add(FACING);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      super.createBlockStateDefinition(builder);
+      builder.add(FACING);
    }
 
    static {

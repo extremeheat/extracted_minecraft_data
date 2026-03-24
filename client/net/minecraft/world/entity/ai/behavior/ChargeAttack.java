@@ -2,6 +2,7 @@ package net.minecraft.world.entity.ai.behavior;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -31,110 +32,100 @@ public class ChargeAttack extends Behavior<Animal> {
    private Vec3 chargeVelocityVector;
    private Vec3 startPosition;
 
-   public ChargeAttack(int var1, TargetingConditions var2, float var3, float var4, double var5, double var7, SoundEvent var9) {
+   public ChargeAttack(final int timeBetweenAttacks, final TargetingConditions chargeTargeting, final float speed, final float knockbackForce, final double maxChargeDistance, final double maxTargetDetectionDistance, final SoundEvent chargeSound) {
       super(ImmutableMap.of(MemoryModuleType.CHARGE_COOLDOWN_TICKS, MemoryStatus.VALUE_ABSENT, MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_PRESENT));
-      this.timeBetweenAttacks = var1;
-      this.chargeTargeting = var2;
-      this.speed = var3;
-      this.knockbackForce = var4;
-      this.maxChargeDistance = var5;
-      this.maxTargetDetectionDistance = var7;
-      this.chargeSound = var9;
+      this.timeBetweenAttacks = timeBetweenAttacks;
+      this.chargeTargeting = chargeTargeting;
+      this.speed = speed;
+      this.knockbackForce = knockbackForce;
+      this.maxChargeDistance = maxChargeDistance;
+      this.maxTargetDetectionDistance = maxTargetDetectionDistance;
+      this.chargeSound = chargeSound;
       this.chargeVelocityVector = Vec3.ZERO;
       this.startPosition = Vec3.ZERO;
    }
 
-   protected boolean checkExtraStartConditions(ServerLevel var1, Animal var2) {
-      return var2.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_TARGET);
+   protected boolean checkExtraStartConditions(final ServerLevel level, final Animal body) {
+      return body.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_TARGET);
    }
 
-   protected boolean canStillUse(ServerLevel var1, Animal var2, long var3) {
-      Brain var5 = var2.getBrain();
-      Optional var6 = var5.getMemory(MemoryModuleType.ATTACK_TARGET);
-      if (var6.isEmpty()) {
+   protected boolean canStillUse(final ServerLevel level, final Animal body, final long timestamp) {
+      Brain<?> brain = body.getBrain();
+      Optional<LivingEntity> attackCandidate = brain.<LivingEntity>getMemory(MemoryModuleType.ATTACK_TARGET);
+      if (attackCandidate.isEmpty()) {
          return false;
       } else {
-         LivingEntity var7 = (LivingEntity)var6.get();
-         if (var2 instanceof TamableAnimal) {
-            TamableAnimal var8 = (TamableAnimal)var2;
-            if (var8.isTame()) {
+         LivingEntity attackTarget = (LivingEntity)attackCandidate.get();
+         if (body instanceof TamableAnimal) {
+            TamableAnimal tamedAnimal = (TamableAnimal)body;
+            if (tamedAnimal.isTame()) {
                return false;
             }
          }
 
-         if (var2.position().subtract(this.startPosition).lengthSqr() >= this.maxChargeDistance * this.maxChargeDistance) {
+         if (body.position().subtract(this.startPosition).lengthSqr() >= this.maxChargeDistance * this.maxChargeDistance) {
             return false;
-         } else if (var7.position().subtract(var2.position()).lengthSqr() >= this.maxTargetDetectionDistance * this.maxTargetDetectionDistance) {
+         } else if (attackTarget.position().subtract(body.position()).lengthSqr() >= this.maxTargetDetectionDistance * this.maxTargetDetectionDistance) {
             return false;
-         } else if (!var2.hasLineOfSight(var7)) {
+         } else if (!body.hasLineOfSight(attackTarget)) {
             return false;
          } else {
-            return !var5.hasMemoryValue(MemoryModuleType.CHARGE_COOLDOWN_TICKS);
+            return !brain.hasMemoryValue(MemoryModuleType.CHARGE_COOLDOWN_TICKS);
          }
       }
    }
 
-   protected void start(ServerLevel var1, Animal var2, long var3) {
-      Brain var5 = var2.getBrain();
-      this.startPosition = var2.position();
-      LivingEntity var6 = (LivingEntity)var5.getMemory(MemoryModuleType.ATTACK_TARGET).get();
-      Vec3 var7 = var6.position().subtract(var2.position()).normalize();
-      this.chargeVelocityVector = var7.scale((double)this.speed);
-      if (this.canStillUse(var1, var2, var3)) {
-         var2.playSound(this.chargeSound);
+   protected void start(final ServerLevel level, final Animal body, final long timestamp) {
+      Brain<?> brain = body.getBrain();
+      this.startPosition = body.position();
+      LivingEntity attackCandidate = (LivingEntity)brain.getMemory(MemoryModuleType.ATTACK_TARGET).get();
+      Vec3 direction = attackCandidate.position().subtract(body.position()).normalize();
+      this.chargeVelocityVector = direction.scale((double)this.speed);
+      if (this.canStillUse(level, body, timestamp)) {
+         body.playSound(this.chargeSound);
       }
 
    }
 
-   protected void tick(ServerLevel var1, Animal var2, long var3) {
-      Brain var5 = var2.getBrain();
-      LivingEntity var6 = (LivingEntity)var5.getMemory(MemoryModuleType.ATTACK_TARGET).orElseThrow();
-      var2.lookAt(var6, 360.0F, 360.0F);
-      var2.setDeltaMovement(this.chargeVelocityVector);
-      ArrayList var7 = new ArrayList(1);
-      var1.getEntities(EntityTypeTest.forClass(LivingEntity.class), var2.getBoundingBox(), (var3x) -> this.chargeTargeting.test(var1, var2, var3x), var7, 1);
-      if (!var7.isEmpty()) {
-         LivingEntity var8 = (LivingEntity)var7.get(0);
-         if (var2.hasPassenger(var8)) {
+   protected void tick(final ServerLevel level, final Animal body, final long timestamp) {
+      Brain<?> brain = body.getBrain();
+      LivingEntity attackTarget = (LivingEntity)brain.getMemory(MemoryModuleType.ATTACK_TARGET).orElseThrow();
+      body.lookAt(attackTarget, 360.0F, 360.0F);
+      body.setDeltaMovement(this.chargeVelocityVector);
+      List<LivingEntity> collidingEntities = new ArrayList(1);
+      level.getEntities(EntityTypeTest.forClass(LivingEntity.class), body.getBoundingBox(), (e) -> this.chargeTargeting.test(level, body, e), collidingEntities, 1);
+      if (!collidingEntities.isEmpty()) {
+         LivingEntity closestAttackTarget = (LivingEntity)collidingEntities.get(0);
+         if (body.hasPassenger(closestAttackTarget)) {
             return;
          }
 
-         this.dealDamageToTarget(var1, var2, var8);
-         this.dealKnockBack(var2, var8);
-         this.stop(var1, var2, var3);
+         this.dealDamageToTarget(level, body, closestAttackTarget);
+         this.dealKnockBack(body, closestAttackTarget);
+         this.stop(level, body, timestamp);
       }
 
    }
 
-   private void dealDamageToTarget(ServerLevel var1, Animal var2, LivingEntity var3) {
-      DamageSource var4 = var1.damageSources().mobAttack(var2);
-      float var5 = (float)var2.getAttributeValue(Attributes.ATTACK_DAMAGE);
-      if (var3.hurtServer(var1, var4, var5)) {
-         EnchantmentHelper.doPostAttackEffects(var1, var3, var4);
+   private void dealDamageToTarget(final ServerLevel level, final Animal body, final LivingEntity target) {
+      DamageSource damageSource = level.damageSources().mobAttack(body);
+      float damage = (float)body.getAttributeValue(Attributes.ATTACK_DAMAGE);
+      if (target.hurtServer(level, damageSource, damage)) {
+         EnchantmentHelper.doPostAttackEffects(level, target, damageSource);
       }
 
    }
 
-   private void dealKnockBack(Animal var1, LivingEntity var2) {
-      int var3 = var1.hasEffect(MobEffects.SPEED) ? var1.getEffect(MobEffects.SPEED).getAmplifier() + 1 : 0;
-      int var4 = var1.hasEffect(MobEffects.SLOWNESS) ? var1.getEffect(MobEffects.SLOWNESS).getAmplifier() + 1 : 0;
-      float var5 = 0.25F * (float)(var3 - var4);
-      float var6 = Mth.clamp(this.speed * (float)var1.getAttributeValue(Attributes.MOVEMENT_SPEED), 0.2F, 2.0F) + var5;
-      var1.causeExtraKnockback(var2, var6 * this.knockbackForce, var1.getDeltaMovement());
+   private void dealKnockBack(final Animal body, final LivingEntity target) {
+      int movementSpeedLevel = body.hasEffect(MobEffects.SPEED) ? body.getEffect(MobEffects.SPEED).getAmplifier() + 1 : 0;
+      int movementSlowdownLevel = body.hasEffect(MobEffects.SLOWNESS) ? body.getEffect(MobEffects.SLOWNESS).getAmplifier() + 1 : 0;
+      float speedBoostPower = 0.25F * (float)(movementSpeedLevel - movementSlowdownLevel);
+      float speedFactor = Mth.clamp(this.speed * (float)body.getAttributeValue(Attributes.MOVEMENT_SPEED), 0.2F, 2.0F) + speedBoostPower;
+      body.causeExtraKnockback(target, speedFactor * this.knockbackForce, body.getDeltaMovement());
    }
 
-   protected void stop(ServerLevel var1, Animal var2, long var3) {
-      var2.getBrain().setMemory(MemoryModuleType.CHARGE_COOLDOWN_TICKS, this.timeBetweenAttacks);
-      var2.getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
-   }
-
-   // $FF: synthetic method
-   protected void stop(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.stop(var1, (Animal)var2, var3);
-   }
-
-   // $FF: synthetic method
-   protected void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.start(var1, (Animal)var2, var3);
+   protected void stop(final ServerLevel level, final Animal body, final long timestamp) {
+      body.getBrain().setMemory(MemoryModuleType.CHARGE_COOLDOWN_TICKS, this.timeBetweenAttacks);
+      body.getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
    }
 }

@@ -5,11 +5,11 @@ import java.util.function.LongSupplier;
 
 @FunctionalInterface
 public interface TimeSource {
-   long get(TimeUnit var1);
+   long get(TimeUnit timeUnit);
 
-   public interface NanoTimeSource extends TimeSource, LongSupplier {
-      default long get(TimeUnit var1) {
-         return var1.convert(this.getAsLong(), TimeUnit.NANOSECONDS);
+   public interface NanoTimeSource extends LongSupplier, TimeSource {
+      default long get(final TimeUnit timeUnit) {
+         return timeUnit.convert(this.getAsLong(), TimeUnit.NANOSECONDS);
       }
    }
 }

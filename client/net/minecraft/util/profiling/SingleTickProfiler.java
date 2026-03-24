@@ -16,12 +16,12 @@ public class SingleTickProfiler {
    private final File location;
    private ProfileCollector profiler;
 
-   public SingleTickProfiler(LongSupplier var1, String var2, long var3) {
+   public SingleTickProfiler(final LongSupplier realTime, final String location, final long saveThresholdNs) {
       super();
       this.profiler = InactiveProfiler.INSTANCE;
-      this.realTime = var1;
-      this.location = new File("debug", var2);
-      this.saveThreshold = var3;
+      this.realTime = realTime;
+      this.location = new File("debug", location);
+      this.saveThreshold = saveThresholdNs;
    }
 
    public ProfilerFiller startTick() {
@@ -32,22 +32,22 @@ public class SingleTickProfiler {
 
    public void endTick() {
       if (this.profiler != InactiveProfiler.INSTANCE) {
-         ProfileResults var1 = this.profiler.getResults();
+         ProfileResults results = this.profiler.getResults();
          this.profiler = InactiveProfiler.INSTANCE;
-         if (var1.getNanoDuration() >= this.saveThreshold) {
-            File var2 = new File(this.location, "tick-results-" + Util.getFilenameFormattedDateTime() + ".txt");
-            var1.saveResults(var2.toPath());
-            LOGGER.info("Recorded long tick -- wrote info to: {}", var2.getAbsolutePath());
+         if (results.getNanoDuration() >= this.saveThreshold) {
+            File file = new File(this.location, "tick-results-" + Util.getFilenameFormattedDateTime() + ".txt");
+            results.saveResults(file.toPath());
+            LOGGER.info("Recorded long tick -- wrote info to: {}", file.getAbsolutePath());
          }
 
       }
    }
 
-   public static @Nullable SingleTickProfiler createTickProfiler(String var0) {
-      return SharedConstants.DEBUG_MONITOR_TICK_TIMES ? new SingleTickProfiler(Util.timeSource, var0, SharedConstants.MAXIMUM_TICK_TIME_NANOS) : null;
+   public static @Nullable SingleTickProfiler createTickProfiler(final String name) {
+      return SharedConstants.DEBUG_MONITOR_TICK_TIMES ? new SingleTickProfiler(Util.timeSource, name, SharedConstants.MAXIMUM_TICK_TIME_NANOS) : null;
    }
 
-   public static ProfilerFiller decorateFiller(ProfilerFiller var0, @Nullable SingleTickProfiler var1) {
-      return var1 != null ? ProfilerFiller.combine(var1.startTick(), var0) : var0;
+   public static ProfilerFiller decorateFiller(final ProfilerFiller filler, final @Nullable SingleTickProfiler tickProfiler) {
+      return tickProfiler != null ? ProfilerFiller.combine(tickProfiler.startTick(), filler) : filler;
    }
 }

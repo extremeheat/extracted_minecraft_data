@@ -9,23 +9,22 @@ import net.minecraft.world.level.block.state.properties.Property;
 
 public record PropertyValueList(List<Property.Value<?>> values) {
    public static final PropertyValueList EMPTY = new PropertyValueList(List.of());
-   private static final Comparator<Property.Value<?>> COMPARE_BY_NAME = Comparator.comparing((var0) -> var0.property().getName());
+   private static final Comparator<Property.Value<?>> COMPARE_BY_NAME = Comparator.comparing((p) -> p.property().getName());
 
-   public PropertyValueList(List<Property.Value<?>> var1) {
+   public PropertyValueList {
       super();
-      this.values = var1;
    }
 
-   public PropertyValueList extend(Property.Value<?> var1) {
-      return new PropertyValueList(Util.copyAndAdd(this.values, var1));
+   public PropertyValueList extend(final Property.Value<?> element) {
+      return new PropertyValueList(Util.copyAndAdd(this.values, element));
    }
 
-   public PropertyValueList extend(PropertyValueList var1) {
-      return new PropertyValueList(ImmutableList.builder().addAll(this.values).addAll(var1.values).build());
+   public PropertyValueList extend(final PropertyValueList other) {
+      return new PropertyValueList(ImmutableList.builder().addAll(this.values).addAll(other.values).build());
    }
 
-   public static PropertyValueList of(Property.Value<?>... var0) {
-      return new PropertyValueList(List.of(var0));
+   public static PropertyValueList of(final Property.Value<?>... values) {
+      return new PropertyValueList(List.of(values));
    }
 
    public String getKey() {

@@ -16,44 +16,56 @@ public class ValidationContext {
    private final Optional<HolderGetter.Provider> resolver;
    private final Set<ResourceKey<?>> visitedElements;
 
-   public ValidationContext(ProblemReporter var1, ContextKeySet var2, HolderGetter.Provider var3) {
-      this(var1, var2, Optional.of(var3), Set.of());
+   public ValidationContext(final ProblemReporter reporter, final ContextKeySet contextKeySet, final HolderGetter.Provider resolver) {
+      this(reporter, contextKeySet, Optional.of(resolver), Set.of());
    }
 
-   public ValidationContext(ProblemReporter var1, ContextKeySet var2) {
-      this(var1, var2, Optional.empty(), Set.of());
+   public ValidationContext(final ProblemReporter reporter, final ContextKeySet contextKeySet) {
+      this(reporter, contextKeySet, Optional.empty(), Set.of());
    }
 
-   private ValidationContext(ProblemReporter var1, ContextKeySet var2, Optional<HolderGetter.Provider> var3, Set<ResourceKey<?>> var4) {
+   private ValidationContext(final ProblemReporter reporter, final ContextKeySet contextKeySet, final Optional<HolderGetter.Provider> resolver, final Set<ResourceKey<?>> visitedElements) {
       super();
-      this.reporter = var1;
-      this.contextKeySet = var2;
-      this.resolver = var3;
-      this.visitedElements = var4;
+      this.reporter = reporter;
+      this.contextKeySet = contextKeySet;
+      this.resolver = resolver;
+      this.visitedElements = visitedElements;
    }
 
-   public ValidationContext forChild(ProblemReporter.PathElement var1) {
-      return new ValidationContext(this.reporter.forChild(var1), this.contextKeySet, this.resolver, this.visitedElements);
+   public ValidationContext forChild(final ProblemReporter.PathElement subContext) {
+      return new ValidationContext(this.reporter.forChild(subContext), this.contextKeySet, this.resolver, this.visitedElements);
    }
 
-   public ValidationContext enterElement(ProblemReporter.PathElement var1, ResourceKey<?> var2) {
-      ImmutableSet var3 = ImmutableSet.builder().addAll(this.visitedElements).add(var2).build();
-      return new ValidationContext(this.reporter.forChild(var1), this.contextKeySet, this.resolver, var3);
+   public ValidationContext forField(final String name) {
+      return this.forChild(new ProblemReporter.FieldPathElement(name));
    }
 
-   public boolean hasVisitedElement(ResourceKey<?> var1) {
-      return this.visitedElements.contains(var1);
+   public ValidationContext forIndexedField(final String name, final int index) {
+      return this.forChild(new ProblemReporter.IndexedFieldPathElement(name, index));
    }
 
-   public void reportProblem(ProblemReporter.Problem var1) {
-      this.reporter.report(var1);
+   public ValidationContext forMapField(final String name, final String key) {
+      return this.forChild(new ProblemReporter.MapEntryPathElement(name, key));
    }
 
-   public void validateContextUsage(LootContextUser var1) {
-      Set var2 = var1.getReferencedContextParams();
-      Sets.SetView var3 = Sets.difference(var2, this.contextKeySet.allowed());
-      if (!var3.isEmpty()) {
-         this.reporter.report(new ParametersNotProvidedProblem(var3));
+   public ValidationContext enterElement(final ProblemReporter.PathElement subContext, final ResourceKey<?> element) {
+      Set<ResourceKey<?>> newVisitedElements = ImmutableSet.builder().addAll(this.visitedElements).add(element).build();
+      return new ValidationContext(this.reporter.forChild(subContext), this.contextKeySet, this.resolver, newVisitedElements);
+   }
+
+   public boolean hasVisitedElement(final ResourceKey<?> element) {
+      return this.visitedElements.contains(element);
+   }
+
+   public void reportProblem(final ProblemReporter.Problem description) {
+      this.reporter.report(description);
+   }
+
+   public void validateContextUsage(final LootContextUser lootContextUser) {
+      Set<ContextKey<?>> allReferenced = lootContextUser.getReferencedContextParams();
+      Set<ContextKey<?>> notProvided = Sets.difference(allReferenced, this.contextKeySet.allowed());
+      if (!notProvided.isEmpty()) {
+         this.reporter.report(new ParametersNotProvidedProblem(notProvided));
       }
 
    }
@@ -66,18 +78,13 @@ public class ValidationContext {
       return this.resolver.isPresent();
    }
 
-   public ValidationContext setContextKeySet(ContextKeySet var1) {
-      return new ValidationContext(this.reporter, var1, this.resolver, this.visitedElements);
-   }
-
    public ProblemReporter reporter() {
       return this.reporter;
    }
 
    public static record ParametersNotProvidedProblem(Set<ContextKey<?>> notProvided) implements ProblemReporter.Problem {
-      public ParametersNotProvidedProblem(Set<ContextKey<?>> var1) {
+      public ParametersNotProvidedProblem {
          super();
-         this.notProvided = var1;
       }
 
       public String description() {
@@ -86,9 +93,8 @@ public class ValidationContext {
    }
 
    public static record ReferenceNotAllowedProblem(ResourceKey<?> referenced) implements ProblemReporter.Problem {
-      public ReferenceNotAllowedProblem(ResourceKey<?> var1) {
+      public ReferenceNotAllowedProblem {
          super();
-         this.referenced = var1;
       }
 
       public String description() {
@@ -98,9 +104,8 @@ public class ValidationContext {
    }
 
    public static record RecursiveReferenceProblem(ResourceKey<?> referenced) implements ProblemReporter.Problem {
-      public RecursiveReferenceProblem(ResourceKey<?> var1) {
+      public RecursiveReferenceProblem {
          super();
-         this.referenced = var1;
       }
 
       public String description() {
@@ -110,9 +115,8 @@ public class ValidationContext {
    }
 
    public static record MissingReferenceProblem(ResourceKey<?> referenced) implements ProblemReporter.Problem {
-      public MissingReferenceProblem(ResourceKey<?> var1) {
+      public MissingReferenceProblem {
          super();
-         this.referenced = var1;
       }
 
       public String description() {

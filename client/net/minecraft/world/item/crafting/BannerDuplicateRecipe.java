@@ -1,75 +1,98 @@
 package net.minecraft.world.item.crafting;
 
-import net.minecraft.core.HolderLookup;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.BannerItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
 
 public class BannerDuplicateRecipe extends CustomRecipe {
-   public BannerDuplicateRecipe(CraftingBookCategory var1) {
-      super(var1);
+   public static final MapCodec<BannerDuplicateRecipe> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Ingredient.CODEC.fieldOf("banner").forGetter((o) -> o.banner), ItemStackTemplate.CODEC.fieldOf("result").forGetter((o) -> o.result)).apply(i, BannerDuplicateRecipe::new));
+   public static final StreamCodec<RegistryFriendlyByteBuf, BannerDuplicateRecipe> STREAM_CODEC;
+   public static final RecipeSerializer<BannerDuplicateRecipe> SERIALIZER;
+   private final Ingredient banner;
+   private final ItemStackTemplate result;
+
+   public BannerDuplicateRecipe(final Ingredient banner, final ItemStackTemplate result) {
+      super();
+      this.banner = banner;
+      this.result = result;
    }
 
-   public boolean matches(CraftingInput var1, Level var2) {
-      if (var1.ingredientCount() != 2) {
+   public boolean matches(final CraftingInput input, final Level level) {
+      if (input.ingredientCount() != 2) {
          return false;
       } else {
-         DyeColor var3 = null;
-         boolean var4 = false;
-         boolean var5 = false;
+         DyeColor color = null;
+         boolean hasTarget = false;
+         boolean hasSource = false;
+         int slot = 0;
 
-         for(int var6 = 0; var6 < var1.size(); ++var6) {
-            ItemStack var7 = var1.getItem(var6);
-            if (!var7.isEmpty()) {
-               Item var8 = var7.getItem();
-               if (!(var8 instanceof BannerItem)) {
+         while(true) {
+            if (slot >= input.size()) {
+               return hasSource && hasTarget;
+            }
+
+            ItemStack itemStack = input.getItem(slot);
+            if (!itemStack.isEmpty()) {
+               if (!this.banner.test(itemStack)) {
+                  break;
+               }
+
+               Item var9 = itemStack.getItem();
+               if (!(var9 instanceof BannerItem)) {
+                  break;
+               }
+
+               BannerItem banner = (BannerItem)var9;
+               if (color == null) {
+                  color = banner.getColor();
+               } else if (color != banner.getColor()) {
                   return false;
                }
 
-               BannerItem var9 = (BannerItem)var8;
-               if (var3 == null) {
-                  var3 = var9.getColor();
-               } else if (var3 != var9.getColor()) {
+               int patternCount = ((BannerPatternLayers)itemStack.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY)).layers().size();
+               if (patternCount > 6) {
                   return false;
                }
 
-               int var10 = ((BannerPatternLayers)var7.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY)).layers().size();
-               if (var10 > 6) {
-                  return false;
-               }
-
-               if (var10 > 0) {
-                  if (var5) {
+               if (patternCount > 0) {
+                  if (hasSource) {
                      return false;
                   }
 
-                  var5 = true;
+                  hasSource = true;
                } else {
-                  if (var4) {
+                  if (hasTarget) {
                      return false;
                   }
 
-                  var4 = true;
+                  hasTarget = true;
                }
             }
+
+            ++slot;
          }
 
-         return var5 && var4;
+         return false;
       }
    }
 
-   public ItemStack assemble(CraftingInput var1, HolderLookup.Provider var2) {
-      for(int var3 = 0; var3 < var1.size(); ++var3) {
-         ItemStack var4 = var1.getItem(var3);
-         if (!var4.isEmpty()) {
-            int var5 = ((BannerPatternLayers)var4.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY)).layers().size();
-            if (var5 > 0 && var5 <= 6) {
-               return var4.copyWithCount(1);
+   public ItemStack assemble(final CraftingInput input) {
+      for(int slot = 0; slot < input.size(); ++slot) {
+         ItemStack itemStack = input.getItem(slot);
+         if (!itemStack.isEmpty()) {
+            int patternCount = ((BannerPatternLayers)itemStack.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY)).layers().size();
+            if (patternCount > 0 && patternCount <= 6) {
+               return TransmuteRecipe.createWithOriginalComponents(this.result, itemStack);
             }
          }
       }
@@ -77,25 +100,30 @@ public class BannerDuplicateRecipe extends CustomRecipe {
       return ItemStack.EMPTY;
    }
 
-   public NonNullList<ItemStack> getRemainingItems(CraftingInput var1) {
-      NonNullList var2 = NonNullList.withSize(var1.size(), ItemStack.EMPTY);
+   public NonNullList<ItemStack> getRemainingItems(final CraftingInput input) {
+      NonNullList<ItemStack> result = NonNullList.<ItemStack>withSize(input.size(), ItemStack.EMPTY);
 
-      for(int var3 = 0; var3 < var2.size(); ++var3) {
-         ItemStack var4 = var1.getItem(var3);
-         if (!var4.isEmpty()) {
-            ItemStack var5 = var4.getItem().getCraftingRemainder();
-            if (!var5.isEmpty()) {
-               var2.set(var3, var5);
-            } else if (!((BannerPatternLayers)var4.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY)).layers().isEmpty()) {
-               var2.set(var3, var4.copyWithCount(1));
+      for(int slot = 0; slot < result.size(); ++slot) {
+         ItemStack itemStack = input.getItem(slot);
+         if (!itemStack.isEmpty()) {
+            ItemStackTemplate remainder = itemStack.getItem().getCraftingRemainder();
+            if (remainder != null) {
+               result.set(slot, remainder.create());
+            } else if (!((BannerPatternLayers)itemStack.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY)).layers().isEmpty()) {
+               result.set(slot, itemStack.copyWithCount(1));
             }
          }
       }
 
-      return var2;
+      return result;
    }
 
    public RecipeSerializer<BannerDuplicateRecipe> getSerializer() {
-      return RecipeSerializer.BANNER_DUPLICATE;
+      return SERIALIZER;
+   }
+
+   static {
+      STREAM_CODEC = StreamCodec.composite(Ingredient.CONTENTS_STREAM_CODEC, (o) -> o.banner, ItemStackTemplate.STREAM_CODEC, (o) -> o.result, BannerDuplicateRecipe::new);
+      SERIALIZER = new RecipeSerializer<BannerDuplicateRecipe>(MAP_CODEC, STREAM_CODEC);
    }
 }

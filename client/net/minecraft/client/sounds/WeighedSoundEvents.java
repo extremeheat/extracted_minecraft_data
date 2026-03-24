@@ -15,40 +15,40 @@ public class WeighedSoundEvents implements Weighted<Sound> {
    private final List<Weighted<Sound>> list = Lists.newArrayList();
    private final @Nullable Component subtitle;
 
-   public WeighedSoundEvents(Identifier var1, @Nullable String var2) {
+   public WeighedSoundEvents(final Identifier location, final @Nullable String subtitle) {
       super();
       if (SharedConstants.DEBUG_SUBTITLES) {
-         MutableComponent var3 = Component.literal(var1.getPath());
-         if ("FOR THE DEBUG!".equals(var2)) {
-            var3 = var3.append((Component)Component.literal(" missing").withStyle(ChatFormatting.RED));
+         MutableComponent components = Component.literal(location.getPath());
+         if ("FOR THE DEBUG!".equals(subtitle)) {
+            components = components.append((Component)Component.literal(" missing").withStyle(ChatFormatting.RED));
          }
 
-         this.subtitle = var3;
+         this.subtitle = components;
       } else {
-         this.subtitle = var2 == null ? null : Component.translatable(var2);
+         this.subtitle = subtitle == null ? null : Component.translatable(subtitle);
       }
 
    }
 
    public int getWeight() {
-      int var1 = 0;
+      int sum = 0;
 
-      for(Weighted var3 : this.list) {
-         var1 += var3.getWeight();
+      for(Weighted<Sound> sound : this.list) {
+         sum += sound.getWeight();
       }
 
-      return var1;
+      return sum;
    }
 
-   public Sound getSound(RandomSource var1) {
-      int var2 = this.getWeight();
-      if (!this.list.isEmpty() && var2 != 0) {
-         int var3 = var1.nextInt(var2);
+   public Sound getSound(final RandomSource random) {
+      int weight = this.getWeight();
+      if (!this.list.isEmpty() && weight != 0) {
+         int index = random.nextInt(weight);
 
-         for(Weighted var5 : this.list) {
-            var3 -= var5.getWeight();
-            if (var3 < 0) {
-               return (Sound)var5.getSound(var1);
+         for(Weighted<Sound> weighted : this.list) {
+            index -= weighted.getWeight();
+            if (index < 0) {
+               return weighted.getSound(random);
             }
          }
 
@@ -58,23 +58,18 @@ public class WeighedSoundEvents implements Weighted<Sound> {
       }
    }
 
-   public void addSound(Weighted<Sound> var1) {
-      this.list.add(var1);
+   public void addSound(final Weighted<Sound> sound) {
+      this.list.add(sound);
    }
 
    public @Nullable Component getSubtitle() {
       return this.subtitle;
    }
 
-   public void preloadIfRequired(SoundEngine var1) {
-      for(Weighted var3 : this.list) {
-         var3.preloadIfRequired(var1);
+   public void preloadIfRequired(final SoundEngine soundEngine) {
+      for(Weighted<Sound> weighted : this.list) {
+         weighted.preloadIfRequired(soundEngine);
       }
 
-   }
-
-   // $FF: synthetic method
-   public Object getSound(final RandomSource var1) {
-      return this.getSound(var1);
    }
 }

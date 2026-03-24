@@ -11,35 +11,31 @@ import org.jspecify.annotations.Nullable;
 
 public record CustomModelData(List<Float> floats, List<Boolean> flags, List<String> strings, List<Integer> colors) {
    public static final CustomModelData EMPTY = new CustomModelData(List.of(), List.of(), List.of(), List.of());
-   public static final Codec<CustomModelData> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.FLOAT.listOf().optionalFieldOf("floats", List.of()).forGetter(CustomModelData::floats), Codec.BOOL.listOf().optionalFieldOf("flags", List.of()).forGetter(CustomModelData::flags), Codec.STRING.listOf().optionalFieldOf("strings", List.of()).forGetter(CustomModelData::strings), ExtraCodecs.RGB_COLOR_CODEC.listOf().optionalFieldOf("colors", List.of()).forGetter(CustomModelData::colors)).apply(var0, CustomModelData::new));
+   public static final Codec<CustomModelData> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.FLOAT.listOf().optionalFieldOf("floats", List.of()).forGetter(CustomModelData::floats), Codec.BOOL.listOf().optionalFieldOf("flags", List.of()).forGetter(CustomModelData::flags), Codec.STRING.listOf().optionalFieldOf("strings", List.of()).forGetter(CustomModelData::strings), ExtraCodecs.RGB_COLOR_CODEC.listOf().optionalFieldOf("colors", List.of()).forGetter(CustomModelData::colors)).apply(i, CustomModelData::new));
    public static final StreamCodec<ByteBuf, CustomModelData> STREAM_CODEC;
 
-   public CustomModelData(List<Float> var1, List<Boolean> var2, List<String> var3, List<Integer> var4) {
+   public CustomModelData {
       super();
-      this.floats = var1;
-      this.flags = var2;
-      this.strings = var3;
-      this.colors = var4;
    }
 
-   private static <T> @Nullable T getSafe(List<T> var0, int var1) {
-      return (T)(var1 >= 0 && var1 < var0.size() ? var0.get(var1) : null);
+   private static <T> @Nullable T getSafe(final List<T> values, final int index) {
+      return (T)(index >= 0 && index < values.size() ? values.get(index) : null);
    }
 
-   public @Nullable Float getFloat(int var1) {
-      return (Float)getSafe(this.floats, var1);
+   public @Nullable Float getFloat(final int index) {
+      return (Float)getSafe(this.floats, index);
    }
 
-   public @Nullable Boolean getBoolean(int var1) {
-      return (Boolean)getSafe(this.flags, var1);
+   public @Nullable Boolean getBoolean(final int index) {
+      return (Boolean)getSafe(this.flags, index);
    }
 
-   public @Nullable String getString(int var1) {
-      return (String)getSafe(this.strings, var1);
+   public @Nullable String getString(final int index) {
+      return (String)getSafe(this.strings, index);
    }
 
-   public @Nullable Integer getColor(int var1) {
-      return (Integer)getSafe(this.colors, var1);
+   public @Nullable Integer getColor(final int index) {
+      return (Integer)getSafe(this.colors, index);
    }
 
    static {

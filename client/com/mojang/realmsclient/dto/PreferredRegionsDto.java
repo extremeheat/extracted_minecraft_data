@@ -4,9 +4,8 @@ import com.google.gson.annotations.SerializedName;
 import java.util.List;
 
 public record PreferredRegionsDto(List<RegionDataDto> regionData) implements ReflectionBasedSerialization {
-   public PreferredRegionsDto(List<RegionDataDto> var1) {
+   public PreferredRegionsDto {
       super();
-      this.regionData = var1;
    }
 
    public static PreferredRegionsDto empty() {

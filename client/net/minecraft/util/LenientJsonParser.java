@@ -11,11 +11,11 @@ public class LenientJsonParser {
       super();
    }
 
-   public static JsonElement parse(Reader var0) throws JsonIOException, JsonSyntaxException {
-      return JsonParser.parseReader(var0);
+   public static JsonElement parse(final Reader reader) throws JsonIOException, JsonSyntaxException {
+      return JsonParser.parseReader(reader);
    }
 
-   public static JsonElement parse(String var0) throws JsonSyntaxException {
-      return JsonParser.parseString(var0);
+   public static JsonElement parse(final String json) throws JsonSyntaxException {
+      return JsonParser.parseString(json);
    }
 }

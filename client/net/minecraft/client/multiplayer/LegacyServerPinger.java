@@ -15,65 +15,60 @@ public class LegacyServerPinger extends SimpleChannelInboundHandler<ByteBuf> {
    private final ServerAddress address;
    private final Output output;
 
-   public LegacyServerPinger(ServerAddress var1, Output var2) {
+   public LegacyServerPinger(final ServerAddress address, final Output output) {
       super();
-      this.address = var1;
-      this.output = var2;
+      this.address = address;
+      this.output = output;
    }
 
-   public void channelActive(ChannelHandlerContext var1) throws Exception {
-      super.channelActive(var1);
-      ByteBuf var2 = var1.alloc().buffer();
+   public void channelActive(final ChannelHandlerContext ctx) throws Exception {
+      super.channelActive(ctx);
+      ByteBuf toSend = ctx.alloc().buffer();
 
       try {
-         var2.writeByte(254);
-         var2.writeByte(1);
-         var2.writeByte(250);
-         LegacyProtocolUtils.writeLegacyString(var2, "MC|PingHost");
-         int var3 = var2.writerIndex();
-         var2.writeShort(0);
-         int var4 = var2.writerIndex();
-         var2.writeByte(127);
-         LegacyProtocolUtils.writeLegacyString(var2, this.address.getHost());
-         var2.writeInt(this.address.getPort());
-         int var5 = var2.writerIndex() - var4;
-         var2.setShort(var3, var5);
-         var1.channel().writeAndFlush(var2).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
-      } catch (Exception var6) {
-         var2.release();
-         throw var6;
+         toSend.writeByte(254);
+         toSend.writeByte(1);
+         toSend.writeByte(250);
+         LegacyProtocolUtils.writeLegacyString(toSend, "MC|PingHost");
+         int sizeIndex = toSend.writerIndex();
+         toSend.writeShort(0);
+         int payloadStart = toSend.writerIndex();
+         toSend.writeByte(127);
+         LegacyProtocolUtils.writeLegacyString(toSend, this.address.getHost());
+         toSend.writeInt(this.address.getPort());
+         int payloadSize = toSend.writerIndex() - payloadStart;
+         toSend.setShort(sizeIndex, payloadSize);
+         ctx.channel().writeAndFlush(toSend).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
+      } catch (Exception e) {
+         toSend.release();
+         throw e;
       }
    }
 
-   protected void channelRead0(ChannelHandlerContext var1, ByteBuf var2) {
-      short var3 = var2.readUnsignedByte();
-      if (var3 == 255) {
-         String var4 = LegacyProtocolUtils.readLegacyString(var2);
-         List var5 = SPLITTER.splitToList(var4);
-         if ("\u00a71".equals(var5.get(0))) {
-            int var6 = Mth.getInt((String)var5.get(1), 0);
-            String var7 = (String)var5.get(2);
-            String var8 = (String)var5.get(3);
-            int var9 = Mth.getInt((String)var5.get(4), -1);
-            int var10 = Mth.getInt((String)var5.get(5), -1);
-            this.output.handleResponse(var6, var7, var8, var9, var10);
+   protected void channelRead0(final ChannelHandlerContext ctx, final ByteBuf msg) {
+      short firstByte = msg.readUnsignedByte();
+      if (firstByte == 255) {
+         String str = LegacyProtocolUtils.readLegacyString(msg);
+         List<String> split = SPLITTER.splitToList(str);
+         if ("\u00a71".equals(split.get(0))) {
+            int protocolVersion = Mth.getInt((String)split.get(1), 0);
+            String version = (String)split.get(2);
+            String motd = (String)split.get(3);
+            int curPlayers = Mth.getInt((String)split.get(4), -1);
+            int maxPlayers = Mth.getInt((String)split.get(5), -1);
+            this.output.handleResponse(protocolVersion, version, motd, curPlayers, maxPlayers);
          }
       }
 
-      var1.close();
+      ctx.close();
    }
 
-   public void exceptionCaught(ChannelHandlerContext var1, Throwable var2) {
-      var1.close();
-   }
-
-   // $FF: synthetic method
-   protected void channelRead0(final ChannelHandlerContext var1, final Object var2) throws Exception {
-      this.channelRead0(var1, (ByteBuf)var2);
+   public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
+      ctx.close();
    }
 
    @FunctionalInterface
    public interface Output {
-      void handleResponse(int var1, String var2, String var3, int var4, int var5);
+      void handleResponse(int protocolVersion, String gameVersion, String motd, int players, int maxPlayers);
    }
 }

@@ -1,6 +1,5 @@
 package net.minecraft.client.renderer.entity.layers;
 
-import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.monster.wither.WitherBossModel;
@@ -13,17 +12,17 @@ public class WitherArmorLayer extends EnergySwirlLayer<WitherRenderState, Wither
    private static final Identifier WITHER_ARMOR_LOCATION = Identifier.withDefaultNamespace("textures/entity/wither/wither_armor.png");
    private final WitherBossModel model;
 
-   public WitherArmorLayer(RenderLayerParent<WitherRenderState, WitherBossModel> var1, EntityModelSet var2) {
-      super(var1);
-      this.model = new WitherBossModel(var2.bakeLayer(ModelLayers.WITHER_ARMOR));
+   public WitherArmorLayer(final RenderLayerParent<WitherRenderState, WitherBossModel> renderer, final EntityModelSet modelSet) {
+      super(renderer);
+      this.model = new WitherBossModel(modelSet.bakeLayer(ModelLayers.WITHER_ARMOR));
    }
 
-   protected boolean isPowered(WitherRenderState var1) {
-      return var1.isPowered;
+   protected boolean isPowered(final WitherRenderState state) {
+      return state.isPowered;
    }
 
-   protected float xOffset(float var1) {
-      return Mth.cos((double)(var1 * 0.02F)) * 3.0F;
+   protected float xOffset(final float t) {
+      return Mth.cos((double)(t * 0.02F)) * 3.0F;
    }
 
    protected Identifier getTextureLocation() {
@@ -32,10 +31,5 @@ public class WitherArmorLayer extends EnergySwirlLayer<WitherRenderState, Wither
 
    protected WitherBossModel model() {
       return this.model;
-   }
-
-   // $FF: synthetic method
-   protected EntityModel model() {
-      return this.model();
    }
 }

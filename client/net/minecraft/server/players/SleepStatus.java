@@ -13,17 +13,17 @@ public class SleepStatus {
       super();
    }
 
-   public boolean areEnoughSleeping(int var1) {
-      return this.sleepingPlayers >= this.sleepersNeeded(var1);
+   public boolean areEnoughSleeping(final int sleepPercentageNeeded) {
+      return this.sleepingPlayers >= this.sleepersNeeded(sleepPercentageNeeded);
    }
 
-   public boolean areEnoughDeepSleeping(int var1, List<ServerPlayer> var2) {
-      int var3 = (int)var2.stream().filter(Player::isSleepingLongEnough).count();
-      return var3 >= this.sleepersNeeded(var1);
+   public boolean areEnoughDeepSleeping(final int sleepPercentageNeeded, final List<ServerPlayer> players) {
+      int deepSleepers = (int)players.stream().filter(Player::isSleepingLongEnough).count();
+      return deepSleepers >= this.sleepersNeeded(sleepPercentageNeeded);
    }
 
-   public int sleepersNeeded(int var1) {
-      return Math.max(1, Mth.ceil((float)(this.activePlayers * var1) / 100.0F));
+   public int sleepersNeeded(final int sleepPercentageNeeded) {
+      return Math.max(1, Mth.ceil((float)(this.activePlayers * sleepPercentageNeeded) / 100.0F));
    }
 
    public void removeAllSleepers() {
@@ -34,21 +34,21 @@ public class SleepStatus {
       return this.sleepingPlayers;
    }
 
-   public boolean update(List<ServerPlayer> var1) {
-      int var2 = this.activePlayers;
-      int var3 = this.sleepingPlayers;
+   public boolean update(final List<ServerPlayer> players) {
+      int oldActivePlayers = this.activePlayers;
+      int oldSleepingPlayers = this.sleepingPlayers;
       this.activePlayers = 0;
       this.sleepingPlayers = 0;
 
-      for(ServerPlayer var5 : var1) {
-         if (!var5.isSpectator()) {
+      for(ServerPlayer player : players) {
+         if (!player.isSpectator()) {
             ++this.activePlayers;
-            if (var5.isSleeping()) {
+            if (player.isSleeping()) {
                ++this.sleepingPlayers;
             }
          }
       }
 
-      return (var3 > 0 || this.sleepingPlayers > 0) && (var2 != this.activePlayers || var3 != this.sleepingPlayers);
+      return (oldSleepingPlayers > 0 || this.sleepingPlayers > 0) && (oldActivePlayers != this.activePlayers || oldSleepingPlayers != this.sleepingPlayers);
    }
 }

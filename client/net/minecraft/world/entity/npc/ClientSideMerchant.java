@@ -14,47 +14,47 @@ public class ClientSideMerchant implements Merchant {
    private MerchantOffers offers = new MerchantOffers();
    private int xp;
 
-   public ClientSideMerchant(Player var1) {
+   public ClientSideMerchant(final Player source) {
       super();
-      this.source = var1;
+      this.source = source;
    }
 
    public Player getTradingPlayer() {
       return this.source;
    }
 
-   public void setTradingPlayer(@Nullable Player var1) {
+   public void setTradingPlayer(final @Nullable Player player) {
    }
 
    public MerchantOffers getOffers() {
       return this.offers;
    }
 
-   public void overrideOffers(MerchantOffers var1) {
-      this.offers = var1;
+   public void overrideOffers(final MerchantOffers offers) {
+      this.offers = offers;
    }
 
-   public void notifyTrade(MerchantOffer var1) {
-      var1.increaseUses();
+   public void notifyTrade(final MerchantOffer offer) {
+      offer.increaseUses();
    }
 
-   public void notifyTradeUpdated(ItemStack var1) {
+   public void notifyTradeUpdated(final ItemStack itemStack) {
    }
 
    public boolean isClientSide() {
       return this.source.level().isClientSide();
    }
 
-   public boolean stillValid(Player var1) {
-      return this.source == var1;
+   public boolean stillValid(final Player player) {
+      return this.source == player;
    }
 
    public int getVillagerXp() {
       return this.xp;
    }
 
-   public void overrideXp(int var1) {
-      this.xp = var1;
+   public void overrideXp(final int xp) {
+      this.xp = xp;
    }
 
    public boolean showProgressBar() {

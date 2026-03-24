@@ -16,33 +16,33 @@ import net.minecraft.util.datafix.LegacyComponentDataFixUtils;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
 public class EntityCustomNameToComponentFix extends DataFix {
-   public EntityCustomNameToComponentFix(Schema var1) {
-      super(var1, true);
+   public EntityCustomNameToComponentFix(final Schema outputSchema) {
+      super(outputSchema, true);
    }
 
    public TypeRewriteRule makeRule() {
-      Type var1 = this.getInputSchema().getType(References.ENTITY);
-      Type var2 = this.getOutputSchema().getType(References.ENTITY);
-      OpticFinder var3 = DSL.fieldFinder("id", NamespacedSchema.namespacedString());
-      OpticFinder var4 = var1.findField("CustomName");
-      Type var5 = var2.findFieldType("CustomName");
-      return this.fixTypeEverywhereTyped("EntityCustomNameToComponentFix", var1, var2, (var4x) -> fixEntity(var4x, var2, var3, var4, var5));
+      Type<?> entityType = this.getInputSchema().getType(References.ENTITY);
+      Type<?> newEntityType = this.getOutputSchema().getType(References.ENTITY);
+      OpticFinder<String> idF = DSL.fieldFinder("id", NamespacedSchema.namespacedString());
+      OpticFinder<String> customNameF = entityType.findField("CustomName");
+      Type<?> newCustomNameType = newEntityType.findFieldType("CustomName");
+      return this.fixTypeEverywhereTyped("EntityCustomNameToComponentFix", entityType, newEntityType, (entity) -> fixEntity(entity, newEntityType, idF, customNameF, newCustomNameType));
    }
 
-   private static <T> Typed<?> fixEntity(Typed<?> var0, Type<?> var1, OpticFinder<String> var2, OpticFinder<String> var3, Type<T> var4) {
-      Optional var5 = var0.getOptional(var3);
-      if (var5.isEmpty()) {
-         return ExtraDataFixUtils.cast(var1, var0);
-      } else if (((String)var5.get()).isEmpty()) {
-         return Util.writeAndReadTypedOrThrow(var0, var1, (var0x) -> var0x.remove("CustomName"));
+   private static <T> Typed<?> fixEntity(final Typed<?> entity, final Type<?> newEntityType, final OpticFinder<String> idF, final OpticFinder<String> customNameF, final Type<T> newCustomNameType) {
+      Optional<String> customName = entity.getOptional(customNameF);
+      if (customName.isEmpty()) {
+         return ExtraDataFixUtils.cast(newEntityType, entity);
+      } else if (((String)customName.get()).isEmpty()) {
+         return Util.writeAndReadTypedOrThrow(entity, newEntityType, (dynamic) -> dynamic.remove("CustomName"));
       } else {
-         String var6 = (String)var0.getOptional(var2).orElse("");
-         Dynamic var7 = fixCustomName(var0.getOps(), (String)var5.get(), var6);
-         return var0.set(var3, Util.readTypedOrThrow(var4, var7));
+         String id = (String)entity.getOptional(idF).orElse("");
+         Dynamic<?> component = fixCustomName(entity.getOps(), (String)customName.get(), id);
+         return entity.set(customNameF, Util.readTypedOrThrow(newCustomNameType, component));
       }
    }
 
-   private static <T> Dynamic<T> fixCustomName(DynamicOps<T> var0, String var1, String var2) {
-      return "minecraft:commandblock_minecart".equals(var2) ? new Dynamic(var0, var0.createString(var1)) : LegacyComponentDataFixUtils.createPlainTextComponent(var0, var1);
+   private static <T> Dynamic<T> fixCustomName(final DynamicOps<T> ops, final String customName, final String id) {
+      return "minecraft:commandblock_minecart".equals(id) ? new Dynamic(ops, ops.createString(customName)) : LegacyComponentDataFixUtils.createPlainTextComponent(ops, customName);
    }
 }

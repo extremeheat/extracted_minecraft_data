@@ -10,21 +10,21 @@ public class ConstantHeight extends HeightProvider {
    public static final MapCodec<ConstantHeight> CODEC;
    private final VerticalAnchor value;
 
-   public static ConstantHeight of(VerticalAnchor var0) {
-      return new ConstantHeight(var0);
+   public static ConstantHeight of(final VerticalAnchor value) {
+      return new ConstantHeight(value);
    }
 
-   private ConstantHeight(VerticalAnchor var1) {
+   private ConstantHeight(final VerticalAnchor value) {
       super();
-      this.value = var1;
+      this.value = value;
    }
 
    public VerticalAnchor getValue() {
       return this.value;
    }
 
-   public int sample(RandomSource var1, WorldGenerationContext var2) {
-      return this.value.resolveY(var2);
+   public int sample(final RandomSource random, final WorldGenerationContext context) {
+      return this.value.resolveY(context);
    }
 
    public HeightProviderType<?> getType() {

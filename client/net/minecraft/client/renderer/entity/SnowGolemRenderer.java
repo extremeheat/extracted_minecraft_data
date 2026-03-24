@@ -2,22 +2,26 @@ package net.minecraft.client.renderer.entity;
 
 import net.minecraft.client.model.animal.golem.SnowGolemModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.renderer.block.BlockModelResolver;
+import net.minecraft.client.renderer.block.model.BlockDisplayContext;
 import net.minecraft.client.renderer.entity.layers.SnowGolemHeadLayer;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.SnowGolemRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.golem.SnowGolem;
+import net.minecraft.world.level.block.Blocks;
 
 public class SnowGolemRenderer extends MobRenderer<SnowGolem, SnowGolemRenderState, SnowGolemModel> {
-   private static final Identifier SNOW_GOLEM_LOCATION = Identifier.withDefaultNamespace("textures/entity/snow_golem.png");
+   public static final BlockDisplayContext BLOCK_DISPLAY_CONTEXT = BlockDisplayContext.create();
+   private static final Identifier SNOW_GOLEM_LOCATION = Identifier.withDefaultNamespace("textures/entity/snow_golem/snow_golem.png");
+   private final BlockModelResolver blockModelResolver;
 
-   public SnowGolemRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new SnowGolemModel(var1.bakeLayer(ModelLayers.SNOW_GOLEM)), 0.5F);
-      this.addLayer(new SnowGolemHeadLayer(this, var1.getBlockRenderDispatcher()));
+   public SnowGolemRenderer(final EntityRendererProvider.Context context) {
+      super(context, new SnowGolemModel(context.bakeLayer(ModelLayers.SNOW_GOLEM)), 0.5F);
+      this.blockModelResolver = context.getBlockModelResolver();
+      this.addLayer(new SnowGolemHeadLayer(this));
    }
 
-   public Identifier getTextureLocation(SnowGolemRenderState var1) {
+   public Identifier getTextureLocation(final SnowGolemRenderState state) {
       return SNOW_GOLEM_LOCATION;
    }
 
@@ -25,18 +29,13 @@ public class SnowGolemRenderer extends MobRenderer<SnowGolem, SnowGolemRenderSta
       return new SnowGolemRenderState();
    }
 
-   public void extractRenderState(SnowGolem var1, SnowGolemRenderState var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      var2.hasPumpkin = var1.hasPumpkin();
-   }
+   public void extractRenderState(final SnowGolem entity, final SnowGolemRenderState state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      if (entity.hasPumpkin()) {
+         this.blockModelResolver.update(state.headBlock, Blocks.CARVED_PUMPKIN.defaultBlockState(), BLOCK_DISPLAY_CONTEXT);
+      } else {
+         state.headBlock.clear();
+      }
 
-   // $FF: synthetic method
-   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
-      return this.getTextureLocation((SnowGolemRenderState)var1);
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
    }
 }

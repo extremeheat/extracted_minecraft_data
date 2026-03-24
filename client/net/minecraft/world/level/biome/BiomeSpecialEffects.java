@@ -4,19 +4,15 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import java.util.OptionalInt;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 
 public record BiomeSpecialEffects(int waterColor, Optional<Integer> foliageColorOverride, Optional<Integer> dryFoliageColorOverride, Optional<Integer> grassColorOverride, GrassColorModifier grassColorModifier) {
-   public static final Codec<BiomeSpecialEffects> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.STRING_RGB_COLOR.fieldOf("water_color").forGetter(BiomeSpecialEffects::waterColor), ExtraCodecs.STRING_RGB_COLOR.optionalFieldOf("foliage_color").forGetter(BiomeSpecialEffects::foliageColorOverride), ExtraCodecs.STRING_RGB_COLOR.optionalFieldOf("dry_foliage_color").forGetter(BiomeSpecialEffects::dryFoliageColorOverride), ExtraCodecs.STRING_RGB_COLOR.optionalFieldOf("grass_color").forGetter(BiomeSpecialEffects::grassColorOverride), BiomeSpecialEffects.GrassColorModifier.CODEC.optionalFieldOf("grass_color_modifier", BiomeSpecialEffects.GrassColorModifier.NONE).forGetter(BiomeSpecialEffects::grassColorModifier)).apply(var0, BiomeSpecialEffects::new));
+   public static final Codec<BiomeSpecialEffects> CODEC = RecordCodecBuilder.create((i) -> i.group(ExtraCodecs.STRING_RGB_COLOR.fieldOf("water_color").forGetter(BiomeSpecialEffects::waterColor), ExtraCodecs.STRING_RGB_COLOR.optionalFieldOf("foliage_color").forGetter(BiomeSpecialEffects::foliageColorOverride), ExtraCodecs.STRING_RGB_COLOR.optionalFieldOf("dry_foliage_color").forGetter(BiomeSpecialEffects::dryFoliageColorOverride), ExtraCodecs.STRING_RGB_COLOR.optionalFieldOf("grass_color").forGetter(BiomeSpecialEffects::grassColorOverride), BiomeSpecialEffects.GrassColorModifier.CODEC.optionalFieldOf("grass_color_modifier", BiomeSpecialEffects.GrassColorModifier.NONE).forGetter(BiomeSpecialEffects::grassColorModifier)).apply(i, BiomeSpecialEffects::new));
 
-   public BiomeSpecialEffects(int var1, Optional<Integer> var2, Optional<Integer> var3, Optional<Integer> var4, GrassColorModifier var5) {
+   public BiomeSpecialEffects {
       super();
-      this.waterColor = var1;
-      this.foliageColorOverride = var2;
-      this.dryFoliageColorOverride = var3;
-      this.grassColorOverride = var4;
-      this.grassColorModifier = var5;
    }
 
    public static class Builder {
@@ -31,28 +27,28 @@ public record BiomeSpecialEffects(int waterColor, Optional<Integer> foliageColor
          this.grassColorModifier = BiomeSpecialEffects.GrassColorModifier.NONE;
       }
 
-      public Builder waterColor(int var1) {
-         this.waterColor = OptionalInt.of(var1);
+      public Builder waterColor(final int waterColor) {
+         this.waterColor = OptionalInt.of(waterColor);
          return this;
       }
 
-      public Builder foliageColorOverride(int var1) {
-         this.foliageColorOverride = Optional.of(var1);
+      public Builder foliageColorOverride(final int foliageColor) {
+         this.foliageColorOverride = Optional.of(foliageColor);
          return this;
       }
 
-      public Builder dryFoliageColorOverride(int var1) {
-         this.dryFoliageColorOverride = Optional.of(var1);
+      public Builder dryFoliageColorOverride(final int dryFoliageColor) {
+         this.dryFoliageColorOverride = Optional.of(dryFoliageColor);
          return this;
       }
 
-      public Builder grassColorOverride(int var1) {
-         this.grassColorOverride = Optional.of(var1);
+      public Builder grassColorOverride(final int grassColor) {
+         this.grassColorOverride = Optional.of(grassColor);
          return this;
       }
 
-      public Builder grassColorModifier(GrassColorModifier var1) {
-         this.grassColorModifier = var1;
+      public Builder grassColorModifier(final GrassColorModifier grassModifier) {
+         this.grassColorModifier = grassModifier;
          return this;
       }
 
@@ -63,29 +59,29 @@ public record BiomeSpecialEffects(int waterColor, Optional<Integer> foliageColor
 
    public static enum GrassColorModifier implements StringRepresentable {
       NONE("none") {
-         public int modifyColor(double var1, double var3, int var5) {
-            return var5;
+         public int modifyColor(final double x, final double z, final int baseColor) {
+            return baseColor;
          }
       },
       DARK_FOREST("dark_forest") {
-         public int modifyColor(double var1, double var3, int var5) {
-            return (var5 & 16711422) + 2634762 >> 1;
+         public int modifyColor(final double x, final double z, final int baseColor) {
+            return ARGB.opaque((baseColor & 16711422) + 2634762 >> 1);
          }
       },
       SWAMP("swamp") {
-         public int modifyColor(double var1, double var3, int var5) {
-            double var6 = Biome.BIOME_INFO_NOISE.getValue(var1 * 0.0225, var3 * 0.0225, false);
-            return var6 < -0.1 ? 5011004 : 6975545;
+         public int modifyColor(final double x, final double z, final int baseColor) {
+            double groundValue = Biome.BIOME_INFO_NOISE.getValue(x * 0.0225, z * 0.0225, false);
+            return groundValue < -0.1 ? -11766212 : -9801671;
          }
       };
 
       private final String name;
       public static final Codec<GrassColorModifier> CODEC = StringRepresentable.<GrassColorModifier>fromEnum(GrassColorModifier::values);
 
-      public abstract int modifyColor(double var1, double var3, int var5);
+      public abstract int modifyColor(final double x, final double z, final int baseColor);
 
-      GrassColorModifier(final String var3) {
-         this.name = var3;
+      private GrassColorModifier(final String name) {
+         this.name = name;
       }
 
       public String getName() {

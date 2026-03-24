@@ -12,25 +12,23 @@ import org.slf4j.Logger;
 
 public record SingleFile(Identifier resourceId, Optional<Identifier> spriteId) implements SpriteSource {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final MapCodec<SingleFile> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("resource").forGetter(SingleFile::resourceId), Identifier.CODEC.optionalFieldOf("sprite").forGetter(SingleFile::spriteId)).apply(var0, SingleFile::new));
+   public static final MapCodec<SingleFile> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Identifier.CODEC.fieldOf("resource").forGetter(SingleFile::resourceId), Identifier.CODEC.optionalFieldOf("sprite").forGetter(SingleFile::spriteId)).apply(i, SingleFile::new));
 
-   public SingleFile(Identifier var1) {
-      this(var1, Optional.empty());
+   public SingleFile(final Identifier resourceId) {
+      this(resourceId, Optional.empty());
    }
 
-   public SingleFile(Identifier var1, Optional<Identifier> var2) {
+   public SingleFile {
       super();
-      this.resourceId = var1;
-      this.spriteId = var2;
    }
 
-   public void run(ResourceManager var1, SpriteSource.Output var2) {
-      Identifier var3 = TEXTURE_ID_CONVERTER.idToFile(this.resourceId);
-      Optional var4 = var1.getResource(var3);
-      if (var4.isPresent()) {
-         var2.add((Identifier)this.spriteId.orElse(this.resourceId), (Resource)var4.get());
+   public void run(final ResourceManager resourceManager, final SpriteSource.Output output) {
+      Identifier fullResourceId = TEXTURE_ID_CONVERTER.idToFile(this.resourceId);
+      Optional<Resource> resource = resourceManager.getResource(fullResourceId);
+      if (resource.isPresent()) {
+         output.add((Identifier)this.spriteId.orElse(this.resourceId), (Resource)resource.get());
       } else {
-         LOGGER.warn("Missing sprite: {}", var3);
+         LOGGER.warn("Missing sprite: {}", fullResourceId);
       }
 
    }

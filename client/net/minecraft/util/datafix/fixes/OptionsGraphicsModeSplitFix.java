@@ -13,21 +13,21 @@ public class OptionsGraphicsModeSplitFix extends DataFix {
    private final String valueIfFancy;
    private final String valueIfFabulous;
 
-   public OptionsGraphicsModeSplitFix(Schema var1, String var2, String var3, String var4, String var5) {
-      super(var1, true);
-      this.newFieldName = var2;
-      this.valueIfFast = var3;
-      this.valueIfFancy = var4;
-      this.valueIfFabulous = var5;
+   public OptionsGraphicsModeSplitFix(final Schema outputSchema, final String newFieldName, final String valueIfFast, final String valueIfFancy, final String valueIfFabulous) {
+      super(outputSchema, true);
+      this.newFieldName = newFieldName;
+      this.valueIfFast = valueIfFast;
+      this.valueIfFancy = valueIfFancy;
+      this.valueIfFabulous = valueIfFabulous;
    }
 
    public TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped("graphicsMode split to " + this.newFieldName, this.getInputSchema().getType(References.OPTIONS), (var1) -> var1.update(DSL.remainderFinder(), (var1x) -> (Dynamic)DataFixUtils.orElseGet(var1x.get("graphicsMode").asString().map((var2) -> var1x.set(this.newFieldName, var1x.createString(this.getValue(var2)))).result(), () -> var1x.set(this.newFieldName, var1x.createString(this.valueIfFancy)))));
+      return this.fixTypeEverywhereTyped("graphicsMode split to " + this.newFieldName, this.getInputSchema().getType(References.OPTIONS), (input) -> input.update(DSL.remainderFinder(), (tag) -> (Dynamic)DataFixUtils.orElseGet(tag.get("graphicsMode").asString().map((mode) -> tag.set(this.newFieldName, tag.createString(this.getValue(mode)))).result(), () -> tag.set(this.newFieldName, tag.createString(this.valueIfFancy)))));
    }
 
-   private String getValue(String var1) {
+   private String getValue(final String mode) {
       String var10000;
-      switch (var1) {
+      switch (mode) {
          case "2" -> var10000 = this.valueIfFabulous;
          case "0" -> var10000 = this.valueIfFast;
          default -> var10000 = this.valueIfFancy;

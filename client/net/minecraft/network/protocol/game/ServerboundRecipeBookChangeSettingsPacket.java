@@ -12,32 +12,32 @@ public class ServerboundRecipeBookChangeSettingsPacket implements Packet<ServerG
    private final boolean isOpen;
    private final boolean isFiltering;
 
-   public ServerboundRecipeBookChangeSettingsPacket(RecipeBookType var1, boolean var2, boolean var3) {
+   public ServerboundRecipeBookChangeSettingsPacket(final RecipeBookType bookType, final boolean isOpen, final boolean isFiltering) {
       super();
-      this.bookType = var1;
-      this.isOpen = var2;
-      this.isFiltering = var3;
+      this.bookType = bookType;
+      this.isOpen = isOpen;
+      this.isFiltering = isFiltering;
    }
 
-   private ServerboundRecipeBookChangeSettingsPacket(FriendlyByteBuf var1) {
+   private ServerboundRecipeBookChangeSettingsPacket(final FriendlyByteBuf input) {
       super();
-      this.bookType = (RecipeBookType)var1.readEnum(RecipeBookType.class);
-      this.isOpen = var1.readBoolean();
-      this.isFiltering = var1.readBoolean();
+      this.bookType = (RecipeBookType)input.readEnum(RecipeBookType.class);
+      this.isOpen = input.readBoolean();
+      this.isFiltering = input.readBoolean();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeEnum(this.bookType);
-      var1.writeBoolean(this.isOpen);
-      var1.writeBoolean(this.isFiltering);
+   private void write(final FriendlyByteBuf output) {
+      output.writeEnum(this.bookType);
+      output.writeBoolean(this.isOpen);
+      output.writeBoolean(this.isFiltering);
    }
 
    public PacketType<ServerboundRecipeBookChangeSettingsPacket> type() {
       return GamePacketTypes.SERVERBOUND_RECIPE_BOOK_CHANGE_SETTINGS;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handleRecipeBookChangeSettingsPacket(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handleRecipeBookChangeSettingsPacket(this);
    }
 
    public RecipeBookType getBookType() {

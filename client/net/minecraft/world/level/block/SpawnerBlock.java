@@ -3,6 +3,7 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -20,23 +21,24 @@ public class SpawnerBlock extends BaseEntityBlock {
       return CODEC;
    }
 
-   protected SpawnerBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   protected SpawnerBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new SpawnerBlockEntity(var1, var2);
+   public BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      return new SpawnerBlockEntity(worldPosition, blockState);
    }
 
-   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return createTickerHelper(var3, BlockEntityType.MOB_SPAWNER, var1.isClientSide() ? SpawnerBlockEntity::clientTick : SpawnerBlockEntity::serverTick);
+   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(final Level level, final BlockState blockState, final BlockEntityType<T> type) {
+      return createTickerHelper(type, BlockEntityType.MOB_SPAWNER, level.isClientSide() ? SpawnerBlockEntity::clientTick : SpawnerBlockEntity::serverTick);
    }
 
-   protected void spawnAfterBreak(BlockState var1, ServerLevel var2, BlockPos var3, ItemStack var4, boolean var5) {
-      super.spawnAfterBreak(var1, var2, var3, var4, var5);
-      if (var5) {
-         int var6 = 15 + var2.random.nextInt(15) + var2.random.nextInt(15);
-         this.popExperience(var2, var3, var6);
+   protected void spawnAfterBreak(final BlockState state, final ServerLevel level, final BlockPos pos, final ItemStack tool, final boolean dropExperience) {
+      super.spawnAfterBreak(state, level, pos, tool, dropExperience);
+      if (dropExperience) {
+         RandomSource random = level.getRandom();
+         int magicCount = 15 + random.nextInt(15) + random.nextInt(15);
+         this.popExperience(level, pos, magicCount);
       }
 
    }

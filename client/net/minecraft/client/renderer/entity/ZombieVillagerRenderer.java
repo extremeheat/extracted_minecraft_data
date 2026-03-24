@@ -1,55 +1,40 @@
 package net.minecraft.client.renderer.entity;
 
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.monster.zombie.BabyZombieVillagerModel;
 import net.minecraft.client.model.monster.zombie.ZombieVillagerModel;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.renderer.entity.layers.VillagerProfessionLayer;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.ZombieVillagerRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.monster.zombie.ZombieVillager;
 
 public class ZombieVillagerRenderer extends HumanoidMobRenderer<ZombieVillager, ZombieVillagerRenderState, ZombieVillagerModel<ZombieVillagerRenderState>> {
    private static final Identifier ZOMBIE_VILLAGER_LOCATION = Identifier.withDefaultNamespace("textures/entity/zombie_villager/zombie_villager.png");
+   private static final Identifier BABY_ZOMBIE_VILLAGER_LOCATION = Identifier.withDefaultNamespace("textures/entity/zombie_villager/zombie_villager_baby.png");
 
-   public ZombieVillagerRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new ZombieVillagerModel(var1.bakeLayer(ModelLayers.ZOMBIE_VILLAGER)), new ZombieVillagerModel(var1.bakeLayer(ModelLayers.ZOMBIE_VILLAGER_BABY)), 0.5F, VillagerRenderer.CUSTOM_HEAD_TRANSFORMS);
-      this.addLayer(new HumanoidArmorLayer(this, ArmorModelSet.bake(ModelLayers.ZOMBIE_VILLAGER_ARMOR, var1.getModelSet(), ZombieVillagerModel::new), ArmorModelSet.bake(ModelLayers.ZOMBIE_VILLAGER_BABY_ARMOR, var1.getModelSet(), ZombieVillagerModel::new), var1.getEquipmentRenderer()));
-      this.addLayer(new VillagerProfessionLayer(this, var1.getResourceManager(), "zombie_villager", new ZombieVillagerModel(var1.bakeLayer(ModelLayers.ZOMBIE_VILLAGER_NO_HAT)), new ZombieVillagerModel(var1.bakeLayer(ModelLayers.ZOMBIE_VILLAGER_BABY_NO_HAT))));
+   public ZombieVillagerRenderer(final EntityRendererProvider.Context context) {
+      super(context, new ZombieVillagerModel(context.bakeLayer(ModelLayers.ZOMBIE_VILLAGER)), new BabyZombieVillagerModel(context.bakeLayer(ModelLayers.ZOMBIE_VILLAGER_BABY)), 0.5F, VillagerRenderer.CUSTOM_HEAD_TRANSFORMS);
+      this.addLayer(new HumanoidArmorLayer(this, ArmorModelSet.bake(ModelLayers.ZOMBIE_VILLAGER_ARMOR, context.getModelSet(), ZombieVillagerModel::new), ArmorModelSet.bake(ModelLayers.ZOMBIE_VILLAGER_BABY_ARMOR, context.getModelSet(), BabyZombieVillagerModel::new), context.getEquipmentRenderer()));
+      this.addLayer(new VillagerProfessionLayer(this, context.getResourceManager(), "zombie_villager", new ZombieVillagerModel(context.bakeLayer(ModelLayers.ZOMBIE_VILLAGER_NO_HAT)), new BabyZombieVillagerModel(context.bakeLayer(ModelLayers.ZOMBIE_VILLAGER_BABY_NO_HAT))));
    }
 
-   public Identifier getTextureLocation(ZombieVillagerRenderState var1) {
-      return ZOMBIE_VILLAGER_LOCATION;
+   public Identifier getTextureLocation(final ZombieVillagerRenderState state) {
+      return state.isBaby ? BABY_ZOMBIE_VILLAGER_LOCATION : ZOMBIE_VILLAGER_LOCATION;
    }
 
    public ZombieVillagerRenderState createRenderState() {
       return new ZombieVillagerRenderState();
    }
 
-   public void extractRenderState(ZombieVillager var1, ZombieVillagerRenderState var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      var2.isConverting = var1.isConverting();
-      var2.villagerData = var1.getVillagerData();
-      var2.isAggressive = var1.isAggressive();
+   public void extractRenderState(final ZombieVillager entity, final ZombieVillagerRenderState state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      state.isConverting = entity.isConverting();
+      state.villagerData = entity.getVillagerData();
+      state.isAggressive = entity.isAggressive();
    }
 
-   protected boolean isShaking(ZombieVillagerRenderState var1) {
-      return super.isShaking(var1) || var1.isConverting;
-   }
-
-   // $FF: synthetic method
-   protected boolean isShaking(final LivingEntityRenderState var1) {
-      return this.isShaking((ZombieVillagerRenderState)var1);
-   }
-
-   // $FF: synthetic method
-   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
-      return this.getTextureLocation((ZombieVillagerRenderState)var1);
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
+   protected boolean isShaking(final ZombieVillagerRenderState state) {
+      return super.isShaking(state) || state.isConverting;
    }
 }

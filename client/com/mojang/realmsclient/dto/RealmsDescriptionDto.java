@@ -4,10 +4,8 @@ import com.google.gson.annotations.SerializedName;
 import org.jspecify.annotations.Nullable;
 
 public record RealmsDescriptionDto(@Nullable String name, String description) implements ReflectionBasedSerialization {
-   public RealmsDescriptionDto(@Nullable String var1, String var2) {
+   public RealmsDescriptionDto {
       super();
-      this.name = var1;
-      this.description = var2;
    }
 
    @SerializedName("name")

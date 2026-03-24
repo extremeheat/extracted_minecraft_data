@@ -1,7 +1,6 @@
 package net.minecraft.server.packs.resources;
 
 import com.mojang.logging.LogUtils;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,46 +20,46 @@ public class MultiPackResourceManager implements CloseableResourceManager {
    private final Map<String, FallbackResourceManager> namespacedManagers;
    private final List<PackResources> packs;
 
-   public MultiPackResourceManager(PackType var1, List<PackResources> var2) {
+   public MultiPackResourceManager(final PackType type, final List<PackResources> packs) {
       super();
-      this.packs = List.copyOf(var2);
-      HashMap var3 = new HashMap();
-      List var4 = var2.stream().flatMap((var1x) -> var1x.getNamespaces(var1).stream()).distinct().toList();
+      this.packs = List.copyOf(packs);
+      Map<String, FallbackResourceManager> namespacedManagers = new HashMap();
+      List<String> namespaces = packs.stream().flatMap((p) -> p.getNamespaces(type).stream()).distinct().toList();
 
-      for(PackResources var6 : var2) {
-         ResourceFilterSection var7 = this.getPackFilterSection(var6);
-         Set var8 = var6.getNamespaces(var1);
-         Predicate var9 = var7 != null ? (var1x) -> var7.isPathFiltered(var1x.getPath()) : null;
+      for(PackResources pack : packs) {
+         ResourceFilterSection filterSection = this.getPackFilterSection(pack);
+         Set<String> providedNamespaces = pack.getNamespaces(type);
+         Predicate<Identifier> pathFilter = filterSection != null ? (location) -> filterSection.isPathFiltered(location.getPath()) : null;
 
-         for(String var11 : var4) {
-            boolean var12 = var8.contains(var11);
-            boolean var13 = var7 != null && var7.isNamespaceFiltered(var11);
-            if (var12 || var13) {
-               FallbackResourceManager var14 = (FallbackResourceManager)var3.get(var11);
-               if (var14 == null) {
-                  var14 = new FallbackResourceManager(var1, var11);
-                  var3.put(var11, var14);
+         for(String namespace : namespaces) {
+            boolean packContainsNamespace = providedNamespaces.contains(namespace);
+            boolean filterMatchesNamespace = filterSection != null && filterSection.isNamespaceFiltered(namespace);
+            if (packContainsNamespace || filterMatchesNamespace) {
+               FallbackResourceManager fallbackResourceManager = (FallbackResourceManager)namespacedManagers.get(namespace);
+               if (fallbackResourceManager == null) {
+                  fallbackResourceManager = new FallbackResourceManager(type, namespace);
+                  namespacedManagers.put(namespace, fallbackResourceManager);
                }
 
-               if (var12 && var13) {
-                  var14.push(var6, var9);
-               } else if (var12) {
-                  var14.push(var6);
+               if (packContainsNamespace && filterMatchesNamespace) {
+                  fallbackResourceManager.push(pack, pathFilter);
+               } else if (packContainsNamespace) {
+                  fallbackResourceManager.push(pack);
                } else {
-                  var14.pushFilterOnly(var6.packId(), var9);
+                  fallbackResourceManager.pushFilterOnly(pack.packId(), pathFilter);
                }
             }
          }
       }
 
-      this.namespacedManagers = var3;
+      this.namespacedManagers = namespacedManagers;
    }
 
-   private @Nullable ResourceFilterSection getPackFilterSection(PackResources var1) {
+   private @Nullable ResourceFilterSection getPackFilterSection(final PackResources pack) {
       try {
-         return (ResourceFilterSection)var1.getMetadataSection(ResourceFilterSection.TYPE);
-      } catch (IOException var3) {
-         LOGGER.error("Failed to get filter section from pack {}", var1.packId());
+         return (ResourceFilterSection)pack.getMetadataSection(ResourceFilterSection.TYPE);
+      } catch (Exception var3) {
+         LOGGER.error("Failed to get filter section from pack {}", pack.packId());
          return null;
       }
    }
@@ -69,41 +68,41 @@ public class MultiPackResourceManager implements CloseableResourceManager {
       return this.namespacedManagers.keySet();
    }
 
-   public Optional<Resource> getResource(Identifier var1) {
-      ResourceManager var2 = (ResourceManager)this.namespacedManagers.get(var1.getNamespace());
-      return var2 != null ? var2.getResource(var1) : Optional.empty();
+   public Optional<Resource> getResource(final Identifier location) {
+      ResourceManager pack = (ResourceManager)this.namespacedManagers.get(location.getNamespace());
+      return pack != null ? pack.getResource(location) : Optional.empty();
    }
 
-   public List<Resource> getResourceStack(Identifier var1) {
-      ResourceManager var2 = (ResourceManager)this.namespacedManagers.get(var1.getNamespace());
-      return var2 != null ? var2.getResourceStack(var1) : List.of();
+   public List<Resource> getResourceStack(final Identifier location) {
+      ResourceManager pack = (ResourceManager)this.namespacedManagers.get(location.getNamespace());
+      return pack != null ? pack.getResourceStack(location) : List.of();
    }
 
-   public Map<Identifier, Resource> listResources(String var1, Predicate<Identifier> var2) {
-      checkTrailingDirectoryPath(var1);
-      TreeMap var3 = new TreeMap();
+   public Map<Identifier, Resource> listResources(final String directory, final Predicate<Identifier> filter) {
+      checkTrailingDirectoryPath(directory);
+      Map<Identifier, Resource> result = new TreeMap();
 
-      for(FallbackResourceManager var5 : this.namespacedManagers.values()) {
-         var3.putAll(var5.listResources(var1, var2));
+      for(FallbackResourceManager manager : this.namespacedManagers.values()) {
+         result.putAll(manager.listResources(directory, filter));
       }
 
-      return var3;
+      return result;
    }
 
-   public Map<Identifier, List<Resource>> listResourceStacks(String var1, Predicate<Identifier> var2) {
-      checkTrailingDirectoryPath(var1);
-      TreeMap var3 = new TreeMap();
+   public Map<Identifier, List<Resource>> listResourceStacks(final String directory, final Predicate<Identifier> filter) {
+      checkTrailingDirectoryPath(directory);
+      Map<Identifier, List<Resource>> result = new TreeMap();
 
-      for(FallbackResourceManager var5 : this.namespacedManagers.values()) {
-         var3.putAll(var5.listResourceStacks(var1, var2));
+      for(FallbackResourceManager manager : this.namespacedManagers.values()) {
+         result.putAll(manager.listResourceStacks(directory, filter));
       }
 
-      return var3;
+      return result;
    }
 
-   private static void checkTrailingDirectoryPath(String var0) {
-      if (var0.endsWith("/")) {
-         throw new IllegalArgumentException("Trailing slash in path " + var0);
+   private static void checkTrailingDirectoryPath(final String directory) {
+      if (directory.endsWith("/")) {
+         throw new IllegalArgumentException("Trailing slash in path " + directory);
       }
    }
 

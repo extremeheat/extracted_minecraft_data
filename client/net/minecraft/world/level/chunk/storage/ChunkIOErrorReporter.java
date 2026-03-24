@@ -7,20 +7,20 @@ import net.minecraft.ReportedException;
 import net.minecraft.world.level.ChunkPos;
 
 public interface ChunkIOErrorReporter {
-   void reportChunkLoadFailure(Throwable var1, RegionStorageInfo var2, ChunkPos var3);
+   void reportChunkLoadFailure(Throwable throwable, RegionStorageInfo storageInfo, ChunkPos pos);
 
-   void reportChunkSaveFailure(Throwable var1, RegionStorageInfo var2, ChunkPos var3);
+   void reportChunkSaveFailure(Throwable throwable, RegionStorageInfo storageInfo, ChunkPos pos);
 
-   static ReportedException createMisplacedChunkReport(ChunkPos var0, ChunkPos var1) {
-      String var10002 = String.valueOf(var0);
-      CrashReport var2 = CrashReport.forThrowable(new IllegalStateException("Retrieved chunk position " + var10002 + " does not match requested " + String.valueOf(var1)), "Chunk found in invalid location");
-      CrashReportCategory var3 = var2.addCategory("Misplaced Chunk");
-      Objects.requireNonNull(var0);
-      var3.setDetail("Stored Position", var0::toString);
-      return new ReportedException(var2);
+   static ReportedException createMisplacedChunkReport(final ChunkPos storedPos, final ChunkPos requestedPos) {
+      String var10002 = String.valueOf(storedPos);
+      CrashReport report = CrashReport.forThrowable(new IllegalStateException("Retrieved chunk position " + var10002 + " does not match requested " + String.valueOf(requestedPos)), "Chunk found in invalid location");
+      CrashReportCategory category = report.addCategory("Misplaced Chunk");
+      Objects.requireNonNull(storedPos);
+      category.setDetail("Stored Position", storedPos::toString);
+      return new ReportedException(report);
    }
 
-   default void reportMisplacedChunk(ChunkPos var1, ChunkPos var2, RegionStorageInfo var3) {
-      this.reportChunkLoadFailure(createMisplacedChunkReport(var1, var2), var3, var2);
+   default void reportMisplacedChunk(final ChunkPos storedPos, final ChunkPos requestedPos, final RegionStorageInfo storageInfo) {
+      this.reportChunkLoadFailure(createMisplacedChunkReport(storedPos, requestedPos), storageInfo, requestedPos);
    }
 }

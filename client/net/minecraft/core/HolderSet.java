@@ -24,21 +24,21 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
 
    Either<TagKey<T>, List<Holder<T>>> unwrap();
 
-   Optional<Holder<T>> getRandomElement(RandomSource var1);
+   Optional<Holder<T>> getRandomElement(RandomSource random);
 
-   Holder<T> get(int var1);
+   Holder<T> get(int index);
 
-   boolean contains(Holder<T> var1);
+   boolean contains(final Holder<T> value);
 
-   boolean canSerializeIn(HolderOwner<T> var1);
+   boolean canSerializeIn(HolderOwner<T> owner);
 
    Optional<TagKey<T>> unwrapKey();
 
    /** @deprecated */
    @Deprecated
    @VisibleForTesting
-   static <T> Named<T> emptyNamed(HolderOwner<T> var0, TagKey<T> var1) {
-      return new Named<T>(var0, var1) {
+   static <T> Named<T> emptyNamed(final HolderOwner<T> owner, final TagKey<T> key) {
+      return new Named<T>(owner, key) {
          protected List<Holder<T>> contents() {
             throw new UnsupportedOperationException("Tag " + String.valueOf(this.key()) + " can't be dereferenced during construction");
          }
@@ -50,21 +50,21 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
    }
 
    @SafeVarargs
-   static <T> Direct<T> direct(Holder<T>... var0) {
-      return new Direct<T>(List.of(var0));
+   static <T> Direct<T> direct(final Holder<T>... values) {
+      return new Direct<T>(List.of(values));
    }
 
-   static <T> Direct<T> direct(List<? extends Holder<T>> var0) {
-      return new Direct<T>(List.copyOf(var0));
+   static <T> Direct<T> direct(final List<? extends Holder<T>> values) {
+      return new Direct<T>(List.copyOf(values));
    }
 
    @SafeVarargs
-   static <E, T> Direct<T> direct(Function<E, Holder<T>> var0, E... var1) {
-      return direct(Stream.of(var1).map(var0).toList());
+   static <E, T> Direct<T> direct(final Function<E, Holder<T>> holderGetter, final E... elements) {
+      return direct(Stream.of(elements).map(holderGetter).toList());
    }
 
-   static <E, T> Direct<T> direct(Function<E, Holder<T>> var0, Collection<E> var1) {
-      return direct(var1.stream().map(var0).toList());
+   static <E, T> Direct<T> direct(final Function<E, Holder<T>> holderGetter, final Collection<E> elements) {
+      return direct(elements.stream().map(holderGetter).toList());
    }
 
    public abstract static class ListBacked<T> implements HolderSet<T> {
@@ -90,27 +90,27 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
          return this.contents().stream();
       }
 
-      public Optional<Holder<T>> getRandomElement(RandomSource var1) {
-         return Util.<Holder<T>>getRandomSafe(this.contents(), var1);
+      public Optional<Holder<T>> getRandomElement(final RandomSource random) {
+         return Util.<Holder<T>>getRandomSafe(this.contents(), random);
       }
 
-      public Holder<T> get(int var1) {
-         return (Holder)this.contents().get(var1);
+      public Holder<T> get(final int index) {
+         return (Holder)this.contents().get(index);
       }
 
-      public boolean canSerializeIn(HolderOwner<T> var1) {
+      public boolean canSerializeIn(final HolderOwner<T> owner) {
          return true;
       }
    }
 
    public static final class Direct<T> extends ListBacked<T> {
-      static final Direct<?> EMPTY = new Direct(List.of());
+      private static final Direct<?> EMPTY = new Direct(List.of());
       private final List<Holder<T>> contents;
       private @Nullable Set<Holder<T>> contentsSet;
 
-      Direct(List<Holder<T>> var1) {
+      private Direct(final List<Holder<T>> contents) {
          super();
-         this.contents = var1;
+         this.contents = contents;
       }
 
       protected List<Holder<T>> contents() {
@@ -129,26 +129,26 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
          return Optional.empty();
       }
 
-      public boolean contains(Holder<T> var1) {
+      public boolean contains(final Holder<T> value) {
          if (this.contentsSet == null) {
             this.contentsSet = Set.copyOf(this.contents);
          }
 
-         return this.contentsSet.contains(var1);
+         return this.contentsSet.contains(value);
       }
 
       public String toString() {
          return "DirectSet[" + String.valueOf(this.contents) + "]";
       }
 
-      public boolean equals(Object var1) {
-         if (this == var1) {
+      public boolean equals(final Object obj) {
+         if (this == obj) {
             return true;
          } else {
             boolean var10000;
-            if (var1 instanceof Direct) {
-               Direct var2 = (Direct)var1;
-               if (this.contents.equals(var2.contents)) {
+            if (obj instanceof Direct) {
+               Direct<?> direct = (Direct)obj;
+               if (this.contents.equals(direct.contents)) {
                   var10000 = true;
                   return var10000;
                }
@@ -169,14 +169,14 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
       private final TagKey<T> key;
       private @Nullable List<Holder<T>> contents;
 
-      Named(HolderOwner<T> var1, TagKey<T> var2) {
+      Named(final HolderOwner<T> owner, final TagKey<T> key) {
          super();
-         this.owner = var1;
-         this.key = var2;
+         this.owner = owner;
+         this.key = key;
       }
 
-      void bind(List<Holder<T>> var1) {
-         this.contents = List.copyOf(var1);
+      void bind(final List<Holder<T>> contents) {
+         this.contents = List.copyOf(contents);
       }
 
       public TagKey<T> key() {
@@ -204,8 +204,8 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
          return Optional.of(this.key);
       }
 
-      public boolean contains(Holder<T> var1) {
-         return var1.is(this.key);
+      public boolean contains(final Holder<T> value) {
+         return value.is(this.key);
       }
 
       public String toString() {
@@ -213,8 +213,8 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
          return "NamedSet(" + var10000 + ")[" + String.valueOf(this.contents) + "]";
       }
 
-      public boolean canSerializeIn(HolderOwner<T> var1) {
-         return this.owner.canSerializeIn(var1);
+      public boolean canSerializeIn(final HolderOwner<T> context) {
+         return this.owner.canSerializeIn(context);
       }
    }
 }

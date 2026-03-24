@@ -3,7 +3,6 @@ package net.minecraft.stats;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
@@ -101,16 +100,16 @@ public class Stats {
       super();
    }
 
-   private static Identifier makeCustomStat(String var0, StatFormatter var1) {
-      Identifier var2 = Identifier.withDefaultNamespace(var0);
-      Registry.register(BuiltInRegistries.CUSTOM_STAT, (String)var0, var2);
-      CUSTOM.get(var2, var1);
-      return var2;
+   private static Identifier makeCustomStat(final String id, final StatFormatter formatter) {
+      Identifier location = Identifier.withDefaultNamespace(id);
+      Registry.register(BuiltInRegistries.CUSTOM_STAT, (String)id, location);
+      CUSTOM.get(location, formatter);
+      return location;
    }
 
-   private static <T> StatType<T> makeRegistryStatType(String var0, Registry<T> var1) {
-      MutableComponent var2 = Component.translatable("stat_type.minecraft." + var0);
-      return (StatType)Registry.register(BuiltInRegistries.STAT_TYPE, (String)var0, new StatType(var1, var2));
+   private static <T> StatType<T> makeRegistryStatType(final String name, final Registry<T> registry) {
+      Component displayName = Component.translatable("stat_type.minecraft." + name);
+      return (StatType)Registry.register(BuiltInRegistries.STAT_TYPE, (String)name, new StatType(registry, displayName));
    }
 
    static {

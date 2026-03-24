@@ -24,38 +24,42 @@ public interface LevelHeightAccessor {
       return SectionPos.blockToSectionCoord(this.getMaxY());
    }
 
-   default boolean isInsideBuildHeight(int var1) {
-      return var1 >= this.getMinY() && var1 <= this.getMaxY();
+   default boolean isInsideBuildHeight(final BlockPos pos) {
+      return this.isInsideBuildHeight(pos.getY());
    }
 
-   default boolean isOutsideBuildHeight(BlockPos var1) {
-      return this.isOutsideBuildHeight(var1.getY());
+   default boolean isInsideBuildHeight(final int blockY) {
+      return blockY >= this.getMinY() && blockY <= this.getMaxY();
    }
 
-   default boolean isOutsideBuildHeight(int var1) {
-      return var1 < this.getMinY() || var1 > this.getMaxY();
+   default boolean isOutsideBuildHeight(final BlockPos pos) {
+      return this.isOutsideBuildHeight(pos.getY());
    }
 
-   default int getSectionIndex(int var1) {
-      return this.getSectionIndexFromSectionY(SectionPos.blockToSectionCoord(var1));
+   default boolean isOutsideBuildHeight(final int blockY) {
+      return blockY < this.getMinY() || blockY > this.getMaxY();
    }
 
-   default int getSectionIndexFromSectionY(int var1) {
-      return var1 - this.getMinSectionY();
+   default int getSectionIndex(final int blockY) {
+      return this.getSectionIndexFromSectionY(SectionPos.blockToSectionCoord(blockY));
    }
 
-   default int getSectionYFromSectionIndex(int var1) {
-      return var1 + this.getMinSectionY();
+   default int getSectionIndexFromSectionY(final int sectionY) {
+      return sectionY - this.getMinSectionY();
    }
 
-   static LevelHeightAccessor create(final int var0, final int var1) {
+   default int getSectionYFromSectionIndex(final int sectionIndex) {
+      return sectionIndex + this.getMinSectionY();
+   }
+
+   static LevelHeightAccessor create(final int minY, final int height) {
       return new LevelHeightAccessor() {
          public int getHeight() {
-            return var1;
+            return height;
          }
 
          public int getMinY() {
-            return var0;
+            return minY;
          }
       };
    }

@@ -7,7 +7,6 @@ import java.util.function.Consumer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.DecoratedPotRenderer;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.PotDecorations;
 import org.joml.Vector3fc;
@@ -16,29 +15,24 @@ import org.jspecify.annotations.Nullable;
 public class DecoratedPotSpecialRenderer implements SpecialModelRenderer<PotDecorations> {
    private final DecoratedPotRenderer decoratedPotRenderer;
 
-   public DecoratedPotSpecialRenderer(DecoratedPotRenderer var1) {
+   public DecoratedPotSpecialRenderer(final DecoratedPotRenderer decoratedPotRenderer) {
       super();
-      this.decoratedPotRenderer = var1;
+      this.decoratedPotRenderer = decoratedPotRenderer;
    }
 
-   public @Nullable PotDecorations extractArgument(ItemStack var1) {
-      return (PotDecorations)var1.get(DataComponents.POT_DECORATIONS);
+   public @Nullable PotDecorations extractArgument(final ItemStack stack) {
+      return (PotDecorations)stack.get(DataComponents.POT_DECORATIONS);
    }
 
-   public void submit(@Nullable PotDecorations var1, ItemDisplayContext var2, PoseStack var3, SubmitNodeCollector var4, int var5, int var6, boolean var7, int var8) {
-      this.decoratedPotRenderer.submit(var3, var4, var5, var6, (PotDecorations)Objects.requireNonNullElse(var1, PotDecorations.EMPTY), var8);
+   public void submit(final @Nullable PotDecorations decorations, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final boolean hasFoil, final int outlineColor) {
+      this.decoratedPotRenderer.submit(poseStack, submitNodeCollector, lightCoords, overlayCoords, (PotDecorations)Objects.requireNonNullElse(decorations, PotDecorations.EMPTY), outlineColor);
    }
 
-   public void getExtents(Consumer<Vector3fc> var1) {
-      this.decoratedPotRenderer.getExtents(var1);
+   public void getExtents(final Consumer<Vector3fc> output) {
+      this.decoratedPotRenderer.getExtents(output);
    }
 
-   // $FF: synthetic method
-   public @Nullable Object extractArgument(final ItemStack var1) {
-      return this.extractArgument(var1);
-   }
-
-   public static record Unbaked() implements SpecialModelRenderer.Unbaked {
+   public static record Unbaked() implements SpecialModelRenderer.Unbaked<PotDecorations> {
       public static final MapCodec<Unbaked> MAP_CODEC = MapCodec.unit(new Unbaked());
 
       public Unbaked() {
@@ -49,8 +43,8 @@ public class DecoratedPotSpecialRenderer implements SpecialModelRenderer<PotDeco
          return MAP_CODEC;
       }
 
-      public SpecialModelRenderer<?> bake(SpecialModelRenderer.BakingContext var1) {
-         return new DecoratedPotSpecialRenderer(new DecoratedPotRenderer(var1));
+      public DecoratedPotSpecialRenderer bake(final SpecialModelRenderer.BakingContext context) {
+         return new DecoratedPotSpecialRenderer(new DecoratedPotRenderer(context));
       }
    }
 }

@@ -8,10 +8,10 @@ public final class RecordedDeviation {
    public final int tick;
    public final ProfileResults profilerResultAtTick;
 
-   public RecordedDeviation(Instant var1, int var2, ProfileResults var3) {
+   public RecordedDeviation(final Instant timestamp, final int tick, final ProfileResults profilerResultAtTick) {
       super();
-      this.timestamp = var1;
-      this.tick = var2;
-      this.profilerResultAtTick = var3;
+      this.timestamp = timestamp;
+      this.tick = tick;
+      this.profilerResultAtTick = profilerResultAtTick;
    }
 }

@@ -13,6 +13,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemInstance;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
@@ -26,39 +27,39 @@ public class LootContext {
    private final HolderGetter.Provider lootDataResolver;
    private final Set<VisitedEntry<?>> visitedElements = Sets.newLinkedHashSet();
 
-   LootContext(LootParams var1, RandomSource var2, HolderGetter.Provider var3) {
+   private LootContext(final LootParams params, final RandomSource random, final HolderGetter.Provider lootDataResolver) {
       super();
-      this.params = var1;
-      this.random = var2;
-      this.lootDataResolver = var3;
+      this.params = params;
+      this.random = random;
+      this.lootDataResolver = lootDataResolver;
    }
 
-   public boolean hasParameter(ContextKey<?> var1) {
-      return this.params.contextMap().has(var1);
+   public boolean hasParameter(final ContextKey<?> key) {
+      return this.params.contextMap().has(key);
    }
 
-   public <T> T getParameter(ContextKey<T> var1) {
-      return (T)this.params.contextMap().getOrThrow(var1);
+   public <T> T getParameter(final ContextKey<T> key) {
+      return (T)this.params.contextMap().getOrThrow(key);
    }
 
-   public <T> @Nullable T getOptionalParameter(ContextKey<T> var1) {
-      return (T)this.params.contextMap().getOptional(var1);
+   public <T> @Nullable T getOptionalParameter(final ContextKey<T> key) {
+      return (T)this.params.contextMap().getOptional(key);
    }
 
-   public void addDynamicDrops(Identifier var1, Consumer<ItemStack> var2) {
-      this.params.addDynamicDrops(var1, var2);
+   public void addDynamicDrops(final Identifier location, final Consumer<ItemStack> output) {
+      this.params.addDynamicDrops(location, output);
    }
 
-   public boolean hasVisitedElement(VisitedEntry<?> var1) {
-      return this.visitedElements.contains(var1);
+   public boolean hasVisitedElement(final VisitedEntry<?> element) {
+      return this.visitedElements.contains(element);
    }
 
-   public boolean pushVisitedElement(VisitedEntry<?> var1) {
-      return this.visitedElements.add(var1);
+   public boolean pushVisitedElement(final VisitedEntry<?> element) {
+      return this.visitedElements.add(element);
    }
 
-   public void popVisitedElement(VisitedEntry<?> var1) {
-      this.visitedElements.remove(var1);
+   public void popVisitedElement(final VisitedEntry<?> element) {
+      this.visitedElements.remove(element);
    }
 
    public HolderGetter.Provider getResolver() {
@@ -77,37 +78,37 @@ public class LootContext {
       return this.params.getLevel();
    }
 
-   public static VisitedEntry<LootTable> createVisitedEntry(LootTable var0) {
-      return new VisitedEntry<LootTable>(LootDataType.TABLE, var0);
+   public static VisitedEntry<LootTable> createVisitedEntry(final LootTable table) {
+      return new VisitedEntry<LootTable>(LootDataType.TABLE, table);
    }
 
-   public static VisitedEntry<LootItemCondition> createVisitedEntry(LootItemCondition var0) {
-      return new VisitedEntry<LootItemCondition>(LootDataType.PREDICATE, var0);
+   public static VisitedEntry<LootItemCondition> createVisitedEntry(final LootItemCondition table) {
+      return new VisitedEntry<LootItemCondition>(LootDataType.PREDICATE, table);
    }
 
-   public static VisitedEntry<LootItemFunction> createVisitedEntry(LootItemFunction var0) {
-      return new VisitedEntry<LootItemFunction>(LootDataType.MODIFIER, var0);
+   public static VisitedEntry<LootItemFunction> createVisitedEntry(final LootItemFunction table) {
+      return new VisitedEntry<LootItemFunction>(LootDataType.MODIFIER, table);
    }
 
    public static class Builder {
       private final LootParams params;
       private @Nullable RandomSource random;
 
-      public Builder(LootParams var1) {
+      public Builder(final LootParams params) {
          super();
-         this.params = var1;
+         this.params = params;
       }
 
-      public Builder withOptionalRandomSeed(long var1) {
-         if (var1 != 0L) {
-            this.random = RandomSource.create(var1);
+      public Builder withOptionalRandomSeed(final long seed) {
+         if (seed != 0L) {
+            this.random = RandomSource.create(seed);
          }
 
          return this;
       }
 
-      public Builder withOptionalRandomSource(RandomSource var1) {
-         this.random = var1;
+      public Builder withOptionalRandomSource(final RandomSource randomSource) {
+         this.random = randomSource;
          return this;
       }
 
@@ -115,16 +116,16 @@ public class LootContext {
          return this.params.getLevel();
       }
 
-      public LootContext create(Optional<Identifier> var1) {
-         ServerLevel var2 = this.getLevel();
-         MinecraftServer var3 = var2.getServer();
+      public LootContext create(final Optional<Identifier> randomSequenceKey) {
+         ServerLevel level = this.getLevel();
+         MinecraftServer server = level.getServer();
          Optional var10000 = Optional.ofNullable(this.random).or(() -> {
-            Objects.requireNonNull(var2);
-            return var1.map(var2::getRandomSequence);
+            Objects.requireNonNull(server);
+            return randomSequenceKey.map(server::getRandomSequence);
          });
-         Objects.requireNonNull(var2);
-         RandomSource var4 = (RandomSource)var10000.orElseGet(var2::getRandom);
-         return new LootContext(this.params, var4, var3.reloadableRegistries().lookup());
+         Objects.requireNonNull(level);
+         RandomSource random = (RandomSource)var10000.orElseGet(level::getRandom);
+         return new LootContext(this.params, random, server.reloadableRegistries().lookup());
       }
    }
 
@@ -140,21 +141,21 @@ public class LootContext {
       private final String name;
       private final ContextKey<? extends Entity> param;
 
-      private EntityTarget(final String var3, final ContextKey<? extends Entity> var4) {
-         this.name = var3;
-         this.param = var4;
+      private EntityTarget(final String name, final ContextKey<? extends Entity> param) {
+         this.name = name;
+         this.param = param;
       }
 
       public ContextKey<? extends Entity> contextParam() {
          return this.param;
       }
 
-      public static EntityTarget getByName(String var0) {
-         EntityTarget var1 = CODEC.byName(var0);
-         if (var1 != null) {
-            return var1;
+      public static EntityTarget getByName(final String name) {
+         EntityTarget target = CODEC.byName(name);
+         if (target != null) {
+            return target;
          } else {
-            throw new IllegalArgumentException("Invalid entity target " + var0);
+            throw new IllegalArgumentException("Invalid entity target " + name);
          }
       }
 
@@ -174,9 +175,9 @@ public class LootContext {
       private final String name;
       private final ContextKey<? extends BlockEntity> param;
 
-      private BlockEntityTarget(final String var3, final ContextKey<? extends BlockEntity> var4) {
-         this.name = var3;
-         this.param = var4;
+      private BlockEntityTarget(final String name, final ContextKey<? extends BlockEntity> param) {
+         this.name = name;
+         this.param = param;
       }
 
       public ContextKey<? extends BlockEntity> contextParam() {
@@ -193,18 +194,18 @@ public class LootContext {
       }
    }
 
-   public static enum ItemStackTarget implements StringRepresentable, LootContextArg.SimpleGetter<ItemStack> {
+   public static enum ItemStackTarget implements StringRepresentable, LootContextArg.SimpleGetter<ItemInstance> {
       TOOL("tool", LootContextParams.TOOL);
 
       private final String name;
-      private final ContextKey<? extends ItemStack> param;
+      private final ContextKey<? extends ItemInstance> param;
 
-      private ItemStackTarget(final String var3, final ContextKey<? extends ItemStack> var4) {
-         this.name = var3;
-         this.param = var4;
+      private ItemStackTarget(final String name, final ContextKey<? extends ItemInstance> param) {
+         this.name = name;
+         this.param = param;
       }
 
-      public ContextKey<? extends ItemStack> contextParam() {
+      public ContextKey<? extends ItemInstance> contextParam() {
          return this.param;
       }
 
@@ -218,11 +219,9 @@ public class LootContext {
       }
    }
 
-   public static record VisitedEntry<T>(LootDataType<T> type, T value) {
-      public VisitedEntry(LootDataType<T> var1, T var2) {
+   public static record VisitedEntry<T extends Validatable>(LootDataType<T> type, T value) {
+      public VisitedEntry {
          super();
-         this.type = var1;
-         this.value = var2;
       }
    }
 }

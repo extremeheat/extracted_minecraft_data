@@ -10,11 +10,11 @@ import net.minecraft.resources.Identifier;
 public abstract class EntityModel<T extends EntityRenderState> extends Model<T> {
    public static final float MODEL_Y_OFFSET = -1.501F;
 
-   protected EntityModel(ModelPart var1) {
-      this(var1, RenderTypes::entityCutoutNoCull);
+   protected EntityModel(final ModelPart root) {
+      this(root, RenderTypes::entityCutout);
    }
 
-   protected EntityModel(ModelPart var1, Function<Identifier, RenderType> var2) {
-      super(var1, var2);
+   protected EntityModel(final ModelPart root, final Function<Identifier, RenderType> renderType) {
+      super(root, renderType);
    }
 }

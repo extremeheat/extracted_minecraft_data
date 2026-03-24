@@ -5,11 +5,11 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class BedItem extends BlockItem {
-   public BedItem(Block var1, Item.Properties var2) {
-      super(var1, var2);
+   public BedItem(final Block block, final Item.Properties properties) {
+      super(block, properties);
    }
 
-   protected boolean placeBlock(BlockPlaceContext var1, BlockState var2) {
-      return var1.getLevel().setBlock(var1.getClickedPos(), var2, 26);
+   protected boolean placeBlock(final BlockPlaceContext context, final BlockState placementState) {
+      return context.getLevel().setBlock(context.getClickedPos(), placementState, 26);
    }
 }

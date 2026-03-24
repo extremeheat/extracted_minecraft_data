@@ -15,17 +15,17 @@ public class BuiltinTestFunctions extends TestFunctionLoader {
       super();
    }
 
-   private static ResourceKey<Consumer<GameTestHelper>> create(String var0) {
-      return ResourceKey.create(Registries.TEST_FUNCTION, Identifier.withDefaultNamespace(var0));
+   private static ResourceKey<Consumer<GameTestHelper>> create(final String name) {
+      return ResourceKey.create(Registries.TEST_FUNCTION, Identifier.withDefaultNamespace(name));
    }
 
-   public static Consumer<GameTestHelper> bootstrap(Registry<Consumer<GameTestHelper>> var0) {
+   public static Consumer<GameTestHelper> bootstrap(final Registry<Consumer<GameTestHelper>> registry) {
       registerLoader(new BuiltinTestFunctions());
-      runLoaders(var0);
+      runLoaders(registry);
       return ALWAYS_PASS_INSTANCE;
    }
 
-   public void load(BiConsumer<ResourceKey<Consumer<GameTestHelper>>, Consumer<GameTestHelper>> var1) {
-      var1.accept(ALWAYS_PASS, ALWAYS_PASS_INSTANCE);
+   public void load(final BiConsumer<ResourceKey<Consumer<GameTestHelper>>, Consumer<GameTestHelper>> register) {
+      register.accept(ALWAYS_PASS, ALWAYS_PASS_INSTANCE);
    }
 }

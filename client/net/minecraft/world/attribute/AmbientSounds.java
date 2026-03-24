@@ -13,15 +13,12 @@ public record AmbientSounds(Optional<Holder<SoundEvent>> loop, Optional<AmbientM
    public static final AmbientSounds LEGACY_CAVE_SETTINGS;
    public static final Codec<AmbientSounds> CODEC;
 
-   public AmbientSounds(Optional<Holder<SoundEvent>> var1, Optional<AmbientMoodSettings> var2, List<AmbientAdditionsSettings> var3) {
+   public AmbientSounds {
       super();
-      this.loop = var1;
-      this.mood = var2;
-      this.additions = var3;
    }
 
    static {
       LEGACY_CAVE_SETTINGS = new AmbientSounds(Optional.empty(), Optional.of(AmbientMoodSettings.LEGACY_CAVE_SETTINGS), List.of());
-      CODEC = RecordCodecBuilder.create((var0) -> var0.group(SoundEvent.CODEC.optionalFieldOf("loop").forGetter(AmbientSounds::loop), AmbientMoodSettings.CODEC.optionalFieldOf("mood").forGetter(AmbientSounds::mood), ExtraCodecs.compactListCodec(AmbientAdditionsSettings.CODEC).optionalFieldOf("additions", List.of()).forGetter(AmbientSounds::additions)).apply(var0, AmbientSounds::new));
+      CODEC = RecordCodecBuilder.create((i) -> i.group(SoundEvent.CODEC.optionalFieldOf("loop").forGetter(AmbientSounds::loop), AmbientMoodSettings.CODEC.optionalFieldOf("mood").forGetter(AmbientSounds::mood), ExtraCodecs.compactListCodec(AmbientAdditionsSettings.CODEC).optionalFieldOf("additions", List.of()).forGetter(AmbientSounds::additions)).apply(i, AmbientSounds::new));
    }
 }

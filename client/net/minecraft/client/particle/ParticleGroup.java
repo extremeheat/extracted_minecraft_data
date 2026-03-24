@@ -9,16 +9,16 @@ import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.client.Camera;
 import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.client.renderer.state.ParticleGroupRenderState;
+import net.minecraft.client.renderer.state.level.ParticleGroupRenderState;
 
 public abstract class ParticleGroup<P extends Particle> {
    private static final int MAX_PARTICLES = 16384;
    protected final ParticleEngine engine;
    protected final Queue<P> particles = EvictingQueue.create(16384);
 
-   public ParticleGroup(ParticleEngine var1) {
+   public ParticleGroup(final ParticleEngine engine) {
       super();
-      this.engine = var1;
+      this.engine = engine;
    }
 
    public boolean isEmpty() {
@@ -27,44 +27,44 @@ public abstract class ParticleGroup<P extends Particle> {
 
    public void tickParticles() {
       if (!this.particles.isEmpty()) {
-         Iterator var1 = this.particles.iterator();
+         Iterator<P> iterator = this.particles.iterator();
 
-         while(var1.hasNext()) {
-            Particle var2 = (Particle)var1.next();
-            this.tickParticle(var2);
-            if (!var2.isAlive()) {
-               var2.getParticleLimit().ifPresent((var1x) -> this.engine.updateCount(var1x, -1));
-               var1.remove();
+         while(iterator.hasNext()) {
+            P particle = (P)(iterator.next());
+            this.tickParticle(particle);
+            if (!particle.isAlive()) {
+               particle.getParticleLimit().ifPresent((options) -> this.engine.updateCount(options, -1));
+               iterator.remove();
             }
          }
       }
 
    }
 
-   private void tickParticle(Particle var1) {
+   private void tickParticle(final Particle particle) {
       try {
-         var1.tick();
-      } catch (Throwable var5) {
-         CrashReport var3 = CrashReport.forThrowable(var5, "Ticking Particle");
-         CrashReportCategory var4 = var3.addCategory("Particle being ticked");
-         Objects.requireNonNull(var1);
-         var4.setDetail("Particle", var1::toString);
-         ParticleRenderType var10002 = var1.getGroup();
+         particle.tick();
+      } catch (Throwable t) {
+         CrashReport report = CrashReport.forThrowable(t, "Ticking Particle");
+         CrashReportCategory category = report.addCategory("Particle being ticked");
+         Objects.requireNonNull(particle);
+         category.setDetail("Particle", particle::toString);
+         ParticleRenderType var10002 = particle.getGroup();
          Objects.requireNonNull(var10002);
-         var4.setDetail("Particle Type", var10002::toString);
-         throw new ReportedException(var3);
+         category.setDetail("Particle Type", var10002::toString);
+         throw new ReportedException(report);
       }
    }
 
-   public void add(Particle var1) {
-      this.particles.add(var1);
+   public void add(final Particle particle) {
+      this.particles.add(particle);
    }
 
    public int size() {
       return this.particles.size();
    }
 
-   public abstract ParticleGroupRenderState extractRenderState(Frustum var1, Camera var2, float var3);
+   public abstract ParticleGroupRenderState extractRenderState(Frustum frustum, Camera camera, float partialTickTime);
 
    public Queue<P> getAll() {
       return this.particles;

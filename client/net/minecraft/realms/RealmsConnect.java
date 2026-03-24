@@ -24,72 +24,76 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class RealmsConnect {
-   static final Logger LOGGER = LogUtils.getLogger();
-   final Screen onlineScreen;
-   volatile boolean aborted;
-   @Nullable Connection connection;
+   private static final Logger LOGGER = LogUtils.getLogger();
+   private final Screen onlineScreen;
+   private volatile boolean aborted;
+   private @Nullable Connection connection;
 
-   public RealmsConnect(Screen var1) {
+   public RealmsConnect(final Screen onlineScreen) {
       super();
-      this.onlineScreen = var1;
+      this.onlineScreen = onlineScreen;
    }
 
-   public void connect(final RealmsServer var1, ServerAddress var2) {
-      final Minecraft var3 = Minecraft.getInstance();
-      var3.prepareForMultiplayer();
-      var3.getNarrator().saySystemNow((Component)Component.translatable("mco.connect.success"));
-      final String var4 = var2.getHost();
-      final int var5 = var2.getPort();
+   public void connect(final RealmsServer server, final ServerAddress hostAndPort) {
+      final Minecraft minecraft = Minecraft.getInstance();
+      minecraft.prepareForMultiplayer();
+      minecraft.getNarrator().saySystemNow((Component)Component.translatable("mco.connect.success"));
+      final String hostname = hostAndPort.getHost();
+      final int port = hostAndPort.getPort();
       (new Thread("Realms-connect-task") {
+         {
+            Objects.requireNonNull(RealmsConnect.this);
+         }
+
          public void run() {
-            Object var1x = null;
+            InetSocketAddress address = null;
 
             try {
-               InetSocketAddress var6 = new InetSocketAddress(var4, var5);
+               address = new InetSocketAddress(hostname, port);
                if (RealmsConnect.this.aborted) {
                   return;
                }
 
-               RealmsConnect.this.connection = Connection.connectToServer(var6, EventLoopGroupHolder.remote(var3.options.useNativeTransport()), var3.getDebugOverlay().getBandwidthLogger());
+               RealmsConnect.this.connection = Connection.connectToServer(address, EventLoopGroupHolder.remote(minecraft.options.useNativeTransport()), minecraft.getDebugOverlay().getBandwidthLogger());
                if (RealmsConnect.this.aborted) {
                   return;
                }
 
-               ClientHandshakePacketListenerImpl var2 = new ClientHandshakePacketListenerImpl(RealmsConnect.this.connection, var3, var1.toServerData(var4), RealmsConnect.this.onlineScreen, false, (Duration)null, (var0) -> {
+               ClientHandshakePacketListenerImpl clientHandshakePacketListener = new ClientHandshakePacketListenerImpl(RealmsConnect.this.connection, minecraft, server.toServerData(hostname), RealmsConnect.this.onlineScreen, false, (Duration)null, (status) -> {
                }, new LevelLoadTracker(), (TransferState)null);
-               if (var1.isMinigameActive()) {
-                  var2.setMinigameName(var1.minigameName);
+               if (server.isMinigameActive()) {
+                  clientHandshakePacketListener.setMinigameName(server.minigameName);
                }
 
                if (RealmsConnect.this.aborted) {
                   return;
                }
 
-               RealmsConnect.this.connection.initiateServerboundPlayConnection(var4, var5, var2);
+               RealmsConnect.this.connection.initiateServerboundPlayConnection(hostname, port, clientHandshakePacketListener);
                if (RealmsConnect.this.aborted) {
                   return;
                }
 
-               RealmsConnect.this.connection.send(new ServerboundHelloPacket(var3.getUser().getName(), var3.getUser().getProfileId()));
-               var3.updateReportEnvironment(ReportEnvironment.realm(var1));
-               var3.quickPlayLog().setWorldData(QuickPlayLog.Type.REALMS, String.valueOf(var1.id), (String)Objects.requireNonNullElse(var1.name, "unknown"));
-               var3.getDownloadedPackSource().configureForServerControl(RealmsConnect.this.connection, ServerPackManager.PackPromptStatus.ALLOWED);
-            } catch (Exception var5x) {
-               var3.getDownloadedPackSource().cleanupAfterDisconnect();
+               RealmsConnect.this.connection.send(new ServerboundHelloPacket(minecraft.getUser().getName(), minecraft.getUser().getProfileId()));
+               minecraft.updateReportEnvironment(ReportEnvironment.realm(server));
+               minecraft.quickPlayLog().setWorldData(QuickPlayLog.Type.REALMS, String.valueOf(server.id), (String)Objects.requireNonNullElse(server.name, "unknown"));
+               minecraft.getDownloadedPackSource().configureForServerControl(RealmsConnect.this.connection, ServerPackManager.PackPromptStatus.ALLOWED);
+            } catch (Exception e) {
+               minecraft.getDownloadedPackSource().cleanupAfterDisconnect();
                if (RealmsConnect.this.aborted) {
                   return;
                }
 
-               RealmsConnect.LOGGER.error("Couldn't connect to world", var5x);
-               String var3x = var5x.toString();
-               if (var1x != null) {
-                  String var10000 = String.valueOf(var1x);
-                  String var4x = var10000 + ":" + var5;
-                  var3x = var3x.replaceAll(var4x, "");
+               RealmsConnect.LOGGER.error("Couldn't connect to world", e);
+               String message = e.toString();
+               if (address != null) {
+                  String var10000 = String.valueOf(address);
+                  String filter = var10000 + ":" + port;
+                  message = message.replaceAll(filter, "");
                }
 
-               DisconnectedScreen var7 = new DisconnectedScreen(RealmsConnect.this.onlineScreen, Component.translatable("mco.connect.failed"), Component.translatable("disconnect.genericReason", var3x), CommonComponents.GUI_BACK);
-               var3.execute(() -> var3.setScreen(var7));
+               DisconnectedScreen screen = new DisconnectedScreen(RealmsConnect.this.onlineScreen, Component.translatable("mco.connect.failed"), Component.translatable("disconnect.genericReason", message), CommonComponents.GUI_BACK);
+               minecraft.execute(() -> minecraft.setScreen(screen));
             }
 
          }

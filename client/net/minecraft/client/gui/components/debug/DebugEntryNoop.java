@@ -11,16 +11,16 @@ public class DebugEntryNoop implements DebugScreenEntry {
       this(false);
    }
 
-   public DebugEntryNoop(boolean var1) {
+   public DebugEntryNoop(final boolean isAllowedWithReducedDebugInfo) {
       super();
-      this.isAllowedWithReducedDebugInfo = var1;
+      this.isAllowedWithReducedDebugInfo = isAllowedWithReducedDebugInfo;
    }
 
-   public void display(DebugScreenDisplayer var1, @Nullable Level var2, @Nullable LevelChunk var3, @Nullable LevelChunk var4) {
+   public void display(final DebugScreenDisplayer displayer, final @Nullable Level serverOrClientLevel, final @Nullable LevelChunk clientChunk, final @Nullable LevelChunk serverChunk) {
    }
 
-   public boolean isAllowed(boolean var1) {
-      return this.isAllowedWithReducedDebugInfo || !var1;
+   public boolean isAllowed(final boolean reducedDebugInfo) {
+      return this.isAllowedWithReducedDebugInfo || !reducedDebugInfo;
    }
 
    public DebugEntryCategory category() {

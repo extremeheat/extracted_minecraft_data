@@ -1,27 +1,23 @@
 package net.minecraft.client.renderer.chunk;
 
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.systems.CommandEncoder;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
-import java.nio.ByteBuffer;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import net.minecraft.core.Direction;
-import net.minecraft.core.SectionPos;
+import net.minecraft.util.Util;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
 public class CompiledSectionMesh implements SectionMesh {
    public static final SectionMesh UNCOMPILED = new SectionMesh() {
-      public boolean facesCanSeeEachother(Direction var1, Direction var2) {
+      public boolean facesCanSeeEachother(final Direction direction1, final Direction direction2) {
          return false;
       }
    };
    public static final SectionMesh EMPTY = new SectionMesh() {
-      public boolean facesCanSeeEachother(Direction var1, Direction var2) {
+      public boolean facesCanSeeEachother(final Direction direction1, final Direction direction2) {
          return true;
       }
    };
@@ -29,117 +25,65 @@ public class CompiledSectionMesh implements SectionMesh {
    private final VisibilitySet visibilitySet;
    private final MeshData.@Nullable SortState transparencyState;
    private @Nullable TranslucencyPointOfView translucencyPointOfView;
-   private final Map<ChunkSectionLayer, SectionBuffers> buffers = new EnumMap(ChunkSectionLayer.class);
+   private final Map<ChunkSectionLayer, SectionMesh.SectionDraw> draws = new EnumMap(ChunkSectionLayer.class);
+   private final Map<ChunkSectionLayer, AtomicBoolean> vertexBufferUploaded = Util.<ChunkSectionLayer, AtomicBoolean>makeEnumMap(ChunkSectionLayer.class, (layer) -> new AtomicBoolean());
+   private final Map<ChunkSectionLayer, AtomicBoolean> indexBufferUploaded = Util.<ChunkSectionLayer, AtomicBoolean>makeEnumMap(ChunkSectionLayer.class, (layer) -> new AtomicBoolean());
 
-   public CompiledSectionMesh(TranslucencyPointOfView var1, SectionCompiler.Results var2) {
+   public CompiledSectionMesh(final TranslucencyPointOfView translucencyPointOfView, final SectionCompiler.Results results) {
       super();
-      this.translucencyPointOfView = var1;
-      this.visibilitySet = var2.visibilitySet;
-      this.renderableBlockEntities = var2.blockEntities;
-      this.transparencyState = var2.transparencyState;
+      this.translucencyPointOfView = translucencyPointOfView;
+      this.visibilitySet = results.visibilitySet;
+      this.renderableBlockEntities = results.blockEntities;
+      this.transparencyState = results.transparencyState;
+      results.renderedLayers.forEach((layer, mesh) -> this.draws.put(layer, new SectionMesh.SectionDraw(mesh.drawState().indexCount(), mesh.drawState().indexType(), mesh.indexBuffer() != null)));
    }
 
-   public void setTranslucencyPointOfView(TranslucencyPointOfView var1) {
-      this.translucencyPointOfView = var1;
+   public void setTranslucencyPointOfView(final TranslucencyPointOfView translucencyPointOfView) {
+      this.translucencyPointOfView = translucencyPointOfView;
    }
 
-   public boolean isDifferentPointOfView(TranslucencyPointOfView var1) {
-      return !var1.equals(this.translucencyPointOfView);
+   public boolean isDifferentPointOfView(final TranslucencyPointOfView pointOfView) {
+      return !pointOfView.equals(this.translucencyPointOfView);
    }
 
    public boolean hasRenderableLayers() {
-      return !this.buffers.isEmpty();
+      return !this.draws.isEmpty();
    }
 
-   public boolean isEmpty(ChunkSectionLayer var1) {
-      return !this.buffers.containsKey(var1);
+   public boolean isEmpty(final ChunkSectionLayer layer) {
+      return !this.draws.containsKey(layer);
    }
 
    public List<BlockEntity> getRenderableBlockEntities() {
       return this.renderableBlockEntities;
    }
 
-   public boolean facesCanSeeEachother(Direction var1, Direction var2) {
-      return this.visibilitySet.visibilityBetween(var1, var2);
+   public boolean facesCanSeeEachother(final Direction direction1, final Direction direction2) {
+      return this.visibilitySet.visibilityBetween(direction1, direction2);
    }
 
-   public @Nullable SectionBuffers getBuffers(ChunkSectionLayer var1) {
-      return (SectionBuffers)this.buffers.get(var1);
+   public SectionMesh.@Nullable SectionDraw getSectionDraw(final ChunkSectionLayer layer) {
+      return (SectionMesh.SectionDraw)this.draws.get(layer);
    }
 
-   public void uploadMeshLayer(ChunkSectionLayer var1, MeshData var2, long var3) {
-      CommandEncoder var5 = RenderSystem.getDevice().createCommandEncoder();
-      SectionBuffers var6 = this.getBuffers(var1);
-      if (var6 != null) {
-         if (var6.getVertexBuffer().size() < (long)var2.vertexBuffer().remaining()) {
-            var6.getVertexBuffer().close();
-            var6.setVertexBuffer(RenderSystem.getDevice().createBuffer(() -> {
-               String var10000 = var1.label();
-               return "Section vertex buffer - layer: " + var10000 + "; cords: " + SectionPos.x(var3) + ", " + SectionPos.y(var3) + ", " + SectionPos.z(var3);
-            }, 40, var2.vertexBuffer()));
-         } else if (!var6.getVertexBuffer().isClosed()) {
-            var5.writeToBuffer(var6.getVertexBuffer().slice(), var2.vertexBuffer());
-         }
-
-         ByteBuffer var7 = var2.indexBuffer();
-         if (var7 != null) {
-            if (var6.getIndexBuffer() != null && var6.getIndexBuffer().size() >= (long)var7.remaining()) {
-               if (!var6.getIndexBuffer().isClosed()) {
-                  var5.writeToBuffer(var6.getIndexBuffer().slice(), var7);
-               }
-            } else {
-               if (var6.getIndexBuffer() != null) {
-                  var6.getIndexBuffer().close();
-               }
-
-               var6.setIndexBuffer(RenderSystem.getDevice().createBuffer(() -> {
-                  String var10000 = var1.label();
-                  return "Section index buffer - layer: " + var10000 + "; cords: " + SectionPos.x(var3) + ", " + SectionPos.y(var3) + ", " + SectionPos.z(var3);
-               }, 72, var7));
-            }
-         } else if (var6.getIndexBuffer() != null) {
-            var6.getIndexBuffer().close();
-            var6.setIndexBuffer((GpuBuffer)null);
-         }
-
-         var6.setIndexCount(var2.drawState().indexCount());
-         var6.setIndexType(var2.drawState().indexType());
-      } else {
-         GpuBuffer var11 = RenderSystem.getDevice().createBuffer(() -> {
-            String var10000 = var1.label();
-            return "Section vertex buffer - layer: " + var10000 + "; cords: " + SectionPos.x(var3) + ", " + SectionPos.y(var3) + ", " + SectionPos.z(var3);
-         }, 40, var2.vertexBuffer());
-         ByteBuffer var8 = var2.indexBuffer();
-         GpuBuffer var9 = var8 != null ? RenderSystem.getDevice().createBuffer(() -> {
-            String var10000 = var1.label();
-            return "Section index buffer - layer: " + var10000 + "; cords: " + SectionPos.x(var3) + ", " + SectionPos.y(var3) + ", " + SectionPos.z(var3);
-         }, 72, var8) : null;
-         SectionBuffers var10 = new SectionBuffers(var11, var9, var2.drawState().indexCount(), var2.drawState().indexType());
-         this.buffers.put(var1, var10);
-      }
-
+   public boolean isVertexBufferUploaded(final ChunkSectionLayer layer) {
+      return ((AtomicBoolean)this.vertexBufferUploaded.get(layer)).get();
    }
 
-   public void uploadLayerIndexBuffer(ChunkSectionLayer var1, ByteBufferBuilder.Result var2, long var3) {
-      SectionBuffers var5 = this.getBuffers(var1);
-      if (var5 != null) {
-         if (var5.getIndexBuffer() == null) {
-            var5.setIndexBuffer(RenderSystem.getDevice().createBuffer(() -> {
-               String var10000 = var1.label();
-               return "Section index buffer - layer: " + var10000 + "; cords: " + SectionPos.x(var3) + ", " + SectionPos.y(var3) + ", " + SectionPos.z(var3);
-            }, 72, var2.byteBuffer()));
-         } else {
-            CommandEncoder var6 = RenderSystem.getDevice().createCommandEncoder();
-            if (!var5.getIndexBuffer().isClosed()) {
-               var6.writeToBuffer(var5.getIndexBuffer().slice(), var2.byteBuffer());
-            }
-         }
+   public boolean isIndexBufferUploaded(final ChunkSectionLayer layer) {
+      return ((AtomicBoolean)this.indexBufferUploaded.get(layer)).get();
+   }
 
-      }
+   public void setVertexBufferUploaded(final ChunkSectionLayer layer) {
+      ((AtomicBoolean)this.vertexBufferUploaded.get(layer)).set(true);
+   }
+
+   public void setIndexBufferUploaded(final ChunkSectionLayer layer) {
+      ((AtomicBoolean)this.indexBufferUploaded.get(layer)).set(true);
    }
 
    public boolean hasTranslucentGeometry() {
-      return this.buffers.containsKey(ChunkSectionLayer.TRANSLUCENT);
+      return this.draws.containsKey(ChunkSectionLayer.TRANSLUCENT);
    }
 
    public MeshData.@Nullable SortState getTransparencyState() {
@@ -147,7 +91,8 @@ public class CompiledSectionMesh implements SectionMesh {
    }
 
    public void close() {
-      this.buffers.values().forEach(SectionBuffers::close);
-      this.buffers.clear();
+      this.draws.clear();
+      this.vertexBufferUploaded.clear();
+      this.indexBufferUploaded.clear();
    }
 }

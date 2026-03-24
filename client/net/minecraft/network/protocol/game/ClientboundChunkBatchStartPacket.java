@@ -17,8 +17,8 @@ public class ClientboundChunkBatchStartPacket implements Packet<ClientGamePacket
       return GamePacketTypes.CLIENTBOUND_CHUNK_BATCH_START;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleChunkBatchStart(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleChunkBatchStart(this);
    }
 
    static {

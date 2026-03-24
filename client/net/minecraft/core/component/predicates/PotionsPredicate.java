@@ -15,22 +15,21 @@ import net.minecraft.world.item.alchemy.PotionContents;
 public record PotionsPredicate(HolderSet<Potion> potions) implements SingleComponentItemPredicate<PotionContents> {
    public static final Codec<PotionsPredicate> CODEC;
 
-   public PotionsPredicate(HolderSet<Potion> var1) {
+   public PotionsPredicate {
       super();
-      this.potions = var1;
    }
 
    public DataComponentType<PotionContents> componentType() {
       return DataComponents.POTION_CONTENTS;
    }
 
-   public boolean matches(PotionContents var1) {
-      Optional var2 = var1.potion();
-      return !var2.isEmpty() && this.potions.contains((Holder)var2.get());
+   public boolean matches(final PotionContents potionContents) {
+      Optional<Holder<Potion>> potion = potionContents.potion();
+      return !potion.isEmpty() && this.potions.contains((Holder)potion.get());
    }
 
-   public static DataComponentPredicate potions(HolderSet<Potion> var0) {
-      return new PotionsPredicate(var0);
+   public static DataComponentPredicate potions(final HolderSet<Potion> potions) {
+      return new PotionsPredicate(potions);
    }
 
    static {

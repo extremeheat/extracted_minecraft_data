@@ -1,6 +1,7 @@
 package net.minecraft.world.inventory;
 
 import java.util.List;
+import java.util.Objects;
 import net.minecraft.recipebook.ServerPlaceRecipe;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
@@ -28,37 +29,37 @@ public abstract class AbstractFurnaceMenu extends RecipeBookMenu {
    private static final int INV_SLOT_END = 30;
    private static final int USE_ROW_SLOT_START = 30;
    private static final int USE_ROW_SLOT_END = 39;
-   final Container container;
+   private final Container container;
    private final ContainerData data;
    protected final Level level;
    private final RecipeType<? extends AbstractCookingRecipe> recipeType;
    private final RecipePropertySet acceptedInputs;
    private final RecipeBookType recipeBookType;
 
-   protected AbstractFurnaceMenu(MenuType<?> var1, RecipeType<? extends AbstractCookingRecipe> var2, ResourceKey<RecipePropertySet> var3, RecipeBookType var4, int var5, Inventory var6) {
-      this(var1, var2, var3, var4, var5, var6, new SimpleContainer(3), new SimpleContainerData(4));
+   protected AbstractFurnaceMenu(final MenuType<?> menuType, final RecipeType<? extends AbstractCookingRecipe> recipeType, final ResourceKey<RecipePropertySet> allowedInputs, final RecipeBookType recipeBookType, final int containerId, final Inventory inventory) {
+      this(menuType, recipeType, allowedInputs, recipeBookType, containerId, inventory, new SimpleContainer(3), new SimpleContainerData(4));
    }
 
-   protected AbstractFurnaceMenu(MenuType<?> var1, RecipeType<? extends AbstractCookingRecipe> var2, ResourceKey<RecipePropertySet> var3, RecipeBookType var4, int var5, Inventory var6, Container var7, ContainerData var8) {
-      super(var1, var5);
-      this.recipeType = var2;
-      this.recipeBookType = var4;
-      checkContainerSize(var7, 3);
-      checkContainerDataCount(var8, 4);
-      this.container = var7;
-      this.data = var8;
-      this.level = var6.player.level();
-      this.acceptedInputs = this.level.recipeAccess().propertySet(var3);
-      this.addSlot(new Slot(var7, 0, 56, 17));
-      this.addSlot(new FurnaceFuelSlot(this, var7, 1, 56, 53));
-      this.addSlot(new FurnaceResultSlot(var6.player, var7, 2, 116, 35));
-      this.addStandardInventorySlots(var6, 8, 84);
-      this.addDataSlots(var8);
+   protected AbstractFurnaceMenu(final MenuType<?> menuType, final RecipeType<? extends AbstractCookingRecipe> recipeType, final ResourceKey<RecipePropertySet> allowedInputs, final RecipeBookType recipeBookType, final int containerId, final Inventory inventory, final Container container, final ContainerData data) {
+      super(menuType, containerId);
+      this.recipeType = recipeType;
+      this.recipeBookType = recipeBookType;
+      checkContainerSize(container, 3);
+      checkContainerDataCount(data, 4);
+      this.container = container;
+      this.data = data;
+      this.level = inventory.player.level();
+      this.acceptedInputs = this.level.recipeAccess().propertySet(allowedInputs);
+      this.addSlot(new Slot(container, 0, 56, 17));
+      this.addSlot(new FurnaceFuelSlot(this, container, 1, 56, 53));
+      this.addSlot(new FurnaceResultSlot(inventory.player, container, 2, 116, 35));
+      this.addStandardInventorySlots(inventory, 8, 84);
+      this.addDataSlots(data);
    }
 
-   public void fillCraftSlotsStackedContents(StackedItemContents var1) {
+   public void fillCraftSlotsStackedContents(final StackedItemContents stackedContents) {
       if (this.container instanceof StackedContentsCompatible) {
-         ((StackedContentsCompatible)this.container).fillStackedContents(var1);
+         ((StackedContentsCompatible)this.container).fillStackedContents(stackedContents);
       }
 
    }
@@ -67,79 +68,79 @@ public abstract class AbstractFurnaceMenu extends RecipeBookMenu {
       return this.slots.get(2);
    }
 
-   public boolean stillValid(Player var1) {
-      return this.container.stillValid(var1);
+   public boolean stillValid(final Player player) {
+      return this.container.stillValid(player);
    }
 
-   public ItemStack quickMoveStack(Player var1, int var2) {
-      ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = this.slots.get(var2);
-      if (var4 != null && var4.hasItem()) {
-         ItemStack var5 = var4.getItem();
-         var3 = var5.copy();
-         if (var2 == 2) {
-            if (!this.moveItemStackTo(var5, 3, 39, true)) {
+   public ItemStack quickMoveStack(final Player player, final int slotIndex) {
+      ItemStack clicked = ItemStack.EMPTY;
+      Slot slot = this.slots.get(slotIndex);
+      if (slot != null && slot.hasItem()) {
+         ItemStack stack = slot.getItem();
+         clicked = stack.copy();
+         if (slotIndex == 2) {
+            if (!this.moveItemStackTo(stack, 3, 39, true)) {
                return ItemStack.EMPTY;
             }
 
-            var4.onQuickCraft(var5, var3);
-         } else if (var2 != 1 && var2 != 0) {
-            if (this.canSmelt(var5)) {
-               if (!this.moveItemStackTo(var5, 0, 1, false)) {
+            slot.onQuickCraft(stack, clicked);
+         } else if (slotIndex != 1 && slotIndex != 0) {
+            if (this.canSmelt(stack)) {
+               if (!this.moveItemStackTo(stack, 0, 1, false)) {
                   return ItemStack.EMPTY;
                }
-            } else if (this.isFuel(var5)) {
-               if (!this.moveItemStackTo(var5, 1, 2, false)) {
+            } else if (this.isFuel(stack)) {
+               if (!this.moveItemStackTo(stack, 1, 2, false)) {
                   return ItemStack.EMPTY;
                }
-            } else if (var2 >= 3 && var2 < 30) {
-               if (!this.moveItemStackTo(var5, 30, 39, false)) {
+            } else if (slotIndex >= 3 && slotIndex < 30) {
+               if (!this.moveItemStackTo(stack, 30, 39, false)) {
                   return ItemStack.EMPTY;
                }
-            } else if (var2 >= 30 && var2 < 39 && !this.moveItemStackTo(var5, 3, 30, false)) {
+            } else if (slotIndex >= 30 && slotIndex < 39 && !this.moveItemStackTo(stack, 3, 30, false)) {
                return ItemStack.EMPTY;
             }
-         } else if (!this.moveItemStackTo(var5, 3, 39, false)) {
+         } else if (!this.moveItemStackTo(stack, 3, 39, false)) {
             return ItemStack.EMPTY;
          }
 
-         if (var5.isEmpty()) {
-            var4.setByPlayer(ItemStack.EMPTY);
+         if (stack.isEmpty()) {
+            slot.setByPlayer(ItemStack.EMPTY);
          } else {
-            var4.setChanged();
+            slot.setChanged();
          }
 
-         if (var5.getCount() == var3.getCount()) {
+         if (stack.getCount() == clicked.getCount()) {
             return ItemStack.EMPTY;
          }
 
-         var4.onTake(var1, var5);
+         slot.onTake(player, stack);
       }
 
-      return var3;
+      return clicked;
    }
 
-   protected boolean canSmelt(ItemStack var1) {
-      return this.acceptedInputs.test(var1);
+   protected boolean canSmelt(final ItemStack itemStack) {
+      return this.acceptedInputs.test(itemStack);
    }
 
-   protected boolean isFuel(ItemStack var1) {
-      return this.level.fuelValues().isFuel(var1);
+   protected boolean isFuel(final ItemStack itemStack) {
+      return this.level.fuelValues().isFuel(itemStack);
    }
 
    public float getBurnProgress() {
-      int var1 = this.data.get(2);
-      int var2 = this.data.get(3);
-      return var2 != 0 && var1 != 0 ? Mth.clamp((float)var1 / (float)var2, 0.0F, 1.0F) : 0.0F;
+      int current = this.data.get(2);
+      int total = this.data.get(3);
+      return total != 0 && current != 0 ? Mth.clamp((float)current / (float)total, 0.0F, 1.0F) : 0.0F;
    }
 
    public float getLitProgress() {
-      int var1 = this.data.get(1);
-      if (var1 == 0) {
-         var1 = 200;
+      int litDuration = this.data.get(1);
+      if (litDuration == 0) {
+         litDuration = 200;
       }
 
-      return Mth.clamp((float)this.data.get(0) / (float)var1, 0.0F, 1.0F);
+      return Mth.clamp((float)this.data.get(0) / (float)litDuration, 0.0F, 1.0F);
    }
 
    public boolean isLit() {
@@ -150,20 +151,24 @@ public abstract class AbstractFurnaceMenu extends RecipeBookMenu {
       return this.recipeBookType;
    }
 
-   public RecipeBookMenu.PostPlaceAction handlePlacement(boolean var1, boolean var2, RecipeHolder<?> var3, final ServerLevel var4, Inventory var5) {
-      final List var6 = List.of(this.getSlot(0), this.getSlot(2));
+   public RecipeBookMenu.PostPlaceAction handlePlacement(final boolean useMaxItems, final boolean allowDroppingItemsToClear, final RecipeHolder<?> recipe, final ServerLevel level, final Inventory inventory) {
+      final List<Slot> slotsToClear = List.of(this.getSlot(0), this.getSlot(2));
       return ServerPlaceRecipe.placeRecipe(new ServerPlaceRecipe.CraftingMenuAccess<AbstractCookingRecipe>() {
-         public void fillCraftSlotsStackedContents(StackedItemContents var1) {
-            AbstractFurnaceMenu.this.fillCraftSlotsStackedContents(var1);
+         {
+            Objects.requireNonNull(AbstractFurnaceMenu.this);
+         }
+
+         public void fillCraftSlotsStackedContents(final StackedItemContents stackedContents) {
+            AbstractFurnaceMenu.this.fillCraftSlotsStackedContents(stackedContents);
          }
 
          public void clearCraftingContent() {
-            var6.forEach((var0) -> var0.set(ItemStack.EMPTY));
+            slotsToClear.forEach((s) -> s.set(ItemStack.EMPTY));
          }
 
-         public boolean recipeMatches(RecipeHolder<AbstractCookingRecipe> var1) {
-            return ((AbstractCookingRecipe)var1.value()).matches(new SingleRecipeInput(AbstractFurnaceMenu.this.container.getItem(0)), var4);
+         public boolean recipeMatches(final RecipeHolder<AbstractCookingRecipe> recipe) {
+            return ((AbstractCookingRecipe)recipe.value()).matches(new SingleRecipeInput(AbstractFurnaceMenu.this.container.getItem(0)), level);
          }
-      }, 1, 1, List.of(this.getSlot(0)), var6, var5, var3, var1, var2);
+      }, 1, 1, List.of(this.getSlot(0)), slotsToClear, inventory, recipe, useMaxItems, allowDroppingItemsToClear);
    }
 }

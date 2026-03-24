@@ -20,29 +20,29 @@ public class OpCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("op").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).then(Commands.argument("targets", GameProfileArgument.gameProfile()).suggests((var0x, var1) -> {
-         PlayerList var2 = ((CommandSourceStack)var0x.getSource()).getServer().getPlayerList();
-         return SharedSuggestionProvider.suggest(var2.getPlayers().stream().filter((var1x) -> !var2.isOp(var1x.nameAndId())).map((var0) -> var0.getGameProfile().name()), var1);
-      }).executes((var0x) -> opPlayers((CommandSourceStack)var0x.getSource(), GameProfileArgument.getGameProfiles(var0x, "targets")))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("op").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).then(Commands.argument("targets", GameProfileArgument.gameProfile()).suggests((c, p) -> {
+         PlayerList list = ((CommandSourceStack)c.getSource()).getServer().getPlayerList();
+         return SharedSuggestionProvider.suggest(list.getPlayers().stream().filter((player) -> !list.isOp(player.nameAndId())).map((pl) -> pl.getGameProfile().name()), p);
+      }).executes((c) -> opPlayers((CommandSourceStack)c.getSource(), GameProfileArgument.getGameProfiles(c, "targets")))));
    }
 
-   private static int opPlayers(CommandSourceStack var0, Collection<NameAndId> var1) throws CommandSyntaxException {
-      PlayerList var2 = var0.getServer().getPlayerList();
-      int var3 = 0;
+   private static int opPlayers(final CommandSourceStack source, final Collection<NameAndId> players) throws CommandSyntaxException {
+      PlayerList list = source.getServer().getPlayerList();
+      int count = 0;
 
-      for(NameAndId var5 : var1) {
-         if (!var2.isOp(var5)) {
-            var2.op(var5);
-            ++var3;
-            var0.sendSuccess(() -> Component.translatable("commands.op.success", var5.name()), true);
+      for(NameAndId player : players) {
+         if (!list.isOp(player)) {
+            list.op(player);
+            ++count;
+            source.sendSuccess(() -> Component.translatable("commands.op.success", player.name()), true);
          }
       }
 
-      if (var3 == 0) {
+      if (count == 0) {
          throw ERROR_ALREADY_OP.create();
       } else {
-         return var3;
+         return count;
       }
    }
 }

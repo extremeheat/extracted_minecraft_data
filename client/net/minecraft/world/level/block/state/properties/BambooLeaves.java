@@ -9,8 +9,8 @@ public enum BambooLeaves implements StringRepresentable {
 
    private final String name;
 
-   private BambooLeaves(final String var3) {
-      this.name = var3;
+   private BambooLeaves(final String name) {
+      this.name = name;
    }
 
    public String toString() {

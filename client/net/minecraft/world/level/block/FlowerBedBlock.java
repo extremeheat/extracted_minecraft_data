@@ -30,8 +30,8 @@ public class FlowerBedBlock extends VegetationBlock implements BonemealableBlock
       return CODEC;
    }
 
-   protected FlowerBedBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   protected FlowerBedBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(AMOUNT, 1));
       this.shapes = this.makeShapes();
    }
@@ -40,20 +40,20 @@ public class FlowerBedBlock extends VegetationBlock implements BonemealableBlock
       return this.getShapeForEachState(this.getShapeCalculator(FACING, AMOUNT));
    }
 
-   public BlockState rotate(BlockState var1, Rotation var2) {
-      return (BlockState)var1.setValue(FACING, var2.rotate((Direction)var1.getValue(FACING)));
+   public BlockState rotate(final BlockState state, final Rotation rotation) {
+      return (BlockState)state.setValue(FACING, rotation.rotate((Direction)state.getValue(FACING)));
    }
 
-   public BlockState mirror(BlockState var1, Mirror var2) {
-      return var1.rotate(var2.getRotation((Direction)var1.getValue(FACING)));
+   public BlockState mirror(final BlockState state, final Mirror mirror) {
+      return state.rotate(mirror.getRotation((Direction)state.getValue(FACING)));
    }
 
-   public boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
-      return this.canBeReplaced(var1, var2, AMOUNT) ? true : super.canBeReplaced(var1, var2);
+   public boolean canBeReplaced(final BlockState state, final BlockPlaceContext context) {
+      return this.canBeReplaced(state, context, AMOUNT) ? true : super.canBeReplaced(state, context);
    }
 
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (VoxelShape)this.shapes.apply(var1);
+   public VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return (VoxelShape)this.shapes.apply(state);
    }
 
    public double getShapeHeight() {
@@ -64,28 +64,28 @@ public class FlowerBedBlock extends VegetationBlock implements BonemealableBlock
       return AMOUNT;
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return this.getStateForPlacement(var1, this, AMOUNT, FACING);
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      return this.getStateForPlacement(context, this, AMOUNT, FACING);
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(FACING, AMOUNT);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(FACING, AMOUNT);
    }
 
-   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
       return true;
    }
 
-   public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
       return true;
    }
 
-   public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      int var5 = (Integer)var4.getValue(AMOUNT);
-      if (var5 < 4) {
-         var1.setBlock(var3, (BlockState)var4.setValue(AMOUNT, var5 + 1), 2);
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+      int currentAmount = (Integer)state.getValue(AMOUNT);
+      if (currentAmount < 4) {
+         level.setBlock(pos, (BlockState)state.setValue(AMOUNT, currentAmount + 1), 2);
       } else {
-         popResource(var1, var3, new ItemStack(this));
+         popResource(level, pos, new ItemStack(this));
       }
 
    }

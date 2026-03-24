@@ -10,9 +10,9 @@ public enum DebugScreenProfile implements StringRepresentable {
    private final String name;
    private final String translationKey;
 
-   private DebugScreenProfile(final String var3, final String var4) {
-      this.name = var3;
-      this.translationKey = var4;
+   private DebugScreenProfile(final String name, final String translationKey) {
+      this.name = name;
+      this.translationKey = translationKey;
    }
 
    public String translationKey() {

@@ -14,41 +14,41 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class SetBannerPatternFunction extends LootItemConditionalFunction {
-   public static final MapCodec<SetBannerPatternFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(var0.group(BannerPatternLayers.CODEC.fieldOf("patterns").forGetter((var0x) -> var0x.patterns), Codec.BOOL.fieldOf("append").forGetter((var0x) -> var0x.append))).apply(var0, SetBannerPatternFunction::new));
+   public static final MapCodec<SetBannerPatternFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(BannerPatternLayers.CODEC.fieldOf("patterns").forGetter((f) -> f.patterns), Codec.BOOL.fieldOf("append").forGetter((f) -> f.append))).apply(i, SetBannerPatternFunction::new));
    private final BannerPatternLayers patterns;
    private final boolean append;
 
-   SetBannerPatternFunction(List<LootItemCondition> var1, BannerPatternLayers var2, boolean var3) {
-      super(var1);
-      this.patterns = var2;
-      this.append = var3;
+   private SetBannerPatternFunction(final List<LootItemCondition> predicates, final BannerPatternLayers patterns, final boolean append) {
+      super(predicates);
+      this.patterns = patterns;
+      this.append = append;
    }
 
-   protected ItemStack run(ItemStack var1, LootContext var2) {
+   protected ItemStack run(final ItemStack itemStack, final LootContext context) {
       if (this.append) {
-         var1.update(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY, this.patterns, (var0, var1x) -> (new BannerPatternLayers.Builder()).addAll(var0).addAll(var1x).build());
+         itemStack.update(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY, this.patterns, (base, appended) -> (new BannerPatternLayers.Builder()).addAll(base).addAll(appended).build());
       } else {
-         var1.set(DataComponents.BANNER_PATTERNS, this.patterns);
+         itemStack.set(DataComponents.BANNER_PATTERNS, this.patterns);
       }
 
-      return var1;
+      return itemStack;
    }
 
-   public LootItemFunctionType<SetBannerPatternFunction> getType() {
-      return LootItemFunctions.SET_BANNER_PATTERN;
+   public MapCodec<SetBannerPatternFunction> codec() {
+      return MAP_CODEC;
    }
 
-   public static Builder setBannerPattern(boolean var0) {
-      return new Builder(var0);
+   public static Builder setBannerPattern(final boolean append) {
+      return new Builder(append);
    }
 
    public static class Builder extends LootItemConditionalFunction.Builder<Builder> {
       private final BannerPatternLayers.Builder patterns = new BannerPatternLayers.Builder();
       private final boolean append;
 
-      Builder(boolean var1) {
+      private Builder(final boolean append) {
          super();
-         this.append = var1;
+         this.append = append;
       }
 
       protected Builder getThis() {
@@ -59,14 +59,9 @@ public class SetBannerPatternFunction extends LootItemConditionalFunction {
          return new SetBannerPatternFunction(this.getConditions(), this.patterns.build(), this.append);
       }
 
-      public Builder addPattern(Holder<BannerPattern> var1, DyeColor var2) {
-         this.patterns.add(var1, var2);
+      public Builder addPattern(final Holder<BannerPattern> pattern, final DyeColor color) {
+         this.patterns.add(pattern, color);
          return this;
-      }
-
-      // $FF: synthetic method
-      protected LootItemConditionalFunction.Builder getThis() {
-         return this.getThis();
       }
    }
 }

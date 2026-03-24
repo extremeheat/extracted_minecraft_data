@@ -9,17 +9,12 @@ import javax.crypto.Cipher;
 public class CipherDecoder extends MessageToMessageDecoder<ByteBuf> {
    private final CipherBase cipher;
 
-   public CipherDecoder(Cipher var1) {
+   public CipherDecoder(final Cipher cipher) {
       super();
-      this.cipher = new CipherBase(var1);
+      this.cipher = new CipherBase(cipher);
    }
 
-   protected void decode(ChannelHandlerContext var1, ByteBuf var2, List<Object> var3) throws Exception {
-      var3.add(this.cipher.decipher(var1, var2));
-   }
-
-   // $FF: synthetic method
-   protected void decode(final ChannelHandlerContext var1, final Object var2, final List var3) throws Exception {
-      this.decode(var1, (ByteBuf)var2, var3);
+   protected void decode(final ChannelHandlerContext ctx, final ByteBuf msg, final List<Object> out) throws Exception {
+      out.add(this.cipher.decipher(ctx, msg));
    }
 }

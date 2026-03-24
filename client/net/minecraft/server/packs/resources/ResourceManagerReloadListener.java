@@ -7,15 +7,15 @@ import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 
 public interface ResourceManagerReloadListener extends PreparableReloadListener {
-   default CompletableFuture<Void> reload(PreparableReloadListener.SharedState var1, Executor var2, PreparableReloadListener.PreparationBarrier var3, Executor var4) {
-      ResourceManager var5 = var1.resourceManager();
-      return var3.wait(Unit.INSTANCE).thenRunAsync(() -> {
-         ProfilerFiller var2 = Profiler.get();
-         var2.push("listener");
-         this.onResourceManagerReload(var5);
-         var2.pop();
-      }, var4);
+   default CompletableFuture<Void> reload(final PreparableReloadListener.SharedState currentReload, final Executor taskExecutor, final PreparableReloadListener.PreparationBarrier preparationBarrier, final Executor reloadExecutor) {
+      ResourceManager manager = currentReload.resourceManager();
+      return preparationBarrier.wait(Unit.INSTANCE).thenRunAsync(() -> {
+         ProfilerFiller reloadProfiler = Profiler.get();
+         reloadProfiler.push("listener");
+         this.onResourceManagerReload(manager);
+         reloadProfiler.pop();
+      }, reloadExecutor);
    }
 
-   void onResourceManagerReload(ResourceManager var1);
+   void onResourceManagerReload(ResourceManager resourceManager);
 }

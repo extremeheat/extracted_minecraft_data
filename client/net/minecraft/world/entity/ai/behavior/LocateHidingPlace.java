@@ -14,16 +14,16 @@ public class LocateHidingPlace {
       super();
    }
 
-   public static OneShot<LivingEntity> create(int var0, float var1, int var2) {
-      return BehaviorBuilder.create((Function)((var3) -> var3.group(var3.absent(MemoryModuleType.WALK_TARGET), var3.registered(MemoryModuleType.HOME), var3.registered(MemoryModuleType.HIDING_PLACE), var3.registered(MemoryModuleType.PATH), var3.registered(MemoryModuleType.LOOK_TARGET), var3.registered(MemoryModuleType.BREED_TARGET), var3.registered(MemoryModuleType.INTERACTION_TARGET)).apply(var3, (var4, var5, var6, var7, var8, var9, var10) -> (var11, var12, var13) -> {
-               var11.getPoiManager().find((var0x) -> var0x.is(PoiTypes.HOME), (var0x) -> true, var12.blockPosition(), var2 + 1, PoiManager.Occupancy.ANY).filter((var2x) -> var2x.closerToCenterThan(var12.position(), (double)var2)).or(() -> var11.getPoiManager().getRandom((var0x) -> var0x.is(PoiTypes.HOME), (var0x) -> true, PoiManager.Occupancy.ANY, var12.blockPosition(), var0, var12.getRandom())).or(() -> var3.tryGet(var5).map(GlobalPos::pos)).ifPresent((var10x) -> {
-                  var7.erase();
-                  var8.erase();
-                  var9.erase();
-                  var10.erase();
-                  var6.set(GlobalPos.of(var11.dimension(), var10x));
-                  if (!var10x.closerToCenterThan(var12.position(), (double)var2)) {
-                     var4.set(new WalkTarget(var10x, var1, var2));
+   public static OneShot<LivingEntity> create(final int radius, final float speedModifier, final int closeEnoughDist) {
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.absent(MemoryModuleType.WALK_TARGET), i.registered(MemoryModuleType.HOME), i.registered(MemoryModuleType.HIDING_PLACE), i.registered(MemoryModuleType.PATH), i.registered(MemoryModuleType.LOOK_TARGET), i.registered(MemoryModuleType.BREED_TARGET), i.registered(MemoryModuleType.INTERACTION_TARGET)).apply(i, (walkTarget, home, hidingPlace, path, lookTarget, breedTarget, interactionTarget) -> (level, body, timestamp) -> {
+               level.getPoiManager().find((p) -> p.is(PoiTypes.HOME), (blockPos) -> true, body.blockPosition(), closeEnoughDist + 1, PoiManager.Occupancy.ANY).filter((p) -> p.closerToCenterThan(body.position(), (double)closeEnoughDist)).or(() -> level.getPoiManager().getRandom((p) -> p.is(PoiTypes.HOME), (blockPos) -> true, PoiManager.Occupancy.ANY, body.blockPosition(), radius, body.getRandom())).or(() -> i.tryGet(home).map(GlobalPos::pos)).ifPresent((pos) -> {
+                  path.erase();
+                  lookTarget.erase();
+                  breedTarget.erase();
+                  interactionTarget.erase();
+                  hidingPlace.set(GlobalPos.of(level.dimension(), pos));
+                  if (!pos.closerToCenterThan(body.position(), (double)closeEnoughDist)) {
+                     walkTarget.set(new WalkTarget(pos, speedModifier, closeEnoughDist));
                   }
 
                });

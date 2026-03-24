@@ -1,6 +1,7 @@
 package net.minecraft.world.level.storage.loot.functions;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.datafixers.DataFixUtils;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -15,6 +16,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.ComponentUtils;
+import net.minecraft.network.chat.ResolutionContext;
 import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.context.ContextKey;
@@ -27,56 +29,57 @@ import org.slf4j.Logger;
 
 public class SetNameFunction extends LootItemConditionalFunction {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final MapCodec<SetNameFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(var0.group(ComponentSerialization.CODEC.optionalFieldOf("name").forGetter((var0x) -> var0x.name), LootContext.EntityTarget.CODEC.optionalFieldOf("entity").forGetter((var0x) -> var0x.resolutionContext), SetNameFunction.Target.CODEC.optionalFieldOf("target", SetNameFunction.Target.CUSTOM_NAME).forGetter((var0x) -> var0x.target))).apply(var0, SetNameFunction::new));
+   public static final MapCodec<SetNameFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(ComponentSerialization.CODEC.optionalFieldOf("name").forGetter((f) -> f.name), LootContext.EntityTarget.CODEC.optionalFieldOf("entity").forGetter((f) -> f.resolutionContext), SetNameFunction.Target.CODEC.optionalFieldOf("target", SetNameFunction.Target.CUSTOM_NAME).forGetter((f) -> f.target))).apply(i, SetNameFunction::new));
    private final Optional<Component> name;
    private final Optional<LootContext.EntityTarget> resolutionContext;
    private final Target target;
 
-   private SetNameFunction(List<LootItemCondition> var1, Optional<Component> var2, Optional<LootContext.EntityTarget> var3, Target var4) {
-      super(var1);
-      this.name = var2;
-      this.resolutionContext = var3;
-      this.target = var4;
+   private SetNameFunction(final List<LootItemCondition> predicates, final Optional<Component> name, final Optional<LootContext.EntityTarget> resolutionContext, final Target target) {
+      super(predicates);
+      this.name = name;
+      this.resolutionContext = resolutionContext;
+      this.target = target;
    }
 
-   public LootItemFunctionType<SetNameFunction> getType() {
-      return LootItemFunctions.SET_NAME;
+   public MapCodec<SetNameFunction> codec() {
+      return MAP_CODEC;
    }
 
    public Set<ContextKey<?>> getReferencedContextParams() {
-      return (Set)this.resolutionContext.map((var0) -> Set.of(var0.contextParam())).orElse(Set.of());
+      return (Set)DataFixUtils.orElse(this.resolutionContext.map((target) -> Set.of(target.contextParam())), Set.of());
    }
 
-   public static UnaryOperator<Component> createResolver(LootContext var0, LootContext.@Nullable EntityTarget var1) {
-      if (var1 != null) {
-         Entity var2 = (Entity)var0.getOptionalParameter(var1.contextParam());
-         if (var2 != null) {
-            CommandSourceStack var3 = var2.createCommandSourceStackForNameResolution(var0.getLevel()).withPermission(LevelBasedPermissionSet.GAMEMASTER);
-            return (var2x) -> {
+   public static UnaryOperator<Component> createResolver(final LootContext context, final LootContext.@Nullable EntityTarget entityTarget) {
+      if (entityTarget != null) {
+         Entity entity = (Entity)context.getOptionalParameter(entityTarget.contextParam());
+         if (entity != null) {
+            CommandSourceStack commandSourceStack = entity.createCommandSourceStackForNameResolution(context.getLevel()).withPermission(LevelBasedPermissionSet.GAMEMASTER);
+            ResolutionContext resolutionContext = ResolutionContext.create(commandSourceStack);
+            return (line) -> {
                try {
-                  return ComponentUtils.updateForEntity(var3, var2x, var2, 0);
-               } catch (CommandSyntaxException var4) {
-                  LOGGER.warn("Failed to resolve text component", var4);
-                  return var2x;
+                  return ComponentUtils.resolve(resolutionContext, line);
+               } catch (CommandSyntaxException e) {
+                  LOGGER.warn("Failed to resolve text component", e);
+                  return line;
                }
             };
          }
       }
 
-      return (var0x) -> var0x;
+      return (line) -> line;
    }
 
-   public ItemStack run(ItemStack var1, LootContext var2) {
-      this.name.ifPresent((var3) -> var1.set(this.target.component(), (Component)createResolver(var2, (LootContext.EntityTarget)this.resolutionContext.orElse((Object)null)).apply(var3)));
-      return var1;
+   public ItemStack run(final ItemStack itemStack, final LootContext context) {
+      this.name.ifPresent((name) -> itemStack.set(this.target.component(), (Component)createResolver(context, (LootContext.EntityTarget)this.resolutionContext.orElse((Object)null)).apply(name)));
+      return itemStack;
    }
 
-   public static LootItemConditionalFunction.Builder<?> setName(Component var0, Target var1) {
-      return simpleBuilder((var2) -> new SetNameFunction(var2, Optional.of(var0), Optional.empty(), var1));
+   public static LootItemConditionalFunction.Builder<?> setName(final Component value, final Target target) {
+      return simpleBuilder((conditions) -> new SetNameFunction(conditions, Optional.of(value), Optional.empty(), target));
    }
 
-   public static LootItemConditionalFunction.Builder<?> setName(Component var0, Target var1, LootContext.EntityTarget var2) {
-      return simpleBuilder((var3) -> new SetNameFunction(var3, Optional.of(var0), Optional.of(var2), var1));
+   public static LootItemConditionalFunction.Builder<?> setName(final Component value, final Target target, final LootContext.EntityTarget resolutionContext) {
+      return simpleBuilder((conditions) -> new SetNameFunction(conditions, Optional.of(value), Optional.of(resolutionContext), target));
    }
 
    public static enum Target implements StringRepresentable {
@@ -86,8 +89,8 @@ public class SetNameFunction extends LootItemConditionalFunction {
       public static final Codec<Target> CODEC = StringRepresentable.<Target>fromEnum(Target::values);
       private final String name;
 
-      private Target(final String var3) {
-         this.name = var3;
+      private Target(final String name) {
+         this.name = name;
       }
 
       public String getSerializedName() {

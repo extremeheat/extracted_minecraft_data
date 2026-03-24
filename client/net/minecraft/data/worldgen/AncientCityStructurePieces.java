@@ -8,6 +8,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
 
 public class AncientCityStructurePieces {
    public static final ResourceKey<StructureTemplatePool> START = Pools.createKey("ancient_city/city_center");
@@ -16,12 +17,12 @@ public class AncientCityStructurePieces {
       super();
    }
 
-   public static void bootstrap(BootstrapContext<StructureTemplatePool> var0) {
-      HolderGetter var1 = var0.lookup(Registries.PROCESSOR_LIST);
-      Holder.Reference var2 = var1.getOrThrow(ProcessorLists.ANCIENT_CITY_START_DEGRADATION);
-      HolderGetter var3 = var0.lookup(Registries.TEMPLATE_POOL);
-      Holder.Reference var4 = var3.getOrThrow(Pools.EMPTY);
-      var0.register(START, new StructureTemplatePool(var4, ImmutableList.of(Pair.of(StructurePoolElement.single("ancient_city/city_center/city_center_1", var2), 1), Pair.of(StructurePoolElement.single("ancient_city/city_center/city_center_2", var2), 1), Pair.of(StructurePoolElement.single("ancient_city/city_center/city_center_3", var2), 1)), StructureTemplatePool.Projection.RIGID));
-      AncientCityStructurePools.bootstrap(var0);
+   public static void bootstrap(final BootstrapContext<StructureTemplatePool> context) {
+      HolderGetter<StructureProcessorList> processorLists = context.<StructureProcessorList>lookup(Registries.PROCESSOR_LIST);
+      Holder<StructureProcessorList> ancientCityStartDegradation = processorLists.getOrThrow(ProcessorLists.ANCIENT_CITY_START_DEGRADATION);
+      HolderGetter<StructureTemplatePool> pools = context.<StructureTemplatePool>lookup(Registries.TEMPLATE_POOL);
+      Holder<StructureTemplatePool> empty = pools.getOrThrow(Pools.EMPTY);
+      context.register(START, new StructureTemplatePool(empty, ImmutableList.of(Pair.of(StructurePoolElement.single("ancient_city/city_center/city_center_1", ancientCityStartDegradation), 1), Pair.of(StructurePoolElement.single("ancient_city/city_center/city_center_2", ancientCityStartDegradation), 1), Pair.of(StructurePoolElement.single("ancient_city/city_center/city_center_3", ancientCityStartDegradation), 1)), StructureTemplatePool.Projection.RIGID));
+      AncientCityStructurePools.bootstrap(context);
    }
 }

@@ -21,9 +21,9 @@ public class PunchTreeTutorialStepInstance implements TutorialStepInstance {
    private int timeWaiting;
    private int resetCount;
 
-   public PunchTreeTutorialStepInstance(Tutorial var1) {
+   public PunchTreeTutorialStepInstance(final Tutorial tutorial) {
       super();
-      this.tutorial = var1;
+      this.tutorial = tutorial;
    }
 
    public void tick() {
@@ -31,16 +31,16 @@ public class PunchTreeTutorialStepInstance implements TutorialStepInstance {
       if (!this.tutorial.isSurvival()) {
          this.tutorial.setStep(TutorialSteps.NONE);
       } else {
-         Minecraft var1 = this.tutorial.getMinecraft();
+         Minecraft minecraft = this.tutorial.getMinecraft();
          if (this.timeWaiting == 1) {
-            LocalPlayer var2 = var1.player;
-            if (var2 != null) {
-               if (var2.getInventory().contains(ItemTags.LOGS)) {
+            LocalPlayer player = minecraft.player;
+            if (player != null) {
+               if (player.getInventory().contains(ItemTags.LOGS)) {
                   this.tutorial.setStep(TutorialSteps.CRAFT_PLANKS);
                   return;
                }
 
-               if (FindTreeTutorialStepInstance.hasPunchedTreesPreviously(var2)) {
+               if (FindTreeTutorialStepInstance.hasPunchedTreesPreviously(player)) {
                   this.tutorial.setStep(TutorialSteps.CRAFT_PLANKS);
                   return;
                }
@@ -48,8 +48,8 @@ public class PunchTreeTutorialStepInstance implements TutorialStepInstance {
          }
 
          if ((this.timeWaiting >= 600 || this.resetCount > 3) && this.toast == null) {
-            this.toast = new TutorialToast(var1.font, TutorialToast.Icons.TREE, TITLE, DESCRIPTION, true);
-            var1.getToastManager().addToast(this.toast);
+            this.toast = new TutorialToast(minecraft.font, TutorialToast.Icons.TREE, TITLE, DESCRIPTION, true);
+            minecraft.getToastManager().addToast(this.toast);
          }
 
       }
@@ -63,26 +63,26 @@ public class PunchTreeTutorialStepInstance implements TutorialStepInstance {
 
    }
 
-   public void onDestroyBlock(ClientLevel var1, BlockPos var2, BlockState var3, float var4) {
-      boolean var5 = var3.is(BlockTags.LOGS);
-      if (var5 && var4 > 0.0F) {
+   public void onDestroyBlock(final ClientLevel level, final BlockPos pos, final BlockState state, final float percent) {
+      boolean isLogBlock = state.is(BlockTags.LOGS);
+      if (isLogBlock && percent > 0.0F) {
          if (this.toast != null) {
-            this.toast.updateProgress(var4);
+            this.toast.updateProgress(percent);
          }
 
-         if (var4 >= 1.0F) {
+         if (percent >= 1.0F) {
             this.tutorial.setStep(TutorialSteps.OPEN_INVENTORY);
          }
       } else if (this.toast != null) {
          this.toast.updateProgress(0.0F);
-      } else if (var5) {
+      } else if (isLogBlock) {
          ++this.resetCount;
       }
 
    }
 
-   public void onGetItem(ItemStack var1) {
-      if (var1.is(ItemTags.LOGS)) {
+   public void onGetItem(final ItemStack itemStack) {
+      if (itemStack.is(ItemTags.LOGS)) {
          this.tutorial.setStep(TutorialSteps.CRAFT_PLANKS);
       }
    }

@@ -17,16 +17,16 @@ public class BreedGoal extends Goal {
    private int loveTime;
    private final double speedModifier;
 
-   public BreedGoal(Animal var1, double var2) {
-      this(var1, var2, var1.getClass());
+   public BreedGoal(final Animal animal, final double speedModifier) {
+      this(animal, speedModifier, animal.getClass());
    }
 
-   public BreedGoal(Animal var1, double var2, Class<? extends Animal> var4) {
+   public BreedGoal(final Animal animal, final double speedModifier, final Class<? extends Animal> clazz) {
       super();
-      this.animal = var1;
-      this.level = getServerLevel(var1);
-      this.partnerClass = var4;
-      this.speedModifier = var2;
+      this.animal = animal;
+      this.level = getServerLevel(animal);
+      this.partnerClass = clazz;
+      this.speedModifier = speedModifier;
       this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
    }
 
@@ -59,18 +59,18 @@ public class BreedGoal extends Goal {
    }
 
    private @Nullable Animal getFreePartner() {
-      List var1 = this.level.getNearbyEntities(this.partnerClass, PARTNER_TARGETING, this.animal, this.animal.getBoundingBox().inflate(8.0));
-      double var2 = 1.7976931348623157E308;
-      Animal var4 = null;
+      List<? extends Animal> animals = this.level.getNearbyEntities(this.partnerClass, PARTNER_TARGETING, this.animal, this.animal.getBoundingBox().inflate(8.0));
+      double dist = 1.7976931348623157E308;
+      Animal partner = null;
 
-      for(Animal var6 : var1) {
-         if (this.animal.canMate(var6) && !var6.isPanicking() && this.animal.distanceToSqr(var6) < var2) {
-            var4 = var6;
-            var2 = this.animal.distanceToSqr(var6);
+      for(Animal potentialPartner : animals) {
+         if (this.animal.canMate(potentialPartner) && !potentialPartner.isPanicking() && this.animal.distanceToSqr(potentialPartner) < dist) {
+            partner = potentialPartner;
+            dist = this.animal.distanceToSqr(potentialPartner);
          }
       }
 
-      return var4;
+      return partner;
    }
 
    protected void breed() {

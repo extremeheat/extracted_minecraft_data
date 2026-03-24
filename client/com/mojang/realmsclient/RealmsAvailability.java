@@ -32,9 +32,9 @@ public class RealmsAvailability {
       return future;
    }
 
-   private static boolean shouldRefresh(CompletableFuture<Result> var0) {
-      Result var1 = (Result)var0.getNow((Object)null);
-      return var1 != null && var1.exception() != null;
+   private static boolean shouldRefresh(final CompletableFuture<Result> future) {
+      Result result = (Result)future.getNow((Object)null);
+      return result != null && result.exception() != null;
    }
 
    private static CompletableFuture<Result> check() {
@@ -42,45 +42,43 @@ public class RealmsAvailability {
          return CompletableFuture.completedFuture(new Result(RealmsAvailability.Type.AUTHENTICATION_ERROR));
       } else {
          return SharedConstants.DEBUG_BYPASS_REALMS_VERSION_CHECK ? CompletableFuture.completedFuture(new Result(RealmsAvailability.Type.SUCCESS)) : CompletableFuture.supplyAsync(() -> {
-            RealmsClient var0 = RealmsClient.getOrCreate();
+            RealmsClient client = RealmsClient.getOrCreate();
 
             try {
-               if (var0.clientCompatible() != RealmsClient.CompatibleVersionResponse.COMPATIBLE) {
+               if (client.clientCompatible() != RealmsClient.CompatibleVersionResponse.COMPATIBLE) {
                   return new Result(RealmsAvailability.Type.INCOMPATIBLE_CLIENT);
                } else {
-                  return !var0.hasParentalConsent() ? new Result(RealmsAvailability.Type.NEEDS_PARENTAL_CONSENT) : new Result(RealmsAvailability.Type.SUCCESS);
+                  return !client.hasParentalConsent() ? new Result(RealmsAvailability.Type.NEEDS_PARENTAL_CONSENT) : new Result(RealmsAvailability.Type.SUCCESS);
                }
-            } catch (RealmsServiceException var2) {
-               LOGGER.error("Couldn't connect to realms", var2);
-               return var2.realmsError.errorCode() == 401 ? new Result(RealmsAvailability.Type.AUTHENTICATION_ERROR) : new Result(var2);
+            } catch (RealmsServiceException e) {
+               LOGGER.error("Couldn't connect to realms", e);
+               return e.realmsError.errorCode() == 401 ? new Result(RealmsAvailability.Type.AUTHENTICATION_ERROR) : new Result(e);
             }
          }, Util.ioPool());
       }
    }
 
    public static record Result(Type type, @Nullable RealmsServiceException exception) {
-      public Result(Type var1) {
-         this(var1, (RealmsServiceException)null);
+      public Result(final Type type) {
+         this(type, (RealmsServiceException)null);
       }
 
-      public Result(RealmsServiceException var1) {
-         this(RealmsAvailability.Type.UNEXPECTED_ERROR, var1);
+      public Result(final RealmsServiceException exception) {
+         this(RealmsAvailability.Type.UNEXPECTED_ERROR, exception);
       }
 
-      public Result(Type var1, @Nullable RealmsServiceException var2) {
+      public Result {
          super();
-         this.type = var1;
-         this.exception = var2;
       }
 
-      public @Nullable Screen createErrorScreen(Screen var1) {
+      public @Nullable Screen createErrorScreen(final Screen lastScreen) {
          Object var10000;
          switch (this.type.ordinal()) {
             case 0 -> var10000 = null;
-            case 1 -> var10000 = new RealmsClientOutdatedScreen(var1);
-            case 2 -> var10000 = new RealmsParentalConsentScreen(var1);
-            case 3 -> var10000 = new RealmsGenericErrorScreen(Component.translatable("mco.error.invalid.session.title"), Component.translatable("mco.error.invalid.session.message"), var1);
-            case 4 -> var10000 = new RealmsGenericErrorScreen((RealmsServiceException)Objects.requireNonNull(this.exception), var1);
+            case 1 -> var10000 = new RealmsClientOutdatedScreen(lastScreen);
+            case 2 -> var10000 = new RealmsParentalConsentScreen(lastScreen);
+            case 3 -> var10000 = new RealmsGenericErrorScreen(Component.translatable("mco.error.invalid.session.title"), Component.translatable("mco.error.invalid.session.message"), lastScreen);
+            case 4 -> var10000 = new RealmsGenericErrorScreen((RealmsServiceException)Objects.requireNonNull(this.exception), lastScreen);
             default -> throw new MatchException((String)null, (Throwable)null);
          }
 

@@ -7,13 +7,13 @@ import com.mojang.serialization.Dynamic;
 import java.util.function.Predicate;
 
 public abstract class ItemStackTagRemainderFix extends ItemStackTagFix {
-   public ItemStackTagRemainderFix(Schema var1, String var2, Predicate<String> var3) {
-      super(var1, var2, var3);
+   public ItemStackTagRemainderFix(final Schema outputSchema, final String name, final Predicate<String> idFilter) {
+      super(outputSchema, name, idFilter);
    }
 
-   protected abstract <T> Dynamic<T> fixItemStackTag(Dynamic<T> var1);
+   protected abstract <T> Dynamic<T> fixItemStackTag(Dynamic<T> tag);
 
-   protected final Typed<?> fixItemStackTag(Typed<?> var1) {
-      return var1.update(DSL.remainderFinder(), this::fixItemStackTag);
+   protected final Typed<?> fixItemStackTag(final Typed<?> tag) {
+      return tag.update(DSL.remainderFinder(), this::fixItemStackTag);
    }
 }

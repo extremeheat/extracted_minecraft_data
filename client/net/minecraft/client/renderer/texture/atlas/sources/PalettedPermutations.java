@@ -1,12 +1,12 @@
 package net.minecraft.client.renderer.texture.atlas.sources;
 
-import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.IntUnaryOperator;
+import java.util.function.Supplier;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.renderer.texture.atlas.SpriteResourceLoader;
 import net.minecraft.client.renderer.texture.atlas.SpriteSource;
@@ -27,89 +28,85 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public record PalettedPermutations(List<Identifier> textures, Identifier paletteKey, Map<String, Identifier> permutations, String separator) implements SpriteSource {
-   static final Logger LOGGER = LogUtils.getLogger();
+   private static final Logger LOGGER = LogUtils.getLogger();
    public static final String DEFAULT_SEPARATOR = "_";
-   public static final MapCodec<PalettedPermutations> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.list(Identifier.CODEC).fieldOf("textures").forGetter(PalettedPermutations::textures), Identifier.CODEC.fieldOf("palette_key").forGetter(PalettedPermutations::paletteKey), Codec.unboundedMap(Codec.STRING, Identifier.CODEC).fieldOf("permutations").forGetter(PalettedPermutations::permutations), Codec.STRING.optionalFieldOf("separator", "_").forGetter(PalettedPermutations::separator)).apply(var0, PalettedPermutations::new));
+   public static final MapCodec<PalettedPermutations> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.list(Identifier.CODEC).fieldOf("textures").forGetter(PalettedPermutations::textures), Identifier.CODEC.fieldOf("palette_key").forGetter(PalettedPermutations::paletteKey), Codec.unboundedMap(Codec.STRING, Identifier.CODEC).fieldOf("permutations").forGetter(PalettedPermutations::permutations), Codec.STRING.optionalFieldOf("separator", "_").forGetter(PalettedPermutations::separator)).apply(i, PalettedPermutations::new));
 
-   public PalettedPermutations(List<Identifier> var1, Identifier var2, Map<String, Identifier> var3) {
-      this(var1, var2, var3, "_");
+   public PalettedPermutations(final List<Identifier> textures, final Identifier paletteKey, final Map<String, Identifier> permutations) {
+      this(textures, paletteKey, permutations, "_");
    }
 
-   public PalettedPermutations(List<Identifier> var1, Identifier var2, Map<String, Identifier> var3, String var4) {
+   public PalettedPermutations {
       super();
-      this.textures = var1;
-      this.paletteKey = var2;
-      this.permutations = var3;
-      this.separator = var4;
    }
 
-   public void run(ResourceManager var1, SpriteSource.Output var2) {
-      Supplier var3 = Suppliers.memoize(() -> loadPaletteEntryFromImage(var1, this.paletteKey));
-      HashMap var4 = new HashMap();
-      this.permutations.forEach((var3x, var4x) -> var4.put(var3x, Suppliers.memoize(() -> createPaletteMapping((int[])var3.get(), loadPaletteEntryFromImage(var1, var4x)))));
+   public void run(final ResourceManager resourceManager, final SpriteSource.Output output) {
+      Supplier<int[]> paletteKeySupplier = Suppliers.memoize(() -> loadPaletteEntryFromImage(resourceManager, this.paletteKey));
+      Map<String, Supplier<IntUnaryOperator>> palettes = new HashMap();
+      this.permutations.forEach((suffix, palette) -> palettes.put(suffix, Suppliers.memoize(() -> createPaletteMapping((int[])paletteKeySupplier.get(), loadPaletteEntryFromImage(resourceManager, palette)))));
 
-      for(Identifier var6 : this.textures) {
-         Identifier var7 = TEXTURE_ID_CONVERTER.idToFile(var6);
-         Optional var8 = var1.getResource(var7);
-         if (var8.isEmpty()) {
-            LOGGER.warn("Unable to find texture {}", var7);
+      for(Identifier textureLocation : this.textures) {
+         Identifier textureId = TEXTURE_ID_CONVERTER.idToFile(textureLocation);
+         Optional<Resource> resource = resourceManager.getResource(textureId);
+         if (resource.isEmpty()) {
+            LOGGER.warn("Unable to find texture {}", textureId);
          } else {
-            LazyLoadedImage var9 = new LazyLoadedImage(var7, (Resource)var8.get(), var4.size());
+            LazyLoadedImage baseImage = new LazyLoadedImage(textureId, (Resource)resource.get(), palettes.size());
 
-            for(Map.Entry var11 : var4.entrySet()) {
+            for(Map.Entry<String, Supplier<IntUnaryOperator>> entry : palettes.entrySet()) {
                String var10001 = this.separator;
-               Identifier var12 = var6.withSuffix(var10001 + (String)var11.getKey());
-               var2.add(var12, (SpriteSource.DiscardableLoader)(new PalettedSpriteSupplier(var9, (java.util.function.Supplier)var11.getValue(), var12)));
+               Identifier permutationLocation = textureLocation.withSuffix(var10001 + (String)entry.getKey());
+               output.add(permutationLocation, (SpriteSource.DiscardableLoader)(new PalettedSpriteSupplier(baseImage, (Supplier)entry.getValue(), permutationLocation)));
             }
          }
       }
 
    }
 
-   private static IntUnaryOperator createPaletteMapping(int[] var0, int[] var1) {
-      if (var1.length != var0.length) {
-         LOGGER.warn("Palette mapping has different sizes: {} and {}", var0.length, var1.length);
+   private static IntUnaryOperator createPaletteMapping(final int[] keys, final int[] values) {
+      if (values.length != keys.length) {
+         LOGGER.warn("Palette mapping has different sizes: {} and {}", keys.length, values.length);
          throw new IllegalArgumentException();
       } else {
-         Int2IntOpenHashMap var2 = new Int2IntOpenHashMap(var1.length);
+         Int2IntMap palette = new Int2IntOpenHashMap(values.length);
 
-         for(int var3 = 0; var3 < var0.length; ++var3) {
-            int var4 = var0[var3];
-            if (ARGB.alpha(var4) != 0) {
-               var2.put(ARGB.transparent(var4), var1[var3]);
+         for(int i = 0; i < keys.length; ++i) {
+            int key = keys[i];
+            if (ARGB.alpha(key) != 0) {
+               palette.put(ARGB.transparent(key), values[i]);
             }
          }
 
-         return (var1x) -> {
-            int var2x = ARGB.alpha(var1x);
-            if (var2x == 0) {
-               return var1x;
+         return (pixel) -> {
+            int pixelAlpha = ARGB.alpha(pixel);
+            if (pixelAlpha == 0) {
+               return pixel;
             } else {
-               int var3 = ARGB.transparent(var1x);
-               int var4 = var2.getOrDefault(var3, ARGB.opaque(var3));
-               int var5 = ARGB.alpha(var4);
-               return ARGB.color(var2x * var5 / 255, var4);
+               int pixelRGB = ARGB.transparent(pixel);
+               int value = palette.getOrDefault(pixelRGB, ARGB.opaque(pixelRGB));
+               int valueAlpha = ARGB.alpha(value);
+               return ARGB.color(pixelAlpha * valueAlpha / 255, value);
             }
          };
       }
    }
 
-   private static int[] loadPaletteEntryFromImage(ResourceManager var0, Identifier var1) {
-      Optional var2 = var0.getResource(TEXTURE_ID_CONVERTER.idToFile(var1));
-      if (var2.isEmpty()) {
-         LOGGER.error("Failed to load palette image {}", var1);
+   private static int[] loadPaletteEntryFromImage(final ResourceManager resourceManager, final Identifier location) {
+      Optional<Resource> resource = resourceManager.getResource(TEXTURE_ID_CONVERTER.idToFile(location));
+      if (resource.isEmpty()) {
+         LOGGER.error("Failed to load palette image {}", location);
          throw new IllegalArgumentException();
       } else {
          try {
-            InputStream var3 = ((Resource)var2.get()).open();
+            InputStream is = ((Resource)resource.get()).open();
 
             int[] var5;
-            try (NativeImage var4 = NativeImage.read(var3)) {
-               var5 = var4.getPixels();
+            try (NativeImage image = NativeImage.read(is)) {
+               var5 = image.getPixels();
             } catch (Throwable var10) {
-               if (var3 != null) {
+               if (is != null) {
                   try {
-                     var3.close();
+                     is.close();
                   } catch (Throwable var7) {
                      var10.addSuppressed(var7);
                   }
@@ -118,13 +115,13 @@ public record PalettedPermutations(List<Identifier> textures, Identifier palette
                throw var10;
             }
 
-            if (var3 != null) {
-               var3.close();
+            if (is != null) {
+               is.close();
             }
 
             return var5;
-         } catch (Exception var11) {
-            LOGGER.error("Couldn't load texture {}", var1, var11);
+         } catch (Exception exception) {
+            LOGGER.error("Couldn't load texture {}", location, exception);
             throw new IllegalArgumentException();
          }
       }
@@ -134,22 +131,19 @@ public record PalettedPermutations(List<Identifier> textures, Identifier palette
       return MAP_CODEC;
    }
 
-   static record PalettedSpriteSupplier(LazyLoadedImage baseImage, java.util.function.Supplier<IntUnaryOperator> palette, Identifier permutationLocation) implements SpriteSource.DiscardableLoader {
-      PalettedSpriteSupplier(LazyLoadedImage var1, java.util.function.Supplier<IntUnaryOperator> var2, Identifier var3) {
+   private static record PalettedSpriteSupplier(LazyLoadedImage baseImage, Supplier<IntUnaryOperator> palette, Identifier permutationLocation) implements SpriteSource.DiscardableLoader {
+      private PalettedSpriteSupplier {
          super();
-         this.baseImage = var1;
-         this.palette = var2;
-         this.permutationLocation = var3;
       }
 
-      public @Nullable SpriteContents get(SpriteResourceLoader var1) {
+      public @Nullable SpriteContents get(final SpriteResourceLoader loader) {
          SpriteContents var3;
          try {
-            NativeImage var2 = this.baseImage.get().mappedCopy((IntUnaryOperator)this.palette.get());
-            var3 = new SpriteContents(this.permutationLocation, new FrameSize(var2.getWidth(), var2.getHeight()), var2);
+            NativeImage image = this.baseImage.get().mappedCopy((IntUnaryOperator)this.palette.get());
+            var3 = new SpriteContents(this.permutationLocation, new FrameSize(image.getWidth(), image.getHeight()), image);
             return var3;
-         } catch (IllegalArgumentException | IOException var7) {
-            PalettedPermutations.LOGGER.error("unable to apply palette to {}", this.permutationLocation, var7);
+         } catch (IllegalArgumentException | IOException e) {
+            PalettedPermutations.LOGGER.error("unable to apply palette to {}", this.permutationLocation, e);
             var3 = null;
          } finally {
             this.baseImage.release();

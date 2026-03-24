@@ -5,5 +5,5 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 public interface ConsumableListener {
-   void onConsume(Level var1, LivingEntity var2, ItemStack var3, Consumable var4);
+   void onConsume(final Level level, final LivingEntity user, final ItemStack stack, final Consumable consumable);
 }

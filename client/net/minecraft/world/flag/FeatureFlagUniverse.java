@@ -3,9 +3,9 @@ package net.minecraft.world.flag;
 public class FeatureFlagUniverse {
    private final String id;
 
-   public FeatureFlagUniverse(String var1) {
+   public FeatureFlagUniverse(final String id) {
       super();
-      this.id = var1;
+      this.id = id;
    }
 
    public String toString() {

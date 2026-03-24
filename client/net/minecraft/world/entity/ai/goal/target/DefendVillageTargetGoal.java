@@ -17,25 +17,25 @@ public class DefendVillageTargetGoal extends TargetGoal {
    private @Nullable LivingEntity potentialTarget;
    private final TargetingConditions attackTargeting = TargetingConditions.forCombat().range(64.0);
 
-   public DefendVillageTargetGoal(IronGolem var1) {
-      super(var1, false, true);
-      this.golem = var1;
+   public DefendVillageTargetGoal(final IronGolem golem) {
+      super(golem, false, true);
+      this.golem = golem;
       this.setFlags(EnumSet.of(Goal.Flag.TARGET));
    }
 
    public boolean canUse() {
-      AABB var1 = this.golem.getBoundingBox().inflate(10.0, 8.0, 10.0);
-      ServerLevel var2 = getServerLevel(this.golem);
-      List var3 = var2.getNearbyEntities(Villager.class, this.attackTargeting, this.golem, var1);
-      List var4 = var2.getNearbyPlayers(this.attackTargeting, this.golem, var1);
+      AABB grow = this.golem.getBoundingBox().inflate(10.0, 8.0, 10.0);
+      ServerLevel level = getServerLevel(this.golem);
+      List<? extends LivingEntity> villagers = level.getNearbyEntities(Villager.class, this.attackTargeting, this.golem, grow);
+      List<Player> players = level.getNearbyPlayers(this.attackTargeting, this.golem, grow);
 
-      for(LivingEntity var6 : var3) {
-         Villager var7 = (Villager)var6;
+      for(LivingEntity livingEntity : villagers) {
+         Villager villager = (Villager)livingEntity;
 
-         for(Player var9 : var4) {
-            int var10 = var7.getPlayerReputation(var9);
-            if (var10 <= -100) {
-               this.potentialTarget = var9;
+         for(Player player : players) {
+            int reputation = villager.getPlayerReputation(player);
+            if (reputation <= -100) {
+               this.potentialTarget = player;
             }
          }
       }
@@ -45,8 +45,8 @@ public class DefendVillageTargetGoal extends TargetGoal {
       } else {
          LivingEntity var12 = this.potentialTarget;
          if (var12 instanceof Player) {
-            Player var11 = (Player)var12;
-            if (var11.isSpectator() || var11.isCreative()) {
+            Player player = (Player)var12;
+            if (player.isSpectator() || player.isCreative()) {
                return false;
             }
          }

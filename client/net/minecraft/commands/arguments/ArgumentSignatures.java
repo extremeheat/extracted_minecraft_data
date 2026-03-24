@@ -13,46 +13,43 @@ public record ArgumentSignatures(List<Entry> entries) {
    private static final int MAX_ARGUMENT_COUNT = 8;
    private static final int MAX_ARGUMENT_NAME_LENGTH = 16;
 
-   public ArgumentSignatures(FriendlyByteBuf var1) {
-      this((List)var1.readCollection(FriendlyByteBuf.limitValue(ArrayList::new, 8), Entry::new));
+   public ArgumentSignatures(final FriendlyByteBuf input) {
+      this((List)input.readCollection(FriendlyByteBuf.limitValue(ArrayList::new, 8), Entry::new));
    }
 
-   public ArgumentSignatures(List<Entry> var1) {
+   public ArgumentSignatures {
       super();
-      this.entries = var1;
    }
 
-   public void write(FriendlyByteBuf var1) {
-      var1.writeCollection(this.entries, (var0, var1x) -> var1x.write(var0));
+   public void write(final FriendlyByteBuf output) {
+      output.writeCollection(this.entries, (out, entry) -> entry.write(out));
    }
 
-   public static ArgumentSignatures signCommand(SignableCommand<?> var0, Signer var1) {
-      List var2 = var0.arguments().stream().map((var1x) -> {
-         MessageSignature var2 = var1.sign(var1x.value());
-         return var2 != null ? new Entry(var1x.name(), var2) : null;
+   public static ArgumentSignatures signCommand(final SignableCommand<?> command, final Signer signer) {
+      List<Entry> entries = command.arguments().stream().map((argument) -> {
+         MessageSignature signature = signer.sign(argument.value());
+         return signature != null ? new Entry(argument.name(), signature) : null;
       }).filter(Objects::nonNull).toList();
-      return new ArgumentSignatures(var2);
+      return new ArgumentSignatures(entries);
    }
 
    public static record Entry(String name, MessageSignature signature) {
-      public Entry(FriendlyByteBuf var1) {
-         this(var1.readUtf(16), MessageSignature.read(var1));
+      public Entry(final FriendlyByteBuf input) {
+         this(input.readUtf(16), MessageSignature.read(input));
       }
 
-      public Entry(String var1, MessageSignature var2) {
+      public Entry {
          super();
-         this.name = var1;
-         this.signature = var2;
       }
 
-      public void write(FriendlyByteBuf var1) {
-         var1.writeUtf(this.name, 16);
-         MessageSignature.write(var1, this.signature);
+      public void write(final FriendlyByteBuf output) {
+         output.writeUtf(this.name, 16);
+         MessageSignature.write(output, this.signature);
       }
    }
 
    @FunctionalInterface
    public interface Signer {
-      @Nullable MessageSignature sign(String var1);
+      @Nullable MessageSignature sign(String content);
    }
 }

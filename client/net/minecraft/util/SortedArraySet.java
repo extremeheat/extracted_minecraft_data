@@ -6,21 +6,22 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 
 public class SortedArraySet<T> extends AbstractSet<T> {
    private static final int DEFAULT_INITIAL_CAPACITY = 10;
    private final Comparator<T> comparator;
-   T[] contents;
-   int size;
+   private T[] contents;
+   private int size;
 
-   private SortedArraySet(int var1, Comparator<T> var2) {
+   private SortedArraySet(final int initialCapacity, final Comparator<T> comparator) {
       super();
-      this.comparator = var2;
-      if (var1 < 0) {
-         throw new IllegalArgumentException("Initial capacity (" + var1 + ") is negative");
+      this.comparator = comparator;
+      if (initialCapacity < 0) {
+         throw new IllegalArgumentException("Initial capacity (" + initialCapacity + ") is negative");
       } else {
-         this.contents = (T[])castRawArray(new Object[var1]);
+         this.contents = (T[])castRawArray(new Object[initialCapacity]);
       }
    }
 
@@ -28,101 +29,101 @@ public class SortedArraySet<T> extends AbstractSet<T> {
       return create(10);
    }
 
-   public static <T extends Comparable<T>> SortedArraySet<T> create(int var0) {
-      return new SortedArraySet<T>(var0, Comparator.naturalOrder());
+   public static <T extends Comparable<T>> SortedArraySet<T> create(final int initialCapacity) {
+      return new SortedArraySet<T>(initialCapacity, Comparator.naturalOrder());
    }
 
-   public static <T> SortedArraySet<T> create(Comparator<T> var0) {
-      return create(var0, 10);
+   public static <T> SortedArraySet<T> create(final Comparator<T> comparator) {
+      return create(comparator, 10);
    }
 
-   public static <T> SortedArraySet<T> create(Comparator<T> var0, int var1) {
-      return new SortedArraySet<T>(var1, var0);
+   public static <T> SortedArraySet<T> create(final Comparator<T> comparator, final int initialCapacity) {
+      return new SortedArraySet<T>(initialCapacity, comparator);
    }
 
-   private static <T> T[] castRawArray(Object[] var0) {
-      return (T[])var0;
+   private static <T> T[] castRawArray(final Object[] array) {
+      return (T[])array;
    }
 
-   private int findIndex(T var1) {
-      return Arrays.binarySearch(this.contents, 0, this.size, var1, this.comparator);
+   private int findIndex(final T t) {
+      return Arrays.binarySearch(this.contents, 0, this.size, t, this.comparator);
    }
 
-   private static int getInsertionPosition(int var0) {
-      return -var0 - 1;
+   private static int getInsertionPosition(final int position) {
+      return -position - 1;
    }
 
-   public boolean add(T var1) {
-      int var2 = this.findIndex(var1);
-      if (var2 >= 0) {
+   public boolean add(final T t) {
+      int position = this.findIndex(t);
+      if (position >= 0) {
          return false;
       } else {
-         int var3 = getInsertionPosition(var2);
-         this.addInternal(var1, var3);
+         int pos = getInsertionPosition(position);
+         this.addInternal(t, pos);
          return true;
       }
    }
 
-   private void grow(int var1) {
-      if (var1 > this.contents.length) {
+   private void grow(int capacity) {
+      if (capacity > this.contents.length) {
          if (this.contents != ObjectArrays.DEFAULT_EMPTY_ARRAY) {
-            var1 = Util.growByHalf(this.contents.length, var1);
-         } else if (var1 < 10) {
-            var1 = 10;
+            capacity = Util.growByHalf(this.contents.length, capacity);
+         } else if (capacity < 10) {
+            capacity = 10;
          }
 
-         Object[] var2 = new Object[var1];
-         System.arraycopy(this.contents, 0, var2, 0, this.size);
-         this.contents = (T[])castRawArray(var2);
+         Object[] t = new Object[capacity];
+         System.arraycopy(this.contents, 0, t, 0, this.size);
+         this.contents = (T[])castRawArray(t);
       }
    }
 
-   private void addInternal(T var1, int var2) {
+   private void addInternal(final T t, final int pos) {
       this.grow(this.size + 1);
-      if (var2 != this.size) {
-         System.arraycopy(this.contents, var2, this.contents, var2 + 1, this.size - var2);
+      if (pos != this.size) {
+         System.arraycopy(this.contents, pos, this.contents, pos + 1, this.size - pos);
       }
 
-      this.contents[var2] = var1;
+      this.contents[pos] = t;
       ++this.size;
    }
 
-   void removeInternal(int var1) {
+   private void removeInternal(final int position) {
       --this.size;
-      if (var1 != this.size) {
-         System.arraycopy(this.contents, var1 + 1, this.contents, var1, this.size - var1);
+      if (position != this.size) {
+         System.arraycopy(this.contents, position + 1, this.contents, position, this.size - position);
       }
 
       this.contents[this.size] = null;
    }
 
-   private T getInternal(int var1) {
-      return (T)this.contents[var1];
+   private T getInternal(final int position) {
+      return (T)this.contents[position];
    }
 
-   public T addOrGet(T var1) {
-      int var2 = this.findIndex(var1);
-      if (var2 >= 0) {
-         return (T)this.getInternal(var2);
+   public T addOrGet(final T t) {
+      int position = this.findIndex(t);
+      if (position >= 0) {
+         return (T)this.getInternal(position);
       } else {
-         this.addInternal(var1, getInsertionPosition(var2));
-         return var1;
+         this.addInternal(t, getInsertionPosition(position));
+         return t;
       }
    }
 
-   public boolean remove(Object var1) {
-      int var2 = this.findIndex(var1);
-      if (var2 >= 0) {
-         this.removeInternal(var2);
+   public boolean remove(final Object o) {
+      int position = this.findIndex(o);
+      if (position >= 0) {
+         this.removeInternal(position);
          return true;
       } else {
          return false;
       }
    }
 
-   public @Nullable T get(T var1) {
-      int var2 = this.findIndex(var1);
-      return (T)(var2 >= 0 ? this.getInternal(var2) : null);
+   public @Nullable T get(final T t) {
+      int position = this.findIndex(t);
+      return (T)(position >= 0 ? this.getInternal(position) : null);
    }
 
    public T first() {
@@ -133,9 +134,9 @@ public class SortedArraySet<T> extends AbstractSet<T> {
       return (T)this.getInternal(this.size - 1);
    }
 
-   public boolean contains(Object var1) {
-      int var2 = this.findIndex(var1);
-      return var2 >= 0;
+   public boolean contains(final Object o) {
+      int result = this.findIndex(o);
+      return result >= 0;
    }
 
    public Iterator<T> iterator() {
@@ -150,16 +151,16 @@ public class SortedArraySet<T> extends AbstractSet<T> {
       return Arrays.copyOf(this.contents, this.size, Object[].class);
    }
 
-   public <U> U[] toArray(U[] var1) {
-      if (var1.length < this.size) {
-         return (U[])Arrays.copyOf(this.contents, this.size, var1.getClass());
+   public <U> U[] toArray(final U[] a) {
+      if (a.length < this.size) {
+         return (U[])Arrays.copyOf(this.contents, this.size, a.getClass());
       } else {
-         System.arraycopy(this.contents, 0, var1, 0, this.size);
-         if (var1.length > this.size) {
-            var1[this.size] = null;
+         System.arraycopy(this.contents, 0, a, 0, this.size);
+         if (a.length > this.size) {
+            a[this.size] = null;
          }
 
-         return (U[])var1;
+         return a;
       }
    }
 
@@ -168,27 +169,29 @@ public class SortedArraySet<T> extends AbstractSet<T> {
       this.size = 0;
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
+   public boolean equals(final Object o) {
+      if (this == o) {
          return true;
       } else {
-         if (var1 instanceof SortedArraySet) {
-            SortedArraySet var2 = (SortedArraySet)var1;
-            if (this.comparator.equals(var2.comparator)) {
-               return this.size == var2.size && Arrays.equals(this.contents, var2.contents);
+         if (o instanceof SortedArraySet) {
+            SortedArraySet<?> that = (SortedArraySet)o;
+            if (this.comparator.equals(that.comparator)) {
+               return this.size == that.size && Arrays.equals(this.contents, that.contents);
             }
          }
 
-         return super.equals(var1);
+         return super.equals(o);
       }
    }
 
-   class ArrayIterator implements Iterator<T> {
+   private class ArrayIterator implements Iterator<T> {
       private int index;
-      private int last = -1;
+      private int last;
 
-      ArrayIterator() {
+      private ArrayIterator() {
+         Objects.requireNonNull(SortedArraySet.this);
          super();
+         this.last = -1;
       }
 
       public boolean hasNext() {

@@ -7,6 +7,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -39,87 +41,87 @@ public class FrogspawnBlock extends Block {
       return CODEC;
    }
 
-   public FrogspawnBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public FrogspawnBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return SHAPE;
    }
 
-   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      return mayPlaceOn(var2, var3.below());
+   protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
+      return mayPlaceOn(level, pos.below());
    }
 
-   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      var2.scheduleTick(var3, this, getFrogspawnHatchDelay(var2.getRandom()));
+   protected void onPlace(final BlockState state, final Level level, final BlockPos pos, final BlockState oldState, final boolean movedByPiston) {
+      level.scheduleTick(pos, this, getFrogspawnHatchDelay(level.getRandom()));
    }
 
-   private static int getFrogspawnHatchDelay(RandomSource var0) {
-      return var0.nextInt(minHatchTickDelay, maxHatchTickDelay);
+   private static int getFrogspawnHatchDelay(final RandomSource random) {
+      return random.nextInt(minHatchTickDelay, maxHatchTickDelay);
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      return !this.canSurvive(var1, var2, var4) ? Blocks.AIR.defaultBlockState() : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      return !this.canSurvive(state, level, pos) ? Blocks.AIR.defaultBlockState() : super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (!this.canSurvive(var1, var2, var3)) {
-         this.destroyBlock(var2, var3);
+   protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if (!this.canSurvive(state, level, pos)) {
+         this.destroyBlock(level, pos);
       } else {
-         this.hatchFrogspawn(var2, var3, var4);
+         this.hatchFrogspawn(level, pos, random);
       }
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
-      if (var4.getType().equals(EntityType.FALLING_BLOCK)) {
-         this.destroyBlock(var2, var3);
+   protected void entityInside(final BlockState state, final Level level, final BlockPos pos, final Entity entity, final InsideBlockEffectApplier effectApplier, final boolean isPrecise) {
+      if (entity.is(EntityType.FALLING_BLOCK)) {
+         this.destroyBlock(level, pos);
       }
 
    }
 
-   private static boolean mayPlaceOn(BlockGetter var0, BlockPos var1) {
-      FluidState var2 = var0.getFluidState(var1);
-      FluidState var3 = var0.getFluidState(var1.above());
-      return var2.getType() == Fluids.WATER && var3.getType() == Fluids.EMPTY;
+   private static boolean mayPlaceOn(final BlockGetter level, final BlockPos pos) {
+      FluidState fluidState = level.getFluidState(pos);
+      FluidState fluidAbove = level.getFluidState(pos.above());
+      return (fluidState.is(FluidTags.SUPPORTS_FROGSPAWN) || level.getBlockState(pos).is(BlockTags.SUPPORTS_FROGSPAWN)) && fluidAbove.is(Fluids.EMPTY);
    }
 
-   private void hatchFrogspawn(ServerLevel var1, BlockPos var2, RandomSource var3) {
-      this.destroyBlock(var1, var2);
-      var1.playSound((Entity)null, var2, SoundEvents.FROGSPAWN_HATCH, SoundSource.BLOCKS, 1.0F, 1.0F);
-      this.spawnTadpoles(var1, var2, var3);
+   private void hatchFrogspawn(final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      this.destroyBlock(level, pos);
+      level.playSound((Entity)null, pos, SoundEvents.FROGSPAWN_HATCH, SoundSource.BLOCKS, 1.0F, 1.0F);
+      this.spawnTadpoles(level, pos, random);
    }
 
-   private void destroyBlock(Level var1, BlockPos var2) {
-      var1.destroyBlock(var2, false);
+   private void destroyBlock(final Level level, final BlockPos pos) {
+      level.destroyBlock(pos, false);
    }
 
-   private void spawnTadpoles(ServerLevel var1, BlockPos var2, RandomSource var3) {
-      int var4 = var3.nextInt(2, 6);
+   private void spawnTadpoles(final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      int tadpoleAmount = random.nextInt(2, 6);
 
-      for(int var5 = 1; var5 <= var4; ++var5) {
-         Tadpole var6 = EntityType.TADPOLE.create(var1, EntitySpawnReason.BREEDING);
-         if (var6 != null) {
-            double var7 = (double)var2.getX() + this.getRandomTadpolePositionOffset(var3);
-            double var9 = (double)var2.getZ() + this.getRandomTadpolePositionOffset(var3);
-            int var11 = var3.nextInt(1, 361);
-            var6.snapTo(var7, (double)var2.getY() - 0.5, var9, (float)var11, 0.0F);
-            var6.setPersistenceRequired();
-            var1.addFreshEntity(var6);
+      for(int i = 1; i <= tadpoleAmount; ++i) {
+         Tadpole tadpole = EntityType.TADPOLE.create(level, EntitySpawnReason.BREEDING);
+         if (tadpole != null) {
+            double xPos = (double)pos.getX() + this.getRandomTadpolePositionOffset(random);
+            double zPos = (double)pos.getZ() + this.getRandomTadpolePositionOffset(random);
+            int yRot = random.nextInt(1, 361);
+            tadpole.snapTo(xPos, (double)pos.getY() - 0.5, zPos, (float)yRot, 0.0F);
+            tadpole.setPersistenceRequired();
+            level.addFreshEntity(tadpole);
          }
       }
 
    }
 
-   private double getRandomTadpolePositionOffset(RandomSource var1) {
-      double var2 = 0.20000000298023224;
-      return Mth.clamp(var1.nextDouble(), 0.20000000298023224, 0.7999999970197678);
+   private double getRandomTadpolePositionOffset(final RandomSource random) {
+      double tadpoleHitboxCenter = 0.20000000298023224;
+      return Mth.clamp(random.nextDouble(), 0.20000000298023224, 0.7999999970197678);
    }
 
    @VisibleForTesting
-   public static void setHatchDelay(int var0, int var1) {
-      minHatchTickDelay = var0;
-      maxHatchTickDelay = var1;
+   public static void setHatchDelay(final int minDelay, final int maxDelay) {
+      minHatchTickDelay = minDelay;
+      maxHatchTickDelay = maxDelay;
    }
 
    @VisibleForTesting

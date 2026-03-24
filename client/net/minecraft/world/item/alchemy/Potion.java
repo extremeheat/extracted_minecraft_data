@@ -22,15 +22,15 @@ public class Potion implements FeatureElement {
    private final List<MobEffectInstance> effects;
    private FeatureFlagSet requiredFeatures;
 
-   public Potion(String var1, MobEffectInstance... var2) {
+   public Potion(final String name, final MobEffectInstance... effects) {
       super();
       this.requiredFeatures = FeatureFlags.VANILLA_SET;
-      this.name = var1;
-      this.effects = List.of(var2);
+      this.name = name;
+      this.effects = List.of(effects);
    }
 
-   public Potion requiredFeatures(FeatureFlag... var1) {
-      this.requiredFeatures = FeatureFlags.REGISTRY.subset(var1);
+   public Potion requiredFeatures(final FeatureFlag... flags) {
+      this.requiredFeatures = FeatureFlags.REGISTRY.subset(flags);
       return this;
    }
 
@@ -47,8 +47,8 @@ public class Potion implements FeatureElement {
    }
 
    public boolean hasInstantEffects() {
-      for(MobEffectInstance var2 : this.effects) {
-         if (((MobEffect)var2.getEffect().value()).isInstantenous()) {
+      for(MobEffectInstance effect : this.effects) {
+         if (((MobEffect)effect.getEffect().value()).isInstantenous()) {
             return true;
          }
       }

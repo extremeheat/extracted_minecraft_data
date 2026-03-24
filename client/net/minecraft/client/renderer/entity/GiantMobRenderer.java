@@ -5,8 +5,6 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.monster.zombie.GiantZombieModel;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.ZombieRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.monster.Giant;
@@ -14,13 +12,13 @@ import net.minecraft.world.entity.monster.Giant;
 public class GiantMobRenderer extends MobRenderer<Giant, ZombieRenderState, HumanoidModel<ZombieRenderState>> {
    private static final Identifier ZOMBIE_LOCATION = Identifier.withDefaultNamespace("textures/entity/zombie/zombie.png");
 
-   public GiantMobRenderer(EntityRendererProvider.Context var1, float var2) {
-      super(var1, new GiantZombieModel(var1.bakeLayer(ModelLayers.GIANT)), 0.5F * var2);
+   public GiantMobRenderer(final EntityRendererProvider.Context context, final float scale) {
+      super(context, new GiantZombieModel(context.bakeLayer(ModelLayers.GIANT)), 0.5F * scale);
       this.addLayer(new ItemInHandLayer(this));
-      this.addLayer(new HumanoidArmorLayer(this, ArmorModelSet.bake(ModelLayers.GIANT_ARMOR, var1.getModelSet(), GiantZombieModel::new), var1.getEquipmentRenderer()));
+      this.addLayer(new HumanoidArmorLayer(this, ArmorModelSet.bake(ModelLayers.GIANT_ARMOR, context.getModelSet(), GiantZombieModel::new), context.getEquipmentRenderer()));
    }
 
-   public Identifier getTextureLocation(ZombieRenderState var1) {
+   public Identifier getTextureLocation(final ZombieRenderState state) {
       return ZOMBIE_LOCATION;
    }
 
@@ -28,18 +26,8 @@ public class GiantMobRenderer extends MobRenderer<Giant, ZombieRenderState, Huma
       return new ZombieRenderState();
    }
 
-   public void extractRenderState(Giant var1, ZombieRenderState var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      HumanoidMobRenderer.extractHumanoidRenderState(var1, var2, var3, this.itemModelResolver);
-   }
-
-   // $FF: synthetic method
-   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
-      return this.getTextureLocation((ZombieRenderState)var1);
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
+   public void extractRenderState(final Giant entity, final ZombieRenderState state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      HumanoidMobRenderer.extractHumanoidRenderState(entity, state, partialTicks, this.itemModelResolver);
    }
 }

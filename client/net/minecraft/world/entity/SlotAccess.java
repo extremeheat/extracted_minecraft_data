@@ -9,50 +9,50 @@ import net.minecraft.world.item.ItemStack;
 public interface SlotAccess {
    ItemStack get();
 
-   boolean set(ItemStack var1);
+   boolean set(ItemStack itemStack);
 
-   static SlotAccess of(final Supplier<ItemStack> var0, final Consumer<ItemStack> var1) {
+   static SlotAccess of(final Supplier<ItemStack> getter, final Consumer<ItemStack> setter) {
       return new SlotAccess() {
          public ItemStack get() {
-            return (ItemStack)var0.get();
+            return (ItemStack)getter.get();
          }
 
-         public boolean set(ItemStack var1x) {
-            var1.accept(var1x);
+         public boolean set(final ItemStack itemStack) {
+            setter.accept(itemStack);
             return true;
          }
       };
    }
 
-   static SlotAccess forEquipmentSlot(final LivingEntity var0, final EquipmentSlot var1, final Predicate<ItemStack> var2) {
+   static SlotAccess forEquipmentSlot(final LivingEntity entity, final EquipmentSlot slot, final Predicate<ItemStack> validator) {
       return new SlotAccess() {
          public ItemStack get() {
-            return var0.getItemBySlot(var1);
+            return entity.getItemBySlot(slot);
          }
 
-         public boolean set(ItemStack var1x) {
-            if (!var2.test(var1x)) {
+         public boolean set(final ItemStack itemStack) {
+            if (!validator.test(itemStack)) {
                return false;
             } else {
-               var0.setItemSlot(var1, var1x);
+               entity.setItemSlot(slot, itemStack);
                return true;
             }
          }
       };
    }
 
-   static SlotAccess forEquipmentSlot(LivingEntity var0, EquipmentSlot var1) {
-      return forEquipmentSlot(var0, var1, (var0x) -> true);
+   static SlotAccess forEquipmentSlot(final LivingEntity entity, final EquipmentSlot slot) {
+      return forEquipmentSlot(entity, slot, (stack) -> true);
    }
 
-   static SlotAccess forListElement(final List<ItemStack> var0, final int var1) {
+   static SlotAccess forListElement(final List<ItemStack> stacks, final int index) {
       return new SlotAccess() {
          public ItemStack get() {
-            return (ItemStack)var0.get(var1);
+            return (ItemStack)stacks.get(index);
          }
 
-         public boolean set(ItemStack var1x) {
-            var0.set(var1, var1x);
+         public boolean set(final ItemStack itemStack) {
+            stacks.set(index, itemStack);
             return true;
          }
       };

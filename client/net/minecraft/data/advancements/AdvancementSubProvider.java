@@ -7,9 +7,9 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.Identifier;
 
 public interface AdvancementSubProvider {
-   void generate(HolderLookup.Provider var1, Consumer<AdvancementHolder> var2);
+   void generate(HolderLookup.Provider registries, Consumer<AdvancementHolder> output);
 
-   static AdvancementHolder createPlaceholder(String var0) {
-      return Advancement.Builder.advancement().build(Identifier.parse(var0));
+   static AdvancementHolder createPlaceholder(final String id) {
+      return Advancement.Builder.advancement().build(Identifier.parse(id));
    }
 }

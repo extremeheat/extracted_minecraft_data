@@ -18,14 +18,14 @@ import org.jspecify.annotations.Nullable;
 public class SpaceProvider implements GlyphProvider {
    private final Int2ObjectMap<EmptyGlyph> glyphs;
 
-   public SpaceProvider(Map<Integer, Float> var1) {
+   public SpaceProvider(final Map<Integer, Float> advances) {
       super();
-      this.glyphs = new Int2ObjectOpenHashMap(var1.size());
-      var1.forEach((var1x, var2) -> this.glyphs.put(var1x, new EmptyGlyph(var2)));
+      this.glyphs = new Int2ObjectOpenHashMap(advances.size());
+      advances.forEach((codepoint, advance) -> this.glyphs.put(codepoint, new EmptyGlyph(advance)));
    }
 
-   public @Nullable UnbakedGlyph getGlyph(int var1) {
-      return (UnbakedGlyph)this.glyphs.get(var1);
+   public @Nullable UnbakedGlyph getGlyph(final int codepoint) {
+      return (UnbakedGlyph)this.glyphs.get(codepoint);
    }
 
    public IntSet getSupportedGlyphs() {
@@ -33,11 +33,10 @@ public class SpaceProvider implements GlyphProvider {
    }
 
    public static record Definition(Map<Integer, Float> advances) implements GlyphProviderDefinition {
-      public static final MapCodec<Definition> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.unboundedMap(ExtraCodecs.CODEPOINT, Codec.FLOAT).fieldOf("advances").forGetter(Definition::advances)).apply(var0, Definition::new));
+      public static final MapCodec<Definition> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.unboundedMap(ExtraCodecs.CODEPOINT, Codec.FLOAT).fieldOf("advances").forGetter(Definition::advances)).apply(i, Definition::new));
 
-      public Definition(Map<Integer, Float> var1) {
+      public Definition {
          super();
-         this.advances = var1;
       }
 
       public GlyphProviderType type() {
@@ -45,8 +44,8 @@ public class SpaceProvider implements GlyphProvider {
       }
 
       public Either<GlyphProviderDefinition.Loader, GlyphProviderDefinition.Reference> unpack() {
-         GlyphProviderDefinition.Loader var1 = (var1x) -> new SpaceProvider(this.advances);
-         return Either.left(var1);
+         GlyphProviderDefinition.Loader loader = (resourceManager) -> new SpaceProvider(this.advances);
+         return Either.left(loader);
       }
    }
 }

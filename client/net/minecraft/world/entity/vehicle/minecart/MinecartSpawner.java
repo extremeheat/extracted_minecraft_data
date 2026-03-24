@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.vehicle.minecart;
 
+import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
@@ -15,15 +16,19 @@ import net.minecraft.world.level.storage.ValueOutput;
 
 public class MinecartSpawner extends AbstractMinecart {
    private final BaseSpawner spawner = new BaseSpawner() {
-      public void broadcastEvent(Level var1, BlockPos var2, int var3) {
-         var1.broadcastEntityEvent(MinecartSpawner.this, (byte)var3);
+      {
+         Objects.requireNonNull(MinecartSpawner.this);
+      }
+
+      public void broadcastEvent(final Level level, final BlockPos pos, final int id) {
+         level.broadcastEntityEvent(MinecartSpawner.this, (byte)id);
       }
    };
    private final Runnable ticker;
 
-   public MinecartSpawner(EntityType<? extends MinecartSpawner> var1, Level var2) {
-      super(var1, var2);
-      this.ticker = this.createTicker(var2);
+   public MinecartSpawner(final EntityType<? extends MinecartSpawner> type, final Level level) {
+      super(type, level);
+      this.ticker = this.createTicker(level);
    }
 
    protected Item getDropItem() {
@@ -34,26 +39,26 @@ public class MinecartSpawner extends AbstractMinecart {
       return new ItemStack(Items.MINECART);
    }
 
-   private Runnable createTicker(Level var1) {
-      return var1 instanceof ServerLevel ? () -> this.spawner.serverTick((ServerLevel)var1, this.blockPosition()) : () -> this.spawner.clientTick(var1, this.blockPosition());
+   private Runnable createTicker(final Level level) {
+      return level instanceof ServerLevel ? () -> this.spawner.serverTick((ServerLevel)level, this.blockPosition()) : () -> this.spawner.clientTick(level, this.blockPosition());
    }
 
    public BlockState getDefaultDisplayBlockState() {
       return Blocks.SPAWNER.defaultBlockState();
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.spawner.load(this.level(), this.blockPosition(), var1);
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.spawner.load(this.level(), this.blockPosition(), input);
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      this.spawner.save(var1);
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      this.spawner.save(output);
    }
 
-   public void handleEntityEvent(byte var1) {
-      this.spawner.onEventTriggered(this.level(), var1);
+   public void handleEntityEvent(final byte id) {
+      this.spawner.onEventTriggered(this.level(), id);
    }
 
    public void tick() {

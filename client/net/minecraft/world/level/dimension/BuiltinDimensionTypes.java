@@ -14,7 +14,7 @@ public class BuiltinDimensionTypes {
       super();
    }
 
-   private static ResourceKey<DimensionType> register(String var0) {
-      return ResourceKey.create(Registries.DIMENSION_TYPE, Identifier.withDefaultNamespace(var0));
+   private static ResourceKey<DimensionType> register(final String id) {
+      return ResourceKey.create(Registries.DIMENSION_TYPE, Identifier.withDefaultNamespace(id));
    }
 }

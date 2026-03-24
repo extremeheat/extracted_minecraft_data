@@ -14,17 +14,16 @@ public record ClientboundStatusResponsePacket(ServerStatus status) implements Pa
    private static final RegistryOps<JsonElement> OPS;
    public static final StreamCodec<ByteBuf, ClientboundStatusResponsePacket> STREAM_CODEC;
 
-   public ClientboundStatusResponsePacket(ServerStatus var1) {
+   public ClientboundStatusResponsePacket {
       super();
-      this.status = var1;
    }
 
    public PacketType<ClientboundStatusResponsePacket> type() {
       return StatusPacketTypes.CLIENTBOUND_STATUS_RESPONSE;
    }
 
-   public void handle(ClientStatusPacketListener var1) {
-      var1.handleStatusResponse(this);
+   public void handle(final ClientStatusPacketListener listener) {
+      listener.handleStatusResponse(this);
    }
 
    static {

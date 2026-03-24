@@ -1,6 +1,6 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -16,8 +16,8 @@ public class BrewingStandScreen extends AbstractContainerScreen<BrewingStandMenu
    private static final Identifier BREWING_STAND_LOCATION = Identifier.withDefaultNamespace("textures/gui/container/brewing_stand.png");
    private static final int[] BUBBLELENGTHS = new int[]{29, 24, 20, 16, 11, 6, 0};
 
-   public BrewingStandScreen(BrewingStandMenu var1, Inventory var2, Component var3) {
-      super(var1, var2, var3);
+   public BrewingStandScreen(final BrewingStandMenu menu, final Inventory inventory, final Component title) {
+      super(menu, inventory, title);
    }
 
    protected void init() {
@@ -25,31 +25,27 @@ public class BrewingStandScreen extends AbstractContainerScreen<BrewingStandMenu
       this.titleLabelX = (this.imageWidth - this.font.width((FormattedText)this.title)) / 2;
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      this.renderTooltip(var1, var2, var3);
-   }
-
-   protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
-      int var5 = (this.width - this.imageWidth) / 2;
-      int var6 = (this.height - this.imageHeight) / 2;
-      var1.blit(RenderPipelines.GUI_TEXTURED, BREWING_STAND_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
-      int var7 = ((BrewingStandMenu)this.menu).getFuel();
-      int var8 = Mth.clamp((18 * var7 + 20 - 1) / 20, 0, 18);
-      if (var8 > 0) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, FUEL_LENGTH_SPRITE, 18, 4, 0, 0, var5 + 60, var6 + 44, var8, 4);
+   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractBackground(graphics, mouseX, mouseY, a);
+      int xo = (this.width - this.imageWidth) / 2;
+      int yo = (this.height - this.imageHeight) / 2;
+      graphics.blit(RenderPipelines.GUI_TEXTURED, BREWING_STAND_LOCATION, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+      int fuel = ((BrewingStandMenu)this.menu).getFuel();
+      int fuelLength = Mth.clamp((18 * fuel + 20 - 1) / 20, 0, 18);
+      if (fuelLength > 0) {
+         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, FUEL_LENGTH_SPRITE, 18, 4, 0, 0, xo + 60, yo + 44, fuelLength, 4);
       }
 
-      int var9 = ((BrewingStandMenu)this.menu).getBrewingTicks();
-      if (var9 > 0) {
-         int var10 = (int)(28.0F * (1.0F - (float)var9 / 400.0F));
-         if (var10 > 0) {
-            var1.blitSprite(RenderPipelines.GUI_TEXTURED, BREW_PROGRESS_SPRITE, 9, 28, 0, 0, var5 + 97, var6 + 16, 9, var10);
+      int tickCount = ((BrewingStandMenu)this.menu).getBrewingTicks();
+      if (tickCount > 0) {
+         int length = (int)(28.0F * (1.0F - (float)tickCount / 400.0F));
+         if (length > 0) {
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BREW_PROGRESS_SPRITE, 9, 28, 0, 0, xo + 97, yo + 16, 9, length);
          }
 
-         var10 = BUBBLELENGTHS[var9 / 2 % 7];
-         if (var10 > 0) {
-            var1.blitSprite(RenderPipelines.GUI_TEXTURED, BUBBLES_SPRITE, 12, 29, 0, 29 - var10, var5 + 63, var6 + 14 + 29 - var10, 12, var10);
+         length = BUBBLELENGTHS[tickCount / 2 % 7];
+         if (length > 0) {
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BUBBLES_SPRITE, 12, 29, 0, 29 - length, xo + 63, yo + 14 + 29 - length, 12, length);
          }
       }
 

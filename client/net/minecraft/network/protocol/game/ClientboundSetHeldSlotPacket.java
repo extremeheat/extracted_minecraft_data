@@ -9,17 +9,16 @@ import net.minecraft.network.protocol.PacketType;
 public record ClientboundSetHeldSlotPacket(int slot) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<ByteBuf, ClientboundSetHeldSlotPacket> STREAM_CODEC;
 
-   public ClientboundSetHeldSlotPacket(int var1) {
+   public ClientboundSetHeldSlotPacket {
       super();
-      this.slot = var1;
    }
 
    public PacketType<ClientboundSetHeldSlotPacket> type() {
       return GamePacketTypes.CLIENTBOUND_SET_HELD_SLOT;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleSetHeldSlot(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleSetHeldSlot(this);
    }
 
    static {

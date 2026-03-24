@@ -13,88 +13,85 @@ public class KeyframeAnimation {
    private final AnimationDefinition definition;
    private final List<Entry> entries;
 
-   private KeyframeAnimation(AnimationDefinition var1, List<Entry> var2) {
+   private KeyframeAnimation(final AnimationDefinition definition, final List<Entry> entries) {
       super();
-      this.definition = var1;
-      this.entries = var2;
+      this.definition = definition;
+      this.entries = entries;
    }
 
-   static KeyframeAnimation bake(ModelPart var0, AnimationDefinition var1) {
-      ArrayList var2 = new ArrayList();
-      Function var3 = var0.createPartLookup();
+   static KeyframeAnimation bake(final ModelPart root, final AnimationDefinition definition) {
+      List<Entry> entries = new ArrayList();
+      Function<String, ModelPart> partLookup = root.createPartLookup();
 
-      for(Map.Entry var5 : var1.boneAnimations().entrySet()) {
-         String var6 = (String)var5.getKey();
-         List var7 = (List)var5.getValue();
-         ModelPart var8 = (ModelPart)var3.apply(var6);
-         if (var8 == null) {
-            throw new IllegalArgumentException("Cannot animate " + var6 + ", which does not exist in model");
+      for(Map.Entry<String, List<AnimationChannel>> entry : definition.boneAnimations().entrySet()) {
+         String partName = (String)entry.getKey();
+         List<AnimationChannel> channels = (List)entry.getValue();
+         ModelPart part = (ModelPart)partLookup.apply(partName);
+         if (part == null) {
+            throw new IllegalArgumentException("Cannot animate " + partName + ", which does not exist in model");
          }
 
-         for(AnimationChannel var10 : var7) {
-            var2.add(new Entry(var8, var10.target(), var10.keyframes()));
+         for(AnimationChannel channel : channels) {
+            entries.add(new Entry(part, channel.target(), channel.keyframes()));
          }
       }
 
-      return new KeyframeAnimation(var1, List.copyOf(var2));
+      return new KeyframeAnimation(definition, List.copyOf(entries));
    }
 
    public void applyStatic() {
       this.apply(0L, 1.0F);
    }
 
-   public void applyWalk(float var1, float var2, float var3, float var4) {
-      long var5 = (long)(var1 * 50.0F * var3);
-      float var7 = Math.min(var2 * var4, 1.0F);
-      this.apply(var5, var7);
+   public void applyWalk(final float animationPos, final float animationSpeed, final float speedFactor, final float scaleFactor) {
+      long time = (long)(animationPos * 50.0F * speedFactor);
+      float scale = Math.min(animationSpeed * scaleFactor, 1.0F);
+      this.apply(time, scale);
    }
 
-   public void apply(AnimationState var1, float var2) {
-      this.apply(var1, var2, 1.0F);
+   public void apply(final AnimationState animationState, final float currentTime) {
+      this.apply(animationState, currentTime, 1.0F);
    }
 
-   public void apply(AnimationState var1, float var2, float var3) {
-      var1.ifStarted((var3x) -> this.apply((long)((float)var3x.getTimeInMillis(var2) * var3), 1.0F));
+   public void apply(final AnimationState animationState, final float currentTime, final float speedFactor) {
+      animationState.ifStarted((state) -> this.apply((long)((float)state.getTimeInMillis(currentTime) * speedFactor), 1.0F));
    }
 
-   public void apply(long var1, float var3) {
-      float var4 = this.getElapsedSeconds(var1);
-      Vector3f var5 = new Vector3f();
+   public void apply(final long millisSinceStart, final float targetScale) {
+      float secondsSinceStart = this.getElapsedSeconds(millisSinceStart);
+      Vector3f scratchVector = new Vector3f();
 
-      for(Entry var7 : this.entries) {
-         var7.apply(var4, var3, var5);
+      for(Entry entry : this.entries) {
+         entry.apply(secondsSinceStart, targetScale, scratchVector);
       }
 
    }
 
-   private float getElapsedSeconds(long var1) {
-      float var3 = (float)var1 / 1000.0F;
-      return this.definition.looping() ? var3 % this.definition.lengthInSeconds() : var3;
+   private float getElapsedSeconds(final long millisSinceStart) {
+      float secondsSinceStart = (float)millisSinceStart / 1000.0F;
+      return this.definition.looping() ? secondsSinceStart % this.definition.lengthInSeconds() : secondsSinceStart;
    }
 
-   static record Entry(ModelPart part, AnimationChannel.Target target, Keyframe[] keyframes) {
-      Entry(ModelPart var1, AnimationChannel.Target var2, Keyframe[] var3) {
+   private static record Entry(ModelPart part, AnimationChannel.Target target, Keyframe[] keyframes) {
+      private Entry {
          super();
-         this.part = var1;
-         this.target = var2;
-         this.keyframes = var3;
       }
 
-      public void apply(float var1, float var2, Vector3f var3) {
-         int var4 = Math.max(0, Mth.binarySearch(0, this.keyframes.length, (var2x) -> var1 <= this.keyframes[var2x].timestamp()) - 1);
-         int var5 = Math.min(this.keyframes.length - 1, var4 + 1);
-         Keyframe var6 = this.keyframes[var4];
-         Keyframe var7 = this.keyframes[var5];
-         float var8 = var1 - var6.timestamp();
-         float var9;
-         if (var5 != var4) {
-            var9 = Mth.clamp(var8 / (var7.timestamp() - var6.timestamp()), 0.0F, 1.0F);
+      public void apply(final float secondsSinceStart, final float targetScale, final Vector3f scratchVector) {
+         int prev = Math.max(0, Mth.binarySearch(0, this.keyframes.length, (i) -> secondsSinceStart <= this.keyframes[i].timestamp()) - 1);
+         int next = Math.min(this.keyframes.length - 1, prev + 1);
+         Keyframe previousFrame = this.keyframes[prev];
+         Keyframe nextFrame = this.keyframes[next];
+         float keyframeTimeDelta = secondsSinceStart - previousFrame.timestamp();
+         float lerpAlpha;
+         if (next != prev) {
+            lerpAlpha = Mth.clamp(keyframeTimeDelta / (nextFrame.timestamp() - previousFrame.timestamp()), 0.0F, 1.0F);
          } else {
-            var9 = 0.0F;
+            lerpAlpha = 0.0F;
          }
 
-         var7.interpolation().apply(var3, var9, this.keyframes, var4, var5, var2);
-         this.target.apply(this.part, var3);
+         nextFrame.interpolation().apply(scratchVector, lerpAlpha, this.keyframes, prev, next, targetScale);
+         this.target.apply(this.part, scratchVector);
       }
    }
 }

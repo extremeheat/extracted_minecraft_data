@@ -14,50 +14,50 @@ public class MinecraftPlayerListServiceImpl implements MinecraftPlayerListServic
    private final JsonRpcLogger jsonRpcLogger;
    private final DedicatedServer server;
 
-   public MinecraftPlayerListServiceImpl(DedicatedServer var1, JsonRpcLogger var2) {
+   public MinecraftPlayerListServiceImpl(final DedicatedServer server, final JsonRpcLogger jsonRpcLogger) {
       super();
-      this.jsonRpcLogger = var2;
-      this.server = var1;
+      this.jsonRpcLogger = jsonRpcLogger;
+      this.server = server;
    }
 
    public List<ServerPlayer> getPlayers() {
       return this.server.getPlayerList().getPlayers();
    }
 
-   public @Nullable ServerPlayer getPlayer(UUID var1) {
-      return this.server.getPlayerList().getPlayer(var1);
+   public @Nullable ServerPlayer getPlayer(final UUID uuid) {
+      return this.server.getPlayerList().getPlayer(uuid);
    }
 
-   public Optional<NameAndId> fetchUserByName(String var1) {
-      return this.server.services().nameToIdCache().get(var1);
+   public Optional<NameAndId> fetchUserByName(final String name) {
+      return this.server.services().nameToIdCache().get(name);
    }
 
-   public Optional<NameAndId> fetchUserById(UUID var1) {
-      return Optional.ofNullable(this.server.services().sessionService().fetchProfile(var1, true)).map((var0) -> new NameAndId(var0.profile()));
+   public Optional<NameAndId> fetchUserById(final UUID id) {
+      return Optional.ofNullable(this.server.services().sessionService().fetchProfile(id, true)).map((profile) -> new NameAndId(profile.profile()));
    }
 
-   public Optional<NameAndId> getCachedUserById(UUID var1) {
-      return this.server.services().nameToIdCache().get(var1);
+   public Optional<NameAndId> getCachedUserById(final UUID id) {
+      return this.server.services().nameToIdCache().get(id);
    }
 
-   public Optional<ServerPlayer> getPlayer(Optional<UUID> var1, Optional<String> var2) {
-      if (var1.isPresent()) {
-         return Optional.ofNullable(this.server.getPlayerList().getPlayer((UUID)var1.get()));
+   public Optional<ServerPlayer> getPlayer(final Optional<UUID> id, final Optional<String> name) {
+      if (id.isPresent()) {
+         return Optional.ofNullable(this.server.getPlayerList().getPlayer((UUID)id.get()));
       } else {
-         return var2.isPresent() ? Optional.ofNullable(this.server.getPlayerList().getPlayerByName((String)var2.get())) : Optional.empty();
+         return name.isPresent() ? Optional.ofNullable(this.server.getPlayerList().getPlayerByName((String)name.get())) : Optional.empty();
       }
    }
 
-   public List<ServerPlayer> getPlayersWithAddress(String var1) {
-      return this.server.getPlayerList().getPlayersWithAddress(var1);
+   public List<ServerPlayer> getPlayersWithAddress(final String ip) {
+      return this.server.getPlayerList().getPlayersWithAddress(ip);
    }
 
-   public void remove(ServerPlayer var1, ClientInfo var2) {
-      this.server.getPlayerList().remove(var1);
-      this.jsonRpcLogger.log(var2, "Remove player '{}'", var1.getPlainTextName());
+   public void remove(final ServerPlayer serverPlayer, final ClientInfo clientInfo) {
+      this.server.getPlayerList().remove(serverPlayer);
+      this.jsonRpcLogger.log(clientInfo, "Remove player '{}'", serverPlayer.getPlainTextName());
    }
 
-   public @Nullable ServerPlayer getPlayerByName(String var1) {
-      return this.server.getPlayerList().getPlayerByName(var1);
+   public @Nullable ServerPlayer getPlayerByName(final String name) {
+      return this.server.getPlayerList().getPlayerByName(name);
    }
 }

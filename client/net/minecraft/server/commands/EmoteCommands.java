@@ -13,12 +13,12 @@ public class EmoteCommands {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)Commands.literal("me").then(Commands.argument("action", MessageArgument.message()).executes((var0x) -> {
-         MessageArgument.resolveChatMessage(var0x, "action", (var1) -> {
-            CommandSourceStack var2 = (CommandSourceStack)var0x.getSource();
-            PlayerList var3 = var2.getServer().getPlayerList();
-            var3.broadcastChatMessage(var1, var2, ChatType.bind(ChatType.EMOTE_COMMAND, var2));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)Commands.literal("me").then(Commands.argument("action", MessageArgument.message()).executes((c) -> {
+         MessageArgument.resolveChatMessage(c, "action", (message) -> {
+            CommandSourceStack source = (CommandSourceStack)c.getSource();
+            PlayerList playerList = source.getServer().getPlayerList();
+            playerList.broadcastChatMessage(message, source, ChatType.bind(ChatType.EMOTE_COMMAND, source));
          });
          return 1;
       })));

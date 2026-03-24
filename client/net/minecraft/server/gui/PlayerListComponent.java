@@ -9,21 +9,21 @@ public class PlayerListComponent extends JList<String> {
    private final MinecraftServer server;
    private int tickCount;
 
-   public PlayerListComponent(MinecraftServer var1) {
+   public PlayerListComponent(final MinecraftServer server) {
       super();
-      this.server = var1;
-      var1.addTickable(this::tick);
+      this.server = server;
+      server.addTickable(this::tick);
    }
 
    public void tick() {
       if (this.tickCount++ % 20 == 0) {
-         Vector var1 = new Vector();
+         Vector<String> players = new Vector();
 
-         for(int var2 = 0; var2 < this.server.getPlayerList().getPlayers().size(); ++var2) {
-            var1.add(((ServerPlayer)this.server.getPlayerList().getPlayers().get(var2)).getGameProfile().name());
+         for(int i = 0; i < this.server.getPlayerList().getPlayers().size(); ++i) {
+            players.add(((ServerPlayer)this.server.getPlayerList().getPlayers().get(i)).getGameProfile().name());
          }
 
-         this.setListData(var1);
+         this.setListData(players);
       }
 
    }

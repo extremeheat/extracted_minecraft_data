@@ -16,16 +16,14 @@ interface PathContents {
    };
 
    public static record FileContents(Path contents) implements PathContents {
-      public FileContents(Path var1) {
+      public FileContents {
          super();
-         this.contents = var1;
       }
    }
 
    public static record DirectoryContents(Map<String, LinkFSPath> children) implements PathContents {
-      public DirectoryContents(Map<String, LinkFSPath> var1) {
+      public DirectoryContents {
          super();
-         this.children = var1;
       }
    }
 }

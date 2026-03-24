@@ -16,14 +16,14 @@ public enum ArmorType implements StringRepresentable {
    private final String name;
    private final int unitDurability;
 
-   private ArmorType(final EquipmentSlot var3, final int var4, final String var5) {
-      this.slot = var3;
-      this.name = var5;
-      this.unitDurability = var4;
+   private ArmorType(final EquipmentSlot slot, final int unitDurability, final String name) {
+      this.slot = slot;
+      this.name = name;
+      this.unitDurability = unitDurability;
    }
 
-   public int getDurability(int var1) {
-      return this.unitDurability * var1;
+   public int getDurability(final int multiplier) {
+      return this.unitDurability * multiplier;
    }
 
    public EquipmentSlot getSlot() {

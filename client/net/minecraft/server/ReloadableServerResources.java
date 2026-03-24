@@ -9,6 +9,8 @@ import net.minecraft.commands.Commands;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.Registry;
+import net.minecraft.core.component.DataComponentInitializers;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleReloadInstance;
@@ -27,15 +29,17 @@ public class ReloadableServerResources {
    private final ServerAdvancementManager advancements;
    private final ServerFunctionLibrary functionLibrary;
    private final List<Registry.PendingTags<?>> postponedTags;
+   private final List<DataComponentInitializers.PendingComponents<?>> newComponents;
 
-   private ReloadableServerResources(LayeredRegistryAccess<RegistryLayer> var1, HolderLookup.Provider var2, FeatureFlagSet var3, Commands.CommandSelection var4, List<Registry.PendingTags<?>> var5, PermissionSet var6) {
+   private ReloadableServerResources(final LayeredRegistryAccess<RegistryLayer> fullLayers, final HolderLookup.Provider loadingContext, final FeatureFlagSet enabledFeatures, final Commands.CommandSelection commandSelection, final List<Registry.PendingTags<?>> postponedTags, final PermissionSet functionCompilationPermissions, final List<DataComponentInitializers.PendingComponents<?>> newComponents) {
       super();
-      this.fullRegistryHolder = new ReloadableServerRegistries.Holder(var1.compositeAccess());
-      this.postponedTags = var5;
-      this.recipes = new RecipeManager(var2);
-      this.commands = new Commands(var4, CommandBuildContext.simple(var2, var3));
-      this.advancements = new ServerAdvancementManager(var2);
-      this.functionLibrary = new ServerFunctionLibrary(var6, this.commands.getDispatcher());
+      this.fullRegistryHolder = new ReloadableServerRegistries.Holder(fullLayers.compositeAccess());
+      this.postponedTags = postponedTags;
+      this.newComponents = newComponents;
+      this.recipes = new RecipeManager(loadingContext);
+      this.commands = new Commands(commandSelection, CommandBuildContext.simple(loadingContext, enabledFeatures));
+      this.advancements = new ServerAdvancementManager(loadingContext);
+      this.functionLibrary = new ServerFunctionLibrary(functionCompilationPermissions, this.commands.getDispatcher());
    }
 
    public ServerFunctionLibrary getFunctionLibrary() {
@@ -62,15 +66,16 @@ public class ReloadableServerResources {
       return List.of(this.recipes, this.functionLibrary, this.advancements);
    }
 
-   public static CompletableFuture<ReloadableServerResources> loadResources(ResourceManager var0, LayeredRegistryAccess<RegistryLayer> var1, List<Registry.PendingTags<?>> var2, FeatureFlagSet var3, Commands.CommandSelection var4, PermissionSet var5, Executor var6, Executor var7) {
-      return ReloadableServerRegistries.reload(var1, var2, var0, var6).thenCompose((var7x) -> {
-         ReloadableServerResources var8 = new ReloadableServerResources(var7x.layers(), var7x.lookupWithUpdatedTags(), var3, var4, var2, var5);
-         return SimpleReloadInstance.create(var0, var8.listeners(), var6, var7, DATA_RELOAD_INITIAL_TASK, LOGGER.isDebugEnabled()).done().thenApply((var1) -> var8);
-      });
+   public static CompletableFuture<ReloadableServerResources> loadResources(final ResourceManager resourceManager, final LayeredRegistryAccess<RegistryLayer> contextLayers, final List<Registry.PendingTags<?>> updatedContextTags, final FeatureFlagSet enabledFeatures, final Commands.CommandSelection commandSelection, final PermissionSet functionCompilationPermissions, final Executor backgroundExecutor, final Executor mainThreadExecutor) {
+      return ReloadableServerRegistries.reload(contextLayers, updatedContextTags, resourceManager, backgroundExecutor).thenCompose((fullRegistries) -> CompletableFuture.supplyAsync(() -> BuiltInRegistries.DATA_COMPONENT_INITIALIZERS.build(fullRegistries.lookupWithUpdatedTags()), backgroundExecutor).thenCompose((pendingComponents) -> {
+            ReloadableServerResources result = new ReloadableServerResources(fullRegistries.layers(), fullRegistries.lookupWithUpdatedTags(), enabledFeatures, commandSelection, updatedContextTags, functionCompilationPermissions, pendingComponents);
+            return SimpleReloadInstance.create(resourceManager, result.listeners(), backgroundExecutor, mainThreadExecutor, DATA_RELOAD_INITIAL_TASK, LOGGER.isDebugEnabled()).done().thenApply((ignore) -> result);
+         }));
    }
 
-   public void updateStaticRegistryTags() {
+   public void updateComponentsAndStaticRegistryTags() {
       this.postponedTags.forEach(Registry.PendingTags::apply);
+      this.newComponents.forEach(DataComponentInitializers.PendingComponents::apply);
    }
 
    static {

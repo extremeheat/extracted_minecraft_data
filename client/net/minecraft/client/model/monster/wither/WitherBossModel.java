@@ -24,43 +24,43 @@ public class WitherBossModel extends EntityModel<WitherRenderState> {
    private final ModelPart ribcage;
    private final ModelPart tail;
 
-   public WitherBossModel(ModelPart var1) {
-      super(var1);
-      this.ribcage = var1.getChild("ribcage");
-      this.tail = var1.getChild("tail");
-      this.centerHead = var1.getChild("center_head");
-      this.rightHead = var1.getChild("right_head");
-      this.leftHead = var1.getChild("left_head");
+   public WitherBossModel(final ModelPart root) {
+      super(root);
+      this.ribcage = root.getChild("ribcage");
+      this.tail = root.getChild("tail");
+      this.centerHead = root.getChild("center_head");
+      this.rightHead = root.getChild("right_head");
+      this.leftHead = root.getChild("left_head");
    }
 
-   public static LayerDefinition createBodyLayer(CubeDeformation var0) {
-      MeshDefinition var1 = new MeshDefinition();
-      PartDefinition var2 = var1.getRoot();
-      var2.addOrReplaceChild("shoulders", CubeListBuilder.create().texOffs(0, 16).addBox(-10.0F, 3.9F, -0.5F, 20.0F, 3.0F, 3.0F, var0), PartPose.ZERO);
-      float var3 = 0.20420352F;
-      var2.addOrReplaceChild("ribcage", CubeListBuilder.create().texOffs(0, 22).addBox(0.0F, 0.0F, 0.0F, 3.0F, 10.0F, 3.0F, var0).texOffs(24, 22).addBox(-4.0F, 1.5F, 0.5F, 11.0F, 2.0F, 2.0F, var0).texOffs(24, 22).addBox(-4.0F, 4.0F, 0.5F, 11.0F, 2.0F, 2.0F, var0).texOffs(24, 22).addBox(-4.0F, 6.5F, 0.5F, 11.0F, 2.0F, 2.0F, var0), PartPose.offsetAndRotation(-2.0F, 6.9F, -0.5F, 0.20420352F, 0.0F, 0.0F));
-      var2.addOrReplaceChild("tail", CubeListBuilder.create().texOffs(12, 22).addBox(0.0F, 0.0F, 0.0F, 3.0F, 6.0F, 3.0F, var0), PartPose.offsetAndRotation(-2.0F, 6.9F + Mth.cos(0.2042035162448883) * 10.0F, -0.5F + Mth.sin(0.2042035162448883) * 10.0F, 0.83252203F, 0.0F, 0.0F));
-      var2.addOrReplaceChild("center_head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -4.0F, -4.0F, 8.0F, 8.0F, 8.0F, var0), PartPose.ZERO);
-      CubeListBuilder var4 = CubeListBuilder.create().texOffs(32, 0).addBox(-4.0F, -4.0F, -4.0F, 6.0F, 6.0F, 6.0F, var0);
-      var2.addOrReplaceChild("right_head", var4, PartPose.offset(-8.0F, 4.0F, 0.0F));
-      var2.addOrReplaceChild("left_head", var4, PartPose.offset(10.0F, 4.0F, 0.0F));
-      return LayerDefinition.create(var1, 64, 64);
+   public static LayerDefinition createBodyLayer(final CubeDeformation g) {
+      MeshDefinition mesh = new MeshDefinition();
+      PartDefinition root = mesh.getRoot();
+      root.addOrReplaceChild("shoulders", CubeListBuilder.create().texOffs(0, 16).addBox(-10.0F, 3.9F, -0.5F, 20.0F, 3.0F, 3.0F, g), PartPose.ZERO);
+      float ribcageXRot = 0.20420352F;
+      root.addOrReplaceChild("ribcage", CubeListBuilder.create().texOffs(0, 22).addBox(0.0F, 0.0F, 0.0F, 3.0F, 10.0F, 3.0F, g).texOffs(24, 22).addBox(-4.0F, 1.5F, 0.5F, 11.0F, 2.0F, 2.0F, g).texOffs(24, 22).addBox(-4.0F, 4.0F, 0.5F, 11.0F, 2.0F, 2.0F, g).texOffs(24, 22).addBox(-4.0F, 6.5F, 0.5F, 11.0F, 2.0F, 2.0F, g), PartPose.offsetAndRotation(-2.0F, 6.9F, -0.5F, 0.20420352F, 0.0F, 0.0F));
+      root.addOrReplaceChild("tail", CubeListBuilder.create().texOffs(12, 22).addBox(0.0F, 0.0F, 0.0F, 3.0F, 6.0F, 3.0F, g), PartPose.offsetAndRotation(-2.0F, 6.9F + Mth.cos(0.2042035162448883) * 10.0F, -0.5F + Mth.sin(0.2042035162448883) * 10.0F, 0.83252203F, 0.0F, 0.0F));
+      root.addOrReplaceChild("center_head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -4.0F, -4.0F, 8.0F, 8.0F, 8.0F, g), PartPose.ZERO);
+      CubeListBuilder sideHead = CubeListBuilder.create().texOffs(32, 0).addBox(-4.0F, -4.0F, -4.0F, 6.0F, 6.0F, 6.0F, g);
+      root.addOrReplaceChild("right_head", sideHead, PartPose.offset(-8.0F, 4.0F, 0.0F));
+      root.addOrReplaceChild("left_head", sideHead, PartPose.offset(10.0F, 4.0F, 0.0F));
+      return LayerDefinition.create(mesh, 64, 64);
    }
 
-   public void setupAnim(WitherRenderState var1) {
-      super.setupAnim(var1);
-      setupHeadRotation(var1, this.rightHead, 0);
-      setupHeadRotation(var1, this.leftHead, 1);
-      float var2 = Mth.cos((double)(var1.ageInTicks * 0.1F));
-      this.ribcage.xRot = (0.065F + 0.05F * var2) * 3.1415927F;
+   public void setupAnim(final WitherRenderState state) {
+      super.setupAnim(state);
+      setupHeadRotation(state, this.rightHead, 0);
+      setupHeadRotation(state, this.leftHead, 1);
+      float anim = Mth.cos((double)(state.ageInTicks * 0.1F));
+      this.ribcage.xRot = (0.065F + 0.05F * anim) * 3.1415927F;
       this.tail.setPos(-2.0F, 6.9F + Mth.cos((double)this.ribcage.xRot) * 10.0F, -0.5F + Mth.sin((double)this.ribcage.xRot) * 10.0F);
-      this.tail.xRot = (0.265F + 0.1F * var2) * 3.1415927F;
-      this.centerHead.yRot = var1.yRot * 0.017453292F;
-      this.centerHead.xRot = var1.xRot * 0.017453292F;
+      this.tail.xRot = (0.265F + 0.1F * anim) * 3.1415927F;
+      this.centerHead.yRot = state.yRot * 0.017453292F;
+      this.centerHead.xRot = state.xRot * 0.017453292F;
    }
 
-   private static void setupHeadRotation(WitherRenderState var0, ModelPart var1, int var2) {
-      var1.yRot = (var0.yHeadRots[var2] - var0.bodyRot) * 0.017453292F;
-      var1.xRot = var0.xHeadRots[var2] * 0.017453292F;
+   private static void setupHeadRotation(final WitherRenderState state, final ModelPart head, final int headIndex) {
+      head.yRot = (state.yHeadRots[headIndex] - state.bodyRot) * 0.017453292F;
+      head.xRot = state.xHeadRots[headIndex] * 0.017453292F;
    }
 }

@@ -14,55 +14,84 @@ import net.minecraft.WorldVersion;
 import net.minecraft.server.Bootstrap;
 import org.slf4j.Logger;
 
-public class DataGenerator {
+public abstract class DataGenerator {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private final Path rootOutputFolder;
-   private final PackOutput vanillaPackOutput;
-   final Set<String> allProviderIds = new HashSet();
-   final Map<String, DataProvider> providersToRun = new LinkedHashMap();
-   private final WorldVersion version;
-   private final boolean alwaysGenerate;
+   protected final PackOutput vanillaPackOutput;
+   protected final Set<String> allProviderIds = new HashSet();
+   protected final Map<String, DataProvider> providersToRun = new LinkedHashMap();
 
-   public DataGenerator(Path var1, WorldVersion var2, boolean var3) {
+   public DataGenerator(final Path output) {
       super();
-      this.rootOutputFolder = var1;
-      this.vanillaPackOutput = new PackOutput(this.rootOutputFolder);
-      this.version = var2;
-      this.alwaysGenerate = var3;
+      this.vanillaPackOutput = new PackOutput(output);
    }
 
-   public void run() throws IOException {
-      HashCache var1 = new HashCache(this.rootOutputFolder, this.allProviderIds, this.version);
-      Stopwatch var2 = Stopwatch.createStarted();
-      Stopwatch var3 = Stopwatch.createUnstarted();
-      this.providersToRun.forEach((var3x, var4) -> {
-         if (!this.alwaysGenerate && !var1.shouldRunInThisVersion(var3x)) {
-            LOGGER.debug("Generator {} already run for version {}", var3x, this.version.name());
-         } else {
-            LOGGER.info("Starting provider: {}", var3x);
-            var3.start();
-            Objects.requireNonNull(var4);
-            var1.applyUpdate((HashCache.UpdateResult)var1.generateUpdate(var3x, var4::run).join());
-            var3.stop();
-            LOGGER.info("{} finished after {} ms", var3x, var3.elapsed(TimeUnit.MILLISECONDS));
-            var3.reset();
-         }
-      });
-      LOGGER.info("All providers took: {} ms", var2.elapsed(TimeUnit.MILLISECONDS));
-      var1.purgeStaleAndWrite();
+   public abstract void run() throws IOException;
+
+   public PackGenerator getVanillaPack(final boolean toRun) {
+      return new PackGenerator(toRun, "vanilla", this.vanillaPackOutput);
    }
 
-   public PackGenerator getVanillaPack(boolean var1) {
-      return new PackGenerator(var1, "vanilla", this.vanillaPackOutput);
-   }
-
-   public PackGenerator getBuiltinDatapack(boolean var1, String var2) {
-      Path var3 = this.vanillaPackOutput.getOutputFolder(PackOutput.Target.DATA_PACK).resolve("minecraft").resolve("datapacks").resolve(var2);
-      return new PackGenerator(var1, var2, new PackOutput(var3));
+   public PackGenerator getBuiltinDatapack(final boolean toRun, final String packId) {
+      Path packOutputDir = this.vanillaPackOutput.getOutputFolder(PackOutput.Target.DATA_PACK).resolve("minecraft").resolve("datapacks").resolve(packId);
+      return new PackGenerator(toRun, packId, new PackOutput(packOutputDir));
    }
 
    static {
       Bootstrap.bootStrap();
+   }
+
+   public static class Cached extends DataGenerator {
+      private final Path rootOutputFolder;
+      private final WorldVersion version;
+      private final boolean alwaysGenerate;
+
+      public Cached(final Path output, final WorldVersion version, final boolean alwaysGenerate) {
+         super(output);
+         this.rootOutputFolder = output;
+         this.alwaysGenerate = alwaysGenerate;
+         this.version = version;
+      }
+
+      public void run() throws IOException {
+         HashCache cache = new HashCache(this.rootOutputFolder, this.allProviderIds, this.version);
+         Stopwatch totalTime = Stopwatch.createStarted();
+         Stopwatch stopwatch = Stopwatch.createUnstarted();
+         this.providersToRun.forEach((providerId, provider) -> {
+            if (!this.alwaysGenerate && !cache.shouldRunInThisVersion(providerId)) {
+               DataGenerator.LOGGER.debug("Generator {} already run for version {}", providerId, this.version.name());
+            } else {
+               DataGenerator.LOGGER.info("Starting provider: {}", providerId);
+               stopwatch.start();
+               Objects.requireNonNull(provider);
+               cache.applyUpdate((HashCache.UpdateResult)cache.generateUpdate(providerId, provider::run).join());
+               stopwatch.stop();
+               DataGenerator.LOGGER.info("{} finished after {} ms", providerId, stopwatch.elapsed(TimeUnit.MILLISECONDS));
+               stopwatch.reset();
+            }
+         });
+         DataGenerator.LOGGER.info("All providers took: {} ms", totalTime.elapsed(TimeUnit.MILLISECONDS));
+         cache.purgeStaleAndWrite();
+      }
+   }
+
+   public static class Uncached extends DataGenerator {
+      public Uncached(final Path output) {
+         super(output);
+      }
+
+      public void run() throws IOException {
+         Stopwatch totalTime = Stopwatch.createStarted();
+         Stopwatch stopwatch = Stopwatch.createUnstarted();
+         this.providersToRun.forEach((providerId, provider) -> {
+            DataGenerator.LOGGER.info("Starting uncached provider: {}", providerId);
+            stopwatch.start();
+            provider.run(CachedOutput.NO_CACHE).join();
+            stopwatch.stop();
+            DataGenerator.LOGGER.info("{} finished after {} ms", providerId, stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            stopwatch.reset();
+         });
+         DataGenerator.LOGGER.info("All providers took: {} ms", totalTime.elapsed(TimeUnit.MILLISECONDS));
+      }
    }
 
    public class PackGenerator {
@@ -70,25 +99,26 @@ public class DataGenerator {
       private final String providerPrefix;
       private final PackOutput output;
 
-      PackGenerator(final boolean var2, final String var3, final PackOutput var4) {
+      private PackGenerator(final boolean toRun, final String providerPrefix, final PackOutput output) {
+         Objects.requireNonNull(DataGenerator.this);
          super();
-         this.toRun = var2;
-         this.providerPrefix = var3;
-         this.output = var4;
+         this.toRun = toRun;
+         this.providerPrefix = providerPrefix;
+         this.output = output;
       }
 
-      public <T extends DataProvider> T addProvider(DataProvider.Factory<T> var1) {
-         DataProvider var2 = var1.create(this.output);
+      public <T extends DataProvider> T addProvider(final DataProvider.Factory<T> factory) {
+         T provider = factory.create(this.output);
          String var10000 = this.providerPrefix;
-         String var3 = var10000 + "/" + var2.getName();
-         if (!DataGenerator.this.allProviderIds.add(var3)) {
-            throw new IllegalStateException("Duplicate provider: " + var3);
+         String providerId = var10000 + "/" + provider.getName();
+         if (!DataGenerator.this.allProviderIds.add(providerId)) {
+            throw new IllegalStateException("Duplicate provider: " + providerId);
          } else {
             if (this.toRun) {
-               DataGenerator.this.providersToRun.put(var3, var2);
+               DataGenerator.this.providersToRun.put(providerId, provider);
             }
 
-            return (T)var2;
+            return provider;
          }
       }
    }

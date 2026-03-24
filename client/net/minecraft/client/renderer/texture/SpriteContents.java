@@ -3,6 +3,7 @@ package net.minecraft.client.renderer.texture;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.Std140SizeCalculator;
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.platform.Transparency;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -14,12 +15,16 @@ import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
@@ -35,54 +40,57 @@ import net.minecraft.client.resources.metadata.texture.TextureMetadataSection;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.metadata.MetadataSectionType;
 import net.minecraft.util.ARGB;
+import net.minecraft.util.Mth;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-public class SpriteContents implements Stitcher.Entry, AutoCloseable {
+public class SpriteContents implements AutoCloseable, Stitcher.Entry {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final int UBO_SIZE = (new Std140SizeCalculator()).putMat4f().putMat4f().putFloat().putFloat().putInt().get();
-   final Identifier name;
-   final int width;
-   final int height;
+   private final Identifier name;
+   private final int width;
+   private final int height;
    private final NativeImage originalImage;
-   NativeImage[] byMipLevel;
+   private NativeImage[] byMipLevel;
    private final @Nullable AnimatedTexture animatedTexture;
    private final List<MetadataSectionType.WithValue<?>> additionalMetadata;
    private final MipmapStrategy mipmapStrategy;
    private final float alphaCutoffBias;
+   private final Transparency transparency;
 
-   public SpriteContents(Identifier var1, FrameSize var2, NativeImage var3) {
-      this(var1, var2, var3, Optional.empty(), List.of(), Optional.empty());
+   public SpriteContents(final Identifier name, final FrameSize frameSize, final NativeImage image) {
+      this(name, frameSize, image, Optional.empty(), List.of(), Optional.empty());
    }
 
-   public SpriteContents(Identifier var1, FrameSize var2, NativeImage var3, Optional<AnimationMetadataSection> var4, List<MetadataSectionType.WithValue<?>> var5, Optional<TextureMetadataSection> var6) {
+   public SpriteContents(final Identifier name, final FrameSize frameSize, final NativeImage image, final Optional<AnimationMetadataSection> animationInfo, final List<MetadataSectionType.WithValue<?>> additionalMetadata, final Optional<TextureMetadataSection> textureInfo) {
       super();
-      this.name = var1;
-      this.width = var2.width();
-      this.height = var2.height();
-      this.additionalMetadata = var5;
-      this.animatedTexture = (AnimatedTexture)var4.map((var3x) -> this.createAnimatedTexture(var2, var3.getWidth(), var3.getHeight(), var3x)).orElse((Object)null);
-      this.originalImage = var3;
+      this.name = name;
+      this.width = frameSize.width();
+      this.height = frameSize.height();
+      this.additionalMetadata = additionalMetadata;
+      this.animatedTexture = (AnimatedTexture)animationInfo.map((animation) -> this.createAnimatedTexture(frameSize, image.getWidth(), image.getHeight(), animation)).orElse((Object)null);
+      this.originalImage = image;
       this.byMipLevel = new NativeImage[]{this.originalImage};
-      this.mipmapStrategy = (MipmapStrategy)var6.map(TextureMetadataSection::mipmapStrategy).orElse(MipmapStrategy.AUTO);
-      this.alphaCutoffBias = (Float)var6.map(TextureMetadataSection::alphaCutoffBias).orElse(0.0F);
+      this.mipmapStrategy = (MipmapStrategy)textureInfo.map(TextureMetadataSection::mipmapStrategy).orElse(MipmapStrategy.AUTO);
+      this.alphaCutoffBias = (Float)textureInfo.map(TextureMetadataSection::alphaCutoffBias).orElse(0.0F);
+      this.transparency = image.computeTransparency();
    }
 
-   public void increaseMipLevel(int var1) {
+   public void increaseMipLevel(final int mipLevel) {
       try {
-         this.byMipLevel = MipmapGenerator.generateMipLevels(this.name, this.byMipLevel, var1, this.mipmapStrategy, this.alphaCutoffBias);
-      } catch (Throwable var5) {
-         CrashReport var3 = CrashReport.forThrowable(var5, "Generating mipmaps for frame");
-         CrashReportCategory var4 = var3.addCategory("Frame being iterated");
-         var4.setDetail("Sprite name", this.name);
-         var4.setDetail("Sprite size", (CrashReportDetail)(() -> this.width + " x " + this.height));
-         var4.setDetail("Sprite frames", (CrashReportDetail)(() -> this.getFrameCount() + " frames"));
-         var4.setDetail("Mipmap levels", var1);
-         var4.setDetail("Original image size", (CrashReportDetail)(() -> {
+         this.byMipLevel = MipmapGenerator.generateMipLevels(this.name, this.byMipLevel, mipLevel, this.mipmapStrategy, this.alphaCutoffBias, this.transparency);
+      } catch (Throwable t) {
+         CrashReport report = CrashReport.forThrowable(t, "Generating mipmaps for frame");
+         CrashReportCategory frameCategory = report.addCategory("Frame being iterated");
+         frameCategory.setDetail("Sprite name", this.name);
+         frameCategory.setDetail("Sprite size", (CrashReportDetail)(() -> this.width + " x " + this.height));
+         frameCategory.setDetail("Sprite frames", (CrashReportDetail)(() -> this.getFrameCount() + " frames"));
+         frameCategory.setDetail("Mipmap levels", mipLevel);
+         frameCategory.setDetail("Original image size", (CrashReportDetail)(() -> {
             int var10000 = this.originalImage.getWidth();
             return var10000 + "x" + this.originalImage.getHeight();
          }));
-         throw new ReportedException(var3);
+         throw new ReportedException(report);
       }
    }
 
@@ -94,56 +102,60 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
       return this.getFrameCount() > 1;
    }
 
-   private @Nullable AnimatedTexture createAnimatedTexture(FrameSize var1, int var2, int var3, AnimationMetadataSection var4) {
-      int var5 = var2 / var1.width();
-      int var6 = var3 / var1.height();
-      int var7 = var5 * var6;
-      int var8 = var4.defaultFrameTime();
-      ArrayList var9;
-      if (var4.frames().isEmpty()) {
-         var9 = new ArrayList(var7);
+   public Transparency transparency() {
+      return this.transparency;
+   }
 
-         for(int var10 = 0; var10 < var7; ++var10) {
-            var9.add(new FrameInfo(var10, var8));
+   private @Nullable AnimatedTexture createAnimatedTexture(final FrameSize frameSize, final int fullWidth, final int fullHeight, final AnimationMetadataSection metadata) {
+      int frameRowSize = fullWidth / frameSize.width();
+      int frameColumnSize = fullHeight / frameSize.height();
+      int totalFrameCount = frameRowSize * frameColumnSize;
+      int defaultFrameTime = metadata.defaultFrameTime();
+      List<FrameInfo> frames;
+      if (metadata.frames().isEmpty()) {
+         frames = new ArrayList(totalFrameCount);
+
+         for(int i = 0; i < totalFrameCount; ++i) {
+            frames.add(new FrameInfo(i, defaultFrameTime));
          }
       } else {
-         List var16 = (List)var4.frames().get();
-         var9 = new ArrayList(var16.size());
+         List<AnimationFrame> metadataFrames = (List)metadata.frames().get();
+         frames = new ArrayList(metadataFrames.size());
 
-         for(AnimationFrame var12 : var16) {
-            var9.add(new FrameInfo(var12.index(), var12.timeOr(var8)));
+         for(AnimationFrame frame : metadataFrames) {
+            frames.add(new FrameInfo(frame.index(), frame.timeOr(defaultFrameTime)));
          }
 
-         int var17 = 0;
-         IntOpenHashSet var18 = new IntOpenHashSet();
+         int index = 0;
+         IntSet usedFrameIndices = new IntOpenHashSet();
 
-         for(Iterator var13 = var9.iterator(); var13.hasNext(); ++var17) {
-            FrameInfo var14 = (FrameInfo)var13.next();
-            boolean var15 = true;
-            if (var14.time <= 0) {
-               LOGGER.warn("Invalid frame duration on sprite {} frame {}: {}", new Object[]{this.name, var17, var14.time});
-               var15 = false;
+         for(Iterator<FrameInfo> iterator = frames.iterator(); iterator.hasNext(); ++index) {
+            FrameInfo frame = (FrameInfo)iterator.next();
+            boolean isValid = true;
+            if (frame.time <= 0) {
+               LOGGER.warn("Invalid frame duration on sprite {} frame {}: {}", new Object[]{this.name, index, frame.time});
+               isValid = false;
             }
 
-            if (var14.index < 0 || var14.index >= var7) {
-               LOGGER.warn("Invalid frame index on sprite {} frame {}: {}", new Object[]{this.name, var17, var14.index});
-               var15 = false;
+            if (frame.index < 0 || frame.index >= totalFrameCount) {
+               LOGGER.warn("Invalid frame index on sprite {} frame {}: {}", new Object[]{this.name, index, frame.index});
+               isValid = false;
             }
 
-            if (var15) {
-               var18.add(var14.index);
+            if (isValid) {
+               usedFrameIndices.add(frame.index);
             } else {
-               var13.remove();
+               iterator.remove();
             }
          }
 
-         int[] var19 = IntStream.range(0, var7).filter((var1x) -> !var18.contains(var1x)).toArray();
-         if (var19.length > 0) {
-            LOGGER.warn("Unused frames in sprite {}: {}", this.name, Arrays.toString(var19));
+         int[] unusedFrameIndices = IntStream.range(0, totalFrameCount).filter((ix) -> !usedFrameIndices.contains(ix)).toArray();
+         if (unusedFrameIndices.length > 0) {
+            LOGGER.warn("Unused frames in sprite {}: {}", this.name, Arrays.toString(unusedFrameIndices));
          }
       }
 
-      return var9.size() <= 1 ? null : new AnimatedTexture(List.copyOf(var9), var5, var4.interpolatedFrames());
+      return frames.size() <= 1 ? null : new AnimatedTexture(List.copyOf(frames), frameRowSize, metadata.interpolatedFrames());
    }
 
    public int width() {
@@ -158,19 +170,19 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
       return this.name;
    }
 
-   public IntStream getUniqueFrames() {
-      return this.animatedTexture != null ? this.animatedTexture.getUniqueFrames() : IntStream.of(1);
+   public IntList getUniqueFrames() {
+      return this.animatedTexture != null ? this.animatedTexture.getUniqueFrames() : IntList.of(1);
    }
 
-   public @Nullable AnimationState createAnimationState(GpuBufferSlice var1, int var2) {
-      return this.animatedTexture != null ? this.animatedTexture.createAnimationState(var1, var2) : null;
+   public @Nullable AnimationState createAnimationState(final GpuBufferSlice uboSlice, final int spriteUboSize) {
+      return this.animatedTexture != null ? this.animatedTexture.createAnimationState(uboSlice, spriteUboSize) : null;
    }
 
-   public <T> Optional<T> getAdditionalMetadata(MetadataSectionType<T> var1) {
-      for(MetadataSectionType.WithValue var3 : this.additionalMetadata) {
-         Optional var4 = var3.unwrapToType(var1);
-         if (var4.isPresent()) {
-            return var4;
+   public <T> Optional<T> getAdditionalMetadata(final MetadataSectionType<T> type) {
+      for(MetadataSectionType.WithValue<?> metadata : this.additionalMetadata) {
+         Optional<T> result = metadata.<T>unwrapToType(type);
+         if (result.isPresent()) {
+            return result;
          }
       }
 
@@ -178,8 +190,8 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
    }
 
    public void close() {
-      for(NativeImage var4 : this.byMipLevel) {
-         var4.close();
+      for(NativeImage image : this.byMipLevel) {
+         image.close();
       }
 
    }
@@ -189,81 +201,108 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
       return "SpriteContents{name=" + var10000 + ", frameCount=" + this.getFrameCount() + ", height=" + this.height + ", width=" + this.width + "}";
    }
 
-   public boolean isTransparent(int var1, int var2, int var3) {
-      int var4 = var2;
-      int var5 = var3;
+   public boolean isTransparent(final int frame, final int x, final int y) {
+      int actualX = x;
+      int actualY = y;
       if (this.animatedTexture != null) {
-         var4 = var2 + this.animatedTexture.getFrameX(var1) * this.width;
-         var5 = var3 + this.animatedTexture.getFrameY(var1) * this.height;
+         actualX = x + this.animatedTexture.getFrameX(frame) * this.width;
+         actualY = y + this.animatedTexture.getFrameY(frame) * this.height;
       }
 
-      return ARGB.alpha(this.originalImage.getPixel(var4, var5)) == 0;
+      return ARGB.alpha(this.originalImage.getPixel(actualX, actualY)) == 0;
    }
 
-   public void uploadFirstFrame(GpuTexture var1, int var2) {
-      RenderSystem.getDevice().createCommandEncoder().writeToTexture(var1, this.byMipLevel[var2], var2, 0, 0, 0, this.width >> var2, this.height >> var2, 0, 0);
-   }
+   public Transparency computeTransparency(final float u0, final float v0, final float u1, final float v1) {
+      if (this.transparency.isOpaque()) {
+         return this.transparency;
+      } else if (u0 == 0.0F && v0 == 0.0F && u1 == 1.0F && v1 == 1.0F) {
+         return this.transparency;
+      } else {
+         int x0 = Mth.floor(u0 * (float)this.width);
+         int y0 = Mth.floor(v0 * (float)this.height);
+         int x1 = Mth.ceil(u1 * (float)this.width);
+         int y1 = Mth.ceil(v1 * (float)this.height);
+         if (this.animatedTexture == null) {
+            return this.originalImage.computeTransparency(x0, y0, x1, y1);
+         } else {
+            IntList uniqueFrames = this.animatedTexture.uniqueFrames;
+            Transparency transparency = Transparency.NONE;
 
-   static record FrameInfo(int index, int time) {
-      final int index;
-      final int time;
-
-      FrameInfo(int var1, int var2) {
-         super();
-         this.index = var1;
-         this.time = var2;
-      }
-   }
-
-   class AnimatedTexture {
-      final List<FrameInfo> frames;
-      private final int frameRowSize;
-      final boolean interpolateFrames;
-
-      AnimatedTexture(final List<FrameInfo> var2, final int var3, final boolean var4) {
-         super();
-         this.frames = var2;
-         this.frameRowSize = var3;
-         this.interpolateFrames = var4;
-      }
-
-      int getFrameX(int var1) {
-         return var1 % this.frameRowSize;
-      }
-
-      int getFrameY(int var1) {
-         return var1 / this.frameRowSize;
-      }
-
-      public AnimationState createAnimationState(GpuBufferSlice var1, int var2) {
-         GpuDevice var3 = RenderSystem.getDevice();
-         Int2ObjectOpenHashMap var4 = new Int2ObjectOpenHashMap();
-         GpuBufferSlice[] var5 = new GpuBufferSlice[SpriteContents.this.byMipLevel.length];
-
-         for(int var9 : this.getUniqueFrames().toArray()) {
-            GpuTexture var10 = var3.createTexture((Supplier)(() -> {
-               String var10000 = String.valueOf(SpriteContents.this.name);
-               return var10000 + " animation frame " + var9;
-            }), 5, TextureFormat.RGBA8, SpriteContents.this.width, SpriteContents.this.height, 1, SpriteContents.this.byMipLevel.length + 1);
-            int var11 = this.getFrameX(var9) * SpriteContents.this.width;
-            int var12 = this.getFrameY(var9) * SpriteContents.this.height;
-
-            for(int var13 = 0; var13 < SpriteContents.this.byMipLevel.length; ++var13) {
-               RenderSystem.getDevice().createCommandEncoder().writeToTexture(var10, SpriteContents.this.byMipLevel[var13], var13, 0, 0, 0, SpriteContents.this.width >> var13, SpriteContents.this.height >> var13, var11 >> var13, var12 >> var13);
+            for(int i = 0; i < uniqueFrames.size(); ++i) {
+               int frame = uniqueFrames.getInt(i);
+               int frameX = this.animatedTexture.getFrameX(frame) * this.width;
+               int frameY = this.animatedTexture.getFrameY(frame) * this.height;
+               transparency = transparency.or(this.originalImage.computeTransparency(frameX + x0, frameY + y0, frameX + x1, frameY + y1));
             }
 
-            var4.put(var9, RenderSystem.getDevice().createTextureView(var10));
+            return transparency;
          }
+      }
+   }
 
-         for(int var14 = 0; var14 < SpriteContents.this.byMipLevel.length; ++var14) {
-            var5[var14] = var1.slice((long)(var14 * var2), (long)var2);
-         }
+   public void uploadFirstFrame(final GpuTexture destination, final int level) {
+      RenderSystem.getDevice().createCommandEncoder().writeToTexture(destination, this.byMipLevel[level], level, 0, 0, 0, this.width >> level, this.height >> level, 0, 0);
+   }
 
-         return SpriteContents.this.new AnimationState(this, var4, var5);
+   private static record FrameInfo(int index, int time) {
+      private FrameInfo {
+         super();
+      }
+   }
+
+   private class AnimatedTexture {
+      private final List<FrameInfo> frames;
+      private final IntList uniqueFrames;
+      private final int frameRowSize;
+      private final boolean interpolateFrames;
+
+      private AnimatedTexture(final List<FrameInfo> frames, final int frameRowSize, final boolean interpolateFrames) {
+         Objects.requireNonNull(SpriteContents.this);
+         super();
+         this.frames = frames;
+         this.frameRowSize = frameRowSize;
+         this.interpolateFrames = interpolateFrames;
+         this.uniqueFrames = IntArrayList.toList(frames.stream().mapToInt(FrameInfo::index).distinct());
       }
 
-      public IntStream getUniqueFrames() {
-         return this.frames.stream().mapToInt((var0) -> var0.index).distinct();
+      private int getFrameX(final int index) {
+         return index % this.frameRowSize;
+      }
+
+      private int getFrameY(final int index) {
+         return index / this.frameRowSize;
+      }
+
+      public AnimationState createAnimationState(final GpuBufferSlice uboSlice, final int spriteUboSize) {
+         GpuDevice device = RenderSystem.getDevice();
+         Int2ObjectMap<GpuTextureView> frameTexturesByIndex = new Int2ObjectOpenHashMap();
+         GpuBufferSlice[] spriteUbosByMip = new GpuBufferSlice[SpriteContents.this.byMipLevel.length];
+
+         for(int i = 0; i < this.uniqueFrames.size(); ++i) {
+            int frame = this.uniqueFrames.getInt(i);
+            GpuTexture texture = device.createTexture((Supplier)(() -> {
+               String var10000 = String.valueOf(SpriteContents.this.name);
+               return var10000 + " animation frame " + frame;
+            }), 5, TextureFormat.RGBA8, SpriteContents.this.width, SpriteContents.this.height, 1, SpriteContents.this.byMipLevel.length);
+            int offsetX = this.getFrameX(frame) * SpriteContents.this.width;
+            int offsetY = this.getFrameY(frame) * SpriteContents.this.height;
+
+            for(int level = 0; level < SpriteContents.this.byMipLevel.length; ++level) {
+               RenderSystem.getDevice().createCommandEncoder().writeToTexture(texture, SpriteContents.this.byMipLevel[level], level, 0, 0, 0, SpriteContents.this.width >> level, SpriteContents.this.height >> level, offsetX >> level, offsetY >> level);
+            }
+
+            frameTexturesByIndex.put(frame, RenderSystem.getDevice().createTextureView(texture));
+         }
+
+         for(int level = 0; level < SpriteContents.this.byMipLevel.length; ++level) {
+            spriteUbosByMip[level] = uboSlice.slice((long)(level * spriteUboSize), (long)spriteUboSize);
+         }
+
+         return SpriteContents.this.new AnimationState(this, frameTexturesByIndex, spriteUbosByMip);
+      }
+
+      public IntList getUniqueFrames() {
+         return this.uniqueFrames;
       }
    }
 
@@ -273,66 +312,68 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
       private final AnimatedTexture animationInfo;
       private final Int2ObjectMap<GpuTextureView> frameTexturesByIndex;
       private final GpuBufferSlice[] spriteUbosByMip;
-      private boolean isDirty = true;
+      private boolean isDirty;
 
-      AnimationState(final AnimatedTexture var2, final Int2ObjectMap<GpuTextureView> var3, final GpuBufferSlice[] var4) {
+      private AnimationState(final AnimatedTexture animationInfo, final Int2ObjectMap<GpuTextureView> frameTexturesByIndex, final GpuBufferSlice[] spriteUbosByMip) {
+         Objects.requireNonNull(SpriteContents.this);
          super();
-         this.animationInfo = var2;
-         this.frameTexturesByIndex = var3;
-         this.spriteUbosByMip = var4;
+         this.isDirty = true;
+         this.animationInfo = animationInfo;
+         this.frameTexturesByIndex = frameTexturesByIndex;
+         this.spriteUbosByMip = spriteUbosByMip;
       }
 
       public void tick() {
          ++this.subFrame;
          this.isDirty = false;
-         FrameInfo var1 = (FrameInfo)this.animationInfo.frames.get(this.frame);
-         if (this.subFrame >= var1.time) {
-            int var2 = var1.index;
+         FrameInfo currentFrame = (FrameInfo)this.animationInfo.frames.get(this.frame);
+         if (this.subFrame >= currentFrame.time) {
+            int oldFrame = currentFrame.index;
             this.frame = (this.frame + 1) % this.animationInfo.frames.size();
             this.subFrame = 0;
-            int var3 = ((FrameInfo)this.animationInfo.frames.get(this.frame)).index;
-            if (var2 != var3) {
+            int newFrame = ((FrameInfo)this.animationInfo.frames.get(this.frame)).index;
+            if (oldFrame != newFrame) {
                this.isDirty = true;
             }
          }
 
       }
 
-      public GpuBufferSlice getDrawUbo(int var1) {
-         return this.spriteUbosByMip[var1];
+      public GpuBufferSlice getDrawUbo(final int level) {
+         return this.spriteUbosByMip[level];
       }
 
       public boolean needsToDraw() {
          return this.animationInfo.interpolateFrames || this.isDirty;
       }
 
-      public void drawToAtlas(RenderPass var1, GpuBufferSlice var2) {
-         GpuSampler var3 = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST, true);
-         List var4 = this.animationInfo.frames;
-         int var5 = ((FrameInfo)var4.get(this.frame)).index;
-         float var6 = (float)this.subFrame / (float)((FrameInfo)this.animationInfo.frames.get(this.frame)).time;
-         int var7 = (int)(var6 * 1000.0F);
+      public void drawToAtlas(final RenderPass renderPass, final GpuBufferSlice ubo) {
+         GpuSampler sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST, true);
+         List<FrameInfo> frames = this.animationInfo.frames;
+         int oldFrame = ((FrameInfo)frames.get(this.frame)).index;
+         float frameProgress = (float)this.subFrame / (float)((FrameInfo)this.animationInfo.frames.get(this.frame)).time;
+         int frameProgressAsInt = (int)(frameProgress * 1000.0F);
          if (this.animationInfo.interpolateFrames) {
-            int var8 = ((FrameInfo)var4.get((this.frame + 1) % var4.size())).index;
-            var1.setPipeline(RenderPipelines.ANIMATE_SPRITE_INTERPOLATE);
-            var1.bindTexture("CurrentSprite", (GpuTextureView)this.frameTexturesByIndex.get(var5), var3);
-            var1.bindTexture("NextSprite", (GpuTextureView)this.frameTexturesByIndex.get(var8), var3);
+            int newFrame = ((FrameInfo)frames.get((this.frame + 1) % frames.size())).index;
+            renderPass.setPipeline(RenderPipelines.ANIMATE_SPRITE_INTERPOLATE);
+            renderPass.bindTexture("CurrentSprite", (GpuTextureView)this.frameTexturesByIndex.get(oldFrame), sampler);
+            renderPass.bindTexture("NextSprite", (GpuTextureView)this.frameTexturesByIndex.get(newFrame), sampler);
          } else if (this.isDirty) {
-            var1.setPipeline(RenderPipelines.ANIMATE_SPRITE_BLIT);
-            var1.bindTexture("Sprite", (GpuTextureView)this.frameTexturesByIndex.get(var5), var3);
+            renderPass.setPipeline(RenderPipelines.ANIMATE_SPRITE_BLIT);
+            renderPass.bindTexture("Sprite", (GpuTextureView)this.frameTexturesByIndex.get(oldFrame), sampler);
          }
 
-         var1.setUniform("SpriteAnimationInfo", var2);
-         var1.draw(var7 << 3, 6);
+         renderPass.setUniform("SpriteAnimationInfo", ubo);
+         renderPass.draw(frameProgressAsInt << 3, 6);
       }
 
       public void close() {
          ObjectIterator var1 = this.frameTexturesByIndex.values().iterator();
 
          while(var1.hasNext()) {
-            GpuTextureView var2 = (GpuTextureView)var1.next();
-            var2.texture().close();
-            var2.close();
+            GpuTextureView view = (GpuTextureView)var1.next();
+            view.texture().close();
+            view.close();
          }
 
       }

@@ -40,18 +40,18 @@ public class FogRenderer implements AutoCloseable {
 
    public FogRenderer() {
       super();
-      GpuDevice var1 = RenderSystem.getDevice();
+      GpuDevice device = RenderSystem.getDevice();
       this.regularBuffer = new MappableRingBuffer(() -> "Fog UBO", 130, FOG_UBO_SIZE);
-      MemoryStack var2 = MemoryStack.stackPush();
+      MemoryStack stack = MemoryStack.stackPush();
 
       try {
-         ByteBuffer var3 = var2.malloc(FOG_UBO_SIZE);
-         this.updateBuffer(var3, 0, new Vector4f(0.0F), 3.4028235E38F, 3.4028235E38F, 3.4028235E38F, 3.4028235E38F, 3.4028235E38F, 3.4028235E38F);
-         this.emptyBuffer = var1.createBuffer(() -> "Empty fog", 128, var3.flip());
+         ByteBuffer buffer = stack.malloc(FOG_UBO_SIZE);
+         this.updateBuffer(buffer, 0, new Vector4f(0.0F), 3.4028235E38F, 3.4028235E38F, 3.4028235E38F, 3.4028235E38F, 3.4028235E38F, 3.4028235E38F);
+         this.emptyBuffer = device.createBuffer(() -> "Empty fog", 128, buffer.flip());
       } catch (Throwable var6) {
-         if (var2 != null) {
+         if (stack != null) {
             try {
-               var2.close();
+               stack.close();
             } catch (Throwable var5) {
                var6.addSuppressed(var5);
             }
@@ -60,8 +60,8 @@ public class FogRenderer implements AutoCloseable {
          throw var6;
       }
 
-      if (var2 != null) {
-         var2.close();
+      if (stack != null) {
+         stack.close();
       }
 
       RenderSystem.setShaderFog(this.getBuffer(FogRenderer.FogMode.NONE));
@@ -76,12 +76,12 @@ public class FogRenderer implements AutoCloseable {
       this.regularBuffer.rotate();
    }
 
-   public GpuBufferSlice getBuffer(FogMode var1) {
+   public GpuBufferSlice getBuffer(final FogMode mode) {
       if (!fogEnabled) {
          return this.emptyBuffer.slice(0L, (long)FOG_UBO_SIZE);
       } else {
          GpuBufferSlice var10000;
-         switch (var1.ordinal()) {
+         switch (mode.ordinal()) {
             case 0 -> var10000 = this.emptyBuffer.slice(0L, (long)FOG_UBO_SIZE);
             case 1 -> var10000 = this.regularBuffer.currentBuffer().slice(0L, (long)FOG_UBO_SIZE);
             default -> throw new MatchException((String)null, (Throwable)null);
@@ -91,80 +91,80 @@ public class FogRenderer implements AutoCloseable {
       }
    }
 
-   private Vector4f computeFogColor(Camera var1, float var2, ClientLevel var3, int var4, float var5) {
-      FogType var6 = this.getFogType(var1);
-      Entity var7 = var1.entity();
-      FogEnvironment var8 = null;
-      FogEnvironment var9 = null;
+   private void computeFogColor(final Camera camera, final float partialTicks, final ClientLevel level, final int renderDistance, final float darkenWorldAmount, final Vector4f dest) {
+      FogType fogType = this.getFogType(camera);
+      Entity entity = camera.entity();
+      FogEnvironment colorSourceEnvironment = null;
+      FogEnvironment darknessModifyingEnvironment = null;
 
-      for(FogEnvironment var11 : FOG_ENVIRONMENTS) {
-         if (var11.isApplicable(var6, var7)) {
-            if (var8 == null && var11.providesColor()) {
-               var8 = var11;
+      for(FogEnvironment fogEnvironment : FOG_ENVIRONMENTS) {
+         if (fogEnvironment.isApplicable(fogType, entity)) {
+            if (colorSourceEnvironment == null && fogEnvironment.providesColor()) {
+               colorSourceEnvironment = fogEnvironment;
             }
 
-            if (var9 == null && var11.modifiesDarkness()) {
-               var9 = var11;
+            if (darknessModifyingEnvironment == null && fogEnvironment.modifiesDarkness()) {
+               darknessModifyingEnvironment = fogEnvironment;
             }
          }
       }
 
-      if (var8 == null) {
+      if (colorSourceEnvironment == null) {
          throw new IllegalStateException("No color source environment found");
       } else {
-         int var18 = var8.getBaseColor(var3, var1, var4, var2);
-         float var19 = var3.getLevelData().voidDarknessOnsetRange();
-         float var12 = Mth.clamp((var19 + (float)var3.getMinY() - (float)var1.position().y) / var19, 0.0F, 1.0F);
-         if (var9 != null) {
-            LivingEntity var13 = (LivingEntity)var7;
-            var12 = var9.getModifiedDarkness(var13, var12, var2);
+         int color = colorSourceEnvironment.getBaseColor(level, camera, renderDistance, partialTicks);
+         float voidDarknessOnsetRange = level.getLevelData().voidDarknessOnsetRange();
+         float darkness = Mth.clamp((voidDarknessOnsetRange + (float)level.getMinY() - (float)camera.position().y) / voidDarknessOnsetRange, 0.0F, 1.0F);
+         if (darknessModifyingEnvironment != null) {
+            LivingEntity livingEntity = (LivingEntity)entity;
+            darkness = darknessModifyingEnvironment.getModifiedDarkness(livingEntity, darkness, partialTicks);
          }
 
-         float var20 = ARGB.redFloat(var18);
-         float var14 = ARGB.greenFloat(var18);
-         float var15 = ARGB.blueFloat(var18);
-         if (var12 > 0.0F && var6 != FogType.LAVA && var6 != FogType.POWDER_SNOW) {
-            float var16 = Mth.square(1.0F - var12);
-            var20 *= var16;
-            var14 *= var16;
-            var15 *= var16;
+         float fogRed = ARGB.redFloat(color);
+         float fogGreen = ARGB.greenFloat(color);
+         float fogBlue = ARGB.blueFloat(color);
+         if (darkness > 0.0F && fogType != FogType.LAVA && fogType != FogType.POWDER_SNOW) {
+            float brightness = Mth.square(1.0F - darkness);
+            fogRed *= brightness;
+            fogGreen *= brightness;
+            fogBlue *= brightness;
          }
 
-         if (var5 > 0.0F) {
-            var20 = Mth.lerp(var5, var20, var20 * 0.7F);
-            var14 = Mth.lerp(var5, var14, var14 * 0.6F);
-            var15 = Mth.lerp(var5, var15, var15 * 0.6F);
+         if (darkenWorldAmount > 0.0F) {
+            fogRed = Mth.lerp(darkenWorldAmount, fogRed, fogRed * 0.7F);
+            fogGreen = Mth.lerp(darkenWorldAmount, fogGreen, fogGreen * 0.6F);
+            fogBlue = Mth.lerp(darkenWorldAmount, fogBlue, fogBlue * 0.6F);
          }
 
-         float var21;
-         if (var6 == FogType.WATER) {
-            if (var7 instanceof LocalPlayer) {
-               var21 = ((LocalPlayer)var7).getWaterVision();
+         float brightenFactor;
+         if (fogType == FogType.WATER) {
+            if (entity instanceof LocalPlayer) {
+               brightenFactor = ((LocalPlayer)entity).getWaterVision();
             } else {
-               var21 = 1.0F;
+               brightenFactor = 1.0F;
             }
          } else {
             label57: {
-               if (var7 instanceof LivingEntity) {
-                  LivingEntity var17 = (LivingEntity)var7;
-                  if (var17.hasEffect(MobEffects.NIGHT_VISION) && !var17.hasEffect(MobEffects.DARKNESS)) {
-                     var21 = GameRenderer.getNightVisionScale(var17, var2);
+               if (entity instanceof LivingEntity) {
+                  LivingEntity livingEntity = (LivingEntity)entity;
+                  if (livingEntity.hasEffect(MobEffects.NIGHT_VISION) && !livingEntity.hasEffect(MobEffects.DARKNESS)) {
+                     brightenFactor = GameRenderer.getNightVisionScale(livingEntity, partialTicks);
                      break label57;
                   }
                }
 
-               var21 = 0.0F;
+               brightenFactor = 0.0F;
             }
          }
 
-         if (var20 != 0.0F && var14 != 0.0F && var15 != 0.0F) {
-            float var22 = 1.0F / Math.max(var20, Math.max(var14, var15));
-            var20 = Mth.lerp(var21, var20, var20 * var22);
-            var14 = Mth.lerp(var21, var14, var14 * var22);
-            var15 = Mth.lerp(var21, var15, var15 * var22);
+         if (fogRed != 0.0F && fogGreen != 0.0F && fogBlue != 0.0F) {
+            float targetScale = 1.0F / Math.max(fogRed, Math.max(fogGreen, fogBlue));
+            fogRed = Mth.lerp(brightenFactor, fogRed, fogRed * targetScale);
+            fogGreen = Mth.lerp(brightenFactor, fogGreen, fogGreen * targetScale);
+            fogBlue = Mth.lerp(brightenFactor, fogBlue, fogBlue * targetScale);
          }
 
-         return new Vector4f(var20, var14, var15, 1.0F);
+         dest.set(fogRed, fogGreen, fogBlue, 1.0F);
       }
    }
 
@@ -172,40 +172,42 @@ public class FogRenderer implements AutoCloseable {
       return fogEnabled = !fogEnabled;
    }
 
-   public Vector4f setupFog(Camera var1, int var2, DeltaTracker var3, float var4, ClientLevel var5) {
-      float var6 = var3.getGameTimeDeltaPartialTick(false);
-      Vector4f var7 = this.computeFogColor(var1, var6, var5, var2, var4);
-      float var8 = (float)(var2 * 16);
-      FogType var9 = this.getFogType(var1);
-      Entity var10 = var1.entity();
-      FogData var11 = new FogData();
+   public FogData setupFog(final Camera camera, final int renderDistanceInChunks, final DeltaTracker deltaTracker, final float darkenWorldAmount, final ClientLevel level) {
+      float partialTickTime = deltaTracker.getGameTimeDeltaPartialTick(false);
+      float renderDistanceInBlocks = (float)(renderDistanceInChunks * 16);
+      FogType fogType = this.getFogType(camera);
+      Entity entity = camera.entity();
+      FogData fog = new FogData();
+      this.computeFogColor(camera, partialTickTime, level, renderDistanceInChunks, darkenWorldAmount, fog.color);
 
-      for(FogEnvironment var13 : FOG_ENVIRONMENTS) {
-         if (var13.isApplicable(var9, var10)) {
-            var13.setupFog(var11, var1, var5, var8, var3);
+      for(FogEnvironment fogEnvironment : FOG_ENVIRONMENTS) {
+         if (fogEnvironment.isApplicable(fogType, entity)) {
+            fogEnvironment.setupFog(fog, camera, level, renderDistanceInBlocks, deltaTracker);
             break;
          }
       }
 
-      float var18 = Mth.clamp(var8 / 10.0F, 4.0F, 64.0F);
-      var11.renderDistanceStart = var8 - var18;
-      var11.renderDistanceEnd = var8;
+      float renderDistanceFogSpan = Mth.clamp(renderDistanceInBlocks / 10.0F, 4.0F, 64.0F);
+      fog.renderDistanceStart = renderDistanceInBlocks - renderDistanceFogSpan;
+      fog.renderDistanceEnd = renderDistanceInBlocks;
+      return fog;
+   }
 
-      try (GpuBuffer.MappedView var19 = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.regularBuffer.currentBuffer(), false, true)) {
-         this.updateBuffer(var19.data(), 0, var7, var11.environmentalStart, var11.environmentalEnd, var11.renderDistanceStart, var11.renderDistanceEnd, var11.skyEnd, var11.cloudEnd);
+   public void updateBuffer(final FogData fog) {
+      try (GpuBuffer.MappedView view = RenderSystem.getDevice().createCommandEncoder().mapBuffer(this.regularBuffer.currentBuffer(), false, true)) {
+         this.updateBuffer(view.data(), 0, fog.color, fog.environmentalStart, fog.environmentalEnd, fog.renderDistanceStart, fog.renderDistanceEnd, fog.skyEnd, fog.cloudEnd);
       }
 
-      return var7;
    }
 
-   private FogType getFogType(Camera var1) {
-      FogType var2 = var1.getFluidInCamera();
-      return var2 == FogType.NONE ? FogType.ATMOSPHERIC : var2;
+   private FogType getFogType(final Camera camera) {
+      FogType blockFogType = camera.getFluidInCamera();
+      return blockFogType == FogType.NONE ? FogType.ATMOSPHERIC : blockFogType;
    }
 
-   private void updateBuffer(ByteBuffer var1, int var2, Vector4f var3, float var4, float var5, float var6, float var7, float var8, float var9) {
-      var1.position(var2);
-      Std140Builder.intoBuffer(var1).putVec4(var3).putFloat(var4).putFloat(var5).putFloat(var6).putFloat(var7).putFloat(var8).putFloat(var9);
+   private void updateBuffer(final ByteBuffer byteBuffer, final int offset, final Vector4f fogColor, final float environmentalStart, final float environmentalEnd, final float renderDistanceStart, final float renderDistanceEnd, final float skyEnd, final float endClouds) {
+      byteBuffer.position(offset);
+      Std140Builder.intoBuffer(byteBuffer).putVec4(fogColor).putFloat(environmentalStart).putFloat(environmentalEnd).putFloat(renderDistanceStart).putFloat(renderDistanceEnd).putFloat(skyEnd).putFloat(endClouds);
    }
 
    public static enum FogMode {

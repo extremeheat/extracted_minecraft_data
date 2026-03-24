@@ -6,11 +6,10 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.monster.dragon.EnderDragonModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EnderDragonRenderState;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
@@ -18,7 +17,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.boss.enderdragon.phases.DragonPhaseInstance;
@@ -33,169 +31,156 @@ import org.joml.Vector3f;
 public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragonRenderState> {
    public static final Identifier CRYSTAL_BEAM_LOCATION = Identifier.withDefaultNamespace("textures/entity/end_crystal/end_crystal_beam.png");
    private static final Identifier DRAGON_EXPLODING_LOCATION = Identifier.withDefaultNamespace("textures/entity/enderdragon/dragon_exploding.png");
-   private static final Identifier DRAGON_LOCATION = Identifier.withDefaultNamespace("textures/entity/enderdragon/dragon.png");
+   private static final Identifier DRAGON_TEXTURE_LOCATION = Identifier.withDefaultNamespace("textures/entity/enderdragon/dragon.png");
    private static final Identifier DRAGON_EYES_LOCATION = Identifier.withDefaultNamespace("textures/entity/enderdragon/dragon_eyes.png");
-   private static final RenderType RENDER_TYPE;
-   private static final RenderType DECAL;
+   private static final RenderType DYING_RENDER_TYPE;
    private static final RenderType EYES;
    private static final RenderType BEAM;
    private static final float HALF_SQRT_3;
    private final EnderDragonModel model;
 
-   public EnderDragonRenderer(EntityRendererProvider.Context var1) {
-      super(var1);
+   public EnderDragonRenderer(final EntityRendererProvider.Context context) {
+      super(context);
       this.shadowRadius = 0.5F;
-      this.model = new EnderDragonModel(var1.bakeLayer(ModelLayers.ENDER_DRAGON));
+      this.model = new EnderDragonModel(context.bakeLayer(ModelLayers.ENDER_DRAGON));
    }
 
-   public void submit(EnderDragonRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
-      var2.pushPose();
-      float var5 = var1.getHistoricalPos(7).yRot();
-      float var6 = (float)(var1.getHistoricalPos(5).y() - var1.getHistoricalPos(10).y());
-      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-var5));
-      var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(var6 * 10.0F));
-      var2.translate(0.0F, 0.0F, 1.0F);
-      var2.scale(-1.0F, -1.0F, 1.0F);
-      var2.translate(0.0F, -1.501F, 0.0F);
-      int var7 = OverlayTexture.pack(0.0F, var1.hasRedOverlay);
-      if (var1.deathTime > 0.0F) {
-         int var8 = ARGB.white(var1.deathTime / 200.0F);
-         var3.order(0).submitModel(this.model, var1, var2, RenderTypes.dragonExplosionAlpha(DRAGON_EXPLODING_LOCATION), var1.lightCoords, OverlayTexture.NO_OVERLAY, var8, (TextureAtlasSprite)null, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
-         var3.order(1).submitModel(this.model, var1, var2, DECAL, var1.lightCoords, var7, -1, (TextureAtlasSprite)null, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+   public void submit(final EnderDragonRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
+      poseStack.pushPose();
+      float yr = state.getHistoricalPos(7).yRot();
+      float rot2 = (float)(state.getHistoricalPos(5).y() - state.getHistoricalPos(10).y());
+      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-yr));
+      poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(rot2 * 10.0F));
+      poseStack.translate(0.0F, 0.0F, 1.0F);
+      poseStack.scale(-1.0F, -1.0F, 1.0F);
+      poseStack.translate(0.0F, -1.501F, 0.0F);
+      int overlayCoords = OverlayTexture.pack(0.0F, state.hasRedOverlay);
+      if (state.deathTime > 0.0F) {
+         int color = ARGB.white(1.0F - state.deathTime / 200.0F);
+         submitNodeCollector.submitModel(this.model, state, poseStack, DYING_RENDER_TYPE, state.lightCoords, OverlayTexture.NO_OVERLAY, color, (TextureAtlasSprite)null, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       } else {
-         var3.order(0).submitModel(this.model, var1, var2, RENDER_TYPE, var1.lightCoords, var7, -1, (TextureAtlasSprite)null, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+         submitNodeCollector.submitModel(this.model, state, poseStack, DRAGON_TEXTURE_LOCATION, state.lightCoords, overlayCoords, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       }
 
-      var3.submitModel(this.model, var1, var2, EYES, var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
-      if (var1.deathTime > 0.0F) {
-         float var9 = var1.deathTime / 200.0F;
-         var2.pushPose();
-         var2.translate(0.0F, -1.0F, -2.0F);
-         submitRays(var2, var9, var3, RenderTypes.dragonRays());
-         submitRays(var2, var9, var3, RenderTypes.dragonRaysDepth());
-         var2.popPose();
+      submitNodeCollector.submitModel(this.model, state, poseStack, EYES, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+      if (state.deathTime > 0.0F) {
+         float deathTime = state.deathTime / 200.0F;
+         poseStack.pushPose();
+         poseStack.translate(0.0F, -1.0F, -2.0F);
+         submitRays(poseStack, deathTime, submitNodeCollector, RenderTypes.dragonRays());
+         submitRays(poseStack, deathTime, submitNodeCollector, RenderTypes.dragonRaysDepth());
+         poseStack.popPose();
       }
 
-      var2.popPose();
-      if (var1.beamOffset != null) {
-         submitCrystalBeams((float)var1.beamOffset.x, (float)var1.beamOffset.y, (float)var1.beamOffset.z, var1.ageInTicks, var2, var3, var1.lightCoords);
+      poseStack.popPose();
+      if (state.beamOffset != null) {
+         submitCrystalBeams((float)state.beamOffset.x, (float)state.beamOffset.y, (float)state.beamOffset.z, state.ageInTicks, poseStack, submitNodeCollector, state.lightCoords);
       }
 
-      super.submit(var1, var2, var3, var4);
+      super.submit(state, poseStack, submitNodeCollector, camera);
    }
 
-   private static void submitRays(PoseStack var0, float var1, SubmitNodeCollector var2, RenderType var3) {
-      var2.submitCustomGeometry(var0, var3, (var1x, var2x) -> {
-         float var3 = Math.min(var1 > 0.8F ? (var1 - 0.8F) / 0.2F : 0.0F, 1.0F);
-         int var4 = ARGB.colorFromFloat(1.0F - var3, 1.0F, 1.0F, 1.0F);
-         int var5 = 16711935;
-         RandomSource var6 = RandomSource.create(432L);
-         Vector3f var7 = new Vector3f();
-         Vector3f var8 = new Vector3f();
-         Vector3f var9 = new Vector3f();
-         Vector3f var10 = new Vector3f();
-         Quaternionf var11 = new Quaternionf();
-         int var12 = Mth.floor((var1 + var1 * var1) / 2.0F * 60.0F);
+   private static void submitRays(final PoseStack poseStack, final float deathTime, final SubmitNodeCollector submitNodeCollector, final RenderType renderType) {
+      submitNodeCollector.submitCustomGeometry(poseStack, renderType, (pose, buffer) -> {
+         float overDrive = Math.min(deathTime > 0.8F ? (deathTime - 0.8F) / 0.2F : 0.0F, 1.0F);
+         int innerColor = ARGB.colorFromFloat(1.0F - overDrive, 1.0F, 1.0F, 1.0F);
+         int outerColor = 16711935;
+         RandomSource random = RandomSource.createThreadLocalInstance(432L);
+         Vector3f origin = new Vector3f();
+         Vector3f outerLeft = new Vector3f();
+         Vector3f outerRight = new Vector3f();
+         Vector3f outerBottom = new Vector3f();
+         Quaternionf rayRotation = new Quaternionf();
+         int rayCount = Mth.floor((deathTime + deathTime * deathTime) / 2.0F * 60.0F);
 
-         for(int var13 = 0; var13 < var12; ++var13) {
-            var11.rotationXYZ(var6.nextFloat() * 6.2831855F, var6.nextFloat() * 6.2831855F, var6.nextFloat() * 6.2831855F).rotateXYZ(var6.nextFloat() * 6.2831855F, var6.nextFloat() * 6.2831855F, var6.nextFloat() * 6.2831855F + var1 * 1.5707964F);
-            var1x.rotate(var11);
-            float var14 = var6.nextFloat() * 20.0F + 5.0F + var3 * 10.0F;
-            float var15 = var6.nextFloat() * 2.0F + 1.0F + var3 * 2.0F;
-            var8.set(-HALF_SQRT_3 * var15, var14, -0.5F * var15);
-            var9.set(HALF_SQRT_3 * var15, var14, -0.5F * var15);
-            var10.set(0.0F, var14, var15);
-            var2x.addVertex(var1x, var7).setColor(var4);
-            var2x.addVertex(var1x, var8).setColor(16711935);
-            var2x.addVertex(var1x, var9).setColor(16711935);
-            var2x.addVertex(var1x, var7).setColor(var4);
-            var2x.addVertex(var1x, var9).setColor(16711935);
-            var2x.addVertex(var1x, var10).setColor(16711935);
-            var2x.addVertex(var1x, var7).setColor(var4);
-            var2x.addVertex(var1x, var10).setColor(16711935);
-            var2x.addVertex(var1x, var8).setColor(16711935);
+         for(int i = 0; i < rayCount; ++i) {
+            rayRotation.rotationXYZ(random.nextFloat() * 6.2831855F, random.nextFloat() * 6.2831855F, random.nextFloat() * 6.2831855F).rotateXYZ(random.nextFloat() * 6.2831855F, random.nextFloat() * 6.2831855F, random.nextFloat() * 6.2831855F + deathTime * 1.5707964F);
+            pose.rotate(rayRotation);
+            float length = random.nextFloat() * 20.0F + 5.0F + overDrive * 10.0F;
+            float width = random.nextFloat() * 2.0F + 1.0F + overDrive * 2.0F;
+            outerLeft.set(-HALF_SQRT_3 * width, length, -0.5F * width);
+            outerRight.set(HALF_SQRT_3 * width, length, -0.5F * width);
+            outerBottom.set(0.0F, length, width);
+            buffer.addVertex(pose, origin).setColor(innerColor);
+            buffer.addVertex(pose, outerLeft).setColor(16711935);
+            buffer.addVertex(pose, outerRight).setColor(16711935);
+            buffer.addVertex(pose, origin).setColor(innerColor);
+            buffer.addVertex(pose, outerRight).setColor(16711935);
+            buffer.addVertex(pose, outerBottom).setColor(16711935);
+            buffer.addVertex(pose, origin).setColor(innerColor);
+            buffer.addVertex(pose, outerBottom).setColor(16711935);
+            buffer.addVertex(pose, outerLeft).setColor(16711935);
          }
 
       });
    }
 
-   public static void submitCrystalBeams(float var0, float var1, float var2, float var3, PoseStack var4, SubmitNodeCollector var5, int var6) {
-      float var7 = Mth.sqrt(var0 * var0 + var2 * var2);
-      float var8 = Mth.sqrt(var0 * var0 + var1 * var1 + var2 * var2);
-      var4.pushPose();
-      var4.translate(0.0F, 2.0F, 0.0F);
-      var4.mulPose((Quaternionfc)Axis.YP.rotation((float)(-Math.atan2((double)var2, (double)var0)) - 1.5707964F));
-      var4.mulPose((Quaternionfc)Axis.XP.rotation((float)(-Math.atan2((double)var7, (double)var1)) - 1.5707964F));
-      float var9 = 0.0F - var3 * 0.01F;
-      float var10 = var8 / 32.0F - var3 * 0.01F;
-      var5.submitCustomGeometry(var4, BEAM, (var4x, var5x) -> {
-         boolean var6x = true;
-         float var7 = 0.0F;
-         float var8x = 0.75F;
-         float var9x = 0.0F;
+   public static void submitCrystalBeams(final float deltaX, final float deltaY, final float deltaZ, final float timeInTicks, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords) {
+      float horizontalLength = Mth.sqrt(deltaX * deltaX + deltaZ * deltaZ);
+      float length = Mth.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
+      poseStack.pushPose();
+      poseStack.translate(0.0F, 2.0F, 0.0F);
+      poseStack.mulPose((Quaternionfc)Axis.YP.rotation((float)(-Math.atan2((double)deltaZ, (double)deltaX)) - 1.5707964F));
+      poseStack.mulPose((Quaternionfc)Axis.XP.rotation((float)(-Math.atan2((double)horizontalLength, (double)deltaY)) - 1.5707964F));
+      float v0 = 0.0F - timeInTicks * 0.01F;
+      float v1 = length / 32.0F - timeInTicks * 0.01F;
+      submitNodeCollector.submitCustomGeometry(poseStack, BEAM, (pose, buffer) -> {
+         int steps = 8;
+         float lastSin = 0.0F;
+         float lastCos = 0.75F;
+         float lastU = 0.0F;
 
-         for(int var10x = 1; var10x <= 8; ++var10x) {
-            float var11 = Mth.sin((double)((float)var10x * 6.2831855F / 8.0F)) * 0.75F;
-            float var12 = Mth.cos((double)((float)var10x * 6.2831855F / 8.0F)) * 0.75F;
-            float var13 = (float)var10x / 8.0F;
-            var5x.addVertex(var4x, var7 * 0.2F, var8x * 0.2F, 0.0F).setColor(-16777216).setUv(var9x, var9).setOverlay(OverlayTexture.NO_OVERLAY).setLight(var6).setNormal(var4x, 0.0F, -1.0F, 0.0F);
-            var5x.addVertex(var4x, var7, var8x, var8).setColor(-1).setUv(var9x, var10).setOverlay(OverlayTexture.NO_OVERLAY).setLight(var6).setNormal(var4x, 0.0F, -1.0F, 0.0F);
-            var5x.addVertex(var4x, var11, var12, var8).setColor(-1).setUv(var13, var10).setOverlay(OverlayTexture.NO_OVERLAY).setLight(var6).setNormal(var4x, 0.0F, -1.0F, 0.0F);
-            var5x.addVertex(var4x, var11 * 0.2F, var12 * 0.2F, 0.0F).setColor(-16777216).setUv(var13, var9).setOverlay(OverlayTexture.NO_OVERLAY).setLight(var6).setNormal(var4x, 0.0F, -1.0F, 0.0F);
-            var7 = var11;
-            var8x = var12;
-            var9x = var13;
+         for(int i = 1; i <= 8; ++i) {
+            float sin = Mth.sin((double)((float)i * 6.2831855F / 8.0F)) * 0.75F;
+            float cos = Mth.cos((double)((float)i * 6.2831855F / 8.0F)) * 0.75F;
+            float u = (float)i / 8.0F;
+            buffer.addVertex(pose, lastSin * 0.2F, lastCos * 0.2F, 0.0F).setColor(-16777216).setUv(lastU, v0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(lightCoords).setNormal(pose, 0.0F, -1.0F, 0.0F);
+            buffer.addVertex(pose, lastSin, lastCos, length).setColor(-1).setUv(lastU, v1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(lightCoords).setNormal(pose, 0.0F, -1.0F, 0.0F);
+            buffer.addVertex(pose, sin, cos, length).setColor(-1).setUv(u, v1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(lightCoords).setNormal(pose, 0.0F, -1.0F, 0.0F);
+            buffer.addVertex(pose, sin * 0.2F, cos * 0.2F, 0.0F).setColor(-16777216).setUv(u, v0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(lightCoords).setNormal(pose, 0.0F, -1.0F, 0.0F);
+            lastSin = sin;
+            lastCos = cos;
+            lastU = u;
          }
 
       });
-      var4.popPose();
+      poseStack.popPose();
    }
 
    public EnderDragonRenderState createRenderState() {
       return new EnderDragonRenderState();
    }
 
-   public void extractRenderState(EnderDragon var1, EnderDragonRenderState var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      var2.flapTime = Mth.lerp(var3, var1.oFlapTime, var1.flapTime);
-      var2.deathTime = var1.dragonDeathTime > 0 ? (float)var1.dragonDeathTime + var3 : 0.0F;
-      var2.hasRedOverlay = var1.hurtTime > 0;
-      EndCrystal var4 = var1.nearestCrystal;
-      if (var4 != null) {
-         Vec3 var5 = var4.getPosition(var3).add(0.0, (double)EndCrystalRenderer.getY((float)var4.time + var3), 0.0);
-         var2.beamOffset = var5.subtract(var1.getPosition(var3));
+   public void extractRenderState(final EnderDragon entity, final EnderDragonRenderState state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      state.flapTime = Mth.lerp(partialTicks, entity.oFlapTime, entity.flapTime);
+      state.deathTime = entity.dragonDeathTime > 0 ? (float)entity.dragonDeathTime + partialTicks : 0.0F;
+      state.hasRedOverlay = entity.hurtTime > 0;
+      EndCrystal nearestCrystal = entity.nearestCrystal;
+      if (nearestCrystal != null) {
+         Vec3 crystalPosition = nearestCrystal.getPosition(partialTicks).add(0.0, (double)EndCrystalRenderer.getY((float)nearestCrystal.time + partialTicks), 0.0);
+         state.beamOffset = crystalPosition.subtract(entity.getPosition(partialTicks));
       } else {
-         var2.beamOffset = null;
+         state.beamOffset = null;
       }
 
-      DragonPhaseInstance var7 = var1.getPhaseManager().getCurrentPhase();
-      var2.isLandingOrTakingOff = var7 == EnderDragonPhase.LANDING || var7 == EnderDragonPhase.TAKEOFF;
-      var2.isSitting = var7.isSitting();
-      BlockPos var6 = var1.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EndPodiumFeature.getLocation(var1.getFightOrigin()));
-      var2.distanceToEgg = var6.distToCenterSqr(var1.position());
-      var2.partialTicks = var1.isDeadOrDying() ? 0.0F : var3;
-      var2.flightHistory.copyFrom(var1.flightHistory);
+      DragonPhaseInstance phase = entity.getPhaseManager().getCurrentPhase();
+      state.isLandingOrTakingOff = phase == EnderDragonPhase.LANDING || phase == EnderDragonPhase.TAKEOFF;
+      state.isSitting = phase.isSitting();
+      BlockPos egg = entity.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EndPodiumFeature.getLocation(entity.getFightOrigin()));
+      state.distanceToEgg = egg.distToCenterSqr(entity.position());
+      state.partialTicks = entity.isDeadOrDying() ? 0.0F : partialTicks;
+      state.flightHistory.copyFrom(entity.flightHistory);
    }
 
-   protected boolean affectedByCulling(EnderDragon var1) {
+   protected boolean affectedByCulling(final EnderDragon entity) {
       return false;
    }
 
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
-   }
-
-   // $FF: synthetic method
-   protected boolean affectedByCulling(final Entity var1) {
-      return this.affectedByCulling((EnderDragon)var1);
-   }
-
    static {
-      RENDER_TYPE = RenderTypes.entityCutoutNoCull(DRAGON_LOCATION);
-      DECAL = RenderTypes.entityDecal(DRAGON_LOCATION);
+      DYING_RENDER_TYPE = RenderTypes.entityCutoutDissolve(DRAGON_TEXTURE_LOCATION, DRAGON_EXPLODING_LOCATION);
       EYES = RenderTypes.eyes(DRAGON_EYES_LOCATION);
-      BEAM = RenderTypes.entitySmoothCutout(CRYSTAL_BEAM_LOCATION);
+      BEAM = RenderTypes.endCrystalBeam(CRYSTAL_BEAM_LOCATION);
       HALF_SQRT_3 = (float)(Math.sqrt(3.0) / 2.0);
    }
 }

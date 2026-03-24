@@ -47,80 +47,76 @@ public class RecoverWorldDataScreen extends Screen {
    private final MultiLineTextWidget issuesWidget;
    private final LevelStorageSource.LevelStorageAccess storageAccess;
 
-   public RecoverWorldDataScreen(Minecraft var1, BooleanConsumer var2, LevelStorageSource.LevelStorageAccess var3) {
+   public RecoverWorldDataScreen(final Minecraft minecraft, final BooleanConsumer callback, final LevelStorageSource.LevelStorageAccess storageAccess) {
       super(TITLE);
-      this.callback = var2;
-      this.message = Component.translatable("recover_world.message", Component.literal(var3.getLevelId()).withStyle(ChatFormatting.GRAY));
-      this.messageWidget = new MultiLineTextWidget(this.message, var1.font);
-      this.storageAccess = var3;
-      Exception var4 = this.collectIssue(var3, false);
-      Exception var5 = this.collectIssue(var3, true);
-      MutableComponent var6 = Component.empty().append(this.buildInfo(var3, false, var4)).append("\n").append(this.buildInfo(var3, true, var5));
-      this.issuesWidget = new MultiLineTextWidget(var6, var1.font);
-      boolean var7 = var4 != null && var5 == null;
+      this.callback = callback;
+      this.message = Component.translatable("recover_world.message", Component.literal(storageAccess.getLevelId()).withStyle(ChatFormatting.GRAY));
+      this.messageWidget = new MultiLineTextWidget(this.message, minecraft.font);
+      this.storageAccess = storageAccess;
+      Exception levelDatIssues = this.collectIssue(storageAccess, false);
+      Exception levelDatOldIssues = this.collectIssue(storageAccess, true);
+      Component issues = Component.empty().append(this.buildInfo(storageAccess, false, levelDatIssues)).append("\n").append(this.buildInfo(storageAccess, true, levelDatOldIssues));
+      this.issuesWidget = new MultiLineTextWidget(issues, minecraft.font);
+      boolean canRecover = levelDatIssues != null && levelDatOldIssues == null;
       this.layout.defaultCellSetting().alignHorizontallyCenter();
-      this.layout.addChild(new StringWidget(this.title, var1.font));
+      this.layout.addChild(new StringWidget(this.title, minecraft.font));
       this.layout.addChild(this.messageWidget.setCentered(true));
       this.layout.addChild(this.issuesWidget);
-      LinearLayout var8 = LinearLayout.horizontal().spacing(5);
-      var8.addChild(Button.builder(BUGTRACKER_BUTTON, ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.SNAPSHOT_BUGS_FEEDBACK)).size(120, 20).build());
-      ((Button)var8.addChild(Button.builder(RESTORE_BUTTON, (var2x) -> this.attemptRestore(var1)).size(120, 20).tooltip(var7 ? null : Tooltip.create(NO_FALLBACK_TOOLTIP)).build())).active = var7;
-      this.layout.addChild(var8);
-      this.layout.addChild(Button.builder(CommonComponents.GUI_BACK, (var1x) -> this.onClose()).size(120, 20).build());
+      LinearLayout buttonGrid = LinearLayout.horizontal().spacing(5);
+      buttonGrid.addChild(Button.builder(BUGTRACKER_BUTTON, ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.SNAPSHOT_BUGS_FEEDBACK)).size(120, 20).build());
+      ((Button)buttonGrid.addChild(Button.builder(RESTORE_BUTTON, (button) -> this.attemptRestore(minecraft)).size(120, 20).tooltip(canRecover ? null : Tooltip.create(NO_FALLBACK_TOOLTIP)).build())).active = canRecover;
+      this.layout.addChild(buttonGrid);
+      this.layout.addChild(Button.builder(CommonComponents.GUI_BACK, (button) -> this.onClose()).size(120, 20).build());
       this.layout.visitWidgets(this::addRenderableWidget);
    }
 
-   private void attemptRestore(Minecraft var1) {
-      Exception var2 = this.collectIssue(this.storageAccess, false);
-      Exception var3 = this.collectIssue(this.storageAccess, true);
-      if (var2 != null && var3 == null) {
-         var1.setScreenAndShow(new GenericMessageScreen(Component.translatable("recover_world.restoring")));
-         EditWorldScreen.makeBackupAndShowToast(this.storageAccess);
-         if (this.storageAccess.restoreLevelDataFromOld()) {
-            var1.setScreen(new ConfirmScreen(this.callback, DONE_TITLE, DONE_SUCCESS, CommonComponents.GUI_CONTINUE, CommonComponents.GUI_BACK));
-         } else {
-            var1.setScreen(new AlertScreen(() -> this.callback.accept(false), DONE_TITLE, DONE_FAILED));
-         }
+   private void attemptRestore(final Minecraft minecraft) {
+      Exception current = this.collectIssue(this.storageAccess, false);
+      Exception old = this.collectIssue(this.storageAccess, true);
+      if (current != null && old == null) {
+         minecraft.setScreenAndShow(new GenericMessageScreen(Component.translatable("recover_world.restoring")));
+         EditWorldScreen.makeBackupAndShowToast(this.storageAccess).thenAcceptAsync((var2) -> {
+            if (this.storageAccess.restoreLevelDataFromOld()) {
+               minecraft.setScreen(new ConfirmScreen(this.callback, DONE_TITLE, DONE_SUCCESS, CommonComponents.GUI_CONTINUE, CommonComponents.GUI_BACK));
+            } else {
+               minecraft.setScreen(new AlertScreen(() -> this.callback.accept(false), DONE_TITLE, DONE_FAILED));
+            }
 
+         }, minecraft);
       } else {
-         LOGGER.error("Failed to recover world, files not as expected. level.dat: {}, level.dat_old: {}", var2 != null ? var2.getMessage() : "no issues", var3 != null ? var3.getMessage() : "no issues");
-         var1.setScreen(new AlertScreen(() -> this.callback.accept(false), DONE_TITLE, DONE_FAILED));
+         LOGGER.error("Failed to recover world, files not as expected. level.dat: {}, level.dat_old: {}", current != null ? current.getMessage() : "no issues", old != null ? old.getMessage() : "no issues");
+         minecraft.setScreen(new AlertScreen(() -> this.callback.accept(false), DONE_TITLE, DONE_FAILED));
       }
    }
 
-   private Component buildInfo(LevelStorageSource.LevelStorageAccess var1, boolean var2, @Nullable Exception var3) {
-      if (var2 && var3 instanceof FileNotFoundException) {
+   private Component buildInfo(final LevelStorageSource.LevelStorageAccess access, final boolean fallback, final @Nullable Exception exception) {
+      if (fallback && exception instanceof FileNotFoundException) {
          return Component.empty();
       } else {
-         MutableComponent var4 = Component.empty();
-         Instant var5 = var1.getFileModificationTime(var2);
-         MutableComponent var6 = var5 != null ? Component.literal(WorldSelectionList.DATE_FORMAT.format(ZonedDateTime.ofInstant(var5, ZoneId.systemDefault()))) : Component.translatable("recover_world.state_entry.unknown");
-         var4.append((Component)Component.translatable("recover_world.state_entry", var6.withStyle(ChatFormatting.GRAY)));
-         if (var3 == null) {
-            var4.append(NO_ISSUES);
-         } else if (var3 instanceof FileNotFoundException) {
-            var4.append(MISSING_FILE);
-         } else if (var3 instanceof ReportedNbtException) {
-            var4.append((Component)Component.literal(var3.getCause().toString()).withStyle(ChatFormatting.RED));
+         MutableComponent component = Component.empty();
+         Instant timeStamp = access.getFileModificationTime(fallback);
+         MutableComponent time = timeStamp != null ? Component.literal(WorldSelectionList.DATE_FORMAT.format(ZonedDateTime.ofInstant(timeStamp, ZoneId.systemDefault()))) : Component.translatable("recover_world.state_entry.unknown");
+         component.append((Component)Component.translatable("recover_world.state_entry", time.withStyle(ChatFormatting.GRAY)));
+         if (exception == null) {
+            component.append(NO_ISSUES);
+         } else if (exception instanceof FileNotFoundException) {
+            component.append(MISSING_FILE);
+         } else if (exception instanceof ReportedNbtException) {
+            component.append((Component)Component.literal(exception.getCause().toString()).withStyle(ChatFormatting.RED));
          } else {
-            var4.append((Component)Component.literal(var3.toString()).withStyle(ChatFormatting.RED));
+            component.append((Component)Component.literal(exception.toString()).withStyle(ChatFormatting.RED));
          }
 
-         return var4;
+         return component;
       }
    }
 
-   private @Nullable Exception collectIssue(LevelStorageSource.LevelStorageAccess var1, boolean var2) {
+   private @Nullable Exception collectIssue(final LevelStorageSource.LevelStorageAccess access, final boolean useFallback) {
       try {
-         if (!var2) {
-            var1.getSummary(var1.getDataTag());
-         } else {
-            var1.getSummary(var1.getDataTagFallback());
-         }
-
+         access.collectIssues(useFallback);
          return null;
-      } catch (NbtException | ReportedNbtException | IOException var4) {
-         return var4;
+      } catch (NbtException | ReportedNbtException | IOException e) {
+         return e;
       }
    }
 

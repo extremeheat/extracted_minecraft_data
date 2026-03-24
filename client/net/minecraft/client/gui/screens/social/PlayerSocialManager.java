@@ -22,26 +22,26 @@ public class PlayerSocialManager {
    private boolean onlineMode;
    private CompletableFuture<?> pendingBlockListRefresh = CompletableFuture.completedFuture((Object)null);
 
-   public PlayerSocialManager(Minecraft var1, UserApiService var2) {
+   public PlayerSocialManager(final Minecraft minecraft, final UserApiService service) {
       super();
-      this.minecraft = var1;
-      this.service = var2;
+      this.minecraft = minecraft;
+      this.service = service;
    }
 
-   public void hidePlayer(UUID var1) {
-      this.hiddenPlayers.add(var1);
+   public void hidePlayer(final UUID id) {
+      this.hiddenPlayers.add(id);
    }
 
-   public void showPlayer(UUID var1) {
-      this.hiddenPlayers.remove(var1);
+   public void showPlayer(final UUID id) {
+      this.hiddenPlayers.remove(id);
    }
 
-   public boolean shouldHideMessageFrom(UUID var1) {
-      return this.isHidden(var1) || this.isBlocked(var1);
+   public boolean shouldHideMessageFrom(final UUID id) {
+      return this.isHidden(id) || this.isBlocked(id);
    }
 
-   public boolean isHidden(UUID var1) {
-      return this.hiddenPlayers.contains(var1);
+   public boolean isHidden(final UUID id) {
+      return this.hiddenPlayers.contains(id);
    }
 
    public void startOnlineMode() {
@@ -56,12 +56,12 @@ public class PlayerSocialManager {
       this.onlineMode = false;
    }
 
-   public boolean isBlocked(UUID var1) {
+   public boolean isBlocked(final UUID id) {
       if (!this.onlineMode) {
          return false;
       } else {
          this.pendingBlockListRefresh.join();
-         return this.service.isBlockedPlayer(var1);
+         return this.service.isBlockedPlayer(id);
       }
    }
 
@@ -69,24 +69,24 @@ public class PlayerSocialManager {
       return this.hiddenPlayers;
    }
 
-   public UUID getDiscoveredUUID(String var1) {
-      return (UUID)this.discoveredNamesToUUID.getOrDefault(var1, Util.NIL_UUID);
+   public UUID getDiscoveredUUID(final String name) {
+      return (UUID)this.discoveredNamesToUUID.getOrDefault(name, Util.NIL_UUID);
    }
 
-   public void addPlayer(PlayerInfo var1) {
-      GameProfile var2 = var1.getProfile();
-      this.discoveredNamesToUUID.put(var2.name(), var2.id());
+   public void addPlayer(final PlayerInfo info) {
+      GameProfile gameProfile = info.getProfile();
+      this.discoveredNamesToUUID.put(gameProfile.name(), gameProfile.id());
       Screen var4 = this.minecraft.screen;
-      if (var4 instanceof SocialInteractionsScreen var3) {
-         var3.onAddPlayer(var1);
+      if (var4 instanceof SocialInteractionsScreen screen) {
+         screen.onAddPlayer(info);
       }
 
    }
 
-   public void removePlayer(UUID var1) {
+   public void removePlayer(final UUID id) {
       Screen var3 = this.minecraft.screen;
-      if (var3 instanceof SocialInteractionsScreen var2) {
-         var2.onRemovePlayer(var1);
+      if (var3 instanceof SocialInteractionsScreen screen) {
+         screen.onRemovePlayer(id);
       }
 
    }

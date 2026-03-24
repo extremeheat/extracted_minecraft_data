@@ -21,18 +21,18 @@ public class DragonHoldingPatternPhase extends AbstractDragonPhaseInstance {
    private @Nullable Vec3 targetLocation;
    private boolean clockwise;
 
-   public DragonHoldingPatternPhase(EnderDragon var1) {
-      super(var1);
+   public DragonHoldingPatternPhase(final EnderDragon dragon) {
+      super(dragon);
    }
 
    public EnderDragonPhase<DragonHoldingPatternPhase> getPhase() {
       return EnderDragonPhase.HOLDING_PATTERN;
    }
 
-   public void doServerTick(ServerLevel var1) {
-      double var2 = this.targetLocation == null ? 0.0 : this.targetLocation.distanceToSqr(this.dragon.getX(), this.dragon.getY(), this.dragon.getZ());
-      if (var2 < 100.0 || var2 > 22500.0 || this.dragon.horizontalCollision || this.dragon.verticalCollision) {
-         this.findNewTarget(var1);
+   public void doServerTick(final ServerLevel level) {
+      double distToTarget = this.targetLocation == null ? 0.0 : this.targetLocation.distanceToSqr(this.dragon.getX(), this.dragon.getY(), this.dragon.getZ());
+      if (distToTarget < 100.0 || distToTarget > 22500.0 || this.dragon.horizontalCollision || this.dragon.verticalCollision) {
+         this.findNewTarget(level);
       }
 
    }
@@ -46,55 +46,55 @@ public class DragonHoldingPatternPhase extends AbstractDragonPhaseInstance {
       return this.targetLocation;
    }
 
-   private void findNewTarget(ServerLevel var1) {
+   private void findNewTarget(final ServerLevel level) {
       if (this.currentPath != null && this.currentPath.isDone()) {
-         BlockPos var2 = var1.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EndPodiumFeature.getLocation(this.dragon.getFightOrigin()));
-         int var3 = this.dragon.getDragonFight() == null ? 0 : this.dragon.getDragonFight().getCrystalsAlive();
-         if (this.dragon.getRandom().nextInt(var3 + 3) == 0) {
+         BlockPos egg = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EndPodiumFeature.getLocation(this.dragon.getFightOrigin()));
+         int crystals = this.dragon.getDragonFight() == null ? 0 : this.dragon.getDragonFight().aliveCrystals();
+         if (this.dragon.getRandom().nextInt(crystals + 3) == 0) {
             this.dragon.getPhaseManager().setPhase(EnderDragonPhase.LANDING_APPROACH);
             return;
          }
 
-         Player var6 = var1.getNearestPlayer(NEW_TARGET_TARGETING, this.dragon, (double)var2.getX(), (double)var2.getY(), (double)var2.getZ());
-         double var4;
-         if (var6 != null) {
-            var4 = var2.distToCenterSqr(var6.position()) / 512.0;
+         Player playerNearestToEgg = level.getNearestPlayer(NEW_TARGET_TARGETING, this.dragon, (double)egg.getX(), (double)egg.getY(), (double)egg.getZ());
+         double distSqr;
+         if (playerNearestToEgg != null) {
+            distSqr = egg.distToCenterSqr(playerNearestToEgg.position()) / 512.0;
          } else {
-            var4 = 64.0;
+            distSqr = 64.0;
          }
 
-         if (var6 != null && (this.dragon.getRandom().nextInt((int)(var4 + 2.0)) == 0 || this.dragon.getRandom().nextInt(var3 + 2) == 0)) {
-            this.strafePlayer(var6);
+         if (playerNearestToEgg != null && (this.dragon.getRandom().nextInt((int)(distSqr + 2.0)) == 0 || this.dragon.getRandom().nextInt(crystals + 2) == 0)) {
+            this.strafePlayer(playerNearestToEgg);
             return;
          }
       }
 
       if (this.currentPath == null || this.currentPath.isDone()) {
-         int var7 = this.dragon.findClosestNode();
-         int var8 = var7;
+         int currentNodeIndex = this.dragon.findClosestNode();
+         int targetNodeIndex = currentNodeIndex;
          if (this.dragon.getRandom().nextInt(8) == 0) {
             this.clockwise = !this.clockwise;
-            var8 = var7 + 6;
+            targetNodeIndex = currentNodeIndex + 6;
          }
 
          if (this.clockwise) {
-            ++var8;
+            ++targetNodeIndex;
          } else {
-            --var8;
+            --targetNodeIndex;
          }
 
-         if (this.dragon.getDragonFight() != null && this.dragon.getDragonFight().getCrystalsAlive() >= 0) {
-            var8 %= 12;
-            if (var8 < 0) {
-               var8 += 12;
+         if (this.dragon.getDragonFight() != null && this.dragon.getDragonFight().aliveCrystals() >= 0) {
+            targetNodeIndex %= 12;
+            if (targetNodeIndex < 0) {
+               targetNodeIndex += 12;
             }
          } else {
-            var8 -= 12;
-            var8 &= 7;
-            var8 += 12;
+            targetNodeIndex -= 12;
+            targetNodeIndex &= 7;
+            targetNodeIndex += 12;
          }
 
-         this.currentPath = this.dragon.findPath(var7, var8, (Node)null);
+         this.currentPath = this.dragon.findPath(currentNodeIndex, targetNodeIndex, (Node)null);
          if (this.currentPath != null) {
             this.currentPath.advance();
          }
@@ -103,31 +103,31 @@ public class DragonHoldingPatternPhase extends AbstractDragonPhaseInstance {
       this.navigateToNextPathNode();
    }
 
-   private void strafePlayer(Player var1) {
+   private void strafePlayer(final Player playerNearestToEgg) {
       this.dragon.getPhaseManager().setPhase(EnderDragonPhase.STRAFE_PLAYER);
-      ((DragonStrafePlayerPhase)this.dragon.getPhaseManager().getPhase(EnderDragonPhase.STRAFE_PLAYER)).setTarget(var1);
+      ((DragonStrafePlayerPhase)this.dragon.getPhaseManager().getPhase(EnderDragonPhase.STRAFE_PLAYER)).setTarget(playerNearestToEgg);
    }
 
    private void navigateToNextPathNode() {
       if (this.currentPath != null && !this.currentPath.isDone()) {
-         BlockPos var1 = this.currentPath.getNextNodePos();
+         Vec3i current = this.currentPath.getNextNodePos();
          this.currentPath.advance();
-         double var2 = (double)((Vec3i)var1).getX();
-         double var4 = (double)((Vec3i)var1).getZ();
+         double xTarget = (double)current.getX();
+         double zTarget = (double)current.getZ();
 
-         double var6;
+         double yTarget;
          do {
-            var6 = (double)((float)((Vec3i)var1).getY() + this.dragon.getRandom().nextFloat() * 20.0F);
-         } while(var6 < (double)((Vec3i)var1).getY());
+            yTarget = (double)((float)current.getY() + this.dragon.getRandom().nextFloat() * 20.0F);
+         } while(yTarget < (double)current.getY());
 
-         this.targetLocation = new Vec3(var2, var6, var4);
+         this.targetLocation = new Vec3(xTarget, yTarget, zTarget);
       }
 
    }
 
-   public void onCrystalDestroyed(EndCrystal var1, BlockPos var2, DamageSource var3, @Nullable Player var4) {
-      if (var4 != null && this.dragon.canAttack(var4)) {
-         this.strafePlayer(var4);
+   public void onCrystalDestroyed(final EndCrystal crystal, final BlockPos pos, final DamageSource source, final @Nullable Player player) {
+      if (player != null && this.dragon.canAttack(player)) {
+         this.strafePlayer(player);
       }
 
    }

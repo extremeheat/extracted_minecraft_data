@@ -3,6 +3,7 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -17,16 +18,16 @@ public class CactusFlowerBlock extends VegetationBlock {
       return CODEC;
    }
 
-   public CactusFlowerBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public CactusFlowerBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return SHAPE;
    }
 
-   protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
-      BlockState var4 = var2.getBlockState(var3);
-      return var4.is(Blocks.CACTUS) || var4.is(Blocks.FARMLAND) || var4.isFaceSturdy(var2, var3, Direction.UP, SupportType.CENTER);
+   protected boolean mayPlaceOn(final BlockState state, final BlockGetter level, final BlockPos pos) {
+      BlockState blockBelow = level.getBlockState(pos);
+      return blockBelow.is(BlockTags.SUPPORT_OVERRIDE_CACTUS_FLOWER) || blockBelow.isFaceSturdy(level, pos, Direction.UP, SupportType.CENTER);
    }
 }

@@ -9,6 +9,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.util.valueproviders.ConstantInt;
+import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.WeightedListInt;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -41,37 +42,37 @@ public class PlacementUtils {
       super();
    }
 
-   public static void bootstrap(BootstrapContext<PlacedFeature> var0) {
-      AquaticPlacements.bootstrap(var0);
-      CavePlacements.bootstrap(var0);
-      EndPlacements.bootstrap(var0);
-      MiscOverworldPlacements.bootstrap(var0);
-      NetherPlacements.bootstrap(var0);
-      OrePlacements.bootstrap(var0);
-      TreePlacements.bootstrap(var0);
-      VegetationPlacements.bootstrap(var0);
-      VillagePlacements.bootstrap(var0);
+   public static void bootstrap(final BootstrapContext<PlacedFeature> context) {
+      AquaticPlacements.bootstrap(context);
+      CavePlacements.bootstrap(context);
+      EndPlacements.bootstrap(context);
+      MiscOverworldPlacements.bootstrap(context);
+      NetherPlacements.bootstrap(context);
+      OrePlacements.bootstrap(context);
+      TreePlacements.bootstrap(context);
+      VegetationPlacements.bootstrap(context);
+      VillagePlacements.bootstrap(context);
    }
 
-   public static ResourceKey<PlacedFeature> createKey(String var0) {
-      return ResourceKey.create(Registries.PLACED_FEATURE, Identifier.withDefaultNamespace(var0));
+   public static ResourceKey<PlacedFeature> createKey(final String name) {
+      return ResourceKey.create(Registries.PLACED_FEATURE, Identifier.withDefaultNamespace(name));
    }
 
-   public static void register(BootstrapContext<PlacedFeature> var0, ResourceKey<PlacedFeature> var1, Holder<ConfiguredFeature<?, ?>> var2, List<PlacementModifier> var3) {
-      var0.register(var1, new PlacedFeature(var2, List.copyOf(var3)));
+   public static void register(final BootstrapContext<PlacedFeature> context, final ResourceKey<PlacedFeature> id, final Holder<ConfiguredFeature<?, ?>> feature, final List<PlacementModifier> placementModifiers) {
+      context.register(id, new PlacedFeature(feature, List.copyOf(placementModifiers)));
    }
 
-   public static void register(BootstrapContext<PlacedFeature> var0, ResourceKey<PlacedFeature> var1, Holder<ConfiguredFeature<?, ?>> var2, PlacementModifier... var3) {
-      register(var0, var1, var2, List.of(var3));
+   public static void register(final BootstrapContext<PlacedFeature> context, final ResourceKey<PlacedFeature> id, final Holder<ConfiguredFeature<?, ?>> feature, final PlacementModifier... placementModifiers) {
+      register(context, id, feature, List.of(placementModifiers));
    }
 
-   public static PlacementModifier countExtra(int var0, float var1, int var2) {
-      float var3 = 1.0F / var1;
-      if (Math.abs(var3 - (float)((int)var3)) > 1.0E-5F) {
+   public static PlacementModifier countExtra(final int count, final float chance, final int extra) {
+      float weight = 1.0F / chance;
+      if (Math.abs(weight - (float)((int)weight)) > 1.0E-5F) {
          throw new IllegalStateException("Chance data cannot be represented as list weight");
       } else {
-         WeightedList var4 = WeightedList.builder().add(ConstantInt.of(var0), (int)var3 - 1).add(ConstantInt.of(var0 + var2), 1).build();
-         return CountPlacement.of(new WeightedListInt(var4));
+         WeightedList<IntProvider> distribution = WeightedList.<IntProvider>builder().add(ConstantInt.of(count), (int)weight - 1).add(ConstantInt.of(count + extra), 1).build();
+         return CountPlacement.of(new WeightedListInt(distribution));
       }
    }
 
@@ -79,24 +80,24 @@ public class PlacementUtils {
       return BlockPredicateFilter.forPredicate(BlockPredicate.ONLY_IN_AIR_PREDICATE);
    }
 
-   public static BlockPredicateFilter filteredByBlockSurvival(Block var0) {
-      return BlockPredicateFilter.forPredicate(BlockPredicate.wouldSurvive(var0.defaultBlockState(), BlockPos.ZERO));
+   public static BlockPredicateFilter filteredByBlockSurvival(final Block block) {
+      return BlockPredicateFilter.forPredicate(BlockPredicate.wouldSurvive(block.defaultBlockState(), BlockPos.ZERO));
    }
 
-   public static Holder<PlacedFeature> inlinePlaced(Holder<ConfiguredFeature<?, ?>> var0, PlacementModifier... var1) {
-      return Holder.<PlacedFeature>direct(new PlacedFeature(var0, List.of(var1)));
+   public static Holder<PlacedFeature> inlinePlaced(final Holder<ConfiguredFeature<?, ?>> configuredFeature, final PlacementModifier... placedFeatures) {
+      return Holder.<PlacedFeature>direct(new PlacedFeature(configuredFeature, List.of(placedFeatures)));
    }
 
-   public static <FC extends FeatureConfiguration, F extends Feature<FC>> Holder<PlacedFeature> inlinePlaced(F var0, FC var1, PlacementModifier... var2) {
-      return inlinePlaced(Holder.direct(new ConfiguredFeature(var0, var1)), var2);
+   public static <FC extends FeatureConfiguration, F extends Feature<FC>> Holder<PlacedFeature> inlinePlaced(final F feature, final FC config, final PlacementModifier... placedFeatures) {
+      return inlinePlaced(Holder.direct(new ConfiguredFeature(feature, config)), placedFeatures);
    }
 
-   public static <FC extends FeatureConfiguration, F extends Feature<FC>> Holder<PlacedFeature> onlyWhenEmpty(F var0, FC var1) {
-      return filtered(var0, var1, BlockPredicate.ONLY_IN_AIR_PREDICATE);
+   public static <FC extends FeatureConfiguration, F extends Feature<FC>> Holder<PlacedFeature> onlyWhenEmpty(final F feature, final FC config) {
+      return filtered(feature, config, BlockPredicate.ONLY_IN_AIR_PREDICATE);
    }
 
-   public static <FC extends FeatureConfiguration, F extends Feature<FC>> Holder<PlacedFeature> filtered(F var0, FC var1, BlockPredicate var2) {
-      return inlinePlaced(var0, var1, BlockPredicateFilter.forPredicate(var2));
+   public static <FC extends FeatureConfiguration, F extends Feature<FC>> Holder<PlacedFeature> filtered(final F feature, final FC config, final BlockPredicate predicate) {
+      return inlinePlaced(feature, config, BlockPredicateFilter.forPredicate(predicate));
    }
 
    static {

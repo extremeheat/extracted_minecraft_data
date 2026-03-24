@@ -29,12 +29,12 @@ public class WitherSkull extends AbstractHurtingProjectile {
    private static final EntityDataAccessor<Boolean> DATA_DANGEROUS;
    private static final boolean DEFAULT_DANGEROUS = false;
 
-   public WitherSkull(EntityType<? extends WitherSkull> var1, Level var2) {
-      super(var1, var2);
+   public WitherSkull(final EntityType<? extends WitherSkull> type, final Level level) {
+      super(type, level);
    }
 
-   public WitherSkull(Level var1, LivingEntity var2, Vec3 var3) {
-      super(EntityType.WITHER_SKULL, var2, var3, var1);
+   public WitherSkull(final Level level, final LivingEntity mob, final Vec3 direction) {
+      super(EntityType.WITHER_SKULL, mob, direction, level);
    }
 
    protected float getInertia() {
@@ -45,49 +45,49 @@ public class WitherSkull extends AbstractHurtingProjectile {
       return false;
    }
 
-   public float getBlockExplosionResistance(Explosion var1, BlockGetter var2, BlockPos var3, BlockState var4, FluidState var5, float var6) {
-      return this.isDangerous() && WitherBoss.canDestroy(var4) ? Math.min(0.8F, var6) : var6;
+   public float getBlockExplosionResistance(final Explosion explosion, final BlockGetter level, final BlockPos pos, final BlockState block, final FluidState fluid, final float resistance) {
+      return this.isDangerous() && WitherBoss.canDestroy(block) ? Math.min(0.8F, resistance) : resistance;
    }
 
-   protected void onHitEntity(EntityHitResult var1) {
-      super.onHitEntity(var1);
+   protected void onHitEntity(final EntityHitResult hitResult) {
+      super.onHitEntity(hitResult);
       Level var3 = this.level();
-      if (var3 instanceof ServerLevel var2) {
-         Entity var8 = var1.getEntity();
-         Entity var4 = this.getOwner();
-         boolean var5;
-         if (var4 instanceof LivingEntity var6) {
-            DamageSource var7 = this.damageSources().witherSkull(this, var6);
-            var5 = var8.hurtServer(var2, var7, 8.0F);
-            if (var5) {
+      if (var3 instanceof ServerLevel serverLevel) {
+         Entity var8 = hitResult.getEntity();
+         Entity owner = this.getOwner();
+         boolean wasHurt;
+         if (owner instanceof LivingEntity livingOwner) {
+            DamageSource damageSource = this.damageSources().witherSkull(this, livingOwner);
+            wasHurt = var8.hurtServer(serverLevel, damageSource, 8.0F);
+            if (wasHurt) {
                if (var8.isAlive()) {
-                  EnchantmentHelper.doPostAttackEffects(var2, var8, var7);
+                  EnchantmentHelper.doPostAttackEffects(serverLevel, var8, damageSource);
                } else {
-                  var6.heal(5.0F);
+                  livingOwner.heal(5.0F);
                }
             }
          } else {
-            var5 = var8.hurtServer(var2, this.damageSources().magic(), 5.0F);
+            wasHurt = var8.hurtServer(serverLevel, this.damageSources().magic(), 5.0F);
          }
 
-         if (var5 && var8 instanceof LivingEntity var9) {
-            byte var10 = 0;
+         if (wasHurt && var8 instanceof LivingEntity livingEntity) {
+            int witherSeconds = 0;
             if (this.level().getDifficulty() == Difficulty.NORMAL) {
-               var10 = 10;
+               witherSeconds = 10;
             } else if (this.level().getDifficulty() == Difficulty.HARD) {
-               var10 = 40;
+               witherSeconds = 40;
             }
 
-            if (var10 > 0) {
-               var9.addEffect(new MobEffectInstance(MobEffects.WITHER, 20 * var10, 1), this.getEffectSource());
+            if (witherSeconds > 0) {
+               livingEntity.addEffect(new MobEffectInstance(MobEffects.WITHER, 20 * witherSeconds, 1), this.getEffectSource());
             }
          }
 
       }
    }
 
-   protected void onHit(HitResult var1) {
-      super.onHit(var1);
+   protected void onHit(final HitResult hitResult) {
+      super.onHit(hitResult);
       if (!this.level().isClientSide()) {
          this.level().explode(this, this.getX(), this.getY(), this.getZ(), 1.0F, false, Level.ExplosionInteraction.MOB);
          this.discard();
@@ -95,30 +95,30 @@ public class WitherSkull extends AbstractHurtingProjectile {
 
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      var1.define(DATA_DANGEROUS, false);
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      entityData.define(DATA_DANGEROUS, false);
    }
 
    public boolean isDangerous() {
       return (Boolean)this.entityData.get(DATA_DANGEROUS);
    }
 
-   public void setDangerous(boolean var1) {
-      this.entityData.set(DATA_DANGEROUS, var1);
+   public void setDangerous(final boolean value) {
+      this.entityData.set(DATA_DANGEROUS, value);
    }
 
    protected boolean shouldBurn() {
       return false;
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.putBoolean("dangerous", this.isDangerous());
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.putBoolean("dangerous", this.isDangerous());
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.setDangerous(var1.getBooleanOr("dangerous", false));
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.setDangerous(input.getBooleanOr("dangerous", false));
    }
 
    static {

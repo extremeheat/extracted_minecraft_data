@@ -11,40 +11,35 @@ import net.minecraft.resources.Identifier;
 
 public class NamespacedSchema extends Schema {
    public static final PrimitiveCodec<String> NAMESPACED_STRING_CODEC = new PrimitiveCodec<String>() {
-      public <T> DataResult<String> read(DynamicOps<T> var1, T var2) {
-         return var1.getStringValue(var2).map(NamespacedSchema::ensureNamespaced);
+      public <T> DataResult<String> read(final DynamicOps<T> ops, final T input) {
+         return ops.getStringValue(input).map(NamespacedSchema::ensureNamespaced);
       }
 
-      public <T> T write(DynamicOps<T> var1, String var2) {
-         return (T)var1.createString(var2);
+      public <T> T write(final DynamicOps<T> ops, final String value) {
+         return (T)ops.createString(value);
       }
 
       public String toString() {
          return "NamespacedString";
       }
-
-      // $FF: synthetic method
-      public Object write(final DynamicOps var1, final Object var2) {
-         return this.write(var1, (String)var2);
-      }
    };
    private static final Type<String> NAMESPACED_STRING;
 
-   public NamespacedSchema(int var1, Schema var2) {
-      super(var1, var2);
+   public NamespacedSchema(final int versionKey, final Schema parent) {
+      super(versionKey, parent);
    }
 
-   public static String ensureNamespaced(String var0) {
-      Identifier var1 = Identifier.tryParse(var0);
-      return var1 != null ? var1.toString() : var0;
+   public static String ensureNamespaced(final String input) {
+      Identifier identifier = Identifier.tryParse(input);
+      return identifier != null ? identifier.toString() : input;
    }
 
    public static Type<String> namespacedString() {
       return NAMESPACED_STRING;
    }
 
-   public Type<?> getChoiceType(DSL.TypeReference var1, String var2) {
-      return super.getChoiceType(var1, ensureNamespaced(var2));
+   public Type<?> getChoiceType(final DSL.TypeReference type, final String choiceName) {
+      return super.getChoiceType(type, ensureNamespaced(choiceName));
    }
 
    static {

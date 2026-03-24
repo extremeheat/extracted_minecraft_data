@@ -21,51 +21,51 @@ public class ExperimentalRedstoneWireEvaluator extends RedstoneWireEvaluator {
    private final Deque<BlockPos> wiresToTurnOn = new ArrayDeque();
    private final Object2IntMap<BlockPos> updatedWires = new Object2IntLinkedOpenHashMap();
 
-   public ExperimentalRedstoneWireEvaluator(RedStoneWireBlock var1) {
-      super(var1);
+   public ExperimentalRedstoneWireEvaluator(final RedStoneWireBlock wireBlock) {
+      super(wireBlock);
    }
 
-   public void updatePowerStrength(Level var1, BlockPos var2, BlockState var3, @Nullable Orientation var4, boolean var5) {
-      Orientation var6 = getInitialOrientation(var1, var4);
-      this.calculateCurrentChanges(var1, var2, var6);
-      ObjectIterator var7 = this.updatedWires.object2IntEntrySet().iterator();
+   public void updatePowerStrength(final Level level, final BlockPos initialPos, final BlockState ignored, final @Nullable Orientation orientation, final boolean shapeUpdateWiresAroundInitialPosition) {
+      Orientation initialOrientation = getInitialOrientation(level, orientation);
+      this.calculateCurrentChanges(level, initialPos, initialOrientation);
+      ObjectIterator<Object2IntMap.Entry<BlockPos>> iterator = this.updatedWires.object2IntEntrySet().iterator();
 
-      for(boolean var8 = true; var7.hasNext(); var8 = false) {
-         Object2IntMap.Entry var9 = (Object2IntMap.Entry)var7.next();
-         BlockPos var10 = (BlockPos)var9.getKey();
-         int var11 = var9.getIntValue();
-         int var12 = unpackPower(var11);
-         BlockState var13 = var1.getBlockState(var10);
-         if (var13.is(this.wireBlock) && !((Integer)var13.getValue(RedStoneWireBlock.POWER)).equals(var12)) {
-            int var14 = 2;
-            if (!var5 || !var8) {
-               var14 |= 128;
+      for(boolean initialWire = true; iterator.hasNext(); initialWire = false) {
+         Object2IntMap.Entry<BlockPos> next = (Object2IntMap.Entry)iterator.next();
+         BlockPos pos = (BlockPos)next.getKey();
+         int packed = next.getIntValue();
+         int newLevel = unpackPower(packed);
+         BlockState state = level.getBlockState(pos);
+         if (state.is(this.wireBlock) && !((Integer)state.getValue(RedStoneWireBlock.POWER)).equals(newLevel)) {
+            int updateFlags = 2;
+            if (!shapeUpdateWiresAroundInitialPosition || !initialWire) {
+               updateFlags |= 128;
             }
 
-            var1.setBlock(var10, (BlockState)var13.setValue(RedStoneWireBlock.POWER, var12), var14);
+            level.setBlock(pos, (BlockState)state.setValue(RedStoneWireBlock.POWER, newLevel), updateFlags);
          } else {
-            var7.remove();
+            iterator.remove();
          }
       }
 
-      this.causeNeighborUpdates(var1);
+      this.causeNeighborUpdates(level);
    }
 
-   private void causeNeighborUpdates(Level var1) {
-      this.updatedWires.forEach((var2x, var3) -> {
-         Orientation var4 = unpackOrientation(var3);
-         BlockState var5 = var1.getBlockState(var2x);
+   private void causeNeighborUpdates(final Level level) {
+      this.updatedWires.forEach((wirePos, packed) -> {
+         Orientation orientation = unpackOrientation(packed);
+         BlockState state = level.getBlockState(wirePos);
 
-         for(Direction var7 : var4.getDirections()) {
-            if (isConnected(var5, var7)) {
-               BlockPos var8 = var2x.relative(var7);
-               BlockState var9 = var1.getBlockState(var8);
-               Orientation var10 = var4.withFrontPreserveUp(var7);
-               var1.neighborChanged(var9, var8, this.wireBlock, var10, false);
-               if (var9.isRedstoneConductor(var1, var8)) {
-                  for(Direction var12 : var10.getDirections()) {
-                     if (var12 != var7.getOpposite()) {
-                        var1.neighborChanged(var8.relative(var12), this.wireBlock, var10.withFrontPreserveUp(var12));
+         for(Direction neighborDirection : orientation.getDirections()) {
+            if (isConnected(state, neighborDirection)) {
+               BlockPos neighborPos = wirePos.relative(neighborDirection);
+               BlockState neighborState = level.getBlockState(neighborPos);
+               Orientation neighborOrientation = orientation.withFrontPreserveUp(neighborDirection);
+               level.neighborChanged(neighborState, neighborPos, this.wireBlock, neighborOrientation, false);
+               if (neighborState.isRedstoneConductor(level, neighborPos)) {
+                  for(Direction direction : neighborOrientation.getDirections()) {
+                     if (direction != neighborDirection.getOpposite()) {
+                        level.neighborChanged(neighborPos.relative(direction), this.wireBlock, neighborOrientation.withFrontPreserveUp(direction));
                      }
                   }
                }
@@ -73,148 +73,148 @@ public class ExperimentalRedstoneWireEvaluator extends RedstoneWireEvaluator {
          }
 
       });
-      if (var1 instanceof ServerLevel var2) {
-         if (var2.debugSynchronizers().hasAnySubscriberFor(DebugSubscriptions.REDSTONE_WIRE_ORIENTATIONS)) {
-            this.updatedWires.forEach((var1x, var2x) -> var2.debugSynchronizers().sendBlockValue(var1x, DebugSubscriptions.REDSTONE_WIRE_ORIENTATIONS, unpackOrientation(var2x)));
+      if (level instanceof ServerLevel serverLevel) {
+         if (serverLevel.debugSynchronizers().hasAnySubscriberFor(DebugSubscriptions.REDSTONE_WIRE_ORIENTATIONS)) {
+            this.updatedWires.forEach((wirePos, packed) -> serverLevel.debugSynchronizers().sendBlockValue(wirePos, DebugSubscriptions.REDSTONE_WIRE_ORIENTATIONS, unpackOrientation(packed)));
          }
       }
 
    }
 
-   private static boolean isConnected(BlockState var0, Direction var1) {
-      EnumProperty var2 = (EnumProperty)RedStoneWireBlock.PROPERTY_BY_DIRECTION.get(var1);
-      if (var2 == null) {
-         return var1 == Direction.DOWN;
+   private static boolean isConnected(final BlockState state, final Direction direction) {
+      EnumProperty<RedstoneSide> property = (EnumProperty)RedStoneWireBlock.PROPERTY_BY_DIRECTION.get(direction);
+      if (property == null) {
+         return direction == Direction.DOWN;
       } else {
-         return ((RedstoneSide)var0.getValue(var2)).isConnected();
+         return ((RedstoneSide)state.getValue(property)).isConnected();
       }
    }
 
-   private static Orientation getInitialOrientation(Level var0, @Nullable Orientation var1) {
-      Orientation var2;
-      if (var1 != null) {
-         var2 = var1;
+   private static Orientation getInitialOrientation(final Level level, final @Nullable Orientation incomingOrigination) {
+      Orientation orientation;
+      if (incomingOrigination != null) {
+         orientation = incomingOrigination;
       } else {
-         var2 = Orientation.random(var0.random);
+         orientation = Orientation.random(level.getRandom());
       }
 
-      return var2.withUp(Direction.UP).withSideBias(Orientation.SideBias.LEFT);
+      return orientation.withUp(Direction.UP).withSideBias(Orientation.SideBias.LEFT);
    }
 
-   private void calculateCurrentChanges(Level var1, BlockPos var2, Orientation var3) {
-      BlockState var4 = var1.getBlockState(var2);
-      if (var4.is(this.wireBlock)) {
-         this.setPower(var2, (Integer)var4.getValue(RedStoneWireBlock.POWER), var3);
-         this.wiresToTurnOff.add(var2);
+   private void calculateCurrentChanges(final Level level, final BlockPos initialPosition, final Orientation initialOrientation) {
+      BlockState initialState = level.getBlockState(initialPosition);
+      if (initialState.is(this.wireBlock)) {
+         this.setPower(initialPosition, (Integer)initialState.getValue(RedStoneWireBlock.POWER), initialOrientation);
+         this.wiresToTurnOff.add(initialPosition);
       } else {
-         this.propagateChangeToNeighbors(var1, var2, 0, var3, true);
+         this.propagateChangeToNeighbors(level, initialPosition, 0, initialOrientation, true);
       }
 
-      BlockPos var5;
-      Orientation var7;
-      int var8;
-      int var11;
-      int var12;
-      for(; !this.wiresToTurnOff.isEmpty(); this.propagateChangeToNeighbors(var1, var5, var12, var7, var8 > var11)) {
-         var5 = (BlockPos)this.wiresToTurnOff.removeFirst();
-         int var6 = this.updatedWires.getInt(var5);
-         var7 = unpackOrientation(var6);
-         var8 = unpackPower(var6);
-         int var9 = this.getBlockSignal(var1, var5);
-         int var10 = this.getIncomingWireSignal(var1, var5);
-         var11 = Math.max(var9, var10);
-         if (var11 < var8) {
-            if (var9 > 0 && !this.wiresToTurnOn.contains(var5)) {
-               this.wiresToTurnOn.add(var5);
+      BlockPos pos;
+      Orientation orientation;
+      int oldPower;
+      int newPower;
+      int powerToSet;
+      for(; !this.wiresToTurnOff.isEmpty(); this.propagateChangeToNeighbors(level, pos, powerToSet, orientation, oldPower > newPower)) {
+         pos = (BlockPos)this.wiresToTurnOff.removeFirst();
+         int packed = this.updatedWires.getInt(pos);
+         orientation = unpackOrientation(packed);
+         oldPower = unpackPower(packed);
+         int blockPower = this.getBlockSignal(level, pos);
+         int wirePower = this.getIncomingWireSignal(level, pos);
+         newPower = Math.max(blockPower, wirePower);
+         if (newPower < oldPower) {
+            if (blockPower > 0 && !this.wiresToTurnOn.contains(pos)) {
+               this.wiresToTurnOn.add(pos);
             }
 
-            var12 = 0;
+            powerToSet = 0;
          } else {
-            var12 = var11;
+            powerToSet = newPower;
          }
 
-         if (var12 != var8) {
-            this.setPower(var5, var12, var7);
+         if (powerToSet != oldPower) {
+            this.setPower(pos, powerToSet, orientation);
          }
       }
 
-      int var18;
-      for(; !this.wiresToTurnOn.isEmpty(); this.propagateChangeToNeighbors(var1, var5, var18, var19, false)) {
-         var5 = (BlockPos)this.wiresToTurnOn.removeFirst();
-         int var14 = this.updatedWires.getInt(var5);
-         int var15 = unpackPower(var14);
-         var8 = this.getBlockSignal(var1, var5);
-         int var17 = this.getIncomingWireSignal(var1, var5);
-         var18 = Math.max(var8, var17);
-         var19 = unpackOrientation(var14);
-         if (var18 > var15) {
-            this.setPower(var5, var18, var19);
-         } else if (var18 < var15) {
+      int newPower;
+      for(; !this.wiresToTurnOn.isEmpty(); this.propagateChangeToNeighbors(level, pos, newPower, orientation, false)) {
+         pos = (BlockPos)this.wiresToTurnOn.removeFirst();
+         int packed = this.updatedWires.getInt(pos);
+         int oldPower = unpackPower(packed);
+         oldPower = this.getBlockSignal(level, pos);
+         int wirePower = this.getIncomingWireSignal(level, pos);
+         newPower = Math.max(oldPower, wirePower);
+         orientation = unpackOrientation(packed);
+         if (newPower > oldPower) {
+            this.setPower(pos, newPower, orientation);
+         } else if (newPower < oldPower) {
             throw new IllegalStateException("Turning off wire while trying to turn it on. Should not happen.");
          }
       }
 
    }
 
-   private static int packOrientationAndPower(Orientation var0, int var1) {
-      return var0.getIndex() << 4 | var1;
+   private static int packOrientationAndPower(final Orientation orientation, final int power) {
+      return orientation.getIndex() << 4 | power;
    }
 
-   private static Orientation unpackOrientation(int var0) {
-      return Orientation.fromIndex(var0 >> 4);
+   private static Orientation unpackOrientation(final int packed) {
+      return Orientation.fromIndex(packed >> 4);
    }
 
-   private static int unpackPower(int var0) {
-      return var0 & 15;
+   private static int unpackPower(final int packed) {
+      return packed & 15;
    }
 
-   private void setPower(BlockPos var1, int var2, Orientation var3) {
-      this.updatedWires.compute(var1, (var2x, var3x) -> var3x == null ? packOrientationAndPower(var3, var2) : packOrientationAndPower(unpackOrientation(var3x), var2));
+   private void setPower(final BlockPos pos, final int newPower, final Orientation orientation) {
+      this.updatedWires.compute(pos, (key, packed) -> packed == null ? packOrientationAndPower(orientation, newPower) : packOrientationAndPower(unpackOrientation(packed), newPower));
    }
 
-   private void propagateChangeToNeighbors(Level var1, BlockPos var2, int var3, Orientation var4, boolean var5) {
-      for(Direction var7 : var4.getHorizontalDirections()) {
-         BlockPos var8 = var2.relative(var7);
-         this.enqueueNeighborWire(var1, var8, var3, var4.withFront(var7), var5);
+   private void propagateChangeToNeighbors(final Level level, final BlockPos pos, final int newPower, final Orientation orientation, final boolean allowTurningOff) {
+      for(Direction directionHorizontal : orientation.getHorizontalDirections()) {
+         BlockPos offsetPos = pos.relative(directionHorizontal);
+         this.enqueueNeighborWire(level, offsetPos, newPower, orientation.withFront(directionHorizontal), allowTurningOff);
       }
 
-      for(Direction var15 : var4.getVerticalDirections()) {
-         BlockPos var16 = var2.relative(var15);
-         boolean var9 = var1.getBlockState(var16).isRedstoneConductor(var1, var16);
+      for(Direction directionVertical : orientation.getVerticalDirections()) {
+         BlockPos offsetPos = pos.relative(directionVertical);
+         boolean solidBlock = level.getBlockState(offsetPos).isRedstoneConductor(level, offsetPos);
 
-         for(Direction var11 : var4.getHorizontalDirections()) {
-            BlockPos var12 = var2.relative(var11);
-            if (var15 == Direction.UP && !var9) {
-               BlockPos var17 = var16.relative(var11);
-               this.enqueueNeighborWire(var1, var17, var3, var4.withFront(var11), var5);
-            } else if (var15 == Direction.DOWN && !var1.getBlockState(var12).isRedstoneConductor(var1, var12)) {
-               BlockPos var13 = var16.relative(var11);
-               this.enqueueNeighborWire(var1, var13, var3, var4.withFront(var11), var5);
+         for(Direction directionHorizontal : orientation.getHorizontalDirections()) {
+            BlockPos neighbor = pos.relative(directionHorizontal);
+            if (directionVertical == Direction.UP && !solidBlock) {
+               BlockPos neighborWire = offsetPos.relative(directionHorizontal);
+               this.enqueueNeighborWire(level, neighborWire, newPower, orientation.withFront(directionHorizontal), allowTurningOff);
+            } else if (directionVertical == Direction.DOWN && !level.getBlockState(neighbor).isRedstoneConductor(level, neighbor)) {
+               BlockPos neighborWire = offsetPos.relative(directionHorizontal);
+               this.enqueueNeighborWire(level, neighborWire, newPower, orientation.withFront(directionHorizontal), allowTurningOff);
             }
          }
       }
 
    }
 
-   private void enqueueNeighborWire(Level var1, BlockPos var2, int var3, Orientation var4, boolean var5) {
-      BlockState var6 = var1.getBlockState(var2);
-      if (var6.is(this.wireBlock)) {
-         int var7 = this.getWireSignal(var2, var6);
-         if (var7 < var3 - 1 && !this.wiresToTurnOn.contains(var2)) {
-            this.wiresToTurnOn.add(var2);
-            this.setPower(var2, var7, var4);
+   private void enqueueNeighborWire(final Level level, final BlockPos pos, final int newFromPower, final Orientation orientation, final boolean allowTurningOff) {
+      BlockState state = level.getBlockState(pos);
+      if (state.is(this.wireBlock)) {
+         int toPower = this.getWireSignal(pos, state);
+         if (toPower < newFromPower - 1 && !this.wiresToTurnOn.contains(pos)) {
+            this.wiresToTurnOn.add(pos);
+            this.setPower(pos, toPower, orientation);
          }
 
-         if (var5 && var7 > var3 && !this.wiresToTurnOff.contains(var2)) {
-            this.wiresToTurnOff.add(var2);
-            this.setPower(var2, var7, var4);
+         if (allowTurningOff && toPower > newFromPower && !this.wiresToTurnOff.contains(pos)) {
+            this.wiresToTurnOff.add(pos);
+            this.setPower(pos, toPower, orientation);
          }
       }
 
    }
 
-   protected int getWireSignal(BlockPos var1, BlockState var2) {
-      int var3 = this.updatedWires.getOrDefault(var1, -1);
-      return var3 != -1 ? unpackPower(var3) : super.getWireSignal(var1, var2);
+   protected int getWireSignal(final BlockPos pos, final BlockState state) {
+      int packed = this.updatedWires.getOrDefault(pos, -1);
+      return packed != -1 ? unpackPower(packed) : super.getWireSignal(pos, state);
    }
 }

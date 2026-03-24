@@ -21,29 +21,29 @@ public class EndFlashState {
       super();
    }
 
-   public void tick(long var1) {
-      this.calculateFlashParameters(var1);
+   public void tick(final long clockTime) {
+      this.calculateFlashParameters(clockTime);
       this.oldIntensity = this.intensity;
-      this.intensity = this.calculateIntensity(var1);
+      this.intensity = this.calculateIntensity(clockTime);
    }
 
-   private void calculateFlashParameters(long var1) {
-      long var3 = var1 / 600L;
-      if (var3 != this.flashSeed) {
-         RandomSource var5 = RandomSource.create(var3);
-         var5.nextFloat();
-         this.offset = Mth.randomBetweenInclusive(var5, 0, 200);
-         this.duration = Mth.randomBetweenInclusive(var5, 100, Math.min(380, 600 - this.offset));
-         this.xAngle = Mth.randomBetween(var5, -60.0F, 10.0F);
-         this.yAngle = Mth.randomBetween(var5, -180.0F, 180.0F);
-         this.flashSeed = var3;
+   private void calculateFlashParameters(final long clockTime) {
+      long newSeed = clockTime / 600L;
+      if (newSeed != this.flashSeed) {
+         RandomSource randomSource = RandomSource.createThreadLocalInstance(newSeed);
+         randomSource.nextFloat();
+         this.offset = Mth.randomBetweenInclusive(randomSource, 0, 200);
+         this.duration = Mth.randomBetweenInclusive(randomSource, 100, Math.min(380, 600 - this.offset));
+         this.xAngle = Mth.randomBetween(randomSource, -60.0F, 10.0F);
+         this.yAngle = Mth.randomBetween(randomSource, -180.0F, 180.0F);
+         this.flashSeed = newSeed;
       }
 
    }
 
-   private float calculateIntensity(long var1) {
-      long var3 = var1 % 600L;
-      return var3 >= (long)this.offset && var3 <= (long)(this.offset + this.duration) ? Mth.sin((double)((float)(var3 - (long)this.offset) * 3.1415927F / (float)this.duration)) : 0.0F;
+   private float calculateIntensity(final long clockTime) {
+      long clockTimeWithinInterval = clockTime % 600L;
+      return clockTimeWithinInterval >= (long)this.offset && clockTimeWithinInterval <= (long)(this.offset + this.duration) ? Mth.sin((double)((float)(clockTimeWithinInterval - (long)this.offset) * 3.1415927F / (float)this.duration)) : 0.0F;
    }
 
    public float getXAngle() {
@@ -54,8 +54,8 @@ public class EndFlashState {
       return this.yAngle;
    }
 
-   public float getIntensity(float var1) {
-      return Mth.lerp(var1, this.oldIntensity, this.intensity);
+   public float getIntensity(final float partialTicks) {
+      return Mth.lerp(partialTicks, this.oldIntensity, this.intensity);
    }
 
    public boolean flashStartedThisTick() {

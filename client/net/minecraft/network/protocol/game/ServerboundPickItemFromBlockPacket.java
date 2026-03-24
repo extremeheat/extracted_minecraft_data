@@ -10,18 +10,16 @@ import net.minecraft.network.protocol.PacketType;
 public record ServerboundPickItemFromBlockPacket(BlockPos pos, boolean includeData) implements Packet<ServerGamePacketListener> {
    public static final StreamCodec<ByteBuf, ServerboundPickItemFromBlockPacket> STREAM_CODEC;
 
-   public ServerboundPickItemFromBlockPacket(BlockPos var1, boolean var2) {
+   public ServerboundPickItemFromBlockPacket {
       super();
-      this.pos = var1;
-      this.includeData = var2;
    }
 
    public PacketType<ServerboundPickItemFromBlockPacket> type() {
       return GamePacketTypes.SERVERBOUND_PICK_ITEM_FROM_BLOCK;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handlePickItemFromBlock(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handlePickItemFromBlock(this);
    }
 
    static {

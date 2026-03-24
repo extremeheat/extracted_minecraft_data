@@ -21,40 +21,40 @@ public class DialogControlSet {
    private final DialogScreen<?> screen;
    private final Map<String, Action.ValueGetter> valueGetters = new HashMap();
 
-   public DialogControlSet(DialogScreen<?> var1) {
+   public DialogControlSet(final DialogScreen<?> screen) {
       super();
-      this.screen = var1;
+      this.screen = screen;
    }
 
-   public void addInput(Input var1, Consumer<LayoutElement> var2) {
-      String var3 = var1.key();
-      InputControlHandlers.createHandler(var1.control(), this.screen, (var3x, var4) -> {
-         this.valueGetters.put(var3, var4);
-         var2.accept(var3x);
+   public void addInput(final Input data, final Consumer<LayoutElement> output) {
+      String key = data.key();
+      InputControlHandlers.createHandler(data.control(), this.screen, (element, valueGetter) -> {
+         this.valueGetters.put(key, valueGetter);
+         output.accept(element);
       });
    }
 
-   private static Button.Builder createDialogButton(CommonButtonData var0, Button.OnPress var1) {
-      Button.Builder var2 = Button.builder(var0.label(), var1);
-      var2.width(var0.width());
-      if (var0.tooltip().isPresent()) {
-         var2 = var2.tooltip(Tooltip.create((Component)var0.tooltip().get()));
+   private static Button.Builder createDialogButton(final CommonButtonData data, final Button.OnPress clickAction) {
+      Button.Builder result = Button.builder(data.label(), clickAction);
+      result.width(data.width());
+      if (data.tooltip().isPresent()) {
+         result = result.tooltip(Tooltip.create((Component)data.tooltip().get()));
       }
 
-      return var2;
+      return result;
    }
 
-   public Supplier<Optional<ClickEvent>> bindAction(Optional<Action> var1) {
-      if (var1.isPresent()) {
-         Action var2 = (Action)var1.get();
-         return () -> var2.createAction(this.valueGetters);
+   public Supplier<Optional<ClickEvent>> bindAction(final Optional<Action> maybeAction) {
+      if (maybeAction.isPresent()) {
+         Action action = (Action)maybeAction.get();
+         return () -> action.createAction(this.valueGetters);
       } else {
          return EMPTY_ACTION;
       }
    }
 
-   public Button.Builder createActionButton(ActionButton var1) {
-      Supplier var2 = this.bindAction(var1.action());
-      return createDialogButton(var1.button(), (var2x) -> this.screen.runAction((Optional)var2.get()));
+   public Button.Builder createActionButton(final ActionButton actionButton) {
+      Supplier<Optional<ClickEvent>> action = this.bindAction(actionButton.action());
+      return createDialogButton(actionButton.button(), (button) -> this.screen.runAction((Optional)action.get()));
    }
 }

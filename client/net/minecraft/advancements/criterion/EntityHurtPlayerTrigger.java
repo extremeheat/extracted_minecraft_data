@@ -17,33 +17,31 @@ public class EntityHurtPlayerTrigger extends SimpleCriterionTrigger<TriggerInsta
       return EntityHurtPlayerTrigger.TriggerInstance.CODEC;
    }
 
-   public void trigger(ServerPlayer var1, DamageSource var2, float var3, float var4, boolean var5) {
-      this.trigger(var1, (var5x) -> var5x.matches(var1, var2, var3, var4, var5));
+   public void trigger(final ServerPlayer player, final DamageSource source, final float originalDamage, final float actualDamage, final boolean blocked) {
+      this.trigger(player, (t) -> t.matches(player, source, originalDamage, actualDamage, blocked));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<DamagePredicate> damage) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), DamagePredicate.CODEC.optionalFieldOf("damage").forGetter(TriggerInstance::damage)).apply(var0, TriggerInstance::new));
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((i) -> i.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), DamagePredicate.CODEC.optionalFieldOf("damage").forGetter(TriggerInstance::damage)).apply(i, TriggerInstance::new));
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<DamagePredicate> var2) {
+      public TriggerInstance {
          super();
-         this.player = var1;
-         this.damage = var2;
       }
 
       public static Criterion<TriggerInstance> entityHurtPlayer() {
          return CriteriaTriggers.ENTITY_HURT_PLAYER.createCriterion(new TriggerInstance(Optional.empty(), Optional.empty()));
       }
 
-      public static Criterion<TriggerInstance> entityHurtPlayer(DamagePredicate var0) {
-         return CriteriaTriggers.ENTITY_HURT_PLAYER.createCriterion(new TriggerInstance(Optional.empty(), Optional.of(var0)));
+      public static Criterion<TriggerInstance> entityHurtPlayer(final DamagePredicate damage) {
+         return CriteriaTriggers.ENTITY_HURT_PLAYER.createCriterion(new TriggerInstance(Optional.empty(), Optional.of(damage)));
       }
 
-      public static Criterion<TriggerInstance> entityHurtPlayer(DamagePredicate.Builder var0) {
-         return CriteriaTriggers.ENTITY_HURT_PLAYER.createCriterion(new TriggerInstance(Optional.empty(), Optional.of(var0.build())));
+      public static Criterion<TriggerInstance> entityHurtPlayer(final DamagePredicate.Builder damage) {
+         return CriteriaTriggers.ENTITY_HURT_PLAYER.createCriterion(new TriggerInstance(Optional.empty(), Optional.of(damage.build())));
       }
 
-      public boolean matches(ServerPlayer var1, DamageSource var2, float var3, float var4, boolean var5) {
-         return !this.damage.isPresent() || ((DamagePredicate)this.damage.get()).matches(var1, var2, var3, var4, var5);
+      public boolean matches(final ServerPlayer player, final DamageSource source, final float originalDamage, final float actualDamage, final boolean blocked) {
+         return !this.damage.isPresent() || ((DamagePredicate)this.damage.get()).matches(player, source, originalDamage, actualDamage, blocked);
       }
    }
 }

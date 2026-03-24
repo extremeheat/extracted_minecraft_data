@@ -15,35 +15,35 @@ public class SimpleExplosionDamageCalculator extends ExplosionDamageCalculator {
    private final Optional<Float> knockbackMultiplier;
    private final Optional<HolderSet<Block>> immuneBlocks;
 
-   public SimpleExplosionDamageCalculator(boolean var1, boolean var2, Optional<Float> var3, Optional<HolderSet<Block>> var4) {
+   public SimpleExplosionDamageCalculator(final boolean explodesBlocks, final boolean damagesEntities, final Optional<Float> knockbackMultiplier, final Optional<HolderSet<Block>> immuneBlocks) {
       super();
-      this.explodesBlocks = var1;
-      this.damagesEntities = var2;
-      this.knockbackMultiplier = var3;
-      this.immuneBlocks = var4;
+      this.explodesBlocks = explodesBlocks;
+      this.damagesEntities = damagesEntities;
+      this.knockbackMultiplier = knockbackMultiplier;
+      this.immuneBlocks = immuneBlocks;
    }
 
-   public Optional<Float> getBlockExplosionResistance(Explosion var1, BlockGetter var2, BlockPos var3, BlockState var4, FluidState var5) {
+   public Optional<Float> getBlockExplosionResistance(final Explosion explosion, final BlockGetter level, final BlockPos pos, final BlockState block, final FluidState fluid) {
       if (this.immuneBlocks.isPresent()) {
-         return var4.is((HolderSet)this.immuneBlocks.get()) ? Optional.of(3600000.0F) : Optional.empty();
+         return block.is((HolderSet)this.immuneBlocks.get()) ? Optional.of(3600000.0F) : Optional.empty();
       } else {
-         return super.getBlockExplosionResistance(var1, var2, var3, var4, var5);
+         return super.getBlockExplosionResistance(explosion, level, pos, block, fluid);
       }
    }
 
-   public boolean shouldBlockExplode(Explosion var1, BlockGetter var2, BlockPos var3, BlockState var4, float var5) {
+   public boolean shouldBlockExplode(final Explosion explosion, final BlockGetter level, final BlockPos pos, final BlockState state, final float power) {
       return this.explodesBlocks;
    }
 
-   public boolean shouldDamageEntity(Explosion var1, Entity var2) {
+   public boolean shouldDamageEntity(final Explosion explosion, final Entity entity) {
       return this.damagesEntities;
    }
 
-   public float getKnockbackMultiplier(Entity var1) {
+   public float getKnockbackMultiplier(final Entity entity) {
       boolean var10000;
       label17: {
-         if (var1 instanceof Player var3) {
-            if (var3.getAbilities().flying) {
+         if (entity instanceof Player player) {
+            if (player.getAbilities().flying) {
                var10000 = true;
                break label17;
             }
@@ -52,7 +52,7 @@ public class SimpleExplosionDamageCalculator extends ExplosionDamageCalculator {
          var10000 = false;
       }
 
-      boolean var2 = var10000;
-      return var2 ? 0.0F : (Float)this.knockbackMultiplier.orElseGet(() -> super.getKnockbackMultiplier(var1));
+      boolean creativeFlying = var10000;
+      return creativeFlying ? 0.0F : (Float)this.knockbackMultiplier.orElseGet(() -> super.getKnockbackMultiplier(entity));
    }
 }

@@ -3,9 +3,10 @@ package net.minecraft.client.particle;
 import java.util.Optional;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.state.QuadParticleRenderState;
+import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.particles.VibrationParticleOption;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.gameevent.PositionSource;
@@ -19,36 +20,36 @@ public class VibrationSignalParticle extends SingleQuadParticle {
    private float pitch;
    private float pitchO;
 
-   VibrationSignalParticle(ClientLevel var1, double var2, double var4, double var6, PositionSource var8, int var9, TextureAtlasSprite var10) {
-      super(var1, var2, var4, var6, 0.0, 0.0, 0.0, var10);
+   private VibrationSignalParticle(final ClientLevel level, final double x, final double y, final double z, final PositionSource target, final int arrivalInTicks, final TextureAtlasSprite sprite) {
+      super(level, x, y, z, 0.0, 0.0, 0.0, sprite);
       this.quadSize = 0.3F;
-      this.target = var8;
-      this.lifetime = var9;
-      Optional var11 = var8.getPosition(var1);
-      if (var11.isPresent()) {
-         Vec3 var12 = (Vec3)var11.get();
-         double var13 = var2 - var12.x();
-         double var15 = var4 - var12.y();
-         double var17 = var6 - var12.z();
-         this.rotO = this.rot = (float)Mth.atan2(var13, var17);
-         this.pitchO = this.pitch = (float)Mth.atan2(var15, Math.sqrt(var13 * var13 + var17 * var17));
+      this.target = target;
+      this.lifetime = arrivalInTicks;
+      Optional<Vec3> position = target.getPosition(level);
+      if (position.isPresent()) {
+         Vec3 destination = (Vec3)position.get();
+         double dx = x - destination.x();
+         double dy = y - destination.y();
+         double dz = z - destination.z();
+         this.rotO = this.rot = (float)Mth.atan2(dx, dz);
+         this.pitchO = this.pitch = (float)Mth.atan2(dy, Math.sqrt(dx * dx + dz * dz));
       }
 
    }
 
-   public void extract(QuadParticleRenderState var1, Camera var2, float var3) {
-      float var4 = Mth.sin((double)(((float)this.age + var3 - 6.2831855F) * 0.05F)) * 2.0F;
-      float var5 = Mth.lerp(var3, this.rotO, this.rot);
-      float var6 = Mth.lerp(var3, this.pitchO, this.pitch) + 1.5707964F;
-      Quaternionf var7 = new Quaternionf();
-      var7.rotationY(var5).rotateX(-var6).rotateY(var4);
-      this.extractRotatedQuad(var1, var2, var7, var3);
-      var7.rotationY(-3.1415927F + var5).rotateX(var6).rotateY(var4);
-      this.extractRotatedQuad(var1, var2, var7, var3);
+   public void extract(final QuadParticleRenderState particleTypeRenderState, final Camera camera, final float partialTickTime) {
+      float randomSway = Mth.sin((double)(((float)this.age + partialTickTime - 6.2831855F) * 0.05F)) * 2.0F;
+      float lerpedRotation = Mth.lerp(partialTickTime, this.rotO, this.rot);
+      float lerpedPitch = Mth.lerp(partialTickTime, this.pitchO, this.pitch) + 1.5707964F;
+      Quaternionf rotation = new Quaternionf();
+      rotation.rotationY(lerpedRotation).rotateX(-lerpedPitch).rotateY(randomSway);
+      this.extractRotatedQuad(particleTypeRenderState, camera, rotation, partialTickTime);
+      rotation.rotationY(-3.1415927F + lerpedRotation).rotateX(lerpedPitch).rotateY(randomSway);
+      this.extractRotatedQuad(particleTypeRenderState, camera, rotation, partialTickTime);
    }
 
-   public int getLightColor(float var1) {
-      return 240;
+   public int getLightCoords(final float a) {
+      return LightCoordsUtil.withBlock(super.getLightCoords(a), 15);
    }
 
    public SingleQuadParticle.Layer getLayer() {
@@ -62,23 +63,23 @@ public class VibrationSignalParticle extends SingleQuadParticle {
       if (this.age++ >= this.lifetime) {
          this.remove();
       } else {
-         Optional var1 = this.target.getPosition(this.level);
-         if (var1.isEmpty()) {
+         Optional<Vec3> position = this.target.getPosition(this.level);
+         if (position.isEmpty()) {
             this.remove();
          } else {
-            int var2 = this.lifetime - this.age;
-            double var3 = 1.0 / (double)var2;
-            Vec3 var5 = (Vec3)var1.get();
-            this.x = Mth.lerp(var3, this.x, var5.x());
-            this.y = Mth.lerp(var3, this.y, var5.y());
-            this.z = Mth.lerp(var3, this.z, var5.z());
-            double var6 = this.x - var5.x();
-            double var8 = this.y - var5.y();
-            double var10 = this.z - var5.z();
+            int ticksRemaining = this.lifetime - this.age;
+            double alpha = 1.0 / (double)ticksRemaining;
+            Vec3 destination = (Vec3)position.get();
+            this.x = Mth.lerp(alpha, this.x, destination.x());
+            this.y = Mth.lerp(alpha, this.y, destination.y());
+            this.z = Mth.lerp(alpha, this.z, destination.z());
+            double dx = this.x - destination.x();
+            double dy = this.y - destination.y();
+            double dz = this.z - destination.z();
             this.rotO = this.rot;
-            this.rot = (float)Mth.atan2(var6, var10);
+            this.rot = (float)Mth.atan2(dx, dz);
             this.pitchO = this.pitch;
-            this.pitch = (float)Mth.atan2(var8, Math.sqrt(var6 * var6 + var10 * var10));
+            this.pitch = (float)Mth.atan2(dy, Math.sqrt(dx * dx + dz * dz));
          }
       }
    }
@@ -86,15 +87,15 @@ public class VibrationSignalParticle extends SingleQuadParticle {
    public static class Provider implements ParticleProvider<VibrationParticleOption> {
       private final SpriteSet sprite;
 
-      public Provider(SpriteSet var1) {
+      public Provider(final SpriteSet sprite) {
          super();
-         this.sprite = var1;
+         this.sprite = sprite;
       }
 
-      public Particle createParticle(VibrationParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         VibrationSignalParticle var16 = new VibrationSignalParticle(var2, var3, var5, var7, var1.getDestination(), var1.getArrivalInTicks(), this.sprite.get(var15));
-         var16.setAlpha(1.0F);
-         return var16;
+      public Particle createParticle(final VibrationParticleOption options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         VibrationSignalParticle particle = new VibrationSignalParticle(level, x, y, z, options.getDestination(), options.getArrivalInTicks(), this.sprite.get(random));
+         particle.setAlpha(1.0F);
+         return particle;
       }
    }
 }

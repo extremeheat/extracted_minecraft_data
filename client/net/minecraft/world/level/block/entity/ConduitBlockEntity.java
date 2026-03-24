@@ -7,7 +7,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -49,108 +48,108 @@ public class ConduitBlockEntity extends BlockEntity {
    private @Nullable EntityReference<LivingEntity> destroyTarget;
    private long nextAmbientSoundActivation;
 
-   public ConduitBlockEntity(BlockPos var1, BlockState var2) {
-      super(BlockEntityType.CONDUIT, var1, var2);
+   public ConduitBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      super(BlockEntityType.CONDUIT, worldPosition, blockState);
    }
 
-   protected void loadAdditional(ValueInput var1) {
-      super.loadAdditional(var1);
-      this.destroyTarget = EntityReference.<LivingEntity>read(var1, "Target");
+   protected void loadAdditional(final ValueInput input) {
+      super.loadAdditional(input);
+      this.destroyTarget = EntityReference.<LivingEntity>read(input, "Target");
    }
 
-   protected void saveAdditional(ValueOutput var1) {
-      super.saveAdditional(var1);
-      EntityReference.store(this.destroyTarget, var1, "Target");
+   protected void saveAdditional(final ValueOutput output) {
+      super.saveAdditional(output);
+      EntityReference.store(this.destroyTarget, output, "Target");
    }
 
    public ClientboundBlockEntityDataPacket getUpdatePacket() {
       return ClientboundBlockEntityDataPacket.create(this);
    }
 
-   public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
-      return this.saveCustomOnly(var1);
+   public CompoundTag getUpdateTag(final HolderLookup.Provider registries) {
+      return this.saveCustomOnly(registries);
    }
 
-   public static void clientTick(Level var0, BlockPos var1, BlockState var2, ConduitBlockEntity var3) {
-      ++var3.tickCount;
-      long var4 = var0.getGameTime();
-      List var6 = var3.effectBlocks;
-      if (var4 % 40L == 0L) {
-         var3.isActive = updateShape(var0, var1, var6);
-         updateHunting(var3, var6);
+   public static void clientTick(final Level level, final BlockPos pos, final BlockState state, final ConduitBlockEntity entity) {
+      ++entity.tickCount;
+      long gameTime = level.getGameTime();
+      List<BlockPos> effectBlocks = entity.effectBlocks;
+      if (gameTime % 40L == 0L) {
+         entity.isActive = updateShape(level, pos, effectBlocks);
+         updateHunting(entity, effectBlocks);
       }
 
-      LivingEntity var7 = EntityReference.getLivingEntity(var3.destroyTarget, var0);
-      animationTick(var0, var1, var6, var7, var3.tickCount);
-      if (var3.isActive()) {
-         ++var3.activeRotation;
-      }
-
-   }
-
-   public static void serverTick(Level var0, BlockPos var1, BlockState var2, ConduitBlockEntity var3) {
-      ++var3.tickCount;
-      long var4 = var0.getGameTime();
-      List var6 = var3.effectBlocks;
-      if (var4 % 40L == 0L) {
-         boolean var7 = updateShape(var0, var1, var6);
-         if (var7 != var3.isActive) {
-            SoundEvent var8 = var7 ? SoundEvents.CONDUIT_ACTIVATE : SoundEvents.CONDUIT_DEACTIVATE;
-            var0.playSound((Entity)null, (BlockPos)var1, var8, SoundSource.BLOCKS, 1.0F, 1.0F);
-         }
-
-         var3.isActive = var7;
-         updateHunting(var3, var6);
-         if (var7) {
-            applyEffects(var0, var1, var6);
-            updateAndAttackTarget((ServerLevel)var0, var1, var2, var3, var6.size() >= 42);
-         }
-      }
-
-      if (var3.isActive()) {
-         if (var4 % 80L == 0L) {
-            var0.playSound((Entity)null, (BlockPos)var1, SoundEvents.CONDUIT_AMBIENT, SoundSource.BLOCKS, 1.0F, 1.0F);
-         }
-
-         if (var4 > var3.nextAmbientSoundActivation) {
-            var3.nextAmbientSoundActivation = var4 + 60L + (long)var0.getRandom().nextInt(40);
-            var0.playSound((Entity)null, (BlockPos)var1, SoundEvents.CONDUIT_AMBIENT_SHORT, SoundSource.BLOCKS, 1.0F, 1.0F);
-         }
+      LivingEntity destroyTarget = EntityReference.getLivingEntity(entity.destroyTarget, level);
+      animationTick(level, pos, effectBlocks, destroyTarget, entity.tickCount);
+      if (entity.isActive()) {
+         ++entity.activeRotation;
       }
 
    }
 
-   private static void updateHunting(ConduitBlockEntity var0, List<BlockPos> var1) {
-      var0.setHunting(var1.size() >= 42);
+   public static void serverTick(final Level level, final BlockPos pos, final BlockState state, final ConduitBlockEntity entity) {
+      ++entity.tickCount;
+      long gameTime = level.getGameTime();
+      List<BlockPos> effectBlocks = entity.effectBlocks;
+      if (gameTime % 40L == 0L) {
+         boolean active = updateShape(level, pos, effectBlocks);
+         if (active != entity.isActive) {
+            SoundEvent event = active ? SoundEvents.CONDUIT_ACTIVATE : SoundEvents.CONDUIT_DEACTIVATE;
+            level.playSound((Entity)null, (BlockPos)pos, event, SoundSource.BLOCKS, 1.0F, 1.0F);
+         }
+
+         entity.isActive = active;
+         updateHunting(entity, effectBlocks);
+         if (active) {
+            applyEffects(level, pos, effectBlocks);
+            updateAndAttackTarget((ServerLevel)level, pos, state, entity, effectBlocks.size() >= 42);
+         }
+      }
+
+      if (entity.isActive()) {
+         if (gameTime % 80L == 0L) {
+            level.playSound((Entity)null, (BlockPos)pos, SoundEvents.CONDUIT_AMBIENT, SoundSource.BLOCKS, 1.0F, 1.0F);
+         }
+
+         if (gameTime > entity.nextAmbientSoundActivation) {
+            entity.nextAmbientSoundActivation = gameTime + 60L + (long)level.getRandom().nextInt(40);
+            level.playSound((Entity)null, (BlockPos)pos, SoundEvents.CONDUIT_AMBIENT_SHORT, SoundSource.BLOCKS, 1.0F, 1.0F);
+         }
+      }
+
    }
 
-   private static boolean updateShape(Level var0, BlockPos var1, List<BlockPos> var2) {
-      var2.clear();
+   private static void updateHunting(final ConduitBlockEntity entity, final List<BlockPos> effectBlocks) {
+      entity.setHunting(effectBlocks.size() >= 42);
+   }
 
-      for(int var3 = -1; var3 <= 1; ++var3) {
-         for(int var4 = -1; var4 <= 1; ++var4) {
-            for(int var5 = -1; var5 <= 1; ++var5) {
-               BlockPos var6 = var1.offset(var3, var4, var5);
-               if (!var0.isWaterAt(var6)) {
+   private static boolean updateShape(final Level level, final BlockPos worldPosition, final List<BlockPos> effectBlocks) {
+      effectBlocks.clear();
+
+      for(int ox = -1; ox <= 1; ++ox) {
+         for(int oy = -1; oy <= 1; ++oy) {
+            for(int oz = -1; oz <= 1; ++oz) {
+               BlockPos testPos = worldPosition.offset(ox, oy, oz);
+               if (!level.isWaterAt(testPos)) {
                   return false;
                }
             }
          }
       }
 
-      for(int var15 = -2; var15 <= 2; ++var15) {
-         for(int var16 = -2; var16 <= 2; ++var16) {
-            for(int var17 = -2; var17 <= 2; ++var17) {
-               int var18 = Math.abs(var15);
-               int var7 = Math.abs(var16);
-               int var8 = Math.abs(var17);
-               if ((var18 > 1 || var7 > 1 || var8 > 1) && (var15 == 0 && (var7 == 2 || var8 == 2) || var16 == 0 && (var18 == 2 || var8 == 2) || var17 == 0 && (var18 == 2 || var7 == 2))) {
-                  BlockPos var9 = var1.offset(var15, var16, var17);
-                  BlockState var10 = var0.getBlockState(var9);
+      for(int ox = -2; ox <= 2; ++ox) {
+         for(int oy = -2; oy <= 2; ++oy) {
+            for(int oz = -2; oz <= 2; ++oz) {
+               int ax = Math.abs(ox);
+               int ay = Math.abs(oy);
+               int az = Math.abs(oz);
+               if ((ax > 1 || ay > 1 || az > 1) && (ox == 0 && (ay == 2 || az == 2) || oy == 0 && (ax == 2 || az == 2) || oz == 0 && (ax == 2 || ay == 2))) {
+                  BlockPos testPos = worldPosition.offset(ox, oy, oz);
+                  BlockState testBlock = level.getBlockState(testPos);
 
-                  for(Block var14 : VALID_BLOCKS) {
-                     if (var10.is(var14)) {
-                        var2.add(var9);
+                  for(Block type : VALID_BLOCKS) {
+                     if (testBlock.is(type)) {
+                        effectBlocks.add(testPos);
                      }
                   }
                }
@@ -158,85 +157,85 @@ public class ConduitBlockEntity extends BlockEntity {
          }
       }
 
-      return var2.size() >= 16;
+      return effectBlocks.size() >= 16;
    }
 
-   private static void applyEffects(Level var0, BlockPos var1, List<BlockPos> var2) {
-      int var3 = var2.size();
-      int var4 = var3 / 7 * 16;
-      int var5 = var1.getX();
-      int var6 = var1.getY();
-      int var7 = var1.getZ();
-      AABB var8 = (new AABB((double)var5, (double)var6, (double)var7, (double)(var5 + 1), (double)(var6 + 1), (double)(var7 + 1))).inflate((double)var4).expandTowards(0.0, (double)var0.getHeight(), 0.0);
-      List var9 = var0.getEntitiesOfClass(Player.class, var8);
-      if (!var9.isEmpty()) {
-         for(Player var11 : var9) {
-            if (var1.closerThan(var11.blockPosition(), (double)var4) && var11.isInWaterOrRain()) {
-               var11.addEffect(new MobEffectInstance(MobEffects.CONDUIT_POWER, 260, 0, true, true));
+   private static void applyEffects(final Level level, final BlockPos worldPosition, final List<BlockPos> effectBlocks) {
+      int activeSize = effectBlocks.size();
+      int effectRange = activeSize / 7 * 16;
+      int x = worldPosition.getX();
+      int y = worldPosition.getY();
+      int z = worldPosition.getZ();
+      AABB bb = (new AABB((double)x, (double)y, (double)z, (double)(x + 1), (double)(y + 1), (double)(z + 1))).inflate((double)effectRange).expandTowards(0.0, (double)level.getHeight(), 0.0);
+      List<Player> players = level.getEntitiesOfClass(Player.class, bb);
+      if (!players.isEmpty()) {
+         for(Player player : players) {
+            if (worldPosition.closerThan(player.blockPosition(), (double)effectRange) && player.isInWaterOrRain()) {
+               player.addEffect(new MobEffectInstance(MobEffects.CONDUIT_POWER, 260, 0, true, true));
             }
          }
 
       }
    }
 
-   private static void updateAndAttackTarget(ServerLevel var0, BlockPos var1, BlockState var2, ConduitBlockEntity var3, boolean var4) {
-      EntityReference var5 = updateDestroyTarget(var3.destroyTarget, var0, var1, var4);
-      LivingEntity var6 = EntityReference.getLivingEntity(var5, var0);
-      if (var6 != null) {
-         var0.playSound((Entity)null, var6.getX(), var6.getY(), var6.getZ(), SoundEvents.CONDUIT_ATTACK_TARGET, SoundSource.BLOCKS, 1.0F, 1.0F);
-         var6.hurtServer(var0, var0.damageSources().magic(), 4.0F);
+   private static void updateAndAttackTarget(final ServerLevel level, final BlockPos worldPosition, final BlockState blockState, final ConduitBlockEntity entity, final boolean isActive) {
+      EntityReference<LivingEntity> newDestroyTarget = updateDestroyTarget(entity.destroyTarget, level, worldPosition, isActive);
+      LivingEntity targetEntity = EntityReference.getLivingEntity(newDestroyTarget, level);
+      if (targetEntity != null) {
+         level.playSound((Entity)null, targetEntity.getX(), targetEntity.getY(), targetEntity.getZ(), SoundEvents.CONDUIT_ATTACK_TARGET, SoundSource.BLOCKS, 1.0F, 1.0F);
+         targetEntity.hurtServer(level, level.damageSources().magic(), 4.0F);
       }
 
-      if (!Objects.equals(var5, var3.destroyTarget)) {
-         var3.destroyTarget = var5;
-         var0.sendBlockUpdated(var1, var2, var2, 2);
+      if (!Objects.equals(newDestroyTarget, entity.destroyTarget)) {
+         entity.destroyTarget = newDestroyTarget;
+         level.sendBlockUpdated(worldPosition, blockState, blockState, 2);
       }
 
    }
 
-   private static @Nullable EntityReference<LivingEntity> updateDestroyTarget(@Nullable EntityReference<LivingEntity> var0, ServerLevel var1, BlockPos var2, boolean var3) {
-      if (!var3) {
+   private static @Nullable EntityReference<LivingEntity> updateDestroyTarget(final @Nullable EntityReference<LivingEntity> target, final ServerLevel level, final BlockPos pos, final boolean isActive) {
+      if (!isActive) {
          return null;
-      } else if (var0 == null) {
-         return selectNewTarget(var1, var2);
+      } else if (target == null) {
+         return selectNewTarget(level, pos);
       } else {
-         LivingEntity var4 = EntityReference.getLivingEntity(var0, var1);
-         return var4 != null && var4.isAlive() && var2.closerThan(var4.blockPosition(), 8.0) ? var0 : null;
+         LivingEntity targetEntity = EntityReference.getLivingEntity(target, level);
+         return targetEntity != null && targetEntity.isAlive() && pos.closerThan(targetEntity.blockPosition(), 8.0) ? target : null;
       }
    }
 
-   private static @Nullable EntityReference<LivingEntity> selectNewTarget(ServerLevel var0, BlockPos var1) {
-      List var2 = var0.getEntitiesOfClass(LivingEntity.class, getDestroyRangeAABB(var1), (var0x) -> var0x instanceof Enemy && var0x.isInWaterOrRain());
-      return var2.isEmpty() ? null : EntityReference.of((LivingEntity)Util.getRandom(var2, var0.random));
+   private static @Nullable EntityReference<LivingEntity> selectNewTarget(final ServerLevel level, final BlockPos pos) {
+      List<LivingEntity> candidates = level.getEntitiesOfClass(LivingEntity.class, getDestroyRangeAABB(pos), (input) -> input instanceof Enemy && input.isInWaterOrRain());
+      return candidates.isEmpty() ? null : EntityReference.of((LivingEntity)Util.getRandom(candidates, level.getRandom()));
    }
 
-   private static AABB getDestroyRangeAABB(BlockPos var0) {
-      return (new AABB(var0)).inflate(8.0);
+   private static AABB getDestroyRangeAABB(final BlockPos worldPosition) {
+      return (new AABB(worldPosition)).inflate(8.0);
    }
 
-   private static void animationTick(Level var0, BlockPos var1, List<BlockPos> var2, @Nullable Entity var3, int var4) {
-      RandomSource var5 = var0.random;
-      double var6 = (double)(Mth.sin((double)((float)(var4 + 35) * 0.1F)) / 2.0F + 0.5F);
-      var6 = (var6 * var6 + var6) * 0.30000001192092896;
-      Vec3 var8 = new Vec3((double)var1.getX() + 0.5, (double)var1.getY() + 1.5 + var6, (double)var1.getZ() + 0.5);
+   private static void animationTick(final Level level, final BlockPos worldPosition, final List<BlockPos> effectBlocks, final @Nullable Entity destroyTarget, final int tickCount) {
+      RandomSource random = level.getRandom();
+      double hh = (double)(Mth.sin((double)((float)(tickCount + 35) * 0.1F)) / 2.0F + 0.5F);
+      hh = (hh * hh + hh) * 0.30000001192092896;
+      Vec3 particleEnd = new Vec3((double)worldPosition.getX() + 0.5, (double)worldPosition.getY() + 1.5 + hh, (double)worldPosition.getZ() + 0.5);
 
-      for(BlockPos var10 : var2) {
-         if (var5.nextInt(50) == 0) {
-            BlockPos var11 = var10.subtract(var1);
-            float var12 = -0.5F + var5.nextFloat() + (float)var11.getX();
-            float var13 = -2.0F + var5.nextFloat() + (float)var11.getY();
-            float var14 = -0.5F + var5.nextFloat() + (float)var11.getZ();
-            var0.addParticle(ParticleTypes.NAUTILUS, var8.x, var8.y, var8.z, (double)var12, (double)var13, (double)var14);
+      for(BlockPos pos : effectBlocks) {
+         if (random.nextInt(50) == 0) {
+            BlockPos delta = pos.subtract(worldPosition);
+            float dx = -0.5F + random.nextFloat() + (float)delta.getX();
+            float dy = -2.0F + random.nextFloat() + (float)delta.getY();
+            float dz = -0.5F + random.nextFloat() + (float)delta.getZ();
+            level.addParticle(ParticleTypes.NAUTILUS, particleEnd.x, particleEnd.y, particleEnd.z, (double)dx, (double)dy, (double)dz);
          }
       }
 
-      if (var3 != null) {
-         Vec3 var16 = new Vec3(var3.getX(), var3.getEyeY(), var3.getZ());
-         float var17 = (-0.5F + var5.nextFloat()) * (3.0F + var3.getBbWidth());
-         float var18 = -1.0F + var5.nextFloat() * var3.getBbHeight();
-         float var19 = (-0.5F + var5.nextFloat()) * (3.0F + var3.getBbWidth());
-         Vec3 var20 = new Vec3((double)var17, (double)var18, (double)var19);
-         var0.addParticle(ParticleTypes.NAUTILUS, var16.x, var16.y, var16.z, var20.x, var20.y, var20.z);
+      if (destroyTarget != null) {
+         Vec3 targetPosition = new Vec3(destroyTarget.getX(), destroyTarget.getEyeY(), destroyTarget.getZ());
+         float randx = (-0.5F + random.nextFloat()) * (3.0F + destroyTarget.getBbWidth());
+         float randy = -1.0F + random.nextFloat() * destroyTarget.getBbHeight();
+         float randz = (-0.5F + random.nextFloat()) * (3.0F + destroyTarget.getBbWidth());
+         Vec3 velocity = new Vec3((double)randx, (double)randy, (double)randz);
+         level.addParticle(ParticleTypes.NAUTILUS, targetPosition.x, targetPosition.y, targetPosition.z, velocity.x, velocity.y, velocity.z);
       }
 
    }
@@ -249,17 +248,12 @@ public class ConduitBlockEntity extends BlockEntity {
       return this.isHunting;
    }
 
-   private void setHunting(boolean var1) {
-      this.isHunting = var1;
+   private void setHunting(final boolean hunting) {
+      this.isHunting = hunting;
    }
 
-   public float getActiveRotation(float var1) {
-      return (this.activeRotation + var1) * -0.0375F;
-   }
-
-   // $FF: synthetic method
-   public Packet getUpdatePacket() {
-      return this.getUpdatePacket();
+   public float getActiveRotation(final float a) {
+      return (this.activeRotation + a) * -0.0375F;
    }
 
    static {

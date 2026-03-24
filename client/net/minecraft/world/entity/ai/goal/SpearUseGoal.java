@@ -18,21 +18,21 @@ public class SpearUseGoal<T extends Monster> extends Goal {
    static final int MAX_REPOSITION_DISTANCE = 7;
    static final int MIN_COOLDOWN_DISTANCE = 9;
    static final int MAX_COOLDOWN_DISTANCE = 11;
-   static final double MAX_FLEEING_TIME = (double)reducedTickDelay(100);
+   private static final double MAX_FLEEING_TIME = (double)reducedTickDelay(100);
    private final T mob;
    private @Nullable SpearUseState state;
-   double speedModifierWhenCharging;
-   double speedModifierWhenRepositioning;
-   float approachDistanceSq;
-   float targetInRangeRadiusSq;
+   private final double speedModifierWhenCharging;
+   private final double speedModifierWhenRepositioning;
+   private final float approachDistanceSq;
+   private final float targetInRangeRadiusSq;
 
-   public SpearUseGoal(T var1, double var2, double var4, float var6, float var7) {
+   public SpearUseGoal(final T mob, final double speedModifierWhenCharging, final double speedModifierWhenRepositioning, final float approachDistance, final float targetInRangeRadius) {
       super();
-      this.mob = var1;
-      this.speedModifierWhenCharging = var2;
-      this.speedModifierWhenRepositioning = var4;
-      this.approachDistanceSq = var6 * var6;
-      this.targetInRangeRadiusSq = var7 * var7;
+      this.mob = mob;
+      this.speedModifierWhenCharging = speedModifierWhenCharging;
+      this.speedModifierWhenRepositioning = speedModifierWhenRepositioning;
+      this.approachDistanceSq = approachDistance * approachDistance;
+      this.targetInRangeRadiusSq = targetInRangeRadius * targetInRangeRadius;
       this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
    }
 
@@ -45,8 +45,8 @@ public class SpearUseGoal<T extends Monster> extends Goal {
    }
 
    private int getKineticWeaponUseDuration() {
-      int var1 = (Integer)Optional.ofNullable((KineticWeapon)this.mob.getMainHandItem().get(DataComponents.KINETIC_WEAPON)).map(KineticWeapon::computeDamageUseDuration).orElse(0);
-      return reducedTickDelay(var1);
+      int durationTicks = (Integer)Optional.ofNullable((KineticWeapon)this.mob.getMainHandItem().get(DataComponents.KINETIC_WEAPON)).map(KineticWeapon::computeDamageUseDuration).orElse(0);
+      return reducedTickDelay(durationTicks);
    }
 
    public boolean canContinueToUse() {
@@ -69,21 +69,21 @@ public class SpearUseGoal<T extends Monster> extends Goal {
 
    public void tick() {
       if (this.state != null) {
-         LivingEntity var1 = this.mob.getTarget();
-         double var2 = this.mob.distanceToSqr(var1.getX(), var1.getY(), var1.getZ());
-         Entity var4 = this.mob.getRootVehicle();
-         float var5 = 1.0F;
-         if (var4 instanceof Mob) {
-            Mob var6 = (Mob)var4;
-            var5 = var6.chargeSpeedModifier();
+         LivingEntity target = this.mob.getTarget();
+         double targetDistSqr = this.mob.distanceToSqr(target.getX(), target.getY(), target.getZ());
+         Entity mount = this.mob.getRootVehicle();
+         float speedModifier = 1.0F;
+         if (mount instanceof Mob) {
+            Mob vehicleMob = (Mob)mount;
+            speedModifier = vehicleMob.chargeSpeedModifier();
          }
 
-         int var9 = this.mob.isPassenger() ? 2 : 0;
-         this.mob.lookAt(var1, 30.0F, 30.0F);
-         this.mob.getLookControl().setLookAt(var1, 30.0F, 30.0F);
+         int mountDistance = this.mob.isPassenger() ? 2 : 0;
+         this.mob.lookAt(target, 30.0F, 30.0F);
+         this.mob.getLookControl().setLookAt(target, 30.0F, 30.0F);
          if (this.state.notEngagedYet()) {
-            if (var2 > (double)this.approachDistanceSq) {
-               this.mob.getNavigation().moveTo((Entity)var1, (double)var5 * this.speedModifierWhenRepositioning);
+            if (targetDistSqr > (double)this.approachDistanceSq) {
+               this.mob.getNavigation().moveTo((Entity)target, (double)speedModifier * this.speedModifierWhenRepositioning);
                return;
             }
 
@@ -93,14 +93,14 @@ public class SpearUseGoal<T extends Monster> extends Goal {
 
          if (this.state.tickAndCheckEngagement()) {
             this.mob.stopUsingItem();
-            double var7 = Math.sqrt(var2);
-            this.state.awayPos = LandRandomPos.getPosAway(this.mob, Math.max(0.0, (double)(9 + var9) - var7), Math.max(1.0, (double)(11 + var9) - var7), 7, var1.position());
+            double distance = Math.sqrt(targetDistSqr);
+            this.state.awayPos = LandRandomPos.getPosAway(this.mob, Math.max(0.0, (double)(9 + mountDistance) - distance), Math.max(1.0, (double)(11 + mountDistance) - distance), 7, target.position());
             this.state.fleeingTime = 1;
          }
 
          if (!this.state.tickAndCheckFleeing()) {
             if (this.state.awayPos != null) {
-               this.mob.getNavigation().moveTo(this.state.awayPos.x, this.state.awayPos.y, this.state.awayPos.z, (double)var5 * this.speedModifierWhenRepositioning);
+               this.mob.getNavigation().moveTo(this.state.awayPos.x, this.state.awayPos.y, this.state.awayPos.z, (double)speedModifier * this.speedModifierWhenRepositioning);
                if (this.mob.getNavigation().isDone()) {
                   if (this.state.fleeingTime > 0) {
                      this.state.done = true;
@@ -110,10 +110,10 @@ public class SpearUseGoal<T extends Monster> extends Goal {
                   this.state.awayPos = null;
                }
             } else {
-               this.mob.getNavigation().moveTo((Entity)var1, (double)var5 * this.speedModifierWhenCharging);
-               if (var2 < (double)this.targetInRangeRadiusSq || this.mob.getNavigation().isDone()) {
-                  double var10 = Math.sqrt(var2);
-                  this.state.awayPos = LandRandomPos.getPosAway(this.mob, (double)(6 + var9) - var10, (double)(7 + var9) - var10, 7, var1.position());
+               this.mob.getNavigation().moveTo((Entity)target, (double)speedModifier * this.speedModifierWhenCharging);
+               if (targetDistSqr < (double)this.targetInRangeRadiusSq || this.mob.getNavigation().isDone()) {
+                  double distance = Math.sqrt(targetDistSqr);
+                  this.state.awayPos = LandRandomPos.getPosAway(this.mob, (double)(6 + mountDistance) - distance, (double)(7 + mountDistance) - distance, 7, target.position());
                }
             }
 
@@ -123,9 +123,9 @@ public class SpearUseGoal<T extends Monster> extends Goal {
 
    public static class SpearUseState {
       private int engageTime = -1;
-      int fleeingTime = -1;
-      @Nullable Vec3 awayPos;
-      boolean done = false;
+      private int fleeingTime = -1;
+      private @Nullable Vec3 awayPos;
+      private boolean done = false;
 
       public SpearUseState() {
          super();
@@ -135,8 +135,8 @@ public class SpearUseGoal<T extends Monster> extends Goal {
          return this.engageTime < 0;
       }
 
-      public void startEngagement(int var1) {
-         this.engageTime = var1;
+      public void startEngagement(final int spearDownTime) {
+         this.engageTime = spearDownTime;
       }
 
       public boolean tickAndCheckEngagement() {

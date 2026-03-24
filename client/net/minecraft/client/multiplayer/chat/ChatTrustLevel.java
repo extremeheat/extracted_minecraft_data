@@ -3,7 +3,6 @@ package net.minecraft.client.multiplayer.chat;
 import com.mojang.serialization.Codec;
 import java.time.Instant;
 import java.util.Optional;
-import net.minecraft.client.GuiMessageTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FontDescription;
 import net.minecraft.network.chat.PlayerChatMessage;
@@ -19,43 +18,43 @@ public enum ChatTrustLevel implements StringRepresentable {
    public static final Codec<ChatTrustLevel> CODEC = StringRepresentable.<ChatTrustLevel>fromEnum(ChatTrustLevel::values);
    private final String serializedName;
 
-   private ChatTrustLevel(final String var3) {
-      this.serializedName = var3;
+   private ChatTrustLevel(final String serializedName) {
+      this.serializedName = serializedName;
    }
 
-   public static ChatTrustLevel evaluate(PlayerChatMessage var0, Component var1, Instant var2) {
-      if (var0.hasSignature() && !var0.hasExpiredClient(var2)) {
-         return isModified(var0, var1) ? MODIFIED : SECURE;
+   public static ChatTrustLevel evaluate(final PlayerChatMessage message, final Component decoratedMessage, final Instant received) {
+      if (message.hasSignature() && !message.hasExpiredClient(received)) {
+         return isModified(message, decoratedMessage) ? MODIFIED : SECURE;
       } else {
          return NOT_SECURE;
       }
    }
 
-   private static boolean isModified(PlayerChatMessage var0, Component var1) {
-      if (!var1.getString().contains(var0.signedContent())) {
+   private static boolean isModified(final PlayerChatMessage message, final Component decoratedMessage) {
+      if (!decoratedMessage.getString().contains(message.signedContent())) {
          return true;
       } else {
-         Component var2 = var0.unsignedContent();
-         return var2 == null ? false : containsModifiedStyle(var2);
+         Component decoratedContent = message.unsignedContent();
+         return decoratedContent == null ? false : containsModifiedStyle(decoratedContent);
       }
    }
 
-   private static boolean containsModifiedStyle(Component var0) {
-      return (Boolean)var0.visit((var0x, var1) -> isModifiedStyle(var0x) ? Optional.of(true) : Optional.empty(), Style.EMPTY).orElse(false);
+   private static boolean containsModifiedStyle(final Component decoratedContent) {
+      return (Boolean)decoratedContent.visit((style, contents) -> isModifiedStyle(style) ? Optional.of(true) : Optional.empty(), Style.EMPTY).orElse(false);
    }
 
-   private static boolean isModifiedStyle(Style var0) {
-      return !var0.getFont().equals(FontDescription.DEFAULT);
+   private static boolean isModifiedStyle(final Style style) {
+      return !style.getFont().equals(FontDescription.DEFAULT);
    }
 
    public boolean isNotSecure() {
       return this == NOT_SECURE;
    }
 
-   public @Nullable GuiMessageTag createTag(PlayerChatMessage var1) {
+   public @Nullable GuiMessageTag createTag(final PlayerChatMessage message) {
       GuiMessageTag var10000;
       switch (this.ordinal()) {
-         case 1 -> var10000 = GuiMessageTag.chatModified(var1.signedContent());
+         case 1 -> var10000 = GuiMessageTag.chatModified(message.signedContent());
          case 2 -> var10000 = GuiMessageTag.chatNotSecure();
          default -> var10000 = null;
       }

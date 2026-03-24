@@ -9,26 +9,26 @@ public class ClientboundContainerClosePacket implements Packet<ClientGamePacketL
    public static final StreamCodec<FriendlyByteBuf, ClientboundContainerClosePacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundContainerClosePacket>codec(ClientboundContainerClosePacket::write, ClientboundContainerClosePacket::new);
    private final int containerId;
 
-   public ClientboundContainerClosePacket(int var1) {
+   public ClientboundContainerClosePacket(final int containerId) {
       super();
-      this.containerId = var1;
+      this.containerId = containerId;
    }
 
-   private ClientboundContainerClosePacket(FriendlyByteBuf var1) {
+   private ClientboundContainerClosePacket(final FriendlyByteBuf input) {
       super();
-      this.containerId = var1.readContainerId();
+      this.containerId = input.readContainerId();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeContainerId(this.containerId);
+   private void write(final FriendlyByteBuf output) {
+      output.writeContainerId(this.containerId);
    }
 
    public PacketType<ClientboundContainerClosePacket> type() {
       return GamePacketTypes.CLIENTBOUND_CONTAINER_CLOSE;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleContainerClose(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleContainerClose(this);
    }
 
    public int getContainerId() {

@@ -1,6 +1,6 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.navigation.ScreenPosition;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
@@ -10,7 +10,7 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.RecipeBookMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.crafting.display.RecipeDisplay;
@@ -19,9 +19,9 @@ public abstract class AbstractRecipeBookScreen<T extends RecipeBookMenu> extends
    private final RecipeBookComponent<?> recipeBookComponent;
    private boolean widthTooNarrow;
 
-   public AbstractRecipeBookScreen(T var1, RecipeBookComponent<?> var2, Inventory var3, Component var4) {
-      super(var1, var3, var4);
-      this.recipeBookComponent = var2;
+   public AbstractRecipeBookScreen(final T menu, final RecipeBookComponent<?> recipeBookComponent, final Inventory inventory, final Component title) {
+      super(menu, inventory, title);
+      this.recipeBookComponent = recipeBookComponent;
    }
 
    protected void init() {
@@ -35,12 +35,12 @@ public abstract class AbstractRecipeBookScreen<T extends RecipeBookMenu> extends
    protected abstract ScreenPosition getRecipeBookButtonPosition();
 
    private void initButton() {
-      ScreenPosition var1 = this.getRecipeBookButtonPosition();
-      this.addRenderableWidget(new ImageButton(var1.x(), var1.y(), 20, 18, RecipeBookComponent.RECIPE_BUTTON_SPRITES, (var1x) -> {
+      ScreenPosition buttonPos = this.getRecipeBookButtonPosition();
+      this.addRenderableWidget(new ImageButton(buttonPos.x(), buttonPos.y(), 20, 18, RecipeBookComponent.RECIPE_BUTTON_SPRITES, (button) -> {
          this.recipeBookComponent.toggleVisibility();
          this.leftPos = this.recipeBookComponent.updateScreenPosition(this.width, this.imageWidth);
-         ScreenPosition var2 = this.getRecipeBookButtonPosition();
-         var1x.setPosition(var2.x(), var2.y());
+         ScreenPosition updatedButtonPos = this.getRecipeBookButtonPosition();
+         button.setPosition(updatedButtonPos.x(), updatedButtonPos.y());
          this.onRecipeBookButtonClick();
       }));
       this.addWidget(this.recipeBookComponent);
@@ -49,64 +49,64 @@ public abstract class AbstractRecipeBookScreen<T extends RecipeBookMenu> extends
    protected void onRecipeBookButtonClick() {
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       if (this.recipeBookComponent.isVisible() && this.widthTooNarrow) {
-         this.renderBackground(var1, var2, var3, var4);
+         this.extractBackground(graphics, mouseX, mouseY, a);
       } else {
-         super.renderContents(var1, var2, var3, var4);
+         super.extractContents(graphics, mouseX, mouseY, a);
       }
 
-      var1.nextStratum();
-      this.recipeBookComponent.render(var1, var2, var3, var4);
-      var1.nextStratum();
-      this.renderCarriedItem(var1, var2, var3);
-      this.renderSnapbackItem(var1);
-      this.renderTooltip(var1, var2, var3);
-      this.recipeBookComponent.renderTooltip(var1, var2, var3, this.hoveredSlot);
+      graphics.nextStratum();
+      this.recipeBookComponent.extractRenderState(graphics, mouseX, mouseY, a);
+      graphics.nextStratum();
+      this.extractCarriedItem(graphics, mouseX, mouseY);
+      this.extractSnapbackItem(graphics);
+      this.extractTooltip(graphics, mouseX, mouseY);
+      this.recipeBookComponent.extractTooltip(graphics, mouseX, mouseY, this.hoveredSlot);
    }
 
-   protected void renderSlots(GuiGraphics var1, int var2, int var3) {
-      super.renderSlots(var1, var2, var3);
-      this.recipeBookComponent.renderGhostRecipe(var1, this.isBiggerResultSlot());
+   protected void extractSlots(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY) {
+      super.extractSlots(graphics, mouseX, mouseY);
+      this.recipeBookComponent.extractGhostRecipe(graphics, this.isBiggerResultSlot());
    }
 
    protected boolean isBiggerResultSlot() {
       return true;
    }
 
-   public boolean charTyped(CharacterEvent var1) {
-      return this.recipeBookComponent.charTyped(var1) ? true : super.charTyped(var1);
+   public boolean charTyped(final CharacterEvent event) {
+      return this.recipeBookComponent.charTyped(event) ? true : super.charTyped(event);
    }
 
-   public boolean keyPressed(KeyEvent var1) {
-      return this.recipeBookComponent.keyPressed(var1) ? true : super.keyPressed(var1);
+   public boolean keyPressed(final KeyEvent event) {
+      return this.recipeBookComponent.keyPressed(event) ? true : super.keyPressed(event);
    }
 
-   public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
-      if (this.recipeBookComponent.mouseClicked(var1, var2)) {
+   public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
+      if (this.recipeBookComponent.mouseClicked(event, doubleClick)) {
          this.setFocused(this.recipeBookComponent);
          return true;
       } else {
-         return this.widthTooNarrow && this.recipeBookComponent.isVisible() ? true : super.mouseClicked(var1, var2);
+         return this.widthTooNarrow && this.recipeBookComponent.isVisible() ? true : super.mouseClicked(event, doubleClick);
       }
    }
 
-   public boolean mouseDragged(MouseButtonEvent var1, double var2, double var4) {
-      return this.recipeBookComponent.mouseDragged(var1, var2, var4) ? true : super.mouseDragged(var1, var2, var4);
+   public boolean mouseDragged(final MouseButtonEvent event, final double dx, final double dy) {
+      return this.recipeBookComponent.mouseDragged(event, dx, dy) ? true : super.mouseDragged(event, dx, dy);
    }
 
-   protected boolean isHovering(int var1, int var2, int var3, int var4, double var5, double var7) {
-      return (!this.widthTooNarrow || !this.recipeBookComponent.isVisible()) && super.isHovering(var1, var2, var3, var4, var5, var7);
+   protected boolean isHovering(final int left, final int top, final int w, final int h, final double xm, final double ym) {
+      return (!this.widthTooNarrow || !this.recipeBookComponent.isVisible()) && super.isHovering(left, top, w, h, xm, ym);
    }
 
-   protected boolean hasClickedOutside(double var1, double var3, int var5, int var6) {
-      boolean var7 = var1 < (double)var5 || var3 < (double)var6 || var1 >= (double)(var5 + this.imageWidth) || var3 >= (double)(var6 + this.imageHeight);
-      return this.recipeBookComponent.hasClickedOutside(var1, var3, this.leftPos, this.topPos, this.imageWidth, this.imageHeight) && var7;
+   protected boolean hasClickedOutside(final double mx, final double my, final int xo, final int yo) {
+      boolean clickedOutside = mx < (double)xo || my < (double)yo || mx >= (double)(xo + this.imageWidth) || my >= (double)(yo + this.imageHeight);
+      return this.recipeBookComponent.hasClickedOutside(mx, my, this.leftPos, this.topPos, this.imageWidth, this.imageHeight) && clickedOutside;
    }
 
-   protected void slotClicked(Slot var1, int var2, int var3, ClickType var4) {
-      super.slotClicked(var1, var2, var3, var4);
-      this.recipeBookComponent.slotClicked(var1);
+   protected void slotClicked(final Slot slot, final int slotId, final int buttonNum, final ContainerInput containerInput) {
+      super.slotClicked(slot, slotId, buttonNum, containerInput);
+      this.recipeBookComponent.slotClicked(slot);
    }
 
    public void containerTick() {
@@ -118,7 +118,7 @@ public abstract class AbstractRecipeBookScreen<T extends RecipeBookMenu> extends
       this.recipeBookComponent.recipesUpdated();
    }
 
-   public void fillGhostRecipe(RecipeDisplay var1) {
-      this.recipeBookComponent.fillGhostRecipe(var1);
+   public void fillGhostRecipe(final RecipeDisplay display) {
+      this.recipeBookComponent.fillGhostRecipe(display);
    }
 }

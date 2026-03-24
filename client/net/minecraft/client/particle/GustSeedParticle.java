@@ -9,20 +9,20 @@ public class GustSeedParticle extends NoRenderParticle {
    private final double scale;
    private final int tickDelayInBetween;
 
-   GustSeedParticle(ClientLevel var1, double var2, double var4, double var6, double var8, int var10, int var11) {
-      super(var1, var2, var4, var6, 0.0, 0.0, 0.0);
-      this.scale = var8;
-      this.lifetime = var10;
-      this.tickDelayInBetween = var11;
+   private GustSeedParticle(final ClientLevel level, final double x, final double y, final double z, final double scale, final int lifetime, final int tickDelayInBetween) {
+      super(level, x, y, z, 0.0, 0.0, 0.0);
+      this.scale = scale;
+      this.lifetime = lifetime;
+      this.tickDelayInBetween = tickDelayInBetween;
    }
 
    public void tick() {
       if (this.age % (this.tickDelayInBetween + 1) == 0) {
-         for(int var1 = 0; var1 < 3; ++var1) {
-            double var2 = this.x + (this.random.nextDouble() - this.random.nextDouble()) * this.scale;
-            double var4 = this.y + (this.random.nextDouble() - this.random.nextDouble()) * this.scale;
-            double var6 = this.z + (this.random.nextDouble() - this.random.nextDouble()) * this.scale;
-            this.level.addParticle(ParticleTypes.GUST, var2, var4, var6, (double)((float)this.age / (float)this.lifetime), 0.0, 0.0);
+         for(int i = 0; i < 3; ++i) {
+            double x = this.x + (this.random.nextDouble() - this.random.nextDouble()) * this.scale;
+            double y = this.y + (this.random.nextDouble() - this.random.nextDouble()) * this.scale;
+            double z = this.z + (this.random.nextDouble() - this.random.nextDouble()) * this.scale;
+            this.level.addParticle(ParticleTypes.GUST, x, y, z, (double)((float)this.age / (float)this.lifetime), 0.0, 0.0);
          }
       }
 
@@ -37,15 +37,15 @@ public class GustSeedParticle extends NoRenderParticle {
       private final int lifetime;
       private final int tickDelayInBetween;
 
-      public Provider(double var1, int var3, int var4) {
+      public Provider(final double scale, final int lifetime, final int tickDelayInBetween) {
          super();
-         this.scale = var1;
-         this.lifetime = var3;
-         this.tickDelayInBetween = var4;
+         this.scale = scale;
+         this.lifetime = lifetime;
+         this.tickDelayInBetween = tickDelayInBetween;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         return new GustSeedParticle(var2, var3, var5, var7, this.scale, this.lifetime, this.tickDelayInBetween);
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         return new GustSeedParticle(level, x, y, z, this.scale, this.lifetime, this.tickDelayInBetween);
       }
    }
 }

@@ -10,11 +10,11 @@ public class ForceUnmount extends Behavior<LivingEntity> {
       super(ImmutableMap.of());
    }
 
-   protected boolean checkExtraStartConditions(ServerLevel var1, LivingEntity var2) {
-      return var2.isPassenger();
+   protected boolean checkExtraStartConditions(final ServerLevel level, final LivingEntity body) {
+      return body.isPassenger();
    }
 
-   protected void start(ServerLevel var1, LivingEntity var2, long var3) {
-      var2.unRide();
+   protected void start(final ServerLevel level, final LivingEntity body, final long timestamp) {
+      body.unRide();
    }
 }

@@ -3,37 +3,37 @@ package net.minecraft.world.level.levelgen.feature;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.HugeMushroomBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.configurations.HugeMushroomFeatureConfiguration;
 
 public class HugeRedMushroomFeature extends AbstractHugeMushroomFeature {
-   public HugeRedMushroomFeature(Codec<HugeMushroomFeatureConfiguration> var1) {
-      super(var1);
+   public HugeRedMushroomFeature(final Codec<HugeMushroomFeatureConfiguration> codec) {
+      super(codec);
    }
 
-   protected void makeCap(LevelAccessor var1, RandomSource var2, BlockPos var3, int var4, BlockPos.MutableBlockPos var5, HugeMushroomFeatureConfiguration var6) {
-      for(int var7 = var4 - 3; var7 <= var4; ++var7) {
-         int var8 = var7 < var4 ? var6.foliageRadius : var6.foliageRadius - 1;
-         int var9 = var6.foliageRadius - 2;
+   protected void makeCap(final WorldGenLevel level, final RandomSource random, final BlockPos origin, final int treeHeight, final BlockPos.MutableBlockPos blockPos, final HugeMushroomFeatureConfiguration config) {
+      for(int dy = treeHeight - 3; dy <= treeHeight; ++dy) {
+         int radius = dy < treeHeight ? config.foliageRadius() : config.foliageRadius() - 1;
+         int center = config.foliageRadius() - 2;
 
-         for(int var10 = -var8; var10 <= var8; ++var10) {
-            for(int var11 = -var8; var11 <= var8; ++var11) {
-               boolean var12 = var10 == -var8;
-               boolean var13 = var10 == var8;
-               boolean var14 = var11 == -var8;
-               boolean var15 = var11 == var8;
-               boolean var16 = var12 || var13;
-               boolean var17 = var14 || var15;
-               if (var7 >= var4 || var16 != var17) {
-                  var5.setWithOffset(var3, var10, var7, var11);
-                  BlockState var18 = var6.capProvider.getState(var2, var3);
-                  if (var18.hasProperty(HugeMushroomBlock.WEST) && var18.hasProperty(HugeMushroomBlock.EAST) && var18.hasProperty(HugeMushroomBlock.NORTH) && var18.hasProperty(HugeMushroomBlock.SOUTH) && var18.hasProperty(HugeMushroomBlock.UP)) {
-                     var18 = (BlockState)((BlockState)((BlockState)((BlockState)((BlockState)var18.setValue(HugeMushroomBlock.UP, var7 >= var4 - 1)).setValue(HugeMushroomBlock.WEST, var10 < -var9)).setValue(HugeMushroomBlock.EAST, var10 > var9)).setValue(HugeMushroomBlock.NORTH, var11 < -var9)).setValue(HugeMushroomBlock.SOUTH, var11 > var9);
+         for(int dx = -radius; dx <= radius; ++dx) {
+            for(int dz = -radius; dz <= radius; ++dz) {
+               boolean minX = dx == -radius;
+               boolean maxX = dx == radius;
+               boolean minZ = dz == -radius;
+               boolean maxZ = dz == radius;
+               boolean xEdge = minX || maxX;
+               boolean zEdge = minZ || maxZ;
+               if (dy >= treeHeight || xEdge != zEdge) {
+                  blockPos.setWithOffset(origin, dx, dy, dz);
+                  BlockState state = config.capProvider().getState(level, random, origin);
+                  if (state.hasProperty(HugeMushroomBlock.WEST) && state.hasProperty(HugeMushroomBlock.EAST) && state.hasProperty(HugeMushroomBlock.NORTH) && state.hasProperty(HugeMushroomBlock.SOUTH) && state.hasProperty(HugeMushroomBlock.UP)) {
+                     state = (BlockState)((BlockState)((BlockState)((BlockState)((BlockState)state.setValue(HugeMushroomBlock.UP, dy >= treeHeight - 1)).setValue(HugeMushroomBlock.WEST, dx < -center)).setValue(HugeMushroomBlock.EAST, dx > center)).setValue(HugeMushroomBlock.NORTH, dz < -center)).setValue(HugeMushroomBlock.SOUTH, dz > center);
                   }
 
-                  this.placeMushroomBlock(var1, var5, var18);
+                  this.placeMushroomBlock(level, blockPos, state);
                }
             }
          }
@@ -41,14 +41,14 @@ public class HugeRedMushroomFeature extends AbstractHugeMushroomFeature {
 
    }
 
-   protected int getTreeRadiusForHeight(int var1, int var2, int var3, int var4) {
-      int var5 = 0;
-      if (var4 < var2 && var4 >= var2 - 3) {
-         var5 = var3;
-      } else if (var4 == var2) {
-         var5 = var3;
+   protected int getTreeRadiusForHeight(final int trunkHeight, final int treeHeight, final int leafRadius, final int yo) {
+      int radius = 0;
+      if (yo < treeHeight && yo >= treeHeight - 3) {
+         radius = leafRadius;
+      } else if (yo == treeHeight) {
+         radius = leafRadius;
       }
 
-      return var5;
+      return radius;
    }
 }

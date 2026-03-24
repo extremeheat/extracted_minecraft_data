@@ -27,6 +27,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -46,30 +47,30 @@ public class ServerPlayerGameMode {
    private int delayedTickStart;
    private int lastSentState;
 
-   public ServerPlayerGameMode(ServerPlayer var1) {
+   public ServerPlayerGameMode(final ServerPlayer player) {
       super();
       this.gameModeForPlayer = GameType.DEFAULT_MODE;
       this.destroyPos = BlockPos.ZERO;
       this.delayedDestroyPos = BlockPos.ZERO;
       this.lastSentState = -1;
-      this.player = var1;
-      this.level = var1.level();
+      this.player = player;
+      this.level = player.level();
    }
 
-   public boolean changeGameModeForPlayer(GameType var1) {
-      if (var1 == this.gameModeForPlayer) {
+   public boolean changeGameModeForPlayer(final GameType gameModeForPlayer) {
+      if (gameModeForPlayer == this.gameModeForPlayer) {
          return false;
       } else {
-         Abilities var2 = this.player.getAbilities();
-         this.setGameModeForPlayer(var1, this.gameModeForPlayer);
-         if (var2.flying && var1 != GameType.SPECTATOR && this.isInRangeOfGround()) {
-            var2.flying = false;
+         Abilities abilities = this.player.getAbilities();
+         this.setGameModeForPlayer(gameModeForPlayer, this.gameModeForPlayer);
+         if (abilities.flying && gameModeForPlayer != GameType.SPECTATOR && this.isInRangeOfGround()) {
+            abilities.flying = false;
          }
 
          this.player.onUpdateAbilities();
          this.level.getServer().getPlayerList().broadcastAll(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_GAME_MODE, this.player));
          this.level.updateSleepingPlayerList();
-         if (var1 == GameType.CREATIVE) {
+         if (gameModeForPlayer == GameType.CREATIVE) {
             this.player.resetCurrentImpulseContext();
          }
 
@@ -77,16 +78,16 @@ public class ServerPlayerGameMode {
       }
    }
 
-   protected void setGameModeForPlayer(GameType var1, @Nullable GameType var2) {
-      this.previousGameModeForPlayer = var2;
-      this.gameModeForPlayer = var1;
-      Abilities var3 = this.player.getAbilities();
-      var1.updatePlayerAbilities(var3);
+   protected void setGameModeForPlayer(final GameType gameModeForPlayer, final @Nullable GameType previousGameModeForPlayer) {
+      this.previousGameModeForPlayer = previousGameModeForPlayer;
+      this.gameModeForPlayer = gameModeForPlayer;
+      Abilities abilities = this.player.getAbilities();
+      gameModeForPlayer.updatePlayerAbilities(abilities);
    }
 
    private boolean isInRangeOfGround() {
-      List var1 = Entity.collectAllColliders(this.player, this.level, this.player.getBoundingBox());
-      return var1.isEmpty() && this.player.getAvailableSpaceBelow(1.0) < 1.0;
+      List<VoxelShape> clipping = Entity.collectAllColliders(this.player, this.level, this.player.getBoundingBox());
+      return clipping.isEmpty() && this.player.getAvailableSpaceBelow(1.0) < 1.0;
    }
 
    public GameType getGameModeForPlayer() {
@@ -108,177 +109,183 @@ public class ServerPlayerGameMode {
    public void tick() {
       ++this.gameTicks;
       if (this.hasDelayedDestroy) {
-         BlockState var1 = this.level.getBlockState(this.delayedDestroyPos);
-         if (var1.isAir()) {
+         BlockState blockState = this.level.getBlockState(this.delayedDestroyPos);
+         if (blockState.isAir()) {
             this.hasDelayedDestroy = false;
          } else {
-            float var2 = this.incrementDestroyProgress(var1, this.delayedDestroyPos, this.delayedTickStart);
-            if (var2 >= 1.0F) {
+            float destroyProgress = this.incrementDestroyProgress(blockState, this.delayedDestroyPos, this.delayedTickStart);
+            if (destroyProgress >= 1.0F) {
                this.hasDelayedDestroy = false;
                this.destroyBlock(this.delayedDestroyPos);
             }
          }
       } else if (this.isDestroyingBlock) {
-         BlockState var3 = this.level.getBlockState(this.destroyPos);
-         if (var3.isAir()) {
+         BlockState blockState = this.level.getBlockState(this.destroyPos);
+         if (blockState.isAir()) {
             this.level.destroyBlockProgress(this.player.getId(), this.destroyPos, -1);
             this.lastSentState = -1;
             this.isDestroyingBlock = false;
          } else {
-            this.incrementDestroyProgress(var3, this.destroyPos, this.destroyProgressStart);
+            this.incrementDestroyProgress(blockState, this.destroyPos, this.destroyProgressStart);
          }
       }
 
    }
 
-   private float incrementDestroyProgress(BlockState var1, BlockPos var2, int var3) {
-      int var4 = this.gameTicks - var3;
-      float var5 = var1.getDestroyProgress(this.player, this.player.level(), var2) * (float)(var4 + 1);
-      int var6 = (int)(var5 * 10.0F);
-      if (var6 != this.lastSentState) {
-         this.level.destroyBlockProgress(this.player.getId(), var2, var6);
-         this.lastSentState = var6;
+   private float incrementDestroyProgress(final BlockState blockState, final BlockPos delayedDestroyPos, final int destroyStartTick) {
+      int ticksSpentDestroying = this.gameTicks - destroyStartTick;
+      float destroyProgress = blockState.getDestroyProgress(this.player, this.player.level(), delayedDestroyPos) * (float)(ticksSpentDestroying + 1);
+      int state = (int)(destroyProgress * 10.0F);
+      if (state != this.lastSentState) {
+         this.level.destroyBlockProgress(this.player.getId(), delayedDestroyPos, state);
+         this.lastSentState = state;
       }
 
-      return var5;
+      return destroyProgress;
    }
 
-   private void debugLogging(BlockPos var1, boolean var2, int var3, String var4) {
+   private void debugLogging(final BlockPos pos, final boolean allGood, final int sequence, final String message) {
       if (SharedConstants.DEBUG_BLOCK_BREAK) {
-         LOGGER.debug("Server ACK {} {} {} {}", new Object[]{var3, var1, var2, var4});
+         LOGGER.debug("Server ACK {} {} {} {}", new Object[]{sequence, pos, allGood, message});
       }
 
    }
 
-   public void handleBlockBreakAction(BlockPos var1, ServerboundPlayerActionPacket.Action var2, Direction var3, int var4, int var5) {
-      if (!this.player.isWithinBlockInteractionRange(var1, 1.0)) {
-         this.debugLogging(var1, false, var5, "too far");
-      } else if (var1.getY() > var4) {
-         this.player.connection.send(new ClientboundBlockUpdatePacket(var1, this.level.getBlockState(var1)));
-         this.debugLogging(var1, false, var5, "too high");
+   public void handleBlockBreakAction(final BlockPos pos, final ServerboundPlayerActionPacket.Action action, final Direction direction, final int maxY, final int sequence) {
+      if (!this.player.isWithinBlockInteractionRange(pos, 1.0)) {
+         this.debugLogging(pos, false, sequence, "too far");
+      } else if (pos.getY() > maxY) {
+         this.player.connection.send(new ClientboundBlockUpdatePacket(pos, this.level.getBlockState(pos)));
+         this.debugLogging(pos, false, sequence, "too high");
       } else {
-         if (var2 == ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK) {
-            if (!this.level.mayInteract(this.player, var1)) {
-               this.player.connection.send(new ClientboundBlockUpdatePacket(var1, this.level.getBlockState(var1)));
-               this.debugLogging(var1, false, var5, "may not interact");
+         if (action == ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK) {
+            if (this.level.getServer().isUnderSpawnProtection(this.level, pos, this.player)) {
+               this.player.sendSpawnProtectionMessage(pos);
+               this.debugLogging(pos, false, sequence, "spawn protection");
+               return;
+            }
+
+            if (!this.level.mayInteract(this.player, pos)) {
+               this.player.connection.send(new ClientboundBlockUpdatePacket(pos, this.level.getBlockState(pos)));
+               this.debugLogging(pos, false, sequence, "may not interact");
                return;
             }
 
             if (this.player.getAbilities().instabuild) {
-               this.destroyAndAck(var1, var5, "creative destroy");
+               this.destroyAndAck(pos, sequence, "creative destroy");
                return;
             }
 
-            if (this.player.blockActionRestricted(this.level, var1, this.gameModeForPlayer)) {
-               this.player.connection.send(new ClientboundBlockUpdatePacket(var1, this.level.getBlockState(var1)));
-               this.debugLogging(var1, false, var5, "block action restricted");
+            if (this.player.blockActionRestricted(this.level, pos, this.gameModeForPlayer)) {
+               this.player.connection.send(new ClientboundBlockUpdatePacket(pos, this.level.getBlockState(pos)));
+               this.debugLogging(pos, false, sequence, "block action restricted");
                return;
             }
 
             this.destroyProgressStart = this.gameTicks;
-            float var6 = 1.0F;
-            BlockState var7 = this.level.getBlockState(var1);
-            if (!var7.isAir()) {
-               EnchantmentHelper.onHitBlock(this.level, this.player.getMainHandItem(), this.player, this.player, EquipmentSlot.MAINHAND, Vec3.atCenterOf(var1), var7, (var1x) -> this.player.onEquippedItemBroken(var1x, EquipmentSlot.MAINHAND));
-               var7.attack(this.level, var1, this.player);
-               var6 = var7.getDestroyProgress(this.player, this.player.level(), var1);
+            float progress = 1.0F;
+            BlockState blockState = this.level.getBlockState(pos);
+            if (!blockState.isAir()) {
+               EnchantmentHelper.onHitBlock(this.level, this.player.getMainHandItem(), this.player, this.player, EquipmentSlot.MAINHAND, Vec3.atCenterOf(pos), blockState, (item) -> this.player.onEquippedItemBroken(item, EquipmentSlot.MAINHAND));
+               blockState.attack(this.level, pos, this.player);
+               progress = blockState.getDestroyProgress(this.player, this.player.level(), pos);
             }
 
-            if (!var7.isAir() && var6 >= 1.0F) {
-               this.destroyAndAck(var1, var5, "insta mine");
+            if (!blockState.isAir() && progress >= 1.0F) {
+               this.destroyAndAck(pos, sequence, "insta mine");
             } else {
                if (this.isDestroyingBlock) {
                   this.player.connection.send(new ClientboundBlockUpdatePacket(this.destroyPos, this.level.getBlockState(this.destroyPos)));
-                  this.debugLogging(var1, false, var5, "abort destroying since another started (client insta mine, server disagreed)");
+                  this.debugLogging(pos, false, sequence, "abort destroying since another started (client insta mine, server disagreed)");
                }
 
                this.isDestroyingBlock = true;
-               this.destroyPos = var1.immutable();
-               int var8 = (int)(var6 * 10.0F);
-               this.level.destroyBlockProgress(this.player.getId(), var1, var8);
-               this.debugLogging(var1, true, var5, "actual start of destroying");
-               this.lastSentState = var8;
+               this.destroyPos = pos.immutable();
+               int state = (int)(progress * 10.0F);
+               this.level.destroyBlockProgress(this.player.getId(), pos, state);
+               this.debugLogging(pos, true, sequence, "actual start of destroying");
+               this.lastSentState = state;
             }
-         } else if (var2 == ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK) {
-            if (var1.equals(this.destroyPos)) {
-               int var9 = this.gameTicks - this.destroyProgressStart;
-               BlockState var10 = this.level.getBlockState(var1);
-               if (!var10.isAir()) {
-                  float var11 = var10.getDestroyProgress(this.player, this.player.level(), var1) * (float)(var9 + 1);
-                  if (var11 >= 0.7F) {
+         } else if (action == ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK) {
+            if (pos.equals(this.destroyPos)) {
+               int ticksSpentDestroying = this.gameTicks - this.destroyProgressStart;
+               BlockState state = this.level.getBlockState(pos);
+               if (!state.isAir()) {
+                  float destroyProgress = state.getDestroyProgress(this.player, this.player.level(), pos) * (float)(ticksSpentDestroying + 1);
+                  if (destroyProgress >= 0.7F) {
                      this.isDestroyingBlock = false;
-                     this.level.destroyBlockProgress(this.player.getId(), var1, -1);
-                     this.destroyAndAck(var1, var5, "destroyed");
+                     this.level.destroyBlockProgress(this.player.getId(), pos, -1);
+                     this.destroyAndAck(pos, sequence, "destroyed");
                      return;
                   }
 
                   if (!this.hasDelayedDestroy) {
                      this.isDestroyingBlock = false;
                      this.hasDelayedDestroy = true;
-                     this.delayedDestroyPos = var1;
+                     this.delayedDestroyPos = pos;
                      this.delayedTickStart = this.destroyProgressStart;
                   }
                }
             }
 
-            this.debugLogging(var1, true, var5, "stopped destroying");
-         } else if (var2 == ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK) {
+            this.debugLogging(pos, true, sequence, "stopped destroying");
+         } else if (action == ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK) {
             this.isDestroyingBlock = false;
-            if (!Objects.equals(this.destroyPos, var1)) {
-               LOGGER.warn("Mismatch in destroy block pos: {} {}", this.destroyPos, var1);
+            if (!Objects.equals(this.destroyPos, pos)) {
+               LOGGER.warn("Mismatch in destroy block pos: {} {}", this.destroyPos, pos);
                this.level.destroyBlockProgress(this.player.getId(), this.destroyPos, -1);
-               this.debugLogging(var1, true, var5, "aborted mismatched destroying");
+               this.debugLogging(pos, true, sequence, "aborted mismatched destroying");
             }
 
-            this.level.destroyBlockProgress(this.player.getId(), var1, -1);
-            this.debugLogging(var1, true, var5, "aborted destroying");
+            this.level.destroyBlockProgress(this.player.getId(), pos, -1);
+            this.debugLogging(pos, true, sequence, "aborted destroying");
          }
 
       }
    }
 
-   public void destroyAndAck(BlockPos var1, int var2, String var3) {
-      if (this.destroyBlock(var1)) {
-         this.debugLogging(var1, true, var2, var3);
+   public void destroyAndAck(final BlockPos pos, final int sequence, final String exitId) {
+      if (this.destroyBlock(pos)) {
+         this.debugLogging(pos, true, sequence, exitId);
       } else {
-         this.player.connection.send(new ClientboundBlockUpdatePacket(var1, this.level.getBlockState(var1)));
-         this.debugLogging(var1, false, var2, var3);
+         this.player.connection.send(new ClientboundBlockUpdatePacket(pos, this.level.getBlockState(pos)));
+         this.debugLogging(pos, false, sequence, exitId);
       }
 
    }
 
-   public boolean destroyBlock(BlockPos var1) {
-      BlockState var5 = this.level.getBlockState(var1);
-      if (!this.player.getMainHandItem().canDestroyBlock(var5, this.level, var1, this.player)) {
+   public boolean destroyBlock(final BlockPos pos) {
+      BlockState state = this.level.getBlockState(pos);
+      if (!this.player.getMainHandItem().canDestroyBlock(state, this.level, pos, this.player)) {
          return false;
       } else {
-         BlockEntity var2 = this.level.getBlockEntity(var1);
-         Block var3 = var5.getBlock();
-         if (var3 instanceof GameMasterBlock && !this.player.canUseGameMasterBlocks()) {
-            this.level.sendBlockUpdated(var1, var5, var5, 3);
+         BlockEntity blockEntity = this.level.getBlockEntity(pos);
+         Block block = state.getBlock();
+         if (block instanceof GameMasterBlock && !this.player.canUseGameMasterBlocks()) {
+            this.level.sendBlockUpdated(pos, state, state, 3);
             return false;
-         } else if (this.player.blockActionRestricted(this.level, var1, this.gameModeForPlayer)) {
+         } else if (this.player.blockActionRestricted(this.level, pos, this.gameModeForPlayer)) {
             return false;
          } else {
-            BlockState var4 = var3.playerWillDestroy(this.level, var1, var5, this.player);
-            boolean var9 = this.level.removeBlock(var1, false);
+            BlockState adjustedState = block.playerWillDestroy(this.level, pos, state, this.player);
+            boolean changed = this.level.removeBlock(pos, false);
             if (SharedConstants.DEBUG_BLOCK_BREAK) {
-               LOGGER.info("server broke {} {} -> {}", new Object[]{var1, var4, this.level.getBlockState(var1)});
+               LOGGER.info("server broke {} {} -> {}", new Object[]{pos, adjustedState, this.level.getBlockState(pos)});
             }
 
-            if (var9) {
-               var3.destroy(this.level, var1, var4);
+            if (changed) {
+               block.destroy(this.level, pos, adjustedState);
             }
 
             if (this.player.preventsBlockDrops()) {
                return true;
             } else {
-               ItemStack var6 = this.player.getMainHandItem();
-               ItemStack var7 = var6.copy();
-               boolean var8 = this.player.hasCorrectToolForDrops(var4);
-               var6.mineBlock(this.level, var4, var1, this.player);
-               if (var9 && var8) {
-                  var3.playerDestroy(this.level, this.player, var1, var4, var2, var7);
+               ItemStack itemStack = this.player.getMainHandItem();
+               ItemStack destroyedWith = itemStack.copy();
+               boolean canDestroy = this.player.hasCorrectToolForDrops(adjustedState);
+               itemStack.mineBlock(this.level, adjustedState, pos, this.player);
+               if (changed && canDestroy) {
+                  block.playerDestroy(this.level, this.player, pos, adjustedState, blockEntity, destroyedWith);
                }
 
                return true;
@@ -287,101 +294,101 @@ public class ServerPlayerGameMode {
       }
    }
 
-   public InteractionResult useItem(ServerPlayer var1, Level var2, ItemStack var3, InteractionHand var4) {
+   public InteractionResult useItem(final ServerPlayer player, final Level level, final ItemStack itemStack, final InteractionHand hand) {
       if (this.gameModeForPlayer == GameType.SPECTATOR) {
          return InteractionResult.PASS;
-      } else if (var1.getCooldowns().isOnCooldown(var3)) {
+      } else if (player.getCooldowns().isOnCooldown(itemStack)) {
          return InteractionResult.PASS;
       } else {
-         int var5 = var3.getCount();
-         int var6 = var3.getDamageValue();
-         InteractionResult var7 = var3.use(var2, var1, var4);
-         ItemStack var8;
-         if (var7 instanceof InteractionResult.Success) {
-            InteractionResult.Success var9 = (InteractionResult.Success)var7;
-            var8 = (ItemStack)Objects.requireNonNullElse(var9.heldItemTransformedTo(), var1.getItemInHand(var4));
+         int oldCount = itemStack.getCount();
+         int oldDamage = itemStack.getDamageValue();
+         InteractionResult result = itemStack.use(level, player, hand);
+         ItemStack resultStack;
+         if (result instanceof InteractionResult.Success) {
+            InteractionResult.Success success = (InteractionResult.Success)result;
+            resultStack = (ItemStack)Objects.requireNonNullElse(success.heldItemTransformedTo(), player.getItemInHand(hand));
          } else {
-            var8 = var1.getItemInHand(var4);
+            resultStack = player.getItemInHand(hand);
          }
 
-         if (var8 == var3 && var8.getCount() == var5 && var8.getUseDuration(var1) <= 0 && var8.getDamageValue() == var6) {
-            return var7;
-         } else if (var7 instanceof InteractionResult.Fail && var8.getUseDuration(var1) > 0 && !var1.isUsingItem()) {
-            return var7;
+         if (resultStack == itemStack && resultStack.getCount() == oldCount && resultStack.getUseDuration(player) <= 0 && resultStack.getDamageValue() == oldDamage) {
+            return result;
+         } else if (result instanceof InteractionResult.Fail && resultStack.getUseDuration(player) > 0 && !player.isUsingItem()) {
+            return result;
          } else {
-            if (var3 != var8) {
-               var1.setItemInHand(var4, var8);
+            if (itemStack != resultStack) {
+               player.setItemInHand(hand, resultStack);
             }
 
-            if (var8.isEmpty()) {
-               var1.setItemInHand(var4, ItemStack.EMPTY);
+            if (resultStack.isEmpty()) {
+               player.setItemInHand(hand, ItemStack.EMPTY);
             }
 
-            if (!var1.isUsingItem()) {
-               var1.inventoryMenu.sendAllDataToRemote();
+            if (!player.isUsingItem()) {
+               player.inventoryMenu.sendAllDataToRemote();
             }
 
-            return var7;
+            return result;
          }
       }
    }
 
-   public InteractionResult useItemOn(ServerPlayer var1, Level var2, ItemStack var3, InteractionHand var4, BlockHitResult var5) {
-      BlockPos var6 = var5.getBlockPos();
-      BlockState var7 = var2.getBlockState(var6);
-      if (!var7.getBlock().isEnabled(var2.enabledFeatures())) {
+   public InteractionResult useItemOn(final ServerPlayer player, final Level level, final ItemStack itemStack, final InteractionHand hand, final BlockHitResult hitResult) {
+      BlockPos pos = hitResult.getBlockPos();
+      BlockState state = level.getBlockState(pos);
+      if (!state.getBlock().isEnabled(level.enabledFeatures())) {
          return InteractionResult.FAIL;
       } else if (this.gameModeForPlayer == GameType.SPECTATOR) {
-         MenuProvider var14 = var7.getMenuProvider(var2, var6);
-         if (var14 != null) {
-            var1.openMenu(var14);
+         MenuProvider menuProvider = state.getMenuProvider(level, pos);
+         if (menuProvider != null) {
+            player.openMenu(menuProvider);
             return InteractionResult.CONSUME;
          } else {
             return InteractionResult.PASS;
          }
       } else {
-         boolean var8 = !var1.getMainHandItem().isEmpty() || !var1.getOffhandItem().isEmpty();
-         boolean var9 = var1.isSecondaryUseActive() && var8;
-         ItemStack var10 = var3.copy();
-         if (!var9) {
-            InteractionResult var11 = var7.useItemOn(var1.getItemInHand(var4), var2, var1, var4, var5);
-            if (var11.consumesAction()) {
-               CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger(var1, var6, var10);
-               return var11;
+         boolean haveSomethingInOurHands = !player.getMainHandItem().isEmpty() || !player.getOffhandItem().isEmpty();
+         boolean suppressUsingBlock = player.isSecondaryUseActive() && haveSomethingInOurHands;
+         ItemStack usedItemStack = itemStack.copy();
+         if (!suppressUsingBlock) {
+            InteractionResult itemUse = state.useItemOn(player.getItemInHand(hand), level, player, hand, hitResult);
+            if (itemUse.consumesAction()) {
+               CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger(player, pos, usedItemStack);
+               return itemUse;
             }
 
-            if (var11 instanceof InteractionResult.TryEmptyHandInteraction && var4 == InteractionHand.MAIN_HAND) {
-               InteractionResult var12 = var7.useWithoutItem(var2, var1, var5);
-               if (var12.consumesAction()) {
-                  CriteriaTriggers.DEFAULT_BLOCK_USE.trigger(var1, var6);
-                  return var12;
+            if (itemUse instanceof InteractionResult.TryEmptyHandInteraction && hand == InteractionHand.MAIN_HAND) {
+               InteractionResult use = state.useWithoutItem(level, player, hitResult);
+               if (use.consumesAction()) {
+                  CriteriaTriggers.DEFAULT_BLOCK_USE.trigger(player, pos);
+                  return use;
                }
             }
          }
 
-         if (!var3.isEmpty() && !var1.getCooldowns().isOnCooldown(var3)) {
-            UseOnContext var15 = new UseOnContext(var1, var4, var5);
-            InteractionResult var16;
-            if (var1.hasInfiniteMaterials()) {
-               int var13 = var3.getCount();
-               var16 = var3.useOn(var15);
-               var3.setCount(var13);
+         if (!itemStack.isEmpty() && !player.getCooldowns().isOnCooldown(itemStack)) {
+            UseOnContext context = new UseOnContext(player, hand, hitResult);
+            InteractionResult success;
+            if (player.hasInfiniteMaterials()) {
+               int count = itemStack.getCount();
+               success = itemStack.useOn(context);
+               itemStack.setCount(count);
             } else {
-               var16 = var3.useOn(var15);
+               success = itemStack.useOn(context);
             }
 
-            if (var16.consumesAction()) {
-               CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger(var1, var6, var10);
+            if (success.consumesAction()) {
+               CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger(player, pos, usedItemStack);
             }
 
-            return var16;
+            return success;
          } else {
             return InteractionResult.PASS;
          }
       }
    }
 
-   public void setLevel(ServerLevel var1) {
-      this.level = var1;
+   public void setLevel(final ServerLevel newLevel) {
+      this.level = newLevel;
    }
 }

@@ -9,19 +9,17 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 
 public record DirectoryLister(String sourcePath, String idPrefix) implements SpriteSource {
-   public static final MapCodec<DirectoryLister> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("source").forGetter(DirectoryLister::sourcePath), Codec.STRING.fieldOf("prefix").forGetter(DirectoryLister::idPrefix)).apply(var0, DirectoryLister::new));
+   public static final MapCodec<DirectoryLister> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.STRING.fieldOf("source").forGetter(DirectoryLister::sourcePath), Codec.STRING.fieldOf("prefix").forGetter(DirectoryLister::idPrefix)).apply(i, DirectoryLister::new));
 
-   public DirectoryLister(String var1, String var2) {
+   public DirectoryLister {
       super();
-      this.sourcePath = var1;
-      this.idPrefix = var2;
    }
 
-   public void run(ResourceManager var1, SpriteSource.Output var2) {
-      FileToIdConverter var3 = new FileToIdConverter("textures/" + this.sourcePath, ".png");
-      var3.listMatchingResources(var1).forEach((var3x, var4) -> {
-         Identifier var5 = var3.fileToId(var3x).withPrefix(this.idPrefix);
-         var2.add(var5, var4);
+   public void run(final ResourceManager resourceManager, final SpriteSource.Output output) {
+      FileToIdConverter converter = new FileToIdConverter("textures/" + this.sourcePath, ".png");
+      converter.listMatchingResources(resourceManager).forEach((identifier, resource) -> {
+         Identifier spriteLocation = converter.fileToId(identifier).withPrefix(this.idPrefix);
+         output.add(spriteLocation, resource);
       });
    }
 

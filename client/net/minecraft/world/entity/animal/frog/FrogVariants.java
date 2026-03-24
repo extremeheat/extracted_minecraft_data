@@ -18,22 +18,22 @@ public interface FrogVariants {
    ResourceKey<FrogVariant> WARM = createKey(TemperatureVariants.WARM);
    ResourceKey<FrogVariant> COLD = createKey(TemperatureVariants.COLD);
 
-   private static ResourceKey<FrogVariant> createKey(Identifier var0) {
-      return ResourceKey.create(Registries.FROG_VARIANT, var0);
+   private static ResourceKey<FrogVariant> createKey(final Identifier id) {
+      return ResourceKey.create(Registries.FROG_VARIANT, id);
    }
 
-   static void bootstrap(BootstrapContext<FrogVariant> var0) {
-      register(var0, TEMPERATE, "entity/frog/temperate_frog", SpawnPrioritySelectors.fallback(0));
-      register(var0, WARM, "entity/frog/warm_frog", BiomeTags.SPAWNS_WARM_VARIANT_FROGS);
-      register(var0, COLD, "entity/frog/cold_frog", BiomeTags.SPAWNS_COLD_VARIANT_FROGS);
+   static void bootstrap(final BootstrapContext<FrogVariant> registry) {
+      register(registry, TEMPERATE, "entity/frog/frog_temperate", SpawnPrioritySelectors.fallback(0));
+      register(registry, WARM, "entity/frog/frog_warm", BiomeTags.SPAWNS_WARM_VARIANT_FROGS);
+      register(registry, COLD, "entity/frog/frog_cold", BiomeTags.SPAWNS_COLD_VARIANT_FROGS);
    }
 
-   private static void register(BootstrapContext<FrogVariant> var0, ResourceKey<FrogVariant> var1, String var2, TagKey<Biome> var3) {
-      HolderSet.Named var4 = var0.lookup(Registries.BIOME).getOrThrow(var3);
-      register(var0, var1, var2, SpawnPrioritySelectors.single(new BiomeCheck(var4), 1));
+   private static void register(final BootstrapContext<FrogVariant> context, final ResourceKey<FrogVariant> name, final String assetId, final TagKey<Biome> limitToBiome) {
+      HolderSet<Biome> biomes = context.lookup(Registries.BIOME).getOrThrow(limitToBiome);
+      register(context, name, assetId, SpawnPrioritySelectors.single(new BiomeCheck(biomes), 1));
    }
 
-   private static void register(BootstrapContext<FrogVariant> var0, ResourceKey<FrogVariant> var1, String var2, SpawnPrioritySelectors var3) {
-      var0.register(var1, new FrogVariant(new ClientAsset.ResourceTexture(Identifier.withDefaultNamespace(var2)), var3));
+   private static void register(final BootstrapContext<FrogVariant> context, final ResourceKey<FrogVariant> name, final String assetId, final SpawnPrioritySelectors selectors) {
+      context.register(name, new FrogVariant(new ClientAsset.ResourceTexture(Identifier.withDefaultNamespace(assetId)), selectors));
    }
 }

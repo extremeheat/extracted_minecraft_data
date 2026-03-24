@@ -18,17 +18,17 @@ public abstract class Team {
       super();
    }
 
-   public boolean isAlliedTo(@Nullable Team var1) {
-      if (var1 == null) {
+   public boolean isAlliedTo(final @Nullable Team other) {
+      if (other == null) {
          return false;
       } else {
-         return this == var1;
+         return this == other;
       }
    }
 
    public abstract String getName();
 
-   public abstract MutableComponent getFormattedName(Component var1);
+   public abstract MutableComponent getFormattedName(Component teamMemberName);
 
    public abstract boolean canSeeFriendlyInvisibles();
 
@@ -51,14 +51,14 @@ public abstract class Team {
       HIDE_FOR_OWN_TEAM("hideForOwnTeam", 3);
 
       public static final Codec<Visibility> CODEC = StringRepresentable.<Visibility>fromEnum(Visibility::values);
-      private static final IntFunction<Visibility> BY_ID = ByIdMap.<Visibility>continuous((var0) -> var0.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-      public static final StreamCodec<ByteBuf, Visibility> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (var0) -> var0.id);
+      private static final IntFunction<Visibility> BY_ID = ByIdMap.<Visibility>continuous((v) -> v.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+      public static final StreamCodec<ByteBuf, Visibility> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (v) -> v.id);
       public final String name;
       public final int id;
 
-      private Visibility(final String var3, final int var4) {
-         this.name = var3;
-         this.id = var4;
+      private Visibility(final String name, final int id) {
+         this.name = name;
+         this.id = id;
       }
 
       public Component getDisplayName() {
@@ -82,14 +82,14 @@ public abstract class Team {
       PUSH_OWN_TEAM("pushOwnTeam", 3);
 
       public static final Codec<CollisionRule> CODEC = StringRepresentable.<CollisionRule>fromEnum(CollisionRule::values);
-      private static final IntFunction<CollisionRule> BY_ID = ByIdMap.<CollisionRule>continuous((var0) -> var0.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-      public static final StreamCodec<ByteBuf, CollisionRule> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (var0) -> var0.id);
+      private static final IntFunction<CollisionRule> BY_ID = ByIdMap.<CollisionRule>continuous((r) -> r.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+      public static final StreamCodec<ByteBuf, CollisionRule> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (r) -> r.id);
       public final String name;
       public final int id;
 
-      private CollisionRule(final String var3, final int var4) {
-         this.name = var3;
-         this.id = var4;
+      private CollisionRule(final String name, final int id) {
+         this.name = name;
+         this.id = id;
       }
 
       public Component getDisplayName() {

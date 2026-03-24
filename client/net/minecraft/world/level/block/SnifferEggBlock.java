@@ -38,63 +38,63 @@ public class SnifferEggBlock extends Block {
       return CODEC;
    }
 
-   public SnifferEggBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public SnifferEggBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(HATCH, 0));
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(HATCH);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(HATCH);
    }
 
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   public VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return SHAPE;
    }
 
-   public int getHatchLevel(BlockState var1) {
-      return (Integer)var1.getValue(HATCH);
+   public int getHatchLevel(final BlockState state) {
+      return (Integer)state.getValue(HATCH);
    }
 
-   private boolean isReadyToHatch(BlockState var1) {
-      return this.getHatchLevel(var1) == 2;
+   private boolean isReadyToHatch(final BlockState state) {
+      return this.getHatchLevel(state) == 2;
    }
 
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (!this.isReadyToHatch(var1)) {
-         var2.playSound((Entity)null, var3, SoundEvents.SNIFFER_EGG_CRACK, SoundSource.BLOCKS, 0.7F, 0.9F + var4.nextFloat() * 0.2F);
-         var2.setBlock(var3, (BlockState)var1.setValue(HATCH, this.getHatchLevel(var1) + 1), 2);
+   public void tick(final BlockState state, final ServerLevel level, final BlockPos position, final RandomSource random) {
+      if (!this.isReadyToHatch(state)) {
+         level.playSound((Entity)null, position, SoundEvents.SNIFFER_EGG_CRACK, SoundSource.BLOCKS, 0.7F, 0.9F + random.nextFloat() * 0.2F);
+         level.setBlock(position, (BlockState)state.setValue(HATCH, this.getHatchLevel(state) + 1), 2);
       } else {
-         var2.playSound((Entity)null, var3, SoundEvents.SNIFFER_EGG_HATCH, SoundSource.BLOCKS, 0.7F, 0.9F + var4.nextFloat() * 0.2F);
-         var2.destroyBlock(var3, false);
-         Sniffer var5 = EntityType.SNIFFER.create(var2, EntitySpawnReason.BREEDING);
-         if (var5 != null) {
-            Vec3 var6 = var3.getCenter();
-            var5.setBaby(true);
-            var5.snapTo(var6.x(), var6.y(), var6.z(), Mth.wrapDegrees(var2.random.nextFloat() * 360.0F), 0.0F);
-            var2.addFreshEntity(var5);
+         level.playSound((Entity)null, position, SoundEvents.SNIFFER_EGG_HATCH, SoundSource.BLOCKS, 0.7F, 0.9F + random.nextFloat() * 0.2F);
+         level.destroyBlock(position, false);
+         Sniffer sniffer = EntityType.SNIFFER.create(level, EntitySpawnReason.BREEDING);
+         if (sniffer != null) {
+            Vec3 spawnAt = position.getCenter();
+            sniffer.setBaby(true);
+            sniffer.snapTo(spawnAt.x(), spawnAt.y(), spawnAt.z(), Mth.wrapDegrees(level.getRandom().nextFloat() * 360.0F), 0.0F);
+            level.addFreshEntity(sniffer);
          }
 
       }
    }
 
-   public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      boolean var6 = hatchBoost(var2, var3);
-      if (!var2.isClientSide() && var6) {
-         var2.levelEvent(3009, var3, 0);
+   public void onPlace(final BlockState state, final Level level, final BlockPos pos, final BlockState oldState, final boolean movedByPiston) {
+      boolean boosted = hatchBoost(level, pos);
+      if (!level.isClientSide() && boosted) {
+         level.levelEvent(3009, pos, 0);
       }
 
-      int var7 = var6 ? 12000 : 24000;
-      int var8 = var7 / 3;
-      var2.gameEvent(GameEvent.BLOCK_PLACE, var3, GameEvent.Context.of(var1));
-      var2.scheduleTick(var3, this, var8 + var2.random.nextInt(300));
+      int hatchTime = boosted ? 12000 : 24000;
+      int progressionTickDelay = hatchTime / 3;
+      level.gameEvent(GameEvent.BLOCK_PLACE, pos, GameEvent.Context.of(state));
+      level.scheduleTick(pos, this, progressionTickDelay + level.getRandom().nextInt(300));
    }
 
-   public boolean isPathfindable(BlockState var1, PathComputationType var2) {
+   public boolean isPathfindable(final BlockState state, final PathComputationType type) {
       return false;
    }
 
-   public static boolean hatchBoost(BlockGetter var0, BlockPos var1) {
-      return var0.getBlockState(var1.below()).is(BlockTags.SNIFFER_EGG_HATCH_BOOST);
+   public static boolean hatchBoost(final BlockGetter level, final BlockPos pos) {
+      return level.getBlockState(pos.below()).is(BlockTags.SNIFFER_EGG_HATCH_BOOST);
    }
 
    static {

@@ -7,18 +7,18 @@ public class Target extends Node {
    private Node bestNode;
    private boolean reached;
 
-   public Target(Node var1) {
-      super(var1.x, var1.y, var1.z);
+   public Target(final Node node) {
+      super(node.x, node.y, node.z);
    }
 
-   public Target(int var1, int var2, int var3) {
-      super(var1, var2, var3);
+   public Target(final int x, final int y, final int z) {
+      super(x, y, z);
    }
 
-   public void updateBest(float var1, Node var2) {
-      if (var1 < this.bestHeuristic) {
-         this.bestHeuristic = var1;
-         this.bestNode = var2;
+   public void updateBest(final float heuristic, final Node node) {
+      if (heuristic < this.bestHeuristic) {
+         this.bestHeuristic = heuristic;
+         this.bestNode = node;
       }
 
    }
@@ -35,9 +35,9 @@ public class Target extends Node {
       return this.reached;
    }
 
-   public static Target createFromStream(FriendlyByteBuf var0) {
-      Target var1 = new Target(var0.readInt(), var0.readInt(), var0.readInt());
-      readContents(var0, var1);
-      return var1;
+   public static Target createFromStream(final FriendlyByteBuf buffer) {
+      Target node = new Target(buffer.readInt(), buffer.readInt(), buffer.readInt());
+      readContents(buffer, node);
+      return node;
    }
 }

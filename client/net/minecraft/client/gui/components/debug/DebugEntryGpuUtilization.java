@@ -11,14 +11,14 @@ public class DebugEntryGpuUtilization implements DebugScreenEntry {
       super();
    }
 
-   public void display(DebugScreenDisplayer var1, @Nullable Level var2, @Nullable LevelChunk var3, @Nullable LevelChunk var4) {
-      Minecraft var5 = Minecraft.getInstance();
-      String var10000 = var5.getGpuUtilization() > 100.0 ? String.valueOf(ChatFormatting.RED) + "100%" : Math.round(var5.getGpuUtilization()) + "%";
-      String var6 = "GPU: " + var10000;
-      var1.addLine(var6);
+   public void display(final DebugScreenDisplayer displayer, final @Nullable Level serverOrClientLevel, final @Nullable LevelChunk clientChunk, final @Nullable LevelChunk serverChunk) {
+      Minecraft minecraft = Minecraft.getInstance();
+      String var10000 = minecraft.getGpuUtilization() > 100.0 ? String.valueOf(ChatFormatting.RED) + "100%" : Math.round(minecraft.getGpuUtilization()) + "%";
+      String gpuUtilizationString = "GPU: " + var10000;
+      displayer.addLine(gpuUtilizationString);
    }
 
-   public boolean isAllowed(boolean var1) {
+   public boolean isAllowed(final boolean reducedDebugInfo) {
       return true;
    }
 }

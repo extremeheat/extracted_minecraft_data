@@ -6,18 +6,18 @@ import java.util.Optional;
 import net.minecraft.core.BlockPos;
 
 public class EndGatewayConfiguration implements FeatureConfiguration {
-   public static final Codec<EndGatewayConfiguration> CODEC = RecordCodecBuilder.create((var0) -> var0.group(BlockPos.CODEC.optionalFieldOf("exit").forGetter((var0x) -> var0x.exit), Codec.BOOL.fieldOf("exact").forGetter((var0x) -> var0x.exact)).apply(var0, EndGatewayConfiguration::new));
+   public static final Codec<EndGatewayConfiguration> CODEC = RecordCodecBuilder.create((i) -> i.group(BlockPos.CODEC.optionalFieldOf("exit").forGetter((c) -> c.exit), Codec.BOOL.fieldOf("exact").forGetter((c) -> c.exact)).apply(i, EndGatewayConfiguration::new));
    private final Optional<BlockPos> exit;
    private final boolean exact;
 
-   private EndGatewayConfiguration(Optional<BlockPos> var1, boolean var2) {
+   private EndGatewayConfiguration(final Optional<BlockPos> exit, final boolean exact) {
       super();
-      this.exit = var1;
-      this.exact = var2;
+      this.exit = exit;
+      this.exact = exact;
    }
 
-   public static EndGatewayConfiguration knownExit(BlockPos var0, boolean var1) {
-      return new EndGatewayConfiguration(Optional.of(var0), var1);
+   public static EndGatewayConfiguration knownExit(final BlockPos exit, final boolean exact) {
+      return new EndGatewayConfiguration(Optional.of(exit), exact);
    }
 
    public static EndGatewayConfiguration delayedExitSearch() {

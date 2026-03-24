@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -45,15 +45,15 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
    private final List<Integer> slotsThatHasBeenDownloaded = Lists.newArrayList();
    private int animTick;
 
-   public RealmsBrokenWorldScreen(Screen var1, long var2, boolean var4) {
-      super(var4 ? Component.translatable("mco.brokenworld.minigame.title") : Component.translatable("mco.brokenworld.title"));
-      this.lastScreen = var1;
-      this.serverId = var2;
+   public RealmsBrokenWorldScreen(final Screen lastScreen, final long serverId, final boolean isMinigame) {
+      super(isMinigame ? Component.translatable("mco.brokenworld.minigame.title") : Component.translatable("mco.brokenworld.title"));
+      this.lastScreen = lastScreen;
+      this.serverId = serverId;
    }
 
    public void init() {
       this.leftX = this.width / 2 - 150;
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, (var1) -> this.onClose()).bounds((this.width - 150) / 2, row(13) - 5, 150, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, (button) -> this.onClose()).bounds((this.width - 150) / 2, row(13) - 5, 150, 20).build());
       if (this.serverData == null) {
          this.fetchServerData(this.serverId);
       } else {
@@ -67,23 +67,23 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
    }
 
    private void addButtons() {
-      for(Map.Entry var2 : this.serverData.slots.entrySet()) {
-         int var3 = (Integer)var2.getKey();
-         boolean var4 = var3 != this.serverData.activeSlot || this.serverData.isMinigameActive();
-         Button var5;
-         if (var4) {
-            var5 = Button.builder(Component.translatable("mco.brokenworld.play"), (var2x) -> this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(this.lastScreen, new LongRunningTask[]{new SwitchSlotTask(this.serverData.id, var3, this::doSwitchOrReset)}))).bounds(this.getFramePositionX(var3), row(8), 80, 20).build();
-            var5.active = !((RealmsSlot)this.serverData.slots.get(var3)).options.empty;
+      for(Map.Entry<Integer, RealmsSlot> entry : this.serverData.slots.entrySet()) {
+         int slot = (Integer)entry.getKey();
+         boolean canPlay = slot != this.serverData.activeSlot || this.serverData.isMinigameActive();
+         Button playOrDownloadButton;
+         if (canPlay) {
+            playOrDownloadButton = Button.builder(Component.translatable("mco.brokenworld.play"), (button) -> this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(this.lastScreen, new LongRunningTask[]{new SwitchSlotTask(this.serverData.id, slot, this::doSwitchOrReset)}))).bounds(this.getFramePositionX(slot), row(8), 80, 20).build();
+            playOrDownloadButton.active = !((RealmsSlot)this.serverData.slots.get(slot)).options.empty;
          } else {
-            var5 = Button.builder(Component.translatable("mco.brokenworld.download"), (var2x) -> this.minecraft.setScreen(RealmsPopups.infoPopupScreen(this, Component.translatable("mco.configure.world.restore.download.question.line1"), (var2) -> this.downloadWorld(var3)))).bounds(this.getFramePositionX(var3), row(8), 80, 20).build();
+            playOrDownloadButton = Button.builder(Component.translatable("mco.brokenworld.download"), (button) -> this.minecraft.setScreen(RealmsPopups.infoPopupScreen(this, Component.translatable("mco.configure.world.restore.download.question.line1"), (popupScreen) -> this.downloadWorld(slot)))).bounds(this.getFramePositionX(slot), row(8), 80, 20).build();
          }
 
-         if (this.slotsThatHasBeenDownloaded.contains(var3)) {
-            var5.active = false;
-            var5.setMessage(Component.translatable("mco.brokenworld.downloaded"));
+         if (this.slotsThatHasBeenDownloaded.contains(slot)) {
+            playOrDownloadButton.active = false;
+            playOrDownloadButton.setMessage(Component.translatable("mco.brokenworld.downloaded"));
          }
 
-         this.addRenderableWidget(var5);
+         this.addRenderableWidget(playOrDownloadButton);
       }
 
    }
@@ -92,67 +92,67 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
       ++this.animTick;
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 17, -1);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int xm, final int ym, final float a) {
+      super.extractRenderState(graphics, xm, ym, a);
+      graphics.centeredText(this.font, (Component)this.title, this.width / 2, 17, -1);
 
-      for(int var5 = 0; var5 < this.message.length; ++var5) {
-         var1.drawCenteredString(this.font, this.message[var5], this.width / 2, row(-1) + 3 + var5 * 12, -6250336);
+      for(int i = 0; i < this.message.length; ++i) {
+         graphics.centeredText(this.font, this.message[i], this.width / 2, row(-1) + 3 + i * 12, -6250336);
       }
 
       if (this.serverData != null) {
-         for(Map.Entry var6 : this.serverData.slots.entrySet()) {
-            if (((RealmsSlot)var6.getValue()).options.templateImage != null && ((RealmsSlot)var6.getValue()).options.templateId != -1L) {
-               this.drawSlotFrame(var1, this.getFramePositionX((Integer)var6.getKey()), row(1) + 5, var2, var3, this.serverData.activeSlot == (Integer)var6.getKey() && !this.isMinigame(), ((RealmsSlot)var6.getValue()).options.getSlotName((Integer)var6.getKey()), (Integer)var6.getKey(), ((RealmsSlot)var6.getValue()).options.templateId, ((RealmsSlot)var6.getValue()).options.templateImage, ((RealmsSlot)var6.getValue()).options.empty);
+         for(Map.Entry<Integer, RealmsSlot> entry : this.serverData.slots.entrySet()) {
+            if (((RealmsSlot)entry.getValue()).options.templateImage != null && ((RealmsSlot)entry.getValue()).options.templateId != -1L) {
+               this.extractSlotFrame(graphics, this.getFramePositionX((Integer)entry.getKey()), row(1) + 5, xm, ym, this.serverData.activeSlot == (Integer)entry.getKey() && !this.isMinigame(), ((RealmsSlot)entry.getValue()).options.getSlotName((Integer)entry.getKey()), (Integer)entry.getKey(), ((RealmsSlot)entry.getValue()).options.templateId, ((RealmsSlot)entry.getValue()).options.templateImage, ((RealmsSlot)entry.getValue()).options.empty);
             } else {
-               this.drawSlotFrame(var1, this.getFramePositionX((Integer)var6.getKey()), row(1) + 5, var2, var3, this.serverData.activeSlot == (Integer)var6.getKey() && !this.isMinigame(), ((RealmsSlot)var6.getValue()).options.getSlotName((Integer)var6.getKey()), (Integer)var6.getKey(), -1L, (String)null, ((RealmsSlot)var6.getValue()).options.empty);
+               this.extractSlotFrame(graphics, this.getFramePositionX((Integer)entry.getKey()), row(1) + 5, xm, ym, this.serverData.activeSlot == (Integer)entry.getKey() && !this.isMinigame(), ((RealmsSlot)entry.getValue()).options.getSlotName((Integer)entry.getKey()), (Integer)entry.getKey(), -1L, (String)null, ((RealmsSlot)entry.getValue()).options.empty);
             }
          }
 
       }
    }
 
-   private int getFramePositionX(int var1) {
-      return this.leftX + (var1 - 1) * 110;
+   private int getFramePositionX(final int i) {
+      return this.leftX + (i - 1) * 110;
    }
 
-   public Screen createErrorScreen(RealmsServiceException var1) {
-      return new RealmsGenericErrorScreen(var1, this.lastScreen);
+   public Screen createErrorScreen(final RealmsServiceException exception) {
+      return new RealmsGenericErrorScreen(exception, this.lastScreen);
    }
 
-   private void fetchServerData(long var1) {
-      RealmsUtil.supplyAsync((var2) -> var2.getOwnRealm(var1), RealmsUtil.openScreenAndLogOnFailure(this::createErrorScreen, "Couldn't get own world")).thenAcceptAsync((var1x) -> {
-         this.serverData = var1x;
+   private void fetchServerData(final long realmId) {
+      RealmsUtil.supplyAsync((client) -> client.getOwnRealm(realmId), RealmsUtil.openScreenAndLogOnFailure(this::createErrorScreen, "Couldn't get own world")).thenAcceptAsync((serverData) -> {
+         this.serverData = serverData;
          this.addButtons();
       }, this.minecraft);
    }
 
    public void doSwitchOrReset() {
       (new Thread(() -> {
-         RealmsClient var1 = RealmsClient.getOrCreate();
+         RealmsClient client = RealmsClient.getOrCreate();
          if (this.serverData.state == RealmsServer.State.CLOSED) {
             this.minecraft.execute(() -> this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(this, new LongRunningTask[]{new OpenServerTask(this.serverData, this, true, this.minecraft)})));
          } else {
             try {
-               RealmsServer var2 = var1.getOwnRealm(this.serverId);
-               this.minecraft.execute(() -> RealmsMainScreen.play(var2, this));
-            } catch (RealmsServiceException var3) {
-               LOGGER.error("Couldn't get own world", var3);
-               this.minecraft.execute(() -> this.minecraft.setScreen(this.createErrorScreen(var3)));
+               RealmsServer ownRealm = client.getOwnRealm(this.serverId);
+               this.minecraft.execute(() -> RealmsMainScreen.play(ownRealm, this));
+            } catch (RealmsServiceException e) {
+               LOGGER.error("Couldn't get own world", e);
+               this.minecraft.execute(() -> this.minecraft.setScreen(this.createErrorScreen(e)));
             }
          }
 
       })).start();
    }
 
-   private void downloadWorld(int var1) {
-      RealmsClient var2 = RealmsClient.getOrCreate();
+   private void downloadWorld(final int slotId) {
+      RealmsClient client = RealmsClient.getOrCreate();
 
       try {
-         WorldDownload var3 = var2.requestDownloadInfo(this.serverData.id, var1);
-         RealmsDownloadLatestWorldScreen var4 = new RealmsDownloadLatestWorldScreen(this, var3, this.serverData.getWorldName(var1), (var2x) -> {
-            if (var2x) {
-               this.slotsThatHasBeenDownloaded.add(var1);
+         WorldDownload worldDownload = client.requestDownloadInfo(this.serverData.id, slotId);
+         RealmsDownloadLatestWorldScreen downloadScreen = new RealmsDownloadLatestWorldScreen(this, worldDownload, this.serverData.getWorldName(slotId), (result) -> {
+            if (result) {
+               this.slotsThatHasBeenDownloaded.add(slotId);
                this.clearWidgets();
                this.addButtons();
             } else {
@@ -160,10 +160,10 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
             }
 
          });
-         this.minecraft.setScreen(var4);
-      } catch (RealmsServiceException var5) {
-         LOGGER.error("Couldn't download world data", var5);
-         this.minecraft.setScreen(new RealmsGenericErrorScreen(var5, this));
+         this.minecraft.setScreen(downloadScreen);
+      } catch (RealmsServiceException e) {
+         LOGGER.error("Couldn't download world data", e);
+         this.minecraft.setScreen(new RealmsGenericErrorScreen(e, this));
       }
 
    }
@@ -176,32 +176,32 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
       return this.serverData != null && this.serverData.isMinigameActive();
    }
 
-   private void drawSlotFrame(GuiGraphics var1, int var2, int var3, int var4, int var5, boolean var6, String var7, int var8, long var9, @Nullable String var11, boolean var12) {
-      Identifier var13;
-      if (var12) {
-         var13 = RealmsWorldSlotButton.EMPTY_SLOT_LOCATION;
-      } else if (var11 != null && var9 != -1L) {
-         var13 = RealmsTextureManager.worldTemplate(String.valueOf(var9), var11);
-      } else if (var8 == 1) {
-         var13 = RealmsWorldSlotButton.DEFAULT_WORLD_SLOT_1;
-      } else if (var8 == 2) {
-         var13 = RealmsWorldSlotButton.DEFAULT_WORLD_SLOT_2;
-      } else if (var8 == 3) {
-         var13 = RealmsWorldSlotButton.DEFAULT_WORLD_SLOT_3;
+   private void extractSlotFrame(final GuiGraphicsExtractor graphics, final int x, final int y, final int xm, final int ym, final boolean active, final String text, final int i, final long imageId, final @Nullable String image, final boolean empty) {
+      Identifier texture;
+      if (empty) {
+         texture = RealmsWorldSlotButton.EMPTY_SLOT_LOCATION;
+      } else if (image != null && imageId != -1L) {
+         texture = RealmsTextureManager.worldTemplate(String.valueOf(imageId), image);
+      } else if (i == 1) {
+         texture = RealmsWorldSlotButton.DEFAULT_WORLD_SLOT_1;
+      } else if (i == 2) {
+         texture = RealmsWorldSlotButton.DEFAULT_WORLD_SLOT_2;
+      } else if (i == 3) {
+         texture = RealmsWorldSlotButton.DEFAULT_WORLD_SLOT_3;
       } else {
-         var13 = RealmsTextureManager.worldTemplate(String.valueOf(this.serverData.minigameId), this.serverData.minigameImage);
+         texture = RealmsTextureManager.worldTemplate(String.valueOf(this.serverData.minigameId), this.serverData.minigameImage);
       }
 
-      if (var6) {
-         float var14 = 0.9F + 0.1F * Mth.cos((double)((float)this.animTick * 0.2F));
-         var1.blit(RenderPipelines.GUI_TEXTURED, var13, var2 + 3, var3 + 3, 0.0F, 0.0F, 74, 74, 74, 74, 74, 74, ARGB.colorFromFloat(1.0F, var14, var14, var14));
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SLOT_FRAME_SPRITE, var2, var3, 80, 80);
+      if (active) {
+         float c = 0.9F + 0.1F * Mth.cos((double)((float)this.animTick * 0.2F));
+         graphics.blit(RenderPipelines.GUI_TEXTURED, texture, x + 3, y + 3, 0.0F, 0.0F, 74, 74, 74, 74, 74, 74, ARGB.colorFromFloat(1.0F, c, c, c));
+         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SLOT_FRAME_SPRITE, x, y, 80, 80);
       } else {
-         int var15 = ARGB.colorFromFloat(1.0F, 0.56F, 0.56F, 0.56F);
-         var1.blit(RenderPipelines.GUI_TEXTURED, var13, var2 + 3, var3 + 3, 0.0F, 0.0F, 74, 74, 74, 74, 74, 74, var15);
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SLOT_FRAME_SPRITE, var2, var3, 80, 80, var15);
+         int color = ARGB.colorFromFloat(1.0F, 0.56F, 0.56F, 0.56F);
+         graphics.blit(RenderPipelines.GUI_TEXTURED, texture, x + 3, y + 3, 0.0F, 0.0F, 74, 74, 74, 74, 74, 74, color);
+         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SLOT_FRAME_SPRITE, x, y, 80, 80, color);
       }
 
-      var1.drawCenteredString(this.font, (String)var7, var2 + 40, var3 + 66, -1);
+      graphics.centeredText(this.font, (String)text, x + 40, y + 66, -1);
    }
 }

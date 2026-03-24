@@ -13,13 +13,13 @@ public class ProtectedBlockProcessor extends StructureProcessor {
    public final TagKey<Block> cannotReplace;
    public static final MapCodec<ProtectedBlockProcessor> CODEC;
 
-   public ProtectedBlockProcessor(TagKey<Block> var1) {
+   public ProtectedBlockProcessor(final TagKey<Block> cannotReplace) {
       super();
-      this.cannotReplace = var1;
+      this.cannotReplace = cannotReplace;
    }
 
-   public StructureTemplate.@Nullable StructureBlockInfo processBlock(LevelReader var1, BlockPos var2, BlockPos var3, StructureTemplate.StructureBlockInfo var4, StructureTemplate.StructureBlockInfo var5, StructurePlaceSettings var6) {
-      return Feature.isReplaceable(this.cannotReplace).test(var1.getBlockState(var5.pos())) ? var5 : null;
+   public StructureTemplate.@Nullable StructureBlockInfo processBlock(final LevelReader level, final BlockPos targetPosition, final BlockPos referencePos, final StructureTemplate.StructureBlockInfo originalBlockInfo, final StructureTemplate.StructureBlockInfo processedBlockInfo, final StructurePlaceSettings settings) {
+      return Feature.isReplaceable(this.cannotReplace).test(level.getBlockState(processedBlockInfo.pos())) ? processedBlockInfo : null;
    }
 
    protected StructureProcessorType<?> getType() {
@@ -27,6 +27,6 @@ public class ProtectedBlockProcessor extends StructureProcessor {
    }
 
    static {
-      CODEC = TagKey.hashedCodec(Registries.BLOCK).xmap(ProtectedBlockProcessor::new, (var0) -> var0.cannotReplace).fieldOf("value");
+      CODEC = TagKey.hashedCodec(Registries.BLOCK).xmap(ProtectedBlockProcessor::new, (e) -> e.cannotReplace).fieldOf("value");
    }
 }

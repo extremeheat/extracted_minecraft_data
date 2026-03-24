@@ -3,19 +3,20 @@ package net.minecraft.world.level.levelgen.feature.configurations;
 import com.mojang.serialization.Codec;
 import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.util.valueproviders.IntProvider;
+import net.minecraft.util.valueproviders.IntProviders;
 
 public class CountConfiguration implements FeatureConfiguration {
-   public static final Codec<CountConfiguration> CODEC = IntProvider.codec(0, 256).fieldOf("count").xmap(CountConfiguration::new, CountConfiguration::count).codec();
+   public static final Codec<CountConfiguration> CODEC = IntProviders.codec(0, 256).fieldOf("count").xmap(CountConfiguration::new, CountConfiguration::count).codec();
    private final IntProvider count;
 
-   public CountConfiguration(int var1) {
+   public CountConfiguration(final int count) {
       super();
-      this.count = ConstantInt.of(var1);
+      this.count = ConstantInt.of(count);
    }
 
-   public CountConfiguration(IntProvider var1) {
+   public CountConfiguration(final IntProvider count) {
       super();
-      this.count = var1;
+      this.count = count;
    }
 
    public IntProvider count() {

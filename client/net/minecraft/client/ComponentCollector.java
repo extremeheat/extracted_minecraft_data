@@ -12,8 +12,8 @@ public class ComponentCollector {
       super();
    }
 
-   public void append(FormattedText var1) {
-      this.parts.add(var1);
+   public void append(final FormattedText component) {
+      this.parts.add(component);
    }
 
    public @Nullable FormattedText getResult() {
@@ -25,8 +25,8 @@ public class ComponentCollector {
    }
 
    public FormattedText getResultOrEmpty() {
-      FormattedText var1 = this.getResult();
-      return var1 != null ? var1 : FormattedText.EMPTY;
+      FormattedText result = this.getResult();
+      return result != null ? result : FormattedText.EMPTY;
    }
 
    public void reset() {

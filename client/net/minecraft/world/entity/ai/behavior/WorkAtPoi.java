@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Optional;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
@@ -19,55 +18,40 @@ public class WorkAtPoi extends Behavior<Villager> {
       super(ImmutableMap.of(MemoryModuleType.JOB_SITE, MemoryStatus.VALUE_PRESENT, MemoryModuleType.LOOK_TARGET, MemoryStatus.REGISTERED));
    }
 
-   protected boolean checkExtraStartConditions(ServerLevel var1, Villager var2) {
-      if (var1.getGameTime() - this.lastCheck < 300L) {
+   protected boolean checkExtraStartConditions(final ServerLevel level, final Villager body) {
+      if (level.getGameTime() - this.lastCheck < 300L) {
          return false;
-      } else if (var1.random.nextInt(2) != 0) {
-         return false;
-      } else {
-         this.lastCheck = var1.getGameTime();
-         GlobalPos var3 = (GlobalPos)var2.getBrain().getMemory(MemoryModuleType.JOB_SITE).get();
-         return var3.dimension() == var1.dimension() && var3.pos().closerToCenterThan(var2.position(), 1.73);
-      }
-   }
-
-   protected void start(ServerLevel var1, Villager var2, long var3) {
-      Brain var5 = var2.getBrain();
-      var5.setMemory(MemoryModuleType.LAST_WORKED_AT_POI, var3);
-      var5.getMemory(MemoryModuleType.JOB_SITE).ifPresent((var1x) -> var5.setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(var1x.pos())));
-      var2.playWorkSound();
-      this.useWorkstation(var1, var2);
-      if (var2.shouldRestock(var1)) {
-         var2.restock();
-      }
-
-   }
-
-   protected void useWorkstation(ServerLevel var1, Villager var2) {
-   }
-
-   protected boolean canStillUse(ServerLevel var1, Villager var2, long var3) {
-      Optional var5 = var2.getBrain().getMemory(MemoryModuleType.JOB_SITE);
-      if (var5.isEmpty()) {
+      } else if (level.getRandom().nextInt(2) != 0) {
          return false;
       } else {
-         GlobalPos var6 = (GlobalPos)var5.get();
-         return var6.dimension() == var1.dimension() && var6.pos().closerToCenterThan(var2.position(), 1.73);
+         this.lastCheck = level.getGameTime();
+         GlobalPos target = (GlobalPos)body.getBrain().getMemory(MemoryModuleType.JOB_SITE).get();
+         return target.dimension() == level.dimension() && target.pos().closerToCenterThan(body.position(), 1.73);
       }
    }
 
-   // $FF: synthetic method
-   protected boolean checkExtraStartConditions(final ServerLevel var1, final LivingEntity var2) {
-      return this.checkExtraStartConditions(var1, (Villager)var2);
+   protected void start(final ServerLevel level, final Villager body, final long timestamp) {
+      Brain<Villager> brain = body.getBrain();
+      brain.setMemory(MemoryModuleType.LAST_WORKED_AT_POI, timestamp);
+      brain.getMemory(MemoryModuleType.JOB_SITE).ifPresent((globalPos) -> brain.setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(globalPos.pos())));
+      body.playWorkSound();
+      this.useWorkstation(level, body);
+      if (body.shouldRestock(level)) {
+         body.restock();
+      }
+
    }
 
-   // $FF: synthetic method
-   protected boolean canStillUse(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      return this.canStillUse(var1, (Villager)var2, var3);
+   protected void useWorkstation(final ServerLevel level, final Villager body) {
    }
 
-   // $FF: synthetic method
-   protected void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.start(var1, (Villager)var2, var3);
+   protected boolean canStillUse(final ServerLevel level, final Villager body, final long timestamp) {
+      Optional<GlobalPos> jobSiteMemory = body.getBrain().<GlobalPos>getMemory(MemoryModuleType.JOB_SITE);
+      if (jobSiteMemory.isEmpty()) {
+         return false;
+      } else {
+         GlobalPos target = (GlobalPos)jobSiteMemory.get();
+         return target.dimension() == level.dimension() && target.pos().closerToCenterThan(body.position(), 1.73);
+      }
    }
 }

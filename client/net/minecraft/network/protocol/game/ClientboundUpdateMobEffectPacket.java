@@ -20,55 +20,55 @@ public class ClientboundUpdateMobEffectPacket implements Packet<ClientGamePacket
    private final int effectDurationTicks;
    private final byte flags;
 
-   public ClientboundUpdateMobEffectPacket(int var1, MobEffectInstance var2, boolean var3) {
+   public ClientboundUpdateMobEffectPacket(final int entityId, final MobEffectInstance effect, final boolean blend) {
       super();
-      this.entityId = var1;
-      this.effect = var2.getEffect();
-      this.effectAmplifier = var2.getAmplifier();
-      this.effectDurationTicks = var2.getDuration();
-      byte var4 = 0;
-      if (var2.isAmbient()) {
-         var4 = (byte)(var4 | 1);
+      this.entityId = entityId;
+      this.effect = effect.getEffect();
+      this.effectAmplifier = effect.getAmplifier();
+      this.effectDurationTicks = effect.getDuration();
+      byte flags = 0;
+      if (effect.isAmbient()) {
+         flags = (byte)(flags | 1);
       }
 
-      if (var2.isVisible()) {
-         var4 = (byte)(var4 | 2);
+      if (effect.isVisible()) {
+         flags = (byte)(flags | 2);
       }
 
-      if (var2.showIcon()) {
-         var4 = (byte)(var4 | 4);
+      if (effect.showIcon()) {
+         flags = (byte)(flags | 4);
       }
 
-      if (var3) {
-         var4 = (byte)(var4 | 8);
+      if (blend) {
+         flags = (byte)(flags | 8);
       }
 
-      this.flags = var4;
+      this.flags = flags;
    }
 
-   private ClientboundUpdateMobEffectPacket(RegistryFriendlyByteBuf var1) {
+   private ClientboundUpdateMobEffectPacket(final RegistryFriendlyByteBuf input) {
       super();
-      this.entityId = var1.readVarInt();
-      this.effect = (Holder)MobEffect.STREAM_CODEC.decode(var1);
-      this.effectAmplifier = var1.readVarInt();
-      this.effectDurationTicks = var1.readVarInt();
-      this.flags = var1.readByte();
+      this.entityId = input.readVarInt();
+      this.effect = (Holder)MobEffect.STREAM_CODEC.decode(input);
+      this.effectAmplifier = input.readVarInt();
+      this.effectDurationTicks = input.readVarInt();
+      this.flags = input.readByte();
    }
 
-   private void write(RegistryFriendlyByteBuf var1) {
-      var1.writeVarInt(this.entityId);
-      MobEffect.STREAM_CODEC.encode(var1, this.effect);
-      var1.writeVarInt(this.effectAmplifier);
-      var1.writeVarInt(this.effectDurationTicks);
-      var1.writeByte(this.flags);
+   private void write(final RegistryFriendlyByteBuf output) {
+      output.writeVarInt(this.entityId);
+      MobEffect.STREAM_CODEC.encode(output, this.effect);
+      output.writeVarInt(this.effectAmplifier);
+      output.writeVarInt(this.effectDurationTicks);
+      output.writeByte(this.flags);
    }
 
    public PacketType<ClientboundUpdateMobEffectPacket> type() {
       return GamePacketTypes.CLIENTBOUND_UPDATE_MOB_EFFECT;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleUpdateMobEffect(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleUpdateMobEffect(this);
    }
 
    public int getEntityId() {

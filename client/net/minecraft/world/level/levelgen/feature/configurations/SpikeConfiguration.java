@@ -2,38 +2,13 @@ package net.minecraft.world.level.levelgen.feature.configurations;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.List;
-import java.util.Optional;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.levelgen.feature.SpikeFeature;
-import org.jspecify.annotations.Nullable;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 
-public class SpikeConfiguration implements FeatureConfiguration {
-   public static final Codec<SpikeConfiguration> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.BOOL.fieldOf("crystal_invulnerable").orElse(false).forGetter((var0x) -> var0x.crystalInvulnerable), SpikeFeature.EndSpike.CODEC.listOf().fieldOf("spikes").forGetter((var0x) -> var0x.spikes), BlockPos.CODEC.optionalFieldOf("crystal_beam_target").forGetter((var0x) -> Optional.ofNullable(var0x.crystalBeamTarget))).apply(var0, SpikeConfiguration::new));
-   private final boolean crystalInvulnerable;
-   private final List<SpikeFeature.EndSpike> spikes;
-   private final @Nullable BlockPos crystalBeamTarget;
+public record SpikeConfiguration(BlockState state, BlockPredicate canPlaceOn, BlockPredicate canReplace) implements FeatureConfiguration {
+   public static final Codec<SpikeConfiguration> CODEC = RecordCodecBuilder.create((i) -> i.group(BlockState.CODEC.fieldOf("state").forGetter(SpikeConfiguration::state), BlockPredicate.CODEC.fieldOf("can_place_on").forGetter(SpikeConfiguration::canPlaceOn), BlockPredicate.CODEC.fieldOf("can_replace").forGetter(SpikeConfiguration::canReplace)).apply(i, SpikeConfiguration::new));
 
-   public SpikeConfiguration(boolean var1, List<SpikeFeature.EndSpike> var2, @Nullable BlockPos var3) {
-      this(var1, var2, Optional.ofNullable(var3));
-   }
-
-   private SpikeConfiguration(boolean var1, List<SpikeFeature.EndSpike> var2, Optional<BlockPos> var3) {
+   public SpikeConfiguration {
       super();
-      this.crystalInvulnerable = var1;
-      this.spikes = var2;
-      this.crystalBeamTarget = (BlockPos)var3.orElse((Object)null);
-   }
-
-   public boolean isCrystalInvulnerable() {
-      return this.crystalInvulnerable;
-   }
-
-   public List<SpikeFeature.EndSpike> getSpikes() {
-      return this.spikes;
-   }
-
-   public @Nullable BlockPos getCrystalBeamTarget() {
-      return this.crystalBeamTarget;
    }
 }

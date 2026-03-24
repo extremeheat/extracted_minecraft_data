@@ -20,71 +20,57 @@ public class SuppressedExceptionCollector {
       return System.currentTimeMillis();
    }
 
-   public synchronized void addEntry(String var1, Throwable var2) {
-      long var3 = currentTimeMs();
-      String var5 = var2.getMessage();
-      this.latestEntries.add(new LongEntry(var3, var1, var2.getClass(), var5));
+   public synchronized void addEntry(final String location, final Throwable throwable) {
+      long now = currentTimeMs();
+      String message = throwable.getMessage();
+      this.latestEntries.add(new LongEntry(now, location, throwable.getClass(), message));
 
       while(this.latestEntries.size() > 8) {
          this.latestEntries.remove();
       }
 
-      ShortEntry var6 = new ShortEntry(var1, var2.getClass());
-      int var7 = this.entryCounts.getInt(var6);
-      this.entryCounts.putAndMoveToFirst(var6, var7 + 1);
+      ShortEntry key = new ShortEntry(location, throwable.getClass());
+      int currentValue = this.entryCounts.getInt(key);
+      this.entryCounts.putAndMoveToFirst(key, currentValue + 1);
    }
 
    public synchronized String dump() {
-      long var1 = currentTimeMs();
-      StringBuilder var3 = new StringBuilder();
+      long current = currentTimeMs();
+      StringBuilder result = new StringBuilder();
       if (!this.latestEntries.isEmpty()) {
-         var3.append("\n\t\tLatest entries:\n");
+         result.append("\n\t\tLatest entries:\n");
 
-         for(LongEntry var5 : this.latestEntries) {
-            var3.append("\t\t\t").append(var5.location).append(":").append(var5.cls).append(": ").append(var5.message).append(" (").append(var1 - var5.timestampMs).append("ms ago)").append("\n");
+         for(LongEntry e : this.latestEntries) {
+            result.append("\t\t\t").append(e.location).append(":").append(e.cls).append(": ").append(e.message).append(" (").append(current - e.timestampMs).append("ms ago)").append("\n");
          }
       }
 
       if (!this.entryCounts.isEmpty()) {
-         if (var3.isEmpty()) {
-            var3.append("\n");
+         if (result.isEmpty()) {
+            result.append("\n");
          }
 
-         var3.append("\t\tEntry counts:\n");
+         result.append("\t\tEntry counts:\n");
          ObjectIterator var6 = Object2IntMaps.fastIterable(this.entryCounts).iterator();
 
          while(var6.hasNext()) {
-            Object2IntMap.Entry var7 = (Object2IntMap.Entry)var6.next();
-            var3.append("\t\t\t").append(((ShortEntry)var7.getKey()).location).append(":").append(((ShortEntry)var7.getKey()).cls).append(" x ").append(var7.getIntValue()).append("\n");
+            Object2IntMap.Entry<ShortEntry> e = (Object2IntMap.Entry)var6.next();
+            result.append("\t\t\t").append(((ShortEntry)e.getKey()).location).append(":").append(((ShortEntry)e.getKey()).cls).append(" x ").append(e.getIntValue()).append("\n");
          }
       }
 
-      return var3.isEmpty() ? "~~NONE~~" : var3.toString();
+      return result.isEmpty() ? "~~NONE~~" : result.toString();
    }
 
-   static record LongEntry(long timestampMs, String location, Class<? extends Throwable> cls, String message) {
-      final long timestampMs;
-      final String location;
-      final Class<? extends Throwable> cls;
-      final String message;
-
-      LongEntry(long var1, String var3, Class<? extends Throwable> var4, String var5) {
+   private static record LongEntry(long timestampMs, String location, Class<? extends Throwable> cls, String message) {
+      private LongEntry {
          super();
-         this.timestampMs = var1;
-         this.location = var3;
-         this.cls = var4;
-         this.message = var5;
       }
    }
 
-   static record ShortEntry(String location, Class<? extends Throwable> cls) {
-      final String location;
-      final Class<? extends Throwable> cls;
-
-      ShortEntry(String var1, Class<? extends Throwable> var2) {
+   private static record ShortEntry(String location, Class<? extends Throwable> cls) {
+      private ShortEntry {
          super();
-         this.location = var1;
-         this.cls = var2;
       }
    }
 }

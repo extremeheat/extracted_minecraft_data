@@ -17,12 +17,12 @@ public class LootParams {
    private final Map<Identifier, DynamicDrop> dynamicDrops;
    private final float luck;
 
-   public LootParams(ServerLevel var1, ContextMap var2, Map<Identifier, DynamicDrop> var3, float var4) {
+   public LootParams(final ServerLevel level, final ContextMap params, final Map<Identifier, DynamicDrop> dynamicDrops, final float luck) {
       super();
-      this.level = var1;
-      this.params = var2;
-      this.dynamicDrops = var3;
-      this.luck = var4;
+      this.level = level;
+      this.params = params;
+      this.dynamicDrops = dynamicDrops;
+      this.luck = luck;
    }
 
    public ServerLevel getLevel() {
@@ -33,10 +33,10 @@ public class LootParams {
       return this.params;
    }
 
-   public void addDynamicDrops(Identifier var1, Consumer<ItemStack> var2) {
-      DynamicDrop var3 = (DynamicDrop)this.dynamicDrops.get(var1);
-      if (var3 != null) {
-         var3.add(var2);
+   public void addDynamicDrops(final Identifier location, final Consumer<ItemStack> output) {
+      DynamicDrop dynamicDrop = (DynamicDrop)this.dynamicDrops.get(location);
+      if (dynamicDrop != null) {
+         dynamicDrop.add(output);
       }
 
    }
@@ -51,55 +51,55 @@ public class LootParams {
       private final Map<Identifier, DynamicDrop> dynamicDrops = Maps.newHashMap();
       private float luck;
 
-      public Builder(ServerLevel var1) {
+      public Builder(final ServerLevel level) {
          super();
-         this.level = var1;
+         this.level = level;
       }
 
       public ServerLevel getLevel() {
          return this.level;
       }
 
-      public <T> Builder withParameter(ContextKey<T> var1, T var2) {
-         this.params.withParameter(var1, var2);
+      public <T> Builder withParameter(final ContextKey<T> param, final T value) {
+         this.params.withParameter(param, value);
          return this;
       }
 
-      public <T> Builder withOptionalParameter(ContextKey<T> var1, @Nullable T var2) {
-         this.params.withOptionalParameter(var1, var2);
+      public <T> Builder withOptionalParameter(final ContextKey<T> param, final @Nullable T value) {
+         this.params.withOptionalParameter(param, value);
          return this;
       }
 
-      public <T> T getParameter(ContextKey<T> var1) {
-         return (T)this.params.getParameter(var1);
+      public <T> T getParameter(final ContextKey<T> param) {
+         return (T)this.params.getParameter(param);
       }
 
-      public <T> @Nullable T getOptionalParameter(ContextKey<T> var1) {
-         return (T)this.params.getOptionalParameter(var1);
+      public <T> @Nullable T getOptionalParameter(final ContextKey<T> param) {
+         return (T)this.params.getOptionalParameter(param);
       }
 
-      public Builder withDynamicDrop(Identifier var1, DynamicDrop var2) {
-         DynamicDrop var3 = (DynamicDrop)this.dynamicDrops.put(var1, var2);
-         if (var3 != null) {
+      public Builder withDynamicDrop(final Identifier location, final DynamicDrop dynamicDrop) {
+         DynamicDrop prev = (DynamicDrop)this.dynamicDrops.put(location, dynamicDrop);
+         if (prev != null) {
             throw new IllegalStateException("Duplicated dynamic drop '" + String.valueOf(this.dynamicDrops) + "'");
          } else {
             return this;
          }
       }
 
-      public Builder withLuck(float var1) {
-         this.luck = var1;
+      public Builder withLuck(final float luck) {
+         this.luck = luck;
          return this;
       }
 
-      public LootParams create(ContextKeySet var1) {
-         ContextMap var2 = this.params.create(var1);
-         return new LootParams(this.level, var2, this.dynamicDrops, this.luck);
+      public LootParams create(final ContextKeySet contextKeySet) {
+         ContextMap keySet = this.params.create(contextKeySet);
+         return new LootParams(this.level, keySet, this.dynamicDrops, this.luck);
       }
    }
 
    @FunctionalInterface
    public interface DynamicDrop {
-      void add(Consumer<ItemStack> var1);
+      void add(Consumer<ItemStack> output);
    }
 }

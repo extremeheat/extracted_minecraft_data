@@ -1,11 +1,9 @@
 package net.minecraft.world.level.chunk.storage;
 
-import com.google.common.base.Suppliers;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.serialization.Dynamic;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
@@ -24,84 +22,72 @@ public class SimpleRegionStorage implements AutoCloseable {
    private final IOWorker worker;
    private final DataFixer fixerUpper;
    private final DataFixTypes dataFixType;
-   private final Supplier<LegacyTagFixer> legacyFixer;
 
-   public SimpleRegionStorage(RegionStorageInfo var1, Path var2, DataFixer var3, boolean var4, DataFixTypes var5) {
-      this(var1, var2, var3, var4, var5, LegacyTagFixer.EMPTY);
-   }
-
-   public SimpleRegionStorage(RegionStorageInfo var1, Path var2, DataFixer var3, boolean var4, DataFixTypes var5, Supplier<LegacyTagFixer> var6) {
+   public SimpleRegionStorage(final RegionStorageInfo info, final Path folder, final DataFixer fixerUpper, final boolean syncWrites, final DataFixTypes dataFixType) {
       super();
-      this.fixerUpper = var3;
-      this.dataFixType = var5;
-      this.worker = new IOWorker(var1, var2, var4);
-      Objects.requireNonNull(var6);
-      this.legacyFixer = Suppliers.memoize(var6::get);
+      this.fixerUpper = fixerUpper;
+      this.dataFixType = dataFixType;
+      this.worker = new IOWorker(info, folder, syncWrites);
    }
 
-   public boolean isOldChunkAround(ChunkPos var1, int var2) {
-      return this.worker.isOldChunkAround(var1, var2);
+   public boolean isOldChunkAround(final ChunkPos pos, final int range) {
+      return this.worker.isOldChunkAround(pos, range);
    }
 
-   public CompletableFuture<Optional<CompoundTag>> read(ChunkPos var1) {
-      return this.worker.loadAsync(var1);
+   public CompletableFuture<Optional<CompoundTag>> read(final ChunkPos pos) {
+      return this.worker.loadAsync(pos);
    }
 
-   public CompletableFuture<Void> write(ChunkPos var1, CompoundTag var2) {
-      return this.write(var1, (Supplier)(() -> var2));
+   public CompletableFuture<Void> write(final ChunkPos pos, final CompoundTag value) {
+      return this.write(pos, (Supplier)(() -> value));
    }
 
-   public CompletableFuture<Void> write(ChunkPos var1, Supplier<CompoundTag> var2) {
-      this.markChunkDone(var1);
-      return this.worker.store(var1, var2);
+   public CompletableFuture<Void> write(final ChunkPos pos, final Supplier<CompoundTag> supplier) {
+      return this.worker.store(pos, supplier);
    }
 
-   public CompoundTag upgradeChunkTag(CompoundTag var1, int var2, @Nullable CompoundTag var3) {
-      int var4 = NbtUtils.getDataVersion(var1, var2);
-      if (var4 == SharedConstants.getCurrentVersion().dataVersion().version()) {
-         return var1;
+   public CompoundTag upgradeChunkTag(CompoundTag chunkTag, final int defaultVersion, final @Nullable CompoundTag dataFixContextTag, final int targetVersion) {
+      int version = NbtUtils.getDataVersion(chunkTag, defaultVersion);
+      if (version >= targetVersion) {
+         return chunkTag;
       } else {
          try {
-            var1 = ((LegacyTagFixer)this.legacyFixer.get()).applyFix(var1);
-            injectDatafixingContext(var1, var3);
-            var1 = this.dataFixType.updateToCurrentVersion(this.fixerUpper, var1, Math.max(((LegacyTagFixer)this.legacyFixer.get()).targetDataVersion(), var4));
-            removeDatafixingContext(var1);
-            NbtUtils.addCurrentDataVersion(var1);
-            return var1;
-         } catch (Exception var8) {
-            CrashReport var6 = CrashReport.forThrowable(var8, "Updated chunk");
-            CrashReportCategory var7 = var6.addCategory("Updated chunk details");
-            var7.setDetail("Data version", var4);
-            throw new ReportedException(var6);
+            injectDatafixingContext(chunkTag, dataFixContextTag);
+            chunkTag = this.dataFixType.update(this.fixerUpper, chunkTag, version, targetVersion);
+            removeDatafixingContext(chunkTag);
+            NbtUtils.addDataVersion(chunkTag, targetVersion);
+            return chunkTag;
+         } catch (Exception e) {
+            CrashReport report = CrashReport.forThrowable(e, "Updated chunk");
+            CrashReportCategory details = report.addCategory("Updated chunk details");
+            details.setDetail("Data version", version);
+            details.setDetail("Target version", targetVersion);
+            throw new ReportedException(report);
          }
       }
    }
 
-   public CompoundTag upgradeChunkTag(CompoundTag var1, int var2) {
-      return this.upgradeChunkTag(var1, var2, (CompoundTag)null);
+   public CompoundTag upgradeChunkTag(final CompoundTag chunkTag, final int defaultVersion) {
+      return this.upgradeChunkTag(chunkTag, defaultVersion, (CompoundTag)null, SharedConstants.getCurrentVersion().dataVersion().version());
    }
 
-   public Dynamic<Tag> upgradeChunkTag(Dynamic<Tag> var1, int var2) {
-      return new Dynamic(var1.getOps(), this.upgradeChunkTag((CompoundTag)var1.getValue(), var2, (CompoundTag)null));
+   public Dynamic<Tag> upgradeChunkTag(final Dynamic<Tag> chunkTag, final int defaultVersion) {
+      return new Dynamic(chunkTag.getOps(), this.upgradeChunkTag((CompoundTag)chunkTag.getValue(), defaultVersion, (CompoundTag)null, SharedConstants.getCurrentVersion().dataVersion().version()));
    }
 
-   public static void injectDatafixingContext(CompoundTag var0, @Nullable CompoundTag var1) {
-      if (var1 != null) {
-         var0.put("__context", var1);
+   public static void injectDatafixingContext(final CompoundTag chunkTag, final @Nullable CompoundTag contextTag) {
+      if (contextTag != null) {
+         chunkTag.put("__context", contextTag);
       }
 
    }
 
-   private static void removeDatafixingContext(CompoundTag var0) {
-      var0.remove("__context");
+   private static void removeDatafixingContext(final CompoundTag chunkTag) {
+      chunkTag.remove("__context");
    }
 
-   protected void markChunkDone(ChunkPos var1) {
-      ((LegacyTagFixer)this.legacyFixer.get()).markChunkDone(var1);
-   }
-
-   public CompletableFuture<Void> synchronize(boolean var1) {
-      return this.worker.synchronize(var1);
+   public CompletableFuture<Void> synchronize(final boolean flush) {
+      return this.worker.synchronize(flush);
    }
 
    public void close() throws IOException {

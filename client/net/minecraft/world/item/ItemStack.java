@@ -8,7 +8,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.handler.codec.DecoderException;
 import io.netty.handler.codec.EncoderException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -18,12 +17,10 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
-import java.util.stream.Stream;
 import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderSet;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentHolder;
@@ -46,7 +43,6 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
-import net.minecraft.tags.TagKey;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.util.NullOps;
@@ -62,13 +58,14 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
+import net.minecraft.world.item.component.BundleContents;
+import net.minecraft.world.item.component.ChargedProjectiles;
 import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.component.DamageResistant;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
@@ -92,6 +89,7 @@ import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.Spawner;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -100,17 +98,13 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-public final class ItemStack implements DataComponentHolder {
+public final class ItemStack implements DataComponentHolder, ItemInstance {
    private static final List<Component> OP_NBT_WARNING;
    private static final Component UNBREAKABLE_TOOLTIP;
    private static final Component INTANGIBLE_TOOLTIP;
    public static final MapCodec<ItemStack> MAP_CODEC;
    public static final Codec<ItemStack> CODEC;
-   public static final Codec<ItemStack> SINGLE_ITEM_CODEC;
-   public static final Codec<ItemStack> STRICT_CODEC;
-   public static final Codec<ItemStack> STRICT_SINGLE_ITEM_CODEC;
    public static final Codec<ItemStack> OPTIONAL_CODEC;
-   public static final Codec<ItemStack> SIMPLE_ITEM_CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, ItemStack> OPTIONAL_STREAM_CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, ItemStack> OPTIONAL_UNTRUSTED_STREAM_CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, ItemStack> STREAM_CODEC;
@@ -122,81 +116,60 @@ public final class ItemStack implements DataComponentHolder {
    private int popTime;
    /** @deprecated */
    @Deprecated
-   private final @Nullable Item item;
-   final PatchedDataComponentMap components;
-   private @Nullable Entity entityRepresentation;
+   private final @Nullable Holder<Item> item;
+   private final PatchedDataComponentMap components;
 
-   public static DataResult<ItemStack> validateStrict(ItemStack var0) {
-      DataResult var1 = validateComponents(var0.getComponents());
-      if (var1.isError()) {
-         return var1.map((var1x) -> var0);
+   public static DataResult<ItemStack> validateStrict(final ItemStack itemStack) {
+      DataResult<?> result = validateComponents(itemStack.getComponents());
+      if (result.isError()) {
+         return result.map((unit) -> itemStack);
       } else {
-         return var0.getCount() > var0.getMaxStackSize() ? DataResult.error(() -> {
-            int var10000 = var0.getCount();
-            return "Item stack with stack size of " + var10000 + " was larger than maximum: " + var0.getMaxStackSize();
-         }) : DataResult.success(var0);
+         return itemStack.getCount() > itemStack.getMaxStackSize() ? DataResult.error(() -> {
+            int var10000 = itemStack.getCount();
+            return "Item stack with stack size of " + var10000 + " was larger than maximum: " + itemStack.getMaxStackSize();
+         }) : DataResult.success(itemStack);
       }
    }
 
-   private static StreamCodec<RegistryFriendlyByteBuf, ItemStack> createOptionalStreamCodec(final StreamCodec<RegistryFriendlyByteBuf, DataComponentPatch> var0) {
+   private static StreamCodec<RegistryFriendlyByteBuf, ItemStack> createOptionalStreamCodec(final StreamCodec<RegistryFriendlyByteBuf, DataComponentPatch> patchCodec) {
       return new StreamCodec<RegistryFriendlyByteBuf, ItemStack>() {
-         public ItemStack decode(RegistryFriendlyByteBuf var1) {
-            int var2 = var1.readVarInt();
-            if (var2 <= 0) {
+         public ItemStack decode(final RegistryFriendlyByteBuf input) {
+            int count = input.readVarInt();
+            if (count <= 0) {
                return ItemStack.EMPTY;
             } else {
-               Holder var3 = (Holder)Item.STREAM_CODEC.decode(var1);
-               DataComponentPatch var4 = (DataComponentPatch)var0.decode(var1);
-               return new ItemStack(var3, var2, var4);
+               Holder<Item> item = (Holder)Item.STREAM_CODEC.decode(input);
+               DataComponentPatch patch = (DataComponentPatch)patchCodec.decode(input);
+               return new ItemStack(item, count, patch);
             }
          }
 
-         public void encode(RegistryFriendlyByteBuf var1, ItemStack var2) {
-            if (var2.isEmpty()) {
-               var1.writeVarInt(0);
+         public void encode(final RegistryFriendlyByteBuf output, final ItemStack itemStack) {
+            if (itemStack.isEmpty()) {
+               output.writeVarInt(0);
             } else {
-               var1.writeVarInt(var2.getCount());
-               Item.STREAM_CODEC.encode(var1, var2.getItemHolder());
-               var0.encode(var1, var2.components.asPatch());
+               output.writeVarInt(itemStack.getCount());
+               Item.STREAM_CODEC.encode(output, itemStack.typeHolder());
+               patchCodec.encode(output, itemStack.components.asPatch());
             }
-         }
-
-         // $FF: synthetic method
-         public void encode(final Object var1, final Object var2) {
-            this.encode((RegistryFriendlyByteBuf)var1, (ItemStack)var2);
-         }
-
-         // $FF: synthetic method
-         public Object decode(final Object var1) {
-            return this.decode((RegistryFriendlyByteBuf)var1);
          }
       };
    }
 
-   public static StreamCodec<RegistryFriendlyByteBuf, ItemStack> validatedStreamCodec(final StreamCodec<RegistryFriendlyByteBuf, ItemStack> var0) {
+   public static StreamCodec<RegistryFriendlyByteBuf, ItemStack> validatedStreamCodec(final StreamCodec<RegistryFriendlyByteBuf, ItemStack> codec) {
       return new StreamCodec<RegistryFriendlyByteBuf, ItemStack>() {
-         public ItemStack decode(RegistryFriendlyByteBuf var1) {
-            ItemStack var2 = (ItemStack)var0.decode(var1);
-            if (!var2.isEmpty()) {
-               RegistryOps var3 = var1.registryAccess().createSerializationContext(NullOps.INSTANCE);
-               ItemStack.CODEC.encodeStart(var3, var2).getOrThrow(DecoderException::new);
+         public ItemStack decode(final RegistryFriendlyByteBuf input) {
+            ItemStack itemStack = (ItemStack)codec.decode(input);
+            if (!itemStack.isEmpty()) {
+               RegistryOps<Unit> ops = input.registryAccess().createSerializationContext(NullOps.INSTANCE);
+               ItemStack.CODEC.encodeStart(ops, itemStack).getOrThrow(DecoderException::new);
             }
 
-            return var2;
+            return itemStack;
          }
 
-         public void encode(RegistryFriendlyByteBuf var1, ItemStack var2) {
-            var0.encode(var1, var2);
-         }
-
-         // $FF: synthetic method
-         public void encode(final Object var1, final Object var2) {
-            this.encode((RegistryFriendlyByteBuf)var1, (ItemStack)var2);
-         }
-
-         // $FF: synthetic method
-         public Object decode(final Object var1) {
-            return this.decode((RegistryFriendlyByteBuf)var1);
+         public void encode(final RegistryFriendlyByteBuf output, final ItemStack value) {
+            codec.encode(output, value);
          }
       };
    }
@@ -210,7 +183,7 @@ public final class ItemStack implements DataComponentHolder {
    }
 
    public DataComponentMap getPrototype() {
-      return !this.isEmpty() ? this.getItem().components() : DataComponentMap.EMPTY;
+      return !this.isEmpty() ? this.typeHolder().components() : DataComponentMap.EMPTY;
    }
 
    public DataComponentPatch getComponentsPatch() {
@@ -221,54 +194,73 @@ public final class ItemStack implements DataComponentHolder {
       return !this.isEmpty() ? this.components.toImmutableMap() : DataComponentMap.EMPTY;
    }
 
-   public boolean hasNonDefault(DataComponentType<?> var1) {
-      return !this.isEmpty() && this.components.hasNonDefault(var1);
+   public boolean hasNonDefault(final DataComponentType<?> type) {
+      return !this.isEmpty() && this.components.hasNonDefault(type);
    }
 
-   public ItemStack(ItemLike var1) {
-      this(var1, 1);
+   public ItemStack(final ItemLike item, final int count) {
+      this((Holder)item.asItem().builtInRegistryHolder(), count);
    }
 
-   public ItemStack(Holder<Item> var1) {
-      this((ItemLike)var1.value(), 1);
+   public ItemStack(final ItemLike item) {
+      this((Holder)item.asItem().builtInRegistryHolder(), 1);
    }
 
-   public ItemStack(Holder<Item> var1, int var2, DataComponentPatch var3) {
-      this((ItemLike)var1.value(), var2, PatchedDataComponentMap.fromPatch(((Item)var1.value()).components(), var3));
+   public ItemStack(final Holder<Item> item, final int count) {
+      this(item, count, new PatchedDataComponentMap(item.components()));
    }
 
-   public ItemStack(Holder<Item> var1, int var2) {
-      this((ItemLike)var1.value(), var2);
+   public ItemStack(final Holder<Item> item) {
+      this((Holder)item, 1);
    }
 
-   public ItemStack(ItemLike var1, int var2) {
-      this(var1, var2, new PatchedDataComponentMap(var1.asItem().components()));
+   public ItemStack(final Holder<Item> item, final int count, final DataComponentPatch components) {
+      this(item, count, PatchedDataComponentMap.fromPatch(item.components(), components));
    }
 
-   private ItemStack(ItemLike var1, int var2, PatchedDataComponentMap var3) {
+   private ItemStack(final Holder<Item> item, final int count, final PatchedDataComponentMap components) {
       super();
-      this.item = var1.asItem();
-      this.count = var2;
-      this.components = var3;
+      this.item = item;
+      this.count = count;
+      this.components = components;
    }
 
-   private ItemStack(@Nullable Void var1) {
+   private ItemStack(final @Nullable Void nullMarker) {
       super();
       this.item = null;
       this.components = new PatchedDataComponentMap(DataComponentMap.EMPTY);
    }
 
-   public static DataResult<Unit> validateComponents(DataComponentMap var0) {
-      if (var0.has(DataComponents.MAX_DAMAGE) && (Integer)var0.getOrDefault(DataComponents.MAX_STACK_SIZE, 1) > 1) {
+   private static DataResult<?> validateComponents(final DataComponentMap components) {
+      if (components.has(DataComponents.MAX_DAMAGE) && (Integer)components.getOrDefault(DataComponents.MAX_STACK_SIZE, 1) > 1) {
          return DataResult.error(() -> "Item cannot be both damageable and stackable");
       } else {
-         ItemContainerContents var1 = (ItemContainerContents)var0.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
+         ItemContainerContents container = (ItemContainerContents)components.get(DataComponents.CONTAINER);
+         if (container != null) {
+            DataResult<?> validationContents = validateContainedItemSizes(container.nonEmptyItems());
+            if (validationContents.isError()) {
+               return validationContents;
+            }
+         }
 
-         for(ItemStack var3 : var1.nonEmptyItems()) {
-            int var4 = var3.getCount();
-            int var5 = var3.getMaxStackSize();
-            if (var4 > var5) {
-               return DataResult.error(() -> "Item stack with count of " + var4 + " was larger than maximum: " + var5);
+         BundleContents bundle = (BundleContents)components.get(DataComponents.BUNDLE_CONTENTS);
+         if (bundle != null) {
+            DataResult<?> validationResult = validateContainedItemSizes(bundle.items());
+            if (validationResult.isError()) {
+               return validationResult;
+            }
+
+            validationResult = bundle.weight();
+            if (validationResult.isError()) {
+               return validationResult;
+            }
+         }
+
+         ChargedProjectiles chargedProjectiles = (ChargedProjectiles)components.get(DataComponents.CHARGED_PROJECTILES);
+         if (chargedProjectiles != null) {
+            DataResult<?> validationResult = validateContainedItemSizes(chargedProjectiles.items());
+            if (validationResult.isError()) {
+               return validationResult;
             }
          }
 
@@ -276,123 +268,111 @@ public final class ItemStack implements DataComponentHolder {
       }
    }
 
+   private static DataResult<?> validateContainedItemSizes(final Iterable<? extends ItemInstance> items) {
+      for(ItemInstance item : items) {
+         int itemCount = item.count();
+         int maxStackSize = item.getMaxStackSize();
+         if (itemCount > maxStackSize) {
+            return DataResult.error(() -> "Item stack with count of " + itemCount + " was larger than maximum: " + maxStackSize);
+         }
+      }
+
+      return DataResult.success(Unit.INSTANCE);
+   }
+
    public boolean isEmpty() {
-      return this == EMPTY || this.item == Items.AIR || this.count <= 0;
+      return this == EMPTY || this.item.value() == Items.AIR || this.count <= 0;
    }
 
-   public boolean isItemEnabled(FeatureFlagSet var1) {
-      return this.isEmpty() || this.getItem().isEnabled(var1);
+   public boolean isItemEnabled(final FeatureFlagSet enabledFeatures) {
+      return this.isEmpty() || this.getItem().isEnabled(enabledFeatures);
    }
 
-   public ItemStack split(int var1) {
-      int var2 = Math.min(var1, this.getCount());
-      ItemStack var3 = this.copyWithCount(var2);
-      this.shrink(var2);
-      return var3;
+   public ItemStack split(final int amount) {
+      int realAmount = Math.min(amount, this.getCount());
+      ItemStack result = this.copyWithCount(realAmount);
+      this.shrink(realAmount);
+      return result;
    }
 
    public ItemStack copyAndClear() {
       if (this.isEmpty()) {
          return EMPTY;
       } else {
-         ItemStack var1 = this.copy();
+         ItemStack result = this.copy();
          this.setCount(0);
-         return var1;
+         return result;
       }
    }
 
    public Item getItem() {
-      return this.isEmpty() ? Items.AIR : this.item;
+      return (Item)this.typeHolder().value();
    }
 
-   public Holder<Item> getItemHolder() {
-      return this.getItem().builtInRegistryHolder();
+   public Holder<Item> typeHolder() {
+      return (Holder<Item>)(this.isEmpty() ? Items.AIR.builtInRegistryHolder() : this.item);
    }
 
-   public boolean is(TagKey<Item> var1) {
-      return this.getItem().builtInRegistryHolder().is(var1);
+   public boolean is(final Predicate<Holder<Item>> item) {
+      return item.test(this.typeHolder());
    }
 
-   public boolean is(Item var1) {
-      return this.getItem() == var1;
-   }
-
-   public boolean is(Predicate<Holder<Item>> var1) {
-      return var1.test(this.getItem().builtInRegistryHolder());
-   }
-
-   public boolean is(Holder<Item> var1) {
-      return this.getItem().builtInRegistryHolder() == var1;
-   }
-
-   public boolean is(HolderSet<Item> var1) {
-      return var1.contains(this.getItemHolder());
-   }
-
-   public Stream<TagKey<Item>> getTags() {
-      return this.getItem().builtInRegistryHolder().tags();
-   }
-
-   public InteractionResult useOn(UseOnContext var1) {
-      Player var2 = var1.getPlayer();
-      BlockPos var3 = var1.getClickedPos();
-      if (var2 != null && !var2.getAbilities().mayBuild && !this.canPlaceOnBlockInAdventureMode(new BlockInWorld(var1.getLevel(), var3, false))) {
+   public InteractionResult useOn(final UseOnContext context) {
+      Player player = context.getPlayer();
+      BlockPos pos = context.getClickedPos();
+      if (player != null && !player.getAbilities().mayBuild && !this.canPlaceOnBlockInAdventureMode(new BlockInWorld(context.getLevel(), pos, false))) {
          return InteractionResult.PASS;
       } else {
-         Item var4 = this.getItem();
-         InteractionResult var5 = var4.useOn(var1);
-         if (var2 != null && var5 instanceof InteractionResult.Success) {
-            InteractionResult.Success var6 = (InteractionResult.Success)var5;
-            if (var6.wasItemInteraction()) {
-               var2.awardStat(Stats.ITEM_USED.get(var4));
+         Item usedItem = this.getItem();
+         InteractionResult result = usedItem.useOn(context);
+         if (player != null && result instanceof InteractionResult.Success) {
+            InteractionResult.Success success = (InteractionResult.Success)result;
+            if (success.wasItemInteraction()) {
+               player.awardStat(Stats.ITEM_USED.get(usedItem));
             }
          }
 
-         return var5;
+         return result;
       }
    }
 
-   public float getDestroySpeed(BlockState var1) {
-      return this.getItem().getDestroySpeed(this, var1);
+   public float getDestroySpeed(final BlockState state) {
+      return this.getItem().getDestroySpeed(this, state);
    }
 
-   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
-      ItemStack var4 = this.copy();
-      boolean var5 = this.getUseDuration(var2) <= 0;
-      InteractionResult var6 = this.getItem().use(var1, var2, var3);
-      if (var5 && var6 instanceof InteractionResult.Success var7) {
-         return var7.heldItemTransformedTo(var7.heldItemTransformedTo() == null ? this.applyAfterUseComponentSideEffects(var2, var4) : var7.heldItemTransformedTo().applyAfterUseComponentSideEffects(var2, var4));
+   public InteractionResult use(final Level level, final Player player, final InteractionHand hand) {
+      ItemStack stackBeforeUse = this.copy();
+      boolean isInstantlyUsed = this.getUseDuration(player) <= 0;
+      InteractionResult result = this.getItem().use(level, player, hand);
+      if (isInstantlyUsed && result instanceof InteractionResult.Success success) {
+         return success.heldItemTransformedTo(success.heldItemTransformedTo() == null ? this.applyAfterUseComponentSideEffects(player, stackBeforeUse) : success.heldItemTransformedTo().applyAfterUseComponentSideEffects(player, stackBeforeUse));
       } else {
-         return var6;
+         return result;
       }
    }
 
-   public ItemStack finishUsingItem(Level var1, LivingEntity var2) {
-      ItemStack var3 = this.copy();
-      ItemStack var4 = this.getItem().finishUsingItem(this, var1, var2);
-      return var4.applyAfterUseComponentSideEffects(var2, var3);
+   public ItemStack finishUsingItem(final Level level, final LivingEntity livingEntity) {
+      ItemStack stackBeforeUse = this.copy();
+      ItemStack result = this.getItem().finishUsingItem(this, level, livingEntity);
+      return result.applyAfterUseComponentSideEffects(livingEntity, stackBeforeUse);
    }
 
-   private ItemStack applyAfterUseComponentSideEffects(LivingEntity var1, ItemStack var2) {
-      UseRemainder var3 = (UseRemainder)var2.get(DataComponents.USE_REMAINDER);
-      UseCooldown var4 = (UseCooldown)var2.get(DataComponents.USE_COOLDOWN);
-      int var5 = var2.getCount();
-      ItemStack var6 = this;
-      if (var3 != null) {
-         boolean var10003 = var1.hasInfiniteMaterials();
-         Objects.requireNonNull(var1);
-         var6 = var3.convertIntoRemainder(this, var5, var10003, var1::handleExtraItemsCreatedOnUse);
+   private ItemStack applyAfterUseComponentSideEffects(final LivingEntity user, final ItemStack stackBeforeUsing) {
+      UseRemainder useRemainder = (UseRemainder)stackBeforeUsing.get(DataComponents.USE_REMAINDER);
+      UseCooldown useCooldown = (UseCooldown)stackBeforeUsing.get(DataComponents.USE_COOLDOWN);
+      int stackCountBeforeUsing = stackBeforeUsing.getCount();
+      ItemStack result = this;
+      if (useRemainder != null) {
+         boolean var10003 = user.hasInfiniteMaterials();
+         Objects.requireNonNull(user);
+         result = useRemainder.convertIntoRemainder(this, stackCountBeforeUsing, var10003, user::handleExtraItemsCreatedOnUse);
       }
 
-      if (var4 != null) {
-         var4.apply(var2, var1);
+      if (useCooldown != null) {
+         useCooldown.apply(stackBeforeUsing, user);
       }
 
-      return var6;
-   }
-
-   public int getMaxStackSize() {
-      return (Integer)this.getOrDefault(DataComponents.MAX_STACK_SIZE, 1);
+      return result;
    }
 
    public boolean isStackable() {
@@ -411,8 +391,8 @@ public final class ItemStack implements DataComponentHolder {
       return Mth.clamp((Integer)this.getOrDefault(DataComponents.DAMAGE, 0), 0, this.getMaxDamage());
    }
 
-   public void setDamageValue(int var1) {
-      this.set(DataComponents.DAMAGE, Mth.clamp(var1, 0, this.getMaxDamage()));
+   public void setDamageValue(final int value) {
+      this.set(DataComponents.DAMAGE, Mth.clamp(value, 0, this.getMaxDamage()));
    }
 
    public int getMaxDamage() {
@@ -427,80 +407,80 @@ public final class ItemStack implements DataComponentHolder {
       return this.isDamageableItem() && this.getDamageValue() >= this.getMaxDamage() - 1;
    }
 
-   public void hurtAndBreak(int var1, ServerLevel var2, @Nullable ServerPlayer var3, Consumer<Item> var4) {
-      int var5 = this.processDurabilityChange(var1, var2, var3);
-      if (var5 != 0) {
-         this.applyDamage(this.getDamageValue() + var5, var3, var4);
+   public void hurtAndBreak(final int amount, final ServerLevel level, final @Nullable ServerPlayer player, final Consumer<Item> onBreak) {
+      int newAmount = this.processDurabilityChange(amount, level, player);
+      if (newAmount != 0) {
+         this.applyDamage(this.getDamageValue() + newAmount, player, onBreak);
       }
 
    }
 
-   private int processDurabilityChange(int var1, ServerLevel var2, @Nullable ServerPlayer var3) {
+   private int processDurabilityChange(final int amount, final ServerLevel level, final @Nullable ServerPlayer player) {
       if (!this.isDamageableItem()) {
          return 0;
-      } else if (var3 != null && var3.hasInfiniteMaterials()) {
+      } else if (player != null && player.hasInfiniteMaterials()) {
          return 0;
       } else {
-         return var1 > 0 ? EnchantmentHelper.processDurabilityChange(var2, this, var1) : var1;
+         return amount > 0 ? EnchantmentHelper.processDurabilityChange(level, this, amount) : amount;
       }
    }
 
-   private void applyDamage(int var1, @Nullable ServerPlayer var2, Consumer<Item> var3) {
-      if (var2 != null) {
-         CriteriaTriggers.ITEM_DURABILITY_CHANGED.trigger(var2, this, var1);
+   private void applyDamage(final int newDamage, final @Nullable ServerPlayer player, final Consumer<Item> onBreak) {
+      if (player != null) {
+         CriteriaTriggers.ITEM_DURABILITY_CHANGED.trigger(player, this, newDamage);
       }
 
-      this.setDamageValue(var1);
+      this.setDamageValue(newDamage);
       if (this.isBroken()) {
-         Item var4 = this.getItem();
+         Item item = this.getItem();
          this.shrink(1);
-         var3.accept(var4);
+         onBreak.accept(item);
       }
 
    }
 
-   public void hurtWithoutBreaking(int var1, Player var2) {
-      if (var2 instanceof ServerPlayer var3) {
-         int var4 = this.processDurabilityChange(var1, var3.level(), var3);
-         if (var4 == 0) {
+   public void hurtWithoutBreaking(final int amount, final Player player) {
+      if (player instanceof ServerPlayer serverPlayer) {
+         int newAmount = this.processDurabilityChange(amount, serverPlayer.level(), serverPlayer);
+         if (newAmount == 0) {
             return;
          }
 
-         int var5 = Math.min(this.getDamageValue() + var4, this.getMaxDamage() - 1);
-         this.applyDamage(var5, var3, (var0) -> {
+         int newDamage = Math.min(this.getDamageValue() + newAmount, this.getMaxDamage() - 1);
+         this.applyDamage(newDamage, serverPlayer, (i) -> {
          });
       }
 
    }
 
-   public void hurtAndBreak(int var1, LivingEntity var2, InteractionHand var3) {
-      this.hurtAndBreak(var1, var2, var3.asEquipmentSlot());
+   public void hurtAndBreak(final int amount, final LivingEntity owner, final InteractionHand hand) {
+      this.hurtAndBreak(amount, owner, hand.asEquipmentSlot());
    }
 
-   public void hurtAndBreak(int var1, LivingEntity var2, EquipmentSlot var3) {
-      Level var5 = var2.level();
-      if (var5 instanceof ServerLevel var4) {
+   public void hurtAndBreak(final int amount, final LivingEntity owner, final EquipmentSlot slot) {
+      Level var5 = owner.level();
+      if (var5 instanceof ServerLevel serverLevel) {
          ServerPlayer var10003;
-         if (var2 instanceof ServerPlayer var6) {
-            var10003 = var6;
+         if (owner instanceof ServerPlayer player) {
+            var10003 = player;
          } else {
             var10003 = null;
          }
 
-         this.hurtAndBreak(var1, var4, var10003, (var2x) -> var2.onEquippedItemBroken(var2x, var3));
+         this.hurtAndBreak(amount, serverLevel, var10003, (brokenItem) -> owner.onEquippedItemBroken(brokenItem, slot));
       }
 
    }
 
-   public ItemStack hurtAndConvertOnBreak(int var1, ItemLike var2, LivingEntity var3, EquipmentSlot var4) {
-      this.hurtAndBreak(var1, var3, var4);
+   public ItemStack hurtAndConvertOnBreak(final int amount, final ItemLike newItem, final LivingEntity owner, final EquipmentSlot slot) {
+      this.hurtAndBreak(amount, owner, slot);
       if (this.isEmpty()) {
-         ItemStack var5 = this.transmuteCopyIgnoreEmpty(var2, 1);
-         if (var5.isDamageableItem()) {
-            var5.setDamageValue(0);
+         ItemStack replacement = this.transmuteCopyIgnoreEmpty(newItem, 1);
+         if (replacement.isDamageableItem()) {
+            replacement.setDamageValue(0);
          }
 
-         return var5;
+         return replacement;
       } else {
          return this;
       }
@@ -518,21 +498,21 @@ public final class ItemStack implements DataComponentHolder {
       return this.getItem().getBarColor(this);
    }
 
-   public boolean overrideStackedOnOther(Slot var1, ClickAction var2, Player var3) {
-      return this.getItem().overrideStackedOnOther(this, var1, var2, var3);
+   public boolean overrideStackedOnOther(final Slot slot, final ClickAction clickAction, final Player player) {
+      return this.getItem().overrideStackedOnOther(this, slot, clickAction, player);
    }
 
-   public boolean overrideOtherStackedOnMe(ItemStack var1, Slot var2, ClickAction var3, Player var4, SlotAccess var5) {
-      return this.getItem().overrideOtherStackedOnMe(this, var1, var2, var3, var4, var5);
+   public boolean overrideOtherStackedOnMe(final ItemStack other, final Slot slot, final ClickAction clickAction, final Player player, final SlotAccess carriedItem) {
+      return this.getItem().overrideOtherStackedOnMe(this, other, slot, clickAction, player, carriedItem);
    }
 
-   public boolean hurtEnemy(LivingEntity var1, LivingEntity var2) {
-      Item var3 = this.getItem();
-      var3.hurtEnemy(this, var1, var2);
+   public boolean hurtEnemy(final LivingEntity mob, final LivingEntity attacker) {
+      Item usedItem = this.getItem();
+      usedItem.hurtEnemy(this, mob, attacker);
       if (this.has(DataComponents.WEAPON)) {
-         if (var2 instanceof Player) {
-            Player var4 = (Player)var2;
-            var4.awardStat(Stats.ITEM_USED.get(var3));
+         if (attacker instanceof Player) {
+            Player player = (Player)attacker;
+            player.awardStat(Stats.ITEM_USED.get(usedItem));
          }
 
          return true;
@@ -541,87 +521,87 @@ public final class ItemStack implements DataComponentHolder {
       }
    }
 
-   public void postHurtEnemy(LivingEntity var1, LivingEntity var2) {
-      this.getItem().postHurtEnemy(this, var1, var2);
-      Weapon var3 = (Weapon)this.get(DataComponents.WEAPON);
-      if (var3 != null) {
-         this.hurtAndBreak(var3.itemDamagePerAttack(), var2, EquipmentSlot.MAINHAND);
+   public void postHurtEnemy(final LivingEntity mob, final LivingEntity attacker) {
+      this.getItem().postHurtEnemy(this, mob, attacker);
+      Weapon weapon = (Weapon)this.get(DataComponents.WEAPON);
+      if (weapon != null) {
+         this.hurtAndBreak(weapon.itemDamagePerAttack(), attacker, EquipmentSlot.MAINHAND);
       }
 
    }
 
-   public void mineBlock(Level var1, BlockState var2, BlockPos var3, Player var4) {
-      Item var5 = this.getItem();
-      if (var5.mineBlock(this, var1, var2, var3, var4)) {
-         var4.awardStat(Stats.ITEM_USED.get(var5));
+   public void mineBlock(final Level level, final BlockState state, final BlockPos pos, final Player owner) {
+      Item usedItem = this.getItem();
+      if (usedItem.mineBlock(this, level, state, pos, owner)) {
+         owner.awardStat(Stats.ITEM_USED.get(usedItem));
       }
 
    }
 
-   public boolean isCorrectToolForDrops(BlockState var1) {
-      return this.getItem().isCorrectToolForDrops(this, var1);
+   public boolean isCorrectToolForDrops(final BlockState state) {
+      return this.getItem().isCorrectToolForDrops(this, state);
    }
 
-   public InteractionResult interactLivingEntity(Player var1, LivingEntity var2, InteractionHand var3) {
-      Equippable var4 = (Equippable)this.get(DataComponents.EQUIPPABLE);
-      if (var4 != null && var4.equipOnInteract()) {
-         InteractionResult var5 = var4.equipOnTarget(var1, var2, this);
-         if (var5 != InteractionResult.PASS) {
-            return var5;
+   public InteractionResult interactLivingEntity(final Player player, final LivingEntity target, final InteractionHand hand) {
+      Equippable equippable = (Equippable)this.get(DataComponents.EQUIPPABLE);
+      if (equippable != null && equippable.equipOnInteract()) {
+         InteractionResult result = equippable.equipOnTarget(player, target, this);
+         if (result != InteractionResult.PASS) {
+            return result;
          }
       }
 
-      return this.getItem().interactLivingEntity(this, var1, var2, var3);
+      return this.getItem().interactLivingEntity(this, player, target, hand);
    }
 
    public ItemStack copy() {
       if (this.isEmpty()) {
          return EMPTY;
       } else {
-         ItemStack var1 = new ItemStack(this.getItem(), this.count, this.components.copy());
-         var1.setPopTime(this.getPopTime());
-         return var1;
+         ItemStack copy = new ItemStack(this.typeHolder(), this.count, this.components.copy());
+         copy.setPopTime(this.getPopTime());
+         return copy;
       }
    }
 
-   public ItemStack copyWithCount(int var1) {
+   public ItemStack copyWithCount(final int count) {
       if (this.isEmpty()) {
          return EMPTY;
       } else {
-         ItemStack var2 = this.copy();
-         var2.setCount(var1);
-         return var2;
+         ItemStack copy = this.copy();
+         copy.setCount(count);
+         return copy;
       }
    }
 
-   public ItemStack transmuteCopy(ItemLike var1) {
-      return this.transmuteCopy(var1, this.getCount());
+   public ItemStack transmuteCopy(final ItemLike newItem) {
+      return this.transmuteCopy(newItem, this.getCount());
    }
 
-   public ItemStack transmuteCopy(ItemLike var1, int var2) {
-      return this.isEmpty() ? EMPTY : this.transmuteCopyIgnoreEmpty(var1, var2);
+   public ItemStack transmuteCopy(final ItemLike newItem, final int newCount) {
+      return this.isEmpty() ? EMPTY : this.transmuteCopyIgnoreEmpty(newItem, newCount);
    }
 
-   private ItemStack transmuteCopyIgnoreEmpty(ItemLike var1, int var2) {
-      return new ItemStack(var1.asItem().builtInRegistryHolder(), var2, this.components.asPatch());
+   private ItemStack transmuteCopyIgnoreEmpty(final ItemLike newItem, final int newCount) {
+      return new ItemStack(newItem.asItem().builtInRegistryHolder(), newCount, this.components.asPatch());
    }
 
-   public static boolean matches(ItemStack var0, ItemStack var1) {
-      if (var0 == var1) {
+   public static boolean matches(final ItemStack a, final ItemStack b) {
+      if (a == b) {
          return true;
       } else {
-         return var0.getCount() != var1.getCount() ? false : isSameItemSameComponents(var0, var1);
+         return a.getCount() != b.getCount() ? false : isSameItemSameComponents(a, b);
       }
    }
 
    /** @deprecated */
    @Deprecated
-   public static boolean listMatches(List<ItemStack> var0, List<ItemStack> var1) {
-      if (var0.size() != var1.size()) {
+   public static boolean listMatches(final List<ItemStack> left, final List<ItemStack> right) {
+      if (left.size() != right.size()) {
          return false;
       } else {
-         for(int var2 = 0; var2 < var0.size(); ++var2) {
-            if (!matches((ItemStack)var0.get(var2), (ItemStack)var1.get(var2))) {
+         for(int i = 0; i < left.size(); ++i) {
+            if (!matches((ItemStack)left.get(i), (ItemStack)right.get(i))) {
                return false;
             }
          }
@@ -630,38 +610,38 @@ public final class ItemStack implements DataComponentHolder {
       }
    }
 
-   public static boolean isSameItem(ItemStack var0, ItemStack var1) {
-      return var0.is(var1.getItem());
+   public static boolean isSameItem(final ItemStack a, final ItemStack b) {
+      return a.is(b.getItem());
    }
 
-   public static boolean isSameItemSameComponents(ItemStack var0, ItemStack var1) {
-      if (!var0.is(var1.getItem())) {
+   public static boolean isSameItemSameComponents(final ItemStack a, final ItemStack b) {
+      if (!a.is(b.getItem())) {
          return false;
       } else {
-         return var0.isEmpty() && var1.isEmpty() ? true : Objects.equals(var0.components, var1.components);
+         return a.isEmpty() && b.isEmpty() ? true : Objects.equals(a.components, b.components);
       }
    }
 
-   public static boolean matchesIgnoringComponents(ItemStack var0, ItemStack var1, Predicate<DataComponentType<?>> var2) {
-      if (var0 == var1) {
+   public static boolean matchesIgnoringComponents(final ItemStack a, final ItemStack b, final Predicate<DataComponentType<?>> ignoredPredicate) {
+      if (a == b) {
          return true;
-      } else if (var0.getCount() != var1.getCount()) {
+      } else if (a.getCount() != b.getCount()) {
          return false;
-      } else if (!var0.is(var1.getItem())) {
+      } else if (!a.is(b.getItem())) {
          return false;
-      } else if (var0.isEmpty() && var1.isEmpty()) {
+      } else if (a.isEmpty() && b.isEmpty()) {
          return true;
-      } else if (var0.components.size() != var1.components.size()) {
+      } else if (a.components.size() != b.components.size()) {
          return false;
       } else {
-         for(DataComponentType var4 : var0.components.keySet()) {
-            Object var5 = var0.components.get(var4);
-            Object var6 = var1.components.get(var4);
-            if (var5 == null || var6 == null) {
+         for(DataComponentType<?> type : a.components.keySet()) {
+            Object componentA = a.components.get(type);
+            Object componentB = b.components.get(type);
+            if (componentA == null || componentB == null) {
                return false;
             }
 
-            if (!Objects.equals(var5, var6) && !var2.test(var4)) {
+            if (!Objects.equals(componentA, componentB) && !ignoredPredicate.test(type)) {
                return false;
             }
          }
@@ -670,14 +650,14 @@ public final class ItemStack implements DataComponentHolder {
       }
    }
 
-   public static MapCodec<ItemStack> lenientOptionalFieldOf(String var0) {
-      return CODEC.lenientOptionalFieldOf(var0).xmap((var0x) -> (ItemStack)var0x.orElse(EMPTY), (var0x) -> var0x.isEmpty() ? Optional.empty() : Optional.of(var0x));
+   public static MapCodec<ItemStack> lenientOptionalFieldOf(final String name) {
+      return CODEC.lenientOptionalFieldOf(name).xmap((itemStack) -> (ItemStack)itemStack.orElse(EMPTY), (itemStack) -> itemStack.isEmpty() ? Optional.empty() : Optional.of(itemStack));
    }
 
-   public static int hashItemAndComponents(@Nullable ItemStack var0) {
-      if (var0 != null) {
-         int var1 = 31 + var0.getItem().hashCode();
-         return 31 * var1 + var0.getComponents().hashCode();
+   public static int hashItemAndComponents(final @Nullable ItemStack item) {
+      if (item != null) {
+         int result = 31 + item.getItem().hashCode();
+         return 31 * result + item.getComponents().hashCode();
       } else {
          return 0;
       }
@@ -685,14 +665,14 @@ public final class ItemStack implements DataComponentHolder {
 
    /** @deprecated */
    @Deprecated
-   public static int hashStackList(List<ItemStack> var0) {
-      int var1 = 0;
+   public static int hashStackList(final List<ItemStack> items) {
+      int result = 0;
 
-      for(ItemStack var3 : var0) {
-         var1 = var1 * 31 + hashItemAndComponents(var3);
+      for(ItemStack item : items) {
+         result = result * 31 + hashItemAndComponents(item);
       }
 
-      return var1;
+      return result;
    }
 
    public String toString() {
@@ -700,49 +680,49 @@ public final class ItemStack implements DataComponentHolder {
       return var10000 + " " + String.valueOf(this.getItem());
    }
 
-   public void inventoryTick(Level var1, Entity var2, @Nullable EquipmentSlot var3) {
+   public void inventoryTick(final Level level, final Entity owner, final @Nullable EquipmentSlot slot) {
       if (this.popTime > 0) {
          --this.popTime;
       }
 
-      if (var1 instanceof ServerLevel var4) {
-         this.getItem().inventoryTick(this, var4, var2, var3);
+      if (level instanceof ServerLevel serverLevel) {
+         this.getItem().inventoryTick(this, serverLevel, owner, slot);
       }
 
    }
 
-   public void onCraftedBy(Player var1, int var2) {
-      var1.awardStat(Stats.ITEM_CRAFTED.get(this.getItem()), var2);
-      this.getItem().onCraftedBy(this, var1);
+   public void onCraftedBy(final Player player, final int craftCount) {
+      player.awardStat(Stats.ITEM_CRAFTED.get(this.getItem()), craftCount);
+      this.getItem().onCraftedBy(this, player);
    }
 
-   public void onCraftedBySystem(Level var1) {
-      this.getItem().onCraftedPostProcess(this, var1);
+   public void onCraftedBySystem(final Level level) {
+      this.getItem().onCraftedPostProcess(this, level);
    }
 
-   public int getUseDuration(LivingEntity var1) {
-      return this.getItem().getUseDuration(this, var1);
+   public int getUseDuration(final LivingEntity user) {
+      return this.getItem().getUseDuration(this, user);
    }
 
    public ItemUseAnimation getUseAnimation() {
       return this.getItem().getUseAnimation(this);
    }
 
-   public void releaseUsing(Level var1, LivingEntity var2, int var3) {
-      ItemStack var4 = this.copy();
-      if (this.getItem().releaseUsing(this, var1, var2, var3)) {
-         ItemStack var5 = this.applyAfterUseComponentSideEffects(var2, var4);
-         if (var5 != this) {
-            var2.setItemInHand(var2.getUsedItemHand(), var5);
+   public void releaseUsing(final Level level, final LivingEntity entity, final int remainingTime) {
+      ItemStack stackBeforeUsing = this.copy();
+      if (this.getItem().releaseUsing(this, level, entity, remainingTime)) {
+         ItemStack withSideEffects = this.applyAfterUseComponentSideEffects(entity, stackBeforeUsing);
+         if (withSideEffects != this) {
+            entity.setItemInHand(entity.getUsedItemHand(), withSideEffects);
          }
       }
 
    }
 
-   public void causeUseVibration(Entity var1, Holder.Reference<GameEvent> var2) {
-      UseEffects var3 = (UseEffects)this.get(DataComponents.USE_EFFECTS);
-      if (var3 != null && var3.interactVibrations()) {
-         var1.gameEvent(var2);
+   public void causeUseVibration(final Entity causer, final Holder.Reference<GameEvent> event) {
+      UseEffects useEffects = (UseEffects)this.get(DataComponents.USE_EFFECTS);
+      if (useEffects != null && useEffects.interactVibrations()) {
+         causer.gameEvent(event);
       }
 
    }
@@ -751,65 +731,65 @@ public final class ItemStack implements DataComponentHolder {
       return this.getItem().useOnRelease(this);
    }
 
-   public <T> @Nullable T set(DataComponentType<T> var1, @Nullable T var2) {
-      return (T)this.components.set(var1, var2);
+   public <T> @Nullable T set(final DataComponentType<T> type, final @Nullable T value) {
+      return (T)this.components.set(type, value);
    }
 
-   public <T> @Nullable T set(TypedDataComponent<T> var1) {
-      return (T)this.components.set(var1);
+   public <T> @Nullable T set(final TypedDataComponent<T> value) {
+      return (T)this.components.set(value);
    }
 
-   public <T> void copyFrom(DataComponentType<T> var1, DataComponentGetter var2) {
-      this.set(var1, var2.get(var1));
+   public <T> void copyFrom(final DataComponentType<T> type, final DataComponentGetter source) {
+      this.set(type, source.get(type));
    }
 
-   public <T, U> @Nullable T update(DataComponentType<T> var1, T var2, U var3, BiFunction<T, U, T> var4) {
-      return (T)this.set(var1, var4.apply(this.getOrDefault(var1, var2), var3));
+   public <T, U> @Nullable T update(final DataComponentType<T> type, final T defaultValue, final U value, final BiFunction<T, U, T> combiner) {
+      return (T)this.set(type, combiner.apply(this.getOrDefault(type, defaultValue), value));
    }
 
-   public <T> @Nullable T update(DataComponentType<T> var1, T var2, UnaryOperator<T> var3) {
-      Object var4 = this.getOrDefault(var1, var2);
-      return (T)this.set(var1, var3.apply(var4));
+   public <T> @Nullable T update(final DataComponentType<T> type, final T defaultValue, final UnaryOperator<T> function) {
+      T value = (T)this.getOrDefault(type, defaultValue);
+      return (T)this.set(type, function.apply(value));
    }
 
-   public <T> @Nullable T remove(DataComponentType<? extends T> var1) {
-      return (T)this.components.remove(var1);
+   public <T> @Nullable T remove(final DataComponentType<? extends T> type) {
+      return (T)this.components.remove(type);
    }
 
-   public void applyComponentsAndValidate(DataComponentPatch var1) {
-      DataComponentPatch var2 = this.components.asPatch();
-      this.components.applyPatch(var1);
-      Optional var3 = validateStrict(this).error();
-      if (var3.isPresent()) {
-         LOGGER.error("Failed to apply component patch '{}' to item: '{}'", var1, ((DataResult.Error)var3.get()).message());
-         this.components.restorePatch(var2);
+   public void applyComponentsAndValidate(final DataComponentPatch patch) {
+      DataComponentPatch oldPatch = this.components.asPatch();
+      this.components.applyPatch(patch);
+      Optional<DataResult.Error<ItemStack>> validationError = validateStrict(this).error();
+      if (validationError.isPresent()) {
+         LOGGER.error("Failed to apply component patch '{}' to item: '{}'", patch, ((DataResult.Error)validationError.get()).message());
+         this.components.restorePatch(oldPatch);
       }
 
    }
 
-   public void applyComponents(DataComponentPatch var1) {
-      this.components.applyPatch(var1);
+   public void applyComponents(final DataComponentPatch patch) {
+      this.components.applyPatch(patch);
    }
 
-   public void applyComponents(DataComponentMap var1) {
-      this.components.setAll(var1);
+   public void applyComponents(final DataComponentMap components) {
+      this.components.setAll(components);
    }
 
    public Component getHoverName() {
-      Component var1 = this.getCustomName();
-      return var1 != null ? var1 : this.getItemName();
+      Component customName = this.getCustomName();
+      return customName != null ? customName : this.getItemName();
    }
 
    public @Nullable Component getCustomName() {
-      Component var1 = (Component)this.get(DataComponents.CUSTOM_NAME);
-      if (var1 != null) {
-         return var1;
+      Component customName = (Component)this.get(DataComponents.CUSTOM_NAME);
+      if (customName != null) {
+         return customName;
       } else {
-         WrittenBookContent var2 = (WrittenBookContent)this.get(DataComponents.WRITTEN_BOOK_CONTENT);
-         if (var2 != null) {
-            String var3 = (String)var2.title().raw();
-            if (!StringUtil.isBlank(var3)) {
-               return Component.literal(var3);
+         WrittenBookContent content = (WrittenBookContent)this.get(DataComponents.WRITTEN_BOOK_CONTENT);
+         if (content != null) {
+            String title = (String)content.title().raw();
+            if (!StringUtil.isBlank(title)) {
+               return Component.literal(title);
             }
          }
 
@@ -822,127 +802,127 @@ public final class ItemStack implements DataComponentHolder {
    }
 
    public Component getStyledHoverName() {
-      MutableComponent var1 = Component.empty().append(this.getHoverName()).withStyle(this.getRarity().color());
+      MutableComponent hoverName = Component.empty().append(this.getHoverName()).withStyle(this.getRarity().color());
       if (this.has(DataComponents.CUSTOM_NAME)) {
-         var1.withStyle(ChatFormatting.ITALIC);
+         hoverName.withStyle(ChatFormatting.ITALIC);
       }
 
-      return var1;
+      return hoverName;
    }
 
-   public <T extends TooltipProvider> void addToTooltip(DataComponentType<T> var1, Item.TooltipContext var2, TooltipDisplay var3, Consumer<Component> var4, TooltipFlag var5) {
-      TooltipProvider var6 = (TooltipProvider)this.get(var1);
-      if (var6 != null && var3.shows(var1)) {
-         var6.addToTooltip(var2, var4, var5, this.components);
+   public <T extends TooltipProvider> void addToTooltip(final DataComponentType<T> type, final Item.TooltipContext context, final TooltipDisplay display, final Consumer<Component> consumer, final TooltipFlag flag) {
+      T component = (T)(this.get(type));
+      if (component != null && display.shows(type)) {
+         component.addToTooltip(context, consumer, flag, this.components);
       }
 
    }
 
-   public List<Component> getTooltipLines(Item.TooltipContext var1, @Nullable Player var2, TooltipFlag var3) {
-      TooltipDisplay var4 = (TooltipDisplay)this.getOrDefault(DataComponents.TOOLTIP_DISPLAY, TooltipDisplay.DEFAULT);
-      if (!var3.isCreative() && var4.hideTooltip()) {
-         boolean var6 = this.getItem().shouldPrintOpWarning(this, var2);
-         return var6 ? OP_NBT_WARNING : List.of();
+   public List<Component> getTooltipLines(final Item.TooltipContext context, final @Nullable Player player, final TooltipFlag tooltipFlag) {
+      TooltipDisplay display = (TooltipDisplay)this.getOrDefault(DataComponents.TOOLTIP_DISPLAY, TooltipDisplay.DEFAULT);
+      if (!tooltipFlag.isCreative() && display.hideTooltip()) {
+         boolean shouldPrintOpWarning = this.getItem().shouldPrintOpWarning(this, player);
+         return shouldPrintOpWarning ? OP_NBT_WARNING : List.of();
       } else {
-         ArrayList var5 = Lists.newArrayList();
-         var5.add(this.getStyledHoverName());
-         Objects.requireNonNull(var5);
-         this.addDetailsToTooltip(var1, var4, var2, var3, var5::add);
-         return var5;
+         List<Component> lines = Lists.newArrayList();
+         lines.add(this.getStyledHoverName());
+         Objects.requireNonNull(lines);
+         this.addDetailsToTooltip(context, display, player, tooltipFlag, lines::add);
+         return lines;
       }
    }
 
-   public void addDetailsToTooltip(Item.TooltipContext var1, TooltipDisplay var2, @Nullable Player var3, TooltipFlag var4, Consumer<Component> var5) {
-      this.getItem().appendHoverText(this, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.TROPICAL_FISH_PATTERN, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.INSTRUMENT, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.MAP_ID, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.BEES, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.CONTAINER_LOOT, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.CONTAINER, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.BANNER_PATTERNS, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.POT_DECORATIONS, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.WRITTEN_BOOK_CONTENT, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.CHARGED_PROJECTILES, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.FIREWORKS, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.FIREWORK_EXPLOSION, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.POTION_CONTENTS, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.JUKEBOX_PLAYABLE, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.TRIM, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.STORED_ENCHANTMENTS, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.ENCHANTMENTS, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.DYED_COLOR, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.PROFILE, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.LORE, var1, var2, var5, var4);
-      this.addAttributeTooltips(var5, var2, var3);
-      this.addUnitComponentToTooltip(DataComponents.INTANGIBLE_PROJECTILE, INTANGIBLE_TOOLTIP, var2, var5);
-      this.addUnitComponentToTooltip(DataComponents.UNBREAKABLE, UNBREAKABLE_TOOLTIP, var2, var5);
-      this.addToTooltip(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.SUSPICIOUS_STEW_EFFECTS, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.BLOCK_STATE, var1, var2, var5, var4);
-      this.addToTooltip(DataComponents.ENTITY_DATA, var1, var2, var5, var4);
-      if ((this.is(Items.SPAWNER) || this.is(Items.TRIAL_SPAWNER)) && var2.shows(DataComponents.BLOCK_ENTITY_DATA)) {
-         TypedEntityData var6 = (TypedEntityData)this.get(DataComponents.BLOCK_ENTITY_DATA);
-         Spawner.appendHoverText(var6, var5, "SpawnData");
+   public void addDetailsToTooltip(final Item.TooltipContext context, final TooltipDisplay display, final @Nullable Player player, final TooltipFlag tooltipFlag, final Consumer<Component> builder) {
+      this.getItem().appendHoverText(this, context, display, builder, tooltipFlag);
+      this.addToTooltip(DataComponents.TROPICAL_FISH_PATTERN, context, display, builder, tooltipFlag);
+      this.addToTooltip(DataComponents.INSTRUMENT, context, display, builder, tooltipFlag);
+      this.addToTooltip(DataComponents.MAP_ID, context, display, builder, tooltipFlag);
+      this.addToTooltip(DataComponents.BEES, context, display, builder, tooltipFlag);
+      this.addToTooltip(DataComponents.CONTAINER_LOOT, context, display, builder, tooltipFlag);
+      this.addToTooltip(DataComponents.CONTAINER, context, display, builder, tooltipFlag);
+      this.addToTooltip(DataComponents.BANNER_PATTERNS, context, display, builder, tooltipFlag);
+      this.addToTooltip(DataComponents.POT_DECORATIONS, context, display, builder, tooltipFlag);
+      this.addToTooltip(DataComponents.WRITTEN_BOOK_CONTENT, context, display, builder, tooltipFlag);
+      this.addToTooltip(DataComponents.CHARGED_PROJECTILES, context, display, builder, tooltipFlag);
+      this.addToTooltip(DataComponents.FIREWORKS, context, display, builder, tooltipFlag);
+      this.addToTooltip(DataComponents.FIREWORK_EXPLOSION, context, display, builder, tooltipFlag);
+      this.addToTooltip(DataComponents.POTION_CONTENTS, context, display, builder, tooltipFlag);
+      this.addToTooltip(DataComponents.JUKEBOX_PLAYABLE, context, display, builder, tooltipFlag);
+      this.addToTooltip(DataComponents.TRIM, context, display, builder, tooltipFlag);
+      this.addToTooltip(DataComponents.STORED_ENCHANTMENTS, context, display, builder, tooltipFlag);
+      this.addToTooltip(DataComponents.ENCHANTMENTS, context, display, builder, tooltipFlag);
+      this.addToTooltip(DataComponents.DYED_COLOR, context, display, builder, tooltipFlag);
+      this.addToTooltip(DataComponents.PROFILE, context, display, builder, tooltipFlag);
+      this.addToTooltip(DataComponents.LORE, context, display, builder, tooltipFlag);
+      this.addAttributeTooltips(builder, display, player);
+      this.addUnitComponentToTooltip(DataComponents.INTANGIBLE_PROJECTILE, INTANGIBLE_TOOLTIP, display, builder);
+      this.addUnitComponentToTooltip(DataComponents.UNBREAKABLE, UNBREAKABLE_TOOLTIP, display, builder);
+      this.addToTooltip(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, context, display, builder, tooltipFlag);
+      this.addToTooltip(DataComponents.SUSPICIOUS_STEW_EFFECTS, context, display, builder, tooltipFlag);
+      this.addToTooltip(DataComponents.BLOCK_STATE, context, display, builder, tooltipFlag);
+      this.addToTooltip(DataComponents.ENTITY_DATA, context, display, builder, tooltipFlag);
+      if ((this.is(Items.SPAWNER) || this.is(Items.TRIAL_SPAWNER)) && display.shows(DataComponents.BLOCK_ENTITY_DATA)) {
+         TypedEntityData<BlockEntityType<?>> blockEntityData = (TypedEntityData)this.get(DataComponents.BLOCK_ENTITY_DATA);
+         Spawner.appendHoverText(blockEntityData, builder, "SpawnData");
       }
 
-      AdventureModePredicate var9 = (AdventureModePredicate)this.get(DataComponents.CAN_BREAK);
-      if (var9 != null && var2.shows(DataComponents.CAN_BREAK)) {
-         var5.accept(CommonComponents.EMPTY);
-         var5.accept(AdventureModePredicate.CAN_BREAK_HEADER);
-         var9.addToTooltip(var5);
+      AdventureModePredicate canBreak = (AdventureModePredicate)this.get(DataComponents.CAN_BREAK);
+      if (canBreak != null && display.shows(DataComponents.CAN_BREAK)) {
+         builder.accept(CommonComponents.EMPTY);
+         builder.accept(AdventureModePredicate.CAN_BREAK_HEADER);
+         canBreak.addToTooltip(builder);
       }
 
-      AdventureModePredicate var7 = (AdventureModePredicate)this.get(DataComponents.CAN_PLACE_ON);
-      if (var7 != null && var2.shows(DataComponents.CAN_PLACE_ON)) {
-         var5.accept(CommonComponents.EMPTY);
-         var5.accept(AdventureModePredicate.CAN_PLACE_HEADER);
-         var7.addToTooltip(var5);
+      AdventureModePredicate canPlaceOn = (AdventureModePredicate)this.get(DataComponents.CAN_PLACE_ON);
+      if (canPlaceOn != null && display.shows(DataComponents.CAN_PLACE_ON)) {
+         builder.accept(CommonComponents.EMPTY);
+         builder.accept(AdventureModePredicate.CAN_PLACE_HEADER);
+         canPlaceOn.addToTooltip(builder);
       }
 
-      if (var4.isAdvanced()) {
-         if (this.isDamaged() && var2.shows(DataComponents.DAMAGE)) {
-            var5.accept(Component.translatable("item.durability", this.getMaxDamage() - this.getDamageValue(), this.getMaxDamage()));
+      if (tooltipFlag.isAdvanced()) {
+         if (this.isDamaged() && display.shows(DataComponents.DAMAGE)) {
+            builder.accept(Component.translatable("item.durability", this.getMaxDamage() - this.getDamageValue(), this.getMaxDamage()));
          }
 
-         var5.accept(Component.literal(BuiltInRegistries.ITEM.getKey(this.getItem()).toString()).withStyle(ChatFormatting.DARK_GRAY));
-         int var8 = this.components.size();
-         if (var8 > 0) {
-            var5.accept(Component.translatable("item.components", var8).withStyle(ChatFormatting.DARK_GRAY));
+         builder.accept(Component.literal(BuiltInRegistries.ITEM.getKey(this.getItem()).toString()).withStyle(ChatFormatting.DARK_GRAY));
+         int count = this.components.size();
+         if (count > 0) {
+            builder.accept(Component.translatable("item.components", count).withStyle(ChatFormatting.DARK_GRAY));
          }
       }
 
-      if (var3 != null && !this.getItem().isEnabled(var3.level().enabledFeatures())) {
-         var5.accept(DISABLED_ITEM_TOOLTIP);
+      if (player != null && !this.getItem().isEnabled(player.level().enabledFeatures())) {
+         builder.accept(DISABLED_ITEM_TOOLTIP);
       }
 
-      boolean var10 = this.getItem().shouldPrintOpWarning(this, var3);
-      if (var10) {
-         OP_NBT_WARNING.forEach(var5);
-      }
-
-   }
-
-   private void addUnitComponentToTooltip(DataComponentType<?> var1, Component var2, TooltipDisplay var3, Consumer<Component> var4) {
-      if (this.has(var1) && var3.shows(var1)) {
-         var4.accept(var2);
+      boolean shouldPrintOpWarning = this.getItem().shouldPrintOpWarning(this, player);
+      if (shouldPrintOpWarning) {
+         OP_NBT_WARNING.forEach(builder);
       }
 
    }
 
-   private void addAttributeTooltips(Consumer<Component> var1, TooltipDisplay var2, @Nullable Player var3) {
-      if (var2.shows(DataComponents.ATTRIBUTE_MODIFIERS)) {
-         for(EquipmentSlotGroup var7 : EquipmentSlotGroup.values()) {
-            MutableBoolean var8 = new MutableBoolean(true);
-            this.forEachModifier((EquipmentSlotGroup)var7, (TriConsumer)((var4, var5, var6) -> {
-               if (var6 != ItemAttributeModifiers.Display.hidden()) {
-                  if (var8.isTrue()) {
-                     var1.accept(CommonComponents.EMPTY);
-                     var1.accept(Component.translatable("item.modifiers." + var7.getSerializedName()).withStyle(ChatFormatting.GRAY));
-                     var8.setFalse();
+   private void addUnitComponentToTooltip(final DataComponentType<?> dataComponentType, final Component component, final TooltipDisplay display, final Consumer<Component> builder) {
+      if (this.has(dataComponentType) && display.shows(dataComponentType)) {
+         builder.accept(component);
+      }
+
+   }
+
+   private void addAttributeTooltips(final Consumer<Component> consumer, final TooltipDisplay display, final @Nullable Player player) {
+      if (display.shows(DataComponents.ATTRIBUTE_MODIFIERS)) {
+         for(EquipmentSlotGroup slot : EquipmentSlotGroup.values()) {
+            MutableBoolean first = new MutableBoolean(true);
+            this.forEachModifier((EquipmentSlotGroup)slot, (TriConsumer)((attribute, modifier, tooltip) -> {
+               if (tooltip != ItemAttributeModifiers.Display.hidden()) {
+                  if (first.isTrue()) {
+                     consumer.accept(CommonComponents.EMPTY);
+                     consumer.accept(Component.translatable("item.modifiers." + slot.getSerializedName()).withStyle(ChatFormatting.GRAY));
+                     first.setFalse();
                   }
 
-                  var6.apply(var1, var3, var4, var5);
+                  tooltip.apply(consumer, player, attribute, modifier);
                }
             }));
          }
@@ -951,17 +931,17 @@ public final class ItemStack implements DataComponentHolder {
    }
 
    public boolean hasFoil() {
-      Boolean var1 = (Boolean)this.get(DataComponents.ENCHANTMENT_GLINT_OVERRIDE);
-      return var1 != null ? var1 : this.getItem().isFoil(this);
+      Boolean enchantmentGlintOverride = (Boolean)this.get(DataComponents.ENCHANTMENT_GLINT_OVERRIDE);
+      return enchantmentGlintOverride != null ? enchantmentGlintOverride : this.getItem().isFoil(this);
    }
 
    public Rarity getRarity() {
-      Rarity var1 = (Rarity)this.getOrDefault(DataComponents.RARITY, Rarity.COMMON);
+      Rarity baseRarity = (Rarity)this.getOrDefault(DataComponents.RARITY, Rarity.COMMON);
       if (!this.isEnchanted()) {
-         return var1;
+         return baseRarity;
       } else {
          Rarity var10000;
-         switch (var1) {
+         switch (baseRarity) {
             case COMMON:
             case UNCOMMON:
                var10000 = Rarity.RARE;
@@ -970,7 +950,7 @@ public final class ItemStack implements DataComponentHolder {
                var10000 = Rarity.EPIC;
                break;
             default:
-               var10000 = var1;
+               var10000 = baseRarity;
          }
 
          return var10000;
@@ -981,13 +961,13 @@ public final class ItemStack implements DataComponentHolder {
       if (!this.has(DataComponents.ENCHANTABLE)) {
          return false;
       } else {
-         ItemEnchantments var1 = (ItemEnchantments)this.get(DataComponents.ENCHANTMENTS);
-         return var1 != null && var1.isEmpty();
+         ItemEnchantments enchantments = (ItemEnchantments)this.get(DataComponents.ENCHANTMENTS);
+         return enchantments != null && enchantments.isEmpty();
       }
    }
 
-   public void enchant(Holder<Enchantment> var1, int var2) {
-      EnchantmentHelper.updateEnchantments(this, (var2x) -> var2x.upgrade(var1, var2));
+   public void enchant(final Holder<Enchantment> enchantment, final int level) {
+      EnchantmentHelper.updateEnchantments(this, (enchantments) -> enchantments.upgrade(enchantment, level));
    }
 
    public boolean isEnchanted() {
@@ -998,186 +978,157 @@ public final class ItemStack implements DataComponentHolder {
       return (ItemEnchantments)this.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
    }
 
-   public boolean isFramed() {
-      return this.entityRepresentation instanceof ItemFrame;
+   public void forEachModifier(final EquipmentSlotGroup slot, final TriConsumer<Holder<Attribute>, AttributeModifier, ItemAttributeModifiers.Display> consumer) {
+      ItemAttributeModifiers modifiers = (ItemAttributeModifiers)this.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
+      modifiers.forEach(slot, consumer);
+      EnchantmentHelper.forEachModifier(this, (EquipmentSlotGroup)slot, (a, b) -> consumer.accept(a, b, ItemAttributeModifiers.Display.attributeModifiers()));
    }
 
-   public void setEntityRepresentation(@Nullable Entity var1) {
-      if (!this.isEmpty()) {
-         this.entityRepresentation = var1;
-      }
-
-   }
-
-   public @Nullable ItemFrame getFrame() {
-      return this.entityRepresentation instanceof ItemFrame ? (ItemFrame)this.getEntityRepresentation() : null;
-   }
-
-   public @Nullable Entity getEntityRepresentation() {
-      return !this.isEmpty() ? this.entityRepresentation : null;
-   }
-
-   public void forEachModifier(EquipmentSlotGroup var1, TriConsumer<Holder<Attribute>, AttributeModifier, ItemAttributeModifiers.Display> var2) {
-      ItemAttributeModifiers var3 = (ItemAttributeModifiers)this.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
-      var3.forEach(var1, var2);
-      EnchantmentHelper.forEachModifier(this, (EquipmentSlotGroup)var1, (var1x, var2x) -> var2.accept(var1x, var2x, ItemAttributeModifiers.Display.attributeModifiers()));
-   }
-
-   public void forEachModifier(EquipmentSlot var1, BiConsumer<Holder<Attribute>, AttributeModifier> var2) {
-      ItemAttributeModifiers var3 = (ItemAttributeModifiers)this.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
-      var3.forEach(var1, var2);
-      EnchantmentHelper.forEachModifier(this, var1, var2);
+   public void forEachModifier(final EquipmentSlot slot, final BiConsumer<Holder<Attribute>, AttributeModifier> consumer) {
+      ItemAttributeModifiers modifiers = (ItemAttributeModifiers)this.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
+      modifiers.forEach(slot, consumer);
+      EnchantmentHelper.forEachModifier(this, slot, consumer);
    }
 
    public Component getDisplayName() {
-      MutableComponent var1 = Component.empty().append(this.getHoverName());
+      MutableComponent hoverName = Component.empty().append(this.getHoverName());
       if (this.has(DataComponents.CUSTOM_NAME)) {
-         var1.withStyle(ChatFormatting.ITALIC);
+         hoverName.withStyle(ChatFormatting.ITALIC);
       }
 
-      MutableComponent var2 = ComponentUtils.wrapInSquareBrackets(var1);
+      MutableComponent result = ComponentUtils.wrapInSquareBrackets(hoverName);
       if (!this.isEmpty()) {
-         var2.withStyle(this.getRarity().color()).withStyle((UnaryOperator)((var1x) -> var1x.withHoverEvent(new HoverEvent.ShowItem(this))));
+         result.withStyle(this.getRarity().color()).withStyle((UnaryOperator)((s) -> s.withHoverEvent(new HoverEvent.ShowItem(ItemStackTemplate.fromNonEmptyStack(this)))));
       }
 
-      return var2;
+      return result;
    }
 
    public SwingAnimation getSwingAnimation() {
       return (SwingAnimation)this.getOrDefault(DataComponents.SWING_ANIMATION, SwingAnimation.DEFAULT);
    }
 
-   public boolean canPlaceOnBlockInAdventureMode(BlockInWorld var1) {
-      AdventureModePredicate var2 = (AdventureModePredicate)this.get(DataComponents.CAN_PLACE_ON);
-      return var2 != null && var2.test(var1);
+   public boolean canPlaceOnBlockInAdventureMode(final BlockInWorld blockInWorld) {
+      AdventureModePredicate canPlaceOn = (AdventureModePredicate)this.get(DataComponents.CAN_PLACE_ON);
+      return canPlaceOn != null && canPlaceOn.test(blockInWorld);
    }
 
-   public boolean canBreakBlockInAdventureMode(BlockInWorld var1) {
-      AdventureModePredicate var2 = (AdventureModePredicate)this.get(DataComponents.CAN_BREAK);
-      return var2 != null && var2.test(var1);
+   public boolean canBreakBlockInAdventureMode(final BlockInWorld blockInWorld) {
+      AdventureModePredicate canBreak = (AdventureModePredicate)this.get(DataComponents.CAN_BREAK);
+      return canBreak != null && canBreak.test(blockInWorld);
    }
 
    public int getPopTime() {
       return this.popTime;
    }
 
-   public void setPopTime(int var1) {
-      this.popTime = var1;
+   public void setPopTime(final int popTime) {
+      this.popTime = popTime;
    }
 
    public int getCount() {
       return this.isEmpty() ? 0 : this.count;
    }
 
-   public void setCount(int var1) {
-      this.count = var1;
+   public int count() {
+      return this.getCount();
    }
 
-   public void limitSize(int var1) {
-      if (!this.isEmpty() && this.getCount() > var1) {
-         this.setCount(var1);
+   public void setCount(final int count) {
+      this.count = count;
+   }
+
+   public void limitSize(final int maxStackSize) {
+      if (!this.isEmpty() && this.getCount() > maxStackSize) {
+         this.setCount(maxStackSize);
       }
 
    }
 
-   public void grow(int var1) {
-      this.setCount(this.getCount() + var1);
+   public void grow(final int amount) {
+      this.setCount(this.getCount() + amount);
    }
 
-   public void shrink(int var1) {
-      this.grow(-var1);
+   public void shrink(final int amount) {
+      this.grow(-amount);
    }
 
-   public void consume(int var1, @Nullable LivingEntity var2) {
-      if (var2 == null || !var2.hasInfiniteMaterials()) {
-         this.shrink(var1);
+   public void consume(final int amount, final @Nullable LivingEntity owner) {
+      if (owner == null || !owner.hasInfiniteMaterials()) {
+         this.shrink(amount);
       }
 
    }
 
-   public ItemStack consumeAndReturn(int var1, @Nullable LivingEntity var2) {
-      ItemStack var3 = this.copyWithCount(var1);
-      this.consume(var1, var2);
-      return var3;
+   public ItemStack consumeAndReturn(final int amount, final @Nullable LivingEntity owner) {
+      ItemStack split = this.copyWithCount(amount);
+      this.consume(amount, owner);
+      return split;
    }
 
-   public void onUseTick(Level var1, LivingEntity var2, int var3) {
-      Consumable var4 = (Consumable)this.get(DataComponents.CONSUMABLE);
-      if (var4 != null && var4.shouldEmitParticlesAndSounds(var3)) {
-         var4.emitParticlesAndSounds(var2.getRandom(), var2, this, 5);
+   public void onUseTick(final Level level, final LivingEntity livingEntity, final int ticksRemaining) {
+      Consumable consumable = (Consumable)this.get(DataComponents.CONSUMABLE);
+      if (consumable != null && consumable.shouldEmitParticlesAndSounds(ticksRemaining)) {
+         consumable.emitParticlesAndSounds(livingEntity.getRandom(), livingEntity, this, 5);
       }
 
-      KineticWeapon var5 = (KineticWeapon)this.get(DataComponents.KINETIC_WEAPON);
-      if (var5 != null && !var1.isClientSide()) {
-         var5.damageEntities(this, var3, var2, var2.getUsedItemHand().asEquipmentSlot());
+      KineticWeapon kineticWeapon = (KineticWeapon)this.get(DataComponents.KINETIC_WEAPON);
+      if (kineticWeapon != null && !level.isClientSide()) {
+         kineticWeapon.damageEntities(this, ticksRemaining, livingEntity, livingEntity.getUsedItemHand().asEquipmentSlot());
       } else {
-         this.getItem().onUseTick(var1, var2, this, var3);
+         this.getItem().onUseTick(level, livingEntity, this, ticksRemaining);
       }
    }
 
-   public void onDestroyed(ItemEntity var1) {
-      this.getItem().onDestroyed(var1);
+   public void onDestroyed(final ItemEntity itemEntity) {
+      this.getItem().onDestroyed(itemEntity);
    }
 
-   public boolean canBeHurtBy(DamageSource var1) {
-      DamageResistant var2 = (DamageResistant)this.get(DataComponents.DAMAGE_RESISTANT);
-      return var2 == null || !var2.isResistantTo(var1);
+   public boolean canBeHurtBy(final DamageSource source) {
+      DamageResistant damageResistant = (DamageResistant)this.get(DataComponents.DAMAGE_RESISTANT);
+      return damageResistant == null || !damageResistant.isResistantTo(source);
    }
 
-   public boolean isValidRepairItem(ItemStack var1) {
-      Repairable var2 = (Repairable)this.get(DataComponents.REPAIRABLE);
-      return var2 != null && var2.isValidRepairItem(var1);
+   public boolean isValidRepairItem(final ItemStack repairItem) {
+      Repairable repairable = (Repairable)this.get(DataComponents.REPAIRABLE);
+      return repairable != null && repairable.isValidRepairItem(repairItem);
    }
 
-   public boolean canDestroyBlock(BlockState var1, Level var2, BlockPos var3, Player var4) {
-      return this.getItem().canDestroyBlock(this, var1, var2, var3, var4);
+   public boolean canDestroyBlock(final BlockState state, final Level level, final BlockPos pos, final Player player) {
+      return this.getItem().canDestroyBlock(this, state, level, pos, player);
    }
 
-   public DamageSource getDamageSource(LivingEntity var1, Supplier<DamageSource> var2) {
-      return (DamageSource)Optional.ofNullable((EitherHolder)this.get(DataComponents.DAMAGE_TYPE)).flatMap((var1x) -> var1x.unwrap(var1.registryAccess())).map((var1x) -> new DamageSource(var1x, var1)).or(() -> Optional.ofNullable(this.getItem().getItemDamageSource(var1))).orElseGet(var2);
+   public DamageSource getDamageSource(final LivingEntity attacker, final Supplier<DamageSource> defaultSource) {
+      return (DamageSource)Optional.ofNullable((Holder)this.get(DataComponents.DAMAGE_TYPE)).map((type) -> new DamageSource(type, attacker)).or(() -> Optional.ofNullable(this.getItem().getItemDamageSource(attacker))).orElseGet(defaultSource);
    }
 
    static {
       OP_NBT_WARNING = List.of(Component.translatable("item.op_warning.line1").withStyle(ChatFormatting.RED, ChatFormatting.BOLD), Component.translatable("item.op_warning.line2").withStyle(ChatFormatting.RED), Component.translatable("item.op_warning.line3").withStyle(ChatFormatting.RED));
       UNBREAKABLE_TOOLTIP = Component.translatable("item.unbreakable").withStyle(ChatFormatting.BLUE);
       INTANGIBLE_TOOLTIP = Component.translatable("item.intangible").withStyle(ChatFormatting.GRAY);
-      MAP_CODEC = MapCodec.recursive("ItemStack", (var0) -> RecordCodecBuilder.mapCodec((var0x) -> var0x.group(Item.CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder), ExtraCodecs.intRange(1, 99).fieldOf("count").orElse(1).forGetter(ItemStack::getCount), DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter((var0) -> var0.components.asPatch())).apply(var0x, ItemStack::new)));
+      MAP_CODEC = MapCodec.recursive("ItemStack", (subCodec) -> RecordCodecBuilder.mapCodec((i) -> i.group(Item.CODEC_WITH_BOUND_COMPONENTS.fieldOf("id").forGetter(ItemStack::typeHolder), ExtraCodecs.intRange(1, 99).fieldOf("count").orElse(1).forGetter(ItemStack::getCount), DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter((s) -> s.components.asPatch())).apply(i, ItemStack::new)));
       MapCodec var10000 = MAP_CODEC;
       Objects.requireNonNull(var10000);
       CODEC = Codec.lazyInitialized(var10000::codec);
-      SINGLE_ITEM_CODEC = Codec.lazyInitialized(() -> RecordCodecBuilder.create((var0) -> var0.group(Item.CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder), DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter((var0x) -> var0x.components.asPatch())).apply(var0, (var0x, var1) -> new ItemStack(var0x, 1, var1))));
-      STRICT_CODEC = CODEC.validate(ItemStack::validateStrict);
-      STRICT_SINGLE_ITEM_CODEC = SINGLE_ITEM_CODEC.validate(ItemStack::validateStrict);
-      OPTIONAL_CODEC = ExtraCodecs.optionalEmptyMap(CODEC).xmap((var0) -> (ItemStack)var0.orElse(EMPTY), (var0) -> var0.isEmpty() ? Optional.empty() : Optional.of(var0));
-      SIMPLE_ITEM_CODEC = Item.CODEC.xmap(ItemStack::new, ItemStack::getItemHolder);
+      OPTIONAL_CODEC = ExtraCodecs.optionalEmptyMap(CODEC).xmap((itemStack) -> (ItemStack)itemStack.orElse(EMPTY), (itemStack) -> itemStack.isEmpty() ? Optional.empty() : Optional.of(itemStack));
       OPTIONAL_STREAM_CODEC = createOptionalStreamCodec(DataComponentPatch.STREAM_CODEC);
       OPTIONAL_UNTRUSTED_STREAM_CODEC = createOptionalStreamCodec(DataComponentPatch.DELIMITED_STREAM_CODEC);
       STREAM_CODEC = new StreamCodec<RegistryFriendlyByteBuf, ItemStack>() {
-         public ItemStack decode(RegistryFriendlyByteBuf var1) {
-            ItemStack var2 = (ItemStack)ItemStack.OPTIONAL_STREAM_CODEC.decode(var1);
-            if (var2.isEmpty()) {
+         public ItemStack decode(final RegistryFriendlyByteBuf input) {
+            ItemStack itemStack = (ItemStack)ItemStack.OPTIONAL_STREAM_CODEC.decode(input);
+            if (itemStack.isEmpty()) {
                throw new DecoderException("Empty ItemStack not allowed");
             } else {
-               return var2;
+               return itemStack;
             }
          }
 
-         public void encode(RegistryFriendlyByteBuf var1, ItemStack var2) {
-            if (var2.isEmpty()) {
+         public void encode(final RegistryFriendlyByteBuf output, final ItemStack itemStack) {
+            if (itemStack.isEmpty()) {
                throw new EncoderException("Empty ItemStack not allowed");
             } else {
-               ItemStack.OPTIONAL_STREAM_CODEC.encode(var1, var2);
+               ItemStack.OPTIONAL_STREAM_CODEC.encode(output, itemStack);
             }
-         }
-
-         // $FF: synthetic method
-         public void encode(final Object var1, final Object var2) {
-            this.encode((RegistryFriendlyByteBuf)var1, (ItemStack)var2);
-         }
-
-         // $FF: synthetic method
-         public Object decode(final Object var1) {
-            return this.decode((RegistryFriendlyByteBuf)var1);
          }
       };
       OPTIONAL_LIST_STREAM_CODEC = OPTIONAL_STREAM_CODEC.apply(ByteBufCodecs.collection(NonNullList::createWithCapacity));

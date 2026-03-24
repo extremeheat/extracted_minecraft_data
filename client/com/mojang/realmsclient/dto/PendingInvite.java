@@ -12,20 +12,15 @@ import org.slf4j.Logger;
 public record PendingInvite(String invitationId, String realmName, String realmOwnerName, UUID realmOwnerUuid, Instant date) {
    private static final Logger LOGGER = LogUtils.getLogger();
 
-   public PendingInvite(String var1, String var2, String var3, UUID var4, Instant var5) {
+   public PendingInvite {
       super();
-      this.invitationId = var1;
-      this.realmName = var2;
-      this.realmOwnerName = var3;
-      this.realmOwnerUuid = var4;
-      this.date = var5;
    }
 
-   public static @Nullable PendingInvite parse(JsonObject var0) {
+   public static @Nullable PendingInvite parse(final JsonObject json) {
       try {
-         return new PendingInvite(JsonUtils.getStringOr("invitationId", var0, ""), JsonUtils.getStringOr("worldName", var0, ""), JsonUtils.getStringOr("worldOwnerName", var0, ""), JsonUtils.getUuidOr("worldOwnerUuid", var0, Util.NIL_UUID), JsonUtils.getDateOr("date", var0));
-      } catch (Exception var2) {
-         LOGGER.error("Could not parse PendingInvite", var2);
+         return new PendingInvite(JsonUtils.getStringOr("invitationId", json, ""), JsonUtils.getStringOr("worldName", json, ""), JsonUtils.getStringOr("worldOwnerName", json, ""), JsonUtils.getUuidOr("worldOwnerUuid", json, Util.NIL_UUID), JsonUtils.getDateOr("date", json));
+      } catch (Exception e) {
+         LOGGER.error("Could not parse PendingInvite", e);
          return null;
       }
    }

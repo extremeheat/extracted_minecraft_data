@@ -10,22 +10,20 @@ import net.minecraft.world.item.ItemStack;
 public record ServerboundSetCreativeModeSlotPacket(short slotNum, ItemStack itemStack) implements Packet<ServerGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ServerboundSetCreativeModeSlotPacket> STREAM_CODEC;
 
-   public ServerboundSetCreativeModeSlotPacket(int var1, ItemStack var2) {
-      this((short)var1, var2);
+   public ServerboundSetCreativeModeSlotPacket(final int slotNum, final ItemStack itemStack) {
+      this((short)slotNum, itemStack);
    }
 
-   public ServerboundSetCreativeModeSlotPacket(short var1, ItemStack var2) {
+   public ServerboundSetCreativeModeSlotPacket {
       super();
-      this.slotNum = var1;
-      this.itemStack = var2;
    }
 
    public PacketType<ServerboundSetCreativeModeSlotPacket> type() {
       return GamePacketTypes.SERVERBOUND_SET_CREATIVE_MODE_SLOT;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handleSetCreativeModeSlot(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handleSetCreativeModeSlot(this);
    }
 
    static {

@@ -2,8 +2,6 @@ package net.minecraft.client.renderer.entity;
 
 import net.minecraft.client.model.animal.sniffer.SnifferModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.SnifferRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.sniffer.Sniffer;
@@ -11,40 +9,31 @@ import net.minecraft.world.phys.AABB;
 
 public class SnifferRenderer extends AgeableMobRenderer<Sniffer, SnifferRenderState, SnifferModel> {
    private static final Identifier SNIFFER_LOCATION = Identifier.withDefaultNamespace("textures/entity/sniffer/sniffer.png");
+   private static final Identifier SNIFFLET_LOCATION = Identifier.withDefaultNamespace("textures/entity/sniffer/snifflet.png");
 
-   public SnifferRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new SnifferModel(var1.bakeLayer(ModelLayers.SNIFFER)), new SnifferModel(var1.bakeLayer(ModelLayers.SNIFFER_BABY)), 1.1F);
+   public SnifferRenderer(final EntityRendererProvider.Context context) {
+      super(context, new SnifferModel(context.bakeLayer(ModelLayers.SNIFFER)), new SnifferModel(context.bakeLayer(ModelLayers.SNIFFER_BABY)), 1.1F);
    }
 
-   public Identifier getTextureLocation(SnifferRenderState var1) {
-      return SNIFFER_LOCATION;
+   public Identifier getTextureLocation(final SnifferRenderState state) {
+      return state.isBaby ? SNIFFLET_LOCATION : SNIFFER_LOCATION;
    }
 
    public SnifferRenderState createRenderState() {
       return new SnifferRenderState();
    }
 
-   public void extractRenderState(Sniffer var1, SnifferRenderState var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      var2.isSearching = var1.isSearching();
-      var2.diggingAnimationState.copyFrom(var1.diggingAnimationState);
-      var2.sniffingAnimationState.copyFrom(var1.sniffingAnimationState);
-      var2.risingAnimationState.copyFrom(var1.risingAnimationState);
-      var2.feelingHappyAnimationState.copyFrom(var1.feelingHappyAnimationState);
-      var2.scentingAnimationState.copyFrom(var1.scentingAnimationState);
+   public void extractRenderState(final Sniffer entity, final SnifferRenderState state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      state.isSearching = entity.isSearching();
+      state.diggingAnimationState.copyFrom(entity.diggingAnimationState);
+      state.sniffingAnimationState.copyFrom(entity.sniffingAnimationState);
+      state.risingAnimationState.copyFrom(entity.risingAnimationState);
+      state.feelingHappyAnimationState.copyFrom(entity.feelingHappyAnimationState);
+      state.scentingAnimationState.copyFrom(entity.scentingAnimationState);
    }
 
-   protected AABB getBoundingBoxForCulling(Sniffer var1) {
-      return super.getBoundingBoxForCulling(var1).inflate(0.6000000238418579);
-   }
-
-   // $FF: synthetic method
-   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
-      return this.getTextureLocation((SnifferRenderState)var1);
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
+   protected AABB getBoundingBoxForCulling(final Sniffer entity) {
+      return super.getBoundingBoxForCulling(entity).inflate(0.6000000238418579);
    }
 }

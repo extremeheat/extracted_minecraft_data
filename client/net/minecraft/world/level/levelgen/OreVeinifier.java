@@ -21,37 +21,37 @@ public final class OreVeinifier {
       super();
    }
 
-   protected static NoiseChunk.BlockStateFiller create(DensityFunction var0, DensityFunction var1, DensityFunction var2, PositionalRandomFactory var3) {
-      BlockState var4 = SharedConstants.DEBUG_ORE_VEINS ? Blocks.AIR.defaultBlockState() : null;
-      return (var5) -> {
-         double var6 = var0.compute(var5);
-         int var8 = var5.blockY();
-         VeinType var9 = var6 > 0.0 ? OreVeinifier.VeinType.COPPER : OreVeinifier.VeinType.IRON;
-         double var10 = Math.abs(var6);
-         int var12 = var9.maxY - var8;
-         int var13 = var8 - var9.minY;
-         if (var13 >= 0 && var12 >= 0) {
-            int var14 = Math.min(var12, var13);
-            double var15 = Mth.clampedMap((double)var14, 0.0, 20.0, -0.2, 0.0);
-            if (var10 + var15 < 0.4000000059604645) {
-               return var4;
+   protected static NoiseChunk.BlockStateFiller create(final DensityFunction veinToggle, final DensityFunction veinRidged, final DensityFunction veinGap, final PositionalRandomFactory oreVeinsPositionalRandomFactory) {
+      BlockState defaultState = SharedConstants.DEBUG_ORE_VEINS ? Blocks.AIR.defaultBlockState() : null;
+      return (context) -> {
+         double oreVeininessNoiseValue = veinToggle.compute(context);
+         int posY = context.blockY();
+         VeinType veinType = oreVeininessNoiseValue > 0.0 ? OreVeinifier.VeinType.COPPER : OreVeinifier.VeinType.IRON;
+         double veininessRidged = Math.abs(oreVeininessNoiseValue);
+         int distanceFromTop = veinType.maxY - posY;
+         int distanceFromBottom = posY - veinType.minY;
+         if (distanceFromBottom >= 0 && distanceFromTop >= 0) {
+            int distanceFromEdge = Math.min(distanceFromTop, distanceFromBottom);
+            double edgeRoundoff = Mth.clampedMap((double)distanceFromEdge, 0.0, 20.0, -0.2, 0.0);
+            if (veininessRidged + edgeRoundoff < 0.4000000059604645) {
+               return defaultState;
             } else {
-               RandomSource var17 = var3.at(var5.blockX(), var8, var5.blockZ());
-               if (var17.nextFloat() > 0.7F) {
-                  return var4;
-               } else if (var1.compute(var5) >= 0.0) {
-                  return var4;
+               RandomSource positionalRandom = oreVeinsPositionalRandomFactory.at(context.blockX(), posY, context.blockZ());
+               if (positionalRandom.nextFloat() > 0.7F) {
+                  return defaultState;
+               } else if (veinRidged.compute(context) >= 0.0) {
+                  return defaultState;
                } else {
-                  double var18 = Mth.clampedMap(var10, 0.4000000059604645, 0.6000000238418579, 0.10000000149011612, 0.30000001192092896);
-                  if ((double)var17.nextFloat() < var18 && var2.compute(var5) > -0.30000001192092896) {
-                     return var17.nextFloat() < 0.02F ? var9.rawOreBlock : var9.ore;
+                  double richness = Mth.clampedMap(veininessRidged, 0.4000000059604645, 0.6000000238418579, 0.10000000149011612, 0.30000001192092896);
+                  if ((double)positionalRandom.nextFloat() < richness && veinGap.compute(context) > -0.30000001192092896) {
+                     return positionalRandom.nextFloat() < 0.02F ? veinType.rawOreBlock : veinType.ore;
                   } else {
-                     return SharedConstants.DEBUG_ORE_VEINS ? Blocks.OAK_BUTTON.defaultBlockState() : var9.filler;
+                     return SharedConstants.DEBUG_ORE_VEINS ? Blocks.OAK_BUTTON.defaultBlockState() : veinType.filler;
                   }
                }
             }
          } else {
-            return var4;
+            return defaultState;
          }
       };
    }
@@ -60,18 +60,18 @@ public final class OreVeinifier {
       COPPER(Blocks.COPPER_ORE.defaultBlockState(), Blocks.RAW_COPPER_BLOCK.defaultBlockState(), Blocks.GRANITE.defaultBlockState(), 0, 50),
       IRON(Blocks.DEEPSLATE_IRON_ORE.defaultBlockState(), Blocks.RAW_IRON_BLOCK.defaultBlockState(), Blocks.TUFF.defaultBlockState(), -60, -8);
 
-      final BlockState ore;
-      final BlockState rawOreBlock;
-      final BlockState filler;
+      private final BlockState ore;
+      private final BlockState rawOreBlock;
+      private final BlockState filler;
       protected final int minY;
       protected final int maxY;
 
-      private VeinType(final BlockState var3, final BlockState var4, final BlockState var5, final int var6, final int var7) {
-         this.ore = var3;
-         this.rawOreBlock = var4;
-         this.filler = var5;
-         this.minY = var6;
-         this.maxY = var7;
+      private VeinType(final BlockState ore, final BlockState rawOreBlock, final BlockState filler, final int minY, final int maxY) {
+         this.ore = ore;
+         this.rawOreBlock = rawOreBlock;
+         this.filler = filler;
+         this.minY = minY;
+         this.maxY = maxY;
       }
 
       // $FF: synthetic method

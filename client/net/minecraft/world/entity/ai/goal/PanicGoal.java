@@ -24,19 +24,19 @@ public class PanicGoal extends Goal {
    protected boolean isRunning;
    private final Function<PathfinderMob, TagKey<DamageType>> panicCausingDamageTypes;
 
-   public PanicGoal(PathfinderMob var1, double var2) {
-      this(var1, var2, DamageTypeTags.PANIC_CAUSES);
+   public PanicGoal(final PathfinderMob mob, final double speedModifier) {
+      this(mob, speedModifier, DamageTypeTags.PANIC_CAUSES);
    }
 
-   public PanicGoal(PathfinderMob var1, double var2, TagKey<DamageType> var4) {
-      this(var1, var2, (Function)((var1x) -> var4));
+   public PanicGoal(final PathfinderMob mob, final double speedModifier, final TagKey<DamageType> panicCausingDamageTypes) {
+      this(mob, speedModifier, (Function)((entity) -> panicCausingDamageTypes));
    }
 
-   public PanicGoal(PathfinderMob var1, double var2, Function<PathfinderMob, TagKey<DamageType>> var4) {
+   public PanicGoal(final PathfinderMob mob, final double speedModifier, final Function<PathfinderMob, TagKey<DamageType>> panicCausingDamageTypes) {
       super();
-      this.mob = var1;
-      this.speedModifier = var2;
-      this.panicCausingDamageTypes = var4;
+      this.mob = mob;
+      this.speedModifier = speedModifier;
+      this.panicCausingDamageTypes = panicCausingDamageTypes;
       this.setFlags(EnumSet.of(Goal.Flag.MOVE));
    }
 
@@ -45,11 +45,11 @@ public class PanicGoal extends Goal {
          return false;
       } else {
          if (this.mob.isOnFire()) {
-            BlockPos var1 = this.lookForWater(this.mob.level(), this.mob, 5);
-            if (var1 != null) {
-               this.posX = (double)var1.getX();
-               this.posY = (double)var1.getY();
-               this.posZ = (double)var1.getZ();
+            BlockPos blockPos = this.lookForWater(this.mob.level(), this.mob, 5);
+            if (blockPos != null) {
+               this.posX = (double)blockPos.getX();
+               this.posY = (double)blockPos.getY();
+               this.posZ = (double)blockPos.getZ();
                return true;
             }
          }
@@ -63,13 +63,13 @@ public class PanicGoal extends Goal {
    }
 
    protected boolean findRandomPosition() {
-      Vec3 var1 = DefaultRandomPos.getPos(this.mob, 5, 4);
-      if (var1 == null) {
+      Vec3 pos = DefaultRandomPos.getPos(this.mob, 5, 4);
+      if (pos == null) {
          return false;
       } else {
-         this.posX = var1.x;
-         this.posY = var1.y;
-         this.posZ = var1.z;
+         this.posX = pos.x;
+         this.posY = pos.y;
+         this.posZ = pos.z;
          return true;
       }
    }
@@ -91,8 +91,8 @@ public class PanicGoal extends Goal {
       return !this.mob.getNavigation().isDone();
    }
 
-   protected @Nullable BlockPos lookForWater(BlockGetter var1, Entity var2, int var3) {
-      BlockPos var4 = var2.blockPosition();
-      return !var1.getBlockState(var4).getCollisionShape(var1, var4).isEmpty() ? null : (BlockPos)BlockPos.findClosestMatch(var2.blockPosition(), var3, 1, (var1x) -> var1.getFluidState(var1x).is(FluidTags.WATER)).orElse((Object)null);
+   protected @Nullable BlockPos lookForWater(final BlockGetter level, final Entity mob, final int xzDist) {
+      BlockPos mobPosition = mob.blockPosition();
+      return !level.getBlockState(mobPosition).getCollisionShape(level, mobPosition).isEmpty() ? null : (BlockPos)BlockPos.findClosestMatch(mob.blockPosition(), xzDist, 1, (pos) -> level.getFluidState(pos).is(FluidTags.WATER)).orElse((Object)null);
    }
 }

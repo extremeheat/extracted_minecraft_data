@@ -8,12 +8,12 @@ import net.minecraft.world.entity.monster.spider.CaveSpider;
 public class CaveSpiderRenderer extends SpiderRenderer<CaveSpider> {
    private static final Identifier CAVE_SPIDER_LOCATION = Identifier.withDefaultNamespace("textures/entity/spider/cave_spider.png");
 
-   public CaveSpiderRenderer(EntityRendererProvider.Context var1) {
-      super(var1, ModelLayers.CAVE_SPIDER);
+   public CaveSpiderRenderer(final EntityRendererProvider.Context context) {
+      super(context, ModelLayers.CAVE_SPIDER);
       this.shadowRadius = 0.56F;
    }
 
-   public Identifier getTextureLocation(LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState state) {
       return CAVE_SPIDER_LOCATION;
    }
 }

@@ -9,20 +9,20 @@ import java.util.function.Supplier;
 import net.minecraft.util.datafix.fixes.References;
 
 public class V4059 extends NamespacedSchema {
-   public V4059(int var1, Schema var2) {
-      super(var1, var2);
+   public V4059(final int versionKey, final Schema parent) {
+      super(versionKey, parent);
    }
 
-   public static SequencedMap<String, Supplier<TypeTemplate>> components(Schema var0) {
-      SequencedMap var1 = V3818_3.components(var0);
-      var1.remove("minecraft:food");
-      var1.put("minecraft:use_remainder", (Supplier)() -> References.ITEM_STACK.in(var0));
-      var1.put("minecraft:equippable", (Supplier)() -> DSL.optionalFields("allowed_entities", DSL.or(References.ENTITY_NAME.in(var0), DSL.list(References.ENTITY_NAME.in(var0)))));
-      return var1;
+   public static SequencedMap<String, Supplier<TypeTemplate>> components(final Schema schema) {
+      SequencedMap<String, Supplier<TypeTemplate>> components = V3818_3.components(schema);
+      components.remove("minecraft:food");
+      components.put("minecraft:use_remainder", (Supplier)() -> References.ITEM_STACK.in(schema));
+      components.put("minecraft:equippable", (Supplier)() -> DSL.optionalFields("allowed_entities", DSL.or(References.ENTITY_NAME.in(schema), DSL.list(References.ENTITY_NAME.in(schema)))));
+      return components;
    }
 
-   public void registerTypes(Schema var1, Map<String, Supplier<TypeTemplate>> var2, Map<String, Supplier<TypeTemplate>> var3) {
-      super.registerTypes(var1, var2, var3);
-      var1.registerType(true, References.DATA_COMPONENTS, () -> DSL.optionalFieldsLazy(components(var1)));
+   public void registerTypes(final Schema schema, final Map<String, Supplier<TypeTemplate>> entityTypes, final Map<String, Supplier<TypeTemplate>> blockEntityTypes) {
+      super.registerTypes(schema, entityTypes, blockEntityTypes);
+      schema.registerType(true, References.DATA_COMPONENTS, () -> DSL.optionalFieldsLazy(components(schema)));
    }
 }

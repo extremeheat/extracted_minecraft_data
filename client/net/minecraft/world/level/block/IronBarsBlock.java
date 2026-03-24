@@ -7,7 +7,6 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -28,57 +27,57 @@ public class IronBarsBlock extends CrossCollisionBlock {
       return CODEC;
    }
 
-   protected IronBarsBlock(BlockBehaviour.Properties var1) {
-      super(2.0F, 16.0F, 2.0F, 16.0F, 16.0F, var1);
+   protected IronBarsBlock(final BlockBehaviour.Properties properties) {
+      super(2.0F, 16.0F, 2.0F, 16.0F, 16.0F, properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(NORTH, false)).setValue(EAST, false)).setValue(SOUTH, false)).setValue(WEST, false)).setValue(WATERLOGGED, false));
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      Level var2 = var1.getLevel();
-      BlockPos var3 = var1.getClickedPos();
-      FluidState var4 = var1.getLevel().getFluidState(var1.getClickedPos());
-      BlockPos var5 = var3.north();
-      BlockPos var6 = var3.south();
-      BlockPos var7 = var3.west();
-      BlockPos var8 = var3.east();
-      BlockState var9 = var2.getBlockState(var5);
-      BlockState var10 = var2.getBlockState(var6);
-      BlockState var11 = var2.getBlockState(var7);
-      BlockState var12 = var2.getBlockState(var8);
-      return (BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(NORTH, this.attachsTo(var9, var9.isFaceSturdy(var2, var5, Direction.SOUTH)))).setValue(SOUTH, this.attachsTo(var10, var10.isFaceSturdy(var2, var6, Direction.NORTH)))).setValue(WEST, this.attachsTo(var11, var11.isFaceSturdy(var2, var7, Direction.EAST)))).setValue(EAST, this.attachsTo(var12, var12.isFaceSturdy(var2, var8, Direction.WEST)))).setValue(WATERLOGGED, var4.getType() == Fluids.WATER);
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      BlockGetter level = context.getLevel();
+      BlockPos pos = context.getClickedPos();
+      FluidState replacedFluidState = context.getLevel().getFluidState(context.getClickedPos());
+      BlockPos north = pos.north();
+      BlockPos south = pos.south();
+      BlockPos west = pos.west();
+      BlockPos east = pos.east();
+      BlockState northState = level.getBlockState(north);
+      BlockState southState = level.getBlockState(south);
+      BlockState westState = level.getBlockState(west);
+      BlockState eastState = level.getBlockState(east);
+      return (BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(NORTH, this.attachsTo(northState, northState.isFaceSturdy(level, north, Direction.SOUTH)))).setValue(SOUTH, this.attachsTo(southState, southState.isFaceSturdy(level, south, Direction.NORTH)))).setValue(WEST, this.attachsTo(westState, westState.isFaceSturdy(level, west, Direction.EAST)))).setValue(EAST, this.attachsTo(eastState, eastState.isFaceSturdy(level, east, Direction.WEST)))).setValue(WATERLOGGED, replacedFluidState.is(Fluids.WATER));
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      if ((Boolean)var1.getValue(WATERLOGGED)) {
-         var3.scheduleTick(var4, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var2));
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      if ((Boolean)state.getValue(WATERLOGGED)) {
+         ticks.scheduleTick(pos, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(level));
       }
 
-      return var5.getAxis().isHorizontal() ? (BlockState)var1.setValue((Property)PROPERTY_BY_DIRECTION.get(var5), this.attachsTo(var7, var7.isFaceSturdy(var2, var6, var5.getOpposite()))) : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+      return directionToNeighbour.getAxis().isHorizontal() ? (BlockState)state.setValue((Property)PROPERTY_BY_DIRECTION.get(directionToNeighbour), this.attachsTo(neighbourState, neighbourState.isFaceSturdy(level, neighbourPos, directionToNeighbour.getOpposite()))) : super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   protected VoxelShape getVisualShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getVisualShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return Shapes.empty();
    }
 
-   protected boolean skipRendering(BlockState var1, BlockState var2, Direction var3) {
-      if (var2.is(this) || var2.is(BlockTags.BARS) && var1.is(BlockTags.BARS) && var2.hasProperty((Property)PROPERTY_BY_DIRECTION.get(var3.getOpposite()))) {
-         if (!var3.getAxis().isHorizontal()) {
+   protected boolean skipRendering(final BlockState state, final BlockState neighborState, final Direction direction) {
+      if (neighborState.is(this) || neighborState.is(BlockTags.BARS) && state.is(BlockTags.BARS) && neighborState.hasProperty((Property)PROPERTY_BY_DIRECTION.get(direction.getOpposite()))) {
+         if (!direction.getAxis().isHorizontal()) {
             return true;
          }
 
-         if ((Boolean)var1.getValue((Property)PROPERTY_BY_DIRECTION.get(var3)) && (Boolean)var2.getValue((Property)PROPERTY_BY_DIRECTION.get(var3.getOpposite()))) {
+         if ((Boolean)state.getValue((Property)PROPERTY_BY_DIRECTION.get(direction)) && (Boolean)neighborState.getValue((Property)PROPERTY_BY_DIRECTION.get(direction.getOpposite()))) {
             return true;
          }
       }
 
-      return super.skipRendering(var1, var2, var3);
+      return super.skipRendering(state, neighborState, direction);
    }
 
-   public final boolean attachsTo(BlockState var1, boolean var2) {
-      return !isExceptionForConnection(var1) && var2 || var1.getBlock() instanceof IronBarsBlock || var1.is(BlockTags.WALLS);
+   public final boolean attachsTo(final BlockState state, final boolean faceSolid) {
+      return !isExceptionForConnection(state) && faceSolid || state.getBlock() instanceof IronBarsBlock || state.is(BlockTags.WALLS);
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(NORTH, EAST, WEST, SOUTH, WATERLOGGED);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(NORTH, EAST, WEST, SOUTH, WATERLOGGED);
    }
 }

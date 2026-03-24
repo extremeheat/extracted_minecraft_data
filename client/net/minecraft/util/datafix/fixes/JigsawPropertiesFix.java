@@ -6,17 +6,17 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
 
 public class JigsawPropertiesFix extends NamedEntityFix {
-   public JigsawPropertiesFix(Schema var1, boolean var2) {
-      super(var1, var2, "JigsawPropertiesFix", References.BLOCK_ENTITY, "minecraft:jigsaw");
+   public JigsawPropertiesFix(final Schema schema, final boolean changesType) {
+      super(schema, changesType, "JigsawPropertiesFix", References.BLOCK_ENTITY, "minecraft:jigsaw");
    }
 
-   private static Dynamic<?> fixTag(Dynamic<?> var0) {
-      String var1 = var0.get("attachement_type").asString("minecraft:empty");
-      String var2 = var0.get("target_pool").asString("minecraft:empty");
-      return var0.set("name", var0.createString(var1)).set("target", var0.createString(var1)).remove("attachement_type").set("pool", var0.createString(var2)).remove("target_pool");
+   private static Dynamic<?> fixTag(final Dynamic<?> tag) {
+      String oldName = tag.get("attachement_type").asString("minecraft:empty");
+      String oldPool = tag.get("target_pool").asString("minecraft:empty");
+      return tag.set("name", tag.createString(oldName)).set("target", tag.createString(oldName)).remove("attachement_type").set("pool", tag.createString(oldPool)).remove("target_pool");
    }
 
-   protected Typed<?> fix(Typed<?> var1) {
-      return var1.update(DSL.remainderFinder(), JigsawPropertiesFix::fixTag);
+   protected Typed<?> fix(final Typed<?> entity) {
+      return entity.update(DSL.remainderFinder(), JigsawPropertiesFix::fixTag);
    }
 }

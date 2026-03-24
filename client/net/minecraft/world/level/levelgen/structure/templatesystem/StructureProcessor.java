@@ -11,13 +11,13 @@ public abstract class StructureProcessor {
       super();
    }
 
-   public StructureTemplate.@Nullable StructureBlockInfo processBlock(LevelReader var1, BlockPos var2, BlockPos var3, StructureTemplate.StructureBlockInfo var4, StructureTemplate.StructureBlockInfo var5, StructurePlaceSettings var6) {
-      return var5;
+   public StructureTemplate.@Nullable StructureBlockInfo processBlock(final LevelReader level, final BlockPos targetPosition, final BlockPos referencePos, final StructureTemplate.StructureBlockInfo originalBlockInfo, final StructureTemplate.StructureBlockInfo processedBlockInfo, final StructurePlaceSettings settings) {
+      return processedBlockInfo;
    }
 
    protected abstract StructureProcessorType<?> getType();
 
-   public List<StructureTemplate.StructureBlockInfo> finalizeProcessing(ServerLevelAccessor var1, BlockPos var2, BlockPos var3, List<StructureTemplate.StructureBlockInfo> var4, List<StructureTemplate.StructureBlockInfo> var5, StructurePlaceSettings var6) {
-      return var5;
+   public List<StructureTemplate.StructureBlockInfo> finalizeProcessing(final ServerLevelAccessor level, final BlockPos position, final BlockPos referencePos, final List<StructureTemplate.StructureBlockInfo> originalBlockInfoList, final List<StructureTemplate.StructureBlockInfo> processedBlockInfoList, final StructurePlaceSettings settings) {
+      return processedBlockInfoList;
    }
 }

@@ -15,37 +15,37 @@ public class RecipeMap {
    private final Multimap<RecipeType<?>, RecipeHolder<?>> byType;
    private final Map<ResourceKey<Recipe<?>>, RecipeHolder<?>> byKey;
 
-   private RecipeMap(Multimap<RecipeType<?>, RecipeHolder<?>> var1, Map<ResourceKey<Recipe<?>>, RecipeHolder<?>> var2) {
+   private RecipeMap(final Multimap<RecipeType<?>, RecipeHolder<?>> byType, final Map<ResourceKey<Recipe<?>>, RecipeHolder<?>> byKey) {
       super();
-      this.byType = var1;
-      this.byKey = var2;
+      this.byType = byType;
+      this.byKey = byKey;
    }
 
-   public static RecipeMap create(Iterable<RecipeHolder<?>> var0) {
-      ImmutableMultimap.Builder var1 = ImmutableMultimap.builder();
-      ImmutableMap.Builder var2 = ImmutableMap.builder();
+   public static RecipeMap create(final Iterable<RecipeHolder<?>> recipes) {
+      ImmutableMultimap.Builder<RecipeType<?>, RecipeHolder<?>> byType = ImmutableMultimap.builder();
+      ImmutableMap.Builder<ResourceKey<Recipe<?>>, RecipeHolder<?>> byKey = ImmutableMap.builder();
 
-      for(RecipeHolder var4 : var0) {
-         var1.put(var4.value().getType(), var4);
-         var2.put(var4.id(), var4);
+      for(RecipeHolder<?> recipe : recipes) {
+         byType.put(recipe.value().getType(), recipe);
+         byKey.put(recipe.id(), recipe);
       }
 
-      return new RecipeMap(var1.build(), var2.build());
+      return new RecipeMap(byType.build(), byKey.build());
    }
 
-   public <I extends RecipeInput, T extends Recipe<I>> Collection<RecipeHolder<T>> byType(RecipeType<T> var1) {
-      return this.byType.get(var1);
+   public <I extends RecipeInput, T extends Recipe<I>> Collection<RecipeHolder<T>> byType(final RecipeType<T> type) {
+      return this.byType.get(type);
    }
 
    public Collection<RecipeHolder<?>> values() {
       return this.byKey.values();
    }
 
-   public @Nullable RecipeHolder<?> byKey(ResourceKey<Recipe<?>> var1) {
-      return (RecipeHolder)this.byKey.get(var1);
+   public @Nullable RecipeHolder<?> byKey(final ResourceKey<Recipe<?>> recipeId) {
+      return (RecipeHolder)this.byKey.get(recipeId);
    }
 
-   public <I extends RecipeInput, T extends Recipe<I>> Stream<RecipeHolder<T>> getRecipesFor(RecipeType<T> var1, I var2, Level var3) {
-      return var2.isEmpty() ? Stream.empty() : this.byType(var1).stream().filter((var2x) -> var2x.value().matches(var2, var3));
+   public <I extends RecipeInput, T extends Recipe<I>> Stream<RecipeHolder<T>> getRecipesFor(final RecipeType<T> type, final I container, final Level level) {
+      return container.isEmpty() ? Stream.empty() : this.byType(type).stream().filter((r) -> r.value().matches(container, level));
    }
 }

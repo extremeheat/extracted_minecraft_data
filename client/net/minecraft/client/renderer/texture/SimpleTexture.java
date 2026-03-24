@@ -5,11 +5,11 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 
 public class SimpleTexture extends ReloadableTexture {
-   public SimpleTexture(Identifier var1) {
-      super(var1);
+   public SimpleTexture(final Identifier location) {
+      super(location);
    }
 
-   public TextureContents loadContents(ResourceManager var1) throws IOException {
-      return TextureContents.load(var1, this.resourceId());
+   public TextureContents loadContents(final ResourceManager resourceManager) throws IOException {
+      return TextureContents.load(resourceManager, this.resourceId());
    }
 }

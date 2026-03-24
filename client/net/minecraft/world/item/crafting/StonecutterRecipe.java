@@ -1,15 +1,22 @@
 package net.minecraft.world.item.crafting;
 
+import com.mojang.serialization.MapCodec;
 import java.util.List;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.display.RecipeDisplay;
 import net.minecraft.world.item.crafting.display.SlotDisplay;
 import net.minecraft.world.item.crafting.display.StonecutterRecipeDisplay;
 
 public class StonecutterRecipe extends SingleItemRecipe {
-   public StonecutterRecipe(String var1, Ingredient var2, ItemStack var3) {
-      super(var1, var2, var3);
+   public static final MapCodec<StonecutterRecipe> MAP_CODEC = simpleMapCodec(StonecutterRecipe::new);
+   public static final StreamCodec<RegistryFriendlyByteBuf, StonecutterRecipe> STREAM_CODEC = simpleStreamCodec(StonecutterRecipe::new);
+   public static final RecipeSerializer<StonecutterRecipe> SERIALIZER;
+
+   public StonecutterRecipe(final Recipe.CommonInfo commonInfo, final Ingredient ingredient, final ItemStackTemplate result) {
+      super(commonInfo, ingredient, result);
    }
 
    public RecipeType<StonecutterRecipe> getType() {
@@ -17,7 +24,11 @@ public class StonecutterRecipe extends SingleItemRecipe {
    }
 
    public RecipeSerializer<StonecutterRecipe> getSerializer() {
-      return RecipeSerializer.STONECUTTER;
+      return SERIALIZER;
+   }
+
+   public String group() {
+      return "";
    }
 
    public List<RecipeDisplay> display() {
@@ -30,5 +41,9 @@ public class StonecutterRecipe extends SingleItemRecipe {
 
    public RecipeBookCategory recipeBookCategory() {
       return RecipeBookCategories.STONECUTTER;
+   }
+
+   static {
+      SERIALIZER = new RecipeSerializer<StonecutterRecipe>(MAP_CODEC, STREAM_CODEC);
    }
 }

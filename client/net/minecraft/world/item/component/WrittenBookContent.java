@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
-import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponents;
@@ -19,14 +18,13 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.ComponentUtils;
-import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.ResolutionContext;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.network.Filterable;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.StringUtil;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -38,68 +36,67 @@ public record WrittenBookContent(Filterable<String> title, String author, int ge
    public static final int TITLE_LENGTH = 16;
    public static final int TITLE_MAX_LENGTH = 32;
    public static final int MAX_GENERATION = 3;
-   public static final int MAX_CRAFTABLE_GENERATION = 2;
    public static final Codec<Component> CONTENT_CODEC = ComponentSerialization.flatRestrictedCodec(32767);
    public static final Codec<List<Filterable<Component>>> PAGES_CODEC;
    public static final Codec<WrittenBookContent> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, WrittenBookContent> STREAM_CODEC;
 
-   public WrittenBookContent(Filterable<String> var1, String var2, int var3, List<Filterable<Component>> var4, boolean var5) {
+   public WrittenBookContent(Filterable<String> title, String author, int generation, List<Filterable<Component>> pages, boolean resolved) {
       super();
-      if (var3 >= 0 && var3 <= 3) {
-         this.title = var1;
-         this.author = var2;
-         this.generation = var3;
-         this.pages = var4;
-         this.resolved = var5;
+      if (generation >= 0 && generation <= 3) {
+         this.title = title;
+         this.author = author;
+         this.generation = generation;
+         this.pages = pages;
+         this.resolved = resolved;
       } else {
-         throw new IllegalArgumentException("Generation was " + var3 + ", but must be between 0 and 3");
+         throw new IllegalArgumentException("Generation was " + generation + ", but must be between 0 and 3");
       }
    }
 
-   private static Codec<Filterable<Component>> pageCodec(Codec<Component> var0) {
-      return Filterable.codec(var0);
+   private static Codec<Filterable<Component>> pageCodec(final Codec<Component> contentCodec) {
+      return Filterable.codec(contentCodec);
    }
 
-   public static Codec<List<Filterable<Component>>> pagesCodec(Codec<Component> var0) {
-      return pageCodec(var0).listOf();
+   public static Codec<List<Filterable<Component>>> pagesCodec(final Codec<Component> contentCodec) {
+      return pageCodec(contentCodec).listOf();
    }
 
-   public @Nullable WrittenBookContent tryCraftCopy() {
-      return this.generation >= 2 ? null : new WrittenBookContent(this.title, this.author, this.generation + 1, this.pages, this.resolved);
+   public WrittenBookContent craftCopy() {
+      return new WrittenBookContent(this.title, this.author, this.generation + 1, this.pages, this.resolved);
    }
 
-   public static boolean resolveForItem(ItemStack var0, CommandSourceStack var1, @Nullable Player var2) {
-      WrittenBookContent var3 = (WrittenBookContent)var0.get(DataComponents.WRITTEN_BOOK_CONTENT);
-      if (var3 != null && !var3.resolved()) {
-         WrittenBookContent var4 = var3.resolve(var1, var2);
-         if (var4 != null) {
-            var0.set(DataComponents.WRITTEN_BOOK_CONTENT, var4);
+   public static boolean resolveForItem(final ItemStack itemStack, final ResolutionContext context, final HolderLookup.Provider registries) {
+      WrittenBookContent content = (WrittenBookContent)itemStack.get(DataComponents.WRITTEN_BOOK_CONTENT);
+      if (content != null && !content.resolved()) {
+         WrittenBookContent resolvedContent = content.resolve(context, registries);
+         if (resolvedContent != null) {
+            itemStack.set(DataComponents.WRITTEN_BOOK_CONTENT, resolvedContent);
             return true;
          }
 
-         var0.set(DataComponents.WRITTEN_BOOK_CONTENT, var3.markResolved());
+         itemStack.set(DataComponents.WRITTEN_BOOK_CONTENT, content.markResolved());
       }
 
       return false;
    }
 
-   public @Nullable WrittenBookContent resolve(CommandSourceStack var1, @Nullable Player var2) {
+   public @Nullable WrittenBookContent resolve(final ResolutionContext context, final HolderLookup.Provider registries) {
       if (this.resolved) {
          return null;
       } else {
-         ImmutableList.Builder var3 = ImmutableList.builderWithExpectedSize(this.pages.size());
+         ImmutableList.Builder<Filterable<Component>> newPages = ImmutableList.builderWithExpectedSize(this.pages.size());
 
-         for(Filterable var5 : this.pages) {
-            Optional var6 = resolvePage(var1, var2, var5);
-            if (var6.isEmpty()) {
+         for(Filterable<Component> page : this.pages) {
+            Optional<Filterable<Component>> resolvedPage = resolvePage(context, registries, page);
+            if (resolvedPage.isEmpty()) {
                return null;
             }
 
-            var3.add((Filterable)var6.get());
+            newPages.add((Filterable)resolvedPage.get());
          }
 
-         return new WrittenBookContent(this.title, this.author, this.generation, var3.build(), true);
+         return new WrittenBookContent(this.title, this.author, this.generation, newPages.build(), true);
       }
    }
 
@@ -107,46 +104,41 @@ public record WrittenBookContent(Filterable<String> title, String author, int ge
       return new WrittenBookContent(this.title, this.author, this.generation, this.pages, true);
    }
 
-   private static Optional<Filterable<Component>> resolvePage(CommandSourceStack var0, @Nullable Player var1, Filterable<Component> var2) {
-      return var2.resolve((var2x) -> {
+   private static Optional<Filterable<Component>> resolvePage(final ResolutionContext context, final HolderLookup.Provider registries, final Filterable<Component> page) {
+      return page.resolve((component) -> {
          try {
-            MutableComponent var3 = ComponentUtils.updateForEntity(var0, var2x, var1, 0);
-            return isPageTooLarge(var3, var0.registryAccess()) ? Optional.empty() : Optional.of(var3);
+            Component newComponent = ComponentUtils.resolve(context, component);
+            return isPageTooLarge(newComponent, registries) ? Optional.empty() : Optional.of(newComponent);
          } catch (Exception var4) {
-            return Optional.of(var2x);
+            return Optional.of(component);
          }
       });
    }
 
-   private static boolean isPageTooLarge(Component var0, HolderLookup.Provider var1) {
-      DataResult var2 = ComponentSerialization.CODEC.encodeStart(var1.createSerializationContext(JsonOps.INSTANCE), var0);
-      return var2.isSuccess() && GsonHelper.encodesLongerThan((JsonElement)var2.getOrThrow(), 32767);
+   private static boolean isPageTooLarge(final Component page, final HolderLookup.Provider registries) {
+      DataResult<JsonElement> json = ComponentSerialization.CODEC.encodeStart(registries.createSerializationContext(JsonOps.INSTANCE), page);
+      return json.isSuccess() && GsonHelper.encodesLongerThan((JsonElement)json.getOrThrow(), 32767);
    }
 
-   public List<Component> getPages(boolean var1) {
-      return Lists.transform(this.pages, (var1x) -> (Component)var1x.get(var1));
+   public List<Component> getPages(final boolean filterEnabled) {
+      return Lists.transform(this.pages, (page) -> (Component)page.get(filterEnabled));
    }
 
-   public WrittenBookContent withReplacedPages(List<Filterable<Component>> var1) {
-      return new WrittenBookContent(this.title, this.author, this.generation, var1, false);
+   public WrittenBookContent withReplacedPages(final List<Filterable<Component>> newPages) {
+      return new WrittenBookContent(this.title, this.author, this.generation, newPages, false);
    }
 
-   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
+   public void addToTooltip(final Item.TooltipContext context, final Consumer<Component> consumer, final TooltipFlag flag, final DataComponentGetter components) {
       if (!StringUtil.isBlank(this.author)) {
-         var2.accept(Component.translatable("book.byAuthor", this.author).withStyle(ChatFormatting.GRAY));
+         consumer.accept(Component.translatable("book.byAuthor", this.author).withStyle(ChatFormatting.GRAY));
       }
 
-      var2.accept(Component.translatable("book.generation." + this.generation).withStyle(ChatFormatting.GRAY));
-   }
-
-   // $FF: synthetic method
-   public Object withReplacedPages(final List var1) {
-      return this.withReplacedPages(var1);
+      consumer.accept(Component.translatable("book.generation." + this.generation).withStyle(ChatFormatting.GRAY));
    }
 
    static {
       PAGES_CODEC = pagesCodec(CONTENT_CODEC);
-      CODEC = RecordCodecBuilder.create((var0) -> var0.group(Filterable.codec(Codec.string(0, 32)).fieldOf("title").forGetter(WrittenBookContent::title), Codec.STRING.fieldOf("author").forGetter(WrittenBookContent::author), ExtraCodecs.intRange(0, 3).optionalFieldOf("generation", 0).forGetter(WrittenBookContent::generation), PAGES_CODEC.optionalFieldOf("pages", List.of()).forGetter(WrittenBookContent::pages), Codec.BOOL.optionalFieldOf("resolved", false).forGetter(WrittenBookContent::resolved)).apply(var0, WrittenBookContent::new));
+      CODEC = RecordCodecBuilder.create((i) -> i.group(Filterable.codec(Codec.string(0, 32)).fieldOf("title").forGetter(WrittenBookContent::title), Codec.STRING.fieldOf("author").forGetter(WrittenBookContent::author), ExtraCodecs.intRange(0, 3).optionalFieldOf("generation", 0).forGetter(WrittenBookContent::generation), PAGES_CODEC.optionalFieldOf("pages", List.of()).forGetter(WrittenBookContent::pages), Codec.BOOL.optionalFieldOf("resolved", false).forGetter(WrittenBookContent::resolved)).apply(i, WrittenBookContent::new));
       STREAM_CODEC = StreamCodec.composite(Filterable.streamCodec(ByteBufCodecs.stringUtf8(32)), WrittenBookContent::title, ByteBufCodecs.STRING_UTF8, WrittenBookContent::author, ByteBufCodecs.VAR_INT, WrittenBookContent::generation, Filterable.streamCodec(ComponentSerialization.STREAM_CODEC).apply(ByteBufCodecs.list()), WrittenBookContent::pages, ByteBufCodecs.BOOL, WrittenBookContent::resolved, WrittenBookContent::new);
    }
 }

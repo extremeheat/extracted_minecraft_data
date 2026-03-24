@@ -25,19 +25,19 @@ public class LinkFileSystem extends FileSystem {
    private final FileSystemProvider provider = new LinkFSProvider();
    private final LinkFSPath root;
 
-   LinkFileSystem(String var1, DirectoryEntry var2) {
+   private LinkFileSystem(final String name, final DirectoryEntry rootEntry) {
       super();
-      this.store = new LinkFSFileStore(var1);
-      this.root = buildPath(var2, this, "", (LinkFSPath)null);
+      this.store = new LinkFSFileStore(name);
+      this.root = buildPath(rootEntry, this, "", (LinkFSPath)null);
    }
 
-   private static LinkFSPath buildPath(DirectoryEntry var0, LinkFileSystem var1, String var2, @Nullable LinkFSPath var3) {
-      Object2ObjectOpenHashMap var4 = new Object2ObjectOpenHashMap();
-      LinkFSPath var5 = new LinkFSPath(var1, var2, var3, new PathContents.DirectoryContents(var4));
-      var0.files.forEach((var3x, var4x) -> var4.put(var3x, new LinkFSPath(var1, var3x, var5, new PathContents.FileContents(var4x))));
-      var0.children.forEach((var3x, var4x) -> var4.put(var3x, buildPath(var4x, var1, var3x, var5)));
-      var4.trim();
-      return var5;
+   private static LinkFSPath buildPath(final DirectoryEntry entry, final LinkFileSystem fileSystem, final String selfName, final @Nullable LinkFSPath parent) {
+      Object2ObjectOpenHashMap<String, LinkFSPath> children = new Object2ObjectOpenHashMap();
+      LinkFSPath result = new LinkFSPath(fileSystem, selfName, parent, new PathContents.DirectoryContents(children));
+      entry.files.forEach((name, linkTarget) -> children.put(name, new LinkFSPath(fileSystem, name, result, new PathContents.FileContents(linkTarget))));
+      entry.children.forEach((name, childEntry) -> children.put(name, buildPath(childEntry, fileSystem, name, result)));
+      children.trim();
+      return result;
    }
 
    public FileSystemProvider provider() {
@@ -71,47 +71,47 @@ public class LinkFileSystem extends FileSystem {
       return VIEWS;
    }
 
-   public Path getPath(String var1, String... var2) {
-      Stream var3 = Stream.of(var1);
-      if (var2.length > 0) {
-         var3 = Stream.concat(var3, Stream.of(var2));
+   public Path getPath(final String first, final String... more) {
+      Stream<String> path = Stream.of(first);
+      if (more.length > 0) {
+         path = Stream.concat(path, Stream.of(more));
       }
 
-      String var4 = (String)var3.collect(Collectors.joining("/"));
-      if (var4.equals("/")) {
+      String joinedPath = (String)path.collect(Collectors.joining("/"));
+      if (joinedPath.equals("/")) {
          return this.root;
-      } else if (var4.startsWith("/")) {
-         LinkFSPath var8 = this.root;
+      } else if (joinedPath.startsWith("/")) {
+         LinkFSPath result = this.root;
 
-         for(String var10 : PATH_SPLITTER.split(var4.substring(1))) {
-            if (var10.isEmpty()) {
+         for(String segment : PATH_SPLITTER.split(joinedPath.substring(1))) {
+            if (segment.isEmpty()) {
                throw new IllegalArgumentException("Empty paths not allowed");
             }
 
-            var8 = var8.resolveName(var10);
+            result = result.resolveName(segment);
          }
 
-         return var8;
+         return result;
       } else {
-         LinkFSPath var5 = null;
+         LinkFSPath result = null;
 
-         for(String var7 : PATH_SPLITTER.split(var4)) {
-            if (var7.isEmpty()) {
+         for(String segment : PATH_SPLITTER.split(joinedPath)) {
+            if (segment.isEmpty()) {
                throw new IllegalArgumentException("Empty paths not allowed");
             }
 
-            var5 = new LinkFSPath(this, var7, var5, PathContents.RELATIVE);
+            result = new LinkFSPath(this, segment, result, PathContents.RELATIVE);
          }
 
-         if (var5 == null) {
+         if (result == null) {
             throw new IllegalArgumentException("Empty paths not allowed");
          } else {
-            return var5;
+            return result;
          }
       }
    }
 
-   public PathMatcher getPathMatcher(String var1) {
+   public PathMatcher getPathMatcher(final String syntaxAndPattern) {
       throw new UnsupportedOperationException();
    }
 
@@ -135,18 +135,13 @@ public class LinkFileSystem extends FileSystem {
       return new Builder();
    }
 
-   static record DirectoryEntry(Map<String, DirectoryEntry> children, Map<String, Path> files) {
-      final Map<String, DirectoryEntry> children;
-      final Map<String, Path> files;
-
+   private static record DirectoryEntry(Map<String, DirectoryEntry> children, Map<String, Path> files) {
       public DirectoryEntry() {
          this(new HashMap(), new HashMap());
       }
 
-      private DirectoryEntry(Map<String, DirectoryEntry> var1, Map<String, Path> var2) {
+      private DirectoryEntry {
          super();
-         this.children = var1;
-         this.files = var2;
       }
    }
 
@@ -157,28 +152,28 @@ public class LinkFileSystem extends FileSystem {
          super();
       }
 
-      public Builder put(List<String> var1, String var2, Path var3) {
-         DirectoryEntry var4 = this.root;
+      public Builder put(final List<String> path, final String name, final Path target) {
+         DirectoryEntry currentEntry = this.root;
 
-         for(String var6 : var1) {
-            var4 = (DirectoryEntry)var4.children.computeIfAbsent(var6, (var0) -> new DirectoryEntry());
+         for(String segment : path) {
+            currentEntry = (DirectoryEntry)currentEntry.children.computeIfAbsent(segment, (n) -> new DirectoryEntry());
          }
 
-         var4.files.put(var2, var3);
+         currentEntry.files.put(name, target);
          return this;
       }
 
-      public Builder put(List<String> var1, Path var2) {
-         if (var1.isEmpty()) {
+      public Builder put(final List<String> path, final Path target) {
+         if (path.isEmpty()) {
             throw new IllegalArgumentException("Path can't be empty");
          } else {
-            int var3 = var1.size() - 1;
-            return this.put(var1.subList(0, var3), (String)var1.get(var3), var2);
+            int lastIndex = path.size() - 1;
+            return this.put(path.subList(0, lastIndex), (String)path.get(lastIndex), target);
          }
       }
 
-      public FileSystem build(String var1) {
-         return new LinkFileSystem(var1, this.root);
+      public FileSystem build(final String name) {
+         return new LinkFileSystem(name, this.root);
       }
    }
 }

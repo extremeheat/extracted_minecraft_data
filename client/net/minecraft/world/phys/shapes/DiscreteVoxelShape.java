@@ -11,78 +11,78 @@ public abstract class DiscreteVoxelShape {
    protected final int ySize;
    protected final int zSize;
 
-   protected DiscreteVoxelShape(int var1, int var2, int var3) {
+   protected DiscreteVoxelShape(final int xSize, final int ySize, final int zSize) {
       super();
-      if (var1 >= 0 && var2 >= 0 && var3 >= 0) {
-         this.xSize = var1;
-         this.ySize = var2;
-         this.zSize = var3;
+      if (xSize >= 0 && ySize >= 0 && zSize >= 0) {
+         this.xSize = xSize;
+         this.ySize = ySize;
+         this.zSize = zSize;
       } else {
-         throw new IllegalArgumentException("Need all positive sizes: x: " + var1 + ", y: " + var2 + ", z: " + var3);
+         throw new IllegalArgumentException("Need all positive sizes: x: " + xSize + ", y: " + ySize + ", z: " + zSize);
       }
    }
 
-   public DiscreteVoxelShape rotate(OctahedralGroup var1) {
-      if (var1 == OctahedralGroup.IDENTITY) {
+   public DiscreteVoxelShape rotate(final OctahedralGroup rotation) {
+      if (rotation == OctahedralGroup.IDENTITY) {
          return this;
       } else {
-         Vector3i var2 = var1.rotate(new Vector3i(this.xSize, this.ySize, this.zSize));
-         int var3 = fixupCoordinate(var2, 0);
-         int var4 = fixupCoordinate(var2, 1);
-         int var5 = fixupCoordinate(var2, 2);
-         BitSetDiscreteVoxelShape var6 = new BitSetDiscreteVoxelShape(var2.x, var2.y, var2.z);
+         Vector3i v = rotation.rotate(new Vector3i(this.xSize, this.ySize, this.zSize));
+         int shiftX = fixupCoordinate(v, 0);
+         int shiftY = fixupCoordinate(v, 1);
+         int shiftZ = fixupCoordinate(v, 2);
+         DiscreteVoxelShape newShape = new BitSetDiscreteVoxelShape(v.x, v.y, v.z);
 
-         for(int var7 = 0; var7 < this.xSize; ++var7) {
-            for(int var8 = 0; var8 < this.ySize; ++var8) {
-               for(int var9 = 0; var9 < this.zSize; ++var9) {
-                  if (this.isFull(var7, var8, var9)) {
-                     Vector3i var10 = var1.rotate(var2.set(var7, var8, var9));
-                     int var11 = var3 + var10.x;
-                     int var12 = var4 + var10.y;
-                     int var13 = var5 + var10.z;
-                     ((DiscreteVoxelShape)var6).fill(var11, var12, var13);
+         for(int x = 0; x < this.xSize; ++x) {
+            for(int y = 0; y < this.ySize; ++y) {
+               for(int z = 0; z < this.zSize; ++z) {
+                  if (this.isFull(x, y, z)) {
+                     Vector3i newPos = rotation.rotate(v.set(x, y, z));
+                     int newX = shiftX + newPos.x;
+                     int newY = shiftY + newPos.y;
+                     int newZ = shiftZ + newPos.z;
+                     newShape.fill(newX, newY, newZ);
                   }
                }
             }
          }
 
-         return var6;
+         return newShape;
       }
    }
 
-   private static int fixupCoordinate(Vector3i var0, int var1) {
-      int var2 = var0.get(var1);
-      if (var2 < 0) {
-         var0.setComponent(var1, -var2);
-         return -var2 - 1;
+   private static int fixupCoordinate(final Vector3i v, final int index) {
+      int value = v.get(index);
+      if (value < 0) {
+         v.setComponent(index, -value);
+         return -value - 1;
       } else {
          return 0;
       }
    }
 
-   public boolean isFullWide(AxisCycle var1, int var2, int var3, int var4) {
-      return this.isFullWide(var1.cycle(var2, var3, var4, Direction.Axis.X), var1.cycle(var2, var3, var4, Direction.Axis.Y), var1.cycle(var2, var3, var4, Direction.Axis.Z));
+   public boolean isFullWide(final AxisCycle transform, final int x, final int y, final int z) {
+      return this.isFullWide(transform.cycle(x, y, z, Direction.Axis.X), transform.cycle(x, y, z, Direction.Axis.Y), transform.cycle(x, y, z, Direction.Axis.Z));
    }
 
-   public boolean isFullWide(int var1, int var2, int var3) {
-      if (var1 >= 0 && var2 >= 0 && var3 >= 0) {
-         return var1 < this.xSize && var2 < this.ySize && var3 < this.zSize ? this.isFull(var1, var2, var3) : false;
+   public boolean isFullWide(final int x, final int y, final int z) {
+      if (x >= 0 && y >= 0 && z >= 0) {
+         return x < this.xSize && y < this.ySize && z < this.zSize ? this.isFull(x, y, z) : false;
       } else {
          return false;
       }
    }
 
-   public boolean isFull(AxisCycle var1, int var2, int var3, int var4) {
-      return this.isFull(var1.cycle(var2, var3, var4, Direction.Axis.X), var1.cycle(var2, var3, var4, Direction.Axis.Y), var1.cycle(var2, var3, var4, Direction.Axis.Z));
+   public boolean isFull(final AxisCycle transform, final int x, final int y, final int z) {
+      return this.isFull(transform.cycle(x, y, z, Direction.Axis.X), transform.cycle(x, y, z, Direction.Axis.Y), transform.cycle(x, y, z, Direction.Axis.Z));
    }
 
-   public abstract boolean isFull(int var1, int var2, int var3);
+   public abstract boolean isFull(final int x, final int y, final int z);
 
-   public abstract void fill(int var1, int var2, int var3);
+   public abstract void fill(final int x, final int y, final int z);
 
    public boolean isEmpty() {
-      for(Direction.Axis var4 : AXIS_VALUES) {
-         if (this.firstFull(var4) >= this.lastFull(var4)) {
+      for(Direction.Axis axis : AXIS_VALUES) {
+         if (this.firstFull(axis) >= this.lastFull(axis)) {
             return true;
          }
       }
@@ -90,44 +90,44 @@ public abstract class DiscreteVoxelShape {
       return false;
    }
 
-   public abstract int firstFull(Direction.Axis var1);
+   public abstract int firstFull(final Direction.Axis axis);
 
-   public abstract int lastFull(Direction.Axis var1);
+   public abstract int lastFull(final Direction.Axis axis);
 
-   public int firstFull(Direction.Axis var1, int var2, int var3) {
-      int var4 = this.getSize(var1);
-      if (var2 >= 0 && var3 >= 0) {
-         Direction.Axis var5 = AxisCycle.FORWARD.cycle(var1);
-         Direction.Axis var6 = AxisCycle.BACKWARD.cycle(var1);
-         if (var2 < this.getSize(var5) && var3 < this.getSize(var6)) {
-            AxisCycle var7 = AxisCycle.between(Direction.Axis.X, var1);
+   public int firstFull(final Direction.Axis aAxis, final int b, final int c) {
+      int aSize = this.getSize(aAxis);
+      if (b >= 0 && c >= 0) {
+         Direction.Axis bAxis = AxisCycle.FORWARD.cycle(aAxis);
+         Direction.Axis cAxis = AxisCycle.BACKWARD.cycle(aAxis);
+         if (b < this.getSize(bAxis) && c < this.getSize(cAxis)) {
+            AxisCycle transform = AxisCycle.between(Direction.Axis.X, aAxis);
 
-            for(int var8 = 0; var8 < var4; ++var8) {
-               if (this.isFull(var7, var8, var2, var3)) {
-                  return var8;
+            for(int a = 0; a < aSize; ++a) {
+               if (this.isFull(transform, a, b, c)) {
+                  return a;
                }
             }
 
-            return var4;
+            return aSize;
          } else {
-            return var4;
+            return aSize;
          }
       } else {
-         return var4;
+         return aSize;
       }
    }
 
-   public int lastFull(Direction.Axis var1, int var2, int var3) {
-      if (var2 >= 0 && var3 >= 0) {
-         Direction.Axis var4 = AxisCycle.FORWARD.cycle(var1);
-         Direction.Axis var5 = AxisCycle.BACKWARD.cycle(var1);
-         if (var2 < this.getSize(var4) && var3 < this.getSize(var5)) {
-            int var6 = this.getSize(var1);
-            AxisCycle var7 = AxisCycle.between(Direction.Axis.X, var1);
+   public int lastFull(final Direction.Axis aAxis, final int b, final int c) {
+      if (b >= 0 && c >= 0) {
+         Direction.Axis bAxis = AxisCycle.FORWARD.cycle(aAxis);
+         Direction.Axis cAxis = AxisCycle.BACKWARD.cycle(aAxis);
+         if (b < this.getSize(bAxis) && c < this.getSize(cAxis)) {
+            int aSize = this.getSize(aAxis);
+            AxisCycle transform = AxisCycle.between(Direction.Axis.X, aAxis);
 
-            for(int var8 = var6 - 1; var8 >= 0; --var8) {
-               if (this.isFull(var7, var8, var2, var3)) {
-                  return var8 + 1;
+            for(int a = aSize - 1; a >= 0; --a) {
+               if (this.isFull(transform, a, b, c)) {
+                  return a + 1;
                }
             }
 
@@ -140,8 +140,8 @@ public abstract class DiscreteVoxelShape {
       }
    }
 
-   public int getSize(Direction.Axis var1) {
-      return var1.choose(this.xSize, this.ySize, this.zSize);
+   public int getSize(final Direction.Axis axis) {
+      return axis.choose(this.xSize, this.ySize, this.zSize);
    }
 
    public int getXSize() {
@@ -156,46 +156,46 @@ public abstract class DiscreteVoxelShape {
       return this.getSize(Direction.Axis.Z);
    }
 
-   public void forAllEdges(IntLineConsumer var1, boolean var2) {
-      this.forAllAxisEdges(var1, AxisCycle.NONE, var2);
-      this.forAllAxisEdges(var1, AxisCycle.FORWARD, var2);
-      this.forAllAxisEdges(var1, AxisCycle.BACKWARD, var2);
+   public void forAllEdges(final IntLineConsumer consumer, final boolean mergeNeighbors) {
+      this.forAllAxisEdges(consumer, AxisCycle.NONE, mergeNeighbors);
+      this.forAllAxisEdges(consumer, AxisCycle.FORWARD, mergeNeighbors);
+      this.forAllAxisEdges(consumer, AxisCycle.BACKWARD, mergeNeighbors);
    }
 
-   private void forAllAxisEdges(IntLineConsumer var1, AxisCycle var2, boolean var3) {
-      AxisCycle var5 = var2.inverse();
-      int var6 = this.getSize(var5.cycle(Direction.Axis.X));
-      int var7 = this.getSize(var5.cycle(Direction.Axis.Y));
-      int var8 = this.getSize(var5.cycle(Direction.Axis.Z));
+   private void forAllAxisEdges(final IntLineConsumer consumer, final AxisCycle transform, final boolean mergeNeighbors) {
+      AxisCycle inverse = transform.inverse();
+      int aSize = this.getSize(inverse.cycle(Direction.Axis.X));
+      int bSize = this.getSize(inverse.cycle(Direction.Axis.Y));
+      int cSize = this.getSize(inverse.cycle(Direction.Axis.Z));
 
-      for(int var9 = 0; var9 <= var6; ++var9) {
-         for(int var10 = 0; var10 <= var7; ++var10) {
-            int var4 = -1;
+      for(int a = 0; a <= aSize; ++a) {
+         for(int b = 0; b <= bSize; ++b) {
+            int lastStart = -1;
 
-            for(int var11 = 0; var11 <= var8; ++var11) {
-               int var12 = 0;
-               int var13 = 0;
+            for(int c = 0; c <= cSize; ++c) {
+               int fullSectors = 0;
+               int oddSectors = 0;
 
-               for(int var14 = 0; var14 <= 1; ++var14) {
-                  for(int var15 = 0; var15 <= 1; ++var15) {
-                     if (this.isFullWide(var5, var9 + var14 - 1, var10 + var15 - 1, var11)) {
-                        ++var12;
-                        var13 ^= var14 ^ var15;
+               for(int da = 0; da <= 1; ++da) {
+                  for(int db = 0; db <= 1; ++db) {
+                     if (this.isFullWide(inverse, a + da - 1, b + db - 1, c)) {
+                        ++fullSectors;
+                        oddSectors ^= da ^ db;
                      }
                   }
                }
 
-               if (var12 == 1 || var12 == 3 || var12 == 2 && (var13 & 1) == 0) {
-                  if (var3) {
-                     if (var4 == -1) {
-                        var4 = var11;
+               if (fullSectors == 1 || fullSectors == 3 || fullSectors == 2 && (oddSectors & 1) == 0) {
+                  if (mergeNeighbors) {
+                     if (lastStart == -1) {
+                        lastStart = c;
                      }
                   } else {
-                     var1.consume(var5.cycle(var9, var10, var11, Direction.Axis.X), var5.cycle(var9, var10, var11, Direction.Axis.Y), var5.cycle(var9, var10, var11, Direction.Axis.Z), var5.cycle(var9, var10, var11 + 1, Direction.Axis.X), var5.cycle(var9, var10, var11 + 1, Direction.Axis.Y), var5.cycle(var9, var10, var11 + 1, Direction.Axis.Z));
+                     consumer.consume(inverse.cycle(a, b, c, Direction.Axis.X), inverse.cycle(a, b, c, Direction.Axis.Y), inverse.cycle(a, b, c, Direction.Axis.Z), inverse.cycle(a, b, c + 1, Direction.Axis.X), inverse.cycle(a, b, c + 1, Direction.Axis.Y), inverse.cycle(a, b, c + 1, Direction.Axis.Z));
                   }
-               } else if (var4 != -1) {
-                  var1.consume(var5.cycle(var9, var10, var4, Direction.Axis.X), var5.cycle(var9, var10, var4, Direction.Axis.Y), var5.cycle(var9, var10, var4, Direction.Axis.Z), var5.cycle(var9, var10, var11, Direction.Axis.X), var5.cycle(var9, var10, var11, Direction.Axis.Y), var5.cycle(var9, var10, var11, Direction.Axis.Z));
-                  var4 = -1;
+               } else if (lastStart != -1) {
+                  consumer.consume(inverse.cycle(a, b, lastStart, Direction.Axis.X), inverse.cycle(a, b, lastStart, Direction.Axis.Y), inverse.cycle(a, b, lastStart, Direction.Axis.Z), inverse.cycle(a, b, c, Direction.Axis.X), inverse.cycle(a, b, c, Direction.Axis.Y), inverse.cycle(a, b, c, Direction.Axis.Z));
+                  lastStart = -1;
                }
             }
          }
@@ -203,40 +203,40 @@ public abstract class DiscreteVoxelShape {
 
    }
 
-   public void forAllBoxes(IntLineConsumer var1, boolean var2) {
-      BitSetDiscreteVoxelShape.forAllBoxes(this, var1, var2);
+   public void forAllBoxes(final IntLineConsumer consumer, final boolean mergeNeighbors) {
+      BitSetDiscreteVoxelShape.forAllBoxes(this, consumer, mergeNeighbors);
    }
 
-   public void forAllFaces(IntFaceConsumer var1) {
-      this.forAllAxisFaces(var1, AxisCycle.NONE);
-      this.forAllAxisFaces(var1, AxisCycle.FORWARD);
-      this.forAllAxisFaces(var1, AxisCycle.BACKWARD);
+   public void forAllFaces(final IntFaceConsumer consumer) {
+      this.forAllAxisFaces(consumer, AxisCycle.NONE);
+      this.forAllAxisFaces(consumer, AxisCycle.FORWARD);
+      this.forAllAxisFaces(consumer, AxisCycle.BACKWARD);
    }
 
-   private void forAllAxisFaces(IntFaceConsumer var1, AxisCycle var2) {
-      AxisCycle var3 = var2.inverse();
-      Direction.Axis var4 = var3.cycle(Direction.Axis.Z);
-      int var5 = this.getSize(var3.cycle(Direction.Axis.X));
-      int var6 = this.getSize(var3.cycle(Direction.Axis.Y));
-      int var7 = this.getSize(var4);
-      Direction var8 = Direction.fromAxisAndDirection(var4, Direction.AxisDirection.NEGATIVE);
-      Direction var9 = Direction.fromAxisAndDirection(var4, Direction.AxisDirection.POSITIVE);
+   private void forAllAxisFaces(final IntFaceConsumer consumer, final AxisCycle transform) {
+      AxisCycle inverse = transform.inverse();
+      Direction.Axis cAxis = inverse.cycle(Direction.Axis.Z);
+      int aSize = this.getSize(inverse.cycle(Direction.Axis.X));
+      int bSize = this.getSize(inverse.cycle(Direction.Axis.Y));
+      int cSize = this.getSize(cAxis);
+      Direction negative = Direction.fromAxisAndDirection(cAxis, Direction.AxisDirection.NEGATIVE);
+      Direction positive = Direction.fromAxisAndDirection(cAxis, Direction.AxisDirection.POSITIVE);
 
-      for(int var10 = 0; var10 < var5; ++var10) {
-         for(int var11 = 0; var11 < var6; ++var11) {
-            boolean var12 = false;
+      for(int a = 0; a < aSize; ++a) {
+         for(int b = 0; b < bSize; ++b) {
+            boolean lastFull = false;
 
-            for(int var13 = 0; var13 <= var7; ++var13) {
-               boolean var14 = var13 != var7 && this.isFull(var3, var10, var11, var13);
-               if (!var12 && var14) {
-                  var1.consume(var8, var3.cycle(var10, var11, var13, Direction.Axis.X), var3.cycle(var10, var11, var13, Direction.Axis.Y), var3.cycle(var10, var11, var13, Direction.Axis.Z));
+            for(int c = 0; c <= cSize; ++c) {
+               boolean full = c != cSize && this.isFull(inverse, a, b, c);
+               if (!lastFull && full) {
+                  consumer.consume(negative, inverse.cycle(a, b, c, Direction.Axis.X), inverse.cycle(a, b, c, Direction.Axis.Y), inverse.cycle(a, b, c, Direction.Axis.Z));
                }
 
-               if (var12 && !var14) {
-                  var1.consume(var9, var3.cycle(var10, var11, var13 - 1, Direction.Axis.X), var3.cycle(var10, var11, var13 - 1, Direction.Axis.Y), var3.cycle(var10, var11, var13 - 1, Direction.Axis.Z));
+               if (lastFull && !full) {
+                  consumer.consume(positive, inverse.cycle(a, b, c - 1, Direction.Axis.X), inverse.cycle(a, b, c - 1, Direction.Axis.Y), inverse.cycle(a, b, c - 1, Direction.Axis.Z));
                }
 
-               var12 = var14;
+               lastFull = full;
             }
          }
       }
@@ -244,10 +244,10 @@ public abstract class DiscreteVoxelShape {
    }
 
    public interface IntFaceConsumer {
-      void consume(Direction var1, int var2, int var3, int var4);
+      void consume(Direction direction, int x, int y, int z);
    }
 
    public interface IntLineConsumer {
-      void consume(int var1, int var2, int var3, int var4, int var5, int var6);
+      void consume(int x1, int y1, int z1, int x2, int y2, int z2);
    }
 }

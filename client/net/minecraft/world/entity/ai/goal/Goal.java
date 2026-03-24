@@ -36,9 +36,9 @@ public abstract class Goal {
    public void tick() {
    }
 
-   public void setFlags(EnumSet<Flag> var1) {
+   public void setFlags(final EnumSet<Flag> requiredControlFlags) {
       this.flags.clear();
-      this.flags.addAll(var1);
+      this.flags.addAll(requiredControlFlags);
    }
 
    public String toString() {
@@ -49,20 +49,20 @@ public abstract class Goal {
       return this.flags;
    }
 
-   protected int adjustedTickDelay(int var1) {
-      return this.requiresUpdateEveryTick() ? var1 : reducedTickDelay(var1);
+   protected int adjustedTickDelay(final int ticks) {
+      return this.requiresUpdateEveryTick() ? ticks : reducedTickDelay(ticks);
    }
 
-   protected static int reducedTickDelay(int var0) {
-      return Mth.positiveCeilDiv(var0, 2);
+   protected static int reducedTickDelay(final int ticks) {
+      return Mth.positiveCeilDiv(ticks, 2);
    }
 
-   protected static ServerLevel getServerLevel(Entity var0) {
-      return (ServerLevel)var0.level();
+   protected static ServerLevel getServerLevel(final Entity entity) {
+      return (ServerLevel)entity.level();
    }
 
-   protected static ServerLevel getServerLevel(Level var0) {
-      return (ServerLevel)var0;
+   protected static ServerLevel getServerLevel(final Level level) {
+      return (ServerLevel)level;
    }
 
    public static enum Flag {

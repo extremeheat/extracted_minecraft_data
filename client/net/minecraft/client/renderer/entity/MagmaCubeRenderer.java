@@ -3,8 +3,6 @@ package net.minecraft.client.renderer.entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.monster.slime.MagmaCubeModel;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.SlimeRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
@@ -14,15 +12,15 @@ import net.minecraft.world.entity.monster.MagmaCube;
 public class MagmaCubeRenderer extends MobRenderer<MagmaCube, SlimeRenderState, MagmaCubeModel> {
    private static final Identifier MAGMACUBE_LOCATION = Identifier.withDefaultNamespace("textures/entity/slime/magmacube.png");
 
-   public MagmaCubeRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new MagmaCubeModel(var1.bakeLayer(ModelLayers.MAGMA_CUBE)), 0.25F);
+   public MagmaCubeRenderer(final EntityRendererProvider.Context context) {
+      super(context, new MagmaCubeModel(context.bakeLayer(ModelLayers.MAGMA_CUBE)), 0.25F);
    }
 
-   protected int getBlockLightLevel(MagmaCube var1, BlockPos var2) {
+   protected int getBlockLightLevel(final MagmaCube entity, final BlockPos blockPos) {
       return 15;
    }
 
-   public Identifier getTextureLocation(SlimeRenderState var1) {
+   public Identifier getTextureLocation(final SlimeRenderState state) {
       return MAGMACUBE_LOCATION;
    }
 
@@ -30,40 +28,20 @@ public class MagmaCubeRenderer extends MobRenderer<MagmaCube, SlimeRenderState, 
       return new SlimeRenderState();
    }
 
-   public void extractRenderState(MagmaCube var1, SlimeRenderState var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      var2.squish = Mth.lerp(var3, var1.oSquish, var1.squish);
-      var2.size = var1.getSize();
+   public void extractRenderState(final MagmaCube entity, final SlimeRenderState state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      state.squish = Mth.lerp(partialTicks, entity.oSquish, entity.squish);
+      state.size = entity.getSize();
    }
 
-   protected float getShadowRadius(SlimeRenderState var1) {
-      return (float)var1.size * 0.25F;
+   protected float getShadowRadius(final SlimeRenderState state) {
+      return (float)state.size * 0.25F;
    }
 
-   protected void scale(SlimeRenderState var1, PoseStack var2) {
-      int var3 = var1.size;
-      float var4 = var1.squish / ((float)var3 * 0.5F + 1.0F);
-      float var5 = 1.0F / (var4 + 1.0F);
-      var2.scale(var5 * (float)var3, 1.0F / var5 * (float)var3, var5 * (float)var3);
-   }
-
-   // $FF: synthetic method
-   protected float getShadowRadius(final LivingEntityRenderState var1) {
-      return this.getShadowRadius((SlimeRenderState)var1);
-   }
-
-   // $FF: synthetic method
-   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
-      return this.getTextureLocation((SlimeRenderState)var1);
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
-   }
-
-   // $FF: synthetic method
-   protected float getShadowRadius(final EntityRenderState var1) {
-      return this.getShadowRadius((SlimeRenderState)var1);
+   protected void scale(final SlimeRenderState state, final PoseStack poseStack) {
+      int size = state.size;
+      float ss = state.squish / ((float)size * 0.5F + 1.0F);
+      float w = 1.0F / (ss + 1.0F);
+      poseStack.scale(w * (float)size, 1.0F / w * (float)size, w * (float)size);
    }
 }

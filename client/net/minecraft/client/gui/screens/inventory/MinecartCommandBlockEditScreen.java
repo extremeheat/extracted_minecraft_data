@@ -7,9 +7,9 @@ import net.minecraft.world.level.BaseCommandBlock;
 public class MinecartCommandBlockEditScreen extends AbstractCommandBlockEditScreen {
    private final MinecartCommandBlock minecart;
 
-   public MinecartCommandBlockEditScreen(MinecartCommandBlock var1) {
+   public MinecartCommandBlockEditScreen(final MinecartCommandBlock minecart) {
       super();
-      this.minecart = var1;
+      this.minecart = minecart;
    }
 
    public BaseCommandBlock getCommandBlock() {

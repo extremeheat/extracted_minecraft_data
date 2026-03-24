@@ -10,7 +10,7 @@ import com.mojang.datafixers.util.Pair;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
+import java.util.Objects;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.functions.CommandFunction;
 import net.minecraft.network.chat.Component;
@@ -18,8 +18,8 @@ import net.minecraft.resources.Identifier;
 
 public class FunctionArgument implements ArgumentType<Result> {
    private static final Collection<String> EXAMPLES = Arrays.asList("foo", "foo:bar", "#foo");
-   private static final DynamicCommandExceptionType ERROR_UNKNOWN_TAG = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("arguments.function.tag.unknown", var0));
-   private static final DynamicCommandExceptionType ERROR_UNKNOWN_FUNCTION = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("arguments.function.unknown", var0));
+   private static final DynamicCommandExceptionType ERROR_UNKNOWN_TAG = new DynamicCommandExceptionType((tag) -> Component.translatableEscape("arguments.function.tag.unknown", tag));
+   private static final DynamicCommandExceptionType ERROR_UNKNOWN_FUNCTION = new DynamicCommandExceptionType((value) -> Component.translatableEscape("arguments.function.unknown", value));
 
    public FunctionArgument() {
       super();
@@ -29,80 +29,83 @@ public class FunctionArgument implements ArgumentType<Result> {
       return new FunctionArgument();
    }
 
-   public Result parse(StringReader var1) throws CommandSyntaxException {
-      if (var1.canRead() && var1.peek() == '#') {
-         var1.skip();
-         final Identifier var3 = Identifier.read(var1);
+   public Result parse(final StringReader reader) throws CommandSyntaxException {
+      if (reader.canRead() && reader.peek() == '#') {
+         reader.skip();
+         final Identifier id = Identifier.read(reader);
          return new Result() {
-            public Collection<CommandFunction<CommandSourceStack>> create(CommandContext<CommandSourceStack> var1) throws CommandSyntaxException {
-               return FunctionArgument.getFunctionTag(var1, var3);
+            {
+               Objects.requireNonNull(FunctionArgument.this);
             }
 
-            public Pair<Identifier, Either<CommandFunction<CommandSourceStack>, Collection<CommandFunction<CommandSourceStack>>>> unwrap(CommandContext<CommandSourceStack> var1) throws CommandSyntaxException {
-               return Pair.of(var3, Either.right(FunctionArgument.getFunctionTag(var1, var3)));
+            public Collection<CommandFunction<CommandSourceStack>> create(final CommandContext<CommandSourceStack> c) throws CommandSyntaxException {
+               return FunctionArgument.getFunctionTag(c, id);
             }
 
-            public Pair<Identifier, Collection<CommandFunction<CommandSourceStack>>> unwrapToCollection(CommandContext<CommandSourceStack> var1) throws CommandSyntaxException {
-               return Pair.of(var3, FunctionArgument.getFunctionTag(var1, var3));
+            public Pair<Identifier, Either<CommandFunction<CommandSourceStack>, Collection<CommandFunction<CommandSourceStack>>>> unwrap(final CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+               return Pair.of(id, Either.right(FunctionArgument.getFunctionTag(context, id)));
+            }
+
+            public Pair<Identifier, Collection<CommandFunction<CommandSourceStack>>> unwrapToCollection(final CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+               return Pair.of(id, FunctionArgument.getFunctionTag(context, id));
             }
          };
       } else {
-         final Identifier var2 = Identifier.read(var1);
+         final Identifier id = Identifier.read(reader);
          return new Result() {
-            public Collection<CommandFunction<CommandSourceStack>> create(CommandContext<CommandSourceStack> var1) throws CommandSyntaxException {
-               return Collections.singleton(FunctionArgument.getFunction(var1, var2));
+            {
+               Objects.requireNonNull(FunctionArgument.this);
             }
 
-            public Pair<Identifier, Either<CommandFunction<CommandSourceStack>, Collection<CommandFunction<CommandSourceStack>>>> unwrap(CommandContext<CommandSourceStack> var1) throws CommandSyntaxException {
-               return Pair.of(var2, Either.left(FunctionArgument.getFunction(var1, var2)));
+            public Collection<CommandFunction<CommandSourceStack>> create(final CommandContext<CommandSourceStack> c) throws CommandSyntaxException {
+               return Collections.singleton(FunctionArgument.getFunction(c, id));
             }
 
-            public Pair<Identifier, Collection<CommandFunction<CommandSourceStack>>> unwrapToCollection(CommandContext<CommandSourceStack> var1) throws CommandSyntaxException {
-               return Pair.of(var2, Collections.singleton(FunctionArgument.getFunction(var1, var2)));
+            public Pair<Identifier, Either<CommandFunction<CommandSourceStack>, Collection<CommandFunction<CommandSourceStack>>>> unwrap(final CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+               return Pair.of(id, Either.left(FunctionArgument.getFunction(context, id)));
+            }
+
+            public Pair<Identifier, Collection<CommandFunction<CommandSourceStack>>> unwrapToCollection(final CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+               return Pair.of(id, Collections.singleton(FunctionArgument.getFunction(context, id)));
             }
          };
       }
    }
 
-   static CommandFunction<CommandSourceStack> getFunction(CommandContext<CommandSourceStack> var0, Identifier var1) throws CommandSyntaxException {
-      return (CommandFunction)((CommandSourceStack)var0.getSource()).getServer().getFunctions().get(var1).orElseThrow(() -> ERROR_UNKNOWN_FUNCTION.create(var1.toString()));
+   private static CommandFunction<CommandSourceStack> getFunction(final CommandContext<CommandSourceStack> c, final Identifier id) throws CommandSyntaxException {
+      return (CommandFunction)((CommandSourceStack)c.getSource()).getServer().getFunctions().get(id).orElseThrow(() -> ERROR_UNKNOWN_FUNCTION.create(id.toString()));
    }
 
-   static Collection<CommandFunction<CommandSourceStack>> getFunctionTag(CommandContext<CommandSourceStack> var0, Identifier var1) throws CommandSyntaxException {
-      List var2 = ((CommandSourceStack)var0.getSource()).getServer().getFunctions().getTag(var1);
-      if (var2 == null) {
-         throw ERROR_UNKNOWN_TAG.create(var1.toString());
+   private static Collection<CommandFunction<CommandSourceStack>> getFunctionTag(final CommandContext<CommandSourceStack> c, final Identifier id) throws CommandSyntaxException {
+      Collection<CommandFunction<CommandSourceStack>> tag = ((CommandSourceStack)c.getSource()).getServer().getFunctions().getTag(id);
+      if (tag == null) {
+         throw ERROR_UNKNOWN_TAG.create(id.toString());
       } else {
-         return var2;
+         return tag;
       }
    }
 
-   public static Collection<CommandFunction<CommandSourceStack>> getFunctions(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
-      return ((Result)var0.getArgument(var1, Result.class)).create(var0);
+   public static Collection<CommandFunction<CommandSourceStack>> getFunctions(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
+      return ((Result)context.getArgument(name, Result.class)).create(context);
    }
 
-   public static Pair<Identifier, Either<CommandFunction<CommandSourceStack>, Collection<CommandFunction<CommandSourceStack>>>> getFunctionOrTag(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
-      return ((Result)var0.getArgument(var1, Result.class)).unwrap(var0);
+   public static Pair<Identifier, Either<CommandFunction<CommandSourceStack>, Collection<CommandFunction<CommandSourceStack>>>> getFunctionOrTag(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
+      return ((Result)context.getArgument(name, Result.class)).unwrap(context);
    }
 
-   public static Pair<Identifier, Collection<CommandFunction<CommandSourceStack>>> getFunctionCollection(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
-      return ((Result)var0.getArgument(var1, Result.class)).unwrapToCollection(var0);
+   public static Pair<Identifier, Collection<CommandFunction<CommandSourceStack>>> getFunctionCollection(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
+      return ((Result)context.getArgument(name, Result.class)).unwrapToCollection(context);
    }
 
    public Collection<String> getExamples() {
       return EXAMPLES;
    }
 
-   // $FF: synthetic method
-   public Object parse(final StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1);
-   }
-
    public interface Result {
-      Collection<CommandFunction<CommandSourceStack>> create(CommandContext<CommandSourceStack> var1) throws CommandSyntaxException;
+      Collection<CommandFunction<CommandSourceStack>> create(CommandContext<CommandSourceStack> context) throws CommandSyntaxException;
 
-      Pair<Identifier, Either<CommandFunction<CommandSourceStack>, Collection<CommandFunction<CommandSourceStack>>>> unwrap(CommandContext<CommandSourceStack> var1) throws CommandSyntaxException;
+      Pair<Identifier, Either<CommandFunction<CommandSourceStack>, Collection<CommandFunction<CommandSourceStack>>>> unwrap(CommandContext<CommandSourceStack> context) throws CommandSyntaxException;
 
-      Pair<Identifier, Collection<CommandFunction<CommandSourceStack>>> unwrapToCollection(CommandContext<CommandSourceStack> var1) throws CommandSyntaxException;
+      Pair<Identifier, Collection<CommandFunction<CommandSourceStack>>> unwrapToCollection(CommandContext<CommandSourceStack> context) throws CommandSyntaxException;
    }
 }

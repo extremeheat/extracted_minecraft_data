@@ -2,7 +2,6 @@ package com.mojang.blaze3d.vertex;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.mojang.blaze3d.DontObfuscate;
 import com.mojang.blaze3d.GraphicsWorkarounds;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.systems.CommandEncoder;
@@ -14,11 +13,12 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
+import net.minecraft.util.Mth;
 import org.jspecify.annotations.Nullable;
 
-@DontObfuscate
 public class VertexFormat {
    public static final int UNKNOWN_ELEMENT = -1;
+   private static final int VERTEX_ALIGNMENT = 4;
    private final List<VertexFormatElement> elements;
    private final List<String> names;
    private final int vertexSize;
@@ -27,17 +27,17 @@ public class VertexFormat {
    private @Nullable GpuBuffer immediateDrawVertexBuffer;
    private @Nullable GpuBuffer immediateDrawIndexBuffer;
 
-   VertexFormat(List<VertexFormatElement> var1, List<String> var2, IntList var3, int var4) {
+   private VertexFormat(final List<VertexFormatElement> elements, final List<String> names, final IntList offsets, final int vertexSize) {
       super();
-      this.elements = var1;
-      this.names = var2;
-      this.vertexSize = var4;
-      this.elementsMask = var1.stream().mapToInt(VertexFormatElement::mask).reduce(0, (var0, var1x) -> var0 | var1x);
+      this.elements = elements;
+      this.names = names;
+      this.vertexSize = vertexSize;
+      this.elementsMask = elements.stream().mapToInt(VertexFormatElement::mask).reduce(0, (left, right) -> left | right);
 
-      for(int var5 = 0; var5 < this.offsetsByElement.length; ++var5) {
-         VertexFormatElement var6 = VertexFormatElement.byId(var5);
-         int var7 = var6 != null ? var1.indexOf(var6) : -1;
-         this.offsetsByElement[var5] = var7 != -1 ? var3.getInt(var7) : -1;
+      for(int id = 0; id < this.offsetsByElement.length; ++id) {
+         VertexFormatElement element = VertexFormatElement.byId(id);
+         int index = element != null ? elements.indexOf(element) : -1;
+         this.offsetsByElement[id] = index != -1 ? offsets.getInt(index) : -1;
       }
 
    }
@@ -66,35 +66,35 @@ public class VertexFormat {
       return this.offsetsByElement;
    }
 
-   public int getOffset(VertexFormatElement var1) {
-      return this.offsetsByElement[var1.id()];
+   public int getOffset(final VertexFormatElement element) {
+      return this.offsetsByElement[element.id()];
    }
 
-   public boolean contains(VertexFormatElement var1) {
-      return (this.elementsMask & var1.mask()) != 0;
+   public boolean contains(final VertexFormatElement element) {
+      return (this.elementsMask & element.mask()) != 0;
    }
 
    public int getElementsMask() {
       return this.elementsMask;
    }
 
-   public String getElementName(VertexFormatElement var1) {
-      int var2 = this.elements.indexOf(var1);
-      if (var2 == -1) {
-         throw new IllegalArgumentException(String.valueOf(var1) + " is not contained in format");
+   public String getElementName(final VertexFormatElement element) {
+      int index = this.elements.indexOf(element);
+      if (index == -1) {
+         throw new IllegalArgumentException(String.valueOf(element) + " is not contained in format");
       } else {
-         return (String)this.names.get(var2);
+         return (String)this.names.get(index);
       }
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
+   public boolean equals(final Object o) {
+      if (this == o) {
          return true;
       } else {
          boolean var10000;
-         if (var1 instanceof VertexFormat) {
-            VertexFormat var2 = (VertexFormat)var1;
-            if (this.elementsMask == var2.elementsMask && this.vertexSize == var2.vertexSize && this.names.equals(var2.names) && Arrays.equals(this.offsetsByElement, var2.offsetsByElement)) {
+         if (o instanceof VertexFormat) {
+            VertexFormat format = (VertexFormat)o;
+            if (this.elementsMask == format.elementsMask && this.vertexSize == format.vertexSize && this.names.equals(format.names) && Arrays.equals(this.offsetsByElement, format.offsetsByElement)) {
                var10000 = true;
                return var10000;
             }
@@ -109,68 +109,72 @@ public class VertexFormat {
       return this.elementsMask * 31 + Arrays.hashCode(this.offsetsByElement);
    }
 
-   private static GpuBuffer uploadToBuffer(@Nullable GpuBuffer var0, ByteBuffer var1, @GpuBuffer.Usage int var2, Supplier<String> var3) {
-      GpuDevice var4 = RenderSystem.getDevice();
-      if (GraphicsWorkarounds.get(var4).alwaysCreateFreshImmediateBuffer()) {
-         if (var0 != null) {
-            var0.close();
+   private static GpuBuffer uploadToBuffer(@Nullable GpuBuffer target, final ByteBuffer buffer, final @GpuBuffer.Usage int usage, final Supplier<String> label) {
+      GpuDevice device = RenderSystem.getDevice();
+      if (GraphicsWorkarounds.get(device).alwaysCreateFreshImmediateBuffer()) {
+         if (target != null) {
+            target.close();
          }
 
-         return var4.createBuffer(var3, var2, var1);
+         return device.createBuffer(label, usage, buffer);
       } else {
-         if (var0 == null) {
-            var0 = var4.createBuffer(var3, var2, var1);
+         if (target == null) {
+            target = device.createBuffer(label, usage, buffer);
          } else {
-            CommandEncoder var5 = var4.createCommandEncoder();
-            if (var0.size() < (long)var1.remaining()) {
-               var0.close();
-               var0 = var4.createBuffer(var3, var2, var1);
+            CommandEncoder encoder = device.createCommandEncoder();
+            if (target.size() < (long)buffer.remaining()) {
+               target.close();
+               target = device.createBuffer(label, usage, buffer);
             } else {
-               var5.writeToBuffer(var0.slice(), var1);
+               encoder.writeToBuffer(target.slice(), buffer);
             }
          }
 
-         return var0;
+         return target;
       }
    }
 
-   public GpuBuffer uploadImmediateVertexBuffer(ByteBuffer var1) {
-      this.immediateDrawVertexBuffer = uploadToBuffer(this.immediateDrawVertexBuffer, var1, 40, () -> "Immediate vertex buffer for " + String.valueOf(this));
+   public GpuBuffer uploadImmediateVertexBuffer(final ByteBuffer buffer) {
+      this.immediateDrawVertexBuffer = uploadToBuffer(this.immediateDrawVertexBuffer, buffer, 40, () -> "Immediate vertex buffer for " + String.valueOf(this));
       return this.immediateDrawVertexBuffer;
    }
 
-   public GpuBuffer uploadImmediateIndexBuffer(ByteBuffer var1) {
-      this.immediateDrawIndexBuffer = uploadToBuffer(this.immediateDrawIndexBuffer, var1, 72, () -> "Immediate index buffer for " + String.valueOf(this));
+   public GpuBuffer uploadImmediateIndexBuffer(final ByteBuffer buffer) {
+      this.immediateDrawIndexBuffer = uploadToBuffer(this.immediateDrawIndexBuffer, buffer, 72, () -> "Immediate index buffer for " + String.valueOf(this));
       return this.immediateDrawIndexBuffer;
    }
 
-   @DontObfuscate
    public static class Builder {
       private final ImmutableMap.Builder<String, VertexFormatElement> elements = ImmutableMap.builder();
       private final IntList offsets = new IntArrayList();
       private int offset;
 
-      Builder() {
+      private Builder() {
          super();
       }
 
-      public Builder add(String var1, VertexFormatElement var2) {
-         this.elements.put(var1, var2);
+      public Builder add(final String name, final VertexFormatElement element) {
+         this.elements.put(name, element);
          this.offsets.add(this.offset);
-         this.offset += var2.byteSize();
+         this.offset += element.byteSize();
          return this;
       }
 
-      public Builder padding(int var1) {
-         this.offset += var1;
+      public Builder padding(final int bytes) {
+         this.offset += bytes;
          return this;
       }
 
       public VertexFormat build() {
-         ImmutableMap var1 = this.elements.buildOrThrow();
-         ImmutableList var2 = var1.values().asList();
-         ImmutableList var3 = var1.keySet().asList();
-         return new VertexFormat(var2, var3, this.offsets, this.offset);
+         ImmutableMap<String, VertexFormatElement> elementMap = this.elements.buildOrThrow();
+         ImmutableList<VertexFormatElement> elements = elementMap.values().asList();
+         ImmutableList<String> names = elementMap.keySet().asList();
+         int vertexSize = this.offset;
+         if (!Mth.isMultipleOf(vertexSize, 4)) {
+            throw new IllegalStateException("Vertex size must be a multiple of 4, was " + vertexSize);
+         } else {
+            return new VertexFormat(elements, names, this.offsets, vertexSize);
+         }
       }
    }
 
@@ -180,12 +184,12 @@ public class VertexFormat {
 
       public final int bytes;
 
-      private IndexType(final int var3) {
-         this.bytes = var3;
+      private IndexType(final int bytes) {
+         this.bytes = bytes;
       }
 
-      public static IndexType least(int var0) {
-         return (var0 & -65536) != 0 ? INT : SHORT;
+      public static IndexType least(final int length) {
+         return (length & -65536) != 0 ? INT : SHORT;
       }
 
       // $FF: synthetic method
@@ -208,18 +212,18 @@ public class VertexFormat {
       public final int primitiveStride;
       public final boolean connectedPrimitives;
 
-      private Mode(final int var3, final int var4, final boolean var5) {
-         this.primitiveLength = var3;
-         this.primitiveStride = var4;
-         this.connectedPrimitives = var5;
+      private Mode(final int primitiveLength, final int primitiveStride, final boolean connectedPrimitives) {
+         this.primitiveLength = primitiveLength;
+         this.primitiveStride = primitiveStride;
+         this.connectedPrimitives = connectedPrimitives;
       }
 
-      public int indexCount(int var1) {
-         int var2;
+      public int indexCount(final int vertexCount) {
+         int indexCount;
          switch (this.ordinal()) {
             case 0:
             case 7:
-               var2 = var1 / 4 * 6;
+               indexCount = vertexCount / 4 * 6;
                break;
             case 1:
             case 2:
@@ -227,13 +231,13 @@ public class VertexFormat {
             case 4:
             case 5:
             case 6:
-               var2 = var1;
+               indexCount = vertexCount;
                break;
             default:
-               var2 = 0;
+               indexCount = 0;
          }
 
-         return var2;
+         return indexCount;
       }
 
       // $FF: synthetic method

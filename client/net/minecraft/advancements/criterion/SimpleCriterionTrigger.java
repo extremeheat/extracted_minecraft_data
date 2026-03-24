@@ -3,7 +3,7 @@ package net.minecraft.advancements.criterion;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -13,6 +13,8 @@ import net.minecraft.advancements.CriterionTriggerInstance;
 import net.minecraft.server.PlayerAdvancements;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.Validatable;
+import net.minecraft.world.level.storage.loot.ValidationContextSource;
 
 public abstract class SimpleCriterionTrigger<T extends SimpleCriterionTrigger.SimpleInstance> implements CriterionTrigger<T> {
    private final Map<PlayerAdvancements, Set<CriterionTrigger.Listener<T>>> players = Maps.newIdentityHashMap();
@@ -21,49 +23,49 @@ public abstract class SimpleCriterionTrigger<T extends SimpleCriterionTrigger.Si
       super();
    }
 
-   public final void addPlayerListener(PlayerAdvancements var1, CriterionTrigger.Listener<T> var2) {
-      ((Set)this.players.computeIfAbsent(var1, (var0) -> Sets.newHashSet())).add(var2);
+   public final void addPlayerListener(final PlayerAdvancements player, final CriterionTrigger.Listener<T> listener) {
+      ((Set)this.players.computeIfAbsent(player, (k) -> Sets.newHashSet())).add(listener);
    }
 
-   public final void removePlayerListener(PlayerAdvancements var1, CriterionTrigger.Listener<T> var2) {
-      Set var3 = (Set)this.players.get(var1);
-      if (var3 != null) {
-         var3.remove(var2);
-         if (var3.isEmpty()) {
-            this.players.remove(var1);
+   public final void removePlayerListener(final PlayerAdvancements player, final CriterionTrigger.Listener<T> listener) {
+      Set<CriterionTrigger.Listener<T>> listeners = (Set)this.players.get(player);
+      if (listeners != null) {
+         listeners.remove(listener);
+         if (listeners.isEmpty()) {
+            this.players.remove(player);
          }
       }
 
    }
 
-   public final void removePlayerListeners(PlayerAdvancements var1) {
-      this.players.remove(var1);
+   public final void removePlayerListeners(final PlayerAdvancements player) {
+      this.players.remove(player);
    }
 
-   protected void trigger(ServerPlayer var1, Predicate<T> var2) {
-      PlayerAdvancements var3 = var1.getAdvancements();
-      Set var4 = (Set)this.players.get(var3);
-      if (var4 != null && !var4.isEmpty()) {
-         LootContext var5 = EntityPredicate.createContext(var1, var1);
-         ArrayList var6 = null;
+   protected void trigger(final ServerPlayer player, final Predicate<T> matcher) {
+      PlayerAdvancements advancements = player.getAdvancements();
+      Set<CriterionTrigger.Listener<T>> allListeners = (Set)this.players.get(advancements);
+      if (allListeners != null && !allListeners.isEmpty()) {
+         LootContext playerContext = EntityPredicate.createContext(player, player);
+         List<CriterionTrigger.Listener<T>> listeners = null;
 
-         for(CriterionTrigger.Listener var8 : var4) {
-            SimpleInstance var9 = (SimpleInstance)var8.trigger();
-            if (var2.test(var9)) {
-               Optional var10 = var9.player();
-               if (var10.isEmpty() || ((ContextAwarePredicate)var10.get()).matches(var5)) {
-                  if (var6 == null) {
-                     var6 = Lists.newArrayList();
+         for(CriterionTrigger.Listener<T> listener : allListeners) {
+            T triggerInstance = listener.trigger();
+            if (matcher.test(triggerInstance)) {
+               Optional<ContextAwarePredicate> predicate = triggerInstance.player();
+               if (predicate.isEmpty() || ((ContextAwarePredicate)predicate.get()).matches(playerContext)) {
+                  if (listeners == null) {
+                     listeners = Lists.newArrayList();
                   }
 
-                  var6.add(var8);
+                  listeners.add(listener);
                }
             }
          }
 
-         if (var6 != null) {
-            for(CriterionTrigger.Listener var12 : var6) {
-               var12.run(var3);
+         if (listeners != null) {
+            for(CriterionTrigger.Listener<T> listener : listeners) {
+               listener.run(advancements);
             }
          }
 
@@ -71,8 +73,8 @@ public abstract class SimpleCriterionTrigger<T extends SimpleCriterionTrigger.Si
    }
 
    public interface SimpleInstance extends CriterionTriggerInstance {
-      default void validate(CriterionValidator var1) {
-         var1.validateEntity(this.player(), "player");
+      default void validate(final ValidationContextSource validator) {
+         Validatable.validate(validator.entityContext(), "player", this.player());
       }
 
       Optional<ContextAwarePredicate> player();

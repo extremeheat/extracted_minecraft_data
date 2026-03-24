@@ -10,43 +10,40 @@ import java.util.stream.LongStream;
 import net.minecraft.network.FriendlyByteBuf;
 
 public interface PalettedContainerRO<T> {
-   T get(int var1, int var2, int var3);
+   T get(int x, int y, int z);
 
-   void getAll(Consumer<T> var1);
+   void getAll(Consumer<T> consumer);
 
-   void write(FriendlyByteBuf var1);
+   void write(FriendlyByteBuf buffer);
 
    int getSerializedSize();
 
    @VisibleForTesting
    int bitsPerEntry();
 
-   boolean maybeHas(Predicate<T> var1);
+   boolean maybeHas(Predicate<T> predicate);
 
-   void count(PalettedContainer.CountConsumer<T> var1);
+   void count(PalettedContainer.CountConsumer<T> output);
 
    PalettedContainer<T> copy();
 
    PalettedContainer<T> recreate();
 
-   PackedData<T> pack(Strategy<T> var1);
+   PackedData<T> pack(Strategy<T> strategy);
 
    public static record PackedData<T>(List<T> paletteEntries, Optional<LongStream> storage, int bitsPerEntry) {
       public static final int UNKNOWN_BITS_PER_ENTRY = -1;
 
-      public PackedData(List<T> var1, Optional<LongStream> var2) {
-         this(var1, var2, -1);
+      public PackedData(final List<T> paletteEntries, final Optional<LongStream> storage) {
+         this(paletteEntries, storage, -1);
       }
 
-      public PackedData(List<T> var1, Optional<LongStream> var2, int var3) {
+      public PackedData {
          super();
-         this.paletteEntries = var1;
-         this.storage = var2;
-         this.bitsPerEntry = var3;
       }
    }
 
    public interface Unpacker<T, C extends PalettedContainerRO<T>> {
-      DataResult<C> read(Strategy<T> var1, PackedData<T> var2);
+      DataResult<C> read(Strategy<T> strategy, PackedData<T> discData);
    }
 }

@@ -7,19 +7,19 @@ import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.UserBanListEntry;
 
 public interface MinecraftBanListService {
-   void addUserBan(UserBanListEntry var1, ClientInfo var2);
+   void addUserBan(UserBanListEntry ban, ClientInfo clientInfo);
 
-   void removeUserBan(NameAndId var1, ClientInfo var2);
+   void removeUserBan(NameAndId nameAndId, ClientInfo clientInfo);
 
    Collection<UserBanListEntry> getUserBanEntries();
 
    Collection<IpBanListEntry> getIpBanEntries();
 
-   void addIpBan(IpBanListEntry var1, ClientInfo var2);
+   void addIpBan(IpBanListEntry ipBanEntry, ClientInfo clientInfo);
 
-   void clearIpBans(ClientInfo var1);
+   void clearIpBans(ClientInfo clientInfo);
 
-   void removeIpBan(String var1, ClientInfo var2);
+   void removeIpBan(String ip, ClientInfo clientInfo);
 
-   void clearUserBans(ClientInfo var1);
+   void clearUserBans(ClientInfo clientInfo);
 }

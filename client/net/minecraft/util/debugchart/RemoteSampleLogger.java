@@ -7,14 +7,14 @@ public class RemoteSampleLogger extends AbstractSampleLogger {
    private final ServerDebugSubscribers subscribers;
    private final RemoteDebugSampleType sampleType;
 
-   public RemoteSampleLogger(int var1, ServerDebugSubscribers var2, RemoteDebugSampleType var3) {
-      this(var1, var2, var3, new long[var1]);
+   public RemoteSampleLogger(final int dimensions, final ServerDebugSubscribers subscribers, final RemoteDebugSampleType sampleType) {
+      this(dimensions, subscribers, sampleType, new long[dimensions]);
    }
 
-   public RemoteSampleLogger(int var1, ServerDebugSubscribers var2, RemoteDebugSampleType var3, long[] var4) {
-      super(var1, var4);
-      this.subscribers = var2;
-      this.sampleType = var3;
+   public RemoteSampleLogger(final int dimensions, final ServerDebugSubscribers subscribers, final RemoteDebugSampleType sampleType, final long[] defaults) {
+      super(dimensions, defaults);
+      this.subscribers = subscribers;
+      this.sampleType = sampleType;
    }
 
    protected void useSample() {

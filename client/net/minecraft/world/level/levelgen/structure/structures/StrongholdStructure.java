@@ -11,35 +11,35 @@ import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilde
 public class StrongholdStructure extends Structure {
    public static final MapCodec<StrongholdStructure> CODEC = simpleCodec(StrongholdStructure::new);
 
-   public StrongholdStructure(Structure.StructureSettings var1) {
-      super(var1);
+   public StrongholdStructure(final Structure.StructureSettings settings) {
+      super(settings);
    }
 
-   public Optional<Structure.GenerationStub> findGenerationPoint(Structure.GenerationContext var1) {
-      return Optional.of(new Structure.GenerationStub(var1.chunkPos().getWorldPosition(), (var1x) -> generatePieces(var1x, var1)));
+   public Optional<Structure.GenerationStub> findGenerationPoint(final Structure.GenerationContext context) {
+      return Optional.of(new Structure.GenerationStub(context.chunkPos().getWorldPosition(), (builder) -> generatePieces(builder, context)));
    }
 
-   private static void generatePieces(StructurePiecesBuilder var0, Structure.GenerationContext var1) {
-      int var2 = 0;
+   private static void generatePieces(final StructurePiecesBuilder builder, final Structure.GenerationContext context) {
+      int tries = 0;
 
-      StrongholdPieces.StartPiece var3;
+      StrongholdPieces.StartPiece startRoom;
       do {
-         var0.clear();
-         var1.random().setLargeFeatureSeed(var1.seed() + (long)(var2++), var1.chunkPos().x, var1.chunkPos().z);
+         builder.clear();
+         context.random().setLargeFeatureSeed(context.seed() + (long)(tries++), context.chunkPos().x(), context.chunkPos().z());
          StrongholdPieces.resetPieces();
-         var3 = new StrongholdPieces.StartPiece(var1.random(), var1.chunkPos().getBlockX(2), var1.chunkPos().getBlockZ(2));
-         var0.addPiece(var3);
-         var3.addChildren(var3, var0, var1.random());
-         List var4 = var3.pendingChildren;
+         startRoom = new StrongholdPieces.StartPiece(context.random(), context.chunkPos().getBlockX(2), context.chunkPos().getBlockZ(2));
+         builder.addPiece(startRoom);
+         startRoom.addChildren(startRoom, builder, context.random());
+         List<StructurePiece> pendingChildren = startRoom.pendingChildren;
 
-         while(!var4.isEmpty()) {
-            int var5 = var1.random().nextInt(var4.size());
-            StructurePiece var6 = (StructurePiece)var4.remove(var5);
-            var6.addChildren(var3, var0, var1.random());
+         while(!pendingChildren.isEmpty()) {
+            int pos = context.random().nextInt(pendingChildren.size());
+            StructurePiece structurePiece = (StructurePiece)pendingChildren.remove(pos);
+            structurePiece.addChildren(startRoom, builder, context.random());
          }
 
-         var0.moveBelowSeaLevel(var1.chunkGenerator().getSeaLevel(), var1.chunkGenerator().getMinY(), var1.random(), 10);
-      } while(var0.isEmpty() || var3.portalRoomPiece == null);
+         builder.moveBelowSeaLevel(context.chunkGenerator().getSeaLevel(), context.chunkGenerator().getMinY(), context.random(), 10);
+      } while(builder.isEmpty() || startRoom.portalRoomPiece == null);
 
    }
 

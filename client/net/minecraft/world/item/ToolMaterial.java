@@ -26,36 +26,30 @@ public record ToolMaterial(TagKey<Block> incorrectBlocksForDrops, int durability
    public static final ToolMaterial GOLD;
    public static final ToolMaterial NETHERITE;
 
-   public ToolMaterial(TagKey<Block> var1, int var2, float var3, float var4, int var5, TagKey<Item> var6) {
+   public ToolMaterial {
       super();
-      this.incorrectBlocksForDrops = var1;
-      this.durability = var2;
-      this.speed = var3;
-      this.attackDamageBonus = var4;
-      this.enchantmentValue = var5;
-      this.repairItems = var6;
    }
 
-   private Item.Properties applyCommonProperties(Item.Properties var1) {
-      return var1.durability(this.durability).repairable(this.repairItems).enchantable(this.enchantmentValue);
+   private Item.Properties applyCommonProperties(final Item.Properties properties) {
+      return properties.durability(this.durability).repairable(this.repairItems).enchantable(this.enchantmentValue);
    }
 
-   public Item.Properties applyToolProperties(Item.Properties var1, TagKey<Block> var2, float var3, float var4, float var5) {
-      HolderGetter var6 = BuiltInRegistries.acquireBootstrapRegistrationLookup(BuiltInRegistries.BLOCK);
-      return this.applyCommonProperties(var1).component(DataComponents.TOOL, new Tool(List.of(Tool.Rule.deniesDrops(var6.getOrThrow(this.incorrectBlocksForDrops)), Tool.Rule.minesAndDrops(var6.getOrThrow(var2), this.speed)), 1.0F, 1, true)).attributes(this.createToolAttributes(var3, var4)).component(DataComponents.WEAPON, new Weapon(2, var5));
+   public Item.Properties applyToolProperties(final Item.Properties properties, final TagKey<Block> minesEfficiently, final float attackDamageBaseline, final float attackSpeedBaseline, final float disableBlockingSeconds) {
+      HolderGetter<Block> registrationLookup = BuiltInRegistries.<Block>acquireBootstrapRegistrationLookup(BuiltInRegistries.BLOCK);
+      return this.applyCommonProperties(properties).component(DataComponents.TOOL, new Tool(List.of(Tool.Rule.deniesDrops(registrationLookup.getOrThrow(this.incorrectBlocksForDrops)), Tool.Rule.minesAndDrops(registrationLookup.getOrThrow(minesEfficiently), this.speed)), 1.0F, 1, true)).attributes(this.createToolAttributes(attackDamageBaseline, attackSpeedBaseline)).component(DataComponents.WEAPON, new Weapon(2, disableBlockingSeconds));
    }
 
-   private ItemAttributeModifiers createToolAttributes(float var1, float var2) {
-      return ItemAttributeModifiers.builder().add(Attributes.ATTACK_DAMAGE, new AttributeModifier(Item.BASE_ATTACK_DAMAGE_ID, (double)(var1 + this.attackDamageBonus), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).add(Attributes.ATTACK_SPEED, new AttributeModifier(Item.BASE_ATTACK_SPEED_ID, (double)var2, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).build();
+   private ItemAttributeModifiers createToolAttributes(final float attackDamageBaseline, final float attackSpeedBaseline) {
+      return ItemAttributeModifiers.builder().add(Attributes.ATTACK_DAMAGE, new AttributeModifier(Item.BASE_ATTACK_DAMAGE_ID, (double)(attackDamageBaseline + this.attackDamageBonus), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).add(Attributes.ATTACK_SPEED, new AttributeModifier(Item.BASE_ATTACK_SPEED_ID, (double)attackSpeedBaseline, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).build();
    }
 
-   public Item.Properties applySwordProperties(Item.Properties var1, float var2, float var3) {
-      HolderGetter var4 = BuiltInRegistries.acquireBootstrapRegistrationLookup(BuiltInRegistries.BLOCK);
-      return this.applyCommonProperties(var1).component(DataComponents.TOOL, new Tool(List.of(Tool.Rule.minesAndDrops(HolderSet.direct(Blocks.COBWEB.builtInRegistryHolder()), 15.0F), Tool.Rule.overrideSpeed(var4.getOrThrow(BlockTags.SWORD_INSTANTLY_MINES), 3.4028235E38F), Tool.Rule.overrideSpeed(var4.getOrThrow(BlockTags.SWORD_EFFICIENT), 1.5F)), 1.0F, 2, false)).attributes(this.createSwordAttributes(var2, var3)).component(DataComponents.WEAPON, new Weapon(1));
+   public Item.Properties applySwordProperties(final Item.Properties properties, final float attackDamageBaseline, final float attackSpeedBaseline) {
+      HolderGetter<Block> registrationLookup = BuiltInRegistries.<Block>acquireBootstrapRegistrationLookup(BuiltInRegistries.BLOCK);
+      return this.applyCommonProperties(properties).component(DataComponents.TOOL, new Tool(List.of(Tool.Rule.minesAndDrops(HolderSet.direct(Blocks.COBWEB.builtInRegistryHolder()), 15.0F), Tool.Rule.overrideSpeed(registrationLookup.getOrThrow(BlockTags.SWORD_INSTANTLY_MINES), 3.4028235E38F), Tool.Rule.overrideSpeed(registrationLookup.getOrThrow(BlockTags.SWORD_EFFICIENT), 1.5F)), 1.0F, 2, false)).attributes(this.createSwordAttributes(attackDamageBaseline, attackSpeedBaseline)).component(DataComponents.WEAPON, new Weapon(1));
    }
 
-   private ItemAttributeModifiers createSwordAttributes(float var1, float var2) {
-      return ItemAttributeModifiers.builder().add(Attributes.ATTACK_DAMAGE, new AttributeModifier(Item.BASE_ATTACK_DAMAGE_ID, (double)(var1 + this.attackDamageBonus), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).add(Attributes.ATTACK_SPEED, new AttributeModifier(Item.BASE_ATTACK_SPEED_ID, (double)var2, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).build();
+   private ItemAttributeModifiers createSwordAttributes(final float attackDamageBaseline, final float attackSpeedBaseline) {
+      return ItemAttributeModifiers.builder().add(Attributes.ATTACK_DAMAGE, new AttributeModifier(Item.BASE_ATTACK_DAMAGE_ID, (double)(attackDamageBaseline + this.attackDamageBonus), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).add(Attributes.ATTACK_SPEED, new AttributeModifier(Item.BASE_ATTACK_SPEED_ID, (double)attackSpeedBaseline, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).build();
    }
 
    static {

@@ -15,18 +15,18 @@ public class GlyphStitcher implements AutoCloseable {
    private final Identifier texturePrefix;
    private final List<FontTexture> textures = new ArrayList();
 
-   public GlyphStitcher(TextureManager var1, Identifier var2) {
+   public GlyphStitcher(final TextureManager textureManager, final Identifier texturePrefix) {
       super();
-      this.textureManager = var1;
-      this.texturePrefix = var2;
+      this.textureManager = textureManager;
+      this.texturePrefix = texturePrefix;
    }
 
    public void reset() {
-      int var1 = this.textures.size();
+      int textureCount = this.textures.size();
       this.textures.clear();
 
-      for(int var2 = 0; var2 < var1; ++var2) {
-         this.textureManager.release(this.textureName(var2));
+      for(int i = 0; i < textureCount; ++i) {
+         this.textureManager.release(this.textureName(i));
       }
 
    }
@@ -35,26 +35,26 @@ public class GlyphStitcher implements AutoCloseable {
       this.reset();
    }
 
-   public @Nullable BakedSheetGlyph stitch(GlyphInfo var1, GlyphBitmap var2) {
-      for(FontTexture var4 : this.textures) {
-         BakedSheetGlyph var5 = var4.add(var1, var2);
-         if (var5 != null) {
-            return var5;
+   public @Nullable BakedSheetGlyph stitch(final GlyphInfo info, final GlyphBitmap glyphBitmap) {
+      for(FontTexture texture : this.textures) {
+         BakedSheetGlyph glyph = texture.add(info, glyphBitmap);
+         if (glyph != null) {
+            return glyph;
          }
       }
 
-      int var8 = this.textures.size();
-      Identifier var9 = this.textureName(var8);
-      boolean var10 = var2.isColored();
-      GlyphRenderTypes var6 = var10 ? GlyphRenderTypes.createForColorTexture(var9) : GlyphRenderTypes.createForIntensityTexture(var9);
-      Objects.requireNonNull(var9);
-      FontTexture var7 = new FontTexture(var9::toString, var6, var10);
-      this.textures.add(var7);
-      this.textureManager.register(var9, var7);
-      return var7.add(var1, var2);
+      int nextIndex = this.textures.size();
+      Identifier name = this.textureName(nextIndex);
+      boolean isColored = glyphBitmap.isColored();
+      GlyphRenderTypes renderTypes = isColored ? GlyphRenderTypes.createForColorTexture(name) : GlyphRenderTypes.createForIntensityTexture(name);
+      Objects.requireNonNull(name);
+      FontTexture texture = new FontTexture(name::toString, renderTypes, isColored);
+      this.textures.add(texture);
+      this.textureManager.register(name, texture);
+      return texture.add(info, glyphBitmap);
    }
 
-   private Identifier textureName(int var1) {
-      return this.texturePrefix.withSuffix("/" + var1);
+   private Identifier textureName(final int index) {
+      return this.texturePrefix.withSuffix("/" + index);
    }
 }

@@ -13,17 +13,16 @@ public record ClientboundAwardStatsPacket(Object2IntMap<Stat<?>> stats) implemen
    private static final StreamCodec<RegistryFriendlyByteBuf, Object2IntMap<Stat<?>>> STAT_VALUES_STREAM_CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundAwardStatsPacket> STREAM_CODEC;
 
-   public ClientboundAwardStatsPacket(Object2IntMap<Stat<?>> var1) {
+   public ClientboundAwardStatsPacket {
       super();
-      this.stats = var1;
    }
 
    public PacketType<ClientboundAwardStatsPacket> type() {
       return GamePacketTypes.CLIENTBOUND_AWARD_STATS;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleAwardStats(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleAwardStats(this);
    }
 
    static {

@@ -19,56 +19,56 @@ public class ClientboundPlayerAbilitiesPacket implements Packet<ClientGamePacket
    private final float flyingSpeed;
    private final float walkingSpeed;
 
-   public ClientboundPlayerAbilitiesPacket(Abilities var1) {
+   public ClientboundPlayerAbilitiesPacket(final Abilities abilities) {
       super();
-      this.invulnerable = var1.invulnerable;
-      this.isFlying = var1.flying;
-      this.canFly = var1.mayfly;
-      this.instabuild = var1.instabuild;
-      this.flyingSpeed = var1.getFlyingSpeed();
-      this.walkingSpeed = var1.getWalkingSpeed();
+      this.invulnerable = abilities.invulnerable;
+      this.isFlying = abilities.flying;
+      this.canFly = abilities.mayfly;
+      this.instabuild = abilities.instabuild;
+      this.flyingSpeed = abilities.getFlyingSpeed();
+      this.walkingSpeed = abilities.getWalkingSpeed();
    }
 
-   private ClientboundPlayerAbilitiesPacket(FriendlyByteBuf var1) {
+   private ClientboundPlayerAbilitiesPacket(final FriendlyByteBuf input) {
       super();
-      byte var2 = var1.readByte();
-      this.invulnerable = (var2 & 1) != 0;
-      this.isFlying = (var2 & 2) != 0;
-      this.canFly = (var2 & 4) != 0;
-      this.instabuild = (var2 & 8) != 0;
-      this.flyingSpeed = var1.readFloat();
-      this.walkingSpeed = var1.readFloat();
+      byte bitfield = input.readByte();
+      this.invulnerable = (bitfield & 1) != 0;
+      this.isFlying = (bitfield & 2) != 0;
+      this.canFly = (bitfield & 4) != 0;
+      this.instabuild = (bitfield & 8) != 0;
+      this.flyingSpeed = input.readFloat();
+      this.walkingSpeed = input.readFloat();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      byte var2 = 0;
+   private void write(final FriendlyByteBuf output) {
+      byte bitfield = 0;
       if (this.invulnerable) {
-         var2 = (byte)(var2 | 1);
+         bitfield = (byte)(bitfield | 1);
       }
 
       if (this.isFlying) {
-         var2 = (byte)(var2 | 2);
+         bitfield = (byte)(bitfield | 2);
       }
 
       if (this.canFly) {
-         var2 = (byte)(var2 | 4);
+         bitfield = (byte)(bitfield | 4);
       }
 
       if (this.instabuild) {
-         var2 = (byte)(var2 | 8);
+         bitfield = (byte)(bitfield | 8);
       }
 
-      var1.writeByte(var2);
-      var1.writeFloat(this.flyingSpeed);
-      var1.writeFloat(this.walkingSpeed);
+      output.writeByte(bitfield);
+      output.writeFloat(this.flyingSpeed);
+      output.writeFloat(this.walkingSpeed);
    }
 
    public PacketType<ClientboundPlayerAbilitiesPacket> type() {
       return GamePacketTypes.CLIENTBOUND_PLAYER_ABILITIES;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handlePlayerAbilities(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handlePlayerAbilities(this);
    }
 
    public boolean isInvulnerable() {

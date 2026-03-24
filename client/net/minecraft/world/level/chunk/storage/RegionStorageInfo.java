@@ -4,14 +4,11 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 
 public record RegionStorageInfo(String level, ResourceKey<Level> dimension, String type) {
-   public RegionStorageInfo(String var1, ResourceKey<Level> var2, String var3) {
+   public RegionStorageInfo {
       super();
-      this.level = var1;
-      this.dimension = var2;
-      this.type = var3;
    }
 
-   public RegionStorageInfo withTypeSuffix(String var1) {
-      return new RegionStorageInfo(this.level, this.dimension, this.type + var1);
+   public RegionStorageInfo withTypeSuffix(final String suffix) {
+      return new RegionStorageInfo(this.level, this.dimension, this.type + suffix);
    }
 }

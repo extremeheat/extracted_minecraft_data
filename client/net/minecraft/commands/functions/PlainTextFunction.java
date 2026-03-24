@@ -9,13 +9,11 @@ import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
 public record PlainTextFunction<T>(Identifier id, List<UnboundEntryAction<T>> entries) implements CommandFunction<T>, InstantiatedFunction<T> {
-   public PlainTextFunction(Identifier var1, List<UnboundEntryAction<T>> var2) {
+   public PlainTextFunction {
       super();
-      this.id = var1;
-      this.entries = var2;
    }
 
-   public InstantiatedFunction<T> instantiate(@Nullable CompoundTag var1, CommandDispatcher<T> var2) throws FunctionInstantiationException {
+   public InstantiatedFunction<T> instantiate(final @Nullable CompoundTag arguments, final CommandDispatcher<T> dispatcher) throws FunctionInstantiationException {
       return this;
    }
 }

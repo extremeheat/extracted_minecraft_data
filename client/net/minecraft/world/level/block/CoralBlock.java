@@ -22,34 +22,34 @@ public class CoralBlock extends Block {
    public static final MapCodec<CoralBlock> CODEC;
    private final Block deadBlock;
 
-   public CoralBlock(Block var1, BlockBehaviour.Properties var2) {
-      super(var2);
-      this.deadBlock = var1;
+   public CoralBlock(final Block deadBlock, final BlockBehaviour.Properties properties) {
+      super(properties);
+      this.deadBlock = deadBlock;
    }
 
    public MapCodec<CoralBlock> codec() {
       return CODEC;
    }
 
-   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (!this.scanForWater(var2, var3)) {
-         var2.setBlock(var3, this.deadBlock.defaultBlockState(), 2);
+   protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if (!this.scanForWater(level, pos)) {
+         level.setBlock(pos, this.deadBlock.defaultBlockState(), 2);
       }
 
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      if (!this.scanForWater(var2, var4)) {
-         var3.scheduleTick(var4, (Block)this, 60 + var8.nextInt(40));
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      if (!this.scanForWater(level, pos)) {
+         ticks.scheduleTick(pos, (Block)this, 60 + random.nextInt(40));
       }
 
-      return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+      return super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   protected boolean scanForWater(BlockGetter var1, BlockPos var2) {
-      for(Direction var6 : Direction.values()) {
-         FluidState var7 = var1.getFluidState(var2.relative(var6));
-         if (var7.is(FluidTags.WATER)) {
+   protected boolean scanForWater(final BlockGetter level, final BlockPos blockPos) {
+      for(Direction direction : Direction.values()) {
+         FluidState fluidState = level.getFluidState(blockPos.relative(direction));
+         if (fluidState.is(FluidTags.WATER)) {
             return true;
          }
       }
@@ -57,9 +57,9 @@ public class CoralBlock extends Block {
       return false;
    }
 
-   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
-      if (!this.scanForWater(var1.getLevel(), var1.getClickedPos())) {
-         var1.getLevel().scheduleTick(var1.getClickedPos(), this, 60 + var1.getLevel().getRandom().nextInt(40));
+   public @Nullable BlockState getStateForPlacement(final BlockPlaceContext context) {
+      if (!this.scanForWater(context.getLevel(), context.getClickedPos())) {
+         context.getLevel().scheduleTick(context.getClickedPos(), this, 60 + context.getLevel().getRandom().nextInt(40));
       }
 
       return this.defaultBlockState();
@@ -67,6 +67,6 @@ public class CoralBlock extends Block {
 
    static {
       DEAD_CORAL_FIELD = BuiltInRegistries.BLOCK.byNameCodec().fieldOf("dead");
-      CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(DEAD_CORAL_FIELD.forGetter((var0x) -> var0x.deadBlock), propertiesCodec()).apply(var0, CoralBlock::new));
+      CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(DEAD_CORAL_FIELD.forGetter((b) -> b.deadBlock), propertiesCodec()).apply(i, CoralBlock::new));
    }
 }

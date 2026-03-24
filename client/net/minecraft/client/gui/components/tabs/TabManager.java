@@ -18,47 +18,47 @@ public class TabManager {
    private @Nullable Tab currentTab;
    private @Nullable ScreenRectangle tabArea;
 
-   public TabManager(Consumer<AbstractWidget> var1, Consumer<AbstractWidget> var2) {
-      this(var1, var2, (var0) -> {
-      }, (var0) -> {
+   public TabManager(final Consumer<AbstractWidget> addWidget, final Consumer<AbstractWidget> removeWidget) {
+      this(addWidget, removeWidget, (t) -> {
+      }, (t) -> {
       });
    }
 
-   public TabManager(Consumer<AbstractWidget> var1, Consumer<AbstractWidget> var2, Consumer<Tab> var3, Consumer<Tab> var4) {
+   public TabManager(final Consumer<AbstractWidget> addWidget, final Consumer<AbstractWidget> removeWidget, final Consumer<Tab> onSelected, final Consumer<Tab> onDeselected) {
       super();
-      this.addWidget = var1;
-      this.removeWidget = var2;
-      this.onSelected = var3;
-      this.onDeselected = var4;
+      this.addWidget = addWidget;
+      this.removeWidget = removeWidget;
+      this.onSelected = onSelected;
+      this.onDeselected = onDeselected;
    }
 
-   public void setTabArea(ScreenRectangle var1) {
-      this.tabArea = var1;
-      Tab var2 = this.getCurrentTab();
-      if (var2 != null) {
-         var2.doLayout(var1);
+   public void setTabArea(final ScreenRectangle tabArea) {
+      this.tabArea = tabArea;
+      Tab tab = this.getCurrentTab();
+      if (tab != null) {
+         tab.doLayout(tabArea);
       }
 
    }
 
-   public void setCurrentTab(Tab var1, boolean var2) {
-      if (!Objects.equals(this.currentTab, var1)) {
+   public void setCurrentTab(final Tab tab, final boolean playSound) {
+      if (!Objects.equals(this.currentTab, tab)) {
          if (this.currentTab != null) {
             this.currentTab.visitChildren(this.removeWidget);
          }
 
-         Tab var3 = this.currentTab;
-         this.currentTab = var1;
-         var1.visitChildren(this.addWidget);
+         Tab oldTab = this.currentTab;
+         this.currentTab = tab;
+         tab.visitChildren(this.addWidget);
          if (this.tabArea != null) {
-            var1.doLayout(this.tabArea);
+            tab.doLayout(this.tabArea);
          }
 
-         if (var2) {
+         if (playSound) {
             Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI((Holder)SoundEvents.UI_BUTTON_CLICK, 1.0F));
          }
 
-         this.onDeselected.accept(var3);
+         this.onDeselected.accept(oldTab);
          this.onSelected.accept(this.currentTab);
       }
 

@@ -2,47 +2,38 @@ package net.minecraft.util.valueproviders;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.RandomSource;
 
-public class ConstantInt extends IntProvider {
+public record ConstantInt(int value) implements IntProvider {
    public static final ConstantInt ZERO = new ConstantInt(0);
-   public static final MapCodec<ConstantInt> CODEC;
-   private final int value;
+   public static final MapCodec<ConstantInt> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.INT.fieldOf("value").forGetter(ConstantInt::value)).apply(i, ConstantInt::of));
 
-   public static ConstantInt of(int var0) {
-      return var0 == 0 ? ZERO : new ConstantInt(var0);
-   }
-
-   private ConstantInt(int var1) {
+   public ConstantInt {
       super();
-      this.value = var1;
    }
 
-   public int getValue() {
+   public static ConstantInt of(final int value) {
+      return value == 0 ? ZERO : new ConstantInt(value);
+   }
+
+   public int sample(final RandomSource random) {
       return this.value;
    }
 
-   public int sample(RandomSource var1) {
+   public int minInclusive() {
       return this.value;
    }
 
-   public int getMinValue() {
+   public int maxInclusive() {
       return this.value;
    }
 
-   public int getMaxValue() {
-      return this.value;
-   }
-
-   public IntProviderType<?> getType() {
-      return IntProviderType.CONSTANT;
+   public MapCodec<ConstantInt> codec() {
+      return MAP_CODEC;
    }
 
    public String toString() {
       return Integer.toString(this.value);
-   }
-
-   static {
-      CODEC = Codec.INT.fieldOf("value").xmap(ConstantInt::of, ConstantInt::getValue);
    }
 }

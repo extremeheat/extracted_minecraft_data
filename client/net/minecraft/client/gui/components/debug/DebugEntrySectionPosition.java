@@ -13,16 +13,16 @@ public class DebugEntrySectionPosition implements DebugScreenEntry {
       super();
    }
 
-   public void display(DebugScreenDisplayer var1, @Nullable Level var2, @Nullable LevelChunk var3, @Nullable LevelChunk var4) {
-      Minecraft var5 = Minecraft.getInstance();
-      Entity var6 = var5.getCameraEntity();
-      if (var6 != null) {
-         BlockPos var7 = var5.getCameraEntity().blockPosition();
-         var1.addToGroup(DebugEntryPosition.GROUP, String.format(Locale.ROOT, "Section-relative: %02d %02d %02d", var7.getX() & 15, var7.getY() & 15, var7.getZ() & 15));
+   public void display(final DebugScreenDisplayer displayer, final @Nullable Level serverOrClientLevel, final @Nullable LevelChunk clientChunk, final @Nullable LevelChunk serverChunk) {
+      Minecraft minecraft = Minecraft.getInstance();
+      Entity entity = minecraft.getCameraEntity();
+      if (entity != null) {
+         BlockPos feetPos = minecraft.getCameraEntity().blockPosition();
+         displayer.addToGroup(DebugEntryPosition.GROUP, String.format(Locale.ROOT, "Section-relative: %02d %02d %02d", feetPos.getX() & 15, feetPos.getY() & 15, feetPos.getZ() & 15));
       }
    }
 
-   public boolean isAllowed(boolean var1) {
+   public boolean isAllowed(final boolean reducedDebugInfo) {
       return true;
    }
 }

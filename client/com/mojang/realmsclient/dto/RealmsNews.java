@@ -10,21 +10,20 @@ import org.slf4j.Logger;
 public record RealmsNews(@Nullable String newsLink) {
    private static final Logger LOGGER = LogUtils.getLogger();
 
-   public RealmsNews(@Nullable String var1) {
+   public RealmsNews {
       super();
-      this.newsLink = var1;
    }
 
-   public static RealmsNews parse(String var0) {
-      String var1 = null;
+   public static RealmsNews parse(final String json) {
+      String newsLink = null;
 
       try {
-         JsonObject var2 = LenientJsonParser.parse(var0).getAsJsonObject();
-         var1 = JsonUtils.getStringOr("newsLink", var2, (String)null);
-      } catch (Exception var3) {
-         LOGGER.error("Could not parse RealmsNews", var3);
+         JsonObject object = LenientJsonParser.parse(json).getAsJsonObject();
+         newsLink = JsonUtils.getStringOr("newsLink", object, (String)null);
+      } catch (Exception e) {
+         LOGGER.error("Could not parse RealmsNews", e);
       }
 
-      return new RealmsNews(var1);
+      return new RealmsNews(newsLink);
    }
 }

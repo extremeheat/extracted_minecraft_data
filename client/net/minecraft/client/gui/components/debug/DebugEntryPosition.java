@@ -24,15 +24,15 @@ public class DebugEntryPosition implements DebugScreenEntry {
       super();
    }
 
-   public void display(DebugScreenDisplayer var1, @Nullable Level var2, @Nullable LevelChunk var3, @Nullable LevelChunk var4) {
-      Minecraft var5 = Minecraft.getInstance();
-      Entity var6 = var5.getCameraEntity();
-      if (var6 != null) {
-         BlockPos var7 = var5.getCameraEntity().blockPosition();
-         ChunkPos var8 = new ChunkPos(var7);
-         Direction var9 = var6.getDirection();
+   public void display(final DebugScreenDisplayer displayer, final @Nullable Level serverOrClientLevel, final @Nullable LevelChunk clientChunk, final @Nullable LevelChunk serverChunk) {
+      Minecraft minecraft = Minecraft.getInstance();
+      Entity entity = minecraft.getCameraEntity();
+      if (entity != null) {
+         BlockPos feetPos = minecraft.getCameraEntity().blockPosition();
+         ChunkPos chunkPos = ChunkPos.containing(feetPos);
+         Direction direction = entity.getDirection();
          String var10000;
-         switch (var9) {
+         switch (direction) {
             case NORTH -> var10000 = "Towards negative Z";
             case SOUTH -> var10000 = "Towards positive Z";
             case WEST -> var10000 = "Towards negative X";
@@ -40,15 +40,15 @@ public class DebugEntryPosition implements DebugScreenEntry {
             default -> var10000 = "Invalid";
          }
 
-         String var10 = var10000;
-         Object var11 = var2 instanceof ServerLevel ? ((ServerLevel)var2).getForceLoadedChunks() : LongSets.EMPTY_SET;
+         String faceString = var10000;
+         LongSet chunks = (LongSet)(serverOrClientLevel instanceof ServerLevel ? ((ServerLevel)serverOrClientLevel).getForceLoadedChunks() : LongSets.EMPTY_SET);
          Identifier var10001 = GROUP;
-         String var10002 = String.format(Locale.ROOT, "XYZ: %.3f / %.5f / %.3f", var5.getCameraEntity().getX(), var5.getCameraEntity().getY(), var5.getCameraEntity().getZ());
-         String var10003 = String.format(Locale.ROOT, "Block: %d %d %d", var7.getX(), var7.getY(), var7.getZ());
-         String var10004 = String.format(Locale.ROOT, "Chunk: %d %d %d [%d %d in r.%d.%d.mca]", var8.x, SectionPos.blockToSectionCoord(var7.getY()), var8.z, var8.getRegionLocalX(), var8.getRegionLocalZ(), var8.getRegionX(), var8.getRegionZ());
-         String var10005 = String.format(Locale.ROOT, "Facing: %s (%s) (%.1f / %.1f)", var9, var10, Mth.wrapDegrees(var6.getYRot()), Mth.wrapDegrees(var6.getXRot()));
-         String var10006 = String.valueOf(var5.level.dimension().identifier());
-         var1.addToGroup(var10001, List.of(var10002, var10003, var10004, var10005, var10006 + " FC: " + ((LongSet)var11).size()));
+         String var10002 = String.format(Locale.ROOT, "XYZ: %.3f / %.5f / %.3f", minecraft.getCameraEntity().getX(), minecraft.getCameraEntity().getY(), minecraft.getCameraEntity().getZ());
+         String var10003 = String.format(Locale.ROOT, "Block: %d %d %d", feetPos.getX(), feetPos.getY(), feetPos.getZ());
+         String var10004 = String.format(Locale.ROOT, "Chunk: %d %d %d [%d %d in r.%d.%d.mca]", chunkPos.x(), SectionPos.blockToSectionCoord(feetPos.getY()), chunkPos.z(), chunkPos.getRegionLocalX(), chunkPos.getRegionLocalZ(), chunkPos.getRegionX(), chunkPos.getRegionZ());
+         String var10005 = String.format(Locale.ROOT, "Facing: %s (%s) (%.1f / %.1f)", direction, faceString, Mth.wrapDegrees(entity.getYRot()), Mth.wrapDegrees(entity.getXRot()));
+         String var10006 = String.valueOf(minecraft.level.dimension().identifier());
+         displayer.addToGroup(var10001, List.of(var10002, var10003, var10004, var10005, var10006 + " FC: " + chunks.size()));
       }
    }
 }

@@ -13,11 +13,11 @@ import org.joml.Vector3ic;
 import org.joml.Vector4fc;
 
 public interface UniformValue {
-   Codec<UniformValue> CODEC = UniformValue.Type.CODEC.dispatch(UniformValue::type, (var0) -> var0.valueCodec);
+   Codec<UniformValue> CODEC = UniformValue.Type.CODEC.dispatch(UniformValue::type, (t) -> t.valueCodec);
 
-   void writeTo(Std140Builder var1);
+   void writeTo(Std140Builder builder);
 
-   void addSize(Std140SizeCalculator var1);
+   void addSize(Std140SizeCalculator calculator);
 
    Type type();
 
@@ -30,13 +30,13 @@ public interface UniformValue {
       VEC4("vec4", UniformValue.Vec4Uniform.CODEC),
       MATRIX4X4("matrix4x4", UniformValue.Matrix4x4Uniform.CODEC);
 
-      public static final StringRepresentable.EnumCodec<Type> CODEC = StringRepresentable.<Type>fromEnum(Type::values);
+      public static final Codec<Type> CODEC = StringRepresentable.<Type>fromEnum(Type::values);
       private final String name;
-      final MapCodec<? extends UniformValue> valueCodec;
+      private final MapCodec<? extends UniformValue> valueCodec;
 
-      private Type(final String var3, final Codec<? extends UniformValue> var4) {
-         this.name = var3;
-         this.valueCodec = var4.fieldOf("value");
+      private Type(final String name, final Codec<? extends UniformValue> valueCodec) {
+         this.name = name;
+         this.valueCodec = valueCodec.fieldOf("value");
       }
 
       public String getSerializedName() {
@@ -52,17 +52,16 @@ public interface UniformValue {
    public static record IntUniform(int value) implements UniformValue {
       public static final Codec<IntUniform> CODEC;
 
-      public IntUniform(int var1) {
+      public IntUniform {
          super();
-         this.value = var1;
       }
 
-      public void writeTo(Std140Builder var1) {
-         var1.putInt(this.value);
+      public void writeTo(final Std140Builder builder) {
+         builder.putInt(this.value);
       }
 
-      public void addSize(Std140SizeCalculator var1) {
-         var1.putInt();
+      public void addSize(final Std140SizeCalculator calculator) {
+         calculator.putInt();
       }
 
       public Type type() {
@@ -77,17 +76,16 @@ public interface UniformValue {
    public static record IVec3Uniform(Vector3ic value) implements UniformValue {
       public static final Codec<IVec3Uniform> CODEC;
 
-      public IVec3Uniform(Vector3ic var1) {
+      public IVec3Uniform {
          super();
-         this.value = var1;
       }
 
-      public void writeTo(Std140Builder var1) {
-         var1.putIVec3(this.value);
+      public void writeTo(final Std140Builder builder) {
+         builder.putIVec3(this.value);
       }
 
-      public void addSize(Std140SizeCalculator var1) {
-         var1.putIVec3();
+      public void addSize(final Std140SizeCalculator calculator) {
+         calculator.putIVec3();
       }
 
       public Type type() {
@@ -102,17 +100,16 @@ public interface UniformValue {
    public static record FloatUniform(float value) implements UniformValue {
       public static final Codec<FloatUniform> CODEC;
 
-      public FloatUniform(float var1) {
+      public FloatUniform {
          super();
-         this.value = var1;
       }
 
-      public void writeTo(Std140Builder var1) {
-         var1.putFloat(this.value);
+      public void writeTo(final Std140Builder builder) {
+         builder.putFloat(this.value);
       }
 
-      public void addSize(Std140SizeCalculator var1) {
-         var1.putFloat();
+      public void addSize(final Std140SizeCalculator calculator) {
+         calculator.putFloat();
       }
 
       public Type type() {
@@ -127,17 +124,16 @@ public interface UniformValue {
    public static record Vec2Uniform(Vector2fc value) implements UniformValue {
       public static final Codec<Vec2Uniform> CODEC;
 
-      public Vec2Uniform(Vector2fc var1) {
+      public Vec2Uniform {
          super();
-         this.value = var1;
       }
 
-      public void writeTo(Std140Builder var1) {
-         var1.putVec2(this.value);
+      public void writeTo(final Std140Builder builder) {
+         builder.putVec2(this.value);
       }
 
-      public void addSize(Std140SizeCalculator var1) {
-         var1.putVec2();
+      public void addSize(final Std140SizeCalculator calculator) {
+         calculator.putVec2();
       }
 
       public Type type() {
@@ -152,17 +148,16 @@ public interface UniformValue {
    public static record Vec3Uniform(Vector3fc value) implements UniformValue {
       public static final Codec<Vec3Uniform> CODEC;
 
-      public Vec3Uniform(Vector3fc var1) {
+      public Vec3Uniform {
          super();
-         this.value = var1;
       }
 
-      public void writeTo(Std140Builder var1) {
-         var1.putVec3(this.value);
+      public void writeTo(final Std140Builder builder) {
+         builder.putVec3(this.value);
       }
 
-      public void addSize(Std140SizeCalculator var1) {
-         var1.putVec3();
+      public void addSize(final Std140SizeCalculator calculator) {
+         calculator.putVec3();
       }
 
       public Type type() {
@@ -177,17 +172,16 @@ public interface UniformValue {
    public static record Vec4Uniform(Vector4fc value) implements UniformValue {
       public static final Codec<Vec4Uniform> CODEC;
 
-      public Vec4Uniform(Vector4fc var1) {
+      public Vec4Uniform {
          super();
-         this.value = var1;
       }
 
-      public void writeTo(Std140Builder var1) {
-         var1.putVec4(this.value);
+      public void writeTo(final Std140Builder builder) {
+         builder.putVec4(this.value);
       }
 
-      public void addSize(Std140SizeCalculator var1) {
-         var1.putVec4();
+      public void addSize(final Std140SizeCalculator calculator) {
+         calculator.putVec4();
       }
 
       public Type type() {
@@ -202,17 +196,16 @@ public interface UniformValue {
    public static record Matrix4x4Uniform(Matrix4fc value) implements UniformValue {
       public static final Codec<Matrix4x4Uniform> CODEC;
 
-      public Matrix4x4Uniform(Matrix4fc var1) {
+      public Matrix4x4Uniform {
          super();
-         this.value = var1;
       }
 
-      public void writeTo(Std140Builder var1) {
-         var1.putMat4f(this.value);
+      public void writeTo(final Std140Builder builder) {
+         builder.putMat4f(this.value);
       }
 
-      public void addSize(Std140SizeCalculator var1) {
-         var1.putMat4f();
+      public void addSize(final Std140SizeCalculator calculator) {
+         calculator.putMat4f();
       }
 
       public Type type() {

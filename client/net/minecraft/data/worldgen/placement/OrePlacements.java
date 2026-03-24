@@ -9,6 +9,7 @@ import net.minecraft.data.worldgen.features.OreFeatures;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.level.levelgen.VerticalAnchor;
+import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.placement.BiomeFilter;
 import net.minecraft.world.level.levelgen.placement.CountPlacement;
 import net.minecraft.world.level.levelgen.placement.HeightRangePlacement;
@@ -63,91 +64,91 @@ public class OrePlacements {
       super();
    }
 
-   private static List<PlacementModifier> orePlacement(PlacementModifier var0, PlacementModifier var1) {
-      return List.of(var0, InSquarePlacement.spread(), var1, BiomeFilter.biome());
+   private static List<PlacementModifier> orePlacement(final PlacementModifier frequencyModifier, final PlacementModifier heightRange) {
+      return List.of(frequencyModifier, InSquarePlacement.spread(), heightRange, BiomeFilter.biome());
    }
 
-   private static List<PlacementModifier> commonOrePlacement(int var0, PlacementModifier var1) {
-      return orePlacement(CountPlacement.of(var0), var1);
+   private static List<PlacementModifier> commonOrePlacement(final int count, final PlacementModifier heightRange) {
+      return orePlacement(CountPlacement.of(count), heightRange);
    }
 
-   private static List<PlacementModifier> rareOrePlacement(int var0, PlacementModifier var1) {
-      return orePlacement(RarityFilter.onAverageOnceEvery(var0), var1);
+   private static List<PlacementModifier> rareOrePlacement(final int rarity, final PlacementModifier heightRange) {
+      return orePlacement(RarityFilter.onAverageOnceEvery(rarity), heightRange);
    }
 
-   public static void bootstrap(BootstrapContext<PlacedFeature> var0) {
-      HolderGetter var1 = var0.lookup(Registries.CONFIGURED_FEATURE);
-      Holder.Reference var2 = var1.getOrThrow(OreFeatures.ORE_MAGMA);
-      Holder.Reference var3 = var1.getOrThrow(OreFeatures.ORE_SOUL_SAND);
-      Holder.Reference var4 = var1.getOrThrow(OreFeatures.ORE_NETHER_GOLD);
-      Holder.Reference var5 = var1.getOrThrow(OreFeatures.ORE_QUARTZ);
-      Holder.Reference var6 = var1.getOrThrow(OreFeatures.ORE_GRAVEL_NETHER);
-      Holder.Reference var7 = var1.getOrThrow(OreFeatures.ORE_BLACKSTONE);
-      Holder.Reference var8 = var1.getOrThrow(OreFeatures.ORE_DIRT);
-      Holder.Reference var9 = var1.getOrThrow(OreFeatures.ORE_GRAVEL);
-      Holder.Reference var10 = var1.getOrThrow(OreFeatures.ORE_GRANITE);
-      Holder.Reference var11 = var1.getOrThrow(OreFeatures.ORE_DIORITE);
-      Holder.Reference var12 = var1.getOrThrow(OreFeatures.ORE_ANDESITE);
-      Holder.Reference var13 = var1.getOrThrow(OreFeatures.ORE_TUFF);
-      Holder.Reference var14 = var1.getOrThrow(OreFeatures.ORE_COAL);
-      Holder.Reference var15 = var1.getOrThrow(OreFeatures.ORE_COAL_BURIED);
-      Holder.Reference var16 = var1.getOrThrow(OreFeatures.ORE_IRON);
-      Holder.Reference var17 = var1.getOrThrow(OreFeatures.ORE_IRON_SMALL);
-      Holder.Reference var18 = var1.getOrThrow(OreFeatures.ORE_GOLD);
-      Holder.Reference var19 = var1.getOrThrow(OreFeatures.ORE_GOLD_BURIED);
-      Holder.Reference var20 = var1.getOrThrow(OreFeatures.ORE_REDSTONE);
-      Holder.Reference var21 = var1.getOrThrow(OreFeatures.ORE_DIAMOND_SMALL);
-      Holder.Reference var22 = var1.getOrThrow(OreFeatures.ORE_DIAMOND_MEDIUM);
-      Holder.Reference var23 = var1.getOrThrow(OreFeatures.ORE_DIAMOND_LARGE);
-      Holder.Reference var24 = var1.getOrThrow(OreFeatures.ORE_DIAMOND_BURIED);
-      Holder.Reference var25 = var1.getOrThrow(OreFeatures.ORE_LAPIS);
-      Holder.Reference var26 = var1.getOrThrow(OreFeatures.ORE_LAPIS_BURIED);
-      Holder.Reference var27 = var1.getOrThrow(OreFeatures.ORE_INFESTED);
-      Holder.Reference var28 = var1.getOrThrow(OreFeatures.ORE_EMERALD);
-      Holder.Reference var29 = var1.getOrThrow(OreFeatures.ORE_ANCIENT_DEBRIS_LARGE);
-      Holder.Reference var30 = var1.getOrThrow(OreFeatures.ORE_ANCIENT_DEBRIS_SMALL);
-      Holder.Reference var31 = var1.getOrThrow(OreFeatures.ORE_COPPPER_SMALL);
-      Holder.Reference var32 = var1.getOrThrow(OreFeatures.ORE_COPPER_LARGE);
-      Holder.Reference var33 = var1.getOrThrow(OreFeatures.ORE_CLAY);
-      PlacementUtils.register(var0, ORE_MAGMA, var2, commonOrePlacement(4, HeightRangePlacement.uniform(VerticalAnchor.absolute(27), VerticalAnchor.absolute(36))));
-      PlacementUtils.register(var0, ORE_SOUL_SAND, var3, commonOrePlacement(12, HeightRangePlacement.uniform(VerticalAnchor.bottom(), VerticalAnchor.absolute(31))));
-      PlacementUtils.register(var0, ORE_GOLD_DELTAS, var4, commonOrePlacement(20, PlacementUtils.RANGE_10_10));
-      PlacementUtils.register(var0, ORE_QUARTZ_DELTAS, var5, commonOrePlacement(32, PlacementUtils.RANGE_10_10));
-      PlacementUtils.register(var0, ORE_GOLD_NETHER, var4, commonOrePlacement(10, PlacementUtils.RANGE_10_10));
-      PlacementUtils.register(var0, ORE_QUARTZ_NETHER, var5, commonOrePlacement(16, PlacementUtils.RANGE_10_10));
-      PlacementUtils.register(var0, ORE_GRAVEL_NETHER, var6, commonOrePlacement(2, HeightRangePlacement.uniform(VerticalAnchor.absolute(5), VerticalAnchor.absolute(41))));
-      PlacementUtils.register(var0, ORE_BLACKSTONE, var7, commonOrePlacement(2, HeightRangePlacement.uniform(VerticalAnchor.absolute(5), VerticalAnchor.absolute(31))));
-      PlacementUtils.register(var0, ORE_DIRT, var8, commonOrePlacement(7, HeightRangePlacement.uniform(VerticalAnchor.absolute(0), VerticalAnchor.absolute(160))));
-      PlacementUtils.register(var0, ORE_GRAVEL, var9, commonOrePlacement(14, HeightRangePlacement.uniform(VerticalAnchor.bottom(), VerticalAnchor.top())));
-      PlacementUtils.register(var0, ORE_GRANITE_UPPER, var10, rareOrePlacement(6, HeightRangePlacement.uniform(VerticalAnchor.absolute(64), VerticalAnchor.absolute(128))));
-      PlacementUtils.register(var0, ORE_GRANITE_LOWER, var10, commonOrePlacement(2, HeightRangePlacement.uniform(VerticalAnchor.absolute(0), VerticalAnchor.absolute(60))));
-      PlacementUtils.register(var0, ORE_DIORITE_UPPER, var11, rareOrePlacement(6, HeightRangePlacement.uniform(VerticalAnchor.absolute(64), VerticalAnchor.absolute(128))));
-      PlacementUtils.register(var0, ORE_DIORITE_LOWER, var11, commonOrePlacement(2, HeightRangePlacement.uniform(VerticalAnchor.absolute(0), VerticalAnchor.absolute(60))));
-      PlacementUtils.register(var0, ORE_ANDESITE_UPPER, var12, rareOrePlacement(6, HeightRangePlacement.uniform(VerticalAnchor.absolute(64), VerticalAnchor.absolute(128))));
-      PlacementUtils.register(var0, ORE_ANDESITE_LOWER, var12, commonOrePlacement(2, HeightRangePlacement.uniform(VerticalAnchor.absolute(0), VerticalAnchor.absolute(60))));
-      PlacementUtils.register(var0, ORE_TUFF, var13, commonOrePlacement(2, HeightRangePlacement.uniform(VerticalAnchor.bottom(), VerticalAnchor.absolute(0))));
-      PlacementUtils.register(var0, ORE_COAL_UPPER, var14, commonOrePlacement(30, HeightRangePlacement.uniform(VerticalAnchor.absolute(136), VerticalAnchor.top())));
-      PlacementUtils.register(var0, ORE_COAL_LOWER, var15, commonOrePlacement(20, HeightRangePlacement.triangle(VerticalAnchor.absolute(0), VerticalAnchor.absolute(192))));
-      PlacementUtils.register(var0, ORE_IRON_UPPER, var16, commonOrePlacement(90, HeightRangePlacement.triangle(VerticalAnchor.absolute(80), VerticalAnchor.absolute(384))));
-      PlacementUtils.register(var0, ORE_IRON_MIDDLE, var16, commonOrePlacement(10, HeightRangePlacement.triangle(VerticalAnchor.absolute(-24), VerticalAnchor.absolute(56))));
-      PlacementUtils.register(var0, ORE_IRON_SMALL, var17, commonOrePlacement(10, HeightRangePlacement.uniform(VerticalAnchor.bottom(), VerticalAnchor.absolute(72))));
-      PlacementUtils.register(var0, ORE_GOLD_EXTRA, var18, commonOrePlacement(50, HeightRangePlacement.uniform(VerticalAnchor.absolute(32), VerticalAnchor.absolute(256))));
-      PlacementUtils.register(var0, ORE_GOLD, var19, commonOrePlacement(4, HeightRangePlacement.triangle(VerticalAnchor.absolute(-64), VerticalAnchor.absolute(32))));
-      PlacementUtils.register(var0, ORE_GOLD_LOWER, var19, orePlacement(CountPlacement.of(UniformInt.of(0, 1)), HeightRangePlacement.uniform(VerticalAnchor.absolute(-64), VerticalAnchor.absolute(-48))));
-      PlacementUtils.register(var0, ORE_REDSTONE, var20, commonOrePlacement(4, HeightRangePlacement.uniform(VerticalAnchor.bottom(), VerticalAnchor.absolute(15))));
-      PlacementUtils.register(var0, ORE_REDSTONE_LOWER, var20, commonOrePlacement(8, HeightRangePlacement.triangle(VerticalAnchor.aboveBottom(-32), VerticalAnchor.aboveBottom(32))));
-      PlacementUtils.register(var0, ORE_DIAMOND, var21, commonOrePlacement(7, HeightRangePlacement.triangle(VerticalAnchor.aboveBottom(-80), VerticalAnchor.aboveBottom(80))));
-      PlacementUtils.register(var0, ORE_DIAMOND_MEDIUM, var22, commonOrePlacement(2, HeightRangePlacement.uniform(VerticalAnchor.absolute(-64), VerticalAnchor.absolute(-4))));
-      PlacementUtils.register(var0, ORE_DIAMOND_LARGE, var23, rareOrePlacement(9, HeightRangePlacement.triangle(VerticalAnchor.aboveBottom(-80), VerticalAnchor.aboveBottom(80))));
-      PlacementUtils.register(var0, ORE_DIAMOND_BURIED, var24, commonOrePlacement(4, HeightRangePlacement.triangle(VerticalAnchor.aboveBottom(-80), VerticalAnchor.aboveBottom(80))));
-      PlacementUtils.register(var0, ORE_LAPIS, var25, commonOrePlacement(2, HeightRangePlacement.triangle(VerticalAnchor.absolute(-32), VerticalAnchor.absolute(32))));
-      PlacementUtils.register(var0, ORE_LAPIS_BURIED, var26, commonOrePlacement(4, HeightRangePlacement.uniform(VerticalAnchor.bottom(), VerticalAnchor.absolute(64))));
-      PlacementUtils.register(var0, ORE_INFESTED, var27, commonOrePlacement(14, HeightRangePlacement.uniform(VerticalAnchor.bottom(), VerticalAnchor.absolute(63))));
-      PlacementUtils.register(var0, ORE_EMERALD, var28, commonOrePlacement(100, HeightRangePlacement.triangle(VerticalAnchor.absolute(-16), VerticalAnchor.absolute(480))));
-      PlacementUtils.register(var0, ORE_ANCIENT_DEBRIS_LARGE, var29, InSquarePlacement.spread(), HeightRangePlacement.triangle(VerticalAnchor.absolute(8), VerticalAnchor.absolute(24)), BiomeFilter.biome());
-      PlacementUtils.register(var0, ORE_ANCIENT_DEBRIS_SMALL, var30, InSquarePlacement.spread(), PlacementUtils.RANGE_8_8, BiomeFilter.biome());
-      PlacementUtils.register(var0, ORE_COPPER, var31, commonOrePlacement(16, HeightRangePlacement.triangle(VerticalAnchor.absolute(-16), VerticalAnchor.absolute(112))));
-      PlacementUtils.register(var0, ORE_COPPER_LARGE, var32, commonOrePlacement(16, HeightRangePlacement.triangle(VerticalAnchor.absolute(-16), VerticalAnchor.absolute(112))));
-      PlacementUtils.register(var0, ORE_CLAY, var33, commonOrePlacement(46, PlacementUtils.RANGE_BOTTOM_TO_MAX_TERRAIN_HEIGHT));
+   public static void bootstrap(final BootstrapContext<PlacedFeature> context) {
+      HolderGetter<ConfiguredFeature<?, ?>> configuredFeatures = context.<ConfiguredFeature<?, ?>>lookup(Registries.CONFIGURED_FEATURE);
+      Holder<ConfiguredFeature<?, ?>> oreMagma = configuredFeatures.getOrThrow(OreFeatures.ORE_MAGMA);
+      Holder<ConfiguredFeature<?, ?>> oreSoulSand = configuredFeatures.getOrThrow(OreFeatures.ORE_SOUL_SAND);
+      Holder<ConfiguredFeature<?, ?>> oreNetherGold = configuredFeatures.getOrThrow(OreFeatures.ORE_NETHER_GOLD);
+      Holder<ConfiguredFeature<?, ?>> oreQuartz = configuredFeatures.getOrThrow(OreFeatures.ORE_QUARTZ);
+      Holder<ConfiguredFeature<?, ?>> oreGravelNether = configuredFeatures.getOrThrow(OreFeatures.ORE_GRAVEL_NETHER);
+      Holder<ConfiguredFeature<?, ?>> oreBlackstone = configuredFeatures.getOrThrow(OreFeatures.ORE_BLACKSTONE);
+      Holder<ConfiguredFeature<?, ?>> oreDirt = configuredFeatures.getOrThrow(OreFeatures.ORE_DIRT);
+      Holder<ConfiguredFeature<?, ?>> oreGravel = configuredFeatures.getOrThrow(OreFeatures.ORE_GRAVEL);
+      Holder<ConfiguredFeature<?, ?>> oreGranite = configuredFeatures.getOrThrow(OreFeatures.ORE_GRANITE);
+      Holder<ConfiguredFeature<?, ?>> oreDiorite = configuredFeatures.getOrThrow(OreFeatures.ORE_DIORITE);
+      Holder<ConfiguredFeature<?, ?>> oreAndesite = configuredFeatures.getOrThrow(OreFeatures.ORE_ANDESITE);
+      Holder<ConfiguredFeature<?, ?>> oreTuff = configuredFeatures.getOrThrow(OreFeatures.ORE_TUFF);
+      Holder<ConfiguredFeature<?, ?>> oreCoal = configuredFeatures.getOrThrow(OreFeatures.ORE_COAL);
+      Holder<ConfiguredFeature<?, ?>> oreCoalBuried = configuredFeatures.getOrThrow(OreFeatures.ORE_COAL_BURIED);
+      Holder<ConfiguredFeature<?, ?>> oreIron = configuredFeatures.getOrThrow(OreFeatures.ORE_IRON);
+      Holder<ConfiguredFeature<?, ?>> oreIronSmall = configuredFeatures.getOrThrow(OreFeatures.ORE_IRON_SMALL);
+      Holder<ConfiguredFeature<?, ?>> oreGold = configuredFeatures.getOrThrow(OreFeatures.ORE_GOLD);
+      Holder<ConfiguredFeature<?, ?>> oreGoldBuried = configuredFeatures.getOrThrow(OreFeatures.ORE_GOLD_BURIED);
+      Holder<ConfiguredFeature<?, ?>> oreRedstone = configuredFeatures.getOrThrow(OreFeatures.ORE_REDSTONE);
+      Holder<ConfiguredFeature<?, ?>> oreDiamondSmall = configuredFeatures.getOrThrow(OreFeatures.ORE_DIAMOND_SMALL);
+      Holder<ConfiguredFeature<?, ?>> oreDiamondMedium = configuredFeatures.getOrThrow(OreFeatures.ORE_DIAMOND_MEDIUM);
+      Holder<ConfiguredFeature<?, ?>> oreDiamondLarge = configuredFeatures.getOrThrow(OreFeatures.ORE_DIAMOND_LARGE);
+      Holder<ConfiguredFeature<?, ?>> oreDiamondBuried = configuredFeatures.getOrThrow(OreFeatures.ORE_DIAMOND_BURIED);
+      Holder<ConfiguredFeature<?, ?>> oreLapis = configuredFeatures.getOrThrow(OreFeatures.ORE_LAPIS);
+      Holder<ConfiguredFeature<?, ?>> oreLapisBuried = configuredFeatures.getOrThrow(OreFeatures.ORE_LAPIS_BURIED);
+      Holder<ConfiguredFeature<?, ?>> oreInfested = configuredFeatures.getOrThrow(OreFeatures.ORE_INFESTED);
+      Holder<ConfiguredFeature<?, ?>> oreEmerald = configuredFeatures.getOrThrow(OreFeatures.ORE_EMERALD);
+      Holder<ConfiguredFeature<?, ?>> oreAncientDebrisLarge = configuredFeatures.getOrThrow(OreFeatures.ORE_ANCIENT_DEBRIS_LARGE);
+      Holder<ConfiguredFeature<?, ?>> oreAncientDebrisSmall = configuredFeatures.getOrThrow(OreFeatures.ORE_ANCIENT_DEBRIS_SMALL);
+      Holder<ConfiguredFeature<?, ?>> oreCoppperSmall = configuredFeatures.getOrThrow(OreFeatures.ORE_COPPPER_SMALL);
+      Holder<ConfiguredFeature<?, ?>> oreCopperLarge = configuredFeatures.getOrThrow(OreFeatures.ORE_COPPER_LARGE);
+      Holder<ConfiguredFeature<?, ?>> oreClay = configuredFeatures.getOrThrow(OreFeatures.ORE_CLAY);
+      PlacementUtils.register(context, ORE_MAGMA, oreMagma, commonOrePlacement(4, HeightRangePlacement.uniform(VerticalAnchor.absolute(27), VerticalAnchor.absolute(36))));
+      PlacementUtils.register(context, ORE_SOUL_SAND, oreSoulSand, commonOrePlacement(12, HeightRangePlacement.uniform(VerticalAnchor.bottom(), VerticalAnchor.absolute(31))));
+      PlacementUtils.register(context, ORE_GOLD_DELTAS, oreNetherGold, commonOrePlacement(20, PlacementUtils.RANGE_10_10));
+      PlacementUtils.register(context, ORE_QUARTZ_DELTAS, oreQuartz, commonOrePlacement(32, PlacementUtils.RANGE_10_10));
+      PlacementUtils.register(context, ORE_GOLD_NETHER, oreNetherGold, commonOrePlacement(10, PlacementUtils.RANGE_10_10));
+      PlacementUtils.register(context, ORE_QUARTZ_NETHER, oreQuartz, commonOrePlacement(16, PlacementUtils.RANGE_10_10));
+      PlacementUtils.register(context, ORE_GRAVEL_NETHER, oreGravelNether, commonOrePlacement(2, HeightRangePlacement.uniform(VerticalAnchor.absolute(5), VerticalAnchor.absolute(41))));
+      PlacementUtils.register(context, ORE_BLACKSTONE, oreBlackstone, commonOrePlacement(2, HeightRangePlacement.uniform(VerticalAnchor.absolute(5), VerticalAnchor.absolute(31))));
+      PlacementUtils.register(context, ORE_DIRT, oreDirt, commonOrePlacement(7, HeightRangePlacement.uniform(VerticalAnchor.absolute(0), VerticalAnchor.absolute(160))));
+      PlacementUtils.register(context, ORE_GRAVEL, oreGravel, commonOrePlacement(14, HeightRangePlacement.uniform(VerticalAnchor.bottom(), VerticalAnchor.top())));
+      PlacementUtils.register(context, ORE_GRANITE_UPPER, oreGranite, rareOrePlacement(6, HeightRangePlacement.uniform(VerticalAnchor.absolute(64), VerticalAnchor.absolute(128))));
+      PlacementUtils.register(context, ORE_GRANITE_LOWER, oreGranite, commonOrePlacement(2, HeightRangePlacement.uniform(VerticalAnchor.absolute(0), VerticalAnchor.absolute(60))));
+      PlacementUtils.register(context, ORE_DIORITE_UPPER, oreDiorite, rareOrePlacement(6, HeightRangePlacement.uniform(VerticalAnchor.absolute(64), VerticalAnchor.absolute(128))));
+      PlacementUtils.register(context, ORE_DIORITE_LOWER, oreDiorite, commonOrePlacement(2, HeightRangePlacement.uniform(VerticalAnchor.absolute(0), VerticalAnchor.absolute(60))));
+      PlacementUtils.register(context, ORE_ANDESITE_UPPER, oreAndesite, rareOrePlacement(6, HeightRangePlacement.uniform(VerticalAnchor.absolute(64), VerticalAnchor.absolute(128))));
+      PlacementUtils.register(context, ORE_ANDESITE_LOWER, oreAndesite, commonOrePlacement(2, HeightRangePlacement.uniform(VerticalAnchor.absolute(0), VerticalAnchor.absolute(60))));
+      PlacementUtils.register(context, ORE_TUFF, oreTuff, commonOrePlacement(2, HeightRangePlacement.uniform(VerticalAnchor.bottom(), VerticalAnchor.absolute(0))));
+      PlacementUtils.register(context, ORE_COAL_UPPER, oreCoal, commonOrePlacement(30, HeightRangePlacement.uniform(VerticalAnchor.absolute(136), VerticalAnchor.top())));
+      PlacementUtils.register(context, ORE_COAL_LOWER, oreCoalBuried, commonOrePlacement(20, HeightRangePlacement.triangle(VerticalAnchor.absolute(0), VerticalAnchor.absolute(192))));
+      PlacementUtils.register(context, ORE_IRON_UPPER, oreIron, commonOrePlacement(90, HeightRangePlacement.triangle(VerticalAnchor.absolute(80), VerticalAnchor.absolute(384))));
+      PlacementUtils.register(context, ORE_IRON_MIDDLE, oreIron, commonOrePlacement(10, HeightRangePlacement.triangle(VerticalAnchor.absolute(-24), VerticalAnchor.absolute(56))));
+      PlacementUtils.register(context, ORE_IRON_SMALL, oreIronSmall, commonOrePlacement(10, HeightRangePlacement.uniform(VerticalAnchor.bottom(), VerticalAnchor.absolute(72))));
+      PlacementUtils.register(context, ORE_GOLD_EXTRA, oreGold, commonOrePlacement(50, HeightRangePlacement.uniform(VerticalAnchor.absolute(32), VerticalAnchor.absolute(256))));
+      PlacementUtils.register(context, ORE_GOLD, oreGoldBuried, commonOrePlacement(4, HeightRangePlacement.triangle(VerticalAnchor.absolute(-64), VerticalAnchor.absolute(32))));
+      PlacementUtils.register(context, ORE_GOLD_LOWER, oreGoldBuried, orePlacement(CountPlacement.of(UniformInt.of(0, 1)), HeightRangePlacement.uniform(VerticalAnchor.absolute(-64), VerticalAnchor.absolute(-48))));
+      PlacementUtils.register(context, ORE_REDSTONE, oreRedstone, commonOrePlacement(4, HeightRangePlacement.uniform(VerticalAnchor.bottom(), VerticalAnchor.absolute(15))));
+      PlacementUtils.register(context, ORE_REDSTONE_LOWER, oreRedstone, commonOrePlacement(8, HeightRangePlacement.triangle(VerticalAnchor.aboveBottom(-32), VerticalAnchor.aboveBottom(32))));
+      PlacementUtils.register(context, ORE_DIAMOND, oreDiamondSmall, commonOrePlacement(7, HeightRangePlacement.triangle(VerticalAnchor.aboveBottom(-80), VerticalAnchor.aboveBottom(80))));
+      PlacementUtils.register(context, ORE_DIAMOND_MEDIUM, oreDiamondMedium, commonOrePlacement(2, HeightRangePlacement.uniform(VerticalAnchor.absolute(-64), VerticalAnchor.absolute(-4))));
+      PlacementUtils.register(context, ORE_DIAMOND_LARGE, oreDiamondLarge, rareOrePlacement(9, HeightRangePlacement.triangle(VerticalAnchor.aboveBottom(-80), VerticalAnchor.aboveBottom(80))));
+      PlacementUtils.register(context, ORE_DIAMOND_BURIED, oreDiamondBuried, commonOrePlacement(4, HeightRangePlacement.triangle(VerticalAnchor.aboveBottom(-80), VerticalAnchor.aboveBottom(80))));
+      PlacementUtils.register(context, ORE_LAPIS, oreLapis, commonOrePlacement(2, HeightRangePlacement.triangle(VerticalAnchor.absolute(-32), VerticalAnchor.absolute(32))));
+      PlacementUtils.register(context, ORE_LAPIS_BURIED, oreLapisBuried, commonOrePlacement(4, HeightRangePlacement.uniform(VerticalAnchor.bottom(), VerticalAnchor.absolute(64))));
+      PlacementUtils.register(context, ORE_INFESTED, oreInfested, commonOrePlacement(14, HeightRangePlacement.uniform(VerticalAnchor.bottom(), VerticalAnchor.absolute(63))));
+      PlacementUtils.register(context, ORE_EMERALD, oreEmerald, commonOrePlacement(100, HeightRangePlacement.triangle(VerticalAnchor.absolute(-16), VerticalAnchor.absolute(480))));
+      PlacementUtils.register(context, ORE_ANCIENT_DEBRIS_LARGE, oreAncientDebrisLarge, InSquarePlacement.spread(), HeightRangePlacement.triangle(VerticalAnchor.absolute(8), VerticalAnchor.absolute(24)), BiomeFilter.biome());
+      PlacementUtils.register(context, ORE_ANCIENT_DEBRIS_SMALL, oreAncientDebrisSmall, InSquarePlacement.spread(), PlacementUtils.RANGE_8_8, BiomeFilter.biome());
+      PlacementUtils.register(context, ORE_COPPER, oreCoppperSmall, commonOrePlacement(16, HeightRangePlacement.triangle(VerticalAnchor.absolute(-16), VerticalAnchor.absolute(112))));
+      PlacementUtils.register(context, ORE_COPPER_LARGE, oreCopperLarge, commonOrePlacement(16, HeightRangePlacement.triangle(VerticalAnchor.absolute(-16), VerticalAnchor.absolute(112))));
+      PlacementUtils.register(context, ORE_CLAY, oreClay, commonOrePlacement(46, PlacementUtils.RANGE_BOTTOM_TO_MAX_TERRAIN_HEIGHT));
    }
 }

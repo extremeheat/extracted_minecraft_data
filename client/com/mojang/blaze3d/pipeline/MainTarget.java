@@ -13,27 +13,27 @@ import org.jspecify.annotations.Nullable;
 public class MainTarget extends RenderTarget {
    public static final int DEFAULT_WIDTH = 854;
    public static final int DEFAULT_HEIGHT = 480;
-   static final Dimension DEFAULT_DIMENSIONS = new Dimension(854, 480);
+   private static final Dimension DEFAULT_DIMENSIONS = new Dimension(854, 480);
 
-   public MainTarget(int var1, int var2) {
+   public MainTarget(final int desiredWidth, final int desiredHeight) {
       super("Main", true);
-      this.createFrameBuffer(var1, var2);
+      this.createFrameBuffer(desiredWidth, desiredHeight);
    }
 
-   private void createFrameBuffer(int var1, int var2) {
-      Dimension var3 = this.allocateAttachments(var1, var2);
+   private void createFrameBuffer(final int desiredWidth, final int desiredHeight) {
+      Dimension allocatedDimensions = this.allocateAttachments(desiredWidth, desiredHeight);
       if (this.colorTexture != null && this.depthTexture != null) {
-         this.width = var3.width;
-         this.height = var3.height;
+         this.width = allocatedDimensions.width;
+         this.height = allocatedDimensions.height;
       } else {
          throw new IllegalStateException("Missing color and/or depth textures");
       }
    }
 
-   private Dimension allocateAttachments(int var1, int var2) {
+   private Dimension allocateAttachments(final int width, final int height) {
       RenderSystem.assertOnRenderThread();
 
-      for(Dimension var4 : MainTarget.Dimension.listWithFallback(var1, var2)) {
+      for(Dimension dimension : MainTarget.Dimension.listWithFallback(width, height)) {
          if (this.colorTexture != null) {
             this.colorTexture.close();
             this.colorTexture = null;
@@ -54,12 +54,12 @@ public class MainTarget extends RenderTarget {
             this.depthTextureView = null;
          }
 
-         this.colorTexture = this.allocateColorAttachment(var4);
-         this.depthTexture = this.allocateDepthAttachment(var4);
+         this.colorTexture = this.allocateColorAttachment(dimension);
+         this.depthTexture = this.allocateDepthAttachment(dimension);
          if (this.colorTexture != null && this.depthTexture != null) {
             this.colorTextureView = RenderSystem.getDevice().createTextureView(this.colorTexture);
             this.depthTextureView = RenderSystem.getDevice().createTextureView(this.depthTexture);
-            return var4;
+            return dimension;
          }
       }
 
@@ -67,44 +67,44 @@ public class MainTarget extends RenderTarget {
       throw new RuntimeException("Unrecoverable GL_OUT_OF_MEMORY (" + var10002 + ", " + (this.depthTexture == null ? "missing depth" : "have depth") + ")");
    }
 
-   private @Nullable GpuTexture allocateColorAttachment(Dimension var1) {
+   private @Nullable GpuTexture allocateColorAttachment(final Dimension dimension) {
       try {
-         return RenderSystem.getDevice().createTexture((Supplier)(() -> this.label + " / Color"), 15, TextureFormat.RGBA8, var1.width, var1.height, 1, 1);
+         return RenderSystem.getDevice().createTexture((Supplier)(() -> this.label + " / Color"), 15, TextureFormat.RGBA8, dimension.width, dimension.height, 1, 1);
       } catch (GpuOutOfMemoryException var3) {
          return null;
       }
    }
 
-   private @Nullable GpuTexture allocateDepthAttachment(Dimension var1) {
+   private @Nullable GpuTexture allocateDepthAttachment(final Dimension dimension) {
       try {
-         return RenderSystem.getDevice().createTexture((Supplier)(() -> this.label + " / Depth"), 15, TextureFormat.DEPTH32, var1.width, var1.height, 1, 1);
+         return RenderSystem.getDevice().createTexture((Supplier)(() -> this.label + " / Depth"), 15, TextureFormat.DEPTH32, dimension.width, dimension.height, 1, 1);
       } catch (GpuOutOfMemoryException var3) {
          return null;
       }
    }
 
-   static class Dimension {
+   private static class Dimension {
       public final int width;
       public final int height;
 
-      Dimension(int var1, int var2) {
+      private Dimension(final int width, final int height) {
          super();
-         this.width = var1;
-         this.height = var2;
+         this.width = width;
+         this.height = height;
       }
 
-      static List<Dimension> listWithFallback(int var0, int var1) {
+      private static List<Dimension> listWithFallback(final int width, final int height) {
          RenderSystem.assertOnRenderThread();
-         int var2 = RenderSystem.getDevice().getMaxTextureSize();
-         return var0 > 0 && var0 <= var2 && var1 > 0 && var1 <= var2 ? ImmutableList.of(new Dimension(var0, var1), MainTarget.DEFAULT_DIMENSIONS) : ImmutableList.of(MainTarget.DEFAULT_DIMENSIONS);
+         int maxTextureSize = RenderSystem.getDevice().getMaxTextureSize();
+         return width > 0 && width <= maxTextureSize && height > 0 && height <= maxTextureSize ? ImmutableList.of(new Dimension(width, height), MainTarget.DEFAULT_DIMENSIONS) : ImmutableList.of(MainTarget.DEFAULT_DIMENSIONS);
       }
 
-      public boolean equals(Object var1) {
-         if (this == var1) {
+      public boolean equals(final Object other) {
+         if (this == other) {
             return true;
-         } else if (var1 != null && this.getClass() == var1.getClass()) {
-            Dimension var2 = (Dimension)var1;
-            return this.width == var2.width && this.height == var2.height;
+         } else if (other != null && this.getClass() == other.getClass()) {
+            Dimension that = (Dimension)other;
+            return this.width == that.width && this.height == that.height;
          } else {
             return false;
          }

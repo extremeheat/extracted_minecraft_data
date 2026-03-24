@@ -11,14 +11,14 @@ public class NbtAccounter {
    private final int maxDepth;
    private int depth;
 
-   public NbtAccounter(long var1, int var3) {
+   public NbtAccounter(final long quota, final int maxDepth) {
       super();
-      this.quota = var1;
-      this.maxDepth = var3;
+      this.quota = quota;
+      this.maxDepth = maxDepth;
    }
 
-   public static NbtAccounter create(long var0) {
-      return new NbtAccounter(var0, 512);
+   public static NbtAccounter create(final long quota) {
+      return new NbtAccounter(quota, 512);
    }
 
    public static NbtAccounter defaultQuota() {
@@ -33,17 +33,17 @@ public class NbtAccounter {
       return new NbtAccounter(9223372036854775807L, 512);
    }
 
-   public void accountBytes(long var1, long var3) {
-      this.accountBytes(var1 * var3);
+   public void accountBytes(final long bytesPerEntry, final long count) {
+      this.accountBytes(bytesPerEntry * count);
    }
 
-   public void accountBytes(long var1) {
-      if (var1 < 0L) {
-         throw new IllegalArgumentException("Tried to account NBT tag with negative size: " + var1);
-      } else if (this.usage + var1 > this.quota) {
-         throw new NbtAccounterException("Tried to read NBT tag that was too big; tried to allocate: " + this.usage + " + " + var1 + " bytes where max allowed: " + this.quota);
+   public void accountBytes(final long size) {
+      if (size < 0L) {
+         throw new IllegalArgumentException("Tried to account NBT tag with negative size: " + size);
+      } else if (this.usage + size > this.quota) {
+         throw new NbtAccounterException("Tried to read NBT tag that was too big; tried to allocate: " + this.usage + " + " + size + " bytes where max allowed: " + this.quota);
       } else {
-         this.usage += var1;
+         this.usage += size;
       }
    }
 

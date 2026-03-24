@@ -20,31 +20,31 @@ public abstract class ClientboundMoveEntityPacket implements Packet<ClientGamePa
    protected final boolean hasRot;
    protected final boolean hasPos;
 
-   protected ClientboundMoveEntityPacket(int var1, short var2, short var3, short var4, byte var5, byte var6, boolean var7, boolean var8, boolean var9) {
+   protected ClientboundMoveEntityPacket(final int entityId, final short xa, final short ya, final short za, final byte yRot, final byte xRot, final boolean onGround, final boolean hasRot, final boolean hasPos) {
       super();
-      this.entityId = var1;
-      this.xa = var2;
-      this.ya = var3;
-      this.za = var4;
-      this.yRot = var5;
-      this.xRot = var6;
-      this.onGround = var7;
-      this.hasRot = var8;
-      this.hasPos = var9;
+      this.entityId = entityId;
+      this.xa = xa;
+      this.ya = ya;
+      this.za = za;
+      this.yRot = yRot;
+      this.xRot = xRot;
+      this.onGround = onGround;
+      this.hasRot = hasRot;
+      this.hasPos = hasPos;
    }
 
    public abstract PacketType<? extends ClientboundMoveEntityPacket> type();
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleMoveEntity(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleMoveEntity(this);
    }
 
    public String toString() {
       return "Entity_" + super.toString();
    }
 
-   public @Nullable Entity getEntity(Level var1) {
-      return var1.getEntity(this.entityId);
+   public @Nullable Entity getEntity(final Level level) {
+      return level.getEntity(this.entityId);
    }
 
    public short getXa() {
@@ -82,29 +82,29 @@ public abstract class ClientboundMoveEntityPacket implements Packet<ClientGamePa
    public static class PosRot extends ClientboundMoveEntityPacket {
       public static final StreamCodec<FriendlyByteBuf, PosRot> STREAM_CODEC = Packet.<FriendlyByteBuf, PosRot>codec(PosRot::write, PosRot::read);
 
-      public PosRot(int var1, short var2, short var3, short var4, byte var5, byte var6, boolean var7) {
-         super(var1, var2, var3, var4, var5, var6, var7, true, true);
+      public PosRot(final int id, final short xa, final short ya, final short za, final byte yRot, final byte xRot, final boolean onGround) {
+         super(id, xa, ya, za, yRot, xRot, onGround, true, true);
       }
 
-      private static PosRot read(FriendlyByteBuf var0) {
-         int var1 = var0.readVarInt();
-         short var2 = var0.readShort();
-         short var3 = var0.readShort();
-         short var4 = var0.readShort();
-         byte var5 = var0.readByte();
-         byte var6 = var0.readByte();
-         boolean var7 = var0.readBoolean();
-         return new PosRot(var1, var2, var3, var4, var5, var6, var7);
+      private static PosRot read(final FriendlyByteBuf input) {
+         int entityId = input.readVarInt();
+         short xa = input.readShort();
+         short ya = input.readShort();
+         short za = input.readShort();
+         byte yRot = input.readByte();
+         byte xRot = input.readByte();
+         boolean onGround = input.readBoolean();
+         return new PosRot(entityId, xa, ya, za, yRot, xRot, onGround);
       }
 
-      private void write(FriendlyByteBuf var1) {
-         var1.writeVarInt(this.entityId);
-         var1.writeShort(this.xa);
-         var1.writeShort(this.ya);
-         var1.writeShort(this.za);
-         var1.writeByte(this.yRot);
-         var1.writeByte(this.xRot);
-         var1.writeBoolean(this.onGround);
+      private void write(final FriendlyByteBuf output) {
+         output.writeVarInt(this.entityId);
+         output.writeShort(this.xa);
+         output.writeShort(this.ya);
+         output.writeShort(this.za);
+         output.writeByte(this.yRot);
+         output.writeByte(this.xRot);
+         output.writeBoolean(this.onGround);
       }
 
       public PacketType<PosRot> type() {
@@ -115,25 +115,25 @@ public abstract class ClientboundMoveEntityPacket implements Packet<ClientGamePa
    public static class Pos extends ClientboundMoveEntityPacket {
       public static final StreamCodec<FriendlyByteBuf, Pos> STREAM_CODEC = Packet.<FriendlyByteBuf, Pos>codec(Pos::write, Pos::read);
 
-      public Pos(int var1, short var2, short var3, short var4, boolean var5) {
-         super(var1, var2, var3, var4, (byte)0, (byte)0, var5, false, true);
+      public Pos(final int id, final short xa, final short ya, final short za, final boolean onGround) {
+         super(id, xa, ya, za, (byte)0, (byte)0, onGround, false, true);
       }
 
-      private static Pos read(FriendlyByteBuf var0) {
-         int var1 = var0.readVarInt();
-         short var2 = var0.readShort();
-         short var3 = var0.readShort();
-         short var4 = var0.readShort();
-         boolean var5 = var0.readBoolean();
-         return new Pos(var1, var2, var3, var4, var5);
+      private static Pos read(final FriendlyByteBuf input) {
+         int entityId = input.readVarInt();
+         short xa = input.readShort();
+         short ya = input.readShort();
+         short za = input.readShort();
+         boolean onGround = input.readBoolean();
+         return new Pos(entityId, xa, ya, za, onGround);
       }
 
-      private void write(FriendlyByteBuf var1) {
-         var1.writeVarInt(this.entityId);
-         var1.writeShort(this.xa);
-         var1.writeShort(this.ya);
-         var1.writeShort(this.za);
-         var1.writeBoolean(this.onGround);
+      private void write(final FriendlyByteBuf output) {
+         output.writeVarInt(this.entityId);
+         output.writeShort(this.xa);
+         output.writeShort(this.ya);
+         output.writeShort(this.za);
+         output.writeBoolean(this.onGround);
       }
 
       public PacketType<Pos> type() {
@@ -144,23 +144,23 @@ public abstract class ClientboundMoveEntityPacket implements Packet<ClientGamePa
    public static class Rot extends ClientboundMoveEntityPacket {
       public static final StreamCodec<FriendlyByteBuf, Rot> STREAM_CODEC = Packet.<FriendlyByteBuf, Rot>codec(Rot::write, Rot::read);
 
-      public Rot(int var1, byte var2, byte var3, boolean var4) {
-         super(var1, (short)0, (short)0, (short)0, var2, var3, var4, true, false);
+      public Rot(final int id, final byte yRot, final byte xRot, final boolean onGround) {
+         super(id, (short)0, (short)0, (short)0, yRot, xRot, onGround, true, false);
       }
 
-      private static Rot read(FriendlyByteBuf var0) {
-         int var1 = var0.readVarInt();
-         byte var2 = var0.readByte();
-         byte var3 = var0.readByte();
-         boolean var4 = var0.readBoolean();
-         return new Rot(var1, var2, var3, var4);
+      private static Rot read(final FriendlyByteBuf input) {
+         int entityId = input.readVarInt();
+         byte yRot = input.readByte();
+         byte xRot = input.readByte();
+         boolean onGround = input.readBoolean();
+         return new Rot(entityId, yRot, xRot, onGround);
       }
 
-      private void write(FriendlyByteBuf var1) {
-         var1.writeVarInt(this.entityId);
-         var1.writeByte(this.yRot);
-         var1.writeByte(this.xRot);
-         var1.writeBoolean(this.onGround);
+      private void write(final FriendlyByteBuf output) {
+         output.writeVarInt(this.entityId);
+         output.writeByte(this.yRot);
+         output.writeByte(this.xRot);
+         output.writeBoolean(this.onGround);
       }
 
       public PacketType<Rot> type() {

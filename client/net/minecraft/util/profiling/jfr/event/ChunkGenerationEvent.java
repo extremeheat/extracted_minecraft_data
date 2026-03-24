@@ -7,7 +7,6 @@ import jdk.jfr.EventType;
 import jdk.jfr.Label;
 import jdk.jfr.Name;
 import jdk.jfr.StackTrace;
-import net.minecraft.obfuscate.DontObfuscate;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
@@ -17,7 +16,6 @@ import net.minecraft.world.level.Level;
 @Category({"Minecraft", "World Generation"})
 @StackTrace(false)
 @Enabled(false)
-@DontObfuscate
 public class ChunkGenerationEvent extends Event {
    public static final String EVENT_NAME = "minecraft.ChunkGeneration";
    public static final EventType TYPE = EventType.getEventType(ChunkGenerationEvent.class);
@@ -40,14 +38,14 @@ public class ChunkGenerationEvent extends Event {
    @Label("Level")
    public final String level;
 
-   public ChunkGenerationEvent(ChunkPos var1, ResourceKey<Level> var2, String var3) {
+   public ChunkGenerationEvent(final ChunkPos pos, final ResourceKey<Level> dimension, final String name) {
       super();
-      this.targetStatus = var3;
-      this.level = var2.identifier().toString();
-      this.chunkPosX = var1.x;
-      this.chunkPosZ = var1.z;
-      this.worldPosX = var1.getMinBlockX();
-      this.worldPosZ = var1.getMinBlockZ();
+      this.targetStatus = name;
+      this.level = dimension.identifier().toString();
+      this.chunkPosX = pos.x();
+      this.chunkPosZ = pos.z();
+      this.worldPosX = pos.getMinBlockX();
+      this.worldPosZ = pos.getMinBlockZ();
    }
 
    public static class Fields {

@@ -2,7 +2,7 @@ package net.minecraft.client.gui.screens;
 
 import java.util.Objects;
 import net.minecraft.client.gui.ActiveTextCollector;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Checkbox;
@@ -23,18 +23,18 @@ public class BackupConfirmScreen extends Screen {
    protected int id;
    private Checkbox eraseCache;
 
-   public BackupConfirmScreen(Runnable var1, Listener var2, Component var3, Component var4, boolean var5) {
-      this(var1, var2, var3, var4, BACKUP_AND_JOIN, var5);
+   public BackupConfirmScreen(final Runnable onCancel, final Listener onProceed, final Component title, final Component description, final boolean promptForCacheErase) {
+      this(onCancel, onProceed, title, description, BACKUP_AND_JOIN, promptForCacheErase);
    }
 
-   public BackupConfirmScreen(Runnable var1, Listener var2, Component var3, Component var4, Component var5, boolean var6) {
-      super(var3);
+   public BackupConfirmScreen(final Runnable onCancel, final Listener onProceed, final Component title, final Component description, final Component confirmation, final boolean promptForCacheErase) {
+      super(title);
       this.message = MultiLineLabel.EMPTY;
-      this.onCancel = var1;
-      this.onProceed = var2;
-      this.description = var4;
-      this.promptForCacheErase = var6;
-      this.confirmation = var5;
+      this.onCancel = onCancel;
+      this.onProceed = onProceed;
+      this.description = description;
+      this.promptForCacheErase = promptForCacheErase;
+      this.confirmation = confirmation;
    }
 
    protected void init() {
@@ -42,42 +42,43 @@ public class BackupConfirmScreen extends Screen {
       this.message = MultiLineLabel.create(this.font, this.description, this.width - 50);
       int var10000 = this.message.getLineCount() + 1;
       Objects.requireNonNull(this.font);
-      int var1 = var10000 * 9;
-      this.eraseCache = Checkbox.builder(Component.translatable("selectWorld.backupEraseCache").withColor(-2039584), this.font).pos(this.width / 2 - 155 + 80, 76 + var1).build();
+      int textSize = var10000 * 9;
+      this.eraseCache = Checkbox.builder(Component.translatable("selectWorld.backupEraseCache").withColor(-2039584), this.font).pos(this.width / 2 - 155 + 80, 76 + textSize).build();
       if (this.promptForCacheErase) {
          this.addRenderableWidget(this.eraseCache);
       }
 
-      this.addRenderableWidget(Button.builder(this.confirmation, (var1x) -> this.onProceed.proceed(true, this.eraseCache.selected())).bounds(this.width / 2 - 155, 100 + var1, 150, 20).build());
-      this.addRenderableWidget(Button.builder(SKIP_AND_JOIN, (var1x) -> this.onProceed.proceed(false, this.eraseCache.selected())).bounds(this.width / 2 - 155 + 160, 100 + var1, 150, 20).build());
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> this.onCancel.run()).bounds(this.width / 2 - 155 + 80, 124 + var1, 150, 20).build());
+      this.addRenderableWidget(Button.builder(this.confirmation, (button) -> this.onProceed.proceed(true, this.eraseCache.selected())).bounds(this.width / 2 - 155, 100 + textSize, 150, 20).build());
+      Button skipAndJoinButton = Button.builder(SKIP_AND_JOIN, (button) -> this.onProceed.proceed(false, this.eraseCache.selected())).bounds(this.width / 2 - 155 + 160, 100 + textSize, 150, 20).build();
+      this.addRenderableWidget(skipAndJoinButton);
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (button) -> this.onCancel.run()).bounds(this.width / 2 - 155 + 80, 124 + textSize, 150, 20).build());
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      ActiveTextCollector var5 = var1.textRenderer();
-      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 50, -1);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
+      ActiveTextCollector textRenderer = graphics.textRenderer();
+      graphics.centeredText(this.font, (Component)this.title, this.width / 2, 50, -1);
       MultiLineLabel var10000 = this.message;
       TextAlignment var10001 = TextAlignment.CENTER;
       int var10002 = this.width / 2;
       Objects.requireNonNull(this.font);
-      var10000.visitLines(var10001, var10002, 70, 9, var5);
+      var10000.visitLines(var10001, var10002, 70, 9, textRenderer);
    }
 
    public boolean shouldCloseOnEsc() {
       return false;
    }
 
-   public boolean keyPressed(KeyEvent var1) {
-      if (var1.key() == 256) {
+   public boolean keyPressed(final KeyEvent event) {
+      if (event.isEscape()) {
          this.onCancel.run();
          return true;
       } else {
-         return super.keyPressed(var1);
+         return super.keyPressed(event);
       }
    }
 
    public interface Listener {
-      void proceed(boolean var1, boolean var2);
+      void proceed(final boolean backup, final boolean eraseCache);
    }
 }

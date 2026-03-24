@@ -12,41 +12,41 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.ClickEvent;
 
 public interface Action {
-   Codec<Action> CODEC = BuiltInRegistries.DIALOG_ACTION_TYPE.byNameCodec().dispatch(Action::codec, (var0) -> var0);
+   Codec<Action> CODEC = BuiltInRegistries.DIALOG_ACTION_TYPE.byNameCodec().dispatch(Action::codec, (c) -> c);
 
    MapCodec<? extends Action> codec();
 
-   Optional<ClickEvent> createAction(Map<String, ValueGetter> var1);
+   Optional<ClickEvent> createAction(Map<String, ValueGetter> parameters);
 
    public interface ValueGetter {
       String asTemplateSubstitution();
 
       Tag asTag();
 
-      static Map<String, String> getAsTemplateSubstitutions(Map<String, ValueGetter> var0) {
-         return Maps.transformValues(var0, ValueGetter::asTemplateSubstitution);
+      static Map<String, String> getAsTemplateSubstitutions(final Map<String, ValueGetter> parameters) {
+         return Maps.transformValues(parameters, ValueGetter::asTemplateSubstitution);
       }
 
-      static ValueGetter of(final String var0) {
+      static ValueGetter of(final String value) {
          return new ValueGetter() {
             public String asTemplateSubstitution() {
-               return var0;
+               return value;
             }
 
             public Tag asTag() {
-               return StringTag.valueOf(var0);
+               return StringTag.valueOf(value);
             }
          };
       }
 
-      static ValueGetter of(final Supplier<String> var0) {
+      static ValueGetter of(final Supplier<String> value) {
          return new ValueGetter() {
             public String asTemplateSubstitution() {
-               return (String)var0.get();
+               return (String)value.get();
             }
 
             public Tag asTag() {
-               return StringTag.valueOf((String)var0.get());
+               return StringTag.valueOf((String)value.get());
             }
          };
       }

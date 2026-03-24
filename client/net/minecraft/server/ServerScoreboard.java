@@ -2,7 +2,6 @@ package net.minecraft.server;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -30,80 +29,80 @@ public class ServerScoreboard extends Scoreboard {
    private final Set<Objective> trackedObjectives = Sets.newHashSet();
    private boolean dirty;
 
-   public ServerScoreboard(MinecraftServer var1) {
+   public ServerScoreboard(final MinecraftServer server) {
       super();
-      this.server = var1;
+      this.server = server;
    }
 
-   public void load(ScoreboardSaveData.Packed var1) {
-      var1.objectives().forEach((var1x) -> this.loadObjective(var1x));
-      var1.scores().forEach((var1x) -> this.loadPlayerScore(var1x));
-      var1.displaySlots().forEach((var1x, var2) -> {
-         Objective var3 = this.getObjective(var2);
-         this.setDisplayObjective(var1x, var3);
+   public void load(final ScoreboardSaveData.Packed data) {
+      data.objectives().forEach((x$0) -> this.loadObjective(x$0));
+      data.scores().forEach((x$0) -> this.loadPlayerScore(x$0));
+      data.displaySlots().forEach((slot, name) -> {
+         Objective objective = this.getObjective(name);
+         this.setDisplayObjective(slot, objective);
       });
-      var1.teams().forEach((var1x) -> this.loadPlayerTeam(var1x));
+      data.teams().forEach((x$0) -> this.loadPlayerTeam(x$0));
    }
 
    private ScoreboardSaveData.Packed store() {
       return new ScoreboardSaveData.Packed(this.packObjectives(), this.packPlayerScores(), this.packDisplaySlots(), this.packPlayerTeams());
    }
 
-   protected void onScoreChanged(ScoreHolder var1, Objective var2, Score var3) {
-      super.onScoreChanged(var1, var2, var3);
-      if (this.trackedObjectives.contains(var2)) {
-         this.server.getPlayerList().broadcastAll(new ClientboundSetScorePacket(var1.getScoreboardName(), var2.getName(), var3.value(), Optional.ofNullable(var3.display()), Optional.ofNullable(var3.numberFormat())));
+   protected void onScoreChanged(final ScoreHolder owner, final Objective objective, final Score score) {
+      super.onScoreChanged(owner, objective, score);
+      if (this.trackedObjectives.contains(objective)) {
+         this.server.getPlayerList().broadcastAll(new ClientboundSetScorePacket(owner.getScoreboardName(), objective.getName(), score.value(), Optional.ofNullable(score.display()), Optional.ofNullable(score.numberFormat())));
       }
 
       this.setDirty();
    }
 
-   protected void onScoreLockChanged(ScoreHolder var1, Objective var2) {
-      super.onScoreLockChanged(var1, var2);
+   protected void onScoreLockChanged(final ScoreHolder owner, final Objective objective) {
+      super.onScoreLockChanged(owner, objective);
       this.setDirty();
    }
 
-   public void onPlayerRemoved(ScoreHolder var1) {
-      super.onPlayerRemoved(var1);
-      this.server.getPlayerList().broadcastAll(new ClientboundResetScorePacket(var1.getScoreboardName(), (String)null));
+   public void onPlayerRemoved(final ScoreHolder player) {
+      super.onPlayerRemoved(player);
+      this.server.getPlayerList().broadcastAll(new ClientboundResetScorePacket(player.getScoreboardName(), (String)null));
       this.setDirty();
    }
 
-   public void onPlayerScoreRemoved(ScoreHolder var1, Objective var2) {
-      super.onPlayerScoreRemoved(var1, var2);
-      if (this.trackedObjectives.contains(var2)) {
-         this.server.getPlayerList().broadcastAll(new ClientboundResetScorePacket(var1.getScoreboardName(), var2.getName()));
+   public void onPlayerScoreRemoved(final ScoreHolder player, final Objective objective) {
+      super.onPlayerScoreRemoved(player, objective);
+      if (this.trackedObjectives.contains(objective)) {
+         this.server.getPlayerList().broadcastAll(new ClientboundResetScorePacket(player.getScoreboardName(), objective.getName()));
       }
 
       this.setDirty();
    }
 
-   public void setDisplayObjective(DisplaySlot var1, @Nullable Objective var2) {
-      Objective var3 = this.getDisplayObjective(var1);
-      super.setDisplayObjective(var1, var2);
-      if (var3 != var2 && var3 != null) {
-         if (this.getObjectiveDisplaySlotCount(var3) > 0) {
-            this.server.getPlayerList().broadcastAll(new ClientboundSetDisplayObjectivePacket(var1, var2));
+   public void setDisplayObjective(final DisplaySlot slot, final @Nullable Objective objective) {
+      Objective old = this.getDisplayObjective(slot);
+      super.setDisplayObjective(slot, objective);
+      if (old != objective && old != null) {
+         if (this.getObjectiveDisplaySlotCount(old) > 0) {
+            this.server.getPlayerList().broadcastAll(new ClientboundSetDisplayObjectivePacket(slot, objective));
          } else {
-            this.stopTrackingObjective(var3);
+            this.stopTrackingObjective(old);
          }
       }
 
-      if (var2 != null) {
-         if (this.trackedObjectives.contains(var2)) {
-            this.server.getPlayerList().broadcastAll(new ClientboundSetDisplayObjectivePacket(var1, var2));
+      if (objective != null) {
+         if (this.trackedObjectives.contains(objective)) {
+            this.server.getPlayerList().broadcastAll(new ClientboundSetDisplayObjectivePacket(slot, objective));
          } else {
-            this.startTrackingObjective(var2);
+            this.startTrackingObjective(objective);
          }
       }
 
       this.setDirty();
    }
 
-   public boolean addPlayerToTeam(String var1, PlayerTeam var2) {
-      if (super.addPlayerToTeam(var1, var2)) {
-         this.server.getPlayerList().broadcastAll(ClientboundSetPlayerTeamPacket.createPlayerPacket(var2, var1, ClientboundSetPlayerTeamPacket.Action.ADD));
-         this.updatePlayerWaypoint(var1);
+   public boolean addPlayerToTeam(final String player, final PlayerTeam team) {
+      if (super.addPlayerToTeam(player, team)) {
+         this.server.getPlayerList().broadcastAll(ClientboundSetPlayerTeamPacket.createPlayerPacket(team, player, ClientboundSetPlayerTeamPacket.Action.ADD));
+         this.updatePlayerWaypoint(player);
          this.setDirty();
          return true;
       } else {
@@ -111,53 +110,53 @@ public class ServerScoreboard extends Scoreboard {
       }
    }
 
-   public void removePlayerFromTeam(String var1, PlayerTeam var2) {
-      super.removePlayerFromTeam(var1, var2);
-      this.server.getPlayerList().broadcastAll(ClientboundSetPlayerTeamPacket.createPlayerPacket(var2, var1, ClientboundSetPlayerTeamPacket.Action.REMOVE));
-      this.updatePlayerWaypoint(var1);
+   public void removePlayerFromTeam(final String player, final PlayerTeam team) {
+      super.removePlayerFromTeam(player, team);
+      this.server.getPlayerList().broadcastAll(ClientboundSetPlayerTeamPacket.createPlayerPacket(team, player, ClientboundSetPlayerTeamPacket.Action.REMOVE));
+      this.updatePlayerWaypoint(player);
       this.setDirty();
    }
 
-   public void onObjectiveAdded(Objective var1) {
-      super.onObjectiveAdded(var1);
+   public void onObjectiveAdded(final Objective objective) {
+      super.onObjectiveAdded(objective);
       this.setDirty();
    }
 
-   public void onObjectiveChanged(Objective var1) {
-      super.onObjectiveChanged(var1);
-      if (this.trackedObjectives.contains(var1)) {
-         this.server.getPlayerList().broadcastAll(new ClientboundSetObjectivePacket(var1, 2));
+   public void onObjectiveChanged(final Objective objective) {
+      super.onObjectiveChanged(objective);
+      if (this.trackedObjectives.contains(objective)) {
+         this.server.getPlayerList().broadcastAll(new ClientboundSetObjectivePacket(objective, 2));
       }
 
       this.setDirty();
    }
 
-   public void onObjectiveRemoved(Objective var1) {
-      super.onObjectiveRemoved(var1);
-      if (this.trackedObjectives.contains(var1)) {
-         this.stopTrackingObjective(var1);
+   public void onObjectiveRemoved(final Objective objective) {
+      super.onObjectiveRemoved(objective);
+      if (this.trackedObjectives.contains(objective)) {
+         this.stopTrackingObjective(objective);
       }
 
       this.setDirty();
    }
 
-   public void onTeamAdded(PlayerTeam var1) {
-      super.onTeamAdded(var1);
-      this.server.getPlayerList().broadcastAll(ClientboundSetPlayerTeamPacket.createAddOrModifyPacket(var1, true));
+   public void onTeamAdded(final PlayerTeam team) {
+      super.onTeamAdded(team);
+      this.server.getPlayerList().broadcastAll(ClientboundSetPlayerTeamPacket.createAddOrModifyPacket(team, true));
       this.setDirty();
    }
 
-   public void onTeamChanged(PlayerTeam var1) {
-      super.onTeamChanged(var1);
-      this.server.getPlayerList().broadcastAll(ClientboundSetPlayerTeamPacket.createAddOrModifyPacket(var1, false));
-      this.updateTeamWaypoints(var1);
+   public void onTeamChanged(final PlayerTeam team) {
+      super.onTeamChanged(team);
+      this.server.getPlayerList().broadcastAll(ClientboundSetPlayerTeamPacket.createAddOrModifyPacket(team, false));
+      this.updateTeamWaypoints(team);
       this.setDirty();
    }
 
-   public void onTeamRemoved(PlayerTeam var1) {
-      super.onTeamRemoved(var1);
-      this.server.getPlayerList().broadcastAll(ClientboundSetPlayerTeamPacket.createRemovePacket(var1));
-      this.updateTeamWaypoints(var1);
+   public void onTeamRemoved(final PlayerTeam team) {
+      super.onTeamRemoved(team);
+      this.server.getPlayerList().broadcastAll(ClientboundSetPlayerTeamPacket.createRemovePacket(team));
+      this.updateTeamWaypoints(team);
       this.setDirty();
    }
 
@@ -165,91 +164,91 @@ public class ServerScoreboard extends Scoreboard {
       this.dirty = true;
    }
 
-   public void storeToSaveDataIfDirty(ScoreboardSaveData var1) {
+   public void storeToSaveDataIfDirty(final ScoreboardSaveData saveData) {
       if (this.dirty) {
          this.dirty = false;
-         var1.setData(this.store());
+         saveData.setData(this.store());
       }
 
    }
 
-   public List<Packet<?>> getStartTrackingPackets(Objective var1) {
-      ArrayList var2 = Lists.newArrayList();
-      var2.add(new ClientboundSetObjectivePacket(var1, 0));
+   public List<Packet<?>> getStartTrackingPackets(final Objective objective) {
+      List<Packet<?>> packets = Lists.newArrayList();
+      packets.add(new ClientboundSetObjectivePacket(objective, 0));
 
-      for(DisplaySlot var6 : DisplaySlot.values()) {
-         if (this.getDisplayObjective(var6) == var1) {
-            var2.add(new ClientboundSetDisplayObjectivePacket(var6, var1));
+      for(DisplaySlot slot : DisplaySlot.values()) {
+         if (this.getDisplayObjective(slot) == objective) {
+            packets.add(new ClientboundSetDisplayObjectivePacket(slot, objective));
          }
       }
 
-      for(PlayerScoreEntry var8 : this.listPlayerScores(var1)) {
-         var2.add(new ClientboundSetScorePacket(var8.owner(), var1.getName(), var8.value(), Optional.ofNullable(var8.display()), Optional.ofNullable(var8.numberFormatOverride())));
+      for(PlayerScoreEntry score : this.listPlayerScores(objective)) {
+         packets.add(new ClientboundSetScorePacket(score.owner(), objective.getName(), score.value(), Optional.ofNullable(score.display()), Optional.ofNullable(score.numberFormatOverride())));
       }
 
-      return var2;
+      return packets;
    }
 
-   public void startTrackingObjective(Objective var1) {
-      List var2 = this.getStartTrackingPackets(var1);
+   public void startTrackingObjective(final Objective objective) {
+      List<Packet<?>> packets = this.getStartTrackingPackets(objective);
 
-      for(ServerPlayer var4 : this.server.getPlayerList().getPlayers()) {
-         for(Packet var6 : var2) {
-            var4.connection.send(var6);
+      for(ServerPlayer player : this.server.getPlayerList().getPlayers()) {
+         for(Packet<?> packet : packets) {
+            player.connection.send(packet);
          }
       }
 
-      this.trackedObjectives.add(var1);
+      this.trackedObjectives.add(objective);
    }
 
-   public List<Packet<?>> getStopTrackingPackets(Objective var1) {
-      ArrayList var2 = Lists.newArrayList();
-      var2.add(new ClientboundSetObjectivePacket(var1, 1));
+   public List<Packet<?>> getStopTrackingPackets(final Objective objective) {
+      List<Packet<?>> packets = Lists.newArrayList();
+      packets.add(new ClientboundSetObjectivePacket(objective, 1));
 
-      for(DisplaySlot var6 : DisplaySlot.values()) {
-         if (this.getDisplayObjective(var6) == var1) {
-            var2.add(new ClientboundSetDisplayObjectivePacket(var6, var1));
+      for(DisplaySlot slot : DisplaySlot.values()) {
+         if (this.getDisplayObjective(slot) == objective) {
+            packets.add(new ClientboundSetDisplayObjectivePacket(slot, objective));
          }
       }
 
-      return var2;
+      return packets;
    }
 
-   public void stopTrackingObjective(Objective var1) {
-      List var2 = this.getStopTrackingPackets(var1);
+   public void stopTrackingObjective(final Objective objective) {
+      List<Packet<?>> packets = this.getStopTrackingPackets(objective);
 
-      for(ServerPlayer var4 : this.server.getPlayerList().getPlayers()) {
-         for(Packet var6 : var2) {
-            var4.connection.send(var6);
+      for(ServerPlayer player : this.server.getPlayerList().getPlayers()) {
+         for(Packet<?> packet : packets) {
+            player.connection.send(packet);
          }
       }
 
-      this.trackedObjectives.remove(var1);
+      this.trackedObjectives.remove(objective);
    }
 
-   public int getObjectiveDisplaySlotCount(Objective var1) {
-      int var2 = 0;
+   public int getObjectiveDisplaySlotCount(final Objective objective) {
+      int count = 0;
 
-      for(DisplaySlot var6 : DisplaySlot.values()) {
-         if (this.getDisplayObjective(var6) == var1) {
-            ++var2;
+      for(DisplaySlot slot : DisplaySlot.values()) {
+         if (this.getDisplayObjective(slot) == objective) {
+            ++count;
          }
       }
 
-      return var2;
+      return count;
    }
 
-   private void updatePlayerWaypoint(String var1) {
-      ServerPlayer var2 = this.server.getPlayerList().getPlayerByName(var1);
-      if (var2 != null) {
-         var2.level().getWaypointManager().remakeConnections(var2);
+   private void updatePlayerWaypoint(final String player) {
+      ServerPlayer serverPlayer = this.server.getPlayerList().getPlayerByName(player);
+      if (serverPlayer != null) {
+         serverPlayer.level().getWaypointManager().remakeConnections(serverPlayer);
       }
 
    }
 
-   private void updateTeamWaypoints(PlayerTeam var1) {
-      for(ServerLevel var3 : this.server.getAllLevels()) {
-         var1.getPlayers().stream().map((var1x) -> this.server.getPlayerList().getPlayerByName(var1x)).filter(Objects::nonNull).forEach((var1x) -> var3.getWaypointManager().remakeConnections(var1x));
+   private void updateTeamWaypoints(final PlayerTeam team) {
+      for(ServerLevel level : this.server.getAllLevels()) {
+         team.getPlayers().stream().map((name) -> this.server.getPlayerList().getPlayerByName(name)).filter(Objects::nonNull).forEach((player) -> level.getWaypointManager().remakeConnections(player));
       }
 
    }

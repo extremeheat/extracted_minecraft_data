@@ -22,38 +22,38 @@ import net.minecraft.world.level.gameevent.GameEvent;
 public class ShovelItem extends Item {
    protected static final Map<Block, BlockState> FLATTENABLES;
 
-   public ShovelItem(ToolMaterial var1, float var2, float var3, Item.Properties var4) {
-      super(var4.shovel(var1, var2, var3));
+   public ShovelItem(final ToolMaterial material, final float attackDamageBaseline, final float attackSpeedBaseline, final Item.Properties properties) {
+      super(properties.shovel(material, attackDamageBaseline, attackSpeedBaseline));
    }
 
-   public InteractionResult useOn(UseOnContext var1) {
-      Level var2 = var1.getLevel();
-      BlockPos var3 = var1.getClickedPos();
-      BlockState var4 = var2.getBlockState(var3);
-      if (var1.getClickedFace() == Direction.DOWN) {
+   public InteractionResult useOn(final UseOnContext context) {
+      Level level = context.getLevel();
+      BlockPos pos = context.getClickedPos();
+      BlockState blockState = level.getBlockState(pos);
+      if (context.getClickedFace() == Direction.DOWN) {
          return InteractionResult.PASS;
       } else {
-         Player var5 = var1.getPlayer();
-         BlockState var6 = (BlockState)FLATTENABLES.get(var4.getBlock());
-         BlockState var7 = null;
-         if (var6 != null && var2.getBlockState(var3.above()).isAir()) {
-            var2.playSound(var5, (BlockPos)var3, SoundEvents.SHOVEL_FLATTEN, SoundSource.BLOCKS, 1.0F, 1.0F);
-            var7 = var6;
-         } else if (var4.getBlock() instanceof CampfireBlock && (Boolean)var4.getValue(CampfireBlock.LIT)) {
-            if (!var2.isClientSide()) {
-               var2.levelEvent((Entity)null, 1009, var3, 0);
+         Player player = context.getPlayer();
+         BlockState newState = (BlockState)FLATTENABLES.get(blockState.getBlock());
+         BlockState updatedState = null;
+         if (newState != null && level.getBlockState(pos.above()).isAir()) {
+            level.playSound(player, (BlockPos)pos, SoundEvents.SHOVEL_FLATTEN, SoundSource.BLOCKS, 1.0F, 1.0F);
+            updatedState = newState;
+         } else if (blockState.getBlock() instanceof CampfireBlock && (Boolean)blockState.getValue(CampfireBlock.LIT)) {
+            if (!level.isClientSide()) {
+               level.levelEvent((Entity)null, 1009, pos, 0);
             }
 
-            CampfireBlock.dowse(var1.getPlayer(), var2, var3, var4);
-            var7 = (BlockState)var4.setValue(CampfireBlock.LIT, false);
+            CampfireBlock.dowse(context.getPlayer(), level, pos, blockState);
+            updatedState = (BlockState)blockState.setValue(CampfireBlock.LIT, false);
          }
 
-         if (var7 != null) {
-            if (!var2.isClientSide()) {
-               var2.setBlock(var3, var7, 11);
-               var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var5, var7));
-               if (var5 != null) {
-                  var1.getItemInHand().hurtAndBreak(1, var5, (EquipmentSlot)var1.getHand().asEquipmentSlot());
+         if (updatedState != null) {
+            if (!level.isClientSide()) {
+               level.setBlock(pos, updatedState, 11);
+               level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(player, updatedState));
+               if (player != null) {
+                  context.getItemInHand().hurtAndBreak(1, player, (EquipmentSlot)context.getHand().asEquipmentSlot());
                }
             }
 

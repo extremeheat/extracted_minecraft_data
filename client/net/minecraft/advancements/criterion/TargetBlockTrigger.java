@@ -8,6 +8,8 @@ import net.minecraft.advancements.Criterion;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.Validatable;
+import net.minecraft.world.level.storage.loot.ValidationContextSource;
 import net.minecraft.world.phys.Vec3;
 
 public class TargetBlockTrigger extends SimpleCriterionTrigger<TriggerInstance> {
@@ -19,36 +21,33 @@ public class TargetBlockTrigger extends SimpleCriterionTrigger<TriggerInstance> 
       return TargetBlockTrigger.TriggerInstance.CODEC;
    }
 
-   public void trigger(ServerPlayer var1, Entity var2, Vec3 var3, int var4) {
-      LootContext var5 = EntityPredicate.createContext(var1, var2);
-      this.trigger(var1, (var3x) -> var3x.matches(var5, var3, var4));
+   public void trigger(final ServerPlayer player, final Entity projectile, final Vec3 hitPosition, final int signalStrength) {
+      LootContext projectileContext = EntityPredicate.createContext(player, projectile);
+      this.trigger(player, (t) -> t.matches(projectileContext, hitPosition, signalStrength));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, MinMaxBounds.Ints signalStrength, Optional<ContextAwarePredicate> projectile) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), MinMaxBounds.Ints.CODEC.optionalFieldOf("signal_strength", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::signalStrength), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("projectile").forGetter(TriggerInstance::projectile)).apply(var0, TriggerInstance::new));
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((i) -> i.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), MinMaxBounds.Ints.CODEC.optionalFieldOf("signal_strength", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::signalStrength), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("projectile").forGetter(TriggerInstance::projectile)).apply(i, TriggerInstance::new));
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, MinMaxBounds.Ints var2, Optional<ContextAwarePredicate> var3) {
+      public TriggerInstance {
          super();
-         this.player = var1;
-         this.signalStrength = var2;
-         this.projectile = var3;
       }
 
-      public static Criterion<TriggerInstance> targetHit(MinMaxBounds.Ints var0, Optional<ContextAwarePredicate> var1) {
-         return CriteriaTriggers.TARGET_BLOCK_HIT.createCriterion(new TriggerInstance(Optional.empty(), var0, var1));
+      public static Criterion<TriggerInstance> targetHit(final MinMaxBounds.Ints redstoneSignalStrength, final Optional<ContextAwarePredicate> projectile) {
+         return CriteriaTriggers.TARGET_BLOCK_HIT.createCriterion(new TriggerInstance(Optional.empty(), redstoneSignalStrength, projectile));
       }
 
-      public boolean matches(LootContext var1, Vec3 var2, int var3) {
-         if (!this.signalStrength.matches(var3)) {
+      public boolean matches(final LootContext projectile, final Vec3 hitPosition, final int signalStrength) {
+         if (!this.signalStrength.matches(signalStrength)) {
             return false;
          } else {
-            return !this.projectile.isPresent() || ((ContextAwarePredicate)this.projectile.get()).matches(var1);
+            return !this.projectile.isPresent() || ((ContextAwarePredicate)this.projectile.get()).matches(projectile);
          }
       }
 
-      public void validate(CriterionValidator var1) {
-         SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
-         var1.validateEntity(this.projectile, "projectile");
+      public void validate(final ValidationContextSource validator) {
+         SimpleCriterionTrigger.SimpleInstance.super.validate(validator);
+         Validatable.validate(validator.entityContext(), "projectile", this.projectile);
       }
    }
 }

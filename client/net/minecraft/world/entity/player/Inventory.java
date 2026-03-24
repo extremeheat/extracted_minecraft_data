@@ -43,22 +43,22 @@ public class Inventory implements Container, Nameable {
    private final EntityEquipment equipment;
    private int timesChanged;
 
-   public Inventory(Player var1, EntityEquipment var2) {
+   public Inventory(final Player player, final EntityEquipment equipment) {
       super();
       this.items = NonNullList.<ItemStack>withSize(36, ItemStack.EMPTY);
-      this.player = var1;
-      this.equipment = var2;
+      this.player = player;
+      this.equipment = equipment;
    }
 
    public int getSelectedSlot() {
       return this.selected;
    }
 
-   public void setSelectedSlot(int var1) {
-      if (!isHotbarSlot(var1)) {
+   public void setSelectedSlot(final int selected) {
+      if (!isHotbarSlot(selected)) {
          throw new IllegalArgumentException("Invalid selected slot");
       } else {
-         this.selected = var1;
+         this.selected = selected;
       }
    }
 
@@ -66,8 +66,8 @@ public class Inventory implements Container, Nameable {
       return this.items.get(this.selected);
    }
 
-   public ItemStack setSelectedItem(ItemStack var1) {
-      return this.items.set(this.selected, var1);
+   public ItemStack setSelectedItem(final ItemStack itemStack) {
+      return this.items.set(this.selected, itemStack);
    }
 
    public static int getSelectionSize() {
@@ -78,62 +78,62 @@ public class Inventory implements Container, Nameable {
       return this.items;
    }
 
-   private boolean hasRemainingSpaceForItem(ItemStack var1, ItemStack var2) {
-      return !var1.isEmpty() && ItemStack.isSameItemSameComponents(var1, var2) && var1.isStackable() && var1.getCount() < this.getMaxStackSize(var1);
+   private boolean hasRemainingSpaceForItem(final ItemStack slotItemStack, final ItemStack newItemStack) {
+      return !slotItemStack.isEmpty() && ItemStack.isSameItemSameComponents(slotItemStack, newItemStack) && slotItemStack.isStackable() && slotItemStack.getCount() < this.getMaxStackSize(slotItemStack);
    }
 
    public int getFreeSlot() {
-      for(int var1 = 0; var1 < this.items.size(); ++var1) {
-         if (((ItemStack)this.items.get(var1)).isEmpty()) {
-            return var1;
+      for(int i = 0; i < this.items.size(); ++i) {
+         if (((ItemStack)this.items.get(i)).isEmpty()) {
+            return i;
          }
       }
 
       return -1;
    }
 
-   public void addAndPickItem(ItemStack var1) {
+   public void addAndPickItem(final ItemStack itemStack) {
       this.setSelectedSlot(this.getSuitableHotbarSlot());
       if (!((ItemStack)this.items.get(this.selected)).isEmpty()) {
-         int var2 = this.getFreeSlot();
-         if (var2 != -1) {
-            this.items.set(var2, this.items.get(this.selected));
+         int freeSlot = this.getFreeSlot();
+         if (freeSlot != -1) {
+            this.items.set(freeSlot, this.items.get(this.selected));
          }
       }
 
-      this.items.set(this.selected, var1);
+      this.items.set(this.selected, itemStack);
    }
 
-   public void pickSlot(int var1) {
+   public void pickSlot(final int slot) {
       this.setSelectedSlot(this.getSuitableHotbarSlot());
-      ItemStack var2 = this.items.get(this.selected);
-      this.items.set(this.selected, this.items.get(var1));
-      this.items.set(var1, var2);
+      ItemStack tmp = this.items.get(this.selected);
+      this.items.set(this.selected, this.items.get(slot));
+      this.items.set(slot, tmp);
    }
 
-   public static boolean isHotbarSlot(int var0) {
-      return var0 >= 0 && var0 < 9;
+   public static boolean isHotbarSlot(final int slot) {
+      return slot >= 0 && slot < 9;
    }
 
-   public int findSlotMatchingItem(ItemStack var1) {
-      for(int var2 = 0; var2 < this.items.size(); ++var2) {
-         if (!((ItemStack)this.items.get(var2)).isEmpty() && ItemStack.isSameItemSameComponents(var1, this.items.get(var2))) {
-            return var2;
+   public int findSlotMatchingItem(final ItemStack itemStack) {
+      for(int i = 0; i < this.items.size(); ++i) {
+         if (!((ItemStack)this.items.get(i)).isEmpty() && ItemStack.isSameItemSameComponents(itemStack, this.items.get(i))) {
+            return i;
          }
       }
 
       return -1;
    }
 
-   public static boolean isUsableForCrafting(ItemStack var0) {
-      return !var0.isDamaged() && !var0.isEnchanted() && !var0.has(DataComponents.CUSTOM_NAME);
+   public static boolean isUsableForCrafting(final ItemStack item) {
+      return !item.isDamaged() && !item.isEnchanted() && !item.has(DataComponents.CUSTOM_NAME);
    }
 
-   public int findSlotMatchingCraftingIngredient(Holder<Item> var1, ItemStack var2) {
-      for(int var3 = 0; var3 < this.items.size(); ++var3) {
-         ItemStack var4 = this.items.get(var3);
-         if (!var4.isEmpty() && var4.is(var1) && isUsableForCrafting(var4) && (var2.isEmpty() || ItemStack.isSameItemSameComponents(var2, var4))) {
-            return var3;
+   public int findSlotMatchingCraftingIngredient(final Holder<Item> item, final ItemStack existingItem) {
+      for(int i = 0; i < this.items.size(); ++i) {
+         ItemStack inventoryItemStack = this.items.get(i);
+         if (!inventoryItemStack.isEmpty() && inventoryItemStack.is(item) && isUsableForCrafting(inventoryItemStack) && (existingItem.isEmpty() || ItemStack.isSameItemSameComponents(existingItem, inventoryItemStack))) {
+            return i;
          }
       }
 
@@ -141,75 +141,75 @@ public class Inventory implements Container, Nameable {
    }
 
    public int getSuitableHotbarSlot() {
-      for(int var1 = 0; var1 < 9; ++var1) {
-         int var2 = (this.selected + var1) % 9;
-         if (((ItemStack)this.items.get(var2)).isEmpty()) {
-            return var2;
+      for(int slot = 0; slot < 9; ++slot) {
+         int index = (this.selected + slot) % 9;
+         if (((ItemStack)this.items.get(index)).isEmpty()) {
+            return index;
          }
       }
 
-      for(int var3 = 0; var3 < 9; ++var3) {
-         int var4 = (this.selected + var3) % 9;
-         if (!((ItemStack)this.items.get(var4)).isEnchanted()) {
-            return var4;
+      for(int slot = 0; slot < 9; ++slot) {
+         int index = (this.selected + slot) % 9;
+         if (!((ItemStack)this.items.get(index)).isEnchanted()) {
+            return index;
          }
       }
 
       return this.selected;
    }
 
-   public int clearOrCountMatchingItems(Predicate<ItemStack> var1, int var2, Container var3) {
-      int var4 = 0;
-      boolean var5 = var2 == 0;
-      var4 += ContainerHelper.clearOrCountMatchingItems((Container)this, var1, var2 - var4, var5);
-      var4 += ContainerHelper.clearOrCountMatchingItems(var3, var1, var2 - var4, var5);
-      ItemStack var6 = this.player.containerMenu.getCarried();
-      var4 += ContainerHelper.clearOrCountMatchingItems(var6, var1, var2 - var4, var5);
-      if (var6.isEmpty()) {
+   public int clearOrCountMatchingItems(final Predicate<ItemStack> predicate, final int amountToRemove, final Container craftSlots) {
+      int count = 0;
+      boolean countingOnly = amountToRemove == 0;
+      count += ContainerHelper.clearOrCountMatchingItems((Container)this, predicate, amountToRemove - count, countingOnly);
+      count += ContainerHelper.clearOrCountMatchingItems(craftSlots, predicate, amountToRemove - count, countingOnly);
+      ItemStack carried = this.player.containerMenu.getCarried();
+      count += ContainerHelper.clearOrCountMatchingItems(carried, predicate, amountToRemove - count, countingOnly);
+      if (carried.isEmpty()) {
          this.player.containerMenu.setCarried(ItemStack.EMPTY);
       }
 
-      return var4;
+      return count;
    }
 
-   private int addResource(ItemStack var1) {
-      int var2 = this.getSlotWithRemainingSpace(var1);
-      if (var2 == -1) {
-         var2 = this.getFreeSlot();
+   private int addResource(final ItemStack itemStack) {
+      int slot = this.getSlotWithRemainingSpace(itemStack);
+      if (slot == -1) {
+         slot = this.getFreeSlot();
       }
 
-      return var2 == -1 ? var1.getCount() : this.addResource(var2, var1);
+      return slot == -1 ? itemStack.getCount() : this.addResource(slot, itemStack);
    }
 
-   private int addResource(int var1, ItemStack var2) {
-      int var3 = var2.getCount();
-      ItemStack var4 = this.getItem(var1);
-      if (var4.isEmpty()) {
-         var4 = var2.copyWithCount(0);
-         this.setItem(var1, var4);
+   private int addResource(final int slot, final ItemStack itemStack) {
+      int count = itemStack.getCount();
+      ItemStack itemStackInSlot = this.getItem(slot);
+      if (itemStackInSlot.isEmpty()) {
+         itemStackInSlot = itemStack.copyWithCount(0);
+         this.setItem(slot, itemStackInSlot);
       }
 
-      int var5 = this.getMaxStackSize(var4) - var4.getCount();
-      int var6 = Math.min(var3, var5);
-      if (var6 == 0) {
-         return var3;
+      int maxToAdd = this.getMaxStackSize(itemStackInSlot) - itemStackInSlot.getCount();
+      int toAdd = Math.min(count, maxToAdd);
+      if (toAdd == 0) {
+         return count;
       } else {
-         var3 -= var6;
-         var4.grow(var6);
-         var4.setPopTime(5);
-         return var3;
+         count -= toAdd;
+         itemStackInSlot.grow(toAdd);
+         itemStackInSlot.setPopTime(5);
+         return count;
       }
    }
 
-   public int getSlotWithRemainingSpace(ItemStack var1) {
-      if (this.hasRemainingSpaceForItem(this.getItem(this.selected), var1)) {
+   public int getSlotWithRemainingSpace(final ItemStack newItemStack) {
+      if (this.hasRemainingSpaceForItem(this.getItem(this.selected), newItemStack)) {
          return this.selected;
-      } else if (this.hasRemainingSpaceForItem(this.getItem(40), var1)) {
+      } else if (this.hasRemainingSpaceForItem(this.getItem(40), newItemStack)) {
          return 40;
       } else {
-         for(int var2 = 0; var2 < this.items.size(); ++var2) {
-            if (this.hasRemainingSpaceForItem(this.items.get(var2), var1)) {
-               return var2;
+         for(int i = 0; i < this.items.size(); ++i) {
+            if (this.hasRemainingSpaceForItem(this.items.get(i), newItemStack)) {
+               return i;
             }
          }
 
@@ -218,114 +218,114 @@ public class Inventory implements Container, Nameable {
    }
 
    public void tick() {
-      for(int var1 = 0; var1 < this.items.size(); ++var1) {
-         ItemStack var2 = this.getItem(var1);
-         if (!var2.isEmpty()) {
-            var2.inventoryTick(this.player.level(), this.player, var1 == this.selected ? EquipmentSlot.MAINHAND : null);
+      for(int i = 0; i < this.items.size(); ++i) {
+         ItemStack itemStack = this.getItem(i);
+         if (!itemStack.isEmpty()) {
+            itemStack.inventoryTick(this.player.level(), this.player, i == this.selected ? EquipmentSlot.MAINHAND : null);
          }
       }
 
    }
 
-   public boolean add(ItemStack var1) {
-      return this.add(-1, var1);
+   public boolean add(final ItemStack itemStack) {
+      return this.add(-1, itemStack);
    }
 
-   public boolean add(int var1, ItemStack var2) {
-      if (var2.isEmpty()) {
+   public boolean add(int slot, final ItemStack itemStack) {
+      if (itemStack.isEmpty()) {
          return false;
       } else {
          try {
-            if (var2.isDamaged()) {
-               if (var1 == -1) {
-                  var1 = this.getFreeSlot();
+            if (itemStack.isDamaged()) {
+               if (slot == -1) {
+                  slot = this.getFreeSlot();
                }
 
-               if (var1 >= 0) {
-                  this.items.set(var1, var2.copyAndClear());
-                  ((ItemStack)this.items.get(var1)).setPopTime(5);
+               if (slot >= 0) {
+                  this.items.set(slot, itemStack.copyAndClear());
+                  ((ItemStack)this.items.get(slot)).setPopTime(5);
                   return true;
                } else if (this.player.hasInfiniteMaterials()) {
-                  var2.setCount(0);
+                  itemStack.setCount(0);
                   return true;
                } else {
                   return false;
                }
             } else {
-               int var3;
+               int lastSize;
                do {
-                  var3 = var2.getCount();
-                  if (var1 == -1) {
-                     var2.setCount(this.addResource(var2));
+                  lastSize = itemStack.getCount();
+                  if (slot == -1) {
+                     itemStack.setCount(this.addResource(itemStack));
                   } else {
-                     var2.setCount(this.addResource(var1, var2));
+                     itemStack.setCount(this.addResource(slot, itemStack));
                   }
-               } while(!var2.isEmpty() && var2.getCount() < var3);
+               } while(!itemStack.isEmpty() && itemStack.getCount() < lastSize);
 
-               if (var2.getCount() == var3 && this.player.hasInfiniteMaterials()) {
-                  var2.setCount(0);
+               if (itemStack.getCount() == lastSize && this.player.hasInfiniteMaterials()) {
+                  itemStack.setCount(0);
                   return true;
                } else {
-                  return var2.getCount() < var3;
+                  return itemStack.getCount() < lastSize;
                }
             }
-         } catch (Throwable var6) {
-            CrashReport var4 = CrashReport.forThrowable(var6, "Adding item to inventory");
-            CrashReportCategory var5 = var4.addCategory("Item being added");
-            var5.setDetail("Item ID", Item.getId(var2.getItem()));
-            var5.setDetail("Item data", var2.getDamageValue());
-            var5.setDetail("Item name", (CrashReportDetail)(() -> var2.getHoverName().getString()));
-            throw new ReportedException(var4);
+         } catch (Throwable t) {
+            CrashReport report = CrashReport.forThrowable(t, "Adding item to inventory");
+            CrashReportCategory category = report.addCategory("Item being added");
+            category.setDetail("Item ID", Item.getId(itemStack.getItem()));
+            category.setDetail("Item data", itemStack.getDamageValue());
+            category.setDetail("Item name", (CrashReportDetail)(() -> itemStack.getHoverName().getString()));
+            throw new ReportedException(report);
          }
       }
    }
 
-   public void placeItemBackInInventory(ItemStack var1) {
-      this.placeItemBackInInventory(var1, true);
+   public void placeItemBackInInventory(final ItemStack itemStack) {
+      this.placeItemBackInInventory(itemStack, true);
    }
 
-   public void placeItemBackInInventory(ItemStack var1, boolean var2) {
+   public void placeItemBackInInventory(final ItemStack itemStack, final boolean shouldSendSetSlotPacket) {
       while(true) {
-         if (!var1.isEmpty()) {
-            int var3 = this.getSlotWithRemainingSpace(var1);
-            if (var3 == -1) {
-               var3 = this.getFreeSlot();
+         if (!itemStack.isEmpty()) {
+            int slot = this.getSlotWithRemainingSpace(itemStack);
+            if (slot == -1) {
+               slot = this.getFreeSlot();
             }
 
-            if (var3 != -1) {
-               int var4 = var1.getMaxStackSize() - this.getItem(var3).getCount();
-               if (!this.add(var3, var1.split(var4)) || !var2) {
+            if (slot != -1) {
+               int slotHasSpaceFor = itemStack.getMaxStackSize() - this.getItem(slot).getCount();
+               if (!this.add(slot, itemStack.split(slotHasSpaceFor)) || !shouldSendSetSlotPacket) {
                   continue;
                }
 
                Player var6 = this.player;
                if (var6 instanceof ServerPlayer) {
-                  ServerPlayer var5 = (ServerPlayer)var6;
-                  var5.connection.send(this.createInventoryUpdatePacket(var3));
+                  ServerPlayer serverPlayer = (ServerPlayer)var6;
+                  serverPlayer.connection.send(this.createInventoryUpdatePacket(slot));
                }
                continue;
             }
 
-            this.player.drop(var1, false);
+            this.player.drop(itemStack, false);
          }
 
          return;
       }
    }
 
-   public ClientboundSetPlayerInventoryPacket createInventoryUpdatePacket(int var1) {
-      return new ClientboundSetPlayerInventoryPacket(var1, this.getItem(var1).copy());
+   public ClientboundSetPlayerInventoryPacket createInventoryUpdatePacket(final int slot) {
+      return new ClientboundSetPlayerInventoryPacket(slot, this.getItem(slot).copy());
    }
 
-   public ItemStack removeItem(int var1, int var2) {
-      if (var1 < this.items.size()) {
-         return ContainerHelper.removeItem(this.items, var1, var2);
+   public ItemStack removeItem(final int slot, final int count) {
+      if (slot < this.items.size()) {
+         return ContainerHelper.removeItem(this.items, slot, count);
       } else {
-         EquipmentSlot var3 = (EquipmentSlot)EQUIPMENT_SLOT_MAPPING.get(var1);
-         if (var3 != null) {
-            ItemStack var4 = this.equipment.get(var3);
-            if (!var4.isEmpty()) {
-               return var4.split(var2);
+         EquipmentSlot equipmentSlot = (EquipmentSlot)EQUIPMENT_SLOT_MAPPING.get(slot);
+         if (equipmentSlot != null) {
+            ItemStack itemStack = this.equipment.get(equipmentSlot);
+            if (!itemStack.isEmpty()) {
+               return itemStack.split(count);
             }
          }
 
@@ -333,10 +333,10 @@ public class Inventory implements Container, Nameable {
       }
    }
 
-   public void removeItem(ItemStack var1) {
-      for(int var2 = 0; var2 < this.items.size(); ++var2) {
-         if (this.items.get(var2) == var1) {
-            this.items.set(var2, ItemStack.EMPTY);
+   public void removeItem(final ItemStack itemStack) {
+      for(int slot = 0; slot < this.items.size(); ++slot) {
+         if (this.items.get(slot) == itemStack) {
+            this.items.set(slot, ItemStack.EMPTY);
             return;
          }
       }
@@ -344,55 +344,55 @@ public class Inventory implements Container, Nameable {
       ObjectIterator var5 = EQUIPMENT_SLOT_MAPPING.values().iterator();
 
       while(var5.hasNext()) {
-         EquipmentSlot var3 = (EquipmentSlot)var5.next();
-         ItemStack var4 = this.equipment.get(var3);
-         if (var4 == var1) {
-            this.equipment.set(var3, ItemStack.EMPTY);
+         EquipmentSlot equipmentSlot = (EquipmentSlot)var5.next();
+         ItemStack stackInSlot = this.equipment.get(equipmentSlot);
+         if (stackInSlot == itemStack) {
+            this.equipment.set(equipmentSlot, ItemStack.EMPTY);
             return;
          }
       }
 
    }
 
-   public ItemStack removeItemNoUpdate(int var1) {
-      if (var1 < this.items.size()) {
-         ItemStack var3 = this.items.get(var1);
-         this.items.set(var1, ItemStack.EMPTY);
-         return var3;
+   public ItemStack removeItemNoUpdate(final int slot) {
+      if (slot < this.items.size()) {
+         ItemStack itemStack = this.items.get(slot);
+         this.items.set(slot, ItemStack.EMPTY);
+         return itemStack;
       } else {
-         EquipmentSlot var2 = (EquipmentSlot)EQUIPMENT_SLOT_MAPPING.get(var1);
-         return var2 != null ? this.equipment.set(var2, ItemStack.EMPTY) : ItemStack.EMPTY;
+         EquipmentSlot equipmentSlot = (EquipmentSlot)EQUIPMENT_SLOT_MAPPING.get(slot);
+         return equipmentSlot != null ? this.equipment.set(equipmentSlot, ItemStack.EMPTY) : ItemStack.EMPTY;
       }
    }
 
-   public void setItem(int var1, ItemStack var2) {
-      if (var1 < this.items.size()) {
-         this.items.set(var1, var2);
+   public void setItem(final int slot, final ItemStack itemStack) {
+      if (slot < this.items.size()) {
+         this.items.set(slot, itemStack);
       }
 
-      EquipmentSlot var3 = (EquipmentSlot)EQUIPMENT_SLOT_MAPPING.get(var1);
-      if (var3 != null) {
-         this.equipment.set(var3, var2);
+      EquipmentSlot equipmentSlot = (EquipmentSlot)EQUIPMENT_SLOT_MAPPING.get(slot);
+      if (equipmentSlot != null) {
+         this.equipment.set(equipmentSlot, itemStack);
       }
 
    }
 
-   public void save(ValueOutput.TypedOutputList<ItemStackWithSlot> var1) {
-      for(int var2 = 0; var2 < this.items.size(); ++var2) {
-         ItemStack var3 = this.items.get(var2);
-         if (!var3.isEmpty()) {
-            var1.add(new ItemStackWithSlot(var2, var3));
+   public void save(final ValueOutput.TypedOutputList<ItemStackWithSlot> output) {
+      for(int i = 0; i < this.items.size(); ++i) {
+         ItemStack item = this.items.get(i);
+         if (!item.isEmpty()) {
+            output.add(new ItemStackWithSlot(i, item));
          }
       }
 
    }
 
-   public void load(ValueInput.TypedInputList<ItemStackWithSlot> var1) {
+   public void load(final ValueInput.TypedInputList<ItemStackWithSlot> input) {
       this.items.clear();
 
-      for(ItemStackWithSlot var3 : var1) {
-         if (var3.isValidInContainer(this.items.size())) {
-            this.setItem(var3.slot(), var3.stack());
+      for(ItemStackWithSlot item : input) {
+         if (item.isValidInContainer(this.items.size())) {
+            this.setItem(item.slot(), item.stack());
          }
       }
 
@@ -403,8 +403,8 @@ public class Inventory implements Container, Nameable {
    }
 
    public boolean isEmpty() {
-      for(ItemStack var2 : this.items) {
-         if (!var2.isEmpty()) {
+      for(ItemStack itemStack : this.items) {
+         if (!itemStack.isEmpty()) {
             return false;
          }
       }
@@ -412,8 +412,8 @@ public class Inventory implements Container, Nameable {
       ObjectIterator var3 = EQUIPMENT_SLOT_MAPPING.values().iterator();
 
       while(var3.hasNext()) {
-         EquipmentSlot var4 = (EquipmentSlot)var3.next();
-         if (!this.equipment.get(var4).isEmpty()) {
+         EquipmentSlot slot = (EquipmentSlot)var3.next();
+         if (!this.equipment.get(slot).isEmpty()) {
             return false;
          }
       }
@@ -421,12 +421,12 @@ public class Inventory implements Container, Nameable {
       return true;
    }
 
-   public ItemStack getItem(int var1) {
-      if (var1 < this.items.size()) {
-         return this.items.get(var1);
+   public ItemStack getItem(final int slot) {
+      if (slot < this.items.size()) {
+         return this.items.get(slot);
       } else {
-         EquipmentSlot var2 = (EquipmentSlot)EQUIPMENT_SLOT_MAPPING.get(var1);
-         return var2 != null ? this.equipment.get(var2) : ItemStack.EMPTY;
+         EquipmentSlot equipmentSlot = (EquipmentSlot)EQUIPMENT_SLOT_MAPPING.get(slot);
+         return equipmentSlot != null ? this.equipment.get(equipmentSlot) : ItemStack.EMPTY;
       }
    }
 
@@ -435,11 +435,11 @@ public class Inventory implements Container, Nameable {
    }
 
    public void dropAll() {
-      for(int var1 = 0; var1 < this.items.size(); ++var1) {
-         ItemStack var2 = this.items.get(var1);
-         if (!var2.isEmpty()) {
-            this.player.drop(var2, true, false);
-            this.items.set(var1, ItemStack.EMPTY);
+      for(int i = 0; i < this.items.size(); ++i) {
+         ItemStack itemStack = this.items.get(i);
+         if (!itemStack.isEmpty()) {
+            this.player.drop(itemStack, true, false);
+            this.items.set(i, ItemStack.EMPTY);
          }
       }
 
@@ -454,13 +454,13 @@ public class Inventory implements Container, Nameable {
       return this.timesChanged;
    }
 
-   public boolean stillValid(Player var1) {
+   public boolean stillValid(final Player player) {
       return true;
    }
 
-   public boolean contains(ItemStack var1) {
-      for(ItemStack var3 : this) {
-         if (!var3.isEmpty() && ItemStack.isSameItemSameComponents(var3, var1)) {
+   public boolean contains(final ItemStack searchStack) {
+      for(ItemStack itemStack : this) {
+         if (!itemStack.isEmpty() && ItemStack.isSameItemSameComponents(itemStack, searchStack)) {
             return true;
          }
       }
@@ -468,9 +468,9 @@ public class Inventory implements Container, Nameable {
       return false;
    }
 
-   public boolean contains(TagKey<Item> var1) {
-      for(ItemStack var3 : this) {
-         if (!var3.isEmpty() && var3.is(var1)) {
+   public boolean contains(final TagKey<Item> tag) {
+      for(ItemStack itemStack : this) {
+         if (!itemStack.isEmpty() && itemStack.is(tag)) {
             return true;
          }
       }
@@ -478,9 +478,9 @@ public class Inventory implements Container, Nameable {
       return false;
    }
 
-   public boolean contains(Predicate<ItemStack> var1) {
-      for(ItemStack var3 : this) {
-         if (var1.test(var3)) {
+   public boolean contains(final Predicate<ItemStack> predicate) {
+      for(ItemStack stack : this) {
+         if (predicate.test(stack)) {
             return true;
          }
       }
@@ -488,12 +488,12 @@ public class Inventory implements Container, Nameable {
       return false;
    }
 
-   public void replaceWith(Inventory var1) {
-      for(int var2 = 0; var2 < this.getContainerSize(); ++var2) {
-         this.setItem(var2, var1.getItem(var2));
+   public void replaceWith(final Inventory other) {
+      for(int i = 0; i < this.getContainerSize(); ++i) {
+         this.setItem(i, other.getItem(i));
       }
 
-      this.setSelectedSlot(var1.getSelectedSlot());
+      this.setSelectedSlot(other.getSelectedSlot());
    }
 
    public void clearContent() {
@@ -501,16 +501,16 @@ public class Inventory implements Container, Nameable {
       this.equipment.clear();
    }
 
-   public void fillStackedContents(StackedItemContents var1) {
-      for(ItemStack var3 : this.items) {
-         var1.accountSimpleStack(var3);
+   public void fillStackedContents(final StackedItemContents contents) {
+      for(ItemStack itemStack : this.items) {
+         contents.accountSimpleStack(itemStack);
       }
 
    }
 
-   public ItemStack removeFromSelected(boolean var1) {
-      ItemStack var2 = this.getSelectedItem();
-      return var2.isEmpty() ? ItemStack.EMPTY : this.removeItem(this.selected, var1 ? var2.getCount() : 1);
+   public ItemStack removeFromSelected(final boolean all) {
+      ItemStack selectedItem = this.getSelectedItem();
+      return selectedItem.isEmpty() ? ItemStack.EMPTY : this.removeItem(this.selected, all ? selectedItem.getCount() : 1);
    }
 
    static {

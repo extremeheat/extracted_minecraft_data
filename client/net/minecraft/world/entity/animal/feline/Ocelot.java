@@ -2,8 +2,8 @@ package net.minecraft.world.entity.animal.feline;
 
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -60,37 +60,37 @@ public class Ocelot extends Animal {
    private @Nullable OcelotAvoidEntityGoal<Player> ocelotAvoidPlayersGoal;
    private @Nullable OcelotTemptGoal temptGoal;
 
-   public Ocelot(EntityType<? extends Ocelot> var1, Level var2) {
-      super(var1, var2);
+   public Ocelot(final EntityType<? extends Ocelot> type, final Level level) {
+      super(type, level);
       this.reassessTrustingGoals();
    }
 
-   boolean isTrusting() {
+   private boolean isTrusting() {
       return (Boolean)this.entityData.get(DATA_TRUSTING);
    }
 
-   private void setTrusting(boolean var1) {
-      this.entityData.set(DATA_TRUSTING, var1);
+   private void setTrusting(final boolean trusting) {
+      this.entityData.set(DATA_TRUSTING, trusting);
       this.reassessTrustingGoals();
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.putBoolean("Trusting", this.isTrusting());
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.putBoolean("Trusting", this.isTrusting());
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.setTrusting(var1.getBooleanOr("Trusting", false));
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.setTrusting(input.getBooleanOr("Trusting", false));
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(DATA_TRUSTING, false);
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(DATA_TRUSTING, false);
    }
 
    protected void registerGoals() {
-      this.temptGoal = new OcelotTemptGoal(this, 0.6, (var0) -> var0.is(ItemTags.OCELOT_FOOD), true);
+      this.temptGoal = new OcelotTemptGoal(this, 0.6, (i) -> i.is(ItemTags.OCELOT_FOOD), true);
       this.goalSelector.addGoal(1, new FloatGoal(this));
       this.goalSelector.addGoal(3, this.temptGoal);
       this.goalSelector.addGoal(7, new LeapAtTargetGoal(this, 0.3F));
@@ -102,13 +102,13 @@ public class Ocelot extends Animal {
       this.targetSelector.addGoal(1, new NearestAttackableTargetGoal(this, Turtle.class, 10, false, false, Turtle.BABY_ON_LAND_SELECTOR));
    }
 
-   public void customServerAiStep(ServerLevel var1) {
+   public void customServerAiStep(final ServerLevel level) {
       if (this.getMoveControl().hasWanted()) {
-         double var2 = this.getMoveControl().getSpeedModifier();
-         if (var2 == 0.6) {
+         double speed = this.getMoveControl().getSpeedModifier();
+         if (speed == 0.6) {
             this.setPose(Pose.CROUCHING);
             this.setSprinting(false);
-         } else if (var2 == 1.33) {
+         } else if (speed == 1.33) {
             this.setPose(Pose.STANDING);
             this.setSprinting(true);
          } else {
@@ -122,7 +122,7 @@ public class Ocelot extends Animal {
 
    }
 
-   public boolean removeWhenFarAway(double var1) {
+   public boolean removeWhenFarAway(final double distSqr) {
       return !this.isTrusting() && this.tickCount > 2400;
    }
 
@@ -138,7 +138,7 @@ public class Ocelot extends Animal {
       return 900;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return SoundEvents.OCELOT_HURT;
    }
 
@@ -146,10 +146,10 @@ public class Ocelot extends Animal {
       return SoundEvents.OCELOT_DEATH;
    }
 
-   public InteractionResult mobInteract(Player var1, InteractionHand var2) {
-      ItemStack var3 = var1.getItemInHand(var2);
-      if ((this.temptGoal == null || this.temptGoal.isRunning()) && !this.isTrusting() && this.isFood(var3) && var1.distanceToSqr(this) < 9.0) {
-         this.usePlayerItem(var1, var2, var3);
+   public InteractionResult mobInteract(final Player player, final InteractionHand hand) {
+      ItemStack itemStack = player.getItemInHand(hand);
+      if ((this.temptGoal == null || this.temptGoal.isRunning()) && !this.isTrusting() && this.isFood(itemStack) && player.distanceToSqr(this) < 9.0) {
+         this.usePlayerItem(player, hand, itemStack);
          if (!this.level().isClientSide()) {
             if (this.random.nextInt(3) == 0) {
                this.setTrusting(true);
@@ -163,32 +163,32 @@ public class Ocelot extends Animal {
 
          return InteractionResult.SUCCESS;
       } else {
-         return super.mobInteract(var1, var2);
+         return super.mobInteract(player, hand);
       }
    }
 
-   public void handleEntityEvent(byte var1) {
-      if (var1 == 41) {
+   public void handleEntityEvent(final byte id) {
+      if (id == 41) {
          this.spawnTrustingParticles(true);
-      } else if (var1 == 40) {
+      } else if (id == 40) {
          this.spawnTrustingParticles(false);
       } else {
-         super.handleEntityEvent(var1);
+         super.handleEntityEvent(id);
       }
 
    }
 
-   private void spawnTrustingParticles(boolean var1) {
-      SimpleParticleType var2 = ParticleTypes.HEART;
-      if (!var1) {
-         var2 = ParticleTypes.SMOKE;
+   private void spawnTrustingParticles(final boolean success) {
+      ParticleOptions particle = ParticleTypes.HEART;
+      if (!success) {
+         particle = ParticleTypes.SMOKE;
       }
 
-      for(int var3 = 0; var3 < 7; ++var3) {
-         double var4 = this.random.nextGaussian() * 0.02;
-         double var6 = this.random.nextGaussian() * 0.02;
-         double var8 = this.random.nextGaussian() * 0.02;
-         this.level().addParticle(var2, this.getRandomX(1.0), this.getRandomY() + 0.5, this.getRandomZ(1.0), var4, var6, var8);
+      for(int i = 0; i < 7; ++i) {
+         double xa = this.random.nextGaussian() * 0.02;
+         double ya = this.random.nextGaussian() * 0.02;
+         double za = this.random.nextGaussian() * 0.02;
+         this.level().addParticle(particle, this.getRandomX(1.0), this.getRandomY() + 0.5, this.getRandomZ(1.0), xa, ya, za);
       }
 
    }
@@ -205,27 +205,27 @@ public class Ocelot extends Animal {
 
    }
 
-   public @Nullable Ocelot getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return EntityType.OCELOT.create(var1, EntitySpawnReason.BREEDING);
+   public @Nullable Ocelot getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
+      return EntityType.OCELOT.create(level, EntitySpawnReason.BREEDING);
    }
 
-   public boolean isFood(ItemStack var1) {
-      return var1.is(ItemTags.OCELOT_FOOD);
+   public boolean isFood(final ItemStack itemStack) {
+      return itemStack.is(ItemTags.OCELOT_FOOD);
    }
 
-   public static boolean checkOcelotSpawnRules(EntityType<Ocelot> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
-      return var4.nextInt(3) != 0;
+   public static boolean checkOcelotSpawnRules(final EntityType<Ocelot> type, final LevelAccessor level, final EntitySpawnReason spawnReason, final BlockPos pos, final RandomSource random) {
+      return random.nextInt(3) != 0;
    }
 
-   public boolean checkSpawnObstruction(LevelReader var1) {
-      if (var1.isUnobstructed(this) && !var1.containsAnyLiquid(this.getBoundingBox())) {
-         BlockPos var2 = this.blockPosition();
-         if (var2.getY() < var1.getSeaLevel()) {
+   public boolean checkSpawnObstruction(final LevelReader level) {
+      if (level.isUnobstructed(this) && !level.containsAnyLiquid(this.getBoundingBox())) {
+         BlockPos pos = this.blockPosition();
+         if (pos.getY() < level.getSeaLevel()) {
             return false;
          }
 
-         BlockState var3 = var1.getBlockState(var2.below());
-         if (var3.is(Blocks.GRASS_BLOCK) || var3.is(BlockTags.LEAVES)) {
+         BlockState state = level.getBlockState(pos.below());
+         if (state.is(Blocks.GRASS_BLOCK) || state.is(BlockTags.LEAVES)) {
             return true;
          }
       }
@@ -233,12 +233,12 @@ public class Ocelot extends Animal {
       return false;
    }
 
-   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      if (var4 == null) {
-         var4 = new AgeableMob.AgeableMobGroupData(1.0F);
+   public @Nullable SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, @Nullable SpawnGroupData groupData) {
+      if (groupData == null) {
+         groupData = new AgeableMob.AgeableMobGroupData(1.0F);
       }
 
-      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4);
+      return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
    }
 
    public Vec3 getLeashOffset() {
@@ -249,21 +249,16 @@ public class Ocelot extends Animal {
       return this.isCrouching() || super.isSteppingCarefully();
    }
 
-   // $FF: synthetic method
-   public @Nullable AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
-      return this.getBreedOffspring(var1, var2);
-   }
-
    static {
       DATA_TRUSTING = SynchedEntityData.<Boolean>defineId(Ocelot.class, EntityDataSerializers.BOOLEAN);
    }
 
-   static class OcelotAvoidEntityGoal<T extends LivingEntity> extends AvoidEntityGoal<T> {
+   private static class OcelotAvoidEntityGoal<T extends LivingEntity> extends AvoidEntityGoal<T> {
       private final Ocelot ocelot;
 
-      public OcelotAvoidEntityGoal(Ocelot var1, Class<T> var2, float var3, double var4, double var6) {
-         super(var1, var2, var3, var4, var6, EntitySelector.NO_CREATIVE_OR_SPECTATOR);
-         this.ocelot = var1;
+      public OcelotAvoidEntityGoal(final Ocelot ocelot, final Class<T> avoidClass, final float maxDist, final double walkSpeedModifier, final double sprintSpeedModifier) {
+         super(ocelot, avoidClass, maxDist, walkSpeedModifier, sprintSpeedModifier, EntitySelector.NO_CREATIVE_OR_SPECTATOR);
+         this.ocelot = ocelot;
       }
 
       public boolean canUse() {
@@ -275,12 +270,12 @@ public class Ocelot extends Animal {
       }
    }
 
-   static class OcelotTemptGoal extends TemptGoal {
+   private static class OcelotTemptGoal extends TemptGoal {
       private final Ocelot ocelot;
 
-      public OcelotTemptGoal(Ocelot var1, double var2, Predicate<ItemStack> var4, boolean var5) {
-         super(var1, var2, var4, var5);
-         this.ocelot = var1;
+      public OcelotTemptGoal(final Ocelot ocelot, final double speedModifier, final Predicate<ItemStack> items, final boolean canScare) {
+         super(ocelot, speedModifier, items, canScare);
+         this.ocelot = ocelot;
       }
 
       protected boolean canScare() {

@@ -8,8 +8,8 @@ public class LoadingDotsText {
       super();
    }
 
-   public static String get(long var0) {
-      int var2 = (int)(var0 / 300L % (long)FRAMES.length);
-      return FRAMES[var2];
+   public static String get(final long timeMs) {
+      int index = (int)(timeMs / 300L % (long)FRAMES.length);
+      return FRAMES[index];
    }
 }

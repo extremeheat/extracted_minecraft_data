@@ -1,69 +1,74 @@
 package net.minecraft.world.level.lighting;
 
 import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
+import java.util.Objects;
 
 public class LeveledPriorityQueue {
    private final int levelCount;
    private final LongLinkedOpenHashSet[] queues;
    private int firstQueuedLevel;
 
-   public LeveledPriorityQueue(int var1, final int var2) {
+   public LeveledPriorityQueue(final int levelCount, final int minSize) {
       super();
-      this.levelCount = var1;
-      this.queues = new LongLinkedOpenHashSet[var1];
+      this.levelCount = levelCount;
+      this.queues = new LongLinkedOpenHashSet[levelCount];
 
-      for(int var3 = 0; var3 < var1; ++var3) {
-         this.queues[var3] = new LongLinkedOpenHashSet(var2, 0.5F) {
-            protected void rehash(int var1) {
-               if (var1 > var2) {
-                  super.rehash(var1);
+      for(int i = 0; i < levelCount; ++i) {
+         this.queues[i] = new LongLinkedOpenHashSet(minSize, 0.5F) {
+            {
+               Objects.requireNonNull(LeveledPriorityQueue.this);
+            }
+
+            protected void rehash(final int newN) {
+               if (newN > minSize) {
+                  super.rehash(newN);
                }
 
             }
          };
       }
 
-      this.firstQueuedLevel = var1;
+      this.firstQueuedLevel = levelCount;
    }
 
    public long removeFirstLong() {
-      LongLinkedOpenHashSet var1 = this.queues[this.firstQueuedLevel];
-      long var2 = var1.removeFirstLong();
-      if (var1.isEmpty()) {
+      LongLinkedOpenHashSet queue = this.queues[this.firstQueuedLevel];
+      long result = queue.removeFirstLong();
+      if (queue.isEmpty()) {
          this.checkFirstQueuedLevel(this.levelCount);
       }
 
-      return var2;
+      return result;
    }
 
    public boolean isEmpty() {
       return this.firstQueuedLevel >= this.levelCount;
    }
 
-   public void dequeue(long var1, int var3, int var4) {
-      LongLinkedOpenHashSet var5 = this.queues[var3];
-      var5.remove(var1);
-      if (var5.isEmpty() && this.firstQueuedLevel == var3) {
-         this.checkFirstQueuedLevel(var4);
+   public void dequeue(final long node, final int key, final int upperBound) {
+      LongLinkedOpenHashSet queue = this.queues[key];
+      queue.remove(node);
+      if (queue.isEmpty() && this.firstQueuedLevel == key) {
+         this.checkFirstQueuedLevel(upperBound);
       }
 
    }
 
-   public void enqueue(long var1, int var3) {
-      this.queues[var3].add(var1);
-      if (this.firstQueuedLevel > var3) {
-         this.firstQueuedLevel = var3;
+   public void enqueue(final long node, final int key) {
+      this.queues[key].add(node);
+      if (this.firstQueuedLevel > key) {
+         this.firstQueuedLevel = key;
       }
 
    }
 
-   private void checkFirstQueuedLevel(int var1) {
-      int var2 = this.firstQueuedLevel;
-      this.firstQueuedLevel = var1;
+   private void checkFirstQueuedLevel(final int upperBound) {
+      int oldLevel = this.firstQueuedLevel;
+      this.firstQueuedLevel = upperBound;
 
-      for(int var3 = var2 + 1; var3 < var1; ++var3) {
-         if (!this.queues[var3].isEmpty()) {
-            this.firstQueuedLevel = var3;
+      for(int i = oldLevel + 1; i < upperBound; ++i) {
+         if (!this.queues[i].isEmpty()) {
+            this.firstQueuedLevel = i;
             break;
          }
       }

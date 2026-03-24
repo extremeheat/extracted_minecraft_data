@@ -25,10 +25,10 @@ public class MoveControl implements Control {
    protected float strafeRight;
    protected Operation operation;
 
-   public MoveControl(Mob var1) {
+   public MoveControl(final Mob mob) {
       super();
       this.operation = MoveControl.Operation.WAIT;
-      this.mob = var1;
+      this.mob = mob;
    }
 
    public boolean hasWanted() {
@@ -39,69 +39,69 @@ public class MoveControl implements Control {
       return this.speedModifier;
    }
 
-   public void setWantedPosition(double var1, double var3, double var5, double var7) {
-      this.wantedX = var1;
-      this.wantedY = var3;
-      this.wantedZ = var5;
-      this.speedModifier = var7;
+   public void setWantedPosition(final double x, final double y, final double z, final double speedModifier) {
+      this.wantedX = x;
+      this.wantedY = y;
+      this.wantedZ = z;
+      this.speedModifier = speedModifier;
       if (this.operation != MoveControl.Operation.JUMPING) {
          this.operation = MoveControl.Operation.MOVE_TO;
       }
 
    }
 
-   public void strafe(float var1, float var2) {
+   public void strafe(final float forwards, final float right) {
       this.operation = MoveControl.Operation.STRAFE;
-      this.strafeForwards = var1;
-      this.strafeRight = var2;
+      this.strafeForwards = forwards;
+      this.strafeRight = right;
       this.speedModifier = 0.25;
    }
 
    public void tick() {
       if (this.operation == MoveControl.Operation.STRAFE) {
-         float var1 = (float)this.mob.getAttributeValue(Attributes.MOVEMENT_SPEED);
-         float var2 = (float)this.speedModifier * var1;
-         float var3 = this.strafeForwards;
-         float var4 = this.strafeRight;
-         float var5 = Mth.sqrt(var3 * var3 + var4 * var4);
-         if (var5 < 1.0F) {
-            var5 = 1.0F;
+         float speed = (float)this.mob.getAttributeValue(Attributes.MOVEMENT_SPEED);
+         float speedModified = (float)this.speedModifier * speed;
+         float xa = this.strafeForwards;
+         float za = this.strafeRight;
+         float dist = Mth.sqrt(xa * xa + za * za);
+         if (dist < 1.0F) {
+            dist = 1.0F;
          }
 
-         var5 = var2 / var5;
-         var3 *= var5;
-         var4 *= var5;
-         float var6 = Mth.sin((double)(this.mob.getYRot() * 0.017453292F));
-         float var7 = Mth.cos((double)(this.mob.getYRot() * 0.017453292F));
-         float var8 = var3 * var7 - var4 * var6;
-         float var9 = var4 * var7 + var3 * var6;
-         if (!this.isWalkable(var8, var9)) {
+         dist = speedModified / dist;
+         xa *= dist;
+         za *= dist;
+         float sin = Mth.sin((double)(this.mob.getYRot() * 0.017453292F));
+         float cos = Mth.cos((double)(this.mob.getYRot() * 0.017453292F));
+         float dx = xa * cos - za * sin;
+         float dz = za * cos + xa * sin;
+         if (!this.isWalkable(dx, dz)) {
             this.strafeForwards = 1.0F;
             this.strafeRight = 0.0F;
          }
 
-         this.mob.setSpeed(var2);
+         this.mob.setSpeed(speedModified);
          this.mob.setZza(this.strafeForwards);
          this.mob.setXxa(this.strafeRight);
          this.operation = MoveControl.Operation.WAIT;
       } else if (this.operation == MoveControl.Operation.MOVE_TO) {
          this.operation = MoveControl.Operation.WAIT;
-         double var13 = this.wantedX - this.mob.getX();
-         double var15 = this.wantedZ - this.mob.getZ();
-         double var18 = this.wantedY - this.mob.getY();
-         double var19 = var13 * var13 + var18 * var18 + var15 * var15;
-         if (var19 < 2.500000277905201E-7) {
+         double xd = this.wantedX - this.mob.getX();
+         double zd = this.wantedZ - this.mob.getZ();
+         double yd = this.wantedY - this.mob.getY();
+         double dd = xd * xd + yd * yd + zd * zd;
+         if (dd < 2.500000277905201E-7) {
             this.mob.setZza(0.0F);
             return;
          }
 
-         float var20 = (float)(Mth.atan2(var15, var13) * 57.2957763671875) - 90.0F;
-         this.mob.setYRot(this.rotlerp(this.mob.getYRot(), var20, 90.0F));
+         float yRotD = (float)(Mth.atan2(zd, xd) * 57.2957763671875) - 90.0F;
+         this.mob.setYRot(this.rotlerp(this.mob.getYRot(), yRotD, 90.0F));
          this.mob.setSpeed((float)(this.speedModifier * this.mob.getAttributeValue(Attributes.MOVEMENT_SPEED)));
-         BlockPos var10 = this.mob.blockPosition();
-         BlockState var11 = this.mob.level().getBlockState(var10);
-         VoxelShape var12 = var11.getCollisionShape(this.mob.level(), var10);
-         if (var18 > (double)this.mob.maxUpStep() && var13 * var13 + var15 * var15 < (double)Math.max(1.0F, this.mob.getBbWidth()) || !var12.isEmpty() && this.mob.getY() < var12.max(Direction.Axis.Y) + (double)var10.getY() && !var11.is(BlockTags.DOORS) && !var11.is(BlockTags.FENCES)) {
+         BlockPos pos = this.mob.blockPosition();
+         BlockState blockState = this.mob.level().getBlockState(pos);
+         VoxelShape shape = blockState.getCollisionShape(this.mob.level(), pos);
+         if (yd > (double)this.mob.maxUpStep() && xd * xd + zd * zd < (double)Math.max(1.0F, this.mob.getBbWidth()) || !shape.isEmpty() && this.mob.getY() < shape.max(Direction.Axis.Y) + (double)pos.getY() && !blockState.is(BlockTags.DOORS) && !blockState.is(BlockTags.FENCES)) {
             this.mob.getJumpControl().jump();
             this.operation = MoveControl.Operation.JUMPING;
          }
@@ -116,11 +116,11 @@ public class MoveControl implements Control {
 
    }
 
-   private boolean isWalkable(float var1, float var2) {
-      PathNavigation var3 = this.mob.getNavigation();
-      if (var3 != null) {
-         NodeEvaluator var4 = var3.getNodeEvaluator();
-         if (var4 != null && var4.getPathType(this.mob, BlockPos.containing(this.mob.getX() + (double)var1, (double)this.mob.getBlockY(), this.mob.getZ() + (double)var2)) != PathType.WALKABLE) {
+   private boolean isWalkable(final float dx, final float dz) {
+      PathNavigation pathNavigation = this.mob.getNavigation();
+      if (pathNavigation != null) {
+         NodeEvaluator nodeEvaluator = pathNavigation.getNodeEvaluator();
+         if (nodeEvaluator != null && nodeEvaluator.getPathType(this.mob, BlockPos.containing(this.mob.getX() + (double)dx, (double)this.mob.getBlockY(), this.mob.getZ() + (double)dz)) != PathType.WALKABLE) {
             return false;
          }
       }
@@ -128,24 +128,24 @@ public class MoveControl implements Control {
       return true;
    }
 
-   protected float rotlerp(float var1, float var2, float var3) {
-      float var4 = Mth.wrapDegrees(var2 - var1);
-      if (var4 > var3) {
-         var4 = var3;
+   protected float rotlerp(final float a, final float b, final float max) {
+      float diff = Mth.wrapDegrees(b - a);
+      if (diff > max) {
+         diff = max;
       }
 
-      if (var4 < -var3) {
-         var4 = -var3;
+      if (diff < -max) {
+         diff = -max;
       }
 
-      float var5 = var1 + var4;
-      if (var5 < 0.0F) {
-         var5 += 360.0F;
-      } else if (var5 > 360.0F) {
-         var5 -= 360.0F;
+      float result = a + diff;
+      if (result < 0.0F) {
+         result += 360.0F;
+      } else if (result > 360.0F) {
+         result -= 360.0F;
       }
 
-      return var5;
+      return result;
    }
 
    public double getWantedX() {

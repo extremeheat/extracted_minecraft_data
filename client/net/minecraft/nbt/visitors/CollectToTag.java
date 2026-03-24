@@ -36,8 +36,8 @@ public class CollectToTag implements StreamTagVisitor {
       return this.containerStack.size() - 1;
    }
 
-   private void appendEntry(Tag var1) {
-      ((ContainerBuilder)this.containerStack.getLast()).acceptValue(var1);
+   private void appendEntry(final Tag instance) {
+      ((ContainerBuilder)this.containerStack.getLast()).acceptValue(instance);
    }
 
    public StreamTagVisitor.ValueResult visitEnd() {
@@ -45,117 +45,117 @@ public class CollectToTag implements StreamTagVisitor {
       return StreamTagVisitor.ValueResult.CONTINUE;
    }
 
-   public StreamTagVisitor.ValueResult visit(String var1) {
-      this.appendEntry(StringTag.valueOf(var1));
+   public StreamTagVisitor.ValueResult visit(final String value) {
+      this.appendEntry(StringTag.valueOf(value));
       return StreamTagVisitor.ValueResult.CONTINUE;
    }
 
-   public StreamTagVisitor.ValueResult visit(byte var1) {
-      this.appendEntry(ByteTag.valueOf(var1));
+   public StreamTagVisitor.ValueResult visit(final byte value) {
+      this.appendEntry(ByteTag.valueOf(value));
       return StreamTagVisitor.ValueResult.CONTINUE;
    }
 
-   public StreamTagVisitor.ValueResult visit(short var1) {
-      this.appendEntry(ShortTag.valueOf(var1));
+   public StreamTagVisitor.ValueResult visit(final short value) {
+      this.appendEntry(ShortTag.valueOf(value));
       return StreamTagVisitor.ValueResult.CONTINUE;
    }
 
-   public StreamTagVisitor.ValueResult visit(int var1) {
-      this.appendEntry(IntTag.valueOf(var1));
+   public StreamTagVisitor.ValueResult visit(final int value) {
+      this.appendEntry(IntTag.valueOf(value));
       return StreamTagVisitor.ValueResult.CONTINUE;
    }
 
-   public StreamTagVisitor.ValueResult visit(long var1) {
-      this.appendEntry(LongTag.valueOf(var1));
+   public StreamTagVisitor.ValueResult visit(final long value) {
+      this.appendEntry(LongTag.valueOf(value));
       return StreamTagVisitor.ValueResult.CONTINUE;
    }
 
-   public StreamTagVisitor.ValueResult visit(float var1) {
-      this.appendEntry(FloatTag.valueOf(var1));
+   public StreamTagVisitor.ValueResult visit(final float value) {
+      this.appendEntry(FloatTag.valueOf(value));
       return StreamTagVisitor.ValueResult.CONTINUE;
    }
 
-   public StreamTagVisitor.ValueResult visit(double var1) {
-      this.appendEntry(DoubleTag.valueOf(var1));
+   public StreamTagVisitor.ValueResult visit(final double value) {
+      this.appendEntry(DoubleTag.valueOf(value));
       return StreamTagVisitor.ValueResult.CONTINUE;
    }
 
-   public StreamTagVisitor.ValueResult visit(byte[] var1) {
-      this.appendEntry(new ByteArrayTag(var1));
+   public StreamTagVisitor.ValueResult visit(final byte[] value) {
+      this.appendEntry(new ByteArrayTag(value));
       return StreamTagVisitor.ValueResult.CONTINUE;
    }
 
-   public StreamTagVisitor.ValueResult visit(int[] var1) {
-      this.appendEntry(new IntArrayTag(var1));
+   public StreamTagVisitor.ValueResult visit(final int[] value) {
+      this.appendEntry(new IntArrayTag(value));
       return StreamTagVisitor.ValueResult.CONTINUE;
    }
 
-   public StreamTagVisitor.ValueResult visit(long[] var1) {
-      this.appendEntry(new LongArrayTag(var1));
+   public StreamTagVisitor.ValueResult visit(final long[] value) {
+      this.appendEntry(new LongArrayTag(value));
       return StreamTagVisitor.ValueResult.CONTINUE;
    }
 
-   public StreamTagVisitor.ValueResult visitList(TagType<?> var1, int var2) {
+   public StreamTagVisitor.ValueResult visitList(final TagType<?> elementType, final int size) {
       return StreamTagVisitor.ValueResult.CONTINUE;
    }
 
-   public StreamTagVisitor.EntryResult visitElement(TagType<?> var1, int var2) {
-      this.enterContainerIfNeeded(var1);
+   public StreamTagVisitor.EntryResult visitElement(final TagType<?> type, final int index) {
+      this.enterContainerIfNeeded(type);
       return StreamTagVisitor.EntryResult.ENTER;
    }
 
-   public StreamTagVisitor.EntryResult visitEntry(TagType<?> var1) {
+   public StreamTagVisitor.EntryResult visitEntry(final TagType<?> type) {
       return StreamTagVisitor.EntryResult.ENTER;
    }
 
-   public StreamTagVisitor.EntryResult visitEntry(TagType<?> var1, String var2) {
-      ((ContainerBuilder)this.containerStack.getLast()).acceptKey(var2);
-      this.enterContainerIfNeeded(var1);
+   public StreamTagVisitor.EntryResult visitEntry(final TagType<?> type, final String id) {
+      ((ContainerBuilder)this.containerStack.getLast()).acceptKey(id);
+      this.enterContainerIfNeeded(type);
       return StreamTagVisitor.EntryResult.ENTER;
    }
 
-   private void enterContainerIfNeeded(TagType<?> var1) {
-      if (var1 == ListTag.TYPE) {
+   private void enterContainerIfNeeded(final TagType<?> type) {
+      if (type == ListTag.TYPE) {
          this.containerStack.addLast(new ListBuilder());
-      } else if (var1 == CompoundTag.TYPE) {
+      } else if (type == CompoundTag.TYPE) {
          this.containerStack.addLast(new CompoundBuilder());
       }
 
    }
 
    public StreamTagVisitor.ValueResult visitContainerEnd() {
-      ContainerBuilder var1 = (ContainerBuilder)this.containerStack.removeLast();
-      Tag var2 = var1.build();
-      if (var2 != null) {
-         ((ContainerBuilder)this.containerStack.getLast()).acceptValue(var2);
+      ContainerBuilder container = (ContainerBuilder)this.containerStack.removeLast();
+      Tag tag = container.build();
+      if (tag != null) {
+         ((ContainerBuilder)this.containerStack.getLast()).acceptValue(tag);
       }
 
       return StreamTagVisitor.ValueResult.CONTINUE;
    }
 
-   public StreamTagVisitor.ValueResult visitRootEntry(TagType<?> var1) {
-      this.enterContainerIfNeeded(var1);
+   public StreamTagVisitor.ValueResult visitRootEntry(final TagType<?> type) {
+      this.enterContainerIfNeeded(type);
       return StreamTagVisitor.ValueResult.CONTINUE;
    }
 
-   interface ContainerBuilder {
-      default void acceptKey(String var1) {
+   private interface ContainerBuilder {
+      default void acceptKey(final String id) {
       }
 
-      void acceptValue(Tag var1);
+      void acceptValue(Tag tag);
 
       @Nullable Tag build();
    }
 
-   static class RootBuilder implements ContainerBuilder {
+   private static class RootBuilder implements ContainerBuilder {
       private @Nullable Tag result;
 
-      RootBuilder() {
+      private RootBuilder() {
          super();
       }
 
-      public void acceptValue(Tag var1) {
-         this.result = var1;
+      public void acceptValue(final Tag tag) {
+         this.result = tag;
       }
 
       public @Nullable Tag build() {
@@ -163,20 +163,20 @@ public class CollectToTag implements StreamTagVisitor {
       }
    }
 
-   static class CompoundBuilder implements ContainerBuilder {
+   private static class CompoundBuilder implements ContainerBuilder {
       private final CompoundTag compound = new CompoundTag();
       private String lastId = "";
 
-      CompoundBuilder() {
+      private CompoundBuilder() {
          super();
       }
 
-      public void acceptKey(String var1) {
-         this.lastId = var1;
+      public void acceptKey(final String id) {
+         this.lastId = id;
       }
 
-      public void acceptValue(Tag var1) {
-         this.compound.put(this.lastId, var1);
+      public void acceptValue(final Tag tag) {
+         this.compound.put(this.lastId, tag);
       }
 
       public Tag build() {
@@ -184,15 +184,15 @@ public class CollectToTag implements StreamTagVisitor {
       }
    }
 
-   static class ListBuilder implements ContainerBuilder {
+   private static class ListBuilder implements ContainerBuilder {
       private final ListTag list = new ListTag();
 
-      ListBuilder() {
+      private ListBuilder() {
          super();
       }
 
-      public void acceptValue(Tag var1) {
-         this.list.addAndUnwrap(var1);
+      public void acceptValue(final Tag tag) {
+         this.list.addAndUnwrap(tag);
       }
 
       public Tag build() {

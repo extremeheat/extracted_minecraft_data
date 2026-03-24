@@ -8,34 +8,34 @@ public class NonOverlappingMerger extends AbstractDoubleList implements IndexMer
    private final DoubleList upper;
    private final boolean swap;
 
-   protected NonOverlappingMerger(DoubleList var1, DoubleList var2, boolean var3) {
+   protected NonOverlappingMerger(final DoubleList lower, final DoubleList upper, final boolean swap) {
       super();
-      this.lower = var1;
-      this.upper = var2;
-      this.swap = var3;
+      this.lower = lower;
+      this.upper = upper;
+      this.swap = swap;
    }
 
    public int size() {
       return this.lower.size() + this.upper.size();
    }
 
-   public boolean forMergedIndexes(IndexMerger.IndexConsumer var1) {
-      return this.swap ? this.forNonSwappedIndexes((var1x, var2, var3) -> var1.merge(var2, var1x, var3)) : this.forNonSwappedIndexes(var1);
+   public boolean forMergedIndexes(final IndexMerger.IndexConsumer consumer) {
+      return this.swap ? this.forNonSwappedIndexes((firstIndex, secondIndex, resultIndex) -> consumer.merge(secondIndex, firstIndex, resultIndex)) : this.forNonSwappedIndexes(consumer);
    }
 
-   private boolean forNonSwappedIndexes(IndexMerger.IndexConsumer var1) {
-      int var2 = this.lower.size();
+   private boolean forNonSwappedIndexes(final IndexMerger.IndexConsumer consumer) {
+      int lowerSize = this.lower.size();
 
-      for(int var3 = 0; var3 < var2; ++var3) {
-         if (!var1.merge(var3, -1, var3)) {
+      for(int i = 0; i < lowerSize; ++i) {
+         if (!consumer.merge(i, -1, i)) {
             return false;
          }
       }
 
-      int var5 = this.upper.size() - 1;
+      int upperSize = this.upper.size() - 1;
 
-      for(int var4 = 0; var4 < var5; ++var4) {
-         if (!var1.merge(var2 - 1, var4, var2 + var4)) {
+      for(int i = 0; i < upperSize; ++i) {
+         if (!consumer.merge(lowerSize - 1, i, lowerSize + i)) {
             return false;
          }
       }
@@ -43,8 +43,8 @@ public class NonOverlappingMerger extends AbstractDoubleList implements IndexMer
       return true;
    }
 
-   public double getDouble(int var1) {
-      return var1 < this.lower.size() ? this.lower.getDouble(var1) : this.upper.getDouble(var1 - this.lower.size());
+   public double getDouble(final int index) {
+      return index < this.lower.size() ? this.lower.getDouble(index) : this.upper.getDouble(index - this.lower.size());
    }
 
    public DoubleList getList() {

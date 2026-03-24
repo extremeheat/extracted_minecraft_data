@@ -9,7 +9,7 @@ import org.jspecify.annotations.Nullable;
 public interface RuleBlockEntityModifier {
    Codec<RuleBlockEntityModifier> CODEC = BuiltInRegistries.RULE_BLOCK_ENTITY_MODIFIER.byNameCodec().dispatch(RuleBlockEntityModifier::getType, RuleBlockEntityModifierType::codec);
 
-   @Nullable CompoundTag apply(RandomSource var1, @Nullable CompoundTag var2);
+   @Nullable CompoundTag apply(final RandomSource random, final @Nullable CompoundTag existingTag);
 
    RuleBlockEntityModifierType<?> getType();
 }

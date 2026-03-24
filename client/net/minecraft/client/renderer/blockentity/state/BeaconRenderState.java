@@ -13,10 +13,8 @@ public class BeaconRenderState extends BlockEntityRenderState {
    }
 
    public static record Section(int color, int height) {
-      public Section(int var1, int var2) {
+      public Section {
          super();
-         this.color = var1;
-         this.height = var2;
       }
    }
 }

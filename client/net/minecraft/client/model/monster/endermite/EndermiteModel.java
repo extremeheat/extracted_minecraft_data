@@ -16,40 +16,40 @@ public class EndermiteModel extends EntityModel<EntityRenderState> {
    private static final int[][] BODY_TEXS = new int[][]{{0, 0}, {0, 5}, {0, 14}, {0, 18}};
    private final ModelPart[] bodyParts = new ModelPart[4];
 
-   public EndermiteModel(ModelPart var1) {
-      super(var1);
+   public EndermiteModel(final ModelPart root) {
+      super(root);
 
-      for(int var2 = 0; var2 < 4; ++var2) {
-         this.bodyParts[var2] = var1.getChild(createSegmentName(var2));
+      for(int i = 0; i < 4; ++i) {
+         this.bodyParts[i] = root.getChild(createSegmentName(i));
       }
 
    }
 
-   private static String createSegmentName(int var0) {
-      return "segment" + var0;
+   private static String createSegmentName(final int i) {
+      return "segment" + i;
    }
 
    public static LayerDefinition createBodyLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      float var2 = -3.5F;
+      MeshDefinition mesh = new MeshDefinition();
+      PartDefinition root = mesh.getRoot();
+      float placement = -3.5F;
 
-      for(int var3 = 0; var3 < 4; ++var3) {
-         var1.addOrReplaceChild(createSegmentName(var3), CubeListBuilder.create().texOffs(BODY_TEXS[var3][0], BODY_TEXS[var3][1]).addBox((float)BODY_SIZES[var3][0] * -0.5F, 0.0F, (float)BODY_SIZES[var3][2] * -0.5F, (float)BODY_SIZES[var3][0], (float)BODY_SIZES[var3][1], (float)BODY_SIZES[var3][2]), PartPose.offset(0.0F, (float)(24 - BODY_SIZES[var3][1]), var2));
-         if (var3 < 3) {
-            var2 += (float)(BODY_SIZES[var3][2] + BODY_SIZES[var3 + 1][2]) * 0.5F;
+      for(int i = 0; i < 4; ++i) {
+         root.addOrReplaceChild(createSegmentName(i), CubeListBuilder.create().texOffs(BODY_TEXS[i][0], BODY_TEXS[i][1]).addBox((float)BODY_SIZES[i][0] * -0.5F, 0.0F, (float)BODY_SIZES[i][2] * -0.5F, (float)BODY_SIZES[i][0], (float)BODY_SIZES[i][1], (float)BODY_SIZES[i][2]), PartPose.offset(0.0F, (float)(24 - BODY_SIZES[i][1]), placement));
+         if (i < 3) {
+            placement += (float)(BODY_SIZES[i][2] + BODY_SIZES[i + 1][2]) * 0.5F;
          }
       }
 
-      return LayerDefinition.create(var0, 64, 32);
+      return LayerDefinition.create(mesh, 64, 32);
    }
 
-   public void setupAnim(EntityRenderState var1) {
-      super.setupAnim(var1);
+   public void setupAnim(final EntityRenderState state) {
+      super.setupAnim(state);
 
-      for(int var2 = 0; var2 < this.bodyParts.length; ++var2) {
-         this.bodyParts[var2].yRot = Mth.cos((double)(var1.ageInTicks * 0.9F + (float)var2 * 0.15F * 3.1415927F)) * 3.1415927F * 0.01F * (float)(1 + Math.abs(var2 - 2));
-         this.bodyParts[var2].x = Mth.sin((double)(var1.ageInTicks * 0.9F + (float)var2 * 0.15F * 3.1415927F)) * 3.1415927F * 0.1F * (float)Math.abs(var2 - 2);
+      for(int i = 0; i < this.bodyParts.length; ++i) {
+         this.bodyParts[i].yRot = Mth.cos((double)(state.ageInTicks * 0.9F + (float)i * 0.15F * 3.1415927F)) * 3.1415927F * 0.01F * (float)(1 + Math.abs(i - 2));
+         this.bodyParts[i].x = Mth.sin((double)(state.ageInTicks * 0.9F + (float)i * 0.15F * 3.1415927F)) * 3.1415927F * 0.1F * (float)Math.abs(i - 2);
       }
 
    }

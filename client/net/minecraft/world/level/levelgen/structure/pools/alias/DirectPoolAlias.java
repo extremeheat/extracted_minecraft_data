@@ -10,16 +10,14 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
 public record DirectPoolAlias(ResourceKey<StructureTemplatePool> alias, ResourceKey<StructureTemplatePool> target) implements PoolAliasBinding {
-   static MapCodec<DirectPoolAlias> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceKey.codec(Registries.TEMPLATE_POOL).fieldOf("alias").forGetter(DirectPoolAlias::alias), ResourceKey.codec(Registries.TEMPLATE_POOL).fieldOf("target").forGetter(DirectPoolAlias::target)).apply(var0, DirectPoolAlias::new));
+   static final MapCodec<DirectPoolAlias> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ResourceKey.codec(Registries.TEMPLATE_POOL).fieldOf("alias").forGetter(DirectPoolAlias::alias), ResourceKey.codec(Registries.TEMPLATE_POOL).fieldOf("target").forGetter(DirectPoolAlias::target)).apply(i, DirectPoolAlias::new));
 
-   public DirectPoolAlias(ResourceKey<StructureTemplatePool> var1, ResourceKey<StructureTemplatePool> var2) {
+   public DirectPoolAlias {
       super();
-      this.alias = var1;
-      this.target = var2;
    }
 
-   public void forEachResolved(RandomSource var1, BiConsumer<ResourceKey<StructureTemplatePool>, ResourceKey<StructureTemplatePool>> var2) {
-      var2.accept(this.alias, this.target);
+   public void forEachResolved(final RandomSource random, final BiConsumer<ResourceKey<StructureTemplatePool>, ResourceKey<StructureTemplatePool>> aliasAndTargetConsumer) {
+      aliasAndTargetConsumer.accept(this.alias, this.target);
    }
 
    public Stream<ResourceKey<StructureTemplatePool>> allTargets() {

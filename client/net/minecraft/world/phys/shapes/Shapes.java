@@ -21,9 +21,9 @@ public final class Shapes {
    public static final double EPSILON = 1.0E-7;
    public static final double BIG_EPSILON = 1.0E-6;
    private static final VoxelShape BLOCK = (VoxelShape)Util.make(() -> {
-      BitSetDiscreteVoxelShape var0 = new BitSetDiscreteVoxelShape(1, 1, 1);
-      ((DiscreteVoxelShape)var0).fill(0, 0, 0);
-      return new CubeVoxelShape(var0);
+      DiscreteVoxelShape shape = new BitSetDiscreteVoxelShape(1, 1, 1);
+      shape.fill(0, 0, 0);
+      return new CubeVoxelShape(shape);
    });
    private static final Vec3 BLOCK_CENTER = new Vec3(0.5, 0.5, 0.5);
    public static final VoxelShape INFINITY = box(-1.0 / 0.0, -1.0 / 0.0, -1.0 / 0.0, 1.0 / 0.0, 1.0 / 0.0, 1.0 / 0.0);
@@ -41,52 +41,52 @@ public final class Shapes {
       return BLOCK;
    }
 
-   public static VoxelShape box(double var0, double var2, double var4, double var6, double var8, double var10) {
-      if (!(var0 > var6) && !(var2 > var8) && !(var4 > var10)) {
-         return create(var0, var2, var4, var6, var8, var10);
+   public static VoxelShape box(final double minX, final double minY, final double minZ, final double maxX, final double maxY, final double maxZ) {
+      if (!(minX > maxX) && !(minY > maxY) && !(minZ > maxZ)) {
+         return create(minX, minY, minZ, maxX, maxY, maxZ);
       } else {
          throw new IllegalArgumentException("The min values need to be smaller or equals to the max values");
       }
    }
 
-   public static VoxelShape create(double var0, double var2, double var4, double var6, double var8, double var10) {
-      if (!(var6 - var0 < 1.0E-7) && !(var8 - var2 < 1.0E-7) && !(var10 - var4 < 1.0E-7)) {
-         int var12 = findBits(var0, var6);
-         int var13 = findBits(var2, var8);
-         int var14 = findBits(var4, var10);
-         if (var12 >= 0 && var13 >= 0 && var14 >= 0) {
-            if (var12 == 0 && var13 == 0 && var14 == 0) {
+   public static VoxelShape create(final double minX, final double minY, final double minZ, final double maxX, final double maxY, final double maxZ) {
+      if (!(maxX - minX < 1.0E-7) && !(maxY - minY < 1.0E-7) && !(maxZ - minZ < 1.0E-7)) {
+         int xBits = findBits(minX, maxX);
+         int yBits = findBits(minY, maxY);
+         int zBits = findBits(minZ, maxZ);
+         if (xBits >= 0 && yBits >= 0 && zBits >= 0) {
+            if (xBits == 0 && yBits == 0 && zBits == 0) {
                return block();
             } else {
-               int var15 = 1 << var12;
-               int var16 = 1 << var13;
-               int var17 = 1 << var14;
-               BitSetDiscreteVoxelShape var18 = BitSetDiscreteVoxelShape.withFilledBounds(var15, var16, var17, (int)Math.round(var0 * (double)var15), (int)Math.round(var2 * (double)var16), (int)Math.round(var4 * (double)var17), (int)Math.round(var6 * (double)var15), (int)Math.round(var8 * (double)var16), (int)Math.round(var10 * (double)var17));
-               return new CubeVoxelShape(var18);
+               int xSize = 1 << xBits;
+               int ySize = 1 << yBits;
+               int zSize = 1 << zBits;
+               BitSetDiscreteVoxelShape voxelShape = BitSetDiscreteVoxelShape.withFilledBounds(xSize, ySize, zSize, (int)Math.round(minX * (double)xSize), (int)Math.round(minY * (double)ySize), (int)Math.round(minZ * (double)zSize), (int)Math.round(maxX * (double)xSize), (int)Math.round(maxY * (double)ySize), (int)Math.round(maxZ * (double)zSize));
+               return new CubeVoxelShape(voxelShape);
             }
          } else {
-            return new ArrayVoxelShape(BLOCK.shape, DoubleArrayList.wrap(new double[]{var0, var6}), DoubleArrayList.wrap(new double[]{var2, var8}), DoubleArrayList.wrap(new double[]{var4, var10}));
+            return new ArrayVoxelShape(BLOCK.shape, DoubleArrayList.wrap(new double[]{minX, maxX}), DoubleArrayList.wrap(new double[]{minY, maxY}), DoubleArrayList.wrap(new double[]{minZ, maxZ}));
          }
       } else {
          return empty();
       }
    }
 
-   public static VoxelShape create(AABB var0) {
-      return create(var0.minX, var0.minY, var0.minZ, var0.maxX, var0.maxY, var0.maxZ);
+   public static VoxelShape create(final AABB aabb) {
+      return create(aabb.minX, aabb.minY, aabb.minZ, aabb.maxX, aabb.maxY, aabb.maxZ);
    }
 
    @VisibleForTesting
-   protected static int findBits(double var0, double var2) {
-      if (!(var0 < -1.0E-7) && !(var2 > 1.0000001)) {
-         for(int var4 = 0; var4 <= 3; ++var4) {
-            int var5 = 1 << var4;
-            double var6 = var0 * (double)var5;
-            double var8 = var2 * (double)var5;
-            boolean var10 = Math.abs(var6 - (double)Math.round(var6)) < 1.0E-7 * (double)var5;
-            boolean var11 = Math.abs(var8 - (double)Math.round(var8)) < 1.0E-7 * (double)var5;
-            if (var10 && var11) {
-               return var4;
+   protected static int findBits(final double min, final double max) {
+      if (!(min < -1.0E-7) && !(max > 1.0000001)) {
+         for(int bits = 0; bits <= 3; ++bits) {
+            int intervals = 1 << bits;
+            double shMin = min * (double)intervals;
+            double shMax = max * (double)intervals;
+            boolean foundMin = Math.abs(shMin - (double)Math.round(shMin)) < 1.0E-7 * (double)intervals;
+            boolean foundMax = Math.abs(shMax - (double)Math.round(shMax)) < 1.0E-7 * (double)intervals;
+            if (foundMin && foundMax) {
+               return bits;
             }
          }
 
@@ -96,135 +96,135 @@ public final class Shapes {
       }
    }
 
-   protected static long lcm(int var0, int var1) {
-      return (long)var0 * (long)(var1 / IntMath.gcd(var0, var1));
+   protected static long lcm(final int first, final int second) {
+      return (long)first * (long)(second / IntMath.gcd(first, second));
    }
 
-   public static VoxelShape or(VoxelShape var0, VoxelShape var1) {
-      return join(var0, var1, BooleanOp.OR);
+   public static VoxelShape or(final VoxelShape first, final VoxelShape second) {
+      return join(first, second, BooleanOp.OR);
    }
 
-   public static VoxelShape or(VoxelShape var0, VoxelShape... var1) {
-      return (VoxelShape)Arrays.stream(var1).reduce(var0, Shapes::or);
+   public static VoxelShape or(final VoxelShape first, final VoxelShape... tail) {
+      return (VoxelShape)Arrays.stream(tail).reduce(first, Shapes::or);
    }
 
-   public static VoxelShape join(VoxelShape var0, VoxelShape var1, BooleanOp var2) {
-      return joinUnoptimized(var0, var1, var2).optimize();
+   public static VoxelShape join(final VoxelShape first, final VoxelShape second, final BooleanOp op) {
+      return joinUnoptimized(first, second, op).optimize();
    }
 
-   public static VoxelShape joinUnoptimized(VoxelShape var0, VoxelShape var1, BooleanOp var2) {
-      if (var2.apply(false, false)) {
+   public static VoxelShape joinUnoptimized(final VoxelShape first, final VoxelShape second, final BooleanOp op) {
+      if (op.apply(false, false)) {
          throw (IllegalArgumentException)Util.pauseInIde(new IllegalArgumentException());
-      } else if (var0 == var1) {
-         return var2.apply(true, true) ? var0 : empty();
+      } else if (first == second) {
+         return op.apply(true, true) ? first : empty();
       } else {
-         boolean var3 = var2.apply(true, false);
-         boolean var4 = var2.apply(false, true);
-         if (var0.isEmpty()) {
-            return var4 ? var1 : empty();
-         } else if (var1.isEmpty()) {
-            return var3 ? var0 : empty();
+         boolean firstOnlyMatters = op.apply(true, false);
+         boolean secondOnlyMatters = op.apply(false, true);
+         if (first.isEmpty()) {
+            return secondOnlyMatters ? second : empty();
+         } else if (second.isEmpty()) {
+            return firstOnlyMatters ? first : empty();
          } else {
-            IndexMerger var5 = createIndexMerger(1, var0.getCoords(Direction.Axis.X), var1.getCoords(Direction.Axis.X), var3, var4);
-            IndexMerger var6 = createIndexMerger(var5.size() - 1, var0.getCoords(Direction.Axis.Y), var1.getCoords(Direction.Axis.Y), var3, var4);
-            IndexMerger var7 = createIndexMerger((var5.size() - 1) * (var6.size() - 1), var0.getCoords(Direction.Axis.Z), var1.getCoords(Direction.Axis.Z), var3, var4);
-            BitSetDiscreteVoxelShape var8 = BitSetDiscreteVoxelShape.join(var0.shape, var1.shape, var5, var6, var7, var2);
-            return (VoxelShape)(var5 instanceof DiscreteCubeMerger && var6 instanceof DiscreteCubeMerger && var7 instanceof DiscreteCubeMerger ? new CubeVoxelShape(var8) : new ArrayVoxelShape(var8, var5.getList(), var6.getList(), var7.getList()));
+            IndexMerger xMerger = createIndexMerger(1, first.getCoords(Direction.Axis.X), second.getCoords(Direction.Axis.X), firstOnlyMatters, secondOnlyMatters);
+            IndexMerger yMerger = createIndexMerger(xMerger.size() - 1, first.getCoords(Direction.Axis.Y), second.getCoords(Direction.Axis.Y), firstOnlyMatters, secondOnlyMatters);
+            IndexMerger zMerger = createIndexMerger((xMerger.size() - 1) * (yMerger.size() - 1), first.getCoords(Direction.Axis.Z), second.getCoords(Direction.Axis.Z), firstOnlyMatters, secondOnlyMatters);
+            BitSetDiscreteVoxelShape voxelShape = BitSetDiscreteVoxelShape.join(first.shape, second.shape, xMerger, yMerger, zMerger, op);
+            return (VoxelShape)(xMerger instanceof DiscreteCubeMerger && yMerger instanceof DiscreteCubeMerger && zMerger instanceof DiscreteCubeMerger ? new CubeVoxelShape(voxelShape) : new ArrayVoxelShape(voxelShape, xMerger.getList(), yMerger.getList(), zMerger.getList()));
          }
       }
    }
 
-   public static boolean joinIsNotEmpty(VoxelShape var0, VoxelShape var1, BooleanOp var2) {
-      if (var2.apply(false, false)) {
+   public static boolean joinIsNotEmpty(final VoxelShape first, final VoxelShape second, final BooleanOp op) {
+      if (op.apply(false, false)) {
          throw (IllegalArgumentException)Util.pauseInIde(new IllegalArgumentException());
       } else {
-         boolean var3 = var0.isEmpty();
-         boolean var4 = var1.isEmpty();
-         if (!var3 && !var4) {
-            if (var0 == var1) {
-               return var2.apply(true, true);
+         boolean firstEmpty = first.isEmpty();
+         boolean secondEmpty = second.isEmpty();
+         if (!firstEmpty && !secondEmpty) {
+            if (first == second) {
+               return op.apply(true, true);
             } else {
-               boolean var5 = var2.apply(true, false);
-               boolean var6 = var2.apply(false, true);
+               boolean firstOnlyMatters = op.apply(true, false);
+               boolean secondOnlyMatters = op.apply(false, true);
 
-               for(Direction.Axis var10 : AxisCycle.AXIS_VALUES) {
-                  if (var0.max(var10) < var1.min(var10) - 1.0E-7) {
-                     return var5 || var6;
+               for(Direction.Axis axis : AxisCycle.AXIS_VALUES) {
+                  if (first.max(axis) < second.min(axis) - 1.0E-7) {
+                     return firstOnlyMatters || secondOnlyMatters;
                   }
 
-                  if (var1.max(var10) < var0.min(var10) - 1.0E-7) {
-                     return var5 || var6;
+                  if (second.max(axis) < first.min(axis) - 1.0E-7) {
+                     return firstOnlyMatters || secondOnlyMatters;
                   }
                }
 
-               IndexMerger var11 = createIndexMerger(1, var0.getCoords(Direction.Axis.X), var1.getCoords(Direction.Axis.X), var5, var6);
-               IndexMerger var12 = createIndexMerger(var11.size() - 1, var0.getCoords(Direction.Axis.Y), var1.getCoords(Direction.Axis.Y), var5, var6);
-               IndexMerger var13 = createIndexMerger((var11.size() - 1) * (var12.size() - 1), var0.getCoords(Direction.Axis.Z), var1.getCoords(Direction.Axis.Z), var5, var6);
-               return joinIsNotEmpty(var11, var12, var13, var0.shape, var1.shape, var2);
+               IndexMerger xMerger = createIndexMerger(1, first.getCoords(Direction.Axis.X), second.getCoords(Direction.Axis.X), firstOnlyMatters, secondOnlyMatters);
+               IndexMerger yMerger = createIndexMerger(xMerger.size() - 1, first.getCoords(Direction.Axis.Y), second.getCoords(Direction.Axis.Y), firstOnlyMatters, secondOnlyMatters);
+               IndexMerger zMerger = createIndexMerger((xMerger.size() - 1) * (yMerger.size() - 1), first.getCoords(Direction.Axis.Z), second.getCoords(Direction.Axis.Z), firstOnlyMatters, secondOnlyMatters);
+               return joinIsNotEmpty(xMerger, yMerger, zMerger, first.shape, second.shape, op);
             }
          } else {
-            return var2.apply(!var3, !var4);
+            return op.apply(!firstEmpty, !secondEmpty);
          }
       }
    }
 
-   private static boolean joinIsNotEmpty(IndexMerger var0, IndexMerger var1, IndexMerger var2, DiscreteVoxelShape var3, DiscreteVoxelShape var4, BooleanOp var5) {
-      return !var0.forMergedIndexes((var5x, var6, var7) -> var1.forMergedIndexes((var6x, var7x, var8) -> var2.forMergedIndexes((var7, var8x, var9) -> !var5.apply(var3.isFullWide(var5x, var6x, var7), var4.isFullWide(var6, var7x, var8x)))));
+   private static boolean joinIsNotEmpty(final IndexMerger xMerger, final IndexMerger yMerger, final IndexMerger zMerger, final DiscreteVoxelShape first, final DiscreteVoxelShape second, final BooleanOp op) {
+      return !xMerger.forMergedIndexes((x1, x2, xr) -> yMerger.forMergedIndexes((y1, y2, yr) -> zMerger.forMergedIndexes((z1, z2, zr) -> !op.apply(first.isFullWide(x1, y1, z1), second.isFullWide(x2, y2, z2)))));
    }
 
-   public static double collide(Direction.Axis var0, AABB var1, Iterable<VoxelShape> var2, double var3) {
-      for(VoxelShape var6 : var2) {
-         if (Math.abs(var3) < 1.0E-7) {
+   public static double collide(final Direction.Axis axis, final AABB moving, final Iterable<VoxelShape> shapes, double distance) {
+      for(VoxelShape shape : shapes) {
+         if (Math.abs(distance) < 1.0E-7) {
             return 0.0;
          }
 
-         var3 = var6.collide(var0, var1, var3);
+         distance = shape.collide(axis, moving, distance);
       }
 
-      return var3;
+      return distance;
    }
 
-   public static boolean blockOccludes(VoxelShape var0, VoxelShape var1, Direction var2) {
-      if (var0 == block() && var1 == block()) {
+   public static boolean blockOccludes(final VoxelShape shape, final VoxelShape occluder, final Direction direction) {
+      if (shape == block() && occluder == block()) {
          return true;
-      } else if (var1.isEmpty()) {
+      } else if (occluder.isEmpty()) {
          return false;
       } else {
-         Direction.Axis var3 = var2.getAxis();
-         Direction.AxisDirection var4 = var2.getAxisDirection();
-         VoxelShape var5 = var4 == Direction.AxisDirection.POSITIVE ? var0 : var1;
-         VoxelShape var6 = var4 == Direction.AxisDirection.POSITIVE ? var1 : var0;
-         BooleanOp var7 = var4 == Direction.AxisDirection.POSITIVE ? BooleanOp.ONLY_FIRST : BooleanOp.ONLY_SECOND;
-         return DoubleMath.fuzzyEquals(var5.max(var3), 1.0, 1.0E-7) && DoubleMath.fuzzyEquals(var6.min(var3), 0.0, 1.0E-7) && !joinIsNotEmpty(new SliceShape(var5, var3, var5.shape.getSize(var3) - 1), new SliceShape(var6, var3, 0), var7);
+         Direction.Axis axis = direction.getAxis();
+         Direction.AxisDirection sign = direction.getAxisDirection();
+         VoxelShape first = sign == Direction.AxisDirection.POSITIVE ? shape : occluder;
+         VoxelShape second = sign == Direction.AxisDirection.POSITIVE ? occluder : shape;
+         BooleanOp op = sign == Direction.AxisDirection.POSITIVE ? BooleanOp.ONLY_FIRST : BooleanOp.ONLY_SECOND;
+         return DoubleMath.fuzzyEquals(first.max(axis), 1.0, 1.0E-7) && DoubleMath.fuzzyEquals(second.min(axis), 0.0, 1.0E-7) && !joinIsNotEmpty(new SliceShape(first, axis, first.shape.getSize(axis) - 1), new SliceShape(second, axis, 0), op);
       }
    }
 
-   public static boolean mergedFaceOccludes(VoxelShape var0, VoxelShape var1, Direction var2) {
-      if (var0 != block() && var1 != block()) {
-         Direction.Axis var3 = var2.getAxis();
-         Direction.AxisDirection var4 = var2.getAxisDirection();
-         VoxelShape var5 = var4 == Direction.AxisDirection.POSITIVE ? var0 : var1;
-         VoxelShape var6 = var4 == Direction.AxisDirection.POSITIVE ? var1 : var0;
-         if (!DoubleMath.fuzzyEquals(var5.max(var3), 1.0, 1.0E-7)) {
-            var5 = empty();
+   public static boolean mergedFaceOccludes(final VoxelShape shape, final VoxelShape occluder, final Direction direction) {
+      if (shape != block() && occluder != block()) {
+         Direction.Axis axis = direction.getAxis();
+         Direction.AxisDirection sign = direction.getAxisDirection();
+         VoxelShape first = sign == Direction.AxisDirection.POSITIVE ? shape : occluder;
+         VoxelShape second = sign == Direction.AxisDirection.POSITIVE ? occluder : shape;
+         if (!DoubleMath.fuzzyEquals(first.max(axis), 1.0, 1.0E-7)) {
+            first = empty();
          }
 
-         if (!DoubleMath.fuzzyEquals(var6.min(var3), 0.0, 1.0E-7)) {
-            var6 = empty();
+         if (!DoubleMath.fuzzyEquals(second.min(axis), 0.0, 1.0E-7)) {
+            second = empty();
          }
 
-         return !joinIsNotEmpty(block(), joinUnoptimized(new SliceShape(var5, var3, var5.shape.getSize(var3) - 1), new SliceShape(var6, var3, 0), BooleanOp.OR), BooleanOp.ONLY_FIRST);
+         return !joinIsNotEmpty(block(), joinUnoptimized(new SliceShape(first, axis, first.shape.getSize(axis) - 1), new SliceShape(second, axis, 0), BooleanOp.OR), BooleanOp.ONLY_FIRST);
       } else {
          return true;
       }
    }
 
-   public static boolean faceShapeOccludes(VoxelShape var0, VoxelShape var1) {
-      if (var0 != block() && var1 != block()) {
-         if (var0.isEmpty() && var1.isEmpty()) {
+   public static boolean faceShapeOccludes(final VoxelShape shape, final VoxelShape occluder) {
+      if (shape != block() && occluder != block()) {
+         if (shape.isEmpty() && occluder.isEmpty()) {
             return false;
          } else {
-            return !joinIsNotEmpty(block(), joinUnoptimized(var0, var1, BooleanOp.OR), BooleanOp.ONLY_FIRST);
+            return !joinIsNotEmpty(block(), joinUnoptimized(shape, occluder, BooleanOp.OR), BooleanOp.ONLY_FIRST);
          }
       } else {
          return true;
@@ -232,125 +232,125 @@ public final class Shapes {
    }
 
    @VisibleForTesting
-   protected static IndexMerger createIndexMerger(int var0, DoubleList var1, DoubleList var2, boolean var3, boolean var4) {
-      int var5 = var1.size() - 1;
-      int var6 = var2.size() - 1;
-      if (var1 instanceof CubePointRange && var2 instanceof CubePointRange) {
-         long var7 = lcm(var5, var6);
-         if ((long)var0 * var7 <= 256L) {
-            return new DiscreteCubeMerger(var5, var6);
+   protected static IndexMerger createIndexMerger(final int cost, final DoubleList first, final DoubleList second, final boolean firstOnlyMatters, final boolean secondOnlyMatters) {
+      int firstSize = first.size() - 1;
+      int secondSize = second.size() - 1;
+      if (first instanceof CubePointRange && second instanceof CubePointRange) {
+         long size = lcm(firstSize, secondSize);
+         if ((long)cost * size <= 256L) {
+            return new DiscreteCubeMerger(firstSize, secondSize);
          }
       }
 
-      if (var1.getDouble(var5) < var2.getDouble(0) - 1.0E-7) {
-         return new NonOverlappingMerger(var1, var2, false);
-      } else if (var2.getDouble(var6) < var1.getDouble(0) - 1.0E-7) {
-         return new NonOverlappingMerger(var2, var1, true);
+      if (first.getDouble(firstSize) < second.getDouble(0) - 1.0E-7) {
+         return new NonOverlappingMerger(first, second, false);
+      } else if (second.getDouble(secondSize) < first.getDouble(0) - 1.0E-7) {
+         return new NonOverlappingMerger(second, first, true);
       } else {
-         return (IndexMerger)(var5 == var6 && Objects.equals(var1, var2) ? new IdenticalMerger(var1) : new IndirectMerger(var1, var2, var3, var4));
+         return (IndexMerger)(firstSize == secondSize && Objects.equals(first, second) ? new IdenticalMerger(first) : new IndirectMerger(first, second, firstOnlyMatters, secondOnlyMatters));
       }
    }
 
-   public static VoxelShape rotate(VoxelShape var0, OctahedralGroup var1) {
-      return rotate(var0, var1, BLOCK_CENTER);
+   public static VoxelShape rotate(final VoxelShape shape, final OctahedralGroup rotation) {
+      return rotate(shape, rotation, BLOCK_CENTER);
    }
 
-   public static VoxelShape rotate(VoxelShape var0, OctahedralGroup var1, Vec3 var2) {
-      if (var1 == OctahedralGroup.IDENTITY) {
-         return var0;
+   public static VoxelShape rotate(final VoxelShape shape, final OctahedralGroup rotation, final Vec3 rotationPoint) {
+      if (rotation == OctahedralGroup.IDENTITY) {
+         return shape;
       } else {
-         DiscreteVoxelShape var3 = var0.shape.rotate(var1);
-         if (var0 instanceof CubeVoxelShape && BLOCK_CENTER.equals(var2)) {
-            return new CubeVoxelShape(var3);
+         DiscreteVoxelShape newDiscreteShape = shape.shape.rotate(rotation);
+         if (shape instanceof CubeVoxelShape && BLOCK_CENTER.equals(rotationPoint)) {
+            return new CubeVoxelShape(newDiscreteShape);
          } else {
-            Direction.Axis var4 = var1.permutation().permuteAxis(Direction.Axis.X);
-            Direction.Axis var5 = var1.permutation().permuteAxis(Direction.Axis.Y);
-            Direction.Axis var6 = var1.permutation().permuteAxis(Direction.Axis.Z);
-            DoubleList var7 = var0.getCoords(var4);
-            DoubleList var8 = var0.getCoords(var5);
-            DoubleList var9 = var0.getCoords(var6);
-            boolean var10 = var1.inverts(Direction.Axis.X);
-            boolean var11 = var1.inverts(Direction.Axis.Y);
-            boolean var12 = var1.inverts(Direction.Axis.Z);
-            return new ArrayVoxelShape(var3, flipAxisIfNeeded(var7, var10, var2.get(var4), var2.x), flipAxisIfNeeded(var8, var11, var2.get(var5), var2.y), flipAxisIfNeeded(var9, var12, var2.get(var6), var2.z));
+            Direction.Axis newX = rotation.permutation().permuteAxis(Direction.Axis.X);
+            Direction.Axis newY = rotation.permutation().permuteAxis(Direction.Axis.Y);
+            Direction.Axis newZ = rotation.permutation().permuteAxis(Direction.Axis.Z);
+            DoubleList newXs = shape.getCoords(newX);
+            DoubleList newYs = shape.getCoords(newY);
+            DoubleList newZs = shape.getCoords(newZ);
+            boolean flipX = rotation.inverts(Direction.Axis.X);
+            boolean flipY = rotation.inverts(Direction.Axis.Y);
+            boolean flipZ = rotation.inverts(Direction.Axis.Z);
+            return new ArrayVoxelShape(newDiscreteShape, flipAxisIfNeeded(newXs, flipX, rotationPoint.get(newX), rotationPoint.x), flipAxisIfNeeded(newYs, flipY, rotationPoint.get(newY), rotationPoint.y), flipAxisIfNeeded(newZs, flipZ, rotationPoint.get(newZ), rotationPoint.z));
          }
       }
    }
 
    @VisibleForTesting
-   static DoubleList flipAxisIfNeeded(DoubleList var0, boolean var1, double var2, double var4) {
-      if (!var1 && var2 == var4) {
-         return var0;
+   static DoubleList flipAxisIfNeeded(final DoubleList newAxis, final boolean flip, final double newRelative, final double oldRelative) {
+      if (!flip && newRelative == oldRelative) {
+         return newAxis;
       } else {
-         int var6 = var0.size();
-         DoubleArrayList var7 = new DoubleArrayList(var6);
-         if (var1) {
-            for(int var8 = var6 - 1; var8 >= 0; --var8) {
-               var7.add(-(var0.getDouble(var8) - var2) + var4);
+         int size = newAxis.size();
+         DoubleList newList = new DoubleArrayList(size);
+         if (flip) {
+            for(int i = size - 1; i >= 0; --i) {
+               newList.add(-(newAxis.getDouble(i) - newRelative) + oldRelative);
             }
          } else {
-            for(int var9 = 0; var9 >= 0 && var9 < var6; ++var9) {
-               var7.add(var0.getDouble(var9) - var2 + var4);
+            for(int i = 0; i >= 0 && i < size; ++i) {
+               newList.add(newAxis.getDouble(i) - newRelative + oldRelative);
             }
          }
 
-         return var7;
+         return newList;
       }
    }
 
-   public static boolean equal(VoxelShape var0, VoxelShape var1) {
-      return !joinIsNotEmpty(var0, var1, BooleanOp.NOT_SAME);
+   public static boolean equal(final VoxelShape first, final VoxelShape second) {
+      return !joinIsNotEmpty(first, second, BooleanOp.NOT_SAME);
    }
 
-   public static Map<Direction.Axis, VoxelShape> rotateHorizontalAxis(VoxelShape var0) {
-      return rotateHorizontalAxis(var0, BLOCK_CENTER);
+   public static Map<Direction.Axis, VoxelShape> rotateHorizontalAxis(final VoxelShape zAxis) {
+      return rotateHorizontalAxis(zAxis, BLOCK_CENTER);
    }
 
-   public static Map<Direction.Axis, VoxelShape> rotateHorizontalAxis(VoxelShape var0, Vec3 var1) {
-      return Maps.newEnumMap(Map.of(Direction.Axis.Z, var0, Direction.Axis.X, rotate(var0, OctahedralGroup.BLOCK_ROT_Y_90, var1)));
+   public static Map<Direction.Axis, VoxelShape> rotateHorizontalAxis(final VoxelShape zAxis, final Vec3 rotationCenter) {
+      return Maps.newEnumMap(Map.of(Direction.Axis.Z, zAxis, Direction.Axis.X, rotate(zAxis, OctahedralGroup.BLOCK_ROT_Y_90, rotationCenter)));
    }
 
-   public static Map<Direction.Axis, VoxelShape> rotateAllAxis(VoxelShape var0) {
-      return rotateAllAxis(var0, BLOCK_CENTER);
+   public static Map<Direction.Axis, VoxelShape> rotateAllAxis(final VoxelShape north) {
+      return rotateAllAxis(north, BLOCK_CENTER);
    }
 
-   public static Map<Direction.Axis, VoxelShape> rotateAllAxis(VoxelShape var0, Vec3 var1) {
-      return Maps.newEnumMap(Map.of(Direction.Axis.Z, var0, Direction.Axis.X, rotate(var0, OctahedralGroup.BLOCK_ROT_Y_90, var1), Direction.Axis.Y, rotate(var0, OctahedralGroup.BLOCK_ROT_X_90, var1)));
+   public static Map<Direction.Axis, VoxelShape> rotateAllAxis(final VoxelShape north, final Vec3 rotationCenter) {
+      return Maps.newEnumMap(Map.of(Direction.Axis.Z, north, Direction.Axis.X, rotate(north, OctahedralGroup.BLOCK_ROT_Y_90, rotationCenter), Direction.Axis.Y, rotate(north, OctahedralGroup.BLOCK_ROT_X_90, rotationCenter)));
    }
 
-   public static Map<Direction, VoxelShape> rotateHorizontal(VoxelShape var0) {
-      return rotateHorizontal(var0, OctahedralGroup.IDENTITY, BLOCK_CENTER);
+   public static Map<Direction, VoxelShape> rotateHorizontal(final VoxelShape north) {
+      return rotateHorizontal(north, OctahedralGroup.IDENTITY, BLOCK_CENTER);
    }
 
-   public static Map<Direction, VoxelShape> rotateHorizontal(VoxelShape var0, OctahedralGroup var1) {
-      return rotateHorizontal(var0, var1, BLOCK_CENTER);
+   public static Map<Direction, VoxelShape> rotateHorizontal(final VoxelShape north, final OctahedralGroup initial) {
+      return rotateHorizontal(north, initial, BLOCK_CENTER);
    }
 
-   public static Map<Direction, VoxelShape> rotateHorizontal(VoxelShape var0, OctahedralGroup var1, Vec3 var2) {
-      return Maps.newEnumMap(Map.of(Direction.NORTH, rotate(var0, var1), Direction.EAST, rotate(var0, OctahedralGroup.BLOCK_ROT_Y_90.compose(var1), var2), Direction.SOUTH, rotate(var0, OctahedralGroup.BLOCK_ROT_Y_180.compose(var1), var2), Direction.WEST, rotate(var0, OctahedralGroup.BLOCK_ROT_Y_270.compose(var1), var2)));
+   public static Map<Direction, VoxelShape> rotateHorizontal(final VoxelShape north, final OctahedralGroup initial, final Vec3 rotationCenter) {
+      return Maps.newEnumMap(Map.of(Direction.NORTH, rotate(north, initial), Direction.EAST, rotate(north, OctahedralGroup.BLOCK_ROT_Y_90.compose(initial), rotationCenter), Direction.SOUTH, rotate(north, OctahedralGroup.BLOCK_ROT_Y_180.compose(initial), rotationCenter), Direction.WEST, rotate(north, OctahedralGroup.BLOCK_ROT_Y_270.compose(initial), rotationCenter)));
    }
 
-   public static Map<Direction, VoxelShape> rotateAll(VoxelShape var0) {
-      return rotateAll(var0, OctahedralGroup.IDENTITY, BLOCK_CENTER);
+   public static Map<Direction, VoxelShape> rotateAll(final VoxelShape north) {
+      return rotateAll(north, OctahedralGroup.IDENTITY, BLOCK_CENTER);
    }
 
-   public static Map<Direction, VoxelShape> rotateAll(VoxelShape var0, Vec3 var1) {
-      return rotateAll(var0, OctahedralGroup.IDENTITY, var1);
+   public static Map<Direction, VoxelShape> rotateAll(final VoxelShape north, final Vec3 rotationCenter) {
+      return rotateAll(north, OctahedralGroup.IDENTITY, rotationCenter);
    }
 
-   public static Map<Direction, VoxelShape> rotateAll(VoxelShape var0, OctahedralGroup var1, Vec3 var2) {
-      return Maps.newEnumMap(Map.of(Direction.NORTH, rotate(var0, var1), Direction.EAST, rotate(var0, OctahedralGroup.BLOCK_ROT_Y_90.compose(var1), var2), Direction.SOUTH, rotate(var0, OctahedralGroup.BLOCK_ROT_Y_180.compose(var1), var2), Direction.WEST, rotate(var0, OctahedralGroup.BLOCK_ROT_Y_270.compose(var1), var2), Direction.UP, rotate(var0, OctahedralGroup.BLOCK_ROT_X_270.compose(var1), var2), Direction.DOWN, rotate(var0, OctahedralGroup.BLOCK_ROT_X_90.compose(var1), var2)));
+   public static Map<Direction, VoxelShape> rotateAll(final VoxelShape north, final OctahedralGroup initial, final Vec3 rotationCenter) {
+      return Maps.newEnumMap(Map.of(Direction.NORTH, rotate(north, initial), Direction.EAST, rotate(north, OctahedralGroup.BLOCK_ROT_Y_90.compose(initial), rotationCenter), Direction.SOUTH, rotate(north, OctahedralGroup.BLOCK_ROT_Y_180.compose(initial), rotationCenter), Direction.WEST, rotate(north, OctahedralGroup.BLOCK_ROT_Y_270.compose(initial), rotationCenter), Direction.UP, rotate(north, OctahedralGroup.BLOCK_ROT_X_270.compose(initial), rotationCenter), Direction.DOWN, rotate(north, OctahedralGroup.BLOCK_ROT_X_90.compose(initial), rotationCenter)));
    }
 
-   public static Map<AttachFace, Map<Direction, VoxelShape>> rotateAttachFace(VoxelShape var0) {
-      return rotateAttachFace(var0, OctahedralGroup.IDENTITY);
+   public static Map<AttachFace, Map<Direction, VoxelShape>> rotateAttachFace(final VoxelShape north) {
+      return rotateAttachFace(north, OctahedralGroup.IDENTITY);
    }
 
-   public static Map<AttachFace, Map<Direction, VoxelShape>> rotateAttachFace(VoxelShape var0, OctahedralGroup var1) {
-      return Map.of(AttachFace.WALL, rotateHorizontal(var0, var1), AttachFace.FLOOR, rotateHorizontal(var0, OctahedralGroup.BLOCK_ROT_X_270.compose(var1)), AttachFace.CEILING, rotateHorizontal(var0, OctahedralGroup.BLOCK_ROT_Y_180.compose(OctahedralGroup.BLOCK_ROT_X_90).compose(var1)));
+   public static Map<AttachFace, Map<Direction, VoxelShape>> rotateAttachFace(final VoxelShape north, final OctahedralGroup initial) {
+      return Map.of(AttachFace.WALL, rotateHorizontal(north, initial), AttachFace.FLOOR, rotateHorizontal(north, OctahedralGroup.BLOCK_ROT_X_270.compose(initial)), AttachFace.CEILING, rotateHorizontal(north, OctahedralGroup.BLOCK_ROT_Y_180.compose(OctahedralGroup.BLOCK_ROT_X_90).compose(initial)));
    }
 
    public interface DoubleLineConsumer {
-      void consume(double var1, double var3, double var5, double var7, double var9, double var11);
+      void consume(double x1, double y1, double z1, double x2, double y2, double z2);
    }
 }

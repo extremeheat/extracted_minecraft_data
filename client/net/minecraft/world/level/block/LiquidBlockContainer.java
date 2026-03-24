@@ -10,7 +10,7 @@ import net.minecraft.world.level.material.FluidState;
 import org.jspecify.annotations.Nullable;
 
 public interface LiquidBlockContainer {
-   boolean canPlaceLiquid(@Nullable LivingEntity var1, BlockGetter var2, BlockPos var3, BlockState var4, Fluid var5);
+   boolean canPlaceLiquid(@Nullable LivingEntity user, BlockGetter level, BlockPos pos, BlockState state, Fluid type);
 
-   boolean placeLiquid(LevelAccessor var1, BlockPos var2, BlockState var3, FluidState var4);
+   boolean placeLiquid(LevelAccessor level, BlockPos pos, BlockState state, FluidState fluidState);
 }

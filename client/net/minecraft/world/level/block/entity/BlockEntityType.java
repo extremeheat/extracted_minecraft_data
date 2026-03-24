@@ -6,7 +6,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.world.level.BlockGetter;
@@ -74,32 +73,28 @@ public class BlockEntityType<T extends BlockEntity> {
    private final Set<Block> validBlocks;
    private final Holder.Reference<BlockEntityType<?>> builtInRegistryHolder;
 
-   public static @Nullable Identifier getKey(BlockEntityType<?> var0) {
-      return BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(var0);
-   }
-
-   private static <T extends BlockEntity> BlockEntityType<T> register(String var0, BlockEntitySupplier<? extends T> var1, Block... var2) {
-      if (var2.length == 0) {
-         LOGGER.warn("Block entity type {} requires at least one valid block to be defined!", var0);
+   private static <T extends BlockEntity> BlockEntityType<T> register(final String name, final BlockEntitySupplier<? extends T> factory, final Block... validBlocks) {
+      if (validBlocks.length == 0) {
+         LOGGER.warn("Block entity type {} requires at least one valid block to be defined!", name);
       }
 
-      Util.fetchChoiceType(References.BLOCK_ENTITY, var0);
-      return (BlockEntityType)Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, (String)var0, new BlockEntityType(var1, Set.of(var2)));
+      Util.fetchChoiceType(References.BLOCK_ENTITY, name);
+      return (BlockEntityType)Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, (String)name, new BlockEntityType(factory, Set.of(validBlocks)));
    }
 
-   private BlockEntityType(BlockEntitySupplier<? extends T> var1, Set<Block> var2) {
+   private BlockEntityType(final BlockEntitySupplier<? extends T> factory, final Set<Block> validBlocks) {
       super();
       this.builtInRegistryHolder = BuiltInRegistries.BLOCK_ENTITY_TYPE.createIntrusiveHolder(this);
-      this.factory = var1;
-      this.validBlocks = var2;
+      this.factory = factory;
+      this.validBlocks = validBlocks;
    }
 
-   public T create(BlockPos var1, BlockState var2) {
-      return this.factory.create(var1, var2);
+   public T create(final BlockPos worldPosition, final BlockState blockState) {
+      return this.factory.create(worldPosition, blockState);
    }
 
-   public boolean isValid(BlockState var1) {
-      return this.validBlocks.contains(var1.getBlock());
+   public boolean isValid(final BlockState state) {
+      return this.validBlocks.contains(state.getBlock());
    }
 
    /** @deprecated */
@@ -108,9 +103,9 @@ public class BlockEntityType<T extends BlockEntity> {
       return this.builtInRegistryHolder;
    }
 
-   public @Nullable T getBlockEntity(BlockGetter var1, BlockPos var2) {
-      BlockEntity var3 = var1.getBlockEntity(var2);
-      return (T)(var3 != null && var3.getType() == this ? var3 : null);
+   public @Nullable T getBlockEntity(final BlockGetter level, final BlockPos pos) {
+      BlockEntity entity = level.getBlockEntity(pos);
+      return (T)(entity != null && entity.getType() == this ? entity : null);
    }
 
    public boolean onlyOpCanSetNbt() {
@@ -171,7 +166,7 @@ public class BlockEntityType<T extends BlockEntity> {
    }
 
    @FunctionalInterface
-   interface BlockEntitySupplier<T extends BlockEntity> {
-      T create(BlockPos var1, BlockState var2);
+   private interface BlockEntitySupplier<T extends BlockEntity> {
+      T create(BlockPos worldPosition, BlockState blockState);
    }
 }

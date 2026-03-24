@@ -10,19 +10,19 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class SetItemFunction extends LootItemConditionalFunction {
-   public static final MapCodec<SetItemFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(Item.CODEC.fieldOf("item").forGetter((var0x) -> var0x.item)).apply(var0, SetItemFunction::new));
+   public static final MapCodec<SetItemFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(Item.CODEC.fieldOf("item").forGetter((f) -> f.item)).apply(i, SetItemFunction::new));
    private final Holder<Item> item;
 
-   private SetItemFunction(List<LootItemCondition> var1, Holder<Item> var2) {
-      super(var1);
-      this.item = var2;
+   private SetItemFunction(final List<LootItemCondition> predicates, final Holder<Item> item) {
+      super(predicates);
+      this.item = item;
    }
 
-   public LootItemFunctionType<SetItemFunction> getType() {
-      return LootItemFunctions.SET_ITEM;
+   public MapCodec<SetItemFunction> codec() {
+      return MAP_CODEC;
    }
 
-   public ItemStack run(ItemStack var1, LootContext var2) {
-      return var1.transmuteCopy(this.item.value());
+   public ItemStack run(final ItemStack itemStack, final LootContext context) {
+      return itemStack.transmuteCopy(this.item.value());
    }
 }

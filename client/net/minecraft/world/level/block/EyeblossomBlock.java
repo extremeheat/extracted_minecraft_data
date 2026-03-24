@@ -27,7 +27,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
 
 public class EyeblossomBlock extends FlowerBlock {
-   public static final MapCodec<EyeblossomBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.fieldOf("open").forGetter((var0x) -> var0x.type.open), propertiesCodec()).apply(var0, EyeblossomBlock::new));
+   public static final MapCodec<EyeblossomBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.BOOL.fieldOf("open").forGetter((e) -> e.type.open), propertiesCodec()).apply(i, EyeblossomBlock::new));
    private static final int EYEBLOSSOM_XZ_RANGE = 3;
    private static final int EYEBLOSSOM_Y_RANGE = 2;
    private final Type type;
@@ -36,57 +36,57 @@ public class EyeblossomBlock extends FlowerBlock {
       return CODEC;
    }
 
-   public EyeblossomBlock(Type var1, BlockBehaviour.Properties var2) {
-      super(var1.effect, var1.effectDuration, var2);
-      this.type = var1;
+   public EyeblossomBlock(final Type type, final BlockBehaviour.Properties properties) {
+      super(type.effect, type.effectDuration, properties);
+      this.type = type;
    }
 
-   public EyeblossomBlock(boolean var1, BlockBehaviour.Properties var2) {
-      super(EyeblossomBlock.Type.fromBoolean(var1).effect, EyeblossomBlock.Type.fromBoolean(var1).effectDuration, var2);
-      this.type = EyeblossomBlock.Type.fromBoolean(var1);
+   public EyeblossomBlock(final boolean open, final BlockBehaviour.Properties properties) {
+      super(EyeblossomBlock.Type.fromBoolean(open).effect, EyeblossomBlock.Type.fromBoolean(open).effectDuration, properties);
+      this.type = EyeblossomBlock.Type.fromBoolean(open);
    }
 
-   public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
-      if (this.type.emitSounds() && var4.nextInt(700) == 0) {
-         BlockState var5 = var2.getBlockState(var3.below());
-         if (var5.is(Blocks.PALE_MOSS_BLOCK)) {
-            var2.playLocalSound((double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), SoundEvents.EYEBLOSSOM_IDLE, SoundSource.AMBIENT, 1.0F, 1.0F, false);
+   public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {
+      if (this.type.emitSounds() && random.nextInt(700) == 0) {
+         BlockState below = level.getBlockState(pos.below());
+         if (below.is(Blocks.PALE_MOSS_BLOCK)) {
+            level.playLocalSound((double)pos.getX(), (double)pos.getY(), (double)pos.getZ(), SoundEvents.EYEBLOSSOM_IDLE, SoundSource.AMBIENT, 1.0F, 1.0F, false);
          }
       }
 
    }
 
-   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (this.tryChangingState(var1, var2, var3, var4)) {
-         var2.playSound((Entity)null, var3, this.type.transform().longSwitchSound, SoundSource.BLOCKS, 1.0F, 1.0F);
+   protected void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if (this.tryChangingState(state, level, pos, random)) {
+         level.playSound((Entity)null, pos, this.type.transform().longSwitchSound, SoundSource.BLOCKS, 1.0F, 1.0F);
       }
 
-      super.randomTick(var1, var2, var3, var4);
+      super.randomTick(state, level, pos, random);
    }
 
-   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (this.tryChangingState(var1, var2, var3, var4)) {
-         var2.playSound((Entity)null, var3, this.type.transform().shortSwitchSound, SoundSource.BLOCKS, 1.0F, 1.0F);
+   protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if (this.tryChangingState(state, level, pos, random)) {
+         level.playSound((Entity)null, pos, this.type.transform().shortSwitchSound, SoundSource.BLOCKS, 1.0F, 1.0F);
       }
 
-      super.tick(var1, var2, var3, var4);
+      super.tick(state, level, pos, random);
    }
 
-   private boolean tryChangingState(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      boolean var5 = ((TriState)var2.environmentAttributes().getValue(EnvironmentAttributes.EYEBLOSSOM_OPEN, var3)).toBoolean(this.type.open);
-      if (var5 == this.type.open) {
+   private boolean tryChangingState(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      boolean shouldBeOpen = ((TriState)level.environmentAttributes().getValue(EnvironmentAttributes.EYEBLOSSOM_OPEN, pos)).toBoolean(this.type.open);
+      if (shouldBeOpen == this.type.open) {
          return false;
       } else {
-         Type var6 = this.type.transform();
-         var2.setBlock(var3, var6.state(), 3);
-         var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var1));
-         var6.spawnTransformParticle(var2, var3, var4);
-         BlockPos.betweenClosed(var3.offset(-3, -2, -3), var3.offset(3, 2, 3)).forEach((var4x) -> {
-            BlockState var5 = var2.getBlockState(var4x);
-            if (var5 == var1) {
-               double var6 = Math.sqrt(var3.distSqr(var4x));
-               int var8 = var4.nextIntBetweenInclusive((int)(var6 * 5.0), (int)(var6 * 10.0));
-               var2.scheduleTick(var4x, var1.getBlock(), var8);
+         Type newType = this.type.transform();
+         level.setBlock(pos, newType.state(), 3);
+         level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(state));
+         newType.spawnTransformParticle(level, pos, random);
+         BlockPos.betweenClosed(pos.offset(-3, -2, -3), pos.offset(3, 2, 3)).forEach((nearby) -> {
+            BlockState nearbyState = level.getBlockState(nearby);
+            if (nearbyState == state) {
+               double distance = Math.sqrt(pos.distSqr(nearby));
+               int delay = random.nextIntBetweenInclusive((int)(distance * 5.0), (int)(distance * 10.0));
+               level.scheduleTick(nearby, state.getBlock(), delay);
             }
 
          });
@@ -94,10 +94,10 @@ public class EyeblossomBlock extends FlowerBlock {
       }
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
-      if (!var2.isClientSide() && var2.getDifficulty() != Difficulty.PEACEFUL && var4 instanceof Bee var7) {
-         if (Bee.attractsBees(var1) && !var7.hasEffect(MobEffects.POISON)) {
-            var7.addEffect(this.getBeeInteractionEffect());
+   protected void entityInside(final BlockState state, final Level level, final BlockPos pos, final Entity entity, final InsideBlockEffectApplier effectApplier, final boolean isPrecise) {
+      if (!level.isClientSide() && level.getDifficulty() != Difficulty.PEACEFUL && entity instanceof Bee bee) {
+         if (Bee.attractsBees(state) && !bee.hasEffect(MobEffects.POISON)) {
+            bee.addEffect(this.getBeeInteractionEffect());
          }
       }
 
@@ -111,20 +111,20 @@ public class EyeblossomBlock extends FlowerBlock {
       OPEN(true, MobEffects.BLINDNESS, 11.0F, SoundEvents.EYEBLOSSOM_OPEN_LONG, SoundEvents.EYEBLOSSOM_OPEN, 16545810),
       CLOSED(false, MobEffects.NAUSEA, 7.0F, SoundEvents.EYEBLOSSOM_CLOSE_LONG, SoundEvents.EYEBLOSSOM_CLOSE, 6250335);
 
-      final boolean open;
-      final Holder<MobEffect> effect;
-      final float effectDuration;
-      final SoundEvent longSwitchSound;
-      final SoundEvent shortSwitchSound;
+      private final boolean open;
+      private final Holder<MobEffect> effect;
+      private final float effectDuration;
+      private final SoundEvent longSwitchSound;
+      private final SoundEvent shortSwitchSound;
       private final int particleColor;
 
-      private Type(final boolean var3, final Holder<MobEffect> var4, final float var5, final SoundEvent var6, final SoundEvent var7, final int var8) {
-         this.open = var3;
-         this.effect = var4;
-         this.effectDuration = var5;
-         this.longSwitchSound = var6;
-         this.shortSwitchSound = var7;
-         this.particleColor = var8;
+      private Type(final boolean open, final Holder<MobEffect> effect, final float duration, final SoundEvent longSwitchSound, final SoundEvent shortSwitchSound, final int particleColor) {
+         this.open = open;
+         this.effect = effect;
+         this.effectDuration = duration;
+         this.longSwitchSound = longSwitchSound;
+         this.shortSwitchSound = shortSwitchSound;
+         this.particleColor = particleColor;
       }
 
       public Block block() {
@@ -143,17 +143,17 @@ public class EyeblossomBlock extends FlowerBlock {
          return this.open;
       }
 
-      public static Type fromBoolean(boolean var0) {
-         return var0 ? OPEN : CLOSED;
+      public static Type fromBoolean(final boolean open) {
+         return open ? OPEN : CLOSED;
       }
 
-      public void spawnTransformParticle(ServerLevel var1, BlockPos var2, RandomSource var3) {
-         Vec3 var4 = var2.getCenter();
-         double var5 = 0.5 + var3.nextDouble();
-         Vec3 var7 = new Vec3(var3.nextDouble() - 0.5, var3.nextDouble() + 1.0, var3.nextDouble() - 0.5);
-         Vec3 var8 = var4.add(var7.scale(var5));
-         TrailParticleOption var9 = new TrailParticleOption(var8, this.particleColor, (int)(20.0 * var5));
-         var1.sendParticles(var9, var4.x, var4.y, var4.z, 1, 0.0, 0.0, 0.0, 0.0);
+      public void spawnTransformParticle(final ServerLevel level, final BlockPos pos, final RandomSource random) {
+         Vec3 start = pos.getCenter();
+         double lifetime = 0.5 + random.nextDouble();
+         Vec3 velocity = new Vec3(random.nextDouble() - 0.5, random.nextDouble() + 1.0, random.nextDouble() - 0.5);
+         Vec3 target = start.add(velocity.scale(lifetime));
+         TrailParticleOption particle = new TrailParticleOption(target, this.particleColor, (int)(20.0 * lifetime));
+         level.sendParticles(particle, start.x, start.y, start.z, 1, 0.0, 0.0, 0.0, 0.0);
       }
 
       public SoundEvent longSwitchSound() {

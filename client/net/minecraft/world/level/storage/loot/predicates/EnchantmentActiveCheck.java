@@ -9,19 +9,18 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
 public record EnchantmentActiveCheck(boolean active) implements LootItemCondition {
-   public static final MapCodec<EnchantmentActiveCheck> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.fieldOf("active").forGetter(EnchantmentActiveCheck::active)).apply(var0, EnchantmentActiveCheck::new));
+   public static final MapCodec<EnchantmentActiveCheck> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.BOOL.fieldOf("active").forGetter(EnchantmentActiveCheck::active)).apply(i, EnchantmentActiveCheck::new));
 
-   public EnchantmentActiveCheck(boolean var1) {
+   public EnchantmentActiveCheck {
       super();
-      this.active = var1;
    }
 
-   public boolean test(LootContext var1) {
-      return (Boolean)var1.getParameter(LootContextParams.ENCHANTMENT_ACTIVE) == this.active;
+   public boolean test(final LootContext lootContext) {
+      return (Boolean)lootContext.getParameter(LootContextParams.ENCHANTMENT_ACTIVE) == this.active;
    }
 
-   public LootItemConditionType getType() {
-      return LootItemConditions.ENCHANTMENT_ACTIVE_CHECK;
+   public MapCodec<EnchantmentActiveCheck> codec() {
+      return MAP_CODEC;
    }
 
    public Set<ContextKey<?>> getReferencedContextParams() {
@@ -34,10 +33,5 @@ public record EnchantmentActiveCheck(boolean active) implements LootItemConditio
 
    public static LootItemCondition.Builder enchantmentInactiveCheck() {
       return () -> new EnchantmentActiveCheck(false);
-   }
-
-   // $FF: synthetic method
-   public boolean test(final Object var1) {
-      return this.test((LootContext)var1);
    }
 }

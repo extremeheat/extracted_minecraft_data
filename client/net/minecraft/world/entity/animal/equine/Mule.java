@@ -11,8 +11,8 @@ import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
 
 public class Mule extends AbstractChestedHorse {
-   public Mule(EntityType<? extends Mule> var1, Level var2) {
-      super(var1, var2);
+   public Mule(final EntityType<? extends Mule> type, final Level level) {
+      super(type, level);
    }
 
    protected SoundEvent getAmbientSound() {
@@ -31,7 +31,7 @@ public class Mule extends AbstractChestedHorse {
       return SoundEvents.MULE_EAT;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return SoundEvents.MULE_HURT;
    }
 
@@ -43,7 +43,7 @@ public class Mule extends AbstractChestedHorse {
       this.playSound(SoundEvents.MULE_CHEST, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
    }
 
-   public @Nullable AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return EntityType.MULE.create(var1, EntitySpawnReason.BREEDING);
+   public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
+      return EntityType.MULE.create(level, EntitySpawnReason.BREEDING);
    }
 }

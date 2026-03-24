@@ -16,81 +16,81 @@ public class CodepointMap<T> {
    private final @Nullable T[][] blockMap;
    private final IntFunction<T[]> blockConstructor;
 
-   public CodepointMap(IntFunction<T[]> var1, IntFunction<T[][]> var2) {
+   public CodepointMap(final IntFunction<T[]> blockConstructor, final IntFunction<T[][]> blockMapConstructor) {
       super();
-      this.empty = (T[])((Object[])var1.apply(256));
-      this.blockMap = (T[][])((Object[][])var2.apply(4352));
+      this.empty = (T[])((Object[])blockConstructor.apply(256));
+      this.blockMap = (T[][])((Object[][])blockMapConstructor.apply(4352));
       Arrays.fill(this.blockMap, this.empty);
-      this.blockConstructor = var1;
+      this.blockConstructor = blockConstructor;
    }
 
    public void clear() {
       Arrays.fill(this.blockMap, this.empty);
    }
 
-   public @Nullable T get(int var1) {
-      int var2 = var1 >> 8;
-      int var3 = var1 & 255;
-      return (T)this.blockMap[var2][var3];
+   public @Nullable T get(final int codepoint) {
+      int block = codepoint >> 8;
+      int offset = codepoint & 255;
+      return (T)this.blockMap[block][offset];
    }
 
-   public @Nullable T put(int var1, T var2) {
-      int var3 = var1 >> 8;
-      int var4 = var1 & 255;
-      Object[] var5 = this.blockMap[var3];
-      if (var5 == this.empty) {
-         var5 = this.blockConstructor.apply(256);
-         this.blockMap[var3] = var5;
-         var5[var4] = var2;
+   public @Nullable T put(final int codepoint, final T value) {
+      int block = codepoint >> 8;
+      int offset = codepoint & 255;
+      T[] blockData = (T[])this.blockMap[block];
+      if (blockData == this.empty) {
+         blockData = (T[])((Object[])this.blockConstructor.apply(256));
+         this.blockMap[block] = blockData;
+         blockData[offset] = value;
          return null;
       } else {
-         Object var6 = var5[var4];
-         var5[var4] = var2;
-         return (T)var6;
+         T previous = (T)blockData[offset];
+         blockData[offset] = value;
+         return previous;
       }
    }
 
-   public T computeIfAbsent(int var1, IntFunction<T> var2) {
-      int var3 = var1 >> 8;
-      int var4 = var1 & 255;
-      Object[] var5 = this.blockMap[var3];
-      Object var6 = var5[var4];
-      if (var6 != null) {
-         return (T)var6;
+   public T computeIfAbsent(final int codepoint, final IntFunction<T> mapper) {
+      int block = codepoint >> 8;
+      int offset = codepoint & 255;
+      T[] blockData = (T[])this.blockMap[block];
+      T current = (T)blockData[offset];
+      if (current != null) {
+         return current;
       } else {
-         if (var5 == this.empty) {
-            var5 = this.blockConstructor.apply(256);
-            this.blockMap[var3] = var5;
+         if (blockData == this.empty) {
+            blockData = (T[])((Object[])this.blockConstructor.apply(256));
+            this.blockMap[block] = blockData;
          }
 
-         Object var7 = var2.apply(var1);
-         var5[var4] = var7;
-         return (T)var7;
+         T result = (T)mapper.apply(codepoint);
+         blockData[offset] = result;
+         return result;
       }
    }
 
-   public @Nullable T remove(int var1) {
-      int var2 = var1 >> 8;
-      int var3 = var1 & 255;
-      Object[] var4 = this.blockMap[var2];
-      if (var4 == this.empty) {
+   public @Nullable T remove(final int codepoint) {
+      int block = codepoint >> 8;
+      int offset = codepoint & 255;
+      T[] blockData = (T[])this.blockMap[block];
+      if (blockData == this.empty) {
          return null;
       } else {
-         Object var5 = var4[var3];
-         var4[var3] = null;
-         return (T)var5;
+         T previous = (T)blockData[offset];
+         blockData[offset] = null;
+         return previous;
       }
    }
 
-   public void forEach(Output<T> var1) {
-      for(int var2 = 0; var2 < this.blockMap.length; ++var2) {
-         Object[] var3 = this.blockMap[var2];
-         if (var3 != this.empty) {
-            for(int var4 = 0; var4 < var3.length; ++var4) {
-               Object var5 = var3[var4];
-               if (var5 != null) {
-                  int var6 = var2 << 8 | var4;
-                  var1.accept(var6, var5);
+   public void forEach(final Output<T> output) {
+      for(int block = 0; block < this.blockMap.length; ++block) {
+         T[] blockData = (T[])this.blockMap[block];
+         if (blockData != this.empty) {
+            for(int offset = 0; offset < blockData.length; ++offset) {
+               T value = (T)blockData[offset];
+               if (value != null) {
+                  int codepoint = block << 8 | offset;
+                  output.accept(codepoint, value);
                }
             }
          }
@@ -99,13 +99,13 @@ public class CodepointMap<T> {
    }
 
    public IntSet keySet() {
-      IntOpenHashSet var1 = new IntOpenHashSet();
-      this.forEach((var1x, var2) -> var1.add(var1x));
-      return var1;
+      IntOpenHashSet result = new IntOpenHashSet();
+      this.forEach((codepoint, value) -> result.add(codepoint));
+      return result;
    }
 
    @FunctionalInterface
    public interface Output<T> {
-      void accept(int var1, T var2);
+      void accept(int codepoint, T value);
    }
 }

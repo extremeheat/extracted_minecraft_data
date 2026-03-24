@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.slf4j.Logger;
 
 public class DownloadCacheCleaner {
@@ -26,106 +27,94 @@ public class DownloadCacheCleaner {
       super();
    }
 
-   public static void vacuumCacheDir(Path var0, int var1) {
+   public static void vacuumCacheDir(final Path cacheDir, final int maxFiles) {
       try {
-         List var2 = listFilesWithModificationTimes(var0);
-         int var3 = var2.size() - var1;
-         if (var3 <= 0) {
+         List<PathAndTime> filesAndDates = listFilesWithModificationTimes(cacheDir);
+         int toRemove = filesAndDates.size() - maxFiles;
+         if (toRemove <= 0) {
             return;
          }
 
-         var2.sort(DownloadCacheCleaner.PathAndTime.NEWEST_FIRST);
-         List var4 = prioritizeFilesInDirs(var2);
-         Collections.reverse(var4);
-         var4.sort(DownloadCacheCleaner.PathAndPriority.HIGHEST_PRIORITY_FIRST);
-         HashSet var5 = new HashSet();
+         filesAndDates.sort(DownloadCacheCleaner.PathAndTime.NEWEST_FIRST);
+         List<PathAndPriority> filesWithDirOrder = prioritizeFilesInDirs(filesAndDates);
+         Collections.reverse(filesWithDirOrder);
+         filesWithDirOrder.sort(DownloadCacheCleaner.PathAndPriority.HIGHEST_PRIORITY_FIRST);
+         Set<Path> emptyDirectoryCandidates = new HashSet();
 
-         for(int var6 = 0; var6 < var3; ++var6) {
-            PathAndPriority var7 = (PathAndPriority)var4.get(var6);
-            Path var8 = var7.path;
+         for(int i = 0; i < toRemove; ++i) {
+            PathAndPriority entry = (PathAndPriority)filesWithDirOrder.get(i);
+            Path pathToRemove = entry.path;
 
             try {
-               Files.delete(var8);
-               if (var7.removalPriority == 0) {
-                  var5.add(var8.getParent());
+               Files.delete(pathToRemove);
+               if (entry.removalPriority == 0) {
+                  emptyDirectoryCandidates.add(pathToRemove.getParent());
                }
-            } catch (IOException var12) {
-               LOGGER.warn("Failed to delete cache file {}", var8, var12);
+            } catch (IOException e) {
+               LOGGER.warn("Failed to delete cache file {}", pathToRemove, e);
             }
          }
 
-         var5.remove(var0);
+         emptyDirectoryCandidates.remove(cacheDir);
 
-         for(Path var15 : var5) {
+         for(Path dir : emptyDirectoryCandidates) {
             try {
-               Files.delete(var15);
+               Files.delete(dir);
             } catch (DirectoryNotEmptyException var10) {
-            } catch (IOException var11) {
-               LOGGER.warn("Failed to delete empty(?) cache directory {}", var15, var11);
+            } catch (IOException e) {
+               LOGGER.warn("Failed to delete empty(?) cache directory {}", dir, e);
             }
          }
-      } catch (UncheckedIOException | IOException var13) {
-         LOGGER.error("Failed to vacuum cache dir {}", var0, var13);
+      } catch (UncheckedIOException | IOException e) {
+         LOGGER.error("Failed to vacuum cache dir {}", cacheDir, e);
       }
 
    }
 
-   private static List<PathAndTime> listFilesWithModificationTimes(final Path var0) throws IOException {
+   private static List<PathAndTime> listFilesWithModificationTimes(final Path cacheDir) throws IOException {
       try {
-         final ArrayList var1 = new ArrayList();
-         Files.walkFileTree(var0, new SimpleFileVisitor<Path>() {
-            public FileVisitResult visitFile(Path var1x, BasicFileAttributes var2) {
-               if (var2.isRegularFile() && !var1x.getParent().equals(var0)) {
-                  FileTime var3 = var2.lastModifiedTime();
-                  var1.add(new PathAndTime(var1x, var3));
+         final List<PathAndTime> unsortedFiles = new ArrayList();
+         Files.walkFileTree(cacheDir, new SimpleFileVisitor<Path>() {
+            public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) {
+               if (attrs.isRegularFile() && !file.getParent().equals(cacheDir)) {
+                  FileTime fileTime = attrs.lastModifiedTime();
+                  unsortedFiles.add(new PathAndTime(file, fileTime));
                }
 
                return FileVisitResult.CONTINUE;
             }
-
-            // $FF: synthetic method
-            public FileVisitResult visitFile(final Object var1x, final BasicFileAttributes var2) throws IOException {
-               return this.visitFile((Path)var1x, var2);
-            }
          });
-         return var1;
+         return unsortedFiles;
       } catch (NoSuchFileException var2) {
          return List.of();
       }
    }
 
-   private static List<PathAndPriority> prioritizeFilesInDirs(List<PathAndTime> var0) {
-      ArrayList var1 = new ArrayList();
-      Object2IntOpenHashMap var2 = new Object2IntOpenHashMap();
+   private static List<PathAndPriority> prioritizeFilesInDirs(final List<PathAndTime> filesAndDates) {
+      List<PathAndPriority> result = new ArrayList();
+      Object2IntOpenHashMap<Path> parentCounts = new Object2IntOpenHashMap();
 
-      for(PathAndTime var4 : var0) {
-         int var5 = var2.addTo(var4.path.getParent(), 1);
-         var1.add(new PathAndPriority(var4.path, var5));
+      for(PathAndTime entry : filesAndDates) {
+         int removalPriority = parentCounts.addTo(entry.path.getParent(), 1);
+         result.add(new PathAndPriority(entry.path, removalPriority));
       }
 
-      return var1;
+      return result;
    }
 
-   static record PathAndTime(Path path, FileTime modifiedTime) {
-      final Path path;
+   private static record PathAndTime(Path path, FileTime modifiedTime) {
       public static final Comparator<PathAndTime> NEWEST_FIRST = Comparator.comparing(PathAndTime::modifiedTime).reversed();
 
-      PathAndTime(Path var1, FileTime var2) {
+      private PathAndTime {
          super();
-         this.path = var1;
-         this.modifiedTime = var2;
       }
    }
 
-   static record PathAndPriority(Path path, int removalPriority) {
-      final Path path;
-      final int removalPriority;
+   private static record PathAndPriority(Path path, int removalPriority) {
       public static final Comparator<PathAndPriority> HIGHEST_PRIORITY_FIRST = Comparator.comparing(PathAndPriority::removalPriority).reversed();
 
-      PathAndPriority(Path var1, int var2) {
+      private PathAndPriority {
          super();
-         this.path = var1;
-         this.removalPriority = var2;
       }
    }
 }

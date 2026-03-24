@@ -14,9 +14,9 @@ public class LegacyRandomSource implements BitRandomSource {
    private final AtomicLong seed = new AtomicLong();
    private final MarsagliaPolarGaussian gaussianSource = new MarsagliaPolarGaussian(this);
 
-   public LegacyRandomSource(long var1) {
+   public LegacyRandomSource(final long seed) {
       super();
-      this.setSeed(var1);
+      this.setSeed(seed);
    }
 
    public RandomSource fork() {
@@ -27,21 +27,21 @@ public class LegacyRandomSource implements BitRandomSource {
       return new LegacyPositionalRandomFactory(this.nextLong());
    }
 
-   public void setSeed(long var1) {
-      if (!this.seed.compareAndSet(this.seed.get(), (var1 ^ 25214903917L) & 281474976710655L)) {
+   public void setSeed(final long seed) {
+      if (!this.seed.compareAndSet(this.seed.get(), (seed ^ 25214903917L) & 281474976710655L)) {
          throw ThreadingDetector.makeThreadingException("LegacyRandomSource", (Thread)null);
       } else {
          this.gaussianSource.reset();
       }
    }
 
-   public int next(int var1) {
-      long var2 = this.seed.get();
-      long var4 = var2 * 25214903917L + 11L & 281474976710655L;
-      if (!this.seed.compareAndSet(var2, var4)) {
+   public int next(final int bits) {
+      long oldSeed = this.seed.get();
+      long newSeed = oldSeed * 25214903917L + 11L & 281474976710655L;
+      if (!this.seed.compareAndSet(oldSeed, newSeed)) {
          throw ThreadingDetector.makeThreadingException("LegacyRandomSource", (Thread)null);
       } else {
-         return (int)(var4 >> 48 - var1);
+         return (int)(newSeed >> 48 - bits);
       }
    }
 
@@ -52,29 +52,29 @@ public class LegacyRandomSource implements BitRandomSource {
    public static class LegacyPositionalRandomFactory implements PositionalRandomFactory {
       private final long seed;
 
-      public LegacyPositionalRandomFactory(long var1) {
+      public LegacyPositionalRandomFactory(final long seed) {
          super();
-         this.seed = var1;
+         this.seed = seed;
       }
 
-      public RandomSource at(int var1, int var2, int var3) {
-         long var4 = Mth.getSeed(var1, var2, var3);
-         long var6 = var4 ^ this.seed;
-         return new LegacyRandomSource(var6);
+      public RandomSource at(final int x, final int y, final int z) {
+         long positionalSeed = Mth.getSeed(x, y, z);
+         long randomSeed = positionalSeed ^ this.seed;
+         return new LegacyRandomSource(randomSeed);
       }
 
-      public RandomSource fromHashOf(String var1) {
-         int var2 = var1.hashCode();
-         return new LegacyRandomSource((long)var2 ^ this.seed);
+      public RandomSource fromHashOf(final String name) {
+         int positionalSeed = name.hashCode();
+         return new LegacyRandomSource((long)positionalSeed ^ this.seed);
       }
 
-      public RandomSource fromSeed(long var1) {
-         return new LegacyRandomSource(var1);
+      public RandomSource fromSeed(final long seed) {
+         return new LegacyRandomSource(seed);
       }
 
       @VisibleForTesting
-      public void parityConfigString(StringBuilder var1) {
-         var1.append("LegacyPositionalRandomFactory{").append(this.seed).append("}");
+      public void parityConfigString(final StringBuilder sb) {
+         sb.append("LegacyPositionalRandomFactory{").append(this.seed).append("}");
       }
    }
 }

@@ -16,34 +16,34 @@ public record TagKey<T>(ResourceKey<? extends Registry<T>> registry, Identifier 
 
    /** @deprecated */
    @Deprecated
-   public TagKey(ResourceKey<? extends Registry<T>> var1, Identifier var2) {
+   public TagKey(ResourceKey<? extends Registry<T>> registry, Identifier location) {
       super();
-      this.registry = var1;
-      this.location = var2;
+      this.registry = registry;
+      this.location = location;
    }
 
-   public static <T> Codec<TagKey<T>> codec(ResourceKey<? extends Registry<T>> var0) {
-      return Identifier.CODEC.xmap((var1) -> create(var0, var1), TagKey::location);
+   public static <T> Codec<TagKey<T>> codec(final ResourceKey<? extends Registry<T>> registryName) {
+      return Identifier.CODEC.xmap((name) -> create(registryName, name), TagKey::location);
    }
 
-   public static <T> Codec<TagKey<T>> hashedCodec(ResourceKey<? extends Registry<T>> var0) {
-      return Codec.STRING.comapFlatMap((var1) -> var1.startsWith("#") ? Identifier.read(var1.substring(1)).map((var1x) -> create(var0, var1x)) : DataResult.error(() -> "Not a tag id"), (var0x) -> "#" + String.valueOf(var0x.location));
+   public static <T> Codec<TagKey<T>> hashedCodec(final ResourceKey<? extends Registry<T>> registryName) {
+      return Codec.STRING.comapFlatMap((name) -> name.startsWith("#") ? Identifier.read(name.substring(1)).map((id) -> create(registryName, id)) : DataResult.error(() -> "Not a tag id"), (e) -> "#" + String.valueOf(e.location));
    }
 
-   public static <T> StreamCodec<ByteBuf, TagKey<T>> streamCodec(ResourceKey<? extends Registry<T>> var0) {
-      return Identifier.STREAM_CODEC.map((var1) -> create(var0, var1), TagKey::location);
+   public static <T> StreamCodec<ByteBuf, TagKey<T>> streamCodec(final ResourceKey<? extends Registry<T>> registryName) {
+      return Identifier.STREAM_CODEC.map((location) -> create(registryName, location), TagKey::location);
    }
 
-   public static <T> TagKey<T> create(ResourceKey<? extends Registry<T>> var0, Identifier var1) {
-      return (TagKey)VALUES.intern(new TagKey(var0, var1));
+   public static <T> TagKey<T> create(final ResourceKey<? extends Registry<T>> registry, final Identifier location) {
+      return (TagKey)VALUES.intern(new TagKey(registry, location));
    }
 
-   public boolean isFor(ResourceKey<? extends Registry<?>> var1) {
-      return this.registry == var1;
+   public boolean isFor(final ResourceKey<? extends Registry<?>> registry) {
+      return this.registry == registry;
    }
 
-   public <E> Optional<TagKey<E>> cast(ResourceKey<? extends Registry<E>> var1) {
-      return this.isFor(var1) ? Optional.of(this) : Optional.empty();
+   public <E> Optional<TagKey<E>> cast(final ResourceKey<? extends Registry<E>> registry) {
+      return this.isFor(registry) ? Optional.of(this) : Optional.empty();
    }
 
    public String toString() {

@@ -39,20 +39,20 @@ public class InputControlHandlers {
       super();
    }
 
-   private static <T extends InputControl> void register(MapCodec<T> var0, InputControlHandler<? super T> var1) {
-      HANDLERS.put(var0, var1);
+   private static <T extends InputControl> void register(final MapCodec<T> type, final InputControlHandler<? super T> handler) {
+      HANDLERS.put(type, handler);
    }
 
-   private static <T extends InputControl> @Nullable InputControlHandler<T> get(T var0) {
-      return (InputControlHandler)HANDLERS.get(var0.mapCodec());
+   private static <T extends InputControl> @Nullable InputControlHandler<T> get(final T inputControl) {
+      return (InputControlHandler)HANDLERS.get(inputControl.mapCodec());
    }
 
-   public static <T extends InputControl> void createHandler(T var0, Screen var1, InputControlHandler.Output var2) {
-      InputControlHandler var3 = get(var0);
-      if (var3 == null) {
-         LOGGER.warn("Unrecognized input control {}", var0);
+   public static <T extends InputControl> void createHandler(final T inputControl, final Screen screen, final InputControlHandler.Output outputConsumer) {
+      InputControlHandler<T> handler = get(inputControl);
+      if (handler == null) {
+         LOGGER.warn("Unrecognized input control {}", inputControl);
       } else {
-         var3.addControl(var0, var1, var2);
+         handler.addControl(inputControl, screen, outputConsumer);
       }
    }
 
@@ -63,131 +63,123 @@ public class InputControlHandlers {
       register(NumberRangeInput.MAP_CODEC, new NumberRangeHandler());
    }
 
-   static class TextInputHandler implements InputControlHandler<TextInput> {
-      TextInputHandler() {
+   private static class TextInputHandler implements InputControlHandler<TextInput> {
+      private TextInputHandler() {
          super();
       }
 
-      public void addControl(TextInput var1, Screen var2, InputControlHandler.Output var3) {
-         Font var4 = var2.getFont();
-         Object var5;
-         final Supplier var6;
-         if (var1.multiline().isPresent()) {
-            TextInput.MultilineOptions var7 = (TextInput.MultilineOptions)var1.multiline().get();
-            int var8 = (Integer)var7.height().orElseGet(() -> {
-               int var2 = (Integer)var7.maxLines().orElse(4);
-               Objects.requireNonNull(var4);
-               return Math.min(9 * var2 + 8, 512);
+      public void addControl(final TextInput input, final Screen screen, final InputControlHandler.Output output) {
+         Font font = screen.getFont();
+         LayoutElement control;
+         final Supplier<String> getter;
+         if (input.multiline().isPresent()) {
+            TextInput.MultilineOptions multiline = (TextInput.MultilineOptions)input.multiline().get();
+            int computedHeight = (Integer)multiline.height().orElseGet(() -> {
+               int lineCountToFit = (Integer)multiline.maxLines().orElse(4);
+               Objects.requireNonNull(font);
+               return Math.min(9 * lineCountToFit + 8, 512);
             });
-            MultiLineEditBox var9 = MultiLineEditBox.builder().build(var4, var1.width(), var8, CommonComponents.EMPTY);
-            var9.setCharacterLimit(var1.maxLength());
-            Optional var10000 = var7.maxLines();
-            Objects.requireNonNull(var9);
-            var10000.ifPresent(var9::setLineLimit);
-            var9.setValue(var1.initial());
-            var5 = var9;
-            Objects.requireNonNull(var9);
-            var6 = var9::getValue;
+            MultiLineEditBox editBox = MultiLineEditBox.builder().build(font, input.width(), computedHeight, CommonComponents.EMPTY);
+            editBox.setCharacterLimit(input.maxLength());
+            Optional var10000 = multiline.maxLines();
+            Objects.requireNonNull(editBox);
+            var10000.ifPresent(editBox::setLineLimit);
+            editBox.setValue(input.initial());
+            control = editBox;
+            Objects.requireNonNull(editBox);
+            getter = editBox::getValue;
          } else {
-            EditBox var10 = new EditBox(var4, var1.width(), 20, var1.label());
-            var10.setMaxLength(var1.maxLength());
-            var10.setValue(var1.initial());
-            var5 = var10;
-            Objects.requireNonNull(var10);
-            var6 = var10::getValue;
+            EditBox editBox = new EditBox(font, input.width(), 20, input.label());
+            editBox.setMaxLength(input.maxLength());
+            editBox.setValue(input.initial());
+            control = editBox;
+            Objects.requireNonNull(editBox);
+            getter = editBox::getValue;
          }
 
-         Object var11 = var1.labelVisible() ? CommonLayouts.labeledElement(var4, (LayoutElement)var5, var1.label()) : var5;
-         var3.accept((LayoutElement)var11, new Action.ValueGetter() {
+         LayoutElement wrappedControl = (LayoutElement)(input.labelVisible() ? CommonLayouts.labeledElement(font, control, input.label()) : control);
+         output.accept(wrappedControl, new Action.ValueGetter() {
+            {
+               Objects.requireNonNull(TextInputHandler.this);
+            }
+
             public String asTemplateSubstitution() {
-               return StringTag.escapeWithoutQuotes((String)var6.get());
+               return StringTag.escapeWithoutQuotes((String)getter.get());
             }
 
             public Tag asTag() {
-               return StringTag.valueOf((String)var6.get());
+               return StringTag.valueOf((String)getter.get());
+            }
+         });
+      }
+   }
+
+   private static class SingleOptionHandler implements InputControlHandler<SingleOptionInput> {
+      private SingleOptionHandler() {
+         super();
+      }
+
+      public void addControl(final SingleOptionInput input, final Screen screen, final InputControlHandler.Output output) {
+         SingleOptionInput.Entry initial = (SingleOptionInput.Entry)input.initial().orElse((SingleOptionInput.Entry)input.entries().getFirst());
+         CycleButton.Builder<SingleOptionInput.Entry> controlBuilder = CycleButton.builder(SingleOptionInput.Entry::displayOrDefault, initial).withValues(input.entries()).displayState(!input.labelVisible() ? CycleButton.DisplayState.VALUE : CycleButton.DisplayState.NAME_AND_VALUE);
+         CycleButton<SingleOptionInput.Entry> control = controlBuilder.create(0, 0, input.width(), 20, input.label());
+         output.accept(control, Action.ValueGetter.of((Supplier)(() -> ((SingleOptionInput.Entry)control.getValue()).id())));
+      }
+   }
+
+   private static class BooleanHandler implements InputControlHandler<BooleanInput> {
+      private BooleanHandler() {
+         super();
+      }
+
+      public void addControl(final BooleanInput input, final Screen screen, final InputControlHandler.Output output) {
+         Font font = screen.getFont();
+         final Checkbox control = Checkbox.builder(input.label(), font).selected(input.initial()).build();
+         output.accept(control, new Action.ValueGetter() {
+            {
+               Objects.requireNonNull(BooleanHandler.this);
+            }
+
+            public String asTemplateSubstitution() {
+               return control.selected() ? input.onTrue() : input.onFalse();
+            }
+
+            public Tag asTag() {
+               return ByteTag.valueOf(control.selected());
+            }
+         });
+      }
+   }
+
+   private static class NumberRangeHandler implements InputControlHandler<NumberRangeInput> {
+      private NumberRangeHandler() {
+         super();
+      }
+
+      public void addControl(final NumberRangeInput input, final Screen screen, final InputControlHandler.Output output) {
+         float initialValue = input.rangeInfo().initialSliderValue();
+         final SliderImpl control = new SliderImpl(input, (double)initialValue);
+         output.accept(control, new Action.ValueGetter() {
+            {
+               Objects.requireNonNull(NumberRangeHandler.this);
+            }
+
+            public String asTemplateSubstitution() {
+               return control.stringValueToSend();
+            }
+
+            public Tag asTag() {
+               return FloatTag.valueOf(control.floatValueToSend());
             }
          });
       }
 
-      // $FF: synthetic method
-      public void addControl(final InputControl var1, final Screen var2, final InputControlHandler.Output var3) {
-         this.addControl((TextInput)var1, var2, var3);
-      }
-   }
-
-   static class SingleOptionHandler implements InputControlHandler<SingleOptionInput> {
-      SingleOptionHandler() {
-         super();
-      }
-
-      public void addControl(SingleOptionInput var1, Screen var2, InputControlHandler.Output var3) {
-         SingleOptionInput.Entry var4 = (SingleOptionInput.Entry)var1.initial().orElse((SingleOptionInput.Entry)var1.entries().getFirst());
-         CycleButton.Builder var5 = CycleButton.builder(SingleOptionInput.Entry::displayOrDefault, var4).withValues(var1.entries()).displayState(!var1.labelVisible() ? CycleButton.DisplayState.VALUE : CycleButton.DisplayState.NAME_AND_VALUE);
-         CycleButton var6 = var5.create(0, 0, var1.width(), 20, var1.label());
-         var3.accept(var6, Action.ValueGetter.of((Supplier)(() -> ((SingleOptionInput.Entry)var6.getValue()).id())));
-      }
-
-      // $FF: synthetic method
-      public void addControl(final InputControl var1, final Screen var2, final InputControlHandler.Output var3) {
-         this.addControl((SingleOptionInput)var1, var2, var3);
-      }
-   }
-
-   static class BooleanHandler implements InputControlHandler<BooleanInput> {
-      BooleanHandler() {
-         super();
-      }
-
-      public void addControl(final BooleanInput var1, Screen var2, InputControlHandler.Output var3) {
-         Font var4 = var2.getFont();
-         final Checkbox var5 = Checkbox.builder(var1.label(), var4).selected(var1.initial()).build();
-         var3.accept(var5, new Action.ValueGetter() {
-            public String asTemplateSubstitution() {
-               return var5.selected() ? var1.onTrue() : var1.onFalse();
-            }
-
-            public Tag asTag() {
-               return ByteTag.valueOf(var5.selected());
-            }
-         });
-      }
-
-      // $FF: synthetic method
-      public void addControl(final InputControl var1, final Screen var2, final InputControlHandler.Output var3) {
-         this.addControl((BooleanInput)var1, var2, var3);
-      }
-   }
-
-   static class NumberRangeHandler implements InputControlHandler<NumberRangeInput> {
-      NumberRangeHandler() {
-         super();
-      }
-
-      public void addControl(NumberRangeInput var1, Screen var2, InputControlHandler.Output var3) {
-         float var4 = var1.rangeInfo().initialSliderValue();
-         final SliderImpl var5 = new SliderImpl(var1, (double)var4);
-         var3.accept(var5, new Action.ValueGetter() {
-            public String asTemplateSubstitution() {
-               return var5.stringValueToSend();
-            }
-
-            public Tag asTag() {
-               return FloatTag.valueOf(var5.floatValueToSend());
-            }
-         });
-      }
-
-      // $FF: synthetic method
-      public void addControl(final InputControl var1, final Screen var2, final InputControlHandler.Output var3) {
-         this.addControl((NumberRangeInput)var1, var2, var3);
-      }
-
-      static class SliderImpl extends AbstractSliderButton {
+      private static class SliderImpl extends AbstractSliderButton {
          private final NumberRangeInput input;
 
-         SliderImpl(NumberRangeInput var1, double var2) {
-            super(0, 0, var1.width(), 20, computeMessage(var1, var2), var2);
-            this.input = var1;
+         private SliderImpl(final NumberRangeInput input, final double initialSliderValue) {
+            super(0, 0, input.width(), 20, computeMessage(input, initialSliderValue), initialSliderValue);
+            this.input = input;
          }
 
          protected void updateMessage() {
@@ -205,21 +197,21 @@ public class InputControlHandlers {
             return scaledValue(this.input, this.value);
          }
 
-         private static float scaledValue(NumberRangeInput var0, double var1) {
-            return var0.rangeInfo().computeScaledValue((float)var1);
+         private static float scaledValue(final NumberRangeInput input, final double sliderValue) {
+            return input.rangeInfo().computeScaledValue((float)sliderValue);
          }
 
-         private static String sliderValueToString(NumberRangeInput var0, double var1) {
-            return valueToString(scaledValue(var0, var1));
+         private static String sliderValueToString(final NumberRangeInput input, final double sliderValue) {
+            return valueToString(scaledValue(input, sliderValue));
          }
 
-         private static Component computeMessage(NumberRangeInput var0, double var1) {
-            return var0.computeLabel(sliderValueToString(var0, var1));
+         private static Component computeMessage(final NumberRangeInput input, final double sliderValue) {
+            return input.computeLabel(sliderValueToString(input, sliderValue));
          }
 
-         private static String valueToString(float var0) {
-            int var1 = (int)var0;
-            return (float)var1 == var0 ? Integer.toString(var1) : Float.toString(var0);
+         private static String valueToString(final float v) {
+            int intV = (int)v;
+            return (float)intV == v ? Integer.toString(intV) : Float.toString(v);
          }
       }
    }

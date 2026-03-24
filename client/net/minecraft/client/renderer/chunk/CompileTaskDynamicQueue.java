@@ -15,44 +15,44 @@ public class CompileTaskDynamicQueue {
       super();
    }
 
-   public synchronized void add(SectionRenderDispatcher.RenderSection.CompileTask var1) {
-      this.tasks.add(var1);
+   public synchronized void add(final SectionRenderDispatcher.RenderSection.CompileTask task) {
+      this.tasks.add(task);
    }
 
-   public synchronized SectionRenderDispatcher.RenderSection.@Nullable CompileTask poll(Vec3 var1) {
-      int var2 = -1;
-      int var3 = -1;
-      double var4 = 1.7976931348623157E308;
-      double var6 = 1.7976931348623157E308;
-      ListIterator var8 = this.tasks.listIterator();
+   public synchronized SectionRenderDispatcher.RenderSection.@Nullable CompileTask poll(final Vec3 cameraPos) {
+      int bestInitialCompileTaskIndex = -1;
+      int bestRecompileTaskIndex = -1;
+      double bestInitialCompileDistance = 1.7976931348623157E308;
+      double bestRecompileDistance = 1.7976931348623157E308;
+      ListIterator<SectionRenderDispatcher.RenderSection.CompileTask> iterator = this.tasks.listIterator();
 
-      while(var8.hasNext()) {
-         int var9 = var8.nextIndex();
-         SectionRenderDispatcher.RenderSection.CompileTask var10 = (SectionRenderDispatcher.RenderSection.CompileTask)var8.next();
-         if (var10.isCancelled.get()) {
-            var8.remove();
+      while(iterator.hasNext()) {
+         int taskIndex = iterator.nextIndex();
+         SectionRenderDispatcher.RenderSection.CompileTask task = (SectionRenderDispatcher.RenderSection.CompileTask)iterator.next();
+         if (task.isCancelled.get()) {
+            iterator.remove();
          } else {
-            double var11 = var10.getRenderOrigin().distToCenterSqr(var1);
-            if (!var10.isRecompile() && var11 < var4) {
-               var4 = var11;
-               var2 = var9;
+            double distance = task.getRenderOrigin().distToCenterSqr(cameraPos);
+            if (!task.isRecompile() && distance < bestInitialCompileDistance) {
+               bestInitialCompileDistance = distance;
+               bestInitialCompileTaskIndex = taskIndex;
             }
 
-            if (var10.isRecompile() && var11 < var6) {
-               var6 = var11;
-               var3 = var9;
+            if (task.isRecompile() && distance < bestRecompileDistance) {
+               bestRecompileDistance = distance;
+               bestRecompileTaskIndex = taskIndex;
             }
          }
       }
 
-      boolean var13 = var3 >= 0;
-      boolean var14 = var2 >= 0;
-      if (!var13 || var14 && (this.recompileQuota <= 0 || !(var6 < var4))) {
+      boolean hasRecompileTask = bestRecompileTaskIndex >= 0;
+      boolean hasInitialCompileTask = bestInitialCompileTaskIndex >= 0;
+      if (!hasRecompileTask || hasInitialCompileTask && (this.recompileQuota <= 0 || !(bestRecompileDistance < bestInitialCompileDistance))) {
          this.recompileQuota = 2;
-         return this.removeTaskByIndex(var2);
+         return this.removeTaskByIndex(bestInitialCompileTaskIndex);
       } else {
          --this.recompileQuota;
-         return this.removeTaskByIndex(var3);
+         return this.removeTaskByIndex(bestRecompileTaskIndex);
       }
    }
 
@@ -60,13 +60,13 @@ public class CompileTaskDynamicQueue {
       return this.tasks.size();
    }
 
-   private SectionRenderDispatcher.RenderSection.@Nullable CompileTask removeTaskByIndex(int var1) {
-      return var1 >= 0 ? (SectionRenderDispatcher.RenderSection.CompileTask)this.tasks.remove(var1) : null;
+   private SectionRenderDispatcher.RenderSection.@Nullable CompileTask removeTaskByIndex(final int taskIndex) {
+      return taskIndex >= 0 ? (SectionRenderDispatcher.RenderSection.CompileTask)this.tasks.remove(taskIndex) : null;
    }
 
    public synchronized void clear() {
-      for(SectionRenderDispatcher.RenderSection.CompileTask var2 : this.tasks) {
-         var2.cancel();
+      for(SectionRenderDispatcher.RenderSection.CompileTask task : this.tasks) {
+         task.cancel();
       }
 
       this.tasks.clear();

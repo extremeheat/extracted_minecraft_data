@@ -15,16 +15,16 @@ public class PoiRecord {
    private int freeTickets;
    private final Runnable setDirty;
 
-   PoiRecord(BlockPos var1, Holder<PoiType> var2, int var3, Runnable var4) {
+   private PoiRecord(final BlockPos pos, final Holder<PoiType> poiType, final int freeTickets, final Runnable setDirty) {
       super();
-      this.pos = var1.immutable();
-      this.poiType = var2;
-      this.freeTickets = var3;
-      this.setDirty = var4;
+      this.pos = pos.immutable();
+      this.poiType = poiType;
+      this.freeTickets = freeTickets;
+      this.setDirty = setDirty;
    }
 
-   public PoiRecord(BlockPos var1, Holder<PoiType> var2, Runnable var3) {
-      this(var1, var2, ((PoiType)var2.value()).maxTickets(), var3);
+   public PoiRecord(final BlockPos pos, final Holder<PoiType> poiType, final Runnable setDirty) {
+      this(pos, poiType, ((PoiType)poiType.value()).maxTickets(), setDirty);
    }
 
    public Packed pack() {
@@ -74,11 +74,11 @@ public class PoiRecord {
       return this.poiType;
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
+   public boolean equals(final Object o) {
+      if (this == o) {
          return true;
       } else {
-         return var1 != null && this.getClass() == var1.getClass() ? Objects.equals(this.pos, ((PoiRecord)var1).pos) : false;
+         return o != null && this.getClass() == o.getClass() ? Objects.equals(this.pos, ((PoiRecord)o).pos) : false;
       }
    }
 
@@ -87,17 +87,14 @@ public class PoiRecord {
    }
 
    public static record Packed(BlockPos pos, Holder<PoiType> poiType, int freeTickets) {
-      public static final Codec<Packed> CODEC = RecordCodecBuilder.create((var0) -> var0.group(BlockPos.CODEC.fieldOf("pos").forGetter(Packed::pos), RegistryFixedCodec.create(Registries.POINT_OF_INTEREST_TYPE).fieldOf("type").forGetter(Packed::poiType), Codec.INT.fieldOf("free_tickets").orElse(0).forGetter(Packed::freeTickets)).apply(var0, Packed::new));
+      public static final Codec<Packed> CODEC = RecordCodecBuilder.create((i) -> i.group(BlockPos.CODEC.fieldOf("pos").forGetter(Packed::pos), RegistryFixedCodec.create(Registries.POINT_OF_INTEREST_TYPE).fieldOf("type").forGetter(Packed::poiType), Codec.INT.fieldOf("free_tickets").orElse(0).forGetter(Packed::freeTickets)).apply(i, Packed::new));
 
-      public Packed(BlockPos var1, Holder<PoiType> var2, int var3) {
+      public Packed {
          super();
-         this.pos = var1;
-         this.poiType = var2;
-         this.freeTickets = var3;
       }
 
-      public PoiRecord unpack(Runnable var1) {
-         return new PoiRecord(this.pos, this.poiType, this.freeTickets, var1);
+      public PoiRecord unpack(final Runnable setDirty) {
+         return new PoiRecord(this.pos, this.poiType, this.freeTickets, setDirty);
       }
    }
 }

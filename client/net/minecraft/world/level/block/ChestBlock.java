@@ -62,7 +62,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements SimpleWaterloggedBlock {
-   public static final MapCodec<ChestBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("open_sound").forGetter(ChestBlock::getOpenChestSound), BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("close_sound").forGetter(ChestBlock::getCloseChestSound), propertiesCodec()).apply(var0, (var0x, var1, var2) -> new ChestBlock(() -> BlockEntityType.CHEST, var0x, var1, var2)));
+   public static final MapCodec<ChestBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("open_sound").forGetter(ChestBlock::getOpenChestSound), BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("close_sound").forGetter(ChestBlock::getCloseChestSound), propertiesCodec()).apply(i, (openSound, closeSound, p) -> new ChestBlock(() -> BlockEntityType.CHEST, openSound, closeSound, p)));
    public static final EnumProperty<Direction> FACING;
    public static final EnumProperty<ChestType> TYPE;
    public static final BooleanProperty WATERLOGGED;
@@ -78,52 +78,52 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
       return CODEC;
    }
 
-   protected ChestBlock(Supplier<BlockEntityType<? extends ChestBlockEntity>> var1, SoundEvent var2, SoundEvent var3, BlockBehaviour.Properties var4) {
-      super(var4, var1);
-      this.openSound = var2;
-      this.closeSound = var3;
+   protected ChestBlock(final Supplier<BlockEntityType<? extends ChestBlockEntity>> blockEntityType, final SoundEvent openSound, final SoundEvent closeSound, final BlockBehaviour.Properties properties) {
+      super(properties, blockEntityType);
+      this.openSound = openSound;
+      this.closeSound = closeSound;
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(TYPE, ChestType.SINGLE)).setValue(WATERLOGGED, false));
    }
 
-   public static DoubleBlockCombiner.BlockType getBlockType(BlockState var0) {
-      ChestType var1 = (ChestType)var0.getValue(TYPE);
-      if (var1 == ChestType.SINGLE) {
+   public static DoubleBlockCombiner.BlockType getBlockType(final BlockState state) {
+      ChestType type = (ChestType)state.getValue(TYPE);
+      if (type == ChestType.SINGLE) {
          return DoubleBlockCombiner.BlockType.SINGLE;
       } else {
-         return var1 == ChestType.RIGHT ? DoubleBlockCombiner.BlockType.FIRST : DoubleBlockCombiner.BlockType.SECOND;
+         return type == ChestType.RIGHT ? DoubleBlockCombiner.BlockType.FIRST : DoubleBlockCombiner.BlockType.SECOND;
       }
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      if ((Boolean)var1.getValue(WATERLOGGED)) {
-         var3.scheduleTick(var4, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var2));
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      if ((Boolean)state.getValue(WATERLOGGED)) {
+         ticks.scheduleTick(pos, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(level));
       }
 
-      if (this.chestCanConnectTo(var7) && var5.getAxis().isHorizontal()) {
-         ChestType var9 = (ChestType)var7.getValue(TYPE);
-         if (var1.getValue(TYPE) == ChestType.SINGLE && var9 != ChestType.SINGLE && var1.getValue(FACING) == var7.getValue(FACING) && getConnectedDirection(var7) == var5.getOpposite()) {
-            return (BlockState)var1.setValue(TYPE, var9.getOpposite());
+      if (this.chestCanConnectTo(neighbourState) && directionToNeighbour.getAxis().isHorizontal()) {
+         ChestType neighbourType = (ChestType)neighbourState.getValue(TYPE);
+         if (state.getValue(TYPE) == ChestType.SINGLE && neighbourType != ChestType.SINGLE && state.getValue(FACING) == neighbourState.getValue(FACING) && getConnectedDirection(neighbourState) == directionToNeighbour.getOpposite()) {
+            return (BlockState)state.setValue(TYPE, neighbourType.getOpposite());
          }
-      } else if (getConnectedDirection(var1) == var5) {
-         return (BlockState)var1.setValue(TYPE, ChestType.SINGLE);
+      } else if (getConnectedDirection(state) == directionToNeighbour) {
+         return (BlockState)state.setValue(TYPE, ChestType.SINGLE);
       }
 
-      return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+      return super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   public boolean chestCanConnectTo(BlockState var1) {
-      return var1.is(this);
+   public boolean chestCanConnectTo(final BlockState blockState) {
+      return blockState.is(this);
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       VoxelShape var10000;
-      switch ((ChestType)var1.getValue(TYPE)) {
+      switch ((ChestType)state.getValue(TYPE)) {
          case SINGLE:
             var10000 = SHAPE;
             break;
          case LEFT:
          case RIGHT:
-            var10000 = (VoxelShape)HALF_SHAPES.get(getConnectedDirection(var1));
+            var10000 = (VoxelShape)HALF_SHAPES.get(getConnectedDirection(state));
             break;
          default:
             throw new MatchException((String)null, (Throwable)null);
@@ -132,65 +132,65 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
       return var10000;
    }
 
-   public static Direction getConnectedDirection(BlockState var0) {
-      Direction var1 = (Direction)var0.getValue(FACING);
-      return var0.getValue(TYPE) == ChestType.LEFT ? var1.getClockWise() : var1.getCounterClockWise();
+   public static Direction getConnectedDirection(final BlockState state) {
+      Direction facing = (Direction)state.getValue(FACING);
+      return state.getValue(TYPE) == ChestType.LEFT ? facing.getClockWise() : facing.getCounterClockWise();
    }
 
-   public static BlockPos getConnectedBlockPos(BlockPos var0, BlockState var1) {
-      Direction var2 = getConnectedDirection(var1);
-      return var0.relative(var2);
+   public static BlockPos getConnectedBlockPos(final BlockPos pos, final BlockState state) {
+      Direction connectedDirection = getConnectedDirection(state);
+      return pos.relative(connectedDirection);
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      ChestType var2 = ChestType.SINGLE;
-      Direction var3 = var1.getHorizontalDirection().getOpposite();
-      FluidState var4 = var1.getLevel().getFluidState(var1.getClickedPos());
-      boolean var5 = var1.isSecondaryUseActive();
-      Direction var6 = var1.getClickedFace();
-      if (var6.getAxis().isHorizontal() && var5) {
-         Direction var7 = this.candidatePartnerFacing(var1.getLevel(), var1.getClickedPos(), var6.getOpposite());
-         if (var7 != null && var7.getAxis() != var6.getAxis()) {
-            var3 = var7;
-            var2 = var7.getCounterClockWise() == var6.getOpposite() ? ChestType.RIGHT : ChestType.LEFT;
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      ChestType type = ChestType.SINGLE;
+      Direction facingDirection = context.getHorizontalDirection().getOpposite();
+      FluidState replacedFluidState = context.getLevel().getFluidState(context.getClickedPos());
+      boolean secondaryUse = context.isSecondaryUseActive();
+      Direction clickedFace = context.getClickedFace();
+      if (clickedFace.getAxis().isHorizontal() && secondaryUse) {
+         Direction neighbourFacing = this.candidatePartnerFacing(context.getLevel(), context.getClickedPos(), clickedFace.getOpposite());
+         if (neighbourFacing != null && neighbourFacing.getAxis() != clickedFace.getAxis()) {
+            facingDirection = neighbourFacing;
+            type = neighbourFacing.getCounterClockWise() == clickedFace.getOpposite() ? ChestType.RIGHT : ChestType.LEFT;
          }
       }
 
-      if (var2 == ChestType.SINGLE && !var5) {
-         var2 = this.getChestType(var1.getLevel(), var1.getClickedPos(), var3);
+      if (type == ChestType.SINGLE && !secondaryUse) {
+         type = this.getChestType(context.getLevel(), context.getClickedPos(), facingDirection);
       }
 
-      return (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(FACING, var3)).setValue(TYPE, var2)).setValue(WATERLOGGED, var4.getType() == Fluids.WATER);
+      return (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(FACING, facingDirection)).setValue(TYPE, type)).setValue(WATERLOGGED, replacedFluidState.is(Fluids.WATER));
    }
 
-   protected ChestType getChestType(Level var1, BlockPos var2, Direction var3) {
-      if (var3 == this.candidatePartnerFacing(var1, var2, var3.getClockWise())) {
+   protected ChestType getChestType(final Level level, final BlockPos pos, final Direction facingDirection) {
+      if (facingDirection == this.candidatePartnerFacing(level, pos, facingDirection.getClockWise())) {
          return ChestType.LEFT;
       } else {
-         return var3 == this.candidatePartnerFacing(var1, var2, var3.getCounterClockWise()) ? ChestType.RIGHT : ChestType.SINGLE;
+         return facingDirection == this.candidatePartnerFacing(level, pos, facingDirection.getCounterClockWise()) ? ChestType.RIGHT : ChestType.SINGLE;
       }
    }
 
-   protected FluidState getFluidState(BlockState var1) {
-      return (Boolean)var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
+   protected FluidState getFluidState(final BlockState state) {
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
    }
 
-   private @Nullable Direction candidatePartnerFacing(Level var1, BlockPos var2, Direction var3) {
-      BlockState var4 = var1.getBlockState(var2.relative(var3));
-      return this.chestCanConnectTo(var4) && var4.getValue(TYPE) == ChestType.SINGLE ? (Direction)var4.getValue(FACING) : null;
+   private @Nullable Direction candidatePartnerFacing(final Level level, final BlockPos pos, final Direction neighbourDirection) {
+      BlockState state = level.getBlockState(pos.relative(neighbourDirection));
+      return this.chestCanConnectTo(state) && state.getValue(TYPE) == ChestType.SINGLE ? (Direction)state.getValue(FACING) : null;
    }
 
-   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
-      Containers.updateNeighboursAfterDestroy(var1, var2, var3);
+   protected void affectNeighborsAfterRemoval(final BlockState state, final ServerLevel level, final BlockPos pos, final boolean movedByPiston) {
+      Containers.updateNeighboursAfterDestroy(state, level, pos);
    }
 
-   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (var2 instanceof ServerLevel var6) {
-         MenuProvider var7 = this.getMenuProvider(var1, var2, var3);
-         if (var7 != null) {
-            var4.openMenu(var7);
-            var4.awardStat(this.getOpenChestStat());
-            PiglinAi.angerNearbyPiglins(var6, var4, true);
+   protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
+      if (level instanceof ServerLevel serverLevel) {
+         MenuProvider menuProvider = this.getMenuProvider(state, level, pos);
+         if (menuProvider != null) {
+            player.openMenu(menuProvider);
+            player.awardStat(this.getOpenChestStat());
+            PiglinAi.angerNearbyPiglins(serverLevel, player, true);
          }
       }
 
@@ -205,71 +205,66 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
       return (BlockEntityType)this.blockEntityType.get();
    }
 
-   public static @Nullable Container getContainer(ChestBlock var0, BlockState var1, Level var2, BlockPos var3, boolean var4) {
-      return (Container)((Optional)var0.combine(var1, var2, var3, var4).apply(CHEST_COMBINER)).orElse((Object)null);
+   public static @Nullable Container getContainer(final ChestBlock block, final BlockState state, final Level level, final BlockPos pos, final boolean ignoreBeingBlocked) {
+      return (Container)((Optional)block.combine(state, level, pos, ignoreBeingBlocked).apply(CHEST_COMBINER)).orElse((Object)null);
    }
 
-   public DoubleBlockCombiner.NeighborCombineResult<? extends ChestBlockEntity> combine(BlockState var1, Level var2, BlockPos var3, boolean var4) {
-      BiPredicate var5;
-      if (var4) {
-         var5 = (var0, var1x) -> false;
+   public DoubleBlockCombiner.NeighborCombineResult<? extends ChestBlockEntity> combine(final BlockState state, final Level level, final BlockPos pos, final boolean ignoreBeingBlocked) {
+      BiPredicate<LevelAccessor, BlockPos> predicate;
+      if (ignoreBeingBlocked) {
+         predicate = (levelAccessor, blockPos) -> false;
       } else {
-         var5 = ChestBlock::isChestBlockedAt;
+         predicate = ChestBlock::isChestBlockedAt;
       }
 
-      return DoubleBlockCombiner.<ChestBlockEntity>combineWithNeigbour((BlockEntityType)this.blockEntityType.get(), ChestBlock::getBlockType, ChestBlock::getConnectedDirection, FACING, var1, var2, var3, var5);
+      return DoubleBlockCombiner.<ChestBlockEntity>combineWithNeigbour((BlockEntityType)this.blockEntityType.get(), ChestBlock::getBlockType, ChestBlock::getConnectedDirection, FACING, state, level, pos, predicate);
    }
 
-   protected @Nullable MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
-      return (MenuProvider)((Optional)this.combine(var1, var2, var3, false).apply(MENU_PROVIDER_COMBINER)).orElse((Object)null);
+   protected @Nullable MenuProvider getMenuProvider(final BlockState state, final Level level, final BlockPos pos) {
+      return (MenuProvider)((Optional)this.combine(state, level, pos, false).apply(MENU_PROVIDER_COMBINER)).orElse((Object)null);
    }
 
-   public static DoubleBlockCombiner.Combiner<ChestBlockEntity, Float2FloatFunction> opennessCombiner(final LidBlockEntity var0) {
+   public static DoubleBlockCombiner.Combiner<ChestBlockEntity, Float2FloatFunction> opennessCombiner(final LidBlockEntity entity) {
       return new DoubleBlockCombiner.Combiner<ChestBlockEntity, Float2FloatFunction>() {
-         public Float2FloatFunction acceptDouble(ChestBlockEntity var1, ChestBlockEntity var2) {
-            return (var2x) -> Math.max(var1.getOpenNess(var2x), var2.getOpenNess(var2x));
+         public Float2FloatFunction acceptDouble(final ChestBlockEntity first, final ChestBlockEntity second) {
+            return (partialTickTime) -> Math.max(first.getOpenNess(partialTickTime), second.getOpenNess(partialTickTime));
          }
 
-         public Float2FloatFunction acceptSingle(ChestBlockEntity var1) {
-            Objects.requireNonNull(var1);
-            return var1::getOpenNess;
+         public Float2FloatFunction acceptSingle(final ChestBlockEntity single) {
+            Objects.requireNonNull(single);
+            return single::getOpenNess;
          }
 
          public Float2FloatFunction acceptNone() {
-            LidBlockEntity var10000 = var0;
+            LidBlockEntity var10000 = entity;
             Objects.requireNonNull(var10000);
             return var10000::getOpenNess;
-         }
-
-         // $FF: synthetic method
-         public Object acceptNone() {
-            return this.acceptNone();
          }
       };
    }
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new ChestBlockEntity(var1, var2);
+   public BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      return new ChestBlockEntity(worldPosition, blockState);
    }
 
-   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return var1.isClientSide() ? createTickerHelper(var3, this.blockEntityType(), ChestBlockEntity::lidAnimateTick) : null;
+   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(final Level level, final BlockState blockState, final BlockEntityType<T> type) {
+      return level.isClientSide() ? createTickerHelper(type, this.blockEntityType(), ChestBlockEntity::lidAnimateTick) : null;
    }
 
-   public static boolean isChestBlockedAt(LevelAccessor var0, BlockPos var1) {
-      return isBlockedChestByBlock(var0, var1) || isCatSittingOnChest(var0, var1);
+   public static boolean isChestBlockedAt(final LevelAccessor level, final BlockPos pos) {
+      return isBlockedChestByBlock(level, pos) || isCatSittingOnChest(level, pos);
    }
 
-   private static boolean isBlockedChestByBlock(BlockGetter var0, BlockPos var1) {
-      BlockPos var2 = var1.above();
-      return var0.getBlockState(var2).isRedstoneConductor(var0, var2);
+   private static boolean isBlockedChestByBlock(final BlockGetter level, final BlockPos pos) {
+      BlockPos above = pos.above();
+      return level.getBlockState(above).isRedstoneConductor(level, above);
    }
 
-   private static boolean isCatSittingOnChest(LevelAccessor var0, BlockPos var1) {
-      List var2 = var0.getEntitiesOfClass(Cat.class, new AABB((double)var1.getX(), (double)(var1.getY() + 1), (double)var1.getZ(), (double)(var1.getX() + 1), (double)(var1.getY() + 2), (double)(var1.getZ() + 1)));
-      if (!var2.isEmpty()) {
-         for(Cat var4 : var2) {
-            if (var4.isInSittingPose()) {
+   private static boolean isCatSittingOnChest(final LevelAccessor level, final BlockPos pos) {
+      List<Cat> cats = level.getEntitiesOfClass(Cat.class, new AABB((double)pos.getX(), (double)(pos.getY() + 1), (double)pos.getZ(), (double)(pos.getX() + 1), (double)(pos.getY() + 2), (double)(pos.getZ() + 1)));
+      if (!cats.isEmpty()) {
+         for(Cat cat : cats) {
+            if (cat.isInSittingPose()) {
                return true;
             }
          }
@@ -278,34 +273,34 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
       return false;
    }
 
-   protected boolean hasAnalogOutputSignal(BlockState var1) {
+   protected boolean hasAnalogOutputSignal(final BlockState state) {
       return true;
    }
 
-   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
-      return AbstractContainerMenu.getRedstoneSignalFromContainer(getContainer(this, var1, var2, var3, false));
+   protected int getAnalogOutputSignal(final BlockState state, final Level level, final BlockPos pos, final Direction direction) {
+      return AbstractContainerMenu.getRedstoneSignalFromContainer(getContainer(this, state, level, pos, false));
    }
 
-   protected BlockState rotate(BlockState var1, Rotation var2) {
-      return (BlockState)var1.setValue(FACING, var2.rotate((Direction)var1.getValue(FACING)));
+   protected BlockState rotate(final BlockState state, final Rotation rotation) {
+      return (BlockState)state.setValue(FACING, rotation.rotate((Direction)state.getValue(FACING)));
    }
 
-   protected BlockState mirror(BlockState var1, Mirror var2) {
-      return var1.rotate(var2.getRotation((Direction)var1.getValue(FACING)));
+   protected BlockState mirror(final BlockState state, final Mirror mirror) {
+      return state.rotate(mirror.getRotation((Direction)state.getValue(FACING)));
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(FACING, TYPE, WATERLOGGED);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(FACING, TYPE, WATERLOGGED);
    }
 
-   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
+   protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
       return false;
    }
 
-   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      BlockEntity var5 = var2.getBlockEntity(var3);
-      if (var5 instanceof ChestBlockEntity) {
-         ((ChestBlockEntity)var5).recheckOpen();
+   protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      BlockEntity blockEntity = level.getBlockEntity(pos);
+      if (blockEntity instanceof ChestBlockEntity) {
+         ((ChestBlockEntity)blockEntity).recheckOpen();
       }
 
    }
@@ -325,62 +320,56 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
       SHAPE = Block.column(14.0, 0.0, 14.0);
       HALF_SHAPES = Shapes.rotateHorizontal(Block.boxZ(14.0, 0.0, 14.0, 0.0, 15.0));
       CHEST_COMBINER = new DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<Container>>() {
-         public Optional<Container> acceptDouble(ChestBlockEntity var1, ChestBlockEntity var2) {
-            return Optional.of(new CompoundContainer(var1, var2));
+         public Optional<Container> acceptDouble(final ChestBlockEntity first, final ChestBlockEntity second) {
+            return Optional.of(new CompoundContainer(first, second));
          }
 
-         public Optional<Container> acceptSingle(ChestBlockEntity var1) {
-            return Optional.of(var1);
+         public Optional<Container> acceptSingle(final ChestBlockEntity single) {
+            return Optional.of(single);
          }
 
          public Optional<Container> acceptNone() {
             return Optional.empty();
          }
-
-         // $FF: synthetic method
-         public Object acceptNone() {
-            return this.acceptNone();
-         }
       };
       MENU_PROVIDER_COMBINER = new DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<MenuProvider>>() {
-         public Optional<MenuProvider> acceptDouble(final ChestBlockEntity var1, final ChestBlockEntity var2) {
-            final CompoundContainer var3 = new CompoundContainer(var1, var2);
+         public Optional<MenuProvider> acceptDouble(final ChestBlockEntity first, final ChestBlockEntity second) {
+            final Container container = new CompoundContainer(first, second);
             return Optional.of(new MenuProvider() {
-               public @Nullable AbstractContainerMenu createMenu(int var1x, Inventory var2x, Player var3x) {
-                  if (var1.canOpen(var3x) && var2.canOpen(var3x)) {
-                     var1.unpackLootTable(var2x.player);
-                     var2.unpackLootTable(var2x.player);
-                     return ChestMenu.sixRows(var1x, var2x, var3);
+               {
+                  Objects.requireNonNull(<VAR_NAMELESS_ENCLOSURE>);
+               }
+
+               public @Nullable AbstractContainerMenu createMenu(final int containerId, final Inventory inventory, final Player player) {
+                  if (first.canOpen(player) && second.canOpen(player)) {
+                     first.unpackLootTable(inventory.player);
+                     second.unpackLootTable(inventory.player);
+                     return ChestMenu.sixRows(containerId, inventory, container);
                   } else {
-                     Direction var4 = ChestBlock.getConnectedDirection(var1.getBlockState());
-                     Vec3 var5 = var1.getBlockPos().getCenter();
-                     Vec3 var6 = var5.add((double)var4.getStepX() / 2.0, 0.0, (double)var4.getStepZ() / 2.0);
-                     BaseContainerBlockEntity.sendChestLockedNotifications(var6, var3x, this.getDisplayName());
+                     Direction connectedDirection = ChestBlock.getConnectedDirection(first.getBlockState());
+                     Vec3 firstCenter = first.getBlockPos().getCenter();
+                     Vec3 centerBetweenChests = firstCenter.add((double)connectedDirection.getStepX() / 2.0, 0.0, (double)connectedDirection.getStepZ() / 2.0);
+                     BaseContainerBlockEntity.sendChestLockedNotifications(centerBetweenChests, player, this.getDisplayName());
                      return null;
                   }
                }
 
                public Component getDisplayName() {
-                  if (var1.hasCustomName()) {
-                     return var1.getDisplayName();
+                  if (first.hasCustomName()) {
+                     return first.getDisplayName();
                   } else {
-                     return (Component)(var2.hasCustomName() ? var2.getDisplayName() : Component.translatable("container.chestDouble"));
+                     return (Component)(second.hasCustomName() ? second.getDisplayName() : Component.translatable("container.chestDouble"));
                   }
                }
             });
          }
 
-         public Optional<MenuProvider> acceptSingle(ChestBlockEntity var1) {
-            return Optional.of(var1);
+         public Optional<MenuProvider> acceptSingle(final ChestBlockEntity single) {
+            return Optional.of(single);
          }
 
          public Optional<MenuProvider> acceptNone() {
             return Optional.empty();
-         }
-
-         // $FF: synthetic method
-         public Object acceptNone() {
-            return this.acceptNone();
          }
       };
    }

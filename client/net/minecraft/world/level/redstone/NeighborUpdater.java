@@ -18,44 +18,53 @@ import org.jspecify.annotations.Nullable;
 public interface NeighborUpdater {
    Direction[] UPDATE_ORDER = new Direction[]{Direction.WEST, Direction.EAST, Direction.DOWN, Direction.UP, Direction.NORTH, Direction.SOUTH};
 
-   void shapeUpdate(Direction var1, BlockState var2, BlockPos var3, BlockPos var4, @Block.UpdateFlags int var5, int var6);
+   void shapeUpdate(Direction direction, BlockState neighborState, BlockPos pos, BlockPos neighborPos, @Block.UpdateFlags int updateFlags, int updateLimit);
 
-   void neighborChanged(BlockPos var1, Block var2, @Nullable Orientation var3);
+   void neighborChanged(BlockPos pos, Block changedBlock, @Nullable Orientation orientation);
 
-   void neighborChanged(BlockState var1, BlockPos var2, Block var3, @Nullable Orientation var4, boolean var5);
+   void neighborChanged(BlockState state, BlockPos pos, Block changedBlock, @Nullable Orientation orientation, boolean movedByPiston);
 
-   default void updateNeighborsAtExceptFromFacing(BlockPos var1, Block var2, @Nullable Direction var3, @Nullable Orientation var4) {
-      for(Direction var8 : UPDATE_ORDER) {
-         if (var8 != var3) {
-            this.neighborChanged(var1.relative(var8), var2, (Orientation)null);
+   default void updateNeighborsAtExceptFromFacing(final BlockPos pos, final Block block, final @Nullable Direction skipDirection, final @Nullable Orientation orientation) {
+      for(Direction direction : UPDATE_ORDER) {
+         if (direction != skipDirection) {
+            this.neighborChanged(pos.relative(direction), block, (Orientation)null);
          }
       }
 
    }
 
-   static void executeShapeUpdate(LevelAccessor var0, Direction var1, BlockPos var2, BlockPos var3, BlockState var4, @Block.UpdateFlags int var5, int var6) {
-      BlockState var7 = var0.getBlockState(var2);
-      if ((var5 & 128) == 0 || !var7.is(Blocks.REDSTONE_WIRE)) {
-         BlockState var8 = var7.updateShape(var0, var0, var2, var1, var3, var4, var0.getRandom());
-         Block.updateOrDestroy(var7, var8, var0, var2, var5, var6);
+   static void executeShapeUpdate(final LevelAccessor level, final Direction direction, final BlockPos pos, final BlockPos neighborPos, final BlockState neighborState, final @Block.UpdateFlags int updateFlags, final int updateLimit) {
+      BlockState currentState = level.getBlockState(pos);
+      if ((updateFlags & 128) == 0 || !currentState.is(Blocks.REDSTONE_WIRE)) {
+         try {
+            BlockState newState = currentState.updateShape(level, level, pos, direction, neighborPos, neighborState, level.getRandom());
+            Block.updateOrDestroy(currentState, newState, level, pos, updateFlags, updateLimit);
+         } catch (Throwable t) {
+            CrashReport report = CrashReport.forThrowable(t, "Exception while updating neighbour shapes");
+            CrashReportCategory ownCategory = report.addCategory("Block being updated");
+            CrashReportCategory.populateBlockDetails(ownCategory, level, pos, currentState);
+            CrashReportCategory neighborCategory = report.addCategory("Neighbor block");
+            CrashReportCategory.populateBlockDetails(neighborCategory, level, neighborPos, neighborState);
+            throw new ReportedException(report);
+         }
       }
    }
 
-   static void executeUpdate(Level var0, BlockState var1, BlockPos var2, Block var3, @Nullable Orientation var4, boolean var5) {
+   static void executeUpdate(final Level level, final BlockState state, final BlockPos pos, final Block changedBlock, final @Nullable Orientation orientation, final boolean movedByPiston) {
       try {
-         var1.handleNeighborChanged(var0, var2, var3, var4, var5);
-      } catch (Throwable var9) {
-         CrashReport var7 = CrashReport.forThrowable(var9, "Exception while updating neighbours");
-         CrashReportCategory var8 = var7.addCategory("Block being updated");
-         var8.setDetail("Source block type", (CrashReportDetail)(() -> {
+         state.handleNeighborChanged(level, pos, changedBlock, orientation, movedByPiston);
+      } catch (Throwable t) {
+         CrashReport report = CrashReport.forThrowable(t, "Exception while updating neighbours");
+         CrashReportCategory category = report.addCategory("Block being updated");
+         category.setDetail("Source block type", (CrashReportDetail)(() -> {
             try {
-               return String.format(Locale.ROOT, "ID #%s (%s // %s)", BuiltInRegistries.BLOCK.getKey(var3), var3.getDescriptionId(), var3.getClass().getCanonicalName());
+               return String.format(Locale.ROOT, "ID #%s (%s // %s)", BuiltInRegistries.BLOCK.getKey(changedBlock), changedBlock.getDescriptionId(), changedBlock.getClass().getCanonicalName());
             } catch (Throwable var2) {
-               return "ID #" + String.valueOf(BuiltInRegistries.BLOCK.getKey(var3));
+               return "ID #" + String.valueOf(BuiltInRegistries.BLOCK.getKey(changedBlock));
             }
          }));
-         CrashReportCategory.populateBlockDetails(var8, var0, var2, var1);
-         throw new ReportedException(var7);
+         CrashReportCategory.populateBlockDetails(category, level, pos, state);
+         throw new ReportedException(report);
       }
    }
 }

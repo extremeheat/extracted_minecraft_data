@@ -10,14 +10,14 @@ import org.slf4j.Logger;
 public class SavedDataUUIDFix extends AbstractUUIDFix {
    private static final Logger LOGGER = LogUtils.getLogger();
 
-   public SavedDataUUIDFix(Schema var1) {
-      super(var1, References.SAVED_DATA_RAIDS);
+   public SavedDataUUIDFix(final Schema outputSchema) {
+      super(outputSchema, References.SAVED_DATA_RAIDS);
    }
 
    protected TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped("SavedDataUUIDFix", this.getInputSchema().getType(this.typeReference), (var0) -> var0.update(DSL.remainderFinder(), (var0x) -> var0x.update("data", (var0) -> var0.update("Raids", (var0x) -> var0x.createList(var0x.asStream().map((var0) -> var0.update("HeroesOfTheVillage", (var0x) -> var0x.createList(var0x.asStream().map((var0) -> (Dynamic)createUUIDFromLongs(var0, "UUIDMost", "UUIDLeast").orElseGet(() -> {
+      return this.fixTypeEverywhereTyped("SavedDataUUIDFix", this.getInputSchema().getType(this.typeReference), (input) -> input.update(DSL.remainderFinder(), (container) -> container.update("data", (tag) -> tag.update("Raids", (raids) -> raids.createList(raids.asStream().map((raid) -> raid.update("HeroesOfTheVillage", (heros) -> heros.createList(heros.asStream().map((hero) -> (Dynamic)createUUIDFromLongs(hero, "UUIDMost", "UUIDLeast").orElseGet(() -> {
                               LOGGER.warn("HeroesOfTheVillage contained invalid UUIDs.");
-                              return var0;
+                              return hero;
                            }))))))))));
    }
 }

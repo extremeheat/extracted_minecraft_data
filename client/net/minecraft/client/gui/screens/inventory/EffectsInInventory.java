@@ -8,8 +8,8 @@ import java.util.Optional;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.StringWidget;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.ComponentRenderUtils;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -31,88 +31,88 @@ public class EffectsInInventory {
    private final AbstractContainerScreen<?> screen;
    private final Minecraft minecraft;
 
-   public EffectsInInventory(AbstractContainerScreen<?> var1) {
+   public EffectsInInventory(final AbstractContainerScreen<?> screen) {
       super();
-      this.screen = var1;
+      this.screen = screen;
       this.minecraft = Minecraft.getInstance();
    }
 
    public boolean canSeeEffects() {
-      int var1 = this.screen.leftPos + this.screen.imageWidth + 2;
-      int var2 = this.screen.width - var1;
-      return var2 >= 32;
+      int xo = this.screen.leftPos + this.screen.imageWidth + 2;
+      int availableWidth = this.screen.width - xo;
+      return availableWidth >= 32;
    }
 
-   public void render(GuiGraphics var1, int var2, int var3) {
-      int var4 = this.screen.leftPos + this.screen.imageWidth + 2;
-      int var5 = this.screen.width - var4;
-      Collection var6 = this.minecraft.player.getActiveEffects();
-      if (!var6.isEmpty() && var5 >= 32) {
-         int var7 = var5 >= 120 ? var5 - 7 : 32;
-         int var8 = 33;
-         if (var6.size() > 5) {
-            var8 = 132 / (var6.size() - 1);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY) {
+      int xo = this.screen.leftPos + this.screen.imageWidth + 2;
+      int availableWidth = this.screen.width - xo;
+      Collection<MobEffectInstance> activeEffects = this.minecraft.player.getActiveEffects();
+      if (!activeEffects.isEmpty() && availableWidth >= 32) {
+         int maxWidth = availableWidth >= 120 ? availableWidth - 7 : 32;
+         int yStep = 33;
+         if (activeEffects.size() > 5) {
+            yStep = 132 / (activeEffects.size() - 1);
          }
 
-         this.renderEffects(var1, var6, var4, var8, var2, var3, var7);
+         this.extractEffects(graphics, activeEffects, xo, yStep, mouseX, mouseY, maxWidth);
       }
    }
 
-   private void renderEffects(GuiGraphics var1, Collection<MobEffectInstance> var2, int var3, int var4, int var5, int var6, int var7) {
-      List var8 = Ordering.natural().sortedCopy(var2);
-      int var9 = this.screen.topPos;
-      Font var10 = this.screen.getFont();
+   private void extractEffects(final GuiGraphicsExtractor graphics, final Collection<MobEffectInstance> activeEffects, final int x0, final int yStep, final int mouseX, final int mouseY, final int maxWidth) {
+      Iterable<MobEffectInstance> sortedEffects = Ordering.natural().sortedCopy(activeEffects);
+      int y0 = this.screen.topPos;
+      Font font = this.screen.getFont();
 
-      for(MobEffectInstance var12 : var8) {
-         boolean var13 = var12.isAmbient();
-         Component var14 = this.getEffectName(var12);
-         Component var15 = MobEffectUtil.formatDuration(var12, 1.0F, this.minecraft.level.tickRateManager().tickrate());
-         int var16 = this.renderBackground(var1, var10, var14, var15, var3, var9, var13, var7);
-         this.renderText(var1, var14, var15, var10, var3, var9, var16, var4, var5, var6);
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)Gui.getMobEffectSprite(var12.getEffect()), var3 + 7, var9 + 7, 18, 18);
-         var9 += var4;
+      for(MobEffectInstance effect : sortedEffects) {
+         boolean isAmbient = effect.isAmbient();
+         Component effectText = this.getEffectName(effect);
+         Component duration = MobEffectUtil.formatDuration(effect, 1.0F, this.minecraft.level.tickRateManager().tickrate());
+         int textureWidth = this.extractBackground(graphics, font, effectText, duration, x0, y0, isAmbient, maxWidth);
+         this.extractText(graphics, effectText, duration, font, x0, y0, textureWidth, yStep, mouseX, mouseY);
+         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)Gui.getMobEffectSprite(effect.getEffect()), x0 + 7, y0 + 7, 18, 18);
+         y0 += yStep;
       }
 
    }
 
-   private int renderBackground(GuiGraphics var1, Font var2, Component var3, Component var4, int var5, int var6, boolean var7, int var8) {
-      int var9 = 32 + var2.width((FormattedText)var3) + 7;
-      int var10 = 32 + var2.width((FormattedText)var4) + 7;
-      int var11 = Math.min(var8, Math.max(var9, var10));
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)(var7 ? EFFECT_BACKGROUND_AMBIENT_SPRITE : EFFECT_BACKGROUND_SPRITE), var5, var6, var11, 32);
-      return var11;
+   private int extractBackground(final GuiGraphicsExtractor graphics, final Font font, final Component effectName, final Component duration, final int x0, final int y0, final boolean isAmbient, final int maxTextureWidth) {
+      int nameWidth = 32 + font.width((FormattedText)effectName) + 7;
+      int durationWidth = 32 + font.width((FormattedText)duration) + 7;
+      int textureWidth = Math.min(maxTextureWidth, Math.max(nameWidth, durationWidth));
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)(isAmbient ? EFFECT_BACKGROUND_AMBIENT_SPRITE : EFFECT_BACKGROUND_SPRITE), x0, y0, textureWidth, 32);
+      return textureWidth;
    }
 
-   private void renderText(GuiGraphics var1, Component var2, Component var3, Font var4, int var5, int var6, int var7, int var8, int var9, int var10) {
-      int var11 = var5 + 32;
-      int var12 = var6 + 7;
-      int var13 = var7 - 32 - 7;
-      boolean var14;
-      if (var13 > 0) {
-         boolean var15 = var4.width((FormattedText)var2) > var13;
-         FormattedCharSequence var16 = var15 ? StringWidget.clipText(var2, var4, var13) : var2.getVisualOrderText();
-         var1.drawString(var4, (FormattedCharSequence)var16, var11, var12, -1);
-         Objects.requireNonNull(var4);
-         var1.drawString(var4, var3, var11, var12 + 9, -8355712);
-         var14 = var15;
+   private void extractText(final GuiGraphicsExtractor graphics, final Component effectText, final Component duration, final Font font, final int x0, final int y0, final int textureWidth, final int yStep, final int mouseX, final int mouseY) {
+      int textX = x0 + 32;
+      int textY = y0 + 7;
+      int maxTextWidth = textureWidth - 32 - 7;
+      boolean isCompact;
+      if (maxTextWidth > 0) {
+         boolean shouldClip = font.width((FormattedText)effectText) > maxTextWidth;
+         FormattedCharSequence clippedText = shouldClip ? ComponentRenderUtils.clipText(effectText, font, maxTextWidth) : effectText.getVisualOrderText();
+         graphics.text(font, (FormattedCharSequence)clippedText, textX, textY, -1);
+         Objects.requireNonNull(font);
+         graphics.text(font, duration, textX, textY + 9, -8355712);
+         isCompact = shouldClip;
       } else {
-         var14 = true;
+         isCompact = true;
       }
 
-      if (var14 && var9 >= var5 && var9 <= var5 + var7 && var10 >= var6 && var10 <= var6 + var8) {
-         var1.setTooltipForNextFrame(this.screen.getFont(), List.of(var2, var3), Optional.empty(), var9, var10);
+      if (isCompact && mouseX >= x0 && mouseX <= x0 + textureWidth && mouseY >= y0 && mouseY <= y0 + yStep) {
+         graphics.setTooltipForNextFrame(this.screen.getFont(), List.of(effectText, duration), Optional.empty(), mouseX, mouseY);
       }
 
    }
 
-   private Component getEffectName(MobEffectInstance var1) {
-      MutableComponent var2 = ((MobEffect)var1.getEffect().value()).getDisplayName().copy();
-      if (var1.getAmplifier() >= 1 && var1.getAmplifier() <= 9) {
-         MutableComponent var10000 = var2.append(CommonComponents.SPACE);
-         int var10001 = var1.getAmplifier();
+   private Component getEffectName(final MobEffectInstance effect) {
+      MutableComponent name = ((MobEffect)effect.getEffect().value()).getDisplayName().copy();
+      if (effect.getAmplifier() >= 1 && effect.getAmplifier() <= 9) {
+         MutableComponent var10000 = name.append(CommonComponents.SPACE);
+         int var10001 = effect.getAmplifier();
          var10000.append((Component)Component.translatable("enchantment.level." + (var10001 + 1)));
       }
 
-      return var2;
+      return name;
    }
 }

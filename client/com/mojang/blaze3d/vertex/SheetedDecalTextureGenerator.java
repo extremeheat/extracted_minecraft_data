@@ -16,60 +16,60 @@ public class SheetedDecalTextureGenerator implements VertexConsumer {
    private float y;
    private float z;
 
-   public SheetedDecalTextureGenerator(VertexConsumer var1, PoseStack.Pose var2, float var3) {
+   public SheetedDecalTextureGenerator(final VertexConsumer delegate, final PoseStack.Pose cameraPose, final float textureScale) {
       super();
-      this.delegate = var1;
-      this.cameraInversePose = (new Matrix4f(var2.pose())).invert();
-      this.normalInversePose = (new Matrix3f(var2.normal())).invert();
-      this.textureScale = var3;
+      this.delegate = delegate;
+      this.cameraInversePose = (new Matrix4f(cameraPose.pose())).invert();
+      this.normalInversePose = (new Matrix3f(cameraPose.normal())).invert();
+      this.textureScale = textureScale;
    }
 
-   public VertexConsumer addVertex(float var1, float var2, float var3) {
-      this.x = var1;
-      this.y = var2;
-      this.z = var3;
-      this.delegate.addVertex(var1, var2, var3);
+   public VertexConsumer addVertex(final float x, final float y, final float z) {
+      this.x = x;
+      this.y = y;
+      this.z = z;
+      this.delegate.addVertex(x, y, z);
       return this;
    }
 
-   public VertexConsumer setColor(int var1, int var2, int var3, int var4) {
+   public VertexConsumer setColor(final int r, final int g, final int b, final int a) {
       this.delegate.setColor(-1);
       return this;
    }
 
-   public VertexConsumer setColor(int var1) {
+   public VertexConsumer setColor(final int color) {
       this.delegate.setColor(-1);
       return this;
    }
 
-   public VertexConsumer setUv(float var1, float var2) {
+   public VertexConsumer setUv(final float u, final float v) {
       return this;
    }
 
-   public VertexConsumer setUv1(int var1, int var2) {
-      this.delegate.setUv1(var1, var2);
+   public VertexConsumer setUv1(final int u, final int v) {
+      this.delegate.setUv1(u, v);
       return this;
    }
 
-   public VertexConsumer setUv2(int var1, int var2) {
-      this.delegate.setUv2(var1, var2);
+   public VertexConsumer setUv2(final int u, final int v) {
+      this.delegate.setUv2(u, v);
       return this;
    }
 
-   public VertexConsumer setNormal(float var1, float var2, float var3) {
-      this.delegate.setNormal(var1, var2, var3);
-      Vector3f var4 = this.normalInversePose.transform(var1, var2, var3, this.normal);
-      Direction var5 = Direction.getApproximateNearest(var4.x(), var4.y(), var4.z());
-      Vector3f var6 = this.cameraInversePose.transformPosition(this.x, this.y, this.z, this.worldPos);
-      var6.rotateY(3.1415927F);
-      var6.rotateX(-1.5707964F);
-      var6.rotate(var5.getRotation());
-      this.delegate.setUv(-var6.x() * this.textureScale, -var6.y() * this.textureScale);
+   public VertexConsumer setNormal(final float x, final float y, final float z) {
+      this.delegate.setNormal(x, y, z);
+      Vector3f normal = this.normalInversePose.transform(x, y, z, this.normal);
+      Direction direction = Direction.getApproximateNearest(normal.x(), normal.y(), normal.z());
+      Vector3f worldPos = this.cameraInversePose.transformPosition(this.x, this.y, this.z, this.worldPos);
+      worldPos.rotateY(3.1415927F);
+      worldPos.rotateX(-1.5707964F);
+      worldPos.rotate(direction.getRotation());
+      this.delegate.setUv(-worldPos.x() * this.textureScale, -worldPos.y() * this.textureScale);
       return this;
    }
 
-   public VertexConsumer setLineWidth(float var1) {
-      this.delegate.setLineWidth(var1);
+   public VertexConsumer setLineWidth(final float width) {
+      this.delegate.setLineWidth(width);
       return this;
    }
 }

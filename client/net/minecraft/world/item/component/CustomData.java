@@ -20,42 +20,42 @@ public final class CustomData {
    public static final StreamCodec<ByteBuf, CustomData> STREAM_CODEC;
    private final CompoundTag tag;
 
-   private CustomData(CompoundTag var1) {
+   private CustomData(final CompoundTag tag) {
       super();
-      this.tag = var1;
+      this.tag = tag;
    }
 
-   public static CustomData of(CompoundTag var0) {
-      return new CustomData(var0.copy());
+   public static CustomData of(final CompoundTag tag) {
+      return new CustomData(tag.copy());
    }
 
-   public boolean matchedBy(CompoundTag var1) {
-      return NbtUtils.compareNbt(var1, this.tag, true);
+   public boolean matchedBy(final CompoundTag expectedTag) {
+      return NbtUtils.compareNbt(expectedTag, this.tag, true);
    }
 
-   public static void update(DataComponentType<CustomData> var0, ItemStack var1, Consumer<CompoundTag> var2) {
-      CustomData var3 = ((CustomData)var1.getOrDefault(var0, EMPTY)).update(var2);
-      if (var3.tag.isEmpty()) {
-         var1.remove(var0);
+   public static void update(final DataComponentType<CustomData> component, final ItemStack itemStack, final Consumer<CompoundTag> consumer) {
+      CustomData newData = ((CustomData)itemStack.getOrDefault(component, EMPTY)).update(consumer);
+      if (newData.tag.isEmpty()) {
+         itemStack.remove(component);
       } else {
-         var1.set(var0, var3);
+         itemStack.set(component, newData);
       }
 
    }
 
-   public static void set(DataComponentType<CustomData> var0, ItemStack var1, CompoundTag var2) {
-      if (!var2.isEmpty()) {
-         var1.set(var0, of(var2));
+   public static void set(final DataComponentType<CustomData> component, final ItemStack itemStack, final CompoundTag tag) {
+      if (!tag.isEmpty()) {
+         itemStack.set(component, of(tag));
       } else {
-         var1.remove(var0);
+         itemStack.remove(component);
       }
 
    }
 
-   public CustomData update(Consumer<CompoundTag> var1) {
-      CompoundTag var2 = this.tag.copy();
-      var1.accept(var2);
-      return new CustomData(var2);
+   public CustomData update(final Consumer<CompoundTag> consumer) {
+      CompoundTag newTag = this.tag.copy();
+      consumer.accept(newTag);
+      return new CustomData(newTag);
    }
 
    public boolean isEmpty() {
@@ -66,12 +66,12 @@ public final class CustomData {
       return this.tag.copy();
    }
 
-   public boolean equals(Object var1) {
-      if (var1 == this) {
+   public boolean equals(final Object obj) {
+      if (obj == this) {
          return true;
-      } else if (var1 instanceof CustomData) {
-         CustomData var2 = (CustomData)var1;
-         return this.tag.equals(var2.tag);
+      } else if (obj instanceof CustomData) {
+         CustomData customData = (CustomData)obj;
+         return this.tag.equals(customData.tag);
       } else {
          return false;
       }
@@ -87,7 +87,7 @@ public final class CustomData {
 
    static {
       COMPOUND_TAG_CODEC = Codec.withAlternative(CompoundTag.CODEC, TagParser.FLATTENED_CODEC);
-      CODEC = COMPOUND_TAG_CODEC.xmap(CustomData::new, (var0) -> var0.tag);
-      STREAM_CODEC = ByteBufCodecs.COMPOUND_TAG.map(CustomData::new, (var0) -> var0.tag);
+      CODEC = COMPOUND_TAG_CODEC.xmap(CustomData::new, (data) -> data.tag);
+      STREAM_CODEC = ByteBufCodecs.COMPOUND_TAG.map(CustomData::new, (data) -> data.tag);
    }
 }

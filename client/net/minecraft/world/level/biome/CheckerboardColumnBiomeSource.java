@@ -8,16 +8,16 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 
 public class CheckerboardColumnBiomeSource extends BiomeSource {
-   public static final MapCodec<CheckerboardColumnBiomeSource> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Biome.LIST_CODEC.fieldOf("biomes").forGetter((var0x) -> var0x.allowedBiomes), Codec.intRange(0, 62).fieldOf("scale").orElse(2).forGetter((var0x) -> var0x.size)).apply(var0, CheckerboardColumnBiomeSource::new));
+   public static final MapCodec<CheckerboardColumnBiomeSource> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Biome.LIST_CODEC.fieldOf("biomes").forGetter((s) -> s.allowedBiomes), Codec.intRange(0, 62).fieldOf("scale").orElse(2).forGetter((s) -> s.size)).apply(i, CheckerboardColumnBiomeSource::new));
    private final HolderSet<Biome> allowedBiomes;
    private final int bitShift;
    private final int size;
 
-   public CheckerboardColumnBiomeSource(HolderSet<Biome> var1, int var2) {
+   public CheckerboardColumnBiomeSource(final HolderSet<Biome> allowedBiomes, final int size) {
       super();
-      this.allowedBiomes = var1;
-      this.bitShift = var2 + 2;
-      this.size = var2;
+      this.allowedBiomes = allowedBiomes;
+      this.bitShift = size + 2;
+      this.size = size;
    }
 
    protected Stream<Holder<Biome>> collectPossibleBiomes() {
@@ -28,7 +28,7 @@ public class CheckerboardColumnBiomeSource extends BiomeSource {
       return CODEC;
    }
 
-   public Holder<Biome> getNoiseBiome(int var1, int var2, int var3, Climate.Sampler var4) {
-      return this.allowedBiomes.get(Math.floorMod((var1 >> this.bitShift) + (var3 >> this.bitShift), this.allowedBiomes.size()));
+   public Holder<Biome> getNoiseBiome(final int quartX, final int quartY, final int quartZ, final Climate.Sampler sampler) {
+      return this.allowedBiomes.get(Math.floorMod((quartX >> this.bitShift) + (quartZ >> this.bitShift), this.allowedBiomes.size()));
    }
 }

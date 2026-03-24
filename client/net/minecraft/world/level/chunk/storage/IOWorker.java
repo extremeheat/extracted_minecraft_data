@@ -27,7 +27,7 @@ import net.minecraft.world.level.ChunkPos;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-public class IOWorker implements ChunkScanAccess, AutoCloseable {
+public class IOWorker implements AutoCloseable, ChunkScanAccess {
    public static final Supplier<CompoundTag> STORE_EMPTY = () -> null;
    private static final Logger LOGGER = LogUtils.getLogger();
    private final AtomicBoolean shutdownRequested = new AtomicBoolean();
@@ -37,30 +37,30 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
    private final Long2ObjectLinkedOpenHashMap<CompletableFuture<BitSet>> regionCacheForBlender = new Long2ObjectLinkedOpenHashMap();
    private static final int REGION_CACHE_SIZE = 1024;
 
-   protected IOWorker(RegionStorageInfo var1, Path var2, boolean var3) {
+   protected IOWorker(final RegionStorageInfo info, final Path dir, final boolean sync) {
       super();
-      this.storage = new RegionFileStorage(var1, var2, var3);
-      this.consecutiveExecutor = new PriorityConsecutiveExecutor(IOWorker.Priority.values().length, Util.ioPool(), "IOWorker-" + var1.type());
+      this.storage = new RegionFileStorage(info, dir, sync);
+      this.consecutiveExecutor = new PriorityConsecutiveExecutor(IOWorker.Priority.values().length, Util.ioPool(), "IOWorker-" + info.type());
    }
 
-   public boolean isOldChunkAround(ChunkPos var1, int var2) {
-      ChunkPos var3 = new ChunkPos(var1.x - var2, var1.z - var2);
-      ChunkPos var4 = new ChunkPos(var1.x + var2, var1.z + var2);
+   public boolean isOldChunkAround(final ChunkPos pos, final int range) {
+      ChunkPos from = new ChunkPos(pos.x() - range, pos.z() - range);
+      ChunkPos to = new ChunkPos(pos.x() + range, pos.z() + range);
 
-      for(int var5 = var3.getRegionX(); var5 <= var4.getRegionX(); ++var5) {
-         for(int var6 = var3.getRegionZ(); var6 <= var4.getRegionZ(); ++var6) {
-            BitSet var7 = (BitSet)this.getOrCreateOldDataForRegion(var5, var6).join();
-            if (!var7.isEmpty()) {
-               ChunkPos var8 = ChunkPos.minFromRegion(var5, var6);
-               int var9 = Math.max(var3.x - var8.x, 0);
-               int var10 = Math.max(var3.z - var8.z, 0);
-               int var11 = Math.min(var4.x - var8.x, 31);
-               int var12 = Math.min(var4.z - var8.z, 31);
+      for(int regionX = from.getRegionX(); regionX <= to.getRegionX(); ++regionX) {
+         for(int regionZ = from.getRegionZ(); regionZ <= to.getRegionZ(); ++regionZ) {
+            BitSet data = (BitSet)this.getOrCreateOldDataForRegion(regionX, regionZ).join();
+            if (!data.isEmpty()) {
+               ChunkPos minChunkPos = ChunkPos.minFromRegion(regionX, regionZ);
+               int startChunkX = Math.max(from.x() - minChunkPos.x(), 0);
+               int startChunkZ = Math.max(from.z() - minChunkPos.z(), 0);
+               int endChunkX = Math.min(to.x() - minChunkPos.x(), 31);
+               int endChunkZ = Math.min(to.z() - minChunkPos.z(), 31);
 
-               for(int var13 = var9; var13 <= var11; ++var13) {
-                  for(int var14 = var10; var14 <= var12; ++var14) {
-                     int var15 = var14 * 32 + var13;
-                     if (var7.get(var15)) {
+               for(int x = startChunkX; x <= endChunkX; ++x) {
+                  for(int z = startChunkZ; z <= endChunkZ; ++z) {
+                     int chunkIndex = z * 32 + x;
+                     if (data.get(chunkIndex)) {
                         return true;
                      }
                   }
@@ -72,124 +72,124 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
       return false;
    }
 
-   private CompletableFuture<BitSet> getOrCreateOldDataForRegion(int var1, int var2) {
-      long var3 = ChunkPos.asLong(var1, var2);
+   private CompletableFuture<BitSet> getOrCreateOldDataForRegion(final int regionX, final int regionZ) {
+      long regionPos = ChunkPos.pack(regionX, regionZ);
       synchronized(this.regionCacheForBlender) {
-         CompletableFuture var6 = (CompletableFuture)this.regionCacheForBlender.getAndMoveToFirst(var3);
-         if (var6 == null) {
-            var6 = this.createOldDataForRegion(var1, var2);
-            this.regionCacheForBlender.putAndMoveToFirst(var3, var6);
+         CompletableFuture<BitSet> result = (CompletableFuture)this.regionCacheForBlender.getAndMoveToFirst(regionPos);
+         if (result == null) {
+            result = this.createOldDataForRegion(regionX, regionZ);
+            this.regionCacheForBlender.putAndMoveToFirst(regionPos, result);
             if (this.regionCacheForBlender.size() > 1024) {
                this.regionCacheForBlender.removeLast();
             }
          }
 
-         return var6;
+         return result;
       }
    }
 
-   private CompletableFuture<BitSet> createOldDataForRegion(int var1, int var2) {
+   private CompletableFuture<BitSet> createOldDataForRegion(final int regionX, final int regionZ) {
       return CompletableFuture.supplyAsync(() -> {
-         ChunkPos var3 = ChunkPos.minFromRegion(var1, var2);
-         ChunkPos var4 = ChunkPos.maxFromRegion(var1, var2);
-         BitSet var5 = new BitSet();
-         ChunkPos.rangeClosed(var3, var4).forEach((var2x) -> {
-            CollectFields var3 = new CollectFields(new FieldSelector[]{new FieldSelector(IntTag.TYPE, "DataVersion"), new FieldSelector(CompoundTag.TYPE, "blending_data")});
+         ChunkPos from = ChunkPos.minFromRegion(regionX, regionZ);
+         ChunkPos to = ChunkPos.maxFromRegion(regionX, regionZ);
+         BitSet resultSet = new BitSet();
+         ChunkPos.rangeClosed(from, to).forEach((pos) -> {
+            CollectFields collectFields = new CollectFields(new FieldSelector[]{new FieldSelector(IntTag.TYPE, "DataVersion"), new FieldSelector(CompoundTag.TYPE, "blending_data")});
 
             try {
-               this.scanChunk(var2x, var3).join();
-            } catch (Exception var7) {
-               LOGGER.warn("Failed to scan chunk {}", var2x, var7);
+               this.scanChunk(pos, collectFields).join();
+            } catch (Exception e) {
+               LOGGER.warn("Failed to scan chunk {}", pos, e);
                return;
             }
 
-            Tag var4 = var3.getResult();
-            if (var4 instanceof CompoundTag var5x) {
-               if (this.isOldChunk(var5x)) {
-                  int var6 = var2x.getRegionLocalZ() * 32 + var2x.getRegionLocalX();
-                  var5.set(var6);
+            Tag tag = collectFields.getResult();
+            if (tag instanceof CompoundTag chunkTag) {
+               if (this.isOldChunk(chunkTag)) {
+                  int chunkIndex = pos.getRegionLocalZ() * 32 + pos.getRegionLocalX();
+                  resultSet.set(chunkIndex);
                }
             }
 
          });
-         return var5;
+         return resultSet;
       }, Util.backgroundExecutor());
    }
 
-   private boolean isOldChunk(CompoundTag var1) {
-      return var1.getIntOr("DataVersion", 0) < 4295 ? true : var1.getCompound("blending_data").isPresent();
+   private boolean isOldChunk(final CompoundTag tag) {
+      return tag.getIntOr("DataVersion", 0) < 4295 ? true : tag.getCompound("blending_data").isPresent();
    }
 
-   public CompletableFuture<Void> store(ChunkPos var1, CompoundTag var2) {
-      return this.store(var1, (Supplier)(() -> var2));
+   public CompletableFuture<Void> store(final ChunkPos pos, final CompoundTag value) {
+      return this.store(pos, (Supplier)(() -> value));
    }
 
-   public CompletableFuture<Void> store(ChunkPos var1, Supplier<CompoundTag> var2) {
+   public CompletableFuture<Void> store(final ChunkPos pos, final Supplier<CompoundTag> supplier) {
       return this.submitTask(() -> {
-         CompoundTag var3 = (CompoundTag)var2.get();
-         PendingStore var4 = (PendingStore)this.pendingWrites.computeIfAbsent(var1, (var1x) -> new PendingStore(var3));
-         var4.data = var3;
-         return var4.result;
+         CompoundTag data = (CompoundTag)supplier.get();
+         PendingStore pendingStore = (PendingStore)this.pendingWrites.computeIfAbsent(pos, (p) -> new PendingStore(data));
+         pendingStore.data = data;
+         return pendingStore.result;
       }).thenCompose(Function.identity());
    }
 
-   public CompletableFuture<Optional<CompoundTag>> loadAsync(ChunkPos var1) {
+   public CompletableFuture<Optional<CompoundTag>> loadAsync(final ChunkPos pos) {
       return this.<Optional<CompoundTag>>submitThrowingTask(() -> {
-         PendingStore var2 = (PendingStore)this.pendingWrites.get(var1);
-         if (var2 != null) {
-            return Optional.ofNullable(var2.copyData());
+         PendingStore pendingStore = (PendingStore)this.pendingWrites.get(pos);
+         if (pendingStore != null) {
+            return Optional.ofNullable(pendingStore.copyData());
          } else {
             try {
-               CompoundTag var3 = this.storage.read(var1);
-               return Optional.ofNullable(var3);
-            } catch (Exception var4) {
-               LOGGER.warn("Failed to read chunk {}", var1, var4);
-               throw var4;
+               CompoundTag data = this.storage.read(pos);
+               return Optional.ofNullable(data);
+            } catch (Exception e) {
+               LOGGER.warn("Failed to read chunk {}", pos, e);
+               throw e;
             }
          }
       });
    }
 
-   public CompletableFuture<Void> synchronize(boolean var1) {
-      CompletableFuture var2 = this.submitTask(() -> CompletableFuture.allOf((CompletableFuture[])this.pendingWrites.values().stream().map((var0) -> var0.result).toArray((var0) -> new CompletableFuture[var0]))).thenCompose(Function.identity());
-      return var1 ? var2.thenCompose((var1x) -> this.submitThrowingTask(() -> {
+   public CompletableFuture<Void> synchronize(final boolean flush) {
+      CompletableFuture<Void> currentWrites = this.submitTask(() -> CompletableFuture.allOf((CompletableFuture[])this.pendingWrites.values().stream().map((store) -> store.result).toArray((x$0) -> new CompletableFuture[x$0]))).thenCompose(Function.identity());
+      return flush ? currentWrites.thenCompose((ignore) -> this.submitThrowingTask(() -> {
             try {
                this.storage.flush();
                return null;
-            } catch (Exception var2) {
-               LOGGER.warn("Failed to synchronize chunks", var2);
-               throw var2;
+            } catch (Exception e) {
+               LOGGER.warn("Failed to synchronize chunks", e);
+               throw e;
             }
-         })) : var2.thenCompose((var1x) -> this.submitTask(() -> null));
+         })) : currentWrites.thenCompose((ignore) -> this.submitTask(() -> null));
    }
 
-   public CompletableFuture<Void> scanChunk(ChunkPos var1, StreamTagVisitor var2) {
+   public CompletableFuture<Void> scanChunk(final ChunkPos pos, final StreamTagVisitor visitor) {
       return this.<Void>submitThrowingTask(() -> {
          try {
-            PendingStore var3 = (PendingStore)this.pendingWrites.get(var1);
-            if (var3 != null) {
-               if (var3.data != null) {
-                  var3.data.acceptAsRoot(var2);
+            PendingStore pendingStore = (PendingStore)this.pendingWrites.get(pos);
+            if (pendingStore != null) {
+               if (pendingStore.data != null) {
+                  pendingStore.data.acceptAsRoot(visitor);
                }
             } else {
-               this.storage.scanChunk(var1, var2);
+               this.storage.scanChunk(pos, visitor);
             }
 
             return null;
-         } catch (Exception var4) {
-            LOGGER.warn("Failed to bulk scan chunk {}", var1, var4);
-            throw var4;
+         } catch (Exception e) {
+            LOGGER.warn("Failed to bulk scan chunk {}", pos, e);
+            throw e;
          }
       });
    }
 
-   private <T> CompletableFuture<T> submitThrowingTask(ThrowingSupplier<T> var1) {
-      return this.consecutiveExecutor.<T>scheduleWithResult(IOWorker.Priority.FOREGROUND.ordinal(), (var2) -> {
+   private <T> CompletableFuture<T> submitThrowingTask(final ThrowingSupplier<T> task) {
+      return this.consecutiveExecutor.<T>scheduleWithResult(IOWorker.Priority.FOREGROUND.ordinal(), (future) -> {
          if (!this.shutdownRequested.get()) {
             try {
-               var2.complete(var1.get());
-            } catch (Exception var4) {
-               var2.completeExceptionally(var4);
+               future.complete(task.get());
+            } catch (Exception e) {
+               future.completeExceptionally(e);
             }
          }
 
@@ -197,10 +197,10 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
       });
    }
 
-   private <T> CompletableFuture<T> submitTask(Supplier<T> var1) {
-      return this.consecutiveExecutor.<T>scheduleWithResult(IOWorker.Priority.FOREGROUND.ordinal(), (var2) -> {
+   private <T> CompletableFuture<T> submitTask(final Supplier<T> task) {
+      return this.consecutiveExecutor.<T>scheduleWithResult(IOWorker.Priority.FOREGROUND.ordinal(), (future) -> {
          if (!this.shutdownRequested.get()) {
-            var2.complete(var1.get());
+            future.complete(task.get());
          }
 
          this.tellStorePending();
@@ -208,9 +208,9 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
    }
 
    private void storePendingChunk() {
-      Map.Entry var1 = this.pendingWrites.pollFirstEntry();
-      if (var1 != null) {
-         this.runStore((ChunkPos)var1.getKey(), (PendingStore)var1.getValue());
+      Map.Entry<ChunkPos, PendingStore> entry = this.pendingWrites.pollFirstEntry();
+      if (entry != null) {
+         this.runStore((ChunkPos)entry.getKey(), (PendingStore)entry.getValue());
          this.tellStorePending();
       }
    }
@@ -219,13 +219,13 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
       this.consecutiveExecutor.schedule(new StrictQueue.RunnableWithPriority(IOWorker.Priority.BACKGROUND.ordinal(), this::storePendingChunk));
    }
 
-   private void runStore(ChunkPos var1, PendingStore var2) {
+   private void runStore(final ChunkPos pos, final PendingStore write) {
       try {
-         this.storage.write(var1, var2.data);
-         var2.result.complete((Object)null);
-      } catch (Exception var4) {
-         LOGGER.error("Failed to store chunk {}", var1, var4);
-         var2.result.completeExceptionally(var4);
+         this.storage.write(pos, write.data);
+         write.result.complete((Object)null);
+      } catch (Exception e) {
+         LOGGER.error("Failed to store chunk {}", pos, e);
+         write.result.completeExceptionally(e);
       }
 
    }
@@ -237,22 +237,22 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
 
          try {
             this.storage.close();
-         } catch (Exception var2) {
-            LOGGER.error("Failed to close storage", var2);
+         } catch (Exception e) {
+            LOGGER.error("Failed to close storage", e);
          }
 
       }
    }
 
    private void waitForShutdown() {
-      this.consecutiveExecutor.scheduleWithResult(IOWorker.Priority.SHUTDOWN.ordinal(), (var0) -> var0.complete(Unit.INSTANCE)).join();
+      this.consecutiveExecutor.scheduleWithResult(IOWorker.Priority.SHUTDOWN.ordinal(), (future) -> future.complete(Unit.INSTANCE)).join();
    }
 
    public RegionStorageInfo storageInfo() {
       return this.storage.info();
    }
 
-   static enum Priority {
+   private static enum Priority {
       FOREGROUND,
       BACKGROUND,
       SHUTDOWN;
@@ -266,23 +266,23 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
       }
    }
 
-   static class PendingStore {
-      @Nullable CompoundTag data;
-      final CompletableFuture<Void> result = new CompletableFuture();
+   private static class PendingStore {
+      private @Nullable CompoundTag data;
+      private final CompletableFuture<Void> result = new CompletableFuture();
 
-      public PendingStore(@Nullable CompoundTag var1) {
+      public PendingStore(final @Nullable CompoundTag data) {
          super();
-         this.data = var1;
+         this.data = data;
       }
 
-      @Nullable CompoundTag copyData() {
-         CompoundTag var1 = this.data;
-         return var1 == null ? null : var1.copy();
+      private @Nullable CompoundTag copyData() {
+         CompoundTag data = this.data;
+         return data == null ? null : data.copy();
       }
    }
 
    @FunctionalInterface
-   interface ThrowingSupplier<T> {
+   private interface ThrowingSupplier<T> {
       @Nullable T get() throws Exception;
    }
 }

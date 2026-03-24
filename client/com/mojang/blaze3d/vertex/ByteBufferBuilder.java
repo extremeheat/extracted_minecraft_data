@@ -4,6 +4,7 @@ import com.mojang.jtracy.MemoryPool;
 import com.mojang.jtracy.TracyClient;
 import com.mojang.logging.LogUtils;
 import java.nio.ByteBuffer;
+import java.util.Objects;
 import net.minecraft.util.Mth;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;
@@ -16,7 +17,7 @@ public class ByteBufferBuilder implements AutoCloseable {
    private static final long DEFAULT_MAX_CAPACITY = 4294967295L;
    private static final int MAX_GROWTH_SIZE = 2097152;
    private static final int BUFFER_FREED_GENERATION = -1;
-   long pointer;
+   private long pointer;
    private long capacity;
    private final long maxCapacity;
    private long writeOffset;
@@ -24,70 +25,70 @@ public class ByteBufferBuilder implements AutoCloseable {
    private int resultCount;
    private int generation;
 
-   public ByteBufferBuilder(int var1, long var2) {
+   public ByteBufferBuilder(final int initialCapacity, final long maxCapacity) {
       super();
-      this.capacity = (long)var1;
-      this.maxCapacity = var2;
-      this.pointer = ALLOCATOR.malloc((long)var1);
-      MEMORY_POOL.malloc(this.pointer, var1);
+      this.capacity = (long)initialCapacity;
+      this.maxCapacity = maxCapacity;
+      this.pointer = ALLOCATOR.malloc((long)initialCapacity);
+      MEMORY_POOL.malloc(this.pointer, initialCapacity);
       if (this.pointer == 0L) {
-         throw new OutOfMemoryError("Failed to allocate " + var1 + " bytes");
+         throw new OutOfMemoryError("Failed to allocate " + initialCapacity + " bytes");
       }
    }
 
-   public ByteBufferBuilder(int var1) {
-      this(var1, 4294967295L);
+   public ByteBufferBuilder(final int initialCapacity) {
+      this(initialCapacity, 4294967295L);
    }
 
-   public static ByteBufferBuilder exactlySized(int var0) {
-      return new ByteBufferBuilder(var0, (long)var0);
+   public static ByteBufferBuilder exactlySized(final int capacity) {
+      return new ByteBufferBuilder(capacity, (long)capacity);
    }
 
-   public long reserve(int var1) {
-      long var2 = this.writeOffset;
-      long var4 = Math.addExact(var2, (long)var1);
-      this.ensureCapacity(var4);
-      this.writeOffset = var4;
-      return Math.addExact(this.pointer, var2);
+   public long reserve(final int size) {
+      long offset = this.writeOffset;
+      long nextOffset = Math.addExact(offset, (long)size);
+      this.ensureCapacity(nextOffset);
+      this.writeOffset = nextOffset;
+      return Math.addExact(this.pointer, offset);
    }
 
-   private void ensureCapacity(long var1) {
-      if (var1 > this.capacity) {
-         if (var1 > this.maxCapacity) {
-            throw new IllegalArgumentException("Maximum capacity of ByteBufferBuilder (" + this.maxCapacity + ") exceeded, required " + var1);
+   private void ensureCapacity(final long requiredCapacity) {
+      if (requiredCapacity > this.capacity) {
+         if (requiredCapacity > this.maxCapacity) {
+            throw new IllegalArgumentException("Maximum capacity of ByteBufferBuilder (" + this.maxCapacity + ") exceeded, required " + requiredCapacity);
          }
 
-         long var3 = Math.min(this.capacity, 2097152L);
-         long var5 = Mth.clamp(this.capacity + var3, var1, this.maxCapacity);
-         this.resize(var5);
+         long preferredGrowth = Math.min(this.capacity, 2097152L);
+         long newCapacity = Mth.clamp(this.capacity + preferredGrowth, requiredCapacity, this.maxCapacity);
+         this.resize(newCapacity);
       }
 
    }
 
-   private void resize(long var1) {
+   private void resize(final long newCapacity) {
       MEMORY_POOL.free(this.pointer);
-      this.pointer = ALLOCATOR.realloc(this.pointer, var1);
-      MEMORY_POOL.malloc(this.pointer, (int)Math.min(var1, 2147483647L));
-      LOGGER.debug("Needed to grow BufferBuilder buffer: Old size {} bytes, new size {} bytes.", this.capacity, var1);
+      this.pointer = ALLOCATOR.realloc(this.pointer, newCapacity);
+      MEMORY_POOL.malloc(this.pointer, (int)Math.min(newCapacity, 2147483647L));
+      LOGGER.debug("Needed to grow BufferBuilder buffer: Old size {} bytes, new size {} bytes.", this.capacity, newCapacity);
       if (this.pointer == 0L) {
-         throw new OutOfMemoryError("Failed to resize buffer from " + this.capacity + " bytes to " + var1 + " bytes");
+         throw new OutOfMemoryError("Failed to resize buffer from " + this.capacity + " bytes to " + newCapacity + " bytes");
       } else {
-         this.capacity = var1;
+         this.capacity = newCapacity;
       }
    }
 
    public @Nullable Result build() {
       this.checkOpen();
-      long var1 = this.nextResultOffset;
-      long var3 = this.writeOffset - var1;
-      if (var3 == 0L) {
+      long offset = this.nextResultOffset;
+      long size = this.writeOffset - offset;
+      if (size == 0L) {
          return null;
-      } else if (var3 > 2147483647L) {
-         throw new IllegalStateException("Cannot build buffer larger than 2147483647 bytes (was " + var3 + ")");
+      } else if (size > 2147483647L) {
+         throw new IllegalStateException("Cannot build buffer larger than 2147483647 bytes (was " + size + ")");
       } else {
          this.nextResultOffset = this.writeOffset;
          ++this.resultCount;
-         return new Result(var1, (int)var3, this.generation);
+         return new Result(offset, (int)size, this.generation);
       }
    }
 
@@ -108,11 +109,11 @@ public class ByteBufferBuilder implements AutoCloseable {
 
    }
 
-   boolean isValid(int var1) {
-      return var1 == this.generation;
+   private boolean isValid(final int generation) {
+      return generation == this.generation;
    }
 
-   void freeResult() {
+   private void freeResult() {
       if (--this.resultCount <= 0) {
          this.discardResults();
       }
@@ -120,12 +121,12 @@ public class ByteBufferBuilder implements AutoCloseable {
    }
 
    private void discardResults() {
-      long var1 = this.writeOffset - this.nextResultOffset;
-      if (var1 > 0L) {
-         MemoryUtil.memCopy(this.pointer + this.nextResultOffset, this.pointer, var1);
+      long currentSize = this.writeOffset - this.nextResultOffset;
+      if (currentSize > 0L) {
+         MemoryUtil.memCopy(this.pointer + this.nextResultOffset, this.pointer, currentSize);
       }
 
-      this.writeOffset = var1;
+      this.writeOffset = currentSize;
       this.nextResultOffset = 0L;
       ++this.generation;
    }
@@ -152,11 +153,12 @@ public class ByteBufferBuilder implements AutoCloseable {
       private final int generation;
       private boolean closed;
 
-      Result(final long var2, final int var4, final int var5) {
+      private Result(final long offset, final int capacity, final int generation) {
+         Objects.requireNonNull(ByteBufferBuilder.this);
          super();
-         this.offset = var2;
-         this.capacity = var4;
-         this.generation = var5;
+         this.offset = offset;
+         this.capacity = capacity;
+         this.generation = generation;
       }
 
       public ByteBuffer byteBuffer() {

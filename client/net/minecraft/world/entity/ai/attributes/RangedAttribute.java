@@ -6,15 +6,15 @@ public class RangedAttribute extends Attribute {
    private final double minValue;
    private final double maxValue;
 
-   public RangedAttribute(String var1, double var2, double var4, double var6) {
-      super(var1, var2);
-      this.minValue = var4;
-      this.maxValue = var6;
-      if (var4 > var6) {
+   public RangedAttribute(final String descriptionId, final double defaultValue, final double minValue, final double maxValue) {
+      super(descriptionId, defaultValue);
+      this.minValue = minValue;
+      this.maxValue = maxValue;
+      if (minValue > maxValue) {
          throw new IllegalArgumentException("Minimum value cannot be bigger than maximum value!");
-      } else if (var2 < var4) {
+      } else if (defaultValue < minValue) {
          throw new IllegalArgumentException("Default value cannot be lower than minimum value!");
-      } else if (var2 > var6) {
+      } else if (defaultValue > maxValue) {
          throw new IllegalArgumentException("Default value cannot be bigger than maximum value!");
       }
    }
@@ -27,7 +27,7 @@ public class RangedAttribute extends Attribute {
       return this.maxValue;
    }
 
-   public double sanitizeValue(double var1) {
-      return Double.isNaN(var1) ? this.minValue : Mth.clamp(var1, this.minValue, this.maxValue);
+   public double sanitizeValue(final double value) {
+      return Double.isNaN(value) ? this.minValue : Mth.clamp(value, this.minValue, this.maxValue);
    }
 }

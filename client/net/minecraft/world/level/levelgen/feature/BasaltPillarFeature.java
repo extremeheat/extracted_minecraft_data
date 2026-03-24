@@ -11,60 +11,60 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 
 public class BasaltPillarFeature extends Feature<NoneFeatureConfiguration> {
-   public BasaltPillarFeature(Codec<NoneFeatureConfiguration> var1) {
-      super(var1);
+   public BasaltPillarFeature(final Codec<NoneFeatureConfiguration> codec) {
+      super(codec);
    }
 
-   public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> var1) {
-      BlockPos var2 = var1.origin();
-      WorldGenLevel var3 = var1.level();
-      RandomSource var4 = var1.random();
-      if (var3.isEmptyBlock(var2) && !var3.isEmptyBlock(var2.above())) {
-         BlockPos.MutableBlockPos var5 = var2.mutable();
-         BlockPos.MutableBlockPos var6 = var2.mutable();
-         boolean var7 = true;
-         boolean var8 = true;
-         boolean var9 = true;
-         boolean var10 = true;
+   public boolean place(final FeaturePlaceContext<NoneFeatureConfiguration> context) {
+      BlockPos origin = context.origin();
+      WorldGenLevel level = context.level();
+      RandomSource random = context.random();
+      if (level.isEmptyBlock(origin) && !level.isEmptyBlock(origin.above())) {
+         BlockPos.MutableBlockPos pos = origin.mutable();
+         BlockPos.MutableBlockPos tmpPos = origin.mutable();
+         boolean placeNorthHangoff = true;
+         boolean placeSouthHangoff = true;
+         boolean placeWestHangoff = true;
+         boolean placeEastHangoff = true;
 
-         while(var3.isEmptyBlock(var5)) {
-            if (var3.isOutsideBuildHeight(var5)) {
+         while(level.isEmptyBlock(pos)) {
+            if (level.isOutsideBuildHeight(pos)) {
                return true;
             }
 
-            var3.setBlock(var5, Blocks.BASALT.defaultBlockState(), 2);
-            var7 = var7 && this.placeHangOff(var3, var4, var6.setWithOffset(var5, (Direction)Direction.NORTH));
-            var8 = var8 && this.placeHangOff(var3, var4, var6.setWithOffset(var5, (Direction)Direction.SOUTH));
-            var9 = var9 && this.placeHangOff(var3, var4, var6.setWithOffset(var5, (Direction)Direction.WEST));
-            var10 = var10 && this.placeHangOff(var3, var4, var6.setWithOffset(var5, (Direction)Direction.EAST));
-            var5.move(Direction.DOWN);
+            level.setBlock(pos, Blocks.BASALT.defaultBlockState(), 2);
+            placeNorthHangoff = placeNorthHangoff && this.placeHangOff(level, random, tmpPos.setWithOffset(pos, (Direction)Direction.NORTH));
+            placeSouthHangoff = placeSouthHangoff && this.placeHangOff(level, random, tmpPos.setWithOffset(pos, (Direction)Direction.SOUTH));
+            placeWestHangoff = placeWestHangoff && this.placeHangOff(level, random, tmpPos.setWithOffset(pos, (Direction)Direction.WEST));
+            placeEastHangoff = placeEastHangoff && this.placeHangOff(level, random, tmpPos.setWithOffset(pos, (Direction)Direction.EAST));
+            pos.move(Direction.DOWN);
          }
 
-         var5.move(Direction.UP);
-         this.placeBaseHangOff(var3, var4, var6.setWithOffset(var5, (Direction)Direction.NORTH));
-         this.placeBaseHangOff(var3, var4, var6.setWithOffset(var5, (Direction)Direction.SOUTH));
-         this.placeBaseHangOff(var3, var4, var6.setWithOffset(var5, (Direction)Direction.WEST));
-         this.placeBaseHangOff(var3, var4, var6.setWithOffset(var5, (Direction)Direction.EAST));
-         var5.move(Direction.DOWN);
-         BlockPos.MutableBlockPos var11 = new BlockPos.MutableBlockPos();
+         pos.move(Direction.UP);
+         this.placeBaseHangOff(level, random, tmpPos.setWithOffset(pos, (Direction)Direction.NORTH));
+         this.placeBaseHangOff(level, random, tmpPos.setWithOffset(pos, (Direction)Direction.SOUTH));
+         this.placeBaseHangOff(level, random, tmpPos.setWithOffset(pos, (Direction)Direction.WEST));
+         this.placeBaseHangOff(level, random, tmpPos.setWithOffset(pos, (Direction)Direction.EAST));
+         pos.move(Direction.DOWN);
+         BlockPos.MutableBlockPos basePos = new BlockPos.MutableBlockPos();
 
-         for(int var12 = -3; var12 < 4; ++var12) {
-            for(int var13 = -3; var13 < 4; ++var13) {
-               int var14 = Mth.abs(var12) * Mth.abs(var13);
-               if (var4.nextInt(10) < 10 - var14) {
-                  var11.set(var5.offset(var12, 0, var13));
-                  int var15 = 3;
+         for(int dx = -3; dx < 4; ++dx) {
+            for(int dz = -3; dz < 4; ++dz) {
+               int probability = Mth.abs(dx) * Mth.abs(dz);
+               if (random.nextInt(10) < 10 - probability) {
+                  basePos.set(pos.offset(dx, 0, dz));
+                  int maxDrop = 3;
 
-                  while(var3.isEmptyBlock(var6.setWithOffset(var11, (Direction)Direction.DOWN))) {
-                     var11.move(Direction.DOWN);
-                     --var15;
-                     if (var15 <= 0) {
+                  while(level.isEmptyBlock(tmpPos.setWithOffset(basePos, (Direction)Direction.DOWN))) {
+                     basePos.move(Direction.DOWN);
+                     --maxDrop;
+                     if (maxDrop <= 0) {
                         break;
                      }
                   }
 
-                  if (!var3.isEmptyBlock(var6.setWithOffset(var11, (Direction)Direction.DOWN))) {
-                     var3.setBlock(var11, Blocks.BASALT.defaultBlockState(), 2);
+                  if (!level.isEmptyBlock(tmpPos.setWithOffset(basePos, (Direction)Direction.DOWN))) {
+                     level.setBlock(basePos, Blocks.BASALT.defaultBlockState(), 2);
                   }
                }
             }
@@ -76,16 +76,16 @@ public class BasaltPillarFeature extends Feature<NoneFeatureConfiguration> {
       }
    }
 
-   private void placeBaseHangOff(LevelAccessor var1, RandomSource var2, BlockPos var3) {
-      if (var2.nextBoolean()) {
-         var1.setBlock(var3, Blocks.BASALT.defaultBlockState(), 2);
+   private void placeBaseHangOff(final LevelAccessor level, final RandomSource random, final BlockPos pos) {
+      if (random.nextBoolean()) {
+         level.setBlock(pos, Blocks.BASALT.defaultBlockState(), 2);
       }
 
    }
 
-   private boolean placeHangOff(LevelAccessor var1, RandomSource var2, BlockPos var3) {
-      if (var2.nextInt(10) != 0) {
-         var1.setBlock(var3, Blocks.BASALT.defaultBlockState(), 2);
+   private boolean placeHangOff(final LevelAccessor level, final RandomSource random, final BlockPos hangOffPos) {
+      if (random.nextInt(10) != 0) {
+         level.setBlock(hangOffPos, Blocks.BASALT.defaultBlockState(), 2);
          return true;
       } else {
          return false;

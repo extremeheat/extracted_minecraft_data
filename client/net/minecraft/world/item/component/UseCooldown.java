@@ -13,26 +13,24 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 public record UseCooldown(float seconds, Optional<Identifier> cooldownGroup) {
-   public static final Codec<UseCooldown> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.POSITIVE_FLOAT.fieldOf("seconds").forGetter(UseCooldown::seconds), Identifier.CODEC.optionalFieldOf("cooldown_group").forGetter(UseCooldown::cooldownGroup)).apply(var0, UseCooldown::new));
+   public static final Codec<UseCooldown> CODEC = RecordCodecBuilder.create((i) -> i.group(ExtraCodecs.POSITIVE_FLOAT.fieldOf("seconds").forGetter(UseCooldown::seconds), Identifier.CODEC.optionalFieldOf("cooldown_group").forGetter(UseCooldown::cooldownGroup)).apply(i, UseCooldown::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, UseCooldown> STREAM_CODEC;
 
-   public UseCooldown(float var1) {
-      this(var1, Optional.empty());
+   public UseCooldown(final float seconds) {
+      this(seconds, Optional.empty());
    }
 
-   public UseCooldown(float var1, Optional<Identifier> var2) {
+   public UseCooldown {
       super();
-      this.seconds = var1;
-      this.cooldownGroup = var2;
    }
 
    public int ticks() {
       return (int)(this.seconds * 20.0F);
    }
 
-   public void apply(ItemStack var1, LivingEntity var2) {
-      if (var2 instanceof Player var3) {
-         var3.getCooldowns().addCooldown(var1, this.ticks());
+   public void apply(final ItemStack stack, final LivingEntity user) {
+      if (user instanceof Player player) {
+         player.getCooldowns().addCooldown(stack, this.ticks());
       }
 
    }

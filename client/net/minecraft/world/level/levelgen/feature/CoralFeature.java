@@ -18,42 +18,42 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 
 public abstract class CoralFeature extends Feature<NoneFeatureConfiguration> {
-   public CoralFeature(Codec<NoneFeatureConfiguration> var1) {
-      super(var1);
+   public CoralFeature(final Codec<NoneFeatureConfiguration> codec) {
+      super(codec);
    }
 
-   public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> var1) {
-      RandomSource var2 = var1.random();
-      WorldGenLevel var3 = var1.level();
-      BlockPos var4 = var1.origin();
-      Optional var5 = BuiltInRegistries.BLOCK.getRandomElementOf(BlockTags.CORAL_BLOCKS, var2).map(Holder::value);
-      return var5.isEmpty() ? false : this.placeFeature(var3, var2, var4, ((Block)var5.get()).defaultBlockState());
+   public boolean place(final FeaturePlaceContext<NoneFeatureConfiguration> context) {
+      RandomSource random = context.random();
+      WorldGenLevel level = context.level();
+      BlockPos origin = context.origin();
+      Optional<Block> coral = BuiltInRegistries.BLOCK.getRandomElementOf(BlockTags.CORAL_BLOCKS, random).map(Holder::value);
+      return coral.isEmpty() ? false : this.placeFeature(level, random, origin, ((Block)coral.get()).defaultBlockState());
    }
 
-   protected abstract boolean placeFeature(LevelAccessor var1, RandomSource var2, BlockPos var3, BlockState var4);
+   protected abstract boolean placeFeature(final LevelAccessor level, final RandomSource random, final BlockPos origin, final BlockState state);
 
-   protected boolean placeCoralBlock(LevelAccessor var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      BlockPos var5 = var3.above();
-      BlockState var6 = var1.getBlockState(var3);
-      if ((var6.is(Blocks.WATER) || var6.is(BlockTags.CORALS)) && var1.getBlockState(var5).is(Blocks.WATER)) {
-         var1.setBlock(var3, var4, 3);
-         if (var2.nextFloat() < 0.25F) {
-            BuiltInRegistries.BLOCK.getRandomElementOf(BlockTags.CORALS, var2).map(Holder::value).ifPresent((var2x) -> var1.setBlock(var5, var2x.defaultBlockState(), 2));
-         } else if (var2.nextFloat() < 0.05F) {
-            var1.setBlock(var5, (BlockState)Blocks.SEA_PICKLE.defaultBlockState().setValue(SeaPickleBlock.PICKLES, var2.nextInt(4) + 1), 2);
+   protected boolean placeCoralBlock(final LevelAccessor level, final RandomSource random, final BlockPos pos, final BlockState state) {
+      BlockPos above = pos.above();
+      BlockState targetBlockState = level.getBlockState(pos);
+      if ((targetBlockState.is(Blocks.WATER) || targetBlockState.is(BlockTags.CORALS)) && level.getBlockState(above).is(Blocks.WATER)) {
+         level.setBlock(pos, state, 3);
+         if (random.nextFloat() < 0.25F) {
+            BuiltInRegistries.BLOCK.getRandomElementOf(BlockTags.CORALS, random).map(Holder::value).ifPresent((block) -> level.setBlock(above, block.defaultBlockState(), 2));
+         } else if (random.nextFloat() < 0.05F) {
+            level.setBlock(above, (BlockState)Blocks.SEA_PICKLE.defaultBlockState().setValue(SeaPickleBlock.PICKLES, random.nextInt(4) + 1), 2);
          }
 
-         for(Direction var8 : Direction.Plane.HORIZONTAL) {
-            if (var2.nextFloat() < 0.2F) {
-               BlockPos var9 = var3.relative(var8);
-               if (var1.getBlockState(var9).is(Blocks.WATER)) {
-                  BuiltInRegistries.BLOCK.getRandomElementOf(BlockTags.WALL_CORALS, var2).map(Holder::value).ifPresent((var3x) -> {
-                     BlockState var4 = var3x.defaultBlockState();
-                     if (var4.hasProperty(BaseCoralWallFanBlock.FACING)) {
-                        var4 = (BlockState)var4.setValue(BaseCoralWallFanBlock.FACING, var8);
+         for(Direction direction : Direction.Plane.HORIZONTAL) {
+            if (random.nextFloat() < 0.2F) {
+               BlockPos relativePos = pos.relative(direction);
+               if (level.getBlockState(relativePos).is(Blocks.WATER)) {
+                  BuiltInRegistries.BLOCK.getRandomElementOf(BlockTags.WALL_CORALS, random).map(Holder::value).ifPresent((coral) -> {
+                     BlockState coralFanState = coral.defaultBlockState();
+                     if (coralFanState.hasProperty(BaseCoralWallFanBlock.FACING)) {
+                        coralFanState = (BlockState)coralFanState.setValue(BaseCoralWallFanBlock.FACING, direction);
                      }
 
-                     var1.setBlock(var9, var4, 2);
+                     level.setBlock(relativePos, coralFanState, 2);
                   });
                }
             }

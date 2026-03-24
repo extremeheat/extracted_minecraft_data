@@ -10,29 +10,29 @@ public class ClientboundSetChunkCacheCenterPacket implements Packet<ClientGamePa
    private final int x;
    private final int z;
 
-   public ClientboundSetChunkCacheCenterPacket(int var1, int var2) {
+   public ClientboundSetChunkCacheCenterPacket(final int x, final int z) {
       super();
-      this.x = var1;
-      this.z = var2;
+      this.x = x;
+      this.z = z;
    }
 
-   private ClientboundSetChunkCacheCenterPacket(FriendlyByteBuf var1) {
+   private ClientboundSetChunkCacheCenterPacket(final FriendlyByteBuf input) {
       super();
-      this.x = var1.readVarInt();
-      this.z = var1.readVarInt();
+      this.x = input.readVarInt();
+      this.z = input.readVarInt();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeVarInt(this.x);
-      var1.writeVarInt(this.z);
+   private void write(final FriendlyByteBuf output) {
+      output.writeVarInt(this.x);
+      output.writeVarInt(this.z);
    }
 
    public PacketType<ClientboundSetChunkCacheCenterPacket> type() {
       return GamePacketTypes.CLIENTBOUND_SET_CHUNK_CACHE_CENTER;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleSetChunkCacheCenter(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleSetChunkCacheCenter(this);
    }
 
    public int getX() {

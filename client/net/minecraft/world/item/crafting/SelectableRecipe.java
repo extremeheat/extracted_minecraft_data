@@ -9,23 +9,17 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.display.SlotDisplay;
 
 public record SelectableRecipe<T extends Recipe<?>>(SlotDisplay optionDisplay, Optional<RecipeHolder<T>> recipe) {
-   public SelectableRecipe(SlotDisplay var1, Optional<RecipeHolder<T>> var2) {
+   public SelectableRecipe {
       super();
-      this.optionDisplay = var1;
-      this.recipe = var2;
    }
 
    public static <T extends Recipe<?>> StreamCodec<RegistryFriendlyByteBuf, SelectableRecipe<T>> noRecipeCodec() {
-      return StreamCodec.composite(SlotDisplay.STREAM_CODEC, SelectableRecipe::optionDisplay, (var0) -> new SelectableRecipe(var0, Optional.empty()));
+      return StreamCodec.composite(SlotDisplay.STREAM_CODEC, SelectableRecipe::optionDisplay, (slotDisplay) -> new SelectableRecipe(slotDisplay, Optional.empty()));
    }
 
    public static record SingleInputEntry<T extends Recipe<?>>(Ingredient input, SelectableRecipe<T> recipe) {
-      final Ingredient input;
-
-      public SingleInputEntry(Ingredient var1, SelectableRecipe<T> var2) {
+      public SingleInputEntry {
          super();
-         this.input = var1;
-         this.recipe = var2;
       }
 
       public static <T extends Recipe<?>> StreamCodec<RegistryFriendlyByteBuf, SingleInputEntry<T>> noRecipeCodec() {
@@ -34,9 +28,8 @@ public record SelectableRecipe<T extends Recipe<?>>(SlotDisplay optionDisplay, O
    }
 
    public static record SingleInputSet<T extends Recipe<?>>(List<SingleInputEntry<T>> entries) {
-      public SingleInputSet(List<SingleInputEntry<T>> var1) {
+      public SingleInputSet {
          super();
-         this.entries = var1;
       }
 
       public static <T extends Recipe<?>> SingleInputSet<T> empty() {
@@ -47,12 +40,12 @@ public record SelectableRecipe<T extends Recipe<?>>(SlotDisplay optionDisplay, O
          return StreamCodec.composite(SelectableRecipe.SingleInputEntry.noRecipeCodec().apply(ByteBufCodecs.list()), SingleInputSet::entries, SingleInputSet::new);
       }
 
-      public boolean acceptsInput(ItemStack var1) {
-         return this.entries.stream().anyMatch((var1x) -> var1x.input.test(var1));
+      public boolean acceptsInput(final ItemStack input) {
+         return this.entries.stream().anyMatch((e) -> e.input.test(input));
       }
 
-      public SingleInputSet<T> selectByInput(ItemStack var1) {
-         return new SingleInputSet<T>(this.entries.stream().filter((var1x) -> var1x.input.test(var1)).toList());
+      public SingleInputSet<T> selectByInput(final ItemStack input) {
+         return new SingleInputSet<T>(this.entries.stream().filter((e) -> e.input.test(input)).toList());
       }
 
       public boolean isEmpty() {

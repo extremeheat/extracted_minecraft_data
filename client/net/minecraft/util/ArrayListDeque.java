@@ -2,12 +2,10 @@ package net.minecraft.util;
 
 import com.google.common.annotations.VisibleForTesting;
 import java.util.AbstractList;
-import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.SequencedCollection;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
@@ -23,9 +21,9 @@ public class ArrayListDeque<T> extends AbstractList<T> implements ListAndDeque<T
       this(1);
    }
 
-   public ArrayListDeque(int var1) {
+   public ArrayListDeque(final int capacity) {
       super();
-      this.contents = new Object[var1];
+      this.contents = new Object[capacity];
       this.head = 0;
       this.size = 0;
    }
@@ -39,61 +37,61 @@ public class ArrayListDeque<T> extends AbstractList<T> implements ListAndDeque<T
       return this.contents.length;
    }
 
-   private int getIndex(int var1) {
-      return (var1 + this.head) % this.contents.length;
+   private int getIndex(final int index) {
+      return (index + this.head) % this.contents.length;
    }
 
-   public T get(int var1) {
-      this.verifyIndexInRange(var1);
-      return (T)this.getInner(this.getIndex(var1));
+   public T get(final int index) {
+      this.verifyIndexInRange(index);
+      return (T)this.getInner(this.getIndex(index));
    }
 
-   private static void verifyIndexInRange(int var0, int var1) {
-      if (var0 < 0 || var0 >= var1) {
-         throw new IndexOutOfBoundsException(var0);
+   private static void verifyIndexInRange(final int index, final int size) {
+      if (index < 0 || index >= size) {
+         throw new IndexOutOfBoundsException(index);
       }
    }
 
-   private void verifyIndexInRange(int var1) {
-      verifyIndexInRange(var1, this.size);
+   private void verifyIndexInRange(final int index) {
+      verifyIndexInRange(index, this.size);
    }
 
-   private T getInner(int var1) {
-      return (T)this.contents[var1];
+   private T getInner(final int innerIndex) {
+      return (T)this.contents[innerIndex];
    }
 
-   public T set(int var1, T var2) {
-      this.verifyIndexInRange(var1);
-      Objects.requireNonNull(var2);
-      int var3 = this.getIndex(var1);
-      Object var4 = this.getInner(var3);
-      this.contents[var3] = var2;
-      return (T)var4;
+   public T set(final int index, final T element) {
+      this.verifyIndexInRange(index);
+      Objects.requireNonNull(element);
+      int innerIndex = this.getIndex(index);
+      T current = (T)this.getInner(innerIndex);
+      this.contents[innerIndex] = element;
+      return current;
    }
 
-   public void add(int var1, T var2) {
-      verifyIndexInRange(var1, this.size + 1);
-      Objects.requireNonNull(var2);
+   public void add(final int index, final T element) {
+      verifyIndexInRange(index, this.size + 1);
+      Objects.requireNonNull(element);
       if (this.size == this.contents.length) {
          this.grow();
       }
 
-      int var3 = this.getIndex(var1);
-      if (var1 == this.size) {
-         this.contents[var3] = var2;
-      } else if (var1 == 0) {
+      int internalIndex = this.getIndex(index);
+      if (index == this.size) {
+         this.contents[internalIndex] = element;
+      } else if (index == 0) {
          --this.head;
          if (this.head < 0) {
             this.head += this.contents.length;
          }
 
-         this.contents[this.getIndex(0)] = var2;
+         this.contents[this.getIndex(0)] = element;
       } else {
-         for(int var4 = this.size - 1; var4 >= var1; --var4) {
-            this.contents[this.getIndex(var4 + 1)] = this.contents[this.getIndex(var4)];
+         for(int i = this.size - 1; i >= index; --i) {
+            this.contents[this.getIndex(i + 1)] = this.contents[this.getIndex(i)];
          }
 
-         this.contents[var3] = var2;
+         this.contents[internalIndex] = element;
       }
 
       ++this.modCount;
@@ -101,25 +99,25 @@ public class ArrayListDeque<T> extends AbstractList<T> implements ListAndDeque<T
    }
 
    private void grow() {
-      int var1 = this.contents.length + Math.max(this.contents.length >> 1, 1);
-      Object[] var2 = new Object[var1];
-      this.copyCount(var2, this.size);
+      int newLength = this.contents.length + Math.max(this.contents.length >> 1, 1);
+      Object[] newContents = new Object[newLength];
+      this.copyCount(newContents, this.size);
       this.head = 0;
-      this.contents = var2;
+      this.contents = newContents;
    }
 
-   public T remove(int var1) {
-      this.verifyIndexInRange(var1);
-      int var2 = this.getIndex(var1);
-      Object var3 = this.getInner(var2);
-      if (var1 == 0) {
-         this.contents[var2] = null;
+   public T remove(final int index) {
+      this.verifyIndexInRange(index);
+      int innerIndex = this.getIndex(index);
+      T value = (T)this.getInner(innerIndex);
+      if (index == 0) {
+         this.contents[innerIndex] = null;
          ++this.head;
-      } else if (var1 == this.size - 1) {
-         this.contents[var2] = null;
+      } else if (index == this.size - 1) {
+         this.contents[innerIndex] = null;
       } else {
-         for(int var4 = var1 + 1; var4 < this.size; ++var4) {
-            this.contents[this.getIndex(var4 - 1)] = this.get(var4);
+         for(int i = index + 1; i < this.size; ++i) {
+            this.contents[this.getIndex(i - 1)] = this.get(i);
          }
 
          this.contents[this.getIndex(this.size - 1)] = null;
@@ -127,64 +125,64 @@ public class ArrayListDeque<T> extends AbstractList<T> implements ListAndDeque<T
 
       ++this.modCount;
       --this.size;
-      return (T)var3;
+      return value;
    }
 
-   public boolean removeIf(Predicate<? super T> var1) {
-      int var2 = 0;
+   public boolean removeIf(final Predicate<? super T> filter) {
+      int removed = 0;
 
-      for(int var3 = 0; var3 < this.size; ++var3) {
-         Object var4 = this.get(var3);
-         if (var1.test(var4)) {
-            ++var2;
-         } else if (var2 != 0) {
-            this.contents[this.getIndex(var3 - var2)] = var4;
-            this.contents[this.getIndex(var3)] = null;
+      for(int i = 0; i < this.size; ++i) {
+         T value = (T)this.get(i);
+         if (filter.test(value)) {
+            ++removed;
+         } else if (removed != 0) {
+            this.contents[this.getIndex(i - removed)] = value;
+            this.contents[this.getIndex(i)] = null;
          }
       }
 
-      this.modCount += var2;
-      this.size -= var2;
-      return var2 != 0;
+      this.modCount += removed;
+      this.size -= removed;
+      return removed != 0;
    }
 
-   private void copyCount(Object[] var1, int var2) {
-      for(int var3 = 0; var3 < var2; ++var3) {
-         var1[var3] = this.get(var3);
+   private void copyCount(final Object[] newContents, final int count) {
+      for(int i = 0; i < count; ++i) {
+         newContents[i] = this.get(i);
       }
 
    }
 
-   public void replaceAll(UnaryOperator<T> var1) {
-      for(int var2 = 0; var2 < this.size; ++var2) {
-         int var3 = this.getIndex(var2);
-         this.contents[var3] = Objects.requireNonNull(var1.apply(this.getInner(var2)));
+   public void replaceAll(final UnaryOperator<T> operator) {
+      for(int i = 0; i < this.size; ++i) {
+         int index = this.getIndex(i);
+         this.contents[index] = Objects.requireNonNull(operator.apply(this.getInner(i)));
       }
 
    }
 
-   public void forEach(Consumer<? super T> var1) {
-      for(int var2 = 0; var2 < this.size; ++var2) {
-         var1.accept(this.get(var2));
+   public void forEach(final Consumer<? super T> action) {
+      for(int i = 0; i < this.size; ++i) {
+         action.accept(this.get(i));
       }
 
    }
 
-   public void addFirst(T var1) {
-      this.add(0, var1);
+   public void addFirst(final T value) {
+      this.add(0, value);
    }
 
-   public void addLast(T var1) {
-      this.add(this.size, var1);
+   public void addLast(final T value) {
+      this.add(this.size, value);
    }
 
-   public boolean offerFirst(T var1) {
-      this.addFirst(var1);
+   public boolean offerFirst(final T value) {
+      this.addFirst(value);
       return true;
    }
 
-   public boolean offerLast(T var1) {
-      this.addLast(var1);
+   public boolean offerLast(final T value) {
+      this.addLast(value);
       return true;
    }
 
@@ -240,11 +238,11 @@ public class ArrayListDeque<T> extends AbstractList<T> implements ListAndDeque<T
       return (T)(this.size == 0 ? null : this.getLast());
    }
 
-   public boolean removeFirstOccurrence(Object var1) {
-      for(int var2 = 0; var2 < this.size; ++var2) {
-         Object var3 = this.get(var2);
-         if (Objects.equals(var1, var3)) {
-            this.remove(var2);
+   public boolean removeFirstOccurrence(final Object o) {
+      for(int i = 0; i < this.size; ++i) {
+         T value = (T)this.get(i);
+         if (Objects.equals(o, value)) {
+            this.remove(i);
             return true;
          }
       }
@@ -252,11 +250,11 @@ public class ArrayListDeque<T> extends AbstractList<T> implements ListAndDeque<T
       return false;
    }
 
-   public boolean removeLastOccurrence(Object var1) {
-      for(int var2 = this.size - 1; var2 >= 0; --var2) {
-         Object var3 = this.get(var2);
-         if (Objects.equals(var1, var3)) {
-            this.remove(var2);
+   public boolean removeLastOccurrence(final Object o) {
+      for(int i = this.size - 1; i >= 0; --i) {
+         T value = (T)this.get(i);
+         if (Objects.equals(o, value)) {
+            this.remove(i);
             return true;
          }
       }
@@ -268,26 +266,13 @@ public class ArrayListDeque<T> extends AbstractList<T> implements ListAndDeque<T
       return new DescendingIterator();
    }
 
-   // $FF: synthetic method
-   public List reversed() {
-      return this.reversed();
-   }
-
-   // $FF: synthetic method
-   public SequencedCollection reversed() {
-      return this.reversed();
-   }
-
-   // $FF: synthetic method
-   public Deque reversed() {
-      return this.reversed();
-   }
-
-   class DescendingIterator implements Iterator<T> {
-      private int index = ArrayListDeque.this.size() - 1;
+   private class DescendingIterator implements Iterator<T> {
+      private int index;
 
       public DescendingIterator() {
+         Objects.requireNonNull(ArrayListDeque.this);
          super();
+         this.index = ArrayListDeque.this.size() - 1;
       }
 
       public boolean hasNext() {
@@ -303,12 +288,13 @@ public class ArrayListDeque<T> extends AbstractList<T> implements ListAndDeque<T
       }
    }
 
-   class ReversedView extends AbstractList<T> implements ListAndDeque<T> {
+   private class ReversedView extends AbstractList<T> implements ListAndDeque<T> {
       private final ArrayListDeque<T> source;
 
-      public ReversedView(final ArrayListDeque<T> var2) {
+      public ReversedView(final ArrayListDeque<T> source) {
+         Objects.requireNonNull(ArrayListDeque.this);
          super();
-         this.source = var2;
+         this.source = source;
       }
 
       public ListAndDeque<T> reversed() {
@@ -323,20 +309,20 @@ public class ArrayListDeque<T> extends AbstractList<T> implements ListAndDeque<T
          return this.source.getFirst();
       }
 
-      public void addFirst(T var1) {
-         this.source.addLast(var1);
+      public void addFirst(final T t) {
+         this.source.addLast(t);
       }
 
-      public void addLast(T var1) {
-         this.source.addFirst(var1);
+      public void addLast(final T t) {
+         this.source.addFirst(t);
       }
 
-      public boolean offerFirst(T var1) {
-         return this.source.offerLast(var1);
+      public boolean offerFirst(final T t) {
+         return this.source.offerLast(t);
       }
 
-      public boolean offerLast(T var1) {
-         return this.source.offerFirst(var1);
+      public boolean offerLast(final T t) {
+         return this.source.offerFirst(t);
       }
 
       public @Nullable T pollFirst() {
@@ -363,12 +349,12 @@ public class ArrayListDeque<T> extends AbstractList<T> implements ListAndDeque<T
          return this.source.removeFirst();
       }
 
-      public boolean removeFirstOccurrence(Object var1) {
-         return this.source.removeLastOccurrence(var1);
+      public boolean removeFirstOccurrence(final Object o) {
+         return this.source.removeLastOccurrence(o);
       }
 
-      public boolean removeLastOccurrence(Object var1) {
-         return this.source.removeFirstOccurrence(var1);
+      public boolean removeLastOccurrence(final Object o) {
+         return this.source.removeFirstOccurrence(o);
       }
 
       public Iterator<T> descendingIterator() {
@@ -383,36 +369,36 @@ public class ArrayListDeque<T> extends AbstractList<T> implements ListAndDeque<T
          return this.source.isEmpty();
       }
 
-      public boolean contains(Object var1) {
-         return this.source.contains(var1);
+      public boolean contains(final Object o) {
+         return this.source.contains(o);
       }
 
-      public T get(int var1) {
-         return this.source.get(this.reverseIndex(var1));
+      public T get(final int index) {
+         return this.source.get(this.reverseIndex(index));
       }
 
-      public T set(int var1, T var2) {
-         return this.source.set(this.reverseIndex(var1), var2);
+      public T set(final int index, final T element) {
+         return this.source.set(this.reverseIndex(index), element);
       }
 
-      public void add(int var1, T var2) {
-         this.source.add(this.reverseIndex(var1) + 1, var2);
+      public void add(final int index, final T element) {
+         this.source.add(this.reverseIndex(index) + 1, element);
       }
 
-      public T remove(int var1) {
-         return this.source.remove(this.reverseIndex(var1));
+      public T remove(final int index) {
+         return this.source.remove(this.reverseIndex(index));
       }
 
-      public int indexOf(Object var1) {
-         return this.reverseIndex(this.source.lastIndexOf(var1));
+      public int indexOf(final Object o) {
+         return this.reverseIndex(this.source.lastIndexOf(o));
       }
 
-      public int lastIndexOf(Object var1) {
-         return this.reverseIndex(this.source.indexOf(var1));
+      public int lastIndexOf(final Object o) {
+         return this.reverseIndex(this.source.indexOf(o));
       }
 
-      public List<T> subList(int var1, int var2) {
-         return this.source.subList(this.reverseIndex(var2) + 1, this.reverseIndex(var1) + 1).reversed();
+      public List<T> subList(final int fromIndex, final int toIndex) {
+         return this.source.subList(this.reverseIndex(toIndex) + 1, this.reverseIndex(fromIndex) + 1).reversed();
       }
 
       public Iterator<T> iterator() {
@@ -423,23 +409,8 @@ public class ArrayListDeque<T> extends AbstractList<T> implements ListAndDeque<T
          this.source.clear();
       }
 
-      private int reverseIndex(int var1) {
-         return var1 == -1 ? -1 : this.source.size() - 1 - var1;
-      }
-
-      // $FF: synthetic method
-      public List reversed() {
-         return this.reversed();
-      }
-
-      // $FF: synthetic method
-      public SequencedCollection reversed() {
-         return this.reversed();
-      }
-
-      // $FF: synthetic method
-      public Deque reversed() {
-         return this.reversed();
+      private int reverseIndex(final int index) {
+         return index == -1 ? -1 : this.source.size() - 1 - index;
       }
    }
 }

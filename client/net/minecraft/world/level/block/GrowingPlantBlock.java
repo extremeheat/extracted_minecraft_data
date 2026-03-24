@@ -19,46 +19,46 @@ public abstract class GrowingPlantBlock extends Block {
    protected final boolean scheduleFluidTicks;
    protected final VoxelShape shape;
 
-   protected GrowingPlantBlock(BlockBehaviour.Properties var1, Direction var2, VoxelShape var3, boolean var4) {
-      super(var1);
-      this.growthDirection = var2;
-      this.shape = var3;
-      this.scheduleFluidTicks = var4;
+   protected GrowingPlantBlock(final BlockBehaviour.Properties properties, final Direction growthDirection, final VoxelShape shape, final boolean scheduleFluidTicks) {
+      super(properties);
+      this.growthDirection = growthDirection;
+      this.shape = shape;
+      this.scheduleFluidTicks = scheduleFluidTicks;
    }
 
    protected abstract MapCodec<? extends GrowingPlantBlock> codec();
 
-   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
-      BlockState var2 = var1.getLevel().getBlockState(var1.getClickedPos().relative(this.growthDirection));
-      return !var2.is(this.getHeadBlock()) && !var2.is(this.getBodyBlock()) ? this.getStateForPlacement(var1.getLevel().random) : this.getBodyBlock().defaultBlockState();
+   public @Nullable BlockState getStateForPlacement(final BlockPlaceContext context) {
+      BlockState growthDirectionState = context.getLevel().getBlockState(context.getClickedPos().relative(this.growthDirection));
+      return !growthDirectionState.is(this.getHeadBlock()) && !growthDirectionState.is(this.getBodyBlock()) ? this.getStateForPlacement(context.getLevel().getRandom()) : this.getBodyBlock().defaultBlockState();
    }
 
-   public BlockState getStateForPlacement(RandomSource var1) {
+   public BlockState getStateForPlacement(final RandomSource random) {
       return this.defaultBlockState();
    }
 
-   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      BlockPos var4 = var3.relative(this.growthDirection.getOpposite());
-      BlockState var5 = var2.getBlockState(var4);
-      if (!this.canAttachTo(var5)) {
+   protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
+      BlockPos attachedToPos = pos.relative(this.growthDirection.getOpposite());
+      BlockState attachedToState = level.getBlockState(attachedToPos);
+      if (!this.canAttachTo(attachedToState)) {
          return false;
       } else {
-         return var5.is(this.getHeadBlock()) || var5.is(this.getBodyBlock()) || var5.isFaceSturdy(var2, var4, this.growthDirection);
+         return attachedToState.is(this.getHeadBlock()) || attachedToState.is(this.getBodyBlock()) || attachedToState.isFaceSturdy(level, attachedToPos, this.growthDirection);
       }
    }
 
-   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (!var1.canSurvive(var2, var3)) {
-         var2.destroyBlock(var3, true);
+   protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if (!state.canSurvive(level, pos)) {
+         level.destroyBlock(pos, true);
       }
 
    }
 
-   protected boolean canAttachTo(BlockState var1) {
+   protected boolean canAttachTo(final BlockState state) {
       return true;
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return this.shape;
    }
 

@@ -15,21 +15,21 @@ public enum JsonRPCErrors {
    private final int errorCode;
    private final String message;
 
-   private JsonRPCErrors(final int var3, final String var4) {
-      this.errorCode = var3;
-      this.message = var4;
+   private JsonRPCErrors(final int errorCode, final String message) {
+      this.errorCode = errorCode;
+      this.message = message;
    }
 
-   public JsonObject createWithUnknownId(@Nullable String var1) {
-      return JsonRPCUtils.createError(JsonNull.INSTANCE, this.message, this.errorCode, var1);
+   public JsonObject createWithUnknownId(final @Nullable String data) {
+      return JsonRPCUtils.createError(JsonNull.INSTANCE, this.message, this.errorCode, data);
    }
 
-   public JsonObject createWithoutData(JsonElement var1) {
-      return JsonRPCUtils.createError(var1, this.message, this.errorCode, (String)null);
+   public JsonObject createWithoutData(final JsonElement id) {
+      return JsonRPCUtils.createError(id, this.message, this.errorCode, (String)null);
    }
 
-   public JsonObject create(JsonElement var1, String var2) {
-      return JsonRPCUtils.createError(var1, this.message, this.errorCode, var2);
+   public JsonObject create(final JsonElement id, final String data) {
+      return JsonRPCUtils.createError(id, this.message, this.errorCode, data);
    }
 
    // $FF: synthetic method

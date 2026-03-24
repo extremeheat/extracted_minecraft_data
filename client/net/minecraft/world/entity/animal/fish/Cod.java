@@ -9,8 +9,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 
 public class Cod extends AbstractSchoolingFish {
-   public Cod(EntityType<? extends Cod> var1, Level var2) {
-      super(var1, var2);
+   public Cod(final EntityType<? extends Cod> type, final Level level) {
+      super(type, level);
    }
 
    public ItemStack getBucketItemStack() {
@@ -25,7 +25,7 @@ public class Cod extends AbstractSchoolingFish {
       return SoundEvents.COD_DEATH;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return SoundEvents.COD_HURT;
    }
 

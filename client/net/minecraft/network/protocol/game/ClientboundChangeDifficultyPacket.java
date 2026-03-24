@@ -10,18 +10,16 @@ import net.minecraft.world.Difficulty;
 public record ClientboundChangeDifficultyPacket(Difficulty difficulty, boolean locked) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<ByteBuf, ClientboundChangeDifficultyPacket> STREAM_CODEC;
 
-   public ClientboundChangeDifficultyPacket(Difficulty var1, boolean var2) {
+   public ClientboundChangeDifficultyPacket {
       super();
-      this.difficulty = var1;
-      this.locked = var2;
    }
 
    public PacketType<ClientboundChangeDifficultyPacket> type() {
       return GamePacketTypes.CLIENTBOUND_CHANGE_DIFFICULTY;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleChangeDifficulty(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleChangeDifficulty(this);
    }
 
    static {

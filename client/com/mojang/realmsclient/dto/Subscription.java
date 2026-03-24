@@ -11,27 +11,24 @@ import org.slf4j.Logger;
 public record Subscription(Instant startDate, int daysLeft, SubscriptionType type) {
    private static final Logger LOGGER = LogUtils.getLogger();
 
-   public Subscription(Instant var1, int var2, SubscriptionType var3) {
+   public Subscription {
       super();
-      this.startDate = var1;
-      this.daysLeft = var2;
-      this.type = var3;
    }
 
-   public static Subscription parse(String var0) {
+   public static Subscription parse(final String json) {
       try {
-         JsonObject var1 = LenientJsonParser.parse(var0).getAsJsonObject();
-         return new Subscription(JsonUtils.getDateOr("startDate", var1), JsonUtils.getIntOr("daysLeft", var1, 0), typeFrom(JsonUtils.getStringOr("subscriptionType", var1, (String)null)));
-      } catch (Exception var2) {
-         LOGGER.error("Could not parse Subscription", var2);
+         JsonObject jsonObject = LenientJsonParser.parse(json).getAsJsonObject();
+         return new Subscription(JsonUtils.getDateOr("startDate", jsonObject), JsonUtils.getIntOr("daysLeft", jsonObject, 0), typeFrom(JsonUtils.getStringOr("subscriptionType", jsonObject, (String)null)));
+      } catch (Exception e) {
+         LOGGER.error("Could not parse Subscription", e);
          return new Subscription(Instant.EPOCH, 0, Subscription.SubscriptionType.NORMAL);
       }
    }
 
-   private static SubscriptionType typeFrom(@Nullable String var0) {
+   private static SubscriptionType typeFrom(final @Nullable String subscriptionType) {
       try {
-         if (var0 != null) {
-            return Subscription.SubscriptionType.valueOf(var0);
+         if (subscriptionType != null) {
+            return Subscription.SubscriptionType.valueOf(subscriptionType);
          }
       } catch (Exception var2) {
       }

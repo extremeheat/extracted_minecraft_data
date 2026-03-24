@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens.reporting;
 
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.components.StringWidget;
@@ -24,13 +23,15 @@ public class ReportPlayerScreen extends Screen {
    private final Screen lastScreen;
    private final ReportingContext context;
    private final PlayerEntry player;
+   private final boolean chatDisabledOrBlocked;
    private final LinearLayout layout = LinearLayout.vertical().spacing(6);
 
-   public ReportPlayerScreen(Screen var1, ReportingContext var2, PlayerEntry var3) {
+   public ReportPlayerScreen(final Screen lastScreen, final ReportingContext context, final PlayerEntry player, final boolean chatDisabledOrBlocked) {
       super(TITLE);
-      this.lastScreen = var1;
-      this.context = var2;
-      this.player = var3;
+      this.lastScreen = lastScreen;
+      this.context = context;
+      this.player = player;
+      this.chatDisabledOrBlocked = chatDisabledOrBlocked;
    }
 
    public Component getNarrationMessage() {
@@ -41,22 +42,23 @@ public class ReportPlayerScreen extends Screen {
       this.layout.defaultCellSetting().alignHorizontallyCenter();
       this.layout.addChild(new StringWidget(this.title, this.font), this.layout.newCellSettings().paddingBottom(6));
       this.layout.addChild((new MultiLineTextWidget(MESSAGE, this.font)).setCentered(true), this.layout.newCellSettings().paddingBottom(6));
-      Button var1 = (Button)this.layout.addChild(Button.builder(REPORT_CHAT, (var1x) -> this.minecraft.setScreen(new ChatReportScreen(this.lastScreen, this.context, this.player.getPlayerId()))).build());
-      if (!this.player.isChatReportable()) {
-         var1.active = false;
-         var1.setTooltip(Tooltip.create(Component.translatable("gui.socialInteractions.tooltip.report.not_reportable")));
+      Button chatButton = (Button)this.layout.addChild(Button.builder(REPORT_CHAT, (b) -> this.minecraft.setScreen(new ChatReportScreen(this.lastScreen, this.context, this.player.getPlayerId()))).build());
+      if (this.chatDisabledOrBlocked) {
+         chatButton.active = false;
+         chatButton.setTooltip(Tooltip.create(Component.translatable("gui.socialInteractions.tooltip.report.chat_disabled_or_blocked")));
+      } else if (!this.player.isChatReportable()) {
+         chatButton.active = false;
+         chatButton.setTooltip(Tooltip.create(Component.translatable("gui.socialInteractions.tooltip.report.not_reportable")));
       } else if (!this.player.hasRecentMessages()) {
-         var1.active = false;
-         var1.setTooltip(Tooltip.create(Component.translatable("gui.socialInteractions.tooltip.report.no_messages", this.player.getPlayerName())));
+         chatButton.active = false;
+         chatButton.setTooltip(Tooltip.create(Component.translatable("gui.socialInteractions.tooltip.report.no_messages", this.player.getPlayerName())));
       }
 
-      this.layout.addChild(Button.builder(REPORT_SKIN, (var1x) -> this.minecraft.setScreen(new SkinReportScreen(this.lastScreen, this.context, this.player.getPlayerId(), this.player.getSkinGetter()))).build());
-      this.layout.addChild(Button.builder(REPORT_NAME, (var1x) -> this.minecraft.setScreen(new NameReportScreen(this.lastScreen, this.context, this.player.getPlayerId(), this.player.getPlayerName()))).build());
+      this.layout.addChild(Button.builder(REPORT_SKIN, (b) -> this.minecraft.setScreen(new SkinReportScreen(this.lastScreen, this.context, this.player.getPlayerId(), this.player.getSkinGetter()))).build());
+      this.layout.addChild(Button.builder(REPORT_NAME, (b) -> this.minecraft.setScreen(new NameReportScreen(this.lastScreen, this.context, this.player.getPlayerId(), this.player.getPlayerName()))).build());
       this.layout.addChild(SpacerElement.height(20));
-      this.layout.addChild(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> this.onClose()).build());
-      this.layout.visitWidgets((var1x) -> {
-         AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
-      });
+      this.layout.addChild(Button.builder(CommonComponents.GUI_CANCEL, (b) -> this.onClose()).build());
+      this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
       this.repositionElements();
    }
 

@@ -1,36 +1,21 @@
 package net.minecraft.util.worldupdate;
 
-import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
-import it.unimi.dsi.fastutil.objects.Reference2FloatMap;
-import it.unimi.dsi.fastutil.objects.Reference2FloatMaps;
-import it.unimi.dsi.fastutil.objects.Reference2FloatOpenHashMap;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.ThreadFactory;
-import java.util.function.Supplier;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
-import net.minecraft.ReportedException;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ChunkMap;
@@ -39,68 +24,81 @@ import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.chunk.storage.LegacyTagFixer;
-import net.minecraft.world.level.chunk.storage.RecreatingSimpleRegionStorage;
-import net.minecraft.world.level.chunk.storage.RegionFile;
-import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
-import net.minecraft.world.level.chunk.storage.SimpleRegionStorage;
 import net.minecraft.world.level.dimension.LevelStem;
-import net.minecraft.world.level.levelgen.structure.LegacyStructureDataHandler;
-import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.minecraft.world.level.storage.LevelStorageSource;
-import net.minecraft.world.level.storage.WorldData;
-import org.jspecify.annotations.Nullable;
+import net.minecraft.world.level.storage.SavedDataStorage;
 import org.slf4j.Logger;
 
 public class WorldUpgrader implements AutoCloseable {
-   static final Logger LOGGER = LogUtils.getLogger();
+   private static final Logger LOGGER = LogUtils.getLogger();
    private static final ThreadFactory THREAD_FACTORY = (new ThreadFactoryBuilder()).setDaemon(true).build();
-   private static final String NEW_DIRECTORY_PREFIX = "new_";
-   static final Component STATUS_UPGRADING_POI = Component.translatable("optimizeWorld.stage.upgrading.poi");
-   static final Component STATUS_FINISHED_POI = Component.translatable("optimizeWorld.stage.finished.poi");
-   static final Component STATUS_UPGRADING_ENTITIES = Component.translatable("optimizeWorld.stage.upgrading.entities");
-   static final Component STATUS_FINISHED_ENTITIES = Component.translatable("optimizeWorld.stage.finished.entities");
-   static final Component STATUS_UPGRADING_CHUNKS = Component.translatable("optimizeWorld.stage.upgrading.chunks");
-   static final Component STATUS_FINISHED_CHUNKS = Component.translatable("optimizeWorld.stage.finished.chunks");
-   final Registry<LevelStem> dimensions;
-   final Set<ResourceKey<Level>> levels;
-   final boolean eraseCache;
-   final boolean recreateRegionFiles;
-   final LevelStorageSource.LevelStorageAccess levelStorage;
+   private final UpgradeStatusTranslator statusTranslator = new UpgradeStatusTranslator();
+   private final Registry<LevelStem> dimensions;
+   private final Set<ResourceKey<Level>> levels;
+   private final boolean eraseCache;
+   private final boolean recreateRegionFiles;
+   private final LevelStorageSource.LevelStorageAccess levelStorage;
    private final Thread thread;
-   final DataFixer dataFixer;
-   volatile boolean running = true;
-   private volatile boolean finished;
-   volatile float progress;
-   volatile int totalChunks;
-   volatile int totalFiles;
-   volatile int converted;
-   volatile int skipped;
-   final Reference2FloatMap<ResourceKey<Level>> progressMap = Reference2FloatMaps.synchronize(new Reference2FloatOpenHashMap());
-   volatile Component status = Component.translatable("optimizeWorld.stage.counting");
-   static final Pattern REGEX = Pattern.compile("^r\\.(-?[0-9]+)\\.(-?[0-9]+)\\.mca$");
-   final DimensionDataStorage overworldDataStorage;
+   private final DataFixer dataFixer;
+   private final UpgradeProgress upgradeProgress = new UpgradeProgress();
+   private final SavedDataStorage overworldSavedDataStorage;
 
-   public WorldUpgrader(LevelStorageSource.LevelStorageAccess var1, DataFixer var2, WorldData var3, RegistryAccess var4, boolean var5, boolean var6) {
+   public WorldUpgrader(final LevelStorageSource.LevelStorageAccess levelSource, final DataFixer dataFixer, final RegistryAccess registryAccess, final boolean eraseCache, final boolean recreateRegionFiles) {
       super();
-      this.dimensions = var4.lookupOrThrow(Registries.LEVEL_STEM);
+      this.dimensions = registryAccess.lookupOrThrow(Registries.LEVEL_STEM);
       this.levels = (Set)this.dimensions.registryKeySet().stream().map(Registries::levelStemToLevel).collect(Collectors.toUnmodifiableSet());
-      this.eraseCache = var5;
-      this.dataFixer = var2;
-      this.levelStorage = var1;
-      this.overworldDataStorage = new DimensionDataStorage(this.levelStorage.getDimensionPath(Level.OVERWORLD).resolve("data"), var2, var4);
-      this.recreateRegionFiles = var6;
+      this.eraseCache = eraseCache;
+      this.dataFixer = dataFixer;
+      this.levelStorage = levelSource;
+      this.overworldSavedDataStorage = new SavedDataStorage(this.levelStorage.getDimensionPath(Level.OVERWORLD).resolve("data"), dataFixer, registryAccess);
+      this.recreateRegionFiles = recreateRegionFiles;
       this.thread = THREAD_FACTORY.newThread(this::work);
-      this.thread.setUncaughtExceptionHandler((var1x, var2x) -> {
-         LOGGER.error("Error upgrading world", var2x);
-         this.status = Component.translatable("optimizeWorld.stage.failed");
-         this.finished = true;
+      this.thread.setUncaughtExceptionHandler((t, e) -> {
+         LOGGER.error("Error upgrading world", e);
+         this.upgradeProgress.setStatus(UpgradeProgress.Status.FAILED);
+         this.upgradeProgress.setFinished(true);
       });
       this.thread.start();
    }
 
+   public static CompoundTag getDataFixContextTag(final Registry<LevelStem> dimensions, final ResourceKey<Level> dimension) {
+      ChunkGenerator generator = ((LevelStem)dimensions.getValueOrThrow(Registries.levelToLevelStem(dimension))).generator();
+      return ChunkMap.getChunkDataFixContextTag(dimension, generator.getTypeNameForDataFixer());
+   }
+
+   public static boolean verifyChunkPosAndEraseCache(final ChunkPos pos, final CompoundTag upgradedTag) {
+      verifyChunkPos(pos, upgradedTag);
+      boolean changed = upgradedTag.contains("Heightmaps");
+      upgradedTag.remove("Heightmaps");
+      changed = changed || upgradedTag.contains("isLightOn");
+      upgradedTag.remove("isLightOn");
+      ListTag sections = upgradedTag.getListOrEmpty("sections");
+
+      for(int i = 0; i < sections.size(); ++i) {
+         Optional<CompoundTag> maybeSection = sections.getCompound(i);
+         if (!maybeSection.isEmpty()) {
+            CompoundTag section = (CompoundTag)maybeSection.get();
+            changed = changed || section.contains("BlockLight");
+            section.remove("BlockLight");
+            changed = changed || section.contains("SkyLight");
+            section.remove("SkyLight");
+         }
+      }
+
+      return changed;
+   }
+
+   public static boolean verifyChunkPos(final ChunkPos pos, final CompoundTag upgradedTag) {
+      ChunkPos storedPos = new ChunkPos(upgradedTag.getIntOr("xPos", 0), upgradedTag.getIntOr("zPos", 0));
+      if (!storedPos.equals(pos)) {
+         LOGGER.warn("Chunk {} has invalid position {}", pos, storedPos);
+      }
+
+      return false;
+   }
+
    public void cancel() {
-      this.running = false;
+      this.upgradeProgress.setCanceled();
 
       try {
          this.thread.join();
@@ -110,375 +108,74 @@ public class WorldUpgrader implements AutoCloseable {
    }
 
    private void work() {
-      long var1 = Util.getMillis();
+      long conversionTime = Util.getMillis();
+      int currentVersion = SharedConstants.getCurrentVersion().dataVersion().version();
       LOGGER.info("Upgrading entities");
-      (new EntityUpgrader()).upgrade();
+      this.upgradeLevels(DataFixTypes.ENTITY_CHUNK, (new RegionStorageUpgrader.Builder(this.dataFixer)).setTypeAndFolderName("entities").setRecreateRegionFiles(this.recreateRegionFiles).trackProgress(this.upgradeProgress));
       LOGGER.info("Upgrading POIs");
-      (new PoiUpgrader()).upgrade();
+      this.upgradeLevels(DataFixTypes.POI_CHUNK, (new RegionStorageUpgrader.Builder(this.dataFixer)).setTypeAndFolderName("poi").setDefaultVersion(1945).setRecreateRegionFiles(this.recreateRegionFiles).trackProgress(this.upgradeProgress));
       LOGGER.info("Upgrading blocks");
-      (new ChunkUpgrader()).upgrade();
-      this.overworldDataStorage.saveAndJoin();
-      var1 = Util.getMillis() - var1;
-      LOGGER.info("World optimizaton finished after {} seconds", var1 / 1000L);
-      this.finished = true;
+      this.upgradeLevels(DataFixTypes.CHUNK, (new RegionStorageUpgrader.Builder(this.dataFixer)).setType("chunk").setFolderName("region").setRecreateRegionFiles(this.recreateRegionFiles).trackProgress(this.upgradeProgress), (levelSpecificBuilder, level) -> levelSpecificBuilder.setDataFixContextTag(getDataFixContextTag(this.dimensions, level)).addTagModifier(currentVersion, this.eraseCache ? WorldUpgrader::verifyChunkPosAndEraseCache : WorldUpgrader::verifyChunkPos));
+      this.overworldSavedDataStorage.saveAndJoin();
+      conversionTime = Util.getMillis() - conversionTime;
+      LOGGER.info("World optimization finished after {} seconds", conversionTime / 1000L);
+      this.upgradeProgress.setFinished(true);
+   }
+
+   private void upgradeLevels(final DataFixTypes dataFixType, final RegionStorageUpgrader.Builder builder) {
+      this.upgradeLevels(dataFixType, builder, (levelSpecificBuilder, level) -> levelSpecificBuilder);
+   }
+
+   private void upgradeLevels(final DataFixTypes dataFixType, final RegionStorageUpgrader.Builder builder, final BiFunction<RegionStorageUpgrader.Builder, ResourceKey<Level>, RegionStorageUpgrader.Builder> levelSpecificBuilder) {
+      List<RegionStorageUpgrader> upgraders = new ArrayList();
+      this.upgradeProgress.reset(dataFixType);
+      this.upgradeProgress.setType(UpgradeProgress.Type.REGIONS);
+      builder.setDataFixType(dataFixType);
+      int previousCopiesFileAmounts = 0;
+
+      for(ResourceKey<Level> level : this.levels) {
+         RegionStorageUpgrader upgrader = ((RegionStorageUpgrader.Builder)levelSpecificBuilder.apply(builder.copy(), level)).build(previousCopiesFileAmounts);
+         upgrader.init(level, this.levelStorage);
+         previousCopiesFileAmounts += upgrader.fileAmount();
+         upgraders.add(upgrader);
+      }
+
+      upgraders.forEach(RegionStorageUpgrader::upgrade);
    }
 
    public boolean isFinished() {
-      return this.finished;
+      return this.upgradeProgress.isFinished();
    }
 
    public Set<ResourceKey<Level>> levels() {
       return this.levels;
    }
 
-   public float dimensionProgress(ResourceKey<Level> var1) {
-      return this.progressMap.getFloat(var1);
+   public float dimensionProgress(final ResourceKey<Level> dimension) {
+      return this.upgradeProgress.getDimensionProgress(dimension);
    }
 
-   public float getProgress() {
-      return this.progress;
+   public float getTotalProgress() {
+      return this.upgradeProgress.getTotalProgress();
    }
 
    public int getTotalChunks() {
-      return this.totalChunks;
+      return this.upgradeProgress.getTotalChunks();
    }
 
    public int getConverted() {
-      return this.converted;
+      return this.upgradeProgress.getConverted();
    }
 
    public int getSkipped() {
-      return this.skipped;
+      return this.upgradeProgress.getSkipped();
    }
 
    public Component getStatus() {
-      return this.status;
+      return this.statusTranslator.translate(this.upgradeProgress);
    }
 
    public void close() {
-      this.overworldDataStorage.close();
-   }
-
-   static Path resolveRecreateDirectory(Path var0) {
-      return var0.resolveSibling("new_" + var0.getFileName().toString());
-   }
-
-   static record DimensionToUpgrade(ResourceKey<Level> dimensionKey, SimpleRegionStorage storage, ListIterator<FileToUpgrade> files) {
-      final ResourceKey<Level> dimensionKey;
-      final SimpleRegionStorage storage;
-      final ListIterator<FileToUpgrade> files;
-
-      DimensionToUpgrade(ResourceKey<Level> var1, SimpleRegionStorage var2, ListIterator<FileToUpgrade> var3) {
-         super();
-         this.dimensionKey = var1;
-         this.storage = var2;
-         this.files = var3;
-      }
-   }
-
-   static record FileToUpgrade(RegionFile file, List<ChunkPos> chunksToUpgrade) {
-      final RegionFile file;
-      final List<ChunkPos> chunksToUpgrade;
-
-      FileToUpgrade(RegionFile var1, List<ChunkPos> var2) {
-         super();
-         this.file = var1;
-         this.chunksToUpgrade = var2;
-      }
-   }
-
-   abstract class AbstractUpgrader {
-      private final Component upgradingStatus;
-      private final Component finishedStatus;
-      private final String type;
-      private final String folderName;
-      protected @Nullable CompletableFuture<Void> previousWriteFuture;
-      protected final DataFixTypes dataFixType;
-
-      AbstractUpgrader(final DataFixTypes var2, final String var3, final String var4, final Component var5, final Component var6) {
-         super();
-         this.dataFixType = var2;
-         this.type = var3;
-         this.folderName = var4;
-         this.upgradingStatus = var5;
-         this.finishedStatus = var6;
-      }
-
-      public void upgrade() {
-         WorldUpgrader.this.totalFiles = 0;
-         WorldUpgrader.this.totalChunks = 0;
-         WorldUpgrader.this.converted = 0;
-         WorldUpgrader.this.skipped = 0;
-         List var1 = this.getDimensionsToUpgrade();
-         if (WorldUpgrader.this.totalChunks != 0) {
-            float var2 = (float)WorldUpgrader.this.totalFiles;
-            WorldUpgrader.this.status = this.upgradingStatus;
-
-            while(WorldUpgrader.this.running) {
-               boolean var3 = false;
-               float var4 = 0.0F;
-
-               for(DimensionToUpgrade var6 : var1) {
-                  ResourceKey var7 = var6.dimensionKey;
-                  ListIterator var8 = var6.files;
-                  SimpleRegionStorage var9 = var6.storage;
-                  if (var8.hasNext()) {
-                     FileToUpgrade var10 = (FileToUpgrade)var8.next();
-                     boolean var11 = true;
-
-                     for(ChunkPos var13 : var10.chunksToUpgrade) {
-                        var11 = var11 && this.processOnePosition(var7, var9, var13);
-                        var3 = true;
-                     }
-
-                     if (WorldUpgrader.this.recreateRegionFiles) {
-                        if (var11) {
-                           this.onFileFinished(var10.file);
-                        } else {
-                           WorldUpgrader.LOGGER.error("Failed to convert region file {}", var10.file.getPath());
-                        }
-                     }
-                  }
-
-                  float var17 = (float)var8.nextIndex() / var2;
-                  WorldUpgrader.this.progressMap.put(var7, var17);
-                  var4 += var17;
-               }
-
-               WorldUpgrader.this.progress = var4;
-               if (!var3) {
-                  break;
-               }
-            }
-
-            WorldUpgrader.this.status = this.finishedStatus;
-
-            for(DimensionToUpgrade var16 : var1) {
-               try {
-                  var16.storage.close();
-               } catch (Exception var14) {
-                  WorldUpgrader.LOGGER.error("Error upgrading chunk", var14);
-               }
-            }
-
-         }
-      }
-
-      private List<DimensionToUpgrade> getDimensionsToUpgrade() {
-         ArrayList var1 = Lists.newArrayList();
-
-         for(ResourceKey var3 : WorldUpgrader.this.levels) {
-            RegionStorageInfo var4 = new RegionStorageInfo(WorldUpgrader.this.levelStorage.getLevelId(), var3, this.type);
-            Path var5 = WorldUpgrader.this.levelStorage.getDimensionPath(var3).resolve(this.folderName);
-            SimpleRegionStorage var6 = this.createStorage(var4, var5);
-            ListIterator var7 = this.getFilesToProcess(var4, var5);
-            var1.add(new DimensionToUpgrade(var3, var6, var7));
-         }
-
-         return var1;
-      }
-
-      protected abstract SimpleRegionStorage createStorage(RegionStorageInfo var1, Path var2);
-
-      private ListIterator<FileToUpgrade> getFilesToProcess(RegionStorageInfo var1, Path var2) {
-         List var3 = getAllChunkPositions(var1, var2);
-         WorldUpgrader var10000 = WorldUpgrader.this;
-         var10000.totalFiles += var3.size();
-         var10000 = WorldUpgrader.this;
-         var10000.totalChunks += var3.stream().mapToInt((var0) -> var0.chunksToUpgrade.size()).sum();
-         return var3.listIterator();
-      }
-
-      private static List<FileToUpgrade> getAllChunkPositions(RegionStorageInfo var0, Path var1) {
-         File[] var2 = var1.toFile().listFiles((var0x, var1x) -> var1x.endsWith(".mca"));
-         if (var2 == null) {
-            return List.of();
-         } else {
-            ArrayList var3 = Lists.newArrayList();
-
-            for(File var7 : var2) {
-               Matcher var8 = WorldUpgrader.REGEX.matcher(var7.getName());
-               if (var8.matches()) {
-                  int var9 = Integer.parseInt(var8.group(1)) << 5;
-                  int var10 = Integer.parseInt(var8.group(2)) << 5;
-                  ArrayList var11 = Lists.newArrayList();
-
-                  try (RegionFile var12 = new RegionFile(var0, var7.toPath(), var1, true)) {
-                     for(int var13 = 0; var13 < 32; ++var13) {
-                        for(int var14 = 0; var14 < 32; ++var14) {
-                           ChunkPos var15 = new ChunkPos(var13 + var9, var14 + var10);
-                           if (var12.doesChunkExist(var15)) {
-                              var11.add(var15);
-                           }
-                        }
-                     }
-
-                     if (!var11.isEmpty()) {
-                        var3.add(new FileToUpgrade(var12, var11));
-                     }
-                  } catch (Throwable var18) {
-                     WorldUpgrader.LOGGER.error("Failed to read chunks from region file {}", var7.toPath(), var18);
-                  }
-               }
-            }
-
-            return var3;
-         }
-      }
-
-      private boolean processOnePosition(ResourceKey<Level> var1, SimpleRegionStorage var2, ChunkPos var3) {
-         boolean var4 = false;
-
-         try {
-            var4 = this.tryProcessOnePosition(var2, var3, var1);
-         } catch (CompletionException | ReportedException var7) {
-            Throwable var6 = ((RuntimeException)var7).getCause();
-            if (!(var6 instanceof IOException)) {
-               throw var7;
-            }
-
-            WorldUpgrader.LOGGER.error("Error upgrading chunk {}", var3, var6);
-         }
-
-         if (var4) {
-            ++WorldUpgrader.this.converted;
-         } else {
-            ++WorldUpgrader.this.skipped;
-         }
-
-         return var4;
-      }
-
-      protected abstract boolean tryProcessOnePosition(SimpleRegionStorage var1, ChunkPos var2, ResourceKey<Level> var3);
-
-      private void onFileFinished(RegionFile var1) {
-         if (WorldUpgrader.this.recreateRegionFiles) {
-            if (this.previousWriteFuture != null) {
-               this.previousWriteFuture.join();
-            }
-
-            Path var2 = var1.getPath();
-            Path var3 = var2.getParent();
-            Path var4 = WorldUpgrader.resolveRecreateDirectory(var3).resolve(var2.getFileName().toString());
-
-            try {
-               if (var4.toFile().exists()) {
-                  Files.delete(var2);
-                  Files.move(var4, var2);
-               } else {
-                  WorldUpgrader.LOGGER.error("Failed to replace an old region file. New file {} does not exist.", var4);
-               }
-            } catch (IOException var6) {
-               WorldUpgrader.LOGGER.error("Failed to replace an old region file", var6);
-            }
-
-         }
-      }
-   }
-
-   abstract class SimpleRegionStorageUpgrader extends AbstractUpgrader {
-      SimpleRegionStorageUpgrader(final DataFixTypes var2, final String var3, final Component var4, final Component var5) {
-         super(var2, var3, var3, var4, var5);
-      }
-
-      protected SimpleRegionStorage createStorage(RegionStorageInfo var1, Path var2) {
-         return (SimpleRegionStorage)(WorldUpgrader.this.recreateRegionFiles ? new RecreatingSimpleRegionStorage(var1.withTypeSuffix("source"), var2, var1.withTypeSuffix("target"), WorldUpgrader.resolveRecreateDirectory(var2), WorldUpgrader.this.dataFixer, true, this.dataFixType, LegacyTagFixer.EMPTY) : new SimpleRegionStorage(var1, var2, WorldUpgrader.this.dataFixer, true, this.dataFixType));
-      }
-
-      protected boolean tryProcessOnePosition(SimpleRegionStorage var1, ChunkPos var2, ResourceKey<Level> var3) {
-         CompoundTag var4 = (CompoundTag)((Optional)var1.read(var2).join()).orElse((Object)null);
-         if (var4 != null) {
-            int var5 = NbtUtils.getDataVersion(var4);
-            CompoundTag var6 = this.upgradeTag(var1, var4);
-            boolean var7 = var5 < SharedConstants.getCurrentVersion().dataVersion().version();
-            if (var7 || WorldUpgrader.this.recreateRegionFiles) {
-               if (this.previousWriteFuture != null) {
-                  this.previousWriteFuture.join();
-               }
-
-               this.previousWriteFuture = var1.write(var2, var6);
-               return true;
-            }
-         }
-
-         return false;
-      }
-
-      protected abstract CompoundTag upgradeTag(SimpleRegionStorage var1, CompoundTag var2);
-   }
-
-   class PoiUpgrader extends SimpleRegionStorageUpgrader {
-      PoiUpgrader() {
-         super(DataFixTypes.POI_CHUNK, "poi", WorldUpgrader.STATUS_UPGRADING_POI, WorldUpgrader.STATUS_FINISHED_POI);
-      }
-
-      protected CompoundTag upgradeTag(SimpleRegionStorage var1, CompoundTag var2) {
-         return var1.upgradeChunkTag(var2, 1945);
-      }
-   }
-
-   class EntityUpgrader extends SimpleRegionStorageUpgrader {
-      EntityUpgrader() {
-         super(DataFixTypes.ENTITY_CHUNK, "entities", WorldUpgrader.STATUS_UPGRADING_ENTITIES, WorldUpgrader.STATUS_FINISHED_ENTITIES);
-      }
-
-      protected CompoundTag upgradeTag(SimpleRegionStorage var1, CompoundTag var2) {
-         return var1.upgradeChunkTag(var2, -1);
-      }
-   }
-
-   class ChunkUpgrader extends AbstractUpgrader {
-      ChunkUpgrader() {
-         super(DataFixTypes.CHUNK, "chunk", "region", WorldUpgrader.STATUS_UPGRADING_CHUNKS, WorldUpgrader.STATUS_FINISHED_CHUNKS);
-      }
-
-      protected boolean tryProcessOnePosition(SimpleRegionStorage var1, ChunkPos var2, ResourceKey<Level> var3) {
-         CompoundTag var4 = (CompoundTag)((Optional)var1.read(var2).join()).orElse((Object)null);
-         if (var4 != null) {
-            int var5 = NbtUtils.getDataVersion(var4);
-            ChunkGenerator var6 = ((LevelStem)WorldUpgrader.this.dimensions.getValueOrThrow(Registries.levelToLevelStem(var3))).generator();
-            CompoundTag var7 = var1.upgradeChunkTag(var4, -1, ChunkMap.getChunkDataFixContextTag(var3, var6.getTypeNameForDataFixer()));
-            ChunkPos var8 = new ChunkPos(var7.getIntOr("xPos", 0), var7.getIntOr("zPos", 0));
-            if (!var8.equals(var2)) {
-               WorldUpgrader.LOGGER.warn("Chunk {} has invalid position {}", var2, var8);
-            }
-
-            boolean var9 = var5 < SharedConstants.getCurrentVersion().dataVersion().version();
-            if (WorldUpgrader.this.eraseCache) {
-               var9 = var9 || var7.contains("Heightmaps");
-               var7.remove("Heightmaps");
-               var9 = var9 || var7.contains("isLightOn");
-               var7.remove("isLightOn");
-               ListTag var10 = var7.getListOrEmpty("sections");
-
-               for(int var11 = 0; var11 < var10.size(); ++var11) {
-                  Optional var12 = var10.getCompound(var11);
-                  if (!var12.isEmpty()) {
-                     CompoundTag var13 = (CompoundTag)var12.get();
-                     var9 = var9 || var13.contains("BlockLight");
-                     var13.remove("BlockLight");
-                     var9 = var9 || var13.contains("SkyLight");
-                     var13.remove("SkyLight");
-                  }
-               }
-            }
-
-            if (var9 || WorldUpgrader.this.recreateRegionFiles) {
-               if (this.previousWriteFuture != null) {
-                  this.previousWriteFuture.join();
-               }
-
-               this.previousWriteFuture = var1.write(var2, var7);
-               return true;
-            }
-         }
-
-         return false;
-      }
-
-      protected SimpleRegionStorage createStorage(RegionStorageInfo var1, Path var2) {
-         Supplier var3 = LegacyStructureDataHandler.getLegacyTagFixer(var1.dimension(), () -> WorldUpgrader.this.overworldDataStorage, WorldUpgrader.this.dataFixer);
-         return (SimpleRegionStorage)(WorldUpgrader.this.recreateRegionFiles ? new RecreatingSimpleRegionStorage(var1.withTypeSuffix("source"), var2, var1.withTypeSuffix("target"), WorldUpgrader.resolveRecreateDirectory(var2), WorldUpgrader.this.dataFixer, true, DataFixTypes.CHUNK, var3) : new SimpleRegionStorage(var1, var2, WorldUpgrader.this.dataFixer, true, DataFixTypes.CHUNK, var3));
-      }
+      this.overworldSavedDataStorage.close();
    }
 }

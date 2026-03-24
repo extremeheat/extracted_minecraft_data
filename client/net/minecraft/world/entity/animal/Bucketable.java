@@ -21,11 +21,11 @@ import net.minecraft.world.level.Level;
 public interface Bucketable {
    boolean fromBucket();
 
-   void setFromBucket(boolean var1);
+   void setFromBucket(final boolean fromBucket);
 
-   void saveToBucketTag(ItemStack var1);
+   void saveToBucketTag(final ItemStack bucket);
 
-   void loadFromBucketTag(CompoundTag var1);
+   void loadFromBucketTag(final CompoundTag tag);
 
    ItemStack getBucketItemStack();
 
@@ -33,70 +33,70 @@ public interface Bucketable {
 
    /** @deprecated */
    @Deprecated
-   static void saveDefaultDataToBucketTag(Mob var0, ItemStack var1) {
-      var1.copyFrom(DataComponents.CUSTOM_NAME, var0);
-      CustomData.update(DataComponents.BUCKET_ENTITY_DATA, var1, (var1x) -> {
-         if (var0.isNoAi()) {
-            var1x.putBoolean("NoAI", var0.isNoAi());
+   static void saveDefaultDataToBucketTag(final Mob entity, final ItemStack bucket) {
+      bucket.copyFrom(DataComponents.CUSTOM_NAME, entity);
+      CustomData.update(DataComponents.BUCKET_ENTITY_DATA, bucket, (tag) -> {
+         if (entity.isNoAi()) {
+            tag.putBoolean("NoAI", entity.isNoAi());
          }
 
-         if (var0.isSilent()) {
-            var1x.putBoolean("Silent", var0.isSilent());
+         if (entity.isSilent()) {
+            tag.putBoolean("Silent", entity.isSilent());
          }
 
-         if (var0.isNoGravity()) {
-            var1x.putBoolean("NoGravity", var0.isNoGravity());
+         if (entity.isNoGravity()) {
+            tag.putBoolean("NoGravity", entity.isNoGravity());
          }
 
-         if (var0.hasGlowingTag()) {
-            var1x.putBoolean("Glowing", var0.hasGlowingTag());
+         if (entity.hasGlowingTag()) {
+            tag.putBoolean("Glowing", entity.hasGlowingTag());
          }
 
-         if (var0.isInvulnerable()) {
-            var1x.putBoolean("Invulnerable", var0.isInvulnerable());
+         if (entity.isInvulnerable()) {
+            tag.putBoolean("Invulnerable", entity.isInvulnerable());
          }
 
-         var1x.putFloat("Health", var0.getHealth());
+         tag.putFloat("Health", entity.getHealth());
       });
    }
 
    /** @deprecated */
    @Deprecated
-   static void loadDefaultDataFromBucketTag(Mob var0, CompoundTag var1) {
-      Optional var10000 = var1.getBoolean("NoAI");
-      Objects.requireNonNull(var0);
-      var10000.ifPresent(var0::setNoAi);
-      var10000 = var1.getBoolean("Silent");
-      Objects.requireNonNull(var0);
-      var10000.ifPresent(var0::setSilent);
-      var10000 = var1.getBoolean("NoGravity");
-      Objects.requireNonNull(var0);
-      var10000.ifPresent(var0::setNoGravity);
-      var10000 = var1.getBoolean("Glowing");
-      Objects.requireNonNull(var0);
-      var10000.ifPresent(var0::setGlowingTag);
-      var10000 = var1.getBoolean("Invulnerable");
-      Objects.requireNonNull(var0);
-      var10000.ifPresent(var0::setInvulnerable);
-      var10000 = var1.getFloat("Health");
-      Objects.requireNonNull(var0);
-      var10000.ifPresent(var0::setHealth);
+   static void loadDefaultDataFromBucketTag(final Mob entity, final CompoundTag tag) {
+      Optional var10000 = tag.getBoolean("NoAI");
+      Objects.requireNonNull(entity);
+      var10000.ifPresent(entity::setNoAi);
+      var10000 = tag.getBoolean("Silent");
+      Objects.requireNonNull(entity);
+      var10000.ifPresent(entity::setSilent);
+      var10000 = tag.getBoolean("NoGravity");
+      Objects.requireNonNull(entity);
+      var10000.ifPresent(entity::setNoGravity);
+      var10000 = tag.getBoolean("Glowing");
+      Objects.requireNonNull(entity);
+      var10000.ifPresent(entity::setGlowingTag);
+      var10000 = tag.getBoolean("Invulnerable");
+      Objects.requireNonNull(entity);
+      var10000.ifPresent(entity::setInvulnerable);
+      var10000 = tag.getFloat("Health");
+      Objects.requireNonNull(entity);
+      var10000.ifPresent(entity::setHealth);
    }
 
-   static <T extends LivingEntity & Bucketable> Optional<InteractionResult> bucketMobPickup(Player var0, InteractionHand var1, T var2) {
-      ItemStack var3 = var0.getItemInHand(var1);
-      if (var3.getItem() == Items.WATER_BUCKET && var2.isAlive()) {
-         var2.playSound(((Bucketable)var2).getPickupSound(), 1.0F, 1.0F);
-         ItemStack var4 = ((Bucketable)var2).getBucketItemStack();
-         ((Bucketable)var2).saveToBucketTag(var4);
-         ItemStack var5 = ItemUtils.createFilledResult(var3, var0, var4, false);
-         var0.setItemInHand(var1, var5);
-         Level var6 = var2.level();
-         if (!var6.isClientSide()) {
-            CriteriaTriggers.FILLED_BUCKET.trigger((ServerPlayer)var0, var4);
+   static <T extends LivingEntity & Bucketable> Optional<InteractionResult> bucketMobPickup(final Player player, final InteractionHand hand, final T pickupEntity) {
+      ItemStack itemStack = player.getItemInHand(hand);
+      if (itemStack.getItem() == Items.WATER_BUCKET && pickupEntity.isAlive()) {
+         pickupEntity.playSound(((Bucketable)pickupEntity).getPickupSound(), 1.0F, 1.0F);
+         ItemStack bucket = ((Bucketable)pickupEntity).getBucketItemStack();
+         ((Bucketable)pickupEntity).saveToBucketTag(bucket);
+         ItemStack result = ItemUtils.createFilledResult(itemStack, player, bucket, false);
+         player.setItemInHand(hand, result);
+         Level level = pickupEntity.level();
+         if (!level.isClientSide()) {
+            CriteriaTriggers.FILLED_BUCKET.trigger((ServerPlayer)player, bucket);
          }
 
-         var2.discard();
+         pickupEntity.discard();
          return Optional.of(InteractionResult.SUCCESS);
       } else {
          return Optional.empty();

@@ -1,9 +1,9 @@
 package com.mojang.realmsclient.gui.screens;
 
 import java.net.URI;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.FittingMultiLineTextWidget;
 import net.minecraft.client.gui.components.ImageButton;
@@ -42,15 +42,15 @@ public class AddRealmPopupScreen extends RealmsScreen {
    private int carouselIndex;
    private int carouselTick;
 
-   public AddRealmPopupScreen(Screen var1, boolean var2) {
+   public AddRealmPopupScreen(final Screen backgroundScreen, final boolean trialAvailable) {
       super(POPUP_TEXT);
-      this.backgroundScreen = var1;
-      this.trialAvailable = var2;
+      this.backgroundScreen = backgroundScreen;
+      this.trialAvailable = trialAvailable;
    }
 
-   public static void updateCarouselImages(ResourceManager var0) {
-      Set var1 = var0.listResources("textures/gui/images", (var0x) -> var0x.getPath().endsWith(".png")).keySet();
-      carouselImages = var1.stream().filter((var0x) -> var0x.getNamespace().equals("realms")).toList();
+   public static void updateCarouselImages(final ResourceManager resourceManager) {
+      Collection<Identifier> candidates = resourceManager.listResources("textures/gui/images", (s) -> s.getPath().endsWith(".png")).keySet();
+      carouselImages = candidates.stream().filter((id) -> id.getNamespace().equals("realms")).toList();
    }
 
    protected void init() {
@@ -60,15 +60,15 @@ public class AddRealmPopupScreen extends RealmsScreen {
       }
 
       this.addRenderableWidget(Button.builder(Component.translatable("mco.selectServer.buy"), ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.BUY_REALMS)).bounds(this.right() - 10 - 99, this.bottom() - 10 - 20, 99, 20).build());
-      ImageButton var1 = (ImageButton)this.addRenderableWidget(new ImageButton(this.left() + 4, this.top() + 4, 14, 14, CROSS_BUTTON_SPRITES, (var1x) -> this.onClose(), CLOSE_TEXT));
-      var1.setTooltip(Tooltip.create(CLOSE_TEXT));
-      int var2 = 142 - (this.trialAvailable ? 40 : 20);
-      FittingMultiLineTextWidget var3 = new FittingMultiLineTextWidget(this.right() - 10 - 100, this.top() + 10, 100, var2, POPUP_TEXT, this.font);
-      if (var3.showingScrollBar()) {
-         var3.setWidth(94);
+      ImageButton closeButton = (ImageButton)this.addRenderableWidget(new ImageButton(this.left() + 4, this.top() + 4, 14, 14, CROSS_BUTTON_SPRITES, (button) -> this.onClose(), CLOSE_TEXT));
+      closeButton.setTooltip(Tooltip.create(CLOSE_TEXT));
+      int textBoxHeight = 142 - (this.trialAvailable ? 40 : 20);
+      FittingMultiLineTextWidget fittingMultiLineTextWidget = new FittingMultiLineTextWidget(this.right() - 10 - 100, this.top() + 10, 100, textBoxHeight, POPUP_TEXT, this.font);
+      if (fittingMultiLineTextWidget.showingScrollBar()) {
+         fittingMultiLineTextWidget.setWidth(100 - fittingMultiLineTextWidget.scrollbarWidth());
       }
 
-      this.addRenderableWidget(var3);
+      this.addRenderableWidget(fittingMultiLineTextWidget);
    }
 
    public void tick() {
@@ -80,28 +80,28 @@ public class AddRealmPopupScreen extends RealmsScreen {
 
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
       if (this.createTrialButton != null) {
-         renderDiamond(var1, this.createTrialButton);
+         extractDiamond(graphics, this.createTrialButton);
       }
 
    }
 
-   public static void renderDiamond(GuiGraphics var0, Button var1) {
-      boolean var2 = true;
-      var0.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)TRIAL_AVAILABLE_SPRITE, var1.getX() + var1.getWidth() - 8 - 4, var1.getY() + var1.getHeight() / 2 - 4, 8, 8);
+   public static void extractDiamond(final GuiGraphicsExtractor graphics, final Button button) {
+      int size = 8;
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)TRIAL_AVAILABLE_SPRITE, button.getX() + button.getWidth() - 8 - 4, button.getY() + button.getHeight() / 2 - 4, 8, 8);
    }
 
-   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      this.backgroundScreen.renderBackground(var1, -1, -1, var4);
-      var1.nextStratum();
-      this.backgroundScreen.render(var1, -1, -1, var4);
-      var1.nextStratum();
-      this.renderTransparentBackground(var1);
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)BACKGROUND_SPRITE, this.left(), this.top(), 320, 172);
+   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      this.backgroundScreen.extractBackground(graphics, -1, -1, a);
+      graphics.nextStratum();
+      this.backgroundScreen.extractRenderState(graphics, -1, -1, a);
+      graphics.nextStratum();
+      this.extractTransparentBackground(graphics);
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)BACKGROUND_SPRITE, this.left(), this.top(), 320, 172);
       if (!carouselImages.isEmpty()) {
-         var1.blit(RenderPipelines.GUI_TEXTURED, (Identifier)carouselImages.get(this.carouselIndex), this.left() + 10, this.top() + 10, 0.0F, 0.0F, 195, 152, 195, 152);
+         graphics.blit(RenderPipelines.GUI_TEXTURED, (Identifier)carouselImages.get(this.carouselIndex), this.left() + 10, this.top() + 10, 0.0F, 0.0F, 195, 152, 195, 152);
       }
 
    }

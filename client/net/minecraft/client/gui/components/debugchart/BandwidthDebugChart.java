@@ -2,7 +2,7 @@ package net.minecraft.client.gui.components.debugchart;
 
 import java.util.Locale;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.Mth;
 import net.minecraft.util.debugchart.SampleStorage;
 
@@ -14,51 +14,51 @@ public class BandwidthDebugChart extends AbstractDebugChart {
    private static final int MEGABYTE = 1048576;
    private static final int CHART_TOP_VALUE = 1048576;
 
-   public BandwidthDebugChart(Font var1, SampleStorage var2) {
-      super(var1, var2);
+   public BandwidthDebugChart(final Font font, final SampleStorage sampleStorage) {
+      super(font, sampleStorage);
    }
 
-   protected void renderAdditionalLinesAndLabels(GuiGraphics var1, int var2, int var3, int var4) {
-      this.drawLabeledLineAtValue(var1, var2, var3, var4, 64);
-      this.drawLabeledLineAtValue(var1, var2, var3, var4, 1024);
-      this.drawLabeledLineAtValue(var1, var2, var3, var4, 16384);
-      this.drawStringWithShade(var1, toDisplayStringInternal(1048576.0), var2 + 1, var4 - getSampleHeightInternal(1048576.0) + 1);
+   protected void extractAdditionalLinesAndLabels(final GuiGraphicsExtractor graphics, final int left, final int width, final int bottom) {
+      this.extractLabeledLineAtValue(graphics, left, width, bottom, 64);
+      this.extractLabeledLineAtValue(graphics, left, width, bottom, 1024);
+      this.extractLabeledLineAtValue(graphics, left, width, bottom, 16384);
+      this.extractStringWithShade(graphics, toDisplayStringInternal(1048576.0), left + 1, bottom - getSampleHeightInternal(1048576.0) + 1);
    }
 
-   private void drawLabeledLineAtValue(GuiGraphics var1, int var2, int var3, int var4, int var5) {
-      this.drawLineWithLabel(var1, var2, var3, var4 - getSampleHeightInternal((double)var5), toDisplayStringInternal((double)var5));
+   private void extractLabeledLineAtValue(final GuiGraphicsExtractor graphics, final int left, final int width, final int bottom, final int bytesPerSecond) {
+      this.extractLineWithLabel(graphics, left, width, bottom - getSampleHeightInternal((double)bytesPerSecond), toDisplayStringInternal((double)bytesPerSecond));
    }
 
-   private void drawLineWithLabel(GuiGraphics var1, int var2, int var3, int var4, String var5) {
-      this.drawStringWithShade(var1, var5, var2 + 1, var4 + 1);
-      var1.hLine(var2, var2 + var3 - 1, var4, -1);
+   private void extractLineWithLabel(final GuiGraphicsExtractor graphics, final int x, final int width, final int y, final String label) {
+      this.extractStringWithShade(graphics, label, x + 1, y + 1);
+      graphics.horizontalLine(x, x + width - 1, y, -1);
    }
 
-   protected String toDisplayString(double var1) {
-      return toDisplayStringInternal(toBytesPerSecond(var1));
+   protected String toDisplayString(final double bytesPerTick) {
+      return toDisplayStringInternal(toBytesPerSecond(bytesPerTick));
    }
 
-   private static String toDisplayStringInternal(double var0) {
-      if (var0 >= 1048576.0) {
-         return String.format(Locale.ROOT, "%.1f MiB/s", var0 / 1048576.0);
+   private static String toDisplayStringInternal(final double bytesPerSecond) {
+      if (bytesPerSecond >= 1048576.0) {
+         return String.format(Locale.ROOT, "%.1f MiB/s", bytesPerSecond / 1048576.0);
       } else {
-         return var0 >= 1024.0 ? String.format(Locale.ROOT, "%.1f KiB/s", var0 / 1024.0) : String.format(Locale.ROOT, "%d B/s", Mth.floor(var0));
+         return bytesPerSecond >= 1024.0 ? String.format(Locale.ROOT, "%.1f KiB/s", bytesPerSecond / 1024.0) : String.format(Locale.ROOT, "%d B/s", Mth.floor(bytesPerSecond));
       }
    }
 
-   protected int getSampleHeight(double var1) {
-      return getSampleHeightInternal(toBytesPerSecond(var1));
+   protected int getSampleHeight(final double bytesPerTick) {
+      return getSampleHeightInternal(toBytesPerSecond(bytesPerTick));
    }
 
-   private static int getSampleHeightInternal(double var0) {
-      return (int)Math.round(Math.log(var0 + 1.0) * 60.0 / Math.log(1048576.0));
+   private static int getSampleHeightInternal(final double bytesPerSecond) {
+      return (int)Math.round(Math.log(bytesPerSecond + 1.0) * 60.0 / Math.log(1048576.0));
    }
 
-   protected int getSampleColor(long var1) {
-      return this.getSampleColor(toBytesPerSecond((double)var1), 0.0, -16711681, 8192.0, -6250241, 1.048576E7, -65536);
+   protected int getSampleColor(final long bytesPerTick) {
+      return this.getSampleColor(toBytesPerSecond((double)bytesPerTick), 0.0, -16711681, 8192.0, -6250241, 1.048576E7, -65536);
    }
 
-   private static double toBytesPerSecond(double var0) {
-      return var0 * 20.0;
+   private static double toBytesPerSecond(final double bytesPerTick) {
+      return bytesPerTick * 20.0;
    }
 }

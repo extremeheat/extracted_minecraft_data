@@ -9,17 +9,16 @@ import net.minecraft.network.protocol.PacketType;
 public record ClientboundCodeOfConductPacket(String codeOfConduct) implements Packet<ClientConfigurationPacketListener> {
    public static final StreamCodec<ByteBuf, ClientboundCodeOfConductPacket> STREAM_CODEC;
 
-   public ClientboundCodeOfConductPacket(String var1) {
+   public ClientboundCodeOfConductPacket {
       super();
-      this.codeOfConduct = var1;
    }
 
    public PacketType<ClientboundCodeOfConductPacket> type() {
       return ConfigurationPacketTypes.CLIENTBOUND_CODE_OF_CONDUCT;
    }
 
-   public void handle(ClientConfigurationPacketListener var1) {
-      var1.handleCodeOfConduct(this);
+   public void handle(final ClientConfigurationPacketListener listener) {
+      listener.handleCodeOfConduct(this);
    }
 
    static {

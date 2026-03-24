@@ -30,12 +30,12 @@ public class ChaseServer {
    private @Nullable ServerSocket serverSocket;
    private final CopyOnWriteArrayList<Socket> clientSockets = new CopyOnWriteArrayList();
 
-   public ChaseServer(String var1, int var2, PlayerList var3, int var4) {
+   public ChaseServer(final String serverBindAddress, final int serverPort, final PlayerList playerList, final int broadcastIntervalMs) {
       super();
-      this.serverBindAddress = var1;
-      this.serverPort = var2;
-      this.playerList = var3;
-      this.broadcastIntervalMs = var4;
+      this.serverBindAddress = serverBindAddress;
+      this.serverPort = serverPort;
+      this.playerList = playerList;
+      this.broadcastIntervalMs = broadcastIntervalMs;
    }
 
    public void start() throws IOException {
@@ -44,35 +44,35 @@ public class ChaseServer {
       } else {
          this.wantsToRun = true;
          this.serverSocket = new ServerSocket(this.serverPort, 50, InetAddress.getByName(this.serverBindAddress));
-         Thread var1 = new Thread(this::runAcceptor, "chase-server-acceptor");
-         var1.setDaemon(true);
-         var1.start();
-         Thread var2 = new Thread(this::runSender, "chase-server-sender");
-         var2.setDaemon(true);
-         var2.start();
+         Thread acceptor = new Thread(this::runAcceptor, "chase-server-acceptor");
+         acceptor.setDaemon(true);
+         acceptor.start();
+         Thread sender = new Thread(this::runSender, "chase-server-sender");
+         sender.setDaemon(true);
+         sender.start();
       }
    }
 
    private void runSender() {
-      PlayerPosition var1 = null;
+      PlayerPosition oldPlayerPosition = null;
 
       while(this.wantsToRun) {
          if (!this.clientSockets.isEmpty()) {
-            PlayerPosition var2 = this.getPlayerPosition();
-            if (var2 != null && !var2.equals(var1)) {
-               var1 = var2;
-               byte[] var3 = var2.format().getBytes(StandardCharsets.US_ASCII);
+            PlayerPosition playerPosition = this.getPlayerPosition();
+            if (playerPosition != null && !playerPosition.equals(oldPlayerPosition)) {
+               oldPlayerPosition = playerPosition;
+               byte[] messageBytes = playerPosition.format().getBytes(StandardCharsets.US_ASCII);
 
-               for(Socket var5 : this.clientSockets) {
-                  if (!var5.isClosed()) {
+               for(Socket clientSocket : this.clientSockets) {
+                  if (!clientSocket.isClosed()) {
                      Util.ioPool().execute(() -> {
                         try {
-                           OutputStream var2 = var5.getOutputStream();
-                           var2.write(var3);
-                           var2.flush();
-                        } catch (IOException var3x) {
-                           LOGGER.info("Remote control client socket got an IO exception and will be closed", var3x);
-                           IOUtils.closeQuietly(var5);
+                           OutputStream output = clientSocket.getOutputStream();
+                           output.write(messageBytes);
+                           output.flush();
+                        } catch (IOException e) {
+                           LOGGER.info("Remote control client socket got an IO exception and will be closed", e);
+                           IOUtils.closeQuietly(clientSocket);
                         }
 
                      });
@@ -80,8 +80,8 @@ public class ChaseServer {
                }
             }
 
-            List var7 = (List)this.clientSockets.stream().filter(Socket::isClosed).collect(Collectors.toList());
-            this.clientSockets.removeAll(var7);
+            List<Socket> closed = (List)this.clientSockets.stream().filter(Socket::isClosed).collect(Collectors.toList());
+            this.clientSockets.removeAll(closed);
          }
 
          if (this.wantsToRun) {
@@ -105,18 +105,18 @@ public class ChaseServer {
          while(this.wantsToRun) {
             if (this.serverSocket != null) {
                LOGGER.info("Remote control server is listening for connections on port {}", this.serverPort);
-               Socket var1 = this.serverSocket.accept();
-               LOGGER.info("Remote control server received client connection on port {}", var1.getPort());
-               this.clientSockets.add(var1);
+               Socket clientSocket = this.serverSocket.accept();
+               LOGGER.info("Remote control server received client connection on port {}", clientSocket.getPort());
+               this.clientSockets.add(clientSocket);
             }
          }
       } catch (ClosedByInterruptException var6) {
          if (this.wantsToRun) {
             LOGGER.info("Remote control server closed by interrupt");
          }
-      } catch (IOException var7) {
+      } catch (IOException e) {
          if (this.wantsToRun) {
-            LOGGER.error("Remote control server closed because of an IO exception", var7);
+            LOGGER.error("Remote control server closed because of an IO exception", e);
          }
       } finally {
          IOUtils.closeQuietly(this.serverSocket);
@@ -127,28 +127,22 @@ public class ChaseServer {
    }
 
    private @Nullable PlayerPosition getPlayerPosition() {
-      List var1 = this.playerList.getPlayers();
-      if (var1.isEmpty()) {
+      List<ServerPlayer> players = this.playerList.getPlayers();
+      if (players.isEmpty()) {
          return null;
       } else {
-         ServerPlayer var2 = (ServerPlayer)var1.get(0);
-         String var3 = (String)ChaseCommand.DIMENSION_NAMES.inverse().get(var2.level().dimension());
-         return var3 == null ? null : new PlayerPosition(var3, var2.getX(), var2.getY(), var2.getZ(), var2.getYRot(), var2.getXRot());
+         ServerPlayer player = (ServerPlayer)players.get(0);
+         String dimensionName = (String)ChaseCommand.DIMENSION_NAMES.inverse().get(player.level().dimension());
+         return dimensionName == null ? null : new PlayerPosition(dimensionName, player.getX(), player.getY(), player.getZ(), player.getYRot(), player.getXRot());
       }
    }
 
-   static record PlayerPosition(String dimensionName, double x, double y, double z, float yRot, float xRot) {
-      PlayerPosition(String var1, double var2, double var4, double var6, float var8, float var9) {
+   private static record PlayerPosition(String dimensionName, double x, double y, double z, float yRot, float xRot) {
+      private PlayerPosition {
          super();
-         this.dimensionName = var1;
-         this.x = var2;
-         this.y = var4;
-         this.z = var6;
-         this.yRot = var8;
-         this.xRot = var9;
       }
 
-      String format() {
+      private String format() {
          return String.format(Locale.ROOT, "t %s %.2f %.2f %.2f %.2f %.2f\n", this.dimensionName, this.x, this.y, this.z, this.yRot, this.xRot);
       }
    }

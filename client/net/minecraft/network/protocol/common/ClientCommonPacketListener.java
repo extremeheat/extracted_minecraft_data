@@ -3,29 +3,29 @@ package net.minecraft.network.protocol.common;
 import net.minecraft.network.protocol.cookie.ClientCookiePacketListener;
 
 public interface ClientCommonPacketListener extends ClientCookiePacketListener {
-   void handleKeepAlive(ClientboundKeepAlivePacket var1);
+   void handleKeepAlive(ClientboundKeepAlivePacket packet);
 
-   void handlePing(ClientboundPingPacket var1);
+   void handlePing(ClientboundPingPacket packet);
 
-   void handleCustomPayload(ClientboundCustomPayloadPacket var1);
+   void handleCustomPayload(ClientboundCustomPayloadPacket packet);
 
-   void handleDisconnect(ClientboundDisconnectPacket var1);
+   void handleDisconnect(ClientboundDisconnectPacket packet);
 
-   void handleResourcePackPush(ClientboundResourcePackPushPacket var1);
+   void handleResourcePackPush(ClientboundResourcePackPushPacket packet);
 
-   void handleResourcePackPop(ClientboundResourcePackPopPacket var1);
+   void handleResourcePackPop(ClientboundResourcePackPopPacket packet);
 
-   void handleUpdateTags(ClientboundUpdateTagsPacket var1);
+   void handleUpdateTags(ClientboundUpdateTagsPacket packet);
 
-   void handleStoreCookie(ClientboundStoreCookiePacket var1);
+   void handleStoreCookie(ClientboundStoreCookiePacket packet);
 
-   void handleTransfer(ClientboundTransferPacket var1);
+   void handleTransfer(ClientboundTransferPacket packet);
 
-   void handleCustomReportDetails(ClientboundCustomReportDetailsPacket var1);
+   void handleCustomReportDetails(ClientboundCustomReportDetailsPacket packet);
 
-   void handleServerLinks(ClientboundServerLinksPacket var1);
+   void handleServerLinks(ClientboundServerLinksPacket packet);
 
-   void handleClearDialog(ClientboundClearDialogPacket var1);
+   void handleClearDialog(ClientboundClearDialogPacket packet);
 
-   void handleShowDialog(ClientboundShowDialogPacket var1);
+   void handleShowDialog(ClientboundShowDialogPacket packet);
 }

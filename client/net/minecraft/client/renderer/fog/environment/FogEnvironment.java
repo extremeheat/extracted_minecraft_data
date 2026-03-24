@@ -14,13 +14,13 @@ public abstract class FogEnvironment {
       super();
    }
 
-   public abstract void setupFog(FogData var1, Camera var2, ClientLevel var3, float var4, DeltaTracker var5);
+   public abstract void setupFog(FogData fog, Camera camera, ClientLevel level, float renderDistance, DeltaTracker deltaTracker);
 
    public boolean providesColor() {
       return true;
    }
 
-   public int getBaseColor(ClientLevel var1, Camera var2, int var3, float var4) {
+   public int getBaseColor(final ClientLevel level, final Camera camera, final int renderDistance, final float partialTicks) {
       return -1;
    }
 
@@ -28,9 +28,9 @@ public abstract class FogEnvironment {
       return false;
    }
 
-   public float getModifiedDarkness(LivingEntity var1, float var2, float var3) {
-      return var2;
+   public float getModifiedDarkness(final LivingEntity entity, final float darkness, final float partialTickTime) {
+      return darkness;
    }
 
-   public abstract boolean isApplicable(@Nullable FogType var1, Entity var2);
+   public abstract boolean isApplicable(@Nullable FogType fogType, Entity entity);
 }

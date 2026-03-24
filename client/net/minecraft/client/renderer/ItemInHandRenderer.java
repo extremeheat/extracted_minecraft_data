@@ -120,222 +120,222 @@ public class ItemInHandRenderer {
    private final EntityRenderDispatcher entityRenderDispatcher;
    private final ItemModelResolver itemModelResolver;
 
-   public ItemInHandRenderer(Minecraft var1, EntityRenderDispatcher var2, ItemModelResolver var3) {
+   public ItemInHandRenderer(final Minecraft minecraft, final EntityRenderDispatcher entityRenderDispatcher, final ItemModelResolver itemModelResolver) {
       super();
       this.mainHandItem = ItemStack.EMPTY;
       this.offHandItem = ItemStack.EMPTY;
-      this.minecraft = var1;
-      this.entityRenderDispatcher = var2;
-      this.itemModelResolver = var3;
+      this.minecraft = minecraft;
+      this.entityRenderDispatcher = entityRenderDispatcher;
+      this.itemModelResolver = itemModelResolver;
    }
 
-   public void renderItem(LivingEntity var1, ItemStack var2, ItemDisplayContext var3, PoseStack var4, SubmitNodeCollector var5, int var6) {
-      if (!var2.isEmpty()) {
-         ItemStackRenderState var7 = new ItemStackRenderState();
-         this.itemModelResolver.updateForTopItem(var7, var2, var3, var1.level(), var1, var1.getId() + var3.ordinal());
-         var7.submit(var4, var5, var6, OverlayTexture.NO_OVERLAY, 0);
+   public void renderItem(final LivingEntity mob, final ItemStack itemStack, final ItemDisplayContext type, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords) {
+      if (!itemStack.isEmpty()) {
+         ItemStackRenderState renderState = new ItemStackRenderState();
+         this.itemModelResolver.updateForTopItem(renderState, itemStack, type, mob.level(), mob, mob.getId() + type.ordinal());
+         renderState.submit(poseStack, submitNodeCollector, lightCoords, OverlayTexture.NO_OVERLAY, 0);
       }
    }
 
-   private float calculateMapTilt(float var1) {
-      float var2 = 1.0F - var1 / 45.0F + 0.1F;
-      var2 = Mth.clamp(var2, 0.0F, 1.0F);
-      var2 = -Mth.cos((double)(var2 * 3.1415927F)) * 0.5F + 0.5F;
-      return var2;
+   private float calculateMapTilt(final float xRot) {
+      float tilt = 1.0F - xRot / 45.0F + 0.1F;
+      tilt = Mth.clamp(tilt, 0.0F, 1.0F);
+      tilt = -Mth.cos((double)(tilt * 3.1415927F)) * 0.5F + 0.5F;
+      return tilt;
    }
 
-   private void renderMapHand(PoseStack var1, SubmitNodeCollector var2, int var3, HumanoidArm var4) {
-      AvatarRenderer var5 = this.entityRenderDispatcher.getPlayerRenderer(this.minecraft.player);
-      var1.pushPose();
-      float var6 = var4 == HumanoidArm.RIGHT ? 1.0F : -1.0F;
-      var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(92.0F));
-      var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(45.0F));
-      var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(var6 * -41.0F));
-      var1.translate(var6 * 0.3F, -1.1F, 0.45F);
-      Identifier var7 = this.minecraft.player.getSkin().body().texturePath();
-      if (var4 == HumanoidArm.RIGHT) {
-         var5.renderRightHand(var1, var2, var3, var7, this.minecraft.player.isModelPartShown(PlayerModelPart.RIGHT_SLEEVE));
+   private void renderMapHand(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final HumanoidArm arm) {
+      AvatarRenderer<AbstractClientPlayer> avatarRenderer = this.entityRenderDispatcher.getPlayerRenderer(this.minecraft.player);
+      poseStack.pushPose();
+      float invert = arm == HumanoidArm.RIGHT ? 1.0F : -1.0F;
+      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(92.0F));
+      poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(45.0F));
+      poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(invert * -41.0F));
+      poseStack.translate(invert * 0.3F, -1.1F, 0.45F);
+      Identifier skinTexture = this.minecraft.player.getSkin().body().texturePath();
+      if (arm == HumanoidArm.RIGHT) {
+         avatarRenderer.renderRightHand(poseStack, submitNodeCollector, lightCoords, skinTexture, this.minecraft.player.isModelPartShown(PlayerModelPart.RIGHT_SLEEVE));
       } else {
-         var5.renderLeftHand(var1, var2, var3, var7, this.minecraft.player.isModelPartShown(PlayerModelPart.LEFT_SLEEVE));
+         avatarRenderer.renderLeftHand(poseStack, submitNodeCollector, lightCoords, skinTexture, this.minecraft.player.isModelPartShown(PlayerModelPart.LEFT_SLEEVE));
       }
 
-      var1.popPose();
+      poseStack.popPose();
    }
 
-   private void renderOneHandedMap(PoseStack var1, SubmitNodeCollector var2, int var3, float var4, HumanoidArm var5, float var6, ItemStack var7) {
-      float var8 = var5 == HumanoidArm.RIGHT ? 1.0F : -1.0F;
-      var1.translate(var8 * 0.125F, -0.125F, 0.0F);
+   private void renderOneHandedMap(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final float inverseArmHeight, final HumanoidArm arm, final float attackValue, final ItemStack map) {
+      float invert = arm == HumanoidArm.RIGHT ? 1.0F : -1.0F;
+      poseStack.translate(invert * 0.125F, -0.125F, 0.0F);
       if (!this.minecraft.player.isInvisible()) {
-         var1.pushPose();
-         var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(var8 * 10.0F));
-         this.renderPlayerArm(var1, var2, var3, var4, var6, var5);
-         var1.popPose();
+         poseStack.pushPose();
+         poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(invert * 10.0F));
+         this.renderPlayerArm(poseStack, submitNodeCollector, lightCoords, inverseArmHeight, attackValue, arm);
+         poseStack.popPose();
       }
 
-      var1.pushPose();
-      var1.translate(var8 * 0.51F, -0.08F + var4 * -1.2F, -0.75F);
-      float var9 = Mth.sqrt(var6);
-      float var10 = Mth.sin((double)(var9 * 3.1415927F));
-      float var11 = -0.5F * var10;
-      float var12 = 0.4F * Mth.sin((double)(var9 * 6.2831855F));
-      float var13 = -0.3F * Mth.sin((double)(var6 * 3.1415927F));
-      var1.translate(var8 * var11, var12 - 0.3F * var10, var13);
-      var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(var10 * -45.0F));
-      var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var8 * var10 * -30.0F));
-      this.renderMap(var1, var2, var3, var7);
-      var1.popPose();
+      poseStack.pushPose();
+      poseStack.translate(invert * 0.51F, -0.08F + inverseArmHeight * -1.2F, -0.75F);
+      float sqrtAttackValue = Mth.sqrt(attackValue);
+      float xSwing = Mth.sin((double)(sqrtAttackValue * 3.1415927F));
+      float xSwingPosition = -0.5F * xSwing;
+      float ySwingPosition = 0.4F * Mth.sin((double)(sqrtAttackValue * 6.2831855F));
+      float zSwingPosition = -0.3F * Mth.sin((double)(attackValue * 3.1415927F));
+      poseStack.translate(invert * xSwingPosition, ySwingPosition - 0.3F * xSwing, zSwingPosition);
+      poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(xSwing * -45.0F));
+      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(invert * xSwing * -30.0F));
+      this.renderMap(poseStack, submitNodeCollector, lightCoords, map);
+      poseStack.popPose();
    }
 
-   private void renderTwoHandedMap(PoseStack var1, SubmitNodeCollector var2, int var3, float var4, float var5, float var6) {
-      float var7 = Mth.sqrt(var6);
-      float var8 = -0.2F * Mth.sin((double)(var6 * 3.1415927F));
-      float var9 = -0.4F * Mth.sin((double)(var7 * 3.1415927F));
-      var1.translate(0.0F, -var8 / 2.0F, var9);
-      float var10 = this.calculateMapTilt(var4);
-      var1.translate(0.0F, 0.04F + var5 * -1.2F + var10 * -0.5F, -0.72F);
-      var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(var10 * -85.0F));
+   private void renderTwoHandedMap(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final float xRot, final float inverseArmHeight, final float attackValue) {
+      float sqrtAttackValue = Mth.sqrt(attackValue);
+      float ySwingPosition = -0.2F * Mth.sin((double)(attackValue * 3.1415927F));
+      float zSwingPosition = -0.4F * Mth.sin((double)(sqrtAttackValue * 3.1415927F));
+      poseStack.translate(0.0F, -ySwingPosition / 2.0F, zSwingPosition);
+      float mapTilt = this.calculateMapTilt(xRot);
+      poseStack.translate(0.0F, 0.04F + inverseArmHeight * -1.2F + mapTilt * -0.5F, -0.72F);
+      poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(mapTilt * -85.0F));
       if (!this.minecraft.player.isInvisible()) {
-         var1.pushPose();
-         var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(90.0F));
-         this.renderMapHand(var1, var2, var3, HumanoidArm.RIGHT);
-         this.renderMapHand(var1, var2, var3, HumanoidArm.LEFT);
-         var1.popPose();
+         poseStack.pushPose();
+         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(90.0F));
+         this.renderMapHand(poseStack, submitNodeCollector, lightCoords, HumanoidArm.RIGHT);
+         this.renderMapHand(poseStack, submitNodeCollector, lightCoords, HumanoidArm.LEFT);
+         poseStack.popPose();
       }
 
-      float var11 = Mth.sin((double)(var7 * 3.1415927F));
-      var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(var11 * 20.0F));
-      var1.scale(2.0F, 2.0F, 2.0F);
-      this.renderMap(var1, var2, var3, this.mainHandItem);
+      float xzSwingRotation = Mth.sin((double)(sqrtAttackValue * 3.1415927F));
+      poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(xzSwingRotation * 20.0F));
+      poseStack.scale(2.0F, 2.0F, 2.0F);
+      this.renderMap(poseStack, submitNodeCollector, lightCoords, this.mainHandItem);
    }
 
-   private void renderMap(PoseStack var1, SubmitNodeCollector var2, int var3, ItemStack var4) {
-      var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F));
-      var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(180.0F));
-      var1.scale(0.38F, 0.38F, 0.38F);
-      var1.translate(-0.5F, -0.5F, 0.0F);
-      var1.scale(0.0078125F, 0.0078125F, 0.0078125F);
-      MapId var5 = (MapId)var4.get(DataComponents.MAP_ID);
-      MapItemSavedData var6 = MapItem.getSavedData((MapId)var5, this.minecraft.level);
-      RenderType var7 = var6 == null ? MAP_BACKGROUND : MAP_BACKGROUND_CHECKERBOARD;
-      var2.submitCustomGeometry(var1, var7, (var1x, var2x) -> {
-         var2x.addVertex(var1x, -7.0F, 135.0F, 0.0F).setColor(-1).setUv(0.0F, 1.0F).setLight(var3);
-         var2x.addVertex(var1x, 135.0F, 135.0F, 0.0F).setColor(-1).setUv(1.0F, 1.0F).setLight(var3);
-         var2x.addVertex(var1x, 135.0F, -7.0F, 0.0F).setColor(-1).setUv(1.0F, 0.0F).setLight(var3);
-         var2x.addVertex(var1x, -7.0F, -7.0F, 0.0F).setColor(-1).setUv(0.0F, 0.0F).setLight(var3);
+   private void renderMap(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final ItemStack itemStack) {
+      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F));
+      poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(180.0F));
+      poseStack.scale(0.38F, 0.38F, 0.38F);
+      poseStack.translate(-0.5F, -0.5F, 0.0F);
+      poseStack.scale(0.0078125F, 0.0078125F, 0.0078125F);
+      MapId id = (MapId)itemStack.get(DataComponents.MAP_ID);
+      MapItemSavedData data = MapItem.getSavedData((MapId)id, this.minecraft.level);
+      RenderType renderType = data == null ? MAP_BACKGROUND : MAP_BACKGROUND_CHECKERBOARD;
+      submitNodeCollector.submitCustomGeometry(poseStack, renderType, (pose, buffer) -> {
+         buffer.addVertex(pose, -7.0F, 135.0F, 0.0F).setColor(-1).setUv(0.0F, 1.0F).setLight(lightCoords);
+         buffer.addVertex(pose, 135.0F, 135.0F, 0.0F).setColor(-1).setUv(1.0F, 1.0F).setLight(lightCoords);
+         buffer.addVertex(pose, 135.0F, -7.0F, 0.0F).setColor(-1).setUv(1.0F, 0.0F).setLight(lightCoords);
+         buffer.addVertex(pose, -7.0F, -7.0F, 0.0F).setColor(-1).setUv(0.0F, 0.0F).setLight(lightCoords);
       });
-      if (var6 != null) {
-         MapRenderer var8 = this.minecraft.getMapRenderer();
-         var8.extractRenderState(var5, var6, this.mapRenderState);
-         var8.render(this.mapRenderState, var1, var2, false, var3);
+      if (data != null) {
+         MapRenderer mapRenderer = this.minecraft.getMapRenderer();
+         mapRenderer.extractRenderState(id, data, this.mapRenderState);
+         mapRenderer.render(this.mapRenderState, poseStack, submitNodeCollector, false, lightCoords);
       }
 
    }
 
-   private void renderPlayerArm(PoseStack var1, SubmitNodeCollector var2, int var3, float var4, float var5, HumanoidArm var6) {
-      boolean var7 = var6 != HumanoidArm.LEFT;
-      float var8 = var7 ? 1.0F : -1.0F;
-      float var9 = Mth.sqrt(var5);
-      float var10 = -0.3F * Mth.sin((double)(var9 * 3.1415927F));
-      float var11 = 0.4F * Mth.sin((double)(var9 * 6.2831855F));
-      float var12 = -0.4F * Mth.sin((double)(var5 * 3.1415927F));
-      var1.translate(var8 * (var10 + 0.64000005F), var11 + -0.6F + var4 * -0.6F, var12 + -0.71999997F);
-      var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var8 * 45.0F));
-      float var13 = Mth.sin((double)(var5 * var5 * 3.1415927F));
-      float var14 = Mth.sin((double)(var9 * 3.1415927F));
-      var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var8 * var14 * 70.0F));
-      var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(var8 * var13 * -20.0F));
-      LocalPlayer var15 = this.minecraft.player;
-      var1.translate(var8 * -1.0F, 3.6F, 3.5F);
-      var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(var8 * 120.0F));
-      var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(200.0F));
-      var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var8 * -135.0F));
-      var1.translate(var8 * 5.6F, 0.0F, 0.0F);
-      AvatarRenderer var16 = this.entityRenderDispatcher.getPlayerRenderer(var15);
-      Identifier var17 = ((AbstractClientPlayer)var15).getSkin().body().texturePath();
-      if (var7) {
-         var16.renderRightHand(var1, var2, var3, var17, ((AbstractClientPlayer)var15).isModelPartShown(PlayerModelPart.RIGHT_SLEEVE));
+   private void renderPlayerArm(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final float inverseArmHeight, final float attackValue, final HumanoidArm arm) {
+      boolean isRightArm = arm != HumanoidArm.LEFT;
+      float invert = isRightArm ? 1.0F : -1.0F;
+      float sqrtAttackValue = Mth.sqrt(attackValue);
+      float xSwingPosition = -0.3F * Mth.sin((double)(sqrtAttackValue * 3.1415927F));
+      float ySwingPosition = 0.4F * Mth.sin((double)(sqrtAttackValue * 6.2831855F));
+      float zSwingPosition = -0.4F * Mth.sin((double)(attackValue * 3.1415927F));
+      poseStack.translate(invert * (xSwingPosition + 0.64000005F), ySwingPosition + -0.6F + inverseArmHeight * -0.6F, zSwingPosition + -0.71999997F);
+      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(invert * 45.0F));
+      float zSwingRotation = Mth.sin((double)(attackValue * attackValue * 3.1415927F));
+      float ySwingRotation = Mth.sin((double)(sqrtAttackValue * 3.1415927F));
+      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(invert * ySwingRotation * 70.0F));
+      poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(invert * zSwingRotation * -20.0F));
+      AbstractClientPlayer player = this.minecraft.player;
+      poseStack.translate(invert * -1.0F, 3.6F, 3.5F);
+      poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(invert * 120.0F));
+      poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(200.0F));
+      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(invert * -135.0F));
+      poseStack.translate(invert * 5.6F, 0.0F, 0.0F);
+      AvatarRenderer<AbstractClientPlayer> avatarRenderer = this.entityRenderDispatcher.getPlayerRenderer(player);
+      Identifier skinTexture = player.getSkin().body().texturePath();
+      if (isRightArm) {
+         avatarRenderer.renderRightHand(poseStack, submitNodeCollector, lightCoords, skinTexture, player.isModelPartShown(PlayerModelPart.RIGHT_SLEEVE));
       } else {
-         var16.renderLeftHand(var1, var2, var3, var17, ((AbstractClientPlayer)var15).isModelPartShown(PlayerModelPart.LEFT_SLEEVE));
+         avatarRenderer.renderLeftHand(poseStack, submitNodeCollector, lightCoords, skinTexture, player.isModelPartShown(PlayerModelPart.LEFT_SLEEVE));
       }
 
    }
 
-   private void applyEatTransform(PoseStack var1, float var2, HumanoidArm var3, ItemStack var4, Player var5) {
-      float var6 = (float)var5.getUseItemRemainingTicks() - var2 + 1.0F;
-      float var7 = var6 / (float)var4.getUseDuration(var5);
-      if (var7 < 0.8F) {
-         float var8 = Mth.abs(Mth.cos((double)(var6 / 4.0F * 3.1415927F)) * 0.1F);
-         var1.translate(0.0F, var8, 0.0F);
+   private void applyEatTransform(final PoseStack poseStack, final float frameInterp, final HumanoidArm arm, final ItemStack itemStack, final Player player) {
+      float currUsageTime = (float)player.getUseItemRemainingTicks() - frameInterp + 1.0F;
+      float scaledUsageTime = currUsageTime / (float)itemStack.getUseDuration(player);
+      if (scaledUsageTime < 0.8F) {
+         float extraHeightOffset = Mth.abs(Mth.cos((double)(currUsageTime / 4.0F * 3.1415927F)) * 0.1F);
+         poseStack.translate(0.0F, extraHeightOffset, 0.0F);
       }
 
-      float var10 = 1.0F - (float)Math.pow((double)var7, 27.0);
-      int var9 = var3 == HumanoidArm.RIGHT ? 1 : -1;
-      var1.translate(var10 * 0.6F * (float)var9, var10 * -0.5F, var10 * 0.0F);
-      var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)var9 * var10 * 90.0F));
-      var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(var10 * 10.0F));
-      var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees((float)var9 * var10 * 30.0F));
+      float eatJiggle = 1.0F - (float)Math.pow((double)scaledUsageTime, 27.0);
+      int invert = arm == HumanoidArm.RIGHT ? 1 : -1;
+      poseStack.translate(eatJiggle * 0.6F * (float)invert, eatJiggle * -0.5F, eatJiggle * 0.0F);
+      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)invert * eatJiggle * 90.0F));
+      poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(eatJiggle * 10.0F));
+      poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees((float)invert * eatJiggle * 30.0F));
    }
 
-   private void applyBrushTransform(PoseStack var1, float var2, HumanoidArm var3, Player var4) {
-      float var5 = (float)(var4.getUseItemRemainingTicks() % 10);
-      float var6 = var5 - var2 + 1.0F;
-      float var7 = 1.0F - var6 / 10.0F;
-      float var8 = -90.0F;
-      float var9 = 60.0F;
-      float var10 = 150.0F;
-      float var11 = -15.0F;
-      boolean var12 = true;
-      float var13 = -15.0F + 75.0F * Mth.cos((double)(var7 * 2.0F * 3.1415927F));
-      if (var3 != HumanoidArm.RIGHT) {
-         var1.translate(0.1, 0.83, 0.35);
-         var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-80.0F));
-         var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-90.0F));
-         var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(var13));
-         var1.translate(-0.3, 0.22, 0.35);
+   private void applyBrushTransform(final PoseStack poseStack, final float frameInterp, final HumanoidArm arm, final Player player) {
+      float brushAnimationRemainingTicks = (float)(player.getUseItemRemainingTicks() % 10);
+      float deltaSinceLastUpdate = brushAnimationRemainingTicks - frameInterp + 1.0F;
+      float scaledUsageTime = 1.0F - deltaSinceLastUpdate / 10.0F;
+      float minSwipeAngle = -90.0F;
+      float maxSwipeAngle = 60.0F;
+      float swipeRange = 150.0F;
+      float swipeCenter = -15.0F;
+      int swipeSpeed = 2;
+      float currentSwipeAngle = -15.0F + 75.0F * Mth.cos((double)(scaledUsageTime * 2.0F * 3.1415927F));
+      if (arm != HumanoidArm.RIGHT) {
+         poseStack.translate(0.1, 0.83, 0.35);
+         poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-80.0F));
+         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(-90.0F));
+         poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(currentSwipeAngle));
+         poseStack.translate(-0.3, 0.22, 0.35);
       } else {
-         var1.translate(-0.25, 0.22, 0.35);
-         var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-80.0F));
-         var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(90.0F));
-         var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(0.0F));
-         var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(var13));
+         poseStack.translate(-0.25, 0.22, 0.35);
+         poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-80.0F));
+         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(90.0F));
+         poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(0.0F));
+         poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(currentSwipeAngle));
       }
 
    }
 
-   private void applyItemArmAttackTransform(PoseStack var1, HumanoidArm var2, float var3) {
-      int var4 = var2 == HumanoidArm.RIGHT ? 1 : -1;
-      float var5 = Mth.sin((double)(var3 * var3 * 3.1415927F));
-      var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)var4 * (45.0F + var5 * -20.0F)));
-      float var6 = Mth.sin((double)(Mth.sqrt(var3) * 3.1415927F));
-      var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees((float)var4 * var6 * -20.0F));
-      var1.mulPose((Quaternionfc)Axis.XP.rotationDegrees(var6 * -80.0F));
-      var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)var4 * -45.0F));
+   private void applyItemArmAttackTransform(final PoseStack poseStack, final HumanoidArm arm, final float attackValue) {
+      int invert = arm == HumanoidArm.RIGHT ? 1 : -1;
+      float ySwingRotation = Mth.sin((double)(attackValue * attackValue * 3.1415927F));
+      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)invert * (45.0F + ySwingRotation * -20.0F)));
+      float xzSwingRotation = Mth.sin((double)(Mth.sqrt(attackValue) * 3.1415927F));
+      poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees((float)invert * xzSwingRotation * -20.0F));
+      poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(xzSwingRotation * -80.0F));
+      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)invert * -45.0F));
    }
 
-   private void applyItemArmTransform(PoseStack var1, HumanoidArm var2, float var3) {
-      int var4 = var2 == HumanoidArm.RIGHT ? 1 : -1;
-      var1.translate((float)var4 * 0.56F, -0.52F + var3 * -0.6F, -0.72F);
+   private void applyItemArmTransform(final PoseStack poseStack, final HumanoidArm arm, final float inverseArmHeight) {
+      int invert = arm == HumanoidArm.RIGHT ? 1 : -1;
+      poseStack.translate((float)invert * 0.56F, -0.52F + inverseArmHeight * -0.6F, -0.72F);
    }
 
-   public void renderHandsWithItems(float var1, PoseStack var2, SubmitNodeCollector var3, LocalPlayer var4, int var5) {
-      float var6 = var4.getAttackAnim(var1);
-      InteractionHand var7 = (InteractionHand)MoreObjects.firstNonNull(var4.swingingArm, InteractionHand.MAIN_HAND);
-      float var8 = var4.getXRot(var1);
-      HandRenderSelection var9 = evaluateWhichHandsToRender(var4);
-      float var10 = Mth.lerp(var1, var4.xBobO, var4.xBob);
-      float var11 = Mth.lerp(var1, var4.yBobO, var4.yBob);
-      var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees((var4.getViewXRot(var1) - var10) * 0.1F));
-      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees((var4.getViewYRot(var1) - var11) * 0.1F));
-      if (var9.renderMainHand) {
-         float var12 = var7 == InteractionHand.MAIN_HAND ? var6 : 0.0F;
-         float var13 = this.itemModelResolver.swapAnimationScale(this.mainHandItem) * (1.0F - Mth.lerp(var1, this.oMainHandHeight, this.mainHandHeight));
-         this.renderArmWithItem(var4, var1, var8, InteractionHand.MAIN_HAND, var12, this.mainHandItem, var13, var2, var3, var5);
+   public void renderHandsWithItems(final float frameInterp, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final LocalPlayer player, final int lightCoords) {
+      float attackValue = player.getAttackAnim(frameInterp);
+      InteractionHand attackHand = (InteractionHand)MoreObjects.firstNonNull(player.swingingArm, InteractionHand.MAIN_HAND);
+      float xRot = player.getXRot(frameInterp);
+      HandRenderSelection handRenderSelection = evaluateWhichHandsToRender(player);
+      float xBob = Mth.lerp(frameInterp, player.xBobO, player.xBob);
+      float yBob = Mth.lerp(frameInterp, player.yBobO, player.yBob);
+      poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees((player.getViewXRot(frameInterp) - xBob) * 0.1F));
+      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees((player.getViewYRot(frameInterp) - yBob) * 0.1F));
+      if (handRenderSelection.renderMainHand) {
+         float mainHandAttack = attackHand == InteractionHand.MAIN_HAND ? attackValue : 0.0F;
+         float mainhandInverseArmHeight = this.itemModelResolver.swapAnimationScale(this.mainHandItem) * (1.0F - Mth.lerp(frameInterp, this.oMainHandHeight, this.mainHandHeight));
+         this.renderArmWithItem(player, frameInterp, xRot, InteractionHand.MAIN_HAND, mainHandAttack, this.mainHandItem, mainhandInverseArmHeight, poseStack, submitNodeCollector, lightCoords);
       }
 
-      if (var9.renderOffHand) {
-         float var14 = var7 == InteractionHand.OFF_HAND ? var6 : 0.0F;
-         float var15 = this.itemModelResolver.swapAnimationScale(this.offHandItem) * (1.0F - Mth.lerp(var1, this.oOffHandHeight, this.offHandHeight));
-         this.renderArmWithItem(var4, var1, var8, InteractionHand.OFF_HAND, var14, this.offHandItem, var15, var2, var3, var5);
+      if (handRenderSelection.renderOffHand) {
+         float offHandAttack = attackHand == InteractionHand.OFF_HAND ? attackValue : 0.0F;
+         float offhandInverseArmHeight = this.itemModelResolver.swapAnimationScale(this.offHandItem) * (1.0F - Mth.lerp(frameInterp, this.oOffHandHeight, this.offHandHeight));
+         this.renderArmWithItem(player, frameInterp, xRot, InteractionHand.OFF_HAND, offHandAttack, this.offHandItem, offhandInverseArmHeight, poseStack, submitNodeCollector, lightCoords);
       }
 
       this.minecraft.gameRenderer.getFeatureRenderDispatcher().renderAllFeatures();
@@ -343,245 +343,245 @@ public class ItemInHandRenderer {
    }
 
    @VisibleForTesting
-   static HandRenderSelection evaluateWhichHandsToRender(LocalPlayer var0) {
-      ItemStack var1 = var0.getMainHandItem();
-      ItemStack var2 = var0.getOffhandItem();
-      boolean var3 = var1.is(Items.BOW) || var2.is(Items.BOW);
-      boolean var4 = var1.is(Items.CROSSBOW) || var2.is(Items.CROSSBOW);
-      if (!var3 && !var4) {
+   static HandRenderSelection evaluateWhichHandsToRender(final LocalPlayer player) {
+      ItemStack mainHandItem = player.getMainHandItem();
+      ItemStack offhandItem = player.getOffhandItem();
+      boolean holdsBow = mainHandItem.is(Items.BOW) || offhandItem.is(Items.BOW);
+      boolean holdsCrossbow = mainHandItem.is(Items.CROSSBOW) || offhandItem.is(Items.CROSSBOW);
+      if (!holdsBow && !holdsCrossbow) {
          return ItemInHandRenderer.HandRenderSelection.RENDER_BOTH_HANDS;
-      } else if (var0.isUsingItem()) {
-         return selectionUsingItemWhileHoldingBowLike(var0);
+      } else if (player.isUsingItem()) {
+         return selectionUsingItemWhileHoldingBowLike(player);
       } else {
-         return isChargedCrossbow(var1) ? ItemInHandRenderer.HandRenderSelection.RENDER_MAIN_HAND_ONLY : ItemInHandRenderer.HandRenderSelection.RENDER_BOTH_HANDS;
+         return isChargedCrossbow(mainHandItem) ? ItemInHandRenderer.HandRenderSelection.RENDER_MAIN_HAND_ONLY : ItemInHandRenderer.HandRenderSelection.RENDER_BOTH_HANDS;
       }
    }
 
-   private static HandRenderSelection selectionUsingItemWhileHoldingBowLike(LocalPlayer var0) {
-      ItemStack var1 = var0.getUseItem();
-      InteractionHand var2 = var0.getUsedItemHand();
-      if (!var1.is(Items.BOW) && !var1.is(Items.CROSSBOW)) {
-         return var2 == InteractionHand.MAIN_HAND && isChargedCrossbow(var0.getOffhandItem()) ? ItemInHandRenderer.HandRenderSelection.RENDER_MAIN_HAND_ONLY : ItemInHandRenderer.HandRenderSelection.RENDER_BOTH_HANDS;
+   private static HandRenderSelection selectionUsingItemWhileHoldingBowLike(final LocalPlayer player) {
+      ItemStack usedItemStack = player.getUseItem();
+      InteractionHand usedHand = player.getUsedItemHand();
+      if (!usedItemStack.is(Items.BOW) && !usedItemStack.is(Items.CROSSBOW)) {
+         return usedHand == InteractionHand.MAIN_HAND && isChargedCrossbow(player.getOffhandItem()) ? ItemInHandRenderer.HandRenderSelection.RENDER_MAIN_HAND_ONLY : ItemInHandRenderer.HandRenderSelection.RENDER_BOTH_HANDS;
       } else {
-         return ItemInHandRenderer.HandRenderSelection.onlyForHand(var2);
+         return ItemInHandRenderer.HandRenderSelection.onlyForHand(usedHand);
       }
    }
 
-   private static boolean isChargedCrossbow(ItemStack var0) {
-      return var0.is(Items.CROSSBOW) && CrossbowItem.isCharged(var0);
+   private static boolean isChargedCrossbow(final ItemStack item) {
+      return item.is(Items.CROSSBOW) && CrossbowItem.isCharged(item);
    }
 
-   private void renderArmWithItem(AbstractClientPlayer var1, float var2, float var3, InteractionHand var4, float var5, ItemStack var6, float var7, PoseStack var8, SubmitNodeCollector var9, int var10) {
-      if (!var1.isScoping()) {
-         boolean var11 = var4 == InteractionHand.MAIN_HAND;
-         HumanoidArm var12 = var11 ? var1.getMainArm() : var1.getMainArm().getOpposite();
-         var8.pushPose();
-         if (var6.isEmpty()) {
-            if (var11 && !var1.isInvisible()) {
-               this.renderPlayerArm(var8, var9, var10, var7, var5, var12);
+   private void renderArmWithItem(final AbstractClientPlayer player, final float frameInterp, final float xRot, final InteractionHand hand, final float attack, final ItemStack itemStack, final float inverseArmHeight, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords) {
+      if (!player.isScoping()) {
+         boolean isMainHand = hand == InteractionHand.MAIN_HAND;
+         HumanoidArm arm = isMainHand ? player.getMainArm() : player.getMainArm().getOpposite();
+         poseStack.pushPose();
+         if (itemStack.isEmpty()) {
+            if (isMainHand && !player.isInvisible()) {
+               this.renderPlayerArm(poseStack, submitNodeCollector, lightCoords, inverseArmHeight, attack, arm);
             }
-         } else if (var6.has(DataComponents.MAP_ID)) {
-            if (var11 && this.offHandItem.isEmpty()) {
-               this.renderTwoHandedMap(var8, var9, var10, var3, var7, var5);
+         } else if (itemStack.has(DataComponents.MAP_ID)) {
+            if (isMainHand && this.offHandItem.isEmpty()) {
+               this.renderTwoHandedMap(poseStack, submitNodeCollector, lightCoords, xRot, inverseArmHeight, attack);
             } else {
-               this.renderOneHandedMap(var8, var9, var10, var7, var12, var5, var6);
+               this.renderOneHandedMap(poseStack, submitNodeCollector, lightCoords, inverseArmHeight, arm, attack, itemStack);
             }
-         } else if (var6.is(Items.CROSSBOW)) {
-            this.applyItemArmTransform(var8, var12, var7);
-            boolean var13 = CrossbowItem.isCharged(var6);
-            boolean var14 = var12 == HumanoidArm.RIGHT;
-            int var15 = var14 ? 1 : -1;
-            if (var1.isUsingItem() && var1.getUseItemRemainingTicks() > 0 && var1.getUsedItemHand() == var4 && !var13) {
-               var8.translate((float)var15 * -0.4785682F, -0.094387F, 0.05731531F);
-               var8.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-11.935F));
-               var8.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)var15 * 65.3F));
-               var8.mulPose((Quaternionfc)Axis.ZP.rotationDegrees((float)var15 * -9.785F));
-               float var16 = (float)var6.getUseDuration(var1) - ((float)var1.getUseItemRemainingTicks() - var2 + 1.0F);
-               float var17 = var16 / (float)CrossbowItem.getChargeDuration(var6, var1);
-               if (var17 > 1.0F) {
-                  var17 = 1.0F;
+         } else if (itemStack.is(Items.CROSSBOW)) {
+            this.applyItemArmTransform(poseStack, arm, inverseArmHeight);
+            boolean charged = CrossbowItem.isCharged(itemStack);
+            boolean isRightArm = arm == HumanoidArm.RIGHT;
+            int invert = isRightArm ? 1 : -1;
+            if (player.isUsingItem() && player.getUseItemRemainingTicks() > 0 && player.getUsedItemHand() == hand && !charged) {
+               poseStack.translate((float)invert * -0.4785682F, -0.094387F, 0.05731531F);
+               poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-11.935F));
+               poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)invert * 65.3F));
+               poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees((float)invert * -9.785F));
+               float timeHeld = (float)itemStack.getUseDuration(player) - ((float)player.getUseItemRemainingTicks() - frameInterp + 1.0F);
+               float power = timeHeld / (float)CrossbowItem.getChargeDuration(itemStack, player);
+               if (power > 1.0F) {
+                  power = 1.0F;
                }
 
-               if (var17 > 0.1F) {
-                  float var18 = Mth.sin((double)((var16 - 0.1F) * 1.3F));
-                  float var19 = var17 - 0.1F;
-                  float var20 = var18 * var19;
-                  var8.translate(var20 * 0.0F, var20 * 0.004F, var20 * 0.0F);
+               if (power > 0.1F) {
+                  float shakeOffset = Mth.sin((double)((timeHeld - 0.1F) * 1.3F));
+                  float shakeIntensity = power - 0.1F;
+                  float shake = shakeOffset * shakeIntensity;
+                  poseStack.translate(shake * 0.0F, shake * 0.004F, shake * 0.0F);
                }
 
-               var8.translate(var17 * 0.0F, var17 * 0.0F, var17 * 0.04F);
-               var8.scale(1.0F, 1.0F, 1.0F + var17 * 0.2F);
-               var8.mulPose((Quaternionfc)Axis.YN.rotationDegrees((float)var15 * 45.0F));
+               poseStack.translate(power * 0.0F, power * 0.0F, power * 0.04F);
+               poseStack.scale(1.0F, 1.0F, 1.0F + power * 0.2F);
+               poseStack.mulPose((Quaternionfc)Axis.YN.rotationDegrees((float)invert * 45.0F));
             } else {
-               this.swingArm(var5, var8, var15, var12);
-               if (var13 && var5 < 0.001F && var11) {
-                  var8.translate((float)var15 * -0.641864F, 0.0F, 0.0F);
-                  var8.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)var15 * 10.0F));
+               this.swingArm(attack, poseStack, invert, arm);
+               if (charged && attack < 0.001F && isMainHand) {
+                  poseStack.translate((float)invert * -0.641864F, 0.0F, 0.0F);
+                  poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)invert * 10.0F));
                }
             }
 
-            this.renderItem(var1, var6, var14 ? ItemDisplayContext.FIRST_PERSON_RIGHT_HAND : ItemDisplayContext.FIRST_PERSON_LEFT_HAND, var8, var9, var10);
+            this.renderItem(player, itemStack, isRightArm ? ItemDisplayContext.FIRST_PERSON_RIGHT_HAND : ItemDisplayContext.FIRST_PERSON_LEFT_HAND, poseStack, submitNodeCollector, lightCoords);
          } else {
-            boolean var21 = var12 == HumanoidArm.RIGHT;
-            int var22 = var21 ? 1 : -1;
-            if (var1.isUsingItem() && var1.getUseItemRemainingTicks() > 0 && var1.getUsedItemHand() == var4) {
-               ItemUseAnimation var23 = var6.getUseAnimation();
-               if (!var23.hasCustomArmTransform()) {
-                  this.applyItemArmTransform(var8, var12, var7);
+            boolean isRightArm = arm == HumanoidArm.RIGHT;
+            int invert = isRightArm ? 1 : -1;
+            if (player.isUsingItem() && player.getUseItemRemainingTicks() > 0 && player.getUsedItemHand() == hand) {
+               ItemUseAnimation useAnimation = itemStack.getUseAnimation();
+               if (!useAnimation.hasCustomArmTransform()) {
+                  this.applyItemArmTransform(poseStack, arm, inverseArmHeight);
                }
 
-               switch (var23) {
+               switch (useAnimation) {
                   case NONE:
                   default:
                      break;
                   case EAT:
                   case DRINK:
-                     this.applyEatTransform(var8, var2, var12, var6, var1);
-                     this.applyItemArmTransform(var8, var12, var7);
+                     this.applyEatTransform(poseStack, frameInterp, arm, itemStack, player);
+                     this.applyItemArmTransform(poseStack, arm, inverseArmHeight);
                      break;
                   case BLOCK:
-                     if (!(var6.getItem() instanceof ShieldItem)) {
-                        var8.translate((float)var22 * -0.14142136F, 0.08F, 0.14142136F);
-                        var8.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-102.25F));
-                        var8.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)var22 * 13.365F));
-                        var8.mulPose((Quaternionfc)Axis.ZP.rotationDegrees((float)var22 * 78.05F));
+                     if (!(itemStack.getItem() instanceof ShieldItem)) {
+                        poseStack.translate((float)invert * -0.14142136F, 0.08F, 0.14142136F);
+                        poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-102.25F));
+                        poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)invert * 13.365F));
+                        poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees((float)invert * 78.05F));
                      }
                      break;
                   case BOW:
-                     var8.translate((float)var22 * -0.2785682F, 0.18344387F, 0.15731531F);
-                     var8.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-13.935F));
-                     var8.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)var22 * 35.3F));
-                     var8.mulPose((Quaternionfc)Axis.ZP.rotationDegrees((float)var22 * -9.785F));
-                     float var26 = (float)var6.getUseDuration(var1) - ((float)var1.getUseItemRemainingTicks() - var2 + 1.0F);
-                     float var28 = var26 / 20.0F;
-                     var28 = (var28 * var28 + var28 * 2.0F) / 3.0F;
-                     if (var28 > 1.0F) {
-                        var28 = 1.0F;
+                     poseStack.translate((float)invert * -0.2785682F, 0.18344387F, 0.15731531F);
+                     poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-13.935F));
+                     poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)invert * 35.3F));
+                     poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees((float)invert * -9.785F));
+                     float timeHeld = (float)itemStack.getUseDuration(player) - ((float)player.getUseItemRemainingTicks() - frameInterp + 1.0F);
+                     float power = timeHeld / 20.0F;
+                     power = (power * power + power * 2.0F) / 3.0F;
+                     if (power > 1.0F) {
+                        power = 1.0F;
                      }
 
-                     if (var28 > 0.1F) {
-                        float var31 = Mth.sin((double)((var26 - 0.1F) * 1.3F));
-                        float var33 = var28 - 0.1F;
-                        float var35 = var31 * var33;
-                        var8.translate(var35 * 0.0F, var35 * 0.004F, var35 * 0.0F);
+                     if (power > 0.1F) {
+                        float shakeOffset = Mth.sin((double)((timeHeld - 0.1F) * 1.3F));
+                        float shakeIntensity = power - 0.1F;
+                        float shake = shakeOffset * shakeIntensity;
+                        poseStack.translate(shake * 0.0F, shake * 0.004F, shake * 0.0F);
                      }
 
-                     var8.translate(var28 * 0.0F, var28 * 0.0F, var28 * 0.04F);
-                     var8.scale(1.0F, 1.0F, 1.0F + var28 * 0.2F);
-                     var8.mulPose((Quaternionfc)Axis.YN.rotationDegrees((float)var22 * 45.0F));
+                     poseStack.translate(power * 0.0F, power * 0.0F, power * 0.04F);
+                     poseStack.scale(1.0F, 1.0F, 1.0F + power * 0.2F);
+                     poseStack.mulPose((Quaternionfc)Axis.YN.rotationDegrees((float)invert * 45.0F));
                      break;
                   case TRIDENT:
-                     var8.translate((float)var22 * -0.5F, 0.7F, 0.1F);
-                     var8.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-55.0F));
-                     var8.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)var22 * 35.3F));
-                     var8.mulPose((Quaternionfc)Axis.ZP.rotationDegrees((float)var22 * -9.785F));
-                     float var25 = (float)var6.getUseDuration(var1) - ((float)var1.getUseItemRemainingTicks() - var2 + 1.0F);
-                     float var27 = var25 / 10.0F;
-                     if (var27 > 1.0F) {
-                        var27 = 1.0F;
+                     poseStack.translate((float)invert * -0.5F, 0.7F, 0.1F);
+                     poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-55.0F));
+                     poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)invert * 35.3F));
+                     poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees((float)invert * -9.785F));
+                     float timeHeld = (float)itemStack.getUseDuration(player) - ((float)player.getUseItemRemainingTicks() - frameInterp + 1.0F);
+                     float power = timeHeld / 10.0F;
+                     if (power > 1.0F) {
+                        power = 1.0F;
                      }
 
-                     if (var27 > 0.1F) {
-                        float var30 = Mth.sin((double)((var25 - 0.1F) * 1.3F));
-                        float var32 = var27 - 0.1F;
-                        float var34 = var30 * var32;
-                        var8.translate(var34 * 0.0F, var34 * 0.004F, var34 * 0.0F);
+                     if (power > 0.1F) {
+                        float shakeOffset = Mth.sin((double)((timeHeld - 0.1F) * 1.3F));
+                        float shakeIntensity = power - 0.1F;
+                        float shake = shakeOffset * shakeIntensity;
+                        poseStack.translate(shake * 0.0F, shake * 0.004F, shake * 0.0F);
                      }
 
-                     var8.translate(0.0F, 0.0F, var27 * 0.2F);
-                     var8.scale(1.0F, 1.0F, 1.0F + var27 * 0.2F);
-                     var8.mulPose((Quaternionfc)Axis.YN.rotationDegrees((float)var22 * 45.0F));
+                     poseStack.translate(0.0F, 0.0F, power * 0.2F);
+                     poseStack.scale(1.0F, 1.0F, 1.0F + power * 0.2F);
+                     poseStack.mulPose((Quaternionfc)Axis.YN.rotationDegrees((float)invert * 45.0F));
                      break;
                   case BRUSH:
-                     this.applyBrushTransform(var8, var2, var12, var1);
+                     this.applyBrushTransform(poseStack, frameInterp, arm, player);
                      break;
                   case BUNDLE:
-                     this.swingArm(var5, var8, var22, var12);
+                     this.swingArm(attack, poseStack, invert, arm);
                      break;
                   case SPEAR:
-                     var8.translate((float)var22 * 0.56F, -0.52F, -0.72F);
-                     float var24 = (float)var6.getUseDuration(var1) - ((float)var1.getUseItemRemainingTicks() - var2 + 1.0F);
-                     SpearAnimations.firstPersonUse(var1.getTicksSinceLastKineticHitFeedback(var2), var8, var24, var12, var6);
+                     poseStack.translate((float)invert * 0.56F, -0.52F, -0.72F);
+                     float timeHeld = (float)itemStack.getUseDuration(player) - ((float)player.getUseItemRemainingTicks() - frameInterp + 1.0F);
+                     SpearAnimations.firstPersonUse(player.getTicksSinceLastKineticHitFeedback(frameInterp), poseStack, timeHeld, arm, itemStack);
                }
-            } else if (var1.isAutoSpinAttack()) {
-               this.applyItemArmTransform(var8, var12, var7);
-               var8.translate((float)var22 * -0.4F, 0.8F, 0.3F);
-               var8.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)var22 * 65.0F));
-               var8.mulPose((Quaternionfc)Axis.ZP.rotationDegrees((float)var22 * -85.0F));
+            } else if (player.isAutoSpinAttack()) {
+               this.applyItemArmTransform(poseStack, arm, inverseArmHeight);
+               poseStack.translate((float)invert * -0.4F, 0.8F, 0.3F);
+               poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees((float)invert * 65.0F));
+               poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees((float)invert * -85.0F));
             } else {
-               this.applyItemArmTransform(var8, var12, var7);
-               switch (var6.getSwingAnimation().type()) {
+               this.applyItemArmTransform(poseStack, arm, inverseArmHeight);
+               switch (itemStack.getSwingAnimation().type()) {
                   case NONE:
                   default:
                      break;
                   case WHACK:
-                     this.swingArm(var5, var8, var22, var12);
+                     this.swingArm(attack, poseStack, invert, arm);
                      break;
                   case STAB:
-                     SpearAnimations.firstPersonAttack(var5, var8, var22, var12);
+                     SpearAnimations.firstPersonAttack(attack, poseStack, invert, arm);
                }
             }
 
-            this.renderItem(var1, var6, var21 ? ItemDisplayContext.FIRST_PERSON_RIGHT_HAND : ItemDisplayContext.FIRST_PERSON_LEFT_HAND, var8, var9, var10);
+            this.renderItem(player, itemStack, isRightArm ? ItemDisplayContext.FIRST_PERSON_RIGHT_HAND : ItemDisplayContext.FIRST_PERSON_LEFT_HAND, poseStack, submitNodeCollector, lightCoords);
          }
 
-         var8.popPose();
+         poseStack.popPose();
       }
    }
 
-   private void swingArm(float var1, PoseStack var2, int var3, HumanoidArm var4) {
-      float var5 = -0.4F * Mth.sin((double)(Mth.sqrt(var1) * 3.1415927F));
-      float var6 = 0.2F * Mth.sin((double)(Mth.sqrt(var1) * 6.2831855F));
-      float var7 = -0.2F * Mth.sin((double)(var1 * 3.1415927F));
-      var2.translate((float)var3 * var5, var6, var7);
-      this.applyItemArmAttackTransform(var2, var4, var1);
+   private void swingArm(final float attack, final PoseStack poseStack, final int invert, final HumanoidArm arm) {
+      float xSwingPosition = -0.4F * Mth.sin((double)(Mth.sqrt(attack) * 3.1415927F));
+      float ySwingPosition = 0.2F * Mth.sin((double)(Mth.sqrt(attack) * 6.2831855F));
+      float zSwingPosition = -0.2F * Mth.sin((double)(attack * 3.1415927F));
+      poseStack.translate((float)invert * xSwingPosition, ySwingPosition, zSwingPosition);
+      this.applyItemArmAttackTransform(poseStack, arm, attack);
    }
 
-   private boolean shouldInstantlyReplaceVisibleItem(ItemStack var1, ItemStack var2) {
-      if (ItemStack.matchesIgnoringComponents(var1, var2, DataComponentType::ignoreSwapAnimation)) {
+   private boolean shouldInstantlyReplaceVisibleItem(final ItemStack currentlyVisibleItem, final ItemStack expectedItem) {
+      if (ItemStack.matchesIgnoringComponents(currentlyVisibleItem, expectedItem, DataComponentType::ignoreSwapAnimation)) {
          return true;
       } else {
-         return !this.itemModelResolver.shouldPlaySwapAnimation(var2);
+         return !this.itemModelResolver.shouldPlaySwapAnimation(expectedItem);
       }
    }
 
    public void tick() {
       this.oMainHandHeight = this.mainHandHeight;
       this.oOffHandHeight = this.offHandHeight;
-      LocalPlayer var1 = this.minecraft.player;
-      ItemStack var2 = var1.getMainHandItem();
-      ItemStack var3 = var1.getOffhandItem();
-      if (this.shouldInstantlyReplaceVisibleItem(this.mainHandItem, var2)) {
-         this.mainHandItem = var2;
+      LocalPlayer player = this.minecraft.player;
+      ItemStack nextMainHand = player.getMainHandItem();
+      ItemStack nextOffHand = player.getOffhandItem();
+      if (this.shouldInstantlyReplaceVisibleItem(this.mainHandItem, nextMainHand)) {
+         this.mainHandItem = nextMainHand;
       }
 
-      if (this.shouldInstantlyReplaceVisibleItem(this.offHandItem, var3)) {
-         this.offHandItem = var3;
+      if (this.shouldInstantlyReplaceVisibleItem(this.offHandItem, nextOffHand)) {
+         this.offHandItem = nextOffHand;
       }
 
-      if (var1.isHandsBusy()) {
+      if (player.isHandsBusy()) {
          this.mainHandHeight = Mth.clamp(this.mainHandHeight - 0.4F, 0.0F, 1.0F);
          this.offHandHeight = Mth.clamp(this.offHandHeight - 0.4F, 0.0F, 1.0F);
       } else {
-         float var4 = var1.getItemSwapScale(1.0F);
-         float var5 = this.mainHandItem != var2 ? 0.0F : var4 * var4 * var4;
-         float var6 = this.offHandItem != var3 ? 0.0F : 1.0F;
-         this.mainHandHeight += Mth.clamp(var5 - this.mainHandHeight, -0.4F, 0.4F);
-         this.offHandHeight += Mth.clamp(var6 - this.offHandHeight, -0.4F, 0.4F);
+         float attackAnim = player.getItemSwapScale(1.0F);
+         float mainHandTargetHeight = this.mainHandItem != nextMainHand ? 0.0F : attackAnim * attackAnim * attackAnim;
+         float offHandTargetHeight = this.offHandItem != nextOffHand ? 0.0F : 1.0F;
+         this.mainHandHeight += Mth.clamp(mainHandTargetHeight - this.mainHandHeight, -0.4F, 0.4F);
+         this.offHandHeight += Mth.clamp(offHandTargetHeight - this.offHandHeight, -0.4F, 0.4F);
       }
 
       if (this.mainHandHeight < 0.1F) {
-         this.mainHandItem = var2;
+         this.mainHandItem = nextMainHand;
       }
 
       if (this.offHandHeight < 0.1F) {
-         this.offHandItem = var3;
+         this.offHandItem = nextOffHand;
       }
 
    }
 
-   public void itemUsed(InteractionHand var1) {
-      if (var1 == InteractionHand.MAIN_HAND) {
+   public void itemUsed(final InteractionHand hand) {
+      if (hand == InteractionHand.MAIN_HAND) {
          this.mainHandHeight = 0.0F;
       } else {
          this.offHandHeight = 0.0F;
@@ -598,13 +598,13 @@ public class ItemInHandRenderer {
       final boolean renderMainHand;
       final boolean renderOffHand;
 
-      private HandRenderSelection(final boolean var3, final boolean var4) {
-         this.renderMainHand = var3;
-         this.renderOffHand = var4;
+      private HandRenderSelection(final boolean renderMainHand, final boolean renderOffHand) {
+         this.renderMainHand = renderMainHand;
+         this.renderOffHand = renderOffHand;
       }
 
-      public static HandRenderSelection onlyForHand(InteractionHand var0) {
-         return var0 == InteractionHand.MAIN_HAND ? RENDER_MAIN_HAND_ONLY : RENDER_OFF_HAND_ONLY;
+      public static HandRenderSelection onlyForHand(final InteractionHand hand) {
+         return hand == InteractionHand.MAIN_HAND ? RENDER_MAIN_HAND_ONLY : RENDER_OFF_HAND_ONLY;
       }
 
       // $FF: synthetic method

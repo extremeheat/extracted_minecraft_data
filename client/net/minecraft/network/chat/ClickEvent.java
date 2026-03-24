@@ -17,16 +17,15 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 
 public interface ClickEvent {
-   Codec<ClickEvent> CODEC = ClickEvent.Action.CODEC.dispatch("action", ClickEvent::action, (var0) -> var0.codec);
+   Codec<ClickEvent> CODEC = ClickEvent.Action.CODEC.dispatch("action", ClickEvent::action, (action) -> action.codec);
 
    Action action();
 
    public static record OpenUrl(URI uri) implements ClickEvent {
-      public static final MapCodec<OpenUrl> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.UNTRUSTED_URI.fieldOf("url").forGetter(OpenUrl::uri)).apply(var0, OpenUrl::new));
+      public static final MapCodec<OpenUrl> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ExtraCodecs.UNTRUSTED_URI.fieldOf("url").forGetter(OpenUrl::uri)).apply(i, OpenUrl::new));
 
-      public OpenUrl(URI var1) {
+      public OpenUrl {
          super();
-         this.uri = var1;
       }
 
       public Action action() {
@@ -35,19 +34,18 @@ public interface ClickEvent {
    }
 
    public static record OpenFile(String path) implements ClickEvent {
-      public static final MapCodec<OpenFile> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("path").forGetter(OpenFile::path)).apply(var0, OpenFile::new));
+      public static final MapCodec<OpenFile> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.STRING.fieldOf("path").forGetter(OpenFile::path)).apply(i, OpenFile::new));
 
-      public OpenFile(File var1) {
-         this(var1.toString());
+      public OpenFile(final File file) {
+         this(file.toString());
       }
 
-      public OpenFile(Path var1) {
-         this(var1.toFile());
+      public OpenFile(final Path path) {
+         this(path.toFile());
       }
 
-      public OpenFile(String var1) {
+      public OpenFile {
          super();
-         this.path = var1;
       }
 
       public File file() {
@@ -60,11 +58,10 @@ public interface ClickEvent {
    }
 
    public static record RunCommand(String command) implements ClickEvent {
-      public static final MapCodec<RunCommand> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.CHAT_STRING.fieldOf("command").forGetter(RunCommand::command)).apply(var0, RunCommand::new));
+      public static final MapCodec<RunCommand> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ExtraCodecs.CHAT_STRING.fieldOf("command").forGetter(RunCommand::command)).apply(i, RunCommand::new));
 
-      public RunCommand(String var1) {
+      public RunCommand {
          super();
-         this.command = var1;
       }
 
       public Action action() {
@@ -73,11 +70,10 @@ public interface ClickEvent {
    }
 
    public static record SuggestCommand(String command) implements ClickEvent {
-      public static final MapCodec<SuggestCommand> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.CHAT_STRING.fieldOf("command").forGetter(SuggestCommand::command)).apply(var0, SuggestCommand::new));
+      public static final MapCodec<SuggestCommand> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ExtraCodecs.CHAT_STRING.fieldOf("command").forGetter(SuggestCommand::command)).apply(i, SuggestCommand::new));
 
-      public SuggestCommand(String var1) {
+      public SuggestCommand {
          super();
-         this.command = var1;
       }
 
       public Action action() {
@@ -86,11 +82,10 @@ public interface ClickEvent {
    }
 
    public static record ShowDialog(Holder<Dialog> dialog) implements ClickEvent {
-      public static final MapCodec<ShowDialog> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Dialog.CODEC.fieldOf("dialog").forGetter(ShowDialog::dialog)).apply(var0, ShowDialog::new));
+      public static final MapCodec<ShowDialog> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Dialog.CODEC.fieldOf("dialog").forGetter(ShowDialog::dialog)).apply(i, ShowDialog::new));
 
-      public ShowDialog(Holder<Dialog> var1) {
+      public ShowDialog {
          super();
-         this.dialog = var1;
       }
 
       public Action action() {
@@ -99,11 +94,10 @@ public interface ClickEvent {
    }
 
    public static record ChangePage(int page) implements ClickEvent {
-      public static final MapCodec<ChangePage> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.POSITIVE_INT.fieldOf("page").forGetter(ChangePage::page)).apply(var0, ChangePage::new));
+      public static final MapCodec<ChangePage> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ExtraCodecs.POSITIVE_INT.fieldOf("page").forGetter(ChangePage::page)).apply(i, ChangePage::new));
 
-      public ChangePage(int var1) {
+      public ChangePage {
          super();
-         this.page = var1;
       }
 
       public Action action() {
@@ -112,11 +106,10 @@ public interface ClickEvent {
    }
 
    public static record CopyToClipboard(String value) implements ClickEvent {
-      public static final MapCodec<CopyToClipboard> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("value").forGetter(CopyToClipboard::value)).apply(var0, CopyToClipboard::new));
+      public static final MapCodec<CopyToClipboard> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.STRING.fieldOf("value").forGetter(CopyToClipboard::value)).apply(i, CopyToClipboard::new));
 
-      public CopyToClipboard(String var1) {
+      public CopyToClipboard {
          super();
-         this.value = var1;
       }
 
       public Action action() {
@@ -125,12 +118,10 @@ public interface ClickEvent {
    }
 
    public static record Custom(Identifier id, Optional<Tag> payload) implements ClickEvent {
-      public static final MapCodec<Custom> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("id").forGetter(Custom::id), ExtraCodecs.NBT.optionalFieldOf("payload").forGetter(Custom::payload)).apply(var0, Custom::new));
+      public static final MapCodec<Custom> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Identifier.CODEC.fieldOf("id").forGetter(Custom::id), ExtraCodecs.NBT.optionalFieldOf("payload").forGetter(Custom::payload)).apply(i, Custom::new));
 
-      public Custom(Identifier var1, Optional<Tag> var2) {
+      public Custom {
          super();
-         this.id = var1;
-         this.payload = var2;
       }
 
       public Action action() {
@@ -152,12 +143,12 @@ public interface ClickEvent {
       public static final Codec<Action> CODEC = UNSAFE_CODEC.validate(Action::filterForSerialization);
       private final boolean allowFromServer;
       private final String name;
-      final MapCodec<? extends ClickEvent> codec;
+      private final MapCodec<? extends ClickEvent> codec;
 
-      private Action(final String var3, final boolean var4, final MapCodec<? extends ClickEvent> var5) {
-         this.name = var3;
-         this.allowFromServer = var4;
-         this.codec = var5;
+      private Action(final String name, final boolean allowFromServer, final MapCodec<? extends ClickEvent> codec) {
+         this.name = name;
+         this.allowFromServer = allowFromServer;
+         this.codec = codec;
       }
 
       public boolean isAllowedFromServer() {
@@ -172,8 +163,8 @@ public interface ClickEvent {
          return this.codec;
       }
 
-      public static DataResult<Action> filterForSerialization(Action var0) {
-         return !var0.isAllowedFromServer() ? DataResult.error(() -> "Click event type not allowed: " + String.valueOf(var0)) : DataResult.success(var0, Lifecycle.stable());
+      public static DataResult<Action> filterForSerialization(final Action action) {
+         return !action.isAllowedFromServer() ? DataResult.error(() -> "Click event type not allowed: " + String.valueOf(action)) : DataResult.success(action, Lifecycle.stable());
       }
 
       // $FF: synthetic method

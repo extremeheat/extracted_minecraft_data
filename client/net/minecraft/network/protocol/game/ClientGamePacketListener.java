@@ -9,247 +9,251 @@ public interface ClientGamePacketListener extends ClientCommonPacketListener, Cl
       return ConnectionProtocol.PLAY;
    }
 
-   void handleAddEntity(ClientboundAddEntityPacket var1);
+   void handleAddEntity(ClientboundAddEntityPacket packet);
 
-   void handleAddObjective(ClientboundSetObjectivePacket var1);
+   void handleAddObjective(ClientboundSetObjectivePacket packet);
 
-   void handleAnimate(ClientboundAnimatePacket var1);
+   void handleAnimate(ClientboundAnimatePacket packet);
 
-   void handleHurtAnimation(ClientboundHurtAnimationPacket var1);
+   void handleHurtAnimation(ClientboundHurtAnimationPacket packet);
 
-   void handleAwardStats(ClientboundAwardStatsPacket var1);
+   void handleAwardStats(ClientboundAwardStatsPacket packet);
 
-   void handleRecipeBookAdd(ClientboundRecipeBookAddPacket var1);
+   void handleRecipeBookAdd(ClientboundRecipeBookAddPacket packet);
 
-   void handleRecipeBookRemove(ClientboundRecipeBookRemovePacket var1);
+   void handleRecipeBookRemove(ClientboundRecipeBookRemovePacket packet);
 
-   void handleRecipeBookSettings(ClientboundRecipeBookSettingsPacket var1);
+   void handleRecipeBookSettings(ClientboundRecipeBookSettingsPacket packet);
 
-   void handleBlockDestruction(ClientboundBlockDestructionPacket var1);
+   void handleBlockDestruction(ClientboundBlockDestructionPacket packet);
 
-   void handleOpenSignEditor(ClientboundOpenSignEditorPacket var1);
+   void handleOpenSignEditor(ClientboundOpenSignEditorPacket packet);
 
-   void handleBlockEntityData(ClientboundBlockEntityDataPacket var1);
+   void handleBlockEntityData(ClientboundBlockEntityDataPacket packet);
 
-   void handleBlockEvent(ClientboundBlockEventPacket var1);
+   void handleBlockEvent(ClientboundBlockEventPacket packet);
 
-   void handleBlockUpdate(ClientboundBlockUpdatePacket var1);
+   void handleBlockUpdate(ClientboundBlockUpdatePacket packet);
 
-   void handleSystemChat(ClientboundSystemChatPacket var1);
+   void handleSystemChat(ClientboundSystemChatPacket packet);
 
-   void handlePlayerChat(ClientboundPlayerChatPacket var1);
+   void handlePlayerChat(ClientboundPlayerChatPacket packet);
 
-   void handleDisguisedChat(ClientboundDisguisedChatPacket var1);
+   void handleDisguisedChat(ClientboundDisguisedChatPacket packet);
 
-   void handleDeleteChat(ClientboundDeleteChatPacket var1);
+   void handleDeleteChat(ClientboundDeleteChatPacket packet);
 
-   void handleChunkBlocksUpdate(ClientboundSectionBlocksUpdatePacket var1);
+   void handleChunkBlocksUpdate(ClientboundSectionBlocksUpdatePacket packet);
 
-   void handleMapItemData(ClientboundMapItemDataPacket var1);
+   void handleMapItemData(ClientboundMapItemDataPacket packet);
 
-   void handleContainerClose(ClientboundContainerClosePacket var1);
+   void handleContainerClose(ClientboundContainerClosePacket packet);
 
-   void handleContainerContent(ClientboundContainerSetContentPacket var1);
+   void handleContainerContent(ClientboundContainerSetContentPacket packet);
 
-   void handleMountScreenOpen(ClientboundMountScreenOpenPacket var1);
+   void handleMountScreenOpen(ClientboundMountScreenOpenPacket packet);
 
-   void handleContainerSetData(ClientboundContainerSetDataPacket var1);
+   void handleContainerSetData(ClientboundContainerSetDataPacket packet);
 
-   void handleContainerSetSlot(ClientboundContainerSetSlotPacket var1);
+   void handleContainerSetSlot(ClientboundContainerSetSlotPacket packet);
 
-   void handleEntityEvent(ClientboundEntityEventPacket var1);
+   void handleEntityEvent(ClientboundEntityEventPacket packet);
 
-   void handleEntityLinkPacket(ClientboundSetEntityLinkPacket var1);
+   void handleEntityLinkPacket(ClientboundSetEntityLinkPacket packet);
 
-   void handleSetEntityPassengersPacket(ClientboundSetPassengersPacket var1);
+   void handleSetEntityPassengersPacket(ClientboundSetPassengersPacket packet);
 
-   void handleExplosion(ClientboundExplodePacket var1);
+   void handleExplosion(ClientboundExplodePacket packet);
 
-   void handleGameEvent(ClientboundGameEventPacket var1);
+   void handleGameEvent(ClientboundGameEventPacket packet);
 
-   void handleLevelChunkWithLight(ClientboundLevelChunkWithLightPacket var1);
+   void handleLevelChunkWithLight(ClientboundLevelChunkWithLightPacket packet);
 
-   void handleChunksBiomes(ClientboundChunksBiomesPacket var1);
+   void handleChunksBiomes(ClientboundChunksBiomesPacket packet);
 
-   void handleForgetLevelChunk(ClientboundForgetLevelChunkPacket var1);
+   void handleForgetLevelChunk(ClientboundForgetLevelChunkPacket packet);
 
-   void handleLevelEvent(ClientboundLevelEventPacket var1);
+   void handleLevelEvent(ClientboundLevelEventPacket packet);
 
-   void handleLogin(ClientboundLoginPacket var1);
+   void handleLogin(ClientboundLoginPacket packet);
 
-   void handleMoveEntity(ClientboundMoveEntityPacket var1);
+   void handleMoveEntity(ClientboundMoveEntityPacket packet);
 
-   void handleMinecartAlongTrack(ClientboundMoveMinecartPacket var1);
+   void handleMinecartAlongTrack(ClientboundMoveMinecartPacket packet);
 
-   void handleMovePlayer(ClientboundPlayerPositionPacket var1);
+   void handleMovePlayer(ClientboundPlayerPositionPacket packet);
 
-   void handleRotatePlayer(ClientboundPlayerRotationPacket var1);
+   void handleRotatePlayer(ClientboundPlayerRotationPacket packet);
 
-   void handleParticleEvent(ClientboundLevelParticlesPacket var1);
+   void handleParticleEvent(ClientboundLevelParticlesPacket packet);
 
-   void handlePlayerAbilities(ClientboundPlayerAbilitiesPacket var1);
+   void handlePlayerAbilities(ClientboundPlayerAbilitiesPacket packet);
 
-   void handlePlayerInfoRemove(ClientboundPlayerInfoRemovePacket var1);
+   void handleGameRuleValues(ClientboundGameRuleValuesPacket packet);
 
-   void handlePlayerInfoUpdate(ClientboundPlayerInfoUpdatePacket var1);
+   void handlePlayerInfoRemove(ClientboundPlayerInfoRemovePacket packet);
 
-   void handleRemoveEntities(ClientboundRemoveEntitiesPacket var1);
+   void handlePlayerInfoUpdate(ClientboundPlayerInfoUpdatePacket packet);
 
-   void handleRemoveMobEffect(ClientboundRemoveMobEffectPacket var1);
+   void handleRemoveEntities(ClientboundRemoveEntitiesPacket packet);
 
-   void handleRespawn(ClientboundRespawnPacket var1);
+   void handleRemoveMobEffect(ClientboundRemoveMobEffectPacket packet);
 
-   void handleRotateMob(ClientboundRotateHeadPacket var1);
+   void handleRespawn(ClientboundRespawnPacket packet);
 
-   void handleSetHeldSlot(ClientboundSetHeldSlotPacket var1);
+   void handleRotateMob(ClientboundRotateHeadPacket packet);
 
-   void handleSetDisplayObjective(ClientboundSetDisplayObjectivePacket var1);
+   void handleSetHeldSlot(ClientboundSetHeldSlotPacket packet);
 
-   void handleSetEntityData(ClientboundSetEntityDataPacket var1);
+   void handleSetDisplayObjective(ClientboundSetDisplayObjectivePacket packet);
 
-   void handleSetEntityMotion(ClientboundSetEntityMotionPacket var1);
+   void handleSetEntityData(ClientboundSetEntityDataPacket packet);
 
-   void handleSetEquipment(ClientboundSetEquipmentPacket var1);
+   void handleSetEntityMotion(ClientboundSetEntityMotionPacket packet);
 
-   void handleSetExperience(ClientboundSetExperiencePacket var1);
+   void handleSetEquipment(ClientboundSetEquipmentPacket packet);
 
-   void handleSetHealth(ClientboundSetHealthPacket var1);
+   void handleSetExperience(ClientboundSetExperiencePacket packet);
 
-   void handleSetPlayerTeamPacket(ClientboundSetPlayerTeamPacket var1);
+   void handleSetHealth(ClientboundSetHealthPacket packet);
 
-   void handleSetScore(ClientboundSetScorePacket var1);
+   void handleSetPlayerTeamPacket(ClientboundSetPlayerTeamPacket packet);
 
-   void handleResetScore(ClientboundResetScorePacket var1);
+   void handleSetScore(ClientboundSetScorePacket packet);
 
-   void handleSetSpawn(ClientboundSetDefaultSpawnPositionPacket var1);
+   void handleResetScore(ClientboundResetScorePacket packet);
 
-   void handleSetTime(ClientboundSetTimePacket var1);
+   void handleSetSpawn(ClientboundSetDefaultSpawnPositionPacket packet);
 
-   void handleSoundEvent(ClientboundSoundPacket var1);
+   void handleSetTime(ClientboundSetTimePacket packet);
 
-   void handleSoundEntityEvent(ClientboundSoundEntityPacket var1);
+   void handleSoundEvent(ClientboundSoundPacket packet);
 
-   void handleTakeItemEntity(ClientboundTakeItemEntityPacket var1);
+   void handleSoundEntityEvent(ClientboundSoundEntityPacket packet);
 
-   void handleEntityPositionSync(ClientboundEntityPositionSyncPacket var1);
+   void handleTakeItemEntity(ClientboundTakeItemEntityPacket packet);
 
-   void handleTeleportEntity(ClientboundTeleportEntityPacket var1);
+   void handleEntityPositionSync(ClientboundEntityPositionSyncPacket packet);
 
-   void handleTickingState(ClientboundTickingStatePacket var1);
+   void handleTeleportEntity(ClientboundTeleportEntityPacket packet);
 
-   void handleTickingStep(ClientboundTickingStepPacket var1);
+   void handleTickingState(ClientboundTickingStatePacket packet);
 
-   void handleUpdateAttributes(ClientboundUpdateAttributesPacket var1);
+   void handleTickingStep(ClientboundTickingStepPacket packet);
 
-   void handleUpdateMobEffect(ClientboundUpdateMobEffectPacket var1);
+   void handleUpdateAttributes(ClientboundUpdateAttributesPacket packet);
 
-   void handlePlayerCombatEnd(ClientboundPlayerCombatEndPacket var1);
+   void handleUpdateMobEffect(ClientboundUpdateMobEffectPacket packet);
 
-   void handlePlayerCombatEnter(ClientboundPlayerCombatEnterPacket var1);
+   void handlePlayerCombatEnd(ClientboundPlayerCombatEndPacket packet);
 
-   void handlePlayerCombatKill(ClientboundPlayerCombatKillPacket var1);
+   void handlePlayerCombatEnter(ClientboundPlayerCombatEnterPacket packet);
 
-   void handleChangeDifficulty(ClientboundChangeDifficultyPacket var1);
+   void handlePlayerCombatKill(ClientboundPlayerCombatKillPacket packet);
 
-   void handleSetCamera(ClientboundSetCameraPacket var1);
+   void handleChangeDifficulty(ClientboundChangeDifficultyPacket packet);
 
-   void handleInitializeBorder(ClientboundInitializeBorderPacket var1);
+   void handleSetCamera(ClientboundSetCameraPacket packet);
 
-   void handleSetBorderLerpSize(ClientboundSetBorderLerpSizePacket var1);
+   void handleInitializeBorder(ClientboundInitializeBorderPacket packet);
 
-   void handleSetBorderSize(ClientboundSetBorderSizePacket var1);
+   void handleSetBorderLerpSize(ClientboundSetBorderLerpSizePacket packet);
 
-   void handleSetBorderWarningDelay(ClientboundSetBorderWarningDelayPacket var1);
+   void handleSetBorderSize(ClientboundSetBorderSizePacket packet);
 
-   void handleSetBorderWarningDistance(ClientboundSetBorderWarningDistancePacket var1);
+   void handleSetBorderWarningDelay(ClientboundSetBorderWarningDelayPacket packet);
 
-   void handleSetBorderCenter(ClientboundSetBorderCenterPacket var1);
+   void handleSetBorderWarningDistance(ClientboundSetBorderWarningDistancePacket packet);
 
-   void handleTabListCustomisation(ClientboundTabListPacket var1);
+   void handleSetBorderCenter(ClientboundSetBorderCenterPacket packet);
 
-   void handleBossUpdate(ClientboundBossEventPacket var1);
+   void handleTabListCustomisation(ClientboundTabListPacket packet);
 
-   void handleItemCooldown(ClientboundCooldownPacket var1);
+   void handleBossUpdate(ClientboundBossEventPacket packet);
 
-   void handleMoveVehicle(ClientboundMoveVehiclePacket var1);
+   void handleItemCooldown(ClientboundCooldownPacket packet);
 
-   void handleUpdateAdvancementsPacket(ClientboundUpdateAdvancementsPacket var1);
+   void handleMoveVehicle(ClientboundMoveVehiclePacket packet);
 
-   void handleSelectAdvancementsTab(ClientboundSelectAdvancementsTabPacket var1);
+   void handleUpdateAdvancementsPacket(ClientboundUpdateAdvancementsPacket packet);
 
-   void handlePlaceRecipe(ClientboundPlaceGhostRecipePacket var1);
+   void handleSelectAdvancementsTab(ClientboundSelectAdvancementsTabPacket packet);
 
-   void handleCommands(ClientboundCommandsPacket var1);
+   void handlePlaceRecipe(ClientboundPlaceGhostRecipePacket packet);
 
-   void handleStopSoundEvent(ClientboundStopSoundPacket var1);
+   void handleCommands(ClientboundCommandsPacket packet);
 
-   void handleCommandSuggestions(ClientboundCommandSuggestionsPacket var1);
+   void handleStopSoundEvent(ClientboundStopSoundPacket packet);
 
-   void handleUpdateRecipes(ClientboundUpdateRecipesPacket var1);
+   void handleCommandSuggestions(ClientboundCommandSuggestionsPacket packet);
 
-   void handleLookAt(ClientboundPlayerLookAtPacket var1);
+   void handleUpdateRecipes(ClientboundUpdateRecipesPacket packet);
 
-   void handleTagQueryPacket(ClientboundTagQueryPacket var1);
+   void handleLookAt(ClientboundPlayerLookAtPacket packet);
 
-   void handleLightUpdatePacket(ClientboundLightUpdatePacket var1);
+   void handleTagQueryPacket(ClientboundTagQueryPacket packet);
 
-   void handleOpenBook(ClientboundOpenBookPacket var1);
+   void handleLightUpdatePacket(ClientboundLightUpdatePacket packet);
 
-   void handleOpenScreen(ClientboundOpenScreenPacket var1);
+   void handleOpenBook(ClientboundOpenBookPacket packet);
 
-   void handleMerchantOffers(ClientboundMerchantOffersPacket var1);
+   void handleOpenScreen(ClientboundOpenScreenPacket packet);
 
-   void handleSetChunkCacheRadius(ClientboundSetChunkCacheRadiusPacket var1);
+   void handleMerchantOffers(ClientboundMerchantOffersPacket packet);
 
-   void handleSetSimulationDistance(ClientboundSetSimulationDistancePacket var1);
+   void handleSetChunkCacheRadius(ClientboundSetChunkCacheRadiusPacket packet);
 
-   void handleSetChunkCacheCenter(ClientboundSetChunkCacheCenterPacket var1);
+   void handleSetSimulationDistance(ClientboundSetSimulationDistancePacket packet);
 
-   void handleBlockChangedAck(ClientboundBlockChangedAckPacket var1);
+   void handleSetChunkCacheCenter(ClientboundSetChunkCacheCenterPacket packet);
 
-   void setActionBarText(ClientboundSetActionBarTextPacket var1);
+   void handleBlockChangedAck(ClientboundBlockChangedAckPacket packet);
 
-   void setSubtitleText(ClientboundSetSubtitleTextPacket var1);
+   void setActionBarText(ClientboundSetActionBarTextPacket packet);
 
-   void setTitleText(ClientboundSetTitleTextPacket var1);
+   void setSubtitleText(ClientboundSetSubtitleTextPacket packet);
 
-   void setTitlesAnimation(ClientboundSetTitlesAnimationPacket var1);
+   void setTitleText(ClientboundSetTitleTextPacket packet);
 
-   void handleTitlesClear(ClientboundClearTitlesPacket var1);
+   void setTitlesAnimation(ClientboundSetTitlesAnimationPacket packet);
 
-   void handleServerData(ClientboundServerDataPacket var1);
+   void handleTitlesClear(ClientboundClearTitlesPacket packet);
 
-   void handleCustomChatCompletions(ClientboundCustomChatCompletionsPacket var1);
+   void handleServerData(ClientboundServerDataPacket packet);
 
-   void handleBundlePacket(ClientboundBundlePacket var1);
+   void handleCustomChatCompletions(ClientboundCustomChatCompletionsPacket packet);
 
-   void handleDamageEvent(ClientboundDamageEventPacket var1);
+   void handleBundlePacket(ClientboundBundlePacket packet);
 
-   void handleConfigurationStart(ClientboundStartConfigurationPacket var1);
+   void handleDamageEvent(ClientboundDamageEventPacket packet);
 
-   void handleChunkBatchStart(ClientboundChunkBatchStartPacket var1);
+   void handleConfigurationStart(ClientboundStartConfigurationPacket packet);
 
-   void handleChunkBatchFinished(ClientboundChunkBatchFinishedPacket var1);
+   void handleChunkBatchStart(ClientboundChunkBatchStartPacket packet);
 
-   void handleDebugSample(ClientboundDebugSamplePacket var1);
+   void handleChunkBatchFinished(ClientboundChunkBatchFinishedPacket packet);
 
-   void handleProjectilePowerPacket(ClientboundProjectilePowerPacket var1);
+   void handleDebugSample(ClientboundDebugSamplePacket packet);
 
-   void handleSetCursorItem(ClientboundSetCursorItemPacket var1);
+   void handleProjectilePowerPacket(ClientboundProjectilePowerPacket packet);
 
-   void handleSetPlayerInventory(ClientboundSetPlayerInventoryPacket var1);
+   void handleSetCursorItem(ClientboundSetCursorItemPacket packet);
 
-   void handleTestInstanceBlockStatus(ClientboundTestInstanceBlockStatus var1);
+   void handleSetPlayerInventory(ClientboundSetPlayerInventoryPacket packet);
 
-   void handleWaypoint(ClientboundTrackedWaypointPacket var1);
+   void handleTestInstanceBlockStatus(ClientboundTestInstanceBlockStatus packet);
 
-   void handleDebugChunkValue(ClientboundDebugChunkValuePacket var1);
+   void handleWaypoint(ClientboundTrackedWaypointPacket packet);
 
-   void handleDebugBlockValue(ClientboundDebugBlockValuePacket var1);
+   void handleDebugChunkValue(ClientboundDebugChunkValuePacket packet);
 
-   void handleDebugEntityValue(ClientboundDebugEntityValuePacket var1);
+   void handleDebugBlockValue(ClientboundDebugBlockValuePacket packet);
 
-   void handleDebugEvent(ClientboundDebugEventPacket var1);
+   void handleDebugEntityValue(ClientboundDebugEntityValuePacket packet);
 
-   void handleGameTestHighlightPos(ClientboundGameTestHighlightPosPacket var1);
+   void handleDebugEvent(ClientboundDebugEventPacket packet);
+
+   void handleGameTestHighlightPos(ClientboundGameTestHighlightPosPacket packet);
+
+   void handleLowDiskSpaceWarning(ClientboundLowDiskSpaceWarningPacket packet);
 }

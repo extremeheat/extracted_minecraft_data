@@ -15,36 +15,36 @@ import org.jspecify.annotations.Nullable;
 public final class Style {
    public static final Style EMPTY = new Style((TextColor)null, (Integer)null, (Boolean)null, (Boolean)null, (Boolean)null, (Boolean)null, (Boolean)null, (ClickEvent)null, (HoverEvent)null, (String)null, (FontDescription)null);
    public static final int NO_SHADOW = 0;
-   final @Nullable TextColor color;
-   final @Nullable Integer shadowColor;
-   final @Nullable Boolean bold;
-   final @Nullable Boolean italic;
-   final @Nullable Boolean underlined;
-   final @Nullable Boolean strikethrough;
-   final @Nullable Boolean obfuscated;
-   final @Nullable ClickEvent clickEvent;
-   final @Nullable HoverEvent hoverEvent;
-   final @Nullable String insertion;
-   final @Nullable FontDescription font;
+   private final @Nullable TextColor color;
+   private final @Nullable Integer shadowColor;
+   private final @Nullable Boolean bold;
+   private final @Nullable Boolean italic;
+   private final @Nullable Boolean underlined;
+   private final @Nullable Boolean strikethrough;
+   private final @Nullable Boolean obfuscated;
+   private final @Nullable ClickEvent clickEvent;
+   private final @Nullable HoverEvent hoverEvent;
+   private final @Nullable String insertion;
+   private final @Nullable FontDescription font;
 
-   private static Style create(Optional<TextColor> var0, Optional<Integer> var1, Optional<Boolean> var2, Optional<Boolean> var3, Optional<Boolean> var4, Optional<Boolean> var5, Optional<Boolean> var6, Optional<ClickEvent> var7, Optional<HoverEvent> var8, Optional<String> var9, Optional<FontDescription> var10) {
-      Style var11 = new Style((TextColor)var0.orElse((Object)null), (Integer)var1.orElse((Object)null), (Boolean)var2.orElse((Object)null), (Boolean)var3.orElse((Object)null), (Boolean)var4.orElse((Object)null), (Boolean)var5.orElse((Object)null), (Boolean)var6.orElse((Object)null), (ClickEvent)var7.orElse((Object)null), (HoverEvent)var8.orElse((Object)null), (String)var9.orElse((Object)null), (FontDescription)var10.orElse((Object)null));
-      return var11.equals(EMPTY) ? EMPTY : var11;
+   private static Style create(final Optional<TextColor> color, final Optional<Integer> shadowColor, final Optional<Boolean> bold, final Optional<Boolean> italic, final Optional<Boolean> underlined, final Optional<Boolean> strikethrough, final Optional<Boolean> obfuscated, final Optional<ClickEvent> clickEvent, final Optional<HoverEvent> hoverEvent, final Optional<String> insertion, final Optional<FontDescription> font) {
+      Style result = new Style((TextColor)color.orElse((Object)null), (Integer)shadowColor.orElse((Object)null), (Boolean)bold.orElse((Object)null), (Boolean)italic.orElse((Object)null), (Boolean)underlined.orElse((Object)null), (Boolean)strikethrough.orElse((Object)null), (Boolean)obfuscated.orElse((Object)null), (ClickEvent)clickEvent.orElse((Object)null), (HoverEvent)hoverEvent.orElse((Object)null), (String)insertion.orElse((Object)null), (FontDescription)font.orElse((Object)null));
+      return result.equals(EMPTY) ? EMPTY : result;
    }
 
-   private Style(@Nullable TextColor var1, @Nullable Integer var2, @Nullable Boolean var3, @Nullable Boolean var4, @Nullable Boolean var5, @Nullable Boolean var6, @Nullable Boolean var7, @Nullable ClickEvent var8, @Nullable HoverEvent var9, @Nullable String var10, @Nullable FontDescription var11) {
+   private Style(final @Nullable TextColor color, final @Nullable Integer shadowColor, final @Nullable Boolean bold, final @Nullable Boolean italic, final @Nullable Boolean underlined, final @Nullable Boolean strikethrough, final @Nullable Boolean obfuscated, final @Nullable ClickEvent clickEvent, final @Nullable HoverEvent hoverEvent, final @Nullable String insertion, final @Nullable FontDescription font) {
       super();
-      this.color = var1;
-      this.shadowColor = var2;
-      this.bold = var3;
-      this.italic = var4;
-      this.underlined = var5;
-      this.strikethrough = var6;
-      this.obfuscated = var7;
-      this.clickEvent = var8;
-      this.hoverEvent = var9;
-      this.insertion = var10;
-      this.font = var11;
+      this.color = color;
+      this.shadowColor = shadowColor;
+      this.bold = bold;
+      this.italic = italic;
+      this.underlined = underlined;
+      this.strikethrough = strikethrough;
+      this.obfuscated = obfuscated;
+      this.clickEvent = clickEvent;
+      this.hoverEvent = hoverEvent;
+      this.insertion = insertion;
+      this.font = font;
    }
 
    public @Nullable TextColor getColor() {
@@ -95,233 +95,234 @@ public final class Style {
       return (FontDescription)(this.font != null ? this.font : FontDescription.DEFAULT);
    }
 
-   private static <T> Style checkEmptyAfterChange(Style var0, @Nullable T var1, @Nullable T var2) {
-      return var1 != null && var2 == null && var0.equals(EMPTY) ? EMPTY : var0;
+   private static <T> Style checkEmptyAfterChange(final Style newStyle, final @Nullable T previous, final @Nullable T next) {
+      return previous != null && next == null && newStyle.equals(EMPTY) ? EMPTY : newStyle;
    }
 
-   public Style withColor(@Nullable TextColor var1) {
-      return Objects.equals(this.color, var1) ? this : checkEmptyAfterChange(new Style(var1, this.shadowColor, this.bold, this.italic, this.underlined, this.strikethrough, this.obfuscated, this.clickEvent, this.hoverEvent, this.insertion, this.font), this.color, var1);
+   public Style withColor(final @Nullable TextColor color) {
+      return Objects.equals(this.color, color) ? this : checkEmptyAfterChange(new Style(color, this.shadowColor, this.bold, this.italic, this.underlined, this.strikethrough, this.obfuscated, this.clickEvent, this.hoverEvent, this.insertion, this.font), this.color, color);
    }
 
-   public Style withColor(@Nullable ChatFormatting var1) {
-      return this.withColor(var1 != null ? TextColor.fromLegacyFormat(var1) : null);
+   public Style withColor(final @Nullable ChatFormatting color) {
+      return this.withColor(color != null ? TextColor.fromLegacyFormat(color) : null);
    }
 
-   public Style withColor(int var1) {
-      return this.withColor(TextColor.fromRgb(var1));
+   public Style withColor(final int color) {
+      return this.withColor(TextColor.fromRgb(color));
    }
 
-   public Style withShadowColor(int var1) {
-      return Objects.equals(this.shadowColor, var1) ? this : checkEmptyAfterChange(new Style(this.color, var1, this.bold, this.italic, this.underlined, this.strikethrough, this.obfuscated, this.clickEvent, this.hoverEvent, this.insertion, this.font), this.shadowColor, var1);
+   public Style withShadowColor(final int shadowColor) {
+      return Objects.equals(this.shadowColor, shadowColor) ? this : checkEmptyAfterChange(new Style(this.color, shadowColor, this.bold, this.italic, this.underlined, this.strikethrough, this.obfuscated, this.clickEvent, this.hoverEvent, this.insertion, this.font), this.shadowColor, shadowColor);
    }
 
    public Style withoutShadow() {
       return this.withShadowColor(0);
    }
 
-   public Style withBold(@Nullable Boolean var1) {
-      return Objects.equals(this.bold, var1) ? this : checkEmptyAfterChange(new Style(this.color, this.shadowColor, var1, this.italic, this.underlined, this.strikethrough, this.obfuscated, this.clickEvent, this.hoverEvent, this.insertion, this.font), this.bold, var1);
+   public Style withBold(final @Nullable Boolean bold) {
+      return Objects.equals(this.bold, bold) ? this : checkEmptyAfterChange(new Style(this.color, this.shadowColor, bold, this.italic, this.underlined, this.strikethrough, this.obfuscated, this.clickEvent, this.hoverEvent, this.insertion, this.font), this.bold, bold);
    }
 
-   public Style withItalic(@Nullable Boolean var1) {
-      return Objects.equals(this.italic, var1) ? this : checkEmptyAfterChange(new Style(this.color, this.shadowColor, this.bold, var1, this.underlined, this.strikethrough, this.obfuscated, this.clickEvent, this.hoverEvent, this.insertion, this.font), this.italic, var1);
+   public Style withItalic(final @Nullable Boolean italic) {
+      return Objects.equals(this.italic, italic) ? this : checkEmptyAfterChange(new Style(this.color, this.shadowColor, this.bold, italic, this.underlined, this.strikethrough, this.obfuscated, this.clickEvent, this.hoverEvent, this.insertion, this.font), this.italic, italic);
    }
 
-   public Style withUnderlined(@Nullable Boolean var1) {
-      return Objects.equals(this.underlined, var1) ? this : checkEmptyAfterChange(new Style(this.color, this.shadowColor, this.bold, this.italic, var1, this.strikethrough, this.obfuscated, this.clickEvent, this.hoverEvent, this.insertion, this.font), this.underlined, var1);
+   public Style withUnderlined(final @Nullable Boolean underlined) {
+      return Objects.equals(this.underlined, underlined) ? this : checkEmptyAfterChange(new Style(this.color, this.shadowColor, this.bold, this.italic, underlined, this.strikethrough, this.obfuscated, this.clickEvent, this.hoverEvent, this.insertion, this.font), this.underlined, underlined);
    }
 
-   public Style withStrikethrough(@Nullable Boolean var1) {
-      return Objects.equals(this.strikethrough, var1) ? this : checkEmptyAfterChange(new Style(this.color, this.shadowColor, this.bold, this.italic, this.underlined, var1, this.obfuscated, this.clickEvent, this.hoverEvent, this.insertion, this.font), this.strikethrough, var1);
+   public Style withStrikethrough(final @Nullable Boolean strikethrough) {
+      return Objects.equals(this.strikethrough, strikethrough) ? this : checkEmptyAfterChange(new Style(this.color, this.shadowColor, this.bold, this.italic, this.underlined, strikethrough, this.obfuscated, this.clickEvent, this.hoverEvent, this.insertion, this.font), this.strikethrough, strikethrough);
    }
 
-   public Style withObfuscated(@Nullable Boolean var1) {
-      return Objects.equals(this.obfuscated, var1) ? this : checkEmptyAfterChange(new Style(this.color, this.shadowColor, this.bold, this.italic, this.underlined, this.strikethrough, var1, this.clickEvent, this.hoverEvent, this.insertion, this.font), this.obfuscated, var1);
+   public Style withObfuscated(final @Nullable Boolean obfuscated) {
+      return Objects.equals(this.obfuscated, obfuscated) ? this : checkEmptyAfterChange(new Style(this.color, this.shadowColor, this.bold, this.italic, this.underlined, this.strikethrough, obfuscated, this.clickEvent, this.hoverEvent, this.insertion, this.font), this.obfuscated, obfuscated);
    }
 
-   public Style withClickEvent(@Nullable ClickEvent var1) {
-      return Objects.equals(this.clickEvent, var1) ? this : checkEmptyAfterChange(new Style(this.color, this.shadowColor, this.bold, this.italic, this.underlined, this.strikethrough, this.obfuscated, var1, this.hoverEvent, this.insertion, this.font), this.clickEvent, var1);
+   public Style withClickEvent(final @Nullable ClickEvent clickEvent) {
+      return Objects.equals(this.clickEvent, clickEvent) ? this : checkEmptyAfterChange(new Style(this.color, this.shadowColor, this.bold, this.italic, this.underlined, this.strikethrough, this.obfuscated, clickEvent, this.hoverEvent, this.insertion, this.font), this.clickEvent, clickEvent);
    }
 
-   public Style withHoverEvent(@Nullable HoverEvent var1) {
-      return Objects.equals(this.hoverEvent, var1) ? this : checkEmptyAfterChange(new Style(this.color, this.shadowColor, this.bold, this.italic, this.underlined, this.strikethrough, this.obfuscated, this.clickEvent, var1, this.insertion, this.font), this.hoverEvent, var1);
+   public Style withHoverEvent(final @Nullable HoverEvent hoverEvent) {
+      return Objects.equals(this.hoverEvent, hoverEvent) ? this : checkEmptyAfterChange(new Style(this.color, this.shadowColor, this.bold, this.italic, this.underlined, this.strikethrough, this.obfuscated, this.clickEvent, hoverEvent, this.insertion, this.font), this.hoverEvent, hoverEvent);
    }
 
-   public Style withInsertion(@Nullable String var1) {
-      return Objects.equals(this.insertion, var1) ? this : checkEmptyAfterChange(new Style(this.color, this.shadowColor, this.bold, this.italic, this.underlined, this.strikethrough, this.obfuscated, this.clickEvent, this.hoverEvent, var1, this.font), this.insertion, var1);
+   public Style withInsertion(final @Nullable String insertion) {
+      return Objects.equals(this.insertion, insertion) ? this : checkEmptyAfterChange(new Style(this.color, this.shadowColor, this.bold, this.italic, this.underlined, this.strikethrough, this.obfuscated, this.clickEvent, this.hoverEvent, insertion, this.font), this.insertion, insertion);
    }
 
-   public Style withFont(@Nullable FontDescription var1) {
-      return Objects.equals(this.font, var1) ? this : checkEmptyAfterChange(new Style(this.color, this.shadowColor, this.bold, this.italic, this.underlined, this.strikethrough, this.obfuscated, this.clickEvent, this.hoverEvent, this.insertion, var1), this.font, var1);
+   public Style withFont(final @Nullable FontDescription font) {
+      return Objects.equals(this.font, font) ? this : checkEmptyAfterChange(new Style(this.color, this.shadowColor, this.bold, this.italic, this.underlined, this.strikethrough, this.obfuscated, this.clickEvent, this.hoverEvent, this.insertion, font), this.font, font);
    }
 
-   public Style applyFormat(ChatFormatting var1) {
-      TextColor var2 = this.color;
-      Boolean var3 = this.bold;
-      Boolean var4 = this.italic;
-      Boolean var5 = this.strikethrough;
-      Boolean var6 = this.underlined;
-      Boolean var7 = this.obfuscated;
-      switch (var1) {
-         case OBFUSCATED -> var7 = true;
-         case BOLD -> var3 = true;
-         case STRIKETHROUGH -> var5 = true;
-         case UNDERLINE -> var6 = true;
-         case ITALIC -> var4 = true;
+   public Style applyFormat(final ChatFormatting format) {
+      TextColor color = this.color;
+      Boolean bold = this.bold;
+      Boolean italic = this.italic;
+      Boolean strikethrough = this.strikethrough;
+      Boolean underlined = this.underlined;
+      Boolean obfuscated = this.obfuscated;
+      switch (format) {
+         case OBFUSCATED -> obfuscated = true;
+         case BOLD -> bold = true;
+         case STRIKETHROUGH -> strikethrough = true;
+         case UNDERLINE -> underlined = true;
+         case ITALIC -> italic = true;
          case RESET -> {
             return EMPTY;
          }
-         default -> var2 = TextColor.fromLegacyFormat(var1);
+         default -> color = TextColor.fromLegacyFormat(format);
       }
 
-      return new Style(var2, this.shadowColor, var3, var4, var6, var5, var7, this.clickEvent, this.hoverEvent, this.insertion, this.font);
+      return new Style(color, this.shadowColor, bold, italic, underlined, strikethrough, obfuscated, this.clickEvent, this.hoverEvent, this.insertion, this.font);
    }
 
-   public Style applyLegacyFormat(ChatFormatting var1) {
-      TextColor var2 = this.color;
-      Boolean var3 = this.bold;
-      Boolean var4 = this.italic;
-      Boolean var5 = this.strikethrough;
-      Boolean var6 = this.underlined;
-      Boolean var7 = this.obfuscated;
-      switch (var1) {
+   public Style applyLegacyFormat(final ChatFormatting format) {
+      TextColor color = this.color;
+      Boolean bold = this.bold;
+      Boolean italic = this.italic;
+      Boolean strikethrough = this.strikethrough;
+      Boolean underlined = this.underlined;
+      Boolean obfuscated = this.obfuscated;
+      switch (format) {
          case OBFUSCATED:
-            var7 = true;
+            obfuscated = true;
             break;
          case BOLD:
-            var3 = true;
+            bold = true;
             break;
          case STRIKETHROUGH:
-            var5 = true;
+            strikethrough = true;
             break;
          case UNDERLINE:
-            var6 = true;
+            underlined = true;
             break;
          case ITALIC:
-            var4 = true;
+            italic = true;
             break;
          case RESET:
             return EMPTY;
          default:
-            var7 = false;
-            var3 = false;
-            var5 = false;
-            var6 = false;
-            var4 = false;
-            var2 = TextColor.fromLegacyFormat(var1);
+            obfuscated = false;
+            bold = false;
+            strikethrough = false;
+            underlined = false;
+            italic = false;
+            color = TextColor.fromLegacyFormat(format);
       }
 
-      return new Style(var2, this.shadowColor, var3, var4, var6, var5, var7, this.clickEvent, this.hoverEvent, this.insertion, this.font);
+      return new Style(color, this.shadowColor, bold, italic, underlined, strikethrough, obfuscated, this.clickEvent, this.hoverEvent, this.insertion, this.font);
    }
 
-   public Style applyFormats(ChatFormatting... var1) {
-      TextColor var2 = this.color;
-      Boolean var3 = this.bold;
-      Boolean var4 = this.italic;
-      Boolean var5 = this.strikethrough;
-      Boolean var6 = this.underlined;
-      Boolean var7 = this.obfuscated;
+   public Style applyFormats(final ChatFormatting... formats) {
+      TextColor color = this.color;
+      Boolean bold = this.bold;
+      Boolean italic = this.italic;
+      Boolean strikethrough = this.strikethrough;
+      Boolean underlined = this.underlined;
+      Boolean obfuscated = this.obfuscated;
 
-      for(ChatFormatting var11 : var1) {
-         switch (var11) {
+      for(ChatFormatting format : formats) {
+         switch (format) {
             case OBFUSCATED:
-               var7 = true;
+               obfuscated = true;
                break;
             case BOLD:
-               var3 = true;
+               bold = true;
                break;
             case STRIKETHROUGH:
-               var5 = true;
+               strikethrough = true;
                break;
             case UNDERLINE:
-               var6 = true;
+               underlined = true;
                break;
             case ITALIC:
-               var4 = true;
+               italic = true;
                break;
             case RESET:
                return EMPTY;
             default:
-               var2 = TextColor.fromLegacyFormat(var11);
+               color = TextColor.fromLegacyFormat(format);
          }
       }
 
-      return new Style(var2, this.shadowColor, var3, var4, var6, var5, var7, this.clickEvent, this.hoverEvent, this.insertion, this.font);
+      return new Style(color, this.shadowColor, bold, italic, underlined, strikethrough, obfuscated, this.clickEvent, this.hoverEvent, this.insertion, this.font);
    }
 
-   public Style applyTo(Style var1) {
+   public Style applyTo(final Style other) {
       if (this == EMPTY) {
-         return var1;
+         return other;
       } else {
-         return var1 == EMPTY ? this : new Style(this.color != null ? this.color : var1.color, this.shadowColor != null ? this.shadowColor : var1.shadowColor, this.bold != null ? this.bold : var1.bold, this.italic != null ? this.italic : var1.italic, this.underlined != null ? this.underlined : var1.underlined, this.strikethrough != null ? this.strikethrough : var1.strikethrough, this.obfuscated != null ? this.obfuscated : var1.obfuscated, this.clickEvent != null ? this.clickEvent : var1.clickEvent, this.hoverEvent != null ? this.hoverEvent : var1.hoverEvent, this.insertion != null ? this.insertion : var1.insertion, this.font != null ? this.font : var1.font);
+         return other == EMPTY ? this : new Style(this.color != null ? this.color : other.color, this.shadowColor != null ? this.shadowColor : other.shadowColor, this.bold != null ? this.bold : other.bold, this.italic != null ? this.italic : other.italic, this.underlined != null ? this.underlined : other.underlined, this.strikethrough != null ? this.strikethrough : other.strikethrough, this.obfuscated != null ? this.obfuscated : other.obfuscated, this.clickEvent != null ? this.clickEvent : other.clickEvent, this.hoverEvent != null ? this.hoverEvent : other.hoverEvent, this.insertion != null ? this.insertion : other.insertion, this.font != null ? this.font : other.font);
       }
    }
 
    public String toString() {
-      final StringBuilder var1 = new StringBuilder("{");
+      final StringBuilder result = new StringBuilder("{");
 
-      class 1Collector {
+      class Collector {
          private boolean isNotFirst;
 
-         _Collector/* $FF was: 1Collector*/() {
+         Collector() {
+            Objects.requireNonNull(Style.this);
             super();
          }
 
          private void prependSeparator() {
             if (this.isNotFirst) {
-               var1.append(',');
+               result.append(',');
             }
 
             this.isNotFirst = true;
          }
 
-         void addFlagString(String var1x, @Nullable Boolean var2) {
-            if (var2 != null) {
+         private void addFlagString(final String name, final @Nullable Boolean value) {
+            if (value != null) {
                this.prependSeparator();
-               if (!var2) {
-                  var1.append('!');
+               if (!value) {
+                  result.append('!');
                }
 
-               var1.append(var1x);
+               result.append(name);
             }
 
          }
 
-         void addValueString(String var1x, @Nullable Object var2) {
-            if (var2 != null) {
+         private void addValueString(final String name, final @Nullable Object value) {
+            if (value != null) {
                this.prependSeparator();
-               var1.append(var1x);
-               var1.append('=');
-               var1.append(var2);
+               result.append(name);
+               result.append('=');
+               result.append(value);
             }
 
          }
       }
 
-      1Collector var2 = new 1Collector();
-      var2.addValueString("color", this.color);
-      var2.addValueString("shadowColor", this.shadowColor);
-      var2.addFlagString("bold", this.bold);
-      var2.addFlagString("italic", this.italic);
-      var2.addFlagString("underlined", this.underlined);
-      var2.addFlagString("strikethrough", this.strikethrough);
-      var2.addFlagString("obfuscated", this.obfuscated);
-      var2.addValueString("clickEvent", this.clickEvent);
-      var2.addValueString("hoverEvent", this.hoverEvent);
-      var2.addValueString("insertion", this.insertion);
-      var2.addValueString("font", this.font);
-      var1.append("}");
-      return var1.toString();
+      Collector collector = new Collector();
+      collector.addValueString("color", this.color);
+      collector.addValueString("shadowColor", this.shadowColor);
+      collector.addFlagString("bold", this.bold);
+      collector.addFlagString("italic", this.italic);
+      collector.addFlagString("underlined", this.underlined);
+      collector.addFlagString("strikethrough", this.strikethrough);
+      collector.addFlagString("obfuscated", this.obfuscated);
+      collector.addValueString("clickEvent", this.clickEvent);
+      collector.addValueString("hoverEvent", this.hoverEvent);
+      collector.addValueString("insertion", this.insertion);
+      collector.addValueString("font", this.font);
+      result.append("}");
+      return result.toString();
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
+   public boolean equals(final Object o) {
+      if (this == o) {
          return true;
-      } else if (!(var1 instanceof Style)) {
+      } else if (!(o instanceof Style)) {
          return false;
       } else {
-         Style var2 = (Style)var1;
-         return this.bold == var2.bold && Objects.equals(this.getColor(), var2.getColor()) && Objects.equals(this.getShadowColor(), var2.getShadowColor()) && this.italic == var2.italic && this.obfuscated == var2.obfuscated && this.strikethrough == var2.strikethrough && this.underlined == var2.underlined && Objects.equals(this.clickEvent, var2.clickEvent) && Objects.equals(this.hoverEvent, var2.hoverEvent) && Objects.equals(this.insertion, var2.insertion) && Objects.equals(this.font, var2.font);
+         Style style = (Style)o;
+         return this.bold == style.bold && Objects.equals(this.getColor(), style.getColor()) && Objects.equals(this.getShadowColor(), style.getShadowColor()) && this.italic == style.italic && this.obfuscated == style.obfuscated && this.strikethrough == style.strikethrough && this.underlined == style.underlined && Objects.equals(this.clickEvent, style.clickEvent) && Objects.equals(this.hoverEvent, style.hoverEvent) && Objects.equals(this.insertion, style.insertion) && Objects.equals(this.font, style.font);
       }
    }
 
@@ -330,7 +331,7 @@ public final class Style {
    }
 
    public static class Serializer {
-      public static final MapCodec<Style> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(TextColor.CODEC.optionalFieldOf("color").forGetter((var0x) -> Optional.ofNullable(var0x.color)), ExtraCodecs.ARGB_COLOR_CODEC.optionalFieldOf("shadow_color").forGetter((var0x) -> Optional.ofNullable(var0x.shadowColor)), Codec.BOOL.optionalFieldOf("bold").forGetter((var0x) -> Optional.ofNullable(var0x.bold)), Codec.BOOL.optionalFieldOf("italic").forGetter((var0x) -> Optional.ofNullable(var0x.italic)), Codec.BOOL.optionalFieldOf("underlined").forGetter((var0x) -> Optional.ofNullable(var0x.underlined)), Codec.BOOL.optionalFieldOf("strikethrough").forGetter((var0x) -> Optional.ofNullable(var0x.strikethrough)), Codec.BOOL.optionalFieldOf("obfuscated").forGetter((var0x) -> Optional.ofNullable(var0x.obfuscated)), ClickEvent.CODEC.optionalFieldOf("click_event").forGetter((var0x) -> Optional.ofNullable(var0x.clickEvent)), HoverEvent.CODEC.optionalFieldOf("hover_event").forGetter((var0x) -> Optional.ofNullable(var0x.hoverEvent)), Codec.STRING.optionalFieldOf("insertion").forGetter((var0x) -> Optional.ofNullable(var0x.insertion)), FontDescription.CODEC.optionalFieldOf("font").forGetter((var0x) -> Optional.ofNullable(var0x.font))).apply(var0, Style::create));
+      public static final MapCodec<Style> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(TextColor.CODEC.optionalFieldOf("color").forGetter((o) -> Optional.ofNullable(o.color)), ExtraCodecs.ARGB_COLOR_CODEC.optionalFieldOf("shadow_color").forGetter((o) -> Optional.ofNullable(o.shadowColor)), Codec.BOOL.optionalFieldOf("bold").forGetter((o) -> Optional.ofNullable(o.bold)), Codec.BOOL.optionalFieldOf("italic").forGetter((o) -> Optional.ofNullable(o.italic)), Codec.BOOL.optionalFieldOf("underlined").forGetter((o) -> Optional.ofNullable(o.underlined)), Codec.BOOL.optionalFieldOf("strikethrough").forGetter((o) -> Optional.ofNullable(o.strikethrough)), Codec.BOOL.optionalFieldOf("obfuscated").forGetter((o) -> Optional.ofNullable(o.obfuscated)), ClickEvent.CODEC.optionalFieldOf("click_event").forGetter((o) -> Optional.ofNullable(o.clickEvent)), HoverEvent.CODEC.optionalFieldOf("hover_event").forGetter((o) -> Optional.ofNullable(o.hoverEvent)), Codec.STRING.optionalFieldOf("insertion").forGetter((o) -> Optional.ofNullable(o.insertion)), FontDescription.CODEC.optionalFieldOf("font").forGetter((o) -> Optional.ofNullable(o.font))).apply(i, Style::create));
       public static final Codec<Style> CODEC;
       public static final StreamCodec<RegistryFriendlyByteBuf, Style> TRUSTED_STREAM_CODEC;
 

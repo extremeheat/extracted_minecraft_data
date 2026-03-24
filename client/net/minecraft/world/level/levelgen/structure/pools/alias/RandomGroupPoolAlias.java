@@ -12,19 +12,18 @@ import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
 public record RandomGroupPoolAlias(WeightedList<List<PoolAliasBinding>> groups) implements PoolAliasBinding {
-   static MapCodec<RandomGroupPoolAlias> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(WeightedList.nonEmptyCodec(Codec.list(PoolAliasBinding.CODEC)).fieldOf("groups").forGetter(RandomGroupPoolAlias::groups)).apply(var0, RandomGroupPoolAlias::new));
+   static final MapCodec<RandomGroupPoolAlias> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(WeightedList.nonEmptyCodec(Codec.list(PoolAliasBinding.CODEC)).fieldOf("groups").forGetter(RandomGroupPoolAlias::groups)).apply(i, RandomGroupPoolAlias::new));
 
-   public RandomGroupPoolAlias(WeightedList<List<PoolAliasBinding>> var1) {
+   public RandomGroupPoolAlias {
       super();
-      this.groups = var1;
    }
 
-   public void forEachResolved(RandomSource var1, BiConsumer<ResourceKey<StructureTemplatePool>, ResourceKey<StructureTemplatePool>> var2) {
-      this.groups.getRandom(var1).ifPresent((var2x) -> var2x.forEach((var2xx) -> var2xx.forEachResolved(var1, var2)));
+   public void forEachResolved(final RandomSource random, final BiConsumer<ResourceKey<StructureTemplatePool>, ResourceKey<StructureTemplatePool>> aliasAndTargetConsumer) {
+      ((List)this.groups.getRandomOrThrow(random)).forEach((binding) -> binding.forEachResolved(random, aliasAndTargetConsumer));
    }
 
    public Stream<ResourceKey<StructureTemplatePool>> allTargets() {
-      return this.groups.unwrap().stream().flatMap((var0) -> ((List)var0.value()).stream()).flatMap(PoolAliasBinding::allTargets);
+      return this.groups.unwrap().stream().flatMap((weightedEntry) -> ((List)weightedEntry.value()).stream()).flatMap(PoolAliasBinding::allTargets);
    }
 
    public MapCodec<RandomGroupPoolAlias> codec() {

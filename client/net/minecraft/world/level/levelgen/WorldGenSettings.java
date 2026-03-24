@@ -1,26 +1,50 @@
 package net.minecraft.world.level.levelgen;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.HashMap;
+import java.util.Objects;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.datafix.DataFixTypes;
+import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 
-public record WorldGenSettings(WorldOptions options, WorldDimensions dimensions) {
-   public static final Codec<WorldGenSettings> CODEC = RecordCodecBuilder.create((var0) -> var0.group(WorldOptions.CODEC.forGetter(WorldGenSettings::options), WorldDimensions.CODEC.forGetter(WorldGenSettings::dimensions)).apply(var0, var0.stable(WorldGenSettings::new)));
+public final class WorldGenSettings extends SavedData {
+   public static final Codec<WorldGenSettings> CODEC = RecordCodecBuilder.create((i) -> i.group(WorldOptions.CODEC.forGetter(WorldGenSettings::options), WorldDimensions.CODEC.forGetter(WorldGenSettings::dimensions)).apply(i, i.stable(WorldGenSettings::new)));
+   public static final SavedDataType<WorldGenSettings> TYPE;
+   private final WorldOptions options;
+   private final WorldDimensions dimensions;
 
-   public WorldGenSettings(WorldOptions var1, WorldDimensions var2) {
+   public WorldGenSettings(final WorldOptions options, final WorldDimensions dimensions) {
       super();
-      this.options = var1;
-      this.dimensions = var2;
+      this.options = options;
+      this.dimensions = dimensions;
    }
 
-   public static <T> DataResult<T> encode(DynamicOps<T> var0, WorldOptions var1, WorldDimensions var2) {
-      return CODEC.encodeStart(var0, new WorldGenSettings(var1, var2));
+   public static WorldGenSettings of(final WorldOptions options, final RegistryAccess registryAccess) {
+      return new WorldGenSettings(options, new WorldDimensions(registryAccess.lookupOrThrow(Registries.LEVEL_STEM)));
    }
 
-   public static <T> DataResult<T> encode(DynamicOps<T> var0, WorldOptions var1, RegistryAccess var2) {
-      return encode(var0, var1, new WorldDimensions(var2.lookupOrThrow(Registries.LEVEL_STEM)));
+   public WorldOptions options() {
+      return this.options;
+   }
+
+   public WorldDimensions dimensions() {
+      return this.dimensions;
+   }
+
+   public int hashCode() {
+      return Objects.hash(new Object[]{this.options, this.dimensions});
+   }
+
+   public String toString() {
+      String var10000 = String.valueOf(this.options);
+      return "WorldGenSettings[options=" + var10000 + ", dimensions=" + String.valueOf(this.dimensions) + "]";
+   }
+
+   static {
+      TYPE = new SavedDataType<WorldGenSettings>(Identifier.withDefaultNamespace("world_gen_settings"), () -> new WorldGenSettings(WorldOptions.defaultWithRandomSeed(), new WorldDimensions(new HashMap())), CODEC, DataFixTypes.SAVED_DATA_WORLD_GEN_SETTINGS);
    }
 }

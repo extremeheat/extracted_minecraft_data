@@ -8,10 +8,8 @@ import net.minecraft.world.level.pathfinder.Path;
 public record DebugPathInfo(Path path, float maxNodeDistance) {
    public static final StreamCodec<FriendlyByteBuf, DebugPathInfo> STREAM_CODEC;
 
-   public DebugPathInfo(Path var1, float var2) {
+   public DebugPathInfo {
       super();
-      this.path = var1;
-      this.maxNodeDistance = var2;
    }
 
    static {

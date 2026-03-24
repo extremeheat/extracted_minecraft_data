@@ -1,12 +1,14 @@
 package net.minecraft.client.renderer.entity;
 
+import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.model.animal.camel.AdultCamelModel;
+import net.minecraft.client.model.animal.camel.BabyCamelModel;
 import net.minecraft.client.model.animal.camel.CamelModel;
 import net.minecraft.client.model.animal.camel.CamelSaddleModel;
+import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.SimpleEquipmentLayer;
 import net.minecraft.client.renderer.entity.state.CamelRenderState;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -14,43 +16,42 @@ import net.minecraft.world.entity.animal.camel.Camel;
 
 public class CamelRenderer extends AgeableMobRenderer<Camel, CamelRenderState, CamelModel> {
    private static final Identifier CAMEL_LOCATION = Identifier.withDefaultNamespace("textures/entity/camel/camel.png");
+   private static final Identifier CAMEL_BABY_LOCATION = Identifier.withDefaultNamespace("textures/entity/camel/camel_baby.png");
 
-   public CamelRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new CamelModel(var1.bakeLayer(ModelLayers.CAMEL)), new CamelModel(var1.bakeLayer(ModelLayers.CAMEL_BABY)), 0.7F);
-      this.addLayer(this.createCamelSaddleLayer(var1));
+   public CamelRenderer(final EntityRendererProvider.Context context) {
+      super(context, new AdultCamelModel(context.bakeLayer(ModelLayers.CAMEL)), new BabyCamelModel(context.bakeLayer(ModelLayers.CAMEL_BABY)), 0.7F);
+      this.addLayer(createCamelSaddleLayer(context, this, EquipmentClientInfo.LayerType.CAMEL_SADDLE, ModelLayers.CAMEL_SADDLE));
    }
 
-   protected SimpleEquipmentLayer<CamelRenderState, CamelModel, CamelSaddleModel> createCamelSaddleLayer(EntityRendererProvider.Context var1) {
-      return new SimpleEquipmentLayer<CamelRenderState, CamelModel, CamelSaddleModel>(this, var1.getEquipmentRenderer(), EquipmentClientInfo.LayerType.CAMEL_SADDLE, (var0) -> var0.saddle, new CamelSaddleModel(var1.bakeLayer(ModelLayers.CAMEL_SADDLE)), new CamelSaddleModel(var1.bakeLayer(ModelLayers.CAMEL_BABY_SADDLE)));
+   protected static SimpleEquipmentLayer<CamelRenderState, CamelModel, CamelSaddleModel> createCamelSaddleLayer(final EntityRendererProvider.Context context, MobRenderer<Camel, CamelRenderState, CamelModel> renderer, final EquipmentClientInfo.LayerType saddleLayerType, final ModelLayerLocation saddleModelLayer) {
+      return new SimpleEquipmentLayer<CamelRenderState, CamelModel, CamelSaddleModel>(renderer, context.getEquipmentRenderer(), saddleLayerType, (state) -> state.saddle, new CamelSaddleModel(context.bakeLayer(saddleModelLayer)), (EntityModel)null);
    }
 
-   public Identifier getTextureLocation(CamelRenderState var1) {
-      return CAMEL_LOCATION;
+   public Identifier getTextureLocation(final CamelRenderState state) {
+      return state.isBaby ? CAMEL_BABY_LOCATION : CAMEL_LOCATION;
    }
 
    public CamelRenderState createRenderState() {
       return new CamelRenderState();
    }
 
-   public void extractRenderState(Camel var1, CamelRenderState var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      var2.saddle = var1.getItemBySlot(EquipmentSlot.SADDLE).copy();
-      var2.isRidden = var1.isVehicle();
-      var2.jumpCooldown = Math.max((float)var1.getJumpCooldown() - var3, 0.0F);
-      var2.sitAnimationState.copyFrom(var1.sitAnimationState);
-      var2.sitPoseAnimationState.copyFrom(var1.sitPoseAnimationState);
-      var2.sitUpAnimationState.copyFrom(var1.sitUpAnimationState);
-      var2.idleAnimationState.copyFrom(var1.idleAnimationState);
-      var2.dashAnimationState.copyFrom(var1.dashAnimationState);
+   public void extractRenderState(final Camel entity, final CamelRenderState state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      extractAdditionalState(entity, state, partialTicks);
    }
 
-   // $FF: synthetic method
-   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
-      return this.getTextureLocation((CamelRenderState)var1);
+   static void extractAdditionalState(Camel entity, CamelRenderState state, float partialTicks) {
+      state.saddle = entity.getItemBySlot(EquipmentSlot.SADDLE).copy();
+      state.isRidden = entity.isVehicle();
+      state.jumpCooldown = getJumpCooldown(entity, partialTicks);
+      state.sitAnimationState.copyFrom(entity.sitAnimationState);
+      state.sitPoseAnimationState.copyFrom(entity.sitPoseAnimationState);
+      state.sitUpAnimationState.copyFrom(entity.sitUpAnimationState);
+      state.idleAnimationState.copyFrom(entity.idleAnimationState);
+      state.dashAnimationState.copyFrom(entity.dashAnimationState);
    }
 
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
+   static float getJumpCooldown(final Camel camel, final float partialTicks) {
+      return Math.max((float)camel.getJumpCooldown() - partialTicks, 0.0F);
    }
 }

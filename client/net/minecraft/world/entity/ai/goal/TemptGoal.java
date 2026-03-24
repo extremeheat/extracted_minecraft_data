@@ -31,23 +31,23 @@ public class TemptGoal extends Goal {
    private final boolean canScare;
    private final double stopDistance;
 
-   public TemptGoal(PathfinderMob var1, double var2, Predicate<ItemStack> var4, boolean var5) {
-      this((Mob)var1, var2, var4, var5, 2.5);
+   public TemptGoal(final PathfinderMob mob, final double speedModifier, final Predicate<ItemStack> items, final boolean canScare) {
+      this((Mob)mob, speedModifier, items, canScare, 2.5);
    }
 
-   public TemptGoal(PathfinderMob var1, double var2, Predicate<ItemStack> var4, boolean var5, double var6) {
-      this((Mob)var1, var2, var4, var5, var6);
+   public TemptGoal(final PathfinderMob mob, final double speedModifier, final Predicate<ItemStack> items, final boolean canScare, final double stopDistance) {
+      this((Mob)mob, speedModifier, items, canScare, stopDistance);
    }
 
-   TemptGoal(Mob var1, double var2, Predicate<ItemStack> var4, boolean var5, double var6) {
+   private TemptGoal(final Mob mob, final double speedModifier, final Predicate<ItemStack> items, final boolean canScare, final double stopDistance) {
       super();
-      this.mob = var1;
-      this.speedModifier = var2;
-      this.items = var4;
-      this.canScare = var5;
-      this.stopDistance = var6;
+      this.mob = mob;
+      this.speedModifier = speedModifier;
+      this.items = items;
+      this.canScare = canScare;
+      this.stopDistance = stopDistance;
       this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
-      this.targetingConditions = TEMPT_TARGETING.copy().selector((var1x, var2x) -> this.shouldFollow(var1x));
+      this.targetingConditions = TEMPT_TARGETING.copy().selector((target, level) -> this.shouldFollow(target));
    }
 
    public boolean canUse() {
@@ -60,8 +60,8 @@ public class TemptGoal extends Goal {
       }
    }
 
-   private boolean shouldFollow(LivingEntity var1) {
-      return this.items.test(var1.getMainHandItem()) || this.items.test(var1.getOffhandItem());
+   private boolean shouldFollow(final LivingEntity player) {
+      return this.items.test(player.getMainHandItem()) || this.items.test(player.getOffhandItem());
    }
 
    public boolean canContinueToUse() {
@@ -119,8 +119,8 @@ public class TemptGoal extends Goal {
       this.mob.getNavigation().stop();
    }
 
-   protected void navigateTowards(Player var1) {
-      this.mob.getNavigation().moveTo((Entity)var1, this.speedModifier);
+   protected void navigateTowards(final Player player) {
+      this.mob.getNavigation().moveTo((Entity)player, this.speedModifier);
    }
 
    public boolean isRunning() {
@@ -128,17 +128,17 @@ public class TemptGoal extends Goal {
    }
 
    public static class ForNonPathfinders extends TemptGoal {
-      public ForNonPathfinders(Mob var1, double var2, Predicate<ItemStack> var4, boolean var5, double var6) {
-         super(var1, var2, var4, var5, var6);
+      public ForNonPathfinders(final Mob mob, final double speedModifier, final Predicate<ItemStack> items, final boolean canScare, final double stopDistance) {
+         super(mob, speedModifier, items, canScare, stopDistance);
       }
 
       protected void stopNavigation() {
          this.mob.getMoveControl().setWait();
       }
 
-      protected void navigateTowards(Player var1) {
-         Vec3 var2 = var1.getEyePosition().subtract(this.mob.position()).scale(this.mob.getRandom().nextDouble()).add(this.mob.position());
-         this.mob.getMoveControl().setWantedPosition(var2.x, var2.y, var2.z, this.speedModifier);
+      protected void navigateTowards(final Player player) {
+         Vec3 target = player.getEyePosition().subtract(this.mob.position()).scale(this.mob.getRandom().nextDouble()).add(this.mob.position());
+         this.mob.getMoveControl().setWantedPosition(target.x, target.y, target.z, this.speedModifier);
       }
    }
 }

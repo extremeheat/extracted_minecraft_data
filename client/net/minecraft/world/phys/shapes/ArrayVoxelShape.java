@@ -11,27 +11,27 @@ public class ArrayVoxelShape extends VoxelShape {
    private final DoubleList ys;
    private final DoubleList zs;
 
-   protected ArrayVoxelShape(DiscreteVoxelShape var1, double[] var2, double[] var3, double[] var4) {
-      this(var1, (DoubleList)DoubleArrayList.wrap(Arrays.copyOf(var2, var1.getXSize() + 1)), (DoubleList)DoubleArrayList.wrap(Arrays.copyOf(var3, var1.getYSize() + 1)), (DoubleList)DoubleArrayList.wrap(Arrays.copyOf(var4, var1.getZSize() + 1)));
+   protected ArrayVoxelShape(final DiscreteVoxelShape shape, final double[] xs, final double[] ys, final double[] zs) {
+      this(shape, (DoubleList)DoubleArrayList.wrap(Arrays.copyOf(xs, shape.getXSize() + 1)), (DoubleList)DoubleArrayList.wrap(Arrays.copyOf(ys, shape.getYSize() + 1)), (DoubleList)DoubleArrayList.wrap(Arrays.copyOf(zs, shape.getZSize() + 1)));
    }
 
-   ArrayVoxelShape(DiscreteVoxelShape var1, DoubleList var2, DoubleList var3, DoubleList var4) {
-      super(var1);
-      int var5 = var1.getXSize() + 1;
-      int var6 = var1.getYSize() + 1;
-      int var7 = var1.getZSize() + 1;
-      if (var5 == var2.size() && var6 == var3.size() && var7 == var4.size()) {
-         this.xs = var2;
-         this.ys = var3;
-         this.zs = var4;
+   ArrayVoxelShape(final DiscreteVoxelShape shape, final DoubleList xs, final DoubleList ys, final DoubleList zs) {
+      super(shape);
+      int xSize = shape.getXSize() + 1;
+      int ySize = shape.getYSize() + 1;
+      int zSize = shape.getZSize() + 1;
+      if (xSize == xs.size() && ySize == ys.size() && zSize == zs.size()) {
+         this.xs = xs;
+         this.ys = ys;
+         this.zs = zs;
       } else {
          throw (IllegalArgumentException)Util.pauseInIde(new IllegalArgumentException("Lengths of point arrays must be consistent with the size of the VoxelShape."));
       }
    }
 
-   public DoubleList getCoords(Direction.Axis var1) {
+   public DoubleList getCoords(final Direction.Axis axis) {
       DoubleList var10000;
-      switch (var1) {
+      switch (axis) {
          case X -> var10000 = this.xs;
          case Y -> var10000 = this.ys;
          case Z -> var10000 = this.zs;

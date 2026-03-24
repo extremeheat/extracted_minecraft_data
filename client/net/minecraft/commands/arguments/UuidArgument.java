@@ -22,37 +22,32 @@ public class UuidArgument implements ArgumentType<UUID> {
       super();
    }
 
-   public static UUID getUuid(CommandContext<CommandSourceStack> var0, String var1) {
-      return (UUID)var0.getArgument(var1, UUID.class);
+   public static UUID getUuid(final CommandContext<CommandSourceStack> source, final String name) {
+      return (UUID)source.getArgument(name, UUID.class);
    }
 
    public static UuidArgument uuid() {
       return new UuidArgument();
    }
 
-   public UUID parse(StringReader var1) throws CommandSyntaxException {
-      String var2 = var1.getRemaining();
-      Matcher var3 = ALLOWED_CHARACTERS.matcher(var2);
-      if (var3.find()) {
-         String var4 = var3.group(1);
+   public UUID parse(final StringReader reader) throws CommandSyntaxException {
+      String remaining = reader.getRemaining();
+      Matcher matcher = ALLOWED_CHARACTERS.matcher(remaining);
+      if (matcher.find()) {
+         String maybeUUID = matcher.group(1);
 
          try {
-            UUID var5 = UUID.fromString(var4);
-            var1.setCursor(var1.getCursor() + var4.length());
-            return var5;
+            UUID result = UUID.fromString(maybeUUID);
+            reader.setCursor(reader.getCursor() + maybeUUID.length());
+            return result;
          } catch (IllegalArgumentException var6) {
          }
       }
 
-      throw ERROR_INVALID_UUID.createWithContext(var1);
+      throw ERROR_INVALID_UUID.createWithContext(reader);
    }
 
    public Collection<String> getExamples() {
       return EXAMPLES;
-   }
-
-   // $FF: synthetic method
-   public Object parse(final StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1);
    }
 }

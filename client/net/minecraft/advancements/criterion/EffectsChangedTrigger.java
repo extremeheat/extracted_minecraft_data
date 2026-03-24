@@ -9,6 +9,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.Validatable;
+import net.minecraft.world.level.storage.loot.ValidationContextSource;
 import org.jspecify.annotations.Nullable;
 
 public class EffectsChangedTrigger extends SimpleCriterionTrigger<TriggerInstance> {
@@ -20,40 +22,37 @@ public class EffectsChangedTrigger extends SimpleCriterionTrigger<TriggerInstanc
       return EffectsChangedTrigger.TriggerInstance.CODEC;
    }
 
-   public void trigger(ServerPlayer var1, @Nullable Entity var2) {
-      LootContext var3 = var2 != null ? EntityPredicate.createContext(var1, var2) : null;
-      this.trigger(var1, (var2x) -> var2x.matches(var1, var3));
+   public void trigger(final ServerPlayer player, final @Nullable Entity source) {
+      LootContext wrappedSource = source != null ? EntityPredicate.createContext(player, source) : null;
+      this.trigger(player, (t) -> t.matches(player, wrappedSource));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<MobEffectsPredicate> effects, Optional<ContextAwarePredicate> source) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), MobEffectsPredicate.CODEC.optionalFieldOf("effects").forGetter(TriggerInstance::effects), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("source").forGetter(TriggerInstance::source)).apply(var0, TriggerInstance::new));
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((i) -> i.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), MobEffectsPredicate.CODEC.optionalFieldOf("effects").forGetter(TriggerInstance::effects), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("source").forGetter(TriggerInstance::source)).apply(i, TriggerInstance::new));
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<MobEffectsPredicate> var2, Optional<ContextAwarePredicate> var3) {
+      public TriggerInstance {
          super();
-         this.player = var1;
-         this.effects = var2;
-         this.source = var3;
       }
 
-      public static Criterion<TriggerInstance> hasEffects(MobEffectsPredicate.Builder var0) {
-         return CriteriaTriggers.EFFECTS_CHANGED.createCriterion(new TriggerInstance(Optional.empty(), var0.build(), Optional.empty()));
+      public static Criterion<TriggerInstance> hasEffects(final MobEffectsPredicate.Builder effects) {
+         return CriteriaTriggers.EFFECTS_CHANGED.createCriterion(new TriggerInstance(Optional.empty(), effects.build(), Optional.empty()));
       }
 
-      public static Criterion<TriggerInstance> gotEffectsFrom(EntityPredicate.Builder var0) {
-         return CriteriaTriggers.EFFECTS_CHANGED.createCriterion(new TriggerInstance(Optional.empty(), Optional.empty(), Optional.of(EntityPredicate.wrap(var0.build()))));
+      public static Criterion<TriggerInstance> gotEffectsFrom(final EntityPredicate.Builder source) {
+         return CriteriaTriggers.EFFECTS_CHANGED.createCriterion(new TriggerInstance(Optional.empty(), Optional.empty(), Optional.of(EntityPredicate.wrap(source.build()))));
       }
 
-      public boolean matches(ServerPlayer var1, @Nullable LootContext var2) {
-         if (this.effects.isPresent() && !((MobEffectsPredicate)this.effects.get()).matches((LivingEntity)var1)) {
+      public boolean matches(final ServerPlayer player, final @Nullable LootContext source) {
+         if (this.effects.isPresent() && !((MobEffectsPredicate)this.effects.get()).matches((LivingEntity)player)) {
             return false;
          } else {
-            return !this.source.isPresent() || var2 != null && ((ContextAwarePredicate)this.source.get()).matches(var2);
+            return !this.source.isPresent() || source != null && ((ContextAwarePredicate)this.source.get()).matches(source);
          }
       }
 
-      public void validate(CriterionValidator var1) {
-         SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
-         var1.validateEntity(this.source, "source");
+      public void validate(final ValidationContextSource validator) {
+         SimpleCriterionTrigger.SimpleInstance.super.validate(validator);
+         Validatable.validate(validator.entityContext(), "source", this.source);
       }
    }
 }

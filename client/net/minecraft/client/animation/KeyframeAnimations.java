@@ -7,15 +7,15 @@ public class KeyframeAnimations {
       super();
    }
 
-   public static Vector3f posVec(float var0, float var1, float var2) {
-      return new Vector3f(var0, -var1, var2);
+   public static Vector3f posVec(final float x, final float y, final float z) {
+      return new Vector3f(x, -y, z);
    }
 
-   public static Vector3f degreeVec(float var0, float var1, float var2) {
-      return new Vector3f(var0 * 0.017453292F, var1 * 0.017453292F, var2 * 0.017453292F);
+   public static Vector3f degreeVec(final float x, final float y, final float z) {
+      return new Vector3f(x * 0.017453292F, y * 0.017453292F, z * 0.017453292F);
    }
 
-   public static Vector3f scaleVec(double var0, double var2, double var4) {
-      return new Vector3f((float)(var0 - 1.0), (float)(var2 - 1.0), (float)(var4 - 1.0));
+   public static Vector3f scaleVec(final double x, final double y, final double z) {
+      return new Vector3f((float)(x - 1.0), (float)(y - 1.0), (float)(z - 1.0));
    }
 }

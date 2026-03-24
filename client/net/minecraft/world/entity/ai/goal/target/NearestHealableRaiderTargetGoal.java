@@ -9,8 +9,8 @@ public class NearestHealableRaiderTargetGoal<T extends LivingEntity> extends Nea
    private static final int DEFAULT_COOLDOWN = 200;
    private int cooldown = 0;
 
-   public NearestHealableRaiderTargetGoal(Raider var1, Class<T> var2, boolean var3, TargetingConditions.@Nullable Selector var4) {
-      super(var1, var2, 500, var3, false, var4);
+   public NearestHealableRaiderTargetGoal(final Raider raider, final Class<T> targetType, final boolean mustSee, final TargetingConditions.@Nullable Selector subselector) {
+      super(raider, targetType, 500, mustSee, false, subselector);
    }
 
    public int getCooldown() {

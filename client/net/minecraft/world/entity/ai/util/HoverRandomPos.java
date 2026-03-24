@@ -11,19 +11,19 @@ public class HoverRandomPos {
       super();
    }
 
-   public static @Nullable Vec3 getPos(PathfinderMob var0, int var1, int var2, double var3, double var5, float var7, int var8, int var9) {
-      boolean var10 = GoalUtils.mobRestricted(var0, (double)var1);
-      return RandomPos.generateRandomPos(var0, (Supplier)(() -> {
-         BlockPos var11 = RandomPos.generateRandomDirectionWithinRadians(var0.getRandom(), 0.0, (double)var1, var2, 0, var3, var5, (double)var7);
-         if (var11 == null) {
+   public static @Nullable Vec3 getPos(final PathfinderMob mob, final int horizontalDist, final int verticalDist, final double xDir, final double zDir, final float maxXzRadiansDifference, final int hoverMaxHeight, final int hoverMinHeight) {
+      boolean restrict = GoalUtils.mobRestricted(mob, (double)horizontalDist);
+      return RandomPos.generateRandomPos(mob, (Supplier)(() -> {
+         BlockPos direction = RandomPos.generateRandomDirectionWithinRadians(mob.getRandom(), 0.0, (double)horizontalDist, verticalDist, 0, xDir, zDir, (double)maxXzRadiansDifference);
+         if (direction == null) {
             return null;
          } else {
-            BlockPos var12 = LandRandomPos.generateRandomPosTowardDirection(var0, (double)var1, var10, var11);
-            if (var12 == null) {
+            BlockPos pos = LandRandomPos.generateRandomPosTowardDirection(mob, (double)horizontalDist, restrict, direction);
+            if (pos == null) {
                return null;
             } else {
-               var12 = RandomPos.moveUpToAboveSolid(var12, var0.getRandom().nextInt(var8 - var9 + 1) + var9, var0.level().getMaxY(), (var1x) -> GoalUtils.isSolid(var0, var1x));
-               return !GoalUtils.isWater(var0, var12) && !GoalUtils.hasMalus(var0, var12) ? var12 : null;
+               pos = RandomPos.moveUpToAboveSolid(pos, mob.getRandom().nextInt(hoverMaxHeight - hoverMinHeight + 1) + hoverMinHeight, mob.level().getMaxY(), (blockPos) -> GoalUtils.isSolid(mob, blockPos));
+               return !GoalUtils.isWater(mob, pos) && !GoalUtils.hasMalus(mob, pos) ? pos : null;
             }
          }
       }));

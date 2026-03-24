@@ -29,37 +29,37 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 public class EnderEyeItem extends Item {
-   public EnderEyeItem(Item.Properties var1) {
-      super(var1);
+   public EnderEyeItem(final Item.Properties properties) {
+      super(properties);
    }
 
-   public InteractionResult useOn(UseOnContext var1) {
-      Level var2 = var1.getLevel();
-      BlockPos var3 = var1.getClickedPos();
-      BlockState var4 = var2.getBlockState(var3);
-      if (var4.is(Blocks.END_PORTAL_FRAME) && !(Boolean)var4.getValue(EndPortalFrameBlock.HAS_EYE)) {
-         if (var2.isClientSide()) {
+   public InteractionResult useOn(final UseOnContext context) {
+      Level level = context.getLevel();
+      BlockPos pos = context.getClickedPos();
+      BlockState targetState = level.getBlockState(pos);
+      if (targetState.is(Blocks.END_PORTAL_FRAME) && !(Boolean)targetState.getValue(EndPortalFrameBlock.HAS_EYE)) {
+         if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
          } else {
-            BlockState var5 = (BlockState)var4.setValue(EndPortalFrameBlock.HAS_EYE, true);
-            Block.pushEntitiesUp(var4, var5, var2, var3);
-            var2.setBlock(var3, var5, 2);
-            var2.updateNeighbourForOutputSignal(var3, Blocks.END_PORTAL_FRAME);
-            var1.getItemInHand().shrink(1);
-            var2.levelEvent(1503, var3, 0);
-            BlockPattern.BlockPatternMatch var6 = EndPortalFrameBlock.getOrCreatePortalShape().find(var2, var3);
-            if (var6 != null) {
-               BlockPos var7 = var6.getFrontTopLeft().offset(-3, 0, -3);
+            BlockState newState = (BlockState)targetState.setValue(EndPortalFrameBlock.HAS_EYE, true);
+            Block.pushEntitiesUp(targetState, newState, level, pos);
+            level.setBlock(pos, newState, 2);
+            level.updateNeighbourForOutputSignal(pos, Blocks.END_PORTAL_FRAME);
+            context.getItemInHand().shrink(1);
+            level.levelEvent(1503, pos, 0);
+            BlockPattern.BlockPatternMatch match = EndPortalFrameBlock.getOrCreatePortalShape().find(level, pos);
+            if (match != null) {
+               BlockPos blockPos = match.getFrontTopLeft().offset(-3, 0, -3);
 
-               for(int var8 = 0; var8 < 3; ++var8) {
-                  for(int var9 = 0; var9 < 3; ++var9) {
-                     BlockPos var10 = var7.offset(var8, 0, var9);
-                     var2.destroyBlock(var10, true, (Entity)null);
-                     var2.setBlock(var10, Blocks.END_PORTAL.defaultBlockState(), 2);
+               for(int x = 0; x < 3; ++x) {
+                  for(int z = 0; z < 3; ++z) {
+                     BlockPos portalBlockPos = blockPos.offset(x, 0, z);
+                     level.destroyBlock(portalBlockPos, true, (Entity)null);
+                     level.setBlock(portalBlockPos, Blocks.END_PORTAL.defaultBlockState(), 2);
                   }
                }
 
-               var2.globalLevelEvent(1038, var7.offset(1, 0, 1), 0);
+               level.globalLevelEvent(1038, blockPos.offset(1, 0, 1), 0);
             }
 
             return InteractionResult.SUCCESS;
@@ -69,38 +69,38 @@ public class EnderEyeItem extends Item {
       }
    }
 
-   public int getUseDuration(ItemStack var1, LivingEntity var2) {
+   public int getUseDuration(final ItemStack itemStack, final LivingEntity user) {
       return 0;
    }
 
-   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
-      ItemStack var4 = var2.getItemInHand(var3);
-      BlockHitResult var5 = getPlayerPOVHitResult(var1, var2, ClipContext.Fluid.NONE);
-      if (var5.getType() == HitResult.Type.BLOCK && var1.getBlockState(var5.getBlockPos()).is(Blocks.END_PORTAL_FRAME)) {
+   public InteractionResult use(final Level level, final Player player, final InteractionHand hand) {
+      ItemStack itemStack = player.getItemInHand(hand);
+      BlockHitResult hitResult = getPlayerPOVHitResult(level, player, ClipContext.Fluid.NONE);
+      if (hitResult.getType() == HitResult.Type.BLOCK && level.getBlockState(hitResult.getBlockPos()).is(Blocks.END_PORTAL_FRAME)) {
          return InteractionResult.PASS;
       } else {
-         var2.startUsingItem(var3);
-         if (var1 instanceof ServerLevel) {
-            ServerLevel var6 = (ServerLevel)var1;
-            BlockPos var7 = var6.findNearestMapStructure(StructureTags.EYE_OF_ENDER_LOCATED, var2.blockPosition(), 100, false);
-            if (var7 == null) {
+         player.startUsingItem(hand);
+         if (level instanceof ServerLevel) {
+            ServerLevel serverLevel = (ServerLevel)level;
+            BlockPos nearestMapFeature = serverLevel.findNearestMapStructure(StructureTags.EYE_OF_ENDER_LOCATED, player.blockPosition(), 100, false);
+            if (nearestMapFeature == null) {
                return InteractionResult.CONSUME;
             }
 
-            EyeOfEnder var8 = new EyeOfEnder(var1, var2.getX(), var2.getY(0.5), var2.getZ());
-            var8.setItem(var4);
-            var8.signalTo(Vec3.atLowerCornerOf(var7));
-            var1.gameEvent(GameEvent.PROJECTILE_SHOOT, var8.position(), GameEvent.Context.of((Entity)var2));
-            var1.addFreshEntity(var8);
-            if (var2 instanceof ServerPlayer) {
-               ServerPlayer var9 = (ServerPlayer)var2;
-               CriteriaTriggers.USED_ENDER_EYE.trigger(var9, var7);
+            EyeOfEnder eyeOfEnder = new EyeOfEnder(level, player.getX(), player.getY(0.5), player.getZ());
+            eyeOfEnder.setItem(itemStack);
+            eyeOfEnder.signalTo(Vec3.atLowerCornerOf(nearestMapFeature));
+            level.gameEvent(GameEvent.PROJECTILE_SHOOT, eyeOfEnder.position(), GameEvent.Context.of((Entity)player));
+            level.addFreshEntity(eyeOfEnder);
+            if (player instanceof ServerPlayer) {
+               ServerPlayer serverPlayer = (ServerPlayer)player;
+               CriteriaTriggers.USED_ENDER_EYE.trigger(serverPlayer, nearestMapFeature);
             }
 
-            float var10 = Mth.lerp(var1.random.nextFloat(), 0.33F, 0.5F);
-            var1.playSound((Entity)null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.ENDER_EYE_LAUNCH, SoundSource.NEUTRAL, 1.0F, var10);
-            var4.consume(1, var2);
-            var2.awardStat(Stats.ITEM_USED.get(this));
+            float pitch = Mth.lerp(level.getRandom().nextFloat(), 0.33F, 0.5F);
+            level.playSound((Entity)null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENDER_EYE_LAUNCH, SoundSource.NEUTRAL, 1.0F, pitch);
+            itemStack.consume(1, player);
+            player.awardStat(Stats.ITEM_USED.get(this));
          }
 
          return InteractionResult.SUCCESS_SERVER;

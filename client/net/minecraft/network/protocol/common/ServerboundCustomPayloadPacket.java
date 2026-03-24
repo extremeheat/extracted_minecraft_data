@@ -15,21 +15,20 @@ public record ServerboundCustomPayloadPacket(CustomPacketPayload payload) implem
    private static final int MAX_PAYLOAD_SIZE = 32767;
    public static final StreamCodec<FriendlyByteBuf, ServerboundCustomPayloadPacket> STREAM_CODEC;
 
-   public ServerboundCustomPayloadPacket(CustomPacketPayload var1) {
+   public ServerboundCustomPayloadPacket {
       super();
-      this.payload = var1;
    }
 
    public PacketType<ServerboundCustomPayloadPacket> type() {
       return CommonPacketTypes.SERVERBOUND_CUSTOM_PAYLOAD;
    }
 
-   public void handle(ServerCommonPacketListener var1) {
-      var1.handleCustomPayload(this);
+   public void handle(final ServerCommonPacketListener listener) {
+      listener.handleCustomPayload(this);
    }
 
    static {
-      STREAM_CODEC = CustomPacketPayload.codec((CustomPacketPayload.FallbackProvider)((var0) -> DiscardedPayload.codec(var0, 32767)), (List)Util.make(Lists.newArrayList(new CustomPacketPayload.TypeAndCodec[]{new CustomPacketPayload.TypeAndCodec(BrandPayload.TYPE, BrandPayload.STREAM_CODEC)}), (var0) -> {
+      STREAM_CODEC = CustomPacketPayload.codec((CustomPacketPayload.FallbackProvider)((id) -> DiscardedPayload.codec(id, 32767)), (List)Util.make(Lists.newArrayList(new CustomPacketPayload.TypeAndCodec[]{new CustomPacketPayload.TypeAndCodec(BrandPayload.TYPE, BrandPayload.STREAM_CODEC)}), (types) -> {
       })).map(ServerboundCustomPayloadPacket::new, ServerboundCustomPayloadPacket::payload);
    }
 }

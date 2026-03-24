@@ -16,16 +16,16 @@ public class NotificationManager implements NotificationService {
       super();
    }
 
-   public void registerService(NotificationService var1) {
-      this.notificationServices.add(var1);
+   public void registerService(final NotificationService notificationService) {
+      this.notificationServices.add(notificationService);
    }
 
-   public void playerJoined(ServerPlayer var1) {
-      this.notificationServices.forEach((var1x) -> var1x.playerJoined(var1));
+   public void playerJoined(final ServerPlayer player) {
+      this.notificationServices.forEach((notificationService) -> notificationService.playerJoined(player));
    }
 
-   public void playerLeft(ServerPlayer var1) {
-      this.notificationServices.forEach((var1x) -> var1x.playerLeft(var1));
+   public void playerLeft(final ServerPlayer player) {
+      this.notificationServices.forEach((notificationService) -> notificationService.playerLeft(player));
    }
 
    public void serverStarted() {
@@ -48,40 +48,40 @@ public class NotificationManager implements NotificationService {
       this.notificationServices.forEach(NotificationService::serverActivityOccured);
    }
 
-   public void playerOped(ServerOpListEntry var1) {
-      this.notificationServices.forEach((var1x) -> var1x.playerOped(var1));
+   public void playerOped(final ServerOpListEntry operator) {
+      this.notificationServices.forEach((notificationService) -> notificationService.playerOped(operator));
    }
 
-   public void playerDeoped(ServerOpListEntry var1) {
-      this.notificationServices.forEach((var1x) -> var1x.playerDeoped(var1));
+   public void playerDeoped(final ServerOpListEntry operator) {
+      this.notificationServices.forEach((notificationService) -> notificationService.playerDeoped(operator));
    }
 
-   public void playerAddedToAllowlist(NameAndId var1) {
-      this.notificationServices.forEach((var1x) -> var1x.playerAddedToAllowlist(var1));
+   public void playerAddedToAllowlist(final NameAndId player) {
+      this.notificationServices.forEach((notificationService) -> notificationService.playerAddedToAllowlist(player));
    }
 
-   public void playerRemovedFromAllowlist(NameAndId var1) {
-      this.notificationServices.forEach((var1x) -> var1x.playerRemovedFromAllowlist(var1));
+   public void playerRemovedFromAllowlist(final NameAndId player) {
+      this.notificationServices.forEach((notificationService) -> notificationService.playerRemovedFromAllowlist(player));
    }
 
-   public void ipBanned(IpBanListEntry var1) {
-      this.notificationServices.forEach((var1x) -> var1x.ipBanned(var1));
+   public void ipBanned(final IpBanListEntry ban) {
+      this.notificationServices.forEach((notificationService) -> notificationService.ipBanned(ban));
    }
 
-   public void ipUnbanned(String var1) {
-      this.notificationServices.forEach((var1x) -> var1x.ipUnbanned(var1));
+   public void ipUnbanned(final String ip) {
+      this.notificationServices.forEach((notificationService) -> notificationService.ipUnbanned(ip));
    }
 
-   public void playerBanned(UserBanListEntry var1) {
-      this.notificationServices.forEach((var1x) -> var1x.playerBanned(var1));
+   public void playerBanned(final UserBanListEntry ban) {
+      this.notificationServices.forEach((notificationService) -> notificationService.playerBanned(ban));
    }
 
-   public void playerUnbanned(NameAndId var1) {
-      this.notificationServices.forEach((var1x) -> var1x.playerUnbanned(var1));
+   public void playerUnbanned(final NameAndId player) {
+      this.notificationServices.forEach((notificationService) -> notificationService.playerUnbanned(player));
    }
 
-   public <T> void onGameRuleChanged(GameRule<T> var1, T var2) {
-      this.notificationServices.forEach((var2x) -> var2x.onGameRuleChanged(var1, var2));
+   public <T> void onGameRuleChanged(final GameRule<T> gameRule, final T value) {
+      this.notificationServices.forEach((notificationService) -> notificationService.onGameRuleChanged(gameRule, value));
    }
 
    public void statusHeartbeat() {

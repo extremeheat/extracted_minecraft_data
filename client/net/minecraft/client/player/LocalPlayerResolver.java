@@ -12,33 +12,33 @@ public class LocalPlayerResolver implements ProfileResolver {
    private final Minecraft minecraft;
    private final ProfileResolver parentResolver;
 
-   public LocalPlayerResolver(Minecraft var1, ProfileResolver var2) {
+   public LocalPlayerResolver(final Minecraft minecraft, final ProfileResolver parentResolver) {
       super();
-      this.minecraft = var1;
-      this.parentResolver = var2;
+      this.minecraft = minecraft;
+      this.parentResolver = parentResolver;
    }
 
-   public Optional<GameProfile> fetchByName(String var1) {
-      ClientPacketListener var2 = this.minecraft.getConnection();
-      if (var2 != null) {
-         PlayerInfo var3 = var2.getPlayerInfoIgnoreCase(var1);
-         if (var3 != null) {
-            return Optional.of(var3.getProfile());
+   public Optional<GameProfile> fetchByName(final String name) {
+      ClientPacketListener connection = this.minecraft.getConnection();
+      if (connection != null) {
+         PlayerInfo playerInfo = connection.getPlayerInfoIgnoreCase(name);
+         if (playerInfo != null) {
+            return Optional.of(playerInfo.getProfile());
          }
       }
 
-      return this.parentResolver.fetchByName(var1);
+      return this.parentResolver.fetchByName(name);
    }
 
-   public Optional<GameProfile> fetchById(UUID var1) {
-      ClientPacketListener var2 = this.minecraft.getConnection();
-      if (var2 != null) {
-         PlayerInfo var3 = var2.getPlayerInfo(var1);
-         if (var3 != null) {
-            return Optional.of(var3.getProfile());
+   public Optional<GameProfile> fetchById(final UUID id) {
+      ClientPacketListener connection = this.minecraft.getConnection();
+      if (connection != null) {
+         PlayerInfo playerInfo = connection.getPlayerInfo(id);
+         if (playerInfo != null) {
+            return Optional.of(playerInfo.getProfile());
          }
       }
 
-      return this.parentResolver.fetchById(var1);
+      return this.parentResolver.fetchById(id);
    }
 }

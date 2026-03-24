@@ -3,12 +3,11 @@ package net.minecraft.client.renderer.entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.ItemClusterRenderState;
 import net.minecraft.client.renderer.entity.state.ItemEntityRenderState;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -23,9 +22,9 @@ public class ItemEntityRenderer extends EntityRenderer<ItemEntity, ItemEntityRen
    private final ItemModelResolver itemModelResolver;
    private final RandomSource random = RandomSource.create();
 
-   public ItemEntityRenderer(EntityRendererProvider.Context var1) {
-      super(var1);
-      this.itemModelResolver = var1.getItemModelResolver();
+   public ItemEntityRenderer(final EntityRendererProvider.Context context) {
+      super(context);
+      this.itemModelResolver = context.getItemModelResolver();
       this.shadowRadius = 0.15F;
       this.shadowStrength = 0.75F;
    }
@@ -34,110 +33,105 @@ public class ItemEntityRenderer extends EntityRenderer<ItemEntity, ItemEntityRen
       return new ItemEntityRenderState();
    }
 
-   public void extractRenderState(ItemEntity var1, ItemEntityRenderState var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      var2.bobOffset = var1.bobOffs;
-      var2.extractItemGroupRenderState(var1, var1.getItem(), this.itemModelResolver);
+   public void extractRenderState(final ItemEntity entity, final ItemEntityRenderState state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      state.bobOffset = entity.bobOffs;
+      state.extractItemGroupRenderState(entity, entity.getItem(), this.itemModelResolver);
    }
 
-   public void submit(ItemEntityRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
-      if (!var1.item.isEmpty()) {
-         var2.pushPose();
-         AABB var5 = var1.item.getModelBoundingBox();
-         float var6 = -((float)var5.minY) + 0.0625F;
-         float var7 = Mth.sin((double)(var1.ageInTicks / 10.0F + var1.bobOffset)) * 0.1F + 0.1F;
-         var2.translate(0.0F, var7 + var6, 0.0F);
-         float var8 = ItemEntity.getSpin(var1.ageInTicks, var1.bobOffset);
-         var2.mulPose((Quaternionfc)Axis.YP.rotation(var8));
-         submitMultipleFromCount(var2, var3, var1.lightCoords, var1, this.random, var5);
-         var2.popPose();
-         super.submit(var1, var2, var3, var4);
+   public void submit(final ItemEntityRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
+      if (!state.item.isEmpty()) {
+         poseStack.pushPose();
+         AABB boundingBox = state.item.getModelBoundingBox();
+         float minOffsetY = -((float)boundingBox.minY) + 0.0625F;
+         float bob = Mth.sin((double)(state.ageInTicks / 10.0F + state.bobOffset)) * 0.1F + 0.1F;
+         poseStack.translate(0.0F, bob + minOffsetY, 0.0F);
+         float spin = ItemEntity.getSpin(state.ageInTicks, state.bobOffset);
+         poseStack.mulPose((Quaternionfc)Axis.YP.rotation(spin));
+         submitMultipleFromCount(poseStack, submitNodeCollector, state.lightCoords, state, this.random, boundingBox);
+         poseStack.popPose();
+         super.submit(state, poseStack, submitNodeCollector, camera);
       }
    }
 
-   public static void submitMultipleFromCount(PoseStack var0, SubmitNodeCollector var1, int var2, ItemClusterRenderState var3, RandomSource var4) {
-      submitMultipleFromCount(var0, var1, var2, var3, var4, var3.item.getModelBoundingBox());
+   public static void submitMultipleFromCount(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final ItemClusterRenderState state, final RandomSource random) {
+      submitMultipleFromCount(poseStack, submitNodeCollector, lightCoords, state, random, state.item.getModelBoundingBox());
    }
 
-   public static void submitMultipleFromCount(PoseStack var0, SubmitNodeCollector var1, int var2, ItemClusterRenderState var3, RandomSource var4, AABB var5) {
-      int var6 = var3.count;
-      if (var6 != 0) {
-         var4.setSeed((long)var3.seed);
-         ItemStackRenderState var7 = var3.item;
-         float var8 = (float)var5.getZsize();
-         if (var8 > 0.0625F) {
-            var7.submit(var0, var1, var2, OverlayTexture.NO_OVERLAY, var3.outlineColor);
+   public static void submitMultipleFromCount(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final ItemClusterRenderState state, final RandomSource random, final AABB modelBoundingBox) {
+      int amount = state.count;
+      if (amount != 0) {
+         random.setSeed((long)state.seed);
+         ItemStackRenderState item = state.item;
+         float modelDepth = (float)modelBoundingBox.getZsize();
+         if (modelDepth > 0.0625F) {
+            item.submit(poseStack, submitNodeCollector, lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
 
-            for(int var9 = 1; var9 < var6; ++var9) {
-               var0.pushPose();
-               float var10 = (var4.nextFloat() * 2.0F - 1.0F) * 0.15F;
-               float var11 = (var4.nextFloat() * 2.0F - 1.0F) * 0.15F;
-               float var12 = (var4.nextFloat() * 2.0F - 1.0F) * 0.15F;
-               var0.translate(var10, var11, var12);
-               var7.submit(var0, var1, var2, OverlayTexture.NO_OVERLAY, var3.outlineColor);
-               var0.popPose();
+            for(int i = 1; i < amount; ++i) {
+               poseStack.pushPose();
+               float xo = (random.nextFloat() * 2.0F - 1.0F) * 0.15F;
+               float yo = (random.nextFloat() * 2.0F - 1.0F) * 0.15F;
+               float zo = (random.nextFloat() * 2.0F - 1.0F) * 0.15F;
+               poseStack.translate(xo, yo, zo);
+               item.submit(poseStack, submitNodeCollector, lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
+               poseStack.popPose();
             }
          } else {
-            float var13 = var8 * 1.5F;
-            var0.translate(0.0F, 0.0F, -(var13 * (float)(var6 - 1) / 2.0F));
-            var7.submit(var0, var1, var2, OverlayTexture.NO_OVERLAY, var3.outlineColor);
-            var0.translate(0.0F, 0.0F, var13);
+            float offsetZ = modelDepth * 1.5F;
+            poseStack.translate(0.0F, 0.0F, -(offsetZ * (float)(amount - 1) / 2.0F));
+            item.submit(poseStack, submitNodeCollector, lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
+            poseStack.translate(0.0F, 0.0F, offsetZ);
 
-            for(int var14 = 1; var14 < var6; ++var14) {
-               var0.pushPose();
-               float var15 = (var4.nextFloat() * 2.0F - 1.0F) * 0.15F * 0.5F;
-               float var16 = (var4.nextFloat() * 2.0F - 1.0F) * 0.15F * 0.5F;
-               var0.translate(var15, var16, 0.0F);
-               var7.submit(var0, var1, var2, OverlayTexture.NO_OVERLAY, var3.outlineColor);
-               var0.popPose();
-               var0.translate(0.0F, 0.0F, var13);
+            for(int i = 1; i < amount; ++i) {
+               poseStack.pushPose();
+               float xo = (random.nextFloat() * 2.0F - 1.0F) * 0.15F * 0.5F;
+               float yo = (random.nextFloat() * 2.0F - 1.0F) * 0.15F * 0.5F;
+               poseStack.translate(xo, yo, 0.0F);
+               item.submit(poseStack, submitNodeCollector, lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
+               poseStack.popPose();
+               poseStack.translate(0.0F, 0.0F, offsetZ);
             }
          }
 
       }
    }
 
-   public static void renderMultipleFromCount(PoseStack var0, SubmitNodeCollector var1, int var2, ItemClusterRenderState var3, RandomSource var4) {
-      AABB var5 = var3.item.getModelBoundingBox();
-      int var6 = var3.count;
-      if (var6 != 0) {
-         var4.setSeed((long)var3.seed);
-         ItemStackRenderState var7 = var3.item;
-         float var8 = (float)var5.getZsize();
-         if (var8 > 0.0625F) {
-            var7.submit(var0, var1, var2, OverlayTexture.NO_OVERLAY, var3.outlineColor);
+   public static void renderMultipleFromCount(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final ItemClusterRenderState state, final RandomSource random) {
+      AABB modelBoundingBox = state.item.getModelBoundingBox();
+      int amount = state.count;
+      if (amount != 0) {
+         random.setSeed((long)state.seed);
+         ItemStackRenderState item = state.item;
+         float modelDepth = (float)modelBoundingBox.getZsize();
+         if (modelDepth > 0.0625F) {
+            item.submit(poseStack, submitNodeCollector, lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
 
-            for(int var9 = 1; var9 < var6; ++var9) {
-               var0.pushPose();
-               float var10 = (var4.nextFloat() * 2.0F - 1.0F) * 0.15F;
-               float var11 = (var4.nextFloat() * 2.0F - 1.0F) * 0.15F;
-               float var12 = (var4.nextFloat() * 2.0F - 1.0F) * 0.15F;
-               var0.translate(var10, var11, var12);
-               var7.submit(var0, var1, var2, OverlayTexture.NO_OVERLAY, var3.outlineColor);
-               var0.popPose();
+            for(int i = 1; i < amount; ++i) {
+               poseStack.pushPose();
+               float xo = (random.nextFloat() * 2.0F - 1.0F) * 0.15F;
+               float yo = (random.nextFloat() * 2.0F - 1.0F) * 0.15F;
+               float zo = (random.nextFloat() * 2.0F - 1.0F) * 0.15F;
+               poseStack.translate(xo, yo, zo);
+               item.submit(poseStack, submitNodeCollector, lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
+               poseStack.popPose();
             }
          } else {
-            float var13 = var8 * 1.5F;
-            var0.translate(0.0F, 0.0F, -(var13 * (float)(var6 - 1) / 2.0F));
-            var7.submit(var0, var1, var2, OverlayTexture.NO_OVERLAY, var3.outlineColor);
-            var0.translate(0.0F, 0.0F, var13);
+            float offsetZ = modelDepth * 1.5F;
+            poseStack.translate(0.0F, 0.0F, -(offsetZ * (float)(amount - 1) / 2.0F));
+            item.submit(poseStack, submitNodeCollector, lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
+            poseStack.translate(0.0F, 0.0F, offsetZ);
 
-            for(int var14 = 1; var14 < var6; ++var14) {
-               var0.pushPose();
-               float var15 = (var4.nextFloat() * 2.0F - 1.0F) * 0.15F * 0.5F;
-               float var16 = (var4.nextFloat() * 2.0F - 1.0F) * 0.15F * 0.5F;
-               var0.translate(var15, var16, 0.0F);
-               var7.submit(var0, var1, var2, OverlayTexture.NO_OVERLAY, var3.outlineColor);
-               var0.popPose();
-               var0.translate(0.0F, 0.0F, var13);
+            for(int i = 1; i < amount; ++i) {
+               poseStack.pushPose();
+               float xo = (random.nextFloat() * 2.0F - 1.0F) * 0.15F * 0.5F;
+               float yo = (random.nextFloat() * 2.0F - 1.0F) * 0.15F * 0.5F;
+               poseStack.translate(xo, yo, 0.0F);
+               item.submit(poseStack, submitNodeCollector, lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
+               poseStack.popPose();
+               poseStack.translate(0.0F, 0.0F, offsetZ);
             }
          }
 
       }
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
    }
 }

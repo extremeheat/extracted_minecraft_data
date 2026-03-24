@@ -18,29 +18,25 @@ import net.minecraft.network.protocol.PacketType;
 public record ClientboundCommandSuggestionsPacket(int id, int start, int length, List<Entry> suggestions) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundCommandSuggestionsPacket> STREAM_CODEC;
 
-   public ClientboundCommandSuggestionsPacket(int var1, Suggestions var2) {
-      this(var1, var2.getRange().getStart(), var2.getRange().getLength(), var2.getList().stream().map((var0) -> new Entry(var0.getText(), Optional.ofNullable(var0.getTooltip()).map(ComponentUtils::fromMessage))).toList());
+   public ClientboundCommandSuggestionsPacket(final int id, final Suggestions suggestions) {
+      this(id, suggestions.getRange().getStart(), suggestions.getRange().getLength(), suggestions.getList().stream().map((suggestion) -> new Entry(suggestion.getText(), Optional.ofNullable(suggestion.getTooltip()).map(ComponentUtils::fromMessage))).toList());
    }
 
-   public ClientboundCommandSuggestionsPacket(int var1, int var2, int var3, List<Entry> var4) {
+   public ClientboundCommandSuggestionsPacket {
       super();
-      this.id = var1;
-      this.start = var2;
-      this.length = var3;
-      this.suggestions = var4;
    }
 
    public PacketType<ClientboundCommandSuggestionsPacket> type() {
       return GamePacketTypes.CLIENTBOUND_COMMAND_SUGGESTIONS;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleCommandSuggestions(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleCommandSuggestions(this);
    }
 
    public Suggestions toSuggestions() {
-      StringRange var1 = StringRange.between(this.start, this.start + this.length);
-      return new Suggestions(var1, this.suggestions.stream().map((var1x) -> new Suggestion(var1, var1x.text(), (Message)var1x.tooltip().orElse((Object)null))).toList());
+      StringRange range = StringRange.between(this.start, this.start + this.length);
+      return new Suggestions(range, this.suggestions.stream().map((entry) -> new Suggestion(range, entry.text(), (Message)entry.tooltip().orElse((Object)null))).toList());
    }
 
    static {
@@ -50,10 +46,8 @@ public record ClientboundCommandSuggestionsPacket(int id, int start, int length,
    public static record Entry(String text, Optional<Component> tooltip) {
       public static final StreamCodec<RegistryFriendlyByteBuf, Entry> STREAM_CODEC;
 
-      public Entry(String var1, Optional<Component> var2) {
+      public Entry {
          super();
-         this.text = var1;
-         this.tooltip = var2;
       }
 
       static {

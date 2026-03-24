@@ -12,18 +12,18 @@ import org.jspecify.annotations.Nullable;
 public interface SpriteSource {
    FileToIdConverter TEXTURE_ID_CONVERTER = new FileToIdConverter("textures", ".png");
 
-   void run(ResourceManager var1, Output var2);
+   void run(ResourceManager resourceManager, Output output);
 
    MapCodec<? extends SpriteSource> codec();
 
    public interface Output {
-      default void add(Identifier var1, Resource var2) {
-         this.add(var1, (DiscardableLoader)((var2x) -> var2x.loadSprite(var1, var2)));
+      default void add(final Identifier id, final Resource resource) {
+         this.add(id, (DiscardableLoader)((loader) -> loader.loadSprite(id, resource)));
       }
 
-      void add(Identifier var1, DiscardableLoader var2);
+      void add(Identifier id, DiscardableLoader sprite);
 
-      void removeAll(Predicate<Identifier> var1);
+      void removeAll(Predicate<Identifier> predicate);
    }
 
    public interface DiscardableLoader extends Loader {
@@ -33,6 +33,6 @@ public interface SpriteSource {
 
    @FunctionalInterface
    public interface Loader {
-      @Nullable SpriteContents get(SpriteResourceLoader var1);
+      @Nullable SpriteContents get(SpriteResourceLoader loader);
    }
 }

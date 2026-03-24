@@ -71,89 +71,89 @@ public class ArgumentTypeInfos {
       super();
    }
 
-   private static <A extends ArgumentType<?>, T extends ArgumentTypeInfo.Template<A>> ArgumentTypeInfo<A, T> register(Registry<ArgumentTypeInfo<?, ?>> var0, String var1, Class<? extends A> var2, ArgumentTypeInfo<A, T> var3) {
-      BY_CLASS.put(var2, var3);
-      return (ArgumentTypeInfo)Registry.register(var0, (String)var1, var3);
+   private static <A extends ArgumentType<?>, T extends ArgumentTypeInfo.Template<A>> ArgumentTypeInfo<A, T> register(final Registry<ArgumentTypeInfo<?, ?>> registry, final String id, final Class<? extends A> brigadierType, final ArgumentTypeInfo<A, T> info) {
+      BY_CLASS.put(brigadierType, info);
+      return (ArgumentTypeInfo)Registry.register(registry, (String)id, info);
    }
 
-   public static ArgumentTypeInfo<?, ?> bootstrap(Registry<ArgumentTypeInfo<?, ?>> var0) {
-      register(var0, "brigadier:bool", BoolArgumentType.class, SingletonArgumentInfo.contextFree(BoolArgumentType::bool));
-      register(var0, "brigadier:float", FloatArgumentType.class, new FloatArgumentInfo());
-      register(var0, "brigadier:double", DoubleArgumentType.class, new DoubleArgumentInfo());
-      register(var0, "brigadier:integer", IntegerArgumentType.class, new IntegerArgumentInfo());
-      register(var0, "brigadier:long", LongArgumentType.class, new LongArgumentInfo());
-      register(var0, "brigadier:string", StringArgumentType.class, new StringArgumentSerializer());
-      register(var0, "entity", EntityArgument.class, new EntityArgument.Info());
-      register(var0, "game_profile", GameProfileArgument.class, SingletonArgumentInfo.contextFree(GameProfileArgument::gameProfile));
-      register(var0, "block_pos", BlockPosArgument.class, SingletonArgumentInfo.contextFree(BlockPosArgument::blockPos));
-      register(var0, "column_pos", ColumnPosArgument.class, SingletonArgumentInfo.contextFree(ColumnPosArgument::columnPos));
-      register(var0, "vec3", Vec3Argument.class, SingletonArgumentInfo.contextFree(Vec3Argument::vec3));
-      register(var0, "vec2", Vec2Argument.class, SingletonArgumentInfo.contextFree(Vec2Argument::vec2));
-      register(var0, "block_state", BlockStateArgument.class, SingletonArgumentInfo.contextAware(BlockStateArgument::block));
-      register(var0, "block_predicate", BlockPredicateArgument.class, SingletonArgumentInfo.contextAware(BlockPredicateArgument::blockPredicate));
-      register(var0, "item_stack", ItemArgument.class, SingletonArgumentInfo.contextAware(ItemArgument::item));
-      register(var0, "item_predicate", ItemPredicateArgument.class, SingletonArgumentInfo.contextAware(ItemPredicateArgument::itemPredicate));
-      register(var0, "color", ColorArgument.class, SingletonArgumentInfo.contextFree(ColorArgument::color));
-      register(var0, "hex_color", HexColorArgument.class, SingletonArgumentInfo.contextFree(HexColorArgument::hexColor));
-      register(var0, "component", ComponentArgument.class, SingletonArgumentInfo.contextAware(ComponentArgument::textComponent));
-      register(var0, "style", StyleArgument.class, SingletonArgumentInfo.contextAware(StyleArgument::style));
-      register(var0, "message", MessageArgument.class, SingletonArgumentInfo.contextFree(MessageArgument::message));
-      register(var0, "nbt_compound_tag", CompoundTagArgument.class, SingletonArgumentInfo.contextFree(CompoundTagArgument::compoundTag));
-      register(var0, "nbt_tag", NbtTagArgument.class, SingletonArgumentInfo.contextFree(NbtTagArgument::nbtTag));
-      register(var0, "nbt_path", NbtPathArgument.class, SingletonArgumentInfo.contextFree(NbtPathArgument::nbtPath));
-      register(var0, "objective", ObjectiveArgument.class, SingletonArgumentInfo.contextFree(ObjectiveArgument::objective));
-      register(var0, "objective_criteria", ObjectiveCriteriaArgument.class, SingletonArgumentInfo.contextFree(ObjectiveCriteriaArgument::criteria));
-      register(var0, "operation", OperationArgument.class, SingletonArgumentInfo.contextFree(OperationArgument::operation));
-      register(var0, "particle", ParticleArgument.class, SingletonArgumentInfo.contextAware(ParticleArgument::particle));
-      register(var0, "angle", AngleArgument.class, SingletonArgumentInfo.contextFree(AngleArgument::angle));
-      register(var0, "rotation", RotationArgument.class, SingletonArgumentInfo.contextFree(RotationArgument::rotation));
-      register(var0, "scoreboard_slot", ScoreboardSlotArgument.class, SingletonArgumentInfo.contextFree(ScoreboardSlotArgument::displaySlot));
-      register(var0, "score_holder", ScoreHolderArgument.class, new ScoreHolderArgument.Info());
-      register(var0, "swizzle", SwizzleArgument.class, SingletonArgumentInfo.contextFree(SwizzleArgument::swizzle));
-      register(var0, "team", TeamArgument.class, SingletonArgumentInfo.contextFree(TeamArgument::team));
-      register(var0, "item_slot", SlotArgument.class, SingletonArgumentInfo.contextFree(SlotArgument::slot));
-      register(var0, "item_slots", SlotsArgument.class, SingletonArgumentInfo.contextFree(SlotsArgument::slots));
-      register(var0, "resource_location", IdentifierArgument.class, SingletonArgumentInfo.contextFree(IdentifierArgument::id));
-      register(var0, "function", FunctionArgument.class, SingletonArgumentInfo.contextFree(FunctionArgument::functions));
-      register(var0, "entity_anchor", EntityAnchorArgument.class, SingletonArgumentInfo.contextFree(EntityAnchorArgument::anchor));
-      register(var0, "int_range", RangeArgument.Ints.class, SingletonArgumentInfo.contextFree(RangeArgument::intRange));
-      register(var0, "float_range", RangeArgument.Floats.class, SingletonArgumentInfo.contextFree(RangeArgument::floatRange));
-      register(var0, "dimension", DimensionArgument.class, SingletonArgumentInfo.contextFree(DimensionArgument::dimension));
-      register(var0, "gamemode", GameModeArgument.class, SingletonArgumentInfo.contextFree(GameModeArgument::gameMode));
-      register(var0, "time", TimeArgument.class, new TimeArgument.Info());
-      register(var0, "resource_or_tag", fixClassType(ResourceOrTagArgument.class), new ResourceOrTagArgument.Info());
-      register(var0, "resource_or_tag_key", fixClassType(ResourceOrTagKeyArgument.class), new ResourceOrTagKeyArgument.Info());
-      register(var0, "resource", fixClassType(ResourceArgument.class), new ResourceArgument.Info());
-      register(var0, "resource_key", fixClassType(ResourceKeyArgument.class), new ResourceKeyArgument.Info());
-      register(var0, "resource_selector", fixClassType(ResourceSelectorArgument.class), new ResourceSelectorArgument.Info());
-      register(var0, "template_mirror", TemplateMirrorArgument.class, SingletonArgumentInfo.contextFree(TemplateMirrorArgument::templateMirror));
-      register(var0, "template_rotation", TemplateRotationArgument.class, SingletonArgumentInfo.contextFree(TemplateRotationArgument::templateRotation));
-      register(var0, "heightmap", HeightmapTypeArgument.class, SingletonArgumentInfo.contextFree(HeightmapTypeArgument::heightmap));
-      register(var0, "loot_table", ResourceOrIdArgument.LootTableArgument.class, SingletonArgumentInfo.contextAware(ResourceOrIdArgument::lootTable));
-      register(var0, "loot_predicate", ResourceOrIdArgument.LootPredicateArgument.class, SingletonArgumentInfo.contextAware(ResourceOrIdArgument::lootPredicate));
-      register(var0, "loot_modifier", ResourceOrIdArgument.LootModifierArgument.class, SingletonArgumentInfo.contextAware(ResourceOrIdArgument::lootModifier));
-      register(var0, "dialog", ResourceOrIdArgument.DialogArgument.class, SingletonArgumentInfo.contextAware(ResourceOrIdArgument::dialog));
-      return register(var0, "uuid", UuidArgument.class, SingletonArgumentInfo.contextFree(UuidArgument::uuid));
+   public static ArgumentTypeInfo<?, ?> bootstrap(final Registry<ArgumentTypeInfo<?, ?>> registry) {
+      register(registry, "brigadier:bool", BoolArgumentType.class, SingletonArgumentInfo.contextFree(BoolArgumentType::bool));
+      register(registry, "brigadier:float", FloatArgumentType.class, new FloatArgumentInfo());
+      register(registry, "brigadier:double", DoubleArgumentType.class, new DoubleArgumentInfo());
+      register(registry, "brigadier:integer", IntegerArgumentType.class, new IntegerArgumentInfo());
+      register(registry, "brigadier:long", LongArgumentType.class, new LongArgumentInfo());
+      register(registry, "brigadier:string", StringArgumentType.class, new StringArgumentSerializer());
+      register(registry, "entity", EntityArgument.class, new EntityArgument.Info());
+      register(registry, "game_profile", GameProfileArgument.class, SingletonArgumentInfo.contextFree(GameProfileArgument::gameProfile));
+      register(registry, "block_pos", BlockPosArgument.class, SingletonArgumentInfo.contextFree(BlockPosArgument::blockPos));
+      register(registry, "column_pos", ColumnPosArgument.class, SingletonArgumentInfo.contextFree(ColumnPosArgument::columnPos));
+      register(registry, "vec3", Vec3Argument.class, SingletonArgumentInfo.contextFree(Vec3Argument::vec3));
+      register(registry, "vec2", Vec2Argument.class, SingletonArgumentInfo.contextFree(Vec2Argument::vec2));
+      register(registry, "block_state", BlockStateArgument.class, SingletonArgumentInfo.contextAware(BlockStateArgument::block));
+      register(registry, "block_predicate", BlockPredicateArgument.class, SingletonArgumentInfo.contextAware(BlockPredicateArgument::blockPredicate));
+      register(registry, "item_stack", ItemArgument.class, SingletonArgumentInfo.contextAware(ItemArgument::item));
+      register(registry, "item_predicate", ItemPredicateArgument.class, SingletonArgumentInfo.contextAware(ItemPredicateArgument::itemPredicate));
+      register(registry, "color", ColorArgument.class, SingletonArgumentInfo.contextFree(ColorArgument::color));
+      register(registry, "hex_color", HexColorArgument.class, SingletonArgumentInfo.contextFree(HexColorArgument::hexColor));
+      register(registry, "component", ComponentArgument.class, SingletonArgumentInfo.contextAware(ComponentArgument::textComponent));
+      register(registry, "style", StyleArgument.class, SingletonArgumentInfo.contextAware(StyleArgument::style));
+      register(registry, "message", MessageArgument.class, SingletonArgumentInfo.contextFree(MessageArgument::message));
+      register(registry, "nbt_compound_tag", CompoundTagArgument.class, SingletonArgumentInfo.contextFree(CompoundTagArgument::compoundTag));
+      register(registry, "nbt_tag", NbtTagArgument.class, SingletonArgumentInfo.contextFree(NbtTagArgument::nbtTag));
+      register(registry, "nbt_path", NbtPathArgument.class, SingletonArgumentInfo.contextFree(NbtPathArgument::nbtPath));
+      register(registry, "objective", ObjectiveArgument.class, SingletonArgumentInfo.contextFree(ObjectiveArgument::objective));
+      register(registry, "objective_criteria", ObjectiveCriteriaArgument.class, SingletonArgumentInfo.contextFree(ObjectiveCriteriaArgument::criteria));
+      register(registry, "operation", OperationArgument.class, SingletonArgumentInfo.contextFree(OperationArgument::operation));
+      register(registry, "particle", ParticleArgument.class, SingletonArgumentInfo.contextAware(ParticleArgument::particle));
+      register(registry, "angle", AngleArgument.class, SingletonArgumentInfo.contextFree(AngleArgument::angle));
+      register(registry, "rotation", RotationArgument.class, SingletonArgumentInfo.contextFree(RotationArgument::rotation));
+      register(registry, "scoreboard_slot", ScoreboardSlotArgument.class, SingletonArgumentInfo.contextFree(ScoreboardSlotArgument::displaySlot));
+      register(registry, "score_holder", ScoreHolderArgument.class, new ScoreHolderArgument.Info());
+      register(registry, "swizzle", SwizzleArgument.class, SingletonArgumentInfo.contextFree(SwizzleArgument::swizzle));
+      register(registry, "team", TeamArgument.class, SingletonArgumentInfo.contextFree(TeamArgument::team));
+      register(registry, "item_slot", SlotArgument.class, SingletonArgumentInfo.contextFree(SlotArgument::slot));
+      register(registry, "item_slots", SlotsArgument.class, SingletonArgumentInfo.contextFree(SlotsArgument::slots));
+      register(registry, "resource_location", IdentifierArgument.class, SingletonArgumentInfo.contextFree(IdentifierArgument::id));
+      register(registry, "function", FunctionArgument.class, SingletonArgumentInfo.contextFree(FunctionArgument::functions));
+      register(registry, "entity_anchor", EntityAnchorArgument.class, SingletonArgumentInfo.contextFree(EntityAnchorArgument::anchor));
+      register(registry, "int_range", RangeArgument.Ints.class, SingletonArgumentInfo.contextFree(RangeArgument::intRange));
+      register(registry, "float_range", RangeArgument.Floats.class, SingletonArgumentInfo.contextFree(RangeArgument::floatRange));
+      register(registry, "dimension", DimensionArgument.class, SingletonArgumentInfo.contextFree(DimensionArgument::dimension));
+      register(registry, "gamemode", GameModeArgument.class, SingletonArgumentInfo.contextFree(GameModeArgument::gameMode));
+      register(registry, "time", TimeArgument.class, new TimeArgument.Info());
+      register(registry, "resource_or_tag", fixClassType(ResourceOrTagArgument.class), new ResourceOrTagArgument.Info());
+      register(registry, "resource_or_tag_key", fixClassType(ResourceOrTagKeyArgument.class), new ResourceOrTagKeyArgument.Info());
+      register(registry, "resource", fixClassType(ResourceArgument.class), new ResourceArgument.Info());
+      register(registry, "resource_key", fixClassType(ResourceKeyArgument.class), new ResourceKeyArgument.Info());
+      register(registry, "resource_selector", fixClassType(ResourceSelectorArgument.class), new ResourceSelectorArgument.Info());
+      register(registry, "template_mirror", TemplateMirrorArgument.class, SingletonArgumentInfo.contextFree(TemplateMirrorArgument::templateMirror));
+      register(registry, "template_rotation", TemplateRotationArgument.class, SingletonArgumentInfo.contextFree(TemplateRotationArgument::templateRotation));
+      register(registry, "heightmap", HeightmapTypeArgument.class, SingletonArgumentInfo.contextFree(HeightmapTypeArgument::heightmap));
+      register(registry, "loot_table", ResourceOrIdArgument.LootTableArgument.class, SingletonArgumentInfo.contextAware(ResourceOrIdArgument::lootTable));
+      register(registry, "loot_predicate", ResourceOrIdArgument.LootPredicateArgument.class, SingletonArgumentInfo.contextAware(ResourceOrIdArgument::lootPredicate));
+      register(registry, "loot_modifier", ResourceOrIdArgument.LootModifierArgument.class, SingletonArgumentInfo.contextAware(ResourceOrIdArgument::lootModifier));
+      register(registry, "dialog", ResourceOrIdArgument.DialogArgument.class, SingletonArgumentInfo.contextAware(ResourceOrIdArgument::dialog));
+      return register(registry, "uuid", UuidArgument.class, SingletonArgumentInfo.contextFree(UuidArgument::uuid));
    }
 
-   private static <T extends ArgumentType<?>> Class<T> fixClassType(Class<? super T> var0) {
-      return var0;
+   private static <T extends ArgumentType<?>> Class<T> fixClassType(final Class<? super T> cls) {
+      return cls;
    }
 
-   public static boolean isClassRecognized(Class<?> var0) {
-      return BY_CLASS.containsKey(var0);
+   public static boolean isClassRecognized(final Class<?> cls) {
+      return BY_CLASS.containsKey(cls);
    }
 
-   public static <A extends ArgumentType<?>> ArgumentTypeInfo<A, ?> byClass(A var0) {
-      ArgumentTypeInfo var1 = (ArgumentTypeInfo)BY_CLASS.get(var0.getClass());
-      if (var1 == null) {
-         throw new IllegalArgumentException(String.format(Locale.ROOT, "Unrecognized argument type %s (%s)", var0, var0.getClass()));
+   public static <A extends ArgumentType<?>> ArgumentTypeInfo<A, ?> byClass(final A argumentType) {
+      ArgumentTypeInfo<?, ?> result = (ArgumentTypeInfo)BY_CLASS.get(argumentType.getClass());
+      if (result == null) {
+         throw new IllegalArgumentException(String.format(Locale.ROOT, "Unrecognized argument type %s (%s)", argumentType, argumentType.getClass()));
       } else {
-         return var1;
+         return result;
       }
    }
 
-   public static <A extends ArgumentType<?>> ArgumentTypeInfo.Template<A> unpack(A var0) {
-      return byClass(var0).unpack(var0);
+   public static <A extends ArgumentType<?>> ArgumentTypeInfo.Template<A> unpack(final A argumentType) {
+      return byClass(argumentType).unpack(argumentType);
    }
 }

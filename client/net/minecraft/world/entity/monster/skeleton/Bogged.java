@@ -39,47 +39,47 @@ public class Bogged extends AbstractSkeleton implements Shearable {
       return AbstractSkeleton.createAttributes().add(Attributes.MAX_HEALTH, 16.0);
    }
 
-   public Bogged(EntityType<? extends Bogged> var1, Level var2) {
-      super(var1, var2);
+   public Bogged(final EntityType<? extends Bogged> type, final Level level) {
+      super(type, level);
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(DATA_SHEARED, false);
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(DATA_SHEARED, false);
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.putBoolean("sheared", this.isSheared());
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.putBoolean("sheared", this.isSheared());
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.setSheared(var1.getBooleanOr("sheared", false));
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.setSheared(input.getBooleanOr("sheared", false));
    }
 
    public boolean isSheared() {
       return (Boolean)this.entityData.get(DATA_SHEARED);
    }
 
-   public void setSheared(boolean var1) {
-      this.entityData.set(DATA_SHEARED, var1);
+   public void setSheared(final boolean sheared) {
+      this.entityData.set(DATA_SHEARED, sheared);
    }
 
-   protected InteractionResult mobInteract(Player var1, InteractionHand var2) {
-      ItemStack var3 = var1.getItemInHand(var2);
-      if (var3.is(Items.SHEARS) && this.readyForShearing()) {
+   protected InteractionResult mobInteract(final Player player, final InteractionHand hand) {
+      ItemStack itemStack = player.getItemInHand(hand);
+      if (itemStack.is(Items.SHEARS) && this.readyForShearing()) {
          Level var5 = this.level();
          if (var5 instanceof ServerLevel) {
-            ServerLevel var4 = (ServerLevel)var5;
-            this.shear(var4, SoundSource.PLAYERS, var3);
-            this.gameEvent(GameEvent.SHEAR, var1);
-            var3.hurtAndBreak(1, var1, (EquipmentSlot)var2.asEquipmentSlot());
+            ServerLevel level = (ServerLevel)var5;
+            this.shear(level, SoundSource.PLAYERS, itemStack);
+            this.gameEvent(GameEvent.SHEAR, player);
+            itemStack.hurtAndBreak(1, player, (EquipmentSlot)hand.asEquipmentSlot());
          }
 
          return InteractionResult.SUCCESS;
       } else {
-         return super.mobInteract(var1, var2);
+         return super.mobInteract(player, hand);
       }
    }
 
@@ -87,7 +87,7 @@ public class Bogged extends AbstractSkeleton implements Shearable {
       return SoundEvents.BOGGED_AMBIENT;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return SoundEvents.BOGGED_HURT;
    }
 
@@ -99,13 +99,13 @@ public class Bogged extends AbstractSkeleton implements Shearable {
       return SoundEvents.BOGGED_STEP;
    }
 
-   protected AbstractArrow getArrow(ItemStack var1, float var2, @Nullable ItemStack var3) {
-      AbstractArrow var4 = super.getArrow(var1, var2, var3);
-      if (var4 instanceof Arrow var5) {
-         var5.addEffect(new MobEffectInstance(MobEffects.POISON, 100));
+   protected AbstractArrow getArrow(final ItemStack projectile, final float power, final @Nullable ItemStack firingWeapon) {
+      AbstractArrow abstractArrow = super.getArrow(projectile, power, firingWeapon);
+      if (abstractArrow instanceof Arrow arrow) {
+         arrow.addEffect(new MobEffectInstance(MobEffects.POISON, 100));
       }
 
-      return var4;
+      return abstractArrow;
    }
 
    protected int getHardAttackInterval() {
@@ -116,14 +116,14 @@ public class Bogged extends AbstractSkeleton implements Shearable {
       return 70;
    }
 
-   public void shear(ServerLevel var1, SoundSource var2, ItemStack var3) {
-      var1.playSound((Entity)null, this, SoundEvents.BOGGED_SHEAR, var2, 1.0F, 1.0F);
-      this.spawnShearedMushrooms(var1, var3);
+   public void shear(final ServerLevel level, final SoundSource soundSource, final ItemStack tool) {
+      level.playSound((Entity)null, this, SoundEvents.BOGGED_SHEAR, soundSource, 1.0F, 1.0F);
+      this.spawnShearedMushrooms(level, tool);
       this.setSheared(true);
    }
 
-   private void spawnShearedMushrooms(ServerLevel var1, ItemStack var2) {
-      this.dropFromShearingLootTable(var1, BuiltInLootTables.BOGGED_SHEAR, var2, (var1x, var2x) -> this.spawnAtLocation(var1x, var2x, this.getBbHeight()));
+   private void spawnShearedMushrooms(final ServerLevel level, final ItemStack tool) {
+      this.dropFromShearingLootTable(level, BuiltInLootTables.BOGGED_SHEAR, tool, (l, drop) -> this.spawnAtLocation(l, drop, this.getBbHeight()));
    }
 
    public boolean readyForShearing() {

@@ -19,42 +19,42 @@ public class DemoMode extends ServerPlayerGameMode {
    private int demoEndedReminder;
    private int gameModeTicks;
 
-   public DemoMode(ServerPlayer var1) {
-      super(var1);
+   public DemoMode(final ServerPlayer player) {
+      super(player);
    }
 
    public void tick() {
       super.tick();
       ++this.gameModeTicks;
-      long var1 = this.level.getGameTime();
-      long var3 = var1 / 24000L + 1L;
+      long time = this.level.getGameTime();
+      long day = time / 24000L + 1L;
       if (!this.displayedIntro && this.gameModeTicks > 20) {
          this.displayedIntro = true;
          this.player.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.DEMO_EVENT, 0.0F));
       }
 
-      this.demoHasEnded = var1 > 120500L;
+      this.demoHasEnded = time > 120500L;
       if (this.demoHasEnded) {
          ++this.demoEndedReminder;
       }
 
-      if (var1 % 24000L == 500L) {
-         if (var3 <= 6L) {
-            if (var3 == 6L) {
+      if (time % 24000L == 500L) {
+         if (day <= 6L) {
+            if (day == 6L) {
                this.player.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.DEMO_EVENT, 104.0F));
             } else {
-               this.player.sendSystemMessage(Component.translatable("demo.day." + var3));
+               this.player.sendSystemMessage(Component.translatable("demo.day." + day));
             }
          }
-      } else if (var3 == 1L) {
-         if (var1 == 100L) {
+      } else if (day == 1L) {
+         if (time == 100L) {
             this.player.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.DEMO_EVENT, 101.0F));
-         } else if (var1 == 175L) {
+         } else if (time == 175L) {
             this.player.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.DEMO_EVENT, 102.0F));
-         } else if (var1 == 250L) {
+         } else if (time == 250L) {
             this.player.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.DEMO_EVENT, 103.0F));
          }
-      } else if (var3 == 5L && var1 % 24000L == 22000L) {
+      } else if (day == 5L && time % 24000L == 22000L) {
          this.player.sendSystemMessage(Component.translatable("demo.day.warning"));
       }
 
@@ -68,29 +68,29 @@ public class DemoMode extends ServerPlayerGameMode {
 
    }
 
-   public void handleBlockBreakAction(BlockPos var1, ServerboundPlayerActionPacket.Action var2, Direction var3, int var4, int var5) {
+   public void handleBlockBreakAction(final BlockPos pos, final ServerboundPlayerActionPacket.Action action, final Direction direction, final int maxY, final int sequence) {
       if (this.demoHasEnded) {
          this.outputDemoReminder();
       } else {
-         super.handleBlockBreakAction(var1, var2, var3, var4, var5);
+         super.handleBlockBreakAction(pos, action, direction, maxY, sequence);
       }
    }
 
-   public InteractionResult useItem(ServerPlayer var1, Level var2, ItemStack var3, InteractionHand var4) {
+   public InteractionResult useItem(final ServerPlayer player, final Level level, final ItemStack itemStack, final InteractionHand hand) {
       if (this.demoHasEnded) {
          this.outputDemoReminder();
          return InteractionResult.PASS;
       } else {
-         return super.useItem(var1, var2, var3, var4);
+         return super.useItem(player, level, itemStack, hand);
       }
    }
 
-   public InteractionResult useItemOn(ServerPlayer var1, Level var2, ItemStack var3, InteractionHand var4, BlockHitResult var5) {
+   public InteractionResult useItemOn(final ServerPlayer player, final Level level, final ItemStack itemStack, final InteractionHand hand, final BlockHitResult hitResult) {
       if (this.demoHasEnded) {
          this.outputDemoReminder();
          return InteractionResult.PASS;
       } else {
-         return super.useItemOn(var1, var2, var3, var4, var5);
+         return super.useItemOn(player, level, itemStack, hand, hitResult);
       }
    }
 }

@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.model.animal.fish.CodModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -14,11 +13,11 @@ import org.joml.Quaternionfc;
 public class CodRenderer extends MobRenderer<Cod, LivingEntityRenderState, CodModel> {
    private static final Identifier COD_LOCATION = Identifier.withDefaultNamespace("textures/entity/fish/cod.png");
 
-   public CodRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new CodModel(var1.bakeLayer(ModelLayers.COD)), 0.3F);
+   public CodRenderer(final EntityRendererProvider.Context context) {
+      super(context, new CodModel(context.bakeLayer(ModelLayers.COD)), 0.3F);
    }
 
-   public Identifier getTextureLocation(LivingEntityRenderState var1) {
+   public Identifier getTextureLocation(final LivingEntityRenderState state) {
       return COD_LOCATION;
    }
 
@@ -26,19 +25,14 @@ public class CodRenderer extends MobRenderer<Cod, LivingEntityRenderState, CodMo
       return new LivingEntityRenderState();
    }
 
-   protected void setupRotations(LivingEntityRenderState var1, PoseStack var2, float var3, float var4) {
-      super.setupRotations(var1, var2, var3, var4);
-      float var5 = 4.3F * Mth.sin((double)(0.6F * var1.ageInTicks));
-      var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var5));
-      if (!var1.isInWater) {
-         var2.translate(0.1F, 0.1F, -0.1F);
-         var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(90.0F));
+   protected void setupRotations(final LivingEntityRenderState state, final PoseStack poseStack, final float bodyRot, final float entityScale) {
+      super.setupRotations(state, poseStack, bodyRot, entityScale);
+      float bodyZRot = 4.3F * Mth.sin((double)(0.6F * state.ageInTicks));
+      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(bodyZRot));
+      if (!state.isInWater) {
+         poseStack.translate(0.1F, 0.1F, -0.1F);
+         poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(90.0F));
       }
 
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
    }
 }

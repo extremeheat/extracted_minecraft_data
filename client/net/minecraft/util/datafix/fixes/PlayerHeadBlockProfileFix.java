@@ -7,24 +7,24 @@ import com.mojang.serialization.Dynamic;
 import java.util.Optional;
 
 public class PlayerHeadBlockProfileFix extends NamedEntityFix {
-   public PlayerHeadBlockProfileFix(Schema var1) {
-      super(var1, false, "PlayerHeadBlockProfileFix", References.BLOCK_ENTITY, "minecraft:skull");
+   public PlayerHeadBlockProfileFix(final Schema outputSchema) {
+      super(outputSchema, false, "PlayerHeadBlockProfileFix", References.BLOCK_ENTITY, "minecraft:skull");
    }
 
-   protected Typed<?> fix(Typed<?> var1) {
-      return var1.update(DSL.remainderFinder(), this::fix);
+   protected Typed<?> fix(final Typed<?> entity) {
+      return entity.update(DSL.remainderFinder(), this::fix);
    }
 
-   private <T> Dynamic<T> fix(Dynamic<T> var1) {
-      Optional var2 = var1.get("SkullOwner").result();
-      Optional var3 = var1.get("ExtraType").result();
-      Optional var4 = var2.or(() -> var3);
-      if (var4.isEmpty()) {
-         return var1;
+   private <T> Dynamic<T> fix(Dynamic<T> entity) {
+      Optional<Dynamic<T>> skullOwner = entity.get("SkullOwner").result();
+      Optional<Dynamic<T>> extraType = entity.get("ExtraType").result();
+      Optional<Dynamic<T>> profile = skullOwner.or(() -> extraType);
+      if (profile.isEmpty()) {
+         return entity;
       } else {
-         var1 = var1.remove("SkullOwner").remove("ExtraType");
-         var1 = var1.set("profile", ItemStackComponentizationFix.fixProfile((Dynamic)var4.get()));
-         return var1;
+         entity = entity.remove("SkullOwner").remove("ExtraType");
+         entity = entity.set("profile", ItemStackComponentizationFix.fixProfile((Dynamic)profile.get()));
+         return entity;
       }
    }
 }

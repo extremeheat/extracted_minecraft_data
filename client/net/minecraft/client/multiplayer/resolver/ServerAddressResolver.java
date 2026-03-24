@@ -10,15 +10,15 @@ import org.slf4j.Logger;
 @FunctionalInterface
 public interface ServerAddressResolver {
    Logger LOGGER = LogUtils.getLogger();
-   ServerAddressResolver SYSTEM = (var0) -> {
+   ServerAddressResolver SYSTEM = (address) -> {
       try {
-         InetAddress var1 = InetAddress.getByName(var0.getHost());
-         return Optional.of(ResolvedServerAddress.from(new InetSocketAddress(var1, var0.getPort())));
-      } catch (UnknownHostException var2) {
-         LOGGER.debug("Couldn't resolve server {} address", var0.getHost(), var2);
+         InetAddress resolvedAddress = InetAddress.getByName(address.getHost());
+         return Optional.of(ResolvedServerAddress.from(new InetSocketAddress(resolvedAddress, address.getPort())));
+      } catch (UnknownHostException e) {
+         LOGGER.debug("Couldn't resolve server {} address", address.getHost(), e);
          return Optional.empty();
       }
    };
 
-   Optional<ResolvedServerAddress> resolve(ServerAddress var1);
+   Optional<ResolvedServerAddress> resolve(ServerAddress address);
 }

@@ -2,16 +2,18 @@ package net.minecraft.client.gui.screens.worldselection;
 
 import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Dynamic;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import java.util.Objects;
 import java.util.function.ToIntFunction;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -21,6 +23,8 @@ import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.repository.ServerPacksSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
+import net.minecraft.util.datafix.DataFixTypes;
+import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.util.worldupdate.WorldUpgrader;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.LevelStorageSource;
@@ -30,41 +34,48 @@ import org.slf4j.Logger;
 
 public class OptimizeWorldScreen extends Screen {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final ToIntFunction<ResourceKey<Level>> DIMENSION_COLORS = (ToIntFunction)Util.make(new Reference2IntOpenHashMap(), (var0) -> {
-      var0.put(Level.OVERWORLD, -13408734);
-      var0.put(Level.NETHER, -10075085);
-      var0.put(Level.END, -8943531);
-      var0.defaultReturnValue(-2236963);
+   private static final ToIntFunction<ResourceKey<Level>> DIMENSION_COLORS = (ToIntFunction)Util.make(new Reference2IntOpenHashMap(), (map) -> {
+      map.put(Level.OVERWORLD, -13408734);
+      map.put(Level.NETHER, -10075085);
+      map.put(Level.END, -8943531);
+      map.defaultReturnValue(-2236963);
    });
    private final BooleanConsumer callback;
    private final WorldUpgrader upgrader;
 
-   public static @Nullable OptimizeWorldScreen create(Minecraft var0, BooleanConsumer var1, DataFixer var2, LevelStorageSource.LevelStorageAccess var3, boolean var4) {
+   public static @Nullable OptimizeWorldScreen create(final Minecraft minecraft, final BooleanConsumer callback, final DataFixer dataFixer, final LevelStorageSource.LevelStorageAccess levelSourceAccess, final boolean eraseCache) {
       try {
-         WorldOpenFlows var5 = var0.createWorldOpenFlows();
-         PackRepository var6 = ServerPacksSource.createPackRepository(var3);
+         WorldOpenFlows worldOpenFlows = minecraft.createWorldOpenFlows();
+         PackRepository packRepository = ServerPacksSource.createPackRepository(levelSourceAccess);
+         Dynamic<?> unfixedDataTag = levelSourceAccess.getUnfixedDataTagWithFallback();
+         int dataVersion = NbtUtils.getDataVersion(unfixedDataTag);
+         if (DataFixers.getFileFixer().requiresFileFixing(dataVersion)) {
+            throw new IllegalStateException("Can't optimize world before file fixing; shouldn't be able to get here");
+         } else {
+            Dynamic<?> dataTag = DataFixTypes.LEVEL.updateToCurrentVersion(DataFixers.getDataFixer(), unfixedDataTag, dataVersion);
 
-         try (WorldStem var7 = var5.loadWorldStem(var3.getDataTag(), false, var6)) {
-            WorldData var8 = var7.worldData();
-            RegistryAccess.Frozen var9 = var7.registries().compositeAccess();
-            var3.saveDataTag(var9, var8);
-            return new OptimizeWorldScreen(var1, var2, var3, var8, var4, var9);
+            try (WorldStem worldStem = worldOpenFlows.loadWorldStem(levelSourceAccess, dataTag, false, packRepository)) {
+               WorldData worldData = worldStem.worldDataAndGenSettings().data();
+               RegistryAccess.Frozen registryAccess = worldStem.registries().compositeAccess();
+               levelSourceAccess.saveDataTag(worldData);
+               return new OptimizeWorldScreen(callback, dataFixer, levelSourceAccess, worldData, eraseCache, registryAccess);
+            }
          }
-      } catch (Exception var13) {
-         LOGGER.warn("Failed to load datapacks, can't optimize world", var13);
+      } catch (Exception e) {
+         LOGGER.warn("Failed to load datapacks, can't optimize world", e);
          return null;
       }
    }
 
-   private OptimizeWorldScreen(BooleanConsumer var1, DataFixer var2, LevelStorageSource.LevelStorageAccess var3, WorldData var4, boolean var5, RegistryAccess var6) {
-      super(Component.translatable("optimizeWorld.title", var4.getLevelSettings().levelName()));
-      this.callback = var1;
-      this.upgrader = new WorldUpgrader(var3, var2, var4, var6, var5, false);
+   private OptimizeWorldScreen(final BooleanConsumer callback, final DataFixer dataFixer, final LevelStorageSource.LevelStorageAccess levelSource, final WorldData worldData, final boolean eraseCache, final RegistryAccess registryAccess) {
+      super(Component.translatable("optimizeWorld.title", worldData.getLevelSettings().levelName()));
+      this.callback = callback;
+      this.upgrader = new WorldUpgrader(levelSource, dataFixer, registryAccess, eraseCache, false);
    }
 
    protected void init() {
       super.init();
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1) -> {
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (button) -> {
          this.upgrader.cancel();
          this.callback.accept(false);
       }).bounds(this.width / 2 - 100, this.height / 4 + 150, 200, 20).build());
@@ -77,6 +88,10 @@ public class OptimizeWorldScreen extends Screen {
 
    }
 
+   public boolean shouldCloseOnEsc() {
+      return false;
+   }
+
    public void onClose() {
       this.callback.accept(false);
    }
@@ -86,49 +101,49 @@ public class OptimizeWorldScreen extends Screen {
       this.upgrader.close();
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 20, -1);
-      int var5 = this.width / 2 - 150;
-      int var6 = this.width / 2 + 150;
-      int var7 = this.height / 4 + 100;
-      int var8 = var7 + 10;
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
+      graphics.centeredText(this.font, (Component)this.title, this.width / 2, 20, -1);
+      int x0 = this.width / 2 - 150;
+      int x1 = this.width / 2 + 150;
+      int y0 = this.height / 4 + 100;
+      int y1 = y0 + 10;
       Font var10001 = this.font;
       Component var10002 = this.upgrader.getStatus();
       int var10003 = this.width / 2;
       Objects.requireNonNull(this.font);
-      var1.drawCenteredString(var10001, var10002, var10003, var7 - 9 - 2, -6250336);
+      graphics.centeredText(var10001, var10002, var10003, y0 - 9 - 2, -6250336);
       if (this.upgrader.getTotalChunks() > 0) {
-         var1.fill(var5 - 1, var7 - 1, var6 + 1, var8 + 1, -16777216);
-         var1.drawString(this.font, (Component)Component.translatable("optimizeWorld.info.converted", this.upgrader.getConverted()), var5, 40, -6250336);
+         graphics.fill(x0 - 1, y0 - 1, x1 + 1, y1 + 1, -16777216);
+         graphics.text(this.font, (Component)Component.translatable("optimizeWorld.info.converted", this.upgrader.getConverted()), x0, 40, -6250336);
          var10001 = this.font;
          MutableComponent var20 = Component.translatable("optimizeWorld.info.skipped", this.upgrader.getSkipped());
          Objects.requireNonNull(this.font);
-         var1.drawString(var10001, (Component)var20, var5, 40 + 9 + 3, -6250336);
+         graphics.text(var10001, (Component)var20, x0, 40 + 9 + 3, -6250336);
          var10001 = this.font;
          var20 = Component.translatable("optimizeWorld.info.total", this.upgrader.getTotalChunks());
          Objects.requireNonNull(this.font);
-         var1.drawString(var10001, (Component)var20, var5, 40 + (9 + 3) * 2, -6250336);
-         int var9 = 0;
+         graphics.text(var10001, (Component)var20, x0, 40 + (9 + 3) * 2, -6250336);
+         int progress = 0;
 
-         for(ResourceKey var11 : this.upgrader.levels()) {
-            int var12 = Mth.floor(this.upgrader.dimensionProgress(var11) * (float)(var6 - var5));
-            var1.fill(var5 + var9, var7, var5 + var9 + var12, var8, DIMENSION_COLORS.applyAsInt(var11));
-            var9 += var12;
+         for(ResourceKey<Level> dimension : this.upgrader.levels()) {
+            int length = Mth.floor(this.upgrader.dimensionProgress(dimension) * (float)(x1 - x0));
+            graphics.fill(x0 + progress, y0, x0 + progress + length, y1, DIMENSION_COLORS.applyAsInt(dimension));
+            progress += length;
          }
 
-         int var13 = this.upgrader.getConverted() + this.upgrader.getSkipped();
-         MutableComponent var14 = Component.translatable("optimizeWorld.progress.counter", var13, this.upgrader.getTotalChunks());
-         MutableComponent var15 = Component.translatable("optimizeWorld.progress.percentage", Mth.floor(this.upgrader.getProgress() * 100.0F));
+         int totalProgress = this.upgrader.getConverted() + this.upgrader.getSkipped();
+         Component countStr = Component.translatable("optimizeWorld.progress.counter", totalProgress, this.upgrader.getTotalChunks());
+         Component progressStr = Component.translatable("optimizeWorld.progress.percentage", Mth.floor(this.upgrader.getTotalProgress() * 100.0F));
          var10001 = this.font;
          var10003 = this.width / 2;
          Objects.requireNonNull(this.font);
-         var1.drawCenteredString(var10001, (Component)var14, var10003, var7 + 2 * 9 + 2, -6250336);
+         graphics.centeredText(var10001, countStr, var10003, y0 + 2 * 9 + 2, -6250336);
          var10001 = this.font;
          var10003 = this.width / 2;
-         int var10004 = var7 + (var8 - var7) / 2;
+         int var10004 = y0 + (y1 - y0) / 2;
          Objects.requireNonNull(this.font);
-         var1.drawCenteredString(var10001, (Component)var15, var10003, var10004 - 9 / 2, -6250336);
+         graphics.centeredText(var10001, progressStr, var10003, var10004 - 9 / 2, -6250336);
       }
 
    }

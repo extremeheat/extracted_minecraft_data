@@ -8,8 +8,8 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
+import com.mojang.datafixers.util.Unit;
 import com.mojang.serialization.Dynamic;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -18,68 +18,68 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 public class EntityEquipmentToArmorAndHandFix extends DataFix {
-   public EntityEquipmentToArmorAndHandFix(Schema var1) {
-      super(var1, true);
+   public EntityEquipmentToArmorAndHandFix(final Schema outputSchema) {
+      super(outputSchema, true);
    }
 
    public TypeRewriteRule makeRule() {
       return this.cap(this.getInputSchema().getTypeRaw(References.ITEM_STACK), this.getOutputSchema().getTypeRaw(References.ITEM_STACK));
    }
 
-   private <ItemStackOld, ItemStackNew> TypeRewriteRule cap(Type<ItemStackOld> var1, Type<ItemStackNew> var2) {
-      Type var3 = DSL.named(References.ENTITY_EQUIPMENT.typeName(), DSL.optional(DSL.field("Equipment", DSL.list(var1))));
-      Type var4 = DSL.named(References.ENTITY_EQUIPMENT.typeName(), DSL.and(DSL.optional(DSL.field("ArmorItems", DSL.list(var2))), DSL.optional(DSL.field("HandItems", DSL.list(var2))), DSL.optional(DSL.field("body_armor_item", var2)), DSL.optional(DSL.field("saddle", var2))));
-      if (!var3.equals(this.getInputSchema().getType(References.ENTITY_EQUIPMENT))) {
+   private <ItemStackOld, ItemStackNew> TypeRewriteRule cap(final Type<ItemStackOld> oldItemStackType, final Type<ItemStackNew> newItemStackType) {
+      Type<Pair<String, Either<List<ItemStackOld>, Unit>>> oldEquipmentType = DSL.named(References.ENTITY_EQUIPMENT.typeName(), DSL.optional(DSL.field("Equipment", DSL.list(oldItemStackType))));
+      Type<Pair<String, Pair<Either<List<ItemStackNew>, Unit>, Pair<Either<List<ItemStackNew>, Unit>, Pair<Either<ItemStackNew, Unit>, Either<ItemStackNew, Unit>>>>>> newEquipmentType = DSL.named(References.ENTITY_EQUIPMENT.typeName(), DSL.and(DSL.optional(DSL.field("ArmorItems", DSL.list(newItemStackType))), DSL.optional(DSL.field("HandItems", DSL.list(newItemStackType))), DSL.optional(DSL.field("body_armor_item", newItemStackType)), DSL.optional(DSL.field("saddle", newItemStackType))));
+      if (!oldEquipmentType.equals(this.getInputSchema().getType(References.ENTITY_EQUIPMENT))) {
          throw new IllegalStateException("Input entity_equipment type does not match expected");
-      } else if (!var4.equals(this.getOutputSchema().getType(References.ENTITY_EQUIPMENT))) {
+      } else if (!newEquipmentType.equals(this.getOutputSchema().getType(References.ENTITY_EQUIPMENT))) {
          throw new IllegalStateException("Output entity_equipment type does not match expected");
       } else {
-         return TypeRewriteRule.seq(this.fixTypeEverywhereTyped("EntityEquipmentToArmorAndHandFix - drop chances", this.getInputSchema().getType(References.ENTITY), (var0) -> var0.update(DSL.remainderFinder(), EntityEquipmentToArmorAndHandFix::fixDropChances)), this.fixTypeEverywhere("EntityEquipmentToArmorAndHandFix - equipment", var3, var4, (var1x) -> {
-            Object var2x = ((Pair)var2.read((new Dynamic(var1x)).emptyMap()).result().orElseThrow(() -> new IllegalStateException("Could not parse newly created empty itemstack."))).getFirst();
-            Either var3 = Either.right(DSL.unit());
-            return (var2xx) -> var2xx.mapSecond((var2) -> {
-                  List var3x = (List)var2.map(Function.identity(), (var0) -> List.of());
-                  Either var4 = Either.right(DSL.unit());
-                  Either var5 = Either.right(DSL.unit());
-                  if (!var3x.isEmpty()) {
-                     var4 = Either.left(Lists.newArrayList(new Object[]{var3x.getFirst(), var2x}));
+         return TypeRewriteRule.seq(this.fixTypeEverywhereTyped("EntityEquipmentToArmorAndHandFix - drop chances", this.getInputSchema().getType(References.ENTITY), (typed) -> typed.update(DSL.remainderFinder(), EntityEquipmentToArmorAndHandFix::fixDropChances)), this.fixTypeEverywhere("EntityEquipmentToArmorAndHandFix - equipment", oldEquipmentType, newEquipmentType, (ops) -> {
+            ItemStackNew emptyStack = (ItemStackNew)((Pair)newItemStackType.read((new Dynamic(ops)).emptyMap()).result().orElseThrow(() -> new IllegalStateException("Could not parse newly created empty itemstack."))).getFirst();
+            Either<ItemStackNew, Unit> noItem = Either.right(DSL.unit());
+            return (named) -> named.mapSecond((equipmentField) -> {
+                  List<ItemStackOld> items = (List)equipmentField.map(Function.identity(), (ignored) -> List.of());
+                  Either<List<ItemStackNew>, Unit> handItems = Either.right(DSL.unit());
+                  Either<List<ItemStackNew>, Unit> armorItems = Either.right(DSL.unit());
+                  if (!items.isEmpty()) {
+                     handItems = Either.left(Lists.newArrayList(new Object[]{items.getFirst(), emptyStack}));
                   }
 
-                  if (var3x.size() > 1) {
-                     ArrayList var6 = Lists.newArrayList(new Object[]{var2x, var2x, var2x, var2x});
+                  if (items.size() > 1) {
+                     List<ItemStackNew> armor = Lists.newArrayList(new Object[]{emptyStack, emptyStack, emptyStack, emptyStack});
 
-                     for(int var7 = 1; var7 < Math.min(var3x.size(), 5); ++var7) {
-                        var6.set(var7 - 1, var3x.get(var7));
+                     for(int i = 1; i < Math.min(items.size(), 5); ++i) {
+                        armor.set(i - 1, items.get(i));
                      }
 
-                     var5 = Either.left(var6);
+                     armorItems = Either.left(armor);
                   }
 
-                  return Pair.of(var5, Pair.of(var4, Pair.of(var3, var3)));
+                  return Pair.of(armorItems, Pair.of(handItems, Pair.of(noItem, noItem)));
                });
          }));
       }
    }
 
-   private static Dynamic<?> fixDropChances(Dynamic<?> var0) {
-      Optional var1 = var0.get("DropChances").asStreamOpt().result();
-      var0 = var0.remove("DropChances");
-      if (var1.isPresent()) {
-         Iterator var2 = Stream.concat(((Stream)var1.get()).map((var0x) -> var0x.asFloat(0.0F)), Stream.generate(() -> 0.0F)).iterator();
-         float var3 = (Float)var2.next();
-         if (var0.get("HandDropChances").result().isEmpty()) {
-            Stream var10003 = Stream.of(var3, 0.0F);
-            Objects.requireNonNull(var0);
-            var0 = var0.set("HandDropChances", var0.createList(var10003.map(var0::createFloat)));
+   private static Dynamic<?> fixDropChances(Dynamic<?> tag) {
+      Optional<? extends Stream<? extends Dynamic<?>>> dropChances = tag.get("DropChances").asStreamOpt().result();
+      tag = tag.remove("DropChances");
+      if (dropChances.isPresent()) {
+         Iterator<Float> chances = Stream.concat(((Stream)dropChances.get()).map((value) -> value.asFloat(0.0F)), Stream.generate(() -> 0.0F)).iterator();
+         float handChance = (Float)chances.next();
+         if (tag.get("HandDropChances").result().isEmpty()) {
+            Stream var10003 = Stream.of(handChance, 0.0F);
+            Objects.requireNonNull(tag);
+            tag = tag.set("HandDropChances", tag.createList(var10003.map(tag::createFloat)));
          }
 
-         if (var0.get("ArmorDropChances").result().isEmpty()) {
-            Stream var5 = Stream.of((Float)var2.next(), (Float)var2.next(), (Float)var2.next(), (Float)var2.next());
-            Objects.requireNonNull(var0);
-            var0 = var0.set("ArmorDropChances", var0.createList(var5.map(var0::createFloat)));
+         if (tag.get("ArmorDropChances").result().isEmpty()) {
+            Stream var5 = Stream.of((Float)chances.next(), (Float)chances.next(), (Float)chances.next(), (Float)chances.next());
+            Objects.requireNonNull(tag);
+            tag = tag.set("ArmorDropChances", tag.createList(var5.map(tag::createFloat)));
          }
       }
 
-      return var0;
+      return tag;
    }
 }

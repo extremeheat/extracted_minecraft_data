@@ -10,6 +10,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Util;
+import org.jspecify.annotations.Nullable;
 
 public class ConfirmLinkScreen extends ConfirmScreen {
    private static final Component WARNING_TEXT = Component.translatable("chat.link.warning").withColor(-13108);
@@ -17,36 +18,36 @@ public class ConfirmLinkScreen extends ConfirmScreen {
    private final String url;
    private final boolean showWarning;
 
-   public ConfirmLinkScreen(BooleanConsumer var1, String var2, boolean var3) {
-      this(var1, confirmMessage(var3), Component.literal(var2), (String)var2, var3 ? CommonComponents.GUI_CANCEL : CommonComponents.GUI_NO, var3);
+   public ConfirmLinkScreen(final BooleanConsumer callback, final String url, final boolean trusted) {
+      this(callback, confirmMessage(trusted), Component.literal(url), (String)url, trusted ? CommonComponents.GUI_CANCEL : CommonComponents.GUI_NO, trusted);
    }
 
-   public ConfirmLinkScreen(BooleanConsumer var1, Component var2, String var3, boolean var4) {
-      this(var1, var2, confirmMessage(var4, var3), (String)var3, var4 ? CommonComponents.GUI_CANCEL : CommonComponents.GUI_NO, var4);
+   public ConfirmLinkScreen(final BooleanConsumer callback, final Component title, final String url, final boolean trusted) {
+      this(callback, title, confirmMessage(trusted, url), (String)url, trusted ? CommonComponents.GUI_CANCEL : CommonComponents.GUI_NO, trusted);
    }
 
-   public ConfirmLinkScreen(BooleanConsumer var1, Component var2, URI var3, boolean var4) {
-      this(var1, var2, var3.toString(), var4);
+   public ConfirmLinkScreen(final BooleanConsumer callback, final Component title, final URI uri, final boolean trusted) {
+      this(callback, title, uri.toString(), trusted);
    }
 
-   public ConfirmLinkScreen(BooleanConsumer var1, Component var2, Component var3, URI var4, Component var5, boolean var6) {
-      this(var1, var2, var3, var4.toString(), var5, true);
+   public ConfirmLinkScreen(final BooleanConsumer callback, final Component title, final Component message, final URI uri, final Component noButton, final boolean trusted) {
+      this(callback, title, message, uri.toString(), noButton, true);
    }
 
-   public ConfirmLinkScreen(BooleanConsumer var1, Component var2, Component var3, String var4, Component var5, boolean var6) {
-      super(var1, var2, var3);
-      this.yesButtonComponent = var6 ? CommonComponents.GUI_OPEN_IN_BROWSER : CommonComponents.GUI_YES;
-      this.noButtonComponent = var5;
-      this.showWarning = !var6;
-      this.url = var4;
+   public ConfirmLinkScreen(final BooleanConsumer callback, final Component title, final Component message, final String url, final Component noButtonComponent, final boolean trusted) {
+      super(callback, title, message);
+      this.yesButtonComponent = trusted ? CommonComponents.GUI_OPEN_IN_BROWSER : CommonComponents.GUI_YES;
+      this.noButtonComponent = noButtonComponent;
+      this.showWarning = !trusted;
+      this.url = url;
    }
 
-   protected static MutableComponent confirmMessage(boolean var0, String var1) {
-      return confirmMessage(var0).append(CommonComponents.SPACE).append((Component)Component.literal(var1));
+   protected static MutableComponent confirmMessage(final boolean trusted, final String url) {
+      return confirmMessage(trusted).append(CommonComponents.SPACE).append((Component)Component.literal(url));
    }
 
-   protected static MutableComponent confirmMessage(boolean var0) {
-      return Component.translatable(var0 ? "chat.link.confirmTrusted" : "chat.link.confirm");
+   protected static MutableComponent confirmMessage(final boolean trusted) {
+      return Component.translatable(trusted ? "chat.link.confirmTrusted" : "chat.link.confirm");
    }
 
    protected void addAdditionalText() {
@@ -56,62 +57,62 @@ public class ConfirmLinkScreen extends ConfirmScreen {
 
    }
 
-   protected void addButtons(LinearLayout var1) {
-      this.yesButton = (Button)var1.addChild(Button.builder(this.yesButtonComponent, (var1x) -> this.callback.accept(true)).width(100).build());
-      var1.addChild(Button.builder(CommonComponents.GUI_COPY_TO_CLIPBOARD, (var1x) -> {
+   protected void addButtons(final LinearLayout buttonLayout) {
+      this.yesButton = (Button)buttonLayout.addChild(Button.builder(this.yesButtonComponent, (button) -> this.callback.accept(true)).width(100).build());
+      buttonLayout.addChild(Button.builder(CommonComponents.GUI_COPY_TO_CLIPBOARD, (button) -> {
          this.copyToClipboard();
          this.callback.accept(false);
       }).width(100).build());
-      this.noButton = (Button)var1.addChild(Button.builder(this.noButtonComponent, (var1x) -> this.callback.accept(false)).width(100).build());
+      this.noButton = (Button)buttonLayout.addChild(Button.builder(this.noButtonComponent, (button) -> this.callback.accept(false)).width(100).build());
    }
 
    public void copyToClipboard() {
       this.minecraft.keyboardHandler.setClipboard(this.url);
    }
 
-   public static void confirmLinkNow(Screen var0, String var1, boolean var2) {
-      Minecraft var3 = Minecraft.getInstance();
-      var3.setScreen(new ConfirmLinkScreen((var3x) -> {
-         if (var3x) {
-            Util.getPlatform().openUri(var1);
+   public static void confirmLinkNow(final Screen parentScreen, final String uri, final boolean trusted) {
+      Minecraft minecraft = Minecraft.getInstance();
+      minecraft.setScreen(new ConfirmLinkScreen((shouldOpen) -> {
+         if (shouldOpen) {
+            Util.getPlatform().openUri(uri);
          }
 
-         var3.setScreen(var0);
-      }, var1, var2));
+         minecraft.setScreen(parentScreen);
+      }, uri, trusted));
    }
 
-   public static void confirmLinkNow(Screen var0, URI var1, boolean var2) {
-      Minecraft var3 = Minecraft.getInstance();
-      var3.setScreen(new ConfirmLinkScreen((var3x) -> {
-         if (var3x) {
-            Util.getPlatform().openUri(var1);
+   public static void confirmLinkNow(final @Nullable Screen parentScreen, final URI uri, final boolean trusted) {
+      Minecraft minecraft = Minecraft.getInstance();
+      minecraft.setScreen(new ConfirmLinkScreen((shouldOpen) -> {
+         if (shouldOpen) {
+            Util.getPlatform().openUri(uri);
          }
 
-         var3.setScreen(var0);
-      }, var1.toString(), var2));
+         minecraft.setScreen(parentScreen);
+      }, uri.toString(), trusted));
    }
 
-   public static void confirmLinkNow(Screen var0, URI var1) {
-      confirmLinkNow(var0, var1, true);
+   public static void confirmLinkNow(final @Nullable Screen parentScreen, final URI uri) {
+      confirmLinkNow(parentScreen, uri, true);
    }
 
-   public static void confirmLinkNow(Screen var0, String var1) {
-      confirmLinkNow(var0, var1, true);
+   public static void confirmLinkNow(final Screen parentScreen, final String uri) {
+      confirmLinkNow(parentScreen, uri, true);
    }
 
-   public static Button.OnPress confirmLink(Screen var0, String var1, boolean var2) {
-      return (var3) -> confirmLinkNow(var0, var1, var2);
+   public static Button.OnPress confirmLink(final Screen parentScreen, final String uri, final boolean trusted) {
+      return (button) -> confirmLinkNow(parentScreen, uri, trusted);
    }
 
-   public static Button.OnPress confirmLink(Screen var0, URI var1, boolean var2) {
-      return (var3) -> confirmLinkNow(var0, var1, var2);
+   public static Button.OnPress confirmLink(final Screen parentScreen, final URI uri, final boolean trusted) {
+      return (button) -> confirmLinkNow(parentScreen, uri, trusted);
    }
 
-   public static Button.OnPress confirmLink(Screen var0, String var1) {
-      return confirmLink(var0, var1, true);
+   public static Button.OnPress confirmLink(final Screen parentScreen, final String uri) {
+      return confirmLink(parentScreen, uri, true);
    }
 
-   public static Button.OnPress confirmLink(Screen var0, URI var1) {
-      return confirmLink(var0, var1, true);
+   public static Button.OnPress confirmLink(final Screen parentScreen, final URI uri) {
+      return confirmLink(parentScreen, uri, true);
    }
 }

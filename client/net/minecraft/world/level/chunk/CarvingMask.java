@@ -8,42 +8,42 @@ import net.minecraft.world.level.ChunkPos;
 public class CarvingMask {
    private final int minY;
    private final BitSet mask;
-   private Mask additionalMask = (var0, var1x, var2x) -> false;
+   private Mask additionalMask = (x, y, z) -> false;
 
-   public CarvingMask(int var1, int var2) {
+   public CarvingMask(final int height, final int minY) {
       super();
-      this.minY = var2;
-      this.mask = new BitSet(256 * var1);
+      this.minY = minY;
+      this.mask = new BitSet(256 * height);
    }
 
-   public void setAdditionalMask(Mask var1) {
-      this.additionalMask = var1;
+   public void setAdditionalMask(final Mask additionalMask) {
+      this.additionalMask = additionalMask;
    }
 
-   public CarvingMask(long[] var1, int var2) {
+   public CarvingMask(final long[] array, final int minY) {
       super();
-      this.minY = var2;
-      this.mask = BitSet.valueOf(var1);
+      this.minY = minY;
+      this.mask = BitSet.valueOf(array);
    }
 
-   private int getIndex(int var1, int var2, int var3) {
-      return var1 & 15 | (var3 & 15) << 4 | var2 - this.minY << 8;
+   private int getIndex(final int x, final int y, final int z) {
+      return x & 15 | (z & 15) << 4 | y - this.minY << 8;
    }
 
-   public void set(int var1, int var2, int var3) {
-      this.mask.set(this.getIndex(var1, var2, var3));
+   public void set(final int x, final int y, final int z) {
+      this.mask.set(this.getIndex(x, y, z));
    }
 
-   public boolean get(int var1, int var2, int var3) {
-      return this.additionalMask.test(var1, var2, var3) || this.mask.get(this.getIndex(var1, var2, var3));
+   public boolean get(final int x, final int y, final int z) {
+      return this.additionalMask.test(x, y, z) || this.mask.get(this.getIndex(x, y, z));
    }
 
-   public Stream<BlockPos> stream(ChunkPos var1) {
-      return this.mask.stream().mapToObj((var2) -> {
-         int var3 = var2 & 15;
-         int var4 = var2 >> 4 & 15;
-         int var5 = var2 >> 8;
-         return var1.getBlockAt(var3, var5 + this.minY, var4);
+   public Stream<BlockPos> stream(final ChunkPos pos) {
+      return this.mask.stream().mapToObj((i) -> {
+         int x = i & 15;
+         int z = i >> 4 & 15;
+         int y = i >> 8;
+         return pos.getBlockAt(x, y + this.minY, z);
       });
    }
 
@@ -52,6 +52,6 @@ public class CarvingMask {
    }
 
    public interface Mask {
-      boolean test(int var1, int var2, int var3);
+      boolean test(int x, int y, int z);
    }
 }

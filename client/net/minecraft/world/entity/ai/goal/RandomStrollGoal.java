@@ -17,20 +17,20 @@ public class RandomStrollGoal extends Goal {
    protected boolean forceTrigger;
    private final boolean checkNoActionTime;
 
-   public RandomStrollGoal(PathfinderMob var1, double var2) {
-      this(var1, var2, 120);
+   public RandomStrollGoal(final PathfinderMob mob, final double speedModifier) {
+      this(mob, speedModifier, 120);
    }
 
-   public RandomStrollGoal(PathfinderMob var1, double var2, int var4) {
-      this(var1, var2, var4, true);
+   public RandomStrollGoal(final PathfinderMob mob, final double speedModifier, final int interval) {
+      this(mob, speedModifier, interval, true);
    }
 
-   public RandomStrollGoal(PathfinderMob var1, double var2, int var4, boolean var5) {
+   public RandomStrollGoal(final PathfinderMob mob, final double speedModifier, final int interval, final boolean checkNoActionTime) {
       super();
-      this.mob = var1;
-      this.speedModifier = var2;
-      this.interval = var4;
-      this.checkNoActionTime = var5;
+      this.mob = mob;
+      this.speedModifier = speedModifier;
+      this.interval = interval;
+      this.checkNoActionTime = checkNoActionTime;
       this.setFlags(EnumSet.of(Goal.Flag.MOVE));
    }
 
@@ -48,13 +48,13 @@ public class RandomStrollGoal extends Goal {
             }
          }
 
-         Vec3 var1 = this.getPosition();
-         if (var1 == null) {
+         Vec3 pos = this.getPosition();
+         if (pos == null) {
             return false;
          } else {
-            this.wantedX = var1.x;
-            this.wantedY = var1.y;
-            this.wantedZ = var1.z;
+            this.wantedX = pos.x;
+            this.wantedY = pos.y;
+            this.wantedZ = pos.z;
             this.forceTrigger = false;
             return true;
          }
@@ -82,7 +82,7 @@ public class RandomStrollGoal extends Goal {
       this.forceTrigger = true;
    }
 
-   public void setInterval(int var1) {
-      this.interval = var1;
+   public void setInterval(final int interval) {
+      this.interval = interval;
    }
 }

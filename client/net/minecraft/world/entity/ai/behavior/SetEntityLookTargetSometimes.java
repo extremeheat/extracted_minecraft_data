@@ -19,25 +19,25 @@ public class SetEntityLookTargetSometimes {
       super();
    }
 
-   public static BehaviorControl<LivingEntity> create(float var0, UniformInt var1) {
-      return create(var0, var1, (var0x) -> true);
+   public static BehaviorControl<LivingEntity> create(final float maxDist, final UniformInt interval) {
+      return create(maxDist, interval, (mob) -> true);
    }
 
-   public static BehaviorControl<LivingEntity> create(EntityType<?> var0, float var1, UniformInt var2) {
-      return create(var1, var2, (var1x) -> var0.equals(var1x.getType()));
+   public static BehaviorControl<LivingEntity> create(final EntityType<?> type, final float maxDist, final UniformInt interval) {
+      return create(maxDist, interval, (mob) -> mob.is(type));
    }
 
-   private static BehaviorControl<LivingEntity> create(float var0, UniformInt var1, Predicate<LivingEntity> var2) {
-      float var3 = var0 * var0;
-      Ticker var4 = new Ticker(var1);
-      return BehaviorBuilder.create((Function)((var3x) -> var3x.group(var3x.absent(MemoryModuleType.LOOK_TARGET), var3x.present(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)).apply(var3x, (var4x, var5) -> (var6, var7, var8) -> {
-               Optional var10 = ((NearestVisibleLivingEntities)var3x.get(var5)).findClosest(var2.and((var2x) -> var2x.distanceToSqr(var7) <= (double)var3));
-               if (var10.isEmpty()) {
+   private static BehaviorControl<LivingEntity> create(final float maxDist, final UniformInt interval, final Predicate<LivingEntity> predicate) {
+      float maxDistSqr = maxDist * maxDist;
+      Ticker ticker = new Ticker(interval);
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.absent(MemoryModuleType.LOOK_TARGET), i.present(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)).apply(i, (lookTarget, nearestEntities) -> (level, body, timestamp) -> {
+               Optional<LivingEntity> target = ((NearestVisibleLivingEntities)i.get(nearestEntities)).findClosest(predicate.and((mob) -> mob.distanceToSqr(body) <= (double)maxDistSqr));
+               if (target.isEmpty()) {
                   return false;
-               } else if (!var4.tickDownAndCheck(var6.random)) {
+               } else if (!ticker.tickDownAndCheck(level.getRandom())) {
                   return false;
                } else {
-                  var4x.set(new EntityTracker((Entity)var10.get(), true));
+                  lookTarget.set(new EntityTracker((Entity)target.get(), true));
                   return true;
                }
             })));
@@ -47,18 +47,18 @@ public class SetEntityLookTargetSometimes {
       private final UniformInt interval;
       private int ticksUntilNextStart;
 
-      public Ticker(UniformInt var1) {
+      public Ticker(final UniformInt interval) {
          super();
-         if (var1.getMinValue() <= 1) {
+         if (interval.minInclusive() <= 1) {
             throw new IllegalArgumentException();
          } else {
-            this.interval = var1;
+            this.interval = interval;
          }
       }
 
-      public boolean tickDownAndCheck(RandomSource var1) {
+      public boolean tickDownAndCheck(final RandomSource random) {
          if (this.ticksUntilNextStart == 0) {
-            this.ticksUntilNextStart = this.interval.sample(var1) - 1;
+            this.ticksUntilNextStart = this.interval.sample(random) - 1;
             return false;
          } else {
             return --this.ticksUntilNextStart == 0;

@@ -1,12 +1,11 @@
 package net.minecraft.server.jsonrpc.methods;
 
 public record ClientInfo(Integer connectionId) {
-   public ClientInfo(Integer var1) {
+   public ClientInfo {
       super();
-      this.connectionId = var1;
    }
 
-   public static ClientInfo of(Integer var0) {
-      return new ClientInfo(var0);
+   public static ClientInfo of(final Integer connectionId) {
+      return new ClientInfo(connectionId);
    }
 }

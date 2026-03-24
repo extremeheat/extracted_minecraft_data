@@ -6,5 +6,5 @@ import net.minecraft.server.network.Filterable;
 public interface BookContent<T, C> {
    List<Filterable<T>> pages();
 
-   C withReplacedPages(List<Filterable<T>> var1);
+   C withReplacedPages(List<Filterable<T>> newPages);
 }

@@ -8,14 +8,14 @@ public class WrappedGoal extends Goal {
    private final int priority;
    private boolean isRunning;
 
-   public WrappedGoal(int var1, Goal var2) {
+   public WrappedGoal(final int priority, final Goal goal) {
       super();
-      this.priority = var1;
-      this.goal = var2;
+      this.priority = priority;
+      this.goal = goal;
    }
 
-   public boolean canBeReplacedBy(WrappedGoal var1) {
-      return this.isInterruptable() && var1.getPriority() < this.getPriority();
+   public boolean canBeReplacedBy(final WrappedGoal goal) {
+      return this.isInterruptable() && goal.getPriority() < this.getPriority();
    }
 
    public boolean canUse() {
@@ -48,16 +48,16 @@ public class WrappedGoal extends Goal {
       return this.goal.requiresUpdateEveryTick();
    }
 
-   protected int adjustedTickDelay(int var1) {
-      return this.goal.adjustedTickDelay(var1);
+   protected int adjustedTickDelay(final int ticks) {
+      return this.goal.adjustedTickDelay(ticks);
    }
 
    public void tick() {
       this.goal.tick();
    }
 
-   public void setFlags(EnumSet<Goal.Flag> var1) {
-      this.goal.setFlags(var1);
+   public void setFlags(final EnumSet<Goal.Flag> requiredControlFlags) {
+      this.goal.setFlags(requiredControlFlags);
    }
 
    public EnumSet<Goal.Flag> getFlags() {
@@ -76,11 +76,11 @@ public class WrappedGoal extends Goal {
       return this.goal;
    }
 
-   public boolean equals(@Nullable Object var1) {
-      if (this == var1) {
+   public boolean equals(final @Nullable Object o) {
+      if (this == o) {
          return true;
       } else {
-         return var1 != null && this.getClass() == var1.getClass() ? this.goal.equals(((WrappedGoal)var1).goal) : false;
+         return o != null && this.getClass() == o.getClass() ? this.goal.equals(((WrappedGoal)o).goal) : false;
       }
    }
 

@@ -24,13 +24,13 @@ public class AquaticFeatures {
       super();
    }
 
-   public static void bootstrap(BootstrapContext<ConfiguredFeature<?, ?>> var0) {
-      FeatureUtils.register(var0, SEAGRASS_SHORT, Feature.SEAGRASS, new ProbabilityFeatureConfiguration(0.3F));
-      FeatureUtils.register(var0, SEAGRASS_SLIGHTLY_LESS_SHORT, Feature.SEAGRASS, new ProbabilityFeatureConfiguration(0.4F));
-      FeatureUtils.register(var0, SEAGRASS_MID, Feature.SEAGRASS, new ProbabilityFeatureConfiguration(0.6F));
-      FeatureUtils.register(var0, SEAGRASS_TALL, Feature.SEAGRASS, new ProbabilityFeatureConfiguration(0.8F));
-      FeatureUtils.register(var0, SEA_PICKLE, Feature.SEA_PICKLE, new CountConfiguration(20));
-      FeatureUtils.register(var0, KELP, Feature.KELP);
-      FeatureUtils.register(var0, WARM_OCEAN_VEGETATION, Feature.SIMPLE_RANDOM_SELECTOR, new SimpleRandomFeatureConfiguration(HolderSet.direct(PlacementUtils.inlinePlaced(Feature.CORAL_TREE, FeatureConfiguration.NONE), PlacementUtils.inlinePlaced(Feature.CORAL_CLAW, FeatureConfiguration.NONE), PlacementUtils.inlinePlaced(Feature.CORAL_MUSHROOM, FeatureConfiguration.NONE))));
+   public static void bootstrap(final BootstrapContext<ConfiguredFeature<?, ?>> context) {
+      FeatureUtils.register(context, SEAGRASS_SHORT, Feature.SEAGRASS, new ProbabilityFeatureConfiguration(0.3F));
+      FeatureUtils.register(context, SEAGRASS_SLIGHTLY_LESS_SHORT, Feature.SEAGRASS, new ProbabilityFeatureConfiguration(0.4F));
+      FeatureUtils.register(context, SEAGRASS_MID, Feature.SEAGRASS, new ProbabilityFeatureConfiguration(0.6F));
+      FeatureUtils.register(context, SEAGRASS_TALL, Feature.SEAGRASS, new ProbabilityFeatureConfiguration(0.8F));
+      FeatureUtils.register(context, SEA_PICKLE, Feature.SEA_PICKLE, new CountConfiguration(20));
+      FeatureUtils.register(context, KELP, Feature.KELP);
+      FeatureUtils.register(context, WARM_OCEAN_VEGETATION, Feature.SIMPLE_RANDOM_SELECTOR, new SimpleRandomFeatureConfiguration(HolderSet.direct(PlacementUtils.inlinePlaced(Feature.CORAL_TREE, FeatureConfiguration.NONE), PlacementUtils.inlinePlaced(Feature.CORAL_CLAW, FeatureConfiguration.NONE), PlacementUtils.inlinePlaced(Feature.CORAL_MUSHROOM, FeatureConfiguration.NONE))));
    }
 }

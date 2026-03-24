@@ -10,18 +10,16 @@ import net.minecraft.world.level.ChunkPos;
 public record ClientboundDebugChunkValuePacket(ChunkPos chunkPos, DebugSubscription.Update<?> update) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundDebugChunkValuePacket> STREAM_CODEC;
 
-   public ClientboundDebugChunkValuePacket(ChunkPos var1, DebugSubscription.Update<?> var2) {
+   public ClientboundDebugChunkValuePacket {
       super();
-      this.chunkPos = var1;
-      this.update = var2;
    }
 
    public PacketType<ClientboundDebugChunkValuePacket> type() {
       return GamePacketTypes.CLIENTBOUND_DEBUG_CHUNK_VALUE;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleDebugChunkValue(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleDebugChunkValue(this);
    }
 
    static {

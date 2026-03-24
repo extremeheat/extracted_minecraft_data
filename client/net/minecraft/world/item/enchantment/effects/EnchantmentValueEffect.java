@@ -10,16 +10,16 @@ import net.minecraft.util.RandomSource;
 public interface EnchantmentValueEffect {
    Codec<EnchantmentValueEffect> CODEC = BuiltInRegistries.ENCHANTMENT_VALUE_EFFECT_TYPE.byNameCodec().dispatch(EnchantmentValueEffect::codec, Function.identity());
 
-   static MapCodec<? extends EnchantmentValueEffect> bootstrap(Registry<MapCodec<? extends EnchantmentValueEffect>> var0) {
-      Registry.register(var0, (String)"add", AddValue.CODEC);
-      Registry.register(var0, (String)"all_of", AllOf.ValueEffects.CODEC);
-      Registry.register(var0, (String)"multiply", MultiplyValue.CODEC);
-      Registry.register(var0, (String)"remove_binomial", RemoveBinomial.CODEC);
-      Registry.register(var0, (String)"exponential", ScaleExponentially.CODEC);
-      return (MapCodec)Registry.register(var0, (String)"set", SetValue.CODEC);
+   static MapCodec<? extends EnchantmentValueEffect> bootstrap(final Registry<MapCodec<? extends EnchantmentValueEffect>> registry) {
+      Registry.register(registry, (String)"add", AddValue.CODEC);
+      Registry.register(registry, (String)"all_of", AllOf.ValueEffects.CODEC);
+      Registry.register(registry, (String)"multiply", MultiplyValue.CODEC);
+      Registry.register(registry, (String)"remove_binomial", RemoveBinomial.CODEC);
+      Registry.register(registry, (String)"exponential", ScaleExponentially.CODEC);
+      return (MapCodec)Registry.register(registry, (String)"set", SetValue.CODEC);
    }
 
-   float process(int var1, RandomSource var2, float var3);
+   float process(int enchantmentLevel, RandomSource random, float inputValue);
 
    MapCodec<? extends EnchantmentValueEffect> codec();
 }

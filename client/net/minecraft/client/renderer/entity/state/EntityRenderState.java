@@ -28,6 +28,7 @@ public class EntityRenderState {
    public int outlineColor = 0;
    public @Nullable Vec3 passengerOffset;
    public @Nullable Component nameTag;
+   public @Nullable Component scoreText;
    public @Nullable Vec3 nameTagAttachment;
    public @Nullable List<LeashState> leashStates;
    public float shadowRadius;
@@ -41,9 +42,9 @@ public class EntityRenderState {
       return this.outlineColor != 0;
    }
 
-   public void fillCrashReportCategory(CrashReportCategory var1) {
-      var1.setDetail("EntityRenderState", this.getClass().getCanonicalName());
-      var1.setDetail("Entity's Exact location", String.format(Locale.ROOT, "%.2f, %.2f, %.2f", this.x, this.y, this.z));
+   public void fillCrashReportCategory(final CrashReportCategory category) {
+      category.setDetail("EntityRenderState", this.getClass().getCanonicalName());
+      category.setDetail("Entity's Exact location", String.format(Locale.ROOT, "%.2f, %.2f, %.2f", this.x, this.y, this.z));
    }
 
    public static class LeashState {
@@ -70,13 +71,8 @@ public class EntityRenderState {
    }
 
    public static record ShadowPiece(float relativeX, float relativeY, float relativeZ, VoxelShape shapeBelow, float alpha) {
-      public ShadowPiece(float var1, float var2, float var3, VoxelShape var4, float var5) {
+      public ShadowPiece {
          super();
-         this.relativeX = var1;
-         this.relativeY = var2;
-         this.relativeZ = var3;
-         this.shapeBelow = var4;
-         this.alpha = var5;
       }
    }
 }

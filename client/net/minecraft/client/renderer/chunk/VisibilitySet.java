@@ -14,53 +14,53 @@ public class VisibilitySet {
       this.data = new BitSet(FACINGS * FACINGS);
    }
 
-   public void add(Set<Direction> var1) {
-      for(Direction var3 : var1) {
-         for(Direction var5 : var1) {
-            this.set(var3, var5, true);
+   public void add(final Set<Direction> directions) {
+      for(Direction direction1 : directions) {
+         for(Direction direction2 : directions) {
+            this.set(direction1, direction2, true);
          }
       }
 
    }
 
-   public void set(Direction var1, Direction var2, boolean var3) {
-      this.data.set(var1.ordinal() + var2.ordinal() * FACINGS, var3);
-      this.data.set(var2.ordinal() + var1.ordinal() * FACINGS, var3);
+   public void set(final Direction direction1, final Direction direction2, final boolean value) {
+      this.data.set(direction1.ordinal() + direction2.ordinal() * FACINGS, value);
+      this.data.set(direction2.ordinal() + direction1.ordinal() * FACINGS, value);
    }
 
-   public void setAll(boolean var1) {
-      this.data.set(0, this.data.size(), var1);
+   public void setAll(final boolean visible) {
+      this.data.set(0, this.data.size(), visible);
    }
 
-   public boolean visibilityBetween(Direction var1, Direction var2) {
-      return this.data.get(var1.ordinal() + var2.ordinal() * FACINGS);
+   public boolean visibilityBetween(final Direction direction1, final Direction direction2) {
+      return this.data.get(direction1.ordinal() + direction2.ordinal() * FACINGS);
    }
 
    public String toString() {
-      StringBuilder var1 = new StringBuilder();
-      var1.append(' ');
+      StringBuilder builder = new StringBuilder();
+      builder.append(' ');
 
-      for(Direction var5 : Direction.values()) {
-         var1.append(' ').append(var5.toString().toUpperCase(Locale.ROOT).charAt(0));
+      for(Direction direction : Direction.values()) {
+         builder.append(' ').append(direction.toString().toUpperCase(Locale.ROOT).charAt(0));
       }
 
-      var1.append('\n');
+      builder.append('\n');
 
-      for(Direction var14 : Direction.values()) {
-         var1.append(var14.toString().toUpperCase(Locale.ROOT).charAt(0));
+      for(Direction direction1 : Direction.values()) {
+         builder.append(direction1.toString().toUpperCase(Locale.ROOT).charAt(0));
 
-         for(Direction var9 : Direction.values()) {
-            if (var14 == var9) {
-               var1.append("  ");
+         for(Direction direction2 : Direction.values()) {
+            if (direction1 == direction2) {
+               builder.append("  ");
             } else {
-               boolean var10 = this.visibilityBetween(var14, var9);
-               var1.append(' ').append((char)(var10 ? 'Y' : 'n'));
+               boolean ok = this.visibilityBetween(direction1, direction2);
+               builder.append(' ').append((char)(ok ? 'Y' : 'n'));
             }
          }
 
-         var1.append('\n');
+         builder.append('\n');
       }
 
-      return var1.toString();
+      return builder.toString();
    }
 }

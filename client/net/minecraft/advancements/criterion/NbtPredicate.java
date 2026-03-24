@@ -26,36 +26,35 @@ public record NbtPredicate(CompoundTag tag) {
    public static final StreamCodec<ByteBuf, NbtPredicate> STREAM_CODEC;
    public static final String SELECTED_ITEM_TAG = "SelectedItem";
 
-   public NbtPredicate(CompoundTag var1) {
+   public NbtPredicate {
       super();
-      this.tag = var1;
    }
 
-   public boolean matches(DataComponentGetter var1) {
-      CustomData var2 = (CustomData)var1.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
-      return var2.matchedBy(this.tag);
+   public boolean matches(final DataComponentGetter components) {
+      CustomData data = (CustomData)components.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
+      return data.matchedBy(this.tag);
    }
 
-   public boolean matches(Entity var1) {
-      return this.matches((Tag)getEntityTagToCompare(var1));
+   public boolean matches(final Entity entity) {
+      return this.matches((Tag)getEntityTagToCompare(entity));
    }
 
-   public boolean matches(@Nullable Tag var1) {
-      return var1 != null && NbtUtils.compareNbt(this.tag, var1, true);
+   public boolean matches(final @Nullable Tag tag) {
+      return tag != null && NbtUtils.compareNbt(this.tag, tag, true);
    }
 
-   public static CompoundTag getEntityTagToCompare(Entity var0) {
-      try (ProblemReporter.ScopedCollector var1 = new ProblemReporter.ScopedCollector(var0.problemPath(), LOGGER)) {
-         TagValueOutput var2 = TagValueOutput.createWithContext(var1, var0.registryAccess());
-         var0.saveWithoutId(var2);
-         if (var0 instanceof Player var3) {
-            ItemStack var4 = var3.getInventory().getSelectedItem();
-            if (!var4.isEmpty()) {
-               var2.store("SelectedItem", ItemStack.CODEC, var4);
+   public static CompoundTag getEntityTagToCompare(final Entity entity) {
+      try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(entity.problemPath(), LOGGER)) {
+         TagValueOutput output = TagValueOutput.createWithContext(reporter, entity.registryAccess());
+         entity.saveWithoutId(output);
+         if (entity instanceof Player player) {
+            ItemStack selected = player.getInventory().getSelectedItem();
+            if (!selected.isEmpty()) {
+               output.store("SelectedItem", ItemStack.CODEC, selected);
             }
          }
 
-         return var2.buildResult();
+         return output.buildResult();
       }
    }
 

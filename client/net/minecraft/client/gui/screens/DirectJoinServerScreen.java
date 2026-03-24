@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.screens;
 
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.input.KeyEvent;
@@ -18,19 +18,19 @@ public class DirectJoinServerScreen extends Screen {
    private final BooleanConsumer callback;
    private final Screen lastScreen;
 
-   public DirectJoinServerScreen(Screen var1, BooleanConsumer var2, ServerData var3) {
+   public DirectJoinServerScreen(final Screen lastScreen, final BooleanConsumer callback, final ServerData serverData) {
       super(Component.translatable("selectServer.direct"));
-      this.lastScreen = var1;
-      this.serverData = var3;
-      this.callback = var2;
+      this.lastScreen = lastScreen;
+      this.serverData = serverData;
+      this.callback = callback;
    }
 
-   public boolean keyPressed(KeyEvent var1) {
-      if (this.selectButton.active && this.getFocused() == this.ipEdit && var1.isConfirmation()) {
+   public boolean keyPressed(final KeyEvent event) {
+      if (this.selectButton.active && this.getFocused() == this.ipEdit && event.isConfirmation()) {
          this.onSelect();
          return true;
       } else {
-         return super.keyPressed(var1);
+         return super.keyPressed(event);
       }
    }
 
@@ -38,10 +38,10 @@ public class DirectJoinServerScreen extends Screen {
       this.ipEdit = new EditBox(this.font, this.width / 2 - 100, 116, 200, 20, ENTER_IP_LABEL);
       this.ipEdit.setMaxLength(128);
       this.ipEdit.setValue(this.minecraft.options.lastMpIp);
-      this.ipEdit.setResponder((var1) -> this.updateSelectButtonStatus());
+      this.ipEdit.setResponder((value) -> this.updateSelectButtonStatus());
       this.addWidget(this.ipEdit);
-      this.selectButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("selectServer.select"), (var1) -> this.onSelect()).bounds(this.width / 2 - 100, this.height / 4 + 96 + 12, 200, 20).build());
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1) -> this.callback.accept(false)).bounds(this.width / 2 - 100, this.height / 4 + 120 + 12, 200, 20).build());
+      this.selectButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("selectServer.select"), (button) -> this.onSelect()).bounds(this.width / 2 - 100, this.height / 4 + 96 + 12, 200, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (button) -> this.callback.accept(false)).bounds(this.width / 2 - 100, this.height / 4 + 120 + 12, 200, 20).build());
       this.updateSelectButtonStatus();
    }
 
@@ -49,10 +49,10 @@ public class DirectJoinServerScreen extends Screen {
       this.setInitialFocus(this.ipEdit);
    }
 
-   public void resize(int var1, int var2) {
-      String var3 = this.ipEdit.getValue();
-      this.init(var1, var2);
-      this.ipEdit.setValue(var3);
+   public void resize(final int width, final int height) {
+      String oldEdit = this.ipEdit.getValue();
+      this.init(width, height);
+      this.ipEdit.setValue(oldEdit);
    }
 
    private void onSelect() {
@@ -73,10 +73,10 @@ public class DirectJoinServerScreen extends Screen {
       this.selectButton.active = ServerAddress.isValidAddress(this.ipEdit.getValue());
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 20, -1);
-      var1.drawString(this.font, (Component)ENTER_IP_LABEL, this.width / 2 - 100 + 1, 100, -6250336);
-      this.ipEdit.render(var1, var2, var3, var4);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
+      graphics.centeredText(this.font, (Component)this.title, this.width / 2, 20, -1);
+      graphics.text(this.font, (Component)ENTER_IP_LABEL, this.width / 2 - 100 + 1, 100, -6250336);
+      this.ipEdit.extractRenderState(graphics, mouseX, mouseY, a);
    }
 }

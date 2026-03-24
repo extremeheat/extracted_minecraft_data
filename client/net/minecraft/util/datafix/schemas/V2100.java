@@ -8,24 +8,24 @@ import java.util.function.Supplier;
 import net.minecraft.util.datafix.fixes.References;
 
 public class V2100 extends NamespacedSchema {
-   public V2100(int var1, Schema var2) {
-      super(var1, var2);
+   public V2100(final int versionKey, final Schema parent) {
+      super(versionKey, parent);
    }
 
-   protected static void registerMob(Schema var0, Map<String, Supplier<TypeTemplate>> var1, String var2) {
-      var0.registerSimple(var1, var2);
+   protected static void registerMob(final Schema schema, final Map<String, Supplier<TypeTemplate>> map, final String name) {
+      schema.registerSimple(map, name);
    }
 
-   public Map<String, Supplier<TypeTemplate>> registerEntities(Schema var1) {
-      Map var2 = super.registerEntities(var1);
-      registerMob(var1, var2, "minecraft:bee");
-      registerMob(var1, var2, "minecraft:bee_stinger");
-      return var2;
+   public Map<String, Supplier<TypeTemplate>> registerEntities(final Schema schema) {
+      Map<String, Supplier<TypeTemplate>> map = super.registerEntities(schema);
+      registerMob(schema, map, "minecraft:bee");
+      registerMob(schema, map, "minecraft:bee_stinger");
+      return map;
    }
 
-   public Map<String, Supplier<TypeTemplate>> registerBlockEntities(Schema var1) {
-      Map var2 = super.registerBlockEntities(var1);
-      var1.register(var2, "minecraft:beehive", () -> DSL.optionalFields("Bees", DSL.list(DSL.optionalFields("EntityData", References.ENTITY_TREE.in(var1)))));
-      return var2;
+   public Map<String, Supplier<TypeTemplate>> registerBlockEntities(final Schema schema) {
+      Map<String, Supplier<TypeTemplate>> map = super.registerBlockEntities(schema);
+      schema.register(map, "minecraft:beehive", () -> DSL.optionalFields("Bees", DSL.list(DSL.optionalFields("EntityData", References.ENTITY_TREE.in(schema)))));
+      return map;
    }
 }

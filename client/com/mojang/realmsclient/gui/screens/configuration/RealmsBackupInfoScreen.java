@@ -3,9 +3,9 @@ package com.mojang.realmsclient.gui.screens.configuration;
 import com.mojang.realmsclient.dto.Backup;
 import com.mojang.realmsclient.dto.RealmsServer;
 import java.util.Locale;
+import java.util.Objects;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
@@ -20,24 +20,22 @@ public class RealmsBackupInfoScreen extends RealmsScreen {
    private static final Component TITLE = Component.translatable("mco.backup.info.title");
    private static final Component UNKNOWN = Component.translatable("mco.backup.unknown");
    private final Screen lastScreen;
-   final Backup backup;
-   final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
+   private final Backup backup;
+   private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
    private BackupInfoList backupInfoList;
 
-   public RealmsBackupInfoScreen(Screen var1, Backup var2) {
+   public RealmsBackupInfoScreen(final Screen lastScreen, final Backup backup) {
       super(TITLE);
-      this.lastScreen = var1;
-      this.backup = var2;
+      this.lastScreen = lastScreen;
+      this.backup = backup;
    }
 
    public void init() {
       this.layout.addTitleHeader(TITLE, this.font);
       this.backupInfoList = (BackupInfoList)this.layout.addToContents(new BackupInfoList(this.minecraft));
-      this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, (var1) -> this.onClose()).build());
+      this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, (button) -> this.onClose()).build());
       this.repositionElements();
-      this.layout.visitWidgets((var1) -> {
-         AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1);
-      });
+      this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
    }
 
    protected void repositionElements() {
@@ -49,42 +47,42 @@ public class RealmsBackupInfoScreen extends RealmsScreen {
       this.minecraft.setScreen(this.lastScreen);
    }
 
-   Component checkForSpecificMetadata(String var1, String var2) {
-      String var3 = var1.toLowerCase(Locale.ROOT);
-      if (var3.contains("game") && var3.contains("mode")) {
-         return this.gameModeMetadata(var2);
-      } else if (var3.contains("game") && var3.contains("difficulty")) {
-         return this.gameDifficultyMetadata(var2);
+   private Component checkForSpecificMetadata(final String key, final String value) {
+      String k = key.toLowerCase(Locale.ROOT);
+      if (k.contains("game") && k.contains("mode")) {
+         return this.gameModeMetadata(value);
+      } else if (k.contains("game") && k.contains("difficulty")) {
+         return this.gameDifficultyMetadata(value);
       } else {
-         return (Component)(var1.equals("world_type") ? this.parseWorldType(var2) : Component.literal(var2));
+         return (Component)(key.equals("world_type") ? this.parseWorldType(value) : Component.literal(value));
       }
    }
 
-   private Component gameDifficultyMetadata(String var1) {
+   private Component gameDifficultyMetadata(final String value) {
       try {
-         return ((Difficulty)RealmsSlotOptionsScreen.DIFFICULTIES.get(Integer.parseInt(var1))).getDisplayName();
+         return ((Difficulty)RealmsSlotOptionsScreen.DIFFICULTIES.get(Integer.parseInt(value))).getDisplayName();
       } catch (Exception var3) {
          return UNKNOWN;
       }
    }
 
-   private Component gameModeMetadata(String var1) {
+   private Component gameModeMetadata(final String value) {
       try {
-         return ((GameType)RealmsSlotOptionsScreen.GAME_MODES.get(Integer.parseInt(var1))).getShortDisplayName();
+         return ((GameType)RealmsSlotOptionsScreen.GAME_MODES.get(Integer.parseInt(value))).getShortDisplayName();
       } catch (Exception var3) {
          return UNKNOWN;
       }
    }
 
-   private Component parseWorldType(String var1) {
+   private Component parseWorldType(final String value) {
       try {
-         return RealmsServer.WorldType.valueOf(var1.toUpperCase(Locale.ROOT)).getDisplayName();
+         return RealmsServer.WorldType.valueOf(value.toUpperCase(Locale.ROOT)).getDisplayName();
       } catch (Exception var3) {
          return RealmsServer.WorldType.UNKNOWN.getDisplayName();
       }
    }
 
-   class BackupInfoListEntry extends ObjectSelectionList.Entry<BackupInfoListEntry> {
+   private class BackupInfoListEntry extends ObjectSelectionList.Entry<BackupInfoListEntry> {
       private static final Component TEMPLATE_NAME = Component.translatable("mco.backup.entry.templateName");
       private static final Component GAME_DIFFICULTY = Component.translatable("mco.backup.entry.gameDifficulty");
       private static final Component NAME = Component.translatable("mco.backup.entry.name");
@@ -101,22 +99,23 @@ public class RealmsBackupInfoScreen extends RealmsScreen {
       private final Component keyComponent;
       private final Component valueComponent;
 
-      public BackupInfoListEntry(final String var2, final String var3) {
+      public BackupInfoListEntry(final String key, final String value) {
+         Objects.requireNonNull(RealmsBackupInfoScreen.this);
          super();
-         this.key = var2;
-         this.value = var3;
-         this.keyComponent = this.translateKey(var2);
-         this.valueComponent = RealmsBackupInfoScreen.this.checkForSpecificMetadata(var2, var3);
+         this.key = key;
+         this.value = value;
+         this.keyComponent = this.translateKey(key);
+         this.valueComponent = RealmsBackupInfoScreen.this.checkForSpecificMetadata(key, value);
       }
 
-      public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
-         var1.drawString(RealmsBackupInfoScreen.this.font, this.keyComponent, this.getContentX(), this.getContentY(), -6250336);
-         var1.drawString(RealmsBackupInfoScreen.this.font, (Component)this.valueComponent, this.getContentX(), this.getContentY() + 12, -1);
+      public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+         graphics.text(RealmsBackupInfoScreen.this.font, this.keyComponent, this.getContentX(), this.getContentY(), -6250336);
+         graphics.text(RealmsBackupInfoScreen.this.font, (Component)this.valueComponent, this.getContentX(), this.getContentY() + 12, -1);
       }
 
-      private Component translateKey(String var1) {
+      private Component translateKey(final String key) {
          Component var10000;
-         switch (var1) {
+         switch (key) {
             case "template_name" -> var10000 = TEMPLATE_NAME;
             case "game_difficulty" -> var10000 = GAME_DIFFICULTY;
             case "name" -> var10000 = NAME;
@@ -138,11 +137,12 @@ public class RealmsBackupInfoScreen extends RealmsScreen {
       }
    }
 
-   class BackupInfoList extends ObjectSelectionList<BackupInfoListEntry> {
-      public BackupInfoList(final Minecraft var2) {
-         super(var2, RealmsBackupInfoScreen.this.width, RealmsBackupInfoScreen.this.layout.getContentHeight(), RealmsBackupInfoScreen.this.layout.getHeaderHeight(), 36);
+   private class BackupInfoList extends ObjectSelectionList<BackupInfoListEntry> {
+      public BackupInfoList(final Minecraft minecraft) {
+         Objects.requireNonNull(RealmsBackupInfoScreen.this);
+         super(minecraft, RealmsBackupInfoScreen.this.width, RealmsBackupInfoScreen.this.layout.getContentHeight(), RealmsBackupInfoScreen.this.layout.getHeaderHeight(), 36);
          if (RealmsBackupInfoScreen.this.backup.changeList != null) {
-            RealmsBackupInfoScreen.this.backup.changeList.forEach((var1x, var2x) -> this.addEntry(RealmsBackupInfoScreen.this.new BackupInfoListEntry(var1x, var2x)));
+            RealmsBackupInfoScreen.this.backup.changeList.forEach((key, value) -> this.addEntry(RealmsBackupInfoScreen.this.new BackupInfoListEntry(key, value)));
          }
 
       }

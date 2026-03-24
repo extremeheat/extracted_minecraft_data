@@ -19,101 +19,84 @@ import org.jspecify.annotations.Nullable;
 public class SpearAttack extends Behavior<PathfinderMob> {
    public static final int MIN_REPOSITION_DISTANCE = 6;
    public static final int MAX_REPOSITION_DISTANCE = 7;
-   double speedModifierWhenCharging;
-   double speedModifierWhenRepositioning;
-   float approachDistanceSq;
-   float targetInRangeRadiusSq;
+   private final double speedModifierWhenCharging;
+   private final double speedModifierWhenRepositioning;
+   private final float targetInRangeRadiusSq;
 
-   public SpearAttack(double var1, double var3, float var5, float var6) {
+   public SpearAttack(final double speedModifierWhenCharging, final double speedModifierWhenRepositioning, final float targetInRangeRadius) {
       super(Map.of(MemoryModuleType.SPEAR_STATUS, MemoryStatus.VALUE_PRESENT));
-      this.speedModifierWhenCharging = var1;
-      this.speedModifierWhenRepositioning = var3;
-      this.approachDistanceSq = var5 * var5;
-      this.targetInRangeRadiusSq = var6 * var6;
+      this.speedModifierWhenCharging = speedModifierWhenCharging;
+      this.speedModifierWhenRepositioning = speedModifierWhenRepositioning;
+      this.targetInRangeRadiusSq = targetInRangeRadius * targetInRangeRadius;
    }
 
-   private @Nullable LivingEntity getTarget(PathfinderMob var1) {
-      return (LivingEntity)var1.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse((Object)null);
+   private @Nullable LivingEntity getTarget(final PathfinderMob mob) {
+      return (LivingEntity)mob.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse((Object)null);
    }
 
-   private boolean ableToAttack(PathfinderMob var1) {
-      return this.getTarget(var1) != null && var1.getMainHandItem().has(DataComponents.KINETIC_WEAPON);
+   private boolean ableToAttack(final PathfinderMob mob) {
+      return this.getTarget(mob) != null && mob.getMainHandItem().has(DataComponents.KINETIC_WEAPON);
    }
 
-   private int getKineticWeaponUseDuration(PathfinderMob var1) {
-      return (Integer)Optional.ofNullable((KineticWeapon)var1.getMainHandItem().get(DataComponents.KINETIC_WEAPON)).map(KineticWeapon::computeDamageUseDuration).orElse(0);
+   private int getKineticWeaponUseDuration(final PathfinderMob mob) {
+      return (Integer)Optional.ofNullable((KineticWeapon)mob.getMainHandItem().get(DataComponents.KINETIC_WEAPON)).map(KineticWeapon::computeDamageUseDuration).orElse(0);
    }
 
-   protected boolean checkExtraStartConditions(ServerLevel var1, PathfinderMob var2) {
-      return var2.getBrain().getMemory(MemoryModuleType.SPEAR_STATUS).orElse(SpearAttack.SpearStatus.APPROACH) == SpearAttack.SpearStatus.CHARGING && this.ableToAttack(var2) && !var2.isUsingItem();
+   protected boolean checkExtraStartConditions(final ServerLevel level, final PathfinderMob body) {
+      return body.getBrain().getMemory(MemoryModuleType.SPEAR_STATUS).orElse(SpearAttack.SpearStatus.APPROACH) == SpearAttack.SpearStatus.CHARGING && this.ableToAttack(body) && !body.isUsingItem();
    }
 
-   protected void start(ServerLevel var1, PathfinderMob var2, long var3) {
-      var2.setAggressive(true);
-      var2.getBrain().setMemory(MemoryModuleType.SPEAR_ENGAGE_TIME, this.getKineticWeaponUseDuration(var2));
-      var2.getBrain().eraseMemory(MemoryModuleType.SPEAR_CHARGE_POSITION);
-      var2.startUsingItem(InteractionHand.MAIN_HAND);
-      super.start(var1, var2, var3);
+   protected void start(final ServerLevel level, final PathfinderMob body, final long timestamp) {
+      body.setAggressive(true);
+      body.getBrain().setMemory(MemoryModuleType.SPEAR_ENGAGE_TIME, this.getKineticWeaponUseDuration(body));
+      body.getBrain().eraseMemory(MemoryModuleType.SPEAR_CHARGE_POSITION);
+      body.startUsingItem(InteractionHand.MAIN_HAND);
+      super.start(level, body, timestamp);
    }
 
-   protected boolean canStillUse(ServerLevel var1, PathfinderMob var2, long var3) {
-      return (Integer)var2.getBrain().getMemory(MemoryModuleType.SPEAR_ENGAGE_TIME).orElse(0) > 0 && this.ableToAttack(var2);
+   protected boolean canStillUse(final ServerLevel level, final PathfinderMob body, final long timestamp) {
+      return (Integer)body.getBrain().getMemory(MemoryModuleType.SPEAR_ENGAGE_TIME).orElse(0) > 0 && this.ableToAttack(body);
    }
 
-   protected void tick(ServerLevel var1, PathfinderMob var2, long var3) {
-      LivingEntity var5 = this.getTarget(var2);
-      double var6 = var2.distanceToSqr(var5.getX(), var5.getY(), var5.getZ());
-      Entity var8 = var2.getRootVehicle();
-      float var9 = 1.0F;
-      if (var8 instanceof Mob var10) {
-         var9 = var10.chargeSpeedModifier();
+   protected void tick(final ServerLevel level, final PathfinderMob mob, final long timestamp) {
+      LivingEntity target = this.getTarget(mob);
+      double targetDistSqr = mob.distanceToSqr(target.getX(), target.getY(), target.getZ());
+      Entity mount = mob.getRootVehicle();
+      float speedModifier = 1.0F;
+      if (mount instanceof Mob vehicleMob) {
+         speedModifier = vehicleMob.chargeSpeedModifier();
       }
 
-      int var15 = var2.isPassenger() ? 2 : 0;
-      var2.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(var5, true));
-      var2.getBrain().setMemory(MemoryModuleType.SPEAR_ENGAGE_TIME, (Integer)var2.getBrain().getMemory(MemoryModuleType.SPEAR_ENGAGE_TIME).orElse(0) - 1);
-      Vec3 var11 = (Vec3)var2.getBrain().getMemory(MemoryModuleType.SPEAR_CHARGE_POSITION).orElse((Object)null);
-      if (var11 != null) {
-         var2.getNavigation().moveTo(var11.x, var11.y, var11.z, (double)var9 * this.speedModifierWhenRepositioning);
-         if (var2.getNavigation().isDone()) {
-            var2.getBrain().eraseMemory(MemoryModuleType.SPEAR_CHARGE_POSITION);
+      int mountDistance = mob.isPassenger() ? 2 : 0;
+      mob.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(target, true));
+      mob.getBrain().setMemory(MemoryModuleType.SPEAR_ENGAGE_TIME, (Integer)mob.getBrain().getMemory(MemoryModuleType.SPEAR_ENGAGE_TIME).orElse(0) - 1);
+      Vec3 awayPos = (Vec3)mob.getBrain().getMemory(MemoryModuleType.SPEAR_CHARGE_POSITION).orElse((Object)null);
+      if (awayPos != null) {
+         mob.getNavigation().moveTo(awayPos.x, awayPos.y, awayPos.z, (double)speedModifier * this.speedModifierWhenRepositioning);
+         if (mob.getNavigation().isDone()) {
+            mob.getBrain().eraseMemory(MemoryModuleType.SPEAR_CHARGE_POSITION);
          }
       } else {
-         var2.getNavigation().moveTo((Entity)var5, (double)var9 * this.speedModifierWhenCharging);
-         if (var6 < (double)this.targetInRangeRadiusSq || var2.getNavigation().isDone()) {
-            double var12 = Math.sqrt(var6);
-            Vec3 var14 = LandRandomPos.getPosAway(var2, (double)(6 + var15) - var12, (double)(7 + var15) - var12, 7, var5.position());
-            var2.getBrain().setMemory(MemoryModuleType.SPEAR_CHARGE_POSITION, var14);
+         mob.getNavigation().moveTo((Entity)target, (double)speedModifier * this.speedModifierWhenCharging);
+         if (targetDistSqr < (double)this.targetInRangeRadiusSq || mob.getNavigation().isDone()) {
+            double distance = Math.sqrt(targetDistSqr);
+            Vec3 newAwayPos = LandRandomPos.getPosAway(mob, (double)(6 + mountDistance) - distance, (double)(7 + mountDistance) - distance, 7, target.position());
+            mob.getBrain().setMemory(MemoryModuleType.SPEAR_CHARGE_POSITION, newAwayPos);
          }
       }
 
    }
 
-   protected void stop(ServerLevel var1, PathfinderMob var2, long var3) {
-      var2.getNavigation().stop();
-      var2.stopUsingItem();
-      var2.getBrain().eraseMemory(MemoryModuleType.SPEAR_CHARGE_POSITION);
-      var2.getBrain().eraseMemory(MemoryModuleType.SPEAR_ENGAGE_TIME);
-      var2.getBrain().setMemory(MemoryModuleType.SPEAR_STATUS, SpearAttack.SpearStatus.RETREAT);
+   protected void stop(final ServerLevel level, final PathfinderMob body, final long timestamp) {
+      body.getNavigation().stop();
+      body.stopUsingItem();
+      body.getBrain().eraseMemory(MemoryModuleType.SPEAR_CHARGE_POSITION);
+      body.getBrain().eraseMemory(MemoryModuleType.SPEAR_ENGAGE_TIME);
+      body.getBrain().setMemory(MemoryModuleType.SPEAR_STATUS, SpearAttack.SpearStatus.RETREAT);
    }
 
-   protected boolean timedOut(long var1) {
+   protected boolean timedOut(final long timestamp) {
       return false;
-   }
-
-   // $FF: synthetic method
-   protected boolean canStillUse(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      return this.canStillUse(var1, (PathfinderMob)var2, var3);
-   }
-
-   // $FF: synthetic method
-   protected void stop(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.stop(var1, (PathfinderMob)var2, var3);
-   }
-
-   // $FF: synthetic method
-   protected void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.start(var1, (PathfinderMob)var2, var3);
    }
 
    public static enum SpearStatus {

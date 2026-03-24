@@ -17,45 +17,45 @@ public class DependencySorter<K, V extends DependencySorter.Entry<K>> {
       super();
    }
 
-   public DependencySorter<K, V> addEntry(K var1, V var2) {
-      this.contents.put(var1, var2);
+   public DependencySorter<K, V> addEntry(final K id, final V value) {
+      this.contents.put(id, value);
       return this;
    }
 
-   private void visitDependenciesAndElement(Multimap<K, K> var1, Set<K> var2, K var3, BiConsumer<K, V> var4) {
-      if (var2.add(var3)) {
-         var1.get(var3).forEach((var4x) -> this.visitDependenciesAndElement(var1, var2, var4x, var4));
-         Entry var5 = (Entry)this.contents.get(var3);
-         if (var5 != null) {
-            var4.accept(var3, var5);
+   private void visitDependenciesAndElement(final Multimap<K, K> dependencies, final Set<K> alreadyVisited, final K id, final BiConsumer<K, V> output) {
+      if (alreadyVisited.add(id)) {
+         dependencies.get(id).forEach((dependency) -> this.visitDependenciesAndElement(dependencies, alreadyVisited, dependency, output));
+         V current = (V)(this.contents.get(id));
+         if (current != null) {
+            output.accept(id, current);
          }
 
       }
    }
 
-   private static <K> boolean isCyclic(Multimap<K, K> var0, K var1, K var2) {
-      Collection var3 = var0.get(var2);
-      return var3.contains(var1) ? true : var3.stream().anyMatch((var2x) -> isCyclic(var0, var1, var2x));
+   private static <K> boolean isCyclic(final Multimap<K, K> directDependencies, final K from, final K to) {
+      Collection<K> dependencies = directDependencies.get(to);
+      return dependencies.contains(from) ? true : dependencies.stream().anyMatch((dep) -> isCyclic(directDependencies, from, dep));
    }
 
-   private static <K> void addDependencyIfNotCyclic(Multimap<K, K> var0, K var1, K var2) {
-      if (!isCyclic(var0, var1, var2)) {
-         var0.put(var1, var2);
+   private static <K> void addDependencyIfNotCyclic(final Multimap<K, K> directDependencies, final K from, final K to) {
+      if (!isCyclic(directDependencies, from, to)) {
+         directDependencies.put(from, to);
       }
 
    }
 
-   public void orderByDependencies(BiConsumer<K, V> var1) {
-      HashMultimap var2 = HashMultimap.create();
-      this.contents.forEach((var1x, var2x) -> var2x.visitRequiredDependencies((var2xx) -> addDependencyIfNotCyclic(var2, var1x, var2xx)));
-      this.contents.forEach((var1x, var2x) -> var2x.visitOptionalDependencies((var2xx) -> addDependencyIfNotCyclic(var2, var1x, var2xx)));
-      HashSet var3 = new HashSet();
-      this.contents.keySet().forEach((var4) -> this.visitDependenciesAndElement(var2, var3, var4, var1));
+   public void orderByDependencies(final BiConsumer<K, V> output) {
+      Multimap<K, K> directDependencies = HashMultimap.create();
+      this.contents.forEach((id, value) -> value.visitRequiredDependencies((dep) -> addDependencyIfNotCyclic(directDependencies, id, dep)));
+      this.contents.forEach((id, value) -> value.visitOptionalDependencies((dep) -> addDependencyIfNotCyclic(directDependencies, id, dep)));
+      Set<K> alreadyVisited = new HashSet();
+      this.contents.keySet().forEach((topId) -> this.visitDependenciesAndElement(directDependencies, alreadyVisited, topId, output));
    }
 
    public interface Entry<K> {
-      void visitRequiredDependencies(Consumer<K> var1);
+      void visitRequiredDependencies(final Consumer<K> output);
 
-      void visitOptionalDependencies(Consumer<K> var1);
+      void visitOptionalDependencies(final Consumer<K> output);
    }
 }

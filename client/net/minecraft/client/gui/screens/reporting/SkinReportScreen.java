@@ -24,40 +24,40 @@ public class SkinReportScreen extends AbstractReportScreen<SkinReport.Builder> {
    private MultiLineEditBox commentBox;
    private Button selectReasonButton;
 
-   private SkinReportScreen(Screen var1, ReportingContext var2, SkinReport.Builder var3) {
-      super(TITLE, var1, var2, var3);
+   private SkinReportScreen(final Screen lastScreen, final ReportingContext reportingContext, final SkinReport.Builder reportBuilder) {
+      super(TITLE, lastScreen, reportingContext, reportBuilder);
    }
 
-   public SkinReportScreen(Screen var1, ReportingContext var2, UUID var3, Supplier<PlayerSkin> var4) {
-      this(var1, var2, new SkinReport.Builder(var3, var4, var2.sender().reportLimits()));
+   public SkinReportScreen(final Screen lastScreen, final ReportingContext reportingContext, final UUID playerId, final Supplier<PlayerSkin> skinGetter) {
+      this(lastScreen, reportingContext, new SkinReport.Builder(playerId, skinGetter, reportingContext.sender().reportLimits()));
    }
 
-   public SkinReportScreen(Screen var1, ReportingContext var2, SkinReport var3) {
-      this(var1, var2, new SkinReport.Builder(var3, var2.sender().reportLimits()));
+   public SkinReportScreen(final Screen lastScreen, final ReportingContext reportingContext, final SkinReport draft) {
+      this(lastScreen, reportingContext, new SkinReport.Builder(draft, reportingContext.sender().reportLimits()));
    }
 
    protected void addContent() {
-      LinearLayout var1 = (LinearLayout)this.layout.addChild(LinearLayout.horizontal().spacing(8));
-      var1.defaultCellSetting().alignVerticallyMiddle();
-      var1.addChild(new PlayerSkinWidget(85, 120, this.minecraft.getEntityModels(), ((SkinReport)((SkinReport.Builder)this.reportBuilder).report()).getSkinGetter()));
-      LinearLayout var2 = (LinearLayout)var1.addChild(LinearLayout.vertical().spacing(8));
-      this.selectReasonButton = Button.builder(SELECT_REASON, (var1x) -> this.minecraft.setScreen(new ReportReasonSelectionScreen(this, ((SkinReport.Builder)this.reportBuilder).reason(), ReportType.SKIN, (var1) -> {
-            ((SkinReport.Builder)this.reportBuilder).setReason(var1);
+      LinearLayout contentLayout = (LinearLayout)this.layout.addChild(LinearLayout.horizontal().spacing(8));
+      contentLayout.defaultCellSetting().alignVerticallyMiddle();
+      contentLayout.addChild(new PlayerSkinWidget(85, 120, this.minecraft.getEntityModels(), ((SkinReport)((SkinReport.Builder)this.reportBuilder).report()).getSkinGetter()));
+      LinearLayout formLayout = (LinearLayout)contentLayout.addChild(LinearLayout.vertical().spacing(8));
+      this.selectReasonButton = Button.builder(SELECT_REASON, (b) -> this.minecraft.setScreen(new ReportReasonSelectionScreen(this, ((SkinReport.Builder)this.reportBuilder).reason(), ReportType.SKIN, (reason) -> {
+            ((SkinReport.Builder)this.reportBuilder).setReason(reason);
             this.onReportChanged();
          }))).width(178).build();
-      var2.addChild(CommonLayouts.labeledElement(this.font, this.selectReasonButton, OBSERVED_WHAT_LABEL));
+      formLayout.addChild(CommonLayouts.labeledElement(this.font, this.selectReasonButton, OBSERVED_WHAT_LABEL));
       Objects.requireNonNull(this.font);
-      this.commentBox = this.createCommentBox(178, 9 * 8, (var1x) -> {
-         ((SkinReport.Builder)this.reportBuilder).setComments(var1x);
+      this.commentBox = this.createCommentBox(178, 9 * 8, (comments) -> {
+         ((SkinReport.Builder)this.reportBuilder).setComments(comments);
          this.onReportChanged();
       });
-      var2.addChild(CommonLayouts.labeledElement(this.font, this.commentBox, MORE_COMMENTS_LABEL, (var0) -> var0.paddingBottom(12)));
+      formLayout.addChild(CommonLayouts.labeledElement(this.font, this.commentBox, MORE_COMMENTS_LABEL, (s) -> s.paddingBottom(12)));
    }
 
    protected void onReportChanged() {
-      ReportReason var1 = ((SkinReport.Builder)this.reportBuilder).reason();
-      if (var1 != null) {
-         this.selectReasonButton.setMessage(var1.title());
+      ReportReason reportReason = ((SkinReport.Builder)this.reportBuilder).reason();
+      if (reportReason != null) {
+         this.selectReasonButton.setMessage(reportReason.title());
       } else {
          this.selectReasonButton.setMessage(SELECT_REASON);
       }
@@ -65,7 +65,7 @@ public class SkinReportScreen extends AbstractReportScreen<SkinReport.Builder> {
       super.onReportChanged();
    }
 
-   public boolean mouseReleased(MouseButtonEvent var1) {
-      return super.mouseReleased(var1) ? true : this.commentBox.mouseReleased(var1);
+   public boolean mouseReleased(final MouseButtonEvent event) {
+      return super.mouseReleased(event) ? true : this.commentBox.mouseReleased(event);
    }
 }

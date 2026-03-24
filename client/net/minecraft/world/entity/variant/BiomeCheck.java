@@ -8,23 +8,17 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.biome.Biome;
 
 public record BiomeCheck(HolderSet<Biome> requiredBiomes) implements SpawnCondition {
-   public static final MapCodec<BiomeCheck> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(RegistryCodecs.homogeneousList(Registries.BIOME).fieldOf("biomes").forGetter(BiomeCheck::requiredBiomes)).apply(var0, BiomeCheck::new));
+   public static final MapCodec<BiomeCheck> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(RegistryCodecs.homogeneousList(Registries.BIOME).fieldOf("biomes").forGetter(BiomeCheck::requiredBiomes)).apply(i, BiomeCheck::new));
 
-   public BiomeCheck(HolderSet<Biome> var1) {
+   public BiomeCheck {
       super();
-      this.requiredBiomes = var1;
    }
 
-   public boolean test(SpawnContext var1) {
-      return this.requiredBiomes.contains(var1.biome());
+   public boolean test(final SpawnContext context) {
+      return this.requiredBiomes.contains(context.biome());
    }
 
    public MapCodec<BiomeCheck> codec() {
       return MAP_CODEC;
-   }
-
-   // $FF: synthetic method
-   public boolean test(final Object var1) {
-      return this.test((SpawnContext)var1);
    }
 }

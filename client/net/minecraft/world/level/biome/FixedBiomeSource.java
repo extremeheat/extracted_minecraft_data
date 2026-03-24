@@ -17,9 +17,9 @@ public class FixedBiomeSource extends BiomeSource implements BiomeManager.NoiseB
    public static final MapCodec<FixedBiomeSource> CODEC;
    private final Holder<Biome> biome;
 
-   public FixedBiomeSource(Holder<Biome> var1) {
+   public FixedBiomeSource(final Holder<Biome> biome) {
       super();
-      this.biome = var1;
+      this.biome = biome;
    }
 
    protected Stream<Holder<Biome>> collectPossibleBiomes() {
@@ -30,31 +30,31 @@ public class FixedBiomeSource extends BiomeSource implements BiomeManager.NoiseB
       return CODEC;
    }
 
-   public Holder<Biome> getNoiseBiome(int var1, int var2, int var3, Climate.Sampler var4) {
+   public Holder<Biome> getNoiseBiome(final int quartX, final int quartY, final int quartZ, final Climate.Sampler sampler) {
       return this.biome;
    }
 
-   public Holder<Biome> getNoiseBiome(int var1, int var2, int var3) {
+   public Holder<Biome> getNoiseBiome(final int quartX, final int quartY, final int quartZ) {
       return this.biome;
    }
 
-   public @Nullable Pair<BlockPos, Holder<Biome>> findBiomeHorizontal(int var1, int var2, int var3, int var4, int var5, Predicate<Holder<Biome>> var6, RandomSource var7, boolean var8, Climate.Sampler var9) {
-      if (var6.test(this.biome)) {
-         return var8 ? Pair.of(new BlockPos(var1, var2, var3), this.biome) : Pair.of(new BlockPos(var1 - var4 + var7.nextInt(var4 * 2 + 1), var2, var3 - var4 + var7.nextInt(var4 * 2 + 1)), this.biome);
+   public @Nullable Pair<BlockPos, Holder<Biome>> findBiomeHorizontal(final int originX, final int originY, final int originZ, final int r, final int skipStep, final Predicate<Holder<Biome>> allowed, final RandomSource random, final boolean findClosest, final Climate.Sampler sampler) {
+      if (allowed.test(this.biome)) {
+         return findClosest ? Pair.of(new BlockPos(originX, originY, originZ), this.biome) : Pair.of(new BlockPos(originX - r + random.nextInt(r * 2 + 1), originY, originZ - r + random.nextInt(r * 2 + 1)), this.biome);
       } else {
          return null;
       }
    }
 
-   public @Nullable Pair<BlockPos, Holder<Biome>> findClosestBiome3d(BlockPos var1, int var2, int var3, int var4, Predicate<Holder<Biome>> var5, Climate.Sampler var6, LevelReader var7) {
-      return var5.test(this.biome) ? Pair.of(var1.atY(Mth.clamp(var1.getY(), var7.getMinY() + 1, var7.getMaxY() + 1)), this.biome) : null;
+   public @Nullable Pair<BlockPos, Holder<Biome>> findClosestBiome3d(final BlockPos origin, final int searchRadius, final int sampleResolutionHorizontal, final int sampleResolutionVertical, final Predicate<Holder<Biome>> allowed, final Climate.Sampler sampler, final LevelReader level) {
+      return allowed.test(this.biome) ? Pair.of(origin.atY(Mth.clamp(origin.getY(), level.getMinY() + 1, level.getMaxY() + 1)), this.biome) : null;
    }
 
-   public Set<Holder<Biome>> getBiomesWithin(int var1, int var2, int var3, int var4, Climate.Sampler var5) {
+   public Set<Holder<Biome>> getBiomesWithin(final int x, final int y, final int z, final int r, final Climate.Sampler sampler) {
       return Sets.newHashSet(Set.of(this.biome));
    }
 
    static {
-      CODEC = Biome.CODEC.fieldOf("biome").xmap(FixedBiomeSource::new, (var0) -> var0.biome).stable();
+      CODEC = Biome.CODEC.fieldOf("biome").xmap(FixedBiomeSource::new, (s) -> s.biome).stable();
    }
 }

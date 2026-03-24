@@ -6,18 +6,18 @@ public class LocalSampleLogger extends AbstractSampleLogger implements SampleSto
    private int start;
    private int size;
 
-   public LocalSampleLogger(int var1) {
-      this(var1, new long[var1]);
+   public LocalSampleLogger(final int dimensions) {
+      this(dimensions, new long[dimensions]);
    }
 
-   public LocalSampleLogger(int var1, long[] var2) {
-      super(var1, var2);
-      this.samples = new long[240][var1];
+   public LocalSampleLogger(final int dimensions, final long[] defaults) {
+      super(dimensions, defaults);
+      this.samples = new long[240][dimensions];
    }
 
    protected void useSample() {
-      int var1 = this.wrapIndex(this.start + this.size);
-      System.arraycopy(this.sample, 0, this.samples[var1], 0, this.sample.length);
+      int nextIndex = this.wrapIndex(this.start + this.size);
+      System.arraycopy(this.sample, 0, this.samples[nextIndex], 0, this.sample.length);
       if (this.size < 240) {
          ++this.size;
       } else {
@@ -34,25 +34,25 @@ public class LocalSampleLogger extends AbstractSampleLogger implements SampleSto
       return this.size;
    }
 
-   public long get(int var1) {
-      return this.get(var1, 0);
+   public long get(final int index) {
+      return this.get(index, 0);
    }
 
-   public long get(int var1, int var2) {
-      if (var1 >= 0 && var1 < this.size) {
-         long[] var3 = this.samples[this.wrapIndex(this.start + var1)];
-         if (var2 >= 0 && var2 < var3.length) {
-            return var3[var2];
+   public long get(final int index, final int dimension) {
+      if (index >= 0 && index < this.size) {
+         long[] sampleArray = this.samples[this.wrapIndex(this.start + index)];
+         if (dimension >= 0 && dimension < sampleArray.length) {
+            return sampleArray[dimension];
          } else {
-            throw new IndexOutOfBoundsException(var2 + " out of bounds for dimensions " + var3.length);
+            throw new IndexOutOfBoundsException(dimension + " out of bounds for dimensions " + sampleArray.length);
          }
       } else {
-         throw new IndexOutOfBoundsException(var1 + " out of bounds for length " + this.size);
+         throw new IndexOutOfBoundsException(index + " out of bounds for length " + this.size);
       }
    }
 
-   private int wrapIndex(int var1) {
-      return var1 % 240;
+   private int wrapIndex(final int index) {
+      return index % 240;
    }
 
    public void reset() {

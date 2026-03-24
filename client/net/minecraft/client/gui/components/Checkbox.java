@@ -4,7 +4,7 @@ import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.InputWithModifiers;
@@ -26,44 +26,44 @@ public class Checkbox extends AbstractButton {
    private final OnValueChange onValueChange;
    private final MultiLineTextWidget textWidget;
 
-   Checkbox(int var1, int var2, int var3, Component var4, Font var5, boolean var6, OnValueChange var7) {
-      super(var1, var2, 0, 0, var4);
-      this.textWidget = new MultiLineTextWidget(var4, var5);
+   private Checkbox(final int x, final int y, final int maxWidth, final Component message, final Font font, final boolean selected, final OnValueChange onValueChange) {
+      super(x, y, 0, 0, message);
+      this.textWidget = new MultiLineTextWidget(message, font);
       this.textWidget.setMaxRows(2);
-      this.width = this.adjustWidth(var3, var5);
-      this.height = this.getAdjustedHeight(var5);
-      this.selected = var6;
-      this.onValueChange = var7;
+      this.width = this.adjustWidth(maxWidth, font);
+      this.height = this.getAdjustedHeight(font);
+      this.selected = selected;
+      this.onValueChange = onValueChange;
    }
 
-   public int adjustWidth(int var1, Font var2) {
-      this.width = this.getAdjustedWidth(var1, this.getMessage(), var2);
+   public int adjustWidth(final int maxWidth, final Font font) {
+      this.width = this.getAdjustedWidth(maxWidth, this.getMessage(), font);
       this.textWidget.setMaxWidth(this.width);
       return this.width;
    }
 
-   private int getAdjustedWidth(int var1, Component var2, Font var3) {
-      return Math.min(getDefaultWidth(var2, var3), var1);
+   private int getAdjustedWidth(final int maxWidth, final Component message, final Font font) {
+      return Math.min(getDefaultWidth(message, font), maxWidth);
    }
 
-   private int getAdjustedHeight(Font var1) {
-      return Math.max(getBoxSize(var1), this.textWidget.getHeight());
+   private int getAdjustedHeight(final Font font) {
+      return Math.max(getBoxSize(font), this.textWidget.getHeight());
    }
 
-   static int getDefaultWidth(Component var0, Font var1) {
-      return getBoxSize(var1) + 4 + var1.width((FormattedText)var0);
+   private static int getDefaultWidth(final Component message, final Font font) {
+      return getBoxSize(font) + 4 + font.width((FormattedText)message);
    }
 
-   public static Builder builder(Component var0, Font var1) {
-      return new Builder(var0, var1);
+   public static Builder builder(final Component message, final Font font) {
+      return new Builder(message, font);
    }
 
-   public static int getBoxSize(Font var0) {
-      Objects.requireNonNull(var0);
+   public static int getBoxSize(final Font font) {
+      Objects.requireNonNull(font);
       return 9 + 8;
    }
 
-   public void onPress(InputWithModifiers var1) {
+   public void onPress(final InputWithModifiers input) {
       this.selected = !this.selected;
       this.onValueChange.onValueChange(this, this.selected);
    }
@@ -72,41 +72,41 @@ public class Checkbox extends AbstractButton {
       return this.selected;
    }
 
-   public void updateWidgetNarration(NarrationElementOutput var1) {
-      var1.add(NarratedElementType.TITLE, (Component)this.createNarrationMessage());
+   public void updateWidgetNarration(final NarrationElementOutput output) {
+      output.add(NarratedElementType.TITLE, (Component)this.createNarrationMessage());
       if (this.active) {
          if (this.isFocused()) {
-            var1.add(NarratedElementType.USAGE, (Component)Component.translatable(this.selected ? "narration.checkbox.usage.focused.uncheck" : "narration.checkbox.usage.focused.check"));
+            output.add(NarratedElementType.USAGE, (Component)Component.translatable(this.selected ? "narration.checkbox.usage.focused.uncheck" : "narration.checkbox.usage.focused.check"));
          } else {
-            var1.add(NarratedElementType.USAGE, (Component)Component.translatable(this.selected ? "narration.checkbox.usage.hovered.uncheck" : "narration.checkbox.usage.hovered.check"));
+            output.add(NarratedElementType.USAGE, (Component)Component.translatable(this.selected ? "narration.checkbox.usage.hovered.uncheck" : "narration.checkbox.usage.hovered.check"));
          }
       }
 
    }
 
-   public void renderContents(GuiGraphics var1, int var2, int var3, float var4) {
-      Minecraft var5 = Minecraft.getInstance();
-      Font var6 = var5.font;
-      Identifier var7;
+   public void extractContents(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      Minecraft minecraft = Minecraft.getInstance();
+      Font font = minecraft.font;
+      Identifier sprite;
       if (this.selected) {
-         var7 = this.isFocused() ? CHECKBOX_SELECTED_HIGHLIGHTED_SPRITE : CHECKBOX_SELECTED_SPRITE;
+         sprite = this.isFocused() ? CHECKBOX_SELECTED_HIGHLIGHTED_SPRITE : CHECKBOX_SELECTED_SPRITE;
       } else {
-         var7 = this.isFocused() ? CHECKBOX_HIGHLIGHTED_SPRITE : CHECKBOX_SPRITE;
+         sprite = this.isFocused() ? CHECKBOX_HIGHLIGHTED_SPRITE : CHECKBOX_SPRITE;
       }
 
-      int var8 = getBoxSize(var6);
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, var7, this.getX(), this.getY(), var8, var8, ARGB.white(this.alpha));
-      int var9 = this.getX() + var8 + 4;
-      int var10 = this.getY() + var8 / 2 - this.textWidget.getHeight() / 2;
-      this.textWidget.setPosition(var9, var10);
-      this.textWidget.visitLines(var1.textRendererForWidget(this, GuiGraphics.HoveredTextEffects.notClickable(this.isHovered())));
+      int boxSize = getBoxSize(font);
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, this.getX(), this.getY(), boxSize, boxSize, ARGB.white(this.alpha));
+      int textX = this.getX() + boxSize + 4;
+      int textY = this.getY() + boxSize / 2 - this.textWidget.getHeight() / 2;
+      this.textWidget.setPosition(textX, textY);
+      this.textWidget.visitLines(graphics.textRendererForWidget(this, GuiGraphicsExtractor.HoveredTextEffects.notClickable(this.isHovered())));
    }
 
    public interface OnValueChange {
-      OnValueChange NOP = (var0, var1) -> {
+      OnValueChange NOP = (checkbox, value) -> {
       };
 
-      void onValueChange(Checkbox var1, boolean var2);
+      void onValueChange(Checkbox checkbox, boolean value);
    }
 
    public static class Builder {
@@ -120,58 +120,58 @@ public class Checkbox extends AbstractButton {
       private @Nullable OptionInstance<Boolean> option;
       private @Nullable Tooltip tooltip;
 
-      Builder(Component var1, Font var2) {
+      private Builder(final Component message, final Font font) {
          super();
          this.onValueChange = Checkbox.OnValueChange.NOP;
          this.selected = false;
          this.option = null;
          this.tooltip = null;
-         this.message = var1;
-         this.font = var2;
-         this.maxWidth = Checkbox.getDefaultWidth(var1, var2);
+         this.message = message;
+         this.font = font;
+         this.maxWidth = Checkbox.getDefaultWidth(message, font);
       }
 
-      public Builder pos(int var1, int var2) {
-         this.x = var1;
-         this.y = var2;
+      public Builder pos(final int x, final int y) {
+         this.x = x;
+         this.y = y;
          return this;
       }
 
-      public Builder onValueChange(OnValueChange var1) {
-         this.onValueChange = var1;
+      public Builder onValueChange(final OnValueChange onValueChange) {
+         this.onValueChange = onValueChange;
          return this;
       }
 
-      public Builder selected(boolean var1) {
-         this.selected = var1;
+      public Builder selected(final boolean selected) {
+         this.selected = selected;
          this.option = null;
          return this;
       }
 
-      public Builder selected(OptionInstance<Boolean> var1) {
-         this.option = var1;
-         this.selected = (Boolean)var1.get();
+      public Builder selected(final OptionInstance<Boolean> option) {
+         this.option = option;
+         this.selected = (Boolean)option.get();
          return this;
       }
 
-      public Builder tooltip(Tooltip var1) {
-         this.tooltip = var1;
+      public Builder tooltip(final Tooltip tooltip) {
+         this.tooltip = tooltip;
          return this;
       }
 
-      public Builder maxWidth(int var1) {
-         this.maxWidth = var1;
+      public Builder maxWidth(final int maxWidth) {
+         this.maxWidth = maxWidth;
          return this;
       }
 
       public Checkbox build() {
-         OnValueChange var1 = this.option == null ? this.onValueChange : (var1x, var2x) -> {
-            this.option.set(var2x);
-            this.onValueChange.onValueChange(var1x, var2x);
+         OnValueChange onChange = this.option == null ? this.onValueChange : (checkbox, value) -> {
+            this.option.set(value);
+            this.onValueChange.onValueChange(checkbox, value);
          };
-         Checkbox var2 = new Checkbox(this.x, this.y, this.maxWidth, this.message, this.font, this.selected, var1);
-         var2.setTooltip(this.tooltip);
-         return var2;
+         Checkbox box = new Checkbox(this.x, this.y, this.maxWidth, this.message, this.font, this.selected, onChange);
+         box.setTooltip(this.tooltip);
+         return box;
       }
    }
 }

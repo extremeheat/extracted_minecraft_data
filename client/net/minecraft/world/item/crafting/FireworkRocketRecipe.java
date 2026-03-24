@@ -1,85 +1,95 @@
 package net.minecraft.world.item.crafting;
 
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
-import net.minecraft.core.HolderLookup;
+import java.util.List;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.component.FireworkExplosion;
 import net.minecraft.world.item.component.Fireworks;
-import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 
 public class FireworkRocketRecipe extends CustomRecipe {
-   private static final Ingredient PAPER_INGREDIENT;
-   private static final Ingredient GUNPOWDER_INGREDIENT;
-   private static final Ingredient STAR_INGREDIENT;
+   public static final MapCodec<FireworkRocketRecipe> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Ingredient.CODEC.fieldOf("shell").forGetter((o) -> o.shell), Ingredient.CODEC.fieldOf("fuel").forGetter((o) -> o.fuel), Ingredient.CODEC.fieldOf("star").forGetter((o) -> o.star), ItemStackTemplate.CODEC.fieldOf("result").forGetter((o) -> o.result)).apply(i, FireworkRocketRecipe::new));
+   public static final StreamCodec<RegistryFriendlyByteBuf, FireworkRocketRecipe> STREAM_CODEC;
+   public static final RecipeSerializer<FireworkRocketRecipe> SERIALIZER;
+   private final Ingredient shell;
+   private final Ingredient fuel;
+   private final Ingredient star;
+   private final ItemStackTemplate result;
 
-   public FireworkRocketRecipe(CraftingBookCategory var1) {
-      super(var1);
+   public FireworkRocketRecipe(final Ingredient shell, final Ingredient fuel, final Ingredient star, final ItemStackTemplate result) {
+      super();
+      this.shell = shell;
+      this.fuel = fuel;
+      this.star = star;
+      this.result = result;
    }
 
-   public boolean matches(CraftingInput var1, Level var2) {
-      if (var1.ingredientCount() < 2) {
+   public boolean matches(final CraftingInput input, final Level level) {
+      if (input.ingredientCount() < 2) {
          return false;
       } else {
-         boolean var3 = false;
-         int var4 = 0;
+         boolean hasShell = false;
+         int fuelCount = 0;
 
-         for(int var5 = 0; var5 < var1.size(); ++var5) {
-            ItemStack var6 = var1.getItem(var5);
-            if (!var6.isEmpty()) {
-               if (PAPER_INGREDIENT.test(var6)) {
-                  if (var3) {
+         for(int slot = 0; slot < input.size(); ++slot) {
+            ItemStack itemStack = input.getItem(slot);
+            if (!itemStack.isEmpty()) {
+               if (this.shell.test(itemStack)) {
+                  if (hasShell) {
                      return false;
                   }
 
-                  var3 = true;
-               } else if (GUNPOWDER_INGREDIENT.test(var6)) {
-                  ++var4;
-                  if (var4 > 3) {
+                  hasShell = true;
+               } else if (this.fuel.test(itemStack)) {
+                  ++fuelCount;
+                  if (fuelCount > 3) {
                      return false;
                   }
-               } else if (!STAR_INGREDIENT.test(var6)) {
+               } else if (!this.star.test(itemStack)) {
                   return false;
                }
             }
          }
 
-         return var3 && var4 >= 1;
+         return hasShell && fuelCount >= 1;
       }
    }
 
-   public ItemStack assemble(CraftingInput var1, HolderLookup.Provider var2) {
-      ArrayList var3 = new ArrayList();
-      int var4 = 0;
+   public ItemStack assemble(final CraftingInput input) {
+      List<FireworkExplosion> explosions = new ArrayList();
+      int fuelCount = 0;
 
-      for(int var5 = 0; var5 < var1.size(); ++var5) {
-         ItemStack var6 = var1.getItem(var5);
-         if (!var6.isEmpty()) {
-            if (GUNPOWDER_INGREDIENT.test(var6)) {
-               ++var4;
-            } else if (STAR_INGREDIENT.test(var6)) {
-               FireworkExplosion var7 = (FireworkExplosion)var6.get(DataComponents.FIREWORK_EXPLOSION);
-               if (var7 != null) {
-                  var3.add(var7);
+      for(int slot = 0; slot < input.size(); ++slot) {
+         ItemStack itemStack = input.getItem(slot);
+         if (!itemStack.isEmpty()) {
+            if (this.fuel.test(itemStack)) {
+               ++fuelCount;
+            } else if (this.star.test(itemStack)) {
+               FireworkExplosion explosion = (FireworkExplosion)itemStack.get(DataComponents.FIREWORK_EXPLOSION);
+               if (explosion != null) {
+                  explosions.add(explosion);
                }
             }
          }
       }
 
-      ItemStack var8 = new ItemStack(Items.FIREWORK_ROCKET, 3);
-      var8.set(DataComponents.FIREWORKS, new Fireworks(var4, var3));
-      return var8;
+      DataComponentPatch components = DataComponentPatch.builder().set(DataComponents.FIREWORKS, new Fireworks(fuelCount, explosions)).build();
+      return this.result.apply(components);
    }
 
    public RecipeSerializer<FireworkRocketRecipe> getSerializer() {
-      return RecipeSerializer.FIREWORK_ROCKET;
+      return SERIALIZER;
    }
 
    static {
-      PAPER_INGREDIENT = Ingredient.of((ItemLike)Items.PAPER);
-      GUNPOWDER_INGREDIENT = Ingredient.of((ItemLike)Items.GUNPOWDER);
-      STAR_INGREDIENT = Ingredient.of((ItemLike)Items.FIREWORK_STAR);
+      STREAM_CODEC = StreamCodec.composite(Ingredient.CONTENTS_STREAM_CODEC, (o) -> o.shell, Ingredient.CONTENTS_STREAM_CODEC, (o) -> o.fuel, Ingredient.CONTENTS_STREAM_CODEC, (o) -> o.star, ItemStackTemplate.STREAM_CODEC, (o) -> o.result, FireworkRocketRecipe::new);
+      SERIALIZER = new RecipeSerializer<FireworkRocketRecipe>(MAP_CODEC, STREAM_CODEC);
    }
 }

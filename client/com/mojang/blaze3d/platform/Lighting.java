@@ -7,7 +7,7 @@ import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.nio.ByteBuffer;
 import net.minecraft.util.Mth;
-import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.CardinalLighting;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
@@ -25,36 +25,36 @@ public class Lighting implements AutoCloseable {
 
    public Lighting() {
       super();
-      GpuDevice var1 = RenderSystem.getDevice();
-      this.paddedSize = (long)Mth.roundToward(UBO_SIZE, var1.getUniformOffsetAlignment());
-      this.buffer = var1.createBuffer(() -> "Lighting UBO", 136, this.paddedSize * (long)Lighting.Entry.values().length);
-      Matrix4f var2 = (new Matrix4f()).rotationY(-0.3926991F).rotateX(2.3561945F);
-      this.updateBuffer(Lighting.Entry.ITEMS_FLAT, var2.transformDirection(DIFFUSE_LIGHT_0, new Vector3f()), var2.transformDirection(DIFFUSE_LIGHT_1, new Vector3f()));
-      Matrix4f var3 = (new Matrix4f()).scaling(1.0F, -1.0F, 1.0F).rotateYXZ(1.0821041F, 3.2375858F, 0.0F).rotateYXZ(-0.3926991F, 2.3561945F, 0.0F);
-      this.updateBuffer(Lighting.Entry.ITEMS_3D, var3.transformDirection(DIFFUSE_LIGHT_0, new Vector3f()), var3.transformDirection(DIFFUSE_LIGHT_1, new Vector3f()));
+      GpuDevice device = RenderSystem.getDevice();
+      this.paddedSize = (long)Mth.roundToward(UBO_SIZE, device.getUniformOffsetAlignment());
+      this.buffer = device.createBuffer(() -> "Lighting UBO", 136, this.paddedSize * (long)Lighting.Entry.values().length);
+      Matrix4f flatPose = (new Matrix4f()).rotationY(-0.3926991F).rotateX(2.3561945F);
+      this.updateBuffer(Lighting.Entry.ITEMS_FLAT, flatPose.transformDirection(DIFFUSE_LIGHT_0, new Vector3f()), flatPose.transformDirection(DIFFUSE_LIGHT_1, new Vector3f()));
+      Matrix4f item3DPose = (new Matrix4f()).scaling(1.0F, -1.0F, 1.0F).rotateYXZ(1.0821041F, 3.2375858F, 0.0F).rotateYXZ(-0.3926991F, 2.3561945F, 0.0F);
+      this.updateBuffer(Lighting.Entry.ITEMS_3D, item3DPose.transformDirection(DIFFUSE_LIGHT_0, new Vector3f()), item3DPose.transformDirection(DIFFUSE_LIGHT_1, new Vector3f()));
       this.updateBuffer(Lighting.Entry.ENTITY_IN_UI, INVENTORY_DIFFUSE_LIGHT_0, INVENTORY_DIFFUSE_LIGHT_1);
-      Matrix4f var4 = new Matrix4f();
-      this.updateBuffer(Lighting.Entry.PLAYER_SKIN, var4.transformDirection(INVENTORY_DIFFUSE_LIGHT_0, new Vector3f()), var4.transformDirection(INVENTORY_DIFFUSE_LIGHT_1, new Vector3f()));
+      Matrix4f playerSkinPose = new Matrix4f();
+      this.updateBuffer(Lighting.Entry.PLAYER_SKIN, playerSkinPose.transformDirection(INVENTORY_DIFFUSE_LIGHT_0, new Vector3f()), playerSkinPose.transformDirection(INVENTORY_DIFFUSE_LIGHT_1, new Vector3f()));
    }
 
-   public void updateLevel(DimensionType.CardinalLightType var1) {
-      switch (var1) {
+   public void updateLevel(final CardinalLighting.Type type) {
+      switch (type) {
          case DEFAULT -> this.updateBuffer(Lighting.Entry.LEVEL, DIFFUSE_LIGHT_0, DIFFUSE_LIGHT_1);
          case NETHER -> this.updateBuffer(Lighting.Entry.LEVEL, NETHER_DIFFUSE_LIGHT_0, NETHER_DIFFUSE_LIGHT_1);
       }
 
    }
 
-   private void updateBuffer(Entry var1, Vector3f var2, Vector3f var3) {
-      MemoryStack var4 = MemoryStack.stackPush();
+   private void updateBuffer(final Entry entry, final Vector3f light0, final Vector3f light1) {
+      MemoryStack stack = MemoryStack.stackPush();
 
       try {
-         ByteBuffer var5 = Std140Builder.onStack(var4, UBO_SIZE).putVec3(var2).putVec3(var3).get();
-         RenderSystem.getDevice().createCommandEncoder().writeToBuffer(this.buffer.slice((long)var1.ordinal() * this.paddedSize, this.paddedSize), var5);
+         ByteBuffer byteBuffer = Std140Builder.onStack(stack, UBO_SIZE).putVec3(light0).putVec3(light1).get();
+         RenderSystem.getDevice().createCommandEncoder().writeToBuffer(this.buffer.slice((long)entry.ordinal() * this.paddedSize, this.paddedSize), byteBuffer);
       } catch (Throwable var8) {
-         if (var4 != null) {
+         if (stack != null) {
             try {
-               var4.close();
+               stack.close();
             } catch (Throwable var7) {
                var8.addSuppressed(var7);
             }
@@ -63,14 +63,14 @@ public class Lighting implements AutoCloseable {
          throw var8;
       }
 
-      if (var4 != null) {
-         var4.close();
+      if (stack != null) {
+         stack.close();
       }
 
    }
 
-   public void setupFor(Entry var1) {
-      RenderSystem.setShaderLights(this.buffer.slice((long)var1.ordinal() * this.paddedSize, (long)UBO_SIZE));
+   public void setupFor(final Entry entry) {
+      RenderSystem.setShaderLights(this.buffer.slice((long)entry.ordinal() * this.paddedSize, (long)UBO_SIZE));
    }
 
    public void close() {

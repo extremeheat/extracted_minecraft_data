@@ -13,19 +13,20 @@ public class ClientShutdownWatchdog {
       super();
    }
 
-   public static void startShutdownWatchdog(File var0, long var1) {
-      Thread var3 = new Thread(() -> {
+   public static void startShutdownWatchdog(final Minecraft minecraft, final File gameDirectory, final long mainThreadId) {
+      Thread thread = new Thread(() -> {
          try {
             Thread.sleep(CRASH_REPORT_PRELOAD_LOAD);
-         } catch (InterruptedException var4) {
+         } catch (InterruptedException var5) {
             return;
          }
 
-         CrashReport var3 = ServerWatchdog.createWatchdogCrashReport("Client shutdown", var1);
-         Minecraft.saveReport(var0, var3);
+         CrashReport report = ServerWatchdog.createWatchdogCrashReport("Client shutdown", mainThreadId);
+         minecraft.fillReport(report);
+         Minecraft.saveReport(gameDirectory, report);
       });
-      var3.setDaemon(true);
-      var3.setName("Client shutdown watchdog");
-      var3.start();
+      thread.setDaemon(true);
+      thread.setName("Client shutdown watchdog");
+      thread.start();
    }
 }

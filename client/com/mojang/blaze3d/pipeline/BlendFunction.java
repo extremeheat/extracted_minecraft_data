@@ -1,10 +1,8 @@
 package com.mojang.blaze3d.pipeline;
 
-import com.mojang.blaze3d.DontObfuscate;
 import com.mojang.blaze3d.platform.DestFactor;
 import com.mojang.blaze3d.platform.SourceFactor;
 
-@DontObfuscate
 public record BlendFunction(SourceFactor sourceColor, DestFactor destColor, SourceFactor sourceAlpha, DestFactor destAlpha) {
    public static final BlendFunction LIGHTNING;
    public static final BlendFunction GLINT;
@@ -15,16 +13,12 @@ public record BlendFunction(SourceFactor sourceColor, DestFactor destColor, Sour
    public static final BlendFunction ENTITY_OUTLINE_BLIT;
    public static final BlendFunction INVERT;
 
-   public BlendFunction(SourceFactor var1, DestFactor var2) {
-      this(var1, var2, var1, var2);
+   public BlendFunction(final SourceFactor source, final DestFactor dest) {
+      this(source, dest, source, dest);
    }
 
-   public BlendFunction(SourceFactor var1, DestFactor var2, SourceFactor var3, DestFactor var4) {
+   public BlendFunction {
       super();
-      this.sourceColor = var1;
-      this.destColor = var2;
-      this.sourceAlpha = var3;
-      this.destAlpha = var4;
    }
 
    static {

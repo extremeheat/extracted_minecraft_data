@@ -10,25 +10,25 @@ import org.jspecify.annotations.Nullable;
 public class LockComponentPredicateFix extends DataComponentRemainderFix {
    public static final Escaper ESCAPER = Escapers.builder().addEscape('"', "\\\"").addEscape('\\', "\\\\").build();
 
-   public LockComponentPredicateFix(Schema var1) {
-      super(var1, "LockComponentPredicateFix", "minecraft:lock");
+   public LockComponentPredicateFix(final Schema outputSchema) {
+      super(outputSchema, "LockComponentPredicateFix", "minecraft:lock");
    }
 
-   protected <T> @Nullable Dynamic<T> fixComponent(Dynamic<T> var1) {
-      return fixLock(var1);
+   protected <T> @Nullable Dynamic<T> fixComponent(final Dynamic<T> input) {
+      return fixLock(input);
    }
 
-   public static <T> @Nullable Dynamic<T> fixLock(Dynamic<T> var0) {
-      Optional var1 = var0.asString().result();
-      if (var1.isEmpty()) {
+   public static <T> @Nullable Dynamic<T> fixLock(final Dynamic<T> input) {
+      Optional<String> name = input.asString().result();
+      if (name.isEmpty()) {
          return null;
-      } else if (((String)var1.get()).isEmpty()) {
+      } else if (((String)name.get()).isEmpty()) {
          return null;
       } else {
          Escaper var10001 = ESCAPER;
-         Dynamic var2 = var0.createString("\"" + var10001.escape((String)var1.get()) + "\"");
-         Dynamic var3 = var0.emptyMap().set("minecraft:custom_name", var2);
-         return var0.emptyMap().set("components", var3);
+         Dynamic<T> nameComponent = input.createString("\"" + var10001.escape((String)name.get()) + "\"");
+         Dynamic<T> components = input.emptyMap().set("minecraft:custom_name", nameComponent);
+         return input.emptyMap().set("components", components);
       }
    }
 }

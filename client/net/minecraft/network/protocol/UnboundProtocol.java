@@ -6,5 +6,5 @@ import net.minecraft.network.PacketListener;
 import net.minecraft.network.ProtocolInfo;
 
 public interface UnboundProtocol<T extends PacketListener, B extends ByteBuf, C> extends ProtocolInfo.DetailsProvider {
-   ProtocolInfo<T> bind(Function<ByteBuf, B> var1, C var2);
+   ProtocolInfo<T> bind(Function<ByteBuf, B> contextWrapper, C context);
 }

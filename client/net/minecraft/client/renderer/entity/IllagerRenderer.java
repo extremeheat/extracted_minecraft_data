@@ -8,20 +8,20 @@ import net.minecraft.world.entity.monster.illager.AbstractIllager;
 import net.minecraft.world.item.CrossbowItem;
 
 public abstract class IllagerRenderer<T extends AbstractIllager, S extends IllagerRenderState> extends MobRenderer<T, S, IllagerModel<S>> {
-   protected IllagerRenderer(EntityRendererProvider.Context var1, IllagerModel<S> var2, float var3) {
-      super(var1, var2, var3);
-      this.addLayer(new CustomHeadLayer(this, var1.getModelSet(), var1.getPlayerSkinRenderCache()));
+   protected IllagerRenderer(final EntityRendererProvider.Context context, final IllagerModel<S> model, final float shadow) {
+      super(context, model, shadow);
+      this.addLayer(new CustomHeadLayer(this, context.getModelSet(), context.getPlayerSkinRenderCache()));
    }
 
-   public void extractRenderState(T var1, S var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      ArmedEntityRenderState.extractArmedEntityRenderState(var1, var2, this.itemModelResolver, var3);
-      var2.isRiding = var1.isPassenger();
-      var2.mainArm = var1.getMainArm();
-      var2.armPose = var1.getArmPose();
-      var2.maxCrossbowChargeDuration = var2.armPose == AbstractIllager.IllagerArmPose.CROSSBOW_CHARGE ? CrossbowItem.getChargeDuration(var1.getUseItem(), var1) : 0;
-      var2.ticksUsingItem = var1.getTicksUsingItem(var3);
-      var2.attackAnim = var1.getAttackAnim(var3);
-      var2.isAggressive = var1.isAggressive();
+   public void extractRenderState(final T entity, final S state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      ArmedEntityRenderState.extractArmedEntityRenderState(entity, state, this.itemModelResolver, partialTicks);
+      state.isRiding = entity.isPassenger();
+      state.mainArm = entity.getMainArm();
+      state.armPose = entity.getArmPose();
+      state.maxCrossbowChargeDuration = state.armPose == AbstractIllager.IllagerArmPose.CROSSBOW_CHARGE ? CrossbowItem.getChargeDuration(entity.getUseItem(), entity) : 0;
+      state.ticksUsingItem = entity.getTicksUsingItem(partialTicks);
+      state.attackAnim = entity.getAttackAnim(partialTicks);
+      state.isAggressive = entity.isAggressive();
    }
 }

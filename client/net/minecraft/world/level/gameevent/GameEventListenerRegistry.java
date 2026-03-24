@@ -9,27 +9,27 @@ public interface GameEventListenerRegistry {
          return true;
       }
 
-      public void register(GameEventListener var1) {
+      public void register(final GameEventListener listener) {
       }
 
-      public void unregister(GameEventListener var1) {
+      public void unregister(final GameEventListener listener) {
       }
 
-      public boolean visitInRangeListeners(Holder<GameEvent> var1, Vec3 var2, GameEvent.Context var3, ListenerVisitor var4) {
+      public boolean visitInRangeListeners(final Holder<GameEvent> event, final Vec3 sourcePosition, final GameEvent.Context context, final ListenerVisitor action) {
          return false;
       }
    };
 
    boolean isEmpty();
 
-   void register(GameEventListener var1);
+   void register(GameEventListener listener);
 
-   void unregister(GameEventListener var1);
+   void unregister(GameEventListener listener);
 
-   boolean visitInRangeListeners(Holder<GameEvent> var1, Vec3 var2, GameEvent.Context var3, ListenerVisitor var4);
+   boolean visitInRangeListeners(Holder<GameEvent> event, Vec3 sourcePosition, GameEvent.Context context, ListenerVisitor action);
 
    @FunctionalInterface
    public interface ListenerVisitor {
-      void visit(GameEventListener var1, Vec3 var2);
+      void visit(GameEventListener listener, Vec3 position);
    }
 }

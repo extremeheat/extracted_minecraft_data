@@ -15,29 +15,29 @@ public class LazyLoadedImage {
    private final AtomicReference<@Nullable NativeImage> image = new AtomicReference();
    private final AtomicInteger referenceCount;
 
-   public LazyLoadedImage(Identifier var1, Resource var2, int var3) {
+   public LazyLoadedImage(final Identifier id, final Resource resource, final int count) {
       super();
-      this.id = var1;
-      this.resource = var2;
-      this.referenceCount = new AtomicInteger(var3);
+      this.id = id;
+      this.resource = resource;
+      this.referenceCount = new AtomicInteger(count);
    }
 
    public NativeImage get() throws IOException {
-      NativeImage var1 = (NativeImage)this.image.get();
-      if (var1 == null) {
+      NativeImage nativeImage = (NativeImage)this.image.get();
+      if (nativeImage == null) {
          synchronized(this) {
-            var1 = (NativeImage)this.image.get();
-            if (var1 == null) {
+            nativeImage = (NativeImage)this.image.get();
+            if (nativeImage == null) {
                try {
-                  InputStream var3 = this.resource.open();
+                  InputStream stream = this.resource.open();
 
                   try {
-                     var1 = NativeImage.read(var3);
-                     this.image.set(var1);
+                     nativeImage = NativeImage.read(stream);
+                     this.image.set(nativeImage);
                   } catch (Throwable var8) {
-                     if (var3 != null) {
+                     if (stream != null) {
                         try {
-                           var3.close();
+                           stream.close();
                         } catch (Throwable var7) {
                            var8.addSuppressed(var7);
                         }
@@ -46,25 +46,25 @@ public class LazyLoadedImage {
                      throw var8;
                   }
 
-                  if (var3 != null) {
-                     var3.close();
+                  if (stream != null) {
+                     stream.close();
                   }
-               } catch (IOException var9) {
-                  throw new IOException("Failed to load image " + String.valueOf(this.id), var9);
+               } catch (IOException e) {
+                  throw new IOException("Failed to load image " + String.valueOf(this.id), e);
                }
             }
          }
       }
 
-      return var1;
+      return nativeImage;
    }
 
    public void release() {
-      int var1 = this.referenceCount.decrementAndGet();
-      if (var1 <= 0) {
-         NativeImage var2 = (NativeImage)this.image.getAndSet((Object)null);
-         if (var2 != null) {
-            var2.close();
+      int references = this.referenceCount.decrementAndGet();
+      if (references <= 0) {
+         NativeImage nativeImage = (NativeImage)this.image.getAndSet((Object)null);
+         if (nativeImage != null) {
+            nativeImage.close();
          }
       }
 

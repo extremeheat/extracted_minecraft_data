@@ -9,25 +9,25 @@ import com.mojang.serialization.Dynamic;
 import net.minecraft.util.Util;
 
 public class EntityMinecartIdentifiersFix extends EntityRenameFix {
-   public EntityMinecartIdentifiersFix(Schema var1) {
-      super("EntityMinecartIdentifiersFix", var1, true);
+   public EntityMinecartIdentifiersFix(final Schema outputSchema) {
+      super("EntityMinecartIdentifiersFix", outputSchema, true);
    }
 
-   protected Pair<String, Typed<?>> fix(String var1, Typed<?> var2) {
-      if (!var1.equals("Minecart")) {
-         return Pair.of(var1, var2);
+   protected Pair<String, Typed<?>> fix(final String name, final Typed<?> entity) {
+      if (!name.equals("Minecart")) {
+         return Pair.of(name, entity);
       } else {
-         int var3 = ((Dynamic)var2.getOrCreate(DSL.remainderFinder())).get("Type").asInt(0);
+         int id = ((Dynamic)entity.getOrCreate(DSL.remainderFinder())).get("Type").asInt(0);
          String var10000;
-         switch (var3) {
+         switch (id) {
             case 1 -> var10000 = "MinecartChest";
             case 2 -> var10000 = "MinecartFurnace";
             default -> var10000 = "MinecartRideable";
          }
 
-         String var4 = var10000;
-         Type var5 = (Type)this.getOutputSchema().findChoiceType(References.ENTITY).types().get(var4);
-         return Pair.of(var4, Util.writeAndReadTypedOrThrow(var2, var5, (var0) -> var0.remove("Type")));
+         String newName = var10000;
+         Type<?> newType = (Type)this.getOutputSchema().findChoiceType(References.ENTITY).types().get(newName);
+         return Pair.of(newName, Util.writeAndReadTypedOrThrow(entity, newType, (dynamic) -> dynamic.remove("Type")));
       }
    }
 }

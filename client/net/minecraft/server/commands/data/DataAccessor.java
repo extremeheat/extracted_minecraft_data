@@ -7,13 +7,13 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 
 public interface DataAccessor {
-   void setData(CompoundTag var1) throws CommandSyntaxException;
+   void setData(CompoundTag tag) throws CommandSyntaxException;
 
    CompoundTag getData() throws CommandSyntaxException;
 
    Component getModifiedSuccess();
 
-   Component getPrintSuccess(Tag var1);
+   Component getPrintSuccess(Tag data);
 
-   Component getPrintSuccess(NbtPathArgument.NbtPath var1, double var2, int var4);
+   Component getPrintSuccess(NbtPathArgument.NbtPath path, double scale, int value);
 }

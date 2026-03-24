@@ -11,16 +11,16 @@ import net.minecraft.network.chat.Component;
 public class ControlsScreen extends OptionsSubScreen {
    private static final Component TITLE = Component.translatable("controls.title");
 
-   private static OptionInstance<?>[] options(Options var0) {
-      return new OptionInstance[]{var0.toggleCrouch(), var0.toggleSprint(), var0.toggleAttack(), var0.toggleUse(), var0.autoJump(), var0.sprintWindow(), var0.operatorItemsTab()};
+   private static OptionInstance<?>[] options(final Options options) {
+      return new OptionInstance[]{options.toggleCrouch(), options.toggleSprint(), options.toggleAttack(), options.toggleUse(), options.autoJump(), options.sprintWindow(), options.operatorItemsTab()};
    }
 
-   public ControlsScreen(Screen var1, Options var2) {
-      super(var1, var2, TITLE);
+   public ControlsScreen(final Screen lastScreen, final Options options) {
+      super(lastScreen, options, TITLE);
    }
 
    protected void addOptions() {
-      this.list.addSmall(Button.builder(Component.translatable("options.mouse_settings"), (var1) -> this.minecraft.setScreen(new MouseSettingsScreen(this, this.options))).build(), Button.builder(Component.translatable("controls.keybinds"), (var1) -> this.minecraft.setScreen(new KeyBindsScreen(this, this.options))).build());
+      this.list.addSmall(Button.builder(Component.translatable("options.mouse_settings"), (button) -> this.minecraft.setScreen(new MouseSettingsScreen(this, this.options))).build(), Button.builder(Component.translatable("controls.keybinds"), (button) -> this.minecraft.setScreen(new KeyBindsScreen(this, this.options))).build());
       this.list.addSmall(options(this.options));
    }
 }

@@ -5,21 +5,20 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import org.jspecify.annotations.Nullable;
-import org.lwjgl.system.Pointer;
 
 public class DebugMemoryUntracker {
    private static final @Nullable MethodHandle UNTRACK = (MethodHandle)GLX.make(() -> {
       try {
-         MethodHandles.Lookup var0 = MethodHandles.lookup();
-         Class var1 = Class.forName("org.lwjgl.system.MemoryManage$DebugAllocator");
-         Method var2 = var1.getDeclaredMethod("untrack", Long.TYPE);
-         var2.setAccessible(true);
-         Field var3 = Class.forName("org.lwjgl.system.MemoryUtil$LazyInit").getDeclaredField("ALLOCATOR");
-         var3.setAccessible(true);
-         Object var4 = var3.get((Object)null);
-         return var1.isInstance(var4) ? var0.unreflect(var2) : null;
-      } catch (NoSuchMethodException | NoSuchFieldException | IllegalAccessException | ClassNotFoundException var5) {
-         throw new RuntimeException(var5);
+         MethodHandles.Lookup lookup = MethodHandles.lookup();
+         Class<?> debugAllocator = Class.forName("org.lwjgl.system.MemoryManage$DebugAllocator");
+         Method reflectionUntrack = debugAllocator.getDeclaredMethod("untrack", Long.TYPE);
+         reflectionUntrack.setAccessible(true);
+         Field allocatorField = Class.forName("org.lwjgl.system.MemoryUtil$LazyInit").getDeclaredField("ALLOCATOR");
+         allocatorField.setAccessible(true);
+         Object allocator = allocatorField.get((Object)null);
+         return debugAllocator.isInstance(allocator) ? lookup.unreflect(reflectionUntrack) : null;
+      } catch (NoSuchMethodException | NoSuchFieldException | IllegalAccessException | ClassNotFoundException e) {
+         throw new RuntimeException(e);
       }
    });
 
@@ -27,17 +26,13 @@ public class DebugMemoryUntracker {
       super();
    }
 
-   public static void untrack(long var0) {
+   public static void untrack(final long address) {
       if (UNTRACK != null) {
          try {
-            UNTRACK.invoke(var0);
-         } catch (Throwable var3) {
-            throw new RuntimeException(var3);
+            UNTRACK.invoke(address);
+         } catch (Throwable throwable) {
+            throw new RuntimeException(throwable);
          }
       }
-   }
-
-   public static void untrack(Pointer var0) {
-      untrack(var0.address());
    }
 }

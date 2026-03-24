@@ -163,7 +163,7 @@ public class BlockStateProperties {
       SOUTH = BooleanProperty.create("south");
       WEST = BooleanProperty.create("west");
       FACING = EnumProperty.create("facing", Direction.class, Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP, Direction.DOWN);
-      FACING_HOPPER = EnumProperty.create("facing", Direction.class, (Predicate)((var0) -> var0 != Direction.UP));
+      FACING_HOPPER = EnumProperty.create("facing", Direction.class, (Predicate)((direction) -> direction != Direction.UP));
       HORIZONTAL_FACING = EnumProperty.create("facing", Direction.class, Direction.Plane.HORIZONTAL);
       FLOWER_AMOUNT = IntegerProperty.create("flower_amount", 1, 4);
       SEGMENT_AMOUNT = IntegerProperty.create("segment_amount", 1, 4);
@@ -182,7 +182,7 @@ public class BlockStateProperties {
       HALF = EnumProperty.<Half>create("half", Half.class);
       SIDE_CHAIN_PART = EnumProperty.<SideChainPart>create("side_chain", SideChainPart.class);
       RAIL_SHAPE = EnumProperty.<RailShape>create("shape", RailShape.class);
-      RAIL_SHAPE_STRAIGHT = EnumProperty.create("shape", RailShape.class, (Predicate)((var0) -> var0 != RailShape.NORTH_EAST && var0 != RailShape.NORTH_WEST && var0 != RailShape.SOUTH_EAST && var0 != RailShape.SOUTH_WEST));
+      RAIL_SHAPE_STRAIGHT = EnumProperty.create("shape", RailShape.class, (Predicate)((railShape) -> railShape != RailShape.NORTH_EAST && railShape != RailShape.NORTH_WEST && railShape != RailShape.SOUTH_EAST && railShape != RailShape.SOUTH_WEST));
       AGE_1 = IntegerProperty.create("age", 0, 1);
       AGE_2 = IntegerProperty.create("age", 0, 2);
       AGE_3 = IntegerProperty.create("age", 0, 3);

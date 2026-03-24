@@ -2,21 +2,15 @@ package net.minecraft.data.recipes;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import net.minecraft.advancements.Advancement;
-import net.minecraft.advancements.AdvancementRequirements;
-import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.Criterion;
-import net.minecraft.advancements.criterion.RecipeUnlockedTrigger;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.ShapedRecipe;
@@ -27,102 +21,86 @@ import org.jspecify.annotations.Nullable;
 public class ShapedRecipeBuilder implements RecipeBuilder {
    private final HolderGetter<Item> items;
    private final RecipeCategory category;
-   private final Item result;
-   private final int count;
-   private final List<String> rows = Lists.newArrayList();
-   private final Map<Character, Ingredient> key = Maps.newLinkedHashMap();
-   private final Map<String, Criterion<?>> criteria = new LinkedHashMap();
+   private final ItemStackTemplate result;
+   private final List<String> rows;
+   private final Map<Character, Ingredient> key;
+   private final RecipeUnlockAdvancementBuilder advancementBuilder;
    private @Nullable String group;
-   private boolean showNotification = true;
+   private boolean showNotification;
 
-   private ShapedRecipeBuilder(HolderGetter<Item> var1, RecipeCategory var2, ItemLike var3, int var4) {
+   private ShapedRecipeBuilder(final HolderGetter<Item> items, final RecipeCategory category, final ItemStackTemplate result) {
       super();
-      this.items = var1;
-      this.category = var2;
-      this.result = var3.asItem();
-      this.count = var4;
+      this.rows = Lists.newArrayList();
+      this.key = Maps.newLinkedHashMap();
+      this.advancementBuilder = new RecipeUnlockAdvancementBuilder();
+      this.showNotification = true;
+      this.items = items;
+      this.category = category;
+      this.result = result;
    }
 
-   public static ShapedRecipeBuilder shaped(HolderGetter<Item> var0, RecipeCategory var1, ItemLike var2) {
-      return shaped(var0, var1, var2, 1);
+   private ShapedRecipeBuilder(final HolderGetter<Item> items, final RecipeCategory category, final ItemLike result, final int count) {
+      this(items, category, new ItemStackTemplate(result.asItem(), count));
    }
 
-   public static ShapedRecipeBuilder shaped(HolderGetter<Item> var0, RecipeCategory var1, ItemLike var2, int var3) {
-      return new ShapedRecipeBuilder(var0, var1, var2, var3);
+   public static ShapedRecipeBuilder shaped(final HolderGetter<Item> items, final RecipeCategory category, final ItemLike item) {
+      return shaped(items, category, item, 1);
    }
 
-   public ShapedRecipeBuilder define(Character var1, TagKey<Item> var2) {
-      return this.define(var1, Ingredient.of((HolderSet)this.items.getOrThrow(var2)));
+   public static ShapedRecipeBuilder shaped(final HolderGetter<Item> items, final RecipeCategory category, final ItemLike item, final int count) {
+      return new ShapedRecipeBuilder(items, category, item, count);
    }
 
-   public ShapedRecipeBuilder define(Character var1, ItemLike var2) {
-      return this.define(var1, Ingredient.of(var2));
+   public ShapedRecipeBuilder define(final Character symbol, final TagKey<Item> tag) {
+      return this.define(symbol, Ingredient.of((HolderSet)this.items.getOrThrow(tag)));
    }
 
-   public ShapedRecipeBuilder define(Character var1, Ingredient var2) {
-      if (this.key.containsKey(var1)) {
-         throw new IllegalArgumentException("Symbol '" + var1 + "' is already defined!");
-      } else if (var1 == ' ') {
+   public ShapedRecipeBuilder define(final Character symbol, final ItemLike item) {
+      return this.define(symbol, Ingredient.of(item));
+   }
+
+   public ShapedRecipeBuilder define(final Character symbol, final Ingredient ingredient) {
+      if (this.key.containsKey(symbol)) {
+         throw new IllegalArgumentException("Symbol '" + symbol + "' is already defined!");
+      } else if (symbol == ' ') {
          throw new IllegalArgumentException("Symbol ' ' (whitespace) is reserved and cannot be defined");
       } else {
-         this.key.put(var1, var2);
+         this.key.put(symbol, ingredient);
          return this;
       }
    }
 
-   public ShapedRecipeBuilder pattern(String var1) {
-      if (!this.rows.isEmpty() && var1.length() != ((String)this.rows.get(0)).length()) {
+   public ShapedRecipeBuilder pattern(final String row) {
+      if (!this.rows.isEmpty() && row.length() != ((String)this.rows.get(0)).length()) {
          throw new IllegalArgumentException("Pattern must be the same width on every line!");
       } else {
-         this.rows.add(var1);
+         this.rows.add(row);
          return this;
       }
    }
 
-   public ShapedRecipeBuilder unlockedBy(String var1, Criterion<?> var2) {
-      this.criteria.put(var1, var2);
+   public ShapedRecipeBuilder unlockedBy(final String name, final Criterion<?> criterion) {
+      this.advancementBuilder.unlockedBy(name, criterion);
       return this;
    }
 
-   public ShapedRecipeBuilder group(@Nullable String var1) {
-      this.group = var1;
+   public ShapedRecipeBuilder group(final @Nullable String group) {
+      this.group = group;
       return this;
    }
 
-   public ShapedRecipeBuilder showNotification(boolean var1) {
-      this.showNotification = var1;
+   public ShapedRecipeBuilder showNotification(final boolean showNotification) {
+      this.showNotification = showNotification;
       return this;
    }
 
-   public Item getResult() {
-      return this.result;
+   public ResourceKey<Recipe<?>> defaultId() {
+      return RecipeBuilder.getDefaultRecipeId(this.result);
    }
 
-   public void save(RecipeOutput var1, ResourceKey<Recipe<?>> var2) {
-      ShapedRecipePattern var3 = this.ensureValid(var2);
-      Advancement.Builder var4 = var1.advancement().addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(var2)).rewards(AdvancementRewards.Builder.recipe(var2)).requirements(AdvancementRequirements.Strategy.OR);
-      Map var10000 = this.criteria;
-      Objects.requireNonNull(var4);
-      var10000.forEach(var4::addCriterion);
-      ShapedRecipe var5 = new ShapedRecipe((String)Objects.requireNonNullElse(this.group, ""), RecipeBuilder.determineBookCategory(this.category), var3, new ItemStack(this.result, this.count), this.showNotification);
-      var1.accept(var2, var5, var4.build(var2.identifier().withPrefix("recipes/" + this.category.getFolderName() + "/")));
-   }
-
-   private ShapedRecipePattern ensureValid(ResourceKey<Recipe<?>> var1) {
-      if (this.criteria.isEmpty()) {
-         throw new IllegalStateException("No way of obtaining recipe " + String.valueOf(var1.identifier()));
-      } else {
-         return ShapedRecipePattern.of(this.key, this.rows);
-      }
-   }
-
-   // $FF: synthetic method
-   public RecipeBuilder group(final @Nullable String var1) {
-      return this.group(var1);
-   }
-
-   // $FF: synthetic method
-   public RecipeBuilder unlockedBy(final String var1, final Criterion var2) {
-      return this.unlockedBy(var1, var2);
+   public void save(final RecipeOutput output, final ResourceKey<Recipe<?>> id) {
+      ShapedRecipePattern pattern = ShapedRecipePattern.of(this.key, this.rows);
+      ShapedRecipe recipe = new ShapedRecipe(RecipeBuilder.createCraftingCommonInfo(this.showNotification), RecipeBuilder.createCraftingBookInfo(this.category, this.group), pattern, this.result);
+      output.accept(id, recipe, this.advancementBuilder.build(output, id, this.category));
    }
 }

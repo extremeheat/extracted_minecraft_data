@@ -9,122 +9,121 @@ import com.mojang.datafixers.types.templates.TypeTemplate;
 import com.mojang.datafixers.types.templates.Hook.HookFunction;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 import net.minecraft.util.datafix.fixes.References;
 
 public class V705 extends NamespacedSchema {
-   static final Map<String, String> ITEM_TO_ENTITY = ImmutableMap.builder().put("minecraft:armor_stand", "minecraft:armor_stand").put("minecraft:painting", "minecraft:painting").put("minecraft:armadillo_spawn_egg", "minecraft:armadillo").put("minecraft:allay_spawn_egg", "minecraft:allay").put("minecraft:axolotl_spawn_egg", "minecraft:axolotl").put("minecraft:bat_spawn_egg", "minecraft:bat").put("minecraft:bee_spawn_egg", "minecraft:bee").put("minecraft:blaze_spawn_egg", "minecraft:blaze").put("minecraft:bogged_spawn_egg", "minecraft:bogged").put("minecraft:breeze_spawn_egg", "minecraft:breeze").put("minecraft:cat_spawn_egg", "minecraft:cat").put("minecraft:camel_spawn_egg", "minecraft:camel").put("minecraft:cave_spider_spawn_egg", "minecraft:cave_spider").put("minecraft:chicken_spawn_egg", "minecraft:chicken").put("minecraft:cod_spawn_egg", "minecraft:cod").put("minecraft:cow_spawn_egg", "minecraft:cow").put("minecraft:creeper_spawn_egg", "minecraft:creeper").put("minecraft:dolphin_spawn_egg", "minecraft:dolphin").put("minecraft:donkey_spawn_egg", "minecraft:donkey").put("minecraft:drowned_spawn_egg", "minecraft:drowned").put("minecraft:elder_guardian_spawn_egg", "minecraft:elder_guardian").put("minecraft:ender_dragon_spawn_egg", "minecraft:ender_dragon").put("minecraft:enderman_spawn_egg", "minecraft:enderman").put("minecraft:endermite_spawn_egg", "minecraft:endermite").put("minecraft:evoker_spawn_egg", "minecraft:evoker").put("minecraft:fox_spawn_egg", "minecraft:fox").put("minecraft:frog_spawn_egg", "minecraft:frog").put("minecraft:ghast_spawn_egg", "minecraft:ghast").put("minecraft:glow_squid_spawn_egg", "minecraft:glow_squid").put("minecraft:goat_spawn_egg", "minecraft:goat").put("minecraft:guardian_spawn_egg", "minecraft:guardian").put("minecraft:hoglin_spawn_egg", "minecraft:hoglin").put("minecraft:horse_spawn_egg", "minecraft:horse").put("minecraft:husk_spawn_egg", "minecraft:husk").put("minecraft:iron_golem_spawn_egg", "minecraft:iron_golem").put("minecraft:llama_spawn_egg", "minecraft:llama").put("minecraft:magma_cube_spawn_egg", "minecraft:magma_cube").put("minecraft:mooshroom_spawn_egg", "minecraft:mooshroom").put("minecraft:mule_spawn_egg", "minecraft:mule").put("minecraft:ocelot_spawn_egg", "minecraft:ocelot").put("minecraft:panda_spawn_egg", "minecraft:panda").put("minecraft:parrot_spawn_egg", "minecraft:parrot").put("minecraft:phantom_spawn_egg", "minecraft:phantom").put("minecraft:pig_spawn_egg", "minecraft:pig").put("minecraft:piglin_spawn_egg", "minecraft:piglin").put("minecraft:piglin_brute_spawn_egg", "minecraft:piglin_brute").put("minecraft:pillager_spawn_egg", "minecraft:pillager").put("minecraft:polar_bear_spawn_egg", "minecraft:polar_bear").put("minecraft:pufferfish_spawn_egg", "minecraft:pufferfish").put("minecraft:rabbit_spawn_egg", "minecraft:rabbit").put("minecraft:ravager_spawn_egg", "minecraft:ravager").put("minecraft:salmon_spawn_egg", "minecraft:salmon").put("minecraft:sheep_spawn_egg", "minecraft:sheep").put("minecraft:shulker_spawn_egg", "minecraft:shulker").put("minecraft:silverfish_spawn_egg", "minecraft:silverfish").put("minecraft:skeleton_spawn_egg", "minecraft:skeleton").put("minecraft:skeleton_horse_spawn_egg", "minecraft:skeleton_horse").put("minecraft:slime_spawn_egg", "minecraft:slime").put("minecraft:sniffer_spawn_egg", "minecraft:sniffer").put("minecraft:snow_golem_spawn_egg", "minecraft:snow_golem").put("minecraft:spider_spawn_egg", "minecraft:spider").put("minecraft:squid_spawn_egg", "minecraft:squid").put("minecraft:stray_spawn_egg", "minecraft:stray").put("minecraft:strider_spawn_egg", "minecraft:strider").put("minecraft:tadpole_spawn_egg", "minecraft:tadpole").put("minecraft:trader_llama_spawn_egg", "minecraft:trader_llama").put("minecraft:tropical_fish_spawn_egg", "minecraft:tropical_fish").put("minecraft:turtle_spawn_egg", "minecraft:turtle").put("minecraft:vex_spawn_egg", "minecraft:vex").put("minecraft:villager_spawn_egg", "minecraft:villager").put("minecraft:vindicator_spawn_egg", "minecraft:vindicator").put("minecraft:wandering_trader_spawn_egg", "minecraft:wandering_trader").put("minecraft:warden_spawn_egg", "minecraft:warden").put("minecraft:witch_spawn_egg", "minecraft:witch").put("minecraft:wither_spawn_egg", "minecraft:wither").put("minecraft:wither_skeleton_spawn_egg", "minecraft:wither_skeleton").put("minecraft:wolf_spawn_egg", "minecraft:wolf").put("minecraft:zoglin_spawn_egg", "minecraft:zoglin").put("minecraft:zombie_spawn_egg", "minecraft:zombie").put("minecraft:zombie_horse_spawn_egg", "minecraft:zombie_horse").put("minecraft:zombie_villager_spawn_egg", "minecraft:zombie_villager").put("minecraft:zombified_piglin_spawn_egg", "minecraft:zombified_piglin").put("minecraft:item_frame", "minecraft:item_frame").put("minecraft:boat", "minecraft:oak_boat").put("minecraft:oak_boat", "minecraft:oak_boat").put("minecraft:oak_chest_boat", "minecraft:oak_chest_boat").put("minecraft:spruce_boat", "minecraft:spruce_boat").put("minecraft:spruce_chest_boat", "minecraft:spruce_chest_boat").put("minecraft:birch_boat", "minecraft:birch_boat").put("minecraft:birch_chest_boat", "minecraft:birch_chest_boat").put("minecraft:jungle_boat", "minecraft:jungle_boat").put("minecraft:jungle_chest_boat", "minecraft:jungle_chest_boat").put("minecraft:acacia_boat", "minecraft:acacia_boat").put("minecraft:acacia_chest_boat", "minecraft:acacia_chest_boat").put("minecraft:cherry_boat", "minecraft:cherry_boat").put("minecraft:cherry_chest_boat", "minecraft:cherry_chest_boat").put("minecraft:dark_oak_boat", "minecraft:dark_oak_boat").put("minecraft:dark_oak_chest_boat", "minecraft:dark_oak_chest_boat").put("minecraft:mangrove_boat", "minecraft:mangrove_boat").put("minecraft:mangrove_chest_boat", "minecraft:mangrove_chest_boat").put("minecraft:bamboo_raft", "minecraft:bamboo_raft").put("minecraft:bamboo_chest_raft", "minecraft:bamboo_chest_raft").put("minecraft:minecart", "minecraft:minecart").put("minecraft:chest_minecart", "minecraft:chest_minecart").put("minecraft:furnace_minecart", "minecraft:furnace_minecart").put("minecraft:tnt_minecart", "minecraft:tnt_minecart").put("minecraft:hopper_minecart", "minecraft:hopper_minecart").build();
+   private static final Map<String, String> ITEM_TO_ENTITY = ImmutableMap.builder().put("minecraft:armor_stand", "minecraft:armor_stand").put("minecraft:painting", "minecraft:painting").put("minecraft:armadillo_spawn_egg", "minecraft:armadillo").put("minecraft:allay_spawn_egg", "minecraft:allay").put("minecraft:axolotl_spawn_egg", "minecraft:axolotl").put("minecraft:bat_spawn_egg", "minecraft:bat").put("minecraft:bee_spawn_egg", "minecraft:bee").put("minecraft:blaze_spawn_egg", "minecraft:blaze").put("minecraft:bogged_spawn_egg", "minecraft:bogged").put("minecraft:breeze_spawn_egg", "minecraft:breeze").put("minecraft:cat_spawn_egg", "minecraft:cat").put("minecraft:camel_spawn_egg", "minecraft:camel").put("minecraft:cave_spider_spawn_egg", "minecraft:cave_spider").put("minecraft:chicken_spawn_egg", "minecraft:chicken").put("minecraft:cod_spawn_egg", "minecraft:cod").put("minecraft:cow_spawn_egg", "minecraft:cow").put("minecraft:creeper_spawn_egg", "minecraft:creeper").put("minecraft:dolphin_spawn_egg", "minecraft:dolphin").put("minecraft:donkey_spawn_egg", "minecraft:donkey").put("minecraft:drowned_spawn_egg", "minecraft:drowned").put("minecraft:elder_guardian_spawn_egg", "minecraft:elder_guardian").put("minecraft:ender_dragon_spawn_egg", "minecraft:ender_dragon").put("minecraft:enderman_spawn_egg", "minecraft:enderman").put("minecraft:endermite_spawn_egg", "minecraft:endermite").put("minecraft:evoker_spawn_egg", "minecraft:evoker").put("minecraft:fox_spawn_egg", "minecraft:fox").put("minecraft:frog_spawn_egg", "minecraft:frog").put("minecraft:ghast_spawn_egg", "minecraft:ghast").put("minecraft:glow_squid_spawn_egg", "minecraft:glow_squid").put("minecraft:goat_spawn_egg", "minecraft:goat").put("minecraft:guardian_spawn_egg", "minecraft:guardian").put("minecraft:hoglin_spawn_egg", "minecraft:hoglin").put("minecraft:horse_spawn_egg", "minecraft:horse").put("minecraft:husk_spawn_egg", "minecraft:husk").put("minecraft:iron_golem_spawn_egg", "minecraft:iron_golem").put("minecraft:llama_spawn_egg", "minecraft:llama").put("minecraft:magma_cube_spawn_egg", "minecraft:magma_cube").put("minecraft:mooshroom_spawn_egg", "minecraft:mooshroom").put("minecraft:mule_spawn_egg", "minecraft:mule").put("minecraft:ocelot_spawn_egg", "minecraft:ocelot").put("minecraft:panda_spawn_egg", "minecraft:panda").put("minecraft:parrot_spawn_egg", "minecraft:parrot").put("minecraft:phantom_spawn_egg", "minecraft:phantom").put("minecraft:pig_spawn_egg", "minecraft:pig").put("minecraft:piglin_spawn_egg", "minecraft:piglin").put("minecraft:piglin_brute_spawn_egg", "minecraft:piglin_brute").put("minecraft:pillager_spawn_egg", "minecraft:pillager").put("minecraft:polar_bear_spawn_egg", "minecraft:polar_bear").put("minecraft:pufferfish_spawn_egg", "minecraft:pufferfish").put("minecraft:rabbit_spawn_egg", "minecraft:rabbit").put("minecraft:ravager_spawn_egg", "minecraft:ravager").put("minecraft:salmon_spawn_egg", "minecraft:salmon").put("minecraft:sheep_spawn_egg", "minecraft:sheep").put("minecraft:shulker_spawn_egg", "minecraft:shulker").put("minecraft:silverfish_spawn_egg", "minecraft:silverfish").put("minecraft:skeleton_spawn_egg", "minecraft:skeleton").put("minecraft:skeleton_horse_spawn_egg", "minecraft:skeleton_horse").put("minecraft:slime_spawn_egg", "minecraft:slime").put("minecraft:sniffer_spawn_egg", "minecraft:sniffer").put("minecraft:snow_golem_spawn_egg", "minecraft:snow_golem").put("minecraft:spider_spawn_egg", "minecraft:spider").put("minecraft:squid_spawn_egg", "minecraft:squid").put("minecraft:stray_spawn_egg", "minecraft:stray").put("minecraft:strider_spawn_egg", "minecraft:strider").put("minecraft:tadpole_spawn_egg", "minecraft:tadpole").put("minecraft:trader_llama_spawn_egg", "minecraft:trader_llama").put("minecraft:tropical_fish_spawn_egg", "minecraft:tropical_fish").put("minecraft:turtle_spawn_egg", "minecraft:turtle").put("minecraft:vex_spawn_egg", "minecraft:vex").put("minecraft:villager_spawn_egg", "minecraft:villager").put("minecraft:vindicator_spawn_egg", "minecraft:vindicator").put("minecraft:wandering_trader_spawn_egg", "minecraft:wandering_trader").put("minecraft:warden_spawn_egg", "minecraft:warden").put("minecraft:witch_spawn_egg", "minecraft:witch").put("minecraft:wither_spawn_egg", "minecraft:wither").put("minecraft:wither_skeleton_spawn_egg", "minecraft:wither_skeleton").put("minecraft:wolf_spawn_egg", "minecraft:wolf").put("minecraft:zoglin_spawn_egg", "minecraft:zoglin").put("minecraft:zombie_spawn_egg", "minecraft:zombie").put("minecraft:zombie_horse_spawn_egg", "minecraft:zombie_horse").put("minecraft:zombie_villager_spawn_egg", "minecraft:zombie_villager").put("minecraft:zombified_piglin_spawn_egg", "minecraft:zombified_piglin").put("minecraft:item_frame", "minecraft:item_frame").put("minecraft:boat", "minecraft:oak_boat").put("minecraft:oak_boat", "minecraft:oak_boat").put("minecraft:oak_chest_boat", "minecraft:oak_chest_boat").put("minecraft:spruce_boat", "minecraft:spruce_boat").put("minecraft:spruce_chest_boat", "minecraft:spruce_chest_boat").put("minecraft:birch_boat", "minecraft:birch_boat").put("minecraft:birch_chest_boat", "minecraft:birch_chest_boat").put("minecraft:jungle_boat", "minecraft:jungle_boat").put("minecraft:jungle_chest_boat", "minecraft:jungle_chest_boat").put("minecraft:acacia_boat", "minecraft:acacia_boat").put("minecraft:acacia_chest_boat", "minecraft:acacia_chest_boat").put("minecraft:cherry_boat", "minecraft:cherry_boat").put("minecraft:cherry_chest_boat", "minecraft:cherry_chest_boat").put("minecraft:dark_oak_boat", "minecraft:dark_oak_boat").put("minecraft:dark_oak_chest_boat", "minecraft:dark_oak_chest_boat").put("minecraft:mangrove_boat", "minecraft:mangrove_boat").put("minecraft:mangrove_chest_boat", "minecraft:mangrove_chest_boat").put("minecraft:bamboo_raft", "minecraft:bamboo_raft").put("minecraft:bamboo_chest_raft", "minecraft:bamboo_chest_raft").put("minecraft:minecart", "minecraft:minecart").put("minecraft:chest_minecart", "minecraft:chest_minecart").put("minecraft:furnace_minecart", "minecraft:furnace_minecart").put("minecraft:tnt_minecart", "minecraft:tnt_minecart").put("minecraft:hopper_minecart", "minecraft:hopper_minecart").build();
    protected static final Hook.HookFunction ADD_NAMES = new Hook.HookFunction() {
-      public <T> T apply(DynamicOps<T> var1, T var2) {
-         return (T)V99.addNames(new Dynamic(var1, var2), V704.ITEM_TO_BLOCKENTITY, V705.ITEM_TO_ENTITY);
+      public <T> T apply(final DynamicOps<T> ops, final T value) {
+         return (T)V99.addNames(new Dynamic(ops, value), V704.ITEM_TO_BLOCKENTITY, V705.ITEM_TO_ENTITY);
       }
    };
 
-   public V705(int var1, Schema var2) {
-      super(var1, var2);
+   public V705(final int versionKey, final Schema parent) {
+      super(versionKey, parent);
    }
 
-   protected static void registerMob(Schema var0, Map<String, Supplier<TypeTemplate>> var1, String var2) {
-      var0.registerSimple(var1, var2);
+   protected static void registerMob(final Schema schema, final Map<String, Supplier<TypeTemplate>> map, final String name) {
+      schema.registerSimple(map, name);
    }
 
-   protected static void registerThrowableProjectile(Schema var0, Map<String, Supplier<TypeTemplate>> var1, String var2) {
-      var0.register(var1, var2, () -> DSL.optionalFields("inTile", References.BLOCK_NAME.in(var0)));
+   protected static void registerThrowableProjectile(final Schema schema, final Map<String, Supplier<TypeTemplate>> map, final String name) {
+      schema.register(map, name, () -> DSL.optionalFields("inTile", References.BLOCK_NAME.in(schema)));
    }
 
-   public Map<String, Supplier<TypeTemplate>> registerEntities(Schema var1) {
-      HashMap var2 = Maps.newHashMap();
-      var1.register(var2, "minecraft:area_effect_cloud", (var1x) -> DSL.optionalFields("Particle", References.PARTICLE.in(var1)));
-      registerMob(var1, var2, "minecraft:armor_stand");
-      var1.register(var2, "minecraft:arrow", (var1x) -> DSL.optionalFields("inTile", References.BLOCK_NAME.in(var1)));
-      registerMob(var1, var2, "minecraft:bat");
-      registerMob(var1, var2, "minecraft:blaze");
-      var1.registerSimple(var2, "minecraft:boat");
-      registerMob(var1, var2, "minecraft:cave_spider");
-      var1.register(var2, "minecraft:chest_minecart", (var1x) -> DSL.optionalFields("DisplayTile", References.BLOCK_NAME.in(var1), "Items", DSL.list(References.ITEM_STACK.in(var1))));
-      registerMob(var1, var2, "minecraft:chicken");
-      var1.register(var2, "minecraft:commandblock_minecart", (var1x) -> DSL.optionalFields("DisplayTile", References.BLOCK_NAME.in(var1), "LastOutput", References.TEXT_COMPONENT.in(var1)));
-      registerMob(var1, var2, "minecraft:cow");
-      registerMob(var1, var2, "minecraft:creeper");
-      var1.register(var2, "minecraft:donkey", (var1x) -> DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(var1)), "SaddleItem", References.ITEM_STACK.in(var1)));
-      var1.registerSimple(var2, "minecraft:dragon_fireball");
-      registerThrowableProjectile(var1, var2, "minecraft:egg");
-      registerMob(var1, var2, "minecraft:elder_guardian");
-      var1.registerSimple(var2, "minecraft:ender_crystal");
-      registerMob(var1, var2, "minecraft:ender_dragon");
-      var1.register(var2, "minecraft:enderman", (var1x) -> DSL.optionalFields("carried", References.BLOCK_NAME.in(var1)));
-      registerMob(var1, var2, "minecraft:endermite");
-      registerThrowableProjectile(var1, var2, "minecraft:ender_pearl");
-      var1.registerSimple(var2, "minecraft:eye_of_ender_signal");
-      var1.register(var2, "minecraft:falling_block", (var1x) -> DSL.optionalFields("Block", References.BLOCK_NAME.in(var1), "TileEntityData", References.BLOCK_ENTITY.in(var1)));
-      registerThrowableProjectile(var1, var2, "minecraft:fireball");
-      var1.register(var2, "minecraft:fireworks_rocket", (var1x) -> DSL.optionalFields("FireworksItem", References.ITEM_STACK.in(var1)));
-      var1.register(var2, "minecraft:furnace_minecart", (var1x) -> DSL.optionalFields("DisplayTile", References.BLOCK_NAME.in(var1)));
-      registerMob(var1, var2, "minecraft:ghast");
-      registerMob(var1, var2, "minecraft:giant");
-      registerMob(var1, var2, "minecraft:guardian");
-      var1.register(var2, "minecraft:hopper_minecart", (var1x) -> DSL.optionalFields("DisplayTile", References.BLOCK_NAME.in(var1), "Items", DSL.list(References.ITEM_STACK.in(var1))));
-      var1.register(var2, "minecraft:horse", (var1x) -> DSL.optionalFields("ArmorItem", References.ITEM_STACK.in(var1), "SaddleItem", References.ITEM_STACK.in(var1)));
-      registerMob(var1, var2, "minecraft:husk");
-      var1.register(var2, "minecraft:item", (var1x) -> DSL.optionalFields("Item", References.ITEM_STACK.in(var1)));
-      var1.register(var2, "minecraft:item_frame", (var1x) -> DSL.optionalFields("Item", References.ITEM_STACK.in(var1)));
-      var1.registerSimple(var2, "minecraft:leash_knot");
-      registerMob(var1, var2, "minecraft:magma_cube");
-      var1.register(var2, "minecraft:minecart", (var1x) -> DSL.optionalFields("DisplayTile", References.BLOCK_NAME.in(var1)));
-      registerMob(var1, var2, "minecraft:mooshroom");
-      var1.register(var2, "minecraft:mule", (var1x) -> DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(var1)), "SaddleItem", References.ITEM_STACK.in(var1)));
-      registerMob(var1, var2, "minecraft:ocelot");
-      var1.registerSimple(var2, "minecraft:painting");
-      registerMob(var1, var2, "minecraft:parrot");
-      registerMob(var1, var2, "minecraft:pig");
-      registerMob(var1, var2, "minecraft:polar_bear");
-      var1.register(var2, "minecraft:potion", (var1x) -> DSL.optionalFields("Potion", References.ITEM_STACK.in(var1), "inTile", References.BLOCK_NAME.in(var1)));
-      registerMob(var1, var2, "minecraft:rabbit");
-      registerMob(var1, var2, "minecraft:sheep");
-      registerMob(var1, var2, "minecraft:shulker");
-      var1.registerSimple(var2, "minecraft:shulker_bullet");
-      registerMob(var1, var2, "minecraft:silverfish");
-      registerMob(var1, var2, "minecraft:skeleton");
-      var1.register(var2, "minecraft:skeleton_horse", (var1x) -> DSL.optionalFields("SaddleItem", References.ITEM_STACK.in(var1)));
-      registerMob(var1, var2, "minecraft:slime");
-      registerThrowableProjectile(var1, var2, "minecraft:small_fireball");
-      registerThrowableProjectile(var1, var2, "minecraft:snowball");
-      registerMob(var1, var2, "minecraft:snowman");
-      var1.register(var2, "minecraft:spawner_minecart", (var1x) -> DSL.optionalFields("DisplayTile", References.BLOCK_NAME.in(var1), References.UNTAGGED_SPAWNER.in(var1)));
-      var1.register(var2, "minecraft:spectral_arrow", (var1x) -> DSL.optionalFields("inTile", References.BLOCK_NAME.in(var1)));
-      registerMob(var1, var2, "minecraft:spider");
-      registerMob(var1, var2, "minecraft:squid");
-      registerMob(var1, var2, "minecraft:stray");
-      var1.registerSimple(var2, "minecraft:tnt");
-      var1.register(var2, "minecraft:tnt_minecart", (var1x) -> DSL.optionalFields("DisplayTile", References.BLOCK_NAME.in(var1)));
-      var1.register(var2, "minecraft:villager", (var1x) -> DSL.optionalFields("Inventory", DSL.list(References.ITEM_STACK.in(var1)), "Offers", DSL.optionalFields("Recipes", DSL.list(References.VILLAGER_TRADE.in(var1)))));
-      registerMob(var1, var2, "minecraft:villager_golem");
-      registerMob(var1, var2, "minecraft:witch");
-      registerMob(var1, var2, "minecraft:wither");
-      registerMob(var1, var2, "minecraft:wither_skeleton");
-      registerThrowableProjectile(var1, var2, "minecraft:wither_skull");
-      registerMob(var1, var2, "minecraft:wolf");
-      registerThrowableProjectile(var1, var2, "minecraft:xp_bottle");
-      var1.registerSimple(var2, "minecraft:xp_orb");
-      registerMob(var1, var2, "minecraft:zombie");
-      var1.register(var2, "minecraft:zombie_horse", (var1x) -> DSL.optionalFields("SaddleItem", References.ITEM_STACK.in(var1)));
-      registerMob(var1, var2, "minecraft:zombie_pigman");
-      var1.register(var2, "minecraft:zombie_villager", (var1x) -> DSL.optionalFields("Offers", DSL.optionalFields("Recipes", DSL.list(References.VILLAGER_TRADE.in(var1)))));
-      var1.registerSimple(var2, "minecraft:evocation_fangs");
-      registerMob(var1, var2, "minecraft:evocation_illager");
-      registerMob(var1, var2, "minecraft:illusion_illager");
-      var1.register(var2, "minecraft:llama", (var1x) -> DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(var1)), "SaddleItem", References.ITEM_STACK.in(var1), "DecorItem", References.ITEM_STACK.in(var1)));
-      var1.registerSimple(var2, "minecraft:llama_spit");
-      registerMob(var1, var2, "minecraft:vex");
-      registerMob(var1, var2, "minecraft:vindication_illager");
-      return var2;
+   public Map<String, Supplier<TypeTemplate>> registerEntities(final Schema schema) {
+      Map<String, Supplier<TypeTemplate>> map = Maps.newHashMap();
+      schema.register(map, "minecraft:area_effect_cloud", (name) -> DSL.optionalFields("Particle", References.PARTICLE.in(schema)));
+      registerMob(schema, map, "minecraft:armor_stand");
+      schema.register(map, "minecraft:arrow", (name) -> DSL.optionalFields("inTile", References.BLOCK_NAME.in(schema)));
+      registerMob(schema, map, "minecraft:bat");
+      registerMob(schema, map, "minecraft:blaze");
+      schema.registerSimple(map, "minecraft:boat");
+      registerMob(schema, map, "minecraft:cave_spider");
+      schema.register(map, "minecraft:chest_minecart", (name) -> DSL.optionalFields("DisplayTile", References.BLOCK_NAME.in(schema), "Items", DSL.list(References.ITEM_STACK.in(schema))));
+      registerMob(schema, map, "minecraft:chicken");
+      schema.register(map, "minecraft:commandblock_minecart", (name) -> DSL.optionalFields("DisplayTile", References.BLOCK_NAME.in(schema), "LastOutput", References.TEXT_COMPONENT.in(schema)));
+      registerMob(schema, map, "minecraft:cow");
+      registerMob(schema, map, "minecraft:creeper");
+      schema.register(map, "minecraft:donkey", (name) -> DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(schema)), "SaddleItem", References.ITEM_STACK.in(schema)));
+      schema.registerSimple(map, "minecraft:dragon_fireball");
+      registerThrowableProjectile(schema, map, "minecraft:egg");
+      registerMob(schema, map, "minecraft:elder_guardian");
+      schema.registerSimple(map, "minecraft:ender_crystal");
+      registerMob(schema, map, "minecraft:ender_dragon");
+      schema.register(map, "minecraft:enderman", (name) -> DSL.optionalFields("carried", References.BLOCK_NAME.in(schema)));
+      registerMob(schema, map, "minecraft:endermite");
+      registerThrowableProjectile(schema, map, "minecraft:ender_pearl");
+      schema.registerSimple(map, "minecraft:eye_of_ender_signal");
+      schema.register(map, "minecraft:falling_block", (name) -> DSL.optionalFields("Block", References.BLOCK_NAME.in(schema), "TileEntityData", References.BLOCK_ENTITY.in(schema)));
+      registerThrowableProjectile(schema, map, "minecraft:fireball");
+      schema.register(map, "minecraft:fireworks_rocket", (name) -> DSL.optionalFields("FireworksItem", References.ITEM_STACK.in(schema)));
+      schema.register(map, "minecraft:furnace_minecart", (name) -> DSL.optionalFields("DisplayTile", References.BLOCK_NAME.in(schema)));
+      registerMob(schema, map, "minecraft:ghast");
+      registerMob(schema, map, "minecraft:giant");
+      registerMob(schema, map, "minecraft:guardian");
+      schema.register(map, "minecraft:hopper_minecart", (name) -> DSL.optionalFields("DisplayTile", References.BLOCK_NAME.in(schema), "Items", DSL.list(References.ITEM_STACK.in(schema))));
+      schema.register(map, "minecraft:horse", (name) -> DSL.optionalFields("ArmorItem", References.ITEM_STACK.in(schema), "SaddleItem", References.ITEM_STACK.in(schema)));
+      registerMob(schema, map, "minecraft:husk");
+      schema.register(map, "minecraft:item", (name) -> DSL.optionalFields("Item", References.ITEM_STACK.in(schema)));
+      schema.register(map, "minecraft:item_frame", (name) -> DSL.optionalFields("Item", References.ITEM_STACK.in(schema)));
+      schema.registerSimple(map, "minecraft:leash_knot");
+      registerMob(schema, map, "minecraft:magma_cube");
+      schema.register(map, "minecraft:minecart", (name) -> DSL.optionalFields("DisplayTile", References.BLOCK_NAME.in(schema)));
+      registerMob(schema, map, "minecraft:mooshroom");
+      schema.register(map, "minecraft:mule", (name) -> DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(schema)), "SaddleItem", References.ITEM_STACK.in(schema)));
+      registerMob(schema, map, "minecraft:ocelot");
+      schema.registerSimple(map, "minecraft:painting");
+      registerMob(schema, map, "minecraft:parrot");
+      registerMob(schema, map, "minecraft:pig");
+      registerMob(schema, map, "minecraft:polar_bear");
+      schema.register(map, "minecraft:potion", (name) -> DSL.optionalFields("Potion", References.ITEM_STACK.in(schema), "inTile", References.BLOCK_NAME.in(schema)));
+      registerMob(schema, map, "minecraft:rabbit");
+      registerMob(schema, map, "minecraft:sheep");
+      registerMob(schema, map, "minecraft:shulker");
+      schema.registerSimple(map, "minecraft:shulker_bullet");
+      registerMob(schema, map, "minecraft:silverfish");
+      registerMob(schema, map, "minecraft:skeleton");
+      schema.register(map, "minecraft:skeleton_horse", (name) -> DSL.optionalFields("SaddleItem", References.ITEM_STACK.in(schema)));
+      registerMob(schema, map, "minecraft:slime");
+      registerThrowableProjectile(schema, map, "minecraft:small_fireball");
+      registerThrowableProjectile(schema, map, "minecraft:snowball");
+      registerMob(schema, map, "minecraft:snowman");
+      schema.register(map, "minecraft:spawner_minecart", (name) -> DSL.optionalFields("DisplayTile", References.BLOCK_NAME.in(schema), References.UNTAGGED_SPAWNER.in(schema)));
+      schema.register(map, "minecraft:spectral_arrow", (name) -> DSL.optionalFields("inTile", References.BLOCK_NAME.in(schema)));
+      registerMob(schema, map, "minecraft:spider");
+      registerMob(schema, map, "minecraft:squid");
+      registerMob(schema, map, "minecraft:stray");
+      schema.registerSimple(map, "minecraft:tnt");
+      schema.register(map, "minecraft:tnt_minecart", (name) -> DSL.optionalFields("DisplayTile", References.BLOCK_NAME.in(schema)));
+      schema.register(map, "minecraft:villager", (name) -> DSL.optionalFields("Inventory", DSL.list(References.ITEM_STACK.in(schema)), "Offers", DSL.optionalFields("Recipes", DSL.list(References.VILLAGER_TRADE.in(schema)))));
+      registerMob(schema, map, "minecraft:villager_golem");
+      registerMob(schema, map, "minecraft:witch");
+      registerMob(schema, map, "minecraft:wither");
+      registerMob(schema, map, "minecraft:wither_skeleton");
+      registerThrowableProjectile(schema, map, "minecraft:wither_skull");
+      registerMob(schema, map, "minecraft:wolf");
+      registerThrowableProjectile(schema, map, "minecraft:xp_bottle");
+      schema.registerSimple(map, "minecraft:xp_orb");
+      registerMob(schema, map, "minecraft:zombie");
+      schema.register(map, "minecraft:zombie_horse", (name) -> DSL.optionalFields("SaddleItem", References.ITEM_STACK.in(schema)));
+      registerMob(schema, map, "minecraft:zombie_pigman");
+      schema.register(map, "minecraft:zombie_villager", (name) -> DSL.optionalFields("Offers", DSL.optionalFields("Recipes", DSL.list(References.VILLAGER_TRADE.in(schema)))));
+      schema.registerSimple(map, "minecraft:evocation_fangs");
+      registerMob(schema, map, "minecraft:evocation_illager");
+      registerMob(schema, map, "minecraft:illusion_illager");
+      schema.register(map, "minecraft:llama", (name) -> DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(schema)), "SaddleItem", References.ITEM_STACK.in(schema), "DecorItem", References.ITEM_STACK.in(schema)));
+      schema.registerSimple(map, "minecraft:llama_spit");
+      registerMob(schema, map, "minecraft:vex");
+      registerMob(schema, map, "minecraft:vindication_illager");
+      return map;
    }
 
-   public void registerTypes(Schema var1, Map<String, Supplier<TypeTemplate>> var2, Map<String, Supplier<TypeTemplate>> var3) {
-      super.registerTypes(var1, var2, var3);
-      var1.registerType(true, References.ENTITY, () -> DSL.and(References.ENTITY_EQUIPMENT.in(var1), DSL.optionalFields("CustomName", DSL.constType(DSL.string()), DSL.taggedChoiceLazy("id", namespacedString(), var2))));
-      var1.registerType(true, References.ITEM_STACK, () -> DSL.hook(DSL.optionalFields("id", References.ITEM_NAME.in(var1), "tag", V99.itemStackTag(var1)), ADD_NAMES, HookFunction.IDENTITY));
+   public void registerTypes(final Schema schema, final Map<String, Supplier<TypeTemplate>> entityTypes, final Map<String, Supplier<TypeTemplate>> blockEntityTypes) {
+      super.registerTypes(schema, entityTypes, blockEntityTypes);
+      schema.registerType(true, References.ENTITY, () -> DSL.and(References.ENTITY_EQUIPMENT.in(schema), DSL.optionalFields("CustomName", DSL.constType(DSL.string()), DSL.taggedChoiceLazy("id", namespacedString(), entityTypes))));
+      schema.registerType(true, References.ITEM_STACK, () -> DSL.hook(DSL.optionalFields("id", References.ITEM_NAME.in(schema), "tag", V99.itemStackTag(schema)), ADD_NAMES, HookFunction.IDENTITY));
    }
 }

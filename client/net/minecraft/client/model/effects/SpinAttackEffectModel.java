@@ -14,38 +14,38 @@ public class SpinAttackEffectModel extends EntityModel<AvatarRenderState> {
    private static final int BOX_COUNT = 2;
    private final ModelPart[] boxes = new ModelPart[2];
 
-   public SpinAttackEffectModel(ModelPart var1) {
-      super(var1);
+   public SpinAttackEffectModel(final ModelPart root) {
+      super(root);
 
-      for(int var2 = 0; var2 < 2; ++var2) {
-         this.boxes[var2] = var1.getChild(boxName(var2));
+      for(int i = 0; i < 2; ++i) {
+         this.boxes[i] = root.getChild(boxName(i));
       }
 
    }
 
-   private static String boxName(int var0) {
-      return "box" + var0;
+   private static String boxName(final int i) {
+      return "box" + i;
    }
 
    public static LayerDefinition createLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
+      MeshDefinition mesh = new MeshDefinition();
+      PartDefinition root = mesh.getRoot();
 
-      for(int var2 = 0; var2 < 2; ++var2) {
-         float var3 = -3.2F + 9.6F * (float)(var2 + 1);
-         float var4 = 0.75F * (float)(var2 + 1);
-         var1.addOrReplaceChild(boxName(var2), CubeListBuilder.create().texOffs(0, 0).addBox(-8.0F, -16.0F + var3, -8.0F, 16.0F, 32.0F, 16.0F), PartPose.ZERO.withScale(var4));
+      for(int i = 0; i < 2; ++i) {
+         float yOffset = -3.2F + 9.6F * (float)(i + 1);
+         float scale = 0.75F * (float)(i + 1);
+         root.addOrReplaceChild(boxName(i), CubeListBuilder.create().texOffs(0, 0).addBox(-8.0F, -16.0F + yOffset, -8.0F, 16.0F, 32.0F, 16.0F), PartPose.ZERO.withScale(scale));
       }
 
-      return LayerDefinition.create(var0, 64, 64);
+      return LayerDefinition.create(mesh, 64, 64);
    }
 
-   public void setupAnim(AvatarRenderState var1) {
-      super.setupAnim(var1);
+   public void setupAnim(final AvatarRenderState state) {
+      super.setupAnim(state);
 
-      for(int var2 = 0; var2 < this.boxes.length; ++var2) {
-         float var3 = var1.ageInTicks * (float)(-(45 + (var2 + 1) * 5));
-         this.boxes[var2].yRot = Mth.wrapDegrees(var3) * 0.017453292F;
+      for(int i = 0; i < this.boxes.length; ++i) {
+         float angle = state.ageInTicks * (float)(-(45 + (i + 1) * 5));
+         this.boxes[i].yRot = Mth.wrapDegrees(angle) * 0.017453292F;
       }
 
    }

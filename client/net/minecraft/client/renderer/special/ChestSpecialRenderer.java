@@ -5,71 +5,77 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.function.Consumer;
-import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.object.chest.ChestModel;
+import net.minecraft.client.renderer.MultiblockChestResources;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.blockentity.ChestRenderer;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.resources.model.Material;
-import net.minecraft.client.resources.model.MaterialSet;
+import net.minecraft.client.resources.model.sprite.SpriteGetter;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.level.block.state.properties.ChestType;
 import org.joml.Vector3fc;
 
 public class ChestSpecialRenderer implements NoDataSpecialModelRenderer {
-   public static final Identifier GIFT_CHEST_TEXTURE = Identifier.withDefaultNamespace("christmas");
-   public static final Identifier NORMAL_CHEST_TEXTURE = Identifier.withDefaultNamespace("normal");
-   public static final Identifier TRAPPED_CHEST_TEXTURE = Identifier.withDefaultNamespace("trapped");
-   public static final Identifier ENDER_CHEST_TEXTURE = Identifier.withDefaultNamespace("ender");
-   public static final Identifier COPPER_CHEST_TEXTURE = Identifier.withDefaultNamespace("copper");
-   public static final Identifier EXPOSED_COPPER_CHEST_TEXTURE = Identifier.withDefaultNamespace("copper_exposed");
-   public static final Identifier WEATHERED_COPPER_CHEST_TEXTURE = Identifier.withDefaultNamespace("copper_weathered");
-   public static final Identifier OXIDIZED_COPPER_CHEST_TEXTURE = Identifier.withDefaultNamespace("copper_oxidized");
-   private final MaterialSet materials;
+   public static final Identifier ENDER_CHEST = Identifier.withDefaultNamespace("ender");
+   public static final MultiblockChestResources<Identifier> REGULAR = createDefaultTextures("normal");
+   public static final MultiblockChestResources<Identifier> TRAPPED = createDefaultTextures("trapped");
+   public static final MultiblockChestResources<Identifier> CHRISTMAS = createDefaultTextures("christmas");
+   public static final MultiblockChestResources<Identifier> COPPER_UNAFFECTED = createDefaultTextures("copper");
+   public static final MultiblockChestResources<Identifier> COPPER_EXPOSED = createDefaultTextures("copper_exposed");
+   public static final MultiblockChestResources<Identifier> COPPER_WEATHERED = createDefaultTextures("copper_weathered");
+   public static final MultiblockChestResources<Identifier> COPPER_OXIDIZED = createDefaultTextures("copper_oxidized");
+   private final SpriteGetter sprites;
    private final ChestModel model;
-   private final Material material;
+   private final SpriteId sprite;
    private final float openness;
 
-   public ChestSpecialRenderer(MaterialSet var1, ChestModel var2, Material var3, float var4) {
+   public ChestSpecialRenderer(final SpriteGetter sprites, final ChestModel model, final SpriteId sprite, final float openness) {
       super();
-      this.materials = var1;
-      this.model = var2;
-      this.material = var3;
-      this.openness = var4;
+      this.sprites = sprites;
+      this.model = model;
+      this.sprite = sprite;
+      this.openness = openness;
    }
 
-   public void submit(ItemDisplayContext var1, PoseStack var2, SubmitNodeCollector var3, int var4, int var5, boolean var6, int var7) {
-      var3.submitModel(this.model, this.openness, var2, this.material.renderType(RenderTypes::entitySolid), var4, var5, -1, this.materials.get(this.material), var7, (ModelFeatureRenderer.CrumblingOverlay)null);
+   private static MultiblockChestResources<Identifier> createDefaultTextures(final String prefix) {
+      return new MultiblockChestResources<Identifier>(Identifier.withDefaultNamespace(prefix), Identifier.withDefaultNamespace(prefix + "_left"), Identifier.withDefaultNamespace(prefix + "_right"));
    }
 
-   public void getExtents(Consumer<Vector3fc> var1) {
-      PoseStack var2 = new PoseStack();
+   public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final boolean hasFoil, final int outlineColor) {
+      submitNodeCollector.submitModel(this.model, this.openness, poseStack, lightCoords, overlayCoords, -1, this.sprite, this.sprites, outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+   }
+
+   public void getExtents(final Consumer<Vector3fc> output) {
+      PoseStack poseStack = new PoseStack();
       this.model.setupAnim(this.openness);
-      this.model.root().getExtentsForGui(var2, var1);
+      this.model.root().getExtentsForGui(poseStack, output);
    }
 
-   public static record Unbaked(Identifier texture, float openness) implements SpecialModelRenderer.Unbaked {
-      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("texture").forGetter(Unbaked::texture), Codec.FLOAT.optionalFieldOf("openness", 0.0F).forGetter(Unbaked::openness)).apply(var0, Unbaked::new));
+   public static record Unbaked(Identifier texture, float openness, ChestType chestType) implements NoDataSpecialModelRenderer.Unbaked {
+      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Identifier.CODEC.fieldOf("texture").forGetter(Unbaked::texture), Codec.FLOAT.optionalFieldOf("openness", 0.0F).forGetter(Unbaked::openness), ChestType.CODEC.optionalFieldOf("chest_type", ChestType.SINGLE).forGetter(Unbaked::chestType)).apply(i, Unbaked::new));
 
-      public Unbaked(Identifier var1) {
-         this(var1, 0.0F);
+      public Unbaked(final Identifier texture, final ChestType chestType) {
+         this(texture, 0.0F, chestType);
       }
 
-      public Unbaked(Identifier var1, float var2) {
+      public Unbaked(final Identifier texture) {
+         this(texture, 0.0F, ChestType.SINGLE);
+      }
+
+      public Unbaked {
          super();
-         this.texture = var1;
-         this.openness = var2;
       }
 
       public MapCodec<Unbaked> type() {
          return MAP_CODEC;
       }
 
-      public SpecialModelRenderer<?> bake(SpecialModelRenderer.BakingContext var1) {
-         ChestModel var2 = new ChestModel(var1.entityModelSet().bakeLayer(ModelLayers.CHEST));
-         Material var3 = Sheets.CHEST_MAPPER.apply(this.texture);
-         return new ChestSpecialRenderer(var1.materials(), var2, var3, this.openness);
+      public ChestSpecialRenderer bake(final SpecialModelRenderer.BakingContext context) {
+         ChestModel model = new ChestModel(context.entityModelSet().bakeLayer(ChestRenderer.LAYERS.select(this.chestType)));
+         SpriteId fullTexture = Sheets.CHEST_MAPPER.apply(this.texture);
+         return new ChestSpecialRenderer(context.sprites(), model, fullTexture, this.openness);
       }
    }
 }

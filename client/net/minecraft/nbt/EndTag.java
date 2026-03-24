@@ -7,20 +7,20 @@ import java.io.IOException;
 public final class EndTag implements Tag {
    private static final int SELF_SIZE_IN_BYTES = 8;
    public static final TagType<EndTag> TYPE = new TagType<EndTag>() {
-      public EndTag load(DataInput var1, NbtAccounter var2) {
-         var2.accountBytes(8L);
+      public EndTag load(final DataInput input, final NbtAccounter accounter) {
+         accounter.accountBytes(8L);
          return EndTag.INSTANCE;
       }
 
-      public StreamTagVisitor.ValueResult parse(DataInput var1, StreamTagVisitor var2, NbtAccounter var3) {
-         var3.accountBytes(8L);
-         return var2.visitEnd();
+      public StreamTagVisitor.ValueResult parse(final DataInput input, final StreamTagVisitor output, final NbtAccounter accounter) {
+         accounter.accountBytes(8L);
+         return output.visitEnd();
       }
 
-      public void skip(DataInput var1, int var2, NbtAccounter var3) {
+      public void skip(final DataInput input, final int count, final NbtAccounter accounter) {
       }
 
-      public void skip(DataInput var1, NbtAccounter var2) {
+      public void skip(final DataInput input, final NbtAccounter accounter) {
       }
 
       public String getName() {
@@ -30,11 +30,6 @@ public final class EndTag implements Tag {
       public String getPrettyName() {
          return "TAG_End";
       }
-
-      // $FF: synthetic method
-      public Tag load(final DataInput var1, final NbtAccounter var2) throws IOException {
-         return this.load(var1, var2);
-      }
    };
    public static final EndTag INSTANCE = new EndTag();
 
@@ -42,7 +37,7 @@ public final class EndTag implements Tag {
       super();
    }
 
-   public void write(DataOutput var1) throws IOException {
+   public void write(final DataOutput output) throws IOException {
    }
 
    public int sizeInBytes() {
@@ -58,25 +53,20 @@ public final class EndTag implements Tag {
    }
 
    public String toString() {
-      StringTagVisitor var1 = new StringTagVisitor();
-      var1.visitEnd(this);
-      return var1.build();
+      StringTagVisitor visitor = new StringTagVisitor();
+      visitor.visitEnd(this);
+      return visitor.build();
    }
 
    public EndTag copy() {
       return this;
    }
 
-   public void accept(TagVisitor var1) {
-      var1.visitEnd(this);
+   public void accept(final TagVisitor visitor) {
+      visitor.visitEnd(this);
    }
 
-   public StreamTagVisitor.ValueResult accept(StreamTagVisitor var1) {
-      return var1.visitEnd();
-   }
-
-   // $FF: synthetic method
-   public Tag copy() {
-      return this.copy();
+   public StreamTagVisitor.ValueResult accept(final StreamTagVisitor visitor) {
+      return visitor.visitEnd();
    }
 }

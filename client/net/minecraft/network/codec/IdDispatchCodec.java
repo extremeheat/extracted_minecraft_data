@@ -16,106 +16,91 @@ public class IdDispatchCodec<B extends ByteBuf, V, T> implements StreamCodec<B, 
    private final List<Entry<B, V, T>> byId;
    private final Object2IntMap<T> toId;
 
-   IdDispatchCodec(Function<V, ? extends T> var1, List<Entry<B, V, T>> var2, Object2IntMap<T> var3) {
+   private IdDispatchCodec(final Function<V, ? extends T> typeGetter, final List<Entry<B, V, T>> byId, final Object2IntMap<T> toId) {
       super();
-      this.typeGetter = var1;
-      this.byId = var2;
-      this.toId = var3;
+      this.typeGetter = typeGetter;
+      this.byId = byId;
+      this.toId = toId;
    }
 
-   public V decode(B var1) {
-      int var2 = VarInt.read(var1);
-      if (var2 >= 0 && var2 < this.byId.size()) {
-         Entry var3 = (Entry)this.byId.get(var2);
+   public V decode(final B input) {
+      int id = VarInt.read(input);
+      if (id >= 0 && id < this.byId.size()) {
+         Entry<B, V, T> entry = (Entry)this.byId.get(id);
 
          try {
-            return (V)var3.serializer.decode(var1);
-         } catch (Exception var5) {
-            if (var5 instanceof DontDecorateException) {
-               throw var5;
+            return (V)entry.serializer.decode(input);
+         } catch (Exception e) {
+            if (e instanceof DontDecorateException) {
+               throw e;
             } else {
-               throw new DecoderException("Failed to decode packet '" + String.valueOf(var3.type) + "'", var5);
+               throw new DecoderException("Failed to decode packet '" + String.valueOf(entry.type) + "'", e);
             }
          }
       } else {
-         throw new DecoderException("Received unknown packet id " + var2);
+         throw new DecoderException("Received unknown packet id " + id);
       }
    }
 
-   public void encode(B var1, V var2) {
-      Object var3 = this.typeGetter.apply(var2);
-      int var4 = this.toId.getOrDefault(var3, -1);
-      if (var4 == -1) {
-         throw new EncoderException("Sending unknown packet '" + String.valueOf(var3) + "'");
+   public void encode(final B output, final V value) {
+      T type = (T)this.typeGetter.apply(value);
+      int id = this.toId.getOrDefault(type, -1);
+      if (id == -1) {
+         throw new EncoderException("Sending unknown packet '" + String.valueOf(type) + "'");
       } else {
-         VarInt.write(var1, var4);
-         Entry var5 = (Entry)this.byId.get(var4);
+         VarInt.write(output, id);
+         Entry<B, V, T> entry = (Entry)this.byId.get(id);
 
          try {
-            StreamCodec var6 = var5.serializer;
-            var6.encode(var1, var2);
-         } catch (Exception var7) {
-            if (var7 instanceof DontDecorateException) {
-               throw var7;
+            StreamCodec<? super B, V> codec = entry.serializer;
+            codec.encode(output, value);
+         } catch (Exception e) {
+            if (e instanceof DontDecorateException) {
+               throw e;
             } else {
-               throw new EncoderException("Failed to encode packet '" + String.valueOf(var3) + "'", var7);
+               throw new EncoderException("Failed to encode packet '" + String.valueOf(type) + "'", e);
             }
          }
       }
    }
 
-   public static <B extends ByteBuf, V, T> Builder<B, V, T> builder(Function<V, ? extends T> var0) {
-      return new Builder<B, V, T>(var0);
-   }
-
-   // $FF: synthetic method
-   public void encode(final Object var1, final Object var2) {
-      this.encode((ByteBuf)var1, var2);
-   }
-
-   // $FF: synthetic method
-   public Object decode(final Object var1) {
-      return this.decode((ByteBuf)var1);
+   public static <B extends ByteBuf, V, T> Builder<B, V, T> builder(final Function<V, ? extends T> typeGetter) {
+      return new Builder<B, V, T>(typeGetter);
    }
 
    public static class Builder<B extends ByteBuf, V, T> {
       private final List<Entry<B, V, T>> entries = new ArrayList();
       private final Function<V, ? extends T> typeGetter;
 
-      Builder(Function<V, ? extends T> var1) {
+      private Builder(final Function<V, ? extends T> typeGetter) {
          super();
-         this.typeGetter = var1;
+         this.typeGetter = typeGetter;
       }
 
-      public Builder<B, V, T> add(T var1, StreamCodec<? super B, ? extends V> var2) {
-         this.entries.add(new Entry(var2, var1));
+      public Builder<B, V, T> add(final T type, final StreamCodec<? super B, ? extends V> serializer) {
+         this.entries.add(new Entry(serializer, type));
          return this;
       }
 
       public IdDispatchCodec<B, V, T> build() {
-         Object2IntOpenHashMap var1 = new Object2IntOpenHashMap();
-         var1.defaultReturnValue(-2);
+         Object2IntOpenHashMap<T> toId = new Object2IntOpenHashMap();
+         toId.defaultReturnValue(-2);
 
-         for(Entry var3 : this.entries) {
-            int var4 = var1.size();
-            int var5 = var1.putIfAbsent(var3.type, var4);
-            if (var5 != -2) {
-               throw new IllegalStateException("Duplicate registration for type " + String.valueOf(var3.type));
+         for(Entry<B, V, T> entry : this.entries) {
+            int id = toId.size();
+            int previous = toId.putIfAbsent(entry.type, id);
+            if (previous != -2) {
+               throw new IllegalStateException("Duplicate registration for type " + String.valueOf(entry.type));
             }
          }
 
-         return new IdDispatchCodec<B, V, T>(this.typeGetter, List.copyOf(this.entries), var1);
+         return new IdDispatchCodec<B, V, T>(this.typeGetter, List.copyOf(this.entries), toId);
       }
    }
 
-   static record Entry<B, V, T>(StreamCodec<? super B, ? extends V> serializer, T type) {
-      final StreamCodec<? super B, ? extends V> serializer;
-      final T type;
-
-      Entry(StreamCodec<? super B, ? extends V> var1, T var2) {
+   private static record Entry<B, V, T>(StreamCodec<? super B, ? extends V> serializer, T type) {
+      private Entry {
          super();
-         this.serializer = var1;
-         this.type = var2;
       }
    }
 

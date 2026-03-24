@@ -1,6 +1,7 @@
 package net.minecraft.world.inventory;
 
 import java.util.List;
+import java.util.Objects;
 import net.minecraft.recipebook.ServerPlaceRecipe;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Inventory;
@@ -15,36 +16,40 @@ public abstract class AbstractCraftingMenu extends RecipeBookMenu {
    protected final CraftingContainer craftSlots;
    protected final ResultContainer resultSlots = new ResultContainer();
 
-   public AbstractCraftingMenu(MenuType<?> var1, int var2, int var3, int var4) {
-      super(var1, var2);
-      this.width = var3;
-      this.height = var4;
-      this.craftSlots = new TransientCraftingContainer(this, var3, var4);
+   public AbstractCraftingMenu(final MenuType<?> menuType, final int containerId, final int width, final int height) {
+      super(menuType, containerId);
+      this.width = width;
+      this.height = height;
+      this.craftSlots = new TransientCraftingContainer(this, width, height);
    }
 
-   protected Slot addResultSlot(Player var1, int var2, int var3) {
-      return this.addSlot(new ResultSlot(var1, this.craftSlots, this.resultSlots, 0, var2, var3));
+   protected Slot addResultSlot(final Player player, final int x, final int y) {
+      return this.addSlot(new ResultSlot(player, this.craftSlots, this.resultSlots, 0, x, y));
    }
 
-   protected void addCraftingGridSlots(int var1, int var2) {
-      for(int var3 = 0; var3 < this.width; ++var3) {
-         for(int var4 = 0; var4 < this.height; ++var4) {
-            this.addSlot(new Slot(this.craftSlots, var4 + var3 * this.width, var1 + var4 * 18, var2 + var3 * 18));
+   protected void addCraftingGridSlots(final int left, final int top) {
+      for(int y = 0; y < this.width; ++y) {
+         for(int x = 0; x < this.height; ++x) {
+            this.addSlot(new Slot(this.craftSlots, x + y * this.width, left + x * 18, top + y * 18));
          }
       }
 
    }
 
-   public RecipeBookMenu.PostPlaceAction handlePlacement(boolean var1, boolean var2, RecipeHolder<?> var3, ServerLevel var4, Inventory var5) {
-      RecipeHolder var6 = var3;
+   public RecipeBookMenu.PostPlaceAction handlePlacement(final boolean useMaxItems, final boolean allowDroppingItemsToClear, final RecipeHolder<?> recipe, final ServerLevel level, final Inventory inventory) {
+      RecipeHolder<CraftingRecipe> typedRecipe = recipe;
       this.beginPlacingRecipe();
 
       RecipeBookMenu.PostPlaceAction var8;
       try {
-         List var7 = this.getInputGridSlots();
+         List<Slot> inputSlots = this.getInputGridSlots();
          var8 = ServerPlaceRecipe.placeRecipe(new ServerPlaceRecipe.CraftingMenuAccess<CraftingRecipe>() {
-            public void fillCraftSlotsStackedContents(StackedItemContents var1) {
-               AbstractCraftingMenu.this.fillCraftSlotsStackedContents(var1);
+            {
+               Objects.requireNonNull(AbstractCraftingMenu.this);
+            }
+
+            public void fillCraftSlotsStackedContents(final StackedItemContents stackedContents) {
+               AbstractCraftingMenu.this.fillCraftSlotsStackedContents(stackedContents);
             }
 
             public void clearCraftingContent() {
@@ -52,12 +57,12 @@ public abstract class AbstractCraftingMenu extends RecipeBookMenu {
                AbstractCraftingMenu.this.craftSlots.clearContent();
             }
 
-            public boolean recipeMatches(RecipeHolder<CraftingRecipe> var1) {
-               return ((CraftingRecipe)var1.value()).matches(AbstractCraftingMenu.this.craftSlots.asCraftInput(), AbstractCraftingMenu.this.owner().level());
+            public boolean recipeMatches(final RecipeHolder<CraftingRecipe> recipe) {
+               return ((CraftingRecipe)recipe.value()).matches(AbstractCraftingMenu.this.craftSlots.asCraftInput(), AbstractCraftingMenu.this.owner().level());
             }
-         }, this.width, this.height, var7, var7, var5, var6, var1, var2);
+         }, this.width, this.height, inputSlots, inputSlots, inventory, typedRecipe, useMaxItems, allowDroppingItemsToClear);
       } finally {
-         this.finishPlacingRecipe(var4, var3);
+         this.finishPlacingRecipe(level, recipe);
       }
 
       return var8;
@@ -66,7 +71,7 @@ public abstract class AbstractCraftingMenu extends RecipeBookMenu {
    protected void beginPlacingRecipe() {
    }
 
-   protected void finishPlacingRecipe(ServerLevel var1, RecipeHolder<CraftingRecipe> var2) {
+   protected void finishPlacingRecipe(final ServerLevel level, final RecipeHolder<CraftingRecipe> recipe) {
    }
 
    public abstract Slot getResultSlot();
@@ -83,7 +88,7 @@ public abstract class AbstractCraftingMenu extends RecipeBookMenu {
 
    protected abstract Player owner();
 
-   public void fillCraftSlotsStackedContents(StackedItemContents var1) {
-      this.craftSlots.fillStackedContents(var1);
+   public void fillCraftSlotsStackedContents(final StackedItemContents stackedContents) {
+      this.craftSlots.fillStackedContents(stackedContents);
    }
 }

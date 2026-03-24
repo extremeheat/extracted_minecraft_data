@@ -15,115 +15,115 @@ public class CrashReportCategory {
    private final List<Entry> entries = Lists.newArrayList();
    private StackTraceElement[] stackTrace = new StackTraceElement[0];
 
-   public CrashReportCategory(String var1) {
+   public CrashReportCategory(final String title) {
       super();
-      this.title = var1;
+      this.title = title;
    }
 
-   public static String formatLocation(double var0, double var2, double var4) {
-      return String.format(Locale.ROOT, "%.2f,%.2f,%.2f", var0, var2, var4);
+   public static String formatLocation(final double x, final double y, final double z) {
+      return String.format(Locale.ROOT, "%.2f,%.2f,%.2f", x, y, z);
    }
 
-   public static String formatLocation(LevelHeightAccessor var0, double var1, double var3, double var5) {
-      return String.format(Locale.ROOT, "%.2f,%.2f,%.2f - %s", var1, var3, var5, formatLocation(var0, BlockPos.containing(var1, var3, var5)));
+   public static String formatLocation(final LevelHeightAccessor levelHeightAccessor, final double x, final double y, final double z) {
+      return String.format(Locale.ROOT, "%.2f,%.2f,%.2f - %s", x, y, z, formatLocation(levelHeightAccessor, BlockPos.containing(x, y, z)));
    }
 
-   public static String formatLocation(LevelHeightAccessor var0, BlockPos var1) {
-      return formatLocation(var0, var1.getX(), var1.getY(), var1.getZ());
+   public static String formatLocation(final LevelHeightAccessor levelHeightAccessor, final BlockPos pos) {
+      return formatLocation(levelHeightAccessor, pos.getX(), pos.getY(), pos.getZ());
    }
 
-   public static String formatLocation(LevelHeightAccessor var0, int var1, int var2, int var3) {
-      StringBuilder var4 = new StringBuilder();
+   public static String formatLocation(final LevelHeightAccessor levelHeightAccessor, final int x, final int y, final int z) {
+      StringBuilder result = new StringBuilder();
 
       try {
-         var4.append(String.format(Locale.ROOT, "World: (%d,%d,%d)", var1, var2, var3));
+         result.append(String.format(Locale.ROOT, "World: (%d,%d,%d)", x, y, z));
       } catch (Throwable var19) {
-         var4.append("(Error finding world loc)");
+         result.append("(Error finding world loc)");
       }
 
-      var4.append(", ");
+      result.append(", ");
 
       try {
-         int var5 = SectionPos.blockToSectionCoord(var1);
-         int var6 = SectionPos.blockToSectionCoord(var2);
-         int var7 = SectionPos.blockToSectionCoord(var3);
-         int var8 = var1 & 15;
-         int var9 = var2 & 15;
-         int var10 = var3 & 15;
-         int var11 = SectionPos.sectionToBlockCoord(var5);
-         int var12 = var0.getMinY();
-         int var13 = SectionPos.sectionToBlockCoord(var7);
-         int var14 = SectionPos.sectionToBlockCoord(var5 + 1) - 1;
-         int var15 = var0.getMaxY();
-         int var16 = SectionPos.sectionToBlockCoord(var7 + 1) - 1;
-         var4.append(String.format(Locale.ROOT, "Section: (at %d,%d,%d in %d,%d,%d; chunk contains blocks %d,%d,%d to %d,%d,%d)", var8, var9, var10, var5, var6, var7, var11, var12, var13, var14, var15, var16));
+         int sectionX = SectionPos.blockToSectionCoord(x);
+         int sectionY = SectionPos.blockToSectionCoord(y);
+         int sectionZ = SectionPos.blockToSectionCoord(z);
+         int relativeX = x & 15;
+         int relativeY = y & 15;
+         int relativeZ = z & 15;
+         int minBlockX = SectionPos.sectionToBlockCoord(sectionX);
+         int minBlockY = levelHeightAccessor.getMinY();
+         int minBlockZ = SectionPos.sectionToBlockCoord(sectionZ);
+         int maxBlockX = SectionPos.sectionToBlockCoord(sectionX + 1) - 1;
+         int maxBlockY = levelHeightAccessor.getMaxY();
+         int maxBlockZ = SectionPos.sectionToBlockCoord(sectionZ + 1) - 1;
+         result.append(String.format(Locale.ROOT, "Section: (at %d,%d,%d in %d,%d,%d; chunk contains blocks %d,%d,%d to %d,%d,%d)", relativeX, relativeY, relativeZ, sectionX, sectionY, sectionZ, minBlockX, minBlockY, minBlockZ, maxBlockX, maxBlockY, maxBlockZ));
       } catch (Throwable var18) {
-         var4.append("(Error finding chunk loc)");
+         result.append("(Error finding chunk loc)");
       }
 
-      var4.append(", ");
+      result.append(", ");
 
       try {
-         int var20 = var1 >> 9;
-         int var21 = var3 >> 9;
-         int var22 = var20 << 5;
-         int var23 = var21 << 5;
-         int var24 = (var20 + 1 << 5) - 1;
-         int var25 = (var21 + 1 << 5) - 1;
-         int var26 = var20 << 9;
-         int var27 = var0.getMinY();
-         int var28 = var21 << 9;
-         int var29 = (var20 + 1 << 9) - 1;
-         int var30 = var0.getMaxY();
-         int var31 = (var21 + 1 << 9) - 1;
-         var4.append(String.format(Locale.ROOT, "Region: (%d,%d; contains chunks %d,%d to %d,%d, blocks %d,%d,%d to %d,%d,%d)", var20, var21, var22, var23, var24, var25, var26, var27, var28, var29, var30, var31));
+         int regionX = x >> 9;
+         int regionZ = z >> 9;
+         int minChunkX = regionX << 5;
+         int minChunkZ = regionZ << 5;
+         int maxChunkX = (regionX + 1 << 5) - 1;
+         int maxChunkZ = (regionZ + 1 << 5) - 1;
+         int minBlockX = regionX << 9;
+         int minBlockY = levelHeightAccessor.getMinY();
+         int minBlockZ = regionZ << 9;
+         int maxBlockX = (regionX + 1 << 9) - 1;
+         int maxBlockY = levelHeightAccessor.getMaxY();
+         int maxBlockZ = (regionZ + 1 << 9) - 1;
+         result.append(String.format(Locale.ROOT, "Region: (%d,%d; contains chunks %d,%d to %d,%d, blocks %d,%d,%d to %d,%d,%d)", regionX, regionZ, minChunkX, minChunkZ, maxChunkX, maxChunkZ, minBlockX, minBlockY, minBlockZ, maxBlockX, maxBlockY, maxBlockZ));
       } catch (Throwable var17) {
-         var4.append("(Error finding world loc)");
+         result.append("(Error finding world loc)");
       }
 
-      return var4.toString();
+      return result.toString();
    }
 
-   public CrashReportCategory setDetail(String var1, CrashReportDetail<String> var2) {
+   public CrashReportCategory setDetail(final String key, final CrashReportDetail<String> callback) {
       try {
-         this.setDetail(var1, var2.call());
-      } catch (Throwable var4) {
-         this.setDetailError(var1, var4);
+         this.setDetail(key, callback.call());
+      } catch (Throwable t) {
+         this.setDetailError(key, t);
       }
 
       return this;
    }
 
-   public CrashReportCategory setDetail(String var1, Object var2) {
-      this.entries.add(new Entry(var1, var2));
+   public CrashReportCategory setDetail(final String key, final Object value) {
+      this.entries.add(new Entry(key, value));
       return this;
    }
 
-   public void setDetailError(String var1, Throwable var2) {
-      this.setDetail(var1, var2);
+   public void setDetailError(final String key, final Throwable t) {
+      this.setDetail(key, t);
    }
 
-   public int fillInStackTrace(int var1) {
-      StackTraceElement[] var2 = Thread.currentThread().getStackTrace();
-      if (var2.length <= 0) {
+   public int fillInStackTrace(final int nestedOffset) {
+      StackTraceElement[] full = Thread.currentThread().getStackTrace();
+      if (full.length <= 0) {
          return 0;
       } else {
-         this.stackTrace = new StackTraceElement[var2.length - 3 - var1];
-         System.arraycopy(var2, 3 + var1, this.stackTrace, 0, this.stackTrace.length);
+         this.stackTrace = new StackTraceElement[full.length - 3 - nestedOffset];
+         System.arraycopy(full, 3 + nestedOffset, this.stackTrace, 0, this.stackTrace.length);
          return this.stackTrace.length;
       }
    }
 
-   public boolean validateStackTrace(StackTraceElement var1, StackTraceElement var2) {
-      if (this.stackTrace.length != 0 && var1 != null) {
-         StackTraceElement var3 = this.stackTrace[0];
-         if (var3.isNativeMethod() == var1.isNativeMethod() && var3.getClassName().equals(var1.getClassName()) && var3.getFileName().equals(var1.getFileName()) && var3.getMethodName().equals(var1.getMethodName())) {
-            if (var2 != null != this.stackTrace.length > 1) {
+   public boolean validateStackTrace(final StackTraceElement source, final StackTraceElement next) {
+      if (this.stackTrace.length != 0 && source != null) {
+         StackTraceElement current = this.stackTrace[0];
+         if (current.isNativeMethod() == source.isNativeMethod() && current.getClassName().equals(source.getClassName()) && current.getFileName().equals(source.getFileName()) && current.getMethodName().equals(source.getMethodName())) {
+            if (next != null != this.stackTrace.length > 1) {
                return false;
-            } else if (var2 != null && !this.stackTrace[1].equals(var2)) {
+            } else if (next != null && !this.stackTrace[1].equals(next)) {
                return false;
             } else {
-               this.stackTrace[0] = var1;
+               this.stackTrace[0] = source;
                return true;
             }
          } else {
@@ -134,29 +134,29 @@ public class CrashReportCategory {
       }
    }
 
-   public void trimStacktrace(int var1) {
-      StackTraceElement[] var2 = new StackTraceElement[this.stackTrace.length - var1];
-      System.arraycopy(this.stackTrace, 0, var2, 0, var2.length);
-      this.stackTrace = var2;
+   public void trimStacktrace(final int length) {
+      StackTraceElement[] swap = new StackTraceElement[this.stackTrace.length - length];
+      System.arraycopy(this.stackTrace, 0, swap, 0, swap.length);
+      this.stackTrace = swap;
    }
 
-   public void getDetails(StringBuilder var1) {
-      var1.append("-- ").append(this.title).append(" --\n");
-      var1.append("Details:");
+   public void getDetails(final StringBuilder builder) {
+      builder.append("-- ").append(this.title).append(" --\n");
+      builder.append("Details:");
 
-      for(Entry var3 : this.entries) {
-         var1.append("\n\t");
-         var1.append(var3.getKey());
-         var1.append(": ");
-         var1.append(var3.getValue());
+      for(Entry entry : this.entries) {
+         builder.append("\n\t");
+         builder.append(entry.getKey());
+         builder.append(": ");
+         builder.append(entry.getValue());
       }
 
       if (this.stackTrace != null && this.stackTrace.length > 0) {
-         var1.append("\nStacktrace:");
+         builder.append("\nStacktrace:");
 
-         for(StackTraceElement var5 : this.stackTrace) {
-            var1.append("\n\tat ");
-            var1.append(var5);
+         for(StackTraceElement element : this.stackTrace) {
+            builder.append("\n\tat ");
+            builder.append(element);
          }
       }
 
@@ -166,31 +166,31 @@ public class CrashReportCategory {
       return this.stackTrace;
    }
 
-   public static void populateBlockDetails(CrashReportCategory var0, LevelHeightAccessor var1, BlockPos var2, BlockState var3) {
-      Objects.requireNonNull(var3);
-      var0.setDetail("Block", var3::toString);
-      populateBlockLocationDetails(var0, var1, var2);
+   public static void populateBlockDetails(final CrashReportCategory category, final LevelHeightAccessor levelHeightAccessor, final BlockPos pos, final BlockState state) {
+      Objects.requireNonNull(state);
+      category.setDetail("Block", state::toString);
+      populateBlockLocationDetails(category, levelHeightAccessor, pos);
    }
 
-   public static CrashReportCategory populateBlockLocationDetails(CrashReportCategory var0, LevelHeightAccessor var1, BlockPos var2) {
-      return var0.setDetail("Block location", (CrashReportDetail)(() -> formatLocation(var1, var2)));
+   public static CrashReportCategory populateBlockLocationDetails(final CrashReportCategory category, final LevelHeightAccessor levelHeightAccessor, final BlockPos pos) {
+      return category.setDetail("Block location", (CrashReportDetail)(() -> formatLocation(levelHeightAccessor, pos)));
    }
 
-   static class Entry {
+   private static class Entry {
       private final String key;
       private final String value;
 
-      public Entry(String var1, @Nullable Object var2) {
+      public Entry(final String key, final @Nullable Object value) {
          super();
-         this.key = var1;
-         if (var2 == null) {
+         this.key = key;
+         if (value == null) {
             this.value = "~~NULL~~";
-         } else if (var2 instanceof Throwable) {
-            Throwable var3 = (Throwable)var2;
-            String var10001 = var3.getClass().getSimpleName();
-            this.value = "~~ERROR~~ " + var10001 + ": " + var3.getMessage();
+         } else if (value instanceof Throwable) {
+            Throwable t = (Throwable)value;
+            String var10001 = t.getClass().getSimpleName();
+            this.value = "~~ERROR~~ " + var10001 + ": " + t.getMessage();
          } else {
-            this.value = var2.toString();
+            this.value = value.toString();
          }
 
       }

@@ -32,61 +32,61 @@ public class GameProfileArgument implements ArgumentType<Result> {
       super();
    }
 
-   public static Collection<NameAndId> getGameProfiles(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
-      return ((Result)var0.getArgument(var1, Result.class)).getNames((CommandSourceStack)var0.getSource());
+   public static Collection<NameAndId> getGameProfiles(final CommandContext<CommandSourceStack> source, final String name) throws CommandSyntaxException {
+      return ((Result)source.getArgument(name, Result.class)).getNames((CommandSourceStack)source.getSource());
    }
 
    public static GameProfileArgument gameProfile() {
       return new GameProfileArgument();
    }
 
-   public <S> Result parse(StringReader var1, S var2) throws CommandSyntaxException {
-      return parse(var1, EntitySelectorParser.allowSelectors(var2));
+   public <S> Result parse(final StringReader reader, final S source) throws CommandSyntaxException {
+      return parse(reader, EntitySelectorParser.allowSelectors(source));
    }
 
-   public Result parse(StringReader var1) throws CommandSyntaxException {
-      return parse(var1, true);
+   public Result parse(final StringReader reader) throws CommandSyntaxException {
+      return parse(reader, true);
    }
 
-   private static Result parse(StringReader var0, boolean var1) throws CommandSyntaxException {
-      if (var0.canRead() && var0.peek() == '@') {
-         EntitySelectorParser var4 = new EntitySelectorParser(var0, var1);
-         EntitySelector var5 = var4.parse();
-         if (var5.includesEntities()) {
-            throw EntityArgument.ERROR_ONLY_PLAYERS_ALLOWED.createWithContext(var0);
+   private static Result parse(final StringReader reader, final boolean allowSelectors) throws CommandSyntaxException {
+      if (reader.canRead() && reader.peek() == '@') {
+         EntitySelectorParser parser = new EntitySelectorParser(reader, allowSelectors);
+         EntitySelector parse = parser.parse();
+         if (parse.includesEntities()) {
+            throw EntityArgument.ERROR_ONLY_PLAYERS_ALLOWED.createWithContext(reader);
          } else {
-            return new SelectorResult(var5);
+            return new SelectorResult(parse);
          }
       } else {
-         int var2 = var0.getCursor();
+         int start = reader.getCursor();
 
-         while(var0.canRead() && var0.peek() != ' ') {
-            var0.skip();
+         while(reader.canRead() && reader.peek() != ' ') {
+            reader.skip();
          }
 
-         String var3 = var0.getString().substring(var2, var0.getCursor());
-         return (var1x) -> {
-            Optional var2 = var1x.getServer().services().nameToIdCache().get(var3);
+         String name = reader.getString().substring(start, reader.getCursor());
+         return (c) -> {
+            Optional<NameAndId> result = c.getServer().services().nameToIdCache().get(name);
             SimpleCommandExceptionType var10001 = ERROR_UNKNOWN_PLAYER;
             Objects.requireNonNull(var10001);
-            return Collections.singleton((NameAndId)var2.orElseThrow(var10001::create));
+            return Collections.singleton((NameAndId)result.orElseThrow(var10001::create));
          };
       }
    }
 
-   public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      Object var4 = var1.getSource();
-      if (var4 instanceof SharedSuggestionProvider var3) {
-         StringReader var8 = new StringReader(var2.getInput());
-         var8.setCursor(var2.getStart());
-         EntitySelectorParser var5 = new EntitySelectorParser(var8, var3.permissions().hasPermission(Permissions.COMMANDS_ENTITY_SELECTORS));
+   public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> contextBuilder, final SuggestionsBuilder builder) {
+      Object var4 = contextBuilder.getSource();
+      if (var4 instanceof SharedSuggestionProvider source) {
+         StringReader reader = new StringReader(builder.getInput());
+         reader.setCursor(builder.getStart());
+         EntitySelectorParser parser = new EntitySelectorParser(reader, source.permissions().hasPermission(Permissions.COMMANDS_ENTITY_SELECTORS));
 
          try {
-            var5.parse();
+            parser.parse();
          } catch (CommandSyntaxException var7) {
          }
 
-         return var5.fillSuggestions(var2, (var1x) -> SharedSuggestionProvider.suggest(var3.getOnlinePlayerNames(), var1x));
+         return parser.fillSuggestions(builder, (suggestions) -> SharedSuggestionProvider.suggest(source.getOnlinePlayerNames(), suggestions));
       } else {
          return Suggestions.empty();
       }
@@ -96,42 +96,32 @@ public class GameProfileArgument implements ArgumentType<Result> {
       return EXAMPLES;
    }
 
-   // $FF: synthetic method
-   public Object parse(final StringReader var1, final Object var2) throws CommandSyntaxException {
-      return this.parse(var1, var2);
-   }
-
-   // $FF: synthetic method
-   public Object parse(final StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1);
-   }
-
    public static class SelectorResult implements Result {
       private final EntitySelector selector;
 
-      public SelectorResult(EntitySelector var1) {
+      public SelectorResult(final EntitySelector selector) {
          super();
-         this.selector = var1;
+         this.selector = selector;
       }
 
-      public Collection<NameAndId> getNames(CommandSourceStack var1) throws CommandSyntaxException {
-         List var2 = this.selector.findPlayers(var1);
-         if (var2.isEmpty()) {
+      public Collection<NameAndId> getNames(final CommandSourceStack sender) throws CommandSyntaxException {
+         List<ServerPlayer> players = this.selector.findPlayers(sender);
+         if (players.isEmpty()) {
             throw EntityArgument.NO_PLAYERS_FOUND.create();
          } else {
-            ArrayList var3 = new ArrayList();
+            List<NameAndId> result = new ArrayList();
 
-            for(ServerPlayer var5 : var2) {
-               var3.add(var5.nameAndId());
+            for(ServerPlayer entity : players) {
+               result.add(entity.nameAndId());
             }
 
-            return var3;
+            return result;
          }
       }
    }
 
    @FunctionalInterface
    public interface Result {
-      Collection<NameAndId> getNames(CommandSourceStack var1) throws CommandSyntaxException;
+      Collection<NameAndId> getNames(final CommandSourceStack sender) throws CommandSyntaxException;
    }
 }

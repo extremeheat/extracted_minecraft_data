@@ -7,9 +7,11 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
+import com.mojang.datafixers.util.Unit;
 import com.mojang.serialization.Dynamic;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import net.minecraft.util.Util;
@@ -17,131 +19,131 @@ import net.minecraft.util.datafix.ExtraDataFixUtils;
 import org.jspecify.annotations.Nullable;
 
 public class TextComponentHoverAndClickEventFix extends DataFix {
-   public TextComponentHoverAndClickEventFix(Schema var1) {
-      super(var1, true);
+   public TextComponentHoverAndClickEventFix(final Schema outputSchema) {
+      super(outputSchema, true);
    }
 
    protected TypeRewriteRule makeRule() {
-      Type var1 = this.getInputSchema().getType(References.TEXT_COMPONENT).findFieldType("hoverEvent");
-      return this.createFixer(this.getInputSchema().getTypeRaw(References.TEXT_COMPONENT), this.getOutputSchema().getType(References.TEXT_COMPONENT), var1);
+      Type<? extends Pair<String, ?>> hoverEventType = this.getInputSchema().getType(References.TEXT_COMPONENT).findFieldType("hoverEvent");
+      return this.createFixer(this.getInputSchema().getTypeRaw(References.TEXT_COMPONENT), this.getOutputSchema().getType(References.TEXT_COMPONENT), hoverEventType);
    }
 
-   private <C1, C2, H extends Pair<String, ?>> TypeRewriteRule createFixer(Type<C1> var1, Type<C2> var2, Type<H> var3) {
-      Type var4 = DSL.named(References.TEXT_COMPONENT.typeName(), DSL.or(DSL.or(DSL.string(), DSL.list(var1)), DSL.and(DSL.optional(DSL.field("extra", DSL.list(var1))), DSL.optional(DSL.field("separator", var1)), DSL.optional(DSL.field("hoverEvent", var3)), DSL.remainderType())));
-      if (!var4.equals(this.getInputSchema().getType(References.TEXT_COMPONENT))) {
-         String var10002 = String.valueOf(var4);
+   private <C1, C2, H extends Pair<String, ?>> TypeRewriteRule createFixer(final Type<C1> oldRawTextComponentType, final Type<C2> newTextComponentType, final Type<H> hoverEventType) {
+      Type<Pair<String, Either<Either<String, List<C1>>, Pair<Either<List<C1>, Unit>, Pair<Either<C1, Unit>, Pair<Either<H, Unit>, Dynamic<?>>>>>>> oldTextComponentType = DSL.named(References.TEXT_COMPONENT.typeName(), DSL.or(DSL.or(DSL.string(), DSL.list(oldRawTextComponentType)), DSL.and(DSL.optional(DSL.field("extra", DSL.list(oldRawTextComponentType))), DSL.optional(DSL.field("separator", oldRawTextComponentType)), DSL.optional(DSL.field("hoverEvent", hoverEventType)), DSL.remainderType())));
+      if (!oldTextComponentType.equals(this.getInputSchema().getType(References.TEXT_COMPONENT))) {
+         String var10002 = String.valueOf(oldTextComponentType);
          throw new IllegalStateException("Text component type did not match, expected " + var10002 + " but got " + String.valueOf(this.getInputSchema().getType(References.TEXT_COMPONENT)));
       } else {
-         Type var5 = ExtraDataFixUtils.patchSubType(var4, var4, var2);
-         return this.fixTypeEverywhere("TextComponentHoverAndClickEventFix", var4, var2, (var2x) -> (var3) -> {
-               boolean var4 = (Boolean)((Either)var3.getSecond()).map((var0) -> false, (var0) -> {
-                  Pair var1 = (Pair)((Pair)var0.getSecond()).getSecond();
-                  boolean var2 = ((Either)var1.getFirst()).left().isPresent();
-                  boolean var3 = ((Dynamic)var1.getSecond()).get("clickEvent").result().isPresent();
-                  return var2 || var3;
+         Type<?> patchedInputType = ExtraDataFixUtils.patchSubType(oldTextComponentType, oldTextComponentType, newTextComponentType);
+         return this.fixTypeEverywhere("TextComponentHoverAndClickEventFix", oldTextComponentType, newTextComponentType, (ops) -> (textComponent) -> {
+               boolean hasHoverOrClick = (Boolean)((Either)textComponent.getSecond()).map((simple) -> false, (full) -> {
+                  Pair<Either<H, Unit>, Dynamic<?>> hoverAndRemainder = (Pair)((Pair)full.getSecond()).getSecond();
+                  boolean hasHover = ((Either)hoverAndRemainder.getFirst()).left().isPresent();
+                  boolean hasClick = ((Dynamic)hoverAndRemainder.getSecond()).get("clickEvent").result().isPresent();
+                  return hasHover || hasClick;
                });
-               return !var4 ? var3 : Util.writeAndReadTypedOrThrow(ExtraDataFixUtils.cast(var5, var3, var2x), var2, TextComponentHoverAndClickEventFix::fixTextComponent).getValue();
+               return !hasHoverOrClick ? textComponent : Util.writeAndReadTypedOrThrow(ExtraDataFixUtils.cast(patchedInputType, textComponent, ops), newTextComponentType, TextComponentHoverAndClickEventFix::fixTextComponent).getValue();
             });
       }
    }
 
-   private static Dynamic<?> fixTextComponent(Dynamic<?> var0) {
-      return var0.renameAndFixField("hoverEvent", "hover_event", TextComponentHoverAndClickEventFix::fixHoverEvent).renameAndFixField("clickEvent", "click_event", TextComponentHoverAndClickEventFix::fixClickEvent);
+   private static Dynamic<?> fixTextComponent(final Dynamic<?> dynamic) {
+      return dynamic.renameAndFixField("hoverEvent", "hover_event", TextComponentHoverAndClickEventFix::fixHoverEvent).renameAndFixField("clickEvent", "click_event", TextComponentHoverAndClickEventFix::fixClickEvent);
    }
 
-   private static Dynamic<?> copyFields(Dynamic<?> var0, Dynamic<?> var1, String... var2) {
-      for(String var6 : var2) {
-         var0 = Dynamic.copyField(var1, var6, var0, var6);
+   private static Dynamic<?> copyFields(Dynamic<?> target, final Dynamic<?> source, final String... fields) {
+      for(String field : fields) {
+         target = Dynamic.copyField(source, field, target, field);
       }
 
-      return var0;
+      return target;
    }
 
-   private static Dynamic<?> fixHoverEvent(Dynamic<?> var0) {
+   private static Dynamic<?> fixHoverEvent(final Dynamic<?> dynamic) {
       Dynamic var10000;
-      switch (var0.get("action").asString("")) {
+      switch (dynamic.get("action").asString("")) {
          case "show_text":
-            var10000 = var0.renameField("contents", "value");
+            var10000 = dynamic.renameField("contents", "value");
             break;
          case "show_item":
-            Dynamic var6 = var0.get("contents").orElseEmptyMap();
-            Optional var5 = var6.asString().result();
-            var10000 = var5.isPresent() ? var0.renameField("contents", "id") : copyFields(var0.remove("contents"), var6, "id", "count", "components");
+            Dynamic<?> contents = dynamic.get("contents").orElseEmptyMap();
+            Optional<String> simpleId = contents.asString().result();
+            var10000 = simpleId.isPresent() ? dynamic.renameField("contents", "id") : copyFields(dynamic.remove("contents"), contents, "id", "count", "components");
             break;
          case "show_entity":
-            Dynamic var4 = var0.get("contents").orElseEmptyMap();
-            var10000 = copyFields(var0.remove("contents"), var4, "id", "type", "name").renameField("id", "uuid").renameField("type", "id");
+            Dynamic<?> contents = dynamic.get("contents").orElseEmptyMap();
+            var10000 = copyFields(dynamic.remove("contents"), contents, "id", "type", "name").renameField("id", "uuid").renameField("type", "id");
             break;
          default:
-            var10000 = var0;
+            var10000 = dynamic;
       }
 
       return var10000;
    }
 
-   private static <T> @Nullable Dynamic<T> fixClickEvent(Dynamic<T> var0) {
-      String var1 = var0.get("action").asString("");
-      String var2 = var0.get("value").asString("");
+   private static <T> @Nullable Dynamic<T> fixClickEvent(final Dynamic<T> dynamic) {
+      String action = dynamic.get("action").asString("");
+      String value = dynamic.get("value").asString("");
       Dynamic var10000;
-      switch (var1) {
+      switch (action) {
          case "open_url":
-            var10000 = !validateUri(var2) ? null : var0.renameField("value", "url");
+            var10000 = !validateUri(value) ? null : dynamic.renameField("value", "url");
             break;
          case "open_file":
-            var10000 = var0.renameField("value", "path");
+            var10000 = dynamic.renameField("value", "path");
             break;
          case "run_command":
          case "suggest_command":
-            var10000 = !validateChat(var2) ? null : var0.renameField("value", "command");
+            var10000 = !validateChat(value) ? null : dynamic.renameField("value", "command");
             break;
          case "change_page":
-            Integer var5 = (Integer)var0.get("value").result().map(TextComponentHoverAndClickEventFix::parseOldPage).orElse((Object)null);
-            if (var5 == null) {
+            Integer oldPage = (Integer)dynamic.get("value").result().map(TextComponentHoverAndClickEventFix::parseOldPage).orElse((Object)null);
+            if (oldPage == null) {
                var10000 = null;
             } else {
-               int var6 = Math.max(var5, 1);
-               var10000 = var0.remove("value").set("page", var0.createInt(var6));
+               int page = Math.max(oldPage, 1);
+               var10000 = dynamic.remove("value").set("page", dynamic.createInt(page));
             }
             break;
          default:
-            var10000 = var0;
+            var10000 = dynamic;
       }
 
       return var10000;
    }
 
-   private static @Nullable Integer parseOldPage(Dynamic<?> var0) {
-      Optional var1 = var0.asNumber().result();
-      if (var1.isPresent()) {
-         return ((Number)var1.get()).intValue();
+   private static @Nullable Integer parseOldPage(final Dynamic<?> value) {
+      Optional<Number> numberValue = value.asNumber().result();
+      if (numberValue.isPresent()) {
+         return ((Number)numberValue.get()).intValue();
       } else {
          try {
-            return Integer.parseInt(var0.asString(""));
+            return Integer.parseInt(value.asString(""));
          } catch (Exception var3) {
             return null;
          }
       }
    }
 
-   private static boolean validateUri(String var0) {
+   private static boolean validateUri(final String uri) {
       try {
-         URI var1 = new URI(var0);
-         String var2 = var1.getScheme();
-         if (var2 == null) {
+         URI parsedUri = new URI(uri);
+         String scheme = parsedUri.getScheme();
+         if (scheme == null) {
             return false;
          } else {
-            String var3 = var2.toLowerCase(Locale.ROOT);
-            return "http".equals(var3) || "https".equals(var3);
+            String protocol = scheme.toLowerCase(Locale.ROOT);
+            return "http".equals(protocol) || "https".equals(protocol);
          }
       } catch (URISyntaxException var4) {
          return false;
       }
    }
 
-   private static boolean validateChat(String var0) {
-      for(int var1 = 0; var1 < var0.length(); ++var1) {
-         char var2 = var0.charAt(var1);
-         if (var2 == 167 || var2 < ' ' || var2 == 127) {
+   private static boolean validateChat(final String string) {
+      for(int i = 0; i < string.length(); ++i) {
+         char c = string.charAt(i);
+         if (c == 167 || c < ' ' || c == 127) {
             return false;
          }
       }

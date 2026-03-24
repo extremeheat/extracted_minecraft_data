@@ -1,6 +1,7 @@
 package net.minecraft.client.renderer.special;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Transformation;
 import com.mojang.serialization.MapCodec;
 import java.util.function.Consumer;
 import net.minecraft.client.model.geom.ModelLayers;
@@ -8,31 +9,29 @@ import net.minecraft.client.model.object.projectile.TridentModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.world.item.ItemDisplayContext;
+import org.joml.Quaternionfc;
+import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
 public class TridentSpecialRenderer implements NoDataSpecialModelRenderer {
+   public static final Transformation DEFAULT_TRANSFORMATION = new Transformation((Vector3fc)null, (Quaternionfc)null, new Vector3f(1.0F, -1.0F, -1.0F), (Quaternionfc)null);
    private final TridentModel model;
 
-   public TridentSpecialRenderer(TridentModel var1) {
+   public TridentSpecialRenderer(final TridentModel model) {
       super();
-      this.model = var1;
+      this.model = model;
    }
 
-   public void submit(ItemDisplayContext var1, PoseStack var2, SubmitNodeCollector var3, int var4, int var5, boolean var6, int var7) {
-      var2.pushPose();
-      var2.scale(1.0F, -1.0F, -1.0F);
-      var3.submitModelPart(this.model.root(), var2, this.model.renderType(TridentModel.TEXTURE), var4, var5, (TextureAtlasSprite)null, false, var6, -1, (ModelFeatureRenderer.CrumblingOverlay)null, var7);
-      var2.popPose();
+   public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final boolean hasFoil, final int outlineColor) {
+      submitNodeCollector.submitModelPart(this.model.root(), poseStack, this.model.renderType(TridentModel.TEXTURE), lightCoords, overlayCoords, (TextureAtlasSprite)null, false, hasFoil, -1, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
    }
 
-   public void getExtents(Consumer<Vector3fc> var1) {
-      PoseStack var2 = new PoseStack();
-      var2.scale(1.0F, -1.0F, -1.0F);
-      this.model.root().getExtentsForGui(var2, var1);
+   public void getExtents(final Consumer<Vector3fc> output) {
+      PoseStack poseStack = new PoseStack();
+      this.model.root().getExtentsForGui(poseStack, output);
    }
 
-   public static record Unbaked() implements SpecialModelRenderer.Unbaked {
+   public static record Unbaked() implements NoDataSpecialModelRenderer.Unbaked {
       public static final MapCodec<Unbaked> MAP_CODEC = MapCodec.unit(new Unbaked());
 
       public Unbaked() {
@@ -43,8 +42,8 @@ public class TridentSpecialRenderer implements NoDataSpecialModelRenderer {
          return MAP_CODEC;
       }
 
-      public SpecialModelRenderer<?> bake(SpecialModelRenderer.BakingContext var1) {
-         return new TridentSpecialRenderer(new TridentModel(var1.entityModelSet().bakeLayer(ModelLayers.TRIDENT)));
+      public TridentSpecialRenderer bake(final SpecialModelRenderer.BakingContext context) {
+         return new TridentSpecialRenderer(new TridentModel(context.entityModelSet().bakeLayer(ModelLayers.TRIDENT)));
       }
    }
 }

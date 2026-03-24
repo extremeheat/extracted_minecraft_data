@@ -11,11 +11,11 @@ public class GlShaderModule implements AutoCloseable {
    private int shaderId;
    private final ShaderType type;
 
-   public GlShaderModule(int var1, Identifier var2, ShaderType var3) {
+   public GlShaderModule(final int shaderId, final Identifier id, final ShaderType type) {
       super();
-      this.id = var2;
-      this.shaderId = var1;
-      this.type = var3;
+      this.id = id;
+      this.shaderId = shaderId;
+      this.type = type;
    }
 
    public void close() {

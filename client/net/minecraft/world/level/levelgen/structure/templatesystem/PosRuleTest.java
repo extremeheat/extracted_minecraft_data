@@ -12,7 +12,7 @@ public abstract class PosRuleTest {
       super();
    }
 
-   public abstract boolean test(BlockPos var1, BlockPos var2, BlockPos var3, RandomSource var4);
+   public abstract boolean test(final BlockPos inTemplatePos, BlockPos worldPos, BlockPos worldReference, RandomSource random);
 
    protected abstract PosRuleTestType<?> getType();
 

@@ -16,37 +16,36 @@ public record MessageSignature(byte[] bytes) {
    public static final Codec<MessageSignature> CODEC;
    public static final int BYTES = 256;
 
-   public MessageSignature(byte[] var1) {
+   public MessageSignature {
       super();
-      Preconditions.checkState(var1.length == 256, "Invalid message signature size");
-      this.bytes = var1;
+      Preconditions.checkState(bytes.length == 256, "Invalid message signature size");
    }
 
-   public static MessageSignature read(FriendlyByteBuf var0) {
-      byte[] var1 = new byte[256];
-      var0.readBytes(var1);
-      return new MessageSignature(var1);
+   public static MessageSignature read(final FriendlyByteBuf input) {
+      byte[] bytes = new byte[256];
+      input.readBytes(bytes);
+      return new MessageSignature(bytes);
    }
 
-   public static void write(FriendlyByteBuf var0, MessageSignature var1) {
-      var0.writeBytes(var1.bytes);
+   public static void write(final FriendlyByteBuf output, final MessageSignature signature) {
+      output.writeBytes(signature.bytes);
    }
 
-   public boolean verify(SignatureValidator var1, SignatureUpdater var2) {
-      return var1.validate(var2, this.bytes);
+   public boolean verify(final SignatureValidator signature, final SignatureUpdater updater) {
+      return signature.validate(updater, this.bytes);
    }
 
    public ByteBuffer asByteBuffer() {
       return ByteBuffer.wrap(this.bytes);
    }
 
-   public boolean equals(Object var1) {
+   public boolean equals(final Object o) {
       boolean var10000;
-      if (this != var1) {
+      if (this != o) {
          label26: {
-            if (var1 instanceof MessageSignature) {
-               MessageSignature var2 = (MessageSignature)var1;
-               if (Arrays.equals(this.bytes, var2.bytes)) {
+            if (o instanceof MessageSignature) {
+               MessageSignature that = (MessageSignature)o;
+               if (Arrays.equals(this.bytes, that.bytes)) {
                   break label26;
                }
             }
@@ -68,13 +67,13 @@ public record MessageSignature(byte[] bytes) {
       return Base64.getEncoder().encodeToString(this.bytes);
    }
 
-   public static String describe(@Nullable MessageSignature var0) {
-      return var0 == null ? "<no signature>" : var0.toString();
+   public static String describe(final @Nullable MessageSignature signature) {
+      return signature == null ? "<no signature>" : signature.toString();
    }
 
-   public Packed pack(MessageSignatureCache var1) {
-      int var2 = var1.pack(this);
-      return var2 != -1 ? new Packed(var2) : new Packed(this);
+   public Packed pack(final MessageSignatureCache cache) {
+      int packedId = cache.pack(this);
+      return packedId != -1 ? new Packed(packedId) : new Packed(this);
    }
 
    public int checksum() {
@@ -88,35 +87,33 @@ public record MessageSignature(byte[] bytes) {
    public static record Packed(int id, @Nullable MessageSignature fullSignature) {
       public static final int FULL_SIGNATURE = -1;
 
-      public Packed(MessageSignature var1) {
-         this(-1, var1);
+      public Packed(final MessageSignature signature) {
+         this(-1, signature);
       }
 
-      public Packed(int var1) {
-         this(var1, (MessageSignature)null);
+      public Packed(final int id) {
+         this(id, (MessageSignature)null);
       }
 
-      public Packed(int var1, @Nullable MessageSignature var2) {
+      public Packed {
          super();
-         this.id = var1;
-         this.fullSignature = var2;
       }
 
-      public static Packed read(FriendlyByteBuf var0) {
-         int var1 = var0.readVarInt() - 1;
-         return var1 == -1 ? new Packed(MessageSignature.read(var0)) : new Packed(var1);
+      public static Packed read(final FriendlyByteBuf input) {
+         int id = input.readVarInt() - 1;
+         return id == -1 ? new Packed(MessageSignature.read(input)) : new Packed(id);
       }
 
-      public static void write(FriendlyByteBuf var0, Packed var1) {
-         var0.writeVarInt(var1.id() + 1);
-         if (var1.fullSignature() != null) {
-            MessageSignature.write(var0, var1.fullSignature());
+      public static void write(final FriendlyByteBuf output, final Packed packed) {
+         output.writeVarInt(packed.id() + 1);
+         if (packed.fullSignature() != null) {
+            MessageSignature.write(output, packed.fullSignature());
          }
 
       }
 
-      public Optional<MessageSignature> unpack(MessageSignatureCache var1) {
-         return this.fullSignature != null ? Optional.of(this.fullSignature) : Optional.ofNullable(var1.unpack(this.id));
+      public Optional<MessageSignature> unpack(final MessageSignatureCache cache) {
+         return this.fullSignature != null ? Optional.of(this.fullSignature) : Optional.ofNullable(cache.unpack(this.id));
       }
    }
 }

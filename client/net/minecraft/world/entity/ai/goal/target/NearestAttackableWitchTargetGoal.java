@@ -8,12 +8,12 @@ import org.jspecify.annotations.Nullable;
 public class NearestAttackableWitchTargetGoal<T extends LivingEntity> extends NearestAttackableTargetGoal<T> {
    private boolean canAttack = true;
 
-   public NearestAttackableWitchTargetGoal(Raider var1, Class<T> var2, int var3, boolean var4, boolean var5, TargetingConditions.@Nullable Selector var6) {
-      super(var1, var2, var3, var4, var5, var6);
+   public NearestAttackableWitchTargetGoal(final Raider raider, final Class<T> targetType, final int randomInterval, final boolean mustSee, final boolean mustReach, final TargetingConditions.@Nullable Selector subselector) {
+      super(raider, targetType, randomInterval, mustSee, mustReach, subselector);
    }
 
-   public void setCanAttack(boolean var1) {
-      this.canAttack = var1;
+   public void setCanAttack(final boolean canAttack) {
+      this.canAttack = canAttack;
    }
 
    public boolean canUse() {

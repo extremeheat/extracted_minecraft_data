@@ -10,16 +10,16 @@ import java.util.Objects;
 import net.minecraft.util.Util;
 
 public class EntityHorseSplitFix extends EntityRenameFix {
-   public EntityHorseSplitFix(Schema var1, boolean var2) {
-      super("EntityHorseSplitFix", var1, var2);
+   public EntityHorseSplitFix(final Schema outputSchema, final boolean changesType) {
+      super("EntityHorseSplitFix", outputSchema, changesType);
    }
 
-   protected Pair<String, Typed<?>> fix(String var1, Typed<?> var2) {
-      if (Objects.equals("EntityHorse", var1)) {
-         Dynamic var3 = (Dynamic)var2.get(DSL.remainderFinder());
-         int var4 = var3.get("Type").asInt(0);
+   protected Pair<String, Typed<?>> fix(final String name, final Typed<?> entity) {
+      if (Objects.equals("EntityHorse", name)) {
+         Dynamic<?> tag = (Dynamic)entity.get(DSL.remainderFinder());
+         int type = tag.get("Type").asInt(0);
          String var10000;
-         switch (var4) {
+         switch (type) {
             case 1 -> var10000 = "Donkey";
             case 2 -> var10000 = "Mule";
             case 3 -> var10000 = "ZombieHorse";
@@ -27,11 +27,11 @@ public class EntityHorseSplitFix extends EntityRenameFix {
             default -> var10000 = "Horse";
          }
 
-         String var5 = var10000;
-         Type var6 = (Type)this.getOutputSchema().findChoiceType(References.ENTITY).types().get(var5);
-         return Pair.of(var5, Util.writeAndReadTypedOrThrow(var2, var6, (var0) -> var0.remove("Type")));
+         String newName = var10000;
+         Type<?> newType = (Type)this.getOutputSchema().findChoiceType(References.ENTITY).types().get(newName);
+         return Pair.of(newName, Util.writeAndReadTypedOrThrow(entity, newType, (dynamic) -> dynamic.remove("Type")));
       } else {
-         return Pair.of(var1, var2);
+         return Pair.of(name, entity);
       }
    }
 }

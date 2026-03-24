@@ -3,6 +3,7 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -26,42 +27,42 @@ public class NetherWartBlock extends VegetationBlock {
       return CODEC;
    }
 
-   protected NetherWartBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   protected NetherWartBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(AGE, 0));
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return SHAPES[(Integer)var1.getValue(AGE)];
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return SHAPES[(Integer)state.getValue(AGE)];
    }
 
-   protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return var1.is(Blocks.SOUL_SAND);
+   protected boolean mayPlaceOn(final BlockState state, final BlockGetter level, final BlockPos pos) {
+      return state.is(BlockTags.SUPPORTS_NETHER_WART);
    }
 
-   protected boolean isRandomlyTicking(BlockState var1) {
-      return (Integer)var1.getValue(AGE) < 3;
+   protected boolean isRandomlyTicking(final BlockState state) {
+      return (Integer)state.getValue(AGE) < 3;
    }
 
-   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      int var5 = (Integer)var1.getValue(AGE);
-      if (var5 < 3 && var4.nextInt(10) == 0) {
-         var1 = (BlockState)var1.setValue(AGE, var5 + 1);
-         var2.setBlock(var3, var1, 2);
+   protected void randomTick(BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      int age = (Integer)state.getValue(AGE);
+      if (age < 3 && random.nextInt(10) == 0) {
+         state = (BlockState)state.setValue(AGE, age + 1);
+         level.setBlock(pos, state, 2);
       }
 
    }
 
-   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
+   protected ItemStack getCloneItemStack(final LevelReader level, final BlockPos pos, final BlockState state, final boolean includeData) {
       return new ItemStack(Items.NETHER_WART);
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(AGE);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(AGE);
    }
 
    static {
       AGE = BlockStateProperties.AGE_3;
-      SHAPES = Block.boxes(3, (var0) -> Block.column(16.0, 0.0, (double)(5 + var0 * 3)));
+      SHAPES = Block.boxes(3, (age) -> Block.column(16.0, 0.0, (double)(5 + age * 3)));
    }
 }

@@ -20,38 +20,38 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 public class ArmorStandItem extends Item {
-   public ArmorStandItem(Item.Properties var1) {
-      super(var1);
+   public ArmorStandItem(final Item.Properties properties) {
+      super(properties);
    }
 
-   public InteractionResult useOn(UseOnContext var1) {
-      Direction var2 = var1.getClickedFace();
-      if (var2 == Direction.DOWN) {
+   public InteractionResult useOn(final UseOnContext context) {
+      Direction clickedFace = context.getClickedFace();
+      if (clickedFace == Direction.DOWN) {
          return InteractionResult.FAIL;
       } else {
-         Level var3 = var1.getLevel();
-         BlockPlaceContext var4 = new BlockPlaceContext(var1);
-         BlockPos var5 = var4.getClickedPos();
-         ItemStack var6 = var1.getItemInHand();
-         Vec3 var7 = Vec3.atBottomCenterOf(var5);
-         AABB var8 = EntityType.ARMOR_STAND.getDimensions().makeBoundingBox(var7.x(), var7.y(), var7.z());
-         if (var3.noCollision((Entity)null, var8) && var3.getEntities((Entity)null, var8).isEmpty()) {
-            if (var3 instanceof ServerLevel) {
-               ServerLevel var9 = (ServerLevel)var3;
-               Consumer var10 = EntityType.createDefaultStackConfig(var9, var6, var1.getPlayer());
-               ArmorStand var11 = EntityType.ARMOR_STAND.create(var9, var10, var5, EntitySpawnReason.SPAWN_ITEM_USE, true, true);
-               if (var11 == null) {
+         Level level = context.getLevel();
+         BlockPlaceContext placeContext = new BlockPlaceContext(context);
+         BlockPos blockPos = placeContext.getClickedPos();
+         ItemStack itemStack = context.getItemInHand();
+         Vec3 pos = Vec3.atBottomCenterOf(blockPos);
+         AABB box = EntityType.ARMOR_STAND.getDimensions().makeBoundingBox(pos.x(), pos.y(), pos.z());
+         if (level.noCollision((Entity)null, box) && level.getEntities((Entity)null, box).isEmpty()) {
+            if (level instanceof ServerLevel) {
+               ServerLevel serverLevel = (ServerLevel)level;
+               Consumer<ArmorStand> entityConfig = EntityType.<ArmorStand>createDefaultStackConfig(serverLevel, itemStack, context.getPlayer());
+               ArmorStand entity = EntityType.ARMOR_STAND.create(serverLevel, entityConfig, blockPos, EntitySpawnReason.SPAWN_ITEM_USE, true, true);
+               if (entity == null) {
                   return InteractionResult.FAIL;
                }
 
-               float var12 = (float)Mth.floor((Mth.wrapDegrees(var1.getRotation() - 180.0F) + 22.5F) / 45.0F) * 45.0F;
-               var11.snapTo(var11.getX(), var11.getY(), var11.getZ(), var12, 0.0F);
-               var9.addFreshEntityWithPassengers(var11);
-               var3.playSound((Entity)null, var11.getX(), var11.getY(), var11.getZ(), SoundEvents.ARMOR_STAND_PLACE, SoundSource.BLOCKS, 0.75F, 0.8F);
-               var11.gameEvent(GameEvent.ENTITY_PLACE, var1.getPlayer());
+               float yRot = (float)Mth.floor((Mth.wrapDegrees(context.getRotation() - 180.0F) + 22.5F) / 45.0F) * 45.0F;
+               entity.snapTo(entity.getX(), entity.getY(), entity.getZ(), yRot, 0.0F);
+               serverLevel.addFreshEntityWithPassengers(entity);
+               level.playSound((Entity)null, entity.getX(), entity.getY(), entity.getZ(), SoundEvents.ARMOR_STAND_PLACE, SoundSource.BLOCKS, 0.75F, 0.8F);
+               entity.gameEvent(GameEvent.ENTITY_PLACE, context.getPlayer());
             }
 
-            var6.shrink(1);
+            itemStack.shrink(1);
             return InteractionResult.SUCCESS;
          } else {
             return InteractionResult.FAIL;

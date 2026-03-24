@@ -27,35 +27,35 @@ public abstract class PipeBlock extends Block {
    public static final Map<Direction, BooleanProperty> PROPERTY_BY_DIRECTION;
    private final Function<BlockState, VoxelShape> shapes;
 
-   protected PipeBlock(float var1, BlockBehaviour.Properties var2) {
-      super(var2);
-      this.shapes = this.makeShapes(var1);
+   protected PipeBlock(final float size, final BlockBehaviour.Properties properties) {
+      super(properties);
+      this.shapes = this.makeShapes(size);
    }
 
    protected abstract MapCodec<? extends PipeBlock> codec();
 
-   private Function<BlockState, VoxelShape> makeShapes(float var1) {
-      VoxelShape var2 = Block.cube((double)var1);
-      Map var3 = Shapes.rotateAll(Block.boxZ((double)var1, 0.0, 8.0));
-      return this.getShapeForEachState((var2x) -> {
-         VoxelShape var3x = var2;
+   private Function<BlockState, VoxelShape> makeShapes(final float size) {
+      VoxelShape core = Block.cube((double)size);
+      Map<Direction, VoxelShape> shapes = Shapes.rotateAll(Block.boxZ((double)size, 0.0, 8.0));
+      return this.getShapeForEachState((state) -> {
+         VoxelShape shape = core;
 
-         for(Map.Entry var5 : PROPERTY_BY_DIRECTION.entrySet()) {
-            if ((Boolean)var2x.getValue((Property)var5.getValue())) {
-               var3x = Shapes.or((VoxelShape)var3.get(var5.getKey()), var3x);
+         for(Map.Entry<Direction, BooleanProperty> entry : PROPERTY_BY_DIRECTION.entrySet()) {
+            if ((Boolean)state.getValue((Property)entry.getValue())) {
+               shape = Shapes.or((VoxelShape)shapes.get(entry.getKey()), shape);
             }
          }
 
-         return var3x;
+         return shape;
       });
    }
 
-   protected boolean propagatesSkylightDown(BlockState var1) {
+   protected boolean propagatesSkylightDown(final BlockState state) {
       return false;
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (VoxelShape)this.shapes.apply(var1);
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return (VoxelShape)this.shapes.apply(state);
    }
 
    static {

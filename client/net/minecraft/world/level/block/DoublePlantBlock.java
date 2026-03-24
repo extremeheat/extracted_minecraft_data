@@ -31,86 +31,86 @@ public class DoublePlantBlock extends VegetationBlock {
       return CODEC;
    }
 
-   public DoublePlantBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public DoublePlantBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(HALF, DoubleBlockHalf.LOWER));
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      DoubleBlockHalf var9 = (DoubleBlockHalf)var1.getValue(HALF);
-      if (var5.getAxis() != Direction.Axis.Y || var9 == DoubleBlockHalf.LOWER != (var5 == Direction.UP) || var7.is(this) && var7.getValue(HALF) != var9) {
-         return var9 == DoubleBlockHalf.LOWER && var5 == Direction.DOWN && !var1.canSurvive(var2, var4) ? Blocks.AIR.defaultBlockState() : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      DoubleBlockHalf half = (DoubleBlockHalf)state.getValue(HALF);
+      if (directionToNeighbour.getAxis() != Direction.Axis.Y || half == DoubleBlockHalf.LOWER != (directionToNeighbour == Direction.UP) || neighbourState.is(this) && neighbourState.getValue(HALF) != half) {
+         return half == DoubleBlockHalf.LOWER && directionToNeighbour == Direction.DOWN && !state.canSurvive(level, pos) ? Blocks.AIR.defaultBlockState() : super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
       } else {
          return Blocks.AIR.defaultBlockState();
       }
    }
 
-   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
-      BlockPos var2 = var1.getClickedPos();
-      Level var3 = var1.getLevel();
-      return var2.getY() < var3.getMaxY() && var3.getBlockState(var2.above()).canBeReplaced(var1) ? super.getStateForPlacement(var1) : null;
+   public @Nullable BlockState getStateForPlacement(final BlockPlaceContext context) {
+      BlockPos pos = context.getClickedPos();
+      Level level = context.getLevel();
+      return pos.getY() < level.getMaxY() && level.getBlockState(pos.above()).canBeReplaced(context) ? super.getStateForPlacement(context) : null;
    }
 
-   public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, @Nullable LivingEntity var4, ItemStack var5) {
-      BlockPos var6 = var2.above();
-      var1.setBlock(var6, copyWaterloggedFrom(var1, var6, (BlockState)this.defaultBlockState().setValue(HALF, DoubleBlockHalf.UPPER)), 3);
+   public void setPlacedBy(final Level level, final BlockPos pos, final BlockState state, final @Nullable LivingEntity by, final ItemStack itemStack) {
+      BlockPos abovePos = pos.above();
+      level.setBlock(abovePos, copyWaterloggedFrom(level, abovePos, (BlockState)this.defaultBlockState().setValue(HALF, DoubleBlockHalf.UPPER)), 3);
    }
 
-   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      if (var1.getValue(HALF) != DoubleBlockHalf.UPPER) {
-         return super.canSurvive(var1, var2, var3);
+   protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
+      if (state.getValue(HALF) != DoubleBlockHalf.UPPER) {
+         return super.canSurvive(state, level, pos);
       } else {
-         BlockState var4 = var2.getBlockState(var3.below());
-         return var4.is(this) && var4.getValue(HALF) == DoubleBlockHalf.LOWER;
+         BlockState belowState = level.getBlockState(pos.below());
+         return belowState.is(this) && belowState.getValue(HALF) == DoubleBlockHalf.LOWER;
       }
    }
 
-   public static void placeAt(LevelAccessor var0, BlockState var1, BlockPos var2, @Block.UpdateFlags int var3) {
-      BlockPos var4 = var2.above();
-      var0.setBlock(var2, copyWaterloggedFrom(var0, var2, (BlockState)var1.setValue(HALF, DoubleBlockHalf.LOWER)), var3);
-      var0.setBlock(var4, copyWaterloggedFrom(var0, var4, (BlockState)var1.setValue(HALF, DoubleBlockHalf.UPPER)), var3);
+   public static void placeAt(final LevelAccessor level, final BlockState state, final BlockPos lowerPos, final @Block.UpdateFlags int updateType) {
+      BlockPos upperPos = lowerPos.above();
+      level.setBlock(lowerPos, copyWaterloggedFrom(level, lowerPos, (BlockState)state.setValue(HALF, DoubleBlockHalf.LOWER)), updateType);
+      level.setBlock(upperPos, copyWaterloggedFrom(level, upperPos, (BlockState)state.setValue(HALF, DoubleBlockHalf.UPPER)), updateType);
    }
 
-   public static BlockState copyWaterloggedFrom(LevelReader var0, BlockPos var1, BlockState var2) {
-      return var2.hasProperty(BlockStateProperties.WATERLOGGED) ? (BlockState)var2.setValue(BlockStateProperties.WATERLOGGED, var0.isWaterAt(var1)) : var2;
+   public static BlockState copyWaterloggedFrom(final LevelReader level, final BlockPos pos, final BlockState state) {
+      return state.hasProperty(BlockStateProperties.WATERLOGGED) ? (BlockState)state.setValue(BlockStateProperties.WATERLOGGED, level.isWaterAt(pos)) : state;
    }
 
-   public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
-      if (!var1.isClientSide()) {
-         if (var4.preventsBlockDrops()) {
-            preventDropFromBottomPart(var1, var2, var3, var4);
+   public BlockState playerWillDestroy(final Level level, final BlockPos pos, final BlockState state, final Player player) {
+      if (!level.isClientSide()) {
+         if (player.preventsBlockDrops()) {
+            preventDropFromBottomPart(level, pos, state, player);
          } else {
-            dropResources(var3, var1, var2, (BlockEntity)null, var4, var4.getMainHandItem());
+            dropResources(state, level, pos, (BlockEntity)null, player, player.getMainHandItem());
          }
       }
 
-      return super.playerWillDestroy(var1, var2, var3, var4);
+      return super.playerWillDestroy(level, pos, state, player);
    }
 
-   public void playerDestroy(Level var1, Player var2, BlockPos var3, BlockState var4, @Nullable BlockEntity var5, ItemStack var6) {
-      super.playerDestroy(var1, var2, var3, Blocks.AIR.defaultBlockState(), var5, var6);
+   public void playerDestroy(final Level level, final Player player, final BlockPos pos, final BlockState state, final @Nullable BlockEntity blockEntity, final ItemStack destroyedWith) {
+      super.playerDestroy(level, player, pos, Blocks.AIR.defaultBlockState(), blockEntity, destroyedWith);
    }
 
-   protected static void preventDropFromBottomPart(Level var0, BlockPos var1, BlockState var2, Player var3) {
-      DoubleBlockHalf var4 = (DoubleBlockHalf)var2.getValue(HALF);
-      if (var4 == DoubleBlockHalf.UPPER) {
-         BlockPos var5 = var1.below();
-         BlockState var6 = var0.getBlockState(var5);
-         if (var6.is(var2.getBlock()) && var6.getValue(HALF) == DoubleBlockHalf.LOWER) {
-            BlockState var7 = var6.getFluidState().is(Fluids.WATER) ? Blocks.WATER.defaultBlockState() : Blocks.AIR.defaultBlockState();
-            var0.setBlock(var5, var7, 35);
-            var0.levelEvent(var3, 2001, var5, Block.getId(var6));
+   protected static void preventDropFromBottomPart(final Level level, final BlockPos pos, final BlockState state, final Player player) {
+      DoubleBlockHalf part = (DoubleBlockHalf)state.getValue(HALF);
+      if (part == DoubleBlockHalf.UPPER) {
+         BlockPos bottomPos = pos.below();
+         BlockState bottomState = level.getBlockState(bottomPos);
+         if (bottomState.is(state.getBlock()) && bottomState.getValue(HALF) == DoubleBlockHalf.LOWER) {
+            BlockState blockState = bottomState.getFluidState().is(Fluids.WATER) ? Blocks.WATER.defaultBlockState() : Blocks.AIR.defaultBlockState();
+            level.setBlock(bottomPos, blockState, 35);
+            level.levelEvent(player, 2001, bottomPos, Block.getId(bottomState));
          }
       }
 
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(HALF);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(HALF);
    }
 
-   protected long getSeed(BlockState var1, BlockPos var2) {
-      return Mth.getSeed(var2.getX(), var2.below(var1.getValue(HALF) == DoubleBlockHalf.LOWER ? 0 : 1).getY(), var2.getZ());
+   protected long getSeed(final BlockState state, final BlockPos pos) {
+      return Mth.getSeed(pos.getX(), pos.below(state.getValue(HALF) == DoubleBlockHalf.LOWER ? 0 : 1).getY(), pos.getZ());
    }
 
    static {

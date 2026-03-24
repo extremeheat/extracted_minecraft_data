@@ -10,45 +10,45 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.dimension.end.EndDragonFight;
+import net.minecraft.world.level.dimension.end.EnderDragonFight;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
 
 public class EndCrystalItem extends Item {
-   public EndCrystalItem(Item.Properties var1) {
-      super(var1);
+   public EndCrystalItem(final Item.Properties properties) {
+      super(properties);
    }
 
-   public InteractionResult useOn(UseOnContext var1) {
-      Level var2 = var1.getLevel();
-      BlockPos var3 = var1.getClickedPos();
-      BlockState var4 = var2.getBlockState(var3);
-      if (!var4.is(Blocks.OBSIDIAN) && !var4.is(Blocks.BEDROCK)) {
+   public InteractionResult useOn(final UseOnContext context) {
+      Level level = context.getLevel();
+      BlockPos pos = context.getClickedPos();
+      BlockState blockState = level.getBlockState(pos);
+      if (!blockState.is(Blocks.OBSIDIAN) && !blockState.is(Blocks.BEDROCK)) {
          return InteractionResult.FAIL;
       } else {
-         BlockPos var5 = var3.above();
-         if (!var2.isEmptyBlock(var5)) {
+         BlockPos above = pos.above();
+         if (!level.isEmptyBlock(above)) {
             return InteractionResult.FAIL;
          } else {
-            double var6 = (double)var5.getX();
-            double var8 = (double)var5.getY();
-            double var10 = (double)var5.getZ();
-            List var12 = var2.getEntities((Entity)null, new AABB(var6, var8, var10, var6 + 1.0, var8 + 2.0, var10 + 1.0));
-            if (!var12.isEmpty()) {
+            double x = (double)above.getX();
+            double y = (double)above.getY();
+            double z = (double)above.getZ();
+            List<Entity> entities = level.getEntities((Entity)null, new AABB(x, y, z, x + 1.0, y + 2.0, z + 1.0));
+            if (!entities.isEmpty()) {
                return InteractionResult.FAIL;
             } else {
-               if (var2 instanceof ServerLevel) {
-                  EndCrystal var13 = new EndCrystal(var2, var6 + 0.5, var8, var10 + 0.5);
-                  var13.setShowBottom(false);
-                  var2.addFreshEntity(var13);
-                  var2.gameEvent(var1.getPlayer(), GameEvent.ENTITY_PLACE, var5);
-                  EndDragonFight var14 = ((ServerLevel)var2).getDragonFight();
-                  if (var14 != null) {
-                     var14.tryRespawn();
+               if (level instanceof ServerLevel) {
+                  EndCrystal crystal = new EndCrystal(level, x + 0.5, y, z + 0.5);
+                  crystal.setShowBottom(false);
+                  level.addFreshEntity(crystal);
+                  level.gameEvent(context.getPlayer(), GameEvent.ENTITY_PLACE, above);
+                  EnderDragonFight fight = ((ServerLevel)level).getDragonFight();
+                  if (fight != null) {
+                     fight.tryRespawn();
                   }
                }
 
-               var1.getItemInHand().shrink(1);
+               context.getItemInHand().shrink(1);
                return InteractionResult.SUCCESS;
             }
          }

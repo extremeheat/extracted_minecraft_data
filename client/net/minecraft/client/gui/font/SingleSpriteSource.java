@@ -5,16 +5,15 @@ import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.util.RandomSource;
 
 public record SingleSpriteSource(BakedGlyph glyph) implements GlyphSource {
-   public SingleSpriteSource(BakedGlyph var1) {
+   public SingleSpriteSource {
       super();
-      this.glyph = var1;
    }
 
-   public BakedGlyph getGlyph(int var1) {
+   public BakedGlyph getGlyph(final int codepoint) {
       return this.glyph;
    }
 
-   public BakedGlyph getRandomGlyph(RandomSource var1, int var2) {
+   public BakedGlyph getRandomGlyph(final RandomSource random, final int width) {
       return this.glyph;
    }
 }

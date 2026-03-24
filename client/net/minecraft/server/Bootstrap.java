@@ -13,7 +13,7 @@ import net.minecraft.SharedConstants;
 import net.minecraft.SuppressForbidden;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.selector.options.EntitySelectorOptions;
-import net.minecraft.core.cauldron.CauldronInteraction;
+import net.minecraft.core.cauldron.CauldronInteractions;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.locale.Language;
@@ -33,7 +33,7 @@ import net.minecraft.world.level.gamerules.GameRules;
 import org.slf4j.Logger;
 
 @SuppressForbidden(
-   a = "System.out setup"
+   reason = "System.out setup"
 )
 public class Bootstrap {
    public static final PrintStream STDOUT;
@@ -48,7 +48,7 @@ public class Bootstrap {
    public static void bootStrap() {
       if (!isBootstrapped) {
          isBootstrapped = true;
-         Instant var0 = Instant.now();
+         Instant start = Instant.now();
          if (BuiltInRegistries.REGISTRY.keySet().isEmpty()) {
             throw new IllegalStateException("Unable to load registries");
          } else {
@@ -59,34 +59,34 @@ public class Bootstrap {
             } else {
                EntitySelectorOptions.bootStrap();
                DispenseItemBehavior.bootStrap();
-               CauldronInteraction.bootStrap();
+               CauldronInteractions.bootStrap();
                BuiltInRegistries.bootStrap();
                CreativeModeTabs.validate();
                wrapStreams();
-               bootstrapDuration.set(Duration.between(var0, Instant.now()).toMillis());
+               bootstrapDuration.set(Duration.between(start, Instant.now()).toMillis());
             }
          }
       }
    }
 
-   private static <T> void checkTranslations(Iterable<T> var0, Function<T, String> var1, Set<String> var2) {
-      Language var3 = Language.getInstance();
-      var0.forEach((var3x) -> {
-         String var4 = (String)var1.apply(var3x);
-         if (!var3.has(var4)) {
-            var2.add(var4);
+   private static <T> void checkTranslations(final Iterable<T> registry, final Function<T, String> descriptionGetter, final Set<String> output) {
+      Language language = Language.getInstance();
+      registry.forEach((t) -> {
+         String id = (String)descriptionGetter.apply(t);
+         if (!language.has(id)) {
+            output.add(id);
          }
 
       });
    }
 
-   private static void checkGameruleTranslations(final Set<String> var0) {
-      final Language var1 = Language.getInstance();
-      GameRules var2 = new GameRules(FeatureFlags.REGISTRY.allFlags());
-      var2.visitGameRuleTypes(new GameRuleTypeVisitor() {
-         public <T> void visit(GameRule<T> var1x) {
-            if (!var1.has(var1x.getDescriptionId())) {
-               var0.add(var1x.id());
+   private static void checkGameruleTranslations(final Set<String> missing) {
+      final Language language = Language.getInstance();
+      GameRules rules = new GameRules(FeatureFlags.REGISTRY.allFlags());
+      rules.visitGameRuleTypes(new GameRuleTypeVisitor() {
+         public <T> void visit(final GameRule<T> gameRule) {
+            if (!language.has(gameRule.getDescriptionId())) {
+               missing.add(gameRule.id());
             }
 
          }
@@ -94,41 +94,41 @@ public class Bootstrap {
    }
 
    public static Set<String> getMissingTranslations() {
-      TreeSet var0 = new TreeSet();
-      checkTranslations(BuiltInRegistries.ATTRIBUTE, Attribute::getDescriptionId, var0);
-      checkTranslations(BuiltInRegistries.ENTITY_TYPE, EntityType::getDescriptionId, var0);
-      checkTranslations(BuiltInRegistries.MOB_EFFECT, MobEffect::getDescriptionId, var0);
-      checkTranslations(BuiltInRegistries.ITEM, Item::getDescriptionId, var0);
-      checkTranslations(BuiltInRegistries.BLOCK, BlockBehaviour::getDescriptionId, var0);
-      checkTranslations(BuiltInRegistries.CUSTOM_STAT, (var0x) -> {
-         String var10000 = var0x.toString();
+      Set<String> missing = new TreeSet();
+      checkTranslations(BuiltInRegistries.ATTRIBUTE, Attribute::getDescriptionId, missing);
+      checkTranslations(BuiltInRegistries.ENTITY_TYPE, EntityType::getDescriptionId, missing);
+      checkTranslations(BuiltInRegistries.MOB_EFFECT, MobEffect::getDescriptionId, missing);
+      checkTranslations(BuiltInRegistries.ITEM, Item::getDescriptionId, missing);
+      checkTranslations(BuiltInRegistries.BLOCK, BlockBehaviour::getDescriptionId, missing);
+      checkTranslations(BuiltInRegistries.CUSTOM_STAT, (id) -> {
+         String var10000 = id.toString();
          return "stat." + var10000.replace(':', '.');
-      }, var0);
-      checkGameruleTranslations(var0);
-      return var0;
+      }, missing);
+      checkGameruleTranslations(missing);
+      return missing;
    }
 
-   public static void checkBootstrapCalled(Supplier<String> var0) {
+   public static void checkBootstrapCalled(final Supplier<String> location) {
       if (!isBootstrapped) {
-         throw createBootstrapException(var0);
+         throw createBootstrapException(location);
       }
    }
 
-   private static RuntimeException createBootstrapException(Supplier<String> var0) {
+   private static RuntimeException createBootstrapException(final Supplier<String> location) {
       try {
-         String var1 = (String)var0.get();
-         return new IllegalArgumentException("Not bootstrapped (called from " + var1 + ")");
-      } catch (Exception var3) {
-         IllegalArgumentException var2 = new IllegalArgumentException("Not bootstrapped (failed to resolve location)");
-         ((RuntimeException)var2).addSuppressed(var3);
-         return var2;
+         String resolvedLocation = (String)location.get();
+         return new IllegalArgumentException("Not bootstrapped (called from " + resolvedLocation + ")");
+      } catch (Exception e) {
+         RuntimeException result = new IllegalArgumentException("Not bootstrapped (failed to resolve location)");
+         result.addSuppressed(e);
+         return result;
       }
    }
 
    public static void validate() {
       checkBootstrapCalled(() -> "validate");
       if (SharedConstants.IS_RUNNING_IN_IDE) {
-         getMissingTranslations().forEach((var0) -> LOGGER.error("Missing translations: {}", var0));
+         getMissingTranslations().forEach((key) -> LOGGER.error("Missing translations: {}", key));
          Commands.validate();
       }
 
@@ -146,8 +146,12 @@ public class Bootstrap {
 
    }
 
-   public static void realStdoutPrintln(String var0) {
-      STDOUT.println(var0);
+   public static void realStdoutPrintln(final String string) {
+      STDOUT.println(string);
+   }
+
+   public static void shutdownStdout() {
+      STDOUT.close();
    }
 
    static {

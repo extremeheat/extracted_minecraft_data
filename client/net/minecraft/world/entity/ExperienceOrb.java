@@ -44,51 +44,51 @@ public class ExperienceOrb extends Entity {
    private @Nullable Player followingPlayer;
    private final InterpolationHandler interpolation;
 
-   public ExperienceOrb(Level var1, double var2, double var4, double var6, int var8) {
-      this(var1, new Vec3(var2, var4, var6), Vec3.ZERO, var8);
+   public ExperienceOrb(final Level level, final double x, final double y, final double z, final int value) {
+      this(level, new Vec3(x, y, z), Vec3.ZERO, value);
    }
 
-   public ExperienceOrb(Level var1, Vec3 var2, Vec3 var3, int var4) {
-      this(EntityType.EXPERIENCE_ORB, var1);
-      this.setPos(var2);
-      if (!var1.isClientSide()) {
+   public ExperienceOrb(final Level level, final Vec3 pos, final Vec3 roughly, final int value) {
+      this(EntityType.EXPERIENCE_ORB, level);
+      this.setPos(pos);
+      if (!level.isClientSide()) {
          this.setYRot(this.random.nextFloat() * 360.0F);
-         Vec3 var5 = new Vec3((this.random.nextDouble() * 0.2 - 0.1) * 2.0, this.random.nextDouble() * 0.2 * 2.0, (this.random.nextDouble() * 0.2 - 0.1) * 2.0);
-         if (var3.lengthSqr() > 0.0 && var3.dot(var5) < 0.0) {
-            var5 = var5.scale(-1.0);
+         Vec3 randomMovement = new Vec3((this.random.nextDouble() * 0.2 - 0.1) * 2.0, this.random.nextDouble() * 0.2 * 2.0, (this.random.nextDouble() * 0.2 - 0.1) * 2.0);
+         if (roughly.lengthSqr() > 0.0 && roughly.dot(randomMovement) < 0.0) {
+            randomMovement = randomMovement.scale(-1.0);
          }
 
-         double var6 = this.getBoundingBox().getSize();
-         this.setPos(var2.add(var3.normalize().scale(var6 * 0.5)));
-         this.setDeltaMovement(var5);
-         if (!var1.noCollision(this.getBoundingBox())) {
-            this.unstuckIfPossible(var6);
+         double size = this.getBoundingBox().getSize();
+         this.setPos(pos.add(roughly.normalize().scale(size * 0.5)));
+         this.setDeltaMovement(randomMovement);
+         if (!level.noCollision(this.getBoundingBox())) {
+            this.unstuckIfPossible(size);
          }
       }
 
-      this.setValue(var4);
+      this.setValue(value);
    }
 
-   public ExperienceOrb(EntityType<? extends ExperienceOrb> var1, Level var2) {
-      super(var1, var2);
+   public ExperienceOrb(final EntityType<? extends ExperienceOrb> type, final Level level) {
+      super(type, level);
       this.age = 0;
       this.health = 5;
       this.count = 1;
       this.interpolation = new InterpolationHandler(this);
    }
 
-   protected void unstuckIfPossible(double var1) {
-      Vec3 var3 = this.position().add(0.0, (double)this.getBbHeight() / 2.0, 0.0);
-      VoxelShape var4 = Shapes.create(AABB.ofSize(var3, var1, var1, var1));
-      this.level().findFreePosition(this, var4, var3, (double)this.getBbWidth(), (double)this.getBbHeight(), (double)this.getBbWidth()).ifPresent((var1x) -> this.setPos(var1x.add(0.0, (double)(-this.getBbHeight()) / 2.0, 0.0)));
+   protected void unstuckIfPossible(final double maxDistance) {
+      Vec3 center = this.position().add(0.0, (double)this.getBbHeight() / 2.0, 0.0);
+      VoxelShape allowedCenters = Shapes.create(AABB.ofSize(center, maxDistance, maxDistance, maxDistance));
+      this.level().findFreePosition(this, allowedCenters, center, (double)this.getBbWidth(), (double)this.getBbHeight(), (double)this.getBbWidth()).ifPresent((pos) -> this.setPos(pos.add(0.0, (double)(-this.getBbHeight()) / 2.0, 0.0)));
    }
 
    protected Entity.MovementEmission getMovementEmission() {
       return Entity.MovementEmission.NONE;
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      var1.define(DATA_VALUE, 0);
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      entityData.define(DATA_VALUE, 0);
    }
 
    protected double getDefaultGravity() {
@@ -101,10 +101,10 @@ public class ExperienceOrb extends Entity {
          this.firstTick = false;
       } else {
          super.tick();
-         boolean var1 = !this.level().noCollision(this.getBoundingBox());
+         boolean colliding = !this.level().noCollision(this.getBoundingBox());
          if (this.isEyeInFluid(FluidTags.WATER)) {
             this.setUnderwaterMovement();
-         } else if (!var1) {
+         } else if (!colliding) {
             this.applyGravity();
          }
 
@@ -117,25 +117,25 @@ public class ExperienceOrb extends Entity {
          }
 
          this.followNearbyPlayer();
-         if (this.followingPlayer == null && !this.level().isClientSide() && var1) {
-            boolean var2 = !this.level().noCollision(this.getBoundingBox().move(this.getDeltaMovement()));
-            if (var2) {
+         if (this.followingPlayer == null && !this.level().isClientSide() && colliding) {
+            boolean nextColliding = !this.level().noCollision(this.getBoundingBox().move(this.getDeltaMovement()));
+            if (nextColliding) {
                this.moveTowardsClosestSpace(this.getX(), (this.getBoundingBox().minY + this.getBoundingBox().maxY) / 2.0, this.getZ());
                this.needsSync = true;
             }
          }
 
-         double var5 = this.getDeltaMovement().y;
+         double fallSpeed = this.getDeltaMovement().y;
          this.move(MoverType.SELF, this.getDeltaMovement());
          this.applyEffectsFromBlocks();
-         float var4 = 0.98F;
+         float friction = 0.98F;
          if (this.onGround()) {
-            var4 = this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement()).getBlock().getFriction() * 0.98F;
+            friction = this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement()).getBlock().getFriction() * 0.98F;
          }
 
-         this.setDeltaMovement(this.getDeltaMovement().scale((double)var4));
-         if (this.verticalCollisionBelow && var5 < -this.getGravity()) {
-            this.setDeltaMovement(new Vec3(this.getDeltaMovement().x, -var5 * 0.4, this.getDeltaMovement().z));
+         this.setDeltaMovement(this.getDeltaMovement().scale((double)friction));
+         if (this.verticalCollisionBelow && fallSpeed < -this.getGravity()) {
+            this.setDeltaMovement(new Vec3(this.getDeltaMovement().x, -fallSpeed * 0.4, this.getDeltaMovement().z));
          }
 
          ++this.age;
@@ -148,19 +148,19 @@ public class ExperienceOrb extends Entity {
 
    private void followNearbyPlayer() {
       if (this.followingPlayer == null || this.followingPlayer.isSpectator() || this.followingPlayer.distanceToSqr(this) > 64.0) {
-         Player var1 = this.level().getNearestPlayer(this, 8.0);
-         if (var1 != null && !var1.isSpectator() && !var1.isDeadOrDying()) {
-            this.followingPlayer = var1;
+         Player nearestPlayer = this.level().getNearestPlayer(this, 8.0);
+         if (nearestPlayer != null && !nearestPlayer.isSpectator() && !nearestPlayer.isDeadOrDying()) {
+            this.followingPlayer = nearestPlayer;
          } else {
             this.followingPlayer = null;
          }
       }
 
       if (this.followingPlayer != null) {
-         Vec3 var6 = new Vec3(this.followingPlayer.getX() - this.getX(), this.followingPlayer.getY() + (double)this.followingPlayer.getEyeHeight() / 2.0 - this.getY(), this.followingPlayer.getZ() - this.getZ());
-         double var2 = var6.lengthSqr();
-         double var4 = 1.0 - Math.sqrt(var2) / 8.0;
-         this.setDeltaMovement(this.getDeltaMovement().add(var6.normalize().scale(var4 * var4 * 0.1)));
+         Vec3 delta = new Vec3(this.followingPlayer.getX() - this.getX(), this.followingPlayer.getY() + (double)this.followingPlayer.getEyeHeight() / 2.0 - this.getY(), this.followingPlayer.getZ() - this.getZ());
+         double length = delta.lengthSqr();
+         double power = 1.0 - Math.sqrt(length) / 8.0;
+         this.setDeltaMovement(this.getDeltaMovement().add(delta.normalize().scale(power * power * 0.1)));
       }
 
    }
@@ -171,74 +171,74 @@ public class ExperienceOrb extends Entity {
 
    private void scanForMerges() {
       if (this.level() instanceof ServerLevel) {
-         for(ExperienceOrb var3 : this.level().getEntities(EntityTypeTest.forClass(ExperienceOrb.class), this.getBoundingBox().inflate(0.5), this::canMerge)) {
-            this.merge(var3);
+         for(ExperienceOrb orb : this.level().getEntities(EntityTypeTest.forClass(ExperienceOrb.class), this.getBoundingBox().inflate(0.5), this::canMerge)) {
+            this.merge(orb);
          }
       }
 
    }
 
-   public static void award(ServerLevel var0, Vec3 var1, int var2) {
-      awardWithDirection(var0, var1, Vec3.ZERO, var2);
+   public static void award(final ServerLevel level, final Vec3 pos, final int amount) {
+      awardWithDirection(level, pos, Vec3.ZERO, amount);
    }
 
-   public static void awardWithDirection(ServerLevel var0, Vec3 var1, Vec3 var2, int var3) {
-      while(var3 > 0) {
-         int var4 = getExperienceValue(var3);
-         var3 -= var4;
-         if (!tryMergeToExisting(var0, var1, var4)) {
-            var0.addFreshEntity(new ExperienceOrb(var0, var1, var2, var4));
+   public static void awardWithDirection(final ServerLevel level, final Vec3 pos, final Vec3 roughDirection, int amount) {
+      while(amount > 0) {
+         int newCount = getExperienceValue(amount);
+         amount -= newCount;
+         if (!tryMergeToExisting(level, pos, newCount)) {
+            level.addFreshEntity(new ExperienceOrb(level, pos, roughDirection, newCount));
          }
       }
 
    }
 
-   private static boolean tryMergeToExisting(ServerLevel var0, Vec3 var1, int var2) {
-      AABB var3 = AABB.ofSize(var1, 1.0, 1.0, 1.0);
-      int var4 = var0.getRandom().nextInt(40);
-      List var5 = var0.getEntities(EntityTypeTest.forClass(ExperienceOrb.class), var3, (var2x) -> canMerge(var2x, var4, var2));
-      if (!var5.isEmpty()) {
-         ExperienceOrb var6 = (ExperienceOrb)var5.get(0);
-         ++var6.count;
-         var6.age = 0;
+   private static boolean tryMergeToExisting(final ServerLevel level, final Vec3 pos, final int value) {
+      AABB box = AABB.ofSize(pos, 1.0, 1.0, 1.0);
+      int id = level.getRandom().nextInt(40);
+      List<ExperienceOrb> orbs = level.getEntities(EntityTypeTest.forClass(ExperienceOrb.class), box, (orbx) -> canMerge(orbx, id, value));
+      if (!orbs.isEmpty()) {
+         ExperienceOrb orb = (ExperienceOrb)orbs.get(0);
+         ++orb.count;
+         orb.age = 0;
          return true;
       } else {
          return false;
       }
    }
 
-   private boolean canMerge(ExperienceOrb var1) {
-      return var1 != this && canMerge(var1, this.getId(), this.getValue());
+   private boolean canMerge(final ExperienceOrb orb) {
+      return orb != this && canMerge(orb, this.getId(), this.getValue());
    }
 
-   private static boolean canMerge(ExperienceOrb var0, int var1, int var2) {
-      return !var0.isRemoved() && (var0.getId() - var1) % 40 == 0 && var0.getValue() == var2;
+   private static boolean canMerge(final ExperienceOrb orb, final int id, final int value) {
+      return !orb.isRemoved() && (orb.getId() - id) % 40 == 0 && orb.getValue() == value;
    }
 
-   private void merge(ExperienceOrb var1) {
-      this.count += var1.count;
-      this.age = Math.min(this.age, var1.age);
-      var1.discard();
+   private void merge(final ExperienceOrb orb) {
+      this.count += orb.count;
+      this.age = Math.min(this.age, orb.age);
+      orb.discard();
    }
 
    private void setUnderwaterMovement() {
-      Vec3 var1 = this.getDeltaMovement();
-      this.setDeltaMovement(var1.x * 0.9900000095367432, Math.min(var1.y + 5.000000237487257E-4, 0.05999999865889549), var1.z * 0.9900000095367432);
+      Vec3 movement = this.getDeltaMovement();
+      this.setDeltaMovement(movement.x * 0.9900000095367432, Math.min(movement.y + 5.000000237487257E-4, 0.05999999865889549), movement.z * 0.9900000095367432);
    }
 
    protected void doWaterSplashEffect() {
    }
 
-   public final boolean hurtClient(DamageSource var1) {
-      return !this.isInvulnerableToBase(var1);
+   public final boolean hurtClient(final DamageSource source) {
+      return !this.isInvulnerableToBase(source);
    }
 
-   public final boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
-      if (this.isInvulnerableToBase(var2)) {
+   public final boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {
+      if (this.isInvulnerableToBase(source)) {
          return false;
       } else {
          this.markHurt();
-         this.health = (int)((float)this.health - var3);
+         this.health = (int)((float)this.health - damage);
          if (this.health <= 0) {
             this.discard();
          }
@@ -247,28 +247,28 @@ public class ExperienceOrb extends Entity {
       }
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      var1.putShort("Health", (short)this.health);
-      var1.putShort("Age", (short)this.age);
-      var1.putShort("Value", (short)this.getValue());
-      var1.putInt("Count", this.count);
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      output.putShort("Health", (short)this.health);
+      output.putShort("Age", (short)this.age);
+      output.putShort("Value", (short)this.getValue());
+      output.putInt("Count", this.count);
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      this.health = var1.getShortOr("Health", (short)5);
-      this.age = var1.getShortOr("Age", (short)0);
-      this.setValue(var1.getShortOr("Value", (short)0));
-      this.count = (Integer)var1.read("Count", ExtraCodecs.POSITIVE_INT).orElse(1);
+   protected void readAdditionalSaveData(final ValueInput input) {
+      this.health = input.getShortOr("Health", (short)5);
+      this.age = input.getShortOr("Age", (short)0);
+      this.setValue(input.getShortOr("Value", (short)0));
+      this.count = (Integer)input.read("Count", ExtraCodecs.POSITIVE_INT).orElse(1);
    }
 
-   public void playerTouch(Player var1) {
-      if (var1 instanceof ServerPlayer var2) {
-         if (var1.takeXpDelay == 0) {
-            var1.takeXpDelay = 2;
-            var1.take(this, 1);
-            int var3 = this.repairPlayerItems(var2, this.getValue());
-            if (var3 > 0) {
-               var1.giveExperiencePoints(var3);
+   public void playerTouch(final Player player) {
+      if (player instanceof ServerPlayer serverPlayer) {
+         if (player.takeXpDelay == 0) {
+            player.takeXpDelay = 2;
+            player.take(this, 1);
+            int remaining = this.repairPlayerItems(serverPlayer, this.getValue());
+            if (remaining > 0) {
+               player.giveExperiencePoints(remaining);
             }
 
             --this.count;
@@ -280,23 +280,23 @@ public class ExperienceOrb extends Entity {
       }
    }
 
-   private int repairPlayerItems(ServerPlayer var1, int var2) {
-      Optional var3 = EnchantmentHelper.getRandomItemWith(EnchantmentEffectComponents.REPAIR_WITH_XP, var1, ItemStack::isDamaged);
-      if (var3.isPresent()) {
-         ItemStack var4 = ((EnchantedItemInUse)var3.get()).itemStack();
-         int var5 = EnchantmentHelper.modifyDurabilityToRepairFromXp(var1.level(), var4, var2);
-         int var6 = Math.min(var5, var4.getDamageValue());
-         var4.setDamageValue(var4.getDamageValue() - var6);
-         if (var6 > 0) {
-            int var7 = var2 - var6 * var2 / var5;
-            if (var7 > 0) {
-               return this.repairPlayerItems(var1, var7);
+   private int repairPlayerItems(final ServerPlayer player, final int amount) {
+      Optional<EnchantedItemInUse> selected = EnchantmentHelper.getRandomItemWith(EnchantmentEffectComponents.REPAIR_WITH_XP, player, ItemStack::isDamaged);
+      if (selected.isPresent()) {
+         ItemStack itemStack = ((EnchantedItemInUse)selected.get()).itemStack();
+         int toRepairFromXpAmount = EnchantmentHelper.modifyDurabilityToRepairFromXp(player.level(), itemStack, amount);
+         int repair = Math.min(toRepairFromXpAmount, itemStack.getDamageValue());
+         itemStack.setDamageValue(itemStack.getDamageValue() - repair);
+         if (repair > 0) {
+            int remaining = amount - repair * amount / toRepairFromXpAmount;
+            if (remaining > 0) {
+               return this.repairPlayerItems(player, remaining);
             }
          }
 
          return 0;
       } else {
-         return var2;
+         return amount;
       }
    }
 
@@ -304,56 +304,56 @@ public class ExperienceOrb extends Entity {
       return (Integer)this.entityData.get(DATA_VALUE);
    }
 
-   private void setValue(int var1) {
-      this.entityData.set(DATA_VALUE, var1);
+   private void setValue(final int value) {
+      this.entityData.set(DATA_VALUE, value);
    }
 
    public int getIcon() {
-      int var1 = this.getValue();
-      if (var1 >= 2477) {
+      int value = this.getValue();
+      if (value >= 2477) {
          return 10;
-      } else if (var1 >= 1237) {
+      } else if (value >= 1237) {
          return 9;
-      } else if (var1 >= 617) {
+      } else if (value >= 617) {
          return 8;
-      } else if (var1 >= 307) {
+      } else if (value >= 307) {
          return 7;
-      } else if (var1 >= 149) {
+      } else if (value >= 149) {
          return 6;
-      } else if (var1 >= 73) {
+      } else if (value >= 73) {
          return 5;
-      } else if (var1 >= 37) {
+      } else if (value >= 37) {
          return 4;
-      } else if (var1 >= 17) {
+      } else if (value >= 17) {
          return 3;
-      } else if (var1 >= 7) {
+      } else if (value >= 7) {
          return 2;
       } else {
-         return var1 >= 3 ? 1 : 0;
+         return value >= 3 ? 1 : 0;
       }
    }
 
-   public static int getExperienceValue(int var0) {
-      if (var0 >= 2477) {
+   public static int getExperienceValue(final int maxValue) {
+      if (maxValue >= 2477) {
          return 2477;
-      } else if (var0 >= 1237) {
+      } else if (maxValue >= 1237) {
          return 1237;
-      } else if (var0 >= 617) {
+      } else if (maxValue >= 617) {
          return 617;
-      } else if (var0 >= 307) {
+      } else if (maxValue >= 307) {
          return 307;
-      } else if (var0 >= 149) {
+      } else if (maxValue >= 149) {
          return 149;
-      } else if (var0 >= 73) {
+      } else if (maxValue >= 73) {
          return 73;
-      } else if (var0 >= 37) {
+      } else if (maxValue >= 37) {
          return 37;
-      } else if (var0 >= 17) {
+      } else if (maxValue >= 17) {
          return 17;
-      } else if (var0 >= 7) {
+      } else if (maxValue >= 7) {
          return 7;
       } else {
-         return var0 >= 3 ? 3 : 1;
+         return maxValue >= 3 ? 3 : 1;
       }
    }
 

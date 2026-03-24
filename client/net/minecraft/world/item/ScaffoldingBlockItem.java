@@ -1,9 +1,7 @@
 package net.minecraft.world.item;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -14,49 +12,52 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 public class ScaffoldingBlockItem extends BlockItem {
-   public ScaffoldingBlockItem(Block var1, Item.Properties var2) {
-      super(var1, var2);
+   public ScaffoldingBlockItem(final Block block, final Item.Properties properties) {
+      super(block, properties);
    }
 
-   public @Nullable BlockPlaceContext updatePlacementContext(BlockPlaceContext var1) {
-      BlockPos var2 = var1.getClickedPos();
-      Level var3 = var1.getLevel();
-      BlockState var4 = var3.getBlockState(var2);
-      Block var5 = this.getBlock();
-      if (!var4.is(var5)) {
-         return ScaffoldingBlock.getDistance(var3, var2) == 7 ? null : var1;
+   public @Nullable BlockPlaceContext updatePlacementContext(final BlockPlaceContext context) {
+      BlockPos pos = context.getClickedPos();
+      Level level = context.getLevel();
+      BlockState replacedState = level.getBlockState(pos);
+      Block block = this.getBlock();
+      if (!replacedState.is(block)) {
+         return ScaffoldingBlock.getDistance(level, pos) == 7 ? null : context;
       } else {
-         Direction var6;
-         if (var1.isSecondaryUseActive()) {
-            var6 = var1.isInside() ? var1.getClickedFace().getOpposite() : var1.getClickedFace();
+         Direction direction;
+         if (context.isSecondaryUseActive()) {
+            direction = context.isInside() ? context.getClickedFace().getOpposite() : context.getClickedFace();
          } else {
-            var6 = var1.getClickedFace() == Direction.UP ? var1.getHorizontalDirection() : Direction.UP;
+            direction = context.getClickedFace() == Direction.UP ? context.getHorizontalDirection() : Direction.UP;
          }
 
-         int var7 = 0;
-         BlockPos.MutableBlockPos var8 = var2.mutable().move(var6);
+         int horizontalDistance = 0;
+         BlockPos.MutableBlockPos placementPos = pos.mutable().move(direction);
 
-         while(var7 < 7) {
-            if (!var3.isClientSide() && !var3.isInWorldBounds(var8)) {
-               Player var9 = var1.getPlayer();
-               int var10 = var3.getMaxY();
-               if (var9 instanceof ServerPlayer && var8.getY() > var10) {
-                  ((ServerPlayer)var9).sendSystemMessage(Component.translatable("build.tooHigh", var10).withStyle(ChatFormatting.RED), true);
+         while(horizontalDistance < 7) {
+            if (!level.isClientSide() && !level.isInWorldBounds(placementPos)) {
+               Player player = context.getPlayer();
+               int maxY = level.getMaxY();
+               if (player instanceof ServerPlayer) {
+                  ServerPlayer serverPlayer = (ServerPlayer)player;
+                  if (placementPos.getY() > maxY) {
+                     serverPlayer.sendBuildLimitMessage(true, maxY);
+                  }
                }
                break;
             }
 
-            var4 = var3.getBlockState(var8);
-            if (!var4.is(this.getBlock())) {
-               if (var4.canBeReplaced(var1)) {
-                  return BlockPlaceContext.at(var1, var8, var6);
+            replacedState = level.getBlockState(placementPos);
+            if (!replacedState.is(this.getBlock())) {
+               if (replacedState.canBeReplaced(context)) {
+                  return BlockPlaceContext.at(context, placementPos, direction);
                }
                break;
             }
 
-            var8.move(var6);
-            if (var6.getAxis().isHorizontal()) {
-               ++var7;
+            placementPos.move(direction);
+            if (direction.getAxis().isHorizontal()) {
+               ++horizontalDistance;
             }
          }
 

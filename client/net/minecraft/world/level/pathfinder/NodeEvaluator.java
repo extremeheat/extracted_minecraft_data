@@ -27,13 +27,13 @@ public abstract class NodeEvaluator {
       super();
    }
 
-   public void prepare(PathNavigationRegion var1, Mob var2) {
-      this.currentContext = new PathfindingContext(var1, var2);
-      this.mob = var2;
+   public void prepare(final PathNavigationRegion level, final Mob entity) {
+      this.currentContext = new PathfindingContext(level, entity);
+      this.mob = entity;
       this.nodes.clear();
-      this.entityWidth = Mth.floor(var2.getBbWidth() + 1.0F);
-      this.entityHeight = Mth.floor(var2.getBbHeight() + 1.0F);
-      this.entityDepth = Mth.floor(var2.getBbWidth() + 1.0F);
+      this.entityWidth = Mth.floor(entity.getBbWidth() + 1.0F);
+      this.entityHeight = Mth.floor(entity.getBbHeight() + 1.0F);
+      this.entityDepth = Mth.floor(entity.getBbWidth() + 1.0F);
    }
 
    public void done() {
@@ -41,46 +41,46 @@ public abstract class NodeEvaluator {
       this.mob = null;
    }
 
-   protected Node getNode(BlockPos var1) {
-      return this.getNode(var1.getX(), var1.getY(), var1.getZ());
+   protected Node getNode(final BlockPos pos) {
+      return this.getNode(pos.getX(), pos.getY(), pos.getZ());
    }
 
-   protected Node getNode(int var1, int var2, int var3) {
-      return (Node)this.nodes.computeIfAbsent(Node.createHash(var1, var2, var3), (var3x) -> new Node(var1, var2, var3));
+   protected Node getNode(final int x, final int y, final int z) {
+      return (Node)this.nodes.computeIfAbsent(Node.createHash(x, y, z), (k) -> new Node(x, y, z));
    }
 
    public abstract Node getStart();
 
-   public abstract Target getTarget(double var1, double var3, double var5);
+   public abstract Target getTarget(double x, double y, double z);
 
-   protected Target getTargetNodeAt(double var1, double var3, double var5) {
-      return new Target(this.getNode(Mth.floor(var1), Mth.floor(var3), Mth.floor(var5)));
+   protected Target getTargetNodeAt(final double x, final double y, final double z) {
+      return new Target(this.getNode(Mth.floor(x), Mth.floor(y), Mth.floor(z)));
    }
 
-   public abstract int getNeighbors(Node[] var1, Node var2);
+   public abstract int getNeighbors(Node[] neighbors, Node pos);
 
-   public abstract PathType getPathTypeOfMob(PathfindingContext var1, int var2, int var3, int var4, Mob var5);
+   public abstract PathType getPathTypeOfMob(PathfindingContext context, int x, int y, int z, Mob mob);
 
-   public abstract PathType getPathType(PathfindingContext var1, int var2, int var3, int var4);
+   public abstract PathType getPathType(PathfindingContext context, int x, int y, int z);
 
-   public PathType getPathType(Mob var1, BlockPos var2) {
-      return this.getPathType(new PathfindingContext(var1.level(), var1), var2.getX(), var2.getY(), var2.getZ());
+   public PathType getPathType(final Mob mob, final BlockPos pos) {
+      return this.getPathType(new PathfindingContext(mob.level(), mob), pos.getX(), pos.getY(), pos.getZ());
    }
 
-   public void setCanPassDoors(boolean var1) {
-      this.canPassDoors = var1;
+   public void setCanPassDoors(final boolean canPassDoors) {
+      this.canPassDoors = canPassDoors;
    }
 
-   public void setCanOpenDoors(boolean var1) {
-      this.canOpenDoors = var1;
+   public void setCanOpenDoors(final boolean canOpenDoors) {
+      this.canOpenDoors = canOpenDoors;
    }
 
-   public void setCanFloat(boolean var1) {
-      this.canFloat = var1;
+   public void setCanFloat(final boolean canFloat) {
+      this.canFloat = canFloat;
    }
 
-   public void setCanWalkOverFences(boolean var1) {
-      this.canWalkOverFences = var1;
+   public void setCanWalkOverFences(final boolean canWalkOverFences) {
+      this.canWalkOverFences = canWalkOverFences;
    }
 
    public boolean canPassDoors() {
@@ -99,7 +99,7 @@ public abstract class NodeEvaluator {
       return this.canWalkOverFences;
    }
 
-   public static boolean isBurningBlock(BlockState var0) {
-      return var0.is(BlockTags.FIRE) || var0.is(Blocks.LAVA) || var0.is(Blocks.MAGMA_BLOCK) || CampfireBlock.isLitCampfire(var0) || var0.is(Blocks.LAVA_CAULDRON);
+   public static boolean isBurningBlock(final BlockState blockState) {
+      return blockState.is(BlockTags.FIRE) || blockState.is(Blocks.LAVA) || blockState.is(Blocks.MAGMA_BLOCK) || CampfireBlock.isLitCampfire(blockState) || blockState.is(Blocks.LAVA_CAULDRON);
    }
 }

@@ -8,7 +8,6 @@ import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
@@ -24,106 +23,96 @@ public class VillagerMakeLove extends Behavior<Villager> {
       super(ImmutableMap.of(MemoryModuleType.BREED_TARGET, MemoryStatus.VALUE_PRESENT, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryStatus.VALUE_PRESENT), 350, 350);
    }
 
-   protected boolean checkExtraStartConditions(ServerLevel var1, Villager var2) {
-      return this.isBreedingPossible(var2);
+   protected boolean checkExtraStartConditions(final ServerLevel level, final Villager body) {
+      return this.isBreedingPossible(body);
    }
 
-   protected boolean canStillUse(ServerLevel var1, Villager var2, long var3) {
-      return var3 <= this.birthTimestamp && this.isBreedingPossible(var2);
+   protected boolean canStillUse(final ServerLevel level, final Villager body, final long timestamp) {
+      return timestamp <= this.birthTimestamp && this.isBreedingPossible(body);
    }
 
-   protected void start(ServerLevel var1, Villager var2, long var3) {
-      AgeableMob var5 = (AgeableMob)var2.getBrain().getMemory(MemoryModuleType.BREED_TARGET).get();
-      BehaviorUtils.lockGazeAndWalkToEachOther(var2, var5, 0.5F, 2);
-      var1.broadcastEntityEvent(var5, (byte)18);
-      var1.broadcastEntityEvent(var2, (byte)18);
-      int var6 = 275 + var2.getRandom().nextInt(50);
-      this.birthTimestamp = var3 + (long)var6;
+   protected void start(final ServerLevel level, final Villager body, final long timestamp) {
+      AgeableMob breedTarget = (AgeableMob)body.getBrain().getMemory(MemoryModuleType.BREED_TARGET).get();
+      BehaviorUtils.lockGazeAndWalkToEachOther(body, breedTarget, 0.5F, 2);
+      level.broadcastEntityEvent(breedTarget, (byte)18);
+      level.broadcastEntityEvent(body, (byte)18);
+      int duration = 275 + body.getRandom().nextInt(50);
+      this.birthTimestamp = timestamp + (long)duration;
    }
 
-   protected void tick(ServerLevel var1, Villager var2, long var3) {
-      Villager var5 = (Villager)var2.getBrain().getMemory(MemoryModuleType.BREED_TARGET).get();
-      if (!(var2.distanceToSqr(var5) > 5.0)) {
-         BehaviorUtils.lockGazeAndWalkToEachOther(var2, var5, 0.5F, 2);
-         if (var3 >= this.birthTimestamp) {
-            var2.eatAndDigestFood();
-            var5.eatAndDigestFood();
-            this.tryToGiveBirth(var1, var2, var5);
-         } else if (var2.getRandom().nextInt(35) == 0) {
-            var1.broadcastEntityEvent(var5, (byte)12);
-            var1.broadcastEntityEvent(var2, (byte)12);
+   protected void tick(final ServerLevel level, final Villager body, final long timestamp) {
+      Villager target = (Villager)body.getBrain().getMemory(MemoryModuleType.BREED_TARGET).get();
+      if (!(body.distanceToSqr(target) > 5.0)) {
+         BehaviorUtils.lockGazeAndWalkToEachOther(body, target, 0.5F, 2);
+         if (timestamp >= this.birthTimestamp) {
+            body.eatAndDigestFood();
+            target.eatAndDigestFood();
+            this.tryToGiveBirth(level, body, target);
+         } else if (body.getRandom().nextInt(35) == 0) {
+            level.broadcastEntityEvent(target, (byte)12);
+            level.broadcastEntityEvent(body, (byte)12);
          }
 
       }
    }
 
-   private void tryToGiveBirth(ServerLevel var1, Villager var2, Villager var3) {
-      Optional var4 = this.takeVacantBed(var1, var2);
-      if (var4.isEmpty()) {
-         var1.broadcastEntityEvent(var3, (byte)13);
-         var1.broadcastEntityEvent(var2, (byte)13);
+   private void tryToGiveBirth(final ServerLevel level, final Villager body, final Villager target) {
+      Optional<BlockPos> childsBed = this.takeVacantBed(level, body);
+      if (childsBed.isEmpty()) {
+         level.broadcastEntityEvent(target, (byte)13);
+         level.broadcastEntityEvent(body, (byte)13);
       } else {
-         Optional var5 = this.breed(var1, var2, var3);
-         if (var5.isPresent()) {
-            this.giveBedToChild(var1, (Villager)var5.get(), (BlockPos)var4.get());
+         Optional<Villager> child = this.breed(level, body, target);
+         if (child.isPresent()) {
+            this.giveBedToChild(level, (Villager)child.get(), (BlockPos)childsBed.get());
          } else {
-            var1.getPoiManager().release((BlockPos)var4.get());
-            var1.debugSynchronizers().updatePoi((BlockPos)var4.get());
+            level.getPoiManager().release((BlockPos)childsBed.get());
+            level.debugSynchronizers().updatePoi((BlockPos)childsBed.get());
          }
       }
 
    }
 
-   protected void stop(ServerLevel var1, Villager var2, long var3) {
-      var2.getBrain().eraseMemory(MemoryModuleType.BREED_TARGET);
+   protected void stop(final ServerLevel level, final Villager body, final long timestamp) {
+      body.getBrain().eraseMemory(MemoryModuleType.BREED_TARGET);
    }
 
-   private boolean isBreedingPossible(Villager var1) {
-      Brain var2 = var1.getBrain();
-      Optional var3 = var2.getMemory(MemoryModuleType.BREED_TARGET).filter((var0) -> var0.getType() == EntityType.VILLAGER);
-      if (var3.isEmpty()) {
+   private boolean isBreedingPossible(final Villager myBody) {
+      Brain<Villager> brain = myBody.getBrain();
+      Optional<AgeableMob> breedTarget = brain.getMemory(MemoryModuleType.BREED_TARGET).filter((entity) -> entity.is(EntityType.VILLAGER));
+      if (breedTarget.isEmpty()) {
          return false;
       } else {
-         return BehaviorUtils.targetIsValid(var2, MemoryModuleType.BREED_TARGET, EntityType.VILLAGER) && var1.canBreed() && ((AgeableMob)var3.get()).canBreed();
+         return BehaviorUtils.targetIsValid(brain, MemoryModuleType.BREED_TARGET, EntityType.VILLAGER) && myBody.canBreed() && ((AgeableMob)breedTarget.get()).canBreed();
       }
    }
 
-   private Optional<BlockPos> takeVacantBed(ServerLevel var1, Villager var2) {
-      return var1.getPoiManager().take((var0) -> var0.is(PoiTypes.HOME), (var2x, var3) -> this.canReach(var2, var3, var2x), var2.blockPosition(), 48);
+   private Optional<BlockPos> takeVacantBed(final ServerLevel level, final Villager body) {
+      return level.getPoiManager().take((p) -> p.is(PoiTypes.HOME), (poiType, poiPos) -> this.canReach(body, poiPos, poiType), body.blockPosition(), 48);
    }
 
-   private boolean canReach(Villager var1, BlockPos var2, Holder<PoiType> var3) {
-      Path var4 = var1.getNavigation().createPath(var2, ((PoiType)var3.value()).validRange());
-      return var4 != null && var4.canReach();
+   private boolean canReach(final Villager body, final BlockPos poiPos, final Holder<PoiType> poiType) {
+      Path path = body.getNavigation().createPath(poiPos, ((PoiType)poiType.value()).validRange());
+      return path != null && path.canReach();
    }
 
-   private Optional<Villager> breed(ServerLevel var1, Villager var2, Villager var3) {
-      Villager var4 = var2.getBreedOffspring(var1, var3);
-      if (var4 == null) {
+   private Optional<Villager> breed(final ServerLevel level, final Villager source, final Villager target) {
+      Villager child = source.getBreedOffspring(level, target);
+      if (child == null) {
          return Optional.empty();
       } else {
-         var2.setAge(6000);
-         var3.setAge(6000);
-         var4.setAge(-24000);
-         var4.snapTo(var2.getX(), var2.getY(), var2.getZ(), 0.0F, 0.0F);
-         var1.addFreshEntityWithPassengers(var4);
-         var1.broadcastEntityEvent(var4, (byte)12);
-         return Optional.of(var4);
+         source.setAge(6000);
+         target.setAge(6000);
+         child.setAge(-24000);
+         child.snapTo(source.getX(), source.getY(), source.getZ(), 0.0F, 0.0F);
+         level.addFreshEntityWithPassengers(child);
+         level.broadcastEntityEvent(child, (byte)12);
+         return Optional.of(child);
       }
    }
 
-   private void giveBedToChild(ServerLevel var1, Villager var2, BlockPos var3) {
-      GlobalPos var4 = GlobalPos.of(var1.dimension(), var3);
-      var2.getBrain().setMemory(MemoryModuleType.HOME, var4);
-   }
-
-   // $FF: synthetic method
-   protected void stop(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.stop(var1, (Villager)var2, var3);
-   }
-
-   // $FF: synthetic method
-   protected void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.start(var1, (Villager)var2, var3);
+   private void giveBedToChild(final ServerLevel level, final Villager child, final BlockPos bedPos) {
+      GlobalPos globalBedPos = GlobalPos.of(level.dimension(), bedPos);
+      child.getBrain().setMemory(MemoryModuleType.HOME, globalBedPos);
    }
 }

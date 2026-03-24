@@ -8,36 +8,36 @@ import org.joml.Vector3fc;
 
 public interface VertexSorting {
    VertexSorting DISTANCE_TO_ORIGIN = byDistance(0.0F, 0.0F, 0.0F);
-   VertexSorting ORTHOGRAPHIC_Z = byDistance((DistanceFunction)((var0) -> -var0.z()));
+   VertexSorting ORTHOGRAPHIC_Z = byDistance((DistanceFunction)((point) -> -point.z()));
 
-   static VertexSorting byDistance(float var0, float var1, float var2) {
-      return byDistance((Vector3fc)(new Vector3f(var0, var1, var2)));
+   static VertexSorting byDistance(final float x, final float y, final float z) {
+      return byDistance((Vector3fc)(new Vector3f(x, y, z)));
    }
 
-   static VertexSorting byDistance(Vector3fc var0) {
-      Objects.requireNonNull(var0);
-      return byDistance(var0::distanceSquared);
+   static VertexSorting byDistance(final Vector3fc origin) {
+      Objects.requireNonNull(origin);
+      return byDistance(origin::distanceSquared);
    }
 
-   static VertexSorting byDistance(DistanceFunction var0) {
-      return (var1) -> {
-         Vector3f var2 = new Vector3f();
-         float[] var3 = new float[var1.size()];
-         int[] var4 = new int[var1.size()];
+   static VertexSorting byDistance(final DistanceFunction function) {
+      return (values) -> {
+         Vector3f scratch = new Vector3f();
+         float[] keys = new float[values.size()];
+         int[] indices = new int[values.size()];
 
-         for(int var5 = 0; var5 < var1.size(); var4[var5] = var5++) {
-            var3[var5] = var0.apply(var1.get(var5, var2));
+         for(int i = 0; i < values.size(); indices[i] = i++) {
+            keys[i] = function.apply(values.get(i, scratch));
          }
 
-         IntArrays.mergeSort(var4, (var1x, var2x) -> Floats.compare(var3[var2x], var3[var1x]));
-         return var4;
+         IntArrays.mergeSort(indices, (o1, o2) -> Floats.compare(keys[o2], keys[o1]));
+         return indices;
       };
    }
 
-   int[] sort(CompactVectorArray var1);
+   int[] sort(CompactVectorArray points);
 
    @FunctionalInterface
    public interface DistanceFunction {
-      float apply(Vector3f var1);
+      float apply(Vector3f value);
    }
 }

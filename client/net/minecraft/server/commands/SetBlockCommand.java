@@ -26,35 +26,35 @@ public class SetBlockCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
-      Predicate var2 = (var0x) -> var0x.getLevel().isEmptyBlock(var0x.getPos());
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("setblock").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.argument("pos", BlockPosArgument.blockPos()).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("block", BlockStateArgument.block(var1)).executes((var0x) -> setBlock((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), BlockStateArgument.getBlock(var0x, "block"), SetBlockCommand.Mode.REPLACE, (Predicate)null, false))).then(Commands.literal("destroy").executes((var0x) -> setBlock((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), BlockStateArgument.getBlock(var0x, "block"), SetBlockCommand.Mode.DESTROY, (Predicate)null, false)))).then(Commands.literal("keep").executes((var1x) -> setBlock((CommandSourceStack)var1x.getSource(), BlockPosArgument.getLoadedBlockPos(var1x, "pos"), BlockStateArgument.getBlock(var1x, "block"), SetBlockCommand.Mode.REPLACE, var2, false)))).then(Commands.literal("replace").executes((var0x) -> setBlock((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), BlockStateArgument.getBlock(var0x, "block"), SetBlockCommand.Mode.REPLACE, (Predicate)null, false)))).then(Commands.literal("strict").executes((var0x) -> setBlock((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), BlockStateArgument.getBlock(var0x, "block"), SetBlockCommand.Mode.REPLACE, (Predicate)null, true))))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final CommandBuildContext context) {
+      Predicate<BlockInWorld> filter = (b) -> b.getLevel().isEmptyBlock(b.getPos());
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("setblock").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.argument("pos", BlockPosArgument.blockPos()).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("block", BlockStateArgument.block(context)).executes((c) -> setBlock((CommandSourceStack)c.getSource(), BlockPosArgument.getLoadedBlockPos(c, "pos"), BlockStateArgument.getBlock(c, "block"), SetBlockCommand.Mode.REPLACE, (Predicate)null, false))).then(Commands.literal("destroy").executes((c) -> setBlock((CommandSourceStack)c.getSource(), BlockPosArgument.getLoadedBlockPos(c, "pos"), BlockStateArgument.getBlock(c, "block"), SetBlockCommand.Mode.DESTROY, (Predicate)null, false)))).then(Commands.literal("keep").executes((c) -> setBlock((CommandSourceStack)c.getSource(), BlockPosArgument.getLoadedBlockPos(c, "pos"), BlockStateArgument.getBlock(c, "block"), SetBlockCommand.Mode.REPLACE, filter, false)))).then(Commands.literal("replace").executes((c) -> setBlock((CommandSourceStack)c.getSource(), BlockPosArgument.getLoadedBlockPos(c, "pos"), BlockStateArgument.getBlock(c, "block"), SetBlockCommand.Mode.REPLACE, (Predicate)null, false)))).then(Commands.literal("strict").executes((c) -> setBlock((CommandSourceStack)c.getSource(), BlockPosArgument.getLoadedBlockPos(c, "pos"), BlockStateArgument.getBlock(c, "block"), SetBlockCommand.Mode.REPLACE, (Predicate)null, true))))));
    }
 
-   private static int setBlock(CommandSourceStack var0, BlockPos var1, BlockInput var2, Mode var3, @Nullable Predicate<BlockInWorld> var4, boolean var5) throws CommandSyntaxException {
-      ServerLevel var6 = var0.getLevel();
-      if (var6.isDebug()) {
+   private static int setBlock(final CommandSourceStack source, final BlockPos pos, final BlockInput block, final Mode mode, final @Nullable Predicate<BlockInWorld> predicate, final boolean strict) throws CommandSyntaxException {
+      ServerLevel level = source.getLevel();
+      if (level.isDebug()) {
          throw ERROR_FAILED.create();
-      } else if (var4 != null && !var4.test(new BlockInWorld(var6, var1, true))) {
+      } else if (predicate != null && !predicate.test(new BlockInWorld(level, pos, true))) {
          throw ERROR_FAILED.create();
       } else {
-         boolean var7;
-         if (var3 == SetBlockCommand.Mode.DESTROY) {
-            var6.destroyBlock(var1, true);
-            var7 = !var2.getState().isAir() || !var6.getBlockState(var1).isAir();
+         boolean placeNeeded;
+         if (mode == SetBlockCommand.Mode.DESTROY) {
+            level.destroyBlock(pos, true);
+            placeNeeded = !block.getState().isAir() || !level.getBlockState(pos).isAir();
          } else {
-            var7 = true;
+            placeNeeded = true;
          }
 
-         BlockState var8 = var6.getBlockState(var1);
-         if (var7 && !var2.place(var6, var1, 2 | (var5 ? 816 : 256))) {
+         BlockState oldState = level.getBlockState(pos);
+         if (placeNeeded && !block.place(level, pos, 2 | (strict ? 816 : 256))) {
             throw ERROR_FAILED.create();
          } else {
-            if (!var5) {
-               var6.updateNeighboursOnBlockSet(var1, var8);
+            if (!strict) {
+               level.updateNeighboursOnBlockSet(pos, oldState);
             }
 
-            var0.sendSuccess(() -> Component.translatable("commands.setblock.success", var1.getX(), var1.getY(), var1.getZ()), true);
+            source.sendSuccess(() -> Component.translatable("commands.setblock.success", pos.getX(), pos.getY(), pos.getZ()), true);
             return 1;
          }
       }

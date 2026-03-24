@@ -12,50 +12,50 @@ public class LinearPalette<T> implements Palette<T> {
    private final int bits;
    private int size;
 
-   private LinearPalette(int var1, List<T> var2) {
+   private LinearPalette(final int bits, final List<T> paletteEntries) {
       super();
-      this.values = (T[])(new Object[1 << var1]);
-      this.bits = var1;
-      Validate.isTrue(var2.size() <= this.values.length, "Can't initialize LinearPalette of size %d with %d entries", new Object[]{this.values.length, var2.size()});
+      this.values = (T[])(new Object[1 << bits]);
+      this.bits = bits;
+      Validate.isTrue(paletteEntries.size() <= this.values.length, "Can't initialize LinearPalette of size %d with %d entries", new Object[]{this.values.length, paletteEntries.size()});
 
-      for(int var3 = 0; var3 < var2.size(); ++var3) {
-         this.values[var3] = var2.get(var3);
+      for(int i = 0; i < paletteEntries.size(); ++i) {
+         this.values[i] = paletteEntries.get(i);
       }
 
-      this.size = var2.size();
+      this.size = paletteEntries.size();
    }
 
-   private LinearPalette(T[] var1, int var2, int var3) {
+   private LinearPalette(final T[] values, final int bits, final int size) {
       super();
-      this.values = (T[])var1;
-      this.bits = var2;
-      this.size = var3;
+      this.values = values;
+      this.bits = bits;
+      this.size = size;
    }
 
-   public static <A> Palette<A> create(int var0, List<A> var1) {
-      return new LinearPalette<A>(var0, var1);
+   public static <A> Palette<A> create(final int bits, final List<A> paletteEntries) {
+      return new LinearPalette<A>(bits, paletteEntries);
    }
 
-   public int idFor(T var1, PaletteResize<T> var2) {
-      for(int var3 = 0; var3 < this.size; ++var3) {
-         if (this.values[var3] == var1) {
-            return var3;
+   public int idFor(final T value, final PaletteResize<T> resizeHandler) {
+      for(int i = 0; i < this.size; ++i) {
+         if (this.values[i] == value) {
+            return i;
          }
       }
 
-      int var4 = this.size;
-      if (var4 < this.values.length) {
-         this.values[var4] = var1;
+      int index = this.size;
+      if (index < this.values.length) {
+         this.values[index] = value;
          ++this.size;
-         return var4;
+         return index;
       } else {
-         return var2.onResize(this.bits + 1, var1);
+         return resizeHandler.onResize(this.bits + 1, value);
       }
    }
 
-   public boolean maybeHas(Predicate<T> var1) {
-      for(int var2 = 0; var2 < this.size; ++var2) {
-         if (var1.test(this.values[var2])) {
+   public boolean maybeHas(final Predicate<T> predicate) {
+      for(int i = 0; i < this.size; ++i) {
+         if (predicate.test(this.values[i])) {
             return true;
          }
       }
@@ -63,40 +63,40 @@ public class LinearPalette<T> implements Palette<T> {
       return false;
    }
 
-   public T valueFor(int var1) {
-      if (var1 >= 0 && var1 < this.size) {
-         return (T)this.values[var1];
+   public T valueFor(final int index) {
+      if (index >= 0 && index < this.size) {
+         return (T)this.values[index];
       } else {
-         throw new MissingPaletteEntryException(var1);
+         throw new MissingPaletteEntryException(index);
       }
    }
 
-   public void read(FriendlyByteBuf var1, IdMap<T> var2) {
-      this.size = var1.readVarInt();
+   public void read(final FriendlyByteBuf buffer, final IdMap<T> globalMap) {
+      this.size = buffer.readVarInt();
 
-      for(int var3 = 0; var3 < this.size; ++var3) {
-         this.values[var3] = var2.byIdOrThrow(var1.readVarInt());
-      }
-
-   }
-
-   public void write(FriendlyByteBuf var1, IdMap<T> var2) {
-      var1.writeVarInt(this.size);
-
-      for(int var3 = 0; var3 < this.size; ++var3) {
-         var1.writeVarInt(var2.getId(this.values[var3]));
+      for(int i = 0; i < this.size; ++i) {
+         this.values[i] = globalMap.byIdOrThrow(buffer.readVarInt());
       }
 
    }
 
-   public int getSerializedSize(IdMap<T> var1) {
-      int var2 = VarInt.getByteSize(this.getSize());
+   public void write(final FriendlyByteBuf buffer, final IdMap<T> globalMap) {
+      buffer.writeVarInt(this.size);
 
-      for(int var3 = 0; var3 < this.getSize(); ++var3) {
-         var2 += VarInt.getByteSize(var1.getId(this.values[var3]));
+      for(int i = 0; i < this.size; ++i) {
+         buffer.writeVarInt(globalMap.getId(this.values[i]));
       }
 
-      return var2;
+   }
+
+   public int getSerializedSize(final IdMap<T> globalMap) {
+      int result = VarInt.getByteSize(this.getSize());
+
+      for(int i = 0; i < this.getSize(); ++i) {
+         result += VarInt.getByteSize(globalMap.getId(this.values[i]));
+      }
+
+      return result;
    }
 
    public int getSize() {

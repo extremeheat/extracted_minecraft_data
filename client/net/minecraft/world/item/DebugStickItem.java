@@ -21,24 +21,24 @@ import net.minecraft.world.level.block.state.properties.Property;
 import org.jspecify.annotations.Nullable;
 
 public class DebugStickItem extends Item {
-   public DebugStickItem(Item.Properties var1) {
-      super(var1);
+   public DebugStickItem(final Item.Properties properties) {
+      super(properties);
    }
 
-   public boolean canDestroyBlock(ItemStack var1, BlockState var2, Level var3, BlockPos var4, LivingEntity var5) {
-      if (!var3.isClientSide() && var5 instanceof Player var6) {
-         this.handleInteraction(var6, var2, var3, var4, false, var1);
+   public boolean canDestroyBlock(final ItemStack itemStack, final BlockState state, final Level level, final BlockPos pos, final LivingEntity user) {
+      if (user instanceof ServerPlayer player) {
+         this.handleInteraction(player, state, level, pos, false, itemStack);
       }
 
       return false;
    }
 
-   public InteractionResult useOn(UseOnContext var1) {
-      Player var2 = var1.getPlayer();
-      Level var3 = var1.getLevel();
-      if (!var3.isClientSide() && var2 != null) {
-         BlockPos var4 = var1.getClickedPos();
-         if (!this.handleInteraction(var2, var3.getBlockState(var4), var3, var4, true, var1.getItemInHand())) {
+   public InteractionResult useOn(final UseOnContext context) {
+      Player player = context.getPlayer();
+      Level level = context.getLevel();
+      if (player instanceof ServerPlayer serverPlayer) {
+         BlockPos pos = context.getClickedPos();
+         if (!this.handleInteraction(serverPlayer, level.getBlockState(pos), level, pos, true, context.getItemInHand())) {
             return InteractionResult.FAIL;
          }
       }
@@ -46,34 +46,34 @@ public class DebugStickItem extends Item {
       return InteractionResult.SUCCESS;
    }
 
-   private boolean handleInteraction(Player var1, BlockState var2, LevelAccessor var3, BlockPos var4, boolean var5, ItemStack var6) {
-      if (!var1.canUseGameMasterBlocks()) {
+   private boolean handleInteraction(final ServerPlayer player, final BlockState state, final LevelAccessor level, final BlockPos pos, final boolean cycle, final ItemStack itemStackInHand) {
+      if (!player.canUseGameMasterBlocks()) {
          return false;
       } else {
-         Holder var7 = var2.getBlockHolder();
-         StateDefinition var8 = ((Block)var7.value()).getStateDefinition();
-         Collection var9 = var8.getProperties();
-         if (var9.isEmpty()) {
-            message(var1, Component.translatable(this.descriptionId + ".empty", var7.getRegisteredName()));
+         Holder<Block> block = state.typeHolder();
+         StateDefinition<Block, BlockState> definition = ((Block)block.value()).getStateDefinition();
+         Collection<Property<?>> properties = definition.getProperties();
+         if (properties.isEmpty()) {
+            message(player, Component.translatable(this.descriptionId + ".empty", block.getRegisteredName()));
             return false;
          } else {
-            DebugStickState var10 = (DebugStickState)var6.get(DataComponents.DEBUG_STICK_STATE);
-            if (var10 == null) {
+            DebugStickState debugStickState = (DebugStickState)itemStackInHand.get(DataComponents.DEBUG_STICK_STATE);
+            if (debugStickState == null) {
                return false;
             } else {
-               Property var11 = (Property)var10.properties().get(var7);
-               if (var5) {
-                  if (var11 == null) {
-                     var11 = (Property)var9.iterator().next();
+               Property<?> property = (Property)debugStickState.properties().get(block);
+               if (cycle) {
+                  if (property == null) {
+                     property = (Property)properties.iterator().next();
                   }
 
-                  BlockState var12 = cycleState(var2, var11, var1.isSecondaryUseActive());
-                  var3.setBlock(var4, var12, 18);
-                  message(var1, Component.translatable(this.descriptionId + ".update", var11.getName(), getNameHelper(var12, var11)));
+                  BlockState newState = cycleState(state, property, player.isSecondaryUseActive());
+                  level.setBlock(pos, newState, 18);
+                  message(player, Component.translatable(this.descriptionId + ".update", property.getName(), getNameHelper(newState, property)));
                } else {
-                  var11 = (Property)getRelative(var9, var11, var1.isSecondaryUseActive());
-                  var6.set(DataComponents.DEBUG_STICK_STATE, var10.withProperty(var7, var11));
-                  message(var1, Component.translatable(this.descriptionId + ".select", var11.getName(), getNameHelper(var2, var11)));
+                  property = (Property)getRelative(properties, property, player.isSecondaryUseActive());
+                  itemStackInHand.set(DataComponents.DEBUG_STICK_STATE, debugStickState.withProperty(block, property));
+                  message(player, Component.translatable(this.descriptionId + ".select", property.getName(), getNameHelper(state, property)));
                }
 
                return true;
@@ -82,19 +82,19 @@ public class DebugStickItem extends Item {
       }
    }
 
-   private static <T extends Comparable<T>> BlockState cycleState(BlockState var0, Property<T> var1, boolean var2) {
-      return (BlockState)var0.setValue(var1, (Comparable)getRelative(var1.getPossibleValues(), var0.getValue(var1), var2));
+   private static <T extends Comparable<T>> BlockState cycleState(final BlockState state, final Property<T> property, final boolean backward) {
+      return (BlockState)state.setValue(property, (Comparable)getRelative(property.getPossibleValues(), state.getValue(property), backward));
    }
 
-   private static <T> T getRelative(Iterable<T> var0, @Nullable T var1, boolean var2) {
-      return (T)(var2 ? Util.findPreviousInIterable(var0, var1) : Util.findNextInIterable(var0, var1));
+   private static <T> T getRelative(final Iterable<T> collection, final @Nullable T current, final boolean backward) {
+      return (T)(backward ? Util.findPreviousInIterable(collection, current) : Util.findNextInIterable(collection, current));
    }
 
-   private static void message(Player var0, Component var1) {
-      ((ServerPlayer)var0).sendSystemMessage(var1, true);
+   private static void message(final ServerPlayer player, final Component message) {
+      player.sendOverlayMessage(message);
    }
 
-   private static <T extends Comparable<T>> String getNameHelper(BlockState var0, Property<T> var1) {
-      return var1.getName(var0.getValue(var1));
+   private static <T extends Comparable<T>> String getNameHelper(final BlockState state, final Property<T> property) {
+      return property.getName(state.getValue(property));
    }
 }

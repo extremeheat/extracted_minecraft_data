@@ -29,10 +29,11 @@ import net.minecraft.server.permissions.PermissionCheck;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.stats.StatType;
 import net.minecraft.util.debug.DebugSubscription;
-import net.minecraft.util.valueproviders.FloatProviderType;
-import net.minecraft.util.valueproviders.IntProviderType;
+import net.minecraft.util.valueproviders.FloatProvider;
+import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.attribute.AttributeType;
 import net.minecraft.world.attribute.EnvironmentAttribute;
+import net.minecraft.world.clock.WorldClock;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.EntityType;
@@ -40,11 +41,15 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.ai.village.poi.PoiType;
+import net.minecraft.world.entity.animal.chicken.ChickenSoundVariant;
 import net.minecraft.world.entity.animal.chicken.ChickenVariant;
+import net.minecraft.world.entity.animal.cow.CowSoundVariant;
 import net.minecraft.world.entity.animal.cow.CowVariant;
+import net.minecraft.world.entity.animal.feline.CatSoundVariant;
 import net.minecraft.world.entity.animal.feline.CatVariant;
 import net.minecraft.world.entity.animal.frog.FrogVariant;
 import net.minecraft.world.entity.animal.nautilus.ZombieNautilusVariant;
+import net.minecraft.world.entity.animal.pig.PigSoundVariant;
 import net.minecraft.world.entity.animal.pig.PigVariant;
 import net.minecraft.world.entity.animal.wolf.WolfSoundVariant;
 import net.minecraft.world.entity.animal.wolf.WolfVariant;
@@ -75,6 +80,8 @@ import net.minecraft.world.item.enchantment.providers.EnchantmentProvider;
 import net.minecraft.world.item.equipment.trim.TrimMaterial;
 import net.minecraft.world.item.equipment.trim.TrimPattern;
 import net.minecraft.world.item.slot.SlotSource;
+import net.minecraft.world.item.trading.TradeSet;
+import net.minecraft.world.item.trading.VillagerTrade;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSource;
@@ -127,14 +134,12 @@ import net.minecraft.world.level.levelgen.synth.NormalNoise;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.saveddata.maps.MapDecorationType;
 import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.entries.LootPoolEntryType;
+import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
-import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
-import net.minecraft.world.level.storage.loot.providers.nbt.LootNbtProviderType;
-import net.minecraft.world.level.storage.loot.providers.number.LootNumberProviderType;
-import net.minecraft.world.level.storage.loot.providers.score.LootScoreProviderType;
+import net.minecraft.world.level.storage.loot.providers.nbt.NbtProvider;
+import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
+import net.minecraft.world.level.storage.loot.providers.score.ScoreboardNameProvider;
 import net.minecraft.world.timeline.Timeline;
 
 public class Registries {
@@ -174,21 +179,21 @@ public class Registries {
    public static final ResourceKey<Registry<AttributeType<?>>> ATTRIBUTE_TYPE = createRegistryKey("attribute_type");
    public static final ResourceKey<Registry<FeatureSizeType<?>>> FEATURE_SIZE_TYPE = createRegistryKey("worldgen/feature_size_type");
    public static final ResourceKey<Registry<Feature<?>>> FEATURE = createRegistryKey("worldgen/feature");
-   public static final ResourceKey<Registry<FloatProviderType<?>>> FLOAT_PROVIDER_TYPE = createRegistryKey("float_provider_type");
+   public static final ResourceKey<Registry<MapCodec<? extends FloatProvider>>> FLOAT_PROVIDER_TYPE = createRegistryKey("float_provider_type");
    public static final ResourceKey<Registry<Fluid>> FLUID = createRegistryKey("fluid");
    public static final ResourceKey<Registry<FoliagePlacerType<?>>> FOLIAGE_PLACER_TYPE = createRegistryKey("worldgen/foliage_placer_type");
    public static final ResourceKey<Registry<GameEvent>> GAME_EVENT = createRegistryKey("game_event");
    public static final ResourceKey<Registry<HeightProviderType<?>>> HEIGHT_PROVIDER_TYPE = createRegistryKey("height_provider_type");
    public static final ResourceKey<Registry<MapCodec<? extends InputControl>>> INPUT_CONTROL_TYPE = createRegistryKey("input_control_type");
-   public static final ResourceKey<Registry<IntProviderType<?>>> INT_PROVIDER_TYPE = createRegistryKey("int_provider_type");
+   public static final ResourceKey<Registry<MapCodec<? extends IntProvider>>> INT_PROVIDER_TYPE = createRegistryKey("int_provider_type");
    public static final ResourceKey<Registry<Item>> ITEM = createRegistryKey("item");
    public static final ResourceKey<Registry<MapCodec<? extends SlotSource>>> SLOT_SOURCE_TYPE = createRegistryKey("slot_source_type");
-   public static final ResourceKey<Registry<LootItemConditionType>> LOOT_CONDITION_TYPE = createRegistryKey("loot_condition_type");
-   public static final ResourceKey<Registry<LootItemFunctionType<?>>> LOOT_FUNCTION_TYPE = createRegistryKey("loot_function_type");
-   public static final ResourceKey<Registry<LootNbtProviderType>> LOOT_NBT_PROVIDER_TYPE = createRegistryKey("loot_nbt_provider_type");
-   public static final ResourceKey<Registry<LootNumberProviderType>> LOOT_NUMBER_PROVIDER_TYPE = createRegistryKey("loot_number_provider_type");
-   public static final ResourceKey<Registry<LootPoolEntryType>> LOOT_POOL_ENTRY_TYPE = createRegistryKey("loot_pool_entry_type");
-   public static final ResourceKey<Registry<LootScoreProviderType>> LOOT_SCORE_PROVIDER_TYPE = createRegistryKey("loot_score_provider_type");
+   public static final ResourceKey<Registry<MapCodec<? extends LootItemCondition>>> LOOT_CONDITION_TYPE = createRegistryKey("loot_condition_type");
+   public static final ResourceKey<Registry<MapCodec<? extends LootItemFunction>>> LOOT_FUNCTION_TYPE = createRegistryKey("loot_function_type");
+   public static final ResourceKey<Registry<MapCodec<? extends NbtProvider>>> LOOT_NBT_PROVIDER_TYPE = createRegistryKey("loot_nbt_provider_type");
+   public static final ResourceKey<Registry<MapCodec<? extends NumberProvider>>> LOOT_NUMBER_PROVIDER_TYPE = createRegistryKey("loot_number_provider_type");
+   public static final ResourceKey<Registry<MapCodec<? extends LootPoolEntryContainer>>> LOOT_POOL_ENTRY_TYPE = createRegistryKey("loot_pool_entry_type");
+   public static final ResourceKey<Registry<MapCodec<? extends ScoreboardNameProvider>>> LOOT_SCORE_PROVIDER_TYPE = createRegistryKey("loot_score_provider_type");
    public static final ResourceKey<Registry<MapDecorationType>> MAP_DECORATION_TYPE = createRegistryKey("map_decoration_type");
    public static final ResourceKey<Registry<MapCodec<? extends SurfaceRules.ConditionSource>>> MATERIAL_CONDITION = createRegistryKey("worldgen/material_condition");
    public static final ResourceKey<Registry<MapCodec<? extends SurfaceRules.RuleSource>>> MATERIAL_RULE = createRegistryKey("worldgen/material_rule");
@@ -221,7 +226,7 @@ public class Registries {
    public static final ResourceKey<Registry<StructureProcessorType<?>>> STRUCTURE_PROCESSOR = createRegistryKey("worldgen/structure_processor");
    public static final ResourceKey<Registry<StructureType<?>>> STRUCTURE_TYPE = createRegistryKey("worldgen/structure_type");
    public static final ResourceKey<Registry<MapCodec<? extends Action>>> DIALOG_ACTION_TYPE = createRegistryKey("dialog_action_type");
-   public static final ResourceKey<Registry<MapCodec<? extends TestEnvironmentDefinition>>> TEST_ENVIRONMENT_DEFINITION_TYPE = createRegistryKey("test_environment_definition_type");
+   public static final ResourceKey<Registry<MapCodec<? extends TestEnvironmentDefinition<?>>>> TEST_ENVIRONMENT_DEFINITION_TYPE = createRegistryKey("test_environment_definition_type");
    public static final ResourceKey<Registry<Consumer<GameTestHelper>>> TEST_FUNCTION = createRegistryKey("test_function");
    public static final ResourceKey<Registry<MapCodec<? extends GameTestInstance>>> TEST_INSTANCE_TYPE = createRegistryKey("test_instance_type");
    public static final ResourceKey<Registry<TicketType>> TICKET_TYPE = createRegistryKey("ticket_type");
@@ -235,12 +240,15 @@ public class Registries {
    public static final ResourceKey<Registry<MapCodec<? extends PermissionCheck>>> PERMISSION_CHECK_TYPE = createRegistryKey("permission_check_type");
    public static final ResourceKey<Registry<BannerPattern>> BANNER_PATTERN = createRegistryKey("banner_pattern");
    public static final ResourceKey<Registry<Biome>> BIOME = createRegistryKey("worldgen/biome");
+   public static final ResourceKey<Registry<CatSoundVariant>> CAT_SOUND_VARIANT = createRegistryKey("cat_sound_variant");
    public static final ResourceKey<Registry<CatVariant>> CAT_VARIANT = createRegistryKey("cat_variant");
    public static final ResourceKey<Registry<ChatType>> CHAT_TYPE = createRegistryKey("chat_type");
+   public static final ResourceKey<Registry<ChickenSoundVariant>> CHICKEN_SOUND_VARIANT = createRegistryKey("chicken_sound_variant");
    public static final ResourceKey<Registry<ChickenVariant>> CHICKEN_VARIANT = createRegistryKey("chicken_variant");
    public static final ResourceKey<Registry<ZombieNautilusVariant>> ZOMBIE_NAUTILUS_VARIANT = createRegistryKey("zombie_nautilus_variant");
    public static final ResourceKey<Registry<ConfiguredWorldCarver<?>>> CONFIGURED_CARVER = createRegistryKey("worldgen/configured_carver");
    public static final ResourceKey<Registry<ConfiguredFeature<?, ?>>> CONFIGURED_FEATURE = createRegistryKey("worldgen/configured_feature");
+   public static final ResourceKey<Registry<CowSoundVariant>> COW_SOUND_VARIANT = createRegistryKey("cow_sound_variant");
    public static final ResourceKey<Registry<CowVariant>> COW_VARIANT = createRegistryKey("cow_variant");
    public static final ResourceKey<Registry<DamageType>> DAMAGE_TYPE = createRegistryKey("damage_type");
    public static final ResourceKey<Registry<DensityFunction>> DENSITY_FUNCTION = createRegistryKey("worldgen/density_function");
@@ -256,21 +264,25 @@ public class Registries {
    public static final ResourceKey<Registry<NoiseGeneratorSettings>> NOISE_SETTINGS = createRegistryKey("worldgen/noise_settings");
    public static final ResourceKey<Registry<NormalNoise.NoiseParameters>> NOISE = createRegistryKey("worldgen/noise");
    public static final ResourceKey<Registry<PaintingVariant>> PAINTING_VARIANT = createRegistryKey("painting_variant");
+   public static final ResourceKey<Registry<PigSoundVariant>> PIG_SOUND_VARIANT = createRegistryKey("pig_sound_variant");
    public static final ResourceKey<Registry<PigVariant>> PIG_VARIANT = createRegistryKey("pig_variant");
    public static final ResourceKey<Registry<PlacedFeature>> PLACED_FEATURE = createRegistryKey("worldgen/placed_feature");
    public static final ResourceKey<Registry<StructureProcessorList>> PROCESSOR_LIST = createRegistryKey("worldgen/processor_list");
    public static final ResourceKey<Registry<StructureSet>> STRUCTURE_SET = createRegistryKey("worldgen/structure_set");
    public static final ResourceKey<Registry<Structure>> STRUCTURE = createRegistryKey("worldgen/structure");
    public static final ResourceKey<Registry<StructureTemplatePool>> TEMPLATE_POOL = createRegistryKey("worldgen/template_pool");
-   public static final ResourceKey<Registry<TestEnvironmentDefinition>> TEST_ENVIRONMENT = createRegistryKey("test_environment");
+   public static final ResourceKey<Registry<TestEnvironmentDefinition<?>>> TEST_ENVIRONMENT = createRegistryKey("test_environment");
    public static final ResourceKey<Registry<GameTestInstance>> TEST_INSTANCE = createRegistryKey("test_instance");
    public static final ResourceKey<Registry<Timeline>> TIMELINE = createRegistryKey("timeline");
+   public static final ResourceKey<Registry<TradeSet>> TRADE_SET = createRegistryKey("trade_set");
    public static final ResourceKey<Registry<TrialSpawnerConfig>> TRIAL_SPAWNER_CONFIG = createRegistryKey("trial_spawner");
    public static final ResourceKey<Registry<CriterionTrigger<?>>> TRIGGER_TYPE = createRegistryKey("trigger_type");
    public static final ResourceKey<Registry<TrimMaterial>> TRIM_MATERIAL = createRegistryKey("trim_material");
    public static final ResourceKey<Registry<TrimPattern>> TRIM_PATTERN = createRegistryKey("trim_pattern");
+   public static final ResourceKey<Registry<VillagerTrade>> VILLAGER_TRADE = createRegistryKey("villager_trade");
    public static final ResourceKey<Registry<WolfVariant>> WOLF_VARIANT = createRegistryKey("wolf_variant");
    public static final ResourceKey<Registry<WolfSoundVariant>> WOLF_SOUND_VARIANT = createRegistryKey("wolf_sound_variant");
+   public static final ResourceKey<Registry<WorldClock>> WORLD_CLOCK = createRegistryKey("world_clock");
    public static final ResourceKey<Registry<WorldPreset>> WORLD_PRESET = createRegistryKey("worldgen/world_preset");
    public static final ResourceKey<Registry<Level>> DIMENSION = createRegistryKey("dimension");
    public static final ResourceKey<Registry<LevelStem>> LEVEL_STEM = createRegistryKey("dimension");
@@ -284,23 +296,31 @@ public class Registries {
       super();
    }
 
-   public static ResourceKey<Level> levelStemToLevel(ResourceKey<LevelStem> var0) {
-      return ResourceKey.create(DIMENSION, var0.identifier());
+   public static ResourceKey<Level> levelStemToLevel(final ResourceKey<LevelStem> levelStem) {
+      return ResourceKey.create(DIMENSION, levelStem.identifier());
    }
 
-   public static ResourceKey<LevelStem> levelToLevelStem(ResourceKey<Level> var0) {
-      return ResourceKey.create(LEVEL_STEM, var0.identifier());
+   public static ResourceKey<LevelStem> levelToLevelStem(final ResourceKey<Level> level) {
+      return ResourceKey.create(LEVEL_STEM, level.identifier());
    }
 
-   private static <T> ResourceKey<Registry<T>> createRegistryKey(String var0) {
-      return ResourceKey.createRegistryKey(Identifier.withDefaultNamespace(var0));
+   private static <T> ResourceKey<Registry<T>> createRegistryKey(final String name) {
+      return ResourceKey.createRegistryKey(Identifier.withDefaultNamespace(name));
    }
 
-   public static String elementsDirPath(ResourceKey<? extends Registry<?>> var0) {
-      return var0.identifier().getPath();
+   private static String registryDirPath(final ResourceKey<? extends Registry<?>> registryKey) {
+      return registryKey.identifier().getPath();
    }
 
-   public static String tagsDirPath(ResourceKey<? extends Registry<?>> var0) {
-      return "tags/" + var0.identifier().getPath();
+   public static String elementsDirPath(final ResourceKey<? extends Registry<?>> registryKey) {
+      return registryDirPath(registryKey);
+   }
+
+   public static String tagsDirPath(final ResourceKey<? extends Registry<?>> registryKey) {
+      return "tags/" + registryDirPath(registryKey);
+   }
+
+   public static String componentsDirPath(final ResourceKey<? extends Registry<?>> registryKey) {
+      return "components/" + registryDirPath(registryKey);
    }
 }

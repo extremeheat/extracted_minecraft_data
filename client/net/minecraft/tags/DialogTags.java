@@ -12,7 +12,7 @@ public class DialogTags {
       super();
    }
 
-   private static TagKey<Dialog> create(String var0) {
-      return TagKey.<Dialog>create(Registries.DIALOG, Identifier.withDefaultNamespace(var0));
+   private static TagKey<Dialog> create(final String name) {
+      return TagKey.<Dialog>create(Registries.DIALOG, Identifier.withDefaultNamespace(name));
    }
 }

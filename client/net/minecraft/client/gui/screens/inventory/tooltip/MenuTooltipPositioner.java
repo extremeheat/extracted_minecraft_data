@@ -12,32 +12,32 @@ public class MenuTooltipPositioner implements ClientTooltipPositioner {
    public static final int MAX_DISTANCE_TO_WIDGET = 5;
    private final ScreenRectangle screenRectangle;
 
-   public MenuTooltipPositioner(ScreenRectangle var1) {
+   public MenuTooltipPositioner(final ScreenRectangle screenRectangle) {
       super();
-      this.screenRectangle = var1;
+      this.screenRectangle = screenRectangle;
    }
 
-   public Vector2ic positionTooltip(int var1, int var2, int var3, int var4, int var5, int var6) {
-      Vector2i var7 = new Vector2i(var3 + 12, var4);
-      if (var7.x + var5 > var1 - 5) {
-         var7.x = Math.max(var3 - 12 - var5, 9);
+   public Vector2ic positionTooltip(final int screenWidth, final int screenHeight, final int x, final int y, final int tooltipWidth, final int tooltipHeight) {
+      Vector2i result = new Vector2i(x + 12, y);
+      if (result.x + tooltipWidth > screenWidth - 5) {
+         result.x = Math.max(x - 12 - tooltipWidth, 9);
       }
 
-      var7.y += 3;
-      int var8 = var6 + 3 + 3;
-      int var9 = this.screenRectangle.bottom() + 3 + getOffset(0, 0, this.screenRectangle.height());
-      int var10 = var2 - 5;
-      if (var9 + var8 <= var10) {
-         var7.y += getOffset(var7.y, this.screenRectangle.top(), this.screenRectangle.height());
+      result.y += 3;
+      int paddedHeight = tooltipHeight + 3 + 3;
+      int lowestPossibleY = this.screenRectangle.bottom() + 3 + getOffset(0, 0, this.screenRectangle.height());
+      int maxY = screenHeight - 5;
+      if (lowestPossibleY + paddedHeight <= maxY) {
+         result.y += getOffset(result.y, this.screenRectangle.top(), this.screenRectangle.height());
       } else {
-         var7.y -= var8 + getOffset(var7.y, this.screenRectangle.bottom(), this.screenRectangle.height());
+         result.y -= paddedHeight + getOffset(result.y, this.screenRectangle.bottom(), this.screenRectangle.height());
       }
 
-      return var7;
+      return result;
    }
 
-   private static int getOffset(int var0, int var1, int var2) {
-      int var3 = Math.min(Math.abs(var0 - var1), var2);
-      return Math.round(Mth.lerp((float)var3 / (float)var2, (float)(var2 - 3), 5.0F));
+   private static int getOffset(final int mouseY, final int widgetY, final int widgetHeight) {
+      int distance = Math.min(Math.abs(mouseY - widgetY), widgetHeight);
+      return Math.round(Mth.lerp((float)distance / (float)widgetHeight, (float)(widgetHeight - 3), 5.0F));
    }
 }

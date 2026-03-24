@@ -1,18 +1,16 @@
 package net.minecraft.network.syncher;
 
 public record EntityDataAccessor<T>(int id, EntityDataSerializer<T> serializer) {
-   public EntityDataAccessor(int var1, EntityDataSerializer<T> var2) {
+   public EntityDataAccessor {
       super();
-      this.id = var1;
-      this.serializer = var2;
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
+   public boolean equals(final Object o) {
+      if (this == o) {
          return true;
-      } else if (var1 != null && this.getClass() == var1.getClass()) {
-         EntityDataAccessor var2 = (EntityDataAccessor)var1;
-         return this.id == var2.id;
+      } else if (o != null && this.getClass() == o.getClass()) {
+         EntityDataAccessor<?> that = (EntityDataAccessor)o;
+         return this.id == that.id;
       } else {
          return false;
       }

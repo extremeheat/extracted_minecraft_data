@@ -21,29 +21,29 @@ public class ClientboundUpdateAttributesPacket implements Packet<ClientGamePacke
    private final int entityId;
    private final List<AttributeSnapshot> attributes;
 
-   public ClientboundUpdateAttributesPacket(int var1, Collection<AttributeInstance> var2) {
+   public ClientboundUpdateAttributesPacket(final int entityId, final Collection<AttributeInstance> values) {
       super();
-      this.entityId = var1;
+      this.entityId = entityId;
       this.attributes = Lists.newArrayList();
 
-      for(AttributeInstance var4 : var2) {
-         this.attributes.add(new AttributeSnapshot(var4.getAttribute(), var4.getBaseValue(), var4.getModifiers()));
+      for(AttributeInstance value : values) {
+         this.attributes.add(new AttributeSnapshot(value.getAttribute(), value.getBaseValue(), value.getModifiers()));
       }
 
    }
 
-   private ClientboundUpdateAttributesPacket(int var1, List<AttributeSnapshot> var2) {
+   private ClientboundUpdateAttributesPacket(final int entityId, final List<AttributeSnapshot> attributes) {
       super();
-      this.entityId = var1;
-      this.attributes = var2;
+      this.entityId = entityId;
+      this.attributes = attributes;
    }
 
    public PacketType<ClientboundUpdateAttributesPacket> type() {
       return GamePacketTypes.CLIENTBOUND_UPDATE_ATTRIBUTES;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleUpdateAttributes(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleUpdateAttributes(this);
    }
 
    public int getEntityId() {
@@ -62,11 +62,8 @@ public class ClientboundUpdateAttributesPacket implements Packet<ClientGamePacke
       public static final StreamCodec<ByteBuf, AttributeModifier> MODIFIER_STREAM_CODEC;
       public static final StreamCodec<RegistryFriendlyByteBuf, AttributeSnapshot> STREAM_CODEC;
 
-      public AttributeSnapshot(Holder<Attribute> var1, double var2, Collection<AttributeModifier> var4) {
+      public AttributeSnapshot {
          super();
-         this.attribute = var1;
-         this.base = var2;
-         this.modifiers = var4;
       }
 
       static {

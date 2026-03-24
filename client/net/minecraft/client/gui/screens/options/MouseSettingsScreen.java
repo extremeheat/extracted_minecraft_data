@@ -11,17 +11,17 @@ import net.minecraft.network.chat.Component;
 public class MouseSettingsScreen extends OptionsSubScreen {
    private static final Component TITLE = Component.translatable("options.mouse_settings.title");
 
-   private static OptionInstance<?>[] options(Options var0) {
-      return new OptionInstance[]{var0.sensitivity(), var0.touchscreen(), var0.mouseWheelSensitivity(), var0.discreteMouseScroll(), var0.invertMouseX(), var0.invertMouseY(), var0.allowCursorChanges()};
+   private static OptionInstance<?>[] options(final Options options) {
+      return new OptionInstance[]{options.sensitivity(), options.touchscreen(), options.mouseWheelSensitivity(), options.discreteMouseScroll(), options.invertMouseX(), options.invertMouseY(), options.allowCursorChanges()};
    }
 
-   public MouseSettingsScreen(Screen var1, Options var2) {
-      super(var1, var2, TITLE);
+   public MouseSettingsScreen(final Screen lastScreen, final Options options) {
+      super(lastScreen, options, TITLE);
    }
 
    protected void addOptions() {
       if (InputConstants.isRawMouseInputSupported()) {
-         this.list.addSmall((OptionInstance[])Stream.concat(Arrays.stream(options(this.options)), Stream.of(this.options.rawMouseInput())).toArray((var0) -> new OptionInstance[var0]));
+         this.list.addSmall((OptionInstance[])Stream.concat(Arrays.stream(options(this.options)), Stream.of(this.options.rawMouseInput())).toArray((x$0) -> new OptionInstance[x$0]));
       } else {
          this.list.addSmall(options(this.options));
       }

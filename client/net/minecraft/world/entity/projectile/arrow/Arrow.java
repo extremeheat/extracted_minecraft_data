@@ -22,17 +22,17 @@ public class Arrow extends AbstractArrow {
    private static final EntityDataAccessor<Integer> ID_EFFECT_COLOR;
    private static final byte EVENT_POTION_PUFF = 0;
 
-   public Arrow(EntityType<? extends Arrow> var1, Level var2) {
-      super(var1, var2);
+   public Arrow(final EntityType<? extends Arrow> type, final Level level) {
+      super(type, level);
    }
 
-   public Arrow(Level var1, double var2, double var4, double var6, ItemStack var8, @Nullable ItemStack var9) {
-      super(EntityType.ARROW, var2, var4, var6, var1, var8, var9);
+   public Arrow(final Level level, final double x, final double y, final double z, final ItemStack pickupItemStack, final @Nullable ItemStack firedFromWeapon) {
+      super(EntityType.ARROW, x, y, z, level, pickupItemStack, firedFromWeapon);
       this.updateColor();
    }
 
-   public Arrow(Level var1, LivingEntity var2, ItemStack var3, @Nullable ItemStack var4) {
-      super(EntityType.ARROW, var2, var1, var3, var4);
+   public Arrow(final Level level, final LivingEntity owner, final ItemStack pickupItemStack, final @Nullable ItemStack firedFromWeapon) {
+      super(EntityType.ARROW, owner, level, pickupItemStack, firedFromWeapon);
       this.updateColor();
    }
 
@@ -44,28 +44,28 @@ public class Arrow extends AbstractArrow {
       return (Float)this.getPickupItemStackOrigin().getOrDefault(DataComponents.POTION_DURATION_SCALE, 1.0F);
    }
 
-   private void setPotionContents(PotionContents var1) {
-      this.getPickupItemStackOrigin().set(DataComponents.POTION_CONTENTS, var1);
+   private void setPotionContents(final PotionContents potionContents) {
+      this.getPickupItemStackOrigin().set(DataComponents.POTION_CONTENTS, potionContents);
       this.updateColor();
    }
 
-   protected void setPickupItemStack(ItemStack var1) {
-      super.setPickupItemStack(var1);
+   protected void setPickupItemStack(final ItemStack itemStack) {
+      super.setPickupItemStack(itemStack);
       this.updateColor();
    }
 
    private void updateColor() {
-      PotionContents var1 = this.getPotionContents();
-      this.entityData.set(ID_EFFECT_COLOR, var1.equals(PotionContents.EMPTY) ? -1 : var1.getColor());
+      PotionContents potionContents = this.getPotionContents();
+      this.entityData.set(ID_EFFECT_COLOR, potionContents.equals(PotionContents.EMPTY) ? -1 : potionContents.getColor());
    }
 
-   public void addEffect(MobEffectInstance var1) {
-      this.setPotionContents(this.getPotionContents().withEffectAdded(var1));
+   public void addEffect(final MobEffectInstance effect) {
+      this.setPotionContents(this.getPotionContents().withEffectAdded(effect));
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(ID_EFFECT_COLOR, -1);
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(ID_EFFECT_COLOR, -1);
    }
 
    public void tick() {
@@ -85,11 +85,11 @@ public class Arrow extends AbstractArrow {
 
    }
 
-   private void makeParticle(int var1) {
-      int var2 = this.getColor();
-      if (var2 != -1 && var1 > 0) {
-         for(int var3 = 0; var3 < var1; ++var3) {
-            this.level().addParticle(ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, var2), this.getRandomX(0.5), this.getRandomY(), this.getRandomZ(0.5), 0.0, 0.0, 0.0);
+   private void makeParticle(final int amount) {
+      int colorValue = this.getColor();
+      if (colorValue != -1 && amount > 0) {
+         for(int i = 0; i < amount; ++i) {
+            this.level().addParticle(ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, colorValue), this.getRandomX(0.5), this.getRandomY(), this.getRandomZ(0.5), 0.0, 0.0, 0.0);
          }
 
       }
@@ -99,32 +99,32 @@ public class Arrow extends AbstractArrow {
       return (Integer)this.entityData.get(ID_EFFECT_COLOR);
    }
 
-   protected void doPostHurtEffects(LivingEntity var1) {
-      super.doPostHurtEffects(var1);
-      Entity var2 = this.getEffectSource();
-      PotionContents var3 = this.getPotionContents();
-      float var4 = this.getPotionDurationScale();
-      var3.forEachEffect((var2x) -> var1.addEffect(var2x, var2), var4);
+   protected void doPostHurtEffects(final LivingEntity mob) {
+      super.doPostHurtEffects(mob);
+      Entity effectSource = this.getEffectSource();
+      PotionContents potionContents = this.getPotionContents();
+      float durationScale = this.getPotionDurationScale();
+      potionContents.forEachEffect((effect) -> mob.addEffect(effect, effectSource), durationScale);
    }
 
    protected ItemStack getDefaultPickupItem() {
       return new ItemStack(Items.ARROW);
    }
 
-   public void handleEntityEvent(byte var1) {
-      if (var1 == 0) {
-         int var2 = this.getColor();
-         if (var2 != -1) {
-            float var3 = (float)(var2 >> 16 & 255) / 255.0F;
-            float var4 = (float)(var2 >> 8 & 255) / 255.0F;
-            float var5 = (float)(var2 >> 0 & 255) / 255.0F;
+   public void handleEntityEvent(final byte id) {
+      if (id == 0) {
+         int colorValue = this.getColor();
+         if (colorValue != -1) {
+            float red = (float)(colorValue >> 16 & 255) / 255.0F;
+            float green = (float)(colorValue >> 8 & 255) / 255.0F;
+            float blue = (float)(colorValue >> 0 & 255) / 255.0F;
 
-            for(int var6 = 0; var6 < 20; ++var6) {
-               this.level().addParticle(ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, var3, var4, var5), this.getRandomX(0.5), this.getRandomY(), this.getRandomZ(0.5), 0.0, 0.0, 0.0);
+            for(int i = 0; i < 20; ++i) {
+               this.level().addParticle(ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, red, green, blue), this.getRandomX(0.5), this.getRandomY(), this.getRandomZ(0.5), 0.0, 0.0, 0.0);
             }
          }
       } else {
-         super.handleEntityEvent(var1);
+         super.handleEntityEvent(id);
       }
 
    }

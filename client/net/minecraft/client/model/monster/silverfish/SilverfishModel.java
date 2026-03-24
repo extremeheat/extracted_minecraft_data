@@ -18,46 +18,46 @@ public class SilverfishModel extends EntityModel<EntityRenderState> {
    private static final int[][] BODY_SIZES = new int[][]{{3, 2, 2}, {4, 3, 2}, {6, 4, 3}, {3, 3, 3}, {2, 2, 3}, {2, 1, 2}, {1, 1, 2}};
    private static final int[][] BODY_TEXS = new int[][]{{0, 0}, {0, 4}, {0, 9}, {0, 16}, {0, 22}, {11, 0}, {13, 4}};
 
-   public SilverfishModel(ModelPart var1) {
-      super(var1);
-      Arrays.setAll(this.bodyParts, (var1x) -> var1.getChild(getSegmentName(var1x)));
-      Arrays.setAll(this.bodyLayers, (var1x) -> var1.getChild(getLayerName(var1x)));
+   public SilverfishModel(final ModelPart root) {
+      super(root);
+      Arrays.setAll(this.bodyParts, (i) -> root.getChild(getSegmentName(i)));
+      Arrays.setAll(this.bodyLayers, (i) -> root.getChild(getLayerName(i)));
    }
 
-   private static String getLayerName(int var0) {
-      return "layer" + var0;
+   private static String getLayerName(final int i) {
+      return "layer" + i;
    }
 
-   private static String getSegmentName(int var0) {
-      return "segment" + var0;
+   private static String getSegmentName(final int i) {
+      return "segment" + i;
    }
 
    public static LayerDefinition createBodyLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      float[] var2 = new float[7];
-      float var3 = -3.5F;
+      MeshDefinition mesh = new MeshDefinition();
+      PartDefinition root = mesh.getRoot();
+      float[] zPlacement = new float[7];
+      float placement = -3.5F;
 
-      for(int var4 = 0; var4 < 7; ++var4) {
-         var1.addOrReplaceChild(getSegmentName(var4), CubeListBuilder.create().texOffs(BODY_TEXS[var4][0], BODY_TEXS[var4][1]).addBox((float)BODY_SIZES[var4][0] * -0.5F, 0.0F, (float)BODY_SIZES[var4][2] * -0.5F, (float)BODY_SIZES[var4][0], (float)BODY_SIZES[var4][1], (float)BODY_SIZES[var4][2]), PartPose.offset(0.0F, (float)(24 - BODY_SIZES[var4][1]), var3));
-         var2[var4] = var3;
-         if (var4 < 6) {
-            var3 += (float)(BODY_SIZES[var4][2] + BODY_SIZES[var4 + 1][2]) * 0.5F;
+      for(int i = 0; i < 7; ++i) {
+         root.addOrReplaceChild(getSegmentName(i), CubeListBuilder.create().texOffs(BODY_TEXS[i][0], BODY_TEXS[i][1]).addBox((float)BODY_SIZES[i][0] * -0.5F, 0.0F, (float)BODY_SIZES[i][2] * -0.5F, (float)BODY_SIZES[i][0], (float)BODY_SIZES[i][1], (float)BODY_SIZES[i][2]), PartPose.offset(0.0F, (float)(24 - BODY_SIZES[i][1]), placement));
+         zPlacement[i] = placement;
+         if (i < 6) {
+            placement += (float)(BODY_SIZES[i][2] + BODY_SIZES[i + 1][2]) * 0.5F;
          }
       }
 
-      var1.addOrReplaceChild(getLayerName(0), CubeListBuilder.create().texOffs(20, 0).addBox(-5.0F, 0.0F, (float)BODY_SIZES[2][2] * -0.5F, 10.0F, 8.0F, (float)BODY_SIZES[2][2]), PartPose.offset(0.0F, 16.0F, var2[2]));
-      var1.addOrReplaceChild(getLayerName(1), CubeListBuilder.create().texOffs(20, 11).addBox(-3.0F, 0.0F, (float)BODY_SIZES[4][2] * -0.5F, 6.0F, 4.0F, (float)BODY_SIZES[4][2]), PartPose.offset(0.0F, 20.0F, var2[4]));
-      var1.addOrReplaceChild(getLayerName(2), CubeListBuilder.create().texOffs(20, 18).addBox(-3.0F, 0.0F, (float)BODY_SIZES[4][2] * -0.5F, 6.0F, 5.0F, (float)BODY_SIZES[1][2]), PartPose.offset(0.0F, 19.0F, var2[1]));
-      return LayerDefinition.create(var0, 64, 32);
+      root.addOrReplaceChild(getLayerName(0), CubeListBuilder.create().texOffs(20, 0).addBox(-5.0F, 0.0F, (float)BODY_SIZES[2][2] * -0.5F, 10.0F, 8.0F, (float)BODY_SIZES[2][2]), PartPose.offset(0.0F, 16.0F, zPlacement[2]));
+      root.addOrReplaceChild(getLayerName(1), CubeListBuilder.create().texOffs(20, 11).addBox(-3.0F, 0.0F, (float)BODY_SIZES[4][2] * -0.5F, 6.0F, 4.0F, (float)BODY_SIZES[4][2]), PartPose.offset(0.0F, 20.0F, zPlacement[4]));
+      root.addOrReplaceChild(getLayerName(2), CubeListBuilder.create().texOffs(20, 18).addBox(-3.0F, 0.0F, (float)BODY_SIZES[4][2] * -0.5F, 6.0F, 5.0F, (float)BODY_SIZES[1][2]), PartPose.offset(0.0F, 19.0F, zPlacement[1]));
+      return LayerDefinition.create(mesh, 64, 32);
    }
 
-   public void setupAnim(EntityRenderState var1) {
-      super.setupAnim(var1);
+   public void setupAnim(final EntityRenderState state) {
+      super.setupAnim(state);
 
-      for(int var2 = 0; var2 < this.bodyParts.length; ++var2) {
-         this.bodyParts[var2].yRot = Mth.cos((double)(var1.ageInTicks * 0.9F + (float)var2 * 0.15F * 3.1415927F)) * 3.1415927F * 0.05F * (float)(1 + Math.abs(var2 - 2));
-         this.bodyParts[var2].x = Mth.sin((double)(var1.ageInTicks * 0.9F + (float)var2 * 0.15F * 3.1415927F)) * 3.1415927F * 0.2F * (float)Math.abs(var2 - 2);
+      for(int i = 0; i < this.bodyParts.length; ++i) {
+         this.bodyParts[i].yRot = Mth.cos((double)(state.ageInTicks * 0.9F + (float)i * 0.15F * 3.1415927F)) * 3.1415927F * 0.05F * (float)(1 + Math.abs(i - 2));
+         this.bodyParts[i].x = Mth.sin((double)(state.ageInTicks * 0.9F + (float)i * 0.15F * 3.1415927F)) * 3.1415927F * 0.2F * (float)Math.abs(i - 2);
       }
 
       this.bodyLayers[0].yRot = this.bodyParts[2].yRot;

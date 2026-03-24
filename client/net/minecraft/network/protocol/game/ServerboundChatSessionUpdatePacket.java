@@ -9,24 +9,23 @@ import net.minecraft.network.protocol.PacketType;
 public record ServerboundChatSessionUpdatePacket(RemoteChatSession.Data chatSession) implements Packet<ServerGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ServerboundChatSessionUpdatePacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundChatSessionUpdatePacket>codec(ServerboundChatSessionUpdatePacket::write, ServerboundChatSessionUpdatePacket::new);
 
-   private ServerboundChatSessionUpdatePacket(FriendlyByteBuf var1) {
-      this(RemoteChatSession.Data.read(var1));
+   private ServerboundChatSessionUpdatePacket(final FriendlyByteBuf input) {
+      this(RemoteChatSession.Data.read(input));
    }
 
-   public ServerboundChatSessionUpdatePacket(RemoteChatSession.Data var1) {
+   public ServerboundChatSessionUpdatePacket {
       super();
-      this.chatSession = var1;
    }
 
-   private void write(FriendlyByteBuf var1) {
-      RemoteChatSession.Data.write(var1, this.chatSession);
+   private void write(final FriendlyByteBuf output) {
+      RemoteChatSession.Data.write(output, this.chatSession);
    }
 
    public PacketType<ServerboundChatSessionUpdatePacket> type() {
       return GamePacketTypes.SERVERBOUND_CHAT_SESSION_UPDATE;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handleChatSessionUpdate(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handleChatSessionUpdate(this);
    }
 }

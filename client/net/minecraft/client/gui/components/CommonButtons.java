@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.components;
 
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 
 public class CommonButtons {
@@ -9,12 +8,12 @@ public class CommonButtons {
       super();
    }
 
-   public static SpriteIconButton language(int var0, Button.OnPress var1, boolean var2) {
-      return SpriteIconButton.builder(Component.translatable("options.language"), var1, var2).width(var0).sprite((Identifier)Identifier.withDefaultNamespace("icon/language"), 15, 15).build();
+   public static SpriteIconButton language(final int width, final Button.OnPress onPress, final boolean iconOnly) {
+      return SpriteIconButton.builder(Component.translatable("options.language"), onPress, iconOnly).width(width).sprite((Identifier)Identifier.withDefaultNamespace("icon/language"), 15, 15).build();
    }
 
-   public static SpriteIconButton accessibility(int var0, Button.OnPress var1, boolean var2) {
-      MutableComponent var3 = var2 ? Component.translatable("options.accessibility") : Component.translatable("accessibility.onboarding.accessibility.button");
-      return SpriteIconButton.builder(var3, var1, var2).width(var0).sprite((Identifier)Identifier.withDefaultNamespace("icon/accessibility"), 15, 15).build();
+   public static SpriteIconButton accessibility(final int width, final Button.OnPress onPress, final boolean iconOnly) {
+      Component text = iconOnly ? Component.translatable("options.accessibility") : Component.translatable("accessibility.onboarding.accessibility.button");
+      return SpriteIconButton.builder(text, onPress, iconOnly).width(width).sprite((Identifier)Identifier.withDefaultNamespace("icon/accessibility"), 15, 15).build();
    }
 }

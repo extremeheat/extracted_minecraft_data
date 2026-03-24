@@ -3,7 +3,7 @@ package net.minecraft.world.level.levelgen.feature.treedecorators;
 import com.mojang.serialization.MapCodec;
 import java.util.List;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.levelgen.feature.Feature;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.TreeFeature;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 
@@ -11,31 +11,31 @@ public class AlterGroundDecorator extends TreeDecorator {
    public static final MapCodec<AlterGroundDecorator> CODEC;
    private final BlockStateProvider provider;
 
-   public AlterGroundDecorator(BlockStateProvider var1) {
+   public AlterGroundDecorator(final BlockStateProvider provider) {
       super();
-      this.provider = var1;
+      this.provider = provider;
    }
 
    protected TreeDecoratorType<?> type() {
       return TreeDecoratorType.ALTER_GROUND;
    }
 
-   public void place(TreeDecorator.Context var1) {
-      List var2 = TreeFeature.getLowestTrunkOrRootOfTree(var1);
-      if (!var2.isEmpty()) {
-         int var3 = ((BlockPos)var2.get(0)).getY();
-         var2.stream().filter((var1x) -> var1x.getY() == var3).forEach((var2x) -> {
-            this.placeCircle(var1, var2x.west().north());
-            this.placeCircle(var1, var2x.east(2).north());
-            this.placeCircle(var1, var2x.west().south(2));
-            this.placeCircle(var1, var2x.east(2).south(2));
+   public void place(final TreeDecorator.Context context) {
+      List<BlockPos> blockPositions = TreeFeature.getLowestTrunkOrRootOfTree(context);
+      if (!blockPositions.isEmpty()) {
+         int minY = ((BlockPos)blockPositions.getFirst()).getY();
+         blockPositions.stream().filter((pos) -> pos.getY() == minY).forEach((pos) -> {
+            this.placeCircle(context, pos.west().north());
+            this.placeCircle(context, pos.east(2).north());
+            this.placeCircle(context, pos.west().south(2));
+            this.placeCircle(context, pos.east(2).south(2));
 
-            for(int var3 = 0; var3 < 5; ++var3) {
-               int var4 = var1.random().nextInt(64);
-               int var5 = var4 % 8;
-               int var6 = var4 / 8;
-               if (var5 == 0 || var5 == 7 || var6 == 0 || var6 == 7) {
-                  this.placeCircle(var1, var2x.offset(-3 + var5, 0, -3 + var6));
+            for(int i = 0; i < 5; ++i) {
+               int placement = context.random().nextInt(64);
+               int xx = placement % 8;
+               int zz = placement / 8;
+               if (xx == 0 || xx == 7 || zz == 0 || zz == 7) {
+                  this.placeCircle(context, pos.offset(-3 + xx, 0, -3 + zz));
                }
             }
 
@@ -43,26 +43,27 @@ public class AlterGroundDecorator extends TreeDecorator {
       }
    }
 
-   private void placeCircle(TreeDecorator.Context var1, BlockPos var2) {
-      for(int var3 = -2; var3 <= 2; ++var3) {
-         for(int var4 = -2; var4 <= 2; ++var4) {
-            if (Math.abs(var3) != 2 || Math.abs(var4) != 2) {
-               this.placeBlockAt(var1, var2.offset(var3, 0, var4));
+   private void placeCircle(final TreeDecorator.Context context, final BlockPos pos) {
+      for(int xx = -2; xx <= 2; ++xx) {
+         for(int zz = -2; zz <= 2; ++zz) {
+            if (Math.abs(xx) != 2 || Math.abs(zz) != 2) {
+               this.placeBlockAt(context, pos.offset(xx, 0, zz));
             }
          }
       }
 
    }
 
-   private void placeBlockAt(TreeDecorator.Context var1, BlockPos var2) {
-      for(int var3 = 2; var3 >= -3; --var3) {
-         BlockPos var4 = var2.above(var3);
-         if (Feature.isGrassOrDirt(var1.level(), var4)) {
-            var1.setBlock(var4, this.provider.getState(var1.random(), var2));
+   private void placeBlockAt(final TreeDecorator.Context context, final BlockPos pos) {
+      for(int dy = 2; dy >= -3; --dy) {
+         BlockPos cursor = pos.above(dy);
+         BlockState replaceWith = this.provider.getOptionalState(context.level(), context.random(), cursor);
+         if (replaceWith != null) {
+            context.setBlock(cursor, replaceWith);
             break;
          }
 
-         if (!var1.isAir(var4) && var3 < 0) {
+         if (!context.isAir(cursor) && dy < 0) {
             break;
          }
       }
@@ -70,6 +71,6 @@ public class AlterGroundDecorator extends TreeDecorator {
    }
 
    static {
-      CODEC = BlockStateProvider.CODEC.fieldOf("provider").xmap(AlterGroundDecorator::new, (var0) -> var0.provider);
+      CODEC = BlockStateProvider.CODEC.fieldOf("provider").xmap(AlterGroundDecorator::new, (d) -> d.provider);
    }
 }

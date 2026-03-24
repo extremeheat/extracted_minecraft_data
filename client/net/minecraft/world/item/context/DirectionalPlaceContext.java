@@ -12,9 +12,9 @@ import net.minecraft.world.phys.Vec3;
 public class DirectionalPlaceContext extends BlockPlaceContext {
    private final Direction direction;
 
-   public DirectionalPlaceContext(Level var1, BlockPos var2, Direction var3, ItemStack var4, Direction var5) {
-      super(var1, (Player)null, InteractionHand.MAIN_HAND, var4, new BlockHitResult(Vec3.atBottomCenterOf(var2), var5, var2, false));
-      this.direction = var3;
+   public DirectionalPlaceContext(final Level level, final BlockPos pos, final Direction direction, final ItemStack dispensed, final Direction clickedFace) {
+      super(level, (Player)null, InteractionHand.MAIN_HAND, dispensed, new BlockHitResult(Vec3.atBottomCenterOf(pos), clickedFace, pos, false));
+      this.direction = direction;
    }
 
    public BlockPos getClickedPos() {

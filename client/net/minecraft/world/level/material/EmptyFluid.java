@@ -21,15 +21,15 @@ public class EmptyFluid extends Fluid {
       return Items.AIR;
    }
 
-   public boolean canBeReplacedWith(FluidState var1, BlockGetter var2, BlockPos var3, Fluid var4, Direction var5) {
+   public boolean canBeReplacedWith(final FluidState state, final BlockGetter level, final BlockPos pos, final Fluid other, final Direction direction) {
       return true;
    }
 
-   public Vec3 getFlow(BlockGetter var1, BlockPos var2, FluidState var3) {
+   public Vec3 getFlow(final BlockGetter level, final BlockPos pos, final FluidState fluidState) {
       return Vec3.ZERO;
    }
 
-   public int getTickDelay(LevelReader var1) {
+   public int getTickDelay(final LevelReader level) {
       return 0;
    }
 
@@ -41,27 +41,27 @@ public class EmptyFluid extends Fluid {
       return 0.0F;
    }
 
-   public float getHeight(FluidState var1, BlockGetter var2, BlockPos var3) {
+   public float getHeight(final FluidState fluidState, final BlockGetter level, final BlockPos pos) {
       return 0.0F;
    }
 
-   public float getOwnHeight(FluidState var1) {
+   public float getOwnHeight(final FluidState fluidState) {
       return 0.0F;
    }
 
-   protected BlockState createLegacyBlock(FluidState var1) {
+   protected BlockState createLegacyBlock(final FluidState fluidState) {
       return Blocks.AIR.defaultBlockState();
    }
 
-   public boolean isSource(FluidState var1) {
+   public boolean isSource(final FluidState fluidState) {
       return false;
    }
 
-   public int getAmount(FluidState var1) {
+   public int getAmount(final FluidState fluidState) {
       return 0;
    }
 
-   public VoxelShape getShape(FluidState var1, BlockGetter var2, BlockPos var3) {
+   public VoxelShape getShape(final FluidState state, final BlockGetter level, final BlockPos pos) {
       return Shapes.empty();
    }
 }

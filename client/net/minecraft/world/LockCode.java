@@ -3,6 +3,7 @@ package net.minecraft.world;
 import com.mojang.serialization.Codec;
 import net.minecraft.advancements.criterion.ItemPredicate;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemInstance;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -12,28 +13,27 @@ public record LockCode(ItemPredicate predicate) {
    public static final Codec<LockCode> CODEC;
    public static final String TAG_LOCK = "lock";
 
-   public LockCode(ItemPredicate var1) {
+   public LockCode {
       super();
-      this.predicate = var1;
    }
 
-   public boolean unlocksWith(ItemStack var1) {
-      return this.predicate.test(var1);
+   public boolean unlocksWith(final ItemStack itemStack) {
+      return this.predicate.test((ItemInstance)itemStack);
    }
 
-   public void addToTag(ValueOutput var1) {
+   public void addToTag(final ValueOutput parent) {
       if (this != NO_LOCK) {
-         var1.store("lock", CODEC, this);
+         parent.store("lock", CODEC, this);
       }
 
    }
 
-   public boolean canUnlock(Player var1) {
-      return var1.isSpectator() || this.unlocksWith(var1.getMainHandItem());
+   public boolean canUnlock(final Player player) {
+      return player.isSpectator() || this.unlocksWith(player.getMainHandItem());
    }
 
-   public static LockCode fromTag(ValueInput var0) {
-      return (LockCode)var0.read("lock", CODEC).orElse(NO_LOCK);
+   public static LockCode fromTag(final ValueInput parent) {
+      return (LockCode)parent.read("lock", CODEC).orElse(NO_LOCK);
    }
 
    static {

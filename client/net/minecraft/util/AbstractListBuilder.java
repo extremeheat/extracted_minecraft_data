@@ -10,9 +10,9 @@ abstract class AbstractListBuilder<T, B> implements ListBuilder<T> {
    private final DynamicOps<T> ops;
    protected DataResult<B> builder = DataResult.success(this.initBuilder(), Lifecycle.stable());
 
-   protected AbstractListBuilder(DynamicOps<T> var1) {
+   protected AbstractListBuilder(final DynamicOps<T> ops) {
       super();
-      this.ops = var1;
+      this.ops = ops;
    }
 
    public DynamicOps<T> ops() {
@@ -21,33 +21,33 @@ abstract class AbstractListBuilder<T, B> implements ListBuilder<T> {
 
    protected abstract B initBuilder();
 
-   protected abstract B append(B var1, T var2);
+   protected abstract B append(B builder, T value);
 
-   protected abstract DataResult<T> build(B var1, T var2);
+   protected abstract DataResult<T> build(B builder, T prefix);
 
-   public ListBuilder<T> add(T var1) {
-      this.builder = this.builder.map((var2) -> this.append(var2, var1));
+   public ListBuilder<T> add(final T value) {
+      this.builder = this.builder.map((b) -> this.append(b, value));
       return this;
    }
 
-   public ListBuilder<T> add(DataResult<T> var1) {
-      this.builder = this.builder.apply2stable(this::append, var1);
+   public ListBuilder<T> add(final DataResult<T> value) {
+      this.builder = this.builder.apply2stable(this::append, value);
       return this;
    }
 
-   public ListBuilder<T> withErrorsFrom(DataResult<?> var1) {
-      this.builder = this.builder.flatMap((var1x) -> var1.map((var1xx) -> var1x));
+   public ListBuilder<T> withErrorsFrom(final DataResult<?> result) {
+      this.builder = this.builder.flatMap((r) -> result.map((v) -> r));
       return this;
    }
 
-   public ListBuilder<T> mapError(UnaryOperator<String> var1) {
-      this.builder = this.builder.mapError(var1);
+   public ListBuilder<T> mapError(final UnaryOperator<String> onError) {
+      this.builder = this.builder.mapError(onError);
       return this;
    }
 
-   public DataResult<T> build(T var1) {
-      DataResult var2 = this.builder.flatMap((var2x) -> this.build(var2x, var1));
+   public DataResult<T> build(final T prefix) {
+      DataResult<T> result = this.builder.flatMap((b) -> this.build(b, prefix));
       this.builder = DataResult.success(this.initBuilder(), Lifecycle.stable());
-      return var2;
+      return result;
    }
 }

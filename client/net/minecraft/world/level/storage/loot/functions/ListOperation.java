@@ -16,28 +16,28 @@ import org.slf4j.Logger;
 public interface ListOperation {
    MapCodec<ListOperation> UNLIMITED_CODEC = codec(2147483647);
 
-   static MapCodec<ListOperation> codec(int var0) {
-      return ListOperation.Type.CODEC.dispatchMap("mode", ListOperation::mode, (var0x) -> var0x.mapCodec).validate((var1) -> {
-         if (var1 instanceof ReplaceSection var2) {
-            if (var2.size().isPresent()) {
-               int var3 = (Integer)var2.size().get();
-               if (var3 > var0) {
-                  return DataResult.error(() -> "Size value too large: " + var3 + ", max size is " + var0);
+   static MapCodec<ListOperation> codec(final int maxSize) {
+      return ListOperation.Type.CODEC.dispatchMap("mode", ListOperation::mode, (e) -> e.mapCodec).validate((op) -> {
+         if (op instanceof ReplaceSection section) {
+            if (section.size().isPresent()) {
+               int size = (Integer)section.size().get();
+               if (size > maxSize) {
+                  return DataResult.error(() -> "Size value too large: " + size + ", max size is " + maxSize);
                }
             }
          }
 
-         return DataResult.success(var1);
+         return DataResult.success(op);
       });
    }
 
    Type mode();
 
-   default <T> List<T> apply(List<T> var1, List<T> var2) {
-      return this.<T>apply(var1, var2, 2147483647);
+   default <T> List<T> apply(final List<T> original, final List<T> replacement) {
+      return this.<T>apply(original, replacement, 2147483647);
    }
 
-   <T> List<T> apply(List<T> var1, List<T> var2, int var3);
+   <T> List<T> apply(List<T> original, List<T> replacement, int maxSize);
 
    public static enum Type implements StringRepresentable {
       REPLACE_ALL("replace_all", ListOperation.ReplaceAll.MAP_CODEC),
@@ -47,11 +47,11 @@ public interface ListOperation {
 
       public static final Codec<Type> CODEC = StringRepresentable.<Type>fromEnum(Type::values);
       private final String id;
-      final MapCodec<? extends ListOperation> mapCodec;
+      private final MapCodec<? extends ListOperation> mapCodec;
 
-      private Type(final String var3, final MapCodec<? extends ListOperation> var4) {
-         this.id = var3;
-         this.mapCodec = var4;
+      private Type(final String id, final MapCodec<? extends ListOperation> mapCodec) {
+         this.id = id;
+         this.mapCodec = mapCodec;
       }
 
       public MapCodec<? extends ListOperation> mapCodec() {
@@ -80,49 +80,47 @@ public interface ListOperation {
          return ListOperation.Type.REPLACE_ALL;
       }
 
-      public <T> List<T> apply(List<T> var1, List<T> var2, int var3) {
-         return var2;
+      public <T> List<T> apply(final List<T> original, final List<T> replacement, final int maxSize) {
+         return replacement;
       }
    }
 
    public static record ReplaceSection(int offset, Optional<Integer> size) implements ListOperation {
       private static final Logger LOGGER = LogUtils.getLogger();
-      public static final MapCodec<ReplaceSection> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("offset", 0).forGetter(ReplaceSection::offset), ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("size").forGetter(ReplaceSection::size)).apply(var0, ReplaceSection::new));
+      public static final MapCodec<ReplaceSection> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("offset", 0).forGetter(ReplaceSection::offset), ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("size").forGetter(ReplaceSection::size)).apply(i, ReplaceSection::new));
 
-      public ReplaceSection(int var1) {
-         this(var1, Optional.empty());
+      public ReplaceSection(final int offset) {
+         this(offset, Optional.empty());
       }
 
-      public ReplaceSection(int var1, Optional<Integer> var2) {
+      public ReplaceSection {
          super();
-         this.offset = var1;
-         this.size = var2;
       }
 
       public Type mode() {
          return ListOperation.Type.REPLACE_SECTION;
       }
 
-      public <T> List<T> apply(List<T> var1, List<T> var2, int var3) {
-         int var4 = var1.size();
-         if (this.offset > var4) {
+      public <T> List<T> apply(final List<T> original, final List<T> replacement, final int maxSize) {
+         int originalSize = original.size();
+         if (this.offset > originalSize) {
             LOGGER.error("Cannot replace when offset is out of bounds");
-            return var1;
+            return original;
          } else {
-            ImmutableList.Builder var5 = ImmutableList.builder();
-            var5.addAll(var1.subList(0, this.offset));
-            var5.addAll(var2);
-            int var6 = this.offset + (Integer)this.size.orElse(var2.size());
-            if (var6 < var4) {
-               var5.addAll(var1.subList(var6, var4));
+            ImmutableList.Builder<T> newList = ImmutableList.builder();
+            newList.addAll(original.subList(0, this.offset));
+            newList.addAll(replacement);
+            int resumeIndex = this.offset + (Integer)this.size.orElse(replacement.size());
+            if (resumeIndex < originalSize) {
+               newList.addAll(original.subList(resumeIndex, originalSize));
             }
 
-            ImmutableList var7 = var5.build();
-            if (var7.size() > var3) {
+            List<T> result = newList.build();
+            if (result.size() > maxSize) {
                LOGGER.error("Contents overflow in section replacement");
-               return var1;
+               return original;
             } else {
-               return var7;
+               return result;
             }
          }
       }
@@ -130,31 +128,30 @@ public interface ListOperation {
 
    public static record Insert(int offset) implements ListOperation {
       private static final Logger LOGGER = LogUtils.getLogger();
-      public static final MapCodec<Insert> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("offset", 0).forGetter(Insert::offset)).apply(var0, Insert::new));
+      public static final MapCodec<Insert> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("offset", 0).forGetter(Insert::offset)).apply(i, Insert::new));
 
-      public Insert(int var1) {
+      public Insert {
          super();
-         this.offset = var1;
       }
 
       public Type mode() {
          return ListOperation.Type.INSERT;
       }
 
-      public <T> List<T> apply(List<T> var1, List<T> var2, int var3) {
-         int var4 = var1.size();
-         if (this.offset > var4) {
+      public <T> List<T> apply(final List<T> original, final List<T> replacement, final int maxSize) {
+         int originalSize = original.size();
+         if (this.offset > originalSize) {
             LOGGER.error("Cannot insert when offset is out of bounds");
-            return var1;
-         } else if (var4 + var2.size() > var3) {
+            return original;
+         } else if (originalSize + replacement.size() > maxSize) {
             LOGGER.error("Contents overflow in section insertion");
-            return var1;
+            return original;
          } else {
-            ImmutableList.Builder var5 = ImmutableList.builder();
-            var5.addAll(var1.subList(0, this.offset));
-            var5.addAll(var2);
-            var5.addAll(var1.subList(this.offset, var4));
-            return var5.build();
+            ImmutableList.Builder<T> newList = ImmutableList.builder();
+            newList.addAll(original.subList(0, this.offset));
+            newList.addAll(replacement);
+            newList.addAll(original.subList(this.offset, originalSize));
+            return newList.build();
          }
       }
    }
@@ -172,29 +169,27 @@ public interface ListOperation {
          return ListOperation.Type.APPEND;
       }
 
-      public <T> List<T> apply(List<T> var1, List<T> var2, int var3) {
-         if (var1.size() + var2.size() > var3) {
+      public <T> List<T> apply(final List<T> original, final List<T> replacement, final int maxSize) {
+         if (original.size() + replacement.size() > maxSize) {
             LOGGER.error("Contents overflow in section append");
-            return var1;
+            return original;
          } else {
-            return Stream.concat(var1.stream(), var2.stream()).toList();
+            return Stream.concat(original.stream(), replacement.stream()).toList();
          }
       }
    }
 
    public static record StandAlone<T>(List<T> value, ListOperation operation) {
-      public StandAlone(List<T> var1, ListOperation var2) {
+      public StandAlone {
          super();
-         this.value = var1;
-         this.operation = var2;
       }
 
-      public static <T> Codec<StandAlone<T>> codec(Codec<T> var0, int var1) {
-         return RecordCodecBuilder.create((var2) -> var2.group(var0.sizeLimitedListOf(var1).fieldOf("values").forGetter((var0x) -> var0x.value), ListOperation.codec(var1).forGetter((var0x) -> var0x.operation)).apply(var2, StandAlone::new));
+      public static <T> Codec<StandAlone<T>> codec(final Codec<T> valueCodec, final int maxSize) {
+         return RecordCodecBuilder.create((i) -> i.group(valueCodec.sizeLimitedListOf(maxSize).fieldOf("values").forGetter((f) -> f.value), ListOperation.codec(maxSize).forGetter((f) -> f.operation)).apply(i, StandAlone::new));
       }
 
-      public List<T> apply(List<T> var1) {
-         return this.operation.<T>apply(var1, this.value);
+      public List<T> apply(final List<T> input) {
+         return this.operation.<T>apply(input, this.value);
       }
    }
 }

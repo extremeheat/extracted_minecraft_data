@@ -14,20 +14,20 @@ import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownLinge
 import net.minecraft.world.level.Level;
 
 public class LingeringPotionItem extends ThrowablePotionItem {
-   public LingeringPotionItem(Item.Properties var1) {
-      super(var1);
+   public LingeringPotionItem(final Item.Properties properties) {
+      super(properties);
    }
 
-   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
-      var1.playSound((Entity)null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.LINGERING_POTION_THROW, SoundSource.NEUTRAL, 0.5F, 0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F));
-      return super.use(var1, var2, var3);
+   public InteractionResult use(final Level level, final Player player, final InteractionHand hand) {
+      level.playSound((Entity)null, player.getX(), player.getY(), player.getZ(), SoundEvents.LINGERING_POTION_THROW, SoundSource.NEUTRAL, 0.5F, 0.4F / (level.getRandom().nextFloat() * 0.4F + 0.8F));
+      return super.use(level, player, hand);
    }
 
-   protected AbstractThrownPotion createPotion(ServerLevel var1, LivingEntity var2, ItemStack var3) {
-      return new ThrownLingeringPotion(var1, var2, var3);
+   protected AbstractThrownPotion createPotion(final ServerLevel level, final LivingEntity owner, final ItemStack itemStack) {
+      return new ThrownLingeringPotion(level, owner, itemStack);
    }
 
-   protected AbstractThrownPotion createPotion(Level var1, Position var2, ItemStack var3) {
-      return new ThrownLingeringPotion(var1, var2.x(), var2.y(), var2.z(), var3);
+   protected AbstractThrownPotion createPotion(final Level level, final Position position, final ItemStack itemStack) {
+      return new ThrownLingeringPotion(level, position.x(), position.y(), position.z(), itemStack);
    }
 }

@@ -7,36 +7,36 @@ import com.mojang.serialization.Dynamic;
 import java.util.Optional;
 
 public class AreaEffectCloudPotionFix extends NamedEntityFix {
-   public AreaEffectCloudPotionFix(Schema var1) {
-      super(var1, false, "AreaEffectCloudPotionFix", References.ENTITY, "minecraft:area_effect_cloud");
+   public AreaEffectCloudPotionFix(final Schema outputSchema) {
+      super(outputSchema, false, "AreaEffectCloudPotionFix", References.ENTITY, "minecraft:area_effect_cloud");
    }
 
-   protected Typed<?> fix(Typed<?> var1) {
-      return var1.update(DSL.remainderFinder(), this::fix);
+   protected Typed<?> fix(final Typed<?> entity) {
+      return entity.update(DSL.remainderFinder(), this::fix);
    }
 
-   private <T> Dynamic<T> fix(Dynamic<T> var1) {
-      Optional var2 = var1.get("Color").result();
-      Optional var3 = var1.get("effects").result();
-      Optional var4 = var1.get("Potion").result();
-      var1 = var1.remove("Color").remove("effects").remove("Potion");
-      if (var2.isEmpty() && var3.isEmpty() && var4.isEmpty()) {
-         return var1;
+   private <T> Dynamic<T> fix(Dynamic<T> entity) {
+      Optional<Dynamic<T>> color = entity.get("Color").result();
+      Optional<Dynamic<T>> effects = entity.get("effects").result();
+      Optional<Dynamic<T>> potion = entity.get("Potion").result();
+      entity = entity.remove("Color").remove("effects").remove("Potion");
+      if (color.isEmpty() && effects.isEmpty() && potion.isEmpty()) {
+         return entity;
       } else {
-         Dynamic var5 = var1.emptyMap();
-         if (var2.isPresent()) {
-            var5 = var5.set("custom_color", (Dynamic)var2.get());
+         Dynamic<T> potionContents = entity.emptyMap();
+         if (color.isPresent()) {
+            potionContents = potionContents.set("custom_color", (Dynamic)color.get());
          }
 
-         if (var3.isPresent()) {
-            var5 = var5.set("custom_effects", (Dynamic)var3.get());
+         if (effects.isPresent()) {
+            potionContents = potionContents.set("custom_effects", (Dynamic)effects.get());
          }
 
-         if (var4.isPresent()) {
-            var5 = var5.set("potion", (Dynamic)var4.get());
+         if (potion.isPresent()) {
+            potionContents = potionContents.set("potion", (Dynamic)potion.get());
          }
 
-         return var1.set("potion_contents", var5);
+         return entity.set("potion_contents", potionContents);
       }
    }
 }

@@ -1,10 +1,9 @@
 package net.minecraft.client.renderer.entity.state;
 
-import java.util.Optional;
+import net.minecraft.client.renderer.block.BlockModelRenderState;
 import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.animal.golem.CopperGolemState;
 import net.minecraft.world.level.block.WeatheringCopper;
-import net.minecraft.world.level.block.state.BlockState;
 
 public class CopperGolemRenderState extends ArmedEntityRenderState {
    public WeatheringCopper.WeatherState weathering;
@@ -14,7 +13,7 @@ public class CopperGolemRenderState extends ArmedEntityRenderState {
    public final AnimationState interactionGetNoItem;
    public final AnimationState interactionDropItem;
    public final AnimationState interactionDropNoItem;
-   public Optional<BlockState> blockOnAntenna;
+   public final BlockModelRenderState blockOnAntenna;
 
    public CopperGolemRenderState() {
       super();
@@ -25,6 +24,6 @@ public class CopperGolemRenderState extends ArmedEntityRenderState {
       this.interactionGetNoItem = new AnimationState();
       this.interactionDropItem = new AnimationState();
       this.interactionDropNoItem = new AnimationState();
-      this.blockOnAntenna = Optional.empty();
+      this.blockOnAntenna = new BlockModelRenderState();
    }
 }

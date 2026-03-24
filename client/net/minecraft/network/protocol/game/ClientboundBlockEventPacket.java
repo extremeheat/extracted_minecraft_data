@@ -16,35 +16,35 @@ public class ClientboundBlockEventPacket implements Packet<ClientGamePacketListe
    private final int b1;
    private final Block block;
 
-   public ClientboundBlockEventPacket(BlockPos var1, Block var2, int var3, int var4) {
+   public ClientboundBlockEventPacket(final BlockPos pos, final Block block, final int b0, final int b1) {
       super();
-      this.pos = var1;
-      this.block = var2;
-      this.b0 = var3;
-      this.b1 = var4;
+      this.pos = pos;
+      this.block = block;
+      this.b0 = b0;
+      this.b1 = b1;
    }
 
-   private ClientboundBlockEventPacket(RegistryFriendlyByteBuf var1) {
+   private ClientboundBlockEventPacket(final RegistryFriendlyByteBuf input) {
       super();
-      this.pos = var1.readBlockPos();
-      this.b0 = var1.readUnsignedByte();
-      this.b1 = var1.readUnsignedByte();
-      this.block = (Block)ByteBufCodecs.registry(Registries.BLOCK).decode(var1);
+      this.pos = input.readBlockPos();
+      this.b0 = input.readUnsignedByte();
+      this.b1 = input.readUnsignedByte();
+      this.block = (Block)ByteBufCodecs.registry(Registries.BLOCK).decode(input);
    }
 
-   private void write(RegistryFriendlyByteBuf var1) {
-      var1.writeBlockPos(this.pos);
-      var1.writeByte(this.b0);
-      var1.writeByte(this.b1);
-      ByteBufCodecs.registry(Registries.BLOCK).encode(var1, this.block);
+   private void write(final RegistryFriendlyByteBuf output) {
+      output.writeBlockPos(this.pos);
+      output.writeByte(this.b0);
+      output.writeByte(this.b1);
+      ByteBufCodecs.registry(Registries.BLOCK).encode(output, this.block);
    }
 
    public PacketType<ClientboundBlockEventPacket> type() {
       return GamePacketTypes.CLIENTBOUND_BLOCK_EVENT;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleBlockEvent(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleBlockEvent(this);
    }
 
    public BlockPos getPos() {

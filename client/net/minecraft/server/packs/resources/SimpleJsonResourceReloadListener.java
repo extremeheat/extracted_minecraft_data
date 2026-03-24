@@ -6,7 +6,6 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.HashMap;
@@ -26,49 +25,49 @@ public abstract class SimpleJsonResourceReloadListener<T> extends SimplePreparab
    private final Codec<T> codec;
    private final FileToIdConverter lister;
 
-   protected SimpleJsonResourceReloadListener(HolderLookup.Provider var1, Codec<T> var2, ResourceKey<? extends Registry<T>> var3) {
-      this((DynamicOps)var1.createSerializationContext(JsonOps.INSTANCE), var2, FileToIdConverter.registry(var3));
+   protected SimpleJsonResourceReloadListener(final HolderLookup.Provider registries, final Codec<T> codec, final ResourceKey<? extends Registry<T>> registryKey) {
+      this((DynamicOps)registries.createSerializationContext(JsonOps.INSTANCE), codec, FileToIdConverter.registry(registryKey));
    }
 
-   protected SimpleJsonResourceReloadListener(Codec<T> var1, FileToIdConverter var2) {
-      this((DynamicOps)JsonOps.INSTANCE, var1, var2);
+   protected SimpleJsonResourceReloadListener(final Codec<T> codec, final FileToIdConverter lister) {
+      this((DynamicOps)JsonOps.INSTANCE, codec, lister);
    }
 
-   private SimpleJsonResourceReloadListener(DynamicOps<JsonElement> var1, Codec<T> var2, FileToIdConverter var3) {
+   private SimpleJsonResourceReloadListener(final DynamicOps<JsonElement> ops, final Codec<T> codec, final FileToIdConverter lister) {
       super();
-      this.ops = var1;
-      this.codec = var2;
-      this.lister = var3;
+      this.ops = ops;
+      this.codec = codec;
+      this.lister = lister;
    }
 
-   protected Map<Identifier, T> prepare(ResourceManager var1, ProfilerFiller var2) {
-      HashMap var3 = new HashMap();
-      scanDirectory(var1, this.lister, this.ops, this.codec, var3);
-      return var3;
+   protected Map<Identifier, T> prepare(final ResourceManager manager, final ProfilerFiller profiler) {
+      Map<Identifier, T> result = new HashMap();
+      scanDirectory(manager, this.lister, this.ops, this.codec, result);
+      return result;
    }
 
-   public static <T> void scanDirectory(ResourceManager var0, ResourceKey<? extends Registry<T>> var1, DynamicOps<JsonElement> var2, Codec<T> var3, Map<Identifier, T> var4) {
-      scanDirectory(var0, FileToIdConverter.registry(var1), var2, var3, var4);
+   public static <T> void scanDirectory(final ResourceManager manager, final ResourceKey<? extends Registry<T>> registryKey, final DynamicOps<JsonElement> ops, final Codec<T> codec, final Map<Identifier, T> result) {
+      scanDirectory(manager, FileToIdConverter.registry(registryKey), ops, codec, result);
    }
 
-   public static <T> void scanDirectory(ResourceManager var0, FileToIdConverter var1, DynamicOps<JsonElement> var2, Codec<T> var3, Map<Identifier, T> var4) {
-      for(Map.Entry var6 : var1.listMatchingResources(var0).entrySet()) {
-         Identifier var7 = (Identifier)var6.getKey();
-         Identifier var8 = var1.fileToId(var7);
+   public static <T> void scanDirectory(final ResourceManager manager, final FileToIdConverter lister, final DynamicOps<JsonElement> ops, final Codec<T> codec, final Map<Identifier, T> result) {
+      for(Map.Entry<Identifier, Resource> entry : lister.listMatchingResources(manager).entrySet()) {
+         Identifier location = (Identifier)entry.getKey();
+         Identifier id = lister.fileToId(location);
 
          try {
-            BufferedReader var9 = ((Resource)var6.getValue()).openAsReader();
+            Reader reader = ((Resource)entry.getValue()).openAsReader();
 
             try {
-               var3.parse(var2, StrictJsonParser.parse((Reader)var9)).ifSuccess((var2x) -> {
-                  if (var4.putIfAbsent(var8, var2x) != null) {
-                     throw new IllegalStateException("Duplicate data file ignored with ID " + String.valueOf(var8));
+               codec.parse(ops, StrictJsonParser.parse(reader)).ifSuccess((parsed) -> {
+                  if (result.putIfAbsent(id, parsed) != null) {
+                     throw new IllegalStateException("Duplicate data file ignored with ID " + String.valueOf(id));
                   }
-               }).ifError((var2x) -> LOGGER.error("Couldn't parse data file '{}' from '{}': {}", new Object[]{var8, var7, var2x}));
+               }).ifError((error) -> LOGGER.error("Couldn't parse data file '{}' from '{}': {}", new Object[]{id, location, error}));
             } catch (Throwable var13) {
-               if (var9 != null) {
+               if (reader != null) {
                   try {
-                     ((Reader)var9).close();
+                     reader.close();
                   } catch (Throwable var12) {
                      var13.addSuppressed(var12);
                   }
@@ -77,18 +76,13 @@ public abstract class SimpleJsonResourceReloadListener<T> extends SimplePreparab
                throw var13;
             }
 
-            if (var9 != null) {
-               ((Reader)var9).close();
+            if (reader != null) {
+               reader.close();
             }
-         } catch (IllegalArgumentException | IOException | JsonParseException var14) {
-            LOGGER.error("Couldn't parse data file '{}' from '{}'", new Object[]{var8, var7, var14});
+         } catch (IllegalArgumentException | IOException | JsonParseException e) {
+            LOGGER.error("Couldn't parse data file '{}' from '{}'", new Object[]{id, location, e});
          }
       }
 
-   }
-
-   // $FF: synthetic method
-   protected Object prepare(final ResourceManager var1, final ProfilerFiller var2) {
-      return this.prepare(var1, var2);
    }
 }

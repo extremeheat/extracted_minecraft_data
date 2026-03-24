@@ -10,49 +10,49 @@ import com.mojang.serialization.Dynamic;
 import java.util.Optional;
 
 public class HeightmapRenamingFix extends DataFix {
-   public HeightmapRenamingFix(Schema var1, boolean var2) {
-      super(var1, var2);
+   public HeightmapRenamingFix(final Schema outputSchema, final boolean changesType) {
+      super(outputSchema, changesType);
    }
 
    protected TypeRewriteRule makeRule() {
-      Type var1 = this.getInputSchema().getType(References.CHUNK);
-      OpticFinder var2 = var1.findField("Level");
-      return this.fixTypeEverywhereTyped("HeightmapRenamingFix", var1, (var2x) -> var2x.updateTyped(var2, (var1) -> var1.update(DSL.remainderFinder(), this::fix)));
+      Type<?> inputType = this.getInputSchema().getType(References.CHUNK);
+      OpticFinder<?> levelF = inputType.findField("Level");
+      return this.fixTypeEverywhereTyped("HeightmapRenamingFix", inputType, (input) -> input.updateTyped(levelF, (level) -> level.update(DSL.remainderFinder(), this::fix)));
    }
 
-   private Dynamic<?> fix(Dynamic<?> var1) {
-      Optional var2 = var1.get("Heightmaps").result();
-      if (var2.isEmpty()) {
-         return var1;
+   private Dynamic<?> fix(final Dynamic<?> tag) {
+      Optional<? extends Dynamic<?>> heightmaps = tag.get("Heightmaps").result();
+      if (heightmaps.isEmpty()) {
+         return tag;
       } else {
-         Dynamic var3 = (Dynamic)var2.get();
-         Optional var4 = var3.get("LIQUID").result();
-         if (var4.isPresent()) {
-            var3 = var3.remove("LIQUID");
-            var3 = var3.set("WORLD_SURFACE_WG", (Dynamic)var4.get());
+         Dynamic<?> heightmapsTag = (Dynamic)heightmaps.get();
+         Optional<? extends Dynamic<?>> liquid = heightmapsTag.get("LIQUID").result();
+         if (liquid.isPresent()) {
+            heightmapsTag = heightmapsTag.remove("LIQUID");
+            heightmapsTag = heightmapsTag.set("WORLD_SURFACE_WG", (Dynamic)liquid.get());
          }
 
-         Optional var5 = var3.get("SOLID").result();
-         if (var5.isPresent()) {
-            var3 = var3.remove("SOLID");
-            var3 = var3.set("OCEAN_FLOOR_WG", (Dynamic)var5.get());
-            var3 = var3.set("OCEAN_FLOOR", (Dynamic)var5.get());
+         Optional<? extends Dynamic<?>> solid = heightmapsTag.get("SOLID").result();
+         if (solid.isPresent()) {
+            heightmapsTag = heightmapsTag.remove("SOLID");
+            heightmapsTag = heightmapsTag.set("OCEAN_FLOOR_WG", (Dynamic)solid.get());
+            heightmapsTag = heightmapsTag.set("OCEAN_FLOOR", (Dynamic)solid.get());
          }
 
-         Optional var6 = var3.get("LIGHT").result();
-         if (var6.isPresent()) {
-            var3 = var3.remove("LIGHT");
-            var3 = var3.set("LIGHT_BLOCKING", (Dynamic)var6.get());
+         Optional<? extends Dynamic<?>> light = heightmapsTag.get("LIGHT").result();
+         if (light.isPresent()) {
+            heightmapsTag = heightmapsTag.remove("LIGHT");
+            heightmapsTag = heightmapsTag.set("LIGHT_BLOCKING", (Dynamic)light.get());
          }
 
-         Optional var7 = var3.get("RAIN").result();
-         if (var7.isPresent()) {
-            var3 = var3.remove("RAIN");
-            var3 = var3.set("MOTION_BLOCKING", (Dynamic)var7.get());
-            var3 = var3.set("MOTION_BLOCKING_NO_LEAVES", (Dynamic)var7.get());
+         Optional<? extends Dynamic<?>> rain = heightmapsTag.get("RAIN").result();
+         if (rain.isPresent()) {
+            heightmapsTag = heightmapsTag.remove("RAIN");
+            heightmapsTag = heightmapsTag.set("MOTION_BLOCKING", (Dynamic)rain.get());
+            heightmapsTag = heightmapsTag.set("MOTION_BLOCKING_NO_LEAVES", (Dynamic)rain.get());
          }
 
-         return var1.set("Heightmaps", var3);
+         return tag.set("Heightmaps", heightmapsTag);
       }
    }
 }

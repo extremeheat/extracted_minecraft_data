@@ -26,54 +26,50 @@ public class RealmsTextureManager {
       super();
    }
 
-   public static Identifier worldTemplate(String var0, @Nullable String var1) {
-      return var1 == null ? TEMPLATE_ICON_LOCATION : getTexture(var0, var1);
+   public static Identifier worldTemplate(final String id, final @Nullable String image) {
+      return image == null ? TEMPLATE_ICON_LOCATION : getTexture(id, image);
    }
 
-   private static Identifier getTexture(String var0, String var1) {
-      RealmsTexture var2 = (RealmsTexture)TEXTURES.get(var0);
-      if (var2 != null && var2.image().equals(var1)) {
-         return var2.textureId;
+   private static Identifier getTexture(final String id, final String encodedImage) {
+      RealmsTexture texture = (RealmsTexture)TEXTURES.get(id);
+      if (texture != null && texture.image().equals(encodedImage)) {
+         return texture.textureId;
       } else {
-         NativeImage var3 = loadImage(var1);
-         if (var3 == null) {
-            Identifier var5 = MissingTextureAtlasSprite.getLocation();
-            TEXTURES.put(var0, new RealmsTexture(var1, var5));
-            return var5;
+         NativeImage image = loadImage(encodedImage);
+         if (image == null) {
+            Identifier missingTexture = MissingTextureAtlasSprite.getLocation();
+            TEXTURES.put(id, new RealmsTexture(encodedImage, missingTexture));
+            return missingTexture;
          } else {
-            Identifier var4 = Identifier.fromNamespaceAndPath("realms", "dynamic/" + var0);
+            Identifier textureId = Identifier.fromNamespaceAndPath("realms", "dynamic/" + id);
             TextureManager var10000 = Minecraft.getInstance().getTextureManager();
-            Objects.requireNonNull(var4);
-            var10000.register(var4, new DynamicTexture(var4::toString, var3));
-            TEXTURES.put(var0, new RealmsTexture(var1, var4));
-            return var4;
+            Objects.requireNonNull(textureId);
+            var10000.register(textureId, new DynamicTexture(textureId::toString, image));
+            TEXTURES.put(id, new RealmsTexture(encodedImage, textureId));
+            return textureId;
          }
       }
    }
 
-   private static @Nullable NativeImage loadImage(String var0) {
-      byte[] var1 = Base64.getDecoder().decode(var0);
-      ByteBuffer var2 = MemoryUtil.memAlloc(var1.length);
+   private static @Nullable NativeImage loadImage(final String encodedImage) {
+      byte[] bytes = Base64.getDecoder().decode(encodedImage);
+      ByteBuffer buffer = MemoryUtil.memAlloc(bytes.length);
 
       try {
-         NativeImage var3 = NativeImage.read(var2.put(var1).flip());
+         NativeImage var3 = NativeImage.read(buffer.put(bytes).flip());
          return var3;
-      } catch (IOException var7) {
-         LOGGER.warn("Failed to load world image: {}", var0, var7);
+      } catch (IOException e) {
+         LOGGER.warn("Failed to load world image: {}", encodedImage, e);
       } finally {
-         MemoryUtil.memFree(var2);
+         MemoryUtil.memFree(buffer);
       }
 
       return null;
    }
 
    public static record RealmsTexture(String image, Identifier textureId) {
-      final Identifier textureId;
-
-      public RealmsTexture(String var1, Identifier var2) {
+      public RealmsTexture {
          super();
-         this.image = var1;
-         this.textureId = var2;
       }
    }
 }

@@ -11,13 +11,13 @@ public class Listener {
       this.transform = ListenerTransform.INITIAL;
    }
 
-   public void setTransform(ListenerTransform var1) {
-      this.transform = var1;
-      Vec3 var2 = var1.position();
-      Vec3 var3 = var1.forward();
-      Vec3 var4 = var1.up();
-      AL10.alListener3f(4100, (float)var2.x, (float)var2.y, (float)var2.z);
-      AL10.alListenerfv(4111, new float[]{(float)var3.x, (float)var3.y, (float)var3.z, (float)var4.x(), (float)var4.y(), (float)var4.z()});
+   public void setTransform(final ListenerTransform transform) {
+      this.transform = transform;
+      Vec3 position = transform.position();
+      Vec3 forward = transform.forward();
+      Vec3 up = transform.up();
+      AL10.alListener3f(4100, (float)position.x, (float)position.y, (float)position.z);
+      AL10.alListenerfv(4111, new float[]{(float)forward.x, (float)forward.y, (float)forward.z, (float)up.x(), (float)up.y(), (float)up.z()});
    }
 
    public void reset() {

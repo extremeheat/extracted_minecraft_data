@@ -13,15 +13,15 @@ public class GlazedTerracottaBlock extends HorizontalDirectionalBlock {
       return CODEC;
    }
 
-   public GlazedTerracottaBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public GlazedTerracottaBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(FACING);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(FACING);
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return (BlockState)this.defaultBlockState().setValue(FACING, var1.getHorizontalDirection().getOpposite());
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      return (BlockState)this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
    }
 }

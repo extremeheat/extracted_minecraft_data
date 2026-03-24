@@ -37,59 +37,59 @@ public class WaypointCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("waypoint").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("list").executes((var0x) -> listWaypoints((CommandSourceStack)var0x.getSource())))).then(Commands.literal("modify").then(((RequiredArgumentBuilder)Commands.argument("waypoint", EntityArgument.entity()).then(((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("color").then(Commands.argument("color", ColorArgument.color()).executes((var0x) -> setWaypointColor((CommandSourceStack)var0x.getSource(), WaypointArgument.getWaypoint(var0x, "waypoint"), ColorArgument.getColor(var0x, "color"))))).then(Commands.literal("hex").then(Commands.argument("color", HexColorArgument.hexColor()).executes((var0x) -> setWaypointColor((CommandSourceStack)var0x.getSource(), WaypointArgument.getWaypoint(var0x, "waypoint"), HexColorArgument.getHexColor(var0x, "color")))))).then(Commands.literal("reset").executes((var0x) -> resetWaypointColor((CommandSourceStack)var0x.getSource(), WaypointArgument.getWaypoint(var0x, "waypoint")))))).then(((LiteralArgumentBuilder)Commands.literal("style").then(Commands.literal("reset").executes((var0x) -> setWaypointStyle((CommandSourceStack)var0x.getSource(), WaypointArgument.getWaypoint(var0x, "waypoint"), WaypointStyleAssets.DEFAULT)))).then(Commands.literal("set").then(Commands.argument("style", IdentifierArgument.id()).executes((var0x) -> setWaypointStyle((CommandSourceStack)var0x.getSource(), WaypointArgument.getWaypoint(var0x, "waypoint"), ResourceKey.create(WaypointStyleAssets.ROOT_ID, IdentifierArgument.getId(var0x, "style"))))))))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final CommandBuildContext context) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("waypoint").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("list").executes((c) -> listWaypoints((CommandSourceStack)c.getSource())))).then(Commands.literal("modify").then(((RequiredArgumentBuilder)Commands.argument("waypoint", EntityArgument.entity()).then(((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("color").then(Commands.argument("color", ColorArgument.color()).executes((c) -> setWaypointColor((CommandSourceStack)c.getSource(), WaypointArgument.getWaypoint(c, "waypoint"), ColorArgument.getColor(c, "color"))))).then(Commands.literal("hex").then(Commands.argument("color", HexColorArgument.hexColor()).executes((c) -> setWaypointColor((CommandSourceStack)c.getSource(), WaypointArgument.getWaypoint(c, "waypoint"), HexColorArgument.getHexColor(c, "color")))))).then(Commands.literal("reset").executes((c) -> resetWaypointColor((CommandSourceStack)c.getSource(), WaypointArgument.getWaypoint(c, "waypoint")))))).then(((LiteralArgumentBuilder)Commands.literal("style").then(Commands.literal("reset").executes((c) -> setWaypointStyle((CommandSourceStack)c.getSource(), WaypointArgument.getWaypoint(c, "waypoint"), WaypointStyleAssets.DEFAULT)))).then(Commands.literal("set").then(Commands.argument("style", IdentifierArgument.id()).executes((c) -> setWaypointStyle((CommandSourceStack)c.getSource(), WaypointArgument.getWaypoint(c, "waypoint"), ResourceKey.create(WaypointStyleAssets.ROOT_ID, IdentifierArgument.getId(c, "style"))))))))));
    }
 
-   private static int setWaypointStyle(CommandSourceStack var0, WaypointTransmitter var1, ResourceKey<WaypointStyleAsset> var2) {
-      mutateIcon(var0, var1, (var1x) -> var1x.style = var2);
-      var0.sendSuccess(() -> Component.translatable("commands.waypoint.modify.style"), false);
+   private static int setWaypointStyle(final CommandSourceStack source, final WaypointTransmitter waypoint, final ResourceKey<WaypointStyleAsset> style) {
+      mutateIcon(source, waypoint, (icon) -> icon.style = style);
+      source.sendSuccess(() -> Component.translatable("commands.waypoint.modify.style"), false);
       return 0;
    }
 
-   private static int setWaypointColor(CommandSourceStack var0, WaypointTransmitter var1, ChatFormatting var2) {
-      mutateIcon(var0, var1, (var1x) -> var1x.color = Optional.of(var2.getColor()));
-      var0.sendSuccess(() -> Component.translatable("commands.waypoint.modify.color", Component.literal(var2.getName()).withStyle(var2)), false);
+   private static int setWaypointColor(final CommandSourceStack source, final WaypointTransmitter waypoint, final ChatFormatting color) {
+      mutateIcon(source, waypoint, (icon) -> icon.color = Optional.of(color.getColor()));
+      source.sendSuccess(() -> Component.translatable("commands.waypoint.modify.color", Component.literal(color.getName()).withStyle(color)), false);
       return 0;
    }
 
-   private static int setWaypointColor(CommandSourceStack var0, WaypointTransmitter var1, Integer var2) {
-      mutateIcon(var0, var1, (var1x) -> var1x.color = Optional.of(var2));
-      var0.sendSuccess(() -> Component.translatable("commands.waypoint.modify.color", Component.literal(HexFormat.of().withUpperCase().toHexDigits((long)ARGB.color(0, var2), 6)).withColor(var2)), false);
+   private static int setWaypointColor(final CommandSourceStack source, final WaypointTransmitter waypoint, final Integer color) {
+      mutateIcon(source, waypoint, (icon) -> icon.color = Optional.of(color));
+      source.sendSuccess(() -> Component.translatable("commands.waypoint.modify.color", Component.literal(HexFormat.of().withUpperCase().toHexDigits((long)ARGB.color(0, color), 6)).withColor(color)), false);
       return 0;
    }
 
-   private static int resetWaypointColor(CommandSourceStack var0, WaypointTransmitter var1) {
-      mutateIcon(var0, var1, (var0x) -> var0x.color = Optional.empty());
-      var0.sendSuccess(() -> Component.translatable("commands.waypoint.modify.color.reset"), false);
+   private static int resetWaypointColor(final CommandSourceStack source, final WaypointTransmitter waypoint) {
+      mutateIcon(source, waypoint, (icon) -> icon.color = Optional.empty());
+      source.sendSuccess(() -> Component.translatable("commands.waypoint.modify.color.reset"), false);
       return 0;
    }
 
-   private static int listWaypoints(CommandSourceStack var0) {
-      ServerLevel var1 = var0.getLevel();
-      Set var2 = var1.getWaypointManager().transmitters();
-      String var3 = var1.dimension().identifier().toString();
-      if (var2.isEmpty()) {
-         var0.sendSuccess(() -> Component.translatable("commands.waypoint.list.empty", var3), false);
+   private static int listWaypoints(final CommandSourceStack source) {
+      ServerLevel level = source.getLevel();
+      Set<WaypointTransmitter> waypoints = level.getWaypointManager().transmitters();
+      String dimension = level.dimension().identifier().toString();
+      if (waypoints.isEmpty()) {
+         source.sendSuccess(() -> Component.translatable("commands.waypoint.list.empty", dimension), false);
          return 0;
       } else {
-         Component var4 = ComponentUtils.formatList(var2.stream().map((var1x) -> {
-            if (var1x instanceof LivingEntity var2) {
-               BlockPos var3x = var2.blockPosition();
-               return var2.getFeedbackDisplayName().copy().withStyle((UnaryOperator)((var3xx) -> var3xx.withClickEvent(new ClickEvent.SuggestCommand("/execute in " + var3 + " run tp @s " + var3x.getX() + " " + var3x.getY() + " " + var3x.getZ())).withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.coordinates.tooltip"))).withColor((Integer)var1x.waypointIcon().color.orElse(-1))));
+         Component waypointNames = ComponentUtils.formatList(waypoints.stream().map((transmitter) -> {
+            if (transmitter instanceof LivingEntity livingEntity) {
+               BlockPos pos = livingEntity.blockPosition();
+               return livingEntity.getFeedbackDisplayName().copy().withStyle((UnaryOperator)((s) -> s.withClickEvent(new ClickEvent.SuggestCommand("/execute in " + dimension + " run tp @s " + pos.getX() + " " + pos.getY() + " " + pos.getZ())).withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.coordinates.tooltip"))).withColor((Integer)transmitter.waypointIcon().color.orElse(-1))));
             } else {
-               return Component.literal(var1x.toString());
+               return Component.literal(transmitter.toString());
             }
          }).toList(), Function.identity());
-         var0.sendSuccess(() -> Component.translatable("commands.waypoint.list.success", var2.size(), var3, var4), false);
-         return var2.size();
+         source.sendSuccess(() -> Component.translatable("commands.waypoint.list.success", waypoints.size(), dimension, waypointNames), false);
+         return waypoints.size();
       }
    }
 
-   private static void mutateIcon(CommandSourceStack var0, WaypointTransmitter var1, Consumer<Waypoint.Icon> var2) {
-      ServerLevel var3 = var0.getLevel();
-      var3.getWaypointManager().untrackWaypoint(var1);
-      var2.accept(var1.waypointIcon());
-      var3.getWaypointManager().trackWaypoint(var1);
+   private static void mutateIcon(final CommandSourceStack source, final WaypointTransmitter waypoint, final Consumer<Waypoint.Icon> iconConsumer) {
+      ServerLevel level = source.getLevel();
+      level.getWaypointManager().untrackWaypoint(waypoint);
+      iconConsumer.accept(waypoint.waypointIcon());
+      level.getWaypointManager().trackWaypoint(waypoint);
    }
 }

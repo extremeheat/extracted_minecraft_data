@@ -8,23 +8,23 @@ import java.util.function.Supplier;
 import net.minecraft.util.datafix.fixes.References;
 
 public class V4300 extends NamespacedSchema {
-   public V4300(int var1, Schema var2) {
-      super(var1, var2);
+   public V4300(final int versionKey, final Schema parent) {
+      super(versionKey, parent);
    }
 
-   public Map<String, Supplier<TypeTemplate>> registerEntities(Schema var1) {
-      Map var2 = super.registerEntities(var1);
-      var1.register(var2, "minecraft:llama", (var1x) -> entityWithInventory(var1));
-      var1.register(var2, "minecraft:trader_llama", (var1x) -> entityWithInventory(var1));
-      var1.register(var2, "minecraft:donkey", (var1x) -> entityWithInventory(var1));
-      var1.register(var2, "minecraft:mule", (var1x) -> entityWithInventory(var1));
-      var1.registerSimple(var2, "minecraft:horse");
-      var1.registerSimple(var2, "minecraft:skeleton_horse");
-      var1.registerSimple(var2, "minecraft:zombie_horse");
-      return var2;
+   public Map<String, Supplier<TypeTemplate>> registerEntities(final Schema schema) {
+      Map<String, Supplier<TypeTemplate>> map = super.registerEntities(schema);
+      schema.register(map, "minecraft:llama", (name) -> entityWithInventory(schema));
+      schema.register(map, "minecraft:trader_llama", (name) -> entityWithInventory(schema));
+      schema.register(map, "minecraft:donkey", (name) -> entityWithInventory(schema));
+      schema.register(map, "minecraft:mule", (name) -> entityWithInventory(schema));
+      schema.registerSimple(map, "minecraft:horse");
+      schema.registerSimple(map, "minecraft:skeleton_horse");
+      schema.registerSimple(map, "minecraft:zombie_horse");
+      return map;
    }
 
-   private static TypeTemplate entityWithInventory(Schema var0) {
-      return DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(var0)));
+   private static TypeTemplate entityWithInventory(final Schema schema) {
+      return DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(schema)));
    }
 }

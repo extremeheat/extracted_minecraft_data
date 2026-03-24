@@ -3,13 +3,16 @@ package net.minecraft.world.item;
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponentLookup;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerLevel;
@@ -18,6 +21,7 @@ import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.material.MapColor;
 import org.jetbrains.annotations.Contract;
@@ -41,13 +45,14 @@ public enum DyeColor implements StringRepresentable {
    RED(14, "red", 11546150, MapColor.COLOR_RED, 11743532, 16711680),
    BLACK(15, "black", 1908001, MapColor.COLOR_BLACK, 1973019, 0);
 
-   private static final IntFunction<DyeColor> BY_ID = ByIdMap.<DyeColor>continuous(DyeColor::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-   private static final Int2ObjectOpenHashMap<DyeColor> BY_FIREWORK_COLOR = new Int2ObjectOpenHashMap((Map)Arrays.stream(values()).collect(Collectors.toMap((var0) -> var0.fireworkColor, (var0) -> var0)));
+   public static final List<DyeColor> VALUES = List.of(values());
+   private static final IntFunction<DyeColor> BY_ID = ByIdMap.<DyeColor>continuous(DyeColor::getId, (DyeColor[])VALUES.toArray((x$0) -> new DyeColor[x$0]), ByIdMap.OutOfBoundsStrategy.ZERO);
+   private static final Int2ObjectOpenHashMap<DyeColor> BY_FIREWORK_COLOR = new Int2ObjectOpenHashMap((Map)VALUES.stream().collect(Collectors.toMap((v) -> v.fireworkColor, (v) -> v)));
    public static final StringRepresentable.EnumCodec<DyeColor> CODEC = StringRepresentable.<DyeColor>fromEnum(DyeColor::values);
    public static final StreamCodec<ByteBuf, DyeColor> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, DyeColor::getId);
    /** @deprecated */
    @Deprecated
-   public static final Codec<DyeColor> LEGACY_ID_CODEC = Codec.BYTE.xmap(DyeColor::byId, (var0) -> (byte)var0.id);
+   public static final Codec<DyeColor> LEGACY_ID_CODEC = Codec.BYTE.xmap(DyeColor::byId, (color) -> (byte)color.id);
    private final int id;
    private final String name;
    private final MapColor mapColor;
@@ -55,13 +60,13 @@ public enum DyeColor implements StringRepresentable {
    private final int fireworkColor;
    private final int textColor;
 
-   private DyeColor(final int var3, final String var4, final int var5, final MapColor var6, final int var7, final int var8) {
-      this.id = var3;
-      this.name = var4;
-      this.mapColor = var6;
-      this.textColor = ARGB.opaque(var8);
-      this.textureDiffuseColor = ARGB.opaque(var5);
-      this.fireworkColor = var7;
+   private DyeColor(final int id, final String name, final int textureDiffuseColor, final MapColor mapColor, final int fireworkColor, final int textColor) {
+      this.id = id;
+      this.name = name;
+      this.mapColor = mapColor;
+      this.textColor = ARGB.opaque(textColor);
+      this.textureDiffuseColor = ARGB.opaque(textureDiffuseColor);
+      this.fireworkColor = fireworkColor;
    }
 
    public int getId() {
@@ -88,18 +93,18 @@ public enum DyeColor implements StringRepresentable {
       return this.textColor;
    }
 
-   public static DyeColor byId(int var0) {
-      return (DyeColor)BY_ID.apply(var0);
+   public static DyeColor byId(final int id) {
+      return (DyeColor)BY_ID.apply(id);
    }
 
    @Contract("_,!null->!null;_,null->_")
-   public static @Nullable DyeColor byName(String var0, @Nullable DyeColor var1) {
-      DyeColor var2 = CODEC.byName(var0);
-      return var2 != null ? var2 : var1;
+   public static @Nullable DyeColor byName(final String name, final @Nullable DyeColor def) {
+      DyeColor result = CODEC.byName(name);
+      return result != null ? result : def;
    }
 
-   public static @Nullable DyeColor byFireworkColor(int var0) {
-      return (DyeColor)BY_FIREWORK_COLOR.get(var0);
+   public static @Nullable DyeColor byFireworkColor(final int color) {
+      return (DyeColor)BY_FIREWORK_COLOR.get(color);
    }
 
    public String toString() {
@@ -110,17 +115,42 @@ public enum DyeColor implements StringRepresentable {
       return this.name;
    }
 
-   public static DyeColor getMixedColor(ServerLevel var0, DyeColor var1, DyeColor var2) {
-      CraftingInput var3 = makeCraftColorInput(var1, var2);
-      Optional var10000 = var0.recipeAccess().getRecipeFor(RecipeType.CRAFTING, var3, var0).map((var2x) -> ((CraftingRecipe)var2x.value()).assemble(var3, var0.registryAccess())).map(ItemStack::getItem);
-      Objects.requireNonNull(DyeItem.class);
-      var10000 = var10000.filter(DyeItem.class::isInstance);
-      Objects.requireNonNull(DyeItem.class);
-      return (DyeColor)var10000.map(DyeItem.class::cast).map(DyeItem::getDyeColor).orElseGet(() -> var0.random.nextBoolean() ? var1 : var2);
+   public static DyeColor getMixedColor(final ServerLevel level, final DyeColor dyeColor1, final DyeColor dyeColor2) {
+      DyeColor mixedColor = findColorMixInRecipes(level, dyeColor1, dyeColor2);
+      if (mixedColor != null) {
+         return mixedColor;
+      } else {
+         return level.getRandom().nextBoolean() ? dyeColor1 : dyeColor2;
+      }
    }
 
-   private static CraftingInput makeCraftColorInput(DyeColor var0, DyeColor var1) {
-      return CraftingInput.of(2, 1, List.of(new ItemStack(DyeItem.byColor(var0)), new ItemStack(DyeItem.byColor(var1))));
+   private static @Nullable DyeColor findColorMixInRecipes(final ServerLevel level, final DyeColor dyeColor1, final DyeColor dyeColor2) {
+      DataComponentLookup<Item> itemComponents = level.registryAccess().lookupOrThrow(Registries.ITEM).componentLookup();
+      Collection<Holder<Item>> dye1Items = itemComponents.findAll(DataComponents.DYE, dyeColor1);
+      if (dye1Items.isEmpty()) {
+         return null;
+      } else {
+         Collection<Holder<Item>> dye2Items = itemComponents.findAll(DataComponents.DYE, dyeColor2);
+         if (dye2Items.isEmpty()) {
+            return null;
+         } else {
+            for(Holder<Item> dye1Item : dye1Items) {
+               for(Holder<Item> dye2Item : dye2Items) {
+                  CraftingInput input = CraftingInput.of(2, 1, List.of(new ItemStack(dye1Item), new ItemStack(dye2Item)));
+                  Optional<RecipeHolder<CraftingRecipe>> foundRecipe = level.recipeAccess().getRecipeFor(RecipeType.CRAFTING, input, level);
+                  if (foundRecipe.isPresent()) {
+                     ItemStack craftingResult = ((CraftingRecipe)((RecipeHolder)foundRecipe.get()).value()).assemble(input);
+                     DyeColor craftedDyeColor = (DyeColor)craftingResult.get(DataComponents.DYE);
+                     if (craftedDyeColor != null) {
+                        return craftedDyeColor;
+                     }
+                  }
+               }
+            }
+
+            return null;
+         }
+      }
    }
 
    // $FF: synthetic method

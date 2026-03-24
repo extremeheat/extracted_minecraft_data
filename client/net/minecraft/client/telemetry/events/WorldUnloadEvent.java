@@ -25,23 +25,23 @@ public class WorldUnloadEvent {
 
    }
 
-   public void setTime(long var1) {
+   public void setTime(final long gameTime) {
       if (this.lastGameTime != -1L) {
-         this.totalTicks += Math.max(0L, var1 - this.lastGameTime);
+         this.totalTicks += Math.max(0L, gameTime - this.lastGameTime);
       }
 
-      this.lastGameTime = var1;
+      this.lastGameTime = gameTime;
    }
 
-   private int getTimeInSecondsSinceLoad(Instant var1) {
-      Duration var2 = Duration.between(var1, Instant.now());
-      return (int)var2.toSeconds();
+   private int getTimeInSecondsSinceLoad(final Instant loadedTime) {
+      Duration timeBetween = Duration.between(loadedTime, Instant.now());
+      return (int)timeBetween.toSeconds();
    }
 
-   public void send(TelemetryEventSender var1) {
-      this.worldLoadedTime.ifPresent((var2) -> var1.send(TelemetryEventType.WORLD_UNLOADED, (var2x) -> {
-            var2x.put(TelemetryProperty.SECONDS_SINCE_LOAD, this.getTimeInSecondsSinceLoad(var2));
-            var2x.put(TelemetryProperty.TICKS_SINCE_LOAD, (int)this.totalTicks);
+   public void send(final TelemetryEventSender eventSender) {
+      this.worldLoadedTime.ifPresent((loadedTime) -> eventSender.send(TelemetryEventType.WORLD_UNLOADED, (properties) -> {
+            properties.put(TelemetryProperty.SECONDS_SINCE_LOAD, this.getTimeInSecondsSinceLoad(loadedTime));
+            properties.put(TelemetryProperty.TICKS_SINCE_LOAD, (int)this.totalTicks);
          }));
    }
 }

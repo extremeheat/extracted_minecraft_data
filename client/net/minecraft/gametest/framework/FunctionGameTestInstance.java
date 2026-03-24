@@ -10,16 +10,16 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
 
 public class FunctionGameTestInstance extends GameTestInstance {
-   public static final MapCodec<FunctionGameTestInstance> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceKey.codec(Registries.TEST_FUNCTION).fieldOf("function").forGetter(FunctionGameTestInstance::function), TestData.CODEC.forGetter(GameTestInstance::info)).apply(var0, FunctionGameTestInstance::new));
+   public static final MapCodec<FunctionGameTestInstance> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ResourceKey.codec(Registries.TEST_FUNCTION).fieldOf("function").forGetter(FunctionGameTestInstance::function), TestData.CODEC.forGetter(GameTestInstance::info)).apply(i, FunctionGameTestInstance::new));
    private final ResourceKey<Consumer<GameTestHelper>> function;
 
-   public FunctionGameTestInstance(ResourceKey<Consumer<GameTestHelper>> var1, TestData<Holder<TestEnvironmentDefinition>> var2) {
-      super(var2);
-      this.function = var1;
+   public FunctionGameTestInstance(final ResourceKey<Consumer<GameTestHelper>> function, final TestData<Holder<TestEnvironmentDefinition<?>>> info) {
+      super(info);
+      this.function = function;
    }
 
-   public void run(GameTestHelper var1) {
-      ((Consumer)var1.getLevel().registryAccess().get(this.function).map(Holder.Reference::value).orElseThrow(() -> new IllegalStateException("Trying to access missing test function: " + String.valueOf(this.function.identifier())))).accept(var1);
+   public void run(final GameTestHelper helper) {
+      ((Consumer)helper.getLevel().registryAccess().get(this.function).map(Holder.Reference::value).orElseThrow(() -> new IllegalStateException("Trying to access missing test function: " + String.valueOf(this.function.identifier())))).accept(helper);
    }
 
    private ResourceKey<Consumer<GameTestHelper>> function() {

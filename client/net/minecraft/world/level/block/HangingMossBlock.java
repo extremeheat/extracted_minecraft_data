@@ -30,86 +30,87 @@ public class HangingMossBlock extends Block implements BonemealableBlock {
       return CODEC;
    }
 
-   public HangingMossBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public HangingMossBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(TIP, true));
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (Boolean)var1.getValue(TIP) ? SHAPE_TIP : SHAPE_BASE;
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return (Boolean)state.getValue(TIP) ? SHAPE_TIP : SHAPE_BASE;
    }
 
-   public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
-      if (var4.nextInt(500) == 0) {
-         BlockState var5 = var2.getBlockState(var3.above());
-         if (var5.is(BlockTags.PALE_OAK_LOGS) || var5.is(Blocks.PALE_OAK_LEAVES)) {
-            var2.playLocalSound((double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), SoundEvents.PALE_HANGING_MOSS_IDLE, SoundSource.AMBIENT, 1.0F, 1.0F, false);
+   public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {
+      if (random.nextInt(500) == 0) {
+         BlockState above = level.getBlockState(pos.above());
+         if (above.is(BlockTags.PALE_OAK_LOGS) || above.is(Blocks.PALE_OAK_LEAVES)) {
+            level.playLocalSound((double)pos.getX(), (double)pos.getY(), (double)pos.getZ(), SoundEvents.PALE_HANGING_MOSS_IDLE, SoundSource.AMBIENT, 1.0F, 1.0F, false);
          }
       }
 
    }
 
-   protected boolean propagatesSkylightDown(BlockState var1) {
+   protected boolean propagatesSkylightDown(final BlockState state) {
       return true;
    }
 
-   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      return this.canStayAtPosition(var2, var3);
+   protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
+      return this.canStayAtPosition(level, pos);
    }
 
-   private boolean canStayAtPosition(BlockGetter var1, BlockPos var2) {
-      BlockPos var3 = var2.relative(Direction.UP);
-      BlockState var4 = var1.getBlockState(var3);
-      return MultifaceBlock.canAttachTo(var1, Direction.UP, var3, var4) || var4.is(Blocks.PALE_HANGING_MOSS);
+   private boolean canStayAtPosition(final BlockGetter level, final BlockPos pos) {
+      BlockPos neighbourPos = pos.relative(Direction.UP);
+      BlockState blockState = level.getBlockState(neighbourPos);
+      return MultifaceBlock.canAttachTo(level, Direction.UP, neighbourPos, blockState) || blockState.is(this);
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      if (!this.canStayAtPosition(var2, var4)) {
-         var3.scheduleTick(var4, (Block)this, 1);
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      if (!this.canStayAtPosition(level, pos)) {
+         ticks.scheduleTick(pos, (Block)this, 1);
       }
 
-      return (BlockState)var1.setValue(TIP, !var2.getBlockState(var4.below()).is(this));
+      return (BlockState)state.setValue(TIP, !level.getBlockState(pos.below()).is(this));
    }
 
-   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (!this.canStayAtPosition(var2, var3)) {
-         var2.destroyBlock(var3, true);
+   protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if (!this.canStayAtPosition(level, pos)) {
+         level.destroyBlock(pos, true);
       }
 
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(TIP);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(TIP);
    }
 
-   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
-      return this.canGrowInto(var1.getBlockState(this.getTip(var1, var2).below()));
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+      BlockPos growPos = this.getTip(level, pos).below();
+      return this.canGrowInto(level.getBlockState(growPos)) && level.isInsideBuildHeight(growPos);
    }
 
-   private boolean canGrowInto(BlockState var1) {
-      return var1.isAir();
+   private boolean canGrowInto(final BlockState state) {
+      return state.isAir();
    }
 
-   public BlockPos getTip(BlockGetter var1, BlockPos var2) {
-      BlockPos.MutableBlockPos var3 = var2.mutable();
+   public BlockPos getTip(final BlockGetter level, final BlockPos pos) {
+      BlockPos.MutableBlockPos forwardPos = pos.mutable();
 
-      BlockState var4;
+      BlockState forwardState;
       do {
-         var3.move(Direction.DOWN);
-         var4 = var1.getBlockState(var3);
-      } while(var4.is(this));
+         forwardPos.move(Direction.DOWN);
+         forwardState = level.getBlockState(forwardPos);
+      } while(forwardState.is(this));
 
-      return var3.relative(Direction.UP).immutable();
+      return forwardPos.relative(Direction.UP).immutable();
    }
 
-   public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
       return true;
    }
 
-   public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      BlockPos var5 = this.getTip(var1, var3).below();
-      if (this.canGrowInto(var1.getBlockState(var5))) {
-         var1.setBlockAndUpdate(var5, (BlockState)var4.setValue(TIP, true));
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+      BlockPos tipPos = this.getTip(level, pos).below();
+      if (this.canGrowInto(level.getBlockState(tipPos))) {
+         level.setBlockAndUpdate(tipPos, (BlockState)state.setValue(TIP, true));
       }
    }
 

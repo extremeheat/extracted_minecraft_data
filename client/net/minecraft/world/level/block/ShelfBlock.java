@@ -61,64 +61,64 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
       return CODEC;
    }
 
-   public ShelfBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public ShelfBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(POWERED, false)).setValue(SIDE_CHAIN_PART, SideChainPart.UNCONNECTED)).setValue(WATERLOGGED, false));
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (VoxelShape)SHAPES.get(var1.getValue(FACING));
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return (VoxelShape)SHAPES.get(state.getValue(FACING));
    }
 
-   protected boolean useShapeForLightOcclusion(BlockState var1) {
+   protected boolean useShapeForLightOcclusion(final BlockState state) {
       return true;
    }
 
-   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
-      return var2 == PathComputationType.WATER && var1.getFluidState().is(FluidTags.WATER);
+   protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
+      return type == PathComputationType.WATER && state.getFluidState().is(FluidTags.WATER);
    }
 
-   public @Nullable BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new ShelfBlockEntity(var1, var2);
+   public @Nullable BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      return new ShelfBlockEntity(worldPosition, blockState);
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(FACING, POWERED, SIDE_CHAIN_PART, WATERLOGGED);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(FACING, POWERED, SIDE_CHAIN_PART, WATERLOGGED);
    }
 
-   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
-      Containers.updateNeighboursAfterDestroy(var1, var2, var3);
-      this.updateNeighborsAfterPoweringDown(var2, var3, var1);
+   protected void affectNeighborsAfterRemoval(final BlockState state, final ServerLevel level, final BlockPos pos, final boolean movedByPiston) {
+      Containers.updateNeighboursAfterDestroy(state, level, pos);
+      this.updateNeighborsAfterPoweringDown(level, pos, state);
    }
 
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
-      if (!var2.isClientSide()) {
-         boolean var7 = var2.hasNeighborSignal(var3);
-         if ((Boolean)var1.getValue(POWERED) != var7) {
-            BlockState var8 = (BlockState)var1.setValue(POWERED, var7);
-            if (!var7) {
-               var8 = (BlockState)var8.setValue(SIDE_CHAIN_PART, SideChainPart.UNCONNECTED);
+   protected void neighborChanged(final BlockState state, final Level level, final BlockPos pos, final Block block, final @Nullable Orientation orientation, final boolean movedByPiston) {
+      if (!level.isClientSide()) {
+         boolean signal = level.hasNeighborSignal(pos);
+         if ((Boolean)state.getValue(POWERED) != signal) {
+            BlockState newState = (BlockState)state.setValue(POWERED, signal);
+            if (!signal) {
+               newState = (BlockState)newState.setValue(SIDE_CHAIN_PART, SideChainPart.UNCONNECTED);
             }
 
-            var2.setBlock(var3, var8, 3);
-            this.playSound(var2, var3, var7 ? SoundEvents.SHELF_ACTIVATE : SoundEvents.SHELF_DEACTIVATE);
-            var2.gameEvent(var7 ? GameEvent.BLOCK_ACTIVATE : GameEvent.BLOCK_DEACTIVATE, var3, GameEvent.Context.of(var8));
+            level.setBlock(pos, newState, 3);
+            this.playSound(level, pos, signal ? SoundEvents.SHELF_ACTIVATE : SoundEvents.SHELF_DEACTIVATE);
+            level.gameEvent(signal ? GameEvent.BLOCK_ACTIVATE : GameEvent.BLOCK_DEACTIVATE, pos, GameEvent.Context.of(newState));
          }
 
       }
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      FluidState var2 = var1.getLevel().getFluidState(var1.getClickedPos());
-      return (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(FACING, var1.getHorizontalDirection().getOpposite())).setValue(POWERED, var1.getLevel().hasNeighborSignal(var1.getClickedPos()))).setValue(WATERLOGGED, var2.getType() == Fluids.WATER);
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      FluidState replacedFluidState = context.getLevel().getFluidState(context.getClickedPos());
+      return (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite())).setValue(POWERED, context.getLevel().hasNeighborSignal(context.getClickedPos()))).setValue(WATERLOGGED, replacedFluidState.is(Fluids.WATER));
    }
 
-   public BlockState rotate(BlockState var1, Rotation var2) {
-      return (BlockState)var1.setValue(FACING, var2.rotate((Direction)var1.getValue(FACING)));
+   public BlockState rotate(final BlockState state, final Rotation rotation) {
+      return (BlockState)state.setValue(FACING, rotation.rotate((Direction)state.getValue(FACING)));
    }
 
-   public BlockState mirror(BlockState var1, Mirror var2) {
-      return var1.rotate(var2.getRotation((Direction)var1.getValue(FACING)));
+   public BlockState mirror(final BlockState state, final Mirror mirror) {
+      return state.rotate(mirror.getRotation((Direction)state.getValue(FACING)));
    }
 
    public int getRows() {
@@ -129,155 +129,155 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
       return 3;
    }
 
-   protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
-      BlockEntity var9 = var3.getBlockEntity(var4);
-      if (var9 instanceof ShelfBlockEntity var8) {
-         if (!var6.equals(InteractionHand.OFF_HAND)) {
-            OptionalInt var13 = this.getHitSlot(var7, (Direction)var2.getValue(FACING));
-            if (var13.isEmpty()) {
+   protected InteractionResult useItemOn(final ItemStack itemStack, final BlockState state, final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final BlockHitResult hitResult) {
+      BlockEntity var9 = level.getBlockEntity(pos);
+      if (var9 instanceof ShelfBlockEntity shelfBlockEntity) {
+         if (!hand.equals(InteractionHand.OFF_HAND)) {
+            OptionalInt hitSlot = this.getHitSlot(hitResult, (Direction)state.getValue(FACING));
+            if (hitSlot.isEmpty()) {
                return InteractionResult.PASS;
             }
 
-            Inventory var10 = var5.getInventory();
-            if (var3.isClientSide()) {
-               return (InteractionResult)(var10.getSelectedItem().isEmpty() ? InteractionResult.PASS : InteractionResult.SUCCESS);
+            Inventory inventory = player.getInventory();
+            if (level.isClientSide()) {
+               return (InteractionResult)(inventory.getSelectedItem().isEmpty() ? InteractionResult.PASS : InteractionResult.SUCCESS);
             }
 
-            if (!(Boolean)var2.getValue(POWERED)) {
-               boolean var14 = swapSingleItem(var1, var5, var8, var13.getAsInt(), var10);
-               if (var14) {
-                  this.playSound(var3, var4, var1.isEmpty() ? SoundEvents.SHELF_TAKE_ITEM : SoundEvents.SHELF_SINGLE_SWAP);
+            if (!(Boolean)state.getValue(POWERED)) {
+               boolean itemRemoved = swapSingleItem(itemStack, player, shelfBlockEntity, hitSlot.getAsInt(), inventory);
+               if (itemRemoved) {
+                  this.playSound(level, pos, itemStack.isEmpty() ? SoundEvents.SHELF_TAKE_ITEM : SoundEvents.SHELF_SINGLE_SWAP);
                } else {
-                  if (var1.isEmpty()) {
+                  if (itemStack.isEmpty()) {
                      return InteractionResult.PASS;
                   }
 
-                  this.playSound(var3, var4, SoundEvents.SHELF_PLACE_ITEM);
+                  this.playSound(level, pos, SoundEvents.SHELF_PLACE_ITEM);
                }
 
-               return InteractionResult.SUCCESS.heldItemTransformedTo(var1);
+               return InteractionResult.SUCCESS.heldItemTransformedTo(itemStack);
             }
 
-            ItemStack var11 = var10.getSelectedItem();
-            boolean var12 = this.swapHotbar(var3, var4, var10);
-            if (!var12) {
+            ItemStack previousItem = inventory.getSelectedItem();
+            boolean anySwapped = this.swapHotbar(level, pos, inventory);
+            if (!anySwapped) {
                return InteractionResult.CONSUME;
             }
 
-            this.playSound(var3, var4, SoundEvents.SHELF_MULTI_SWAP);
-            if (var11 == var10.getSelectedItem()) {
+            this.playSound(level, pos, SoundEvents.SHELF_MULTI_SWAP);
+            if (previousItem == inventory.getSelectedItem()) {
                return InteractionResult.SUCCESS;
             }
 
-            return InteractionResult.SUCCESS.heldItemTransformedTo(var10.getSelectedItem());
+            return InteractionResult.SUCCESS.heldItemTransformedTo(inventory.getSelectedItem());
          }
       }
 
       return InteractionResult.PASS;
    }
 
-   private static boolean swapSingleItem(ItemStack var0, Player var1, ShelfBlockEntity var2, int var3, Inventory var4) {
-      ItemStack var5 = var2.swapItemNoUpdate(var3, var0);
-      ItemStack var6 = var1.hasInfiniteMaterials() && var5.isEmpty() ? var0.copy() : var5;
-      var4.setItem(var4.getSelectedSlot(), var6);
-      var4.setChanged();
-      var2.setChanged(var6.has(DataComponents.USE_EFFECTS) && !((UseEffects)var6.get(DataComponents.USE_EFFECTS)).interactVibrations() ? null : GameEvent.ITEM_INTERACT_FINISH);
-      return !var5.isEmpty();
+   private static boolean swapSingleItem(final ItemStack itemStack, final Player player, final ShelfBlockEntity shelfBlockEntity, final int hitSlot, final Inventory inventory) {
+      ItemStack removedItem = shelfBlockEntity.swapItemNoUpdate(hitSlot, itemStack);
+      ItemStack newInventoryItem = player.hasInfiniteMaterials() && removedItem.isEmpty() ? itemStack.copy() : removedItem;
+      inventory.setItem(inventory.getSelectedSlot(), newInventoryItem);
+      inventory.setChanged();
+      shelfBlockEntity.setChanged(newInventoryItem.has(DataComponents.USE_EFFECTS) && !((UseEffects)newInventoryItem.get(DataComponents.USE_EFFECTS)).interactVibrations() ? null : GameEvent.ITEM_INTERACT_FINISH);
+      return !removedItem.isEmpty();
    }
 
-   private boolean swapHotbar(Level var1, BlockPos var2, Inventory var3) {
-      List var4 = this.getAllBlocksConnectedTo(var1, var2);
-      if (var4.isEmpty()) {
+   private boolean swapHotbar(final Level level, final BlockPos pos, final Inventory inventory) {
+      List<BlockPos> connectedBlocks = this.getAllBlocksConnectedTo(level, pos);
+      if (connectedBlocks.isEmpty()) {
          return false;
       } else {
-         boolean var5 = false;
+         boolean anySwapped = false;
 
-         for(int var6 = 0; var6 < var4.size(); ++var6) {
-            ShelfBlockEntity var7 = (ShelfBlockEntity)var1.getBlockEntity((BlockPos)var4.get(var6));
-            if (var7 != null) {
-               for(int var8 = 0; var8 < var7.getContainerSize(); ++var8) {
-                  int var9 = 9 - (var4.size() - var6) * var7.getContainerSize() + var8;
-                  if (var9 >= 0 && var9 <= var3.getContainerSize()) {
-                     ItemStack var10 = var3.removeItemNoUpdate(var9);
-                     ItemStack var11 = var7.swapItemNoUpdate(var8, var10);
-                     if (!var10.isEmpty() || !var11.isEmpty()) {
-                        var3.setItem(var9, var11);
-                        var5 = true;
+         for(int shelfPartIndex = 0; shelfPartIndex < connectedBlocks.size(); ++shelfPartIndex) {
+            ShelfBlockEntity shelfPart = (ShelfBlockEntity)level.getBlockEntity((BlockPos)connectedBlocks.get(shelfPartIndex));
+            if (shelfPart != null) {
+               for(int slot = 0; slot < shelfPart.getContainerSize(); ++slot) {
+                  int inventorySlot = 9 - (connectedBlocks.size() - shelfPartIndex) * shelfPart.getContainerSize() + slot;
+                  if (inventorySlot >= 0 && inventorySlot <= inventory.getContainerSize()) {
+                     ItemStack placedInventoryItem = inventory.removeItemNoUpdate(inventorySlot);
+                     ItemStack removedShelfItem = shelfPart.swapItemNoUpdate(slot, placedInventoryItem);
+                     if (!placedInventoryItem.isEmpty() || !removedShelfItem.isEmpty()) {
+                        inventory.setItem(inventorySlot, removedShelfItem);
+                        anySwapped = true;
                      }
                   }
                }
 
-               var3.setChanged();
-               var7.setChanged(GameEvent.ENTITY_INTERACT);
+               inventory.setChanged();
+               shelfPart.setChanged(GameEvent.ENTITY_INTERACT);
             }
          }
 
-         return var5;
+         return anySwapped;
       }
    }
 
-   public SideChainPart getSideChainPart(BlockState var1) {
-      return (SideChainPart)var1.getValue(SIDE_CHAIN_PART);
+   public SideChainPart getSideChainPart(final BlockState state) {
+      return (SideChainPart)state.getValue(SIDE_CHAIN_PART);
    }
 
-   public BlockState setSideChainPart(BlockState var1, SideChainPart var2) {
-      return (BlockState)var1.setValue(SIDE_CHAIN_PART, var2);
+   public BlockState setSideChainPart(final BlockState state, final SideChainPart newPart) {
+      return (BlockState)state.setValue(SIDE_CHAIN_PART, newPart);
    }
 
-   public Direction getFacing(BlockState var1) {
-      return (Direction)var1.getValue(FACING);
+   public Direction getFacing(final BlockState state) {
+      return (Direction)state.getValue(FACING);
    }
 
-   public boolean isConnectable(BlockState var1) {
-      return var1.is(BlockTags.WOODEN_SHELVES) && var1.hasProperty(POWERED) && (Boolean)var1.getValue(POWERED);
+   public boolean isConnectable(final BlockState state) {
+      return state.is(BlockTags.WOODEN_SHELVES) && state.hasProperty(POWERED) && (Boolean)state.getValue(POWERED);
    }
 
    public int getMaxChainLength() {
       return 3;
    }
 
-   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if ((Boolean)var1.getValue(POWERED)) {
-         this.updateSelfAndNeighborsOnPoweringUp(var2, var3, var1, var4);
+   protected void onPlace(final BlockState state, final Level level, final BlockPos pos, final BlockState oldState, final boolean movedByPiston) {
+      if ((Boolean)state.getValue(POWERED)) {
+         this.updateSelfAndNeighborsOnPoweringUp(level, pos, state, oldState);
       } else {
-         this.updateNeighborsAfterPoweringDown(var2, var3, var1);
+         this.updateNeighborsAfterPoweringDown(level, pos, state);
       }
 
    }
 
-   private void playSound(LevelAccessor var1, BlockPos var2, SoundEvent var3) {
-      var1.playSound((Entity)null, var2, var3, SoundSource.BLOCKS, 1.0F, 1.0F);
+   private void playSound(final LevelAccessor level, final BlockPos pos, final SoundEvent sound) {
+      level.playSound((Entity)null, pos, sound, SoundSource.BLOCKS, 1.0F, 1.0F);
    }
 
-   protected FluidState getFluidState(BlockState var1) {
-      return (Boolean)var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
+   protected FluidState getFluidState(final BlockState state) {
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      if ((Boolean)var1.getValue(WATERLOGGED)) {
-         var3.scheduleTick(var4, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var2));
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      if ((Boolean)state.getValue(WATERLOGGED)) {
+         ticks.scheduleTick(pos, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(level));
       }
 
-      return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+      return super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   protected boolean hasAnalogOutputSignal(BlockState var1) {
+   protected boolean hasAnalogOutputSignal(final BlockState state) {
       return true;
    }
 
-   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
-      if (var2.isClientSide()) {
+   protected int getAnalogOutputSignal(final BlockState state, final Level level, final BlockPos pos, final Direction direction) {
+      if (level.isClientSide()) {
          return 0;
-      } else if (var4 != ((Direction)var1.getValue(FACING)).getOpposite()) {
+      } else if (direction != ((Direction)state.getValue(FACING)).getOpposite()) {
          return 0;
       } else {
-         BlockEntity var6 = var2.getBlockEntity(var3);
+         BlockEntity var6 = level.getBlockEntity(pos);
          if (var6 instanceof ShelfBlockEntity) {
-            ShelfBlockEntity var5 = (ShelfBlockEntity)var6;
-            int var9 = var5.getItem(0).isEmpty() ? 0 : 1;
-            int var7 = var5.getItem(1).isEmpty() ? 0 : 1;
-            int var8 = var5.getItem(2).isEmpty() ? 0 : 1;
-            return var9 | var7 << 1 | var8 << 2;
+            ShelfBlockEntity blockEntity = (ShelfBlockEntity)var6;
+            int item1Bit = blockEntity.getItem(0).isEmpty() ? 0 : 1;
+            int item2Bit = blockEntity.getItem(1).isEmpty() ? 0 : 1;
+            int item3Bit = blockEntity.getItem(2).isEmpty() ? 0 : 1;
+            return item1Bit | item2Bit << 1 | item3Bit << 2;
          } else {
             return 0;
          }

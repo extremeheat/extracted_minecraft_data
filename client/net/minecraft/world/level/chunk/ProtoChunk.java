@@ -50,16 +50,16 @@ public class ProtoChunk extends ChunkAccess {
    private final ProtoChunkTicks<Block> blockTicks;
    private final ProtoChunkTicks<Fluid> fluidTicks;
 
-   public ProtoChunk(ChunkPos var1, UpgradeData var2, LevelHeightAccessor var3, PalettedContainerFactory var4, @Nullable BlendingData var5) {
-      this(var1, var2, (LevelChunkSection[])null, new ProtoChunkTicks(), new ProtoChunkTicks(), var3, var4, var5);
+   public ProtoChunk(final ChunkPos chunkPos, final UpgradeData upgradeData, final LevelHeightAccessor levelHeightAccessor, final PalettedContainerFactory containerFactory, final @Nullable BlendingData blendingData) {
+      this(chunkPos, upgradeData, (LevelChunkSection[])null, new ProtoChunkTicks(), new ProtoChunkTicks(), levelHeightAccessor, containerFactory, blendingData);
    }
 
-   public ProtoChunk(ChunkPos var1, UpgradeData var2, LevelChunkSection @Nullable [] var3, ProtoChunkTicks<Block> var4, ProtoChunkTicks<Fluid> var5, LevelHeightAccessor var6, PalettedContainerFactory var7, @Nullable BlendingData var8) {
-      super(var1, var2, var6, var7, 0L, var3, var8);
+   public ProtoChunk(final ChunkPos chunkPos, final UpgradeData upgradeData, final LevelChunkSection @Nullable [] sections, final ProtoChunkTicks<Block> blockTicks, final ProtoChunkTicks<Fluid> fluidTicks, final LevelHeightAccessor levelHeightAccessor, final PalettedContainerFactory containerFactory, final @Nullable BlendingData blendingData) {
+      super(chunkPos, upgradeData, levelHeightAccessor, containerFactory, 0L, sections, blendingData);
       this.status = ChunkStatus.EMPTY;
       this.entities = Lists.newArrayList();
-      this.blockTicks = var4;
-      this.fluidTicks = var5;
+      this.blockTicks = blockTicks;
+      this.fluidTicks = fluidTicks;
    }
 
    public TickContainerAccess<Block> getBlockTicks() {
@@ -70,125 +70,125 @@ public class ProtoChunk extends ChunkAccess {
       return this.fluidTicks;
    }
 
-   public ChunkAccess.PackedTicks getTicksForSerialization(long var1) {
-      return new ChunkAccess.PackedTicks(this.blockTicks.pack(var1), this.fluidTicks.pack(var1));
+   public ChunkAccess.PackedTicks getTicksForSerialization(final long currentTick) {
+      return new ChunkAccess.PackedTicks(this.blockTicks.pack(currentTick), this.fluidTicks.pack(currentTick));
    }
 
-   public BlockState getBlockState(BlockPos var1) {
-      int var2 = var1.getY();
-      if (this.isOutsideBuildHeight(var2)) {
+   public BlockState getBlockState(final BlockPos pos) {
+      int y = pos.getY();
+      if (this.isOutsideBuildHeight(y)) {
          return Blocks.VOID_AIR.defaultBlockState();
       } else {
-         LevelChunkSection var3 = this.getSection(this.getSectionIndex(var2));
-         return var3.hasOnlyAir() ? Blocks.AIR.defaultBlockState() : var3.getBlockState(var1.getX() & 15, var2 & 15, var1.getZ() & 15);
+         LevelChunkSection section = this.getSection(this.getSectionIndex(y));
+         return section.hasOnlyAir() ? Blocks.AIR.defaultBlockState() : section.getBlockState(pos.getX() & 15, y & 15, pos.getZ() & 15);
       }
    }
 
-   public FluidState getFluidState(BlockPos var1) {
-      int var2 = var1.getY();
-      if (this.isOutsideBuildHeight(var2)) {
+   public FluidState getFluidState(final BlockPos pos) {
+      int y = pos.getY();
+      if (this.isOutsideBuildHeight(y)) {
          return Fluids.EMPTY.defaultFluidState();
       } else {
-         LevelChunkSection var3 = this.getSection(this.getSectionIndex(var2));
-         return var3.hasOnlyAir() ? Fluids.EMPTY.defaultFluidState() : var3.getFluidState(var1.getX() & 15, var2 & 15, var1.getZ() & 15);
+         LevelChunkSection section = this.getSection(this.getSectionIndex(y));
+         return section.hasOnlyAir() ? Fluids.EMPTY.defaultFluidState() : section.getFluidState(pos.getX() & 15, y & 15, pos.getZ() & 15);
       }
    }
 
-   public @Nullable BlockState setBlockState(BlockPos var1, BlockState var2, @Block.UpdateFlags int var3) {
-      int var4 = var1.getX();
-      int var5 = var1.getY();
-      int var6 = var1.getZ();
-      if (this.isOutsideBuildHeight(var5)) {
+   public @Nullable BlockState setBlockState(final BlockPos pos, final BlockState state, final @Block.UpdateFlags int flags) {
+      int x = pos.getX();
+      int y = pos.getY();
+      int z = pos.getZ();
+      if (this.isOutsideBuildHeight(y)) {
          return Blocks.VOID_AIR.defaultBlockState();
       } else {
-         int var7 = this.getSectionIndex(var5);
-         LevelChunkSection var8 = this.getSection(var7);
-         boolean var9 = var8.hasOnlyAir();
-         if (var9 && var2.is(Blocks.AIR)) {
-            return var2;
+         int sectionIndex = this.getSectionIndex(y);
+         LevelChunkSection section = this.getSection(sectionIndex);
+         boolean wasEmpty = section.hasOnlyAir();
+         if (wasEmpty && state.is(Blocks.AIR)) {
+            return state;
          } else {
-            int var10 = SectionPos.sectionRelative(var4);
-            int var11 = SectionPos.sectionRelative(var5);
-            int var12 = SectionPos.sectionRelative(var6);
-            BlockState var13 = var8.setBlockState(var10, var11, var12, var2);
+            int localX = SectionPos.sectionRelative(x);
+            int localY = SectionPos.sectionRelative(y);
+            int localZ = SectionPos.sectionRelative(z);
+            BlockState oldState = section.setBlockState(localX, localY, localZ, state);
             if (this.status.isOrAfter(ChunkStatus.INITIALIZE_LIGHT)) {
-               boolean var14 = var8.hasOnlyAir();
-               if (var14 != var9) {
-                  this.lightEngine.updateSectionStatus(var1, var14);
+               boolean isEmpty = section.hasOnlyAir();
+               if (isEmpty != wasEmpty) {
+                  this.lightEngine.updateSectionStatus(pos, isEmpty);
                }
 
-               if (LightEngine.hasDifferentLightProperties(var13, var2)) {
-                  this.skyLightSources.update(this, var10, var5, var12);
-                  this.lightEngine.checkBlock(var1);
+               if (LightEngine.hasDifferentLightProperties(oldState, state)) {
+                  this.skyLightSources.update(this, localX, y, localZ);
+                  this.lightEngine.checkBlock(pos);
                }
             }
 
-            EnumSet var19 = this.getPersistedStatus().heightmapsAfter();
-            EnumSet var15 = null;
+            EnumSet<Heightmap.Types> heightmapsAfter = this.getPersistedStatus().heightmapsAfter();
+            EnumSet<Heightmap.Types> toPrime = null;
 
-            for(Heightmap.Types var17 : var19) {
-               Heightmap var18 = (Heightmap)this.heightmaps.get(var17);
-               if (var18 == null) {
-                  if (var15 == null) {
-                     var15 = EnumSet.noneOf(Heightmap.Types.class);
+            for(Heightmap.Types type : heightmapsAfter) {
+               Heightmap heightmap = (Heightmap)this.heightmaps.get(type);
+               if (heightmap == null) {
+                  if (toPrime == null) {
+                     toPrime = EnumSet.noneOf(Heightmap.Types.class);
                   }
 
-                  var15.add(var17);
+                  toPrime.add(type);
                }
             }
 
-            if (var15 != null) {
-               Heightmap.primeHeightmaps(this, var15);
+            if (toPrime != null) {
+               Heightmap.primeHeightmaps(this, toPrime);
             }
 
-            for(Heightmap.Types var21 : var19) {
-               ((Heightmap)this.heightmaps.get(var21)).update(var10, var5, var12, var2);
+            for(Heightmap.Types type : heightmapsAfter) {
+               ((Heightmap)this.heightmaps.get(type)).update(localX, y, localZ, state);
             }
 
-            return var13;
+            return oldState;
          }
       }
    }
 
-   public void setBlockEntity(BlockEntity var1) {
-      this.pendingBlockEntities.remove(var1.getBlockPos());
-      this.blockEntities.put(var1.getBlockPos(), var1);
+   public void setBlockEntity(final BlockEntity blockEntity) {
+      this.pendingBlockEntities.remove(blockEntity.getBlockPos());
+      this.blockEntities.put(blockEntity.getBlockPos(), blockEntity);
    }
 
-   public @Nullable BlockEntity getBlockEntity(BlockPos var1) {
-      return (BlockEntity)this.blockEntities.get(var1);
+   public @Nullable BlockEntity getBlockEntity(final BlockPos pos) {
+      return (BlockEntity)this.blockEntities.get(pos);
    }
 
    public Map<BlockPos, BlockEntity> getBlockEntities() {
       return this.blockEntities;
    }
 
-   public void addEntity(CompoundTag var1) {
-      this.entities.add(var1);
+   public void addEntity(final CompoundTag tag) {
+      this.entities.add(tag);
    }
 
-   public void addEntity(Entity var1) {
-      if (!var1.isPassenger()) {
-         try (ProblemReporter.ScopedCollector var2 = new ProblemReporter.ScopedCollector(var1.problemPath(), LOGGER)) {
-            TagValueOutput var3 = TagValueOutput.createWithContext(var2, var1.registryAccess());
-            var1.save(var3);
-            this.addEntity(var3.buildResult());
+   public void addEntity(final Entity entity) {
+      if (!entity.isPassenger()) {
+         try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(entity.problemPath(), LOGGER)) {
+            TagValueOutput output = TagValueOutput.createWithContext(reporter, entity.registryAccess());
+            entity.save(output);
+            this.addEntity(output.buildResult());
          }
 
       }
    }
 
-   public void setStartForStructure(Structure var1, StructureStart var2) {
-      BelowZeroRetrogen var3 = this.getBelowZeroRetrogen();
-      if (var3 != null && var2.isValid()) {
-         BoundingBox var4 = var2.getBoundingBox();
-         LevelHeightAccessor var5 = this.getHeightAccessorForGeneration();
-         if (var4.minY() < var5.getMinY() || var4.maxY() > var5.getMaxY()) {
+   public void setStartForStructure(final Structure structure, final StructureStart structureStart) {
+      BelowZeroRetrogen belowZeroRetrogen = this.getBelowZeroRetrogen();
+      if (belowZeroRetrogen != null && structureStart.isValid()) {
+         BoundingBox boundingBox = structureStart.getBoundingBox();
+         LevelHeightAccessor heightAccessor = this.getHeightAccessorForGeneration();
+         if (boundingBox.minY() < heightAccessor.getMinY() || boundingBox.maxY() > heightAccessor.getMaxY()) {
             return;
          }
       }
 
-      super.setStartForStructure(var1, var2);
+      super.setStartForStructure(structure, structureStart);
    }
 
    public List<CompoundTag> getEntities() {
@@ -199,63 +199,63 @@ public class ProtoChunk extends ChunkAccess {
       return this.status;
    }
 
-   public void setPersistedStatus(ChunkStatus var1) {
-      this.status = var1;
-      if (this.belowZeroRetrogen != null && var1.isOrAfter(this.belowZeroRetrogen.targetStatus())) {
+   public void setPersistedStatus(final ChunkStatus status) {
+      this.status = status;
+      if (this.belowZeroRetrogen != null && status.isOrAfter(this.belowZeroRetrogen.targetStatus())) {
          this.setBelowZeroRetrogen((BelowZeroRetrogen)null);
       }
 
       this.markUnsaved();
    }
 
-   public Holder<Biome> getNoiseBiome(int var1, int var2, int var3) {
+   public Holder<Biome> getNoiseBiome(final int quartX, final int quartY, final int quartZ) {
       if (this.getHighestGeneratedStatus().isOrAfter(ChunkStatus.BIOMES)) {
-         return super.getNoiseBiome(var1, var2, var3);
+         return super.getNoiseBiome(quartX, quartY, quartZ);
       } else {
          throw new IllegalStateException("Asking for biomes before we have biomes");
       }
    }
 
-   public static short packOffsetCoordinates(BlockPos var0) {
-      int var1 = var0.getX();
-      int var2 = var0.getY();
-      int var3 = var0.getZ();
-      int var4 = var1 & 15;
-      int var5 = var2 & 15;
-      int var6 = var3 & 15;
-      return (short)(var4 | var5 << 4 | var6 << 8);
+   public static short packOffsetCoordinates(final BlockPos blockPos) {
+      int x = blockPos.getX();
+      int y = blockPos.getY();
+      int z = blockPos.getZ();
+      int dx = x & 15;
+      int dy = y & 15;
+      int dz = z & 15;
+      return (short)(dx | dy << 4 | dz << 8);
    }
 
-   public static BlockPos unpackOffsetCoordinates(short var0, int var1, ChunkPos var2) {
-      int var3 = SectionPos.sectionToBlockCoord(var2.x, var0 & 15);
-      int var4 = SectionPos.sectionToBlockCoord(var1, var0 >>> 4 & 15);
-      int var5 = SectionPos.sectionToBlockCoord(var2.z, var0 >>> 8 & 15);
-      return new BlockPos(var3, var4, var5);
+   public static BlockPos unpackOffsetCoordinates(final short packedCoord, final int sectionY, final ChunkPos chunkPos) {
+      int posX = SectionPos.sectionToBlockCoord(chunkPos.x(), packedCoord & 15);
+      int posY = SectionPos.sectionToBlockCoord(sectionY, packedCoord >>> 4 & 15);
+      int posZ = SectionPos.sectionToBlockCoord(chunkPos.z(), packedCoord >>> 8 & 15);
+      return new BlockPos(posX, posY, posZ);
    }
 
-   public void markPosForPostprocessing(BlockPos var1) {
-      if (!this.isOutsideBuildHeight(var1)) {
-         ChunkAccess.getOrCreateOffsetList(this.postProcessing, this.getSectionIndex(var1.getY())).add(packOffsetCoordinates(var1));
+   public void markPosForPostprocessing(final BlockPos blockPos) {
+      if (this.isInsideBuildHeight(blockPos)) {
+         ChunkAccess.getOrCreateOffsetList(this.postProcessing, this.getSectionIndex(blockPos.getY())).add(packOffsetCoordinates(blockPos));
       }
 
    }
 
-   public void addPackedPostProcess(ShortList var1, int var2) {
-      ChunkAccess.getOrCreateOffsetList(this.postProcessing, var2).addAll(var1);
+   public void addPackedPostProcess(final ShortList packedOffsets, final int sectionIndex) {
+      ChunkAccess.getOrCreateOffsetList(this.postProcessing, sectionIndex).addAll(packedOffsets);
    }
 
    public Map<BlockPos, CompoundTag> getBlockEntityNbts() {
       return Collections.unmodifiableMap(this.pendingBlockEntities);
    }
 
-   public @Nullable CompoundTag getBlockEntityNbtForSaving(BlockPos var1, HolderLookup.Provider var2) {
-      BlockEntity var3 = this.getBlockEntity(var1);
-      return var3 != null ? var3.saveWithFullMetadata(var2) : (CompoundTag)this.pendingBlockEntities.get(var1);
+   public @Nullable CompoundTag getBlockEntityNbtForSaving(final BlockPos blockPos, final HolderLookup.Provider registryAccess) {
+      BlockEntity blockEntity = this.getBlockEntity(blockPos);
+      return blockEntity != null ? blockEntity.saveWithFullMetadata(registryAccess) : (CompoundTag)this.pendingBlockEntities.get(blockPos);
    }
 
-   public void removeBlockEntity(BlockPos var1) {
-      this.blockEntities.remove(var1);
-      this.pendingBlockEntities.remove(var1);
+   public void removeBlockEntity(final BlockPos pos) {
+      this.blockEntities.remove(pos);
+      this.pendingBlockEntities.remove(pos);
    }
 
    public @Nullable CarvingMask getCarvingMask() {
@@ -270,24 +270,24 @@ public class ProtoChunk extends ChunkAccess {
       return this.carvingMask;
    }
 
-   public void setCarvingMask(CarvingMask var1) {
-      this.carvingMask = var1;
+   public void setCarvingMask(final CarvingMask data) {
+      this.carvingMask = data;
    }
 
-   public void setLightEngine(LevelLightEngine var1) {
-      this.lightEngine = var1;
+   public void setLightEngine(final LevelLightEngine lightEngine) {
+      this.lightEngine = lightEngine;
    }
 
-   public void setBelowZeroRetrogen(@Nullable BelowZeroRetrogen var1) {
-      this.belowZeroRetrogen = var1;
+   public void setBelowZeroRetrogen(final @Nullable BelowZeroRetrogen belowZeroRetrogen) {
+      this.belowZeroRetrogen = belowZeroRetrogen;
    }
 
    public @Nullable BelowZeroRetrogen getBelowZeroRetrogen() {
       return this.belowZeroRetrogen;
    }
 
-   private static <T> LevelChunkTicks<T> unpackTicks(ProtoChunkTicks<T> var0) {
-      return new LevelChunkTicks<T>(var0.scheduledTicks());
+   private static <T> LevelChunkTicks<T> unpackTicks(final ProtoChunkTicks<T> ticks) {
+      return new LevelChunkTicks<T>(ticks.scheduledTicks());
    }
 
    public LevelChunkTicks<Block> unpackBlockTicks() {

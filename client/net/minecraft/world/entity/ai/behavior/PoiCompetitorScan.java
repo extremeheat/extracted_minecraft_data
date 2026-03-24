@@ -18,34 +18,34 @@ public class PoiCompetitorScan {
    }
 
    public static BehaviorControl<Villager> create() {
-      return BehaviorBuilder.create((Function)((var0) -> var0.group(var0.present(MemoryModuleType.JOB_SITE), var0.present(MemoryModuleType.NEAREST_LIVING_ENTITIES)).apply(var0, (var1, var2) -> (var3, var4, var5) -> {
-               GlobalPos var7 = (GlobalPos)var0.get(var1);
-               var3.getPoiManager().getType(var7.pos()).ifPresent((var4x) -> ((List)var0.get(var2)).stream().filter((var1) -> var1 instanceof Villager && var1 != var4).map((var0x) -> (Villager)var0x).filter(LivingEntity::isAlive).filter((var2x) -> competesForSameJobsite(var7, var4x, var2x)).reduce(var4, PoiCompetitorScan::selectWinner));
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.present(MemoryModuleType.JOB_SITE), i.present(MemoryModuleType.NEAREST_LIVING_ENTITIES)).apply(i, (jobSite, nearestEntities) -> (level, body, timestamp) -> {
+               GlobalPos pos = (GlobalPos)i.get(jobSite);
+               level.getPoiManager().getType(pos.pos()).ifPresent((poiType) -> ((List)i.get(nearestEntities)).stream().filter((v) -> v instanceof Villager && v != body).map((v) -> (Villager)v).filter(LivingEntity::isAlive).filter((nearbyVillager) -> competesForSameJobsite(pos, poiType, nearbyVillager)).reduce(body, PoiCompetitorScan::selectWinner));
                return true;
             })));
    }
 
-   private static Villager selectWinner(Villager var0, Villager var1) {
-      Villager var2;
-      Villager var3;
-      if (var0.getVillagerXp() > var1.getVillagerXp()) {
-         var2 = var0;
-         var3 = var1;
+   private static Villager selectWinner(final Villager first, final Villager second) {
+      Villager winner;
+      Villager loser;
+      if (first.getVillagerXp() > second.getVillagerXp()) {
+         winner = first;
+         loser = second;
       } else {
-         var2 = var1;
-         var3 = var0;
+         winner = second;
+         loser = first;
       }
 
-      var3.getBrain().eraseMemory(MemoryModuleType.JOB_SITE);
-      return var2;
+      loser.getBrain().eraseMemory(MemoryModuleType.JOB_SITE);
+      return winner;
    }
 
-   private static boolean competesForSameJobsite(GlobalPos var0, Holder<PoiType> var1, Villager var2) {
-      Optional var3 = var2.getBrain().getMemory(MemoryModuleType.JOB_SITE);
-      return var3.isPresent() && var0.equals(var3.get()) && hasMatchingProfession(var1, var2.getVillagerData().profession());
+   private static boolean competesForSameJobsite(final GlobalPos pos, final Holder<PoiType> poiType, final Villager nearbyVillager) {
+      Optional<GlobalPos> jobSite = nearbyVillager.getBrain().<GlobalPos>getMemory(MemoryModuleType.JOB_SITE);
+      return jobSite.isPresent() && pos.equals(jobSite.get()) && hasMatchingProfession(poiType, nearbyVillager.getVillagerData().profession());
    }
 
-   private static boolean hasMatchingProfession(Holder<PoiType> var0, Holder<VillagerProfession> var1) {
-      return ((VillagerProfession)var1.value()).heldJobSite().test(var0);
+   private static boolean hasMatchingProfession(final Holder<PoiType> poiType, final Holder<VillagerProfession> profession) {
+      return ((VillagerProfession)profession.value()).heldJobSite().test(poiType);
    }
 }

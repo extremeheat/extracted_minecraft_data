@@ -8,12 +8,12 @@ import net.minecraft.network.chat.Component;
 public class ResettingTemplateWorldTask extends ResettingWorldTask {
    private final WorldTemplate template;
 
-   public ResettingTemplateWorldTask(WorldTemplate var1, long var2, Component var4, Runnable var5) {
-      super(var2, var4, var5);
-      this.template = var1;
+   public ResettingTemplateWorldTask(final WorldTemplate template, final long serverId, final Component title, final Runnable callback) {
+      super(serverId, title, callback);
+      this.template = template;
    }
 
-   protected void sendResetRequest(RealmsClient var1, long var2) throws RealmsServiceException {
-      var1.resetWorldWithTemplate(var2, this.template.id());
+   protected void sendResetRequest(final RealmsClient client, final long serverId) throws RealmsServiceException {
+      client.resetWorldWithTemplate(serverId, this.template.id());
    }
 }

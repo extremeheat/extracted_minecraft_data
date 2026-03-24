@@ -19,25 +19,25 @@ import net.minecraft.world.level.block.Blocks;
 import org.jspecify.annotations.Nullable;
 
 public class Stray extends AbstractSkeleton {
-   public Stray(EntityType<? extends Stray> var1, Level var2) {
-      super(var1, var2);
+   public Stray(final EntityType<? extends Stray> type, final Level level) {
+      super(type, level);
    }
 
-   public static boolean checkStraySpawnRules(EntityType<Stray> var0, ServerLevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
-      BlockPos var5 = var3;
+   public static boolean checkStraySpawnRules(final EntityType<Stray> type, final ServerLevelAccessor level, final EntitySpawnReason spawnReason, final BlockPos pos, final RandomSource random) {
+      BlockPos checkSkyPos = pos;
 
       do {
-         var5 = var5.above();
-      } while(var1.getBlockState(var5).is(Blocks.POWDER_SNOW));
+         checkSkyPos = checkSkyPos.above();
+      } while(level.getBlockState(checkSkyPos).is(Blocks.POWDER_SNOW));
 
-      return Monster.checkMonsterSpawnRules(var0, var1, var2, var3, var4) && (EntitySpawnReason.isSpawner(var2) || var1.canSeeSky(var5.below()));
+      return Monster.checkMonsterSpawnRules(type, level, spawnReason, pos, random) && (EntitySpawnReason.isSpawner(spawnReason) || level.canSeeSky(checkSkyPos.below()));
    }
 
    protected SoundEvent getAmbientSound() {
       return SoundEvents.STRAY_AMBIENT;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return SoundEvents.STRAY_HURT;
    }
 
@@ -49,12 +49,12 @@ public class Stray extends AbstractSkeleton {
       return SoundEvents.STRAY_STEP;
    }
 
-   protected AbstractArrow getArrow(ItemStack var1, float var2, @Nullable ItemStack var3) {
-      AbstractArrow var4 = super.getArrow(var1, var2, var3);
-      if (var4 instanceof Arrow) {
-         ((Arrow)var4).addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 600));
+   protected AbstractArrow getArrow(final ItemStack projectile, final float power, final @Nullable ItemStack firingWeapon) {
+      AbstractArrow arrow = super.getArrow(projectile, power, firingWeapon);
+      if (arrow instanceof Arrow) {
+         ((Arrow)arrow).addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 600));
       }
 
-      return var4;
+      return arrow;
    }
 }

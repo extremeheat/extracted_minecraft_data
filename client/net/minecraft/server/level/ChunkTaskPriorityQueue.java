@@ -13,46 +13,46 @@ public class ChunkTaskPriorityQueue {
    private volatile int topPriorityQueueIndex;
    private final String name;
 
-   public ChunkTaskPriorityQueue(String var1) {
+   public ChunkTaskPriorityQueue(final String name) {
       super();
-      this.queuesPerPriority = IntStream.range(0, PRIORITY_LEVEL_COUNT).mapToObj((var0) -> new Long2ObjectLinkedOpenHashMap()).toList();
+      this.queuesPerPriority = IntStream.range(0, PRIORITY_LEVEL_COUNT).mapToObj((priority) -> new Long2ObjectLinkedOpenHashMap()).toList();
       this.topPriorityQueueIndex = PRIORITY_LEVEL_COUNT;
-      this.name = var1;
+      this.name = name;
    }
 
-   protected void resortChunkTasks(int var1, ChunkPos var2, int var3) {
-      if (var1 < PRIORITY_LEVEL_COUNT) {
-         Long2ObjectLinkedOpenHashMap var4 = (Long2ObjectLinkedOpenHashMap)this.queuesPerPriority.get(var1);
-         List var5 = (List)var4.remove(var2.toLong());
-         if (var1 == this.topPriorityQueueIndex) {
+   protected void resortChunkTasks(final int oldPriority, final ChunkPos pos, final int newPriority) {
+      if (oldPriority < PRIORITY_LEVEL_COUNT) {
+         Long2ObjectLinkedOpenHashMap<List<Runnable>> oldQueue = (Long2ObjectLinkedOpenHashMap)this.queuesPerPriority.get(oldPriority);
+         List<Runnable> oldTasks = (List)oldQueue.remove(pos.pack());
+         if (oldPriority == this.topPriorityQueueIndex) {
             while(this.hasWork() && ((Long2ObjectLinkedOpenHashMap)this.queuesPerPriority.get(this.topPriorityQueueIndex)).isEmpty()) {
                ++this.topPriorityQueueIndex;
             }
          }
 
-         if (var5 != null && !var5.isEmpty()) {
-            ((List)((Long2ObjectLinkedOpenHashMap)this.queuesPerPriority.get(var3)).computeIfAbsent(var2.toLong(), (var0) -> Lists.newArrayList())).addAll(var5);
-            this.topPriorityQueueIndex = Math.min(this.topPriorityQueueIndex, var3);
+         if (oldTasks != null && !oldTasks.isEmpty()) {
+            ((List)((Long2ObjectLinkedOpenHashMap)this.queuesPerPriority.get(newPriority)).computeIfAbsent(pos.pack(), (k) -> Lists.newArrayList())).addAll(oldTasks);
+            this.topPriorityQueueIndex = Math.min(this.topPriorityQueueIndex, newPriority);
          }
 
       }
    }
 
-   protected void submit(Runnable var1, long var2, int var4) {
-      ((List)((Long2ObjectLinkedOpenHashMap)this.queuesPerPriority.get(var4)).computeIfAbsent(var2, (var0) -> Lists.newArrayList())).add(var1);
-      this.topPriorityQueueIndex = Math.min(this.topPriorityQueueIndex, var4);
+   protected void submit(final Runnable task, final long chunkPos, final int level) {
+      ((List)((Long2ObjectLinkedOpenHashMap)this.queuesPerPriority.get(level)).computeIfAbsent(chunkPos, (p) -> Lists.newArrayList())).add(task);
+      this.topPriorityQueueIndex = Math.min(this.topPriorityQueueIndex, level);
    }
 
-   protected void release(long var1, boolean var3) {
-      for(Long2ObjectLinkedOpenHashMap var5 : this.queuesPerPriority) {
-         List var6 = (List)var5.get(var1);
-         if (var6 != null) {
-            if (var3) {
-               var6.clear();
+   protected void release(final long pos, final boolean unschedule) {
+      for(Long2ObjectLinkedOpenHashMap<List<Runnable>> queue : this.queuesPerPriority) {
+         List<Runnable> tasks = (List)queue.get(pos);
+         if (tasks != null) {
+            if (unschedule) {
+               tasks.clear();
             }
 
-            if (var6.isEmpty()) {
-               var5.remove(var1);
+            if (tasks.isEmpty()) {
+               queue.remove(pos);
             }
          }
       }
@@ -67,15 +67,15 @@ public class ChunkTaskPriorityQueue {
       if (!this.hasWork()) {
          return null;
       } else {
-         int var1 = this.topPriorityQueueIndex;
-         Long2ObjectLinkedOpenHashMap var2 = (Long2ObjectLinkedOpenHashMap)this.queuesPerPriority.get(var1);
-         long var3 = var2.firstLongKey();
+         int index = this.topPriorityQueueIndex;
+         Long2ObjectLinkedOpenHashMap<List<Runnable>> queue = (Long2ObjectLinkedOpenHashMap)this.queuesPerPriority.get(index);
+         long chunkPos = queue.firstLongKey();
 
-         List var5;
-         for(var5 = (List)var2.removeFirst(); this.hasWork() && ((Long2ObjectLinkedOpenHashMap)this.queuesPerPriority.get(this.topPriorityQueueIndex)).isEmpty(); ++this.topPriorityQueueIndex) {
+         List<Runnable> tasks;
+         for(tasks = (List)queue.removeFirst(); this.hasWork() && ((Long2ObjectLinkedOpenHashMap)this.queuesPerPriority.get(this.topPriorityQueueIndex)).isEmpty(); ++this.topPriorityQueueIndex) {
          }
 
-         return new TasksForChunk(var3, var5);
+         return new TasksForChunk(chunkPos, tasks);
       }
    }
 
@@ -92,10 +92,8 @@ public class ChunkTaskPriorityQueue {
    }
 
    public static record TasksForChunk(long chunkPos, List<Runnable> tasks) {
-      public TasksForChunk(long var1, List<Runnable> var3) {
+      public TasksForChunk {
          super();
-         this.chunkPos = var1;
-         this.tasks = var3;
       }
    }
 }

@@ -3,43 +3,37 @@ package net.minecraft.client.model;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.UnaryOperator;
+import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.MeshTransformer;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 
 public record BabyModelTransform(boolean scaleHead, float babyYHeadOffset, float babyZHeadOffset, float babyHeadScale, float babyBodyScale, float bodyYOffset, Set<String> headParts) implements MeshTransformer {
-   public BabyModelTransform(Set<String> var1) {
-      this(false, 5.0F, 2.0F, var1);
+   public BabyModelTransform(final Set<String> headParts) {
+      this(false, 5.0F, 2.0F, headParts);
    }
 
-   public BabyModelTransform(boolean var1, float var2, float var3, Set<String> var4) {
-      this(var1, var2, var3, 2.0F, 2.0F, 24.0F, var4);
+   public BabyModelTransform(final boolean scaleHead, final float babyYHeadOffset, final float babyZHeadOffset, final Set<String> headParts) {
+      this(scaleHead, babyYHeadOffset, babyZHeadOffset, 2.0F, 2.0F, 24.0F, headParts);
    }
 
-   public BabyModelTransform(boolean var1, float var2, float var3, float var4, float var5, float var6, Set<String> var7) {
+   public BabyModelTransform {
       super();
-      this.scaleHead = var1;
-      this.babyYHeadOffset = var2;
-      this.babyZHeadOffset = var3;
-      this.babyHeadScale = var4;
-      this.babyBodyScale = var5;
-      this.bodyYOffset = var6;
-      this.headParts = var7;
    }
 
-   public MeshDefinition apply(MeshDefinition var1) {
-      float var2 = this.scaleHead ? 1.5F / this.babyHeadScale : 1.0F;
-      float var3 = 1.0F / this.babyBodyScale;
-      UnaryOperator var4 = (var2x) -> var2x.translated(0.0F, this.babyYHeadOffset, this.babyZHeadOffset).scaled(var2);
-      UnaryOperator var5 = (var2x) -> var2x.translated(0.0F, this.bodyYOffset, 0.0F).scaled(var3);
-      MeshDefinition var6 = new MeshDefinition();
+   public MeshDefinition apply(final MeshDefinition mesh) {
+      float headScale = this.scaleHead ? 1.5F / this.babyHeadScale : 1.0F;
+      float bodyScale = 1.0F / this.babyBodyScale;
+      UnaryOperator<PartPose> headTransform = (p) -> p.translated(0.0F, this.babyYHeadOffset, this.babyZHeadOffset).scaled(headScale);
+      UnaryOperator<PartPose> bodyTransform = (p) -> p.translated(0.0F, this.bodyYOffset, 0.0F).scaled(bodyScale);
+      MeshDefinition babyMesh = new MeshDefinition();
 
-      for(Map.Entry var8 : var1.getRoot().getChildren()) {
-         String var9 = (String)var8.getKey();
-         PartDefinition var10 = (PartDefinition)var8.getValue();
-         var6.getRoot().addOrReplaceChild(var9, var10.transformed(this.headParts.contains(var9) ? var4 : var5));
+      for(Map.Entry<String, PartDefinition> entry : mesh.getRoot().getChildren()) {
+         String name = (String)entry.getKey();
+         PartDefinition part = (PartDefinition)entry.getValue();
+         babyMesh.getRoot().addOrReplaceChild(name, part.transformed(this.headParts.contains(name) ? headTransform : bodyTransform));
       }
 
-      return var6;
+      return babyMesh;
    }
 }

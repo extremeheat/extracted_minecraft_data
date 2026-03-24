@@ -10,25 +10,25 @@ import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.SlimeRenderer;
 import net.minecraft.client.renderer.entity.state.SlimeRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 
 public class SlimeOuterLayer extends RenderLayer<SlimeRenderState, SlimeModel> {
    private final SlimeModel model;
 
-   public SlimeOuterLayer(RenderLayerParent<SlimeRenderState, SlimeModel> var1, EntityModelSet var2) {
-      super(var1);
-      this.model = new SlimeModel(var2.bakeLayer(ModelLayers.SLIME_OUTER));
+   public SlimeOuterLayer(final RenderLayerParent<SlimeRenderState, SlimeModel> renderer, final EntityModelSet modelSet) {
+      super(renderer);
+      this.model = new SlimeModel(modelSet.bakeLayer(ModelLayers.SLIME_OUTER));
    }
 
-   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, SlimeRenderState var4, float var5, float var6) {
-      boolean var7 = var4.appearsGlowing() && var4.isInvisible;
-      if (!var4.isInvisible || var7) {
-         int var8 = LivingEntityRenderer.getOverlayCoords(var4, 0.0F);
-         if (var7) {
-            var2.order(1).submitModel(this.model, var4, var1, RenderTypes.outline(SlimeRenderer.SLIME_LOCATION), var3, var8, -1, (TextureAtlasSprite)null, var4.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+   public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final SlimeRenderState state, final float yRot, final float xRot) {
+      boolean appearsGlowingWithInvisibility = state.appearsGlowing() && state.isInvisible;
+      if (!state.isInvisible || appearsGlowingWithInvisibility) {
+         int overlayCoords = LivingEntityRenderer.getOverlayCoords(state, 0.0F);
+         if (appearsGlowingWithInvisibility) {
+            submitNodeCollector.order(1).submitModel(this.model, state, poseStack, (RenderType)RenderTypes.outline(SlimeRenderer.SLIME_LOCATION), lightCoords, overlayCoords, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
          } else {
-            var2.order(1).submitModel(this.model, var4, var1, RenderTypes.entityTranslucent(SlimeRenderer.SLIME_LOCATION), var3, var8, -1, (TextureAtlasSprite)null, var4.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+            submitNodeCollector.order(1).submitModel(this.model, state, poseStack, (RenderType)RenderTypes.entityTranslucent(SlimeRenderer.SLIME_LOCATION), lightCoords, overlayCoords, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
          }
 
       }

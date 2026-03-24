@@ -1,77 +1,29 @@
 package net.minecraft.world.level.storage;
 
 import java.util.Locale;
-import java.util.Optional;
-import java.util.UUID;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelHeightAccessor;
-import net.minecraft.world.level.border.WorldBorder;
-import net.minecraft.world.level.gamerules.GameRules;
-import net.minecraft.world.level.timers.TimerQueue;
-import org.jspecify.annotations.Nullable;
 
 public interface ServerLevelData extends WritableLevelData {
    String getLevelName();
 
-   void setThundering(boolean var1);
-
-   int getRainTime();
-
-   void setRainTime(int var1);
-
-   void setThunderTime(int var1);
-
-   int getThunderTime();
-
-   default void fillCrashReportCategory(CrashReportCategory var1, LevelHeightAccessor var2) {
-      WritableLevelData.super.fillCrashReportCategory(var1, var2);
-      var1.setDetail("Level name", this::getLevelName);
-      var1.setDetail("Level game mode", (CrashReportDetail)(() -> String.format(Locale.ROOT, "Game mode: %s (ID %d). Hardcore: %b. Commands: %b", this.getGameType().getName(), this.getGameType().getId(), this.isHardcore(), this.isAllowCommands())));
-      var1.setDetail("Level weather", (CrashReportDetail)(() -> String.format(Locale.ROOT, "Rain time: %d (now: %b), thunder time: %d (now: %b)", this.getRainTime(), this.isRaining(), this.getThunderTime(), this.isThundering())));
+   default void fillCrashReportCategory(final CrashReportCategory category, final LevelHeightAccessor levelHeightAccessor) {
+      WritableLevelData.super.fillCrashReportCategory(category, levelHeightAccessor);
+      category.setDetail("Level name", this::getLevelName);
+      category.setDetail("Level game mode", (CrashReportDetail)(() -> String.format(Locale.ROOT, "Game mode: %s (ID %d). Hardcore: %b. Commands: %b", this.getGameType().getName(), this.getGameType().getId(), this.isHardcore(), this.isAllowCommands())));
    }
-
-   int getClearWeatherTime();
-
-   void setClearWeatherTime(int var1);
-
-   int getWanderingTraderSpawnDelay();
-
-   void setWanderingTraderSpawnDelay(int var1);
-
-   int getWanderingTraderSpawnChance();
-
-   void setWanderingTraderSpawnChance(int var1);
-
-   @Nullable UUID getWanderingTraderId();
-
-   void setWanderingTraderId(UUID var1);
 
    GameType getGameType();
 
-   /** @deprecated */
-   @Deprecated
-   Optional<WorldBorder.Settings> getLegacyWorldBorderSettings();
-
-   /** @deprecated */
-   @Deprecated
-   void setLegacyWorldBorderSettings(Optional<WorldBorder.Settings> var1);
-
    boolean isInitialized();
 
-   void setInitialized(boolean var1);
+   void setInitialized(boolean initialized);
 
    boolean isAllowCommands();
 
-   void setGameType(GameType var1);
+   void setGameType(GameType gameType);
 
-   TimerQueue<MinecraftServer> getScheduledEvents();
-
-   void setGameTime(long var1);
-
-   void setDayTime(long var1);
-
-   GameRules getGameRules();
+   void setGameTime(final long time);
 }

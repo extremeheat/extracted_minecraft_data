@@ -16,148 +16,146 @@ public class MatrixUtil {
       super();
    }
 
-   public static Matrix4f mulComponentWise(Matrix4f var0, float var1) {
-      return var0.set(var0.m00() * var1, var0.m01() * var1, var0.m02() * var1, var0.m03() * var1, var0.m10() * var1, var0.m11() * var1, var0.m12() * var1, var0.m13() * var1, var0.m20() * var1, var0.m21() * var1, var0.m22() * var1, var0.m23() * var1, var0.m30() * var1, var0.m31() * var1, var0.m32() * var1, var0.m33() * var1);
+   public static Matrix4f mulComponentWise(final Matrix4f m, final float factor) {
+      return m.set(m.m00() * factor, m.m01() * factor, m.m02() * factor, m.m03() * factor, m.m10() * factor, m.m11() * factor, m.m12() * factor, m.m13() * factor, m.m20() * factor, m.m21() * factor, m.m22() * factor, m.m23() * factor, m.m30() * factor, m.m31() * factor, m.m32() * factor, m.m33() * factor);
    }
 
-   private static GivensParameters approxGivensQuat(float var0, float var1, float var2) {
-      float var3 = 2.0F * (var0 - var2);
-      return G * var1 * var1 < var3 * var3 ? GivensParameters.fromUnnormalized(var1, var3) : PI_4;
+   private static GivensParameters approxGivensQuat(final float a11, final float a12, final float a22) {
+      float ch = 2.0F * (a11 - a22);
+      return G * a12 * a12 < ch * ch ? GivensParameters.fromUnnormalized(a12, ch) : PI_4;
    }
 
-   private static GivensParameters qrGivensQuat(float var0, float var1) {
-      float var2 = (float)java.lang.Math.hypot((double)var0, (double)var1);
-      float var3 = var2 > 1.0E-6F ? var1 : 0.0F;
-      float var4 = Math.abs(var0) + Math.max(var2, 1.0E-6F);
-      if (var0 < 0.0F) {
-         float var5 = var3;
-         var3 = var4;
-         var4 = var5;
+   private static GivensParameters qrGivensQuat(final float a1, final float a2) {
+      float p = (float)java.lang.Math.hypot((double)a1, (double)a2);
+      float sh = p > 1.0E-6F ? a2 : 0.0F;
+      float ch = Math.abs(a1) + Math.max(p, 1.0E-6F);
+      if (a1 < 0.0F) {
+         float f = sh;
+         sh = ch;
+         ch = f;
       }
 
-      return GivensParameters.fromUnnormalized(var3, var4);
+      return GivensParameters.fromUnnormalized(sh, ch);
    }
 
-   private static void similarityTransform(Matrix3f var0, Matrix3f var1) {
-      var0.mul(var1);
-      var1.transpose();
-      var1.mul(var0);
-      var0.set(var1);
+   private static void similarityTransform(final Matrix3f a, final Matrix3f q) {
+      a.mul(q);
+      q.transpose();
+      q.mul(a);
+      a.set(q);
    }
 
-   private static void stepJacobi(Matrix3f var0, Matrix3f var1, Quaternionf var2, Quaternionf var3) {
-      if (var0.m01 * var0.m01 + var0.m10 * var0.m10 > 1.0E-6F) {
-         GivensParameters var4 = approxGivensQuat(var0.m00, 0.5F * (var0.m01 + var0.m10), var0.m11);
-         Quaternionf var5 = var4.aroundZ(var2);
-         var3.mul(var5);
-         var4.aroundZ(var1);
-         similarityTransform(var0, var1);
+   private static void stepJacobi(final Matrix3f m, final Matrix3f tmpMat, final Quaternionf tmpQ, final Quaternionf output) {
+      if (m.m01 * m.m01 + m.m10 * m.m10 > 1.0E-6F) {
+         GivensParameters p = approxGivensQuat(m.m00, 0.5F * (m.m01 + m.m10), m.m11);
+         Quaternionf qt = p.aroundZ(tmpQ);
+         output.mul(qt);
+         p.aroundZ(tmpMat);
+         similarityTransform(m, tmpMat);
       }
 
-      if (var0.m02 * var0.m02 + var0.m20 * var0.m20 > 1.0E-6F) {
-         GivensParameters var6 = approxGivensQuat(var0.m00, 0.5F * (var0.m02 + var0.m20), var0.m22).inverse();
-         Quaternionf var8 = var6.aroundY(var2);
-         var3.mul(var8);
-         var6.aroundY(var1);
-         similarityTransform(var0, var1);
+      if (m.m02 * m.m02 + m.m20 * m.m20 > 1.0E-6F) {
+         GivensParameters p = approxGivensQuat(m.m00, 0.5F * (m.m02 + m.m20), m.m22).inverse();
+         Quaternionf qt = p.aroundY(tmpQ);
+         output.mul(qt);
+         p.aroundY(tmpMat);
+         similarityTransform(m, tmpMat);
       }
 
-      if (var0.m12 * var0.m12 + var0.m21 * var0.m21 > 1.0E-6F) {
-         GivensParameters var7 = approxGivensQuat(var0.m11, 0.5F * (var0.m12 + var0.m21), var0.m22);
-         Quaternionf var9 = var7.aroundX(var2);
-         var3.mul(var9);
-         var7.aroundX(var1);
-         similarityTransform(var0, var1);
+      if (m.m12 * m.m12 + m.m21 * m.m21 > 1.0E-6F) {
+         GivensParameters p = approxGivensQuat(m.m11, 0.5F * (m.m12 + m.m21), m.m22);
+         Quaternionf qt = p.aroundX(tmpQ);
+         output.mul(qt);
+         p.aroundX(tmpMat);
+         similarityTransform(m, tmpMat);
       }
 
    }
 
-   public static Quaternionf eigenvalueJacobi(Matrix3f var0, int var1) {
-      Quaternionf var2 = new Quaternionf();
-      Matrix3f var3 = new Matrix3f();
-      Quaternionf var4 = new Quaternionf();
+   public static Quaternionf eigenvalueJacobi(final Matrix3f inOut, final int steps) {
+      Quaternionf v = new Quaternionf();
+      Matrix3f scratchMat = new Matrix3f();
+      Quaternionf scratchQ = new Quaternionf();
 
-      for(int var5 = 0; var5 < var1; ++var5) {
-         stepJacobi(var0, var3, var4, var2);
+      for(int i = 0; i < steps; ++i) {
+         stepJacobi(inOut, scratchMat, scratchQ, v);
       }
 
-      var2.normalize();
-      return var2;
+      v.normalize();
+      return v;
    }
 
-   public static Triple<Quaternionf, Vector3f, Quaternionf> svdDecompose(Matrix3f var0) {
-      Matrix3f var1 = new Matrix3f(var0);
-      var1.transpose();
-      var1.mul(var0);
-      Quaternionf var2 = eigenvalueJacobi(var1, 5);
-      float var3 = var1.m00;
-      float var4 = var1.m11;
-      boolean var5 = (double)var3 < 1.0E-6;
-      boolean var6 = (double)var4 < 1.0E-6;
-      Matrix3f var8 = var0.rotate(var2);
-      Quaternionf var9 = new Quaternionf();
-      Quaternionf var10 = new Quaternionf();
-      GivensParameters var11;
-      if (var5) {
-         var11 = qrGivensQuat(var8.m11, -var8.m10);
+   public static Triple<Quaternionf, Vector3f, Quaternionf> svdDecompose(final Matrix3f matrix) {
+      Matrix3f b = new Matrix3f(matrix);
+      b.transpose();
+      b.mul(matrix);
+      Quaternionf v = eigenvalueJacobi(b, 5);
+      float columnScaleSquare0 = b.m00;
+      float columnScaleSquare1 = b.m11;
+      boolean zeroColumn0 = (double)columnScaleSquare0 < 1.0E-6;
+      boolean zeroColumn1 = (double)columnScaleSquare1 < 1.0E-6;
+      Matrix3f u012s = matrix.rotate(v);
+      Quaternionf u = new Quaternionf();
+      Quaternionf tmpQ = new Quaternionf();
+      GivensParameters p;
+      if (zeroColumn0) {
+         p = qrGivensQuat(u012s.m11, -u012s.m10);
       } else {
-         var11 = qrGivensQuat(var8.m00, var8.m01);
+         p = qrGivensQuat(u012s.m00, u012s.m01);
       }
 
-      Quaternionf var12 = var11.aroundZ(var10);
-      Matrix3f var13 = var11.aroundZ(var1);
-      var9.mul(var12);
-      var13.transpose().mul(var8);
-      if (var5) {
-         var11 = qrGivensQuat(var13.m22, -var13.m20);
+      Quaternionf qt0 = p.aroundZ(tmpQ);
+      Matrix3f u12s = p.aroundZ(b);
+      u.mul(qt0);
+      u12s.transpose().mul(u012s);
+      if (zeroColumn0) {
+         p = qrGivensQuat(u12s.m22, -u12s.m20);
       } else {
-         var11 = qrGivensQuat(var13.m00, var13.m02);
+         p = qrGivensQuat(u12s.m00, u12s.m02);
       }
 
-      var11 = var11.inverse();
-      Quaternionf var14 = var11.aroundY(var10);
-      Matrix3f var15 = var11.aroundY(var8);
-      var9.mul(var14);
-      var15.transpose().mul(var13);
-      if (var6) {
-         var11 = qrGivensQuat(var15.m22, -var15.m21);
+      p = p.inverse();
+      Quaternionf qt1 = p.aroundY(tmpQ);
+      Matrix3f u2s = p.aroundY(u012s);
+      u.mul(qt1);
+      u2s.transpose().mul(u12s);
+      if (zeroColumn1) {
+         p = qrGivensQuat(u2s.m22, -u2s.m21);
       } else {
-         var11 = qrGivensQuat(var15.m11, var15.m12);
+         p = qrGivensQuat(u2s.m11, u2s.m12);
       }
 
-      Quaternionf var16 = var11.aroundX(var10);
-      Matrix3f var17 = var11.aroundX(var13);
-      var9.mul(var16);
-      var17.transpose().mul(var15);
-      Vector3f var18 = new Vector3f(var17.m00, var17.m11, var17.m22);
-      return Triple.of(var9, var18, var2.conjugate());
+      Quaternionf qt2 = p.aroundX(tmpQ);
+      Matrix3f s = p.aroundX(u12s);
+      u.mul(qt2);
+      s.transpose().mul(u2s);
+      Vector3f scale = new Vector3f(s.m00, s.m11, s.m22);
+      return Triple.of(u, scale, v.conjugate());
    }
 
-   private static boolean checkPropertyRaw(Matrix4fc var0, int var1) {
-      return (var0.properties() & var1) != 0;
+   public static boolean checkPropertyRaw(final Matrix4fc matrix, final int property) {
+      return (matrix.properties() & property) != 0;
    }
 
-   public static boolean checkProperty(Matrix4fc var0, int var1) {
-      if (checkPropertyRaw(var0, var1)) {
+   public static boolean checkProperty(final Matrix4fc matrix, final int property) {
+      if (checkPropertyRaw(matrix, property)) {
          return true;
-      } else if (var0 instanceof Matrix4f) {
-         Matrix4f var2 = (Matrix4f)var0;
-         var2.determineProperties();
-         return checkPropertyRaw(var0, var1);
+      } else if (matrix instanceof Matrix4f) {
+         Matrix4f mutableMatrix = (Matrix4f)matrix;
+         int currentProperties = mutableMatrix.properties();
+         mutableMatrix.determineProperties();
+         mutableMatrix.assume(mutableMatrix.properties() | currentProperties);
+         return checkPropertyRaw(matrix, property);
       } else {
          return false;
       }
    }
 
-   public static boolean isIdentity(Matrix4fc var0) {
-      return checkProperty(var0, 4);
+   public static boolean isIdentity(final Matrix4fc matrix) {
+      return checkProperty(matrix, 4);
    }
 
-   public static boolean isPureTranslation(Matrix4fc var0) {
-      return checkProperty(var0, 8);
-   }
-
-   public static boolean isOrthonormal(Matrix4fc var0) {
-      return checkProperty(var0, 16);
+   public static boolean isPureTranslation(final Matrix4fc matrix) {
+      return checkProperty(matrix, 8);
    }
 }

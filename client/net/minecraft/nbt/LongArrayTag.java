@@ -10,29 +10,29 @@ import org.apache.commons.lang3.ArrayUtils;
 public final class LongArrayTag implements CollectionTag {
    private static final int SELF_SIZE_IN_BYTES = 24;
    public static final TagType<LongArrayTag> TYPE = new TagType.VariableSize<LongArrayTag>() {
-      public LongArrayTag load(DataInput var1, NbtAccounter var2) throws IOException {
-         return new LongArrayTag(readAccounted(var1, var2));
+      public LongArrayTag load(final DataInput input, final NbtAccounter accounter) throws IOException {
+         return new LongArrayTag(readAccounted(input, accounter));
       }
 
-      public StreamTagVisitor.ValueResult parse(DataInput var1, StreamTagVisitor var2, NbtAccounter var3) throws IOException {
-         return var2.visit(readAccounted(var1, var3));
+      public StreamTagVisitor.ValueResult parse(final DataInput input, final StreamTagVisitor output, final NbtAccounter accounter) throws IOException {
+         return output.visit(readAccounted(input, accounter));
       }
 
-      private static long[] readAccounted(DataInput var0, NbtAccounter var1) throws IOException {
-         var1.accountBytes(24L);
-         int var2 = var0.readInt();
-         var1.accountBytes(8L, (long)var2);
-         long[] var3 = new long[var2];
+      private static long[] readAccounted(final DataInput input, final NbtAccounter accounter) throws IOException {
+         accounter.accountBytes(24L);
+         int length = input.readInt();
+         accounter.accountBytes(8L, (long)length);
+         long[] data = new long[length];
 
-         for(int var4 = 0; var4 < var2; ++var4) {
-            var3[var4] = var0.readLong();
+         for(int i = 0; i < length; ++i) {
+            data[i] = input.readLong();
          }
 
-         return var3;
+         return data;
       }
 
-      public void skip(DataInput var1, NbtAccounter var2) throws IOException {
-         var1.skipBytes(var1.readInt() * 8);
+      public void skip(final DataInput input, final NbtAccounter accounter) throws IOException {
+         input.skipBytes(input.readInt() * 8);
       }
 
       public String getName() {
@@ -42,24 +42,19 @@ public final class LongArrayTag implements CollectionTag {
       public String getPrettyName() {
          return "TAG_Long_Array";
       }
-
-      // $FF: synthetic method
-      public Tag load(final DataInput var1, final NbtAccounter var2) throws IOException {
-         return this.load(var1, var2);
-      }
    };
    private long[] data;
 
-   public LongArrayTag(long[] var1) {
+   public LongArrayTag(final long[] data) {
       super();
-      this.data = var1;
+      this.data = data;
    }
 
-   public void write(DataOutput var1) throws IOException {
-      var1.writeInt(this.data.length);
+   public void write(final DataOutput output) throws IOException {
+      output.writeInt(this.data.length);
 
-      for(long var5 : this.data) {
-         var1.writeLong(var5);
+      for(long i : this.data) {
+         output.writeLong(i);
       }
 
    }
@@ -77,22 +72,22 @@ public final class LongArrayTag implements CollectionTag {
    }
 
    public String toString() {
-      StringTagVisitor var1 = new StringTagVisitor();
-      var1.visitLongArray(this);
-      return var1.build();
+      StringTagVisitor visitor = new StringTagVisitor();
+      visitor.visitLongArray(this);
+      return visitor.build();
    }
 
    public LongArrayTag copy() {
-      long[] var1 = new long[this.data.length];
-      System.arraycopy(this.data, 0, var1, 0, this.data.length);
-      return new LongArrayTag(var1);
+      long[] cp = new long[this.data.length];
+      System.arraycopy(this.data, 0, cp, 0, this.data.length);
+      return new LongArrayTag(cp);
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
+   public boolean equals(final Object obj) {
+      if (this == obj) {
          return true;
       } else {
-         return var1 instanceof LongArrayTag && Arrays.equals(this.data, ((LongArrayTag)var1).data);
+         return obj instanceof LongArrayTag && Arrays.equals(this.data, ((LongArrayTag)obj).data);
       }
    }
 
@@ -100,8 +95,8 @@ public final class LongArrayTag implements CollectionTag {
       return Arrays.hashCode(this.data);
    }
 
-   public void accept(TagVisitor var1) {
-      var1.visitLongArray(this);
+   public void accept(final TagVisitor visitor) {
+      visitor.visitLongArray(this);
    }
 
    public long[] getAsLongArray() {
@@ -112,32 +107,32 @@ public final class LongArrayTag implements CollectionTag {
       return this.data.length;
    }
 
-   public LongTag get(int var1) {
-      return LongTag.valueOf(this.data[var1]);
+   public LongTag get(final int index) {
+      return LongTag.valueOf(this.data[index]);
    }
 
-   public boolean setTag(int var1, Tag var2) {
-      if (var2 instanceof NumericTag var3) {
-         this.data[var1] = var3.longValue();
+   public boolean setTag(final int index, final Tag tag) {
+      if (tag instanceof NumericTag numeric) {
+         this.data[index] = numeric.longValue();
          return true;
       } else {
          return false;
       }
    }
 
-   public boolean addTag(int var1, Tag var2) {
-      if (var2 instanceof NumericTag var3) {
-         this.data = ArrayUtils.add(this.data, var1, var3.longValue());
+   public boolean addTag(final int index, final Tag tag) {
+      if (tag instanceof NumericTag numeric) {
+         this.data = ArrayUtils.add(this.data, index, numeric.longValue());
          return true;
       } else {
          return false;
       }
    }
 
-   public LongTag remove(int var1) {
-      long var2 = this.data[var1];
-      this.data = ArrayUtils.remove(this.data, var1);
-      return LongTag.valueOf(var2);
+   public LongTag remove(final int index) {
+      long prev = this.data[index];
+      this.data = ArrayUtils.remove(this.data, index);
+      return LongTag.valueOf(prev);
    }
 
    public void clear() {
@@ -148,22 +143,7 @@ public final class LongArrayTag implements CollectionTag {
       return Optional.of(this.data);
    }
 
-   public StreamTagVisitor.ValueResult accept(StreamTagVisitor var1) {
-      return var1.visit(this.data);
-   }
-
-   // $FF: synthetic method
-   public Tag get(final int var1) {
-      return this.get(var1);
-   }
-
-   // $FF: synthetic method
-   public Tag remove(final int var1) {
-      return this.remove(var1);
-   }
-
-   // $FF: synthetic method
-   public Tag copy() {
-      return this.copy();
+   public StreamTagVisitor.ValueResult accept(final StreamTagVisitor visitor) {
+      return visitor.visit(this.data);
    }
 }

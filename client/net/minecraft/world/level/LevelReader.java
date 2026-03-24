@@ -23,47 +23,43 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import org.jspecify.annotations.Nullable;
 
-public interface LevelReader extends BlockAndTintGetter, CollisionGetter, SignalGetter, BiomeManager.NoiseBiomeSource {
-   @Nullable ChunkAccess getChunk(int var1, int var2, ChunkStatus var3, boolean var4);
+public interface LevelReader extends BlockAndLightGetter, CollisionGetter, SignalGetter, BiomeManager.NoiseBiomeSource {
+   @Nullable ChunkAccess getChunk(final int chunkX, final int chunkZ, final ChunkStatus targetStatus, final boolean loadOrGenerate);
 
    /** @deprecated */
    @Deprecated
-   boolean hasChunk(int var1, int var2);
+   boolean hasChunk(int chunkX, int chunkZ);
 
-   int getHeight(Heightmap.Types var1, int var2, int var3);
+   int getHeight(Heightmap.Types type, int x, int z);
 
-   default int getHeight(Heightmap.Types var1, BlockPos var2) {
-      return this.getHeight(var1, var2.getX(), var2.getZ());
+   default int getHeight(final Heightmap.Types type, final BlockPos pos) {
+      return this.getHeight(type, pos.getX(), pos.getZ());
    }
 
    int getSkyDarken();
 
    BiomeManager getBiomeManager();
 
-   default Holder<Biome> getBiome(BlockPos var1) {
-      return this.getBiomeManager().getBiome(var1);
+   default Holder<Biome> getBiome(final BlockPos pos) {
+      return this.getBiomeManager().getBiome(pos);
    }
 
-   default Stream<BlockState> getBlockStatesIfLoaded(AABB var1) {
-      int var2 = Mth.floor(var1.minX);
-      int var3 = Mth.floor(var1.maxX);
-      int var4 = Mth.floor(var1.minY);
-      int var5 = Mth.floor(var1.maxY);
-      int var6 = Mth.floor(var1.minZ);
-      int var7 = Mth.floor(var1.maxZ);
-      return this.hasChunksAt(var2, var4, var6, var3, var5, var7) ? this.getBlockStates(var1) : Stream.empty();
+   default Stream<BlockState> getBlockStatesIfLoaded(final AABB box) {
+      int x0 = Mth.floor(box.minX);
+      int x1 = Mth.floor(box.maxX);
+      int y0 = Mth.floor(box.minY);
+      int y1 = Mth.floor(box.maxY);
+      int z0 = Mth.floor(box.minZ);
+      int z1 = Mth.floor(box.maxZ);
+      return this.hasChunksAt(x0, y0, z0, x1, y1, z1) ? this.getBlockStates(box) : Stream.empty();
    }
 
-   default int getBlockTint(BlockPos var1, ColorResolver var2) {
-      return var2.getColor((Biome)this.getBiome(var1).value(), (double)var1.getX(), (double)var1.getZ());
+   default Holder<Biome> getNoiseBiome(final int quartX, final int quartY, final int quartZ) {
+      ChunkAccess chunk = this.getChunk(QuartPos.toSection(quartX), QuartPos.toSection(quartZ), ChunkStatus.BIOMES, false);
+      return chunk != null ? chunk.getNoiseBiome(quartX, quartY, quartZ) : this.getUncachedNoiseBiome(quartX, quartY, quartZ);
    }
 
-   default Holder<Biome> getNoiseBiome(int var1, int var2, int var3) {
-      ChunkAccess var4 = this.getChunk(QuartPos.toSection(var1), QuartPos.toSection(var3), ChunkStatus.BIOMES, false);
-      return var4 != null ? var4.getNoiseBiome(var1, var2, var3) : this.getUncachedNoiseBiome(var1, var2, var3);
-   }
-
-   Holder<Biome> getUncachedNoiseBiome(int var1, int var2, int var3);
+   Holder<Biome> getUncachedNoiseBiome(int quartX, int quartY, int quartZ);
 
    boolean isClientSide();
 
@@ -79,25 +75,25 @@ public interface LevelReader extends BlockAndTintGetter, CollisionGetter, Signal
       return this.dimensionType().height();
    }
 
-   default BlockPos getHeightmapPos(Heightmap.Types var1, BlockPos var2) {
-      return new BlockPos(var2.getX(), this.getHeight(var1, var2.getX(), var2.getZ()), var2.getZ());
+   default BlockPos getHeightmapPos(final Heightmap.Types type, final BlockPos pos) {
+      return new BlockPos(pos.getX(), this.getHeight(type, pos.getX(), pos.getZ()), pos.getZ());
    }
 
-   default boolean isEmptyBlock(BlockPos var1) {
-      return this.getBlockState(var1).isAir();
+   default boolean isEmptyBlock(final BlockPos pos) {
+      return this.getBlockState(pos).isAir();
    }
 
-   default boolean canSeeSkyFromBelowWater(BlockPos var1) {
-      if (var1.getY() >= this.getSeaLevel()) {
-         return this.canSeeSky(var1);
+   default boolean canSeeSkyFromBelowWater(final BlockPos pos) {
+      if (pos.getY() >= this.getSeaLevel()) {
+         return this.canSeeSky(pos);
       } else {
-         BlockPos var2 = new BlockPos(var1.getX(), this.getSeaLevel(), var1.getZ());
-         if (!this.canSeeSky(var2)) {
+         BlockPos scanPoint = new BlockPos(pos.getX(), this.getSeaLevel(), pos.getZ());
+         if (!this.canSeeSky(scanPoint)) {
             return false;
          } else {
-            for(BlockPos var4 = var2.below(); var4.getY() > var1.getY(); var4 = var4.below()) {
-               BlockState var3 = this.getBlockState(var4);
-               if (var3.getLightBlock() > 0 && !var3.liquid()) {
+            for(BlockPos var4 = scanPoint.below(); var4.getY() > pos.getY(); var4 = var4.below()) {
+               BlockState state = this.getBlockState(var4);
+               if (state.getLightDampening() > 0 && !state.liquid()) {
                   return false;
                }
             }
@@ -107,52 +103,52 @@ public interface LevelReader extends BlockAndTintGetter, CollisionGetter, Signal
       }
    }
 
-   default float getPathfindingCostFromLightLevels(BlockPos var1) {
-      return this.getLightLevelDependentMagicValue(var1) - 0.5F;
+   default float getPathfindingCostFromLightLevels(final BlockPos pos) {
+      return this.getLightLevelDependentMagicValue(pos) - 0.5F;
    }
 
    /** @deprecated */
    @Deprecated
-   default float getLightLevelDependentMagicValue(BlockPos var1) {
-      float var2 = (float)this.getMaxLocalRawBrightness(var1) / 15.0F;
-      float var3 = var2 / (4.0F - 3.0F * var2);
-      return Mth.lerp(this.dimensionType().ambientLight(), var3, 1.0F);
+   default float getLightLevelDependentMagicValue(final BlockPos pos) {
+      float v = (float)this.getMaxLocalRawBrightness(pos) / 15.0F;
+      float curvedV = v / (4.0F - 3.0F * v);
+      return Mth.lerp(this.dimensionType().ambientLight(), curvedV, 1.0F);
    }
 
-   default ChunkAccess getChunk(BlockPos var1) {
-      return this.getChunk(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getZ()));
+   default ChunkAccess getChunk(final BlockPos pos) {
+      return this.getChunk(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ()));
    }
 
-   default ChunkAccess getChunk(int var1, int var2) {
-      return this.getChunk(var1, var2, ChunkStatus.FULL, true);
+   default ChunkAccess getChunk(final int chunkX, final int chunkZ) {
+      return this.getChunk(chunkX, chunkZ, ChunkStatus.FULL, true);
    }
 
-   default ChunkAccess getChunk(int var1, int var2, ChunkStatus var3) {
-      return this.getChunk(var1, var2, var3, true);
+   default ChunkAccess getChunk(final int chunkX, final int chunkZ, final ChunkStatus status) {
+      return this.getChunk(chunkX, chunkZ, status, true);
    }
 
-   default @Nullable BlockGetter getChunkForCollisions(int var1, int var2) {
-      return this.getChunk(var1, var2, ChunkStatus.EMPTY, false);
+   default @Nullable BlockGetter getChunkForCollisions(final int chunkX, final int chunkZ) {
+      return this.getChunk(chunkX, chunkZ, ChunkStatus.EMPTY, false);
    }
 
-   default boolean isWaterAt(BlockPos var1) {
-      return this.getFluidState(var1).is(FluidTags.WATER);
+   default boolean isWaterAt(final BlockPos pos) {
+      return this.getFluidState(pos).is(FluidTags.WATER);
    }
 
-   default boolean containsAnyLiquid(AABB var1) {
-      int var2 = Mth.floor(var1.minX);
-      int var3 = Mth.ceil(var1.maxX);
-      int var4 = Mth.floor(var1.minY);
-      int var5 = Mth.ceil(var1.maxY);
-      int var6 = Mth.floor(var1.minZ);
-      int var7 = Mth.ceil(var1.maxZ);
-      BlockPos.MutableBlockPos var8 = new BlockPos.MutableBlockPos();
+   default boolean containsAnyLiquid(final AABB box) {
+      int x0 = Mth.floor(box.minX);
+      int x1 = Mth.ceil(box.maxX);
+      int y0 = Mth.floor(box.minY);
+      int y1 = Mth.ceil(box.maxY);
+      int z0 = Mth.floor(box.minZ);
+      int z1 = Mth.ceil(box.maxZ);
+      BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 
-      for(int var9 = var2; var9 < var3; ++var9) {
-         for(int var10 = var4; var10 < var5; ++var10) {
-            for(int var11 = var6; var11 < var7; ++var11) {
-               BlockState var12 = this.getBlockState(var8.set(var9, var10, var11));
-               if (!var12.getFluidState().isEmpty()) {
+      for(int x = x0; x < x1; ++x) {
+         for(int y = y0; y < y1; ++y) {
+            for(int z = z0; z < z1; ++z) {
+               BlockState blockState = this.getBlockState(pos.set(x, y, z));
+               if (!blockState.getFluidState().isEmpty()) {
                   return true;
                }
             }
@@ -162,49 +158,53 @@ public interface LevelReader extends BlockAndTintGetter, CollisionGetter, Signal
       return false;
    }
 
-   default int getMaxLocalRawBrightness(BlockPos var1) {
-      return this.getMaxLocalRawBrightness(var1, this.getSkyDarken());
+   default int getMaxLocalRawBrightness(final BlockPos pos) {
+      return this.getMaxLocalRawBrightness(pos, this.getSkyDarken());
    }
 
-   default int getMaxLocalRawBrightness(BlockPos var1, int var2) {
-      return var1.getX() >= -30000000 && var1.getZ() >= -30000000 && var1.getX() < 30000000 && var1.getZ() < 30000000 ? this.getRawBrightness(var1, var2) : 15;
+   default int getMaxLocalRawBrightness(final BlockPos pos, final int skyDarkening) {
+      return pos.getX() >= -30000000 && pos.getZ() >= -30000000 && pos.getX() < 30000000 && pos.getZ() < 30000000 ? this.getRawBrightness(pos, skyDarkening) : 15;
    }
 
-   /** @deprecated */
-   @Deprecated
-   default boolean hasChunkAt(int var1, int var2) {
-      return this.hasChunk(SectionPos.blockToSectionCoord(var1), SectionPos.blockToSectionCoord(var2));
-   }
-
-   /** @deprecated */
-   @Deprecated
-   default boolean hasChunkAt(BlockPos var1) {
-      return this.hasChunkAt(var1.getX(), var1.getZ());
+   default int getEffectiveSkyBrightness(final BlockPos pos) {
+      return this.getBrightness(LightLayer.SKY, pos) - this.getSkyDarken();
    }
 
    /** @deprecated */
    @Deprecated
-   default boolean hasChunksAt(BlockPos var1, BlockPos var2) {
-      return this.hasChunksAt(var1.getX(), var1.getY(), var1.getZ(), var2.getX(), var2.getY(), var2.getZ());
+   default boolean hasChunkAt(final int blockX, final int blockZ) {
+      return this.hasChunk(SectionPos.blockToSectionCoord(blockX), SectionPos.blockToSectionCoord(blockZ));
    }
 
    /** @deprecated */
    @Deprecated
-   default boolean hasChunksAt(int var1, int var2, int var3, int var4, int var5, int var6) {
-      return var5 >= this.getMinY() && var2 <= this.getMaxY() ? this.hasChunksAt(var1, var3, var4, var6) : false;
+   default boolean hasChunkAt(final BlockPos pos) {
+      return this.hasChunkAt(pos.getX(), pos.getZ());
    }
 
    /** @deprecated */
    @Deprecated
-   default boolean hasChunksAt(int var1, int var2, int var3, int var4) {
-      int var5 = SectionPos.blockToSectionCoord(var1);
-      int var6 = SectionPos.blockToSectionCoord(var3);
-      int var7 = SectionPos.blockToSectionCoord(var2);
-      int var8 = SectionPos.blockToSectionCoord(var4);
+   default boolean hasChunksAt(final BlockPos pos0, final BlockPos pos1) {
+      return this.hasChunksAt(pos0.getX(), pos0.getY(), pos0.getZ(), pos1.getX(), pos1.getY(), pos1.getZ());
+   }
 
-      for(int var9 = var5; var9 <= var6; ++var9) {
-         for(int var10 = var7; var10 <= var8; ++var10) {
-            if (!this.hasChunk(var9, var10)) {
+   /** @deprecated */
+   @Deprecated
+   default boolean hasChunksAt(final int x0, final int y0, final int z0, final int x1, final int y1, final int z1) {
+      return y1 >= this.getMinY() && y0 <= this.getMaxY() ? this.hasChunksAt(x0, z0, x1, z1) : false;
+   }
+
+   /** @deprecated */
+   @Deprecated
+   default boolean hasChunksAt(final int x0, final int z0, final int x1, final int z1) {
+      int chunkX0 = SectionPos.blockToSectionCoord(x0);
+      int chunkX1 = SectionPos.blockToSectionCoord(x1);
+      int chunkZ0 = SectionPos.blockToSectionCoord(z0);
+      int chunkZ1 = SectionPos.blockToSectionCoord(z1);
+
+      for(int chunkX = chunkX0; chunkX <= chunkX1; ++chunkX) {
+         for(int chunkZ = chunkZ0; chunkZ <= chunkZ1; ++chunkZ) {
+            if (!this.hasChunk(chunkX, chunkZ)) {
                return false;
             }
          }
@@ -217,9 +217,9 @@ public interface LevelReader extends BlockAndTintGetter, CollisionGetter, Signal
 
    FeatureFlagSet enabledFeatures();
 
-   default <T> HolderLookup<T> holderLookup(ResourceKey<? extends Registry<? extends T>> var1) {
-      Registry var2 = this.registryAccess().lookupOrThrow(var1);
-      return var2.filterFeatures(this.enabledFeatures());
+   default <T> HolderLookup<T> holderLookup(final ResourceKey<? extends Registry<? extends T>> key) {
+      Registry<T> registry = this.registryAccess().lookupOrThrow(key);
+      return registry.filterFeatures(this.enabledFeatures());
    }
 
    EnvironmentAttributeReader environmentAttributes();

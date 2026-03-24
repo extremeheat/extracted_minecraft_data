@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.monster;
 
 import java.util.EnumSet;
+import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -52,8 +53,8 @@ public class Vex extends Monster implements TraceableEntity {
    private boolean hasLimitedLife;
    private int limitedLifeTicks;
 
-   public Vex(EntityType<? extends Vex> var1, Level var2) {
-      super(var1, var2);
+   public Vex(final EntityType<? extends Vex> type, final Level level) {
+      super(type, level);
       this.moveControl = new VexMoveControl(this);
       this.xpReward = 3;
    }
@@ -94,34 +95,34 @@ public class Vex extends Monster implements TraceableEntity {
       return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 14.0).add(Attributes.ATTACK_DAMAGE, 4.0);
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(DATA_FLAGS_ID, (byte)0);
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(DATA_FLAGS_ID, (byte)0);
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.boundOrigin = (BlockPos)var1.read("bound_pos", BlockPos.CODEC).orElse((Object)null);
-      var1.getInt("life_ticks").ifPresentOrElse(this::setLimitedLife, () -> this.hasLimitedLife = false);
-      this.owner = EntityReference.<Mob>read(var1, "owner");
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.boundOrigin = (BlockPos)input.read("bound_pos", BlockPos.CODEC).orElse((Object)null);
+      input.getInt("life_ticks").ifPresentOrElse(this::setLimitedLife, () -> this.hasLimitedLife = false);
+      this.owner = EntityReference.<Mob>read(input, "owner");
    }
 
-   public void restoreFrom(Entity var1) {
-      super.restoreFrom(var1);
-      if (var1 instanceof Vex var2) {
-         this.owner = var2.owner;
+   public void restoreFrom(final Entity oldEntity) {
+      super.restoreFrom(oldEntity);
+      if (oldEntity instanceof Vex vex) {
+         this.owner = vex.owner;
       }
 
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.storeNullable("bound_pos", BlockPos.CODEC, this.boundOrigin);
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.storeNullable("bound_pos", BlockPos.CODEC, this.boundOrigin);
       if (this.hasLimitedLife) {
-         var1.putInt("life_ticks", this.limitedLifeTicks);
+         output.putInt("life_ticks", this.limitedLifeTicks);
       }
 
-      EntityReference.store(this.owner, var1, "owner");
+      EntityReference.store(this.owner, output, "owner");
    }
 
    public @Nullable Mob getOwner() {
@@ -132,41 +133,41 @@ public class Vex extends Monster implements TraceableEntity {
       return this.boundOrigin;
    }
 
-   public void setBoundOrigin(@Nullable BlockPos var1) {
-      this.boundOrigin = var1;
+   public void setBoundOrigin(final @Nullable BlockPos boundOrigin) {
+      this.boundOrigin = boundOrigin;
    }
 
-   private boolean getVexFlag(int var1) {
-      byte var2 = (Byte)this.entityData.get(DATA_FLAGS_ID);
-      return (var2 & var1) != 0;
+   private boolean getVexFlag(final int flag) {
+      int flags = (Byte)this.entityData.get(DATA_FLAGS_ID);
+      return (flags & flag) != 0;
    }
 
-   private void setVexFlag(int var1, boolean var2) {
-      int var3 = (Byte)this.entityData.get(DATA_FLAGS_ID);
-      if (var2) {
-         var3 |= var1;
+   private void setVexFlag(final int flag, final boolean value) {
+      int flags = (Byte)this.entityData.get(DATA_FLAGS_ID);
+      if (value) {
+         flags |= flag;
       } else {
-         var3 &= ~var1;
+         flags &= ~flag;
       }
 
-      this.entityData.set(DATA_FLAGS_ID, (byte)(var3 & 255));
+      this.entityData.set(DATA_FLAGS_ID, (byte)(flags & 255));
    }
 
    public boolean isCharging() {
       return this.getVexFlag(1);
    }
 
-   public void setIsCharging(boolean var1) {
-      this.setVexFlag(1, var1);
+   public void setIsCharging(final boolean value) {
+      this.setVexFlag(1, value);
    }
 
-   public void setOwner(Mob var1) {
-      this.owner = EntityReference.of(var1);
+   public void setOwner(final Mob owner) {
+      this.owner = EntityReference.of(owner);
    }
 
-   public void setLimitedLife(int var1) {
+   public void setLimitedLife(final int lifeTicks) {
       this.hasLimitedLife = true;
-      this.limitedLifeTicks = var1;
+      this.limitedLifeTicks = lifeTicks;
    }
 
    protected SoundEvent getAmbientSound() {
@@ -177,7 +178,7 @@ public class Vex extends Monster implements TraceableEntity {
       return SoundEvents.VEX_DEATH;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return SoundEvents.VEX_HURT;
    }
 
@@ -185,49 +186,45 @@ public class Vex extends Monster implements TraceableEntity {
       return 1.0F;
    }
 
-   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      RandomSource var5 = var1.getRandom();
-      this.populateDefaultEquipmentSlots(var5, var2);
-      this.populateDefaultEquipmentEnchantments(var1, var5, var2);
-      return super.finalizeSpawn(var1, var2, var3, var4);
+   public @Nullable SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, final @Nullable SpawnGroupData groupData) {
+      RandomSource random = level.getRandom();
+      this.populateDefaultEquipmentSlots(random, difficulty);
+      this.populateDefaultEquipmentEnchantments(level, random, difficulty);
+      return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
    }
 
-   protected void populateDefaultEquipmentSlots(RandomSource var1, DifficultyInstance var2) {
+   protected void populateDefaultEquipmentSlots(final RandomSource random, final DifficultyInstance difficulty) {
       this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_SWORD));
       this.setDropChance(EquipmentSlot.MAINHAND, 0.0F);
-   }
-
-   // $FF: synthetic method
-   public @Nullable Entity getOwner() {
-      return this.getOwner();
    }
 
    static {
       DATA_FLAGS_ID = SynchedEntityData.<Byte>defineId(Vex.class, EntityDataSerializers.BYTE);
    }
 
-   class VexMoveControl extends MoveControl {
-      public VexMoveControl(final Vex var2) {
-         super(var2);
+   private class VexMoveControl extends MoveControl {
+      public VexMoveControl(final Vex vex) {
+         Objects.requireNonNull(Vex.this);
+         super(vex);
       }
 
       public void tick() {
          if (this.operation == MoveControl.Operation.MOVE_TO) {
-            Vec3 var1 = new Vec3(this.wantedX - Vex.this.getX(), this.wantedY - Vex.this.getY(), this.wantedZ - Vex.this.getZ());
-            double var2 = var1.length();
-            if (var2 < Vex.this.getBoundingBox().getSize()) {
+            Vec3 delta = new Vec3(this.wantedX - Vex.this.getX(), this.wantedY - Vex.this.getY(), this.wantedZ - Vex.this.getZ());
+            double deltaLength = delta.length();
+            if (deltaLength < Vex.this.getBoundingBox().getSize()) {
                this.operation = MoveControl.Operation.WAIT;
                Vex.this.setDeltaMovement(Vex.this.getDeltaMovement().scale(0.5));
             } else {
-               Vex.this.setDeltaMovement(Vex.this.getDeltaMovement().add(var1.scale(this.speedModifier * 0.05 / var2)));
+               Vex.this.setDeltaMovement(Vex.this.getDeltaMovement().add(delta.scale(this.speedModifier * 0.05 / deltaLength)));
                if (Vex.this.getTarget() == null) {
-                  Vec3 var4 = Vex.this.getDeltaMovement();
-                  Vex.this.setYRot(-((float)Mth.atan2(var4.x, var4.z)) * 57.295776F);
+                  Vec3 movement = Vex.this.getDeltaMovement();
+                  Vex.this.setYRot(-((float)Mth.atan2(movement.x, movement.z)) * 57.295776F);
                   Vex.this.yBodyRot = Vex.this.getYRot();
                } else {
-                  double var8 = Vex.this.getTarget().getX() - Vex.this.getX();
-                  double var6 = Vex.this.getTarget().getZ() - Vex.this.getZ();
-                  Vex.this.setYRot(-((float)Mth.atan2(var8, var6)) * 57.295776F);
+                  double tx = Vex.this.getTarget().getX() - Vex.this.getX();
+                  double tz = Vex.this.getTarget().getZ() - Vex.this.getZ();
+                  Vex.this.setYRot(-((float)Mth.atan2(tx, tz)) * 57.295776F);
                   Vex.this.yBodyRot = Vex.this.getYRot();
                }
             }
@@ -236,16 +233,17 @@ public class Vex extends Monster implements TraceableEntity {
       }
    }
 
-   class VexChargeAttackGoal extends Goal {
+   private class VexChargeAttackGoal extends Goal {
       public VexChargeAttackGoal() {
+         Objects.requireNonNull(Vex.this);
          super();
          this.setFlags(EnumSet.of(Goal.Flag.MOVE));
       }
 
       public boolean canUse() {
-         LivingEntity var1 = Vex.this.getTarget();
-         if (var1 != null && var1.isAlive() && !Vex.this.getMoveControl().hasWanted() && Vex.this.random.nextInt(reducedTickDelay(7)) == 0) {
-            return Vex.this.distanceToSqr(var1) > 4.0;
+         LivingEntity target = Vex.this.getTarget();
+         if (target != null && target.isAlive() && !Vex.this.getMoveControl().hasWanted() && Vex.this.random.nextInt(reducedTickDelay(7)) == 0) {
+            return Vex.this.distanceToSqr(target) > 4.0;
          } else {
             return false;
          }
@@ -256,10 +254,10 @@ public class Vex extends Monster implements TraceableEntity {
       }
 
       public void start() {
-         LivingEntity var1 = Vex.this.getTarget();
-         if (var1 != null) {
-            Vec3 var2 = var1.getEyePosition();
-            Vex.this.moveControl.setWantedPosition(var2.x, var2.y, var2.z, 1.0);
+         LivingEntity attackTarget = Vex.this.getTarget();
+         if (attackTarget != null) {
+            Vec3 eyePosition = attackTarget.getEyePosition();
+            Vex.this.moveControl.setWantedPosition(eyePosition.x, eyePosition.y, eyePosition.z, 1.0);
          }
 
          Vex.this.setIsCharging(true);
@@ -275,16 +273,16 @@ public class Vex extends Monster implements TraceableEntity {
       }
 
       public void tick() {
-         LivingEntity var1 = Vex.this.getTarget();
-         if (var1 != null) {
-            if (Vex.this.getBoundingBox().intersects(var1.getBoundingBox())) {
-               Vex.this.doHurtTarget(getServerLevel(Vex.this.level()), var1);
+         LivingEntity attackTarget = Vex.this.getTarget();
+         if (attackTarget != null) {
+            if (Vex.this.getBoundingBox().intersects(attackTarget.getBoundingBox())) {
+               Vex.this.doHurtTarget(getServerLevel(Vex.this.level()), attackTarget);
                Vex.this.setIsCharging(false);
             } else {
-               double var2 = Vex.this.distanceToSqr(var1);
-               if (var2 < 9.0) {
-                  Vec3 var4 = var1.getEyePosition();
-                  Vex.this.moveControl.setWantedPosition(var4.x, var4.y, var4.z, 1.0);
+               double distance = Vex.this.distanceToSqr(attackTarget);
+               if (distance < 9.0) {
+                  Vec3 eyePosition = attackTarget.getEyePosition();
+                  Vex.this.moveControl.setWantedPosition(eyePosition.x, eyePosition.y, eyePosition.z, 1.0);
                }
             }
 
@@ -292,8 +290,9 @@ public class Vex extends Monster implements TraceableEntity {
       }
    }
 
-   class VexRandomMoveGoal extends Goal {
+   private class VexRandomMoveGoal extends Goal {
       public VexRandomMoveGoal() {
+         Objects.requireNonNull(Vex.this);
          super();
          this.setFlags(EnumSet.of(Goal.Flag.MOVE));
       }
@@ -307,17 +306,17 @@ public class Vex extends Monster implements TraceableEntity {
       }
 
       public void tick() {
-         BlockPos var1 = Vex.this.getBoundOrigin();
-         if (var1 == null) {
-            var1 = Vex.this.blockPosition();
+         BlockPos boundOrigin = Vex.this.getBoundOrigin();
+         if (boundOrigin == null) {
+            boundOrigin = Vex.this.blockPosition();
          }
 
-         for(int var2 = 0; var2 < 3; ++var2) {
-            BlockPos var3 = var1.offset(Vex.this.random.nextInt(15) - 7, Vex.this.random.nextInt(11) - 5, Vex.this.random.nextInt(15) - 7);
-            if (Vex.this.level().isEmptyBlock(var3)) {
-               Vex.this.moveControl.setWantedPosition((double)var3.getX() + 0.5, (double)var3.getY() + 0.5, (double)var3.getZ() + 0.5, 0.25);
+         for(int attempts = 0; attempts < 3; ++attempts) {
+            BlockPos testPos = boundOrigin.offset(Vex.this.random.nextInt(15) - 7, Vex.this.random.nextInt(11) - 5, Vex.this.random.nextInt(15) - 7);
+            if (Vex.this.level().isEmptyBlock(testPos)) {
+               Vex.this.moveControl.setWantedPosition((double)testPos.getX() + 0.5, (double)testPos.getY() + 0.5, (double)testPos.getZ() + 0.5, 0.25);
                if (Vex.this.getTarget() == null) {
-                  Vex.this.getLookControl().setLookAt((double)var3.getX() + 0.5, (double)var3.getY() + 0.5, (double)var3.getZ() + 0.5, 180.0F, 20.0F);
+                  Vex.this.getLookControl().setLookAt((double)testPos.getX() + 0.5, (double)testPos.getY() + 0.5, (double)testPos.getZ() + 0.5, 180.0F, 20.0F);
                }
                break;
             }
@@ -326,21 +325,23 @@ public class Vex extends Monster implements TraceableEntity {
       }
    }
 
-   class VexCopyOwnerTargetGoal extends TargetGoal {
-      private final TargetingConditions copyOwnerTargeting = TargetingConditions.forNonCombat().ignoreLineOfSight().ignoreInvisibilityTesting();
+   private class VexCopyOwnerTargetGoal extends TargetGoal {
+      private final TargetingConditions copyOwnerTargeting;
 
-      public VexCopyOwnerTargetGoal(final PathfinderMob var2) {
-         super(var2, false);
+      public VexCopyOwnerTargetGoal(final PathfinderMob mob) {
+         Objects.requireNonNull(Vex.this);
+         super(mob, false);
+         this.copyOwnerTargeting = TargetingConditions.forNonCombat().ignoreLineOfSight().ignoreInvisibilityTesting();
       }
 
       public boolean canUse() {
-         Mob var1 = Vex.this.getOwner();
-         return var1 != null && var1.getTarget() != null && this.canAttack(var1.getTarget(), this.copyOwnerTargeting);
+         Mob owner = Vex.this.getOwner();
+         return owner != null && owner.getTarget() != null && this.canAttack(owner.getTarget(), this.copyOwnerTargeting);
       }
 
       public void start() {
-         Mob var1 = Vex.this.getOwner();
-         Vex.this.setTarget(var1 != null ? var1.getTarget() : null);
+         Mob owner = Vex.this.getOwner();
+         Vex.this.setTarget(owner != null ? owner.getTarget() : null);
          super.start();
       }
    }

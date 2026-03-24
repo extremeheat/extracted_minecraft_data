@@ -9,17 +9,16 @@ import net.minecraft.world.level.GameType;
 public record ServerboundChangeGameModePacket(GameType mode) implements Packet<ServerGamePacketListener> {
    public static final StreamCodec<ByteBuf, ServerboundChangeGameModePacket> STREAM_CODEC;
 
-   public ServerboundChangeGameModePacket(GameType var1) {
+   public ServerboundChangeGameModePacket {
       super();
-      this.mode = var1;
    }
 
    public PacketType<ServerboundChangeGameModePacket> type() {
       return GamePacketTypes.SERVERBOUND_CHANGE_GAME_MODE;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handleChangeGameMode(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handleChangeGameMode(this);
    }
 
    static {

@@ -10,17 +10,16 @@ import net.minecraft.network.protocol.PacketType;
 public record ClientboundSetTitleTextPacket(Component text) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSetTitleTextPacket> STREAM_CODEC;
 
-   public ClientboundSetTitleTextPacket(Component var1) {
+   public ClientboundSetTitleTextPacket {
       super();
-      this.text = var1;
    }
 
    public PacketType<ClientboundSetTitleTextPacket> type() {
       return GamePacketTypes.CLIENTBOUND_SET_TITLE_TEXT;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.setTitleText(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.setTitleText(this);
    }
 
    static {

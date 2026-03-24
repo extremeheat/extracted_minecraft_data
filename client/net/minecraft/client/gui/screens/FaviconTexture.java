@@ -17,43 +17,43 @@ public class FaviconTexture implements AutoCloseable {
    private @Nullable DynamicTexture texture;
    private boolean closed;
 
-   private FaviconTexture(TextureManager var1, Identifier var2) {
+   private FaviconTexture(final TextureManager textureManager, final Identifier textureLocation) {
       super();
-      this.textureManager = var1;
-      this.textureLocation = var2;
+      this.textureManager = textureManager;
+      this.textureLocation = textureLocation;
    }
 
-   public static FaviconTexture forWorld(TextureManager var0, String var1) {
-      String var10003 = Util.sanitizeName(var1, Identifier::validPathChar);
-      return new FaviconTexture(var0, Identifier.withDefaultNamespace("worlds/" + var10003 + "/" + String.valueOf(Hashing.sha1().hashUnencodedChars(var1)) + "/icon"));
+   public static FaviconTexture forWorld(final TextureManager textureManager, final String levelId) {
+      String var10003 = Util.sanitizeName(levelId, Identifier::validPathChar);
+      return new FaviconTexture(textureManager, Identifier.withDefaultNamespace("worlds/" + var10003 + "/" + String.valueOf(Hashing.sha1().hashUnencodedChars(levelId)) + "/icon"));
    }
 
-   public static FaviconTexture forServer(TextureManager var0, String var1) {
-      String var10003 = String.valueOf(Hashing.sha1().hashUnencodedChars(var1));
-      return new FaviconTexture(var0, Identifier.withDefaultNamespace("servers/" + var10003 + "/icon"));
+   public static FaviconTexture forServer(final TextureManager textureManager, final String address) {
+      String var10003 = String.valueOf(Hashing.sha1().hashUnencodedChars(address));
+      return new FaviconTexture(textureManager, Identifier.withDefaultNamespace("servers/" + var10003 + "/icon"));
    }
 
-   public void upload(NativeImage var1) {
-      if (var1.getWidth() == 64 && var1.getHeight() == 64) {
+   public void upload(final NativeImage image) {
+      if (image.getWidth() == 64 && image.getHeight() == 64) {
          try {
             this.checkOpen();
             if (this.texture == null) {
-               this.texture = new DynamicTexture(() -> "Favicon " + String.valueOf(this.textureLocation), var1);
+               this.texture = new DynamicTexture(() -> "Favicon " + String.valueOf(this.textureLocation), image);
             } else {
-               this.texture.setPixels(var1);
+               this.texture.setPixels(image);
                this.texture.upload();
             }
 
             this.textureManager.register(this.textureLocation, this.texture);
-         } catch (Throwable var3) {
-            var1.close();
+         } catch (Throwable t) {
+            image.close();
             this.clear();
-            throw var3;
+            throw t;
          }
       } else {
-         var1.close();
-         int var10002 = var1.getWidth();
-         throw new IllegalArgumentException("Icon must be 64x64, but was " + var10002 + "x" + var1.getHeight());
+         image.close();
+         int var10002 = image.getWidth();
+         throw new IllegalArgumentException("Icon must be 64x64, but was " + var10002 + "x" + image.getHeight());
       }
    }
 

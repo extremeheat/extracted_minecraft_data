@@ -8,49 +8,54 @@ import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.input.PreeditEvent;
 import org.jspecify.annotations.Nullable;
 
 public interface GuiEventListener extends TabOrderedElement {
-   default void mouseMoved(double var1, double var3) {
+   default void mouseMoved(final double x, final double y) {
    }
 
-   default boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+   default boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
       return false;
    }
 
-   default boolean mouseReleased(MouseButtonEvent var1) {
+   default boolean mouseReleased(final MouseButtonEvent event) {
       return false;
    }
 
-   default boolean mouseDragged(MouseButtonEvent var1, double var2, double var4) {
+   default boolean mouseDragged(final MouseButtonEvent event, final double dx, final double dy) {
       return false;
    }
 
-   default boolean mouseScrolled(double var1, double var3, double var5, double var7) {
+   default boolean mouseScrolled(final double x, final double y, final double scrollX, final double scrollY) {
       return false;
    }
 
-   default boolean keyPressed(KeyEvent var1) {
+   default boolean keyPressed(final KeyEvent event) {
       return false;
    }
 
-   default boolean keyReleased(KeyEvent var1) {
+   default boolean keyReleased(final KeyEvent event) {
       return false;
    }
 
-   default boolean charTyped(CharacterEvent var1) {
+   default boolean charTyped(final CharacterEvent event) {
       return false;
    }
 
-   default @Nullable ComponentPath nextFocusPath(FocusNavigationEvent var1) {
+   default boolean preeditUpdated(final @Nullable PreeditEvent event) {
+      return false;
+   }
+
+   default @Nullable ComponentPath nextFocusPath(final FocusNavigationEvent navigationEvent) {
       return null;
    }
 
-   default boolean isMouseOver(double var1, double var3) {
+   default boolean isMouseOver(final double mouseX, final double mouseY) {
       return false;
    }
 
-   void setFocused(boolean var1);
+   void setFocused(final boolean focused);
 
    boolean isFocused();
 
@@ -66,7 +71,7 @@ public interface GuiEventListener extends TabOrderedElement {
       return ScreenRectangle.empty();
    }
 
-   default ScreenRectangle getBorderForArrowNavigation(ScreenDirection var1) {
-      return this.getRectangle().getBorder(var1);
+   default ScreenRectangle getBorderForArrowNavigation(final ScreenDirection opposite) {
+      return this.getRectangle().getBorder(opposite);
    }
 }

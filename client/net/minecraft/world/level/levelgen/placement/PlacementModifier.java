@@ -13,7 +13,7 @@ public abstract class PlacementModifier {
       super();
    }
 
-   public abstract Stream<BlockPos> getPositions(PlacementContext var1, RandomSource var2, BlockPos var3);
+   public abstract Stream<BlockPos> getPositions(PlacementContext context, RandomSource random, BlockPos origin);
 
    public abstract PlacementModifierType<?> type();
 

@@ -14,30 +14,29 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.TooltipFlag;
 
-public final class ChargedProjectiles implements TooltipProvider {
+public record ChargedProjectiles(List<ItemStackTemplate> items) implements TooltipProvider {
    public static final ChargedProjectiles EMPTY = new ChargedProjectiles(List.of());
    public static final Codec<ChargedProjectiles> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, ChargedProjectiles> STREAM_CODEC;
-   private final List<ItemStack> items;
 
-   private ChargedProjectiles(List<ItemStack> var1) {
+   public ChargedProjectiles {
       super();
-      this.items = var1;
    }
 
-   public static ChargedProjectiles of(ItemStack var0) {
-      return new ChargedProjectiles(List.of(var0.copy()));
+   public static ChargedProjectiles of(final ItemStackTemplate stack) {
+      return new ChargedProjectiles(List.of(stack));
    }
 
-   public static ChargedProjectiles of(List<ItemStack> var0) {
-      return new ChargedProjectiles(List.copyOf(Lists.transform(var0, ItemStack::copy)));
+   public static ChargedProjectiles ofNonEmpty(final List<ItemStack> items) {
+      return new ChargedProjectiles(List.copyOf(Lists.transform(items, ItemStackTemplate::fromNonEmptyStack)));
    }
 
-   public boolean contains(Item var1) {
-      for(ItemStack var3 : this.items) {
-         if (var3.is(var1)) {
+   public boolean contains(final Item item) {
+      for(ItemStackTemplate projectile : this.items) {
+         if (projectile.is(item)) {
             return true;
          }
       }
@@ -45,76 +44,51 @@ public final class ChargedProjectiles implements TooltipProvider {
       return false;
    }
 
-   public List<ItemStack> getItems() {
-      return Lists.transform(this.items, ItemStack::copy);
+   public List<ItemStack> itemCopies() {
+      return Lists.transform(this.items, ItemStackTemplate::create);
    }
 
    public boolean isEmpty() {
       return this.items.isEmpty();
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
-         return true;
-      } else {
-         boolean var10000;
-         if (var1 instanceof ChargedProjectiles) {
-            ChargedProjectiles var2 = (ChargedProjectiles)var1;
-            if (ItemStack.listMatches(this.items, var2.items)) {
-               var10000 = true;
-               return var10000;
-            }
-         }
+   public void addToTooltip(final Item.TooltipContext context, final Consumer<Component> consumer, final TooltipFlag flag, final DataComponentGetter components) {
+      ItemStack current = null;
+      int count = 0;
 
-         var10000 = false;
-         return var10000;
-      }
-   }
-
-   public int hashCode() {
-      return ItemStack.hashStackList(this.items);
-   }
-
-   public String toString() {
-      return "ChargedProjectiles[items=" + String.valueOf(this.items) + "]";
-   }
-
-   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
-      ItemStack var5 = null;
-      int var6 = 0;
-
-      for(ItemStack var8 : this.items) {
-         if (var5 == null) {
-            var5 = var8;
-            var6 = 1;
-         } else if (ItemStack.matches(var5, var8)) {
-            ++var6;
+      for(ItemStackTemplate projectileTemplate : this.items) {
+         ItemStack projectile = projectileTemplate.create();
+         if (current == null) {
+            current = projectile;
+            count = 1;
+         } else if (ItemStack.matches(current, projectile)) {
+            ++count;
          } else {
-            addProjectileTooltip(var1, var2, var5, var6);
-            var5 = var8;
-            var6 = 1;
+            addProjectileTooltip(context, consumer, current, count);
+            current = projectile;
+            count = 1;
          }
       }
 
-      if (var5 != null) {
-         addProjectileTooltip(var1, var2, var5, var6);
+      if (current != null) {
+         addProjectileTooltip(context, consumer, current, count);
       }
 
    }
 
-   private static void addProjectileTooltip(Item.TooltipContext var0, Consumer<Component> var1, ItemStack var2, int var3) {
-      if (var3 == 1) {
-         var1.accept(Component.translatable("item.minecraft.crossbow.projectile.single", var2.getDisplayName()));
+   private static void addProjectileTooltip(final Item.TooltipContext context, final Consumer<Component> consumer, final ItemStack projectile, final int count) {
+      if (count == 1) {
+         consumer.accept(Component.translatable("item.minecraft.crossbow.projectile.single", projectile.getDisplayName()));
       } else {
-         var1.accept(Component.translatable("item.minecraft.crossbow.projectile.multiple", var3, var2.getDisplayName()));
+         consumer.accept(Component.translatable("item.minecraft.crossbow.projectile.multiple", count, projectile.getDisplayName()));
       }
 
-      TooltipDisplay var4 = (TooltipDisplay)var2.getOrDefault(DataComponents.TOOLTIP_DISPLAY, TooltipDisplay.DEFAULT);
-      var2.addDetailsToTooltip(var0, var4, (Player)null, TooltipFlag.NORMAL, (var1x) -> var1.accept(Component.literal("  ").append(var1x).withStyle(ChatFormatting.GRAY)));
+      TooltipDisplay projectileDisplay = (TooltipDisplay)projectile.getOrDefault(DataComponents.TOOLTIP_DISPLAY, TooltipDisplay.DEFAULT);
+      projectile.addDetailsToTooltip(context, projectileDisplay, (Player)null, TooltipFlag.NORMAL, (line) -> consumer.accept(Component.literal("  ").append(line).withStyle(ChatFormatting.GRAY)));
    }
 
    static {
-      CODEC = ItemStack.CODEC.listOf().xmap(ChargedProjectiles::new, (var0) -> var0.items);
-      STREAM_CODEC = ItemStack.STREAM_CODEC.apply(ByteBufCodecs.list()).map(ChargedProjectiles::new, (var0) -> var0.items);
+      CODEC = ItemStackTemplate.CODEC.listOf().xmap(ChargedProjectiles::new, (projectiles) -> projectiles.items);
+      STREAM_CODEC = ItemStackTemplate.STREAM_CODEC.apply(ByteBufCodecs.list()).map(ChargedProjectiles::new, (projectiles) -> projectiles.items);
    }
 }

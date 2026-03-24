@@ -11,29 +11,29 @@ public class ClientboundSetBorderCenterPacket implements Packet<ClientGamePacket
    private final double newCenterX;
    private final double newCenterZ;
 
-   public ClientboundSetBorderCenterPacket(WorldBorder var1) {
+   public ClientboundSetBorderCenterPacket(final WorldBorder border) {
       super();
-      this.newCenterX = var1.getCenterX();
-      this.newCenterZ = var1.getCenterZ();
+      this.newCenterX = border.getCenterX();
+      this.newCenterZ = border.getCenterZ();
    }
 
-   private ClientboundSetBorderCenterPacket(FriendlyByteBuf var1) {
+   private ClientboundSetBorderCenterPacket(final FriendlyByteBuf input) {
       super();
-      this.newCenterX = var1.readDouble();
-      this.newCenterZ = var1.readDouble();
+      this.newCenterX = input.readDouble();
+      this.newCenterZ = input.readDouble();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeDouble(this.newCenterX);
-      var1.writeDouble(this.newCenterZ);
+   private void write(final FriendlyByteBuf output) {
+      output.writeDouble(this.newCenterX);
+      output.writeDouble(this.newCenterZ);
    }
 
    public PacketType<ClientboundSetBorderCenterPacket> type() {
       return GamePacketTypes.CLIENTBOUND_SET_BORDER_CENTER;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleSetBorderCenter(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleSetBorderCenter(this);
    }
 
    public double getNewCenterZ() {

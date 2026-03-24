@@ -1,8 +1,5 @@
 package com.mojang.blaze3d.pipeline;
 
-import com.mojang.blaze3d.DontObfuscate;
-import com.mojang.blaze3d.platform.DepthTestFunction;
-import com.mojang.blaze3d.platform.LogicOp;
 import com.mojang.blaze3d.platform.PolygonMode;
 import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.textures.TextureFormat;
@@ -18,7 +15,6 @@ import net.minecraft.client.renderer.ShaderDefines;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
-@DontObfuscate
 public class RenderPipeline {
    private final Identifier location;
    private final Identifier vertexShader;
@@ -26,42 +22,30 @@ public class RenderPipeline {
    private final ShaderDefines shaderDefines;
    private final List<String> samplers;
    private final List<UniformDescription> uniforms;
-   private final DepthTestFunction depthTestFunction;
+   private final @Nullable DepthStencilState depthStencilState;
    private final PolygonMode polygonMode;
    private final boolean cull;
-   private final LogicOp colorLogic;
-   private final Optional<BlendFunction> blendFunction;
-   private final boolean writeColor;
-   private final boolean writeAlpha;
-   private final boolean writeDepth;
+   private final ColorTargetState colorTargetState;
    private final VertexFormat vertexFormat;
    private final VertexFormat.Mode vertexFormatMode;
-   private final float depthBiasScaleFactor;
-   private final float depthBiasConstant;
    private final int sortKey;
    private static int sortKeySeed;
 
-   protected RenderPipeline(Identifier var1, Identifier var2, Identifier var3, ShaderDefines var4, List<String> var5, List<UniformDescription> var6, Optional<BlendFunction> var7, DepthTestFunction var8, PolygonMode var9, boolean var10, boolean var11, boolean var12, boolean var13, LogicOp var14, VertexFormat var15, VertexFormat.Mode var16, float var17, float var18, int var19) {
+   protected RenderPipeline(final Identifier location, final Identifier vertexShader, final Identifier fragmentShader, final ShaderDefines shaderDefines, final List<String> samplers, final List<UniformDescription> uniforms, final ColorTargetState colorTargetState, final @Nullable DepthStencilState depthStencilState, final PolygonMode polygonMode, final boolean cull, final VertexFormat vertexFormat, final VertexFormat.Mode vertexFormatMode, final int sortKey) {
       super();
-      this.location = var1;
-      this.vertexShader = var2;
-      this.fragmentShader = var3;
-      this.shaderDefines = var4;
-      this.samplers = var5;
-      this.uniforms = var6;
-      this.depthTestFunction = var8;
-      this.polygonMode = var9;
-      this.cull = var10;
-      this.blendFunction = var7;
-      this.writeColor = var11;
-      this.writeAlpha = var12;
-      this.writeDepth = var13;
-      this.colorLogic = var14;
-      this.vertexFormat = var15;
-      this.vertexFormatMode = var16;
-      this.depthBiasScaleFactor = var17;
-      this.depthBiasConstant = var18;
-      this.sortKey = var19;
+      this.location = location;
+      this.vertexShader = vertexShader;
+      this.fragmentShader = fragmentShader;
+      this.shaderDefines = shaderDefines;
+      this.samplers = samplers;
+      this.uniforms = uniforms;
+      this.depthStencilState = depthStencilState;
+      this.polygonMode = polygonMode;
+      this.cull = cull;
+      this.colorTargetState = colorTargetState;
+      this.vertexFormat = vertexFormat;
+      this.vertexFormatMode = vertexFormatMode;
+      this.sortKey = sortKey;
    }
 
    public int getSortKey() {
@@ -76,10 +60,6 @@ public class RenderPipeline {
       return this.location.toString();
    }
 
-   public DepthTestFunction getDepthTestFunction() {
-      return this.depthTestFunction;
-   }
-
    public PolygonMode getPolygonMode() {
       return this.polygonMode;
    }
@@ -88,32 +68,12 @@ public class RenderPipeline {
       return this.cull;
    }
 
-   public LogicOp getColorLogic() {
-      return this.colorLogic;
+   public ColorTargetState getColorTargetState() {
+      return this.colorTargetState;
    }
 
-   public Optional<BlendFunction> getBlendFunction() {
-      return this.blendFunction;
-   }
-
-   public boolean isWriteColor() {
-      return this.writeColor;
-   }
-
-   public boolean isWriteAlpha() {
-      return this.writeAlpha;
-   }
-
-   public boolean isWriteDepth() {
-      return this.writeDepth;
-   }
-
-   public float getDepthBiasScaleFactor() {
-      return this.depthBiasScaleFactor;
-   }
-
-   public float getDepthBiasConstant() {
-      return this.depthBiasConstant;
+   public @Nullable DepthStencilState getDepthStencilState() {
+      return this.depthStencilState;
    }
 
    public Identifier getLocation() {
@@ -149,20 +109,19 @@ public class RenderPipeline {
    }
 
    public boolean wantsDepthTexture() {
-      return this.depthTestFunction != DepthTestFunction.NO_DEPTH_TEST || this.depthBiasConstant != 0.0F || this.depthBiasScaleFactor != 0.0F || this.writeDepth;
+      return this.depthStencilState != null;
    }
 
-   public static Builder builder(Snippet... var0) {
-      Builder var1 = new Builder();
+   public static Builder builder(final Snippet... snippets) {
+      Builder builder = new Builder();
 
-      for(Snippet var5 : var0) {
-         var1.withSnippet(var5);
+      for(Snippet snippet : snippets) {
+         builder.withSnippet(snippet);
       }
 
-      return var1;
+      return builder;
    }
 
-   @DontObfuscate
    public static class Builder {
       private static int nextPipelineSortKey;
       private Optional<Identifier> location = Optional.empty();
@@ -171,257 +130,209 @@ public class RenderPipeline {
       private Optional<ShaderDefines.Builder> definesBuilder = Optional.empty();
       private Optional<List<String>> samplers = Optional.empty();
       private Optional<List<UniformDescription>> uniforms = Optional.empty();
-      private Optional<DepthTestFunction> depthTestFunction = Optional.empty();
+      private Optional<DepthStencilState> depthStencilState = Optional.empty();
       private Optional<PolygonMode> polygonMode = Optional.empty();
       private Optional<Boolean> cull = Optional.empty();
-      private Optional<Boolean> writeColor = Optional.empty();
-      private Optional<Boolean> writeAlpha = Optional.empty();
-      private Optional<Boolean> writeDepth = Optional.empty();
-      private Optional<LogicOp> colorLogic = Optional.empty();
-      private Optional<BlendFunction> blendFunction = Optional.empty();
+      private Optional<ColorTargetState> colorTargetState = Optional.empty();
       private Optional<VertexFormat> vertexFormat = Optional.empty();
       private Optional<VertexFormat.Mode> vertexFormatMode = Optional.empty();
-      private float depthBiasScaleFactor;
-      private float depthBiasConstant;
 
-      Builder() {
+      private Builder() {
          super();
       }
 
-      public Builder withLocation(String var1) {
-         this.location = Optional.of(Identifier.withDefaultNamespace(var1));
+      public Builder withLocation(final String location) {
+         this.location = Optional.of(Identifier.withDefaultNamespace(location));
          return this;
       }
 
-      public Builder withLocation(Identifier var1) {
-         this.location = Optional.of(var1);
+      public Builder withLocation(final Identifier location) {
+         this.location = Optional.of(location);
          return this;
       }
 
-      public Builder withFragmentShader(String var1) {
-         this.fragmentShader = Optional.of(Identifier.withDefaultNamespace(var1));
+      public Builder withFragmentShader(final String fragmentShader) {
+         this.fragmentShader = Optional.of(Identifier.withDefaultNamespace(fragmentShader));
          return this;
       }
 
-      public Builder withFragmentShader(Identifier var1) {
-         this.fragmentShader = Optional.of(var1);
+      public Builder withFragmentShader(final Identifier fragmentShader) {
+         this.fragmentShader = Optional.of(fragmentShader);
          return this;
       }
 
-      public Builder withVertexShader(String var1) {
-         this.vertexShader = Optional.of(Identifier.withDefaultNamespace(var1));
+      public Builder withVertexShader(final String vertexShader) {
+         this.vertexShader = Optional.of(Identifier.withDefaultNamespace(vertexShader));
          return this;
       }
 
-      public Builder withVertexShader(Identifier var1) {
-         this.vertexShader = Optional.of(var1);
+      public Builder withVertexShader(final Identifier vertexShader) {
+         this.vertexShader = Optional.of(vertexShader);
          return this;
       }
 
-      public Builder withShaderDefine(String var1) {
+      public Builder withShaderDefine(final String key) {
          if (this.definesBuilder.isEmpty()) {
             this.definesBuilder = Optional.of(ShaderDefines.builder());
          }
 
-         ((ShaderDefines.Builder)this.definesBuilder.get()).define(var1);
+         ((ShaderDefines.Builder)this.definesBuilder.get()).define(key);
          return this;
       }
 
-      public Builder withShaderDefine(String var1, int var2) {
+      public Builder withShaderDefine(final String key, final int value) {
          if (this.definesBuilder.isEmpty()) {
             this.definesBuilder = Optional.of(ShaderDefines.builder());
          }
 
-         ((ShaderDefines.Builder)this.definesBuilder.get()).define(var1, var2);
+         ((ShaderDefines.Builder)this.definesBuilder.get()).define(key, value);
          return this;
       }
 
-      public Builder withShaderDefine(String var1, float var2) {
+      public Builder withShaderDefine(final String key, final float value) {
          if (this.definesBuilder.isEmpty()) {
             this.definesBuilder = Optional.of(ShaderDefines.builder());
          }
 
-         ((ShaderDefines.Builder)this.definesBuilder.get()).define(var1, var2);
+         ((ShaderDefines.Builder)this.definesBuilder.get()).define(key, value);
          return this;
       }
 
-      public Builder withSampler(String var1) {
+      public Builder withSampler(final String sampler) {
          if (this.samplers.isEmpty()) {
             this.samplers = Optional.of(new ArrayList());
          }
 
-         ((List)this.samplers.get()).add(var1);
+         ((List)this.samplers.get()).add(sampler);
          return this;
       }
 
-      public Builder withUniform(String var1, UniformType var2) {
+      public Builder withUniform(final String name, final UniformType type) {
          if (this.uniforms.isEmpty()) {
             this.uniforms = Optional.of(new ArrayList());
          }
 
-         if (var2 == UniformType.TEXEL_BUFFER) {
+         if (type == UniformType.TEXEL_BUFFER) {
             throw new IllegalArgumentException("Cannot use texel buffer without specifying texture format");
          } else {
-            ((List)this.uniforms.get()).add(new UniformDescription(var1, var2));
+            ((List)this.uniforms.get()).add(new UniformDescription(name, type));
             return this;
          }
       }
 
-      public Builder withUniform(String var1, UniformType var2, TextureFormat var3) {
+      public Builder withUniform(final String name, final UniformType type, final TextureFormat format) {
          if (this.uniforms.isEmpty()) {
             this.uniforms = Optional.of(new ArrayList());
          }
 
-         if (var2 != UniformType.TEXEL_BUFFER) {
+         if (type != UniformType.TEXEL_BUFFER) {
             throw new IllegalArgumentException("Only texel buffer can specify texture format");
          } else {
-            ((List)this.uniforms.get()).add(new UniformDescription(var1, var3));
+            ((List)this.uniforms.get()).add(new UniformDescription(name, format));
             return this;
          }
       }
 
-      public Builder withDepthTestFunction(DepthTestFunction var1) {
-         this.depthTestFunction = Optional.of(var1);
+      public Builder withPolygonMode(final PolygonMode polygonMode) {
+         this.polygonMode = Optional.of(polygonMode);
          return this;
       }
 
-      public Builder withPolygonMode(PolygonMode var1) {
-         this.polygonMode = Optional.of(var1);
+      public Builder withCull(final boolean cull) {
+         this.cull = Optional.of(cull);
          return this;
       }
 
-      public Builder withCull(boolean var1) {
-         this.cull = Optional.of(var1);
+      public Builder withColorTargetState(final ColorTargetState colorTargetState) {
+         this.colorTargetState = Optional.of(colorTargetState);
          return this;
       }
 
-      public Builder withBlend(BlendFunction var1) {
-         this.blendFunction = Optional.of(var1);
+      public Builder withDepthStencilState(final DepthStencilState depthStencilState) {
+         this.depthStencilState = Optional.of(depthStencilState);
          return this;
       }
 
-      public Builder withoutBlend() {
-         this.blendFunction = Optional.empty();
+      public Builder withDepthStencilState(final Optional<DepthStencilState> depthStencilState) {
+         this.depthStencilState = depthStencilState;
          return this;
       }
 
-      public Builder withColorWrite(boolean var1) {
-         this.writeColor = Optional.of(var1);
-         this.writeAlpha = Optional.of(var1);
+      public Builder withVertexFormat(final VertexFormat vertexFormat, final VertexFormat.Mode vertexFormatMode) {
+         this.vertexFormat = Optional.of(vertexFormat);
+         this.vertexFormatMode = Optional.of(vertexFormatMode);
          return this;
       }
 
-      public Builder withColorWrite(boolean var1, boolean var2) {
-         this.writeColor = Optional.of(var1);
-         this.writeAlpha = Optional.of(var2);
-         return this;
-      }
-
-      public Builder withDepthWrite(boolean var1) {
-         this.writeDepth = Optional.of(var1);
-         return this;
-      }
-
-      /** @deprecated */
-      @Deprecated
-      public Builder withColorLogic(LogicOp var1) {
-         this.colorLogic = Optional.of(var1);
-         return this;
-      }
-
-      public Builder withVertexFormat(VertexFormat var1, VertexFormat.Mode var2) {
-         this.vertexFormat = Optional.of(var1);
-         this.vertexFormatMode = Optional.of(var2);
-         return this;
-      }
-
-      public Builder withDepthBias(float var1, float var2) {
-         this.depthBiasScaleFactor = var1;
-         this.depthBiasConstant = var2;
-         return this;
-      }
-
-      void withSnippet(Snippet var1) {
-         if (var1.vertexShader.isPresent()) {
-            this.vertexShader = var1.vertexShader;
+      private void withSnippet(final Snippet snippet) {
+         if (snippet.vertexShader.isPresent()) {
+            this.vertexShader = snippet.vertexShader;
          }
 
-         if (var1.fragmentShader.isPresent()) {
-            this.fragmentShader = var1.fragmentShader;
+         if (snippet.fragmentShader.isPresent()) {
+            this.fragmentShader = snippet.fragmentShader;
          }
 
-         if (var1.shaderDefines.isPresent()) {
+         if (snippet.shaderDefines.isPresent()) {
             if (this.definesBuilder.isEmpty()) {
                this.definesBuilder = Optional.of(ShaderDefines.builder());
             }
 
-            ShaderDefines var2 = (ShaderDefines)var1.shaderDefines.get();
+            ShaderDefines snippetDefines = (ShaderDefines)snippet.shaderDefines.get();
 
-            for(Map.Entry var4 : var2.values().entrySet()) {
-               ((ShaderDefines.Builder)this.definesBuilder.get()).define((String)var4.getKey(), (String)var4.getValue());
+            for(Map.Entry<String, String> snippetValue : snippetDefines.values().entrySet()) {
+               ((ShaderDefines.Builder)this.definesBuilder.get()).define((String)snippetValue.getKey(), (String)snippetValue.getValue());
             }
 
-            for(String var6 : var2.flags()) {
-               ((ShaderDefines.Builder)this.definesBuilder.get()).define(var6);
+            for(String flag : snippetDefines.flags()) {
+               ((ShaderDefines.Builder)this.definesBuilder.get()).define(flag);
             }
          }
 
-         var1.samplers.ifPresent((var1x) -> {
+         snippet.samplers.ifPresent((builderSamplers) -> {
             if (this.samplers.isPresent()) {
-               ((List)this.samplers.get()).addAll(var1x);
+               ((List)this.samplers.get()).addAll(builderSamplers);
             } else {
-               this.samplers = Optional.of(new ArrayList(var1x));
+               this.samplers = Optional.of(new ArrayList(builderSamplers));
             }
 
          });
-         var1.uniforms.ifPresent((var1x) -> {
+         snippet.uniforms.ifPresent((builderUniforms) -> {
             if (this.uniforms.isPresent()) {
-               ((List)this.uniforms.get()).addAll(var1x);
+               ((List)this.uniforms.get()).addAll(builderUniforms);
             } else {
-               this.uniforms = Optional.of(new ArrayList(var1x));
+               this.uniforms = Optional.of(new ArrayList(builderUniforms));
             }
 
          });
-         if (var1.depthTestFunction.isPresent()) {
-            this.depthTestFunction = var1.depthTestFunction;
+         if (snippet.depthStencilState.isPresent()) {
+            this.depthStencilState = snippet.depthStencilState;
          }
 
-         if (var1.cull.isPresent()) {
-            this.cull = var1.cull;
+         if (snippet.cull.isPresent()) {
+            this.cull = snippet.cull;
          }
 
-         if (var1.writeColor.isPresent()) {
-            this.writeColor = var1.writeColor;
+         if (snippet.colorTargetState.isPresent()) {
+            this.colorTargetState = snippet.colorTargetState;
          }
 
-         if (var1.writeAlpha.isPresent()) {
-            this.writeAlpha = var1.writeAlpha;
+         if (snippet.vertexFormat.isPresent()) {
+            this.vertexFormat = snippet.vertexFormat;
          }
 
-         if (var1.writeDepth.isPresent()) {
-            this.writeDepth = var1.writeDepth;
+         if (snippet.vertexFormatMode.isPresent()) {
+            this.vertexFormatMode = snippet.vertexFormatMode;
          }
 
-         if (var1.colorLogic.isPresent()) {
-            this.colorLogic = var1.colorLogic;
-         }
-
-         if (var1.blendFunction.isPresent()) {
-            this.blendFunction = var1.blendFunction;
-         }
-
-         if (var1.vertexFormat.isPresent()) {
-            this.vertexFormat = var1.vertexFormat;
-         }
-
-         if (var1.vertexFormatMode.isPresent()) {
-            this.vertexFormatMode = var1.vertexFormatMode;
+         if (snippet.polygonMode.isPresent()) {
+            this.polygonMode = snippet.polygonMode;
          }
 
       }
 
       public Snippet buildSnippet() {
-         return new Snippet(this.vertexShader, this.fragmentShader, this.definesBuilder.map(ShaderDefines.Builder::build), this.samplers.map(Collections::unmodifiableList), this.uniforms.map(Collections::unmodifiableList), this.blendFunction, this.depthTestFunction, this.polygonMode, this.cull, this.writeColor, this.writeAlpha, this.writeDepth, this.colorLogic, this.vertexFormat, this.vertexFormatMode);
+         return new Snippet(this.vertexShader, this.fragmentShader, this.definesBuilder.map(ShaderDefines.Builder::build), this.samplers.map(Collections::unmodifiableList), this.uniforms.map(Collections::unmodifiableList), this.colorTargetState, this.depthStencilState, this.polygonMode, this.cull, this.vertexFormat, this.vertexFormatMode);
       }
 
       public RenderPipeline build() {
@@ -436,66 +347,31 @@ public class RenderPipeline {
          } else if (this.vertexFormatMode.isEmpty()) {
             throw new IllegalStateException("Missing vertex mode");
          } else {
-            return new RenderPipeline((Identifier)this.location.get(), (Identifier)this.vertexShader.get(), (Identifier)this.fragmentShader.get(), ((ShaderDefines.Builder)this.definesBuilder.orElse(ShaderDefines.builder())).build(), List.copyOf((Collection)this.samplers.orElse(new ArrayList())), (List)this.uniforms.orElse(Collections.emptyList()), this.blendFunction, (DepthTestFunction)this.depthTestFunction.orElse(DepthTestFunction.LEQUAL_DEPTH_TEST), (PolygonMode)this.polygonMode.orElse(PolygonMode.FILL), (Boolean)this.cull.orElse(true), (Boolean)this.writeColor.orElse(true), (Boolean)this.writeAlpha.orElse(true), (Boolean)this.writeDepth.orElse(true), (LogicOp)this.colorLogic.orElse(LogicOp.NONE), (VertexFormat)this.vertexFormat.get(), (VertexFormat.Mode)this.vertexFormatMode.get(), this.depthBiasScaleFactor, this.depthBiasConstant, nextPipelineSortKey++);
+            return new RenderPipeline((Identifier)this.location.get(), (Identifier)this.vertexShader.get(), (Identifier)this.fragmentShader.get(), ((ShaderDefines.Builder)this.definesBuilder.orElse(ShaderDefines.builder())).build(), List.copyOf((Collection)this.samplers.orElse(new ArrayList())), (List)this.uniforms.orElse(Collections.emptyList()), (ColorTargetState)this.colorTargetState.orElse(ColorTargetState.DEFAULT), (DepthStencilState)this.depthStencilState.orElse((Object)null), (PolygonMode)this.polygonMode.orElse(PolygonMode.FILL), (Boolean)this.cull.orElse(true), (VertexFormat)this.vertexFormat.get(), (VertexFormat.Mode)this.vertexFormatMode.get(), nextPipelineSortKey++);
          }
       }
    }
 
-   @DontObfuscate
    public static record UniformDescription(String name, UniformType type, @Nullable TextureFormat textureFormat) {
-      public UniformDescription(String var1, UniformType var2) {
-         this(var1, var2, (TextureFormat)null);
-         if (var2 == UniformType.TEXEL_BUFFER) {
+      public UniformDescription(final String name, final UniformType type) {
+         this(name, type, (TextureFormat)null);
+         if (type == UniformType.TEXEL_BUFFER) {
             throw new IllegalArgumentException("Texel buffer needs a texture format");
          }
       }
 
-      public UniformDescription(String var1, TextureFormat var2) {
-         this(var1, UniformType.TEXEL_BUFFER, var2);
+      public UniformDescription(final String name, final TextureFormat textureFormat) {
+         this(name, UniformType.TEXEL_BUFFER, textureFormat);
       }
 
-      public UniformDescription(String var1, UniformType var2, @Nullable TextureFormat var3) {
+      public UniformDescription {
          super();
-         this.name = var1;
-         this.type = var2;
-         this.textureFormat = var3;
       }
    }
 
-   @DontObfuscate
-   public static record Snippet(Optional<Identifier> vertexShader, Optional<Identifier> fragmentShader, Optional<ShaderDefines> shaderDefines, Optional<List<String>> samplers, Optional<List<UniformDescription>> uniforms, Optional<BlendFunction> blendFunction, Optional<DepthTestFunction> depthTestFunction, Optional<PolygonMode> polygonMode, Optional<Boolean> cull, Optional<Boolean> writeColor, Optional<Boolean> writeAlpha, Optional<Boolean> writeDepth, Optional<LogicOp> colorLogic, Optional<VertexFormat> vertexFormat, Optional<VertexFormat.Mode> vertexFormatMode) {
-      final Optional<Identifier> vertexShader;
-      final Optional<Identifier> fragmentShader;
-      final Optional<ShaderDefines> shaderDefines;
-      final Optional<List<String>> samplers;
-      final Optional<List<UniformDescription>> uniforms;
-      final Optional<BlendFunction> blendFunction;
-      final Optional<DepthTestFunction> depthTestFunction;
-      final Optional<Boolean> cull;
-      final Optional<Boolean> writeColor;
-      final Optional<Boolean> writeAlpha;
-      final Optional<Boolean> writeDepth;
-      final Optional<LogicOp> colorLogic;
-      final Optional<VertexFormat> vertexFormat;
-      final Optional<VertexFormat.Mode> vertexFormatMode;
-
-      public Snippet(Optional<Identifier> var1, Optional<Identifier> var2, Optional<ShaderDefines> var3, Optional<List<String>> var4, Optional<List<UniformDescription>> var5, Optional<BlendFunction> var6, Optional<DepthTestFunction> var7, Optional<PolygonMode> var8, Optional<Boolean> var9, Optional<Boolean> var10, Optional<Boolean> var11, Optional<Boolean> var12, Optional<LogicOp> var13, Optional<VertexFormat> var14, Optional<VertexFormat.Mode> var15) {
+   public static record Snippet(Optional<Identifier> vertexShader, Optional<Identifier> fragmentShader, Optional<ShaderDefines> shaderDefines, Optional<List<String>> samplers, Optional<List<UniformDescription>> uniforms, Optional<ColorTargetState> colorTargetState, Optional<DepthStencilState> depthStencilState, Optional<PolygonMode> polygonMode, Optional<Boolean> cull, Optional<VertexFormat> vertexFormat, Optional<VertexFormat.Mode> vertexFormatMode) {
+      public Snippet {
          super();
-         this.vertexShader = var1;
-         this.fragmentShader = var2;
-         this.shaderDefines = var3;
-         this.samplers = var4;
-         this.uniforms = var5;
-         this.blendFunction = var6;
-         this.depthTestFunction = var7;
-         this.polygonMode = var8;
-         this.cull = var9;
-         this.writeColor = var10;
-         this.writeAlpha = var11;
-         this.writeDepth = var12;
-         this.colorLogic = var13;
-         this.vertexFormat = var14;
-         this.vertexFormatMode = var15;
       }
    }
 }

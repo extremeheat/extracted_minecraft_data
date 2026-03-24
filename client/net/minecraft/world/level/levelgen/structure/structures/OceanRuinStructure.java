@@ -14,26 +14,26 @@ import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
 
 public class OceanRuinStructure extends Structure {
-   public static final MapCodec<OceanRuinStructure> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(settingsCodec(var0), OceanRuinStructure.Type.CODEC.fieldOf("biome_temp").forGetter((var0x) -> var0x.biomeTemp), Codec.floatRange(0.0F, 1.0F).fieldOf("large_probability").forGetter((var0x) -> var0x.largeProbability), Codec.floatRange(0.0F, 1.0F).fieldOf("cluster_probability").forGetter((var0x) -> var0x.clusterProbability)).apply(var0, OceanRuinStructure::new));
+   public static final MapCodec<OceanRuinStructure> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(settingsCodec(i), OceanRuinStructure.Type.CODEC.fieldOf("biome_temp").forGetter((c) -> c.biomeTemp), Codec.floatRange(0.0F, 1.0F).fieldOf("large_probability").forGetter((c) -> c.largeProbability), Codec.floatRange(0.0F, 1.0F).fieldOf("cluster_probability").forGetter((c) -> c.clusterProbability)).apply(i, OceanRuinStructure::new));
    public final Type biomeTemp;
    public final float largeProbability;
    public final float clusterProbability;
 
-   public OceanRuinStructure(Structure.StructureSettings var1, Type var2, float var3, float var4) {
-      super(var1);
-      this.biomeTemp = var2;
-      this.largeProbability = var3;
-      this.clusterProbability = var4;
+   public OceanRuinStructure(final Structure.StructureSettings settings, final Type biomeTemp, final float largeProbability, final float clusterProbability) {
+      super(settings);
+      this.biomeTemp = biomeTemp;
+      this.largeProbability = largeProbability;
+      this.clusterProbability = clusterProbability;
    }
 
-   public Optional<Structure.GenerationStub> findGenerationPoint(Structure.GenerationContext var1) {
-      return onTopOfChunkCenter(var1, Heightmap.Types.OCEAN_FLOOR_WG, (var2) -> this.generatePieces(var2, var1));
+   public Optional<Structure.GenerationStub> findGenerationPoint(final Structure.GenerationContext context) {
+      return onTopOfChunkCenter(context, Heightmap.Types.OCEAN_FLOOR_WG, (builder) -> this.generatePieces(builder, context));
    }
 
-   private void generatePieces(StructurePiecesBuilder var1, Structure.GenerationContext var2) {
-      BlockPos var3 = new BlockPos(var2.chunkPos().getMinBlockX(), 90, var2.chunkPos().getMinBlockZ());
-      Rotation var4 = Rotation.getRandom(var2.random());
-      OceanRuinPieces.addPieces(var2.structureTemplateManager(), var3, var4, var1, var2.random(), this);
+   private void generatePieces(final StructurePiecesBuilder builder, final Structure.GenerationContext context) {
+      BlockPos offset = new BlockPos(context.chunkPos().getMinBlockX(), 90, context.chunkPos().getMinBlockZ());
+      Rotation rotation = Rotation.getRandom(context.random());
+      OceanRuinPieces.addPieces(context.structureTemplateManager(), offset, rotation, builder, context.random(), this);
    }
 
    public StructureType<?> type() {
@@ -50,8 +50,8 @@ public class OceanRuinStructure extends Structure {
       public static final Codec<Type> LEGACY_CODEC = ExtraCodecs.<Type>legacyEnum(Type::valueOf);
       private final String name;
 
-      private Type(final String var3) {
-         this.name = var3;
+      private Type(final String name) {
+         this.name = name;
       }
 
       public String getName() {

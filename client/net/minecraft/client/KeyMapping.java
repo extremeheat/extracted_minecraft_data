@@ -28,47 +28,47 @@ public class KeyMapping implements Comparable<KeyMapping> {
    private int clickCount;
    private final int order;
 
-   public static void click(InputConstants.Key var0) {
-      forAllKeyMappings(var0, (var0x) -> ++var0x.clickCount);
+   public static void click(final InputConstants.Key key) {
+      forAllKeyMappings(key, (keyMapping) -> ++keyMapping.clickCount);
    }
 
-   public static void set(InputConstants.Key var0, boolean var1) {
-      forAllKeyMappings(var0, (var1x) -> var1x.setDown(var1));
+   public static void set(final InputConstants.Key key, final boolean state) {
+      forAllKeyMappings(key, (keyMapping) -> keyMapping.setDown(state));
    }
 
-   private static void forAllKeyMappings(InputConstants.Key var0, Consumer<KeyMapping> var1) {
-      List var2 = (List)MAP.get(var0);
-      if (var2 != null && !var2.isEmpty()) {
-         for(KeyMapping var4 : var2) {
-            var1.accept(var4);
+   private static void forAllKeyMappings(final InputConstants.Key key, final Consumer<KeyMapping> operation) {
+      List<KeyMapping> keyMappings = (List)MAP.get(key);
+      if (keyMappings != null && !keyMappings.isEmpty()) {
+         for(KeyMapping keyMapping : keyMappings) {
+            operation.accept(keyMapping);
          }
       }
 
    }
 
    public static void setAll() {
-      Window var0 = Minecraft.getInstance().getWindow();
+      Window window = Minecraft.getInstance().getWindow();
 
-      for(KeyMapping var2 : ALL.values()) {
-         if (var2.shouldSetOnIngameFocus()) {
-            var2.setDown(InputConstants.isKeyDown(var0, var2.key.getValue()));
+      for(KeyMapping keyMapping : ALL.values()) {
+         if (keyMapping.shouldSetOnIngameFocus()) {
+            keyMapping.setDown(InputConstants.isKeyDown(window, keyMapping.key.getValue()));
          }
       }
 
    }
 
    public static void releaseAll() {
-      for(KeyMapping var1 : ALL.values()) {
-         var1.release();
+      for(KeyMapping keyMapping : ALL.values()) {
+         keyMapping.release();
       }
 
    }
 
    public static void restoreToggleStatesOnScreenClosed() {
-      for(KeyMapping var1 : ALL.values()) {
-         if (var1 instanceof ToggleKeyMapping var2) {
-            if (var2.shouldRestoreStateOnScreenClosed()) {
-               var2.setDown(true);
+      for(KeyMapping keyMapping : ALL.values()) {
+         if (keyMapping instanceof ToggleKeyMapping toggleKeyMapping) {
+            if (toggleKeyMapping.shouldRestoreStateOnScreenClosed()) {
+               toggleKeyMapping.setDown(true);
             }
          }
       }
@@ -76,9 +76,9 @@ public class KeyMapping implements Comparable<KeyMapping> {
    }
 
    public static void resetToggleKeys() {
-      for(KeyMapping var1 : ALL.values()) {
-         if (var1 instanceof ToggleKeyMapping var2) {
-            var2.reset();
+      for(KeyMapping keyMapping : ALL.values()) {
+         if (keyMapping instanceof ToggleKeyMapping toggleKeyMapping) {
+            toggleKeyMapping.reset();
          }
       }
 
@@ -87,28 +87,28 @@ public class KeyMapping implements Comparable<KeyMapping> {
    public static void resetMapping() {
       MAP.clear();
 
-      for(KeyMapping var1 : ALL.values()) {
-         var1.registerMapping(var1.key);
+      for(KeyMapping keyMapping : ALL.values()) {
+         keyMapping.registerMapping(keyMapping.key);
       }
 
    }
 
-   public KeyMapping(String var1, int var2, Category var3) {
-      this(var1, InputConstants.Type.KEYSYM, var2, var3);
+   public KeyMapping(final String name, final int keysym, final Category category) {
+      this(name, InputConstants.Type.KEYSYM, keysym, category);
    }
 
-   public KeyMapping(String var1, InputConstants.Type var2, int var3, Category var4) {
-      this(var1, var2, var3, var4, 0);
+   public KeyMapping(final String name, final InputConstants.Type type, final int value, final Category category) {
+      this(name, type, value, category, 0);
    }
 
-   public KeyMapping(String var1, InputConstants.Type var2, int var3, Category var4, int var5) {
+   public KeyMapping(final String name, final InputConstants.Type type, final int value, final Category category, final int order) {
       super();
-      this.name = var1;
-      this.key = var2.getOrCreate(var3);
+      this.name = name;
+      this.key = type.getOrCreate(value);
       this.defaultKey = this.key;
-      this.category = var4;
-      this.order = var5;
-      ALL.put(var1, this);
+      this.category = category;
+      this.order = order;
+      ALL.put(name, this);
       this.registerMapping(this.key);
    }
 
@@ -146,46 +146,46 @@ public class KeyMapping implements Comparable<KeyMapping> {
       return this.defaultKey;
    }
 
-   public void setKey(InputConstants.Key var1) {
-      this.key = var1;
+   public void setKey(final InputConstants.Key key) {
+      this.key = key;
    }
 
-   public int compareTo(KeyMapping var1) {
-      if (this.category == var1.category) {
-         return this.order == var1.order ? I18n.get(this.name).compareTo(I18n.get(var1.name)) : Integer.compare(this.order, var1.order);
+   public int compareTo(final KeyMapping o) {
+      if (this.category == o.category) {
+         return this.order == o.order ? I18n.get(this.name).compareTo(I18n.get(o.name)) : Integer.compare(this.order, o.order);
       } else {
-         return Integer.compare(KeyMapping.Category.SORT_ORDER.indexOf(this.category), KeyMapping.Category.SORT_ORDER.indexOf(var1.category));
+         return Integer.compare(KeyMapping.Category.SORT_ORDER.indexOf(this.category), KeyMapping.Category.SORT_ORDER.indexOf(o.category));
       }
    }
 
-   public static Supplier<Component> createNameSupplier(String var0) {
-      KeyMapping var1 = (KeyMapping)ALL.get(var0);
-      if (var1 == null) {
-         return () -> Component.translatable(var0);
+   public static Supplier<Component> createNameSupplier(final String key) {
+      KeyMapping map = (KeyMapping)ALL.get(key);
+      if (map == null) {
+         return () -> Component.translatable(key);
       } else {
-         Objects.requireNonNull(var1);
-         return var1::getTranslatedKeyMessage;
+         Objects.requireNonNull(map);
+         return map::getTranslatedKeyMessage;
       }
    }
 
-   public boolean same(KeyMapping var1) {
-      return this.key.equals(var1.key);
+   public boolean same(final KeyMapping that) {
+      return this.key.equals(that.key);
    }
 
    public boolean isUnbound() {
       return this.key.equals(InputConstants.UNKNOWN);
    }
 
-   public boolean matches(KeyEvent var1) {
-      if (var1.key() == InputConstants.UNKNOWN.getValue()) {
-         return this.key.getType() == InputConstants.Type.SCANCODE && this.key.getValue() == var1.scancode();
+   public boolean matches(final KeyEvent event) {
+      if (event.key() == InputConstants.UNKNOWN.getValue()) {
+         return this.key.getType() == InputConstants.Type.SCANCODE && this.key.getValue() == event.scancode();
       } else {
-         return this.key.getType() == InputConstants.Type.KEYSYM && this.key.getValue() == var1.key();
+         return this.key.getType() == InputConstants.Type.KEYSYM && this.key.getValue() == event.key();
       }
    }
 
-   public boolean matchesMouse(MouseButtonEvent var1) {
-      return this.key.getType() == InputConstants.Type.MOUSE && this.key.getValue() == var1.button();
+   public boolean matchesMouse(final MouseButtonEvent event) {
+      return this.key.getType() == InputConstants.Type.MOUSE && this.key.getValue() == event.button();
    }
 
    public Component getTranslatedKeyMessage() {
@@ -200,25 +200,20 @@ public class KeyMapping implements Comparable<KeyMapping> {
       return this.key.getName();
    }
 
-   public void setDown(boolean var1) {
-      this.isDown = var1;
+   public void setDown(final boolean down) {
+      this.isDown = down;
    }
 
-   private void registerMapping(InputConstants.Key var1) {
-      ((List)MAP.computeIfAbsent(var1, (var0) -> new ArrayList())).add(this);
+   private void registerMapping(final InputConstants.Key key) {
+      ((List)MAP.computeIfAbsent(key, (k) -> new ArrayList())).add(this);
    }
 
-   public static @Nullable KeyMapping get(String var0) {
-      return (KeyMapping)ALL.get(var0);
-   }
-
-   // $FF: synthetic method
-   public int compareTo(final Object var1) {
-      return this.compareTo((KeyMapping)var1);
+   public static @Nullable KeyMapping get(final String name) {
+      return (KeyMapping)ALL.get(name);
    }
 
    public static record Category(Identifier id) {
-      static final List<Category> SORT_ORDER = new ArrayList();
+      private static final List<Category> SORT_ORDER = new ArrayList();
       public static final Category MOVEMENT = register("movement");
       public static final Category MISC = register("misc");
       public static final Category MULTIPLAYER = register("multiplayer");
@@ -228,22 +223,21 @@ public class KeyMapping implements Comparable<KeyMapping> {
       public static final Category SPECTATOR = register("spectator");
       public static final Category DEBUG = register("debug");
 
-      public Category(Identifier var1) {
+      public Category {
          super();
-         this.id = var1;
       }
 
-      private static Category register(String var0) {
-         return register(Identifier.withDefaultNamespace(var0));
+      private static Category register(final String name) {
+         return register(Identifier.withDefaultNamespace(name));
       }
 
-      public static Category register(Identifier var0) {
-         Category var1 = new Category(var0);
-         if (SORT_ORDER.contains(var1)) {
-            throw new IllegalArgumentException(String.format(Locale.ROOT, "Category '%s' is already registered.", var0));
+      public static Category register(final Identifier id) {
+         Category category = new Category(id);
+         if (SORT_ORDER.contains(category)) {
+            throw new IllegalArgumentException(String.format(Locale.ROOT, "Category '%s' is already registered.", id));
          } else {
-            SORT_ORDER.add(var1);
-            return var1;
+            SORT_ORDER.add(category);
+            return category;
          }
       }
 

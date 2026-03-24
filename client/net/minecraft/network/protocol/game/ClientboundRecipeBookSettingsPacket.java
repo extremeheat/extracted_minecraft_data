@@ -9,17 +9,16 @@ import net.minecraft.stats.RecipeBookSettings;
 public record ClientboundRecipeBookSettingsPacket(RecipeBookSettings bookSettings) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundRecipeBookSettingsPacket> STREAM_CODEC;
 
-   public ClientboundRecipeBookSettingsPacket(RecipeBookSettings var1) {
+   public ClientboundRecipeBookSettingsPacket {
       super();
-      this.bookSettings = var1;
    }
 
    public PacketType<ClientboundRecipeBookSettingsPacket> type() {
       return GamePacketTypes.CLIENTBOUND_RECIPE_BOOK_SETTINGS;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleRecipeBookSettings(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleRecipeBookSettings(this);
    }
 
    static {

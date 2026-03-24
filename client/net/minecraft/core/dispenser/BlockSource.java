@@ -7,12 +7,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 public record BlockSource(ServerLevel level, BlockPos pos, BlockState state, DispenserBlockEntity blockEntity) {
-   public BlockSource(ServerLevel var1, BlockPos var2, BlockState var3, DispenserBlockEntity var4) {
+   public BlockSource {
       super();
-      this.level = var1;
-      this.pos = var2;
-      this.state = var3;
-      this.blockEntity = var4;
    }
 
    public Vec3 center() {

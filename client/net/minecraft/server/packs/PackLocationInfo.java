@@ -11,15 +11,11 @@ import net.minecraft.server.packs.repository.KnownPack;
 import net.minecraft.server.packs.repository.PackSource;
 
 public record PackLocationInfo(String id, Component title, PackSource source, Optional<KnownPack> knownPackInfo) {
-   public PackLocationInfo(String var1, Component var2, PackSource var3, Optional<KnownPack> var4) {
+   public PackLocationInfo {
       super();
-      this.id = var1;
-      this.title = var2;
-      this.source = var3;
-      this.knownPackInfo = var4;
    }
 
-   public Component createChatLink(boolean var1, Component var2) {
-      return ComponentUtils.wrapInSquareBrackets(this.source.decorate(Component.literal(this.id))).withStyle((UnaryOperator)((var3) -> var3.withColor(var1 ? ChatFormatting.GREEN : ChatFormatting.RED).withInsertion(StringArgumentType.escapeIfRequired(this.id)).withHoverEvent(new HoverEvent.ShowText(Component.empty().append(this.title).append("\n").append(var2)))));
+   public Component createChatLink(final boolean enabled, final Component description) {
+      return ComponentUtils.wrapInSquareBrackets(this.source.decorate(Component.literal(this.id))).withStyle((UnaryOperator)((s) -> s.withColor(enabled ? ChatFormatting.GREEN : ChatFormatting.RED).withInsertion(StringArgumentType.escapeIfRequired(this.id)).withHoverEvent(new HoverEvent.ShowText(Component.empty().append(this.title).append("\n").append(description)))));
    }
 }

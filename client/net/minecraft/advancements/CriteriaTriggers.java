@@ -113,11 +113,11 @@ public class CriteriaTriggers {
       super();
    }
 
-   private static <T extends CriterionTrigger<?>> T register(String var0, T var1) {
-      return (T)(Registry.register(BuiltInRegistries.TRIGGER_TYPES, (String)var0, var1));
+   private static <T extends CriterionTrigger<?>> T register(final String name, final T criterion) {
+      return (T)(Registry.register(BuiltInRegistries.TRIGGER_TYPES, (String)name, criterion));
    }
 
-   public static CriterionTrigger<?> bootstrap(Registry<CriterionTrigger<?>> var0) {
+   public static CriterionTrigger<?> bootstrap(final Registry<CriterionTrigger<?>> registry) {
       return IMPOSSIBLE;
    }
 

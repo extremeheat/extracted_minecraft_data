@@ -17,7 +17,7 @@ import net.minecraft.world.scores.DisplaySlot;
 
 public class ScoreboardSlotArgument implements ArgumentType<DisplaySlot> {
    private static final Collection<String> EXAMPLES = Arrays.asList("sidebar", "foo.bar");
-   public static final DynamicCommandExceptionType ERROR_INVALID_VALUE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.scoreboardDisplaySlot.invalid", var0));
+   public static final DynamicCommandExceptionType ERROR_INVALID_VALUE = new DynamicCommandExceptionType((value) -> Component.translatableEscape("argument.scoreboardDisplaySlot.invalid", value));
 
    private ScoreboardSlotArgument() {
       super();
@@ -27,30 +27,25 @@ public class ScoreboardSlotArgument implements ArgumentType<DisplaySlot> {
       return new ScoreboardSlotArgument();
    }
 
-   public static DisplaySlot getDisplaySlot(CommandContext<CommandSourceStack> var0, String var1) {
-      return (DisplaySlot)var0.getArgument(var1, DisplaySlot.class);
+   public static DisplaySlot getDisplaySlot(final CommandContext<CommandSourceStack> context, final String name) {
+      return (DisplaySlot)context.getArgument(name, DisplaySlot.class);
    }
 
-   public DisplaySlot parse(StringReader var1) throws CommandSyntaxException {
-      String var2 = var1.readUnquotedString();
-      DisplaySlot var3 = DisplaySlot.CODEC.byName(var2);
-      if (var3 == null) {
-         throw ERROR_INVALID_VALUE.createWithContext(var1, var2);
+   public DisplaySlot parse(final StringReader reader) throws CommandSyntaxException {
+      String name = reader.readUnquotedString();
+      DisplaySlot result = DisplaySlot.CODEC.byName(name);
+      if (result == null) {
+         throw ERROR_INVALID_VALUE.createWithContext(reader, name);
       } else {
-         return var3;
+         return result;
       }
    }
 
-   public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      return SharedSuggestionProvider.suggest(Arrays.stream(DisplaySlot.values()).map(DisplaySlot::getSerializedName), var2);
+   public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
+      return SharedSuggestionProvider.suggest(Arrays.stream(DisplaySlot.values()).map(DisplaySlot::getSerializedName), builder);
    }
 
    public Collection<String> getExamples() {
       return EXAMPLES;
-   }
-
-   // $FF: synthetic method
-   public Object parse(final StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1);
    }
 }

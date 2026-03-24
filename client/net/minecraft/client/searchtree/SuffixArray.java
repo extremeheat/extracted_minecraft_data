@@ -9,9 +9,10 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntComparator;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import org.slf4j.Logger;
 
 public class SuffixArray<T> {
@@ -31,77 +32,77 @@ public class SuffixArray<T> {
       super();
    }
 
-   public void add(T var1, String var2) {
-      this.maxStringLength = Math.max(this.maxStringLength, var2.length());
-      int var3 = this.list.size();
-      this.list.add(var1);
+   public void add(final T t, final String text) {
+      this.maxStringLength = Math.max(this.maxStringLength, text.length());
+      int index = this.list.size();
+      this.list.add(t);
       this.wordStarts.add(this.chars.size());
 
-      for(int var4 = 0; var4 < var2.length(); ++var4) {
-         this.suffixToT.add(var3);
-         this.offsets.add(var4);
-         this.chars.add(var2.charAt(var4));
+      for(int i = 0; i < text.length(); ++i) {
+         this.suffixToT.add(index);
+         this.offsets.add(i);
+         this.chars.add(text.charAt(i));
       }
 
-      this.suffixToT.add(var3);
-      this.offsets.add(var2.length());
+      this.suffixToT.add(index);
+      this.offsets.add(text.length());
       this.chars.add(-1);
    }
 
    public void generate() {
-      int var1 = this.chars.size();
-      int[] var2 = new int[var1];
-      int[] var3 = new int[var1];
-      int[] var4 = new int[var1];
-      int[] var5 = new int[var1];
-      IntComparator var6 = (var2x, var3x) -> var3[var2x] == var3[var3x] ? Integer.compare(var4[var2x], var4[var3x]) : Integer.compare(var3[var2x], var3[var3x]);
-      Swapper var7 = (var3x, var4x) -> {
-         if (var3x != var4x) {
-            int var5x = var3[var3x];
-            var3[var3x] = var3[var4x];
-            var3[var4x] = var5x;
-            var5x = var4[var3x];
-            var4[var3x] = var4[var4x];
-            var4[var4x] = var5x;
-            var5x = var5[var3x];
-            var5[var3x] = var5[var4x];
-            var5[var4x] = var5x;
+      int charCount = this.chars.size();
+      int[] positions = new int[charCount];
+      int[] lefts = new int[charCount];
+      int[] rights = new int[charCount];
+      int[] reverse = new int[charCount];
+      IntComparator comparator = (a, b) -> lefts[a] == lefts[b] ? Integer.compare(rights[a], rights[b]) : Integer.compare(lefts[a], lefts[b]);
+      Swapper swapper = (a, b) -> {
+         if (a != b) {
+            int tmp = lefts[a];
+            lefts[a] = lefts[b];
+            lefts[b] = tmp;
+            tmp = rights[a];
+            rights[a] = rights[b];
+            rights[b] = tmp;
+            tmp = reverse[a];
+            reverse[a] = reverse[b];
+            reverse[b] = tmp;
          }
 
       };
 
-      for(int var8 = 0; var8 < var1; ++var8) {
-         var2[var8] = this.chars.getInt(var8);
+      for(int i = 0; i < charCount; ++i) {
+         positions[i] = this.chars.getInt(i);
       }
 
-      int var14 = 1;
+      int count = 1;
 
-      for(int var9 = Math.min(var1, this.maxStringLength); var14 * 2 < var9; var14 *= 2) {
-         for(int var10 = 0; var10 < var1; var5[var10] = var10++) {
-            var3[var10] = var2[var10];
-            var4[var10] = var10 + var14 < var1 ? var2[var10 + var14] : -2;
+      for(int max = Math.min(charCount, this.maxStringLength); count * 2 < max; count *= 2) {
+         for(int i = 0; i < charCount; reverse[i] = i++) {
+            lefts[i] = positions[i];
+            rights[i] = i + count < charCount ? positions[i + count] : -2;
          }
 
-         Arrays.quickSort(0, var1, var6, var7);
+         Arrays.quickSort(0, charCount, comparator, swapper);
 
-         for(int var15 = 0; var15 < var1; ++var15) {
-            if (var15 > 0 && var3[var15] == var3[var15 - 1] && var4[var15] == var4[var15 - 1]) {
-               var2[var5[var15]] = var2[var5[var15 - 1]];
+         for(int i = 0; i < charCount; ++i) {
+            if (i > 0 && lefts[i] == lefts[i - 1] && rights[i] == rights[i - 1]) {
+               positions[reverse[i]] = positions[reverse[i - 1]];
             } else {
-               var2[var5[var15]] = var15;
+               positions[reverse[i]] = i;
             }
          }
       }
 
-      IntList var16 = this.suffixToT;
-      IntList var11 = this.offsets;
-      this.suffixToT = new IntArrayList(var16.size());
-      this.offsets = new IntArrayList(var11.size());
+      IntList oldSuffixToT = this.suffixToT;
+      IntList oldOffsets = this.offsets;
+      this.suffixToT = new IntArrayList(oldSuffixToT.size());
+      this.offsets = new IntArrayList(oldOffsets.size());
 
-      for(int var12 = 0; var12 < var1; ++var12) {
-         int var13 = var5[var12];
-         this.suffixToT.add(var16.getInt(var13));
-         this.offsets.add(var11.getInt(var13));
+      for(int i = 0; i < charCount; ++i) {
+         int index = reverse[i];
+         this.suffixToT.add(oldSuffixToT.getInt(index));
+         this.offsets.add(oldOffsets.getInt(index));
       }
 
       if (DEBUG_ARRAY) {
@@ -111,51 +112,51 @@ public class SuffixArray<T> {
    }
 
    private void print() {
-      for(int var1 = 0; var1 < this.suffixToT.size(); ++var1) {
-         LOGGER.debug("{} {}", var1, this.getString(var1));
+      for(int i = 0; i < this.suffixToT.size(); ++i) {
+         LOGGER.debug("{} {}", i, this.getString(i));
       }
 
       LOGGER.debug("");
    }
 
-   private String getString(int var1) {
-      int var2 = this.offsets.getInt(var1);
-      int var3 = this.wordStarts.getInt(this.suffixToT.getInt(var1));
-      StringBuilder var4 = new StringBuilder();
+   private String getString(final int i) {
+      int start = this.offsets.getInt(i);
+      int offset = this.wordStarts.getInt(this.suffixToT.getInt(i));
+      StringBuilder builder = new StringBuilder();
 
-      for(int var5 = 0; var3 + var5 < this.chars.size(); ++var5) {
-         if (var5 == var2) {
-            var4.append('^');
+      for(int j = 0; offset + j < this.chars.size(); ++j) {
+         if (j == start) {
+            builder.append('^');
          }
 
-         int var6 = this.chars.getInt(var3 + var5);
-         if (var6 == -1) {
+         int p = this.chars.getInt(offset + j);
+         if (p == -1) {
             break;
          }
 
-         var4.append((char)var6);
+         builder.append((char)p);
       }
 
-      return var4.toString();
+      return builder.toString();
    }
 
-   private int compare(String var1, int var2) {
-      int var3 = this.wordStarts.getInt(this.suffixToT.getInt(var2));
-      int var4 = this.offsets.getInt(var2);
+   private int compare(final String text, final int index) {
+      int start = this.wordStarts.getInt(this.suffixToT.getInt(index));
+      int offset = this.offsets.getInt(index);
 
-      for(int var5 = 0; var5 < var1.length(); ++var5) {
-         int var6 = this.chars.getInt(var3 + var4 + var5);
-         if (var6 == -1) {
+      for(int i = 0; i < text.length(); ++i) {
+         int p = this.chars.getInt(start + offset + i);
+         if (p == -1) {
             return 1;
          }
 
-         char var7 = var1.charAt(var5);
-         char var8 = (char)var6;
-         if (var7 < var8) {
+         char c = text.charAt(i);
+         char c2 = (char)p;
+         if (c < c2) {
             return -1;
          }
 
-         if (var7 > var8) {
+         if (c > c2) {
             return 1;
          }
       }
@@ -163,59 +164,59 @@ public class SuffixArray<T> {
       return 0;
    }
 
-   public List<T> search(String var1) {
-      int var2 = this.suffixToT.size();
-      int var3 = 0;
-      int var4 = var2;
+   public List<T> search(final String text) {
+      int suffixCount = this.suffixToT.size();
+      int low = 0;
+      int high = suffixCount;
 
-      while(var3 < var4) {
-         int var5 = var3 + (var4 - var3) / 2;
-         int var6 = this.compare(var1, var5);
+      while(low < high) {
+         int mid = low + (high - low) / 2;
+         int c = this.compare(text, mid);
          if (DEBUG_COMPARISONS) {
-            LOGGER.debug("comparing lower \"{}\" with {} \"{}\": {}", new Object[]{var1, var5, this.getString(var5), var6});
+            LOGGER.debug("comparing lower \"{}\" with {} \"{}\": {}", new Object[]{text, mid, this.getString(mid), c});
          }
 
-         if (var6 > 0) {
-            var3 = var5 + 1;
+         if (c > 0) {
+            low = mid + 1;
          } else {
-            var4 = var5;
+            high = mid;
          }
       }
 
-      if (var3 >= 0 && var3 < var2) {
-         int var15 = var3;
-         var4 = var2;
+      if (low >= 0 && low < suffixCount) {
+         int lowerBound = low;
+         high = suffixCount;
 
-         while(var3 < var4) {
-            int var16 = var3 + (var4 - var3) / 2;
-            int var7 = this.compare(var1, var16);
+         while(low < high) {
+            int mid = low + (high - low) / 2;
+            int c = this.compare(text, mid);
             if (DEBUG_COMPARISONS) {
-               LOGGER.debug("comparing upper \"{}\" with {} \"{}\": {}", new Object[]{var1, var16, this.getString(var16), var7});
+               LOGGER.debug("comparing upper \"{}\" with {} \"{}\": {}", new Object[]{text, mid, this.getString(mid), c});
             }
 
-            if (var7 >= 0) {
-               var3 = var16 + 1;
+            if (c >= 0) {
+               low = mid + 1;
             } else {
-               var4 = var16;
+               high = mid;
             }
          }
 
-         int var17 = var3;
-         IntOpenHashSet var18 = new IntOpenHashSet();
+         int upperBound = low;
+         IntSet matches = new IntOpenHashSet();
 
-         for(int var8 = var15; var8 < var17; ++var8) {
-            var18.add(this.suffixToT.getInt(var8));
+         for(int i = lowerBound; i < upperBound; ++i) {
+            matches.add(this.suffixToT.getInt(i));
          }
 
-         int[] var19 = var18.toIntArray();
-         java.util.Arrays.sort(var19);
-         LinkedHashSet var9 = Sets.newLinkedHashSet();
+         int[] ints = matches.toIntArray();
+         java.util.Arrays.sort(ints);
+         Set<T> result = Sets.newLinkedHashSet();
 
-         for(int var13 : var19) {
-            var9.add(this.list.get(var13));
+         for(int t : ints) {
+            result.add(this.list.get(t));
          }
 
-         return Lists.newArrayList(var9);
+         return Lists.newArrayList(result);
       } else {
          return Collections.emptyList();
       }

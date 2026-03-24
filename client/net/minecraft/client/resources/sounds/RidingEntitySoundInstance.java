@@ -14,18 +14,18 @@ public class RidingEntitySoundInstance extends AbstractTickableSoundInstance {
    private final float volumeMax;
    private final float volumeAmplifier;
 
-   public RidingEntitySoundInstance(Player var1, Entity var2, boolean var3, SoundEvent var4, SoundSource var5, float var6, float var7, float var8) {
-      super(var4, var5, SoundInstance.createUnseededRandom());
-      this.player = var1;
-      this.entity = var2;
-      this.underwaterSound = var3;
-      this.volumeMin = var6;
-      this.volumeMax = var7;
-      this.volumeAmplifier = var8;
+   public RidingEntitySoundInstance(final Player player, final Entity entity, final boolean underwaterSound, final SoundEvent soundEvent, final SoundSource soundSource, final float volumeMin, final float volumeMax, final float volumeAmplifier) {
+      super(soundEvent, soundSource, SoundInstance.createUnseededRandom());
+      this.player = player;
+      this.entity = entity;
+      this.underwaterSound = underwaterSound;
+      this.volumeMin = volumeMin;
+      this.volumeMax = volumeMax;
+      this.volumeAmplifier = volumeAmplifier;
       this.attenuation = SoundInstance.Attenuation.NONE;
       this.looping = true;
       this.delay = 0;
-      this.volume = var6;
+      this.volume = volumeMin;
    }
 
    public boolean canPlaySound() {
@@ -53,9 +53,9 @@ public class RidingEntitySoundInstance extends AbstractTickableSoundInstance {
          if (this.shouldNotPlayUnderwaterSound()) {
             this.volume = this.volumeMin;
          } else {
-            float var1 = this.getEntitySpeed();
-            if (var1 >= 0.01F && this.shoudlPlaySound()) {
-               this.volume = this.volumeAmplifier * Mth.clampedLerp(var1, this.volumeMin, this.volumeMax);
+            float speed = this.getEntitySpeed();
+            if (speed >= 0.01F && this.shoudlPlaySound()) {
+               this.volume = this.volumeAmplifier * Mth.clampedLerp(speed, this.volumeMin, this.volumeMax);
             } else {
                this.volume = this.volumeMin;
             }

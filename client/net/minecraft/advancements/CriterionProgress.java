@@ -11,9 +11,9 @@ public class CriterionProgress {
       super();
    }
 
-   public CriterionProgress(Instant var1) {
+   public CriterionProgress(final Instant obtained) {
       super();
-      this.obtained = var1;
+      this.obtained = obtained;
    }
 
    public boolean isDone() {
@@ -37,13 +37,13 @@ public class CriterionProgress {
       return "CriterionProgress{obtained=" + String.valueOf(var10000) + "}";
    }
 
-   public void serializeToNetwork(FriendlyByteBuf var1) {
-      var1.writeNullable(this.obtained, FriendlyByteBuf::writeInstant);
+   public void serializeToNetwork(final FriendlyByteBuf output) {
+      output.writeNullable(this.obtained, FriendlyByteBuf::writeInstant);
    }
 
-   public static CriterionProgress fromNetwork(FriendlyByteBuf var0) {
-      CriterionProgress var1 = new CriterionProgress();
-      var1.obtained = (Instant)var0.readNullable(FriendlyByteBuf::readInstant);
-      return var1;
+   public static CriterionProgress fromNetwork(final FriendlyByteBuf input) {
+      CriterionProgress result = new CriterionProgress();
+      result.obtained = (Instant)input.readNullable(FriendlyByteBuf::readInstant);
+      return result;
    }
 }

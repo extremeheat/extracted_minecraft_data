@@ -12,20 +12,19 @@ import net.minecraft.world.item.component.MapItemColor;
 import org.jspecify.annotations.Nullable;
 
 public record MapColor(int defaultColor) implements ItemTintSource {
-   public static final MapCodec<MapColor> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.RGB_COLOR_CODEC.fieldOf("default").forGetter(MapColor::defaultColor)).apply(var0, MapColor::new));
+   public static final MapCodec<MapColor> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ExtraCodecs.RGB_COLOR_CODEC.fieldOf("default").forGetter(MapColor::defaultColor)).apply(i, MapColor::new));
 
    public MapColor() {
       this(MapItemColor.DEFAULT.rgb());
    }
 
-   public MapColor(int var1) {
+   public MapColor {
       super();
-      this.defaultColor = var1;
    }
 
-   public int calculate(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3) {
-      MapItemColor var4 = (MapItemColor)var1.get(DataComponents.MAP_COLOR);
-      return var4 != null ? ARGB.opaque(var4.rgb()) : ARGB.opaque(this.defaultColor);
+   public int calculate(final ItemStack itemStack, final @Nullable ClientLevel level, final @Nullable LivingEntity owner) {
+      MapItemColor component = (MapItemColor)itemStack.get(DataComponents.MAP_COLOR);
+      return component != null ? ARGB.opaque(component.rgb()) : ARGB.opaque(this.defaultColor);
    }
 
    public MapCodec<MapColor> type() {

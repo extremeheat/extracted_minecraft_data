@@ -9,23 +9,17 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.phys.shapes.Shapes;
 
 record UnobstructedPredicate(Vec3i offset) implements BlockPredicate {
-   public static MapCodec<UnobstructedPredicate> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Vec3i.CODEC.optionalFieldOf("offset", Vec3i.ZERO).forGetter(UnobstructedPredicate::offset)).apply(var0, UnobstructedPredicate::new));
+   public static final MapCodec<UnobstructedPredicate> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Vec3i.CODEC.optionalFieldOf("offset", Vec3i.ZERO).forGetter(UnobstructedPredicate::offset)).apply(i, UnobstructedPredicate::new));
 
-   UnobstructedPredicate(Vec3i var1) {
+   UnobstructedPredicate {
       super();
-      this.offset = var1;
    }
 
    public BlockPredicateType<?> type() {
       return BlockPredicateType.UNOBSTRUCTED;
    }
 
-   public boolean test(WorldGenLevel var1, BlockPos var2) {
-      return var1.isUnobstructed((Entity)null, Shapes.block().move((Vec3i)var2));
-   }
-
-   // $FF: synthetic method
-   public boolean test(final Object var1, final Object var2) {
-      return this.test((WorldGenLevel)var1, (BlockPos)var2);
+   public boolean test(final WorldGenLevel worldGenLevel, final BlockPos pos) {
+      return worldGenLevel.isUnobstructed((Entity)null, Shapes.block().move((Vec3i)pos));
    }
 }

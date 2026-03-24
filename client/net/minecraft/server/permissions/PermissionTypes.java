@@ -9,8 +9,8 @@ public class PermissionTypes {
       super();
    }
 
-   public static MapCodec<? extends Permission> bootstrap(Registry<MapCodec<? extends Permission>> var0) {
-      Registry.register(var0, (Identifier)Identifier.withDefaultNamespace("atom"), Permission.Atom.MAP_CODEC);
-      return (MapCodec)Registry.register(var0, (Identifier)Identifier.withDefaultNamespace("command_level"), Permission.HasCommandLevel.MAP_CODEC);
+   public static MapCodec<? extends Permission> bootstrap(final Registry<MapCodec<? extends Permission>> registry) {
+      Registry.register(registry, (Identifier)Identifier.withDefaultNamespace("atom"), Permission.Atom.MAP_CODEC);
+      return (MapCodec)Registry.register(registry, (Identifier)Identifier.withDefaultNamespace("command_level"), Permission.HasCommandLevel.MAP_CODEC);
    }
 }

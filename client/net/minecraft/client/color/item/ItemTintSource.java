@@ -7,7 +7,7 @@ import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
 public interface ItemTintSource {
-   int calculate(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3);
+   int calculate(ItemStack itemStack, @Nullable ClientLevel level, @Nullable LivingEntity owner);
 
    MapCodec<? extends ItemTintSource> type();
 }

@@ -48,63 +48,63 @@ public class PowderSnowBlock extends Block implements BucketPickup {
       return CODEC;
    }
 
-   public PowderSnowBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public PowderSnowBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
-   protected boolean skipRendering(BlockState var1, BlockState var2, Direction var3) {
-      return var2.is(this) ? true : super.skipRendering(var1, var2, var3);
+   protected boolean skipRendering(final BlockState state, final BlockState neighborState, final Direction direction) {
+      return neighborState.is(this) ? true : super.skipRendering(state, neighborState, direction);
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
-      if (!(var4 instanceof LivingEntity) || var4.getInBlockState().is(this)) {
-         var4.makeStuckInBlock(var1, new Vec3(0.8999999761581421, 1.5, 0.8999999761581421));
-         if (var2.isClientSide()) {
-            RandomSource var7 = var2.getRandom();
-            boolean var8 = var4.xOld != var4.getX() || var4.zOld != var4.getZ();
-            if (var8 && var7.nextBoolean()) {
-               var2.addParticle(ParticleTypes.SNOWFLAKE, var4.getX(), (double)(var3.getY() + 1), var4.getZ(), (double)(Mth.randomBetween(var7, -1.0F, 1.0F) * 0.083333336F), 0.05000000074505806, (double)(Mth.randomBetween(var7, -1.0F, 1.0F) * 0.083333336F));
+   protected void entityInside(final BlockState state, final Level level, final BlockPos pos, final Entity entity, final InsideBlockEffectApplier effectApplier, final boolean isPrecise) {
+      if (!(entity instanceof LivingEntity) || entity.getInBlockState().is(this)) {
+         entity.makeStuckInBlock(state, new Vec3(0.8999999761581421, 1.5, 0.8999999761581421));
+         if (level.isClientSide()) {
+            RandomSource random = level.getRandom();
+            boolean isMoving = entity.xOld != entity.getX() || entity.zOld != entity.getZ();
+            if (isMoving && random.nextBoolean()) {
+               level.addParticle(ParticleTypes.SNOWFLAKE, entity.getX(), (double)(pos.getY() + 1), entity.getZ(), (double)(Mth.randomBetween(random, -1.0F, 1.0F) * 0.083333336F), 0.05000000074505806, (double)(Mth.randomBetween(random, -1.0F, 1.0F) * 0.083333336F));
             }
          }
       }
 
-      BlockPos var9 = var3.immutable();
-      var5.runBefore(InsideBlockEffectType.EXTINGUISH, (var2x) -> {
-         if (var2 instanceof ServerLevel var3) {
-            if (var2x.isOnFire() && ((Boolean)var3.getGameRules().get(GameRules.MOB_GRIEFING) || var2x instanceof Player) && var2x.mayInteract(var3, var9)) {
-               var2.destroyBlock(var9, false);
+      BlockPos position = pos.immutable();
+      effectApplier.runBefore(InsideBlockEffectType.EXTINGUISH, (e) -> {
+         if (level instanceof ServerLevel serverLevel) {
+            if (e.isOnFire() && ((Boolean)serverLevel.getGameRules().get(GameRules.MOB_GRIEFING) || e instanceof Player) && e.mayInteract(serverLevel, position)) {
+               level.destroyBlock(position, false);
             }
          }
 
       });
-      var5.apply(InsideBlockEffectType.FREEZE);
-      var5.apply(InsideBlockEffectType.EXTINGUISH);
+      effectApplier.apply(InsideBlockEffectType.FREEZE);
+      effectApplier.apply(InsideBlockEffectType.EXTINGUISH);
    }
 
-   public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, double var5) {
-      if (!(var5 < 4.0) && var4 instanceof LivingEntity var7) {
-         LivingEntity.Fallsounds var8 = var7.getFallSounds();
-         SoundEvent var9 = var5 < 7.0 ? var8.small() : var8.big();
-         var4.playSound(var9, 1.0F, 1.0F);
+   public void fallOn(final Level level, final BlockState state, final BlockPos pos, final Entity entity, final double fallDistance) {
+      if (!(fallDistance < 4.0) && entity instanceof LivingEntity livingEntity) {
+         LivingEntity.Fallsounds entityFallsounds = livingEntity.getFallSounds();
+         SoundEvent fallSound = fallDistance < 7.0 ? entityFallsounds.small() : entityFallsounds.big();
+         entity.playSound(fallSound, 1.0F, 1.0F);
       }
    }
 
-   protected VoxelShape getEntityInsideCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, Entity var4) {
-      VoxelShape var5 = this.getCollisionShape(var1, var2, var3, CollisionContext.of(var4));
-      return var5.isEmpty() ? Shapes.block() : var5;
+   protected VoxelShape getEntityInsideCollisionShape(final BlockState state, final BlockGetter level, final BlockPos pos, final Entity entity) {
+      VoxelShape collisionShape = this.getCollisionShape(state, level, pos, CollisionContext.of(entity));
+      return collisionShape.isEmpty() ? Shapes.block() : collisionShape;
    }
 
-   protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      if (!var4.isPlacement() && var4 instanceof EntityCollisionContext var5) {
-         Entity var6 = var5.getEntity();
-         if (var6 != null) {
-            if (var6.fallDistance > 2.5) {
+   protected VoxelShape getCollisionShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      if (!context.isPlacement() && context instanceof EntityCollisionContext entityCollisionContext) {
+         Entity entity = entityCollisionContext.getEntity();
+         if (entity != null) {
+            if (entity.fallDistance > 2.5) {
                return FALLING_COLLISION_SHAPE;
             }
 
-            boolean var7 = var6 instanceof FallingBlockEntity;
-            if (var7 || canEntityWalkOnPowderSnow(var6) && var4.isAbove(Shapes.block(), var3, false) && !var4.isDescending()) {
-               return super.getCollisionShape(var1, var2, var3, var4);
+            boolean isFallingBlock = entity instanceof FallingBlockEntity;
+            if (isFallingBlock || canEntityWalkOnPowderSnow(entity) && context.isAbove(Shapes.block(), pos, false) && !context.isDescending()) {
+               return super.getCollisionShape(state, level, pos, context);
             }
          }
       }
@@ -112,22 +112,22 @@ public class PowderSnowBlock extends Block implements BucketPickup {
       return Shapes.empty();
    }
 
-   protected VoxelShape getVisualShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getVisualShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return Shapes.empty();
    }
 
-   public static boolean canEntityWalkOnPowderSnow(Entity var0) {
-      if (var0.getType().is(EntityTypeTags.POWDER_SNOW_WALKABLE_MOBS)) {
+   public static boolean canEntityWalkOnPowderSnow(final Entity entity) {
+      if (entity.is(EntityTypeTags.POWDER_SNOW_WALKABLE_MOBS)) {
          return true;
       } else {
-         return var0 instanceof LivingEntity ? ((LivingEntity)var0).getItemBySlot(EquipmentSlot.FEET).is(Items.LEATHER_BOOTS) : false;
+         return entity instanceof LivingEntity ? ((LivingEntity)entity).getItemBySlot(EquipmentSlot.FEET).is(Items.LEATHER_BOOTS) : false;
       }
    }
 
-   public ItemStack pickupBlock(@Nullable LivingEntity var1, LevelAccessor var2, BlockPos var3, BlockState var4) {
-      var2.setBlock(var3, Blocks.AIR.defaultBlockState(), 11);
-      if (!var2.isClientSide()) {
-         var2.levelEvent(2001, var3, Block.getId(var4));
+   public ItemStack pickupBlock(final @Nullable LivingEntity user, final LevelAccessor level, final BlockPos pos, final BlockState state) {
+      level.setBlock(pos, Blocks.AIR.defaultBlockState(), 11);
+      if (!level.isClientSide()) {
+         level.levelEvent(2001, pos, Block.getId(state));
       }
 
       return new ItemStack(Items.POWDER_SNOW_BUCKET);
@@ -137,7 +137,7 @@ public class PowderSnowBlock extends Block implements BucketPickup {
       return Optional.of(SoundEvents.BUCKET_FILL_POWDER_SNOW);
    }
 
-   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
+   protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
       return true;
    }
 }

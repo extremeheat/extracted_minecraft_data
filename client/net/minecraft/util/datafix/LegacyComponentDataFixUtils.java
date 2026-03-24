@@ -17,58 +17,58 @@ public class LegacyComponentDataFixUtils {
       super();
    }
 
-   public static <T> Dynamic<T> createPlainTextComponent(DynamicOps<T> var0, String var1) {
-      String var2 = createTextComponentJson(var1);
-      return new Dynamic(var0, var0.createString(var2));
+   public static <T> Dynamic<T> createPlainTextComponent(final DynamicOps<T> ops, final String text) {
+      String stableString = createTextComponentJson(text);
+      return new Dynamic(ops, ops.createString(stableString));
    }
 
-   public static <T> Dynamic<T> createEmptyComponent(DynamicOps<T> var0) {
-      return new Dynamic(var0, var0.createString(EMPTY_CONTENTS));
+   public static <T> Dynamic<T> createEmptyComponent(final DynamicOps<T> ops) {
+      return new Dynamic(ops, ops.createString(EMPTY_CONTENTS));
    }
 
-   public static String createTextComponentJson(String var0) {
-      JsonObject var1 = new JsonObject();
-      var1.addProperty("text", var0);
-      return GsonHelper.toStableString(var1);
+   public static String createTextComponentJson(final String text) {
+      JsonObject result = new JsonObject();
+      result.addProperty("text", text);
+      return GsonHelper.toStableString(result);
    }
 
-   public static String createTranslatableComponentJson(String var0) {
-      JsonObject var1 = new JsonObject();
-      var1.addProperty("translate", var0);
-      return GsonHelper.toStableString(var1);
+   public static String createTranslatableComponentJson(final String key) {
+      JsonObject result = new JsonObject();
+      result.addProperty("translate", key);
+      return GsonHelper.toStableString(result);
    }
 
-   public static <T> Dynamic<T> createTranslatableComponent(DynamicOps<T> var0, String var1) {
-      String var2 = createTranslatableComponentJson(var1);
-      return new Dynamic(var0, var0.createString(var2));
+   public static <T> Dynamic<T> createTranslatableComponent(final DynamicOps<T> ops, final String key) {
+      String stableString = createTranslatableComponentJson(key);
+      return new Dynamic(ops, ops.createString(stableString));
    }
 
-   public static String rewriteFromLenient(String var0) {
-      if (!var0.isEmpty() && !var0.equals("null")) {
-         char var1 = var0.charAt(0);
-         char var2 = var0.charAt(var0.length() - 1);
-         if (var1 == '"' && var2 == '"' || var1 == '{' && var2 == '}' || var1 == '[' && var2 == ']') {
+   public static String rewriteFromLenient(final String string) {
+      if (!string.isEmpty() && !string.equals("null")) {
+         char firstChar = string.charAt(0);
+         char lastChar = string.charAt(string.length() - 1);
+         if (firstChar == '"' && lastChar == '"' || firstChar == '{' && lastChar == '}' || firstChar == '[' && lastChar == ']') {
             try {
-               JsonElement var3 = LenientJsonParser.parse(var0);
-               if (var3.isJsonPrimitive()) {
-                  return createTextComponentJson(var3.getAsString());
+               JsonElement json = LenientJsonParser.parse(string);
+               if (json.isJsonPrimitive()) {
+                  return createTextComponentJson(json.getAsString());
                }
 
-               return GsonHelper.toStableString(var3);
+               return GsonHelper.toStableString(json);
             } catch (JsonParseException var4) {
             }
          }
 
-         return createTextComponentJson(var0);
+         return createTextComponentJson(string);
       } else {
          return EMPTY_CONTENTS;
       }
    }
 
-   public static boolean isStrictlyValidJson(Dynamic<?> var0) {
-      return var0.asString().result().filter((var0x) -> {
+   public static boolean isStrictlyValidJson(final Dynamic<?> component) {
+      return component.asString().result().filter((string) -> {
          try {
-            StrictJsonParser.parse(var0x);
+            StrictJsonParser.parse(string);
             return true;
          } catch (JsonParseException var2) {
             return false;
@@ -76,14 +76,14 @@ public class LegacyComponentDataFixUtils {
       }).isPresent();
    }
 
-   public static Optional<String> extractTranslationString(String var0) {
+   public static Optional<String> extractTranslationString(final String component) {
       try {
-         JsonElement var1 = LenientJsonParser.parse(var0);
-         if (var1.isJsonObject()) {
-            JsonObject var2 = var1.getAsJsonObject();
-            JsonElement var3 = var2.get("translate");
-            if (var3 != null && var3.isJsonPrimitive()) {
-               return Optional.of(var3.getAsString());
+         JsonElement parsed = LenientJsonParser.parse(component);
+         if (parsed.isJsonObject()) {
+            JsonObject parsedObject = parsed.getAsJsonObject();
+            JsonElement key = parsedObject.get("translate");
+            if (key != null && key.isJsonPrimitive()) {
+               return Optional.of(key.getAsString());
             }
          }
       } catch (JsonParseException var4) {

@@ -2,9 +2,9 @@ package net.minecraft.resources;
 
 @FunctionalInterface
 public interface DependantName<T, V> {
-   V get(ResourceKey<T> var1);
+   V get(ResourceKey<T> id);
 
-   static <T, V> DependantName<T, V> fixed(V var0) {
-      return (var1) -> var0;
+   static <T, V> DependantName<T, V> fixed(final V value) {
+      return (id) -> value;
    }
 }

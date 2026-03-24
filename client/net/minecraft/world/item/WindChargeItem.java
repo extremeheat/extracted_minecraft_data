@@ -18,39 +18,39 @@ import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.phys.Vec3;
 
 public class WindChargeItem extends Item implements ProjectileItem {
-   public static float PROJECTILE_SHOOT_POWER = 1.5F;
+   public static final float PROJECTILE_SHOOT_POWER = 1.5F;
 
-   public WindChargeItem(Item.Properties var1) {
-      super(var1);
+   public WindChargeItem(final Item.Properties properties) {
+      super(properties);
    }
 
-   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
-      ItemStack var4 = var2.getItemInHand(var3);
-      if (var1 instanceof ServerLevel var5) {
-         Projectile.spawnProjectileFromRotation((var2x, var3x, var4x) -> new WindCharge(var2, var1, var2.position().x(), var2.getEyePosition().y(), var2.position().z()), var5, var4, var2, 0.0F, PROJECTILE_SHOOT_POWER, 1.0F);
+   public InteractionResult use(final Level level, final Player player, final InteractionHand hand) {
+      ItemStack stack = player.getItemInHand(hand);
+      if (level instanceof ServerLevel serverLevel) {
+         Projectile.spawnProjectileFromRotation((source, l, itemStack) -> new WindCharge(player, level, player.position().x(), player.getEyePosition().y(), player.position().z()), serverLevel, stack, player, 0.0F, 1.5F, 1.0F);
       }
 
-      var1.playSound((Entity)null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.WIND_CHARGE_THROW, SoundSource.NEUTRAL, 0.5F, 0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F));
-      var2.awardStat(Stats.ITEM_USED.get(this));
-      var4.consume(1, var2);
+      level.playSound((Entity)null, player.getX(), player.getY(), player.getZ(), SoundEvents.WIND_CHARGE_THROW, SoundSource.NEUTRAL, 0.5F, 0.4F / (level.getRandom().nextFloat() * 0.4F + 0.8F));
+      player.awardStat(Stats.ITEM_USED.get(this));
+      stack.consume(1, player);
       return InteractionResult.SUCCESS;
    }
 
-   public Projectile asProjectile(Level var1, Position var2, ItemStack var3, Direction var4) {
-      RandomSource var5 = var1.getRandom();
-      double var6 = var5.triangle((double)var4.getStepX(), 0.11485000000000001);
-      double var8 = var5.triangle((double)var4.getStepY(), 0.11485000000000001);
-      double var10 = var5.triangle((double)var4.getStepZ(), 0.11485000000000001);
-      Vec3 var12 = new Vec3(var6, var8, var10);
-      WindCharge var13 = new WindCharge(var1, var2.x(), var2.y(), var2.z(), var12);
-      var13.setDeltaMovement(var12);
-      return var13;
+   public Projectile asProjectile(final Level level, final Position position, final ItemStack itemStack, final Direction direction) {
+      RandomSource random = level.getRandom();
+      double dirX = random.triangle((double)direction.getStepX(), 0.11485000000000001);
+      double dirY = random.triangle((double)direction.getStepY(), 0.11485000000000001);
+      double dirZ = random.triangle((double)direction.getStepZ(), 0.11485000000000001);
+      Vec3 dir = new Vec3(dirX, dirY, dirZ);
+      WindCharge windCharge = new WindCharge(level, position.x(), position.y(), position.z(), dir);
+      windCharge.setDeltaMovement(dir);
+      return windCharge;
    }
 
-   public void shoot(Projectile var1, double var2, double var4, double var6, float var8, float var9) {
+   public void shoot(final Projectile projectile, final double xd, final double yd, final double zd, final float pow, final float uncertainty) {
    }
 
    public ProjectileItem.DispenseConfig createDispenseConfig() {
-      return ProjectileItem.DispenseConfig.builder().positionFunction((var0, var1) -> DispenserBlock.getDispensePosition(var0, 1.0, Vec3.ZERO)).uncertainty(6.6666665F).power(1.0F).overrideDispenseEvent(1051).build();
+      return ProjectileItem.DispenseConfig.builder().positionFunction((source, direction) -> DispenserBlock.getDispensePosition(source, 1.0, Vec3.ZERO)).uncertainty(6.6666665F).power(1.0F).overrideDispenseEvent(1051).build();
    }
 }

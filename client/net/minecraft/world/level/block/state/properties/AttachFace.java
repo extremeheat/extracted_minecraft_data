@@ -9,8 +9,8 @@ public enum AttachFace implements StringRepresentable {
 
    private final String name;
 
-   private AttachFace(final String var3) {
-      this.name = var3;
+   private AttachFace(final String name) {
+      this.name = name;
    }
 
    public String getSerializedName() {

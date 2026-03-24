@@ -13,15 +13,15 @@ public enum CookingBookCategory implements StringRepresentable {
    BLOCKS(1, "blocks"),
    MISC(2, "misc");
 
-   private static final IntFunction<CookingBookCategory> BY_ID = ByIdMap.<CookingBookCategory>continuous((var0) -> var0.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+   private static final IntFunction<CookingBookCategory> BY_ID = ByIdMap.<CookingBookCategory>continuous((e) -> e.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
    public static final Codec<CookingBookCategory> CODEC = StringRepresentable.<CookingBookCategory>fromEnum(CookingBookCategory::values);
-   public static final StreamCodec<ByteBuf, CookingBookCategory> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (var0) -> var0.id);
+   public static final StreamCodec<ByteBuf, CookingBookCategory> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (e) -> e.id);
    private final int id;
    private final String name;
 
-   private CookingBookCategory(final int var3, final String var4) {
-      this.id = var3;
-      this.name = var4;
+   private CookingBookCategory(final int id, final String name) {
+      this.id = id;
+      this.name = name;
    }
 
    public String getSerializedName() {

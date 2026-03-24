@@ -5,35 +5,31 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
 
 public class NbtProviders {
    private static final Codec<NbtProvider> TYPED_CODEC;
    public static final Codec<NbtProvider> CODEC;
-   public static final LootNbtProviderType STORAGE;
-   public static final LootNbtProviderType CONTEXT;
 
    public NbtProviders() {
       super();
    }
 
-   private static LootNbtProviderType register(String var0, MapCodec<? extends NbtProvider> var1) {
-      return (LootNbtProviderType)Registry.register(BuiltInRegistries.LOOT_NBT_PROVIDER_TYPE, (Identifier)Identifier.withDefaultNamespace(var0), new LootNbtProviderType(var1));
+   public static MapCodec<? extends NbtProvider> bootstrap(final Registry<MapCodec<? extends NbtProvider>> registry) {
+      Registry.register(registry, (String)"storage", StorageNbtProvider.MAP_CODEC);
+      return (MapCodec)Registry.register(registry, (String)"context", ContextNbtProvider.MAP_CODEC);
    }
 
    static {
-      TYPED_CODEC = BuiltInRegistries.LOOT_NBT_PROVIDER_TYPE.byNameCodec().dispatch(NbtProvider::getType, LootNbtProviderType::codec);
-      CODEC = Codec.lazyInitialized(() -> Codec.either(ContextNbtProvider.INLINE_CODEC, TYPED_CODEC).xmap(Either::unwrap, (var0) -> {
+      TYPED_CODEC = BuiltInRegistries.LOOT_NBT_PROVIDER_TYPE.byNameCodec().dispatch(NbtProvider::codec, (c) -> c);
+      CODEC = Codec.lazyInitialized(() -> Codec.either(ContextNbtProvider.INLINE_CODEC, TYPED_CODEC).xmap(Either::unwrap, (provider) -> {
             Either var10000;
-            if (var0 instanceof ContextNbtProvider var1) {
-               var10000 = Either.left(var1);
+            if (provider instanceof ContextNbtProvider context) {
+               var10000 = Either.left(context);
             } else {
-               var10000 = Either.right(var0);
+               var10000 = Either.right(provider);
             }
 
             return var10000;
          }));
-      STORAGE = register("storage", StorageNbtProvider.CODEC);
-      CONTEXT = register("context", ContextNbtProvider.MAP_CODEC);
    }
 }

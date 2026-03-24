@@ -7,26 +7,26 @@ public abstract class DataSlot {
       super();
    }
 
-   public static DataSlot forContainer(final ContainerData var0, final int var1) {
+   public static DataSlot forContainer(final ContainerData container, final int dataId) {
       return new DataSlot() {
          public int get() {
-            return var0.get(var1);
+            return container.get(dataId);
          }
 
-         public void set(int var1x) {
-            var0.set(var1, var1x);
+         public void set(final int value) {
+            container.set(dataId, value);
          }
       };
    }
 
-   public static DataSlot shared(final int[] var0, final int var1) {
+   public static DataSlot shared(final int[] storage, final int index) {
       return new DataSlot() {
          public int get() {
-            return var0[var1];
+            return storage[index];
          }
 
-         public void set(int var1x) {
-            var0[var1] = var1x;
+         public void set(final int value) {
+            storage[index] = value;
          }
       };
    }
@@ -39,20 +39,20 @@ public abstract class DataSlot {
             return this.value;
          }
 
-         public void set(int var1) {
-            this.value = var1;
+         public void set(final int value) {
+            this.value = value;
          }
       };
    }
 
    public abstract int get();
 
-   public abstract void set(int var1);
+   public abstract void set(int value);
 
    public boolean checkAndClearUpdateFlag() {
-      int var1 = this.get();
-      boolean var2 = var1 != this.prevValue;
-      this.prevValue = var1;
-      return var2;
+      int currentValue = this.get();
+      boolean result = currentValue != this.prevValue;
+      this.prevValue = currentValue;
+      return result;
    }
 }

@@ -31,30 +31,30 @@ import org.jspecify.annotations.Nullable;
 public class AxeItem extends Item {
    protected static final Map<Block, Block> STRIPPABLES;
 
-   public AxeItem(ToolMaterial var1, float var2, float var3, Item.Properties var4) {
-      super(var4.axe(var1, var2, var3));
+   public AxeItem(final ToolMaterial material, final float attackDamageBaseline, final float attackSpeedBaseline, final Item.Properties properties) {
+      super(properties.axe(material, attackDamageBaseline, attackSpeedBaseline));
    }
 
-   public InteractionResult useOn(UseOnContext var1) {
-      Level var2 = var1.getLevel();
-      BlockPos var3 = var1.getClickedPos();
-      Player var4 = var1.getPlayer();
-      if (playerHasBlockingItemUseIntent(var1)) {
+   public InteractionResult useOn(final UseOnContext context) {
+      Level level = context.getLevel();
+      BlockPos pos = context.getClickedPos();
+      Player player = context.getPlayer();
+      if (playerHasBlockingItemUseIntent(context)) {
          return InteractionResult.PASS;
       } else {
-         Optional var5 = this.evaluateNewBlockState(var2, var3, var4, var2.getBlockState(var3));
-         if (var5.isEmpty()) {
+         Optional<BlockState> newBlock = this.evaluateNewBlockState(level, pos, player, level.getBlockState(pos));
+         if (newBlock.isEmpty()) {
             return InteractionResult.PASS;
          } else {
-            ItemStack var6 = var1.getItemInHand();
-            if (var4 instanceof ServerPlayer) {
-               CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger((ServerPlayer)var4, var3, var6);
+            ItemStack itemInHand = context.getItemInHand();
+            if (player instanceof ServerPlayer) {
+               CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger((ServerPlayer)player, pos, itemInHand);
             }
 
-            var2.setBlock(var3, (BlockState)var5.get(), 11);
-            var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var4, (BlockState)var5.get()));
-            if (var4 != null) {
-               var6.hurtAndBreak(1, var4, (EquipmentSlot)var1.getHand().asEquipmentSlot());
+            level.setBlock(pos, (BlockState)newBlock.get(), 11);
+            level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(player, (BlockState)newBlock.get()));
+            if (player != null) {
+               itemInHand.hurtAndBreak(1, player, (EquipmentSlot)context.getHand().asEquipmentSlot());
             }
 
             return InteractionResult.SUCCESS;
@@ -62,26 +62,26 @@ public class AxeItem extends Item {
       }
    }
 
-   private static boolean playerHasBlockingItemUseIntent(UseOnContext var0) {
-      Player var1 = var0.getPlayer();
-      return var0.getHand().equals(InteractionHand.MAIN_HAND) && var1.getOffhandItem().has(DataComponents.BLOCKS_ATTACKS) && !var1.isSecondaryUseActive();
+   private static boolean playerHasBlockingItemUseIntent(final UseOnContext context) {
+      Player player = context.getPlayer();
+      return context.getHand().equals(InteractionHand.MAIN_HAND) && player.getOffhandItem().has(DataComponents.BLOCKS_ATTACKS) && !player.isSecondaryUseActive();
    }
 
-   private Optional<BlockState> evaluateNewBlockState(Level var1, BlockPos var2, @Nullable Player var3, BlockState var4) {
-      Optional var5 = this.getStripped(var4);
-      if (var5.isPresent()) {
-         var1.playSound(var3, (BlockPos)var2, SoundEvents.AXE_STRIP, SoundSource.BLOCKS, 1.0F, 1.0F);
-         return var5;
+   private Optional<BlockState> evaluateNewBlockState(final Level level, final BlockPos pos, final @Nullable Player player, final BlockState oldState) {
+      Optional<BlockState> strippedBlock = this.getStripped(oldState);
+      if (strippedBlock.isPresent()) {
+         level.playSound(player, (BlockPos)pos, SoundEvents.AXE_STRIP, SoundSource.BLOCKS, 1.0F, 1.0F);
+         return strippedBlock;
       } else {
-         Optional var6 = WeatheringCopper.getPrevious(var4);
-         if (var6.isPresent()) {
-            spawnSoundAndParticle(var1, var2, var3, var4, SoundEvents.AXE_SCRAPE, 3005);
-            return var6;
+         Optional<BlockState> scrapedBlock = WeatheringCopper.getPrevious(oldState);
+         if (scrapedBlock.isPresent()) {
+            spawnSoundAndParticle(level, pos, player, oldState, SoundEvents.AXE_SCRAPE, 3005);
+            return scrapedBlock;
          } else {
-            Optional var7 = Optional.ofNullable((Block)((BiMap)HoneycombItem.WAX_OFF_BY_BLOCK.get()).get(var4.getBlock())).map((var1x) -> var1x.withPropertiesOf(var4));
-            if (var7.isPresent()) {
-               spawnSoundAndParticle(var1, var2, var3, var4, SoundEvents.AXE_WAX_OFF, 3004);
-               return var7;
+            Optional<BlockState> waxoffBlock = Optional.ofNullable((Block)((BiMap)HoneycombItem.WAX_OFF_BY_BLOCK.get()).get(oldState.getBlock())).map((b) -> b.withPropertiesOf(oldState));
+            if (waxoffBlock.isPresent()) {
+               spawnSoundAndParticle(level, pos, player, oldState, SoundEvents.AXE_WAX_OFF, 3004);
+               return waxoffBlock;
             } else {
                return Optional.empty();
             }
@@ -89,19 +89,19 @@ public class AxeItem extends Item {
       }
    }
 
-   private static void spawnSoundAndParticle(Level var0, BlockPos var1, @Nullable Player var2, BlockState var3, SoundEvent var4, int var5) {
-      var0.playSound(var2, (BlockPos)var1, var4, SoundSource.BLOCKS, 1.0F, 1.0F);
-      var0.levelEvent(var2, var5, var1, 0);
-      if (var3.getBlock() instanceof ChestBlock && var3.getValue(ChestBlock.TYPE) != ChestType.SINGLE) {
-         BlockPos var6 = ChestBlock.getConnectedBlockPos(var1, var3);
-         var0.gameEvent(GameEvent.BLOCK_CHANGE, var6, GameEvent.Context.of(var2, var0.getBlockState(var6)));
-         var0.levelEvent(var2, var5, var6, 0);
+   private static void spawnSoundAndParticle(final Level level, final BlockPos pos, final @Nullable Player player, final BlockState oldState, final SoundEvent soundEvent, final int particle) {
+      level.playSound(player, (BlockPos)pos, soundEvent, SoundSource.BLOCKS, 1.0F, 1.0F);
+      level.levelEvent(player, particle, pos, 0);
+      if (oldState.getBlock() instanceof ChestBlock && oldState.getValue(ChestBlock.TYPE) != ChestType.SINGLE) {
+         BlockPos neighborPos = ChestBlock.getConnectedBlockPos(pos, oldState);
+         level.gameEvent(GameEvent.BLOCK_CHANGE, neighborPos, GameEvent.Context.of(player, level.getBlockState(neighborPos)));
+         level.levelEvent(player, particle, neighborPos, 0);
       }
 
    }
 
-   private Optional<BlockState> getStripped(BlockState var1) {
-      return Optional.ofNullable((Block)STRIPPABLES.get(var1.getBlock())).map((var1x) -> (BlockState)var1x.defaultBlockState().setValue(RotatedPillarBlock.AXIS, (Direction.Axis)var1.getValue(RotatedPillarBlock.AXIS)));
+   private Optional<BlockState> getStripped(final BlockState state) {
+      return Optional.ofNullable((Block)STRIPPABLES.get(state.getBlock())).map((block) -> (BlockState)block.defaultBlockState().setValue(RotatedPillarBlock.AXIS, (Direction.Axis)state.getValue(RotatedPillarBlock.AXIS)));
    }
 
    static {

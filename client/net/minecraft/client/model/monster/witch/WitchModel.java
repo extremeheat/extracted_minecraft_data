@@ -22,38 +22,38 @@ public class WitchModel extends EntityModel<WitchRenderState> implements HeadedM
    private final ModelPart leftLeg;
    private final ModelPart arms;
 
-   public WitchModel(ModelPart var1) {
-      super(var1);
-      this.head = var1.getChild("head");
+   public WitchModel(final ModelPart root) {
+      super(root);
+      this.head = root.getChild("head");
       this.nose = this.head.getChild("nose");
-      this.rightLeg = var1.getChild("right_leg");
-      this.leftLeg = var1.getChild("left_leg");
-      this.arms = var1.getChild("arms");
+      this.rightLeg = root.getChild("right_leg");
+      this.leftLeg = root.getChild("left_leg");
+      this.arms = root.getChild("arms");
    }
 
    public static LayerDefinition createBodyLayer() {
-      MeshDefinition var0 = VillagerModel.createBodyModel();
-      PartDefinition var1 = var0.getRoot();
-      PartDefinition var2 = var1.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -10.0F, -4.0F, 8.0F, 10.0F, 8.0F), PartPose.ZERO);
-      PartDefinition var3 = var2.addOrReplaceChild("hat", CubeListBuilder.create().texOffs(0, 64).addBox(0.0F, 0.0F, 0.0F, 10.0F, 2.0F, 10.0F), PartPose.offset(-5.0F, -10.03125F, -5.0F));
-      PartDefinition var4 = var3.addOrReplaceChild("hat2", CubeListBuilder.create().texOffs(0, 76).addBox(0.0F, 0.0F, 0.0F, 7.0F, 4.0F, 7.0F), PartPose.offsetAndRotation(1.75F, -4.0F, 2.0F, -0.05235988F, 0.0F, 0.02617994F));
-      PartDefinition var5 = var4.addOrReplaceChild("hat3", CubeListBuilder.create().texOffs(0, 87).addBox(0.0F, 0.0F, 0.0F, 4.0F, 4.0F, 4.0F), PartPose.offsetAndRotation(1.75F, -4.0F, 2.0F, -0.10471976F, 0.0F, 0.05235988F));
-      var5.addOrReplaceChild("hat4", CubeListBuilder.create().texOffs(0, 95).addBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F, 1.0F, new CubeDeformation(0.25F)), PartPose.offsetAndRotation(1.75F, -2.0F, 2.0F, -0.20943952F, 0.0F, 0.10471976F));
-      PartDefinition var6 = var2.getChild("nose");
-      var6.addOrReplaceChild("mole", CubeListBuilder.create().texOffs(0, 0).addBox(0.0F, 3.0F, -6.75F, 1.0F, 1.0F, 1.0F, new CubeDeformation(-0.25F)), PartPose.offset(0.0F, -2.0F, 0.0F));
-      return LayerDefinition.create(var0, 64, 128);
+      MeshDefinition mesh = VillagerModel.createBodyModel();
+      PartDefinition root = mesh.getRoot();
+      PartDefinition head = root.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -10.0F, -4.0F, 8.0F, 10.0F, 8.0F), PartPose.ZERO);
+      PartDefinition hat = head.addOrReplaceChild("hat", CubeListBuilder.create().texOffs(0, 64).addBox(0.0F, 0.0F, 0.0F, 10.0F, 2.0F, 10.0F), PartPose.offset(-5.0F, -10.03125F, -5.0F));
+      PartDefinition hat2 = hat.addOrReplaceChild("hat2", CubeListBuilder.create().texOffs(0, 76).addBox(0.0F, 0.0F, 0.0F, 7.0F, 4.0F, 7.0F), PartPose.offsetAndRotation(1.75F, -4.0F, 2.0F, -0.05235988F, 0.0F, 0.02617994F));
+      PartDefinition hat3 = hat2.addOrReplaceChild("hat3", CubeListBuilder.create().texOffs(0, 87).addBox(0.0F, 0.0F, 0.0F, 4.0F, 4.0F, 4.0F), PartPose.offsetAndRotation(1.75F, -4.0F, 2.0F, -0.10471976F, 0.0F, 0.05235988F));
+      hat3.addOrReplaceChild("hat4", CubeListBuilder.create().texOffs(0, 95).addBox(0.0F, 0.0F, 0.0F, 1.0F, 2.0F, 1.0F, new CubeDeformation(0.25F)), PartPose.offsetAndRotation(1.75F, -2.0F, 2.0F, -0.20943952F, 0.0F, 0.10471976F));
+      PartDefinition nose = head.getChild("nose");
+      nose.addOrReplaceChild("mole", CubeListBuilder.create().texOffs(0, 0).addBox(0.0F, 3.0F, -6.75F, 1.0F, 1.0F, 1.0F, new CubeDeformation(-0.25F)), PartPose.offset(0.0F, -2.0F, 0.0F));
+      return LayerDefinition.create(mesh, 64, 128);
    }
 
-   public void setupAnim(WitchRenderState var1) {
-      super.setupAnim(var1);
-      this.head.yRot = var1.yRot * 0.017453292F;
-      this.head.xRot = var1.xRot * 0.017453292F;
-      this.rightLeg.xRot = Mth.cos((double)(var1.walkAnimationPos * 0.6662F)) * 1.4F * var1.walkAnimationSpeed * 0.5F;
-      this.leftLeg.xRot = Mth.cos((double)(var1.walkAnimationPos * 0.6662F + 3.1415927F)) * 1.4F * var1.walkAnimationSpeed * 0.5F;
-      float var2 = 0.01F * (float)(var1.entityId % 10);
-      this.nose.xRot = Mth.sin((double)(var1.ageInTicks * var2)) * 4.5F * 0.017453292F;
-      this.nose.zRot = Mth.cos((double)(var1.ageInTicks * var2)) * 2.5F * 0.017453292F;
-      if (var1.isHoldingItem) {
+   public void setupAnim(final WitchRenderState state) {
+      super.setupAnim(state);
+      this.head.yRot = state.yRot * 0.017453292F;
+      this.head.xRot = state.xRot * 0.017453292F;
+      this.rightLeg.xRot = Mth.cos((double)(state.walkAnimationPos * 0.6662F)) * 1.4F * state.walkAnimationSpeed * 0.5F;
+      this.leftLeg.xRot = Mth.cos((double)(state.walkAnimationPos * 0.6662F + 3.1415927F)) * 1.4F * state.walkAnimationSpeed * 0.5F;
+      float speed = 0.01F * (float)(state.entityId % 10);
+      this.nose.xRot = Mth.sin((double)(state.ageInTicks * speed)) * 4.5F * 0.017453292F;
+      this.nose.zRot = Mth.cos((double)(state.ageInTicks * speed)) * 2.5F * 0.017453292F;
+      if (state.isHoldingItem) {
          this.nose.setPos(0.0F, 1.0F, -1.5F);
          this.nose.xRot = -0.9F;
       }
@@ -68,8 +68,8 @@ public class WitchModel extends EntityModel<WitchRenderState> implements HeadedM
       return this.head;
    }
 
-   public void translateToArms(WitchRenderState var1, PoseStack var2) {
-      this.root.translateAndRotate(var2);
-      this.arms.translateAndRotate(var2);
+   public void translateToArms(final WitchRenderState state, final PoseStack outputPoseStack) {
+      this.root.translateAndRotate(outputPoseStack);
+      this.arms.translateAndRotate(outputPoseStack);
    }
 }

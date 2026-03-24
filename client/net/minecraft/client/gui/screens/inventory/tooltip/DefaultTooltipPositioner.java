@@ -10,20 +10,20 @@ public class DefaultTooltipPositioner implements ClientTooltipPositioner {
       super();
    }
 
-   public Vector2ic positionTooltip(int var1, int var2, int var3, int var4, int var5, int var6) {
-      Vector2i var7 = (new Vector2i(var3, var4)).add(12, -12);
-      this.positionTooltip(var1, var2, var7, var5, var6);
-      return var7;
+   public Vector2ic positionTooltip(final int screenWidth, final int screenHeight, final int x, final int y, final int tooltipWidth, final int tooltipHeight) {
+      Vector2i result = (new Vector2i(x, y)).add(12, -12);
+      this.positionTooltip(screenWidth, screenHeight, result, tooltipWidth, tooltipHeight);
+      return result;
    }
 
-   private void positionTooltip(int var1, int var2, Vector2i var3, int var4, int var5) {
-      if (var3.x + var4 > var1) {
-         var3.x = Math.max(var3.x - 24 - var4, 4);
+   private void positionTooltip(final int screenWidth, final int screenHeight, final Vector2i result, final int tooltipWidth, final int tooltipHeight) {
+      if (result.x + tooltipWidth > screenWidth) {
+         result.x = Math.max(result.x - 24 - tooltipWidth, 4);
       }
 
-      int var6 = var5 + 3;
-      if (var3.y + var6 > var2) {
-         var3.y = var2 - var6;
+      int paddedHeight = tooltipHeight + 3;
+      if (result.y + paddedHeight > screenHeight) {
+         result.y = screenHeight - paddedHeight;
       }
 
    }

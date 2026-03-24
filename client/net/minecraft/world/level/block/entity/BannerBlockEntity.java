@@ -8,13 +8,11 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
-import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.Nameable;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.AbstractBannerBlock;
-import net.minecraft.world.level.block.BannerBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -28,14 +26,14 @@ public class BannerBlockEntity extends BlockEntity implements Nameable {
    private final DyeColor baseColor;
    private BannerPatternLayers patterns;
 
-   public BannerBlockEntity(BlockPos var1, BlockState var2) {
-      this(var1, var2, ((AbstractBannerBlock)var2.getBlock()).getColor());
+   public BannerBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      this(worldPosition, blockState, ((AbstractBannerBlock)blockState.getBlock()).getColor());
    }
 
-   public BannerBlockEntity(BlockPos var1, BlockState var2, DyeColor var3) {
-      super(BlockEntityType.BANNER, var1, var2);
+   public BannerBlockEntity(final BlockPos worldPosition, final BlockState blockState, final DyeColor color) {
+      super(BlockEntityType.BANNER, worldPosition, blockState);
       this.patterns = BannerPatternLayers.EMPTY;
-      this.baseColor = var3;
+      this.baseColor = color;
    }
 
    public Component getName() {
@@ -46,27 +44,27 @@ public class BannerBlockEntity extends BlockEntity implements Nameable {
       return this.name;
    }
 
-   protected void saveAdditional(ValueOutput var1) {
-      super.saveAdditional(var1);
+   protected void saveAdditional(final ValueOutput output) {
+      super.saveAdditional(output);
       if (!this.patterns.equals(BannerPatternLayers.EMPTY)) {
-         var1.store("patterns", BannerPatternLayers.CODEC, this.patterns);
+         output.store("patterns", BannerPatternLayers.CODEC, this.patterns);
       }
 
-      var1.storeNullable("CustomName", ComponentSerialization.CODEC, this.name);
+      output.storeNullable("CustomName", ComponentSerialization.CODEC, this.name);
    }
 
-   protected void loadAdditional(ValueInput var1) {
-      super.loadAdditional(var1);
-      this.name = parseCustomNameSafe(var1, "CustomName");
-      this.patterns = (BannerPatternLayers)var1.read("patterns", BannerPatternLayers.CODEC).orElse(BannerPatternLayers.EMPTY);
+   protected void loadAdditional(final ValueInput input) {
+      super.loadAdditional(input);
+      this.name = parseCustomNameSafe(input, "CustomName");
+      this.patterns = (BannerPatternLayers)input.read("patterns", BannerPatternLayers.CODEC).orElse(BannerPatternLayers.EMPTY);
    }
 
    public ClientboundBlockEntityDataPacket getUpdatePacket() {
       return ClientboundBlockEntityDataPacket.create(this);
    }
 
-   public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
-      return this.saveWithoutMetadata(var1);
+   public CompoundTag getUpdateTag(final HolderLookup.Provider registries) {
+      return this.saveWithoutMetadata(registries);
    }
 
    public BannerPatternLayers getPatterns() {
@@ -74,34 +72,29 @@ public class BannerBlockEntity extends BlockEntity implements Nameable {
    }
 
    public ItemStack getItem() {
-      ItemStack var1 = new ItemStack(BannerBlock.byColor(this.baseColor));
-      var1.applyComponents(this.collectComponents());
-      return var1;
+      ItemStack itemStack = new ItemStack(this.getBlockState().getBlock());
+      itemStack.applyComponents(this.collectComponents());
+      return itemStack;
    }
 
    public DyeColor getBaseColor() {
       return this.baseColor;
    }
 
-   protected void applyImplicitComponents(DataComponentGetter var1) {
-      super.applyImplicitComponents(var1);
-      this.patterns = (BannerPatternLayers)var1.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
-      this.name = (Component)var1.get(DataComponents.CUSTOM_NAME);
+   protected void applyImplicitComponents(final DataComponentGetter components) {
+      super.applyImplicitComponents(components);
+      this.patterns = (BannerPatternLayers)components.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
+      this.name = (Component)components.get(DataComponents.CUSTOM_NAME);
    }
 
-   protected void collectImplicitComponents(DataComponentMap.Builder var1) {
-      super.collectImplicitComponents(var1);
-      var1.set(DataComponents.BANNER_PATTERNS, this.patterns);
-      var1.set(DataComponents.CUSTOM_NAME, this.name);
+   protected void collectImplicitComponents(final DataComponentMap.Builder components) {
+      super.collectImplicitComponents(components);
+      components.set(DataComponents.BANNER_PATTERNS, this.patterns);
+      components.set(DataComponents.CUSTOM_NAME, this.name);
    }
 
-   public void removeComponentsFromTag(ValueOutput var1) {
-      var1.discard("patterns");
-      var1.discard("CustomName");
-   }
-
-   // $FF: synthetic method
-   public Packet getUpdatePacket() {
-      return this.getUpdatePacket();
+   public void removeComponentsFromTag(final ValueOutput output) {
+      output.discard("patterns");
+      output.discard("CustomName");
    }
 }

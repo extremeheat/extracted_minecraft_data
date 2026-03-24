@@ -11,8 +11,8 @@ public abstract class SavedData {
       this.setDirty(true);
    }
 
-   public void setDirty(boolean var1) {
-      this.dirty = var1;
+   public void setDirty(final boolean dirty) {
+      this.dirty = dirty;
    }
 
    public boolean isDirty() {

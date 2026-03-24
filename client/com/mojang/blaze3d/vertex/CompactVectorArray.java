@@ -6,38 +6,38 @@ import org.joml.Vector3fc;
 public class CompactVectorArray {
    private final float[] contents;
 
-   public CompactVectorArray(int var1) {
+   public CompactVectorArray(final int count) {
       super();
-      this.contents = new float[3 * var1];
+      this.contents = new float[3 * count];
    }
 
    public int size() {
       return this.contents.length / 3;
    }
 
-   public void set(int var1, Vector3fc var2) {
-      this.set(var1, var2.x(), var2.y(), var2.z());
+   public void set(final int index, final Vector3fc v) {
+      this.set(index, v.x(), v.y(), v.z());
    }
 
-   public void set(int var1, float var2, float var3, float var4) {
-      this.contents[3 * var1 + 0] = var2;
-      this.contents[3 * var1 + 1] = var3;
-      this.contents[3 * var1 + 2] = var4;
+   public void set(final int index, final float x, final float y, final float z) {
+      this.contents[3 * index + 0] = x;
+      this.contents[3 * index + 1] = y;
+      this.contents[3 * index + 2] = z;
    }
 
-   public Vector3f get(int var1, Vector3f var2) {
-      return var2.set(this.contents[3 * var1 + 0], this.contents[3 * var1 + 1], this.contents[3 * var1 + 2]);
+   public Vector3f get(final int index, final Vector3f output) {
+      return output.set(this.contents[3 * index + 0], this.contents[3 * index + 1], this.contents[3 * index + 2]);
    }
 
-   public float getX(int var1) {
-      return this.contents[3 * var1 + 0];
+   public float getX(final int index) {
+      return this.contents[3 * index + 0];
    }
 
-   public float getY(int var1) {
-      return this.contents[3 * var1 + 1];
+   public float getY(final int index) {
+      return this.contents[3 * index + 1];
    }
 
-   public float getZ(int var1) {
-      return this.contents[3 * var1 + 1];
+   public float getZ(final int index) {
+      return this.contents[3 * index + 1];
    }
 }

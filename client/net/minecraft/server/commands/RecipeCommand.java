@@ -24,47 +24,47 @@ public class RecipeCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("recipe").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("give").then(((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).then(Commands.argument("recipe", ResourceKeyArgument.key(Registries.RECIPE)).executes((var0x) -> giveRecipes((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), Collections.singleton(ResourceKeyArgument.getRecipe(var0x, "recipe")))))).then(Commands.literal("*").executes((var0x) -> giveRecipes((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), ((CommandSourceStack)var0x.getSource()).getServer().getRecipeManager().getRecipes())))))).then(Commands.literal("take").then(((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).then(Commands.argument("recipe", ResourceKeyArgument.key(Registries.RECIPE)).executes((var0x) -> takeRecipes((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), Collections.singleton(ResourceKeyArgument.getRecipe(var0x, "recipe")))))).then(Commands.literal("*").executes((var0x) -> takeRecipes((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), ((CommandSourceStack)var0x.getSource()).getServer().getRecipeManager().getRecipes()))))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("recipe").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("give").then(((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).then(Commands.argument("recipe", ResourceKeyArgument.key(Registries.RECIPE)).executes((c) -> giveRecipes((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), Collections.singleton(ResourceKeyArgument.getRecipe(c, "recipe")))))).then(Commands.literal("*").executes((c) -> giveRecipes((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), ((CommandSourceStack)c.getSource()).getServer().getRecipeManager().getRecipes())))))).then(Commands.literal("take").then(((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).then(Commands.argument("recipe", ResourceKeyArgument.key(Registries.RECIPE)).executes((c) -> takeRecipes((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), Collections.singleton(ResourceKeyArgument.getRecipe(c, "recipe")))))).then(Commands.literal("*").executes((c) -> takeRecipes((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), ((CommandSourceStack)c.getSource()).getServer().getRecipeManager().getRecipes()))))));
    }
 
-   private static int giveRecipes(CommandSourceStack var0, Collection<ServerPlayer> var1, Collection<RecipeHolder<?>> var2) throws CommandSyntaxException {
-      int var3 = 0;
+   private static int giveRecipes(final CommandSourceStack source, final Collection<ServerPlayer> players, final Collection<RecipeHolder<?>> recipes) throws CommandSyntaxException {
+      int success = 0;
 
-      for(ServerPlayer var5 : var1) {
-         var3 += var5.awardRecipes(var2);
+      for(ServerPlayer player : players) {
+         success += player.awardRecipes(recipes);
       }
 
-      if (var3 == 0) {
+      if (success == 0) {
          throw ERROR_GIVE_FAILED.create();
       } else {
-         if (var1.size() == 1) {
-            var0.sendSuccess(() -> Component.translatable("commands.recipe.give.success.single", var2.size(), ((ServerPlayer)var1.iterator().next()).getDisplayName()), true);
+         if (players.size() == 1) {
+            source.sendSuccess(() -> Component.translatable("commands.recipe.give.success.single", recipes.size(), ((ServerPlayer)players.iterator().next()).getDisplayName()), true);
          } else {
-            var0.sendSuccess(() -> Component.translatable("commands.recipe.give.success.multiple", var2.size(), var1.size()), true);
+            source.sendSuccess(() -> Component.translatable("commands.recipe.give.success.multiple", recipes.size(), players.size()), true);
          }
 
-         return var3;
+         return success;
       }
    }
 
-   private static int takeRecipes(CommandSourceStack var0, Collection<ServerPlayer> var1, Collection<RecipeHolder<?>> var2) throws CommandSyntaxException {
-      int var3 = 0;
+   private static int takeRecipes(final CommandSourceStack source, final Collection<ServerPlayer> players, final Collection<RecipeHolder<?>> recipes) throws CommandSyntaxException {
+      int success = 0;
 
-      for(ServerPlayer var5 : var1) {
-         var3 += var5.resetRecipes(var2);
+      for(ServerPlayer player : players) {
+         success += player.resetRecipes(recipes);
       }
 
-      if (var3 == 0) {
+      if (success == 0) {
          throw ERROR_TAKE_FAILED.create();
       } else {
-         if (var1.size() == 1) {
-            var0.sendSuccess(() -> Component.translatable("commands.recipe.take.success.single", var2.size(), ((ServerPlayer)var1.iterator().next()).getDisplayName()), true);
+         if (players.size() == 1) {
+            source.sendSuccess(() -> Component.translatable("commands.recipe.take.success.single", recipes.size(), ((ServerPlayer)players.iterator().next()).getDisplayName()), true);
          } else {
-            var0.sendSuccess(() -> Component.translatable("commands.recipe.take.success.multiple", var2.size(), var1.size()), true);
+            source.sendSuccess(() -> Component.translatable("commands.recipe.take.success.multiple", recipes.size(), players.size()), true);
          }
 
-         return var3;
+         return success;
       }
    }
 }

@@ -28,74 +28,74 @@ import net.minecraft.util.Util;
 import org.slf4j.Logger;
 
 public interface DataProvider {
-   ToIntFunction<String> FIXED_ORDER_FIELDS = (ToIntFunction)Util.make(new Object2IntOpenHashMap(), (var0) -> {
-      var0.put("type", 0);
-      var0.put("parent", 1);
-      var0.defaultReturnValue(2);
+   ToIntFunction<String> FIXED_ORDER_FIELDS = (ToIntFunction)Util.make(new Object2IntOpenHashMap(), (m) -> {
+      m.put("type", 0);
+      m.put("parent", 1);
+      m.defaultReturnValue(2);
    });
-   Comparator<String> KEY_COMPARATOR = Comparator.comparingInt(FIXED_ORDER_FIELDS).thenComparing((var0) -> var0);
+   Comparator<String> KEY_COMPARATOR = Comparator.comparingInt(FIXED_ORDER_FIELDS).thenComparing((e) -> e);
    Logger LOGGER = LogUtils.getLogger();
 
-   CompletableFuture<?> run(CachedOutput var1);
+   CompletableFuture<?> run(CachedOutput cache);
 
    String getName();
 
-   static <T> CompletableFuture<?> saveAll(CachedOutput var0, Codec<T> var1, PackOutput.PathProvider var2, Map<Identifier, T> var3) {
-      Objects.requireNonNull(var2);
-      return saveAll(var0, var1, var2::json, var3);
+   static <T> CompletableFuture<?> saveAll(final CachedOutput cache, final Codec<T> codec, final PackOutput.PathProvider pathProvider, final Map<Identifier, T> entries) {
+      Objects.requireNonNull(pathProvider);
+      return saveAll(cache, codec, pathProvider::json, entries);
    }
 
-   static <T, E> CompletableFuture<?> saveAll(CachedOutput var0, Codec<E> var1, Function<T, Path> var2, Map<T, E> var3) {
-      return saveAll(var0, (Function)((var1x) -> (JsonElement)var1.encodeStart(JsonOps.INSTANCE, var1x).getOrThrow()), (Function)var2, var3);
+   static <T, E> CompletableFuture<?> saveAll(final CachedOutput cache, final Codec<E> codec, final Function<T, Path> pathGetter, final Map<T, E> contents) {
+      return saveAll(cache, (Function)((e) -> (JsonElement)codec.encodeStart(JsonOps.INSTANCE, e).getOrThrow()), (Function)pathGetter, contents);
    }
 
-   static <T, E> CompletableFuture<?> saveAll(CachedOutput var0, Function<E, JsonElement> var1, Function<T, Path> var2, Map<T, E> var3) {
-      return CompletableFuture.allOf((CompletableFuture[])var3.entrySet().stream().map((var3x) -> {
-         Path var4 = (Path)var2.apply(var3x.getKey());
-         JsonElement var5 = (JsonElement)var1.apply(var3x.getValue());
-         return saveStable(var0, var5, var4);
-      }).toArray((var0x) -> new CompletableFuture[var0x]));
+   static <T, E> CompletableFuture<?> saveAll(final CachedOutput cache, final Function<E, JsonElement> serializer, final Function<T, Path> pathGetter, final Map<T, E> contents) {
+      return CompletableFuture.allOf((CompletableFuture[])contents.entrySet().stream().map((entry) -> {
+         Path path = (Path)pathGetter.apply(entry.getKey());
+         JsonElement json = (JsonElement)serializer.apply(entry.getValue());
+         return saveStable(cache, json, path);
+      }).toArray((x$0) -> new CompletableFuture[x$0]));
    }
 
-   static <T> CompletableFuture<?> saveStable(CachedOutput var0, HolderLookup.Provider var1, Codec<T> var2, T var3, Path var4) {
-      RegistryOps var5 = var1.createSerializationContext(JsonOps.INSTANCE);
-      return saveStable(var0, (DynamicOps)var5, var2, var3, var4);
+   static <T> CompletableFuture<?> saveStable(final CachedOutput cache, final HolderLookup.Provider registries, final Codec<T> codec, final T value, final Path path) {
+      RegistryOps<JsonElement> ops = registries.<JsonElement>createSerializationContext(JsonOps.INSTANCE);
+      return saveStable(cache, (DynamicOps)ops, codec, value, path);
    }
 
-   static <T> CompletableFuture<?> saveStable(CachedOutput var0, Codec<T> var1, T var2, Path var3) {
-      return saveStable(var0, (DynamicOps)JsonOps.INSTANCE, var1, var2, var3);
+   static <T> CompletableFuture<?> saveStable(final CachedOutput cache, final Codec<T> codec, final T value, final Path path) {
+      return saveStable(cache, (DynamicOps)JsonOps.INSTANCE, codec, value, path);
    }
 
-   private static <T> CompletableFuture<?> saveStable(CachedOutput var0, DynamicOps<JsonElement> var1, Codec<T> var2, T var3, Path var4) {
-      JsonElement var5 = (JsonElement)var2.encodeStart(var1, var3).getOrThrow();
-      return saveStable(var0, var5, var4);
+   private static <T> CompletableFuture<?> saveStable(final CachedOutput cache, final DynamicOps<JsonElement> ops, final Codec<T> codec, final T value, final Path path) {
+      JsonElement json = (JsonElement)codec.encodeStart(ops, value).getOrThrow();
+      return saveStable(cache, json, path);
    }
 
-   static CompletableFuture<?> saveStable(CachedOutput var0, JsonElement var1, Path var2) {
+   static CompletableFuture<?> saveStable(final CachedOutput cache, final JsonElement root, final Path path) {
       return CompletableFuture.runAsync(() -> {
          try {
-            ByteArrayOutputStream var3 = new ByteArrayOutputStream();
-            HashingOutputStream var4 = new HashingOutputStream(Hashing.sha1(), var3);
-            JsonWriter var5 = new JsonWriter(new OutputStreamWriter(var4, StandardCharsets.UTF_8));
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            HashingOutputStream hashedBytes = new HashingOutputStream(Hashing.sha1(), bytes);
+            JsonWriter jsonWriter = new JsonWriter(new OutputStreamWriter(hashedBytes, StandardCharsets.UTF_8));
 
             try {
-               var5.setSerializeNulls(false);
-               var5.setIndent("  ");
-               GsonHelper.writeValue(var5, var1, KEY_COMPARATOR);
+               jsonWriter.setSerializeNulls(false);
+               jsonWriter.setIndent("  ");
+               GsonHelper.writeValue(jsonWriter, root, KEY_COMPARATOR);
             } catch (Throwable var9) {
                try {
-                  var5.close();
-               } catch (Throwable var8) {
-                  var9.addSuppressed(var8);
+                  jsonWriter.close();
+               } catch (Throwable x2) {
+                  var9.addSuppressed(x2);
                }
 
                throw var9;
             }
 
-            var5.close();
-            var0.writeIfNeeded(var2, var3.toByteArray(), var4.hash());
-         } catch (IOException var10) {
-            LOGGER.error("Failed to save file to {}", var2, var10);
+            jsonWriter.close();
+            cache.writeIfNeeded(path, bytes.toByteArray(), hashedBytes.hash());
+         } catch (IOException e) {
+            LOGGER.error("Failed to save file to {}", path, e);
          }
 
       }, Util.backgroundExecutor().forName("saveStable"));
@@ -103,6 +103,6 @@ public interface DataProvider {
 
    @FunctionalInterface
    public interface Factory<T extends DataProvider> {
-      T create(PackOutput var1);
+      T create(PackOutput output);
    }
 }

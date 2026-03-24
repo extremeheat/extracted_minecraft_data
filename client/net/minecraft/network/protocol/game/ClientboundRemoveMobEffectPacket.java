@@ -14,22 +14,20 @@ import org.jspecify.annotations.Nullable;
 public record ClientboundRemoveMobEffectPacket(int entityId, Holder<MobEffect> effect) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundRemoveMobEffectPacket> STREAM_CODEC;
 
-   public ClientboundRemoveMobEffectPacket(int var1, Holder<MobEffect> var2) {
+   public ClientboundRemoveMobEffectPacket {
       super();
-      this.entityId = var1;
-      this.effect = var2;
    }
 
    public PacketType<ClientboundRemoveMobEffectPacket> type() {
       return GamePacketTypes.CLIENTBOUND_REMOVE_MOB_EFFECT;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleRemoveMobEffect(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleRemoveMobEffect(this);
    }
 
-   public @Nullable Entity getEntity(Level var1) {
-      return var1.getEntity(this.entityId);
+   public @Nullable Entity getEntity(final Level level) {
+      return level.getEntity(this.entityId);
    }
 
    static {

@@ -8,9 +8,9 @@ public class LinearCongruentialGenerator {
       super();
    }
 
-   public static long next(long var0, long var2) {
-      var0 *= var0 * 6364136223846793005L + 1442695040888963407L;
-      var0 += var2;
-      return var0;
+   public static long next(long rval, final long c) {
+      rval *= rval * 6364136223846793005L + 1442695040888963407L;
+      rval += c;
+      return rval;
    }
 }

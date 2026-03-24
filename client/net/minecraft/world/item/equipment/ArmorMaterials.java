@@ -16,7 +16,7 @@ public interface ArmorMaterials {
    ArmorMaterial NETHERITE = new ArmorMaterial(37, makeDefense(3, 6, 8, 3, 19), 15, SoundEvents.ARMOR_EQUIP_NETHERITE, 3.0F, 0.1F, ItemTags.REPAIRS_NETHERITE_ARMOR, EquipmentAssets.NETHERITE);
    ArmorMaterial ARMADILLO_SCUTE = new ArmorMaterial(4, makeDefense(3, 6, 8, 3, 11), 10, SoundEvents.ARMOR_EQUIP_WOLF, 0.0F, 0.0F, ItemTags.REPAIRS_WOLF_ARMOR, EquipmentAssets.ARMADILLO_SCUTE);
 
-   private static Map<ArmorType, Integer> makeDefense(int var0, int var1, int var2, int var3, int var4) {
-      return Maps.newEnumMap(Map.of(ArmorType.BOOTS, var0, ArmorType.LEGGINGS, var1, ArmorType.CHESTPLATE, var2, ArmorType.HELMET, var3, ArmorType.BODY, var4));
+   private static Map<ArmorType, Integer> makeDefense(final int boots, final int legs, final int chest, final int helm, final int body) {
+      return Maps.newEnumMap(Map.of(ArmorType.BOOTS, boots, ArmorType.LEGGINGS, legs, ArmorType.CHESTPLATE, chest, ArmorType.HELMET, helm, ArmorType.BODY, body));
    }
 }

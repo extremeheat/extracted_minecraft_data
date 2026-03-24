@@ -3,7 +3,6 @@ package net.minecraft.world.level.levelgen.feature.trunkplacers;
 import com.google.common.collect.Lists;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import net.minecraft.core.BlockPos;
@@ -11,62 +10,63 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
-import net.minecraft.world.level.LevelSimulatedReader;
+import net.minecraft.util.valueproviders.IntProviders;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.TreeFeature;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
 
 public class BendingTrunkPlacer extends TrunkPlacer {
-   public static final MapCodec<BendingTrunkPlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> trunkPlacerParts(var0).and(var0.group(ExtraCodecs.POSITIVE_INT.optionalFieldOf("min_height_for_leaves", 1).forGetter((var0x) -> var0x.minHeightForLeaves), IntProvider.codec(1, 64).fieldOf("bend_length").forGetter((var0x) -> var0x.bendLength))).apply(var0, BendingTrunkPlacer::new));
+   public static final MapCodec<BendingTrunkPlacer> CODEC = RecordCodecBuilder.mapCodec((i) -> trunkPlacerParts(i).and(i.group(ExtraCodecs.POSITIVE_INT.optionalFieldOf("min_height_for_leaves", 1).forGetter((c) -> c.minHeightForLeaves), IntProviders.codec(1, 64).fieldOf("bend_length").forGetter((c) -> c.bendLength))).apply(i, BendingTrunkPlacer::new));
    private final int minHeightForLeaves;
    private final IntProvider bendLength;
 
-   public BendingTrunkPlacer(int var1, int var2, int var3, int var4, IntProvider var5) {
-      super(var1, var2, var3);
-      this.minHeightForLeaves = var4;
-      this.bendLength = var5;
+   public BendingTrunkPlacer(final int baseHeight, final int heightRandA, final int heightRandB, final int minHeightForLeaves, final IntProvider bendLength) {
+      super(baseHeight, heightRandA, heightRandB);
+      this.minHeightForLeaves = minHeightForLeaves;
+      this.bendLength = bendLength;
    }
 
    protected TrunkPlacerType<?> type() {
       return TrunkPlacerType.BENDING_TRUNK_PLACER;
    }
 
-   public List<FoliagePlacer.FoliageAttachment> placeTrunk(LevelSimulatedReader var1, BiConsumer<BlockPos, BlockState> var2, RandomSource var3, int var4, BlockPos var5, TreeConfiguration var6) {
-      Direction var7 = Direction.Plane.HORIZONTAL.getRandomDirection(var3);
-      int var8 = var4 - 1;
-      BlockPos.MutableBlockPos var9 = var5.mutable();
-      BlockPos var10 = var9.below();
-      setDirtAt(var1, var2, var3, var10, var6);
-      ArrayList var11 = Lists.newArrayList();
+   public List<FoliagePlacer.FoliageAttachment> placeTrunk(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeConfiguration config) {
+      Direction direction = Direction.Plane.HORIZONTAL.getRandomDirection(random);
+      int logHeight = treeHeight - 1;
+      BlockPos.MutableBlockPos pos = origin.mutable();
+      BlockPos belowPos = pos.below();
+      placeBelowTrunkBlock(level, trunkSetter, random, belowPos, config);
+      List<FoliagePlacer.FoliageAttachment> foliagePoints = Lists.newArrayList();
 
-      for(int var12 = 0; var12 <= var8; ++var12) {
-         if (var12 + 1 >= var8 + var3.nextInt(2)) {
-            var9.move(var7);
+      for(int i = 0; i <= logHeight; ++i) {
+         if (i + 1 >= logHeight + random.nextInt(2)) {
+            pos.move(direction);
          }
 
-         if (TreeFeature.validTreePos(var1, var9)) {
-            this.placeLog(var1, var2, var3, var9, var6);
+         if (TreeFeature.validTreePos(level, pos)) {
+            this.placeLog(level, trunkSetter, random, pos, config);
          }
 
-         if (var12 >= this.minHeightForLeaves) {
-            var11.add(new FoliagePlacer.FoliageAttachment(var9.immutable(), 0, false));
+         if (i >= this.minHeightForLeaves) {
+            foliagePoints.add(new FoliagePlacer.FoliageAttachment(pos.immutable(), 0, false));
          }
 
-         var9.move(Direction.UP);
+         pos.move(Direction.UP);
       }
 
-      int var14 = this.bendLength.sample(var3);
+      int dirLength = this.bendLength.sample(random);
 
-      for(int var13 = 0; var13 <= var14; ++var13) {
-         if (TreeFeature.validTreePos(var1, var9)) {
-            this.placeLog(var1, var2, var3, var9, var6);
+      for(int i = 0; i <= dirLength; ++i) {
+         if (TreeFeature.validTreePos(level, pos)) {
+            this.placeLog(level, trunkSetter, random, pos, config);
          }
 
-         var11.add(new FoliagePlacer.FoliageAttachment(var9.immutable(), 0, false));
-         var9.move(var7);
+         foliagePoints.add(new FoliagePlacer.FoliageAttachment(pos.immutable(), 0, false));
+         pos.move(direction);
       }
 
-      return var11;
+      return foliagePoints;
    }
 }

@@ -14,8 +14,8 @@ public class OpenAlUtil {
       super();
    }
 
-   private static String alErrorToString(int var0) {
-      switch (var0) {
+   private static String alErrorToString(final int error) {
+      switch (error) {
          case 40961 -> {
             return "Invalid name parameter.";
          }
@@ -37,18 +37,18 @@ public class OpenAlUtil {
       }
    }
 
-   static boolean checkALError(String var0) {
-      int var1 = AL10.alGetError();
-      if (var1 != 0) {
-         LOGGER.error("{}: {}", var0, alErrorToString(var1));
+   static boolean checkALError(final String location) {
+      int error = AL10.alGetError();
+      if (error != 0) {
+         LOGGER.error("{}: {}", location, alErrorToString(error));
          return true;
       } else {
          return false;
       }
    }
 
-   private static String alcErrorToString(int var0) {
-      switch (var0) {
+   private static String alcErrorToString(final int error) {
+      switch (error) {
          case 40961 -> {
             return "Invalid device.";
          }
@@ -70,40 +70,40 @@ public class OpenAlUtil {
       }
    }
 
-   static boolean checkALCError(long var0, String var2) {
-      int var3 = ALC10.alcGetError(var0);
-      if (var3 != 0) {
-         LOGGER.error("{} ({}): {}", new Object[]{var2, var0, alcErrorToString(var3)});
+   static boolean checkALCError(final long device, final String location) {
+      int error = ALC10.alcGetError(device);
+      if (error != 0) {
+         LOGGER.error("{} ({}): {}", new Object[]{location, device, alcErrorToString(error)});
          return true;
       } else {
          return false;
       }
    }
 
-   static int audioFormatToOpenAl(AudioFormat var0) {
-      AudioFormat.Encoding var1 = var0.getEncoding();
-      int var2 = var0.getChannels();
-      int var3 = var0.getSampleSizeInBits();
-      if (var1.equals(Encoding.PCM_UNSIGNED) || var1.equals(Encoding.PCM_SIGNED)) {
-         if (var2 == 1) {
-            if (var3 == 8) {
+   static int audioFormatToOpenAl(final AudioFormat audioFormat) {
+      AudioFormat.Encoding encoding = audioFormat.getEncoding();
+      int channels = audioFormat.getChannels();
+      int sampleSizeInBits = audioFormat.getSampleSizeInBits();
+      if (encoding.equals(Encoding.PCM_UNSIGNED) || encoding.equals(Encoding.PCM_SIGNED)) {
+         if (channels == 1) {
+            if (sampleSizeInBits == 8) {
                return 4352;
             }
 
-            if (var3 == 16) {
+            if (sampleSizeInBits == 16) {
                return 4353;
             }
-         } else if (var2 == 2) {
-            if (var3 == 8) {
+         } else if (channels == 2) {
+            if (sampleSizeInBits == 8) {
                return 4354;
             }
 
-            if (var3 == 16) {
+            if (sampleSizeInBits == 16) {
                return 4355;
             }
          }
       }
 
-      throw new IllegalArgumentException("Invalid audio format: " + String.valueOf(var0));
+      throw new IllegalArgumentException("Invalid audio format: " + String.valueOf(audioFormat));
    }
 }

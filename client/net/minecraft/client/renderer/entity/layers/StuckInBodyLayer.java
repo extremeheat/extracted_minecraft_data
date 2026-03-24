@@ -21,57 +21,57 @@ public abstract class StuckInBodyLayer<M extends PlayerModel, S> extends RenderL
    private final Identifier texture;
    private final PlacementStyle placementStyle;
 
-   public StuckInBodyLayer(LivingEntityRenderer<?, AvatarRenderState, M> var1, Model<S> var2, S var3, Identifier var4, PlacementStyle var5) {
-      super(var1);
-      this.model = var2;
-      this.modelState = var3;
-      this.texture = var4;
-      this.placementStyle = var5;
+   public StuckInBodyLayer(final LivingEntityRenderer<?, AvatarRenderState, M> renderer, final Model<S> model, final S modelState, final Identifier texture, final PlacementStyle placementStyle) {
+      super(renderer);
+      this.model = model;
+      this.modelState = modelState;
+      this.texture = texture;
+      this.placementStyle = placementStyle;
    }
 
-   protected abstract int numStuck(AvatarRenderState var1);
+   protected abstract int numStuck(final AvatarRenderState state);
 
-   private void submitStuckItem(PoseStack var1, SubmitNodeCollector var2, int var3, float var4, float var5, float var6, int var7) {
-      float var8 = Mth.sqrt(var4 * var4 + var6 * var6);
-      float var9 = (float)(Math.atan2((double)var4, (double)var6) * 57.2957763671875);
-      float var10 = (float)(Math.atan2((double)var5, (double)var8) * 57.2957763671875);
-      var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var9 - 90.0F));
-      var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(var10));
-      var2.submitModel(this.model, this.modelState, var1, this.model.renderType(this.texture), var3, OverlayTexture.NO_OVERLAY, var7, (ModelFeatureRenderer.CrumblingOverlay)null);
+   private void submitStuckItem(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final float directionX, final float directionY, final float directionZ, final int outlineColor) {
+      float directionXZ = Mth.sqrt(directionX * directionX + directionZ * directionZ);
+      float yRot = (float)(Math.atan2((double)directionX, (double)directionZ) * 57.2957763671875);
+      float xRot = (float)(Math.atan2((double)directionY, (double)directionXZ) * 57.2957763671875);
+      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(yRot - 90.0F));
+      poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(xRot));
+      submitNodeCollector.submitModel(this.model, this.modelState, poseStack, this.texture, lightCoords, OverlayTexture.NO_OVERLAY, outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
    }
 
-   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, AvatarRenderState var4, float var5, float var6) {
-      int var7 = this.numStuck(var4);
-      if (var7 > 0) {
-         RandomSource var8 = RandomSource.create((long)var4.id);
+   public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final AvatarRenderState state, final float yRot, final float xRot) {
+      int count = this.numStuck(state);
+      if (count > 0) {
+         RandomSource random = RandomSource.createThreadLocalInstance((long)state.id);
 
-         for(int var9 = 0; var9 < var7; ++var9) {
-            var1.pushPose();
-            ModelPart var10 = ((PlayerModel)this.getParentModel()).getRandomBodyPart(var8);
-            ModelPart.Cube var11 = var10.getRandomCube(var8);
-            var10.translateAndRotate(var1);
-            float var12 = var8.nextFloat();
-            float var13 = var8.nextFloat();
-            float var14 = var8.nextFloat();
+         for(int i = 0; i < count; ++i) {
+            poseStack.pushPose();
+            ModelPart modelPart = ((PlayerModel)this.getParentModel()).getRandomBodyPart(random);
+            ModelPart.Cube cube = modelPart.getRandomCube(random);
+            modelPart.translateAndRotate(poseStack);
+            float midX = random.nextFloat();
+            float midY = random.nextFloat();
+            float midZ = random.nextFloat();
             if (this.placementStyle == StuckInBodyLayer.PlacementStyle.ON_SURFACE) {
-               int var15 = var8.nextInt(3);
-               switch (var15) {
-                  case 0 -> var12 = snapToFace(var12);
-                  case 1 -> var13 = snapToFace(var13);
-                  default -> var14 = snapToFace(var14);
+               int plane = random.nextInt(3);
+               switch (plane) {
+                  case 0 -> midX = snapToFace(midX);
+                  case 1 -> midY = snapToFace(midY);
+                  default -> midZ = snapToFace(midZ);
                }
             }
 
-            var1.translate(Mth.lerp(var12, var11.minX, var11.maxX) / 16.0F, Mth.lerp(var13, var11.minY, var11.maxY) / 16.0F, Mth.lerp(var14, var11.minZ, var11.maxZ) / 16.0F);
-            this.submitStuckItem(var1, var2, var3, -(var12 * 2.0F - 1.0F), -(var13 * 2.0F - 1.0F), -(var14 * 2.0F - 1.0F), var4.outlineColor);
-            var1.popPose();
+            poseStack.translate(Mth.lerp(midX, cube.minX, cube.maxX) / 16.0F, Mth.lerp(midY, cube.minY, cube.maxY) / 16.0F, Mth.lerp(midZ, cube.minZ, cube.maxZ) / 16.0F);
+            this.submitStuckItem(poseStack, submitNodeCollector, lightCoords, -(midX * 2.0F - 1.0F), -(midY * 2.0F - 1.0F), -(midZ * 2.0F - 1.0F), state.outlineColor);
+            poseStack.popPose();
          }
 
       }
    }
 
-   private static float snapToFace(float var0) {
-      return var0 > 0.5F ? 1.0F : 0.5F;
+   private static float snapToFace(final float value) {
+      return value > 0.5F ? 1.0F : 0.5F;
    }
 
    public static enum PlacementStyle {

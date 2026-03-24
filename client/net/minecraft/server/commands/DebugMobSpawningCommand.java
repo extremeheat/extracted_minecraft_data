@@ -14,18 +14,18 @@ public class DebugMobSpawningCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      LiteralArgumentBuilder var1 = (LiteralArgumentBuilder)Commands.literal("debugmobspawning").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      LiteralArgumentBuilder<CommandSourceStack> base = (LiteralArgumentBuilder)Commands.literal("debugmobspawning").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS));
 
-      for(MobCategory var5 : MobCategory.values()) {
-         var1.then(Commands.literal(var5.getName()).then(Commands.argument("at", BlockPosArgument.blockPos()).executes((var1x) -> spawnMobs((CommandSourceStack)var1x.getSource(), var5, BlockPosArgument.getLoadedBlockPos(var1x, "at")))));
+      for(MobCategory mobCategory : MobCategory.values()) {
+         base.then(Commands.literal(mobCategory.getName()).then(Commands.argument("at", BlockPosArgument.blockPos()).executes((c) -> spawnMobs((CommandSourceStack)c.getSource(), mobCategory, BlockPosArgument.getLoadedBlockPos(c, "at")))));
       }
 
-      var0.register(var1);
+      dispatcher.register(base);
    }
 
-   private static int spawnMobs(CommandSourceStack var0, MobCategory var1, BlockPos var2) {
-      NaturalSpawner.spawnCategoryForPosition(var1, var0.getLevel(), var2);
+   private static int spawnMobs(final CommandSourceStack source, final MobCategory mobCategory, final BlockPos at) {
+      NaturalSpawner.spawnCategoryForPosition(mobCategory, source.getLevel(), at);
       return 1;
    }
 }

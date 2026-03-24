@@ -12,8 +12,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
+import net.minecraft.util.valueproviders.IntProviders;
 import net.minecraft.util.valueproviders.UniformInt;
-import net.minecraft.world.level.LevelSimulatedReader;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
@@ -28,88 +29,88 @@ public class CherryTrunkPlacer extends TrunkPlacer {
    private final UniformInt secondBranchStartOffsetFromTop;
    private final IntProvider branchEndOffsetFromTop;
 
-   public CherryTrunkPlacer(int var1, int var2, int var3, IntProvider var4, IntProvider var5, UniformInt var6, IntProvider var7) {
-      super(var1, var2, var3);
-      this.branchCount = var4;
-      this.branchHorizontalLength = var5;
-      this.branchStartOffsetFromTop = var6;
-      this.secondBranchStartOffsetFromTop = UniformInt.of(var6.getMinValue(), var6.getMaxValue() - 1);
-      this.branchEndOffsetFromTop = var7;
+   public CherryTrunkPlacer(final int baseHeight, final int heightRandA, final int heightRandB, final IntProvider branchCount, final IntProvider branchHorizontalLength, final UniformInt branchStartOffsetFromTop, final IntProvider branchEndOffsetFromTop) {
+      super(baseHeight, heightRandA, heightRandB);
+      this.branchCount = branchCount;
+      this.branchHorizontalLength = branchHorizontalLength;
+      this.branchStartOffsetFromTop = branchStartOffsetFromTop;
+      this.secondBranchStartOffsetFromTop = UniformInt.of(branchStartOffsetFromTop.minInclusive(), branchStartOffsetFromTop.maxInclusive() - 1);
+      this.branchEndOffsetFromTop = branchEndOffsetFromTop;
    }
 
    protected TrunkPlacerType<?> type() {
       return TrunkPlacerType.CHERRY_TRUNK_PLACER;
    }
 
-   public List<FoliagePlacer.FoliageAttachment> placeTrunk(LevelSimulatedReader var1, BiConsumer<BlockPos, BlockState> var2, RandomSource var3, int var4, BlockPos var5, TreeConfiguration var6) {
-      setDirtAt(var1, var2, var3, var5.below(), var6);
-      int var7 = Math.max(0, var4 - 1 + this.branchStartOffsetFromTop.sample(var3));
-      int var8 = Math.max(0, var4 - 1 + this.secondBranchStartOffsetFromTop.sample(var3));
-      if (var8 >= var7) {
-         ++var8;
+   public List<FoliagePlacer.FoliageAttachment> placeTrunk(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeConfiguration config) {
+      placeBelowTrunkBlock(level, trunkSetter, random, origin.below(), config);
+      int firstBranchOffsetFromOrigin = Math.max(0, treeHeight - 1 + this.branchStartOffsetFromTop.sample(random));
+      int secondBranchOffsetFromOrigin = Math.max(0, treeHeight - 1 + this.secondBranchStartOffsetFromTop.sample(random));
+      if (secondBranchOffsetFromOrigin >= firstBranchOffsetFromOrigin) {
+         ++secondBranchOffsetFromOrigin;
       }
 
-      int var9 = this.branchCount.sample(var3);
-      boolean var10 = var9 == 3;
-      boolean var11 = var9 >= 2;
-      int var12;
-      if (var10) {
-         var12 = var4;
-      } else if (var11) {
-         var12 = Math.max(var7, var8) + 1;
+      int branchCount = this.branchCount.sample(random);
+      boolean hasMiddleBranch = branchCount == 3;
+      boolean hasBothSideBranches = branchCount >= 2;
+      int trunkHeight;
+      if (hasMiddleBranch) {
+         trunkHeight = treeHeight;
+      } else if (hasBothSideBranches) {
+         trunkHeight = Math.max(firstBranchOffsetFromOrigin, secondBranchOffsetFromOrigin) + 1;
       } else {
-         var12 = var7 + 1;
+         trunkHeight = firstBranchOffsetFromOrigin + 1;
       }
 
-      for(int var13 = 0; var13 < var12; ++var13) {
-         this.placeLog(var1, var2, var3, var5.above(var13), var6);
+      for(int y = 0; y < trunkHeight; ++y) {
+         this.placeLog(level, trunkSetter, random, origin.above(y), config);
       }
 
-      ArrayList var17 = new ArrayList();
-      if (var10) {
-         var17.add(new FoliagePlacer.FoliageAttachment(var5.above(var12), 0, false));
+      List<FoliagePlacer.FoliageAttachment> attachments = new ArrayList();
+      if (hasMiddleBranch) {
+         attachments.add(new FoliagePlacer.FoliageAttachment(origin.above(trunkHeight), 0, false));
       }
 
-      BlockPos.MutableBlockPos var14 = new BlockPos.MutableBlockPos();
-      Direction var15 = Direction.Plane.HORIZONTAL.getRandomDirection(var3);
-      Function var16 = (var1x) -> (BlockState)var1x.trySetValue(RotatedPillarBlock.AXIS, var15.getAxis());
-      var17.add(this.generateBranch(var1, var2, var3, var4, var5, var6, var16, var15, var7, var7 < var12 - 1, var14));
-      if (var11) {
-         var17.add(this.generateBranch(var1, var2, var3, var4, var5, var6, var16, var15.getOpposite(), var8, var8 < var12 - 1, var14));
+      BlockPos.MutableBlockPos logPos = new BlockPos.MutableBlockPos();
+      Direction treeDirection = Direction.Plane.HORIZONTAL.getRandomDirection(random);
+      Function<BlockState, BlockState> sidewaysStateModifier = (state) -> (BlockState)state.trySetValue(RotatedPillarBlock.AXIS, treeDirection.getAxis());
+      attachments.add(this.generateBranch(level, trunkSetter, random, treeHeight, origin, config, sidewaysStateModifier, treeDirection, firstBranchOffsetFromOrigin, firstBranchOffsetFromOrigin < trunkHeight - 1, logPos));
+      if (hasBothSideBranches) {
+         attachments.add(this.generateBranch(level, trunkSetter, random, treeHeight, origin, config, sidewaysStateModifier, treeDirection.getOpposite(), secondBranchOffsetFromOrigin, secondBranchOffsetFromOrigin < trunkHeight - 1, logPos));
       }
 
-      return var17;
+      return attachments;
    }
 
-   private FoliagePlacer.FoliageAttachment generateBranch(LevelSimulatedReader var1, BiConsumer<BlockPos, BlockState> var2, RandomSource var3, int var4, BlockPos var5, TreeConfiguration var6, Function<BlockState, BlockState> var7, Direction var8, int var9, boolean var10, BlockPos.MutableBlockPos var11) {
-      var11.set(var5).move(Direction.UP, var9);
-      int var12 = var4 - 1 + this.branchEndOffsetFromTop.sample(var3);
-      boolean var13 = var10 || var12 < var9;
-      int var14 = this.branchHorizontalLength.sample(var3) + (var13 ? 1 : 0);
-      BlockPos var15 = var5.relative(var8, var14).above(var12);
-      int var16 = var13 ? 2 : 1;
+   private FoliagePlacer.FoliageAttachment generateBranch(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeConfiguration config, final Function<BlockState, BlockState> sidewaysStateModifier, final Direction branchDirection, final int offsetFromOrigin, final boolean middleContinuesUpwards, final BlockPos.MutableBlockPos logPos) {
+      logPos.set(origin).move(Direction.UP, offsetFromOrigin);
+      int branchEndPosOffsetFromOrigin = treeHeight - 1 + this.branchEndOffsetFromTop.sample(random);
+      boolean extendBranchAwayFromTrunk = middleContinuesUpwards || branchEndPosOffsetFromOrigin < offsetFromOrigin;
+      int distanceToTrunk = this.branchHorizontalLength.sample(random) + (extendBranchAwayFromTrunk ? 1 : 0);
+      BlockPos branchEndPos = origin.relative(branchDirection, distanceToTrunk).above(branchEndPosOffsetFromOrigin);
+      int stepsHorizontally = extendBranchAwayFromTrunk ? 2 : 1;
 
-      for(int var17 = 0; var17 < var16; ++var17) {
-         this.placeLog(var1, var2, var3, var11.move(var8), var6, var7);
+      for(int i = 0; i < stepsHorizontally; ++i) {
+         this.placeLog(level, trunkSetter, random, logPos.move(branchDirection), config, sidewaysStateModifier);
       }
 
-      Direction var21 = var15.getY() > var11.getY() ? Direction.UP : Direction.DOWN;
+      Direction verticalDirection = branchEndPos.getY() > logPos.getY() ? Direction.UP : Direction.DOWN;
 
       while(true) {
-         int var18 = var11.distManhattan(var15);
-         if (var18 == 0) {
-            return new FoliagePlacer.FoliageAttachment(var15.above(), 0, false);
+         int distance = logPos.distManhattan(branchEndPos);
+         if (distance == 0) {
+            return new FoliagePlacer.FoliageAttachment(branchEndPos.above(), 0, false);
          }
 
-         float var19 = (float)Math.abs(var15.getY() - var11.getY()) / (float)var18;
-         boolean var20 = var3.nextFloat() < var19;
-         var11.move(var20 ? var21 : var8);
-         this.placeLog(var1, var2, var3, var11, var6, var20 ? Function.identity() : var7);
+         float chanceToGrowVertically = (float)Math.abs(branchEndPos.getY() - logPos.getY()) / (float)distance;
+         boolean growVertically = random.nextFloat() < chanceToGrowVertically;
+         logPos.move(growVertically ? verticalDirection : branchDirection);
+         this.placeLog(level, trunkSetter, random, logPos, config, growVertically ? Function.identity() : sidewaysStateModifier);
       }
    }
 
    static {
-      BRANCH_START_CODEC = UniformInt.CODEC.codec().validate((var0) -> var0.getMaxValue() - var0.getMinValue() < 1 ? DataResult.error(() -> "Need at least 2 blocks variation for the branch starts to fit both branches") : DataResult.success(var0));
-      CODEC = RecordCodecBuilder.mapCodec((var0) -> trunkPlacerParts(var0).and(var0.group(IntProvider.codec(1, 3).fieldOf("branch_count").forGetter((var0x) -> var0x.branchCount), IntProvider.codec(2, 16).fieldOf("branch_horizontal_length").forGetter((var0x) -> var0x.branchHorizontalLength), IntProvider.validateCodec(-16, 0, BRANCH_START_CODEC).fieldOf("branch_start_offset_from_top").forGetter((var0x) -> var0x.branchStartOffsetFromTop), IntProvider.codec(-16, 16).fieldOf("branch_end_offset_from_top").forGetter((var0x) -> var0x.branchEndOffsetFromTop))).apply(var0, CherryTrunkPlacer::new));
+      BRANCH_START_CODEC = UniformInt.MAP_CODEC.codec().validate((u) -> u.maxInclusive() - u.minInclusive() < 1 ? DataResult.error(() -> "Need at least 2 blocks variation for the branch starts to fit both branches") : DataResult.success(u));
+      CODEC = RecordCodecBuilder.mapCodec((i) -> trunkPlacerParts(i).and(i.group(IntProviders.codec(1, 3).fieldOf("branch_count").forGetter((t) -> t.branchCount), IntProviders.codec(2, 16).fieldOf("branch_horizontal_length").forGetter((t) -> t.branchHorizontalLength), IntProviders.validateCodec(-16, 0, BRANCH_START_CODEC).fieldOf("branch_start_offset_from_top").forGetter((t) -> t.branchStartOffsetFromTop), IntProviders.codec(-16, 16).fieldOf("branch_end_offset_from_top").forGetter((t) -> t.branchEndOffsetFromTop))).apply(i, CherryTrunkPlacer::new));
    }
 }

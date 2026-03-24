@@ -7,7 +7,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Supplier;
 import net.minecraft.commands.arguments.NbtPathArgument;
 import net.minecraft.core.component.DataComponents;
@@ -15,10 +14,11 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.util.StringRepresentable;
-import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.Validatable;
+import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.providers.nbt.ContextNbtProvider;
 import net.minecraft.world.level.storage.loot.providers.nbt.NbtProvider;
@@ -26,72 +26,70 @@ import net.minecraft.world.level.storage.loot.providers.nbt.NbtProviders;
 import org.apache.commons.lang3.mutable.MutableObject;
 
 public class CopyCustomDataFunction extends LootItemConditionalFunction {
-   public static final MapCodec<CopyCustomDataFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(var0.group(NbtProviders.CODEC.fieldOf("source").forGetter((var0x) -> var0x.source), CopyCustomDataFunction.CopyOperation.CODEC.listOf().fieldOf("ops").forGetter((var0x) -> var0x.operations))).apply(var0, CopyCustomDataFunction::new));
+   public static final MapCodec<CopyCustomDataFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(NbtProviders.CODEC.fieldOf("source").forGetter((f) -> f.source), CopyCustomDataFunction.CopyOperation.CODEC.listOf().fieldOf("ops").forGetter((f) -> f.operations))).apply(i, CopyCustomDataFunction::new));
    private final NbtProvider source;
    private final List<CopyOperation> operations;
 
-   CopyCustomDataFunction(List<LootItemCondition> var1, NbtProvider var2, List<CopyOperation> var3) {
-      super(var1);
-      this.source = var2;
-      this.operations = List.copyOf(var3);
+   private CopyCustomDataFunction(final List<LootItemCondition> predicates, final NbtProvider source, final List<CopyOperation> operations) {
+      super(predicates);
+      this.source = source;
+      this.operations = List.copyOf(operations);
    }
 
-   public LootItemFunctionType<CopyCustomDataFunction> getType() {
-      return LootItemFunctions.COPY_CUSTOM_DATA;
+   public MapCodec<CopyCustomDataFunction> codec() {
+      return MAP_CODEC;
    }
 
-   public Set<ContextKey<?>> getReferencedContextParams() {
-      return this.source.getReferencedContextParams();
+   public void validate(final ValidationContext context) {
+      super.validate(context);
+      Validatable.validate(context, "source", this.source);
    }
 
-   public ItemStack run(ItemStack var1, LootContext var2) {
-      Tag var3 = this.source.get(var2);
-      if (var3 == null) {
-         return var1;
+   public ItemStack run(final ItemStack itemStack, final LootContext context) {
+      Tag sourceTag = this.source.get(context);
+      if (sourceTag == null) {
+         return itemStack;
       } else {
-         MutableObject var4 = new MutableObject();
-         Supplier var5 = () -> {
-            if (var4.get() == null) {
-               var4.setValue(((CustomData)var1.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY)).copyTag());
+         MutableObject<CompoundTag> result = new MutableObject();
+         Supplier<Tag> lazyTargetCopy = () -> {
+            if (result.get() == null) {
+               result.setValue(((CustomData)itemStack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY)).copyTag());
             }
 
-            return (Tag)var4.get();
+            return (Tag)result.get();
          };
-         this.operations.forEach((var2x) -> var2x.apply(var5, var3));
-         CompoundTag var6 = (CompoundTag)var4.get();
-         if (var6 != null) {
-            CustomData.set(DataComponents.CUSTOM_DATA, var1, var6);
+         this.operations.forEach((op) -> op.apply(lazyTargetCopy, sourceTag));
+         CompoundTag resultTag = (CompoundTag)result.get();
+         if (resultTag != null) {
+            CustomData.set(DataComponents.CUSTOM_DATA, itemStack, resultTag);
          }
 
-         return var1;
+         return itemStack;
       }
    }
 
    /** @deprecated */
    @Deprecated
-   public static Builder copyData(NbtProvider var0) {
-      return new Builder(var0);
+   public static Builder copyData(final NbtProvider source) {
+      return new Builder(source);
    }
 
-   public static Builder copyData(LootContext.EntityTarget var0) {
-      return new Builder(ContextNbtProvider.forContextEntity(var0));
+   public static Builder copyData(final LootContext.EntityTarget source) {
+      return new Builder(ContextNbtProvider.forContextEntity(source));
    }
 
-   static record CopyOperation(NbtPathArgument.NbtPath sourcePath, NbtPathArgument.NbtPath targetPath, MergeStrategy op) {
-      public static final Codec<CopyOperation> CODEC = RecordCodecBuilder.create((var0) -> var0.group(NbtPathArgument.NbtPath.CODEC.fieldOf("source").forGetter(CopyOperation::sourcePath), NbtPathArgument.NbtPath.CODEC.fieldOf("target").forGetter(CopyOperation::targetPath), CopyCustomDataFunction.MergeStrategy.CODEC.fieldOf("op").forGetter(CopyOperation::op)).apply(var0, CopyOperation::new));
+   private static record CopyOperation(NbtPathArgument.NbtPath sourcePath, NbtPathArgument.NbtPath targetPath, MergeStrategy op) {
+      public static final Codec<CopyOperation> CODEC = RecordCodecBuilder.create((i) -> i.group(NbtPathArgument.NbtPath.CODEC.fieldOf("source").forGetter(CopyOperation::sourcePath), NbtPathArgument.NbtPath.CODEC.fieldOf("target").forGetter(CopyOperation::targetPath), CopyCustomDataFunction.MergeStrategy.CODEC.fieldOf("op").forGetter(CopyOperation::op)).apply(i, CopyOperation::new));
 
-      CopyOperation(NbtPathArgument.NbtPath var1, NbtPathArgument.NbtPath var2, MergeStrategy var3) {
+      private CopyOperation {
          super();
-         this.sourcePath = var1;
-         this.targetPath = var2;
-         this.op = var3;
       }
 
-      public void apply(Supplier<Tag> var1, Tag var2) {
+      public void apply(final Supplier<Tag> target, final Tag source) {
          try {
-            List var3 = this.sourcePath.get(var2);
-            if (!var3.isEmpty()) {
-               this.op.merge((Tag)var1.get(), this.targetPath, var3);
+            List<Tag> sourceTags = this.sourcePath.get(source);
+            if (!sourceTags.isEmpty()) {
+               this.op.merge((Tag)target.get(), this.targetPath, sourceTags);
             }
          } catch (CommandSyntaxException var4) {
          }
@@ -103,22 +101,22 @@ public class CopyCustomDataFunction extends LootItemConditionalFunction {
       private final NbtProvider source;
       private final List<CopyOperation> ops = Lists.newArrayList();
 
-      Builder(NbtProvider var1) {
+      private Builder(final NbtProvider source) {
          super();
-         this.source = var1;
+         this.source = source;
       }
 
-      public Builder copy(String var1, String var2, MergeStrategy var3) {
+      public Builder copy(final String sourcePath, final String targetPath, final MergeStrategy mergeStrategy) {
          try {
-            this.ops.add(new CopyOperation(NbtPathArgument.NbtPath.of(var1), NbtPathArgument.NbtPath.of(var2), var3));
+            this.ops.add(new CopyOperation(NbtPathArgument.NbtPath.of(sourcePath), NbtPathArgument.NbtPath.of(targetPath), mergeStrategy));
             return this;
-         } catch (CommandSyntaxException var5) {
-            throw new IllegalArgumentException(var5);
+         } catch (CommandSyntaxException e) {
+            throw new IllegalArgumentException(e);
          }
       }
 
-      public Builder copy(String var1, String var2) {
-         return this.copy(var1, var2, CopyCustomDataFunction.MergeStrategy.REPLACE);
+      public Builder copy(final String sourcePath, final String targetPath) {
+         return this.copy(sourcePath, targetPath, CopyCustomDataFunction.MergeStrategy.REPLACE);
       }
 
       protected Builder getThis() {
@@ -128,38 +126,33 @@ public class CopyCustomDataFunction extends LootItemConditionalFunction {
       public LootItemFunction build() {
          return new CopyCustomDataFunction(this.getConditions(), this.source, this.ops);
       }
-
-      // $FF: synthetic method
-      protected LootItemConditionalFunction.Builder getThis() {
-         return this.getThis();
-      }
    }
 
    public static enum MergeStrategy implements StringRepresentable {
       REPLACE("replace") {
-         public void merge(Tag var1, NbtPathArgument.NbtPath var2, List<Tag> var3) throws CommandSyntaxException {
-            var2.set(var1, (Tag)Iterables.getLast(var3));
+         public void merge(final Tag target, final NbtPathArgument.NbtPath path, final List<Tag> sources) throws CommandSyntaxException {
+            path.set(target, (Tag)Iterables.getLast(sources));
          }
       },
       APPEND("append") {
-         public void merge(Tag var1, NbtPathArgument.NbtPath var2, List<Tag> var3) throws CommandSyntaxException {
-            List var4 = var2.getOrCreate(var1, ListTag::new);
-            var4.forEach((var1x) -> {
-               if (var1x instanceof ListTag) {
-                  var3.forEach((var1) -> ((ListTag)var1x).add(var1.copy()));
+         public void merge(final Tag target, final NbtPathArgument.NbtPath path, final List<Tag> sources) throws CommandSyntaxException {
+            List<Tag> targets = path.getOrCreate(target, ListTag::new);
+            targets.forEach((tag) -> {
+               if (tag instanceof ListTag) {
+                  sources.forEach((source) -> ((ListTag)tag).add(source.copy()));
                }
 
             });
          }
       },
       MERGE("merge") {
-         public void merge(Tag var1, NbtPathArgument.NbtPath var2, List<Tag> var3) throws CommandSyntaxException {
-            List var4 = var2.getOrCreate(var1, CompoundTag::new);
-            var4.forEach((var1x) -> {
-               if (var1x instanceof CompoundTag) {
-                  var3.forEach((var1) -> {
-                     if (var1 instanceof CompoundTag) {
-                        ((CompoundTag)var1x).merge((CompoundTag)var1);
+         public void merge(final Tag target, final NbtPathArgument.NbtPath path, final List<Tag> sources) throws CommandSyntaxException {
+            List<Tag> targets = path.getOrCreate(target, CompoundTag::new);
+            targets.forEach((tag) -> {
+               if (tag instanceof CompoundTag) {
+                  sources.forEach((source) -> {
+                     if (source instanceof CompoundTag) {
+                        ((CompoundTag)tag).merge((CompoundTag)source);
                      }
 
                   });
@@ -172,10 +165,10 @@ public class CopyCustomDataFunction extends LootItemConditionalFunction {
       public static final Codec<MergeStrategy> CODEC = StringRepresentable.<MergeStrategy>fromEnum(MergeStrategy::values);
       private final String name;
 
-      public abstract void merge(Tag var1, NbtPathArgument.NbtPath var2, List<Tag> var3) throws CommandSyntaxException;
+      public abstract void merge(final Tag target, final NbtPathArgument.NbtPath path, List<Tag> sources) throws CommandSyntaxException;
 
-      MergeStrategy(final String var3) {
-         this.name = var3;
+      private MergeStrategy(final String name) {
+         this.name = name;
       }
 
       public String getSerializedName() {

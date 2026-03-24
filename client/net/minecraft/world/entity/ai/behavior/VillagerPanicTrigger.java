@@ -13,43 +13,38 @@ public class VillagerPanicTrigger extends Behavior<Villager> {
       super(ImmutableMap.of());
    }
 
-   protected boolean canStillUse(ServerLevel var1, Villager var2, long var3) {
-      return isHurt(var2) || hasHostile(var2);
+   protected boolean canStillUse(final ServerLevel level, final Villager body, final long timestamp) {
+      return isHurt(body) || hasHostile(body);
    }
 
-   protected void start(ServerLevel var1, Villager var2, long var3) {
-      if (isHurt(var2) || hasHostile(var2)) {
-         Brain var5 = var2.getBrain();
-         if (!var5.isActive(Activity.PANIC)) {
-            var5.eraseMemory(MemoryModuleType.PATH);
-            var5.eraseMemory(MemoryModuleType.WALK_TARGET);
-            var5.eraseMemory(MemoryModuleType.LOOK_TARGET);
-            var5.eraseMemory(MemoryModuleType.BREED_TARGET);
-            var5.eraseMemory(MemoryModuleType.INTERACTION_TARGET);
+   protected void start(final ServerLevel level, final Villager body, final long timestamp) {
+      if (isHurt(body) || hasHostile(body)) {
+         Brain<?> brain = body.getBrain();
+         if (!brain.isActive(Activity.PANIC)) {
+            brain.eraseMemory(MemoryModuleType.PATH);
+            brain.eraseMemory(MemoryModuleType.WALK_TARGET);
+            brain.eraseMemory(MemoryModuleType.LOOK_TARGET);
+            brain.eraseMemory(MemoryModuleType.BREED_TARGET);
+            brain.eraseMemory(MemoryModuleType.INTERACTION_TARGET);
          }
 
-         var5.setActiveActivityIfPossible(Activity.PANIC);
+         brain.setActiveActivityIfPossible(Activity.PANIC);
       }
 
    }
 
-   protected void tick(ServerLevel var1, Villager var2, long var3) {
-      if (var3 % 100L == 0L) {
-         var2.spawnGolemIfNeeded(var1, var3, 3);
+   protected void tick(final ServerLevel level, final Villager body, final long timestamp) {
+      if (timestamp % 100L == 0L) {
+         body.spawnGolemIfNeeded(level, timestamp, 3);
       }
 
    }
 
-   public static boolean hasHostile(LivingEntity var0) {
-      return var0.getBrain().hasMemoryValue(MemoryModuleType.NEAREST_HOSTILE);
+   public static boolean hasHostile(final LivingEntity myBody) {
+      return myBody.getBrain().hasMemoryValue(MemoryModuleType.NEAREST_HOSTILE);
    }
 
-   public static boolean isHurt(LivingEntity var0) {
-      return var0.getBrain().hasMemoryValue(MemoryModuleType.HURT_BY);
-   }
-
-   // $FF: synthetic method
-   protected void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.start(var1, (Villager)var2, var3);
+   public static boolean isHurt(final LivingEntity myBody) {
+      return myBody.getBrain().hasMemoryValue(MemoryModuleType.HURT_BY);
    }
 }

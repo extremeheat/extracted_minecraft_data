@@ -13,36 +13,36 @@ public interface StatFormatter {
    StatFormatter DISTANCE;
    StatFormatter TIME;
 
-   String format(int var1);
+   String format(int value);
 
    static {
       NumberFormat var10000 = NumberFormat.getIntegerInstance(Locale.US);
       Objects.requireNonNull(var10000);
       DEFAULT = var10000::format;
-      DIVIDE_BY_TEN = (var0) -> DECIMAL_FORMAT.format((double)var0 * 0.1);
-      DISTANCE = (var0) -> {
-         double var1 = (double)var0 / 100.0;
-         double var3 = var1 / 1000.0;
-         if (var3 > 0.5) {
-            return DECIMAL_FORMAT.format(var3) + " km";
+      DIVIDE_BY_TEN = (value) -> DECIMAL_FORMAT.format((double)value * 0.1);
+      DISTANCE = (cm) -> {
+         double meters = (double)cm / 100.0;
+         double kilometers = meters / 1000.0;
+         if (kilometers > 0.5) {
+            return DECIMAL_FORMAT.format(kilometers) + " km";
          } else {
-            return var1 > 0.5 ? DECIMAL_FORMAT.format(var1) + " m" : var0 + " cm";
+            return meters > 0.5 ? DECIMAL_FORMAT.format(meters) + " m" : cm + " cm";
          }
       };
-      TIME = (var0) -> {
-         double var1 = (double)var0 / 20.0;
-         double var3 = var1 / 60.0;
-         double var5 = var3 / 60.0;
-         double var7 = var5 / 24.0;
-         double var9 = var7 / 365.0;
-         if (var9 > 0.5) {
-            return DECIMAL_FORMAT.format(var9) + " y";
-         } else if (var7 > 0.5) {
-            return DECIMAL_FORMAT.format(var7) + " d";
-         } else if (var5 > 0.5) {
-            return DECIMAL_FORMAT.format(var5) + " h";
+      TIME = (value) -> {
+         double seconds = (double)value / 20.0;
+         double minutes = seconds / 60.0;
+         double hours = minutes / 60.0;
+         double days = hours / 24.0;
+         double years = days / 365.0;
+         if (years > 0.5) {
+            return DECIMAL_FORMAT.format(years) + " y";
+         } else if (days > 0.5) {
+            return DECIMAL_FORMAT.format(days) + " d";
+         } else if (hours > 0.5) {
+            return DECIMAL_FORMAT.format(hours) + " h";
          } else {
-            return var3 > 0.5 ? DECIMAL_FORMAT.format(var3) + " min" : var1 + " s";
+            return minutes > 0.5 ? DECIMAL_FORMAT.format(minutes) + " min" : seconds + " s";
          }
       };
    }

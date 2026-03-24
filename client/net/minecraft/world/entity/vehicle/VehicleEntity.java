@@ -22,18 +22,18 @@ public abstract class VehicleEntity extends Entity {
    protected static final EntityDataAccessor<Integer> DATA_ID_HURTDIR;
    protected static final EntityDataAccessor<Float> DATA_ID_DAMAGE;
 
-   public VehicleEntity(EntityType<?> var1, Level var2) {
-      super(var1, var2);
+   public VehicleEntity(final EntityType<?> type, final Level level) {
+      super(type, level);
    }
 
-   public boolean hurtClient(DamageSource var1) {
+   public boolean hurtClient(final DamageSource source) {
       return true;
    }
 
-   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+   public boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {
       if (this.isRemoved()) {
          return true;
-      } else if (this.isInvulnerableToBase(var2)) {
+      } else if (this.isInvulnerableToBase(source)) {
          return false;
       } else {
          boolean var10000;
@@ -41,12 +41,12 @@ public abstract class VehicleEntity extends Entity {
             this.setHurtDir(-this.getHurtDir());
             this.setHurtTime(10);
             this.markHurt();
-            this.setDamage(this.getDamage() + var3 * 10.0F);
-            this.gameEvent(GameEvent.ENTITY_DAMAGE, var2.getEntity());
-            Entity var6 = var2.getEntity();
+            this.setDamage(this.getDamage() + damage * 10.0F);
+            this.gameEvent(GameEvent.ENTITY_DAMAGE, source.getEntity());
+            Entity var6 = source.getEntity();
             if (var6 instanceof Player) {
-               Player var5 = (Player)var6;
-               if (var5.getAbilities().instabuild) {
+               Player player = (Player)var6;
+               if (player.getAbilities().instabuild) {
                   var10000 = true;
                   break label32;
                }
@@ -55,52 +55,52 @@ public abstract class VehicleEntity extends Entity {
             var10000 = false;
          }
 
-         boolean var4 = var10000;
-         if ((var4 || !(this.getDamage() > 40.0F)) && !this.shouldSourceDestroy(var2)) {
-            if (var4) {
+         boolean creativePlayer = var10000;
+         if ((creativePlayer || !(this.getDamage() > 40.0F)) && !this.shouldSourceDestroy(source)) {
+            if (creativePlayer) {
                this.discard();
             }
          } else {
-            this.destroy(var1, var2);
+            this.destroy(level, source);
          }
 
          return true;
       }
    }
 
-   protected boolean shouldSourceDestroy(DamageSource var1) {
+   protected boolean shouldSourceDestroy(final DamageSource source) {
       return false;
    }
 
-   public boolean ignoreExplosion(Explosion var1) {
-      return var1.getIndirectSourceEntity() instanceof Mob && !(Boolean)var1.level().getGameRules().get(GameRules.MOB_GRIEFING);
+   public boolean ignoreExplosion(final Explosion explosion) {
+      return explosion.getIndirectSourceEntity() instanceof Mob && !(Boolean)explosion.level().getGameRules().get(GameRules.MOB_GRIEFING);
    }
 
-   public void destroy(ServerLevel var1, Item var2) {
-      this.kill(var1);
-      if ((Boolean)var1.getGameRules().get(GameRules.ENTITY_DROPS)) {
-         ItemStack var3 = new ItemStack(var2);
-         var3.set(DataComponents.CUSTOM_NAME, this.getCustomName());
-         this.spawnAtLocation(var1, var3);
+   public void destroy(final ServerLevel level, final Item dropItem) {
+      this.kill(level);
+      if ((Boolean)level.getGameRules().get(GameRules.ENTITY_DROPS)) {
+         ItemStack itemStack = new ItemStack(dropItem);
+         itemStack.set(DataComponents.CUSTOM_NAME, this.getCustomName());
+         this.spawnAtLocation(level, itemStack);
       }
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      var1.define(DATA_ID_HURT, 0);
-      var1.define(DATA_ID_HURTDIR, 1);
-      var1.define(DATA_ID_DAMAGE, 0.0F);
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      entityData.define(DATA_ID_HURT, 0);
+      entityData.define(DATA_ID_HURTDIR, 1);
+      entityData.define(DATA_ID_DAMAGE, 0.0F);
    }
 
-   public void setHurtTime(int var1) {
-      this.entityData.set(DATA_ID_HURT, var1);
+   public void setHurtTime(final int hurtTime) {
+      this.entityData.set(DATA_ID_HURT, hurtTime);
    }
 
-   public void setHurtDir(int var1) {
-      this.entityData.set(DATA_ID_HURTDIR, var1);
+   public void setHurtDir(final int hurtDir) {
+      this.entityData.set(DATA_ID_HURTDIR, hurtDir);
    }
 
-   public void setDamage(float var1) {
-      this.entityData.set(DATA_ID_DAMAGE, var1);
+   public void setDamage(final float damage) {
+      this.entityData.set(DATA_ID_DAMAGE, damage);
    }
 
    public float getDamage() {
@@ -115,8 +115,8 @@ public abstract class VehicleEntity extends Entity {
       return (Integer)this.entityData.get(DATA_ID_HURTDIR);
    }
 
-   protected void destroy(ServerLevel var1, DamageSource var2) {
-      this.destroy(var1, this.getDropItem());
+   protected void destroy(final ServerLevel level, final DamageSource source) {
+      this.destroy(level, this.getDropItem());
    }
 
    public int getDimensionChangingDelay() {

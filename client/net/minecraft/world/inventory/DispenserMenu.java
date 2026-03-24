@@ -14,65 +14,65 @@ public class DispenserMenu extends AbstractContainerMenu {
    private static final int USE_ROW_SLOT_END = 45;
    private final Container dispenser;
 
-   public DispenserMenu(int var1, Inventory var2) {
-      this(var1, var2, new SimpleContainer(9));
+   public DispenserMenu(final int containerId, final Inventory inventory) {
+      this(containerId, inventory, new SimpleContainer(9));
    }
 
-   public DispenserMenu(int var1, Inventory var2, Container var3) {
-      super(MenuType.GENERIC_3x3, var1);
-      checkContainerSize(var3, 9);
-      this.dispenser = var3;
-      var3.startOpen(var2.player);
-      this.add3x3GridSlots(var3, 62, 17);
-      this.addStandardInventorySlots(var2, 8, 84);
+   public DispenserMenu(final int containerId, final Inventory inventory, final Container dispenser) {
+      super(MenuType.GENERIC_3x3, containerId);
+      checkContainerSize(dispenser, 9);
+      this.dispenser = dispenser;
+      dispenser.startOpen(inventory.player);
+      this.add3x3GridSlots(dispenser, 62, 17);
+      this.addStandardInventorySlots(inventory, 8, 84);
    }
 
-   protected void add3x3GridSlots(Container var1, int var2, int var3) {
-      for(int var4 = 0; var4 < 3; ++var4) {
-         for(int var5 = 0; var5 < 3; ++var5) {
-            int var6 = var5 + var4 * 3;
-            this.addSlot(new Slot(var1, var6, var2 + var5 * 18, var3 + var4 * 18));
+   protected void add3x3GridSlots(final Container container, final int left, final int top) {
+      for(int y = 0; y < 3; ++y) {
+         for(int x = 0; x < 3; ++x) {
+            int slot = x + y * 3;
+            this.addSlot(new Slot(container, slot, left + x * 18, top + y * 18));
          }
       }
 
    }
 
-   public boolean stillValid(Player var1) {
-      return this.dispenser.stillValid(var1);
+   public boolean stillValid(final Player player) {
+      return this.dispenser.stillValid(player);
    }
 
-   public ItemStack quickMoveStack(Player var1, int var2) {
-      ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = this.slots.get(var2);
-      if (var4 != null && var4.hasItem()) {
-         ItemStack var5 = var4.getItem();
-         var3 = var5.copy();
-         if (var2 < 9) {
-            if (!this.moveItemStackTo(var5, 9, 45, true)) {
+   public ItemStack quickMoveStack(final Player player, final int slotIndex) {
+      ItemStack clicked = ItemStack.EMPTY;
+      Slot slot = this.slots.get(slotIndex);
+      if (slot != null && slot.hasItem()) {
+         ItemStack stack = slot.getItem();
+         clicked = stack.copy();
+         if (slotIndex < 9) {
+            if (!this.moveItemStackTo(stack, 9, 45, true)) {
                return ItemStack.EMPTY;
             }
-         } else if (!this.moveItemStackTo(var5, 0, 9, false)) {
+         } else if (!this.moveItemStackTo(stack, 0, 9, false)) {
             return ItemStack.EMPTY;
          }
 
-         if (var5.isEmpty()) {
-            var4.setByPlayer(ItemStack.EMPTY);
+         if (stack.isEmpty()) {
+            slot.setByPlayer(ItemStack.EMPTY);
          } else {
-            var4.setChanged();
+            slot.setChanged();
          }
 
-         if (var5.getCount() == var3.getCount()) {
+         if (stack.getCount() == clicked.getCount()) {
             return ItemStack.EMPTY;
          }
 
-         var4.onTake(var1, var5);
+         slot.onTake(player, stack);
       }
 
-      return var3;
+      return clicked;
    }
 
-   public void removed(Player var1) {
-      super.removed(var1);
-      this.dispenser.stopOpen(var1);
+   public void removed(final Player player) {
+      super.removed(player);
+      this.dispenser.stopOpen(player);
    }
 }

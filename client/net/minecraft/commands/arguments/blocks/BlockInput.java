@@ -5,7 +5,6 @@ import java.util.Set;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.server.level.ServerLevel;
@@ -27,11 +26,11 @@ public class BlockInput implements Predicate<BlockInWorld> {
    private final Set<Property<?>> properties;
    private final @Nullable CompoundTag tag;
 
-   public BlockInput(BlockState var1, Set<Property<?>> var2, @Nullable CompoundTag var3) {
+   public BlockInput(final BlockState state, final Set<Property<?>> properties, final @Nullable CompoundTag tag) {
       super();
-      this.state = var1;
-      this.properties = var2;
-      this.tag = var3;
+      this.state = state;
+      this.properties = properties;
+      this.tag = tag;
    }
 
    public BlockState getState() {
@@ -42,13 +41,13 @@ public class BlockInput implements Predicate<BlockInWorld> {
       return this.properties;
    }
 
-   public boolean test(BlockInWorld var1) {
-      BlockState var2 = var1.getState();
-      if (!var2.is(this.state.getBlock())) {
+   public boolean test(final BlockInWorld blockInWorld) {
+      BlockState state = blockInWorld.getState();
+      if (!state.is(this.state.getBlock())) {
          return false;
       } else {
-         for(Property var4 : this.properties) {
-            if (var2.getValue(var4) != this.state.getValue(var4)) {
+         for(Property<?> property : this.properties) {
+            if (state.getValue(property) != this.state.getValue(property)) {
                return false;
             }
          }
@@ -56,71 +55,66 @@ public class BlockInput implements Predicate<BlockInWorld> {
          if (this.tag == null) {
             return true;
          } else {
-            BlockEntity var5 = var1.getEntity();
-            return var5 != null && NbtUtils.compareNbt(this.tag, var5.saveWithFullMetadata((HolderLookup.Provider)var1.getLevel().registryAccess()), true);
+            BlockEntity entity = blockInWorld.getEntity();
+            return entity != null && NbtUtils.compareNbt(this.tag, entity.saveWithFullMetadata((HolderLookup.Provider)blockInWorld.getLevel().registryAccess()), true);
          }
       }
    }
 
-   public boolean test(ServerLevel var1, BlockPos var2) {
-      return this.test(new BlockInWorld(var1, var2, false));
+   public boolean test(final ServerLevel level, final BlockPos pos) {
+      return this.test(new BlockInWorld(level, pos, false));
    }
 
-   public boolean place(ServerLevel var1, BlockPos var2, @Block.UpdateFlags int var3) {
-      BlockState var4 = (var3 & 16) != 0 ? this.state : Block.updateFromNeighbourShapes(this.state, var1, var2);
-      if (var4.isAir()) {
-         var4 = this.state;
+   public boolean place(final ServerLevel level, final BlockPos pos, final @Block.UpdateFlags int update) {
+      BlockState state = (update & 16) != 0 ? this.state : Block.updateFromNeighbourShapes(this.state, level, pos);
+      if (state.isAir()) {
+         state = this.state;
       }
 
-      var4 = this.overwriteWithDefinedProperties(var4);
-      boolean var5 = false;
-      if (var1.setBlock(var2, var4, var3)) {
-         var5 = true;
+      state = this.overwriteWithDefinedProperties(state);
+      boolean affected = false;
+      if (level.setBlock(pos, state, update)) {
+         affected = true;
       }
 
       if (this.tag != null) {
-         BlockEntity var6 = var1.getBlockEntity(var2);
-         if (var6 != null) {
-            try (ProblemReporter.ScopedCollector var7 = new ProblemReporter.ScopedCollector(LOGGER)) {
-               RegistryAccess var8 = var1.registryAccess();
-               ProblemReporter var9 = var7.forChild(var6.problemPath());
-               TagValueOutput var10 = TagValueOutput.createWithContext(var9.forChild(() -> "(before)"), var8);
-               var6.saveWithoutMetadata((ValueOutput)var10);
-               CompoundTag var11 = var10.buildResult();
-               var6.loadWithComponents(TagValueInput.create(var7, var8, this.tag));
-               TagValueOutput var12 = TagValueOutput.createWithContext(var9.forChild(() -> "(after)"), var8);
-               var6.saveWithoutMetadata((ValueOutput)var12);
-               CompoundTag var13 = var12.buildResult();
-               if (!var13.equals(var11)) {
-                  var5 = true;
-                  var6.setChanged();
-                  var1.getChunkSource().blockChanged(var2);
+         BlockEntity entity = level.getBlockEntity(pos);
+         if (entity != null) {
+            try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(LOGGER)) {
+               HolderLookup.Provider registries = level.registryAccess();
+               ProblemReporter blockEntityReporter = reporter.forChild(entity.problemPath());
+               TagValueOutput initialOutput = TagValueOutput.createWithContext(blockEntityReporter.forChild(() -> "(before)"), registries);
+               entity.saveWithoutMetadata((ValueOutput)initialOutput);
+               CompoundTag before = initialOutput.buildResult();
+               entity.loadWithComponents(TagValueInput.create(reporter, registries, this.tag));
+               TagValueOutput updatedOutput = TagValueOutput.createWithContext(blockEntityReporter.forChild(() -> "(after)"), registries);
+               entity.saveWithoutMetadata((ValueOutput)updatedOutput);
+               CompoundTag after = updatedOutput.buildResult();
+               if (!after.equals(before)) {
+                  affected = true;
+                  entity.setChanged();
+                  level.getChunkSource().blockChanged(pos);
                }
             }
          }
       }
 
-      return var5;
+      return affected;
    }
 
-   private BlockState overwriteWithDefinedProperties(BlockState var1) {
-      if (var1 == this.state) {
-         return var1;
+   private BlockState overwriteWithDefinedProperties(BlockState state) {
+      if (state == this.state) {
+         return state;
       } else {
-         for(Property var3 : this.properties) {
-            var1 = copyProperty(var1, this.state, var3);
+         for(Property<?> property : this.properties) {
+            state = copyProperty(state, this.state, property);
          }
 
-         return var1;
+         return state;
       }
    }
 
-   private static <T extends Comparable<T>> BlockState copyProperty(BlockState var0, BlockState var1, Property<T> var2) {
-      return (BlockState)var0.trySetValue(var2, var1.getValue(var2));
-   }
-
-   // $FF: synthetic method
-   public boolean test(final Object var1) {
-      return this.test((BlockInWorld)var1);
+   private static <T extends Comparable<T>> BlockState copyProperty(final BlockState target, final BlockState source, final Property<T> property) {
+      return (BlockState)target.trySetValue(property, source.getValue(property));
    }
 }

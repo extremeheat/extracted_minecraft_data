@@ -3,7 +3,6 @@ package net.minecraft.world.level.chunk.status;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -35,30 +34,30 @@ public class ChunkStatus {
    private final ChunkType chunkType;
    private final EnumSet<Heightmap.Types> heightmapsAfter;
 
-   private static ChunkStatus register(String var0, @Nullable ChunkStatus var1, EnumSet<Heightmap.Types> var2, ChunkType var3) {
-      return (ChunkStatus)Registry.register(BuiltInRegistries.CHUNK_STATUS, (String)var0, new ChunkStatus(var1, var2, var3));
+   private static ChunkStatus register(final String name, final @Nullable ChunkStatus parent, final EnumSet<Heightmap.Types> heightmaps, final ChunkType chunkType) {
+      return (ChunkStatus)Registry.register(BuiltInRegistries.CHUNK_STATUS, (String)name, new ChunkStatus(parent, heightmaps, chunkType));
    }
 
    public static List<ChunkStatus> getStatusList() {
-      ArrayList var0 = Lists.newArrayList();
+      List<ChunkStatus> list = Lists.newArrayList();
 
-      ChunkStatus var1;
-      for(var1 = FULL; var1.getParent() != var1; var1 = var1.getParent()) {
-         var0.add(var1);
+      ChunkStatus status;
+      for(status = FULL; status.getParent() != status; status = status.getParent()) {
+         list.add(status);
       }
 
-      var0.add(var1);
-      Collections.reverse(var0);
-      return var0;
+      list.add(status);
+      Collections.reverse(list);
+      return list;
    }
 
    @VisibleForTesting
-   protected ChunkStatus(@Nullable ChunkStatus var1, EnumSet<Heightmap.Types> var2, ChunkType var3) {
+   protected ChunkStatus(final @Nullable ChunkStatus parent, final EnumSet<Heightmap.Types> heightmapsAfter, final ChunkType chunkType) {
       super();
-      this.parent = var1 == null ? this : var1;
-      this.chunkType = var3;
-      this.heightmapsAfter = var2;
-      this.index = var1 == null ? 0 : var1.getIndex() + 1;
+      this.parent = parent == null ? this : parent;
+      this.chunkType = chunkType;
+      this.heightmapsAfter = heightmapsAfter;
+      this.index = parent == null ? 0 : parent.getIndex() + 1;
    }
 
    public int getIndex() {
@@ -73,32 +72,32 @@ public class ChunkStatus {
       return this.chunkType;
    }
 
-   public static ChunkStatus byName(String var0) {
-      return BuiltInRegistries.CHUNK_STATUS.getValue(Identifier.tryParse(var0));
+   public static ChunkStatus byName(final String key) {
+      return BuiltInRegistries.CHUNK_STATUS.getValue(Identifier.tryParse(key));
    }
 
    public EnumSet<Heightmap.Types> heightmapsAfter() {
       return this.heightmapsAfter;
    }
 
-   public boolean isOrAfter(ChunkStatus var1) {
-      return this.getIndex() >= var1.getIndex();
+   public boolean isOrAfter(final ChunkStatus step) {
+      return this.getIndex() >= step.getIndex();
    }
 
-   public boolean isAfter(ChunkStatus var1) {
-      return this.getIndex() > var1.getIndex();
+   public boolean isAfter(final ChunkStatus step) {
+      return this.getIndex() > step.getIndex();
    }
 
-   public boolean isOrBefore(ChunkStatus var1) {
-      return this.getIndex() <= var1.getIndex();
+   public boolean isOrBefore(final ChunkStatus step) {
+      return this.getIndex() <= step.getIndex();
    }
 
-   public boolean isBefore(ChunkStatus var1) {
-      return this.getIndex() < var1.getIndex();
+   public boolean isBefore(final ChunkStatus step) {
+      return this.getIndex() < step.getIndex();
    }
 
-   public static ChunkStatus max(ChunkStatus var0, ChunkStatus var1) {
-      return var0.isAfter(var1) ? var0 : var1;
+   public static ChunkStatus max(final ChunkStatus a, final ChunkStatus b) {
+      return a.isAfter(b) ? a : b;
    }
 
    public String toString() {

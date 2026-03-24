@@ -5,14 +5,13 @@ public record ChainModifiers(byte flags) {
    private static final byte FLAG_FORKED = 1;
    private static final byte FLAG_IS_RETURN = 2;
 
-   public ChainModifiers(byte var1) {
+   public ChainModifiers {
       super();
-      this.flags = var1;
    }
 
-   private ChainModifiers setFlag(byte var1) {
-      int var2 = this.flags | var1;
-      return var2 != this.flags ? new ChainModifiers((byte)var2) : this;
+   private ChainModifiers setFlag(final byte flag) {
+      int newFlags = this.flags | flag;
+      return newFlags != this.flags ? new ChainModifiers((byte)newFlags) : this;
    }
 
    public boolean isForked() {

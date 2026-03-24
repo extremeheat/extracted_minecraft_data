@@ -6,7 +6,6 @@ import com.google.common.collect.Sets;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
@@ -41,55 +40,55 @@ public abstract class BiomeSource implements BiomeResolver {
       return (Set)this.possibleBiomes.get();
    }
 
-   public Set<Holder<Biome>> getBiomesWithin(int var1, int var2, int var3, int var4, Climate.Sampler var5) {
-      int var6 = QuartPos.fromBlock(var1 - var4);
-      int var7 = QuartPos.fromBlock(var2 - var4);
-      int var8 = QuartPos.fromBlock(var3 - var4);
-      int var9 = QuartPos.fromBlock(var1 + var4);
-      int var10 = QuartPos.fromBlock(var2 + var4);
-      int var11 = QuartPos.fromBlock(var3 + var4);
-      int var12 = var9 - var6 + 1;
-      int var13 = var10 - var7 + 1;
-      int var14 = var11 - var8 + 1;
-      HashSet var15 = Sets.newHashSet();
+   public Set<Holder<Biome>> getBiomesWithin(final int x, final int y, final int z, final int r, final Climate.Sampler sampler) {
+      int x0 = QuartPos.fromBlock(x - r);
+      int y0 = QuartPos.fromBlock(y - r);
+      int z0 = QuartPos.fromBlock(z - r);
+      int x1 = QuartPos.fromBlock(x + r);
+      int y1 = QuartPos.fromBlock(y + r);
+      int z1 = QuartPos.fromBlock(z + r);
+      int w = x1 - x0 + 1;
+      int d = y1 - y0 + 1;
+      int h = z1 - z0 + 1;
+      Set<Holder<Biome>> biomeSet = Sets.newHashSet();
 
-      for(int var16 = 0; var16 < var14; ++var16) {
-         for(int var17 = 0; var17 < var12; ++var17) {
-            for(int var18 = 0; var18 < var13; ++var18) {
-               int var19 = var6 + var17;
-               int var20 = var7 + var18;
-               int var21 = var8 + var16;
-               var15.add(this.getNoiseBiome(var19, var20, var21, var5));
+      for(int row = 0; row < h; ++row) {
+         for(int column = 0; column < w; ++column) {
+            for(int depth = 0; depth < d; ++depth) {
+               int noiseX = x0 + column;
+               int noiseY = y0 + depth;
+               int noiseZ = z0 + row;
+               biomeSet.add(this.getNoiseBiome(noiseX, noiseY, noiseZ, sampler));
             }
          }
       }
 
-      return var15;
+      return biomeSet;
    }
 
-   public @Nullable Pair<BlockPos, Holder<Biome>> findBiomeHorizontal(int var1, int var2, int var3, int var4, Predicate<Holder<Biome>> var5, RandomSource var6, Climate.Sampler var7) {
-      return this.findBiomeHorizontal(var1, var2, var3, var4, 1, var5, var6, false, var7);
+   public @Nullable Pair<BlockPos, Holder<Biome>> findBiomeHorizontal(final int x, final int y, final int z, final int searchRadius, final Predicate<Holder<Biome>> allowed, final RandomSource random, final Climate.Sampler sampler) {
+      return this.findBiomeHorizontal(x, y, z, searchRadius, 1, allowed, random, false, sampler);
    }
 
-   public @Nullable Pair<BlockPos, Holder<Biome>> findClosestBiome3d(BlockPos var1, int var2, int var3, int var4, Predicate<Holder<Biome>> var5, Climate.Sampler var6, LevelReader var7) {
-      Set var8 = (Set)this.possibleBiomes().stream().filter(var5).collect(Collectors.toUnmodifiableSet());
-      if (var8.isEmpty()) {
+   public @Nullable Pair<BlockPos, Holder<Biome>> findClosestBiome3d(final BlockPos origin, final int searchRadius, final int sampleResolutionHorizontal, final int sampleResolutionVertical, final Predicate<Holder<Biome>> allowed, final Climate.Sampler sampler, final LevelReader level) {
+      Set<Holder<Biome>> candidateBiomes = (Set)this.possibleBiomes().stream().filter(allowed).collect(Collectors.toUnmodifiableSet());
+      if (candidateBiomes.isEmpty()) {
          return null;
       } else {
-         int var9 = Math.floorDiv(var2, var3);
-         int[] var10 = Mth.outFromOrigin(var1.getY(), var7.getMinY() + 1, var7.getMaxY() + 1, var4).toArray();
+         int sampleRadius = Math.floorDiv(searchRadius, sampleResolutionHorizontal);
+         int[] sampleYs = Mth.outFromOrigin(origin.getY(), level.getMinY() + 1, level.getMaxY() + 1, sampleResolutionVertical).toArray();
 
-         for(BlockPos.MutableBlockPos var12 : BlockPos.spiralAround(BlockPos.ZERO, var9, Direction.EAST, Direction.SOUTH)) {
-            int var13 = var1.getX() + var12.getX() * var3;
-            int var14 = var1.getZ() + var12.getZ() * var3;
-            int var15 = QuartPos.fromBlock(var13);
-            int var16 = QuartPos.fromBlock(var14);
+         for(BlockPos.MutableBlockPos sampleColumn : BlockPos.spiralAround(BlockPos.ZERO, sampleRadius, Direction.EAST, Direction.SOUTH)) {
+            int blockX = origin.getX() + sampleColumn.getX() * sampleResolutionHorizontal;
+            int blockZ = origin.getZ() + sampleColumn.getZ() * sampleResolutionHorizontal;
+            int noiseX = QuartPos.fromBlock(blockX);
+            int noiseZ = QuartPos.fromBlock(blockZ);
 
-            for(int var20 : var10) {
-               int var21 = QuartPos.fromBlock(var20);
-               Holder var22 = this.getNoiseBiome(var15, var21, var16, var6);
-               if (var8.contains(var22)) {
-                  return Pair.of(new BlockPos(var13, var20, var14), var22);
+            for(int blockY : sampleYs) {
+               int noiseY = QuartPos.fromBlock(blockY);
+               Holder<Biome> biome = this.getNoiseBiome(noiseX, noiseY, noiseZ, sampler);
+               if (candidateBiomes.contains(biome)) {
+                  return Pair.of(new BlockPos(blockX, blockY, blockZ), biome);
                }
             }
          }
@@ -98,52 +97,52 @@ public abstract class BiomeSource implements BiomeResolver {
       }
    }
 
-   public @Nullable Pair<BlockPos, Holder<Biome>> findBiomeHorizontal(int var1, int var2, int var3, int var4, int var5, Predicate<Holder<Biome>> var6, RandomSource var7, boolean var8, Climate.Sampler var9) {
-      int var10 = QuartPos.fromBlock(var1);
-      int var11 = QuartPos.fromBlock(var3);
-      int var12 = QuartPos.fromBlock(var4);
-      int var13 = QuartPos.fromBlock(var2);
-      Pair var14 = null;
-      int var15 = 0;
-      int var16 = var8 ? 0 : var12;
+   public @Nullable Pair<BlockPos, Holder<Biome>> findBiomeHorizontal(final int originX, final int originY, final int originZ, final int searchRadius, final int skipSteps, final Predicate<Holder<Biome>> allowed, final RandomSource random, final boolean findClosest, final Climate.Sampler sampler) {
+      int noiseCenterX = QuartPos.fromBlock(originX);
+      int noiseCenterZ = QuartPos.fromBlock(originZ);
+      int noiseRadius = QuartPos.fromBlock(searchRadius);
+      int noiseY = QuartPos.fromBlock(originY);
+      Pair<BlockPos, Holder<Biome>> result = null;
+      int found = 0;
+      int startRadius = findClosest ? 0 : noiseRadius;
 
-      for(int var17 = var16; var17 <= var12; var17 += var5) {
-         for(int var18 = !SharedConstants.DEBUG_ONLY_GENERATE_HALF_THE_WORLD && !SharedConstants.debugGenerateSquareTerrainWithoutNoise ? -var17 : 0; var18 <= var17; var18 += var5) {
-            boolean var19 = Math.abs(var18) == var17;
+      for(int currentRadius = startRadius; currentRadius <= noiseRadius; currentRadius += skipSteps) {
+         for(int z = !SharedConstants.DEBUG_ONLY_GENERATE_HALF_THE_WORLD && !SharedConstants.debugGenerateSquareTerrainWithoutNoise ? -currentRadius : 0; z <= currentRadius; z += skipSteps) {
+            boolean zEdge = Math.abs(z) == currentRadius;
 
-            for(int var20 = -var17; var20 <= var17; var20 += var5) {
-               if (var8) {
-                  boolean var21 = Math.abs(var20) == var17;
-                  if (!var21 && !var19) {
+            for(int x = -currentRadius; x <= currentRadius; x += skipSteps) {
+               if (findClosest) {
+                  boolean xEdge = Math.abs(x) == currentRadius;
+                  if (!xEdge && !zEdge) {
                      continue;
                   }
                }
 
-               int var25 = var10 + var20;
-               int var22 = var11 + var18;
-               Holder var23 = this.getNoiseBiome(var25, var13, var22, var9);
-               if (var6.test(var23)) {
-                  if (var14 == null || var7.nextInt(var15 + 1) == 0) {
-                     BlockPos var24 = new BlockPos(QuartPos.toBlock(var25), var2, QuartPos.toBlock(var22));
-                     if (var8) {
-                        return Pair.of(var24, var23);
+               int noiseX = noiseCenterX + x;
+               int noiseZ = noiseCenterZ + z;
+               Holder<Biome> biome = this.getNoiseBiome(noiseX, noiseY, noiseZ, sampler);
+               if (allowed.test(biome)) {
+                  if (result == null || random.nextInt(found + 1) == 0) {
+                     BlockPos resultPos = new BlockPos(QuartPos.toBlock(noiseX), originY, QuartPos.toBlock(noiseZ));
+                     if (findClosest) {
+                        return Pair.of(resultPos, biome);
                      }
 
-                     var14 = Pair.of(var24, var23);
+                     result = Pair.of(resultPos, biome);
                   }
 
-                  ++var15;
+                  ++found;
                }
             }
          }
       }
 
-      return var14;
+      return result;
    }
 
-   public abstract Holder<Biome> getNoiseBiome(int var1, int var2, int var3, Climate.Sampler var4);
+   public abstract Holder<Biome> getNoiseBiome(final int quartX, final int quartY, final int quartZ, final Climate.Sampler sampler);
 
-   public void addDebugInfo(List<String> var1, BlockPos var2, Climate.Sampler var3) {
+   public void addDebugInfo(final List<String> result, final BlockPos feetPos, final Climate.Sampler sampler) {
    }
 
    static {

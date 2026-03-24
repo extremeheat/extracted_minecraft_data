@@ -1,39 +1,38 @@
 package net.minecraft.world.level.storage.loot.providers.number;
 
-import com.google.common.collect.Sets;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Set;
 import net.minecraft.util.Mth;
-import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.Validatable;
+import net.minecraft.world.level.storage.loot.ValidationContext;
 
 public record UniformGenerator(NumberProvider min, NumberProvider max) implements NumberProvider {
-   public static final MapCodec<UniformGenerator> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(NumberProviders.CODEC.fieldOf("min").forGetter(UniformGenerator::min), NumberProviders.CODEC.fieldOf("max").forGetter(UniformGenerator::max)).apply(var0, UniformGenerator::new));
+   public static final MapCodec<UniformGenerator> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(NumberProviders.CODEC.fieldOf("min").forGetter(UniformGenerator::min), NumberProviders.CODEC.fieldOf("max").forGetter(UniformGenerator::max)).apply(i, UniformGenerator::new));
 
-   public UniformGenerator(NumberProvider var1, NumberProvider var2) {
+   public UniformGenerator {
       super();
-      this.min = var1;
-      this.max = var2;
    }
 
-   public LootNumberProviderType getType() {
-      return NumberProviders.UNIFORM;
+   public MapCodec<UniformGenerator> codec() {
+      return MAP_CODEC;
    }
 
-   public static UniformGenerator between(float var0, float var1) {
-      return new UniformGenerator(ConstantValue.exactly(var0), ConstantValue.exactly(var1));
+   public static UniformGenerator between(final float min, final float max) {
+      return new UniformGenerator(ConstantValue.exactly(min), ConstantValue.exactly(max));
    }
 
-   public int getInt(LootContext var1) {
-      return Mth.nextInt(var1.getRandom(), this.min.getInt(var1), this.max.getInt(var1));
+   public int getInt(final LootContext context) {
+      return Mth.nextInt(context.getRandom(), this.min.getInt(context), this.max.getInt(context));
    }
 
-   public float getFloat(LootContext var1) {
-      return Mth.nextFloat(var1.getRandom(), this.min.getFloat(var1), this.max.getFloat(var1));
+   public float getFloat(final LootContext context) {
+      return Mth.nextFloat(context.getRandom(), this.min.getFloat(context), this.max.getFloat(context));
    }
 
-   public Set<ContextKey<?>> getReferencedContextParams() {
-      return Sets.union(this.min.getReferencedContextParams(), this.max.getReferencedContextParams());
+   public void validate(final ValidationContext context) {
+      NumberProvider.super.validate(context);
+      Validatable.validate(context, "min", this.min);
+      Validatable.validate(context, "max", this.max);
    }
 }

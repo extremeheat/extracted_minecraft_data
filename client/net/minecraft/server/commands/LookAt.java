@@ -8,33 +8,30 @@ import net.minecraft.world.phys.Vec3;
 
 @FunctionalInterface
 public interface LookAt {
-   void perform(CommandSourceStack var1, Entity var2);
+   void perform(CommandSourceStack source, Entity target);
 
    public static record LookAtEntity(Entity entity, EntityAnchorArgument.Anchor anchor) implements LookAt {
-      public LookAtEntity(Entity var1, EntityAnchorArgument.Anchor var2) {
+      public LookAtEntity {
          super();
-         this.entity = var1;
-         this.anchor = var2;
       }
 
-      public void perform(CommandSourceStack var1, Entity var2) {
-         if (var2 instanceof ServerPlayer var3) {
-            var3.lookAt(var1.getAnchor(), this.entity, this.anchor);
+      public void perform(final CommandSourceStack source, final Entity target) {
+         if (target instanceof ServerPlayer targetPlayer) {
+            targetPlayer.lookAt(source.getAnchor(), this.entity, this.anchor);
          } else {
-            var2.lookAt(var1.getAnchor(), this.anchor.apply(this.entity));
+            target.lookAt(source.getAnchor(), this.anchor.apply(this.entity));
          }
 
       }
    }
 
    public static record LookAtPosition(Vec3 position) implements LookAt {
-      public LookAtPosition(Vec3 var1) {
+      public LookAtPosition {
          super();
-         this.position = var1;
       }
 
-      public void perform(CommandSourceStack var1, Entity var2) {
-         var2.lookAt(var1.getAnchor(), this.position);
+      public void perform(final CommandSourceStack source, final Entity target) {
+         target.lookAt(source.getAnchor(), this.position);
       }
    }
 }

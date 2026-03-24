@@ -11,13 +11,13 @@ public class JigsawJunction {
    private final int deltaY;
    private final StructureTemplatePool.Projection destProjection;
 
-   public JigsawJunction(int var1, int var2, int var3, int var4, StructureTemplatePool.Projection var5) {
+   public JigsawJunction(final int sourceX, final int sourceGroundY, final int sourceZ, final int deltaY, final StructureTemplatePool.Projection destProjection) {
       super();
-      this.sourceX = var1;
-      this.sourceGroundY = var2;
-      this.sourceZ = var3;
-      this.deltaY = var4;
-      this.destProjection = var5;
+      this.sourceX = sourceX;
+      this.sourceGroundY = sourceGroundY;
+      this.sourceZ = sourceZ;
+      this.deltaY = deltaY;
+      this.destProjection = destProjection;
    }
 
    public int getSourceX() {
@@ -40,29 +40,29 @@ public class JigsawJunction {
       return this.destProjection;
    }
 
-   public <T> Dynamic<T> serialize(DynamicOps<T> var1) {
-      ImmutableMap.Builder var2 = ImmutableMap.builder();
-      var2.put(var1.createString("source_x"), var1.createInt(this.sourceX)).put(var1.createString("source_ground_y"), var1.createInt(this.sourceGroundY)).put(var1.createString("source_z"), var1.createInt(this.sourceZ)).put(var1.createString("delta_y"), var1.createInt(this.deltaY)).put(var1.createString("dest_proj"), var1.createString(this.destProjection.getName()));
-      return new Dynamic(var1, var1.createMap(var2.build()));
+   public <T> Dynamic<T> serialize(final DynamicOps<T> ops) {
+      ImmutableMap.Builder<T, T> builder = ImmutableMap.builder();
+      builder.put(ops.createString("source_x"), ops.createInt(this.sourceX)).put(ops.createString("source_ground_y"), ops.createInt(this.sourceGroundY)).put(ops.createString("source_z"), ops.createInt(this.sourceZ)).put(ops.createString("delta_y"), ops.createInt(this.deltaY)).put(ops.createString("dest_proj"), ops.createString(this.destProjection.getName()));
+      return new Dynamic(ops, ops.createMap(builder.build()));
    }
 
-   public static <T> JigsawJunction deserialize(Dynamic<T> var0) {
-      return new JigsawJunction(var0.get("source_x").asInt(0), var0.get("source_ground_y").asInt(0), var0.get("source_z").asInt(0), var0.get("delta_y").asInt(0), StructureTemplatePool.Projection.byName(var0.get("dest_proj").asString("")));
+   public static <T> JigsawJunction deserialize(final Dynamic<T> input) {
+      return new JigsawJunction(input.get("source_x").asInt(0), input.get("source_ground_y").asInt(0), input.get("source_z").asInt(0), input.get("delta_y").asInt(0), StructureTemplatePool.Projection.byName(input.get("dest_proj").asString("")));
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
+   public boolean equals(final Object o) {
+      if (this == o) {
          return true;
-      } else if (var1 != null && this.getClass() == var1.getClass()) {
-         JigsawJunction var2 = (JigsawJunction)var1;
-         if (this.sourceX != var2.sourceX) {
+      } else if (o != null && this.getClass() == o.getClass()) {
+         JigsawJunction that = (JigsawJunction)o;
+         if (this.sourceX != that.sourceX) {
             return false;
-         } else if (this.sourceZ != var2.sourceZ) {
+         } else if (this.sourceZ != that.sourceZ) {
             return false;
-         } else if (this.deltaY != var2.deltaY) {
+         } else if (this.deltaY != that.deltaY) {
             return false;
          } else {
-            return this.destProjection == var2.destProjection;
+            return this.destProjection == that.destProjection;
          }
       } else {
          return false;
@@ -70,12 +70,12 @@ public class JigsawJunction {
    }
 
    public int hashCode() {
-      int var1 = this.sourceX;
-      var1 = 31 * var1 + this.sourceGroundY;
-      var1 = 31 * var1 + this.sourceZ;
-      var1 = 31 * var1 + this.deltaY;
-      var1 = 31 * var1 + this.destProjection.hashCode();
-      return var1;
+      int result = this.sourceX;
+      result = 31 * result + this.sourceGroundY;
+      result = 31 * result + this.sourceZ;
+      result = 31 * result + this.deltaY;
+      result = 31 * result + this.destProjection.hashCode();
+      return result;
    }
 
    public String toString() {

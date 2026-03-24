@@ -47,8 +47,8 @@ public class Ghast extends Mob implements Enemy {
    private static final byte DEFAULT_EXPLOSION_POWER = 1;
    private int explosionPower = 1;
 
-   public Ghast(EntityType<? extends Ghast> var1, Level var2) {
-      super(var1, var2);
+   public Ghast(final EntityType<? extends Ghast> type, final Level level) {
+      super(type, level);
       this.xpReward = 5;
       this.moveControl = new GhastMoveControl(this, false, () -> false);
    }
@@ -57,52 +57,52 @@ public class Ghast extends Mob implements Enemy {
       this.goalSelector.addGoal(5, new RandomFloatAroundGoal(this));
       this.goalSelector.addGoal(7, new GhastLookGoal(this));
       this.goalSelector.addGoal(7, new GhastShootFireballGoal(this));
-      this.targetSelector.addGoal(1, new NearestAttackableTargetGoal(this, Player.class, 10, true, false, (var1, var2) -> Math.abs(var1.getY() - this.getY()) <= 4.0));
+      this.targetSelector.addGoal(1, new NearestAttackableTargetGoal(this, Player.class, 10, true, false, (target, level) -> Math.abs(target.getY() - this.getY()) <= 4.0));
    }
 
    public boolean isCharging() {
       return (Boolean)this.entityData.get(DATA_IS_CHARGING);
    }
 
-   public void setCharging(boolean var1) {
-      this.entityData.set(DATA_IS_CHARGING, var1);
+   public void setCharging(final boolean onOff) {
+      this.entityData.set(DATA_IS_CHARGING, onOff);
    }
 
    public int getExplosionPower() {
       return this.explosionPower;
    }
 
-   private static boolean isReflectedFireball(DamageSource var0) {
-      return var0.getDirectEntity() instanceof LargeFireball && var0.getEntity() instanceof Player;
+   private static boolean isReflectedFireball(final DamageSource source) {
+      return source.getDirectEntity() instanceof LargeFireball && source.getEntity() instanceof Player;
    }
 
-   public boolean isInvulnerableTo(ServerLevel var1, DamageSource var2) {
-      return this.isInvulnerable() && !var2.is(DamageTypeTags.BYPASSES_INVULNERABILITY) || !isReflectedFireball(var2) && super.isInvulnerableTo(var1, var2);
+   public boolean isInvulnerableTo(final ServerLevel level, final DamageSource source) {
+      return this.isInvulnerable() && !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) || !isReflectedFireball(source) && super.isInvulnerableTo(level, source);
    }
 
-   protected void checkFallDamage(double var1, boolean var3, BlockState var4, BlockPos var5) {
+   protected void checkFallDamage(final double ya, final boolean onGround, final BlockState onState, final BlockPos pos) {
    }
 
    public boolean onClimbable() {
       return false;
    }
 
-   public void travel(Vec3 var1) {
-      this.travelFlying(var1, 0.02F);
+   public void travel(final Vec3 input) {
+      this.travelFlying(input, 0.02F);
    }
 
-   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
-      if (isReflectedFireball(var2)) {
-         super.hurtServer(var1, var2, 1000.0F);
+   public boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {
+      if (isReflectedFireball(source)) {
+         super.hurtServer(level, source, 1000.0F);
          return true;
       } else {
-         return this.isInvulnerableTo(var1, var2) ? false : super.hurtServer(var1, var2, var3);
+         return this.isInvulnerableTo(level, source) ? false : super.hurtServer(level, source, damage);
       }
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(DATA_IS_CHARGING, false);
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(DATA_IS_CHARGING, false);
    }
 
    public static AttributeSupplier.Builder createAttributes() {
@@ -117,7 +117,7 @@ public class Ghast extends Mob implements Enemy {
       return SoundEvents.GHAST_AMBIENT;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return SoundEvents.GHAST_HURT;
    }
 
@@ -129,22 +129,22 @@ public class Ghast extends Mob implements Enemy {
       return 5.0F;
    }
 
-   public static boolean checkGhastSpawnRules(EntityType<Ghast> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
-      return var1.getDifficulty() != Difficulty.PEACEFUL && var4.nextInt(20) == 0 && checkMobSpawnRules(var0, var1, var2, var3, var4);
+   public static boolean checkGhastSpawnRules(final EntityType<Ghast> type, final LevelAccessor level, final EntitySpawnReason spawnReason, final BlockPos pos, final RandomSource random) {
+      return level.getDifficulty() != Difficulty.PEACEFUL && random.nextInt(20) == 0 && checkMobSpawnRules(type, level, spawnReason, pos, random);
    }
 
    public int getMaxSpawnClusterSize() {
       return 1;
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.putByte("ExplosionPower", (byte)this.explosionPower);
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.putByte("ExplosionPower", (byte)this.explosionPower);
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.explosionPower = var1.getByteOr("ExplosionPower", (byte)1);
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.explosionPower = input.getByteOr("ExplosionPower", (byte)1);
    }
 
    public boolean supportQuadLeashAsHolder() {
@@ -159,19 +159,19 @@ public class Ghast extends Mob implements Enemy {
       return 16.0;
    }
 
-   public static void faceMovementDirection(Mob var0) {
-      if (var0.getTarget() == null) {
-         Vec3 var1 = var0.getDeltaMovement();
-         var0.setYRot(-((float)Mth.atan2(var1.x, var1.z)) * 57.295776F);
-         var0.yBodyRot = var0.getYRot();
+   public static void faceMovementDirection(final Mob ghast) {
+      if (ghast.getTarget() == null) {
+         Vec3 movement = ghast.getDeltaMovement();
+         ghast.setYRot(-((float)Mth.atan2(movement.x, movement.z)) * 57.295776F);
+         ghast.yBodyRot = ghast.getYRot();
       } else {
-         LivingEntity var8 = var0.getTarget();
-         double var2 = 64.0;
-         if (var8.distanceToSqr(var0) < 4096.0) {
-            double var4 = var8.getX() - var0.getX();
-            double var6 = var8.getZ() - var0.getZ();
-            var0.setYRot(-((float)Mth.atan2(var4, var6)) * 57.295776F);
-            var0.yBodyRot = var0.getYRot();
+         LivingEntity target = ghast.getTarget();
+         double maxDist = 64.0;
+         if (target.distanceToSqr(ghast) < 4096.0) {
+            double xdd = target.getX() - ghast.getX();
+            double zdd = target.getZ() - ghast.getZ();
+            ghast.setYRot(-((float)Mth.atan2(xdd, zdd)) * 57.295776F);
+            ghast.yBodyRot = ghast.getYRot();
          }
       }
 
@@ -187,11 +187,11 @@ public class Ghast extends Mob implements Enemy {
       private final boolean careful;
       private final BooleanSupplier shouldBeStopped;
 
-      public GhastMoveControl(Mob var1, boolean var2, BooleanSupplier var3) {
-         super(var1);
-         this.ghast = var1;
-         this.careful = var2;
-         this.shouldBeStopped = var3;
+      public GhastMoveControl(final Mob ghast, final boolean careful, final BooleanSupplier shouldBeStopped) {
+         super(ghast);
+         this.ghast = ghast;
+         this.careful = careful;
+         this.shouldBeStopped = shouldBeStopped;
       }
 
       public void tick() {
@@ -203,9 +203,9 @@ public class Ghast extends Mob implements Enemy {
          if (this.operation == MoveControl.Operation.MOVE_TO) {
             if (this.floatDuration-- <= 0) {
                this.floatDuration += this.ghast.getRandom().nextInt(5) + 2;
-               Vec3 var1 = new Vec3(this.wantedX - this.ghast.getX(), this.wantedY - this.ghast.getY(), this.wantedZ - this.ghast.getZ());
-               if (this.canReach(var1)) {
-                  this.ghast.setDeltaMovement(this.ghast.getDeltaMovement().add(var1.normalize().scale(this.ghast.getAttributeValue(Attributes.FLYING_SPEED) * 5.0 / 3.0)));
+               Vec3 travel = new Vec3(this.wantedX - this.ghast.getX(), this.wantedY - this.ghast.getY(), this.wantedZ - this.ghast.getZ());
+               if (this.canReach(travel)) {
+                  this.ghast.setDeltaMovement(this.ghast.getDeltaMovement().add(travel.normalize().scale(this.ghast.getAttributeValue(Attributes.FLYING_SPEED) * 5.0 / 3.0)));
                } else {
                   this.operation = MoveControl.Operation.WAIT;
                }
@@ -214,48 +214,48 @@ public class Ghast extends Mob implements Enemy {
          }
       }
 
-      private boolean canReach(Vec3 var1) {
-         AABB var2 = this.ghast.getBoundingBox();
-         AABB var3 = var2.move(var1);
+      private boolean canReach(final Vec3 travel) {
+         AABB aabb = this.ghast.getBoundingBox();
+         AABB aabbAtDestination = aabb.move(travel);
          if (this.careful) {
-            for(BlockPos var5 : BlockPos.betweenClosed(var3.inflate(1.0))) {
-               if (!this.blockTraversalPossible(this.ghast.level(), (Vec3)null, (Vec3)null, var5, false, false)) {
+            for(BlockPos pos : BlockPos.betweenClosed(aabbAtDestination.inflate(1.0))) {
+               if (!this.blockTraversalPossible(this.ghast.level(), (Vec3)null, (Vec3)null, pos, false, false)) {
                   return false;
                }
             }
          }
 
-         boolean var8 = this.ghast.isInWater();
-         boolean var9 = this.ghast.isInLava();
-         Vec3 var6 = this.ghast.position();
-         Vec3 var7 = var6.add(var1);
-         return BlockGetter.forEachBlockIntersectedBetween(var6, var7, var3, (var6x, var7x) -> var2.intersects(var6x) ? true : this.blockTraversalPossible(this.ghast.level(), var6, var7, var6x, var8, var9));
+         boolean isInWater = this.ghast.isInWater();
+         boolean isInLava = this.ghast.isInLava();
+         Vec3 start = this.ghast.position();
+         Vec3 end = start.add(travel);
+         return BlockGetter.forEachBlockIntersectedBetween(start, end, aabbAtDestination, (blockPos, i) -> aabb.intersects(blockPos) ? true : this.blockTraversalPossible(this.ghast.level(), start, end, blockPos, isInWater, isInLava));
       }
 
-      private boolean blockTraversalPossible(BlockGetter var1, @Nullable Vec3 var2, @Nullable Vec3 var3, BlockPos var4, boolean var5, boolean var6) {
-         BlockState var7 = var1.getBlockState(var4);
-         if (var7.isAir()) {
+      private boolean blockTraversalPossible(final BlockGetter level, final @Nullable Vec3 start, final @Nullable Vec3 end, final BlockPos pos, final boolean canPathThroughWater, final boolean canPathThroughLava) {
+         BlockState state = level.getBlockState(pos);
+         if (state.isAir()) {
             return true;
          } else {
-            boolean var8 = var2 != null && var3 != null;
-            boolean var9 = var8 ? !this.ghast.collidedWithShapeMovingFrom(var2, var3, var7.getCollisionShape(var1, var4).move(new Vec3(var4)).toAabbs()) : var7.getCollisionShape(var1, var4).isEmpty();
+            boolean preciseBlockCollisions = start != null && end != null;
+            boolean pathNoCollisions = preciseBlockCollisions ? !this.ghast.collidedWithShapeMovingFrom(start, end, state.getCollisionShape(level, pos).move(new Vec3(pos)).toAabbs()) : state.getCollisionShape(level, pos).isEmpty();
             if (!this.careful) {
-               return var9;
-            } else if (var7.is(BlockTags.HAPPY_GHAST_AVOIDS)) {
+               return pathNoCollisions;
+            } else if (state.is(BlockTags.HAPPY_GHAST_AVOIDS)) {
                return false;
             } else {
-               FluidState var10 = var1.getFluidState(var4);
-               if (!var10.isEmpty() && (!var8 || this.ghast.collidedWithFluid(var10, var4, var2, var3))) {
-                  if (var10.is(FluidTags.WATER)) {
-                     return var5;
+               FluidState fluidState = level.getFluidState(pos);
+               if (!fluidState.isEmpty() && (!preciseBlockCollisions || this.ghast.collidedWithFluid(fluidState, pos, start, end))) {
+                  if (fluidState.is(FluidTags.WATER)) {
+                     return canPathThroughWater;
                   }
 
-                  if (var10.is(FluidTags.LAVA)) {
-                     return var6;
+                  if (fluidState.is(FluidTags.LAVA)) {
+                     return canPathThroughLava;
                   }
                }
 
-               return var9;
+               return pathNoCollisions;
             }
          }
       }
@@ -266,27 +266,27 @@ public class Ghast extends Mob implements Enemy {
       private final Mob ghast;
       private final int distanceToBlocks;
 
-      public RandomFloatAroundGoal(Mob var1) {
-         this(var1, 0);
+      public RandomFloatAroundGoal(final Mob ghast) {
+         this(ghast, 0);
       }
 
-      public RandomFloatAroundGoal(Mob var1, int var2) {
+      public RandomFloatAroundGoal(final Mob ghast, final int distanceToBlocks) {
          super();
-         this.ghast = var1;
-         this.distanceToBlocks = var2;
+         this.ghast = ghast;
+         this.distanceToBlocks = distanceToBlocks;
          this.setFlags(EnumSet.of(Goal.Flag.MOVE));
       }
 
       public boolean canUse() {
-         MoveControl var1 = this.ghast.getMoveControl();
-         if (!var1.hasWanted()) {
+         MoveControl moveControl = this.ghast.getMoveControl();
+         if (!moveControl.hasWanted()) {
             return true;
          } else {
-            double var2 = var1.getWantedX() - this.ghast.getX();
-            double var4 = var1.getWantedY() - this.ghast.getY();
-            double var6 = var1.getWantedZ() - this.ghast.getZ();
-            double var8 = var2 * var2 + var4 * var4 + var6 * var6;
-            return var8 < 1.0 || var8 > 3600.0;
+            double xd = moveControl.getWantedX() - this.ghast.getX();
+            double yd = moveControl.getWantedY() - this.ghast.getY();
+            double zd = moveControl.getWantedZ() - this.ghast.getZ();
+            double dd = xd * xd + yd * yd + zd * zd;
+            return dd < 1.0 || dd > 3600.0;
          }
       }
 
@@ -295,48 +295,48 @@ public class Ghast extends Mob implements Enemy {
       }
 
       public void start() {
-         Vec3 var1 = getSuitableFlyToPosition(this.ghast, this.distanceToBlocks);
-         this.ghast.getMoveControl().setWantedPosition(var1.x(), var1.y(), var1.z(), 1.0);
+         Vec3 result = getSuitableFlyToPosition(this.ghast, this.distanceToBlocks);
+         this.ghast.getMoveControl().setWantedPosition(result.x(), result.y(), result.z(), 1.0);
       }
 
-      public static Vec3 getSuitableFlyToPosition(Mob var0, int var1) {
-         Level var2 = var0.level();
-         RandomSource var3 = var0.getRandom();
-         Vec3 var4 = var0.position();
-         Vec3 var5 = null;
+      public static Vec3 getSuitableFlyToPosition(final Mob mob, final int distanceToBlocks) {
+         Level level = mob.level();
+         RandomSource random = mob.getRandom();
+         Vec3 center = mob.position();
+         Vec3 result = null;
 
-         for(int var6 = 0; var6 < 64; ++var6) {
-            var5 = chooseRandomPositionWithRestriction(var0, var4, var3);
-            if (var5 != null && isGoodTarget(var2, var5, var1)) {
-               return var5;
+         for(int i = 0; i < 64; ++i) {
+            result = chooseRandomPositionWithRestriction(mob, center, random);
+            if (result != null && isGoodTarget(level, result, distanceToBlocks)) {
+               return result;
             }
          }
 
-         if (var5 == null) {
-            var5 = chooseRandomPosition(var4, var3);
+         if (result == null) {
+            result = chooseRandomPosition(center, random);
          }
 
-         BlockPos var8 = BlockPos.containing(var5);
-         int var7 = var2.getHeight(Heightmap.Types.MOTION_BLOCKING, var8.getX(), var8.getZ());
-         if (var7 < var8.getY() && var7 > var2.getMinY()) {
-            var5 = new Vec3(var5.x(), var0.getY() - Math.abs(var0.getY() - var5.y()), var5.z());
+         BlockPos pos = BlockPos.containing(result);
+         int heightY = level.getHeight(Heightmap.Types.MOTION_BLOCKING, pos.getX(), pos.getZ());
+         if (heightY < pos.getY() && heightY > level.getMinY()) {
+            result = new Vec3(result.x(), mob.getY() - Math.abs(mob.getY() - result.y()), result.z());
          }
 
-         return var5;
+         return result;
       }
 
-      private static boolean isGoodTarget(Level var0, Vec3 var1, int var2) {
-         if (var2 <= 0) {
+      private static boolean isGoodTarget(final Level level, final Vec3 target, final int distanceToBlocks) {
+         if (distanceToBlocks <= 0) {
             return true;
          } else {
-            BlockPos var3 = BlockPos.containing(var1);
-            if (!var0.getBlockState(var3).isAir()) {
+            BlockPos pos = BlockPos.containing(target);
+            if (!level.getBlockState(pos).isAir()) {
                return false;
             } else {
-               for(Direction var7 : Direction.values()) {
-                  for(int var8 = 1; var8 < var2; ++var8) {
-                     BlockPos var9 = var3.relative(var7, var8);
-                     if (!var0.getBlockState(var9).isAir()) {
+               for(Direction dir : Direction.values()) {
+                  for(int i = 1; i < distanceToBlocks; ++i) {
+                     BlockPos offset = pos.relative(dir, i);
+                     if (!level.getBlockState(offset).isAir()) {
                         return true;
                      }
                   }
@@ -347,25 +347,25 @@ public class Ghast extends Mob implements Enemy {
          }
       }
 
-      private static Vec3 chooseRandomPosition(Vec3 var0, RandomSource var1) {
-         double var2 = var0.x() + (double)((var1.nextFloat() * 2.0F - 1.0F) * 16.0F);
-         double var4 = var0.y() + (double)((var1.nextFloat() * 2.0F - 1.0F) * 16.0F);
-         double var6 = var0.z() + (double)((var1.nextFloat() * 2.0F - 1.0F) * 16.0F);
-         return new Vec3(var2, var4, var6);
+      private static Vec3 chooseRandomPosition(final Vec3 center, final RandomSource random) {
+         double xTarget = center.x() + (double)((random.nextFloat() * 2.0F - 1.0F) * 16.0F);
+         double yTarget = center.y() + (double)((random.nextFloat() * 2.0F - 1.0F) * 16.0F);
+         double zTarget = center.z() + (double)((random.nextFloat() * 2.0F - 1.0F) * 16.0F);
+         return new Vec3(xTarget, yTarget, zTarget);
       }
 
-      private static @Nullable Vec3 chooseRandomPositionWithRestriction(Mob var0, Vec3 var1, RandomSource var2) {
-         Vec3 var3 = chooseRandomPosition(var1, var2);
-         return var0.hasHome() && !var0.isWithinHome(var3) ? null : var3;
+      private static @Nullable Vec3 chooseRandomPositionWithRestriction(final Mob mob, final Vec3 center, final RandomSource random) {
+         Vec3 target = chooseRandomPosition(center, random);
+         return mob.hasHome() && !mob.isWithinHome(target) ? null : target;
       }
    }
 
    public static class GhastLookGoal extends Goal {
       private final Mob ghast;
 
-      public GhastLookGoal(Mob var1) {
+      public GhastLookGoal(final Mob ghast) {
          super();
-         this.ghast = var1;
+         this.ghast = ghast;
          this.setFlags(EnumSet.of(Goal.Flag.LOOK));
       }
 
@@ -382,13 +382,13 @@ public class Ghast extends Mob implements Enemy {
       }
    }
 
-   static class GhastShootFireballGoal extends Goal {
+   private static class GhastShootFireballGoal extends Goal {
       private final Ghast ghast;
       public int chargeTime;
 
-      public GhastShootFireballGoal(Ghast var1) {
+      public GhastShootFireballGoal(final Ghast ghast) {
          super();
-         this.ghast = var1;
+         this.ghast = ghast;
       }
 
       public boolean canUse() {
@@ -408,30 +408,30 @@ public class Ghast extends Mob implements Enemy {
       }
 
       public void tick() {
-         LivingEntity var1 = this.ghast.getTarget();
-         if (var1 != null) {
-            double var2 = 64.0;
-            if (var1.distanceToSqr(this.ghast) < 4096.0 && this.ghast.hasLineOfSight(var1)) {
-               Level var4 = this.ghast.level();
+         LivingEntity target = this.ghast.getTarget();
+         if (target != null) {
+            double maxDist = 64.0;
+            if (target.distanceToSqr(this.ghast) < 4096.0 && this.ghast.hasLineOfSight(target)) {
+               Level level = this.ghast.level();
                ++this.chargeTime;
                if (this.chargeTime == 10 && !this.ghast.isSilent()) {
-                  var4.levelEvent((Entity)null, 1015, this.ghast.blockPosition(), 0);
+                  level.levelEvent((Entity)null, 1015, this.ghast.blockPosition(), 0);
                }
 
                if (this.chargeTime == 20) {
-                  double var5 = 4.0;
-                  Vec3 var7 = this.ghast.getViewVector(1.0F);
-                  double var8 = var1.getX() - (this.ghast.getX() + var7.x * 4.0);
-                  double var10 = var1.getY(0.5) - (0.5 + this.ghast.getY(0.5));
-                  double var12 = var1.getZ() - (this.ghast.getZ() + var7.z * 4.0);
-                  Vec3 var14 = new Vec3(var8, var10, var12);
+                  double d = 4.0;
+                  Vec3 viewVector = this.ghast.getViewVector(1.0F);
+                  double xdd = target.getX() - (this.ghast.getX() + viewVector.x * 4.0);
+                  double ydd = target.getY(0.5) - (0.5 + this.ghast.getY(0.5));
+                  double zdd = target.getZ() - (this.ghast.getZ() + viewVector.z * 4.0);
+                  Vec3 direction = new Vec3(xdd, ydd, zdd);
                   if (!this.ghast.isSilent()) {
-                     var4.levelEvent((Entity)null, 1016, this.ghast.blockPosition(), 0);
+                     level.levelEvent((Entity)null, 1016, this.ghast.blockPosition(), 0);
                   }
 
-                  LargeFireball var15 = new LargeFireball(var4, this.ghast, var14.normalize(), this.ghast.getExplosionPower());
-                  var15.setPos(this.ghast.getX() + var7.x * 4.0, this.ghast.getY(0.5) + 0.5, var15.getZ() + var7.z * 4.0);
-                  var4.addFreshEntity(var15);
+                  LargeFireball entity = new LargeFireball(level, this.ghast, direction.normalize(), this.ghast.getExplosionPower());
+                  entity.setPos(this.ghast.getX() + viewVector.x * 4.0, this.ghast.getY(0.5) + 0.5, entity.getZ() + viewVector.z * 4.0);
+                  level.addFreshEntity(entity);
                   this.chargeTime = -40;
                }
             } else if (this.chargeTime > 0) {

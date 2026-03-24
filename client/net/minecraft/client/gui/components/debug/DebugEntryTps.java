@@ -16,43 +16,43 @@ public class DebugEntryTps implements DebugScreenEntry {
       super();
    }
 
-   public void display(DebugScreenDisplayer var1, @Nullable Level var2, @Nullable LevelChunk var3, @Nullable LevelChunk var4) {
-      Minecraft var5 = Minecraft.getInstance();
-      IntegratedServer var6 = var5.getSingleplayerServer();
-      ClientPacketListener var7 = var5.getConnection();
-      if (var7 != null && var2 != null) {
-         Connection var8 = var7.getConnection();
-         float var9 = var8.getAverageSentPackets();
-         float var10 = var8.getAverageReceivedPackets();
-         TickRateManager var12 = var2.tickRateManager();
-         String var11;
-         if (var12.isSteppingForward()) {
-            var11 = " (frozen - stepping)";
-         } else if (var12.isFrozen()) {
-            var11 = " (frozen)";
+   public void display(final DebugScreenDisplayer displayer, final @Nullable Level serverOrClientLevel, final @Nullable LevelChunk clientChunk, final @Nullable LevelChunk serverChunk) {
+      Minecraft minecraft = Minecraft.getInstance();
+      IntegratedServer server = minecraft.getSingleplayerServer();
+      ClientPacketListener connectionListener = minecraft.getConnection();
+      if (connectionListener != null && serverOrClientLevel != null) {
+         Connection connection = connectionListener.getConnection();
+         float averageSentPackets = connection.getAverageSentPackets();
+         float averageReceivedPackets = connection.getAverageReceivedPackets();
+         TickRateManager tickRateManager = serverOrClientLevel.tickRateManager();
+         String runStatus;
+         if (tickRateManager.isSteppingForward()) {
+            runStatus = " (frozen - stepping)";
+         } else if (tickRateManager.isFrozen()) {
+            runStatus = " (frozen)";
          } else {
-            var11 = "";
+            runStatus = "";
          }
 
-         String var13;
-         if (var6 != null) {
-            ServerTickRateManager var14 = var6.tickRateManager();
-            boolean var15 = var14.isSprinting();
-            if (var15) {
-               var11 = " (sprinting)";
+         String tps;
+         if (server != null) {
+            ServerTickRateManager serverTickRateManager = server.tickRateManager();
+            boolean isSpriting = serverTickRateManager.isSprinting();
+            if (isSpriting) {
+               runStatus = " (sprinting)";
             }
 
-            String var16 = var15 ? "-" : String.format(Locale.ROOT, "%.1f", var12.millisecondsPerTick());
-            var13 = String.format(Locale.ROOT, "Integrated server @ %.1f/%s ms%s, %.0f tx, %.0f rx", var6.getCurrentSmoothedTickTime(), var16, var11, var9, var10);
+            String tpsTarget = isSpriting ? "-" : String.format(Locale.ROOT, "%.1f", tickRateManager.millisecondsPerTick());
+            tps = String.format(Locale.ROOT, "Integrated server @ %.1f/%s ms%s, %.0f tx, %.0f rx", server.getCurrentSmoothedTickTime(), tpsTarget, runStatus, averageSentPackets, averageReceivedPackets);
          } else {
-            var13 = String.format(Locale.ROOT, "\"%s\" server%s, %.0f tx, %.0f rx", var7.serverBrand(), var11, var9, var10);
+            tps = String.format(Locale.ROOT, "\"%s\" server%s, %.0f tx, %.0f rx", connectionListener.serverBrand(), runStatus, averageSentPackets, averageReceivedPackets);
          }
 
-         var1.addLine(var13);
+         displayer.addLine(tps);
       }
    }
 
-   public boolean isAllowed(boolean var1) {
+   public boolean isAllowed(final boolean reducedDebugInfo) {
       return true;
    }
 }

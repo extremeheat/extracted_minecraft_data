@@ -9,20 +9,16 @@ import net.minecraft.network.protocol.PacketType;
 public record ClientboundPlayerRotationPacket(float yRot, boolean relativeY, float xRot, boolean relativeX) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundPlayerRotationPacket> STREAM_CODEC;
 
-   public ClientboundPlayerRotationPacket(float var1, boolean var2, float var3, boolean var4) {
+   public ClientboundPlayerRotationPacket {
       super();
-      this.yRot = var1;
-      this.relativeY = var2;
-      this.xRot = var3;
-      this.relativeX = var4;
    }
 
    public PacketType<ClientboundPlayerRotationPacket> type() {
       return GamePacketTypes.CLIENTBOUND_PLAYER_ROTATION;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleRotatePlayer(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleRotatePlayer(this);
    }
 
    static {

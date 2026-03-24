@@ -19,47 +19,47 @@ public class ServerboundSetJigsawBlockPacket implements Packet<ServerGamePacketL
    private final int selectionPriority;
    private final int placementPriority;
 
-   public ServerboundSetJigsawBlockPacket(BlockPos var1, Identifier var2, Identifier var3, Identifier var4, String var5, JigsawBlockEntity.JointType var6, int var7, int var8) {
+   public ServerboundSetJigsawBlockPacket(final BlockPos blockPos, final Identifier name, final Identifier target, final Identifier pool, final String finalState, final JigsawBlockEntity.JointType joint, final int selectionPriority, final int placementPriority) {
       super();
-      this.pos = var1;
-      this.name = var2;
-      this.target = var3;
-      this.pool = var4;
-      this.finalState = var5;
-      this.joint = var6;
-      this.selectionPriority = var7;
-      this.placementPriority = var8;
+      this.pos = blockPos;
+      this.name = name;
+      this.target = target;
+      this.pool = pool;
+      this.finalState = finalState;
+      this.joint = joint;
+      this.selectionPriority = selectionPriority;
+      this.placementPriority = placementPriority;
    }
 
-   private ServerboundSetJigsawBlockPacket(FriendlyByteBuf var1) {
+   private ServerboundSetJigsawBlockPacket(final FriendlyByteBuf input) {
       super();
-      this.pos = var1.readBlockPos();
-      this.name = var1.readIdentifier();
-      this.target = var1.readIdentifier();
-      this.pool = var1.readIdentifier();
-      this.finalState = var1.readUtf();
-      this.joint = (JigsawBlockEntity.JointType)JigsawBlockEntity.JointType.CODEC.byName(var1.readUtf(), JigsawBlockEntity.JointType.ALIGNED);
-      this.selectionPriority = var1.readVarInt();
-      this.placementPriority = var1.readVarInt();
+      this.pos = input.readBlockPos();
+      this.name = input.readIdentifier();
+      this.target = input.readIdentifier();
+      this.pool = input.readIdentifier();
+      this.finalState = input.readUtf();
+      this.joint = (JigsawBlockEntity.JointType)JigsawBlockEntity.JointType.CODEC.byName(input.readUtf(), JigsawBlockEntity.JointType.ALIGNED);
+      this.selectionPriority = input.readVarInt();
+      this.placementPriority = input.readVarInt();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeBlockPos(this.pos);
-      var1.writeIdentifier(this.name);
-      var1.writeIdentifier(this.target);
-      var1.writeIdentifier(this.pool);
-      var1.writeUtf(this.finalState);
-      var1.writeUtf(this.joint.getSerializedName());
-      var1.writeVarInt(this.selectionPriority);
-      var1.writeVarInt(this.placementPriority);
+   private void write(final FriendlyByteBuf output) {
+      output.writeBlockPos(this.pos);
+      output.writeIdentifier(this.name);
+      output.writeIdentifier(this.target);
+      output.writeIdentifier(this.pool);
+      output.writeUtf(this.finalState);
+      output.writeUtf(this.joint.getSerializedName());
+      output.writeVarInt(this.selectionPriority);
+      output.writeVarInt(this.placementPriority);
    }
 
    public PacketType<ServerboundSetJigsawBlockPacket> type() {
       return GamePacketTypes.SERVERBOUND_SET_JIGSAW_BLOCK;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handleSetJigsawBlock(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handleSetJigsawBlock(this);
    }
 
    public BlockPos getPos() {

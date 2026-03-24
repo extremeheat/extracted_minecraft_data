@@ -4,13 +4,13 @@ import java.util.List;
 import net.minecraft.world.item.ItemStack;
 
 public interface ContainerSynchronizer {
-   void sendInitialData(AbstractContainerMenu var1, List<ItemStack> var2, ItemStack var3, int[] var4);
+   void sendInitialData(AbstractContainerMenu container, List<ItemStack> slotItems, ItemStack carried, int[] dataSlots);
 
-   void sendSlotChange(AbstractContainerMenu var1, int var2, ItemStack var3);
+   void sendSlotChange(AbstractContainerMenu container, int slotIndex, ItemStack itemStack);
 
-   void sendCarriedChange(AbstractContainerMenu var1, ItemStack var2);
+   void sendCarriedChange(AbstractContainerMenu container, ItemStack itemStack);
 
-   void sendDataChange(AbstractContainerMenu var1, int var2, int var3);
+   void sendDataChange(AbstractContainerMenu container, int id, int value);
 
    RemoteSlot createSlot();
 }

@@ -13,23 +13,23 @@ import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class LootItem extends LootPoolSingletonContainer {
-   public static final MapCodec<LootItem> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Item.CODEC.fieldOf("name").forGetter((var0x) -> var0x.item)).and(singletonFields(var0)).apply(var0, LootItem::new));
+   public static final MapCodec<LootItem> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Item.CODEC.fieldOf("name").forGetter((e) -> e.item)).and(singletonFields(i)).apply(i, LootItem::new));
    private final Holder<Item> item;
 
-   private LootItem(Holder<Item> var1, int var2, int var3, List<LootItemCondition> var4, List<LootItemFunction> var5) {
-      super(var2, var3, var4, var5);
-      this.item = var1;
+   private LootItem(final Holder<Item> item, final int weight, final int quality, final List<LootItemCondition> conditions, final List<LootItemFunction> functions) {
+      super(weight, quality, conditions, functions);
+      this.item = item;
    }
 
-   public LootPoolEntryType getType() {
-      return LootPoolEntries.ITEM;
+   public MapCodec<LootItem> codec() {
+      return MAP_CODEC;
    }
 
-   public void createItemStack(Consumer<ItemStack> var1, LootContext var2) {
-      var1.accept(new ItemStack(this.item));
+   public void createItemStack(final Consumer<ItemStack> output, final LootContext context) {
+      output.accept(new ItemStack(this.item));
    }
 
-   public static LootPoolSingletonContainer.Builder<?> lootTableItem(ItemLike var0) {
-      return simpleBuilder((var1, var2, var3, var4) -> new LootItem(var0.asItem().builtInRegistryHolder(), var1, var2, var3, var4));
+   public static LootPoolSingletonContainer.Builder<?> lootTableItem(final ItemLike item) {
+      return simpleBuilder((weight, quality, conditions, functions) -> new LootItem(item.asItem().builtInRegistryHolder(), weight, quality, conditions, functions));
    }
 }

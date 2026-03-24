@@ -12,33 +12,33 @@ import net.minecraft.world.level.levelgen.WorldGenerationContext;
 import org.slf4j.Logger;
 
 public class UniformHeight extends HeightProvider {
-   public static final MapCodec<UniformHeight> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(VerticalAnchor.CODEC.fieldOf("min_inclusive").forGetter((var0x) -> var0x.minInclusive), VerticalAnchor.CODEC.fieldOf("max_inclusive").forGetter((var0x) -> var0x.maxInclusive)).apply(var0, UniformHeight::new));
+   public static final MapCodec<UniformHeight> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(VerticalAnchor.CODEC.fieldOf("min_inclusive").forGetter((u) -> u.minInclusive), VerticalAnchor.CODEC.fieldOf("max_inclusive").forGetter((u) -> u.maxInclusive)).apply(i, UniformHeight::new));
    private static final Logger LOGGER = LogUtils.getLogger();
    private final VerticalAnchor minInclusive;
    private final VerticalAnchor maxInclusive;
    private final LongSet warnedFor = new LongOpenHashSet();
 
-   private UniformHeight(VerticalAnchor var1, VerticalAnchor var2) {
+   private UniformHeight(final VerticalAnchor minInclusive, final VerticalAnchor maxInclusive) {
       super();
-      this.minInclusive = var1;
-      this.maxInclusive = var2;
+      this.minInclusive = minInclusive;
+      this.maxInclusive = maxInclusive;
    }
 
-   public static UniformHeight of(VerticalAnchor var0, VerticalAnchor var1) {
-      return new UniformHeight(var0, var1);
+   public static UniformHeight of(final VerticalAnchor minInclusive, final VerticalAnchor maxInclusive) {
+      return new UniformHeight(minInclusive, maxInclusive);
    }
 
-   public int sample(RandomSource var1, WorldGenerationContext var2) {
-      int var3 = this.minInclusive.resolveY(var2);
-      int var4 = this.maxInclusive.resolveY(var2);
-      if (var3 > var4) {
-         if (this.warnedFor.add((long)var3 << 32 | (long)var4)) {
+   public int sample(final RandomSource random, final WorldGenerationContext context) {
+      int min = this.minInclusive.resolveY(context);
+      int max = this.maxInclusive.resolveY(context);
+      if (min > max) {
+         if (this.warnedFor.add((long)min << 32 | (long)max)) {
             LOGGER.warn("Empty height range: {}", this);
          }
 
-         return var3;
+         return min;
       } else {
-         return Mth.randomBetweenInclusive(var1, var3, var4);
+         return Mth.randomBetweenInclusive(random, min, max);
       }
    }
 

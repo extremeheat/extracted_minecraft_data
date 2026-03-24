@@ -15,65 +15,65 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class ItemStackEnchantmentNamesFix extends DataFix {
-   private static final Int2ObjectMap<String> MAP = (Int2ObjectMap)DataFixUtils.make(new Int2ObjectOpenHashMap(), (var0) -> {
-      var0.put(0, "minecraft:protection");
-      var0.put(1, "minecraft:fire_protection");
-      var0.put(2, "minecraft:feather_falling");
-      var0.put(3, "minecraft:blast_protection");
-      var0.put(4, "minecraft:projectile_protection");
-      var0.put(5, "minecraft:respiration");
-      var0.put(6, "minecraft:aqua_affinity");
-      var0.put(7, "minecraft:thorns");
-      var0.put(8, "minecraft:depth_strider");
-      var0.put(9, "minecraft:frost_walker");
-      var0.put(10, "minecraft:binding_curse");
-      var0.put(16, "minecraft:sharpness");
-      var0.put(17, "minecraft:smite");
-      var0.put(18, "minecraft:bane_of_arthropods");
-      var0.put(19, "minecraft:knockback");
-      var0.put(20, "minecraft:fire_aspect");
-      var0.put(21, "minecraft:looting");
-      var0.put(22, "minecraft:sweeping");
-      var0.put(32, "minecraft:efficiency");
-      var0.put(33, "minecraft:silk_touch");
-      var0.put(34, "minecraft:unbreaking");
-      var0.put(35, "minecraft:fortune");
-      var0.put(48, "minecraft:power");
-      var0.put(49, "minecraft:punch");
-      var0.put(50, "minecraft:flame");
-      var0.put(51, "minecraft:infinity");
-      var0.put(61, "minecraft:luck_of_the_sea");
-      var0.put(62, "minecraft:lure");
-      var0.put(65, "minecraft:loyalty");
-      var0.put(66, "minecraft:impaling");
-      var0.put(67, "minecraft:riptide");
-      var0.put(68, "minecraft:channeling");
-      var0.put(70, "minecraft:mending");
-      var0.put(71, "minecraft:vanishing_curse");
+   private static final Int2ObjectMap<String> MAP = (Int2ObjectMap)DataFixUtils.make(new Int2ObjectOpenHashMap(), (map) -> {
+      map.put(0, "minecraft:protection");
+      map.put(1, "minecraft:fire_protection");
+      map.put(2, "minecraft:feather_falling");
+      map.put(3, "minecraft:blast_protection");
+      map.put(4, "minecraft:projectile_protection");
+      map.put(5, "minecraft:respiration");
+      map.put(6, "minecraft:aqua_affinity");
+      map.put(7, "minecraft:thorns");
+      map.put(8, "minecraft:depth_strider");
+      map.put(9, "minecraft:frost_walker");
+      map.put(10, "minecraft:binding_curse");
+      map.put(16, "minecraft:sharpness");
+      map.put(17, "minecraft:smite");
+      map.put(18, "minecraft:bane_of_arthropods");
+      map.put(19, "minecraft:knockback");
+      map.put(20, "minecraft:fire_aspect");
+      map.put(21, "minecraft:looting");
+      map.put(22, "minecraft:sweeping");
+      map.put(32, "minecraft:efficiency");
+      map.put(33, "minecraft:silk_touch");
+      map.put(34, "minecraft:unbreaking");
+      map.put(35, "minecraft:fortune");
+      map.put(48, "minecraft:power");
+      map.put(49, "minecraft:punch");
+      map.put(50, "minecraft:flame");
+      map.put(51, "minecraft:infinity");
+      map.put(61, "minecraft:luck_of_the_sea");
+      map.put(62, "minecraft:lure");
+      map.put(65, "minecraft:loyalty");
+      map.put(66, "minecraft:impaling");
+      map.put(67, "minecraft:riptide");
+      map.put(68, "minecraft:channeling");
+      map.put(70, "minecraft:mending");
+      map.put(71, "minecraft:vanishing_curse");
    });
 
-   public ItemStackEnchantmentNamesFix(Schema var1, boolean var2) {
-      super(var1, var2);
+   public ItemStackEnchantmentNamesFix(final Schema outputSchema, final boolean changesType) {
+      super(outputSchema, changesType);
    }
 
    protected TypeRewriteRule makeRule() {
-      Type var1 = this.getInputSchema().getType(References.ITEM_STACK);
-      OpticFinder var2 = var1.findField("tag");
-      return this.fixTypeEverywhereTyped("ItemStackEnchantmentFix", var1, (var2x) -> var2x.updateTyped(var2, (var1) -> var1.update(DSL.remainderFinder(), this::fixTag)));
+      Type<?> item = this.getInputSchema().getType(References.ITEM_STACK);
+      OpticFinder<?> tagFinder = item.findField("tag");
+      return this.fixTypeEverywhereTyped("ItemStackEnchantmentFix", item, (input) -> input.updateTyped(tagFinder, (tag) -> tag.update(DSL.remainderFinder(), this::fixTag)));
    }
 
-   private Dynamic<?> fixTag(Dynamic<?> var1) {
-      DataResult var10000 = var1.get("ench").asStreamOpt().map((var0) -> var0.map((var0x) -> var0x.set("id", var0x.createString((String)MAP.getOrDefault(var0x.get("id").asInt(0), "null")))));
-      Objects.requireNonNull(var1);
-      Optional var2 = var10000.map(var1::createList).result();
-      if (var2.isPresent()) {
-         var1 = var1.remove("ench").set("Enchantments", (Dynamic)var2.get());
+   private Dynamic<?> fixTag(Dynamic<?> tag) {
+      DataResult var10000 = tag.get("ench").asStreamOpt().map((s) -> s.map((element) -> element.set("id", element.createString((String)MAP.getOrDefault(element.get("id").asInt(0), "null")))));
+      Objects.requireNonNull(tag);
+      Optional<? extends Dynamic<?>> newEnch = var10000.map(tag::createList).result();
+      if (newEnch.isPresent()) {
+         tag = tag.remove("ench").set("Enchantments", (Dynamic)newEnch.get());
       }
 
-      return var1.update("StoredEnchantments", (var0) -> {
-         DataResult var10000 = var0.asStreamOpt().map((var0x) -> var0x.map((var0) -> var0.set("id", var0.createString((String)MAP.getOrDefault(var0.get("id").asInt(0), "null")))));
-         Objects.requireNonNull(var0);
-         return (Dynamic)DataFixUtils.orElse(var10000.map(var0::createList).result(), var0);
+      return tag.update("StoredEnchantments", (list) -> {
+         DataResult var10000 = list.asStreamOpt().map((l) -> l.map((enchant) -> enchant.set("id", enchant.createString((String)MAP.getOrDefault(enchant.get("id").asInt(0), "null")))));
+         Objects.requireNonNull(list);
+         return (Dynamic)DataFixUtils.orElse(var10000.map(list::createList).result(), list);
       });
    }
 }

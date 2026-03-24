@@ -5,7 +5,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
 public class DragonSittingScanningPhase extends AbstractDragonSittingPhase {
@@ -17,45 +16,45 @@ public class DragonSittingScanningPhase extends AbstractDragonSittingPhase {
    private final TargetingConditions scanTargeting;
    private int scanningTime;
 
-   public DragonSittingScanningPhase(EnderDragon var1) {
-      super(var1);
-      this.scanTargeting = TargetingConditions.forCombat().range(20.0).selector((var1x, var2) -> Math.abs(var1x.getY() - var1.getY()) <= 10.0);
+   public DragonSittingScanningPhase(final EnderDragon dragon) {
+      super(dragon);
+      this.scanTargeting = TargetingConditions.forCombat().range(20.0).selector((target, level) -> Math.abs(target.getY() - dragon.getY()) <= 10.0);
    }
 
-   public void doServerTick(ServerLevel var1) {
+   public void doServerTick(final ServerLevel level) {
       ++this.scanningTime;
-      Player var2 = var1.getNearestPlayer(this.scanTargeting, this.dragon, this.dragon.getX(), this.dragon.getY(), this.dragon.getZ());
-      if (var2 != null) {
+      LivingEntity attackTarget = level.getNearestPlayer(this.scanTargeting, this.dragon, this.dragon.getX(), this.dragon.getY(), this.dragon.getZ());
+      if (attackTarget != null) {
          if (this.scanningTime > 25) {
             this.dragon.getPhaseManager().setPhase(EnderDragonPhase.SITTING_ATTACKING);
          } else {
-            Vec3 var3 = (new Vec3(((LivingEntity)var2).getX() - this.dragon.getX(), 0.0, ((LivingEntity)var2).getZ() - this.dragon.getZ())).normalize();
-            Vec3 var4 = (new Vec3((double)Mth.sin((double)(this.dragon.getYRot() * 0.017453292F)), 0.0, (double)(-Mth.cos((double)(this.dragon.getYRot() * 0.017453292F))))).normalize();
-            float var5 = (float)var4.dot(var3);
-            float var6 = (float)(Math.acos((double)var5) * 57.2957763671875) + 0.5F;
-            if (var6 < 0.0F || var6 > 10.0F) {
-               double var7 = ((LivingEntity)var2).getX() - this.dragon.head.getX();
-               double var9 = ((LivingEntity)var2).getZ() - this.dragon.head.getZ();
-               double var11 = Mth.clamp(Mth.wrapDegrees(180.0 - Mth.atan2(var7, var9) * 57.2957763671875 - (double)this.dragon.getYRot()), -100.0, 100.0);
+            Vec3 aim = (new Vec3(attackTarget.getX() - this.dragon.getX(), 0.0, attackTarget.getZ() - this.dragon.getZ())).normalize();
+            Vec3 dir = (new Vec3((double)Mth.sin((double)(this.dragon.getYRot() * 0.017453292F)), 0.0, (double)(-Mth.cos((double)(this.dragon.getYRot() * 0.017453292F))))).normalize();
+            float dot = (float)dir.dot(aim);
+            float angle = (float)(Math.acos((double)dot) * 57.2957763671875) + 0.5F;
+            if (angle < 0.0F || angle > 10.0F) {
+               double xAttackDist = attackTarget.getX() - this.dragon.head.getX();
+               double zAttackDist = attackTarget.getZ() - this.dragon.head.getZ();
+               double yRotDelta = Mth.clamp(Mth.wrapDegrees(180.0 - Mth.atan2(xAttackDist, zAttackDist) * 57.2957763671875 - (double)this.dragon.getYRot()), -100.0, 100.0);
                EnderDragon var10000 = this.dragon;
                var10000.yRotA *= 0.8F;
-               float var13 = (float)Math.sqrt(var7 * var7 + var9 * var9) + 1.0F;
-               float var14 = var13;
-               if (var13 > 40.0F) {
-                  var13 = 40.0F;
+               float dist = (float)Math.sqrt(xAttackDist * xAttackDist + zAttackDist * zAttackDist) + 1.0F;
+               float rotSpeed = dist;
+               if (dist > 40.0F) {
+                  dist = 40.0F;
                }
 
                var10000 = this.dragon;
-               var10000.yRotA += (float)var11 * (0.7F / var13 / var14);
+               var10000.yRotA += (float)yRotDelta * (0.7F / dist / rotSpeed);
                this.dragon.setYRot(this.dragon.getYRot() + this.dragon.yRotA);
             }
          }
       } else if (this.scanningTime >= 100) {
-         var2 = var1.getNearestPlayer(CHARGE_TARGETING, this.dragon, this.dragon.getX(), this.dragon.getY(), this.dragon.getZ());
+         attackTarget = level.getNearestPlayer(CHARGE_TARGETING, this.dragon, this.dragon.getX(), this.dragon.getY(), this.dragon.getZ());
          this.dragon.getPhaseManager().setPhase(EnderDragonPhase.TAKEOFF);
-         if (var2 != null) {
+         if (attackTarget != null) {
             this.dragon.getPhaseManager().setPhase(EnderDragonPhase.CHARGING_PLAYER);
-            ((DragonChargePlayerPhase)this.dragon.getPhaseManager().getPhase(EnderDragonPhase.CHARGING_PLAYER)).setTarget(new Vec3(((LivingEntity)var2).getX(), ((LivingEntity)var2).getY(), ((LivingEntity)var2).getZ()));
+            ((DragonChargePlayerPhase)this.dragon.getPhaseManager().getPhase(EnderDragonPhase.CHARGING_PLAYER)).setTarget(new Vec3(attackTarget.getX(), attackTarget.getY(), attackTarget.getZ()));
          }
       }
 

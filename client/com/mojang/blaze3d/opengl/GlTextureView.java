@@ -14,9 +14,9 @@ public class GlTextureView extends GpuTextureView {
    private int firstFboDepthId = -1;
    private @Nullable Int2IntMap fboCache;
 
-   protected GlTextureView(GlTexture var1, int var2, int var3) {
-      super(var1, var2, var3);
-      var1.addViews();
+   protected GlTextureView(final GlTexture texture, final int baseMipLevel, final int mipLevels) {
+      super(texture, baseMipLevel, mipLevels);
+      texture.addViews();
    }
 
    public boolean isClosed() {
@@ -35,43 +35,38 @@ public class GlTextureView extends GpuTextureView {
             IntIterator var1 = this.fboCache.values().iterator();
 
             while(var1.hasNext()) {
-               int var2 = (Integer)var1.next();
-               GlStateManager._glDeleteFramebuffers(var2);
+               int fbo = (Integer)var1.next();
+               GlStateManager._glDeleteFramebuffers(fbo);
             }
          }
       }
 
    }
 
-   public int getFbo(DirectStateAccess var1, @Nullable GpuTexture var2) {
-      int var3 = var2 == null ? 0 : ((GlTexture)var2).id;
-      if (this.firstFboDepthId == var3) {
+   public int getFbo(final DirectStateAccess dsa, final @Nullable GpuTexture depth) {
+      int depthId = depth == null ? 0 : ((GlTexture)depth).id;
+      if (this.firstFboDepthId == depthId) {
          return this.firstFboId;
       } else if (this.firstFboId == -1) {
-         this.firstFboId = this.createFbo(var1, var3);
-         this.firstFboDepthId = var3;
+         this.firstFboId = this.createFbo(dsa, depthId);
+         this.firstFboDepthId = depthId;
          return this.firstFboId;
       } else {
          if (this.fboCache == null) {
             this.fboCache = new Int2IntArrayMap();
          }
 
-         return this.fboCache.computeIfAbsent(var3, (var2x) -> this.createFbo(var1, var2x));
+         return this.fboCache.computeIfAbsent(depthId, (_depthId) -> this.createFbo(dsa, _depthId));
       }
    }
 
-   private int createFbo(DirectStateAccess var1, int var2) {
-      int var3 = var1.createFrameBufferObject();
-      var1.bindFrameBufferTextures(var3, this.texture().id, var2, this.baseMipLevel(), 0);
-      return var3;
+   private int createFbo(final DirectStateAccess dsa, final int depthid) {
+      int fbo = dsa.createFrameBufferObject();
+      dsa.bindFrameBufferTextures(fbo, this.texture().id, depthid, this.baseMipLevel(), 0);
+      return fbo;
    }
 
    public GlTexture texture() {
       return (GlTexture)super.texture();
-   }
-
-   // $FF: synthetic method
-   public GpuTexture texture() {
-      return this.texture();
    }
 }

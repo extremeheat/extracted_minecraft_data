@@ -56,39 +56,39 @@ public class StructureCheck {
    private final Long2ObjectMap<Object2IntMap<Structure>> loadedChunks = new Long2ObjectOpenHashMap();
    private final Map<Structure, Long2BooleanMap> featureChecks = new HashMap();
 
-   public StructureCheck(ChunkScanAccess var1, RegistryAccess var2, StructureTemplateManager var3, ResourceKey<Level> var4, ChunkGenerator var5, RandomState var6, LevelHeightAccessor var7, BiomeSource var8, long var9, DataFixer var11) {
+   public StructureCheck(final ChunkScanAccess storageAccess, final RegistryAccess registryAccess, final StructureTemplateManager structureTemplateManager, final ResourceKey<Level> dimension, final ChunkGenerator chunkGenerator, final RandomState randomState, final LevelHeightAccessor heightAccessor, final BiomeSource biomeSource, final long seed, final DataFixer fixerUpper) {
       super();
-      this.storageAccess = var1;
-      this.registryAccess = var2;
-      this.structureTemplateManager = var3;
-      this.dimension = var4;
-      this.chunkGenerator = var5;
-      this.randomState = var6;
-      this.heightAccessor = var7;
-      this.biomeSource = var8;
-      this.seed = var9;
-      this.fixerUpper = var11;
+      this.storageAccess = storageAccess;
+      this.registryAccess = registryAccess;
+      this.structureTemplateManager = structureTemplateManager;
+      this.dimension = dimension;
+      this.chunkGenerator = chunkGenerator;
+      this.randomState = randomState;
+      this.heightAccessor = heightAccessor;
+      this.biomeSource = biomeSource;
+      this.seed = seed;
+      this.fixerUpper = fixerUpper;
    }
 
-   public StructureCheckResult checkStart(ChunkPos var1, Structure var2, StructurePlacement var3, boolean var4) {
-      long var5 = var1.toLong();
-      Object2IntMap var7 = (Object2IntMap)this.loadedChunks.get(var5);
-      if (var7 != null) {
-         return this.checkStructureInfo(var7, var2, var4);
+   public StructureCheckResult checkStart(final ChunkPos pos, final Structure structure, final StructurePlacement placement, final boolean requireUnreferenced) {
+      long posKey = pos.pack();
+      Object2IntMap<Structure> cachedResult = (Object2IntMap)this.loadedChunks.get(posKey);
+      if (cachedResult != null) {
+         return this.checkStructureInfo(cachedResult, structure, requireUnreferenced);
       } else {
-         StructureCheckResult var8 = this.tryLoadFromStorage(var1, var2, var4, var5);
-         if (var8 != null) {
-            return var8;
-         } else if (!var3.applyAdditionalChunkRestrictions(var1.x, var1.z, this.seed)) {
+         StructureCheckResult storageCheckResult = this.tryLoadFromStorage(pos, structure, requireUnreferenced, posKey);
+         if (storageCheckResult != null) {
+            return storageCheckResult;
+         } else if (!placement.applyAdditionalChunkRestrictions(pos.x(), pos.z(), this.seed)) {
             return StructureCheckResult.START_NOT_PRESENT;
          } else {
-            boolean var9 = ((Long2BooleanMap)this.featureChecks.computeIfAbsent(var2, (var0) -> new Long2BooleanOpenHashMap())).computeIfAbsent(var5, (var3x) -> this.canCreateStructure(var1, var2));
-            return !var9 ? StructureCheckResult.START_NOT_PRESENT : StructureCheckResult.CHUNK_LOAD_NEEDED;
+            boolean isFeatureChunk = ((Long2BooleanMap)this.featureChecks.computeIfAbsent(structure, (k) -> new Long2BooleanOpenHashMap())).computeIfAbsent(posKey, (k) -> this.canCreateStructure(pos, structure));
+            return !isFeatureChunk ? StructureCheckResult.START_NOT_PRESENT : StructureCheckResult.CHUNK_LOAD_NEEDED;
          }
       }
    }
 
-   private boolean canCreateStructure(ChunkPos var1, Structure var2) {
+   private boolean canCreateStructure(final ChunkPos pos, final Structure structure) {
       RegistryAccess var10003 = this.registryAccess;
       ChunkGenerator var10004 = this.chunkGenerator;
       BiomeSource var10005 = this.biomeSource;
@@ -96,116 +96,112 @@ public class StructureCheck {
       StructureTemplateManager var10007 = this.structureTemplateManager;
       long var10008 = this.seed;
       LevelHeightAccessor var10010 = this.heightAccessor;
-      HolderSet var10011 = var2.biomes();
+      HolderSet var10011 = structure.biomes();
       Objects.requireNonNull(var10011);
-      return var2.findValidGenerationPoint(new Structure.GenerationContext(var10003, var10004, var10005, var10006, var10007, var10008, var1, var10010, var10011::contains)).isPresent();
+      return structure.findValidGenerationPoint(new Structure.GenerationContext(var10003, var10004, var10005, var10006, var10007, var10008, pos, var10010, var10011::contains)).isPresent();
    }
 
-   private @Nullable StructureCheckResult tryLoadFromStorage(ChunkPos var1, Structure var2, boolean var3, long var4) {
-      CollectFields var6 = new CollectFields(new FieldSelector[]{new FieldSelector(IntTag.TYPE, "DataVersion"), new FieldSelector("Level", "Structures", CompoundTag.TYPE, "Starts"), new FieldSelector("structures", CompoundTag.TYPE, "starts")});
+   private @Nullable StructureCheckResult tryLoadFromStorage(final ChunkPos pos, final Structure structure, final boolean requireUnreferenced, final long posKey) {
+      CollectFields collectFields = new CollectFields(new FieldSelector[]{new FieldSelector(IntTag.TYPE, "DataVersion"), new FieldSelector("Level", "Structures", CompoundTag.TYPE, "Starts"), new FieldSelector("structures", CompoundTag.TYPE, "starts")});
 
       try {
-         this.storageAccess.scanChunk(var1, var6).join();
-      } catch (Exception var13) {
-         LOGGER.warn("Failed to read chunk {}", var1, var13);
+         this.storageAccess.scanChunk(pos, collectFields).join();
+      } catch (Exception e) {
+         LOGGER.warn("Failed to read chunk {}", pos, e);
          return StructureCheckResult.CHUNK_LOAD_NEEDED;
       }
 
-      Tag var7 = var6.getResult();
-      if (!(var7 instanceof CompoundTag var8)) {
+      Tag result = collectFields.getResult();
+      if (!(result instanceof CompoundTag chunkTag)) {
          return null;
       } else {
-         int var9 = NbtUtils.getDataVersion(var8);
-         if (var9 <= 1493) {
+         int version = NbtUtils.getDataVersion(chunkTag);
+         SimpleRegionStorage.injectDatafixingContext(chunkTag, ChunkMap.getChunkDataFixContextTag(this.dimension, this.chunkGenerator.getTypeNameForDataFixer()));
+
+         CompoundTag fixedChunkTag;
+         try {
+            fixedChunkTag = DataFixTypes.CHUNK.updateToCurrentVersion(this.fixerUpper, chunkTag, version);
+         } catch (Exception e) {
+            LOGGER.warn("Failed to partially datafix chunk {}", pos, e);
             return StructureCheckResult.CHUNK_LOAD_NEEDED;
+         }
+
+         Object2IntMap<Structure> knownStarts = this.loadStructures(fixedChunkTag);
+         if (knownStarts == null) {
+            return null;
          } else {
-            SimpleRegionStorage.injectDatafixingContext(var8, ChunkMap.getChunkDataFixContextTag(this.dimension, this.chunkGenerator.getTypeNameForDataFixer()));
-
-            CompoundTag var10;
-            try {
-               var10 = DataFixTypes.CHUNK.updateToCurrentVersion(this.fixerUpper, var8, var9);
-            } catch (Exception var12) {
-               LOGGER.warn("Failed to partially datafix chunk {}", var1, var12);
-               return StructureCheckResult.CHUNK_LOAD_NEEDED;
-            }
-
-            Object2IntMap var11 = this.loadStructures(var10);
-            if (var11 == null) {
-               return null;
-            } else {
-               this.storeFullResults(var4, var11);
-               return this.checkStructureInfo(var11, var2, var3);
-            }
+            this.storeFullResults(posKey, knownStarts);
+            return this.checkStructureInfo(knownStarts, structure, requireUnreferenced);
          }
       }
    }
 
-   private @Nullable Object2IntMap<Structure> loadStructures(CompoundTag var1) {
-      Optional var2 = var1.getCompound("structures").flatMap((var0) -> var0.getCompound("starts"));
-      if (var2.isEmpty()) {
+   private @Nullable Object2IntMap<Structure> loadStructures(final CompoundTag chunkTag) {
+      Optional<CompoundTag> maybeStartsTag = chunkTag.getCompound("structures").flatMap((tag) -> tag.getCompound("starts"));
+      if (maybeStartsTag.isEmpty()) {
          return null;
       } else {
-         CompoundTag var3 = (CompoundTag)var2.get();
-         if (var3.isEmpty()) {
+         CompoundTag startsTag = (CompoundTag)maybeStartsTag.get();
+         if (startsTag.isEmpty()) {
             return Object2IntMaps.emptyMap();
          } else {
-            Object2IntOpenHashMap var4 = new Object2IntOpenHashMap();
-            Registry var5 = this.registryAccess.lookupOrThrow(Registries.STRUCTURE);
-            var3.forEach((var2x, var3x) -> {
-               Identifier var4x = Identifier.tryParse(var2x);
-               if (var4x != null) {
-                  Structure var5x = (Structure)var5.getValue(var4x);
-                  if (var5x != null) {
-                     var3x.asCompound().ifPresent((var2) -> {
-                        String var3 = var2.getStringOr("id", "");
-                        if (!"INVALID".equals(var3)) {
-                           int var4x = var2.getIntOr("references", 0);
-                           var4.put(var5x, var4x);
+            Object2IntMap<Structure> knownStarts = new Object2IntOpenHashMap();
+            Registry<Structure> structuresRegistry = this.registryAccess.lookupOrThrow(Registries.STRUCTURE);
+            startsTag.forEach((key, tag) -> {
+               Identifier id = Identifier.tryParse(key);
+               if (id != null) {
+                  Structure foundFeature = (Structure)structuresRegistry.getValue(id);
+                  if (foundFeature != null) {
+                     tag.asCompound().ifPresent((structureData) -> {
+                        String pieceId = structureData.getStringOr("id", "");
+                        if (!"INVALID".equals(pieceId)) {
+                           int referenceCount = structureData.getIntOr("references", 0);
+                           knownStarts.put(foundFeature, referenceCount);
                         }
 
                      });
                   }
                }
             });
-            return var4;
+            return knownStarts;
          }
       }
    }
 
-   private static Object2IntMap<Structure> deduplicateEmptyMap(Object2IntMap<Structure> var0) {
-      return var0.isEmpty() ? Object2IntMaps.emptyMap() : var0;
+   private static Object2IntMap<Structure> deduplicateEmptyMap(final Object2IntMap<Structure> map) {
+      return map.isEmpty() ? Object2IntMaps.emptyMap() : map;
    }
 
-   private StructureCheckResult checkStructureInfo(Object2IntMap<Structure> var1, Structure var2, boolean var3) {
-      int var4 = var1.getOrDefault(var2, -1);
-      return var4 == -1 || var3 && var4 != 0 ? StructureCheckResult.START_NOT_PRESENT : StructureCheckResult.START_PRESENT;
+   private StructureCheckResult checkStructureInfo(final Object2IntMap<Structure> cachedResult, final Structure structure, final boolean requireUnreferenced) {
+      int referenceCount = cachedResult.getOrDefault(structure, -1);
+      return referenceCount == -1 || requireUnreferenced && referenceCount != 0 ? StructureCheckResult.START_NOT_PRESENT : StructureCheckResult.START_PRESENT;
    }
 
-   public void onStructureLoad(ChunkPos var1, Map<Structure, StructureStart> var2) {
-      long var3 = var1.toLong();
-      Object2IntOpenHashMap var5 = new Object2IntOpenHashMap();
-      var2.forEach((var1x, var2x) -> {
-         if (var2x.isValid()) {
-            var5.put(var1x, var2x.getReferences());
+   public void onStructureLoad(final ChunkPos pos, final Map<Structure, StructureStart> starts) {
+      long posKey = pos.pack();
+      Object2IntMap<Structure> startsToReferences = new Object2IntOpenHashMap();
+      starts.forEach((structure, structureStart) -> {
+         if (structureStart.isValid()) {
+            startsToReferences.put(structure, structureStart.getReferences());
          }
 
       });
-      this.storeFullResults(var3, var5);
+      this.storeFullResults(posKey, startsToReferences);
    }
 
-   private void storeFullResults(long var1, Object2IntMap<Structure> var3) {
-      this.loadedChunks.put(var1, deduplicateEmptyMap(var3));
-      this.featureChecks.values().forEach((var2) -> var2.remove(var1));
+   private void storeFullResults(final long posKey, final Object2IntMap<Structure> starts) {
+      this.loadedChunks.put(posKey, deduplicateEmptyMap(starts));
+      this.featureChecks.values().forEach((m) -> m.remove(posKey));
    }
 
-   public void incrementReference(ChunkPos var1, Structure var2) {
-      this.loadedChunks.compute(var1.toLong(), (var1x, var2x) -> {
-         if (var2x == null || ((Object2IntMap)var2x).isEmpty()) {
-            var2x = new Object2IntOpenHashMap();
+   public void incrementReference(final ChunkPos chunkPos, final Structure structure) {
+      this.loadedChunks.compute(chunkPos.pack(), (key, counts) -> {
+         if (counts == null || counts.isEmpty()) {
+            counts = new Object2IntOpenHashMap();
          }
 
-         ((Object2IntMap)var2x).computeInt(var2, (var0, var1) -> var1 == null ? 1 : var1 + 1);
-         return (Object2IntMap)var2x;
+         counts.computeInt(structure, (k, value) -> value == null ? 1 : value + 1);
+         return counts;
       });
    }
 }

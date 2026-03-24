@@ -15,7 +15,6 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.stats.Stats;
-import net.minecraft.tags.TagKey;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -27,93 +26,82 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
-public record BlocksAttacks(float blockDelaySeconds, float disableCooldownScale, List<DamageReduction> damageReductions, ItemDamageFunction itemDamage, Optional<TagKey<DamageType>> bypassedBy, Optional<Holder<SoundEvent>> blockSound, Optional<Holder<SoundEvent>> disableSound) {
-   public static final Codec<BlocksAttacks> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("block_delay_seconds", 0.0F).forGetter(BlocksAttacks::blockDelaySeconds), ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("disable_cooldown_scale", 1.0F).forGetter(BlocksAttacks::disableCooldownScale), BlocksAttacks.DamageReduction.CODEC.listOf().optionalFieldOf("damage_reductions", List.of(new DamageReduction(90.0F, Optional.empty(), 0.0F, 1.0F))).forGetter(BlocksAttacks::damageReductions), BlocksAttacks.ItemDamageFunction.CODEC.optionalFieldOf("item_damage", BlocksAttacks.ItemDamageFunction.DEFAULT).forGetter(BlocksAttacks::itemDamage), TagKey.hashedCodec(Registries.DAMAGE_TYPE).optionalFieldOf("bypassed_by").forGetter(BlocksAttacks::bypassedBy), SoundEvent.CODEC.optionalFieldOf("block_sound").forGetter(BlocksAttacks::blockSound), SoundEvent.CODEC.optionalFieldOf("disabled_sound").forGetter(BlocksAttacks::disableSound)).apply(var0, BlocksAttacks::new));
+public record BlocksAttacks(float blockDelaySeconds, float disableCooldownScale, List<DamageReduction> damageReductions, ItemDamageFunction itemDamage, Optional<HolderSet<DamageType>> bypassedBy, Optional<Holder<SoundEvent>> blockSound, Optional<Holder<SoundEvent>> disableSound) {
+   public static final Codec<BlocksAttacks> CODEC = RecordCodecBuilder.create((i) -> i.group(ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("block_delay_seconds", 0.0F).forGetter(BlocksAttacks::blockDelaySeconds), ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("disable_cooldown_scale", 1.0F).forGetter(BlocksAttacks::disableCooldownScale), BlocksAttacks.DamageReduction.CODEC.listOf().optionalFieldOf("damage_reductions", List.of(new DamageReduction(90.0F, Optional.empty(), 0.0F, 1.0F))).forGetter(BlocksAttacks::damageReductions), BlocksAttacks.ItemDamageFunction.CODEC.optionalFieldOf("item_damage", BlocksAttacks.ItemDamageFunction.DEFAULT).forGetter(BlocksAttacks::itemDamage), RegistryCodecs.homogeneousList(Registries.DAMAGE_TYPE).optionalFieldOf("bypassed_by").forGetter(BlocksAttacks::bypassedBy), SoundEvent.CODEC.optionalFieldOf("block_sound").forGetter(BlocksAttacks::blockSound), SoundEvent.CODEC.optionalFieldOf("disabled_sound").forGetter(BlocksAttacks::disableSound)).apply(i, BlocksAttacks::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, BlocksAttacks> STREAM_CODEC;
 
-   public BlocksAttacks(float var1, float var2, List<DamageReduction> var3, ItemDamageFunction var4, Optional<TagKey<DamageType>> var5, Optional<Holder<SoundEvent>> var6, Optional<Holder<SoundEvent>> var7) {
+   public BlocksAttacks {
       super();
-      this.blockDelaySeconds = var1;
-      this.disableCooldownScale = var2;
-      this.damageReductions = var3;
-      this.itemDamage = var4;
-      this.bypassedBy = var5;
-      this.blockSound = var6;
-      this.disableSound = var7;
    }
 
-   public void onBlocked(ServerLevel var1, LivingEntity var2) {
-      this.blockSound.ifPresent((var2x) -> var1.playSound((Entity)null, var2.getX(), var2.getY(), var2.getZ(), var2x, var2.getSoundSource(), 1.0F, 0.8F + var1.random.nextFloat() * 0.4F));
+   public void onBlocked(final ServerLevel level, final LivingEntity user) {
+      this.blockSound.ifPresent((sound) -> level.playSound((Entity)null, user.getX(), user.getY(), user.getZ(), sound, user.getSoundSource(), 1.0F, 0.8F + level.getRandom().nextFloat() * 0.4F));
    }
 
-   public void disable(ServerLevel var1, LivingEntity var2, float var3, ItemStack var4) {
-      int var5 = this.disableBlockingForTicks(var3);
-      if (var5 > 0) {
-         if (var2 instanceof Player) {
-            Player var6 = (Player)var2;
-            var6.getCooldowns().addCooldown(var4, var5);
+   public void disable(final ServerLevel level, final LivingEntity user, final float baseSeconds, final ItemStack blockingWith) {
+      int cooldownTicks = this.disableBlockingForTicks(baseSeconds);
+      if (cooldownTicks > 0) {
+         if (user instanceof Player) {
+            Player player = (Player)user;
+            player.getCooldowns().addCooldown(blockingWith, cooldownTicks);
          }
 
-         var2.stopUsingItem();
-         this.disableSound.ifPresent((var2x) -> var1.playSound((Entity)null, var2.getX(), var2.getY(), var2.getZ(), var2x, var2.getSoundSource(), 0.8F, 0.8F + var1.random.nextFloat() * 0.4F));
+         user.stopUsingItem();
+         this.disableSound.ifPresent((sound) -> level.playSound((Entity)null, user.getX(), user.getY(), user.getZ(), sound, user.getSoundSource(), 0.8F, 0.8F + level.getRandom().nextFloat() * 0.4F));
       }
 
    }
 
-   public void hurtBlockingItem(Level var1, ItemStack var2, LivingEntity var3, InteractionHand var4, float var5) {
-      if (var3 instanceof Player var6) {
-         if (!var1.isClientSide()) {
-            var6.awardStat(Stats.ITEM_USED.get(var2.getItem()));
+   public void hurtBlockingItem(final Level level, final ItemStack item, final LivingEntity user, final InteractionHand hand, final float damage) {
+      if (user instanceof Player player) {
+         if (!level.isClientSide()) {
+            player.awardStat(Stats.ITEM_USED.get(item.getItem()));
          }
 
-         int var7 = this.itemDamage.apply(var5);
-         if (var7 > 0) {
-            var2.hurtAndBreak(var7, var3, var4.asEquipmentSlot());
+         int itemDamage = this.itemDamage.apply(damage);
+         if (itemDamage > 0) {
+            item.hurtAndBreak(itemDamage, user, hand.asEquipmentSlot());
          }
 
       }
    }
 
-   private int disableBlockingForTicks(float var1) {
-      float var2 = var1 * this.disableCooldownScale;
-      return var2 > 0.0F ? Math.round(var2 * 20.0F) : 0;
+   private int disableBlockingForTicks(final float baseSeconds) {
+      float seconds = baseSeconds * this.disableCooldownScale;
+      return seconds > 0.0F ? Math.round(seconds * 20.0F) : 0;
    }
 
    public int blockDelayTicks() {
       return Math.round(this.blockDelaySeconds * 20.0F);
    }
 
-   public float resolveBlockedDamage(DamageSource var1, float var2, double var3) {
-      float var5 = 0.0F;
+   public float resolveBlockedDamage(final DamageSource source, final float dealtDamage, final double angle) {
+      float blockedDamage = 0.0F;
 
-      for(DamageReduction var7 : this.damageReductions) {
-         var5 += var7.resolve(var1, var2, var3);
+      for(DamageReduction reduction : this.damageReductions) {
+         blockedDamage += reduction.resolve(source, dealtDamage, angle);
       }
 
-      return Mth.clamp(var5, 0.0F, var2);
+      return Mth.clamp(blockedDamage, 0.0F, dealtDamage);
    }
 
    static {
-      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.FLOAT, BlocksAttacks::blockDelaySeconds, ByteBufCodecs.FLOAT, BlocksAttacks::disableCooldownScale, BlocksAttacks.DamageReduction.STREAM_CODEC.apply(ByteBufCodecs.list()), BlocksAttacks::damageReductions, BlocksAttacks.ItemDamageFunction.STREAM_CODEC, BlocksAttacks::itemDamage, TagKey.streamCodec(Registries.DAMAGE_TYPE).apply(ByteBufCodecs::optional), BlocksAttacks::bypassedBy, SoundEvent.STREAM_CODEC.apply(ByteBufCodecs::optional), BlocksAttacks::blockSound, SoundEvent.STREAM_CODEC.apply(ByteBufCodecs::optional), BlocksAttacks::disableSound, BlocksAttacks::new);
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.FLOAT, BlocksAttacks::blockDelaySeconds, ByteBufCodecs.FLOAT, BlocksAttacks::disableCooldownScale, BlocksAttacks.DamageReduction.STREAM_CODEC.apply(ByteBufCodecs.list()), BlocksAttacks::damageReductions, BlocksAttacks.ItemDamageFunction.STREAM_CODEC, BlocksAttacks::itemDamage, ByteBufCodecs.holderSet(Registries.DAMAGE_TYPE).apply(ByteBufCodecs::optional), BlocksAttacks::bypassedBy, SoundEvent.STREAM_CODEC.apply(ByteBufCodecs::optional), BlocksAttacks::blockSound, SoundEvent.STREAM_CODEC.apply(ByteBufCodecs::optional), BlocksAttacks::disableSound, BlocksAttacks::new);
    }
 
    public static record DamageReduction(float horizontalBlockingAngle, Optional<HolderSet<DamageType>> type, float base, float factor) {
-      public static final Codec<DamageReduction> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.POSITIVE_FLOAT.optionalFieldOf("horizontal_blocking_angle", 90.0F).forGetter(DamageReduction::horizontalBlockingAngle), RegistryCodecs.homogeneousList(Registries.DAMAGE_TYPE).optionalFieldOf("type").forGetter(DamageReduction::type), Codec.FLOAT.fieldOf("base").forGetter(DamageReduction::base), Codec.FLOAT.fieldOf("factor").forGetter(DamageReduction::factor)).apply(var0, DamageReduction::new));
+      public static final Codec<DamageReduction> CODEC = RecordCodecBuilder.create((i) -> i.group(ExtraCodecs.POSITIVE_FLOAT.optionalFieldOf("horizontal_blocking_angle", 90.0F).forGetter(DamageReduction::horizontalBlockingAngle), RegistryCodecs.homogeneousList(Registries.DAMAGE_TYPE).optionalFieldOf("type").forGetter(DamageReduction::type), Codec.FLOAT.fieldOf("base").forGetter(DamageReduction::base), Codec.FLOAT.fieldOf("factor").forGetter(DamageReduction::factor)).apply(i, DamageReduction::new));
       public static final StreamCodec<RegistryFriendlyByteBuf, DamageReduction> STREAM_CODEC;
 
-      public DamageReduction(float var1, Optional<HolderSet<DamageType>> var2, float var3, float var4) {
+      public DamageReduction {
          super();
-         this.horizontalBlockingAngle = var1;
-         this.type = var2;
-         this.base = var3;
-         this.factor = var4;
       }
 
-      public float resolve(DamageSource var1, float var2, double var3) {
-         if (var3 > (double)(0.017453292F * this.horizontalBlockingAngle)) {
+      public float resolve(final DamageSource source, final float dealtDamage, final double angle) {
+         if (angle > (double)(0.017453292F * this.horizontalBlockingAngle)) {
             return 0.0F;
          } else {
-            return this.type.isPresent() && !((HolderSet)this.type.get()).contains(var1.typeHolder()) ? 0.0F : Mth.clamp(this.base + this.factor * var2, 0.0F, var2);
+            return this.type.isPresent() && !((HolderSet)this.type.get()).contains(source.typeHolder()) ? 0.0F : Mth.clamp(this.base + this.factor * dealtDamage, 0.0F, dealtDamage);
          }
       }
 
@@ -123,19 +111,16 @@ public record BlocksAttacks(float blockDelaySeconds, float disableCooldownScale,
    }
 
    public static record ItemDamageFunction(float threshold, float base, float factor) {
-      public static final Codec<ItemDamageFunction> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.NON_NEGATIVE_FLOAT.fieldOf("threshold").forGetter(ItemDamageFunction::threshold), Codec.FLOAT.fieldOf("base").forGetter(ItemDamageFunction::base), Codec.FLOAT.fieldOf("factor").forGetter(ItemDamageFunction::factor)).apply(var0, ItemDamageFunction::new));
+      public static final Codec<ItemDamageFunction> CODEC = RecordCodecBuilder.create((i) -> i.group(ExtraCodecs.NON_NEGATIVE_FLOAT.fieldOf("threshold").forGetter(ItemDamageFunction::threshold), Codec.FLOAT.fieldOf("base").forGetter(ItemDamageFunction::base), Codec.FLOAT.fieldOf("factor").forGetter(ItemDamageFunction::factor)).apply(i, ItemDamageFunction::new));
       public static final StreamCodec<ByteBuf, ItemDamageFunction> STREAM_CODEC;
       public static final ItemDamageFunction DEFAULT;
 
-      public ItemDamageFunction(float var1, float var2, float var3) {
+      public ItemDamageFunction {
          super();
-         this.threshold = var1;
-         this.base = var2;
-         this.factor = var3;
       }
 
-      public int apply(float var1) {
-         return var1 < this.threshold ? 0 : Mth.floor(this.base + this.factor * var1);
+      public int apply(final float dealtDamage) {
+         return dealtDamage < this.threshold ? 0 : Mth.floor(this.base + this.factor * dealtDamage);
       }
 
       static {

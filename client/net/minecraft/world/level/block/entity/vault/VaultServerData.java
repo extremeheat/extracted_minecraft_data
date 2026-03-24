@@ -17,7 +17,7 @@ import net.minecraft.world.item.ItemStack;
 
 public class VaultServerData {
    static final String TAG_NAME = "server_data";
-   static Codec<VaultServerData> CODEC = RecordCodecBuilder.create((var0) -> var0.group(UUIDUtil.CODEC_LINKED_SET.lenientOptionalFieldOf("rewarded_players", Set.of()).forGetter((var0x) -> var0x.rewardedPlayers), Codec.LONG.lenientOptionalFieldOf("state_updating_resumes_at", 0L).forGetter((var0x) -> var0x.stateUpdatingResumesAt), ItemStack.CODEC.listOf().lenientOptionalFieldOf("items_to_eject", List.of()).forGetter((var0x) -> var0x.itemsToEject), Codec.INT.lenientOptionalFieldOf("total_ejections_needed", 0).forGetter((var0x) -> var0x.totalEjectionsNeeded)).apply(var0, VaultServerData::new));
+   static final Codec<VaultServerData> CODEC = RecordCodecBuilder.create((i) -> i.group(UUIDUtil.CODEC_LINKED_SET.lenientOptionalFieldOf("rewarded_players", Set.of()).forGetter((vault) -> vault.rewardedPlayers), Codec.LONG.lenientOptionalFieldOf("state_updating_resumes_at", 0L).forGetter((vault) -> vault.stateUpdatingResumesAt), ItemStack.CODEC.listOf().lenientOptionalFieldOf("items_to_eject", List.of()).forGetter((vault) -> vault.itemsToEject), Codec.INT.lenientOptionalFieldOf("total_ejections_needed", 0).forGetter((vault) -> vault.totalEjectionsNeeded)).apply(i, VaultServerData::new));
    private static final int MAX_REWARD_PLAYERS = 128;
    private final Set<UUID> rewardedPlayers = new ObjectLinkedOpenHashSet();
    private long stateUpdatingResumesAt;
@@ -26,20 +26,20 @@ public class VaultServerData {
    private int totalEjectionsNeeded;
    boolean isDirty;
 
-   VaultServerData(Set<UUID> var1, long var2, List<ItemStack> var4, int var5) {
+   VaultServerData(final Set<UUID> rewardedPlayers, final long stateUpdatingResumesAt, final List<ItemStack> itemsToEject, final int totalEjectionsNeeded) {
       super();
-      this.rewardedPlayers.addAll(var1);
-      this.stateUpdatingResumesAt = var2;
-      this.itemsToEject.addAll(var4);
-      this.totalEjectionsNeeded = var5;
+      this.rewardedPlayers.addAll(rewardedPlayers);
+      this.stateUpdatingResumesAt = stateUpdatingResumesAt;
+      this.itemsToEject.addAll(itemsToEject);
+      this.totalEjectionsNeeded = totalEjectionsNeeded;
    }
 
    VaultServerData() {
       super();
    }
 
-   void setLastInsertFailTimestamp(long var1) {
-      this.lastInsertFailTimestamp = var1;
+   void setLastInsertFailTimestamp(final long lastInsertFailTimestamp) {
+      this.lastInsertFailTimestamp = lastInsertFailTimestamp;
    }
 
    long getLastInsertFailTimestamp() {
@@ -50,18 +50,18 @@ public class VaultServerData {
       return this.rewardedPlayers;
    }
 
-   boolean hasRewardedPlayer(Player var1) {
-      return this.rewardedPlayers.contains(var1.getUUID());
+   boolean hasRewardedPlayer(final Player player) {
+      return this.rewardedPlayers.contains(player.getUUID());
    }
 
    @VisibleForTesting
-   public void addToRewardedPlayers(Player var1) {
-      this.rewardedPlayers.add(var1.getUUID());
+   public void addToRewardedPlayers(final Player player) {
+      this.rewardedPlayers.add(player.getUUID());
       if (this.rewardedPlayers.size() > 128) {
-         Iterator var2 = this.rewardedPlayers.iterator();
-         if (var2.hasNext()) {
-            var2.next();
-            var2.remove();
+         Iterator<UUID> iterator = this.rewardedPlayers.iterator();
+         if (iterator.hasNext()) {
+            iterator.next();
+            iterator.remove();
          }
       }
 
@@ -72,8 +72,8 @@ public class VaultServerData {
       return this.stateUpdatingResumesAt;
    }
 
-   void pauseStateUpdatingUntil(long var1) {
-      this.stateUpdatingResumesAt = var1;
+   void pauseStateUpdatingUntil(final long stateUpdatingResumesAt) {
+      this.stateUpdatingResumesAt = stateUpdatingResumesAt;
       this.markChanged();
    }
 
@@ -86,9 +86,9 @@ public class VaultServerData {
       this.markChanged();
    }
 
-   void setItemsToEject(List<ItemStack> var1) {
+   void setItemsToEject(final List<ItemStack> newItemsToEject) {
       this.itemsToEject.clear();
-      this.itemsToEject.addAll(var1);
+      this.itemsToEject.addAll(newItemsToEject);
       this.totalEjectionsNeeded = this.itemsToEject.size();
       this.markChanged();
    }
@@ -106,12 +106,12 @@ public class VaultServerData {
       }
    }
 
-   void set(VaultServerData var1) {
-      this.stateUpdatingResumesAt = var1.stateUpdatingResumesAt();
+   void set(final VaultServerData from) {
+      this.stateUpdatingResumesAt = from.stateUpdatingResumesAt();
       this.itemsToEject.clear();
-      this.itemsToEject.addAll(var1.itemsToEject);
+      this.itemsToEject.addAll(from.itemsToEject);
       this.rewardedPlayers.clear();
-      this.rewardedPlayers.addAll(var1.rewardedPlayers);
+      this.rewardedPlayers.addAll(from.rewardedPlayers);
    }
 
    private void markChanged() {

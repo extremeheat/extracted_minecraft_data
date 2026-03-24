@@ -21,17 +21,17 @@ public class RangedBowAttackGoal<T extends Monster & RangedAttackMob> extends Go
    private boolean strafingBackwards;
    private int strafingTime = -1;
 
-   public RangedBowAttackGoal(T var1, double var2, int var4, float var5) {
+   public RangedBowAttackGoal(final T mob, final double speedModifier, final int attackIntervalMin, final float attackRadius) {
       super();
-      this.mob = var1;
-      this.speedModifier = var2;
-      this.attackIntervalMin = var4;
-      this.attackRadiusSqr = var5 * var5;
+      this.mob = mob;
+      this.speedModifier = speedModifier;
+      this.attackIntervalMin = attackIntervalMin;
+      this.attackRadiusSqr = attackRadius * attackRadius;
       this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
    }
 
-   public void setMinAttackInterval(int var1) {
-      this.attackIntervalMin = var1;
+   public void setMinAttackInterval(final int ticks) {
+      this.attackIntervalMin = ticks;
    }
 
    public boolean canUse() {
@@ -64,26 +64,26 @@ public class RangedBowAttackGoal<T extends Monster & RangedAttackMob> extends Go
    }
 
    public void tick() {
-      LivingEntity var1 = this.mob.getTarget();
-      if (var1 != null) {
-         double var2 = this.mob.distanceToSqr(var1.getX(), var1.getY(), var1.getZ());
-         boolean var4 = this.mob.getSensing().hasLineOfSight(var1);
-         boolean var5 = this.seeTime > 0;
-         if (var4 != var5) {
+      LivingEntity target = this.mob.getTarget();
+      if (target != null) {
+         double targetDistSqr = this.mob.distanceToSqr(target.getX(), target.getY(), target.getZ());
+         boolean hasLineOfSight = this.mob.getSensing().hasLineOfSight(target);
+         boolean hadLineOfSight = this.seeTime > 0;
+         if (hasLineOfSight != hadLineOfSight) {
             this.seeTime = 0;
          }
 
-         if (var4) {
+         if (hasLineOfSight) {
             ++this.seeTime;
          } else {
             --this.seeTime;
          }
 
-         if (!(var2 > (double)this.attackRadiusSqr) && this.seeTime >= 20) {
+         if (!(targetDistSqr > (double)this.attackRadiusSqr) && this.seeTime >= 20) {
             this.mob.getNavigation().stop();
             ++this.strafingTime;
          } else {
-            this.mob.getNavigation().moveTo((Entity)var1, this.speedModifier);
+            this.mob.getNavigation().moveTo((Entity)target, this.speedModifier);
             this.strafingTime = -1;
          }
 
@@ -100,32 +100,32 @@ public class RangedBowAttackGoal<T extends Monster & RangedAttackMob> extends Go
          }
 
          if (this.strafingTime > -1) {
-            if (var2 > (double)(this.attackRadiusSqr * 0.75F)) {
+            if (targetDistSqr > (double)(this.attackRadiusSqr * 0.75F)) {
                this.strafingBackwards = false;
-            } else if (var2 < (double)(this.attackRadiusSqr * 0.25F)) {
+            } else if (targetDistSqr < (double)(this.attackRadiusSqr * 0.25F)) {
                this.strafingBackwards = true;
             }
 
             this.mob.getMoveControl().strafe(this.strafingBackwards ? -0.5F : 0.5F, this.strafingClockwise ? 0.5F : -0.5F);
             Entity var7 = this.mob.getControlledVehicle();
             if (var7 instanceof Mob) {
-               Mob var6 = (Mob)var7;
-               var6.lookAt(var1, 30.0F, 30.0F);
+               Mob vehicle = (Mob)var7;
+               vehicle.lookAt(target, 30.0F, 30.0F);
             }
 
-            this.mob.lookAt(var1, 30.0F, 30.0F);
+            this.mob.lookAt(target, 30.0F, 30.0F);
          } else {
-            this.mob.getLookControl().setLookAt(var1, 30.0F, 30.0F);
+            this.mob.getLookControl().setLookAt(target, 30.0F, 30.0F);
          }
 
          if (this.mob.isUsingItem()) {
-            if (!var4 && this.seeTime < -60) {
+            if (!hasLineOfSight && this.seeTime < -60) {
                this.mob.stopUsingItem();
-            } else if (var4) {
-               int var8 = this.mob.getTicksUsingItem();
-               if (var8 >= 20) {
+            } else if (hasLineOfSight) {
+               int pullTime = this.mob.getTicksUsingItem();
+               if (pullTime >= 20) {
                   this.mob.stopUsingItem();
-                  ((RangedAttackMob)this.mob).performRangedAttack(var1, BowItem.getPowerForTime(var8));
+                  ((RangedAttackMob)this.mob).performRangedAttack(target, BowItem.getPowerForTime(pullTime));
                   this.attackTime = this.attackIntervalMin;
                }
             }

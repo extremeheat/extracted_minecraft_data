@@ -4,11 +4,11 @@ import java.util.Collection;
 import net.minecraft.resources.Identifier;
 
 public interface DebugScreenDisplayer {
-   void addPriorityLine(String var1);
+   void addPriorityLine(String line);
 
-   void addLine(String var1);
+   void addLine(String line);
 
-   void addToGroup(Identifier var1, Collection<String> var2);
+   void addToGroup(final Identifier group, Collection<String> lines);
 
-   void addToGroup(Identifier var1, String var2);
+   void addToGroup(final Identifier group, String lines);
 }

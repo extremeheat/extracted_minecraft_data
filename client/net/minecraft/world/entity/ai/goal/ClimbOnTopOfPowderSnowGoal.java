@@ -13,19 +13,19 @@ public class ClimbOnTopOfPowderSnowGoal extends Goal {
    private final Mob mob;
    private final Level level;
 
-   public ClimbOnTopOfPowderSnowGoal(Mob var1, Level var2) {
+   public ClimbOnTopOfPowderSnowGoal(final Mob mob, final Level level) {
       super();
-      this.mob = var1;
-      this.level = var2;
+      this.mob = mob;
+      this.level = level;
       this.setFlags(EnumSet.of(Goal.Flag.JUMP));
    }
 
    public boolean canUse() {
-      boolean var1 = this.mob.wasInPowderSnow || this.mob.isInPowderSnow;
-      if (var1 && this.mob.getType().is(EntityTypeTags.POWDER_SNOW_WALKABLE_MOBS)) {
-         BlockPos var2 = this.mob.blockPosition().above();
-         BlockState var3 = this.level.getBlockState(var2);
-         return var3.is(Blocks.POWDER_SNOW) || var3.getCollisionShape(this.level, var2) == Shapes.empty();
+      boolean inPowderSnow = this.mob.wasInPowderSnow || this.mob.isInPowderSnow;
+      if (inPowderSnow && this.mob.is(EntityTypeTags.POWDER_SNOW_WALKABLE_MOBS)) {
+         BlockPos above = this.mob.blockPosition().above();
+         BlockState aboveBlockState = this.level.getBlockState(above);
+         return aboveBlockState.is(Blocks.POWDER_SNOW) || aboveBlockState.getCollisionShape(this.level, above) == Shapes.empty();
       } else {
          return false;
       }

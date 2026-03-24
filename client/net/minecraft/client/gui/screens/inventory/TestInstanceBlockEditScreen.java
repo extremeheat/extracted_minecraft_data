@@ -4,7 +4,7 @@ import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
@@ -12,6 +12,7 @@ import net.minecraft.client.gui.components.FittingMultiLineTextWidget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.gametest.framework.GameTestInstance;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -41,79 +42,79 @@ public class TestInstanceBlockEditScreen extends Screen {
    private @Nullable CycleButton<Boolean> includeEntitiesButton;
    private @Nullable CycleButton<Rotation> rotationButton;
 
-   public TestInstanceBlockEditScreen(TestInstanceBlockEntity var1) {
-      super(var1.getBlockState().getBlock().getName());
-      this.blockEntity = var1;
+   public TestInstanceBlockEditScreen(final TestInstanceBlockEntity blockEntity) {
+      super(blockEntity.getBlockState().getBlock().getName());
+      this.blockEntity = blockEntity;
    }
 
    protected void init() {
-      int var1 = this.width / 2 - 158;
-      boolean var2 = SharedConstants.IS_RUNNING_IN_IDE;
-      int var3 = var2 ? 3 : 2;
-      int var4 = widgetSize(var3);
-      this.idEdit = new EditBox(this.font, var1, 40, 316, 20, Component.translatable("test_instance_block.test_id"));
+      int leftEdge = this.width / 2 - 158;
+      boolean includeExport = SharedConstants.IS_RUNNING_IN_IDE;
+      int actionButtonCount = includeExport ? 3 : 2;
+      int buttonSize = widgetSize(actionButtonCount);
+      this.idEdit = new EditBox(this.font, leftEdge, 40, 316, 20, Component.translatable("test_instance_block.test_id"));
       this.idEdit.setMaxLength(128);
-      Optional var5 = this.blockEntity.test();
-      if (var5.isPresent()) {
-         this.idEdit.setValue(((ResourceKey)var5.get()).identifier().toString());
+      Optional<ResourceKey<GameTestInstance>> test = this.blockEntity.test();
+      if (test.isPresent()) {
+         this.idEdit.setValue(((ResourceKey)test.get()).identifier().toString());
       }
 
-      this.idEdit.setResponder((var1x) -> this.updateTestInfo(false));
+      this.idEdit.setResponder((s) -> this.updateTestInfo(false));
       this.addRenderableWidget(this.idEdit);
       Objects.requireNonNull(this.font);
-      this.infoWidget = new FittingMultiLineTextWidget(var1, 70, 316, 8 * 9, Component.literal(""), this.font);
+      this.infoWidget = new FittingMultiLineTextWidget(leftEdge, 70, 316, 8 * 9, Component.literal(""), this.font);
       this.addRenderableWidget(this.infoWidget);
-      Vec3i var6 = this.blockEntity.getSize();
-      int var7 = 0;
-      this.sizeXEdit = new EditBox(this.font, this.widgetX(var7++, 5), 160, widgetSize(5), 20, Component.translatable("structure_block.size.x"));
+      Vec3i size = this.blockEntity.getSize();
+      int index = 0;
+      this.sizeXEdit = new EditBox(this.font, this.widgetX(index++, 5), 160, widgetSize(5), 20, Component.translatable("structure_block.size.x"));
       this.sizeXEdit.setMaxLength(15);
       this.addRenderableWidget(this.sizeXEdit);
-      this.sizeYEdit = new EditBox(this.font, this.widgetX(var7++, 5), 160, widgetSize(5), 20, Component.translatable("structure_block.size.y"));
+      this.sizeYEdit = new EditBox(this.font, this.widgetX(index++, 5), 160, widgetSize(5), 20, Component.translatable("structure_block.size.y"));
       this.sizeYEdit.setMaxLength(15);
       this.addRenderableWidget(this.sizeYEdit);
-      this.sizeZEdit = new EditBox(this.font, this.widgetX(var7++, 5), 160, widgetSize(5), 20, Component.translatable("structure_block.size.z"));
+      this.sizeZEdit = new EditBox(this.font, this.widgetX(index++, 5), 160, widgetSize(5), 20, Component.translatable("structure_block.size.z"));
       this.sizeZEdit.setMaxLength(15);
       this.addRenderableWidget(this.sizeZEdit);
-      this.setSize(var6);
-      this.rotationButton = (CycleButton)this.addRenderableWidget(CycleButton.builder(TestInstanceBlockEditScreen::rotationDisplay, this.blockEntity.getRotation()).withValues(Rotation.values()).displayOnlyValue().create(this.widgetX(var7++, 5), 160, widgetSize(5), 20, ROTATION_LABEL, (var1x, var2x) -> this.updateSaveState()));
-      this.includeEntitiesButton = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(!this.blockEntity.ignoreEntities()).displayOnlyValue().create(this.widgetX(var7++, 5), 160, widgetSize(5), 20, INCLUDE_ENTITIES_LABEL));
-      var7 = 0;
-      this.addRenderableWidget(Button.builder(Component.translatable("test_instance.action.reset"), (var1x) -> {
+      this.setSize(size);
+      this.rotationButton = (CycleButton)this.addRenderableWidget(CycleButton.builder(TestInstanceBlockEditScreen::rotationDisplay, this.blockEntity.getRotation()).withValues(Rotation.values()).displayOnlyValue().create(this.widgetX(index++, 5), 160, widgetSize(5), 20, ROTATION_LABEL, (button, value) -> this.updateSaveState()));
+      this.includeEntitiesButton = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(!this.blockEntity.ignoreEntities()).displayOnlyValue().create(this.widgetX(index++, 5), 160, widgetSize(5), 20, INCLUDE_ENTITIES_LABEL));
+      index = 0;
+      this.addRenderableWidget(Button.builder(Component.translatable("test_instance.action.reset"), (button) -> {
          this.sendToServer(ServerboundTestInstanceBlockActionPacket.Action.RESET);
          this.minecraft.setScreen((Screen)null);
-      }).bounds(this.widgetX(var7++, var3), 185, var4, 20).build());
-      this.saveButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("test_instance.action.save"), (var1x) -> {
+      }).bounds(this.widgetX(index++, actionButtonCount), 185, buttonSize, 20).build());
+      this.saveButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("test_instance.action.save"), (button) -> {
          this.sendToServer(ServerboundTestInstanceBlockActionPacket.Action.SAVE);
          this.minecraft.setScreen((Screen)null);
-      }).bounds(this.widgetX(var7++, var3), 185, var4, 20).build());
-      if (var2) {
-         this.exportButton = (Button)this.addRenderableWidget(Button.builder(Component.literal("Export Structure"), (var1x) -> {
+      }).bounds(this.widgetX(index++, actionButtonCount), 185, buttonSize, 20).build());
+      if (includeExport) {
+         this.exportButton = (Button)this.addRenderableWidget(Button.builder(Component.literal("Export Structure"), (button) -> {
             this.sendToServer(ServerboundTestInstanceBlockActionPacket.Action.EXPORT);
             this.minecraft.setScreen((Screen)null);
-         }).bounds(this.widgetX(var7++, var3), 185, var4, 20).build());
+         }).bounds(this.widgetX(index++, actionButtonCount), 185, buttonSize, 20).build());
       }
 
-      this.addRenderableWidget(Button.builder(Component.translatable("test_instance.action.run"), (var1x) -> {
+      this.addRenderableWidget(Button.builder(Component.translatable("test_instance.action.run"), (button) -> {
          this.sendToServer(ServerboundTestInstanceBlockActionPacket.Action.RUN);
          this.minecraft.setScreen((Screen)null);
       }).bounds(this.widgetX(0, 3), 210, widgetSize(3), 20).build());
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.onDone()).bounds(this.widgetX(1, 3), 210, widgetSize(3), 20).build());
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> this.onCancel()).bounds(this.widgetX(2, 3), 210, widgetSize(3), 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (button) -> this.onDone()).bounds(this.widgetX(1, 3), 210, widgetSize(3), 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (button) -> this.onCancel()).bounds(this.widgetX(2, 3), 210, widgetSize(3), 20).build());
       this.updateTestInfo(true);
    }
 
    private void updateSaveState() {
-      boolean var1 = this.rotationButton.getValue() == Rotation.NONE && Identifier.tryParse(this.idEdit.getValue()) != null;
-      this.saveButton.active = var1;
+      boolean allowSaving = this.rotationButton.getValue() == Rotation.NONE && Identifier.tryParse(this.idEdit.getValue()) != null;
+      this.saveButton.active = allowSaving;
       if (this.exportButton != null) {
-         this.exportButton.active = var1;
+         this.exportButton.active = allowSaving;
       }
 
    }
 
-   private static Component rotationDisplay(Rotation var0) {
+   private static Component rotationDisplay(final Rotation rotation) {
       String var10000;
-      switch (var0) {
+      switch (rotation) {
          case NONE -> var10000 = "0";
          case CLOCKWISE_90 -> var10000 = "90";
          case CLOCKWISE_180 -> var10000 = "180";
@@ -124,39 +125,39 @@ public class TestInstanceBlockEditScreen extends Screen {
       return Component.literal(var10000);
    }
 
-   private void setSize(Vec3i var1) {
-      this.sizeXEdit.setValue(Integer.toString(var1.getX()));
-      this.sizeYEdit.setValue(Integer.toString(var1.getY()));
-      this.sizeZEdit.setValue(Integer.toString(var1.getZ()));
+   private void setSize(final Vec3i size) {
+      this.sizeXEdit.setValue(Integer.toString(size.getX()));
+      this.sizeYEdit.setValue(Integer.toString(size.getY()));
+      this.sizeZEdit.setValue(Integer.toString(size.getZ()));
    }
 
-   private int widgetX(int var1, int var2) {
-      int var3 = this.width / 2 - 158;
-      float var4 = exactWidgetSize(var2);
-      return (int)((float)var3 + (float)var1 * (8.0F + var4));
+   private int widgetX(final int index, final int count) {
+      int leftEdge = this.width / 2 - 158;
+      float buttonSize = exactWidgetSize(count);
+      return (int)((float)leftEdge + (float)index * (8.0F + buttonSize));
    }
 
-   private static int widgetSize(int var0) {
-      return (int)exactWidgetSize(var0);
+   private static int widgetSize(final int count) {
+      return (int)exactWidgetSize(count);
    }
 
-   private static float exactWidgetSize(int var0) {
-      return (float)(316 - (var0 - 1) * 8) / (float)var0;
+   private static float exactWidgetSize(final int count) {
+      return (float)(316 - (count - 1) * 8) / (float)count;
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      int var5 = this.width / 2 - 158;
-      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 10, -1);
-      var1.drawString(this.font, (Component)ID_LABEL, var5, 30, -6250336);
-      var1.drawString(this.font, (Component)SIZE_LABEL, var5, 150, -6250336);
-      var1.drawString(this.font, (Component)ROTATION_LABEL, this.rotationButton.getX(), 150, -6250336);
-      var1.drawString(this.font, (Component)INCLUDE_ENTITIES_LABEL, this.includeEntitiesButton.getX(), 150, -6250336);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
+      int leftEdge = this.width / 2 - 158;
+      graphics.centeredText(this.font, (Component)this.title, this.width / 2, 10, -1);
+      graphics.text(this.font, (Component)ID_LABEL, leftEdge, 30, -6250336);
+      graphics.text(this.font, (Component)SIZE_LABEL, leftEdge, 150, -6250336);
+      graphics.text(this.font, (Component)ROTATION_LABEL, this.rotationButton.getX(), 150, -6250336);
+      graphics.text(this.font, (Component)INCLUDE_ENTITIES_LABEL, this.includeEntitiesButton.getX(), 150, -6250336);
    }
 
-   private void updateTestInfo(boolean var1) {
-      boolean var2 = this.sendToServer(var1 ? ServerboundTestInstanceBlockActionPacket.Action.INIT : ServerboundTestInstanceBlockActionPacket.Action.QUERY);
-      if (!var2) {
+   private void updateTestInfo(final boolean isInit) {
+      boolean valid = this.sendToServer(isInit ? ServerboundTestInstanceBlockActionPacket.Action.INIT : ServerboundTestInstanceBlockActionPacket.Action.QUERY);
+      if (!valid) {
          this.infoWidget.setMessage(Component.translatable("test_instance.description.invalid_id").withStyle(ChatFormatting.RED));
       }
 
@@ -168,30 +169,30 @@ public class TestInstanceBlockEditScreen extends Screen {
       this.onClose();
    }
 
-   private boolean sendToServer(ServerboundTestInstanceBlockActionPacket.Action var1) {
-      Optional var2 = Optional.ofNullable(Identifier.tryParse(this.idEdit.getValue()));
-      Optional var3 = var2.map((var0) -> ResourceKey.create(Registries.TEST_INSTANCE, var0));
-      Vec3i var4 = new Vec3i(parseSize(this.sizeXEdit.getValue()), parseSize(this.sizeYEdit.getValue()), parseSize(this.sizeZEdit.getValue()));
-      boolean var5 = !(Boolean)this.includeEntitiesButton.getValue();
-      this.minecraft.getConnection().send(new ServerboundTestInstanceBlockActionPacket(this.blockEntity.getBlockPos(), var1, var3, var4, this.rotationButton.getValue(), var5));
-      return var2.isPresent();
+   private boolean sendToServer(final ServerboundTestInstanceBlockActionPacket.Action action) {
+      Optional<Identifier> id = Optional.ofNullable(Identifier.tryParse(this.idEdit.getValue()));
+      Optional<ResourceKey<GameTestInstance>> key = id.map((i) -> ResourceKey.create(Registries.TEST_INSTANCE, i));
+      Vec3i size = new Vec3i(parseSize(this.sizeXEdit.getValue()), parseSize(this.sizeYEdit.getValue()), parseSize(this.sizeZEdit.getValue()));
+      boolean ignoreEntities = !(Boolean)this.includeEntitiesButton.getValue();
+      this.minecraft.getConnection().send(new ServerboundTestInstanceBlockActionPacket(this.blockEntity.getBlockPos(), action, key, size, this.rotationButton.getValue(), ignoreEntities));
+      return id.isPresent();
    }
 
-   public void setStatus(Component var1, Optional<Vec3i> var2) {
-      MutableComponent var3 = Component.empty();
-      this.blockEntity.errorMessage().ifPresent((var1x) -> var3.append((Component)Component.translatable("test_instance.description.failed", Component.empty().withStyle(ChatFormatting.RED).append(var1x))).append("\n\n"));
-      var3.append(var1);
-      this.infoWidget.setMessage(var3);
-      var2.ifPresent(this::setSize);
+   public void setStatus(final Component status, final Optional<Vec3i> size) {
+      MutableComponent description = Component.empty();
+      this.blockEntity.errorMessage().ifPresent((error) -> description.append((Component)Component.translatable("test_instance.description.failed", Component.empty().withStyle(ChatFormatting.RED).append(error))).append("\n\n"));
+      description.append(status);
+      this.infoWidget.setMessage(description);
+      size.ifPresent(this::setSize);
    }
 
    private void onCancel() {
       this.onClose();
    }
 
-   private static int parseSize(String var0) {
+   private static int parseSize(final String value) {
       try {
-         return Mth.clamp(Integer.parseInt(var0), 1, 48);
+         return Mth.clamp(Integer.parseInt(value), 1, 48);
       } catch (NumberFormatException var2) {
          return 1;
       }

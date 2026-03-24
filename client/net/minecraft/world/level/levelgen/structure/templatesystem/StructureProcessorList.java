@@ -5,9 +5,9 @@ import java.util.List;
 public class StructureProcessorList {
    private final List<StructureProcessor> list;
 
-   public StructureProcessorList(List<StructureProcessor> var1) {
+   public StructureProcessorList(final List<StructureProcessor> list) {
       super();
-      this.list = var1;
+      this.list = list;
    }
 
    public List<StructureProcessor> list() {

@@ -15,12 +15,11 @@ public record IsKeybindDown(KeyMapping keybind) implements ConditionalItemModelP
    private static final Codec<KeyMapping> KEYBIND_CODEC;
    public static final MapCodec<IsKeybindDown> MAP_CODEC;
 
-   public IsKeybindDown(KeyMapping var1) {
+   public IsKeybindDown {
       super();
-      this.keybind = var1;
    }
 
-   public boolean get(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3, int var4, ItemDisplayContext var5) {
+   public boolean get(final ItemStack itemStack, final @Nullable ClientLevel level, final @Nullable LivingEntity owner, final int seed, final ItemDisplayContext displayContext) {
       return this.keybind.isDown();
    }
 
@@ -29,10 +28,10 @@ public record IsKeybindDown(KeyMapping keybind) implements ConditionalItemModelP
    }
 
    static {
-      KEYBIND_CODEC = Codec.STRING.comapFlatMap((var0) -> {
-         KeyMapping var1 = KeyMapping.get(var0);
-         return var1 != null ? DataResult.success(var1) : DataResult.error(() -> "Invalid keybind: " + var0);
+      KEYBIND_CODEC = Codec.STRING.comapFlatMap((id) -> {
+         KeyMapping mapping = KeyMapping.get(id);
+         return mapping != null ? DataResult.success(mapping) : DataResult.error(() -> "Invalid keybind: " + id);
       }, KeyMapping::getName);
-      MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(KEYBIND_CODEC.fieldOf("keybind").forGetter(IsKeybindDown::keybind)).apply(var0, IsKeybindDown::new));
+      MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(KEYBIND_CODEC.fieldOf("keybind").forGetter(IsKeybindDown::keybind)).apply(i, IsKeybindDown::new));
    }
 }

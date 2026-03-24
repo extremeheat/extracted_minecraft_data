@@ -20,38 +20,38 @@ public enum Mirror implements StringRepresentable {
    private final Component symbol;
    private final OctahedralGroup rotation;
 
-   private Mirror(final String var3, final OctahedralGroup var4) {
-      this.id = var3;
-      this.symbol = Component.translatable("mirror." + var3);
-      this.rotation = var4;
+   private Mirror(final String id, final OctahedralGroup rotation) {
+      this.id = id;
+      this.symbol = Component.translatable("mirror." + id);
+      this.rotation = rotation;
    }
 
-   public int mirror(int var1, int var2) {
-      int var3 = var2 / 2;
-      int var4 = var1 > var3 ? var1 - var2 : var1;
+   public int mirror(final int rotation, final int steps) {
+      int halfSteps = steps / 2;
+      int correctedRotation = rotation > halfSteps ? rotation - steps : rotation;
       switch (this.ordinal()) {
          case 1 -> {
-            return (var3 - var4 + var2) % var2;
+            return (halfSteps - correctedRotation + steps) % steps;
          }
          case 2 -> {
-            return (var2 - var4) % var2;
+            return (steps - correctedRotation) % steps;
          }
          default -> {
-            return var1;
+            return rotation;
          }
       }
    }
 
-   public Rotation getRotation(Direction var1) {
-      Direction.Axis var2 = var1.getAxis();
-      return (this != LEFT_RIGHT || var2 != Direction.Axis.Z) && (this != FRONT_BACK || var2 != Direction.Axis.X) ? Rotation.NONE : Rotation.CLOCKWISE_180;
+   public Rotation getRotation(final Direction value) {
+      Direction.Axis axis = value.getAxis();
+      return (this != LEFT_RIGHT || axis != Direction.Axis.Z) && (this != FRONT_BACK || axis != Direction.Axis.X) ? Rotation.NONE : Rotation.CLOCKWISE_180;
    }
 
-   public Direction mirror(Direction var1) {
-      if (this == FRONT_BACK && var1.getAxis() == Direction.Axis.X) {
-         return var1.getOpposite();
+   public Direction mirror(final Direction direction) {
+      if (this == FRONT_BACK && direction.getAxis() == Direction.Axis.X) {
+         return direction.getOpposite();
       } else {
-         return this == LEFT_RIGHT && var1.getAxis() == Direction.Axis.Z ? var1.getOpposite() : var1;
+         return this == LEFT_RIGHT && direction.getAxis() == Direction.Axis.Z ? direction.getOpposite() : direction;
       }
    }
 

@@ -6,10 +6,8 @@ import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
 public record AnimationChannel(Target target, Keyframe... keyframes) {
-   public AnimationChannel(Target var1, Keyframe... var2) {
+   public AnimationChannel {
       super();
-      this.target = var1;
-      this.keyframes = var2;
    }
 
    public static class Targets {
@@ -23,18 +21,18 @@ public record AnimationChannel(Target target, Keyframe... keyframes) {
    }
 
    public static class Interpolations {
-      public static final Interpolation LINEAR = (var0, var1, var2, var3, var4, var5) -> {
-         Vector3fc var6 = var2[var3].postTarget();
-         Vector3fc var7 = var2[var4].preTarget();
-         return var6.lerp(var7, var1, var0).mul(var5);
+      public static final Interpolation LINEAR = (vector, alpha, keyframes, prev, next, targetScale) -> {
+         Vector3fc point0 = keyframes[prev].postTarget();
+         Vector3fc point1 = keyframes[next].preTarget();
+         return point0.lerp(point1, alpha, vector).mul(targetScale);
       };
-      public static final Interpolation CATMULLROM = (var0, var1, var2, var3, var4, var5) -> {
-         Vector3fc var6 = var2[Math.max(0, var3 - 1)].postTarget();
-         Vector3fc var7 = var2[var3].postTarget();
-         Vector3fc var8 = var2[var4].postTarget();
-         Vector3fc var9 = var2[Math.min(var2.length - 1, var4 + 1)].postTarget();
-         var0.set(Mth.catmullrom(var1, var6.x(), var7.x(), var8.x(), var9.x()) * var5, Mth.catmullrom(var1, var6.y(), var7.y(), var8.y(), var9.y()) * var5, Mth.catmullrom(var1, var6.z(), var7.z(), var8.z(), var9.z()) * var5);
-         return var0;
+      public static final Interpolation CATMULLROM = (vector, alpha, keyframes, prev, next, targetScale) -> {
+         Vector3fc point0 = keyframes[Math.max(0, prev - 1)].postTarget();
+         Vector3fc point1 = keyframes[prev].postTarget();
+         Vector3fc point2 = keyframes[next].postTarget();
+         Vector3fc point3 = keyframes[Math.min(keyframes.length - 1, next + 1)].postTarget();
+         vector.set(Mth.catmullrom(alpha, point0.x(), point1.x(), point2.x(), point3.x()) * targetScale, Mth.catmullrom(alpha, point0.y(), point1.y(), point2.y(), point3.y()) * targetScale, Mth.catmullrom(alpha, point0.z(), point1.z(), point2.z(), point3.z()) * targetScale);
+         return vector;
       };
 
       public Interpolations() {
@@ -43,10 +41,10 @@ public record AnimationChannel(Target target, Keyframe... keyframes) {
    }
 
    public interface Interpolation {
-      Vector3f apply(Vector3f var1, float var2, Keyframe[] var3, int var4, int var5, float var6);
+      Vector3f apply(final Vector3f vector, final float alpha, final Keyframe[] keyframes, final int prev, final int next, final float targetScale);
    }
 
    public interface Target {
-      void apply(ModelPart var1, Vector3f var2);
+      void apply(final ModelPart animationBone, final Vector3f target);
    }
 }

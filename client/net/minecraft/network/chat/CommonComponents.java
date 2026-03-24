@@ -37,52 +37,52 @@ public class CommonComponents {
       return Component.literal(" ");
    }
 
-   public static MutableComponent days(long var0) {
-      return Component.translatable("gui.days", var0);
+   public static MutableComponent days(final long value) {
+      return Component.translatable("gui.days", value);
    }
 
-   public static MutableComponent hours(long var0) {
-      return Component.translatable("gui.hours", var0);
+   public static MutableComponent hours(final long value) {
+      return Component.translatable("gui.hours", value);
    }
 
-   public static MutableComponent minutes(long var0) {
-      return Component.translatable("gui.minutes", var0);
+   public static MutableComponent minutes(final long value) {
+      return Component.translatable("gui.minutes", value);
    }
 
-   public static Component optionStatus(boolean var0) {
-      return var0 ? OPTION_ON : OPTION_OFF;
+   public static Component optionStatus(final boolean value) {
+      return value ? OPTION_ON : OPTION_OFF;
    }
 
-   public static Component disconnectButtonLabel(boolean var0) {
-      return var0 ? GUI_RETURN_TO_MENU : GUI_DISCONNECT;
+   public static Component disconnectButtonLabel(final boolean isLocalServer) {
+      return isLocalServer ? GUI_RETURN_TO_MENU : GUI_DISCONNECT;
    }
 
-   public static MutableComponent optionStatus(Component var0, boolean var1) {
-      return Component.translatable(var1 ? "options.on.composed" : "options.off.composed", var0);
+   public static MutableComponent optionStatus(final Component name, final boolean value) {
+      return Component.translatable(value ? "options.on.composed" : "options.off.composed", name);
    }
 
-   public static MutableComponent optionNameValue(Component var0, Component var1) {
-      return Component.translatable("options.generic_value", var0, var1);
+   public static MutableComponent optionNameValue(final Component name, final Component value) {
+      return Component.translatable("options.generic_value", name, value);
    }
 
-   public static MutableComponent joinForNarration(Component... var0) {
-      MutableComponent var1 = Component.empty();
+   public static MutableComponent joinForNarration(final Component... components) {
+      MutableComponent result = Component.empty();
 
-      for(int var2 = 0; var2 < var0.length; ++var2) {
-         var1.append(var0[var2]);
-         if (var2 != var0.length - 1) {
-            var1.append(NARRATION_SEPARATOR);
+      for(int i = 0; i < components.length; ++i) {
+         result.append(components[i]);
+         if (i != components.length - 1) {
+            result.append(NARRATION_SEPARATOR);
          }
       }
 
-      return var1;
+      return result;
    }
 
-   public static Component joinLines(Component... var0) {
-      return joinLines((Collection)Arrays.asList(var0));
+   public static Component joinLines(final Component... lines) {
+      return joinLines((Collection)Arrays.asList(lines));
    }
 
-   public static Component joinLines(Collection<? extends Component> var0) {
-      return ComponentUtils.formatList(var0, NEW_LINE);
+   public static Component joinLines(final Collection<? extends Component> lines) {
+      return ComponentUtils.formatList(lines, NEW_LINE);
    }
 }

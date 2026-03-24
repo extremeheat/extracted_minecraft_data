@@ -30,11 +30,11 @@ public class CommonPacketTypes {
       super();
    }
 
-   private static <T extends Packet<ClientCommonPacketListener>> PacketType<T> createClientbound(String var0) {
-      return new PacketType<T>(PacketFlow.CLIENTBOUND, Identifier.withDefaultNamespace(var0));
+   private static <T extends Packet<ClientCommonPacketListener>> PacketType<T> createClientbound(final String id) {
+      return new PacketType<T>(PacketFlow.CLIENTBOUND, Identifier.withDefaultNamespace(id));
    }
 
-   private static <T extends Packet<ServerCommonPacketListener>> PacketType<T> createServerbound(String var0) {
-      return new PacketType<T>(PacketFlow.SERVERBOUND, Identifier.withDefaultNamespace(var0));
+   private static <T extends Packet<ServerCommonPacketListener>> PacketType<T> createServerbound(final String id) {
+      return new PacketType<T>(PacketFlow.SERVERBOUND, Identifier.withDefaultNamespace(id));
    }
 }

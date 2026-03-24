@@ -20,20 +20,20 @@ public class StructureGridSpawner implements GameTestRunner.StructureSpawner {
    private float maxX = -1.0F;
    private final Collection<GameTestInfo> testInLastBatch = new ArrayList();
 
-   public StructureGridSpawner(BlockPos var1, int var2, boolean var3) {
+   public StructureGridSpawner(final BlockPos firstTestNorthWestCorner, final int testsPerRow, final boolean clearOnBatch) {
       super();
-      this.testsPerRow = var2;
-      this.nextTestNorthWestCorner = var1.mutable();
+      this.testsPerRow = testsPerRow;
+      this.nextTestNorthWestCorner = firstTestNorthWestCorner.mutable();
       this.rowBounds = new AABB(this.nextTestNorthWestCorner);
-      this.firstTestNorthWestCorner = var1;
-      this.clearOnBatch = var3;
+      this.firstTestNorthWestCorner = firstTestNorthWestCorner;
+      this.clearOnBatch = clearOnBatch;
    }
 
-   public void onBatchStart(ServerLevel var1) {
+   public void onBatchStart(final ServerLevel level) {
       if (this.clearOnBatch) {
-         this.testInLastBatch.forEach((var1x) -> {
-            BoundingBox var2 = var1x.getTestInstanceBlockEntity().getStructureBoundingBox();
-            StructureUtils.clearSpaceForStructure(var2, var1);
+         this.testInLastBatch.forEach((info) -> {
+            BoundingBox boundingBox = info.getTestInstanceBlockEntity().getTestBoundingBox();
+            StructureUtils.clearSpaceForStructure(boundingBox, level);
          });
          this.testInLastBatch.clear();
          this.rowBounds = new AABB(this.firstTestNorthWestCorner);
@@ -42,17 +42,17 @@ public class StructureGridSpawner implements GameTestRunner.StructureSpawner {
 
    }
 
-   public Optional<GameTestInfo> spawnStructure(GameTestInfo var1) {
-      BlockPos var2 = new BlockPos(this.nextTestNorthWestCorner);
-      var1.setTestBlockPos(var2);
-      GameTestInfo var3 = var1.prepareTestStructure();
-      if (var3 == null) {
+   public Optional<GameTestInfo> spawnStructure(final GameTestInfo testInfo) {
+      BlockPos northWestCorner = new BlockPos(this.nextTestNorthWestCorner);
+      testInfo.setTestBlockPos(northWestCorner);
+      GameTestInfo infoWithStructure = testInfo.prepareTestStructure();
+      if (infoWithStructure == null) {
          return Optional.empty();
       } else {
-         var3.startExecution(1);
-         AABB var4 = var1.getTestInstanceBlockEntity().getStructureBounds();
-         this.rowBounds = this.rowBounds.minmax(var4);
-         this.nextTestNorthWestCorner.move((int)var4.getXsize() + 5, 0, 0);
+         infoWithStructure.startExecution(1);
+         AABB structureBounds = testInfo.getTestInstanceBlockEntity().getTestBounds();
+         this.rowBounds = this.rowBounds.minmax(structureBounds);
+         this.nextTestNorthWestCorner.move((int)structureBounds.getXsize() + 5, 0, 0);
          if ((float)this.nextTestNorthWestCorner.getX() > this.maxX) {
             this.maxX = (float)this.nextTestNorthWestCorner.getX();
          }
@@ -64,8 +64,8 @@ public class StructureGridSpawner implements GameTestRunner.StructureSpawner {
             this.rowBounds = new AABB(this.nextTestNorthWestCorner);
          }
 
-         this.testInLastBatch.add(var1);
-         return Optional.of(var1);
+         this.testInLastBatch.add(testInfo);
+         return Optional.of(testInfo);
       }
    }
 }

@@ -19,81 +19,81 @@ public class PoiDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    private static final int ORANGE = -23296;
    private final BrainDebugRenderer brainRenderer;
 
-   public PoiDebugRenderer(BrainDebugRenderer var1) {
+   public PoiDebugRenderer(final BrainDebugRenderer brainRenderer) {
       super();
-      this.brainRenderer = var1;
+      this.brainRenderer = brainRenderer;
    }
 
-   public void emitGizmos(double var1, double var3, double var5, DebugValueAccess var7, Frustum var8, float var9) {
-      BlockPos var10 = BlockPos.containing(var1, var3, var5);
-      var7.forEachBlock(DebugSubscriptions.POIS, (var3x, var4) -> {
-         if (var10.closerThan(var3x, 30.0)) {
-            highlightPoi(var3x);
-            this.renderPoiInfo(var4, var7);
+   public void emitGizmos(final double camX, final double camY, final double camZ, final DebugValueAccess debugValues, final Frustum frustum, final float partialTicks) {
+      BlockPos playerPos = BlockPos.containing(camX, camY, camZ);
+      debugValues.forEachBlock(DebugSubscriptions.POIS, (pos, poi) -> {
+         if (playerPos.closerThan(pos, 30.0)) {
+            highlightPoi(pos);
+            this.renderPoiInfo(poi, debugValues);
          }
 
       });
-      this.brainRenderer.getGhostPois(var7).forEach((var3x, var4) -> {
-         if (var7.getBlockValue(DebugSubscriptions.POIS, var3x) == null) {
-            if (var10.closerThan(var3x, 30.0)) {
-               this.renderGhostPoi(var3x, var4);
+      this.brainRenderer.getGhostPois(debugValues).forEach((poiPos, value) -> {
+         if (debugValues.getBlockValue(DebugSubscriptions.POIS, poiPos) == null) {
+            if (playerPos.closerThan(poiPos, 30.0)) {
+               this.renderGhostPoi(poiPos, value);
             }
 
          }
       });
    }
 
-   private static void highlightPoi(BlockPos var0) {
-      float var1 = 0.05F;
-      Gizmos.cuboid(var0, 0.05F, GizmoStyle.fill(ARGB.colorFromFloat(0.3F, 0.2F, 0.2F, 1.0F)));
+   private static void highlightPoi(final BlockPos poiPos) {
+      float padding = 0.05F;
+      Gizmos.cuboid(poiPos, 0.05F, GizmoStyle.fill(ARGB.colorFromFloat(0.3F, 0.2F, 0.2F, 1.0F)));
    }
 
-   private void renderGhostPoi(BlockPos var1, List<String> var2) {
-      float var3 = 0.05F;
-      Gizmos.cuboid(var1, 0.05F, GizmoStyle.fill(ARGB.colorFromFloat(0.3F, 0.2F, 0.2F, 1.0F)));
-      Gizmos.billboardTextOverBlock(var2.toString(), var1, 0, -256, 0.32F);
-      Gizmos.billboardTextOverBlock("Ghost POI", var1, 1, -65536, 0.32F);
+   private void renderGhostPoi(final BlockPos poiPos, final List<String> names) {
+      float padding = 0.05F;
+      Gizmos.cuboid(poiPos, 0.05F, GizmoStyle.fill(ARGB.colorFromFloat(0.3F, 0.2F, 0.2F, 1.0F)));
+      Gizmos.billboardTextOverBlock(names.toString(), poiPos, 0, -256, 0.32F);
+      Gizmos.billboardTextOverBlock("Ghost POI", poiPos, 1, -65536, 0.32F);
    }
 
-   private void renderPoiInfo(DebugPoiInfo var1, DebugValueAccess var2) {
-      int var3 = 0;
+   private void renderPoiInfo(final DebugPoiInfo poi, final DebugValueAccess debugValues) {
+      int row = 0;
       if (SharedConstants.DEBUG_BRAIN) {
-         List var4 = this.getTicketHolderNames(var1, false, var2);
-         if (var4.size() < 4) {
-            renderTextOverPoi("Owners: " + String.valueOf(var4), var1, var3, -256);
+         List<String> ticketHolderNames = this.getTicketHolderNames(poi, false, debugValues);
+         if (ticketHolderNames.size() < 4) {
+            renderTextOverPoi("Owners: " + String.valueOf(ticketHolderNames), poi, row, -256);
          } else {
-            renderTextOverPoi(var4.size() + " ticket holders", var1, var3, -256);
+            renderTextOverPoi(ticketHolderNames.size() + " ticket holders", poi, row, -256);
          }
 
-         ++var3;
-         List var5 = this.getTicketHolderNames(var1, true, var2);
-         if (var5.size() < 4) {
-            renderTextOverPoi("Candidates: " + String.valueOf(var5), var1, var3, -23296);
+         ++row;
+         List<String> potentialTicketHolderNames = this.getTicketHolderNames(poi, true, debugValues);
+         if (potentialTicketHolderNames.size() < 4) {
+            renderTextOverPoi("Candidates: " + String.valueOf(potentialTicketHolderNames), poi, row, -23296);
          } else {
-            renderTextOverPoi(var5.size() + " potential owners", var1, var3, -23296);
+            renderTextOverPoi(potentialTicketHolderNames.size() + " potential owners", poi, row, -23296);
          }
 
-         ++var3;
+         ++row;
       }
 
-      renderTextOverPoi("Free tickets: " + var1.freeTicketCount(), var1, var3, -256);
-      ++var3;
-      renderTextOverPoi(var1.poiType().getRegisteredName(), var1, var3, -1);
+      renderTextOverPoi("Free tickets: " + poi.freeTicketCount(), poi, row, -256);
+      ++row;
+      renderTextOverPoi(poi.poiType().getRegisteredName(), poi, row, -1);
    }
 
-   private static void renderTextOverPoi(String var0, DebugPoiInfo var1, int var2, int var3) {
-      Gizmos.billboardTextOverBlock(var0, var1.pos(), var2, var3, 0.32F);
+   private static void renderTextOverPoi(final String text, final DebugPoiInfo poi, final int row, final int color) {
+      Gizmos.billboardTextOverBlock(text, poi.pos(), row, color, 0.32F);
    }
 
-   private List<String> getTicketHolderNames(DebugPoiInfo var1, boolean var2, DebugValueAccess var3) {
-      ArrayList var4 = new ArrayList();
-      var3.forEachEntity(DebugSubscriptions.BRAINS, (var3x, var4x) -> {
-         boolean var5 = var2 ? var4x.hasPotentialPoi(var1.pos()) : var4x.hasPoi(var1.pos());
-         if (var5) {
-            var4.add(DebugEntityNameGenerator.getEntityName(var3x.getUUID()));
+   private List<String> getTicketHolderNames(final DebugPoiInfo poi, final boolean potential, final DebugValueAccess debugValues) {
+      List<String> names = new ArrayList();
+      debugValues.forEachEntity(DebugSubscriptions.BRAINS, (entity, brainDump) -> {
+         boolean include = potential ? brainDump.hasPotentialPoi(poi.pos()) : brainDump.hasPoi(poi.pos());
+         if (include) {
+            names.add(DebugEntityNameGenerator.getEntityName(entity.getUUID()));
          }
 
       });
-      return var4;
+      return names;
    }
 }

@@ -36,42 +36,42 @@ public abstract class Language {
    }
 
    private static Language loadDefault() {
-      DeprecatedTranslationsInfo var0 = DeprecatedTranslationsInfo.loadFromDefaultResource();
-      HashMap var1 = new HashMap();
-      Objects.requireNonNull(var1);
-      BiConsumer var2 = var1::put;
-      parseTranslations(var2, "/assets/minecraft/lang/en_us.json");
-      var0.applyToMap(var1);
-      final Map var3 = Map.copyOf(var1);
+      DeprecatedTranslationsInfo deprecatedInfo = DeprecatedTranslationsInfo.loadFromDefaultResource();
+      Map<String, String> loadedData = new HashMap();
+      Objects.requireNonNull(loadedData);
+      BiConsumer<String, String> output = loadedData::put;
+      parseTranslations(output, "/assets/minecraft/lang/en_us.json");
+      deprecatedInfo.applyToMap(loadedData);
+      final Map<String, String> storage = Map.copyOf(loadedData);
       return new Language() {
-         public String getOrDefault(String var1, String var2) {
-            return (String)var3.getOrDefault(var1, var2);
+         public String getOrDefault(final String elementId, final String defaultValue) {
+            return (String)storage.getOrDefault(elementId, defaultValue);
          }
 
-         public boolean has(String var1) {
-            return var3.containsKey(var1);
+         public boolean has(final String elementId) {
+            return storage.containsKey(elementId);
          }
 
          public boolean isDefaultRightToLeft() {
             return false;
          }
 
-         public FormattedCharSequence getVisualOrder(FormattedText var1) {
-            return (var1x) -> var1.visit((var1xx, var2) -> StringDecomposer.iterateFormatted(var2, var1xx, var1x) ? Optional.empty() : FormattedText.STOP_ITERATION, Style.EMPTY).isPresent();
+         public FormattedCharSequence getVisualOrder(final FormattedText logicalOrderText) {
+            return (output) -> logicalOrderText.visit((style, contents) -> StringDecomposer.iterateFormatted(contents, style, output) ? Optional.empty() : FormattedText.STOP_ITERATION, Style.EMPTY).isPresent();
          }
       };
    }
 
-   private static void parseTranslations(BiConsumer<String, String> var0, String var1) {
+   private static void parseTranslations(final BiConsumer<String, String> output, final String path) {
       try {
-         InputStream var2 = Language.class.getResourceAsStream(var1);
+         InputStream stream = Language.class.getResourceAsStream(path);
 
          try {
-            loadFromJson(var2, var0);
+            loadFromJson(stream, output);
          } catch (Throwable var6) {
-            if (var2 != null) {
+            if (stream != null) {
                try {
-                  var2.close();
+                  stream.close();
                } catch (Throwable var5) {
                   var6.addSuppressed(var5);
                }
@@ -80,21 +80,21 @@ public abstract class Language {
             throw var6;
          }
 
-         if (var2 != null) {
-            var2.close();
+         if (stream != null) {
+            stream.close();
          }
-      } catch (JsonParseException | IOException var7) {
-         LOGGER.error("Couldn't read strings from {}", var1, var7);
+      } catch (JsonParseException | IOException e) {
+         LOGGER.error("Couldn't read strings from {}", path, e);
       }
 
    }
 
-   public static void loadFromJson(InputStream var0, BiConsumer<String, String> var1) {
-      JsonObject var2 = (JsonObject)GSON.fromJson(new InputStreamReader(var0, StandardCharsets.UTF_8), JsonObject.class);
+   public static void loadFromJson(final InputStream stream, final BiConsumer<String, String> output) {
+      JsonObject entries = (JsonObject)GSON.fromJson(new InputStreamReader(stream, StandardCharsets.UTF_8), JsonObject.class);
 
-      for(Map.Entry var4 : var2.entrySet()) {
-         String var5 = UNSUPPORTED_FORMAT_PATTERN.matcher(GsonHelper.convertToString((JsonElement)var4.getValue(), (String)var4.getKey())).replaceAll("%$1s");
-         var1.accept((String)var4.getKey(), var5);
+      for(Map.Entry<String, JsonElement> entry : entries.entrySet()) {
+         String text = UNSUPPORTED_FORMAT_PATTERN.matcher(GsonHelper.convertToString((JsonElement)entry.getValue(), (String)entry.getKey())).replaceAll("%$1s");
+         output.accept((String)entry.getKey(), text);
       }
 
    }
@@ -103,23 +103,23 @@ public abstract class Language {
       return instance;
    }
 
-   public static void inject(Language var0) {
-      instance = var0;
+   public static void inject(final Language language) {
+      instance = language;
    }
 
-   public String getOrDefault(String var1) {
-      return this.getOrDefault(var1, var1);
+   public String getOrDefault(final String elementId) {
+      return this.getOrDefault(elementId, elementId);
    }
 
-   public abstract String getOrDefault(String var1, String var2);
+   public abstract String getOrDefault(final String elementId, final String defaultValue);
 
-   public abstract boolean has(String var1);
+   public abstract boolean has(final String elementId);
 
    public abstract boolean isDefaultRightToLeft();
 
-   public abstract FormattedCharSequence getVisualOrder(FormattedText var1);
+   public abstract FormattedCharSequence getVisualOrder(final FormattedText logicalOrderText);
 
-   public List<FormattedCharSequence> getVisualOrder(List<FormattedText> var1) {
-      return (List)var1.stream().map(this::getVisualOrder).collect(ImmutableList.toImmutableList());
+   public List<FormattedCharSequence> getVisualOrder(final List<FormattedText> lines) {
+      return (List)lines.stream().map(this::getVisualOrder).collect(ImmutableList.toImmutableList());
    }
 }

@@ -14,14 +14,15 @@ import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.OptionalDynamic;
 import it.unimi.dsi.fastutil.ints.Int2IntFunction;
 import it.unimi.dsi.fastutil.ints.Int2IntLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -60,348 +61,348 @@ public class ChunkHeightAndBiomeFix extends DataFix {
    public static final String DEFAULT_BIOME = "minecraft:plains";
    private static final Int2ObjectMap<String> BIOMES_BY_ID = new Int2ObjectOpenHashMap();
 
-   public ChunkHeightAndBiomeFix(Schema var1) {
-      super(var1, true);
+   public ChunkHeightAndBiomeFix(final Schema outputSchema) {
+      super(outputSchema, true);
    }
 
    protected TypeRewriteRule makeRule() {
-      Type var1 = this.getInputSchema().getType(References.CHUNK);
-      OpticFinder var2 = var1.findField("Level");
-      OpticFinder var3 = var2.type().findField("Sections");
-      Schema var4 = this.getOutputSchema();
-      Type var5 = var4.getType(References.CHUNK);
-      Type var6 = var5.findField("Level").type();
-      Type var7 = var6.findField("Sections").type();
-      return this.fixTypeEverywhereTyped("ChunkHeightAndBiomeFix", var1, var5, (var5x) -> var5x.updateTyped(var2, var6, (var4) -> {
-            Dynamic var5 = (Dynamic)var4.get(DSL.remainderFinder());
-            OptionalDynamic var6 = ((Dynamic)var5x.get(DSL.remainderFinder())).get("__context");
-            String var7x = (String)var6.get("dimension").asString().result().orElse("");
-            String var8 = (String)var6.get("generator").asString().result().orElse("");
-            boolean var9 = "minecraft:overworld".equals(var7x);
-            MutableBoolean var10 = new MutableBoolean();
-            int var11 = var9 ? -4 : 0;
-            Dynamic[] var12 = getBiomeContainers(var5, var9, var11, var10);
-            Dynamic var13 = makePalettedContainer(var5.createList(Stream.of(var5.createMap(ImmutableMap.of(var5.createString("Name"), var5.createString("minecraft:air"))))));
-            HashSet var14 = Sets.newHashSet();
-            MutableObject var15 = new MutableObject((Supplier)() -> null);
-            var4 = var4.updateTyped(var3, var7, (var7xx) -> {
-               IntOpenHashSet var8 = new IntOpenHashSet();
-               Dynamic var9 = (Dynamic)var7xx.write().result().orElseThrow(() -> new IllegalStateException("Malformed Chunk.Level.Sections"));
-               List var10 = (List)var9.asStream().map((var6) -> {
-                  int var7 = var6.get("Y").asInt(0);
-                  Dynamic var8x = (Dynamic)DataFixUtils.orElse(var6.get("Palette").result().flatMap((var2) -> {
-                     Stream var10000 = var2.asStream().map((var0) -> var0.get("Name").asString("minecraft:air"));
-                     Objects.requireNonNull(var14);
-                     var10000.forEach(var14::add);
-                     return var6.get("BlockStates").result().map((var1) -> makeOptimizedPalettedContainer(var2, var1));
-                  }), var13);
-                  Dynamic var9 = var6;
-                  int var10 = var7 - var11;
-                  if (var10 >= 0 && var10 < var12.length) {
-                     var9 = var6.set("biomes", var12[var10]);
+      Type<?> oldChunkType = this.getInputSchema().getType(References.CHUNK);
+      OpticFinder<?> levelFinder = oldChunkType.findField("Level");
+      OpticFinder<?> sectionsFinder = levelFinder.type().findField("Sections");
+      Schema outputSchema = this.getOutputSchema();
+      Type<?> chunkType = outputSchema.getType(References.CHUNK);
+      Type<?> levelType = chunkType.findField("Level").type();
+      Type<?> sectionsType = levelType.findField("Sections").type();
+      return this.fixTypeEverywhereTyped("ChunkHeightAndBiomeFix", oldChunkType, chunkType, (chunk) -> chunk.updateTyped(levelFinder, levelType, (level) -> {
+            Dynamic<?> tag = (Dynamic)level.get(DSL.remainderFinder());
+            OptionalDynamic<?> contextTag = ((Dynamic)chunk.get(DSL.remainderFinder())).get("__context");
+            String dimension = (String)contextTag.get("dimension").asString().result().orElse("");
+            String generator = (String)contextTag.get("generator").asString().result().orElse("");
+            boolean isOverworld = "minecraft:overworld".equals(dimension);
+            MutableBoolean wasIncreasedHeight = new MutableBoolean();
+            int minSection = isOverworld ? -4 : 0;
+            Dynamic<?>[] biomeContainers = getBiomeContainers(tag, isOverworld, minSection, wasIncreasedHeight);
+            Dynamic<?> airContainer = makePalettedContainer(tag.createList(Stream.of(tag.createMap(ImmutableMap.of(tag.createString("Name"), tag.createString("minecraft:air"))))));
+            Set<String> blocksInChunk = Sets.newHashSet();
+            MutableObject<Supplier<ChunkProtoTickListFix.PoorMansPalettedContainer>> bedrockSectionBlocks = new MutableObject((Supplier)() -> null);
+            level = level.updateTyped(sectionsFinder, sectionsType, (sections) -> {
+               IntSet doneSections = new IntOpenHashSet();
+               Dynamic<?> dynamic = (Dynamic)sections.write().result().orElseThrow(() -> new IllegalStateException("Malformed Chunk.Level.Sections"));
+               List<Dynamic<?>> sectionsList = (List)dynamic.asStream().map((sectionx) -> {
+                  int sectionY = sectionx.get("Y").asInt(0);
+                  Dynamic<?> blockStatesContainer = (Dynamic)DataFixUtils.orElse(sectionx.get("Palette").result().flatMap((palette) -> {
+                     Stream var10000 = palette.asStream().map((blockState) -> blockState.get("Name").asString("minecraft:air"));
+                     Objects.requireNonNull(blocksInChunk);
+                     var10000.forEach(blocksInChunk::add);
+                     return sectionx.get("BlockStates").result().map((blockStates) -> makeOptimizedPalettedContainer(palette, blockStates));
+                  }), airContainer);
+                  Dynamic<?> result = sectionx;
+                  int sectionYIndex = sectionY - minSection;
+                  if (sectionYIndex >= 0 && sectionYIndex < biomeContainers.length) {
+                     result = sectionx.set("biomes", biomeContainers[sectionYIndex]);
                   }
 
-                  var8.add(var7);
-                  if (var6.get("Y").asInt(2147483647) == 0) {
-                     var15.setValue((Supplier)() -> {
-                        List var1 = var8x.get("palette").asList(Function.identity());
-                        long[] var2 = var8x.get("data").asLongStream().toArray();
-                        return new ChunkProtoTickListFix.PoorMansPalettedContainer(var1, var2);
+                  doneSections.add(sectionY);
+                  if (sectionx.get("Y").asInt(2147483647) == 0) {
+                     bedrockSectionBlocks.setValue((Supplier)() -> {
+                        List<? extends Dynamic<?>> palette = blockStatesContainer.get("palette").asList(Function.identity());
+                        long[] data = blockStatesContainer.get("data").asLongStream().toArray();
+                        return new ChunkProtoTickListFix.PoorMansPalettedContainer(palette, data);
                      });
                   }
 
-                  return var9.set("block_states", var8x).remove("Palette").remove("BlockStates");
+                  return result.set("block_states", blockStatesContainer).remove("Palette").remove("BlockStates");
                }).collect(Collectors.toCollection(ArrayList::new));
 
-               for(int var11x = 0; var11x < var12.length; ++var11x) {
-                  int var12x = var11x + var11;
-                  if (var8.add(var12x)) {
-                     Dynamic var13x = var5.createMap(Map.of(var5.createString("Y"), var5.createInt(var12x)));
-                     var13x = var13x.set("block_states", var13);
-                     var13x = var13x.set("biomes", var12[var11x]);
-                     var10.add(var13x);
+               for(int sectionIndex = 0; sectionIndex < biomeContainers.length; ++sectionIndex) {
+                  int sectionY = sectionIndex + minSection;
+                  if (doneSections.add(sectionY)) {
+                     Dynamic<?> section = tag.createMap(Map.of(tag.createString("Y"), tag.createInt(sectionY)));
+                     section = section.set("block_states", airContainer);
+                     section = section.set("biomes", biomeContainers[sectionIndex]);
+                     sectionsList.add(section);
                   }
                }
 
-               return Util.readTypedOrThrow(var7, var5.createList(var10.stream()));
+               return Util.readTypedOrThrow(sectionsType, tag.createList(sectionsList.stream()));
             });
-            return var4.update(DSL.remainderFinder(), (var6x) -> {
-               if (var9) {
-                  var6x = this.predictChunkStatusBeforeSurface(var6x, var14);
+            return level.update(DSL.remainderFinder(), (chunkTag) -> {
+               if (isOverworld) {
+                  chunkTag = this.predictChunkStatusBeforeSurface(chunkTag, blocksInChunk);
                }
 
-               return updateChunkTag(var6x, var9, var10.booleanValue(), "minecraft:noise".equals(var8), (Supplier)var15.get());
+               return updateChunkTag(chunkTag, isOverworld, wasIncreasedHeight.booleanValue(), "minecraft:noise".equals(generator), (Supplier)bedrockSectionBlocks.get());
             });
          }));
    }
 
-   private Dynamic<?> predictChunkStatusBeforeSurface(Dynamic<?> var1, Set<String> var2) {
-      return var1.update("Status", (var1x) -> {
-         String var2x = var1x.asString("empty");
-         if (STATUS_IS_OR_AFTER_SURFACE.contains(var2x)) {
-            return var1x;
+   private Dynamic<?> predictChunkStatusBeforeSurface(final Dynamic<?> chunkTag, final Set<String> blocksInChunk) {
+      return chunkTag.update("Status", (statusDynamic) -> {
+         String status = statusDynamic.asString("empty");
+         if (STATUS_IS_OR_AFTER_SURFACE.contains(status)) {
+            return statusDynamic;
          } else {
-            var2.remove("minecraft:air");
-            boolean var3 = !var2.isEmpty();
-            var2.removeAll(BLOCKS_BEFORE_FEATURE_STATUS);
-            boolean var4 = !var2.isEmpty();
-            if (var4) {
-               return var1x.createString("liquid_carvers");
-            } else if (!"noise".equals(var2x) && !var3) {
-               return "biomes".equals(var2x) ? var1x.createString("structure_references") : var1x;
+            blocksInChunk.remove("minecraft:air");
+            boolean hasNonAirBlocks = !blocksInChunk.isEmpty();
+            blocksInChunk.removeAll(BLOCKS_BEFORE_FEATURE_STATUS);
+            boolean hasFeatureBlocks = !blocksInChunk.isEmpty();
+            if (hasFeatureBlocks) {
+               return statusDynamic.createString("liquid_carvers");
+            } else if (!"noise".equals(status) && !hasNonAirBlocks) {
+               return "biomes".equals(status) ? statusDynamic.createString("structure_references") : statusDynamic;
             } else {
-               return var1x.createString("noise");
+               return statusDynamic.createString("noise");
             }
          }
       });
    }
 
-   private static Dynamic<?>[] getBiomeContainers(Dynamic<?> var0, boolean var1, int var2, MutableBoolean var3) {
-      Dynamic[] var4 = new Dynamic[var1 ? 24 : 16];
-      int[] var5 = (int[])var0.get("Biomes").asIntStreamOpt().result().map(IntStream::toArray).orElse((Object)null);
-      if (var5 != null && var5.length == 1536) {
-         var3.setValue(true);
+   private static Dynamic<?>[] getBiomeContainers(final Dynamic<?> tag, final boolean increaseHeight, final int minSection, final MutableBoolean wasIncreasedHeight) {
+      Dynamic<?>[] biomeContainers = new Dynamic[increaseHeight ? 24 : 16];
+      int[] oldBiomes = (int[])tag.get("Biomes").asIntStreamOpt().result().map(IntStream::toArray).orElse((Object)null);
+      if (oldBiomes != null && oldBiomes.length == 1536) {
+         wasIncreasedHeight.setValue(true);
 
-         for(int var10 = 0; var10 < 24; ++var10) {
-            var4[var10] = makeBiomeContainer(var0, (var2x) -> getOldBiome(var5, var10 * 64 + var2x));
+         for(int sectionYIndex = 0; sectionYIndex < 24; ++sectionYIndex) {
+            biomeContainers[sectionYIndex] = makeBiomeContainer(tag, (ix) -> getOldBiome(oldBiomes, sectionYIndex * 64 + ix));
          }
-      } else if (var5 != null && var5.length == 1024) {
-         for(int var6 = 0; var6 < 16; ++var6) {
-            int var7 = var6 - var2;
-            var4[var7] = makeBiomeContainer(var0, (var2x) -> getOldBiome(var5, var6 * 64 + var2x));
+      } else if (oldBiomes != null && oldBiomes.length == 1024) {
+         for(int sectionY = 0; sectionY < 16; ++sectionY) {
+            int sectionYIndex = sectionY - minSection;
+            biomeContainers[sectionYIndex] = makeBiomeContainer(tag, (ix) -> getOldBiome(oldBiomes, sectionY * 64 + ix));
          }
 
-         if (var1) {
-            Dynamic var9 = makeBiomeContainer(var0, (var1x) -> getOldBiome(var5, var1x % 16));
-            Dynamic var11 = makeBiomeContainer(var0, (var1x) -> getOldBiome(var5, var1x % 16 + 1008));
+         if (increaseHeight) {
+            Dynamic<?> belowWorldBiomes = makeBiomeContainer(tag, (ix) -> getOldBiome(oldBiomes, ix % 16));
+            Dynamic<?> aboveWorldBiomes = makeBiomeContainer(tag, (ix) -> getOldBiome(oldBiomes, ix % 16 + 1008));
 
-            for(int var8 = 0; var8 < 4; ++var8) {
-               var4[var8] = var9;
+            for(int i = 0; i < 4; ++i) {
+               biomeContainers[i] = belowWorldBiomes;
             }
 
-            for(int var12 = 20; var12 < 24; ++var12) {
-               var4[var12] = var11;
+            for(int i = 20; i < 24; ++i) {
+               biomeContainers[i] = aboveWorldBiomes;
             }
          }
       } else {
-         Arrays.fill(var4, makePalettedContainer(var0.createList(Stream.of(var0.createString("minecraft:plains")))));
+         Arrays.fill(biomeContainers, makePalettedContainer(tag.createList(Stream.of(tag.createString("minecraft:plains")))));
       }
 
-      return var4;
+      return biomeContainers;
    }
 
-   private static int getOldBiome(int[] var0, int var1) {
-      return var0[var1] & 255;
+   private static int getOldBiome(final int[] oldBiomes, final int index) {
+      return oldBiomes[index] & 255;
    }
 
-   private static Dynamic<?> updateChunkTag(Dynamic<?> var0, boolean var1, boolean var2, boolean var3, Supplier<@Nullable ChunkProtoTickListFix.PoorMansPalettedContainer> var4) {
-      var0 = var0.remove("Biomes");
-      if (!var1) {
-         return updateCarvingMasks(var0, 16, 0);
-      } else if (var2) {
-         return updateCarvingMasks(var0, 24, 0);
+   private static Dynamic<?> updateChunkTag(Dynamic<?> chunkTag, final boolean isOverworld, final boolean wasIncreasedHeight, final boolean needsBlendingAndUpgrade, final Supplier<@Nullable ChunkProtoTickListFix.PoorMansPalettedContainer> bedrockSectionBlocks) {
+      chunkTag = chunkTag.remove("Biomes");
+      if (!isOverworld) {
+         return updateCarvingMasks(chunkTag, 16, 0);
+      } else if (wasIncreasedHeight) {
+         return updateCarvingMasks(chunkTag, 24, 0);
       } else {
-         var0 = updateHeightmaps(var0);
-         var0 = addPaddingEntries(var0, "LiquidsToBeTicked");
-         var0 = addPaddingEntries(var0, "PostProcessing");
-         var0 = addPaddingEntries(var0, "ToBeTicked");
-         var0 = updateCarvingMasks(var0, 24, 4);
-         var0 = var0.update("UpgradeData", ChunkHeightAndBiomeFix::shiftUpgradeData);
-         if (!var3) {
-            return var0;
+         chunkTag = updateHeightmaps(chunkTag);
+         chunkTag = addPaddingEntries(chunkTag, "LiquidsToBeTicked");
+         chunkTag = addPaddingEntries(chunkTag, "PostProcessing");
+         chunkTag = addPaddingEntries(chunkTag, "ToBeTicked");
+         chunkTag = updateCarvingMasks(chunkTag, 24, 4);
+         chunkTag = chunkTag.update("UpgradeData", ChunkHeightAndBiomeFix::shiftUpgradeData);
+         if (!needsBlendingAndUpgrade) {
+            return chunkTag;
          } else {
-            Optional var5 = var0.get("Status").result();
-            if (var5.isPresent()) {
-               Dynamic var6 = (Dynamic)var5.get();
-               String var7 = var6.asString("");
-               if (!"empty".equals(var7)) {
-                  var0 = var0.set("blending_data", var0.createMap(ImmutableMap.of(var0.createString("old_noise"), var0.createBoolean(STATUS_IS_OR_AFTER_NOISE.contains(var7)))));
+            Optional<? extends Dynamic<?>> statusOpt = chunkTag.get("Status").result();
+            if (statusOpt.isPresent()) {
+               Dynamic<?> status = (Dynamic)statusOpt.get();
+               String lastStatus = status.asString("");
+               if (!"empty".equals(lastStatus)) {
+                  chunkTag = chunkTag.set("blending_data", chunkTag.createMap(ImmutableMap.of(chunkTag.createString("old_noise"), chunkTag.createBoolean(STATUS_IS_OR_AFTER_NOISE.contains(lastStatus)))));
                   if (!SharedConstants.DEBUG_DISABLE_BELOW_ZERO_RETROGENERATION) {
-                     ChunkProtoTickListFix.PoorMansPalettedContainer var8 = (ChunkProtoTickListFix.PoorMansPalettedContainer)var4.get();
-                     if (var8 != null) {
-                        BitSet var9 = new BitSet(256);
-                        boolean var10 = var7.equals("noise");
+                     ChunkProtoTickListFix.PoorMansPalettedContainer poorMansPalettedContainer = (ChunkProtoTickListFix.PoorMansPalettedContainer)bedrockSectionBlocks.get();
+                     if (poorMansPalettedContainer != null) {
+                        BitSet missingBedrock = new BitSet(256);
+                        boolean hasAnyBedrock = lastStatus.equals("noise");
 
-                        for(int var11 = 0; var11 < 16; ++var11) {
-                           for(int var12 = 0; var12 < 16; ++var12) {
-                              Dynamic var13 = var8.get(var12, 0, var11);
-                              boolean var14 = var13 != null && "minecraft:bedrock".equals(var13.get("Name").asString(""));
-                              boolean var15 = var13 != null && "minecraft:air".equals(var13.get("Name").asString(""));
-                              if (var15) {
-                                 var9.set(var11 * 16 + var12);
+                        for(int z = 0; z < 16; ++z) {
+                           for(int x = 0; x < 16; ++x) {
+                              Dynamic<?> blockState = poorMansPalettedContainer.get(x, 0, z);
+                              boolean isBedrock = blockState != null && "minecraft:bedrock".equals(blockState.get("Name").asString(""));
+                              boolean isAir = blockState != null && "minecraft:air".equals(blockState.get("Name").asString(""));
+                              if (isAir) {
+                                 missingBedrock.set(z * 16 + x);
                               }
 
-                              var10 |= var14;
+                              hasAnyBedrock |= isBedrock;
                            }
                         }
 
-                        if (var10 && var9.cardinality() != var9.size()) {
-                           Dynamic var24 = "full".equals(var7) ? var0.createString("heightmaps") : var6;
-                           var0 = var0.set("below_zero_retrogen", var0.createMap(ImmutableMap.of(var0.createString("target_status"), var24, var0.createString("missing_bedrock"), var0.createLongList(LongStream.of(var9.toLongArray())))));
-                           var0 = var0.set("Status", var0.createString("empty"));
+                        if (hasAnyBedrock && missingBedrock.cardinality() != missingBedrock.size()) {
+                           Dynamic<?> targetStatus = "full".equals(lastStatus) ? chunkTag.createString("heightmaps") : status;
+                           chunkTag = chunkTag.set("below_zero_retrogen", chunkTag.createMap(ImmutableMap.of(chunkTag.createString("target_status"), targetStatus, chunkTag.createString("missing_bedrock"), chunkTag.createLongList(LongStream.of(missingBedrock.toLongArray())))));
+                           chunkTag = chunkTag.set("Status", chunkTag.createString("empty"));
                         }
 
-                        var0 = var0.set("isLightOn", var0.createBoolean(false));
+                        chunkTag = chunkTag.set("isLightOn", chunkTag.createBoolean(false));
                      }
                   }
                }
             }
 
-            return var0;
+            return chunkTag;
          }
       }
    }
 
-   private static <T> Dynamic<T> shiftUpgradeData(Dynamic<T> var0) {
-      return var0.update("Indices", (var0x) -> {
-         HashMap var1 = new HashMap();
-         var0x.getMapValues().ifSuccess((var1x) -> var1x.forEach((var1xx, var2) -> {
+   private static <T> Dynamic<T> shiftUpgradeData(final Dynamic<T> upgradeData) {
+      return upgradeData.update("Indices", (indices) -> {
+         Map<Dynamic<?>, Dynamic<?>> shiftedIndices = new HashMap();
+         indices.getMapValues().ifSuccess((entries) -> entries.forEach((index, data) -> {
                try {
-                  var1xx.asString().result().map(Integer::parseInt).ifPresent((var3) -> {
-                     int var4 = var3 - -4;
-                     var1.put(var1xx.createString(Integer.toString(var4)), var2);
+                  index.asString().result().map(Integer::parseInt).ifPresent((i) -> {
+                     int shiftedIndex = i - -4;
+                     shiftedIndices.put(index.createString(Integer.toString(shiftedIndex)), data);
                   });
                } catch (NumberFormatException var4) {
                }
 
             }));
-         return var0x.createMap(var1);
+         return indices.createMap(shiftedIndices);
       });
    }
 
-   private static Dynamic<?> updateCarvingMasks(Dynamic<?> var0, int var1, int var2) {
-      Dynamic var3 = var0.get("CarvingMasks").orElseEmptyMap();
-      var3 = var3.updateMapValues((var3x) -> {
-         long[] var4 = BitSet.valueOf(((Dynamic)var3x.getSecond()).asByteBuffer().array()).toLongArray();
-         long[] var5 = new long[64 * var1];
-         System.arraycopy(var4, 0, var5, 64 * var2, var4.length);
-         return Pair.of((Dynamic)var3x.getFirst(), var0.createLongList(LongStream.of(var5)));
+   private static Dynamic<?> updateCarvingMasks(final Dynamic<?> chunkTag, final int sectionCount, final int addedSectionsBelow) {
+      Dynamic<?> carvingMasks = chunkTag.get("CarvingMasks").orElseEmptyMap();
+      carvingMasks = carvingMasks.updateMapValues((pair) -> {
+         long[] oldValues = BitSet.valueOf(((Dynamic)pair.getSecond()).asByteBuffer().array()).toLongArray();
+         long[] newValues = new long[64 * sectionCount];
+         System.arraycopy(oldValues, 0, newValues, 64 * addedSectionsBelow, oldValues.length);
+         return Pair.of((Dynamic)pair.getFirst(), chunkTag.createLongList(LongStream.of(newValues)));
       });
-      return var0.set("CarvingMasks", var3);
+      return chunkTag.set("CarvingMasks", carvingMasks);
    }
 
-   private static Dynamic<?> addPaddingEntries(Dynamic<?> var0, String var1) {
-      List var2 = (List)var0.get(var1).orElseEmptyList().asStream().collect(Collectors.toCollection(ArrayList::new));
-      if (var2.size() == 24) {
-         return var0;
+   private static Dynamic<?> addPaddingEntries(final Dynamic<?> chunkTag, final String key) {
+      List<Dynamic<?>> list = (List)chunkTag.get(key).orElseEmptyList().asStream().collect(Collectors.toCollection(ArrayList::new));
+      if (list.size() == 24) {
+         return chunkTag;
       } else {
-         Dynamic var3 = var0.emptyList();
+         Dynamic<?> emptyList = chunkTag.emptyList();
 
-         for(int var4 = 0; var4 < 4; ++var4) {
-            var2.add(0, var3);
-            var2.add(var3);
+         for(int i = 0; i < 4; ++i) {
+            list.add(0, emptyList);
+            list.add(emptyList);
          }
 
-         return var0.set(var1, var0.createList(var2.stream()));
+         return chunkTag.set(key, chunkTag.createList(list.stream()));
       }
    }
 
-   private static Dynamic<?> updateHeightmaps(Dynamic<?> var0) {
-      return var0.update("Heightmaps", (var0x) -> {
-         for(String var4 : HEIGHTMAP_TYPES) {
-            var0x = var0x.update(var4, ChunkHeightAndBiomeFix::getFixedHeightmap);
+   private static Dynamic<?> updateHeightmaps(final Dynamic<?> chunkTag) {
+      return chunkTag.update("Heightmaps", (heightmapTag) -> {
+         for(String heightmapType : HEIGHTMAP_TYPES) {
+            heightmapTag = heightmapTag.update(heightmapType, ChunkHeightAndBiomeFix::getFixedHeightmap);
          }
 
-         return var0x;
+         return heightmapTag;
       });
    }
 
-   private static Dynamic<?> getFixedHeightmap(Dynamic<?> var0) {
-      return var0.createLongList(var0.asLongStream().map((var0x) -> {
-         long var2 = 0L;
+   private static Dynamic<?> getFixedHeightmap(final Dynamic<?> tag) {
+      return tag.createLongList(tag.asLongStream().map((value) -> {
+         long newValue = 0L;
 
-         for(int var4 = 0; var4 + 9 <= 64; var4 += 9) {
-            long var5 = var0x >> var4 & 511L;
-            long var7;
-            if (var5 == 0L) {
-               var7 = 0L;
+         for(int bitIndex = 0; bitIndex + 9 <= 64; bitIndex += 9) {
+            long oldHeight = value >> bitIndex & 511L;
+            long newHeight;
+            if (oldHeight == 0L) {
+               newHeight = 0L;
             } else {
-               var7 = Math.min(var5 + 64L, 511L);
+               newHeight = Math.min(oldHeight + 64L, 511L);
             }
 
-            var2 |= var7 << var4;
+            newValue |= newHeight << bitIndex;
          }
 
-         return var2;
+         return newValue;
       }));
    }
 
-   private static Dynamic<?> makeBiomeContainer(Dynamic<?> var0, Int2IntFunction var1) {
-      Int2IntLinkedOpenHashMap var2 = new Int2IntLinkedOpenHashMap();
+   private static Dynamic<?> makeBiomeContainer(final Dynamic<?> tag, final Int2IntFunction sourceStorage) {
+      Int2IntMap idMap = new Int2IntLinkedOpenHashMap();
 
-      for(int var3 = 0; var3 < 64; ++var3) {
-         int var4 = var1.applyAsInt(var3);
-         if (!var2.containsKey(var4)) {
-            var2.put(var4, var2.size());
+      for(int i = 0; i < 64; ++i) {
+         int biomeId = sourceStorage.applyAsInt(i);
+         if (!idMap.containsKey(biomeId)) {
+            idMap.put(biomeId, idMap.size());
          }
       }
 
-      Dynamic var12 = var0.createList(var2.keySet().stream().map((var1x) -> var0.createString((String)BIOMES_BY_ID.getOrDefault(var1x, "minecraft:plains"))));
-      int var13 = ceillog2(var2.size());
-      if (var13 == 0) {
-         return makePalettedContainer(var12);
+      Dynamic<?> palette = tag.createList(idMap.keySet().stream().map((biomeId1) -> tag.createString((String)BIOMES_BY_ID.getOrDefault(biomeId1, "minecraft:plains"))));
+      int bits = ceillog2(idMap.size());
+      if (bits == 0) {
+         return makePalettedContainer(palette);
       } else {
-         int var5 = 64 / var13;
-         int var6 = (64 + var5 - 1) / var5;
-         long[] var7 = new long[var6];
-         int var8 = 0;
-         int var9 = 0;
+         int valuesPerLong = 64 / bits;
+         int requiredLength = (64 + valuesPerLong - 1) / valuesPerLong;
+         long[] bitStorage = new long[requiredLength];
+         int cellIndex = 0;
+         int bitIndex = 0;
 
-         for(int var10 = 0; var10 < 64; ++var10) {
-            int var11 = var1.applyAsInt(var10);
-            var7[var8] |= (long)var2.get(var11) << var9;
-            var9 += var13;
-            if (var9 + var13 > 64) {
-               ++var8;
-               var9 = 0;
+         for(int i = 0; i < 64; ++i) {
+            int biomeId = sourceStorage.applyAsInt(i);
+            bitStorage[cellIndex] |= (long)idMap.get(biomeId) << bitIndex;
+            bitIndex += bits;
+            if (bitIndex + bits > 64) {
+               ++cellIndex;
+               bitIndex = 0;
             }
          }
 
-         Dynamic var14 = var0.createLongList(Arrays.stream(var7));
-         return makePalettedContainer(var12, var14);
+         Dynamic<?> storage = tag.createLongList(Arrays.stream(bitStorage));
+         return makePalettedContainer(palette, storage);
       }
    }
 
-   private static Dynamic<?> makePalettedContainer(Dynamic<?> var0) {
-      return var0.createMap(ImmutableMap.of(var0.createString("palette"), var0));
+   private static Dynamic<?> makePalettedContainer(final Dynamic<?> palette) {
+      return palette.createMap(ImmutableMap.of(palette.createString("palette"), palette));
    }
 
-   private static Dynamic<?> makePalettedContainer(Dynamic<?> var0, Dynamic<?> var1) {
-      return var0.createMap(ImmutableMap.of(var0.createString("palette"), var0, var0.createString("data"), var1));
+   private static Dynamic<?> makePalettedContainer(final Dynamic<?> palette, final Dynamic<?> storage) {
+      return palette.createMap(ImmutableMap.of(palette.createString("palette"), palette, palette.createString("data"), storage));
    }
 
-   private static Dynamic<?> makeOptimizedPalettedContainer(Dynamic<?> var0, Dynamic<?> var1) {
-      List var2 = (List)var0.asStream().collect(Collectors.toCollection(ArrayList::new));
-      if (var2.size() == 1) {
-         return makePalettedContainer(var0);
+   private static Dynamic<?> makeOptimizedPalettedContainer(Dynamic<?> palette, final Dynamic<?> data) {
+      List<Dynamic<?>> paletteList = (List)palette.asStream().collect(Collectors.toCollection(ArrayList::new));
+      if (paletteList.size() == 1) {
+         return makePalettedContainer(palette);
       } else {
-         var0 = padPaletteEntries(var0, var1, var2);
-         return makePalettedContainer(var0, var1);
+         palette = padPaletteEntries(palette, data, paletteList);
+         return makePalettedContainer(palette, data);
       }
    }
 
-   private static Dynamic<?> padPaletteEntries(Dynamic<?> var0, Dynamic<?> var1, List<Dynamic<?>> var2) {
-      long var3 = var1.asLongStream().count() * 64L;
-      long var5 = var3 / 4096L;
-      int var7 = var2.size();
-      int var8 = ceillog2(var7);
-      if (var5 <= (long)var8) {
-         return var0;
+   private static Dynamic<?> padPaletteEntries(final Dynamic<?> palette, final Dynamic<?> data, final List<Dynamic<?>> paletteList) {
+      long dataSizeInBits = data.asLongStream().count() * 64L;
+      long estimatedBitsPerBlock = dataSizeInBits / 4096L;
+      int paletteSize = paletteList.size();
+      int expectedBitsPerBlock = ceillog2(paletteSize);
+      if (estimatedBitsPerBlock <= (long)expectedBitsPerBlock) {
+         return palette;
       } else {
-         Dynamic var9 = var0.createMap(ImmutableMap.of(var0.createString("Name"), var0.createString("minecraft:air")));
-         int var10 = (1 << (int)(var5 - 1L)) + 1;
-         int var11 = var10 - var7;
+         Dynamic<?> airPalleteEntry = palette.createMap(ImmutableMap.of(palette.createString("Name"), palette.createString("minecraft:air")));
+         int minimumPaletteSizeToMatchData = (1 << (int)(estimatedBitsPerBlock - 1L)) + 1;
+         int additionalPaletteEntries = minimumPaletteSizeToMatchData - paletteSize;
 
-         for(int var12 = 0; var12 < var11; ++var12) {
-            var2.add(var9);
+         for(int i = 0; i < additionalPaletteEntries; ++i) {
+            paletteList.add(airPalleteEntry);
          }
 
-         return var0.createList(var2.stream());
+         return palette.createList(paletteList.stream());
       }
    }
 
-   public static int ceillog2(int var0) {
-      return var0 == 0 ? 0 : (int)Math.ceil(Math.log((double)var0) / Math.log(2.0));
+   public static int ceillog2(final int input) {
+      return input == 0 ? 0 : (int)Math.ceil(Math.log((double)input) / Math.log(2.0));
    }
 
    static {

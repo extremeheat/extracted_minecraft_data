@@ -9,7 +9,7 @@ public interface WaypointStyleAssets {
    ResourceKey<WaypointStyleAsset> DEFAULT = createId("default");
    ResourceKey<WaypointStyleAsset> BOWTIE = createId("bowtie");
 
-   static ResourceKey<WaypointStyleAsset> createId(String var0) {
-      return ResourceKey.create(ROOT_ID, Identifier.withDefaultNamespace(var0));
+   static ResourceKey<WaypointStyleAsset> createId(final String name) {
+      return ResourceKey.create(ROOT_ID, Identifier.withDefaultNamespace(name));
    }
 }

@@ -8,10 +8,10 @@ public class ChunkEntities<T> {
    private final ChunkPos pos;
    private final List<T> entities;
 
-   public ChunkEntities(ChunkPos var1, List<T> var2) {
+   public ChunkEntities(final ChunkPos pos, final List<T> entities) {
       super();
-      this.pos = var1;
-      this.entities = var2;
+      this.pos = pos;
+      this.entities = entities;
    }
 
    public ChunkPos getPos() {

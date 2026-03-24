@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens.multiplayer;
 
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.layouts.FrameLayout;
@@ -18,9 +17,9 @@ public class ServerReconfigScreen extends Screen {
    private int delayTicker;
    private final LinearLayout layout = LinearLayout.vertical();
 
-   public ServerReconfigScreen(Component var1, Connection var2) {
-      super(var1);
-      this.connection = var2;
+   public ServerReconfigScreen(final Component title, final Connection connection) {
+      super(title);
+      this.connection = connection;
    }
 
    public boolean shouldCloseOnEsc() {
@@ -30,12 +29,10 @@ public class ServerReconfigScreen extends Screen {
    protected void init() {
       this.layout.defaultCellSetting().alignHorizontallyCenter().padding(10);
       this.layout.addChild(new StringWidget(this.title, this.font));
-      this.disconnectButton = (Button)this.layout.addChild(Button.builder(CommonComponents.GUI_DISCONNECT, (var1) -> this.connection.disconnect(ConnectScreen.ABORT_CONNECTION)).build());
+      this.disconnectButton = (Button)this.layout.addChild(Button.builder(CommonComponents.GUI_DISCONNECT, (b) -> this.connection.disconnect(ConnectScreen.ABORT_CONNECTION)).build());
       this.disconnectButton.active = false;
       this.layout.arrangeElements();
-      this.layout.visitWidgets((var1) -> {
-         AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1);
-      });
+      this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
       this.repositionElements();
    }
 

@@ -3,7 +3,7 @@ package net.minecraft.client.gui.screens.options.controls;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Options;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
@@ -22,8 +22,8 @@ public class KeyBindsScreen extends OptionsSubScreen {
    private KeyBindsList keyBindsList;
    private Button resetButton;
 
-   public KeyBindsScreen(Screen var1, Options var2) {
-      super(var1, var2, TITLE);
+   public KeyBindsScreen(final Screen lastScreen, final Options options) {
+      super(lastScreen, options, TITLE);
    }
 
    protected void addContents() {
@@ -34,16 +34,16 @@ public class KeyBindsScreen extends OptionsSubScreen {
    }
 
    protected void addFooter() {
-      this.resetButton = Button.builder(Component.translatable("controls.resetAll"), (var1x) -> {
-         for(KeyMapping var5 : this.options.keyMappings) {
-            var5.setKey(var5.getDefaultKey());
+      this.resetButton = Button.builder(Component.translatable("controls.resetAll"), (button) -> {
+         for(KeyMapping key : this.options.keyMappings) {
+            key.setKey(key.getDefaultKey());
          }
 
          this.keyBindsList.resetMappingAndUpdateButtons();
       }).build();
-      LinearLayout var1 = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
-      var1.addChild(this.resetButton);
-      var1.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.onClose()).build());
+      LinearLayout bottomButtons = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
+      bottomButtons.addChild(this.resetButton);
+      bottomButtons.addChild(Button.builder(CommonComponents.GUI_DONE, (button) -> this.onClose()).build());
    }
 
    protected void repositionElements() {
@@ -51,23 +51,23 @@ public class KeyBindsScreen extends OptionsSubScreen {
       this.keyBindsList.updateSize(this.width, this.layout);
    }
 
-   public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+   public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
       if (this.selectedKey != null) {
-         this.selectedKey.setKey(InputConstants.Type.MOUSE.getOrCreate(var1.button()));
+         this.selectedKey.setKey(InputConstants.Type.MOUSE.getOrCreate(event.button()));
          this.selectedKey = null;
          this.keyBindsList.resetMappingAndUpdateButtons();
          return true;
       } else {
-         return super.mouseClicked(var1, var2);
+         return super.mouseClicked(event, doubleClick);
       }
    }
 
-   public boolean keyPressed(KeyEvent var1) {
+   public boolean keyPressed(final KeyEvent event) {
       if (this.selectedKey != null) {
-         if (var1.isEscape()) {
+         if (event.isEscape()) {
             this.selectedKey.setKey(InputConstants.UNKNOWN);
          } else {
-            this.selectedKey.setKey(InputConstants.getKey(var1));
+            this.selectedKey.setKey(InputConstants.getKey(event));
          }
 
          this.selectedKey = null;
@@ -75,21 +75,21 @@ public class KeyBindsScreen extends OptionsSubScreen {
          this.keyBindsList.resetMappingAndUpdateButtons();
          return true;
       } else {
-         return super.keyPressed(var1);
+         return super.keyPressed(event);
       }
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      boolean var5 = false;
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
+      boolean canReset = false;
 
-      for(KeyMapping var9 : this.options.keyMappings) {
-         if (!var9.isDefault()) {
-            var5 = true;
+      for(KeyMapping key : this.options.keyMappings) {
+         if (!key.isDefault()) {
+            canReset = true;
             break;
          }
       }
 
-      this.resetButton.active = var5;
+      this.resetButton.active = canReset;
    }
 }

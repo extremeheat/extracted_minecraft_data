@@ -24,40 +24,40 @@ public class DirtPathBlock extends Block {
       return CODEC;
    }
 
-   protected DirtPathBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   protected DirtPathBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
-   protected boolean useShapeForLightOcclusion(BlockState var1) {
+   protected boolean useShapeForLightOcclusion(final BlockState state) {
       return true;
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return !this.defaultBlockState().canSurvive(var1.getLevel(), var1.getClickedPos()) ? Block.pushEntitiesUp(this.defaultBlockState(), Blocks.DIRT.defaultBlockState(), var1.getLevel(), var1.getClickedPos()) : super.getStateForPlacement(var1);
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      return !this.defaultBlockState().canSurvive(context.getLevel(), context.getClickedPos()) ? Block.pushEntitiesUp(this.defaultBlockState(), Blocks.DIRT.defaultBlockState(), context.getLevel(), context.getClickedPos()) : super.getStateForPlacement(context);
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      if (var5 == Direction.UP && !var1.canSurvive(var2, var4)) {
-         var3.scheduleTick(var4, (Block)this, 1);
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      if (directionToNeighbour == Direction.UP && !state.canSurvive(level, pos)) {
+         ticks.scheduleTick(pos, (Block)this, 1);
       }
 
-      return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+      return super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      FarmBlock.turnToDirt((Entity)null, var1, var2, var3);
+   protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      FarmlandBlock.turnToDirt((Entity)null, state, level, pos);
    }
 
-   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      BlockState var4 = var2.getBlockState(var3.above());
-      return !var4.isSolid() || var4.getBlock() instanceof FenceGateBlock;
+   protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
+      BlockState aboveState = level.getBlockState(pos.above());
+      return !aboveState.isSolid() || aboveState.getBlock() instanceof FenceGateBlock;
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return SHAPE;
    }
 
-   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
+   protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
       return false;
    }
 }

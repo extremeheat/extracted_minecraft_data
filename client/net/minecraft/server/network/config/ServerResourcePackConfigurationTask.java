@@ -11,13 +11,13 @@ public class ServerResourcePackConfigurationTask implements ConfigurationTask {
    public static final ConfigurationTask.Type TYPE = new ConfigurationTask.Type("server_resource_pack");
    private final MinecraftServer.ServerResourcePackInfo info;
 
-   public ServerResourcePackConfigurationTask(MinecraftServer.ServerResourcePackInfo var1) {
+   public ServerResourcePackConfigurationTask(final MinecraftServer.ServerResourcePackInfo info) {
       super();
-      this.info = var1;
+      this.info = info;
    }
 
-   public void start(Consumer<Packet<?>> var1) {
-      var1.accept(new ClientboundResourcePackPushPacket(this.info.id(), this.info.url(), this.info.hash(), this.info.isRequired(), Optional.ofNullable(this.info.prompt())));
+   public void start(final Consumer<Packet<?>> connection) {
+      connection.accept(new ClientboundResourcePackPushPacket(this.info.id(), this.info.url(), this.info.hash(), this.info.isRequired(), Optional.ofNullable(this.info.prompt())));
    }
 
    public ConfigurationTask.Type type() {

@@ -13,17 +13,17 @@ public class ReferenceUtil {
       super();
    }
 
-   public static URI createLocalReference(String var0) {
-      return URI.create("#/components/schemas/" + var0);
+   public static URI createLocalReference(final String typeId) {
+      return URI.create("#/components/schemas/" + typeId);
    }
 
    static {
-      REFERENCE_CODEC = Codec.STRING.comapFlatMap((var0) -> {
+      REFERENCE_CODEC = Codec.STRING.comapFlatMap((string) -> {
          try {
-            return DataResult.success(new URI(var0));
-         } catch (URISyntaxException var2) {
-            Objects.requireNonNull(var2);
-            return DataResult.error(var2::getMessage);
+            return DataResult.success(new URI(string));
+         } catch (URISyntaxException e) {
+            Objects.requireNonNull(e);
+            return DataResult.error(e::getMessage);
          }
       }, URI::toString);
    }

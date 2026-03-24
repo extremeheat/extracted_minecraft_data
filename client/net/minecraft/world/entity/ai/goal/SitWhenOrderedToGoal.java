@@ -7,9 +7,9 @@ import net.minecraft.world.entity.TamableAnimal;
 public class SitWhenOrderedToGoal extends Goal {
    private final TamableAnimal mob;
 
-   public SitWhenOrderedToGoal(TamableAnimal var1) {
+   public SitWhenOrderedToGoal(final TamableAnimal mob) {
       super();
-      this.mob = var1;
+      this.mob = mob;
       this.setFlags(EnumSet.of(Goal.Flag.JUMP, Goal.Flag.MOVE));
    }
 
@@ -18,17 +18,17 @@ public class SitWhenOrderedToGoal extends Goal {
    }
 
    public boolean canUse() {
-      boolean var1 = this.mob.isOrderedToSit();
-      if (!var1 && !this.mob.isTame()) {
+      boolean orderedToSit = this.mob.isOrderedToSit();
+      if (!orderedToSit && !this.mob.isTame()) {
          return false;
       } else if (this.mob.isInWater()) {
          return false;
       } else if (!this.mob.onGround()) {
          return false;
       } else {
-         LivingEntity var2 = this.mob.getOwner();
-         if (var2 != null && var2.level() == this.mob.level()) {
-            return this.mob.distanceToSqr(var2) < 144.0 && var2.getLastHurtByMob() != null ? false : var1;
+         LivingEntity owner = this.mob.getOwner();
+         if (owner != null && owner.level() == this.mob.level()) {
+            return this.mob.distanceToSqr(owner) < 144.0 && owner.getLastHurtByMob() != null ? false : orderedToSit;
          } else {
             return true;
          }

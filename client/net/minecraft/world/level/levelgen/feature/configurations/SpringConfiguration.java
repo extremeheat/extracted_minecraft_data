@@ -9,19 +9,19 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.FluidState;
 
 public class SpringConfiguration implements FeatureConfiguration {
-   public static final Codec<SpringConfiguration> CODEC = RecordCodecBuilder.create((var0) -> var0.group(FluidState.CODEC.fieldOf("state").forGetter((var0x) -> var0x.state), Codec.BOOL.fieldOf("requires_block_below").orElse(true).forGetter((var0x) -> var0x.requiresBlockBelow), Codec.INT.fieldOf("rock_count").orElse(4).forGetter((var0x) -> var0x.rockCount), Codec.INT.fieldOf("hole_count").orElse(1).forGetter((var0x) -> var0x.holeCount), RegistryCodecs.homogeneousList(Registries.BLOCK).fieldOf("valid_blocks").forGetter((var0x) -> var0x.validBlocks)).apply(var0, SpringConfiguration::new));
+   public static final Codec<SpringConfiguration> CODEC = RecordCodecBuilder.create((i) -> i.group(FluidState.CODEC.fieldOf("state").forGetter((c) -> c.state), Codec.BOOL.fieldOf("requires_block_below").orElse(true).forGetter((c) -> c.requiresBlockBelow), Codec.INT.fieldOf("rock_count").orElse(4).forGetter((c) -> c.rockCount), Codec.INT.fieldOf("hole_count").orElse(1).forGetter((c) -> c.holeCount), RegistryCodecs.homogeneousList(Registries.BLOCK).fieldOf("valid_blocks").forGetter((c) -> c.validBlocks)).apply(i, SpringConfiguration::new));
    public final FluidState state;
    public final boolean requiresBlockBelow;
    public final int rockCount;
    public final int holeCount;
    public final HolderSet<Block> validBlocks;
 
-   public SpringConfiguration(FluidState var1, boolean var2, int var3, int var4, HolderSet<Block> var5) {
+   public SpringConfiguration(final FluidState state, final boolean requiresBlockBelow, final int rockCount, final int holeCount, final HolderSet<Block> validBlocks) {
       super();
-      this.state = var1;
-      this.requiresBlockBelow = var2;
-      this.rockCount = var3;
-      this.holeCount = var4;
-      this.validBlocks = var5;
+      this.state = state;
+      this.requiresBlockBelow = requiresBlockBelow;
+      this.rockCount = rockCount;
+      this.holeCount = holeCount;
+      this.validBlocks = validBlocks;
    }
 }

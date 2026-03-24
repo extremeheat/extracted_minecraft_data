@@ -2,7 +2,7 @@ package net.minecraft.client.gui.components;
 
 import java.util.function.Supplier;
 import net.minecraft.client.gui.ComponentPath;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -29,33 +29,33 @@ public class PlayerSkinWidget extends AbstractWidget {
    private float rotationX = -5.0F;
    private float rotationY = 30.0F;
 
-   public PlayerSkinWidget(int var1, int var2, EntityModelSet var3, Supplier<PlayerSkin> var4) {
-      super(0, 0, var1, var2, CommonComponents.EMPTY);
-      this.wideModel = new PlayerModel(var3.bakeLayer(ModelLayers.PLAYER), false);
-      this.slimModel = new PlayerModel(var3.bakeLayer(ModelLayers.PLAYER_SLIM), true);
-      this.skin = var4;
+   public PlayerSkinWidget(final int width, final int height, final EntityModelSet models, final Supplier<PlayerSkin> skin) {
+      super(0, 0, width, height, CommonComponents.EMPTY);
+      this.wideModel = new PlayerModel(models.bakeLayer(ModelLayers.PLAYER), false);
+      this.slimModel = new PlayerModel(models.bakeLayer(ModelLayers.PLAYER_SLIM), true);
+      this.skin = skin;
    }
 
-   protected void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-      float var5 = 0.97F * (float)this.getHeight() / 2.125F;
-      float var6 = -1.0625F;
-      PlayerSkin var7 = (PlayerSkin)this.skin.get();
-      PlayerModel var8 = var7.model() == PlayerModelType.SLIM ? this.slimModel : this.wideModel;
-      var1.submitSkinRenderState(var8, var7.body().texturePath(), var5, this.rotationX, this.rotationY, -1.0625F, this.getX(), this.getY(), this.getRight(), this.getBottom());
+   protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      float scale = 0.97F * (float)this.getHeight() / 2.125F;
+      float pivotY = -1.0625F;
+      PlayerSkin skin = (PlayerSkin)this.skin.get();
+      PlayerModel model = skin.model() == PlayerModelType.SLIM ? this.slimModel : this.wideModel;
+      graphics.skin(model, skin.body().texturePath(), scale, this.rotationX, this.rotationY, -1.0625F, this.getX(), this.getY(), this.getRight(), this.getBottom());
    }
 
-   protected void onDrag(MouseButtonEvent var1, double var2, double var4) {
-      this.rotationX = Mth.clamp(this.rotationX - (float)var4 * 2.5F, -50.0F, 50.0F);
-      this.rotationY += (float)var2 * 2.5F;
+   protected void onDrag(final MouseButtonEvent event, final double dx, final double dy) {
+      this.rotationX = Mth.clamp(this.rotationX - (float)dy * 2.5F, -50.0F, 50.0F);
+      this.rotationY += (float)dx * 2.5F;
    }
 
-   public void playDownSound(SoundManager var1) {
+   public void playDownSound(final SoundManager soundManager) {
    }
 
-   protected void updateWidgetNarration(NarrationElementOutput var1) {
+   protected void updateWidgetNarration(final NarrationElementOutput output) {
    }
 
-   public @Nullable ComponentPath nextFocusPath(FocusNavigationEvent var1) {
+   public @Nullable ComponentPath nextFocusPath(final FocusNavigationEvent navigationEvent) {
       return null;
    }
 }

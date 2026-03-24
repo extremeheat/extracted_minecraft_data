@@ -11,31 +11,31 @@ public class ClientboundRemoveEntitiesPacket implements Packet<ClientGamePacketL
    public static final StreamCodec<FriendlyByteBuf, ClientboundRemoveEntitiesPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundRemoveEntitiesPacket>codec(ClientboundRemoveEntitiesPacket::write, ClientboundRemoveEntitiesPacket::new);
    private final IntList entityIds;
 
-   public ClientboundRemoveEntitiesPacket(IntList var1) {
+   public ClientboundRemoveEntitiesPacket(final IntList ids) {
       super();
-      this.entityIds = new IntArrayList(var1);
+      this.entityIds = new IntArrayList(ids);
    }
 
-   public ClientboundRemoveEntitiesPacket(int... var1) {
+   public ClientboundRemoveEntitiesPacket(final int... ids) {
       super();
-      this.entityIds = new IntArrayList(var1);
+      this.entityIds = new IntArrayList(ids);
    }
 
-   private ClientboundRemoveEntitiesPacket(FriendlyByteBuf var1) {
+   private ClientboundRemoveEntitiesPacket(final FriendlyByteBuf input) {
       super();
-      this.entityIds = var1.readIntIdList();
+      this.entityIds = input.readIntIdList();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeIntIdList(this.entityIds);
+   private void write(final FriendlyByteBuf output) {
+      output.writeIntIdList(this.entityIds);
    }
 
    public PacketType<ClientboundRemoveEntitiesPacket> type() {
       return GamePacketTypes.CLIENTBOUND_REMOVE_ENTITIES;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleRemoveEntities(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleRemoveEntities(this);
    }
 
    public IntList getEntityIds() {

@@ -8,7 +8,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -27,10 +26,10 @@ public class RemoveBlockGoal extends MoveToBlockGoal {
    private int ticksSinceReachedGoal;
    private static final int WAIT_AFTER_BLOCK_FOUND = 20;
 
-   public RemoveBlockGoal(Block var1, PathfinderMob var2, double var3, int var5) {
-      super(var2, var3, 24, var5);
-      this.blockToRemove = var1;
-      this.removerMob = var2;
+   public RemoveBlockGoal(final Block blockToRemove, final PathfinderMob mob, final double speedModifier, final int verticalSearchRange) {
+      super(mob, speedModifier, 24, verticalSearchRange);
+      this.blockToRemove = blockToRemove;
+      this.removerMob = mob;
    }
 
    public boolean canUse() {
@@ -58,47 +57,47 @@ public class RemoveBlockGoal extends MoveToBlockGoal {
       this.ticksSinceReachedGoal = 0;
    }
 
-   public void playDestroyProgressSound(LevelAccessor var1, BlockPos var2) {
+   public void playDestroyProgressSound(final LevelAccessor level, final BlockPos pos) {
    }
 
-   public void playBreakSound(Level var1, BlockPos var2) {
+   public void playBreakSound(final Level level, final BlockPos pos) {
    }
 
    public void tick() {
       super.tick();
-      Level var1 = this.removerMob.level();
-      BlockPos var2 = this.removerMob.blockPosition();
-      BlockPos var3 = this.getPosWithBlock(var2, var1);
-      RandomSource var4 = this.removerMob.getRandom();
-      if (this.isReachedTarget() && var3 != null) {
+      Level level = this.removerMob.level();
+      BlockPos mobPos = this.removerMob.blockPosition();
+      BlockPos eatPos = this.getPosWithBlock(mobPos, level);
+      RandomSource random = this.removerMob.getRandom();
+      if (this.isReachedTarget() && eatPos != null) {
          if (this.ticksSinceReachedGoal > 0) {
-            Vec3 var5 = this.removerMob.getDeltaMovement();
-            this.removerMob.setDeltaMovement(var5.x, 0.3, var5.z);
-            if (!var1.isClientSide()) {
-               double var6 = 0.08;
-               ((ServerLevel)var1).sendParticles(new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(Items.EGG)), (double)var3.getX() + 0.5, (double)var3.getY() + 0.7, (double)var3.getZ() + 0.5, 3, ((double)var4.nextFloat() - 0.5) * 0.08, ((double)var4.nextFloat() - 0.5) * 0.08, ((double)var4.nextFloat() - 0.5) * 0.08, 0.15000000596046448);
+            Vec3 movement = this.removerMob.getDeltaMovement();
+            this.removerMob.setDeltaMovement(movement.x, 0.3, movement.z);
+            if (level instanceof ServerLevel) {
+               ServerLevel serverLevel = (ServerLevel)level;
+               serverLevel.sendParticles(new ItemParticleOption(ParticleTypes.ITEM, Items.EGG), (double)eatPos.getX() + 0.5, (double)eatPos.getY() + 0.7, (double)eatPos.getZ() + 0.5, 3, ((double)random.nextFloat() - 0.5) * 0.08, ((double)random.nextFloat() - 0.5) * 0.08, ((double)random.nextFloat() - 0.5) * 0.08, 0.15000000596046448);
             }
          }
 
          if (this.ticksSinceReachedGoal % 2 == 0) {
-            Vec3 var12 = this.removerMob.getDeltaMovement();
-            this.removerMob.setDeltaMovement(var12.x, -0.3, var12.z);
+            Vec3 movement = this.removerMob.getDeltaMovement();
+            this.removerMob.setDeltaMovement(movement.x, -0.3, movement.z);
             if (this.ticksSinceReachedGoal % 6 == 0) {
-               this.playDestroyProgressSound(var1, this.blockPos);
+               this.playDestroyProgressSound(level, this.blockPos);
             }
          }
 
          if (this.ticksSinceReachedGoal > 60) {
-            var1.removeBlock(var3, false);
-            if (!var1.isClientSide()) {
-               for(int var13 = 0; var13 < 20; ++var13) {
-                  double var14 = var4.nextGaussian() * 0.02;
-                  double var8 = var4.nextGaussian() * 0.02;
-                  double var10 = var4.nextGaussian() * 0.02;
-                  ((ServerLevel)var1).sendParticles(ParticleTypes.POOF, (double)var3.getX() + 0.5, (double)var3.getY(), (double)var3.getZ() + 0.5, 1, var14, var8, var10, 0.15000000596046448);
+            level.removeBlock(eatPos, false);
+            if (!level.isClientSide()) {
+               for(int i = 0; i < 20; ++i) {
+                  double xa = random.nextGaussian() * 0.02;
+                  double ya = random.nextGaussian() * 0.02;
+                  double za = random.nextGaussian() * 0.02;
+                  ((ServerLevel)level).sendParticles(ParticleTypes.POOF, (double)eatPos.getX() + 0.5, (double)eatPos.getY(), (double)eatPos.getZ() + 0.5, 1, xa, ya, za, 0.15000000596046448);
                }
 
-               this.playBreakSound(var1, var3);
+               this.playBreakSound(level, eatPos);
             }
          }
 
@@ -107,15 +106,15 @@ public class RemoveBlockGoal extends MoveToBlockGoal {
 
    }
 
-   private @Nullable BlockPos getPosWithBlock(BlockPos var1, BlockGetter var2) {
-      if (var2.getBlockState(var1).is(this.blockToRemove)) {
-         return var1;
+   private @Nullable BlockPos getPosWithBlock(final BlockPos pos, final BlockGetter level) {
+      if (level.getBlockState(pos).is(this.blockToRemove)) {
+         return pos;
       } else {
-         BlockPos[] var3 = new BlockPos[]{var1.below(), var1.west(), var1.east(), var1.north(), var1.south(), var1.below().below()};
+         BlockPos[] neighbours = new BlockPos[]{pos.below(), pos.west(), pos.east(), pos.north(), pos.south(), pos.below().below()};
 
-         for(BlockPos var7 : var3) {
-            if (var2.getBlockState(var7).is(this.blockToRemove)) {
-               return var7;
+         for(BlockPos neighborPos : neighbours) {
+            if (level.getBlockState(neighborPos).is(this.blockToRemove)) {
+               return neighborPos;
             }
          }
 
@@ -123,12 +122,12 @@ public class RemoveBlockGoal extends MoveToBlockGoal {
       }
    }
 
-   protected boolean isValidTarget(LevelReader var1, BlockPos var2) {
-      ChunkAccess var3 = var1.getChunk(SectionPos.blockToSectionCoord(var2.getX()), SectionPos.blockToSectionCoord(var2.getZ()), ChunkStatus.FULL, false);
-      if (var3 == null) {
+   protected boolean isValidTarget(final LevelReader level, final BlockPos pos) {
+      ChunkAccess chunk = level.getChunk(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ()), ChunkStatus.FULL, false);
+      if (chunk == null) {
          return false;
       } else {
-         return var3.getBlockState(var2).is(this.blockToRemove) && var3.getBlockState(var2.above()).isAir() && var3.getBlockState(var2.above(2)).isAir();
+         return chunk.getBlockState(pos).is(this.blockToRemove) && chunk.getBlockState(pos.above()).isAir() && chunk.getBlockState(pos.above(2)).isAir();
       }
    }
 }

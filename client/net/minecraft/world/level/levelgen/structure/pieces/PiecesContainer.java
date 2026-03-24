@@ -3,7 +3,6 @@ package net.minecraft.world.level.levelgen.structure.pieces;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -22,18 +21,18 @@ public record PiecesContainer(List<StructurePiece> pieces) {
    private static final Identifier JIGSAW_RENAME = Identifier.withDefaultNamespace("jigsaw");
    private static final Map<Identifier, Identifier> RENAMES;
 
-   public PiecesContainer(final List<StructurePiece> var1) {
+   public PiecesContainer(final List<StructurePiece> pieces) {
       super();
-      this.pieces = List.copyOf(var1);
+      this.pieces = List.copyOf(pieces);
    }
 
    public boolean isEmpty() {
       return this.pieces.isEmpty();
    }
 
-   public boolean isInsidePiece(BlockPos var1) {
-      for(StructurePiece var3 : this.pieces) {
-         if (var3.getBoundingBox().isInside(var1)) {
+   public boolean isInsidePiece(final BlockPos startPos) {
+      for(StructurePiece piece : this.pieces) {
+         if (piece.getBoundingBox().isInside(startPos)) {
             return true;
          }
       }
@@ -41,38 +40,38 @@ public record PiecesContainer(List<StructurePiece> pieces) {
       return false;
    }
 
-   public Tag save(StructurePieceSerializationContext var1) {
-      ListTag var2 = new ListTag();
+   public Tag save(final StructurePieceSerializationContext context) {
+      ListTag childrenTags = new ListTag();
 
-      for(StructurePiece var4 : this.pieces) {
-         var2.add(var4.createTag(var1));
+      for(StructurePiece piece : this.pieces) {
+         childrenTags.add(piece.createTag(context));
       }
 
-      return var2;
+      return childrenTags;
    }
 
-   public static PiecesContainer load(ListTag var0, StructurePieceSerializationContext var1) {
-      ArrayList var2 = Lists.newArrayList();
+   public static PiecesContainer load(final ListTag children, final StructurePieceSerializationContext context) {
+      List<StructurePiece> pieces = Lists.newArrayList();
 
-      for(int var3 = 0; var3 < var0.size(); ++var3) {
-         CompoundTag var4 = var0.getCompoundOrEmpty(var3);
-         String var5 = var4.getStringOr("id", "").toLowerCase(Locale.ROOT);
-         Identifier var6 = Identifier.parse(var5);
-         Identifier var7 = (Identifier)RENAMES.getOrDefault(var6, var6);
-         StructurePieceType var8 = (StructurePieceType)BuiltInRegistries.STRUCTURE_PIECE.getValue(var7);
-         if (var8 == null) {
-            LOGGER.error("Unknown structure piece id: {}", var7);
+      for(int i = 0; i < children.size(); ++i) {
+         CompoundTag pieceTag = children.getCompoundOrEmpty(i);
+         String oldId = pieceTag.getStringOr("id", "").toLowerCase(Locale.ROOT);
+         Identifier oldPieceKey = Identifier.parse(oldId);
+         Identifier pieceId = (Identifier)RENAMES.getOrDefault(oldPieceKey, oldPieceKey);
+         StructurePieceType pieceType = (StructurePieceType)BuiltInRegistries.STRUCTURE_PIECE.getValue(pieceId);
+         if (pieceType == null) {
+            LOGGER.error("Unknown structure piece id: {}", pieceId);
          } else {
             try {
-               StructurePiece var9 = var8.load(var1, var4);
-               var2.add(var9);
-            } catch (Exception var10) {
-               LOGGER.error("Exception loading structure piece with id {}", var7, var10);
+               StructurePiece piece = pieceType.load(context, pieceTag);
+               pieces.add(piece);
+            } catch (Exception e) {
+               LOGGER.error("Exception loading structure piece with id {}", pieceId, e);
             }
          }
       }
 
-      return new PiecesContainer(var2);
+      return new PiecesContainer(pieces);
    }
 
    public BoundingBox calculateBoundingBox() {

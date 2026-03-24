@@ -13,25 +13,25 @@ public class RealmsServerList implements Iterable<RealmsServer> {
    private final Set<RealmsServer> removedServers = new HashSet();
    private List<RealmsServer> servers = List.of();
 
-   public RealmsServerList(Minecraft var1) {
+   public RealmsServerList(final Minecraft minecraft) {
       super();
-      this.minecraft = var1;
+      this.minecraft = minecraft;
    }
 
-   public void updateServersList(List<RealmsServer> var1) {
-      ArrayList var2 = new ArrayList(var1);
-      var2.sort(new RealmsServer.McoServerComparator(this.minecraft.getUser().getName()));
-      boolean var3 = var2.removeAll(this.removedServers);
-      if (!var3) {
+   public void updateServersList(final List<RealmsServer> fetchedServers) {
+      List<RealmsServer> sortedServers = new ArrayList(fetchedServers);
+      sortedServers.sort(new RealmsServer.McoServerComparator(this.minecraft.getUser().getName()));
+      boolean removedAnyServers = sortedServers.removeAll(this.removedServers);
+      if (!removedAnyServers) {
          this.removedServers.clear();
       }
 
-      this.servers = var2;
+      this.servers = sortedServers;
    }
 
-   public void removeItem(RealmsServer var1) {
-      this.servers.remove(var1);
-      this.removedServers.add(var1);
+   public void removeItem(final RealmsServer server) {
+      this.servers.remove(server);
+      this.removedServers.add(server);
    }
 
    public Iterator<RealmsServer> iterator() {

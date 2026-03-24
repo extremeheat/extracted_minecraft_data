@@ -12,39 +12,39 @@ public class MeshData implements AutoCloseable {
    private ByteBufferBuilder.Result indexBuffer;
    private final DrawState drawState;
 
-   public MeshData(ByteBufferBuilder.Result var1, DrawState var2) {
+   public MeshData(final ByteBufferBuilder.Result vertexBuffer, final DrawState drawState) {
       super();
-      this.vertexBuffer = var1;
-      this.drawState = var2;
+      this.vertexBuffer = vertexBuffer;
+      this.drawState = drawState;
    }
 
-   private static CompactVectorArray unpackQuadCentroids(ByteBuffer var0, int var1, VertexFormat var2) {
-      int var3 = var2.getOffset(VertexFormatElement.POSITION);
-      if (var3 == -1) {
+   private static CompactVectorArray unpackQuadCentroids(final ByteBuffer vertexBuffer, final int vertices, final VertexFormat format) {
+      int positionOffset = format.getOffset(VertexFormatElement.POSITION);
+      if (positionOffset == -1) {
          throw new IllegalArgumentException("Cannot identify quad centers with no position element");
       } else {
-         FloatBuffer var4 = var0.asFloatBuffer();
-         int var5 = var2.getVertexSize() / 4;
-         int var6 = var5 * 4;
-         int var7 = var1 / 4;
-         CompactVectorArray var8 = new CompactVectorArray(var7);
+         FloatBuffer floatBuffer = vertexBuffer.asFloatBuffer();
+         int vertexStride = format.getVertexSize() / 4;
+         int quadStride = vertexStride * 4;
+         int quads = vertices / 4;
+         CompactVectorArray sortingPoints = new CompactVectorArray(quads);
 
-         for(int var9 = 0; var9 < var7; ++var9) {
-            int var10 = var9 * var6 + var3;
-            int var11 = var10 + var5 * 2;
-            float var12 = var4.get(var10 + 0);
-            float var13 = var4.get(var10 + 1);
-            float var14 = var4.get(var10 + 2);
-            float var15 = var4.get(var11 + 0);
-            float var16 = var4.get(var11 + 1);
-            float var17 = var4.get(var11 + 2);
-            float var18 = (var12 + var15) / 2.0F;
-            float var19 = (var13 + var16) / 2.0F;
-            float var20 = (var14 + var17) / 2.0F;
-            var8.set(var9, var18, var19, var20);
+         for(int i = 0; i < quads; ++i) {
+            int firstPosOffset = i * quadStride + positionOffset;
+            int secondPosOffset = firstPosOffset + vertexStride * 2;
+            float x0 = floatBuffer.get(firstPosOffset + 0);
+            float y0 = floatBuffer.get(firstPosOffset + 1);
+            float z0 = floatBuffer.get(firstPosOffset + 2);
+            float x1 = floatBuffer.get(secondPosOffset + 0);
+            float y1 = floatBuffer.get(secondPosOffset + 1);
+            float z1 = floatBuffer.get(secondPosOffset + 2);
+            float xMid = (x0 + x1) / 2.0F;
+            float yMid = (y0 + y1) / 2.0F;
+            float zMid = (z0 + z1) / 2.0F;
+            sortingPoints.set(i, xMid, yMid, zMid);
          }
 
-         return var8;
+         return sortingPoints;
       }
    }
 
@@ -60,14 +60,14 @@ public class MeshData implements AutoCloseable {
       return this.drawState;
    }
 
-   public @Nullable SortState sortQuads(ByteBufferBuilder var1, VertexSorting var2) {
+   public @Nullable SortState sortQuads(final ByteBufferBuilder indexBufferTarget, final VertexSorting sorting) {
       if (this.drawState.mode() != VertexFormat.Mode.QUADS) {
          return null;
       } else {
-         CompactVectorArray var3 = unpackQuadCentroids(this.vertexBuffer.byteBuffer(), this.drawState.vertexCount(), this.drawState.format());
-         SortState var4 = new SortState(var3, this.drawState.indexType());
-         this.indexBuffer = var4.buildSortedIndexBuffer(var1, var2);
-         return var4;
+         CompactVectorArray centroids = unpackQuadCentroids(this.vertexBuffer.byteBuffer(), this.drawState.vertexCount(), this.drawState.format());
+         SortState sortState = new SortState(centroids, this.drawState.indexType());
+         this.indexBuffer = sortState.buildSortedIndexBuffer(indexBufferTarget, sorting);
+         return sortState;
       }
    }
 
@@ -80,46 +80,39 @@ public class MeshData implements AutoCloseable {
    }
 
    public static record DrawState(VertexFormat format, int vertexCount, int indexCount, VertexFormat.Mode mode, VertexFormat.IndexType indexType) {
-      public DrawState(VertexFormat var1, int var2, int var3, VertexFormat.Mode var4, VertexFormat.IndexType var5) {
+      public DrawState {
          super();
-         this.format = var1;
-         this.vertexCount = var2;
-         this.indexCount = var3;
-         this.mode = var4;
-         this.indexType = var5;
       }
    }
 
    public static record SortState(CompactVectorArray centroids, VertexFormat.IndexType indexType) {
-      public SortState(CompactVectorArray var1, VertexFormat.IndexType var2) {
+      public SortState {
          super();
-         this.centroids = var1;
-         this.indexType = var2;
       }
 
-      public ByteBufferBuilder.Result buildSortedIndexBuffer(ByteBufferBuilder var1, VertexSorting var2) {
-         int[] var3 = var2.sort(this.centroids);
-         long var4 = var1.reserve(var3.length * 6 * this.indexType.bytes);
-         IntConsumer var6 = this.indexWriter(var4, this.indexType);
+      public ByteBufferBuilder.Result buildSortedIndexBuffer(final ByteBufferBuilder target, final VertexSorting sorting) {
+         int[] startIndices = sorting.sort(this.centroids);
+         long pointer = target.reserve(startIndices.length * 6 * this.indexType.bytes);
+         IntConsumer indexWriter = this.indexWriter(pointer, this.indexType);
 
-         for(int var10 : var3) {
-            var6.accept(var10 * 4 + 0);
-            var6.accept(var10 * 4 + 1);
-            var6.accept(var10 * 4 + 2);
-            var6.accept(var10 * 4 + 2);
-            var6.accept(var10 * 4 + 3);
-            var6.accept(var10 * 4 + 0);
+         for(int startIndex : startIndices) {
+            indexWriter.accept(startIndex * 4 + 0);
+            indexWriter.accept(startIndex * 4 + 1);
+            indexWriter.accept(startIndex * 4 + 2);
+            indexWriter.accept(startIndex * 4 + 2);
+            indexWriter.accept(startIndex * 4 + 3);
+            indexWriter.accept(startIndex * 4 + 0);
          }
 
-         return var1.build();
+         return target.build();
       }
 
-      private IntConsumer indexWriter(long var1, VertexFormat.IndexType var3) {
-         MutableLong var4 = new MutableLong(var1);
+      private IntConsumer indexWriter(final long pointer, final VertexFormat.IndexType indexType) {
+         MutableLong nextIndex = new MutableLong(pointer);
          IntConsumer var10000;
-         switch (var3) {
-            case SHORT -> var10000 = (var1x) -> MemoryUtil.memPutShort(var4.getAndAdd(2L), (short)var1x);
-            case INT -> var10000 = (var1x) -> MemoryUtil.memPutInt(var4.getAndAdd(4L), var1x);
+         switch (indexType) {
+            case SHORT -> var10000 = (value) -> MemoryUtil.memPutShort(nextIndex.getAndAdd(2L), (short)value);
+            case INT -> var10000 = (value) -> MemoryUtil.memPutInt(nextIndex.getAndAdd(4L), value);
             default -> throw new MatchException((String)null, (Throwable)null);
          }
 

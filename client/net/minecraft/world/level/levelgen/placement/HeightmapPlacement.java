@@ -8,23 +8,23 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 public class HeightmapPlacement extends PlacementModifier {
-   public static final MapCodec<HeightmapPlacement> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Heightmap.Types.CODEC.fieldOf("heightmap").forGetter((var0x) -> var0x.heightmap)).apply(var0, HeightmapPlacement::new));
+   public static final MapCodec<HeightmapPlacement> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Heightmap.Types.CODEC.fieldOf("heightmap").forGetter((c) -> c.heightmap)).apply(i, HeightmapPlacement::new));
    private final Heightmap.Types heightmap;
 
-   private HeightmapPlacement(Heightmap.Types var1) {
+   private HeightmapPlacement(final Heightmap.Types heightmap) {
       super();
-      this.heightmap = var1;
+      this.heightmap = heightmap;
    }
 
-   public static HeightmapPlacement onHeightmap(Heightmap.Types var0) {
-      return new HeightmapPlacement(var0);
+   public static HeightmapPlacement onHeightmap(final Heightmap.Types heightmap) {
+      return new HeightmapPlacement(heightmap);
    }
 
-   public Stream<BlockPos> getPositions(PlacementContext var1, RandomSource var2, BlockPos var3) {
-      int var4 = var3.getX();
-      int var5 = var3.getZ();
-      int var6 = var1.getHeight(this.heightmap, var4, var5);
-      return var6 > var1.getMinY() ? Stream.of(new BlockPos(var4, var6, var5)) : Stream.of();
+   public Stream<BlockPos> getPositions(final PlacementContext context, final RandomSource random, final BlockPos origin) {
+      int x = origin.getX();
+      int z = origin.getZ();
+      int height = context.getHeight(this.heightmap, x, z);
+      return height > context.getMinY() ? Stream.of(new BlockPos(x, height, z)) : Stream.of();
    }
 
    public PlacementModifierType<?> type() {

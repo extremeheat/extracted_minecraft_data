@@ -10,32 +10,32 @@ import net.minecraft.world.level.levelgen.WorldGenerationContext;
 import org.slf4j.Logger;
 
 public class BiasedToBottomHeight extends HeightProvider {
-   public static final MapCodec<BiasedToBottomHeight> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(VerticalAnchor.CODEC.fieldOf("min_inclusive").forGetter((var0x) -> var0x.minInclusive), VerticalAnchor.CODEC.fieldOf("max_inclusive").forGetter((var0x) -> var0x.maxInclusive), Codec.intRange(1, 2147483647).optionalFieldOf("inner", 1).forGetter((var0x) -> var0x.inner)).apply(var0, BiasedToBottomHeight::new));
+   public static final MapCodec<BiasedToBottomHeight> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(VerticalAnchor.CODEC.fieldOf("min_inclusive").forGetter((u) -> u.minInclusive), VerticalAnchor.CODEC.fieldOf("max_inclusive").forGetter((u) -> u.maxInclusive), Codec.intRange(1, 2147483647).optionalFieldOf("inner", 1).forGetter((u) -> u.inner)).apply(i, BiasedToBottomHeight::new));
    private static final Logger LOGGER = LogUtils.getLogger();
    private final VerticalAnchor minInclusive;
    private final VerticalAnchor maxInclusive;
    private final int inner;
 
-   private BiasedToBottomHeight(VerticalAnchor var1, VerticalAnchor var2, int var3) {
+   private BiasedToBottomHeight(final VerticalAnchor minInclusive, final VerticalAnchor maxInclusive, final int inner) {
       super();
-      this.minInclusive = var1;
-      this.maxInclusive = var2;
-      this.inner = var3;
+      this.minInclusive = minInclusive;
+      this.maxInclusive = maxInclusive;
+      this.inner = inner;
    }
 
-   public static BiasedToBottomHeight of(VerticalAnchor var0, VerticalAnchor var1, int var2) {
-      return new BiasedToBottomHeight(var0, var1, var2);
+   public static BiasedToBottomHeight of(final VerticalAnchor minInclusive, final VerticalAnchor maxInclusive, final int offset) {
+      return new BiasedToBottomHeight(minInclusive, maxInclusive, offset);
    }
 
-   public int sample(RandomSource var1, WorldGenerationContext var2) {
-      int var3 = this.minInclusive.resolveY(var2);
-      int var4 = this.maxInclusive.resolveY(var2);
-      if (var4 - var3 - this.inner + 1 <= 0) {
+   public int sample(final RandomSource random, final WorldGenerationContext context) {
+      int min = this.minInclusive.resolveY(context);
+      int max = this.maxInclusive.resolveY(context);
+      if (max - min - this.inner + 1 <= 0) {
          LOGGER.warn("Empty height range: {}", this);
-         return var3;
+         return min;
       } else {
-         int var5 = var1.nextInt(var4 - var3 - this.inner + 1);
-         return var1.nextInt(var5 + this.inner) + var3;
+         int limit = random.nextInt(max - min - this.inner + 1);
+         return random.nextInt(limit + this.inner) + min;
       }
    }
 

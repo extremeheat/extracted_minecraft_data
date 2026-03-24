@@ -3,45 +3,42 @@ package net.minecraft.world.level.storage.loot.functions;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
-import java.util.Set;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.util.Mth;
-import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.OminousBottleAmplifier;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.Validatable;
+import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 
 public class SetOminousBottleAmplifierFunction extends LootItemConditionalFunction {
-   static final MapCodec<SetOminousBottleAmplifierFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(NumberProviders.CODEC.fieldOf("amplifier").forGetter((var0x) -> var0x.amplifierGenerator)).apply(var0, SetOminousBottleAmplifierFunction::new));
-   private final NumberProvider amplifierGenerator;
+   static final MapCodec<SetOminousBottleAmplifierFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(NumberProviders.CODEC.fieldOf("amplifier").forGetter((f) -> f.amplifier)).apply(i, SetOminousBottleAmplifierFunction::new));
+   private final NumberProvider amplifier;
 
-   private SetOminousBottleAmplifierFunction(List<LootItemCondition> var1, NumberProvider var2) {
-      super(var1);
-      this.amplifierGenerator = var2;
+   private SetOminousBottleAmplifierFunction(final List<LootItemCondition> predicates, final NumberProvider amplifier) {
+      super(predicates);
+      this.amplifier = amplifier;
    }
 
-   public Set<ContextKey<?>> getReferencedContextParams() {
-      return this.amplifierGenerator.getReferencedContextParams();
+   public void validate(final ValidationContext context) {
+      super.validate(context);
+      Validatable.validate(context, "amplifier", this.amplifier);
    }
 
-   public LootItemFunctionType<SetOminousBottleAmplifierFunction> getType() {
-      return LootItemFunctions.SET_OMINOUS_BOTTLE_AMPLIFIER;
+   public MapCodec<SetOminousBottleAmplifierFunction> codec() {
+      return MAP_CODEC;
    }
 
-   public ItemStack run(ItemStack var1, LootContext var2) {
-      int var3 = Mth.clamp(this.amplifierGenerator.getInt(var2), 0, 4);
-      var1.set(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, new OminousBottleAmplifier(var3));
-      return var1;
+   public ItemStack run(final ItemStack itemStack, final LootContext context) {
+      int amplifierValue = Mth.clamp(this.amplifier.getInt(context), 0, 4);
+      itemStack.set(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, new OminousBottleAmplifier(amplifierValue));
+      return itemStack;
    }
 
-   public NumberProvider amplifier() {
-      return this.amplifierGenerator;
-   }
-
-   public static LootItemConditionalFunction.Builder<?> setAmplifier(NumberProvider var0) {
-      return simpleBuilder((var1) -> new SetOminousBottleAmplifierFunction(var1, var0));
+   public static LootItemConditionalFunction.Builder<?> setAmplifier(final NumberProvider amplifier) {
+      return simpleBuilder((conditions) -> new SetOminousBottleAmplifierFunction(conditions, amplifier));
    }
 }

@@ -17,25 +17,27 @@ import net.minecraft.resources.Identifier;
 
 public class SheepWoolLayer extends RenderLayer<SheepRenderState, SheepModel> {
    private static final Identifier SHEEP_WOOL_LOCATION = Identifier.withDefaultNamespace("textures/entity/sheep/sheep_wool.png");
+   private static final Identifier BABY_SHEEP_WOOL_LOCATION = Identifier.withDefaultNamespace("textures/entity/sheep/sheep_wool_baby.png");
    private final EntityModel<SheepRenderState> adultModel;
    private final EntityModel<SheepRenderState> babyModel;
 
-   public SheepWoolLayer(RenderLayerParent<SheepRenderState, SheepModel> var1, EntityModelSet var2) {
-      super(var1);
-      this.adultModel = new SheepFurModel(var2.bakeLayer(ModelLayers.SHEEP_WOOL));
-      this.babyModel = new SheepFurModel(var2.bakeLayer(ModelLayers.SHEEP_BABY_WOOL));
+   public SheepWoolLayer(final RenderLayerParent<SheepRenderState, SheepModel> renderer, final EntityModelSet modelSet) {
+      super(renderer);
+      this.adultModel = new SheepFurModel(modelSet.bakeLayer(ModelLayers.SHEEP_WOOL));
+      this.babyModel = new SheepFurModel(modelSet.bakeLayer(ModelLayers.SHEEP_BABY_WOOL));
    }
 
-   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, SheepRenderState var4, float var5, float var6) {
-      if (!var4.isSheared) {
-         EntityModel var7 = var4.isBaby ? this.babyModel : this.adultModel;
-         if (var4.isInvisible) {
-            if (var4.appearsGlowing()) {
-               var2.submitModel(var7, var4, var1, RenderTypes.outline(SHEEP_WOOL_LOCATION), var3, LivingEntityRenderer.getOverlayCoords(var4, 0.0F), -16777216, (TextureAtlasSprite)null, var4.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+   public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final SheepRenderState state, final float yRot, final float xRot) {
+      if (!state.isSheared) {
+         EntityModel<SheepRenderState> model = state.isBaby ? this.babyModel : this.adultModel;
+         Identifier location = state.isBaby ? BABY_SHEEP_WOOL_LOCATION : SHEEP_WOOL_LOCATION;
+         if (state.isInvisible) {
+            if (state.appearsGlowing()) {
+               submitNodeCollector.submitModel(model, state, poseStack, RenderTypes.outline(location), lightCoords, LivingEntityRenderer.getOverlayCoords(state, 0.0F), -16777216, (TextureAtlasSprite)null, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
             }
 
          } else {
-            coloredCutoutModelCopyLayerRender(var7, SHEEP_WOOL_LOCATION, var1, var2, var3, var4, var4.getWoolColor(), 0);
+            coloredCutoutModelCopyLayerRender(model, location, poseStack, submitNodeCollector, lightCoords, state, state.getWoolColor(), state.isBaby ? 1 : 0);
          }
       }
    }

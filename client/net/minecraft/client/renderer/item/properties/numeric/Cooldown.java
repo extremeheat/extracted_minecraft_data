@@ -15,13 +15,13 @@ public record Cooldown() implements RangeSelectItemModelProperty {
       super();
    }
 
-   public float get(ItemStack var1, @Nullable ClientLevel var2, @Nullable ItemOwner var3, int var4) {
+   public float get(final ItemStack itemStack, final @Nullable ClientLevel level, final @Nullable ItemOwner owner, final int seed) {
       float var10000;
-      if (var3 != null) {
-         LivingEntity var6 = var3.asLivingEntity();
+      if (owner != null) {
+         LivingEntity var6 = owner.asLivingEntity();
          if (var6 instanceof Player) {
-            Player var5 = (Player)var6;
-            var10000 = var5.getCooldowns().getCooldownPercent(var1, 0.0F);
+            Player player = (Player)var6;
+            var10000 = player.getCooldowns().getCooldownPercent(itemStack, 0.0F);
             return var10000;
          }
       }

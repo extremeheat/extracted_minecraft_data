@@ -24,11 +24,11 @@ public interface ProtocolInfo<T extends PacketListener> {
       PacketFlow flow();
 
       @VisibleForDebug
-      void listPackets(PacketVisitor var1);
+      void listPackets(PacketVisitor output);
 
       @FunctionalInterface
       public interface PacketVisitor {
-         void accept(PacketType<?> var1, int var2);
+         void accept(PacketType<?> type, int networkId);
       }
    }
 

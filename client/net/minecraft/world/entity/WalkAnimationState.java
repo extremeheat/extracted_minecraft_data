@@ -12,15 +12,15 @@ public class WalkAnimationState {
       super();
    }
 
-   public void setSpeed(float var1) {
-      this.speed = var1;
+   public void setSpeed(final float speed) {
+      this.speed = speed;
    }
 
-   public void update(float var1, float var2, float var3) {
+   public void update(final float targetSpeed, final float factor, final float positionScale) {
       this.speedOld = this.speed;
-      this.speed += (var1 - this.speed) * var2;
+      this.speed += (targetSpeed - this.speed) * factor;
       this.position += this.speed;
-      this.positionScale = var3;
+      this.positionScale = positionScale;
    }
 
    public void stop() {
@@ -33,16 +33,16 @@ public class WalkAnimationState {
       return this.speed;
    }
 
-   public float speed(float var1) {
-      return Math.min(Mth.lerp(var1, this.speedOld, this.speed), 1.0F);
+   public float speed(final float partialTicks) {
+      return Math.min(Mth.lerp(partialTicks, this.speedOld, this.speed), 1.0F);
    }
 
    public float position() {
       return this.position * this.positionScale;
    }
 
-   public float position(float var1) {
-      return (this.position - this.speed * (1.0F - var1)) * this.positionScale;
+   public float position(final float partialTicks) {
+      return (this.position - this.speed * (1.0F - partialTicks)) * this.positionScale;
    }
 
    public boolean isMoving() {

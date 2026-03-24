@@ -7,9 +7,8 @@ import net.minecraft.network.codec.StreamCodec;
 public record DebugGameEventListenerInfo(int listenerRadius) {
    public static final StreamCodec<RegistryFriendlyByteBuf, DebugGameEventListenerInfo> STREAM_CODEC;
 
-   public DebugGameEventListenerInfo(int var1) {
+   public DebugGameEventListenerInfo {
       super();
-      this.listenerRadius = var1;
    }
 
    static {

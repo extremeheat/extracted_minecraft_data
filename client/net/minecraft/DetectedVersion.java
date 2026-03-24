@@ -24,40 +24,40 @@ public class DetectedVersion {
       super();
    }
 
-   public static WorldVersion createBuiltIn(String var0, String var1) {
-      return createBuiltIn(var0, var1, true);
+   public static WorldVersion createBuiltIn(final String id, final String name) {
+      return createBuiltIn(id, name, true);
    }
 
-   public static WorldVersion createBuiltIn(String var0, String var1, boolean var2) {
-      return new WorldVersion.Simple(var0, var1, new DataVersion(4671, "main"), SharedConstants.getProtocolVersion(), PackFormat.of(75, 0), PackFormat.of(94, 1), new Date(), var2);
+   public static WorldVersion createBuiltIn(final String id, final String name, final boolean stable) {
+      return new WorldVersion.Simple(id, name, new DataVersion(4786, "main"), SharedConstants.getProtocolVersion(), PackFormat.of(84, 0), PackFormat.of(101, 1), new Date(), stable);
    }
 
-   private static WorldVersion createFromJson(JsonObject var0) {
-      JsonObject var1 = GsonHelper.getAsJsonObject(var0, "pack_version");
-      return new WorldVersion.Simple(GsonHelper.getAsString(var0, "id"), GsonHelper.getAsString(var0, "name"), new DataVersion(GsonHelper.getAsInt(var0, "world_version"), GsonHelper.getAsString(var0, "series_id", "main")), GsonHelper.getAsInt(var0, "protocol_version"), PackFormat.of(GsonHelper.getAsInt(var1, "resource_major"), GsonHelper.getAsInt(var1, "resource_minor")), PackFormat.of(GsonHelper.getAsInt(var1, "data_major"), GsonHelper.getAsInt(var1, "data_minor")), Date.from(ZonedDateTime.parse(GsonHelper.getAsString(var0, "build_time")).toInstant()), GsonHelper.getAsBoolean(var0, "stable"));
+   private static WorldVersion createFromJson(final JsonObject root) {
+      JsonObject packVersion = GsonHelper.getAsJsonObject(root, "pack_version");
+      return new WorldVersion.Simple(GsonHelper.getAsString(root, "id"), GsonHelper.getAsString(root, "name"), new DataVersion(GsonHelper.getAsInt(root, "world_version"), GsonHelper.getAsString(root, "series_id", "main")), GsonHelper.getAsInt(root, "protocol_version"), PackFormat.of(GsonHelper.getAsInt(packVersion, "resource_major"), GsonHelper.getAsInt(packVersion, "resource_minor")), PackFormat.of(GsonHelper.getAsInt(packVersion, "data_major"), GsonHelper.getAsInt(packVersion, "data_minor")), Date.from(ZonedDateTime.parse(GsonHelper.getAsString(root, "build_time")).toInstant()), GsonHelper.getAsBoolean(root, "stable"));
    }
 
    public static WorldVersion tryDetectVersion() {
       try {
-         InputStream var0 = DetectedVersion.class.getResourceAsStream("/version.json");
+         InputStream stream = DetectedVersion.class.getResourceAsStream("/version.json");
 
          WorldVersion var9;
          label63: {
             WorldVersion var2;
             try {
-               if (var0 == null) {
+               if (stream == null) {
                   LOGGER.warn("Missing version information!");
                   var9 = BUILT_IN;
                   break label63;
                }
 
-               InputStreamReader var1 = new InputStreamReader(var0, StandardCharsets.UTF_8);
+               InputStreamReader reader = new InputStreamReader(stream, StandardCharsets.UTF_8);
 
                try {
-                  var2 = createFromJson(GsonHelper.parse((Reader)var1));
+                  var2 = createFromJson(GsonHelper.parse((Reader)reader));
                } catch (Throwable var6) {
                   try {
-                     var1.close();
+                     reader.close();
                   } catch (Throwable var5) {
                      var6.addSuppressed(var5);
                   }
@@ -65,11 +65,11 @@ public class DetectedVersion {
                   throw var6;
                }
 
-               var1.close();
+               reader.close();
             } catch (Throwable var7) {
-               if (var0 != null) {
+               if (stream != null) {
                   try {
-                     var0.close();
+                     stream.close();
                   } catch (Throwable var4) {
                      var7.addSuppressed(var4);
                   }
@@ -78,20 +78,20 @@ public class DetectedVersion {
                throw var7;
             }
 
-            if (var0 != null) {
-               var0.close();
+            if (stream != null) {
+               stream.close();
             }
 
             return var2;
          }
 
-         if (var0 != null) {
-            var0.close();
+         if (stream != null) {
+            stream.close();
          }
 
          return var9;
-      } catch (JsonParseException | IOException var8) {
-         throw new IllegalStateException("Game version information is corrupt", var8);
+      } catch (JsonParseException | IOException e) {
+         throw new IllegalStateException("Game version information is corrupt", e);
       }
    }
 }

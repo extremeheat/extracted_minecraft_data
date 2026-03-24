@@ -7,7 +7,6 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.monster.shulker.ShulkerModel;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.ShulkerRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
@@ -21,65 +20,60 @@ public class ShulkerRenderer extends MobRenderer<Shulker, ShulkerRenderState, Sh
    private static final Identifier DEFAULT_TEXTURE_LOCATION;
    private static final Identifier[] TEXTURE_LOCATION;
 
-   public ShulkerRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new ShulkerModel(var1.bakeLayer(ModelLayers.SHULKER)), 0.0F);
+   public ShulkerRenderer(final EntityRendererProvider.Context context) {
+      super(context, new ShulkerModel(context.bakeLayer(ModelLayers.SHULKER)), 0.0F);
    }
 
-   public Vec3 getRenderOffset(ShulkerRenderState var1) {
-      return var1.renderOffset;
+   public Vec3 getRenderOffset(final ShulkerRenderState state) {
+      return state.renderOffset;
    }
 
-   public boolean shouldRender(Shulker var1, Frustum var2, double var3, double var5, double var7) {
-      if (super.shouldRender(var1, var2, var3, var5, var7)) {
+   public boolean shouldRender(final Shulker entity, final Frustum culler, final double camX, final double camY, final double camZ) {
+      if (super.shouldRender(entity, culler, camX, camY, camZ)) {
          return true;
       } else {
-         Vec3 var9 = var1.getRenderPosition(0.0F);
-         if (var9 == null) {
+         Vec3 startPos = entity.getRenderPosition(0.0F);
+         if (startPos == null) {
             return false;
          } else {
-            EntityType var10 = var1.getType();
-            float var11 = var10.getHeight() / 2.0F;
-            float var12 = var10.getWidth() / 2.0F;
-            Vec3 var13 = Vec3.atBottomCenterOf(var1.blockPosition());
-            return var2.isVisible((new AABB(var9.x, var9.y + (double)var11, var9.z, var13.x, var13.y + (double)var11, var13.z)).inflate((double)var12, (double)var11, (double)var12));
+            EntityType<?> type = entity.getType();
+            float halfHeight = type.getHeight() / 2.0F;
+            float halfWidth = type.getWidth() / 2.0F;
+            Vec3 targetPos = Vec3.atBottomCenterOf(entity.blockPosition());
+            return culler.isVisible((new AABB(startPos.x, startPos.y + (double)halfHeight, startPos.z, targetPos.x, targetPos.y + (double)halfHeight, targetPos.z)).inflate((double)halfWidth, (double)halfHeight, (double)halfWidth));
          }
       }
    }
 
-   public Identifier getTextureLocation(ShulkerRenderState var1) {
-      return getTextureLocation(var1.color);
+   public Identifier getTextureLocation(final ShulkerRenderState state) {
+      return getTextureLocation(state.color);
    }
 
    public ShulkerRenderState createRenderState() {
       return new ShulkerRenderState();
    }
 
-   public void extractRenderState(Shulker var1, ShulkerRenderState var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      var2.renderOffset = (Vec3)Objects.requireNonNullElse(var1.getRenderPosition(var3), Vec3.ZERO);
-      var2.color = var1.getColor();
-      var2.peekAmount = var1.getClientPeekAmount(var3);
-      var2.yHeadRot = var1.yHeadRot;
-      var2.yBodyRot = var1.yBodyRot;
-      var2.attachFace = var1.getAttachFace();
+   public void extractRenderState(final Shulker entity, final ShulkerRenderState state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      state.renderOffset = (Vec3)Objects.requireNonNullElse(entity.getRenderPosition(partialTicks), Vec3.ZERO);
+      state.color = entity.getColor();
+      state.peekAmount = entity.getClientPeekAmount(partialTicks);
+      state.yHeadRot = entity.yHeadRot;
+      state.yBodyRot = entity.yBodyRot;
+      state.attachFace = entity.getAttachFace();
    }
 
-   public static Identifier getTextureLocation(@Nullable DyeColor var0) {
-      return var0 == null ? DEFAULT_TEXTURE_LOCATION : TEXTURE_LOCATION[var0.getId()];
+   public static Identifier getTextureLocation(final @Nullable DyeColor color) {
+      return color == null ? DEFAULT_TEXTURE_LOCATION : TEXTURE_LOCATION[color.getId()];
    }
 
-   protected void setupRotations(ShulkerRenderState var1, PoseStack var2, float var3, float var4) {
-      super.setupRotations(var1, var2, var3 + 180.0F, var4);
-      var2.rotateAround(var1.attachFace.getOpposite().getRotation(), 0.0F, 0.5F, 0.0F);
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
+   protected void setupRotations(final ShulkerRenderState state, final PoseStack poseStack, final float bodyRot, final float entityScale) {
+      super.setupRotations(state, poseStack, bodyRot + 180.0F, entityScale);
+      poseStack.rotateAround(state.attachFace.getOpposite().getRotation(), 0.0F, 0.5F, 0.0F);
    }
 
    static {
-      DEFAULT_TEXTURE_LOCATION = Sheets.DEFAULT_SHULKER_TEXTURE_LOCATION.texture().withPath((UnaryOperator)((var0) -> "textures/" + var0 + ".png"));
-      TEXTURE_LOCATION = (Identifier[])Sheets.SHULKER_TEXTURE_LOCATION.stream().map((var0) -> var0.texture().withPath((UnaryOperator)((var0x) -> "textures/" + var0x + ".png"))).toArray((var0) -> new Identifier[var0]);
+      DEFAULT_TEXTURE_LOCATION = Sheets.DEFAULT_SHULKER_TEXTURE_LOCATION.texture().withPath((UnaryOperator)((path) -> "textures/" + path + ".png"));
+      TEXTURE_LOCATION = (Identifier[])Sheets.SHULKER_TEXTURE_LOCATION.stream().map((location) -> location.texture().withPath((UnaryOperator)((path) -> "textures/" + path + ".png"))).toArray((x$0) -> new Identifier[x$0]);
    }
 }

@@ -19,23 +19,23 @@ public abstract class Fireball extends AbstractHurtingProjectile implements Item
    private static final float MIN_CAMERA_DISTANCE_SQUARED = 12.25F;
    private static final EntityDataAccessor<ItemStack> DATA_ITEM_STACK;
 
-   public Fireball(EntityType<? extends Fireball> var1, Level var2) {
-      super(var1, var2);
+   public Fireball(final EntityType<? extends Fireball> type, final Level level) {
+      super(type, level);
    }
 
-   public Fireball(EntityType<? extends Fireball> var1, double var2, double var4, double var6, Vec3 var8, Level var9) {
-      super(var1, var2, var4, var6, var8, var9);
+   public Fireball(final EntityType<? extends Fireball> type, final double x, final double y, final double z, final Vec3 direction, final Level level) {
+      super(type, x, y, z, direction, level);
    }
 
-   public Fireball(EntityType<? extends Fireball> var1, LivingEntity var2, Vec3 var3, Level var4) {
-      super(var1, var2, var3, var4);
+   public Fireball(final EntityType<? extends Fireball> type, final LivingEntity mob, final Vec3 direction, final Level level) {
+      super(type, mob, direction, level);
    }
 
-   public void setItem(ItemStack var1) {
-      if (var1.isEmpty()) {
+   public void setItem(final ItemStack source) {
+      if (source.isEmpty()) {
          this.getEntityData().set(DATA_ITEM_STACK, this.getDefaultItem());
       } else {
-         this.getEntityData().set(DATA_ITEM_STACK, var1.copyWithCount(1));
+         this.getEntityData().set(DATA_ITEM_STACK, source.copyWithCount(1));
       }
 
    }
@@ -47,30 +47,30 @@ public abstract class Fireball extends AbstractHurtingProjectile implements Item
       return (ItemStack)this.getEntityData().get(DATA_ITEM_STACK);
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      var1.define(DATA_ITEM_STACK, this.getDefaultItem());
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      entityData.define(DATA_ITEM_STACK, this.getDefaultItem());
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.store("Item", ItemStack.CODEC, this.getItem());
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.store("Item", ItemStack.CODEC, this.getItem());
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.setItem((ItemStack)var1.read("Item", ItemStack.CODEC).orElse(this.getDefaultItem()));
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.setItem((ItemStack)input.read("Item", ItemStack.CODEC).orElse(this.getDefaultItem()));
    }
 
    private ItemStack getDefaultItem() {
       return new ItemStack(Items.FIRE_CHARGE);
    }
 
-   public @Nullable SlotAccess getSlot(int var1) {
-      return var1 == 0 ? SlotAccess.of(this::getItem, this::setItem) : super.getSlot(var1);
+   public @Nullable SlotAccess getSlot(final int slot) {
+      return slot == 0 ? SlotAccess.of(this::getItem, this::setItem) : super.getSlot(slot);
    }
 
-   public boolean shouldRenderAtSqrDistance(double var1) {
-      return this.tickCount < 2 && var1 < 12.25 ? false : super.shouldRenderAtSqrDistance(var1);
+   public boolean shouldRenderAtSqrDistance(final double distance) {
+      return this.tickCount < 2 && distance < 12.25 ? false : super.shouldRenderAtSqrDistance(distance);
    }
 
    static {

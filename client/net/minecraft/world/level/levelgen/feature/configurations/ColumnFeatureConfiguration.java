@@ -3,16 +3,17 @@ package net.minecraft.world.level.levelgen.feature.configurations;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.valueproviders.IntProvider;
+import net.minecraft.util.valueproviders.IntProviders;
 
 public class ColumnFeatureConfiguration implements FeatureConfiguration {
-   public static final Codec<ColumnFeatureConfiguration> CODEC = RecordCodecBuilder.create((var0) -> var0.group(IntProvider.codec(0, 3).fieldOf("reach").forGetter((var0x) -> var0x.reach), IntProvider.codec(1, 10).fieldOf("height").forGetter((var0x) -> var0x.height)).apply(var0, ColumnFeatureConfiguration::new));
+   public static final Codec<ColumnFeatureConfiguration> CODEC = RecordCodecBuilder.create((i) -> i.group(IntProviders.codec(0, 3).fieldOf("reach").forGetter((c) -> c.reach), IntProviders.codec(1, 10).fieldOf("height").forGetter((c) -> c.height)).apply(i, ColumnFeatureConfiguration::new));
    private final IntProvider reach;
    private final IntProvider height;
 
-   public ColumnFeatureConfiguration(IntProvider var1, IntProvider var2) {
+   public ColumnFeatureConfiguration(final IntProvider reach, final IntProvider height) {
       super();
-      this.reach = var1;
-      this.height = var2;
+      this.reach = reach;
+      this.height = height;
    }
 
    public IntProvider reach() {

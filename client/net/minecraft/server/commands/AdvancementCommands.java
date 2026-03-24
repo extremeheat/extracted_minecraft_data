@@ -26,183 +26,183 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
 public class AdvancementCommands {
-   private static final DynamicCommandExceptionType ERROR_NO_ACTION_PERFORMED = new DynamicCommandExceptionType((var0) -> (Component)var0);
-   private static final Dynamic2CommandExceptionType ERROR_CRITERION_NOT_FOUND = new Dynamic2CommandExceptionType((var0, var1) -> Component.translatableEscape("commands.advancement.criterionNotFound", var0, var1));
+   private static final DynamicCommandExceptionType ERROR_NO_ACTION_PERFORMED = new DynamicCommandExceptionType((msg) -> (Component)msg);
+   private static final Dynamic2CommandExceptionType ERROR_CRITERION_NOT_FOUND = new Dynamic2CommandExceptionType((name, criterion) -> Component.translatableEscape("commands.advancement.criterionNotFound", name, criterion));
 
    public AdvancementCommands() {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("advancement").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("grant").then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).then(Commands.literal("only").then(((RequiredArgumentBuilder)Commands.argument("advancement", ResourceKeyArgument.key(Registries.ADVANCEMENT)).executes((var0x) -> perform((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), AdvancementCommands.Action.GRANT, getAdvancements(var0x, ResourceKeyArgument.getAdvancement(var0x, "advancement"), AdvancementCommands.Mode.ONLY)))).then(Commands.argument("criterion", StringArgumentType.greedyString()).suggests((var0x, var1) -> SharedSuggestionProvider.suggest(ResourceKeyArgument.getAdvancement(var0x, "advancement").value().criteria().keySet(), var1)).executes((var0x) -> performCriterion((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), AdvancementCommands.Action.GRANT, ResourceKeyArgument.getAdvancement(var0x, "advancement"), StringArgumentType.getString(var0x, "criterion"))))))).then(Commands.literal("from").then(Commands.argument("advancement", ResourceKeyArgument.key(Registries.ADVANCEMENT)).executes((var0x) -> perform((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), AdvancementCommands.Action.GRANT, getAdvancements(var0x, ResourceKeyArgument.getAdvancement(var0x, "advancement"), AdvancementCommands.Mode.FROM)))))).then(Commands.literal("until").then(Commands.argument("advancement", ResourceKeyArgument.key(Registries.ADVANCEMENT)).executes((var0x) -> perform((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), AdvancementCommands.Action.GRANT, getAdvancements(var0x, ResourceKeyArgument.getAdvancement(var0x, "advancement"), AdvancementCommands.Mode.UNTIL)))))).then(Commands.literal("through").then(Commands.argument("advancement", ResourceKeyArgument.key(Registries.ADVANCEMENT)).executes((var0x) -> perform((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), AdvancementCommands.Action.GRANT, getAdvancements(var0x, ResourceKeyArgument.getAdvancement(var0x, "advancement"), AdvancementCommands.Mode.THROUGH)))))).then(Commands.literal("everything").executes((var0x) -> perform((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), AdvancementCommands.Action.GRANT, ((CommandSourceStack)var0x.getSource()).getServer().getAdvancements().getAllAdvancements(), false)))))).then(Commands.literal("revoke").then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).then(Commands.literal("only").then(((RequiredArgumentBuilder)Commands.argument("advancement", ResourceKeyArgument.key(Registries.ADVANCEMENT)).executes((var0x) -> perform((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), AdvancementCommands.Action.REVOKE, getAdvancements(var0x, ResourceKeyArgument.getAdvancement(var0x, "advancement"), AdvancementCommands.Mode.ONLY)))).then(Commands.argument("criterion", StringArgumentType.greedyString()).suggests((var0x, var1) -> SharedSuggestionProvider.suggest(ResourceKeyArgument.getAdvancement(var0x, "advancement").value().criteria().keySet(), var1)).executes((var0x) -> performCriterion((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), AdvancementCommands.Action.REVOKE, ResourceKeyArgument.getAdvancement(var0x, "advancement"), StringArgumentType.getString(var0x, "criterion"))))))).then(Commands.literal("from").then(Commands.argument("advancement", ResourceKeyArgument.key(Registries.ADVANCEMENT)).executes((var0x) -> perform((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), AdvancementCommands.Action.REVOKE, getAdvancements(var0x, ResourceKeyArgument.getAdvancement(var0x, "advancement"), AdvancementCommands.Mode.FROM)))))).then(Commands.literal("until").then(Commands.argument("advancement", ResourceKeyArgument.key(Registries.ADVANCEMENT)).executes((var0x) -> perform((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), AdvancementCommands.Action.REVOKE, getAdvancements(var0x, ResourceKeyArgument.getAdvancement(var0x, "advancement"), AdvancementCommands.Mode.UNTIL)))))).then(Commands.literal("through").then(Commands.argument("advancement", ResourceKeyArgument.key(Registries.ADVANCEMENT)).executes((var0x) -> perform((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), AdvancementCommands.Action.REVOKE, getAdvancements(var0x, ResourceKeyArgument.getAdvancement(var0x, "advancement"), AdvancementCommands.Mode.THROUGH)))))).then(Commands.literal("everything").executes((var0x) -> perform((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), AdvancementCommands.Action.REVOKE, ((CommandSourceStack)var0x.getSource()).getServer().getAdvancements().getAllAdvancements()))))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("advancement").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("grant").then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).then(Commands.literal("only").then(((RequiredArgumentBuilder)Commands.argument("advancement", ResourceKeyArgument.key(Registries.ADVANCEMENT)).executes((c) -> perform((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), AdvancementCommands.Action.GRANT, getAdvancements(c, ResourceKeyArgument.getAdvancement(c, "advancement"), AdvancementCommands.Mode.ONLY)))).then(Commands.argument("criterion", StringArgumentType.greedyString()).suggests((c, p) -> SharedSuggestionProvider.suggest(ResourceKeyArgument.getAdvancement(c, "advancement").value().criteria().keySet(), p)).executes((c) -> performCriterion((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), AdvancementCommands.Action.GRANT, ResourceKeyArgument.getAdvancement(c, "advancement"), StringArgumentType.getString(c, "criterion"))))))).then(Commands.literal("from").then(Commands.argument("advancement", ResourceKeyArgument.key(Registries.ADVANCEMENT)).executes((c) -> perform((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), AdvancementCommands.Action.GRANT, getAdvancements(c, ResourceKeyArgument.getAdvancement(c, "advancement"), AdvancementCommands.Mode.FROM)))))).then(Commands.literal("until").then(Commands.argument("advancement", ResourceKeyArgument.key(Registries.ADVANCEMENT)).executes((c) -> perform((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), AdvancementCommands.Action.GRANT, getAdvancements(c, ResourceKeyArgument.getAdvancement(c, "advancement"), AdvancementCommands.Mode.UNTIL)))))).then(Commands.literal("through").then(Commands.argument("advancement", ResourceKeyArgument.key(Registries.ADVANCEMENT)).executes((c) -> perform((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), AdvancementCommands.Action.GRANT, getAdvancements(c, ResourceKeyArgument.getAdvancement(c, "advancement"), AdvancementCommands.Mode.THROUGH)))))).then(Commands.literal("everything").executes((c) -> perform((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), AdvancementCommands.Action.GRANT, ((CommandSourceStack)c.getSource()).getServer().getAdvancements().getAllAdvancements(), false)))))).then(Commands.literal("revoke").then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).then(Commands.literal("only").then(((RequiredArgumentBuilder)Commands.argument("advancement", ResourceKeyArgument.key(Registries.ADVANCEMENT)).executes((c) -> perform((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), AdvancementCommands.Action.REVOKE, getAdvancements(c, ResourceKeyArgument.getAdvancement(c, "advancement"), AdvancementCommands.Mode.ONLY)))).then(Commands.argument("criterion", StringArgumentType.greedyString()).suggests((c, p) -> SharedSuggestionProvider.suggest(ResourceKeyArgument.getAdvancement(c, "advancement").value().criteria().keySet(), p)).executes((c) -> performCriterion((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), AdvancementCommands.Action.REVOKE, ResourceKeyArgument.getAdvancement(c, "advancement"), StringArgumentType.getString(c, "criterion"))))))).then(Commands.literal("from").then(Commands.argument("advancement", ResourceKeyArgument.key(Registries.ADVANCEMENT)).executes((c) -> perform((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), AdvancementCommands.Action.REVOKE, getAdvancements(c, ResourceKeyArgument.getAdvancement(c, "advancement"), AdvancementCommands.Mode.FROM)))))).then(Commands.literal("until").then(Commands.argument("advancement", ResourceKeyArgument.key(Registries.ADVANCEMENT)).executes((c) -> perform((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), AdvancementCommands.Action.REVOKE, getAdvancements(c, ResourceKeyArgument.getAdvancement(c, "advancement"), AdvancementCommands.Mode.UNTIL)))))).then(Commands.literal("through").then(Commands.argument("advancement", ResourceKeyArgument.key(Registries.ADVANCEMENT)).executes((c) -> perform((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), AdvancementCommands.Action.REVOKE, getAdvancements(c, ResourceKeyArgument.getAdvancement(c, "advancement"), AdvancementCommands.Mode.THROUGH)))))).then(Commands.literal("everything").executes((c) -> perform((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), AdvancementCommands.Action.REVOKE, ((CommandSourceStack)c.getSource()).getServer().getAdvancements().getAllAdvancements()))))));
    }
 
-   private static int perform(CommandSourceStack var0, Collection<ServerPlayer> var1, Action var2, Collection<AdvancementHolder> var3) throws CommandSyntaxException {
-      return perform(var0, var1, var2, var3, true);
+   private static int perform(final CommandSourceStack source, final Collection<ServerPlayer> players, final Action action, final Collection<AdvancementHolder> advancements) throws CommandSyntaxException {
+      return perform(source, players, action, advancements, true);
    }
 
-   private static int perform(CommandSourceStack var0, Collection<ServerPlayer> var1, Action var2, Collection<AdvancementHolder> var3, boolean var4) throws CommandSyntaxException {
-      int var5 = 0;
+   private static int perform(final CommandSourceStack source, final Collection<ServerPlayer> players, final Action action, final Collection<AdvancementHolder> advancements, final boolean showAdvancements) throws CommandSyntaxException {
+      int count = 0;
 
-      for(ServerPlayer var7 : var1) {
-         var5 += var2.perform(var7, var3, var4);
+      for(ServerPlayer player : players) {
+         count += action.perform(player, advancements, showAdvancements);
       }
 
-      if (var5 == 0) {
-         if (var3.size() == 1) {
-            if (var1.size() == 1) {
-               throw ERROR_NO_ACTION_PERFORMED.create(Component.translatable(var2.getKey() + ".one.to.one.failure", Advancement.name((AdvancementHolder)var3.iterator().next()), ((ServerPlayer)var1.iterator().next()).getDisplayName()));
+      if (count == 0) {
+         if (advancements.size() == 1) {
+            if (players.size() == 1) {
+               throw ERROR_NO_ACTION_PERFORMED.create(Component.translatable(action.getKey() + ".one.to.one.failure", Advancement.name((AdvancementHolder)advancements.iterator().next()), ((ServerPlayer)players.iterator().next()).getDisplayName()));
             } else {
-               throw ERROR_NO_ACTION_PERFORMED.create(Component.translatable(var2.getKey() + ".one.to.many.failure", Advancement.name((AdvancementHolder)var3.iterator().next()), var1.size()));
+               throw ERROR_NO_ACTION_PERFORMED.create(Component.translatable(action.getKey() + ".one.to.many.failure", Advancement.name((AdvancementHolder)advancements.iterator().next()), players.size()));
             }
-         } else if (var1.size() == 1) {
-            throw ERROR_NO_ACTION_PERFORMED.create(Component.translatable(var2.getKey() + ".many.to.one.failure", var3.size(), ((ServerPlayer)var1.iterator().next()).getDisplayName()));
+         } else if (players.size() == 1) {
+            throw ERROR_NO_ACTION_PERFORMED.create(Component.translatable(action.getKey() + ".many.to.one.failure", advancements.size(), ((ServerPlayer)players.iterator().next()).getDisplayName()));
          } else {
-            throw ERROR_NO_ACTION_PERFORMED.create(Component.translatable(var2.getKey() + ".many.to.many.failure", var3.size(), var1.size()));
+            throw ERROR_NO_ACTION_PERFORMED.create(Component.translatable(action.getKey() + ".many.to.many.failure", advancements.size(), players.size()));
          }
       } else {
-         if (var3.size() == 1) {
-            if (var1.size() == 1) {
-               var0.sendSuccess(() -> Component.translatable(var2.getKey() + ".one.to.one.success", Advancement.name((AdvancementHolder)var3.iterator().next()), ((ServerPlayer)var1.iterator().next()).getDisplayName()), true);
+         if (advancements.size() == 1) {
+            if (players.size() == 1) {
+               source.sendSuccess(() -> Component.translatable(action.getKey() + ".one.to.one.success", Advancement.name((AdvancementHolder)advancements.iterator().next()), ((ServerPlayer)players.iterator().next()).getDisplayName()), true);
             } else {
-               var0.sendSuccess(() -> Component.translatable(var2.getKey() + ".one.to.many.success", Advancement.name((AdvancementHolder)var3.iterator().next()), var1.size()), true);
+               source.sendSuccess(() -> Component.translatable(action.getKey() + ".one.to.many.success", Advancement.name((AdvancementHolder)advancements.iterator().next()), players.size()), true);
             }
-         } else if (var1.size() == 1) {
-            var0.sendSuccess(() -> Component.translatable(var2.getKey() + ".many.to.one.success", var3.size(), ((ServerPlayer)var1.iterator().next()).getDisplayName()), true);
+         } else if (players.size() == 1) {
+            source.sendSuccess(() -> Component.translatable(action.getKey() + ".many.to.one.success", advancements.size(), ((ServerPlayer)players.iterator().next()).getDisplayName()), true);
          } else {
-            var0.sendSuccess(() -> Component.translatable(var2.getKey() + ".many.to.many.success", var3.size(), var1.size()), true);
+            source.sendSuccess(() -> Component.translatable(action.getKey() + ".many.to.many.success", advancements.size(), players.size()), true);
          }
 
-         return var5;
+         return count;
       }
    }
 
-   private static int performCriterion(CommandSourceStack var0, Collection<ServerPlayer> var1, Action var2, AdvancementHolder var3, String var4) throws CommandSyntaxException {
-      int var5 = 0;
-      Advancement var6 = var3.value();
-      if (!var6.criteria().containsKey(var4)) {
-         throw ERROR_CRITERION_NOT_FOUND.create(Advancement.name(var3), var4);
+   private static int performCriterion(final CommandSourceStack source, final Collection<ServerPlayer> players, final Action action, final AdvancementHolder holder, final String criterion) throws CommandSyntaxException {
+      int count = 0;
+      Advancement advancement = holder.value();
+      if (!advancement.criteria().containsKey(criterion)) {
+         throw ERROR_CRITERION_NOT_FOUND.create(Advancement.name(holder), criterion);
       } else {
-         for(ServerPlayer var8 : var1) {
-            if (var2.performCriterion(var8, var3, var4)) {
-               ++var5;
+         for(ServerPlayer player : players) {
+            if (action.performCriterion(player, holder, criterion)) {
+               ++count;
             }
          }
 
-         if (var5 == 0) {
-            if (var1.size() == 1) {
-               throw ERROR_NO_ACTION_PERFORMED.create(Component.translatable(var2.getKey() + ".criterion.to.one.failure", var4, Advancement.name(var3), ((ServerPlayer)var1.iterator().next()).getDisplayName()));
+         if (count == 0) {
+            if (players.size() == 1) {
+               throw ERROR_NO_ACTION_PERFORMED.create(Component.translatable(action.getKey() + ".criterion.to.one.failure", criterion, Advancement.name(holder), ((ServerPlayer)players.iterator().next()).getDisplayName()));
             } else {
-               throw ERROR_NO_ACTION_PERFORMED.create(Component.translatable(var2.getKey() + ".criterion.to.many.failure", var4, Advancement.name(var3), var1.size()));
+               throw ERROR_NO_ACTION_PERFORMED.create(Component.translatable(action.getKey() + ".criterion.to.many.failure", criterion, Advancement.name(holder), players.size()));
             }
          } else {
-            if (var1.size() == 1) {
-               var0.sendSuccess(() -> Component.translatable(var2.getKey() + ".criterion.to.one.success", var4, Advancement.name(var3), ((ServerPlayer)var1.iterator().next()).getDisplayName()), true);
+            if (players.size() == 1) {
+               source.sendSuccess(() -> Component.translatable(action.getKey() + ".criterion.to.one.success", criterion, Advancement.name(holder), ((ServerPlayer)players.iterator().next()).getDisplayName()), true);
             } else {
-               var0.sendSuccess(() -> Component.translatable(var2.getKey() + ".criterion.to.many.success", var4, Advancement.name(var3), var1.size()), true);
+               source.sendSuccess(() -> Component.translatable(action.getKey() + ".criterion.to.many.success", criterion, Advancement.name(holder), players.size()), true);
             }
 
-            return var5;
+            return count;
          }
       }
    }
 
-   private static List<AdvancementHolder> getAdvancements(CommandContext<CommandSourceStack> var0, AdvancementHolder var1, Mode var2) {
-      AdvancementTree var3 = ((CommandSourceStack)var0.getSource()).getServer().getAdvancements().tree();
-      AdvancementNode var4 = var3.get(var1);
-      if (var4 == null) {
-         return List.of(var1);
+   private static List<AdvancementHolder> getAdvancements(final CommandContext<CommandSourceStack> context, final AdvancementHolder target, final Mode mode) {
+      AdvancementTree advancementTree = ((CommandSourceStack)context.getSource()).getServer().getAdvancements().tree();
+      AdvancementNode targetNode = advancementTree.get(target);
+      if (targetNode == null) {
+         return List.of(target);
       } else {
-         ArrayList var5 = new ArrayList();
-         if (var2.parents) {
-            for(AdvancementNode var6 = var4.parent(); var6 != null; var6 = var6.parent()) {
-               var5.add(var6.holder());
+         List<AdvancementHolder> advancements = new ArrayList();
+         if (mode.parents) {
+            for(AdvancementNode parent = targetNode.parent(); parent != null; parent = parent.parent()) {
+               advancements.add(parent.holder());
             }
          }
 
-         var5.add(var1);
-         if (var2.children) {
-            addChildren(var4, var5);
+         advancements.add(target);
+         if (mode.children) {
+            addChildren(targetNode, advancements);
          }
 
-         return var5;
+         return advancements;
       }
    }
 
-   private static void addChildren(AdvancementNode var0, List<AdvancementHolder> var1) {
-      for(AdvancementNode var3 : var0.children()) {
-         var1.add(var3.holder());
-         addChildren(var3, var1);
+   private static void addChildren(final AdvancementNode parent, final List<AdvancementHolder> output) {
+      for(AdvancementNode child : parent.children()) {
+         output.add(child.holder());
+         addChildren(child, output);
       }
 
    }
 
-   static enum Action {
+   private static enum Action {
       GRANT("grant") {
-         protected boolean perform(ServerPlayer var1, AdvancementHolder var2) {
-            AdvancementProgress var3 = var1.getAdvancements().getOrStartProgress(var2);
-            if (var3.isDone()) {
+         protected boolean perform(final ServerPlayer player, final AdvancementHolder advancement) {
+            AdvancementProgress progress = player.getAdvancements().getOrStartProgress(advancement);
+            if (progress.isDone()) {
                return false;
             } else {
-               for(String var5 : var3.getRemainingCriteria()) {
-                  var1.getAdvancements().award(var2, var5);
+               for(String criterion : progress.getRemainingCriteria()) {
+                  player.getAdvancements().award(advancement, criterion);
                }
 
                return true;
             }
          }
 
-         protected boolean performCriterion(ServerPlayer var1, AdvancementHolder var2, String var3) {
-            return var1.getAdvancements().award(var2, var3);
+         protected boolean performCriterion(final ServerPlayer player, final AdvancementHolder advancement, final String criterion) {
+            return player.getAdvancements().award(advancement, criterion);
          }
       },
       REVOKE("revoke") {
-         protected boolean perform(ServerPlayer var1, AdvancementHolder var2) {
-            AdvancementProgress var3 = var1.getAdvancements().getOrStartProgress(var2);
-            if (!var3.hasProgress()) {
+         protected boolean perform(final ServerPlayer player, final AdvancementHolder advancement) {
+            AdvancementProgress progress = player.getAdvancements().getOrStartProgress(advancement);
+            if (!progress.hasProgress()) {
                return false;
             } else {
-               for(String var5 : var3.getCompletedCriteria()) {
-                  var1.getAdvancements().revoke(var2, var5);
+               for(String criterion : progress.getCompletedCriteria()) {
+                  player.getAdvancements().revoke(advancement, criterion);
                }
 
                return true;
             }
          }
 
-         protected boolean performCriterion(ServerPlayer var1, AdvancementHolder var2, String var3) {
-            return var1.getAdvancements().revoke(var2, var3);
+         protected boolean performCriterion(final ServerPlayer player, final AdvancementHolder advancement, final String criterion) {
+            return player.getAdvancements().revoke(advancement, criterion);
          }
       };
 
       private final String key;
 
-      Action(final String var3) {
-         this.key = "commands.advancement." + var3;
+      private Action(final String key) {
+         this.key = "commands.advancement." + key;
       }
 
-      public int perform(ServerPlayer var1, Iterable<AdvancementHolder> var2, boolean var3) {
-         int var4 = 0;
-         if (!var3) {
-            var1.getAdvancements().flushDirty(var1, true);
+      public int perform(final ServerPlayer player, final Iterable<AdvancementHolder> advancements, final boolean showAdvancements) {
+         int count = 0;
+         if (!showAdvancements) {
+            player.getAdvancements().flushDirty(player, true);
          }
 
-         for(AdvancementHolder var6 : var2) {
-            if (this.perform(var1, var6)) {
-               ++var4;
+         for(AdvancementHolder advancement : advancements) {
+            if (this.perform(player, advancement)) {
+               ++count;
             }
          }
 
-         if (!var3) {
-            var1.getAdvancements().flushDirty(var1, false);
+         if (!showAdvancements) {
+            player.getAdvancements().flushDirty(player, false);
          }
 
-         return var4;
+         return count;
       }
 
-      protected abstract boolean perform(ServerPlayer var1, AdvancementHolder var2);
+      protected abstract boolean perform(ServerPlayer player, AdvancementHolder advancement);
 
-      protected abstract boolean performCriterion(ServerPlayer var1, AdvancementHolder var2, String var3);
+      protected abstract boolean performCriterion(ServerPlayer player, AdvancementHolder advancement, String criterion);
 
       protected String getKey() {
          return this.key;
@@ -214,19 +214,19 @@ public class AdvancementCommands {
       }
    }
 
-   static enum Mode {
+   private static enum Mode {
       ONLY(false, false),
       THROUGH(true, true),
       FROM(false, true),
       UNTIL(true, false),
       EVERYTHING(true, true);
 
-      final boolean parents;
-      final boolean children;
+      private final boolean parents;
+      private final boolean children;
 
-      private Mode(final boolean var3, final boolean var4) {
-         this.parents = var3;
-         this.children = var4;
+      private Mode(final boolean parents, final boolean children) {
+         this.parents = parents;
+         this.children = children;
       }
 
       // $FF: synthetic method

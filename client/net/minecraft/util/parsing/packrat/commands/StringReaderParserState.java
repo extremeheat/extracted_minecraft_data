@@ -7,9 +7,9 @@ import net.minecraft.util.parsing.packrat.ErrorCollector;
 public class StringReaderParserState extends CachedParseState<StringReader> {
    private final StringReader input;
 
-   public StringReaderParserState(ErrorCollector<StringReader> var1, StringReader var2) {
-      super(var1);
-      this.input = var2;
+   public StringReaderParserState(final ErrorCollector<StringReader> errorCollector, final StringReader input) {
+      super(errorCollector);
+      this.input = input;
    }
 
    public StringReader input() {
@@ -20,12 +20,7 @@ public class StringReaderParserState extends CachedParseState<StringReader> {
       return this.input.getCursor();
    }
 
-   public void restore(int var1) {
-      this.input.setCursor(var1);
-   }
-
-   // $FF: synthetic method
-   public Object input() {
-      return this.input();
+   public void restore(final int mark) {
+      this.input.setCursor(mark);
    }
 }

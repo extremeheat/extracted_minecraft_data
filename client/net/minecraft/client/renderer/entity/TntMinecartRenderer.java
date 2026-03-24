@@ -3,54 +3,48 @@ package net.minecraft.client.renderer.entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.block.BlockModelRenderState;
 import net.minecraft.client.renderer.entity.state.MinecartTntRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.vehicle.minecart.MinecartTNT;
-import net.minecraft.world.level.block.state.BlockState;
 
 public class TntMinecartRenderer extends AbstractMinecartRenderer<MinecartTNT, MinecartTntRenderState> {
-   public TntMinecartRenderer(EntityRendererProvider.Context var1) {
-      super(var1, ModelLayers.TNT_MINECART);
+   public TntMinecartRenderer(final EntityRendererProvider.Context context) {
+      super(context, ModelLayers.TNT_MINECART);
    }
 
-   protected void submitMinecartContents(MinecartTntRenderState var1, BlockState var2, PoseStack var3, SubmitNodeCollector var4, int var5) {
-      float var6 = var1.fuseRemainingInTicks;
-      if (var6 > -1.0F && var6 < 10.0F) {
-         float var7 = 1.0F - var6 / 10.0F;
-         var7 = Mth.clamp(var7, 0.0F, 1.0F);
-         var7 *= var7;
-         var7 *= var7;
-         float var8 = 1.0F + var7 * 0.3F;
-         var3.scale(var8, var8, var8);
+   protected void submitMinecartContents(final MinecartTntRenderState state, final BlockModelRenderState blockModel, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords) {
+      float fuse = state.fuseRemainingInTicks;
+      if (fuse > -1.0F && fuse < 10.0F) {
+         float g = 1.0F - fuse / 10.0F;
+         g = Mth.clamp(g, 0.0F, 1.0F);
+         g *= g;
+         g *= g;
+         float s = 1.0F + g * 0.3F;
+         poseStack.scale(s, s, s);
       }
 
-      submitWhiteSolidBlock(var2, var3, var4, var5, var6 > -1.0F && (int)var6 / 5 % 2 == 0, var1.outlineColor);
+      submitWhiteSolidBlock(blockModel, poseStack, submitNodeCollector, lightCoords, fuse > -1.0F && (int)fuse / 5 % 2 == 0, state.outlineColor);
    }
 
-   public static void submitWhiteSolidBlock(BlockState var0, PoseStack var1, SubmitNodeCollector var2, int var3, boolean var4, int var5) {
-      int var6;
-      if (var4) {
-         var6 = OverlayTexture.pack(OverlayTexture.u(1.0F), 10);
+   public static void submitWhiteSolidBlock(final BlockModelRenderState blockModel, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final boolean white, final int outlineColor) {
+      int overlayCoords;
+      if (white) {
+         overlayCoords = OverlayTexture.pack(OverlayTexture.u(1.0F), 10);
       } else {
-         var6 = OverlayTexture.NO_OVERLAY;
+         overlayCoords = OverlayTexture.NO_OVERLAY;
       }
 
-      var2.submitBlock(var1, var0, var3, var6, var5);
+      blockModel.submit(poseStack, submitNodeCollector, lightCoords, overlayCoords, outlineColor);
    }
 
    public MinecartTntRenderState createRenderState() {
       return new MinecartTntRenderState();
    }
 
-   public void extractRenderState(MinecartTNT var1, MinecartTntRenderState var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      var2.fuseRemainingInTicks = var1.getFuse() > -1 ? (float)var1.getFuse() - var3 + 1.0F : -1.0F;
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
+   public void extractRenderState(final MinecartTNT entity, final MinecartTntRenderState state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      state.fuseRemainingInTicks = entity.getFuse() > -1 ? (float)entity.getFuse() - partialTicks + 1.0F : -1.0F;
    }
 }

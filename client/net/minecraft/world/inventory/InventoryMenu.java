@@ -2,6 +2,7 @@ package net.minecraft.world.inventory;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
@@ -38,24 +39,28 @@ public class InventoryMenu extends AbstractCraftingMenu {
    public final boolean active;
    private final Player owner;
 
-   public InventoryMenu(Inventory var1, boolean var2, final Player var3) {
+   public InventoryMenu(final Inventory inventory, final boolean active, final Player owner) {
       super((MenuType)null, 0, 2, 2);
-      this.active = var2;
-      this.owner = var3;
-      this.addResultSlot(var3, 154, 28);
+      this.active = active;
+      this.owner = owner;
+      this.addResultSlot(owner, 154, 28);
       this.addCraftingGridSlots(98, 18);
 
-      for(int var4 = 0; var4 < 4; ++var4) {
-         EquipmentSlot var5 = SLOT_IDS[var4];
-         Identifier var6 = (Identifier)TEXTURE_EMPTY_SLOTS.get(var5);
-         this.addSlot(new ArmorSlot(var1, var3, var5, 39 - var4, 8, 8 + var4 * 18, var6));
+      for(int i = 0; i < 4; ++i) {
+         EquipmentSlot slot = SLOT_IDS[i];
+         Identifier emptyIcon = (Identifier)TEXTURE_EMPTY_SLOTS.get(slot);
+         this.addSlot(new ArmorSlot(inventory, owner, slot, 39 - i, 8, 8 + i * 18, emptyIcon));
       }
 
-      this.addStandardInventorySlots(var1, 8, 84);
-      this.addSlot(new Slot(var1, 40, 77, 62) {
-         public void setByPlayer(ItemStack var1, ItemStack var2) {
-            var3.onEquipItem(EquipmentSlot.OFFHAND, var2, var1);
-            super.setByPlayer(var1, var2);
+      this.addStandardInventorySlots(inventory, 8, 84);
+      this.addSlot(new Slot(inventory, 40, 77, 62) {
+         {
+            Objects.requireNonNull(InventoryMenu.this);
+         }
+
+         public void setByPlayer(final ItemStack itemStack, final ItemStack previous) {
+            owner.onEquipItem(EquipmentSlot.OFFHAND, previous, itemStack);
+            super.setByPlayer(itemStack, previous);
          }
 
          public Identifier getNoItemIcon() {
@@ -64,93 +69,93 @@ public class InventoryMenu extends AbstractCraftingMenu {
       });
    }
 
-   public static boolean isHotbarSlot(int var0) {
-      return var0 >= 36 && var0 < 45 || var0 == 45;
+   public static boolean isHotbarSlot(final int slot) {
+      return slot >= 36 && slot < 45 || slot == 45;
    }
 
-   public void slotsChanged(Container var1) {
+   public void slotsChanged(final Container container) {
       Level var3 = this.owner.level();
-      if (var3 instanceof ServerLevel var2) {
-         CraftingMenu.slotChangedCraftingGrid(this, var2, this.owner, this.craftSlots, this.resultSlots, (RecipeHolder)null);
+      if (var3 instanceof ServerLevel level) {
+         CraftingMenu.slotChangedCraftingGrid(this, level, this.owner, this.craftSlots, this.resultSlots, (RecipeHolder)null);
       }
 
    }
 
-   public void removed(Player var1) {
-      super.removed(var1);
+   public void removed(final Player player) {
+      super.removed(player);
       this.resultSlots.clearContent();
-      if (!var1.level().isClientSide()) {
-         this.clearContainer(var1, this.craftSlots);
+      if (!player.level().isClientSide()) {
+         this.clearContainer(player, this.craftSlots);
       }
    }
 
-   public boolean stillValid(Player var1) {
+   public boolean stillValid(final Player player) {
       return true;
    }
 
-   public ItemStack quickMoveStack(Player var1, int var2) {
-      ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = this.slots.get(var2);
-      if (var4.hasItem()) {
-         ItemStack var5 = var4.getItem();
-         var3 = var5.copy();
-         EquipmentSlot var6 = var1.getEquipmentSlotForItem(var3);
-         if (var2 == 0) {
-            if (!this.moveItemStackTo(var5, 9, 45, true)) {
+   public ItemStack quickMoveStack(final Player player, final int slotIndex) {
+      ItemStack clicked = ItemStack.EMPTY;
+      Slot slot = this.slots.get(slotIndex);
+      if (slot.hasItem()) {
+         ItemStack stack = slot.getItem();
+         clicked = stack.copy();
+         EquipmentSlot eqSlot = player.getEquipmentSlotForItem(clicked);
+         if (slotIndex == 0) {
+            if (!this.moveItemStackTo(stack, 9, 45, true)) {
                return ItemStack.EMPTY;
             }
 
-            var4.onQuickCraft(var5, var3);
-         } else if (var2 >= 1 && var2 < 5) {
-            if (!this.moveItemStackTo(var5, 9, 45, false)) {
+            slot.onQuickCraft(stack, clicked);
+         } else if (slotIndex >= 1 && slotIndex < 5) {
+            if (!this.moveItemStackTo(stack, 9, 45, false)) {
                return ItemStack.EMPTY;
             }
-         } else if (var2 >= 5 && var2 < 9) {
-            if (!this.moveItemStackTo(var5, 9, 45, false)) {
+         } else if (slotIndex >= 5 && slotIndex < 9) {
+            if (!this.moveItemStackTo(stack, 9, 45, false)) {
                return ItemStack.EMPTY;
             }
-         } else if (var6.getType() == EquipmentSlot.Type.HUMANOID_ARMOR && !((Slot)this.slots.get(8 - var6.getIndex())).hasItem()) {
-            int var7 = 8 - var6.getIndex();
-            if (!this.moveItemStackTo(var5, var7, var7 + 1, false)) {
+         } else if (eqSlot.getType() == EquipmentSlot.Type.HUMANOID_ARMOR && !((Slot)this.slots.get(8 - eqSlot.getIndex())).hasItem()) {
+            int pos = 8 - eqSlot.getIndex();
+            if (!this.moveItemStackTo(stack, pos, pos + 1, false)) {
                return ItemStack.EMPTY;
             }
-         } else if (var6 == EquipmentSlot.OFFHAND && !((Slot)this.slots.get(45)).hasItem()) {
-            if (!this.moveItemStackTo(var5, 45, 46, false)) {
+         } else if (eqSlot == EquipmentSlot.OFFHAND && !((Slot)this.slots.get(45)).hasItem()) {
+            if (!this.moveItemStackTo(stack, 45, 46, false)) {
                return ItemStack.EMPTY;
             }
-         } else if (var2 >= 9 && var2 < 36) {
-            if (!this.moveItemStackTo(var5, 36, 45, false)) {
+         } else if (slotIndex >= 9 && slotIndex < 36) {
+            if (!this.moveItemStackTo(stack, 36, 45, false)) {
                return ItemStack.EMPTY;
             }
-         } else if (var2 >= 36 && var2 < 45) {
-            if (!this.moveItemStackTo(var5, 9, 36, false)) {
+         } else if (slotIndex >= 36 && slotIndex < 45) {
+            if (!this.moveItemStackTo(stack, 9, 36, false)) {
                return ItemStack.EMPTY;
             }
-         } else if (!this.moveItemStackTo(var5, 9, 45, false)) {
+         } else if (!this.moveItemStackTo(stack, 9, 45, false)) {
             return ItemStack.EMPTY;
          }
 
-         if (var5.isEmpty()) {
-            var4.setByPlayer(ItemStack.EMPTY, var3);
+         if (stack.isEmpty()) {
+            slot.setByPlayer(ItemStack.EMPTY, clicked);
          } else {
-            var4.setChanged();
+            slot.setChanged();
          }
 
-         if (var5.getCount() == var3.getCount()) {
+         if (stack.getCount() == clicked.getCount()) {
             return ItemStack.EMPTY;
          }
 
-         var4.onTake(var1, var5);
-         if (var2 == 0) {
-            var1.drop(var5, false);
+         slot.onTake(player, stack);
+         if (slotIndex == 0) {
+            player.drop(stack, false);
          }
       }
 
-      return var3;
+      return clicked;
    }
 
-   public boolean canTakeItemForPickAll(ItemStack var1, Slot var2) {
-      return var2.container != this.resultSlots && super.canTakeItemForPickAll(var1, var2);
+   public boolean canTakeItemForPickAll(final ItemStack carried, final Slot target) {
+      return target.container != this.resultSlots && super.canTakeItemForPickAll(carried, target);
    }
 
    public Slot getResultSlot() {

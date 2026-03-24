@@ -10,62 +10,62 @@ public class StaticCache2D<T> {
    private final int sizeZ;
    private final Object[] cache;
 
-   public static <T> StaticCache2D<T> create(int var0, int var1, int var2, Initializer<T> var3) {
-      int var4 = var0 - var2;
-      int var5 = var1 - var2;
-      int var6 = 2 * var2 + 1;
-      return new StaticCache2D<T>(var4, var5, var6, var6, var3);
+   public static <T> StaticCache2D<T> create(final int centerX, final int centerZ, final int range, final Initializer<T> initializer) {
+      int minX = centerX - range;
+      int minZ = centerZ - range;
+      int size = 2 * range + 1;
+      return new StaticCache2D<T>(minX, minZ, size, size, initializer);
    }
 
-   private StaticCache2D(int var1, int var2, int var3, int var4, Initializer<T> var5) {
+   private StaticCache2D(final int minX, final int minZ, final int sizeX, final int sizeZ, final Initializer<T> initializer) {
       super();
-      this.minX = var1;
-      this.minZ = var2;
-      this.sizeX = var3;
-      this.sizeZ = var4;
+      this.minX = minX;
+      this.minZ = minZ;
+      this.sizeX = sizeX;
+      this.sizeZ = sizeZ;
       this.cache = new Object[this.sizeX * this.sizeZ];
 
-      for(int var6 = var1; var6 < var1 + var3; ++var6) {
-         for(int var7 = var2; var7 < var2 + var4; ++var7) {
-            this.cache[this.getIndex(var6, var7)] = var5.get(var6, var7);
+      for(int x = minX; x < minX + sizeX; ++x) {
+         for(int z = minZ; z < minZ + sizeZ; ++z) {
+            this.cache[this.getIndex(x, z)] = initializer.get(x, z);
          }
       }
 
    }
 
-   public void forEach(Consumer<T> var1) {
-      for(Object var5 : this.cache) {
-         var1.accept(var5);
+   public void forEach(final Consumer<T> consumer) {
+      for(Object o : this.cache) {
+         consumer.accept(o);
       }
 
    }
 
-   public T get(int var1, int var2) {
-      if (!this.contains(var1, var2)) {
-         throw new IllegalArgumentException("Requested out of range value (" + var1 + "," + var2 + ") from " + String.valueOf(this));
+   public T get(final int x, final int z) {
+      if (!this.contains(x, z)) {
+         throw new IllegalArgumentException("Requested out of range value (" + x + "," + z + ") from " + String.valueOf(this));
       } else {
-         return (T)this.cache[this.getIndex(var1, var2)];
+         return (T)this.cache[this.getIndex(x, z)];
       }
    }
 
-   public boolean contains(int var1, int var2) {
-      int var3 = var1 - this.minX;
-      int var4 = var2 - this.minZ;
-      return var3 >= 0 && var3 < this.sizeX && var4 >= 0 && var4 < this.sizeZ;
+   public boolean contains(final int x, final int z) {
+      int deltaX = x - this.minX;
+      int deltaZ = z - this.minZ;
+      return deltaX >= 0 && deltaX < this.sizeX && deltaZ >= 0 && deltaZ < this.sizeZ;
    }
 
    public String toString() {
       return String.format(Locale.ROOT, "StaticCache2D[%d, %d, %d, %d]", this.minX, this.minZ, this.minX + this.sizeX, this.minZ + this.sizeZ);
    }
 
-   private int getIndex(int var1, int var2) {
-      int var3 = var1 - this.minX;
-      int var4 = var2 - this.minZ;
-      return var3 * this.sizeZ + var4;
+   private int getIndex(final int x, final int z) {
+      int deltaX = x - this.minX;
+      int deltaZ = z - this.minZ;
+      return deltaX * this.sizeZ + deltaZ;
    }
 
    @FunctionalInterface
    public interface Initializer<T> {
-      T get(int var1, int var2);
+      T get(int x, int z);
    }
 }

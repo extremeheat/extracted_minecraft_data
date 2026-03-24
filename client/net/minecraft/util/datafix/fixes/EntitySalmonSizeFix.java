@@ -5,14 +5,14 @@ import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 
 public class EntitySalmonSizeFix extends NamedEntityFix {
-   public EntitySalmonSizeFix(Schema var1) {
-      super(var1, false, "EntitySalmonSizeFix", References.ENTITY, "minecraft:salmon");
+   public EntitySalmonSizeFix(final Schema outputSchema) {
+      super(outputSchema, false, "EntitySalmonSizeFix", References.ENTITY, "minecraft:salmon");
    }
 
-   protected Typed<?> fix(Typed<?> var1) {
-      return var1.update(DSL.remainderFinder(), (var0) -> {
-         String var1 = var0.get("type").asString("medium");
-         return var1.equals("large") ? var0 : var0.set("type", var0.createString("medium"));
+   protected Typed<?> fix(final Typed<?> entity) {
+      return entity.update(DSL.remainderFinder(), (tag) -> {
+         String type = tag.get("type").asString("medium");
+         return type.equals("large") ? tag : tag.set("type", tag.createString("medium"));
       });
    }
 }

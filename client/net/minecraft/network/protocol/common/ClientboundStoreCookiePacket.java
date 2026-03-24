@@ -13,26 +13,24 @@ public record ClientboundStoreCookiePacket(Identifier key, byte[] payload) imple
    private static final int MAX_PAYLOAD_SIZE = 5120;
    public static final StreamCodec<ByteBuf, byte[]> PAYLOAD_STREAM_CODEC = ByteBufCodecs.byteArray(5120);
 
-   private ClientboundStoreCookiePacket(FriendlyByteBuf var1) {
-      this(var1.readIdentifier(), (byte[])PAYLOAD_STREAM_CODEC.decode(var1));
+   private ClientboundStoreCookiePacket(final FriendlyByteBuf input) {
+      this(input.readIdentifier(), (byte[])PAYLOAD_STREAM_CODEC.decode(input));
    }
 
-   public ClientboundStoreCookiePacket(Identifier var1, byte[] var2) {
+   public ClientboundStoreCookiePacket {
       super();
-      this.key = var1;
-      this.payload = var2;
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeIdentifier(this.key);
-      PAYLOAD_STREAM_CODEC.encode(var1, this.payload);
+   private void write(final FriendlyByteBuf output) {
+      output.writeIdentifier(this.key);
+      PAYLOAD_STREAM_CODEC.encode(output, this.payload);
    }
 
    public PacketType<ClientboundStoreCookiePacket> type() {
       return CommonPacketTypes.CLIENTBOUND_STORE_COOKIE;
    }
 
-   public void handle(ClientCommonPacketListener var1) {
-      var1.handleStoreCookie(this);
+   public void handle(final ClientCommonPacketListener listener) {
+      listener.handleStoreCookie(this);
    }
 }

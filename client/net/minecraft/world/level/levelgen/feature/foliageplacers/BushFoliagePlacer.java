@@ -4,29 +4,29 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
-import net.minecraft.world.level.LevelSimulatedReader;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 
 public class BushFoliagePlacer extends BlobFoliagePlacer {
-   public static final MapCodec<BushFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> blobParts(var0).apply(var0, BushFoliagePlacer::new));
+   public static final MapCodec<BushFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((i) -> blobParts(i).apply(i, BushFoliagePlacer::new));
 
-   public BushFoliagePlacer(IntProvider var1, IntProvider var2, int var3) {
-      super(var1, var2, var3);
+   public BushFoliagePlacer(final IntProvider radius, final IntProvider offset, final int height) {
+      super(radius, offset, height);
    }
 
    protected FoliagePlacerType<?> type() {
       return FoliagePlacerType.BUSH_FOLIAGE_PLACER;
    }
 
-   protected void createFoliage(LevelSimulatedReader var1, FoliagePlacer.FoliageSetter var2, RandomSource var3, TreeConfiguration var4, int var5, FoliagePlacer.FoliageAttachment var6, int var7, int var8, int var9) {
-      for(int var10 = var9; var10 >= var9 - var7; --var10) {
-         int var11 = var8 + var6.radiusOffset() - 1 - var10;
-         this.placeLeavesRow(var1, var2, var3, var4, var6.pos(), var11, var10, var6.doubleTrunk());
+   protected void createFoliage(final WorldGenLevel level, final FoliagePlacer.FoliageSetter foliageSetter, final RandomSource random, final TreeConfiguration config, final int treeHeight, final FoliagePlacer.FoliageAttachment foliageAttachment, final int foliageHeight, final int leafRadius, final int offset) {
+      for(int yo = offset; yo >= offset - foliageHeight; --yo) {
+         int currentRadius = leafRadius + foliageAttachment.radiusOffset() - 1 - yo;
+         this.placeLeavesRow(level, foliageSetter, random, config, foliageAttachment.pos(), currentRadius, yo, foliageAttachment.doubleTrunk());
       }
 
    }
 
-   protected boolean shouldSkipLocation(RandomSource var1, int var2, int var3, int var4, int var5, boolean var6) {
-      return var2 == var5 && var4 == var5 && var1.nextInt(2) == 0;
+   protected boolean shouldSkipLocation(final RandomSource random, final int dx, final int y, final int dz, final int currentRadius, final boolean doubleTrunk) {
+      return dx == currentRadius && dz == currentRadius && random.nextInt(2) == 0;
    }
 }

@@ -8,28 +8,28 @@ public abstract class AbstractLayout implements Layout {
    protected int width;
    protected int height;
 
-   public AbstractLayout(int var1, int var2, int var3, int var4) {
+   public AbstractLayout(final int x, final int y, final int width, final int height) {
       super();
-      this.x = var1;
-      this.y = var2;
-      this.width = var3;
-      this.height = var4;
+      this.x = x;
+      this.y = y;
+      this.width = width;
+      this.height = height;
    }
 
-   public void setX(int var1) {
-      this.visitChildren((var2) -> {
-         int var3 = var2.getX() + (var1 - this.getX());
-         var2.setX(var3);
+   public void setX(final int x) {
+      this.visitChildren((child) -> {
+         int newChildX = child.getX() + (x - this.getX());
+         child.setX(newChildX);
       });
-      this.x = var1;
+      this.x = x;
    }
 
-   public void setY(int var1) {
-      this.visitChildren((var2) -> {
-         int var3 = var2.getY() + (var1 - this.getY());
-         var2.setY(var3);
+   public void setY(final int y) {
+      this.visitChildren((child) -> {
+         int newChildY = child.getY() + (y - this.getY());
+         child.setY(newChildY);
       });
-      this.y = var1;
+      this.y = y;
    }
 
    public int getX() {
@@ -52,10 +52,10 @@ public abstract class AbstractLayout implements Layout {
       public final LayoutElement child;
       public final LayoutSettings.LayoutSettingsImpl layoutSettings;
 
-      protected AbstractChildWrapper(LayoutElement var1, LayoutSettings var2) {
+      protected AbstractChildWrapper(final LayoutElement child, final LayoutSettings layoutSettings) {
          super();
-         this.child = var1;
-         this.layoutSettings = var2.getExposed();
+         this.child = child;
+         this.layoutSettings = layoutSettings.getExposed();
       }
 
       public int getHeight() {
@@ -66,18 +66,18 @@ public abstract class AbstractLayout implements Layout {
          return this.child.getWidth() + this.layoutSettings.paddingLeft + this.layoutSettings.paddingRight;
       }
 
-      public void setX(int var1, int var2) {
-         float var3 = (float)this.layoutSettings.paddingLeft;
-         float var4 = (float)(var2 - this.child.getWidth() - this.layoutSettings.paddingRight);
-         int var5 = (int)Mth.lerp(this.layoutSettings.xAlignment, var3, var4);
-         this.child.setX(var5 + var1);
+      public void setX(final int x, final int availableSpace) {
+         float leastOffset = (float)this.layoutSettings.paddingLeft;
+         float mostOffset = (float)(availableSpace - this.child.getWidth() - this.layoutSettings.paddingRight);
+         int offset = (int)Mth.lerp(this.layoutSettings.xAlignment, leastOffset, mostOffset);
+         this.child.setX(offset + x);
       }
 
-      public void setY(int var1, int var2) {
-         float var3 = (float)this.layoutSettings.paddingTop;
-         float var4 = (float)(var2 - this.child.getHeight() - this.layoutSettings.paddingBottom);
-         int var5 = Math.round(Mth.lerp(this.layoutSettings.yAlignment, var3, var4));
-         this.child.setY(var5 + var1);
+      public void setY(final int y, final int availableSpace) {
+         float leastOffset = (float)this.layoutSettings.paddingTop;
+         float mostOffset = (float)(availableSpace - this.child.getHeight() - this.layoutSettings.paddingBottom);
+         int offset = Math.round(Mth.lerp(this.layoutSettings.yAlignment, leastOffset, mostOffset));
+         this.child.setY(offset + y);
       }
    }
 }

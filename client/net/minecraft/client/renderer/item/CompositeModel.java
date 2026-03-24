@@ -1,54 +1,61 @@
 package net.minecraft.client.renderer.item;
 
+import com.mojang.math.Transformation;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
+import java.util.Optional;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.resources.model.ResolvableModel;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import org.joml.Matrix4fc;
 import org.jspecify.annotations.Nullable;
 
 public class CompositeModel implements ItemModel {
    private final List<ItemModel> models;
 
-   public CompositeModel(List<ItemModel> var1) {
+   public CompositeModel(final List<ItemModel> models) {
       super();
-      this.models = var1;
+      this.models = models;
    }
 
-   public void update(ItemStackRenderState var1, ItemStack var2, ItemModelResolver var3, ItemDisplayContext var4, @Nullable ClientLevel var5, @Nullable ItemOwner var6, int var7) {
-      var1.appendModelIdentityElement(this);
-      var1.ensureCapacity(this.models.size());
+   public void update(final ItemStackRenderState output, final ItemStack item, final ItemModelResolver resolver, final ItemDisplayContext displayContext, final @Nullable ClientLevel level, final @Nullable ItemOwner owner, final int seed) {
+      output.appendModelIdentityElement(this);
+      output.ensureCapacity(this.models.size());
 
-      for(ItemModel var9 : this.models) {
-         var9.update(var1, var2, var3, var4, var5, var6, var7);
+      for(ItemModel model : this.models) {
+         model.update(output, item, resolver, displayContext, level, owner, seed);
       }
 
    }
 
-   public static record Unbaked(List<ItemModel.Unbaked> models) implements ItemModel.Unbaked {
-      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ItemModels.CODEC.listOf().fieldOf("models").forGetter(Unbaked::models)).apply(var0, Unbaked::new));
+   public static record Unbaked(List<ItemModel.Unbaked> models, Optional<Transformation> transformation) implements ItemModel.Unbaked {
+      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ItemModels.CODEC.listOf().fieldOf("models").forGetter(Unbaked::models), Transformation.EXTENDED_CODEC.optionalFieldOf("transformation").forGetter(Unbaked::transformation)).apply(i, Unbaked::new));
 
-      public Unbaked(List<ItemModel.Unbaked> var1) {
+      public Unbaked {
          super();
-         this.models = var1;
       }
 
       public MapCodec<Unbaked> type() {
          return MAP_CODEC;
       }
 
-      public void resolveDependencies(ResolvableModel.Resolver var1) {
-         for(ItemModel.Unbaked var3 : this.models) {
-            var3.resolveDependencies(var1);
+      public void resolveDependencies(final ResolvableModel.Resolver resolver) {
+         for(ItemModel.Unbaked model : this.models) {
+            model.resolveDependencies(resolver);
          }
 
       }
 
-      public ItemModel bake(ItemModel.BakingContext var1) {
-         return new CompositeModel(this.models.stream().map((var1x) -> var1x.bake(var1)).toList());
+      public ItemModel bake(final ItemModel.BakingContext context, final Matrix4fc transformation) {
+         if (this.models.isEmpty()) {
+            return EmptyModel.INSTANCE;
+         } else {
+            Matrix4fc childTransform = Transformation.compose(transformation, this.transformation);
+            return (ItemModel)(this.models.size() == 1 ? ((ItemModel.Unbaked)this.models.getFirst()).bake(context, childTransform) : new CompositeModel(this.models.stream().map((m) -> m.bake(context, childTransform)).toList()));
+         }
       }
    }
 }

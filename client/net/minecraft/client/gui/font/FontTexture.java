@@ -21,87 +21,87 @@ public class FontTexture extends AbstractTexture implements Dumpable {
    private final boolean colored;
    private final Node root;
 
-   public FontTexture(Supplier<String> var1, GlyphRenderTypes var2, boolean var3) {
+   public FontTexture(final Supplier<String> label, final GlyphRenderTypes renderTypes, final boolean colored) {
       super();
-      this.colored = var3;
+      this.colored = colored;
       this.root = new Node(0, 0, 256, 256);
-      GpuDevice var4 = RenderSystem.getDevice();
-      this.texture = var4.createTexture(var1, 7, var3 ? TextureFormat.RGBA8 : TextureFormat.RED8, 256, 256, 1, 1);
+      GpuDevice device = RenderSystem.getDevice();
+      this.texture = device.createTexture(label, 7, colored ? TextureFormat.RGBA8 : TextureFormat.RED8, 256, 256, 1, 1);
       this.sampler = RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST);
-      this.textureView = var4.createTextureView(this.texture);
-      this.renderTypes = var2;
+      this.textureView = device.createTextureView(this.texture);
+      this.renderTypes = renderTypes;
    }
 
-   public @Nullable BakedSheetGlyph add(GlyphInfo var1, GlyphBitmap var2) {
-      if (var2.isColored() != this.colored) {
+   public @Nullable BakedSheetGlyph add(final GlyphInfo info, final GlyphBitmap glyph) {
+      if (glyph.isColored() != this.colored) {
          return null;
       } else {
-         Node var3 = this.root.insert(var2);
-         if (var3 != null) {
-            var2.upload(var3.x, var3.y, this.getTexture());
-            float var4 = 256.0F;
-            float var5 = 256.0F;
-            float var6 = 0.01F;
-            return new BakedSheetGlyph(var1, this.renderTypes, this.getTextureView(), ((float)var3.x + 0.01F) / 256.0F, ((float)var3.x - 0.01F + (float)var2.getPixelWidth()) / 256.0F, ((float)var3.y + 0.01F) / 256.0F, ((float)var3.y - 0.01F + (float)var2.getPixelHeight()) / 256.0F, var2.getLeft(), var2.getRight(), var2.getTop(), var2.getBottom());
+         Node node = this.root.insert(glyph);
+         if (node != null) {
+            glyph.upload(node.x, node.y, this.getTexture());
+            float width = 256.0F;
+            float height = 256.0F;
+            float nudge = 0.01F;
+            return new BakedSheetGlyph(info, this.renderTypes, this.getTextureView(), ((float)node.x + 0.01F) / 256.0F, ((float)node.x - 0.01F + (float)glyph.getPixelWidth()) / 256.0F, ((float)node.y + 0.01F) / 256.0F, ((float)node.y - 0.01F + (float)glyph.getPixelHeight()) / 256.0F, glyph.getLeft(), glyph.getRight(), glyph.getTop(), glyph.getBottom());
          } else {
             return null;
          }
       }
    }
 
-   public void dumpContents(Identifier var1, Path var2) {
+   public void dumpContents(final Identifier selfId, final Path dir) {
       if (this.texture != null) {
-         String var3 = var1.toDebugFileName();
-         TextureUtil.writeAsPNG(var2, var3, this.texture, 0, (var0) -> (var0 & -16777216) == 0 ? -16777216 : var0);
+         String outputId = selfId.toDebugFileName();
+         TextureUtil.writeAsPNG(dir, outputId, this.texture, 0, (argb) -> (argb & -16777216) == 0 ? -16777216 : argb);
       }
    }
 
-   static class Node {
-      final int x;
-      final int y;
+   private static class Node {
+      private final int x;
+      private final int y;
       private final int width;
       private final int height;
       private @Nullable Node left;
       private @Nullable Node right;
       private boolean occupied;
 
-      Node(int var1, int var2, int var3, int var4) {
+      private Node(final int x, final int y, final int width, final int height) {
          super();
-         this.x = var1;
-         this.y = var2;
-         this.width = var3;
-         this.height = var4;
+         this.x = x;
+         this.y = y;
+         this.width = width;
+         this.height = height;
       }
 
-      @Nullable Node insert(GlyphBitmap var1) {
+      @Nullable Node insert(final GlyphBitmap glyph) {
          if (this.left != null && this.right != null) {
-            Node var6 = this.left.insert(var1);
-            if (var6 == null) {
-               var6 = this.right.insert(var1);
+            Node newNode = this.left.insert(glyph);
+            if (newNode == null) {
+               newNode = this.right.insert(glyph);
             }
 
-            return var6;
+            return newNode;
          } else if (this.occupied) {
             return null;
          } else {
-            int var2 = var1.getPixelWidth();
-            int var3 = var1.getPixelHeight();
-            if (var2 <= this.width && var3 <= this.height) {
-               if (var2 == this.width && var3 == this.height) {
+            int glyphWidth = glyph.getPixelWidth();
+            int glyphHeight = glyph.getPixelHeight();
+            if (glyphWidth <= this.width && glyphHeight <= this.height) {
+               if (glyphWidth == this.width && glyphHeight == this.height) {
                   this.occupied = true;
                   return this;
                } else {
-                  int var4 = this.width - var2;
-                  int var5 = this.height - var3;
-                  if (var4 > var5) {
-                     this.left = new Node(this.x, this.y, var2, this.height);
-                     this.right = new Node(this.x + var2 + 1, this.y, this.width - var2 - 1, this.height);
+                  int deltaWidth = this.width - glyphWidth;
+                  int deltaHeight = this.height - glyphHeight;
+                  if (deltaWidth > deltaHeight) {
+                     this.left = new Node(this.x, this.y, glyphWidth, this.height);
+                     this.right = new Node(this.x + glyphWidth + 1, this.y, this.width - glyphWidth - 1, this.height);
                   } else {
-                     this.left = new Node(this.x, this.y, this.width, var3);
-                     this.right = new Node(this.x, this.y + var3 + 1, this.width, this.height - var3 - 1);
+                     this.left = new Node(this.x, this.y, this.width, glyphHeight);
+                     this.right = new Node(this.x, this.y + glyphHeight + 1, this.width, this.height - glyphHeight - 1);
                   }
 
-                  return this.left.insert(var1);
+                  return this.left.insert(glyph);
                }
             } else {
                return null;

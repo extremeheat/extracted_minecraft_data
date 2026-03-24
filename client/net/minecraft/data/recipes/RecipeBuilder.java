@@ -1,48 +1,44 @@
 package net.minecraft.data.recipes;
 
+import java.util.Objects;
 import net.minecraft.advancements.Criterion;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemInstance;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.level.ItemLike;
 import org.jspecify.annotations.Nullable;
 
 public interface RecipeBuilder {
    Identifier ROOT_RECIPE_ADVANCEMENT = Identifier.withDefaultNamespace("recipes/root");
 
-   RecipeBuilder unlockedBy(String var1, Criterion<?> var2);
+   RecipeBuilder unlockedBy(String name, Criterion<?> criterion);
 
-   RecipeBuilder group(@Nullable String var1);
+   RecipeBuilder group(@Nullable String group);
 
-   Item getResult();
+   ResourceKey<Recipe<?>> defaultId();
 
-   void save(RecipeOutput var1, ResourceKey<Recipe<?>> var2);
+   void save(RecipeOutput output, ResourceKey<Recipe<?>> location);
 
-   default void save(RecipeOutput var1) {
-      this.save(var1, ResourceKey.create(Registries.RECIPE, getDefaultRecipeId(this.getResult())));
+   default void save(final RecipeOutput output) {
+      this.save(output, this.defaultId());
    }
 
-   default void save(RecipeOutput var1, String var2) {
-      Identifier var3 = getDefaultRecipeId(this.getResult());
-      Identifier var4 = Identifier.parse(var2);
-      if (var4.equals(var3)) {
-         throw new IllegalStateException("Recipe " + var2 + " should remove its 'save' argument as it is equal to default one");
+   default void save(final RecipeOutput output, final String id) {
+      ResourceKey<Recipe<?>> defaultKey = this.defaultId();
+      ResourceKey<Recipe<?>> overriddenKey = ResourceKey.create(Registries.RECIPE, Identifier.parse(id));
+      if (overriddenKey == defaultKey) {
+         throw new IllegalStateException("Recipe " + id + " should remove its 'save' argument as it is equal to default one");
       } else {
-         this.save(var1, ResourceKey.create(Registries.RECIPE, var4));
+         this.save(output, overriddenKey);
       }
    }
 
-   static Identifier getDefaultRecipeId(ItemLike var0) {
-      return BuiltInRegistries.ITEM.getKey(var0.asItem());
-   }
-
-   static CraftingBookCategory determineBookCategory(RecipeCategory var0) {
+   static CraftingBookCategory determineCraftingBookCategory(final RecipeCategory category) {
       CraftingBookCategory var10000;
-      switch (var0) {
+      switch (category) {
          case BUILDING_BLOCKS:
             var10000 = CraftingBookCategory.BUILDING;
             break;
@@ -58,5 +54,17 @@ public interface RecipeBuilder {
       }
 
       return var10000;
+   }
+
+   static Recipe.CommonInfo createCraftingCommonInfo(final boolean showNotification) {
+      return new Recipe.CommonInfo(showNotification);
+   }
+
+   static CraftingRecipe.CraftingBookInfo createCraftingBookInfo(final RecipeCategory category, final @Nullable String group) {
+      return new CraftingRecipe.CraftingBookInfo(determineCraftingBookCategory(category), (String)Objects.requireNonNullElse(group, ""));
+   }
+
+   static ResourceKey<Recipe<?>> getDefaultRecipeId(final ItemInstance result) {
+      return ResourceKey.create(Registries.RECIPE, ((ResourceKey)result.typeHolder().unwrapKey().orElseThrow()).identifier());
    }
 }

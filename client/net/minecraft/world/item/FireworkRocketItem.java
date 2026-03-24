@@ -21,41 +21,41 @@ public class FireworkRocketItem extends Item implements ProjectileItem {
    public static final byte[] CRAFTABLE_DURATIONS = new byte[]{1, 2, 3};
    public static final double ROCKET_PLACEMENT_OFFSET = 0.15;
 
-   public FireworkRocketItem(Item.Properties var1) {
-      super(var1);
+   public FireworkRocketItem(final Item.Properties properties) {
+      super(properties);
    }
 
-   public InteractionResult useOn(UseOnContext var1) {
-      Level var2 = var1.getLevel();
-      Player var3 = var1.getPlayer();
-      if (var3 != null && var3.isFallFlying()) {
+   public InteractionResult useOn(final UseOnContext context) {
+      Level level = context.getLevel();
+      Player player = context.getPlayer();
+      if (player != null && player.isFallFlying()) {
          return InteractionResult.PASS;
       } else {
-         if (var2 instanceof ServerLevel) {
-            ServerLevel var4 = (ServerLevel)var2;
-            ItemStack var5 = var1.getItemInHand();
-            Vec3 var6 = var1.getClickLocation();
-            Direction var7 = var1.getClickedFace();
-            Projectile.spawnProjectile(new FireworkRocketEntity(var2, var1.getPlayer(), var6.x + (double)var7.getStepX() * 0.15, var6.y + (double)var7.getStepY() * 0.15, var6.z + (double)var7.getStepZ() * 0.15, var5), var4, var5);
-            var5.shrink(1);
+         if (level instanceof ServerLevel) {
+            ServerLevel serverLevel = (ServerLevel)level;
+            ItemStack itemStack = context.getItemInHand();
+            Vec3 clickLocation = context.getClickLocation();
+            Direction direction = context.getClickedFace();
+            Projectile.spawnProjectile(new FireworkRocketEntity(level, context.getPlayer(), clickLocation.x + (double)direction.getStepX() * 0.15, clickLocation.y + (double)direction.getStepY() * 0.15, clickLocation.z + (double)direction.getStepZ() * 0.15, itemStack), serverLevel, itemStack);
+            itemStack.shrink(1);
          }
 
          return InteractionResult.SUCCESS;
       }
    }
 
-   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
-      if (var2.isFallFlying()) {
-         ItemStack var4 = var2.getItemInHand(var3);
-         if (var1 instanceof ServerLevel) {
-            ServerLevel var5 = (ServerLevel)var1;
-            if (var2.dropAllLeashConnections((Player)null)) {
-               var1.playSound((Entity)null, (Entity)var2, SoundEvents.LEAD_BREAK, SoundSource.NEUTRAL, 1.0F, 1.0F);
+   public InteractionResult use(final Level level, final Player player, final InteractionHand hand) {
+      if (player.isFallFlying()) {
+         ItemStack itemStack = player.getItemInHand(hand);
+         if (level instanceof ServerLevel) {
+            ServerLevel serverLevel = (ServerLevel)level;
+            if (player.dropAllLeashConnections((Player)null)) {
+               level.playSound((Entity)null, (Entity)player, SoundEvents.LEAD_BREAK, SoundSource.NEUTRAL, 1.0F, 1.0F);
             }
 
-            Projectile.spawnProjectile(new FireworkRocketEntity(var1, var4, var2), var5, var4);
-            var4.consume(1, var2);
-            var2.awardStat(Stats.ITEM_USED.get(this));
+            Projectile.spawnProjectile(new FireworkRocketEntity(level, itemStack, player), serverLevel, itemStack);
+            itemStack.consume(1, player);
+            player.awardStat(Stats.ITEM_USED.get(this));
          }
 
          return InteractionResult.SUCCESS;
@@ -64,15 +64,15 @@ public class FireworkRocketItem extends Item implements ProjectileItem {
       }
    }
 
-   public Projectile asProjectile(Level var1, Position var2, ItemStack var3, Direction var4) {
-      return new FireworkRocketEntity(var1, var3.copyWithCount(1), var2.x(), var2.y(), var2.z(), true);
+   public Projectile asProjectile(final Level level, final Position position, final ItemStack itemStack, final Direction direction) {
+      return new FireworkRocketEntity(level, itemStack.copyWithCount(1), position.x(), position.y(), position.z(), true);
    }
 
    public ProjectileItem.DispenseConfig createDispenseConfig() {
       return ProjectileItem.DispenseConfig.builder().positionFunction(FireworkRocketItem::getEntityJustOutsideOfBlockPos).uncertainty(1.0F).power(0.5F).overrideDispenseEvent(1004).build();
    }
 
-   private static Vec3 getEntityJustOutsideOfBlockPos(BlockSource var0, Direction var1) {
-      return var0.center().add((double)var1.getStepX() * 0.5000099999997474, (double)var1.getStepY() * 0.5000099999997474, (double)var1.getStepZ() * 0.5000099999997474);
+   private static Vec3 getEntityJustOutsideOfBlockPos(final BlockSource source, final Direction direction) {
+      return source.center().add((double)direction.getStepX() * 0.5000099999997474, (double)direction.getStepY() * 0.5000099999997474, (double)direction.getStepZ() * 0.5000099999997474);
    }
 }

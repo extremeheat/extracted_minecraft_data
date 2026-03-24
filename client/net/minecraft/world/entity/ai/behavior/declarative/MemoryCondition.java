@@ -16,50 +16,47 @@ public interface MemoryCondition<F extends K1, Value> {
 
    MemoryStatus condition();
 
-   @Nullable MemoryAccessor<F, Value> createAccessor(Brain<?> var1, Optional<Value> var2);
+   @Nullable MemoryAccessor<F, Value> createAccessor(Brain<?> brain, final Optional<Value> value);
 
    public static record Registered<Value>(MemoryModuleType<Value> memory) implements MemoryCondition<OptionalBox.Mu, Value> {
-      public Registered(MemoryModuleType<Value> var1) {
+      public Registered {
          super();
-         this.memory = var1;
       }
 
       public MemoryStatus condition() {
          return MemoryStatus.REGISTERED;
       }
 
-      public MemoryAccessor<OptionalBox.Mu, Value> createAccessor(Brain<?> var1, Optional<Value> var2) {
-         return new MemoryAccessor<OptionalBox.Mu, Value>(var1, this.memory, OptionalBox.create(var2));
+      public MemoryAccessor<OptionalBox.Mu, Value> createAccessor(final Brain<?> brain, final Optional<Value> value) {
+         return new MemoryAccessor<OptionalBox.Mu, Value>(brain, this.memory, OptionalBox.create(value));
       }
    }
 
    public static record Present<Value>(MemoryModuleType<Value> memory) implements MemoryCondition<IdF.Mu, Value> {
-      public Present(MemoryModuleType<Value> var1) {
+      public Present {
          super();
-         this.memory = var1;
       }
 
       public MemoryStatus condition() {
          return MemoryStatus.VALUE_PRESENT;
       }
 
-      public MemoryAccessor<IdF.Mu, Value> createAccessor(Brain<?> var1, Optional<Value> var2) {
-         return var2.isEmpty() ? null : new MemoryAccessor(var1, this.memory, IdF.create(var2.get()));
+      public MemoryAccessor<IdF.Mu, Value> createAccessor(final Brain<?> brain, final Optional<Value> value) {
+         return value.isEmpty() ? null : new MemoryAccessor(brain, this.memory, IdF.create(value.get()));
       }
    }
 
    public static record Absent<Value>(MemoryModuleType<Value> memory) implements MemoryCondition<Const.Mu<Unit>, Value> {
-      public Absent(MemoryModuleType<Value> var1) {
+      public Absent {
          super();
-         this.memory = var1;
       }
 
       public MemoryStatus condition() {
          return MemoryStatus.VALUE_ABSENT;
       }
 
-      public MemoryAccessor<Const.Mu<Unit>, Value> createAccessor(Brain<?> var1, Optional<Value> var2) {
-         return var2.isPresent() ? null : new MemoryAccessor(var1, this.memory, Const.create(Unit.INSTANCE));
+      public MemoryAccessor<Const.Mu<Unit>, Value> createAccessor(final Brain<?> brain, final Optional<Value> value) {
+         return value.isPresent() ? null : new MemoryAccessor(brain, this.memory, Const.create(Unit.INSTANCE));
       }
    }
 }

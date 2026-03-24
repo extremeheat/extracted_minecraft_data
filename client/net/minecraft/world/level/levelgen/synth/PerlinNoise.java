@@ -30,106 +30,106 @@ public class PerlinNoise {
 
    /** @deprecated */
    @Deprecated
-   public static PerlinNoise createLegacyForBlendedNoise(RandomSource var0, IntStream var1) {
-      return new PerlinNoise(var0, makeAmplitudes(new IntRBTreeSet((Collection)var1.boxed().collect(ImmutableList.toImmutableList()))), false);
+   public static PerlinNoise createLegacyForBlendedNoise(final RandomSource random, final IntStream octaves) {
+      return new PerlinNoise(random, makeAmplitudes(new IntRBTreeSet((Collection)octaves.boxed().collect(ImmutableList.toImmutableList()))), false);
    }
 
    /** @deprecated */
    @Deprecated
-   public static PerlinNoise createLegacyForLegacyNetherBiome(RandomSource var0, int var1, DoubleList var2) {
-      return new PerlinNoise(var0, Pair.of(var1, var2), false);
+   public static PerlinNoise createLegacyForLegacyNetherBiome(final RandomSource random, final int firstOctave, final DoubleList amplitudes) {
+      return new PerlinNoise(random, Pair.of(firstOctave, amplitudes), false);
    }
 
-   public static PerlinNoise create(RandomSource var0, IntStream var1) {
-      return create(var0, (List)var1.boxed().collect(ImmutableList.toImmutableList()));
+   public static PerlinNoise create(final RandomSource random, final IntStream octaves) {
+      return create(random, (List)octaves.boxed().collect(ImmutableList.toImmutableList()));
    }
 
-   public static PerlinNoise create(RandomSource var0, List<Integer> var1) {
-      return new PerlinNoise(var0, makeAmplitudes(new IntRBTreeSet(var1)), true);
+   public static PerlinNoise create(final RandomSource random, final List<Integer> octaveSet) {
+      return new PerlinNoise(random, makeAmplitudes(new IntRBTreeSet(octaveSet)), true);
    }
 
-   public static PerlinNoise create(RandomSource var0, int var1, double var2, double... var4) {
-      DoubleArrayList var5 = new DoubleArrayList(var4);
-      var5.add(0, var2);
-      return new PerlinNoise(var0, Pair.of(var1, var5), true);
+   public static PerlinNoise create(final RandomSource random, final int firstOctave, final double firstAmplitude, final double... amplitudes) {
+      DoubleArrayList amplitudeList = new DoubleArrayList(amplitudes);
+      amplitudeList.add(0, firstAmplitude);
+      return new PerlinNoise(random, Pair.of(firstOctave, amplitudeList), true);
    }
 
-   public static PerlinNoise create(RandomSource var0, int var1, DoubleList var2) {
-      return new PerlinNoise(var0, Pair.of(var1, var2), true);
+   public static PerlinNoise create(final RandomSource random, final int firstOctave, final DoubleList amplitudes) {
+      return new PerlinNoise(random, Pair.of(firstOctave, amplitudes), true);
    }
 
-   private static Pair<Integer, DoubleList> makeAmplitudes(IntSortedSet var0) {
-      if (var0.isEmpty()) {
+   private static Pair<Integer, DoubleList> makeAmplitudes(final IntSortedSet octaveSet) {
+      if (octaveSet.isEmpty()) {
          throw new IllegalArgumentException("Need some octaves!");
       } else {
-         int var1 = -var0.firstInt();
-         int var2 = var0.lastInt();
-         int var3 = var1 + var2 + 1;
-         if (var3 < 1) {
+         int lowFreqOctaves = -octaveSet.firstInt();
+         int highFreqOctaves = octaveSet.lastInt();
+         int octaves = lowFreqOctaves + highFreqOctaves + 1;
+         if (octaves < 1) {
             throw new IllegalArgumentException("Total number of octaves needs to be >= 1");
          } else {
-            DoubleArrayList var4 = new DoubleArrayList(new double[var3]);
-            IntBidirectionalIterator var5 = var0.iterator();
+            DoubleList amplitudes = new DoubleArrayList(new double[octaves]);
+            IntBidirectionalIterator iterator = octaveSet.iterator();
 
-            while(var5.hasNext()) {
-               int var6 = var5.nextInt();
-               var4.set(var6 + var1, 1.0);
+            while(iterator.hasNext()) {
+               int octave = iterator.nextInt();
+               amplitudes.set(octave + lowFreqOctaves, 1.0);
             }
 
-            return Pair.of(-var1, var4);
+            return Pair.of(-lowFreqOctaves, amplitudes);
          }
       }
    }
 
-   protected PerlinNoise(RandomSource var1, Pair<Integer, DoubleList> var2, boolean var3) {
+   protected PerlinNoise(final RandomSource random, final Pair<Integer, DoubleList> pair, final boolean useNewInitialization) {
       super();
-      this.firstOctave = (Integer)var2.getFirst();
-      this.amplitudes = (DoubleList)var2.getSecond();
-      int var4 = this.amplitudes.size();
-      int var5 = -this.firstOctave;
-      this.noiseLevels = new ImprovedNoise[var4];
-      if (var3) {
-         PositionalRandomFactory var6 = var1.forkPositional();
+      this.firstOctave = (Integer)pair.getFirst();
+      this.amplitudes = (DoubleList)pair.getSecond();
+      int octaves = this.amplitudes.size();
+      int zeroOctaveIndex = -this.firstOctave;
+      this.noiseLevels = new ImprovedNoise[octaves];
+      if (useNewInitialization) {
+         PositionalRandomFactory positional = random.forkPositional();
 
-         for(int var7 = 0; var7 < var4; ++var7) {
-            if (this.amplitudes.getDouble(var7) != 0.0) {
-               int var8 = this.firstOctave + var7;
-               this.noiseLevels[var7] = new ImprovedNoise(var6.fromHashOf("octave_" + var8));
+         for(int i = 0; i < octaves; ++i) {
+            if (this.amplitudes.getDouble(i) != 0.0) {
+               int octave = this.firstOctave + i;
+               this.noiseLevels[i] = new ImprovedNoise(positional.fromHashOf("octave_" + octave));
             }
          }
       } else {
-         ImprovedNoise var10 = new ImprovedNoise(var1);
-         if (var5 >= 0 && var5 < var4) {
-            double var11 = this.amplitudes.getDouble(var5);
-            if (var11 != 0.0) {
-               this.noiseLevels[var5] = var10;
+         ImprovedNoise zeroOctave = new ImprovedNoise(random);
+         if (zeroOctaveIndex >= 0 && zeroOctaveIndex < octaves) {
+            double zeroOctaveAmplitude = this.amplitudes.getDouble(zeroOctaveIndex);
+            if (zeroOctaveAmplitude != 0.0) {
+               this.noiseLevels[zeroOctaveIndex] = zeroOctave;
             }
          }
 
-         for(int var12 = var5 - 1; var12 >= 0; --var12) {
-            if (var12 < var4) {
-               double var13 = this.amplitudes.getDouble(var12);
-               if (var13 != 0.0) {
-                  this.noiseLevels[var12] = new ImprovedNoise(var1);
+         for(int i = zeroOctaveIndex - 1; i >= 0; --i) {
+            if (i < octaves) {
+               double amplitude = this.amplitudes.getDouble(i);
+               if (amplitude != 0.0) {
+                  this.noiseLevels[i] = new ImprovedNoise(random);
                } else {
-                  skipOctave(var1);
+                  skipOctave(random);
                }
             } else {
-               skipOctave(var1);
+               skipOctave(random);
             }
          }
 
-         if (Arrays.stream(this.noiseLevels).filter(Objects::nonNull).count() != this.amplitudes.stream().filter((var0) -> var0 != 0.0).count()) {
+         if (Arrays.stream(this.noiseLevels).filter(Objects::nonNull).count() != this.amplitudes.stream().filter((a) -> a != 0.0).count()) {
             throw new IllegalStateException("Failed to create correct number of noise levels for given non-zero amplitudes");
          }
 
-         if (var5 < var4 - 1) {
+         if (zeroOctaveIndex < octaves - 1) {
             throw new IllegalArgumentException("Positive octaves are temporarily disabled");
          }
       }
 
-      this.lowestFreqInputFactor = Math.pow(2.0, (double)(-var5));
-      this.lowestFreqValueFactor = Math.pow(2.0, (double)(var4 - 1)) / (Math.pow(2.0, (double)var4) - 1.0);
+      this.lowestFreqInputFactor = Math.pow(2.0, (double)(-zeroOctaveIndex));
+      this.lowestFreqValueFactor = Math.pow(2.0, (double)(octaves - 1)) / (Math.pow(2.0, (double)octaves) - 1.0);
       this.maxValue = this.edgeValue(2.0);
    }
 
@@ -137,61 +137,61 @@ public class PerlinNoise {
       return this.maxValue;
    }
 
-   private static void skipOctave(RandomSource var0) {
-      var0.consumeCount(262);
+   private static void skipOctave(final RandomSource random) {
+      random.consumeCount(262);
    }
 
-   public double getValue(double var1, double var3, double var5) {
-      return this.getValue(var1, var3, var5, 0.0, 0.0, false);
+   public double getValue(final double x, final double y, final double z) {
+      return this.getValue(x, y, z, 0.0, 0.0);
    }
 
    /** @deprecated */
    @Deprecated
-   public double getValue(double var1, double var3, double var5, double var7, double var9, boolean var11) {
-      double var12 = 0.0;
-      double var14 = this.lowestFreqInputFactor;
-      double var16 = this.lowestFreqValueFactor;
+   public double getValue(final double x, final double y, final double z, final double yScale, final double yFudge) {
+      double value = 0.0;
+      double factor = this.lowestFreqInputFactor;
+      double valueFactor = this.lowestFreqValueFactor;
 
-      for(int var18 = 0; var18 < this.noiseLevels.length; ++var18) {
-         ImprovedNoise var19 = this.noiseLevels[var18];
-         if (var19 != null) {
-            double var20 = var19.noise(wrap(var1 * var14), var11 ? -var19.yo : wrap(var3 * var14), wrap(var5 * var14), var7 * var14, var9 * var14);
-            var12 += this.amplitudes.getDouble(var18) * var20 * var16;
+      for(int i = 0; i < this.noiseLevels.length; ++i) {
+         ImprovedNoise noise = this.noiseLevels[i];
+         if (noise != null) {
+            double noiseVal = noise.noise(wrap(x * factor), wrap(y * factor), wrap(z * factor), yScale * factor, yFudge * factor);
+            value += this.amplitudes.getDouble(i) * noiseVal * valueFactor;
          }
 
-         var14 *= 2.0;
-         var16 /= 2.0;
+         factor *= 2.0;
+         valueFactor /= 2.0;
       }
 
-      return var12;
+      return value;
    }
 
-   public double maxBrokenValue(double var1) {
-      return this.edgeValue(var1 + 2.0);
+   public double maxBrokenValue(final double yScale) {
+      return this.edgeValue(yScale + 2.0);
    }
 
-   private double edgeValue(double var1) {
-      double var3 = 0.0;
-      double var5 = this.lowestFreqValueFactor;
+   private double edgeValue(final double noiseValue) {
+      double value = 0.0;
+      double valueFactor = this.lowestFreqValueFactor;
 
-      for(int var7 = 0; var7 < this.noiseLevels.length; ++var7) {
-         ImprovedNoise var8 = this.noiseLevels[var7];
-         if (var8 != null) {
-            var3 += this.amplitudes.getDouble(var7) * var1 * var5;
+      for(int i = 0; i < this.noiseLevels.length; ++i) {
+         ImprovedNoise noise = this.noiseLevels[i];
+         if (noise != null) {
+            value += this.amplitudes.getDouble(i) * noiseValue * valueFactor;
          }
 
-         var5 /= 2.0;
+         valueFactor /= 2.0;
       }
 
-      return var3;
+      return value;
    }
 
-   public @Nullable ImprovedNoise getOctaveNoise(int var1) {
-      return this.noiseLevels[this.noiseLevels.length - 1 - var1];
+   public @Nullable ImprovedNoise getOctaveNoise(final int i) {
+      return this.noiseLevels[this.noiseLevels.length - 1 - i];
    }
 
-   public static double wrap(double var0) {
-      return var0 - (double)Mth.lfloor(var0 / 3.3554432E7 + 0.5) * 3.3554432E7;
+   public static double wrap(final double x) {
+      return x - (double)Mth.lfloor(x / 3.3554432E7 + 0.5) * 3.3554432E7;
    }
 
    protected int firstOctave() {
@@ -203,24 +203,24 @@ public class PerlinNoise {
    }
 
    @VisibleForTesting
-   public void parityConfigString(StringBuilder var1) {
-      var1.append("PerlinNoise{");
-      List var2 = this.amplitudes.stream().map((var0) -> String.format(Locale.ROOT, "%.2f", var0)).toList();
-      var1.append("first octave: ").append(this.firstOctave).append(", amplitudes: ").append(var2).append(", noise levels: [");
+   public void parityConfigString(final StringBuilder sb) {
+      sb.append("PerlinNoise{");
+      List<String> amplitudeStrings = this.amplitudes.stream().map((d) -> String.format(Locale.ROOT, "%.2f", d)).toList();
+      sb.append("first octave: ").append(this.firstOctave).append(", amplitudes: ").append(amplitudeStrings).append(", noise levels: [");
 
-      for(int var3 = 0; var3 < this.noiseLevels.length; ++var3) {
-         var1.append(var3).append(": ");
-         ImprovedNoise var4 = this.noiseLevels[var3];
-         if (var4 == null) {
-            var1.append("null");
+      for(int i = 0; i < this.noiseLevels.length; ++i) {
+         sb.append(i).append(": ");
+         ImprovedNoise noiseLevel = this.noiseLevels[i];
+         if (noiseLevel == null) {
+            sb.append("null");
          } else {
-            var4.parityConfigString(var1);
+            noiseLevel.parityConfigString(sb);
          }
 
-         var1.append(", ");
+         sb.append(", ");
       }
 
-      var1.append("]");
-      var1.append("}");
+      sb.append("]");
+      sb.append("}");
    }
 }

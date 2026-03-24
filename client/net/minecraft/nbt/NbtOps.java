@@ -43,185 +43,219 @@ public class NbtOps implements DynamicOps<Tag> {
       return new CompoundTag();
    }
 
-   public <U> U convertTo(DynamicOps<U> var1, Tag var2) {
-      Objects.requireNonNull(var2);
+   public <U> U convertTo(final DynamicOps<U> outOps, final Tag input) {
+      Objects.requireNonNull(input);
+      Tag var3 = input;
       byte var4 = 0;
-      Object var10000;
-      //$FF: var4->value
-      //0->net/minecraft/nbt/EndTag
-      //1->net/minecraft/nbt/ByteTag
-      //2->net/minecraft/nbt/ShortTag
-      //3->net/minecraft/nbt/IntTag
-      //4->net/minecraft/nbt/LongTag
-      //5->net/minecraft/nbt/FloatTag
-      //6->net/minecraft/nbt/DoubleTag
-      //7->net/minecraft/nbt/ByteArrayTag
-      //8->net/minecraft/nbt/StringTag
-      //9->net/minecraft/nbt/ListTag
-      //10->net/minecraft/nbt/CompoundTag
-      //11->net/minecraft/nbt/IntArrayTag
-      //12->net/minecraft/nbt/LongArrayTag
-      switch (var2.typeSwitch<invokedynamic>(var2, var4)) {
-         case 0:
-            EndTag var5 = (EndTag)var2;
-            var10000 = (StringTag)(var1.empty());
-            break;
-         case 1:
-            ByteTag var6 = (ByteTag)var2;
-            ByteTag var53 = var6;
 
-            try {
-               var54 = var53.value();
-            } catch (Throwable var33) {
-               throw new MatchException(var33.toString(), var33);
-            }
+      while(true) {
+         Object var10000;
+         //$FF: var4->value
+         //0->net/minecraft/nbt/EndTag
+         //1->net/minecraft/nbt/ByteTag
+         //2->net/minecraft/nbt/ShortTag
+         //3->net/minecraft/nbt/IntTag
+         //4->net/minecraft/nbt/LongTag
+         //5->net/minecraft/nbt/FloatTag
+         //6->net/minecraft/nbt/DoubleTag
+         //7->net/minecraft/nbt/ByteArrayTag
+         //8->net/minecraft/nbt/StringTag
+         //9->net/minecraft/nbt/ListTag
+         //10->net/minecraft/nbt/CompoundTag
+         //11->net/minecraft/nbt/IntArrayTag
+         //12->net/minecraft/nbt/LongArrayTag
+         switch (var3.typeSwitch<invokedynamic>(var3, var4)) {
+            case 0:
+               EndTag ignored = (EndTag)var3;
+               var10000 = (StringTag)outOps.empty();
+               break;
+            case 1:
+               ByteTag var6 = (ByteTag)var3;
+               ByteTag var53 = var6;
 
-            byte var34 = var54;
-            var10000 = (StringTag)(var1.createByte(var34));
-            break;
-         case 2:
-            ShortTag var8 = (ShortTag)var2;
-            ShortTag var51 = var8;
+               try {
+                  var54 = var53.value();
+               } catch (Throwable var33) {
+                  throw new MatchException(var33.toString(), var33);
+               }
 
-            try {
-               var52 = var51.value();
-            } catch (Throwable var32) {
-               throw new MatchException(var32.toString(), var32);
-            }
+               byte value = var54;
+               if (false) {
+                  var4 = 2;
+                  continue;
+               }
 
-            short var35 = var52;
-            var10000 = (StringTag)(var1.createShort(var35));
-            break;
-         case 3:
-            IntTag var10 = (IntTag)var2;
-            IntTag var49 = var10;
+               var10000 = (StringTag)outOps.createByte(value);
+               break;
+            case 2:
+               ShortTag value = (ShortTag)var3;
+               ShortTag var51 = value;
 
-            try {
-               var50 = var49.value();
-            } catch (Throwable var31) {
-               throw new MatchException(var31.toString(), var31);
-            }
+               try {
+                  var52 = var51.value();
+               } catch (Throwable var32) {
+                  throw new MatchException(var32.toString(), var32);
+               }
 
-            int var36 = var50;
-            var10000 = (StringTag)(var1.createInt(var36));
-            break;
-         case 4:
-            LongTag var12 = (LongTag)var2;
-            LongTag var47 = var12;
+               short value = var52;
+               if (false) {
+                  var4 = 3;
+                  continue;
+               }
 
-            try {
-               var48 = var47.value();
-            } catch (Throwable var30) {
-               throw new MatchException(var30.toString(), var30);
-            }
+               var10000 = (StringTag)outOps.createShort(value);
+               break;
+            case 3:
+               IntTag value = (IntTag)var3;
+               IntTag var49 = value;
 
-            long var37 = var48;
-            var10000 = (StringTag)(var1.createLong(var37));
-            break;
-         case 5:
-            FloatTag var15 = (FloatTag)var2;
-            FloatTag var45 = var15;
+               try {
+                  var50 = var49.value();
+               } catch (Throwable var31) {
+                  throw new MatchException(var31.toString(), var31);
+               }
 
-            try {
-               var46 = var45.value();
-            } catch (Throwable var29) {
-               throw new MatchException(var29.toString(), var29);
-            }
+               int value = var50;
+               if (false) {
+                  var4 = 4;
+                  continue;
+               }
 
-            float var38 = var46;
-            var10000 = (StringTag)(var1.createFloat(var38));
-            break;
-         case 6:
-            DoubleTag var17 = (DoubleTag)var2;
-            DoubleTag var43 = var17;
+               var10000 = (StringTag)outOps.createInt(value);
+               break;
+            case 4:
+               LongTag value = (LongTag)var3;
+               LongTag var47 = value;
 
-            try {
-               var44 = var43.value();
-            } catch (Throwable var28) {
-               throw new MatchException(var28.toString(), var28);
-            }
+               try {
+                  var48 = var47.value();
+               } catch (Throwable var30) {
+                  throw new MatchException(var30.toString(), var30);
+               }
 
-            double var39 = var44;
-            var10000 = (StringTag)(var1.createDouble(var39));
-            break;
-         case 7:
-            ByteArrayTag var20 = (ByteArrayTag)var2;
-            var10000 = (StringTag)(var1.createByteList(ByteBuffer.wrap(var20.getAsByteArray())));
-            break;
-         case 8:
-            StringTag var21 = (StringTag)var2;
-            var10000 = var21;
+               long value = var48;
+               if (false) {
+                  var4 = 5;
+                  continue;
+               }
 
-            try {
-               var42 = var10000.value();
-            } catch (Throwable var27) {
-               throw new MatchException(var27.toString(), var27);
-            }
+               var10000 = (StringTag)outOps.createLong(value);
+               break;
+            case 5:
+               FloatTag value = (FloatTag)var3;
+               FloatTag var45 = value;
 
-            String var40 = var42;
-            var10000 = (StringTag)(var1.createString(var40));
-            break;
-         case 9:
-            ListTag var23 = (ListTag)var2;
-            var10000 = (StringTag)(this.convertList(var1, var23));
-            break;
-         case 10:
-            CompoundTag var24 = (CompoundTag)var2;
-            var10000 = (StringTag)(this.convertMap(var1, var24));
-            break;
-         case 11:
-            IntArrayTag var25 = (IntArrayTag)var2;
-            var10000 = (StringTag)(var1.createIntList(Arrays.stream(var25.getAsIntArray())));
-            break;
-         case 12:
-            LongArrayTag var26 = (LongArrayTag)var2;
-            var10000 = (StringTag)(var1.createLongList(Arrays.stream(var26.getAsLongArray())));
-            break;
-         default:
-            throw new MatchException((String)null, (Throwable)null);
+               try {
+                  var46 = var45.value();
+               } catch (Throwable var29) {
+                  throw new MatchException(var29.toString(), var29);
+               }
+
+               float value = var46;
+               if (false) {
+                  var4 = 6;
+                  continue;
+               }
+
+               var10000 = (StringTag)outOps.createFloat(value);
+               break;
+            case 6:
+               DoubleTag value = (DoubleTag)var3;
+               DoubleTag var43 = value;
+
+               try {
+                  var44 = var43.value();
+               } catch (Throwable var28) {
+                  throw new MatchException(var28.toString(), var28);
+               }
+
+               double value = var44;
+               if (false) {
+                  var4 = 7;
+                  continue;
+               }
+
+               var10000 = (StringTag)outOps.createDouble(value);
+               break;
+            case 7:
+               ByteArrayTag byteArrayTag = (ByteArrayTag)var3;
+               var10000 = (StringTag)outOps.createByteList(ByteBuffer.wrap(byteArrayTag.getAsByteArray()));
+               break;
+            case 8:
+               StringTag var21 = (StringTag)var3;
+               var10000 = var21;
+
+               try {
+                  var42 = var10000.value();
+               } catch (Throwable var27) {
+                  throw new MatchException(var27.toString(), var27);
+               }
+
+               String value = var42;
+               var10000 = (StringTag)outOps.createString(value);
+               break;
+            case 9:
+               ListTag listTag = (ListTag)var3;
+               var10000 = (StringTag)this.convertList(outOps, listTag);
+               break;
+            case 10:
+               CompoundTag compoundTag = (CompoundTag)var3;
+               var10000 = (StringTag)this.convertMap(outOps, compoundTag);
+               break;
+            case 11:
+               IntArrayTag intArrayTag = (IntArrayTag)var3;
+               var10000 = (StringTag)outOps.createIntList(Arrays.stream(intArrayTag.getAsIntArray()));
+               break;
+            case 12:
+               LongArrayTag longArrayTag = (LongArrayTag)var3;
+               var10000 = (StringTag)outOps.createLongList(Arrays.stream(longArrayTag.getAsLongArray()));
+               break;
+            default:
+               throw new MatchException((String)null, (Throwable)null);
+         }
+
+         return (U)var10000;
       }
-
-      return (U)var10000;
    }
 
-   public DataResult<Number> getNumberValue(Tag var1) {
-      return (DataResult)var1.asNumber().map(DataResult::success).orElseGet(() -> DataResult.error(() -> "Not a number"));
+   public DataResult<Number> getNumberValue(final Tag input) {
+      return (DataResult)input.asNumber().map(DataResult::success).orElseGet(() -> DataResult.error(() -> "Not a number"));
    }
 
-   public Tag createNumeric(Number var1) {
-      return DoubleTag.valueOf(var1.doubleValue());
+   public Tag createNumeric(final Number i) {
+      return DoubleTag.valueOf(i.doubleValue());
    }
 
-   public Tag createByte(byte var1) {
-      return ByteTag.valueOf(var1);
+   public Tag createByte(final byte value) {
+      return ByteTag.valueOf(value);
    }
 
-   public Tag createShort(short var1) {
-      return ShortTag.valueOf(var1);
+   public Tag createShort(final short value) {
+      return ShortTag.valueOf(value);
    }
 
-   public Tag createInt(int var1) {
-      return IntTag.valueOf(var1);
+   public Tag createInt(final int value) {
+      return IntTag.valueOf(value);
    }
 
-   public Tag createLong(long var1) {
-      return LongTag.valueOf(var1);
+   public Tag createLong(final long value) {
+      return LongTag.valueOf(value);
    }
 
-   public Tag createFloat(float var1) {
-      return FloatTag.valueOf(var1);
+   public Tag createFloat(final float value) {
+      return FloatTag.valueOf(value);
    }
 
-   public Tag createDouble(double var1) {
-      return DoubleTag.valueOf(var1);
+   public Tag createDouble(final double value) {
+      return DoubleTag.valueOf(value);
    }
 
-   public Tag createBoolean(boolean var1) {
-      return ByteTag.valueOf(var1);
+   public Tag createBoolean(final boolean value) {
+      return ByteTag.valueOf(value);
    }
 
-   public DataResult<String> getStringValue(Tag var1) {
-      if (var1 instanceof StringTag var2) {
+   public DataResult<String> getStringValue(final Tag input) {
+      if (input instanceof StringTag var2) {
          StringTag var10000 = var2;
 
          try {
@@ -230,30 +264,30 @@ public class NbtOps implements DynamicOps<Tag> {
             throw new MatchException(var5.toString(), var5);
          }
 
-         String var4 = var6;
-         return DataResult.success(var4);
+         String value = var6;
+         return DataResult.success(value);
       } else {
          return DataResult.error(() -> "Not a string");
       }
    }
 
-   public Tag createString(String var1) {
-      return StringTag.valueOf(var1);
+   public Tag createString(final String value) {
+      return StringTag.valueOf(value);
    }
 
-   public DataResult<Tag> mergeToList(Tag var1, Tag var2) {
-      return (DataResult)createCollector(var1).map((var1x) -> DataResult.success(var1x.accept(var2).result())).orElseGet(() -> DataResult.error(() -> "mergeToList called with not a list: " + String.valueOf(var1), var1));
+   public DataResult<Tag> mergeToList(final Tag list, final Tag value) {
+      return (DataResult)createCollector(list).map((collector) -> DataResult.success(collector.accept(value).result())).orElseGet(() -> DataResult.error(() -> "mergeToList called with not a list: " + String.valueOf(list), list));
    }
 
-   public DataResult<Tag> mergeToList(Tag var1, List<Tag> var2) {
-      return (DataResult)createCollector(var1).map((var1x) -> DataResult.success(var1x.acceptAll(var2).result())).orElseGet(() -> DataResult.error(() -> "mergeToList called with not a list: " + String.valueOf(var1), var1));
+   public DataResult<Tag> mergeToList(final Tag list, final List<Tag> values) {
+      return (DataResult)createCollector(list).map((collector) -> DataResult.success(collector.acceptAll(values).result())).orElseGet(() -> DataResult.error(() -> "mergeToList called with not a list: " + String.valueOf(list), list));
    }
 
-   public DataResult<Tag> mergeToMap(Tag var1, Tag var2, Tag var3) {
-      if (!(var1 instanceof CompoundTag) && !(var1 instanceof EndTag)) {
-         return DataResult.error(() -> "mergeToMap called with not a map: " + String.valueOf(var1), var1);
-      } else if (var2 instanceof StringTag) {
-         StringTag var5 = (StringTag)var2;
+   public DataResult<Tag> mergeToMap(final Tag map, final Tag key, final Tag value) {
+      if (!(map instanceof CompoundTag) && !(map instanceof EndTag)) {
+         return DataResult.error(() -> "mergeToMap called with not a map: " + String.valueOf(map), map);
+      } else if (key instanceof StringTag) {
+         StringTag var5 = (StringTag)key;
          StringTag var10000 = var5;
 
          try {
@@ -263,45 +297,45 @@ public class NbtOps implements DynamicOps<Tag> {
          }
 
          String var6 = var10;
-         String var4 = var6;
+         String stringKey = var6;
          CompoundTag var11;
-         if (var1 instanceof CompoundTag) {
-            CompoundTag var9 = (CompoundTag)var1;
-            var11 = var9.shallowCopy();
+         if (map instanceof CompoundTag) {
+            CompoundTag tag = (CompoundTag)map;
+            var11 = tag.shallowCopy();
          } else {
             var11 = new CompoundTag();
          }
 
-         CompoundTag var8 = var11;
-         var8.put(var4, var3);
-         return DataResult.success(var8);
+         CompoundTag output = var11;
+         output.put(stringKey, value);
+         return DataResult.success(output);
       } else {
-         return DataResult.error(() -> "key is not a string: " + String.valueOf(var2), var1);
+         return DataResult.error(() -> "key is not a string: " + String.valueOf(key), map);
       }
    }
 
-   public DataResult<Tag> mergeToMap(Tag var1, MapLike<Tag> var2) {
-      if (!(var1 instanceof CompoundTag) && !(var1 instanceof EndTag)) {
-         return DataResult.error(() -> "mergeToMap called with not a map: " + String.valueOf(var1), var1);
+   public DataResult<Tag> mergeToMap(final Tag map, final MapLike<Tag> values) {
+      if (!(map instanceof CompoundTag) && !(map instanceof EndTag)) {
+         return DataResult.error(() -> "mergeToMap called with not a map: " + String.valueOf(map), map);
       } else {
-         Iterator var3 = var2.entries().iterator();
-         if (!var3.hasNext()) {
-            return var1 == this.empty() ? DataResult.success(this.emptyMap()) : DataResult.success(var1);
+         Iterator<Pair<Tag, Tag>> valuesIterator = values.entries().iterator();
+         if (!valuesIterator.hasNext()) {
+            return map == this.empty() ? DataResult.success(this.emptyMap()) : DataResult.success(map);
          } else {
             CompoundTag var10000;
-            if (var1 instanceof CompoundTag) {
-               CompoundTag var5 = (CompoundTag)var1;
-               var10000 = var5.shallowCopy();
+            if (map instanceof CompoundTag) {
+               CompoundTag tag = (CompoundTag)map;
+               var10000 = tag.shallowCopy();
             } else {
                var10000 = new CompoundTag();
             }
 
-            CompoundTag var4 = var10000;
-            ArrayList var6 = new ArrayList();
-            var3.forEachRemaining((var2x) -> {
-               Tag var3 = (Tag)var2x.getFirst();
-               if (var3 instanceof StringTag var5) {
-                  StringTag var10000 = var5;
+            CompoundTag output = var10000;
+            List<Tag> missed = new ArrayList();
+            valuesIterator.forEachRemaining((entry) -> {
+               Tag key = (Tag)entry.getFirst();
+               if (key instanceof StringTag $b$0) {
+                  StringTag var10000 = $b$0;
 
                   try {
                      var8 = var10000.value();
@@ -309,38 +343,38 @@ public class NbtOps implements DynamicOps<Tag> {
                      throw new MatchException(var7.toString(), var7);
                   }
 
-                  String var6x = var8;
-                  var4.put(var6x, (Tag)var2x.getSecond());
+                  String patt1$temp = var8;
+                  output.put(patt1$temp, (Tag)entry.getSecond());
                } else {
-                  var6.add(var3);
+                  missed.add(key);
                }
             });
-            return !var6.isEmpty() ? DataResult.error(() -> "some keys are not strings: " + String.valueOf(var6), var4) : DataResult.success(var4);
+            return !missed.isEmpty() ? DataResult.error(() -> "some keys are not strings: " + String.valueOf(missed), output) : DataResult.success(output);
          }
       }
    }
 
-   public DataResult<Tag> mergeToMap(Tag var1, Map<Tag, Tag> var2) {
-      if (!(var1 instanceof CompoundTag) && !(var1 instanceof EndTag)) {
-         return DataResult.error(() -> "mergeToMap called with not a map: " + String.valueOf(var1), var1);
-      } else if (var2.isEmpty()) {
-         return var1 == this.empty() ? DataResult.success(this.emptyMap()) : DataResult.success(var1);
+   public DataResult<Tag> mergeToMap(final Tag map, final Map<Tag, Tag> values) {
+      if (!(map instanceof CompoundTag) && !(map instanceof EndTag)) {
+         return DataResult.error(() -> "mergeToMap called with not a map: " + String.valueOf(map), map);
+      } else if (values.isEmpty()) {
+         return map == this.empty() ? DataResult.success(this.emptyMap()) : DataResult.success(map);
       } else {
          CompoundTag var10000;
-         if (var1 instanceof CompoundTag) {
-            CompoundTag var4 = (CompoundTag)var1;
-            var10000 = var4.shallowCopy();
+         if (map instanceof CompoundTag) {
+            CompoundTag tag = (CompoundTag)map;
+            var10000 = tag.shallowCopy();
          } else {
             var10000 = new CompoundTag();
          }
 
-         CompoundTag var3 = var10000;
-         ArrayList var12 = new ArrayList();
+         CompoundTag output = var10000;
+         List<Tag> missed = new ArrayList();
 
-         for(Map.Entry var6 : var2.entrySet()) {
-            Tag var7 = (Tag)var6.getKey();
-            if (var7 instanceof StringTag) {
-               StringTag var8 = (StringTag)var7;
+         for(Map.Entry<Tag, Tag> entry : values.entrySet()) {
+            Tag key = (Tag)entry.getKey();
+            if (key instanceof StringTag) {
+               StringTag var8 = (StringTag)key;
                StringTag var13 = var8;
 
                try {
@@ -349,48 +383,52 @@ public class NbtOps implements DynamicOps<Tag> {
                   throw new MatchException(var11.toString(), var11);
                }
 
-               String var10 = var14;
-               var3.put(var10, (Tag)var6.getValue());
+               String stringKey = var14;
+               output.put(stringKey, (Tag)entry.getValue());
             } else {
-               var12.add(var7);
+               missed.add(key);
             }
          }
 
-         if (!var12.isEmpty()) {
-            return DataResult.error(() -> "some keys are not strings: " + String.valueOf(var12), var3);
+         if (!missed.isEmpty()) {
+            return DataResult.error(() -> "some keys are not strings: " + String.valueOf(missed), output);
          } else {
-            return DataResult.success(var3);
+            return DataResult.success(output);
          }
       }
    }
 
-   public DataResult<Stream<Pair<Tag, Tag>>> getMapValues(Tag var1) {
-      if (var1 instanceof CompoundTag var2) {
-         return DataResult.success(var2.entrySet().stream().map((var1x) -> Pair.of(this.createString((String)var1x.getKey()), (Tag)var1x.getValue())));
+   public DataResult<Stream<Pair<Tag, Tag>>> getMapValues(final Tag input) {
+      if (input instanceof CompoundTag tag) {
+         return DataResult.success(tag.entrySet().stream().map((entry) -> Pair.of(this.createString((String)entry.getKey()), (Tag)entry.getValue())));
       } else {
-         return DataResult.error(() -> "Not a map: " + String.valueOf(var1));
+         return DataResult.error(() -> "Not a map: " + String.valueOf(input));
       }
    }
 
-   public DataResult<Consumer<BiConsumer<Tag, Tag>>> getMapEntries(Tag var1) {
-      if (var1 instanceof CompoundTag var2) {
-         return DataResult.success((Consumer)(var2x) -> {
-            for(Map.Entry var4 : var2.entrySet()) {
-               var2x.accept(this.createString((String)var4.getKey()), (Tag)var4.getValue());
+   public DataResult<Consumer<BiConsumer<Tag, Tag>>> getMapEntries(final Tag input) {
+      if (input instanceof CompoundTag tag) {
+         return DataResult.success((Consumer)(c) -> {
+            for(Map.Entry<String, Tag> entry : tag.entrySet()) {
+               c.accept(this.createString((String)entry.getKey()), (Tag)entry.getValue());
             }
 
          });
       } else {
-         return DataResult.error(() -> "Not a map: " + String.valueOf(var1));
+         return DataResult.error(() -> "Not a map: " + String.valueOf(input));
       }
    }
 
-   public DataResult<MapLike<Tag>> getMap(Tag var1) {
-      if (var1 instanceof final CompoundTag var2) {
+   public DataResult<MapLike<Tag>> getMap(final Tag input) {
+      if (input instanceof final CompoundTag tag) {
          return DataResult.success(new MapLike<Tag>() {
-            public @Nullable Tag get(Tag var1) {
-               if (var1 instanceof StringTag var2x) {
-                  StringTag var10000 = var2x;
+            {
+               Objects.requireNonNull(NbtOps.this);
+            }
+
+            public @Nullable Tag get(final Tag key) {
+               if (key instanceof StringTag var2) {
+                  StringTag var10000 = var2;
 
                   try {
                      var6 = var10000.value();
@@ -398,47 +436,37 @@ public class NbtOps implements DynamicOps<Tag> {
                      throw new MatchException(var5.toString(), var5);
                   }
 
-                  String var4 = var6;
-                  return var2.get(var4);
+                  String stringKey = var6;
+                  return tag.get(stringKey);
                } else {
-                  throw new UnsupportedOperationException("Cannot get map entry with non-string key: " + String.valueOf(var1));
+                  throw new UnsupportedOperationException("Cannot get map entry with non-string key: " + String.valueOf(key));
                }
             }
 
-            public @Nullable Tag get(String var1) {
-               return var2.get(var1);
+            public @Nullable Tag get(final String key) {
+               return tag.get(key);
             }
 
             public Stream<Pair<Tag, Tag>> entries() {
-               return var2.entrySet().stream().map((var1) -> Pair.of(NbtOps.this.createString((String)var1.getKey()), (Tag)var1.getValue()));
+               return tag.entrySet().stream().map((entry) -> Pair.of(NbtOps.this.createString((String)entry.getKey()), (Tag)entry.getValue()));
             }
 
             public String toString() {
-               return "MapLike[" + String.valueOf(var2) + "]";
-            }
-
-            // $FF: synthetic method
-            public @Nullable Object get(final String var1) {
-               return this.get(var1);
-            }
-
-            // $FF: synthetic method
-            public @Nullable Object get(final Object var1) {
-               return this.get((Tag)var1);
+               return "MapLike[" + String.valueOf(tag) + "]";
             }
          });
       } else {
-         return DataResult.error(() -> "Not a map: " + String.valueOf(var1));
+         return DataResult.error(() -> "Not a map: " + String.valueOf(input));
       }
    }
 
-   public Tag createMap(Stream<Pair<Tag, Tag>> var1) {
-      CompoundTag var2 = new CompoundTag();
-      var1.forEach((var1x) -> {
-         Tag var2x = (Tag)var1x.getFirst();
-         Tag var3 = (Tag)var1x.getSecond();
-         if (var2x instanceof StringTag var5) {
-            StringTag var10000 = var5;
+   public Tag createMap(final Stream<Pair<Tag, Tag>> map) {
+      CompoundTag tag = new CompoundTag();
+      map.forEach((entry) -> {
+         Tag key = (Tag)entry.getFirst();
+         Tag value = (Tag)entry.getSecond();
+         if (key instanceof StringTag $b$0) {
+            StringTag var10000 = $b$0;
 
             try {
                var8 = var10000.value();
@@ -446,82 +474,82 @@ public class NbtOps implements DynamicOps<Tag> {
                throw new MatchException(var7.toString(), var7);
             }
 
-            String var6 = var8;
-            var2.put(var6, var3);
+            String patt1$temp = var8;
+            tag.put(patt1$temp, value);
          } else {
-            throw new UnsupportedOperationException("Cannot create map with non-string key: " + String.valueOf(var2x));
+            throw new UnsupportedOperationException("Cannot create map with non-string key: " + String.valueOf(key));
          }
       });
-      return var2;
+      return tag;
    }
 
-   public DataResult<Stream<Tag>> getStream(Tag var1) {
-      if (var1 instanceof CollectionTag var2) {
-         return DataResult.success(var2.stream());
+   public DataResult<Stream<Tag>> getStream(final Tag input) {
+      if (input instanceof CollectionTag collection) {
+         return DataResult.success(collection.stream());
       } else {
          return DataResult.error(() -> "Not a list");
       }
    }
 
-   public DataResult<Consumer<Consumer<Tag>>> getList(Tag var1) {
-      if (var1 instanceof CollectionTag var2) {
-         Objects.requireNonNull(var2);
-         return DataResult.success(var2::forEach);
+   public DataResult<Consumer<Consumer<Tag>>> getList(final Tag input) {
+      if (input instanceof CollectionTag collection) {
+         Objects.requireNonNull(collection);
+         return DataResult.success(collection::forEach);
       } else {
-         return DataResult.error(() -> "Not a list: " + String.valueOf(var1));
+         return DataResult.error(() -> "Not a list: " + String.valueOf(input));
       }
    }
 
-   public DataResult<ByteBuffer> getByteBuffer(Tag var1) {
-      if (var1 instanceof ByteArrayTag var2) {
-         return DataResult.success(ByteBuffer.wrap(var2.getAsByteArray()));
+   public DataResult<ByteBuffer> getByteBuffer(final Tag input) {
+      if (input instanceof ByteArrayTag array) {
+         return DataResult.success(ByteBuffer.wrap(array.getAsByteArray()));
       } else {
-         return super.getByteBuffer(var1);
+         return super.getByteBuffer(input);
       }
    }
 
-   public Tag createByteList(ByteBuffer var1) {
-      ByteBuffer var2 = var1.duplicate().clear();
-      byte[] var3 = new byte[var1.capacity()];
-      var2.get(0, var3, 0, var3.length);
-      return new ByteArrayTag(var3);
+   public Tag createByteList(final ByteBuffer input) {
+      ByteBuffer wholeBuffer = input.duplicate().clear();
+      byte[] bytes = new byte[input.capacity()];
+      wholeBuffer.get(0, bytes, 0, bytes.length);
+      return new ByteArrayTag(bytes);
    }
 
-   public DataResult<IntStream> getIntStream(Tag var1) {
-      if (var1 instanceof IntArrayTag var2) {
-         return DataResult.success(Arrays.stream(var2.getAsIntArray()));
+   public DataResult<IntStream> getIntStream(final Tag input) {
+      if (input instanceof IntArrayTag array) {
+         return DataResult.success(Arrays.stream(array.getAsIntArray()));
       } else {
-         return super.getIntStream(var1);
+         return super.getIntStream(input);
       }
    }
 
-   public Tag createIntList(IntStream var1) {
-      return new IntArrayTag(var1.toArray());
+   public Tag createIntList(final IntStream input) {
+      return new IntArrayTag(input.toArray());
    }
 
-   public DataResult<LongStream> getLongStream(Tag var1) {
-      if (var1 instanceof LongArrayTag var2) {
-         return DataResult.success(Arrays.stream(var2.getAsLongArray()));
+   public DataResult<LongStream> getLongStream(final Tag input) {
+      if (input instanceof LongArrayTag array) {
+         return DataResult.success(Arrays.stream(array.getAsLongArray()));
       } else {
-         return super.getLongStream(var1);
+         return super.getLongStream(input);
       }
    }
 
-   public Tag createLongList(LongStream var1) {
-      return new LongArrayTag(var1.toArray());
+   public Tag createLongList(final LongStream input) {
+      return new LongArrayTag(input.toArray());
    }
 
-   public Tag createList(Stream<Tag> var1) {
-      return new ListTag((List)var1.collect(Util.toMutableList()));
+   public Tag createList(final Stream<Tag> input) {
+      return new ListTag((List)input.collect(Util.toMutableList()));
    }
 
-   public Tag remove(Tag var1, String var2) {
-      if (var1 instanceof CompoundTag var3) {
-         CompoundTag var4 = var3.shallowCopy();
-         var4.remove(var2);
-         return var4;
+   public Tag remove(final Tag input, final String key) {
+      if (input instanceof CompoundTag tag) {
+         CompoundTag result = tag.shallowCopy();
+         result.remove(key);
+         return result;
       } else {
-         return var1;
+         return input;
       }
    }
 
@@ -533,15 +561,15 @@ public class NbtOps implements DynamicOps<Tag> {
       return new NbtRecordBuilder();
    }
 
-   private static Optional<ListCollector> createCollector(Tag var0) {
-      if (var0 instanceof EndTag) {
+   private static Optional<ListCollector> createCollector(final Tag tag) {
+      if (tag instanceof EndTag) {
          return Optional.of(new GenericListCollector());
-      } else if (var0 instanceof CollectionTag) {
-         CollectionTag var1 = (CollectionTag)var0;
-         if (var1.isEmpty()) {
+      } else if (tag instanceof CollectionTag) {
+         CollectionTag collection = (CollectionTag)tag;
+         if (collection.isEmpty()) {
             return Optional.of(new GenericListCollector());
          } else {
-            Objects.requireNonNull(var1);
+            Objects.requireNonNull(collection);
             byte var3 = 0;
             Optional var10000;
             //$FF: var3->value
@@ -549,22 +577,22 @@ public class NbtOps implements DynamicOps<Tag> {
             //1->net/minecraft/nbt/ByteArrayTag
             //2->net/minecraft/nbt/IntArrayTag
             //3->net/minecraft/nbt/LongArrayTag
-            switch (var1.typeSwitch<invokedynamic>(var1, var3)) {
+            switch (collection.typeSwitch<invokedynamic>(collection, var3)) {
                case 0:
-                  ListTag var4 = (ListTag)var1;
-                  var10000 = Optional.of(new GenericListCollector(var4));
+                  ListTag list = (ListTag)collection;
+                  var10000 = Optional.of(new GenericListCollector(list));
                   break;
                case 1:
-                  ByteArrayTag var5 = (ByteArrayTag)var1;
-                  var10000 = Optional.of(new ByteListCollector(var5.getAsByteArray()));
+                  ByteArrayTag array = (ByteArrayTag)collection;
+                  var10000 = Optional.of(new ByteListCollector(array.getAsByteArray()));
                   break;
                case 2:
-                  IntArrayTag var6 = (IntArrayTag)var1;
-                  var10000 = Optional.of(new IntListCollector(var6.getAsIntArray()));
+                  IntArrayTag array = (IntArrayTag)collection;
+                  var10000 = Optional.of(new IntListCollector(array.getAsIntArray()));
                   break;
                case 3:
-                  LongArrayTag var7 = (LongArrayTag)var1;
-                  var10000 = Optional.of(new LongListCollector(var7.getAsLongArray()));
+                  LongArrayTag array = (LongArrayTag)collection;
+                  var10000 = Optional.of(new LongListCollector(array.getAsLongArray()));
                   break;
                default:
                   throw new MatchException((String)null, (Throwable)null);
@@ -577,178 +605,9 @@ public class NbtOps implements DynamicOps<Tag> {
       }
    }
 
-   // $FF: synthetic method
-   public Object remove(final Object var1, final String var2) {
-      return this.remove((Tag)var1, var2);
-   }
-
-   // $FF: synthetic method
-   public Object createLongList(final LongStream var1) {
-      return this.createLongList(var1);
-   }
-
-   // $FF: synthetic method
-   public DataResult getLongStream(final Object var1) {
-      return this.getLongStream((Tag)var1);
-   }
-
-   // $FF: synthetic method
-   public Object createIntList(final IntStream var1) {
-      return this.createIntList(var1);
-   }
-
-   // $FF: synthetic method
-   public DataResult getIntStream(final Object var1) {
-      return this.getIntStream((Tag)var1);
-   }
-
-   // $FF: synthetic method
-   public Object createByteList(final ByteBuffer var1) {
-      return this.createByteList(var1);
-   }
-
-   // $FF: synthetic method
-   public DataResult getByteBuffer(final Object var1) {
-      return this.getByteBuffer((Tag)var1);
-   }
-
-   // $FF: synthetic method
-   public Object createList(final Stream var1) {
-      return this.createList(var1);
-   }
-
-   // $FF: synthetic method
-   public DataResult getList(final Object var1) {
-      return this.getList((Tag)var1);
-   }
-
-   // $FF: synthetic method
-   public DataResult getStream(final Object var1) {
-      return this.getStream((Tag)var1);
-   }
-
-   // $FF: synthetic method
-   public DataResult getMap(final Object var1) {
-      return this.getMap((Tag)var1);
-   }
-
-   // $FF: synthetic method
-   public Object createMap(final Stream var1) {
-      return this.createMap(var1);
-   }
-
-   // $FF: synthetic method
-   public DataResult getMapEntries(final Object var1) {
-      return this.getMapEntries((Tag)var1);
-   }
-
-   // $FF: synthetic method
-   public DataResult getMapValues(final Object var1) {
-      return this.getMapValues((Tag)var1);
-   }
-
-   // $FF: synthetic method
-   public DataResult mergeToMap(final Object var1, final MapLike var2) {
-      return this.mergeToMap((Tag)var1, var2);
-   }
-
-   // $FF: synthetic method
-   public DataResult mergeToMap(final Object var1, final Map var2) {
-      return this.mergeToMap((Tag)var1, var2);
-   }
-
-   // $FF: synthetic method
-   public DataResult mergeToMap(final Object var1, final Object var2, final Object var3) {
-      return this.mergeToMap((Tag)var1, (Tag)var2, (Tag)var3);
-   }
-
-   // $FF: synthetic method
-   public DataResult mergeToList(final Object var1, final List var2) {
-      return this.mergeToList((Tag)var1, var2);
-   }
-
-   // $FF: synthetic method
-   public DataResult mergeToList(final Object var1, final Object var2) {
-      return this.mergeToList((Tag)var1, (Tag)var2);
-   }
-
-   // $FF: synthetic method
-   public Object createString(final String var1) {
-      return this.createString(var1);
-   }
-
-   // $FF: synthetic method
-   public DataResult getStringValue(final Object var1) {
-      return this.getStringValue((Tag)var1);
-   }
-
-   // $FF: synthetic method
-   public Object createBoolean(final boolean var1) {
-      return this.createBoolean(var1);
-   }
-
-   // $FF: synthetic method
-   public Object createDouble(final double var1) {
-      return this.createDouble(var1);
-   }
-
-   // $FF: synthetic method
-   public Object createFloat(final float var1) {
-      return this.createFloat(var1);
-   }
-
-   // $FF: synthetic method
-   public Object createLong(final long var1) {
-      return this.createLong(var1);
-   }
-
-   // $FF: synthetic method
-   public Object createInt(final int var1) {
-      return this.createInt(var1);
-   }
-
-   // $FF: synthetic method
-   public Object createShort(final short var1) {
-      return this.createShort(var1);
-   }
-
-   // $FF: synthetic method
-   public Object createByte(final byte var1) {
-      return this.createByte(var1);
-   }
-
-   // $FF: synthetic method
-   public Object createNumeric(final Number var1) {
-      return this.createNumeric(var1);
-   }
-
-   // $FF: synthetic method
-   public DataResult getNumberValue(final Object var1) {
-      return this.getNumberValue((Tag)var1);
-   }
-
-   // $FF: synthetic method
-   public Object convertTo(final DynamicOps var1, final Object var2) {
-      return this.convertTo(var1, (Tag)var2);
-   }
-
-   // $FF: synthetic method
-   public Object emptyList() {
-      return this.emptyList();
-   }
-
-   // $FF: synthetic method
-   public Object emptyMap() {
-      return this.emptyMap();
-   }
-
-   // $FF: synthetic method
-   public Object empty() {
-      return this.empty();
-   }
-
-   class NbtRecordBuilder extends RecordBuilder.AbstractStringBuilder<Tag, CompoundTag> {
+   private class NbtRecordBuilder extends RecordBuilder.AbstractStringBuilder<Tag, CompoundTag> {
       protected NbtRecordBuilder() {
+         Objects.requireNonNull(NbtOps.this);
          super(NbtOps.this);
       }
 
@@ -756,96 +615,76 @@ public class NbtOps implements DynamicOps<Tag> {
          return new CompoundTag();
       }
 
-      protected CompoundTag append(String var1, Tag var2, CompoundTag var3) {
-         var3.put(var1, var2);
-         return var3;
+      protected CompoundTag append(final String key, final Tag value, final CompoundTag builder) {
+         builder.put(key, value);
+         return builder;
       }
 
-      protected DataResult<Tag> build(CompoundTag var1, Tag var2) {
-         if (var2 != null && var2 != EndTag.INSTANCE) {
-            if (!(var2 instanceof CompoundTag)) {
-               return DataResult.error(() -> "mergeToMap called with not a map: " + String.valueOf(var2), var2);
+      protected DataResult<Tag> build(final CompoundTag builder, final Tag prefix) {
+         if (prefix != null && prefix != EndTag.INSTANCE) {
+            if (!(prefix instanceof CompoundTag)) {
+               return DataResult.error(() -> "mergeToMap called with not a map: " + String.valueOf(prefix), prefix);
             } else {
-               CompoundTag var3 = (CompoundTag)var2;
-               CompoundTag var4 = var3.shallowCopy();
+               CompoundTag compound = (CompoundTag)prefix;
+               CompoundTag result = compound.shallowCopy();
 
-               for(Map.Entry var6 : var1.entrySet()) {
-                  var4.put((String)var6.getKey(), (Tag)var6.getValue());
+               for(Map.Entry<String, Tag> entry : builder.entrySet()) {
+                  result.put((String)entry.getKey(), (Tag)entry.getValue());
                }
 
-               return DataResult.success(var4);
+               return DataResult.success(result);
             }
          } else {
-            return DataResult.success(var1);
+            return DataResult.success(builder);
          }
-      }
-
-      // $FF: synthetic method
-      protected Object append(final String var1, final Object var2, final Object var3) {
-         return this.append(var1, (Tag)var2, (CompoundTag)var3);
-      }
-
-      // $FF: synthetic method
-      protected DataResult build(final Object var1, final Object var2) {
-         return this.build((CompoundTag)var1, (Tag)var2);
-      }
-
-      // $FF: synthetic method
-      protected Object initBuilder() {
-         return this.initBuilder();
       }
    }
 
-   interface ListCollector {
-      ListCollector accept(Tag var1);
+   private interface ListCollector {
+      ListCollector accept(Tag t);
 
-      default ListCollector acceptAll(Iterable<Tag> var1) {
-         ListCollector var2 = this;
+      default ListCollector acceptAll(final Iterable<Tag> tags) {
+         ListCollector collector = this;
 
-         for(Tag var4 : var1) {
-            var2 = var2.accept(var4);
+         for(Tag tag : tags) {
+            collector = collector.accept(tag);
          }
 
-         return var2;
-      }
-
-      default ListCollector acceptAll(Stream<Tag> var1) {
-         Objects.requireNonNull(var1);
-         return this.acceptAll(var1::iterator);
+         return collector;
       }
 
       Tag result();
    }
 
-   static class GenericListCollector implements ListCollector {
+   private static class GenericListCollector implements ListCollector {
       private final ListTag result = new ListTag();
 
-      GenericListCollector() {
+      private GenericListCollector() {
          super();
       }
 
-      GenericListCollector(ListTag var1) {
+      private GenericListCollector(final ListTag initial) {
          super();
-         this.result.addAll(var1);
+         this.result.addAll(initial);
       }
 
-      public GenericListCollector(IntArrayList var1) {
+      public GenericListCollector(final IntArrayList initials) {
          super();
-         var1.forEach((var1x) -> this.result.add(IntTag.valueOf(var1x)));
+         initials.forEach((v) -> this.result.add(IntTag.valueOf(v)));
       }
 
-      public GenericListCollector(ByteArrayList var1) {
+      public GenericListCollector(final ByteArrayList initials) {
          super();
-         var1.forEach((var1x) -> this.result.add(ByteTag.valueOf(var1x)));
+         initials.forEach((v) -> this.result.add(ByteTag.valueOf(v)));
       }
 
-      public GenericListCollector(LongArrayList var1) {
+      public GenericListCollector(final LongArrayList initials) {
          super();
-         var1.forEach((var1x) -> this.result.add(LongTag.valueOf(var1x)));
+         initials.forEach((v) -> this.result.add(LongTag.valueOf(v)));
       }
 
-      public ListCollector accept(Tag var1) {
-         this.result.add(var1);
+      public ListCollector accept(final Tag tag) {
+         this.result.add(tag);
          return this;
       }
 
@@ -854,20 +693,20 @@ public class NbtOps implements DynamicOps<Tag> {
       }
    }
 
-   static class IntListCollector implements ListCollector {
+   private static class IntListCollector implements ListCollector {
       private final IntArrayList values = new IntArrayList();
 
-      public IntListCollector(int[] var1) {
+      public IntListCollector(final int[] initialValues) {
          super();
-         this.values.addElements(0, var1);
+         this.values.addElements(0, initialValues);
       }
 
-      public ListCollector accept(Tag var1) {
-         if (var1 instanceof IntTag var2) {
-            this.values.add(var2.intValue());
+      public ListCollector accept(final Tag tag) {
+         if (tag instanceof IntTag intTag) {
+            this.values.add(intTag.intValue());
             return this;
          } else {
-            return (new GenericListCollector(this.values)).accept(var1);
+            return (new GenericListCollector(this.values)).accept(tag);
          }
       }
 
@@ -876,20 +715,20 @@ public class NbtOps implements DynamicOps<Tag> {
       }
    }
 
-   static class ByteListCollector implements ListCollector {
+   private static class ByteListCollector implements ListCollector {
       private final ByteArrayList values = new ByteArrayList();
 
-      public ByteListCollector(byte[] var1) {
+      public ByteListCollector(final byte[] initialValues) {
          super();
-         this.values.addElements(0, var1);
+         this.values.addElements(0, initialValues);
       }
 
-      public ListCollector accept(Tag var1) {
-         if (var1 instanceof ByteTag var2) {
-            this.values.add(var2.byteValue());
+      public ListCollector accept(final Tag tag) {
+         if (tag instanceof ByteTag byteTag) {
+            this.values.add(byteTag.byteValue());
             return this;
          } else {
-            return (new GenericListCollector(this.values)).accept(var1);
+            return (new GenericListCollector(this.values)).accept(tag);
          }
       }
 
@@ -898,20 +737,20 @@ public class NbtOps implements DynamicOps<Tag> {
       }
    }
 
-   static class LongListCollector implements ListCollector {
+   private static class LongListCollector implements ListCollector {
       private final LongArrayList values = new LongArrayList();
 
-      public LongListCollector(long[] var1) {
+      public LongListCollector(final long[] initialValues) {
          super();
-         this.values.addElements(0, var1);
+         this.values.addElements(0, initialValues);
       }
 
-      public ListCollector accept(Tag var1) {
-         if (var1 instanceof LongTag var2) {
-            this.values.add(var2.longValue());
+      public ListCollector accept(final Tag tag) {
+         if (tag instanceof LongTag longTag) {
+            this.values.add(longTag.longValue());
             return this;
          } else {
-            return (new GenericListCollector(this.values)).accept(var1);
+            return (new GenericListCollector(this.values)).accept(tag);
          }
       }
 

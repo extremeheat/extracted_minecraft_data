@@ -15,17 +15,17 @@ public class Fluids {
       super();
    }
 
-   private static <T extends Fluid> T register(String var0, T var1) {
-      return (T)(Registry.register(BuiltInRegistries.FLUID, (String)var0, var1));
+   private static <T extends Fluid> T register(final String name, final T fluid) {
+      return (T)(Registry.register(BuiltInRegistries.FLUID, (String)name, fluid));
    }
 
    static {
-      for(Fluid var1 : BuiltInRegistries.FLUID) {
-         UnmodifiableIterator var2 = var1.getStateDefinition().getPossibleStates().iterator();
+      for(Fluid fluid : BuiltInRegistries.FLUID) {
+         UnmodifiableIterator var2 = fluid.getStateDefinition().getPossibleStates().iterator();
 
          while(var2.hasNext()) {
-            FluidState var3 = (FluidState)var2.next();
-            Fluid.FLUID_STATE_REGISTRY.add(var3);
+            FluidState state = (FluidState)var2.next();
+            Fluid.FLUID_STATE_REGISTRY.add(state);
          }
       }
 

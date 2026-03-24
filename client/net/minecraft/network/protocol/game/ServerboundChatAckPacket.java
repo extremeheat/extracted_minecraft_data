@@ -8,24 +8,23 @@ import net.minecraft.network.protocol.PacketType;
 public record ServerboundChatAckPacket(int offset) implements Packet<ServerGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ServerboundChatAckPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundChatAckPacket>codec(ServerboundChatAckPacket::write, ServerboundChatAckPacket::new);
 
-   private ServerboundChatAckPacket(FriendlyByteBuf var1) {
-      this(var1.readVarInt());
+   private ServerboundChatAckPacket(final FriendlyByteBuf input) {
+      this(input.readVarInt());
    }
 
-   public ServerboundChatAckPacket(int var1) {
+   public ServerboundChatAckPacket {
       super();
-      this.offset = var1;
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeVarInt(this.offset);
+   private void write(final FriendlyByteBuf output) {
+      output.writeVarInt(this.offset);
    }
 
    public PacketType<ServerboundChatAckPacket> type() {
       return GamePacketTypes.SERVERBOUND_CHAT_ACK;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handleChatAck(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handleChatAck(this);
    }
 }

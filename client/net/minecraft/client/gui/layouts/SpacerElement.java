@@ -9,32 +9,32 @@ public class SpacerElement implements LayoutElement {
    private final int width;
    private final int height;
 
-   public SpacerElement(int var1, int var2) {
-      this(0, 0, var1, var2);
+   public SpacerElement(final int width, final int height) {
+      this(0, 0, width, height);
    }
 
-   public SpacerElement(int var1, int var2, int var3, int var4) {
+   public SpacerElement(final int x, final int y, final int width, final int height) {
       super();
-      this.x = var1;
-      this.y = var2;
-      this.width = var3;
-      this.height = var4;
+      this.x = x;
+      this.y = y;
+      this.width = width;
+      this.height = height;
    }
 
-   public static SpacerElement width(int var0) {
-      return new SpacerElement(var0, 0);
+   public static SpacerElement width(final int width) {
+      return new SpacerElement(width, 0);
    }
 
-   public static SpacerElement height(int var0) {
-      return new SpacerElement(0, var0);
+   public static SpacerElement height(final int height) {
+      return new SpacerElement(0, height);
    }
 
-   public void setX(int var1) {
-      this.x = var1;
+   public void setX(final int x) {
+      this.x = x;
    }
 
-   public void setY(int var1) {
-      this.y = var1;
+   public void setY(final int y) {
+      this.y = y;
    }
 
    public int getX() {
@@ -53,6 +53,6 @@ public class SpacerElement implements LayoutElement {
       return this.height;
    }
 
-   public void visitWidgets(Consumer<AbstractWidget> var1) {
+   public void visitWidgets(final Consumer<AbstractWidget> widgetVisitor) {
    }
 }

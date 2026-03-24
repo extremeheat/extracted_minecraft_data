@@ -10,19 +10,19 @@ public class DebugEntryChunkSourceStats implements DebugScreenEntry {
       super();
    }
 
-   public void display(DebugScreenDisplayer var1, @Nullable Level var2, @Nullable LevelChunk var3, @Nullable LevelChunk var4) {
-      Minecraft var5 = Minecraft.getInstance();
-      if (var5.level != null) {
-         var1.addLine(var5.level.gatherChunkSourceStats());
+   public void display(final DebugScreenDisplayer displayer, final @Nullable Level serverOrClientLevel, final @Nullable LevelChunk clientChunk, final @Nullable LevelChunk serverChunk) {
+      Minecraft minecraft = Minecraft.getInstance();
+      if (minecraft.level != null) {
+         displayer.addLine(minecraft.level.gatherChunkSourceStats());
       }
 
-      if (var2 != null && var2 != var5.level) {
-         var1.addLine(var2.gatherChunkSourceStats());
+      if (serverOrClientLevel != null && serverOrClientLevel != minecraft.level) {
+         displayer.addLine(serverOrClientLevel.gatherChunkSourceStats());
       }
 
    }
 
-   public boolean isAllowed(boolean var1) {
+   public boolean isAllowed(final boolean reducedDebugInfo) {
       return true;
    }
 }

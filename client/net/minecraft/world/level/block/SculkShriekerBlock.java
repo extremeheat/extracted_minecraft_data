@@ -43,78 +43,78 @@ public class SculkShriekerBlock extends BaseEntityBlock implements SimpleWaterlo
       return CODEC;
    }
 
-   public SculkShriekerBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public SculkShriekerBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(SHRIEKING, false)).setValue(WATERLOGGED, false)).setValue(CAN_SUMMON, false));
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(SHRIEKING);
-      var1.add(WATERLOGGED);
-      var1.add(CAN_SUMMON);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(SHRIEKING);
+      builder.add(WATERLOGGED);
+      builder.add(CAN_SUMMON);
    }
 
-   public void stepOn(Level var1, BlockPos var2, BlockState var3, Entity var4) {
-      if (var1 instanceof ServerLevel var5) {
-         ServerPlayer var6 = SculkShriekerBlockEntity.tryGetPlayer(var4);
-         if (var6 != null) {
-            var5.getBlockEntity(var2, BlockEntityType.SCULK_SHRIEKER).ifPresent((var2x) -> var2x.tryShriek(var5, var6));
+   public void stepOn(final Level level, final BlockPos pos, final BlockState onState, final Entity entity) {
+      if (level instanceof ServerLevel serverLevel) {
+         ServerPlayer player = SculkShriekerBlockEntity.tryGetPlayer(entity);
+         if (player != null) {
+            serverLevel.getBlockEntity(pos, BlockEntityType.SCULK_SHRIEKER).ifPresent((shrieker) -> shrieker.tryShriek(serverLevel, player));
          }
       }
 
-      super.stepOn(var1, var2, var3, var4);
+      super.stepOn(level, pos, onState, entity);
    }
 
-   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if ((Boolean)var1.getValue(SHRIEKING)) {
-         var2.setBlock(var3, (BlockState)var1.setValue(SHRIEKING, false), 3);
-         var2.getBlockEntity(var3, BlockEntityType.SCULK_SHRIEKER).ifPresent((var1x) -> var1x.tryRespond(var2));
+   protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if ((Boolean)state.getValue(SHRIEKING)) {
+         level.setBlock(pos, (BlockState)state.setValue(SHRIEKING, false), 3);
+         level.getBlockEntity(pos, BlockEntityType.SCULK_SHRIEKER).ifPresent((shrieker) -> shrieker.tryRespond(level));
       }
 
    }
 
-   protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getCollisionShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return SHAPE_COLLISION;
    }
 
-   protected VoxelShape getOcclusionShape(BlockState var1) {
+   protected VoxelShape getOcclusionShape(final BlockState state) {
       return SHAPE_COLLISION;
    }
 
-   protected boolean useShapeForLightOcclusion(BlockState var1) {
+   protected boolean useShapeForLightOcclusion(final BlockState state) {
       return true;
    }
 
-   public @Nullable BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new SculkShriekerBlockEntity(var1, var2);
+   public @Nullable BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      return new SculkShriekerBlockEntity(worldPosition, blockState);
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      if ((Boolean)var1.getValue(WATERLOGGED)) {
-         var3.scheduleTick(var4, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var2));
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      if ((Boolean)state.getValue(WATERLOGGED)) {
+         ticks.scheduleTick(pos, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(level));
       }
 
-      return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+      return super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return (BlockState)this.defaultBlockState().setValue(WATERLOGGED, var1.getLevel().getFluidState(var1.getClickedPos()).getType() == Fluids.WATER);
+   public @Nullable BlockState getStateForPlacement(final BlockPlaceContext context) {
+      return (BlockState)this.defaultBlockState().setValue(WATERLOGGED, context.getLevel().getFluidState(context.getClickedPos()).is(Fluids.WATER));
    }
 
-   protected FluidState getFluidState(BlockState var1) {
-      return (Boolean)var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
+   protected FluidState getFluidState(final BlockState state) {
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
    }
 
-   protected void spawnAfterBreak(BlockState var1, ServerLevel var2, BlockPos var3, ItemStack var4, boolean var5) {
-      super.spawnAfterBreak(var1, var2, var3, var4, var5);
-      if (var5) {
-         this.tryDropExperience(var2, var3, var4, ConstantInt.of(5));
+   protected void spawnAfterBreak(final BlockState state, final ServerLevel level, final BlockPos pos, final ItemStack tool, final boolean dropExperience) {
+      super.spawnAfterBreak(state, level, pos, tool, dropExperience);
+      if (dropExperience) {
+         this.tryDropExperience(level, pos, tool, ConstantInt.of(5));
       }
 
    }
 
-   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return !var1.isClientSide() ? BaseEntityBlock.createTickerHelper(var3, BlockEntityType.SCULK_SHRIEKER, (var0, var1x, var2x, var3x) -> VibrationSystem.Ticker.tick(var0, var3x.getVibrationData(), var3x.getVibrationUser())) : null;
+   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(final Level level, final BlockState blockState, final BlockEntityType<T> type) {
+      return !level.isClientSide() ? BaseEntityBlock.createTickerHelper(type, BlockEntityType.SCULK_SHRIEKER, (innerLevel, pos, state, entity) -> VibrationSystem.Ticker.tick(innerLevel, entity.getVibrationData(), entity.getVibrationUser())) : null;
    }
 
    static {

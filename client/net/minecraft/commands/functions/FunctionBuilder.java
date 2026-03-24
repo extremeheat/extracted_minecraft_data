@@ -18,57 +18,57 @@ class FunctionBuilder<T extends ExecutionCommandSource<T>> {
       super();
    }
 
-   public void addCommand(UnboundEntryAction<T> var1) {
+   public void addCommand(final UnboundEntryAction<T> command) {
       if (this.macroEntries != null) {
-         this.macroEntries.add(new MacroFunction.PlainTextEntry(var1));
+         this.macroEntries.add(new MacroFunction.PlainTextEntry(command));
       } else {
-         this.plainEntries.add(var1);
+         this.plainEntries.add(command);
       }
 
    }
 
-   private int getArgumentIndex(String var1) {
-      int var2 = this.macroArguments.indexOf(var1);
-      if (var2 == -1) {
-         var2 = this.macroArguments.size();
-         this.macroArguments.add(var1);
+   private int getArgumentIndex(final String id) {
+      int index = this.macroArguments.indexOf(id);
+      if (index == -1) {
+         index = this.macroArguments.size();
+         this.macroArguments.add(id);
       }
 
-      return var2;
+      return index;
    }
 
-   private IntList convertToIndices(List<String> var1) {
-      IntArrayList var2 = new IntArrayList(var1.size());
+   private IntList convertToIndices(final List<String> ids) {
+      IntArrayList result = new IntArrayList(ids.size());
 
-      for(String var4 : var1) {
-         var2.add(this.getArgumentIndex(var4));
+      for(String id : ids) {
+         result.add(this.getArgumentIndex(id));
       }
 
-      return var2;
+      return result;
    }
 
-   public void addMacro(String var1, int var2, T var3) {
-      StringTemplate var4;
+   public void addMacro(final String command, final int line, final T compilationContext) {
+      StringTemplate parseResults;
       try {
-         var4 = StringTemplate.fromString(var1);
-      } catch (Exception var7) {
-         throw new IllegalArgumentException("Can't parse function line " + var2 + ": '" + var1 + "'", var7);
+         parseResults = StringTemplate.fromString(command);
+      } catch (Exception e) {
+         throw new IllegalArgumentException("Can't parse function line " + line + ": '" + command + "'", e);
       }
 
       if (this.plainEntries != null) {
          this.macroEntries = new ArrayList(this.plainEntries.size() + 1);
 
-         for(UnboundEntryAction var6 : this.plainEntries) {
-            this.macroEntries.add(new MacroFunction.PlainTextEntry(var6));
+         for(UnboundEntryAction<T> plainEntry : this.plainEntries) {
+            this.macroEntries.add(new MacroFunction.PlainTextEntry(plainEntry));
          }
 
          this.plainEntries = null;
       }
 
-      this.macroEntries.add(new MacroFunction.MacroEntry(var4, this.convertToIndices(var4.variables()), var3));
+      this.macroEntries.add(new MacroFunction.MacroEntry(parseResults, this.convertToIndices(parseResults.variables()), compilationContext));
    }
 
-   public CommandFunction<T> build(Identifier var1) {
-      return (CommandFunction<T>)(this.macroEntries != null ? new MacroFunction(var1, this.macroEntries, this.macroArguments) : new PlainTextFunction(var1, this.plainEntries));
+   public CommandFunction<T> build(final Identifier id) {
+      return (CommandFunction<T>)(this.macroEntries != null ? new MacroFunction(id, this.macroEntries, this.macroArguments) : new PlainTextFunction(id, this.plainEntries));
    }
 }

@@ -15,30 +15,30 @@ public class ServerDebugSubscribers {
    private final MinecraftServer server;
    private final Map<DebugSubscription<?>, List<ServerPlayer>> enabledSubscriptions = new HashMap();
 
-   public ServerDebugSubscribers(MinecraftServer var1) {
+   public ServerDebugSubscribers(final MinecraftServer server) {
       super();
-      this.server = var1;
+      this.server = server;
    }
 
-   private List<ServerPlayer> getSubscribersFor(DebugSubscription<?> var1) {
-      return (List)this.enabledSubscriptions.getOrDefault(var1, List.of());
+   private List<ServerPlayer> getSubscribersFor(final DebugSubscription<?> subscription) {
+      return (List)this.enabledSubscriptions.getOrDefault(subscription, List.of());
    }
 
    public void tick() {
       this.enabledSubscriptions.values().forEach(List::clear);
 
-      for(ServerPlayer var2 : this.server.getPlayerList().getPlayers()) {
-         for(DebugSubscription var4 : var2.debugSubscriptions()) {
-            ((List)this.enabledSubscriptions.computeIfAbsent(var4, (var0) -> new ArrayList())).add(var2);
+      for(ServerPlayer player : this.server.getPlayerList().getPlayers()) {
+         for(DebugSubscription<?> subscription : player.debugSubscriptions()) {
+            ((List)this.enabledSubscriptions.computeIfAbsent(subscription, (s) -> new ArrayList())).add(player);
          }
       }
 
       this.enabledSubscriptions.values().removeIf(List::isEmpty);
    }
 
-   public void broadcastToAll(DebugSubscription<?> var1, Packet<?> var2) {
-      for(ServerPlayer var4 : this.getSubscribersFor(var1)) {
-         var4.connection.send(var2);
+   public void broadcastToAll(final DebugSubscription<?> subscription, final Packet<?> packet) {
+      for(ServerPlayer player : this.getSubscribersFor(subscription)) {
+         player.connection.send(packet);
       }
 
    }
@@ -47,12 +47,12 @@ public class ServerDebugSubscribers {
       return Set.copyOf(this.enabledSubscriptions.keySet());
    }
 
-   public boolean hasAnySubscriberFor(DebugSubscription<?> var1) {
-      return !this.getSubscribersFor(var1).isEmpty();
+   public boolean hasAnySubscriberFor(final DebugSubscription<?> subscription) {
+      return !this.getSubscribersFor(subscription).isEmpty();
    }
 
-   public boolean hasRequiredPermissions(ServerPlayer var1) {
-      NameAndId var2 = var1.nameAndId();
-      return SharedConstants.IS_RUNNING_IN_IDE && this.server.isSingleplayerOwner(var2) ? true : this.server.getPlayerList().isOp(var2);
+   public boolean hasRequiredPermissions(final ServerPlayer player) {
+      NameAndId nameAndId = player.nameAndId();
+      return SharedConstants.IS_RUNNING_IN_IDE && this.server.isSingleplayerOwner(nameAndId) ? true : this.server.getPlayerList().isOp(nameAndId);
    }
 }

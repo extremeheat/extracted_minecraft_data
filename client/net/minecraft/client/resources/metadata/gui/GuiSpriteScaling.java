@@ -28,12 +28,10 @@ public interface GuiSpriteScaling {
    }
 
    public static record Tile(int width, int height) implements GuiSpriteScaling {
-      public static final MapCodec<Tile> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.POSITIVE_INT.fieldOf("width").forGetter(Tile::width), ExtraCodecs.POSITIVE_INT.fieldOf("height").forGetter(Tile::height)).apply(var0, Tile::new));
+      public static final MapCodec<Tile> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ExtraCodecs.POSITIVE_INT.fieldOf("width").forGetter(Tile::width), ExtraCodecs.POSITIVE_INT.fieldOf("height").forGetter(Tile::height)).apply(i, Tile::new));
 
-      public Tile(int var1, int var2) {
+      public Tile {
          super();
-         this.width = var1;
-         this.height = var2;
       }
 
       public Type type() {
@@ -42,28 +40,24 @@ public interface GuiSpriteScaling {
    }
 
    public static record NineSlice(int width, int height, Border border, boolean stretchInner) implements GuiSpriteScaling {
-      public static final MapCodec<NineSlice> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.POSITIVE_INT.fieldOf("width").forGetter(NineSlice::width), ExtraCodecs.POSITIVE_INT.fieldOf("height").forGetter(NineSlice::height), GuiSpriteScaling.NineSlice.Border.CODEC.fieldOf("border").forGetter(NineSlice::border), Codec.BOOL.optionalFieldOf("stretch_inner", false).forGetter(NineSlice::stretchInner)).apply(var0, NineSlice::new)).validate(NineSlice::validate);
+      public static final MapCodec<NineSlice> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ExtraCodecs.POSITIVE_INT.fieldOf("width").forGetter(NineSlice::width), ExtraCodecs.POSITIVE_INT.fieldOf("height").forGetter(NineSlice::height), GuiSpriteScaling.NineSlice.Border.CODEC.fieldOf("border").forGetter(NineSlice::border), Codec.BOOL.optionalFieldOf("stretch_inner", false).forGetter(NineSlice::stretchInner)).apply(i, NineSlice::new)).validate(NineSlice::validate);
 
-      public NineSlice(int var1, int var2, Border var3, boolean var4) {
+      public NineSlice {
          super();
-         this.width = var1;
-         this.height = var2;
-         this.border = var3;
-         this.stretchInner = var4;
       }
 
-      private static DataResult<NineSlice> validate(NineSlice var0) {
-         Border var1 = var0.border();
-         if (var1.left() + var1.right() >= var0.width()) {
+      private static DataResult<NineSlice> validate(final NineSlice nineSlice) {
+         Border border = nineSlice.border();
+         if (border.left() + border.right() >= nineSlice.width()) {
             return DataResult.error(() -> {
-               int var10000 = var1.left();
-               return "Nine-sliced texture has no horizontal center slice: " + var10000 + " + " + var1.right() + " >= " + var0.width();
+               int var10000 = border.left();
+               return "Nine-sliced texture has no horizontal center slice: " + var10000 + " + " + border.right() + " >= " + nineSlice.width();
             });
          } else {
-            return var1.top() + var1.bottom() >= var0.height() ? DataResult.error(() -> {
-               int var10000 = var1.top();
-               return "Nine-sliced texture has no vertical center slice: " + var10000 + " + " + var1.bottom() + " >= " + var0.height();
-            }) : DataResult.success(var0);
+            return border.top() + border.bottom() >= nineSlice.height() ? DataResult.error(() -> {
+               int var10000 = border.top();
+               return "Nine-sliced texture has no vertical center slice: " + var10000 + " + " + border.bottom() + " >= " + nineSlice.height();
+            }) : DataResult.success(nineSlice);
          }
       }
 
@@ -74,14 +68,10 @@ public interface GuiSpriteScaling {
       public static record Border(int left, int top, int right, int bottom) {
          private static final Codec<Border> VALUE_CODEC;
          private static final Codec<Border> RECORD_CODEC;
-         static final Codec<Border> CODEC;
+         private static final Codec<Border> CODEC;
 
-         public Border(int var1, int var2, int var3, int var4) {
+         public Border {
             super();
-            this.left = var1;
-            this.top = var2;
-            this.right = var3;
-            this.bottom = var4;
          }
 
          private OptionalInt unpackValue() {
@@ -89,12 +79,12 @@ public interface GuiSpriteScaling {
          }
 
          static {
-            VALUE_CODEC = ExtraCodecs.POSITIVE_INT.flatComapMap((var0) -> new Border(var0, var0, var0, var0), (var0) -> {
-               OptionalInt var1 = var0.unpackValue();
-               return var1.isPresent() ? DataResult.success(var1.getAsInt()) : DataResult.error(() -> "Border has different side sizes");
+            VALUE_CODEC = ExtraCodecs.POSITIVE_INT.flatComapMap((size) -> new Border(size, size, size, size), (border) -> {
+               OptionalInt size = border.unpackValue();
+               return size.isPresent() ? DataResult.success(size.getAsInt()) : DataResult.error(() -> "Border has different side sizes");
             });
-            RECORD_CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.NON_NEGATIVE_INT.fieldOf("left").forGetter(Border::left), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("top").forGetter(Border::top), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("right").forGetter(Border::right), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("bottom").forGetter(Border::bottom)).apply(var0, Border::new));
-            CODEC = Codec.either(VALUE_CODEC, RECORD_CODEC).xmap(Either::unwrap, (var0) -> var0.unpackValue().isPresent() ? Either.left(var0) : Either.right(var0));
+            RECORD_CODEC = RecordCodecBuilder.create((i) -> i.group(ExtraCodecs.NON_NEGATIVE_INT.fieldOf("left").forGetter(Border::left), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("top").forGetter(Border::top), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("right").forGetter(Border::right), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("bottom").forGetter(Border::bottom)).apply(i, Border::new));
+            CODEC = Codec.either(VALUE_CODEC, RECORD_CODEC).xmap(Either::unwrap, (border) -> border.unpackValue().isPresent() ? Either.left(border) : Either.right(border));
          }
       }
    }
@@ -108,9 +98,9 @@ public interface GuiSpriteScaling {
       private final String key;
       private final MapCodec<? extends GuiSpriteScaling> codec;
 
-      private Type(final String var3, final MapCodec<? extends GuiSpriteScaling> var4) {
-         this.key = var3;
-         this.codec = var4;
+      private Type(final String key, final MapCodec<? extends GuiSpriteScaling> codec) {
+         this.key = key;
+         this.codec = codec;
       }
 
       public String getSerializedName() {

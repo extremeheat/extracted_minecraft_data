@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import net.minecraft.advancements.criterion.EntityPredicate;
 import net.minecraft.advancements.criterion.EntityTypePredicate;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.loot.LootTableSubProvider;
@@ -27,38 +28,30 @@ import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 public record VanillaChargedCreeperExplosionLoot(HolderLookup.Provider registries) implements LootTableSubProvider {
    private static final List<Entry> ENTRIES;
 
-   public VanillaChargedCreeperExplosionLoot(HolderLookup.Provider var1) {
+   public VanillaChargedCreeperExplosionLoot {
       super();
-      this.registries = var1;
    }
 
-   public void generate(BiConsumer<ResourceKey<LootTable>, LootTable.Builder> var1) {
-      HolderLookup.RegistryLookup var2 = this.registries.lookupOrThrow(Registries.ENTITY_TYPE);
-      ArrayList var3 = new ArrayList(ENTRIES.size());
+   public void generate(final BiConsumer<ResourceKey<LootTable>, LootTable.Builder> output) {
+      HolderGetter<EntityType<?>> entityTypes = this.registries.lookupOrThrow(Registries.ENTITY_TYPE);
+      List<LootPoolEntryContainer.Builder<?>> alternatives = new ArrayList(ENTRIES.size());
 
-      for(Entry var5 : ENTRIES) {
-         var1.accept(var5.lootTable, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(var5.item))));
-         LootItemCondition.Builder var6 = LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, EntityPredicate.Builder.entity().entityType(EntityTypePredicate.of(var2, var5.entityType)));
-         var3.add(NestedLootTable.lootTableReference(var5.lootTable).when(var6));
+      for(Entry entry : ENTRIES) {
+         output.accept(entry.lootTable, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(entry.item))));
+         LootItemCondition.Builder predicate = LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, EntityPredicate.Builder.entity().entityType(EntityTypePredicate.of(entityTypes, entry.entityType)));
+         alternatives.add(NestedLootTable.lootTableReference(entry.lootTable).when(predicate));
       }
 
-      var1.accept(BuiltInLootTables.CHARGED_CREEPER, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(AlternativesEntry.alternatives((LootPoolEntryContainer.Builder[])var3.toArray((var0) -> new LootPoolEntryContainer.Builder[var0])))));
+      output.accept(BuiltInLootTables.CHARGED_CREEPER, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(AlternativesEntry.alternatives((LootPoolEntryContainer.Builder[])alternatives.toArray((x$0) -> new LootPoolEntryContainer.Builder[x$0])))));
    }
 
    static {
       ENTRIES = List.of(new Entry(BuiltInLootTables.CHARGED_CREEPER_PIGLIN, EntityType.PIGLIN, Items.PIGLIN_HEAD), new Entry(BuiltInLootTables.CHARGED_CREEPER_CREEPER, EntityType.CREEPER, Items.CREEPER_HEAD), new Entry(BuiltInLootTables.CHARGED_CREEPER_SKELETON, EntityType.SKELETON, Items.SKELETON_SKULL), new Entry(BuiltInLootTables.CHARGED_CREEPER_WITHER_SKELETON, EntityType.WITHER_SKELETON, Items.WITHER_SKELETON_SKULL), new Entry(BuiltInLootTables.CHARGED_CREEPER_ZOMBIE, EntityType.ZOMBIE, Items.ZOMBIE_HEAD));
    }
 
-   static record Entry(ResourceKey<LootTable> lootTable, EntityType<?> entityType, Item item) {
-      final ResourceKey<LootTable> lootTable;
-      final EntityType<?> entityType;
-      final Item item;
-
-      Entry(ResourceKey<LootTable> var1, EntityType<?> var2, Item var3) {
+   private static record Entry(ResourceKey<LootTable> lootTable, EntityType<?> entityType, Item item) {
+      private Entry {
          super();
-         this.lootTable = var1;
-         this.entityType = var2;
-         this.item = var3;
       }
    }
 }

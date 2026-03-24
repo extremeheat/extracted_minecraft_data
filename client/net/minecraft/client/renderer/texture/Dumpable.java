@@ -5,5 +5,5 @@ import java.nio.file.Path;
 import net.minecraft.resources.Identifier;
 
 public interface Dumpable {
-   void dumpContents(Identifier var1, Path var2) throws IOException;
+   void dumpContents(Identifier selfId, Path dir) throws IOException;
 }

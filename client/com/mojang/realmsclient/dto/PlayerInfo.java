@@ -18,12 +18,12 @@ public class PlayerInfo extends ValueObject implements ReflectionBasedSerializat
    @SerializedName("online")
    public final boolean online;
 
-   public PlayerInfo(String var1, UUID var2, boolean var3, boolean var4, boolean var5) {
+   public PlayerInfo(final String name, final UUID uuid, final boolean operator, final boolean accepted, final boolean online) {
       super();
-      this.name = var1;
-      this.uuid = var2;
-      this.operator = var3;
-      this.accepted = var4;
-      this.online = var5;
+      this.name = name;
+      this.uuid = uuid;
+      this.operator = operator;
+      this.accepted = accepted;
+      this.online = online;
    }
 }

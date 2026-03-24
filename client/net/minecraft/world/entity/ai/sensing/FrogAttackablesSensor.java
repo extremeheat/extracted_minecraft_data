@@ -1,7 +1,10 @@
 package net.minecraft.world.entity.ai.sensing;
 
+import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -14,16 +17,20 @@ public class FrogAttackablesSensor extends NearestVisibleLivingEntitySensor {
       super();
    }
 
-   protected boolean isMatchingEntity(ServerLevel var1, LivingEntity var2, LivingEntity var3) {
-      return !var2.getBrain().hasMemoryValue(MemoryModuleType.HAS_HUNTING_COOLDOWN) && Sensor.isEntityAttackable(var1, var2, var3) && Frog.canEat(var3) && !this.isUnreachableAttackTarget(var2, var3) ? var3.closerThan(var2, 10.0) : false;
+   protected boolean isMatchingEntity(final ServerLevel level, final LivingEntity body, final LivingEntity mob) {
+      return Sensor.isEntityAttackable(level, body, mob) && Frog.canEat(mob) && !this.isUnreachableAttackTarget(body, mob) ? mob.closerThan(body, 10.0) : false;
    }
 
-   private boolean isUnreachableAttackTarget(LivingEntity var1, LivingEntity var2) {
-      List var3 = (List)var1.getBrain().getMemory(MemoryModuleType.UNREACHABLE_TONGUE_TARGETS).orElseGet(ArrayList::new);
-      return var3.contains(var2.getUUID());
+   private boolean isUnreachableAttackTarget(final LivingEntity body, final LivingEntity mob) {
+      List<UUID> unreachableAttackTargets = (List)body.getBrain().getMemory(MemoryModuleType.UNREACHABLE_TONGUE_TARGETS).orElseGet(ArrayList::new);
+      return unreachableAttackTargets.contains(mob.getUUID());
    }
 
-   protected MemoryModuleType<LivingEntity> getMemory() {
+   protected MemoryModuleType<LivingEntity> getMemoryToSet() {
       return MemoryModuleType.NEAREST_ATTACKABLE;
+   }
+
+   public Set<MemoryModuleType<?>> requires() {
+      return Sets.union(super.requires(), Set.of(MemoryModuleType.UNREACHABLE_TONGUE_TARGETS));
    }
 }

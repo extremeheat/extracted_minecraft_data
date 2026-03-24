@@ -13,21 +13,21 @@ import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEnder
 import net.minecraft.world.level.Level;
 
 public class EnderpearlItem extends Item {
-   public static float PROJECTILE_SHOOT_POWER = 1.5F;
+   public static final float PROJECTILE_SHOOT_POWER = 1.5F;
 
-   public EnderpearlItem(Item.Properties var1) {
-      super(var1);
+   public EnderpearlItem(final Item.Properties properties) {
+      super(properties);
    }
 
-   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
-      ItemStack var4 = var2.getItemInHand(var3);
-      var1.playSound((Entity)null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.ENDER_PEARL_THROW, SoundSource.NEUTRAL, 0.5F, 0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F));
-      if (var1 instanceof ServerLevel var5) {
-         Projectile.spawnProjectileFromRotation(ThrownEnderpearl::new, var5, var4, var2, 0.0F, PROJECTILE_SHOOT_POWER, 1.0F);
+   public InteractionResult use(final Level level, final Player player, final InteractionHand hand) {
+      ItemStack itemStack = player.getItemInHand(hand);
+      level.playSound((Entity)null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENDER_PEARL_THROW, SoundSource.NEUTRAL, 0.5F, 0.4F / (level.getRandom().nextFloat() * 0.4F + 0.8F));
+      if (level instanceof ServerLevel serverLevel) {
+         Projectile.spawnProjectileFromRotation(ThrownEnderpearl::new, serverLevel, itemStack, player, 0.0F, 1.5F, 1.0F);
       }
 
-      var2.awardStat(Stats.ITEM_USED.get(this));
-      var4.consume(1, var2);
+      player.awardStat(Stats.ITEM_USED.get(this));
+      itemStack.consume(1, player);
       return InteractionResult.SUCCESS;
    }
 }

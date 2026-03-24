@@ -4,45 +4,38 @@ import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.configurations.BlockStateConfiguration;
+import net.minecraft.world.level.levelgen.feature.configurations.BlockBlobConfiguration;
 
-public class BlockBlobFeature extends Feature<BlockStateConfiguration> {
-   public BlockBlobFeature(Codec<BlockStateConfiguration> var1) {
-      super(var1);
+public class BlockBlobFeature extends Feature<BlockBlobConfiguration> {
+   public BlockBlobFeature(final Codec<BlockBlobConfiguration> codec) {
+      super(codec);
    }
 
-   public boolean place(FeaturePlaceContext<BlockStateConfiguration> var1) {
-      BlockPos var2 = var1.origin();
-      WorldGenLevel var3 = var1.level();
-      RandomSource var4 = var1.random();
+   public boolean place(final FeaturePlaceContext<BlockBlobConfiguration> context) {
+      BlockPos origin = context.origin();
+      WorldGenLevel level = context.level();
+      RandomSource random = context.random();
 
-      BlockStateConfiguration var5;
-      for(var5 = (BlockStateConfiguration)var1.config(); var2.getY() > var3.getMinY() + 3; var2 = var2.below()) {
-         if (!var3.isEmptyBlock(var2.below())) {
-            BlockState var6 = var3.getBlockState(var2.below());
-            if (isDirt(var6) || isStone(var6)) {
-               break;
-            }
-         }
+      BlockBlobConfiguration config;
+      for(config = context.config(); origin.getY() > level.getMinY() + 3 && !config.canPlaceOn().test(level, origin.below()); origin = origin.below()) {
       }
 
-      if (var2.getY() <= var3.getMinY() + 3) {
+      if (origin.getY() <= level.getMinY() + 3) {
          return false;
       } else {
-         for(int var13 = 0; var13 < 3; ++var13) {
-            int var7 = var4.nextInt(2);
-            int var8 = var4.nextInt(2);
-            int var9 = var4.nextInt(2);
-            float var10 = (float)(var7 + var8 + var9) * 0.333F + 0.5F;
+         for(int c = 0; c < 3; ++c) {
+            int xr = random.nextInt(2);
+            int yr = random.nextInt(2);
+            int zr = random.nextInt(2);
+            float tr = (float)(xr + yr + zr) * 0.333F + 0.5F;
 
-            for(BlockPos var12 : BlockPos.betweenClosed(var2.offset(-var7, -var8, -var9), var2.offset(var7, var8, var9))) {
-               if (var12.distSqr(var2) <= (double)(var10 * var10)) {
-                  var3.setBlock(var12, var5.state, 3);
+            for(BlockPos blockPos : BlockPos.betweenClosed(origin.offset(-xr, -yr, -zr), origin.offset(xr, yr, zr))) {
+               if (blockPos.distSqr(origin) <= (double)(tr * tr)) {
+                  level.setBlock(blockPos, config.state(), 3);
                }
             }
 
-            var2 = var2.offset(-1 + var4.nextInt(2), -var4.nextInt(2), -1 + var4.nextInt(2));
+            origin = origin.offset(-1 + random.nextInt(2), -random.nextInt(2), -1 + random.nextInt(2));
          }
 
          return true;

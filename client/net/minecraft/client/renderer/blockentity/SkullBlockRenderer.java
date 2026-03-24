@@ -2,6 +2,8 @@ package net.minecraft.client.renderer.blockentity;
 
 import com.google.common.collect.Maps;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
+import com.mojang.math.Transformation;
 import java.util.Map;
 import java.util.function.Function;
 import net.minecraft.client.model.geom.EntityModelSet;
@@ -12,12 +14,11 @@ import net.minecraft.client.model.object.skull.SkullModel;
 import net.minecraft.client.model.object.skull.SkullModelBase;
 import net.minecraft.client.renderer.PlayerSkinRenderCache;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.blockentity.state.SkullBlockRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.core.Direction;
@@ -31,33 +32,37 @@ import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RotationSegment;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix4f;
+import org.joml.Quaternionfc;
+import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 
 public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity, SkullBlockRenderState> {
+   public static final WallAndGroundTransformations<Transformation> TRANSFORMATIONS = new WallAndGroundTransformations<Transformation>(SkullBlockRenderer::createWallTransformation, SkullBlockRenderer::createGroundTransformation, 16);
    private final Function<SkullBlock.Type, SkullModelBase> modelByType;
-   private static final Map<SkullBlock.Type, Identifier> SKIN_BY_TYPE = (Map)Util.make(Maps.newHashMap(), (var0) -> {
-      var0.put(SkullBlock.Types.SKELETON, Identifier.withDefaultNamespace("textures/entity/skeleton/skeleton.png"));
-      var0.put(SkullBlock.Types.WITHER_SKELETON, Identifier.withDefaultNamespace("textures/entity/skeleton/wither_skeleton.png"));
-      var0.put(SkullBlock.Types.ZOMBIE, Identifier.withDefaultNamespace("textures/entity/zombie/zombie.png"));
-      var0.put(SkullBlock.Types.CREEPER, Identifier.withDefaultNamespace("textures/entity/creeper/creeper.png"));
-      var0.put(SkullBlock.Types.DRAGON, Identifier.withDefaultNamespace("textures/entity/enderdragon/dragon.png"));
-      var0.put(SkullBlock.Types.PIGLIN, Identifier.withDefaultNamespace("textures/entity/piglin/piglin.png"));
-      var0.put(SkullBlock.Types.PLAYER, DefaultPlayerSkin.getDefaultTexture());
+   private static final Map<SkullBlock.Type, Identifier> SKIN_BY_TYPE = (Map)Util.make(Maps.newHashMap(), (map) -> {
+      map.put(SkullBlock.Types.SKELETON, Identifier.withDefaultNamespace("textures/entity/skeleton/skeleton.png"));
+      map.put(SkullBlock.Types.WITHER_SKELETON, Identifier.withDefaultNamespace("textures/entity/skeleton/wither_skeleton.png"));
+      map.put(SkullBlock.Types.ZOMBIE, Identifier.withDefaultNamespace("textures/entity/zombie/zombie.png"));
+      map.put(SkullBlock.Types.CREEPER, Identifier.withDefaultNamespace("textures/entity/creeper/creeper.png"));
+      map.put(SkullBlock.Types.DRAGON, Identifier.withDefaultNamespace("textures/entity/enderdragon/dragon.png"));
+      map.put(SkullBlock.Types.PIGLIN, Identifier.withDefaultNamespace("textures/entity/piglin/piglin.png"));
+      map.put(SkullBlock.Types.PLAYER, DefaultPlayerSkin.getDefaultTexture());
    });
    private final PlayerSkinRenderCache playerSkinRenderCache;
 
-   public static @Nullable SkullModelBase createModel(EntityModelSet var0, SkullBlock.Type var1) {
-      if (var1 instanceof SkullBlock.Types) {
-         SkullBlock.Types var2 = (SkullBlock.Types)var1;
+   public static @Nullable SkullModelBase createModel(final EntityModelSet modelSet, final SkullBlock.Type type) {
+      if (type instanceof SkullBlock.Types) {
+         SkullBlock.Types vanillaType = (SkullBlock.Types)type;
          Object var10000;
-         switch (var2) {
-            case SKELETON -> var10000 = new SkullModel(var0.bakeLayer(ModelLayers.SKELETON_SKULL));
-            case WITHER_SKELETON -> var10000 = new SkullModel(var0.bakeLayer(ModelLayers.WITHER_SKELETON_SKULL));
-            case PLAYER -> var10000 = new SkullModel(var0.bakeLayer(ModelLayers.PLAYER_HEAD));
-            case ZOMBIE -> var10000 = new SkullModel(var0.bakeLayer(ModelLayers.ZOMBIE_HEAD));
-            case CREEPER -> var10000 = new SkullModel(var0.bakeLayer(ModelLayers.CREEPER_HEAD));
-            case DRAGON -> var10000 = new DragonHeadModel(var0.bakeLayer(ModelLayers.DRAGON_SKULL));
-            case PIGLIN -> var10000 = new PiglinHeadModel(var0.bakeLayer(ModelLayers.PIGLIN_HEAD));
+         switch (vanillaType) {
+            case SKELETON -> var10000 = new SkullModel(modelSet.bakeLayer(ModelLayers.SKELETON_SKULL));
+            case WITHER_SKELETON -> var10000 = new SkullModel(modelSet.bakeLayer(ModelLayers.WITHER_SKELETON_SKULL));
+            case PLAYER -> var10000 = new SkullModel(modelSet.bakeLayer(ModelLayers.PLAYER_HEAD));
+            case ZOMBIE -> var10000 = new SkullModel(modelSet.bakeLayer(ModelLayers.ZOMBIE_HEAD));
+            case CREEPER -> var10000 = new SkullModel(modelSet.bakeLayer(ModelLayers.CREEPER_HEAD));
+            case DRAGON -> var10000 = new DragonHeadModel(modelSet.bakeLayer(ModelLayers.DRAGON_SKULL));
+            case PIGLIN -> var10000 = new PiglinHeadModel(modelSet.bakeLayer(ModelLayers.PIGLIN_HEAD));
             default -> throw new MatchException((String)null, (Throwable)null);
          }
 
@@ -67,72 +72,71 @@ public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity,
       }
    }
 
-   public SkullBlockRenderer(BlockEntityRendererProvider.Context var1) {
+   public SkullBlockRenderer(final BlockEntityRendererProvider.Context context) {
       super();
-      EntityModelSet var2 = var1.entityModelSet();
-      this.playerSkinRenderCache = var1.playerSkinRenderCache();
-      this.modelByType = Util.memoize((Function)((var1x) -> createModel(var2, var1x)));
+      EntityModelSet modelSet = context.entityModelSet();
+      this.playerSkinRenderCache = context.playerSkinRenderCache();
+      this.modelByType = Util.memoize((Function)((type) -> createModel(modelSet, type)));
    }
 
    public SkullBlockRenderState createRenderState() {
       return new SkullBlockRenderState();
    }
 
-   public void extractRenderState(SkullBlockEntity var1, SkullBlockRenderState var2, float var3, Vec3 var4, ModelFeatureRenderer.@Nullable CrumblingOverlay var5) {
-      BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
-      var2.animationProgress = var1.getAnimation(var3);
-      BlockState var6 = var1.getBlockState();
-      boolean var7 = var6.getBlock() instanceof WallSkullBlock;
-      var2.direction = var7 ? (Direction)var6.getValue(WallSkullBlock.FACING) : null;
-      int var8 = var7 ? RotationSegment.convertToSegment(var2.direction.getOpposite()) : (Integer)var6.getValue(SkullBlock.ROTATION);
-      var2.rotationDegrees = RotationSegment.convertToDegrees(var8);
-      var2.skullType = ((AbstractSkullBlock)var6.getBlock()).getType();
-      var2.renderType = this.resolveSkullRenderType(var2.skullType, var1);
-   }
-
-   public void submit(SkullBlockRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
-      SkullModelBase var5 = (SkullModelBase)this.modelByType.apply(var1.skullType);
-      submitSkull(var1.direction, var1.rotationDegrees, var1.animationProgress, var2, var3, var1.lightCoords, var5, var1.renderType, 0, var1.breakProgress);
-   }
-
-   public static void submitSkull(@Nullable Direction var0, float var1, float var2, PoseStack var3, SubmitNodeCollector var4, int var5, SkullModelBase var6, RenderType var7, int var8, ModelFeatureRenderer.@Nullable CrumblingOverlay var9) {
-      var3.pushPose();
-      if (var0 == null) {
-         var3.translate(0.5F, 0.0F, 0.5F);
+   public void extractRenderState(final SkullBlockEntity blockEntity, final SkullBlockRenderState state, final float partialTicks, final Vec3 cameraPosition, final ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
+      BlockEntityRenderer.super.extractRenderState(blockEntity, state, partialTicks, cameraPosition, breakProgress);
+      state.animationProgress = blockEntity.getAnimation(partialTicks);
+      BlockState blockState = blockEntity.getBlockState();
+      if (blockState.getBlock() instanceof WallSkullBlock) {
+         Direction facing = (Direction)blockState.getValue(WallSkullBlock.FACING);
+         state.transformation = TRANSFORMATIONS.wallTransformation(facing);
       } else {
-         float var10 = 0.25F;
-         var3.translate(0.5F - (float)var0.getStepX() * 0.25F, 0.25F, 0.5F - (float)var0.getStepZ() * 0.25F);
+         state.transformation = TRANSFORMATIONS.freeTransformations((Integer)blockState.getValue(SkullBlock.ROTATION));
       }
 
-      var3.scale(-1.0F, -1.0F, 1.0F);
-      SkullModelBase.State var11 = new SkullModelBase.State();
-      var11.animationPos = var2;
-      var11.yRot = var1;
-      var4.submitModel(var6, var11, var3, var7, var5, OverlayTexture.NO_OVERLAY, var8, var9);
-      var3.popPose();
+      state.skullType = ((AbstractSkullBlock)blockState.getBlock()).getType();
+      state.renderType = this.resolveSkullRenderType(state.skullType, blockEntity);
    }
 
-   private RenderType resolveSkullRenderType(SkullBlock.Type var1, SkullBlockEntity var2) {
-      if (var1 == SkullBlock.Types.PLAYER) {
-         ResolvableProfile var3 = var2.getOwnerProfile();
-         if (var3 != null) {
-            return this.playerSkinRenderCache.getOrDefault(var3).renderType();
+   public void submit(final SkullBlockRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
+      SkullModelBase model = (SkullModelBase)this.modelByType.apply(state.skullType);
+      poseStack.pushPose();
+      poseStack.mulPose(state.transformation);
+      submitSkull(state.animationProgress, poseStack, submitNodeCollector, state.lightCoords, model, state.renderType, 0, state.breakProgress);
+      poseStack.popPose();
+   }
+
+   public static void submitSkull(final float animationValue, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final SkullModelBase model, final RenderType renderType, final int outlineColor, final ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
+      SkullModelBase.State modelState = new SkullModelBase.State();
+      modelState.animationPos = animationValue;
+      submitNodeCollector.submitModel(model, modelState, poseStack, renderType, lightCoords, OverlayTexture.NO_OVERLAY, outlineColor, breakProgress);
+   }
+
+   private RenderType resolveSkullRenderType(final SkullBlock.Type type, final SkullBlockEntity entity) {
+      if (type == SkullBlock.Types.PLAYER) {
+         ResolvableProfile ownerProfile = entity.getOwnerProfile();
+         if (ownerProfile != null) {
+            return this.playerSkinRenderCache.getOrDefault(ownerProfile).renderType();
          }
       }
 
-      return getSkullRenderType(var1, (Identifier)null);
+      return getSkullRenderType(type, (Identifier)null);
    }
 
-   public static RenderType getSkullRenderType(SkullBlock.Type var0, @Nullable Identifier var1) {
-      return RenderTypes.entityCutoutNoCullZOffset(var1 != null ? var1 : (Identifier)SKIN_BY_TYPE.get(var0));
+   public static RenderType getSkullRenderType(final SkullBlock.Type type, final @Nullable Identifier texture) {
+      return RenderTypes.entityCutoutZOffset(texture != null ? texture : (Identifier)SKIN_BY_TYPE.get(type));
    }
 
-   public static RenderType getPlayerSkinRenderType(Identifier var0) {
-      return RenderTypes.entityTranslucent(var0);
+   public static RenderType getPlayerSkinRenderType(final Identifier texture) {
+      return RenderTypes.entityTranslucent(texture);
    }
 
-   // $FF: synthetic method
-   public BlockEntityRenderState createRenderState() {
-      return this.createRenderState();
+   private static Transformation createWallTransformation(final Direction wallDirection) {
+      float offset = 0.25F;
+      return new Transformation(new Vector3f(0.5F - (float)wallDirection.getStepX() * 0.25F, 0.25F, 0.5F - (float)wallDirection.getStepZ() * 0.25F), Axis.YP.rotationDegrees(-wallDirection.getOpposite().toYRot()), new Vector3f(-1.0F, -1.0F, 1.0F), (Quaternionfc)null);
+   }
+
+   private static Transformation createGroundTransformation(final int segment) {
+      return new Transformation((new Matrix4f()).translation(0.5F, 0.0F, 0.5F).rotate(Axis.YP.rotationDegrees(-RotationSegment.convertToDegrees(segment))).scale(-1.0F, -1.0F, 1.0F));
    }
 }

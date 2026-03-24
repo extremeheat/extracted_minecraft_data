@@ -5,23 +5,23 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
 
 public class BlockEntityUUIDFix extends AbstractUUIDFix {
-   public BlockEntityUUIDFix(Schema var1) {
-      super(var1, References.BLOCK_ENTITY);
+   public BlockEntityUUIDFix(final Schema outputSchema) {
+      super(outputSchema, References.BLOCK_ENTITY);
    }
 
    protected TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped("BlockEntityUUIDFix", this.getInputSchema().getType(this.typeReference), (var1) -> {
-         var1 = this.updateNamedChoice(var1, "minecraft:conduit", this::updateConduit);
-         var1 = this.updateNamedChoice(var1, "minecraft:skull", this::updateSkull);
-         return var1;
+      return this.fixTypeEverywhereTyped("BlockEntityUUIDFix", this.getInputSchema().getType(this.typeReference), (input) -> {
+         input = this.updateNamedChoice(input, "minecraft:conduit", this::updateConduit);
+         input = this.updateNamedChoice(input, "minecraft:skull", this::updateSkull);
+         return input;
       });
    }
 
-   private Dynamic<?> updateSkull(Dynamic<?> var1) {
-      return (Dynamic)var1.get("Owner").get().map((var0) -> (Dynamic)replaceUUIDString(var0, "Id", "Id").orElse(var0)).map((var1x) -> var1.remove("Owner").set("SkullOwner", var1x)).result().orElse(var1);
+   private Dynamic<?> updateSkull(final Dynamic<?> tag) {
+      return (Dynamic)tag.get("Owner").get().map((ownerTag) -> (Dynamic)replaceUUIDString(ownerTag, "Id", "Id").orElse(ownerTag)).map((ownerTag) -> tag.remove("Owner").set("SkullOwner", ownerTag)).result().orElse(tag);
    }
 
-   private Dynamic<?> updateConduit(Dynamic<?> var1) {
-      return (Dynamic)replaceUUIDMLTag(var1, "target_uuid", "Target").orElse(var1);
+   private Dynamic<?> updateConduit(final Dynamic<?> tag) {
+      return (Dynamic)replaceUUIDMLTag(tag, "target_uuid", "Target").orElse(tag);
    }
 }

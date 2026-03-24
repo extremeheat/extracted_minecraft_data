@@ -9,9 +9,9 @@ public abstract class PlacementFilter extends PlacementModifier {
       super();
    }
 
-   public final Stream<BlockPos> getPositions(PlacementContext var1, RandomSource var2, BlockPos var3) {
-      return this.shouldPlace(var1, var2, var3) ? Stream.of(var3) : Stream.of();
+   public final Stream<BlockPos> getPositions(final PlacementContext context, final RandomSource random, final BlockPos origin) {
+      return this.shouldPlace(context, random, origin) ? Stream.of(origin) : Stream.of();
    }
 
-   protected abstract boolean shouldPlace(PlacementContext var1, RandomSource var2, BlockPos var3);
+   protected abstract boolean shouldPlace(PlacementContext context, RandomSource random, BlockPos origin);
 }

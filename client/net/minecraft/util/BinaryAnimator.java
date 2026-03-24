@@ -6,19 +6,19 @@ public class BinaryAnimator {
    private int ticks;
    private int ticksOld;
 
-   public BinaryAnimator(int var1, EasingType var2) {
+   public BinaryAnimator(final int animationLength, final EasingType easing) {
       super();
-      this.animationLength = var1;
-      this.easing = var2;
+      this.animationLength = animationLength;
+      this.easing = easing;
    }
 
-   public BinaryAnimator(int var1) {
-      this(var1, EasingType.LINEAR);
+   public BinaryAnimator(final int animationLength) {
+      this(animationLength, EasingType.LINEAR);
    }
 
-   public void tick(boolean var1) {
+   public void tick(final boolean active) {
       this.ticksOld = this.ticks;
-      if (var1) {
+      if (active) {
          if (this.ticks < this.animationLength) {
             ++this.ticks;
          }
@@ -28,8 +28,8 @@ public class BinaryAnimator {
 
    }
 
-   public float getFactor(float var1) {
-      float var2 = Mth.lerp(var1, (float)this.ticksOld, (float)this.ticks) / (float)this.animationLength;
-      return this.easing.apply(var2);
+   public float getFactor(final float partialTicks) {
+      float factor = Mth.lerp(partialTicks, (float)this.ticksOld, (float)this.ticks) / (float)this.animationLength;
+      return this.easing.apply(factor);
    }
 }

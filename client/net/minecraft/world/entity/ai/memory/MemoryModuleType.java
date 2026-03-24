@@ -51,7 +51,6 @@ public class MemoryModuleType<U> {
    public static final MemoryModuleType<AgeableMob> BREED_TARGET;
    public static final MemoryModuleType<Entity> RIDE_TARGET;
    public static final MemoryModuleType<Path> PATH;
-   public static final MemoryModuleType<List<GlobalPos>> INTERACTABLE_DOORS;
    public static final MemoryModuleType<Set<GlobalPos>> DOORS_TO_CLOSE;
    public static final MemoryModuleType<BlockPos> NEAREST_BED;
    public static final MemoryModuleType<DamageSource> HURT_BY;
@@ -150,9 +149,9 @@ public class MemoryModuleType<U> {
    private final Optional<Codec<ExpirableValue<U>>> codec;
 
    @VisibleForTesting
-   public MemoryModuleType(Optional<Codec<U>> var1) {
+   public MemoryModuleType(final Optional<Codec<U>> codec) {
       super();
-      this.codec = var1.map(ExpirableValue::codec);
+      this.codec = codec.map(ExpirableValue::codec);
    }
 
    public String toString() {
@@ -163,12 +162,16 @@ public class MemoryModuleType<U> {
       return this.codec;
    }
 
-   private static <U> MemoryModuleType<U> register(String var0, Codec<U> var1) {
-      return (MemoryModuleType)Registry.register(BuiltInRegistries.MEMORY_MODULE_TYPE, (Identifier)Identifier.withDefaultNamespace(var0), new MemoryModuleType(Optional.of(var1)));
+   public boolean canSerialize() {
+      return this.codec.isPresent();
    }
 
-   private static <U> MemoryModuleType<U> register(String var0) {
-      return (MemoryModuleType)Registry.register(BuiltInRegistries.MEMORY_MODULE_TYPE, (Identifier)Identifier.withDefaultNamespace(var0), new MemoryModuleType(Optional.empty()));
+   private static <U> MemoryModuleType<U> register(final String name, final Codec<U> codec) {
+      return (MemoryModuleType)Registry.register(BuiltInRegistries.MEMORY_MODULE_TYPE, (Identifier)Identifier.withDefaultNamespace(name), new MemoryModuleType(Optional.of(codec)));
+   }
+
+   private static <U> MemoryModuleType<U> register(final String name) {
+      return (MemoryModuleType)Registry.register(BuiltInRegistries.MEMORY_MODULE_TYPE, (Identifier)Identifier.withDefaultNamespace(name), new MemoryModuleType(Optional.empty()));
    }
 
    static {
@@ -192,7 +195,6 @@ public class MemoryModuleType<U> {
       BREED_TARGET = register("breed_target");
       RIDE_TARGET = register("ride_target");
       PATH = register("path");
-      INTERACTABLE_DOORS = register("interactable_doors");
       DOORS_TO_CLOSE = register("doors_to_close");
       NEAREST_BED = register("nearest_bed");
       HURT_BY = register("hurt_by");

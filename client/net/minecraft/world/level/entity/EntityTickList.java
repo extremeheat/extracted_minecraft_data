@@ -23,32 +23,32 @@ public class EntityTickList {
          ObjectIterator var1 = Int2ObjectMaps.fastIterable(this.active).iterator();
 
          while(var1.hasNext()) {
-            Int2ObjectMap.Entry var2 = (Int2ObjectMap.Entry)var1.next();
-            this.passive.put(var2.getIntKey(), (Entity)var2.getValue());
+            Int2ObjectMap.Entry<Entity> entry = (Int2ObjectMap.Entry)var1.next();
+            this.passive.put(entry.getIntKey(), (Entity)entry.getValue());
          }
 
-         Int2ObjectMap var3 = this.active;
+         Int2ObjectMap<Entity> tmp = this.active;
          this.active = this.passive;
-         this.passive = var3;
+         this.passive = tmp;
       }
 
    }
 
-   public void add(Entity var1) {
+   public void add(final Entity entity) {
       this.ensureActiveIsNotIterated();
-      this.active.put(var1.getId(), var1);
+      this.active.put(entity.getId(), entity);
    }
 
-   public void remove(Entity var1) {
+   public void remove(final Entity entity) {
       this.ensureActiveIsNotIterated();
-      this.active.remove(var1.getId());
+      this.active.remove(entity.getId());
    }
 
-   public boolean contains(Entity var1) {
-      return this.active.containsKey(var1.getId());
+   public boolean contains(final Entity entity) {
+      return this.active.containsKey(entity.getId());
    }
 
-   public void forEach(Consumer<Entity> var1) {
+   public void forEach(final Consumer<Entity> output) {
       if (this.iterated != null) {
          throw new UnsupportedOperationException("Only one concurrent iteration supported");
       } else {
@@ -58,8 +58,8 @@ public class EntityTickList {
             ObjectIterator var2 = this.active.values().iterator();
 
             while(var2.hasNext()) {
-               Entity var3 = (Entity)var2.next();
-               var1.accept(var3);
+               Entity entity = (Entity)var2.next();
+               output.accept(entity);
             }
          } finally {
             this.iterated = null;

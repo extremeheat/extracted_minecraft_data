@@ -22,9 +22,9 @@ import java.util.stream.Stream;
 public abstract class DelegatingOps<T> implements DynamicOps<T> {
    protected final DynamicOps<T> delegate;
 
-   protected DelegatingOps(DynamicOps<T> var1) {
+   protected DelegatingOps(final DynamicOps<T> delegate) {
       super();
-      this.delegate = var1;
+      this.delegate = delegate;
    }
 
    public T empty() {
@@ -39,140 +39,140 @@ public abstract class DelegatingOps<T> implements DynamicOps<T> {
       return (T)this.delegate.emptyList();
    }
 
-   public <U> U convertTo(DynamicOps<U> var1, T var2) {
-      return Objects.equals(var1, this.delegate) ? var2 : this.delegate.convertTo(var1, var2);
+   public <U> U convertTo(final DynamicOps<U> outOps, final T input) {
+      return (U)(Objects.equals(outOps, this.delegate) ? input : this.delegate.convertTo(outOps, input));
    }
 
-   public DataResult<Number> getNumberValue(T var1) {
-      return this.delegate.getNumberValue(var1);
+   public DataResult<Number> getNumberValue(final T input) {
+      return this.delegate.getNumberValue(input);
    }
 
-   public T createNumeric(Number var1) {
-      return (T)this.delegate.createNumeric(var1);
+   public T createNumeric(final Number i) {
+      return (T)this.delegate.createNumeric(i);
    }
 
-   public T createByte(byte var1) {
-      return (T)this.delegate.createByte(var1);
+   public T createByte(final byte value) {
+      return (T)this.delegate.createByte(value);
    }
 
-   public T createShort(short var1) {
-      return (T)this.delegate.createShort(var1);
+   public T createShort(final short value) {
+      return (T)this.delegate.createShort(value);
    }
 
-   public T createInt(int var1) {
-      return (T)this.delegate.createInt(var1);
+   public T createInt(final int value) {
+      return (T)this.delegate.createInt(value);
    }
 
-   public T createLong(long var1) {
-      return (T)this.delegate.createLong(var1);
+   public T createLong(final long value) {
+      return (T)this.delegate.createLong(value);
    }
 
-   public T createFloat(float var1) {
-      return (T)this.delegate.createFloat(var1);
+   public T createFloat(final float value) {
+      return (T)this.delegate.createFloat(value);
    }
 
-   public T createDouble(double var1) {
-      return (T)this.delegate.createDouble(var1);
+   public T createDouble(final double value) {
+      return (T)this.delegate.createDouble(value);
    }
 
-   public DataResult<Boolean> getBooleanValue(T var1) {
-      return this.delegate.getBooleanValue(var1);
+   public DataResult<Boolean> getBooleanValue(final T input) {
+      return this.delegate.getBooleanValue(input);
    }
 
-   public T createBoolean(boolean var1) {
-      return (T)this.delegate.createBoolean(var1);
+   public T createBoolean(final boolean value) {
+      return (T)this.delegate.createBoolean(value);
    }
 
-   public DataResult<String> getStringValue(T var1) {
-      return this.delegate.getStringValue(var1);
+   public DataResult<String> getStringValue(final T input) {
+      return this.delegate.getStringValue(input);
    }
 
-   public T createString(String var1) {
-      return (T)this.delegate.createString(var1);
+   public T createString(final String value) {
+      return (T)this.delegate.createString(value);
    }
 
-   public DataResult<T> mergeToList(T var1, T var2) {
-      return this.delegate.mergeToList(var1, var2);
+   public DataResult<T> mergeToList(final T list, final T value) {
+      return this.delegate.mergeToList(list, value);
    }
 
-   public DataResult<T> mergeToList(T var1, List<T> var2) {
-      return this.delegate.mergeToList(var1, var2);
+   public DataResult<T> mergeToList(final T list, final List<T> values) {
+      return this.delegate.mergeToList(list, values);
    }
 
-   public DataResult<T> mergeToMap(T var1, T var2, T var3) {
-      return this.delegate.mergeToMap(var1, var2, var3);
+   public DataResult<T> mergeToMap(final T map, final T key, final T value) {
+      return this.delegate.mergeToMap(map, key, value);
    }
 
-   public DataResult<T> mergeToMap(T var1, MapLike<T> var2) {
-      return this.delegate.mergeToMap(var1, var2);
+   public DataResult<T> mergeToMap(final T map, final MapLike<T> values) {
+      return this.delegate.mergeToMap(map, values);
    }
 
-   public DataResult<T> mergeToMap(T var1, Map<T, T> var2) {
-      return this.delegate.mergeToMap(var1, var2);
+   public DataResult<T> mergeToMap(final T map, final Map<T, T> values) {
+      return this.delegate.mergeToMap(map, values);
    }
 
-   public DataResult<T> mergeToPrimitive(T var1, T var2) {
-      return this.delegate.mergeToPrimitive(var1, var2);
+   public DataResult<T> mergeToPrimitive(final T prefix, final T value) {
+      return this.delegate.mergeToPrimitive(prefix, value);
    }
 
-   public DataResult<Stream<Pair<T, T>>> getMapValues(T var1) {
-      return this.delegate.getMapValues(var1);
+   public DataResult<Stream<Pair<T, T>>> getMapValues(final T input) {
+      return this.delegate.getMapValues(input);
    }
 
-   public DataResult<Consumer<BiConsumer<T, T>>> getMapEntries(T var1) {
-      return this.delegate.getMapEntries(var1);
+   public DataResult<Consumer<BiConsumer<T, T>>> getMapEntries(final T input) {
+      return this.delegate.getMapEntries(input);
    }
 
-   public T createMap(Map<T, T> var1) {
-      return (T)this.delegate.createMap(var1);
+   public T createMap(final Map<T, T> map) {
+      return (T)this.delegate.createMap(map);
    }
 
-   public T createMap(Stream<Pair<T, T>> var1) {
-      return (T)this.delegate.createMap(var1);
+   public T createMap(final Stream<Pair<T, T>> map) {
+      return (T)this.delegate.createMap(map);
    }
 
-   public DataResult<MapLike<T>> getMap(T var1) {
-      return this.delegate.getMap(var1);
+   public DataResult<MapLike<T>> getMap(final T input) {
+      return this.delegate.getMap(input);
    }
 
-   public DataResult<Stream<T>> getStream(T var1) {
-      return this.delegate.getStream(var1);
+   public DataResult<Stream<T>> getStream(final T input) {
+      return this.delegate.getStream(input);
    }
 
-   public DataResult<Consumer<Consumer<T>>> getList(T var1) {
-      return this.delegate.getList(var1);
+   public DataResult<Consumer<Consumer<T>>> getList(final T input) {
+      return this.delegate.getList(input);
    }
 
-   public T createList(Stream<T> var1) {
-      return (T)this.delegate.createList(var1);
+   public T createList(final Stream<T> input) {
+      return (T)this.delegate.createList(input);
    }
 
-   public DataResult<ByteBuffer> getByteBuffer(T var1) {
-      return this.delegate.getByteBuffer(var1);
+   public DataResult<ByteBuffer> getByteBuffer(final T input) {
+      return this.delegate.getByteBuffer(input);
    }
 
-   public T createByteList(ByteBuffer var1) {
-      return (T)this.delegate.createByteList(var1);
+   public T createByteList(final ByteBuffer input) {
+      return (T)this.delegate.createByteList(input);
    }
 
-   public DataResult<IntStream> getIntStream(T var1) {
-      return this.delegate.getIntStream(var1);
+   public DataResult<IntStream> getIntStream(final T input) {
+      return this.delegate.getIntStream(input);
    }
 
-   public T createIntList(IntStream var1) {
-      return (T)this.delegate.createIntList(var1);
+   public T createIntList(final IntStream input) {
+      return (T)this.delegate.createIntList(input);
    }
 
-   public DataResult<LongStream> getLongStream(T var1) {
-      return this.delegate.getLongStream(var1);
+   public DataResult<LongStream> getLongStream(final T input) {
+      return this.delegate.getLongStream(input);
    }
 
-   public T createLongList(LongStream var1) {
-      return (T)this.delegate.createLongList(var1);
+   public T createLongList(final LongStream input) {
+      return (T)this.delegate.createLongList(input);
    }
 
-   public T remove(T var1, String var2) {
-      return (T)this.delegate.remove(var1, var2);
+   public T remove(final T input, final String key) {
+      return (T)this.delegate.remove(input, key);
    }
 
    public boolean compressMaps() {
@@ -190,116 +190,118 @@ public abstract class DelegatingOps<T> implements DynamicOps<T> {
    protected class DelegateListBuilder implements ListBuilder<T> {
       private final ListBuilder<T> original;
 
-      protected DelegateListBuilder(final ListBuilder<T> var2) {
+      protected DelegateListBuilder(final ListBuilder<T> original) {
+         Objects.requireNonNull(DelegatingOps.this);
          super();
-         this.original = var2;
+         this.original = original;
       }
 
       public DynamicOps<T> ops() {
          return DelegatingOps.this;
       }
 
-      public DataResult<T> build(T var1) {
-         return this.original.build(var1);
+      public DataResult<T> build(final T prefix) {
+         return this.original.build(prefix);
       }
 
-      public ListBuilder<T> add(T var1) {
-         this.original.add(var1);
+      public ListBuilder<T> add(final T value) {
+         this.original.add(value);
          return this;
       }
 
-      public ListBuilder<T> add(DataResult<T> var1) {
-         this.original.add(var1);
+      public ListBuilder<T> add(final DataResult<T> value) {
+         this.original.add(value);
          return this;
       }
 
-      public <E> ListBuilder<T> add(E var1, Encoder<E> var2) {
-         this.original.add(var2.encodeStart(this.ops(), var1));
+      public <E> ListBuilder<T> add(final E value, final Encoder<E> encoder) {
+         this.original.add(encoder.encodeStart(this.ops(), value));
          return this;
       }
 
-      public <E> ListBuilder<T> addAll(Iterable<E> var1, Encoder<E> var2) {
-         var1.forEach((var2x) -> this.original.add(var2.encode(var2x, this.ops(), this.ops().empty())));
+      public <E> ListBuilder<T> addAll(final Iterable<E> values, final Encoder<E> encoder) {
+         values.forEach((v) -> this.original.add(encoder.encode(v, this.ops(), this.ops().empty())));
          return this;
       }
 
-      public ListBuilder<T> withErrorsFrom(DataResult<?> var1) {
-         this.original.withErrorsFrom(var1);
+      public ListBuilder<T> withErrorsFrom(final DataResult<?> result) {
+         this.original.withErrorsFrom(result);
          return this;
       }
 
-      public ListBuilder<T> mapError(UnaryOperator<String> var1) {
-         this.original.mapError(var1);
+      public ListBuilder<T> mapError(final UnaryOperator<String> onError) {
+         this.original.mapError(onError);
          return this;
       }
 
-      public DataResult<T> build(DataResult<T> var1) {
-         return this.original.build(var1);
+      public DataResult<T> build(final DataResult<T> prefix) {
+         return this.original.build(prefix);
       }
    }
 
    protected class DelegateRecordBuilder implements RecordBuilder<T> {
       private final RecordBuilder<T> original;
 
-      protected DelegateRecordBuilder(final RecordBuilder<T> var2) {
+      protected DelegateRecordBuilder(final RecordBuilder<T> original) {
+         Objects.requireNonNull(DelegatingOps.this);
          super();
-         this.original = var2;
+         this.original = original;
       }
 
       public DynamicOps<T> ops() {
          return DelegatingOps.this;
       }
 
-      public RecordBuilder<T> add(T var1, T var2) {
-         this.original.add(var1, var2);
+      public RecordBuilder<T> add(final T key, final T value) {
+         this.original.add(key, value);
          return this;
       }
 
-      public RecordBuilder<T> add(T var1, DataResult<T> var2) {
-         this.original.add(var1, var2);
+      public RecordBuilder<T> add(final T key, final DataResult<T> value) {
+         this.original.add(key, value);
          return this;
       }
 
-      public RecordBuilder<T> add(DataResult<T> var1, DataResult<T> var2) {
-         this.original.add(var1, var2);
+      public RecordBuilder<T> add(final DataResult<T> key, final DataResult<T> value) {
+         this.original.add(key, value);
          return this;
       }
 
-      public RecordBuilder<T> add(String var1, T var2) {
-         this.original.add(var1, var2);
+      public RecordBuilder<T> add(final String key, final T value) {
+         this.original.add(key, value);
          return this;
       }
 
-      public RecordBuilder<T> add(String var1, DataResult<T> var2) {
-         this.original.add(var1, var2);
+      public RecordBuilder<T> add(final String key, final DataResult<T> value) {
+         this.original.add(key, value);
          return this;
       }
 
-      public <E> RecordBuilder<T> add(String var1, E var2, Encoder<E> var3) {
-         return this.original.add(var1, var3.encodeStart(this.ops(), var2));
+      public <E> RecordBuilder<T> add(final String key, final E value, final Encoder<E> encoder) {
+         return this.original.add(key, encoder.encodeStart(this.ops(), value));
       }
 
-      public RecordBuilder<T> withErrorsFrom(DataResult<?> var1) {
-         this.original.withErrorsFrom(var1);
+      public RecordBuilder<T> withErrorsFrom(final DataResult<?> result) {
+         this.original.withErrorsFrom(result);
          return this;
       }
 
-      public RecordBuilder<T> setLifecycle(Lifecycle var1) {
-         this.original.setLifecycle(var1);
+      public RecordBuilder<T> setLifecycle(final Lifecycle lifecycle) {
+         this.original.setLifecycle(lifecycle);
          return this;
       }
 
-      public RecordBuilder<T> mapError(UnaryOperator<String> var1) {
-         this.original.mapError(var1);
+      public RecordBuilder<T> mapError(final UnaryOperator<String> onError) {
+         this.original.mapError(onError);
          return this;
       }
 
-      public DataResult<T> build(T var1) {
-         return this.original.build(var1);
+      public DataResult<T> build(final T prefix) {
+         return this.original.build(prefix);
       }
 
-      public DataResult<T> build(DataResult<T> var1) {
-         return this.original.build(var1);
+      public DataResult<T> build(final DataResult<T> prefix) {
+         return this.original.build(prefix);
       }
    }
 }

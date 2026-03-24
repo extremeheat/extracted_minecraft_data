@@ -13,31 +13,31 @@ public class MinecraftGameRuleServiceImpl implements MinecraftGameRuleService {
    private final GameRules gameRules;
    private final JsonRpcLogger jsonrpcLogger;
 
-   public MinecraftGameRuleServiceImpl(DedicatedServer var1, JsonRpcLogger var2) {
+   public MinecraftGameRuleServiceImpl(final DedicatedServer server, final JsonRpcLogger jsonrpcLogger) {
       super();
-      this.server = var1;
-      this.gameRules = var1.getWorldData().getGameRules();
-      this.jsonrpcLogger = var2;
+      this.server = server;
+      this.gameRules = server.getGameRules();
+      this.jsonrpcLogger = jsonrpcLogger;
    }
 
-   public <T> GameRulesService.GameRuleUpdate<T> updateGameRule(GameRulesService.GameRuleUpdate<T> var1, ClientInfo var2) {
-      GameRule var3 = var1.gameRule();
-      Object var4 = this.gameRules.get(var3);
-      Object var5 = var1.value();
-      this.gameRules.set(var3, var5, this.server);
-      this.jsonrpcLogger.log(var2, "Game rule '{}' updated from '{}' to '{}'", var3.id(), var3.serialize(var4), var3.serialize(var5));
-      return var1;
+   public <T> GameRulesService.GameRuleUpdate<T> updateGameRule(final GameRulesService.GameRuleUpdate<T> update, final ClientInfo clientInfo) {
+      GameRule<T> gameRule = update.gameRule();
+      T oldValue = (T)this.gameRules.get(gameRule);
+      T newValue = update.value();
+      this.gameRules.set(gameRule, newValue, this.server);
+      this.jsonrpcLogger.log(clientInfo, "Game rule '{}' updated from '{}' to '{}'", gameRule.id(), gameRule.serialize(oldValue), gameRule.serialize(newValue));
+      return update;
    }
 
-   public <T> GameRulesService.GameRuleUpdate<T> getTypedRule(GameRule<T> var1, T var2) {
-      return new GameRulesService.GameRuleUpdate<T>(var1, var2);
+   public <T> GameRulesService.GameRuleUpdate<T> getTypedRule(final GameRule<T> gameRule, final T value) {
+      return new GameRulesService.GameRuleUpdate<T>(gameRule, value);
    }
 
    public Stream<GameRule<?>> getAvailableGameRules() {
       return this.gameRules.availableRules();
    }
 
-   public <T> T getRuleValue(GameRule<T> var1) {
-      return (T)this.gameRules.get(var1);
+   public <T> T getRuleValue(final GameRule<T> gameRule) {
+      return (T)this.gameRules.get(gameRule);
    }
 }

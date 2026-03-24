@@ -30,157 +30,157 @@ public class BoundingBox {
    private int maxY;
    private int maxZ;
 
-   public BoundingBox(BlockPos var1) {
-      this(var1.getX(), var1.getY(), var1.getZ(), var1.getX(), var1.getY(), var1.getZ());
+   public BoundingBox(final BlockPos content) {
+      this(content.getX(), content.getY(), content.getZ(), content.getX(), content.getY(), content.getZ());
    }
 
-   public BoundingBox(int var1, int var2, int var3, int var4, int var5, int var6) {
+   public BoundingBox(final int minX, final int minY, final int minZ, final int maxX, final int maxY, final int maxZ) {
       super();
-      this.minX = var1;
-      this.minY = var2;
-      this.minZ = var3;
-      this.maxX = var4;
-      this.maxY = var5;
-      this.maxZ = var6;
-      if (var4 < var1 || var5 < var2 || var6 < var3) {
+      this.minX = minX;
+      this.minY = minY;
+      this.minZ = minZ;
+      this.maxX = maxX;
+      this.maxY = maxY;
+      this.maxZ = maxZ;
+      if (maxX < minX || maxY < minY || maxZ < minZ) {
          Util.logAndPauseIfInIde("Invalid bounding box data, inverted bounds for: " + String.valueOf(this));
-         this.minX = Math.min(var1, var4);
-         this.minY = Math.min(var2, var5);
-         this.minZ = Math.min(var3, var6);
-         this.maxX = Math.max(var1, var4);
-         this.maxY = Math.max(var2, var5);
-         this.maxZ = Math.max(var3, var6);
+         this.minX = Math.min(minX, maxX);
+         this.minY = Math.min(minY, maxY);
+         this.minZ = Math.min(minZ, maxZ);
+         this.maxX = Math.max(minX, maxX);
+         this.maxY = Math.max(minY, maxY);
+         this.maxZ = Math.max(minZ, maxZ);
       }
 
    }
 
-   public static BoundingBox fromCorners(Vec3i var0, Vec3i var1) {
-      return new BoundingBox(Math.min(var0.getX(), var1.getX()), Math.min(var0.getY(), var1.getY()), Math.min(var0.getZ(), var1.getZ()), Math.max(var0.getX(), var1.getX()), Math.max(var0.getY(), var1.getY()), Math.max(var0.getZ(), var1.getZ()));
+   public static BoundingBox fromCorners(final Vec3i pos0, final Vec3i pos1) {
+      return new BoundingBox(Math.min(pos0.getX(), pos1.getX()), Math.min(pos0.getY(), pos1.getY()), Math.min(pos0.getZ(), pos1.getZ()), Math.max(pos0.getX(), pos1.getX()), Math.max(pos0.getY(), pos1.getY()), Math.max(pos0.getZ(), pos1.getZ()));
    }
 
    public static BoundingBox infinite() {
       return new BoundingBox(-2147483648, -2147483648, -2147483648, 2147483647, 2147483647, 2147483647);
    }
 
-   public static BoundingBox orientBox(int var0, int var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, Direction var9) {
-      switch (var9) {
+   public static BoundingBox orientBox(final int footX, final int footY, final int footZ, final int offX, final int offY, final int offZ, final int width, final int height, final int depth, final Direction direction) {
+      switch (direction) {
          case SOUTH:
          default:
-            return new BoundingBox(var0 + var3, var1 + var4, var2 + var5, var0 + var6 - 1 + var3, var1 + var7 - 1 + var4, var2 + var8 - 1 + var5);
+            return new BoundingBox(footX + offX, footY + offY, footZ + offZ, footX + width - 1 + offX, footY + height - 1 + offY, footZ + depth - 1 + offZ);
          case NORTH:
-            return new BoundingBox(var0 + var3, var1 + var4, var2 - var8 + 1 + var5, var0 + var6 - 1 + var3, var1 + var7 - 1 + var4, var2 + var5);
+            return new BoundingBox(footX + offX, footY + offY, footZ - depth + 1 + offZ, footX + width - 1 + offX, footY + height - 1 + offY, footZ + offZ);
          case WEST:
-            return new BoundingBox(var0 - var8 + 1 + var5, var1 + var4, var2 + var3, var0 + var5, var1 + var7 - 1 + var4, var2 + var6 - 1 + var3);
+            return new BoundingBox(footX - depth + 1 + offZ, footY + offY, footZ + offX, footX + offZ, footY + height - 1 + offY, footZ + width - 1 + offX);
          case EAST:
-            return new BoundingBox(var0 + var5, var1 + var4, var2 + var3, var0 + var8 - 1 + var5, var1 + var7 - 1 + var4, var2 + var6 - 1 + var3);
+            return new BoundingBox(footX + offZ, footY + offY, footZ + offX, footX + depth - 1 + offZ, footY + height - 1 + offY, footZ + width - 1 + offX);
       }
    }
 
    public Stream<ChunkPos> intersectingChunks() {
-      int var1 = SectionPos.blockToSectionCoord(this.minX());
-      int var2 = SectionPos.blockToSectionCoord(this.minZ());
-      int var3 = SectionPos.blockToSectionCoord(this.maxX());
-      int var4 = SectionPos.blockToSectionCoord(this.maxZ());
-      return ChunkPos.rangeClosed(new ChunkPos(var1, var2), new ChunkPos(var3, var4));
+      int minChunkX = SectionPos.blockToSectionCoord(this.minX());
+      int minChunkZ = SectionPos.blockToSectionCoord(this.minZ());
+      int maxChunkX = SectionPos.blockToSectionCoord(this.maxX());
+      int maxChunkZ = SectionPos.blockToSectionCoord(this.maxZ());
+      return ChunkPos.rangeClosed(new ChunkPos(minChunkX, minChunkZ), new ChunkPos(maxChunkX, maxChunkZ));
    }
 
-   public boolean intersects(BoundingBox var1) {
-      return this.maxX >= var1.minX && this.minX <= var1.maxX && this.maxZ >= var1.minZ && this.minZ <= var1.maxZ && this.maxY >= var1.minY && this.minY <= var1.maxY;
+   public boolean intersects(final BoundingBox other) {
+      return this.maxX >= other.minX && this.minX <= other.maxX && this.maxZ >= other.minZ && this.minZ <= other.maxZ && this.maxY >= other.minY && this.minY <= other.maxY;
    }
 
-   public boolean intersects(int var1, int var2, int var3, int var4) {
-      return this.maxX >= var1 && this.minX <= var3 && this.maxZ >= var2 && this.minZ <= var4;
+   public boolean intersects(final int minX, final int minZ, final int maxX, final int maxZ) {
+      return this.maxX >= minX && this.minX <= maxX && this.maxZ >= minZ && this.minZ <= maxZ;
    }
 
-   public static Optional<BoundingBox> encapsulatingPositions(Iterable<BlockPos> var0) {
-      Iterator var1 = var0.iterator();
-      if (!var1.hasNext()) {
+   public static Optional<BoundingBox> encapsulatingPositions(final Iterable<BlockPos> iterable) {
+      Iterator<BlockPos> iterator = iterable.iterator();
+      if (!iterator.hasNext()) {
          return Optional.empty();
       } else {
-         BoundingBox var2 = new BoundingBox((BlockPos)var1.next());
-         Objects.requireNonNull(var2);
-         var1.forEachRemaining(var2::encapsulate);
-         return Optional.of(var2);
+         BoundingBox result = new BoundingBox((BlockPos)iterator.next());
+         Objects.requireNonNull(result);
+         iterator.forEachRemaining(result::encapsulate);
+         return Optional.of(result);
       }
    }
 
-   public static Optional<BoundingBox> encapsulatingBoxes(Iterable<BoundingBox> var0) {
-      Iterator var1 = var0.iterator();
-      if (!var1.hasNext()) {
+   public static Optional<BoundingBox> encapsulatingBoxes(final Iterable<BoundingBox> iterable) {
+      Iterator<BoundingBox> iterator = iterable.iterator();
+      if (!iterator.hasNext()) {
          return Optional.empty();
       } else {
-         BoundingBox var2 = (BoundingBox)var1.next();
-         BoundingBox var3 = new BoundingBox(var2.minX, var2.minY, var2.minZ, var2.maxX, var2.maxY, var2.maxZ);
-         Objects.requireNonNull(var3);
-         var1.forEachRemaining(var3::encapsulate);
-         return Optional.of(var3);
+         BoundingBox first = (BoundingBox)iterator.next();
+         BoundingBox result = new BoundingBox(first.minX, first.minY, first.minZ, first.maxX, first.maxY, first.maxZ);
+         Objects.requireNonNull(result);
+         iterator.forEachRemaining(result::encapsulate);
+         return Optional.of(result);
       }
    }
 
    /** @deprecated */
    @Deprecated
-   public BoundingBox encapsulate(BoundingBox var1) {
-      this.minX = Math.min(this.minX, var1.minX);
-      this.minY = Math.min(this.minY, var1.minY);
-      this.minZ = Math.min(this.minZ, var1.minZ);
-      this.maxX = Math.max(this.maxX, var1.maxX);
-      this.maxY = Math.max(this.maxY, var1.maxY);
-      this.maxZ = Math.max(this.maxZ, var1.maxZ);
+   public BoundingBox encapsulate(final BoundingBox other) {
+      this.minX = Math.min(this.minX, other.minX);
+      this.minY = Math.min(this.minY, other.minY);
+      this.minZ = Math.min(this.minZ, other.minZ);
+      this.maxX = Math.max(this.maxX, other.maxX);
+      this.maxY = Math.max(this.maxY, other.maxY);
+      this.maxZ = Math.max(this.maxZ, other.maxZ);
       return this;
    }
 
-   public static BoundingBox encapsulating(BoundingBox var0, BoundingBox var1) {
-      return new BoundingBox(Math.min(var0.minX, var1.minX), Math.min(var0.minY, var1.minY), Math.min(var0.minZ, var1.minZ), Math.max(var0.maxX, var1.maxX), Math.max(var0.maxY, var1.maxY), Math.max(var0.maxZ, var1.maxZ));
+   public static BoundingBox encapsulating(final BoundingBox a, final BoundingBox b) {
+      return new BoundingBox(Math.min(a.minX, b.minX), Math.min(a.minY, b.minY), Math.min(a.minZ, b.minZ), Math.max(a.maxX, b.maxX), Math.max(a.maxY, b.maxY), Math.max(a.maxZ, b.maxZ));
    }
 
    /** @deprecated */
    @Deprecated
-   public BoundingBox encapsulate(BlockPos var1) {
-      this.minX = Math.min(this.minX, var1.getX());
-      this.minY = Math.min(this.minY, var1.getY());
-      this.minZ = Math.min(this.minZ, var1.getZ());
-      this.maxX = Math.max(this.maxX, var1.getX());
-      this.maxY = Math.max(this.maxY, var1.getY());
-      this.maxZ = Math.max(this.maxZ, var1.getZ());
-      return this;
-   }
-
-   /** @deprecated */
-   @Deprecated
-   public BoundingBox move(int var1, int var2, int var3) {
-      this.minX += var1;
-      this.minY += var2;
-      this.minZ += var3;
-      this.maxX += var1;
-      this.maxY += var2;
-      this.maxZ += var3;
+   public BoundingBox encapsulate(final BlockPos pos) {
+      this.minX = Math.min(this.minX, pos.getX());
+      this.minY = Math.min(this.minY, pos.getY());
+      this.minZ = Math.min(this.minZ, pos.getZ());
+      this.maxX = Math.max(this.maxX, pos.getX());
+      this.maxY = Math.max(this.maxY, pos.getY());
+      this.maxZ = Math.max(this.maxZ, pos.getZ());
       return this;
    }
 
    /** @deprecated */
    @Deprecated
-   public BoundingBox move(Vec3i var1) {
-      return this.move(var1.getX(), var1.getY(), var1.getZ());
+   public BoundingBox move(final int dx, final int dy, final int dz) {
+      this.minX += dx;
+      this.minY += dy;
+      this.minZ += dz;
+      this.maxX += dx;
+      this.maxY += dy;
+      this.maxZ += dz;
+      return this;
    }
 
-   public BoundingBox moved(int var1, int var2, int var3) {
-      return new BoundingBox(this.minX + var1, this.minY + var2, this.minZ + var3, this.maxX + var1, this.maxY + var2, this.maxZ + var3);
+   /** @deprecated */
+   @Deprecated
+   public BoundingBox move(final Vec3i amount) {
+      return this.move(amount.getX(), amount.getY(), amount.getZ());
    }
 
-   public BoundingBox inflatedBy(int var1) {
-      return this.inflatedBy(var1, var1, var1);
+   public BoundingBox moved(final int dx, final int dy, final int dz) {
+      return new BoundingBox(this.minX + dx, this.minY + dy, this.minZ + dz, this.maxX + dx, this.maxY + dy, this.maxZ + dz);
    }
 
-   public BoundingBox inflatedBy(int var1, int var2, int var3) {
-      return new BoundingBox(this.minX() - var1, this.minY() - var2, this.minZ() - var3, this.maxX() + var1, this.maxY() + var2, this.maxZ() + var3);
+   public BoundingBox inflatedBy(final int amountToAddAllDirections) {
+      return this.inflatedBy(amountToAddAllDirections, amountToAddAllDirections, amountToAddAllDirections);
    }
 
-   public boolean isInside(Vec3i var1) {
-      return this.isInside(var1.getX(), var1.getY(), var1.getZ());
+   public BoundingBox inflatedBy(final int inflateX, final int inflateY, final int inflateZ) {
+      return new BoundingBox(this.minX() - inflateX, this.minY() - inflateY, this.minZ() - inflateZ, this.maxX() + inflateX, this.maxY() + inflateY, this.maxZ() + inflateZ);
    }
 
-   public boolean isInside(int var1, int var2, int var3) {
-      return var1 >= this.minX && var1 <= this.maxX && var3 >= this.minZ && var3 <= this.maxZ && var2 >= this.minY && var2 <= this.maxY;
+   public boolean isInside(final Vec3i pos) {
+      return this.isInside(pos.getX(), pos.getY(), pos.getZ());
+   }
+
+   public boolean isInside(final int x, final int y, final int z) {
+      return x >= this.minX && x <= this.maxX && z >= this.minZ && z <= this.maxZ && y >= this.minY && y <= this.maxY;
    }
 
    public Vec3i getLength() {
@@ -203,30 +203,30 @@ public class BoundingBox {
       return new BlockPos(this.minX + (this.maxX - this.minX + 1) / 2, this.minY + (this.maxY - this.minY + 1) / 2, this.minZ + (this.maxZ - this.minZ + 1) / 2);
    }
 
-   public void forAllCorners(Consumer<BlockPos> var1) {
-      BlockPos.MutableBlockPos var2 = new BlockPos.MutableBlockPos();
-      var1.accept(var2.set(this.maxX, this.maxY, this.maxZ));
-      var1.accept(var2.set(this.minX, this.maxY, this.maxZ));
-      var1.accept(var2.set(this.maxX, this.minY, this.maxZ));
-      var1.accept(var2.set(this.minX, this.minY, this.maxZ));
-      var1.accept(var2.set(this.maxX, this.maxY, this.minZ));
-      var1.accept(var2.set(this.minX, this.maxY, this.minZ));
-      var1.accept(var2.set(this.maxX, this.minY, this.minZ));
-      var1.accept(var2.set(this.minX, this.minY, this.minZ));
+   public void forAllCorners(final Consumer<BlockPos> consumer) {
+      BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+      consumer.accept(pos.set(this.maxX, this.maxY, this.maxZ));
+      consumer.accept(pos.set(this.minX, this.maxY, this.maxZ));
+      consumer.accept(pos.set(this.maxX, this.minY, this.maxZ));
+      consumer.accept(pos.set(this.minX, this.minY, this.maxZ));
+      consumer.accept(pos.set(this.maxX, this.maxY, this.minZ));
+      consumer.accept(pos.set(this.minX, this.maxY, this.minZ));
+      consumer.accept(pos.set(this.maxX, this.minY, this.minZ));
+      consumer.accept(pos.set(this.minX, this.minY, this.minZ));
    }
 
    public String toString() {
       return MoreObjects.toStringHelper(this).add("minX", this.minX).add("minY", this.minY).add("minZ", this.minZ).add("maxX", this.maxX).add("maxY", this.maxY).add("maxZ", this.maxZ).toString();
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
+   public boolean equals(final Object o) {
+      if (this == o) {
          return true;
-      } else if (!(var1 instanceof BoundingBox)) {
+      } else if (!(o instanceof BoundingBox)) {
          return false;
       } else {
-         BoundingBox var2 = (BoundingBox)var1;
-         return this.minX == var2.minX && this.minY == var2.minY && this.minZ == var2.minZ && this.maxX == var2.maxX && this.maxY == var2.maxY && this.maxZ == var2.maxZ;
+         BoundingBox that = (BoundingBox)o;
+         return this.minX == that.minX && this.minY == that.minY && this.minZ == that.minZ && this.maxX == that.maxX && this.maxY == that.maxY && this.maxZ == that.maxZ;
       }
    }
 
@@ -259,7 +259,7 @@ public class BoundingBox {
    }
 
    static {
-      CODEC = Codec.INT_STREAM.comapFlatMap((var0) -> Util.fixedSize((IntStream)var0, 6).map((var0x) -> new BoundingBox(var0x[0], var0x[1], var0x[2], var0x[3], var0x[4], var0x[5])), (var0) -> IntStream.of(new int[]{var0.minX, var0.minY, var0.minZ, var0.maxX, var0.maxY, var0.maxZ})).stable();
-      STREAM_CODEC = StreamCodec.composite(BlockPos.STREAM_CODEC, (var0) -> new BlockPos(var0.minX, var0.minY, var0.minZ), BlockPos.STREAM_CODEC, (var0) -> new BlockPos(var0.maxX, var0.maxY, var0.maxZ), (var0, var1) -> new BoundingBox(var0.getX(), var0.getY(), var0.getZ(), var1.getX(), var1.getY(), var1.getZ()));
+      CODEC = Codec.INT_STREAM.comapFlatMap((input) -> Util.fixedSize((IntStream)input, 6).map((ints) -> new BoundingBox(ints[0], ints[1], ints[2], ints[3], ints[4], ints[5])), (bb) -> IntStream.of(new int[]{bb.minX, bb.minY, bb.minZ, bb.maxX, bb.maxY, bb.maxZ})).stable();
+      STREAM_CODEC = StreamCodec.composite(BlockPos.STREAM_CODEC, (box) -> new BlockPos(box.minX, box.minY, box.minZ), BlockPos.STREAM_CODEC, (box) -> new BlockPos(box.maxX, box.maxY, box.maxZ), (min, max) -> new BoundingBox(min.getX(), min.getY(), min.getZ(), max.getX(), max.getY(), max.getZ()));
    }
 }

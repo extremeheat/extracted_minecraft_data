@@ -33,74 +33,66 @@ public class EquipmentLayerRenderer {
    private final Function<LayerTextureKey, Identifier> layerTextureLookup;
    private final Function<TrimSpriteKey, TextureAtlasSprite> trimSpriteLookup;
 
-   public EquipmentLayerRenderer(EquipmentAssetManager var1, TextureAtlas var2) {
+   public EquipmentLayerRenderer(final EquipmentAssetManager equipmentAssets, final TextureAtlas armorTrimAtlas) {
       super();
-      this.equipmentAssets = var1;
-      this.layerTextureLookup = Util.memoize((Function)((var0) -> var0.layer.getTextureLocation(var0.layerType)));
-      this.trimSpriteLookup = Util.memoize((Function)((var1x) -> var2.getSprite(var1x.spriteId())));
+      this.equipmentAssets = equipmentAssets;
+      this.layerTextureLookup = Util.memoize((Function)((key) -> key.layer.getTextureLocation(key.layerType)));
+      this.trimSpriteLookup = Util.memoize((Function)((key) -> armorTrimAtlas.getSprite(key.spriteId())));
    }
 
-   public <S> void renderLayers(EquipmentClientInfo.LayerType var1, ResourceKey<EquipmentAsset> var2, Model<? super S> var3, S var4, ItemStack var5, PoseStack var6, SubmitNodeCollector var7, int var8, int var9) {
-      this.renderLayers(var1, var2, var3, var4, var5, var6, var7, var8, (Identifier)null, var9, 1);
+   public <S> void renderLayers(final EquipmentClientInfo.LayerType layerType, final ResourceKey<EquipmentAsset> equipmentAssetId, final Model<? super S> model, final S state, final ItemStack itemStack, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int outlineColor) {
+      this.renderLayers(layerType, equipmentAssetId, model, state, itemStack, poseStack, submitNodeCollector, lightCoords, (Identifier)null, outlineColor, 1);
    }
 
-   public <S> void renderLayers(EquipmentClientInfo.LayerType var1, ResourceKey<EquipmentAsset> var2, Model<? super S> var3, S var4, ItemStack var5, PoseStack var6, SubmitNodeCollector var7, int var8, @Nullable Identifier var9, int var10, int var11) {
-      List var12 = this.equipmentAssets.get(var2).getLayers(var1);
-      if (!var12.isEmpty()) {
-         int var13 = DyedItemColor.getOrDefault(var5, 0);
-         boolean var14 = var5.hasFoil();
-         int var15 = var11;
+   public <S> void renderLayers(final EquipmentClientInfo.LayerType layerType, final ResourceKey<EquipmentAsset> equipmentAssetId, final Model<? super S> model, final S state, final ItemStack itemStack, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final @Nullable Identifier playerTextureOverride, final int outlineColor, final int order) {
+      List<EquipmentClientInfo.Layer> layers = this.equipmentAssets.get(equipmentAssetId).getLayers(layerType);
+      if (!layers.isEmpty()) {
+         int dyeColor = DyedItemColor.getOrDefault(itemStack, 0);
+         boolean renderFoil = itemStack.hasFoil();
+         int nextOrder = order;
 
-         for(EquipmentClientInfo.Layer var17 : var12) {
-            int var18 = getColorForLayer(var17, var13);
-            if (var18 != 0) {
-               Identifier var19 = var17.usePlayerTexture() && var9 != null ? var9 : (Identifier)this.layerTextureLookup.apply(new LayerTextureKey(var1, var17));
-               var7.order(var15++).submitModel(var3, var4, var6, RenderTypes.armorCutoutNoCull(var19), var8, OverlayTexture.NO_OVERLAY, var18, (TextureAtlasSprite)null, var10, (ModelFeatureRenderer.CrumblingOverlay)null);
-               if (var14) {
-                  var7.order(var15++).submitModel(var3, var4, var6, RenderTypes.armorEntityGlint(), var8, OverlayTexture.NO_OVERLAY, var18, (TextureAtlasSprite)null, var10, (ModelFeatureRenderer.CrumblingOverlay)null);
+         for(EquipmentClientInfo.Layer layer : layers) {
+            int color = getColorForLayer(layer, dyeColor);
+            if (color != 0) {
+               Identifier layerTexture = layer.usePlayerTexture() && playerTextureOverride != null ? playerTextureOverride : (Identifier)this.layerTextureLookup.apply(new LayerTextureKey(layerType, layer));
+               submitNodeCollector.order(nextOrder++).submitModel(model, state, poseStack, RenderTypes.armorCutoutNoCull(layerTexture), lightCoords, OverlayTexture.NO_OVERLAY, color, (TextureAtlasSprite)null, outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+               if (renderFoil) {
+                  submitNodeCollector.order(nextOrder++).submitModel(model, state, poseStack, RenderTypes.armorEntityGlint(), lightCoords, OverlayTexture.NO_OVERLAY, color, (TextureAtlasSprite)null, outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
                }
 
-               var14 = false;
+               renderFoil = false;
             }
          }
 
-         ArmorTrim var21 = (ArmorTrim)var5.get(DataComponents.TRIM);
-         if (var21 != null) {
-            TextureAtlasSprite var22 = (TextureAtlasSprite)this.trimSpriteLookup.apply(new TrimSpriteKey(var21, var1, var2));
-            RenderType var23 = Sheets.armorTrimsSheet(((TrimPattern)var21.pattern().value()).decal());
-            var7.order(var15++).submitModel(var3, var4, var6, var23, var8, OverlayTexture.NO_OVERLAY, -1, var22, var10, (ModelFeatureRenderer.CrumblingOverlay)null);
+         ArmorTrim trim = (ArmorTrim)itemStack.get(DataComponents.TRIM);
+         if (trim != null && layerType != EquipmentClientInfo.LayerType.HUMANOID_BABY) {
+            TextureAtlasSprite sprite = (TextureAtlasSprite)this.trimSpriteLookup.apply(new TrimSpriteKey(trim, layerType, equipmentAssetId));
+            RenderType renderType = Sheets.armorTrimsSheet(((TrimPattern)trim.pattern().value()).decal());
+            submitNodeCollector.order(nextOrder++).submitModel(model, state, poseStack, renderType, lightCoords, OverlayTexture.NO_OVERLAY, -1, sprite, outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
          }
 
       }
    }
 
-   private static int getColorForLayer(EquipmentClientInfo.Layer var0, int var1) {
-      Optional var2 = var0.dyeable();
-      if (var2.isPresent()) {
-         int var3 = (Integer)((EquipmentClientInfo.Dyeable)var2.get()).colorWhenUndyed().map(ARGB::opaque).orElse(0);
-         return var1 != 0 ? var1 : var3;
+   private static int getColorForLayer(final EquipmentClientInfo.Layer layer, final int dyeColor) {
+      Optional<EquipmentClientInfo.Dyeable> dyeable = layer.dyeable();
+      if (dyeable.isPresent()) {
+         int colorWhenUndyed = (Integer)((EquipmentClientInfo.Dyeable)dyeable.get()).colorWhenUndyed().map(ARGB::opaque).orElse(0);
+         return dyeColor != 0 ? dyeColor : colorWhenUndyed;
       } else {
          return -1;
       }
    }
 
-   static record LayerTextureKey(EquipmentClientInfo.LayerType layerType, EquipmentClientInfo.Layer layer) {
-      final EquipmentClientInfo.LayerType layerType;
-      final EquipmentClientInfo.Layer layer;
-
-      LayerTextureKey(EquipmentClientInfo.LayerType var1, EquipmentClientInfo.Layer var2) {
+   private static record LayerTextureKey(EquipmentClientInfo.LayerType layerType, EquipmentClientInfo.Layer layer) {
+      private LayerTextureKey {
          super();
-         this.layerType = var1;
-         this.layer = var2;
       }
    }
 
-   static record TrimSpriteKey(ArmorTrim trim, EquipmentClientInfo.LayerType layerType, ResourceKey<EquipmentAsset> equipmentAssetId) {
-      TrimSpriteKey(ArmorTrim var1, EquipmentClientInfo.LayerType var2, ResourceKey<EquipmentAsset> var3) {
+   private static record TrimSpriteKey(ArmorTrim trim, EquipmentClientInfo.LayerType layerType, ResourceKey<EquipmentAsset> equipmentAssetId) {
+      private TrimSpriteKey {
          super();
-         this.trim = var1;
-         this.layerType = var2;
-         this.equipmentAssetId = var3;
       }
 
       public Identifier spriteId() {

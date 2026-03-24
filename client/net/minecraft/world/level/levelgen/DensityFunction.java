@@ -12,19 +12,19 @@ import org.jspecify.annotations.Nullable;
 public interface DensityFunction {
    Codec<DensityFunction> DIRECT_CODEC = DensityFunctions.DIRECT_CODEC;
    Codec<Holder<DensityFunction>> CODEC = RegistryFileCodec.<Holder<DensityFunction>>create(Registries.DENSITY_FUNCTION, DIRECT_CODEC);
-   Codec<DensityFunction> HOLDER_HELPER_CODEC = CODEC.xmap(DensityFunctions.HolderHolder::new, (var0) -> {
-      if (var0 instanceof DensityFunctions.HolderHolder var1) {
-         return var1.function();
+   Codec<DensityFunction> HOLDER_HELPER_CODEC = CODEC.xmap(DensityFunctions.HolderHolder::new, (value) -> {
+      if (value instanceof DensityFunctions.HolderHolder holder) {
+         return holder.function();
       } else {
-         return new Holder.Direct(var0);
+         return Holder.direct(value);
       }
    });
 
-   double compute(FunctionContext var1);
+   double compute(final FunctionContext context);
 
-   void fillArray(double[] var1, ContextProvider var2);
+   void fillArray(final double[] output, final ContextProvider contextProvider);
 
-   DensityFunction mapAll(Visitor var1);
+   DensityFunction mapAll(final Visitor visitor);
 
    double minValue();
 
@@ -32,8 +32,8 @@ public interface DensityFunction {
 
    KeyDispatchDataCodec<? extends DensityFunction> codec();
 
-   default DensityFunction clamp(double var1, double var3) {
-      return new DensityFunctions.Clamp(this, var1, var3);
+   default DensityFunction clamp(final double min, final double max) {
+      return new DensityFunctions.Clamp(this, min, max);
    }
 
    default DensityFunction abs() {
@@ -67,18 +67,16 @@ public interface DensityFunction {
    public static record NoiseHolder(Holder<NormalNoise.NoiseParameters> noiseData, @Nullable NormalNoise noise) {
       public static final Codec<NoiseHolder> CODEC;
 
-      public NoiseHolder(Holder<NormalNoise.NoiseParameters> var1) {
-         this(var1, (NormalNoise)null);
+      public NoiseHolder(final Holder<NormalNoise.NoiseParameters> noiseData) {
+         this(noiseData, (NormalNoise)null);
       }
 
-      public NoiseHolder(Holder<NormalNoise.NoiseParameters> var1, @Nullable NormalNoise var2) {
+      public NoiseHolder {
          super();
-         this.noiseData = var1;
-         this.noise = var2;
       }
 
-      public double getValue(double var1, double var3, double var5) {
-         return this.noise == null ? 0.0 : this.noise.getValue(var1, var3, var5);
+      public double getValue(final double x, final double y, final double z) {
+         return this.noise == null ? 0.0 : this.noise.getValue(x, y, z);
       }
 
       public double maxValue() {
@@ -86,25 +84,25 @@ public interface DensityFunction {
       }
 
       static {
-         CODEC = NormalNoise.NoiseParameters.CODEC.xmap((var0) -> new NoiseHolder(var0, (NormalNoise)null), NoiseHolder::noiseData);
+         CODEC = NormalNoise.NoiseParameters.CODEC.xmap((data) -> new NoiseHolder(data, (NormalNoise)null), NoiseHolder::noiseData);
       }
    }
 
    public interface Visitor {
-      DensityFunction apply(DensityFunction var1);
+      DensityFunction apply(DensityFunction input);
 
-      default NoiseHolder visitNoise(NoiseHolder var1) {
-         return var1;
+      default NoiseHolder visitNoise(final NoiseHolder noise) {
+         return noise;
       }
    }
 
    public interface SimpleFunction extends DensityFunction {
-      default void fillArray(double[] var1, ContextProvider var2) {
-         var2.fillAllDirectly(var1, this);
+      default void fillArray(final double[] output, final ContextProvider contextProvider) {
+         contextProvider.fillAllDirectly(output, this);
       }
 
-      default DensityFunction mapAll(Visitor var1) {
-         return var1.apply(this);
+      default DensityFunction mapAll(final Visitor visitor) {
+         return visitor.apply(this);
       }
    }
 
@@ -121,17 +119,14 @@ public interface DensityFunction {
    }
 
    public static record SinglePointContext(int blockX, int blockY, int blockZ) implements FunctionContext {
-      public SinglePointContext(int var1, int var2, int var3) {
+      public SinglePointContext {
          super();
-         this.blockX = var1;
-         this.blockY = var2;
-         this.blockZ = var3;
       }
    }
 
    public interface ContextProvider {
-      FunctionContext forIndex(int var1);
+      FunctionContext forIndex(int index);
 
-      void fillAllDirectly(double[] var1, DensityFunction var2);
+      void fillAllDirectly(double[] output, DensityFunction function);
    }
 }

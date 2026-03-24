@@ -9,20 +9,20 @@ public class LastSeenMessagesValidator {
    private final ObjectList<LastSeenTrackedEntry> trackedMessages = new ObjectArrayList();
    private @Nullable MessageSignature lastPendingMessage;
 
-   public LastSeenMessagesValidator(int var1) {
+   public LastSeenMessagesValidator(final int lastSeenCount) {
       super();
-      this.lastSeenCount = var1;
+      this.lastSeenCount = lastSeenCount;
 
-      for(int var2 = 0; var2 < var1; ++var2) {
+      for(int i = 0; i < lastSeenCount; ++i) {
          this.trackedMessages.add((Object)null);
       }
 
    }
 
-   public void addPending(MessageSignature var1) {
-      if (!var1.equals(this.lastPendingMessage)) {
-         this.trackedMessages.add(new LastSeenTrackedEntry(var1, true));
-         this.lastPendingMessage = var1;
+   public void addPending(final MessageSignature message) {
+      if (!message.equals(this.lastPendingMessage)) {
+         this.trackedMessages.add(new LastSeenTrackedEntry(message, true));
+         this.lastPendingMessage = message;
       }
 
    }
@@ -31,53 +31,53 @@ public class LastSeenMessagesValidator {
       return this.trackedMessages.size();
    }
 
-   public void applyOffset(int var1) throws ValidationException {
-      int var2 = this.trackedMessages.size() - this.lastSeenCount;
-      if (var1 >= 0 && var1 <= var2) {
-         this.trackedMessages.removeElements(0, var1);
+   public void applyOffset(final int offset) throws ValidationException {
+      int maxOffset = this.trackedMessages.size() - this.lastSeenCount;
+      if (offset >= 0 && offset <= maxOffset) {
+         this.trackedMessages.removeElements(0, offset);
       } else {
-         throw new ValidationException("Advanced last seen window by " + var1 + " messages, but expected at most " + var2);
+         throw new ValidationException("Advanced last seen window by " + offset + " messages, but expected at most " + maxOffset);
       }
    }
 
-   public LastSeenMessages applyUpdate(LastSeenMessages.Update var1) throws ValidationException {
-      this.applyOffset(var1.offset());
-      ObjectArrayList var2 = new ObjectArrayList(var1.acknowledged().cardinality());
-      if (var1.acknowledged().length() > this.lastSeenCount) {
-         int var10002 = var1.acknowledged().length();
+   public LastSeenMessages applyUpdate(final LastSeenMessages.Update update) throws ValidationException {
+      this.applyOffset(update.offset());
+      ObjectList<MessageSignature> lastSeenEntries = new ObjectArrayList(update.acknowledged().cardinality());
+      if (update.acknowledged().length() > this.lastSeenCount) {
+         int var10002 = update.acknowledged().length();
          throw new ValidationException("Last seen update contained " + var10002 + " messages, but maximum window size is " + this.lastSeenCount);
       } else {
-         for(int var3 = 0; var3 < this.lastSeenCount; ++var3) {
-            boolean var4 = var1.acknowledged().get(var3);
-            LastSeenTrackedEntry var5 = (LastSeenTrackedEntry)this.trackedMessages.get(var3);
-            if (var4) {
-               if (var5 == null) {
-                  throw new ValidationException("Last seen update acknowledged unknown or previously ignored message at index " + var3);
+         for(int i = 0; i < this.lastSeenCount; ++i) {
+            boolean acknowledged = update.acknowledged().get(i);
+            LastSeenTrackedEntry message = (LastSeenTrackedEntry)this.trackedMessages.get(i);
+            if (acknowledged) {
+               if (message == null) {
+                  throw new ValidationException("Last seen update acknowledged unknown or previously ignored message at index " + i);
                }
 
-               this.trackedMessages.set(var3, var5.acknowledge());
-               var2.add(var5.signature());
+               this.trackedMessages.set(i, message.acknowledge());
+               lastSeenEntries.add(message.signature());
             } else {
-               if (var5 != null && !var5.pending()) {
-                  throw new ValidationException("Last seen update ignored previously acknowledged message at index " + var3 + " and signature " + String.valueOf(var5.signature()));
+               if (message != null && !message.pending()) {
+                  throw new ValidationException("Last seen update ignored previously acknowledged message at index " + i + " and signature " + String.valueOf(message.signature()));
                }
 
-               this.trackedMessages.set(var3, (Object)null);
+               this.trackedMessages.set(i, (Object)null);
             }
          }
 
-         LastSeenMessages var6 = new LastSeenMessages(var2);
-         if (!var1.verifyChecksum(var6)) {
+         LastSeenMessages lastSeen = new LastSeenMessages(lastSeenEntries);
+         if (!update.verifyChecksum(lastSeen)) {
             throw new ValidationException("Checksum mismatch on last seen update: the client and server must have desynced");
          } else {
-            return var6;
+            return lastSeen;
          }
       }
    }
 
    public static class ValidationException extends Exception {
-      public ValidationException(String var1) {
-         super(var1);
+      public ValidationException(final String message) {
+         super(message);
       }
    }
 }

@@ -7,7 +7,6 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Object2ByteLinkedOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -47,6 +46,7 @@ import net.minecraft.world.entity.monster.piglin.PiglinAi;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemInstance;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -82,13 +82,8 @@ public class Block extends BlockBehaviour implements ItemLike {
    private final Holder.Reference<Block> builtInRegistryHolder;
    public static final IdMapper<BlockState> BLOCK_STATE_REGISTRY = new IdMapper<BlockState>();
    private static final LoadingCache<VoxelShape, Boolean> SHAPE_FULL_BLOCK_CACHE = CacheBuilder.newBuilder().maximumSize(512L).weakKeys().build(new CacheLoader<VoxelShape, Boolean>() {
-      public Boolean load(VoxelShape var1) {
-         return !Shapes.joinIsNotEmpty(Shapes.block(), var1, BooleanOp.NOT_SAME);
-      }
-
-      // $FF: synthetic method
-      public Object load(final Object var1) throws Exception {
-         return this.load((VoxelShape)var1);
+      public Boolean load(final VoxelShape shape) {
+         return !Shapes.joinIsNotEmpty(Shapes.block(), shape, BooleanOp.NOT_SAME);
       }
    });
    public static final int UPDATE_NEIGHBORS = 1;
@@ -113,283 +108,285 @@ public class Block extends BlockBehaviour implements ItemLike {
    private @Nullable Item item;
    private static final int CACHE_SIZE = 256;
    private static final ThreadLocal<Object2ByteLinkedOpenHashMap<ShapePairKey>> OCCLUSION_CACHE = ThreadLocal.withInitial(() -> {
-      Object2ByteLinkedOpenHashMap var0 = new Object2ByteLinkedOpenHashMap<ShapePairKey>(256, 0.25F) {
-         protected void rehash(int var1) {
+      Object2ByteLinkedOpenHashMap<ShapePairKey> map = new Object2ByteLinkedOpenHashMap<ShapePairKey>(256, 0.25F) {
+         protected void rehash(final int newN) {
          }
       };
-      var0.defaultReturnValue((byte)127);
-      return var0;
+      map.defaultReturnValue((byte)127);
+      return map;
    });
 
    protected MapCodec<? extends Block> codec() {
       return CODEC;
    }
 
-   public static int getId(@Nullable BlockState var0) {
-      if (var0 == null) {
+   public static int getId(final @Nullable BlockState blockState) {
+      if (blockState == null) {
          return 0;
       } else {
-         int var1 = BLOCK_STATE_REGISTRY.getId(var0);
-         return var1 == -1 ? 0 : var1;
+         int id = BLOCK_STATE_REGISTRY.getId(blockState);
+         return id == -1 ? 0 : id;
       }
    }
 
-   public static BlockState stateById(int var0) {
-      BlockState var1 = BLOCK_STATE_REGISTRY.byId(var0);
-      return var1 == null ? Blocks.AIR.defaultBlockState() : var1;
+   public static BlockState stateById(final int idWithData) {
+      BlockState state = BLOCK_STATE_REGISTRY.byId(idWithData);
+      return state == null ? Blocks.AIR.defaultBlockState() : state;
    }
 
-   public static Block byItem(@Nullable Item var0) {
-      return var0 instanceof BlockItem ? ((BlockItem)var0).getBlock() : Blocks.AIR;
+   public static Block byItem(final @Nullable Item item) {
+      return item instanceof BlockItem ? ((BlockItem)item).getBlock() : Blocks.AIR;
    }
 
-   public static BlockState pushEntitiesUp(BlockState var0, BlockState var1, LevelAccessor var2, BlockPos var3) {
-      VoxelShape var4 = Shapes.joinUnoptimized(var0.getCollisionShape(var2, var3), var1.getCollisionShape(var2, var3), BooleanOp.ONLY_SECOND).move((Vec3i)var3);
-      if (var4.isEmpty()) {
-         return var1;
+   public static BlockState pushEntitiesUp(final BlockState state, final BlockState newState, final LevelAccessor level, final BlockPos pos) {
+      VoxelShape offsetShape = Shapes.joinUnoptimized(state.getCollisionShape(level, pos), newState.getCollisionShape(level, pos), BooleanOp.ONLY_SECOND).move((Vec3i)pos);
+      if (offsetShape.isEmpty()) {
+         return newState;
       } else {
-         for(Entity var7 : var2.getEntities((Entity)null, var4.bounds())) {
-            double var8 = Shapes.collide(Direction.Axis.Y, var7.getBoundingBox().move(0.0, 1.0, 0.0), List.of(var4), -1.0);
-            var7.teleportRelative(0.0, 1.0 + var8, 0.0);
+         for(Entity collidingEntity : level.getEntities((Entity)null, offsetShape.bounds())) {
+            double offset = Shapes.collide(Direction.Axis.Y, collidingEntity.getBoundingBox().move(0.0, 1.0, 0.0), List.of(offsetShape), -1.0);
+            collidingEntity.teleportRelative(0.0, 1.0 + offset, 0.0);
          }
 
-         return var1;
+         return newState;
       }
    }
 
-   public static VoxelShape box(double var0, double var2, double var4, double var6, double var8, double var10) {
-      return Shapes.box(var0 / 16.0, var2 / 16.0, var4 / 16.0, var6 / 16.0, var8 / 16.0, var10 / 16.0);
+   public static VoxelShape box(final double minX, final double minY, final double minZ, final double maxX, final double maxY, final double maxZ) {
+      return Shapes.box(minX / 16.0, minY / 16.0, minZ / 16.0, maxX / 16.0, maxY / 16.0, maxZ / 16.0);
    }
 
-   public static VoxelShape[] boxes(int var0, IntFunction<VoxelShape> var1) {
-      return (VoxelShape[])IntStream.rangeClosed(0, var0).mapToObj(var1).toArray((var0x) -> new VoxelShape[var0x]);
+   public static VoxelShape[] boxes(final int endInclusive, final IntFunction<VoxelShape> voxelShapeFactory) {
+      return (VoxelShape[])IntStream.rangeClosed(0, endInclusive).mapToObj(voxelShapeFactory).toArray((x$0) -> new VoxelShape[x$0]);
    }
 
-   public static VoxelShape cube(double var0) {
-      return cube(var0, var0, var0);
+   public static VoxelShape cube(final double size) {
+      return cube(size, size, size);
    }
 
-   public static VoxelShape cube(double var0, double var2, double var4) {
-      double var6 = var2 / 2.0;
-      return column(var0, var4, 8.0 - var6, 8.0 + var6);
+   public static VoxelShape cube(final double sizeX, final double sizeY, final double sizeZ) {
+      double halfY = sizeY / 2.0;
+      return column(sizeX, sizeZ, 8.0 - halfY, 8.0 + halfY);
    }
 
-   public static VoxelShape column(double var0, double var2, double var4) {
-      return column(var0, var0, var2, var4);
+   public static VoxelShape column(final double sizeXZ, final double minY, final double maxY) {
+      return column(sizeXZ, sizeXZ, minY, maxY);
    }
 
-   public static VoxelShape column(double var0, double var2, double var4, double var6) {
-      double var8 = var0 / 2.0;
-      double var10 = var2 / 2.0;
-      return box(8.0 - var8, var4, 8.0 - var10, 8.0 + var8, var6, 8.0 + var10);
+   public static VoxelShape column(final double sizeX, final double sizeZ, final double minY, final double maxY) {
+      double halfX = sizeX / 2.0;
+      double halfZ = sizeZ / 2.0;
+      return box(8.0 - halfX, minY, 8.0 - halfZ, 8.0 + halfX, maxY, 8.0 + halfZ);
    }
 
-   public static VoxelShape boxZ(double var0, double var2, double var4) {
-      return boxZ(var0, var0, var2, var4);
+   public static VoxelShape boxZ(final double sizeXY, final double minZ, final double maxZ) {
+      return boxZ(sizeXY, sizeXY, minZ, maxZ);
    }
 
-   public static VoxelShape boxZ(double var0, double var2, double var4, double var6) {
-      double var8 = var2 / 2.0;
-      return boxZ(var0, 8.0 - var8, 8.0 + var8, var4, var6);
+   public static VoxelShape boxZ(final double sizeX, final double sizeY, final double minZ, final double maxZ) {
+      double halfY = sizeY / 2.0;
+      return boxZ(sizeX, 8.0 - halfY, 8.0 + halfY, minZ, maxZ);
    }
 
-   public static VoxelShape boxZ(double var0, double var2, double var4, double var6, double var8) {
-      double var10 = var0 / 2.0;
-      return box(8.0 - var10, var2, var6, 8.0 + var10, var4, var8);
+   public static VoxelShape boxZ(final double sizeX, final double minY, final double maxY, final double minZ, final double maxZ) {
+      double halfX = sizeX / 2.0;
+      return box(8.0 - halfX, minY, minZ, 8.0 + halfX, maxY, maxZ);
    }
 
-   public static BlockState updateFromNeighbourShapes(BlockState var0, LevelAccessor var1, BlockPos var2) {
-      BlockState var3 = var0;
-      BlockPos.MutableBlockPos var4 = new BlockPos.MutableBlockPos();
+   public static BlockState updateFromNeighbourShapes(final BlockState state, final LevelAccessor level, final BlockPos pos) {
+      BlockState newState = state;
+      BlockPos.MutableBlockPos neighbourPos = new BlockPos.MutableBlockPos();
 
-      for(Direction var8 : UPDATE_SHAPE_ORDER) {
-         var4.setWithOffset(var2, (Direction)var8);
-         var3 = var3.updateShape(var1, var1, var2, var8, var4, var1.getBlockState(var4), var1.getRandom());
+      for(Direction direction : UPDATE_SHAPE_ORDER) {
+         neighbourPos.setWithOffset(pos, (Direction)direction);
+         newState = newState.updateShape(level, level, pos, direction, neighbourPos, level.getBlockState(neighbourPos), level.getRandom());
       }
 
-      return var3;
+      return newState;
    }
 
-   public static void updateOrDestroy(BlockState var0, BlockState var1, LevelAccessor var2, BlockPos var3, @Block.UpdateFlags int var4) {
-      updateOrDestroy(var0, var1, var2, var3, var4, 512);
+   public static void updateOrDestroy(final BlockState blockState, final BlockState newState, final LevelAccessor level, final BlockPos blockPos, final @Block.UpdateFlags int updateFlags) {
+      updateOrDestroy(blockState, newState, level, blockPos, updateFlags, 512);
    }
 
-   public static void updateOrDestroy(BlockState var0, BlockState var1, LevelAccessor var2, BlockPos var3, @Block.UpdateFlags int var4, int var5) {
-      if (var1 != var0) {
-         if (var1.isAir()) {
-            if (!var2.isClientSide()) {
-               var2.destroyBlock(var3, (var4 & 32) == 0, (Entity)null, var5);
+   public static void updateOrDestroy(final BlockState blockState, final BlockState newState, final LevelAccessor level, final BlockPos blockPos, final @Block.UpdateFlags int updateFlags, final int updateLimit) {
+      if (newState != blockState) {
+         if (newState.isAir()) {
+            if (!level.isClientSide()) {
+               level.destroyBlock(blockPos, (updateFlags & 32) == 0, (Entity)null, updateLimit);
             }
          } else {
-            var2.setBlock(var3, var1, var4 & -33, var5);
+            level.setBlock(blockPos, newState, updateFlags & -33, updateLimit);
          }
       }
 
    }
 
-   public Block(BlockBehaviour.Properties var1) {
-      super(var1);
+   public Block(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.builtInRegistryHolder = BuiltInRegistries.BLOCK.createIntrusiveHolder(this);
-      StateDefinition.Builder var2 = new StateDefinition.Builder(this);
-      this.createBlockStateDefinition(var2);
-      this.stateDefinition = var2.create(Block::defaultBlockState, BlockState::new);
+      StateDefinition.Builder<Block, BlockState> builder = new StateDefinition.Builder<Block, BlockState>(this);
+      this.createBlockStateDefinition(builder);
+      this.stateDefinition = builder.create(Block::defaultBlockState, BlockState::new);
       this.registerDefaultState(this.stateDefinition.any());
       if (SharedConstants.IS_RUNNING_IN_IDE) {
-         String var3 = this.getClass().getSimpleName();
-         if (!var3.endsWith("Block")) {
-            LOGGER.error("Block classes should end with Block and {} doesn't.", var3);
+         String className = this.getClass().getSimpleName();
+         if (!className.endsWith("Block")) {
+            LOGGER.error("Block classes should end with Block and {} doesn't.", className);
          }
       }
 
    }
 
-   public static boolean isExceptionForConnection(BlockState var0) {
-      return var0.getBlock() instanceof LeavesBlock || var0.is(Blocks.BARRIER) || var0.is(Blocks.CARVED_PUMPKIN) || var0.is(Blocks.JACK_O_LANTERN) || var0.is(Blocks.MELON) || var0.is(Blocks.PUMPKIN) || var0.is(BlockTags.SHULKER_BOXES);
+   public static boolean isExceptionForConnection(final BlockState state) {
+      return state.getBlock() instanceof LeavesBlock || state.is(Blocks.BARRIER) || state.is(Blocks.CARVED_PUMPKIN) || state.is(Blocks.JACK_O_LANTERN) || state.is(Blocks.MELON) || state.is(Blocks.PUMPKIN) || state.is(BlockTags.SHULKER_BOXES);
    }
 
-   protected static boolean dropFromBlockInteractLootTable(ServerLevel var0, ResourceKey<LootTable> var1, BlockState var2, @Nullable BlockEntity var3, @Nullable ItemStack var4, @Nullable Entity var5, BiConsumer<ServerLevel, ItemStack> var6) {
-      return dropFromLootTable(var0, var1, (var4x) -> var4x.withParameter(LootContextParams.BLOCK_STATE, var2).withOptionalParameter(LootContextParams.BLOCK_ENTITY, var3).withOptionalParameter(LootContextParams.INTERACTING_ENTITY, var5).withOptionalParameter(LootContextParams.TOOL, var4).create(LootContextParamSets.BLOCK_INTERACT), var6);
+   protected static boolean dropFromBlockInteractLootTable(final ServerLevel level, final ResourceKey<LootTable> key, final BlockState interactedBlockState, final @Nullable BlockEntity interactedBlockEntity, final @Nullable ItemInstance tool, final @Nullable Entity interactingEntity, final BiConsumer<ServerLevel, ItemStack> consumer) {
+      return dropFromLootTable(level, key, (params) -> params.withParameter(LootContextParams.BLOCK_STATE, interactedBlockState).withOptionalParameter(LootContextParams.BLOCK_ENTITY, interactedBlockEntity).withOptionalParameter(LootContextParams.INTERACTING_ENTITY, interactingEntity).withOptionalParameter(LootContextParams.TOOL, tool).create(LootContextParamSets.BLOCK_INTERACT), consumer);
    }
 
-   protected static boolean dropFromLootTable(ServerLevel var0, ResourceKey<LootTable> var1, Function<LootParams.Builder, LootParams> var2, BiConsumer<ServerLevel, ItemStack> var3) {
-      LootTable var4 = var0.getServer().reloadableRegistries().getLootTable(var1);
-      LootParams var5 = (LootParams)var2.apply(new LootParams.Builder(var0));
-      ObjectArrayList var6 = var4.getRandomItems(var5);
-      if (!var6.isEmpty()) {
-         var6.forEach((var2x) -> var3.accept(var0, var2x));
+   protected static boolean dropFromLootTable(final ServerLevel level, final ResourceKey<LootTable> key, final Function<LootParams.Builder, LootParams> paramsBuilder, final BiConsumer<ServerLevel, ItemStack> consumer) {
+      LootTable lootTable = level.getServer().reloadableRegistries().getLootTable(key);
+      LootParams params = (LootParams)paramsBuilder.apply(new LootParams.Builder(level));
+      List<ItemStack> drops = lootTable.getRandomItems(params);
+      if (!drops.isEmpty()) {
+         drops.forEach((stack) -> consumer.accept(level, stack));
          return true;
       } else {
          return false;
       }
    }
 
-   public static boolean shouldRenderFace(BlockState var0, BlockState var1, Direction var2) {
-      VoxelShape var3 = var1.getFaceOcclusionShape(var2.getOpposite());
-      if (var3 == Shapes.block()) {
+   public static boolean shouldRenderFace(final BlockState state, final BlockState neighborState, final Direction direction) {
+      VoxelShape occluder = neighborState.getFaceOcclusionShape(direction.getOpposite());
+      if (occluder == Shapes.block()) {
          return false;
-      } else if (var0.skipRendering(var1, var2)) {
+      } else if (state.skipRendering(neighborState, direction)) {
          return false;
-      } else if (var3 == Shapes.empty()) {
+      } else if (occluder == Shapes.empty()) {
          return true;
       } else {
-         VoxelShape var4 = var0.getFaceOcclusionShape(var2);
-         if (var4 == Shapes.empty()) {
+         VoxelShape shape = state.getFaceOcclusionShape(direction);
+         if (shape == Shapes.empty()) {
             return true;
          } else {
-            ShapePairKey var5 = new ShapePairKey(var4, var3);
-            Object2ByteLinkedOpenHashMap var6 = (Object2ByteLinkedOpenHashMap)OCCLUSION_CACHE.get();
-            byte var7 = var6.getAndMoveToFirst(var5);
-            if (var7 != 127) {
-               return var7 != 0;
+            ShapePairKey key = new ShapePairKey(shape, occluder);
+            Object2ByteLinkedOpenHashMap<ShapePairKey> cache = (Object2ByteLinkedOpenHashMap)OCCLUSION_CACHE.get();
+            byte cached = cache.getAndMoveToFirst(key);
+            if (cached != 127) {
+               return cached != 0;
             } else {
-               boolean var8 = Shapes.joinIsNotEmpty(var4, var3, BooleanOp.ONLY_FIRST);
-               if (var6.size() == 256) {
-                  var6.removeLastByte();
+               boolean result = Shapes.joinIsNotEmpty(shape, occluder, BooleanOp.ONLY_FIRST);
+               if (cache.size() == 256) {
+                  cache.removeLastByte();
                }
 
-               var6.putAndMoveToFirst(var5, (byte)(var8 ? 1 : 0));
-               return var8;
+               cache.putAndMoveToFirst(key, (byte)(result ? 1 : 0));
+               return result;
             }
          }
       }
    }
 
-   public static boolean canSupportRigidBlock(BlockGetter var0, BlockPos var1) {
-      return var0.getBlockState(var1).isFaceSturdy(var0, var1, Direction.UP, SupportType.RIGID);
+   public static boolean canSupportRigidBlock(final BlockGetter level, final BlockPos below) {
+      return level.getBlockState(below).isFaceSturdy(level, below, Direction.UP, SupportType.RIGID);
    }
 
-   public static boolean canSupportCenter(LevelReader var0, BlockPos var1, Direction var2) {
-      BlockState var3 = var0.getBlockState(var1);
-      return var2 == Direction.DOWN && var3.is(BlockTags.UNSTABLE_BOTTOM_CENTER) ? false : var3.isFaceSturdy(var0, var1, var2, SupportType.CENTER);
+   public static boolean canSupportCenter(final LevelReader level, final BlockPos belowPos, final Direction direction) {
+      BlockState state = level.getBlockState(belowPos);
+      return direction == Direction.DOWN && state.is(BlockTags.UNSTABLE_BOTTOM_CENTER) ? false : state.isFaceSturdy(level, belowPos, direction, SupportType.CENTER);
    }
 
-   public static boolean isFaceFull(VoxelShape var0, Direction var1) {
-      VoxelShape var2 = var0.getFaceShape(var1);
-      return isShapeFullBlock(var2);
+   public static boolean isFaceFull(final VoxelShape shape, final Direction direction) {
+      VoxelShape faceShape = shape.getFaceShape(direction);
+      return isShapeFullBlock(faceShape);
    }
 
-   public static boolean isShapeFullBlock(VoxelShape var0) {
-      return (Boolean)SHAPE_FULL_BLOCK_CACHE.getUnchecked(var0);
+   public static boolean isShapeFullBlock(final VoxelShape shape) {
+      return (Boolean)SHAPE_FULL_BLOCK_CACHE.getUnchecked(shape);
    }
 
-   public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
+   public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {
    }
 
-   public void destroy(LevelAccessor var1, BlockPos var2, BlockState var3) {
+   public void destroy(final LevelAccessor level, final BlockPos pos, final BlockState state) {
    }
 
-   public static List<ItemStack> getDrops(BlockState var0, ServerLevel var1, BlockPos var2, @Nullable BlockEntity var3) {
-      LootParams.Builder var4 = (new LootParams.Builder(var1)).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(var2)).withParameter(LootContextParams.TOOL, ItemStack.EMPTY).withOptionalParameter(LootContextParams.BLOCK_ENTITY, var3);
-      return var0.getDrops(var4);
+   public static List<ItemStack> getDrops(final BlockState state, final ServerLevel level, final BlockPos pos, final @Nullable BlockEntity blockEntity) {
+      LootParams.Builder params = (new LootParams.Builder(level)).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(pos)).withParameter(LootContextParams.TOOL, ItemStack.EMPTY).withOptionalParameter(LootContextParams.BLOCK_ENTITY, blockEntity);
+      return state.getDrops(params);
    }
 
-   public static List<ItemStack> getDrops(BlockState var0, ServerLevel var1, BlockPos var2, @Nullable BlockEntity var3, @Nullable Entity var4, ItemStack var5) {
-      LootParams.Builder var6 = (new LootParams.Builder(var1)).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(var2)).withParameter(LootContextParams.TOOL, var5).withOptionalParameter(LootContextParams.THIS_ENTITY, var4).withOptionalParameter(LootContextParams.BLOCK_ENTITY, var3);
-      return var0.getDrops(var6);
+   public static List<ItemStack> getDrops(final BlockState state, final ServerLevel level, final BlockPos pos, final @Nullable BlockEntity blockEntity, final @Nullable Entity breaker, final ItemInstance tool) {
+      LootParams.Builder params = (new LootParams.Builder(level)).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(pos)).withParameter(LootContextParams.TOOL, tool).withOptionalParameter(LootContextParams.THIS_ENTITY, breaker).withOptionalParameter(LootContextParams.BLOCK_ENTITY, blockEntity);
+      return state.getDrops(params);
    }
 
-   public static void dropResources(BlockState var0, Level var1, BlockPos var2) {
-      if (var1 instanceof ServerLevel) {
-         getDrops(var0, (ServerLevel)var1, var2, (BlockEntity)null).forEach((var2x) -> popResource(var1, var2, var2x));
-         var0.spawnAfterBreak((ServerLevel)var1, var2, ItemStack.EMPTY, true);
+   public static void dropResources(final BlockState state, final Level level, final BlockPos pos) {
+      if (level instanceof ServerLevel serverLevel) {
+         getDrops(state, serverLevel, pos, (BlockEntity)null).forEach((stack) -> popResource(level, pos, stack));
+         state.spawnAfterBreak(serverLevel, pos, ItemStack.EMPTY, true);
       }
 
    }
 
-   public static void dropResources(BlockState var0, LevelAccessor var1, BlockPos var2, @Nullable BlockEntity var3) {
-      if (var1 instanceof ServerLevel) {
-         getDrops(var0, (ServerLevel)var1, var2, var3).forEach((var2x) -> popResource((ServerLevel)var1, var2, var2x));
-         var0.spawnAfterBreak((ServerLevel)var1, var2, ItemStack.EMPTY, true);
+   public static void dropResources(final BlockState state, final LevelAccessor level, final BlockPos pos, final @Nullable BlockEntity blockEntity) {
+      if (level instanceof ServerLevel serverLevel) {
+         getDrops(state, serverLevel, pos, blockEntity).forEach((stack) -> popResource(serverLevel, pos, stack));
+         state.spawnAfterBreak(serverLevel, pos, ItemStack.EMPTY, true);
       }
 
    }
 
-   public static void dropResources(BlockState var0, Level var1, BlockPos var2, @Nullable BlockEntity var3, @Nullable Entity var4, ItemStack var5) {
-      if (var1 instanceof ServerLevel) {
-         getDrops(var0, (ServerLevel)var1, var2, var3, var4, var5).forEach((var2x) -> popResource(var1, var2, var2x));
-         var0.spawnAfterBreak((ServerLevel)var1, var2, var5, true);
+   public static void dropResources(final BlockState state, final Level level, final BlockPos pos, final @Nullable BlockEntity blockEntity, final @Nullable Entity breaker, final ItemStack tool) {
+      if (level instanceof ServerLevel serverLevel) {
+         getDrops(state, serverLevel, pos, blockEntity, breaker, tool).forEach((stack) -> popResource(level, pos, stack));
+         state.spawnAfterBreak(serverLevel, pos, tool, true);
       }
 
    }
 
-   public static void popResource(Level var0, BlockPos var1, ItemStack var2) {
-      double var3 = (double)EntityType.ITEM.getHeight() / 2.0;
-      double var5 = (double)var1.getX() + 0.5 + Mth.nextDouble(var0.random, -0.25, 0.25);
-      double var7 = (double)var1.getY() + 0.5 + Mth.nextDouble(var0.random, -0.25, 0.25) - var3;
-      double var9 = (double)var1.getZ() + 0.5 + Mth.nextDouble(var0.random, -0.25, 0.25);
-      popResource(var0, (Supplier)(() -> new ItemEntity(var0, var5, var7, var9, var2)), var2);
+   public static void popResource(final Level level, final BlockPos pos, final ItemStack itemStack) {
+      double halfHeight = (double)EntityType.ITEM.getHeight() / 2.0;
+      RandomSource random = level.getRandom();
+      double x = (double)pos.getX() + 0.5 + Mth.nextDouble(random, -0.25, 0.25);
+      double y = (double)pos.getY() + 0.5 + Mth.nextDouble(random, -0.25, 0.25) - halfHeight;
+      double z = (double)pos.getZ() + 0.5 + Mth.nextDouble(random, -0.25, 0.25);
+      popResource(level, (Supplier)(() -> new ItemEntity(level, x, y, z, itemStack)), itemStack);
    }
 
-   public static void popResourceFromFace(Level var0, BlockPos var1, Direction var2, ItemStack var3) {
-      int var4 = var2.getStepX();
-      int var5 = var2.getStepY();
-      int var6 = var2.getStepZ();
-      double var7 = (double)EntityType.ITEM.getWidth() / 2.0;
-      double var9 = (double)EntityType.ITEM.getHeight() / 2.0;
-      double var11 = (double)var1.getX() + 0.5 + (var4 == 0 ? Mth.nextDouble(var0.random, -0.25, 0.25) : (double)var4 * (0.5 + var7));
-      double var13 = (double)var1.getY() + 0.5 + (var5 == 0 ? Mth.nextDouble(var0.random, -0.25, 0.25) : (double)var5 * (0.5 + var9)) - var9;
-      double var15 = (double)var1.getZ() + 0.5 + (var6 == 0 ? Mth.nextDouble(var0.random, -0.25, 0.25) : (double)var6 * (0.5 + var7));
-      double var17 = var4 == 0 ? Mth.nextDouble(var0.random, -0.1, 0.1) : (double)var4 * 0.1;
-      double var19 = var5 == 0 ? Mth.nextDouble(var0.random, 0.0, 0.1) : (double)var5 * 0.1 + 0.1;
-      double var21 = var6 == 0 ? Mth.nextDouble(var0.random, -0.1, 0.1) : (double)var6 * 0.1;
-      popResource(var0, (Supplier)(() -> new ItemEntity(var0, var11, var13, var15, var3, var17, var19, var21)), var3);
+   public static void popResourceFromFace(final Level level, final BlockPos pos, final Direction face, final ItemStack itemStack) {
+      int stepX = face.getStepX();
+      int stepY = face.getStepY();
+      int stepZ = face.getStepZ();
+      double halfWidth = (double)EntityType.ITEM.getWidth() / 2.0;
+      double halfHeight = (double)EntityType.ITEM.getHeight() / 2.0;
+      RandomSource random = level.getRandom();
+      double x = (double)pos.getX() + 0.5 + (stepX == 0 ? Mth.nextDouble(random, -0.25, 0.25) : (double)stepX * (0.5 + halfWidth));
+      double y = (double)pos.getY() + 0.5 + (stepY == 0 ? Mth.nextDouble(random, -0.25, 0.25) : (double)stepY * (0.5 + halfHeight)) - halfHeight;
+      double z = (double)pos.getZ() + 0.5 + (stepZ == 0 ? Mth.nextDouble(random, -0.25, 0.25) : (double)stepZ * (0.5 + halfWidth));
+      double deltaX = stepX == 0 ? Mth.nextDouble(random, -0.1, 0.1) : (double)stepX * 0.1;
+      double deltaY = stepY == 0 ? Mth.nextDouble(random, 0.0, 0.1) : (double)stepY * 0.1 + 0.1;
+      double deltaZ = stepZ == 0 ? Mth.nextDouble(random, -0.1, 0.1) : (double)stepZ * 0.1;
+      popResource(level, (Supplier)(() -> new ItemEntity(level, x, y, z, itemStack, deltaX, deltaY, deltaZ)), itemStack);
    }
 
-   private static void popResource(Level var0, Supplier<ItemEntity> var1, ItemStack var2) {
-      if (var0 instanceof ServerLevel var3) {
-         if (!var2.isEmpty() && (Boolean)var3.getGameRules().get(GameRules.BLOCK_DROPS)) {
-            ItemEntity var4 = (ItemEntity)var1.get();
-            var4.setDefaultPickUpDelay();
-            var0.addFreshEntity(var4);
+   private static void popResource(final Level level, final Supplier<ItemEntity> entityFactory, final ItemStack itemStack) {
+      if (level instanceof ServerLevel serverLevel) {
+         if (!itemStack.isEmpty() && (Boolean)serverLevel.getGameRules().get(GameRules.BLOCK_DROPS)) {
+            ItemEntity entity = (ItemEntity)entityFactory.get();
+            entity.setDefaultPickUpDelay();
+            level.addFreshEntity(entity);
             return;
          }
       }
 
    }
 
-   protected void popExperience(ServerLevel var1, BlockPos var2, int var3) {
-      if ((Boolean)var1.getGameRules().get(GameRules.BLOCK_DROPS)) {
-         ExperienceOrb.award(var1, Vec3.atCenterOf(var2), var3);
+   protected void popExperience(final ServerLevel level, final BlockPos pos, final int amount) {
+      if ((Boolean)level.getGameRules().get(GameRules.BLOCK_DROPS)) {
+         ExperienceOrb.award(level, Vec3.atCenterOf(pos), amount);
       }
 
    }
@@ -398,39 +395,39 @@ public class Block extends BlockBehaviour implements ItemLike {
       return this.explosionResistance;
    }
 
-   public void wasExploded(ServerLevel var1, BlockPos var2, Explosion var3) {
+   public void wasExploded(final ServerLevel level, final BlockPos pos, final Explosion explosion) {
    }
 
-   public void stepOn(Level var1, BlockPos var2, BlockState var3, Entity var4) {
+   public void stepOn(final Level level, final BlockPos pos, final BlockState onState, final Entity entity) {
    }
 
-   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
+   public @Nullable BlockState getStateForPlacement(final BlockPlaceContext context) {
       return this.defaultBlockState();
    }
 
-   public void playerDestroy(Level var1, Player var2, BlockPos var3, BlockState var4, @Nullable BlockEntity var5, ItemStack var6) {
-      var2.awardStat(Stats.BLOCK_MINED.get(this));
-      var2.causeFoodExhaustion(0.005F);
-      dropResources(var4, var1, var3, var5, var2, var6);
+   public void playerDestroy(final Level level, final Player player, final BlockPos pos, final BlockState state, final @Nullable BlockEntity blockEntity, final ItemStack destroyedWith) {
+      player.awardStat(Stats.BLOCK_MINED.get(this));
+      player.causeFoodExhaustion(0.005F);
+      dropResources(state, level, pos, blockEntity, player, destroyedWith);
    }
 
-   public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, @Nullable LivingEntity var4, ItemStack var5) {
+   public void setPlacedBy(final Level level, final BlockPos pos, final BlockState state, final @Nullable LivingEntity by, final ItemStack itemStack) {
    }
 
-   public boolean isPossibleToRespawnInThis(BlockState var1) {
-      return !var1.isSolid() && !var1.liquid();
+   public boolean isPossibleToRespawnInThis(final BlockState state) {
+      return !state.isSolid() && !state.liquid();
    }
 
    public MutableComponent getName() {
       return Component.translatable(this.getDescriptionId());
    }
 
-   public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, double var5) {
-      var4.causeFallDamage(var5, 1.0F, var4.damageSources().fall());
+   public void fallOn(final Level level, final BlockState state, final BlockPos pos, final Entity entity, final double fallDistance) {
+      entity.causeFallDamage(fallDistance, 1.0F, entity.damageSources().fall());
    }
 
-   public void updateEntityMovementAfterFallOn(BlockGetter var1, Entity var2) {
-      var2.setDeltaMovement(var2.getDeltaMovement().multiply(1.0, 0.0, 1.0));
+   public void updateEntityMovementAfterFallOn(final BlockGetter level, final Entity entity) {
+      entity.setDeltaMovement(entity.getDeltaMovement().multiply(1.0, 0.0, 1.0));
    }
 
    public float getFriction() {
@@ -445,56 +442,56 @@ public class Block extends BlockBehaviour implements ItemLike {
       return this.jumpFactor;
    }
 
-   protected void spawnDestroyParticles(Level var1, Player var2, BlockPos var3, BlockState var4) {
-      var1.levelEvent(var2, 2001, var3, getId(var4));
+   protected void spawnDestroyParticles(final Level level, final Player player, final BlockPos pos, final BlockState state) {
+      level.levelEvent(player, 2001, pos, getId(state));
    }
 
-   public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
-      this.spawnDestroyParticles(var1, var4, var2, var3);
-      if (var3.is(BlockTags.GUARDED_BY_PIGLINS) && var1 instanceof ServerLevel var5) {
-         PiglinAi.angerNearbyPiglins(var5, var4, false);
+   public BlockState playerWillDestroy(final Level level, final BlockPos pos, final BlockState state, final Player player) {
+      this.spawnDestroyParticles(level, player, pos, state);
+      if (state.is(BlockTags.GUARDED_BY_PIGLINS) && level instanceof ServerLevel serverLevel) {
+         PiglinAi.angerNearbyPiglins(serverLevel, player, false);
       }
 
-      var1.gameEvent(GameEvent.BLOCK_DESTROY, var2, GameEvent.Context.of(var4, var3));
-      return var3;
+      level.gameEvent(GameEvent.BLOCK_DESTROY, pos, GameEvent.Context.of(player, state));
+      return state;
    }
 
-   public void handlePrecipitation(BlockState var1, Level var2, BlockPos var3, Biome.Precipitation var4) {
+   public void handlePrecipitation(final BlockState state, final Level level, final BlockPos pos, final Biome.Precipitation precipitation) {
    }
 
-   public boolean dropFromExplosion(Explosion var1) {
+   public boolean dropFromExplosion(final Explosion explosion) {
       return true;
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
    }
 
    public StateDefinition<Block, BlockState> getStateDefinition() {
       return this.stateDefinition;
    }
 
-   protected final void registerDefaultState(BlockState var1) {
-      this.defaultBlockState = var1;
+   protected final void registerDefaultState(final BlockState state) {
+      this.defaultBlockState = state;
    }
 
    public final BlockState defaultBlockState() {
       return this.defaultBlockState;
    }
 
-   public final BlockState withPropertiesOf(BlockState var1) {
-      BlockState var2 = this.defaultBlockState();
+   public final BlockState withPropertiesOf(final BlockState source) {
+      BlockState result = this.defaultBlockState();
 
-      for(Property var4 : var1.getBlock().getStateDefinition().getProperties()) {
-         if (var2.hasProperty(var4)) {
-            var2 = copyProperty(var1, var2, var4);
+      for(Property<?> property : source.getBlock().getStateDefinition().getProperties()) {
+         if (result.hasProperty(property)) {
+            result = copyProperty(source, result, property);
          }
       }
 
-      return var2;
+      return result;
    }
 
-   private static <T extends Comparable<T>> BlockState copyProperty(BlockState var0, BlockState var1, Property<T> var2) {
-      return (BlockState)var1.setValue(var2, var0.getValue(var2));
+   private static <T extends Comparable<T>> BlockState copyProperty(final BlockState from, final BlockState to, final Property<T> property) {
+      return (BlockState)to.setValue(property, from.getValue(property));
    }
 
    public Item asItem() {
@@ -517,26 +514,26 @@ public class Block extends BlockBehaviour implements ItemLike {
       return this;
    }
 
-   protected Function<BlockState, VoxelShape> getShapeForEachState(Function<BlockState, VoxelShape> var1) {
-      ImmutableMap var10000 = (ImmutableMap)this.stateDefinition.getPossibleStates().stream().collect(ImmutableMap.toImmutableMap(Function.identity(), var1));
+   protected Function<BlockState, VoxelShape> getShapeForEachState(final Function<BlockState, VoxelShape> shapeCalculator) {
+      ImmutableMap var10000 = (ImmutableMap)this.stateDefinition.getPossibleStates().stream().collect(ImmutableMap.toImmutableMap(Function.identity(), shapeCalculator));
       Objects.requireNonNull(var10000);
       return var10000::get;
    }
 
-   protected Function<BlockState, VoxelShape> getShapeForEachState(Function<BlockState, VoxelShape> var1, Property<?>... var2) {
-      Map var3 = (Map)Arrays.stream(var2).collect(Collectors.toMap((var0) -> var0, (var0) -> var0.getPossibleValues().getFirst()));
-      ImmutableMap var4 = (ImmutableMap)this.stateDefinition.getPossibleStates().stream().filter((var1x) -> var3.entrySet().stream().allMatch((var1) -> var1x.getValue((Property)var1.getKey()) == var1.getValue())).collect(ImmutableMap.toImmutableMap(Function.identity(), var1));
-      return (var2x) -> {
-         for(Map.Entry var4x : var3.entrySet()) {
-            var2x = (BlockState)setValueHelper(var2x, (Property)var4x.getKey(), var4x.getValue());
+   protected Function<BlockState, VoxelShape> getShapeForEachState(final Function<BlockState, VoxelShape> shapeCalculator, final Property<?>... ignoredProperties) {
+      Map<? extends Property<?>, Object> defaults = (Map)Arrays.stream(ignoredProperties).collect(Collectors.toMap((k) -> k, (k) -> k.getPossibleValues().getFirst()));
+      ImmutableMap<BlockState, VoxelShape> map = (ImmutableMap)this.stateDefinition.getPossibleStates().stream().filter((state) -> defaults.entrySet().stream().allMatch((entry) -> state.getValue((Property)entry.getKey()) == entry.getValue())).collect(ImmutableMap.toImmutableMap(Function.identity(), shapeCalculator));
+      return (blockState) -> {
+         for(Map.Entry<? extends Property<?>, Object> entry : defaults.entrySet()) {
+            blockState = (BlockState)setValueHelper(blockState, (Property)entry.getKey(), entry.getValue());
          }
 
-         return (VoxelShape)var4.get(var2x);
+         return (VoxelShape)map.get(blockState);
       };
    }
 
-   private static <S extends StateHolder<?, S>, T extends Comparable<T>> S setValueHelper(S var0, Property<T> var1, Object var2) {
-      return (S)(var0.setValue(var1, (Comparable)var2));
+   private static <S extends StateHolder<?, S>, T extends Comparable<T>> S setValueHelper(final S state, final Property<T> property, final Object value) {
+      return (S)(((StateHolder)state).setValue(property, (Comparable)value));
    }
 
    /** @deprecated */
@@ -545,25 +542,23 @@ public class Block extends BlockBehaviour implements ItemLike {
       return this.builtInRegistryHolder;
    }
 
-   protected void tryDropExperience(ServerLevel var1, BlockPos var2, ItemStack var3, IntProvider var4) {
-      int var5 = EnchantmentHelper.processBlockExperience(var1, var3, var4.sample(var1.getRandom()));
-      if (var5 > 0) {
-         this.popExperience(var1, var2, var5);
+   protected void tryDropExperience(final ServerLevel level, final BlockPos pos, final ItemStack tool, final IntProvider xpRange) {
+      int experience = EnchantmentHelper.processBlockExperience(level, tool, xpRange.sample(level.getRandom()));
+      if (experience > 0) {
+         this.popExperience(level, pos, experience);
       }
 
    }
 
-   static record ShapePairKey(VoxelShape first, VoxelShape second) {
-      ShapePairKey(VoxelShape var1, VoxelShape var2) {
+   private static record ShapePairKey(VoxelShape first, VoxelShape second) {
+      private ShapePairKey {
          super();
-         this.first = var1;
-         this.second = var2;
       }
 
-      public boolean equals(Object var1) {
+      public boolean equals(final Object o) {
          boolean var10000;
-         if (var1 instanceof ShapePairKey var2) {
-            if (this.first == var2.first && this.second == var2.second) {
+         if (o instanceof ShapePairKey that) {
+            if (this.first == that.first && this.second == that.second) {
                var10000 = true;
                return var10000;
             }

@@ -16,10 +16,10 @@ public record IsViewEntity() implements ConditionalItemModelProperty {
       super();
    }
 
-   public boolean get(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3, int var4, ItemDisplayContext var5) {
-      Minecraft var6 = Minecraft.getInstance();
-      Entity var7 = var6.getCameraEntity();
-      return var7 != null ? var3 == var7 : var3 == var6.player;
+   public boolean get(final ItemStack itemStack, final @Nullable ClientLevel level, final @Nullable LivingEntity owner, final int seed, final ItemDisplayContext displayContext) {
+      Minecraft minecraft = Minecraft.getInstance();
+      Entity cameraEntity = minecraft.getCameraEntity();
+      return cameraEntity != null ? owner == cameraEntity : owner == minecraft.player;
    }
 
    public MapCodec<IsViewEntity> type() {

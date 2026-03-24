@@ -11,34 +11,34 @@ public class DefaultRandomPos {
       super();
    }
 
-   public static @Nullable Vec3 getPos(PathfinderMob var0, int var1, int var2) {
-      boolean var3 = GoalUtils.mobRestricted(var0, (double)var1);
-      return RandomPos.generateRandomPos(var0, (Supplier)(() -> {
-         BlockPos var4 = RandomPos.generateRandomDirection(var0.getRandom(), var1, var2);
-         return generateRandomPosTowardDirection(var0, var1, var3, var4);
+   public static @Nullable Vec3 getPos(final PathfinderMob mob, final int horizontalDist, final int verticalDist) {
+      boolean restrict = GoalUtils.mobRestricted(mob, (double)horizontalDist);
+      return RandomPos.generateRandomPos(mob, (Supplier)(() -> {
+         BlockPos direction = RandomPos.generateRandomDirection(mob.getRandom(), horizontalDist, verticalDist);
+         return generateRandomPosTowardDirection(mob, horizontalDist, restrict, direction);
       }));
    }
 
-   public static @Nullable Vec3 getPosTowards(PathfinderMob var0, int var1, int var2, Vec3 var3, double var4) {
-      Vec3 var6 = var3.subtract(var0.getX(), var0.getY(), var0.getZ());
-      boolean var7 = GoalUtils.mobRestricted(var0, (double)var1);
-      return RandomPos.generateRandomPos(var0, (Supplier)(() -> {
-         BlockPos var7x = RandomPos.generateRandomDirectionWithinRadians(var0.getRandom(), 0.0, (double)var1, var2, 0, var6.x, var6.z, var4);
-         return var7x == null ? null : generateRandomPosTowardDirection(var0, var1, var7, var7x);
+   public static @Nullable Vec3 getPosTowards(final PathfinderMob mob, final int horizontalDist, final int verticalDist, final Vec3 towardsPos, final double maxXzRadiansFromDir) {
+      Vec3 dir = towardsPos.subtract(mob.getX(), mob.getY(), mob.getZ());
+      boolean restrict = GoalUtils.mobRestricted(mob, (double)horizontalDist);
+      return RandomPos.generateRandomPos(mob, (Supplier)(() -> {
+         BlockPos direction = RandomPos.generateRandomDirectionWithinRadians(mob.getRandom(), 0.0, (double)horizontalDist, verticalDist, 0, dir.x, dir.z, maxXzRadiansFromDir);
+         return direction == null ? null : generateRandomPosTowardDirection(mob, horizontalDist, restrict, direction);
       }));
    }
 
-   public static @Nullable Vec3 getPosAway(PathfinderMob var0, int var1, int var2, Vec3 var3) {
-      Vec3 var4 = var0.position().subtract(var3);
-      boolean var5 = GoalUtils.mobRestricted(var0, (double)var1);
-      return RandomPos.generateRandomPos(var0, (Supplier)(() -> {
-         BlockPos var5x = RandomPos.generateRandomDirectionWithinRadians(var0.getRandom(), 0.0, (double)var1, var2, 0, var4.x, var4.z, 1.5707963705062866);
-         return var5x == null ? null : generateRandomPosTowardDirection(var0, var1, var5, var5x);
+   public static @Nullable Vec3 getPosAway(final PathfinderMob mob, final int horizontalDist, final int verticalDist, final Vec3 avoidPos) {
+      Vec3 dirAway = mob.position().subtract(avoidPos);
+      boolean restrict = GoalUtils.mobRestricted(mob, (double)horizontalDist);
+      return RandomPos.generateRandomPos(mob, (Supplier)(() -> {
+         BlockPos direction = RandomPos.generateRandomDirectionWithinRadians(mob.getRandom(), 0.0, (double)horizontalDist, verticalDist, 0, dirAway.x, dirAway.z, 1.5707963705062866);
+         return direction == null ? null : generateRandomPosTowardDirection(mob, horizontalDist, restrict, direction);
       }));
    }
 
-   private static @Nullable BlockPos generateRandomPosTowardDirection(PathfinderMob var0, int var1, boolean var2, BlockPos var3) {
-      BlockPos var4 = RandomPos.generateRandomPosTowardDirection(var0, (double)var1, var0.getRandom(), var3);
-      return !GoalUtils.isOutsideLimits(var4, var0) && !GoalUtils.isRestricted(var2, var0, var4) && !GoalUtils.isNotStable(var0.getNavigation(), var4) && !GoalUtils.hasMalus(var0, var4) ? var4 : null;
+   private static @Nullable BlockPos generateRandomPosTowardDirection(final PathfinderMob mob, final int horizontalDist, final boolean restrict, final BlockPos direction) {
+      BlockPos pos = RandomPos.generateRandomPosTowardDirection(mob, (double)horizontalDist, mob.getRandom(), direction);
+      return !GoalUtils.isOutsideLimits(pos, mob) && !GoalUtils.isRestricted(restrict, mob, pos) && !GoalUtils.isNotStable(mob.getNavigation(), pos) && !GoalUtils.hasMalus(mob, pos) ? pos : null;
    }
 }

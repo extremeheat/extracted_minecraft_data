@@ -10,24 +10,24 @@ public class ExperimentalRedstoneUtils {
       super();
    }
 
-   public static @Nullable Orientation initialOrientation(Level var0, @Nullable Direction var1, @Nullable Direction var2) {
-      if (var0.enabledFeatures().contains(FeatureFlags.REDSTONE_EXPERIMENTS)) {
-         Orientation var3 = Orientation.random(var0.random).withSideBias(Orientation.SideBias.LEFT);
-         if (var2 != null) {
-            var3 = var3.withUp(var2);
+   public static @Nullable Orientation initialOrientation(final Level level, final @Nullable Direction front, final @Nullable Direction up) {
+      if (level.enabledFeatures().contains(FeatureFlags.REDSTONE_EXPERIMENTS)) {
+         Orientation orientation = Orientation.random(level.getRandom()).withSideBias(Orientation.SideBias.LEFT);
+         if (up != null) {
+            orientation = orientation.withUp(up);
          }
 
-         if (var1 != null) {
-            var3 = var3.withFront(var1);
+         if (front != null) {
+            orientation = orientation.withFront(front);
          }
 
-         return var3;
+         return orientation;
       } else {
          return null;
       }
    }
 
-   public static @Nullable Orientation withFront(@Nullable Orientation var0, Direction var1) {
-      return var0 == null ? null : var0.withFront(var1);
+   public static @Nullable Orientation withFront(final @Nullable Orientation orientation, final Direction front) {
+      return orientation == null ? null : orientation.withFront(front);
    }
 }

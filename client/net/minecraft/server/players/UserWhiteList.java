@@ -6,22 +6,22 @@ import java.util.Objects;
 import net.minecraft.server.notifications.NotificationService;
 
 public class UserWhiteList extends StoredUserList<NameAndId, UserWhiteListEntry> {
-   public UserWhiteList(File var1, NotificationService var2) {
-      super(var1, var2);
+   public UserWhiteList(final File file, final NotificationService notificationService) {
+      super(file, notificationService);
    }
 
-   protected StoredUserEntry<NameAndId> createEntry(JsonObject var1) {
-      return new UserWhiteListEntry(var1);
+   protected StoredUserEntry<NameAndId> createEntry(final JsonObject object) {
+      return new UserWhiteListEntry(object);
    }
 
-   public boolean isWhiteListed(NameAndId var1) {
-      return this.contains(var1);
+   public boolean isWhiteListed(final NameAndId user) {
+      return this.contains(user);
    }
 
-   public boolean add(UserWhiteListEntry var1) {
-      if (super.add(var1)) {
-         if (var1.getUser() != null) {
-            this.notificationService.playerAddedToAllowlist((NameAndId)var1.getUser());
+   public boolean add(final UserWhiteListEntry infos) {
+      if (super.add(infos)) {
+         if (infos.getUser() != null) {
+            this.notificationService.playerAddedToAllowlist((NameAndId)infos.getUser());
          }
 
          return true;
@@ -30,9 +30,9 @@ public class UserWhiteList extends StoredUserList<NameAndId, UserWhiteListEntry>
       }
    }
 
-   public boolean remove(NameAndId var1) {
-      if (super.remove(var1)) {
-         this.notificationService.playerRemovedFromAllowlist(var1);
+   public boolean remove(final NameAndId user) {
+      if (super.remove(user)) {
+         this.notificationService.playerRemovedFromAllowlist(user);
          return true;
       } else {
          return false;
@@ -40,9 +40,9 @@ public class UserWhiteList extends StoredUserList<NameAndId, UserWhiteListEntry>
    }
 
    public void clear() {
-      for(UserWhiteListEntry var2 : this.getEntries()) {
-         if (var2.getUser() != null) {
-            this.notificationService.playerRemovedFromAllowlist((NameAndId)var2.getUser());
+      for(UserWhiteListEntry user : this.getEntries()) {
+         if (user.getUser() != null) {
+            this.notificationService.playerRemovedFromAllowlist((NameAndId)user.getUser());
          }
       }
 
@@ -50,20 +50,10 @@ public class UserWhiteList extends StoredUserList<NameAndId, UserWhiteListEntry>
    }
 
    public String[] getUserList() {
-      return (String[])this.getEntries().stream().map(StoredUserEntry::getUser).filter(Objects::nonNull).map(NameAndId::name).toArray((var0) -> new String[var0]);
+      return (String[])this.getEntries().stream().map(StoredUserEntry::getUser).filter(Objects::nonNull).map(NameAndId::name).toArray((x$0) -> new String[x$0]);
    }
 
-   protected String getKeyForUser(NameAndId var1) {
-      return var1.id().toString();
-   }
-
-   // $FF: synthetic method
-   protected String getKeyForUser(final Object var1) {
-      return this.getKeyForUser((NameAndId)var1);
-   }
-
-   // $FF: synthetic method
-   public boolean remove(final Object var1) {
-      return this.remove((NameAndId)var1);
+   protected String getKeyForUser(final NameAndId user) {
+      return user.id().toString();
    }
 }

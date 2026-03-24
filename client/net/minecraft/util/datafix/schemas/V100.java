@@ -8,12 +8,12 @@ import java.util.function.Supplier;
 import net.minecraft.util.datafix.fixes.References;
 
 public class V100 extends Schema {
-   public V100(int var1, Schema var2) {
-      super(var1, var2);
+   public V100(final int versionKey, final Schema parent) {
+      super(versionKey, parent);
    }
 
-   public void registerTypes(Schema var1, Map<String, Supplier<TypeTemplate>> var2, Map<String, Supplier<TypeTemplate>> var3) {
-      super.registerTypes(var1, var2, var3);
-      var1.registerType(true, References.ENTITY_EQUIPMENT, () -> DSL.and(DSL.optional(DSL.field("ArmorItems", DSL.list(References.ITEM_STACK.in(var1)))), new TypeTemplate[]{DSL.optional(DSL.field("HandItems", DSL.list(References.ITEM_STACK.in(var1)))), DSL.optional(DSL.field("body_armor_item", References.ITEM_STACK.in(var1))), DSL.optional(DSL.field("saddle", References.ITEM_STACK.in(var1)))}));
+   public void registerTypes(final Schema schema, final Map<String, Supplier<TypeTemplate>> entityTypes, final Map<String, Supplier<TypeTemplate>> blockEntityTypes) {
+      super.registerTypes(schema, entityTypes, blockEntityTypes);
+      schema.registerType(true, References.ENTITY_EQUIPMENT, () -> DSL.and(DSL.optional(DSL.field("ArmorItems", DSL.list(References.ITEM_STACK.in(schema)))), new TypeTemplate[]{DSL.optional(DSL.field("HandItems", DSL.list(References.ITEM_STACK.in(schema)))), DSL.optional(DSL.field("body_armor_item", References.ITEM_STACK.in(schema))), DSL.optional(DSL.field("saddle", References.ITEM_STACK.in(schema)))}));
    }
 }

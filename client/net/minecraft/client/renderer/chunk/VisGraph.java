@@ -1,6 +1,7 @@
 package net.minecraft.client.renderer.chunk;
 
 import it.unimi.dsi.fastutil.ints.IntArrayFIFOQueue;
+import it.unimi.dsi.fastutil.ints.IntPriorityQueue;
 import java.util.BitSet;
 import java.util.EnumSet;
 import java.util.Set;
@@ -22,16 +23,16 @@ public class VisGraph {
    private static final int INVALID_INDEX = -1;
    private static final Direction[] DIRECTIONS = Direction.values();
    private final BitSet bitSet = new BitSet(4096);
-   private static final int[] INDEX_OF_EDGES = (int[])Util.make(new int[1352], (var0) -> {
-      boolean var1 = false;
-      boolean var2 = true;
-      int var3 = 0;
+   private static final int[] INDEX_OF_EDGES = (int[])Util.make(new int[1352], (map) -> {
+      int min = 0;
+      int max = 15;
+      int index = 0;
 
-      for(int var4 = 0; var4 < 16; ++var4) {
-         for(int var5 = 0; var5 < 16; ++var5) {
-            for(int var6 = 0; var6 < 16; ++var6) {
-               if (var4 == 0 || var4 == 15 || var5 == 0 || var5 == 15 || var6 == 0 || var6 == 15) {
-                  var0[var3++] = getIndex(var4, var5, var6);
+      for(int x = 0; x < 16; ++x) {
+         for(int y = 0; y < 16; ++y) {
+            for(int z = 0; z < 16; ++z) {
+               if (x == 0 || x == 15 || y == 0 || y == 15 || z == 0 || z == 15) {
+                  map[index++] = getIndex(x, y, z);
                }
             }
          }
@@ -44,120 +45,120 @@ public class VisGraph {
       super();
    }
 
-   public void setOpaque(BlockPos var1) {
-      this.bitSet.set(getIndex(var1), true);
+   public void setOpaque(final BlockPos pos) {
+      this.bitSet.set(getIndex(pos), true);
       --this.empty;
    }
 
-   private static int getIndex(BlockPos var0) {
-      return getIndex(var0.getX() & 15, var0.getY() & 15, var0.getZ() & 15);
+   private static int getIndex(final BlockPos pos) {
+      return getIndex(pos.getX() & 15, pos.getY() & 15, pos.getZ() & 15);
    }
 
-   private static int getIndex(int var0, int var1, int var2) {
-      return var0 << 0 | var1 << 8 | var2 << 4;
+   private static int getIndex(final int x, final int y, final int z) {
+      return x << 0 | y << 8 | z << 4;
    }
 
    public VisibilitySet resolve() {
-      VisibilitySet var1 = new VisibilitySet();
+      VisibilitySet visibilitySet = new VisibilitySet();
       if (4096 - this.empty < 256) {
-         var1.setAll(true);
+         visibilitySet.setAll(true);
       } else if (this.empty == 0) {
-         var1.setAll(false);
+         visibilitySet.setAll(false);
       } else {
-         for(int var5 : INDEX_OF_EDGES) {
-            if (!this.bitSet.get(var5)) {
-               var1.add(this.floodFill(var5));
+         for(int i : INDEX_OF_EDGES) {
+            if (!this.bitSet.get(i)) {
+               visibilitySet.add(this.floodFill(i));
             }
          }
       }
 
-      return var1;
+      return visibilitySet;
    }
 
-   private Set<Direction> floodFill(int var1) {
-      EnumSet var2 = EnumSet.noneOf(Direction.class);
-      IntArrayFIFOQueue var3 = new IntArrayFIFOQueue();
-      var3.enqueue(var1);
-      this.bitSet.set(var1, true);
+   private Set<Direction> floodFill(final int startIndex) {
+      Set<Direction> edges = EnumSet.noneOf(Direction.class);
+      IntPriorityQueue queue = new IntArrayFIFOQueue();
+      queue.enqueue(startIndex);
+      this.bitSet.set(startIndex, true);
 
-      while(!var3.isEmpty()) {
-         int var4 = var3.dequeueInt();
-         this.addEdges(var4, var2);
+      while(!queue.isEmpty()) {
+         int index = queue.dequeueInt();
+         this.addEdges(index, edges);
 
-         for(Direction var8 : DIRECTIONS) {
-            int var9 = this.getNeighborIndexAtFace(var4, var8);
-            if (var9 >= 0 && !this.bitSet.get(var9)) {
-               this.bitSet.set(var9, true);
-               var3.enqueue(var9);
+         for(Direction direction : DIRECTIONS) {
+            int neighborIndex = this.getNeighborIndexAtFace(index, direction);
+            if (neighborIndex >= 0 && !this.bitSet.get(neighborIndex)) {
+               this.bitSet.set(neighborIndex, true);
+               queue.enqueue(neighborIndex);
             }
          }
       }
 
-      return var2;
+      return edges;
    }
 
-   private void addEdges(int var1, Set<Direction> var2) {
-      int var3 = var1 >> 0 & 15;
-      if (var3 == 0) {
-         var2.add(Direction.WEST);
-      } else if (var3 == 15) {
-         var2.add(Direction.EAST);
+   private void addEdges(final int index, final Set<Direction> edges) {
+      int x = index >> 0 & 15;
+      if (x == 0) {
+         edges.add(Direction.WEST);
+      } else if (x == 15) {
+         edges.add(Direction.EAST);
       }
 
-      int var4 = var1 >> 8 & 15;
-      if (var4 == 0) {
-         var2.add(Direction.DOWN);
-      } else if (var4 == 15) {
-         var2.add(Direction.UP);
+      int y = index >> 8 & 15;
+      if (y == 0) {
+         edges.add(Direction.DOWN);
+      } else if (y == 15) {
+         edges.add(Direction.UP);
       }
 
-      int var5 = var1 >> 4 & 15;
-      if (var5 == 0) {
-         var2.add(Direction.NORTH);
-      } else if (var5 == 15) {
-         var2.add(Direction.SOUTH);
+      int z = index >> 4 & 15;
+      if (z == 0) {
+         edges.add(Direction.NORTH);
+      } else if (z == 15) {
+         edges.add(Direction.SOUTH);
       }
 
    }
 
-   private int getNeighborIndexAtFace(int var1, Direction var2) {
-      switch (var2) {
+   private int getNeighborIndexAtFace(final int index, final Direction direction) {
+      switch (direction) {
          case DOWN:
-            if ((var1 >> 8 & 15) == 0) {
+            if ((index >> 8 & 15) == 0) {
                return -1;
             }
 
-            return var1 - DY;
+            return index - DY;
          case UP:
-            if ((var1 >> 8 & 15) == 15) {
+            if ((index >> 8 & 15) == 15) {
                return -1;
             }
 
-            return var1 + DY;
+            return index + DY;
          case NORTH:
-            if ((var1 >> 4 & 15) == 0) {
+            if ((index >> 4 & 15) == 0) {
                return -1;
             }
 
-            return var1 - DZ;
+            return index - DZ;
          case SOUTH:
-            if ((var1 >> 4 & 15) == 15) {
+            if ((index >> 4 & 15) == 15) {
                return -1;
             }
 
-            return var1 + DZ;
+            return index + DZ;
          case WEST:
-            if ((var1 >> 0 & 15) == 0) {
+            if ((index >> 0 & 15) == 0) {
                return -1;
             }
 
-            return var1 - DX;
+            return index - DX;
          case EAST:
-            if ((var1 >> 0 & 15) == 15) {
+            if ((index >> 0 & 15) == 15) {
                return -1;
             }
 
-            return var1 + DX;
+            return index + DX;
          default:
             return -1;
       }

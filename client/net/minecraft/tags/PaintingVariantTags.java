@@ -11,7 +11,7 @@ public class PaintingVariantTags {
       super();
    }
 
-   private static TagKey<PaintingVariant> create(String var0) {
-      return TagKey.<PaintingVariant>create(Registries.PAINTING_VARIANT, Identifier.withDefaultNamespace(var0));
+   private static TagKey<PaintingVariant> create(final String name) {
+      return TagKey.<PaintingVariant>create(Registries.PAINTING_VARIANT, Identifier.withDefaultNamespace(name));
    }
 }

@@ -11,59 +11,59 @@ public interface SkipAll extends StreamTagVisitor {
       return StreamTagVisitor.ValueResult.CONTINUE;
    }
 
-   default StreamTagVisitor.ValueResult visit(String var1) {
+   default StreamTagVisitor.ValueResult visit(final String value) {
       return StreamTagVisitor.ValueResult.CONTINUE;
    }
 
-   default StreamTagVisitor.ValueResult visit(byte var1) {
+   default StreamTagVisitor.ValueResult visit(final byte value) {
       return StreamTagVisitor.ValueResult.CONTINUE;
    }
 
-   default StreamTagVisitor.ValueResult visit(short var1) {
+   default StreamTagVisitor.ValueResult visit(final short value) {
       return StreamTagVisitor.ValueResult.CONTINUE;
    }
 
-   default StreamTagVisitor.ValueResult visit(int var1) {
+   default StreamTagVisitor.ValueResult visit(final int value) {
       return StreamTagVisitor.ValueResult.CONTINUE;
    }
 
-   default StreamTagVisitor.ValueResult visit(long var1) {
+   default StreamTagVisitor.ValueResult visit(final long value) {
       return StreamTagVisitor.ValueResult.CONTINUE;
    }
 
-   default StreamTagVisitor.ValueResult visit(float var1) {
+   default StreamTagVisitor.ValueResult visit(final float value) {
       return StreamTagVisitor.ValueResult.CONTINUE;
    }
 
-   default StreamTagVisitor.ValueResult visit(double var1) {
+   default StreamTagVisitor.ValueResult visit(final double value) {
       return StreamTagVisitor.ValueResult.CONTINUE;
    }
 
-   default StreamTagVisitor.ValueResult visit(byte[] var1) {
+   default StreamTagVisitor.ValueResult visit(final byte[] value) {
       return StreamTagVisitor.ValueResult.CONTINUE;
    }
 
-   default StreamTagVisitor.ValueResult visit(int[] var1) {
+   default StreamTagVisitor.ValueResult visit(final int[] value) {
       return StreamTagVisitor.ValueResult.CONTINUE;
    }
 
-   default StreamTagVisitor.ValueResult visit(long[] var1) {
+   default StreamTagVisitor.ValueResult visit(final long[] value) {
       return StreamTagVisitor.ValueResult.CONTINUE;
    }
 
-   default StreamTagVisitor.ValueResult visitList(TagType<?> var1, int var2) {
+   default StreamTagVisitor.ValueResult visitList(final TagType<?> elementType, final int size) {
       return StreamTagVisitor.ValueResult.CONTINUE;
    }
 
-   default StreamTagVisitor.EntryResult visitElement(TagType<?> var1, int var2) {
+   default StreamTagVisitor.EntryResult visitElement(final TagType<?> type, final int index) {
       return StreamTagVisitor.EntryResult.SKIP;
    }
 
-   default StreamTagVisitor.EntryResult visitEntry(TagType<?> var1) {
+   default StreamTagVisitor.EntryResult visitEntry(final TagType<?> type) {
       return StreamTagVisitor.EntryResult.SKIP;
    }
 
-   default StreamTagVisitor.EntryResult visitEntry(TagType<?> var1, String var2) {
+   default StreamTagVisitor.EntryResult visitEntry(final TagType<?> type, final String id) {
       return StreamTagVisitor.EntryResult.SKIP;
    }
 
@@ -71,7 +71,7 @@ public interface SkipAll extends StreamTagVisitor {
       return StreamTagVisitor.ValueResult.CONTINUE;
    }
 
-   default StreamTagVisitor.ValueResult visitRootEntry(TagType<?> var1) {
+   default StreamTagVisitor.ValueResult visitRootEntry(final TagType<?> type) {
       return StreamTagVisitor.ValueResult.CONTINUE;
    }
 }

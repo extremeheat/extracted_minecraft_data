@@ -20,35 +20,30 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.StringRepresentable;
 
 public class StringRepresentableArgument<T extends Enum<T> & StringRepresentable> implements ArgumentType<T> {
-   private static final DynamicCommandExceptionType ERROR_INVALID_VALUE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.enum.invalid", var0));
+   private static final DynamicCommandExceptionType ERROR_INVALID_VALUE = new DynamicCommandExceptionType((value) -> Component.translatableEscape("argument.enum.invalid", value));
    private final Codec<T> codec;
    private final Supplier<T[]> values;
 
-   protected StringRepresentableArgument(Codec<T> var1, Supplier<T[]> var2) {
+   protected StringRepresentableArgument(final Codec<T> codec, final Supplier<T[]> values) {
       super();
-      this.codec = var1;
-      this.values = var2;
+      this.codec = codec;
+      this.values = values;
    }
 
-   public T parse(StringReader var1) throws CommandSyntaxException {
-      String var2 = var1.readUnquotedString();
-      return (T)(this.codec.parse(JsonOps.INSTANCE, new JsonPrimitive(var2)).result().orElseThrow(() -> ERROR_INVALID_VALUE.createWithContext(var1, var2)));
+   public T parse(final StringReader reader) throws CommandSyntaxException {
+      String id = reader.readUnquotedString();
+      return (T)(this.codec.parse(JsonOps.INSTANCE, new JsonPrimitive(id)).result().orElseThrow(() -> ERROR_INVALID_VALUE.createWithContext(reader, id)));
    }
 
-   public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      return SharedSuggestionProvider.suggest((Iterable)Arrays.stream((Enum[])this.values.get()).map((var0) -> ((StringRepresentable)var0).getSerializedName()).map(this::convertId).collect(Collectors.toList()), var2);
+   public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
+      return SharedSuggestionProvider.suggest((Iterable)Arrays.stream((Enum[])this.values.get()).map((rec$) -> ((StringRepresentable)rec$).getSerializedName()).map(this::convertId).collect(Collectors.toList()), builder);
    }
 
    public Collection<String> getExamples() {
-      return (Collection)Arrays.stream((Enum[])this.values.get()).map((var0) -> ((StringRepresentable)var0).getSerializedName()).map(this::convertId).limit(2L).collect(Collectors.toList());
+      return (Collection)Arrays.stream((Enum[])this.values.get()).map((rec$) -> ((StringRepresentable)rec$).getSerializedName()).map(this::convertId).limit(2L).collect(Collectors.toList());
    }
 
-   protected String convertId(String var1) {
-      return var1;
-   }
-
-   // $FF: synthetic method
-   public Object parse(final StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1);
+   protected String convertId(final String id) {
+      return id;
    }
 }

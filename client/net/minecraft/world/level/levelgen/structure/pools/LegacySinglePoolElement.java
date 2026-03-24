@@ -15,17 +15,17 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProc
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 
 public class LegacySinglePoolElement extends SinglePoolElement {
-   public static final MapCodec<LegacySinglePoolElement> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(templateCodec(), processorsCodec(), projectionCodec(), overrideLiquidSettingsCodec()).apply(var0, LegacySinglePoolElement::new));
+   public static final MapCodec<LegacySinglePoolElement> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(templateCodec(), processorsCodec(), projectionCodec(), overrideLiquidSettingsCodec()).apply(i, LegacySinglePoolElement::new));
 
-   protected LegacySinglePoolElement(Either<Identifier, StructureTemplate> var1, Holder<StructureProcessorList> var2, StructureTemplatePool.Projection var3, Optional<LiquidSettings> var4) {
-      super(var1, var2, var3, var4);
+   protected LegacySinglePoolElement(final Either<Identifier, StructureTemplate> template, final Holder<StructureProcessorList> processors, final StructureTemplatePool.Projection projection, final Optional<LiquidSettings> liquidSettings) {
+      super(template, processors, projection, liquidSettings);
    }
 
-   protected StructurePlaceSettings getSettings(Rotation var1, BoundingBox var2, LiquidSettings var3, boolean var4) {
-      StructurePlaceSettings var5 = super.getSettings(var1, var2, var3, var4);
-      var5.popProcessor(BlockIgnoreProcessor.STRUCTURE_BLOCK);
-      var5.addProcessor(BlockIgnoreProcessor.STRUCTURE_AND_AIR);
-      return var5;
+   protected StructurePlaceSettings getSettings(final Rotation rotation, final BoundingBox chunkBB, final LiquidSettings liquidSettings, final boolean keepJigsaws) {
+      StructurePlaceSettings settings = super.getSettings(rotation, chunkBB, liquidSettings, keepJigsaws);
+      settings.popProcessor(BlockIgnoreProcessor.STRUCTURE_BLOCK);
+      settings.addProcessor(BlockIgnoreProcessor.STRUCTURE_AND_AIR);
+      return settings;
    }
 
    public StructurePoolElementType<?> getType() {

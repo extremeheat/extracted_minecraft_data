@@ -10,28 +10,30 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.RegistryFixedCodec;
 import net.minecraft.sounds.SoundEvent;
 
-public record WolfSoundVariant(Holder<SoundEvent> ambientSound, Holder<SoundEvent> deathSound, Holder<SoundEvent> growlSound, Holder<SoundEvent> hurtSound, Holder<SoundEvent> pantSound, Holder<SoundEvent> whineSound) {
+public record WolfSoundVariant(WolfSoundSet adultSounds, WolfSoundSet babySounds) {
    public static final Codec<WolfSoundVariant> DIRECT_CODEC = getWolfSoundVariantCodec();
    public static final Codec<WolfSoundVariant> NETWORK_CODEC = getWolfSoundVariantCodec();
    public static final Codec<Holder<WolfSoundVariant>> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<WolfSoundVariant>> STREAM_CODEC;
 
-   public WolfSoundVariant(Holder<SoundEvent> var1, Holder<SoundEvent> var2, Holder<SoundEvent> var3, Holder<SoundEvent> var4, Holder<SoundEvent> var5, Holder<SoundEvent> var6) {
+   public WolfSoundVariant {
       super();
-      this.ambientSound = var1;
-      this.deathSound = var2;
-      this.growlSound = var3;
-      this.hurtSound = var4;
-      this.pantSound = var5;
-      this.whineSound = var6;
    }
 
    private static Codec<WolfSoundVariant> getWolfSoundVariantCodec() {
-      return RecordCodecBuilder.create((var0) -> var0.group(SoundEvent.CODEC.fieldOf("ambient_sound").forGetter(WolfSoundVariant::ambientSound), SoundEvent.CODEC.fieldOf("death_sound").forGetter(WolfSoundVariant::deathSound), SoundEvent.CODEC.fieldOf("growl_sound").forGetter(WolfSoundVariant::growlSound), SoundEvent.CODEC.fieldOf("hurt_sound").forGetter(WolfSoundVariant::hurtSound), SoundEvent.CODEC.fieldOf("pant_sound").forGetter(WolfSoundVariant::pantSound), SoundEvent.CODEC.fieldOf("whine_sound").forGetter(WolfSoundVariant::whineSound)).apply(var0, WolfSoundVariant::new));
+      return RecordCodecBuilder.create((i) -> i.group(WolfSoundVariant.WolfSoundSet.CODEC.fieldOf("adult_sounds").forGetter(WolfSoundVariant::adultSounds), WolfSoundVariant.WolfSoundSet.CODEC.fieldOf("baby_sounds").forGetter(WolfSoundVariant::babySounds)).apply(i, WolfSoundVariant::new));
    }
 
    static {
       CODEC = RegistryFixedCodec.<Holder<WolfSoundVariant>>create(Registries.WOLF_SOUND_VARIANT);
       STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.WOLF_SOUND_VARIANT);
+   }
+
+   public static record WolfSoundSet(Holder<SoundEvent> ambientSound, Holder<SoundEvent> deathSound, Holder<SoundEvent> growlSound, Holder<SoundEvent> hurtSound, Holder<SoundEvent> pantSound, Holder<SoundEvent> whineSound, Holder<SoundEvent> stepSound) {
+      public static final Codec<WolfSoundSet> CODEC = RecordCodecBuilder.create((i) -> i.group(SoundEvent.CODEC.fieldOf("ambient_sound").forGetter(WolfSoundSet::ambientSound), SoundEvent.CODEC.fieldOf("death_sound").forGetter(WolfSoundSet::deathSound), SoundEvent.CODEC.fieldOf("growl_sound").forGetter(WolfSoundSet::growlSound), SoundEvent.CODEC.fieldOf("hurt_sound").forGetter(WolfSoundSet::hurtSound), SoundEvent.CODEC.fieldOf("pant_sound").forGetter(WolfSoundSet::pantSound), SoundEvent.CODEC.fieldOf("whine_sound").forGetter(WolfSoundSet::whineSound), SoundEvent.CODEC.fieldOf("step_sound").forGetter(WolfSoundSet::stepSound)).apply(i, WolfSoundSet::new));
+
+      public WolfSoundSet {
+         super();
+      }
    }
 }

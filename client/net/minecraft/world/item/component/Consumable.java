@@ -33,55 +33,50 @@ public record Consumable(float consumeSeconds, ItemUseAnimation animation, Holde
    public static final float DEFAULT_CONSUME_SECONDS = 1.6F;
    private static final int CONSUME_EFFECTS_INTERVAL = 4;
    private static final float CONSUME_EFFECTS_START_FRACTION = 0.21875F;
-   public static final Codec<Consumable> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("consume_seconds", 1.6F).forGetter(Consumable::consumeSeconds), ItemUseAnimation.CODEC.optionalFieldOf("animation", ItemUseAnimation.EAT).forGetter(Consumable::animation), SoundEvent.CODEC.optionalFieldOf("sound", SoundEvents.GENERIC_EAT).forGetter(Consumable::sound), Codec.BOOL.optionalFieldOf("has_consume_particles", true).forGetter(Consumable::hasConsumeParticles), ConsumeEffect.CODEC.listOf().optionalFieldOf("on_consume_effects", List.of()).forGetter(Consumable::onConsumeEffects)).apply(var0, Consumable::new));
+   public static final Codec<Consumable> CODEC = RecordCodecBuilder.create((i) -> i.group(ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("consume_seconds", 1.6F).forGetter(Consumable::consumeSeconds), ItemUseAnimation.CODEC.optionalFieldOf("animation", ItemUseAnimation.EAT).forGetter(Consumable::animation), SoundEvent.CODEC.optionalFieldOf("sound", SoundEvents.GENERIC_EAT).forGetter(Consumable::sound), Codec.BOOL.optionalFieldOf("has_consume_particles", true).forGetter(Consumable::hasConsumeParticles), ConsumeEffect.CODEC.listOf().optionalFieldOf("on_consume_effects", List.of()).forGetter(Consumable::onConsumeEffects)).apply(i, Consumable::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, Consumable> STREAM_CODEC;
 
-   public Consumable(float var1, ItemUseAnimation var2, Holder<SoundEvent> var3, boolean var4, List<ConsumeEffect> var5) {
+   public Consumable {
       super();
-      this.consumeSeconds = var1;
-      this.animation = var2;
-      this.sound = var3;
-      this.hasConsumeParticles = var4;
-      this.onConsumeEffects = var5;
    }
 
-   public InteractionResult startConsuming(LivingEntity var1, ItemStack var2, InteractionHand var3) {
-      if (!this.canConsume(var1, var2)) {
+   public InteractionResult startConsuming(final LivingEntity user, final ItemStack stack, final InteractionHand hand) {
+      if (!this.canConsume(user, stack)) {
          return InteractionResult.FAIL;
       } else {
-         boolean var4 = this.consumeTicks() > 0;
-         if (var4) {
-            var1.startUsingItem(var3);
+         boolean consumesOverTime = this.consumeTicks() > 0;
+         if (consumesOverTime) {
+            user.startUsingItem(hand);
             return InteractionResult.CONSUME;
          } else {
-            ItemStack var5 = this.onConsume(var1.level(), var1, var2);
-            return InteractionResult.CONSUME.heldItemTransformedTo(var5);
+            ItemStack result = this.onConsume(user.level(), user, stack);
+            return InteractionResult.CONSUME.heldItemTransformedTo(result);
          }
       }
    }
 
-   public ItemStack onConsume(Level var1, LivingEntity var2, ItemStack var3) {
-      RandomSource var4 = var2.getRandom();
-      this.emitParticlesAndSounds(var4, var2, var3, 16);
-      if (var2 instanceof ServerPlayer var5) {
-         var5.awardStat(Stats.ITEM_USED.get(var3.getItem()));
-         CriteriaTriggers.CONSUME_ITEM.trigger(var5, var3);
+   public ItemStack onConsume(final Level level, final LivingEntity user, final ItemStack stack) {
+      RandomSource random = user.getRandom();
+      this.emitParticlesAndSounds(random, user, stack, 16);
+      if (user instanceof ServerPlayer serverPlayer) {
+         serverPlayer.awardStat(Stats.ITEM_USED.get(stack.getItem()));
+         CriteriaTriggers.CONSUME_ITEM.trigger(serverPlayer, stack);
       }
 
-      var3.getAllOfType(ConsumableListener.class).forEach((var4x) -> var4x.onConsume(var1, var2, var3, this));
-      if (!var1.isClientSide()) {
-         this.onConsumeEffects.forEach((var3x) -> var3x.apply(var1, var3, var2));
+      stack.getAllOfType(ConsumableListener.class).forEach((component) -> component.onConsume(level, user, stack, this));
+      if (!level.isClientSide()) {
+         this.onConsumeEffects.forEach((action) -> action.apply(level, stack, user));
       }
 
-      var2.gameEvent(this.animation == ItemUseAnimation.DRINK ? GameEvent.DRINK : GameEvent.EAT);
-      var3.consume(1, var2);
-      return var3;
+      user.gameEvent(this.animation == ItemUseAnimation.DRINK ? GameEvent.DRINK : GameEvent.EAT);
+      stack.consume(1, user);
+      return stack;
    }
 
-   public boolean canConsume(LivingEntity var1, ItemStack var2) {
-      FoodProperties var3 = (FoodProperties)var2.get(DataComponents.FOOD);
-      if (var3 != null && var1 instanceof Player var4) {
-         return var4.canEat(var3.canAlwaysEat());
+   public boolean canConsume(final LivingEntity user, final ItemStack stack) {
+      FoodProperties foodProperties = (FoodProperties)stack.get(DataComponents.FOOD);
+      if (foodProperties != null && user instanceof Player player) {
+         return player.canEat(foodProperties.canAlwaysEat());
       } else {
          return true;
       }
@@ -91,33 +86,33 @@ public record Consumable(float consumeSeconds, ItemUseAnimation animation, Holde
       return (int)(this.consumeSeconds * 20.0F);
    }
 
-   public void emitParticlesAndSounds(RandomSource var1, LivingEntity var2, ItemStack var3, int var4) {
-      float var5 = var1.nextBoolean() ? 0.5F : 1.0F;
-      float var6 = var1.triangle(1.0F, 0.2F);
-      float var7 = 0.5F;
-      float var8 = Mth.randomBetween(var1, 0.9F, 1.0F);
-      float var9 = this.animation == ItemUseAnimation.DRINK ? 0.5F : var5;
-      float var10 = this.animation == ItemUseAnimation.DRINK ? var8 : var6;
+   public void emitParticlesAndSounds(final RandomSource random, final LivingEntity user, final ItemStack itemStack, final int particleCount) {
+      float eatVolume = random.nextBoolean() ? 0.5F : 1.0F;
+      float eatPitch = random.triangle(1.0F, 0.2F);
+      float drinkVolume = 0.5F;
+      float drinkPitch = Mth.randomBetween(random, 0.9F, 1.0F);
+      float consumableVolume = this.animation == ItemUseAnimation.DRINK ? 0.5F : eatVolume;
+      float consumablePitch = this.animation == ItemUseAnimation.DRINK ? drinkPitch : eatPitch;
       if (this.hasConsumeParticles) {
-         var2.spawnItemParticles(var3, var4);
+         user.spawnItemParticles(itemStack, particleCount);
       }
 
       SoundEvent var10000;
-      if (var2 instanceof OverrideConsumeSound var12) {
-         var10000 = var12.getConsumeSound(var3);
+      if (user instanceof OverrideConsumeSound override) {
+         var10000 = override.getConsumeSound(itemStack);
       } else {
          var10000 = this.sound.value();
       }
 
-      SoundEvent var11 = var10000;
-      var2.playSound(var11, var9, var10);
+      SoundEvent consumeSound = var10000;
+      user.playSound(consumeSound, consumableVolume, consumablePitch);
    }
 
-   public boolean shouldEmitParticlesAndSounds(int var1) {
-      int var2 = this.consumeTicks() - var1;
-      int var3 = (int)((float)this.consumeTicks() * 0.21875F);
-      boolean var4 = var2 > var3;
-      return var4 && var1 % 4 == 0;
+   public boolean shouldEmitParticlesAndSounds(final int useItemRemainingTicks) {
+      int itemUsedForTicks = this.consumeTicks() - useItemRemainingTicks;
+      int waitTicksBeforeUseEffects = (int)((float)this.consumeTicks() * 0.21875F);
+      boolean isValidTime = itemUsedForTicks > waitTicksBeforeUseEffects;
+      return isValidTime && useItemRemainingTicks % 4 == 0;
    }
 
    public static Builder builder() {
@@ -135,7 +130,7 @@ public record Consumable(float consumeSeconds, ItemUseAnimation animation, Holde
       private boolean hasConsumeParticles;
       private final List<ConsumeEffect> onConsumeEffects;
 
-      Builder() {
+      private Builder() {
          super();
          this.animation = ItemUseAnimation.EAT;
          this.sound = SoundEvents.GENERIC_EAT;
@@ -143,32 +138,32 @@ public record Consumable(float consumeSeconds, ItemUseAnimation animation, Holde
          this.onConsumeEffects = new ArrayList();
       }
 
-      public Builder consumeSeconds(float var1) {
-         this.consumeSeconds = var1;
+      public Builder consumeSeconds(final float consumeSeconds) {
+         this.consumeSeconds = consumeSeconds;
          return this;
       }
 
-      public Builder animation(ItemUseAnimation var1) {
-         this.animation = var1;
+      public Builder animation(final ItemUseAnimation animation) {
+         this.animation = animation;
          return this;
       }
 
-      public Builder sound(Holder<SoundEvent> var1) {
-         this.sound = var1;
+      public Builder sound(final Holder<SoundEvent> sound) {
+         this.sound = sound;
          return this;
       }
 
-      public Builder soundAfterConsume(Holder<SoundEvent> var1) {
-         return this.onConsume(new PlaySoundConsumeEffect(var1));
+      public Builder soundAfterConsume(final Holder<SoundEvent> soundAfterConsume) {
+         return this.onConsume(new PlaySoundConsumeEffect(soundAfterConsume));
       }
 
-      public Builder hasConsumeParticles(boolean var1) {
-         this.hasConsumeParticles = var1;
+      public Builder hasConsumeParticles(final boolean hasConsumeParticles) {
+         this.hasConsumeParticles = hasConsumeParticles;
          return this;
       }
 
-      public Builder onConsume(ConsumeEffect var1) {
-         this.onConsumeEffects.add(var1);
+      public Builder onConsume(final ConsumeEffect effect) {
+         this.onConsumeEffects.add(effect);
          return this;
       }
 
@@ -178,6 +173,6 @@ public record Consumable(float consumeSeconds, ItemUseAnimation animation, Holde
    }
 
    public interface OverrideConsumeSound {
-      SoundEvent getConsumeSound(ItemStack var1);
+      SoundEvent getConsumeSound(final ItemStack itemStack);
    }
 }

@@ -9,8 +9,6 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -47,110 +45,110 @@ public class SinglePoolElement extends StructurePoolElement {
    protected final Holder<StructureProcessorList> processors;
    protected final Optional<LiquidSettings> overrideLiquidSettings;
 
-   private static <T> DataResult<T> encodeTemplate(Either<Identifier, StructureTemplate> var0, DynamicOps<T> var1, T var2) {
-      Optional var3 = var0.left();
-      return var3.isEmpty() ? DataResult.error(() -> "Can not serialize a runtime pool element") : Identifier.CODEC.encode((Identifier)var3.get(), var1, var2);
+   private static <T> DataResult<T> encodeTemplate(final Either<Identifier, StructureTemplate> template, final DynamicOps<T> ops, final T prefix) {
+      Optional<Identifier> location = template.left();
+      return location.isEmpty() ? DataResult.error(() -> "Can not serialize a runtime pool element") : Identifier.CODEC.encode((Identifier)location.get(), ops, prefix);
    }
 
    protected static <E extends SinglePoolElement> RecordCodecBuilder<E, Holder<StructureProcessorList>> processorsCodec() {
-      return StructureProcessorType.LIST_CODEC.fieldOf("processors").forGetter((var0) -> var0.processors);
+      return StructureProcessorType.LIST_CODEC.fieldOf("processors").forGetter((t) -> t.processors);
    }
 
    protected static <E extends SinglePoolElement> RecordCodecBuilder<E, Optional<LiquidSettings>> overrideLiquidSettingsCodec() {
-      return LiquidSettings.CODEC.optionalFieldOf("override_liquid_settings").forGetter((var0) -> var0.overrideLiquidSettings);
+      return LiquidSettings.CODEC.optionalFieldOf("override_liquid_settings").forGetter((t) -> t.overrideLiquidSettings);
    }
 
    protected static <E extends SinglePoolElement> RecordCodecBuilder<E, Either<Identifier, StructureTemplate>> templateCodec() {
-      return TEMPLATE_CODEC.fieldOf("location").forGetter((var0) -> var0.template);
+      return TEMPLATE_CODEC.fieldOf("location").forGetter((t) -> t.template);
    }
 
-   protected SinglePoolElement(Either<Identifier, StructureTemplate> var1, Holder<StructureProcessorList> var2, StructureTemplatePool.Projection var3, Optional<LiquidSettings> var4) {
-      super(var3);
-      this.template = var1;
-      this.processors = var2;
-      this.overrideLiquidSettings = var4;
+   protected SinglePoolElement(final Either<Identifier, StructureTemplate> template, final Holder<StructureProcessorList> processors, final StructureTemplatePool.Projection projection, final Optional<LiquidSettings> overrideLiquidSettings) {
+      super(projection);
+      this.template = template;
+      this.processors = processors;
+      this.overrideLiquidSettings = overrideLiquidSettings;
    }
 
-   public Vec3i getSize(StructureTemplateManager var1, Rotation var2) {
-      StructureTemplate var3 = this.getTemplate(var1);
-      return var3.getSize(var2);
+   public Vec3i getSize(final StructureTemplateManager structureTemplateManager, final Rotation rotation) {
+      StructureTemplate template = this.getTemplate(structureTemplateManager);
+      return template.getSize(rotation);
    }
 
-   private StructureTemplate getTemplate(StructureTemplateManager var1) {
+   private StructureTemplate getTemplate(final StructureTemplateManager structureTemplateManager) {
       Either var10000 = this.template;
-      Objects.requireNonNull(var1);
-      return (StructureTemplate)var10000.map(var1::getOrCreate, Function.identity());
+      Objects.requireNonNull(structureTemplateManager);
+      return (StructureTemplate)var10000.map(structureTemplateManager::getOrCreate, Function.identity());
    }
 
-   public List<StructureTemplate.StructureBlockInfo> getDataMarkers(StructureTemplateManager var1, BlockPos var2, Rotation var3, boolean var4) {
-      StructureTemplate var5 = this.getTemplate(var1);
-      ObjectArrayList var6 = var5.filterBlocks(var2, (new StructurePlaceSettings()).setRotation(var3), Blocks.STRUCTURE_BLOCK, var4);
-      ArrayList var7 = Lists.newArrayList();
+   public List<StructureTemplate.StructureBlockInfo> getDataMarkers(final StructureTemplateManager structureTemplateManager, final BlockPos position, final Rotation rotation, final boolean absolute) {
+      StructureTemplate template = this.getTemplate(structureTemplateManager);
+      List<StructureTemplate.StructureBlockInfo> structureBlocks = template.filterBlocks(position, (new StructurePlaceSettings()).setRotation(rotation), Blocks.STRUCTURE_BLOCK, absolute);
+      List<StructureTemplate.StructureBlockInfo> dataMarkers = Lists.newArrayList();
 
-      for(StructureTemplate.StructureBlockInfo var9 : var6) {
-         CompoundTag var10 = var9.nbt();
-         if (var10 != null) {
-            StructureMode var11 = (StructureMode)var10.read("mode", StructureMode.LEGACY_CODEC).orElseThrow();
-            if (var11 == StructureMode.DATA) {
-               var7.add(var9);
+      for(StructureTemplate.StructureBlockInfo info : structureBlocks) {
+         CompoundTag nbt = info.nbt();
+         if (nbt != null) {
+            StructureMode mode = (StructureMode)nbt.read("mode", StructureMode.LEGACY_CODEC).orElseThrow();
+            if (mode == StructureMode.DATA) {
+               dataMarkers.add(info);
             }
          }
       }
 
-      return var7;
+      return dataMarkers;
    }
 
-   public List<StructureTemplate.JigsawBlockInfo> getShuffledJigsawBlocks(StructureTemplateManager var1, BlockPos var2, Rotation var3, RandomSource var4) {
-      List var5 = this.getTemplate(var1).getJigsaws(var2, var3);
-      Util.shuffle(var5, var4);
-      sortBySelectionPriority(var5);
-      return var5;
+   public List<StructureTemplate.JigsawBlockInfo> getShuffledJigsawBlocks(final StructureTemplateManager structureTemplateManager, final BlockPos position, final Rotation rotation, final RandomSource random) {
+      List<StructureTemplate.JigsawBlockInfo> jigsaws = this.getTemplate(structureTemplateManager).getJigsaws(position, rotation);
+      Util.shuffle(jigsaws, random);
+      sortBySelectionPriority(jigsaws);
+      return jigsaws;
    }
 
    @VisibleForTesting
-   static void sortBySelectionPriority(List<StructureTemplate.JigsawBlockInfo> var0) {
-      var0.sort(HIGHEST_SELECTION_PRIORITY_FIRST);
+   static void sortBySelectionPriority(final List<StructureTemplate.JigsawBlockInfo> blocks) {
+      blocks.sort(HIGHEST_SELECTION_PRIORITY_FIRST);
    }
 
-   public BoundingBox getBoundingBox(StructureTemplateManager var1, BlockPos var2, Rotation var3) {
-      StructureTemplate var4 = this.getTemplate(var1);
-      return var4.getBoundingBox((new StructurePlaceSettings()).setRotation(var3), var2);
+   public BoundingBox getBoundingBox(final StructureTemplateManager structureTemplateManager, final BlockPos position, final Rotation rotation) {
+      StructureTemplate template = this.getTemplate(structureTemplateManager);
+      return template.getBoundingBox((new StructurePlaceSettings()).setRotation(rotation), position);
    }
 
-   public boolean place(StructureTemplateManager var1, WorldGenLevel var2, StructureManager var3, ChunkGenerator var4, BlockPos var5, BlockPos var6, Rotation var7, BoundingBox var8, RandomSource var9, LiquidSettings var10, boolean var11) {
-      StructureTemplate var12 = this.getTemplate(var1);
-      StructurePlaceSettings var13 = this.getSettings(var7, var8, var10, var11);
-      if (!var12.placeInWorld(var2, var5, var6, var13, var9, 18)) {
+   public boolean place(final StructureTemplateManager structureTemplateManager, final WorldGenLevel level, final StructureManager structureManager, final ChunkGenerator generator, final BlockPos position, final BlockPos referencePos, final Rotation rotation, final BoundingBox chunkBB, final RandomSource random, final LiquidSettings liquidSettings, final boolean keepJigsaws) {
+      StructureTemplate template = this.getTemplate(structureTemplateManager);
+      StructurePlaceSettings settings = this.getSettings(rotation, chunkBB, liquidSettings, keepJigsaws);
+      if (!template.placeInWorld(level, position, referencePos, settings, random, 18)) {
          return false;
       } else {
-         for(StructureTemplate.StructureBlockInfo var16 : StructureTemplate.processBlockInfos(var2, var5, var6, var13, this.getDataMarkers(var1, var5, var7, false))) {
-            this.handleDataMarker(var2, var16, var5, var7, var9, var8);
+         for(StructureTemplate.StructureBlockInfo dataMarker : StructureTemplate.processBlockInfos(level, position, referencePos, settings, this.getDataMarkers(structureTemplateManager, position, rotation, false))) {
+            this.handleDataMarker(level, dataMarker, position, rotation, random, chunkBB);
          }
 
          return true;
       }
    }
 
-   protected StructurePlaceSettings getSettings(Rotation var1, BoundingBox var2, LiquidSettings var3, boolean var4) {
-      StructurePlaceSettings var5 = new StructurePlaceSettings();
-      var5.setBoundingBox(var2);
-      var5.setRotation(var1);
-      var5.setKnownShape(true);
-      var5.setIgnoreEntities(false);
-      var5.addProcessor(BlockIgnoreProcessor.STRUCTURE_BLOCK);
-      var5.setFinalizeEntities(true);
-      var5.setLiquidSettings((LiquidSettings)this.overrideLiquidSettings.orElse(var3));
-      if (!var4) {
-         var5.addProcessor(JigsawReplacementProcessor.INSTANCE);
+   protected StructurePlaceSettings getSettings(final Rotation rotation, final BoundingBox chunkBB, final LiquidSettings liquidSettings, final boolean keepJigsaws) {
+      StructurePlaceSettings settings = new StructurePlaceSettings();
+      settings.setBoundingBox(chunkBB);
+      settings.setRotation(rotation);
+      settings.setKnownShape(true);
+      settings.setIgnoreEntities(false);
+      settings.addProcessor(BlockIgnoreProcessor.STRUCTURE_BLOCK);
+      settings.setFinalizeEntities(true);
+      settings.setLiquidSettings((LiquidSettings)this.overrideLiquidSettings.orElse(liquidSettings));
+      if (!keepJigsaws) {
+         settings.addProcessor(JigsawReplacementProcessor.INSTANCE);
       }
 
       List var10000 = (this.processors.value()).list();
-      Objects.requireNonNull(var5);
-      var10000.forEach(var5::addProcessor);
+      Objects.requireNonNull(settings);
+      var10000.forEach(settings::addProcessor);
       ImmutableList var6 = this.getProjection().getProcessors();
-      Objects.requireNonNull(var5);
-      var6.forEach(var5::addProcessor);
-      return var5;
+      Objects.requireNonNull(settings);
+      var6.forEach(settings::addProcessor);
+      return settings;
    }
 
    public StructurePoolElementType<?> getType() {
@@ -168,6 +166,6 @@ public class SinglePoolElement extends StructurePoolElement {
 
    static {
       TEMPLATE_CODEC = Codec.of(SinglePoolElement::encodeTemplate, Identifier.CODEC.map(Either::left));
-      CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(templateCodec(), processorsCodec(), projectionCodec(), overrideLiquidSettingsCodec()).apply(var0, SinglePoolElement::new));
+      CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(templateCodec(), processorsCodec(), projectionCodec(), overrideLiquidSettingsCodec()).apply(i, SinglePoolElement::new));
    }
 }

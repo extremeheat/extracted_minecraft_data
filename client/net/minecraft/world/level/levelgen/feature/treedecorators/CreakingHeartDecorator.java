@@ -2,8 +2,8 @@ package net.minecraft.world.level.levelgen.feature.treedecorators;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -16,36 +16,36 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.CreakingHeartState;
 
 public class CreakingHeartDecorator extends TreeDecorator {
-   public static final MapCodec<CreakingHeartDecorator> CODEC = Codec.floatRange(0.0F, 1.0F).fieldOf("probability").xmap(CreakingHeartDecorator::new, (var0) -> var0.probability);
+   public static final MapCodec<CreakingHeartDecorator> CODEC = Codec.floatRange(0.0F, 1.0F).fieldOf("probability").xmap(CreakingHeartDecorator::new, (d) -> d.probability);
    private final float probability;
 
-   public CreakingHeartDecorator(float var1) {
+   public CreakingHeartDecorator(final float probability) {
       super();
-      this.probability = var1;
+      this.probability = probability;
    }
 
    protected TreeDecoratorType<?> type() {
       return TreeDecoratorType.CREAKING_HEART;
    }
 
-   public void place(TreeDecorator.Context var1) {
-      RandomSource var2 = var1.random();
-      ObjectArrayList var3 = var1.logs();
-      if (!var3.isEmpty()) {
-         if (!(var2.nextFloat() >= this.probability)) {
-            ArrayList var4 = new ArrayList(var3);
-            Util.shuffle(var4, var2);
-            Optional var5 = var4.stream().filter((var1x) -> {
-               for(Direction var5 : Direction.values()) {
-                  if (!var1.checkBlock(var1x.relative(var5), (var0) -> var0.is(BlockTags.LOGS))) {
+   public void place(final TreeDecorator.Context context) {
+      RandomSource random = context.random();
+      List<BlockPos> logs = context.logs();
+      if (!logs.isEmpty()) {
+         if (!(random.nextFloat() >= this.probability)) {
+            List<BlockPos> heartPlacements = new ArrayList(logs);
+            Util.shuffle(heartPlacements, random);
+            Optional<BlockPos> targetPos = heartPlacements.stream().filter((pos) -> {
+               for(Direction dir : Direction.values()) {
+                  if (!context.checkBlock(pos.relative(dir), (state) -> state.is(BlockTags.LOGS))) {
                      return false;
                   }
                }
 
                return true;
             }).findFirst();
-            if (!var5.isEmpty()) {
-               var1.setBlock((BlockPos)var5.get(), (BlockState)((BlockState)Blocks.CREAKING_HEART.defaultBlockState().setValue(CreakingHeartBlock.STATE, CreakingHeartState.DORMANT)).setValue(CreakingHeartBlock.NATURAL, true));
+            if (!targetPos.isEmpty()) {
+               context.setBlock((BlockPos)targetPos.get(), (BlockState)((BlockState)Blocks.CREAKING_HEART.defaultBlockState().setValue(CreakingHeartBlock.STATE, CreakingHeartState.DORMANT)).setValue(CreakingHeartBlock.NATURAL, true));
             }
          }
       }

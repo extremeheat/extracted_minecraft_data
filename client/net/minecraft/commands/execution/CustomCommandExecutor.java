@@ -8,10 +8,10 @@ import net.minecraft.commands.ExecutionCommandSource;
 import org.jspecify.annotations.Nullable;
 
 public interface CustomCommandExecutor<T> {
-   void run(T var1, ContextChain<T> var2, ChainModifiers var3, ExecutionControl<T> var4);
+   void run(T sender, ContextChain<T> currentStep, ChainModifiers modifiers, ExecutionControl<T> output);
 
-   public interface CommandAdapter<T> extends Command<T>, CustomCommandExecutor<T> {
-      default int run(CommandContext<T> var1) throws CommandSyntaxException {
+   public interface CommandAdapter<T> extends CustomCommandExecutor<T>, Command<T> {
+      default int run(final CommandContext<T> context) throws CommandSyntaxException {
          throw new UnsupportedOperationException("This function should not run");
       }
    }
@@ -21,20 +21,20 @@ public interface CustomCommandExecutor<T> {
          super();
       }
 
-      public final void run(T var1, ContextChain<T> var2, ChainModifiers var3, ExecutionControl<T> var4) {
+      public final void run(final T sender, final ContextChain<T> currentStep, final ChainModifiers modifiers, final ExecutionControl<T> output) {
          try {
-            this.runGuarded(var1, var2, var3, var4);
-         } catch (CommandSyntaxException var6) {
-            this.onError(var6, var1, var3, var4.tracer());
-            var1.callback().onFailure();
+            this.runGuarded(sender, currentStep, modifiers, output);
+         } catch (CommandSyntaxException e) {
+            this.onError(e, sender, modifiers, output.tracer());
+            sender.callback().onFailure();
          }
 
       }
 
-      protected void onError(CommandSyntaxException var1, T var2, ChainModifiers var3, @Nullable TraceCallbacks var4) {
-         var2.handleError(var1, var3.isForked(), var4);
+      protected void onError(final CommandSyntaxException e, final T sender, final ChainModifiers modifiers, final @Nullable TraceCallbacks tracer) {
+         sender.handleError(e, modifiers.isForked(), tracer);
       }
 
-      protected abstract void runGuarded(T var1, ContextChain<T> var2, ChainModifiers var3, ExecutionControl<T> var4) throws CommandSyntaxException;
+      protected abstract void runGuarded(T sender, ContextChain<T> currentStep, ChainModifiers modifiers, ExecutionControl<T> output) throws CommandSyntaxException;
    }
 }

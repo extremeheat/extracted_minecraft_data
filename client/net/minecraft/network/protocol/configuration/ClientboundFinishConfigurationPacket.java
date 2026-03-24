@@ -17,8 +17,8 @@ public class ClientboundFinishConfigurationPacket implements Packet<ClientConfig
       return ConfigurationPacketTypes.CLIENTBOUND_FINISH_CONFIGURATION;
    }
 
-   public void handle(ClientConfigurationPacketListener var1) {
-      var1.handleConfigurationFinished(this);
+   public void handle(final ClientConfigurationPacketListener listener) {
+      listener.handleConfigurationFinished(this);
    }
 
    public boolean isTerminal() {

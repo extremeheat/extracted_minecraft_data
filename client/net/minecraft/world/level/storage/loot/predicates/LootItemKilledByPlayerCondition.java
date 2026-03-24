@@ -8,34 +8,29 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
 public class LootItemKilledByPlayerCondition implements LootItemCondition {
    private static final LootItemKilledByPlayerCondition INSTANCE = new LootItemKilledByPlayerCondition();
-   public static final MapCodec<LootItemKilledByPlayerCondition> CODEC;
+   public static final MapCodec<LootItemKilledByPlayerCondition> MAP_CODEC;
 
    private LootItemKilledByPlayerCondition() {
       super();
    }
 
-   public LootItemConditionType getType() {
-      return LootItemConditions.KILLED_BY_PLAYER;
+   public MapCodec<LootItemKilledByPlayerCondition> codec() {
+      return MAP_CODEC;
    }
 
    public Set<ContextKey<?>> getReferencedContextParams() {
       return Set.of(LootContextParams.LAST_DAMAGE_PLAYER);
    }
 
-   public boolean test(LootContext var1) {
-      return var1.hasParameter(LootContextParams.LAST_DAMAGE_PLAYER);
+   public boolean test(final LootContext context) {
+      return context.hasParameter(LootContextParams.LAST_DAMAGE_PLAYER);
    }
 
    public static LootItemCondition.Builder killedByPlayer() {
       return () -> INSTANCE;
    }
 
-   // $FF: synthetic method
-   public boolean test(final Object var1) {
-      return this.test((LootContext)var1);
-   }
-
    static {
-      CODEC = MapCodec.unit(INSTANCE);
+      MAP_CODEC = MapCodec.unit(INSTANCE);
    }
 }

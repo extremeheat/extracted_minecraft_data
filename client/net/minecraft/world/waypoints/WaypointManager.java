@@ -1,9 +1,9 @@
 package net.minecraft.world.waypoints;
 
 public interface WaypointManager<T extends Waypoint> {
-   void trackWaypoint(T var1);
+   void trackWaypoint(T waypoint);
 
-   void updateWaypoint(T var1);
+   void updateWaypoint(T waypoint);
 
-   void untrackWaypoint(T var1);
+   void untrackWaypoint(T waypoint);
 }

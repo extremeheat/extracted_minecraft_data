@@ -10,17 +10,17 @@ import net.minecraft.world.level.redstone.ExperimentalRedstoneUtils;
 import net.minecraft.world.level.redstone.Orientation;
 
 public class TrappedChestBlockEntity extends ChestBlockEntity {
-   public TrappedChestBlockEntity(BlockPos var1, BlockState var2) {
-      super(BlockEntityType.TRAPPED_CHEST, var1, var2);
+   public TrappedChestBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      super(BlockEntityType.TRAPPED_CHEST, worldPosition, blockState);
    }
 
-   protected void signalOpenCount(Level var1, BlockPos var2, BlockState var3, int var4, int var5) {
-      super.signalOpenCount(var1, var2, var3, var4, var5);
-      if (var4 != var5) {
-         Orientation var6 = ExperimentalRedstoneUtils.initialOrientation(var1, ((Direction)var3.getValue(TrappedChestBlock.FACING)).getOpposite(), Direction.UP);
-         Block var7 = var3.getBlock();
-         var1.updateNeighborsAt(var2, var7, var6);
-         var1.updateNeighborsAt(var2.below(), var7, var6);
+   protected void signalOpenCount(final Level level, final BlockPos pos, final BlockState blockState, final int previous, final int current) {
+      super.signalOpenCount(level, pos, blockState, previous, current);
+      if (previous != current) {
+         Orientation orientation = ExperimentalRedstoneUtils.initialOrientation(level, ((Direction)blockState.getValue(TrappedChestBlock.FACING)).getOpposite(), Direction.UP);
+         Block block = blockState.getBlock();
+         level.updateNeighborsAt(pos, block, orientation);
+         level.updateNeighborsAt(pos.below(), block, orientation);
       }
 
    }

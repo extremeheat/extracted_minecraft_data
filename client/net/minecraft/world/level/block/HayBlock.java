@@ -15,12 +15,12 @@ public class HayBlock extends RotatedPillarBlock {
       return CODEC;
    }
 
-   public HayBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public HayBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(AXIS, Direction.Axis.Y));
    }
 
-   public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, double var5) {
-      var4.causeFallDamage(var5, 0.2F, var1.damageSources().fall());
+   public void fallOn(final Level level, final BlockState state, final BlockPos pos, final Entity entity, final double fallDistance) {
+      entity.causeFallDamage(fallDistance, 0.2F, level.damageSources().fall());
    }
 }

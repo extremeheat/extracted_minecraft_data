@@ -11,24 +11,24 @@ public class EntityAttributeBaseValueFix extends NamedEntityFix {
    private final String attributeId;
    private final DoubleUnaryOperator valueFixer;
 
-   public EntityAttributeBaseValueFix(Schema var1, String var2, String var3, String var4, DoubleUnaryOperator var5) {
-      super(var1, false, var2, References.ENTITY, var3);
-      this.attributeId = var4;
-      this.valueFixer = var5;
+   public EntityAttributeBaseValueFix(final Schema outputSchema, final String name, final String entityName, final String attributeId, final DoubleUnaryOperator valueFixer) {
+      super(outputSchema, false, name, References.ENTITY, entityName);
+      this.attributeId = attributeId;
+      this.valueFixer = valueFixer;
    }
 
-   protected Typed<?> fix(Typed<?> var1) {
-      return var1.update(DSL.remainderFinder(), this::fixValue);
+   protected Typed<?> fix(final Typed<?> entity) {
+      return entity.update(DSL.remainderFinder(), this::fixValue);
    }
 
-   private Dynamic<?> fixValue(Dynamic<?> var1) {
-      return var1.update("attributes", (var2) -> var1.createList(var2.asStream().map((var1x) -> {
-            String var2 = NamespacedSchema.ensureNamespaced(var1x.get("id").asString(""));
-            if (!var2.equals(this.attributeId)) {
-               return var1x;
+   private Dynamic<?> fixValue(final Dynamic<?> tag) {
+      return tag.update("attributes", (attributes) -> tag.createList(attributes.asStream().map((attribute) -> {
+            String attributeId = NamespacedSchema.ensureNamespaced(attribute.get("id").asString(""));
+            if (!attributeId.equals(this.attributeId)) {
+               return attribute;
             } else {
-               double var3 = var1x.get("base").asDouble(0.0);
-               return var1x.set("base", var1x.createDouble(this.valueFixer.applyAsDouble(var3)));
+               double base = attribute.get("base").asDouble(0.0);
+               return attribute.set("base", attribute.createDouble(this.valueFixer.applyAsDouble(base)));
             }
          })));
    }

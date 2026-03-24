@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.ArrayDeque;
 import java.util.List;
+import java.util.Set;
 import org.jspecify.annotations.Nullable;
 
 public class MessageSignatureCache {
@@ -11,53 +12,53 @@ public class MessageSignatureCache {
    private static final int DEFAULT_CAPACITY = 128;
    private final @Nullable MessageSignature[] entries;
 
-   public MessageSignatureCache(int var1) {
+   public MessageSignatureCache(final int capacity) {
       super();
-      this.entries = new MessageSignature[var1];
+      this.entries = new MessageSignature[capacity];
    }
 
    public static MessageSignatureCache createDefault() {
       return new MessageSignatureCache(128);
    }
 
-   public int pack(MessageSignature var1) {
-      for(int var2 = 0; var2 < this.entries.length; ++var2) {
-         if (var1.equals(this.entries[var2])) {
-            return var2;
+   public int pack(final MessageSignature signature) {
+      for(int i = 0; i < this.entries.length; ++i) {
+         if (signature.equals(this.entries[i])) {
+            return i;
          }
       }
 
       return -1;
    }
 
-   public @Nullable MessageSignature unpack(int var1) {
-      return this.entries[var1];
+   public @Nullable MessageSignature unpack(final int id) {
+      return this.entries[id];
    }
 
-   public void push(SignedMessageBody var1, @Nullable MessageSignature var2) {
-      List var3 = var1.lastSeen().entries();
-      ArrayDeque var4 = new ArrayDeque(var3.size() + 1);
-      var4.addAll(var3);
-      if (var2 != null) {
-         var4.add(var2);
+   public void push(final SignedMessageBody body, final @Nullable MessageSignature signature) {
+      List<MessageSignature> lastSeen = body.lastSeen().entries();
+      ArrayDeque<MessageSignature> queue = new ArrayDeque(lastSeen.size() + 1);
+      queue.addAll(lastSeen);
+      if (signature != null) {
+         queue.add(signature);
       }
 
-      this.push(var4);
+      this.push(queue);
    }
 
    @VisibleForTesting
-   void push(List<MessageSignature> var1) {
-      this.push(new ArrayDeque(var1));
+   void push(final List<MessageSignature> entries) {
+      this.push(new ArrayDeque(entries));
    }
 
-   private void push(ArrayDeque<MessageSignature> var1) {
-      ObjectOpenHashSet var2 = new ObjectOpenHashSet(var1);
+   private void push(final ArrayDeque<MessageSignature> queue) {
+      Set<MessageSignature> newEntries = new ObjectOpenHashSet(queue);
 
-      for(int var3 = 0; !var1.isEmpty() && var3 < this.entries.length; ++var3) {
-         MessageSignature var4 = this.entries[var3];
-         this.entries[var3] = (MessageSignature)var1.removeLast();
-         if (var4 != null && !var2.contains(var4)) {
-            var1.addFirst(var4);
+      for(int i = 0; !queue.isEmpty() && i < this.entries.length; ++i) {
+         MessageSignature entry = this.entries[i];
+         this.entries[i] = (MessageSignature)queue.removeLast();
+         if (entry != null && !newEntries.contains(entry)) {
+            queue.addFirst(entry);
          }
       }
 

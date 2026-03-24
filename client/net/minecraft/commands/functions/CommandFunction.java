@@ -19,84 +19,84 @@ import org.jspecify.annotations.Nullable;
 public interface CommandFunction<T> {
    Identifier id();
 
-   InstantiatedFunction<T> instantiate(@Nullable CompoundTag var1, CommandDispatcher<T> var2) throws FunctionInstantiationException;
+   InstantiatedFunction<T> instantiate(@Nullable CompoundTag arguments, CommandDispatcher<T> dispatcher) throws FunctionInstantiationException;
 
-   private static boolean shouldConcatenateNextLine(CharSequence var0) {
-      int var1 = var0.length();
-      return var1 > 0 && var0.charAt(var1 - 1) == '\\';
+   private static boolean shouldConcatenateNextLine(final CharSequence line) {
+      int length = line.length();
+      return length > 0 && line.charAt(length - 1) == '\\';
    }
 
-   static <T extends ExecutionCommandSource<T>> CommandFunction<T> fromLines(Identifier var0, CommandDispatcher<T> var1, T var2, List<String> var3) {
-      FunctionBuilder var4 = new FunctionBuilder();
+   static <T extends ExecutionCommandSource<T>> CommandFunction<T> fromLines(final Identifier id, final CommandDispatcher<T> dispatcher, final T compilationContext, final List<String> lines) {
+      FunctionBuilder<T> functionBuilder = new FunctionBuilder<T>();
 
-      for(int var5 = 0; var5 < var3.size(); ++var5) {
-         int var6 = var5 + 1;
-         String var7 = ((String)var3.get(var5)).trim();
-         String var8;
-         if (shouldConcatenateNextLine(var7)) {
-            StringBuilder var9 = new StringBuilder(var7);
+      for(int i = 0; i < lines.size(); ++i) {
+         int lineNumber = i + 1;
+         String inputLine = ((String)lines.get(i)).trim();
+         String line;
+         if (shouldConcatenateNextLine(inputLine)) {
+            StringBuilder builder = new StringBuilder(inputLine);
 
             do {
-               ++var5;
-               if (var5 == var3.size()) {
+               ++i;
+               if (i == lines.size()) {
                   throw new IllegalArgumentException("Line continuation at end of file");
                }
 
-               var9.deleteCharAt(var9.length() - 1);
-               String var10 = ((String)var3.get(var5)).trim();
-               var9.append(var10);
-               checkCommandLineLength(var9);
-            } while(shouldConcatenateNextLine(var9));
+               builder.deleteCharAt(builder.length() - 1);
+               String innerLine = ((String)lines.get(i)).trim();
+               builder.append(innerLine);
+               checkCommandLineLength(builder);
+            } while(shouldConcatenateNextLine(builder));
 
-            var8 = var9.toString();
+            line = builder.toString();
          } else {
-            var8 = var7;
+            line = inputLine;
          }
 
-         checkCommandLineLength(var8);
-         StringReader var12 = new StringReader(var8);
-         if (var12.canRead() && var12.peek() != '#') {
-            if (var12.peek() == '/') {
-               var12.skip();
-               if (var12.peek() == '/') {
-                  throw new IllegalArgumentException("Unknown or invalid command '" + var8 + "' on line " + var6 + " (if you intended to make a comment, use '#' not '//')");
+         checkCommandLineLength(line);
+         StringReader input = new StringReader(line);
+         if (input.canRead() && input.peek() != '#') {
+            if (input.peek() == '/') {
+               input.skip();
+               if (input.peek() == '/') {
+                  throw new IllegalArgumentException("Unknown or invalid command '" + line + "' on line " + lineNumber + " (if you intended to make a comment, use '#' not '//')");
                }
 
-               String var13 = var12.readUnquotedString();
-               throw new IllegalArgumentException("Unknown or invalid command '" + var8 + "' on line " + var6 + " (did you mean '" + var13 + "'? Do not use a preceding forwards slash.)");
+               String name = input.readUnquotedString();
+               throw new IllegalArgumentException("Unknown or invalid command '" + line + "' on line " + lineNumber + " (did you mean '" + name + "'? Do not use a preceding forwards slash.)");
             }
 
-            if (var12.peek() == '$') {
-               var4.addMacro(var8.substring(1), var6, var2);
+            if (input.peek() == '$') {
+               functionBuilder.addMacro(line.substring(1), lineNumber, compilationContext);
             } else {
                try {
-                  var4.addCommand(parseCommand(var1, var2, var12));
-               } catch (CommandSyntaxException var11) {
-                  throw new IllegalArgumentException("Whilst parsing command on line " + var6 + ": " + var11.getMessage());
+                  functionBuilder.addCommand(parseCommand(dispatcher, compilationContext, input));
+               } catch (CommandSyntaxException e) {
+                  throw new IllegalArgumentException("Whilst parsing command on line " + lineNumber + ": " + e.getMessage());
                }
             }
          }
       }
 
-      return var4.build(var0);
+      return functionBuilder.build(id);
    }
 
-   static void checkCommandLineLength(CharSequence var0) {
-      if (var0.length() > 2000000) {
-         CharSequence var1 = var0.subSequence(0, Math.min(512, 2000000));
-         int var10002 = var0.length();
-         throw new IllegalStateException("Command too long: " + var10002 + " characters, contents: " + String.valueOf(var1) + "...");
+   static void checkCommandLineLength(final CharSequence line) {
+      if (line.length() > 2000000) {
+         CharSequence truncated = line.subSequence(0, Math.min(512, 2000000));
+         int var10002 = line.length();
+         throw new IllegalStateException("Command too long: " + var10002 + " characters, contents: " + String.valueOf(truncated) + "...");
       }
    }
 
-   static <T extends ExecutionCommandSource<T>> UnboundEntryAction<T> parseCommand(CommandDispatcher<T> var0, T var1, StringReader var2) throws CommandSyntaxException {
-      ParseResults var3 = var0.parse(var2, var1);
-      Commands.validateParseResults(var3);
-      Optional var4 = ContextChain.tryFlatten(var3.getContext().build(var2.getString()));
-      if (var4.isEmpty()) {
-         throw CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownCommand().createWithContext(var3.getReader());
+   static <T extends ExecutionCommandSource<T>> UnboundEntryAction<T> parseCommand(final CommandDispatcher<T> dispatcher, final T compilationContext, final StringReader input) throws CommandSyntaxException {
+      ParseResults<T> parse = dispatcher.parse(input, compilationContext);
+      Commands.validateParseResults(parse);
+      Optional<ContextChain<T>> commandChain = ContextChain.tryFlatten(parse.getContext().build(input.getString()));
+      if (commandChain.isEmpty()) {
+         throw CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownCommand().createWithContext(parse.getReader());
       } else {
-         return new BuildContexts.Unbound<T>(var2.getString(), (ContextChain)var4.get());
+         return new BuildContexts.Unbound<T>(input.getString(), (ContextChain)commandChain.get());
       }
    }
 }

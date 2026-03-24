@@ -11,18 +11,16 @@ import net.minecraft.network.protocol.PacketType;
 public record ClientboundPlayerCombatKillPacket(int playerId, Component message) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundPlayerCombatKillPacket> STREAM_CODEC;
 
-   public ClientboundPlayerCombatKillPacket(int var1, Component var2) {
+   public ClientboundPlayerCombatKillPacket {
       super();
-      this.playerId = var1;
-      this.message = var2;
    }
 
    public PacketType<ClientboundPlayerCombatKillPacket> type() {
       return GamePacketTypes.CLIENTBOUND_PLAYER_COMBAT_KILL;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handlePlayerCombatKill(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handlePlayerCombatKill(this);
    }
 
    public boolean isSkippable() {

@@ -24,12 +24,12 @@ public enum EntitySpawnReason {
    private EntitySpawnReason() {
    }
 
-   public static boolean isSpawner(EntitySpawnReason var0) {
-      return var0 == SPAWNER || var0 == TRIAL_SPAWNER;
+   public static boolean isSpawner(final EntitySpawnReason reason) {
+      return reason == SPAWNER || reason == TRIAL_SPAWNER;
    }
 
-   public static boolean ignoresLightRequirements(EntitySpawnReason var0) {
-      return var0 == TRIAL_SPAWNER;
+   public static boolean ignoresLightRequirements(final EntitySpawnReason reason) {
+      return reason == TRIAL_SPAWNER;
    }
 
    // $FF: synthetic method

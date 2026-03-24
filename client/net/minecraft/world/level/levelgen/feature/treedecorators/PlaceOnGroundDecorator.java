@@ -14,59 +14,59 @@ import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvi
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
 public class PlaceOnGroundDecorator extends TreeDecorator {
-   public static final MapCodec<PlaceOnGroundDecorator> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.POSITIVE_INT.fieldOf("tries").orElse(128).forGetter((var0x) -> var0x.tries), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("radius").orElse(2).forGetter((var0x) -> var0x.radius), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("height").orElse(1).forGetter((var0x) -> var0x.height), BlockStateProvider.CODEC.fieldOf("block_state_provider").forGetter((var0x) -> var0x.blockStateProvider)).apply(var0, PlaceOnGroundDecorator::new));
+   public static final MapCodec<PlaceOnGroundDecorator> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ExtraCodecs.POSITIVE_INT.fieldOf("tries").orElse(128).forGetter((p) -> p.tries), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("radius").orElse(2).forGetter((p) -> p.radius), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("height").orElse(1).forGetter((p) -> p.height), BlockStateProvider.CODEC.fieldOf("block_state_provider").forGetter((p) -> p.blockStateProvider)).apply(i, PlaceOnGroundDecorator::new));
    private final int tries;
    private final int radius;
    private final int height;
    private final BlockStateProvider blockStateProvider;
 
-   public PlaceOnGroundDecorator(int var1, int var2, int var3, BlockStateProvider var4) {
+   public PlaceOnGroundDecorator(final int tries, final int radius, final int height, final BlockStateProvider blockStateProvider) {
       super();
-      this.tries = var1;
-      this.radius = var2;
-      this.height = var3;
-      this.blockStateProvider = var4;
+      this.tries = tries;
+      this.radius = radius;
+      this.height = height;
+      this.blockStateProvider = blockStateProvider;
    }
 
    protected TreeDecoratorType<?> type() {
       return TreeDecoratorType.PLACE_ON_GROUND;
    }
 
-   public void place(TreeDecorator.Context var1) {
-      List var2 = TreeFeature.getLowestTrunkOrRootOfTree(var1);
-      if (!var2.isEmpty()) {
-         BlockPos var3 = (BlockPos)var2.getFirst();
-         int var4 = var3.getY();
-         int var5 = var3.getX();
-         int var6 = var3.getX();
-         int var7 = var3.getZ();
-         int var8 = var3.getZ();
+   public void place(final TreeDecorator.Context context) {
+      List<BlockPos> blockPositions = TreeFeature.getLowestTrunkOrRootOfTree(context);
+      if (!blockPositions.isEmpty()) {
+         BlockPos origin = (BlockPos)blockPositions.getFirst();
+         int minY = origin.getY();
+         int minX = origin.getX();
+         int maxX = origin.getX();
+         int minZ = origin.getZ();
+         int maxZ = origin.getZ();
 
-         for(BlockPos var10 : var2) {
-            if (var10.getY() == var4) {
-               var5 = Math.min(var5, var10.getX());
-               var6 = Math.max(var6, var10.getX());
-               var7 = Math.min(var7, var10.getZ());
-               var8 = Math.max(var8, var10.getZ());
+         for(BlockPos position : blockPositions) {
+            if (position.getY() == minY) {
+               minX = Math.min(minX, position.getX());
+               maxX = Math.max(maxX, position.getX());
+               minZ = Math.min(minZ, position.getZ());
+               maxZ = Math.max(maxZ, position.getZ());
             }
          }
 
-         RandomSource var13 = var1.random();
-         BoundingBox var14 = (new BoundingBox(var5, var4, var7, var6, var4, var8)).inflatedBy(this.radius, this.height, this.radius);
-         BlockPos.MutableBlockPos var11 = new BlockPos.MutableBlockPos();
+         RandomSource random = context.random();
+         BoundingBox bb = (new BoundingBox(minX, minY, minZ, maxX, minY, maxZ)).inflatedBy(this.radius, this.height, this.radius);
+         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 
-         for(int var12 = 0; var12 < this.tries; ++var12) {
-            var11.set(var13.nextIntBetweenInclusive(var14.minX(), var14.maxX()), var13.nextIntBetweenInclusive(var14.minY(), var14.maxY()), var13.nextIntBetweenInclusive(var14.minZ(), var14.maxZ()));
-            this.attemptToPlaceBlockAbove(var1, var11);
+         for(int i = 0; i < this.tries; ++i) {
+            pos.set(random.nextIntBetweenInclusive(bb.minX(), bb.maxX()), random.nextIntBetweenInclusive(bb.minY(), bb.maxY()), random.nextIntBetweenInclusive(bb.minZ(), bb.maxZ()));
+            this.attemptToPlaceBlockAbove(context, pos);
          }
 
       }
    }
 
-   private void attemptToPlaceBlockAbove(TreeDecorator.Context var1, BlockPos var2) {
-      BlockPos var3 = var2.above();
-      if (var1.level().isStateAtPosition(var3, (var0) -> var0.isAir() || var0.is(Blocks.VINE)) && var1.checkBlock(var2, BlockBehaviour.BlockStateBase::isSolidRender) && var1.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, var2).getY() <= var3.getY()) {
-         var1.setBlock(var3, this.blockStateProvider.getState(var1.random(), var3));
+   private void attemptToPlaceBlockAbove(final TreeDecorator.Context context, final BlockPos pos) {
+      BlockPos abovePos = pos.above();
+      if (context.level().isStateAtPosition(abovePos, (state) -> state.isAir() || state.is(Blocks.VINE)) && context.checkBlock(pos, BlockBehaviour.BlockStateBase::isSolidRender) && context.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos).getY() <= abovePos.getY()) {
+         context.setBlock(abovePos, this.blockStateProvider.getState(context.level(), context.random(), abovePos));
       }
 
    }

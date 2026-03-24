@@ -14,69 +14,64 @@ import java.util.stream.Stream;
 import org.jspecify.annotations.Nullable;
 
 public class TelemetryPropertyMap {
-   final Map<TelemetryProperty<?>, Object> entries;
+   private final Map<TelemetryProperty<?>, Object> entries;
 
-   TelemetryPropertyMap(Map<TelemetryProperty<?>, Object> var1) {
+   private TelemetryPropertyMap(final Map<TelemetryProperty<?>, Object> entries) {
       super();
-      this.entries = var1;
+      this.entries = entries;
    }
 
    public static Builder builder() {
       return new Builder();
    }
 
-   public static MapCodec<TelemetryPropertyMap> createCodec(final List<TelemetryProperty<?>> var0) {
+   public static MapCodec<TelemetryPropertyMap> createCodec(final List<TelemetryProperty<?>> properties) {
       return new MapCodec<TelemetryPropertyMap>() {
-         public <T> RecordBuilder<T> encode(TelemetryPropertyMap var1, DynamicOps<T> var2, RecordBuilder<T> var3) {
-            RecordBuilder var4 = var3;
+         public <T> RecordBuilder<T> encode(final TelemetryPropertyMap input, final DynamicOps<T> ops, final RecordBuilder<T> prefix) {
+            RecordBuilder<T> result = prefix;
 
-            for(TelemetryProperty var6 : var0) {
-               var4 = this.encodeProperty(var1, var4, var6);
+            for(TelemetryProperty<?> property : properties) {
+               result = this.encodeProperty(input, result, property);
             }
 
-            return var4;
+            return result;
          }
 
-         private <T, V> RecordBuilder<T> encodeProperty(TelemetryPropertyMap var1, RecordBuilder<T> var2, TelemetryProperty<V> var3) {
-            Object var4 = var1.get(var3);
-            return var4 != null ? var2.add(var3.id(), var4, var3.codec()) : var2;
+         private <T, V> RecordBuilder<T> encodeProperty(final TelemetryPropertyMap input, final RecordBuilder<T> result, final TelemetryProperty<V> property) {
+            V value = (V)input.get(property);
+            return value != null ? result.add(property.id(), value, property.codec()) : result;
          }
 
-         public <T> DataResult<TelemetryPropertyMap> decode(DynamicOps<T> var1, MapLike<T> var2) {
-            DataResult var3 = DataResult.success(new Builder());
+         public <T> DataResult<TelemetryPropertyMap> decode(final DynamicOps<T> ops, final MapLike<T> input) {
+            DataResult<Builder> result = DataResult.success(new Builder());
 
-            for(TelemetryProperty var5 : var0) {
-               var3 = this.decodeProperty(var3, var1, var2, var5);
+            for(TelemetryProperty<?> property : properties) {
+               result = this.decodeProperty(result, ops, input, property);
             }
 
-            return var3.map(Builder::build);
+            return result.map(Builder::build);
          }
 
-         private <T, V> DataResult<Builder> decodeProperty(DataResult<Builder> var1, DynamicOps<T> var2, MapLike<T> var3, TelemetryProperty<V> var4) {
-            Object var5 = var3.get(var4.id());
-            if (var5 != null) {
-               DataResult var6 = var4.codec().parse(var2, var5);
-               return var1.apply2stable((var1x, var2x) -> var1x.put(var4, var2x), var6);
+         private <T, V> DataResult<Builder> decodeProperty(final DataResult<Builder> result, final DynamicOps<T> ops, final MapLike<T> input, final TelemetryProperty<V> property) {
+            T value = (T)input.get(property.id());
+            if (value != null) {
+               DataResult<V> parse = property.codec().parse(ops, value);
+               return result.apply2stable((b, v) -> b.put(property, v), parse);
             } else {
-               return var1;
+               return result;
             }
          }
 
-         public <T> Stream<T> keys(DynamicOps<T> var1) {
-            Stream var10000 = var0.stream().map(TelemetryProperty::id);
-            Objects.requireNonNull(var1);
-            return var10000.map(var1::createString);
-         }
-
-         // $FF: synthetic method
-         public RecordBuilder encode(final Object var1, final DynamicOps var2, final RecordBuilder var3) {
-            return this.encode((TelemetryPropertyMap)var1, var2, var3);
+         public <T> Stream<T> keys(final DynamicOps<T> ops) {
+            Stream var10000 = properties.stream().map(TelemetryProperty::id);
+            Objects.requireNonNull(ops);
+            return var10000.map(ops::createString);
          }
       };
    }
 
-   public <T> @Nullable T get(TelemetryProperty<T> var1) {
-      return (T)this.entries.get(var1);
+   public <T> @Nullable T get(final TelemetryProperty<T> property) {
+      return (T)this.entries.get(property);
    }
 
    public String toString() {
@@ -90,25 +85,25 @@ public class TelemetryPropertyMap {
    public static class Builder {
       private final Map<TelemetryProperty<?>, Object> entries = new Reference2ObjectOpenHashMap();
 
-      Builder() {
+      private Builder() {
          super();
       }
 
-      public <T> Builder put(TelemetryProperty<T> var1, T var2) {
-         this.entries.put(var1, var2);
+      public <T> Builder put(final TelemetryProperty<T> property, final T value) {
+         this.entries.put(property, value);
          return this;
       }
 
-      public <T> Builder putIfNotNull(TelemetryProperty<T> var1, @Nullable T var2) {
-         if (var2 != null) {
-            this.entries.put(var1, var2);
+      public <T> Builder putIfNotNull(final TelemetryProperty<T> property, final @Nullable T value) {
+         if (value != null) {
+            this.entries.put(property, value);
          }
 
          return this;
       }
 
-      public Builder putAll(TelemetryPropertyMap var1) {
-         this.entries.putAll(var1.entries);
+      public Builder putAll(final TelemetryPropertyMap properties) {
+         this.entries.putAll(properties.entries);
          return this;
       }
 

@@ -15,25 +15,25 @@ public class AdvancementVisibilityEvaluator {
       super();
    }
 
-   private static VisibilityRule evaluateVisibilityRule(Advancement var0, boolean var1) {
-      Optional var2 = var0.display();
-      if (var2.isEmpty()) {
+   private static VisibilityRule evaluateVisibilityRule(final Advancement advancement, final boolean isDone) {
+      Optional<DisplayInfo> display = advancement.display();
+      if (display.isEmpty()) {
          return AdvancementVisibilityEvaluator.VisibilityRule.HIDE;
-      } else if (var1) {
+      } else if (isDone) {
          return AdvancementVisibilityEvaluator.VisibilityRule.SHOW;
       } else {
-         return ((DisplayInfo)var2.get()).isHidden() ? AdvancementVisibilityEvaluator.VisibilityRule.HIDE : AdvancementVisibilityEvaluator.VisibilityRule.NO_CHANGE;
+         return ((DisplayInfo)display.get()).isHidden() ? AdvancementVisibilityEvaluator.VisibilityRule.HIDE : AdvancementVisibilityEvaluator.VisibilityRule.NO_CHANGE;
       }
    }
 
-   private static boolean evaluateVisiblityForUnfinishedNode(Stack<VisibilityRule> var0) {
-      for(int var1 = 0; var1 <= 2; ++var1) {
-         VisibilityRule var2 = (VisibilityRule)var0.peek(var1);
-         if (var2 == AdvancementVisibilityEvaluator.VisibilityRule.SHOW) {
+   private static boolean evaluateVisiblityForUnfinishedNode(final Stack<VisibilityRule> ascendants) {
+      for(int i = 0; i <= 2; ++i) {
+         VisibilityRule visibility = (VisibilityRule)ascendants.peek(i);
+         if (visibility == AdvancementVisibilityEvaluator.VisibilityRule.SHOW) {
             return true;
          }
 
-         if (var2 == AdvancementVisibilityEvaluator.VisibilityRule.HIDE) {
+         if (visibility == AdvancementVisibilityEvaluator.VisibilityRule.HIDE) {
             return false;
          }
       }
@@ -41,34 +41,34 @@ public class AdvancementVisibilityEvaluator {
       return false;
    }
 
-   private static boolean evaluateVisibility(AdvancementNode var0, Stack<VisibilityRule> var1, Predicate<AdvancementNode> var2, Output var3) {
-      boolean var4 = var2.test(var0);
-      VisibilityRule var5 = evaluateVisibilityRule(var0.advancement(), var4);
-      boolean var6 = var4;
-      var1.push(var5);
+   private static boolean evaluateVisibility(final AdvancementNode node, final Stack<VisibilityRule> ascendants, final Predicate<AdvancementNode> isDoneTest, final Output output) {
+      boolean isSelfDone = isDoneTest.test(node);
+      VisibilityRule descendantVisibility = evaluateVisibilityRule(node.advancement(), isSelfDone);
+      boolean isSelfOrDescendantDone = isSelfDone;
+      ascendants.push(descendantVisibility);
 
-      for(AdvancementNode var8 : var0.children()) {
-         var6 |= evaluateVisibility(var8, var1, var2, var3);
+      for(AdvancementNode child : node.children()) {
+         isSelfOrDescendantDone |= evaluateVisibility(child, ascendants, isDoneTest, output);
       }
 
-      boolean var9 = var6 || evaluateVisiblityForUnfinishedNode(var1);
-      var1.pop();
-      var3.accept(var0, var9);
-      return var6;
+      boolean visiblity = isSelfOrDescendantDone || evaluateVisiblityForUnfinishedNode(ascendants);
+      ascendants.pop();
+      output.accept(node, visiblity);
+      return isSelfOrDescendantDone;
    }
 
-   public static void evaluateVisibility(AdvancementNode var0, Predicate<AdvancementNode> var1, Output var2) {
-      AdvancementNode var3 = var0.root();
-      ObjectArrayList var4 = new ObjectArrayList();
+   public static void evaluateVisibility(final AdvancementNode node, final Predicate<AdvancementNode> isDone, final Output output) {
+      AdvancementNode root = node.root();
+      Stack<VisibilityRule> visibilityStack = new ObjectArrayList();
 
-      for(int var5 = 0; var5 <= 2; ++var5) {
-         var4.push(AdvancementVisibilityEvaluator.VisibilityRule.NO_CHANGE);
+      for(int i = 0; i <= 2; ++i) {
+         visibilityStack.push(AdvancementVisibilityEvaluator.VisibilityRule.NO_CHANGE);
       }
 
-      evaluateVisibility(var3, var4, var1, var2);
+      evaluateVisibility(root, visibilityStack, isDone, output);
    }
 
-   static enum VisibilityRule {
+   private static enum VisibilityRule {
       SHOW,
       HIDE,
       NO_CHANGE;
@@ -84,6 +84,6 @@ public class AdvancementVisibilityEvaluator {
 
    @FunctionalInterface
    public interface Output {
-      void accept(AdvancementNode var1, boolean var2);
+      void accept(AdvancementNode advancement, boolean visible);
    }
 }

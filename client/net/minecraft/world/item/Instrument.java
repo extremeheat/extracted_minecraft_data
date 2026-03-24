@@ -14,17 +14,13 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.ExtraCodecs;
 
 public record Instrument(Holder<SoundEvent> soundEvent, float useDuration, float range, Component description) {
-   public static final Codec<Instrument> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(SoundEvent.CODEC.fieldOf("sound_event").forGetter(Instrument::soundEvent), ExtraCodecs.POSITIVE_FLOAT.fieldOf("use_duration").forGetter(Instrument::useDuration), ExtraCodecs.POSITIVE_FLOAT.fieldOf("range").forGetter(Instrument::range), ComponentSerialization.CODEC.fieldOf("description").forGetter(Instrument::description)).apply(var0, Instrument::new));
+   public static final Codec<Instrument> DIRECT_CODEC = RecordCodecBuilder.create((i) -> i.group(SoundEvent.CODEC.fieldOf("sound_event").forGetter(Instrument::soundEvent), ExtraCodecs.POSITIVE_FLOAT.fieldOf("use_duration").forGetter(Instrument::useDuration), ExtraCodecs.POSITIVE_FLOAT.fieldOf("range").forGetter(Instrument::range), ComponentSerialization.CODEC.fieldOf("description").forGetter(Instrument::description)).apply(i, Instrument::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, Instrument> DIRECT_STREAM_CODEC;
    public static final Codec<Holder<Instrument>> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<Instrument>> STREAM_CODEC;
 
-   public Instrument(Holder<SoundEvent> var1, float var2, float var3, Component var4) {
+   public Instrument {
       super();
-      this.soundEvent = var1;
-      this.useDuration = var2;
-      this.range = var3;
-      this.description = var4;
    }
 
    static {

@@ -11,7 +11,6 @@ import it.unimi.dsi.fastutil.shorts.ShortList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -58,7 +57,7 @@ import net.minecraft.world.ticks.TickContainerAccess;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, LightChunk, StructureAccess {
+public abstract class ChunkAccess implements LightChunk, StructureAccess, BiomeManager.NoiseBiomeSource {
    public static final int NO_FILLED_SECTION = -1;
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final LongSet EMPTY_REFERENCE_SET = new LongOpenHashSet();
@@ -72,7 +71,7 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
    private @Nullable BiomeGenerationSettings carverBiomeSettings;
    protected @Nullable NoiseChunk noiseChunk;
    protected final UpgradeData upgradeData;
-   protected @Nullable BlendingData blendingData;
+   protected final @Nullable BlendingData blendingData;
    protected final Map<Heightmap.Types, Heightmap> heightmaps = Maps.newEnumMap(Heightmap.Types.class);
    protected ChunkSkyLightSources skyLightSources;
    private final Map<Structure, StructureStart> structureStarts = Maps.newHashMap();
@@ -82,57 +81,57 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
    protected final LevelHeightAccessor levelHeightAccessor;
    protected final LevelChunkSection[] sections;
 
-   public ChunkAccess(ChunkPos var1, UpgradeData var2, LevelHeightAccessor var3, PalettedContainerFactory var4, long var5, LevelChunkSection @Nullable [] var7, @Nullable BlendingData var8) {
+   public ChunkAccess(final ChunkPos chunkPos, final UpgradeData upgradeData, final LevelHeightAccessor levelHeightAccessor, final PalettedContainerFactory containerFactory, final long inhabitedTime, final LevelChunkSection @Nullable [] sections, final @Nullable BlendingData blendingData) {
       super();
-      this.chunkPos = var1;
-      this.upgradeData = var2;
-      this.levelHeightAccessor = var3;
-      this.sections = new LevelChunkSection[var3.getSectionsCount()];
-      this.inhabitedTime = var5;
-      this.postProcessing = new ShortList[var3.getSectionsCount()];
-      this.blendingData = var8;
-      this.skyLightSources = new ChunkSkyLightSources(var3);
-      if (var7 != null) {
-         if (this.sections.length == var7.length) {
-            System.arraycopy(var7, 0, this.sections, 0, this.sections.length);
+      this.chunkPos = chunkPos;
+      this.upgradeData = upgradeData;
+      this.levelHeightAccessor = levelHeightAccessor;
+      this.sections = new LevelChunkSection[levelHeightAccessor.getSectionsCount()];
+      this.inhabitedTime = inhabitedTime;
+      this.postProcessing = new ShortList[levelHeightAccessor.getSectionsCount()];
+      this.blendingData = blendingData;
+      this.skyLightSources = new ChunkSkyLightSources(levelHeightAccessor);
+      if (sections != null) {
+         if (this.sections.length == sections.length) {
+            System.arraycopy(sections, 0, this.sections, 0, this.sections.length);
          } else {
-            LOGGER.warn("Could not set level chunk sections, array length is {} instead of {}", var7.length, this.sections.length);
+            LOGGER.warn("Could not set level chunk sections, array length is {} instead of {}", sections.length, this.sections.length);
          }
       }
 
-      replaceMissingSections(var4, this.sections);
+      replaceMissingSections(containerFactory, this.sections);
    }
 
-   private static void replaceMissingSections(PalettedContainerFactory var0, LevelChunkSection[] var1) {
-      for(int var2 = 0; var2 < var1.length; ++var2) {
-         if (var1[var2] == null) {
-            var1[var2] = new LevelChunkSection(var0);
+   private static void replaceMissingSections(final PalettedContainerFactory containerFactory, final LevelChunkSection[] sections) {
+      for(int i = 0; i < sections.length; ++i) {
+         if (sections[i] == null) {
+            sections[i] = new LevelChunkSection(containerFactory);
          }
       }
 
    }
 
-   public GameEventListenerRegistry getListenerRegistry(int var1) {
+   public GameEventListenerRegistry getListenerRegistry(final int section) {
       return GameEventListenerRegistry.NOOP;
    }
 
-   public @Nullable BlockState setBlockState(BlockPos var1, BlockState var2) {
-      return this.setBlockState(var1, var2, 3);
+   public @Nullable BlockState setBlockState(final BlockPos pos, final BlockState state) {
+      return this.setBlockState(pos, state, 3);
    }
 
-   public abstract @Nullable BlockState setBlockState(BlockPos var1, BlockState var2, @Block.UpdateFlags int var3);
+   public abstract @Nullable BlockState setBlockState(BlockPos pos, BlockState state, @Block.UpdateFlags int flags);
 
-   public abstract void setBlockEntity(BlockEntity var1);
+   public abstract void setBlockEntity(BlockEntity blockEntity);
 
-   public abstract void addEntity(Entity var1);
+   public abstract void addEntity(Entity entity);
 
    public int getHighestFilledSectionIndex() {
-      LevelChunkSection[] var1 = this.getSections();
+      LevelChunkSection[] sections = this.getSections();
 
-      for(int var2 = var1.length - 1; var2 >= 0; --var2) {
-         LevelChunkSection var3 = var1[var2];
-         if (!var3.hasOnlyAir()) {
-            return var2;
+      for(int sectionIndex = sections.length - 1; sectionIndex >= 0; --sectionIndex) {
+         LevelChunkSection section = sections[sectionIndex];
+         if (!section.hasOnlyAir()) {
+            return sectionIndex;
          }
       }
 
@@ -144,64 +143,64 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
       forRemoval = true
    )
    public int getHighestSectionPosition() {
-      int var1 = this.getHighestFilledSectionIndex();
-      return var1 == -1 ? this.getMinY() : SectionPos.sectionToBlockCoord(this.getSectionYFromSectionIndex(var1));
+      int sectionIndex = this.getHighestFilledSectionIndex();
+      return sectionIndex == -1 ? this.getMinY() : SectionPos.sectionToBlockCoord(this.getSectionYFromSectionIndex(sectionIndex));
    }
 
    public Set<BlockPos> getBlockEntitiesPos() {
-      HashSet var1 = Sets.newHashSet(this.pendingBlockEntities.keySet());
-      var1.addAll(this.blockEntities.keySet());
-      return var1;
+      Set<BlockPos> result = Sets.newHashSet(this.pendingBlockEntities.keySet());
+      result.addAll(this.blockEntities.keySet());
+      return result;
    }
 
    public LevelChunkSection[] getSections() {
       return this.sections;
    }
 
-   public LevelChunkSection getSection(int var1) {
-      return this.getSections()[var1];
+   public LevelChunkSection getSection(final int sectionIndex) {
+      return this.getSections()[sectionIndex];
    }
 
    public Collection<Map.Entry<Heightmap.Types, Heightmap>> getHeightmaps() {
       return Collections.unmodifiableSet(this.heightmaps.entrySet());
    }
 
-   public void setHeightmap(Heightmap.Types var1, long[] var2) {
-      this.getOrCreateHeightmapUnprimed(var1).setRawData(this, var1, var2);
+   public void setHeightmap(final Heightmap.Types key, final long[] data) {
+      this.getOrCreateHeightmapUnprimed(key).setRawData(this, key, data);
    }
 
-   public Heightmap getOrCreateHeightmapUnprimed(Heightmap.Types var1) {
-      return (Heightmap)this.heightmaps.computeIfAbsent(var1, (var1x) -> new Heightmap(this, var1x));
+   public Heightmap getOrCreateHeightmapUnprimed(final Heightmap.Types type) {
+      return (Heightmap)this.heightmaps.computeIfAbsent(type, (k) -> new Heightmap(this, k));
    }
 
-   public boolean hasPrimedHeightmap(Heightmap.Types var1) {
-      return this.heightmaps.get(var1) != null;
+   public boolean hasPrimedHeightmap(final Heightmap.Types type) {
+      return this.heightmaps.get(type) != null;
    }
 
-   public int getHeight(Heightmap.Types var1, int var2, int var3) {
-      Heightmap var4 = (Heightmap)this.heightmaps.get(var1);
-      if (var4 == null) {
+   public int getHeight(final Heightmap.Types type, final int x, final int z) {
+      Heightmap heightmap = (Heightmap)this.heightmaps.get(type);
+      if (heightmap == null) {
          if (SharedConstants.IS_RUNNING_IN_IDE && this instanceof LevelChunk) {
-            LOGGER.error("Unprimed heightmap: {} {} {}", new Object[]{var1, var2, var3});
+            LOGGER.error("Unprimed heightmap: {} {} {}", new Object[]{type, x, z});
          }
 
-         Heightmap.primeHeightmaps(this, EnumSet.of(var1));
-         var4 = (Heightmap)this.heightmaps.get(var1);
+         Heightmap.primeHeightmaps(this, EnumSet.of(type));
+         heightmap = (Heightmap)this.heightmaps.get(type);
       }
 
-      return var4.getFirstAvailable(var2 & 15, var3 & 15) - 1;
+      return heightmap.getFirstAvailable(x & 15, z & 15) - 1;
    }
 
    public ChunkPos getPos() {
       return this.chunkPos;
    }
 
-   public @Nullable StructureStart getStartForStructure(Structure var1) {
-      return (StructureStart)this.structureStarts.get(var1);
+   public @Nullable StructureStart getStartForStructure(final Structure structure) {
+      return (StructureStart)this.structureStarts.get(structure);
    }
 
-   public void setStartForStructure(Structure var1, StructureStart var2) {
-      this.structureStarts.put(var1, var2);
+   public void setStartForStructure(final Structure structure, final StructureStart structureStart) {
+      this.structureStarts.put(structure, structureStart);
       this.markUnsaved();
    }
 
@@ -209,18 +208,18 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
       return Collections.unmodifiableMap(this.structureStarts);
    }
 
-   public void setAllStarts(Map<Structure, StructureStart> var1) {
+   public void setAllStarts(final Map<Structure, StructureStart> starts) {
       this.structureStarts.clear();
-      this.structureStarts.putAll(var1);
+      this.structureStarts.putAll(starts);
       this.markUnsaved();
    }
 
-   public LongSet getReferencesForStructure(Structure var1) {
-      return (LongSet)this.structuresRefences.getOrDefault(var1, EMPTY_REFERENCE_SET);
+   public LongSet getReferencesForStructure(final Structure structure) {
+      return (LongSet)this.structuresRefences.getOrDefault(structure, EMPTY_REFERENCE_SET);
    }
 
-   public void addReferenceForStructure(Structure var1, long var2) {
-      ((LongSet)this.structuresRefences.computeIfAbsent(var1, (var0) -> new LongOpenHashSet())).add(var2);
+   public void addReferenceForStructure(final Structure structure, final long reference) {
+      ((LongSet)this.structuresRefences.computeIfAbsent(structure, (k) -> new LongOpenHashSet())).add(reference);
       this.markUnsaved();
    }
 
@@ -228,23 +227,23 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
       return Collections.unmodifiableMap(this.structuresRefences);
    }
 
-   public void setAllReferences(Map<Structure, LongSet> var1) {
+   public void setAllReferences(final Map<Structure, LongSet> data) {
       this.structuresRefences.clear();
-      this.structuresRefences.putAll(var1);
+      this.structuresRefences.putAll(data);
       this.markUnsaved();
    }
 
-   public boolean isYSpaceEmpty(int var1, int var2) {
-      if (var1 < this.getMinY()) {
-         var1 = this.getMinY();
+   public boolean isYSpaceEmpty(int yStartInclusive, int yEndInclusive) {
+      if (yStartInclusive < this.getMinY()) {
+         yStartInclusive = this.getMinY();
       }
 
-      if (var2 > this.getMaxY()) {
-         var2 = this.getMaxY();
+      if (yEndInclusive > this.getMaxY()) {
+         yEndInclusive = this.getMaxY();
       }
 
-      for(int var3 = var1; var3 <= var2; var3 += 16) {
-         if (!this.getSection(this.getSectionIndex(var3)).hasOnlyAir()) {
+      for(int y = yStartInclusive; y <= yEndInclusive; y += 16) {
+         if (!this.getSection(this.getSectionIndex(y)).hasOnlyAir()) {
             return false;
          }
       }
@@ -272,62 +271,62 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
    public abstract ChunkStatus getPersistedStatus();
 
    public ChunkStatus getHighestGeneratedStatus() {
-      ChunkStatus var1 = this.getPersistedStatus();
-      BelowZeroRetrogen var2 = this.getBelowZeroRetrogen();
-      if (var2 != null) {
-         ChunkStatus var3 = var2.targetStatus();
-         return ChunkStatus.max(var3, var1);
+      ChunkStatus status = this.getPersistedStatus();
+      BelowZeroRetrogen belowZeroRetrogen = this.getBelowZeroRetrogen();
+      if (belowZeroRetrogen != null) {
+         ChunkStatus targetStatus = belowZeroRetrogen.targetStatus();
+         return ChunkStatus.max(targetStatus, status);
       } else {
-         return var1;
+         return status;
       }
    }
 
-   public abstract void removeBlockEntity(BlockPos var1);
+   public abstract void removeBlockEntity(BlockPos pos);
 
-   public void markPosForPostprocessing(BlockPos var1) {
-      LOGGER.warn("Trying to mark a block for PostProcessing @ {}, but this operation is not supported.", var1);
+   public void markPosForPostprocessing(final BlockPos blockPos) {
+      LOGGER.warn("Trying to mark a block for PostProcessing @ {}, but this operation is not supported.", blockPos);
    }
 
    public @Nullable ShortList[] getPostProcessing() {
       return this.postProcessing;
    }
 
-   public void addPackedPostProcess(ShortList var1, int var2) {
-      getOrCreateOffsetList(this.getPostProcessing(), var2).addAll(var1);
+   public void addPackedPostProcess(final ShortList packedOffsets, final int sectionIndex) {
+      getOrCreateOffsetList(this.getPostProcessing(), sectionIndex).addAll(packedOffsets);
    }
 
-   public void setBlockEntityNbt(CompoundTag var1) {
-      BlockPos var2 = BlockEntity.getPosFromTag(this.chunkPos, var1);
-      if (!this.blockEntities.containsKey(var2)) {
-         this.pendingBlockEntities.put(var2, var1);
+   public void setBlockEntityNbt(final CompoundTag entityTag) {
+      BlockPos posFromTag = BlockEntity.getPosFromTag(this.chunkPos, entityTag);
+      if (!this.blockEntities.containsKey(posFromTag)) {
+         this.pendingBlockEntities.put(posFromTag, entityTag);
       }
 
    }
 
-   public @Nullable CompoundTag getBlockEntityNbt(BlockPos var1) {
-      return (CompoundTag)this.pendingBlockEntities.get(var1);
+   public @Nullable CompoundTag getBlockEntityNbt(final BlockPos blockPos) {
+      return (CompoundTag)this.pendingBlockEntities.get(blockPos);
    }
 
-   public abstract @Nullable CompoundTag getBlockEntityNbtForSaving(BlockPos var1, HolderLookup.Provider var2);
+   public abstract @Nullable CompoundTag getBlockEntityNbtForSaving(BlockPos blockPos, HolderLookup.Provider registryAccess);
 
-   public final void findBlockLightSources(BiConsumer<BlockPos, BlockState> var1) {
-      this.findBlocks((var0) -> var0.getLightEmission() != 0, var1);
+   public final void findBlockLightSources(final BiConsumer<BlockPos, BlockState> consumer) {
+      this.findBlocks((state) -> state.getLightEmission() != 0, consumer);
    }
 
-   public void findBlocks(Predicate<BlockState> var1, BiConsumer<BlockPos, BlockState> var2) {
-      BlockPos.MutableBlockPos var3 = new BlockPos.MutableBlockPos();
+   public void findBlocks(final Predicate<BlockState> predicate, final BiConsumer<BlockPos, BlockState> consumer) {
+      BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
 
-      for(int var4 = this.getMinSectionY(); var4 <= this.getMaxSectionY(); ++var4) {
-         LevelChunkSection var5 = this.getSection(this.getSectionIndexFromSectionY(var4));
-         if (var5.maybeHas(var1)) {
-            BlockPos var6 = SectionPos.of(this.chunkPos, var4).origin();
+      for(int sectionY = this.getMinSectionY(); sectionY <= this.getMaxSectionY(); ++sectionY) {
+         LevelChunkSection section = this.getSection(this.getSectionIndexFromSectionY(sectionY));
+         if (section.maybeHas(predicate)) {
+            BlockPos origin = SectionPos.of(this.chunkPos, sectionY).origin();
 
-            for(int var7 = 0; var7 < 16; ++var7) {
-               for(int var8 = 0; var8 < 16; ++var8) {
-                  for(int var9 = 0; var9 < 16; ++var9) {
-                     BlockState var10 = var5.getBlockState(var9, var7, var8);
-                     if (var1.test(var10)) {
-                        var2.accept(var3.setWithOffset(var6, var9, var7, var8), var10);
+            for(int y = 0; y < 16; ++y) {
+               for(int z = 0; z < 16; ++z) {
+                  for(int x = 0; x < 16; ++x) {
+                     BlockState state = section.getBlockState(x, y, z);
+                     if (predicate.test(state)) {
+                        consumer.accept(mutablePos.setWithOffset(origin, x, y, z), state);
                      }
                   }
                }
@@ -345,7 +344,7 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
       return true;
    }
 
-   public abstract PackedTicks getTicksForSerialization(long var1);
+   public abstract PackedTicks getTicksForSerialization(long currentTick);
 
    public UpgradeData getUpgradeData() {
       return this.upgradeData;
@@ -363,30 +362,30 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
       return this.inhabitedTime;
    }
 
-   public void incrementInhabitedTime(long var1) {
-      this.inhabitedTime += var1;
+   public void incrementInhabitedTime(final long inhabitedTimeDelta) {
+      this.inhabitedTime += inhabitedTimeDelta;
    }
 
-   public void setInhabitedTime(long var1) {
-      this.inhabitedTime = var1;
+   public void setInhabitedTime(final long inhabitedTime) {
+      this.inhabitedTime = inhabitedTime;
    }
 
-   public static ShortList getOrCreateOffsetList(@Nullable ShortList[] var0, int var1) {
-      Object var2 = var0[var1];
-      if (var2 == null) {
-         var2 = new ShortArrayList();
-         var0[var1] = (ShortList)var2;
+   public static ShortList getOrCreateOffsetList(final @Nullable ShortList[] list, final int sectionIndex) {
+      ShortList result = list[sectionIndex];
+      if (result == null) {
+         result = new ShortArrayList();
+         list[sectionIndex] = result;
       }
 
-      return (ShortList)var2;
+      return result;
    }
 
    public boolean isLightCorrect() {
       return this.isLightCorrect;
    }
 
-   public void setLightCorrect(boolean var1) {
-      this.isLightCorrect = var1;
+   public void setLightCorrect(final boolean isLightCorrect) {
+      this.isLightCorrect = isLightCorrect;
       this.markUnsaved();
    }
 
@@ -398,9 +397,9 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
       return this.levelHeightAccessor.getHeight();
    }
 
-   public NoiseChunk getOrCreateNoiseChunk(Function<ChunkAccess, NoiseChunk> var1) {
+   public NoiseChunk getOrCreateNoiseChunk(final Function<ChunkAccess, NoiseChunk> factory) {
       if (this.noiseChunk == null) {
-         this.noiseChunk = (NoiseChunk)var1.apply(this);
+         this.noiseChunk = (NoiseChunk)factory.apply(this);
       }
 
       return this.noiseChunk;
@@ -408,39 +407,39 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
 
    /** @deprecated */
    @Deprecated
-   public BiomeGenerationSettings carverBiome(Supplier<BiomeGenerationSettings> var1) {
+   public BiomeGenerationSettings carverBiome(final Supplier<BiomeGenerationSettings> source) {
       if (this.carverBiomeSettings == null) {
-         this.carverBiomeSettings = (BiomeGenerationSettings)var1.get();
+         this.carverBiomeSettings = (BiomeGenerationSettings)source.get();
       }
 
       return this.carverBiomeSettings;
    }
 
-   public Holder<Biome> getNoiseBiome(int var1, int var2, int var3) {
+   public Holder<Biome> getNoiseBiome(final int quartX, final int quartY, final int quartZ) {
       try {
-         int var4 = QuartPos.fromBlock(this.getMinY());
-         int var9 = var4 + QuartPos.fromBlock(this.getHeight()) - 1;
-         int var10 = Mth.clamp(var2, var4, var9);
-         int var7 = this.getSectionIndex(QuartPos.toBlock(var10));
-         return this.sections[var7].getNoiseBiome(var1 & 3, var10 & 3, var3 & 3);
-      } catch (Throwable var8) {
-         CrashReport var5 = CrashReport.forThrowable(var8, "Getting biome");
-         CrashReportCategory var6 = var5.addCategory("Biome being got");
-         var6.setDetail("Location", (CrashReportDetail)(() -> CrashReportCategory.formatLocation(this, var1, var2, var3)));
-         throw new ReportedException(var5);
+         int quartMinY = QuartPos.fromBlock(this.getMinY());
+         int quartMaxY = quartMinY + QuartPos.fromBlock(this.getHeight()) - 1;
+         int clampedQuartY = Mth.clamp(quartY, quartMinY, quartMaxY);
+         int sectionIndex = this.getSectionIndex(QuartPos.toBlock(clampedQuartY));
+         return this.sections[sectionIndex].getNoiseBiome(quartX & 3, clampedQuartY & 3, quartZ & 3);
+      } catch (Throwable t) {
+         CrashReport report = CrashReport.forThrowable(t, "Getting biome");
+         CrashReportCategory category = report.addCategory("Biome being got");
+         category.setDetail("Location", (CrashReportDetail)(() -> CrashReportCategory.formatLocation(this, quartX, quartY, quartZ)));
+         throw new ReportedException(report);
       }
    }
 
-   public void fillBiomesFromNoise(BiomeResolver var1, Climate.Sampler var2) {
-      ChunkPos var3 = this.getPos();
-      int var4 = QuartPos.fromBlock(var3.getMinBlockX());
-      int var5 = QuartPos.fromBlock(var3.getMinBlockZ());
-      LevelHeightAccessor var6 = this.getHeightAccessorForGeneration();
+   public void fillBiomesFromNoise(final BiomeResolver biomeResolver, final Climate.Sampler sampler) {
+      ChunkPos pos = this.getPos();
+      int quartMinX = QuartPos.fromBlock(pos.getMinBlockX());
+      int quartMinZ = QuartPos.fromBlock(pos.getMinBlockZ());
+      LevelHeightAccessor heightAccessor = this.getHeightAccessorForGeneration();
 
-      for(int var7 = var6.getMinSectionY(); var7 <= var6.getMaxSectionY(); ++var7) {
-         LevelChunkSection var8 = this.getSection(this.getSectionIndexFromSectionY(var7));
-         int var9 = QuartPos.fromSection(var7);
-         var8.fillBiomesFromNoise(var1, var2, var4, var9, var5);
+      for(int sectionY = heightAccessor.getMinSectionY(); sectionY <= heightAccessor.getMaxSectionY(); ++sectionY) {
+         LevelChunkSection section = this.getSection(this.getSectionIndexFromSectionY(sectionY));
+         int quartMinY = QuartPos.fromSection(sectionY);
+         section.fillBiomesFromNoise(biomeResolver, sampler, quartMinX, quartMinY, quartMinZ);
       }
 
    }
@@ -469,8 +468,8 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
       return this.skyLightSources;
    }
 
-   public static ProblemReporter.PathElement problemPath(ChunkPos var0) {
-      return new ChunkPathElement(var0);
+   public static ProblemReporter.PathElement problemPath(final ChunkPos pos) {
+      return new ChunkPathElement(pos);
    }
 
    public ProblemReporter.PathElement problemPath() {
@@ -478,17 +477,14 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
    }
 
    public static record PackedTicks(List<SavedTick<Block>> blocks, List<SavedTick<Fluid>> fluids) {
-      public PackedTicks(List<SavedTick<Block>> var1, List<SavedTick<Fluid>> var2) {
+      public PackedTicks {
          super();
-         this.blocks = var1;
-         this.fluids = var2;
       }
    }
 
-   static record ChunkPathElement(ChunkPos pos) implements ProblemReporter.PathElement {
-      ChunkPathElement(ChunkPos var1) {
+   private static record ChunkPathElement(ChunkPos pos) implements ProblemReporter.PathElement {
+      private ChunkPathElement {
          super();
-         this.pos = var1;
       }
 
       public String get() {

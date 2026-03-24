@@ -5,7 +5,6 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
-import java.io.BufferedReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.SequencedSet;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import net.minecraft.core.Holder;
@@ -36,41 +36,41 @@ import org.slf4j.Logger;
 
 public class TagLoader<T> {
    private static final Logger LOGGER = LogUtils.getLogger();
-   final ElementLookup<T> elementLookup;
+   private final ElementLookup<T> elementLookup;
    private final String directory;
 
-   public TagLoader(ElementLookup<T> var1, String var2) {
+   public TagLoader(final ElementLookup<T> elementLookup, final String directory) {
       super();
-      this.elementLookup = var1;
-      this.directory = var2;
+      this.elementLookup = elementLookup;
+      this.directory = directory;
    }
 
-   public Map<Identifier, List<EntryWithSource>> load(ResourceManager var1) {
-      HashMap var2 = new HashMap();
-      FileToIdConverter var3 = FileToIdConverter.json(this.directory);
+   public Map<Identifier, List<EntryWithSource>> load(final ResourceManager resourceManager) {
+      Map<Identifier, List<EntryWithSource>> builders = new HashMap();
+      FileToIdConverter lister = FileToIdConverter.json(this.directory);
 
-      for(Map.Entry var5 : var3.listMatchingResourceStacks(var1).entrySet()) {
-         Identifier var6 = (Identifier)var5.getKey();
-         Identifier var7 = var3.fileToId(var6);
+      for(Map.Entry<Identifier, List<Resource>> entry : lister.listMatchingResourceStacks(resourceManager).entrySet()) {
+         Identifier location = (Identifier)entry.getKey();
+         Identifier id = lister.fileToId(location);
 
-         for(Resource var9 : (List)var5.getValue()) {
+         for(Resource resource : (List)entry.getValue()) {
             try {
-               BufferedReader var10 = var9.openAsReader();
+               Reader reader = resource.openAsReader();
 
                try {
-                  JsonElement var11 = StrictJsonParser.parse((Reader)var10);
-                  List var12 = (List)var2.computeIfAbsent(var7, (var0) -> new ArrayList());
-                  TagFile var13 = (TagFile)TagFile.CODEC.parse(new Dynamic(JsonOps.INSTANCE, var11)).getOrThrow();
-                  if (var13.replace()) {
-                     var12.clear();
+                  JsonElement element = StrictJsonParser.parse(reader);
+                  List<EntryWithSource> tagContents = (List)builders.computeIfAbsent(id, (key) -> new ArrayList());
+                  TagFile parsedContents = (TagFile)TagFile.CODEC.parse(new Dynamic(JsonOps.INSTANCE, element)).getOrThrow();
+                  if (parsedContents.replace()) {
+                     tagContents.clear();
                   }
 
-                  String var14 = var9.sourcePackId();
-                  var13.entries().forEach((var2x) -> var12.add(new EntryWithSource(var2x, var14)));
+                  String sourceId = resource.sourcePackId();
+                  parsedContents.entries().forEach((ex) -> tagContents.add(new EntryWithSource(ex, sourceId)));
                } catch (Throwable var16) {
-                  if (var10 != null) {
+                  if (reader != null) {
                      try {
-                        ((Reader)var10).close();
+                        reader.close();
                      } catch (Throwable var15) {
                         var16.addSuppressed(var15);
                      }
@@ -79,90 +79,95 @@ public class TagLoader<T> {
                   throw var16;
                }
 
-               if (var10 != null) {
-                  ((Reader)var10).close();
+               if (reader != null) {
+                  reader.close();
                }
-            } catch (Exception var17) {
-               LOGGER.error("Couldn't read tag list {} from {} in data pack {}", new Object[]{var7, var6, var9.sourcePackId(), var17});
+            } catch (Exception e) {
+               LOGGER.error("Couldn't read tag list {} from {} in data pack {}", new Object[]{id, location, resource.sourcePackId(), e});
             }
          }
       }
 
-      return var2;
+      return builders;
    }
 
-   private Either<List<EntryWithSource>, List<T>> tryBuildTag(TagEntry.Lookup<T> var1, List<EntryWithSource> var2) {
-      LinkedHashSet var3 = new LinkedHashSet();
-      ArrayList var4 = new ArrayList();
+   private Either<List<EntryWithSource>, List<T>> tryBuildTag(final TagEntry.Lookup<T> lookup, final List<EntryWithSource> entries) {
+      SequencedSet<T> values = new LinkedHashSet();
+      List<EntryWithSource> missingElements = new ArrayList();
 
-      for(EntryWithSource var6 : var2) {
-         TagEntry var10000 = var6.entry();
-         Objects.requireNonNull(var3);
-         if (!var10000.build(var1, var3::add)) {
-            var4.add(var6);
+      for(EntryWithSource entry : entries) {
+         TagEntry var10000 = entry.entry();
+         Objects.requireNonNull(values);
+         if (!var10000.build(lookup, values::add)) {
+            missingElements.add(entry);
          }
       }
 
-      return var4.isEmpty() ? Either.right(List.copyOf(var3)) : Either.left(var4);
+      return missingElements.isEmpty() ? Either.right(List.copyOf(values)) : Either.left(missingElements);
    }
 
-   public Map<Identifier, List<T>> build(Map<Identifier, List<EntryWithSource>> var1) {
-      final HashMap var2 = new HashMap();
-      TagEntry.Lookup var3 = new TagEntry.Lookup<T>() {
-         public @Nullable T element(Identifier var1, boolean var2x) {
-            return (T)TagLoader.this.elementLookup.get(var1, var2x).orElse((Object)null);
+   public Map<Identifier, List<T>> build(final Map<Identifier, List<EntryWithSource>> builders) {
+      final Map<Identifier, List<T>> newTags = new HashMap();
+      TagEntry.Lookup<T> lookup = new TagEntry.Lookup<T>() {
+         {
+            Objects.requireNonNull(TagLoader.this);
          }
 
-         public @Nullable Collection<T> tag(Identifier var1) {
-            return (Collection)var2.get(var1);
+         public @Nullable T element(final Identifier key, final boolean required) {
+            return (T)TagLoader.this.elementLookup.get(key, required).orElse((Object)null);
+         }
+
+         public @Nullable Collection<T> tag(final Identifier key) {
+            return (Collection)newTags.get(key);
          }
       };
-      DependencySorter var4 = new DependencySorter();
-      var1.forEach((var1x, var2x) -> var4.addEntry(var1x, new SortingEntry(var2x)));
-      var4.orderByDependencies((var3x, var4x) -> this.tryBuildTag(var3, var4x.entries).ifLeft((var1) -> LOGGER.error("Couldn't load tag {} as it is missing following references: {}", var3x, var1.stream().map(Objects::toString).collect(Collectors.joining(", ")))).ifRight((var2x) -> var2.put(var3x, var2x)));
-      return var2;
+      DependencySorter<Identifier, SortingEntry> sorter = new DependencySorter<Identifier, SortingEntry>();
+      builders.forEach((id, entry) -> sorter.addEntry(id, new SortingEntry(entry)));
+      sorter.orderByDependencies((id, contents) -> this.tryBuildTag(lookup, contents.entries).ifLeft((missing) -> LOGGER.error("Couldn't load tag {} as it is missing following references: {}", id, missing.stream().map(Objects::toString).collect(Collectors.joining(", ")))).ifRight((tag) -> newTags.put(id, tag)));
+      return newTags;
    }
 
-   public static <T> void loadTagsFromNetwork(TagNetworkSerialization.NetworkPayload var0, WritableRegistry<T> var1) {
-      Map var10000 = var0.resolve(var1).tags;
-      Objects.requireNonNull(var1);
-      var10000.forEach(var1::bindTag);
+   public static <T> Map<TagKey<T>, List<Holder<T>>> loadTagsFromNetwork(final TagNetworkSerialization.NetworkPayload tags, final Registry<T> registry) {
+      return tags.resolve(registry).tags;
    }
 
-   public static List<Registry.PendingTags<?>> loadTagsForExistingRegistries(ResourceManager var0, RegistryAccess var1) {
-      return (List)var1.registries().map((var1x) -> loadPendingTags(var0, var1x.value())).flatMap(Optional::stream).collect(Collectors.toUnmodifiableList());
+   public static List<Registry.PendingTags<?>> loadTagsForExistingRegistries(final ResourceManager manager, final RegistryAccess layer) {
+      return (List)layer.registries().map((entry) -> loadPendingTags(manager, entry.value())).flatMap(Optional::stream).collect(Collectors.toUnmodifiableList());
    }
 
-   public static <T> void loadTagsForRegistry(ResourceManager var0, WritableRegistry<T> var1) {
-      ResourceKey var2 = var1.key();
-      TagLoader var3 = new TagLoader(TagLoader.ElementLookup.fromWritableRegistry(var1), Registries.tagsDirPath(var2));
-      var3.build(var3.load(var0)).forEach((var2x, var3x) -> var1.bindTag(TagKey.create(var2, var2x), var3x));
+   public static <T> void loadTagsForRegistry(final ResourceManager manager, final WritableRegistry<T> registry) {
+      loadTagsForRegistry(manager, registry.key(), TagLoader.ElementLookup.fromWritableRegistry(registry));
    }
 
-   private static <T> Map<TagKey<T>, List<Holder<T>>> wrapTags(ResourceKey<? extends Registry<T>> var0, Map<Identifier, List<Holder<T>>> var1) {
-      return (Map)var1.entrySet().stream().collect(Collectors.toUnmodifiableMap((var1x) -> TagKey.create(var0, (Identifier)var1x.getKey()), Map.Entry::getValue));
+   public static <T> Map<TagKey<T>, List<Holder<T>>> loadTagsForRegistry(final ResourceManager manager, final ResourceKey<? extends Registry<T>> registryKey, final ElementLookup<Holder<T>> lookup) {
+      TagLoader<Holder<T>> loader = new TagLoader<Holder<T>>(lookup, Registries.tagsDirPath(registryKey));
+      return wrapTags(registryKey, loader.build(loader.load(manager)));
    }
 
-   private static <T> Optional<Registry.PendingTags<T>> loadPendingTags(ResourceManager var0, Registry<T> var1) {
-      ResourceKey var2 = var1.key();
-      TagLoader var3 = new TagLoader(TagLoader.ElementLookup.fromFrozenRegistry(var1), Registries.tagsDirPath(var2));
-      LoadResult var4 = new LoadResult(var2, wrapTags(var1.key(), var3.build(var3.load(var0))));
-      return var4.tags().isEmpty() ? Optional.empty() : Optional.of(var1.prepareTagReload(var4));
+   private static <T> Map<TagKey<T>, List<Holder<T>>> wrapTags(final ResourceKey<? extends Registry<T>> registryKey, final Map<Identifier, List<Holder<T>>> tags) {
+      return (Map)tags.entrySet().stream().collect(Collectors.toUnmodifiableMap((e) -> TagKey.create(registryKey, (Identifier)e.getKey()), Map.Entry::getValue));
    }
 
-   public static List<HolderLookup.RegistryLookup<?>> buildUpdatedLookups(RegistryAccess.Frozen var0, List<Registry.PendingTags<?>> var1) {
-      ArrayList var2 = new ArrayList();
-      var0.registries().forEach((var2x) -> {
-         Registry.PendingTags var3 = findTagsForRegistry(var1, var2x.key());
-         var2.add(var3 != null ? var3.lookup() : var2x.value());
+   private static <T> Optional<Registry.PendingTags<T>> loadPendingTags(final ResourceManager manager, final Registry<T> registry) {
+      ResourceKey<? extends Registry<T>> key = registry.key();
+      TagLoader<Holder<T>> loader = new TagLoader<Holder<T>>(TagLoader.ElementLookup.fromFrozenRegistry(registry), Registries.tagsDirPath(key));
+      LoadResult<T> tags = new LoadResult<T>(key, wrapTags(registry.key(), loader.build(loader.load(manager))));
+      return tags.tags().isEmpty() ? Optional.empty() : Optional.of(registry.prepareTagReload(tags));
+   }
+
+   public static List<HolderLookup.RegistryLookup<?>> buildUpdatedLookups(final RegistryAccess.Frozen registries, final List<Registry.PendingTags<?>> tags) {
+      List<HolderLookup.RegistryLookup<?>> result = new ArrayList();
+      registries.registries().forEach((lookup) -> {
+         Registry.PendingTags<?> foundTags = findTagsForRegistry(tags, lookup.key());
+         result.add(foundTags != null ? foundTags.lookup() : lookup.value());
       });
-      return var2;
+      return result;
    }
 
-   private static Registry.@Nullable PendingTags<?> findTagsForRegistry(List<Registry.PendingTags<?>> var0, ResourceKey<? extends Registry<?>> var1) {
-      for(Registry.PendingTags var3 : var0) {
-         if (var3.key() == var1) {
-            return var3;
+   private static Registry.@Nullable PendingTags<?> findTagsForRegistry(final List<Registry.PendingTags<?>> tags, final ResourceKey<? extends Registry<?>> registryKey) {
+      for(Registry.PendingTags<?> tag : tags) {
+         if (tag.key() == registryKey) {
+            return tag;
          }
       }
 
@@ -170,12 +175,8 @@ public class TagLoader<T> {
    }
 
    public static record EntryWithSource(TagEntry entry, String source) {
-      final TagEntry entry;
-
-      public EntryWithSource(TagEntry var1, String var2) {
+      public EntryWithSource {
          super();
-         this.entry = var1;
-         this.source = var2;
       }
 
       public String toString() {
@@ -184,43 +185,39 @@ public class TagLoader<T> {
       }
    }
 
-   static record SortingEntry(List<EntryWithSource> entries) implements DependencySorter.Entry<Identifier> {
-      final List<EntryWithSource> entries;
-
-      SortingEntry(List<EntryWithSource> var1) {
+   private static record SortingEntry(List<EntryWithSource> entries) implements DependencySorter.Entry<Identifier> {
+      private SortingEntry {
          super();
-         this.entries = var1;
       }
 
-      public void visitRequiredDependencies(Consumer<Identifier> var1) {
-         this.entries.forEach((var1x) -> var1x.entry.visitRequiredDependencies(var1));
+      public void visitRequiredDependencies(final Consumer<Identifier> output) {
+         this.entries.forEach((e) -> e.entry.visitRequiredDependencies(output));
       }
 
-      public void visitOptionalDependencies(Consumer<Identifier> var1) {
-         this.entries.forEach((var1x) -> var1x.entry.visitOptionalDependencies(var1));
+      public void visitOptionalDependencies(final Consumer<Identifier> output) {
+         this.entries.forEach((e) -> e.entry.visitOptionalDependencies(output));
       }
    }
 
    public static record LoadResult<T>(ResourceKey<? extends Registry<T>> key, Map<TagKey<T>, List<Holder<T>>> tags) {
-      final Map<TagKey<T>, List<Holder<T>>> tags;
-
-      public LoadResult(ResourceKey<? extends Registry<T>> var1, Map<TagKey<T>, List<Holder<T>>> var2) {
+      public LoadResult {
          super();
-         this.key = var1;
-         this.tags = var2;
       }
    }
 
    public interface ElementLookup<T> {
-      Optional<? extends T> get(Identifier var1, boolean var2);
+      Optional<? extends T> get(Identifier id, boolean required);
 
-      static <T> ElementLookup<? extends Holder<T>> fromFrozenRegistry(Registry<T> var0) {
-         return (var1, var2) -> var0.get(var1);
+      static <T> ElementLookup<? extends Holder<T>> fromFrozenRegistry(final Registry<T> registry) {
+         return (id, required) -> registry.get(id);
       }
 
-      static <T> ElementLookup<Holder<T>> fromWritableRegistry(WritableRegistry<T> var0) {
-         HolderGetter var1 = var0.createRegistrationLookup();
-         return (var2, var3) -> ((HolderGetter)(var3 ? var1 : var0)).get(ResourceKey.create(var0.key(), var2));
+      static <T> ElementLookup<Holder<T>> fromWritableRegistry(final WritableRegistry<T> registry) {
+         return fromGetters(registry.key(), registry.createRegistrationLookup(), registry);
+      }
+
+      static <T> ElementLookup<Holder<T>> fromGetters(final ResourceKey<? extends Registry<T>> registryKey, final HolderGetter<T> writable, final HolderGetter<T> immutable) {
+         return (id, required) -> (required ? writable : immutable).get(ResourceKey.create(registryKey, id));
       }
    }
 }

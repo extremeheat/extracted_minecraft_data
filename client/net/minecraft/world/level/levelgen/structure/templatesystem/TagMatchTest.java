@@ -11,13 +11,13 @@ public class TagMatchTest extends RuleTest {
    public static final MapCodec<TagMatchTest> CODEC;
    private final TagKey<Block> tag;
 
-   public TagMatchTest(TagKey<Block> var1) {
+   public TagMatchTest(final TagKey<Block> tag) {
       super();
-      this.tag = var1;
+      this.tag = tag;
    }
 
-   public boolean test(BlockState var1, RandomSource var2) {
-      return var1.is(this.tag);
+   public boolean test(final BlockState blockState, final RandomSource random) {
+      return blockState.is(this.tag);
    }
 
    protected RuleTestType<?> getType() {
@@ -25,6 +25,6 @@ public class TagMatchTest extends RuleTest {
    }
 
    static {
-      CODEC = TagKey.codec(Registries.BLOCK).fieldOf("tag").xmap(TagMatchTest::new, (var0) -> var0.tag);
+      CODEC = TagKey.codec(Registries.BLOCK).fieldOf("tag").xmap(TagMatchTest::new, (t) -> t.tag);
    }
 }

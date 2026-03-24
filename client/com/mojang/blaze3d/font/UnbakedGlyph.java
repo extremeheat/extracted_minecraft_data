@@ -5,10 +5,10 @@ import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 public interface UnbakedGlyph {
    GlyphInfo info();
 
-   BakedGlyph bake(Stitcher var1);
+   BakedGlyph bake(Stitcher stitcher);
 
    public interface Stitcher {
-      BakedGlyph stitch(GlyphInfo var1, GlyphBitmap var2);
+      BakedGlyph stitch(GlyphInfo info, GlyphBitmap glyphBitmap);
 
       BakedGlyph getMissing();
    }

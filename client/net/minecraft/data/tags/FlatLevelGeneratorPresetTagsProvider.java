@@ -9,11 +9,11 @@ import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorPreset;
 import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorPresets;
 
 public class FlatLevelGeneratorPresetTagsProvider extends KeyTagProvider<FlatLevelGeneratorPreset> {
-   public FlatLevelGeneratorPresetTagsProvider(PackOutput var1, CompletableFuture<HolderLookup.Provider> var2) {
-      super(var1, Registries.FLAT_LEVEL_GENERATOR_PRESET, var2);
+   public FlatLevelGeneratorPresetTagsProvider(final PackOutput output, final CompletableFuture<HolderLookup.Provider> lookupProvider) {
+      super(output, Registries.FLAT_LEVEL_GENERATOR_PRESET, lookupProvider);
    }
 
-   protected void addTags(HolderLookup.Provider var1) {
+   protected void addTags(final HolderLookup.Provider registries) {
       this.tag(FlatLevelGeneratorPresetTags.VISIBLE).add(FlatLevelGeneratorPresets.CLASSIC_FLAT).add(FlatLevelGeneratorPresets.TUNNELERS_DREAM).add(FlatLevelGeneratorPresets.WATER_WORLD).add(FlatLevelGeneratorPresets.OVERWORLD).add(FlatLevelGeneratorPresets.SNOWY_KINGDOM).add(FlatLevelGeneratorPresets.BOTTOMLESS_PIT).add(FlatLevelGeneratorPresets.DESERT).add(FlatLevelGeneratorPresets.REDSTONE_READY).add(FlatLevelGeneratorPresets.THE_VOID);
    }
 }

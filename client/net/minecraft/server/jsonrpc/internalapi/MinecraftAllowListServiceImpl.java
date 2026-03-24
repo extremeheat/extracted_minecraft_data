@@ -11,33 +11,33 @@ public class MinecraftAllowListServiceImpl implements MinecraftAllowListService 
    private final DedicatedServer server;
    private final JsonRpcLogger jsonrpcLogger;
 
-   public MinecraftAllowListServiceImpl(DedicatedServer var1, JsonRpcLogger var2) {
+   public MinecraftAllowListServiceImpl(final DedicatedServer server, final JsonRpcLogger jsonrpcLogger) {
       super();
-      this.server = var1;
-      this.jsonrpcLogger = var2;
+      this.server = server;
+      this.jsonrpcLogger = jsonrpcLogger;
    }
 
    public Collection<UserWhiteListEntry> getEntries() {
       return this.server.getPlayerList().getWhiteList().getEntries();
    }
 
-   public boolean add(UserWhiteListEntry var1, ClientInfo var2) {
-      this.jsonrpcLogger.log(var2, "Add player '{}' to allowlist", var1.getUser());
-      return this.server.getPlayerList().getWhiteList().add(var1);
+   public boolean add(final UserWhiteListEntry infos, final ClientInfo clientInfo) {
+      this.jsonrpcLogger.log(clientInfo, "Add player '{}' to allowlist", infos.getUser());
+      return this.server.getPlayerList().getWhiteList().add(infos);
    }
 
-   public void clear(ClientInfo var1) {
-      this.jsonrpcLogger.log(var1, "Clear allowlist");
+   public void clear(final ClientInfo clientInfo) {
+      this.jsonrpcLogger.log(clientInfo, "Clear allowlist");
       this.server.getPlayerList().getWhiteList().clear();
    }
 
-   public void remove(NameAndId var1, ClientInfo var2) {
-      this.jsonrpcLogger.log(var2, "Remove player '{}' from allowlist", var1);
-      this.server.getPlayerList().getWhiteList().remove(var1);
+   public void remove(final NameAndId nameAndId, final ClientInfo clientInfo) {
+      this.jsonrpcLogger.log(clientInfo, "Remove player '{}' from allowlist", nameAndId);
+      this.server.getPlayerList().getWhiteList().remove(nameAndId);
    }
 
-   public void kickUnlistedPlayers(ClientInfo var1) {
-      this.jsonrpcLogger.log(var1, "Kick unlisted players");
+   public void kickUnlistedPlayers(final ClientInfo clientInfo) {
+      this.jsonrpcLogger.log(clientInfo, "Kick unlisted players");
       this.server.kickUnlistedPlayers();
    }
 }

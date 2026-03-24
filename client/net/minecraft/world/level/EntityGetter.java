@@ -16,26 +16,26 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public interface EntityGetter {
-   List<Entity> getEntities(@Nullable Entity var1, AABB var2, Predicate<? super Entity> var3);
+   List<Entity> getEntities(@Nullable Entity except, AABB bb, Predicate<? super Entity> selector);
 
-   <T extends Entity> List<T> getEntities(EntityTypeTest<Entity, T> var1, AABB var2, Predicate<? super T> var3);
+   <T extends Entity> List<T> getEntities(final EntityTypeTest<Entity, T> type, final AABB bb, final Predicate<? super T> selector);
 
-   default <T extends Entity> List<T> getEntitiesOfClass(Class<T> var1, AABB var2, Predicate<? super T> var3) {
-      return this.getEntities(EntityTypeTest.forClass(var1), var2, var3);
+   default <T extends Entity> List<T> getEntitiesOfClass(final Class<T> baseClass, final AABB bb, final Predicate<? super T> selector) {
+      return this.getEntities(EntityTypeTest.forClass(baseClass), bb, selector);
    }
 
    List<? extends Player> players();
 
-   default List<Entity> getEntities(@Nullable Entity var1, AABB var2) {
-      return this.getEntities(var1, var2, EntitySelector.NO_SPECTATORS);
+   default List<Entity> getEntities(final @Nullable Entity except, final AABB bb) {
+      return this.getEntities(except, bb, EntitySelector.NO_SPECTATORS);
    }
 
-   default boolean isUnobstructed(@Nullable Entity var1, VoxelShape var2) {
-      if (var2.isEmpty()) {
+   default boolean isUnobstructed(final @Nullable Entity source, final VoxelShape shape) {
+      if (shape.isEmpty()) {
          return true;
       } else {
-         for(Entity var4 : this.getEntities(var1, var2.bounds())) {
-            if (!var4.isRemoved() && var4.blocksBuilding && (var1 == null || !var4.isPassengerOfSameVehicle(var1)) && Shapes.joinIsNotEmpty(var2, Shapes.create(var4.getBoundingBox()), BooleanOp.AND)) {
+         for(Entity entity : this.getEntities(source, shape.bounds())) {
+            if (!entity.isRemoved() && entity.blocksBuilding && (source == null || !entity.isPassengerOfSameVehicle(source)) && Shapes.joinIsNotEmpty(shape, Shapes.create(entity.getBoundingBox()), BooleanOp.AND)) {
                return false;
             }
          }
@@ -44,70 +44,70 @@ public interface EntityGetter {
       }
    }
 
-   default <T extends Entity> List<T> getEntitiesOfClass(Class<T> var1, AABB var2) {
-      return this.<T>getEntitiesOfClass(var1, var2, EntitySelector.NO_SPECTATORS);
+   default <T extends Entity> List<T> getEntitiesOfClass(final Class<T> baseClass, final AABB bb) {
+      return this.<T>getEntitiesOfClass(baseClass, bb, EntitySelector.NO_SPECTATORS);
    }
 
-   default List<VoxelShape> getEntityCollisions(@Nullable Entity var1, AABB var2) {
-      if (var2.getSize() < 1.0E-7) {
+   default List<VoxelShape> getEntityCollisions(final @Nullable Entity source, final AABB testArea) {
+      if (testArea.getSize() < 1.0E-7) {
          return List.of();
       } else {
          Predicate var10000;
-         if (var1 == null) {
+         if (source == null) {
             var10000 = EntitySelector.CAN_BE_COLLIDED_WITH;
          } else {
             var10000 = EntitySelector.NO_SPECTATORS;
-            Objects.requireNonNull(var1);
-            var10000 = var10000.and(var1::canCollideWith);
+            Objects.requireNonNull(source);
+            var10000 = var10000.and(source::canCollideWith);
          }
 
-         Predicate var3 = var10000;
-         List var4 = this.getEntities(var1, var2.inflate(1.0E-7), var3);
-         if (var4.isEmpty()) {
+         Predicate<Entity> canCollide = var10000;
+         List<Entity> collidingEntities = this.getEntities(source, testArea.inflate(1.0E-7), canCollide);
+         if (collidingEntities.isEmpty()) {
             return List.of();
          } else {
-            ImmutableList.Builder var5 = ImmutableList.builderWithExpectedSize(var4.size());
+            ImmutableList.Builder<VoxelShape> shapes = ImmutableList.builderWithExpectedSize(collidingEntities.size());
 
-            for(Entity var7 : var4) {
-               var5.add(Shapes.create(var7.getBoundingBox()));
+            for(Entity entity : collidingEntities) {
+               shapes.add(Shapes.create(entity.getBoundingBox()));
             }
 
-            return var5.build();
+            return shapes.build();
          }
       }
    }
 
-   default @Nullable Player getNearestPlayer(double var1, double var3, double var5, double var7, @Nullable Predicate<Entity> var9) {
-      double var10 = -1.0;
-      Player var12 = null;
+   default @Nullable Player getNearestPlayer(final double x, final double y, final double z, final double range, final @Nullable Predicate<Entity> predicate) {
+      double best = -1.0;
+      Player result = null;
 
-      for(Player var14 : this.players()) {
-         if (var9 == null || var9.test(var14)) {
-            double var15 = var14.distanceToSqr(var1, var3, var5);
-            if ((var7 < 0.0 || var15 < var7 * var7) && (var10 == -1.0 || var15 < var10)) {
-               var10 = var15;
-               var12 = var14;
+      for(Player player : this.players()) {
+         if (predicate == null || predicate.test(player)) {
+            double dist = player.distanceToSqr(x, y, z);
+            if ((range < 0.0 || dist < range * range) && (best == -1.0 || dist < best)) {
+               best = dist;
+               result = player;
             }
          }
       }
 
-      return var12;
+      return result;
    }
 
-   default @Nullable Player getNearestPlayer(Entity var1, double var2) {
-      return this.getNearestPlayer(var1.getX(), var1.getY(), var1.getZ(), var2, false);
+   default @Nullable Player getNearestPlayer(final Entity source, final double maxDist) {
+      return this.getNearestPlayer(source.getX(), source.getY(), source.getZ(), maxDist, false);
    }
 
-   default @Nullable Player getNearestPlayer(double var1, double var3, double var5, double var7, boolean var9) {
-      Predicate var10 = var9 ? EntitySelector.NO_CREATIVE_OR_SPECTATOR : EntitySelector.NO_SPECTATORS;
-      return this.getNearestPlayer(var1, var3, var5, var7, var10);
+   default @Nullable Player getNearestPlayer(final double x, final double y, final double z, final double maxDist, final boolean filterOutCreative) {
+      Predicate<Entity> predicate = filterOutCreative ? EntitySelector.NO_CREATIVE_OR_SPECTATOR : EntitySelector.NO_SPECTATORS;
+      return this.getNearestPlayer(x, y, z, maxDist, predicate);
    }
 
-   default boolean hasNearbyAlivePlayer(double var1, double var3, double var5, double var7) {
-      for(Player var10 : this.players()) {
-         if (EntitySelector.NO_SPECTATORS.test(var10) && EntitySelector.LIVING_ENTITY_STILL_ALIVE.test(var10)) {
-            double var11 = var10.distanceToSqr(var1, var3, var5);
-            if (var7 < 0.0 || var11 < var7 * var7) {
+   default boolean hasNearbyAlivePlayer(final double x, final double y, final double z, final double range) {
+      for(Player player : this.players()) {
+         if (EntitySelector.NO_SPECTATORS.test(player) && EntitySelector.LIVING_ENTITY_STILL_ALIVE.test(player)) {
+            double playerDist = player.distanceToSqr(x, y, z);
+            if (range < 0.0 || playerDist < range * range) {
                return true;
             }
          }
@@ -116,11 +116,11 @@ public interface EntityGetter {
       return false;
    }
 
-   default @Nullable Player getPlayerByUUID(UUID var1) {
-      for(int var2 = 0; var2 < this.players().size(); ++var2) {
-         Player var3 = (Player)this.players().get(var2);
-         if (var1.equals(var3.getUUID())) {
-            return var3;
+   default @Nullable Player getPlayerByUUID(final UUID uuid) {
+      for(int i = 0; i < this.players().size(); ++i) {
+         Player player = (Player)this.players().get(i);
+         if (uuid.equals(player.getUUID())) {
+            return player;
          }
       }
 

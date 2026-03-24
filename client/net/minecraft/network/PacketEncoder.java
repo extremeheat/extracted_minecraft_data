@@ -13,37 +13,32 @@ public class PacketEncoder<T extends PacketListener> extends MessageToByteEncode
    private static final Logger LOGGER = LogUtils.getLogger();
    private final ProtocolInfo<T> protocolInfo;
 
-   public PacketEncoder(ProtocolInfo<T> var1) {
+   public PacketEncoder(final ProtocolInfo<T> protocolInfo) {
       super();
-      this.protocolInfo = var1;
+      this.protocolInfo = protocolInfo;
    }
 
-   protected void encode(ChannelHandlerContext var1, Packet<T> var2, ByteBuf var3) throws Exception {
-      PacketType var4 = var2.type();
+   protected void encode(final ChannelHandlerContext ctx, final Packet<T> packet, final ByteBuf output) throws Exception {
+      PacketType<? extends Packet<? super T>> packetId = packet.type();
 
       try {
-         this.protocolInfo.codec().encode(var3, var2);
-         int var5 = var3.readableBytes();
+         this.protocolInfo.codec().encode(output, packet);
+         int writtenBytes = output.readableBytes();
          if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(Connection.PACKET_SENT_MARKER, "OUT: [{}:{}] {} -> {} bytes", new Object[]{this.protocolInfo.id().id(), var4, var2.getClass().getName(), var5});
+            LOGGER.debug(Connection.PACKET_SENT_MARKER, "OUT: [{}:{}] {} -> {} bytes", new Object[]{this.protocolInfo.id().id(), packetId, packet.getClass().getName(), writtenBytes});
          }
 
-         JvmProfiler.INSTANCE.onPacketSent(this.protocolInfo.id(), var4, var1.channel().remoteAddress(), var5);
-      } catch (Throwable var9) {
-         LOGGER.error("Error sending packet {}", var4, var9);
-         if (var2.isSkippable()) {
-            throw new SkipPacketEncoderException(var9);
+         JvmProfiler.INSTANCE.onPacketSent(this.protocolInfo.id(), packetId, ctx.channel().remoteAddress(), writtenBytes);
+      } catch (Throwable t) {
+         LOGGER.error("Error sending packet {}", packetId, t);
+         if (packet.isSkippable()) {
+            throw new SkipPacketEncoderException(t);
          }
 
-         throw var9;
+         throw t;
       } finally {
-         ProtocolSwapHandler.handleOutboundTerminalPacket(var1, var2);
+         ProtocolSwapHandler.handleOutboundTerminalPacket(ctx, packet);
       }
 
-   }
-
-   // $FF: synthetic method
-   protected void encode(final ChannelHandlerContext var1, final Object var2, final ByteBuf var3) throws Exception {
-      this.encode(var1, (Packet)var2, var3);
    }
 }

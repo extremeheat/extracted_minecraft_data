@@ -5,7 +5,7 @@ import com.google.common.collect.Lists;
 import com.mojang.blaze3d.platform.Monitor;
 import com.mojang.blaze3d.platform.VideoMode;
 import com.mojang.blaze3d.platform.Window;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.ChatFormatting;
@@ -37,60 +37,60 @@ public class VideoSettingsScreen extends OptionsSubScreen {
    private final int oldAnisotropyBit;
    private final TextureFilteringMethod oldTextureFiltering;
 
-   private static OptionInstance<?>[] qualityOptions(Options var0) {
-      return new OptionInstance[]{var0.biomeBlendRadius(), var0.renderDistance(), var0.prioritizeChunkUpdates(), var0.simulationDistance(), var0.ambientOcclusion(), var0.cloudStatus(), var0.particles(), var0.mipmapLevels(), var0.entityShadows(), var0.entityDistanceScaling(), var0.menuBackgroundBlurriness(), var0.cloudRange(), var0.cutoutLeaves(), var0.improvedTransparency(), var0.textureFiltering(), var0.maxAnisotropyBit(), var0.weatherRadius()};
+   private static OptionInstance<?>[] qualityOptions(final Options options) {
+      return new OptionInstance[]{options.biomeBlendRadius(), options.renderDistance(), options.prioritizeChunkUpdates(), options.simulationDistance(), options.ambientOcclusion(), options.cloudStatus(), options.particles(), options.mipmapLevels(), options.entityShadows(), options.entityDistanceScaling(), options.menuBackgroundBlurriness(), options.cloudRange(), options.cutoutLeaves(), options.improvedTransparency(), options.textureFiltering(), options.maxAnisotropyBit(), options.weatherRadius()};
    }
 
-   private static OptionInstance<?>[] displayOptions(Options var0) {
-      return new OptionInstance[]{var0.framerateLimit(), var0.enableVsync(), var0.inactivityFpsLimit(), var0.guiScale(), var0.fullscreen(), var0.gamma()};
+   private static OptionInstance<?>[] displayOptions(final Options options) {
+      return new OptionInstance[]{options.framerateLimit(), options.enableVsync(), options.inactivityFpsLimit(), options.guiScale(), options.fullscreen(), options.exclusiveFullscreen(), options.gamma()};
    }
 
-   private static OptionInstance<?>[] preferenceOptions(Options var0) {
-      return new OptionInstance[]{var0.showAutosaveIndicator(), var0.vignette(), var0.attackIndicator(), var0.chunkSectionFadeInTime()};
+   private static OptionInstance<?>[] preferenceOptions(final Options options) {
+      return new OptionInstance[]{options.showAutosaveIndicator(), options.vignette(), options.attackIndicator(), options.chunkSectionFadeInTime()};
    }
 
-   public VideoSettingsScreen(Screen var1, Minecraft var2, Options var3) {
-      super(var1, var3, TITLE);
-      this.gpuWarnlistManager = var2.getGpuWarnlistManager();
+   public VideoSettingsScreen(final Screen lastScreen, final Minecraft minecraft, final Options options) {
+      super(lastScreen, options, TITLE);
+      this.gpuWarnlistManager = minecraft.getGpuWarnlistManager();
       this.gpuWarnlistManager.resetWarnings();
-      if ((Boolean)var3.improvedTransparency().get()) {
+      if ((Boolean)options.improvedTransparency().get()) {
          this.gpuWarnlistManager.dismissWarning();
       }
 
-      this.oldMipmaps = (Integer)var3.mipmapLevels().get();
-      this.oldAnisotropyBit = (Integer)var3.maxAnisotropyBit().get();
-      this.oldTextureFiltering = (TextureFilteringMethod)var3.textureFiltering().get();
+      this.oldMipmaps = (Integer)options.mipmapLevels().get();
+      this.oldAnisotropyBit = (Integer)options.maxAnisotropyBit().get();
+      this.oldTextureFiltering = (TextureFilteringMethod)options.textureFiltering().get();
    }
 
    protected void addOptions() {
-      boolean var1 = true;
-      Window var2 = this.minecraft.getWindow();
-      Monitor var3 = var2.findBestMonitor();
-      int var4;
-      if (var3 == null) {
-         var4 = -1;
+      int CURRENT_MODE = -1;
+      Window window = this.minecraft.getWindow();
+      Monitor monitor = window.findBestMonitor();
+      int initialValue;
+      if (monitor == null) {
+         initialValue = -1;
       } else {
-         Optional var5 = var2.getPreferredFullscreenVideoMode();
-         Objects.requireNonNull(var3);
-         var4 = (Integer)var5.map(var3::getVideoModeIndex).orElse(-1);
+         Optional<VideoMode> preferredFullscreenVideoMode = window.getPreferredFullscreenVideoMode();
+         Objects.requireNonNull(monitor);
+         initialValue = (Integer)preferredFullscreenVideoMode.map(monitor::getVideoModeIndex).orElse(-1);
       }
 
-      OptionInstance var6 = new OptionInstance("options.fullscreen.resolution", OptionInstance.noTooltip(), (var1x, var2x) -> {
-         if (var3 == null) {
+      OptionInstance<Integer> fullscreenOption = new OptionInstance<Integer>("options.fullscreen.resolution", OptionInstance.noTooltip(), (caption, value) -> {
+         if (monitor == null) {
             return Component.translatable("options.fullscreen.unavailable");
-         } else if (var2x == -1) {
-            return Options.genericValueLabel(var1x, Component.translatable("options.fullscreen.current"));
+         } else if (value == -1) {
+            return Options.genericValueLabel(caption, Component.translatable("options.fullscreen.current"));
          } else {
-            VideoMode var3x = var3.getMode(var2x);
-            return Options.genericValueLabel(var1x, Component.translatable("options.fullscreen.entry", var3x.getWidth(), var3x.getHeight(), var3x.getRefreshRate(), var3x.getRedBits() + var3x.getGreenBits() + var3x.getBlueBits()));
+            VideoMode mode = monitor.getMode(value);
+            return Options.genericValueLabel(caption, Component.translatable("options.fullscreen.entry", mode.getWidth(), mode.getHeight(), mode.getRefreshRate(), mode.getRedBits() + mode.getGreenBits() + mode.getBlueBits()));
          }
-      }, new OptionInstance.IntRange(-1, var3 != null ? var3.getModeCount() - 1 : -1), var4, (var2x) -> {
-         if (var3 != null) {
-            var2.setPreferredFullscreenVideoMode(var2x == -1 ? Optional.empty() : Optional.of(var3.getMode(var2x)));
+      }, new OptionInstance.IntRange(-1, monitor != null ? monitor.getModeCount() - 1 : -1), initialValue, (value) -> {
+         if (monitor != null) {
+            window.setPreferredFullscreenVideoMode(value == -1 ? Optional.empty() : Optional.of(monitor.getMode(value)));
          }
       });
       this.list.addHeader(DISPLAY_HEADER);
-      this.list.addBig(var6);
+      this.list.addBig(fullscreenOption);
       this.list.addSmall(displayOptions(this.options));
       this.list.addHeader(QUALITY_HEADER);
       this.list.addBig(this.options.graphicsPreset());
@@ -103,8 +103,8 @@ public class VideoSettingsScreen extends OptionsSubScreen {
       if (this.list != null) {
          AbstractWidget var2 = this.list.findOption(this.options.maxAnisotropyBit());
          if (var2 instanceof AbstractSliderButton) {
-            AbstractSliderButton var1 = (AbstractSliderButton)var2;
-            var1.active = this.options.textureFiltering().get() == TextureFilteringMethod.ANISOTROPIC;
+            AbstractSliderButton maxAnisotropy = (AbstractSliderButton)var2;
+            maxAnisotropy.active = this.options.textureFiltering().get() == TextureFilteringMethod.ANISOTROPIC;
          }
       }
 
@@ -125,34 +125,34 @@ public class VideoSettingsScreen extends OptionsSubScreen {
       super.removed();
    }
 
-   public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
-      if (super.mouseClicked(var1, var2)) {
+   public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
+      if (super.mouseClicked(event, doubleClick)) {
          if (this.gpuWarnlistManager.isShowingWarning()) {
-            ArrayList var3 = Lists.newArrayList(new Component[]{WARNING_MESSAGE, CommonComponents.NEW_LINE});
-            String var4 = this.gpuWarnlistManager.getRendererWarnings();
-            if (var4 != null) {
-               var3.add(CommonComponents.NEW_LINE);
-               var3.add(Component.translatable("options.graphics.warning.renderer", var4).withStyle(ChatFormatting.GRAY));
+            List<Component> warningMessage = Lists.newArrayList(new Component[]{WARNING_MESSAGE, CommonComponents.NEW_LINE});
+            String rendererWarnings = this.gpuWarnlistManager.getRendererWarnings();
+            if (rendererWarnings != null) {
+               warningMessage.add(CommonComponents.NEW_LINE);
+               warningMessage.add(Component.translatable("options.graphics.warning.renderer", rendererWarnings).withStyle(ChatFormatting.GRAY));
             }
 
-            String var5 = this.gpuWarnlistManager.getVendorWarnings();
-            if (var5 != null) {
-               var3.add(CommonComponents.NEW_LINE);
-               var3.add(Component.translatable("options.graphics.warning.vendor", var5).withStyle(ChatFormatting.GRAY));
+            String vendorWarnings = this.gpuWarnlistManager.getVendorWarnings();
+            if (vendorWarnings != null) {
+               warningMessage.add(CommonComponents.NEW_LINE);
+               warningMessage.add(Component.translatable("options.graphics.warning.vendor", vendorWarnings).withStyle(ChatFormatting.GRAY));
             }
 
-            String var6 = this.gpuWarnlistManager.getVersionWarnings();
-            if (var6 != null) {
-               var3.add(CommonComponents.NEW_LINE);
-               var3.add(Component.translatable("options.graphics.warning.version", var6).withStyle(ChatFormatting.GRAY));
+            String versionWarnings = this.gpuWarnlistManager.getVersionWarnings();
+            if (versionWarnings != null) {
+               warningMessage.add(CommonComponents.NEW_LINE);
+               warningMessage.add(Component.translatable("options.graphics.warning.version", versionWarnings).withStyle(ChatFormatting.GRAY));
             }
 
-            this.minecraft.setScreen(new UnsupportedGraphicsWarningScreen(WARNING_TITLE, var3, ImmutableList.of(new UnsupportedGraphicsWarningScreen.ButtonOption(BUTTON_ACCEPT, (var1x) -> {
+            this.minecraft.setScreen(new UnsupportedGraphicsWarningScreen(WARNING_TITLE, warningMessage, ImmutableList.of(new UnsupportedGraphicsWarningScreen.ButtonOption(BUTTON_ACCEPT, (btn) -> {
                this.options.improvedTransparency().set(true);
                Minecraft.getInstance().levelRenderer.allChanged();
                this.gpuWarnlistManager.dismissWarning();
                this.minecraft.setScreen(this);
-            }), new UnsupportedGraphicsWarningScreen.ButtonOption(BUTTON_CANCEL, (var1x) -> {
+            }), new UnsupportedGraphicsWarningScreen.ButtonOption(BUTTON_CANCEL, (btn) -> {
                this.gpuWarnlistManager.dismissWarning();
                this.options.improvedTransparency().set(false);
                this.updateTransparencyButton();
@@ -166,20 +166,20 @@ public class VideoSettingsScreen extends OptionsSubScreen {
       }
    }
 
-   public boolean mouseScrolled(double var1, double var3, double var5, double var7) {
+   public boolean mouseScrolled(final double x, final double y, final double scrollX, final double scrollY) {
       if (this.minecraft.hasControlDown()) {
-         OptionInstance var9 = this.options.guiScale();
-         OptionInstance.ValueSet var11 = var9.values();
+         OptionInstance<Integer> guiScale = this.options.guiScale();
+         OptionInstance.ValueSet var11 = guiScale.values();
          if (var11 instanceof OptionInstance.ClampingLazyMaxIntRange) {
-            OptionInstance.ClampingLazyMaxIntRange var10 = (OptionInstance.ClampingLazyMaxIntRange)var11;
-            int var15 = (Integer)var9.get();
-            int var12 = var15 == 0 ? var10.maxInclusive() + 1 : var15;
-            int var13 = var12 + (int)Math.signum(var7);
-            if (var13 != 0 && var13 <= var10.maxInclusive() && var13 >= var10.minInclusive()) {
-               CycleButton var14 = (CycleButton)this.list.findOption(var9);
-               if (var14 != null) {
-                  var9.set(var13);
-                  var14.setValue(var13);
+            OptionInstance.ClampingLazyMaxIntRange clampingLazyMaxIntRange = (OptionInstance.ClampingLazyMaxIntRange)var11;
+            int oldValue = (Integer)guiScale.get();
+            int adjustedOldValue = oldValue == 0 ? clampingLazyMaxIntRange.maxInclusive() + 1 : oldValue;
+            int newValue = adjustedOldValue + (int)Math.signum(scrollY);
+            if (newValue != 0 && newValue <= clampingLazyMaxIntRange.maxInclusive() && newValue >= clampingLazyMaxIntRange.minInclusive()) {
+               CycleButton<Integer> cycleButton = (CycleButton)this.list.findOption(guiScale);
+               if (cycleButton != null) {
+                  guiScale.set(newValue);
+                  cycleButton.setValue(newValue);
                   this.list.setScrollAmount(0.0);
                   return true;
                }
@@ -188,16 +188,16 @@ public class VideoSettingsScreen extends OptionsSubScreen {
 
          return false;
       } else {
-         return super.mouseScrolled(var1, var3, var5, var7);
+         return super.mouseScrolled(x, y, scrollX, scrollY);
       }
    }
 
-   public void updateFullscreenButton(boolean var1) {
+   public void updateFullscreenButton(final boolean fullscreen) {
       if (this.list != null) {
-         AbstractWidget var2 = this.list.findOption(this.options.fullscreen());
-         if (var2 != null) {
-            CycleButton var3 = (CycleButton)var2;
-            var3.setValue(var1);
+         AbstractWidget fullscreenWidget = this.list.findOption(this.options.fullscreen());
+         if (fullscreenWidget != null) {
+            CycleButton<Boolean> fullscreenButton = (CycleButton)fullscreenWidget;
+            fullscreenButton.setValue(fullscreen);
          }
       }
 
@@ -205,11 +205,11 @@ public class VideoSettingsScreen extends OptionsSubScreen {
 
    public void updateTransparencyButton() {
       if (this.list != null) {
-         OptionInstance var1 = this.options.improvedTransparency();
-         AbstractWidget var2 = this.list.findOption(var1);
-         if (var2 != null) {
-            CycleButton var3 = (CycleButton)var2;
-            var3.setValue((Boolean)var1.get());
+         OptionInstance<Boolean> option = this.options.improvedTransparency();
+         AbstractWidget widget = this.list.findOption(option);
+         if (widget != null) {
+            CycleButton<Boolean> button = (CycleButton)widget;
+            button.setValue(option.get());
          }
       }
 

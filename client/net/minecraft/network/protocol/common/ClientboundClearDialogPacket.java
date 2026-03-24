@@ -17,8 +17,8 @@ public class ClientboundClearDialogPacket implements Packet<ClientCommonPacketLi
       return CommonPacketTypes.CLIENTBOUND_CLEAR_DIALOG;
    }
 
-   public void handle(ClientCommonPacketListener var1) {
-      var1.handleClearDialog(this);
+   public void handle(final ClientCommonPacketListener listener) {
+      listener.handleClearDialog(this);
    }
 
    static {

@@ -15,55 +15,52 @@ public record ClientboundChunksBiomesPacket(List<ChunkBiomeData> chunkBiomeData)
    public static final StreamCodec<FriendlyByteBuf, ClientboundChunksBiomesPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundChunksBiomesPacket>codec(ClientboundChunksBiomesPacket::write, ClientboundChunksBiomesPacket::new);
    private static final int TWO_MEGABYTES = 2097152;
 
-   private ClientboundChunksBiomesPacket(FriendlyByteBuf var1) {
-      this(var1.readList(ChunkBiomeData::new));
+   private ClientboundChunksBiomesPacket(final FriendlyByteBuf input) {
+      this(input.readList(ChunkBiomeData::new));
    }
 
-   public ClientboundChunksBiomesPacket(List<ChunkBiomeData> var1) {
+   public ClientboundChunksBiomesPacket {
       super();
-      this.chunkBiomeData = var1;
    }
 
-   public static ClientboundChunksBiomesPacket forChunks(List<LevelChunk> var0) {
-      return new ClientboundChunksBiomesPacket(var0.stream().map(ChunkBiomeData::new).toList());
+   public static ClientboundChunksBiomesPacket forChunks(final List<LevelChunk> chunks) {
+      return new ClientboundChunksBiomesPacket(chunks.stream().map(ChunkBiomeData::new).toList());
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeCollection(this.chunkBiomeData, (var0, var1x) -> var1x.write(var0));
+   private void write(final FriendlyByteBuf output) {
+      output.writeCollection(this.chunkBiomeData, (o, c) -> c.write(o));
    }
 
    public PacketType<ClientboundChunksBiomesPacket> type() {
       return GamePacketTypes.CLIENTBOUND_CHUNKS_BIOMES;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleChunksBiomes(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleChunksBiomes(this);
    }
 
    public static record ChunkBiomeData(ChunkPos pos, byte[] buffer) {
-      public ChunkBiomeData(LevelChunk var1) {
-         this(var1.getPos(), new byte[calculateChunkSize(var1)]);
-         extractChunkData(new FriendlyByteBuf(this.getWriteBuffer()), var1);
+      public ChunkBiomeData(final LevelChunk chunk) {
+         this(chunk.getPos(), new byte[calculateChunkSize(chunk)]);
+         extractChunkData(new FriendlyByteBuf(this.getWriteBuffer()), chunk);
       }
 
-      public ChunkBiomeData(FriendlyByteBuf var1) {
-         this(var1.readChunkPos(), var1.readByteArray(2097152));
+      public ChunkBiomeData(final FriendlyByteBuf input) {
+         this(input.readChunkPos(), input.readByteArray(2097152));
       }
 
-      public ChunkBiomeData(ChunkPos var1, byte[] var2) {
+      public ChunkBiomeData {
          super();
-         this.pos = var1;
-         this.buffer = var2;
       }
 
-      private static int calculateChunkSize(LevelChunk var0) {
-         int var1 = 0;
+      private static int calculateChunkSize(final LevelChunk chunk) {
+         int total = 0;
 
-         for(LevelChunkSection var5 : var0.getSections()) {
-            var1 += var5.getBiomes().getSerializedSize();
+         for(LevelChunkSection section : chunk.getSections()) {
+            total += section.getBiomes().getSerializedSize();
          }
 
-         return var1;
+         return total;
       }
 
       public FriendlyByteBuf getReadBuffer() {
@@ -71,25 +68,25 @@ public record ClientboundChunksBiomesPacket(List<ChunkBiomeData> chunkBiomeData)
       }
 
       private ByteBuf getWriteBuffer() {
-         ByteBuf var1 = Unpooled.wrappedBuffer(this.buffer);
-         var1.writerIndex(0);
-         return var1;
+         ByteBuf buffer = Unpooled.wrappedBuffer(this.buffer);
+         buffer.writerIndex(0);
+         return buffer;
       }
 
-      public static void extractChunkData(FriendlyByteBuf var0, LevelChunk var1) {
-         for(LevelChunkSection var5 : var1.getSections()) {
-            var5.getBiomes().write(var0);
+      public static void extractChunkData(final FriendlyByteBuf buffer, final LevelChunk chunk) {
+         for(LevelChunkSection section : chunk.getSections()) {
+            section.getBiomes().write(buffer);
          }
 
-         if (var0.writerIndex() != var0.capacity()) {
-            int var10002 = var0.capacity();
-            throw new IllegalStateException("Didn't fill biome buffer: expected " + var10002 + " bytes, got " + var0.writerIndex());
+         if (buffer.writerIndex() != buffer.capacity()) {
+            int var10002 = buffer.capacity();
+            throw new IllegalStateException("Didn't fill biome buffer: expected " + var10002 + " bytes, got " + buffer.writerIndex());
          }
       }
 
-      public void write(FriendlyByteBuf var1) {
-         var1.writeChunkPos(this.pos);
-         var1.writeByteArray(this.buffer);
+      public void write(final FriendlyByteBuf output) {
+         output.writeChunkPos(this.pos);
+         output.writeByteArray(this.buffer);
       }
    }
 }

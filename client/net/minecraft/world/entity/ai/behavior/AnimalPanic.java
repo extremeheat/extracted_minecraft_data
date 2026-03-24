@@ -12,7 +12,6 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -33,93 +32,78 @@ public class AnimalPanic<E extends PathfinderMob> extends Behavior<E> {
    private final Function<PathfinderMob, TagKey<DamageType>> panicCausingDamageTypes;
    private final Function<E, Vec3> positionGetter;
 
-   public AnimalPanic(float var1) {
-      this(var1, (var0) -> DamageTypeTags.PANIC_CAUSES, (var0) -> LandRandomPos.getPos(var0, 5, 4));
+   public AnimalPanic(final float speedMultiplier) {
+      this(speedMultiplier, (mob) -> DamageTypeTags.PANIC_CAUSES, (mob) -> LandRandomPos.getPos(mob, 5, 4));
    }
 
-   public AnimalPanic(float var1, int var2) {
-      this(var1, (var0) -> DamageTypeTags.PANIC_CAUSES, (var1x) -> AirAndWaterRandomPos.getPos(var1x, 5, 4, var2, var1x.getViewVector(0.0F).x, var1x.getViewVector(0.0F).z, 1.5707963705062866));
+   public AnimalPanic(final float speedMultiplier, final int flyHeight) {
+      this(speedMultiplier, (mob) -> DamageTypeTags.PANIC_CAUSES, (mob) -> AirAndWaterRandomPos.getPos(mob, 5, 4, flyHeight, mob.getViewVector(0.0F).x, mob.getViewVector(0.0F).z, 1.5707963705062866));
    }
 
-   public AnimalPanic(float var1, Function<PathfinderMob, TagKey<DamageType>> var2) {
-      this(var1, var2, (var0) -> LandRandomPos.getPos(var0, 5, 4));
+   public AnimalPanic(final float speedMultiplier, final Function<PathfinderMob, TagKey<DamageType>> panicCausingDamageTypes) {
+      this(speedMultiplier, panicCausingDamageTypes, (mob) -> LandRandomPos.getPos(mob, 5, 4));
    }
 
-   public AnimalPanic(float var1, Function<PathfinderMob, TagKey<DamageType>> var2, Function<E, Vec3> var3) {
+   public AnimalPanic(final float speedMultiplier, final Function<PathfinderMob, TagKey<DamageType>> panicCausingDamageTypes, final Function<E, Vec3> positionGetter) {
       super(Map.of(MemoryModuleType.IS_PANICKING, MemoryStatus.REGISTERED, MemoryModuleType.HURT_BY, MemoryStatus.REGISTERED), 100, 120);
-      this.speedMultiplier = var1;
-      this.panicCausingDamageTypes = var2;
-      this.positionGetter = var3;
+      this.speedMultiplier = speedMultiplier;
+      this.panicCausingDamageTypes = panicCausingDamageTypes;
+      this.positionGetter = positionGetter;
    }
 
-   protected boolean checkExtraStartConditions(ServerLevel var1, E var2) {
-      return (Boolean)var2.getBrain().getMemory(MemoryModuleType.HURT_BY).map((var2x) -> var2x.is((TagKey)this.panicCausingDamageTypes.apply(var2))).orElse(false) || var2.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING);
+   protected boolean checkExtraStartConditions(final ServerLevel level, final E body) {
+      return (Boolean)body.getBrain().getMemory(MemoryModuleType.HURT_BY).map((d) -> d.is((TagKey)this.panicCausingDamageTypes.apply(body))).orElse(false) || body.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING);
    }
 
-   protected boolean canStillUse(ServerLevel var1, E var2, long var3) {
+   protected boolean canStillUse(final ServerLevel level, final E body, final long timestamp) {
       return true;
    }
 
-   protected void start(ServerLevel var1, E var2, long var3) {
-      var2.getBrain().setMemory(MemoryModuleType.IS_PANICKING, true);
-      var2.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
-      var2.getNavigation().stop();
+   protected void start(final ServerLevel level, final E body, final long timestamp) {
+      body.getBrain().setMemory(MemoryModuleType.IS_PANICKING, true);
+      body.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
+      body.getNavigation().stop();
    }
 
-   protected void stop(ServerLevel var1, E var2, long var3) {
-      Brain var5 = var2.getBrain();
-      var5.eraseMemory(MemoryModuleType.IS_PANICKING);
+   protected void stop(final ServerLevel level, final E body, final long timestamp) {
+      Brain<?> brain = body.getBrain();
+      brain.eraseMemory(MemoryModuleType.IS_PANICKING);
    }
 
-   protected void tick(ServerLevel var1, E var2, long var3) {
-      if (var2.getNavigation().isDone()) {
-         Vec3 var5 = this.getPanicPos(var2, var1);
-         if (var5 != null) {
-            var2.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(var5, this.speedMultiplier, 0));
+   protected void tick(final ServerLevel level, final E body, final long timestamp) {
+      if (body.getNavigation().isDone()) {
+         Vec3 panicToPos = this.getPanicPos(body, level);
+         if (panicToPos != null) {
+            body.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(panicToPos, this.speedMultiplier, 0));
          }
       }
 
    }
 
-   private @Nullable Vec3 getPanicPos(E var1, ServerLevel var2) {
-      if (var1.isOnFire()) {
-         Optional var3 = this.lookForWater(var2, var1).map(Vec3::atBottomCenterOf);
-         if (var3.isPresent()) {
-            return (Vec3)var3.get();
+   private @Nullable Vec3 getPanicPos(final E body, final ServerLevel level) {
+      if (body.isOnFire()) {
+         Optional<Vec3> nearestWater = this.lookForWater(level, body).map(Vec3::atBottomCenterOf);
+         if (nearestWater.isPresent()) {
+            return (Vec3)nearestWater.get();
          }
       }
 
-      return (Vec3)this.positionGetter.apply(var1);
+      return (Vec3)this.positionGetter.apply(body);
    }
 
-   private Optional<BlockPos> lookForWater(BlockGetter var1, Entity var2) {
-      BlockPos var3 = var2.blockPosition();
-      if (!var1.getBlockState(var3).getCollisionShape(var1, var3).isEmpty()) {
+   private Optional<BlockPos> lookForWater(final BlockGetter level, final Entity mob) {
+      BlockPos mobPosition = mob.blockPosition();
+      if (!level.getBlockState(mobPosition).getCollisionShape(level, mobPosition).isEmpty()) {
          return Optional.empty();
       } else {
-         Predicate var4;
-         if (Mth.ceil(var2.getBbWidth()) == 2) {
-            var4 = (var1x) -> BlockPos.squareOutSouthEast(var1x).allMatch((var1xx) -> var1.getFluidState(var1xx).is(FluidTags.WATER));
+         Predicate<BlockPos> posPredicate;
+         if (Mth.ceil(mob.getBbWidth()) == 2) {
+            posPredicate = (from) -> BlockPos.squareOutSouthEast(from).allMatch((pos) -> level.getFluidState(pos).is(FluidTags.WATER));
          } else {
-            var4 = (var1x) -> var1.getFluidState(var1x).is(FluidTags.WATER);
+            posPredicate = (pos) -> level.getFluidState(pos).is(FluidTags.WATER);
          }
 
-         return BlockPos.findClosestMatch(var3, 5, 1, var4);
+         return BlockPos.findClosestMatch(mobPosition, 5, 1, posPredicate);
       }
-   }
-
-   // $FF: synthetic method
-   protected void stop(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.stop(var1, (PathfinderMob)var2, var3);
-   }
-
-   // $FF: synthetic method
-   protected void tick(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.tick(var1, (PathfinderMob)var2, var3);
-   }
-
-   // $FF: synthetic method
-   protected void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.start(var1, (PathfinderMob)var2, var3);
    }
 }

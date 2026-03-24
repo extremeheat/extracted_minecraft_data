@@ -18,31 +18,24 @@ public record WritableBookContent(List<Filterable<String>> pages) implements Boo
    public static final Codec<WritableBookContent> CODEC;
    public static final StreamCodec<ByteBuf, WritableBookContent> STREAM_CODEC;
 
-   public WritableBookContent(List<Filterable<String>> var1) {
+   public WritableBookContent {
       super();
-      if (var1.size() > 100) {
-         throw new IllegalArgumentException("Got " + var1.size() + " pages, but maximum is 100");
-      } else {
-         this.pages = var1;
+      if (pages.size() > 100) {
+         throw new IllegalArgumentException("Got " + pages.size() + " pages, but maximum is 100");
       }
    }
 
-   public Stream<String> getPages(boolean var1) {
-      return this.pages.stream().map((var1x) -> (String)var1x.get(var1));
+   public Stream<String> getPages(final boolean filterEnabled) {
+      return this.pages.stream().map((page) -> (String)page.get(filterEnabled));
    }
 
-   public WritableBookContent withReplacedPages(List<Filterable<String>> var1) {
-      return new WritableBookContent(var1);
-   }
-
-   // $FF: synthetic method
-   public Object withReplacedPages(final List var1) {
-      return this.withReplacedPages(var1);
+   public WritableBookContent withReplacedPages(final List<Filterable<String>> newPages) {
+      return new WritableBookContent(newPages);
    }
 
    static {
       PAGES_CODEC = PAGE_CODEC.sizeLimitedListOf(100);
-      CODEC = RecordCodecBuilder.create((var0) -> var0.group(PAGES_CODEC.optionalFieldOf("pages", List.of()).forGetter(WritableBookContent::pages)).apply(var0, WritableBookContent::new));
+      CODEC = RecordCodecBuilder.create((i) -> i.group(PAGES_CODEC.optionalFieldOf("pages", List.of()).forGetter(WritableBookContent::pages)).apply(i, WritableBookContent::new));
       STREAM_CODEC = Filterable.streamCodec(ByteBufCodecs.stringUtf8(1024)).apply(ByteBufCodecs.list(100)).map(WritableBookContent::new, WritableBookContent::pages);
    }
 }

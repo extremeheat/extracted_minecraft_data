@@ -28,68 +28,68 @@ public class StructureBlock extends BaseEntityBlock implements GameMasterBlock {
       return CODEC;
    }
 
-   protected StructureBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   protected StructureBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(MODE, StructureMode.LOAD));
    }
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new StructureBlockEntity(var1, var2);
+   public BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      return new StructureBlockEntity(worldPosition, blockState);
    }
 
-   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      BlockEntity var6 = var2.getBlockEntity(var3);
-      if (var6 instanceof StructureBlockEntity) {
-         return (InteractionResult)(((StructureBlockEntity)var6).usedBy(var4) ? InteractionResult.SUCCESS : InteractionResult.PASS);
+   protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
+      BlockEntity blockEntity = level.getBlockEntity(pos);
+      if (blockEntity instanceof StructureBlockEntity) {
+         return (InteractionResult)(((StructureBlockEntity)blockEntity).usedBy(player) ? InteractionResult.SUCCESS : InteractionResult.PASS);
       } else {
          return InteractionResult.PASS;
       }
    }
 
-   public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, @Nullable LivingEntity var4, ItemStack var5) {
-      if (!var1.isClientSide()) {
-         if (var4 != null) {
-            BlockEntity var6 = var1.getBlockEntity(var2);
-            if (var6 instanceof StructureBlockEntity) {
-               ((StructureBlockEntity)var6).createdBy(var4);
+   public void setPlacedBy(final Level level, final BlockPos pos, final BlockState state, final @Nullable LivingEntity by, final ItemStack itemStack) {
+      if (!level.isClientSide()) {
+         if (by != null) {
+            BlockEntity blockEntity = level.getBlockEntity(pos);
+            if (blockEntity instanceof StructureBlockEntity) {
+               ((StructureBlockEntity)blockEntity).createdBy(by);
             }
          }
 
       }
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(MODE);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(MODE);
    }
 
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
-      if (var2 instanceof ServerLevel) {
-         BlockEntity var7 = var2.getBlockEntity(var3);
-         if (var7 instanceof StructureBlockEntity) {
-            StructureBlockEntity var8 = (StructureBlockEntity)var7;
-            boolean var9 = var2.hasNeighborSignal(var3);
-            boolean var10 = var8.isPowered();
-            if (var9 && !var10) {
-               var8.setPowered(true);
-               this.trigger((ServerLevel)var2, var8);
-            } else if (!var9 && var10) {
-               var8.setPowered(false);
+   protected void neighborChanged(final BlockState state, final Level level, final BlockPos pos, final Block block, final @Nullable Orientation orientation, final boolean movedByPiston) {
+      if (level instanceof ServerLevel) {
+         BlockEntity blockEntity = level.getBlockEntity(pos);
+         if (blockEntity instanceof StructureBlockEntity) {
+            StructureBlockEntity structureBlock = (StructureBlockEntity)blockEntity;
+            boolean shouldTrigger = level.hasNeighborSignal(pos);
+            boolean isPowered = structureBlock.isPowered();
+            if (shouldTrigger && !isPowered) {
+               structureBlock.setPowered(true);
+               this.trigger((ServerLevel)level, structureBlock);
+            } else if (!shouldTrigger && isPowered) {
+               structureBlock.setPowered(false);
             }
 
          }
       }
    }
 
-   private void trigger(ServerLevel var1, StructureBlockEntity var2) {
-      switch (var2.getMode()) {
+   private void trigger(final ServerLevel level, final StructureBlockEntity structureBlock) {
+      switch (structureBlock.getMode()) {
          case SAVE:
-            var2.saveStructure(false);
+            structureBlock.saveStructure(false);
             break;
          case LOAD:
-            var2.placeStructure(var1);
+            structureBlock.placeStructure(level);
             break;
          case CORNER:
-            var2.unloadStructure();
+            structureBlock.unloadStructure();
          case DATA:
       }
 

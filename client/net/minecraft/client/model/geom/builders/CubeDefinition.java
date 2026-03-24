@@ -17,19 +17,19 @@ public final class CubeDefinition {
    private final UVPair texScale;
    private final Set<Direction> visibleFaces;
 
-   protected CubeDefinition(@Nullable String var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9, CubeDeformation var10, boolean var11, float var12, float var13, Set<Direction> var14) {
+   protected CubeDefinition(final @Nullable String comment, final float xTexOffs, final float yTexOffs, final float minX, final float minY, final float minZ, final float width, final float height, final float depth, final CubeDeformation grow, final boolean mirror, final float xTexScale, final float yTexScale, final Set<Direction> visibleFaces) {
       super();
-      this.comment = var1;
-      this.texCoord = new UVPair(var2, var3);
-      this.origin = new Vector3f(var4, var5, var6);
-      this.dimensions = new Vector3f(var7, var8, var9);
-      this.grow = var10;
-      this.mirror = var11;
-      this.texScale = new UVPair(var12, var13);
-      this.visibleFaces = var14;
+      this.comment = comment;
+      this.texCoord = new UVPair(xTexOffs, yTexOffs);
+      this.origin = new Vector3f(minX, minY, minZ);
+      this.dimensions = new Vector3f(width, height, depth);
+      this.grow = grow;
+      this.mirror = mirror;
+      this.texScale = new UVPair(xTexScale, yTexScale);
+      this.visibleFaces = visibleFaces;
    }
 
-   public ModelPart.Cube bake(int var1, int var2) {
-      return new ModelPart.Cube((int)this.texCoord.u(), (int)this.texCoord.v(), this.origin.x(), this.origin.y(), this.origin.z(), this.dimensions.x(), this.dimensions.y(), this.dimensions.z(), this.grow.growX, this.grow.growY, this.grow.growZ, this.mirror, (float)var1 * this.texScale.u(), (float)var2 * this.texScale.v(), this.visibleFaces);
+   public ModelPart.Cube bake(final int texScaleX, final int texScaleY) {
+      return new ModelPart.Cube((int)this.texCoord.u(), (int)this.texCoord.v(), this.origin.x(), this.origin.y(), this.origin.z(), this.dimensions.x(), this.dimensions.y(), this.dimensions.z(), this.grow.growX, this.grow.growY, this.grow.growZ, this.mirror, (float)texScaleX * this.texScale.u(), (float)texScaleY * this.texScale.v(), this.visibleFaces);
    }
 }

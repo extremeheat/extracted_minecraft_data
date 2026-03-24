@@ -16,20 +16,20 @@ public class ServerStatusPacketListenerImpl implements ServerStatusPacketListene
    private final Connection connection;
    private boolean hasRequestedStatus;
 
-   public ServerStatusPacketListenerImpl(ServerStatus var1, Connection var2) {
+   public ServerStatusPacketListenerImpl(final ServerStatus status, final Connection connection) {
       super();
-      this.status = var1;
-      this.connection = var2;
+      this.status = status;
+      this.connection = connection;
    }
 
-   public void onDisconnect(DisconnectionDetails var1) {
+   public void onDisconnect(final DisconnectionDetails details) {
    }
 
    public boolean isAcceptingMessages() {
       return this.connection.isConnected();
    }
 
-   public void handleStatusRequest(ServerboundStatusRequestPacket var1) {
+   public void handleStatusRequest(final ServerboundStatusRequestPacket packet) {
       if (this.hasRequestedStatus) {
          this.connection.disconnect(DISCONNECT_REASON);
       } else {
@@ -38,8 +38,8 @@ public class ServerStatusPacketListenerImpl implements ServerStatusPacketListene
       }
    }
 
-   public void handlePingRequest(ServerboundPingRequestPacket var1) {
-      this.connection.send(new ClientboundPongResponsePacket(var1.getTime()));
+   public void handlePingRequest(final ServerboundPingRequestPacket packet) {
+      this.connection.send(new ClientboundPongResponsePacket(packet.getTime()));
       this.connection.disconnect(DISCONNECT_REASON);
    }
 }

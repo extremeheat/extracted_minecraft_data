@@ -11,155 +11,155 @@ public final class ImprovedNoise {
    public final double yo;
    public final double zo;
 
-   public ImprovedNoise(RandomSource var1) {
+   public ImprovedNoise(final RandomSource random) {
       super();
-      this.xo = var1.nextDouble() * 256.0;
-      this.yo = var1.nextDouble() * 256.0;
-      this.zo = var1.nextDouble() * 256.0;
+      this.xo = random.nextDouble() * 256.0;
+      this.yo = random.nextDouble() * 256.0;
+      this.zo = random.nextDouble() * 256.0;
       this.p = new byte[256];
 
-      for(int var2 = 0; var2 < 256; ++var2) {
-         this.p[var2] = (byte)var2;
+      for(int i = 0; i < 256; ++i) {
+         this.p[i] = (byte)i;
       }
 
-      for(int var5 = 0; var5 < 256; ++var5) {
-         int var3 = var1.nextInt(256 - var5);
-         byte var4 = this.p[var5];
-         this.p[var5] = this.p[var5 + var3];
-         this.p[var5 + var3] = var4;
+      for(int i = 0; i < 256; ++i) {
+         int offset = random.nextInt(256 - i);
+         byte tmp = this.p[i];
+         this.p[i] = this.p[i + offset];
+         this.p[i + offset] = tmp;
       }
 
    }
 
-   public double noise(double var1, double var3, double var5) {
-      return this.noise(var1, var3, var5, 0.0, 0.0);
+   public double noise(final double _x, final double _y, final double _z) {
+      return this.noise(_x, _y, _z, 0.0, 0.0);
    }
 
    /** @deprecated */
    @Deprecated
-   public double noise(double var1, double var3, double var5, double var7, double var9) {
-      double var11 = var1 + this.xo;
-      double var13 = var3 + this.yo;
-      double var15 = var5 + this.zo;
-      int var17 = Mth.floor(var11);
-      int var18 = Mth.floor(var13);
-      int var19 = Mth.floor(var15);
-      double var20 = var11 - (double)var17;
-      double var22 = var13 - (double)var18;
-      double var24 = var15 - (double)var19;
-      double var26;
-      if (var7 != 0.0) {
-         double var28;
-         if (var9 >= 0.0 && var9 < var22) {
-            var28 = var9;
+   public double noise(final double _x, final double _y, final double _z, final double yScale, final double yFudge) {
+      double x = _x + this.xo;
+      double y = _y + this.yo;
+      double z = _z + this.zo;
+      int xf = Mth.floor(x);
+      int yf = Mth.floor(y);
+      int zf = Mth.floor(z);
+      double xr = x - (double)xf;
+      double yr = y - (double)yf;
+      double zr = z - (double)zf;
+      double yrFudge;
+      if (yScale != 0.0) {
+         double fudgeLimit;
+         if (yFudge >= 0.0 && yFudge < yr) {
+            fudgeLimit = yFudge;
          } else {
-            var28 = var22;
+            fudgeLimit = yr;
          }
 
-         var26 = (double)Mth.floor(var28 / var7 + 1.0000000116860974E-7) * var7;
+         yrFudge = (double)Mth.floor(fudgeLimit / yScale + 1.0000000116860974E-7) * yScale;
       } else {
-         var26 = 0.0;
+         yrFudge = 0.0;
       }
 
-      return this.sampleAndLerp(var17, var18, var19, var20, var22 - var26, var24, var22);
+      return this.sampleAndLerp(xf, yf, zf, xr, yr - yrFudge, zr, yr);
    }
 
-   public double noiseWithDerivative(double var1, double var3, double var5, double[] var7) {
-      double var8 = var1 + this.xo;
-      double var10 = var3 + this.yo;
-      double var12 = var5 + this.zo;
-      int var14 = Mth.floor(var8);
-      int var15 = Mth.floor(var10);
-      int var16 = Mth.floor(var12);
-      double var17 = var8 - (double)var14;
-      double var19 = var10 - (double)var15;
-      double var21 = var12 - (double)var16;
-      return this.sampleWithDerivative(var14, var15, var16, var17, var19, var21, var7);
+   public double noiseWithDerivative(final double _x, final double _y, final double _z, final double[] derivativeOut) {
+      double x = _x + this.xo;
+      double y = _y + this.yo;
+      double z = _z + this.zo;
+      int xf = Mth.floor(x);
+      int yf = Mth.floor(y);
+      int zf = Mth.floor(z);
+      double xr = x - (double)xf;
+      double yr = y - (double)yf;
+      double zr = z - (double)zf;
+      return this.sampleWithDerivative(xf, yf, zf, xr, yr, zr, derivativeOut);
    }
 
-   private static double gradDot(int var0, double var1, double var3, double var5) {
-      return SimplexNoise.dot(SimplexNoise.GRADIENT[var0 & 15], var1, var3, var5);
+   private static double gradDot(final int hash, final double x, final double y, final double z) {
+      return SimplexNoise.dot(SimplexNoise.GRADIENT[hash & 15], x, y, z);
    }
 
-   private int p(int var1) {
-      return this.p[var1 & 255] & 255;
+   private int p(final int x) {
+      return this.p[x & 255] & 255;
    }
 
-   private double sampleAndLerp(int var1, int var2, int var3, double var4, double var6, double var8, double var10) {
-      int var12 = this.p(var1);
-      int var13 = this.p(var1 + 1);
-      int var14 = this.p(var12 + var2);
-      int var15 = this.p(var12 + var2 + 1);
-      int var16 = this.p(var13 + var2);
-      int var17 = this.p(var13 + var2 + 1);
-      double var18 = gradDot(this.p(var14 + var3), var4, var6, var8);
-      double var20 = gradDot(this.p(var16 + var3), var4 - 1.0, var6, var8);
-      double var22 = gradDot(this.p(var15 + var3), var4, var6 - 1.0, var8);
-      double var24 = gradDot(this.p(var17 + var3), var4 - 1.0, var6 - 1.0, var8);
-      double var26 = gradDot(this.p(var14 + var3 + 1), var4, var6, var8 - 1.0);
-      double var28 = gradDot(this.p(var16 + var3 + 1), var4 - 1.0, var6, var8 - 1.0);
-      double var30 = gradDot(this.p(var15 + var3 + 1), var4, var6 - 1.0, var8 - 1.0);
-      double var32 = gradDot(this.p(var17 + var3 + 1), var4 - 1.0, var6 - 1.0, var8 - 1.0);
-      double var34 = Mth.smoothstep(var4);
-      double var36 = Mth.smoothstep(var10);
-      double var38 = Mth.smoothstep(var8);
-      return Mth.lerp3(var34, var36, var38, var18, var20, var22, var24, var26, var28, var30, var32);
+   private double sampleAndLerp(final int x, final int y, final int z, final double xr, final double yr, final double zr, final double yrOriginal) {
+      int x0 = this.p(x);
+      int x1 = this.p(x + 1);
+      int xy00 = this.p(x0 + y);
+      int xy01 = this.p(x0 + y + 1);
+      int xy10 = this.p(x1 + y);
+      int xy11 = this.p(x1 + y + 1);
+      double d000 = gradDot(this.p(xy00 + z), xr, yr, zr);
+      double d100 = gradDot(this.p(xy10 + z), xr - 1.0, yr, zr);
+      double d010 = gradDot(this.p(xy01 + z), xr, yr - 1.0, zr);
+      double d110 = gradDot(this.p(xy11 + z), xr - 1.0, yr - 1.0, zr);
+      double d001 = gradDot(this.p(xy00 + z + 1), xr, yr, zr - 1.0);
+      double d101 = gradDot(this.p(xy10 + z + 1), xr - 1.0, yr, zr - 1.0);
+      double d011 = gradDot(this.p(xy01 + z + 1), xr, yr - 1.0, zr - 1.0);
+      double d111 = gradDot(this.p(xy11 + z + 1), xr - 1.0, yr - 1.0, zr - 1.0);
+      double xAlpha = Mth.smoothstep(xr);
+      double yAlpha = Mth.smoothstep(yrOriginal);
+      double zAlpha = Mth.smoothstep(zr);
+      return Mth.lerp3(xAlpha, yAlpha, zAlpha, d000, d100, d010, d110, d001, d101, d011, d111);
    }
 
-   private double sampleWithDerivative(int var1, int var2, int var3, double var4, double var6, double var8, double[] var10) {
-      int var11 = this.p(var1);
-      int var12 = this.p(var1 + 1);
-      int var13 = this.p(var11 + var2);
-      int var14 = this.p(var11 + var2 + 1);
-      int var15 = this.p(var12 + var2);
-      int var16 = this.p(var12 + var2 + 1);
-      int var17 = this.p(var13 + var3);
-      int var18 = this.p(var15 + var3);
-      int var19 = this.p(var14 + var3);
-      int var20 = this.p(var16 + var3);
-      int var21 = this.p(var13 + var3 + 1);
-      int var22 = this.p(var15 + var3 + 1);
-      int var23 = this.p(var14 + var3 + 1);
-      int var24 = this.p(var16 + var3 + 1);
-      int[] var25 = SimplexNoise.GRADIENT[var17 & 15];
-      int[] var26 = SimplexNoise.GRADIENT[var18 & 15];
-      int[] var27 = SimplexNoise.GRADIENT[var19 & 15];
-      int[] var28 = SimplexNoise.GRADIENT[var20 & 15];
-      int[] var29 = SimplexNoise.GRADIENT[var21 & 15];
-      int[] var30 = SimplexNoise.GRADIENT[var22 & 15];
-      int[] var31 = SimplexNoise.GRADIENT[var23 & 15];
-      int[] var32 = SimplexNoise.GRADIENT[var24 & 15];
-      double var33 = SimplexNoise.dot(var25, var4, var6, var8);
-      double var35 = SimplexNoise.dot(var26, var4 - 1.0, var6, var8);
-      double var37 = SimplexNoise.dot(var27, var4, var6 - 1.0, var8);
-      double var39 = SimplexNoise.dot(var28, var4 - 1.0, var6 - 1.0, var8);
-      double var41 = SimplexNoise.dot(var29, var4, var6, var8 - 1.0);
-      double var43 = SimplexNoise.dot(var30, var4 - 1.0, var6, var8 - 1.0);
-      double var45 = SimplexNoise.dot(var31, var4, var6 - 1.0, var8 - 1.0);
-      double var47 = SimplexNoise.dot(var32, var4 - 1.0, var6 - 1.0, var8 - 1.0);
-      double var49 = Mth.smoothstep(var4);
-      double var51 = Mth.smoothstep(var6);
-      double var53 = Mth.smoothstep(var8);
-      double var55 = Mth.lerp3(var49, var51, var53, (double)var25[0], (double)var26[0], (double)var27[0], (double)var28[0], (double)var29[0], (double)var30[0], (double)var31[0], (double)var32[0]);
-      double var57 = Mth.lerp3(var49, var51, var53, (double)var25[1], (double)var26[1], (double)var27[1], (double)var28[1], (double)var29[1], (double)var30[1], (double)var31[1], (double)var32[1]);
-      double var59 = Mth.lerp3(var49, var51, var53, (double)var25[2], (double)var26[2], (double)var27[2], (double)var28[2], (double)var29[2], (double)var30[2], (double)var31[2], (double)var32[2]);
-      double var61 = Mth.lerp2(var51, var53, var35 - var33, var39 - var37, var43 - var41, var47 - var45);
-      double var63 = Mth.lerp2(var53, var49, var37 - var33, var45 - var41, var39 - var35, var47 - var43);
-      double var65 = Mth.lerp2(var49, var51, var41 - var33, var43 - var35, var45 - var37, var47 - var39);
-      double var67 = Mth.smoothstepDerivative(var4);
-      double var69 = Mth.smoothstepDerivative(var6);
-      double var71 = Mth.smoothstepDerivative(var8);
-      double var73 = var55 + var67 * var61;
-      double var75 = var57 + var69 * var63;
-      double var77 = var59 + var71 * var65;
-      var10[0] += var73;
-      var10[1] += var75;
-      var10[2] += var77;
-      return Mth.lerp3(var49, var51, var53, var33, var35, var37, var39, var41, var43, var45, var47);
+   private double sampleWithDerivative(final int x, final int y, final int z, final double xr, final double yr, final double zr, final double[] derivativeOut) {
+      int x0 = this.p(x);
+      int x1 = this.p(x + 1);
+      int xy00 = this.p(x0 + y);
+      int xy01 = this.p(x0 + y + 1);
+      int xy10 = this.p(x1 + y);
+      int xy11 = this.p(x1 + y + 1);
+      int p000 = this.p(xy00 + z);
+      int p100 = this.p(xy10 + z);
+      int p010 = this.p(xy01 + z);
+      int p110 = this.p(xy11 + z);
+      int p001 = this.p(xy00 + z + 1);
+      int p101 = this.p(xy10 + z + 1);
+      int p011 = this.p(xy01 + z + 1);
+      int p111 = this.p(xy11 + z + 1);
+      int[] g000 = SimplexNoise.GRADIENT[p000 & 15];
+      int[] g100 = SimplexNoise.GRADIENT[p100 & 15];
+      int[] g010 = SimplexNoise.GRADIENT[p010 & 15];
+      int[] g110 = SimplexNoise.GRADIENT[p110 & 15];
+      int[] g001 = SimplexNoise.GRADIENT[p001 & 15];
+      int[] g101 = SimplexNoise.GRADIENT[p101 & 15];
+      int[] g011 = SimplexNoise.GRADIENT[p011 & 15];
+      int[] g111 = SimplexNoise.GRADIENT[p111 & 15];
+      double d000 = SimplexNoise.dot(g000, xr, yr, zr);
+      double d100 = SimplexNoise.dot(g100, xr - 1.0, yr, zr);
+      double d010 = SimplexNoise.dot(g010, xr, yr - 1.0, zr);
+      double d110 = SimplexNoise.dot(g110, xr - 1.0, yr - 1.0, zr);
+      double d001 = SimplexNoise.dot(g001, xr, yr, zr - 1.0);
+      double d101 = SimplexNoise.dot(g101, xr - 1.0, yr, zr - 1.0);
+      double d011 = SimplexNoise.dot(g011, xr, yr - 1.0, zr - 1.0);
+      double d111 = SimplexNoise.dot(g111, xr - 1.0, yr - 1.0, zr - 1.0);
+      double xAlpha = Mth.smoothstep(xr);
+      double yAlpha = Mth.smoothstep(yr);
+      double zAlpha = Mth.smoothstep(zr);
+      double d1x = Mth.lerp3(xAlpha, yAlpha, zAlpha, (double)g000[0], (double)g100[0], (double)g010[0], (double)g110[0], (double)g001[0], (double)g101[0], (double)g011[0], (double)g111[0]);
+      double d1y = Mth.lerp3(xAlpha, yAlpha, zAlpha, (double)g000[1], (double)g100[1], (double)g010[1], (double)g110[1], (double)g001[1], (double)g101[1], (double)g011[1], (double)g111[1]);
+      double d1z = Mth.lerp3(xAlpha, yAlpha, zAlpha, (double)g000[2], (double)g100[2], (double)g010[2], (double)g110[2], (double)g001[2], (double)g101[2], (double)g011[2], (double)g111[2]);
+      double d2x = Mth.lerp2(yAlpha, zAlpha, d100 - d000, d110 - d010, d101 - d001, d111 - d011);
+      double d2y = Mth.lerp2(zAlpha, xAlpha, d010 - d000, d011 - d001, d110 - d100, d111 - d101);
+      double d2z = Mth.lerp2(xAlpha, yAlpha, d001 - d000, d101 - d100, d011 - d010, d111 - d110);
+      double xSD = Mth.smoothstepDerivative(xr);
+      double ySD = Mth.smoothstepDerivative(yr);
+      double zSD = Mth.smoothstepDerivative(zr);
+      double dX = d1x + xSD * d2x;
+      double dY = d1y + ySD * d2y;
+      double dZ = d1z + zSD * d2z;
+      derivativeOut[0] += dX;
+      derivativeOut[1] += dY;
+      derivativeOut[2] += dZ;
+      return Mth.lerp3(xAlpha, yAlpha, zAlpha, d000, d100, d010, d110, d001, d101, d011, d111);
    }
 
    @VisibleForTesting
-   public void parityConfigString(StringBuilder var1) {
-      NoiseUtils.parityNoiseOctaveConfigString(var1, this.xo, this.yo, this.zo, this.p);
+   public void parityConfigString(final StringBuilder sb) {
+      NoiseUtils.parityNoiseOctaveConfigString(sb, this.xo, this.yo, this.zo, this.p);
    }
 }

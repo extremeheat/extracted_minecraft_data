@@ -13,28 +13,28 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class SetWrittenBookPagesFunction extends LootItemConditionalFunction {
-   public static final MapCodec<SetWrittenBookPagesFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(var0.group(WrittenBookContent.PAGES_CODEC.fieldOf("pages").forGetter((var0x) -> var0x.pages), ListOperation.UNLIMITED_CODEC.forGetter((var0x) -> var0x.pageOperation))).apply(var0, SetWrittenBookPagesFunction::new));
+   public static final MapCodec<SetWrittenBookPagesFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(WrittenBookContent.PAGES_CODEC.fieldOf("pages").forGetter((f) -> f.pages), ListOperation.UNLIMITED_CODEC.forGetter((f) -> f.pageOperation))).apply(i, SetWrittenBookPagesFunction::new));
    private final List<Filterable<Component>> pages;
    private final ListOperation pageOperation;
 
-   protected SetWrittenBookPagesFunction(List<LootItemCondition> var1, List<Filterable<Component>> var2, ListOperation var3) {
-      super(var1);
-      this.pages = var2;
-      this.pageOperation = var3;
+   protected SetWrittenBookPagesFunction(final List<LootItemCondition> predicates, final List<Filterable<Component>> pages, final ListOperation pageOperation) {
+      super(predicates);
+      this.pages = pages;
+      this.pageOperation = pageOperation;
    }
 
-   protected ItemStack run(ItemStack var1, LootContext var2) {
-      var1.update(DataComponents.WRITTEN_BOOK_CONTENT, WrittenBookContent.EMPTY, this::apply);
-      return var1;
+   protected ItemStack run(final ItemStack itemStack, final LootContext context) {
+      itemStack.update(DataComponents.WRITTEN_BOOK_CONTENT, WrittenBookContent.EMPTY, this::apply);
+      return itemStack;
    }
 
    @VisibleForTesting
-   public WrittenBookContent apply(WrittenBookContent var1) {
-      List var2 = this.pageOperation.apply(var1.pages(), this.pages);
-      return var1.withReplacedPages(var2);
+   public WrittenBookContent apply(final WrittenBookContent original) {
+      List<Filterable<Component>> newPages = this.pageOperation.<Filterable<Component>>apply(original.pages(), this.pages);
+      return original.withReplacedPages(newPages);
    }
 
-   public LootItemFunctionType<SetWrittenBookPagesFunction> getType() {
-      return LootItemFunctions.SET_WRITTEN_BOOK_PAGES;
+   public MapCodec<SetWrittenBookPagesFunction> codec() {
+      return MAP_CODEC;
    }
 }

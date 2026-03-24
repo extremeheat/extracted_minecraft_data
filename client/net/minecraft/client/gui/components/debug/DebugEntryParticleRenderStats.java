@@ -10,7 +10,7 @@ public class DebugEntryParticleRenderStats implements DebugScreenEntry {
       super();
    }
 
-   public void display(DebugScreenDisplayer var1, @Nullable Level var2, @Nullable LevelChunk var3, @Nullable LevelChunk var4) {
-      var1.addLine("P: " + Minecraft.getInstance().particleEngine.countParticles());
+   public void display(final DebugScreenDisplayer displayer, final @Nullable Level serverOrClientLevel, final @Nullable LevelChunk clientChunk, final @Nullable LevelChunk serverChunk) {
+      displayer.addLine("P: " + Minecraft.getInstance().particleEngine.countParticles());
    }
 }

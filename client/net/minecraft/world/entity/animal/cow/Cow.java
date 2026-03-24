@@ -1,6 +1,9 @@
 package net.minecraft.world.entity.animal.cow;
 
+import java.util.Objects;
+import java.util.Optional;
 import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
@@ -8,6 +11,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.AgeableMob;
@@ -24,72 +28,98 @@ import org.jspecify.annotations.Nullable;
 
 public class Cow extends AbstractCow {
    private static final EntityDataAccessor<Holder<CowVariant>> DATA_VARIANT_ID;
+   private static final EntityDataAccessor<Holder<CowSoundVariant>> DATA_SOUND_VARIANT_ID;
 
-   public Cow(EntityType<? extends Cow> var1, Level var2) {
-      super(var1, var2);
+   public Cow(final EntityType<? extends Cow> type, final Level level) {
+      super(type, level);
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(DATA_VARIANT_ID, VariantUtils.getDefaultOrAny(this.registryAccess(), CowVariants.TEMPERATE));
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      Registry<CowSoundVariant> cowSoundVariants = this.registryAccess().lookupOrThrow(Registries.COW_SOUND_VARIANT);
+      entityData.define(DATA_VARIANT_ID, VariantUtils.getDefaultOrAny(this.registryAccess(), CowVariants.TEMPERATE));
+      EntityDataAccessor var10001 = DATA_SOUND_VARIANT_ID;
+      Optional var10002 = cowSoundVariants.get(CowSoundVariants.CLASSIC);
+      Objects.requireNonNull(cowSoundVariants);
+      entityData.define(var10001, (Holder)var10002.or(cowSoundVariants::getAny).orElseThrow());
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      VariantUtils.writeVariant(var1, this.getVariant());
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      super.addAdditionalSaveData(output);
+      VariantUtils.writeVariant(output, this.getVariant());
+      this.getSoundVariant().unwrapKey().ifPresent((soundVariant) -> output.store("sound_variant", ResourceKey.codec(Registries.COW_SOUND_VARIANT), soundVariant));
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      VariantUtils.readVariant(var1, Registries.COW_VARIANT).ifPresent(this::setVariant);
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      VariantUtils.readVariant(input, Registries.COW_VARIANT).ifPresent(this::setVariant);
+      input.read("sound_variant", ResourceKey.codec(Registries.COW_SOUND_VARIANT)).flatMap((soundVariant) -> this.registryAccess().lookupOrThrow(Registries.COW_SOUND_VARIANT).get(soundVariant)).ifPresent(this::setSoundVariant);
    }
 
-   public @Nullable Cow getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      Cow var3 = EntityType.COW.create(var1, EntitySpawnReason.BREEDING);
-      if (var3 != null && var2 instanceof Cow var4) {
-         var3.setVariant(this.random.nextBoolean() ? this.getVariant() : var4.getVariant());
+   public @Nullable Cow getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
+      Cow baby = EntityType.COW.create(level, EntitySpawnReason.BREEDING);
+      if (baby != null && partner instanceof Cow partnerCow) {
+         baby.setVariant(this.random.nextBoolean() ? this.getVariant() : partnerCow.getVariant());
       }
 
-      return var3;
+      return baby;
    }
 
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      VariantUtils.selectVariantToSpawn(SpawnContext.create(var1, this.blockPosition()), Registries.COW_VARIANT).ifPresent(this::setVariant);
-      return super.finalizeSpawn(var1, var2, var3, var4);
+   public SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, final @Nullable SpawnGroupData groupData) {
+      VariantUtils.selectVariantToSpawn(SpawnContext.create(level, this.blockPosition()), Registries.COW_VARIANT).ifPresent(this::setVariant);
+      this.setSoundVariant(CowSoundVariants.pickRandomSoundVariant(this.registryAccess(), level.getRandom()));
+      return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
    }
 
-   public void setVariant(Holder<CowVariant> var1) {
-      this.entityData.set(DATA_VARIANT_ID, var1);
+   public void setVariant(final Holder<CowVariant> variant) {
+      this.entityData.set(DATA_VARIANT_ID, variant);
    }
 
    public Holder<CowVariant> getVariant() {
       return (Holder)this.entityData.get(DATA_VARIANT_ID);
    }
 
-   public <T> @Nullable T get(DataComponentType<? extends T> var1) {
-      return (T)(var1 == DataComponents.COW_VARIANT ? castComponentValue(var1, this.getVariant()) : super.get(var1));
+   private Holder<CowSoundVariant> getSoundVariant() {
+      return (Holder)this.entityData.get(DATA_SOUND_VARIANT_ID);
    }
 
-   protected void applyImplicitComponents(DataComponentGetter var1) {
-      this.applyImplicitComponentIfPresent(var1, DataComponents.COW_VARIANT);
-      super.applyImplicitComponents(var1);
+   private void setSoundVariant(final Holder<CowSoundVariant> soundVariant) {
+      this.entityData.set(DATA_SOUND_VARIANT_ID, soundVariant);
    }
 
-   protected <T> boolean applyImplicitComponent(DataComponentType<T> var1, T var2) {
-      if (var1 == DataComponents.COW_VARIANT) {
-         this.setVariant((Holder)castComponentValue(DataComponents.COW_VARIANT, var2));
-         return true;
+   protected CowSoundVariant getSoundSet() {
+      return (CowSoundVariant)this.getSoundVariant().value();
+   }
+
+   public <T> @Nullable T get(final DataComponentType<? extends T> type) {
+      if (type == DataComponents.COW_VARIANT) {
+         return (T)castComponentValue(type, this.getVariant());
       } else {
-         return super.applyImplicitComponent(var1, var2);
+         return (T)(type == DataComponents.COW_SOUND_VARIANT ? castComponentValue(type, this.getSoundVariant()) : super.get(type));
       }
    }
 
-   // $FF: synthetic method
-   public @Nullable AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
-      return this.getBreedOffspring(var1, var2);
+   protected void applyImplicitComponents(final DataComponentGetter components) {
+      this.applyImplicitComponentIfPresent(components, DataComponents.COW_VARIANT);
+      this.applyImplicitComponentIfPresent(components, DataComponents.COW_SOUND_VARIANT);
+      super.applyImplicitComponents(components);
+   }
+
+   protected <T> boolean applyImplicitComponent(final DataComponentType<T> type, final T value) {
+      if (type == DataComponents.COW_VARIANT) {
+         this.setVariant((Holder)castComponentValue(DataComponents.COW_VARIANT, value));
+         return true;
+      } else if (type == DataComponents.COW_SOUND_VARIANT) {
+         this.setSoundVariant((Holder)castComponentValue(DataComponents.COW_SOUND_VARIANT, value));
+         return true;
+      } else {
+         return super.applyImplicitComponent(type, value);
+      }
    }
 
    static {
       DATA_VARIANT_ID = SynchedEntityData.<Holder<CowVariant>>defineId(Cow.class, EntityDataSerializers.COW_VARIANT);
+      DATA_SOUND_VARIANT_ID = SynchedEntityData.<Holder<CowSoundVariant>>defineId(Cow.class, EntityDataSerializers.COW_SOUND_VARIANT);
    }
 }

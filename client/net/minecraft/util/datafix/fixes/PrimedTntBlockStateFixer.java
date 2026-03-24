@@ -6,20 +6,20 @@ import java.util.Map;
 import java.util.Optional;
 
 public class PrimedTntBlockStateFixer extends NamedEntityWriteReadFix {
-   public PrimedTntBlockStateFixer(Schema var1) {
-      super(var1, true, "PrimedTnt BlockState fixer", References.ENTITY, "minecraft:tnt");
+   public PrimedTntBlockStateFixer(final Schema outputSchema) {
+      super(outputSchema, true, "PrimedTnt BlockState fixer", References.ENTITY, "minecraft:tnt");
    }
 
-   private static <T> Dynamic<T> renameFuse(Dynamic<T> var0) {
-      Optional var1 = var0.get("Fuse").get().result();
-      return var1.isPresent() ? var0.set("fuse", (Dynamic)var1.get()) : var0;
+   private static <T> Dynamic<T> renameFuse(final Dynamic<T> input) {
+      Optional<Dynamic<T>> fuseValue = input.get("Fuse").get().result();
+      return fuseValue.isPresent() ? input.set("fuse", (Dynamic)fuseValue.get()) : input;
    }
 
-   private static <T> Dynamic<T> insertBlockState(Dynamic<T> var0) {
-      return var0.set("block_state", var0.createMap(Map.of(var0.createString("Name"), var0.createString("minecraft:tnt"))));
+   private static <T> Dynamic<T> insertBlockState(final Dynamic<T> input) {
+      return input.set("block_state", input.createMap(Map.of(input.createString("Name"), input.createString("minecraft:tnt"))));
    }
 
-   protected <T> Dynamic<T> fix(Dynamic<T> var1) {
-      return renameFuse(insertBlockState(var1));
+   protected <T> Dynamic<T> fix(final Dynamic<T> input) {
+      return renameFuse(insertBlockState(input));
    }
 }

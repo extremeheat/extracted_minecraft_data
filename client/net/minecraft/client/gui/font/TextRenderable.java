@@ -5,12 +5,12 @@ import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 
 public interface TextRenderable {
-   void render(Matrix4f var1, VertexConsumer var2, int var3, boolean var4);
+   void render(Matrix4fc pose, VertexConsumer buffer, int packedLightCoords, boolean flat);
 
-   RenderType renderType(Font.DisplayMode var1);
+   RenderType renderType(Font.DisplayMode displayMode);
 
    GpuTextureView textureView();
 
@@ -24,7 +24,7 @@ public interface TextRenderable {
 
    float bottom();
 
-   public interface Styled extends ActiveArea, TextRenderable {
+   public interface Styled extends TextRenderable, ActiveArea {
       default float activeLeft() {
          return this.left();
       }

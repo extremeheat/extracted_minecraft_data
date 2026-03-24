@@ -1,6 +1,5 @@
 package net.minecraft.world;
 
-import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.stream.Collectors;
 import net.minecraft.core.NonNullList;
@@ -11,123 +10,109 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import org.jspecify.annotations.Nullable;
 
 public class SimpleContainer implements Container, StackedContentsCompatible {
    private final int size;
    private final NonNullList<ItemStack> items;
-   private @Nullable List<ContainerListener> listeners;
 
-   public SimpleContainer(int var1) {
+   public SimpleContainer(final int size) {
       super();
-      this.size = var1;
-      this.items = NonNullList.<ItemStack>withSize(var1, ItemStack.EMPTY);
+      this.size = size;
+      this.items = NonNullList.<ItemStack>withSize(size, ItemStack.EMPTY);
    }
 
-   public SimpleContainer(ItemStack... var1) {
+   public SimpleContainer(final ItemStack... itemstacks) {
       super();
-      this.size = var1.length;
-      this.items = NonNullList.<ItemStack>of(ItemStack.EMPTY, var1);
+      this.size = itemstacks.length;
+      this.items = NonNullList.<ItemStack>of(ItemStack.EMPTY, itemstacks);
    }
 
-   public void addListener(ContainerListener var1) {
-      if (this.listeners == null) {
-         this.listeners = Lists.newArrayList();
-      }
-
-      this.listeners.add(var1);
-   }
-
-   public void removeListener(ContainerListener var1) {
-      if (this.listeners != null) {
-         this.listeners.remove(var1);
-      }
-
-   }
-
-   public ItemStack getItem(int var1) {
-      return var1 >= 0 && var1 < this.items.size() ? (ItemStack)this.items.get(var1) : ItemStack.EMPTY;
+   public ItemStack getItem(final int slot) {
+      return slot >= 0 && slot < this.items.size() ? (ItemStack)this.items.get(slot) : ItemStack.EMPTY;
    }
 
    public List<ItemStack> removeAllItems() {
-      List var1 = (List)this.items.stream().filter((var0) -> !var0.isEmpty()).collect(Collectors.toList());
+      List<ItemStack> itemsRemoved = (List)this.items.stream().filter((item) -> !item.isEmpty()).collect(Collectors.toList());
       this.clearContent();
-      return var1;
+      return itemsRemoved;
    }
 
-   public ItemStack removeItem(int var1, int var2) {
-      ItemStack var3 = ContainerHelper.removeItem(this.items, var1, var2);
-      if (!var3.isEmpty()) {
+   public ItemStack removeItem(final int slot, final int count) {
+      ItemStack result = ContainerHelper.removeItem(this.items, slot, count);
+      if (!result.isEmpty()) {
          this.setChanged();
       }
 
-      return var3;
+      return result;
    }
 
-   public ItemStack removeItemType(Item var1, int var2) {
-      ItemStack var3 = new ItemStack(var1, 0);
+   public ItemStack removeItemType(final Item itemType, final int count) {
+      ItemStack removed = new ItemStack(itemType, 0);
 
-      for(int var4 = this.size - 1; var4 >= 0; --var4) {
-         ItemStack var5 = this.getItem(var4);
-         if (var5.getItem().equals(var1)) {
-            int var6 = var2 - var3.getCount();
-            ItemStack var7 = var5.split(var6);
-            var3.grow(var7.getCount());
-            if (var3.getCount() == var2) {
+      for(int slot = this.size - 1; slot >= 0; --slot) {
+         ItemStack current = this.getItem(slot);
+         if (current.getItem().equals(itemType)) {
+            int stillNeeded = count - removed.getCount();
+            ItemStack removedFromThisSlot = current.split(stillNeeded);
+            removed.grow(removedFromThisSlot.getCount());
+            if (removed.getCount() == count) {
                break;
             }
          }
       }
 
-      if (!var3.isEmpty()) {
+      if (!removed.isEmpty()) {
          this.setChanged();
       }
 
-      return var3;
+      return removed;
    }
 
-   public ItemStack addItem(ItemStack var1) {
-      if (var1.isEmpty()) {
+   public ItemStack addItem(final ItemStack itemStack) {
+      if (itemStack.isEmpty()) {
          return ItemStack.EMPTY;
       } else {
-         ItemStack var2 = var1.copy();
-         this.moveItemToOccupiedSlotsWithSameType(var2);
-         if (var2.isEmpty()) {
+         ItemStack remainingItems = itemStack.copy();
+         this.moveItemToOccupiedSlotsWithSameType(remainingItems);
+         if (remainingItems.isEmpty()) {
             return ItemStack.EMPTY;
          } else {
-            this.moveItemToEmptySlots(var2);
-            return var2.isEmpty() ? ItemStack.EMPTY : var2;
+            this.moveItemToEmptySlots(remainingItems);
+            return remainingItems.isEmpty() ? ItemStack.EMPTY : remainingItems;
          }
       }
    }
 
-   public boolean canAddItem(ItemStack var1) {
-      boolean var2 = false;
+   public boolean canAddItem(final ItemStack itemStack) {
+      boolean hasSpace = false;
 
-      for(ItemStack var4 : this.items) {
-         if (var4.isEmpty() || ItemStack.isSameItemSameComponents(var4, var1) && var4.getCount() < var4.getMaxStackSize()) {
-            var2 = true;
+      for(ItemStack targetStack : this.items) {
+         if (targetStack.isEmpty() || ItemStack.isSameItemSameComponents(targetStack, itemStack) && targetStack.getCount() < targetStack.getMaxStackSize()) {
+            hasSpace = true;
             break;
          }
       }
 
-      return var2;
+      return hasSpace;
    }
 
-   public ItemStack removeItemNoUpdate(int var1) {
-      ItemStack var2 = this.items.get(var1);
-      if (var2.isEmpty()) {
+   public ItemStack removeItemNoUpdate(final int slot) {
+      ItemStack itemStack = this.items.get(slot);
+      if (itemStack.isEmpty()) {
          return ItemStack.EMPTY;
       } else {
-         this.items.set(var1, ItemStack.EMPTY);
-         return var2;
+         this.items.set(slot, ItemStack.EMPTY);
+         return itemStack;
       }
    }
 
-   public void setItem(int var1, ItemStack var2) {
-      this.items.set(var1, var2);
-      var2.limitSize(this.getMaxStackSize(var2));
+   public void setItem(final int slot, final ItemStack itemStack) {
+      this.items.set(slot, itemStack);
+      itemStack.limitSize(this.getMaxStackSize(itemStack));
       this.setChanged();
+   }
+
+   public void setChanged() {
    }
 
    public int getContainerSize() {
@@ -135,8 +120,8 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
    }
 
    public boolean isEmpty() {
-      for(ItemStack var2 : this.items) {
-         if (!var2.isEmpty()) {
+      for(ItemStack itemStack : this.items) {
+         if (!itemStack.isEmpty()) {
             return false;
          }
       }
@@ -144,16 +129,7 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
       return true;
    }
 
-   public void setChanged() {
-      if (this.listeners != null) {
-         for(ContainerListener var2 : this.listeners) {
-            var2.containerChanged(this);
-         }
-      }
-
-   }
-
-   public boolean stillValid(Player var1) {
+   public boolean stillValid(final Player player) {
       return true;
    }
 
@@ -162,34 +138,34 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
       this.setChanged();
    }
 
-   public void fillStackedContents(StackedItemContents var1) {
-      for(ItemStack var3 : this.items) {
-         var1.accountStack(var3);
+   public void fillStackedContents(final StackedItemContents contents) {
+      for(ItemStack itemStack : this.items) {
+         contents.accountStack(itemStack);
       }
 
    }
 
    public String toString() {
-      return ((List)this.items.stream().filter((var0) -> !var0.isEmpty()).collect(Collectors.toList())).toString();
+      return this.items.stream().filter((item) -> !item.isEmpty()).toList().toString();
    }
 
-   private void moveItemToEmptySlots(ItemStack var1) {
-      for(int var2 = 0; var2 < this.size; ++var2) {
-         ItemStack var3 = this.getItem(var2);
-         if (var3.isEmpty()) {
-            this.setItem(var2, var1.copyAndClear());
+   private void moveItemToEmptySlots(final ItemStack sourceStack) {
+      for(int slot = 0; slot < this.size; ++slot) {
+         ItemStack targetStack = this.getItem(slot);
+         if (targetStack.isEmpty()) {
+            this.setItem(slot, sourceStack.copyAndClear());
             return;
          }
       }
 
    }
 
-   private void moveItemToOccupiedSlotsWithSameType(ItemStack var1) {
-      for(int var2 = 0; var2 < this.size; ++var2) {
-         ItemStack var3 = this.getItem(var2);
-         if (ItemStack.isSameItemSameComponents(var3, var1)) {
-            this.moveItemsBetweenStacks(var1, var3);
-            if (var1.isEmpty()) {
+   private void moveItemToOccupiedSlotsWithSameType(final ItemStack sourceStack) {
+      for(int slot = 0; slot < this.size; ++slot) {
+         ItemStack targetStack = this.getItem(slot);
+         if (ItemStack.isSameItemSameComponents(targetStack, sourceStack)) {
+            this.moveItemsBetweenStacks(sourceStack, targetStack);
+            if (sourceStack.isEmpty()) {
                return;
             }
          }
@@ -197,31 +173,31 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
 
    }
 
-   private void moveItemsBetweenStacks(ItemStack var1, ItemStack var2) {
-      int var3 = this.getMaxStackSize(var2);
-      int var4 = Math.min(var1.getCount(), var3 - var2.getCount());
-      if (var4 > 0) {
-         var2.grow(var4);
-         var1.shrink(var4);
+   private void moveItemsBetweenStacks(final ItemStack sourceStack, final ItemStack targetStack) {
+      int maxCount = this.getMaxStackSize(targetStack);
+      int diff = Math.min(sourceStack.getCount(), maxCount - targetStack.getCount());
+      if (diff > 0) {
+         targetStack.grow(diff);
+         sourceStack.shrink(diff);
          this.setChanged();
       }
 
    }
 
-   public void fromItemList(ValueInput.TypedInputList<ItemStack> var1) {
+   public void fromItemList(final ValueInput.TypedInputList<ItemStack> items) {
       this.clearContent();
 
-      for(ItemStack var3 : var1) {
-         this.addItem(var3);
+      for(ItemStack stack : items) {
+         this.addItem(stack);
       }
 
    }
 
-   public void storeAsItemList(ValueOutput.TypedOutputList<ItemStack> var1) {
-      for(int var2 = 0; var2 < this.getContainerSize(); ++var2) {
-         ItemStack var3 = this.getItem(var2);
-         if (!var3.isEmpty()) {
-            var1.add(var3);
+   public void storeAsItemList(final ValueOutput.TypedOutputList<ItemStack> output) {
+      for(int i = 0; i < this.getContainerSize(); ++i) {
+         ItemStack itemStack = this.getItem(i);
+         if (!itemStack.isEmpty()) {
+            output.add(itemStack);
          }
       }
 

@@ -27,31 +27,30 @@ public record SuspiciousStewEffects(List<Entry> effects) implements ConsumableLi
    public static final Codec<SuspiciousStewEffects> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, SuspiciousStewEffects> STREAM_CODEC;
 
-   public SuspiciousStewEffects(List<Entry> var1) {
+   public SuspiciousStewEffects {
       super();
-      this.effects = var1;
    }
 
-   public SuspiciousStewEffects withEffectAdded(Entry var1) {
-      return new SuspiciousStewEffects(Util.copyAndAdd(this.effects, var1));
+   public SuspiciousStewEffects withEffectAdded(final Entry entry) {
+      return new SuspiciousStewEffects(Util.copyAndAdd(this.effects, entry));
    }
 
-   public void onConsume(Level var1, LivingEntity var2, ItemStack var3, Consumable var4) {
-      for(Entry var6 : this.effects) {
-         var2.addEffect(var6.createEffectInstance());
+   public void onConsume(final Level level, final LivingEntity user, final ItemStack stack, final Consumable consumable) {
+      for(Entry effect : this.effects) {
+         user.addEffect(effect.createEffectInstance());
       }
 
    }
 
-   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
-      if (var3.isCreative()) {
-         ArrayList var5 = new ArrayList();
+   public void addToTooltip(final Item.TooltipContext context, final Consumer<Component> consumer, final TooltipFlag flag, final DataComponentGetter components) {
+      if (flag.isCreative()) {
+         List<MobEffectInstance> effectInstances = new ArrayList();
 
-         for(Entry var7 : this.effects) {
-            var5.add(var7.createEffectInstance());
+         for(Entry effect : this.effects) {
+            effectInstances.add(effect.createEffectInstance());
          }
 
-         PotionContents.addPotionTooltip(var5, var2, 1.0F, var1.tickRate());
+         PotionContents.addPotionTooltip(effectInstances, consumer, 1.0F, context.tickRate());
       }
 
    }
@@ -62,13 +61,11 @@ public record SuspiciousStewEffects(List<Entry> effects) implements ConsumableLi
    }
 
    public static record Entry(Holder<MobEffect> effect, int duration) {
-      public static final Codec<Entry> CODEC = RecordCodecBuilder.create((var0) -> var0.group(MobEffect.CODEC.fieldOf("id").forGetter(Entry::effect), Codec.INT.lenientOptionalFieldOf("duration", 160).forGetter(Entry::duration)).apply(var0, Entry::new));
+      public static final Codec<Entry> CODEC = RecordCodecBuilder.create((i) -> i.group(MobEffect.CODEC.fieldOf("id").forGetter(Entry::effect), Codec.INT.lenientOptionalFieldOf("duration", 160).forGetter(Entry::duration)).apply(i, Entry::new));
       public static final StreamCodec<RegistryFriendlyByteBuf, Entry> STREAM_CODEC;
 
-      public Entry(Holder<MobEffect> var1, int var2) {
+      public Entry {
          super();
-         this.effect = var1;
-         this.duration = var2;
       }
 
       public MobEffectInstance createEffectInstance() {

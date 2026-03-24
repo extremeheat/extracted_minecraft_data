@@ -13,31 +13,31 @@ public class ServerboundSignUpdatePacket implements Packet<ServerGamePacketListe
    private final String[] lines;
    private final boolean isFrontText;
 
-   public ServerboundSignUpdatePacket(BlockPos var1, boolean var2, String var3, String var4, String var5, String var6) {
+   public ServerboundSignUpdatePacket(final BlockPos pos, final boolean isFrontText, final String line0, final String line1, final String line2, final String line3) {
       super();
-      this.pos = var1;
-      this.isFrontText = var2;
-      this.lines = new String[]{var3, var4, var5, var6};
+      this.pos = pos;
+      this.isFrontText = isFrontText;
+      this.lines = new String[]{line0, line1, line2, line3};
    }
 
-   private ServerboundSignUpdatePacket(FriendlyByteBuf var1) {
+   private ServerboundSignUpdatePacket(final FriendlyByteBuf input) {
       super();
-      this.pos = var1.readBlockPos();
-      this.isFrontText = var1.readBoolean();
+      this.pos = input.readBlockPos();
+      this.isFrontText = input.readBoolean();
       this.lines = new String[4];
 
-      for(int var2 = 0; var2 < 4; ++var2) {
-         this.lines[var2] = var1.readUtf(384);
+      for(int i = 0; i < 4; ++i) {
+         this.lines[i] = input.readUtf(384);
       }
 
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeBlockPos(this.pos);
-      var1.writeBoolean(this.isFrontText);
+   private void write(final FriendlyByteBuf output) {
+      output.writeBlockPos(this.pos);
+      output.writeBoolean(this.isFrontText);
 
-      for(int var2 = 0; var2 < 4; ++var2) {
-         var1.writeUtf(this.lines[var2]);
+      for(int i = 0; i < 4; ++i) {
+         output.writeUtf(this.lines[i]);
       }
 
    }
@@ -46,8 +46,8 @@ public class ServerboundSignUpdatePacket implements Packet<ServerGamePacketListe
       return GamePacketTypes.SERVERBOUND_SIGN_UPDATE;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handleSignUpdate(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handleSignUpdate(this);
    }
 
    public BlockPos getPos() {

@@ -17,53 +17,53 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 public class SmallFireball extends Fireball {
-   public SmallFireball(EntityType<? extends SmallFireball> var1, Level var2) {
-      super(var1, var2);
+   public SmallFireball(final EntityType<? extends SmallFireball> type, final Level level) {
+      super(type, level);
    }
 
-   public SmallFireball(Level var1, LivingEntity var2, Vec3 var3) {
-      super(EntityType.SMALL_FIREBALL, var2, var3, var1);
+   public SmallFireball(final Level level, final LivingEntity mob, final Vec3 direction) {
+      super(EntityType.SMALL_FIREBALL, mob, direction, level);
    }
 
-   public SmallFireball(Level var1, double var2, double var4, double var6, Vec3 var8) {
-      super(EntityType.SMALL_FIREBALL, var2, var4, var6, var8, var1);
+   public SmallFireball(final Level level, final double x, final double y, final double z, final Vec3 direction) {
+      super(EntityType.SMALL_FIREBALL, x, y, z, direction, level);
    }
 
-   protected void onHitEntity(EntityHitResult var1) {
-      super.onHitEntity(var1);
+   protected void onHitEntity(final EntityHitResult hitResult) {
+      super.onHitEntity(hitResult);
       Level var3 = this.level();
-      if (var3 instanceof ServerLevel var2) {
-         Entity var7 = var1.getEntity();
-         Entity var4 = this.getOwner();
-         int var5 = var7.getRemainingFireTicks();
+      if (var3 instanceof ServerLevel serverLevel) {
+         Entity var7 = hitResult.getEntity();
+         Entity owner = this.getOwner();
+         int remainingFireTicks = var7.getRemainingFireTicks();
          var7.igniteForSeconds(5.0F);
-         DamageSource var6 = this.damageSources().fireball(this, var4);
-         if (!var7.hurtServer(var2, var6, 5.0F)) {
-            var7.setRemainingFireTicks(var5);
+         DamageSource damageSource = this.damageSources().fireball(this, owner);
+         if (!var7.hurtServer(serverLevel, damageSource, 5.0F)) {
+            var7.setRemainingFireTicks(remainingFireTicks);
          } else {
-            EnchantmentHelper.doPostAttackEffects(var2, var7, var6);
+            EnchantmentHelper.doPostAttackEffects(serverLevel, var7, damageSource);
          }
 
       }
    }
 
-   protected void onHitBlock(BlockHitResult var1) {
-      super.onHitBlock(var1);
+   protected void onHitBlock(final BlockHitResult hitResult) {
+      super.onHitBlock(hitResult);
       Level var3 = this.level();
-      if (var3 instanceof ServerLevel var2) {
-         Entity var5 = this.getOwner();
-         if (!(var5 instanceof Mob) || (Boolean)var2.getGameRules().get(GameRules.MOB_GRIEFING)) {
-            BlockPos var4 = var1.getBlockPos().relative(var1.getDirection());
-            if (this.level().isEmptyBlock(var4)) {
-               this.level().setBlockAndUpdate(var4, BaseFireBlock.getState(this.level(), var4));
+      if (var3 instanceof ServerLevel serverLevel) {
+         Entity owner = this.getOwner();
+         if (!(owner instanceof Mob) || (Boolean)serverLevel.getGameRules().get(GameRules.MOB_GRIEFING)) {
+            BlockPos pos = hitResult.getBlockPos().relative(hitResult.getDirection());
+            if (this.level().isEmptyBlock(pos)) {
+               this.level().setBlockAndUpdate(pos, BaseFireBlock.getState(this.level(), pos));
             }
          }
 
       }
    }
 
-   protected void onHit(HitResult var1) {
-      super.onHit(var1);
+   protected void onHit(final HitResult hitResult) {
+      super.onHit(hitResult);
       if (!this.level().isClientSide()) {
          this.discard();
       }

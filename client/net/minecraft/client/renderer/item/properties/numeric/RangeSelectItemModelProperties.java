@@ -26,6 +26,6 @@ public class RangeSelectItemModelProperties {
    }
 
    static {
-      MAP_CODEC = ID_MAPPER.codec(Identifier.CODEC).dispatchMap("property", RangeSelectItemModelProperty::type, (var0) -> var0);
+      MAP_CODEC = ID_MAPPER.codec(Identifier.CODEC).dispatchMap("property", RangeSelectItemModelProperty::type, (c) -> c);
    }
 }

@@ -20,43 +20,43 @@ public class InactiveProfiler implements ProfileCollector {
    public void endTick() {
    }
 
-   public void push(String var1) {
+   public void push(final String name) {
    }
 
-   public void push(Supplier<String> var1) {
+   public void push(final Supplier<String> name) {
    }
 
-   public void markForCharting(MetricCategory var1) {
+   public void markForCharting(final MetricCategory category) {
    }
 
    public void pop() {
    }
 
-   public void popPush(String var1) {
+   public void popPush(final String name) {
    }
 
-   public void popPush(Supplier<String> var1) {
+   public void popPush(final Supplier<String> name) {
    }
 
-   public Zone zone(String var1) {
+   public Zone zone(final String name) {
       return Zone.INACTIVE;
    }
 
-   public Zone zone(Supplier<String> var1) {
+   public Zone zone(final Supplier<String> name) {
       return Zone.INACTIVE;
    }
 
-   public void incrementCounter(String var1, int var2) {
+   public void incrementCounter(final String name, final int amount) {
    }
 
-   public void incrementCounter(Supplier<String> var1, int var2) {
+   public void incrementCounter(final Supplier<String> name, final int amount) {
    }
 
    public ProfileResults getResults() {
       return EmptyProfileResults.EMPTY;
    }
 
-   public ActiveProfiler.@Nullable PathEntry getEntry(String var1) {
+   public ActiveProfiler.@Nullable PathEntry getEntry(final String path) {
       return null;
    }
 

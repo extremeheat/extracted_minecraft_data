@@ -25,7 +25,7 @@ public class ChaseCommand {
    private static final String DEFAULT_BIND_ADDRESS = "0.0.0.0";
    private static final int DEFAULT_PORT = 10000;
    private static final int BROADCAST_INTERVAL_MS = 100;
-   public static BiMap<String, ResourceKey<Level>> DIMENSION_NAMES;
+   public static final BiMap<String, ResourceKey<Level>> DIMENSION_NAMES;
    private static @Nullable ChaseServer chaseServer;
    private static @Nullable ChaseClient chaseClient;
 
@@ -33,50 +33,50 @@ public class ChaseCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("chase").then(((LiteralArgumentBuilder)Commands.literal("follow").then(((RequiredArgumentBuilder)Commands.argument("host", StringArgumentType.string()).executes((var0x) -> follow((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "host"), 10000))).then(Commands.argument("port", IntegerArgumentType.integer(1, 65535)).executes((var0x) -> follow((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "host"), IntegerArgumentType.getInteger(var0x, "port")))))).executes((var0x) -> follow((CommandSourceStack)var0x.getSource(), "localhost", 10000)))).then(((LiteralArgumentBuilder)Commands.literal("lead").then(((RequiredArgumentBuilder)Commands.argument("bind_address", StringArgumentType.string()).executes((var0x) -> lead((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "bind_address"), 10000))).then(Commands.argument("port", IntegerArgumentType.integer(1024, 65535)).executes((var0x) -> lead((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "bind_address"), IntegerArgumentType.getInteger(var0x, "port")))))).executes((var0x) -> lead((CommandSourceStack)var0x.getSource(), "0.0.0.0", 10000)))).then(Commands.literal("stop").executes((var0x) -> stop((CommandSourceStack)var0x.getSource()))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("chase").then(((LiteralArgumentBuilder)Commands.literal("follow").then(((RequiredArgumentBuilder)Commands.argument("host", StringArgumentType.string()).executes((c) -> follow((CommandSourceStack)c.getSource(), StringArgumentType.getString(c, "host"), 10000))).then(Commands.argument("port", IntegerArgumentType.integer(1, 65535)).executes((c) -> follow((CommandSourceStack)c.getSource(), StringArgumentType.getString(c, "host"), IntegerArgumentType.getInteger(c, "port")))))).executes((c) -> follow((CommandSourceStack)c.getSource(), "localhost", 10000)))).then(((LiteralArgumentBuilder)Commands.literal("lead").then(((RequiredArgumentBuilder)Commands.argument("bind_address", StringArgumentType.string()).executes((c) -> lead((CommandSourceStack)c.getSource(), StringArgumentType.getString(c, "bind_address"), 10000))).then(Commands.argument("port", IntegerArgumentType.integer(1024, 65535)).executes((c) -> lead((CommandSourceStack)c.getSource(), StringArgumentType.getString(c, "bind_address"), IntegerArgumentType.getInteger(c, "port")))))).executes((c) -> lead((CommandSourceStack)c.getSource(), "0.0.0.0", 10000)))).then(Commands.literal("stop").executes((c) -> stop((CommandSourceStack)c.getSource()))));
    }
 
-   private static int stop(CommandSourceStack var0) {
+   private static int stop(final CommandSourceStack source) {
       if (chaseClient != null) {
          chaseClient.stop();
-         var0.sendSuccess(() -> Component.literal("You have now stopped chasing"), false);
+         source.sendSuccess(() -> Component.literal("You have now stopped chasing"), false);
          chaseClient = null;
       }
 
       if (chaseServer != null) {
          chaseServer.stop();
-         var0.sendSuccess(() -> Component.literal("You are no longer being chased"), false);
+         source.sendSuccess(() -> Component.literal("You are no longer being chased"), false);
          chaseServer = null;
       }
 
       return 0;
    }
 
-   private static boolean alreadyRunning(CommandSourceStack var0) {
+   private static boolean alreadyRunning(final CommandSourceStack source) {
       if (chaseServer != null) {
-         var0.sendFailure(Component.literal("Chase server is already running. Stop it using /chase stop"));
+         source.sendFailure(Component.literal("Chase server is already running. Stop it using /chase stop"));
          return true;
       } else if (chaseClient != null) {
-         var0.sendFailure(Component.literal("You are already chasing someone. Stop it using /chase stop"));
+         source.sendFailure(Component.literal("You are already chasing someone. Stop it using /chase stop"));
          return true;
       } else {
          return false;
       }
    }
 
-   private static int lead(CommandSourceStack var0, String var1, int var2) {
-      if (alreadyRunning(var0)) {
+   private static int lead(final CommandSourceStack source, final String serverBindAddress, final int port) {
+      if (alreadyRunning(source)) {
          return 0;
       } else {
-         chaseServer = new ChaseServer(var1, var2, var0.getServer().getPlayerList(), 100);
+         chaseServer = new ChaseServer(serverBindAddress, port, source.getServer().getPlayerList(), 100);
 
          try {
             chaseServer.start();
-            var0.sendSuccess(() -> Component.literal("Chase server is now running on port " + var2 + ". Clients can follow you using /chase follow <ip> <port>"), false);
-         } catch (IOException var4) {
-            LOGGER.error("Failed to start chase server", var4);
-            var0.sendFailure(Component.literal("Failed to start chase server on port " + var2));
+            source.sendSuccess(() -> Component.literal("Chase server is now running on port " + port + ". Clients can follow you using /chase follow <ip> <port>"), false);
+         } catch (IOException e) {
+            LOGGER.error("Failed to start chase server", e);
+            source.sendFailure(Component.literal("Failed to start chase server on port " + port));
             chaseServer = null;
          }
 
@@ -84,13 +84,13 @@ public class ChaseCommand {
       }
    }
 
-   private static int follow(CommandSourceStack var0, String var1, int var2) {
-      if (alreadyRunning(var0)) {
+   private static int follow(final CommandSourceStack source, final String host, final int port) {
+      if (alreadyRunning(source)) {
          return 0;
       } else {
-         chaseClient = new ChaseClient(var1, var2, var0.getServer());
+         chaseClient = new ChaseClient(host, port, source.getServer());
          chaseClient.start();
-         var0.sendSuccess(() -> Component.literal("You are now chasing " + var1 + ":" + var2 + ". If that server does '/chase lead' then you will automatically go to the same position. Use '/chase stop' to stop chasing."), false);
+         source.sendSuccess(() -> Component.literal("You are now chasing " + host + ":" + port + ". If that server does '/chase lead' then you will automatically go to the same position. Use '/chase stop' to stop chasing."), false);
          return 0;
       }
    }

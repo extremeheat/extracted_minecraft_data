@@ -12,174 +12,174 @@ public final class BitSetDiscreteVoxelShape extends DiscreteVoxelShape {
    private int yMax;
    private int zMax;
 
-   public BitSetDiscreteVoxelShape(int var1, int var2, int var3) {
-      super(var1, var2, var3);
-      this.storage = new BitSet(var1 * var2 * var3);
-      this.xMin = var1;
-      this.yMin = var2;
-      this.zMin = var3;
+   public BitSetDiscreteVoxelShape(final int xSize, final int ySize, final int zSize) {
+      super(xSize, ySize, zSize);
+      this.storage = new BitSet(xSize * ySize * zSize);
+      this.xMin = xSize;
+      this.yMin = ySize;
+      this.zMin = zSize;
    }
 
-   public static BitSetDiscreteVoxelShape withFilledBounds(int var0, int var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8) {
-      BitSetDiscreteVoxelShape var9 = new BitSetDiscreteVoxelShape(var0, var1, var2);
-      var9.xMin = var3;
-      var9.yMin = var4;
-      var9.zMin = var5;
-      var9.xMax = var6;
-      var9.yMax = var7;
-      var9.zMax = var8;
+   public static BitSetDiscreteVoxelShape withFilledBounds(final int xSize, final int ySize, final int zSize, final int xMin, final int yMin, final int zMin, final int xMax, final int yMax, final int zMax) {
+      BitSetDiscreteVoxelShape shape = new BitSetDiscreteVoxelShape(xSize, ySize, zSize);
+      shape.xMin = xMin;
+      shape.yMin = yMin;
+      shape.zMin = zMin;
+      shape.xMax = xMax;
+      shape.yMax = yMax;
+      shape.zMax = zMax;
 
-      for(int var10 = var3; var10 < var6; ++var10) {
-         for(int var11 = var4; var11 < var7; ++var11) {
-            for(int var12 = var5; var12 < var8; ++var12) {
-               var9.fillUpdateBounds(var10, var11, var12, false);
+      for(int x = xMin; x < xMax; ++x) {
+         for(int y = yMin; y < yMax; ++y) {
+            for(int z = zMin; z < zMax; ++z) {
+               shape.fillUpdateBounds(x, y, z, false);
             }
          }
       }
 
-      return var9;
+      return shape;
    }
 
-   public BitSetDiscreteVoxelShape(DiscreteVoxelShape var1) {
-      super(var1.xSize, var1.ySize, var1.zSize);
-      if (var1 instanceof BitSetDiscreteVoxelShape) {
-         this.storage = (BitSet)((BitSetDiscreteVoxelShape)var1).storage.clone();
+   public BitSetDiscreteVoxelShape(final DiscreteVoxelShape voxelShape) {
+      super(voxelShape.xSize, voxelShape.ySize, voxelShape.zSize);
+      if (voxelShape instanceof BitSetDiscreteVoxelShape) {
+         this.storage = (BitSet)((BitSetDiscreteVoxelShape)voxelShape).storage.clone();
       } else {
          this.storage = new BitSet(this.xSize * this.ySize * this.zSize);
 
-         for(int var2 = 0; var2 < this.xSize; ++var2) {
-            for(int var3 = 0; var3 < this.ySize; ++var3) {
-               for(int var4 = 0; var4 < this.zSize; ++var4) {
-                  if (var1.isFull(var2, var3, var4)) {
-                     this.storage.set(this.getIndex(var2, var3, var4));
+         for(int x = 0; x < this.xSize; ++x) {
+            for(int y = 0; y < this.ySize; ++y) {
+               for(int z = 0; z < this.zSize; ++z) {
+                  if (voxelShape.isFull(x, y, z)) {
+                     this.storage.set(this.getIndex(x, y, z));
                   }
                }
             }
          }
       }
 
-      this.xMin = var1.firstFull(Direction.Axis.X);
-      this.yMin = var1.firstFull(Direction.Axis.Y);
-      this.zMin = var1.firstFull(Direction.Axis.Z);
-      this.xMax = var1.lastFull(Direction.Axis.X);
-      this.yMax = var1.lastFull(Direction.Axis.Y);
-      this.zMax = var1.lastFull(Direction.Axis.Z);
+      this.xMin = voxelShape.firstFull(Direction.Axis.X);
+      this.yMin = voxelShape.firstFull(Direction.Axis.Y);
+      this.zMin = voxelShape.firstFull(Direction.Axis.Z);
+      this.xMax = voxelShape.lastFull(Direction.Axis.X);
+      this.yMax = voxelShape.lastFull(Direction.Axis.Y);
+      this.zMax = voxelShape.lastFull(Direction.Axis.Z);
    }
 
-   protected int getIndex(int var1, int var2, int var3) {
-      return (var1 * this.ySize + var2) * this.zSize + var3;
+   protected int getIndex(final int x, final int y, final int z) {
+      return (x * this.ySize + y) * this.zSize + z;
    }
 
-   public boolean isFull(int var1, int var2, int var3) {
-      return this.storage.get(this.getIndex(var1, var2, var3));
+   public boolean isFull(final int x, final int y, final int z) {
+      return this.storage.get(this.getIndex(x, y, z));
    }
 
-   private void fillUpdateBounds(int var1, int var2, int var3, boolean var4) {
-      this.storage.set(this.getIndex(var1, var2, var3));
-      if (var4) {
-         this.xMin = Math.min(this.xMin, var1);
-         this.yMin = Math.min(this.yMin, var2);
-         this.zMin = Math.min(this.zMin, var3);
-         this.xMax = Math.max(this.xMax, var1 + 1);
-         this.yMax = Math.max(this.yMax, var2 + 1);
-         this.zMax = Math.max(this.zMax, var3 + 1);
+   private void fillUpdateBounds(final int x, final int y, final int z, final boolean updateBounds) {
+      this.storage.set(this.getIndex(x, y, z));
+      if (updateBounds) {
+         this.xMin = Math.min(this.xMin, x);
+         this.yMin = Math.min(this.yMin, y);
+         this.zMin = Math.min(this.zMin, z);
+         this.xMax = Math.max(this.xMax, x + 1);
+         this.yMax = Math.max(this.yMax, y + 1);
+         this.zMax = Math.max(this.zMax, z + 1);
       }
 
    }
 
-   public void fill(int var1, int var2, int var3) {
-      this.fillUpdateBounds(var1, var2, var3, true);
+   public void fill(final int x, final int y, final int z) {
+      this.fillUpdateBounds(x, y, z, true);
    }
 
    public boolean isEmpty() {
       return this.storage.isEmpty();
    }
 
-   public int firstFull(Direction.Axis var1) {
-      return var1.choose(this.xMin, this.yMin, this.zMin);
+   public int firstFull(final Direction.Axis axis) {
+      return axis.choose(this.xMin, this.yMin, this.zMin);
    }
 
-   public int lastFull(Direction.Axis var1) {
-      return var1.choose(this.xMax, this.yMax, this.zMax);
+   public int lastFull(final Direction.Axis axis) {
+      return axis.choose(this.xMax, this.yMax, this.zMax);
    }
 
-   static BitSetDiscreteVoxelShape join(DiscreteVoxelShape var0, DiscreteVoxelShape var1, IndexMerger var2, IndexMerger var3, IndexMerger var4, BooleanOp var5) {
-      BitSetDiscreteVoxelShape var6 = new BitSetDiscreteVoxelShape(var2.size() - 1, var3.size() - 1, var4.size() - 1);
-      int[] var7 = new int[]{2147483647, 2147483647, 2147483647, -2147483648, -2147483648, -2147483648};
-      var2.forMergedIndexes((var7x, var8, var9) -> {
-         boolean[] var10 = new boolean[]{false};
-         var3.forMergedIndexes((var10x, var11, var12) -> {
-            boolean[] var13 = new boolean[]{false};
-            var4.forMergedIndexes((var12x, var13x, var14) -> {
-               if (var5.apply(var0.isFullWide(var7x, var10x, var12x), var1.isFullWide(var8, var11, var13x))) {
-                  var6.storage.set(var6.getIndex(var9, var12, var14));
-                  var7[2] = Math.min(var7[2], var14);
-                  var7[5] = Math.max(var7[5], var14);
-                  var13[0] = true;
+   static BitSetDiscreteVoxelShape join(final DiscreteVoxelShape first, final DiscreteVoxelShape second, final IndexMerger xMerger, final IndexMerger yMerger, final IndexMerger zMerger, final BooleanOp op) {
+      BitSetDiscreteVoxelShape shape = new BitSetDiscreteVoxelShape(xMerger.size() - 1, yMerger.size() - 1, zMerger.size() - 1);
+      int[] bounds = new int[]{2147483647, 2147483647, 2147483647, -2147483648, -2147483648, -2147483648};
+      xMerger.forMergedIndexes((x1, x2, xr) -> {
+         boolean[] updatedSlice = new boolean[]{false};
+         yMerger.forMergedIndexes((y1, y2, yr) -> {
+            boolean[] updatedColumn = new boolean[]{false};
+            zMerger.forMergedIndexes((z1, z2, zr) -> {
+               if (op.apply(first.isFullWide(x1, y1, z1), second.isFullWide(x2, y2, z2))) {
+                  shape.storage.set(shape.getIndex(xr, yr, zr));
+                  bounds[2] = Math.min(bounds[2], zr);
+                  bounds[5] = Math.max(bounds[5], zr);
+                  updatedColumn[0] = true;
                }
 
                return true;
             });
-            if (var13[0]) {
-               var7[1] = Math.min(var7[1], var12);
-               var7[4] = Math.max(var7[4], var12);
-               var10[0] = true;
+            if (updatedColumn[0]) {
+               bounds[1] = Math.min(bounds[1], yr);
+               bounds[4] = Math.max(bounds[4], yr);
+               updatedSlice[0] = true;
             }
 
             return true;
          });
-         if (var10[0]) {
-            var7[0] = Math.min(var7[0], var9);
-            var7[3] = Math.max(var7[3], var9);
+         if (updatedSlice[0]) {
+            bounds[0] = Math.min(bounds[0], xr);
+            bounds[3] = Math.max(bounds[3], xr);
          }
 
          return true;
       });
-      var6.xMin = var7[0];
-      var6.yMin = var7[1];
-      var6.zMin = var7[2];
-      var6.xMax = var7[3] + 1;
-      var6.yMax = var7[4] + 1;
-      var6.zMax = var7[5] + 1;
-      return var6;
+      shape.xMin = bounds[0];
+      shape.yMin = bounds[1];
+      shape.zMin = bounds[2];
+      shape.xMax = bounds[3] + 1;
+      shape.yMax = bounds[4] + 1;
+      shape.zMax = bounds[5] + 1;
+      return shape;
    }
 
-   protected static void forAllBoxes(DiscreteVoxelShape var0, DiscreteVoxelShape.IntLineConsumer var1, boolean var2) {
-      BitSetDiscreteVoxelShape var3 = new BitSetDiscreteVoxelShape(var0);
+   protected static void forAllBoxes(final DiscreteVoxelShape voxelShape, final DiscreteVoxelShape.IntLineConsumer consumer, final boolean mergeNeighbors) {
+      BitSetDiscreteVoxelShape shape = new BitSetDiscreteVoxelShape(voxelShape);
 
-      for(int var4 = 0; var4 < var3.ySize; ++var4) {
-         for(int var5 = 0; var5 < var3.xSize; ++var5) {
-            int var6 = -1;
+      for(int y = 0; y < shape.ySize; ++y) {
+         for(int x = 0; x < shape.xSize; ++x) {
+            int lastStartZ = -1;
 
-            for(int var7 = 0; var7 <= var3.zSize; ++var7) {
-               if (var3.isFullWide(var5, var4, var7)) {
-                  if (var2) {
-                     if (var6 == -1) {
-                        var6 = var7;
+            for(int z = 0; z <= shape.zSize; ++z) {
+               if (shape.isFullWide(x, y, z)) {
+                  if (mergeNeighbors) {
+                     if (lastStartZ == -1) {
+                        lastStartZ = z;
                      }
                   } else {
-                     var1.consume(var5, var4, var7, var5 + 1, var4 + 1, var7 + 1);
+                     consumer.consume(x, y, z, x + 1, y + 1, z + 1);
                   }
-               } else if (var6 != -1) {
-                  int var8 = var5;
-                  int var9 = var4;
-                  var3.clearZStrip(var6, var7, var5, var4);
+               } else if (lastStartZ != -1) {
+                  int endX = x;
+                  int endY = y;
+                  shape.clearZStrip(lastStartZ, z, x, y);
 
-                  while(var3.isZStripFull(var6, var7, var8 + 1, var4)) {
-                     var3.clearZStrip(var6, var7, var8 + 1, var4);
-                     ++var8;
+                  while(shape.isZStripFull(lastStartZ, z, endX + 1, y)) {
+                     shape.clearZStrip(lastStartZ, z, endX + 1, y);
+                     ++endX;
                   }
 
-                  while(var3.isXZRectangleFull(var5, var8 + 1, var6, var7, var9 + 1)) {
-                     for(int var10 = var5; var10 <= var8; ++var10) {
-                        var3.clearZStrip(var6, var7, var10, var9 + 1);
+                  while(shape.isXZRectangleFull(x, endX + 1, lastStartZ, z, endY + 1)) {
+                     for(int cx = x; cx <= endX; ++cx) {
+                        shape.clearZStrip(lastStartZ, z, cx, endY + 1);
                      }
 
-                     ++var9;
+                     ++endY;
                   }
 
-                  var1.consume(var5, var4, var6, var8 + 1, var9 + 1, var7);
-                  var6 = -1;
+                  consumer.consume(x, y, lastStartZ, endX + 1, endY + 1, z);
+                  lastStartZ = -1;
                }
             }
          }
@@ -187,17 +187,17 @@ public final class BitSetDiscreteVoxelShape extends DiscreteVoxelShape {
 
    }
 
-   private boolean isZStripFull(int var1, int var2, int var3, int var4) {
-      if (var3 < this.xSize && var4 < this.ySize) {
-         return this.storage.nextClearBit(this.getIndex(var3, var4, var1)) >= this.getIndex(var3, var4, var2);
+   private boolean isZStripFull(final int startZ, final int endZ, final int x, final int y) {
+      if (x < this.xSize && y < this.ySize) {
+         return this.storage.nextClearBit(this.getIndex(x, y, startZ)) >= this.getIndex(x, y, endZ);
       } else {
          return false;
       }
    }
 
-   private boolean isXZRectangleFull(int var1, int var2, int var3, int var4, int var5) {
-      for(int var6 = var1; var6 < var2; ++var6) {
-         if (!this.isZStripFull(var3, var4, var6, var5)) {
+   private boolean isXZRectangleFull(final int startX, final int endX, final int startZ, final int endZ, final int y) {
+      for(int x = startX; x < endX; ++x) {
+         if (!this.isZStripFull(startZ, endZ, x, y)) {
             return false;
          }
       }
@@ -205,12 +205,12 @@ public final class BitSetDiscreteVoxelShape extends DiscreteVoxelShape {
       return true;
    }
 
-   private void clearZStrip(int var1, int var2, int var3, int var4) {
-      this.storage.clear(this.getIndex(var3, var4, var1), this.getIndex(var3, var4, var2));
+   private void clearZStrip(final int startZ, final int endZ, final int x, final int y) {
+      this.storage.clear(this.getIndex(x, y, startZ), this.getIndex(x, y, endZ));
    }
 
-   public boolean isInterior(int var1, int var2, int var3) {
-      boolean var4 = var1 > 0 && var1 < this.xSize - 1 && var2 > 0 && var2 < this.ySize - 1 && var3 > 0 && var3 < this.zSize - 1;
-      return var4 && this.isFull(var1, var2, var3) && this.isFull(var1 - 1, var2, var3) && this.isFull(var1 + 1, var2, var3) && this.isFull(var1, var2 - 1, var3) && this.isFull(var1, var2 + 1, var3) && this.isFull(var1, var2, var3 - 1) && this.isFull(var1, var2, var3 + 1);
+   public boolean isInterior(final int x, final int y, final int z) {
+      boolean isInterior = x > 0 && x < this.xSize - 1 && y > 0 && y < this.ySize - 1 && z > 0 && z < this.zSize - 1;
+      return isInterior && this.isFull(x, y, z) && this.isFull(x - 1, y, z) && this.isFull(x + 1, y, z) && this.isFull(x, y - 1, z) && this.isFull(x, y + 1, z) && this.isFull(x, y, z - 1) && this.isFull(x, y, z + 1);
    }
 }

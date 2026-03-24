@@ -15,26 +15,26 @@ public enum FaceInfo {
    WEST(new VertexInfo[]{new VertexInfo(FaceInfo.Extent.MIN_X, FaceInfo.Extent.MAX_Y, FaceInfo.Extent.MIN_Z), new VertexInfo(FaceInfo.Extent.MIN_X, FaceInfo.Extent.MIN_Y, FaceInfo.Extent.MIN_Z), new VertexInfo(FaceInfo.Extent.MIN_X, FaceInfo.Extent.MIN_Y, FaceInfo.Extent.MAX_Z), new VertexInfo(FaceInfo.Extent.MIN_X, FaceInfo.Extent.MAX_Y, FaceInfo.Extent.MAX_Z)}),
    EAST(new VertexInfo[]{new VertexInfo(FaceInfo.Extent.MAX_X, FaceInfo.Extent.MAX_Y, FaceInfo.Extent.MAX_Z), new VertexInfo(FaceInfo.Extent.MAX_X, FaceInfo.Extent.MIN_Y, FaceInfo.Extent.MAX_Z), new VertexInfo(FaceInfo.Extent.MAX_X, FaceInfo.Extent.MIN_Y, FaceInfo.Extent.MIN_Z), new VertexInfo(FaceInfo.Extent.MAX_X, FaceInfo.Extent.MAX_Y, FaceInfo.Extent.MIN_Z)});
 
-   private static final Map<Direction, FaceInfo> BY_FACING = (Map)Util.make(new EnumMap(Direction.class), (var0) -> {
-      var0.put(Direction.DOWN, DOWN);
-      var0.put(Direction.UP, UP);
-      var0.put(Direction.NORTH, NORTH);
-      var0.put(Direction.SOUTH, SOUTH);
-      var0.put(Direction.WEST, WEST);
-      var0.put(Direction.EAST, EAST);
+   private static final Map<Direction, FaceInfo> BY_FACING = (Map)Util.make(new EnumMap(Direction.class), (map) -> {
+      map.put(Direction.DOWN, DOWN);
+      map.put(Direction.UP, UP);
+      map.put(Direction.NORTH, NORTH);
+      map.put(Direction.SOUTH, SOUTH);
+      map.put(Direction.WEST, WEST);
+      map.put(Direction.EAST, EAST);
    });
    private final VertexInfo[] infos;
 
-   public static FaceInfo fromFacing(Direction var0) {
-      return (FaceInfo)BY_FACING.get(var0);
+   public static FaceInfo fromFacing(final Direction direction) {
+      return (FaceInfo)BY_FACING.get(direction);
    }
 
-   private FaceInfo(final VertexInfo... var3) {
-      this.infos = var3;
+   private FaceInfo(final VertexInfo... infos) {
+      this.infos = infos;
    }
 
-   public VertexInfo getVertexInfo(int var1) {
-      return this.infos[var1];
+   public VertexInfo getVertexInfo(final int index) {
+      return this.infos[index];
    }
 
    // $FF: synthetic method
@@ -53,30 +53,30 @@ public enum FaceInfo {
       private Extent() {
       }
 
-      public float select(Vector3fc var1, Vector3fc var2) {
+      public float select(final Vector3fc min, final Vector3fc max) {
          float var10000;
          switch (this.ordinal()) {
-            case 0 -> var10000 = var1.x();
-            case 1 -> var10000 = var1.y();
-            case 2 -> var10000 = var1.z();
-            case 3 -> var10000 = var2.x();
-            case 4 -> var10000 = var2.y();
-            case 5 -> var10000 = var2.z();
+            case 0 -> var10000 = min.x();
+            case 1 -> var10000 = min.y();
+            case 2 -> var10000 = min.z();
+            case 3 -> var10000 = max.x();
+            case 4 -> var10000 = max.y();
+            case 5 -> var10000 = max.z();
             default -> throw new MatchException((String)null, (Throwable)null);
          }
 
          return var10000;
       }
 
-      public float select(float var1, float var2, float var3, float var4, float var5, float var6) {
+      public float select(final float minX, final float minY, final float minZ, final float maxX, final float maxY, final float maxZ) {
          float var10000;
          switch (this.ordinal()) {
-            case 0 -> var10000 = var1;
-            case 1 -> var10000 = var2;
-            case 2 -> var10000 = var3;
-            case 3 -> var10000 = var4;
-            case 4 -> var10000 = var5;
-            case 5 -> var10000 = var6;
+            case 0 -> var10000 = minX;
+            case 1 -> var10000 = minY;
+            case 2 -> var10000 = minZ;
+            case 3 -> var10000 = maxX;
+            case 4 -> var10000 = maxY;
+            case 5 -> var10000 = maxZ;
             default -> throw new MatchException((String)null, (Throwable)null);
          }
 
@@ -90,15 +90,12 @@ public enum FaceInfo {
    }
 
    public static record VertexInfo(Extent xFace, Extent yFace, Extent zFace) {
-      public VertexInfo(Extent var1, Extent var2, Extent var3) {
+      public VertexInfo {
          super();
-         this.xFace = var1;
-         this.yFace = var2;
-         this.zFace = var3;
       }
 
-      public Vector3f select(Vector3fc var1, Vector3fc var2) {
-         return new Vector3f(this.xFace.select(var1, var2), this.yFace.select(var1, var2), this.zFace.select(var1, var2));
+      public Vector3f select(final Vector3fc min, final Vector3fc max) {
+         return new Vector3f(this.xFace.select(min, max), this.yFace.select(min, max), this.zFace.select(min, max));
       }
    }
 }

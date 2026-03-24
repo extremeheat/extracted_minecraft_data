@@ -9,10 +9,10 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 public class HeightmapTypeArgument extends StringRepresentableArgument<Heightmap.Types> {
-   private static final Codec<Heightmap.Types> LOWER_CASE_CODEC = StringRepresentable.<Heightmap.Types>fromEnumWithMapping(HeightmapTypeArgument::keptTypes, (var0) -> var0.toLowerCase(Locale.ROOT));
+   private static final Codec<Heightmap.Types> LOWER_CASE_CODEC = StringRepresentable.<Heightmap.Types>fromEnumWithMapping(HeightmapTypeArgument::keptTypes, (s) -> s.toLowerCase(Locale.ROOT));
 
    private static Heightmap.Types[] keptTypes() {
-      return (Heightmap.Types[])Arrays.stream(Heightmap.Types.values()).filter(Heightmap.Types::keepAfterWorldgen).toArray((var0) -> new Heightmap.Types[var0]);
+      return (Heightmap.Types[])Arrays.stream(Heightmap.Types.values()).filter(Heightmap.Types::keepAfterWorldgen).toArray((x$0) -> new Heightmap.Types[x$0]);
    }
 
    private HeightmapTypeArgument() {
@@ -23,11 +23,11 @@ public class HeightmapTypeArgument extends StringRepresentableArgument<Heightmap
       return new HeightmapTypeArgument();
    }
 
-   public static Heightmap.Types getHeightmap(CommandContext<CommandSourceStack> var0, String var1) {
-      return (Heightmap.Types)var0.getArgument(var1, Heightmap.Types.class);
+   public static Heightmap.Types getHeightmap(final CommandContext<CommandSourceStack> context, final String name) {
+      return (Heightmap.Types)context.getArgument(name, Heightmap.Types.class);
    }
 
-   protected String convertId(String var1) {
-      return var1.toLowerCase(Locale.ROOT);
+   protected String convertId(final String id) {
+      return id.toLowerCase(Locale.ROOT);
    }
 }

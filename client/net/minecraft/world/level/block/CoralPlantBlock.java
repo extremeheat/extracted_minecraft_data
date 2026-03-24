@@ -18,7 +18,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class CoralPlantBlock extends BaseCoralPlantTypeBlock {
-   public static final MapCodec<CoralPlantBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(CoralBlock.DEAD_CORAL_FIELD.forGetter((var0x) -> var0x.deadBlock), propertiesCodec()).apply(var0, CoralPlantBlock::new));
+   public static final MapCodec<CoralPlantBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(CoralBlock.DEAD_CORAL_FIELD.forGetter((b) -> b.deadBlock), propertiesCodec()).apply(i, CoralPlantBlock::new));
    private final Block deadBlock;
    private static final VoxelShape SHAPE = Block.column(12.0, 0.0, 15.0);
 
@@ -26,36 +26,36 @@ public class CoralPlantBlock extends BaseCoralPlantTypeBlock {
       return CODEC;
    }
 
-   protected CoralPlantBlock(Block var1, BlockBehaviour.Properties var2) {
-      super(var2);
-      this.deadBlock = var1;
+   protected CoralPlantBlock(final Block deadBlock, final BlockBehaviour.Properties properties) {
+      super(properties);
+      this.deadBlock = deadBlock;
    }
 
-   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      this.tryScheduleDieTick(var1, var2, var2, var2.random, var3);
+   protected void onPlace(final BlockState state, final Level level, final BlockPos pos, final BlockState oldState, final boolean movedByPiston) {
+      this.tryScheduleDieTick(state, level, level, level.getRandom(), pos);
    }
 
-   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (!scanForWater(var1, var2, var3)) {
-         var2.setBlock(var3, (BlockState)this.deadBlock.defaultBlockState().setValue(WATERLOGGED, false), 2);
+   protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if (!scanForWater(state, level, pos)) {
+         level.setBlock(pos, (BlockState)this.deadBlock.defaultBlockState().setValue(WATERLOGGED, false), 2);
       }
 
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      if (var5 == Direction.DOWN && !var1.canSurvive(var2, var4)) {
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      if (directionToNeighbour == Direction.DOWN && !state.canSurvive(level, pos)) {
          return Blocks.AIR.defaultBlockState();
       } else {
-         this.tryScheduleDieTick(var1, var2, var3, var8, var4);
-         if ((Boolean)var1.getValue(WATERLOGGED)) {
-            var3.scheduleTick(var4, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var2));
+         this.tryScheduleDieTick(state, level, ticks, random, pos);
+         if ((Boolean)state.getValue(WATERLOGGED)) {
+            ticks.scheduleTick(pos, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(level));
          }
 
-         return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+         return super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
       }
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return SHAPE;
    }
 }

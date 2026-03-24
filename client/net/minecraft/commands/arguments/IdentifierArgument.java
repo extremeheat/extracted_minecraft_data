@@ -20,20 +20,15 @@ public class IdentifierArgument implements ArgumentType<Identifier> {
       return new IdentifierArgument();
    }
 
-   public static Identifier getId(CommandContext<CommandSourceStack> var0, String var1) {
-      return (Identifier)var0.getArgument(var1, Identifier.class);
+   public static Identifier getId(final CommandContext<CommandSourceStack> context, final String name) {
+      return (Identifier)context.getArgument(name, Identifier.class);
    }
 
-   public Identifier parse(StringReader var1) throws CommandSyntaxException {
-      return Identifier.read(var1);
+   public Identifier parse(final StringReader reader) throws CommandSyntaxException {
+      return Identifier.read(reader);
    }
 
    public Collection<String> getExamples() {
       return EXAMPLES;
-   }
-
-   // $FF: synthetic method
-   public Object parse(final StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1);
    }
 }

@@ -13,10 +13,10 @@ public class ReactToBell {
    }
 
    public static BehaviorControl<LivingEntity> create() {
-      return BehaviorBuilder.create((Function)((var0) -> var0.group(var0.present(MemoryModuleType.HEARD_BELL_TIME)).apply(var0, (var0x) -> (var0, var1, var2) -> {
-               Raid var4 = var0.getRaidAt(var1.blockPosition());
-               if (var4 == null) {
-                  var1.getBrain().setActiveActivityIfPossible(Activity.HIDE);
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.present(MemoryModuleType.HEARD_BELL_TIME)).apply(i, (heartTime) -> (level, body, timestamp) -> {
+               Raid nearbyRaid = level.getRaidAt(body.blockPosition());
+               if (nearbyRaid == null) {
+                  body.getBrain().setActiveActivityIfPossible(Activity.HIDE);
                }
 
                return true;

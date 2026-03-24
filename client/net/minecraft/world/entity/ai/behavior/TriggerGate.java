@@ -12,20 +12,20 @@ public class TriggerGate {
       super();
    }
 
-   public static <E extends LivingEntity> OneShot<E> triggerOneShuffled(List<Pair<? extends Trigger<? super E>, Integer>> var0) {
-      return triggerGate(var0, GateBehavior.OrderPolicy.SHUFFLED, GateBehavior.RunningPolicy.RUN_ONE);
+   public static <E extends LivingEntity> OneShot<E> triggerOneShuffled(final List<Pair<? extends Trigger<? super E>, Integer>> weightedTriggers) {
+      return triggerGate(weightedTriggers, GateBehavior.OrderPolicy.SHUFFLED, GateBehavior.RunningPolicy.RUN_ONE);
    }
 
-   public static <E extends LivingEntity> OneShot<E> triggerGate(List<Pair<? extends Trigger<? super E>, Integer>> var0, GateBehavior.OrderPolicy var1, GateBehavior.RunningPolicy var2) {
-      ShufflingList var3 = new ShufflingList();
-      var0.forEach((var1x) -> var3.add((Trigger)var1x.getFirst(), (Integer)var1x.getSecond()));
-      return BehaviorBuilder.create((Function)((var3x) -> var3x.point((Trigger)(var3xx, var4, var5) -> {
-            if (var1 == GateBehavior.OrderPolicy.SHUFFLED) {
-               var3.shuffle();
+   public static <E extends LivingEntity> OneShot<E> triggerGate(final List<Pair<? extends Trigger<? super E>, Integer>> weightedBehaviors, final GateBehavior.OrderPolicy orderPolicy, final GateBehavior.RunningPolicy runningPolicy) {
+      ShufflingList<Trigger<? super E>> behaviors = new ShufflingList<Trigger<? super E>>();
+      weightedBehaviors.forEach((entry) -> behaviors.add((Trigger)entry.getFirst(), (Integer)entry.getSecond()));
+      return BehaviorBuilder.create((Function)((i) -> i.point((Trigger)(level, body, timestamp) -> {
+            if (orderPolicy == GateBehavior.OrderPolicy.SHUFFLED) {
+               behaviors.shuffle();
             }
 
-            for(Trigger var8 : var3) {
-               if (var8.trigger(var3xx, var4, var5) && var2 == GateBehavior.RunningPolicy.RUN_ONE) {
+            for(Trigger<? super E> behavior : behaviors) {
+               if (behavior.trigger(level, body, timestamp) && runningPolicy == GateBehavior.RunningPolicy.RUN_ONE) {
                   break;
                }
             }

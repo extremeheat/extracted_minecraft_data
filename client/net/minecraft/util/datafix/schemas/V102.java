@@ -9,12 +9,12 @@ import java.util.function.Supplier;
 import net.minecraft.util.datafix.fixes.References;
 
 public class V102 extends Schema {
-   public V102(int var1, Schema var2) {
-      super(var1, var2);
+   public V102(final int versionKey, final Schema parent) {
+      super(versionKey, parent);
    }
 
-   public void registerTypes(Schema var1, Map<String, Supplier<TypeTemplate>> var2, Map<String, Supplier<TypeTemplate>> var3) {
-      super.registerTypes(var1, var2, var3);
-      var1.registerType(true, References.ITEM_STACK, () -> DSL.hook(DSL.optionalFields("id", References.ITEM_NAME.in(var1), "tag", V99.itemStackTag(var1)), V99.ADD_NAMES, HookFunction.IDENTITY));
+   public void registerTypes(final Schema schema, final Map<String, Supplier<TypeTemplate>> entityTypes, final Map<String, Supplier<TypeTemplate>> blockEntityTypes) {
+      super.registerTypes(schema, entityTypes, blockEntityTypes);
+      schema.registerType(true, References.ITEM_STACK, () -> DSL.hook(DSL.optionalFields("id", References.ITEM_NAME.in(schema), "tag", V99.itemStackTag(schema)), V99.ADD_NAMES, HookFunction.IDENTITY));
    }
 }

@@ -8,13 +8,13 @@ import net.minecraft.world.level.WorldGenLevel;
 class AllOfPredicate extends CombiningPredicate {
    public static final MapCodec<AllOfPredicate> CODEC = codec(AllOfPredicate::new);
 
-   public AllOfPredicate(List<BlockPredicate> var1) {
-      super(var1);
+   public AllOfPredicate(final List<BlockPredicate> predicates) {
+      super(predicates);
    }
 
-   public boolean test(WorldGenLevel var1, BlockPos var2) {
-      for(BlockPredicate var4 : this.predicates) {
-         if (!var4.test(var1, var2)) {
+   public boolean test(final WorldGenLevel level, final BlockPos origin) {
+      for(BlockPredicate predicate : this.predicates) {
+         if (!predicate.test(level, origin)) {
             return false;
          }
       }
@@ -24,10 +24,5 @@ class AllOfPredicate extends CombiningPredicate {
 
    public BlockPredicateType<?> type() {
       return BlockPredicateType.ALL_OF;
-   }
-
-   // $FF: synthetic method
-   public boolean test(final Object var1, final Object var2) {
-      return this.test((WorldGenLevel)var1, (BlockPos)var2);
    }
 }

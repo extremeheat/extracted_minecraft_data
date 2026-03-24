@@ -16,39 +16,39 @@ import net.minecraft.util.datafix.ExtraDataFixUtils;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
 public class EntitySpawnerItemVariantComponentFix extends DataFix {
-   public EntitySpawnerItemVariantComponentFix(Schema var1) {
-      super(var1, false);
+   public EntitySpawnerItemVariantComponentFix(final Schema outputSchema) {
+      super(outputSchema, false);
    }
 
    public final TypeRewriteRule makeRule() {
-      Type var1 = this.getInputSchema().getType(References.ITEM_STACK);
-      OpticFinder var2 = DSL.fieldFinder("id", DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString()));
-      OpticFinder var3 = var1.findField("components");
-      return this.fixTypeEverywhereTyped("ItemStack bucket_entity_data variants to separate components", var1, (var2x) -> {
+      Type<?> itemStackType = this.getInputSchema().getType(References.ITEM_STACK);
+      OpticFinder<Pair<String, String>> idFinder = DSL.fieldFinder("id", DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString()));
+      OpticFinder<?> componentsFinder = itemStackType.findField("components");
+      return this.fixTypeEverywhereTyped("ItemStack bucket_entity_data variants to separate components", itemStackType, (input) -> {
          Typed var10000;
-         switch ((String)var2x.getOptional(var2).map(Pair::getSecond).orElse("")) {
-            case "minecraft:salmon_bucket" -> var10000 = var2x.updateTyped(var3, EntitySpawnerItemVariantComponentFix::fixSalmonBucket);
-            case "minecraft:axolotl_bucket" -> var10000 = var2x.updateTyped(var3, EntitySpawnerItemVariantComponentFix::fixAxolotlBucket);
-            case "minecraft:tropical_fish_bucket" -> var10000 = var2x.updateTyped(var3, EntitySpawnerItemVariantComponentFix::fixTropicalFishBucket);
-            case "minecraft:painting" -> var10000 = var2x.updateTyped(var3, (var0) -> Util.writeAndReadTypedOrThrow(var0, var0.getType(), EntitySpawnerItemVariantComponentFix::fixPainting));
-            default -> var10000 = var2x;
+         switch ((String)input.getOptional(idFinder).map(Pair::getSecond).orElse("")) {
+            case "minecraft:salmon_bucket" -> var10000 = input.updateTyped(componentsFinder, EntitySpawnerItemVariantComponentFix::fixSalmonBucket);
+            case "minecraft:axolotl_bucket" -> var10000 = input.updateTyped(componentsFinder, EntitySpawnerItemVariantComponentFix::fixAxolotlBucket);
+            case "minecraft:tropical_fish_bucket" -> var10000 = input.updateTyped(componentsFinder, EntitySpawnerItemVariantComponentFix::fixTropicalFishBucket);
+            case "minecraft:painting" -> var10000 = input.updateTyped(componentsFinder, (components) -> Util.writeAndReadTypedOrThrow(components, components.getType(), EntitySpawnerItemVariantComponentFix::fixPainting));
+            default -> var10000 = input;
          }
 
          return var10000;
       });
    }
 
-   private static String getBaseColor(int var0) {
-      return ExtraDataFixUtils.dyeColorIdToName(var0 >> 16 & 255);
+   private static String getBaseColor(final int packedVariant) {
+      return ExtraDataFixUtils.dyeColorIdToName(packedVariant >> 16 & 255);
    }
 
-   private static String getPatternColor(int var0) {
-      return ExtraDataFixUtils.dyeColorIdToName(var0 >> 24 & 255);
+   private static String getPatternColor(final int packedVariant) {
+      return ExtraDataFixUtils.dyeColorIdToName(packedVariant >> 24 & 255);
    }
 
-   private static String getPattern(int var0) {
+   private static String getPattern(final int packedVariant) {
       String var10000;
-      switch (var0 & 65535) {
+      switch (packedVariant & 65535) {
          case 1 -> var10000 = "flopper";
          case 256 -> var10000 = "sunstreak";
          case 257 -> var10000 = "stripey";
@@ -66,26 +66,26 @@ public class EntitySpawnerItemVariantComponentFix extends DataFix {
       return var10000;
    }
 
-   private static <T> Dynamic<T> fixTropicalFishBucket(Dynamic<T> var0, Dynamic<T> var1) {
-      Optional var2 = var1.get("BucketVariantTag").asNumber().result();
-      if (var2.isEmpty()) {
-         return var0;
+   private static <T> Dynamic<T> fixTropicalFishBucket(final Dynamic<T> remainder, final Dynamic<T> bucketData) {
+      Optional<Number> oldVariant = bucketData.get("BucketVariantTag").asNumber().result();
+      if (oldVariant.isEmpty()) {
+         return remainder;
       } else {
-         int var3 = ((Number)var2.get()).intValue();
-         String var4 = getPattern(var3);
-         String var5 = getBaseColor(var3);
-         String var6 = getPatternColor(var3);
-         return var0.update("minecraft:bucket_entity_data", (var0x) -> var0x.remove("BucketVariantTag")).set("minecraft:tropical_fish/pattern", var0.createString(var4)).set("minecraft:tropical_fish/base_color", var0.createString(var5)).set("minecraft:tropical_fish/pattern_color", var0.createString(var6));
+         int packedVariant = ((Number)oldVariant.get()).intValue();
+         String pattern = getPattern(packedVariant);
+         String baseColor = getBaseColor(packedVariant);
+         String patternColor = getPatternColor(packedVariant);
+         return remainder.update("minecraft:bucket_entity_data", (b) -> b.remove("BucketVariantTag")).set("minecraft:tropical_fish/pattern", remainder.createString(pattern)).set("minecraft:tropical_fish/base_color", remainder.createString(baseColor)).set("minecraft:tropical_fish/pattern_color", remainder.createString(patternColor));
       }
    }
 
-   private static <T> Dynamic<T> fixAxolotlBucket(Dynamic<T> var0, Dynamic<T> var1) {
-      Optional var2 = var1.get("Variant").asNumber().result();
-      if (var2.isEmpty()) {
-         return var0;
+   private static <T> Dynamic<T> fixAxolotlBucket(final Dynamic<T> remainder, final Dynamic<T> bucketData) {
+      Optional<Number> oldVariant = bucketData.get("Variant").asNumber().result();
+      if (oldVariant.isEmpty()) {
+         return remainder;
       } else {
          String var10000;
-         switch (((Number)var2.get()).intValue()) {
+         switch (((Number)oldVariant.get()).intValue()) {
             case 1 -> var10000 = "wild";
             case 2 -> var10000 = "gold";
             case 3 -> var10000 = "cyan";
@@ -93,49 +93,49 @@ public class EntitySpawnerItemVariantComponentFix extends DataFix {
             default -> var10000 = "lucy";
          }
 
-         String var3 = var10000;
-         return var0.update("minecraft:bucket_entity_data", (var0x) -> var0x.remove("Variant")).set("minecraft:axolotl/variant", var0.createString(var3));
+         String newVariant = var10000;
+         return remainder.update("minecraft:bucket_entity_data", (b) -> b.remove("Variant")).set("minecraft:axolotl/variant", remainder.createString(newVariant));
       }
    }
 
-   private static <T> Dynamic<T> fixSalmonBucket(Dynamic<T> var0, Dynamic<T> var1) {
-      Optional var2 = var1.get("type").result();
-      return var2.isEmpty() ? var0 : var0.update("minecraft:bucket_entity_data", (var0x) -> var0x.remove("type")).set("minecraft:salmon/size", (Dynamic)var2.get());
+   private static <T> Dynamic<T> fixSalmonBucket(final Dynamic<T> remainder, final Dynamic<T> bucketData) {
+      Optional<Dynamic<T>> type = bucketData.get("type").result();
+      return type.isEmpty() ? remainder : remainder.update("minecraft:bucket_entity_data", (b) -> b.remove("type")).set("minecraft:salmon/size", (Dynamic)type.get());
    }
 
-   private static <T> Dynamic<T> fixPainting(Dynamic<T> var0) {
-      Optional var1 = var0.get("minecraft:entity_data").result();
-      if (var1.isEmpty()) {
-         return var0;
-      } else if (((Dynamic)var1.get()).get("id").asString().result().filter((var0x) -> var0x.equals("minecraft:painting")).isEmpty()) {
-         return var0;
+   private static <T> Dynamic<T> fixPainting(Dynamic<T> components) {
+      Optional<Dynamic<T>> entityData = components.get("minecraft:entity_data").result();
+      if (entityData.isEmpty()) {
+         return components;
+      } else if (((Dynamic)entityData.get()).get("id").asString().result().filter((id) -> id.equals("minecraft:painting")).isEmpty()) {
+         return components;
       } else {
-         Optional var2 = ((Dynamic)var1.get()).get("variant").result();
-         Dynamic var3 = ((Dynamic)var1.get()).remove("variant");
-         if (var3.remove("id").equals(var3.emptyMap())) {
-            var0 = var0.remove("minecraft:entity_data");
+         Optional<Dynamic<T>> result = ((Dynamic)entityData.get()).get("variant").result();
+         Dynamic<T> entityDataRemainder = ((Dynamic)entityData.get()).remove("variant");
+         if (entityDataRemainder.remove("id").equals(entityDataRemainder.emptyMap())) {
+            components = components.remove("minecraft:entity_data");
          } else {
-            var0 = var0.set("minecraft:entity_data", var3);
+            components = components.set("minecraft:entity_data", entityDataRemainder);
          }
 
-         if (var2.isPresent()) {
-            var0 = var0.set("minecraft:painting/variant", (Dynamic)var2.get());
+         if (result.isPresent()) {
+            components = components.set("minecraft:painting/variant", (Dynamic)result.get());
          }
 
-         return var0;
+         return components;
       }
    }
 
    @FunctionalInterface
-   interface Fixer extends Function<Typed<?>, Typed<?>> {
-      default Typed<?> apply(Typed<?> var1) {
-         return var1.update(DSL.remainderFinder(), this::fixRemainder);
+   private interface Fixer extends Function<Typed<?>, Typed<?>> {
+      default Typed<?> apply(final Typed<?> components) {
+         return components.update(DSL.remainderFinder(), this::fixRemainder);
       }
 
-      default <T> Dynamic<T> fixRemainder(Dynamic<T> var1) {
-         return (Dynamic)var1.get("minecraft:bucket_entity_data").result().map((var2) -> this.fixRemainder(var1, var2)).orElse(var1);
+      default <T> Dynamic<T> fixRemainder(final Dynamic<T> remainder) {
+         return (Dynamic)remainder.get("minecraft:bucket_entity_data").result().map((bucketData) -> this.fixRemainder(remainder, bucketData)).orElse(remainder);
       }
 
-      <T> Dynamic<T> fixRemainder(Dynamic<T> var1, Dynamic<T> var2);
+      <T> Dynamic<T> fixRemainder(Dynamic<T> remainder, Dynamic<T> bucketData);
    }
 }

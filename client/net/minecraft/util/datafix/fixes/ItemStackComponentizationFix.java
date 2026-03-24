@@ -40,209 +40,209 @@ public class ItemStackComponentizationFix extends DataFix {
    private static final Set<String> BOOLEAN_BLOCK_STATE_PROPERTIES = Set.of("attached", "bottom", "conditional", "disarmed", "drag", "enabled", "extended", "eye", "falling", "hanging", "has_bottle_0", "has_bottle_1", "has_bottle_2", "has_record", "has_book", "inverted", "in_wall", "lit", "locked", "occupied", "open", "persistent", "powered", "short", "signal_fire", "snowy", "triggered", "unstable", "waterlogged", "berries", "bloom", "shrieking", "can_summon", "up", "down", "north", "east", "south", "west", "slot_0_occupied", "slot_1_occupied", "slot_2_occupied", "slot_3_occupied", "slot_4_occupied", "slot_5_occupied", "cracked", "crafting");
    private static final Splitter PROPERTY_SPLITTER = Splitter.on(',');
 
-   public ItemStackComponentizationFix(Schema var1) {
-      super(var1, true);
+   public ItemStackComponentizationFix(final Schema outputSchema) {
+      super(outputSchema, true);
    }
 
-   private static void fixItemStack(ItemStackData var0, Dynamic<?> var1) {
-      int var2 = var0.removeTag("HideFlags").asInt(0);
-      var0.moveTagToComponent("Damage", "minecraft:damage", var1.createInt(0));
-      var0.moveTagToComponent("RepairCost", "minecraft:repair_cost", var1.createInt(0));
-      var0.moveTagToComponent("CustomModelData", "minecraft:custom_model_data");
-      var0.removeTag("BlockStateTag").result().ifPresent((var1x) -> var0.setComponent("minecraft:block_state", fixBlockStateTag(var1x)));
-      var0.moveTagToComponent("EntityTag", "minecraft:entity_data");
-      var0.fixSubTag("BlockEntityTag", false, (var1x) -> {
-         String var2 = NamespacedSchema.ensureNamespaced(var1x.get("id").asString(""));
-         var1x = fixBlockEntityTag(var0, var1x, var2);
-         Dynamic var3 = var1x.remove("id");
-         return var3.equals(var1x.emptyMap()) ? var3 : var1x;
+   private static void fixItemStack(final ItemStackData itemStack, final Dynamic<?> dynamic) {
+      int hideFlags = itemStack.removeTag("HideFlags").asInt(0);
+      itemStack.moveTagToComponent("Damage", "minecraft:damage", dynamic.createInt(0));
+      itemStack.moveTagToComponent("RepairCost", "minecraft:repair_cost", dynamic.createInt(0));
+      itemStack.moveTagToComponent("CustomModelData", "minecraft:custom_model_data");
+      itemStack.removeTag("BlockStateTag").result().ifPresent((blockStateTag) -> itemStack.setComponent("minecraft:block_state", fixBlockStateTag(blockStateTag)));
+      itemStack.moveTagToComponent("EntityTag", "minecraft:entity_data");
+      itemStack.fixSubTag("BlockEntityTag", false, (blockEntityTag) -> {
+         String id = NamespacedSchema.ensureNamespaced(blockEntityTag.get("id").asString(""));
+         blockEntityTag = fixBlockEntityTag(itemStack, blockEntityTag, id);
+         Dynamic<?> withoutId = blockEntityTag.remove("id");
+         return withoutId.equals(blockEntityTag.emptyMap()) ? withoutId : blockEntityTag;
       });
-      var0.moveTagToComponent("BlockEntityTag", "minecraft:block_entity_data");
-      if (var0.removeTag("Unbreakable").asBoolean(false)) {
-         Dynamic var3 = var1.emptyMap();
-         if ((var2 & 4) != 0) {
-            var3 = var3.set("show_in_tooltip", var1.createBoolean(false));
+      itemStack.moveTagToComponent("BlockEntityTag", "minecraft:block_entity_data");
+      if (itemStack.removeTag("Unbreakable").asBoolean(false)) {
+         Dynamic<?> component = dynamic.emptyMap();
+         if ((hideFlags & 4) != 0) {
+            component = component.set("show_in_tooltip", dynamic.createBoolean(false));
          }
 
-         var0.setComponent("minecraft:unbreakable", var3);
+         itemStack.setComponent("minecraft:unbreakable", component);
       }
 
-      fixEnchantments(var0, var1, "Enchantments", "minecraft:enchantments", (var2 & 1) != 0);
-      if (var0.is("minecraft:enchanted_book")) {
-         fixEnchantments(var0, var1, "StoredEnchantments", "minecraft:stored_enchantments", (var2 & 32) != 0);
+      fixEnchantments(itemStack, dynamic, "Enchantments", "minecraft:enchantments", (hideFlags & 1) != 0);
+      if (itemStack.is("minecraft:enchanted_book")) {
+         fixEnchantments(itemStack, dynamic, "StoredEnchantments", "minecraft:stored_enchantments", (hideFlags & 32) != 0);
       }
 
-      var0.fixSubTag("display", false, (var2x) -> fixDisplay(var0, var2x, var2));
-      fixAdventureModeChecks(var0, var1, var2);
-      fixAttributeModifiers(var0, var1, var2);
-      Optional var5 = var0.removeTag("Trim").result();
-      if (var5.isPresent()) {
-         Dynamic var4 = (Dynamic)var5.get();
-         if ((var2 & 128) != 0) {
-            var4 = var4.set("show_in_tooltip", var4.createBoolean(false));
+      itemStack.fixSubTag("display", false, (display) -> fixDisplay(itemStack, display, hideFlags));
+      fixAdventureModeChecks(itemStack, dynamic, hideFlags);
+      fixAttributeModifiers(itemStack, dynamic, hideFlags);
+      Optional<? extends Dynamic<?>> trim = itemStack.removeTag("Trim").result();
+      if (trim.isPresent()) {
+         Dynamic<?> fixedTrim = (Dynamic)trim.get();
+         if ((hideFlags & 128) != 0) {
+            fixedTrim = fixedTrim.set("show_in_tooltip", fixedTrim.createBoolean(false));
          }
 
-         var0.setComponent("minecraft:trim", var4);
+         itemStack.setComponent("minecraft:trim", fixedTrim);
       }
 
-      if ((var2 & 32) != 0) {
-         var0.setComponent("minecraft:hide_additional_tooltip", var1.emptyMap());
+      if ((hideFlags & 32) != 0) {
+         itemStack.setComponent("minecraft:hide_additional_tooltip", dynamic.emptyMap());
       }
 
-      if (var0.is("minecraft:crossbow")) {
-         var0.removeTag("Charged");
-         var0.moveTagToComponent("ChargedProjectiles", "minecraft:charged_projectiles", var1.createList(Stream.empty()));
+      if (itemStack.is("minecraft:crossbow")) {
+         itemStack.removeTag("Charged");
+         itemStack.moveTagToComponent("ChargedProjectiles", "minecraft:charged_projectiles", dynamic.createList(Stream.empty()));
       }
 
-      if (var0.is("minecraft:bundle")) {
-         var0.moveTagToComponent("Items", "minecraft:bundle_contents", var1.createList(Stream.empty()));
+      if (itemStack.is("minecraft:bundle")) {
+         itemStack.moveTagToComponent("Items", "minecraft:bundle_contents", dynamic.createList(Stream.empty()));
       }
 
-      if (var0.is("minecraft:filled_map")) {
-         var0.moveTagToComponent("map", "minecraft:map_id");
-         Map var6 = (Map)var0.removeTag("Decorations").asStream().map(ItemStackComponentizationFix::fixMapDecoration).collect(Collectors.toMap(Pair::getFirst, Pair::getSecond, (var0x, var1x) -> var0x));
-         if (!var6.isEmpty()) {
-            var0.setComponent("minecraft:map_decorations", var1.createMap(var6));
+      if (itemStack.is("minecraft:filled_map")) {
+         itemStack.moveTagToComponent("map", "minecraft:map_id");
+         Map<? extends Dynamic<?>, ? extends Dynamic<?>> decorations = (Map)itemStack.removeTag("Decorations").asStream().map(ItemStackComponentizationFix::fixMapDecoration).collect(Collectors.toMap(Pair::getFirst, Pair::getSecond, (first, second) -> first));
+         if (!decorations.isEmpty()) {
+            itemStack.setComponent("minecraft:map_decorations", dynamic.createMap(decorations));
          }
       }
 
-      if (var0.is(POTION_HOLDER_IDS)) {
-         fixPotionContents(var0, var1);
+      if (itemStack.is(POTION_HOLDER_IDS)) {
+         fixPotionContents(itemStack, dynamic);
       }
 
-      if (var0.is("minecraft:writable_book")) {
-         fixWritableBook(var0, var1);
+      if (itemStack.is("minecraft:writable_book")) {
+         fixWritableBook(itemStack, dynamic);
       }
 
-      if (var0.is("minecraft:written_book")) {
-         fixWrittenBook(var0, var1);
+      if (itemStack.is("minecraft:written_book")) {
+         fixWrittenBook(itemStack, dynamic);
       }
 
-      if (var0.is("minecraft:suspicious_stew")) {
-         var0.moveTagToComponent("effects", "minecraft:suspicious_stew_effects");
+      if (itemStack.is("minecraft:suspicious_stew")) {
+         itemStack.moveTagToComponent("effects", "minecraft:suspicious_stew_effects");
       }
 
-      if (var0.is("minecraft:debug_stick")) {
-         var0.moveTagToComponent("DebugProperty", "minecraft:debug_stick_state");
+      if (itemStack.is("minecraft:debug_stick")) {
+         itemStack.moveTagToComponent("DebugProperty", "minecraft:debug_stick_state");
       }
 
-      if (var0.is(BUCKETED_MOB_IDS)) {
-         fixBucketedMobData(var0, var1);
+      if (itemStack.is(BUCKETED_MOB_IDS)) {
+         fixBucketedMobData(itemStack, dynamic);
       }
 
-      if (var0.is("minecraft:goat_horn")) {
-         var0.moveTagToComponent("instrument", "minecraft:instrument");
+      if (itemStack.is("minecraft:goat_horn")) {
+         itemStack.moveTagToComponent("instrument", "minecraft:instrument");
       }
 
-      if (var0.is("minecraft:knowledge_book")) {
-         var0.moveTagToComponent("Recipes", "minecraft:recipes");
+      if (itemStack.is("minecraft:knowledge_book")) {
+         itemStack.moveTagToComponent("Recipes", "minecraft:recipes");
       }
 
-      if (var0.is("minecraft:compass")) {
-         fixLodestoneTracker(var0, var1);
+      if (itemStack.is("minecraft:compass")) {
+         fixLodestoneTracker(itemStack, dynamic);
       }
 
-      if (var0.is("minecraft:firework_rocket")) {
-         fixFireworkRocket(var0);
+      if (itemStack.is("minecraft:firework_rocket")) {
+         fixFireworkRocket(itemStack);
       }
 
-      if (var0.is("minecraft:firework_star")) {
-         fixFireworkStar(var0);
+      if (itemStack.is("minecraft:firework_star")) {
+         fixFireworkStar(itemStack);
       }
 
-      if (var0.is("minecraft:player_head")) {
-         var0.removeTag("SkullOwner").result().ifPresent((var1x) -> var0.setComponent("minecraft:profile", fixProfile(var1x)));
+      if (itemStack.is("minecraft:player_head")) {
+         itemStack.removeTag("SkullOwner").result().ifPresent((skullOwner) -> itemStack.setComponent("minecraft:profile", fixProfile(skullOwner)));
       }
 
    }
 
-   private static Dynamic<?> fixBlockStateTag(Dynamic<?> var0) {
-      Optional var10000 = var0.asMapOpt().result().map((var0x) -> (Map)var0x.collect(Collectors.toMap(Pair::getFirst, (var0) -> {
-            String var1 = ((Dynamic)var0.getFirst()).asString("");
-            Dynamic var2 = (Dynamic)var0.getSecond();
-            if (BOOLEAN_BLOCK_STATE_PROPERTIES.contains(var1)) {
-               Optional var3 = var2.asBoolean().result();
-               if (var3.isPresent()) {
-                  return var2.createString(String.valueOf(var3.get()));
+   private static Dynamic<?> fixBlockStateTag(final Dynamic<?> blockStateTag) {
+      Optional var10000 = blockStateTag.asMapOpt().result().map((entries) -> (Map)entries.collect(Collectors.toMap(Pair::getFirst, (entry) -> {
+            String key = ((Dynamic)entry.getFirst()).asString("");
+            Dynamic<?> value = (Dynamic)entry.getSecond();
+            if (BOOLEAN_BLOCK_STATE_PROPERTIES.contains(key)) {
+               Optional<Boolean> bool = value.asBoolean().result();
+               if (bool.isPresent()) {
+                  return value.createString(String.valueOf(bool.get()));
                }
             }
 
-            Optional var4 = var2.asNumber().result();
-            return var4.isPresent() ? var2.createString(((Number)var4.get()).toString()) : var2;
+            Optional<Number> number = value.asNumber().result();
+            return number.isPresent() ? value.createString(((Number)number.get()).toString()) : value;
          })));
-      Objects.requireNonNull(var0);
-      return (Dynamic)DataFixUtils.orElse(var10000.map(var0::createMap), var0);
+      Objects.requireNonNull(blockStateTag);
+      return (Dynamic)DataFixUtils.orElse(var10000.map(blockStateTag::createMap), blockStateTag);
    }
 
-   private static Dynamic<?> fixDisplay(ItemStackData var0, Dynamic<?> var1, int var2) {
-      var1.get("Name").result().filter(LegacyComponentDataFixUtils::isStrictlyValidJson).ifPresent((var1x) -> var0.setComponent("minecraft:custom_name", var1x));
-      OptionalDynamic var3 = var1.get("Lore");
-      if (var3.result().isPresent()) {
-         var0.setComponent("minecraft:lore", var1.createList(var1.get("Lore").asStream().filter(LegacyComponentDataFixUtils::isStrictlyValidJson)));
+   private static Dynamic<?> fixDisplay(final ItemStackData itemStack, Dynamic<?> display, final int hideFlags) {
+      display.get("Name").result().filter(LegacyComponentDataFixUtils::isStrictlyValidJson).ifPresent((name) -> itemStack.setComponent("minecraft:custom_name", name));
+      OptionalDynamic<?> lore = display.get("Lore");
+      if (lore.result().isPresent()) {
+         itemStack.setComponent("minecraft:lore", display.createList(display.get("Lore").asStream().filter(LegacyComponentDataFixUtils::isStrictlyValidJson)));
       }
 
-      Optional var4 = var1.get("color").asNumber().result().map(Number::intValue);
-      boolean var5 = (var2 & 64) != 0;
-      if (var4.isPresent() || var5) {
-         Dynamic var6 = var1.emptyMap().set("rgb", var1.createInt((Integer)var4.orElse(10511680)));
-         if (var5) {
-            var6 = var6.set("show_in_tooltip", var1.createBoolean(false));
+      Optional<Integer> color = display.get("color").asNumber().result().map(Number::intValue);
+      boolean hideDye = (hideFlags & 64) != 0;
+      if (color.isPresent() || hideDye) {
+         Dynamic<?> dyedColor = display.emptyMap().set("rgb", display.createInt((Integer)color.orElse(10511680)));
+         if (hideDye) {
+            dyedColor = dyedColor.set("show_in_tooltip", display.createBoolean(false));
          }
 
-         var0.setComponent("minecraft:dyed_color", var6);
+         itemStack.setComponent("minecraft:dyed_color", dyedColor);
       }
 
-      Optional var7 = var1.get("LocName").asString().result();
-      if (var7.isPresent()) {
-         var0.setComponent("minecraft:item_name", LegacyComponentDataFixUtils.createTranslatableComponent(var1.getOps(), (String)var7.get()));
+      Optional<String> locName = display.get("LocName").asString().result();
+      if (locName.isPresent()) {
+         itemStack.setComponent("minecraft:item_name", LegacyComponentDataFixUtils.createTranslatableComponent(display.getOps(), (String)locName.get()));
       }
 
-      if (var0.is("minecraft:filled_map")) {
-         var0.setComponent("minecraft:map_color", var1.get("MapColor"));
-         var1 = var1.remove("MapColor");
+      if (itemStack.is("minecraft:filled_map")) {
+         itemStack.setComponent("minecraft:map_color", display.get("MapColor"));
+         display = display.remove("MapColor");
       }
 
-      return var1.remove("Name").remove("Lore").remove("color").remove("LocName");
+      return display.remove("Name").remove("Lore").remove("color").remove("LocName");
    }
 
-   private static <T> Dynamic<T> fixBlockEntityTag(ItemStackData var0, Dynamic<T> var1, String var2) {
-      var0.setComponent("minecraft:lock", var1.get("Lock"));
-      var1 = var1.remove("Lock");
-      Optional var3 = var1.get("LootTable").result();
-      if (var3.isPresent()) {
-         Dynamic var4 = var1.emptyMap().set("loot_table", (Dynamic)var3.get());
-         long var5 = var1.get("LootTableSeed").asLong(0L);
-         if (var5 != 0L) {
-            var4 = var4.set("seed", var1.createLong(var5));
+   private static <T> Dynamic<T> fixBlockEntityTag(final ItemStackData itemStack, Dynamic<T> blockEntity, final String id) {
+      itemStack.setComponent("minecraft:lock", blockEntity.get("Lock"));
+      blockEntity = blockEntity.remove("Lock");
+      Optional<Dynamic<T>> lootTable = blockEntity.get("LootTable").result();
+      if (lootTable.isPresent()) {
+         Dynamic<T> containerLoot = blockEntity.emptyMap().set("loot_table", (Dynamic)lootTable.get());
+         long seed = blockEntity.get("LootTableSeed").asLong(0L);
+         if (seed != 0L) {
+            containerLoot = containerLoot.set("seed", blockEntity.createLong(seed));
          }
 
-         var0.setComponent("minecraft:container_loot", var4);
-         var1 = var1.remove("LootTable").remove("LootTableSeed");
+         itemStack.setComponent("minecraft:container_loot", containerLoot);
+         blockEntity = blockEntity.remove("LootTable").remove("LootTableSeed");
       }
 
       Dynamic var10000;
-      switch (var2) {
+      switch (id) {
          case "minecraft:skull":
-            var0.setComponent("minecraft:note_block_sound", var1.get("note_block_sound"));
-            var10000 = var1.remove("note_block_sound");
+            itemStack.setComponent("minecraft:note_block_sound", blockEntity.get("note_block_sound"));
+            var10000 = blockEntity.remove("note_block_sound");
             break;
          case "minecraft:decorated_pot":
-            var0.setComponent("minecraft:pot_decorations", var1.get("sherds"));
-            Optional var10 = var1.get("item").result();
-            if (var10.isPresent()) {
-               var0.setComponent("minecraft:container", var1.createList(Stream.of(var1.emptyMap().set("slot", var1.createInt(0)).set("item", (Dynamic)var10.get()))));
+            itemStack.setComponent("minecraft:pot_decorations", blockEntity.get("sherds"));
+            Optional<Dynamic<T>> item = blockEntity.get("item").result();
+            if (item.isPresent()) {
+               itemStack.setComponent("minecraft:container", blockEntity.createList(Stream.of(blockEntity.emptyMap().set("slot", blockEntity.createInt(0)).set("item", (Dynamic)item.get()))));
             }
 
-            var10000 = var1.remove("sherds").remove("item");
+            var10000 = blockEntity.remove("sherds").remove("item");
             break;
          case "minecraft:banner":
-            var0.setComponent("minecraft:banner_patterns", var1.get("patterns"));
-            Optional var9 = var1.get("Base").asNumber().result();
-            if (var9.isPresent()) {
-               var0.setComponent("minecraft:base_color", var1.createString(ExtraDataFixUtils.dyeColorIdToName(((Number)var9.get()).intValue())));
+            itemStack.setComponent("minecraft:banner_patterns", blockEntity.get("patterns"));
+            Optional<Number> base = blockEntity.get("Base").asNumber().result();
+            if (base.isPresent()) {
+               itemStack.setComponent("minecraft:base_color", blockEntity.createString(ExtraDataFixUtils.dyeColorIdToName(((Number)base.get()).intValue())));
             }
 
-            var10000 = var1.remove("patterns").remove("Base");
+            var10000 = blockEntity.remove("patterns").remove("Base");
             break;
          case "minecraft:shulker_box":
          case "minecraft:chest":
@@ -259,151 +259,151 @@ public class ItemStackComponentizationFix extends DataFix {
          case "minecraft:campfire":
          case "minecraft:chiseled_bookshelf":
          case "minecraft:crafter":
-            List var6 = var1.get("Items").asList((var0x) -> var0x.emptyMap().set("slot", var0x.createInt(var0x.get("Slot").asByte((byte)0) & 255)).set("item", var0x.remove("Slot")));
-            if (!var6.isEmpty()) {
-               var0.setComponent("minecraft:container", var1.createList(var6.stream()));
+            List<Dynamic<T>> items = blockEntity.get("Items").asList((dynamic) -> dynamic.emptyMap().set("slot", dynamic.createInt(dynamic.get("Slot").asByte((byte)0) & 255)).set("item", dynamic.remove("Slot")));
+            if (!items.isEmpty()) {
+               itemStack.setComponent("minecraft:container", blockEntity.createList(items.stream()));
             }
 
-            var10000 = var1.remove("Items");
+            var10000 = blockEntity.remove("Items");
             break;
          case "minecraft:beehive":
-            var0.setComponent("minecraft:bees", var1.get("bees"));
-            var10000 = var1.remove("bees");
+            itemStack.setComponent("minecraft:bees", blockEntity.get("bees"));
+            var10000 = blockEntity.remove("bees");
             break;
          default:
-            var10000 = var1;
+            var10000 = blockEntity;
       }
 
       return var10000;
    }
 
-   private static void fixEnchantments(ItemStackData var0, Dynamic<?> var1, String var2, String var3, boolean var4) {
-      OptionalDynamic var5 = var0.removeTag(var2);
-      List var6 = var5.asList(Function.identity()).stream().flatMap((var0x) -> parseEnchantment(var0x).stream()).filter((var0x) -> (Integer)var0x.getSecond() > 0).toList();
-      if (!var6.isEmpty() || var4) {
-         Dynamic var7 = var1.emptyMap();
-         Dynamic var8 = var1.emptyMap();
+   private static void fixEnchantments(final ItemStackData itemStack, final Dynamic<?> dynamic, final String key, final String componentType, final boolean hideInTooltip) {
+      OptionalDynamic<?> rawEnchantments = itemStack.removeTag(key);
+      List<Pair<String, Integer>> enchantments = rawEnchantments.asList(Function.identity()).stream().flatMap((enchantmentx) -> parseEnchantment(enchantmentx).stream()).filter((enchantmentx) -> (Integer)enchantmentx.getSecond() > 0).toList();
+      if (!enchantments.isEmpty() || hideInTooltip) {
+         Dynamic<?> component = dynamic.emptyMap();
+         Dynamic<?> levels = dynamic.emptyMap();
 
-         for(Pair var10 : var6) {
-            var8 = var8.set((String)var10.getFirst(), var1.createInt((Integer)var10.getSecond()));
+         for(Pair<String, Integer> enchantment : enchantments) {
+            levels = levels.set((String)enchantment.getFirst(), dynamic.createInt((Integer)enchantment.getSecond()));
          }
 
-         var7 = var7.set("levels", var8);
-         if (var4) {
-            var7 = var7.set("show_in_tooltip", var1.createBoolean(false));
+         component = component.set("levels", levels);
+         if (hideInTooltip) {
+            component = component.set("show_in_tooltip", dynamic.createBoolean(false));
          }
 
-         var0.setComponent(var3, var7);
+         itemStack.setComponent(componentType, component);
       }
 
-      if (var5.result().isPresent() && var6.isEmpty()) {
-         var0.setComponent("minecraft:enchantment_glint_override", var1.createBoolean(true));
+      if (rawEnchantments.result().isPresent() && enchantments.isEmpty()) {
+         itemStack.setComponent("minecraft:enchantment_glint_override", dynamic.createBoolean(true));
       }
 
    }
 
-   private static Optional<Pair<String, Integer>> parseEnchantment(Dynamic<?> var0) {
-      return var0.get("id").asString().apply2stable((var0x, var1) -> Pair.of(var0x, Mth.clamp(var1.intValue(), 0, 255)), var0.get("lvl").asNumber()).result();
+   private static Optional<Pair<String, Integer>> parseEnchantment(final Dynamic<?> entry) {
+      return entry.get("id").asString().apply2stable((id, level) -> Pair.of(id, Mth.clamp(level.intValue(), 0, 255)), entry.get("lvl").asNumber()).result();
    }
 
-   private static void fixAdventureModeChecks(ItemStackData var0, Dynamic<?> var1, int var2) {
-      fixBlockStatePredicates(var0, var1, "CanDestroy", "minecraft:can_break", (var2 & 8) != 0);
-      fixBlockStatePredicates(var0, var1, "CanPlaceOn", "minecraft:can_place_on", (var2 & 16) != 0);
+   private static void fixAdventureModeChecks(final ItemStackData itemStack, final Dynamic<?> dynamic, final int hideFlags) {
+      fixBlockStatePredicates(itemStack, dynamic, "CanDestroy", "minecraft:can_break", (hideFlags & 8) != 0);
+      fixBlockStatePredicates(itemStack, dynamic, "CanPlaceOn", "minecraft:can_place_on", (hideFlags & 16) != 0);
    }
 
-   private static void fixBlockStatePredicates(ItemStackData var0, Dynamic<?> var1, String var2, String var3, boolean var4) {
-      Optional var5 = var0.removeTag(var2).result();
-      if (!var5.isEmpty()) {
-         Dynamic var6 = var1.emptyMap().set("predicates", var1.createList(((Dynamic)var5.get()).asStream().map((var0x) -> (Dynamic)DataFixUtils.orElse(var0x.asString().map((var1) -> fixBlockStatePredicate(var0x, var1)).result(), var0x))));
-         if (var4) {
-            var6 = var6.set("show_in_tooltip", var1.createBoolean(false));
+   private static void fixBlockStatePredicates(final ItemStackData itemStack, final Dynamic<?> dynamic, final String tag, final String componentId, final boolean hideInTooltip) {
+      Optional<? extends Dynamic<?>> oldPredicate = itemStack.removeTag(tag).result();
+      if (!oldPredicate.isEmpty()) {
+         Dynamic<?> component = dynamic.emptyMap().set("predicates", dynamic.createList(((Dynamic)oldPredicate.get()).asStream().map((value) -> (Dynamic)DataFixUtils.orElse(value.asString().map((string) -> fixBlockStatePredicate(value, string)).result(), value))));
+         if (hideInTooltip) {
+            component = component.set("show_in_tooltip", dynamic.createBoolean(false));
          }
 
-         var0.setComponent(var3, var6);
+         itemStack.setComponent(componentId, component);
       }
    }
 
-   private static Dynamic<?> fixBlockStatePredicate(Dynamic<?> var0, String var1) {
-      int var2 = var1.indexOf(91);
-      int var3 = var1.indexOf(123);
-      int var4 = var1.length();
-      if (var2 != -1) {
-         var4 = var2;
+   private static Dynamic<?> fixBlockStatePredicate(final Dynamic<?> dynamic, final String string) {
+      int startProperties = string.indexOf(91);
+      int startNbt = string.indexOf(123);
+      int blockNameEnd = string.length();
+      if (startProperties != -1) {
+         blockNameEnd = startProperties;
       }
 
-      if (var3 != -1) {
-         var4 = Math.min(var4, var3);
+      if (startNbt != -1) {
+         blockNameEnd = Math.min(blockNameEnd, startNbt);
       }
 
-      String var5 = var1.substring(0, var4);
-      Dynamic var6 = var0.emptyMap().set("blocks", var0.createString(var5.trim()));
-      int var7 = var1.indexOf(93);
-      if (var2 != -1 && var7 != -1) {
-         Dynamic var8 = var0.emptyMap();
+      String blockOrTagName = string.substring(0, blockNameEnd);
+      Dynamic<?> predicate = dynamic.emptyMap().set("blocks", dynamic.createString(blockOrTagName.trim()));
+      int endProperties = string.indexOf(93);
+      if (startProperties != -1 && endProperties != -1) {
+         Dynamic<?> properties = dynamic.emptyMap();
 
-         for(String var11 : PROPERTY_SPLITTER.split(var1.substring(var2 + 1, var7))) {
-            int var12 = var11.indexOf(61);
-            if (var12 != -1) {
-               String var13 = var11.substring(0, var12).trim();
-               String var14 = var11.substring(var12 + 1).trim();
-               var8 = var8.set(var13, var0.createString(var14));
+         for(String property : PROPERTY_SPLITTER.split(string.substring(startProperties + 1, endProperties))) {
+            int assignment = property.indexOf(61);
+            if (assignment != -1) {
+               String key = property.substring(0, assignment).trim();
+               String value = property.substring(assignment + 1).trim();
+               properties = properties.set(key, dynamic.createString(value));
             }
          }
 
-         var6 = var6.set("state", var8);
+         predicate = predicate.set("state", properties);
       }
 
-      int var15 = var1.indexOf(125);
-      if (var3 != -1 && var15 != -1) {
-         var6 = var6.set("nbt", var0.createString(var1.substring(var3, var15 + 1)));
+      int endNbt = string.indexOf(125);
+      if (startNbt != -1 && endNbt != -1) {
+         predicate = predicate.set("nbt", dynamic.createString(string.substring(startNbt, endNbt + 1)));
       }
 
-      return var6;
+      return predicate;
    }
 
-   private static void fixAttributeModifiers(ItemStackData var0, Dynamic<?> var1, int var2) {
-      OptionalDynamic var3 = var0.removeTag("AttributeModifiers");
-      if (!var3.result().isEmpty()) {
-         boolean var4 = (var2 & 2) != 0;
-         List var5 = var3.asList(ItemStackComponentizationFix::fixAttributeModifier);
-         Dynamic var6 = var1.emptyMap().set("modifiers", var1.createList(var5.stream()));
-         if (var4) {
-            var6 = var6.set("show_in_tooltip", var1.createBoolean(false));
+   private static void fixAttributeModifiers(final ItemStackData itemStack, final Dynamic<?> dynamic, final int hideFlags) {
+      OptionalDynamic<?> attributeModifiersField = itemStack.removeTag("AttributeModifiers");
+      if (!attributeModifiersField.result().isEmpty()) {
+         boolean hideInTooltip = (hideFlags & 2) != 0;
+         List<? extends Dynamic<?>> attributeModifiers = attributeModifiersField.asList(ItemStackComponentizationFix::fixAttributeModifier);
+         Dynamic<?> component = dynamic.emptyMap().set("modifiers", dynamic.createList(attributeModifiers.stream()));
+         if (hideInTooltip) {
+            component = component.set("show_in_tooltip", dynamic.createBoolean(false));
          }
 
-         var0.setComponent("minecraft:attribute_modifiers", var6);
+         itemStack.setComponent("minecraft:attribute_modifiers", component);
       }
    }
 
-   private static Dynamic<?> fixAttributeModifier(Dynamic<?> var0) {
-      Dynamic var1 = var0.emptyMap().set("name", var0.createString("")).set("amount", var0.createDouble(0.0)).set("operation", var0.createString("add_value"));
-      var1 = Dynamic.copyField(var0, "AttributeName", var1, "type");
-      var1 = Dynamic.copyField(var0, "Slot", var1, "slot");
-      var1 = Dynamic.copyField(var0, "UUID", var1, "uuid");
-      var1 = Dynamic.copyField(var0, "Name", var1, "name");
-      var1 = Dynamic.copyField(var0, "Amount", var1, "amount");
-      var1 = Dynamic.copyAndFixField(var0, "Operation", var1, "operation", (var0x) -> {
+   private static Dynamic<?> fixAttributeModifier(final Dynamic<?> input) {
+      Dynamic<?> result = input.emptyMap().set("name", input.createString("")).set("amount", input.createDouble(0.0)).set("operation", input.createString("add_value"));
+      result = Dynamic.copyField(input, "AttributeName", result, "type");
+      result = Dynamic.copyField(input, "Slot", result, "slot");
+      result = Dynamic.copyField(input, "UUID", result, "uuid");
+      result = Dynamic.copyField(input, "Name", result, "name");
+      result = Dynamic.copyField(input, "Amount", result, "amount");
+      result = Dynamic.copyAndFixField(input, "Operation", result, "operation", (operation) -> {
          String var10001;
-         switch (var0x.asInt(0)) {
+         switch (operation.asInt(0)) {
             case 1 -> var10001 = "add_multiplied_base";
             case 2 -> var10001 = "add_multiplied_total";
             default -> var10001 = "add_value";
          }
 
-         return var0x.createString(var10001);
+         return operation.createString(var10001);
       });
-      return var1;
+      return result;
    }
 
-   private static Pair<Dynamic<?>, Dynamic<?>> fixMapDecoration(Dynamic<?> var0) {
-      Dynamic var1 = (Dynamic)DataFixUtils.orElseGet(var0.get("id").result(), () -> var0.createString(""));
-      Dynamic var2 = var0.emptyMap().set("type", var0.createString(fixMapDecorationType(var0.get("type").asInt(0)))).set("x", var0.createDouble(var0.get("x").asDouble(0.0))).set("z", var0.createDouble(var0.get("z").asDouble(0.0))).set("rotation", var0.createFloat((float)var0.get("rot").asDouble(0.0)));
-      return Pair.of(var1, var2);
+   private static Pair<Dynamic<?>, Dynamic<?>> fixMapDecoration(final Dynamic<?> decoration) {
+      Dynamic<?> id = (Dynamic)DataFixUtils.orElseGet(decoration.get("id").result(), () -> decoration.createString(""));
+      Dynamic<?> value = decoration.emptyMap().set("type", decoration.createString(fixMapDecorationType(decoration.get("type").asInt(0)))).set("x", decoration.createDouble(decoration.get("x").asDouble(0.0))).set("z", decoration.createDouble(decoration.get("z").asDouble(0.0))).set("rotation", decoration.createFloat((float)decoration.get("rot").asDouble(0.0)));
+      return Pair.of(id, value);
    }
 
-   private static String fixMapDecorationType(int var0) {
+   private static String fixMapDecorationType(final int id) {
       String var10000;
-      switch (var0) {
+      switch (id) {
          case 1 -> var10000 = "frame";
          case 2 -> var10000 = "red_marker";
          case 3 -> var10000 = "blue_marker";
@@ -443,122 +443,122 @@ public class ItemStackComponentizationFix extends DataFix {
       return var10000;
    }
 
-   private static void fixPotionContents(ItemStackData var0, Dynamic<?> var1) {
-      Dynamic var2 = var1.emptyMap();
-      Optional var3 = var0.removeTag("Potion").asString().result().filter((var0x) -> !var0x.equals("minecraft:empty"));
-      if (var3.isPresent()) {
-         var2 = var2.set("potion", var1.createString((String)var3.get()));
+   private static void fixPotionContents(final ItemStackData itemStack, final Dynamic<?> dynamic) {
+      Dynamic<?> component = dynamic.emptyMap();
+      Optional<String> potion = itemStack.removeTag("Potion").asString().result().filter((id) -> !id.equals("minecraft:empty"));
+      if (potion.isPresent()) {
+         component = component.set("potion", dynamic.createString((String)potion.get()));
       }
 
-      var2 = var0.moveTagInto("CustomPotionColor", var2, "custom_color");
-      var2 = var0.moveTagInto("custom_potion_effects", var2, "custom_effects");
-      if (!var2.equals(var1.emptyMap())) {
-         var0.setComponent("minecraft:potion_contents", var2);
-      }
-
-   }
-
-   private static void fixWritableBook(ItemStackData var0, Dynamic<?> var1) {
-      Dynamic var2 = fixBookPages(var0, var1);
-      if (var2 != null) {
-         var0.setComponent("minecraft:writable_book_content", var1.emptyMap().set("pages", var2));
+      component = itemStack.moveTagInto("CustomPotionColor", component, "custom_color");
+      component = itemStack.moveTagInto("custom_potion_effects", component, "custom_effects");
+      if (!component.equals(dynamic.emptyMap())) {
+         itemStack.setComponent("minecraft:potion_contents", component);
       }
 
    }
 
-   private static void fixWrittenBook(ItemStackData var0, Dynamic<?> var1) {
-      Dynamic var2 = fixBookPages(var0, var1);
-      String var3 = var0.removeTag("title").asString("");
-      Optional var4 = var0.removeTag("filtered_title").asString().result();
-      Dynamic var5 = var1.emptyMap();
-      var5 = var5.set("title", createFilteredText(var1, var3, var4));
-      var5 = var0.moveTagInto("author", var5, "author");
-      var5 = var0.moveTagInto("resolved", var5, "resolved");
-      var5 = var0.moveTagInto("generation", var5, "generation");
-      if (var2 != null) {
-         var5 = var5.set("pages", var2);
+   private static void fixWritableBook(final ItemStackData itemStack, final Dynamic<?> dynamic) {
+      Dynamic<?> pages = fixBookPages(itemStack, dynamic);
+      if (pages != null) {
+         itemStack.setComponent("minecraft:writable_book_content", dynamic.emptyMap().set("pages", pages));
       }
 
-      var0.setComponent("minecraft:written_book_content", var5);
    }
 
-   private static @Nullable Dynamic<?> fixBookPages(ItemStackData var0, Dynamic<?> var1) {
-      List var2 = var0.removeTag("pages").asList((var0x) -> var0x.asString(""));
-      Map var3 = var0.removeTag("filtered_pages").asMap((var0x) -> var0x.asString("0"), (var0x) -> var0x.asString(""));
-      if (var2.isEmpty()) {
+   private static void fixWrittenBook(final ItemStackData itemStack, final Dynamic<?> dynamic) {
+      Dynamic<?> pages = fixBookPages(itemStack, dynamic);
+      String title = itemStack.removeTag("title").asString("");
+      Optional<String> filteredTitle = itemStack.removeTag("filtered_title").asString().result();
+      Dynamic<?> component = dynamic.emptyMap();
+      component = component.set("title", createFilteredText(dynamic, title, filteredTitle));
+      component = itemStack.moveTagInto("author", component, "author");
+      component = itemStack.moveTagInto("resolved", component, "resolved");
+      component = itemStack.moveTagInto("generation", component, "generation");
+      if (pages != null) {
+         component = component.set("pages", pages);
+      }
+
+      itemStack.setComponent("minecraft:written_book_content", component);
+   }
+
+   private static @Nullable Dynamic<?> fixBookPages(final ItemStackData itemStack, final Dynamic<?> dynamic) {
+      List<String> pages = itemStack.removeTag("pages").asList((pagex) -> pagex.asString(""));
+      Map<String, String> filteredPages = itemStack.removeTag("filtered_pages").asMap((key) -> key.asString("0"), (pagex) -> pagex.asString(""));
+      if (pages.isEmpty()) {
          return null;
       } else {
-         ArrayList var4 = new ArrayList(var2.size());
+         List<Dynamic<?>> fixedPages = new ArrayList(pages.size());
 
-         for(int var5 = 0; var5 < var2.size(); ++var5) {
-            String var6 = (String)var2.get(var5);
-            String var7 = (String)var3.get(String.valueOf(var5));
-            var4.add(createFilteredText(var1, var6, Optional.ofNullable(var7)));
+         for(int i = 0; i < pages.size(); ++i) {
+            String page = (String)pages.get(i);
+            String filteredPage = (String)filteredPages.get(String.valueOf(i));
+            fixedPages.add(createFilteredText(dynamic, page, Optional.ofNullable(filteredPage)));
          }
 
-         return var1.createList(var4.stream());
+         return dynamic.createList(fixedPages.stream());
       }
    }
 
-   private static Dynamic<?> createFilteredText(Dynamic<?> var0, String var1, Optional<String> var2) {
-      Dynamic var3 = var0.emptyMap().set("raw", var0.createString(var1));
-      if (var2.isPresent()) {
-         var3 = var3.set("filtered", var0.createString((String)var2.get()));
+   private static Dynamic<?> createFilteredText(final Dynamic<?> dynamic, final String text, final Optional<String> filtered) {
+      Dynamic<?> fixedPage = dynamic.emptyMap().set("raw", dynamic.createString(text));
+      if (filtered.isPresent()) {
+         fixedPage = fixedPage.set("filtered", dynamic.createString((String)filtered.get()));
       }
 
-      return var3;
+      return fixedPage;
    }
 
-   private static void fixBucketedMobData(ItemStackData var0, Dynamic<?> var1) {
-      Dynamic var2 = var1.emptyMap();
+   private static void fixBucketedMobData(final ItemStackData itemStack, final Dynamic<?> dynamic) {
+      Dynamic<?> data = dynamic.emptyMap();
 
-      for(String var4 : BUCKETED_MOB_TAGS) {
-         var2 = var0.moveTagInto(var4, var2, var4);
+      for(String key : BUCKETED_MOB_TAGS) {
+         data = itemStack.moveTagInto(key, data, key);
       }
 
-      if (!var2.equals(var1.emptyMap())) {
-         var0.setComponent("minecraft:bucket_entity_data", var2);
+      if (!data.equals(dynamic.emptyMap())) {
+         itemStack.setComponent("minecraft:bucket_entity_data", data);
       }
 
    }
 
-   private static void fixLodestoneTracker(ItemStackData var0, Dynamic<?> var1) {
-      Optional var2 = var0.removeTag("LodestonePos").result();
-      Optional var3 = var0.removeTag("LodestoneDimension").result();
-      if (!var2.isEmpty() || !var3.isEmpty()) {
-         boolean var4 = var0.removeTag("LodestoneTracked").asBoolean(true);
-         Dynamic var5 = var1.emptyMap();
-         if (var2.isPresent() && var3.isPresent()) {
-            var5 = var5.set("target", var1.emptyMap().set("pos", (Dynamic)var2.get()).set("dimension", (Dynamic)var3.get()));
+   private static void fixLodestoneTracker(final ItemStackData itemStack, final Dynamic<?> dynamic) {
+      Optional<? extends Dynamic<?>> lodestonePos = itemStack.removeTag("LodestonePos").result();
+      Optional<? extends Dynamic<?>> lodestoneDimension = itemStack.removeTag("LodestoneDimension").result();
+      if (!lodestonePos.isEmpty() || !lodestoneDimension.isEmpty()) {
+         boolean lodestoneTracked = itemStack.removeTag("LodestoneTracked").asBoolean(true);
+         Dynamic<?> component = dynamic.emptyMap();
+         if (lodestonePos.isPresent() && lodestoneDimension.isPresent()) {
+            component = component.set("target", dynamic.emptyMap().set("pos", (Dynamic)lodestonePos.get()).set("dimension", (Dynamic)lodestoneDimension.get()));
          }
 
-         if (!var4) {
-            var5 = var5.set("tracked", var1.createBoolean(false));
+         if (!lodestoneTracked) {
+            component = component.set("tracked", dynamic.createBoolean(false));
          }
 
-         var0.setComponent("minecraft:lodestone_tracker", var5);
+         itemStack.setComponent("minecraft:lodestone_tracker", component);
       }
    }
 
-   private static void fixFireworkStar(ItemStackData var0) {
-      var0.fixSubTag("Explosion", true, (var1) -> {
-         var0.setComponent("minecraft:firework_explosion", fixFireworkExplosion(var1));
-         return var1.remove("Type").remove("Colors").remove("FadeColors").remove("Trail").remove("Flicker");
+   private static void fixFireworkStar(final ItemStackData itemStack) {
+      itemStack.fixSubTag("Explosion", true, (explosion) -> {
+         itemStack.setComponent("minecraft:firework_explosion", fixFireworkExplosion(explosion));
+         return explosion.remove("Type").remove("Colors").remove("FadeColors").remove("Trail").remove("Flicker");
       });
    }
 
-   private static void fixFireworkRocket(ItemStackData var0) {
-      var0.fixSubTag("Fireworks", true, (var1) -> {
-         Stream var2 = var1.get("Explosions").asStream().map(ItemStackComponentizationFix::fixFireworkExplosion);
-         int var3 = var1.get("Flight").asInt(0);
-         var0.setComponent("minecraft:fireworks", var1.emptyMap().set("explosions", var1.createList(var2)).set("flight_duration", var1.createByte((byte)var3)));
-         return var1.remove("Explosions").remove("Flight");
+   private static void fixFireworkRocket(final ItemStackData itemStack) {
+      itemStack.fixSubTag("Fireworks", true, (fireworks) -> {
+         Stream<? extends Dynamic<?>> explosions = fireworks.get("Explosions").asStream().map(ItemStackComponentizationFix::fixFireworkExplosion);
+         int flight = fireworks.get("Flight").asInt(0);
+         itemStack.setComponent("minecraft:fireworks", fireworks.emptyMap().set("explosions", fireworks.createList(explosions)).set("flight_duration", fireworks.createByte((byte)flight)));
+         return fireworks.remove("Explosions").remove("Flight");
       });
    }
 
-   private static Dynamic<?> fixFireworkExplosion(Dynamic<?> var0) {
+   private static Dynamic<?> fixFireworkExplosion(Dynamic<?> explosion) {
       String var10003;
-      switch (var0.get("Type").asInt(0)) {
+      switch (explosion.get("Type").asInt(0)) {
          case 1 -> var10003 = "large_ball";
          case 2 -> var10003 = "star";
          case 3 -> var10003 = "creeper";
@@ -566,159 +566,159 @@ public class ItemStackComponentizationFix extends DataFix {
          default -> var10003 = "small_ball";
       }
 
-      var0 = var0.set("shape", var0.createString(var10003)).remove("Type");
-      var0 = var0.renameField("Colors", "colors");
-      var0 = var0.renameField("FadeColors", "fade_colors");
-      var0 = var0.renameField("Trail", "has_trail");
-      var0 = var0.renameField("Flicker", "has_twinkle");
-      return var0;
+      explosion = explosion.set("shape", explosion.createString(var10003)).remove("Type");
+      explosion = explosion.renameField("Colors", "colors");
+      explosion = explosion.renameField("FadeColors", "fade_colors");
+      explosion = explosion.renameField("Trail", "has_trail");
+      explosion = explosion.renameField("Flicker", "has_twinkle");
+      return explosion;
    }
 
-   public static Dynamic<?> fixProfile(Dynamic<?> var0) {
-      Optional var1 = var0.asString().result();
-      if (var1.isPresent()) {
-         return isValidPlayerName((String)var1.get()) ? var0.emptyMap().set("name", var0.createString((String)var1.get())) : var0.emptyMap();
+   public static Dynamic<?> fixProfile(final Dynamic<?> dynamic) {
+      Optional<String> simpleName = dynamic.asString().result();
+      if (simpleName.isPresent()) {
+         return isValidPlayerName((String)simpleName.get()) ? dynamic.emptyMap().set("name", dynamic.createString((String)simpleName.get())) : dynamic.emptyMap();
       } else {
-         String var2 = var0.get("Name").asString("");
-         Optional var3 = var0.get("Id").result();
-         Dynamic var4 = fixProfileProperties(var0.get("Properties"));
-         Dynamic var5 = var0.emptyMap();
-         if (isValidPlayerName(var2)) {
-            var5 = var5.set("name", var0.createString(var2));
+         String name = dynamic.get("Name").asString("");
+         Optional<? extends Dynamic<?>> id = dynamic.get("Id").result();
+         Dynamic<?> properties = fixProfileProperties(dynamic.get("Properties"));
+         Dynamic<?> profile = dynamic.emptyMap();
+         if (isValidPlayerName(name)) {
+            profile = profile.set("name", dynamic.createString(name));
          }
 
-         if (var3.isPresent()) {
-            var5 = var5.set("id", (Dynamic)var3.get());
+         if (id.isPresent()) {
+            profile = profile.set("id", (Dynamic)id.get());
          }
 
-         if (var4 != null) {
-            var5 = var5.set("properties", var4);
+         if (properties != null) {
+            profile = profile.set("properties", properties);
          }
 
-         return var5;
+         return profile;
       }
    }
 
-   private static boolean isValidPlayerName(String var0) {
-      return var0.length() > 16 ? false : var0.chars().filter((var0x) -> var0x <= 32 || var0x >= 127).findAny().isEmpty();
+   private static boolean isValidPlayerName(final String name) {
+      return name.length() > 16 ? false : name.chars().filter((c) -> c <= 32 || c >= 127).findAny().isEmpty();
    }
 
-   private static @Nullable Dynamic<?> fixProfileProperties(OptionalDynamic<?> var0) {
-      Map var1 = var0.asMap((var0x) -> var0x.asString(""), (var0x) -> var0x.asList((var0) -> {
-            String var1 = var0.get("Value").asString("");
-            Optional var2 = var0.get("Signature").asString().result();
-            return Pair.of(var1, var2);
+   private static @Nullable Dynamic<?> fixProfileProperties(final OptionalDynamic<?> dynamic) {
+      Map<String, List<Pair<String, Optional<String>>>> properties = dynamic.asMap((key) -> key.asString(""), (list) -> list.asList((property) -> {
+            String value = property.get("Value").asString("");
+            Optional<String> signature = property.get("Signature").asString().result();
+            return Pair.of(value, signature);
          }));
-      return var1.isEmpty() ? null : var0.createList(var1.entrySet().stream().flatMap((var1x) -> ((List)var1x.getValue()).stream().map((var2) -> {
-            Dynamic var3 = var0.emptyMap().set("name", var0.createString((String)var1x.getKey())).set("value", var0.createString((String)var2.getFirst()));
-            Optional var4 = (Optional)var2.getSecond();
-            return var4.isPresent() ? var3.set("signature", var0.createString((String)var4.get())) : var3;
+      return properties.isEmpty() ? null : dynamic.createList(properties.entrySet().stream().flatMap((entry) -> ((List)entry.getValue()).stream().map((pair) -> {
+            Dynamic<?> property = dynamic.emptyMap().set("name", dynamic.createString((String)entry.getKey())).set("value", dynamic.createString((String)pair.getFirst()));
+            Optional<String> signature = (Optional)pair.getSecond();
+            return signature.isPresent() ? property.set("signature", dynamic.createString((String)signature.get())) : property;
          })));
    }
 
    protected TypeRewriteRule makeRule() {
-      return this.writeFixAndRead("ItemStack componentization", this.getInputSchema().getType(References.ITEM_STACK), this.getOutputSchema().getType(References.ITEM_STACK), (var0) -> {
-         Optional var1 = ItemStackComponentizationFix.ItemStackData.read(var0).map((var0x) -> {
-            fixItemStack(var0x, var0x.tag);
-            return var0x.write();
+      return this.writeFixAndRead("ItemStack componentization", this.getInputSchema().getType(References.ITEM_STACK), this.getOutputSchema().getType(References.ITEM_STACK), (dynamic) -> {
+         Optional<? extends Dynamic<?>> fixedItemStack = ItemStackComponentizationFix.ItemStackData.read(dynamic).map((itemStack) -> {
+            fixItemStack(itemStack, itemStack.tag);
+            return itemStack.write();
          });
-         return (Dynamic)DataFixUtils.orElse(var1, var0);
+         return (Dynamic)DataFixUtils.orElse(fixedItemStack, dynamic);
       });
    }
 
-   static class ItemStackData {
+   private static class ItemStackData {
       private final String item;
       private final int count;
       private Dynamic<?> components;
       private final Dynamic<?> remainder;
-      Dynamic<?> tag;
+      private Dynamic<?> tag;
 
-      private ItemStackData(String var1, int var2, Dynamic<?> var3) {
+      private ItemStackData(final String item, final int count, final Dynamic<?> remainder) {
          super();
-         this.item = NamespacedSchema.ensureNamespaced(var1);
-         this.count = var2;
-         this.components = var3.emptyMap();
-         this.tag = var3.get("tag").orElseEmptyMap();
-         this.remainder = var3.remove("tag");
+         this.item = NamespacedSchema.ensureNamespaced(item);
+         this.count = count;
+         this.components = remainder.emptyMap();
+         this.tag = remainder.get("tag").orElseEmptyMap();
+         this.remainder = remainder.remove("tag");
       }
 
-      public static Optional<ItemStackData> read(Dynamic<?> var0) {
-         return var0.get("id").asString().apply2stable((var1, var2) -> new ItemStackData(var1, var2.intValue(), var0.remove("id").remove("Count")), var0.get("Count").asNumber()).result();
+      public static Optional<ItemStackData> read(final Dynamic<?> dynamic) {
+         return dynamic.get("id").asString().apply2stable((item, count) -> new ItemStackData(item, count.intValue(), dynamic.remove("id").remove("Count")), dynamic.get("Count").asNumber()).result();
       }
 
-      public OptionalDynamic<?> removeTag(String var1) {
-         OptionalDynamic var2 = this.tag.get(var1);
-         this.tag = this.tag.remove(var1);
-         return var2;
+      public OptionalDynamic<?> removeTag(final String key) {
+         OptionalDynamic<?> value = this.tag.get(key);
+         this.tag = this.tag.remove(key);
+         return value;
       }
 
-      public void setComponent(String var1, Dynamic<?> var2) {
-         this.components = this.components.set(var1, var2);
+      public void setComponent(final String type, final Dynamic<?> value) {
+         this.components = this.components.set(type, value);
       }
 
-      public void setComponent(String var1, OptionalDynamic<?> var2) {
-         var2.result().ifPresent((var2x) -> this.components = this.components.set(var1, var2x));
+      public void setComponent(final String type, final OptionalDynamic<?> optionalValue) {
+         optionalValue.result().ifPresent((value) -> this.components = this.components.set(type, value));
       }
 
-      public Dynamic<?> moveTagInto(String var1, Dynamic<?> var2, String var3) {
-         Optional var4 = this.removeTag(var1).result();
-         return var4.isPresent() ? var2.set(var3, (Dynamic)var4.get()) : var2;
+      public Dynamic<?> moveTagInto(final String fromKey, final Dynamic<?> target, final String toKey) {
+         Optional<? extends Dynamic<?>> value = this.removeTag(fromKey).result();
+         return value.isPresent() ? target.set(toKey, (Dynamic)value.get()) : target;
       }
 
-      public void moveTagToComponent(String var1, String var2, Dynamic<?> var3) {
-         Optional var4 = this.removeTag(var1).result();
-         if (var4.isPresent() && !((Dynamic)var4.get()).equals(var3)) {
-            this.setComponent(var2, (Dynamic)var4.get());
+      public void moveTagToComponent(final String key, final String type, final Dynamic<?> defaultValue) {
+         Optional<? extends Dynamic<?>> value = this.removeTag(key).result();
+         if (value.isPresent() && !((Dynamic)value.get()).equals(defaultValue)) {
+            this.setComponent(type, (Dynamic)value.get());
          }
 
       }
 
-      public void moveTagToComponent(String var1, String var2) {
-         this.removeTag(var1).result().ifPresent((var2x) -> this.setComponent(var2, var2x));
+      public void moveTagToComponent(final String key, final String type) {
+         this.removeTag(key).result().ifPresent((value) -> this.setComponent(type, value));
       }
 
-      public void fixSubTag(String var1, boolean var2, UnaryOperator<Dynamic<?>> var3) {
-         OptionalDynamic var4 = this.tag.get(var1);
-         if (!var2 || !var4.result().isEmpty()) {
-            Dynamic var5 = var4.orElseEmptyMap();
-            var5 = (Dynamic)var3.apply(var5);
-            if (var5.equals(var5.emptyMap())) {
-               this.tag = this.tag.remove(var1);
+      public void fixSubTag(final String key, final boolean dontFixWhenFieldIsMissing, final UnaryOperator<Dynamic<?>> function) {
+         OptionalDynamic<?> value = this.tag.get(key);
+         if (!dontFixWhenFieldIsMissing || !value.result().isEmpty()) {
+            Dynamic<?> map = value.orElseEmptyMap();
+            map = (Dynamic)function.apply(map);
+            if (map.equals(map.emptyMap())) {
+               this.tag = this.tag.remove(key);
             } else {
-               this.tag = this.tag.set(var1, var5);
+               this.tag = this.tag.set(key, map);
             }
 
          }
       }
 
       public Dynamic<?> write() {
-         Dynamic var1 = this.tag.emptyMap().set("id", this.tag.createString(this.item)).set("count", this.tag.createInt(this.count));
+         Dynamic<?> result = this.tag.emptyMap().set("id", this.tag.createString(this.item)).set("count", this.tag.createInt(this.count));
          if (!this.tag.equals(this.tag.emptyMap())) {
             this.components = this.components.set("minecraft:custom_data", this.tag);
          }
 
          if (!this.components.equals(this.tag.emptyMap())) {
-            var1 = var1.set("components", this.components);
+            result = result.set("components", this.components);
          }
 
-         return mergeRemainder(var1, this.remainder);
+         return mergeRemainder(result, this.remainder);
       }
 
-      private static <T> Dynamic<T> mergeRemainder(Dynamic<T> var0, Dynamic<?> var1) {
-         DynamicOps var2 = var0.getOps();
-         return (Dynamic)var2.getMap(var0.getValue()).flatMap((var2x) -> var2.mergeToMap(var1.convert(var2).getValue(), var2x)).map((var1x) -> new Dynamic(var2, var1x)).result().orElse(var0);
+      private static <T> Dynamic<T> mergeRemainder(final Dynamic<T> itemStack, final Dynamic<?> remainder) {
+         DynamicOps<T> ops = itemStack.getOps();
+         return (Dynamic)ops.getMap(itemStack.getValue()).flatMap((itemStackMap) -> ops.mergeToMap(remainder.convert(ops).getValue(), itemStackMap)).map((merged) -> new Dynamic(ops, merged)).result().orElse(itemStack);
       }
 
-      public boolean is(String var1) {
-         return this.item.equals(var1);
+      public boolean is(final String id) {
+         return this.item.equals(id);
       }
 
-      public boolean is(Set<String> var1) {
-         return var1.contains(this.item);
+      public boolean is(final Set<String> ids) {
+         return ids.contains(this.item);
       }
 
-      public boolean hasComponent(String var1) {
-         return this.components.get(var1).result().isPresent();
+      public boolean hasComponent(final String id) {
+         return this.components.get(id).result().isPresent();
       }
    }
 }

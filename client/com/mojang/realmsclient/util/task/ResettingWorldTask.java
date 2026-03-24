@@ -13,46 +13,46 @@ public abstract class ResettingWorldTask extends LongRunningTask {
    private final Component title;
    private final Runnable callback;
 
-   public ResettingWorldTask(long var1, Component var3, Runnable var4) {
+   public ResettingWorldTask(final long serverId, final Component title, final Runnable callback) {
       super();
-      this.serverId = var1;
-      this.title = var3;
-      this.callback = var4;
+      this.serverId = serverId;
+      this.title = title;
+      this.callback = callback;
    }
 
-   protected abstract void sendResetRequest(RealmsClient var1, long var2) throws RealmsServiceException;
+   protected abstract void sendResetRequest(final RealmsClient client, final long serverId) throws RealmsServiceException;
 
    public void run() {
-      RealmsClient var1 = RealmsClient.getOrCreate();
-      int var2 = 0;
+      RealmsClient client = RealmsClient.getOrCreate();
+      int i = 0;
 
-      while(var2 < 25) {
+      while(i < 25) {
          try {
             if (this.aborted()) {
                return;
             }
 
-            this.sendResetRequest(var1, this.serverId);
+            this.sendResetRequest(client, this.serverId);
             if (this.aborted()) {
                return;
             }
 
             this.callback.run();
             return;
-         } catch (RetryCallException var4) {
+         } catch (RetryCallException e) {
             if (this.aborted()) {
                return;
             }
 
-            pause((long)var4.delaySeconds);
-            ++var2;
-         } catch (Exception var5) {
+            pause((long)e.delaySeconds);
+            ++i;
+         } catch (Exception e) {
             if (this.aborted()) {
                return;
             }
 
             LOGGER.error("Couldn't reset world");
-            this.error(var5);
+            this.error(e);
             return;
          }
       }

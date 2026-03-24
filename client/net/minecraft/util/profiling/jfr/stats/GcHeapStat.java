@@ -8,44 +8,37 @@ import java.util.stream.Collectors;
 import jdk.jfr.consumer.RecordedEvent;
 
 public record GcHeapStat(Instant timestamp, long heapUsed, Timing timing) {
-   public GcHeapStat(Instant var1, long var2, Timing var4) {
+   public GcHeapStat {
       super();
-      this.timestamp = var1;
-      this.heapUsed = var2;
-      this.timing = var4;
    }
 
-   public static GcHeapStat from(RecordedEvent var0) {
-      return new GcHeapStat(var0.getStartTime(), var0.getLong("heapUsed"), var0.getString("when").equalsIgnoreCase("before gc") ? GcHeapStat.Timing.BEFORE_GC : GcHeapStat.Timing.AFTER_GC);
+   public static GcHeapStat from(final RecordedEvent event) {
+      return new GcHeapStat(event.getStartTime(), event.getLong("heapUsed"), event.getString("when").equalsIgnoreCase("before gc") ? GcHeapStat.Timing.BEFORE_GC : GcHeapStat.Timing.AFTER_GC);
    }
 
-   public static Summary summary(Duration var0, List<GcHeapStat> var1, Duration var2, int var3) {
-      return new Summary(var0, var2, var3, calculateAllocationRatePerSecond(var1));
+   public static Summary summary(final Duration recordingDuration, final List<GcHeapStat> heapStats, final Duration gcTotalDuration, final int totalGCs) {
+      return new Summary(recordingDuration, gcTotalDuration, totalGCs, calculateAllocationRatePerSecond(heapStats));
    }
 
-   private static double calculateAllocationRatePerSecond(List<GcHeapStat> var0) {
-      long var1 = 0L;
-      Map var3 = (Map)var0.stream().collect(Collectors.groupingBy((var0x) -> var0x.timing));
-      List var4 = (List)var3.get(GcHeapStat.Timing.BEFORE_GC);
-      List var5 = (List)var3.get(GcHeapStat.Timing.AFTER_GC);
+   private static double calculateAllocationRatePerSecond(final List<GcHeapStat> heapStats) {
+      long totalAllocations = 0L;
+      Map<Timing, List<GcHeapStat>> byTiming = (Map)heapStats.stream().collect(Collectors.groupingBy((it) -> it.timing));
+      List<GcHeapStat> beforeGcs = (List)byTiming.get(GcHeapStat.Timing.BEFORE_GC);
+      List<GcHeapStat> afterGcs = (List)byTiming.get(GcHeapStat.Timing.AFTER_GC);
 
-      for(int var6 = 1; var6 < var4.size(); ++var6) {
-         GcHeapStat var7 = (GcHeapStat)var4.get(var6);
-         GcHeapStat var8 = (GcHeapStat)var5.get(var6 - 1);
-         var1 += var7.heapUsed - var8.heapUsed;
+      for(int i = 1; i < beforeGcs.size(); ++i) {
+         GcHeapStat beforeGC = (GcHeapStat)beforeGcs.get(i);
+         GcHeapStat previousGC = (GcHeapStat)afterGcs.get(i - 1);
+         totalAllocations += beforeGC.heapUsed - previousGC.heapUsed;
       }
 
-      Duration var9 = Duration.between(((GcHeapStat)var0.get(1)).timestamp, ((GcHeapStat)var0.get(var0.size() - 1)).timestamp);
-      return (double)var1 / (double)var9.getSeconds();
+      Duration totalDuration = Duration.between(((GcHeapStat)heapStats.get(1)).timestamp, ((GcHeapStat)heapStats.get(heapStats.size() - 1)).timestamp);
+      return (double)totalAllocations / (double)totalDuration.getSeconds();
    }
 
    public static record Summary(Duration duration, Duration gcTotalDuration, int totalGCs, double allocationRateBytesPerSecond) {
-      public Summary(Duration var1, Duration var2, int var3, double var4) {
+      public Summary {
          super();
-         this.duration = var1;
-         this.gcTotalDuration = var2;
-         this.totalGCs = var3;
-         this.allocationRateBytesPerSecond = var4;
       }
 
       public float gcOverHead() {

@@ -7,8 +7,8 @@ public class TagTypes {
       super();
    }
 
-   public static TagType<?> getType(int var0) {
-      return var0 >= 0 && var0 < TYPES.length ? TYPES[var0] : TagType.createInvalid(var0);
+   public static TagType<?> getType(final int typeId) {
+      return typeId >= 0 && typeId < TYPES.length ? TYPES[typeId] : TagType.createInvalid(typeId);
    }
 
    static {

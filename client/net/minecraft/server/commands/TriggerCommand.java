@@ -9,16 +9,14 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.ObjectiveArgument;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.ReadOnlyScoreInfo;
 import net.minecraft.world.scores.ScoreAccess;
@@ -34,59 +32,59 @@ public class TriggerCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)Commands.literal("trigger").then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("objective", ObjectiveArgument.objective()).suggests((var0x, var1) -> suggestObjectives((CommandSourceStack)var0x.getSource(), var1)).executes((var0x) -> simpleTrigger((CommandSourceStack)var0x.getSource(), ((CommandSourceStack)var0x.getSource()).getPlayerOrException(), ObjectiveArgument.getObjective(var0x, "objective")))).then(Commands.literal("add").then(Commands.argument("value", IntegerArgumentType.integer()).executes((var0x) -> addValue((CommandSourceStack)var0x.getSource(), ((CommandSourceStack)var0x.getSource()).getPlayerOrException(), ObjectiveArgument.getObjective(var0x, "objective"), IntegerArgumentType.getInteger(var0x, "value")))))).then(Commands.literal("set").then(Commands.argument("value", IntegerArgumentType.integer()).executes((var0x) -> setValue((CommandSourceStack)var0x.getSource(), ((CommandSourceStack)var0x.getSource()).getPlayerOrException(), ObjectiveArgument.getObjective(var0x, "objective"), IntegerArgumentType.getInteger(var0x, "value")))))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)Commands.literal("trigger").then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("objective", ObjectiveArgument.objective()).suggests((c, p) -> suggestObjectives((CommandSourceStack)c.getSource(), p)).executes((c) -> simpleTrigger((CommandSourceStack)c.getSource(), ((CommandSourceStack)c.getSource()).getPlayerOrException(), ObjectiveArgument.getObjective(c, "objective")))).then(Commands.literal("add").then(Commands.argument("value", IntegerArgumentType.integer()).executes((c) -> addValue((CommandSourceStack)c.getSource(), ((CommandSourceStack)c.getSource()).getPlayerOrException(), ObjectiveArgument.getObjective(c, "objective"), IntegerArgumentType.getInteger(c, "value")))))).then(Commands.literal("set").then(Commands.argument("value", IntegerArgumentType.integer()).executes((c) -> setValue((CommandSourceStack)c.getSource(), ((CommandSourceStack)c.getSource()).getPlayerOrException(), ObjectiveArgument.getObjective(c, "objective"), IntegerArgumentType.getInteger(c, "value")))))));
    }
 
-   public static CompletableFuture<Suggestions> suggestObjectives(CommandSourceStack var0, SuggestionsBuilder var1) {
-      Entity var2 = var0.getEntity();
-      ArrayList var3 = Lists.newArrayList();
-      if (var2 != null) {
-         ServerScoreboard var4 = var0.getServer().getScoreboard();
+   public static CompletableFuture<Suggestions> suggestObjectives(final CommandSourceStack source, final SuggestionsBuilder builder) {
+      ScoreHolder entity = source.getEntity();
+      List<String> result = Lists.newArrayList();
+      if (entity != null) {
+         Scoreboard scoreboard = source.getServer().getScoreboard();
 
-         for(Objective var6 : ((Scoreboard)var4).getObjectives()) {
-            if (var6.getCriteria() == ObjectiveCriteria.TRIGGER) {
-               ReadOnlyScoreInfo var7 = ((Scoreboard)var4).getPlayerScoreInfo(var2, var6);
-               if (var7 != null && !var7.isLocked()) {
-                  var3.add(var6.getName());
+         for(Objective objective : scoreboard.getObjectives()) {
+            if (objective.getCriteria() == ObjectiveCriteria.TRIGGER) {
+               ReadOnlyScoreInfo scoreInfo = scoreboard.getPlayerScoreInfo(entity, objective);
+               if (scoreInfo != null && !scoreInfo.isLocked()) {
+                  result.add(objective.getName());
                }
             }
          }
       }
 
-      return SharedSuggestionProvider.suggest(var3, var1);
+      return SharedSuggestionProvider.suggest(result, builder);
    }
 
-   private static int addValue(CommandSourceStack var0, ServerPlayer var1, Objective var2, int var3) throws CommandSyntaxException {
-      ScoreAccess var4 = getScore(var0.getServer().getScoreboard(), var1, var2);
-      int var5 = var4.add(var3);
-      var0.sendSuccess(() -> Component.translatable("commands.trigger.add.success", var2.getFormattedDisplayName(), var3), true);
-      return var5;
+   private static int addValue(final CommandSourceStack source, final ServerPlayer player, final Objective objective, final int amount) throws CommandSyntaxException {
+      ScoreAccess score = getScore(source.getServer().getScoreboard(), player, objective);
+      int newValue = score.add(amount);
+      source.sendSuccess(() -> Component.translatable("commands.trigger.add.success", objective.getFormattedDisplayName(), amount), true);
+      return newValue;
    }
 
-   private static int setValue(CommandSourceStack var0, ServerPlayer var1, Objective var2, int var3) throws CommandSyntaxException {
-      ScoreAccess var4 = getScore(var0.getServer().getScoreboard(), var1, var2);
-      var4.set(var3);
-      var0.sendSuccess(() -> Component.translatable("commands.trigger.set.success", var2.getFormattedDisplayName(), var3), true);
-      return var3;
+   private static int setValue(final CommandSourceStack source, final ServerPlayer player, final Objective objective, final int amount) throws CommandSyntaxException {
+      ScoreAccess score = getScore(source.getServer().getScoreboard(), player, objective);
+      score.set(amount);
+      source.sendSuccess(() -> Component.translatable("commands.trigger.set.success", objective.getFormattedDisplayName(), amount), true);
+      return amount;
    }
 
-   private static int simpleTrigger(CommandSourceStack var0, ServerPlayer var1, Objective var2) throws CommandSyntaxException {
-      ScoreAccess var3 = getScore(var0.getServer().getScoreboard(), var1, var2);
-      int var4 = var3.add(1);
-      var0.sendSuccess(() -> Component.translatable("commands.trigger.simple.success", var2.getFormattedDisplayName()), true);
-      return var4;
+   private static int simpleTrigger(final CommandSourceStack source, final ServerPlayer player, final Objective objective) throws CommandSyntaxException {
+      ScoreAccess score = getScore(source.getServer().getScoreboard(), player, objective);
+      int newValue = score.add(1);
+      source.sendSuccess(() -> Component.translatable("commands.trigger.simple.success", objective.getFormattedDisplayName()), true);
+      return newValue;
    }
 
-   private static ScoreAccess getScore(Scoreboard var0, ScoreHolder var1, Objective var2) throws CommandSyntaxException {
-      if (var2.getCriteria() != ObjectiveCriteria.TRIGGER) {
+   private static ScoreAccess getScore(final Scoreboard scoreboard, final ScoreHolder scoreHolder, final Objective objective) throws CommandSyntaxException {
+      if (objective.getCriteria() != ObjectiveCriteria.TRIGGER) {
          throw ERROR_INVALID_OBJECTIVE.create();
       } else {
-         ReadOnlyScoreInfo var3 = var0.getPlayerScoreInfo(var1, var2);
-         if (var3 != null && !var3.isLocked()) {
-            ScoreAccess var4 = var0.getOrCreatePlayerScore(var1, var2);
-            var4.lock();
-            return var4;
+         ReadOnlyScoreInfo scoreInfo = scoreboard.getPlayerScoreInfo(scoreHolder, objective);
+         if (scoreInfo != null && !scoreInfo.isLocked()) {
+            ScoreAccess score = scoreboard.getOrCreatePlayerScore(scoreHolder, objective);
+            score.lock();
+            return score;
          } else {
             throw ERROR_NOT_PRIMED.create();
          }

@@ -33,20 +33,20 @@ public class DebugSubscriptions<T> {
       super();
    }
 
-   public static DebugSubscription<?> bootstrap(Registry<DebugSubscription<?>> var0) {
+   public static DebugSubscription<?> bootstrap(final Registry<DebugSubscription<?>> registry) {
       return DEDICATED_SERVER_TICK_TIME;
    }
 
-   private static DebugSubscription<?> registerSimple(String var0) {
-      return (DebugSubscription)Registry.register(BuiltInRegistries.DEBUG_SUBSCRIPTION, (Identifier)Identifier.withDefaultNamespace(var0), new DebugSubscription((StreamCodec)null));
+   private static DebugSubscription<?> registerSimple(final String id) {
+      return (DebugSubscription)Registry.register(BuiltInRegistries.DEBUG_SUBSCRIPTION, (Identifier)Identifier.withDefaultNamespace(id), new DebugSubscription((StreamCodec)null));
    }
 
-   private static <T> DebugSubscription<T> registerWithValue(String var0, StreamCodec<? super RegistryFriendlyByteBuf, T> var1) {
-      return (DebugSubscription)Registry.register(BuiltInRegistries.DEBUG_SUBSCRIPTION, (Identifier)Identifier.withDefaultNamespace(var0), new DebugSubscription(var1));
+   private static <T> DebugSubscription<T> registerWithValue(final String id, final StreamCodec<? super RegistryFriendlyByteBuf, T> valueStreamCodec) {
+      return (DebugSubscription)Registry.register(BuiltInRegistries.DEBUG_SUBSCRIPTION, (Identifier)Identifier.withDefaultNamespace(id), new DebugSubscription(valueStreamCodec));
    }
 
-   private static <T> DebugSubscription<T> registerTemporaryValue(String var0, StreamCodec<? super RegistryFriendlyByteBuf, T> var1, int var2) {
-      return (DebugSubscription)Registry.register(BuiltInRegistries.DEBUG_SUBSCRIPTION, (Identifier)Identifier.withDefaultNamespace(var0), new DebugSubscription(var1, var2));
+   private static <T> DebugSubscription<T> registerTemporaryValue(final String id, final StreamCodec<? super RegistryFriendlyByteBuf, T> valueStreamCodec, final int expireAfterTicks) {
+      return (DebugSubscription)Registry.register(BuiltInRegistries.DEBUG_SUBSCRIPTION, (Identifier)Identifier.withDefaultNamespace(id), new DebugSubscription(valueStreamCodec, expireAfterTicks));
    }
 
    static {

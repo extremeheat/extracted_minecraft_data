@@ -6,5 +6,5 @@ import net.minecraft.server.level.ServerPlayer;
 public interface ServerPlayerConnection {
    ServerPlayer getPlayer();
 
-   void send(Packet<?> var1);
+   void send(final Packet<?> packet);
 }

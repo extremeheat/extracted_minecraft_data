@@ -33,26 +33,26 @@ public class Activity {
    private final String name;
    private final int hashCode;
 
-   private Activity(String var1) {
+   private Activity(final String name) {
       super();
-      this.name = var1;
-      this.hashCode = var1.hashCode();
+      this.name = name;
+      this.hashCode = name.hashCode();
    }
 
    public String getName() {
       return this.name;
    }
 
-   private static Activity register(String var0) {
-      return (Activity)Registry.register(BuiltInRegistries.ACTIVITY, (String)var0, new Activity(var0));
+   private static Activity register(final String name) {
+      return (Activity)Registry.register(BuiltInRegistries.ACTIVITY, (String)name, new Activity(name));
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
+   public boolean equals(final Object o) {
+      if (this == o) {
          return true;
-      } else if (var1 != null && this.getClass() == var1.getClass()) {
-         Activity var2 = (Activity)var1;
-         return this.name.equals(var2.name);
+      } else if (o != null && this.getClass() == o.getClass()) {
+         Activity activity = (Activity)o;
+         return this.name.equals(activity.name);
       } else {
          return false;
       }

@@ -32,60 +32,60 @@ public class ItemEnchantments implements TooltipProvider {
    private static final Codec<Integer> LEVEL_CODEC = Codec.intRange(1, 255);
    public static final Codec<ItemEnchantments> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, ItemEnchantments> STREAM_CODEC;
-   final Object2IntOpenHashMap<Holder<Enchantment>> enchantments;
+   private final Object2IntOpenHashMap<Holder<Enchantment>> enchantments;
 
-   ItemEnchantments(Object2IntOpenHashMap<Holder<Enchantment>> var1) {
+   private ItemEnchantments(final Object2IntOpenHashMap<Holder<Enchantment>> enchantments) {
       super();
-      this.enchantments = var1;
-      ObjectIterator var2 = var1.object2IntEntrySet().iterator();
+      this.enchantments = enchantments;
+      ObjectIterator var2 = enchantments.object2IntEntrySet().iterator();
 
       while(var2.hasNext()) {
-         Object2IntMap.Entry var3 = (Object2IntMap.Entry)var2.next();
-         int var4 = var3.getIntValue();
-         if (var4 < 0 || var4 > 255) {
-            String var10002 = String.valueOf(var3.getKey());
-            throw new IllegalArgumentException("Enchantment " + var10002 + " has invalid level " + var4);
+         Object2IntMap.Entry<Holder<Enchantment>> entry = (Object2IntMap.Entry)var2.next();
+         int level = entry.getIntValue();
+         if (level < 0 || level > 255) {
+            String var10002 = String.valueOf(entry.getKey());
+            throw new IllegalArgumentException("Enchantment " + var10002 + " has invalid level " + level);
          }
       }
 
    }
 
-   public int getLevel(Holder<Enchantment> var1) {
-      return this.enchantments.getInt(var1);
+   public int getLevel(final Holder<Enchantment> enchantment) {
+      return this.enchantments.getInt(enchantment);
    }
 
-   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
-      HolderLookup.Provider var5 = var1.registries();
-      HolderSet var6 = getTagOrEmpty(var5, Registries.ENCHANTMENT, EnchantmentTags.TOOLTIP_ORDER);
+   public void addToTooltip(final Item.TooltipContext context, final Consumer<Component> consumer, final TooltipFlag flag, final DataComponentGetter components) {
+      HolderLookup.Provider registries = context.registries();
+      HolderSet<Enchantment> order = getTagOrEmpty(registries, Registries.ENCHANTMENT, EnchantmentTags.TOOLTIP_ORDER);
 
-      for(Holder var8 : var6) {
-         int var9 = this.enchantments.getInt(var8);
-         if (var9 > 0) {
-            var2.accept(Enchantment.getFullname(var8, var9));
+      for(Holder<Enchantment> enchantment : order) {
+         int level = this.enchantments.getInt(enchantment);
+         if (level > 0) {
+            consumer.accept(Enchantment.getFullname(enchantment, level));
          }
       }
 
       ObjectIterator var10 = this.enchantments.object2IntEntrySet().iterator();
 
       while(var10.hasNext()) {
-         Object2IntMap.Entry var11 = (Object2IntMap.Entry)var10.next();
-         Holder var12 = (Holder)var11.getKey();
-         if (!var6.contains(var12)) {
-            var2.accept(Enchantment.getFullname((Holder)var11.getKey(), var11.getIntValue()));
+         Object2IntMap.Entry<Holder<Enchantment>> entry = (Object2IntMap.Entry)var10.next();
+         Holder<Enchantment> enchantment = (Holder)entry.getKey();
+         if (!order.contains(enchantment)) {
+            consumer.accept(Enchantment.getFullname((Holder)entry.getKey(), entry.getIntValue()));
          }
       }
 
    }
 
-   private static <T> HolderSet<T> getTagOrEmpty(HolderLookup.@Nullable Provider var0, ResourceKey<Registry<T>> var1, TagKey<T> var2) {
-      if (var0 != null) {
-         Optional var3 = var0.lookupOrThrow(var1).get(var2);
-         if (var3.isPresent()) {
-            return (HolderSet)var3.get();
+   private static <T> HolderSet<T> getTagOrEmpty(final HolderLookup.@Nullable Provider registries, final ResourceKey<Registry<T>> registry, final TagKey<T> tag) {
+      if (registries != null) {
+         Optional<HolderSet.Named<T>> maybeOrder = registries.lookupOrThrow(registry).get(tag);
+         if (maybeOrder.isPresent()) {
+            return (HolderSet)maybeOrder.get();
          }
       }
 
-      return HolderSet.direct();
+      return HolderSet.<T>empty();
    }
 
    public Set<Holder<Enchantment>> keySet() {
@@ -104,12 +104,12 @@ public class ItemEnchantments implements TooltipProvider {
       return this.enchantments.isEmpty();
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
+   public boolean equals(final Object obj) {
+      if (this == obj) {
          return true;
-      } else if (var1 instanceof ItemEnchantments) {
-         ItemEnchantments var2 = (ItemEnchantments)var1;
-         return this.enchantments.equals(var2.enchantments);
+      } else if (obj instanceof ItemEnchantments) {
+         ItemEnchantments that = (ItemEnchantments)obj;
+         return this.enchantments.equals(that.enchantments);
       } else {
          return false;
       }
@@ -124,40 +124,40 @@ public class ItemEnchantments implements TooltipProvider {
    }
 
    static {
-      CODEC = Codec.unboundedMap(Enchantment.CODEC, LEVEL_CODEC).xmap((var0) -> new ItemEnchantments(new Object2IntOpenHashMap(var0)), (var0) -> var0.enchantments);
-      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.map(Object2IntOpenHashMap::new, Enchantment.STREAM_CODEC, ByteBufCodecs.VAR_INT), (var0) -> var0.enchantments, ItemEnchantments::new);
+      CODEC = Codec.unboundedMap(Enchantment.CODEC, LEVEL_CODEC).xmap((map) -> new ItemEnchantments(new Object2IntOpenHashMap(map)), (enchantments) -> enchantments.enchantments);
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.map(Object2IntOpenHashMap::new, Enchantment.STREAM_CODEC, ByteBufCodecs.VAR_INT), (c) -> c.enchantments, ItemEnchantments::new);
    }
 
    public static class Mutable {
       private final Object2IntOpenHashMap<Holder<Enchantment>> enchantments = new Object2IntOpenHashMap();
 
-      public Mutable(ItemEnchantments var1) {
+      public Mutable(final ItemEnchantments enchantments) {
          super();
-         this.enchantments.putAll(var1.enchantments);
+         this.enchantments.putAll(enchantments.enchantments);
       }
 
-      public void set(Holder<Enchantment> var1, int var2) {
-         if (var2 <= 0) {
-            this.enchantments.removeInt(var1);
+      public void set(final Holder<Enchantment> enchantment, final int level) {
+         if (level <= 0) {
+            this.enchantments.removeInt(enchantment);
          } else {
-            this.enchantments.put(var1, Math.min(var2, 255));
+            this.enchantments.put(enchantment, Math.min(level, 255));
          }
 
       }
 
-      public void upgrade(Holder<Enchantment> var1, int var2) {
-         if (var2 > 0) {
-            this.enchantments.merge(var1, Math.min(var2, 255), Integer::max);
+      public void upgrade(final Holder<Enchantment> enchantment, final int level) {
+         if (level > 0) {
+            this.enchantments.merge(enchantment, Math.min(level, 255), Integer::max);
          }
 
       }
 
-      public void removeIf(Predicate<Holder<Enchantment>> var1) {
-         this.enchantments.keySet().removeIf(var1);
+      public void removeIf(final Predicate<Holder<Enchantment>> predicate) {
+         this.enchantments.keySet().removeIf(predicate);
       }
 
-      public int getLevel(Holder<Enchantment> var1) {
-         return this.enchantments.getOrDefault(var1, 0);
+      public int getLevel(final Holder<Enchantment> enchantment) {
+         return this.enchantments.getOrDefault(enchantment, 0);
       }
 
       public Set<Holder<Enchantment>> keySet() {

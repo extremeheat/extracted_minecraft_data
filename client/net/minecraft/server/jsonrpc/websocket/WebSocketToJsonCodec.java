@@ -12,13 +12,8 @@ public class WebSocketToJsonCodec extends MessageToMessageDecoder<TextWebSocketF
       super();
    }
 
-   protected void decode(ChannelHandlerContext var1, TextWebSocketFrame var2, List<Object> var3) {
-      JsonElement var4 = JsonParser.parseString(var2.text());
-      var3.add(var4);
-   }
-
-   // $FF: synthetic method
-   protected void decode(final ChannelHandlerContext var1, final Object var2, final List var3) throws Exception {
-      this.decode(var1, (TextWebSocketFrame)var2, var3);
+   protected void decode(final ChannelHandlerContext ctx, final TextWebSocketFrame msg, final List<Object> out) {
+      JsonElement json = JsonParser.parseString(msg.text());
+      out.add(json);
    }
 }

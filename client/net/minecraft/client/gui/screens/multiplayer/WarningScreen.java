@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens.multiplayer;
 
 import java.util.function.Consumer;
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Checkbox;
 import net.minecraft.client.gui.components.FittingMultiLineTextWidget;
 import net.minecraft.client.gui.components.StringWidget;
@@ -21,35 +20,33 @@ public abstract class WarningScreen extends Screen {
    private @Nullable FittingMultiLineTextWidget messageWidget;
    private final FrameLayout layout;
 
-   protected WarningScreen(Component var1, Component var2, Component var3) {
-      this(var1, var2, (Component)null, var3);
+   protected WarningScreen(final Component title, final Component message, final Component narration) {
+      this(title, message, (Component)null, narration);
    }
 
-   protected WarningScreen(Component var1, Component var2, @Nullable Component var3, Component var4) {
-      super(var1);
-      this.message = var2;
-      this.check = var3;
-      this.narration = var4;
+   protected WarningScreen(final Component title, final Component message, final @Nullable Component check, final Component narration) {
+      super(title);
+      this.message = message;
+      this.check = check;
+      this.narration = narration;
       this.layout = new FrameLayout(0, 0, this.width, this.height);
    }
 
    protected abstract Layout addFooterButtons();
 
    protected void init() {
-      LinearLayout var1 = (LinearLayout)this.layout.addChild(LinearLayout.vertical().spacing(8));
-      var1.defaultCellSetting().alignHorizontallyCenter();
-      var1.addChild(new StringWidget(this.getTitle(), this.font));
-      this.messageWidget = (FittingMultiLineTextWidget)var1.addChild(new FittingMultiLineTextWidget(0, 0, this.width - 100, this.height - 100, this.message, this.font), (Consumer)((var0) -> var0.padding(12)));
-      LinearLayout var2 = (LinearLayout)var1.addChild(LinearLayout.vertical().spacing(8));
-      var2.defaultCellSetting().alignHorizontallyCenter();
+      LinearLayout content = (LinearLayout)this.layout.addChild(LinearLayout.vertical().spacing(8));
+      content.defaultCellSetting().alignHorizontallyCenter();
+      content.addChild(new StringWidget(this.getTitle(), this.font));
+      this.messageWidget = (FittingMultiLineTextWidget)content.addChild(new FittingMultiLineTextWidget(0, 0, this.width - 100, this.height - 100, this.message, this.font), (Consumer)((s) -> s.padding(12)));
+      LinearLayout footer = (LinearLayout)content.addChild(LinearLayout.vertical().spacing(8));
+      footer.defaultCellSetting().alignHorizontallyCenter();
       if (this.check != null) {
-         this.stopShowing = (Checkbox)var2.addChild(Checkbox.builder(this.check, this.font).build());
+         this.stopShowing = (Checkbox)footer.addChild(Checkbox.builder(this.check, this.font).build());
       }
 
-      var2.addChild(this.addFooterButtons());
-      this.layout.visitWidgets((var1x) -> {
-         AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
-      });
+      footer.addChild(this.addFooterButtons());
+      this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
       this.repositionElements();
    }
 

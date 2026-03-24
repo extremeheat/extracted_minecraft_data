@@ -8,13 +8,13 @@ public class ParserUtils {
       super();
    }
 
-   public static String readWhile(StringReader var0, CharPredicate var1) {
-      int var2 = var0.getCursor();
+   public static String readWhile(final StringReader reader, final CharPredicate predicate) {
+      int start = reader.getCursor();
 
-      while(var0.canRead() && var1.test(var0.peek())) {
-         var0.skip();
+      while(reader.canRead() && predicate.test(reader.peek())) {
+         reader.skip();
       }
 
-      return var0.getString().substring(var2, var0.getCursor());
+      return reader.getString().substring(start, reader.getCursor());
    }
 }

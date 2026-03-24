@@ -8,9 +8,9 @@ public class SpawnConditions {
       super();
    }
 
-   public static MapCodec<? extends SpawnCondition> bootstrap(Registry<MapCodec<? extends SpawnCondition>> var0) {
-      Registry.register(var0, (String)"structure", StructureCheck.MAP_CODEC);
-      Registry.register(var0, (String)"moon_brightness", MoonBrightnessCheck.MAP_CODEC);
-      return (MapCodec)Registry.register(var0, (String)"biome", BiomeCheck.MAP_CODEC);
+   public static MapCodec<? extends SpawnCondition> bootstrap(final Registry<MapCodec<? extends SpawnCondition>> registry) {
+      Registry.register(registry, (String)"structure", StructureCheck.MAP_CODEC);
+      Registry.register(registry, (String)"moon_brightness", MoonBrightnessCheck.MAP_CODEC);
+      return (MapCodec)Registry.register(registry, (String)"biome", BiomeCheck.MAP_CODEC);
    }
 }

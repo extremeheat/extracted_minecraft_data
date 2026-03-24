@@ -8,25 +8,25 @@ import java.util.function.Supplier;
 import net.minecraft.util.datafix.fixes.References;
 
 public class V1470 extends NamespacedSchema {
-   public V1470(int var1, Schema var2) {
-      super(var1, var2);
+   public V1470(final int versionKey, final Schema parent) {
+      super(versionKey, parent);
    }
 
-   protected static void registerMob(Schema var0, Map<String, Supplier<TypeTemplate>> var1, String var2) {
-      var0.registerSimple(var1, var2);
+   protected static void registerMob(final Schema schema, final Map<String, Supplier<TypeTemplate>> map, final String name) {
+      schema.registerSimple(map, name);
    }
 
-   public Map<String, Supplier<TypeTemplate>> registerEntities(Schema var1) {
-      Map var2 = super.registerEntities(var1);
-      registerMob(var1, var2, "minecraft:turtle");
-      registerMob(var1, var2, "minecraft:cod_mob");
-      registerMob(var1, var2, "minecraft:tropical_fish");
-      registerMob(var1, var2, "minecraft:salmon_mob");
-      registerMob(var1, var2, "minecraft:puffer_fish");
-      registerMob(var1, var2, "minecraft:phantom");
-      registerMob(var1, var2, "minecraft:dolphin");
-      registerMob(var1, var2, "minecraft:drowned");
-      var1.register(var2, "minecraft:trident", (var1x) -> DSL.optionalFields("inBlockState", References.BLOCK_STATE.in(var1), "Trident", References.ITEM_STACK.in(var1)));
-      return var2;
+   public Map<String, Supplier<TypeTemplate>> registerEntities(final Schema schema) {
+      Map<String, Supplier<TypeTemplate>> map = super.registerEntities(schema);
+      registerMob(schema, map, "minecraft:turtle");
+      registerMob(schema, map, "minecraft:cod_mob");
+      registerMob(schema, map, "minecraft:tropical_fish");
+      registerMob(schema, map, "minecraft:salmon_mob");
+      registerMob(schema, map, "minecraft:puffer_fish");
+      registerMob(schema, map, "minecraft:phantom");
+      registerMob(schema, map, "minecraft:dolphin");
+      registerMob(schema, map, "minecraft:drowned");
+      schema.register(map, "minecraft:trident", (name) -> DSL.optionalFields("inBlockState", References.BLOCK_STATE.in(schema), "Trident", References.ITEM_STACK.in(schema)));
+      return map;
    }
 }

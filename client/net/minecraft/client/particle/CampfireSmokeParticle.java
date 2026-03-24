@@ -6,20 +6,20 @@ import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.RandomSource;
 
 public class CampfireSmokeParticle extends SingleQuadParticle {
-   CampfireSmokeParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, boolean var14, TextureAtlasSprite var15) {
-      super(var1, var2, var4, var6, var15);
+   private CampfireSmokeParticle(final ClientLevel level, final double x, final double y, final double z, final double xa, final double ya, final double za, final boolean isSignalFire, final TextureAtlasSprite sprite) {
+      super(level, x, y, z, sprite);
       this.scale(3.0F);
       this.setSize(0.25F, 0.25F);
-      if (var14) {
+      if (isSignalFire) {
          this.lifetime = this.random.nextInt(50) + 280;
       } else {
          this.lifetime = this.random.nextInt(50) + 80;
       }
 
       this.gravity = 3.0E-6F;
-      this.xd = var8;
-      this.yd = var10 + (double)(this.random.nextFloat() / 500.0F);
-      this.zd = var12;
+      this.xd = xa;
+      this.yd = ya + (double)(this.random.nextFloat() / 500.0F);
+      this.zd = za;
    }
 
    public void tick() {
@@ -47,30 +47,30 @@ public class CampfireSmokeParticle extends SingleQuadParticle {
    public static class CosyProvider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprites;
 
-      public CosyProvider(SpriteSet var1) {
+      public CosyProvider(final SpriteSet sprites) {
          super();
-         this.sprites = var1;
+         this.sprites = sprites;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         CampfireSmokeParticle var16 = new CampfireSmokeParticle(var2, var3, var5, var7, var9, var11, var13, false, this.sprites.get(var15));
-         var16.setAlpha(0.9F);
-         return var16;
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         CampfireSmokeParticle particle = new CampfireSmokeParticle(level, x, y, z, xAux, yAux, zAux, false, this.sprites.get(random));
+         particle.setAlpha(0.9F);
+         return particle;
       }
    }
 
    public static class SignalProvider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprites;
 
-      public SignalProvider(SpriteSet var1) {
+      public SignalProvider(final SpriteSet sprites) {
          super();
-         this.sprites = var1;
+         this.sprites = sprites;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         CampfireSmokeParticle var16 = new CampfireSmokeParticle(var2, var3, var5, var7, var9, var11, var13, true, this.sprites.get(var15));
-         var16.setAlpha(0.95F);
-         return var16;
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         CampfireSmokeParticle particle = new CampfireSmokeParticle(level, x, y, z, xAux, yAux, zAux, true, this.sprites.get(random));
+         particle.setAlpha(0.95F);
+         return particle;
       }
    }
 }

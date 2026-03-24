@@ -13,16 +13,16 @@ public enum Markings {
    private static final IntFunction<Markings> BY_ID = ByIdMap.<Markings>continuous(Markings::getId, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
    private final int id;
 
-   private Markings(final int var3) {
-      this.id = var3;
+   private Markings(final int id) {
+      this.id = id;
    }
 
    public int getId() {
       return this.id;
    }
 
-   public static Markings byId(int var0) {
-      return (Markings)BY_ID.apply(var0);
+   public static Markings byId(final int id) {
+      return (Markings)BY_ID.apply(id);
    }
 
    // $FF: synthetic method

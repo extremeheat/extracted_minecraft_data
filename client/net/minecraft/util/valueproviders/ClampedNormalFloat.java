@@ -7,43 +7,27 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
-public class ClampedNormalFloat extends FloatProvider {
-   public static final MapCodec<ClampedNormalFloat> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.FLOAT.fieldOf("mean").forGetter((var0x) -> var0x.mean), Codec.FLOAT.fieldOf("deviation").forGetter((var0x) -> var0x.deviation), Codec.FLOAT.fieldOf("min").forGetter((var0x) -> var0x.min), Codec.FLOAT.fieldOf("max").forGetter((var0x) -> var0x.max)).apply(var0, ClampedNormalFloat::new)).validate((var0) -> var0.max < var0.min ? DataResult.error(() -> "Max must be larger than min: [" + var0.min + ", " + var0.max + "]") : DataResult.success(var0));
-   private final float mean;
-   private final float deviation;
-   private final float min;
-   private final float max;
+public record ClampedNormalFloat(float mean, float deviation, float min, float max) implements FloatProvider {
+   public static final MapCodec<ClampedNormalFloat> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.FLOAT.fieldOf("mean").forGetter(ClampedNormalFloat::mean), Codec.FLOAT.fieldOf("deviation").forGetter(ClampedNormalFloat::deviation), Codec.FLOAT.fieldOf("min").forGetter(ClampedNormalFloat::min), Codec.FLOAT.fieldOf("max").forGetter(ClampedNormalFloat::max)).apply(i, ClampedNormalFloat::new)).validate((c) -> c.max < c.min ? DataResult.error(() -> "Max must be larger than min: [" + c.min + ", " + c.max + "]") : DataResult.success(c));
 
-   public static ClampedNormalFloat of(float var0, float var1, float var2, float var3) {
-      return new ClampedNormalFloat(var0, var1, var2, var3);
-   }
-
-   private ClampedNormalFloat(float var1, float var2, float var3, float var4) {
+   public ClampedNormalFloat {
       super();
-      this.mean = var1;
-      this.deviation = var2;
-      this.min = var3;
-      this.max = var4;
    }
 
-   public float sample(RandomSource var1) {
-      return sample(var1, this.mean, this.deviation, this.min, this.max);
+   public static ClampedNormalFloat of(final float mean, final float deviation, final float min, final float max) {
+      return new ClampedNormalFloat(mean, deviation, min, max);
    }
 
-   public static float sample(RandomSource var0, float var1, float var2, float var3, float var4) {
-      return Mth.clamp(Mth.normal(var0, var1, var2), var3, var4);
+   public float sample(final RandomSource random) {
+      return sample(random, this.mean, this.deviation, this.min, this.max);
    }
 
-   public float getMinValue() {
-      return this.min;
+   public static float sample(final RandomSource random, final float mean, final float deviation, final float min, final float max) {
+      return Mth.clamp(Mth.normal(random, mean, deviation), min, max);
    }
 
-   public float getMaxValue() {
-      return this.max;
-   }
-
-   public FloatProviderType<?> getType() {
-      return FloatProviderType.CLAMPED_NORMAL;
+   public MapCodec<ClampedNormalFloat> codec() {
+      return MAP_CODEC;
    }
 
    public String toString() {

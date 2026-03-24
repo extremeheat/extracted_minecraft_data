@@ -6,15 +6,15 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
 
 public class EntityWolfColorFix extends NamedEntityFix {
-   public EntityWolfColorFix(Schema var1, boolean var2) {
-      super(var1, var2, "EntityWolfColorFix", References.ENTITY, "minecraft:wolf");
+   public EntityWolfColorFix(final Schema outputSchema, final boolean changesType) {
+      super(outputSchema, changesType, "EntityWolfColorFix", References.ENTITY, "minecraft:wolf");
    }
 
-   public Dynamic<?> fixTag(Dynamic<?> var1) {
-      return var1.update("CollarColor", (var0) -> var0.createByte((byte)(15 - var0.asInt(0))));
+   public Dynamic<?> fixTag(final Dynamic<?> input) {
+      return input.update("CollarColor", (color) -> color.createByte((byte)(15 - color.asInt(0))));
    }
 
-   protected Typed<?> fix(Typed<?> var1) {
-      return var1.update(DSL.remainderFinder(), this::fixTag);
+   protected Typed<?> fix(final Typed<?> entity) {
+      return entity.update(DSL.remainderFinder(), this::fixTag);
    }
 }

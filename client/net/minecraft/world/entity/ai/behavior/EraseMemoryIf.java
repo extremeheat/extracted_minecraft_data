@@ -11,10 +11,10 @@ public class EraseMemoryIf {
       super();
    }
 
-   public static <E extends LivingEntity> BehaviorControl<E> create(Predicate<E> var0, MemoryModuleType<?> var1) {
-      return BehaviorBuilder.create((Function)((var2) -> var2.group(var2.present(var1)).apply(var2, (var1x) -> (var2, var3, var4) -> {
-               if (var0.test(var3)) {
-                  var1x.erase();
+   public static <E extends LivingEntity> BehaviorControl<E> create(final Predicate<E> predicate, final MemoryModuleType<?> memoryType) {
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.present(memoryType)).apply(i, (memory) -> (level, body, timestamp) -> {
+               if (predicate.test(body)) {
+                  memory.erase();
                   return true;
                } else {
                   return false;

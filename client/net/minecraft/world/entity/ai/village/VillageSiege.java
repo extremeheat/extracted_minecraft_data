@@ -1,10 +1,15 @@
 package net.minecraft.world.entity.ai.village;
 
 import com.mojang.logging.LogUtils;
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.clock.ClockTimeMarkers;
+import net.minecraft.world.clock.WorldClock;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -32,16 +37,16 @@ public class VillageSiege implements CustomSpawner {
       this.siegeState = VillageSiege.State.SIEGE_DONE;
    }
 
-   public void tick(ServerLevel var1, boolean var2) {
-      if (!var1.isBrightOutside() && var2) {
-         long var3 = var1.getDayTime() % 24000L;
-         if (var3 == 18000L) {
-            this.siegeState = var1.random.nextInt(10) == 0 ? VillageSiege.State.SIEGE_TONIGHT : VillageSiege.State.SIEGE_DONE;
+   public void tick(final ServerLevel level, final boolean spawnEnemies) {
+      if (!level.isBrightOutside() && spawnEnemies) {
+         Optional<Holder<WorldClock>> defaultClock = level.dimensionType().defaultClock();
+         if (defaultClock.isPresent() && level.clockManager().isAtTimeMarker((Holder)defaultClock.get(), ClockTimeMarkers.ROLL_VILLAGE_SIEGE)) {
+            this.siegeState = level.getRandom().nextInt(10) == 0 ? VillageSiege.State.SIEGE_TONIGHT : VillageSiege.State.SIEGE_DONE;
          }
 
          if (this.siegeState != VillageSiege.State.SIEGE_DONE) {
             if (!this.hasSetupSiege) {
-               if (!this.tryToSetupSiege(var1)) {
+               if (!this.tryToSetupSiege(level)) {
                   return;
                }
 
@@ -53,7 +58,7 @@ public class VillageSiege implements CustomSpawner {
             } else {
                this.nextSpawnTime = 2;
                if (this.zombiesToSpawn > 0) {
-                  this.trySpawn(var1);
+                  this.trySpawn(level);
                   --this.zombiesToSpawn;
                } else {
                   this.siegeState = VillageSiege.State.SIEGE_DONE;
@@ -67,17 +72,19 @@ public class VillageSiege implements CustomSpawner {
       }
    }
 
-   private boolean tryToSetupSiege(ServerLevel var1) {
-      for(Player var3 : var1.players()) {
-         if (!var3.isSpectator()) {
-            BlockPos var4 = var3.blockPosition();
-            if (var1.isVillage(var4) && !var1.getBiome(var4).is(BiomeTags.WITHOUT_ZOMBIE_SIEGES)) {
-               for(int var5 = 0; var5 < 10; ++var5) {
-                  float var6 = var1.random.nextFloat() * 6.2831855F;
-                  this.spawnX = var4.getX() + Mth.floor(Mth.cos((double)var6) * 32.0F);
-                  this.spawnY = var4.getY();
-                  this.spawnZ = var4.getZ() + Mth.floor(Mth.sin((double)var6) * 32.0F);
-                  if (this.findRandomSpawnPos(var1, new BlockPos(this.spawnX, this.spawnY, this.spawnZ)) != null) {
+   private boolean tryToSetupSiege(final ServerLevel level) {
+      RandomSource random = level.getRandom();
+
+      for(Player player : level.players()) {
+         if (!player.isSpectator()) {
+            BlockPos center = player.blockPosition();
+            if (level.isVillage(center) && !level.getBiome(center).is(BiomeTags.WITHOUT_ZOMBIE_SIEGES)) {
+               for(int i = 0; i < 10; ++i) {
+                  float angle = random.nextFloat() * 6.2831855F;
+                  this.spawnX = center.getX() + Mth.floor(Mth.cos((double)angle) * 32.0F);
+                  this.spawnY = center.getY();
+                  this.spawnZ = center.getZ() + Mth.floor(Mth.sin((double)angle) * 32.0F);
+                  if (this.findRandomSpawnPos(level, new BlockPos(this.spawnX, this.spawnY, this.spawnZ)) != null) {
                      this.nextSpawnTime = 0;
                      this.zombiesToSpawn = 20;
                      break;
@@ -92,38 +99,40 @@ public class VillageSiege implements CustomSpawner {
       return false;
    }
 
-   private void trySpawn(ServerLevel var1) {
-      Vec3 var2 = this.findRandomSpawnPos(var1, new BlockPos(this.spawnX, this.spawnY, this.spawnZ));
-      if (var2 != null) {
-         Zombie var3;
+   private void trySpawn(final ServerLevel level) {
+      Vec3 spawnPos = this.findRandomSpawnPos(level, new BlockPos(this.spawnX, this.spawnY, this.spawnZ));
+      if (spawnPos != null) {
+         Zombie zombie;
          try {
-            var3 = new Zombie(var1);
-            var3.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var3.blockPosition()), EntitySpawnReason.EVENT, (SpawnGroupData)null);
-         } catch (Exception var5) {
-            LOGGER.warn("Failed to create zombie for village siege at {}", var2, var5);
+            zombie = new Zombie(level);
+            zombie.finalizeSpawn(level, level.getCurrentDifficultyAt(zombie.blockPosition()), EntitySpawnReason.EVENT, (SpawnGroupData)null);
+         } catch (Exception e) {
+            LOGGER.warn("Failed to create zombie for village siege at {}", spawnPos, e);
             return;
          }
 
-         var3.snapTo(var2.x, var2.y, var2.z, var1.random.nextFloat() * 360.0F, 0.0F);
-         var1.addFreshEntityWithPassengers(var3);
+         zombie.snapTo(spawnPos.x, spawnPos.y, spawnPos.z, level.getRandom().nextFloat() * 360.0F, 0.0F);
+         level.addFreshEntityWithPassengers(zombie);
       }
    }
 
-   private @Nullable Vec3 findRandomSpawnPos(ServerLevel var1, BlockPos var2) {
-      for(int var3 = 0; var3 < 10; ++var3) {
-         int var4 = var2.getX() + var1.random.nextInt(16) - 8;
-         int var5 = var2.getZ() + var1.random.nextInt(16) - 8;
-         int var6 = var1.getHeight(Heightmap.Types.WORLD_SURFACE, var4, var5);
-         BlockPos var7 = new BlockPos(var4, var6, var5);
-         if (var1.isVillage(var7) && Monster.checkMonsterSpawnRules(EntityType.ZOMBIE, var1, EntitySpawnReason.EVENT, var7, var1.random)) {
-            return Vec3.atBottomCenterOf(var7);
+   private @Nullable Vec3 findRandomSpawnPos(final ServerLevel level, final BlockPos pos) {
+      RandomSource random = level.getRandom();
+
+      for(int i = 0; i < 10; ++i) {
+         int x = pos.getX() + random.nextInt(16) - 8;
+         int z = pos.getZ() + random.nextInt(16) - 8;
+         int y = level.getHeight(Heightmap.Types.WORLD_SURFACE, x, z);
+         BlockPos offset = new BlockPos(x, y, z);
+         if (level.isVillage(offset) && Monster.checkMonsterSpawnRules(EntityType.ZOMBIE, level, EntitySpawnReason.EVENT, offset, random)) {
+            return Vec3.atBottomCenterOf(offset);
          }
       }
 
       return null;
    }
 
-   static enum State {
+   private static enum State {
       SIEGE_CAN_ACTIVATE,
       SIEGE_TONIGHT,
       SIEGE_DONE;

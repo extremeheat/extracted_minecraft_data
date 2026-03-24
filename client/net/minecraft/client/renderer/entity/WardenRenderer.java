@@ -3,8 +3,6 @@ package net.minecraft.client.renderer.entity;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.monster.warden.WardenModel;
 import net.minecraft.client.renderer.entity.layers.LivingEntityEmissiveLayer;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.WardenRenderState;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.Identifier;
@@ -18,20 +16,20 @@ public class WardenRenderer extends MobRenderer<Warden, WardenRenderState, Warde
    private static final Identifier PULSATING_SPOTS_TEXTURE_1 = Identifier.withDefaultNamespace("textures/entity/warden/warden_pulsating_spots_1.png");
    private static final Identifier PULSATING_SPOTS_TEXTURE_2 = Identifier.withDefaultNamespace("textures/entity/warden/warden_pulsating_spots_2.png");
 
-   public WardenRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new WardenModel(var1.bakeLayer(ModelLayers.WARDEN)), 0.9F);
-      WardenModel var2 = new WardenModel(var1.bakeLayer(ModelLayers.WARDEN_BIOLUMINESCENT));
-      WardenModel var3 = new WardenModel(var1.bakeLayer(ModelLayers.WARDEN_PULSATING_SPOTS));
-      WardenModel var4 = new WardenModel(var1.bakeLayer(ModelLayers.WARDEN_TENDRILS));
-      WardenModel var5 = new WardenModel(var1.bakeLayer(ModelLayers.WARDEN_HEART));
-      this.addLayer(new LivingEntityEmissiveLayer(this, (var0) -> BIOLUMINESCENT_LAYER_TEXTURE, (var0, var1x) -> 1.0F, var2, RenderTypes::entityTranslucentEmissive, false));
-      this.addLayer(new LivingEntityEmissiveLayer(this, (var0) -> PULSATING_SPOTS_TEXTURE_1, (var0, var1x) -> Math.max(0.0F, Mth.cos((double)(var1x * 0.045F)) * 0.25F), var3, RenderTypes::entityTranslucentEmissive, false));
-      this.addLayer(new LivingEntityEmissiveLayer(this, (var0) -> PULSATING_SPOTS_TEXTURE_2, (var0, var1x) -> Math.max(0.0F, Mth.cos((double)(var1x * 0.045F + 3.1415927F)) * 0.25F), var3, RenderTypes::entityTranslucentEmissive, false));
-      this.addLayer(new LivingEntityEmissiveLayer(this, (var0) -> TEXTURE, (var0, var1x) -> var0.tendrilAnimation, var4, RenderTypes::entityTranslucentEmissive, false));
-      this.addLayer(new LivingEntityEmissiveLayer(this, (var0) -> HEART_TEXTURE, (var0, var1x) -> var0.heartAnimation, var5, RenderTypes::entityTranslucentEmissive, false));
+   public WardenRenderer(final EntityRendererProvider.Context context) {
+      super(context, new WardenModel(context.bakeLayer(ModelLayers.WARDEN)), 0.9F);
+      WardenModel bioluminescentModel = new WardenModel(context.bakeLayer(ModelLayers.WARDEN_BIOLUMINESCENT));
+      WardenModel pulsatingSpotsModel = new WardenModel(context.bakeLayer(ModelLayers.WARDEN_PULSATING_SPOTS));
+      WardenModel tendrilsModel = new WardenModel(context.bakeLayer(ModelLayers.WARDEN_TENDRILS));
+      WardenModel heartModel = new WardenModel(context.bakeLayer(ModelLayers.WARDEN_HEART));
+      this.addLayer(new LivingEntityEmissiveLayer(this, (renderState) -> BIOLUMINESCENT_LAYER_TEXTURE, (warden, ageInTicks) -> 1.0F, bioluminescentModel, RenderTypes::entityTranslucentEmissive, false));
+      this.addLayer(new LivingEntityEmissiveLayer(this, (renderState) -> PULSATING_SPOTS_TEXTURE_1, (warden, ageInTicks) -> Math.max(0.0F, Mth.cos((double)(ageInTicks * 0.045F)) * 0.25F), pulsatingSpotsModel, RenderTypes::entityTranslucentEmissive, false));
+      this.addLayer(new LivingEntityEmissiveLayer(this, (renderState) -> PULSATING_SPOTS_TEXTURE_2, (warden, ageInTicks) -> Math.max(0.0F, Mth.cos((double)(ageInTicks * 0.045F + 3.1415927F)) * 0.25F), pulsatingSpotsModel, RenderTypes::entityTranslucentEmissive, false));
+      this.addLayer(new LivingEntityEmissiveLayer(this, (renderState) -> TEXTURE, (warden, ageInTicks) -> warden.tendrilAnimation, tendrilsModel, RenderTypes::entityTranslucentEmissive, false));
+      this.addLayer(new LivingEntityEmissiveLayer(this, (renderState) -> HEART_TEXTURE, (warden, ageInTicks) -> warden.heartAnimation, heartModel, RenderTypes::entityTranslucentEmissive, false));
    }
 
-   public Identifier getTextureLocation(WardenRenderState var1) {
+   public Identifier getTextureLocation(final WardenRenderState state) {
       return TEXTURE;
    }
 
@@ -39,25 +37,15 @@ public class WardenRenderer extends MobRenderer<Warden, WardenRenderState, Warde
       return new WardenRenderState();
    }
 
-   public void extractRenderState(Warden var1, WardenRenderState var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      var2.tendrilAnimation = var1.getTendrilAnimation(var3);
-      var2.heartAnimation = var1.getHeartAnimation(var3);
-      var2.roarAnimationState.copyFrom(var1.roarAnimationState);
-      var2.sniffAnimationState.copyFrom(var1.sniffAnimationState);
-      var2.emergeAnimationState.copyFrom(var1.emergeAnimationState);
-      var2.diggingAnimationState.copyFrom(var1.diggingAnimationState);
-      var2.attackAnimationState.copyFrom(var1.attackAnimationState);
-      var2.sonicBoomAnimationState.copyFrom(var1.sonicBoomAnimationState);
-   }
-
-   // $FF: synthetic method
-   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
-      return this.getTextureLocation((WardenRenderState)var1);
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
+   public void extractRenderState(final Warden entity, final WardenRenderState state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      state.tendrilAnimation = entity.getTendrilAnimation(partialTicks);
+      state.heartAnimation = entity.getHeartAnimation(partialTicks);
+      state.roarAnimationState.copyFrom(entity.roarAnimationState);
+      state.sniffAnimationState.copyFrom(entity.sniffAnimationState);
+      state.emergeAnimationState.copyFrom(entity.emergeAnimationState);
+      state.diggingAnimationState.copyFrom(entity.diggingAnimationState);
+      state.attackAnimationState.copyFrom(entity.attackAnimationState);
+      state.sonicBoomAnimationState.copyFrom(entity.sonicBoomAnimationState);
    }
 }

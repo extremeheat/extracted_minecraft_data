@@ -17,31 +17,31 @@ public class RecipeCollection {
    private final Set<RecipeDisplayId> craftable = new HashSet();
    private final Set<RecipeDisplayId> selected = new HashSet();
 
-   public RecipeCollection(List<RecipeDisplayEntry> var1) {
+   public RecipeCollection(final List<RecipeDisplayEntry> recipes) {
       super();
-      this.entries = var1;
+      this.entries = recipes;
    }
 
-   public void selectRecipes(StackedItemContents var1, Predicate<RecipeDisplay> var2) {
-      for(RecipeDisplayEntry var4 : this.entries) {
-         boolean var5 = var2.test(var4.display());
-         if (var5) {
-            this.selected.add(var4.id());
+   public void selectRecipes(final StackedItemContents stackedContents, final Predicate<RecipeDisplay> selector) {
+      for(RecipeDisplayEntry entry : this.entries) {
+         boolean isSelected = selector.test(entry.display());
+         if (isSelected) {
+            this.selected.add(entry.id());
          } else {
-            this.selected.remove(var4.id());
+            this.selected.remove(entry.id());
          }
 
-         if (var5 && var4.canCraft(var1)) {
-            this.craftable.add(var4.id());
+         if (isSelected && entry.canCraft(stackedContents)) {
+            this.craftable.add(entry.id());
          } else {
-            this.craftable.remove(var4.id());
+            this.craftable.remove(entry.id());
          }
       }
 
    }
 
-   public boolean isCraftable(RecipeDisplayId var1) {
-      return this.craftable.contains(var1);
+   public boolean isCraftable(final RecipeDisplayId recipe) {
+      return this.craftable.contains(recipe);
    }
 
    public boolean hasCraftable() {
@@ -56,9 +56,9 @@ public class RecipeCollection {
       return this.entries;
    }
 
-   public List<RecipeDisplayEntry> getSelectedRecipes(CraftableStatus var1) {
+   public List<RecipeDisplayEntry> getSelectedRecipes(final CraftableStatus selector) {
       Predicate var10000;
-      switch (var1.ordinal()) {
+      switch (selector.ordinal()) {
          case 0:
             Set var7 = this.selected;
             Objects.requireNonNull(var7);
@@ -70,22 +70,22 @@ public class RecipeCollection {
             var10000 = var6::contains;
             break;
          case 2:
-            var10000 = (var1x) -> this.selected.contains(var1x) && !this.craftable.contains(var1x);
+            var10000 = (recipe) -> this.selected.contains(recipe) && !this.craftable.contains(recipe);
             break;
          default:
             throw new MatchException((String)null, (Throwable)null);
       }
 
-      Predicate var2 = var10000;
-      ArrayList var3 = new ArrayList();
+      Predicate<RecipeDisplayId> predicate = var10000;
+      List<RecipeDisplayEntry> result = new ArrayList();
 
-      for(RecipeDisplayEntry var5 : this.entries) {
-         if (var2.test(var5.id())) {
-            var3.add(var5);
+      for(RecipeDisplayEntry entries : this.entries) {
+         if (predicate.test(entries.id())) {
+            result.add(entries);
          }
       }
 
-      return var3;
+      return result;
    }
 
    public static enum CraftableStatus {

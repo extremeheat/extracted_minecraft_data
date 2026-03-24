@@ -1,7 +1,7 @@
 package net.minecraft.nbt;
 
 public class NbtFormatException extends NbtException {
-   public NbtFormatException(String var1) {
-      super(var1);
+   public NbtFormatException(final String message) {
+      super(message);
    }
 }

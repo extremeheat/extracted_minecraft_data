@@ -13,20 +13,20 @@ import net.minecraft.world.phys.Vec3;
 public abstract class PathfinderMob extends Mob {
    protected static final float DEFAULT_WALK_TARGET_VALUE = 0.0F;
 
-   protected PathfinderMob(EntityType<? extends PathfinderMob> var1, Level var2) {
-      super(var1, var2);
+   protected PathfinderMob(final EntityType<? extends PathfinderMob> type, final Level level) {
+      super(type, level);
    }
 
-   public float getWalkTargetValue(BlockPos var1) {
-      return this.getWalkTargetValue(var1, this.level());
+   public float getWalkTargetValue(final BlockPos pos) {
+      return this.getWalkTargetValue(pos, this.level());
    }
 
-   public float getWalkTargetValue(BlockPos var1, LevelReader var2) {
+   public float getWalkTargetValue(final BlockPos pos, final LevelReader level) {
       return 0.0F;
    }
 
-   public boolean checkSpawnRules(LevelAccessor var1, EntitySpawnReason var2) {
-      return this.getWalkTargetValue(this.blockPosition(), var1) >= 0.0F;
+   public boolean checkSpawnRules(final LevelAccessor level, final EntitySpawnReason spawnReason) {
+      return this.getWalkTargetValue(this.blockPosition(), level) >= 0.0F;
    }
 
    public boolean isPathFinding() {
@@ -34,11 +34,11 @@ public abstract class PathfinderMob extends Mob {
    }
 
    public boolean isPanicking() {
-      if (this.brain.hasMemoryValue(MemoryModuleType.IS_PANICKING)) {
+      if (!this.brain.isBrainDead() && this.brain.hasMemoryValue(MemoryModuleType.IS_PANICKING)) {
          return this.brain.getMemory(MemoryModuleType.IS_PANICKING).isPresent();
       } else {
-         for(WrappedGoal var2 : this.goalSelector.getAvailableGoals()) {
-            if (var2.isRunning() && var2.getGoal() instanceof PanicGoal) {
+         for(WrappedGoal wrappedGoal : this.goalSelector.getAvailableGoals()) {
+            if (wrappedGoal.isRunning() && wrappedGoal.getGoal() instanceof PanicGoal) {
                return true;
             }
          }
@@ -51,21 +51,21 @@ public abstract class PathfinderMob extends Mob {
       return true;
    }
 
-   public void closeRangeLeashBehaviour(Entity var1) {
-      super.closeRangeLeashBehaviour(var1);
+   public void closeRangeLeashBehaviour(final Entity leashHolder) {
+      super.closeRangeLeashBehaviour(leashHolder);
       if (this.shouldStayCloseToLeashHolder() && !this.isPanicking()) {
          this.goalSelector.enableControlFlag(Goal.Flag.MOVE);
-         float var2 = 2.0F;
-         float var3 = this.distanceTo(var1);
-         Vec3 var4 = (new Vec3(var1.getX() - this.getX(), var1.getY() - this.getY(), var1.getZ() - this.getZ())).normalize().scale((double)Math.max(var3 - 2.0F, 0.0F));
-         this.getNavigation().moveTo(this.getX() + var4.x, this.getY() + var4.y, this.getZ() + var4.z, this.followLeashSpeed());
+         float wantedDistance = 2.0F;
+         float distanceTo = this.distanceTo(leashHolder);
+         Vec3 delta = (new Vec3(leashHolder.getX() - this.getX(), leashHolder.getY() - this.getY(), leashHolder.getZ() - this.getZ())).normalize().scale((double)Math.max(distanceTo - 2.0F, 0.0F));
+         this.getNavigation().moveTo(this.getX() + delta.x, this.getY() + delta.y, this.getZ() + delta.z, this.followLeashSpeed());
       }
 
    }
 
-   public void whenLeashedTo(Entity var1) {
-      this.setHomeTo(var1.blockPosition(), (int)this.leashElasticDistance() - 1);
-      super.whenLeashedTo(var1);
+   public void whenLeashedTo(final Entity leashHolder) {
+      this.setHomeTo(leashHolder.blockPosition(), (int)this.leashElasticDistance() - 1);
+      super.whenLeashedTo(leashHolder);
    }
 
    protected double followLeashSpeed() {

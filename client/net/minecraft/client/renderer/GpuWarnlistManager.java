@@ -8,10 +8,8 @@ import com.google.gson.JsonSyntaxException;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.logging.LogUtils;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -73,47 +71,47 @@ public class GpuWarnlistManager extends SimplePreparableReloadListener<Preparati
    }
 
    public @Nullable String getAllWarnings() {
-      StringBuilder var1 = new StringBuilder();
-      this.warnings.forEach((var1x, var2) -> var1.append(var1x).append(": ").append(var2));
-      return var1.isEmpty() ? null : var1.toString();
+      StringBuilder sb = new StringBuilder();
+      this.warnings.forEach((k, v) -> sb.append(k).append(": ").append(v));
+      return sb.isEmpty() ? null : sb.toString();
    }
 
-   protected Preparations prepare(ResourceManager var1, ProfilerFiller var2) {
-      ArrayList var3 = Lists.newArrayList();
-      ArrayList var4 = Lists.newArrayList();
-      ArrayList var5 = Lists.newArrayList();
-      JsonObject var6 = parseJson(var1, var2);
-      if (var6 != null) {
-         try (Zone var7 = var2.zone("compile_regex")) {
-            compilePatterns(var6.getAsJsonArray("renderer"), var3);
-            compilePatterns(var6.getAsJsonArray("version"), var4);
-            compilePatterns(var6.getAsJsonArray("vendor"), var5);
+   protected Preparations prepare(final ResourceManager manager, final ProfilerFiller profiler) {
+      List<Pattern> rendererPatterns = Lists.newArrayList();
+      List<Pattern> versionPatterns = Lists.newArrayList();
+      List<Pattern> vendorPatterns = Lists.newArrayList();
+      JsonObject root = parseJson(manager, profiler);
+      if (root != null) {
+         try (Zone ignored = profiler.zone("compile_regex")) {
+            compilePatterns(root.getAsJsonArray("renderer"), rendererPatterns);
+            compilePatterns(root.getAsJsonArray("version"), versionPatterns);
+            compilePatterns(root.getAsJsonArray("vendor"), vendorPatterns);
          }
       }
 
-      return new Preparations(var3, var4, var5);
+      return new Preparations(rendererPatterns, versionPatterns, vendorPatterns);
    }
 
-   protected void apply(Preparations var1, ResourceManager var2, ProfilerFiller var3) {
-      this.warnings = var1.apply();
+   protected void apply(final Preparations preparations, final ResourceManager manager, final ProfilerFiller profiler) {
+      this.warnings = preparations.apply();
    }
 
-   private static void compilePatterns(JsonArray var0, List<Pattern> var1) {
-      var0.forEach((var1x) -> var1.add(Pattern.compile(var1x.getAsString(), 2)));
+   private static void compilePatterns(final JsonArray jsonArray, final List<Pattern> patternList) {
+      jsonArray.forEach((e) -> patternList.add(Pattern.compile(e.getAsString(), 2)));
    }
 
-   private static @Nullable JsonObject parseJson(ResourceManager var0, ProfilerFiller var1) {
+   private static @Nullable JsonObject parseJson(final ResourceManager manager, final ProfilerFiller profiler) {
       try {
          JsonObject var4;
-         try (Zone var2 = var1.zone("parse_json")) {
-            BufferedReader var3 = var0.openAsReader(GPU_WARNLIST_LOCATION);
+         try (Zone ignored = profiler.zone("parse_json")) {
+            Reader resource = manager.openAsReader(GPU_WARNLIST_LOCATION);
 
             try {
-               var4 = StrictJsonParser.parse((Reader)var3).getAsJsonObject();
+               var4 = StrictJsonParser.parse(resource).getAsJsonObject();
             } catch (Throwable var8) {
-               if (var3 != null) {
+               if (resource != null) {
                   try {
-                     ((Reader)var3).close();
+                     resource.close();
                   } catch (Throwable var7) {
                      var8.addSuppressed(var7);
                   }
@@ -122,21 +120,16 @@ public class GpuWarnlistManager extends SimplePreparableReloadListener<Preparati
                throw var8;
             }
 
-            if (var3 != null) {
-               ((Reader)var3).close();
+            if (resource != null) {
+               resource.close();
             }
          }
 
          return var4;
-      } catch (JsonSyntaxException | IOException var10) {
-         LOGGER.warn("Failed to load GPU warnlist", var10);
+      } catch (JsonSyntaxException | IOException e) {
+         LOGGER.warn("Failed to load GPU warnlist", e);
          return null;
       }
-   }
-
-   // $FF: synthetic method
-   protected Object prepare(final ResourceManager var1, final ProfilerFiller var2) {
-      return this.prepare(var1, var2);
    }
 
    protected static final class Preparations {
@@ -144,48 +137,48 @@ public class GpuWarnlistManager extends SimplePreparableReloadListener<Preparati
       private final List<Pattern> versionPatterns;
       private final List<Pattern> vendorPatterns;
 
-      Preparations(List<Pattern> var1, List<Pattern> var2, List<Pattern> var3) {
+      private Preparations(final List<Pattern> rendererPatterns, final List<Pattern> versionPatterns, final List<Pattern> vendorPatterns) {
          super();
-         this.rendererPatterns = var1;
-         this.versionPatterns = var2;
-         this.vendorPatterns = var3;
+         this.rendererPatterns = rendererPatterns;
+         this.versionPatterns = versionPatterns;
+         this.vendorPatterns = vendorPatterns;
       }
 
-      private static String matchAny(List<Pattern> var0, String var1) {
-         ArrayList var2 = Lists.newArrayList();
+      private static String matchAny(final List<Pattern> patterns, final String input) {
+         List<String> allMatches = Lists.newArrayList();
 
-         for(Pattern var4 : var0) {
-            Matcher var5 = var4.matcher(var1);
+         for(Pattern pattern : patterns) {
+            Matcher matcher = pattern.matcher(input);
 
-            while(var5.find()) {
-               var2.add(var5.group());
+            while(matcher.find()) {
+               allMatches.add(matcher.group());
             }
          }
 
-         return String.join(", ", var2);
+         return String.join(", ", allMatches);
       }
 
-      ImmutableMap<String, String> apply() {
-         ImmutableMap.Builder var1 = new ImmutableMap.Builder();
-         GpuDevice var2 = RenderSystem.getDevice();
-         if (var2.getBackendName().equals("OpenGL")) {
-            String var3 = matchAny(this.rendererPatterns, var2.getRenderer());
-            if (!var3.isEmpty()) {
-               var1.put("renderer", var3);
+      private ImmutableMap<String, String> apply() {
+         ImmutableMap.Builder<String, String> map = new ImmutableMap.Builder();
+         GpuDevice device = RenderSystem.getDevice();
+         if (device.getBackendName().equals("OpenGL")) {
+            String rendererFails = matchAny(this.rendererPatterns, device.getRenderer());
+            if (!rendererFails.isEmpty()) {
+               map.put("renderer", rendererFails);
             }
 
-            String var4 = matchAny(this.versionPatterns, var2.getVersion());
-            if (!var4.isEmpty()) {
-               var1.put("version", var4);
+            String versionFails = matchAny(this.versionPatterns, device.getVersion());
+            if (!versionFails.isEmpty()) {
+               map.put("version", versionFails);
             }
 
-            String var5 = matchAny(this.vendorPatterns, var2.getVendor());
-            if (!var5.isEmpty()) {
-               var1.put("vendor", var5);
+            String vendorFails = matchAny(this.vendorPatterns, device.getVendor());
+            if (!vendorFails.isEmpty()) {
+               map.put("vendor", vendorFails);
             }
          }
 
-         return var1.build();
+         return map.build();
       }
    }
 }

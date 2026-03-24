@@ -11,11 +11,11 @@ public class EmptyProfileResults implements ProfileResults {
       super();
    }
 
-   public List<ResultField> getTimes(String var1) {
+   public List<ResultField> getTimes(final String path) {
       return Collections.emptyList();
    }
 
-   public boolean saveResults(Path var1) {
+   public boolean saveResults(final Path file) {
       return false;
    }
 

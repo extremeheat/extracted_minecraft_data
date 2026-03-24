@@ -19,8 +19,8 @@ public class BreezeAttackEntitySensor extends NearestLivingEntitySensor<Breeze> 
       return ImmutableSet.copyOf(Iterables.concat(super.requires(), List.of(MemoryModuleType.NEAREST_ATTACKABLE)));
    }
 
-   protected void doTick(ServerLevel var1, Breeze var2) {
-      super.doTick(var1, var2);
-      var2.getBrain().getMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES).stream().flatMap(Collection::stream).filter(EntitySelector.NO_CREATIVE_OR_SPECTATOR).filter((var2x) -> Sensor.isEntityAttackable(var1, var2, var2x)).findFirst().ifPresentOrElse((var1x) -> var2.getBrain().setMemory(MemoryModuleType.NEAREST_ATTACKABLE, var1x), () -> var2.getBrain().eraseMemory(MemoryModuleType.NEAREST_ATTACKABLE));
+   protected void doTick(final ServerLevel level, final Breeze breeze) {
+      super.doTick(level, breeze);
+      breeze.getBrain().getMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES).stream().flatMap(Collection::stream).filter(EntitySelector.NO_CREATIVE_OR_SPECTATOR).filter((entity) -> Sensor.isEntityAttackable(level, breeze, entity)).findFirst().ifPresentOrElse((entity) -> breeze.getBrain().setMemory(MemoryModuleType.NEAREST_ATTACKABLE, entity), () -> breeze.getBrain().eraseMemory(MemoryModuleType.NEAREST_ATTACKABLE));
    }
 }

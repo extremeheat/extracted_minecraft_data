@@ -20,31 +20,31 @@ public class VariantUtils {
       super();
    }
 
-   public static <T> Holder<T> getDefaultOrAny(RegistryAccess var0, ResourceKey<T> var1) {
-      Registry var2 = var0.lookupOrThrow(var1.registryKey());
-      Optional var10000 = var2.get(var1);
-      Objects.requireNonNull(var2);
-      return (Holder)var10000.or(var2::getAny).orElseThrow();
+   public static <T> Holder<T> getDefaultOrAny(final RegistryAccess registryAccess, final ResourceKey<T> id) {
+      Registry<T> registry = registryAccess.lookupOrThrow(id.registryKey());
+      Optional var10000 = registry.get(id);
+      Objects.requireNonNull(registry);
+      return (Holder)var10000.or(registry::getAny).orElseThrow();
    }
 
-   public static <T> Holder<T> getAny(RegistryAccess var0, ResourceKey<? extends Registry<T>> var1) {
-      return (Holder)var0.lookupOrThrow(var1).getAny().orElseThrow();
+   public static <T> Holder<T> getAny(final RegistryAccess registryAccess, final ResourceKey<? extends Registry<T>> registryId) {
+      return (Holder)registryAccess.lookupOrThrow(registryId).getAny().orElseThrow();
    }
 
-   public static <T> void writeVariant(ValueOutput var0, Holder<T> var1) {
-      var1.unwrapKey().ifPresent((var1x) -> var0.store("variant", Identifier.CODEC, var1x.identifier()));
+   public static <T> void writeVariant(final ValueOutput output, final Holder<T> holder) {
+      holder.unwrapKey().ifPresent((k) -> output.store("variant", Identifier.CODEC, k.identifier()));
    }
 
-   public static <T> Optional<Holder<T>> readVariant(ValueInput var0, ResourceKey<? extends Registry<T>> var1) {
-      Optional var10000 = var0.read("variant", Identifier.CODEC).map((var1x) -> ResourceKey.create(var1, var1x));
-      HolderLookup.Provider var10001 = var0.lookup();
+   public static <T> Optional<Holder<T>> readVariant(final ValueInput input, final ResourceKey<? extends Registry<T>> registryId) {
+      Optional var10000 = input.read("variant", Identifier.CODEC).map((id) -> ResourceKey.create(registryId, id));
+      HolderLookup.Provider var10001 = input.lookup();
       Objects.requireNonNull(var10001);
       return var10000.flatMap(var10001::get);
    }
 
-   public static <T extends PriorityProvider<SpawnContext, ?>> Optional<Holder.Reference<T>> selectVariantToSpawn(SpawnContext var0, ResourceKey<Registry<T>> var1) {
-      ServerLevelAccessor var2 = var0.level();
-      Stream var3 = var2.registryAccess().lookupOrThrow(var1).listElements();
-      return PriorityProvider.pick(var3, Holder::value, var2.getRandom(), var0);
+   public static <T extends PriorityProvider<SpawnContext, ?>> Optional<Holder.Reference<T>> selectVariantToSpawn(final SpawnContext context, final ResourceKey<Registry<T>> variantRegistry) {
+      ServerLevelAccessor level = context.level();
+      Stream<Holder.Reference<T>> entries = level.registryAccess().lookupOrThrow(variantRegistry).listElements();
+      return PriorityProvider.pick(entries, Holder::value, level.getRandom(), context);
    }
 }

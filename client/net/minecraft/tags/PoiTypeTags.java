@@ -13,7 +13,7 @@ public class PoiTypeTags {
       super();
    }
 
-   private static TagKey<PoiType> create(String var0) {
-      return TagKey.<PoiType>create(Registries.POINT_OF_INTEREST_TYPE, Identifier.withDefaultNamespace(var0));
+   private static TagKey<PoiType> create(final String name) {
+      return TagKey.<PoiType>create(Registries.POINT_OF_INTEREST_TYPE, Identifier.withDefaultNamespace(name));
    }
 }

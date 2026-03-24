@@ -6,24 +6,19 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.WorldGenLevel;
 
 class NotPredicate implements BlockPredicate {
-   public static final MapCodec<NotPredicate> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BlockPredicate.CODEC.fieldOf("predicate").forGetter((var0x) -> var0x.predicate)).apply(var0, NotPredicate::new));
+   public static final MapCodec<NotPredicate> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockPredicate.CODEC.fieldOf("predicate").forGetter((p) -> p.predicate)).apply(i, NotPredicate::new));
    private final BlockPredicate predicate;
 
-   public NotPredicate(BlockPredicate var1) {
+   public NotPredicate(final BlockPredicate predicate) {
       super();
-      this.predicate = var1;
+      this.predicate = predicate;
    }
 
-   public boolean test(WorldGenLevel var1, BlockPos var2) {
-      return !this.predicate.test(var1, var2);
+   public boolean test(final WorldGenLevel level, final BlockPos origin) {
+      return !this.predicate.test(level, origin);
    }
 
    public BlockPredicateType<?> type() {
       return BlockPredicateType.NOT;
-   }
-
-   // $FF: synthetic method
-   public boolean test(final Object var1, final Object var2) {
-      return this.test((WorldGenLevel)var1, (BlockPos)var2);
    }
 }

@@ -8,15 +8,11 @@ import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
 public record EnchantedItemInUse(ItemStack itemStack, @Nullable EquipmentSlot inSlot, @Nullable LivingEntity owner, Consumer<Item> onBreak) {
-   public EnchantedItemInUse(ItemStack var1, EquipmentSlot var2, LivingEntity var3) {
-      this(var1, var2, var3, (var2x) -> var3.onEquippedItemBroken(var2x, var2));
+   public EnchantedItemInUse(final ItemStack itemStack, final EquipmentSlot inSlot, final LivingEntity owner) {
+      this(itemStack, inSlot, owner, (item) -> owner.onEquippedItemBroken(item, inSlot));
    }
 
-   public EnchantedItemInUse(ItemStack var1, @Nullable EquipmentSlot var2, @Nullable LivingEntity var3, Consumer<Item> var4) {
+   public EnchantedItemInUse {
       super();
-      this.itemStack = var1;
-      this.inSlot = var2;
-      this.owner = var3;
-      this.onBreak = var4;
    }
 }

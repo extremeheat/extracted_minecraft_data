@@ -15,33 +15,33 @@ public class CsvOutput {
    private final Writer output;
    private final int columnCount;
 
-   CsvOutput(Writer var1, List<String> var2) throws IOException {
+   private CsvOutput(final Writer output, final List<String> headers) throws IOException {
       super();
-      this.output = var1;
-      this.columnCount = var2.size();
-      this.writeLine(var2.stream());
+      this.output = output;
+      this.columnCount = headers.size();
+      this.writeLine(headers.stream());
    }
 
    public static Builder builder() {
       return new Builder();
    }
 
-   public void writeRow(Object... var1) throws IOException {
-      if (var1.length != this.columnCount) {
-         throw new IllegalArgumentException("Invalid number of columns, expected " + this.columnCount + ", but got " + var1.length);
+   public void writeRow(final Object... values) throws IOException {
+      if (values.length != this.columnCount) {
+         throw new IllegalArgumentException("Invalid number of columns, expected " + this.columnCount + ", but got " + values.length);
       } else {
-         this.writeLine(Stream.of(var1));
+         this.writeLine(Stream.of(values));
       }
    }
 
-   private void writeLine(Stream<? extends @Nullable Object> var1) throws IOException {
+   private void writeLine(final Stream<? extends @Nullable Object> values) throws IOException {
       Writer var10000 = this.output;
-      Stream var10001 = var1.map(CsvOutput::getStringValue);
+      Stream var10001 = values.map(CsvOutput::getStringValue);
       var10000.write((String)var10001.collect(Collectors.joining(",")) + "\r\n");
    }
 
-   private static String getStringValue(@Nullable Object var0) {
-      return StringEscapeUtils.escapeCsv(var0 != null ? var0.toString() : "[null]");
+   private static String getStringValue(final @Nullable Object value) {
+      return StringEscapeUtils.escapeCsv(value != null ? value.toString() : "[null]");
    }
 
    public static class Builder {
@@ -51,13 +51,13 @@ public class CsvOutput {
          super();
       }
 
-      public Builder addColumn(String var1) {
-         this.headers.add(var1);
+      public Builder addColumn(final String header) {
+         this.headers.add(header);
          return this;
       }
 
-      public CsvOutput build(Writer var1) throws IOException {
-         return new CsvOutput(var1, this.headers);
+      public CsvOutput build(final Writer writer) throws IOException {
+         return new CsvOutput(writer, this.headers);
       }
    }
 }

@@ -23,47 +23,47 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
    private int count = 0;
    private @Nullable Consumer<BlockPos> debugListener;
 
-   public CollectingNeighborUpdater(Level var1, int var2) {
+   public CollectingNeighborUpdater(final Level level, final int maxChainedNeighborUpdates) {
       super();
-      this.level = var1;
-      this.maxChainedNeighborUpdates = var2;
+      this.level = level;
+      this.maxChainedNeighborUpdates = maxChainedNeighborUpdates;
    }
 
-   public void setDebugListener(@Nullable Consumer<BlockPos> var1) {
-      this.debugListener = var1;
+   public void setDebugListener(final @Nullable Consumer<BlockPos> debugListener) {
+      this.debugListener = debugListener;
    }
 
-   public void shapeUpdate(Direction var1, BlockState var2, BlockPos var3, BlockPos var4, @Block.UpdateFlags int var5, int var6) {
-      this.addAndRun(var3, new ShapeUpdate(var1, var2, var3.immutable(), var4.immutable(), var5, var6));
+   public void shapeUpdate(final Direction direction, final BlockState neighborState, final BlockPos pos, final BlockPos neighborPos, final @Block.UpdateFlags int updateFlags, final int updateLimit) {
+      this.addAndRun(pos, new ShapeUpdate(direction, neighborState, pos.immutable(), neighborPos.immutable(), updateFlags, updateLimit));
    }
 
-   public void neighborChanged(BlockPos var1, Block var2, @Nullable Orientation var3) {
-      this.addAndRun(var1, new SimpleNeighborUpdate(var1, var2, var3));
+   public void neighborChanged(final BlockPos pos, final Block block, final @Nullable Orientation orientation) {
+      this.addAndRun(pos, new SimpleNeighborUpdate(pos, block, orientation));
    }
 
-   public void neighborChanged(BlockState var1, BlockPos var2, Block var3, @Nullable Orientation var4, boolean var5) {
-      this.addAndRun(var2, new FullNeighborUpdate(var1, var2.immutable(), var3, var4, var5));
+   public void neighborChanged(final BlockState state, final BlockPos pos, final Block block, final @Nullable Orientation orientation, final boolean movedByPiston) {
+      this.addAndRun(pos, new FullNeighborUpdate(state, pos.immutable(), block, orientation, movedByPiston));
    }
 
-   public void updateNeighborsAtExceptFromFacing(BlockPos var1, Block var2, @Nullable Direction var3, @Nullable Orientation var4) {
-      this.addAndRun(var1, new MultiNeighborUpdate(var1.immutable(), var2, var4, var3));
+   public void updateNeighborsAtExceptFromFacing(final BlockPos pos, final Block block, final @Nullable Direction skipDirection, final @Nullable Orientation orientation) {
+      this.addAndRun(pos, new MultiNeighborUpdate(pos.immutable(), block, orientation, skipDirection));
    }
 
-   private void addAndRun(BlockPos var1, NeighborUpdates var2) {
-      boolean var3 = this.count > 0;
-      boolean var4 = this.maxChainedNeighborUpdates >= 0 && this.count >= this.maxChainedNeighborUpdates;
+   private void addAndRun(final BlockPos pos, final NeighborUpdates update) {
+      boolean runningAlready = this.count > 0;
+      boolean tooManyUpdates = this.maxChainedNeighborUpdates >= 0 && this.count >= this.maxChainedNeighborUpdates;
       ++this.count;
-      if (!var4) {
-         if (var3) {
-            this.addedThisLayer.add(var2);
+      if (!tooManyUpdates) {
+         if (runningAlready) {
+            this.addedThisLayer.add(update);
          } else {
-            this.stack.push(var2);
+            this.stack.push(update);
          }
       } else if (this.count - 1 == this.maxChainedNeighborUpdates) {
-         LOGGER.error("Too many chained neighbor updates. Skipping the rest. First skipped position: {}", var1.toShortString());
+         LOGGER.error("Too many chained neighbor updates. Skipping the rest. First skipped position: {}", pos.toShortString());
       }
 
-      if (!var3) {
+      if (!runningAlready) {
          this.runUpdates();
       }
 
@@ -72,18 +72,18 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
    private void runUpdates() {
       try {
          while(!this.stack.isEmpty() || !this.addedThisLayer.isEmpty()) {
-            for(int var1 = this.addedThisLayer.size() - 1; var1 >= 0; --var1) {
-               this.stack.push((NeighborUpdates)this.addedThisLayer.get(var1));
+            for(int i = this.addedThisLayer.size() - 1; i >= 0; --i) {
+               this.stack.push((NeighborUpdates)this.addedThisLayer.get(i));
             }
 
             this.addedThisLayer.clear();
-            NeighborUpdates var5 = (NeighborUpdates)this.stack.peek();
+            NeighborUpdates nextUpdates = (NeighborUpdates)this.stack.peek();
             if (this.debugListener != null) {
-               var5.forEachUpdatedPos(this.debugListener);
+               nextUpdates.forEachUpdatedPos(this.debugListener);
             }
 
             while(this.addedThisLayer.isEmpty()) {
-               if (!var5.runNext(this.level)) {
+               if (!nextUpdates.runNext(this.level)) {
                   this.stack.pop();
                   break;
                }
@@ -98,41 +98,33 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
    }
 
    static record SimpleNeighborUpdate(BlockPos pos, Block block, @Nullable Orientation orientation) implements NeighborUpdates {
-      SimpleNeighborUpdate(BlockPos var1, Block var2, @Nullable Orientation var3) {
+      SimpleNeighborUpdate {
          super();
-         this.pos = var1;
-         this.block = var2;
-         this.orientation = var3;
       }
 
-      public boolean runNext(Level var1) {
-         BlockState var2 = var1.getBlockState(this.pos);
-         NeighborUpdater.executeUpdate(var1, var2, this.pos, this.block, this.orientation, false);
+      public boolean runNext(final Level level) {
+         BlockState state = level.getBlockState(this.pos);
+         NeighborUpdater.executeUpdate(level, state, this.pos, this.block, this.orientation, false);
          return false;
       }
 
-      public void forEachUpdatedPos(Consumer<BlockPos> var1) {
-         var1.accept(this.pos);
+      public void forEachUpdatedPos(final Consumer<BlockPos> output) {
+         output.accept(this.pos);
       }
    }
 
    static record FullNeighborUpdate(BlockState state, BlockPos pos, Block block, @Nullable Orientation orientation, boolean movedByPiston) implements NeighborUpdates {
-      FullNeighborUpdate(BlockState var1, BlockPos var2, Block var3, @Nullable Orientation var4, boolean var5) {
+      FullNeighborUpdate {
          super();
-         this.state = var1;
-         this.pos = var2;
-         this.block = var3;
-         this.orientation = var4;
-         this.movedByPiston = var5;
       }
 
-      public boolean runNext(Level var1) {
-         NeighborUpdater.executeUpdate(var1, this.state, this.pos, this.block, this.orientation, this.movedByPiston);
+      public boolean runNext(final Level level) {
+         NeighborUpdater.executeUpdate(level, this.state, this.pos, this.block, this.orientation, this.movedByPiston);
          return false;
       }
 
-      public void forEachUpdatedPos(Consumer<BlockPos> var1) {
-         var1.accept(this.pos);
+      public void forEachUpdatedPos(final Consumer<BlockPos> output) {
+         output.accept(this.pos);
       }
    }
 
@@ -143,32 +135,32 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
       private final @Nullable Direction skipDirection;
       private int idx = 0;
 
-      MultiNeighborUpdate(BlockPos var1, Block var2, @Nullable Orientation var3, @Nullable Direction var4) {
+      MultiNeighborUpdate(final BlockPos sourcePos, final Block sourceBlock, final @Nullable Orientation orientation, final @Nullable Direction skipDirection) {
          super();
-         this.sourcePos = var1;
-         this.sourceBlock = var2;
-         this.orientation = var3;
-         this.skipDirection = var4;
-         if (NeighborUpdater.UPDATE_ORDER[this.idx] == var4) {
+         this.sourcePos = sourcePos;
+         this.sourceBlock = sourceBlock;
+         this.orientation = orientation;
+         this.skipDirection = skipDirection;
+         if (NeighborUpdater.UPDATE_ORDER[this.idx] == skipDirection) {
             ++this.idx;
          }
 
       }
 
-      public boolean runNext(Level var1) {
-         Direction var2 = NeighborUpdater.UPDATE_ORDER[this.idx++];
-         BlockPos var3 = this.sourcePos.relative(var2);
-         BlockState var4 = var1.getBlockState(var3);
-         Orientation var5 = null;
-         if (var1.enabledFeatures().contains(FeatureFlags.REDSTONE_EXPERIMENTS)) {
+      public boolean runNext(final Level level) {
+         Direction direction = NeighborUpdater.UPDATE_ORDER[this.idx++];
+         BlockPos neighborPos = this.sourcePos.relative(direction);
+         BlockState state = level.getBlockState(neighborPos);
+         Orientation orientation = null;
+         if (level.enabledFeatures().contains(FeatureFlags.REDSTONE_EXPERIMENTS)) {
             if (this.orientation == null) {
-               this.orientation = ExperimentalRedstoneUtils.initialOrientation(var1, this.skipDirection == null ? null : this.skipDirection.getOpposite(), (Direction)null);
+               this.orientation = ExperimentalRedstoneUtils.initialOrientation(level, this.skipDirection == null ? null : this.skipDirection.getOpposite(), (Direction)null);
             }
 
-            var5 = this.orientation.withFront(var2);
+            orientation = this.orientation.withFront(direction);
          }
 
-         NeighborUpdater.executeUpdate(var1, var4, var3, this.sourceBlock, var5, false);
+         NeighborUpdater.executeUpdate(level, state, neighborPos, this.sourceBlock, orientation, false);
          if (this.idx < NeighborUpdater.UPDATE_ORDER.length && NeighborUpdater.UPDATE_ORDER[this.idx] == this.skipDirection) {
             ++this.idx;
          }
@@ -176,41 +168,35 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
          return this.idx < NeighborUpdater.UPDATE_ORDER.length;
       }
 
-      public void forEachUpdatedPos(Consumer<BlockPos> var1) {
-         for(Direction var5 : NeighborUpdater.UPDATE_ORDER) {
-            if (var5 != this.skipDirection) {
-               BlockPos var6 = this.sourcePos.relative(var5);
-               var1.accept(var6);
+      public void forEachUpdatedPos(final Consumer<BlockPos> output) {
+         for(Direction direction : NeighborUpdater.UPDATE_ORDER) {
+            if (direction != this.skipDirection) {
+               BlockPos neighborPos = this.sourcePos.relative(direction);
+               output.accept(neighborPos);
             }
          }
 
       }
    }
 
-   static record ShapeUpdate(Direction direction, BlockState neighborState, BlockPos pos, BlockPos neighborPos, @Block.UpdateFlags int updateFlags, int updateLimit) implements NeighborUpdates {
-      ShapeUpdate(Direction var1, BlockState var2, BlockPos var3, BlockPos var4, @Block.UpdateFlags int var5, int var6) {
+   private static record ShapeUpdate(Direction direction, BlockState neighborState, BlockPos pos, BlockPos neighborPos, @Block.UpdateFlags int updateFlags, int updateLimit) implements NeighborUpdates {
+      private ShapeUpdate {
          super();
-         this.direction = var1;
-         this.neighborState = var2;
-         this.pos = var3;
-         this.neighborPos = var4;
-         this.updateFlags = var5;
-         this.updateLimit = var6;
       }
 
-      public boolean runNext(Level var1) {
-         NeighborUpdater.executeShapeUpdate(var1, this.direction, this.pos, this.neighborPos, this.neighborState, this.updateFlags, this.updateLimit);
+      public boolean runNext(final Level level) {
+         NeighborUpdater.executeShapeUpdate(level, this.direction, this.pos, this.neighborPos, this.neighborState, this.updateFlags, this.updateLimit);
          return false;
       }
 
-      public void forEachUpdatedPos(Consumer<BlockPos> var1) {
-         var1.accept(this.pos);
+      public void forEachUpdatedPos(final Consumer<BlockPos> output) {
+         output.accept(this.pos);
       }
    }
 
-   interface NeighborUpdates {
-      boolean runNext(Level var1);
+   private interface NeighborUpdates {
+      boolean runNext(Level level);
 
-      void forEachUpdatedPos(Consumer<BlockPos> var1);
+      void forEachUpdatedPos(Consumer<BlockPos> output);
    }
 }

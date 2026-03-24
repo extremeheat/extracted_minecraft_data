@@ -14,54 +14,51 @@ public class LlamaFollowCaravanGoal extends Goal {
    private static final int CARAVAN_LIMIT = 8;
    private int distCheckCounter;
 
-   public LlamaFollowCaravanGoal(Llama var1, double var2) {
+   public LlamaFollowCaravanGoal(final Llama llama, final double speedModifier) {
       super();
-      this.llama = var1;
-      this.speedModifier = var2;
+      this.llama = llama;
+      this.speedModifier = speedModifier;
       this.setFlags(EnumSet.of(Goal.Flag.MOVE));
    }
 
    public boolean canUse() {
       if (!this.llama.isLeashed() && !this.llama.inCaravan()) {
-         List var1 = this.llama.level().getEntities(this.llama, this.llama.getBoundingBox().inflate(9.0, 4.0, 9.0), (var0) -> {
-            EntityType var1 = var0.getType();
-            return var1 == EntityType.LLAMA || var1 == EntityType.TRADER_LLAMA;
-         });
-         Llama var2 = null;
-         double var3 = 1.7976931348623157E308;
+         List<Entity> llamas = this.llama.level().getEntities(this.llama, this.llama.getBoundingBox().inflate(9.0, 4.0, 9.0), (e) -> e.is(EntityType.LLAMA) || e.is(EntityType.TRADER_LLAMA));
+         Llama closest = null;
+         double closestDistSquare = 1.7976931348623157E308;
 
-         for(Entity var6 : var1) {
-            Llama var7 = (Llama)var6;
-            if (var7.inCaravan() && !var7.hasCaravanTail()) {
-               double var8 = this.llama.distanceToSqr(var7);
-               if (!(var8 > var3)) {
-                  var3 = var8;
-                  var2 = var7;
+         for(Entity entity : llamas) {
+            Llama candidate = (Llama)entity;
+            if (candidate.inCaravan() && !candidate.hasCaravanTail()) {
+               double distSquare = this.llama.distanceToSqr(candidate);
+               if (!(distSquare > closestDistSquare)) {
+                  closestDistSquare = distSquare;
+                  closest = candidate;
                }
             }
          }
 
-         if (var2 == null) {
-            for(Entity var11 : var1) {
-               Llama var12 = (Llama)var11;
-               if (var12.isLeashed() && !var12.hasCaravanTail()) {
-                  double var13 = this.llama.distanceToSqr(var12);
-                  if (!(var13 > var3)) {
-                     var3 = var13;
-                     var2 = var12;
+         if (closest == null) {
+            for(Entity entity : llamas) {
+               Llama candidate = (Llama)entity;
+               if (candidate.isLeashed() && !candidate.hasCaravanTail()) {
+                  double distSquare = this.llama.distanceToSqr(candidate);
+                  if (!(distSquare > closestDistSquare)) {
+                     closestDistSquare = distSquare;
+                     closest = candidate;
                   }
                }
             }
          }
 
-         if (var2 == null) {
+         if (closest == null) {
             return false;
-         } else if (var3 < 4.0) {
+         } else if (closestDistSquare < 4.0) {
             return false;
-         } else if (!var2.isLeashed() && !this.firstIsLeashed(var2, 1)) {
+         } else if (!closest.isLeashed() && !this.firstIsLeashed(closest, 1)) {
             return false;
          } else {
-            this.llama.joinCaravan(var2);
+            this.llama.joinCaravan(closest);
             return true;
          }
       } else {
@@ -71,8 +68,8 @@ public class LlamaFollowCaravanGoal extends Goal {
 
    public boolean canContinueToUse() {
       if (this.llama.inCaravan() && this.llama.getCaravanHead().isAlive() && this.firstIsLeashed(this.llama, 0)) {
-         double var1 = this.llama.distanceToSqr(this.llama.getCaravanHead());
-         if (var1 > 676.0) {
+         double distSqr = this.llama.distanceToSqr(this.llama.getCaravanHead());
+         if (distSqr > 676.0) {
             if (this.speedModifier <= 3.0) {
                this.speedModifier *= 1.2;
                this.distCheckCounter = reducedTickDelay(40);
@@ -102,25 +99,25 @@ public class LlamaFollowCaravanGoal extends Goal {
    public void tick() {
       if (this.llama.inCaravan()) {
          if (!(this.llama.getLeashHolder() instanceof LeashFenceKnotEntity)) {
-            Llama var1 = this.llama.getCaravanHead();
-            double var2 = (double)this.llama.distanceTo(var1);
-            float var4 = 2.0F;
-            Vec3 var5 = (new Vec3(var1.getX() - this.llama.getX(), var1.getY() - this.llama.getY(), var1.getZ() - this.llama.getZ())).normalize().scale(Math.max(var2 - 2.0, 0.0));
-            this.llama.getNavigation().moveTo(this.llama.getX() + var5.x, this.llama.getY() + var5.y, this.llama.getZ() + var5.z, this.speedModifier);
+            Llama follows = this.llama.getCaravanHead();
+            double distanceTo = (double)this.llama.distanceTo(follows);
+            float wantedDistance = 2.0F;
+            Vec3 delta = (new Vec3(follows.getX() - this.llama.getX(), follows.getY() - this.llama.getY(), follows.getZ() - this.llama.getZ())).normalize().scale(Math.max(distanceTo - 2.0, 0.0));
+            this.llama.getNavigation().moveTo(this.llama.getX() + delta.x, this.llama.getY() + delta.y, this.llama.getZ() + delta.z, this.speedModifier);
          }
       }
    }
 
-   private boolean firstIsLeashed(Llama var1, int var2) {
-      if (var2 > 8) {
+   private boolean firstIsLeashed(final Llama currentMob, int counter) {
+      if (counter > 8) {
          return false;
-      } else if (var1.inCaravan()) {
-         if (var1.getCaravanHead().isLeashed()) {
+      } else if (currentMob.inCaravan()) {
+         if (currentMob.getCaravanHead().isLeashed()) {
             return true;
          } else {
-            Llama var10001 = var1.getCaravanHead();
-            ++var2;
-            return this.firstIsLeashed(var10001, var2);
+            Llama var10001 = currentMob.getCaravanHead();
+            ++counter;
+            return this.firstIsLeashed(var10001, counter);
          }
       } else {
          return false;

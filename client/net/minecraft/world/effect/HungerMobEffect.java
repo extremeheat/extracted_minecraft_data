@@ -5,19 +5,19 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 
 class HungerMobEffect extends MobEffect {
-   protected HungerMobEffect(MobEffectCategory var1, int var2) {
-      super(var1, var2);
+   protected HungerMobEffect(final MobEffectCategory category, final int color) {
+      super(category, color);
    }
 
-   public boolean applyEffectTick(ServerLevel var1, LivingEntity var2, int var3) {
-      if (var2 instanceof Player var4) {
-         var4.causeFoodExhaustion(0.005F * (float)(var3 + 1));
+   public boolean applyEffectTick(final ServerLevel serverLevel, final LivingEntity mob, final int amplification) {
+      if (mob instanceof Player player) {
+         player.causeFoodExhaustion(0.005F * (float)(amplification + 1));
       }
 
       return true;
    }
 
-   public boolean shouldApplyEffectTickThisTick(int var1, int var2) {
+   public boolean shouldApplyEffectTickThisTick(final int tickCount, final int amplification) {
       return true;
    }
 }

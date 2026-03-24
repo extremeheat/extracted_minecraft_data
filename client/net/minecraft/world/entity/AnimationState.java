@@ -10,20 +10,20 @@ public class AnimationState {
       super();
    }
 
-   public void start(int var1) {
-      this.startTick = var1;
+   public void start(final int tickCount) {
+      this.startTick = tickCount;
    }
 
-   public void startIfStopped(int var1) {
+   public void startIfStopped(final int tickCount) {
       if (!this.isStarted()) {
-         this.start(var1);
+         this.start(tickCount);
       }
 
    }
 
-   public void animateWhen(boolean var1, int var2) {
-      if (var1) {
-         this.startIfStopped(var2);
+   public void animateWhen(final boolean condition, final int tickCount) {
+      if (condition) {
+         this.startIfStopped(tickCount);
       } else {
          this.stop();
       }
@@ -34,29 +34,29 @@ public class AnimationState {
       this.startTick = -2147483648;
    }
 
-   public void ifStarted(Consumer<AnimationState> var1) {
+   public void ifStarted(final Consumer<AnimationState> timer) {
       if (this.isStarted()) {
-         var1.accept(this);
+         timer.accept(this);
       }
 
    }
 
-   public void fastForward(int var1, float var2) {
+   public void fastForward(final int ticks, final float timeScale) {
       if (this.isStarted()) {
-         this.startTick -= (int)((float)var1 * var2);
+         this.startTick -= (int)((float)ticks * timeScale);
       }
    }
 
-   public long getTimeInMillis(float var1) {
-      float var2 = var1 - (float)this.startTick;
-      return (long)(var2 * 50.0F);
+   public long getTimeInMillis(final float ageInTicks) {
+      float timeInTicks = ageInTicks - (float)this.startTick;
+      return (long)(timeInTicks * 50.0F);
    }
 
    public boolean isStarted() {
       return this.startTick != -2147483648;
    }
 
-   public void copyFrom(AnimationState var1) {
-      this.startTick = var1.startTick;
+   public void copyFrom(final AnimationState state) {
+      this.startTick = state.startTick;
    }
 }

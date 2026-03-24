@@ -36,57 +36,57 @@ public class PortalForcer {
    private static final int NOTHING_FOUND = -1;
    private final ServerLevel level;
 
-   public PortalForcer(ServerLevel var1) {
+   public PortalForcer(final ServerLevel level) {
       super();
-      this.level = var1;
+      this.level = level;
    }
 
-   public Optional<BlockPos> findClosestPortalPosition(BlockPos var1, boolean var2, WorldBorder var3) {
-      PoiManager var4 = this.level.getPoiManager();
-      int var5 = var2 ? 16 : 128;
-      var4.ensureLoadedAndValid(this.level, var1, var5);
-      Stream var10000 = var4.getInSquare((var0) -> var0.is(PoiTypes.NETHER_PORTAL), var1, var5, PoiManager.Occupancy.ANY).map(PoiRecord::getPos);
-      Objects.requireNonNull(var3);
-      return var10000.filter(var3::isWithinBounds).filter((var1x) -> this.level.getBlockState(var1x).hasProperty(BlockStateProperties.HORIZONTAL_AXIS)).min(Comparator.comparingDouble((var1x) -> var1x.distSqr(var1)).thenComparingInt(Vec3i::getY));
+   public Optional<BlockPos> findClosestPortalPosition(final BlockPos approximateExitPos, final boolean toNether, final WorldBorder worldBorder) {
+      PoiManager poiManager = this.level.getPoiManager();
+      int radius = toNether ? 16 : 128;
+      poiManager.ensureLoadedAndValid(this.level, approximateExitPos, radius);
+      Stream var10000 = poiManager.getInSquare((type) -> type.is(PoiTypes.NETHER_PORTAL), approximateExitPos, radius, PoiManager.Occupancy.ANY).map(PoiRecord::getPos);
+      Objects.requireNonNull(worldBorder);
+      return var10000.filter(worldBorder::isWithinBounds).filter((pos) -> this.level.getBlockState(pos).hasProperty(BlockStateProperties.HORIZONTAL_AXIS)).min(Comparator.comparingDouble((p) -> p.distSqr(approximateExitPos)).thenComparingInt(Vec3i::getY));
    }
 
-   public Optional<BlockUtil.FoundRectangle> createPortal(BlockPos var1, Direction.Axis var2) {
-      Direction var3 = Direction.get(Direction.AxisDirection.POSITIVE, var2);
-      double var4 = -1.0;
-      BlockPos var6 = null;
-      double var7 = -1.0;
-      BlockPos var9 = null;
-      WorldBorder var10 = this.level.getWorldBorder();
-      int var11 = Math.min(this.level.getMaxY(), this.level.getMinY() + this.level.getLogicalHeight() - 1);
-      boolean var12 = true;
-      BlockPos.MutableBlockPos var13 = var1.mutable();
+   public Optional<BlockUtil.FoundRectangle> createPortal(final BlockPos origin, final Direction.Axis portalAxis) {
+      Direction direction = Direction.get(Direction.AxisDirection.POSITIVE, portalAxis);
+      double closestFullDistanceSqr = -1.0;
+      BlockPos closestFullPosition = null;
+      double closestPartialDistanceSqr = -1.0;
+      BlockPos closestPartialPosition = null;
+      WorldBorder worldBorder = this.level.getWorldBorder();
+      int maxPlaceableY = Math.min(this.level.getMaxY(), this.level.getMinY() + this.level.getLogicalHeight() - 1);
+      int edgeDistance = 1;
+      BlockPos.MutableBlockPos mutable = origin.mutable();
 
-      for(BlockPos.MutableBlockPos var15 : BlockPos.spiralAround(var1, 16, Direction.EAST, Direction.SOUTH)) {
-         int var16 = Math.min(var11, this.level.getHeight(Heightmap.Types.MOTION_BLOCKING, var15.getX(), var15.getZ()));
-         if (var10.isWithinBounds((BlockPos)var15) && var10.isWithinBounds((BlockPos)var15.move(var3, 1))) {
-            var15.move(var3.getOpposite(), 1);
+      for(BlockPos.MutableBlockPos columnPos : BlockPos.spiralAround(origin, 16, Direction.EAST, Direction.SOUTH)) {
+         int height = Math.min(maxPlaceableY, this.level.getHeight(Heightmap.Types.MOTION_BLOCKING, columnPos.getX(), columnPos.getZ()));
+         if (worldBorder.isWithinBounds((BlockPos)columnPos) && worldBorder.isWithinBounds((BlockPos)columnPos.move(direction, 1))) {
+            columnPos.move(direction.getOpposite(), 1);
 
-            for(int var17 = var16; var17 >= this.level.getMinY(); --var17) {
-               var15.setY(var17);
-               if (this.canPortalReplaceBlock(var15)) {
-                  int var18;
-                  for(var18 = var17; var17 > this.level.getMinY() && this.canPortalReplaceBlock(var15.move(Direction.DOWN)); --var17) {
+            for(int y = height; y >= this.level.getMinY(); --y) {
+               columnPos.setY(y);
+               if (this.canPortalReplaceBlock(columnPos)) {
+                  int firstEmptyY;
+                  for(firstEmptyY = y; y > this.level.getMinY() && this.canPortalReplaceBlock(columnPos.move(Direction.DOWN)); --y) {
                   }
 
-                  if (var17 + 4 <= var11) {
-                     int var19 = var18 - var17;
-                     if (var19 <= 0 || var19 >= 3) {
-                        var15.setY(var17);
-                        if (this.canHostFrame(var15, var13, var3, 0)) {
-                           double var20 = var1.distSqr(var15);
-                           if (this.canHostFrame(var15, var13, var3, -1) && this.canHostFrame(var15, var13, var3, 1) && (var4 == -1.0 || var4 > var20)) {
-                              var4 = var20;
-                              var6 = var15.immutable();
+                  if (y + 4 <= maxPlaceableY) {
+                     int deltaY = firstEmptyY - y;
+                     if (deltaY <= 0 || deltaY >= 3) {
+                        columnPos.setY(y);
+                        if (this.canHostFrame(columnPos, mutable, direction, 0)) {
+                           double distance = origin.distSqr(columnPos);
+                           if (this.canHostFrame(columnPos, mutable, direction, -1) && this.canHostFrame(columnPos, mutable, direction, 1) && (closestFullDistanceSqr == -1.0 || closestFullDistanceSqr > distance)) {
+                              closestFullDistanceSqr = distance;
+                              closestFullPosition = columnPos.immutable();
                            }
 
-                           if (var4 == -1.0 && (var7 == -1.0 || var7 > var20)) {
-                              var7 = var20;
-                              var9 = var15.immutable();
+                           if (closestFullDistanceSqr == -1.0 && (closestPartialDistanceSqr == -1.0 || closestPartialDistanceSqr > distance)) {
+                              closestPartialDistanceSqr = distance;
+                              closestPartialPosition = columnPos.immutable();
                            }
                         }
                      }
@@ -96,70 +96,70 @@ public class PortalForcer {
          }
       }
 
-      if (var4 == -1.0 && var7 != -1.0) {
-         var6 = var9;
-         var4 = var7;
+      if (closestFullDistanceSqr == -1.0 && closestPartialDistanceSqr != -1.0) {
+         closestFullPosition = closestPartialPosition;
+         closestFullDistanceSqr = closestPartialDistanceSqr;
       }
 
-      if (var4 == -1.0) {
-         int var23 = Math.max(this.level.getMinY() - -1, 70);
-         int var26 = var11 - 9;
-         if (var26 < var23) {
+      if (closestFullDistanceSqr == -1.0) {
+         int minStartY = Math.max(this.level.getMinY() - -1, 70);
+         int maxStartY = maxPlaceableY - 9;
+         if (maxStartY < minStartY) {
             return Optional.empty();
          }
 
-         var6 = (new BlockPos(var1.getX() - var3.getStepX() * 1, Mth.clamp(var1.getY(), var23, var26), var1.getZ() - var3.getStepZ() * 1)).immutable();
-         var6 = var10.clampToBounds(var6);
-         Direction var29 = var3.getClockWise();
+         closestFullPosition = (new BlockPos(origin.getX() - direction.getStepX() * 1, Mth.clamp(origin.getY(), minStartY, maxStartY), origin.getZ() - direction.getStepZ() * 1)).immutable();
+         closestFullPosition = worldBorder.clampToBounds(closestFullPosition);
+         Direction clockWise = direction.getClockWise();
 
-         for(int var31 = -1; var31 < 2; ++var31) {
-            for(int var32 = 0; var32 < 2; ++var32) {
-               for(int var33 = -1; var33 < 3; ++var33) {
-                  BlockState var34 = var33 < 0 ? Blocks.OBSIDIAN.defaultBlockState() : Blocks.AIR.defaultBlockState();
-                  var13.setWithOffset(var6, var32 * var3.getStepX() + var31 * var29.getStepX(), var33, var32 * var3.getStepZ() + var31 * var29.getStepZ());
-                  this.level.setBlockAndUpdate(var13, var34);
+         for(int box = -1; box < 2; ++box) {
+            for(int width = 0; width < 2; ++width) {
+               for(int height = -1; height < 3; ++height) {
+                  BlockState blockState = height < 0 ? Blocks.OBSIDIAN.defaultBlockState() : Blocks.AIR.defaultBlockState();
+                  mutable.setWithOffset(closestFullPosition, width * direction.getStepX() + box * clockWise.getStepX(), height, width * direction.getStepZ() + box * clockWise.getStepZ());
+                  this.level.setBlockAndUpdate(mutable, blockState);
                }
             }
          }
       }
 
-      for(int var24 = -1; var24 < 3; ++var24) {
-         for(int var27 = -1; var27 < 4; ++var27) {
-            if (var24 == -1 || var24 == 2 || var27 == -1 || var27 == 3) {
-               var13.setWithOffset(var6, var24 * var3.getStepX(), var27, var24 * var3.getStepZ());
-               this.level.setBlock(var13, Blocks.OBSIDIAN.defaultBlockState(), 3);
+      for(int width = -1; width < 3; ++width) {
+         for(int height = -1; height < 4; ++height) {
+            if (width == -1 || width == 2 || height == -1 || height == 3) {
+               mutable.setWithOffset(closestFullPosition, width * direction.getStepX(), height, width * direction.getStepZ());
+               this.level.setBlock(mutable, Blocks.OBSIDIAN.defaultBlockState(), 3);
             }
          }
       }
 
-      BlockState var25 = (BlockState)Blocks.NETHER_PORTAL.defaultBlockState().setValue(NetherPortalBlock.AXIS, var2);
+      BlockState portalBlockState = (BlockState)Blocks.NETHER_PORTAL.defaultBlockState().setValue(NetherPortalBlock.AXIS, portalAxis);
 
-      for(int var28 = 0; var28 < 2; ++var28) {
-         for(int var30 = 0; var30 < 3; ++var30) {
-            var13.setWithOffset(var6, var28 * var3.getStepX(), var30, var28 * var3.getStepZ());
-            this.level.setBlock(var13, var25, 18);
+      for(int width = 0; width < 2; ++width) {
+         for(int height = 0; height < 3; ++height) {
+            mutable.setWithOffset(closestFullPosition, width * direction.getStepX(), height, width * direction.getStepZ());
+            this.level.setBlock(mutable, portalBlockState, 18);
          }
       }
 
-      return Optional.of(new BlockUtil.FoundRectangle(var6.immutable(), 2, 3));
+      return Optional.of(new BlockUtil.FoundRectangle(closestFullPosition.immutable(), 2, 3));
    }
 
-   private boolean canPortalReplaceBlock(BlockPos.MutableBlockPos var1) {
-      BlockState var2 = this.level.getBlockState(var1);
-      return var2.canBeReplaced() && var2.getFluidState().isEmpty();
+   private boolean canPortalReplaceBlock(final BlockPos.MutableBlockPos pos) {
+      BlockState blockState = this.level.getBlockState(pos);
+      return blockState.canBeReplaced() && blockState.getFluidState().isEmpty();
    }
 
-   private boolean canHostFrame(BlockPos var1, BlockPos.MutableBlockPos var2, Direction var3, int var4) {
-      Direction var5 = var3.getClockWise();
+   private boolean canHostFrame(final BlockPos origin, final BlockPos.MutableBlockPos mutable, final Direction direction, final int offset) {
+      Direction clockWise = direction.getClockWise();
 
-      for(int var6 = -1; var6 < 3; ++var6) {
-         for(int var7 = -1; var7 < 4; ++var7) {
-            var2.setWithOffset(var1, var3.getStepX() * var6 + var5.getStepX() * var4, var7, var3.getStepZ() * var6 + var5.getStepZ() * var4);
-            if (var7 < 0 && !this.level.getBlockState(var2).isSolid()) {
+      for(int width = -1; width < 3; ++width) {
+         for(int height = -1; height < 4; ++height) {
+            mutable.setWithOffset(origin, direction.getStepX() * width + clockWise.getStepX() * offset, height, direction.getStepZ() * width + clockWise.getStepZ() * offset);
+            if (height < 0 && !this.level.getBlockState(mutable).isSolid()) {
                return false;
             }
 
-            if (var7 >= 0 && !this.canPortalReplaceBlock(var2)) {
+            if (height >= 0 && !this.canPortalReplaceBlock(mutable)) {
                return false;
             }
          }

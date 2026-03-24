@@ -28,108 +28,108 @@ public abstract class BasePressurePlateBlock extends Block {
    protected static final AABB TOUCH_AABB = (AABB)Block.column(14.0, 0.0, 4.0).toAabbs().getFirst();
    protected final BlockSetType type;
 
-   protected BasePressurePlateBlock(BlockBehaviour.Properties var1, BlockSetType var2) {
-      super(var1.sound(var2.soundType()));
-      this.type = var2;
+   protected BasePressurePlateBlock(final BlockBehaviour.Properties properties, final BlockSetType type) {
+      super(properties.sound(type.soundType()));
+      this.type = type;
    }
 
    protected abstract MapCodec<? extends BasePressurePlateBlock> codec();
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return this.getSignalForState(var1) > 0 ? SHAPE_PRESSED : SHAPE;
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return this.getSignalForState(state) > 0 ? SHAPE_PRESSED : SHAPE;
    }
 
    protected int getPressedTime() {
       return 20;
    }
 
-   public boolean isPossibleToRespawnInThis(BlockState var1) {
+   public boolean isPossibleToRespawnInThis(final BlockState state) {
       return true;
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      return var5 == Direction.DOWN && !var1.canSurvive(var2, var4) ? Blocks.AIR.defaultBlockState() : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      return directionToNeighbour == Direction.DOWN && !state.canSurvive(level, pos) ? Blocks.AIR.defaultBlockState() : super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      BlockPos var4 = var3.below();
-      return canSupportRigidBlock(var2, var4) || canSupportCenter(var2, var4, Direction.UP);
+   protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
+      BlockPos below = pos.below();
+      return canSupportRigidBlock(level, below) || canSupportCenter(level, below, Direction.UP);
    }
 
-   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      int var5 = this.getSignalForState(var1);
-      if (var5 > 0) {
-         this.checkPressed((Entity)null, var2, var3, var1, var5);
+   protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      int signal = this.getSignalForState(state);
+      if (signal > 0) {
+         this.checkPressed((Entity)null, level, pos, state, signal);
       }
 
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
-      if (!var2.isClientSide()) {
-         int var7 = this.getSignalForState(var1);
-         if (var7 == 0) {
-            this.checkPressed(var4, var2, var3, var1, var7);
+   protected void entityInside(final BlockState state, final Level level, final BlockPos pos, final Entity entity, final InsideBlockEffectApplier effectApplier, final boolean isPrecise) {
+      if (!level.isClientSide()) {
+         int signal = this.getSignalForState(state);
+         if (signal == 0) {
+            this.checkPressed(entity, level, pos, state, signal);
          }
 
       }
    }
 
-   private void checkPressed(@Nullable Entity var1, Level var2, BlockPos var3, BlockState var4, int var5) {
-      int var6 = this.getSignalStrength(var2, var3);
-      boolean var7 = var5 > 0;
-      boolean var8 = var6 > 0;
-      if (var5 != var6) {
-         BlockState var9 = this.setSignalForState(var4, var6);
-         var2.setBlock(var3, var9, 2);
-         this.updateNeighbours(var2, var3);
-         var2.setBlocksDirty(var3, var4, var9);
+   private void checkPressed(final @Nullable Entity sourceEntity, final Level level, final BlockPos pos, final BlockState state, final int oldSignal) {
+      int signal = this.getSignalStrength(level, pos);
+      boolean wasPressed = oldSignal > 0;
+      boolean isPressed = signal > 0;
+      if (oldSignal != signal) {
+         BlockState newState = this.setSignalForState(state, signal);
+         level.setBlock(pos, newState, 2);
+         this.updateNeighbours(level, pos);
+         level.setBlocksDirty(pos, state, newState);
       }
 
-      if (!var8 && var7) {
-         var2.playSound((Entity)null, var3, this.type.pressurePlateClickOff(), SoundSource.BLOCKS);
-         var2.gameEvent(var1, GameEvent.BLOCK_DEACTIVATE, var3);
-      } else if (var8 && !var7) {
-         var2.playSound((Entity)null, var3, this.type.pressurePlateClickOn(), SoundSource.BLOCKS);
-         var2.gameEvent(var1, GameEvent.BLOCK_ACTIVATE, var3);
+      if (!isPressed && wasPressed) {
+         level.playSound((Entity)null, pos, this.type.pressurePlateClickOff(), SoundSource.BLOCKS);
+         level.gameEvent(sourceEntity, GameEvent.BLOCK_DEACTIVATE, pos);
+      } else if (isPressed && !wasPressed) {
+         level.playSound((Entity)null, pos, this.type.pressurePlateClickOn(), SoundSource.BLOCKS);
+         level.gameEvent(sourceEntity, GameEvent.BLOCK_ACTIVATE, pos);
       }
 
-      if (var8) {
-         var2.scheduleTick(new BlockPos(var3), this, this.getPressedTime());
-      }
-
-   }
-
-   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
-      if (!var4 && this.getSignalForState(var1) > 0) {
-         this.updateNeighbours(var2, var3);
+      if (isPressed) {
+         level.scheduleTick(new BlockPos(pos), this, this.getPressedTime());
       }
 
    }
 
-   protected void updateNeighbours(Level var1, BlockPos var2) {
-      var1.updateNeighborsAt(var2, this);
-      var1.updateNeighborsAt(var2.below(), this);
+   protected void affectNeighborsAfterRemoval(final BlockState state, final ServerLevel level, final BlockPos pos, final boolean movedByPiston) {
+      if (!movedByPiston && this.getSignalForState(state) > 0) {
+         this.updateNeighbours(level, pos);
+      }
+
    }
 
-   protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
-      return this.getSignalForState(var1);
+   protected void updateNeighbours(final Level level, final BlockPos pos) {
+      level.updateNeighborsAt(pos, this);
+      level.updateNeighborsAt(pos.below(), this);
    }
 
-   protected int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
-      return var4 == Direction.UP ? this.getSignalForState(var1) : 0;
+   protected int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
+      return this.getSignalForState(state);
    }
 
-   protected boolean isSignalSource(BlockState var1) {
+   protected int getDirectSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
+      return direction == Direction.UP ? this.getSignalForState(state) : 0;
+   }
+
+   protected boolean isSignalSource(final BlockState state) {
       return true;
    }
 
-   protected static int getEntityCount(Level var0, AABB var1, Class<? extends Entity> var2) {
-      return var0.getEntitiesOfClass(var2, var1, EntitySelector.NO_SPECTATORS.and((var0x) -> !var0x.isIgnoringBlockTriggers())).size();
+   protected static int getEntityCount(final Level level, final AABB entityDetectionBox, final Class<? extends Entity> entityClass) {
+      return level.getEntitiesOfClass(entityClass, entityDetectionBox, EntitySelector.NO_SPECTATORS.and((e) -> !e.isIgnoringBlockTriggers())).size();
    }
 
-   protected abstract int getSignalStrength(Level var1, BlockPos var2);
+   protected abstract int getSignalStrength(Level level, BlockPos pos);
 
-   protected abstract int getSignalForState(BlockState var1);
+   protected abstract int getSignalForState(BlockState state);
 
-   protected abstract BlockState setSignalForState(BlockState var1, int var2);
+   protected abstract BlockState setSignalForState(BlockState state, int signal);
 }

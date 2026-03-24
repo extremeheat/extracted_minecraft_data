@@ -4,7 +4,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.JsonOps;
-import java.io.BufferedReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
@@ -13,8 +12,8 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Function;
-import net.minecraft.client.renderer.block.model.BlockModelDefinition;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelDispatcher;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
@@ -34,102 +33,96 @@ public class BlockStateModelLoader {
       super();
    }
 
-   public static CompletableFuture<LoadedModels> loadBlockStates(ResourceManager var0, Executor var1) {
-      Function var2 = BlockStateDefinitions.definitionLocationToBlockStateMapper();
-      return CompletableFuture.supplyAsync(() -> BLOCKSTATE_LISTER.listMatchingResourceStacks(var0), var1).thenCompose((var2x) -> {
-         ArrayList var3 = new ArrayList(var2x.size());
+   public static CompletableFuture<LoadedModels> loadBlockStates(final ResourceManager manager, final Executor executor) {
+      Function<Identifier, StateDefinition<Block, BlockState>> definitionToBlockState = BlockStateDefinitions.definitionLocationToBlockStateMapper();
+      return CompletableFuture.supplyAsync(() -> BLOCKSTATE_LISTER.listMatchingResourceStacks(manager), executor).thenCompose((resources) -> {
+         List<CompletableFuture<LoadedModels>> result = new ArrayList(resources.size());
 
-         for(Map.Entry var5 : var2x.entrySet()) {
-            var3.add(CompletableFuture.supplyAsync(() -> {
-               Identifier var2x = BLOCKSTATE_LISTER.fileToId((Identifier)var5.getKey());
-               StateDefinition var3 = (StateDefinition)var2.apply(var2x);
-               if (var3 == null) {
-                  LOGGER.debug("Discovered unknown block state definition {}, ignoring", var2x);
+         for(Map.Entry<Identifier, List<Resource>> resourceStack : resources.entrySet()) {
+            result.add(CompletableFuture.supplyAsync(() -> {
+               Identifier stateDefinitionId = BLOCKSTATE_LISTER.fileToId((Identifier)resourceStack.getKey());
+               StateDefinition<Block, BlockState> stateDefinition = (StateDefinition)definitionToBlockState.apply(stateDefinitionId);
+               if (stateDefinition == null) {
+                  LOGGER.debug("Discovered unknown block state definition {}, ignoring", stateDefinitionId);
                   return null;
                } else {
-                  List var4 = (List)var5.getValue();
-                  ArrayList var5x = new ArrayList(var4.size());
+                  List<Resource> stack = (List)resourceStack.getValue();
+                  List<LoadedBlockStateModelDispatcher> loadedStack = new ArrayList(stack.size());
 
-                  for(Resource var7 : var4) {
+                  for(Resource resource : stack) {
                      try {
-                        BufferedReader var8 = var7.openAsReader();
+                        Reader reader = resource.openAsReader();
 
                         try {
-                           JsonElement var9 = StrictJsonParser.parse((Reader)var8);
-                           BlockModelDefinition var10 = (BlockModelDefinition)BlockModelDefinition.CODEC.parse(JsonOps.INSTANCE, var9).getOrThrow(JsonParseException::new);
-                           var5x.add(new LoadedBlockModelDefinition(var7.sourcePackId(), var10));
+                           JsonElement element = StrictJsonParser.parse(reader);
+                           BlockStateModelDispatcher definition = (BlockStateModelDispatcher)BlockStateModelDispatcher.CODEC.parse(JsonOps.INSTANCE, element).getOrThrow(JsonParseException::new);
+                           loadedStack.add(new LoadedBlockStateModelDispatcher(resource.sourcePackId(), definition));
                         } catch (Throwable var13) {
-                           if (var8 != null) {
+                           if (reader != null) {
                               try {
-                                 ((Reader)var8).close();
-                              } catch (Throwable var12) {
-                                 var13.addSuppressed(var12);
+                                 reader.close();
+                              } catch (Throwable x2) {
+                                 var13.addSuppressed(x2);
                               }
                            }
 
                            throw var13;
                         }
 
-                        if (var8 != null) {
-                           ((Reader)var8).close();
+                        if (reader != null) {
+                           reader.close();
                         }
-                     } catch (Exception var14) {
-                        LOGGER.error("Failed to load blockstate definition {} from pack {}", new Object[]{var2x, var7.sourcePackId(), var14});
+                     } catch (Exception e) {
+                        LOGGER.error("Failed to load blockstate definition {} from pack {}", new Object[]{stateDefinitionId, resource.sourcePackId(), e});
                      }
                   }
 
                   try {
-                     return loadBlockStateDefinitionStack(var2x, var3, var5x);
-                  } catch (Exception var11) {
-                     LOGGER.error("Failed to load blockstate definition {}", var2x, var11);
+                     return loadBlockStateDefinitionStack(stateDefinitionId, stateDefinition, loadedStack);
+                  } catch (Exception e) {
+                     LOGGER.error("Failed to load blockstate definition {}", stateDefinitionId, e);
                      return null;
                   }
                }
-            }, var1));
+            }, executor));
          }
 
-         return Util.sequence(var3).thenApply((var0) -> {
-            IdentityHashMap var1 = new IdentityHashMap();
+         return Util.sequence(result).thenApply((partialMaps) -> {
+            Map<BlockState, BlockStateModel.UnbakedRoot> fullMap = new IdentityHashMap();
 
-            for(LoadedModels var3 : var0) {
-               if (var3 != null) {
-                  var1.putAll(var3.models());
+            for(LoadedModels partialMap : partialMaps) {
+               if (partialMap != null) {
+                  fullMap.putAll(partialMap.models());
                }
             }
 
-            return new LoadedModels(var1);
+            return new LoadedModels(fullMap);
          });
       });
    }
 
-   private static LoadedModels loadBlockStateDefinitionStack(Identifier var0, StateDefinition<Block, BlockState> var1, List<LoadedBlockModelDefinition> var2) {
-      IdentityHashMap var3 = new IdentityHashMap();
+   private static LoadedModels loadBlockStateDefinitionStack(final Identifier stateDefinitionId, final StateDefinition<Block, BlockState> stateDefinition, final List<LoadedBlockStateModelDispatcher> definitionStack) {
+      Map<BlockState, BlockStateModel.UnbakedRoot> result = new IdentityHashMap();
 
-      for(LoadedBlockModelDefinition var5 : var2) {
-         var3.putAll(var5.contents.instantiate(var1, () -> {
-            String var10000 = String.valueOf(var0);
-            return var10000 + "/" + var5.source;
+      for(LoadedBlockStateModelDispatcher definition : definitionStack) {
+         result.putAll(definition.contents.instantiate(stateDefinition, () -> {
+            String var10000 = String.valueOf(stateDefinitionId);
+            return var10000 + "/" + definition.source;
          }));
       }
 
-      return new LoadedModels(var3);
+      return new LoadedModels(result);
    }
 
-   static record LoadedBlockModelDefinition(String source, BlockModelDefinition contents) {
-      final String source;
-      final BlockModelDefinition contents;
-
-      LoadedBlockModelDefinition(String var1, BlockModelDefinition var2) {
+   private static record LoadedBlockStateModelDispatcher(String source, BlockStateModelDispatcher contents) {
+      private LoadedBlockStateModelDispatcher {
          super();
-         this.source = var1;
-         this.contents = var2;
       }
    }
 
    public static record LoadedModels(Map<BlockState, BlockStateModel.UnbakedRoot> models) {
-      public LoadedModels(Map<BlockState, BlockStateModel.UnbakedRoot> var1) {
+      public LoadedModels {
          super();
-         this.models = var1;
       }
    }
 }

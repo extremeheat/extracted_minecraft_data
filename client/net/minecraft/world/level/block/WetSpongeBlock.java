@@ -20,52 +20,52 @@ public class WetSpongeBlock extends Block {
       return CODEC;
    }
 
-   protected WetSpongeBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   protected WetSpongeBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
-   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if ((Boolean)var2.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, var3)) {
-         var2.setBlock(var3, Blocks.SPONGE.defaultBlockState(), 3);
-         var2.levelEvent(2009, var3, 0);
-         var2.playSound((Entity)null, (BlockPos)var3, SoundEvents.WET_SPONGE_DRIES, SoundSource.BLOCKS, 1.0F, (1.0F + var2.getRandom().nextFloat() * 0.2F) * 0.7F);
+   protected void onPlace(final BlockState state, final Level level, final BlockPos pos, final BlockState oldState, final boolean movedByPiston) {
+      if ((Boolean)level.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, pos)) {
+         level.setBlock(pos, Blocks.SPONGE.defaultBlockState(), 3);
+         level.levelEvent(2009, pos, 0);
+         level.playSound((Entity)null, (BlockPos)pos, SoundEvents.WET_SPONGE_DRIES, SoundSource.BLOCKS, 1.0F, (1.0F + level.getRandom().nextFloat() * 0.2F) * 0.7F);
       }
 
    }
 
-   public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
-      Direction var5 = Direction.getRandom(var4);
-      if (var5 != Direction.UP) {
-         BlockPos var6 = var3.relative(var5);
-         BlockState var7 = var2.getBlockState(var6);
-         if (!var1.canOcclude() || !var7.isFaceSturdy(var2, var6, var5.getOpposite())) {
-            double var8 = (double)var3.getX();
-            double var10 = (double)var3.getY();
-            double var12 = (double)var3.getZ();
-            if (var5 == Direction.DOWN) {
-               var10 -= 0.05;
-               var8 += var4.nextDouble();
-               var12 += var4.nextDouble();
+   public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {
+      Direction direction = Direction.getRandom(random);
+      if (direction != Direction.UP) {
+         BlockPos relativePos = pos.relative(direction);
+         BlockState blockState = level.getBlockState(relativePos);
+         if (!state.canOcclude() || !blockState.isFaceSturdy(level, relativePos, direction.getOpposite())) {
+            double xx = (double)pos.getX();
+            double yy = (double)pos.getY();
+            double zz = (double)pos.getZ();
+            if (direction == Direction.DOWN) {
+               yy -= 0.05;
+               xx += random.nextDouble();
+               zz += random.nextDouble();
             } else {
-               var10 += var4.nextDouble() * 0.8;
-               if (var5.getAxis() == Direction.Axis.X) {
-                  var12 += var4.nextDouble();
-                  if (var5 == Direction.EAST) {
-                     ++var8;
+               yy += random.nextDouble() * 0.8;
+               if (direction.getAxis() == Direction.Axis.X) {
+                  zz += random.nextDouble();
+                  if (direction == Direction.EAST) {
+                     ++xx;
                   } else {
-                     var8 += 0.05;
+                     xx += 0.05;
                   }
                } else {
-                  var8 += var4.nextDouble();
-                  if (var5 == Direction.SOUTH) {
-                     ++var12;
+                  xx += random.nextDouble();
+                  if (direction == Direction.SOUTH) {
+                     ++zz;
                   } else {
-                     var12 += 0.05;
+                     zz += 0.05;
                   }
                }
             }
 
-            var2.addParticle(ParticleTypes.DRIPPING_WATER, var8, var10, var12, 0.0, 0.0, 0.0);
+            level.addParticle(ParticleTypes.DRIPPING_WATER, xx, yy, zz, 0.0, 0.0, 0.0);
          }
       }
    }

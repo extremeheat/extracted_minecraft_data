@@ -12,14 +12,14 @@ public enum ChatVisiblity {
    SYSTEM(1, "options.chat.visibility.system"),
    HIDDEN(2, "options.chat.visibility.hidden");
 
-   private static final IntFunction<ChatVisiblity> BY_ID = ByIdMap.<ChatVisiblity>continuous((var0) -> var0.id, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
+   private static final IntFunction<ChatVisiblity> BY_ID = ByIdMap.<ChatVisiblity>continuous((v) -> v.id, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
    public static final Codec<ChatVisiblity> LEGACY_CODEC;
    private final int id;
    private final Component caption;
 
-   private ChatVisiblity(final int var3, final String var4) {
-      this.id = var3;
-      this.caption = Component.translatable(var4);
+   private ChatVisiblity(final int id, final String key) {
+      this.id = id;
+      this.caption = Component.translatable(key);
    }
 
    public Component caption() {
@@ -35,6 +35,6 @@ public enum ChatVisiblity {
       PrimitiveCodec var10000 = Codec.INT;
       IntFunction var10001 = BY_ID;
       Objects.requireNonNull(var10001);
-      LEGACY_CODEC = var10000.xmap(var10001::apply, (var0) -> var0.id);
+      LEGACY_CODEC = var10000.xmap(var10001::apply, (v) -> v.id);
    }
 }

@@ -34,65 +34,65 @@ public class PlaySoundCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      RequiredArgumentBuilder var1 = (RequiredArgumentBuilder)Commands.argument("sound", IdentifierArgument.id()).suggests(SuggestionProviders.cast(SuggestionProviders.AVAILABLE_SOUNDS)).executes((var0x) -> playSound((CommandSourceStack)var0x.getSource(), getCallingPlayerAsCollection(((CommandSourceStack)var0x.getSource()).getPlayer()), IdentifierArgument.getId(var0x, "sound"), SoundSource.MASTER, ((CommandSourceStack)var0x.getSource()).getPosition(), 1.0F, 1.0F, 0.0F));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      RequiredArgumentBuilder<CommandSourceStack, Identifier> name = (RequiredArgumentBuilder)Commands.argument("sound", IdentifierArgument.id()).suggests(SuggestionProviders.cast(SuggestionProviders.AVAILABLE_SOUNDS)).executes((c) -> playSound((CommandSourceStack)c.getSource(), getCallingPlayerAsCollection(((CommandSourceStack)c.getSource()).getPlayer()), IdentifierArgument.getId(c, "sound"), SoundSource.MASTER, ((CommandSourceStack)c.getSource()).getPosition(), 1.0F, 1.0F, 0.0F));
 
-      for(SoundSource var5 : SoundSource.values()) {
-         var1.then(source(var5));
+      for(SoundSource source : SoundSource.values()) {
+         name.then(source(source));
       }
 
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("playsound").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(var1));
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("playsound").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(name));
    }
 
-   private static LiteralArgumentBuilder<CommandSourceStack> source(SoundSource var0) {
-      return (LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal(var0.getName()).executes((var1) -> playSound((CommandSourceStack)var1.getSource(), getCallingPlayerAsCollection(((CommandSourceStack)var1.getSource()).getPlayer()), IdentifierArgument.getId(var1, "sound"), var0, ((CommandSourceStack)var1.getSource()).getPosition(), 1.0F, 1.0F, 0.0F))).then(((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).executes((var1) -> playSound((CommandSourceStack)var1.getSource(), EntityArgument.getPlayers(var1, "targets"), IdentifierArgument.getId(var1, "sound"), var0, ((CommandSourceStack)var1.getSource()).getPosition(), 1.0F, 1.0F, 0.0F))).then(((RequiredArgumentBuilder)Commands.argument("pos", Vec3Argument.vec3()).executes((var1) -> playSound((CommandSourceStack)var1.getSource(), EntityArgument.getPlayers(var1, "targets"), IdentifierArgument.getId(var1, "sound"), var0, Vec3Argument.getVec3(var1, "pos"), 1.0F, 1.0F, 0.0F))).then(((RequiredArgumentBuilder)Commands.argument("volume", FloatArgumentType.floatArg(0.0F)).executes((var1) -> playSound((CommandSourceStack)var1.getSource(), EntityArgument.getPlayers(var1, "targets"), IdentifierArgument.getId(var1, "sound"), var0, Vec3Argument.getVec3(var1, "pos"), (Float)var1.getArgument("volume", Float.class), 1.0F, 0.0F))).then(((RequiredArgumentBuilder)Commands.argument("pitch", FloatArgumentType.floatArg(0.0F, 2.0F)).executes((var1) -> playSound((CommandSourceStack)var1.getSource(), EntityArgument.getPlayers(var1, "targets"), IdentifierArgument.getId(var1, "sound"), var0, Vec3Argument.getVec3(var1, "pos"), (Float)var1.getArgument("volume", Float.class), (Float)var1.getArgument("pitch", Float.class), 0.0F))).then(Commands.argument("minVolume", FloatArgumentType.floatArg(0.0F, 1.0F)).executes((var1) -> playSound((CommandSourceStack)var1.getSource(), EntityArgument.getPlayers(var1, "targets"), IdentifierArgument.getId(var1, "sound"), var0, Vec3Argument.getVec3(var1, "pos"), (Float)var1.getArgument("volume", Float.class), (Float)var1.getArgument("pitch", Float.class), (Float)var1.getArgument("minVolume", Float.class))))))));
+   private static LiteralArgumentBuilder<CommandSourceStack> source(final SoundSource source) {
+      return (LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal(source.getName()).executes((c) -> playSound((CommandSourceStack)c.getSource(), getCallingPlayerAsCollection(((CommandSourceStack)c.getSource()).getPlayer()), IdentifierArgument.getId(c, "sound"), source, ((CommandSourceStack)c.getSource()).getPosition(), 1.0F, 1.0F, 0.0F))).then(((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).executes((c) -> playSound((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), IdentifierArgument.getId(c, "sound"), source, ((CommandSourceStack)c.getSource()).getPosition(), 1.0F, 1.0F, 0.0F))).then(((RequiredArgumentBuilder)Commands.argument("pos", Vec3Argument.vec3()).executes((c) -> playSound((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), IdentifierArgument.getId(c, "sound"), source, Vec3Argument.getVec3(c, "pos"), 1.0F, 1.0F, 0.0F))).then(((RequiredArgumentBuilder)Commands.argument("volume", FloatArgumentType.floatArg(0.0F)).executes((c) -> playSound((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), IdentifierArgument.getId(c, "sound"), source, Vec3Argument.getVec3(c, "pos"), (Float)c.getArgument("volume", Float.class), 1.0F, 0.0F))).then(((RequiredArgumentBuilder)Commands.argument("pitch", FloatArgumentType.floatArg(0.0F, 2.0F)).executes((c) -> playSound((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), IdentifierArgument.getId(c, "sound"), source, Vec3Argument.getVec3(c, "pos"), (Float)c.getArgument("volume", Float.class), (Float)c.getArgument("pitch", Float.class), 0.0F))).then(Commands.argument("minVolume", FloatArgumentType.floatArg(0.0F, 1.0F)).executes((c) -> playSound((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), IdentifierArgument.getId(c, "sound"), source, Vec3Argument.getVec3(c, "pos"), (Float)c.getArgument("volume", Float.class), (Float)c.getArgument("pitch", Float.class), (Float)c.getArgument("minVolume", Float.class))))))));
    }
 
-   private static Collection<ServerPlayer> getCallingPlayerAsCollection(@Nullable ServerPlayer var0) {
-      return var0 != null ? List.of(var0) : List.of();
+   private static Collection<ServerPlayer> getCallingPlayerAsCollection(final @Nullable ServerPlayer player) {
+      return player != null ? List.of(player) : List.of();
    }
 
-   private static int playSound(CommandSourceStack var0, Collection<ServerPlayer> var1, Identifier var2, SoundSource var3, Vec3 var4, float var5, float var6, float var7) throws CommandSyntaxException {
-      Holder var8 = Holder.direct(SoundEvent.createVariableRangeEvent(var2));
-      double var9 = (double)Mth.square(((SoundEvent)var8.value()).getRange(var5));
-      ServerLevel var11 = var0.getLevel();
-      long var12 = var11.getRandom().nextLong();
-      ArrayList var14 = new ArrayList();
+   private static int playSound(final CommandSourceStack source, final Collection<ServerPlayer> players, final Identifier sound, final SoundSource soundSource, final Vec3 position, final float volume, final float pitch, final float minVolume) throws CommandSyntaxException {
+      Holder<SoundEvent> soundHolder = Holder.<SoundEvent>direct(SoundEvent.createVariableRangeEvent(sound));
+      double maxDistSqr = (double)Mth.square(((SoundEvent)soundHolder.value()).getRange(volume));
+      ServerLevel level = source.getLevel();
+      long seed = level.getRandom().nextLong();
+      List<ServerPlayer> playedFor = new ArrayList();
 
-      for(ServerPlayer var16 : var1) {
-         if (var16.level() == var11) {
-            double var17 = var4.x - var16.getX();
-            double var19 = var4.y - var16.getY();
-            double var21 = var4.z - var16.getZ();
-            double var23 = var17 * var17 + var19 * var19 + var21 * var21;
-            Vec3 var25 = var4;
-            float var26 = var5;
-            if (var23 > var9) {
-               if (var7 <= 0.0F) {
+      for(ServerPlayer player : players) {
+         if (player.level() == level) {
+            double deltaX = position.x - player.getX();
+            double deltaY = position.y - player.getY();
+            double deltaZ = position.z - player.getZ();
+            double distSqr = deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ;
+            Vec3 localPosition = position;
+            float localVolume = volume;
+            if (distSqr > maxDistSqr) {
+               if (minVolume <= 0.0F) {
                   continue;
                }
 
-               double var27 = Math.sqrt(var23);
-               var25 = new Vec3(var16.getX() + var17 / var27 * 2.0, var16.getY() + var19 / var27 * 2.0, var16.getZ() + var21 / var27 * 2.0);
-               var26 = var7;
+               double distance = Math.sqrt(distSqr);
+               localPosition = new Vec3(player.getX() + deltaX / distance * 2.0, player.getY() + deltaY / distance * 2.0, player.getZ() + deltaZ / distance * 2.0);
+               localVolume = minVolume;
             }
 
-            var16.connection.send(new ClientboundSoundPacket(var8, var3, var25.x(), var25.y(), var25.z(), var26, var6, var12));
-            var14.add(var16);
+            player.connection.send(new ClientboundSoundPacket(soundHolder, soundSource, localPosition.x(), localPosition.y(), localPosition.z(), localVolume, pitch, seed));
+            playedFor.add(player);
          }
       }
 
-      int var29 = var14.size();
-      if (var29 == 0) {
+      int count = playedFor.size();
+      if (count == 0) {
          throw ERROR_TOO_FAR.create();
       } else {
-         if (var29 == 1) {
-            var0.sendSuccess(() -> Component.translatable("commands.playsound.success.single", Component.translationArg(var2), ((ServerPlayer)var14.getFirst()).getDisplayName()), true);
+         if (count == 1) {
+            source.sendSuccess(() -> Component.translatable("commands.playsound.success.single", Component.translationArg(sound), ((ServerPlayer)playedFor.getFirst()).getDisplayName()), true);
          } else {
-            var0.sendSuccess(() -> Component.translatable("commands.playsound.success.multiple", Component.translationArg(var2), var29), true);
+            source.sendSuccess(() -> Component.translatable("commands.playsound.success.multiple", Component.translationArg(sound), count), true);
          }
 
-         return var29;
+         return count;
       }
    }
 }

@@ -38,51 +38,51 @@ public class DownloadQueue implements AutoCloseable {
    private final JsonEventLog<LogEntry> eventLog;
    private final ConsecutiveExecutor tasks = new ConsecutiveExecutor(Util.nonCriticalIoPool(), "download-queue");
 
-   public DownloadQueue(Path var1) throws IOException {
+   public DownloadQueue(final Path cacheDir) throws IOException {
       super();
-      this.cacheDir = var1;
-      FileUtil.createDirectoriesSafe(var1);
-      this.eventLog = JsonEventLog.<LogEntry>open(DownloadQueue.LogEntry.CODEC, var1.resolve("log.json"));
-      DownloadCacheCleaner.vacuumCacheDir(var1, 20);
+      this.cacheDir = cacheDir;
+      FileUtil.createDirectoriesSafe(cacheDir);
+      this.eventLog = JsonEventLog.<LogEntry>open(DownloadQueue.LogEntry.CODEC, cacheDir.resolve("log.json"));
+      DownloadCacheCleaner.vacuumCacheDir(cacheDir, 20);
    }
 
-   private BatchResult runDownload(BatchConfig var1, Map<UUID, DownloadRequest> var2) {
-      BatchResult var3 = new BatchResult();
-      var2.forEach((var3x, var4) -> {
-         Path var5 = this.cacheDir.resolve(var3x.toString());
-         Path var6 = null;
+   private BatchResult runDownload(final BatchConfig config, final Map<UUID, DownloadRequest> requests) {
+      BatchResult result = new BatchResult();
+      requests.forEach((id, request) -> {
+         Path targetDir = this.cacheDir.resolve(id.toString());
+         Path downloadedFile = null;
 
          try {
-            var6 = HttpUtil.downloadFile(var5, var4.url, var1.headers, var1.hashFunction, var4.hash, var1.maxSize, var1.proxy, var1.listener);
-            var3.downloaded.put(var3x, var6);
-         } catch (Exception var9) {
-            LOGGER.error("Failed to download {}", var4.url, var9);
-            var3.failed.add(var3x);
+            downloadedFile = HttpUtil.downloadFile(targetDir, request.url, config.headers, config.hashFunction, request.hash, config.maxSize, config.proxy, config.listener);
+            result.downloaded.put(id, downloadedFile);
+         } catch (Exception e) {
+            LOGGER.error("Failed to download {}", request.url, e);
+            result.failed.add(id);
          }
 
          try {
-            this.eventLog.write(new LogEntry(var3x, var4.url.toString(), Instant.now(), Optional.ofNullable(var4.hash).map(HashCode::toString), var6 != null ? this.getFileInfo(var6) : Either.left("download_failed")));
-         } catch (Exception var8) {
-            LOGGER.error("Failed to log download of {}", var4.url, var8);
+            this.eventLog.write(new LogEntry(id, request.url.toString(), Instant.now(), Optional.ofNullable(request.hash).map(HashCode::toString), downloadedFile != null ? this.getFileInfo(downloadedFile) : Either.left("download_failed")));
+         } catch (Exception e) {
+            LOGGER.error("Failed to log download of {}", request.url, e);
          }
 
       });
-      return var3;
+      return result;
    }
 
-   private Either<String, FileInfoEntry> getFileInfo(Path var1) {
+   private Either<String, FileInfoEntry> getFileInfo(final Path downloadedFile) {
       try {
-         long var2 = Files.size(var1);
-         Path var4 = this.cacheDir.relativize(var1);
-         return Either.right(new FileInfoEntry(var4.toString(), var2));
-      } catch (IOException var5) {
-         LOGGER.error("Failed to get file size of {}", var1, var5);
+         long size = Files.size(downloadedFile);
+         Path relativePath = this.cacheDir.relativize(downloadedFile);
+         return Either.right(new FileInfoEntry(relativePath.toString(), size));
+      } catch (IOException e) {
+         LOGGER.error("Failed to get file size of {}", downloadedFile, e);
          return Either.left("no_access");
       }
    }
 
-   public CompletableFuture<BatchResult> downloadBatch(BatchConfig var1, Map<UUID, DownloadRequest> var2) {
-      Supplier var10000 = () -> this.runDownload(var1, var2);
+   public CompletableFuture<BatchResult> downloadBatch(final BatchConfig config, final Map<UUID, DownloadRequest> requests) {
+      Supplier var10000 = () -> this.runDownload(config, requests);
       ConsecutiveExecutor var10001 = this.tasks;
       Objects.requireNonNull(var10001);
       return CompletableFuture.supplyAsync(var10000, var10001::schedule);
@@ -93,69 +93,41 @@ public class DownloadQueue implements AutoCloseable {
       this.eventLog.close();
    }
 
-   static record FileInfoEntry(String name, long size) {
-      public static final Codec<FileInfoEntry> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.STRING.fieldOf("name").forGetter(FileInfoEntry::name), Codec.LONG.fieldOf("size").forGetter(FileInfoEntry::size)).apply(var0, FileInfoEntry::new));
+   private static record FileInfoEntry(String name, long size) {
+      public static final Codec<FileInfoEntry> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.STRING.fieldOf("name").forGetter(FileInfoEntry::name), Codec.LONG.fieldOf("size").forGetter(FileInfoEntry::size)).apply(i, FileInfoEntry::new));
 
-      FileInfoEntry(String var1, long var2) {
+      private FileInfoEntry {
          super();
-         this.name = var1;
-         this.size = var2;
       }
    }
 
-   static record LogEntry(UUID id, String url, Instant time, Optional<String> hash, Either<String, FileInfoEntry> errorOrFileInfo) {
-      public static final Codec<LogEntry> CODEC = RecordCodecBuilder.create((var0) -> var0.group(UUIDUtil.STRING_CODEC.fieldOf("id").forGetter(LogEntry::id), Codec.STRING.fieldOf("url").forGetter(LogEntry::url), ExtraCodecs.INSTANT_ISO8601.fieldOf("time").forGetter(LogEntry::time), Codec.STRING.optionalFieldOf("hash").forGetter(LogEntry::hash), Codec.mapEither(Codec.STRING.fieldOf("error"), DownloadQueue.FileInfoEntry.CODEC.fieldOf("file")).forGetter(LogEntry::errorOrFileInfo)).apply(var0, LogEntry::new));
+   private static record LogEntry(UUID id, String url, Instant time, Optional<String> hash, Either<String, FileInfoEntry> errorOrFileInfo) {
+      public static final Codec<LogEntry> CODEC = RecordCodecBuilder.create((i) -> i.group(UUIDUtil.STRING_CODEC.fieldOf("id").forGetter(LogEntry::id), Codec.STRING.fieldOf("url").forGetter(LogEntry::url), ExtraCodecs.INSTANT_ISO8601.fieldOf("time").forGetter(LogEntry::time), Codec.STRING.optionalFieldOf("hash").forGetter(LogEntry::hash), Codec.mapEither(Codec.STRING.fieldOf("error"), DownloadQueue.FileInfoEntry.CODEC.fieldOf("file")).forGetter(LogEntry::errorOrFileInfo)).apply(i, LogEntry::new));
 
-      LogEntry(UUID var1, String var2, Instant var3, Optional<String> var4, Either<String, FileInfoEntry> var5) {
+      private LogEntry {
          super();
-         this.id = var1;
-         this.url = var2;
-         this.time = var3;
-         this.hash = var4;
-         this.errorOrFileInfo = var5;
       }
    }
 
    public static record BatchResult(Map<UUID, Path> downloaded, Set<UUID> failed) {
-      final Map<UUID, Path> downloaded;
-      final Set<UUID> failed;
-
       public BatchResult() {
          this(new HashMap(), new HashSet());
       }
 
-      public BatchResult(Map<UUID, Path> var1, Set<UUID> var2) {
+      public BatchResult {
          super();
-         this.downloaded = var1;
-         this.failed = var2;
       }
    }
 
    public static record DownloadRequest(URL url, @Nullable HashCode hash) {
-      final URL url;
-      final @Nullable HashCode hash;
-
-      public DownloadRequest(URL var1, @Nullable HashCode var2) {
+      public DownloadRequest {
          super();
-         this.url = var1;
-         this.hash = var2;
       }
    }
 
    public static record BatchConfig(HashFunction hashFunction, int maxSize, Map<String, String> headers, Proxy proxy, HttpUtil.DownloadProgressListener listener) {
-      final HashFunction hashFunction;
-      final int maxSize;
-      final Map<String, String> headers;
-      final Proxy proxy;
-      final HttpUtil.DownloadProgressListener listener;
-
-      public BatchConfig(HashFunction var1, int var2, Map<String, String> var3, Proxy var4, HttpUtil.DownloadProgressListener var5) {
+      public BatchConfig {
          super();
-         this.hashFunction = var1;
-         this.maxSize = var2;
-         this.headers = var3;
-         this.proxy = var4;
-         this.listener = var5;
       }
    }
 }

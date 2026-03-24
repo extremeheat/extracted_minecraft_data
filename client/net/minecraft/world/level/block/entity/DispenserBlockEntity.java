@@ -19,75 +19,75 @@ public class DispenserBlockEntity extends RandomizableContainerBlockEntity {
    private static final Component DEFAULT_NAME = Component.translatable("container.dispenser");
    private NonNullList<ItemStack> items;
 
-   protected DispenserBlockEntity(BlockEntityType<?> var1, BlockPos var2, BlockState var3) {
-      super(var1, var2, var3);
+   protected DispenserBlockEntity(final BlockEntityType<?> type, final BlockPos worldPosition, final BlockState blockState) {
+      super(type, worldPosition, blockState);
       this.items = NonNullList.<ItemStack>withSize(9, ItemStack.EMPTY);
    }
 
-   public DispenserBlockEntity(BlockPos var1, BlockState var2) {
-      this(BlockEntityType.DISPENSER, var1, var2);
+   public DispenserBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      this(BlockEntityType.DISPENSER, worldPosition, blockState);
    }
 
    public int getContainerSize() {
       return 9;
    }
 
-   public int getRandomSlot(RandomSource var1) {
+   public int getRandomSlot(final RandomSource random) {
       this.unpackLootTable((Player)null);
-      int var2 = -1;
-      int var3 = 1;
+      int replaceSlot = -1;
+      int replaceOdds = 1;
 
-      for(int var4 = 0; var4 < this.items.size(); ++var4) {
-         if (!((ItemStack)this.items.get(var4)).isEmpty() && var1.nextInt(var3++) == 0) {
-            var2 = var4;
+      for(int i = 0; i < this.items.size(); ++i) {
+         if (!((ItemStack)this.items.get(i)).isEmpty() && random.nextInt(replaceOdds++) == 0) {
+            replaceSlot = i;
          }
       }
 
-      return var2;
+      return replaceSlot;
    }
 
-   public ItemStack insertItem(ItemStack var1) {
-      int var2 = this.getMaxStackSize(var1);
+   public ItemStack insertItem(final ItemStack itemStack) {
+      int maxStackSize = this.getMaxStackSize(itemStack);
 
-      for(int var3 = 0; var3 < this.items.size(); ++var3) {
-         ItemStack var4 = this.items.get(var3);
-         if (var4.isEmpty() || ItemStack.isSameItemSameComponents(var1, var4)) {
-            int var5 = Math.min(var1.getCount(), var2 - var4.getCount());
-            if (var5 > 0) {
-               if (var4.isEmpty()) {
-                  this.setItem(var3, var1.split(var5));
+      for(int i = 0; i < this.items.size(); ++i) {
+         ItemStack targetStack = this.items.get(i);
+         if (targetStack.isEmpty() || ItemStack.isSameItemSameComponents(itemStack, targetStack)) {
+            int transferCount = Math.min(itemStack.getCount(), maxStackSize - targetStack.getCount());
+            if (transferCount > 0) {
+               if (targetStack.isEmpty()) {
+                  this.setItem(i, itemStack.split(transferCount));
                } else {
-                  var1.shrink(var5);
-                  var4.grow(var5);
+                  itemStack.shrink(transferCount);
+                  targetStack.grow(transferCount);
                }
             }
 
-            if (var1.isEmpty()) {
+            if (itemStack.isEmpty()) {
                break;
             }
          }
       }
 
-      return var1;
+      return itemStack;
    }
 
    protected Component getDefaultName() {
       return DEFAULT_NAME;
    }
 
-   protected void loadAdditional(ValueInput var1) {
-      super.loadAdditional(var1);
+   protected void loadAdditional(final ValueInput input) {
+      super.loadAdditional(input);
       this.items = NonNullList.<ItemStack>withSize(this.getContainerSize(), ItemStack.EMPTY);
-      if (!this.tryLoadLootTable(var1)) {
-         ContainerHelper.loadAllItems(var1, this.items);
+      if (!this.tryLoadLootTable(input)) {
+         ContainerHelper.loadAllItems(input, this.items);
       }
 
    }
 
-   protected void saveAdditional(ValueOutput var1) {
-      super.saveAdditional(var1);
-      if (!this.trySaveLootTable(var1)) {
-         ContainerHelper.saveAllItems(var1, this.items);
+   protected void saveAdditional(final ValueOutput output) {
+      super.saveAdditional(output);
+      if (!this.trySaveLootTable(output)) {
+         ContainerHelper.saveAllItems(output, this.items);
       }
 
    }
@@ -96,11 +96,11 @@ public class DispenserBlockEntity extends RandomizableContainerBlockEntity {
       return this.items;
    }
 
-   protected void setItems(NonNullList<ItemStack> var1) {
-      this.items = var1;
+   protected void setItems(final NonNullList<ItemStack> items) {
+      this.items = items;
    }
 
-   protected AbstractContainerMenu createMenu(int var1, Inventory var2) {
-      return new DispenserMenu(var1, var2, this);
+   protected AbstractContainerMenu createMenu(final int containerId, final Inventory inventory) {
+      return new DispenserMenu(containerId, inventory, this);
    }
 }

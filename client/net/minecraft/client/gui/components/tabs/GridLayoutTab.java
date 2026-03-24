@@ -11,9 +11,9 @@ public class GridLayoutTab implements Tab {
    private final Component title;
    protected final GridLayout layout = new GridLayout();
 
-   public GridLayoutTab(Component var1) {
+   public GridLayoutTab(final Component title) {
       super();
-      this.title = var1;
+      this.title = title;
    }
 
    public Component getTabTitle() {
@@ -24,12 +24,12 @@ public class GridLayoutTab implements Tab {
       return Component.empty();
    }
 
-   public void visitChildren(Consumer<AbstractWidget> var1) {
-      this.layout.visitWidgets(var1);
+   public void visitChildren(final Consumer<AbstractWidget> childrenConsumer) {
+      this.layout.visitWidgets(childrenConsumer);
    }
 
-   public void doLayout(ScreenRectangle var1) {
+   public void doLayout(final ScreenRectangle screenRectangle) {
       this.layout.arrangeElements();
-      FrameLayout.alignInRectangle(this.layout, var1, 0.5F, 0.16666667F);
+      FrameLayout.alignInRectangle(this.layout, screenRectangle, 0.5F, 0.16666667F);
    }
 }

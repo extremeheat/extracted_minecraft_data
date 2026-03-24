@@ -13,7 +13,7 @@ public class EntityBlockIntersectionDebugRenderer implements DebugRenderer.Simpl
       super();
    }
 
-   public void emitGizmos(double var1, double var3, double var5, DebugValueAccess var7, Frustum var8, float var9) {
-      var7.forEachBlock(DebugSubscriptions.ENTITY_BLOCK_INTERSECTIONS, (var0, var1x) -> Gizmos.cuboid(var0, 0.02F, GizmoStyle.fill(var1x.color())));
+   public void emitGizmos(final double camX, final double camY, final double camZ, final DebugValueAccess debugValues, final Frustum frustum, final float partialTicks) {
+      debugValues.forEachBlock(DebugSubscriptions.ENTITY_BLOCK_INTERSECTIONS, (pos, type) -> Gizmos.cuboid(pos, 0.02F, GizmoStyle.fill(type.color())));
    }
 }

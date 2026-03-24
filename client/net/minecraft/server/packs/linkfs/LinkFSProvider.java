@@ -26,6 +26,7 @@ import java.nio.file.attribute.FileAttributeView;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import org.jspecify.annotations.Nullable;
 
@@ -40,45 +41,49 @@ class LinkFSProvider extends FileSystemProvider {
       return "x-mc-link";
    }
 
-   public FileSystem newFileSystem(URI var1, Map<String, ?> var2) {
+   public FileSystem newFileSystem(final URI uri, final Map<String, ?> env) {
       throw new UnsupportedOperationException();
    }
 
-   public FileSystem getFileSystem(URI var1) {
+   public FileSystem getFileSystem(final URI uri) {
       throw new UnsupportedOperationException();
    }
 
-   public Path getPath(URI var1) {
+   public Path getPath(final URI uri) {
       throw new UnsupportedOperationException();
    }
 
-   public SeekableByteChannel newByteChannel(Path var1, Set<? extends OpenOption> var2, FileAttribute<?>... var3) throws IOException {
-      if (!var2.contains(StandardOpenOption.CREATE_NEW) && !var2.contains(StandardOpenOption.CREATE) && !var2.contains(StandardOpenOption.APPEND) && !var2.contains(StandardOpenOption.WRITE)) {
-         Path var4 = toLinkPath(var1).toAbsolutePath().getTargetPath();
-         if (var4 == null) {
-            throw new NoSuchFileException(var1.toString());
+   public SeekableByteChannel newByteChannel(final Path path, final Set<? extends OpenOption> options, final FileAttribute<?>... attrs) throws IOException {
+      if (!options.contains(StandardOpenOption.CREATE_NEW) && !options.contains(StandardOpenOption.CREATE) && !options.contains(StandardOpenOption.APPEND) && !options.contains(StandardOpenOption.WRITE)) {
+         Path targetPath = toLinkPath(path).toAbsolutePath().getTargetPath();
+         if (targetPath == null) {
+            throw new NoSuchFileException(path.toString());
          } else {
-            return Files.newByteChannel(var4, var2, var3);
+            return Files.newByteChannel(targetPath, options, attrs);
          }
       } else {
          throw new UnsupportedOperationException();
       }
    }
 
-   public DirectoryStream<Path> newDirectoryStream(Path var1, final DirectoryStream.Filter<? super Path> var2) throws IOException {
-      final PathContents.DirectoryContents var3 = toLinkPath(var1).toAbsolutePath().getDirectoryContents();
-      if (var3 == null) {
-         throw new NotDirectoryException(var1.toString());
+   public DirectoryStream<Path> newDirectoryStream(final Path dir, final DirectoryStream.Filter<? super Path> filter) throws IOException {
+      final PathContents.DirectoryContents directoryContents = toLinkPath(dir).toAbsolutePath().getDirectoryContents();
+      if (directoryContents == null) {
+         throw new NotDirectoryException(dir.toString());
       } else {
          return new DirectoryStream<Path>() {
+            {
+               Objects.requireNonNull(LinkFSProvider.this);
+            }
+
             public Iterator<Path> iterator() {
-               return var3.children().values().stream().filter((var1) -> {
+               return directoryContents.children().values().stream().filter((path) -> {
                   try {
-                     return var2.accept(var1);
-                  } catch (IOException var3x) {
-                     throw new DirectoryIteratorException(var3x);
+                     return filter.accept(path);
+                  } catch (IOException e) {
+                     throw new DirectoryIteratorException(e);
                   }
-               }).map((var0) -> var0).iterator();
+               }).map((path) -> path).iterator();
             }
 
             public void close() {
@@ -87,89 +92,89 @@ class LinkFSProvider extends FileSystemProvider {
       }
    }
 
-   public void createDirectory(Path var1, FileAttribute<?>... var2) {
+   public void createDirectory(final Path dir, final FileAttribute<?>... attrs) {
       throw new ReadOnlyFileSystemException();
    }
 
-   public void delete(Path var1) {
+   public void delete(final Path path) {
       throw new ReadOnlyFileSystemException();
    }
 
-   public void copy(Path var1, Path var2, CopyOption... var3) {
+   public void copy(final Path source, final Path target, final CopyOption... options) {
       throw new ReadOnlyFileSystemException();
    }
 
-   public void move(Path var1, Path var2, CopyOption... var3) {
+   public void move(final Path source, final Path target, final CopyOption... options) {
       throw new ReadOnlyFileSystemException();
    }
 
-   public boolean isSameFile(Path var1, Path var2) {
-      return var1 instanceof LinkFSPath && var2 instanceof LinkFSPath && var1.equals(var2);
+   public boolean isSameFile(final Path path, final Path path2) {
+      return path instanceof LinkFSPath && path2 instanceof LinkFSPath && path.equals(path2);
    }
 
-   public boolean isHidden(Path var1) {
+   public boolean isHidden(final Path path) {
       return false;
    }
 
-   public FileStore getFileStore(Path var1) {
-      return toLinkPath(var1).getFileSystem().store();
+   public FileStore getFileStore(final Path path) {
+      return toLinkPath(path).getFileSystem().store();
    }
 
-   public void checkAccess(Path var1, AccessMode... var2) throws IOException {
-      if (var2.length == 0 && !toLinkPath(var1).exists()) {
-         throw new NoSuchFileException(var1.toString());
+   public void checkAccess(final Path path, final AccessMode... modes) throws IOException {
+      if (modes.length == 0 && !toLinkPath(path).exists()) {
+         throw new NoSuchFileException(path.toString());
       } else {
-         AccessMode[] var3 = var2;
-         int var4 = var2.length;
+         AccessMode[] var3 = modes;
+         int var4 = modes.length;
          int var5 = 0;
 
          while(var5 < var4) {
-            AccessMode var6 = var3[var5];
-            switch (var6) {
+            AccessMode mode = var3[var5];
+            switch (mode) {
                case READ:
-                  if (!toLinkPath(var1).exists()) {
-                     throw new NoSuchFileException(var1.toString());
+                  if (!toLinkPath(path).exists()) {
+                     throw new NoSuchFileException(path.toString());
                   }
                default:
                   ++var5;
                   break;
                case EXECUTE:
                case WRITE:
-                  throw new AccessDeniedException(var6.toString());
+                  throw new AccessDeniedException(mode.toString());
             }
          }
 
       }
    }
 
-   public <V extends FileAttributeView> @Nullable V getFileAttributeView(Path var1, Class<V> var2, LinkOption... var3) {
-      LinkFSPath var4 = toLinkPath(var1);
-      return (V)(var2 == BasicFileAttributeView.class ? var4.getBasicAttributeView() : null);
+   public <V extends FileAttributeView> @Nullable V getFileAttributeView(final Path path, final Class<V> type, final LinkOption... options) {
+      LinkFSPath linkPath = toLinkPath(path);
+      return (V)(type == BasicFileAttributeView.class ? linkPath.getBasicAttributeView() : null);
    }
 
-   public <A extends BasicFileAttributes> A readAttributes(Path var1, Class<A> var2, LinkOption... var3) throws IOException {
-      LinkFSPath var4 = toLinkPath(var1).toAbsolutePath();
-      if (var2 == BasicFileAttributes.class) {
-         return (A)var4.getBasicAttributes();
+   public <A extends BasicFileAttributes> A readAttributes(final Path path, final Class<A> type, final LinkOption... options) throws IOException {
+      LinkFSPath linkPath = toLinkPath(path).toAbsolutePath();
+      if (type == BasicFileAttributes.class) {
+         return (A)linkPath.getBasicAttributes();
       } else {
-         throw new UnsupportedOperationException("Attributes of type " + var2.getName() + " not supported");
+         throw new UnsupportedOperationException("Attributes of type " + type.getName() + " not supported");
       }
    }
 
-   public Map<String, Object> readAttributes(Path var1, String var2, LinkOption... var3) {
+   public Map<String, Object> readAttributes(final Path path, final String attributes, final LinkOption... options) {
       throw new UnsupportedOperationException();
    }
 
-   public void setAttribute(Path var1, String var2, Object var3, LinkOption... var4) {
+   public void setAttribute(final Path path, final String attribute, final Object value, final LinkOption... options) {
       throw new ReadOnlyFileSystemException();
    }
 
-   private static LinkFSPath toLinkPath(@Nullable Path var0) {
-      if (var0 == null) {
+   private static LinkFSPath toLinkPath(final @Nullable Path path) {
+      if (path == null) {
          throw new NullPointerException();
-      } else if (var0 instanceof LinkFSPath) {
-         LinkFSPath var1 = (LinkFSPath)var0;
-         return var1;
+      } else if (path instanceof LinkFSPath) {
+         LinkFSPath p = (LinkFSPath)path;
+         return p;
       } else {
          throw new ProviderMismatchException();
       }

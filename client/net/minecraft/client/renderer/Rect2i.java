@@ -6,27 +6,27 @@ public class Rect2i {
    private int width;
    private int height;
 
-   public Rect2i(int var1, int var2, int var3, int var4) {
+   public Rect2i(final int x, final int y, final int width, final int height) {
       super();
-      this.xPos = var1;
-      this.yPos = var2;
-      this.width = var3;
-      this.height = var4;
+      this.xPos = x;
+      this.yPos = y;
+      this.width = width;
+      this.height = height;
    }
 
-   public Rect2i intersect(Rect2i var1) {
-      int var2 = this.xPos;
-      int var3 = this.yPos;
-      int var4 = this.xPos + this.width;
-      int var5 = this.yPos + this.height;
-      int var6 = var1.getX();
-      int var7 = var1.getY();
-      int var8 = var6 + var1.getWidth();
-      int var9 = var7 + var1.getHeight();
-      this.xPos = Math.max(var2, var6);
-      this.yPos = Math.max(var3, var7);
-      this.width = Math.max(0, Math.min(var4, var8) - this.xPos);
-      this.height = Math.max(0, Math.min(var5, var9) - this.yPos);
+   public Rect2i intersect(final Rect2i other) {
+      int x0 = this.xPos;
+      int y0 = this.yPos;
+      int x1 = this.xPos + this.width;
+      int y1 = this.yPos + this.height;
+      int x2 = other.getX();
+      int y2 = other.getY();
+      int x3 = x2 + other.getWidth();
+      int y3 = y2 + other.getHeight();
+      this.xPos = Math.max(x0, x2);
+      this.yPos = Math.max(y0, y2);
+      this.width = Math.max(0, Math.min(x1, x3) - this.xPos);
+      this.height = Math.max(0, Math.min(y1, y3) - this.yPos);
       return this;
    }
 
@@ -38,12 +38,12 @@ public class Rect2i {
       return this.yPos;
    }
 
-   public void setX(int var1) {
-      this.xPos = var1;
+   public void setX(final int x) {
+      this.xPos = x;
    }
 
-   public void setY(int var1) {
-      this.yPos = var1;
+   public void setY(final int y) {
+      this.yPos = y;
    }
 
    public int getWidth() {
@@ -54,20 +54,20 @@ public class Rect2i {
       return this.height;
    }
 
-   public void setWidth(int var1) {
-      this.width = var1;
+   public void setWidth(final int width) {
+      this.width = width;
    }
 
-   public void setHeight(int var1) {
-      this.height = var1;
+   public void setHeight(final int height) {
+      this.height = height;
    }
 
-   public void setPosition(int var1, int var2) {
-      this.xPos = var1;
-      this.yPos = var2;
+   public void setPosition(final int x, final int y) {
+      this.xPos = x;
+      this.yPos = y;
    }
 
-   public boolean contains(int var1, int var2) {
-      return var1 >= this.xPos && var1 <= this.xPos + this.width && var2 >= this.yPos && var2 <= this.yPos + this.height;
+   public boolean contains(final int x, final int y) {
+      return x >= this.xPos && x <= this.xPos + this.width && y >= this.yPos && y <= this.yPos + this.height;
    }
 }

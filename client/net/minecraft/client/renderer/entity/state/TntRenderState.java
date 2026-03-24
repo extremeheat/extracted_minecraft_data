@@ -1,11 +1,10 @@
 package net.minecraft.client.renderer.entity.state;
 
-import net.minecraft.world.level.block.state.BlockState;
-import org.jspecify.annotations.Nullable;
+import net.minecraft.client.renderer.block.BlockModelRenderState;
 
 public class TntRenderState extends EntityRenderState {
    public float fuseRemainingInTicks;
-   public @Nullable BlockState blockState;
+   public final BlockModelRenderState blockState = new BlockModelRenderState();
 
    public TntRenderState() {
       super();

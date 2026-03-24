@@ -8,11 +8,11 @@ import net.minecraft.world.entity.Entity;
 public class EntityBoundSoundInstance extends AbstractTickableSoundInstance {
    private final Entity entity;
 
-   public EntityBoundSoundInstance(SoundEvent var1, SoundSource var2, float var3, float var4, Entity var5, long var6) {
-      super(var1, var2, RandomSource.create(var6));
-      this.volume = var3;
-      this.pitch = var4;
-      this.entity = var5;
+   public EntityBoundSoundInstance(final SoundEvent event, final SoundSource source, final float volume, final float pitch, final Entity entity, final long seed) {
+      super(event, source, RandomSource.create(seed));
+      this.volume = volume;
+      this.pitch = pitch;
+      this.entity = entity;
       this.x = (double)((float)this.entity.getX());
       this.y = (double)((float)this.entity.getY());
       this.z = (double)((float)this.entity.getZ());

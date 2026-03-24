@@ -7,9 +7,9 @@ import net.minecraft.world.level.chunk.status.ChunkStatus;
 import org.jspecify.annotations.Nullable;
 
 public interface ChunkLoadStatusView {
-   void moveTo(ResourceKey<Level> var1, ChunkPos var2);
+   void moveTo(ResourceKey<Level> dimension, ChunkPos centerChunk);
 
-   @Nullable ChunkStatus get(int var1, int var2);
+   @Nullable ChunkStatus get(int x, int z);
 
    int radius();
 }

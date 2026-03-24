@@ -18,34 +18,34 @@ public interface WeatheringCopper extends ChangeOverTimeBlock<WeatherState> {
    Supplier<BiMap<Block, Block>> NEXT_BY_BLOCK = Suppliers.memoize(() -> ImmutableBiMap.builder().put(Blocks.COPPER_BLOCK, Blocks.EXPOSED_COPPER).put(Blocks.EXPOSED_COPPER, Blocks.WEATHERED_COPPER).put(Blocks.WEATHERED_COPPER, Blocks.OXIDIZED_COPPER).put(Blocks.CUT_COPPER, Blocks.EXPOSED_CUT_COPPER).put(Blocks.EXPOSED_CUT_COPPER, Blocks.WEATHERED_CUT_COPPER).put(Blocks.WEATHERED_CUT_COPPER, Blocks.OXIDIZED_CUT_COPPER).put(Blocks.CHISELED_COPPER, Blocks.EXPOSED_CHISELED_COPPER).put(Blocks.EXPOSED_CHISELED_COPPER, Blocks.WEATHERED_CHISELED_COPPER).put(Blocks.WEATHERED_CHISELED_COPPER, Blocks.OXIDIZED_CHISELED_COPPER).put(Blocks.CUT_COPPER_SLAB, Blocks.EXPOSED_CUT_COPPER_SLAB).put(Blocks.EXPOSED_CUT_COPPER_SLAB, Blocks.WEATHERED_CUT_COPPER_SLAB).put(Blocks.WEATHERED_CUT_COPPER_SLAB, Blocks.OXIDIZED_CUT_COPPER_SLAB).put(Blocks.CUT_COPPER_STAIRS, Blocks.EXPOSED_CUT_COPPER_STAIRS).put(Blocks.EXPOSED_CUT_COPPER_STAIRS, Blocks.WEATHERED_CUT_COPPER_STAIRS).put(Blocks.WEATHERED_CUT_COPPER_STAIRS, Blocks.OXIDIZED_CUT_COPPER_STAIRS).put(Blocks.COPPER_DOOR, Blocks.EXPOSED_COPPER_DOOR).put(Blocks.EXPOSED_COPPER_DOOR, Blocks.WEATHERED_COPPER_DOOR).put(Blocks.WEATHERED_COPPER_DOOR, Blocks.OXIDIZED_COPPER_DOOR).put(Blocks.COPPER_TRAPDOOR, Blocks.EXPOSED_COPPER_TRAPDOOR).put(Blocks.EXPOSED_COPPER_TRAPDOOR, Blocks.WEATHERED_COPPER_TRAPDOOR).put(Blocks.WEATHERED_COPPER_TRAPDOOR, Blocks.OXIDIZED_COPPER_TRAPDOOR).putAll(Blocks.COPPER_BARS.weatheringMapping()).put(Blocks.COPPER_GRATE, Blocks.EXPOSED_COPPER_GRATE).put(Blocks.EXPOSED_COPPER_GRATE, Blocks.WEATHERED_COPPER_GRATE).put(Blocks.WEATHERED_COPPER_GRATE, Blocks.OXIDIZED_COPPER_GRATE).put(Blocks.COPPER_BULB, Blocks.EXPOSED_COPPER_BULB).put(Blocks.EXPOSED_COPPER_BULB, Blocks.WEATHERED_COPPER_BULB).put(Blocks.WEATHERED_COPPER_BULB, Blocks.OXIDIZED_COPPER_BULB).putAll(Blocks.COPPER_LANTERN.weatheringMapping()).put(Blocks.COPPER_CHEST, Blocks.EXPOSED_COPPER_CHEST).put(Blocks.EXPOSED_COPPER_CHEST, Blocks.WEATHERED_COPPER_CHEST).put(Blocks.WEATHERED_COPPER_CHEST, Blocks.OXIDIZED_COPPER_CHEST).put(Blocks.COPPER_GOLEM_STATUE, Blocks.EXPOSED_COPPER_GOLEM_STATUE).put(Blocks.EXPOSED_COPPER_GOLEM_STATUE, Blocks.WEATHERED_COPPER_GOLEM_STATUE).put(Blocks.WEATHERED_COPPER_GOLEM_STATUE, Blocks.OXIDIZED_COPPER_GOLEM_STATUE).put(Blocks.LIGHTNING_ROD, Blocks.EXPOSED_LIGHTNING_ROD).put(Blocks.EXPOSED_LIGHTNING_ROD, Blocks.WEATHERED_LIGHTNING_ROD).put(Blocks.WEATHERED_LIGHTNING_ROD, Blocks.OXIDIZED_LIGHTNING_ROD).putAll(Blocks.COPPER_CHAIN.weatheringMapping()).build());
    Supplier<BiMap<Block, Block>> PREVIOUS_BY_BLOCK = Suppliers.memoize(() -> ((BiMap)NEXT_BY_BLOCK.get()).inverse());
 
-   static Optional<Block> getPrevious(Block var0) {
-      return Optional.ofNullable((Block)((BiMap)PREVIOUS_BY_BLOCK.get()).get(var0));
+   static Optional<Block> getPrevious(final Block block) {
+      return Optional.ofNullable((Block)((BiMap)PREVIOUS_BY_BLOCK.get()).get(block));
    }
 
-   static Block getFirst(Block var0) {
-      Block var1 = var0;
+   static Block getFirst(final Block block) {
+      Block candiate = block;
 
-      for(Block var2 = (Block)((BiMap)PREVIOUS_BY_BLOCK.get()).get(var0); var2 != null; var2 = (Block)((BiMap)PREVIOUS_BY_BLOCK.get()).get(var2)) {
-         var1 = var2;
+      for(Block previous = (Block)((BiMap)PREVIOUS_BY_BLOCK.get()).get(block); previous != null; previous = (Block)((BiMap)PREVIOUS_BY_BLOCK.get()).get(previous)) {
+         candiate = previous;
       }
 
-      return var1;
+      return candiate;
    }
 
-   static Optional<BlockState> getPrevious(BlockState var0) {
-      return getPrevious(var0.getBlock()).map((var1) -> var1.withPropertiesOf(var0));
+   static Optional<BlockState> getPrevious(final BlockState state) {
+      return getPrevious(state.getBlock()).map((s) -> s.withPropertiesOf(state));
    }
 
-   static Optional<Block> getNext(Block var0) {
-      return Optional.ofNullable((Block)((BiMap)NEXT_BY_BLOCK.get()).get(var0));
+   static Optional<Block> getNext(final Block block) {
+      return Optional.ofNullable((Block)((BiMap)NEXT_BY_BLOCK.get()).get(block));
    }
 
-   static BlockState getFirst(BlockState var0) {
-      return getFirst(var0.getBlock()).withPropertiesOf(var0);
+   static BlockState getFirst(final BlockState state) {
+      return getFirst(state.getBlock()).withPropertiesOf(state);
    }
 
-   default Optional<BlockState> getNext(BlockState var1) {
-      return getNext(var1.getBlock()).map((var1x) -> var1x.withPropertiesOf(var1));
+   default Optional<BlockState> getNext(final BlockState state) {
+      return getNext(state.getBlock()).map((s) -> s.withPropertiesOf(state));
    }
 
    default float getChanceModifier() {
@@ -63,8 +63,8 @@ public interface WeatheringCopper extends ChangeOverTimeBlock<WeatherState> {
       public static final StreamCodec<ByteBuf, WeatherState> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Enum::ordinal);
       private final String name;
 
-      private WeatherState(final String var3) {
-         this.name = var3;
+      private WeatherState(final String name) {
+         this.name = name;
       }
 
       public String getSerializedName() {

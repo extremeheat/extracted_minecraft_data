@@ -11,14 +11,14 @@ public class FollowFlockLeaderGoal extends Goal {
    private int timeToRecalcPath;
    private int nextStartTick;
 
-   public FollowFlockLeaderGoal(AbstractSchoolingFish var1) {
+   public FollowFlockLeaderGoal(final AbstractSchoolingFish mob) {
       super();
-      this.mob = var1;
-      this.nextStartTick = this.nextStartTick(var1);
+      this.mob = mob;
+      this.nextStartTick = this.nextStartTick(mob);
    }
 
-   protected int nextStartTick(AbstractSchoolingFish var1) {
-      return reducedTickDelay(200 + var1.getRandom().nextInt(200) % 20);
+   protected int nextStartTick(final AbstractSchoolingFish mob) {
+      return reducedTickDelay(200 + mob.getRandom().nextInt(200) % 20);
    }
 
    public boolean canUse() {
@@ -31,10 +31,10 @@ public class FollowFlockLeaderGoal extends Goal {
          return false;
       } else {
          this.nextStartTick = this.nextStartTick(this.mob);
-         Predicate var1 = (var0) -> var0.canBeFollowed() || !var0.isFollower();
-         List var2 = this.mob.level().getEntitiesOfClass(this.mob.getClass(), this.mob.getBoundingBox().inflate(8.0, 8.0, 8.0), var1);
-         AbstractSchoolingFish var3 = (AbstractSchoolingFish)DataFixUtils.orElse(var2.stream().filter(AbstractSchoolingFish::canBeFollowed).findAny(), this.mob);
-         var3.addFollowers(var2.stream().filter((var0) -> !var0.isFollower()));
+         Predicate<AbstractSchoolingFish> predicate = (fish) -> fish.canBeFollowed() || !fish.isFollower();
+         List<? extends AbstractSchoolingFish> leadersWithSpaceOrNotFollowers = this.mob.level().getEntitiesOfClass(this.mob.getClass(), this.mob.getBoundingBox().inflate(8.0, 8.0, 8.0), predicate);
+         AbstractSchoolingFish leader = (AbstractSchoolingFish)DataFixUtils.orElse(leadersWithSpaceOrNotFollowers.stream().filter(AbstractSchoolingFish::canBeFollowed).findAny(), this.mob);
+         leader.addFollowers(leadersWithSpaceOrNotFollowers.stream().filter((fish) -> !fish.isFollower()));
          return this.mob.isFollower();
       }
    }

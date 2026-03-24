@@ -6,20 +6,20 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
 
 public class EntityItemFrameDirectionFix extends NamedEntityFix {
-   public EntityItemFrameDirectionFix(Schema var1, boolean var2) {
-      super(var1, var2, "EntityItemFrameDirectionFix", References.ENTITY, "minecraft:item_frame");
+   public EntityItemFrameDirectionFix(final Schema outputSchema, final boolean changesType) {
+      super(outputSchema, changesType, "EntityItemFrameDirectionFix", References.ENTITY, "minecraft:item_frame");
    }
 
-   public Dynamic<?> fixTag(Dynamic<?> var1) {
-      return var1.set("Facing", var1.createByte(direction2dTo3d(var1.get("Facing").asByte((byte)0))));
+   public Dynamic<?> fixTag(final Dynamic<?> input) {
+      return input.set("Facing", input.createByte(direction2dTo3d(input.get("Facing").asByte((byte)0))));
    }
 
-   protected Typed<?> fix(Typed<?> var1) {
-      return var1.update(DSL.remainderFinder(), this::fixTag);
+   protected Typed<?> fix(final Typed<?> entity) {
+      return entity.update(DSL.remainderFinder(), this::fixTag);
    }
 
-   private static byte direction2dTo3d(byte var0) {
-      switch (var0) {
+   private static byte direction2dTo3d(final byte dir) {
+      switch (dir) {
          case 0:
             return 3;
          case 1:

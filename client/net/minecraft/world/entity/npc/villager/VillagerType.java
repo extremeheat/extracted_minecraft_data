@@ -34,26 +34,26 @@ public final class VillagerType {
       super();
    }
 
-   private static ResourceKey<VillagerType> createKey(String var0) {
-      return ResourceKey.create(Registries.VILLAGER_TYPE, Identifier.withDefaultNamespace(var0));
+   private static ResourceKey<VillagerType> createKey(final String name) {
+      return ResourceKey.create(Registries.VILLAGER_TYPE, Identifier.withDefaultNamespace(name));
    }
 
-   private static VillagerType register(Registry<VillagerType> var0, ResourceKey<VillagerType> var1) {
-      return (VillagerType)Registry.register(var0, (ResourceKey)var1, new VillagerType());
+   private static VillagerType register(final Registry<VillagerType> registry, final ResourceKey<VillagerType> name) {
+      return (VillagerType)Registry.register(registry, (ResourceKey)name, new VillagerType());
    }
 
-   public static VillagerType bootstrap(Registry<VillagerType> var0) {
-      register(var0, DESERT);
-      register(var0, JUNGLE);
-      register(var0, PLAINS);
-      register(var0, SAVANNA);
-      register(var0, SNOW);
-      register(var0, SWAMP);
-      return register(var0, TAIGA);
+   public static VillagerType bootstrap(final Registry<VillagerType> registry) {
+      register(registry, DESERT);
+      register(registry, JUNGLE);
+      register(registry, PLAINS);
+      register(registry, SAVANNA);
+      register(registry, SNOW);
+      register(registry, SWAMP);
+      return register(registry, TAIGA);
    }
 
-   public static ResourceKey<VillagerType> byBiome(Holder<Biome> var0) {
-      Optional var10000 = var0.unwrapKey();
+   public static ResourceKey<VillagerType> byBiome(final Holder<Biome> biome) {
+      Optional var10000 = biome.unwrapKey();
       Map var10001 = BY_BIOME;
       Objects.requireNonNull(var10001);
       return (ResourceKey)var10000.map(var10001::get).orElse(PLAINS);
@@ -62,36 +62,36 @@ public final class VillagerType {
    static {
       CODEC = RegistryFixedCodec.<Holder<VillagerType>>create(Registries.VILLAGER_TYPE);
       STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.VILLAGER_TYPE);
-      BY_BIOME = (Map)Util.make(Maps.newHashMap(), (var0) -> {
-         var0.put(Biomes.BADLANDS, DESERT);
-         var0.put(Biomes.DESERT, DESERT);
-         var0.put(Biomes.ERODED_BADLANDS, DESERT);
-         var0.put(Biomes.WOODED_BADLANDS, DESERT);
-         var0.put(Biomes.BAMBOO_JUNGLE, JUNGLE);
-         var0.put(Biomes.JUNGLE, JUNGLE);
-         var0.put(Biomes.SPARSE_JUNGLE, JUNGLE);
-         var0.put(Biomes.SAVANNA_PLATEAU, SAVANNA);
-         var0.put(Biomes.SAVANNA, SAVANNA);
-         var0.put(Biomes.WINDSWEPT_SAVANNA, SAVANNA);
-         var0.put(Biomes.DEEP_FROZEN_OCEAN, SNOW);
-         var0.put(Biomes.FROZEN_OCEAN, SNOW);
-         var0.put(Biomes.FROZEN_RIVER, SNOW);
-         var0.put(Biomes.ICE_SPIKES, SNOW);
-         var0.put(Biomes.SNOWY_BEACH, SNOW);
-         var0.put(Biomes.SNOWY_TAIGA, SNOW);
-         var0.put(Biomes.SNOWY_PLAINS, SNOW);
-         var0.put(Biomes.GROVE, SNOW);
-         var0.put(Biomes.SNOWY_SLOPES, SNOW);
-         var0.put(Biomes.FROZEN_PEAKS, SNOW);
-         var0.put(Biomes.JAGGED_PEAKS, SNOW);
-         var0.put(Biomes.SWAMP, SWAMP);
-         var0.put(Biomes.MANGROVE_SWAMP, SWAMP);
-         var0.put(Biomes.OLD_GROWTH_SPRUCE_TAIGA, TAIGA);
-         var0.put(Biomes.OLD_GROWTH_PINE_TAIGA, TAIGA);
-         var0.put(Biomes.WINDSWEPT_GRAVELLY_HILLS, TAIGA);
-         var0.put(Biomes.WINDSWEPT_HILLS, TAIGA);
-         var0.put(Biomes.TAIGA, TAIGA);
-         var0.put(Biomes.WINDSWEPT_FOREST, TAIGA);
+      BY_BIOME = (Map)Util.make(Maps.newHashMap(), (map) -> {
+         map.put(Biomes.BADLANDS, DESERT);
+         map.put(Biomes.DESERT, DESERT);
+         map.put(Biomes.ERODED_BADLANDS, DESERT);
+         map.put(Biomes.WOODED_BADLANDS, DESERT);
+         map.put(Biomes.BAMBOO_JUNGLE, JUNGLE);
+         map.put(Biomes.JUNGLE, JUNGLE);
+         map.put(Biomes.SPARSE_JUNGLE, JUNGLE);
+         map.put(Biomes.SAVANNA_PLATEAU, SAVANNA);
+         map.put(Biomes.SAVANNA, SAVANNA);
+         map.put(Biomes.WINDSWEPT_SAVANNA, SAVANNA);
+         map.put(Biomes.DEEP_FROZEN_OCEAN, SNOW);
+         map.put(Biomes.FROZEN_OCEAN, SNOW);
+         map.put(Biomes.FROZEN_RIVER, SNOW);
+         map.put(Biomes.ICE_SPIKES, SNOW);
+         map.put(Biomes.SNOWY_BEACH, SNOW);
+         map.put(Biomes.SNOWY_TAIGA, SNOW);
+         map.put(Biomes.SNOWY_PLAINS, SNOW);
+         map.put(Biomes.GROVE, SNOW);
+         map.put(Biomes.SNOWY_SLOPES, SNOW);
+         map.put(Biomes.FROZEN_PEAKS, SNOW);
+         map.put(Biomes.JAGGED_PEAKS, SNOW);
+         map.put(Biomes.SWAMP, SWAMP);
+         map.put(Biomes.MANGROVE_SWAMP, SWAMP);
+         map.put(Biomes.OLD_GROWTH_SPRUCE_TAIGA, TAIGA);
+         map.put(Biomes.OLD_GROWTH_PINE_TAIGA, TAIGA);
+         map.put(Biomes.WINDSWEPT_GRAVELLY_HILLS, TAIGA);
+         map.put(Biomes.WINDSWEPT_HILLS, TAIGA);
+         map.put(Biomes.TAIGA, TAIGA);
+         map.put(Biomes.WINDSWEPT_FOREST, TAIGA);
       });
    }
 }

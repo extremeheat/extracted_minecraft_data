@@ -5,7 +5,7 @@ import java.util.List;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.state.QuadParticleRenderState;
+import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
@@ -32,20 +32,20 @@ public class FireworkParticles {
       private final List<FireworkExplosion> explosions;
       private boolean twinkleDelay;
 
-      public Starter(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, ParticleEngine var14, List<FireworkExplosion> var15) {
-         super(var1, var2, var4, var6);
-         this.xd = var8;
-         this.yd = var10;
-         this.zd = var12;
-         this.engine = var14;
-         if (var15.isEmpty()) {
+      public Starter(final ClientLevel level, final double x, final double y, final double z, final double xd, final double yd, final double zd, final ParticleEngine engine, final List<FireworkExplosion> explosions) {
+         super(level, x, y, z);
+         this.xd = xd;
+         this.yd = yd;
+         this.zd = zd;
+         this.engine = engine;
+         if (explosions.isEmpty()) {
             throw new IllegalArgumentException("Cannot create firework starter with no explosions");
          } else {
-            this.explosions = var15;
-            this.lifetime = var15.size() * 2 - 1;
+            this.explosions = explosions;
+            this.lifetime = explosions.size() * 2 - 1;
 
-            for(FireworkExplosion var17 : var15) {
-               if (var17.hasTwinkle()) {
+            for(FireworkExplosion explosion : explosions) {
+               if (explosion.hasTwinkle()) {
                   this.twinkleDelay = true;
                   this.lifetime += 15;
                   break;
@@ -57,58 +57,58 @@ public class FireworkParticles {
 
       public void tick() {
          if (this.life == 0) {
-            boolean var1 = this.isFarAwayFromCamera();
-            boolean var2 = false;
+            boolean farEffect = this.isFarAwayFromCamera();
+            boolean largeExplosion = false;
             if (this.explosions.size() >= 3) {
-               var2 = true;
+               largeExplosion = true;
             } else {
-               for(FireworkExplosion var4 : this.explosions) {
-                  if (var4.shape() == FireworkExplosion.Shape.LARGE_BALL) {
-                     var2 = true;
+               for(FireworkExplosion explosion : this.explosions) {
+                  if (explosion.shape() == FireworkExplosion.Shape.LARGE_BALL) {
+                     largeExplosion = true;
                      break;
                   }
                }
             }
 
-            SoundEvent var12;
-            if (var2) {
-               var12 = var1 ? SoundEvents.FIREWORK_ROCKET_LARGE_BLAST_FAR : SoundEvents.FIREWORK_ROCKET_LARGE_BLAST;
+            SoundEvent sound;
+            if (largeExplosion) {
+               sound = farEffect ? SoundEvents.FIREWORK_ROCKET_LARGE_BLAST_FAR : SoundEvents.FIREWORK_ROCKET_LARGE_BLAST;
             } else {
-               var12 = var1 ? SoundEvents.FIREWORK_ROCKET_BLAST_FAR : SoundEvents.FIREWORK_ROCKET_BLAST;
+               sound = farEffect ? SoundEvents.FIREWORK_ROCKET_BLAST_FAR : SoundEvents.FIREWORK_ROCKET_BLAST;
             }
 
-            this.level.playLocalSound(this.x, this.y, this.z, var12, SoundSource.AMBIENT, 20.0F, 0.95F + this.random.nextFloat() * 0.1F, true);
+            this.level.playLocalSound(this.x, this.y, this.z, sound, SoundSource.AMBIENT, 20.0F, 0.95F + this.random.nextFloat() * 0.1F, true);
          }
 
          if (this.life % 2 == 0 && this.life / 2 < this.explosions.size()) {
-            int var8 = this.life / 2;
-            FireworkExplosion var10 = (FireworkExplosion)this.explosions.get(var8);
-            boolean var13 = var10.hasTrail();
-            boolean var14 = var10.hasTwinkle();
-            IntList var5 = var10.colors();
-            IntList var6 = var10.fadeColors();
-            if (var5.isEmpty()) {
-               var5 = IntList.of(DyeColor.BLACK.getFireworkColor());
+            int eIndex = this.life / 2;
+            FireworkExplosion explosion = (FireworkExplosion)this.explosions.get(eIndex);
+            boolean trail = explosion.hasTrail();
+            boolean twinkle = explosion.hasTwinkle();
+            IntList colors = explosion.colors();
+            IntList fadeColors = explosion.fadeColors();
+            if (colors.isEmpty()) {
+               colors = IntList.of(DyeColor.BLACK.getFireworkColor());
             }
 
-            switch (var10.shape()) {
-               case SMALL_BALL -> this.createParticleBall(0.25, 2, var5, var6, var13, var14);
-               case LARGE_BALL -> this.createParticleBall(0.5, 4, var5, var6, var13, var14);
-               case STAR -> this.createParticleShape(0.5, STAR_PARTICLE_COORDS, var5, var6, var13, var14, false);
-               case CREEPER -> this.createParticleShape(0.5, CREEPER_PARTICLE_COORDS, var5, var6, var13, var14, true);
-               case BURST -> this.createParticleBurst(var5, var6, var13, var14);
+            switch (explosion.shape()) {
+               case SMALL_BALL -> this.createParticleBall(0.25, 2, colors, fadeColors, trail, twinkle);
+               case LARGE_BALL -> this.createParticleBall(0.5, 4, colors, fadeColors, trail, twinkle);
+               case STAR -> this.createParticleShape(0.5, STAR_PARTICLE_COORDS, colors, fadeColors, trail, twinkle, false);
+               case CREEPER -> this.createParticleShape(0.5, CREEPER_PARTICLE_COORDS, colors, fadeColors, trail, twinkle, true);
+               case BURST -> this.createParticleBurst(colors, fadeColors, trail, twinkle);
             }
 
-            int var7 = var5.getInt(0);
-            this.engine.createParticle(ColorParticleOption.create(ParticleTypes.FLASH, var7), this.x, this.y, this.z, 0.0, 0.0, 0.0);
+            int color = colors.getInt(0);
+            this.engine.createParticle(ColorParticleOption.create(ParticleTypes.FLASH, color), this.x, this.y, this.z, 0.0, 0.0, 0.0);
          }
 
          ++this.life;
          if (this.life > this.lifetime) {
             if (this.twinkleDelay) {
-               boolean var9 = this.isFarAwayFromCamera();
-               SoundEvent var11 = var9 ? SoundEvents.FIREWORK_ROCKET_TWINKLE_FAR : SoundEvents.FIREWORK_ROCKET_TWINKLE;
-               this.level.playLocalSound(this.x, this.y, this.z, var11, SoundSource.AMBIENT, 20.0F, 0.9F + this.random.nextFloat() * 0.15F, true);
+               boolean farEffect = this.isFarAwayFromCamera();
+               SoundEvent sound = farEffect ? SoundEvents.FIREWORK_ROCKET_TWINKLE_FAR : SoundEvents.FIREWORK_ROCKET_TWINKLE;
+               this.level.playLocalSound(this.x, this.y, this.z, sound, SoundSource.AMBIENT, 20.0F, 0.9F + this.random.nextFloat() * 0.15F, true);
             }
 
             this.remove();
@@ -117,37 +117,37 @@ public class FireworkParticles {
       }
 
       private boolean isFarAwayFromCamera() {
-         Minecraft var1 = Minecraft.getInstance();
-         return var1.gameRenderer.getMainCamera().position().distanceToSqr(this.x, this.y, this.z) >= 256.0;
+         Minecraft instance = Minecraft.getInstance();
+         return instance.gameRenderer.getMainCamera().position().distanceToSqr(this.x, this.y, this.z) >= 256.0;
       }
 
-      private void createParticle(double var1, double var3, double var5, double var7, double var9, double var11, IntList var13, IntList var14, boolean var15, boolean var16) {
-         SparkParticle var17 = (SparkParticle)this.engine.createParticle(ParticleTypes.FIREWORK, var1, var3, var5, var7, var9, var11);
-         var17.setTrail(var15);
-         var17.setTwinkle(var16);
-         var17.setAlpha(0.99F);
-         var17.setColor((Integer)Util.getRandom(var13, this.random));
-         if (!var14.isEmpty()) {
-            var17.setFadeColor((Integer)Util.getRandom(var14, this.random));
+      private void createParticle(final double x, final double y, final double z, final double xa, final double ya, final double za, final IntList rgbColors, final IntList fadeColors, final boolean trail, final boolean twinkle) {
+         SparkParticle sparkParticle = (SparkParticle)this.engine.createParticle(ParticleTypes.FIREWORK, x, y, z, xa, ya, za);
+         sparkParticle.setTrail(trail);
+         sparkParticle.setTwinkle(twinkle);
+         sparkParticle.setAlpha(0.99F);
+         sparkParticle.setColor((Integer)Util.getRandom(rgbColors, this.random));
+         if (!fadeColors.isEmpty()) {
+            sparkParticle.setFadeColor((Integer)Util.getRandom(fadeColors, this.random));
          }
 
       }
 
-      private void createParticleBall(double var1, int var3, IntList var4, IntList var5, boolean var6, boolean var7) {
-         double var8 = this.x;
-         double var10 = this.y;
-         double var12 = this.z;
+      private void createParticleBall(final double baseSpeed, final int steps, final IntList rgbColors, final IntList fadeColors, final boolean trail, final boolean twinkle) {
+         double xx = this.x;
+         double yy = this.y;
+         double zz = this.z;
 
-         for(int var14 = -var3; var14 <= var3; ++var14) {
-            for(int var15 = -var3; var15 <= var3; ++var15) {
-               for(int var16 = -var3; var16 <= var3; ++var16) {
-                  double var17 = (double)var15 + (this.random.nextDouble() - this.random.nextDouble()) * 0.5;
-                  double var19 = (double)var14 + (this.random.nextDouble() - this.random.nextDouble()) * 0.5;
-                  double var21 = (double)var16 + (this.random.nextDouble() - this.random.nextDouble()) * 0.5;
-                  double var23 = Math.sqrt(var17 * var17 + var19 * var19 + var21 * var21) / var1 + this.random.nextGaussian() * 0.05;
-                  this.createParticle(var8, var10, var12, var17 / var23, var19 / var23, var21 / var23, var4, var5, var6, var7);
-                  if (var14 != -var3 && var14 != var3 && var15 != -var3 && var15 != var3) {
-                     var16 += var3 * 2 - 1;
+         for(int yStep = -steps; yStep <= steps; ++yStep) {
+            for(int xStep = -steps; xStep <= steps; ++xStep) {
+               for(int zStep = -steps; zStep <= steps; ++zStep) {
+                  double xa = (double)xStep + (this.random.nextDouble() - this.random.nextDouble()) * 0.5;
+                  double ya = (double)yStep + (this.random.nextDouble() - this.random.nextDouble()) * 0.5;
+                  double za = (double)zStep + (this.random.nextDouble() - this.random.nextDouble()) * 0.5;
+                  double len = Math.sqrt(xa * xa + ya * ya + za * za) / baseSpeed + this.random.nextGaussian() * 0.05;
+                  this.createParticle(xx, yy, zz, xa / len, ya / len, za / len, rgbColors, fadeColors, trail, twinkle);
+                  if (yStep != -steps && yStep != steps && xStep != -steps && xStep != steps) {
+                     zStep += steps * 2 - 1;
                   }
                }
             }
@@ -155,55 +155,55 @@ public class FireworkParticles {
 
       }
 
-      private void createParticleShape(double var1, double[][] var3, IntList var4, IntList var5, boolean var6, boolean var7, boolean var8) {
-         double var9 = var3[0][0];
-         double var11 = var3[0][1];
-         this.createParticle(this.x, this.y, this.z, var9 * var1, var11 * var1, 0.0, var4, var5, var6, var7);
-         float var13 = this.random.nextFloat() * 3.1415927F;
-         double var14 = var8 ? 0.034 : 0.34;
+      private void createParticleShape(final double baseSpeed, final double[][] coords, final IntList rgbColors, final IntList fadeColors, final boolean trail, final boolean twinkle, final boolean flat) {
+         double sx = coords[0][0];
+         double sy = coords[0][1];
+         this.createParticle(this.x, this.y, this.z, sx * baseSpeed, sy * baseSpeed, 0.0, rgbColors, fadeColors, trail, twinkle);
+         float baseAngle = this.random.nextFloat() * 3.1415927F;
+         double angleMod = flat ? 0.034 : 0.34;
 
-         for(int var16 = 0; var16 < 3; ++var16) {
-            double var17 = (double)var13 + (double)((float)var16 * 3.1415927F) * var14;
-            double var19 = var9;
-            double var21 = var11;
+         for(int angleStep = 0; angleStep < 3; ++angleStep) {
+            double angle = (double)baseAngle + (double)((float)angleStep * 3.1415927F) * angleMod;
+            double ox = sx;
+            double oy = sy;
 
-            for(int var23 = 1; var23 < var3.length; ++var23) {
-               double var24 = var3[var23][0];
-               double var26 = var3[var23][1];
+            for(int c = 1; c < coords.length; ++c) {
+               double tx = coords[c][0];
+               double ty = coords[c][1];
 
-               for(double var28 = 0.25; var28 <= 1.0; var28 += 0.25) {
-                  double var30 = Mth.lerp(var28, var19, var24) * var1;
-                  double var32 = Mth.lerp(var28, var21, var26) * var1;
-                  double var34 = var30 * Math.sin(var17);
-                  var30 *= Math.cos(var17);
+               for(double subStep = 0.25; subStep <= 1.0; subStep += 0.25) {
+                  double xa = Mth.lerp(subStep, ox, tx) * baseSpeed;
+                  double ya = Mth.lerp(subStep, oy, ty) * baseSpeed;
+                  double za = xa * Math.sin(angle);
+                  xa *= Math.cos(angle);
 
-                  for(double var36 = -1.0; var36 <= 1.0; var36 += 2.0) {
-                     this.createParticle(this.x, this.y, this.z, var30 * var36, var32, var34 * var36, var4, var5, var6, var7);
+                  for(double flip = -1.0; flip <= 1.0; flip += 2.0) {
+                     this.createParticle(this.x, this.y, this.z, xa * flip, ya, za * flip, rgbColors, fadeColors, trail, twinkle);
                   }
                }
 
-               var19 = var24;
-               var21 = var26;
+               ox = tx;
+               oy = ty;
             }
          }
 
       }
 
-      private void createParticleBurst(IntList var1, IntList var2, boolean var3, boolean var4) {
-         double var5 = this.random.nextGaussian() * 0.05;
-         double var7 = this.random.nextGaussian() * 0.05;
+      private void createParticleBurst(final IntList rgbColors, final IntList fadeColors, final boolean trail, final boolean twinkle) {
+         double baseOffX = this.random.nextGaussian() * 0.05;
+         double baseOffZ = this.random.nextGaussian() * 0.05;
 
-         for(int var9 = 0; var9 < 70; ++var9) {
-            double var10 = this.xd * 0.5 + this.random.nextGaussian() * 0.15 + var5;
-            double var12 = this.zd * 0.5 + this.random.nextGaussian() * 0.15 + var7;
-            double var14 = this.yd * 0.5 + this.random.nextDouble() * 0.5;
-            this.createParticle(this.x, this.y, this.z, var10, var14, var12, var1, var2, var3, var4);
+         for(int i = 0; i < 70; ++i) {
+            double xa = this.xd * 0.5 + this.random.nextGaussian() * 0.15 + baseOffX;
+            double za = this.zd * 0.5 + this.random.nextGaussian() * 0.15 + baseOffZ;
+            double ya = this.yd * 0.5 + this.random.nextDouble() * 0.5;
+            this.createParticle(this.x, this.y, this.z, xa, ya, za, rgbColors, fadeColors, trail, twinkle);
          }
 
       }
    }
 
-   static class SparkParticle extends SimpleAnimatedParticle {
+   private static class SparkParticle extends SimpleAnimatedParticle {
       private boolean trail;
       private boolean twinkle;
       private final ParticleEngine engine;
@@ -212,28 +212,28 @@ public class FireworkParticles {
       private float fadeB;
       private boolean hasFade;
 
-      SparkParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, ParticleEngine var14, SpriteSet var15) {
-         super(var1, var2, var4, var6, var15, 0.1F);
-         this.xd = var8;
-         this.yd = var10;
-         this.zd = var12;
-         this.engine = var14;
+      private SparkParticle(final ClientLevel level, final double x, final double y, final double z, final double xa, final double ya, final double za, final ParticleEngine engine, final SpriteSet sprites) {
+         super(level, x, y, z, sprites, 0.1F);
+         this.xd = xa;
+         this.yd = ya;
+         this.zd = za;
+         this.engine = engine;
          this.quadSize *= 0.75F;
          this.lifetime = 48 + this.random.nextInt(12);
-         this.setSpriteFromAge(var15);
+         this.setSpriteFromAge(sprites);
       }
 
-      public void setTrail(boolean var1) {
-         this.trail = var1;
+      public void setTrail(final boolean trail) {
+         this.trail = trail;
       }
 
-      public void setTwinkle(boolean var1) {
-         this.twinkle = var1;
+      public void setTwinkle(final boolean twinkle) {
+         this.twinkle = twinkle;
       }
 
-      public void extract(QuadParticleRenderState var1, Camera var2, float var3) {
+      public void extract(final QuadParticleRenderState particleTypeRenderState, final Camera camera, final float partialTickTime) {
          if (!this.twinkle || this.age < this.lifetime / 3 || (this.age + this.lifetime) / 3 % 2 == 0) {
-            super.extract(var1, var2, var3);
+            super.extract(particleTypeRenderState, camera, partialTickTime);
          }
 
       }
@@ -241,27 +241,27 @@ public class FireworkParticles {
       public void tick() {
          super.tick();
          if (this.trail && this.age < this.lifetime / 2 && (this.age + this.lifetime) % 2 == 0) {
-            SparkParticle var1 = new SparkParticle(this.level, this.x, this.y, this.z, 0.0, 0.0, 0.0, this.engine, this.sprites);
-            var1.setAlpha(0.99F);
-            var1.setColor(this.rCol, this.gCol, this.bCol);
-            var1.age = var1.lifetime / 2;
+            SparkParticle sparkParticle = new SparkParticle(this.level, this.x, this.y, this.z, 0.0, 0.0, 0.0, this.engine, this.sprites);
+            sparkParticle.setAlpha(0.99F);
+            sparkParticle.setColor(this.rCol, this.gCol, this.bCol);
+            sparkParticle.age = sparkParticle.lifetime / 2;
             if (this.hasFade) {
-               var1.hasFade = true;
-               var1.fadeR = this.fadeR;
-               var1.fadeG = this.fadeG;
-               var1.fadeB = this.fadeB;
+               sparkParticle.hasFade = true;
+               sparkParticle.fadeR = this.fadeR;
+               sparkParticle.fadeG = this.fadeG;
+               sparkParticle.fadeB = this.fadeB;
             }
 
-            var1.twinkle = this.twinkle;
-            this.engine.add(var1);
+            sparkParticle.twinkle = this.twinkle;
+            this.engine.add(sparkParticle);
          }
 
       }
    }
 
    public static class OverlayParticle extends SingleQuadParticle {
-      OverlayParticle(ClientLevel var1, double var2, double var4, double var6, TextureAtlasSprite var8) {
-         super(var1, var2, var4, var6, var8);
+      private OverlayParticle(final ClientLevel level, final double x, final double y, final double z, final TextureAtlasSprite sprite) {
+         super(level, x, y, z, sprite);
          this.lifetime = 4;
       }
 
@@ -269,44 +269,44 @@ public class FireworkParticles {
          return SingleQuadParticle.Layer.TRANSLUCENT;
       }
 
-      public void extract(QuadParticleRenderState var1, Camera var2, float var3) {
-         this.setAlpha(0.6F - ((float)this.age + var3 - 1.0F) * 0.25F * 0.5F);
-         super.extract(var1, var2, var3);
+      public void extract(final QuadParticleRenderState particleTypeRenderState, final Camera camera, final float partialTickTime) {
+         this.setAlpha(0.6F - ((float)this.age + partialTickTime - 1.0F) * 0.25F * 0.5F);
+         super.extract(particleTypeRenderState, camera, partialTickTime);
       }
 
-      public float getQuadSize(float var1) {
-         return 7.1F * Mth.sin((double)(((float)this.age + var1 - 1.0F) * 0.25F * 3.1415927F));
+      public float getQuadSize(final float a) {
+         return 7.1F * Mth.sin((double)(((float)this.age + a - 1.0F) * 0.25F * 3.1415927F));
       }
    }
 
    public static class FlashProvider implements ParticleProvider<ColorParticleOption> {
       private final SpriteSet sprite;
 
-      public FlashProvider(SpriteSet var1) {
+      public FlashProvider(final SpriteSet sprite) {
          super();
-         this.sprite = var1;
+         this.sprite = sprite;
       }
 
-      public Particle createParticle(ColorParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         OverlayParticle var16 = new OverlayParticle(var2, var3, var5, var7, this.sprite.get(var15));
-         var16.setColor(var1.getRed(), var1.getGreen(), var1.getBlue());
-         var16.setAlpha(var1.getAlpha());
-         return var16;
+      public Particle createParticle(final ColorParticleOption options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         OverlayParticle particle = new OverlayParticle(level, x, y, z, this.sprite.get(random));
+         particle.setColor(options.getRed(), options.getGreen(), options.getBlue());
+         particle.setAlpha(options.getAlpha());
+         return particle;
       }
    }
 
    public static class SparkProvider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprites;
 
-      public SparkProvider(SpriteSet var1) {
+      public SparkProvider(final SpriteSet sprites) {
          super();
-         this.sprites = var1;
+         this.sprites = sprites;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         SparkParticle var16 = new SparkParticle(var2, var3, var5, var7, var9, var11, var13, Minecraft.getInstance().particleEngine, this.sprites);
-         var16.setAlpha(0.99F);
-         return var16;
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         SparkParticle particle = new SparkParticle(level, x, y, z, xAux, yAux, zAux, Minecraft.getInstance().particleEngine, this.sprites);
+         particle.setAlpha(0.99F);
+         return particle;
       }
    }
 }

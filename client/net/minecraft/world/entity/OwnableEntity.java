@@ -1,6 +1,7 @@
 package net.minecraft.world.entity;
 
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import java.util.Set;
 import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
 
@@ -14,21 +15,21 @@ public interface OwnableEntity {
    }
 
    default @Nullable LivingEntity getRootOwner() {
-      ObjectArraySet var1 = new ObjectArraySet();
-      LivingEntity var2 = this.getOwner();
-      var1.add(this);
+      Set<Object> seen = new ObjectArraySet();
+      LivingEntity owner = this.getOwner();
+      seen.add(this);
 
-      while(var2 instanceof OwnableEntity) {
-         OwnableEntity var3 = (OwnableEntity)var2;
-         LivingEntity var4 = var3.getOwner();
-         if (var1.contains(var4)) {
+      while(owner instanceof OwnableEntity) {
+         OwnableEntity ownableOwner = (OwnableEntity)owner;
+         LivingEntity ownersOwner = ownableOwner.getOwner();
+         if (seen.contains(ownersOwner)) {
             return null;
          }
 
-         var1.add(var2);
-         var2 = var3.getOwner();
+         seen.add(owner);
+         owner = ownableOwner.getOwner();
       }
 
-      return var2;
+      return owner;
    }
 }

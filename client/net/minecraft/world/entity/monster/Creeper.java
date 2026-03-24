@@ -57,8 +57,8 @@ public class Creeper extends Monster {
    private int explosionRadius = 3;
    private boolean droppedSkulls;
 
-   public Creeper(EntityType<? extends Creeper> var1, Level var2) {
-      super(var1, var2);
+   public Creeper(final EntityType<? extends Creeper> type, final Level level) {
+      super(type, level);
    }
 
    protected void registerGoals() {
@@ -82,37 +82,37 @@ public class Creeper extends Monster {
       return this.getTarget() == null ? this.getComfortableFallDistance(0.0F) : this.getComfortableFallDistance(this.getHealth() - 1.0F);
    }
 
-   public boolean causeFallDamage(double var1, float var3, DamageSource var4) {
-      boolean var5 = super.causeFallDamage(var1, var3, var4);
-      this.swell += (int)(var1 * 1.5);
+   public boolean causeFallDamage(final double fallDistance, final float damageModifier, final DamageSource damageSource) {
+      boolean damaged = super.causeFallDamage(fallDistance, damageModifier, damageSource);
+      this.swell += (int)(fallDistance * 1.5);
       if (this.swell > this.maxSwell - 5) {
          this.swell = this.maxSwell - 5;
       }
 
-      return var5;
+      return damaged;
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(DATA_SWELL_DIR, -1);
-      var1.define(DATA_IS_POWERED, false);
-      var1.define(DATA_IS_IGNITED, false);
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(DATA_SWELL_DIR, -1);
+      entityData.define(DATA_IS_POWERED, false);
+      entityData.define(DATA_IS_IGNITED, false);
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.putBoolean("powered", this.isPowered());
-      var1.putShort("Fuse", (short)this.maxSwell);
-      var1.putByte("ExplosionRadius", (byte)this.explosionRadius);
-      var1.putBoolean("ignited", this.isIgnited());
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.putBoolean("powered", this.isPowered());
+      output.putShort("Fuse", (short)this.maxSwell);
+      output.putByte("ExplosionRadius", (byte)this.explosionRadius);
+      output.putBoolean("ignited", this.isIgnited());
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.entityData.set(DATA_IS_POWERED, var1.getBooleanOr("powered", false));
-      this.maxSwell = var1.getShortOr("Fuse", (short)30);
-      this.explosionRadius = var1.getByteOr("ExplosionRadius", (byte)3);
-      if (var1.getBooleanOr("ignited", false)) {
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.entityData.set(DATA_IS_POWERED, input.getBooleanOr("powered", false));
+      this.maxSwell = input.getShortOr("Fuse", (short)30);
+      this.explosionRadius = input.getByteOr("ExplosionRadius", (byte)3);
+      if (input.getBooleanOr("ignited", false)) {
          this.ignite();
       }
 
@@ -125,13 +125,13 @@ public class Creeper extends Monster {
             this.setSwellDir(1);
          }
 
-         int var1 = this.getSwellDir();
-         if (var1 > 0 && this.swell == 0) {
+         int swellDir = this.getSwellDir();
+         if (swellDir > 0 && this.swell == 0) {
             this.playSound(SoundEvents.CREEPER_PRIMED, 1.0F, 0.5F);
             this.gameEvent(GameEvent.PRIME_FUSE);
          }
 
-         this.swell += var1;
+         this.swell += swellDir;
          if (this.swell < 0) {
             this.swell = 0;
          }
@@ -145,13 +145,13 @@ public class Creeper extends Monster {
       super.tick();
    }
 
-   public void setTarget(@Nullable LivingEntity var1) {
-      if (!(var1 instanceof Goat)) {
-         super.setTarget(var1);
+   public void setTarget(final @Nullable LivingEntity target) {
+      if (!(target instanceof Goat)) {
+         super.setTarget(target);
       }
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return SoundEvents.CREEPER_HURT;
    }
 
@@ -159,18 +159,18 @@ public class Creeper extends Monster {
       return SoundEvents.CREEPER_DEATH;
    }
 
-   public boolean killedEntity(ServerLevel var1, LivingEntity var2, DamageSource var3) {
-      if (this.shouldDropLoot(var1) && this.isPowered() && !this.droppedSkulls) {
-         var2.dropFromLootTable(var1, var3, false, BuiltInLootTables.CHARGED_CREEPER, (var3x) -> {
-            var2.spawnAtLocation(var1, var3x);
+   public boolean killedEntity(final ServerLevel level, final LivingEntity entity, final DamageSource source) {
+      if (this.shouldDropLoot(level) && this.isPowered() && !this.droppedSkulls) {
+         entity.dropFromLootTable(level, source, false, BuiltInLootTables.CHARGED_CREEPER, (itemStack) -> {
+            entity.spawnAtLocation(level, itemStack);
             this.droppedSkulls = true;
          });
       }
 
-      return super.killedEntity(var1, var2, var3);
+      return super.killedEntity(level, entity, source);
    }
 
-   public boolean doHurtTarget(ServerLevel var1, Entity var2) {
+   public boolean doHurtTarget(final ServerLevel level, final Entity target) {
       return true;
    }
 
@@ -178,72 +178,72 @@ public class Creeper extends Monster {
       return (Boolean)this.entityData.get(DATA_IS_POWERED);
    }
 
-   public float getSwelling(float var1) {
-      return Mth.lerp(var1, (float)this.oldSwell, (float)this.swell) / (float)(this.maxSwell - 2);
+   public float getSwelling(final float a) {
+      return Mth.lerp(a, (float)this.oldSwell, (float)this.swell) / (float)(this.maxSwell - 2);
    }
 
    public int getSwellDir() {
       return (Integer)this.entityData.get(DATA_SWELL_DIR);
    }
 
-   public void setSwellDir(int var1) {
-      this.entityData.set(DATA_SWELL_DIR, var1);
+   public void setSwellDir(final int dir) {
+      this.entityData.set(DATA_SWELL_DIR, dir);
    }
 
-   public void thunderHit(ServerLevel var1, LightningBolt var2) {
-      super.thunderHit(var1, var2);
+   public void thunderHit(final ServerLevel level, final LightningBolt lightningBolt) {
+      super.thunderHit(level, lightningBolt);
       this.entityData.set(DATA_IS_POWERED, true);
    }
 
-   protected InteractionResult mobInteract(Player var1, InteractionHand var2) {
-      ItemStack var3 = var1.getItemInHand(var2);
-      if (var3.is(ItemTags.CREEPER_IGNITERS)) {
-         SoundEvent var4 = var3.is(Items.FIRE_CHARGE) ? SoundEvents.FIRECHARGE_USE : SoundEvents.FLINTANDSTEEL_USE;
-         this.level().playSound(var1, this.getX(), this.getY(), this.getZ(), var4, this.getSoundSource(), 1.0F, this.random.nextFloat() * 0.4F + 0.8F);
+   protected InteractionResult mobInteract(final Player player, final InteractionHand hand) {
+      ItemStack itemStack = player.getItemInHand(hand);
+      if (itemStack.is(ItemTags.CREEPER_IGNITERS)) {
+         SoundEvent soundEvent = itemStack.is(Items.FIRE_CHARGE) ? SoundEvents.FIRECHARGE_USE : SoundEvents.FLINTANDSTEEL_USE;
+         this.level().playSound(player, this.getX(), this.getY(), this.getZ(), soundEvent, this.getSoundSource(), 1.0F, this.random.nextFloat() * 0.4F + 0.8F);
          if (!this.level().isClientSide()) {
             this.ignite();
-            if (!var3.isDamageableItem()) {
-               var3.shrink(1);
+            if (!itemStack.isDamageableItem()) {
+               itemStack.shrink(1);
             } else {
-               var3.hurtAndBreak(1, var1, (EquipmentSlot)var2.asEquipmentSlot());
+               itemStack.hurtAndBreak(1, player, (EquipmentSlot)hand.asEquipmentSlot());
             }
          }
 
          return InteractionResult.SUCCESS;
       } else {
-         return super.mobInteract(var1, var2);
+         return super.mobInteract(player, hand);
       }
    }
 
    private void explodeCreeper() {
       Level var2 = this.level();
-      if (var2 instanceof ServerLevel var1) {
-         float var3 = this.isPowered() ? 2.0F : 1.0F;
+      if (var2 instanceof ServerLevel level) {
+         float explosionMultiplier = this.isPowered() ? 2.0F : 1.0F;
          this.dead = true;
-         var1.explode(this, this.getX(), this.getY(), this.getZ(), (float)this.explosionRadius * var3, Level.ExplosionInteraction.MOB);
+         level.explode(this, this.getX(), this.getY(), this.getZ(), (float)this.explosionRadius * explosionMultiplier, Level.ExplosionInteraction.MOB);
          this.spawnLingeringCloud();
-         this.triggerOnDeathMobEffects(var1, Entity.RemovalReason.KILLED);
+         this.triggerOnDeathMobEffects(level, Entity.RemovalReason.KILLED);
          this.discard();
       }
 
    }
 
    private void spawnLingeringCloud() {
-      Collection var1 = this.getActiveEffects();
-      if (!var1.isEmpty()) {
-         AreaEffectCloud var2 = new AreaEffectCloud(this.level(), this.getX(), this.getY(), this.getZ());
-         var2.setRadius(2.5F);
-         var2.setRadiusOnUse(-0.5F);
-         var2.setWaitTime(10);
-         var2.setDuration(300);
-         var2.setPotionDurationScale(0.25F);
-         var2.setRadiusPerTick(-var2.getRadius() / (float)var2.getDuration());
+      Collection<MobEffectInstance> activeEffects = this.getActiveEffects();
+      if (!activeEffects.isEmpty()) {
+         AreaEffectCloud cloud = new AreaEffectCloud(this.level(), this.getX(), this.getY(), this.getZ());
+         cloud.setRadius(2.5F);
+         cloud.setRadiusOnUse(-0.5F);
+         cloud.setWaitTime(10);
+         cloud.setDuration(300);
+         cloud.setPotionDurationScale(0.25F);
+         cloud.setRadiusPerTick(-cloud.getRadius() / (float)cloud.getDuration());
 
-         for(MobEffectInstance var4 : var1) {
-            var2.addEffect(new MobEffectInstance(var4));
+         for(MobEffectInstance mobEffect : activeEffects) {
+            cloud.addEffect(new MobEffectInstance(mobEffect));
          }
 
-         this.level().addFreshEntity(var2);
+         this.level().addFreshEntity(cloud);
       }
 
    }

@@ -11,12 +11,7 @@ public class JsonToWebSocketEncoder extends MessageToMessageEncoder<JsonElement>
       super();
    }
 
-   protected void encode(ChannelHandlerContext var1, JsonElement var2, List<Object> var3) {
-      var3.add(new TextWebSocketFrame(var2.toString()));
-   }
-
-   // $FF: synthetic method
-   protected void encode(final ChannelHandlerContext var1, final Object var2, final List var3) throws Exception {
-      this.encode(var1, (JsonElement)var2, var3);
+   protected void encode(final ChannelHandlerContext ctx, final JsonElement msg, final List<Object> out) {
+      out.add(new TextWebSocketFrame(msg.toString()));
    }
 }

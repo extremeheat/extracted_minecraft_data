@@ -9,34 +9,29 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.ConduitRenderer;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.resources.model.MaterialSet;
-import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.client.resources.model.sprite.SpriteGetter;
 import org.joml.Vector3fc;
 
 public class ConduitSpecialRenderer implements NoDataSpecialModelRenderer {
-   private final MaterialSet materials;
+   private final SpriteGetter sprites;
    private final ModelPart model;
 
-   public ConduitSpecialRenderer(MaterialSet var1, ModelPart var2) {
+   public ConduitSpecialRenderer(final SpriteGetter sprites, final ModelPart model) {
       super();
-      this.materials = var1;
-      this.model = var2;
+      this.sprites = sprites;
+      this.model = model;
    }
 
-   public void submit(ItemDisplayContext var1, PoseStack var2, SubmitNodeCollector var3, int var4, int var5, boolean var6, int var7) {
-      var2.pushPose();
-      var2.translate(0.5F, 0.5F, 0.5F);
-      var3.submitModelPart(this.model, var2, ConduitRenderer.SHELL_TEXTURE.renderType(RenderTypes::entitySolid), var4, var5, this.materials.get(ConduitRenderer.SHELL_TEXTURE), false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, var7);
-      var2.popPose();
+   public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final boolean hasFoil, final int outlineColor) {
+      submitNodeCollector.submitModelPart(this.model, poseStack, ConduitRenderer.SHELL_TEXTURE.renderType(RenderTypes::entitySolid), lightCoords, overlayCoords, this.sprites.get(ConduitRenderer.SHELL_TEXTURE), false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, outlineColor);
    }
 
-   public void getExtents(Consumer<Vector3fc> var1) {
-      PoseStack var2 = new PoseStack();
-      var2.translate(0.5F, 0.5F, 0.5F);
-      this.model.getExtentsForGui(var2, var1);
+   public void getExtents(final Consumer<Vector3fc> output) {
+      PoseStack poseStack = new PoseStack();
+      this.model.getExtentsForGui(poseStack, output);
    }
 
-   public static record Unbaked() implements SpecialModelRenderer.Unbaked {
+   public static record Unbaked() implements NoDataSpecialModelRenderer.Unbaked {
       public static final MapCodec<Unbaked> MAP_CODEC = MapCodec.unit(new Unbaked());
 
       public Unbaked() {
@@ -47,8 +42,8 @@ public class ConduitSpecialRenderer implements NoDataSpecialModelRenderer {
          return MAP_CODEC;
       }
 
-      public SpecialModelRenderer<?> bake(SpecialModelRenderer.BakingContext var1) {
-         return new ConduitSpecialRenderer(var1.materials(), var1.entityModelSet().bakeLayer(ModelLayers.CONDUIT_SHELL));
+      public ConduitSpecialRenderer bake(final SpecialModelRenderer.BakingContext context) {
+         return new ConduitSpecialRenderer(context.sprites(), context.entityModelSet().bakeLayer(ModelLayers.CONDUIT_SHELL));
       }
    }
 }

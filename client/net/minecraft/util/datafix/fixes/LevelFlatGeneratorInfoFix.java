@@ -26,69 +26,69 @@ public class LevelFlatGeneratorInfoFix extends DataFix {
    private static final Splitter AMOUNT_SPLITTER = Splitter.on('*').limit(2);
    private static final Splitter BLOCK_SPLITTER = Splitter.on(':').limit(3);
 
-   public LevelFlatGeneratorInfoFix(Schema var1, boolean var2) {
-      super(var1, var2);
+   public LevelFlatGeneratorInfoFix(final Schema outputSchema, final boolean changesType) {
+      super(outputSchema, changesType);
    }
 
    public TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped("LevelFlatGeneratorInfoFix", this.getInputSchema().getType(References.LEVEL), (var1) -> var1.update(DSL.remainderFinder(), this::fix));
+      return this.fixTypeEverywhereTyped("LevelFlatGeneratorInfoFix", this.getInputSchema().getType(References.LEVEL), (input) -> input.update(DSL.remainderFinder(), this::fix));
    }
 
-   private Dynamic<?> fix(Dynamic<?> var1) {
-      return var1.get("generatorName").asString("").equalsIgnoreCase("flat") ? var1.update("generatorOptions", (var1x) -> {
-         DataResult var10000 = var1x.asString().map(this::fixString);
-         Objects.requireNonNull(var1x);
-         return (Dynamic)DataFixUtils.orElse(var10000.map(var1x::createString).result(), var1x);
-      }) : var1;
+   private Dynamic<?> fix(final Dynamic<?> input) {
+      return input.get("generatorName").asString("").equalsIgnoreCase("flat") ? input.update("generatorOptions", (options) -> {
+         DataResult var10000 = options.asString().map(this::fixString);
+         Objects.requireNonNull(options);
+         return (Dynamic)DataFixUtils.orElse(var10000.map(options::createString).result(), options);
+      }) : input;
    }
 
    @VisibleForTesting
-   String fixString(String var1) {
-      if (var1.isEmpty()) {
+   String fixString(final String generatorOptions) {
+      if (generatorOptions.isEmpty()) {
          return "minecraft:bedrock,2*minecraft:dirt,minecraft:grass_block;1;village";
       } else {
-         Iterator var2 = SPLITTER.split(var1).iterator();
-         String var3 = (String)var2.next();
-         int var4;
-         String var5;
-         if (var2.hasNext()) {
-            var4 = NumberUtils.toInt(var3, 0);
-            var5 = (String)var2.next();
+         Iterator<String> parts = SPLITTER.split(generatorOptions).iterator();
+         String firstPart = (String)parts.next();
+         int version;
+         String layerInfo;
+         if (parts.hasNext()) {
+            version = NumberUtils.toInt(firstPart, 0);
+            layerInfo = (String)parts.next();
          } else {
-            var4 = 0;
-            var5 = var3;
+            version = 0;
+            layerInfo = firstPart;
          }
 
-         if (var4 >= 0 && var4 <= 3) {
-            StringBuilder var6 = new StringBuilder();
-            Splitter var7 = var4 < 3 ? OLD_AMOUNT_SPLITTER : AMOUNT_SPLITTER;
-            var6.append((String)StreamSupport.stream(LAYER_SPLITTER.split(var5).spliterator(), false).map((var2x) -> {
-               List var5 = var7.splitToList(var2x);
-               int var3;
-               String var4x;
-               if (var5.size() == 2) {
-                  var3 = NumberUtils.toInt((String)var5.get(0));
-                  var4x = (String)var5.get(1);
+         if (version >= 0 && version <= 3) {
+            StringBuilder result = new StringBuilder();
+            Splitter heightSplitter = version < 3 ? OLD_AMOUNT_SPLITTER : AMOUNT_SPLITTER;
+            result.append((String)StreamSupport.stream(LAYER_SPLITTER.split(layerInfo).spliterator(), false).map((layerString) -> {
+               List<String> list = heightSplitter.splitToList(layerString);
+               int height;
+               String layerType;
+               if (list.size() == 2) {
+                  height = NumberUtils.toInt((String)list.get(0));
+                  layerType = (String)list.get(1);
                } else {
-                  var3 = 1;
-                  var4x = (String)var5.get(0);
+                  height = 1;
+                  layerType = (String)list.get(0);
                }
 
-               List var6 = BLOCK_SPLITTER.splitToList(var4x);
-               int var7x = ((String)var6.get(0)).equals("minecraft") ? 1 : 0;
-               String var8 = (String)var6.get(var7x);
-               int var9 = var4 == 3 ? EntityBlockStateFix.getBlockId("minecraft:" + var8) : NumberUtils.toInt(var8, 0);
-               int var10 = var7x + 1;
-               int var11 = var6.size() > var10 ? NumberUtils.toInt((String)var6.get(var10), 0) : 0;
-               String var10000 = var3 == 1 ? "" : var3 + "*";
-               return var10000 + BlockStateData.getTag(var9 << 4 | var11).get("Name").asString("");
+               List<String> layerParts = BLOCK_SPLITTER.splitToList(layerType);
+               int nameIndex = ((String)layerParts.get(0)).equals("minecraft") ? 1 : 0;
+               String blockString = (String)layerParts.get(nameIndex);
+               int blockId = version == 3 ? EntityBlockStateFix.getBlockId("minecraft:" + blockString) : NumberUtils.toInt(blockString, 0);
+               int dataIndex = nameIndex + 1;
+               int data = layerParts.size() > dataIndex ? NumberUtils.toInt((String)layerParts.get(dataIndex), 0) : 0;
+               String var10000 = height == 1 ? "" : height + "*";
+               return var10000 + BlockStateData.getTag(blockId << 4 | data).get("Name").asString("");
             }).collect(Collectors.joining(",")));
 
-            while(var2.hasNext()) {
-               var6.append(';').append((String)var2.next());
+            while(parts.hasNext()) {
+               result.append(';').append((String)parts.next());
             }
 
-            return var6.toString();
+            return result.toString();
          } else {
             return "minecraft:bedrock,2*minecraft:dirt,minecraft:grass_block;1;village";
          }

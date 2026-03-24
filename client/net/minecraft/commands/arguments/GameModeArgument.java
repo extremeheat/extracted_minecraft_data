@@ -26,18 +26,18 @@ public class GameModeArgument implements ArgumentType<GameType> {
       super();
    }
 
-   public GameType parse(StringReader var1) throws CommandSyntaxException {
-      String var2 = var1.readUnquotedString();
-      GameType var3 = GameType.byName(var2, (GameType)null);
-      if (var3 == null) {
-         throw ERROR_INVALID.createWithContext(var1, var2);
+   public GameType parse(final StringReader reader) throws CommandSyntaxException {
+      String gameTypeString = reader.readUnquotedString();
+      GameType gameType = GameType.byName(gameTypeString, (GameType)null);
+      if (gameType == null) {
+         throw ERROR_INVALID.createWithContext(reader, gameTypeString);
       } else {
-         return var3;
+         return gameType;
       }
    }
 
-   public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      return var1.getSource() instanceof SharedSuggestionProvider ? SharedSuggestionProvider.suggest(Arrays.stream(VALUES).map(GameType::getName), var2) : Suggestions.empty();
+   public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
+      return context.getSource() instanceof SharedSuggestionProvider ? SharedSuggestionProvider.suggest(Arrays.stream(VALUES).map(GameType::getName), builder) : Suggestions.empty();
    }
 
    public Collection<String> getExamples() {
@@ -48,18 +48,13 @@ public class GameModeArgument implements ArgumentType<GameType> {
       return new GameModeArgument();
    }
 
-   public static GameType getGameMode(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
-      return (GameType)var0.getArgument(var1, GameType.class);
-   }
-
-   // $FF: synthetic method
-   public Object parse(final StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1);
+   public static GameType getGameMode(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
+      return (GameType)context.getArgument(name, GameType.class);
    }
 
    static {
       EXAMPLES = (Collection)Stream.of(GameType.SURVIVAL, GameType.CREATIVE).map(GameType::getName).collect(Collectors.toList());
       VALUES = GameType.values();
-      ERROR_INVALID = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.gamemode.invalid", var0));
+      ERROR_INVALID = new DynamicCommandExceptionType((value) -> Component.translatableEscape("argument.gamemode.invalid", value));
    }
 }

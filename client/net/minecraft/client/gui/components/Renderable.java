@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.components;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 public interface Renderable {
-   void render(GuiGraphics var1, int var2, int var3, float var4);
+   void extractRenderState(final GuiGraphicsExtractor graphics, int mouseX, int mouseY, final float a);
 }

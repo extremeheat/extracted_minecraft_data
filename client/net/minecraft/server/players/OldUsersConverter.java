@@ -13,7 +13,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -29,7 +28,7 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class OldUsersConverter {
-   static final Logger LOGGER = LogUtils.getLogger();
+   private static final Logger LOGGER = LogUtils.getLogger();
    public static final File OLD_IPBANLIST = new File("banned-ips.txt");
    public static final File OLD_USERBANLIST = new File("banned-players.txt");
    public static final File OLD_OPLIST = new File("ops.txt");
@@ -39,79 +38,79 @@ public class OldUsersConverter {
       super();
    }
 
-   static List<String> readOldListFormat(File var0, Map<String, String[]> var1) throws IOException {
-      List var2 = Files.readLines(var0, StandardCharsets.UTF_8);
+   static List<String> readOldListFormat(final File file, final Map<String, String[]> userMap) throws IOException {
+      List<String> lines = Files.readLines(file, StandardCharsets.UTF_8);
 
-      for(String var4 : var2) {
-         var4 = var4.trim();
-         if (!var4.startsWith("#") && !var4.isEmpty()) {
-            String[] var5 = var4.split("\\|");
-            var1.put(var5[0].toLowerCase(Locale.ROOT), var5);
+      for(String line : lines) {
+         line = line.trim();
+         if (!line.startsWith("#") && !line.isEmpty()) {
+            String[] parts = line.split("\\|");
+            userMap.put(parts[0].toLowerCase(Locale.ROOT), parts);
          }
       }
 
-      return var2;
+      return lines;
    }
 
-   private static void lookupPlayers(MinecraftServer var0, Collection<String> var1, ProfileLookupCallback var2) {
-      String[] var3 = (String[])var1.stream().filter((var0x) -> !StringUtil.isNullOrEmpty(var0x)).toArray((var0x) -> new String[var0x]);
-      if (var0.usesAuthentication()) {
-         var0.services().profileRepository().findProfilesByNames(var3, var2);
+   private static void lookupPlayers(final MinecraftServer server, final Collection<String> names, final ProfileLookupCallback callback) {
+      String[] filteredNames = (String[])names.stream().filter((s) -> !StringUtil.isNullOrEmpty(s)).toArray((x$0) -> new String[x$0]);
+      if (server.usesAuthentication()) {
+         server.services().profileRepository().findProfilesByNames(filteredNames, callback);
       } else {
-         for(String var7 : var3) {
-            var2.onProfileLookupSucceeded(var7, UUIDUtil.createOfflinePlayerUUID(var7));
+         for(String name : filteredNames) {
+            callback.onProfileLookupSucceeded(name, UUIDUtil.createOfflinePlayerUUID(name));
          }
       }
 
    }
 
-   public static boolean convertUserBanlist(final MinecraftServer var0) {
-      final UserBanList var1 = new UserBanList(PlayerList.USERBANLIST_FILE, new EmptyNotificationService());
+   public static boolean convertUserBanlist(final MinecraftServer server) {
+      final UserBanList bans = new UserBanList(PlayerList.USERBANLIST_FILE, new EmptyNotificationService());
       if (OLD_USERBANLIST.exists() && OLD_USERBANLIST.isFile()) {
-         if (var1.getFile().exists()) {
+         if (bans.getFile().exists()) {
             try {
-               var1.load();
-            } catch (IOException var6) {
-               LOGGER.warn("Could not load existing file {}", var1.getFile().getName(), var6);
+               bans.load();
+            } catch (IOException e) {
+               LOGGER.warn("Could not load existing file {}", bans.getFile().getName(), e);
             }
          }
 
          try {
-            final HashMap var2 = Maps.newHashMap();
-            readOldListFormat(OLD_USERBANLIST, var2);
-            ProfileLookupCallback var3 = new ProfileLookupCallback() {
-               public void onProfileLookupSucceeded(String var1x, UUID var2x) {
-                  NameAndId var3 = new NameAndId(var2x, var1x);
-                  var0.services().nameToIdCache().add(var3);
-                  String[] var4 = (String[])var2.get(var3.name().toLowerCase(Locale.ROOT));
-                  if (var4 == null) {
-                     OldUsersConverter.LOGGER.warn("Could not convert user banlist entry for {}", var3.name());
+            final Map<String, String[]> userMap = Maps.newHashMap();
+            readOldListFormat(OLD_USERBANLIST, userMap);
+            ProfileLookupCallback callback = new ProfileLookupCallback() {
+               public void onProfileLookupSucceeded(final String profileName, final UUID profileId) {
+                  NameAndId profile = new NameAndId(profileId, profileName);
+                  server.services().nameToIdCache().add(profile);
+                  String[] userDef = (String[])userMap.get(profile.name().toLowerCase(Locale.ROOT));
+                  if (userDef == null) {
+                     OldUsersConverter.LOGGER.warn("Could not convert user banlist entry for {}", profile.name());
                      throw new ConversionError("Profile not in the conversionlist");
                   } else {
-                     Date var5 = var4.length > 1 ? OldUsersConverter.parseDate(var4[1], (Date)null) : null;
-                     String var6 = var4.length > 2 ? var4[2] : null;
-                     Date var7 = var4.length > 3 ? OldUsersConverter.parseDate(var4[3], (Date)null) : null;
-                     String var8 = var4.length > 4 ? var4[4] : null;
-                     var1.add(new UserBanListEntry(var3, var5, var6, var7, var8));
+                     Date created = userDef.length > 1 ? OldUsersConverter.parseDate(userDef[1], (Date)null) : null;
+                     String source = userDef.length > 2 ? userDef[2] : null;
+                     Date expires = userDef.length > 3 ? OldUsersConverter.parseDate(userDef[3], (Date)null) : null;
+                     String reason = userDef.length > 4 ? userDef[4] : null;
+                     bans.add(new UserBanListEntry(profile, created, source, expires, reason));
                   }
                }
 
-               public void onProfileLookupFailed(String var1x, Exception var2x) {
-                  OldUsersConverter.LOGGER.warn("Could not lookup user banlist entry for {}", var1x, var2x);
-                  if (!(var2x instanceof ProfileNotFoundException)) {
-                     throw new ConversionError("Could not request user " + var1x + " from backend systems", var2x);
+               public void onProfileLookupFailed(final String profileName, final Exception exception) {
+                  OldUsersConverter.LOGGER.warn("Could not lookup user banlist entry for {}", profileName, exception);
+                  if (!(exception instanceof ProfileNotFoundException)) {
+                     throw new ConversionError("Could not request user " + profileName + " from backend systems", exception);
                   }
                }
             };
-            lookupPlayers(var0, var2.keySet(), var3);
-            var1.save();
+            lookupPlayers(server, userMap.keySet(), callback);
+            bans.save();
             renameOldFile(OLD_USERBANLIST);
             return true;
-         } catch (IOException var4) {
-            LOGGER.warn("Could not read old user banlist to convert it!", var4);
+         } catch (IOException e) {
+            LOGGER.warn("Could not read old user banlist to convert it!", e);
             return false;
-         } catch (ConversionError var5) {
-            LOGGER.error("Conversion failed, please try again later", var5);
+         } catch (ConversionError e) {
+            LOGGER.error("Conversion failed, please try again later", e);
             return false;
          }
       } else {
@@ -119,35 +118,35 @@ public class OldUsersConverter {
       }
    }
 
-   public static boolean convertIpBanlist(MinecraftServer var0) {
-      IpBanList var1 = new IpBanList(PlayerList.IPBANLIST_FILE, new EmptyNotificationService());
+   public static boolean convertIpBanlist(final MinecraftServer server) {
+      IpBanList ipBans = new IpBanList(PlayerList.IPBANLIST_FILE, new EmptyNotificationService());
       if (OLD_IPBANLIST.exists() && OLD_IPBANLIST.isFile()) {
-         if (var1.getFile().exists()) {
+         if (ipBans.getFile().exists()) {
             try {
-               var1.load();
-            } catch (IOException var11) {
-               LOGGER.warn("Could not load existing file {}", var1.getFile().getName(), var11);
+               ipBans.load();
+            } catch (IOException e) {
+               LOGGER.warn("Could not load existing file {}", ipBans.getFile().getName(), e);
             }
          }
 
          try {
-            HashMap var2 = Maps.newHashMap();
-            readOldListFormat(OLD_IPBANLIST, var2);
+            Map<String, String[]> userMap = Maps.newHashMap();
+            readOldListFormat(OLD_IPBANLIST, userMap);
 
-            for(String var4 : var2.keySet()) {
-               String[] var5 = (String[])var2.get(var4);
-               Date var6 = var5.length > 1 ? parseDate(var5[1], (Date)null) : null;
-               String var7 = var5.length > 2 ? var5[2] : null;
-               Date var8 = var5.length > 3 ? parseDate(var5[3], (Date)null) : null;
-               String var9 = var5.length > 4 ? var5[4] : null;
-               var1.add(new IpBanListEntry(var4, var6, var7, var8, var9));
+            for(String key : userMap.keySet()) {
+               String[] userDef = (String[])userMap.get(key);
+               Date created = userDef.length > 1 ? parseDate(userDef[1], (Date)null) : null;
+               String source = userDef.length > 2 ? userDef[2] : null;
+               Date expires = userDef.length > 3 ? parseDate(userDef[3], (Date)null) : null;
+               String reason = userDef.length > 4 ? userDef[4] : null;
+               ipBans.add(new IpBanListEntry(key, created, source, expires, reason));
             }
 
-            var1.save();
+            ipBans.save();
             renameOldFile(OLD_IPBANLIST);
             return true;
-         } catch (IOException var10) {
-            LOGGER.warn("Could not parse old ip banlist to convert it!", var10);
+         } catch (IOException e) {
+            LOGGER.warn("Could not parse old ip banlist to convert it!", e);
             return false;
          }
       } else {
@@ -155,42 +154,42 @@ public class OldUsersConverter {
       }
    }
 
-   public static boolean convertOpsList(final MinecraftServer var0) {
-      final ServerOpList var1 = new ServerOpList(PlayerList.OPLIST_FILE, new EmptyNotificationService());
+   public static boolean convertOpsList(final MinecraftServer server) {
+      final ServerOpList opsList = new ServerOpList(PlayerList.OPLIST_FILE, new EmptyNotificationService());
       if (OLD_OPLIST.exists() && OLD_OPLIST.isFile()) {
-         if (var1.getFile().exists()) {
+         if (opsList.getFile().exists()) {
             try {
-               var1.load();
-            } catch (IOException var6) {
-               LOGGER.warn("Could not load existing file {}", var1.getFile().getName(), var6);
+               opsList.load();
+            } catch (IOException e) {
+               LOGGER.warn("Could not load existing file {}", opsList.getFile().getName(), e);
             }
          }
 
          try {
-            List var2 = Files.readLines(OLD_OPLIST, StandardCharsets.UTF_8);
-            ProfileLookupCallback var3 = new ProfileLookupCallback() {
-               public void onProfileLookupSucceeded(String var1x, UUID var2) {
-                  NameAndId var3 = new NameAndId(var2, var1x);
-                  var0.services().nameToIdCache().add(var3);
-                  var1.add(new ServerOpListEntry(var3, var0.operatorUserPermissions(), false));
+            List<String> lines = Files.readLines(OLD_OPLIST, StandardCharsets.UTF_8);
+            ProfileLookupCallback callback = new ProfileLookupCallback() {
+               public void onProfileLookupSucceeded(final String profileName, final UUID profileId) {
+                  NameAndId profile = new NameAndId(profileId, profileName);
+                  server.services().nameToIdCache().add(profile);
+                  opsList.add(new ServerOpListEntry(profile, server.operatorUserPermissions(), false));
                }
 
-               public void onProfileLookupFailed(String var1x, Exception var2) {
-                  OldUsersConverter.LOGGER.warn("Could not lookup oplist entry for {}", var1x, var2);
-                  if (!(var2 instanceof ProfileNotFoundException)) {
-                     throw new ConversionError("Could not request user " + var1x + " from backend systems", var2);
+               public void onProfileLookupFailed(final String profileName, final Exception exception) {
+                  OldUsersConverter.LOGGER.warn("Could not lookup oplist entry for {}", profileName, exception);
+                  if (!(exception instanceof ProfileNotFoundException)) {
+                     throw new ConversionError("Could not request user " + profileName + " from backend systems", exception);
                   }
                }
             };
-            lookupPlayers(var0, var2, var3);
-            var1.save();
+            lookupPlayers(server, lines, callback);
+            opsList.save();
             renameOldFile(OLD_OPLIST);
             return true;
-         } catch (IOException var4) {
-            LOGGER.warn("Could not read old oplist to convert it!", var4);
+         } catch (IOException e) {
+            LOGGER.warn("Could not read old oplist to convert it!", e);
             return false;
-         } catch (ConversionError var5) {
-            LOGGER.error("Conversion failed, please try again later", var5);
+         } catch (ConversionError e) {
+            LOGGER.error("Conversion failed, please try again later", e);
             return false;
          }
       } else {
@@ -198,42 +197,42 @@ public class OldUsersConverter {
       }
    }
 
-   public static boolean convertWhiteList(final MinecraftServer var0) {
-      final UserWhiteList var1 = new UserWhiteList(PlayerList.WHITELIST_FILE, new EmptyNotificationService());
+   public static boolean convertWhiteList(final MinecraftServer server) {
+      final UserWhiteList whitelist = new UserWhiteList(PlayerList.WHITELIST_FILE, new EmptyNotificationService());
       if (OLD_WHITELIST.exists() && OLD_WHITELIST.isFile()) {
-         if (var1.getFile().exists()) {
+         if (whitelist.getFile().exists()) {
             try {
-               var1.load();
-            } catch (IOException var6) {
-               LOGGER.warn("Could not load existing file {}", var1.getFile().getName(), var6);
+               whitelist.load();
+            } catch (IOException e) {
+               LOGGER.warn("Could not load existing file {}", whitelist.getFile().getName(), e);
             }
          }
 
          try {
-            List var2 = Files.readLines(OLD_WHITELIST, StandardCharsets.UTF_8);
-            ProfileLookupCallback var3 = new ProfileLookupCallback() {
-               public void onProfileLookupSucceeded(String var1x, UUID var2) {
-                  NameAndId var3 = new NameAndId(var2, var1x);
-                  var0.services().nameToIdCache().add(var3);
-                  var1.add(new UserWhiteListEntry(var3));
+            List<String> lines = Files.readLines(OLD_WHITELIST, StandardCharsets.UTF_8);
+            ProfileLookupCallback callback = new ProfileLookupCallback() {
+               public void onProfileLookupSucceeded(final String profileName, final UUID profileId) {
+                  NameAndId profile = new NameAndId(profileId, profileName);
+                  server.services().nameToIdCache().add(profile);
+                  whitelist.add(new UserWhiteListEntry(profile));
                }
 
-               public void onProfileLookupFailed(String var1x, Exception var2) {
-                  OldUsersConverter.LOGGER.warn("Could not lookup user whitelist entry for {}", var1x, var2);
-                  if (!(var2 instanceof ProfileNotFoundException)) {
-                     throw new ConversionError("Could not request user " + var1x + " from backend systems", var2);
+               public void onProfileLookupFailed(final String profileName, final Exception exception) {
+                  OldUsersConverter.LOGGER.warn("Could not lookup user whitelist entry for {}", profileName, exception);
+                  if (!(exception instanceof ProfileNotFoundException)) {
+                     throw new ConversionError("Could not request user " + profileName + " from backend systems", exception);
                   }
                }
             };
-            lookupPlayers(var0, var2, var3);
-            var1.save();
+            lookupPlayers(server, lines, callback);
+            whitelist.save();
             renameOldFile(OLD_WHITELIST);
             return true;
-         } catch (IOException var4) {
-            LOGGER.warn("Could not read old whitelist to convert it!", var4);
+         } catch (IOException e) {
+            LOGGER.warn("Could not read old whitelist to convert it!", e);
             return false;
-         } catch (ConversionError var5) {
-            LOGGER.error("Conversion failed, please try again later", var5);
+         } catch (ConversionError e) {
+            LOGGER.error("Conversion failed, please try again later", e);
             return false;
          }
       } else {
@@ -241,105 +240,105 @@ public class OldUsersConverter {
       }
    }
 
-   public static @Nullable UUID convertMobOwnerIfNecessary(final MinecraftServer var0, String var1) {
-      if (!StringUtil.isNullOrEmpty(var1) && var1.length() <= 16) {
-         Optional var2 = var0.services().nameToIdCache().get(var1).map(NameAndId::id);
-         if (var2.isPresent()) {
-            return (UUID)var2.get();
-         } else if (!var0.isSingleplayer() && var0.usesAuthentication()) {
-            final ArrayList var3 = new ArrayList();
-            ProfileLookupCallback var4 = new ProfileLookupCallback() {
-               public void onProfileLookupSucceeded(String var1, UUID var2) {
-                  NameAndId var3x = new NameAndId(var2, var1);
-                  var0.services().nameToIdCache().add(var3x);
-                  var3.add(var3x);
+   public static @Nullable UUID convertMobOwnerIfNecessary(final MinecraftServer server, final String owner) {
+      if (!StringUtil.isNullOrEmpty(owner) && owner.length() <= 16) {
+         Optional<UUID> profileId = server.services().nameToIdCache().get(owner).map(NameAndId::id);
+         if (profileId.isPresent()) {
+            return (UUID)profileId.get();
+         } else if (!server.isSingleplayer() && server.usesAuthentication()) {
+            final List<NameAndId> profiles = new ArrayList();
+            ProfileLookupCallback callback = new ProfileLookupCallback() {
+               public void onProfileLookupSucceeded(final String profileName, final UUID profileId) {
+                  NameAndId profile = new NameAndId(profileId, profileName);
+                  server.services().nameToIdCache().add(profile);
+                  profiles.add(profile);
                }
 
-               public void onProfileLookupFailed(String var1, Exception var2) {
-                  OldUsersConverter.LOGGER.warn("Could not lookup user whitelist entry for {}", var1, var2);
+               public void onProfileLookupFailed(final String profileName, final Exception exception) {
+                  OldUsersConverter.LOGGER.warn("Could not lookup user whitelist entry for {}", profileName, exception);
                }
             };
-            lookupPlayers(var0, Lists.newArrayList(new String[]{var1}), var4);
-            return !var3.isEmpty() ? ((NameAndId)var3.getFirst()).id() : null;
+            lookupPlayers(server, Lists.newArrayList(new String[]{owner}), callback);
+            return !profiles.isEmpty() ? ((NameAndId)profiles.getFirst()).id() : null;
          } else {
-            return UUIDUtil.createOfflinePlayerUUID(var1);
+            return UUIDUtil.createOfflinePlayerUUID(owner);
          }
       } else {
          try {
-            return UUID.fromString(var1);
+            return UUID.fromString(owner);
          } catch (IllegalArgumentException var5) {
             return null;
          }
       }
    }
 
-   public static boolean convertPlayers(final DedicatedServer var0) {
-      final File var1 = getWorldPlayersDirectory(var0);
-      final File var2 = new File(var1.getParentFile(), "playerdata");
-      final File var3 = new File(var1.getParentFile(), "unknownplayers");
-      if (var1.exists() && var1.isDirectory()) {
-         File[] var4 = var1.listFiles();
-         ArrayList var5 = Lists.newArrayList();
+   public static boolean convertPlayers(final DedicatedServer server) {
+      final File worldPlayerDirectory = server.getWorldPath(LevelResource.PLAYER_OLD_DATA_DIR).toFile();
+      final File worldNewPlayerDirectory = new File(worldPlayerDirectory.getParentFile(), LevelResource.PLAYER_DATA_DIR.id());
+      final File unknownPlayerDirectory = new File(worldPlayerDirectory.getParentFile(), "unknownplayers");
+      if (worldPlayerDirectory.exists() && worldPlayerDirectory.isDirectory()) {
+         File[] playerFiles = worldPlayerDirectory.listFiles();
+         List<String> playerNames = Lists.newArrayList();
 
-         for(File var9 : var4) {
-            String var10 = var9.getName();
-            if (var10.toLowerCase(Locale.ROOT).endsWith(".dat")) {
-               String var11 = var10.substring(0, var10.length() - ".dat".length());
-               if (!var11.isEmpty()) {
-                  var5.add(var11);
+         for(File file : playerFiles) {
+            String fileName = file.getName();
+            if (fileName.toLowerCase(Locale.ROOT).endsWith(".dat")) {
+               String playerName = fileName.substring(0, fileName.length() - ".dat".length());
+               if (!playerName.isEmpty()) {
+                  playerNames.add(playerName);
                }
             }
          }
 
          try {
-            final String[] var13 = (String[])var5.toArray(new String[var5.size()]);
-            ProfileLookupCallback var14 = new ProfileLookupCallback() {
-               public void onProfileLookupSucceeded(String var1x, UUID var2x) {
-                  NameAndId var3x = new NameAndId(var2x, var1x);
-                  var0.services().nameToIdCache().add(var3x);
-                  this.movePlayerFile(var2, this.getFileNameForProfile(var1x), var2x.toString());
+            final String[] names = (String[])playerNames.toArray(new String[playerNames.size()]);
+            ProfileLookupCallback callback = new ProfileLookupCallback() {
+               public void onProfileLookupSucceeded(final String profileName, final UUID profileId) {
+                  NameAndId profile = new NameAndId(profileId, profileName);
+                  server.services().nameToIdCache().add(profile);
+                  this.movePlayerFile(worldNewPlayerDirectory, this.getFileNameForProfile(profileName), profileId.toString());
                }
 
-               public void onProfileLookupFailed(String var1x, Exception var2x) {
-                  OldUsersConverter.LOGGER.warn("Could not lookup user uuid for {}", var1x, var2x);
-                  if (var2x instanceof ProfileNotFoundException) {
-                     String var3x = this.getFileNameForProfile(var1x);
-                     this.movePlayerFile(var3, var3x, var3x);
+               public void onProfileLookupFailed(final String profileName, final Exception exception) {
+                  OldUsersConverter.LOGGER.warn("Could not lookup user uuid for {}", profileName, exception);
+                  if (exception instanceof ProfileNotFoundException) {
+                     String fileNameForProfile = this.getFileNameForProfile(profileName);
+                     this.movePlayerFile(unknownPlayerDirectory, fileNameForProfile, fileNameForProfile);
                   } else {
-                     throw new ConversionError("Could not request user " + var1x + " from backend systems", var2x);
+                     throw new ConversionError("Could not request user " + profileName + " from backend systems", exception);
                   }
                }
 
-               private void movePlayerFile(File var1x, String var2x, String var3x) {
-                  File var4 = new File(var1, var2x + ".dat");
-                  File var5 = new File(var1x, var3x + ".dat");
-                  OldUsersConverter.ensureDirectoryExists(var1x);
-                  if (!var4.renameTo(var5)) {
-                     throw new ConversionError("Could not convert file for " + var2x);
+               private void movePlayerFile(final File directory, final String oldName, final String newName) {
+                  File oldFileName = new File(worldPlayerDirectory, oldName + ".dat");
+                  File newFileName = new File(directory, newName + ".dat");
+                  OldUsersConverter.ensureDirectoryExists(directory);
+                  if (!oldFileName.renameTo(newFileName)) {
+                     throw new ConversionError("Could not convert file for " + oldName);
                   }
                }
 
-               private String getFileNameForProfile(String var1x) {
-                  String var2x = null;
+               private String getFileNameForProfile(final String profileName) {
+                  String fileName = null;
 
-                  for(String var6 : var13) {
-                     if (var6 != null && var6.equalsIgnoreCase(var1x)) {
-                        var2x = var6;
+                  for(String name : names) {
+                     if (name != null && name.equalsIgnoreCase(profileName)) {
+                        fileName = name;
                         break;
                      }
                   }
 
-                  if (var2x == null) {
-                     throw new ConversionError("Could not find the filename for " + var1x + " anymore");
+                  if (fileName == null) {
+                     throw new ConversionError("Could not find the filename for " + profileName + " anymore");
                   } else {
-                     return var2x;
+                     return fileName;
                   }
                }
             };
-            lookupPlayers(var0, Lists.newArrayList(var13), var14);
+            lookupPlayers(server, Lists.newArrayList(names), callback);
             return true;
-         } catch (ConversionError var12) {
-            LOGGER.error("Conversion failed, please try again later", var12);
+         } catch (ConversionError e) {
+            LOGGER.error("Conversion failed, please try again later", e);
             return false;
          }
       } else {
@@ -347,61 +346,56 @@ public class OldUsersConverter {
       }
    }
 
-   static void ensureDirectoryExists(File var0) {
-      if (var0.exists()) {
-         if (!var0.isDirectory()) {
-            throw new ConversionError("Can't create directory " + var0.getName() + " in world save directory.");
+   private static void ensureDirectoryExists(final File directory) {
+      if (directory.exists()) {
+         if (!directory.isDirectory()) {
+            throw new ConversionError("Can't create directory " + directory.getName() + " in world save directory.");
          }
-      } else if (!var0.mkdirs()) {
-         throw new ConversionError("Can't create directory " + var0.getName() + " in world save directory.");
+      } else if (!directory.mkdirs()) {
+         throw new ConversionError("Can't create directory " + directory.getName() + " in world save directory.");
       }
+
    }
 
-   public static boolean serverReadyAfterUserconversion(MinecraftServer var0) {
-      boolean var1 = areOldUserlistsRemoved();
-      var1 = var1 && areOldPlayersConverted(var0);
-      return var1;
-   }
-
-   private static boolean areOldUserlistsRemoved() {
-      boolean var0 = false;
+   public static boolean areOldUserlistsRemoved() {
+      boolean foundUserBanlist = false;
       if (OLD_USERBANLIST.exists() && OLD_USERBANLIST.isFile()) {
-         var0 = true;
+         foundUserBanlist = true;
       }
 
-      boolean var1 = false;
+      boolean foundIpBanlist = false;
       if (OLD_IPBANLIST.exists() && OLD_IPBANLIST.isFile()) {
-         var1 = true;
+         foundIpBanlist = true;
       }
 
-      boolean var2 = false;
+      boolean foundOpList = false;
       if (OLD_OPLIST.exists() && OLD_OPLIST.isFile()) {
-         var2 = true;
+         foundOpList = true;
       }
 
-      boolean var3 = false;
+      boolean foundWhitelist = false;
       if (OLD_WHITELIST.exists() && OLD_WHITELIST.isFile()) {
-         var3 = true;
+         foundWhitelist = true;
       }
 
-      if (!var0 && !var1 && !var2 && !var3) {
+      if (!foundUserBanlist && !foundIpBanlist && !foundOpList && !foundWhitelist) {
          return true;
       } else {
          LOGGER.warn("**** FAILED TO START THE SERVER AFTER ACCOUNT CONVERSION!");
          LOGGER.warn("** please remove the following files and restart the server:");
-         if (var0) {
+         if (foundUserBanlist) {
             LOGGER.warn("* {}", OLD_USERBANLIST.getName());
          }
 
-         if (var1) {
+         if (foundIpBanlist) {
             LOGGER.warn("* {}", OLD_IPBANLIST.getName());
          }
 
-         if (var2) {
+         if (foundOpList) {
             LOGGER.warn("* {}", OLD_OPLIST.getName());
          }
 
-         if (var3) {
+         if (foundWhitelist) {
             LOGGER.warn("* {}", OLD_WHITELIST.getName());
          }
 
@@ -409,45 +403,29 @@ public class OldUsersConverter {
       }
    }
 
-   private static boolean areOldPlayersConverted(MinecraftServer var0) {
-      File var1 = getWorldPlayersDirectory(var0);
-      if (!var1.exists() || !var1.isDirectory() || var1.list().length <= 0 && var1.delete()) {
-         return true;
-      } else {
-         LOGGER.warn("**** DETECTED OLD PLAYER DIRECTORY IN THE WORLD SAVE");
-         LOGGER.warn("**** THIS USUALLY HAPPENS WHEN THE AUTOMATIC CONVERSION FAILED IN SOME WAY");
-         LOGGER.warn("** please restart the server and if the problem persists, remove the directory '{}'", var1.getPath());
-         return false;
-      }
+   private static void renameOldFile(final File file) {
+      File newFile = new File(file.getName() + ".converted");
+      file.renameTo(newFile);
    }
 
-   private static File getWorldPlayersDirectory(MinecraftServer var0) {
-      return var0.getWorldPath(LevelResource.PLAYER_OLD_DATA_DIR).toFile();
-   }
-
-   private static void renameOldFile(File var0) {
-      File var1 = new File(var0.getName() + ".converted");
-      var0.renameTo(var1);
-   }
-
-   static Date parseDate(String var0, Date var1) {
-      Date var2;
+   private static Date parseDate(final String dateString, final Date defaultValue) {
+      Date parsedDate;
       try {
-         var2 = BanListEntry.DATE_FORMAT.parse(var0);
+         parsedDate = BanListEntry.DATE_FORMAT.parse(dateString);
       } catch (ParseException var4) {
-         var2 = var1;
+         parsedDate = defaultValue;
       }
 
-      return var2;
+      return parsedDate;
    }
 
-   static class ConversionError extends RuntimeException {
-      ConversionError(String var1, Throwable var2) {
-         super(var1, var2);
+   private static class ConversionError extends RuntimeException {
+      private ConversionError(final String message, final Throwable cause) {
+         super(message, cause);
       }
 
-      ConversionError(String var1) {
-         super(var1);
+      private ConversionError(final String message) {
+         super(message);
       }
    }
 }

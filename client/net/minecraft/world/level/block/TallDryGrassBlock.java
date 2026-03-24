@@ -21,27 +21,27 @@ public class TallDryGrassBlock extends DryVegetationBlock implements Bonemealabl
       return CODEC;
    }
 
-   protected TallDryGrassBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   protected TallDryGrassBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return SHAPE;
    }
 
-   public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
-      AmbientDesertBlockSoundsPlayer.playAmbientDryGrassSounds(var2, var3, var4);
+   public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {
+      AmbientDesertBlockSoundsPlayer.playAmbientDryGrassSounds(level, pos, random);
    }
 
-   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
-      return BonemealableBlock.hasSpreadableNeighbourPos(var1, var2, Blocks.SHORT_DRY_GRASS.defaultBlockState());
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+      return BonemealableBlock.hasSpreadableNeighbourPos(level, pos, Blocks.SHORT_DRY_GRASS.defaultBlockState()) && level.getBlockState(pos.above()).isAir() && level.isInsideBuildHeight(pos.above());
    }
 
-   public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
       return true;
    }
 
-   public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      BonemealableBlock.findSpreadableNeighbourPos(var1, var3, Blocks.SHORT_DRY_GRASS.defaultBlockState()).ifPresent((var1x) -> var1.setBlockAndUpdate(var1x, Blocks.SHORT_DRY_GRASS.defaultBlockState()));
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+      BonemealableBlock.findSpreadableNeighbourPos(level, pos, Blocks.SHORT_DRY_GRASS.defaultBlockState()).ifPresent((blockPos) -> level.setBlockAndUpdate(blockPos, Blocks.SHORT_DRY_GRASS.defaultBlockState()));
    }
 }

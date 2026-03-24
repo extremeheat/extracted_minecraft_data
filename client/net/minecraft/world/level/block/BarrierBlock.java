@@ -30,57 +30,57 @@ public class BarrierBlock extends Block implements SimpleWaterloggedBlock {
       return CODEC;
    }
 
-   protected BarrierBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   protected BarrierBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)this.defaultBlockState().setValue(WATERLOGGED, false));
    }
 
-   protected boolean propagatesSkylightDown(BlockState var1) {
-      return var1.getFluidState().isEmpty();
+   protected boolean propagatesSkylightDown(final BlockState state) {
+      return state.getFluidState().isEmpty();
    }
 
-   protected RenderShape getRenderShape(BlockState var1) {
+   protected RenderShape getRenderShape(final BlockState state) {
       return RenderShape.INVISIBLE;
    }
 
-   protected float getShadeBrightness(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected float getShadeBrightness(final BlockState state, final BlockGetter level, final BlockPos pos) {
       return 1.0F;
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      if ((Boolean)var1.getValue(WATERLOGGED)) {
-         var3.scheduleTick(var4, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var2));
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      if ((Boolean)state.getValue(WATERLOGGED)) {
+         ticks.scheduleTick(pos, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(level));
       }
 
-      return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+      return super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   protected FluidState getFluidState(BlockState var1) {
-      return (Boolean)var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
+   protected FluidState getFluidState(final BlockState state) {
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
    }
 
-   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return (BlockState)this.defaultBlockState().setValue(WATERLOGGED, var1.getLevel().getFluidState(var1.getClickedPos()).getType() == Fluids.WATER);
+   public @Nullable BlockState getStateForPlacement(final BlockPlaceContext context) {
+      return (BlockState)this.defaultBlockState().setValue(WATERLOGGED, context.getLevel().getFluidState(context.getClickedPos()).is(Fluids.WATER));
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(WATERLOGGED);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(WATERLOGGED);
    }
 
-   public ItemStack pickupBlock(@Nullable LivingEntity var1, LevelAccessor var2, BlockPos var3, BlockState var4) {
-      if (var1 instanceof Player var5) {
-         if (var5.isCreative()) {
-            return SimpleWaterloggedBlock.super.pickupBlock(var1, var2, var3, var4);
+   public ItemStack pickupBlock(final @Nullable LivingEntity user, final LevelAccessor level, final BlockPos pos, final BlockState state) {
+      if (user instanceof Player player) {
+         if (player.isCreative()) {
+            return SimpleWaterloggedBlock.super.pickupBlock(user, level, pos, state);
          }
       }
 
       return ItemStack.EMPTY;
    }
 
-   public boolean canPlaceLiquid(@Nullable LivingEntity var1, BlockGetter var2, BlockPos var3, BlockState var4, Fluid var5) {
-      if (var1 instanceof Player var6) {
-         if (var6.isCreative()) {
-            return SimpleWaterloggedBlock.super.canPlaceLiquid(var1, var2, var3, var4, var5);
+   public boolean canPlaceLiquid(final @Nullable LivingEntity user, final BlockGetter level, final BlockPos pos, final BlockState state, final Fluid type) {
+      if (user instanceof Player player) {
+         if (player.isCreative()) {
+            return SimpleWaterloggedBlock.super.canPlaceLiquid(user, level, pos, state, type);
          }
       }
 

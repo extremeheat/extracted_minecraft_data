@@ -8,7 +8,6 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
-import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.component.ResolvableProfile;
@@ -29,36 +28,36 @@ public class SkullBlockEntity extends BlockEntity {
    private boolean isAnimating;
    private @Nullable Component customName;
 
-   public SkullBlockEntity(BlockPos var1, BlockState var2) {
-      super(BlockEntityType.SKULL, var1, var2);
+   public SkullBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      super(BlockEntityType.SKULL, worldPosition, blockState);
    }
 
-   protected void saveAdditional(ValueOutput var1) {
-      super.saveAdditional(var1);
-      var1.storeNullable("profile", ResolvableProfile.CODEC, this.owner);
-      var1.storeNullable("note_block_sound", Identifier.CODEC, this.noteBlockSound);
-      var1.storeNullable("custom_name", ComponentSerialization.CODEC, this.customName);
+   protected void saveAdditional(final ValueOutput output) {
+      super.saveAdditional(output);
+      output.storeNullable("profile", ResolvableProfile.CODEC, this.owner);
+      output.storeNullable("note_block_sound", Identifier.CODEC, this.noteBlockSound);
+      output.storeNullable("custom_name", ComponentSerialization.CODEC, this.customName);
    }
 
-   protected void loadAdditional(ValueInput var1) {
-      super.loadAdditional(var1);
-      this.owner = (ResolvableProfile)var1.read("profile", ResolvableProfile.CODEC).orElse((Object)null);
-      this.noteBlockSound = (Identifier)var1.read("note_block_sound", Identifier.CODEC).orElse((Object)null);
-      this.customName = parseCustomNameSafe(var1, "custom_name");
+   protected void loadAdditional(final ValueInput input) {
+      super.loadAdditional(input);
+      this.owner = (ResolvableProfile)input.read("profile", ResolvableProfile.CODEC).orElse((Object)null);
+      this.noteBlockSound = (Identifier)input.read("note_block_sound", Identifier.CODEC).orElse((Object)null);
+      this.customName = parseCustomNameSafe(input, "custom_name");
    }
 
-   public static void animation(Level var0, BlockPos var1, BlockState var2, SkullBlockEntity var3) {
-      if (var2.hasProperty(SkullBlock.POWERED) && (Boolean)var2.getValue(SkullBlock.POWERED)) {
-         var3.isAnimating = true;
-         ++var3.animationTickCount;
+   public static void animation(final Level level, final BlockPos pos, final BlockState state, final SkullBlockEntity entity) {
+      if (state.hasProperty(SkullBlock.POWERED) && (Boolean)state.getValue(SkullBlock.POWERED)) {
+         entity.isAnimating = true;
+         ++entity.animationTickCount;
       } else {
-         var3.isAnimating = false;
+         entity.isAnimating = false;
       }
 
    }
 
-   public float getAnimation(float var1) {
-      return this.isAnimating ? (float)this.animationTickCount + var1 : (float)this.animationTickCount;
+   public float getAnimation(final float a) {
+      return this.isAnimating ? (float)this.animationTickCount + a : (float)this.animationTickCount;
    }
 
    public @Nullable ResolvableProfile getOwnerProfile() {
@@ -73,33 +72,28 @@ public class SkullBlockEntity extends BlockEntity {
       return ClientboundBlockEntityDataPacket.create(this);
    }
 
-   public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
-      return this.saveCustomOnly(var1);
+   public CompoundTag getUpdateTag(final HolderLookup.Provider registries) {
+      return this.saveCustomOnly(registries);
    }
 
-   protected void applyImplicitComponents(DataComponentGetter var1) {
-      super.applyImplicitComponents(var1);
-      this.owner = (ResolvableProfile)var1.get(DataComponents.PROFILE);
-      this.noteBlockSound = (Identifier)var1.get(DataComponents.NOTE_BLOCK_SOUND);
-      this.customName = (Component)var1.get(DataComponents.CUSTOM_NAME);
+   protected void applyImplicitComponents(final DataComponentGetter components) {
+      super.applyImplicitComponents(components);
+      this.owner = (ResolvableProfile)components.get(DataComponents.PROFILE);
+      this.noteBlockSound = (Identifier)components.get(DataComponents.NOTE_BLOCK_SOUND);
+      this.customName = (Component)components.get(DataComponents.CUSTOM_NAME);
    }
 
-   protected void collectImplicitComponents(DataComponentMap.Builder var1) {
-      super.collectImplicitComponents(var1);
-      var1.set(DataComponents.PROFILE, this.owner);
-      var1.set(DataComponents.NOTE_BLOCK_SOUND, this.noteBlockSound);
-      var1.set(DataComponents.CUSTOM_NAME, this.customName);
+   protected void collectImplicitComponents(final DataComponentMap.Builder components) {
+      super.collectImplicitComponents(components);
+      components.set(DataComponents.PROFILE, this.owner);
+      components.set(DataComponents.NOTE_BLOCK_SOUND, this.noteBlockSound);
+      components.set(DataComponents.CUSTOM_NAME, this.customName);
    }
 
-   public void removeComponentsFromTag(ValueOutput var1) {
-      super.removeComponentsFromTag(var1);
-      var1.discard("profile");
-      var1.discard("note_block_sound");
-      var1.discard("custom_name");
-   }
-
-   // $FF: synthetic method
-   public Packet getUpdatePacket() {
-      return this.getUpdatePacket();
+   public void removeComponentsFromTag(final ValueOutput output) {
+      super.removeComponentsFromTag(output);
+      output.discard("profile");
+      output.discard("note_block_sound");
+      output.discard("custom_name");
    }
 }

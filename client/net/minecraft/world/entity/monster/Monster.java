@@ -29,8 +29,8 @@ import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.gamerules.GameRules;
 
 public abstract class Monster extends PathfinderMob implements Enemy {
-   protected Monster(EntityType<? extends Monster> var1, Level var2) {
-      super(var1, var2);
+   protected Monster(final EntityType<? extends Monster> type, final Level level) {
+      super(type, level);
       this.xpReward = 5;
    }
 
@@ -45,8 +45,8 @@ public abstract class Monster extends PathfinderMob implements Enemy {
    }
 
    protected void updateNoActionTime() {
-      float var1 = this.getLightLevelDependentMagicValue();
-      if (var1 > 0.5F) {
+      float br = this.getLightLevelDependentMagicValue();
+      if (br > 0.5F) {
          this.noActionTime += 2;
       }
 
@@ -60,7 +60,7 @@ public abstract class Monster extends PathfinderMob implements Enemy {
       return SoundEvents.HOSTILE_SPLASH;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return SoundEvents.HOSTILE_HURT;
    }
 
@@ -72,35 +72,35 @@ public abstract class Monster extends PathfinderMob implements Enemy {
       return new LivingEntity.Fallsounds(SoundEvents.HOSTILE_SMALL_FALL, SoundEvents.HOSTILE_BIG_FALL);
    }
 
-   public float getWalkTargetValue(BlockPos var1, LevelReader var2) {
-      return -var2.getPathfindingCostFromLightLevels(var1);
+   public float getWalkTargetValue(final BlockPos pos, final LevelReader level) {
+      return -level.getPathfindingCostFromLightLevels(pos);
    }
 
-   public static boolean isDarkEnoughToSpawn(ServerLevelAccessor var0, BlockPos var1, RandomSource var2) {
-      if (var0.getBrightness(LightLayer.SKY, var1) > var2.nextInt(32)) {
+   public static boolean isDarkEnoughToSpawn(final ServerLevelAccessor level, final BlockPos pos, final RandomSource random) {
+      if (level.getBrightness(LightLayer.SKY, pos) > random.nextInt(32)) {
          return false;
       } else {
-         DimensionType var3 = var0.dimensionType();
-         int var4 = var3.monsterSpawnBlockLightLimit();
-         if (var4 < 15 && var0.getBrightness(LightLayer.BLOCK, var1) > var4) {
+         DimensionType dimensionType = level.dimensionType();
+         int blockLightLimit = dimensionType.monsterSpawnBlockLightLimit();
+         if (blockLightLimit < 15 && level.getBrightness(LightLayer.BLOCK, pos) > blockLightLimit) {
             return false;
          } else {
-            int var5 = var0.getLevel().isThundering() ? var0.getMaxLocalRawBrightness(var1, 10) : var0.getMaxLocalRawBrightness(var1);
-            return var5 <= var3.monsterSpawnLightTest().sample(var2);
+            int brightness = level.getLevel().isThundering() ? level.getMaxLocalRawBrightness(pos, 10) : level.getMaxLocalRawBrightness(pos);
+            return brightness <= dimensionType.monsterSpawnLightTest().sample(random);
          }
       }
    }
 
-   public static boolean checkMonsterSpawnRules(EntityType<? extends Mob> var0, ServerLevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
-      return var1.getDifficulty() != Difficulty.PEACEFUL && (EntitySpawnReason.ignoresLightRequirements(var2) || isDarkEnoughToSpawn(var1, var3, var4)) && checkMobSpawnRules(var0, var1, var2, var3, var4);
+   public static boolean checkMonsterSpawnRules(final EntityType<? extends Mob> type, final ServerLevelAccessor level, final EntitySpawnReason spawnReason, final BlockPos pos, final RandomSource random) {
+      return level.getDifficulty() != Difficulty.PEACEFUL && (EntitySpawnReason.ignoresLightRequirements(spawnReason) || isDarkEnoughToSpawn(level, pos, random)) && checkMobSpawnRules(type, level, spawnReason, pos, random);
    }
 
-   public static boolean checkAnyLightMonsterSpawnRules(EntityType<? extends Monster> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
-      return var1.getDifficulty() != Difficulty.PEACEFUL && checkMobSpawnRules(var0, var1, var2, var3, var4);
+   public static boolean checkAnyLightMonsterSpawnRules(final EntityType<? extends Monster> type, final LevelAccessor level, final EntitySpawnReason spawnReason, final BlockPos pos, final RandomSource random) {
+      return level.getDifficulty() != Difficulty.PEACEFUL && checkMobSpawnRules(type, level, spawnReason, pos, random);
    }
 
-   public static boolean checkSurfaceMonstersSpawnRules(EntityType<? extends Mob> var0, ServerLevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
-      return checkMonsterSpawnRules(var0, var1, var2, var3, var4) && (EntitySpawnReason.isSpawner(var2) || var1.canSeeSky(var3));
+   public static boolean checkSurfaceMonstersSpawnRules(final EntityType<? extends Mob> type, final ServerLevelAccessor level, final EntitySpawnReason spawnReason, final BlockPos pos, final RandomSource random) {
+      return checkMonsterSpawnRules(type, level, spawnReason, pos, random) && (EntitySpawnReason.isSpawner(spawnReason) || level.canSeeSky(pos));
    }
 
    public static AttributeSupplier.Builder createMonsterAttributes() {
@@ -111,19 +111,19 @@ public abstract class Monster extends PathfinderMob implements Enemy {
       return true;
    }
 
-   protected boolean shouldDropLoot(ServerLevel var1) {
-      return (Boolean)var1.getGameRules().get(GameRules.MOB_DROPS);
+   protected boolean shouldDropLoot(final ServerLevel level) {
+      return (Boolean)level.getGameRules().get(GameRules.MOB_DROPS);
    }
 
-   public boolean isPreventingPlayerRest(ServerLevel var1, Player var2) {
+   public boolean isPreventingPlayerRest(final ServerLevel level, final Player player) {
       return true;
    }
 
-   public ItemStack getProjectile(ItemStack var1) {
-      if (var1.getItem() instanceof ProjectileWeaponItem) {
-         Predicate var2 = ((ProjectileWeaponItem)var1.getItem()).getSupportedHeldProjectiles();
-         ItemStack var3 = ProjectileWeaponItem.getHeldProjectile(this, var2);
-         return var3.isEmpty() ? new ItemStack(Items.ARROW) : var3;
+   public ItemStack getProjectile(final ItemStack heldWeapon) {
+      if (heldWeapon.getItem() instanceof ProjectileWeaponItem) {
+         Predicate<ItemStack> supportedProjectiles = ((ProjectileWeaponItem)heldWeapon.getItem()).getSupportedHeldProjectiles();
+         ItemStack heldProjectile = ProjectileWeaponItem.getHeldProjectile(this, supportedProjectiles);
+         return heldProjectile.isEmpty() ? new ItemStack(Items.ARROW) : heldProjectile;
       } else {
          return ItemStack.EMPTY;
       }

@@ -1,11 +1,11 @@
 package net.minecraft.data.info;
 
-import com.google.common.collect.UnmodifiableIterator;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
 import java.nio.file.Path;
+import java.util.Iterator;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
@@ -24,65 +24,65 @@ public class BlockListReport implements DataProvider {
    private final PackOutput output;
    private final CompletableFuture<HolderLookup.Provider> registries;
 
-   public BlockListReport(PackOutput var1, CompletableFuture<HolderLookup.Provider> var2) {
+   public BlockListReport(final PackOutput output, final CompletableFuture<HolderLookup.Provider> registries) {
       super();
-      this.output = var1;
-      this.registries = var2;
+      this.output = output;
+      this.registries = registries;
    }
 
-   public CompletableFuture<?> run(CachedOutput var1) {
-      Path var2 = this.output.getOutputFolder(PackOutput.Target.REPORTS).resolve("blocks.json");
-      return this.registries.thenCompose((var2x) -> {
-         JsonObject var3 = new JsonObject();
-         RegistryOps var4 = var2x.createSerializationContext(JsonOps.INSTANCE);
-         var2x.lookupOrThrow(Registries.BLOCK).listElements().forEach((var2xx) -> {
-            JsonObject var3x = new JsonObject();
-            StateDefinition var4x = ((Block)var2xx.value()).getStateDefinition();
-            if (!var4x.getProperties().isEmpty()) {
-               JsonObject var5 = new JsonObject();
+   public CompletableFuture<?> run(final CachedOutput cache) {
+      Path path = this.output.getOutputFolder(PackOutput.Target.REPORTS).resolve("blocks.json");
+      return this.registries.thenCompose((registries) -> {
+         JsonObject root = new JsonObject();
+         RegistryOps<JsonElement> registryOps = registries.<JsonElement>createSerializationContext(JsonOps.INSTANCE);
+         registries.lookupOrThrow(Registries.BLOCK).listElements().forEach((block) -> {
+            JsonObject entry = new JsonObject();
+            StateDefinition<Block, BlockState> definition = ((Block)block.value()).getStateDefinition();
+            if (!definition.getProperties().isEmpty()) {
+               JsonObject properties = new JsonObject();
 
-               for(Property var7 : var4x.getProperties()) {
-                  JsonArray var8 = new JsonArray();
+               for(Property<?> property : definition.getProperties()) {
+                  JsonArray values = new JsonArray();
 
-                  for(Comparable var10 : var7.getPossibleValues()) {
-                     var8.add(Util.getPropertyName(var7, var10));
+                  for(Comparable<?> value : property.getPossibleValues()) {
+                     values.add(Util.getPropertyName(property, value));
                   }
 
-                  var5.add(var7.getName(), var8);
+                  properties.add(property.getName(), values);
                }
 
-               var3x.add("properties", var5);
+               entry.add("properties", properties);
             }
 
-            JsonArray var12 = new JsonArray();
+            JsonArray protocol = new JsonArray();
 
-            JsonObject var17;
-            for(UnmodifiableIterator var13 = var4x.getPossibleStates().iterator(); var13.hasNext(); var12.add(var17)) {
-               BlockState var15 = (BlockState)var13.next();
-               var17 = new JsonObject();
-               JsonObject var18 = new JsonObject();
+            JsonObject stateEntry;
+            for(Iterator i$ = definition.getPossibleStates().iterator(); i$.hasNext(); protocol.add(stateEntry)) {
+               BlockState state = (BlockState)i$.next();
+               stateEntry = new JsonObject();
+               JsonObject properties = new JsonObject();
 
-               for(Property var11 : var4x.getProperties()) {
-                  var18.addProperty(var11.getName(), Util.getPropertyName(var11, var15.getValue(var11)));
+               for(Property<?> property : definition.getProperties()) {
+                  properties.addProperty(property.getName(), Util.getPropertyName(property, state.getValue(property)));
                }
 
-               if (!var18.isEmpty()) {
-                  var17.add("properties", var18);
+               if (!properties.isEmpty()) {
+                  stateEntry.add("properties", properties);
                }
 
-               var17.addProperty("id", Block.getId(var15));
-               if (var15 == ((Block)var2xx.value()).defaultBlockState()) {
-                  var17.addProperty("default", true);
+               stateEntry.addProperty("id", Block.getId(state));
+               if (state == ((Block)block.value()).defaultBlockState()) {
+                  stateEntry.addProperty("default", true);
                }
             }
 
-            var3x.add("states", var12);
-            String var14 = var2xx.getRegisteredName();
-            JsonElement var16 = (JsonElement)BlockTypes.CODEC.codec().encodeStart(var4, (Block)var2xx.value()).getOrThrow((var1) -> new AssertionError("Failed to serialize block " + var14 + " (is type registered in BlockTypes?): " + var1));
-            var3x.add("definition", var16);
-            var3.add(var14, var3x);
+            entry.add("states", protocol);
+            String id = block.getRegisteredName();
+            JsonElement data = (JsonElement)BlockTypes.CODEC.codec().encodeStart(registryOps, (Block)block.value()).getOrThrow((msg) -> new AssertionError("Failed to serialize block " + id + " (is type registered in BlockTypes?): " + msg));
+            entry.add("definition", data);
+            root.add(id, entry);
          });
-         return DataProvider.saveStable(var1, var3, var2);
+         return DataProvider.saveStable(cache, root, path);
       });
    }
 

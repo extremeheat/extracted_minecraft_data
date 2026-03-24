@@ -11,24 +11,24 @@ public abstract class SinglePieceStructure extends Structure {
    private final int width;
    private final int depth;
 
-   protected SinglePieceStructure(PieceConstructor var1, int var2, int var3, Structure.StructureSettings var4) {
-      super(var4);
-      this.constructor = var1;
-      this.width = var2;
-      this.depth = var3;
+   protected SinglePieceStructure(final PieceConstructor constructor, final int width, final int depth, final Structure.StructureSettings settings) {
+      super(settings);
+      this.constructor = constructor;
+      this.width = width;
+      this.depth = depth;
    }
 
-   public Optional<Structure.GenerationStub> findGenerationPoint(Structure.GenerationContext var1) {
-      return getLowestY(var1, this.width, this.depth) < var1.chunkGenerator().getSeaLevel() ? Optional.empty() : onTopOfChunkCenter(var1, Heightmap.Types.WORLD_SURFACE_WG, (var2) -> this.generatePieces(var2, var1));
+   public Optional<Structure.GenerationStub> findGenerationPoint(final Structure.GenerationContext context) {
+      return getLowestY(context, this.width, this.depth) < context.chunkGenerator().getSeaLevel() ? Optional.empty() : onTopOfChunkCenter(context, Heightmap.Types.WORLD_SURFACE_WG, (builder) -> this.generatePieces(builder, context));
    }
 
-   private void generatePieces(StructurePiecesBuilder var1, Structure.GenerationContext var2) {
-      ChunkPos var3 = var2.chunkPos();
-      var1.addPiece(this.constructor.construct(var2.random(), var3.getMinBlockX(), var3.getMinBlockZ()));
+   private void generatePieces(final StructurePiecesBuilder builder, final Structure.GenerationContext context) {
+      ChunkPos chunkPos = context.chunkPos();
+      builder.addPiece(this.constructor.construct(context.random(), chunkPos.getMinBlockX(), chunkPos.getMinBlockZ()));
    }
 
    @FunctionalInterface
    protected interface PieceConstructor {
-      StructurePiece construct(WorldgenRandom var1, int var2, int var3);
+      StructurePiece construct(WorldgenRandom random, int x, int z);
    }
 }

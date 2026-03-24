@@ -12,29 +12,29 @@ public class ClientboundSetEntityLinkPacket implements Packet<ClientGamePacketLi
    private final int sourceId;
    private final int destId;
 
-   public ClientboundSetEntityLinkPacket(Entity var1, @Nullable Entity var2) {
+   public ClientboundSetEntityLinkPacket(final Entity sourceEntity, final @Nullable Entity destEntity) {
       super();
-      this.sourceId = var1.getId();
-      this.destId = var2 != null ? var2.getId() : 0;
+      this.sourceId = sourceEntity.getId();
+      this.destId = destEntity != null ? destEntity.getId() : 0;
    }
 
-   private ClientboundSetEntityLinkPacket(FriendlyByteBuf var1) {
+   private ClientboundSetEntityLinkPacket(final FriendlyByteBuf input) {
       super();
-      this.sourceId = var1.readInt();
-      this.destId = var1.readInt();
+      this.sourceId = input.readInt();
+      this.destId = input.readInt();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeInt(this.sourceId);
-      var1.writeInt(this.destId);
+   private void write(final FriendlyByteBuf output) {
+      output.writeInt(this.sourceId);
+      output.writeInt(this.destId);
    }
 
    public PacketType<ClientboundSetEntityLinkPacket> type() {
       return GamePacketTypes.CLIENTBOUND_SET_ENTITY_LINK;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleEntityLinkPacket(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleEntityLinkPacket(this);
    }
 
    public int getSourceId() {

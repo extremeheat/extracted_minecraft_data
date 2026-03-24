@@ -4,16 +4,16 @@ import java.util.function.Consumer;
 import net.minecraft.client.gui.components.AbstractWidget;
 
 public interface Layout extends LayoutElement {
-   void visitChildren(Consumer<LayoutElement> var1);
+   void visitChildren(Consumer<LayoutElement> layoutElementVisitor);
 
-   default void visitWidgets(Consumer<AbstractWidget> var1) {
-      this.visitChildren((var1x) -> var1x.visitWidgets(var1));
+   default void visitWidgets(final Consumer<AbstractWidget> widgetVisitor) {
+      this.visitChildren((child) -> child.visitWidgets(widgetVisitor));
    }
 
    default void arrangeElements() {
-      this.visitChildren((var0) -> {
-         if (var0 instanceof Layout var1) {
-            var1.arrangeElements();
+      this.visitChildren((child) -> {
+         if (child instanceof Layout layout) {
+            layout.arrangeElements();
          }
 
       });

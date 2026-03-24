@@ -11,19 +11,18 @@ import net.minecraft.world.item.component.CustomModelData;
 import org.jspecify.annotations.Nullable;
 
 public record CustomModelDataProperty(int index) implements RangeSelectItemModelProperty {
-   public static final MapCodec<CustomModelDataProperty> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("index", 0).forGetter(CustomModelDataProperty::index)).apply(var0, CustomModelDataProperty::new));
+   public static final MapCodec<CustomModelDataProperty> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("index", 0).forGetter(CustomModelDataProperty::index)).apply(i, CustomModelDataProperty::new));
 
-   public CustomModelDataProperty(int var1) {
+   public CustomModelDataProperty {
       super();
-      this.index = var1;
    }
 
-   public float get(ItemStack var1, @Nullable ClientLevel var2, @Nullable ItemOwner var3, int var4) {
-      CustomModelData var5 = (CustomModelData)var1.get(DataComponents.CUSTOM_MODEL_DATA);
-      if (var5 != null) {
-         Float var6 = var5.getFloat(this.index);
-         if (var6 != null) {
-            return var6;
+   public float get(final ItemStack itemStack, final @Nullable ClientLevel level, final @Nullable ItemOwner owner, final int seed) {
+      CustomModelData customModelData = (CustomModelData)itemStack.get(DataComponents.CUSTOM_MODEL_DATA);
+      if (customModelData != null) {
+         Float value = customModelData.getFloat(this.index);
+         if (value != null) {
+            return value;
          }
       }
 

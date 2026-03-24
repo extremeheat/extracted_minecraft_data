@@ -1,13 +1,14 @@
 package net.minecraft.world.entity.monster.piglin;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.mojang.datafixers.util.Pair;
+import java.util.List;
 import java.util.Optional;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.ActivityData;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.BehaviorUtils;
 import net.minecraft.world.entity.ai.behavior.DoNothing;
@@ -45,31 +46,25 @@ public class PiglinBruteAi {
       super();
    }
 
-   protected static Brain<?> makeBrain(PiglinBrute var0, Brain<PiglinBrute> var1) {
-      initCoreActivity(var0, var1);
-      initIdleActivity(var0, var1);
-      initFightActivity(var0, var1);
-      var1.setCoreActivities(ImmutableSet.of(Activity.CORE));
-      var1.setDefaultActivity(Activity.IDLE);
-      var1.useDefaultActivity();
-      return var1;
+   public static List<ActivityData<PiglinBrute>> getActivities(final PiglinBrute piglin) {
+      return List.of(initCoreActivity(), initIdleActivity(), initFightActivity(piglin));
    }
 
-   protected static void initMemories(PiglinBrute var0) {
-      GlobalPos var1 = GlobalPos.of(var0.level().dimension(), var0.blockPosition());
-      var0.getBrain().setMemory(MemoryModuleType.HOME, var1);
+   protected static void initMemories(final PiglinBrute body) {
+      GlobalPos currentGlobalPos = GlobalPos.of(body.level().dimension(), body.blockPosition());
+      body.getBrain().setMemory(MemoryModuleType.HOME, currentGlobalPos);
    }
 
-   private static void initCoreActivity(PiglinBrute var0, Brain<PiglinBrute> var1) {
-      var1.addActivity(Activity.CORE, 0, ImmutableList.of(new LookAtTargetSink(45, 90), new MoveToTargetSink(), InteractWithDoor.create(), StopBeingAngryIfTargetDead.create()));
+   private static ActivityData<PiglinBrute> initCoreActivity() {
+      return ActivityData.<PiglinBrute>create(Activity.CORE, 0, ImmutableList.of(new LookAtTargetSink(45, 90), new MoveToTargetSink(), InteractWithDoor.create(), StopBeingAngryIfTargetDead.create()));
    }
 
-   private static void initIdleActivity(PiglinBrute var0, Brain<PiglinBrute> var1) {
-      var1.addActivity(Activity.IDLE, 10, ImmutableList.of(StartAttacking.create(PiglinBruteAi::findNearestValidAttackTarget), createIdleLookBehaviors(), createIdleMovementBehaviors(), SetLookAndInteract.create(EntityType.PLAYER, 4)));
+   private static ActivityData<PiglinBrute> initIdleActivity() {
+      return ActivityData.<PiglinBrute>create(Activity.IDLE, 10, ImmutableList.of(StartAttacking.create(PiglinBruteAi::findNearestValidAttackTarget), createIdleLookBehaviors(), createIdleMovementBehaviors(), SetLookAndInteract.create(EntityType.PLAYER, 4)));
    }
 
-   private static void initFightActivity(PiglinBrute var0, Brain<PiglinBrute> var1) {
-      var1.addActivityAndRemoveMemoryWhenStopped(Activity.FIGHT, 10, ImmutableList.of(StopAttackingIfTargetInvalid.create((StopAttackingIfTargetInvalid.StopAttackCondition)((var1x, var2) -> !isNearestValidAttackTarget(var1x, var0, var2))), SetWalkTargetFromAttackTargetIfTargetOutOfReach.create(1.0F), MeleeAttack.create(20)), MemoryModuleType.ATTACK_TARGET);
+   private static ActivityData<PiglinBrute> initFightActivity(final PiglinBrute body) {
+      return ActivityData.create(Activity.FIGHT, 10, ImmutableList.of(StopAttackingIfTargetInvalid.create((StopAttackingIfTargetInvalid.StopAttackCondition)((level, target) -> !isNearestValidAttackTarget(level, body, target))), SetWalkTargetFromAttackTargetIfTargetOutOfReach.create(1.0F), MeleeAttack.create(20)), MemoryModuleType.ATTACK_TARGET);
    }
 
    private static RunOne<PiglinBrute> createIdleLookBehaviors() {
@@ -80,54 +75,54 @@ public class PiglinBruteAi {
       return new RunOne<PiglinBrute>(ImmutableList.of(Pair.of(RandomStroll.stroll(0.6F), 2), Pair.of(InteractWith.of(EntityType.PIGLIN, 8, MemoryModuleType.INTERACTION_TARGET, 0.6F, 2), 2), Pair.of(InteractWith.of(EntityType.PIGLIN_BRUTE, 8, MemoryModuleType.INTERACTION_TARGET, 0.6F, 2), 2), Pair.of(StrollToPoi.create(MemoryModuleType.HOME, 0.6F, 2, 100), 2), Pair.of(StrollAroundPoi.create(MemoryModuleType.HOME, 0.6F, 5), 2), Pair.of(new DoNothing(30, 60), 1)));
    }
 
-   protected static void updateActivity(PiglinBrute var0) {
-      Brain var1 = var0.getBrain();
-      Activity var2 = (Activity)var1.getActiveNonCoreActivity().orElse((Object)null);
-      var1.setActiveActivityToFirstValid(ImmutableList.of(Activity.FIGHT, Activity.IDLE));
-      Activity var3 = (Activity)var1.getActiveNonCoreActivity().orElse((Object)null);
-      if (var2 != var3) {
-         playActivitySound(var0);
+   protected static void updateActivity(final PiglinBrute body) {
+      Brain<PiglinBrute> brain = body.getBrain();
+      Activity oldActivity = (Activity)brain.getActiveNonCoreActivity().orElse((Object)null);
+      brain.setActiveActivityToFirstValid(ImmutableList.of(Activity.FIGHT, Activity.IDLE));
+      Activity newActivity = (Activity)brain.getActiveNonCoreActivity().orElse((Object)null);
+      if (oldActivity != newActivity) {
+         playActivitySound(body);
       }
 
-      var0.setAggressive(var1.hasMemoryValue(MemoryModuleType.ATTACK_TARGET));
+      body.setAggressive(brain.hasMemoryValue(MemoryModuleType.ATTACK_TARGET));
    }
 
-   private static boolean isNearestValidAttackTarget(ServerLevel var0, AbstractPiglin var1, LivingEntity var2) {
-      return findNearestValidAttackTarget(var0, var1).filter((var1x) -> var1x == var2).isPresent();
+   private static boolean isNearestValidAttackTarget(final ServerLevel level, final AbstractPiglin body, final LivingEntity target) {
+      return findNearestValidAttackTarget(level, body).filter((nearestValidTarget) -> nearestValidTarget == target).isPresent();
    }
 
-   private static Optional<? extends LivingEntity> findNearestValidAttackTarget(ServerLevel var0, AbstractPiglin var1) {
-      Optional var2 = BehaviorUtils.getLivingEntityFromUUIDMemory(var1, MemoryModuleType.ANGRY_AT);
-      if (var2.isPresent() && Sensor.isEntityAttackableIgnoringLineOfSight(var0, var1, (LivingEntity)var2.get())) {
-         return var2;
+   private static Optional<? extends LivingEntity> findNearestValidAttackTarget(final ServerLevel level, final AbstractPiglin body) {
+      Optional<LivingEntity> angryAt = BehaviorUtils.getLivingEntityFromUUIDMemory(body, MemoryModuleType.ANGRY_AT);
+      if (angryAt.isPresent() && Sensor.isEntityAttackableIgnoringLineOfSight(level, body, (LivingEntity)angryAt.get())) {
+         return angryAt;
       } else {
-         Optional var3 = var1.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER);
-         return var3.isPresent() ? var3 : var1.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_NEMESIS);
+         Optional<? extends LivingEntity> player = body.getBrain().<LivingEntity>getMemory(MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER);
+         return player.isPresent() ? player : body.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_NEMESIS);
       }
    }
 
-   protected static void wasHurtBy(ServerLevel var0, PiglinBrute var1, LivingEntity var2) {
-      if (!(var2 instanceof AbstractPiglin)) {
-         PiglinAi.maybeRetaliate(var0, var1, var2);
+   protected static void wasHurtBy(final ServerLevel level, final PiglinBrute body, final LivingEntity attacker) {
+      if (!(attacker instanceof AbstractPiglin)) {
+         PiglinAi.maybeRetaliate(level, body, attacker);
       }
    }
 
-   protected static void setAngerTarget(PiglinBrute var0, LivingEntity var1) {
-      var0.getBrain().eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
-      var0.getBrain().setMemoryWithExpiry(MemoryModuleType.ANGRY_AT, var1.getUUID(), 600L);
+   protected static void setAngerTarget(final PiglinBrute body, final LivingEntity target) {
+      body.getBrain().eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
+      body.getBrain().setMemoryWithExpiry(MemoryModuleType.ANGRY_AT, target.getUUID(), 600L);
    }
 
-   protected static void maybePlayActivitySound(PiglinBrute var0) {
-      if ((double)var0.level().random.nextFloat() < 0.0125) {
-         playActivitySound(var0);
+   protected static void maybePlayActivitySound(final PiglinBrute body) {
+      if ((double)body.level().getRandom().nextFloat() < 0.0125) {
+         playActivitySound(body);
       }
 
    }
 
-   private static void playActivitySound(PiglinBrute var0) {
-      var0.getBrain().getActiveNonCoreActivity().ifPresent((var1) -> {
-         if (var1 == Activity.FIGHT) {
-            var0.playAngrySound();
+   private static void playActivitySound(final PiglinBrute body) {
+      body.getBrain().getActiveNonCoreActivity().ifPresent((activity) -> {
+         if (activity == Activity.FIGHT) {
+            body.playAngrySound();
          }
 
       });

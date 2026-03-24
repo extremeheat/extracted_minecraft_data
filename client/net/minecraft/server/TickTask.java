@@ -4,10 +4,10 @@ public class TickTask implements Runnable {
    private final int tick;
    private final Runnable runnable;
 
-   public TickTask(int var1, Runnable var2) {
+   public TickTask(final int tick, final Runnable runnable) {
       super();
-      this.tick = var1;
-      this.runnable = var2;
+      this.tick = tick;
+      this.runnable = runnable;
    }
 
    public int getTick() {

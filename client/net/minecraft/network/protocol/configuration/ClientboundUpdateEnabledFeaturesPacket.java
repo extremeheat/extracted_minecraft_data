@@ -11,24 +11,23 @@ import net.minecraft.resources.Identifier;
 public record ClientboundUpdateEnabledFeaturesPacket(Set<Identifier> features) implements Packet<ClientConfigurationPacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundUpdateEnabledFeaturesPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundUpdateEnabledFeaturesPacket>codec(ClientboundUpdateEnabledFeaturesPacket::write, ClientboundUpdateEnabledFeaturesPacket::new);
 
-   private ClientboundUpdateEnabledFeaturesPacket(FriendlyByteBuf var1) {
-      this((Set)var1.readCollection(HashSet::new, FriendlyByteBuf::readIdentifier));
+   private ClientboundUpdateEnabledFeaturesPacket(final FriendlyByteBuf input) {
+      this((Set)input.readCollection(HashSet::new, FriendlyByteBuf::readIdentifier));
    }
 
-   public ClientboundUpdateEnabledFeaturesPacket(Set<Identifier> var1) {
+   public ClientboundUpdateEnabledFeaturesPacket {
       super();
-      this.features = var1;
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeCollection(this.features, FriendlyByteBuf::writeIdentifier);
+   private void write(final FriendlyByteBuf output) {
+      output.writeCollection(this.features, FriendlyByteBuf::writeIdentifier);
    }
 
    public PacketType<ClientboundUpdateEnabledFeaturesPacket> type() {
       return ConfigurationPacketTypes.CLIENTBOUND_UPDATE_ENABLED_FEATURES;
    }
 
-   public void handle(ClientConfigurationPacketListener var1) {
-      var1.handleEnabledFeatures(this);
+   public void handle(final ClientConfigurationPacketListener listener) {
+      listener.handleEnabledFeatures(this);
    }
 }

@@ -7,17 +7,17 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
 public class NoteParticle extends SingleQuadParticle {
-   NoteParticle(ClientLevel var1, double var2, double var4, double var6, double var8, TextureAtlasSprite var10) {
-      super(var1, var2, var4, var6, 0.0, 0.0, 0.0, var10);
+   private NoteParticle(final ClientLevel level, final double x, final double y, final double z, final double color, final TextureAtlasSprite sprite) {
+      super(level, x, y, z, 0.0, 0.0, 0.0, sprite);
       this.friction = 0.66F;
       this.speedUpWhenYMotionIsBlocked = true;
       this.xd *= 0.009999999776482582;
       this.yd *= 0.009999999776482582;
       this.zd *= 0.009999999776482582;
       this.yd += 0.2;
-      this.rCol = Math.max(0.0F, Mth.sin((double)(((float)var8 + 0.0F) * 6.2831855F)) * 0.65F + 0.35F);
-      this.gCol = Math.max(0.0F, Mth.sin((double)(((float)var8 + 0.33333334F) * 6.2831855F)) * 0.65F + 0.35F);
-      this.bCol = Math.max(0.0F, Mth.sin((double)(((float)var8 + 0.6666667F) * 6.2831855F)) * 0.65F + 0.35F);
+      this.rCol = Math.max(0.0F, Mth.sin((double)(((float)color + 0.0F) * 6.2831855F)) * 0.65F + 0.35F);
+      this.gCol = Math.max(0.0F, Mth.sin((double)(((float)color + 0.33333334F) * 6.2831855F)) * 0.65F + 0.35F);
+      this.bCol = Math.max(0.0F, Mth.sin((double)(((float)color + 0.6666667F) * 6.2831855F)) * 0.65F + 0.35F);
       this.quadSize *= 1.5F;
       this.lifetime = 6;
    }
@@ -26,21 +26,21 @@ public class NoteParticle extends SingleQuadParticle {
       return SingleQuadParticle.Layer.OPAQUE;
    }
 
-   public float getQuadSize(float var1) {
-      return this.quadSize * Mth.clamp(((float)this.age + var1) / (float)this.lifetime * 32.0F, 0.0F, 1.0F);
+   public float getQuadSize(final float a) {
+      return this.quadSize * Mth.clamp(((float)this.age + a) / (float)this.lifetime * 32.0F, 0.0F, 1.0F);
    }
 
    public static class Provider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
 
-      public Provider(SpriteSet var1) {
+      public Provider(final SpriteSet sprite) {
          super();
-         this.sprite = var1;
+         this.sprite = sprite;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         NoteParticle var16 = new NoteParticle(var2, var3, var5, var7, var9, this.sprite.get(var15));
-         return var16;
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         NoteParticle particle = new NoteParticle(level, x, y, z, xAux, this.sprite.get(random));
+         return particle;
       }
    }
 }

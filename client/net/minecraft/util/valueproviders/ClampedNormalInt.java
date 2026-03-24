@@ -7,43 +7,27 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
-public class ClampedNormalInt extends IntProvider {
-   public static final MapCodec<ClampedNormalInt> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.FLOAT.fieldOf("mean").forGetter((var0x) -> var0x.mean), Codec.FLOAT.fieldOf("deviation").forGetter((var0x) -> var0x.deviation), Codec.INT.fieldOf("min_inclusive").forGetter((var0x) -> var0x.minInclusive), Codec.INT.fieldOf("max_inclusive").forGetter((var0x) -> var0x.maxInclusive)).apply(var0, ClampedNormalInt::new)).validate((var0) -> var0.maxInclusive < var0.minInclusive ? DataResult.error(() -> "Max must be larger than min: [" + var0.minInclusive + ", " + var0.maxInclusive + "]") : DataResult.success(var0));
-   private final float mean;
-   private final float deviation;
-   private final int minInclusive;
-   private final int maxInclusive;
+public record ClampedNormalInt(float mean, float deviation, int minInclusive, int maxInclusive) implements IntProvider {
+   public static final MapCodec<ClampedNormalInt> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.FLOAT.fieldOf("mean").forGetter(ClampedNormalInt::mean), Codec.FLOAT.fieldOf("deviation").forGetter(ClampedNormalInt::deviation), Codec.INT.fieldOf("min_inclusive").forGetter(ClampedNormalInt::minInclusive), Codec.INT.fieldOf("max_inclusive").forGetter(ClampedNormalInt::maxInclusive)).apply(i, ClampedNormalInt::new)).validate((c) -> c.maxInclusive < c.minInclusive ? DataResult.error(() -> "Max must be larger than min: [" + c.minInclusive + ", " + c.maxInclusive + "]") : DataResult.success(c));
 
-   public static ClampedNormalInt of(float var0, float var1, int var2, int var3) {
-      return new ClampedNormalInt(var0, var1, var2, var3);
-   }
-
-   private ClampedNormalInt(float var1, float var2, int var3, int var4) {
+   public ClampedNormalInt {
       super();
-      this.mean = var1;
-      this.deviation = var2;
-      this.minInclusive = var3;
-      this.maxInclusive = var4;
    }
 
-   public int sample(RandomSource var1) {
-      return sample(var1, this.mean, this.deviation, (float)this.minInclusive, (float)this.maxInclusive);
+   public static ClampedNormalInt of(final float mean, final float deviation, final int minInclusive, final int maxInclusive) {
+      return new ClampedNormalInt(mean, deviation, minInclusive, maxInclusive);
    }
 
-   public static int sample(RandomSource var0, float var1, float var2, float var3, float var4) {
-      return (int)Mth.clamp(Mth.normal(var0, var1, var2), var3, var4);
+   public int sample(final RandomSource random) {
+      return sample(random, this.mean, this.deviation, (float)this.minInclusive, (float)this.maxInclusive);
    }
 
-   public int getMinValue() {
-      return this.minInclusive;
+   public static int sample(final RandomSource random, final float mean, final float deviation, final float minInclusive, final float maxInclusive) {
+      return (int)Mth.clamp(Mth.normal(random, mean, deviation), minInclusive, maxInclusive);
    }
 
-   public int getMaxValue() {
-      return this.maxInclusive;
-   }
-
-   public IntProviderType<?> getType() {
-      return IntProviderType.CLAMPED_NORMAL;
+   public MapCodec<ClampedNormalInt> codec() {
+      return MAP_CODEC;
    }
 
    public String toString() {

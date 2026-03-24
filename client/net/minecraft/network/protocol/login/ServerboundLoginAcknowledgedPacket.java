@@ -17,8 +17,8 @@ public class ServerboundLoginAcknowledgedPacket implements Packet<ServerLoginPac
       return LoginPacketTypes.SERVERBOUND_LOGIN_ACKNOWLEDGED;
    }
 
-   public void handle(ServerLoginPacketListener var1) {
-      var1.handleLoginAcknowledgement(this);
+   public void handle(final ServerLoginPacketListener listener) {
+      listener.handleLoginAcknowledgement(this);
    }
 
    public boolean isTerminal() {

@@ -4,10 +4,8 @@ import com.google.gson.annotations.SerializedName;
 import java.util.Locale;
 
 public record RegionPingResult(String regionName, int ping) implements ReflectionBasedSerialization {
-   public RegionPingResult(String var1, int var2) {
+   public RegionPingResult {
       super();
-      this.regionName = var1;
-      this.ping = var2;
    }
 
    public String toString() {

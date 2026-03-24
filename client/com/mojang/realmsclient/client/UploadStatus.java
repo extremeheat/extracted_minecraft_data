@@ -13,8 +13,8 @@ public class UploadStatus {
       super();
    }
 
-   public void setTotalBytes(long var1) {
-      this.totalBytes = var1;
+   public void setTotalBytes(final long totalBytes) {
+      this.totalBytes = totalBytes;
    }
 
    public void restart() {
@@ -32,8 +32,8 @@ public class UploadStatus {
       return this.bytesWritten;
    }
 
-   public void onWrite(long var1) {
-      this.bytesWritten = var1;
+   public void onWrite(final long bytesWritten) {
+      this.bytesWritten = bytesWritten;
    }
 
    public boolean uploadStarted() {
@@ -49,13 +49,13 @@ public class UploadStatus {
    }
 
    public void refreshBytesPerSecond() {
-      long var1 = Util.getMillis();
-      long var3 = var1 - this.previousTimeSnapshot;
-      if (var3 >= 1000L) {
-         long var5 = this.bytesWritten;
-         this.bytesPerSecond = 1000L * (var5 - this.previousBytesWritten) / var3;
-         this.previousBytesWritten = var5;
-         this.previousTimeSnapshot = var1;
+      long currentMillis = Util.getMillis();
+      long timeElapsed = currentMillis - this.previousTimeSnapshot;
+      if (timeElapsed >= 1000L) {
+         long bytesWritten = this.bytesWritten;
+         this.bytesPerSecond = 1000L * (bytesWritten - this.previousBytesWritten) / timeElapsed;
+         this.previousBytesWritten = bytesWritten;
+         this.previousTimeSnapshot = currentMillis;
       }
    }
 

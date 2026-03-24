@@ -11,22 +11,22 @@ public class IntersectionIterator<T> extends AbstractIterator<T> {
    private final PeekingIterator<T> secondIterator;
    private final Comparator<T> comparator;
 
-   public IntersectionIterator(Iterator<T> var1, Iterator<T> var2, Comparator<T> var3) {
+   public IntersectionIterator(final Iterator<T> firstIterator, final Iterator<T> secondIterator, final Comparator<T> comparator) {
       super();
-      this.firstIterator = Iterators.peekingIterator(var1);
-      this.secondIterator = Iterators.peekingIterator(var2);
-      this.comparator = var3;
+      this.firstIterator = Iterators.peekingIterator(firstIterator);
+      this.secondIterator = Iterators.peekingIterator(secondIterator);
+      this.comparator = comparator;
    }
 
    protected T computeNext() {
       while(this.firstIterator.hasNext() && this.secondIterator.hasNext()) {
-         int var1 = this.comparator.compare(this.firstIterator.peek(), this.secondIterator.peek());
-         if (var1 == 0) {
+         int compare = this.comparator.compare(this.firstIterator.peek(), this.secondIterator.peek());
+         if (compare == 0) {
             this.secondIterator.next();
             return (T)this.firstIterator.next();
          }
 
-         if (var1 < 0) {
+         if (compare < 0) {
             this.firstIterator.next();
          } else {
             this.secondIterator.next();

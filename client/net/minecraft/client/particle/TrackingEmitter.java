@@ -11,32 +11,32 @@ public class TrackingEmitter extends NoRenderParticle {
    private final int lifeTime;
    private final ParticleOptions particleType;
 
-   public TrackingEmitter(ClientLevel var1, Entity var2, ParticleOptions var3) {
-      this(var1, var2, var3, 3);
+   public TrackingEmitter(final ClientLevel level, final Entity entity, final ParticleOptions particleType) {
+      this(level, entity, particleType, 3);
    }
 
-   public TrackingEmitter(ClientLevel var1, Entity var2, ParticleOptions var3, int var4) {
-      this(var1, var2, var3, var4, var2.getDeltaMovement());
+   public TrackingEmitter(final ClientLevel level, final Entity entity, final ParticleOptions particleType, final int lifeTime) {
+      this(level, entity, particleType, lifeTime, entity.getDeltaMovement());
    }
 
-   private TrackingEmitter(ClientLevel var1, Entity var2, ParticleOptions var3, int var4, Vec3 var5) {
-      super(var1, var2.getX(), var2.getY(0.5), var2.getZ(), var5.x, var5.y, var5.z);
-      this.entity = var2;
-      this.lifeTime = var4;
-      this.particleType = var3;
+   private TrackingEmitter(final ClientLevel level, final Entity entity, final ParticleOptions particleType, final int lifeTime, final Vec3 movement) {
+      super(level, entity.getX(), entity.getY(0.5), entity.getZ(), movement.x, movement.y, movement.z);
+      this.entity = entity;
+      this.lifeTime = lifeTime;
+      this.particleType = particleType;
       this.tick();
    }
 
    public void tick() {
-      for(int var1 = 0; var1 < 16; ++var1) {
-         double var2 = (double)(this.random.nextFloat() * 2.0F - 1.0F);
-         double var4 = (double)(this.random.nextFloat() * 2.0F - 1.0F);
-         double var6 = (double)(this.random.nextFloat() * 2.0F - 1.0F);
-         if (!(var2 * var2 + var4 * var4 + var6 * var6 > 1.0)) {
-            double var8 = this.entity.getX(var2 / 4.0);
-            double var10 = this.entity.getY(0.5 + var4 / 4.0);
-            double var12 = this.entity.getZ(var6 / 4.0);
-            this.level.addParticle(this.particleType, var8, var10, var12, var2, var4 + 0.2, var6);
+      for(int i = 0; i < 16; ++i) {
+         double xa = (double)(this.random.nextFloat() * 2.0F - 1.0F);
+         double ya = (double)(this.random.nextFloat() * 2.0F - 1.0F);
+         double za = (double)(this.random.nextFloat() * 2.0F - 1.0F);
+         if (!(xa * xa + ya * ya + za * za > 1.0)) {
+            double x = this.entity.getX(xa / 4.0);
+            double y = this.entity.getY(0.5 + ya / 4.0);
+            double z = this.entity.getZ(za / 4.0);
+            this.level.addParticle(this.particleType, x, y, z, xa, ya + 0.2, za);
          }
       }
 

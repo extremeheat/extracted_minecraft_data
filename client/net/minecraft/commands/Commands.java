@@ -17,6 +17,7 @@ import com.mojang.brigadier.tree.RootCommandNode;
 import com.mojang.logging.LogUtils;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -121,6 +122,7 @@ import net.minecraft.server.commands.StopCommand;
 import net.minecraft.server.commands.StopSoundCommand;
 import net.minecraft.server.commands.StopwatchCommand;
 import net.minecraft.server.commands.SummonCommand;
+import net.minecraft.server.commands.SwingCommand;
 import net.minecraft.server.commands.TagCommand;
 import net.minecraft.server.commands.TeamCommand;
 import net.minecraft.server.commands.TeamMsgCommand;
@@ -170,41 +172,42 @@ public class Commands {
    private static final ClientboundCommandsPacket.NodeInspector<CommandSourceStack> COMMAND_NODE_INSPECTOR;
    private final CommandDispatcher<CommandSourceStack> dispatcher = new CommandDispatcher();
 
-   public Commands(CommandSelection var1, CommandBuildContext var2) {
+   public Commands(final CommandSelection commandSelection, final CommandBuildContext context) {
       super();
       AdvancementCommands.register(this.dispatcher);
-      AttributeCommand.register(this.dispatcher, var2);
-      ExecuteCommand.register(this.dispatcher, var2);
-      BossBarCommands.register(this.dispatcher, var2);
-      ClearInventoryCommands.register(this.dispatcher, var2);
-      CloneCommands.register(this.dispatcher, var2);
-      DamageCommand.register(this.dispatcher, var2);
+      AttributeCommand.register(this.dispatcher, context);
+      ExecuteCommand.register(this.dispatcher, context);
+      BossBarCommands.register(this.dispatcher, context);
+      ClearInventoryCommands.register(this.dispatcher, context);
+      CloneCommands.register(this.dispatcher, context);
+      DamageCommand.register(this.dispatcher, context);
       DataCommands.register(this.dispatcher);
-      DataPackCommand.register(this.dispatcher, var2);
+      DataPackCommand.register(this.dispatcher, context);
       DebugCommand.register(this.dispatcher);
       DefaultGameModeCommands.register(this.dispatcher);
-      DialogCommand.register(this.dispatcher, var2);
+      DialogCommand.register(this.dispatcher, context);
       DifficultyCommand.register(this.dispatcher);
-      EffectCommands.register(this.dispatcher, var2);
+      EffectCommands.register(this.dispatcher, context);
       EmoteCommands.register(this.dispatcher);
-      EnchantCommand.register(this.dispatcher, var2);
+      EnchantCommand.register(this.dispatcher, context);
       ExperienceCommand.register(this.dispatcher);
-      FillCommand.register(this.dispatcher, var2);
-      FillBiomeCommand.register(this.dispatcher, var2);
+      FillCommand.register(this.dispatcher, context);
+      FillBiomeCommand.register(this.dispatcher, context);
       ForceLoadCommand.register(this.dispatcher);
       FunctionCommand.register(this.dispatcher);
       GameModeCommand.register(this.dispatcher);
-      GameRuleCommand.register(this.dispatcher, var2);
-      GiveCommand.register(this.dispatcher, var2);
+      GameRuleCommand.register(this.dispatcher, context);
+      GiveCommand.register(this.dispatcher, context);
       HelpCommand.register(this.dispatcher);
-      ItemCommands.register(this.dispatcher, var2);
+      ItemCommands.register(this.dispatcher, context);
       KickCommand.register(this.dispatcher);
       KillCommand.register(this.dispatcher);
       ListPlayersCommand.register(this.dispatcher);
-      LocateCommand.register(this.dispatcher, var2);
-      LootCommand.register(this.dispatcher, var2);
+      LocateCommand.register(this.dispatcher, context);
+      LootCommand.register(this.dispatcher, context);
       MsgCommand.register(this.dispatcher);
-      ParticleCommand.register(this.dispatcher, var2);
+      SwingCommand.register(this.dispatcher);
+      ParticleCommand.register(this.dispatcher, context);
       PlaceCommand.register(this.dispatcher);
       PlaySoundCommand.register(this.dispatcher);
       RandomCommand.register(this.dispatcher);
@@ -216,28 +219,28 @@ public class Commands {
       RotateCommand.register(this.dispatcher);
       SayCommand.register(this.dispatcher);
       ScheduleCommand.register(this.dispatcher);
-      ScoreboardCommand.register(this.dispatcher, var2);
-      SeedCommand.register(this.dispatcher, var1 != Commands.CommandSelection.INTEGRATED);
-      VersionCommand.register(this.dispatcher, var1 != Commands.CommandSelection.INTEGRATED);
-      SetBlockCommand.register(this.dispatcher, var2);
+      ScoreboardCommand.register(this.dispatcher, context);
+      SeedCommand.register(this.dispatcher, commandSelection != Commands.CommandSelection.INTEGRATED);
+      VersionCommand.register(this.dispatcher, commandSelection != Commands.CommandSelection.INTEGRATED);
+      SetBlockCommand.register(this.dispatcher, context);
       SetSpawnCommand.register(this.dispatcher);
       SetWorldSpawnCommand.register(this.dispatcher);
       SpectateCommand.register(this.dispatcher);
       SpreadPlayersCommand.register(this.dispatcher);
       StopSoundCommand.register(this.dispatcher);
       StopwatchCommand.register(this.dispatcher);
-      SummonCommand.register(this.dispatcher, var2);
+      SummonCommand.register(this.dispatcher, context);
       TagCommand.register(this.dispatcher);
-      TeamCommand.register(this.dispatcher, var2);
+      TeamCommand.register(this.dispatcher, context);
       TeamMsgCommand.register(this.dispatcher);
       TeleportCommand.register(this.dispatcher);
-      TellRawCommand.register(this.dispatcher, var2);
-      TestCommand.register(this.dispatcher, var2);
+      TellRawCommand.register(this.dispatcher, context);
+      TestCommand.register(this.dispatcher, context);
       TickCommand.register(this.dispatcher);
-      TimeCommand.register(this.dispatcher);
-      TitleCommand.register(this.dispatcher, var2);
+      TimeCommand.register(this.dispatcher, context);
+      TitleCommand.register(this.dispatcher, context);
       TriggerCommand.register(this.dispatcher);
-      WaypointCommand.register(this.dispatcher, var2);
+      WaypointCommand.register(this.dispatcher, context);
       WeatherCommand.register(this.dispatcher);
       WorldBorderCommand.register(this.dispatcher);
       if (JvmProfiler.INSTANCE.isAvailable()) {
@@ -249,18 +252,18 @@ public class Commands {
       }
 
       if (SharedConstants.DEBUG_DEV_COMMANDS || SharedConstants.IS_RUNNING_IN_IDE) {
-         RaidCommand.register(this.dispatcher, var2);
+         RaidCommand.register(this.dispatcher, context);
          DebugPathCommand.register(this.dispatcher);
          DebugMobSpawningCommand.register(this.dispatcher);
          WardenSpawnTrackerCommand.register(this.dispatcher);
          SpawnArmorTrimsCommand.register(this.dispatcher);
          ServerPackCommand.register(this.dispatcher);
-         if (var1.includeDedicated) {
-            DebugConfigCommand.register(this.dispatcher, var2);
+         if (commandSelection.includeDedicated) {
+            DebugConfigCommand.register(this.dispatcher, context);
          }
       }
 
-      if (var1.includeDedicated) {
+      if (commandSelection.includeDedicated) {
          BanIpCommands.register(this.dispatcher);
          BanListCommands.register(this.dispatcher);
          BanPlayerCommands.register(this.dispatcher);
@@ -278,52 +281,52 @@ public class Commands {
          WhitelistCommand.register(this.dispatcher);
       }
 
-      if (var1.includeIntegrated) {
+      if (commandSelection.includeIntegrated) {
          PublishCommand.register(this.dispatcher);
       }
 
       this.dispatcher.setConsumer(ExecutionCommandSource.resultConsumer());
    }
 
-   public static <S> ParseResults<S> mapSource(ParseResults<S> var0, UnaryOperator<S> var1) {
-      CommandContextBuilder var2 = var0.getContext();
-      CommandContextBuilder var3 = var2.withSource(var1.apply(var2.getSource()));
-      return new ParseResults(var3, var0.getReader(), var0.getExceptions());
+   public static <S> ParseResults<S> mapSource(final ParseResults<S> parse, final UnaryOperator<S> sourceOperator) {
+      CommandContextBuilder<S> context = parse.getContext();
+      CommandContextBuilder<S> source = context.withSource(sourceOperator.apply(context.getSource()));
+      return new ParseResults(source, parse.getReader(), parse.getExceptions());
    }
 
-   public void performPrefixedCommand(CommandSourceStack var1, String var2) {
-      var2 = trimOptionalPrefix(var2);
-      this.performCommand(this.dispatcher.parse(var2, var1), var2);
+   public void performPrefixedCommand(final CommandSourceStack sender, String command) {
+      command = trimOptionalPrefix(command);
+      this.performCommand(this.dispatcher.parse(command, sender), command);
    }
 
-   public static String trimOptionalPrefix(String var0) {
-      return var0.startsWith("/") ? var0.substring(1) : var0;
+   public static String trimOptionalPrefix(final String command) {
+      return command.startsWith("/") ? command.substring(1) : command;
    }
 
-   public void performCommand(ParseResults<CommandSourceStack> var1, String var2) {
-      CommandSourceStack var3 = (CommandSourceStack)var1.getContext().getSource();
-      Profiler.get().push((Supplier)(() -> "/" + var2));
-      ContextChain var4 = finishParsing(var1, var2, var3);
+   public void performCommand(final ParseResults<CommandSourceStack> command, final String commandString) {
+      CommandSourceStack sender = (CommandSourceStack)command.getContext().getSource();
+      Profiler.get().push((Supplier)(() -> "/" + commandString));
+      ContextChain<CommandSourceStack> commandChain = finishParsing(command, commandString, sender);
 
       try {
-         if (var4 != null) {
-            executeCommandInContext(var3, (var3x) -> ExecutionContext.queueInitialCommandExecution(var3x, var2, var4, var3, CommandResultCallback.EMPTY));
+         if (commandChain != null) {
+            executeCommandInContext(sender, (executionContext) -> ExecutionContext.queueInitialCommandExecution(executionContext, commandString, commandChain, sender, CommandResultCallback.EMPTY));
          }
       } catch (Exception var12) {
-         MutableComponent var6 = Component.literal(var12.getMessage() == null ? var12.getClass().getName() : var12.getMessage());
+         MutableComponent hover = Component.literal(var12.getMessage() == null ? var12.getClass().getName() : var12.getMessage());
          if (LOGGER.isDebugEnabled()) {
-            LOGGER.error("Command exception: /{}", var2, var12);
-            StackTraceElement[] var7 = var12.getStackTrace();
+            LOGGER.error("Command exception: /{}", commandString, var12);
+            StackTraceElement[] stackTrace = var12.getStackTrace();
 
-            for(int var8 = 0; var8 < Math.min(var7.length, 3); ++var8) {
-               var6.append("\n\n").append(var7[var8].getMethodName()).append("\n ").append(var7[var8].getFileName()).append(":").append(String.valueOf(var7[var8].getLineNumber()));
+            for(int i = 0; i < Math.min(stackTrace.length, 3); ++i) {
+               hover.append("\n\n").append(stackTrace[i].getMethodName()).append("\n ").append(stackTrace[i].getFileName()).append(":").append(String.valueOf(stackTrace[i].getLineNumber()));
             }
          }
 
-         var3.sendFailure(Component.translatable("command.failed").withStyle((UnaryOperator)((var1x) -> var1x.withHoverEvent(new HoverEvent.ShowText(var6)))));
+         sender.sendFailure(Component.translatable("command.failed").withStyle((UnaryOperator)((s) -> s.withHoverEvent(new HoverEvent.ShowText(hover)))));
          if (SharedConstants.DEBUG_VERBOSE_COMMAND_ERRORS || SharedConstants.IS_RUNNING_IN_IDE) {
-            var3.sendFailure(Component.literal(Util.describeError(var12)));
-            LOGGER.error("'/{}' threw an exception", var2, var12);
+            sender.sendFailure(Component.literal(Util.describeError(var12)));
+            LOGGER.error("'/{}' threw an exception", commandString, var12);
          }
       } finally {
          Profiler.get().pop();
@@ -331,51 +334,51 @@ public class Commands {
 
    }
 
-   private static @Nullable ContextChain<CommandSourceStack> finishParsing(ParseResults<CommandSourceStack> var0, String var1, CommandSourceStack var2) {
+   private static @Nullable ContextChain<CommandSourceStack> finishParsing(final ParseResults<CommandSourceStack> command, final String commandString, final CommandSourceStack sender) {
       try {
-         validateParseResults(var0);
-         return (ContextChain)ContextChain.tryFlatten(var0.getContext().build(var1)).orElseThrow(() -> CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownCommand().createWithContext(var0.getReader()));
-      } catch (CommandSyntaxException var7) {
-         var2.sendFailure(ComponentUtils.fromMessage(var7.getRawMessage()));
-         if (var7.getInput() != null && var7.getCursor() >= 0) {
-            int var4 = Math.min(var7.getInput().length(), var7.getCursor());
-            MutableComponent var5 = Component.empty().withStyle(ChatFormatting.GRAY).withStyle((UnaryOperator)((var1x) -> var1x.withClickEvent(new ClickEvent.SuggestCommand("/" + var1))));
-            if (var4 > 10) {
-               var5.append(CommonComponents.ELLIPSIS);
+         validateParseResults(command);
+         return (ContextChain)ContextChain.tryFlatten(command.getContext().build(commandString)).orElseThrow(() -> CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownCommand().createWithContext(command.getReader()));
+      } catch (CommandSyntaxException e) {
+         sender.sendFailure(ComponentUtils.fromMessage(e.getRawMessage()));
+         if (e.getInput() != null && e.getCursor() >= 0) {
+            int cursor = Math.min(e.getInput().length(), e.getCursor());
+            MutableComponent context = Component.empty().withStyle(ChatFormatting.GRAY).withStyle((UnaryOperator)((s) -> s.withClickEvent(new ClickEvent.SuggestCommand("/" + commandString))));
+            if (cursor > 10) {
+               context.append(CommonComponents.ELLIPSIS);
             }
 
-            var5.append(var7.getInput().substring(Math.max(0, var4 - 10), var4));
-            if (var4 < var7.getInput().length()) {
-               MutableComponent var6 = Component.literal(var7.getInput().substring(var4)).withStyle(ChatFormatting.RED, ChatFormatting.UNDERLINE);
-               var5.append((Component)var6);
+            context.append(e.getInput().substring(Math.max(0, cursor - 10), cursor));
+            if (cursor < e.getInput().length()) {
+               Component remaining = Component.literal(e.getInput().substring(cursor)).withStyle(ChatFormatting.RED, ChatFormatting.UNDERLINE);
+               context.append(remaining);
             }
 
-            var5.append((Component)Component.translatable("command.context.here").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC));
-            var2.sendFailure(var5);
+            context.append((Component)Component.translatable("command.context.here").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC));
+            sender.sendFailure(context);
          }
 
          return null;
       }
    }
 
-   public static void executeCommandInContext(CommandSourceStack var0, Consumer<ExecutionContext<CommandSourceStack>> var1) {
-      ExecutionContext var2 = (ExecutionContext)CURRENT_EXECUTION_CONTEXT.get();
-      boolean var3 = var2 == null;
-      if (var3) {
-         GameRules var4 = var0.getLevel().getGameRules();
-         int var5 = Math.max(1, (Integer)var4.get(GameRules.MAX_COMMAND_SEQUENCE_LENGTH));
-         int var6 = (Integer)var4.get(GameRules.MAX_COMMAND_FORKS);
+   public static void executeCommandInContext(final CommandSourceStack context, final Consumer<ExecutionContext<CommandSourceStack>> config) {
+      ExecutionContext<CommandSourceStack> currentContext = (ExecutionContext)CURRENT_EXECUTION_CONTEXT.get();
+      boolean isTopContext = currentContext == null;
+      if (isTopContext) {
+         GameRules gameRules = context.getLevel().getGameRules();
+         int chainLimit = Math.max(1, (Integer)gameRules.get(GameRules.MAX_COMMAND_SEQUENCE_LENGTH));
+         int forkLimit = (Integer)gameRules.get(GameRules.MAX_COMMAND_FORKS);
 
          try {
-            ExecutionContext var7 = new ExecutionContext(var5, var6, Profiler.get());
+            ExecutionContext<CommandSourceStack> executionContext = new ExecutionContext<CommandSourceStack>(chainLimit, forkLimit, Profiler.get());
 
             try {
-               CURRENT_EXECUTION_CONTEXT.set(var7);
-               var1.accept(var7);
-               var7.runCommandQueue();
+               CURRENT_EXECUTION_CONTEXT.set(executionContext);
+               config.accept(executionContext);
+               executionContext.runCommandQueue();
             } catch (Throwable var15) {
                try {
-                  var7.close();
+                  executionContext.close();
                } catch (Throwable var14) {
                   var15.addSuppressed(var14);
                }
@@ -383,55 +386,55 @@ public class Commands {
                throw var15;
             }
 
-            var7.close();
+            executionContext.close();
          } finally {
             CURRENT_EXECUTION_CONTEXT.set((Object)null);
          }
       } else {
-         var1.accept(var2);
+         config.accept(currentContext);
       }
 
    }
 
-   public void sendCommands(ServerPlayer var1) {
-      HashMap var2 = new HashMap();
-      RootCommandNode var3 = new RootCommandNode();
-      var2.put(this.dispatcher.getRoot(), var3);
-      fillUsableCommands(this.dispatcher.getRoot(), var3, var1.createCommandSourceStack(), var2);
-      var1.connection.send(new ClientboundCommandsPacket(var3, COMMAND_NODE_INSPECTOR));
+   public void sendCommands(final ServerPlayer player) {
+      Map<CommandNode<CommandSourceStack>, CommandNode<CommandSourceStack>> playerCommands = new HashMap();
+      RootCommandNode<CommandSourceStack> root = new RootCommandNode();
+      playerCommands.put(this.dispatcher.getRoot(), root);
+      fillUsableCommands(this.dispatcher.getRoot(), root, player.createCommandSourceStack(), playerCommands);
+      player.connection.send(new ClientboundCommandsPacket(root, COMMAND_NODE_INSPECTOR));
    }
 
-   private static <S> void fillUsableCommands(CommandNode<S> var0, CommandNode<S> var1, S var2, Map<CommandNode<S>, CommandNode<S>> var3) {
-      for(CommandNode var5 : var0.getChildren()) {
-         if (var5.canUse(var2)) {
-            ArgumentBuilder var6 = var5.createBuilder();
-            if (var6.getRedirect() != null) {
-               var6.redirect((CommandNode)var3.get(var6.getRedirect()));
+   private static <S> void fillUsableCommands(final CommandNode<S> source, final CommandNode<S> target, final S commandFilter, final Map<CommandNode<S>, CommandNode<S>> converted) {
+      for(CommandNode<S> child : source.getChildren()) {
+         if (child.canUse(commandFilter)) {
+            ArgumentBuilder<S, ?> builder = child.createBuilder();
+            if (builder.getRedirect() != null) {
+               builder.redirect((CommandNode)converted.get(builder.getRedirect()));
             }
 
-            CommandNode var7 = var6.build();
-            var3.put(var5, var7);
-            var1.addChild(var7);
-            if (!var5.getChildren().isEmpty()) {
-               fillUsableCommands(var5, var7, var2, var3);
+            CommandNode<S> node = builder.build();
+            converted.put(child, node);
+            target.addChild(node);
+            if (!child.getChildren().isEmpty()) {
+               fillUsableCommands(child, node, commandFilter, converted);
             }
          }
       }
 
    }
 
-   public static LiteralArgumentBuilder<CommandSourceStack> literal(String var0) {
-      return LiteralArgumentBuilder.literal(var0);
+   public static LiteralArgumentBuilder<CommandSourceStack> literal(final String literal) {
+      return LiteralArgumentBuilder.literal(literal);
    }
 
-   public static <T> RequiredArgumentBuilder<CommandSourceStack, T> argument(String var0, ArgumentType<T> var1) {
-      return RequiredArgumentBuilder.argument(var0, var1);
+   public static <T> RequiredArgumentBuilder<CommandSourceStack, T> argument(final String name, final ArgumentType<T> type) {
+      return RequiredArgumentBuilder.argument(name, type);
    }
 
-   public static Predicate<String> createValidator(ParseFunction var0) {
-      return (var1) -> {
+   public static Predicate<String> createValidator(final ParseFunction parser) {
+      return (value) -> {
          try {
-            var0.parse(new StringReader(var1));
+            parser.parse(new StringReader(value));
             return true;
          } catch (CommandSyntaxException var3) {
             return false;
@@ -443,50 +446,54 @@ public class Commands {
       return this.dispatcher;
    }
 
-   public static <S> void validateParseResults(ParseResults<S> var0) throws CommandSyntaxException {
-      CommandSyntaxException var1 = getParseException(var0);
-      if (var1 != null) {
-         throw var1;
+   public static <S> void validateParseResults(final ParseResults<S> command) throws CommandSyntaxException {
+      CommandSyntaxException parseException = getParseException(command);
+      if (parseException != null) {
+         throw parseException;
       }
    }
 
-   public static <S> @Nullable CommandSyntaxException getParseException(ParseResults<S> var0) {
-      if (!var0.getReader().canRead()) {
+   public static <S> @Nullable CommandSyntaxException getParseException(final ParseResults<S> parse) {
+      if (!parse.getReader().canRead()) {
          return null;
-      } else if (var0.getExceptions().size() == 1) {
-         return (CommandSyntaxException)var0.getExceptions().values().iterator().next();
+      } else if (parse.getExceptions().size() == 1) {
+         return (CommandSyntaxException)parse.getExceptions().values().iterator().next();
       } else {
-         return var0.getContext().getRange().isEmpty() ? CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownCommand().createWithContext(var0.getReader()) : CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownArgument().createWithContext(var0.getReader());
+         return parse.getContext().getRange().isEmpty() ? CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownCommand().createWithContext(parse.getReader()) : CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownArgument().createWithContext(parse.getReader());
       }
    }
 
-   public static CommandBuildContext createValidationContext(final HolderLookup.Provider var0) {
+   public static CommandBuildContext createValidationContext(final HolderLookup.Provider registries) {
       return new CommandBuildContext() {
          public FeatureFlagSet enabledFeatures() {
             return FeatureFlags.REGISTRY.allFlags();
          }
 
          public Stream<ResourceKey<? extends Registry<?>>> listRegistryKeys() {
-            return var0.listRegistryKeys();
+            return registries.listRegistryKeys();
          }
 
-         public <T> Optional<HolderLookup.RegistryLookup<T>> lookup(ResourceKey<? extends Registry<? extends T>> var1) {
-            return var0.lookup(var1).map(this::createLookup);
+         public <T> Optional<HolderLookup.RegistryLookup<T>> lookup(final ResourceKey<? extends Registry<? extends T>> key) {
+            return registries.lookup(key).map(this::createLookup);
          }
 
-         private <T> HolderLookup.RegistryLookup.Delegate<T> createLookup(final HolderLookup.RegistryLookup<T> var1) {
+         private <T> HolderLookup.RegistryLookup.Delegate<T> createLookup(final HolderLookup.RegistryLookup<T> original) {
             return new HolderLookup.RegistryLookup.Delegate<T>() {
+               {
+                  Objects.requireNonNull(<VAR_NAMELESS_ENCLOSURE>);
+               }
+
                public HolderLookup.RegistryLookup<T> parent() {
-                  return var1;
+                  return original;
                }
 
-               public Optional<HolderSet.Named<T>> get(TagKey<T> var1x) {
-                  return Optional.of(this.getOrThrow(var1x));
+               public Optional<HolderSet.Named<T>> get(final TagKey<T> id) {
+                  return Optional.of(this.getOrThrow(id));
                }
 
-               public HolderSet.Named<T> getOrThrow(TagKey<T> var1x) {
-                  Optional var2 = this.parent().get(var1x);
-                  return (HolderSet.Named)var2.orElseGet(() -> HolderSet.emptyNamed(this.parent(), var1x));
+               public HolderSet.Named<T> getOrThrow(final TagKey<T> id) {
+                  Optional<HolderSet.Named<T>> tag = this.parent().get(id);
+                  return (HolderSet.Named)tag.orElseGet(() -> HolderSet.emptyNamed(this.parent(), id));
                }
             };
          }
@@ -494,24 +501,24 @@ public class Commands {
    }
 
    public static void validate() {
-      CommandBuildContext var0 = createValidationContext(VanillaRegistries.createLookup());
-      CommandDispatcher var1 = (new Commands(Commands.CommandSelection.ALL, var0)).getDispatcher();
-      RootCommandNode var2 = var1.getRoot();
-      var1.findAmbiguities((var1x, var2x, var3x, var4x) -> LOGGER.warn("Ambiguity between arguments {} and {} with inputs: {}", new Object[]{var1.getPath(var2x), var1.getPath(var3x), var4x}));
-      Set var3 = ArgumentUtils.findUsedArgumentTypes(var2);
-      Set var4 = (Set)var3.stream().filter((var0x) -> !ArgumentTypeInfos.isClassRecognized(var0x.getClass())).collect(Collectors.toSet());
-      if (!var4.isEmpty()) {
-         LOGGER.warn("Missing type registration for following arguments:\n {}", var4.stream().map((var0x) -> "\t" + String.valueOf(var0x)).collect(Collectors.joining(",\n")));
+      CommandBuildContext context = createValidationContext(VanillaRegistries.createLookup());
+      CommandDispatcher<CommandSourceStack> dispatcher = (new Commands(Commands.CommandSelection.ALL, context)).getDispatcher();
+      RootCommandNode<CommandSourceStack> root = dispatcher.getRoot();
+      dispatcher.findAmbiguities((parent, child, sibling, ambiguities) -> LOGGER.warn("Ambiguity between arguments {} and {} with inputs: {}", new Object[]{dispatcher.getPath(child), dispatcher.getPath(sibling), ambiguities}));
+      Set<ArgumentType<?>> usedArgumentTypes = ArgumentUtils.findUsedArgumentTypes(root);
+      Set<ArgumentType<?>> unregisteredTypes = (Set)usedArgumentTypes.stream().filter((arg) -> !ArgumentTypeInfos.isClassRecognized(arg.getClass())).collect(Collectors.toSet());
+      if (!unregisteredTypes.isEmpty()) {
+         LOGGER.warn("Missing type registration for following arguments:\n {}", unregisteredTypes.stream().map((arg) -> "\t" + String.valueOf(arg)).collect(Collectors.joining(",\n")));
          throw new IllegalStateException("Unregistered argument types");
       }
    }
 
-   public static <T extends PermissionSetSupplier> PermissionProviderCheck<T> hasPermission(PermissionCheck var0) {
-      return new PermissionProviderCheck<T>(var0);
+   public static <T extends PermissionSetSupplier> PermissionProviderCheck<T> hasPermission(final PermissionCheck permission) {
+      return new PermissionProviderCheck<T>(permission);
    }
 
-   public static CommandSourceStack createCompilationContext(PermissionSet var0) {
-      return new CommandSourceStack(CommandSource.NULL, Vec3.ZERO, Vec2.ZERO, (ServerLevel)null, var0, "", CommonComponents.EMPTY, (MinecraftServer)null, (Entity)null);
+   public static CommandSourceStack createCompilationContext(final PermissionSet compilationPermissions) {
+      return new CommandSourceStack(CommandSource.NULL, Vec3.ZERO, Vec2.ZERO, (ServerLevel)null, compilationPermissions, "", CommonComponents.EMPTY, (MinecraftServer)null, (Entity)null);
    }
 
    static {
@@ -527,18 +534,18 @@ public class Commands {
             this.noPermissionSource = Commands.createCompilationContext(PermissionSet.NO_PERMISSIONS);
          }
 
-         public @Nullable Identifier suggestionId(ArgumentCommandNode<CommandSourceStack, ?> var1) {
-            SuggestionProvider var2 = var1.getCustomSuggestions();
-            return var2 != null ? SuggestionProviders.getName(var2) : null;
+         public @Nullable Identifier suggestionId(final ArgumentCommandNode<CommandSourceStack, ?> node) {
+            SuggestionProvider<CommandSourceStack> suggestionProvider = node.getCustomSuggestions();
+            return suggestionProvider != null ? SuggestionProviders.getName(suggestionProvider) : null;
          }
 
-         public boolean isExecutable(CommandNode<CommandSourceStack> var1) {
-            return var1.getCommand() != null;
+         public boolean isExecutable(final CommandNode<CommandSourceStack> node) {
+            return node.getCommand() != null;
          }
 
-         public boolean isRestricted(CommandNode<CommandSourceStack> var1) {
-            Predicate var2 = var1.getRequirement();
-            return !var2.test(this.noPermissionSource);
+         public boolean isRestricted(final CommandNode<CommandSourceStack> node) {
+            Predicate<CommandSourceStack> requirement = node.getRequirement();
+            return !requirement.test(this.noPermissionSource);
          }
       };
    }
@@ -548,12 +555,12 @@ public class Commands {
       DEDICATED(false, true),
       INTEGRATED(true, false);
 
-      final boolean includeIntegrated;
-      final boolean includeDedicated;
+      private final boolean includeIntegrated;
+      private final boolean includeDedicated;
 
-      private CommandSelection(final boolean var3, final boolean var4) {
-         this.includeIntegrated = var3;
-         this.includeDedicated = var4;
+      private CommandSelection(final boolean includeIntegrated, final boolean includeDedicated) {
+         this.includeIntegrated = includeIntegrated;
+         this.includeDedicated = includeDedicated;
       }
 
       // $FF: synthetic method
@@ -564,6 +571,6 @@ public class Commands {
 
    @FunctionalInterface
    public interface ParseFunction {
-      void parse(StringReader var1) throws CommandSyntaxException;
+      void parse(StringReader value) throws CommandSyntaxException;
    }
 }

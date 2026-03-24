@@ -11,20 +11,20 @@ import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
-import com.mojang.datafixers.types.templates.List;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectIterator;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -46,86 +46,86 @@ public class LeavesFix extends DataFix {
    private static final int DECAY_DISTANCE = 7;
    private static final int SIZE_BITS = 12;
    private static final int SIZE = 4096;
-   static final Object2IntMap<String> LEAVES = (Object2IntMap)DataFixUtils.make(new Object2IntOpenHashMap(), (var0) -> {
-      var0.put("minecraft:acacia_leaves", 0);
-      var0.put("minecraft:birch_leaves", 1);
-      var0.put("minecraft:dark_oak_leaves", 2);
-      var0.put("minecraft:jungle_leaves", 3);
-      var0.put("minecraft:oak_leaves", 4);
-      var0.put("minecraft:spruce_leaves", 5);
+   private static final Object2IntMap<String> LEAVES = (Object2IntMap)DataFixUtils.make(new Object2IntOpenHashMap(), (map) -> {
+      map.put("minecraft:acacia_leaves", 0);
+      map.put("minecraft:birch_leaves", 1);
+      map.put("minecraft:dark_oak_leaves", 2);
+      map.put("minecraft:jungle_leaves", 3);
+      map.put("minecraft:oak_leaves", 4);
+      map.put("minecraft:spruce_leaves", 5);
    });
-   static final Set<String> LOGS = ImmutableSet.of("minecraft:acacia_bark", "minecraft:birch_bark", "minecraft:dark_oak_bark", "minecraft:jungle_bark", "minecraft:oak_bark", "minecraft:spruce_bark", new String[]{"minecraft:acacia_log", "minecraft:birch_log", "minecraft:dark_oak_log", "minecraft:jungle_log", "minecraft:oak_log", "minecraft:spruce_log", "minecraft:stripped_acacia_log", "minecraft:stripped_birch_log", "minecraft:stripped_dark_oak_log", "minecraft:stripped_jungle_log", "minecraft:stripped_oak_log", "minecraft:stripped_spruce_log"});
+   private static final Set<String> LOGS = ImmutableSet.of("minecraft:acacia_bark", "minecraft:birch_bark", "minecraft:dark_oak_bark", "minecraft:jungle_bark", "minecraft:oak_bark", "minecraft:spruce_bark", new String[]{"minecraft:acacia_log", "minecraft:birch_log", "minecraft:dark_oak_log", "minecraft:jungle_log", "minecraft:oak_log", "minecraft:spruce_log", "minecraft:stripped_acacia_log", "minecraft:stripped_birch_log", "minecraft:stripped_dark_oak_log", "minecraft:stripped_jungle_log", "minecraft:stripped_oak_log", "minecraft:stripped_spruce_log"});
 
-   public LeavesFix(Schema var1, boolean var2) {
-      super(var1, var2);
+   public LeavesFix(final Schema outputSchema, final boolean changesType) {
+      super(outputSchema, changesType);
    }
 
    protected TypeRewriteRule makeRule() {
-      Type var1 = this.getInputSchema().getType(References.CHUNK);
-      OpticFinder var2 = var1.findField("Level");
-      OpticFinder var3 = var2.type().findField("Sections");
-      Type var4 = var3.type();
-      if (!(var4 instanceof List.ListType)) {
+      Type<?> chunkType = this.getInputSchema().getType(References.CHUNK);
+      OpticFinder<?> levelFinder = chunkType.findField("Level");
+      OpticFinder<?> sectionsFinder = levelFinder.type().findField("Sections");
+      Type<?> sectionsType = sectionsFinder.type();
+      if (!(sectionsType instanceof com.mojang.datafixers.types.templates.List.ListType)) {
          throw new IllegalStateException("Expecting sections to be a list.");
       } else {
-         Type var5 = ((List.ListType)var4).getElement();
-         OpticFinder var6 = DSL.typeFinder(var5);
-         return this.fixTypeEverywhereTyped("Leaves fix", var1, (var4x) -> var4x.updateTyped(var2, (var3x) -> {
-               int[] var4 = new int[]{0};
-               Typed var5 = var3x.updateTyped(var3, (var3xx) -> {
-                  Int2ObjectOpenHashMap var4x = new Int2ObjectOpenHashMap((Map)var3xx.getAllTyped(var6).stream().map((var1) -> new LeavesSection(var1, this.getInputSchema())).collect(Collectors.toMap(Section::getIndex, (var0) -> var0)));
-                  if (var4x.values().stream().allMatch(Section::isSkippable)) {
-                     return var3xx;
+         Type<?> sectionType = ((com.mojang.datafixers.types.templates.List.ListType)sectionsType).getElement();
+         OpticFinder<?> sectionFinder = DSL.typeFinder(sectionType);
+         return this.fixTypeEverywhereTyped("Leaves fix", chunkType, (chunk) -> chunk.updateTyped(levelFinder, (level) -> {
+               int[] sides = new int[]{0};
+               Typed<?> newLevel = level.updateTyped(sectionsFinder, (sections) -> {
+                  Int2ObjectMap<LeavesSection> sectionMap = new Int2ObjectOpenHashMap((Map)sections.getAllTyped(sectionFinder).stream().map((sectionxx) -> new LeavesSection(sectionxx, this.getInputSchema())).collect(Collectors.toMap(Section::getIndex, (s) -> s)));
+                  if (sectionMap.values().stream().allMatch(Section::isSkippable)) {
+                     return sections;
                   } else {
-                     ArrayList var5 = Lists.newArrayList();
+                     List<IntSet> queue = Lists.newArrayList();
 
-                     for(int var6x = 0; var6x < 7; ++var6x) {
-                        var5.add(new IntOpenHashSet());
+                     for(int i = 0; i < 7; ++i) {
+                        queue.add(new IntOpenHashSet());
                      }
 
-                     ObjectIterator var25 = var4x.values().iterator();
+                     Iterator i$ = sectionMap.values().iterator();
 
-                     while(var25.hasNext()) {
-                        LeavesSection var7 = (LeavesSection)var25.next();
-                        if (!var7.isSkippable()) {
-                           for(int var8 = 0; var8 < 4096; ++var8) {
-                              int var9 = var7.getBlock(var8);
-                              if (var7.isLog(var9)) {
-                                 ((IntSet)var5.get(0)).add(var7.getIndex() << 12 | var8);
-                              } else if (var7.isLeaf(var9)) {
-                                 int var10 = this.getX(var8);
-                                 int var11 = this.getZ(var8);
-                                 var4[0] |= getSideMask(var10 == 0, var10 == 15, var11 == 0, var11 == 15);
+                     while(i$.hasNext()) {
+                        LeavesSection section = (LeavesSection)i$.next();
+                        if (!section.isSkippable()) {
+                           for(int i = 0; i < 4096; ++i) {
+                              int block = section.getBlock(i);
+                              if (section.isLog(block)) {
+                                 ((IntSet)queue.get(0)).add(section.getIndex() << 12 | i);
+                              } else if (section.isLeaf(block)) {
+                                 int x = this.getX(i);
+                                 int z = this.getZ(i);
+                                 sides[0] |= getSideMask(x == 0, x == 15, z == 0, z == 15);
                               }
                            }
                         }
                      }
 
-                     for(int var26 = 1; var26 < 7; ++var26) {
-                        IntSet var27 = (IntSet)var5.get(var26 - 1);
-                        IntSet var28 = (IntSet)var5.get(var26);
-                        IntIterator var29 = var27.iterator();
+                     for(int i = 1; i < 7; ++i) {
+                        IntSet set = (IntSet)queue.get(i - 1);
+                        IntSet newSet = (IntSet)queue.get(i);
+                        IntIterator iterator = set.iterator();
 
-                        while(var29.hasNext()) {
-                           int var30 = var29.nextInt();
-                           int var31 = this.getX(var30);
-                           int var12 = this.getY(var30);
-                           int var13 = this.getZ(var30);
+                        while(iterator.hasNext()) {
+                           int posChunk = iterator.nextInt();
+                           int x = this.getX(posChunk);
+                           int y = this.getY(posChunk);
+                           int z = this.getZ(posChunk);
 
-                           for(int[] var17 : DIRECTIONS) {
-                              int var18 = var31 + var17[0];
-                              int var19 = var12 + var17[1];
-                              int var20 = var13 + var17[2];
-                              if (var18 >= 0 && var18 <= 15 && var20 >= 0 && var20 <= 15 && var19 >= 0 && var19 <= 255) {
-                                 LeavesSection var21 = (LeavesSection)var4x.get(var19 >> 4);
-                                 if (var21 != null && !var21.isSkippable()) {
-                                    int var22 = getIndex(var18, var19 & 15, var20);
-                                    int var23 = var21.getBlock(var22);
-                                    if (var21.isLeaf(var23)) {
-                                       int var24 = var21.getDistance(var23);
-                                       if (var24 > var26) {
-                                          var21.setDistance(var22, var23, var26);
-                                          var28.add(getIndex(var18, var19, var20));
+                           for(int[] direction : DIRECTIONS) {
+                              int nx = x + direction[0];
+                              int nyChunk = y + direction[1];
+                              int nz = z + direction[2];
+                              if (nx >= 0 && nx <= 15 && nz >= 0 && nz <= 15 && nyChunk >= 0 && nyChunk <= 255) {
+                                 LeavesSection section = (LeavesSection)sectionMap.get(nyChunk >> 4);
+                                 if (section != null && !section.isSkippable()) {
+                                    int posSection = getIndex(nx, nyChunk & 15, nz);
+                                    int block = section.getBlock(posSection);
+                                    if (section.isLeaf(block)) {
+                                       int oldDistance = section.getDistance(block);
+                                       if (oldDistance > i) {
+                                          section.setDistance(posSection, block, i);
+                                          newSet.add(getIndex(nx, nyChunk, nz));
                                        }
                                     }
                                  }
@@ -134,62 +134,62 @@ public class LeavesFix extends DataFix {
                         }
                      }
 
-                     return var3xx.updateTyped(var6, (var1) -> ((LeavesSection)var4x.get(((Dynamic)var1.get(DSL.remainderFinder())).get("Y").asInt(0))).write(var1));
+                     return sections.updateTyped(sectionFinder, (sectionxx) -> ((LeavesSection)sectionMap.get(((Dynamic)sectionxx.get(DSL.remainderFinder())).get("Y").asInt(0))).write(sectionxx));
                   }
                });
-               if (var4[0] != 0) {
-                  var5 = var5.update(DSL.remainderFinder(), (var1) -> {
-                     Dynamic var2 = (Dynamic)DataFixUtils.orElse(var1.get("UpgradeData").result(), var1.emptyMap());
-                     return var1.set("UpgradeData", var2.set("Sides", var1.createByte((byte)(var2.get("Sides").asByte((byte)0) | var4[0]))));
+               if (sides[0] != 0) {
+                  newLevel = newLevel.update(DSL.remainderFinder(), (tag) -> {
+                     Dynamic<?> upgradeData = (Dynamic)DataFixUtils.orElse(tag.get("UpgradeData").result(), tag.emptyMap());
+                     return tag.set("UpgradeData", upgradeData.set("Sides", tag.createByte((byte)(upgradeData.get("Sides").asByte((byte)0) | sides[0]))));
                   });
                }
 
-               return var5;
+               return newLevel;
             }));
       }
    }
 
-   public static int getIndex(int var0, int var1, int var2) {
-      return var1 << 8 | var2 << 4 | var0;
+   public static int getIndex(final int x, final int y, final int z) {
+      return y << 8 | z << 4 | x;
    }
 
-   private int getX(int var1) {
-      return var1 & 15;
+   private int getX(final int index) {
+      return index & 15;
    }
 
-   private int getY(int var1) {
-      return var1 >> 8 & 255;
+   private int getY(final int index) {
+      return index >> 8 & 255;
    }
 
-   private int getZ(int var1) {
-      return var1 >> 4 & 15;
+   private int getZ(final int index) {
+      return index >> 4 & 15;
    }
 
-   public static int getSideMask(boolean var0, boolean var1, boolean var2, boolean var3) {
-      int var4 = 0;
-      if (var2) {
-         if (var1) {
-            var4 |= 2;
-         } else if (var0) {
-            var4 |= 128;
+   public static int getSideMask(final boolean west, final boolean east, final boolean north, final boolean south) {
+      int s = 0;
+      if (north) {
+         if (east) {
+            s |= 2;
+         } else if (west) {
+            s |= 128;
          } else {
-            var4 |= 1;
+            s |= 1;
          }
-      } else if (var3) {
-         if (var0) {
-            var4 |= 32;
-         } else if (var1) {
-            var4 |= 8;
+      } else if (south) {
+         if (west) {
+            s |= 32;
+         } else if (east) {
+            s |= 8;
          } else {
-            var4 |= 16;
+            s |= 16;
          }
-      } else if (var1) {
-         var4 |= 4;
-      } else if (var0) {
-         var4 |= 64;
+      } else if (east) {
+         s |= 4;
+      } else if (west) {
+         s |= 64;
       }
 
-      return var4;
+      return s;
    }
 
    public abstract static class Section {
@@ -197,51 +197,51 @@ public class LeavesFix extends DataFix {
       protected static final String NAME_TAG = "Name";
       protected static final String PROPERTIES_TAG = "Properties";
       private final Type<Pair<String, Dynamic<?>>> blockStateType;
-      protected final OpticFinder<java.util.List<Pair<String, Dynamic<?>>>> paletteFinder;
-      protected final java.util.List<Dynamic<?>> palette;
+      protected final OpticFinder<List<Pair<String, Dynamic<?>>>> paletteFinder;
+      protected final List<Dynamic<?>> palette;
       protected final int index;
       protected @Nullable PackedBitStorage storage;
 
-      public Section(Typed<?> var1, Schema var2) {
+      public Section(final Typed<?> section, final Schema inputSchema) {
          super();
          this.blockStateType = DSL.named(References.BLOCK_STATE.typeName(), DSL.remainderType());
          this.paletteFinder = DSL.fieldFinder("Palette", DSL.list(this.blockStateType));
-         if (!Objects.equals(var2.getType(References.BLOCK_STATE), this.blockStateType)) {
+         if (!Objects.equals(inputSchema.getType(References.BLOCK_STATE), this.blockStateType)) {
             throw new IllegalStateException("Block state type is not what was expected.");
          } else {
-            Optional var3 = var1.getOptional(this.paletteFinder);
-            this.palette = (java.util.List)var3.map((var0) -> (java.util.List)var0.stream().map(Pair::getSecond).collect(Collectors.toList())).orElse(ImmutableList.of());
-            Dynamic var4 = (Dynamic)var1.get(DSL.remainderFinder());
-            this.index = var4.get("Y").asInt(0);
-            this.readStorage(var4);
+            Optional<List<Pair<String, Dynamic<?>>>> typedPalette = section.getOptional(this.paletteFinder);
+            this.palette = (List)typedPalette.map((p) -> (List)p.stream().map(Pair::getSecond).collect(Collectors.toList())).orElse(ImmutableList.of());
+            Dynamic<?> tag = (Dynamic)section.get(DSL.remainderFinder());
+            this.index = tag.get("Y").asInt(0);
+            this.readStorage(tag);
          }
       }
 
-      protected void readStorage(Dynamic<?> var1) {
+      protected void readStorage(final Dynamic<?> tag) {
          if (this.skippable()) {
             this.storage = null;
          } else {
-            long[] var2 = var1.get("BlockStates").asLongStream().toArray();
-            int var3 = Math.max(4, DataFixUtils.ceillog2(this.palette.size()));
-            this.storage = new PackedBitStorage(var3, 4096, var2);
+            long[] states = tag.get("BlockStates").asLongStream().toArray();
+            int size = Math.max(4, DataFixUtils.ceillog2(this.palette.size()));
+            this.storage = new PackedBitStorage(size, 4096, states);
          }
 
       }
 
-      public Typed<?> write(Typed<?> var1) {
-         return this.isSkippable() ? var1 : var1.update(DSL.remainderFinder(), (var1x) -> var1x.set("BlockStates", var1x.createLongList(Arrays.stream(this.storage.getRaw())))).set(this.paletteFinder, (java.util.List)this.palette.stream().map((var0) -> Pair.of(References.BLOCK_STATE.typeName(), var0)).collect(Collectors.toList()));
+      public Typed<?> write(final Typed<?> section) {
+         return this.isSkippable() ? section : section.update(DSL.remainderFinder(), (tag) -> tag.set("BlockStates", tag.createLongList(Arrays.stream(this.storage.getRaw())))).set(this.paletteFinder, (List)this.palette.stream().map((b) -> Pair.of(References.BLOCK_STATE.typeName(), b)).collect(Collectors.toList()));
       }
 
       public boolean isSkippable() {
          return this.storage == null;
       }
 
-      public int getBlock(int var1) {
-         return this.storage.get(var1);
+      public int getBlock(final int pos) {
+         return this.storage.get(pos);
       }
 
-      protected int getStateId(String var1, boolean var2, int var3) {
-         return LeavesFix.LEAVES.get(var1) << 5 | (var2 ? 16 : 0) | var3;
+      protected int getStateId(final String blockName, final boolean persistent, final int distance) {
+         return LeavesFix.LEAVES.get(blockName) << 5 | (persistent ? 16 : 0) | distance;
       }
 
       int getIndex() {
@@ -259,8 +259,8 @@ public class LeavesFix extends DataFix {
       private @Nullable IntSet logIds;
       private @Nullable Int2IntMap stateToIdMap;
 
-      public LeavesSection(Typed<?> var1, Schema var2) {
-         super(var1, var2);
+      public LeavesSection(final Typed<?> section, final Schema inputSchema) {
+         super(section, inputSchema);
       }
 
       protected boolean skippable() {
@@ -268,70 +268,70 @@ public class LeavesFix extends DataFix {
          this.logIds = new IntOpenHashSet();
          this.stateToIdMap = new Int2IntOpenHashMap();
 
-         for(int var1 = 0; var1 < this.palette.size(); ++var1) {
-            Dynamic var2 = (Dynamic)this.palette.get(var1);
-            String var3 = var2.get("Name").asString("");
-            if (LeavesFix.LEAVES.containsKey(var3)) {
-               boolean var4 = Objects.equals(var2.get("Properties").get("decayable").asString(""), "false");
-               this.leaveIds.add(var1);
-               this.stateToIdMap.put(this.getStateId(var3, var4, 7), var1);
-               this.palette.set(var1, this.makeLeafTag(var2, var3, var4, 7));
+         for(int i = 0; i < this.palette.size(); ++i) {
+            Dynamic<?> paletteTag = (Dynamic)this.palette.get(i);
+            String blockName = paletteTag.get("Name").asString("");
+            if (LeavesFix.LEAVES.containsKey(blockName)) {
+               boolean persistent = Objects.equals(paletteTag.get("Properties").get("decayable").asString(""), "false");
+               this.leaveIds.add(i);
+               this.stateToIdMap.put(this.getStateId(blockName, persistent, 7), i);
+               this.palette.set(i, this.makeLeafTag(paletteTag, blockName, persistent, 7));
             }
 
-            if (LeavesFix.LOGS.contains(var3)) {
-               this.logIds.add(var1);
+            if (LeavesFix.LOGS.contains(blockName)) {
+               this.logIds.add(i);
             }
          }
 
          return this.leaveIds.isEmpty() && this.logIds.isEmpty();
       }
 
-      private Dynamic<?> makeLeafTag(Dynamic<?> var1, String var2, boolean var3, int var4) {
-         Dynamic var5 = var1.emptyMap();
-         var5 = var5.set("persistent", var5.createString(var3 ? "true" : "false"));
-         var5 = var5.set("distance", var5.createString(Integer.toString(var4)));
-         Dynamic var6 = var1.emptyMap();
-         var6 = var6.set("Properties", var5);
-         var6 = var6.set("Name", var6.createString(var2));
-         return var6;
+      private Dynamic<?> makeLeafTag(final Dynamic<?> input, final String blockName, final boolean persistent, final int distance) {
+         Dynamic<?> properties = input.emptyMap();
+         properties = properties.set("persistent", properties.createString(persistent ? "true" : "false"));
+         properties = properties.set("distance", properties.createString(Integer.toString(distance)));
+         Dynamic<?> tag = input.emptyMap();
+         tag = tag.set("Properties", properties);
+         tag = tag.set("Name", tag.createString(blockName));
+         return tag;
       }
 
-      public boolean isLog(int var1) {
-         return this.logIds.contains(var1);
+      public boolean isLog(final int block) {
+         return this.logIds.contains(block);
       }
 
-      public boolean isLeaf(int var1) {
-         return this.leaveIds.contains(var1);
+      public boolean isLeaf(final int block) {
+         return this.leaveIds.contains(block);
       }
 
-      int getDistance(int var1) {
-         return this.isLog(var1) ? 0 : Integer.parseInt(((Dynamic)this.palette.get(var1)).get("Properties").get("distance").asString(""));
+      private int getDistance(final int block) {
+         return this.isLog(block) ? 0 : Integer.parseInt(((Dynamic)this.palette.get(block)).get("Properties").get("distance").asString(""));
       }
 
-      void setDistance(int var1, int var2, int var3) {
-         Dynamic var4 = (Dynamic)this.palette.get(var2);
-         String var5 = var4.get("Name").asString("");
-         boolean var6 = Objects.equals(var4.get("Properties").get("persistent").asString(""), "true");
-         int var7 = this.getStateId(var5, var6, var3);
-         if (!this.stateToIdMap.containsKey(var7)) {
-            int var8 = this.palette.size();
-            this.leaveIds.add(var8);
-            this.stateToIdMap.put(var7, var8);
-            this.palette.add(this.makeLeafTag(var4, var5, var6, var3));
+      private void setDistance(final int pos, final int block, final int distance) {
+         Dynamic<?> baseTag = (Dynamic)this.palette.get(block);
+         String blockName = baseTag.get("Name").asString("");
+         boolean persistent = Objects.equals(baseTag.get("Properties").get("persistent").asString(""), "true");
+         int stateId = this.getStateId(blockName, persistent, distance);
+         if (!this.stateToIdMap.containsKey(stateId)) {
+            int id = this.palette.size();
+            this.leaveIds.add(id);
+            this.stateToIdMap.put(stateId, id);
+            this.palette.add(this.makeLeafTag(baseTag, blockName, persistent, distance));
          }
 
-         int var11 = this.stateToIdMap.get(var7);
-         if (1 << this.storage.getBits() <= var11) {
-            PackedBitStorage var9 = new PackedBitStorage(this.storage.getBits() + 1, 4096);
+         int id = this.stateToIdMap.get(stateId);
+         if (1 << this.storage.getBits() <= id) {
+            PackedBitStorage newStorage = new PackedBitStorage(this.storage.getBits() + 1, 4096);
 
-            for(int var10 = 0; var10 < 4096; ++var10) {
-               var9.set(var10, this.storage.get(var10));
+            for(int i = 0; i < 4096; ++i) {
+               newStorage.set(i, this.storage.get(i));
             }
 
-            this.storage = var9;
+            this.storage = newStorage;
          }
 
-         this.storage.set(var1, var11);
+         this.storage.set(pos, id);
       }
    }
 }

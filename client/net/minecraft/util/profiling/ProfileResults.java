@@ -6,9 +6,9 @@ import java.util.List;
 public interface ProfileResults {
    char PATH_SEPARATOR = '\u001e';
 
-   List<ResultField> getTimes(String var1);
+   List<ResultField> getTimes(String path);
 
-   boolean saveResults(Path var1);
+   boolean saveResults(Path file);
 
    long getStartTimeNano();
 
@@ -28,7 +28,7 @@ public interface ProfileResults {
 
    String getProfilerResults();
 
-   static String demanglePath(String var0) {
-      return var0.replace('\u001e', '.');
+   static String demanglePath(final String path) {
+      return path.replace('\u001e', '.');
    }
 }

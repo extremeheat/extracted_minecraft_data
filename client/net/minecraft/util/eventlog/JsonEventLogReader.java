@@ -14,27 +14,27 @@ import java.io.Reader;
 import org.jspecify.annotations.Nullable;
 
 public interface JsonEventLogReader<T> extends Closeable {
-   static <T> JsonEventLogReader<T> create(final Codec<T> var0, Reader var1) {
-      final JsonReader var2 = new JsonReader(var1);
-      var2.setStrictness(Strictness.LENIENT);
+   static <T> JsonEventLogReader<T> create(final Codec<T> codec, final Reader reader) {
+      final JsonReader jsonReader = new JsonReader(reader);
+      jsonReader.setStrictness(Strictness.LENIENT);
       return new JsonEventLogReader<T>() {
          public @Nullable T next() throws IOException {
             try {
-               if (!var2.hasNext()) {
+               if (!jsonReader.hasNext()) {
                   return null;
                } else {
-                  JsonElement var1 = JsonParser.parseReader(var2);
-                  return (T)var0.parse(JsonOps.INSTANCE, var1).getOrThrow(IOException::new);
+                  JsonElement json = JsonParser.parseReader(jsonReader);
+                  return (T)codec.parse(JsonOps.INSTANCE, json).getOrThrow(IOException::new);
                }
-            } catch (JsonParseException var2x) {
-               throw new IOException(var2x);
+            } catch (JsonParseException e) {
+               throw new IOException(e);
             } catch (EOFException var3) {
                return null;
             }
          }
 
          public void close() throws IOException {
-            var2.close();
+            jsonReader.close();
          }
       };
    }

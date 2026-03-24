@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.monster.skeleton;
 
+import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -55,6 +56,10 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
    protected static final int INCREASED_NORMAL_ATTACK_INTERVAL = 70;
    private final RangedBowAttackGoal<AbstractSkeleton> bowGoal = new RangedBowAttackGoal<AbstractSkeleton>(this, 1.0, 20, 15.0F);
    private final MeleeAttackGoal meleeGoal = new MeleeAttackGoal(this, 1.2, false) {
+      {
+         Objects.requireNonNull(AbstractSkeleton.this);
+      }
+
       public void stop() {
          super.stop();
          AbstractSkeleton.this.setAggressive(false);
@@ -66,8 +71,8 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
       }
    };
 
-   protected AbstractSkeleton(EntityType<? extends AbstractSkeleton> var1, Level var2) {
-      super(var1, var2);
+   protected AbstractSkeleton(final EntityType<? extends AbstractSkeleton> type, final Level level) {
+      super(type, level);
       this.reassessWeaponGoal();
    }
 
@@ -88,7 +93,7 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
       return Monster.createMonsterAttributes().add(Attributes.MOVEMENT_SPEED, 0.25);
    }
 
-   protected void playStepSound(BlockPos var1, BlockState var2) {
+   protected void playStepSound(final BlockPos pos, final BlockState blockState) {
       this.playSound(this.getStepSound(), 0.15F, 1.0F);
    }
 
@@ -97,44 +102,44 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
    public void rideTick() {
       super.rideTick();
       Entity var2 = this.getControlledVehicle();
-      if (var2 instanceof PathfinderMob var1) {
-         this.yBodyRot = var1.yBodyRot;
+      if (var2 instanceof PathfinderMob entity) {
+         this.yBodyRot = entity.yBodyRot;
       }
 
    }
 
-   protected void populateDefaultEquipmentSlots(RandomSource var1, DifficultyInstance var2) {
-      super.populateDefaultEquipmentSlots(var1, var2);
+   protected void populateDefaultEquipmentSlots(final RandomSource random, final DifficultyInstance difficulty) {
+      super.populateDefaultEquipmentSlots(random, difficulty);
       this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.BOW));
    }
 
-   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      var4 = super.finalizeSpawn(var1, var2, var3, var4);
-      RandomSource var5 = var1.getRandom();
-      this.populateDefaultEquipmentSlots(var5, var2);
-      this.populateDefaultEquipmentEnchantments(var1, var5, var2);
+   public @Nullable SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, @Nullable SpawnGroupData groupData) {
+      groupData = super.finalizeSpawn(level, difficulty, spawnReason, groupData);
+      RandomSource random = level.getRandom();
+      this.populateDefaultEquipmentSlots(random, difficulty);
+      this.populateDefaultEquipmentEnchantments(level, random, difficulty);
       this.reassessWeaponGoal();
-      this.setCanPickUpLoot(var5.nextFloat() < 0.55F * var2.getSpecialMultiplier());
-      if (this.getItemBySlot(EquipmentSlot.HEAD).isEmpty() && SpecialDates.isHalloween() && var5.nextFloat() < 0.25F) {
-         this.setItemSlot(EquipmentSlot.HEAD, new ItemStack(var5.nextFloat() < 0.1F ? Blocks.JACK_O_LANTERN : Blocks.CARVED_PUMPKIN));
+      this.setCanPickUpLoot(random.nextFloat() < 0.55F * difficulty.getSpecialMultiplier());
+      if (this.getItemBySlot(EquipmentSlot.HEAD).isEmpty() && SpecialDates.isHalloween() && random.nextFloat() < 0.25F) {
+         this.setItemSlot(EquipmentSlot.HEAD, new ItemStack(random.nextFloat() < 0.1F ? Blocks.JACK_O_LANTERN : Blocks.CARVED_PUMPKIN));
          this.setDropChance(EquipmentSlot.HEAD, 0.0F);
       }
 
-      return var4;
+      return groupData;
    }
 
    public void reassessWeaponGoal() {
       if (this.level() != null && !this.level().isClientSide()) {
          this.goalSelector.removeGoal(this.meleeGoal);
          this.goalSelector.removeGoal(this.bowGoal);
-         ItemStack var1 = this.getItemInHand(ProjectileUtil.getWeaponHoldingHand(this, Items.BOW));
-         if (var1.is(Items.BOW)) {
-            int var2 = this.getHardAttackInterval();
+         ItemStack usedWeapon = this.getItemInHand(ProjectileUtil.getWeaponHoldingHand(this, Items.BOW));
+         if (usedWeapon.is(Items.BOW)) {
+            int minAttackInterval = this.getHardAttackInterval();
             if (this.level().getDifficulty() != Difficulty.HARD) {
-               var2 = this.getAttackInterval();
+               minAttackInterval = this.getAttackInterval();
             }
 
-            this.bowGoal.setMinAttackInterval(var2);
+            this.bowGoal.setMinAttackInterval(minAttackInterval);
             this.goalSelector.addGoal(4, this.bowGoal);
          } else {
             this.goalSelector.addGoal(4, this.meleeGoal);
@@ -151,41 +156,41 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
       return 40;
    }
 
-   public void performRangedAttack(LivingEntity var1, float var2) {
-      ItemStack var3 = this.getItemInHand(ProjectileUtil.getWeaponHoldingHand(this, Items.BOW));
-      ItemStack var4 = this.getProjectile(var3);
-      AbstractArrow var5 = this.getArrow(var4, var2, var3);
-      double var6 = var1.getX() - this.getX();
-      double var8 = var1.getY(0.3333333333333333) - var5.getY();
-      double var10 = var1.getZ() - this.getZ();
-      double var12 = Math.sqrt(var6 * var6 + var10 * var10);
+   public void performRangedAttack(final LivingEntity target, final float power) {
+      ItemStack bowItem = this.getItemInHand(ProjectileUtil.getWeaponHoldingHand(this, Items.BOW));
+      ItemStack projectile = this.getProjectile(bowItem);
+      AbstractArrow arrow = this.getArrow(projectile, power, bowItem);
+      double xd = target.getX() - this.getX();
+      double yd = target.getY(0.3333333333333333) - arrow.getY();
+      double zd = target.getZ() - this.getZ();
+      double distanceToTarget = Math.sqrt(xd * xd + zd * zd);
       Level var15 = this.level();
-      if (var15 instanceof ServerLevel var14) {
-         Projectile.spawnProjectileUsingShoot(var5, var14, var4, var6, var8 + var12 * 0.20000000298023224, var10, 1.6F, (float)(14 - var14.getDifficulty().getId() * 4));
+      if (var15 instanceof ServerLevel serverLevel) {
+         Projectile.spawnProjectileUsingShoot(arrow, serverLevel, projectile, xd, yd + distanceToTarget * 0.20000000298023224, zd, 1.6F, (float)(14 - serverLevel.getDifficulty().getId() * 4));
       }
 
       this.playSound(SoundEvents.SKELETON_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
    }
 
-   protected AbstractArrow getArrow(ItemStack var1, float var2, @Nullable ItemStack var3) {
-      return ProjectileUtil.getMobArrow(this, var1, var2, var3);
+   protected AbstractArrow getArrow(final ItemStack projectile, final float power, final @Nullable ItemStack firingWeapon) {
+      return ProjectileUtil.getMobArrow(this, projectile, power, firingWeapon);
    }
 
-   public boolean canUseNonMeleeWeapon(ItemStack var1) {
-      return var1.getItem() == Items.BOW;
+   public boolean canUseNonMeleeWeapon(final ItemStack item) {
+      return item.getItem() == Items.BOW;
    }
 
    public TagKey<Item> getPreferredWeaponType() {
       return ItemTags.SKELETON_PREFERRED_WEAPONS;
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
       this.reassessWeaponGoal();
    }
 
-   public void onEquipItem(EquipmentSlot var1, ItemStack var2, ItemStack var3) {
-      super.onEquipItem(var1, var2, var3);
+   public void onEquipItem(final EquipmentSlot slot, final ItemStack oldStack, final ItemStack stack) {
+      super.onEquipItem(slot, oldStack, stack);
       if (!this.level().isClientSide()) {
          this.reassessWeaponGoal();
       }
@@ -196,7 +201,7 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
       return this.isFullyFrozen();
    }
 
-   public boolean wantsToPickUp(ServerLevel var1, ItemStack var2) {
-      return var2.is(ItemTags.SPEARS) ? false : super.wantsToPickUp(var1, var2);
+   public boolean wantsToPickUp(final ServerLevel level, final ItemStack itemStack) {
+      return itemStack.is(ItemTags.SPEARS) ? false : super.wantsToPickUp(level, itemStack);
    }
 }

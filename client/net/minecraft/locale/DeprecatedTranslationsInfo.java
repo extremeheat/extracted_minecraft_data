@@ -17,34 +17,32 @@ import org.slf4j.Logger;
 public record DeprecatedTranslationsInfo(List<String> removed, Map<String, String> renamed) {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final DeprecatedTranslationsInfo EMPTY = new DeprecatedTranslationsInfo(List.of(), Map.of());
-   public static final Codec<DeprecatedTranslationsInfo> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.STRING.listOf().fieldOf("removed").forGetter(DeprecatedTranslationsInfo::removed), Codec.unboundedMap(Codec.STRING, Codec.STRING).fieldOf("renamed").forGetter(DeprecatedTranslationsInfo::renamed)).apply(var0, DeprecatedTranslationsInfo::new));
+   public static final Codec<DeprecatedTranslationsInfo> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.STRING.listOf().fieldOf("removed").forGetter(DeprecatedTranslationsInfo::removed), Codec.unboundedMap(Codec.STRING, Codec.STRING).fieldOf("renamed").forGetter(DeprecatedTranslationsInfo::renamed)).apply(i, DeprecatedTranslationsInfo::new));
 
-   public DeprecatedTranslationsInfo(List<String> var1, Map<String, String> var2) {
+   public DeprecatedTranslationsInfo {
       super();
-      this.removed = var1;
-      this.renamed = var2;
    }
 
-   public static DeprecatedTranslationsInfo loadFromJson(InputStream var0) {
-      JsonElement var1 = StrictJsonParser.parse((Reader)(new InputStreamReader(var0, StandardCharsets.UTF_8)));
-      return (DeprecatedTranslationsInfo)CODEC.parse(JsonOps.INSTANCE, var1).getOrThrow((var0x) -> new IllegalStateException("Failed to parse deprecated language data: " + var0x));
+   public static DeprecatedTranslationsInfo loadFromJson(final InputStream stream) {
+      JsonElement entries = StrictJsonParser.parse((Reader)(new InputStreamReader(stream, StandardCharsets.UTF_8)));
+      return (DeprecatedTranslationsInfo)CODEC.parse(JsonOps.INSTANCE, entries).getOrThrow((msg) -> new IllegalStateException("Failed to parse deprecated language data: " + msg));
    }
 
-   public static DeprecatedTranslationsInfo loadFromResource(String var0) {
+   public static DeprecatedTranslationsInfo loadFromResource(final String path) {
       try {
-         InputStream var1 = Language.class.getResourceAsStream(var0);
+         InputStream stream = Language.class.getResourceAsStream(path);
 
          DeprecatedTranslationsInfo var2;
          label50: {
             try {
-               if (var1 != null) {
-                  var2 = loadFromJson(var1);
+               if (stream != null) {
+                  var2 = loadFromJson(stream);
                   break label50;
                }
             } catch (Throwable var5) {
-               if (var1 != null) {
+               if (stream != null) {
                   try {
-                     var1.close();
+                     stream.close();
                   } catch (Throwable var4) {
                      var5.addSuppressed(var4);
                   }
@@ -53,20 +51,20 @@ public record DeprecatedTranslationsInfo(List<String> removed, Map<String, Strin
                throw var5;
             }
 
-            if (var1 != null) {
-               var1.close();
+            if (stream != null) {
+               stream.close();
             }
 
             return EMPTY;
          }
 
-         if (var1 != null) {
-            var1.close();
+         if (stream != null) {
+            stream.close();
          }
 
          return var2;
-      } catch (Exception var6) {
-         LOGGER.error("Failed to read {}", var0, var6);
+      } catch (Exception e) {
+         LOGGER.error("Failed to read {}", path, e);
          return EMPTY;
       }
    }
@@ -75,18 +73,18 @@ public record DeprecatedTranslationsInfo(List<String> removed, Map<String, Strin
       return loadFromResource("/assets/minecraft/lang/deprecated.json");
    }
 
-   public void applyToMap(Map<String, String> var1) {
-      for(String var3 : this.removed) {
-         var1.remove(var3);
+   public void applyToMap(final Map<String, String> translations) {
+      for(String key : this.removed) {
+         translations.remove(key);
       }
 
-      this.renamed.forEach((var1x, var2) -> {
-         String var3 = (String)var1.remove(var1x);
-         if (var3 == null) {
-            LOGGER.warn("Missing translation key for rename: {}", var1x);
-            var1.remove(var2);
+      this.renamed.forEach((fromKey, toKey) -> {
+         String value = (String)translations.remove(fromKey);
+         if (value == null) {
+            LOGGER.warn("Missing translation key for rename: {}", fromKey);
+            translations.remove(toKey);
          } else {
-            var1.put(var2, var3);
+            translations.put(toKey, value);
          }
 
       });

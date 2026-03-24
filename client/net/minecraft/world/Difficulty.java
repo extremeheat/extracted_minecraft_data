@@ -21,9 +21,9 @@ public enum Difficulty implements StringRepresentable {
    private final int id;
    private final String key;
 
-   private Difficulty(final int var3, final String var4) {
-      this.id = var3;
-      this.key = var4;
+   private Difficulty(final int id, final String key) {
+      this.id = id;
+      this.key = key;
    }
 
    public int getId() {
@@ -40,16 +40,12 @@ public enum Difficulty implements StringRepresentable {
 
    /** @deprecated */
    @Deprecated
-   public static Difficulty byId(int var0) {
-      return (Difficulty)BY_ID.apply(var0);
+   public static Difficulty byId(final int id) {
+      return (Difficulty)BY_ID.apply(id);
    }
 
-   public static @Nullable Difficulty byName(String var0) {
-      return CODEC.byName(var0);
-   }
-
-   public String getKey() {
-      return this.key;
+   public static @Nullable Difficulty byName(final String name) {
+      return CODEC.byName(name);
    }
 
    public String getSerializedName() {

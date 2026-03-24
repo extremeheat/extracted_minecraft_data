@@ -2,31 +2,31 @@ package net.minecraft.client.gui.screens.inventory.tooltip;
 
 import java.util.Objects;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.inventory.tooltip.BundleTooltip;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 
 public interface ClientTooltipComponent {
-   static ClientTooltipComponent create(FormattedCharSequence var0) {
-      return new ClientTextTooltip(var0);
+   static ClientTooltipComponent create(final FormattedCharSequence charSequence) {
+      return new ClientTextTooltip(charSequence);
    }
 
-   static ClientTooltipComponent create(TooltipComponent var0) {
-      Objects.requireNonNull(var0);
+   static ClientTooltipComponent create(final TooltipComponent component) {
+      Objects.requireNonNull(component);
       byte var2 = 0;
       Object var10000;
       //$FF: var2->value
       //0->net/minecraft/world/inventory/tooltip/BundleTooltip
       //1->net/minecraft/client/gui/screens/inventory/tooltip/ClientActivePlayersTooltip$ActivePlayersTooltip
-      switch (var0.typeSwitch<invokedynamic>(var0, var2)) {
+      switch (component.typeSwitch<invokedynamic>(component, var2)) {
          case 0:
-            BundleTooltip var3 = (BundleTooltip)var0;
-            var10000 = new ClientBundleTooltip(var3.contents());
+            BundleTooltip bundleTooltip = (BundleTooltip)component;
+            var10000 = new ClientBundleTooltip(bundleTooltip.contents());
             break;
          case 1:
-            ClientActivePlayersTooltip.ActivePlayersTooltip var4 = (ClientActivePlayersTooltip.ActivePlayersTooltip)var0;
-            var10000 = new ClientActivePlayersTooltip(var4);
+            ClientActivePlayersTooltip.ActivePlayersTooltip activePlayersTooltip = (ClientActivePlayersTooltip.ActivePlayersTooltip)component;
+            var10000 = new ClientActivePlayersTooltip(activePlayersTooltip);
             break;
          default:
             throw new IllegalArgumentException("Unknown TooltipComponent");
@@ -35,17 +35,17 @@ public interface ClientTooltipComponent {
       return (ClientTooltipComponent)var10000;
    }
 
-   int getHeight(Font var1);
+   int getHeight(final Font font);
 
-   int getWidth(Font var1);
+   int getWidth(final Font font);
 
    default boolean showTooltipWithItemInHand() {
       return false;
    }
 
-   default void renderText(GuiGraphics var1, Font var2, int var3, int var4) {
+   default void extractText(final GuiGraphicsExtractor graphics, final Font font, final int x, final int y) {
    }
 
-   default void renderImage(Font var1, int var2, int var3, int var4, int var5, GuiGraphics var6) {
+   default void extractImage(final Font font, final int x, final int y, final int w, final int h, final GuiGraphicsExtractor graphics) {
    }
 }

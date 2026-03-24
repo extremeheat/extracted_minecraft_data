@@ -8,24 +8,23 @@ import net.minecraft.network.protocol.PacketType;
 public record ClientboundSetSimulationDistancePacket(int simulationDistance) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundSetSimulationDistancePacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundSetSimulationDistancePacket>codec(ClientboundSetSimulationDistancePacket::write, ClientboundSetSimulationDistancePacket::new);
 
-   private ClientboundSetSimulationDistancePacket(FriendlyByteBuf var1) {
-      this(var1.readVarInt());
+   private ClientboundSetSimulationDistancePacket(final FriendlyByteBuf input) {
+      this(input.readVarInt());
    }
 
-   public ClientboundSetSimulationDistancePacket(int var1) {
+   public ClientboundSetSimulationDistancePacket {
       super();
-      this.simulationDistance = var1;
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeVarInt(this.simulationDistance);
+   private void write(final FriendlyByteBuf output) {
+      output.writeVarInt(this.simulationDistance);
    }
 
    public PacketType<ClientboundSetSimulationDistancePacket> type() {
       return GamePacketTypes.CLIENTBOUND_SET_SIMULATION_DISTANCE;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleSetSimulationDistance(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleSetSimulationDistance(this);
    }
 }

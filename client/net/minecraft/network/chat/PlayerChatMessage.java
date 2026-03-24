@@ -16,61 +16,56 @@ import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public record PlayerChatMessage(SignedMessageLink link, @Nullable MessageSignature signature, SignedMessageBody signedBody, @Nullable Component unsignedContent, FilterMask filterMask) {
-   public static final MapCodec<PlayerChatMessage> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(SignedMessageLink.CODEC.fieldOf("link").forGetter(PlayerChatMessage::link), MessageSignature.CODEC.optionalFieldOf("signature").forGetter((var0x) -> Optional.ofNullable(var0x.signature)), SignedMessageBody.MAP_CODEC.forGetter(PlayerChatMessage::signedBody), ComponentSerialization.CODEC.optionalFieldOf("unsigned_content").forGetter((var0x) -> Optional.ofNullable(var0x.unsignedContent)), FilterMask.CODEC.optionalFieldOf("filter_mask", FilterMask.PASS_THROUGH).forGetter(PlayerChatMessage::filterMask)).apply(var0, (var0x, var1, var2, var3, var4) -> new PlayerChatMessage(var0x, (MessageSignature)var1.orElse((Object)null), var2, (Component)var3.orElse((Object)null), var4)));
+   public static final MapCodec<PlayerChatMessage> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(SignedMessageLink.CODEC.fieldOf("link").forGetter(PlayerChatMessage::link), MessageSignature.CODEC.optionalFieldOf("signature").forGetter((playerChatMessage) -> Optional.ofNullable(playerChatMessage.signature)), SignedMessageBody.MAP_CODEC.forGetter(PlayerChatMessage::signedBody), ComponentSerialization.CODEC.optionalFieldOf("unsigned_content").forGetter((playerChatMessage) -> Optional.ofNullable(playerChatMessage.unsignedContent)), FilterMask.CODEC.optionalFieldOf("filter_mask", FilterMask.PASS_THROUGH).forGetter(PlayerChatMessage::filterMask)).apply(i, (link, signature, signedBody, unsignedContent, filterMask) -> new PlayerChatMessage(link, (MessageSignature)signature.orElse((Object)null), signedBody, (Component)unsignedContent.orElse((Object)null), filterMask)));
    private static final UUID SYSTEM_SENDER;
    public static final Duration MESSAGE_EXPIRES_AFTER_SERVER;
    public static final Duration MESSAGE_EXPIRES_AFTER_CLIENT;
 
-   public PlayerChatMessage(SignedMessageLink var1, @Nullable MessageSignature var2, SignedMessageBody var3, @Nullable Component var4, FilterMask var5) {
+   public PlayerChatMessage {
       super();
-      this.link = var1;
-      this.signature = var2;
-      this.signedBody = var3;
-      this.unsignedContent = var4;
-      this.filterMask = var5;
    }
 
-   public static PlayerChatMessage system(String var0) {
-      return unsigned(SYSTEM_SENDER, var0);
+   public static PlayerChatMessage system(final String content) {
+      return unsigned(SYSTEM_SENDER, content);
    }
 
-   public static PlayerChatMessage unsigned(UUID var0, String var1) {
-      SignedMessageBody var2 = SignedMessageBody.unsigned(var1);
-      SignedMessageLink var3 = SignedMessageLink.unsigned(var0);
-      return new PlayerChatMessage(var3, (MessageSignature)null, var2, (Component)null, FilterMask.PASS_THROUGH);
+   public static PlayerChatMessage unsigned(final UUID sender, final String content) {
+      SignedMessageBody body = SignedMessageBody.unsigned(content);
+      SignedMessageLink link = SignedMessageLink.unsigned(sender);
+      return new PlayerChatMessage(link, (MessageSignature)null, body, (Component)null, FilterMask.PASS_THROUGH);
    }
 
-   public PlayerChatMessage withUnsignedContent(Component var1) {
-      Component var2 = !var1.equals(Component.literal(this.signedContent())) ? var1 : null;
-      return new PlayerChatMessage(this.link, this.signature, this.signedBody, var2, this.filterMask);
+   public PlayerChatMessage withUnsignedContent(final Component content) {
+      Component unsignedContent = !content.equals(Component.literal(this.signedContent())) ? content : null;
+      return new PlayerChatMessage(this.link, this.signature, this.signedBody, unsignedContent, this.filterMask);
    }
 
    public PlayerChatMessage removeUnsignedContent() {
       return this.unsignedContent != null ? new PlayerChatMessage(this.link, this.signature, this.signedBody, (Component)null, this.filterMask) : this;
    }
 
-   public PlayerChatMessage filter(FilterMask var1) {
-      return this.filterMask.equals(var1) ? this : new PlayerChatMessage(this.link, this.signature, this.signedBody, this.unsignedContent, var1);
+   public PlayerChatMessage filter(final FilterMask filterMask) {
+      return this.filterMask.equals(filterMask) ? this : new PlayerChatMessage(this.link, this.signature, this.signedBody, this.unsignedContent, filterMask);
    }
 
-   public PlayerChatMessage filter(boolean var1) {
-      return this.filter(var1 ? this.filterMask : FilterMask.PASS_THROUGH);
+   public PlayerChatMessage filter(final boolean filtered) {
+      return this.filter(filtered ? this.filterMask : FilterMask.PASS_THROUGH);
    }
 
    public PlayerChatMessage removeSignature() {
-      SignedMessageBody var1 = SignedMessageBody.unsigned(this.signedContent());
-      SignedMessageLink var2 = SignedMessageLink.unsigned(this.sender());
-      return new PlayerChatMessage(var2, (MessageSignature)null, var1, this.unsignedContent, this.filterMask);
+      SignedMessageBody body = SignedMessageBody.unsigned(this.signedContent());
+      SignedMessageLink link = SignedMessageLink.unsigned(this.sender());
+      return new PlayerChatMessage(link, (MessageSignature)null, body, this.unsignedContent, this.filterMask);
    }
 
-   public static void updateSignature(SignatureUpdater.Output var0, SignedMessageLink var1, SignedMessageBody var2) throws SignatureException {
-      var0.update(Ints.toByteArray(1));
-      var1.updateSignature(var0);
-      var2.updateSignature(var0);
+   public static void updateSignature(final SignatureUpdater.Output output, final SignedMessageLink link, final SignedMessageBody body) throws SignatureException {
+      output.update(Ints.toByteArray(1));
+      link.updateSignature(output);
+      body.updateSignature(output);
    }
 
-   public boolean verify(SignatureValidator var1) {
-      return this.signature != null && this.signature.verify(var1, (var1x) -> updateSignature(var1x, this.link, this.signedBody));
+   public boolean verify(final SignatureValidator signatureValidator) {
+      return this.signature != null && this.signature.verify(signatureValidator, (output) -> updateSignature(output, this.link, this.signedBody));
    }
 
    public String signedContent() {
@@ -89,12 +84,12 @@ public record PlayerChatMessage(SignedMessageLink link, @Nullable MessageSignatu
       return this.signedBody.salt();
    }
 
-   public boolean hasExpiredServer(Instant var1) {
-      return var1.isAfter(this.timeStamp().plus(MESSAGE_EXPIRES_AFTER_SERVER));
+   public boolean hasExpiredServer(final Instant now) {
+      return now.isAfter(this.timeStamp().plus(MESSAGE_EXPIRES_AFTER_SERVER));
    }
 
-   public boolean hasExpiredClient(Instant var1) {
-      return var1.isAfter(this.timeStamp().plus(MESSAGE_EXPIRES_AFTER_CLIENT));
+   public boolean hasExpiredClient(final Instant now) {
+      return now.isAfter(this.timeStamp().plus(MESSAGE_EXPIRES_AFTER_CLIENT));
    }
 
    public UUID sender() {
@@ -109,17 +104,17 @@ public record PlayerChatMessage(SignedMessageLink link, @Nullable MessageSignatu
       return this.signature != null;
    }
 
-   public boolean hasSignatureFrom(UUID var1) {
-      return this.hasSignature() && this.link.sender().equals(var1);
+   public boolean hasSignatureFrom(final UUID profileId) {
+      return this.hasSignature() && this.link.sender().equals(profileId);
    }
 
    public boolean isFullyFiltered() {
       return this.filterMask.isFullyFiltered();
    }
 
-   public static String describeSigned(PlayerChatMessage var0) {
-      String var10000 = var0.signedBody.content();
-      return "'" + var10000 + "' @ " + String.valueOf(var0.signedBody.timeStamp()) + "\n - From: " + String.valueOf(var0.link.sender()) + "/" + String.valueOf(var0.link.sessionId()) + ", message #" + var0.link.index() + "\n - Salt: " + var0.signedBody.salt() + "\n - Signature: " + MessageSignature.describe(var0.signature) + "\n - Last Seen: [\n" + (String)var0.signedBody.lastSeen().entries().stream().map((var0x) -> "     " + MessageSignature.describe(var0x) + "\n").collect(Collectors.joining()) + " ]\n";
+   public static String describeSigned(final PlayerChatMessage message) {
+      String var10000 = message.signedBody.content();
+      return "'" + var10000 + "' @ " + String.valueOf(message.signedBody.timeStamp()) + "\n - From: " + String.valueOf(message.link.sender()) + "/" + String.valueOf(message.link.sessionId()) + ", message #" + message.link.index() + "\n - Salt: " + message.signedBody.salt() + "\n - Signature: " + MessageSignature.describe(message.signature) + "\n - Last Seen: [\n" + (String)message.signedBody.lastSeen().entries().stream().map((signature) -> "     " + MessageSignature.describe(signature) + "\n").collect(Collectors.joining()) + " ]\n";
    }
 
    static {

@@ -27,113 +27,113 @@ public abstract class AbstractMinecartContainer extends AbstractMinecart impleme
    private @Nullable ResourceKey<LootTable> lootTable;
    private long lootTableSeed;
 
-   protected AbstractMinecartContainer(EntityType<?> var1, Level var2) {
-      super(var1, var2);
+   protected AbstractMinecartContainer(final EntityType<?> type, final Level level) {
+      super(type, level);
       this.itemStacks = NonNullList.<ItemStack>withSize(36, ItemStack.EMPTY);
    }
 
-   public void destroy(ServerLevel var1, DamageSource var2) {
-      super.destroy(var1, var2);
-      this.chestVehicleDestroyed(var2, var1, this);
+   public void destroy(final ServerLevel level, final DamageSource source) {
+      super.destroy(level, source);
+      this.chestVehicleDestroyed(source, level, this);
    }
 
-   public ItemStack getItem(int var1) {
-      return this.getChestVehicleItem(var1);
+   public ItemStack getItem(final int slot) {
+      return this.getChestVehicleItem(slot);
    }
 
-   public ItemStack removeItem(int var1, int var2) {
-      return this.removeChestVehicleItem(var1, var2);
+   public ItemStack removeItem(final int slot, final int count) {
+      return this.removeChestVehicleItem(slot, count);
    }
 
-   public ItemStack removeItemNoUpdate(int var1) {
-      return this.removeChestVehicleItemNoUpdate(var1);
+   public ItemStack removeItemNoUpdate(final int slot) {
+      return this.removeChestVehicleItemNoUpdate(slot);
    }
 
-   public void setItem(int var1, ItemStack var2) {
-      this.setChestVehicleItem(var1, var2);
+   public void setItem(final int slot, final ItemStack itemStack) {
+      this.setChestVehicleItem(slot, itemStack);
    }
 
-   public SlotAccess getSlot(int var1) {
-      return this.getChestVehicleSlot(var1);
+   public SlotAccess getSlot(final int slot) {
+      return this.getChestVehicleSlot(slot);
    }
 
    public void setChanged() {
    }
 
-   public boolean stillValid(Player var1) {
-      return this.isChestVehicleStillValid(var1);
+   public boolean stillValid(final Player player) {
+      return this.isChestVehicleStillValid(player);
    }
 
-   public void remove(Entity.RemovalReason var1) {
-      if (!this.level().isClientSide() && var1.shouldDestroy()) {
+   public void remove(final Entity.RemovalReason reason) {
+      if (!this.level().isClientSide() && reason.shouldDestroy()) {
          Containers.dropContents(this.level(), (Entity)this, this);
       }
 
-      super.remove(var1);
+      super.remove(reason);
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      this.addChestVehicleSaveData(var1);
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      this.addChestVehicleSaveData(output);
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.readChestVehicleSaveData(var1);
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.readChestVehicleSaveData(input);
    }
 
-   public InteractionResult interact(Player var1, InteractionHand var2) {
-      return this.interactWithContainerVehicle(var1);
+   public InteractionResult interact(final Player player, final InteractionHand hand, final Vec3 location) {
+      return this.interactWithContainerVehicle(player);
    }
 
-   protected Vec3 applyNaturalSlowdown(Vec3 var1) {
-      float var2 = 0.98F;
+   protected Vec3 applyNaturalSlowdown(final Vec3 deltaMovement) {
+      float keep = 0.98F;
       if (this.lootTable == null) {
-         int var3 = 15 - AbstractContainerMenu.getRedstoneSignalFromContainer(this);
-         var2 += (float)var3 * 0.001F;
+         int emptiness = 15 - AbstractContainerMenu.getRedstoneSignalFromContainer(this);
+         keep += (float)emptiness * 0.001F;
       }
 
       if (this.isInWater()) {
-         var2 *= 0.95F;
+         keep *= 0.95F;
       }
 
-      return var1.multiply((double)var2, 0.0, (double)var2);
+      return deltaMovement.multiply((double)keep, 0.0, (double)keep);
    }
 
    public void clearContent() {
       this.clearChestVehicleContent();
    }
 
-   public void setLootTable(ResourceKey<LootTable> var1, long var2) {
-      this.lootTable = var1;
-      this.lootTableSeed = var2;
+   public void setLootTable(final ResourceKey<LootTable> lootTable, final long seed) {
+      this.lootTable = lootTable;
+      this.lootTableSeed = seed;
    }
 
-   public @Nullable AbstractContainerMenu createMenu(int var1, Inventory var2, Player var3) {
-      if (this.lootTable != null && var3.isSpectator()) {
+   public @Nullable AbstractContainerMenu createMenu(final int containerId, final Inventory inventory, final Player player) {
+      if (this.lootTable != null && player.isSpectator()) {
          return null;
       } else {
-         this.unpackChestVehicleLootTable(var2.player);
-         return this.createMenu(var1, var2);
+         this.unpackChestVehicleLootTable(inventory.player);
+         return this.createMenu(containerId, inventory);
       }
    }
 
-   protected abstract AbstractContainerMenu createMenu(int var1, Inventory var2);
+   protected abstract AbstractContainerMenu createMenu(final int containerId, final Inventory inventory);
 
    public @Nullable ResourceKey<LootTable> getContainerLootTable() {
       return this.lootTable;
    }
 
-   public void setContainerLootTable(@Nullable ResourceKey<LootTable> var1) {
-      this.lootTable = var1;
+   public void setContainerLootTable(final @Nullable ResourceKey<LootTable> lootTable) {
+      this.lootTable = lootTable;
    }
 
    public long getContainerLootTableSeed() {
       return this.lootTableSeed;
    }
 
-   public void setContainerLootTableSeed(long var1) {
-      this.lootTableSeed = var1;
+   public void setContainerLootTableSeed(final long lootTableSeed) {
+      this.lootTableSeed = lootTableSeed;
    }
 
    public NonNullList<ItemStack> getItemStacks() {

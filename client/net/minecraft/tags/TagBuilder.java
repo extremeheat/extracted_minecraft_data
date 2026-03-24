@@ -6,6 +6,7 @@ import net.minecraft.resources.Identifier;
 
 public class TagBuilder {
    private final List<TagEntry> entries = new ArrayList();
+   private boolean replace = false;
 
    public TagBuilder() {
       super();
@@ -19,24 +20,33 @@ public class TagBuilder {
       return List.copyOf(this.entries);
    }
 
-   public TagBuilder add(TagEntry var1) {
-      this.entries.add(var1);
+   public boolean shouldReplace() {
+      return this.replace;
+   }
+
+   public TagBuilder setReplace(final boolean replace) {
+      this.replace = replace;
       return this;
    }
 
-   public TagBuilder addElement(Identifier var1) {
-      return this.add(TagEntry.element(var1));
+   public TagBuilder add(final TagEntry entry) {
+      this.entries.add(entry);
+      return this;
    }
 
-   public TagBuilder addOptionalElement(Identifier var1) {
-      return this.add(TagEntry.optionalElement(var1));
+   public TagBuilder addElement(final Identifier id) {
+      return this.add(TagEntry.element(id));
    }
 
-   public TagBuilder addTag(Identifier var1) {
-      return this.add(TagEntry.tag(var1));
+   public TagBuilder addOptionalElement(final Identifier id) {
+      return this.add(TagEntry.optionalElement(id));
    }
 
-   public TagBuilder addOptionalTag(Identifier var1) {
-      return this.add(TagEntry.optionalTag(var1));
+   public TagBuilder addTag(final Identifier id) {
+      return this.add(TagEntry.tag(id));
+   }
+
+   public TagBuilder addOptionalTag(final Identifier id) {
+      return this.add(TagEntry.optionalTag(id));
    }
 }

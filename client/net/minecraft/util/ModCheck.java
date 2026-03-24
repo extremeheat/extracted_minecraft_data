@@ -4,18 +4,16 @@ import java.util.function.Supplier;
 import org.apache.commons.lang3.ObjectUtils;
 
 public record ModCheck(Confidence confidence, String description) {
-   public ModCheck(Confidence var1, String var2) {
+   public ModCheck {
       super();
-      this.confidence = var1;
-      this.description = var2;
    }
 
-   public static ModCheck identify(String var0, Supplier<String> var1, String var2, Class<?> var3) {
-      String var4 = (String)var1.get();
-      if (!var0.equals(var4)) {
-         return new ModCheck(ModCheck.Confidence.DEFINITELY, var2 + " brand changed to '" + var4 + "'");
+   public static ModCheck identify(final String expectedBrand, final Supplier<String> actualBrand, final String component, final Class<?> canaryClass) {
+      String mod = (String)actualBrand.get();
+      if (!expectedBrand.equals(mod)) {
+         return new ModCheck(ModCheck.Confidence.DEFINITELY, component + " brand changed to '" + mod + "'");
       } else {
-         return var3.getSigners() == null ? new ModCheck(ModCheck.Confidence.VERY_LIKELY, var2 + " jar signature invalidated") : new ModCheck(ModCheck.Confidence.PROBABLY_NOT, var2 + " jar signature and brand is untouched");
+         return canaryClass.getSigners() == null ? new ModCheck(ModCheck.Confidence.VERY_LIKELY, component + " jar signature invalidated") : new ModCheck(ModCheck.Confidence.PROBABLY_NOT, component + " jar signature and brand is untouched");
       }
    }
 
@@ -23,8 +21,8 @@ public record ModCheck(Confidence confidence, String description) {
       return this.confidence.shouldReportAsModified;
    }
 
-   public ModCheck merge(ModCheck var1) {
-      return new ModCheck((Confidence)ObjectUtils.max(new Confidence[]{this.confidence, var1.confidence}), this.description + "; " + var1.description);
+   public ModCheck merge(final ModCheck other) {
+      return new ModCheck((Confidence)ObjectUtils.max(new Confidence[]{this.confidence, other.confidence}), this.description + "; " + other.description);
    }
 
    public String fullDescription() {
@@ -36,12 +34,12 @@ public record ModCheck(Confidence confidence, String description) {
       VERY_LIKELY("Very likely;", true),
       DEFINITELY("Definitely;", true);
 
-      final String description;
-      final boolean shouldReportAsModified;
+      private final String description;
+      private final boolean shouldReportAsModified;
 
-      private Confidence(final String var3, final boolean var4) {
-         this.description = var3;
-         this.shouldReportAsModified = var4;
+      private Confidence(final String description, final boolean shouldReportAsModified) {
+         this.description = description;
+         this.shouldReportAsModified = shouldReportAsModified;
       }
 
       // $FF: synthetic method

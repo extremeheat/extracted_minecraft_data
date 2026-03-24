@@ -3,6 +3,7 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
@@ -26,40 +27,40 @@ public class KelpBlock extends GrowingPlantHeadBlock implements LiquidBlockConta
       return CODEC;
    }
 
-   protected KelpBlock(BlockBehaviour.Properties var1) {
-      super(var1, Direction.UP, SHAPE, true, 0.14);
+   protected KelpBlock(final BlockBehaviour.Properties properties) {
+      super(properties, Direction.UP, SHAPE, true, 0.14);
    }
 
-   protected boolean canGrowInto(BlockState var1) {
-      return var1.is(Blocks.WATER);
+   protected boolean canGrowInto(final BlockState state) {
+      return state.is(Blocks.WATER);
    }
 
    protected Block getBodyBlock() {
       return Blocks.KELP_PLANT;
    }
 
-   protected boolean canAttachTo(BlockState var1) {
-      return !var1.is(Blocks.MAGMA_BLOCK);
+   protected boolean canAttachTo(final BlockState state) {
+      return !state.is(BlockTags.CANNOT_SUPPORT_KELP);
    }
 
-   public boolean canPlaceLiquid(@Nullable LivingEntity var1, BlockGetter var2, BlockPos var3, BlockState var4, Fluid var5) {
+   public boolean canPlaceLiquid(final @Nullable LivingEntity user, final BlockGetter level, final BlockPos pos, final BlockState state, final Fluid type) {
       return false;
    }
 
-   public boolean placeLiquid(LevelAccessor var1, BlockPos var2, BlockState var3, FluidState var4) {
+   public boolean placeLiquid(final LevelAccessor level, final BlockPos pos, final BlockState state, final FluidState fluidState) {
       return false;
    }
 
-   protected int getBlocksToGrowWhenBonemealed(RandomSource var1) {
+   protected int getBlocksToGrowWhenBonemealed(final RandomSource random) {
       return 1;
    }
 
-   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
-      FluidState var2 = var1.getLevel().getFluidState(var1.getClickedPos());
-      return var2.is(FluidTags.WATER) && var2.getAmount() == 8 ? super.getStateForPlacement(var1) : null;
+   public @Nullable BlockState getStateForPlacement(final BlockPlaceContext context) {
+      FluidState fluidState = context.getLevel().getFluidState(context.getClickedPos());
+      return fluidState.is(FluidTags.WATER) && fluidState.isFull() ? super.getStateForPlacement(context) : null;
    }
 
-   protected FluidState getFluidState(BlockState var1) {
+   protected FluidState getFluidState(final BlockState state) {
       return Fluids.WATER.getSource(false);
    }
 }

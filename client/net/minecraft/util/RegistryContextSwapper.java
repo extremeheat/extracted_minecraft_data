@@ -5,5 +5,5 @@ import com.mojang.serialization.DataResult;
 import net.minecraft.core.HolderLookup;
 
 public interface RegistryContextSwapper {
-   <T> DataResult<T> swapTo(Codec<T> var1, T var2, HolderLookup.Provider var3);
+   <T> DataResult<T> swapTo(Codec<T> codec, T value, HolderLookup.Provider newContext);
 }

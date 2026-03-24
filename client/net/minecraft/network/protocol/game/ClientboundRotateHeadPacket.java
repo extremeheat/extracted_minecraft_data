@@ -14,33 +14,33 @@ public class ClientboundRotateHeadPacket implements Packet<ClientGamePacketListe
    private final int entityId;
    private final byte yHeadRot;
 
-   public ClientboundRotateHeadPacket(Entity var1, byte var2) {
+   public ClientboundRotateHeadPacket(final Entity entity, final byte yHeadRot) {
       super();
-      this.entityId = var1.getId();
-      this.yHeadRot = var2;
+      this.entityId = entity.getId();
+      this.yHeadRot = yHeadRot;
    }
 
-   private ClientboundRotateHeadPacket(FriendlyByteBuf var1) {
+   private ClientboundRotateHeadPacket(final FriendlyByteBuf input) {
       super();
-      this.entityId = var1.readVarInt();
-      this.yHeadRot = var1.readByte();
+      this.entityId = input.readVarInt();
+      this.yHeadRot = input.readByte();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeVarInt(this.entityId);
-      var1.writeByte(this.yHeadRot);
+   private void write(final FriendlyByteBuf output) {
+      output.writeVarInt(this.entityId);
+      output.writeByte(this.yHeadRot);
    }
 
    public PacketType<ClientboundRotateHeadPacket> type() {
       return GamePacketTypes.CLIENTBOUND_ROTATE_HEAD;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleRotateMob(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleRotateMob(this);
    }
 
-   public @Nullable Entity getEntity(Level var1) {
-      return var1.getEntity(this.entityId);
+   public @Nullable Entity getEntity(final Level level) {
+      return level.getEntity(this.entityId);
    }
 
    public float getYHeadRot() {

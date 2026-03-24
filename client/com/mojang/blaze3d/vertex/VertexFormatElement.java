@@ -1,13 +1,11 @@
 package com.mojang.blaze3d.vertex;
 
-import com.mojang.blaze3d.DontObfuscate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 import org.jspecify.annotations.Nullable;
 
-@DontObfuscate
-public record VertexFormatElement(int id, int index, Type type, Usage usage, int count) {
+public record VertexFormatElement(int id, int index, Type type, boolean normalized, int count) {
    public static final int MAX_COUNT = 32;
    private static final @Nullable VertexFormatElement[] BY_ID = new VertexFormatElement[32];
    private static final List<VertexFormatElement> ELEMENTS = new ArrayList(32);
@@ -20,41 +18,34 @@ public record VertexFormatElement(int id, int index, Type type, Usage usage, int
    public static final VertexFormatElement NORMAL;
    public static final VertexFormatElement LINE_WIDTH;
 
-   public VertexFormatElement(int var1, int var2, Type var3, Usage var4, int var5) {
+   public VertexFormatElement(int id, int index, Type type, boolean normalized, int count) {
       super();
-      if (var1 >= 0 && var1 < BY_ID.length) {
-         if (!this.supportsUsage(var2, var4)) {
-            throw new IllegalStateException("Multiple vertex elements of the same type other than UVs are not supported");
-         } else {
-            this.id = var1;
-            this.index = var2;
-            this.type = var3;
-            this.usage = var4;
-            this.count = var5;
-         }
+      if (id >= 0 && id < BY_ID.length) {
+         this.id = id;
+         this.index = index;
+         this.type = type;
+         this.normalized = normalized;
+         this.count = count;
       } else {
          throw new IllegalArgumentException("Element ID must be in range [0; " + BY_ID.length + ")");
       }
    }
 
-   public static VertexFormatElement register(int var0, int var1, Type var2, Usage var3, int var4) {
-      VertexFormatElement var5 = new VertexFormatElement(var0, var1, var2, var3, var4);
-      if (BY_ID[var0] != null) {
-         throw new IllegalArgumentException("Duplicate element registration for: " + var0);
+   public static VertexFormatElement register(final int id, final int index, final Type type, final boolean normalized, final int count) {
+      VertexFormatElement element = new VertexFormatElement(id, index, type, normalized, count);
+      if (BY_ID[id] != null) {
+         throw new IllegalArgumentException("Duplicate element registration for: " + id);
       } else {
-         BY_ID[var0] = var5;
-         ELEMENTS.add(var5);
-         return var5;
+         BY_ID[id] = element;
+         ELEMENTS.add(element);
+         return element;
       }
-   }
-
-   private boolean supportsUsage(int var1, Usage var2) {
-      return var1 == 0 || var2 == VertexFormatElement.Usage.UV;
    }
 
    public String toString() {
       int var10000 = this.count;
-      return var10000 + "," + String.valueOf(this.usage) + "," + String.valueOf(this.type) + " (" + this.id + ")";
+      String string = var10000 + "x" + String.valueOf(this.type) + " (" + this.id + ")";
+      return this.normalized ? "normalized " + string : string;
    }
 
    public int mask() {
@@ -65,50 +56,25 @@ public record VertexFormatElement(int id, int index, Type type, Usage usage, int
       return this.type.size() * this.count;
    }
 
-   public static @Nullable VertexFormatElement byId(int var0) {
-      return BY_ID[var0];
+   public static @Nullable VertexFormatElement byId(final int id) {
+      return BY_ID[id];
    }
 
-   public static Stream<VertexFormatElement> elementsFromMask(int var0) {
-      return ELEMENTS.stream().filter((var1) -> (var0 & var1.mask()) != 0);
+   public static Stream<VertexFormatElement> elementsFromMask(final int mask) {
+      return ELEMENTS.stream().filter((element) -> (mask & element.mask()) != 0);
    }
 
    static {
-      POSITION = register(0, 0, VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.POSITION, 3);
-      COLOR = register(1, 0, VertexFormatElement.Type.UBYTE, VertexFormatElement.Usage.COLOR, 4);
-      UV0 = register(2, 0, VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.UV, 2);
+      POSITION = register(0, 0, VertexFormatElement.Type.FLOAT, false, 3);
+      COLOR = register(1, 0, VertexFormatElement.Type.UBYTE, true, 4);
+      UV0 = register(2, 0, VertexFormatElement.Type.FLOAT, false, 2);
       UV = UV0;
-      UV1 = register(3, 1, VertexFormatElement.Type.SHORT, VertexFormatElement.Usage.UV, 2);
-      UV2 = register(4, 2, VertexFormatElement.Type.SHORT, VertexFormatElement.Usage.UV, 2);
-      NORMAL = register(5, 0, VertexFormatElement.Type.BYTE, VertexFormatElement.Usage.NORMAL, 3);
-      LINE_WIDTH = register(6, 0, VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.GENERIC, 1);
+      UV1 = register(3, 1, VertexFormatElement.Type.SHORT, false, 2);
+      UV2 = register(4, 2, VertexFormatElement.Type.SHORT, false, 2);
+      NORMAL = register(5, 0, VertexFormatElement.Type.BYTE, true, 3);
+      LINE_WIDTH = register(6, 0, VertexFormatElement.Type.FLOAT, false, 1);
    }
 
-   @DontObfuscate
-   public static enum Usage {
-      POSITION("Position"),
-      NORMAL("Normal"),
-      COLOR("Vertex Color"),
-      UV("UV"),
-      GENERIC("Generic");
-
-      private final String name;
-
-      private Usage(final String var3) {
-         this.name = var3;
-      }
-
-      public String toString() {
-         return this.name;
-      }
-
-      // $FF: synthetic method
-      private static Usage[] $values() {
-         return new Usage[]{POSITION, NORMAL, COLOR, UV, GENERIC};
-      }
-   }
-
-   @DontObfuscate
    public static enum Type {
       FLOAT(4, "Float"),
       UBYTE(1, "Unsigned Byte"),
@@ -121,9 +87,9 @@ public record VertexFormatElement(int id, int index, Type type, Usage usage, int
       private final int size;
       private final String name;
 
-      private Type(final int var3, final String var4) {
-         this.size = var3;
-         this.name = var4;
+      private Type(final int size, final String name) {
+         this.size = size;
+         this.name = name;
       }
 
       public int size() {

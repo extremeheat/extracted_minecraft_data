@@ -17,24 +17,24 @@ public class RestoreTask extends LongRunningTask {
    private final long realmId;
    private final RealmsConfigureWorldScreen lastScreen;
 
-   public RestoreTask(Backup var1, long var2, RealmsConfigureWorldScreen var4) {
+   public RestoreTask(final Backup backup, final long realmId, final RealmsConfigureWorldScreen lastScreen) {
       super();
-      this.backup = var1;
-      this.realmId = var2;
-      this.lastScreen = var4;
+      this.backup = backup;
+      this.realmId = realmId;
+      this.lastScreen = lastScreen;
    }
 
    public void run() {
-      RealmsClient var1 = RealmsClient.getOrCreate();
-      int var2 = 0;
+      RealmsClient client = RealmsClient.getOrCreate();
+      int i = 0;
 
-      while(var2 < 25) {
+      while(i < 25) {
          try {
             if (this.aborted()) {
                return;
             }
 
-            var1.restoreWorld(this.realmId, this.backup.backupId);
+            client.restoreWorld(this.realmId, this.backup.backupId);
             pause(1L);
             if (this.aborted()) {
                return;
@@ -42,28 +42,28 @@ public class RestoreTask extends LongRunningTask {
 
             setScreen(this.lastScreen);
             return;
-         } catch (RetryCallException var4) {
+         } catch (RetryCallException e) {
             if (this.aborted()) {
                return;
             }
 
-            pause((long)var4.delaySeconds);
-            ++var2;
-         } catch (RealmsServiceException var5) {
+            pause((long)e.delaySeconds);
+            ++i;
+         } catch (RealmsServiceException e) {
             if (this.aborted()) {
                return;
             }
 
-            LOGGER.error("Couldn't restore backup", var5);
-            setScreen(new RealmsGenericErrorScreen(var5, this.lastScreen));
+            LOGGER.error("Couldn't restore backup", e);
+            setScreen(new RealmsGenericErrorScreen(e, this.lastScreen));
             return;
-         } catch (Exception var6) {
+         } catch (Exception e) {
             if (this.aborted()) {
                return;
             }
 
-            LOGGER.error("Couldn't restore backup", var6);
-            this.error(var6);
+            LOGGER.error("Couldn't restore backup", e);
+            this.error(e);
             return;
          }
       }

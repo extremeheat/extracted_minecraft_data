@@ -1,7 +1,6 @@
 package net.minecraft.client.renderer.entity.state;
 
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.client.renderer.block.BlockModelRenderState;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
@@ -13,7 +12,7 @@ public class MinecartRenderState extends EntityRenderState {
    public float hurtTime;
    public float damageTime;
    public int displayOffset;
-   public BlockState displayBlockState;
+   public BlockModelRenderState displayBlockModel = new BlockModelRenderState();
    public boolean isNewRender;
    public @Nullable Vec3 renderPos;
    public @Nullable Vec3 posOnRail;
@@ -22,6 +21,5 @@ public class MinecartRenderState extends EntityRenderState {
 
    public MinecartRenderState() {
       super();
-      this.displayBlockState = Blocks.AIR.defaultBlockState();
    }
 }

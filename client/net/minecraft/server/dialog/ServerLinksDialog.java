@@ -6,14 +6,10 @@ import java.util.Optional;
 import net.minecraft.util.ExtraCodecs;
 
 public record ServerLinksDialog(CommonDialogData common, Optional<ActionButton> exitAction, int columns, int buttonWidth) implements ButtonListDialog {
-   public static final MapCodec<ServerLinksDialog> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(CommonDialogData.MAP_CODEC.forGetter(ServerLinksDialog::common), ActionButton.CODEC.optionalFieldOf("exit_action").forGetter(ServerLinksDialog::exitAction), ExtraCodecs.POSITIVE_INT.optionalFieldOf("columns", 2).forGetter(ServerLinksDialog::columns), WIDTH_CODEC.optionalFieldOf("button_width", 150).forGetter(ServerLinksDialog::buttonWidth)).apply(var0, ServerLinksDialog::new));
+   public static final MapCodec<ServerLinksDialog> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(CommonDialogData.MAP_CODEC.forGetter(ServerLinksDialog::common), ActionButton.CODEC.optionalFieldOf("exit_action").forGetter(ServerLinksDialog::exitAction), ExtraCodecs.POSITIVE_INT.optionalFieldOf("columns", 2).forGetter(ServerLinksDialog::columns), WIDTH_CODEC.optionalFieldOf("button_width", 150).forGetter(ServerLinksDialog::buttonWidth)).apply(i, ServerLinksDialog::new));
 
-   public ServerLinksDialog(CommonDialogData var1, Optional<ActionButton> var2, int var3, int var4) {
+   public ServerLinksDialog {
       super();
-      this.common = var1;
-      this.exitAction = var2;
-      this.columns = var3;
-      this.buttonWidth = var4;
    }
 
    public MapCodec<ServerLinksDialog> codec() {

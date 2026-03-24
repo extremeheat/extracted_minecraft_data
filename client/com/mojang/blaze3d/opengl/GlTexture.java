@@ -16,9 +16,9 @@ public class GlTexture extends GpuTexture {
    protected boolean closed;
    private int views;
 
-   protected GlTexture(@GpuTexture.Usage int var1, String var2, TextureFormat var3, int var4, int var5, int var6, int var7, int var8) {
-      super(var1, var2, var3, var4, var5, var6, var7);
-      this.id = var8;
+   protected GlTexture(final @GpuTexture.Usage int usage, final String label, final TextureFormat format, final int width, final int height, final int depthOrLayers, final int mipLevels, final int id) {
+      super(usage, label, format, width, height, depthOrLayers, mipLevels);
+      this.id = id;
    }
 
    public void close() {
@@ -41,8 +41,8 @@ public class GlTexture extends GpuTexture {
          IntIterator var1 = this.fboCache.values().iterator();
 
          while(var1.hasNext()) {
-            int var2 = (Integer)var1.next();
-            GlStateManager._glDeleteFramebuffers(var2);
+            int fbo = (Integer)var1.next();
+            GlStateManager._glDeleteFramebuffers(fbo);
          }
       }
 
@@ -52,27 +52,27 @@ public class GlTexture extends GpuTexture {
       return this.closed;
    }
 
-   public int getFbo(DirectStateAccess var1, @Nullable GpuTexture var2) {
-      int var3 = var2 == null ? 0 : ((GlTexture)var2).id;
-      if (this.firstFboDepthId == var3) {
+   public int getFbo(final DirectStateAccess dsa, final @Nullable GpuTexture depth) {
+      int depthId = depth == null ? 0 : ((GlTexture)depth).id;
+      if (this.firstFboDepthId == depthId) {
          return this.firstFboId;
       } else if (this.firstFboId == -1) {
-         this.firstFboId = this.createFbo(var1, var3);
-         this.firstFboDepthId = var3;
+         this.firstFboId = this.createFbo(dsa, depthId);
+         this.firstFboDepthId = depthId;
          return this.firstFboId;
       } else {
          if (this.fboCache == null) {
             this.fboCache = new Int2IntArrayMap();
          }
 
-         return this.fboCache.computeIfAbsent(var3, (var2x) -> this.createFbo(var1, var2x));
+         return this.fboCache.computeIfAbsent(depthId, (_depthId) -> this.createFbo(dsa, _depthId));
       }
    }
 
-   private int createFbo(DirectStateAccess var1, int var2) {
-      int var3 = var1.createFrameBufferObject();
-      var1.bindFrameBufferTextures(var3, this.id, var2, 0, 0);
-      return var3;
+   private int createFbo(final DirectStateAccess dsa, final int depthid) {
+      int fbo = dsa.createFrameBufferObject();
+      dsa.bindFrameBufferTextures(fbo, this.id, depthid, 0, 0);
+      return fbo;
    }
 
    public int glId() {

@@ -21,35 +21,35 @@ public class MobBucketItem extends BucketItem {
    private final EntityType<? extends Mob> type;
    private final SoundEvent emptySound;
 
-   public MobBucketItem(EntityType<? extends Mob> var1, Fluid var2, SoundEvent var3, Item.Properties var4) {
-      super(var2, var4);
-      this.type = var1;
-      this.emptySound = var3;
+   public MobBucketItem(final EntityType<? extends Mob> type, final Fluid content, final SoundEvent emptySound, final Item.Properties properties) {
+      super(content, properties);
+      this.type = type;
+      this.emptySound = emptySound;
    }
 
-   public void checkExtraContent(@Nullable LivingEntity var1, Level var2, ItemStack var3, BlockPos var4) {
-      if (var2 instanceof ServerLevel) {
-         this.spawn((ServerLevel)var2, var3, var4);
-         var2.gameEvent(var1, GameEvent.ENTITY_PLACE, var4);
+   public void checkExtraContent(final @Nullable LivingEntity user, final Level level, final ItemStack itemStack, final BlockPos pos) {
+      if (level instanceof ServerLevel) {
+         this.spawn((ServerLevel)level, itemStack, pos);
+         level.gameEvent(user, GameEvent.ENTITY_PLACE, pos);
       }
 
    }
 
-   protected void playEmptySound(@Nullable LivingEntity var1, LevelAccessor var2, BlockPos var3) {
-      var2.playSound(var1, var3, this.emptySound, SoundSource.NEUTRAL, 1.0F, 1.0F);
+   protected void playEmptySound(final @Nullable LivingEntity user, final LevelAccessor level, final BlockPos pos) {
+      level.playSound(user, pos, this.emptySound, SoundSource.NEUTRAL, 1.0F, 1.0F);
    }
 
-   private void spawn(ServerLevel var1, ItemStack var2, BlockPos var3) {
-      Mob var4 = this.type.create(var1, EntityType.createDefaultStackConfig(var1, var2, (LivingEntity)null), var3, EntitySpawnReason.BUCKET, true, false);
-      if (var4 instanceof Bucketable var5) {
-         CustomData var6 = (CustomData)var2.getOrDefault(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY);
-         var5.loadFromBucketTag(var6.copyTag());
-         var5.setFromBucket(true);
+   private void spawn(final ServerLevel level, final ItemStack itemStack, final BlockPos spawnPos) {
+      Mob mob = this.type.create(level, EntityType.createDefaultStackConfig(level, itemStack, (LivingEntity)null), spawnPos, EntitySpawnReason.BUCKET, true, false);
+      if (mob instanceof Bucketable bucketable) {
+         CustomData entityData = (CustomData)itemStack.getOrDefault(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY);
+         bucketable.loadFromBucketTag(entityData.copyTag());
+         bucketable.setFromBucket(true);
       }
 
-      if (var4 != null) {
-         var1.addFreshEntityWithPassengers(var4);
-         var4.playAmbientSound();
+      if (mob != null) {
+         level.addFreshEntityWithPassengers(mob);
+         mob.playAmbientSound();
       }
 
    }

@@ -23,47 +23,47 @@ public class WorkAtComposter extends WorkAtPoi {
       super();
    }
 
-   protected void useWorkstation(ServerLevel var1, Villager var2) {
-      Optional var3 = var2.getBrain().getMemory(MemoryModuleType.JOB_SITE);
-      if (!var3.isEmpty()) {
-         GlobalPos var4 = (GlobalPos)var3.get();
-         BlockState var5 = var1.getBlockState(var4.pos());
-         if (var5.is(Blocks.COMPOSTER)) {
-            this.makeBread(var1, var2);
-            this.compostItems(var1, var2, var4, var5);
+   protected void useWorkstation(final ServerLevel level, final Villager body) {
+      Optional<GlobalPos> jobSiteMemory = body.getBrain().<GlobalPos>getMemory(MemoryModuleType.JOB_SITE);
+      if (!jobSiteMemory.isEmpty()) {
+         GlobalPos jobSitePos = (GlobalPos)jobSiteMemory.get();
+         BlockState blockState = level.getBlockState(jobSitePos.pos());
+         if (blockState.is(Blocks.COMPOSTER)) {
+            this.makeBread(level, body);
+            this.compostItems(level, body, jobSitePos, blockState);
          }
 
       }
    }
 
-   private void compostItems(ServerLevel var1, Villager var2, GlobalPos var3, BlockState var4) {
-      BlockPos var5 = var3.pos();
-      if ((Integer)var4.getValue(ComposterBlock.LEVEL) == 8) {
-         var4 = ComposterBlock.extractProduce(var2, var4, var1, var5);
+   private void compostItems(final ServerLevel level, final Villager body, final GlobalPos jobSitePos, BlockState blockState) {
+      BlockPos pos = jobSitePos.pos();
+      if ((Integer)blockState.getValue(ComposterBlock.LEVEL) == 8) {
+         blockState = ComposterBlock.extractProduce(body, blockState, level, pos);
       }
 
-      int var6 = 20;
-      boolean var7 = true;
-      int[] var8 = new int[COMPOSTABLE_ITEMS.size()];
-      SimpleContainer var9 = var2.getInventory();
-      int var10 = var9.getContainerSize();
-      BlockState var11 = var4;
+      int totalItemsToUse = 20;
+      int minStackSize = 10;
+      int[] itemsSeenSoFar = new int[COMPOSTABLE_ITEMS.size()];
+      SimpleContainer inventory = body.getInventory();
+      int containerSize = inventory.getContainerSize();
+      BlockState tempState = blockState;
 
-      for(int var12 = var10 - 1; var12 >= 0 && var6 > 0; --var12) {
-         ItemStack var13 = var9.getItem(var12);
-         int var14 = COMPOSTABLE_ITEMS.indexOf(var13.getItem());
-         if (var14 != -1) {
-            int var15 = var13.getCount();
-            int var16 = var8[var14] + var15;
-            var8[var14] = var16;
-            int var17 = Math.min(Math.min(var16 - 10, var6), var15);
-            if (var17 > 0) {
-               var6 -= var17;
+      for(int i = containerSize - 1; i >= 0 && totalItemsToUse > 0; --i) {
+         ItemStack itemStack = inventory.getItem(i);
+         int itemIndex = COMPOSTABLE_ITEMS.indexOf(itemStack.getItem());
+         if (itemIndex != -1) {
+            int stackSize = itemStack.getCount();
+            int totalItemCount = itemsSeenSoFar[itemIndex] + stackSize;
+            itemsSeenSoFar[itemIndex] = totalItemCount;
+            int itemsToUse = Math.min(Math.min(totalItemCount - 10, totalItemsToUse), stackSize);
+            if (itemsToUse > 0) {
+               totalItemsToUse -= itemsToUse;
 
-               for(int var18 = 0; var18 < var17; ++var18) {
-                  var11 = ComposterBlock.insertItem(var2, var11, var1, var13, var5);
-                  if ((Integer)var11.getValue(ComposterBlock.LEVEL) == 7) {
-                     this.spawnComposterFillEffects(var1, var4, var5, var11);
+               for(int j = 0; j < itemsToUse; ++j) {
+                  tempState = ComposterBlock.insertItem(body, tempState, level, itemStack, pos);
+                  if ((Integer)tempState.getValue(ComposterBlock.LEVEL) == 7) {
+                     this.spawnComposterFillEffects(level, blockState, pos, tempState);
                      return;
                   }
                }
@@ -71,26 +71,26 @@ public class WorkAtComposter extends WorkAtPoi {
          }
       }
 
-      this.spawnComposterFillEffects(var1, var4, var5, var11);
+      this.spawnComposterFillEffects(level, blockState, pos, tempState);
    }
 
-   private void spawnComposterFillEffects(ServerLevel var1, BlockState var2, BlockPos var3, BlockState var4) {
-      var1.levelEvent(1500, var3, var4 != var2 ? 1 : 0);
+   private void spawnComposterFillEffects(final ServerLevel level, final BlockState blockState, final BlockPos pos, final BlockState newState) {
+      level.levelEvent(1500, pos, newState != blockState ? 1 : 0);
    }
 
-   private void makeBread(ServerLevel var1, Villager var2) {
-      SimpleContainer var3 = var2.getInventory();
-      if (var3.countItem(Items.BREAD) <= 36) {
-         int var4 = var3.countItem(Items.WHEAT);
-         boolean var5 = true;
-         boolean var6 = true;
-         int var7 = Math.min(3, var4 / 3);
-         if (var7 != 0) {
-            int var8 = var7 * 3;
-            var3.removeItemType(Items.WHEAT, var8);
-            ItemStack var9 = var3.addItem(new ItemStack(Items.BREAD, var7));
-            if (!var9.isEmpty()) {
-               var2.spawnAtLocation(var1, var9, 0.5F);
+   private void makeBread(final ServerLevel level, final Villager body) {
+      SimpleContainer inventory = body.getInventory();
+      if (inventory.countItem(Items.BREAD) <= 36) {
+         int howMuchWheatIHave = inventory.countItem(Items.WHEAT);
+         int maxAmountOfBreadToMake = 3;
+         int amountOfWheatNeededToCraftOneBread = 3;
+         int howMuchBreadToMake = Math.min(3, howMuchWheatIHave / 3);
+         if (howMuchBreadToMake != 0) {
+            int howMuchWheatToUse = howMuchBreadToMake * 3;
+            inventory.removeItemType(Items.WHEAT, howMuchWheatToUse);
+            ItemStack breadICantCarry = inventory.addItem(new ItemStack(Items.BREAD, howMuchBreadToMake));
+            if (!breadICantCarry.isEmpty()) {
+               body.spawnAtLocation(level, breadICantCarry, 0.5F);
             }
 
          }

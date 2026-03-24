@@ -12,39 +12,39 @@ public class DynamicGameEventListener<T extends GameEventListener> {
    private final T listener;
    private @Nullable SectionPos lastSection;
 
-   public DynamicGameEventListener(T var1) {
+   public DynamicGameEventListener(final T listener) {
       super();
-      this.listener = var1;
+      this.listener = listener;
    }
 
-   public void add(ServerLevel var1) {
-      this.move(var1);
+   public void add(final ServerLevel level) {
+      this.move(level);
    }
 
    public T getListener() {
       return this.listener;
    }
 
-   public void remove(ServerLevel var1) {
-      ifChunkExists(var1, this.lastSection, (var1x) -> var1x.unregister(this.listener));
+   public void remove(final ServerLevel level) {
+      ifChunkExists(level, this.lastSection, (dispatcher) -> dispatcher.unregister(this.listener));
    }
 
-   public void move(ServerLevel var1) {
-      this.listener.getListenerSource().getPosition(var1).map(SectionPos::of).ifPresent((var2) -> {
-         if (this.lastSection == null || !this.lastSection.equals(var2)) {
-            ifChunkExists(var1, this.lastSection, (var1x) -> var1x.unregister(this.listener));
-            this.lastSection = var2;
-            ifChunkExists(var1, this.lastSection, (var1x) -> var1x.register(this.listener));
+   public void move(final ServerLevel level) {
+      this.listener.getListenerSource().getPosition(level).map(SectionPos::of).ifPresent((currentSection) -> {
+         if (this.lastSection == null || !this.lastSection.equals(currentSection)) {
+            ifChunkExists(level, this.lastSection, (dispatcher) -> dispatcher.unregister(this.listener));
+            this.lastSection = currentSection;
+            ifChunkExists(level, this.lastSection, (dispatcher) -> dispatcher.register(this.listener));
          }
 
       });
    }
 
-   private static void ifChunkExists(LevelReader var0, @Nullable SectionPos var1, Consumer<GameEventListenerRegistry> var2) {
-      if (var1 != null) {
-         ChunkAccess var3 = var0.getChunk(var1.x(), var1.z(), ChunkStatus.FULL, false);
-         if (var3 != null) {
-            var2.accept(var3.getListenerRegistry(var1.y()));
+   private static void ifChunkExists(final LevelReader level, final @Nullable SectionPos sectionPos, final Consumer<GameEventListenerRegistry> action) {
+      if (sectionPos != null) {
+         ChunkAccess chunk = level.getChunk(sectionPos.x(), sectionPos.z(), ChunkStatus.FULL, false);
+         if (chunk != null) {
+            action.accept(chunk.getListenerRegistry(sectionPos.y()));
          }
 
       }

@@ -3,7 +3,7 @@ package net.minecraft.client.gui.components;
 import java.util.function.Consumer;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
@@ -14,56 +14,56 @@ public abstract class AbstractStringWidget extends AbstractWidget {
    private @Nullable Consumer<Style> componentClickHandler = null;
    private final Font font;
 
-   public AbstractStringWidget(int var1, int var2, int var3, int var4, Component var5, Font var6) {
-      super(var1, var2, var3, var4, var5);
-      this.font = var6;
+   public AbstractStringWidget(final int x, final int y, final int width, final int height, final Component message, final Font font) {
+      super(x, y, width, height, message);
+      this.font = font;
    }
 
-   public abstract void visitLines(ActiveTextCollector var1);
+   public abstract void visitLines(ActiveTextCollector output);
 
-   public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-      GuiGraphics.HoveredTextEffects var5;
+   public void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      GuiGraphicsExtractor.HoveredTextEffects effects;
       if (this.isHovered()) {
          if (this.componentClickHandler != null) {
-            var5 = GuiGraphics.HoveredTextEffects.TOOLTIP_AND_CURSOR;
+            effects = GuiGraphicsExtractor.HoveredTextEffects.TOOLTIP_AND_CURSOR;
          } else {
-            var5 = GuiGraphics.HoveredTextEffects.TOOLTIP_ONLY;
+            effects = GuiGraphicsExtractor.HoveredTextEffects.TOOLTIP_ONLY;
          }
       } else {
-         var5 = GuiGraphics.HoveredTextEffects.NONE;
+         effects = GuiGraphicsExtractor.HoveredTextEffects.NONE;
       }
 
-      this.visitLines(var1.textRendererForWidget(this, var5));
+      this.visitLines(graphics.textRendererForWidget(this, effects));
    }
 
-   public void onClick(MouseButtonEvent var1, boolean var2) {
+   public void onClick(final MouseButtonEvent event, final boolean doubleClick) {
       if (this.componentClickHandler != null) {
-         ActiveTextCollector.ClickableStyleFinder var3 = new ActiveTextCollector.ClickableStyleFinder(this.getFont(), (int)var1.x(), (int)var1.y());
-         this.visitLines(var3);
-         Style var4 = var3.result();
-         if (var4 != null) {
-            this.componentClickHandler.accept(var4);
+         ActiveTextCollector.ClickableStyleFinder finder = new ActiveTextCollector.ClickableStyleFinder(this.getFont(), (int)event.x(), (int)event.y());
+         this.visitLines(finder);
+         Style clickedStyle = finder.result();
+         if (clickedStyle != null) {
+            this.componentClickHandler.accept(clickedStyle);
             return;
          }
       }
 
-      super.onClick(var1, var2);
+      super.onClick(event, doubleClick);
    }
 
-   protected void updateWidgetNarration(NarrationElementOutput var1) {
+   protected void updateWidgetNarration(final NarrationElementOutput output) {
    }
 
    protected final Font getFont() {
       return this.font;
    }
 
-   public void setMessage(Component var1) {
-      super.setMessage(var1);
-      this.setWidth(this.getFont().width(var1.getVisualOrderText()));
+   public void setMessage(final Component message) {
+      super.setMessage(message);
+      this.setWidth(this.getFont().width(message.getVisualOrderText()));
    }
 
-   public AbstractStringWidget setComponentClickHandler(@Nullable Consumer<Style> var1) {
-      this.componentClickHandler = var1;
+   public AbstractStringWidget setComponentClickHandler(final @Nullable Consumer<Style> clickEventConsumer) {
+      this.componentClickHandler = clickEventConsumer;
       return this;
    }
 }

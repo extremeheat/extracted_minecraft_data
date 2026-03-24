@@ -9,25 +9,25 @@ public class ComparatorBlockEntity extends BlockEntity {
    private static final int DEFAULT_OUTPUT = 0;
    private int output = 0;
 
-   public ComparatorBlockEntity(BlockPos var1, BlockState var2) {
-      super(BlockEntityType.COMPARATOR, var1, var2);
+   public ComparatorBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      super(BlockEntityType.COMPARATOR, worldPosition, blockState);
    }
 
-   protected void saveAdditional(ValueOutput var1) {
-      super.saveAdditional(var1);
-      var1.putInt("OutputSignal", this.output);
+   protected void saveAdditional(final ValueOutput output) {
+      super.saveAdditional(output);
+      output.putInt("OutputSignal", this.output);
    }
 
-   protected void loadAdditional(ValueInput var1) {
-      super.loadAdditional(var1);
-      this.output = var1.getIntOr("OutputSignal", 0);
+   protected void loadAdditional(final ValueInput input) {
+      super.loadAdditional(input);
+      this.output = input.getIntOr("OutputSignal", 0);
    }
 
    public int getOutputSignal() {
       return this.output;
    }
 
-   public void setOutputSignal(int var1) {
-      this.output = var1;
+   public void setOutputSignal(final int value) {
+      this.output = value;
    }
 }

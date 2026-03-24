@@ -7,8 +7,8 @@ import net.minecraft.world.level.block.state.BlockState;
 public class DropperBlockEntity extends DispenserBlockEntity {
    private static final Component DEFAULT_NAME = Component.translatable("container.dropper");
 
-   public DropperBlockEntity(BlockPos var1, BlockState var2) {
-      super(BlockEntityType.DROPPER, var1, var2);
+   public DropperBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      super(BlockEntityType.DROPPER, worldPosition, blockState);
    }
 
    protected Component getDefaultName() {

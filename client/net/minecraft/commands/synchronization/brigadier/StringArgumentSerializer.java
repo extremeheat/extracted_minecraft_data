@@ -1,8 +1,8 @@
 package net.minecraft.commands.synchronization.brigadier;
 
 import com.google.gson.JsonObject;
-import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import java.util.Objects;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.network.FriendlyByteBuf;
@@ -12,45 +12,41 @@ public class StringArgumentSerializer implements ArgumentTypeInfo<StringArgument
       super();
    }
 
-   public void serializeToNetwork(Template var1, FriendlyByteBuf var2) {
-      var2.writeEnum(var1.type);
+   public void serializeToNetwork(final Template template, final FriendlyByteBuf out) {
+      out.writeEnum(template.type);
    }
 
-   public Template deserializeFromNetwork(FriendlyByteBuf var1) {
-      StringArgumentType.StringType var2 = (StringArgumentType.StringType)var1.readEnum(StringArgumentType.StringType.class);
-      return new Template(var2);
+   public Template deserializeFromNetwork(final FriendlyByteBuf in) {
+      StringArgumentType.StringType type = (StringArgumentType.StringType)in.readEnum(StringArgumentType.StringType.class);
+      return new Template(type);
    }
 
-   public void serializeToJson(Template var1, JsonObject var2) {
+   public void serializeToJson(final Template template, final JsonObject out) {
       String var10002;
-      switch (var1.type) {
+      switch (template.type) {
          case SINGLE_WORD -> var10002 = "word";
          case QUOTABLE_PHRASE -> var10002 = "phrase";
          case GREEDY_PHRASE -> var10002 = "greedy";
          default -> throw new MatchException((String)null, (Throwable)null);
       }
 
-      var2.addProperty("type", var10002);
+      out.addProperty("type", var10002);
    }
 
-   public Template unpack(StringArgumentType var1) {
-      return new Template(var1.getType());
-   }
-
-   // $FF: synthetic method
-   public ArgumentTypeInfo.Template deserializeFromNetwork(final FriendlyByteBuf var1) {
-      return this.deserializeFromNetwork(var1);
+   public Template unpack(final StringArgumentType argument) {
+      return new Template(argument.getType());
    }
 
    public final class Template implements ArgumentTypeInfo.Template<StringArgumentType> {
-      final StringArgumentType.StringType type;
+      private final StringArgumentType.StringType type;
 
-      public Template(final StringArgumentType.StringType var2) {
+      public Template(final StringArgumentType.StringType type) {
+         Objects.requireNonNull(StringArgumentSerializer.this);
          super();
-         this.type = var2;
+         this.type = type;
       }
 
-      public StringArgumentType instantiate(CommandBuildContext var1) {
+      public StringArgumentType instantiate(final CommandBuildContext context) {
          StringArgumentType var10000;
          switch (this.type) {
             case SINGLE_WORD -> var10000 = StringArgumentType.word();
@@ -64,11 +60,6 @@ public class StringArgumentSerializer implements ArgumentTypeInfo<StringArgument
 
       public ArgumentTypeInfo<StringArgumentType, ?> type() {
          return StringArgumentSerializer.this;
-      }
-
-      // $FF: synthetic method
-      public ArgumentType instantiate(final CommandBuildContext var1) {
-         return this.instantiate(var1);
       }
    }
 }

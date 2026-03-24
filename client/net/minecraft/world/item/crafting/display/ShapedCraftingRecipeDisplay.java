@@ -10,20 +10,14 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.flag.FeatureFlagSet;
 
 public record ShapedCraftingRecipeDisplay(int width, int height, List<SlotDisplay> ingredients, SlotDisplay result, SlotDisplay craftingStation) implements RecipeDisplay {
-   public static final MapCodec<ShapedCraftingRecipeDisplay> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.INT.fieldOf("width").forGetter(ShapedCraftingRecipeDisplay::width), Codec.INT.fieldOf("height").forGetter(ShapedCraftingRecipeDisplay::height), SlotDisplay.CODEC.listOf().fieldOf("ingredients").forGetter(ShapedCraftingRecipeDisplay::ingredients), SlotDisplay.CODEC.fieldOf("result").forGetter(ShapedCraftingRecipeDisplay::result), SlotDisplay.CODEC.fieldOf("crafting_station").forGetter(ShapedCraftingRecipeDisplay::craftingStation)).apply(var0, ShapedCraftingRecipeDisplay::new));
+   public static final MapCodec<ShapedCraftingRecipeDisplay> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.INT.fieldOf("width").forGetter(ShapedCraftingRecipeDisplay::width), Codec.INT.fieldOf("height").forGetter(ShapedCraftingRecipeDisplay::height), SlotDisplay.CODEC.listOf().fieldOf("ingredients").forGetter(ShapedCraftingRecipeDisplay::ingredients), SlotDisplay.CODEC.fieldOf("result").forGetter(ShapedCraftingRecipeDisplay::result), SlotDisplay.CODEC.fieldOf("crafting_station").forGetter(ShapedCraftingRecipeDisplay::craftingStation)).apply(i, ShapedCraftingRecipeDisplay::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, ShapedCraftingRecipeDisplay> STREAM_CODEC;
    public static final RecipeDisplay.Type<ShapedCraftingRecipeDisplay> TYPE;
 
-   public ShapedCraftingRecipeDisplay(int var1, int var2, List<SlotDisplay> var3, SlotDisplay var4, SlotDisplay var5) {
+   public ShapedCraftingRecipeDisplay {
       super();
-      if (var3.size() != var1 * var2) {
+      if (ingredients.size() != width * height) {
          throw new IllegalArgumentException("Invalid shaped recipe display contents");
-      } else {
-         this.width = var1;
-         this.height = var2;
-         this.ingredients = var3;
-         this.result = var4;
-         this.craftingStation = var5;
       }
    }
 
@@ -31,8 +25,8 @@ public record ShapedCraftingRecipeDisplay(int width, int height, List<SlotDispla
       return TYPE;
    }
 
-   public boolean isEnabled(FeatureFlagSet var1) {
-      return this.ingredients.stream().allMatch((var1x) -> var1x.isEnabled(var1)) && RecipeDisplay.super.isEnabled(var1);
+   public boolean isEnabled(final FeatureFlagSet enabledFeatures) {
+      return this.ingredients.stream().allMatch((e) -> e.isEnabled(enabledFeatures)) && RecipeDisplay.super.isEnabled(enabledFeatures);
    }
 
    static {

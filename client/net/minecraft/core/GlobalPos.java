@@ -10,18 +10,16 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 
 public record GlobalPos(ResourceKey<Level> dimension, BlockPos pos) {
-   public static final MapCodec<GlobalPos> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Level.RESOURCE_KEY_CODEC.fieldOf("dimension").forGetter(GlobalPos::dimension), BlockPos.CODEC.fieldOf("pos").forGetter(GlobalPos::pos)).apply(var0, GlobalPos::of));
+   public static final MapCodec<GlobalPos> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Level.RESOURCE_KEY_CODEC.fieldOf("dimension").forGetter(GlobalPos::dimension), BlockPos.CODEC.fieldOf("pos").forGetter(GlobalPos::pos)).apply(i, GlobalPos::of));
    public static final Codec<GlobalPos> CODEC;
    public static final StreamCodec<ByteBuf, GlobalPos> STREAM_CODEC;
 
-   public GlobalPos(ResourceKey<Level> var1, BlockPos var2) {
+   public GlobalPos {
       super();
-      this.dimension = var1;
-      this.pos = var2;
    }
 
-   public static GlobalPos of(ResourceKey<Level> var0, BlockPos var1) {
-      return new GlobalPos(var0, var1);
+   public static GlobalPos of(final ResourceKey<Level> dimension, final BlockPos pos) {
+      return new GlobalPos(dimension, pos);
    }
 
    public String toString() {
@@ -29,8 +27,8 @@ public record GlobalPos(ResourceKey<Level> dimension, BlockPos pos) {
       return var10000 + " " + String.valueOf(this.pos);
    }
 
-   public boolean isCloseEnough(ResourceKey<Level> var1, BlockPos var2, int var3) {
-      return this.dimension.equals(var1) && this.pos.distChessboard(var2) <= var3;
+   public boolean isCloseEnough(final ResourceKey<Level> dimension, final BlockPos pos, final int maxDistance) {
+      return this.dimension.equals(dimension) && this.pos.distChessboard(pos) <= maxDistance;
    }
 
    static {

@@ -2,6 +2,7 @@ package net.minecraft.client.gui.components.debug;
 
 import com.google.common.collect.Maps;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -20,37 +21,37 @@ public class DebugEntryHeightmap implements DebugScreenEntry {
       super();
    }
 
-   public void display(DebugScreenDisplayer var1, @Nullable Level var2, @Nullable LevelChunk var3, @Nullable LevelChunk var4) {
-      Minecraft var5 = Minecraft.getInstance();
-      Entity var6 = var5.getCameraEntity();
-      if (var6 != null && var5.level != null && var3 != null) {
-         BlockPos var7 = var6.blockPosition();
-         ArrayList var8 = new ArrayList();
-         StringBuilder var9 = new StringBuilder("CH");
+   public void display(final DebugScreenDisplayer displayer, final @Nullable Level serverOrClientLevel, final @Nullable LevelChunk clientChunk, final @Nullable LevelChunk serverChunk) {
+      Minecraft minecraft = Minecraft.getInstance();
+      Entity entity = minecraft.getCameraEntity();
+      if (entity != null && minecraft.level != null && clientChunk != null) {
+         BlockPos feetPos = entity.blockPosition();
+         List<String> result = new ArrayList();
+         StringBuilder heightmaps = new StringBuilder("CH");
 
-         for(Heightmap.Types var13 : Heightmap.Types.values()) {
-            if (var13.sendToClient()) {
-               var9.append(" ").append((String)HEIGHTMAP_NAMES.get(var13)).append(": ").append(var3.getHeight(var13, var7.getX(), var7.getZ()));
+         for(Heightmap.Types type : Heightmap.Types.values()) {
+            if (type.sendToClient()) {
+               heightmaps.append(" ").append((String)HEIGHTMAP_NAMES.get(type)).append(": ").append(clientChunk.getHeight(type, feetPos.getX(), feetPos.getZ()));
             }
          }
 
-         var8.add(var9.toString());
-         var9.setLength(0);
-         var9.append("SH");
+         result.add(heightmaps.toString());
+         heightmaps.setLength(0);
+         heightmaps.append("SH");
 
-         for(Heightmap.Types var17 : Heightmap.Types.values()) {
-            if (var17.keepAfterWorldgen()) {
-               var9.append(" ").append((String)HEIGHTMAP_NAMES.get(var17)).append(": ");
-               if (var4 != null) {
-                  var9.append(var4.getHeight(var17, var7.getX(), var7.getZ()));
+         for(Heightmap.Types type : Heightmap.Types.values()) {
+            if (type.keepAfterWorldgen()) {
+               heightmaps.append(" ").append((String)HEIGHTMAP_NAMES.get(type)).append(": ");
+               if (serverChunk != null) {
+                  heightmaps.append(serverChunk.getHeight(type, feetPos.getX(), feetPos.getZ()));
                } else {
-                  var9.append("??");
+                  heightmaps.append("??");
                }
             }
          }
 
-         var8.add(var9.toString());
-         var1.addToGroup(GROUP, var8);
+         result.add(heightmaps.toString());
+         displayer.addToGroup(GROUP, result);
       }
    }
 

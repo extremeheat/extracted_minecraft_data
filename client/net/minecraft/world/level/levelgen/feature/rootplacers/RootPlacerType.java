@@ -8,13 +8,13 @@ public class RootPlacerType<P extends RootPlacer> {
    public static final RootPlacerType<MangroveRootPlacer> MANGROVE_ROOT_PLACER;
    private final MapCodec<P> codec;
 
-   private static <P extends RootPlacer> RootPlacerType<P> register(String var0, MapCodec<P> var1) {
-      return (RootPlacerType)Registry.register(BuiltInRegistries.ROOT_PLACER_TYPE, (String)var0, new RootPlacerType(var1));
+   private static <P extends RootPlacer> RootPlacerType<P> register(final String name, final MapCodec<P> codec) {
+      return (RootPlacerType)Registry.register(BuiltInRegistries.ROOT_PLACER_TYPE, (String)name, new RootPlacerType(codec));
    }
 
-   private RootPlacerType(MapCodec<P> var1) {
+   private RootPlacerType(final MapCodec<P> codec) {
       super();
-      this.codec = var1;
+      this.codec = codec;
    }
 
    public MapCodec<P> codec() {

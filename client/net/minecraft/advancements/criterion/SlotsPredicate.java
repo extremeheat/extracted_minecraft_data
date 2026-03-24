@@ -7,18 +7,18 @@ import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.SlotProvider;
 import net.minecraft.world.inventory.SlotRange;
 import net.minecraft.world.inventory.SlotRanges;
+import net.minecraft.world.item.ItemInstance;
 
 public record SlotsPredicate(Map<SlotRange, ItemPredicate> slots) {
    public static final Codec<SlotsPredicate> CODEC;
 
-   public SlotsPredicate(Map<SlotRange, ItemPredicate> var1) {
+   public SlotsPredicate {
       super();
-      this.slots = var1;
    }
 
-   public boolean matches(SlotProvider var1) {
-      for(Map.Entry var3 : this.slots.entrySet()) {
-         if (!matchSlots(var1, (ItemPredicate)var3.getValue(), ((SlotRange)var3.getKey()).slots())) {
+   public boolean matches(final SlotProvider slotProvider) {
+      for(Map.Entry<SlotRange, ItemPredicate> entry : this.slots.entrySet()) {
+         if (!matchSlots(slotProvider, (ItemPredicate)entry.getValue(), ((SlotRange)entry.getKey()).slots())) {
             return false;
          }
       }
@@ -26,11 +26,11 @@ public record SlotsPredicate(Map<SlotRange, ItemPredicate> slots) {
       return true;
    }
 
-   private static boolean matchSlots(SlotProvider var0, ItemPredicate var1, IntList var2) {
-      for(int var3 = 0; var3 < var2.size(); ++var3) {
-         int var4 = var2.getInt(var3);
-         SlotAccess var5 = var0.getSlot(var4);
-         if (var5 != null && var1.test(var5.get())) {
+   private static boolean matchSlots(final SlotProvider slotProvider, final ItemPredicate test, final IntList slots) {
+      for(int i = 0; i < slots.size(); ++i) {
+         int slotId = slots.getInt(i);
+         SlotAccess slot = slotProvider.getSlot(slotId);
+         if (slot != null && test.test((ItemInstance)slot.get())) {
             return true;
          }
       }

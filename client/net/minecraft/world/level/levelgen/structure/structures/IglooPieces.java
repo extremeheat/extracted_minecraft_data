@@ -33,27 +33,27 @@ import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 
 public class IglooPieces {
    public static final int GENERATION_HEIGHT = 90;
-   static final Identifier STRUCTURE_LOCATION_IGLOO = Identifier.withDefaultNamespace("igloo/top");
+   private static final Identifier STRUCTURE_LOCATION_IGLOO = Identifier.withDefaultNamespace("igloo/top");
    private static final Identifier STRUCTURE_LOCATION_LADDER = Identifier.withDefaultNamespace("igloo/middle");
    private static final Identifier STRUCTURE_LOCATION_LABORATORY = Identifier.withDefaultNamespace("igloo/bottom");
-   static final Map<Identifier, BlockPos> PIVOTS;
-   static final Map<Identifier, BlockPos> OFFSETS;
+   private static final Map<Identifier, BlockPos> PIVOTS;
+   private static final Map<Identifier, BlockPos> OFFSETS;
 
    public IglooPieces() {
       super();
    }
 
-   public static void addPieces(StructureTemplateManager var0, BlockPos var1, Rotation var2, StructurePieceAccessor var3, RandomSource var4) {
-      if (var4.nextDouble() < 0.5) {
-         int var5 = var4.nextInt(8) + 4;
-         var3.addPiece(new IglooPiece(var0, STRUCTURE_LOCATION_LABORATORY, var1, var2, var5 * 3));
+   public static void addPieces(final StructureTemplateManager structureTemplateManager, final BlockPos position, final Rotation rotation, final StructurePieceAccessor structurePieceAccessor, final RandomSource random) {
+      if (random.nextDouble() < 0.5) {
+         int depth = random.nextInt(8) + 4;
+         structurePieceAccessor.addPiece(new IglooPiece(structureTemplateManager, STRUCTURE_LOCATION_LABORATORY, position, rotation, depth * 3));
 
-         for(int var6 = 0; var6 < var5 - 1; ++var6) {
-            var3.addPiece(new IglooPiece(var0, STRUCTURE_LOCATION_LADDER, var1, var2, var6 * 3));
+         for(int i = 0; i < depth - 1; ++i) {
+            structurePieceAccessor.addPiece(new IglooPiece(structureTemplateManager, STRUCTURE_LOCATION_LADDER, position, rotation, i * 3));
          }
       }
 
-      var3.addPiece(new IglooPiece(var0, STRUCTURE_LOCATION_IGLOO, var1, var2, 0));
+      structurePieceAccessor.addPiece(new IglooPiece(structureTemplateManager, STRUCTURE_LOCATION_IGLOO, position, rotation, 0));
    }
 
    static {
@@ -62,56 +62,56 @@ public class IglooPieces {
    }
 
    public static class IglooPiece extends TemplateStructurePiece {
-      public IglooPiece(StructureTemplateManager var1, Identifier var2, BlockPos var3, Rotation var4, int var5) {
-         super(StructurePieceType.IGLOO, 0, var1, var2, var2.toString(), makeSettings(var4, var2), makePosition(var2, var3, var5));
+      public IglooPiece(final StructureTemplateManager structureTemplateManager, final Identifier templateLocation, final BlockPos position, final Rotation rotation, final int depth) {
+         super(StructurePieceType.IGLOO, 0, structureTemplateManager, templateLocation, templateLocation.toString(), makeSettings(rotation, templateLocation), makePosition(templateLocation, position, depth));
       }
 
-      public IglooPiece(StructureTemplateManager var1, CompoundTag var2) {
-         super(StructurePieceType.IGLOO, var2, var1, (var1x) -> makeSettings((Rotation)var2.read("Rot", Rotation.LEGACY_CODEC).orElseThrow(), var1x));
+      public IglooPiece(final StructureTemplateManager structureTemplateManager, final CompoundTag tag) {
+         super(StructurePieceType.IGLOO, tag, structureTemplateManager, (location) -> makeSettings((Rotation)tag.read("Rot", Rotation.LEGACY_CODEC).orElseThrow(), location));
       }
 
-      private static StructurePlaceSettings makeSettings(Rotation var0, Identifier var1) {
-         return (new StructurePlaceSettings()).setRotation(var0).setMirror(Mirror.NONE).setRotationPivot((BlockPos)IglooPieces.PIVOTS.get(var1)).addProcessor(BlockIgnoreProcessor.STRUCTURE_BLOCK).setLiquidSettings(LiquidSettings.IGNORE_WATERLOGGING);
+      private static StructurePlaceSettings makeSettings(final Rotation rotation, final Identifier templateLocation) {
+         return (new StructurePlaceSettings()).setRotation(rotation).setMirror(Mirror.NONE).setRotationPivot((BlockPos)IglooPieces.PIVOTS.get(templateLocation)).addProcessor(BlockIgnoreProcessor.STRUCTURE_BLOCK).setLiquidSettings(LiquidSettings.IGNORE_WATERLOGGING);
       }
 
-      private static BlockPos makePosition(Identifier var0, BlockPos var1, int var2) {
-         return var1.offset((Vec3i)IglooPieces.OFFSETS.get(var0)).below(var2);
+      private static BlockPos makePosition(final Identifier templateLocation, final BlockPos position, final int depth) {
+         return position.offset((Vec3i)IglooPieces.OFFSETS.get(templateLocation)).below(depth);
       }
 
-      protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
-         super.addAdditionalSaveData(var1, var2);
-         var2.store("Rot", Rotation.LEGACY_CODEC, this.placeSettings.getRotation());
+      protected void addAdditionalSaveData(final StructurePieceSerializationContext context, final CompoundTag tag) {
+         super.addAdditionalSaveData(context, tag);
+         tag.store("Rot", Rotation.LEGACY_CODEC, this.placeSettings.getRotation());
       }
 
-      protected void handleDataMarker(String var1, BlockPos var2, ServerLevelAccessor var3, RandomSource var4, BoundingBox var5) {
-         if ("chest".equals(var1)) {
-            var3.setBlock(var2, Blocks.AIR.defaultBlockState(), 3);
-            BlockEntity var6 = var3.getBlockEntity(var2.below());
-            if (var6 instanceof ChestBlockEntity) {
-               ((ChestBlockEntity)var6).setLootTable(BuiltInLootTables.IGLOO_CHEST, var4.nextLong());
+      protected void handleDataMarker(final String markerId, final BlockPos position, final ServerLevelAccessor level, final RandomSource random, final BoundingBox chunkBB) {
+         if ("chest".equals(markerId)) {
+            level.setBlock(position, Blocks.AIR.defaultBlockState(), 3);
+            BlockEntity chest = level.getBlockEntity(position.below());
+            if (chest instanceof ChestBlockEntity) {
+               ((ChestBlockEntity)chest).setLootTable(BuiltInLootTables.IGLOO_CHEST, random.nextLong());
             }
 
          }
       }
 
-      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
-         Identifier var8 = Identifier.parse(this.templateName);
-         StructurePlaceSettings var9 = makeSettings(this.placeSettings.getRotation(), var8);
-         BlockPos var10 = (BlockPos)IglooPieces.OFFSETS.get(var8);
-         BlockPos var11 = this.templatePosition.offset(StructureTemplate.calculateRelativePosition(var9, new BlockPos(3 - var10.getX(), 0, -var10.getZ())));
-         int var12 = var1.getHeight(Heightmap.Types.WORLD_SURFACE_WG, var11.getX(), var11.getZ());
-         BlockPos var13 = this.templatePosition;
-         this.templatePosition = this.templatePosition.offset(0, var12 - 90 - 1, 0);
-         super.postProcess(var1, var2, var3, var4, var5, var6, var7);
-         if (var8.equals(IglooPieces.STRUCTURE_LOCATION_IGLOO)) {
-            BlockPos var14 = this.templatePosition.offset(StructureTemplate.calculateRelativePosition(var9, new BlockPos(3, 0, 5)));
-            BlockState var15 = var1.getBlockState(var14.below());
-            if (!var15.isAir() && !var15.is(Blocks.LADDER)) {
-               var1.setBlock(var14, Blocks.SNOW_BLOCK.defaultBlockState(), 3);
+      public void postProcess(final WorldGenLevel level, final StructureManager structureManager, final ChunkGenerator generator, final RandomSource random, final BoundingBox chunkBB, final ChunkPos chunkPos, final BlockPos referencePos) {
+         Identifier templateLocation = Identifier.parse(this.templateName);
+         StructurePlaceSettings settings = makeSettings(this.placeSettings.getRotation(), templateLocation);
+         BlockPos offset = (BlockPos)IglooPieces.OFFSETS.get(templateLocation);
+         BlockPos entrancePos = this.templatePosition.offset(StructureTemplate.calculateRelativePosition(settings, new BlockPos(3 - offset.getX(), 0, -offset.getZ())));
+         int height = level.getHeight(Heightmap.Types.WORLD_SURFACE_WG, entrancePos.getX(), entrancePos.getZ());
+         BlockPos oldTemplatePos = this.templatePosition;
+         this.templatePosition = this.templatePosition.offset(0, height - 90 - 1, 0);
+         super.postProcess(level, structureManager, generator, random, chunkBB, chunkPos, referencePos);
+         if (templateLocation.equals(IglooPieces.STRUCTURE_LOCATION_IGLOO)) {
+            BlockPos trapDoorPos = this.templatePosition.offset(StructureTemplate.calculateRelativePosition(settings, new BlockPos(3, 0, 5)));
+            BlockState belowState = level.getBlockState(trapDoorPos.below());
+            if (!belowState.isAir() && !belowState.is(Blocks.LADDER)) {
+               level.setBlock(trapDoorPos, Blocks.SNOW_BLOCK.defaultBlockState(), 3);
             }
          }
 
-         this.templatePosition = var13;
+         this.templatePosition = oldTemplatePos;
       }
    }
 }

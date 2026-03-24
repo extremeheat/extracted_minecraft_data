@@ -15,31 +15,31 @@ public class MultiLineTextWidget extends AbstractStringWidget {
    private final SingleKeyCache<CacheKey, MultiLineLabel> cache;
    private boolean centered;
 
-   public MultiLineTextWidget(Component var1, Font var2) {
-      this(0, 0, var1, var2);
+   public MultiLineTextWidget(final Component message, final Font font) {
+      this(0, 0, message, font);
    }
 
-   public MultiLineTextWidget(int var1, int var2, Component var3, Font var4) {
-      super(var1, var2, 0, 0, var3, var4);
+   public MultiLineTextWidget(final int x, final int y, final Component message, final Font font) {
+      super(x, y, 0, 0, message, font);
       this.maxWidth = OptionalInt.empty();
       this.maxRows = OptionalInt.empty();
       this.centered = false;
-      this.cache = Util.<CacheKey, MultiLineLabel>singleKeyCache((var1x) -> var1x.maxRows.isPresent() ? MultiLineLabel.create(var4, var1x.maxWidth, var1x.maxRows.getAsInt(), var1x.message) : MultiLineLabel.create(var4, var1x.message, var1x.maxWidth));
+      this.cache = Util.<CacheKey, MultiLineLabel>singleKeyCache((key) -> key.maxRows.isPresent() ? MultiLineLabel.create(font, key.maxWidth, key.maxRows.getAsInt(), key.message) : MultiLineLabel.create(font, key.message, key.maxWidth));
       this.active = false;
    }
 
-   public MultiLineTextWidget setMaxWidth(int var1) {
-      this.maxWidth = OptionalInt.of(var1);
+   public MultiLineTextWidget setMaxWidth(final int maxWidth) {
+      this.maxWidth = OptionalInt.of(maxWidth);
       return this;
    }
 
-   public MultiLineTextWidget setMaxRows(int var1) {
-      this.maxRows = OptionalInt.of(var1);
+   public MultiLineTextWidget setMaxRows(final int maxRows) {
+      this.maxRows = OptionalInt.of(maxRows);
       return this;
    }
 
-   public MultiLineTextWidget setCentered(boolean var1) {
-      this.centered = var1;
+   public MultiLineTextWidget setCentered(final boolean centered) {
+      this.centered = centered;
       return this;
    }
 
@@ -53,17 +53,17 @@ public class MultiLineTextWidget extends AbstractStringWidget {
       return var10000 * 9;
    }
 
-   public void visitLines(ActiveTextCollector var1) {
-      MultiLineLabel var2 = this.cache.getValue(this.getFreshCacheKey());
-      int var3 = this.getTextX();
-      int var4 = this.getTextY();
+   public void visitLines(final ActiveTextCollector output) {
+      MultiLineLabel multilineLabel = this.cache.getValue(this.getFreshCacheKey());
+      int x = this.getTextX();
+      int y = this.getTextY();
       Objects.requireNonNull(this.getFont());
-      byte var5 = 9;
+      int lineHeight = 9;
       if (this.centered) {
-         int var6 = this.getX() + this.getWidth() / 2;
-         var2.visitLines(TextAlignment.CENTER, var6, var4, var5, var1);
+         int midX = this.getX() + this.getWidth() / 2;
+         multilineLabel.visitLines(TextAlignment.CENTER, midX, y, lineHeight, output);
       } else {
-         var2.visitLines(TextAlignment.LEFT, var3, var4, var5, var1);
+         multilineLabel.visitLines(TextAlignment.LEFT, x, y, lineHeight, output);
       }
 
    }
@@ -80,16 +80,9 @@ public class MultiLineTextWidget extends AbstractStringWidget {
       return new CacheKey(this.getMessage(), this.maxWidth.orElse(2147483647), this.maxRows);
    }
 
-   static record CacheKey(Component message, int maxWidth, OptionalInt maxRows) {
-      final Component message;
-      final int maxWidth;
-      final OptionalInt maxRows;
-
-      CacheKey(Component var1, int var2, OptionalInt var3) {
+   private static record CacheKey(Component message, int maxWidth, OptionalInt maxRows) {
+      private CacheKey {
          super();
-         this.message = var1;
-         this.maxWidth = var2;
-         this.maxRows = var3;
       }
    }
 }

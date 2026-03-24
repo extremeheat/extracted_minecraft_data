@@ -7,71 +7,72 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
+import java.util.Objects;
 import net.minecraft.nbt.Tag;
 
 public class EncoderCache {
-   final LoadingCache<Key<?, ?>, DataResult<?>> cache;
+   private final LoadingCache<Key<?, ?>, DataResult<?>> cache;
 
-   public EncoderCache(int var1) {
+   public EncoderCache(final int maximumSize) {
       super();
-      this.cache = CacheBuilder.newBuilder().maximumSize((long)var1).concurrencyLevel(1).softValues().build(new CacheLoader<Key<?, ?>, DataResult<?>>() {
-         public DataResult<?> load(Key<?, ?> var1) {
-            return var1.resolve();
+      this.cache = CacheBuilder.newBuilder().maximumSize((long)maximumSize).concurrencyLevel(1).softValues().build(new CacheLoader<Key<?, ?>, DataResult<?>>() {
+         {
+            Objects.requireNonNull(EncoderCache.this);
          }
 
-         // $FF: synthetic method
-         public Object load(final Object var1) throws Exception {
-            return this.load((Key)var1);
+         public DataResult<?> load(final Key<?, ?> key) {
+            return key.resolve();
          }
       });
    }
 
-   public <A> Codec<A> wrap(final Codec<A> var1) {
+   public <A> Codec<A> wrap(final Codec<A> codec) {
       return new Codec<A>() {
-         public <T> DataResult<Pair<A, T>> decode(DynamicOps<T> var1x, T var2) {
-            return var1.decode(var1x, var2);
+         {
+            Objects.requireNonNull(EncoderCache.this);
          }
 
-         public <T> DataResult<T> encode(A var1x, DynamicOps<T> var2, T var3) {
-            return ((DataResult)EncoderCache.this.cache.getUnchecked(new Key(var1, var1x, var2))).map((var0) -> {
-               if (var0 instanceof Tag var1x) {
-                  return var1x.copy();
+         public <T> DataResult<Pair<A, T>> decode(final DynamicOps<T> ops, final T input) {
+            return codec.decode(ops, input);
+         }
+
+         public <T> DataResult<T> encode(final A input, final DynamicOps<T> ops, final T prefix) {
+            return ((DataResult)EncoderCache.this.cache.getUnchecked(new Key(codec, input, ops))).map((value) -> {
+               if (value instanceof Tag tag) {
+                  return tag.copy();
                } else {
-                  return var0;
+                  return value;
                }
             });
          }
       };
    }
 
-   static record Key<A, T>(Codec<A> codec, A value, DynamicOps<T> ops) {
-      Key(Codec<A> var1, A var2, DynamicOps<T> var3) {
+   private static record Key<A, T>(Codec<A> codec, A value, DynamicOps<T> ops) {
+      private Key {
          super();
-         this.codec = var1;
-         this.value = var2;
-         this.ops = var3;
       }
 
       public DataResult<T> resolve() {
          return this.codec.encodeStart(this.ops, this.value);
       }
 
-      public boolean equals(Object var1) {
-         if (this == var1) {
+      public boolean equals(final Object obj) {
+         if (this == obj) {
             return true;
-         } else if (!(var1 instanceof Key)) {
+         } else if (!(obj instanceof Key)) {
             return false;
          } else {
-            Key var2 = (Key)var1;
-            return this.codec == var2.codec && this.value.equals(var2.value) && this.ops.equals(var2.ops);
+            Key<?, ?> key = (Key)obj;
+            return this.codec == key.codec && this.value.equals(key.value) && this.ops.equals(key.ops);
          }
       }
 
       public int hashCode() {
-         int var1 = System.identityHashCode(this.codec);
-         var1 = 31 * var1 + this.value.hashCode();
-         var1 = 31 * var1 + this.ops.hashCode();
-         return var1;
+         int result = System.identityHashCode(this.codec);
+         result = 31 * result + this.value.hashCode();
+         result = 31 * result + this.ops.hashCode();
+         return result;
       }
    }
 }

@@ -15,24 +15,24 @@ public class BlockEntityRenderers {
       super();
    }
 
-   private static <T extends BlockEntity, S extends BlockEntityRenderState> void register(BlockEntityType<? extends T> var0, BlockEntityRendererProvider<T, S> var1) {
-      PROVIDERS.put(var0, var1);
+   private static <T extends BlockEntity, S extends BlockEntityRenderState> void register(final BlockEntityType<? extends T> type, final BlockEntityRendererProvider<T, S> renderer) {
+      PROVIDERS.put(type, renderer);
    }
 
-   public static Map<BlockEntityType<?>, BlockEntityRenderer<?, ?>> createEntityRenderers(BlockEntityRendererProvider.Context var0) {
-      ImmutableMap.Builder var1 = ImmutableMap.builder();
-      PROVIDERS.forEach((var2, var3) -> {
+   public static Map<BlockEntityType<?>, BlockEntityRenderer<?, ?>> createEntityRenderers(final BlockEntityRendererProvider.Context context) {
+      ImmutableMap.Builder<BlockEntityType<?>, BlockEntityRenderer<?, ?>> result = ImmutableMap.builder();
+      PROVIDERS.forEach((type, provider) -> {
          try {
-            var1.put(var2, var3.create(var0));
-         } catch (Exception var5) {
-            throw new IllegalStateException("Failed to create model for " + String.valueOf(BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(var2)), var5);
+            result.put(type, provider.create(context));
+         } catch (Exception e) {
+            throw new IllegalStateException("Failed to create model for " + String.valueOf(BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(type)), e);
          }
       });
-      return var1.build();
+      return result.build();
    }
 
    static {
-      register(BlockEntityType.SIGN, SignRenderer::new);
+      register(BlockEntityType.SIGN, StandingSignRenderer::new);
       register(BlockEntityType.HANGING_SIGN, HangingSignRenderer::new);
       register(BlockEntityType.MOB_SPAWNER, SpawnerRenderer::new);
       register(BlockEntityType.PISTON, (var0) -> new PistonHeadRenderer());

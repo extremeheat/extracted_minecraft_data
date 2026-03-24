@@ -22,26 +22,30 @@ public interface RandomSource {
       return new ThreadSafeLegacyRandomSource(RandomSupport.generateUniqueSeed());
    }
 
-   static RandomSource create(long var0) {
-      return new LegacyRandomSource(var0);
+   static RandomSource create(final long seed) {
+      return new LegacyRandomSource(seed);
    }
 
-   static RandomSource createNewThreadLocalInstance() {
+   static RandomSource createThreadLocalInstance() {
       return new SingleThreadedRandomSource(ThreadLocalRandom.current().nextLong());
+   }
+
+   static RandomSource createThreadLocalInstance(final long seed) {
+      return new SingleThreadedRandomSource(seed);
    }
 
    RandomSource fork();
 
    PositionalRandomFactory forkPositional();
 
-   void setSeed(long var1);
+   void setSeed(long seed);
 
    int nextInt();
 
-   int nextInt(int var1);
+   int nextInt(int bound);
 
-   default int nextIntBetweenInclusive(int var1, int var2) {
-      return this.nextInt(var2 - var1 + 1) + var1;
+   default int nextIntBetweenInclusive(final int min, final int maxInclusive) {
+      return this.nextInt(maxInclusive - min + 1) + min;
    }
 
    long nextLong();
@@ -54,26 +58,26 @@ public interface RandomSource {
 
    double nextGaussian();
 
-   default double triangle(double var1, double var3) {
-      return var1 + var3 * (this.nextDouble() - this.nextDouble());
+   default double triangle(final double mean, final double spread) {
+      return mean + spread * (this.nextDouble() - this.nextDouble());
    }
 
-   default float triangle(float var1, float var2) {
-      return var1 + var2 * (this.nextFloat() - this.nextFloat());
+   default float triangle(final float mean, final float spread) {
+      return mean + spread * (this.nextFloat() - this.nextFloat());
    }
 
-   default void consumeCount(int var1) {
-      for(int var2 = 0; var2 < var1; ++var2) {
+   default void consumeCount(final int rounds) {
+      for(int i = 0; i < rounds; ++i) {
          this.nextInt();
       }
 
    }
 
-   default int nextInt(int var1, int var2) {
-      if (var1 >= var2) {
+   default int nextInt(final int origin, final int bound) {
+      if (origin >= bound) {
          throw new IllegalArgumentException("bound - origin is non positive");
       } else {
-         return var1 + this.nextInt(var2 - var1);
+         return origin + this.nextInt(bound - origin);
       }
    }
 }

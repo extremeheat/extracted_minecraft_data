@@ -7,62 +7,56 @@ import java.util.List;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.Validatable;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import org.slf4j.Logger;
 
 public class FunctionReference extends LootItemConditionalFunction {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final MapCodec<FunctionReference> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(ResourceKey.codec(Registries.ITEM_MODIFIER).fieldOf("name").forGetter((var0x) -> var0x.name)).apply(var0, FunctionReference::new));
+   public static final MapCodec<FunctionReference> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(ResourceKey.codec(Registries.ITEM_MODIFIER).fieldOf("name").forGetter((f) -> f.name)).apply(i, FunctionReference::new));
    private final ResourceKey<LootItemFunction> name;
 
-   private FunctionReference(List<LootItemCondition> var1, ResourceKey<LootItemFunction> var2) {
-      super(var1);
-      this.name = var2;
+   private FunctionReference(final List<LootItemCondition> predicates, final ResourceKey<LootItemFunction> name) {
+      super(predicates);
+      this.name = name;
    }
 
-   public LootItemFunctionType<FunctionReference> getType() {
-      return LootItemFunctions.REFERENCE;
+   public MapCodec<FunctionReference> codec() {
+      return MAP_CODEC;
    }
 
-   public void validate(ValidationContext var1) {
-      if (!var1.allowsReferences()) {
-         var1.reportProblem(new ValidationContext.ReferenceNotAllowedProblem(this.name));
-      } else if (var1.hasVisitedElement(this.name)) {
-         var1.reportProblem(new ValidationContext.RecursiveReferenceProblem(this.name));
-      } else {
-         super.validate(var1);
-         var1.resolver().get(this.name).ifPresentOrElse((var2) -> ((LootItemFunction)var2.value()).validate(var1.enterElement(new ProblemReporter.ElementReferencePathElement(this.name), this.name)), () -> var1.reportProblem(new ValidationContext.MissingReferenceProblem(this.name)));
-      }
+   public void validate(final ValidationContext context) {
+      super.validate(context);
+      Validatable.validateReference(context, this.name);
    }
 
-   protected ItemStack run(ItemStack var1, LootContext var2) {
-      LootItemFunction var3 = (LootItemFunction)var2.getResolver().get(this.name).map(Holder::value).orElse((Object)null);
-      if (var3 == null) {
+   protected ItemStack run(final ItemStack itemStack, final LootContext context) {
+      LootItemFunction function = (LootItemFunction)context.getResolver().get(this.name).map(Holder::value).orElse((Object)null);
+      if (function == null) {
          LOGGER.warn("Unknown function: {}", this.name.identifier());
-         return var1;
+         return itemStack;
       } else {
-         LootContext.VisitedEntry var4 = LootContext.createVisitedEntry(var3);
-         if (var2.pushVisitedElement(var4)) {
+         LootContext.VisitedEntry<?> breadcrumb = LootContext.createVisitedEntry(function);
+         if (context.pushVisitedElement(breadcrumb)) {
             ItemStack var5;
             try {
-               var5 = (ItemStack)var3.apply(var1, var2);
+               var5 = (ItemStack)function.apply(itemStack, context);
             } finally {
-               var2.popVisitedElement(var4);
+               context.popVisitedElement(breadcrumb);
             }
 
             return var5;
          } else {
             LOGGER.warn("Detected infinite loop in loot tables");
-            return var1;
+            return itemStack;
          }
       }
    }
 
-   public static LootItemConditionalFunction.Builder<?> functionReference(ResourceKey<LootItemFunction> var0) {
-      return simpleBuilder((var1) -> new FunctionReference(var1, var0));
+   public static LootItemConditionalFunction.Builder<?> functionReference(final ResourceKey<LootItemFunction> name) {
+      return simpleBuilder((conditions) -> new FunctionReference(conditions, name));
    }
 }

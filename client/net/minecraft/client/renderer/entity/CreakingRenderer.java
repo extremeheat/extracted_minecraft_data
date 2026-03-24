@@ -4,8 +4,6 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.monster.creaking.CreakingModel;
 import net.minecraft.client.renderer.entity.layers.LivingEntityEmissiveLayer;
 import net.minecraft.client.renderer.entity.state.CreakingRenderState;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.monster.creaking.Creaking;
@@ -14,12 +12,12 @@ public class CreakingRenderer<T extends Creaking> extends MobRenderer<T, Creakin
    private static final Identifier TEXTURE_LOCATION = Identifier.withDefaultNamespace("textures/entity/creaking/creaking.png");
    private static final Identifier EYES_TEXTURE_LOCATION = Identifier.withDefaultNamespace("textures/entity/creaking/creaking_eyes.png");
 
-   public CreakingRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new CreakingModel(var1.bakeLayer(ModelLayers.CREAKING)), 0.6F);
-      this.addLayer(new LivingEntityEmissiveLayer(this, (var0) -> EYES_TEXTURE_LOCATION, (var0, var1x) -> var0.eyesGlowing ? 1.0F : 0.0F, new CreakingModel(var1.bakeLayer(ModelLayers.CREAKING_EYES)), RenderTypes::eyes, true));
+   public CreakingRenderer(final EntityRendererProvider.Context context) {
+      super(context, new CreakingModel(context.bakeLayer(ModelLayers.CREAKING)), 0.6F);
+      this.addLayer(new LivingEntityEmissiveLayer(this, (renderState) -> EYES_TEXTURE_LOCATION, (state, ageInTicks) -> state.eyesGlowing ? 1.0F : 0.0F, new CreakingModel(context.bakeLayer(ModelLayers.CREAKING_EYES)), RenderTypes::eyes, true));
    }
 
-   public Identifier getTextureLocation(CreakingRenderState var1) {
+   public Identifier getTextureLocation(final CreakingRenderState state) {
       return TEXTURE_LOCATION;
    }
 
@@ -27,29 +25,19 @@ public class CreakingRenderer<T extends Creaking> extends MobRenderer<T, Creakin
       return new CreakingRenderState();
    }
 
-   public void extractRenderState(T var1, CreakingRenderState var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      var2.attackAnimationState.copyFrom(var1.attackAnimationState);
-      var2.invulnerabilityAnimationState.copyFrom(var1.invulnerabilityAnimationState);
-      var2.deathAnimationState.copyFrom(var1.deathAnimationState);
-      if (var1.isTearingDown()) {
-         var2.deathTime = 0.0F;
-         var2.hasRedOverlay = false;
-         var2.eyesGlowing = var1.hasGlowingEyes();
+   public void extractRenderState(final T entity, final CreakingRenderState state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      state.attackAnimationState.copyFrom(entity.attackAnimationState);
+      state.invulnerabilityAnimationState.copyFrom(entity.invulnerabilityAnimationState);
+      state.deathAnimationState.copyFrom(entity.deathAnimationState);
+      if (entity.isTearingDown()) {
+         state.deathTime = 0.0F;
+         state.hasRedOverlay = false;
+         state.eyesGlowing = entity.hasGlowingEyes();
       } else {
-         var2.eyesGlowing = var1.isActive();
+         state.eyesGlowing = entity.isActive();
       }
 
-      var2.canMove = var1.canMove();
-   }
-
-   // $FF: synthetic method
-   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
-      return this.getTextureLocation((CreakingRenderState)var1);
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
+      state.canMove = entity.canMove();
    }
 }

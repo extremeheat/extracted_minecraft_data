@@ -12,28 +12,28 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
 public class Marker extends Entity {
-   public Marker(EntityType<?> var1, Level var2) {
-      super(var1, var2);
+   public Marker(final EntityType<?> type, final Level level) {
+      super(type, level);
       this.noPhysics = true;
    }
 
    public void tick() {
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
+   protected void readAdditionalSaveData(final ValueInput input) {
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
+   protected void addAdditionalSaveData(final ValueOutput output) {
    }
 
-   public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity var1) {
+   public Packet<ClientGamePacketListener> getAddEntityPacket(final ServerEntity serverEntity) {
       throw new IllegalStateException("Markers should never be sent");
    }
 
-   protected boolean canAddPassenger(Entity var1) {
+   protected boolean canAddPassenger(final Entity passenger) {
       return false;
    }
 
@@ -41,7 +41,7 @@ public class Marker extends Entity {
       return false;
    }
 
-   protected void addPassenger(Entity var1) {
+   protected void addPassenger(final Entity passenger) {
       throw new IllegalStateException("Should never addPassenger without checking couldAcceptPassenger()");
    }
 
@@ -53,7 +53,7 @@ public class Marker extends Entity {
       return true;
    }
 
-   public final boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+   public final boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {
       return false;
    }
 }

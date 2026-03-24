@@ -1,7 +1,9 @@
 package net.minecraft.client.renderer.item;
 
+import com.mojang.math.Transformation;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Optional;
 import net.minecraft.client.multiplayer.CacheSlot;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.item.properties.conditional.ConditionalItemModelProperties;
@@ -12,6 +14,7 @@ import net.minecraft.util.RegistryContextSwapper;
 import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import org.joml.Matrix4fc;
 import org.jspecify.annotations.Nullable;
 
 public class ConditionalItemModel implements ItemModel {
@@ -19,55 +22,53 @@ public class ConditionalItemModel implements ItemModel {
    private final ItemModel onTrue;
    private final ItemModel onFalse;
 
-   public ConditionalItemModel(ItemModelPropertyTest var1, ItemModel var2, ItemModel var3) {
+   public ConditionalItemModel(final ItemModelPropertyTest property, final ItemModel onTrue, final ItemModel onFalse) {
       super();
-      this.property = var1;
-      this.onTrue = var2;
-      this.onFalse = var3;
+      this.property = property;
+      this.onTrue = onTrue;
+      this.onFalse = onFalse;
    }
 
-   public void update(ItemStackRenderState var1, ItemStack var2, ItemModelResolver var3, ItemDisplayContext var4, @Nullable ClientLevel var5, @Nullable ItemOwner var6, int var7) {
-      var1.appendModelIdentityElement(this);
-      (this.property.get(var2, var5, var6 == null ? null : var6.asLivingEntity(), var7, var4) ? this.onTrue : this.onFalse).update(var1, var2, var3, var4, var5, var6, var7);
+   public void update(final ItemStackRenderState output, final ItemStack item, final ItemModelResolver resolver, final ItemDisplayContext displayContext, final @Nullable ClientLevel level, final @Nullable ItemOwner owner, final int seed) {
+      output.appendModelIdentityElement(this);
+      (this.property.get(item, level, owner == null ? null : owner.asLivingEntity(), seed, displayContext) ? this.onTrue : this.onFalse).update(output, item, resolver, displayContext, level, owner, seed);
    }
 
-   public static record Unbaked(ConditionalItemModelProperty property, ItemModel.Unbaked onTrue, ItemModel.Unbaked onFalse) implements ItemModel.Unbaked {
-      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ConditionalItemModelProperties.MAP_CODEC.forGetter(Unbaked::property), ItemModels.CODEC.fieldOf("on_true").forGetter(Unbaked::onTrue), ItemModels.CODEC.fieldOf("on_false").forGetter(Unbaked::onFalse)).apply(var0, Unbaked::new));
+   public static record Unbaked(Optional<Transformation> transformation, ConditionalItemModelProperty property, ItemModel.Unbaked onTrue, ItemModel.Unbaked onFalse) implements ItemModel.Unbaked {
+      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Transformation.EXTENDED_CODEC.optionalFieldOf("transformation").forGetter(Unbaked::transformation), ConditionalItemModelProperties.MAP_CODEC.forGetter(Unbaked::property), ItemModels.CODEC.fieldOf("on_true").forGetter(Unbaked::onTrue), ItemModels.CODEC.fieldOf("on_false").forGetter(Unbaked::onFalse)).apply(i, Unbaked::new));
 
-      public Unbaked(ConditionalItemModelProperty var1, ItemModel.Unbaked var2, ItemModel.Unbaked var3) {
+      public Unbaked {
          super();
-         this.property = var1;
-         this.onTrue = var2;
-         this.onFalse = var3;
       }
 
       public MapCodec<Unbaked> type() {
          return MAP_CODEC;
       }
 
-      public ItemModel bake(ItemModel.BakingContext var1) {
-         return new ConditionalItemModel(this.adaptProperty(this.property, var1.contextSwapper()), this.onTrue.bake(var1), this.onFalse.bake(var1));
+      public ItemModel bake(final ItemModel.BakingContext context, final Matrix4fc transformation) {
+         Matrix4fc childTransform = Transformation.compose(transformation, this.transformation);
+         return new ConditionalItemModel(this.adaptProperty(this.property, context.contextSwapper()), this.onTrue.bake(context, childTransform), this.onFalse.bake(context, childTransform));
       }
 
-      private ItemModelPropertyTest adaptProperty(ConditionalItemModelProperty var1, @Nullable RegistryContextSwapper var2) {
-         if (var2 == null) {
-            return var1;
+      private ItemModelPropertyTest adaptProperty(final ConditionalItemModelProperty originalProperty, final @Nullable RegistryContextSwapper contextSwapper) {
+         if (contextSwapper == null) {
+            return originalProperty;
          } else {
-            CacheSlot var3 = new CacheSlot((var2x) -> swapContext(var1, var2, var2x));
-            return (var2x, var3x, var4, var5, var6) -> {
-               Object var7 = var3x == null ? var1 : (ItemModelPropertyTest)var3.compute(var3x);
-               return ((ItemModelPropertyTest)var7).get(var2x, var3x, var4, var5, var6);
+            CacheSlot<ClientLevel, ItemModelPropertyTest> remappedModelCache = new CacheSlot<ClientLevel, ItemModelPropertyTest>((context) -> swapContext(originalProperty, contextSwapper, context));
+            return (itemStack, level, owner, seed, displayContext) -> {
+               ItemModelPropertyTest property = (ItemModelPropertyTest)(level == null ? originalProperty : (ItemModelPropertyTest)remappedModelCache.compute(level));
+               return property.get(itemStack, level, owner, seed, displayContext);
             };
          }
       }
 
-      private static <T extends ConditionalItemModelProperty> T swapContext(T var0, RegistryContextSwapper var1, ClientLevel var2) {
-         return (T)(var1.swapTo(var0.type().codec(), var0, var2.registryAccess()).result().orElse(var0));
+      private static <T extends ConditionalItemModelProperty> T swapContext(final T originalProperty, final RegistryContextSwapper contextSwapper, final ClientLevel context) {
+         return (T)(contextSwapper.swapTo(originalProperty.type().codec(), originalProperty, context.registryAccess()).result().orElse(originalProperty));
       }
 
-      public void resolveDependencies(ResolvableModel.Resolver var1) {
-         this.onTrue.resolveDependencies(var1);
-         this.onFalse.resolveDependencies(var1);
+      public void resolveDependencies(final ResolvableModel.Resolver resolver) {
+         this.onTrue.resolveDependencies(resolver);
+         this.onFalse.resolveDependencies(resolver);
       }
    }
 }

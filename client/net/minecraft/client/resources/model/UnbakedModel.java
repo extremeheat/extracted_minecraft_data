@@ -1,7 +1,8 @@
 package net.minecraft.client.resources.model;
 
-import net.minecraft.client.renderer.block.model.ItemTransforms;
-import net.minecraft.client.renderer.block.model.TextureSlots;
+import net.minecraft.client.resources.model.cuboid.ItemTransforms;
+import net.minecraft.client.resources.model.geometry.UnbakedGeometry;
+import net.minecraft.client.resources.model.sprite.TextureSlots;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
@@ -38,18 +39,18 @@ public interface UnbakedModel {
 
       private final String name;
 
-      private GuiLight(final String var3) {
-         this.name = var3;
+      private GuiLight(final String name) {
+         this.name = name;
       }
 
-      public static GuiLight getByName(String var0) {
-         for(GuiLight var4 : values()) {
-            if (var4.name.equals(var0)) {
-               return var4;
+      public static GuiLight getByName(final String name) {
+         for(GuiLight target : values()) {
+            if (target.name.equals(name)) {
+               return target;
             }
          }
 
-         throw new IllegalArgumentException("Invalid gui light: " + var0);
+         throw new IllegalArgumentException("Invalid gui light: " + name);
       }
 
       public boolean lightLikeBlock() {

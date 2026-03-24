@@ -8,12 +8,12 @@ public enum Environment {
 
    private final String description;
 
-   private Environment(final String var3) {
-      this.description = var3;
+   private Environment(final String description) {
+      this.description = description;
    }
 
-   public static Environment from(MinecraftServer var0) {
-      return var0.isDedicatedServer() ? SERVER : CLIENT;
+   public static Environment from(final MinecraftServer server) {
+      return server.isDedicatedServer() ? SERVER : CLIENT;
    }
 
    public String getDescription() {

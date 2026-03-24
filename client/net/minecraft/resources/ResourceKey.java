@@ -14,30 +14,30 @@ public class ResourceKey<T> {
    private final Identifier registryName;
    private final Identifier identifier;
 
-   public static <T> Codec<ResourceKey<T>> codec(ResourceKey<? extends Registry<T>> var0) {
-      return Identifier.CODEC.xmap((var1) -> create(var0, var1), ResourceKey::identifier);
+   public static <T> Codec<ResourceKey<T>> codec(final ResourceKey<? extends Registry<T>> registryName) {
+      return Identifier.CODEC.xmap((name) -> create(registryName, name), ResourceKey::identifier);
    }
 
-   public static <T> StreamCodec<ByteBuf, ResourceKey<T>> streamCodec(ResourceKey<? extends Registry<T>> var0) {
-      return Identifier.STREAM_CODEC.map((var1) -> create(var0, var1), ResourceKey::identifier);
+   public static <T> StreamCodec<ByteBuf, ResourceKey<T>> streamCodec(final ResourceKey<? extends Registry<T>> registryName) {
+      return Identifier.STREAM_CODEC.map((name) -> create(registryName, name), ResourceKey::identifier);
    }
 
-   public static <T> ResourceKey<T> create(ResourceKey<? extends Registry<T>> var0, Identifier var1) {
-      return create(var0.identifier, var1);
+   public static <T> ResourceKey<T> create(final ResourceKey<? extends Registry<T>> registryName, final Identifier location) {
+      return create(registryName.identifier, location);
    }
 
-   public static <T> ResourceKey<Registry<T>> createRegistryKey(Identifier var0) {
-      return create(Registries.ROOT_REGISTRY_NAME, var0);
+   public static <T> ResourceKey<Registry<T>> createRegistryKey(final Identifier identifier) {
+      return create(Registries.ROOT_REGISTRY_NAME, identifier);
    }
 
-   private static <T> ResourceKey<T> create(Identifier var0, Identifier var1) {
-      return (ResourceKey)VALUES.computeIfAbsent(new InternKey(var0, var1), (var0x) -> new ResourceKey(var0x.registry, var0x.identifier));
+   private static <T> ResourceKey<T> create(final Identifier registryName, final Identifier identifier) {
+      return (ResourceKey)VALUES.computeIfAbsent(new InternKey(registryName, identifier), (k) -> new ResourceKey(k.registry, k.identifier));
    }
 
-   private ResourceKey(Identifier var1, Identifier var2) {
+   private ResourceKey(final Identifier registryName, final Identifier identifier) {
       super();
-      this.registryName = var1;
-      this.identifier = var2;
+      this.registryName = registryName;
+      this.identifier = identifier;
    }
 
    public String toString() {
@@ -45,12 +45,12 @@ public class ResourceKey<T> {
       return "ResourceKey[" + var10000 + " / " + String.valueOf(this.identifier) + "]";
    }
 
-   public boolean isFor(ResourceKey<? extends Registry<?>> var1) {
-      return this.registryName.equals(var1.identifier());
+   public boolean isFor(final ResourceKey<? extends Registry<?>> registry) {
+      return this.registryName.equals(registry.identifier());
    }
 
-   public <E> Optional<ResourceKey<E>> cast(ResourceKey<? extends Registry<E>> var1) {
-      return this.isFor(var1) ? Optional.of(this) : Optional.empty();
+   public <E> Optional<ResourceKey<E>> cast(final ResourceKey<? extends Registry<E>> registry) {
+      return this.isFor(registry) ? Optional.of(this) : Optional.empty();
    }
 
    public Identifier identifier() {
@@ -65,14 +65,9 @@ public class ResourceKey<T> {
       return createRegistryKey(this.registryName);
    }
 
-   static record InternKey(Identifier registry, Identifier identifier) {
-      final Identifier registry;
-      final Identifier identifier;
-
-      InternKey(Identifier var1, Identifier var2) {
+   private static record InternKey(Identifier registry, Identifier identifier) {
+      private InternKey {
          super();
-         this.registry = var1;
-         this.identifier = var2;
       }
    }
 }

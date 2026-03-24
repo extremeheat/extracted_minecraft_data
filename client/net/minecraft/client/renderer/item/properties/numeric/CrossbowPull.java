@@ -15,15 +15,15 @@ public class CrossbowPull implements RangeSelectItemModelProperty {
       super();
    }
 
-   public float get(ItemStack var1, @Nullable ClientLevel var2, @Nullable ItemOwner var3, int var4) {
-      LivingEntity var5 = var3 == null ? null : var3.asLivingEntity();
-      if (var5 == null) {
+   public float get(final ItemStack itemStack, final @Nullable ClientLevel level, final @Nullable ItemOwner owner, final int seed) {
+      LivingEntity entity = owner == null ? null : owner.asLivingEntity();
+      if (entity == null) {
          return 0.0F;
-      } else if (CrossbowItem.isCharged(var1)) {
+      } else if (CrossbowItem.isCharged(itemStack)) {
          return 0.0F;
       } else {
-         int var6 = CrossbowItem.getChargeDuration(var1, var5);
-         return (float)UseDuration.useDuration(var1, var5) / (float)var6;
+         int chargeDuration = CrossbowItem.getChargeDuration(itemStack, entity);
+         return (float)UseDuration.useDuration(itemStack, entity) / (float)chargeDuration;
       }
    }
 

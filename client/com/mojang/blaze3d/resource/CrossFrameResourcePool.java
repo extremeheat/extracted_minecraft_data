@@ -10,46 +10,46 @@ public class CrossFrameResourcePool implements GraphicsResourceAllocator, AutoCl
    private final int framesToKeepResource;
    private final Deque<ResourceEntry<?>> pool = new ArrayDeque();
 
-   public CrossFrameResourcePool(int var1) {
+   public CrossFrameResourcePool(final int framesToKeepResource) {
       super();
-      this.framesToKeepResource = var1;
+      this.framesToKeepResource = framesToKeepResource;
    }
 
    public void endFrame() {
-      Iterator var1 = this.pool.iterator();
+      Iterator<? extends ResourceEntry<?>> iterator = this.pool.iterator();
 
-      while(var1.hasNext()) {
-         ResourceEntry var2 = (ResourceEntry)var1.next();
-         if (var2.framesToLive-- == 0) {
-            var2.close();
-            var1.remove();
+      while(iterator.hasNext()) {
+         ResourceEntry<?> entry = (ResourceEntry)iterator.next();
+         if (entry.framesToLive-- == 0) {
+            entry.close();
+            iterator.remove();
          }
       }
 
    }
 
-   public <T> T acquire(ResourceDescriptor<T> var1) {
-      Object var2 = this.acquireWithoutPreparing(var1);
-      var1.prepare(var2);
-      return (T)var2;
+   public <T> T acquire(final ResourceDescriptor<T> descriptor) {
+      T resource = (T)this.acquireWithoutPreparing(descriptor);
+      descriptor.prepare(resource);
+      return resource;
    }
 
-   private <T> T acquireWithoutPreparing(ResourceDescriptor<T> var1) {
-      Iterator var2 = this.pool.iterator();
+   private <T> T acquireWithoutPreparing(final ResourceDescriptor<T> descriptor) {
+      Iterator<? extends ResourceEntry<?>> iterator = this.pool.iterator();
 
-      while(var2.hasNext()) {
-         ResourceEntry var3 = (ResourceEntry)var2.next();
-         if (var1.canUsePhysicalResource(var3.descriptor)) {
-            var2.remove();
-            return var3.value;
+      while(iterator.hasNext()) {
+         ResourceEntry<?> entry = (ResourceEntry)iterator.next();
+         if (descriptor.canUsePhysicalResource(entry.descriptor)) {
+            iterator.remove();
+            return entry.value;
          }
       }
 
-      return (T)var1.allocate();
+      return descriptor.allocate();
    }
 
-   public <T> void release(ResourceDescriptor<T> var1, T var2) {
-      this.pool.addFirst(new ResourceEntry(var1, var2, this.framesToKeepResource));
+   public <T> void release(final ResourceDescriptor<T> descriptor, final T resource) {
+      this.pool.addFirst(new ResourceEntry(descriptor, resource, this.framesToKeepResource));
    }
 
    public void clear() {
@@ -68,15 +68,15 @@ public class CrossFrameResourcePool implements GraphicsResourceAllocator, AutoCl
 
    @VisibleForTesting
    protected static final class ResourceEntry<T> implements AutoCloseable {
-      final ResourceDescriptor<T> descriptor;
-      final T value;
-      int framesToLive;
+      private final ResourceDescriptor<T> descriptor;
+      private final T value;
+      private int framesToLive;
 
-      ResourceEntry(ResourceDescriptor<T> var1, T var2, int var3) {
+      private ResourceEntry(final ResourceDescriptor<T> descriptor, final T value, final int framesToLive) {
          super();
-         this.descriptor = var1;
-         this.value = var2;
-         this.framesToLive = var3;
+         this.descriptor = descriptor;
+         this.value = value;
+         this.framesToLive = framesToLive;
       }
 
       public void close() {

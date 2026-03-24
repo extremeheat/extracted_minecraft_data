@@ -27,62 +27,62 @@ public abstract class AbstractCauldronBlock extends Block {
    protected static final int FLOOR_LEVEL = 4;
    private static final VoxelShape SHAPE_INSIDE = Block.column(12.0, 4.0, 16.0);
    protected static final VoxelShape SHAPE = (VoxelShape)Util.make(() -> {
-      boolean var0 = true;
-      boolean var1 = true;
-      boolean var2 = true;
+      int legWidth = 4;
+      int legHeight = 3;
+      int legThickness = 2;
       return Shapes.join(Shapes.block(), Shapes.or(Block.column(16.0, 8.0, 0.0, 3.0), Block.column(8.0, 16.0, 0.0, 3.0), Block.column(12.0, 0.0, 3.0), SHAPE_INSIDE), BooleanOp.ONLY_FIRST);
    });
-   protected final CauldronInteraction.InteractionMap interactions;
+   protected final CauldronInteraction.Dispatcher interactions;
 
    protected abstract MapCodec<? extends AbstractCauldronBlock> codec();
 
-   public AbstractCauldronBlock(BlockBehaviour.Properties var1, CauldronInteraction.InteractionMap var2) {
-      super(var1);
-      this.interactions = var2;
+   public AbstractCauldronBlock(final BlockBehaviour.Properties properties, final CauldronInteraction.Dispatcher interactions) {
+      super(properties);
+      this.interactions = interactions;
    }
 
-   protected double getContentHeight(BlockState var1) {
+   protected double getContentHeight(final BlockState state) {
       return 0.0;
    }
 
-   protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
-      CauldronInteraction var8 = (CauldronInteraction)this.interactions.map().get(var1.getItem());
-      return var8.interact(var2, var3, var4, var5, var6, var1);
+   protected InteractionResult useItemOn(final ItemStack itemStack, final BlockState state, final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final BlockHitResult hitResult) {
+      CauldronInteraction behavior = this.interactions.get(itemStack);
+      return behavior.interact(state, level, pos, player, hand, itemStack);
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return SHAPE;
    }
 
-   protected VoxelShape getInteractionShape(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected VoxelShape getInteractionShape(final BlockState state, final BlockGetter level, final BlockPos pos) {
       return SHAPE_INSIDE;
    }
 
-   protected boolean hasAnalogOutputSignal(BlockState var1) {
+   protected boolean hasAnalogOutputSignal(final BlockState state) {
       return true;
    }
 
-   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
+   protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
       return false;
    }
 
-   public abstract boolean isFull(BlockState var1);
+   public abstract boolean isFull(final BlockState state);
 
-   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      BlockPos var5 = PointedDripstoneBlock.findStalactiteTipAboveCauldron(var2, var3);
-      if (var5 != null) {
-         Fluid var6 = PointedDripstoneBlock.getCauldronFillFluidType(var2, var5);
-         if (var6 != Fluids.EMPTY && this.canReceiveStalactiteDrip(var6)) {
-            this.receiveStalactiteDrip(var1, var2, var3, var6);
+   protected void tick(final BlockState cauldronState, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      BlockPos stalactitePos = PointedDripstoneBlock.findStalactiteTipAboveCauldron(level, pos);
+      if (stalactitePos != null) {
+         Fluid fluid = PointedDripstoneBlock.getCauldronFillFluidType(level, stalactitePos);
+         if (fluid != Fluids.EMPTY && this.canReceiveStalactiteDrip(fluid)) {
+            this.receiveStalactiteDrip(cauldronState, level, pos, fluid);
          }
 
       }
    }
 
-   protected boolean canReceiveStalactiteDrip(Fluid var1) {
+   protected boolean canReceiveStalactiteDrip(final Fluid fluid) {
       return false;
    }
 
-   protected void receiveStalactiteDrip(BlockState var1, Level var2, BlockPos var3, Fluid var4) {
+   protected void receiveStalactiteDrip(final BlockState state, final Level level, final BlockPos pos, final Fluid fluid) {
    }
 }

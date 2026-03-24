@@ -2,7 +2,6 @@ package net.minecraft.world.level.levelgen.feature.treedecorators;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -19,42 +18,42 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class BeehiveDecorator extends TreeDecorator {
-   public static final MapCodec<BeehiveDecorator> CODEC = Codec.floatRange(0.0F, 1.0F).fieldOf("probability").xmap(BeehiveDecorator::new, (var0) -> var0.probability);
+   public static final MapCodec<BeehiveDecorator> CODEC = Codec.floatRange(0.0F, 1.0F).fieldOf("probability").xmap(BeehiveDecorator::new, (d) -> d.probability);
    private static final Direction WORLDGEN_FACING;
    private static final Direction[] SPAWN_DIRECTIONS;
    private final float probability;
 
-   public BeehiveDecorator(float var1) {
+   public BeehiveDecorator(final float probability) {
       super();
-      this.probability = var1;
+      this.probability = probability;
    }
 
    protected TreeDecoratorType<?> type() {
       return TreeDecoratorType.BEEHIVE;
    }
 
-   public void place(TreeDecorator.Context var1) {
-      ObjectArrayList var2 = var1.leaves();
-      ObjectArrayList var3 = var1.logs();
-      if (!var3.isEmpty()) {
-         RandomSource var4 = var1.random();
-         if (!(var4.nextFloat() >= this.probability)) {
-            int var5 = !var2.isEmpty() ? Math.max(((BlockPos)var2.getFirst()).getY() - 1, ((BlockPos)var3.getFirst()).getY() + 1) : Math.min(((BlockPos)var3.getFirst()).getY() + 1 + var4.nextInt(3), ((BlockPos)var3.getLast()).getY());
-            List var6 = (List)var3.stream().filter((var1x) -> var1x.getY() == var5).flatMap((var0) -> {
+   public void place(final TreeDecorator.Context context) {
+      List<BlockPos> leaves = context.leaves();
+      List<BlockPos> logs = context.logs();
+      if (!logs.isEmpty()) {
+         RandomSource random = context.random();
+         if (!(random.nextFloat() >= this.probability)) {
+            int hiveY = !leaves.isEmpty() ? Math.max(((BlockPos)leaves.getFirst()).getY() - 1, ((BlockPos)logs.getFirst()).getY() + 1) : Math.min(((BlockPos)logs.getFirst()).getY() + 1 + random.nextInt(3), ((BlockPos)logs.getLast()).getY());
+            List<BlockPos> hivePlacements = (List)logs.stream().filter((pos) -> pos.getY() == hiveY).flatMap((pos) -> {
                Stream var10000 = Stream.of(SPAWN_DIRECTIONS);
-               Objects.requireNonNull(var0);
-               return var10000.map(var0::relative);
+               Objects.requireNonNull(pos);
+               return var10000.map(pos::relative);
             }).collect(Collectors.toList());
-            if (!var6.isEmpty()) {
-               Util.shuffle(var6, var4);
-               Optional var7 = var6.stream().filter((var1x) -> var1.isAir(var1x) && var1.isAir(var1x.relative(WORLDGEN_FACING))).findFirst();
-               if (!var7.isEmpty()) {
-                  var1.setBlock((BlockPos)var7.get(), (BlockState)Blocks.BEE_NEST.defaultBlockState().setValue(BeehiveBlock.FACING, WORLDGEN_FACING));
-                  var1.level().getBlockEntity((BlockPos)var7.get(), BlockEntityType.BEEHIVE).ifPresent((var1x) -> {
-                     int var2 = 2 + var4.nextInt(2);
+            if (!hivePlacements.isEmpty()) {
+               Util.shuffle(hivePlacements, random);
+               Optional<BlockPos> hivePos = hivePlacements.stream().filter((pos) -> context.isAir(pos) && context.isAir(pos.relative(WORLDGEN_FACING))).findFirst();
+               if (!hivePos.isEmpty()) {
+                  context.setBlock((BlockPos)hivePos.get(), (BlockState)Blocks.BEE_NEST.defaultBlockState().setValue(BeehiveBlock.FACING, WORLDGEN_FACING));
+                  context.level().getBlockEntity((BlockPos)hivePos.get(), BlockEntityType.BEEHIVE).ifPresent((beehive) -> {
+                     int numBees = 2 + random.nextInt(2);
 
-                     for(int var3 = 0; var3 < var2; ++var3) {
-                        var1x.storeBee(BeehiveBlockEntity.Occupant.create(var4.nextInt(599)));
+                     for(int count = 0; count < numBees; ++count) {
+                        beehive.storeBee(BeehiveBlockEntity.Occupant.create(random.nextInt(599)));
                      }
 
                   });
@@ -66,6 +65,6 @@ public class BeehiveDecorator extends TreeDecorator {
 
    static {
       WORLDGEN_FACING = Direction.SOUTH;
-      SPAWN_DIRECTIONS = (Direction[])Direction.Plane.HORIZONTAL.stream().filter((var0) -> var0 != WORLDGEN_FACING.getOpposite()).toArray((var0) -> new Direction[var0]);
+      SPAWN_DIRECTIONS = (Direction[])Direction.Plane.HORIZONTAL.stream().filter((dir) -> dir != WORLDGEN_FACING.getOpposite()).toArray((x$0) -> new Direction[x$0]);
    }
 }

@@ -33,7 +33,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class FlowerPotBlock extends Block {
-   public static final MapCodec<FlowerPotBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("potted").forGetter((var0x) -> var0x.potted), propertiesCodec()).apply(var0, FlowerPotBlock::new));
+   public static final MapCodec<FlowerPotBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("potted").forGetter((b) -> b.potted), propertiesCodec()).apply(i, FlowerPotBlock::new));
    private static final Map<Block, Block> POTTED_BY_CONTENT = Maps.newHashMap();
    private static final VoxelShape SHAPE = Block.column(6.0, 0.0, 6.0);
    private final Block potted;
@@ -42,98 +42,98 @@ public class FlowerPotBlock extends Block {
       return CODEC;
    }
 
-   public FlowerPotBlock(Block var1, BlockBehaviour.Properties var2) {
-      super(var2);
-      this.potted = var1;
-      POTTED_BY_CONTENT.put(var1, this);
+   public FlowerPotBlock(final Block potted, final BlockBehaviour.Properties properties) {
+      super(properties);
+      this.potted = potted;
+      POTTED_BY_CONTENT.put(potted, this);
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return SHAPE;
    }
 
-   protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
-      Item var10 = var1.getItem();
+   protected InteractionResult useItemOn(final ItemStack itemStack, final BlockState state, final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final BlockHitResult hitResult) {
+      Item var10 = itemStack.getItem();
       Block var10000;
-      if (var10 instanceof BlockItem var9) {
-         var10000 = (Block)POTTED_BY_CONTENT.getOrDefault(var9.getBlock(), Blocks.AIR);
+      if (var10 instanceof BlockItem blockItem) {
+         var10000 = (Block)POTTED_BY_CONTENT.getOrDefault(blockItem.getBlock(), Blocks.AIR);
       } else {
          var10000 = Blocks.AIR;
       }
 
-      BlockState var8 = var10000.defaultBlockState();
-      if (var8.isAir()) {
+      BlockState newContents = var10000.defaultBlockState();
+      if (newContents.isAir()) {
          return InteractionResult.TRY_WITH_EMPTY_HAND;
       } else if (!this.isEmpty()) {
          return InteractionResult.CONSUME;
       } else {
-         var3.setBlock(var4, var8, 3);
-         var3.gameEvent(var5, GameEvent.BLOCK_CHANGE, var4);
-         var5.awardStat(Stats.POT_FLOWER);
-         var1.consume(1, var5);
+         level.setBlock(pos, newContents, 3);
+         level.gameEvent(player, GameEvent.BLOCK_CHANGE, pos);
+         player.awardStat(Stats.POT_FLOWER);
+         itemStack.consume(1, player);
          return InteractionResult.SUCCESS;
       }
    }
 
-   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
+   protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
       if (this.isEmpty()) {
          return InteractionResult.CONSUME;
       } else {
-         ItemStack var6 = new ItemStack(this.potted);
-         if (!var4.addItem(var6)) {
-            var4.drop(var6, false);
+         ItemStack plant = new ItemStack(this.potted);
+         if (!player.addItem(plant)) {
+            player.drop(plant, false);
          }
 
-         var2.setBlock(var3, Blocks.FLOWER_POT.defaultBlockState(), 3);
-         var2.gameEvent(var4, GameEvent.BLOCK_CHANGE, var3);
+         level.setBlock(pos, Blocks.FLOWER_POT.defaultBlockState(), 3);
+         level.gameEvent(player, GameEvent.BLOCK_CHANGE, pos);
          return InteractionResult.SUCCESS;
       }
    }
 
-   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
-      return this.isEmpty() ? super.getCloneItemStack(var1, var2, var3, var4) : new ItemStack(this.potted);
+   protected ItemStack getCloneItemStack(final LevelReader level, final BlockPos pos, final BlockState state, final boolean includeData) {
+      return this.isEmpty() ? super.getCloneItemStack(level, pos, state, includeData) : new ItemStack(this.potted);
    }
 
    private boolean isEmpty() {
       return this.potted == Blocks.AIR;
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      return var5 == Direction.DOWN && !var1.canSurvive(var2, var4) ? Blocks.AIR.defaultBlockState() : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      return directionToNeighbour == Direction.DOWN && !state.canSurvive(level, pos) ? Blocks.AIR.defaultBlockState() : super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
    public Block getPotted() {
       return this.potted;
    }
 
-   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
+   protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
       return false;
    }
 
-   protected boolean isRandomlyTicking(BlockState var1) {
-      return var1.is(Blocks.POTTED_OPEN_EYEBLOSSOM) || var1.is(Blocks.POTTED_CLOSED_EYEBLOSSOM);
+   protected boolean isRandomlyTicking(final BlockState state) {
+      return state.is(Blocks.POTTED_OPEN_EYEBLOSSOM) || state.is(Blocks.POTTED_CLOSED_EYEBLOSSOM);
    }
 
-   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (this.isRandomlyTicking(var1)) {
-         boolean var5 = this.potted == Blocks.OPEN_EYEBLOSSOM;
-         boolean var6 = ((TriState)var2.environmentAttributes().getValue(EnvironmentAttributes.EYEBLOSSOM_OPEN, var3)).toBoolean(var5);
-         if (var5 != var6) {
-            var2.setBlock(var3, this.opposite(var1), 3);
-            EyeblossomBlock.Type var7 = EyeblossomBlock.Type.fromBoolean(var5).transform();
-            var7.spawnTransformParticle(var2, var3, var4);
-            var2.playSound((Entity)null, var3, var7.longSwitchSound(), SoundSource.BLOCKS, 1.0F, 1.0F);
+   protected void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if (this.isRandomlyTicking(state)) {
+         boolean isOpen = this.potted == Blocks.OPEN_EYEBLOSSOM;
+         boolean shouldBeOpen = ((TriState)level.environmentAttributes().getValue(EnvironmentAttributes.EYEBLOSSOM_OPEN, pos)).toBoolean(isOpen);
+         if (isOpen != shouldBeOpen) {
+            level.setBlock(pos, this.opposite(state), 3);
+            EyeblossomBlock.Type newType = EyeblossomBlock.Type.fromBoolean(isOpen).transform();
+            newType.spawnTransformParticle(level, pos, random);
+            level.playSound((Entity)null, pos, newType.longSwitchSound(), SoundSource.BLOCKS, 1.0F, 1.0F);
          }
       }
 
-      super.randomTick(var1, var2, var3, var4);
+      super.randomTick(state, level, pos, random);
    }
 
-   public BlockState opposite(BlockState var1) {
-      if (var1.is(Blocks.POTTED_OPEN_EYEBLOSSOM)) {
+   public BlockState opposite(final BlockState state) {
+      if (state.is(Blocks.POTTED_OPEN_EYEBLOSSOM)) {
          return Blocks.POTTED_CLOSED_EYEBLOSSOM.defaultBlockState();
       } else {
-         return var1.is(Blocks.POTTED_CLOSED_EYEBLOSSOM) ? Blocks.POTTED_OPEN_EYEBLOSSOM.defaultBlockState() : var1;
+         return state.is(Blocks.POTTED_CLOSED_EYEBLOSSOM) ? Blocks.POTTED_OPEN_EYEBLOSSOM.defaultBlockState() : state;
       }
    }
 }

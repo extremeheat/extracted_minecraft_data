@@ -6,39 +6,29 @@ import java.util.function.Consumer;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.PlayerSkinRenderCache;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.resources.model.MaterialSet;
-import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.client.resources.model.sprite.SpriteGetter;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
 public interface SpecialModelRenderer<T> {
-   void submit(@Nullable T var1, ItemDisplayContext var2, PoseStack var3, SubmitNodeCollector var4, int var5, int var6, boolean var7, int var8);
+   void submit(@Nullable T argument, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int lightCoords, int overlayCoords, boolean hasFoil, final int outlineColor);
 
-   void getExtents(Consumer<Vector3fc> var1);
+   void getExtents(Consumer<Vector3fc> output);
 
-   @Nullable T extractArgument(ItemStack var1);
+   @Nullable T extractArgument(ItemStack stack);
 
    public interface BakingContext {
       EntityModelSet entityModelSet();
 
-      MaterialSet materials();
+      SpriteGetter sprites();
 
       PlayerSkinRenderCache playerSkinRenderCache();
-
-      public static record Simple(EntityModelSet entityModelSet, MaterialSet materials, PlayerSkinRenderCache playerSkinRenderCache) implements BakingContext {
-         public Simple(EntityModelSet var1, MaterialSet var2, PlayerSkinRenderCache var3) {
-            super();
-            this.entityModelSet = var1;
-            this.materials = var2;
-            this.playerSkinRenderCache = var3;
-         }
-      }
    }
 
-   public interface Unbaked {
-      @Nullable SpecialModelRenderer<?> bake(BakingContext var1);
+   public interface Unbaked<T> {
+      @Nullable SpecialModelRenderer<T> bake(BakingContext context);
 
-      MapCodec<? extends Unbaked> type();
+      MapCodec<? extends Unbaked<T>> type();
    }
 }

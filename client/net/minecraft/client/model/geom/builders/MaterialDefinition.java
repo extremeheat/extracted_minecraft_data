@@ -4,9 +4,9 @@ public class MaterialDefinition {
    final int xTexSize;
    final int yTexSize;
 
-   public MaterialDefinition(int var1, int var2) {
+   public MaterialDefinition(final int xTexSize, final int yTexSize) {
       super();
-      this.xTexSize = var1;
-      this.yTexSize = var2;
+      this.xTexSize = xTexSize;
+      this.yTexSize = yTexSize;
    }
 }

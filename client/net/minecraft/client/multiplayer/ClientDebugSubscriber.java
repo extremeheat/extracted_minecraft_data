@@ -29,41 +29,41 @@ public class ClientDebugSubscriber {
    private Set<DebugSubscription<?>> remoteSubscriptions = Set.of();
    private final Map<DebugSubscription<?>, ValueMaps<?>> valuesBySubscription = new HashMap();
 
-   public ClientDebugSubscriber(ClientPacketListener var1, DebugScreenOverlay var2) {
+   public ClientDebugSubscriber(final ClientPacketListener connection, final DebugScreenOverlay debugScreenOverlay) {
       super();
-      this.debugScreenOverlay = var2;
-      this.connection = var1;
+      this.debugScreenOverlay = debugScreenOverlay;
+      this.connection = connection;
    }
 
-   private static void addFlag(Set<DebugSubscription<?>> var0, DebugSubscription<?> var1, boolean var2) {
-      if (var2) {
-         var0.add(var1);
+   private static void addFlag(final Set<DebugSubscription<?>> output, final DebugSubscription<?> subscription, final boolean flag) {
+      if (flag) {
+         output.add(subscription);
       }
 
    }
 
    private Set<DebugSubscription<?>> requestedSubscriptions() {
-      ReferenceOpenHashSet var1 = new ReferenceOpenHashSet();
-      addFlag(var1, RemoteDebugSampleType.TICK_TIME.subscription(), this.debugScreenOverlay.showFpsCharts());
+      Set<DebugSubscription<?>> subscriptions = new ReferenceOpenHashSet();
+      addFlag(subscriptions, RemoteDebugSampleType.TICK_TIME.subscription(), this.debugScreenOverlay.showFpsCharts());
       if (SharedConstants.DEBUG_ENABLED) {
-         addFlag(var1, DebugSubscriptions.BEES, SharedConstants.DEBUG_BEES);
-         addFlag(var1, DebugSubscriptions.BEE_HIVES, SharedConstants.DEBUG_BEES);
-         addFlag(var1, DebugSubscriptions.BRAINS, SharedConstants.DEBUG_BRAIN);
-         addFlag(var1, DebugSubscriptions.BREEZES, SharedConstants.DEBUG_BREEZE_MOB);
-         addFlag(var1, DebugSubscriptions.ENTITY_BLOCK_INTERSECTIONS, SharedConstants.DEBUG_ENTITY_BLOCK_INTERSECTION);
-         addFlag(var1, DebugSubscriptions.ENTITY_PATHS, SharedConstants.DEBUG_PATHFINDING);
-         addFlag(var1, DebugSubscriptions.GAME_EVENTS, SharedConstants.DEBUG_GAME_EVENT_LISTENERS);
-         addFlag(var1, DebugSubscriptions.GAME_EVENT_LISTENERS, SharedConstants.DEBUG_GAME_EVENT_LISTENERS);
-         addFlag(var1, DebugSubscriptions.GOAL_SELECTORS, SharedConstants.DEBUG_GOAL_SELECTOR || SharedConstants.DEBUG_BEES);
-         addFlag(var1, DebugSubscriptions.NEIGHBOR_UPDATES, SharedConstants.DEBUG_NEIGHBORSUPDATE);
-         addFlag(var1, DebugSubscriptions.POIS, SharedConstants.DEBUG_POI);
-         addFlag(var1, DebugSubscriptions.RAIDS, SharedConstants.DEBUG_RAIDS);
-         addFlag(var1, DebugSubscriptions.REDSTONE_WIRE_ORIENTATIONS, SharedConstants.DEBUG_EXPERIMENTAL_REDSTONEWIRE_UPDATE_ORDER);
-         addFlag(var1, DebugSubscriptions.STRUCTURES, SharedConstants.DEBUG_STRUCTURES);
-         addFlag(var1, DebugSubscriptions.VILLAGE_SECTIONS, SharedConstants.DEBUG_VILLAGE_SECTIONS);
+         addFlag(subscriptions, DebugSubscriptions.BEES, SharedConstants.DEBUG_BEES);
+         addFlag(subscriptions, DebugSubscriptions.BEE_HIVES, SharedConstants.DEBUG_BEES);
+         addFlag(subscriptions, DebugSubscriptions.BRAINS, SharedConstants.DEBUG_BRAIN);
+         addFlag(subscriptions, DebugSubscriptions.BREEZES, SharedConstants.DEBUG_BREEZE_MOB);
+         addFlag(subscriptions, DebugSubscriptions.ENTITY_BLOCK_INTERSECTIONS, SharedConstants.DEBUG_ENTITY_BLOCK_INTERSECTION);
+         addFlag(subscriptions, DebugSubscriptions.ENTITY_PATHS, SharedConstants.DEBUG_PATHFINDING);
+         addFlag(subscriptions, DebugSubscriptions.GAME_EVENTS, SharedConstants.DEBUG_GAME_EVENT_LISTENERS);
+         addFlag(subscriptions, DebugSubscriptions.GAME_EVENT_LISTENERS, SharedConstants.DEBUG_GAME_EVENT_LISTENERS);
+         addFlag(subscriptions, DebugSubscriptions.GOAL_SELECTORS, SharedConstants.DEBUG_GOAL_SELECTOR || SharedConstants.DEBUG_BEES);
+         addFlag(subscriptions, DebugSubscriptions.NEIGHBOR_UPDATES, SharedConstants.DEBUG_NEIGHBORSUPDATE);
+         addFlag(subscriptions, DebugSubscriptions.POIS, SharedConstants.DEBUG_POI);
+         addFlag(subscriptions, DebugSubscriptions.RAIDS, SharedConstants.DEBUG_RAIDS);
+         addFlag(subscriptions, DebugSubscriptions.REDSTONE_WIRE_ORIENTATIONS, SharedConstants.DEBUG_EXPERIMENTAL_REDSTONEWIRE_UPDATE_ORDER);
+         addFlag(subscriptions, DebugSubscriptions.STRUCTURES, SharedConstants.DEBUG_STRUCTURES);
+         addFlag(subscriptions, DebugSubscriptions.VILLAGE_SECTIONS, SharedConstants.DEBUG_VILLAGE_SECTIONS);
       }
 
-      return var1;
+      return subscriptions;
    }
 
    public void clear() {
@@ -71,89 +71,93 @@ public class ClientDebugSubscriber {
       this.dropLevel();
    }
 
-   public void tick(long var1) {
-      Set var3 = this.requestedSubscriptions();
-      if (!var3.equals(this.remoteSubscriptions)) {
-         this.remoteSubscriptions = var3;
-         this.onSubscriptionsChanged(var3);
+   public void tick(final long gameTime) {
+      Set<DebugSubscription<?>> newSubscriptions = this.requestedSubscriptions();
+      if (!newSubscriptions.equals(this.remoteSubscriptions)) {
+         this.remoteSubscriptions = newSubscriptions;
+         this.onSubscriptionsChanged(newSubscriptions);
       }
 
-      this.valuesBySubscription.forEach((var2, var3x) -> {
-         if (var2.expireAfterTicks() != 0) {
-            var3x.purgeExpired(var1);
+      this.valuesBySubscription.forEach((subscription, valueMaps) -> {
+         if (subscription.expireAfterTicks() != 0) {
+            valueMaps.purgeExpired(gameTime);
          }
 
       });
    }
 
-   private void onSubscriptionsChanged(Set<DebugSubscription<?>> var1) {
-      this.valuesBySubscription.keySet().retainAll(var1);
-      this.initializeSubscriptions(var1);
-      this.connection.send(new ServerboundDebugSubscriptionRequestPacket(var1));
+   private void onSubscriptionsChanged(final Set<DebugSubscription<?>> newSubscriptions) {
+      this.valuesBySubscription.keySet().retainAll(newSubscriptions);
+      this.initializeSubscriptions(newSubscriptions);
+      this.connection.send(new ServerboundDebugSubscriptionRequestPacket(newSubscriptions));
    }
 
-   private void initializeSubscriptions(Set<DebugSubscription<?>> var1) {
-      for(DebugSubscription var3 : var1) {
-         this.valuesBySubscription.computeIfAbsent(var3, (var0) -> new ValueMaps());
+   private void initializeSubscriptions(final Set<DebugSubscription<?>> newSubscriptions) {
+      for(DebugSubscription<?> subscription : newSubscriptions) {
+         this.valuesBySubscription.computeIfAbsent(subscription, (s) -> new ValueMaps());
       }
 
    }
 
-   <V> @Nullable ValueMaps<V> getValueMaps(DebugSubscription<V> var1) {
-      return (ValueMaps)this.valuesBySubscription.get(var1);
+   private <V> @Nullable ValueMaps<V> getValueMaps(final DebugSubscription<V> subscription) {
+      return (ValueMaps)this.valuesBySubscription.get(subscription);
    }
 
-   private <K, V> @Nullable ValueMap<K, V> getValueMap(DebugSubscription<V> var1, ValueMapType<K, V> var2) {
-      ValueMaps var3 = this.getValueMaps(var1);
-      return var3 != null ? var2.get(var3) : null;
+   private <K, V> @Nullable ValueMap<K, V> getValueMap(final DebugSubscription<V> subscription, final ValueMapType<K, V> mapType) {
+      ValueMaps<V> maps = this.<V>getValueMaps(subscription);
+      return maps != null ? mapType.get(maps) : null;
    }
 
-   <K, V> @Nullable V getValue(DebugSubscription<V> var1, K var2, ValueMapType<K, V> var3) {
-      ValueMap var4 = this.getValueMap(var1, var3);
-      return (V)(var4 != null ? var4.getValue(var2) : null);
+   private <K, V> @Nullable V getValue(final DebugSubscription<V> subscription, final K key, final ValueMapType<K, V> type) {
+      ValueMap<K, V> values = this.<K, V>getValueMap(subscription, type);
+      return (V)(values != null ? values.getValue(key) : null);
    }
 
-   public DebugValueAccess createDebugValueAccess(final Level var1) {
+   public DebugValueAccess createDebugValueAccess(final Level level) {
       return new DebugValueAccess() {
-         public <T> void forEachChunk(DebugSubscription<T> var1x, BiConsumer<ChunkPos, T> var2) {
-            ClientDebugSubscriber.this.forEachValue(var1x, ClientDebugSubscriber.chunks(), var2);
+         {
+            Objects.requireNonNull(ClientDebugSubscriber.this);
          }
 
-         public <T> @Nullable T getChunkValue(DebugSubscription<T> var1x, ChunkPos var2) {
-            return (T)ClientDebugSubscriber.this.getValue(var1x, var2, ClientDebugSubscriber.chunks());
+         public <T> void forEachChunk(final DebugSubscription<T> subscription, final BiConsumer<ChunkPos, T> consumer) {
+            ClientDebugSubscriber.this.forEachValue(subscription, ClientDebugSubscriber.chunks(), consumer);
          }
 
-         public <T> void forEachBlock(DebugSubscription<T> var1x, BiConsumer<BlockPos, T> var2) {
-            ClientDebugSubscriber.this.forEachValue(var1x, ClientDebugSubscriber.blocks(), var2);
+         public <T> @Nullable T getChunkValue(final DebugSubscription<T> subscription, final ChunkPos chunkPos) {
+            return (T)ClientDebugSubscriber.this.getValue(subscription, chunkPos, ClientDebugSubscriber.chunks());
          }
 
-         public <T> @Nullable T getBlockValue(DebugSubscription<T> var1x, BlockPos var2) {
-            return (T)ClientDebugSubscriber.this.getValue(var1x, var2, ClientDebugSubscriber.blocks());
+         public <T> void forEachBlock(final DebugSubscription<T> subscription, final BiConsumer<BlockPos, T> consumer) {
+            ClientDebugSubscriber.this.forEachValue(subscription, ClientDebugSubscriber.blocks(), consumer);
          }
 
-         public <T> void forEachEntity(DebugSubscription<T> var1x, BiConsumer<Entity, T> var2) {
-            ClientDebugSubscriber.this.forEachValue(var1x, ClientDebugSubscriber.entities(), (var2x, var3) -> {
-               Entity var4 = var1.getEntity(var2x);
-               if (var4 != null) {
-                  var2.accept(var4, var3);
+         public <T> @Nullable T getBlockValue(final DebugSubscription<T> subscription, final BlockPos blockPos) {
+            return (T)ClientDebugSubscriber.this.getValue(subscription, blockPos, ClientDebugSubscriber.blocks());
+         }
+
+         public <T> void forEachEntity(final DebugSubscription<T> subscription, final BiConsumer<Entity, T> consumer) {
+            ClientDebugSubscriber.this.forEachValue(subscription, ClientDebugSubscriber.entities(), (entityId, value) -> {
+               Entity entity = level.getEntity(entityId);
+               if (entity != null) {
+                  consumer.accept(entity, value);
                }
 
             });
          }
 
-         public <T> @Nullable T getEntityValue(DebugSubscription<T> var1x, Entity var2) {
-            return (T)ClientDebugSubscriber.this.getValue(var1x, var2.getUUID(), ClientDebugSubscriber.entities());
+         public <T> @Nullable T getEntityValue(final DebugSubscription<T> subscription, final Entity entity) {
+            return (T)ClientDebugSubscriber.this.getValue(subscription, entity.getUUID(), ClientDebugSubscriber.entities());
          }
 
-         public <T> void forEachEvent(DebugSubscription<T> var1x, DebugValueAccess.EventVisitor<T> var2) {
-            ValueMaps var3 = ClientDebugSubscriber.this.getValueMaps(var1x);
-            if (var3 != null) {
-               long var4 = var1.getGameTime();
+         public <T> void forEachEvent(final DebugSubscription<T> subscription, final DebugValueAccess.EventVisitor<T> visitor) {
+            ValueMaps<T> values = ClientDebugSubscriber.this.<T>getValueMaps(subscription);
+            if (values != null) {
+               long gameTime = level.getGameTime();
 
-               for(ValueWrapper var7 : var3.events) {
-                  int var8 = (int)(var7.expiresAfterTime() - var4);
-                  int var9 = var1x.expireAfterTicks();
-                  var2.accept(var7.value(), var8, var9);
+               for(ValueWrapper<T> event : values.events) {
+                  int remainingTicks = (int)(event.expiresAfterTime() - gameTime);
+                  int totalLifetime = subscription.expireAfterTicks();
+                  visitor.accept(event.value(), remainingTicks, totalLifetime);
                }
 
             }
@@ -161,38 +165,38 @@ public class ClientDebugSubscriber {
       };
    }
 
-   public <T> void updateChunk(long var1, ChunkPos var3, DebugSubscription.Update<T> var4) {
-      this.updateMap(var1, var3, var4, chunks());
+   public <T> void updateChunk(final long gameTime, final ChunkPos chunkPos, final DebugSubscription.Update<T> update) {
+      this.updateMap(gameTime, chunkPos, update, chunks());
    }
 
-   public <T> void updateBlock(long var1, BlockPos var3, DebugSubscription.Update<T> var4) {
-      this.updateMap(var1, var3, var4, blocks());
+   public <T> void updateBlock(final long gameTime, final BlockPos blockPos, final DebugSubscription.Update<T> update) {
+      this.updateMap(gameTime, blockPos, update, blocks());
    }
 
-   public <T> void updateEntity(long var1, Entity var3, DebugSubscription.Update<T> var4) {
-      this.updateMap(var1, var3.getUUID(), var4, entities());
+   public <T> void updateEntity(final long gameTime, final Entity entity, final DebugSubscription.Update<T> update) {
+      this.updateMap(gameTime, entity.getUUID(), update, entities());
    }
 
-   public <T> void pushEvent(long var1, DebugSubscription.Event<T> var3) {
-      ValueMaps var4 = this.getValueMaps(var3.subscription());
-      if (var4 != null) {
-         var4.events.add(new ValueWrapper(var3.value(), var1 + (long)var3.subscription().expireAfterTicks()));
+   public <T> void pushEvent(final long gameTime, final DebugSubscription.Event<T> event) {
+      ValueMaps<T> values = this.<T>getValueMaps(event.subscription());
+      if (values != null) {
+         values.events.add(new ValueWrapper(event.value(), gameTime + (long)event.subscription().expireAfterTicks()));
       }
 
    }
 
-   private <K, V> void updateMap(long var1, K var3, DebugSubscription.Update<V> var4, ValueMapType<K, V> var5) {
-      ValueMap var6 = this.getValueMap(var4.subscription(), var5);
-      if (var6 != null) {
-         var6.apply(var1, var3, var4);
+   private <K, V> void updateMap(final long gameTime, final K key, final DebugSubscription.Update<V> update, final ValueMapType<K, V> type) {
+      ValueMap<K, V> values = this.<K, V>getValueMap(update.subscription(), type);
+      if (values != null) {
+         values.apply(gameTime, key, update);
       }
 
    }
 
-   <K, V> void forEachValue(DebugSubscription<V> var1, ValueMapType<K, V> var2, BiConsumer<K, V> var3) {
-      ValueMap var4 = this.getValueMap(var1, var2);
-      if (var4 != null) {
-         var4.forEach(var3);
+   private <K, V> void forEachValue(final DebugSubscription<V> subscription, final ValueMapType<K, V> type, final BiConsumer<K, V> consumer) {
+      ValueMap<K, V> values = this.<K, V>getValueMap(subscription, type);
+      if (values != null) {
+         values.forEach(consumer);
       }
 
    }
@@ -202,120 +206,118 @@ public class ClientDebugSubscriber {
       this.initializeSubscriptions(this.remoteSubscriptions);
    }
 
-   public void dropChunk(ChunkPos var1) {
+   public void dropChunk(final ChunkPos chunkPos) {
       if (!this.valuesBySubscription.isEmpty()) {
-         for(ValueMaps var3 : this.valuesBySubscription.values()) {
-            var3.dropChunkAndBlocks(var1);
+         for(ValueMaps<?> values : this.valuesBySubscription.values()) {
+            values.dropChunkAndBlocks(chunkPos);
          }
 
       }
    }
 
-   public void dropEntity(Entity var1) {
+   public void dropEntity(final Entity entity) {
       if (!this.valuesBySubscription.isEmpty()) {
-         for(ValueMaps var3 : this.valuesBySubscription.values()) {
-            var3.entityValues.removeKey(var1.getUUID());
+         for(ValueMaps<?> values : this.valuesBySubscription.values()) {
+            values.entityValues.removeKey(entity.getUUID());
          }
 
       }
    }
 
-   static <T> ValueMapType<UUID, T> entities() {
-      return (var0) -> var0.entityValues;
+   private static <T> ValueMapType<UUID, T> entities() {
+      return (v) -> v.entityValues;
    }
 
-   static <T> ValueMapType<BlockPos, T> blocks() {
-      return (var0) -> var0.blockValues;
+   private static <T> ValueMapType<BlockPos, T> blocks() {
+      return (v) -> v.blockValues;
    }
 
-   static <T> ValueMapType<ChunkPos, T> chunks() {
-      return (var0) -> var0.chunkValues;
+   private static <T> ValueMapType<ChunkPos, T> chunks() {
+      return (v) -> v.chunkValues;
    }
 
-   static class ValueMap<K, V> {
+   private static class ValueMap<K, V> {
       private final Map<K, ValueWrapper<V>> values = new HashMap();
 
-      ValueMap() {
+      private ValueMap() {
          super();
       }
 
-      public void removeValues(Predicate<ValueWrapper<V>> var1) {
-         this.values.values().removeIf(var1);
+      public void removeValues(final Predicate<ValueWrapper<V>> predicate) {
+         this.values.values().removeIf(predicate);
       }
 
-      public void removeKey(K var1) {
-         this.values.remove(var1);
+      public void removeKey(final K key) {
+         this.values.remove(key);
       }
 
-      public void removeKeys(Predicate<K> var1) {
-         this.values.keySet().removeIf(var1);
+      public void removeKeys(final Predicate<K> predicate) {
+         this.values.keySet().removeIf(predicate);
       }
 
-      public @Nullable V getValue(K var1) {
-         ValueWrapper var2 = (ValueWrapper)this.values.get(var1);
-         return (V)(var2 != null ? var2.value() : null);
+      public @Nullable V getValue(final K key) {
+         ValueWrapper<V> result = (ValueWrapper)this.values.get(key);
+         return (V)(result != null ? result.value() : null);
       }
 
-      public void apply(long var1, K var3, DebugSubscription.Update<V> var4) {
-         if (var4.value().isPresent()) {
-            this.values.put(var3, new ValueWrapper(var4.value().get(), var1 + (long)var4.subscription().expireAfterTicks()));
+      public void apply(final long gameTime, final K key, final DebugSubscription.Update<V> update) {
+         if (update.value().isPresent()) {
+            this.values.put(key, new ValueWrapper(update.value().get(), gameTime + (long)update.subscription().expireAfterTicks()));
          } else {
-            this.values.remove(var3);
+            this.values.remove(key);
          }
 
       }
 
-      public void forEach(BiConsumer<K, V> var1) {
-         this.values.forEach((var1x, var2) -> var1.accept(var1x, var2.value()));
+      public void forEach(final BiConsumer<K, V> output) {
+         this.values.forEach((k, v) -> output.accept(k, v.value()));
       }
    }
 
-   static class ValueMaps<V> {
-      final ValueMap<ChunkPos, V> chunkValues = new ValueMap<ChunkPos, V>();
-      final ValueMap<BlockPos, V> blockValues = new ValueMap<BlockPos, V>();
-      final ValueMap<UUID, V> entityValues = new ValueMap<UUID, V>();
-      final List<ValueWrapper<V>> events = new ArrayList();
+   private static class ValueMaps<V> {
+      private final ValueMap<ChunkPos, V> chunkValues = new ValueMap<ChunkPos, V>();
+      private final ValueMap<BlockPos, V> blockValues = new ValueMap<BlockPos, V>();
+      private final ValueMap<UUID, V> entityValues = new ValueMap<UUID, V>();
+      private final List<ValueWrapper<V>> events = new ArrayList();
 
-      ValueMaps() {
+      private ValueMaps() {
          super();
       }
 
-      public void purgeExpired(long var1) {
-         Predicate var3 = (var2) -> var2.hasExpired(var1);
-         this.chunkValues.removeValues(var3);
-         this.blockValues.removeValues(var3);
-         this.entityValues.removeValues(var3);
-         this.events.removeIf(var3);
+      public void purgeExpired(final long gameTime) {
+         Predicate<ValueWrapper<V>> expiredPredicate = (v) -> v.hasExpired(gameTime);
+         this.chunkValues.removeValues(expiredPredicate);
+         this.blockValues.removeValues(expiredPredicate);
+         this.entityValues.removeValues(expiredPredicate);
+         this.events.removeIf(expiredPredicate);
       }
 
-      public void dropChunkAndBlocks(ChunkPos var1) {
-         this.chunkValues.removeKey(var1);
+      public void dropChunkAndBlocks(final ChunkPos chunkPos) {
+         this.chunkValues.removeKey(chunkPos);
          ValueMap var10000 = this.blockValues;
-         Objects.requireNonNull(var1);
-         var10000.removeKeys(var1::contains);
+         Objects.requireNonNull(chunkPos);
+         var10000.removeKeys(chunkPos::contains);
       }
    }
 
-   static record ValueWrapper<T>(T value, long expiresAfterTime) {
+   private static record ValueWrapper<T>(T value, long expiresAfterTime) {
       private static final long NO_EXPIRY = -1L;
 
-      ValueWrapper(T var1, long var2) {
+      private ValueWrapper {
          super();
-         this.value = var1;
-         this.expiresAfterTime = var2;
       }
 
-      public boolean hasExpired(long var1) {
+      public boolean hasExpired(final long gameTime) {
          if (this.expiresAfterTime == -1L) {
             return false;
          } else {
-            return var1 >= this.expiresAfterTime;
+            return gameTime >= this.expiresAfterTime;
          }
       }
    }
 
    @FunctionalInterface
-   interface ValueMapType<K, V> {
-      ValueMap<K, V> get(ValueMaps<V> var1);
+   private interface ValueMapType<K, V> {
+      ValueMap<K, V> get(ValueMaps<V> maps);
    }
 }

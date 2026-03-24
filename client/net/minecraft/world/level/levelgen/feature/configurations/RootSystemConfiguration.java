@@ -11,7 +11,7 @@ import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvi
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 public class RootSystemConfiguration implements FeatureConfiguration {
-   public static final Codec<RootSystemConfiguration> CODEC = RecordCodecBuilder.create((var0) -> var0.group(PlacedFeature.CODEC.fieldOf("feature").forGetter((var0x) -> var0x.treeFeature), Codec.intRange(1, 64).fieldOf("required_vertical_space_for_tree").forGetter((var0x) -> var0x.requiredVerticalSpaceForTree), Codec.intRange(1, 64).fieldOf("root_radius").forGetter((var0x) -> var0x.rootRadius), TagKey.hashedCodec(Registries.BLOCK).fieldOf("root_replaceable").forGetter((var0x) -> var0x.rootReplaceable), BlockStateProvider.CODEC.fieldOf("root_state_provider").forGetter((var0x) -> var0x.rootStateProvider), Codec.intRange(1, 256).fieldOf("root_placement_attempts").forGetter((var0x) -> var0x.rootPlacementAttempts), Codec.intRange(1, 4096).fieldOf("root_column_max_height").forGetter((var0x) -> var0x.rootColumnMaxHeight), Codec.intRange(1, 64).fieldOf("hanging_root_radius").forGetter((var0x) -> var0x.hangingRootRadius), Codec.intRange(1, 16).fieldOf("hanging_roots_vertical_span").forGetter((var0x) -> var0x.hangingRootsVerticalSpan), BlockStateProvider.CODEC.fieldOf("hanging_root_state_provider").forGetter((var0x) -> var0x.hangingRootStateProvider), Codec.intRange(1, 256).fieldOf("hanging_root_placement_attempts").forGetter((var0x) -> var0x.hangingRootPlacementAttempts), Codec.intRange(1, 64).fieldOf("allowed_vertical_water_for_tree").forGetter((var0x) -> var0x.allowedVerticalWaterForTree), BlockPredicate.CODEC.fieldOf("allowed_tree_position").forGetter((var0x) -> var0x.allowedTreePosition)).apply(var0, RootSystemConfiguration::new));
+   public static final Codec<RootSystemConfiguration> CODEC = RecordCodecBuilder.create((i) -> i.group(PlacedFeature.CODEC.fieldOf("feature").forGetter((c) -> c.treeFeature), Codec.intRange(1, 64).fieldOf("required_vertical_space_for_tree").forGetter((c) -> c.requiredVerticalSpaceForTree), Codec.intRange(1, 64).fieldOf("root_radius").forGetter((c) -> c.rootRadius), TagKey.hashedCodec(Registries.BLOCK).fieldOf("root_replaceable").forGetter((c) -> c.rootReplaceable), BlockStateProvider.CODEC.fieldOf("root_state_provider").forGetter((c) -> c.rootStateProvider), Codec.intRange(1, 256).fieldOf("root_placement_attempts").forGetter((c) -> c.rootPlacementAttempts), Codec.intRange(1, 4096).fieldOf("root_column_max_height").forGetter((c) -> c.rootColumnMaxHeight), Codec.intRange(1, 64).fieldOf("hanging_root_radius").forGetter((c) -> c.hangingRootRadius), Codec.intRange(1, 16).fieldOf("hanging_roots_vertical_span").forGetter((c) -> c.hangingRootsVerticalSpan), BlockStateProvider.CODEC.fieldOf("hanging_root_state_provider").forGetter((c) -> c.hangingRootStateProvider), Codec.intRange(1, 256).fieldOf("hanging_root_placement_attempts").forGetter((c) -> c.hangingRootPlacementAttempts), Codec.intRange(1, 64).fieldOf("allowed_vertical_water_for_tree").forGetter((c) -> c.allowedVerticalWaterForTree), BlockPredicate.CODEC.fieldOf("allowed_tree_position").forGetter((c) -> c.allowedTreePosition)).apply(i, RootSystemConfiguration::new));
    public final Holder<PlacedFeature> treeFeature;
    public final int requiredVerticalSpaceForTree;
    public final int rootRadius;
@@ -26,20 +26,20 @@ public class RootSystemConfiguration implements FeatureConfiguration {
    public final int allowedVerticalWaterForTree;
    public final BlockPredicate allowedTreePosition;
 
-   public RootSystemConfiguration(Holder<PlacedFeature> var1, int var2, int var3, TagKey<Block> var4, BlockStateProvider var5, int var6, int var7, int var8, int var9, BlockStateProvider var10, int var11, int var12, BlockPredicate var13) {
+   public RootSystemConfiguration(final Holder<PlacedFeature> treeFeature, final int requiredVerticalSpaceForTree, final int rootRadius, final TagKey<Block> rootReplaceable, final BlockStateProvider rootStateProvider, final int rootPlacementAttempts, final int rootColumnMaxHeight, final int hangingRootRadius, final int hangingRootsVerticalSpan, final BlockStateProvider hangingRootStateProvider, final int hangingRootPlacementAttempts, final int allowedVerticalWaterForTree, final BlockPredicate allowedTreePosition) {
       super();
-      this.treeFeature = var1;
-      this.requiredVerticalSpaceForTree = var2;
-      this.rootRadius = var3;
-      this.rootReplaceable = var4;
-      this.rootStateProvider = var5;
-      this.rootPlacementAttempts = var6;
-      this.rootColumnMaxHeight = var7;
-      this.hangingRootRadius = var8;
-      this.hangingRootsVerticalSpan = var9;
-      this.hangingRootStateProvider = var10;
-      this.hangingRootPlacementAttempts = var11;
-      this.allowedVerticalWaterForTree = var12;
-      this.allowedTreePosition = var13;
+      this.treeFeature = treeFeature;
+      this.requiredVerticalSpaceForTree = requiredVerticalSpaceForTree;
+      this.rootRadius = rootRadius;
+      this.rootReplaceable = rootReplaceable;
+      this.rootStateProvider = rootStateProvider;
+      this.rootPlacementAttempts = rootPlacementAttempts;
+      this.rootColumnMaxHeight = rootColumnMaxHeight;
+      this.hangingRootRadius = hangingRootRadius;
+      this.hangingRootsVerticalSpan = hangingRootsVerticalSpan;
+      this.hangingRootStateProvider = hangingRootStateProvider;
+      this.hangingRootPlacementAttempts = hangingRootPlacementAttempts;
+      this.allowedVerticalWaterForTree = allowedVerticalWaterForTree;
+      this.allowedTreePosition = allowedTreePosition;
    }
 }

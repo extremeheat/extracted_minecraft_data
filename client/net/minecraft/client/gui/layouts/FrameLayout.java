@@ -18,28 +18,28 @@ public class FrameLayout extends AbstractLayout {
       this(0, 0, 0, 0);
    }
 
-   public FrameLayout(int var1, int var2) {
-      this(0, 0, var1, var2);
+   public FrameLayout(final int minWidth, final int minHeight) {
+      this(0, 0, minWidth, minHeight);
    }
 
-   public FrameLayout(int var1, int var2, int var3, int var4) {
-      super(var1, var2, var3, var4);
+   public FrameLayout(final int x, final int y, final int minWidth, final int minHeight) {
+      super(x, y, minWidth, minHeight);
       this.children = new ArrayList();
       this.defaultChildLayoutSettings = LayoutSettings.defaults().align(0.5F, 0.5F);
-      this.setMinDimensions(var3, var4);
+      this.setMinDimensions(minWidth, minHeight);
    }
 
-   public FrameLayout setMinDimensions(int var1, int var2) {
-      return this.setMinWidth(var1).setMinHeight(var2);
+   public FrameLayout setMinDimensions(final int minWidth, final int minHeight) {
+      return this.setMinWidth(minWidth).setMinHeight(minHeight);
    }
 
-   public FrameLayout setMinHeight(int var1) {
-      this.minHeight = var1;
+   public FrameLayout setMinHeight(final int minHeight) {
+      this.minHeight = minHeight;
       return this;
    }
 
-   public FrameLayout setMinWidth(int var1) {
-      this.minWidth = var1;
+   public FrameLayout setMinWidth(final int minWidth) {
+      this.minWidth = minWidth;
       return this;
    }
 
@@ -53,69 +53,69 @@ public class FrameLayout extends AbstractLayout {
 
    public void arrangeElements() {
       super.arrangeElements();
-      int var1 = this.minWidth;
-      int var2 = this.minHeight;
+      int resultWidth = this.minWidth;
+      int resultHeight = this.minHeight;
 
-      for(ChildContainer var4 : this.children) {
-         var1 = Math.max(var1, var4.getWidth());
-         var2 = Math.max(var2, var4.getHeight());
+      for(ChildContainer child : this.children) {
+         resultWidth = Math.max(resultWidth, child.getWidth());
+         resultHeight = Math.max(resultHeight, child.getHeight());
       }
 
-      for(ChildContainer var6 : this.children) {
-         var6.setX(this.getX(), var1);
-         var6.setY(this.getY(), var2);
+      for(ChildContainer child : this.children) {
+         child.setX(this.getX(), resultWidth);
+         child.setY(this.getY(), resultHeight);
       }
 
-      this.width = var1;
-      this.height = var2;
+      this.width = resultWidth;
+      this.height = resultHeight;
    }
 
-   public <T extends LayoutElement> T addChild(T var1) {
-      return (T)this.addChild(var1, this.newChildLayoutSettings());
+   public <T extends LayoutElement> T addChild(final T child) {
+      return (T)this.addChild(child, this.newChildLayoutSettings());
    }
 
-   public <T extends LayoutElement> T addChild(T var1, LayoutSettings var2) {
-      this.children.add(new ChildContainer(var1, var2));
-      return (T)var1;
+   public <T extends LayoutElement> T addChild(final T child, final LayoutSettings childLayoutSettings) {
+      this.children.add(new ChildContainer(child, childLayoutSettings));
+      return child;
    }
 
-   public <T extends LayoutElement> T addChild(T var1, Consumer<LayoutSettings> var2) {
-      return (T)this.addChild(var1, (LayoutSettings)Util.make(this.newChildLayoutSettings(), var2));
+   public <T extends LayoutElement> T addChild(final T child, final Consumer<LayoutSettings> layoutSettingsAdjustments) {
+      return (T)this.addChild(child, (LayoutSettings)Util.make(this.newChildLayoutSettings(), layoutSettingsAdjustments));
    }
 
-   public void visitChildren(Consumer<LayoutElement> var1) {
-      this.children.forEach((var1x) -> var1.accept(var1x.child));
+   public void visitChildren(final Consumer<LayoutElement> layoutElementVisitor) {
+      this.children.forEach((wrapper) -> layoutElementVisitor.accept(wrapper.child));
    }
 
-   public static void centerInRectangle(LayoutElement var0, int var1, int var2, int var3, int var4) {
-      alignInRectangle(var0, var1, var2, var3, var4, 0.5F, 0.5F);
+   public static void centerInRectangle(final LayoutElement widget, final int x, final int y, final int width, final int height) {
+      alignInRectangle(widget, x, y, width, height, 0.5F, 0.5F);
    }
 
-   public static void centerInRectangle(LayoutElement var0, ScreenRectangle var1) {
-      centerInRectangle(var0, var1.position().x(), var1.position().y(), var1.width(), var1.height());
+   public static void centerInRectangle(final LayoutElement widget, final ScreenRectangle rectangle) {
+      centerInRectangle(widget, rectangle.position().x(), rectangle.position().y(), rectangle.width(), rectangle.height());
    }
 
-   public static void alignInRectangle(LayoutElement var0, ScreenRectangle var1, float var2, float var3) {
-      alignInRectangle(var0, var1.left(), var1.top(), var1.width(), var1.height(), var2, var3);
+   public static void alignInRectangle(final LayoutElement widget, final ScreenRectangle rectangle, final float alignX, final float alignY) {
+      alignInRectangle(widget, rectangle.left(), rectangle.top(), rectangle.width(), rectangle.height(), alignX, alignY);
    }
 
-   public static void alignInRectangle(LayoutElement var0, int var1, int var2, int var3, int var4, float var5, float var6) {
-      int var10002 = var0.getWidth();
-      Objects.requireNonNull(var0);
-      alignInDimension(var1, var3, var10002, var0::setX, var5);
-      var10002 = var0.getHeight();
-      Objects.requireNonNull(var0);
-      alignInDimension(var2, var4, var10002, var0::setY, var6);
+   public static void alignInRectangle(final LayoutElement widget, final int x, final int y, final int width, final int height, final float alignX, final float alignY) {
+      int var10002 = widget.getWidth();
+      Objects.requireNonNull(widget);
+      alignInDimension(x, width, var10002, widget::setX, alignX);
+      var10002 = widget.getHeight();
+      Objects.requireNonNull(widget);
+      alignInDimension(y, height, var10002, widget::setY, alignY);
    }
 
-   public static void alignInDimension(int var0, int var1, int var2, Consumer<Integer> var3, float var4) {
-      int var5 = (int)Mth.lerp(var4, 0.0F, (float)(var1 - var2));
-      var3.accept(var0 + var5);
+   public static void alignInDimension(final int pos, final int length, final int widgetLength, final Consumer<Integer> setWidgetPos, final float align) {
+      int offset = (int)Mth.lerp(align, 0.0F, (float)(length - widgetLength));
+      setWidgetPos.accept(pos + offset);
    }
 
-   static class ChildContainer extends AbstractLayout.AbstractChildWrapper {
-      protected ChildContainer(LayoutElement var1, LayoutSettings var2) {
-         super(var1, var2);
+   private static class ChildContainer extends AbstractLayout.AbstractChildWrapper {
+      protected ChildContainer(final LayoutElement child, final LayoutSettings layoutSettings) {
+         super(child, layoutSettings);
       }
    }
 }

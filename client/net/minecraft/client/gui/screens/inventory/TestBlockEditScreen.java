@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.screens.inventory;
 
 import java.util.List;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
@@ -24,11 +24,11 @@ public class TestBlockEditScreen extends Screen {
    private String message;
    private @Nullable EditBox messageEdit;
 
-   public TestBlockEditScreen(TestBlockEntity var1) {
+   public TestBlockEditScreen(final TestBlockEntity block) {
       super(TITLE);
-      this.position = var1.getBlockPos();
-      this.mode = var1.getMode();
-      this.message = var1.getMessage();
+      this.position = block.getBlockPos();
+      this.mode = block.getMode();
+      this.message = block.getMessage();
    }
 
    public void init() {
@@ -37,9 +37,9 @@ public class TestBlockEditScreen extends Screen {
       this.messageEdit.setValue(this.message);
       this.addRenderableWidget(this.messageEdit);
       this.updateMode(this.mode);
-      this.addRenderableWidget(CycleButton.builder(TestBlockMode::getDisplayName, this.mode).withValues(MODES).displayOnlyValue().create(this.width / 2 - 4 - 150, 185, 50, 20, TITLE, (var1, var2) -> this.updateMode(var2)));
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1) -> this.onDone()).bounds(this.width / 2 - 4 - 150, 210, 150, 20).build());
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1) -> this.onCancel()).bounds(this.width / 2 + 4, 210, 150, 20).build());
+      this.addRenderableWidget(CycleButton.builder(TestBlockMode::getDisplayName, this.mode).withValues(MODES).displayOnlyValue().create(this.width / 2 - 4 - 150, 185, 50, 20, TITLE, (button, value) -> this.updateMode(value)));
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (button) -> this.onDone()).bounds(this.width / 2 - 4 - 150, 210, 150, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (button) -> this.onCancel()).bounds(this.width / 2 + 4, 210, 150, 20).build());
    }
 
    protected void setInitialFocus() {
@@ -51,14 +51,14 @@ public class TestBlockEditScreen extends Screen {
 
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 10, -1);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
+      graphics.centeredText(this.font, (Component)this.title, this.width / 2, 10, -1);
       if (this.mode != TestBlockMode.START) {
-         var1.drawString(this.font, (Component)MESSAGE_LABEL, this.width / 2 - 153, 70, -6250336);
+         graphics.text(this.font, (Component)MESSAGE_LABEL, this.width / 2 - 153, 70, -6250336);
       }
 
-      var1.drawString(this.font, (Component)this.mode.getDetailedMessage(), this.width / 2 - 153, 174, -6250336);
+      graphics.text(this.font, (Component)this.mode.getDetailedMessage(), this.width / 2 - 153, 174, -6250336);
    }
 
    public boolean isPauseScreen() {
@@ -83,9 +83,9 @@ public class TestBlockEditScreen extends Screen {
       this.minecraft.setScreen((Screen)null);
    }
 
-   private void updateMode(TestBlockMode var1) {
-      this.mode = var1;
-      this.messageEdit.visible = var1 != TestBlockMode.START;
+   private void updateMode(final TestBlockMode value) {
+      this.mode = value;
+      this.messageEdit.visible = value != TestBlockMode.START;
    }
 
    static {

@@ -2,7 +2,6 @@ package net.minecraft.world.item;
 
 import java.util.Optional;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -18,49 +17,49 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 
 public class InstrumentItem extends Item {
-   public InstrumentItem(Item.Properties var1) {
-      super(var1);
+   public InstrumentItem(final Item.Properties properties) {
+      super(properties);
    }
 
-   public static ItemStack create(Item var0, Holder<Instrument> var1) {
-      ItemStack var2 = new ItemStack(var0);
-      var2.set(DataComponents.INSTRUMENT, new InstrumentComponent(var1));
-      return var2;
+   public static ItemStack create(final Item item, final Holder<Instrument> instrument) {
+      ItemStack itemStack = new ItemStack(item);
+      itemStack.set(DataComponents.INSTRUMENT, new InstrumentComponent(instrument));
+      return itemStack;
    }
 
-   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
-      ItemStack var4 = var2.getItemInHand(var3);
-      Optional var5 = this.getInstrument(var4, var2.registryAccess());
-      if (var5.isPresent()) {
-         Instrument var6 = (Instrument)((Holder)var5.get()).value();
-         var2.startUsingItem(var3);
-         play(var1, var2, var6);
-         var2.getCooldowns().addCooldown(var4, Mth.floor(var6.useDuration() * 20.0F));
-         var2.awardStat(Stats.ITEM_USED.get(this));
+   public InteractionResult use(final Level level, final Player player, final InteractionHand hand) {
+      ItemStack itemStack = player.getItemInHand(hand);
+      Optional<? extends Holder<Instrument>> instrumentHolder = getInstrument(itemStack);
+      if (instrumentHolder.isPresent()) {
+         Instrument instrument = (Instrument)((Holder)instrumentHolder.get()).value();
+         player.startUsingItem(hand);
+         play(level, player, instrument);
+         player.getCooldowns().addCooldown(itemStack, Mth.floor(instrument.useDuration() * 20.0F));
+         player.awardStat(Stats.ITEM_USED.get(this));
          return InteractionResult.CONSUME;
       } else {
          return InteractionResult.FAIL;
       }
    }
 
-   public int getUseDuration(ItemStack var1, LivingEntity var2) {
-      Optional var3 = this.getInstrument(var1, var2.registryAccess());
-      return (Integer)var3.map((var0) -> Mth.floor(((Instrument)var0.value()).useDuration() * 20.0F)).orElse(0);
+   public int getUseDuration(final ItemStack itemStack, final LivingEntity user) {
+      Optional<Holder<Instrument>> instrument = getInstrument(itemStack);
+      return (Integer)instrument.map((instrumentHolder) -> Mth.floor(((Instrument)instrumentHolder.value()).useDuration() * 20.0F)).orElse(0);
    }
 
-   private Optional<Holder<Instrument>> getInstrument(ItemStack var1, HolderLookup.Provider var2) {
-      InstrumentComponent var3 = (InstrumentComponent)var1.get(DataComponents.INSTRUMENT);
-      return var3 != null ? var3.unwrap(var2) : Optional.empty();
+   private static Optional<Holder<Instrument>> getInstrument(final ItemStack itemStack) {
+      InstrumentComponent instrument = (InstrumentComponent)itemStack.get(DataComponents.INSTRUMENT);
+      return instrument != null ? Optional.of(instrument.instrument()) : Optional.empty();
    }
 
-   public ItemUseAnimation getUseAnimation(ItemStack var1) {
+   public ItemUseAnimation getUseAnimation(final ItemStack itemStack) {
       return ItemUseAnimation.TOOT_HORN;
    }
 
-   private static void play(Level var0, Player var1, Instrument var2) {
-      SoundEvent var3 = (SoundEvent)var2.soundEvent().value();
-      float var4 = var2.range() / 16.0F;
-      var0.playSound(var1, (Entity)var1, var3, SoundSource.RECORDS, var4, 1.0F);
-      var0.gameEvent(GameEvent.INSTRUMENT_PLAY, var1.position(), GameEvent.Context.of((Entity)var1));
+   private static void play(final Level level, final Player player, final Instrument instrument) {
+      SoundEvent soundEvent = (SoundEvent)instrument.soundEvent().value();
+      float volume = instrument.range() / 16.0F;
+      level.playSound(player, (Entity)player, soundEvent, SoundSource.RECORDS, volume, 1.0F);
+      level.gameEvent(GameEvent.INSTRUMENT_PLAY, player.position(), GameEvent.Context.of((Entity)player));
    }
 }

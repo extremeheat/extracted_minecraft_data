@@ -31,99 +31,99 @@ public class EnchantingTableBlockEntity extends BlockEntity implements Nameable 
    private static final RandomSource RANDOM = RandomSource.create();
    private @Nullable Component name;
 
-   public EnchantingTableBlockEntity(BlockPos var1, BlockState var2) {
-      super(BlockEntityType.ENCHANTING_TABLE, var1, var2);
+   public EnchantingTableBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      super(BlockEntityType.ENCHANTING_TABLE, worldPosition, blockState);
    }
 
-   protected void saveAdditional(ValueOutput var1) {
-      super.saveAdditional(var1);
-      var1.storeNullable("CustomName", ComponentSerialization.CODEC, this.name);
+   protected void saveAdditional(final ValueOutput output) {
+      super.saveAdditional(output);
+      output.storeNullable("CustomName", ComponentSerialization.CODEC, this.name);
    }
 
-   protected void loadAdditional(ValueInput var1) {
-      super.loadAdditional(var1);
-      this.name = parseCustomNameSafe(var1, "CustomName");
+   protected void loadAdditional(final ValueInput input) {
+      super.loadAdditional(input);
+      this.name = parseCustomNameSafe(input, "CustomName");
    }
 
-   public static void bookAnimationTick(Level var0, BlockPos var1, BlockState var2, EnchantingTableBlockEntity var3) {
-      var3.oOpen = var3.open;
-      var3.oRot = var3.rot;
-      Player var4 = var0.getNearestPlayer((double)var1.getX() + 0.5, (double)var1.getY() + 0.5, (double)var1.getZ() + 0.5, 3.0, false);
-      if (var4 != null) {
-         double var5 = var4.getX() - ((double)var1.getX() + 0.5);
-         double var7 = var4.getZ() - ((double)var1.getZ() + 0.5);
-         var3.tRot = (float)Mth.atan2(var7, var5);
-         var3.open += 0.1F;
-         if (var3.open < 0.5F || RANDOM.nextInt(40) == 0) {
-            float var9 = var3.flipT;
+   public static void bookAnimationTick(final Level level, final BlockPos worldPosition, final BlockState state, final EnchantingTableBlockEntity entity) {
+      entity.oOpen = entity.open;
+      entity.oRot = entity.rot;
+      Player player = level.getNearestPlayer((double)worldPosition.getX() + 0.5, (double)worldPosition.getY() + 0.5, (double)worldPosition.getZ() + 0.5, 3.0, false);
+      if (player != null) {
+         double xd = player.getX() - ((double)worldPosition.getX() + 0.5);
+         double zd = player.getZ() - ((double)worldPosition.getZ() + 0.5);
+         entity.tRot = (float)Mth.atan2(zd, xd);
+         entity.open += 0.1F;
+         if (entity.open < 0.5F || RANDOM.nextInt(40) == 0) {
+            float old = entity.flipT;
 
             do {
-               var3.flipT += (float)(RANDOM.nextInt(4) - RANDOM.nextInt(4));
-            } while(var9 == var3.flipT);
+               entity.flipT += (float)(RANDOM.nextInt(4) - RANDOM.nextInt(4));
+            } while(old == entity.flipT);
          }
       } else {
-         var3.tRot += 0.02F;
-         var3.open -= 0.1F;
+         entity.tRot += 0.02F;
+         entity.open -= 0.1F;
       }
 
-      while(var3.rot >= 3.1415927F) {
-         var3.rot -= 6.2831855F;
+      while(entity.rot >= 3.1415927F) {
+         entity.rot -= 6.2831855F;
       }
 
-      while(var3.rot < -3.1415927F) {
-         var3.rot += 6.2831855F;
+      while(entity.rot < -3.1415927F) {
+         entity.rot += 6.2831855F;
       }
 
-      while(var3.tRot >= 3.1415927F) {
-         var3.tRot -= 6.2831855F;
+      while(entity.tRot >= 3.1415927F) {
+         entity.tRot -= 6.2831855F;
       }
 
-      while(var3.tRot < -3.1415927F) {
-         var3.tRot += 6.2831855F;
+      while(entity.tRot < -3.1415927F) {
+         entity.tRot += 6.2831855F;
       }
 
-      float var10;
-      for(var10 = var3.tRot - var3.rot; var10 >= 3.1415927F; var10 -= 6.2831855F) {
+      float rotDir;
+      for(rotDir = entity.tRot - entity.rot; rotDir >= 3.1415927F; rotDir -= 6.2831855F) {
       }
 
-      while(var10 < -3.1415927F) {
-         var10 += 6.2831855F;
+      while(rotDir < -3.1415927F) {
+         rotDir += 6.2831855F;
       }
 
-      var3.rot += var10 * 0.4F;
-      var3.open = Mth.clamp(var3.open, 0.0F, 1.0F);
-      ++var3.time;
-      var3.oFlip = var3.flip;
-      float var6 = (var3.flipT - var3.flip) * 0.4F;
-      float var12 = 0.2F;
-      var6 = Mth.clamp(var6, -0.2F, 0.2F);
-      var3.flipA += (var6 - var3.flipA) * 0.9F;
-      var3.flip += var3.flipA;
+      entity.rot += rotDir * 0.4F;
+      entity.open = Mth.clamp(entity.open, 0.0F, 1.0F);
+      ++entity.time;
+      entity.oFlip = entity.flip;
+      float diff = (entity.flipT - entity.flip) * 0.4F;
+      float max = 0.2F;
+      diff = Mth.clamp(diff, -0.2F, 0.2F);
+      entity.flipA += (diff - entity.flipA) * 0.9F;
+      entity.flip += entity.flipA;
    }
 
    public Component getName() {
       return this.name != null ? this.name : DEFAULT_NAME;
    }
 
-   public void setCustomName(@Nullable Component var1) {
-      this.name = var1;
+   public void setCustomName(final @Nullable Component name) {
+      this.name = name;
    }
 
    public @Nullable Component getCustomName() {
       return this.name;
    }
 
-   protected void applyImplicitComponents(DataComponentGetter var1) {
-      super.applyImplicitComponents(var1);
-      this.name = (Component)var1.get(DataComponents.CUSTOM_NAME);
+   protected void applyImplicitComponents(final DataComponentGetter components) {
+      super.applyImplicitComponents(components);
+      this.name = (Component)components.get(DataComponents.CUSTOM_NAME);
    }
 
-   protected void collectImplicitComponents(DataComponentMap.Builder var1) {
-      super.collectImplicitComponents(var1);
-      var1.set(DataComponents.CUSTOM_NAME, this.name);
+   protected void collectImplicitComponents(final DataComponentMap.Builder components) {
+      super.collectImplicitComponents(components);
+      components.set(DataComponents.CUSTOM_NAME, this.name);
    }
 
-   public void removeComponentsFromTag(ValueOutput var1) {
-      var1.discard("CustomName");
+   public void removeComponentsFromTag(final ValueOutput output) {
+      output.discard("CustomName");
    }
 }

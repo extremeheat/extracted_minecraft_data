@@ -3,10 +3,8 @@ package com.mojang.realmsclient.gui.screens;
 import org.jspecify.annotations.Nullable;
 
 public record UploadResult(int statusCode, @Nullable String errorMessage) {
-   public UploadResult(int var1, @Nullable String var2) {
+   public UploadResult {
       super();
-      this.statusCode = var1;
-      this.errorMessage = var2;
    }
 
    public @Nullable String getSimplifiedErrorMessage() {
@@ -25,13 +23,13 @@ public record UploadResult(int statusCode, @Nullable String errorMessage) {
          super();
       }
 
-      public Builder withStatusCode(int var1) {
-         this.statusCode = var1;
+      public Builder withStatusCode(final int statusCode) {
+         this.statusCode = statusCode;
          return this;
       }
 
-      public Builder withErrorMessage(@Nullable String var1) {
-         this.errorMessage = var1;
+      public Builder withErrorMessage(final @Nullable String errorMessage) {
+         this.errorMessage = errorMessage;
          return this;
       }
 

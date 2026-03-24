@@ -5,23 +5,22 @@ import java.security.SecureRandom;
 public record SecurityConfig(String secretKey) {
    private static final String SECRET_KEY_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-   public SecurityConfig(String var1) {
+   public SecurityConfig {
       super();
-      this.secretKey = var1;
    }
 
-   public static boolean isValid(String var0) {
-      return var0.isEmpty() ? false : var0.matches("^[a-zA-Z0-9]{40}$");
+   public static boolean isValid(final String secretKey) {
+      return secretKey.isEmpty() ? false : secretKey.matches("^[a-zA-Z0-9]{40}$");
    }
 
    public static String generateSecretKey() {
-      SecureRandom var0 = new SecureRandom();
-      StringBuilder var1 = new StringBuilder(40);
+      SecureRandom random = new SecureRandom();
+      StringBuilder key = new StringBuilder(40);
 
-      for(int var2 = 0; var2 < 40; ++var2) {
-         var1.append("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".charAt(var0.nextInt("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".length())));
+      for(int i = 0; i < 40; ++i) {
+         key.append("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".charAt(random.nextInt("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".length())));
       }
 
-      return var1.toString();
+      return key.toString();
    }
 }

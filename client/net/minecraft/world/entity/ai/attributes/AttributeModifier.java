@@ -12,19 +12,16 @@ import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 
 public record AttributeModifier(Identifier id, double amount, Operation operation) {
-   public static final MapCodec<AttributeModifier> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("id").forGetter(AttributeModifier::id), Codec.DOUBLE.fieldOf("amount").forGetter(AttributeModifier::amount), AttributeModifier.Operation.CODEC.fieldOf("operation").forGetter(AttributeModifier::operation)).apply(var0, AttributeModifier::new));
+   public static final MapCodec<AttributeModifier> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Identifier.CODEC.fieldOf("id").forGetter(AttributeModifier::id), Codec.DOUBLE.fieldOf("amount").forGetter(AttributeModifier::amount), AttributeModifier.Operation.CODEC.fieldOf("operation").forGetter(AttributeModifier::operation)).apply(i, AttributeModifier::new));
    public static final Codec<AttributeModifier> CODEC;
    public static final StreamCodec<ByteBuf, AttributeModifier> STREAM_CODEC;
 
-   public AttributeModifier(Identifier var1, double var2, Operation var4) {
+   public AttributeModifier {
       super();
-      this.id = var1;
-      this.amount = var2;
-      this.operation = var4;
    }
 
-   public boolean is(Identifier var1) {
-      return var1.equals(this.id);
+   public boolean is(final Identifier id) {
+      return id.equals(this.id);
    }
 
    static {
@@ -43,9 +40,9 @@ public record AttributeModifier(Identifier id, double amount, Operation operatio
       private final String name;
       private final int id;
 
-      private Operation(final String var3, final int var4) {
-         this.name = var3;
-         this.id = var4;
+      private Operation(final String name, final int id) {
+         this.name = name;
+         this.id = id;
       }
 
       public int id() {

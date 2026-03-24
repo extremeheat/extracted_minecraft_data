@@ -25,18 +25,17 @@ public record OminousBottleAmplifier(int value) implements ConsumableListener, T
    public static final Codec<OminousBottleAmplifier> CODEC = ExtraCodecs.intRange(0, 4).xmap(OminousBottleAmplifier::new, OminousBottleAmplifier::value);
    public static final StreamCodec<RegistryFriendlyByteBuf, OminousBottleAmplifier> STREAM_CODEC;
 
-   public OminousBottleAmplifier(int var1) {
+   public OminousBottleAmplifier {
       super();
-      this.value = var1;
    }
 
-   public void onConsume(Level var1, LivingEntity var2, ItemStack var3, Consumable var4) {
-      var2.addEffect(new MobEffectInstance(MobEffects.BAD_OMEN, 120000, this.value, false, false, true));
+   public void onConsume(final Level level, final LivingEntity user, final ItemStack stack, final Consumable consumable) {
+      user.addEffect(new MobEffectInstance(MobEffects.BAD_OMEN, 120000, this.value, false, false, true));
    }
 
-   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
-      List var5 = List.of(new MobEffectInstance(MobEffects.BAD_OMEN, 120000, this.value, false, false, true));
-      PotionContents.addPotionTooltip(var5, var2, 1.0F, var1.tickRate());
+   public void addToTooltip(final Item.TooltipContext context, final Consumer<Component> consumer, final TooltipFlag flag, final DataComponentGetter components) {
+      List<MobEffectInstance> effects = List.of(new MobEffectInstance(MobEffects.BAD_OMEN, 120000, this.value, false, false, true));
+      PotionContents.addPotionTooltip(effects, consumer, 1.0F, context.tickRate());
    }
 
    static {

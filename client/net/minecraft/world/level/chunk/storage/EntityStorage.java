@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Function;
@@ -36,101 +37,101 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
    private final LongSet emptyChunks = new LongOpenHashSet();
    private final ConsecutiveExecutor entityDeserializerQueue;
 
-   public EntityStorage(SimpleRegionStorage var1, ServerLevel var2, Executor var3) {
+   public EntityStorage(final SimpleRegionStorage simpleRegionStorage, final ServerLevel level, final Executor mainThreadExecutor) {
       super();
-      this.simpleRegionStorage = var1;
-      this.level = var2;
-      this.entityDeserializerQueue = new ConsecutiveExecutor(var3, "entity-deserializer");
+      this.simpleRegionStorage = simpleRegionStorage;
+      this.level = level;
+      this.entityDeserializerQueue = new ConsecutiveExecutor(mainThreadExecutor, "entity-deserializer");
    }
 
-   public CompletableFuture<ChunkEntities<Entity>> loadEntities(ChunkPos var1) {
-      if (this.emptyChunks.contains(var1.toLong())) {
-         return CompletableFuture.completedFuture(emptyChunk(var1));
+   public CompletableFuture<ChunkEntities<Entity>> loadEntities(final ChunkPos pos) {
+      if (this.emptyChunks.contains(pos.pack())) {
+         return CompletableFuture.completedFuture(emptyChunk(pos));
       } else {
-         CompletableFuture var2 = this.simpleRegionStorage.read(var1);
-         this.reportLoadFailureIfPresent(var2, var1);
-         Function var10001 = (var2x) -> {
-            if (var2x.isEmpty()) {
-               this.emptyChunks.add(var1.toLong());
-               return emptyChunk(var1);
+         CompletableFuture<Optional<CompoundTag>> loadFuture = this.simpleRegionStorage.read(pos);
+         this.reportLoadFailureIfPresent(loadFuture, pos);
+         Function var10001 = (tag) -> {
+            if (tag.isEmpty()) {
+               this.emptyChunks.add(pos.pack());
+               return emptyChunk(pos);
             } else {
                try {
-                  ChunkPos var3 = (ChunkPos)((CompoundTag)var2x.get()).read("Position", ChunkPos.CODEC).orElseThrow();
-                  if (!Objects.equals(var1, var3)) {
-                     LOGGER.error("Chunk file at {} is in the wrong location. (Expected {}, got {})", new Object[]{var1, var1, var3});
-                     this.level.getServer().reportMisplacedChunk(var3, var1, this.simpleRegionStorage.storageInfo());
+                  ChunkPos storedPos = (ChunkPos)((CompoundTag)tag.get()).read("Position", ChunkPos.CODEC).orElseThrow();
+                  if (!Objects.equals(pos, storedPos)) {
+                     LOGGER.error("Chunk file at {} is in the wrong location. (Expected {}, got {})", new Object[]{pos, pos, storedPos});
+                     this.level.getServer().reportMisplacedChunk(storedPos, pos, this.simpleRegionStorage.storageInfo());
                   }
-               } catch (Exception var11) {
-                  LOGGER.warn("Failed to parse chunk {} position info", var1, var11);
-                  this.level.getServer().reportChunkLoadFailure(var11, this.simpleRegionStorage.storageInfo(), var1);
+               } catch (Exception e) {
+                  LOGGER.warn("Failed to parse chunk {} position info", pos, e);
+                  this.level.getServer().reportChunkLoadFailure(e, this.simpleRegionStorage.storageInfo(), pos);
                }
 
-               CompoundTag var12 = this.simpleRegionStorage.upgradeChunkTag((CompoundTag)var2x.get(), -1);
+               CompoundTag upgradedChunkTag = this.simpleRegionStorage.upgradeChunkTag((CompoundTag)tag.get(), -1);
 
-               try (ProblemReporter.ScopedCollector var4 = new ProblemReporter.ScopedCollector(ChunkAccess.problemPath(var1), LOGGER)) {
-                  ValueInput var5 = TagValueInput.create(var4, this.level.registryAccess(), var12);
-                  ValueInput.ValueInputList var6 = var5.childrenListOrEmpty("Entities");
-                  List var7 = EntityType.loadEntitiesRecursive(var6, this.level, EntitySpawnReason.LOAD).toList();
-                  return new ChunkEntities(var1, var7);
+               try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(ChunkAccess.problemPath(pos), LOGGER)) {
+                  ValueInput chunkRoot = TagValueInput.create(reporter, this.level.registryAccess(), upgradedChunkTag);
+                  ValueInput.ValueInputList entities = chunkRoot.childrenListOrEmpty("Entities");
+                  List<Entity> chunkEntities = EntityType.loadEntitiesRecursive(entities, this.level, EntitySpawnReason.LOAD).toList();
+                  return new ChunkEntities(pos, chunkEntities);
                }
             }
          };
          ConsecutiveExecutor var10002 = this.entityDeserializerQueue;
          Objects.requireNonNull(var10002);
-         return var2.thenApplyAsync(var10001, var10002::schedule);
+         return loadFuture.thenApplyAsync(var10001, var10002::schedule);
       }
    }
 
-   private static ChunkEntities<Entity> emptyChunk(ChunkPos var0) {
-      return new ChunkEntities<Entity>(var0, List.of());
+   private static ChunkEntities<Entity> emptyChunk(final ChunkPos pos) {
+      return new ChunkEntities<Entity>(pos, List.of());
    }
 
-   public void storeEntities(ChunkEntities<Entity> var1) {
-      ChunkPos var2 = var1.getPos();
-      if (var1.isEmpty()) {
-         if (this.emptyChunks.add(var2.toLong())) {
-            this.reportSaveFailureIfPresent(this.simpleRegionStorage.write(var2, IOWorker.STORE_EMPTY), var2);
+   public void storeEntities(final ChunkEntities<Entity> chunk) {
+      ChunkPos pos = chunk.getPos();
+      if (chunk.isEmpty()) {
+         if (this.emptyChunks.add(pos.pack())) {
+            this.reportSaveFailureIfPresent(this.simpleRegionStorage.write(pos, IOWorker.STORE_EMPTY), pos);
          }
 
       } else {
-         try (ProblemReporter.ScopedCollector var3 = new ProblemReporter.ScopedCollector(ChunkAccess.problemPath(var2), LOGGER)) {
-            ListTag var4 = new ListTag();
-            var1.getEntities().forEach((var2x) -> {
-               TagValueOutput var3x = TagValueOutput.createWithContext(var3.forChild(var2x.problemPath()), var2x.registryAccess());
-               if (var2x.save(var3x)) {
-                  CompoundTag var4x = var3x.buildResult();
-                  var4.add(var4x);
+         try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(ChunkAccess.problemPath(pos), LOGGER)) {
+            ListTag entities = new ListTag();
+            chunk.getEntities().forEach((e) -> {
+               TagValueOutput output = TagValueOutput.createWithContext(reporter.forChild(e.problemPath()), e.registryAccess());
+               if (e.save(output)) {
+                  CompoundTag result = output.buildResult();
+                  entities.add(result);
                }
 
             });
-            CompoundTag var5 = NbtUtils.addCurrentDataVersion(new CompoundTag());
-            var5.put("Entities", var4);
-            var5.store("Position", ChunkPos.CODEC, var2);
-            this.reportSaveFailureIfPresent(this.simpleRegionStorage.write(var2, var5), var2);
-            this.emptyChunks.remove(var2.toLong());
+            CompoundTag chunkTag = NbtUtils.addCurrentDataVersion(new CompoundTag());
+            chunkTag.put("Entities", entities);
+            chunkTag.store("Position", ChunkPos.CODEC, pos);
+            this.reportSaveFailureIfPresent(this.simpleRegionStorage.write(pos, chunkTag), pos);
+            this.emptyChunks.remove(pos.pack());
          }
 
       }
    }
 
-   private void reportSaveFailureIfPresent(CompletableFuture<?> var1, ChunkPos var2) {
-      var1.exceptionally((var2x) -> {
-         LOGGER.error("Failed to store entity chunk {}", var2, var2x);
-         this.level.getServer().reportChunkSaveFailure(var2x, this.simpleRegionStorage.storageInfo(), var2);
+   private void reportSaveFailureIfPresent(final CompletableFuture<?> operation, final ChunkPos pos) {
+      operation.exceptionally((t) -> {
+         LOGGER.error("Failed to store entity chunk {}", pos, t);
+         this.level.getServer().reportChunkSaveFailure(t, this.simpleRegionStorage.storageInfo(), pos);
          return null;
       });
    }
 
-   private void reportLoadFailureIfPresent(CompletableFuture<?> var1, ChunkPos var2) {
-      var1.exceptionally((var2x) -> {
-         LOGGER.error("Failed to load entity chunk {}", var2, var2x);
-         this.level.getServer().reportChunkLoadFailure(var2x, this.simpleRegionStorage.storageInfo(), var2);
+   private void reportLoadFailureIfPresent(final CompletableFuture<?> operation, final ChunkPos pos) {
+      operation.exceptionally((t) -> {
+         LOGGER.error("Failed to load entity chunk {}", pos, t);
+         this.level.getServer().reportChunkLoadFailure(t, this.simpleRegionStorage.storageInfo(), pos);
          return null;
       });
    }
 
-   public void flush(boolean var1) {
-      this.simpleRegionStorage.synchronize(var1).join();
+   public void flush(final boolean flushStorage) {
+      this.simpleRegionStorage.synchronize(flushStorage).join();
       this.entityDeserializerQueue.runAll();
    }
 

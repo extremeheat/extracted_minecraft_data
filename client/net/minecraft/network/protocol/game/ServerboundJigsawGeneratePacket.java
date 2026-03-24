@@ -12,32 +12,32 @@ public class ServerboundJigsawGeneratePacket implements Packet<ServerGamePacketL
    private final int levels;
    private final boolean keepJigsaws;
 
-   public ServerboundJigsawGeneratePacket(BlockPos var1, int var2, boolean var3) {
+   public ServerboundJigsawGeneratePacket(final BlockPos blockPos, final int levels, final boolean keepJigsaws) {
       super();
-      this.pos = var1;
-      this.levels = var2;
-      this.keepJigsaws = var3;
+      this.pos = blockPos;
+      this.levels = levels;
+      this.keepJigsaws = keepJigsaws;
    }
 
-   private ServerboundJigsawGeneratePacket(FriendlyByteBuf var1) {
+   private ServerboundJigsawGeneratePacket(final FriendlyByteBuf input) {
       super();
-      this.pos = var1.readBlockPos();
-      this.levels = var1.readVarInt();
-      this.keepJigsaws = var1.readBoolean();
+      this.pos = input.readBlockPos();
+      this.levels = input.readVarInt();
+      this.keepJigsaws = input.readBoolean();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeBlockPos(this.pos);
-      var1.writeVarInt(this.levels);
-      var1.writeBoolean(this.keepJigsaws);
+   private void write(final FriendlyByteBuf output) {
+      output.writeBlockPos(this.pos);
+      output.writeVarInt(this.levels);
+      output.writeBoolean(this.keepJigsaws);
    }
 
    public PacketType<ServerboundJigsawGeneratePacket> type() {
       return GamePacketTypes.SERVERBOUND_JIGSAW_GENERATE;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handleJigsawGenerate(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handleJigsawGenerate(this);
    }
 
    public BlockPos getPos() {

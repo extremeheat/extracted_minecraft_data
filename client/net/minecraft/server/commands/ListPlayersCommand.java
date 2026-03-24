@@ -17,23 +17,23 @@ public class ListPlayersCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("list").executes((var0x) -> listPlayers((CommandSourceStack)var0x.getSource()))).then(Commands.literal("uuids").executes((var0x) -> listPlayersWithUuids((CommandSourceStack)var0x.getSource()))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("list").executes((c) -> listPlayers((CommandSourceStack)c.getSource()))).then(Commands.literal("uuids").executes((c) -> listPlayersWithUuids((CommandSourceStack)c.getSource()))));
    }
 
-   private static int listPlayers(CommandSourceStack var0) {
-      return format(var0, Player::getDisplayName);
+   private static int listPlayers(final CommandSourceStack source) {
+      return format(source, Player::getDisplayName);
    }
 
-   private static int listPlayersWithUuids(CommandSourceStack var0) {
-      return format(var0, (var0x) -> Component.translatable("commands.list.nameAndId", var0x.getName(), Component.translationArg(var0x.getGameProfile().id())));
+   private static int listPlayersWithUuids(final CommandSourceStack source) {
+      return format(source, (player) -> Component.translatable("commands.list.nameAndId", player.getName(), Component.translationArg(player.getGameProfile().id())));
    }
 
-   private static int format(CommandSourceStack var0, Function<ServerPlayer, Component> var1) {
-      PlayerList var2 = var0.getServer().getPlayerList();
-      List var3 = var2.getPlayers();
-      Component var4 = ComponentUtils.formatList(var3, var1);
-      var0.sendSuccess(() -> Component.translatable("commands.list.players", var3.size(), var2.getMaxPlayers(), var4), false);
-      return var3.size();
+   private static int format(final CommandSourceStack source, final Function<ServerPlayer, Component> formatter) {
+      PlayerList playerList = source.getServer().getPlayerList();
+      List<ServerPlayer> players = playerList.getPlayers();
+      Component listComponent = ComponentUtils.formatList(players, formatter);
+      source.sendSuccess(() -> Component.translatable("commands.list.players", players.size(), playerList.getMaxPlayers(), listComponent), false);
+      return players.size();
    }
 }

@@ -6,38 +6,38 @@ import java.util.List;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class EntryGroup extends CompositeEntryBase {
-   public static final MapCodec<EntryGroup> CODEC = createCodec(EntryGroup::new);
+   public static final MapCodec<EntryGroup> MAP_CODEC = createCodec(EntryGroup::new);
 
-   EntryGroup(List<LootPoolEntryContainer> var1, List<LootItemCondition> var2) {
-      super(var1, var2);
+   EntryGroup(final List<LootPoolEntryContainer> children, final List<LootItemCondition> conditions) {
+      super(children, conditions);
    }
 
-   public LootPoolEntryType getType() {
-      return LootPoolEntries.GROUP;
+   public MapCodec<EntryGroup> codec() {
+      return MAP_CODEC;
    }
 
-   protected ComposableEntryContainer compose(List<? extends ComposableEntryContainer> var1) {
+   protected ComposableEntryContainer compose(final List<? extends ComposableEntryContainer> entries) {
       ComposableEntryContainer var10000;
-      switch (var1.size()) {
+      switch (entries.size()) {
          case 0:
             var10000 = ALWAYS_TRUE;
             break;
          case 1:
-            var10000 = (ComposableEntryContainer)var1.get(0);
+            var10000 = (ComposableEntryContainer)entries.get(0);
             break;
          case 2:
-            ComposableEntryContainer var2 = (ComposableEntryContainer)var1.get(0);
-            ComposableEntryContainer var3 = (ComposableEntryContainer)var1.get(1);
-            var10000 = (var2x, var3x) -> {
-               var2.expand(var2x, var3x);
-               var3.expand(var2x, var3x);
+            ComposableEntryContainer first = (ComposableEntryContainer)entries.get(0);
+            ComposableEntryContainer second = (ComposableEntryContainer)entries.get(1);
+            var10000 = (context, output) -> {
+               first.expand(context, output);
+               second.expand(context, output);
                return true;
             };
             break;
          default:
-            var10000 = (var1x, var2x) -> {
-               for(ComposableEntryContainer var4 : var1) {
-                  var4.expand(var1x, var2x);
+            var10000 = (context, output) -> {
+               for(ComposableEntryContainer entry : entries) {
+                  entry.expand(context, output);
                }
 
                return true;
@@ -47,18 +47,18 @@ public class EntryGroup extends CompositeEntryBase {
       return var10000;
    }
 
-   public static Builder list(LootPoolEntryContainer.Builder<?>... var0) {
-      return new Builder(var0);
+   public static Builder list(final LootPoolEntryContainer.Builder<?>... entries) {
+      return new Builder(entries);
    }
 
    public static class Builder extends LootPoolEntryContainer.Builder<Builder> {
       private final ImmutableList.Builder<LootPoolEntryContainer> entries = ImmutableList.builder();
 
-      public Builder(LootPoolEntryContainer.Builder<?>... var1) {
+      public Builder(final LootPoolEntryContainer.Builder<?>... entries) {
          super();
 
-         for(LootPoolEntryContainer.Builder var5 : var1) {
-            this.entries.add(var5.build());
+         for(LootPoolEntryContainer.Builder<?> entry : entries) {
+            this.entries.add(entry.build());
          }
 
       }
@@ -67,18 +67,13 @@ public class EntryGroup extends CompositeEntryBase {
          return this;
       }
 
-      public Builder append(LootPoolEntryContainer.Builder<?> var1) {
-         this.entries.add(var1.build());
+      public Builder append(final LootPoolEntryContainer.Builder<?> other) {
+         this.entries.add(other.build());
          return this;
       }
 
       public LootPoolEntryContainer build() {
          return new EntryGroup(this.entries.build(), this.getConditions());
-      }
-
-      // $FF: synthetic method
-      protected LootPoolEntryContainer.Builder getThis() {
-         return this.getThis();
       }
    }
 }

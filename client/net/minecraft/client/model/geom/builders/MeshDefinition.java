@@ -11,20 +11,20 @@ public class MeshDefinition {
       this(new PartDefinition(ImmutableList.of(), PartPose.ZERO));
    }
 
-   private MeshDefinition(PartDefinition var1) {
+   private MeshDefinition(final PartDefinition root) {
       super();
-      this.root = var1;
+      this.root = root;
    }
 
    public PartDefinition getRoot() {
       return this.root;
    }
 
-   public MeshDefinition transformed(UnaryOperator<PartPose> var1) {
-      return new MeshDefinition(this.root.transformed(var1));
+   public MeshDefinition transformed(final UnaryOperator<PartPose> function) {
+      return new MeshDefinition(this.root.transformed(function));
    }
 
-   public MeshDefinition apply(MeshTransformer var1) {
-      return var1.apply(this);
+   public MeshDefinition apply(final MeshTransformer transformer) {
+      return transformer.apply(this);
    }
 }

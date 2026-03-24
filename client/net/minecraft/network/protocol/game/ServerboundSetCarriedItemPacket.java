@@ -9,26 +9,26 @@ public class ServerboundSetCarriedItemPacket implements Packet<ServerGamePacketL
    public static final StreamCodec<FriendlyByteBuf, ServerboundSetCarriedItemPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundSetCarriedItemPacket>codec(ServerboundSetCarriedItemPacket::write, ServerboundSetCarriedItemPacket::new);
    private final int slot;
 
-   public ServerboundSetCarriedItemPacket(int var1) {
+   public ServerboundSetCarriedItemPacket(final int slot) {
       super();
-      this.slot = var1;
+      this.slot = slot;
    }
 
-   private ServerboundSetCarriedItemPacket(FriendlyByteBuf var1) {
+   private ServerboundSetCarriedItemPacket(final FriendlyByteBuf input) {
       super();
-      this.slot = var1.readShort();
+      this.slot = input.readShort();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeShort(this.slot);
+   private void write(final FriendlyByteBuf output) {
+      output.writeShort(this.slot);
    }
 
    public PacketType<ServerboundSetCarriedItemPacket> type() {
       return GamePacketTypes.SERVERBOUND_SET_CARRIED_ITEM;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handleSetCarriedItem(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handleSetCarriedItem(this);
    }
 
    public int getSlot() {

@@ -16,9 +16,9 @@ public enum NarratorStatus {
    private final int id;
    private final Component name;
 
-   private NarratorStatus(final int var3, final String var4) {
-      this.id = var3;
-      this.name = Component.translatable(var4);
+   private NarratorStatus(final int id, final String key) {
+      this.id = id;
+      this.name = Component.translatable(key);
    }
 
    public int getId() {
@@ -29,8 +29,8 @@ public enum NarratorStatus {
       return this.name;
    }
 
-   public static NarratorStatus byId(int var0) {
-      return (NarratorStatus)BY_ID.apply(var0);
+   public static NarratorStatus byId(final int id) {
+      return (NarratorStatus)BY_ID.apply(id);
    }
 
    public boolean shouldNarrateChat() {

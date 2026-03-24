@@ -9,10 +9,8 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 public record DebugStructureInfo(BoundingBox boundingBox, List<Piece> pieces) {
    public static final StreamCodec<ByteBuf, DebugStructureInfo> STREAM_CODEC;
 
-   public DebugStructureInfo(BoundingBox var1, List<Piece> var2) {
+   public DebugStructureInfo {
       super();
-      this.boundingBox = var1;
-      this.pieces = var2;
    }
 
    static {
@@ -22,10 +20,8 @@ public record DebugStructureInfo(BoundingBox boundingBox, List<Piece> pieces) {
    public static record Piece(BoundingBox boundingBox, boolean isStart) {
       public static final StreamCodec<ByteBuf, Piece> STREAM_CODEC;
 
-      public Piece(BoundingBox var1, boolean var2) {
+      public Piece {
          super();
-         this.boundingBox = var1;
-         this.isStart = var2;
       }
 
       static {

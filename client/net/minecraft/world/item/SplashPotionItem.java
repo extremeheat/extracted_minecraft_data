@@ -14,20 +14,20 @@ import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownSplas
 import net.minecraft.world.level.Level;
 
 public class SplashPotionItem extends ThrowablePotionItem {
-   public SplashPotionItem(Item.Properties var1) {
-      super(var1);
+   public SplashPotionItem(final Item.Properties properties) {
+      super(properties);
    }
 
-   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
-      var1.playSound((Entity)null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.SPLASH_POTION_THROW, SoundSource.PLAYERS, 0.5F, 0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F));
-      return super.use(var1, var2, var3);
+   public InteractionResult use(final Level level, final Player player, final InteractionHand hand) {
+      level.playSound((Entity)null, player.getX(), player.getY(), player.getZ(), SoundEvents.SPLASH_POTION_THROW, SoundSource.PLAYERS, 0.5F, 0.4F / (level.getRandom().nextFloat() * 0.4F + 0.8F));
+      return super.use(level, player, hand);
    }
 
-   protected AbstractThrownPotion createPotion(ServerLevel var1, LivingEntity var2, ItemStack var3) {
-      return new ThrownSplashPotion(var1, var2, var3);
+   protected AbstractThrownPotion createPotion(final ServerLevel level, final LivingEntity owner, final ItemStack itemStack) {
+      return new ThrownSplashPotion(level, owner, itemStack);
    }
 
-   protected AbstractThrownPotion createPotion(Level var1, Position var2, ItemStack var3) {
-      return new ThrownSplashPotion(var1, var2.x(), var2.y(), var2.z(), var3);
+   protected AbstractThrownPotion createPotion(final Level level, final Position position, final ItemStack itemStack) {
+      return new ThrownSplashPotion(level, position.x(), position.y(), position.z(), itemStack);
    }
 }

@@ -5,11 +5,11 @@ import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 
 public class BlockEntityShulkerBoxColorFix extends NamedEntityFix {
-   public BlockEntityShulkerBoxColorFix(Schema var1, boolean var2) {
-      super(var1, var2, "BlockEntityShulkerBoxColorFix", References.BLOCK_ENTITY, "minecraft:shulker_box");
+   public BlockEntityShulkerBoxColorFix(final Schema outputSchema, final boolean changesType) {
+      super(outputSchema, changesType, "BlockEntityShulkerBoxColorFix", References.BLOCK_ENTITY, "minecraft:shulker_box");
    }
 
-   protected Typed<?> fix(Typed<?> var1) {
-      return var1.update(DSL.remainderFinder(), (var0) -> var0.remove("Color"));
+   protected Typed<?> fix(final Typed<?> entity) {
+      return entity.update(DSL.remainderFinder(), (tag) -> tag.remove("Color"));
    }
 }

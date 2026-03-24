@@ -9,17 +9,16 @@ import net.minecraft.world.level.storage.LevelData;
 public record ClientboundSetDefaultSpawnPositionPacket(LevelData.RespawnData respawnData) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundSetDefaultSpawnPositionPacket> STREAM_CODEC;
 
-   public ClientboundSetDefaultSpawnPositionPacket(LevelData.RespawnData var1) {
+   public ClientboundSetDefaultSpawnPositionPacket {
       super();
-      this.respawnData = var1;
    }
 
    public PacketType<ClientboundSetDefaultSpawnPositionPacket> type() {
       return GamePacketTypes.CLIENTBOUND_SET_DEFAULT_SPAWN_POSITION;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleSetSpawn(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleSetSpawn(this);
    }
 
    static {

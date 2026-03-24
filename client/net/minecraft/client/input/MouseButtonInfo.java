@@ -6,10 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 public record MouseButtonInfo(@MouseButtonInfo.MouseButton int button, @InputWithModifiers.Modifiers int modifiers) implements InputWithModifiers {
-   public MouseButtonInfo(@MouseButtonInfo.MouseButton int var1, @InputWithModifiers.Modifiers int var2) {
+   public MouseButtonInfo {
       super();
-      this.button = var1;
-      this.modifiers = var2;
    }
 
    public @MouseButtonInfo.MouseButton int input() {

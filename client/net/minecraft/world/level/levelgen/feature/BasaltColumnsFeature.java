@@ -20,108 +20,108 @@ public class BasaltColumnsFeature extends Feature<ColumnFeatureConfiguration> {
    private static final int UNCLUSTERED_REACH = 8;
    private static final int UNCLUSTERED_SIZE = 15;
 
-   public BasaltColumnsFeature(Codec<ColumnFeatureConfiguration> var1) {
-      super(var1);
+   public BasaltColumnsFeature(final Codec<ColumnFeatureConfiguration> codec) {
+      super(codec);
    }
 
-   public boolean place(FeaturePlaceContext<ColumnFeatureConfiguration> var1) {
-      int var2 = var1.chunkGenerator().getSeaLevel();
-      BlockPos var3 = var1.origin();
-      WorldGenLevel var4 = var1.level();
-      RandomSource var5 = var1.random();
-      ColumnFeatureConfiguration var6 = (ColumnFeatureConfiguration)var1.config();
-      if (!canPlaceAt(var4, var2, var3.mutable())) {
+   public boolean place(final FeaturePlaceContext<ColumnFeatureConfiguration> context) {
+      int lavaSeaLevel = context.chunkGenerator().getSeaLevel();
+      BlockPos origin = context.origin();
+      WorldGenLevel level = context.level();
+      RandomSource random = context.random();
+      ColumnFeatureConfiguration config = context.config();
+      if (!canPlaceAt(level, lavaSeaLevel, origin.mutable())) {
          return false;
       } else {
-         int var7 = var6.height().sample(var5);
-         boolean var8 = var5.nextFloat() < 0.9F;
-         int var9 = Math.min(var7, var8 ? 5 : 8);
-         int var10 = var8 ? 50 : 15;
-         boolean var11 = false;
+         int columnHeight = config.height().sample(random);
+         boolean genereteClustered = random.nextFloat() < 0.9F;
+         int reach = Math.min(columnHeight, genereteClustered ? 5 : 8);
+         int count = genereteClustered ? 50 : 15;
+         boolean placed = false;
 
-         for(BlockPos var13 : BlockPos.randomBetweenClosed(var5, var10, var3.getX() - var9, var3.getY(), var3.getZ() - var9, var3.getX() + var9, var3.getY(), var3.getZ() + var9)) {
-            int var14 = var7 - var13.distManhattan(var3);
-            if (var14 >= 0) {
-               var11 |= this.placeColumn(var4, var2, var13, var14, var6.reach().sample(var5));
+         for(BlockPos pos : BlockPos.randomBetweenClosed(random, count, origin.getX() - reach, origin.getY(), origin.getZ() - reach, origin.getX() + reach, origin.getY(), origin.getZ() + reach)) {
+            int blocksToPlaceY = columnHeight - pos.distManhattan(origin);
+            if (blocksToPlaceY >= 0) {
+               placed |= this.placeColumn(level, lavaSeaLevel, pos, blocksToPlaceY, config.reach().sample(random));
             }
          }
 
-         return var11;
+         return placed;
       }
    }
 
-   private boolean placeColumn(LevelAccessor var1, int var2, BlockPos var3, int var4, int var5) {
-      boolean var6 = false;
+   private boolean placeColumn(final LevelAccessor level, final int lavaSeaLevel, final BlockPos origin, final int columnHeight, final int reach) {
+      boolean placedAny = false;
 
-      for(BlockPos var8 : BlockPos.betweenClosed(var3.getX() - var5, var3.getY(), var3.getZ() - var5, var3.getX() + var5, var3.getY(), var3.getZ() + var5)) {
-         int var9 = var8.distManhattan(var3);
-         BlockPos var10 = isAirOrLavaOcean(var1, var2, var8) ? findSurface(var1, var2, var8.mutable(), var9) : findAir(var1, var8.mutable(), var9);
-         if (var10 != null) {
-            int var11 = var4 - var9 / 2;
+      for(BlockPos pos : BlockPos.betweenClosed(origin.getX() - reach, origin.getY(), origin.getZ() - reach, origin.getX() + reach, origin.getY(), origin.getZ() + reach)) {
+         int stepLimit = pos.distManhattan(origin);
+         BlockPos columnPos = isAirOrLavaOcean(level, lavaSeaLevel, pos) ? findSurface(level, lavaSeaLevel, pos.mutable(), stepLimit) : findAir(level, pos.mutable(), stepLimit);
+         if (columnPos != null) {
+            int blocksY = columnHeight - stepLimit / 2;
 
-            for(BlockPos.MutableBlockPos var12 = var10.mutable(); var11 >= 0; --var11) {
-               if (isAirOrLavaOcean(var1, var2, var12)) {
-                  this.setBlock(var1, var12, Blocks.BASALT.defaultBlockState());
-                  var12.move(Direction.UP);
-                  var6 = true;
+            for(BlockPos.MutableBlockPos cursor = columnPos.mutable(); blocksY >= 0; --blocksY) {
+               if (isAirOrLavaOcean(level, lavaSeaLevel, cursor)) {
+                  this.setBlock(level, cursor, Blocks.BASALT.defaultBlockState());
+                  cursor.move(Direction.UP);
+                  placedAny = true;
                } else {
-                  if (!var1.getBlockState(var12).is(Blocks.BASALT)) {
+                  if (!level.getBlockState(cursor).is(Blocks.BASALT)) {
                      break;
                   }
 
-                  var12.move(Direction.UP);
+                  cursor.move(Direction.UP);
                }
             }
          }
       }
 
-      return var6;
+      return placedAny;
    }
 
-   private static @Nullable BlockPos findSurface(LevelAccessor var0, int var1, BlockPos.MutableBlockPos var2, int var3) {
-      while(var2.getY() > var0.getMinY() + 1 && var3 > 0) {
-         --var3;
-         if (canPlaceAt(var0, var1, var2)) {
-            return var2;
+   private static @Nullable BlockPos findSurface(final LevelAccessor level, final int lavaSeaLevel, final BlockPos.MutableBlockPos cursor, int limit) {
+      while(cursor.getY() > level.getMinY() + 1 && limit > 0) {
+         --limit;
+         if (canPlaceAt(level, lavaSeaLevel, cursor)) {
+            return cursor;
          }
 
-         var2.move(Direction.DOWN);
+         cursor.move(Direction.DOWN);
       }
 
       return null;
    }
 
-   private static boolean canPlaceAt(LevelAccessor var0, int var1, BlockPos.MutableBlockPos var2) {
-      if (!isAirOrLavaOcean(var0, var1, var2)) {
+   private static boolean canPlaceAt(final LevelAccessor level, final int lavaSeaLevel, final BlockPos.MutableBlockPos cursor) {
+      if (!isAirOrLavaOcean(level, lavaSeaLevel, cursor)) {
          return false;
       } else {
-         BlockState var3 = var0.getBlockState(var2.move(Direction.DOWN));
-         var2.move(Direction.UP);
-         return !var3.isAir() && !CANNOT_PLACE_ON.contains(var3.getBlock());
+         BlockState blockState = level.getBlockState(cursor.move(Direction.DOWN));
+         cursor.move(Direction.UP);
+         return !blockState.isAir() && !CANNOT_PLACE_ON.contains(blockState.getBlock());
       }
    }
 
-   private static @Nullable BlockPos findAir(LevelAccessor var0, BlockPos.MutableBlockPos var1, int var2) {
-      while(var1.getY() <= var0.getMaxY() && var2 > 0) {
-         --var2;
-         BlockState var3 = var0.getBlockState(var1);
-         if (CANNOT_PLACE_ON.contains(var3.getBlock())) {
+   private static @Nullable BlockPos findAir(final LevelAccessor level, final BlockPos.MutableBlockPos cursor, int limit) {
+      while(cursor.getY() <= level.getMaxY() && limit > 0) {
+         --limit;
+         BlockState blockState = level.getBlockState(cursor);
+         if (CANNOT_PLACE_ON.contains(blockState.getBlock())) {
             return null;
          }
 
-         if (var3.isAir()) {
-            return var1;
+         if (blockState.isAir()) {
+            return cursor;
          }
 
-         var1.move(Direction.UP);
+         cursor.move(Direction.UP);
       }
 
       return null;
    }
 
-   private static boolean isAirOrLavaOcean(LevelAccessor var0, int var1, BlockPos var2) {
-      BlockState var3 = var0.getBlockState(var2);
-      return var3.isAir() || var3.is(Blocks.LAVA) && var2.getY() <= var1;
+   private static boolean isAirOrLavaOcean(final LevelAccessor level, final int lavaSeaLevel, final BlockPos blockPos) {
+      BlockState blockState = level.getBlockState(blockPos);
+      return blockState.isAir() || blockState.is(Blocks.LAVA) && blockPos.getY() <= lavaSeaLevel;
    }
 
    static {

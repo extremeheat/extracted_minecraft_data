@@ -20,41 +20,41 @@ import net.minecraft.world.flag.FeatureFlags;
 public class AccessibilityOptionsScreen extends OptionsSubScreen {
    public static final Component TITLE = Component.translatable("options.accessibility.title");
 
-   private static OptionInstance<?>[] options(Options var0) {
-      return new OptionInstance[]{var0.narrator(), var0.showSubtitles(), var0.highContrast(), var0.menuBackgroundBlurriness(), var0.textBackgroundOpacity(), var0.backgroundForChatOnly(), var0.chatOpacity(), var0.chatLineSpacing(), var0.chatDelay(), var0.notificationDisplayTime(), var0.bobView(), var0.screenEffectScale(), var0.fovEffectScale(), var0.darknessEffectScale(), var0.damageTiltStrength(), var0.glintSpeed(), var0.glintStrength(), var0.hideLightningFlash(), var0.darkMojangStudiosBackground(), var0.panoramaSpeed(), var0.hideSplashTexts(), var0.narratorHotkey(), var0.rotateWithMinecart(), var0.highContrastBlockOutline()};
+   private static OptionInstance<?>[] options(final Options options) {
+      return new OptionInstance[]{options.narrator(), options.showSubtitles(), options.highContrast(), options.menuBackgroundBlurriness(), options.textBackgroundOpacity(), options.backgroundForChatOnly(), options.chatOpacity(), options.chatLineSpacing(), options.chatDelay(), options.notificationDisplayTime(), options.bobView(), options.screenEffectScale(), options.fovEffectScale(), options.darknessEffectScale(), options.damageTiltStrength(), options.glintSpeed(), options.glintStrength(), options.hideLightningFlash(), options.darkMojangStudiosBackground(), options.panoramaSpeed(), options.hideSplashTexts(), options.narratorHotkey(), options.rotateWithMinecart(), options.highContrastBlockOutline()};
    }
 
-   public AccessibilityOptionsScreen(Screen var1, Options var2) {
-      super(var1, var2, TITLE);
+   public AccessibilityOptionsScreen(final Screen lastScreen, final Options options) {
+      super(lastScreen, options, TITLE);
    }
 
    protected void init() {
       super.init();
-      AbstractWidget var1 = this.list.findOption(this.options.highContrast());
-      if (var1 != null && !this.minecraft.getResourcePackRepository().getAvailableIds().contains("high_contrast")) {
-         var1.active = false;
-         var1.setTooltip(Tooltip.create(Component.translatable("options.accessibility.high_contrast.error.tooltip")));
+      AbstractWidget highContrast = this.list.findOption(this.options.highContrast());
+      if (highContrast != null && !this.minecraft.getResourcePackRepository().getAvailableIds().contains("high_contrast")) {
+         highContrast.active = false;
+         highContrast.setTooltip(Tooltip.create(Component.translatable("options.accessibility.high_contrast.error.tooltip")));
       }
 
-      AbstractWidget var2 = this.list.findOption(this.options.rotateWithMinecart());
-      if (var2 != null) {
-         var2.active = this.isMinecartOptionEnabled();
+      AbstractWidget rotateWithMinecart = this.list.findOption(this.options.rotateWithMinecart());
+      if (rotateWithMinecart != null) {
+         rotateWithMinecart.active = this.isMinecartOptionEnabled();
       }
 
    }
 
    protected void addOptions() {
-      OptionInstance[] var1 = options(this.options);
-      Button var2 = Button.builder(OptionsScreen.CONTROLS, (var1x) -> this.minecraft.setScreen(new ControlsScreen(this, this.options))).build();
-      OptionInstance var3 = var1[0];
-      this.list.addSmall(var3.createButton(this.options), this.options.narrator(), var2);
-      this.list.addSmall((OptionInstance[])Arrays.stream(var1).filter((var1x) -> var1x != var3).toArray((var0) -> new OptionInstance[var0]));
+      OptionInstance<?>[] optionsInstances = options(this.options);
+      Button controlsLink = Button.builder(OptionsScreen.CONTROLS, (button) -> this.minecraft.setScreen(new ControlsScreen(this, this.options))).build();
+      OptionInstance<?> firstOptionInstance = optionsInstances[0];
+      this.list.addSmall(firstOptionInstance.createButton(this.options), this.options.narrator(), controlsLink);
+      this.list.addSmall((OptionInstance[])Arrays.stream(optionsInstances).filter((instance) -> instance != firstOptionInstance).toArray((x$0) -> new OptionInstance[x$0]));
    }
 
    protected void addFooter() {
-      LinearLayout var1 = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
-      var1.addChild(Button.builder(Component.translatable("options.accessibility.link"), ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.ACCESSIBILITY_HELP)).build());
-      var1.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.minecraft.setScreen(this.lastScreen)).build());
+      LinearLayout footer = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
+      footer.addChild(Button.builder(Component.translatable("options.accessibility.link"), ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.ACCESSIBILITY_HELP)).build());
+      footer.addChild(Button.builder(CommonComponents.GUI_DONE, (button) -> this.minecraft.setScreen(this.lastScreen)).build());
    }
 
    protected boolean panoramaShouldSpin() {

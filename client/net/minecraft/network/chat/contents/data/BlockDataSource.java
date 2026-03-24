@@ -13,39 +13,32 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.CompilableString;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import org.jspecify.annotations.Nullable;
 
-public record BlockDataSource(String posPattern, @Nullable Coordinates compiledPos) implements DataSource {
-   public static final MapCodec<BlockDataSource> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("block").forGetter(BlockDataSource::posPattern)).apply(var0, BlockDataSource::new));
-
-   public BlockDataSource(String var1) {
-      this(var1, compilePos(var1));
-   }
-
-   public BlockDataSource(String var1, @Nullable Coordinates var2) {
-      super();
-      this.posPattern = var1;
-      this.compiledPos = var2;
-   }
-
-   private static @Nullable Coordinates compilePos(String var0) {
-      try {
-         return BlockPosArgument.blockPos().parse(new StringReader(var0));
-      } catch (CommandSyntaxException var2) {
-         return null;
+public record BlockDataSource(CompilableString<Coordinates> coordinates) implements DataSource {
+   public static final Codec<CompilableString<Coordinates>> BLOCK_POS_CODEC = CompilableString.codec(new CompilableString.CommandParserHelper<Coordinates>() {
+      protected Coordinates parse(final StringReader reader) throws CommandSyntaxException {
+         return BlockPosArgument.blockPos().parse(reader);
       }
+
+      protected String errorMessage(final String original, final CommandSyntaxException exception) {
+         return "Invalid coordinates path: " + original + ": " + exception.getMessage();
+      }
+   });
+   public static final MapCodec<BlockDataSource> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BLOCK_POS_CODEC.fieldOf("block").forGetter(BlockDataSource::coordinates)).apply(i, BlockDataSource::new));
+
+   public BlockDataSource {
+      super();
    }
 
-   public Stream<CompoundTag> getData(CommandSourceStack var1) {
-      if (this.compiledPos != null) {
-         ServerLevel var2 = var1.getLevel();
-         BlockPos var3 = this.compiledPos.getBlockPos(var1);
-         if (var2.isLoaded(var3)) {
-            BlockEntity var4 = var2.getBlockEntity(var3);
-            if (var4 != null) {
-               return Stream.of(var4.saveWithFullMetadata((HolderLookup.Provider)var1.registryAccess()));
-            }
+   public Stream<CompoundTag> getData(final CommandSourceStack sender) {
+      ServerLevel level = sender.getLevel();
+      BlockPos pos = ((Coordinates)this.coordinates.compiled()).getBlockPos(sender);
+      if (level.isLoaded(pos)) {
+         BlockEntity entity = level.getBlockEntity(pos);
+         if (entity != null) {
+            return Stream.of(entity.saveWithFullMetadata((HolderLookup.Provider)sender.registryAccess()));
          }
       }
 
@@ -54,31 +47,5 @@ public record BlockDataSource(String posPattern, @Nullable Coordinates compiledP
 
    public MapCodec<BlockDataSource> codec() {
       return MAP_CODEC;
-   }
-
-   public String toString() {
-      return "block=" + this.posPattern;
-   }
-
-   public boolean equals(Object var1) {
-      if (this == var1) {
-         return true;
-      } else {
-         boolean var10000;
-         if (var1 instanceof BlockDataSource) {
-            BlockDataSource var2 = (BlockDataSource)var1;
-            if (this.posPattern.equals(var2.posPattern)) {
-               var10000 = true;
-               return var10000;
-            }
-         }
-
-         var10000 = false;
-         return var10000;
-      }
-   }
-
-   public int hashCode() {
-      return this.posPattern.hashCode();
    }
 }

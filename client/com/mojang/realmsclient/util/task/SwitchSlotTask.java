@@ -13,39 +13,39 @@ public class SwitchSlotTask extends LongRunningTask {
    private final int slot;
    private final Runnable callback;
 
-   public SwitchSlotTask(long var1, int var3, Runnable var4) {
+   public SwitchSlotTask(final long realmId, final int slot, final Runnable callback) {
       super();
-      this.realmId = var1;
-      this.slot = var3;
-      this.callback = var4;
+      this.realmId = realmId;
+      this.slot = slot;
+      this.callback = callback;
    }
 
    public void run() {
-      RealmsClient var1 = RealmsClient.getOrCreate();
+      RealmsClient client = RealmsClient.getOrCreate();
 
-      for(int var2 = 0; var2 < 25; ++var2) {
+      for(int i = 0; i < 25; ++i) {
          try {
             if (this.aborted()) {
                return;
             }
 
-            if (var1.switchSlot(this.realmId, this.slot)) {
+            if (client.switchSlot(this.realmId, this.slot)) {
                this.callback.run();
                break;
             }
-         } catch (RetryCallException var4) {
+         } catch (RetryCallException e) {
             if (this.aborted()) {
                return;
             }
 
-            pause((long)var4.delaySeconds);
-         } catch (Exception var5) {
+            pause((long)e.delaySeconds);
+         } catch (Exception e) {
             if (this.aborted()) {
                return;
             }
 
             LOGGER.error("Couldn't switch world!");
-            this.error(var5);
+            this.error(e);
          }
       }
 

@@ -11,32 +11,32 @@ public class ClientboundSetHealthPacket implements Packet<ClientGamePacketListen
    private final int food;
    private final float saturation;
 
-   public ClientboundSetHealthPacket(float var1, int var2, float var3) {
+   public ClientboundSetHealthPacket(final float health, final int food, final float saturation) {
       super();
-      this.health = var1;
-      this.food = var2;
-      this.saturation = var3;
+      this.health = health;
+      this.food = food;
+      this.saturation = saturation;
    }
 
-   private ClientboundSetHealthPacket(FriendlyByteBuf var1) {
+   private ClientboundSetHealthPacket(final FriendlyByteBuf input) {
       super();
-      this.health = var1.readFloat();
-      this.food = var1.readVarInt();
-      this.saturation = var1.readFloat();
+      this.health = input.readFloat();
+      this.food = input.readVarInt();
+      this.saturation = input.readFloat();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeFloat(this.health);
-      var1.writeVarInt(this.food);
-      var1.writeFloat(this.saturation);
+   private void write(final FriendlyByteBuf output) {
+      output.writeFloat(this.health);
+      output.writeVarInt(this.food);
+      output.writeFloat(this.saturation);
    }
 
    public PacketType<ClientboundSetHealthPacket> type() {
       return GamePacketTypes.CLIENTBOUND_SET_HEALTH;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleSetHealth(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleSetHealth(this);
    }
 
    public float getHealth() {

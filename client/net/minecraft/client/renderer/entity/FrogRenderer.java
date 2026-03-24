@@ -2,43 +2,31 @@ package net.minecraft.client.renderer.entity;
 
 import net.minecraft.client.model.animal.frog.FrogModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.FrogRenderState;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.frog.Frog;
 import net.minecraft.world.entity.animal.frog.FrogVariant;
 
 public class FrogRenderer extends MobRenderer<Frog, FrogRenderState, FrogModel> {
-   public FrogRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new FrogModel(var1.bakeLayer(ModelLayers.FROG)), 0.3F);
+   public FrogRenderer(final EntityRendererProvider.Context context) {
+      super(context, new FrogModel(context.bakeLayer(ModelLayers.FROG)), 0.3F);
    }
 
-   public Identifier getTextureLocation(FrogRenderState var1) {
-      return var1.texture;
+   public Identifier getTextureLocation(final FrogRenderState state) {
+      return state.texture;
    }
 
    public FrogRenderState createRenderState() {
       return new FrogRenderState();
    }
 
-   public void extractRenderState(Frog var1, FrogRenderState var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      var2.isSwimming = var1.isInWater();
-      var2.jumpAnimationState.copyFrom(var1.jumpAnimationState);
-      var2.croakAnimationState.copyFrom(var1.croakAnimationState);
-      var2.tongueAnimationState.copyFrom(var1.tongueAnimationState);
-      var2.swimIdleAnimationState.copyFrom(var1.swimIdleAnimationState);
-      var2.texture = ((FrogVariant)var1.getVariant().value()).assetInfo().texturePath();
-   }
-
-   // $FF: synthetic method
-   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
-      return this.getTextureLocation((FrogRenderState)var1);
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
+   public void extractRenderState(final Frog entity, final FrogRenderState state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      state.isSwimming = entity.isInWater();
+      state.jumpAnimationState.copyFrom(entity.jumpAnimationState);
+      state.croakAnimationState.copyFrom(entity.croakAnimationState);
+      state.tongueAnimationState.copyFrom(entity.tongueAnimationState);
+      state.swimIdleAnimationState.copyFrom(entity.swimIdleAnimationState);
+      state.texture = ((FrogVariant)entity.getVariant().value()).assetInfo().texturePath();
    }
 }

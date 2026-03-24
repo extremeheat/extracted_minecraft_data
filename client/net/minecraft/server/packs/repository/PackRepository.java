@@ -5,13 +5,11 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.server.packs.PackResources;
@@ -24,81 +22,81 @@ public class PackRepository {
    private Map<String, Pack> available = ImmutableMap.of();
    private List<Pack> selected = ImmutableList.of();
 
-   public PackRepository(RepositorySource... var1) {
+   public PackRepository(final RepositorySource... sources) {
       super();
-      this.sources = ImmutableSet.copyOf(var1);
+      this.sources = ImmutableSet.copyOf(sources);
    }
 
-   public static String displayPackList(Collection<Pack> var0) {
-      return (String)var0.stream().map((var0x) -> {
-         String var10000 = var0x.getId();
-         return var10000 + (var0x.getCompatibility().isCompatible() ? "" : " (incompatible)");
+   public static String displayPackList(final Collection<Pack> packs) {
+      return (String)packs.stream().map((pack) -> {
+         String var10000 = pack.getId();
+         return var10000 + (pack.getCompatibility().isCompatible() ? "" : " (incompatible)");
       }).collect(Collectors.joining(", "));
    }
 
    public void reload() {
-      List var1 = (List)this.selected.stream().map(Pack::getId).collect(ImmutableList.toImmutableList());
+      List<String> currentlySelectedNames = (List)this.selected.stream().map(Pack::getId).collect(ImmutableList.toImmutableList());
       this.available = this.discoverAvailable();
-      this.selected = this.rebuildSelected(var1);
+      this.selected = this.rebuildSelected(currentlySelectedNames);
    }
 
    private Map<String, Pack> discoverAvailable() {
-      TreeMap var1 = Maps.newTreeMap();
+      Map<String, Pack> discovered = Maps.newTreeMap();
 
-      for(RepositorySource var3 : this.sources) {
-         var3.loadPacks((var1x) -> var1.put(var1x.getId(), var1x));
+      for(RepositorySource source : this.sources) {
+         source.loadPacks((pack) -> discovered.put(pack.getId(), pack));
       }
 
-      return ImmutableMap.copyOf(var1);
+      return ImmutableMap.copyOf(discovered);
    }
 
    public boolean isAbleToClearAnyPack() {
-      List var1 = this.rebuildSelected(List.of());
-      return !this.selected.equals(var1);
+      List<Pack> newSelected = this.rebuildSelected(List.of());
+      return !this.selected.equals(newSelected);
    }
 
-   public void setSelected(Collection<String> var1) {
-      this.selected = this.rebuildSelected(var1);
+   public void setSelected(final Collection<String> packs) {
+      this.selected = this.rebuildSelected(packs);
    }
 
-   public boolean addPack(String var1) {
-      Pack var2 = (Pack)this.available.get(var1);
-      if (var2 != null && !this.selected.contains(var2)) {
-         ArrayList var3 = Lists.newArrayList(this.selected);
-         var3.add(var2);
-         this.selected = var3;
+   public boolean addPack(final String packId) {
+      Pack pack = (Pack)this.available.get(packId);
+      if (pack != null && !this.selected.contains(pack)) {
+         List<Pack> selectedCopy = Lists.newArrayList(this.selected);
+         selectedCopy.add(pack);
+         this.selected = selectedCopy;
          return true;
       } else {
          return false;
       }
    }
 
-   public boolean removePack(String var1) {
-      Pack var2 = (Pack)this.available.get(var1);
-      if (var2 != null && this.selected.contains(var2)) {
-         ArrayList var3 = Lists.newArrayList(this.selected);
-         var3.remove(var2);
-         this.selected = var3;
+   public boolean removePack(final String packId) {
+      Pack pack = (Pack)this.available.get(packId);
+      if (pack != null && this.selected.contains(pack)) {
+         List<Pack> selectedCopy = Lists.newArrayList(this.selected);
+         selectedCopy.remove(pack);
+         this.selected = selectedCopy;
          return true;
       } else {
          return false;
       }
    }
 
-   private List<Pack> rebuildSelected(Collection<String> var1) {
-      List var2 = (List)this.getAvailablePacks(var1).collect(Util.toMutableList());
+   private List<Pack> rebuildSelected(final Collection<String> selectedNames) {
+      List<Pack> selectedAndPresent = (List)this.getAvailablePacks(selectedNames).collect(Util.toMutableList());
 
-      for(Pack var4 : this.available.values()) {
-         if (var4.isRequired() && !var2.contains(var4)) {
-            var4.getDefaultPosition().insert(var2, var4, Pack::selectionConfig, false);
+      for(Pack pack : this.available.values()) {
+         if (pack.isRequired() && !selectedAndPresent.contains(pack)) {
+            pack.getDefaultPosition().insert(selectedAndPresent, pack, Pack::selectionConfig, false);
          }
       }
 
-      return ImmutableList.copyOf(var2);
+      return ImmutableList.copyOf(selectedAndPresent);
    }
 
-   private Stream<Pack> getAvailablePacks(Collection<String> var1) {
-      Stream var10000 = var1.stream();
+   private Stream<Pack> getAvailablePacks(final Collection<String> ids) {
+      Stream var10000 = ids.stream();
       Map var10001 = this.available;
       Objects.requireNonNull(var10001);
       return var10000.map(var10001::get).filter(Objects::nonNull);
@@ -124,12 +122,12 @@ public class PackRepository {
       return this.selected;
    }
 
-   public @Nullable Pack getPack(String var1) {
-      return (Pack)this.available.get(var1);
+   public @Nullable Pack getPack(final String id) {
+      return (Pack)this.available.get(id);
    }
 
-   public boolean isAvailable(String var1) {
-      return this.available.containsKey(var1);
+   public boolean isAvailable(final String id) {
+      return this.available.containsKey(id);
    }
 
    public List<PackResources> openAllSelected() {

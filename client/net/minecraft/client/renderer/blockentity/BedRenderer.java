@@ -2,7 +2,10 @@ package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import com.mojang.math.Transformation;
 import it.unimi.dsi.fastutil.ints.Int2IntFunction;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.EntityModelSet;
@@ -15,16 +18,16 @@ import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.state.BedRenderState;
-import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.Material;
-import net.minecraft.client.resources.model.MaterialSet;
+import net.minecraft.client.resources.model.sprite.SpriteGetter;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Unit;
+import net.minecraft.util.Util;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.DoubleBlockCombiner;
@@ -32,100 +35,106 @@ import net.minecraft.world.level.block.entity.BedBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Quaternionfc;
+import org.joml.Matrix4f;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
 public class BedRenderer implements BlockEntityRenderer<BedBlockEntity, BedRenderState> {
-   private final MaterialSet materials;
+   private static final Map<Direction, Transformation> TRANSFORMATIONS = Util.<Direction, Transformation>makeEnumMap(Direction.class, BedRenderer::createModelTransform);
+   private static final Set<Direction> VISIBLE_LEG_FACES;
+   private final SpriteGetter sprites;
    private final Model.Simple headModel;
    private final Model.Simple footModel;
 
-   public BedRenderer(BlockEntityRendererProvider.Context var1) {
-      this(var1.materials(), var1.entityModelSet());
+   public BedRenderer(final BlockEntityRendererProvider.Context context) {
+      this(context.sprites(), context.entityModelSet());
    }
 
-   public BedRenderer(SpecialModelRenderer.BakingContext var1) {
-      this(var1.materials(), var1.entityModelSet());
+   public BedRenderer(final SpecialModelRenderer.BakingContext context) {
+      this(context.sprites(), context.entityModelSet());
    }
 
-   public BedRenderer(MaterialSet var1, EntityModelSet var2) {
+   public BedRenderer(final SpriteGetter sprites, final EntityModelSet entityModelSet) {
       super();
-      this.materials = var1;
-      this.headModel = new Model.Simple(var2.bakeLayer(ModelLayers.BED_HEAD), RenderTypes::entitySolid);
-      this.footModel = new Model.Simple(var2.bakeLayer(ModelLayers.BED_FOOT), RenderTypes::entitySolid);
+      this.sprites = sprites;
+      this.headModel = new Model.Simple(entityModelSet.bakeLayer(ModelLayers.BED_HEAD), RenderTypes::entitySolid);
+      this.footModel = new Model.Simple(entityModelSet.bakeLayer(ModelLayers.BED_FOOT), RenderTypes::entitySolid);
    }
 
    public static LayerDefinition createHeadLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      var1.addOrReplaceChild("main", CubeListBuilder.create().texOffs(0, 0).addBox(0.0F, 0.0F, 0.0F, 16.0F, 16.0F, 6.0F), PartPose.ZERO);
-      var1.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(50, 6).addBox(0.0F, 6.0F, 0.0F, 3.0F, 3.0F, 3.0F), PartPose.rotation(1.5707964F, 0.0F, 1.5707964F));
-      var1.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(50, 18).addBox(-16.0F, 6.0F, 0.0F, 3.0F, 3.0F, 3.0F), PartPose.rotation(1.5707964F, 0.0F, 3.1415927F));
-      return LayerDefinition.create(var0, 64, 64);
+      MeshDefinition mesh = new MeshDefinition();
+      PartDefinition root = mesh.getRoot();
+      Set<Direction> visibleBodyFaces = Util.<Direction>allOfEnumExcept(Direction.UP);
+      root.addOrReplaceChild("main", CubeListBuilder.create().texOffs(0, 0).addBox(0.0F, 0.0F, 0.0F, 16.0F, 16.0F, 6.0F, visibleBodyFaces), PartPose.ZERO);
+      root.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(50, 6).addBox(0.0F, 6.0F, 0.0F, 3.0F, 3.0F, 3.0F, VISIBLE_LEG_FACES), PartPose.rotation(1.5707964F, 0.0F, 1.5707964F));
+      root.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(50, 18).addBox(-16.0F, 6.0F, 0.0F, 3.0F, 3.0F, 3.0F, VISIBLE_LEG_FACES), PartPose.rotation(1.5707964F, 0.0F, 3.1415927F));
+      return LayerDefinition.create(mesh, 64, 64);
    }
 
    public static LayerDefinition createFootLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      var1.addOrReplaceChild("main", CubeListBuilder.create().texOffs(0, 22).addBox(0.0F, 0.0F, 0.0F, 16.0F, 16.0F, 6.0F), PartPose.ZERO);
-      var1.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(50, 0).addBox(0.0F, 6.0F, -16.0F, 3.0F, 3.0F, 3.0F), PartPose.rotation(1.5707964F, 0.0F, 0.0F));
-      var1.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(50, 12).addBox(-16.0F, 6.0F, -16.0F, 3.0F, 3.0F, 3.0F), PartPose.rotation(1.5707964F, 0.0F, 4.712389F));
-      return LayerDefinition.create(var0, 64, 64);
+      MeshDefinition mesh = new MeshDefinition();
+      PartDefinition root = mesh.getRoot();
+      Set<Direction> visibleBodyFaces = Util.<Direction>allOfEnumExcept(Direction.DOWN);
+      root.addOrReplaceChild("main", CubeListBuilder.create().texOffs(0, 22).addBox(0.0F, 0.0F, 0.0F, 16.0F, 16.0F, 6.0F, visibleBodyFaces), PartPose.ZERO);
+      root.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(50, 0).addBox(0.0F, 6.0F, -16.0F, 3.0F, 3.0F, 3.0F, VISIBLE_LEG_FACES), PartPose.rotation(1.5707964F, 0.0F, 0.0F));
+      root.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(50, 12).addBox(-16.0F, 6.0F, -16.0F, 3.0F, 3.0F, 3.0F, VISIBLE_LEG_FACES), PartPose.rotation(1.5707964F, 0.0F, 4.712389F));
+      return LayerDefinition.create(mesh, 64, 64);
    }
 
    public BedRenderState createRenderState() {
       return new BedRenderState();
    }
 
-   public void extractRenderState(BedBlockEntity var1, BedRenderState var2, float var3, Vec3 var4, ModelFeatureRenderer.@Nullable CrumblingOverlay var5) {
-      BlockEntityRenderer.super.extractRenderState(var1, var2, var3, var4, var5);
-      var2.color = var1.getColor();
-      var2.facing = (Direction)var1.getBlockState().getValue(BedBlock.FACING);
-      var2.isHead = var1.getBlockState().getValue(BedBlock.PART) == BedPart.HEAD;
-      if (var1.getLevel() != null) {
-         DoubleBlockCombiner.NeighborCombineResult var6 = DoubleBlockCombiner.combineWithNeigbour(BlockEntityType.BED, BedBlock::getBlockType, BedBlock::getConnectedDirection, ChestBlock.FACING, var1.getBlockState(), var1.getLevel(), var1.getBlockPos(), (var0, var1x) -> false);
-         var2.lightCoords = ((Int2IntFunction)var6.apply(new BrightnessCombiner())).get(var2.lightCoords);
+   public void extractRenderState(final BedBlockEntity blockEntity, final BedRenderState state, final float partialTicks, final Vec3 cameraPosition, final ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
+      BlockEntityRenderer.super.extractRenderState(blockEntity, state, partialTicks, cameraPosition, breakProgress);
+      state.color = blockEntity.getColor();
+      state.facing = (Direction)blockEntity.getBlockState().getValue(BedBlock.FACING);
+      state.part = (BedPart)blockEntity.getBlockState().getValue(BedBlock.PART);
+      if (blockEntity.getLevel() != null) {
+         DoubleBlockCombiner.NeighborCombineResult<? extends BedBlockEntity> combineResult = DoubleBlockCombiner.<BedBlockEntity>combineWithNeigbour(BlockEntityType.BED, BedBlock::getBlockType, BedBlock::getConnectedDirection, ChestBlock.FACING, blockEntity.getBlockState(), blockEntity.getLevel(), blockEntity.getBlockPos(), (levelAccessor, blockPos) -> false);
+         state.lightCoords = ((Int2IntFunction)combineResult.apply(new BrightnessCombiner())).get(state.lightCoords);
       }
 
    }
 
-   public void submit(BedRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
-      Material var5 = Sheets.getBedMaterial(var1.color);
-      this.submitPiece(var2, var3, var1.isHead ? this.headModel : this.footModel, var1.facing, var5, var1.lightCoords, OverlayTexture.NO_OVERLAY, false, var1.breakProgress, 0);
+   public void submit(final BedRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
+      SpriteId sprite = Sheets.getBedSprite(state.color);
+      poseStack.pushPose();
+      poseStack.mulPose(modelTransform(state.facing));
+      this.submitPiece(state.part, sprite, poseStack, submitNodeCollector, state.lightCoords, OverlayTexture.NO_OVERLAY, state.breakProgress, 0);
+      poseStack.popPose();
    }
 
-   public void submitSpecial(PoseStack var1, SubmitNodeCollector var2, int var3, int var4, Material var5, int var6) {
-      this.submitPiece(var1, var2, this.headModel, Direction.SOUTH, var5, var3, var4, false, (ModelFeatureRenderer.CrumblingOverlay)null, var6);
-      this.submitPiece(var1, var2, this.footModel, Direction.SOUTH, var5, var3, var4, true, (ModelFeatureRenderer.CrumblingOverlay)null, var6);
+   public void submitPiece(final BedPart part, final SpriteId sprite, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress, final int outlineColor) {
+      Model.Simple model = this.getPieceModel(part);
+      submitNodeCollector.submitModel(model, Unit.INSTANCE, poseStack, lightCoords, overlayCoords, -1, sprite, this.sprites, outlineColor, breakProgress);
    }
 
-   private void submitPiece(PoseStack var1, SubmitNodeCollector var2, Model.Simple var3, Direction var4, Material var5, int var6, int var7, boolean var8, ModelFeatureRenderer.@Nullable CrumblingOverlay var9, int var10) {
-      var1.pushPose();
-      preparePose(var1, var8, var4);
-      var2.submitModel(var3, Unit.INSTANCE, var1, var5.renderType(RenderTypes::entitySolid), var6, var7, -1, this.materials.get(var5), var10, var9);
-      var1.popPose();
+   private Model.Simple getPieceModel(final BedPart part) {
+      Model.Simple var10000;
+      switch (part) {
+         case HEAD -> var10000 = this.headModel;
+         case FOOT -> var10000 = this.footModel;
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
    }
 
-   private static void preparePose(PoseStack var0, boolean var1, Direction var2) {
-      var0.translate(0.0F, 0.5625F, var1 ? -1.0F : 0.0F);
-      var0.mulPose((Quaternionfc)Axis.XP.rotationDegrees(90.0F));
-      var0.translate(0.5F, 0.5F, 0.5F);
-      var0.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(180.0F + var2.toYRot()));
-      var0.translate(-0.5F, -0.5F, -0.5F);
+   private static Transformation createModelTransform(final Direction direction) {
+      return new Transformation((new Matrix4f()).translation(0.0F, 0.5625F, 0.0F).rotate(Axis.XP.rotationDegrees(90.0F)).rotateAround(Axis.ZP.rotationDegrees(180.0F + direction.toYRot()), 0.5F, 0.5F, 0.5F));
    }
 
-   public void getExtents(Consumer<Vector3fc> var1) {
-      PoseStack var2 = new PoseStack();
-      preparePose(var2, false, Direction.SOUTH);
-      this.headModel.root().getExtentsForGui(var2, var1);
-      var2.setIdentity();
-      preparePose(var2, true, Direction.SOUTH);
-      this.footModel.root().getExtentsForGui(var2, var1);
+   public static Transformation modelTransform(final Direction direction) {
+      return (Transformation)TRANSFORMATIONS.get(direction);
    }
 
-   // $FF: synthetic method
-   public BlockEntityRenderState createRenderState() {
-      return this.createRenderState();
+   public void getExtents(final BedPart part, final Consumer<Vector3fc> output) {
+      PoseStack poseStack = new PoseStack();
+      this.getPieceModel(part).root().getExtentsForGui(poseStack, output);
+   }
+
+   static {
+      VISIBLE_LEG_FACES = Util.<Direction>allOfEnumExcept(Direction.DOWN);
    }
 }

@@ -12,8 +12,9 @@ import java.util.stream.Collectors;
 import net.minecraft.client.renderer.blockentity.state.ChestRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.special.ChestSpecialRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -38,106 +39,71 @@ public class Sheets {
    public static final Identifier MAP_DECORATIONS_SHEET = Identifier.withDefaultNamespace("textures/atlas/map_decorations.png");
    public static final Identifier PAINTINGS_SHEET = Identifier.withDefaultNamespace("textures/atlas/paintings.png");
    public static final Identifier CELESTIAL_SHEET = Identifier.withDefaultNamespace("textures/atlas/celestials.png");
-   private static final RenderType SHULKER_BOX_SHEET_TYPE;
-   private static final RenderType BED_SHEET_TYPE;
-   private static final RenderType BANNER_SHEET_TYPE;
-   private static final RenderType SHIELD_SHEET_TYPE;
-   private static final RenderType SIGN_SHEET_TYPE;
-   private static final RenderType CHEST_SHEET_TYPE;
    private static final RenderType ARMOR_TRIMS_SHEET_TYPE;
    private static final RenderType ARMOR_TRIMS_DECAL_SHEET_TYPE;
-   private static final RenderType SOLID_BLOCK_SHEET;
    private static final RenderType CUTOUT_BLOCK_SHEET;
+   private static final RenderType TRANSLUCENT_BLOCK_SHEET;
+   private static final RenderType CUTOUT_BLOCK_ITEM_SHEET;
    private static final RenderType TRANSLUCENT_BLOCK_ITEM_SHEET;
+   private static final RenderType CUTOUT_ITEM_SHEET;
    private static final RenderType TRANSLUCENT_ITEM_SHEET;
-   public static final MaterialMapper ITEMS_MAPPER;
-   public static final MaterialMapper BLOCKS_MAPPER;
-   public static final MaterialMapper BLOCK_ENTITIES_MAPPER;
-   public static final MaterialMapper BANNER_MAPPER;
-   public static final MaterialMapper SHIELD_MAPPER;
-   public static final MaterialMapper CHEST_MAPPER;
-   public static final MaterialMapper DECORATED_POT_MAPPER;
-   public static final MaterialMapper BED_MAPPER;
-   public static final MaterialMapper SHULKER_MAPPER;
-   public static final MaterialMapper SIGN_MAPPER;
-   public static final MaterialMapper HANGING_SIGN_MAPPER;
-   public static final Material DEFAULT_SHULKER_TEXTURE_LOCATION;
-   public static final List<Material> SHULKER_TEXTURE_LOCATION;
-   public static final Map<WoodType, Material> SIGN_MATERIALS;
-   public static final Map<WoodType, Material> HANGING_SIGN_MATERIALS;
-   public static final Material BANNER_BASE;
-   public static final Material SHIELD_BASE;
-   private static final Map<Identifier, Material> BANNER_MATERIALS;
-   private static final Map<Identifier, Material> SHIELD_MATERIALS;
-   public static final Map<ResourceKey<DecoratedPotPattern>, Material> DECORATED_POT_MATERIALS;
-   public static final Material DECORATED_POT_BASE;
-   public static final Material DECORATED_POT_SIDE;
-   private static final Material[] BED_TEXTURES;
-   public static final Material CHEST_TRAP_LOCATION;
-   public static final Material CHEST_TRAP_LOCATION_LEFT;
-   public static final Material CHEST_TRAP_LOCATION_RIGHT;
-   public static final Material CHEST_XMAS_LOCATION;
-   public static final Material CHEST_XMAS_LOCATION_LEFT;
-   public static final Material CHEST_XMAS_LOCATION_RIGHT;
-   public static final Material CHEST_LOCATION;
-   public static final Material CHEST_LOCATION_LEFT;
-   public static final Material CHEST_LOCATION_RIGHT;
-   public static final Material ENDER_CHEST_LOCATION;
-   public static final Material COPPER_CHEST_LOCATION;
-   public static final Material COPPER_CHEST_LOCATION_LEFT;
-   public static final Material COPPER_CHEST_LOCATION_RIGHT;
-   public static final Material EXPOSED_COPPER_CHEST_LOCATION;
-   public static final Material EXPOSED_COPPER_CHEST_LOCATION_LEFT;
-   public static final Material EXPOSED_COPPER_CHEST_LOCATION_RIGHT;
-   public static final Material WEATHERED_COPPER_CHEST_LOCATION;
-   public static final Material WEATHERED_COPPER_CHEST_LOCATION_LEFT;
-   public static final Material WEATHERED_COPPER_CHEST_LOCATION_RIGHT;
-   public static final Material OXIDIZED_COPPER_CHEST_LOCATION;
-   public static final Material OXIDIZED_COPPER_CHEST_LOCATION_LEFT;
-   public static final Material OXIDIZED_COPPER_CHEST_LOCATION_RIGHT;
+   public static final SpriteMapper ITEMS_MAPPER;
+   public static final SpriteMapper BLOCKS_MAPPER;
+   public static final SpriteMapper BLOCK_ENTITIES_MAPPER;
+   public static final SpriteMapper BANNER_MAPPER;
+   public static final SpriteMapper SHIELD_MAPPER;
+   public static final SpriteMapper CHEST_MAPPER;
+   public static final SpriteMapper DECORATED_POT_MAPPER;
+   public static final SpriteMapper BED_MAPPER;
+   public static final SpriteMapper SHULKER_MAPPER;
+   public static final SpriteMapper SIGN_MAPPER;
+   public static final SpriteMapper HANGING_SIGN_MAPPER;
+   public static final SpriteId DEFAULT_SHULKER_TEXTURE_LOCATION;
+   public static final List<SpriteId> SHULKER_TEXTURE_LOCATION;
+   public static final Map<WoodType, SpriteId> SIGN_SPRITES;
+   public static final Map<WoodType, SpriteId> HANGING_SIGN_SPRITES;
+   public static final SpriteId BANNER_BASE;
+   public static final SpriteId SHIELD_BASE;
+   public static final SpriteId SHIELD_BASE_NO_PATTERN;
+   public static final SpriteId BANNER_PATTERN_BASE;
+   public static final SpriteId SHIELD_PATTERN_BASE;
+   private static final Map<Identifier, SpriteId> BANNER_SPRITES;
+   private static final Map<Identifier, SpriteId> SHIELD_SPRITES;
+   public static final Map<ResourceKey<DecoratedPotPattern>, SpriteId> DECORATED_POT_SPRITES;
+   public static final SpriteId DECORATED_POT_BASE;
+   public static final SpriteId DECORATED_POT_SIDE;
+   private static final SpriteId[] BED_TEXTURES;
+   public static final SpriteId ENDER_CHEST_LOCATION;
+   public static final MultiblockChestResources<SpriteId> CHEST_REGULAR;
+   public static final MultiblockChestResources<SpriteId> CHEST_TRAPPED;
+   public static final MultiblockChestResources<SpriteId> CHEST_CHRISTMAS;
+   public static final MultiblockChestResources<SpriteId> CHEST_COPPER_UNAFFECTED;
+   public static final MultiblockChestResources<SpriteId> CHEST_COPPER_EXPOSED;
+   public static final MultiblockChestResources<SpriteId> CHEST_COPPER_WEATHERED;
+   public static final MultiblockChestResources<SpriteId> CHEST_COPPER_OXIDIZED;
 
    public Sheets() {
       super();
    }
 
-   public static RenderType bannerSheet() {
-      return BANNER_SHEET_TYPE;
-   }
-
-   public static RenderType shieldSheet() {
-      return SHIELD_SHEET_TYPE;
-   }
-
-   public static RenderType bedSheet() {
-      return BED_SHEET_TYPE;
-   }
-
-   public static RenderType shulkerBoxSheet() {
-      return SHULKER_BOX_SHEET_TYPE;
-   }
-
-   public static RenderType signSheet() {
-      return SIGN_SHEET_TYPE;
-   }
-
-   public static RenderType hangingSignSheet() {
-      return SIGN_SHEET_TYPE;
-   }
-
-   public static RenderType chestSheet() {
-      return CHEST_SHEET_TYPE;
-   }
-
-   public static RenderType armorTrimsSheet(boolean var0) {
-      return var0 ? ARMOR_TRIMS_DECAL_SHEET_TYPE : ARMOR_TRIMS_SHEET_TYPE;
-   }
-
-   public static RenderType solidBlockSheet() {
-      return SOLID_BLOCK_SHEET;
+   public static RenderType armorTrimsSheet(final boolean decal) {
+      return decal ? ARMOR_TRIMS_DECAL_SHEET_TYPE : ARMOR_TRIMS_SHEET_TYPE;
    }
 
    public static RenderType cutoutBlockSheet() {
       return CUTOUT_BLOCK_SHEET;
+   }
+
+   public static RenderType translucentBlockSheet() {
+      return TRANSLUCENT_BLOCK_SHEET;
+   }
+
+   public static RenderType cutoutBlockItemSheet() {
+      return CUTOUT_BLOCK_ITEM_SHEET;
+   }
+
+   public static RenderType cutoutItemSheet() {
+      return CUTOUT_ITEM_SHEET;
    }
 
    public static RenderType translucentItemSheet() {
@@ -148,152 +114,146 @@ public class Sheets {
       return TRANSLUCENT_BLOCK_ITEM_SHEET;
    }
 
-   public static Material getBedMaterial(DyeColor var0) {
-      return BED_TEXTURES[var0.getId()];
+   public static SpriteId getBedSprite(final DyeColor color) {
+      return BED_TEXTURES[color.getId()];
    }
 
-   public static Identifier colorToResourceMaterial(DyeColor var0) {
-      return Identifier.withDefaultNamespace(var0.getName());
+   public static Identifier colorToResourceSprite(final DyeColor color) {
+      return Identifier.withDefaultNamespace(color.getName());
    }
 
-   public static Material createBedMaterial(DyeColor var0) {
-      return BED_MAPPER.apply(colorToResourceMaterial(var0));
+   public static SpriteId createBedSprite(final DyeColor color) {
+      return BED_MAPPER.apply(colorToResourceSprite(color));
    }
 
-   public static Material getShulkerBoxMaterial(DyeColor var0) {
-      return (Material)SHULKER_TEXTURE_LOCATION.get(var0.getId());
+   public static SpriteId getShulkerBoxSprite(final DyeColor color) {
+      return (SpriteId)SHULKER_TEXTURE_LOCATION.get(color.getId());
    }
 
-   public static Identifier colorToShulkerMaterial(DyeColor var0) {
-      return Identifier.withDefaultNamespace("shulker_" + var0.getName());
+   public static Identifier colorToShulkerSprite(final DyeColor color) {
+      return Identifier.withDefaultNamespace("shulker_" + color.getName());
    }
 
-   public static Material createShulkerMaterial(DyeColor var0) {
-      return SHULKER_MAPPER.apply(colorToShulkerMaterial(var0));
+   public static SpriteId createShulkerSprite(final DyeColor color) {
+      return SHULKER_MAPPER.apply(colorToShulkerSprite(color));
    }
 
-   private static Material createSignMaterial(WoodType var0) {
-      return SIGN_MAPPER.defaultNamespaceApply(var0.name());
+   private static SpriteId createSignSprite(final WoodType type) {
+      return SIGN_MAPPER.defaultNamespaceApply(type.name());
    }
 
-   private static Material createHangingSignMaterial(WoodType var0) {
-      return HANGING_SIGN_MAPPER.defaultNamespaceApply(var0.name());
+   private static SpriteId createHangingSignSprite(final WoodType type) {
+      return HANGING_SIGN_MAPPER.defaultNamespaceApply(type.name());
    }
 
-   public static Material getSignMaterial(WoodType var0) {
-      return (Material)SIGN_MATERIALS.get(var0);
+   public static SpriteId getSignSprite(final WoodType type) {
+      return (SpriteId)SIGN_SPRITES.get(type);
    }
 
-   public static Material getHangingSignMaterial(WoodType var0) {
-      return (Material)HANGING_SIGN_MATERIALS.get(var0);
+   public static SpriteId getHangingSignSprite(final WoodType type) {
+      return (SpriteId)HANGING_SIGN_SPRITES.get(type);
    }
 
-   public static Material getBannerMaterial(Holder<BannerPattern> var0) {
-      Map var10000 = BANNER_MATERIALS;
-      Identifier var10001 = ((BannerPattern)var0.value()).assetId();
-      MaterialMapper var10002 = BANNER_MAPPER;
+   public static SpriteId getBannerSprite(final Holder<BannerPattern> pattern) {
+      Map var10000 = BANNER_SPRITES;
+      Identifier var10001 = ((BannerPattern)pattern.value()).assetId();
+      SpriteMapper var10002 = BANNER_MAPPER;
       Objects.requireNonNull(var10002);
-      return (Material)var10000.computeIfAbsent(var10001, var10002::apply);
+      return (SpriteId)var10000.computeIfAbsent(var10001, var10002::apply);
    }
 
-   public static Material getShieldMaterial(Holder<BannerPattern> var0) {
-      Map var10000 = SHIELD_MATERIALS;
-      Identifier var10001 = ((BannerPattern)var0.value()).assetId();
-      MaterialMapper var10002 = SHIELD_MAPPER;
+   public static SpriteId getShieldSprite(final Holder<BannerPattern> pattern) {
+      Map var10000 = SHIELD_SPRITES;
+      Identifier var10001 = ((BannerPattern)pattern.value()).assetId();
+      SpriteMapper var10002 = SHIELD_MAPPER;
       Objects.requireNonNull(var10002);
-      return (Material)var10000.computeIfAbsent(var10001, var10002::apply);
+      return (SpriteId)var10000.computeIfAbsent(var10001, var10002::apply);
    }
 
-   public static @Nullable Material getDecoratedPotMaterial(@Nullable ResourceKey<DecoratedPotPattern> var0) {
-      return var0 == null ? null : (Material)DECORATED_POT_MATERIALS.get(var0);
+   public static @Nullable SpriteId getDecoratedPotSprite(final @Nullable ResourceKey<DecoratedPotPattern> pattern) {
+      return pattern == null ? null : (SpriteId)DECORATED_POT_SPRITES.get(pattern);
    }
 
-   public static Material chooseMaterial(ChestRenderState.ChestMaterialType var0, ChestType var1) {
-      Material var10000;
-      switch (var0) {
+   public static SpriteId chooseSprite(final ChestRenderState.ChestMaterialType materialType, final ChestType type) {
+      SpriteId var10000;
+      switch (materialType) {
          case ENDER_CHEST -> var10000 = ENDER_CHEST_LOCATION;
-         case CHRISTMAS -> var10000 = chooseMaterial(var1, CHEST_XMAS_LOCATION, CHEST_XMAS_LOCATION_LEFT, CHEST_XMAS_LOCATION_RIGHT);
-         case TRAPPED -> var10000 = chooseMaterial(var1, CHEST_TRAP_LOCATION, CHEST_TRAP_LOCATION_LEFT, CHEST_TRAP_LOCATION_RIGHT);
-         case COPPER_UNAFFECTED -> var10000 = chooseMaterial(var1, COPPER_CHEST_LOCATION, COPPER_CHEST_LOCATION_LEFT, COPPER_CHEST_LOCATION_RIGHT);
-         case COPPER_EXPOSED -> var10000 = chooseMaterial(var1, EXPOSED_COPPER_CHEST_LOCATION, EXPOSED_COPPER_CHEST_LOCATION_LEFT, EXPOSED_COPPER_CHEST_LOCATION_RIGHT);
-         case COPPER_WEATHERED -> var10000 = chooseMaterial(var1, WEATHERED_COPPER_CHEST_LOCATION, WEATHERED_COPPER_CHEST_LOCATION_LEFT, WEATHERED_COPPER_CHEST_LOCATION_RIGHT);
-         case COPPER_OXIDIZED -> var10000 = chooseMaterial(var1, OXIDIZED_COPPER_CHEST_LOCATION, OXIDIZED_COPPER_CHEST_LOCATION_LEFT, OXIDIZED_COPPER_CHEST_LOCATION_RIGHT);
-         case REGULAR -> var10000 = chooseMaterial(var1, CHEST_LOCATION, CHEST_LOCATION_LEFT, CHEST_LOCATION_RIGHT);
+         case REGULAR -> var10000 = CHEST_REGULAR.select(type);
+         case CHRISTMAS -> var10000 = CHEST_CHRISTMAS.select(type);
+         case TRAPPED -> var10000 = CHEST_TRAPPED.select(type);
+         case COPPER_UNAFFECTED -> var10000 = CHEST_COPPER_UNAFFECTED.select(type);
+         case COPPER_EXPOSED -> var10000 = CHEST_COPPER_EXPOSED.select(type);
+         case COPPER_WEATHERED -> var10000 = CHEST_COPPER_WEATHERED.select(type);
+         case COPPER_OXIDIZED -> var10000 = CHEST_COPPER_OXIDIZED.select(type);
          default -> throw new MatchException((String)null, (Throwable)null);
       }
 
       return var10000;
    }
 
-   private static Material chooseMaterial(ChestType var0, Material var1, Material var2, Material var3) {
-      switch (var0) {
-         case LEFT:
-            return var2;
-         case RIGHT:
-            return var3;
-         case SINGLE:
-         default:
-            return var1;
-      }
-   }
-
    static {
-      SHULKER_BOX_SHEET_TYPE = RenderTypes.entityCutoutNoCull(SHULKER_SHEET);
-      BED_SHEET_TYPE = RenderTypes.entitySolid(BED_SHEET);
-      BANNER_SHEET_TYPE = RenderTypes.entityNoOutline(BANNER_SHEET);
-      SHIELD_SHEET_TYPE = RenderTypes.entityNoOutline(SHIELD_SHEET);
-      SIGN_SHEET_TYPE = RenderTypes.entityCutoutNoCull(SIGN_SHEET);
-      CHEST_SHEET_TYPE = RenderTypes.entityCutout(CHEST_SHEET);
       ARMOR_TRIMS_SHEET_TYPE = RenderTypes.armorCutoutNoCull(ARMOR_TRIMS_SHEET);
       ARMOR_TRIMS_DECAL_SHEET_TYPE = RenderTypes.createArmorDecalCutoutNoCull(ARMOR_TRIMS_SHEET);
-      SOLID_BLOCK_SHEET = RenderTypes.entitySolid(TextureAtlas.LOCATION_BLOCKS);
-      CUTOUT_BLOCK_SHEET = RenderTypes.entityCutout(TextureAtlas.LOCATION_BLOCKS);
-      TRANSLUCENT_BLOCK_ITEM_SHEET = RenderTypes.itemEntityTranslucentCull(TextureAtlas.LOCATION_BLOCKS);
-      TRANSLUCENT_ITEM_SHEET = RenderTypes.itemEntityTranslucentCull(TextureAtlas.LOCATION_ITEMS);
-      ITEMS_MAPPER = new MaterialMapper(TextureAtlas.LOCATION_ITEMS, "item");
-      BLOCKS_MAPPER = new MaterialMapper(TextureAtlas.LOCATION_BLOCKS, "block");
-      BLOCK_ENTITIES_MAPPER = new MaterialMapper(TextureAtlas.LOCATION_BLOCKS, "entity");
-      BANNER_MAPPER = new MaterialMapper(BANNER_SHEET, "entity/banner");
-      SHIELD_MAPPER = new MaterialMapper(SHIELD_SHEET, "entity/shield");
-      CHEST_MAPPER = new MaterialMapper(CHEST_SHEET, "entity/chest");
-      DECORATED_POT_MAPPER = new MaterialMapper(DECORATED_POT_SHEET, "entity/decorated_pot");
-      BED_MAPPER = new MaterialMapper(BED_SHEET, "entity/bed");
-      SHULKER_MAPPER = new MaterialMapper(SHULKER_SHEET, "entity/shulker");
-      SIGN_MAPPER = new MaterialMapper(SIGN_SHEET, "entity/signs");
-      HANGING_SIGN_MAPPER = new MaterialMapper(SIGN_SHEET, "entity/signs/hanging");
+      CUTOUT_BLOCK_SHEET = RenderTypes.entityCutoutCull(TextureAtlas.LOCATION_BLOCKS);
+      TRANSLUCENT_BLOCK_SHEET = RenderTypes.entityTranslucentCullItemTarget(TextureAtlas.LOCATION_BLOCKS);
+      CUTOUT_BLOCK_ITEM_SHEET = RenderTypes.itemCutout(TextureAtlas.LOCATION_BLOCKS);
+      TRANSLUCENT_BLOCK_ITEM_SHEET = RenderTypes.itemTranslucent(TextureAtlas.LOCATION_BLOCKS);
+      CUTOUT_ITEM_SHEET = RenderTypes.itemCutout(TextureAtlas.LOCATION_ITEMS);
+      TRANSLUCENT_ITEM_SHEET = RenderTypes.itemTranslucent(TextureAtlas.LOCATION_ITEMS);
+      ITEMS_MAPPER = new SpriteMapper(TextureAtlas.LOCATION_ITEMS, "item");
+      BLOCKS_MAPPER = new SpriteMapper(TextureAtlas.LOCATION_BLOCKS, "block");
+      BLOCK_ENTITIES_MAPPER = new SpriteMapper(TextureAtlas.LOCATION_BLOCKS, "entity");
+      BANNER_MAPPER = new SpriteMapper(BANNER_SHEET, "entity/banner");
+      SHIELD_MAPPER = new SpriteMapper(SHIELD_SHEET, "entity/shield");
+      CHEST_MAPPER = new SpriteMapper(CHEST_SHEET, "entity/chest");
+      DECORATED_POT_MAPPER = new SpriteMapper(DECORATED_POT_SHEET, "entity/decorated_pot");
+      BED_MAPPER = new SpriteMapper(BED_SHEET, "entity/bed");
+      SHULKER_MAPPER = new SpriteMapper(SHULKER_SHEET, "entity/shulker");
+      SIGN_MAPPER = new SpriteMapper(SIGN_SHEET, "entity/signs");
+      HANGING_SIGN_MAPPER = new SpriteMapper(SIGN_SHEET, "entity/signs/hanging");
       DEFAULT_SHULKER_TEXTURE_LOCATION = SHULKER_MAPPER.defaultNamespaceApply("shulker");
-      SHULKER_TEXTURE_LOCATION = (List)Arrays.stream(DyeColor.values()).sorted(Comparator.comparingInt(DyeColor::getId)).map(Sheets::createShulkerMaterial).collect(ImmutableList.toImmutableList());
-      SIGN_MATERIALS = (Map)WoodType.values().collect(Collectors.toMap(Function.identity(), Sheets::createSignMaterial));
-      HANGING_SIGN_MATERIALS = (Map)WoodType.values().collect(Collectors.toMap(Function.identity(), Sheets::createHangingSignMaterial));
-      BANNER_BASE = BANNER_MAPPER.defaultNamespaceApply("base");
-      SHIELD_BASE = SHIELD_MAPPER.defaultNamespaceApply("base");
-      BANNER_MATERIALS = new HashMap();
-      SHIELD_MATERIALS = new HashMap();
-      DECORATED_POT_MATERIALS = (Map)BuiltInRegistries.DECORATED_POT_PATTERN.listElements().collect(Collectors.toMap(Holder.Reference::key, (var0) -> DECORATED_POT_MAPPER.apply(((DecoratedPotPattern)var0.value()).assetId())));
+      SHULKER_TEXTURE_LOCATION = (List)Arrays.stream(DyeColor.values()).sorted(Comparator.comparingInt(DyeColor::getId)).map(Sheets::createShulkerSprite).collect(ImmutableList.toImmutableList());
+      SIGN_SPRITES = (Map)WoodType.values().collect(Collectors.toMap(Function.identity(), Sheets::createSignSprite));
+      HANGING_SIGN_SPRITES = (Map)WoodType.values().collect(Collectors.toMap(Function.identity(), Sheets::createHangingSignSprite));
+      BANNER_BASE = BANNER_MAPPER.defaultNamespaceApply("banner_base");
+      SHIELD_BASE = SHIELD_MAPPER.defaultNamespaceApply("shield_base");
+      SHIELD_BASE_NO_PATTERN = SHIELD_MAPPER.defaultNamespaceApply("shield_base_nopattern");
+      BANNER_PATTERN_BASE = BANNER_MAPPER.defaultNamespaceApply("base");
+      SHIELD_PATTERN_BASE = SHIELD_MAPPER.defaultNamespaceApply("base");
+      BANNER_SPRITES = new HashMap();
+      SHIELD_SPRITES = new HashMap();
+      DECORATED_POT_SPRITES = (Map)BuiltInRegistries.DECORATED_POT_PATTERN.listElements().collect(Collectors.toMap(Holder.Reference::key, (holder) -> DECORATED_POT_MAPPER.apply(((DecoratedPotPattern)holder.value()).assetId())));
       DECORATED_POT_BASE = DECORATED_POT_MAPPER.defaultNamespaceApply("decorated_pot_base");
       DECORATED_POT_SIDE = DECORATED_POT_MAPPER.defaultNamespaceApply("decorated_pot_side");
-      BED_TEXTURES = (Material[])Arrays.stream(DyeColor.values()).sorted(Comparator.comparingInt(DyeColor::getId)).map(Sheets::createBedMaterial).toArray((var0) -> new Material[var0]);
-      CHEST_TRAP_LOCATION = CHEST_MAPPER.defaultNamespaceApply("trapped");
-      CHEST_TRAP_LOCATION_LEFT = CHEST_MAPPER.defaultNamespaceApply("trapped_left");
-      CHEST_TRAP_LOCATION_RIGHT = CHEST_MAPPER.defaultNamespaceApply("trapped_right");
-      CHEST_XMAS_LOCATION = CHEST_MAPPER.defaultNamespaceApply("christmas");
-      CHEST_XMAS_LOCATION_LEFT = CHEST_MAPPER.defaultNamespaceApply("christmas_left");
-      CHEST_XMAS_LOCATION_RIGHT = CHEST_MAPPER.defaultNamespaceApply("christmas_right");
-      CHEST_LOCATION = CHEST_MAPPER.defaultNamespaceApply("normal");
-      CHEST_LOCATION_LEFT = CHEST_MAPPER.defaultNamespaceApply("normal_left");
-      CHEST_LOCATION_RIGHT = CHEST_MAPPER.defaultNamespaceApply("normal_right");
+      BED_TEXTURES = (SpriteId[])Arrays.stream(DyeColor.values()).sorted(Comparator.comparingInt(DyeColor::getId)).map(Sheets::createBedSprite).toArray((x$0) -> new SpriteId[x$0]);
       ENDER_CHEST_LOCATION = CHEST_MAPPER.defaultNamespaceApply("ender");
-      COPPER_CHEST_LOCATION = CHEST_MAPPER.defaultNamespaceApply("copper");
-      COPPER_CHEST_LOCATION_LEFT = CHEST_MAPPER.defaultNamespaceApply("copper_left");
-      COPPER_CHEST_LOCATION_RIGHT = CHEST_MAPPER.defaultNamespaceApply("copper_right");
-      EXPOSED_COPPER_CHEST_LOCATION = CHEST_MAPPER.defaultNamespaceApply("copper_exposed");
-      EXPOSED_COPPER_CHEST_LOCATION_LEFT = CHEST_MAPPER.defaultNamespaceApply("copper_exposed_left");
-      EXPOSED_COPPER_CHEST_LOCATION_RIGHT = CHEST_MAPPER.defaultNamespaceApply("copper_exposed_right");
-      WEATHERED_COPPER_CHEST_LOCATION = CHEST_MAPPER.defaultNamespaceApply("copper_weathered");
-      WEATHERED_COPPER_CHEST_LOCATION_LEFT = CHEST_MAPPER.defaultNamespaceApply("copper_weathered_left");
-      WEATHERED_COPPER_CHEST_LOCATION_RIGHT = CHEST_MAPPER.defaultNamespaceApply("copper_weathered_right");
-      OXIDIZED_COPPER_CHEST_LOCATION = CHEST_MAPPER.defaultNamespaceApply("copper_oxidized");
-      OXIDIZED_COPPER_CHEST_LOCATION_LEFT = CHEST_MAPPER.defaultNamespaceApply("copper_oxidized_left");
-      OXIDIZED_COPPER_CHEST_LOCATION_RIGHT = CHEST_MAPPER.defaultNamespaceApply("copper_oxidized_right");
+      MultiblockChestResources var10000 = ChestSpecialRenderer.REGULAR;
+      SpriteMapper var10001 = CHEST_MAPPER;
+      Objects.requireNonNull(var10001);
+      CHEST_REGULAR = var10000.<SpriteId>map(var10001::apply);
+      var10000 = ChestSpecialRenderer.TRAPPED;
+      var10001 = CHEST_MAPPER;
+      Objects.requireNonNull(var10001);
+      CHEST_TRAPPED = var10000.<SpriteId>map(var10001::apply);
+      var10000 = ChestSpecialRenderer.CHRISTMAS;
+      var10001 = CHEST_MAPPER;
+      Objects.requireNonNull(var10001);
+      CHEST_CHRISTMAS = var10000.<SpriteId>map(var10001::apply);
+      var10000 = ChestSpecialRenderer.COPPER_UNAFFECTED;
+      var10001 = CHEST_MAPPER;
+      Objects.requireNonNull(var10001);
+      CHEST_COPPER_UNAFFECTED = var10000.<SpriteId>map(var10001::apply);
+      var10000 = ChestSpecialRenderer.COPPER_EXPOSED;
+      var10001 = CHEST_MAPPER;
+      Objects.requireNonNull(var10001);
+      CHEST_COPPER_EXPOSED = var10000.<SpriteId>map(var10001::apply);
+      var10000 = ChestSpecialRenderer.COPPER_WEATHERED;
+      var10001 = CHEST_MAPPER;
+      Objects.requireNonNull(var10001);
+      CHEST_COPPER_WEATHERED = var10000.<SpriteId>map(var10001::apply);
+      var10000 = ChestSpecialRenderer.COPPER_OXIDIZED;
+      var10001 = CHEST_MAPPER;
+      Objects.requireNonNull(var10001);
+      CHEST_COPPER_OXIDIZED = var10000.<SpriteId>map(var10001::apply);
    }
 }

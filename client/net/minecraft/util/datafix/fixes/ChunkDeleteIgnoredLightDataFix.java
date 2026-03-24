@@ -9,16 +9,16 @@ import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.Dynamic;
 
 public class ChunkDeleteIgnoredLightDataFix extends DataFix {
-   public ChunkDeleteIgnoredLightDataFix(Schema var1) {
-      super(var1, true);
+   public ChunkDeleteIgnoredLightDataFix(final Schema outputSchema) {
+      super(outputSchema, true);
    }
 
    protected TypeRewriteRule makeRule() {
-      Type var1 = this.getInputSchema().getType(References.CHUNK);
-      OpticFinder var2 = var1.findField("sections");
-      return this.fixTypeEverywhereTyped("ChunkDeleteIgnoredLightDataFix", var1, (var1x) -> {
-         boolean var2x = ((Dynamic)var1x.get(DSL.remainderFinder())).get("isLightOn").asBoolean(false);
-         return !var2x ? var1x.updateTyped(var2, (var0) -> var0.update(DSL.remainderFinder(), (var0x) -> var0x.remove("BlockLight").remove("SkyLight"))) : var1x;
+      Type<?> chunkType = this.getInputSchema().getType(References.CHUNK);
+      OpticFinder<?> sectionsFinder = chunkType.findField("sections");
+      return this.fixTypeEverywhereTyped("ChunkDeleteIgnoredLightDataFix", chunkType, (chunk) -> {
+         boolean isLightOn = ((Dynamic)chunk.get(DSL.remainderFinder())).get("isLightOn").asBoolean(false);
+         return !isLightOn ? chunk.updateTyped(sectionsFinder, (section) -> section.update(DSL.remainderFinder(), (tag) -> tag.remove("BlockLight").remove("SkyLight"))) : chunk;
       });
    }
 }

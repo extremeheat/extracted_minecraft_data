@@ -14,18 +14,18 @@ public class TelemetryEventLog implements AutoCloseable {
    private final JsonEventLog<TelemetryEventInstance> log;
    private final ConsecutiveExecutor consecutiveExecutor;
 
-   public TelemetryEventLog(FileChannel var1, Executor var2) {
+   public TelemetryEventLog(final FileChannel channel, final Executor executor) {
       super();
-      this.log = new JsonEventLog<TelemetryEventInstance>(TelemetryEventInstance.CODEC, var1);
-      this.consecutiveExecutor = new ConsecutiveExecutor(var2, "telemetry-event-log");
+      this.log = new JsonEventLog<TelemetryEventInstance>(TelemetryEventInstance.CODEC, channel);
+      this.consecutiveExecutor = new ConsecutiveExecutor(executor, "telemetry-event-log");
    }
 
    public TelemetryEventLogger logger() {
-      return (var1) -> this.consecutiveExecutor.schedule(() -> {
+      return (event) -> this.consecutiveExecutor.schedule(() -> {
             try {
-               this.log.write(var1);
-            } catch (IOException var3) {
-               LOGGER.error("Failed to write telemetry event to log", var3);
+               this.log.write(event);
+            } catch (IOException e) {
+               LOGGER.error("Failed to write telemetry event to log", e);
             }
 
          });

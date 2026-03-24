@@ -8,12 +8,12 @@ public class RealmsNewsManager {
    private boolean hasUnreadNews;
    private String newsLink;
 
-   public RealmsNewsManager(RealmsPersistence var1) {
+   public RealmsNewsManager(final RealmsPersistence newsLocalStorage) {
       super();
-      this.newsLocalStorage = var1;
-      RealmsPersistence.RealmsPersistenceData var2 = var1.read();
-      this.hasUnreadNews = var2.hasUnreadNews;
-      this.newsLink = var2.newsLink;
+      this.newsLocalStorage = newsLocalStorage;
+      RealmsPersistence.RealmsPersistenceData news = newsLocalStorage.read();
+      this.hasUnreadNews = news.hasUnreadNews;
+      this.newsLink = news.newsLink;
    }
 
    public boolean hasUnreadNews() {
@@ -24,22 +24,22 @@ public class RealmsNewsManager {
       return this.newsLink;
    }
 
-   public void updateUnreadNews(RealmsNews var1) {
-      RealmsPersistence.RealmsPersistenceData var2 = this.updateNewsStorage(var1);
-      this.hasUnreadNews = var2.hasUnreadNews;
-      this.newsLink = var2.newsLink;
+   public void updateUnreadNews(final RealmsNews newsResponse) {
+      RealmsPersistence.RealmsPersistenceData news = this.updateNewsStorage(newsResponse);
+      this.hasUnreadNews = news.hasUnreadNews;
+      this.newsLink = news.newsLink;
    }
 
-   private RealmsPersistence.RealmsPersistenceData updateNewsStorage(RealmsNews var1) {
-      RealmsPersistence.RealmsPersistenceData var2 = this.newsLocalStorage.read();
-      if (var1.newsLink() != null && !var1.newsLink().equals(var2.newsLink)) {
-         RealmsPersistence.RealmsPersistenceData var3 = new RealmsPersistence.RealmsPersistenceData();
-         var3.newsLink = var1.newsLink();
-         var3.hasUnreadNews = true;
-         this.newsLocalStorage.save(var3);
-         return var3;
+   private RealmsPersistence.RealmsPersistenceData updateNewsStorage(final RealmsNews newsResponse) {
+      RealmsPersistence.RealmsPersistenceData previousNews = this.newsLocalStorage.read();
+      if (newsResponse.newsLink() != null && !newsResponse.newsLink().equals(previousNews.newsLink)) {
+         RealmsPersistence.RealmsPersistenceData realmsNews = new RealmsPersistence.RealmsPersistenceData();
+         realmsNews.newsLink = newsResponse.newsLink();
+         realmsNews.hasUnreadNews = true;
+         this.newsLocalStorage.save(realmsNews);
+         return realmsNews;
       } else {
-         return var2;
+         return previousNews;
       }
    }
 }

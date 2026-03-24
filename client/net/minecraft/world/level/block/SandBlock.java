@@ -11,18 +11,18 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class SandBlock extends ColoredFallingBlock {
-   public static final MapCodec<SandBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ColorRGBA.CODEC.fieldOf("falling_dust_color").forGetter((var0x) -> var0x.dustColor), propertiesCodec()).apply(var0, SandBlock::new));
+   public static final MapCodec<SandBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ColorRGBA.CODEC.fieldOf("falling_dust_color").forGetter((b) -> b.dustColor), propertiesCodec()).apply(i, SandBlock::new));
 
    public MapCodec<SandBlock> codec() {
       return CODEC;
    }
 
-   public SandBlock(ColorRGBA var1, BlockBehaviour.Properties var2) {
-      super(var1, var2);
+   public SandBlock(final ColorRGBA dustColor, final BlockBehaviour.Properties properties) {
+      super(dustColor, properties);
    }
 
-   public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
-      super.animateTick(var1, var2, var3, var4);
-      AmbientDesertBlockSoundsPlayer.playAmbientSandSounds(var2, var3, var4);
+   public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {
+      super.animateTick(state, level, pos, random);
+      AmbientDesertBlockSoundsPlayer.playAmbientSandSounds(level, pos, random);
    }
 }

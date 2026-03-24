@@ -13,18 +13,18 @@ public class CriteriaRenameFix extends DataFix {
    private final String advancementId;
    private final UnaryOperator<String> conversions;
 
-   public CriteriaRenameFix(Schema var1, String var2, String var3, UnaryOperator<String> var4) {
-      super(var1, false);
-      this.name = var2;
-      this.advancementId = var3;
-      this.conversions = var4;
+   public CriteriaRenameFix(final Schema outputSchema, final String name, final String advancementId, final UnaryOperator<String> conversions) {
+      super(outputSchema, false);
+      this.name = name;
+      this.advancementId = advancementId;
+      this.conversions = conversions;
    }
 
    protected TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped(this.name, this.getInputSchema().getType(References.ADVANCEMENTS), (var1) -> var1.update(DSL.remainderFinder(), this::fixAdvancements));
+      return this.fixTypeEverywhereTyped(this.name, this.getInputSchema().getType(References.ADVANCEMENTS), (input) -> input.update(DSL.remainderFinder(), this::fixAdvancements));
    }
 
-   private Dynamic<?> fixAdvancements(Dynamic<?> var1) {
-      return var1.update(this.advancementId, (var1x) -> var1x.update("criteria", (var1) -> var1.updateMapValues((var1x) -> var1x.mapFirst((var1) -> (Dynamic)DataFixUtils.orElse(var1.asString().map((var2) -> var1.createString((String)this.conversions.apply(var2))).result(), var1)))));
+   private Dynamic<?> fixAdvancements(final Dynamic<?> tag) {
+      return tag.update(this.advancementId, (advancement) -> advancement.update("criteria", (criteria) -> criteria.updateMapValues((e) -> e.mapFirst((k) -> (Dynamic)DataFixUtils.orElse(k.asString().map((s) -> k.createString((String)this.conversions.apply(s))).result(), k)))));
    }
 }

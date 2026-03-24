@@ -14,15 +14,15 @@ public class DefaultGameModeCommands {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("defaultgamemode").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.argument("gamemode", GameModeArgument.gameMode()).executes((var0x) -> setMode((CommandSourceStack)var0x.getSource(), GameModeArgument.getGameMode(var0x, "gamemode")))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("defaultgamemode").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.argument("gamemode", GameModeArgument.gameMode()).executes((c) -> setMode((CommandSourceStack)c.getSource(), GameModeArgument.getGameMode(c, "gamemode")))));
    }
 
-   private static int setMode(CommandSourceStack var0, GameType var1) {
-      MinecraftServer var2 = var0.getServer();
-      var2.setDefaultGameType(var1);
-      int var3 = var2.enforceGameTypeForPlayers(var2.getForcedGameType());
-      var0.sendSuccess(() -> Component.translatable("commands.defaultgamemode.success", var1.getLongDisplayName()), true);
-      return var3;
+   private static int setMode(final CommandSourceStack source, final GameType type) {
+      MinecraftServer server = source.getServer();
+      server.setDefaultGameType(type);
+      int count = server.enforceGameTypeForPlayers(server.getForcedGameType());
+      source.sendSuccess(() -> Component.translatable("commands.defaultgamemode.success", type.getLongDisplayName()), true);
+      return count;
    }
 }

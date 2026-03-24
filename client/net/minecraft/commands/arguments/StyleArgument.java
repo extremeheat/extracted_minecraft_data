@@ -18,20 +18,20 @@ import net.minecraft.util.parsing.packrat.commands.ParserBasedArgument;
 
 public class StyleArgument extends ParserBasedArgument<Style> {
    private static final Collection<String> EXAMPLES = List.of("{bold: true}", "{color: 'red'}", "{}");
-   public static final DynamicCommandExceptionType ERROR_INVALID_STYLE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.style.invalid", var0));
+   public static final DynamicCommandExceptionType ERROR_INVALID_STYLE = new DynamicCommandExceptionType((message) -> Component.translatableEscape("argument.style.invalid", message));
    private static final DynamicOps<Tag> OPS;
    private static final CommandArgumentParser<Tag> TAG_PARSER;
 
-   private StyleArgument(HolderLookup.Provider var1) {
-      super(TAG_PARSER.withCodec(var1.createSerializationContext(OPS), TAG_PARSER, Style.Serializer.CODEC, ERROR_INVALID_STYLE));
+   private StyleArgument(final HolderLookup.Provider registries) {
+      super(TAG_PARSER.withCodec(registries.createSerializationContext(OPS), TAG_PARSER, Style.Serializer.CODEC, ERROR_INVALID_STYLE));
    }
 
-   public static Style getStyle(CommandContext<CommandSourceStack> var0, String var1) {
-      return (Style)var0.getArgument(var1, Style.class);
+   public static Style getStyle(final CommandContext<CommandSourceStack> context, final String name) {
+      return (Style)context.getArgument(name, Style.class);
    }
 
-   public static StyleArgument style(CommandBuildContext var0) {
-      return new StyleArgument(var0);
+   public static StyleArgument style(final CommandBuildContext context) {
+      return new StyleArgument(context);
    }
 
    public Collection<String> getExamples() {

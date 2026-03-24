@@ -9,7 +9,7 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 
 public interface PlainTextContents extends ComponentContents {
-   MapCodec<PlainTextContents> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("text").forGetter(PlainTextContents::text)).apply(var0, PlainTextContents::create));
+   MapCodec<PlainTextContents> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.STRING.fieldOf("text").forGetter(PlainTextContents::text)).apply(i, PlainTextContents::create));
    PlainTextContents EMPTY = new PlainTextContents() {
       public String toString() {
          return "empty";
@@ -20,8 +20,8 @@ public interface PlainTextContents extends ComponentContents {
       }
    };
 
-   static PlainTextContents create(String var0) {
-      return (PlainTextContents)(var0.isEmpty() ? EMPTY : new LiteralContents(var0));
+   static PlainTextContents create(final String text) {
+      return (PlainTextContents)(text.isEmpty() ? EMPTY : new LiteralContents(text));
    }
 
    String text();
@@ -31,17 +31,16 @@ public interface PlainTextContents extends ComponentContents {
    }
 
    public static record LiteralContents(String text) implements PlainTextContents {
-      public LiteralContents(String var1) {
+      public LiteralContents {
          super();
-         this.text = var1;
       }
 
-      public <T> Optional<T> visit(FormattedText.ContentConsumer<T> var1) {
-         return var1.accept(this.text);
+      public <T> Optional<T> visit(final FormattedText.ContentConsumer<T> output) {
+         return output.accept(this.text);
       }
 
-      public <T> Optional<T> visit(FormattedText.StyledContentConsumer<T> var1, Style var2) {
-         return var1.accept(var2, this.text);
+      public <T> Optional<T> visit(final FormattedText.StyledContentConsumer<T> output, final Style currentStyle) {
+         return output.accept(currentStyle, this.text);
       }
 
       public String toString() {

@@ -9,12 +9,12 @@ import java.util.zip.ZipFile;
 
 @FunctionalInterface
 public interface IoSupplier<T> {
-   static IoSupplier<InputStream> create(Path var0) {
-      return () -> Files.newInputStream(var0);
+   static IoSupplier<InputStream> create(final Path path) {
+      return () -> Files.newInputStream(path);
    }
 
-   static IoSupplier<InputStream> create(ZipFile var0, ZipEntry var1) {
-      return () -> var0.getInputStream(var1);
+   static IoSupplier<InputStream> create(final ZipFile zipFile, final ZipEntry entry) {
+      return () -> zipFile.getInputStream(entry);
    }
 
    T get() throws IOException;

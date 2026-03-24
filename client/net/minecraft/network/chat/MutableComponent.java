@@ -15,16 +15,16 @@ public final class MutableComponent implements Component {
    private FormattedCharSequence visualOrderText;
    private @Nullable Language decomposedWith;
 
-   MutableComponent(ComponentContents var1, List<Component> var2, Style var3) {
+   MutableComponent(final ComponentContents contents, final List<Component> siblings, final Style style) {
       super();
       this.visualOrderText = FormattedCharSequence.EMPTY;
-      this.contents = var1;
-      this.siblings = var2;
-      this.style = var3;
+      this.contents = contents;
+      this.siblings = siblings;
+      this.style = style;
    }
 
-   public static MutableComponent create(ComponentContents var0) {
-      return new MutableComponent(var0, Lists.newArrayList(), Style.EMPTY);
+   public static MutableComponent create(final ComponentContents contents) {
+      return new MutableComponent(contents, Lists.newArrayList(), Style.EMPTY);
    }
 
    public ComponentContents getContents() {
@@ -35,8 +35,8 @@ public final class MutableComponent implements Component {
       return this.siblings;
    }
 
-   public MutableComponent setStyle(Style var1) {
-      this.style = var1;
+   public MutableComponent setStyle(final Style style) {
+      this.style = style;
       return this;
    }
 
@@ -44,37 +44,37 @@ public final class MutableComponent implements Component {
       return this.style;
    }
 
-   public MutableComponent append(String var1) {
-      return var1.isEmpty() ? this : this.append((Component)Component.literal(var1));
+   public MutableComponent append(final String text) {
+      return text.isEmpty() ? this : this.append((Component)Component.literal(text));
    }
 
-   public MutableComponent append(Component var1) {
-      this.siblings.add(var1);
+   public MutableComponent append(final Component component) {
+      this.siblings.add(component);
       return this;
    }
 
-   public MutableComponent withStyle(UnaryOperator<Style> var1) {
-      this.setStyle((Style)var1.apply(this.getStyle()));
+   public MutableComponent withStyle(final UnaryOperator<Style> updater) {
+      this.setStyle((Style)updater.apply(this.getStyle()));
       return this;
    }
 
-   public MutableComponent withStyle(Style var1) {
-      this.setStyle(var1.applyTo(this.getStyle()));
+   public MutableComponent withStyle(final Style patch) {
+      this.setStyle(patch.applyTo(this.getStyle()));
       return this;
    }
 
-   public MutableComponent withStyle(ChatFormatting... var1) {
-      this.setStyle(this.getStyle().applyFormats(var1));
+   public MutableComponent withStyle(final ChatFormatting... formats) {
+      this.setStyle(this.getStyle().applyFormats(formats));
       return this;
    }
 
-   public MutableComponent withStyle(ChatFormatting var1) {
-      this.setStyle(this.getStyle().applyFormat(var1));
+   public MutableComponent withStyle(final ChatFormatting format) {
+      this.setStyle(this.getStyle().applyFormat(format));
       return this;
    }
 
-   public MutableComponent withColor(int var1) {
-      this.setStyle(this.getStyle().withColor(var1));
+   public MutableComponent withColor(final int color) {
+      this.setStyle(this.getStyle().withColor(color));
       return this;
    }
 
@@ -84,23 +84,23 @@ public final class MutableComponent implements Component {
    }
 
    public FormattedCharSequence getVisualOrderText() {
-      Language var1 = Language.getInstance();
-      if (this.decomposedWith != var1) {
-         this.visualOrderText = var1.getVisualOrder(this);
-         this.decomposedWith = var1;
+      Language currentLanguage = Language.getInstance();
+      if (this.decomposedWith != currentLanguage) {
+         this.visualOrderText = currentLanguage.getVisualOrder(this);
+         this.decomposedWith = currentLanguage;
       }
 
       return this.visualOrderText;
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
+   public boolean equals(final Object o) {
+      if (this == o) {
          return true;
       } else {
          boolean var10000;
-         if (var1 instanceof MutableComponent) {
-            MutableComponent var2 = (MutableComponent)var1;
-            if (this.contents.equals(var2.contents) && this.style.equals(var2.style) && this.siblings.equals(var2.siblings)) {
+         if (o instanceof MutableComponent) {
+            MutableComponent that = (MutableComponent)o;
+            if (this.contents.equals(that.contents) && this.style.equals(that.style) && this.siblings.equals(that.siblings)) {
                var10000 = true;
                return var10000;
             }
@@ -112,36 +112,36 @@ public final class MutableComponent implements Component {
    }
 
    public int hashCode() {
-      int var1 = 1;
-      var1 = 31 * var1 + this.contents.hashCode();
-      var1 = 31 * var1 + this.style.hashCode();
-      var1 = 31 * var1 + this.siblings.hashCode();
-      return var1;
+      int result = 1;
+      result = 31 * result + this.contents.hashCode();
+      result = 31 * result + this.style.hashCode();
+      result = 31 * result + this.siblings.hashCode();
+      return result;
    }
 
    public String toString() {
-      StringBuilder var1 = new StringBuilder(this.contents.toString());
-      boolean var2 = !this.style.isEmpty();
-      boolean var3 = !this.siblings.isEmpty();
-      if (var2 || var3) {
-         var1.append('[');
-         if (var2) {
-            var1.append("style=");
-            var1.append(this.style);
+      StringBuilder result = new StringBuilder(this.contents.toString());
+      boolean hasStyle = !this.style.isEmpty();
+      boolean hasSiblings = !this.siblings.isEmpty();
+      if (hasStyle || hasSiblings) {
+         result.append('[');
+         if (hasStyle) {
+            result.append("style=");
+            result.append(this.style);
          }
 
-         if (var2 && var3) {
-            var1.append(", ");
+         if (hasStyle && hasSiblings) {
+            result.append(", ");
          }
 
-         if (var3) {
-            var1.append("siblings=");
-            var1.append(this.siblings);
+         if (hasSiblings) {
+            result.append("siblings=");
+            result.append(this.siblings);
          }
 
-         var1.append(']');
+         result.append(']');
       }
 
-      return var1.toString();
+      return result.toString();
    }
 }

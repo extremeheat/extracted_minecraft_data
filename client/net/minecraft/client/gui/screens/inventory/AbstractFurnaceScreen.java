@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.screens.inventory;
 
 import java.util.List;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenPosition;
 import net.minecraft.client.gui.screens.recipebook.FurnaceRecipeBookComponent;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
@@ -18,11 +18,11 @@ public abstract class AbstractFurnaceScreen<T extends AbstractFurnaceMenu> exten
    private final Identifier litProgressSprite;
    private final Identifier burnProgressSprite;
 
-   public AbstractFurnaceScreen(T var1, Inventory var2, Component var3, Component var4, Identifier var5, Identifier var6, Identifier var7, List<RecipeBookComponent.TabInfo> var8) {
-      super(var1, new FurnaceRecipeBookComponent(var1, var4, var8), var2, var3);
-      this.texture = var5;
-      this.litProgressSprite = var6;
-      this.burnProgressSprite = var7;
+   public AbstractFurnaceScreen(final T menu, final Inventory inventory, final Component title, final Component recipeFilterName, final Identifier texture, final Identifier litProgressSprite, final Identifier burnProgressSprite, final List<RecipeBookComponent.TabInfo> tabInfos) {
+      super(menu, new FurnaceRecipeBookComponent(menu, recipeFilterName, tabInfos), inventory, title);
+      this.texture = texture;
+      this.litProgressSprite = litProgressSprite;
+      this.burnProgressSprite = burnProgressSprite;
    }
 
    public void init() {
@@ -34,18 +34,19 @@ public abstract class AbstractFurnaceScreen<T extends AbstractFurnaceMenu> exten
       return new ScreenPosition(this.leftPos + 20, this.height / 2 - 49);
    }
 
-   protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
-      int var5 = this.leftPos;
-      int var6 = this.topPos;
-      var1.blit(RenderPipelines.GUI_TEXTURED, this.texture, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractBackground(graphics, mouseX, mouseY, a);
+      int xo = this.leftPos;
+      int yo = this.topPos;
+      graphics.blit(RenderPipelines.GUI_TEXTURED, this.texture, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
       if (((AbstractFurnaceMenu)this.menu).isLit()) {
-         boolean var7 = true;
-         int var8 = Mth.ceil(((AbstractFurnaceMenu)this.menu).getLitProgress() * 13.0F) + 1;
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, this.litProgressSprite, 14, 14, 0, 14 - var8, var5 + 56, var6 + 36 + 14 - var8, 14, var8);
+         int litSpriteHeight = 14;
+         int litProgressHeight = Mth.ceil(((AbstractFurnaceMenu)this.menu).getLitProgress() * 13.0F) + 1;
+         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, this.litProgressSprite, 14, 14, 0, 14 - litProgressHeight, xo + 56, yo + 36 + 14 - litProgressHeight, 14, litProgressHeight);
       }
 
-      boolean var9 = true;
-      int var10 = Mth.ceil(((AbstractFurnaceMenu)this.menu).getBurnProgress() * 24.0F);
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, this.burnProgressSprite, 24, 16, 0, 0, var5 + 79, var6 + 34, var10, 16);
+      int burnSpriteWidth = 24;
+      int burnProgressWidth = Mth.ceil(((AbstractFurnaceMenu)this.menu).getBurnProgress() * 24.0F);
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, this.burnProgressSprite, 24, 16, 0, 0, xo + 79, yo + 34, burnProgressWidth, 16);
    }
 }

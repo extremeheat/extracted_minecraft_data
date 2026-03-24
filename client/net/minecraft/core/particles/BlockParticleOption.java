@@ -14,18 +14,18 @@ public class BlockParticleOption implements ParticleOptions {
    private final ParticleType<BlockParticleOption> type;
    private final BlockState state;
 
-   public static MapCodec<BlockParticleOption> codec(ParticleType<BlockParticleOption> var0) {
-      return BLOCK_STATE_CODEC.xmap((var1) -> new BlockParticleOption(var0, var1), (var0x) -> var0x.state).fieldOf("block_state");
+   public static MapCodec<BlockParticleOption> codec(final ParticleType<BlockParticleOption> type) {
+      return BLOCK_STATE_CODEC.xmap((state) -> new BlockParticleOption(type, state), (o) -> o.state).fieldOf("block_state");
    }
 
-   public static StreamCodec<? super RegistryFriendlyByteBuf, BlockParticleOption> streamCodec(ParticleType<BlockParticleOption> var0) {
-      return ByteBufCodecs.idMapper(Block.BLOCK_STATE_REGISTRY).map((var1) -> new BlockParticleOption(var0, var1), (var0x) -> var0x.state);
+   public static StreamCodec<? super RegistryFriendlyByteBuf, BlockParticleOption> streamCodec(final ParticleType<BlockParticleOption> type) {
+      return ByteBufCodecs.idMapper(Block.BLOCK_STATE_REGISTRY).map((state) -> new BlockParticleOption(type, state), (o) -> o.state);
    }
 
-   public BlockParticleOption(ParticleType<BlockParticleOption> var1, BlockState var2) {
+   public BlockParticleOption(final ParticleType<BlockParticleOption> type, final BlockState state) {
       super();
-      this.type = var1;
-      this.state = var2;
+      this.type = type;
+      this.state = state;
    }
 
    public ParticleType<BlockParticleOption> getType() {

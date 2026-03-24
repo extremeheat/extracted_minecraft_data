@@ -8,7 +8,7 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Set;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -25,84 +25,84 @@ public class TagCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("tag").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.entities()).then(Commands.literal("add").then(Commands.argument("name", StringArgumentType.word()).executes((var0x) -> addTag((CommandSourceStack)var0x.getSource(), EntityArgument.getEntities(var0x, "targets"), StringArgumentType.getString(var0x, "name")))))).then(Commands.literal("remove").then(Commands.argument("name", StringArgumentType.word()).suggests((var0x, var1) -> SharedSuggestionProvider.suggest(getTags(EntityArgument.getEntities(var0x, "targets")), var1)).executes((var0x) -> removeTag((CommandSourceStack)var0x.getSource(), EntityArgument.getEntities(var0x, "targets"), StringArgumentType.getString(var0x, "name")))))).then(Commands.literal("list").executes((var0x) -> listTags((CommandSourceStack)var0x.getSource(), EntityArgument.getEntities(var0x, "targets"))))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("tag").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.entities()).then(Commands.literal("add").then(Commands.argument("name", StringArgumentType.word()).executes((c) -> addTag((CommandSourceStack)c.getSource(), EntityArgument.getEntities(c, "targets"), StringArgumentType.getString(c, "name")))))).then(Commands.literal("remove").then(Commands.argument("name", StringArgumentType.word()).suggests((c, p) -> SharedSuggestionProvider.suggest(getTags(EntityArgument.getEntities(c, "targets")), p)).executes((c) -> removeTag((CommandSourceStack)c.getSource(), EntityArgument.getEntities(c, "targets"), StringArgumentType.getString(c, "name")))))).then(Commands.literal("list").executes((c) -> listTags((CommandSourceStack)c.getSource(), EntityArgument.getEntities(c, "targets"))))));
    }
 
-   private static Collection<String> getTags(Collection<? extends Entity> var0) {
-      HashSet var1 = Sets.newHashSet();
+   private static Collection<String> getTags(final Collection<? extends Entity> entities) {
+      Set<String> result = Sets.newHashSet();
 
-      for(Entity var3 : var0) {
-         var1.addAll(var3.getTags());
+      for(Entity entity : entities) {
+         result.addAll(entity.entityTags());
       }
 
-      return var1;
+      return result;
    }
 
-   private static int addTag(CommandSourceStack var0, Collection<? extends Entity> var1, String var2) throws CommandSyntaxException {
-      int var3 = 0;
+   private static int addTag(final CommandSourceStack source, final Collection<? extends Entity> targets, final String name) throws CommandSyntaxException {
+      int count = 0;
 
-      for(Entity var5 : var1) {
-         if (var5.addTag(var2)) {
-            ++var3;
+      for(Entity entity : targets) {
+         if (entity.addTag(name)) {
+            ++count;
          }
       }
 
-      if (var3 == 0) {
+      if (count == 0) {
          throw ERROR_ADD_FAILED.create();
       } else {
-         if (var1.size() == 1) {
-            var0.sendSuccess(() -> Component.translatable("commands.tag.add.success.single", var2, ((Entity)var1.iterator().next()).getDisplayName()), true);
+         if (targets.size() == 1) {
+            source.sendSuccess(() -> Component.translatable("commands.tag.add.success.single", name, ((Entity)targets.iterator().next()).getDisplayName()), true);
          } else {
-            var0.sendSuccess(() -> Component.translatable("commands.tag.add.success.multiple", var2, var1.size()), true);
+            source.sendSuccess(() -> Component.translatable("commands.tag.add.success.multiple", name, targets.size()), true);
          }
 
-         return var3;
+         return count;
       }
    }
 
-   private static int removeTag(CommandSourceStack var0, Collection<? extends Entity> var1, String var2) throws CommandSyntaxException {
-      int var3 = 0;
+   private static int removeTag(final CommandSourceStack source, final Collection<? extends Entity> targets, final String name) throws CommandSyntaxException {
+      int count = 0;
 
-      for(Entity var5 : var1) {
-         if (var5.removeTag(var2)) {
-            ++var3;
+      for(Entity entity : targets) {
+         if (entity.removeTag(name)) {
+            ++count;
          }
       }
 
-      if (var3 == 0) {
+      if (count == 0) {
          throw ERROR_REMOVE_FAILED.create();
       } else {
-         if (var1.size() == 1) {
-            var0.sendSuccess(() -> Component.translatable("commands.tag.remove.success.single", var2, ((Entity)var1.iterator().next()).getDisplayName()), true);
+         if (targets.size() == 1) {
+            source.sendSuccess(() -> Component.translatable("commands.tag.remove.success.single", name, ((Entity)targets.iterator().next()).getDisplayName()), true);
          } else {
-            var0.sendSuccess(() -> Component.translatable("commands.tag.remove.success.multiple", var2, var1.size()), true);
+            source.sendSuccess(() -> Component.translatable("commands.tag.remove.success.multiple", name, targets.size()), true);
          }
 
-         return var3;
+         return count;
       }
    }
 
-   private static int listTags(CommandSourceStack var0, Collection<? extends Entity> var1) {
-      HashSet var2 = Sets.newHashSet();
+   private static int listTags(final CommandSourceStack source, final Collection<? extends Entity> targets) {
+      Set<String> tags = Sets.newHashSet();
 
-      for(Entity var4 : var1) {
-         var2.addAll(var4.getTags());
+      for(Entity entity : targets) {
+         tags.addAll(entity.entityTags());
       }
 
-      if (var1.size() == 1) {
-         Entity var5 = (Entity)var1.iterator().next();
-         if (var2.isEmpty()) {
-            var0.sendSuccess(() -> Component.translatable("commands.tag.list.single.empty", var5.getDisplayName()), false);
+      if (targets.size() == 1) {
+         Entity entity = (Entity)targets.iterator().next();
+         if (tags.isEmpty()) {
+            source.sendSuccess(() -> Component.translatable("commands.tag.list.single.empty", entity.getDisplayName()), false);
          } else {
-            var0.sendSuccess(() -> Component.translatable("commands.tag.list.single.success", var5.getDisplayName(), var2.size(), ComponentUtils.formatList(var2)), false);
+            source.sendSuccess(() -> Component.translatable("commands.tag.list.single.success", entity.getDisplayName(), tags.size(), ComponentUtils.formatList(tags)), false);
          }
-      } else if (var2.isEmpty()) {
-         var0.sendSuccess(() -> Component.translatable("commands.tag.list.multiple.empty", var1.size()), false);
+      } else if (tags.isEmpty()) {
+         source.sendSuccess(() -> Component.translatable("commands.tag.list.multiple.empty", targets.size()), false);
       } else {
-         var0.sendSuccess(() -> Component.translatable("commands.tag.list.multiple.success", var1.size(), var2.size(), ComponentUtils.formatList(var2)), false);
+         source.sendSuccess(() -> Component.translatable("commands.tag.list.multiple.success", targets.size(), tags.size(), ComponentUtils.formatList(tags)), false);
       }
 
-      return var2.size();
+      return tags.size();
    }
 }

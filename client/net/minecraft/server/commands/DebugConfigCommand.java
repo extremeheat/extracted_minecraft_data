@@ -4,6 +4,7 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
@@ -28,39 +29,39 @@ public class DebugConfigCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("debugconfig").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).then(Commands.literal("config").then(Commands.argument("target", EntityArgument.player()).executes((var0x) -> config((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayer(var0x, "target")))))).then(Commands.literal("unconfig").then(Commands.argument("target", UuidArgument.uuid()).suggests((var0x, var1x) -> SharedSuggestionProvider.suggest(getUuidsInConfig(((CommandSourceStack)var0x.getSource()).getServer()), var1x)).executes((var0x) -> unconfig((CommandSourceStack)var0x.getSource(), UuidArgument.getUuid(var0x, "target")))))).then(Commands.literal("dialog").then(Commands.argument("target", UuidArgument.uuid()).suggests((var0x, var1x) -> SharedSuggestionProvider.suggest(getUuidsInConfig(((CommandSourceStack)var0x.getSource()).getServer()), var1x)).then(Commands.argument("dialog", ResourceOrIdArgument.dialog(var1)).executes((var0x) -> showDialog((CommandSourceStack)var0x.getSource(), UuidArgument.getUuid(var0x, "target"), ResourceOrIdArgument.getDialog(var0x, "dialog")))))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final CommandBuildContext context) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("debugconfig").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).then(Commands.literal("config").then(Commands.argument("target", EntityArgument.player()).executes((c) -> config((CommandSourceStack)c.getSource(), EntityArgument.getPlayer(c, "target")))))).then(Commands.literal("unconfig").then(Commands.argument("target", UuidArgument.uuid()).suggests((c, p) -> SharedSuggestionProvider.suggest(getUuidsInConfig(((CommandSourceStack)c.getSource()).getServer()), p)).executes((c) -> unconfig((CommandSourceStack)c.getSource(), UuidArgument.getUuid(c, "target")))))).then(Commands.literal("dialog").then(Commands.argument("target", UuidArgument.uuid()).suggests((c, p) -> SharedSuggestionProvider.suggest(getUuidsInConfig(((CommandSourceStack)c.getSource()).getServer()), p)).then(Commands.argument("dialog", ResourceOrIdArgument.dialog(context)).executes((c) -> showDialog((CommandSourceStack)c.getSource(), UuidArgument.getUuid(c, "target"), ResourceOrIdArgument.getDialog(c, "dialog")))))));
    }
 
-   private static Iterable<String> getUuidsInConfig(MinecraftServer var0) {
-      HashSet var1 = new HashSet();
+   private static Iterable<String> getUuidsInConfig(final MinecraftServer server) {
+      Set<String> result = new HashSet();
 
-      for(Connection var3 : var0.getConnection().getConnections()) {
-         PacketListener var5 = var3.getPacketListener();
-         if (var5 instanceof ServerConfigurationPacketListenerImpl var4) {
-            var1.add(var4.getOwner().id().toString());
+      for(Connection connection : server.getConnection().getConnections()) {
+         PacketListener var5 = connection.getPacketListener();
+         if (var5 instanceof ServerConfigurationPacketListenerImpl configListener) {
+            result.add(configListener.getOwner().id().toString());
          }
       }
 
-      return var1;
+      return result;
    }
 
-   private static int config(CommandSourceStack var0, ServerPlayer var1) {
-      GameProfile var2 = var1.getGameProfile();
-      var1.connection.switchToConfig();
-      var0.sendSuccess(() -> {
-         String var10000 = var2.name();
-         return Component.literal("Switched player " + var10000 + "(" + String.valueOf(var2.id()) + ") to config mode");
+   private static int config(final CommandSourceStack source, final ServerPlayer target) {
+      GameProfile gameProfile = target.getGameProfile();
+      target.connection.switchToConfig();
+      source.sendSuccess(() -> {
+         String var10000 = gameProfile.name();
+         return Component.literal("Switched player " + var10000 + "(" + String.valueOf(gameProfile.id()) + ") to config mode");
       }, false);
       return 1;
    }
 
-   private static @Nullable ServerConfigurationPacketListenerImpl findConfigPlayer(MinecraftServer var0, UUID var1) {
-      for(Connection var3 : var0.getConnection().getConnections()) {
-         PacketListener var5 = var3.getPacketListener();
-         if (var5 instanceof ServerConfigurationPacketListenerImpl var4) {
-            if (var4.getOwner().id().equals(var1)) {
-               return var4;
+   private static @Nullable ServerConfigurationPacketListenerImpl findConfigPlayer(final MinecraftServer server, final UUID target) {
+      for(Connection connection : server.getConnection().getConnections()) {
+         PacketListener var5 = connection.getPacketListener();
+         if (var5 instanceof ServerConfigurationPacketListenerImpl configListener) {
+            if (configListener.getOwner().id().equals(target)) {
+               return configListener;
             }
          }
       }
@@ -68,24 +69,24 @@ public class DebugConfigCommand {
       return null;
    }
 
-   private static int unconfig(CommandSourceStack var0, UUID var1) {
-      ServerConfigurationPacketListenerImpl var2 = findConfigPlayer(var0.getServer(), var1);
-      if (var2 != null) {
-         var2.returnToWorld();
+   private static int unconfig(final CommandSourceStack source, final UUID target) {
+      ServerConfigurationPacketListenerImpl listener = findConfigPlayer(source.getServer(), target);
+      if (listener != null) {
+         listener.returnToWorld();
          return 1;
       } else {
-         var0.sendFailure(Component.literal("Can't find player to unconfig"));
+         source.sendFailure(Component.literal("Can't find player to unconfig"));
          return 0;
       }
    }
 
-   private static int showDialog(CommandSourceStack var0, UUID var1, Holder<Dialog> var2) {
-      ServerConfigurationPacketListenerImpl var3 = findConfigPlayer(var0.getServer(), var1);
-      if (var3 != null) {
-         var3.send(new ClientboundShowDialogPacket(var2));
+   private static int showDialog(final CommandSourceStack source, final UUID target, final Holder<Dialog> dialog) {
+      ServerConfigurationPacketListenerImpl listener = findConfigPlayer(source.getServer(), target);
+      if (listener != null) {
+         listener.send(new ClientboundShowDialogPacket(dialog));
          return 1;
       } else {
-         var0.sendFailure(Component.literal("Can't find player to talk to"));
+         source.sendFailure(Component.literal("Can't find player to talk to"));
          return 0;
       }
    }

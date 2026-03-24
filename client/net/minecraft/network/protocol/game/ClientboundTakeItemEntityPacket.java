@@ -11,32 +11,32 @@ public class ClientboundTakeItemEntityPacket implements Packet<ClientGamePacketL
    private final int playerId;
    private final int amount;
 
-   public ClientboundTakeItemEntityPacket(int var1, int var2, int var3) {
+   public ClientboundTakeItemEntityPacket(final int itemId, final int playerId, final int amount) {
       super();
-      this.itemId = var1;
-      this.playerId = var2;
-      this.amount = var3;
+      this.itemId = itemId;
+      this.playerId = playerId;
+      this.amount = amount;
    }
 
-   private ClientboundTakeItemEntityPacket(FriendlyByteBuf var1) {
+   private ClientboundTakeItemEntityPacket(final FriendlyByteBuf input) {
       super();
-      this.itemId = var1.readVarInt();
-      this.playerId = var1.readVarInt();
-      this.amount = var1.readVarInt();
+      this.itemId = input.readVarInt();
+      this.playerId = input.readVarInt();
+      this.amount = input.readVarInt();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeVarInt(this.itemId);
-      var1.writeVarInt(this.playerId);
-      var1.writeVarInt(this.amount);
+   private void write(final FriendlyByteBuf output) {
+      output.writeVarInt(this.itemId);
+      output.writeVarInt(this.playerId);
+      output.writeVarInt(this.amount);
    }
 
    public PacketType<ClientboundTakeItemEntityPacket> type() {
       return GamePacketTypes.CLIENTBOUND_TAKE_ITEM_ENTITY;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleTakeItemEntity(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleTakeItemEntity(this);
    }
 
    public int getItemId() {

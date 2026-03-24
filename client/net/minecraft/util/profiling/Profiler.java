@@ -14,35 +14,35 @@ public final class Profiler {
       super();
    }
 
-   public static Scope use(ProfilerFiller var0) {
-      startUsing(var0);
+   public static Scope use(final ProfilerFiller filler) {
+      startUsing(filler);
       return Profiler::stopUsing;
    }
 
-   private static void startUsing(ProfilerFiller var0) {
+   private static void startUsing(final ProfilerFiller filler) {
       if (ACTIVE.get() != null) {
          throw new IllegalStateException("Profiler is already active");
       } else {
-         ProfilerFiller var1 = decorateFiller(var0);
-         ACTIVE.set(var1);
+         ProfilerFiller active = decorateFiller(filler);
+         ACTIVE.set(active);
          ACTIVE_COUNT.incrementAndGet();
-         var1.startTick();
+         active.startTick();
       }
    }
 
    private static void stopUsing() {
-      ProfilerFiller var0 = (ProfilerFiller)ACTIVE.get();
-      if (var0 == null) {
+      ProfilerFiller active = (ProfilerFiller)ACTIVE.get();
+      if (active == null) {
          throw new IllegalStateException("Profiler was not active");
       } else {
          ACTIVE.remove();
          ACTIVE_COUNT.decrementAndGet();
-         var0.endTick();
+         active.endTick();
       }
    }
 
-   private static ProfilerFiller decorateFiller(ProfilerFiller var0) {
-      return ProfilerFiller.combine(getDefaultFiller(), var0);
+   private static ProfilerFiller decorateFiller(final ProfilerFiller filler) {
+      return ProfilerFiller.combine(getDefaultFiller(), filler);
    }
 
    public static ProfilerFiller get() {

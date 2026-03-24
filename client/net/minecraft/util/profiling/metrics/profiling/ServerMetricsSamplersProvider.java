@@ -28,54 +28,54 @@ public class ServerMetricsSamplersProvider implements MetricsSamplerProvider {
    private final Set<MetricSampler> samplers = new ObjectOpenHashSet();
    private final ProfilerSamplerAdapter samplerFactory = new ProfilerSamplerAdapter();
 
-   public ServerMetricsSamplersProvider(LongSupplier var1, boolean var2) {
+   public ServerMetricsSamplersProvider(final LongSupplier wallTimeSource, final boolean isDedicatedServer) {
       super();
-      this.samplers.add(tickTimeSampler(var1));
-      if (var2) {
+      this.samplers.add(tickTimeSampler(wallTimeSource));
+      if (isDedicatedServer) {
          this.samplers.addAll(runtimeIndependentSamplers());
       }
 
    }
 
    public static Set<MetricSampler> runtimeIndependentSamplers() {
-      ImmutableSet.Builder var0 = ImmutableSet.builder();
+      ImmutableSet.Builder<MetricSampler> result = ImmutableSet.builder();
 
       try {
-         CpuStats var1 = new CpuStats();
-         Stream var10000 = IntStream.range(0, var1.nrOfCpus).mapToObj((var1x) -> MetricSampler.create("cpu#" + var1x, MetricCategory.CPU, () -> var1.loadForCpu(var1x)));
-         Objects.requireNonNull(var0);
-         var10000.forEach(var0::add);
-      } catch (Throwable var2) {
-         LOGGER.warn("Failed to query cpu, no cpu stats will be recorded", var2);
+         CpuStats cpuStats = new CpuStats();
+         Stream var10000 = IntStream.range(0, cpuStats.nrOfCpus).mapToObj((i) -> MetricSampler.create("cpu#" + i, MetricCategory.CPU, () -> cpuStats.loadForCpu(i)));
+         Objects.requireNonNull(result);
+         var10000.forEach(result::add);
+      } catch (Throwable t) {
+         LOGGER.warn("Failed to query cpu, no cpu stats will be recorded", t);
       }
 
-      var0.add(MetricSampler.create("heap MiB", MetricCategory.JVM, () -> (double)SystemReport.sizeInMiB(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())));
-      var0.addAll(MetricsRegistry.INSTANCE.getRegisteredSamplers());
-      return var0.build();
+      result.add(MetricSampler.create("heap MiB", MetricCategory.JVM, () -> (double)SystemReport.sizeInMiB(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())));
+      result.addAll(MetricsRegistry.INSTANCE.getRegisteredSamplers());
+      return result.build();
    }
 
-   public Set<MetricSampler> samplers(Supplier<ProfileCollector> var1) {
-      this.samplers.addAll(this.samplerFactory.newSamplersFoundInProfiler(var1));
+   public Set<MetricSampler> samplers(final Supplier<ProfileCollector> profiler) {
+      this.samplers.addAll(this.samplerFactory.newSamplersFoundInProfiler(profiler));
       return this.samplers;
    }
 
-   public static MetricSampler tickTimeSampler(final LongSupplier var0) {
-      Stopwatch var1 = Stopwatch.createUnstarted(new Ticker() {
+   public static MetricSampler tickTimeSampler(final LongSupplier timeSource) {
+      Stopwatch stopwatch = Stopwatch.createUnstarted(new Ticker() {
          public long read() {
-            return var0.getAsLong();
+            return timeSource.getAsLong();
          }
       });
-      ToDoubleFunction var2 = (var0x) -> {
-         if (var0x.isRunning()) {
-            var0x.stop();
+      ToDoubleFunction<Stopwatch> timeSampler = (watch) -> {
+         if (watch.isRunning()) {
+            watch.stop();
          }
 
-         long var1 = var0x.elapsed(TimeUnit.NANOSECONDS);
-         var0x.reset();
-         return (double)var1;
+         long deltaTime = watch.elapsed(TimeUnit.NANOSECONDS);
+         watch.reset();
+         return (double)deltaTime;
       };
-      MetricSampler.ValueIncreasedByPercentage var3 = new MetricSampler.ValueIncreasedByPercentage(2.0F);
-      return MetricSampler.builder("ticktime", MetricCategory.TICK_LOOP, var2, var1).withBeforeTick(Stopwatch::start).withThresholdAlert(var3).build();
+      MetricSampler.ValueIncreasedByPercentage thresholdAlerter = new MetricSampler.ValueIncreasedByPercentage(2.0F);
+      return MetricSampler.builder("ticktime", MetricCategory.TICK_LOOP, timeSampler, stopwatch).withBeforeTick(Stopwatch::start).withThresholdAlert(thresholdAlerter).build();
    }
 
    static class CpuStats {
@@ -94,15 +94,15 @@ public class ServerMetricsSamplersProvider implements MetricsSamplerProvider {
          this.currentLoad = this.processor.getProcessorCpuLoadBetweenTicks(this.previousCpuLoadTick);
       }
 
-      public double loadForCpu(int var1) {
-         long var2 = System.currentTimeMillis();
-         if (this.lastPollMs == 0L || this.lastPollMs + 501L < var2) {
+      public double loadForCpu(final int i) {
+         long now = System.currentTimeMillis();
+         if (this.lastPollMs == 0L || this.lastPollMs + 501L < now) {
             this.currentLoad = this.processor.getProcessorCpuLoadBetweenTicks(this.previousCpuLoadTick);
             this.previousCpuLoadTick = this.processor.getProcessorCpuLoadTicks();
-            this.lastPollMs = var2;
+            this.lastPollMs = now;
          }
 
-         return this.currentLoad[var1] * 100.0;
+         return this.currentLoad[i] * 100.0;
       }
    }
 }

@@ -10,9 +10,8 @@ public record LanguageMetadataSection(Map<String, LanguageInfo> languages) {
    public static final Codec<LanguageMetadataSection> CODEC;
    public static final MetadataSectionType<LanguageMetadataSection> TYPE;
 
-   public LanguageMetadataSection(Map<String, LanguageInfo> var1) {
+   public LanguageMetadataSection {
       super();
-      this.languages = var1;
    }
 
    static {

@@ -16,26 +16,26 @@ public class SetEntityLookTarget {
       super();
    }
 
-   public static BehaviorControl<LivingEntity> create(MobCategory var0, float var1) {
-      return create((Predicate)((var1x) -> var0.equals(var1x.getType().getCategory())), var1);
+   public static BehaviorControl<LivingEntity> create(final MobCategory category, final float maxDist) {
+      return create((Predicate)((mob) -> category.equals(mob.getType().getCategory())), maxDist);
    }
 
-   public static OneShot<LivingEntity> create(EntityType<?> var0, float var1) {
-      return create((Predicate)((var1x) -> var0.equals(var1x.getType())), var1);
+   public static OneShot<LivingEntity> create(final EntityType<?> type, final float maxDist) {
+      return create((Predicate)((mob) -> mob.is(type)), maxDist);
    }
 
-   public static OneShot<LivingEntity> create(float var0) {
-      return create((Predicate)((var0x) -> true), var0);
+   public static OneShot<LivingEntity> create(final float maxDist) {
+      return create((Predicate)((mob) -> true), maxDist);
    }
 
-   public static OneShot<LivingEntity> create(Predicate<LivingEntity> var0, float var1) {
-      float var2 = var1 * var1;
-      return BehaviorBuilder.create((Function)((var2x) -> var2x.group(var2x.absent(MemoryModuleType.LOOK_TARGET), var2x.present(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)).apply(var2x, (var3, var4) -> (var5, var6, var7) -> {
-               Optional var9 = ((NearestVisibleLivingEntities)var2x.get(var4)).findClosest(var0.and((var2xx) -> var2xx.distanceToSqr(var6) <= (double)var2 && !var6.hasPassenger(var2xx)));
-               if (var9.isEmpty()) {
+   public static OneShot<LivingEntity> create(final Predicate<LivingEntity> predicate, final float maxDist) {
+      float maxDistSqr = maxDist * maxDist;
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.absent(MemoryModuleType.LOOK_TARGET), i.present(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)).apply(i, (lookTarget, nearestEntities) -> (level, body, timestamp) -> {
+               Optional<LivingEntity> target = ((NearestVisibleLivingEntities)i.get(nearestEntities)).findClosest(predicate.and((mob) -> mob.distanceToSqr(body) <= (double)maxDistSqr && !body.hasPassenger(mob)));
+               if (target.isEmpty()) {
                   return false;
                } else {
-                  var3.set(new EntityTracker((Entity)var9.get(), true));
+                  lookTarget.set(new EntityTracker((Entity)target.get(), true));
                   return true;
                }
             })));

@@ -9,21 +9,18 @@ import net.minecraft.world.phys.Vec3;
 public record WorldCoordinates(WorldCoordinate x, WorldCoordinate y, WorldCoordinate z) implements Coordinates {
    public static final WorldCoordinates ZERO_ROTATION = absolute(new Vec2(0.0F, 0.0F));
 
-   public WorldCoordinates(WorldCoordinate var1, WorldCoordinate var2, WorldCoordinate var3) {
+   public WorldCoordinates {
       super();
-      this.x = var1;
-      this.y = var2;
-      this.z = var3;
    }
 
-   public Vec3 getPosition(CommandSourceStack var1) {
-      Vec3 var2 = var1.getPosition();
-      return new Vec3(this.x.get(var2.x), this.y.get(var2.y), this.z.get(var2.z));
+   public Vec3 getPosition(final CommandSourceStack sender) {
+      Vec3 pos = sender.getPosition();
+      return new Vec3(this.x.get(pos.x), this.y.get(pos.y), this.z.get(pos.z));
    }
 
-   public Vec2 getRotation(CommandSourceStack var1) {
-      Vec2 var2 = var1.getRotation();
-      return new Vec2((float)this.x.get((double)var2.x), (float)this.y.get((double)var2.y));
+   public Vec2 getRotation(final CommandSourceStack sender) {
+      Vec2 rot = sender.getRotation();
+      return new Vec2((float)this.x.get((double)rot.x), (float)this.y.get((double)rot.y));
    }
 
    public boolean isXRelative() {
@@ -38,51 +35,51 @@ public record WorldCoordinates(WorldCoordinate x, WorldCoordinate y, WorldCoordi
       return this.z.isRelative();
    }
 
-   public static WorldCoordinates parseInt(StringReader var0) throws CommandSyntaxException {
-      int var1 = var0.getCursor();
-      WorldCoordinate var2 = WorldCoordinate.parseInt(var0);
-      if (var0.canRead() && var0.peek() == ' ') {
-         var0.skip();
-         WorldCoordinate var3 = WorldCoordinate.parseInt(var0);
-         if (var0.canRead() && var0.peek() == ' ') {
-            var0.skip();
-            WorldCoordinate var4 = WorldCoordinate.parseInt(var0);
-            return new WorldCoordinates(var2, var3, var4);
+   public static WorldCoordinates parseInt(final StringReader reader) throws CommandSyntaxException {
+      int start = reader.getCursor();
+      WorldCoordinate x = WorldCoordinate.parseInt(reader);
+      if (reader.canRead() && reader.peek() == ' ') {
+         reader.skip();
+         WorldCoordinate y = WorldCoordinate.parseInt(reader);
+         if (reader.canRead() && reader.peek() == ' ') {
+            reader.skip();
+            WorldCoordinate z = WorldCoordinate.parseInt(reader);
+            return new WorldCoordinates(x, y, z);
          } else {
-            var0.setCursor(var1);
-            throw Vec3Argument.ERROR_NOT_COMPLETE.createWithContext(var0);
+            reader.setCursor(start);
+            throw Vec3Argument.ERROR_NOT_COMPLETE.createWithContext(reader);
          }
       } else {
-         var0.setCursor(var1);
-         throw Vec3Argument.ERROR_NOT_COMPLETE.createWithContext(var0);
+         reader.setCursor(start);
+         throw Vec3Argument.ERROR_NOT_COMPLETE.createWithContext(reader);
       }
    }
 
-   public static WorldCoordinates parseDouble(StringReader var0, boolean var1) throws CommandSyntaxException {
-      int var2 = var0.getCursor();
-      WorldCoordinate var3 = WorldCoordinate.parseDouble(var0, var1);
-      if (var0.canRead() && var0.peek() == ' ') {
-         var0.skip();
-         WorldCoordinate var4 = WorldCoordinate.parseDouble(var0, false);
-         if (var0.canRead() && var0.peek() == ' ') {
-            var0.skip();
-            WorldCoordinate var5 = WorldCoordinate.parseDouble(var0, var1);
-            return new WorldCoordinates(var3, var4, var5);
+   public static WorldCoordinates parseDouble(final StringReader reader, final boolean centerCorrect) throws CommandSyntaxException {
+      int start = reader.getCursor();
+      WorldCoordinate x = WorldCoordinate.parseDouble(reader, centerCorrect);
+      if (reader.canRead() && reader.peek() == ' ') {
+         reader.skip();
+         WorldCoordinate y = WorldCoordinate.parseDouble(reader, false);
+         if (reader.canRead() && reader.peek() == ' ') {
+            reader.skip();
+            WorldCoordinate z = WorldCoordinate.parseDouble(reader, centerCorrect);
+            return new WorldCoordinates(x, y, z);
          } else {
-            var0.setCursor(var2);
-            throw Vec3Argument.ERROR_NOT_COMPLETE.createWithContext(var0);
+            reader.setCursor(start);
+            throw Vec3Argument.ERROR_NOT_COMPLETE.createWithContext(reader);
          }
       } else {
-         var0.setCursor(var2);
-         throw Vec3Argument.ERROR_NOT_COMPLETE.createWithContext(var0);
+         reader.setCursor(start);
+         throw Vec3Argument.ERROR_NOT_COMPLETE.createWithContext(reader);
       }
    }
 
-   public static WorldCoordinates absolute(double var0, double var2, double var4) {
-      return new WorldCoordinates(new WorldCoordinate(false, var0), new WorldCoordinate(false, var2), new WorldCoordinate(false, var4));
+   public static WorldCoordinates absolute(final double x, final double y, final double z) {
+      return new WorldCoordinates(new WorldCoordinate(false, x), new WorldCoordinate(false, y), new WorldCoordinate(false, z));
    }
 
-   public static WorldCoordinates absolute(Vec2 var0) {
-      return new WorldCoordinates(new WorldCoordinate(false, (double)var0.x), new WorldCoordinate(false, (double)var0.y), new WorldCoordinate(true, 0.0));
+   public static WorldCoordinates absolute(final Vec2 rotation) {
+      return new WorldCoordinates(new WorldCoordinate(false, (double)rotation.x), new WorldCoordinate(false, (double)rotation.y), new WorldCoordinate(true, 0.0));
    }
 }

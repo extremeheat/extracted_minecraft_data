@@ -17,8 +17,8 @@ public record ServerboundAcceptCodeOfConductPacket() implements Packet<ServerCon
       return ConfigurationPacketTypes.SERVERBOUND_ACCEPT_CODE_OF_CONDUCT;
    }
 
-   public void handle(ServerConfigurationPacketListener var1) {
-      var1.handleAcceptCodeOfConduct(this);
+   public void handle(final ServerConfigurationPacketListener listener) {
+      listener.handleAcceptCodeOfConduct(this);
    }
 
    static {

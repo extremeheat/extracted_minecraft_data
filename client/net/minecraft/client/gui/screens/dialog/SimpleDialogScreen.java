@@ -8,18 +8,18 @@ import net.minecraft.server.dialog.SimpleDialog;
 import org.jspecify.annotations.Nullable;
 
 public class SimpleDialogScreen<T extends SimpleDialog> extends DialogScreen<T> {
-   public SimpleDialogScreen(@Nullable Screen var1, T var2, DialogConnectionAccess var3) {
-      super(var1, var2, var3);
+   public SimpleDialogScreen(final @Nullable Screen previousScreen, final T dialog, final DialogConnectionAccess connectionAccess) {
+      super(previousScreen, dialog, connectionAccess);
    }
 
-   protected void updateHeaderAndFooter(HeaderAndFooterLayout var1, DialogControlSet var2, T var3, DialogConnectionAccess var4) {
-      super.updateHeaderAndFooter(var1, var2, var3, var4);
-      LinearLayout var5 = LinearLayout.horizontal().spacing(8);
+   protected void updateHeaderAndFooter(final HeaderAndFooterLayout layout, final DialogControlSet controlSet, final T dialog, final DialogConnectionAccess connectionAccess) {
+      super.updateHeaderAndFooter(layout, controlSet, dialog, connectionAccess);
+      LinearLayout buttonLayout = LinearLayout.horizontal().spacing(8);
 
-      for(ActionButton var7 : var3.mainActions()) {
-         var5.addChild(var2.createActionButton(var7).build());
+      for(ActionButton action : dialog.mainActions()) {
+         buttonLayout.addChild(controlSet.createActionButton(action).build());
       }
 
-      var1.addToFooter(var5);
+      layout.addToFooter(buttonLayout);
    }
 }

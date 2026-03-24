@@ -14,42 +14,42 @@ public class HashMapPalette<T> implements Palette<T> {
    private final CrudeIncrementalIntIdentityHashBiMap<T> values;
    private final int bits;
 
-   public HashMapPalette(int var1, List<T> var2) {
-      this(var1);
+   public HashMapPalette(final int bits, final List<T> values) {
+      this(bits);
       CrudeIncrementalIntIdentityHashBiMap var10001 = this.values;
       Objects.requireNonNull(var10001);
-      var2.forEach(var10001::add);
+      values.forEach(var10001::add);
    }
 
-   public HashMapPalette(int var1) {
-      this(var1, CrudeIncrementalIntIdentityHashBiMap.create(1 << var1));
+   public HashMapPalette(final int bits) {
+      this(bits, CrudeIncrementalIntIdentityHashBiMap.create(1 << bits));
    }
 
-   private HashMapPalette(int var1, CrudeIncrementalIntIdentityHashBiMap<T> var2) {
+   private HashMapPalette(final int bits, final CrudeIncrementalIntIdentityHashBiMap<T> values) {
       super();
-      this.bits = var1;
-      this.values = var2;
+      this.bits = bits;
+      this.values = values;
    }
 
-   public static <A> Palette<A> create(int var0, List<A> var1) {
-      return new HashMapPalette<A>(var0, var1);
+   public static <A> Palette<A> create(final int bits, final List<A> paletteEntries) {
+      return new HashMapPalette<A>(bits, paletteEntries);
    }
 
-   public int idFor(T var1, PaletteResize<T> var2) {
-      int var3 = this.values.getId(var1);
-      if (var3 == -1) {
-         var3 = this.values.add(var1);
-         if (var3 >= 1 << this.bits) {
-            var3 = var2.onResize(this.bits + 1, var1);
+   public int idFor(final T value, final PaletteResize<T> resizeHandler) {
+      int id = this.values.getId(value);
+      if (id == -1) {
+         id = this.values.add(value);
+         if (id >= 1 << this.bits) {
+            id = resizeHandler.onResize(this.bits + 1, value);
          }
       }
 
-      return var3;
+      return id;
    }
 
-   public boolean maybeHas(Predicate<T> var1) {
-      for(int var2 = 0; var2 < this.getSize(); ++var2) {
-         if (var1.test(this.values.byId(var2))) {
+   public boolean maybeHas(final Predicate<T> predicate) {
+      for(int i = 0; i < this.getSize(); ++i) {
+         if (predicate.test(this.values.byId(i))) {
             return true;
          }
       }
@@ -57,51 +57,51 @@ public class HashMapPalette<T> implements Palette<T> {
       return false;
    }
 
-   public T valueFor(int var1) {
-      Object var2 = this.values.byId(var1);
-      if (var2 == null) {
-         throw new MissingPaletteEntryException(var1);
+   public T valueFor(final int index) {
+      T value = this.values.byId(index);
+      if (value == null) {
+         throw new MissingPaletteEntryException(index);
       } else {
-         return (T)var2;
+         return value;
       }
    }
 
-   public void read(FriendlyByteBuf var1, IdMap<T> var2) {
+   public void read(final FriendlyByteBuf buffer, final IdMap<T> globalMap) {
       this.values.clear();
-      int var3 = var1.readVarInt();
+      int size = buffer.readVarInt();
 
-      for(int var4 = 0; var4 < var3; ++var4) {
-         this.values.add(var2.byIdOrThrow(var1.readVarInt()));
+      for(int i = 0; i < size; ++i) {
+         this.values.add(globalMap.byIdOrThrow(buffer.readVarInt()));
       }
 
    }
 
-   public void write(FriendlyByteBuf var1, IdMap<T> var2) {
-      int var3 = this.getSize();
-      var1.writeVarInt(var3);
+   public void write(final FriendlyByteBuf buffer, final IdMap<T> globalMap) {
+      int size = this.getSize();
+      buffer.writeVarInt(size);
 
-      for(int var4 = 0; var4 < var3; ++var4) {
-         var1.writeVarInt(var2.getId(this.values.byId(var4)));
+      for(int i = 0; i < size; ++i) {
+         buffer.writeVarInt(globalMap.getId(this.values.byId(i)));
       }
 
    }
 
-   public int getSerializedSize(IdMap<T> var1) {
-      int var2 = VarInt.getByteSize(this.getSize());
+   public int getSerializedSize(final IdMap<T> globalMap) {
+      int size = VarInt.getByteSize(this.getSize());
 
-      for(int var3 = 0; var3 < this.getSize(); ++var3) {
-         var2 += VarInt.getByteSize(var1.getId(this.values.byId(var3)));
+      for(int i = 0; i < this.getSize(); ++i) {
+         size += VarInt.getByteSize(globalMap.getId(this.values.byId(i)));
       }
 
-      return var2;
+      return size;
    }
 
    public List<T> getEntries() {
-      ArrayList var1 = new ArrayList();
+      ArrayList<T> list = new ArrayList();
       Iterator var10000 = this.values.iterator();
-      Objects.requireNonNull(var1);
-      var10000.forEachRemaining(var1::add);
-      return var1;
+      Objects.requireNonNull(list);
+      var10000.forEachRemaining(list::add);
+      return list;
    }
 
    public int getSize() {

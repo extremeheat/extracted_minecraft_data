@@ -11,33 +11,33 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.Difficulty;
 
 public class DifficultyCommand {
-   private static final DynamicCommandExceptionType ERROR_ALREADY_DIFFICULT = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.difficulty.failure", var0));
+   private static final DynamicCommandExceptionType ERROR_ALREADY_SAME_DIFFICULTY = new DynamicCommandExceptionType((difficulty) -> Component.translatableEscape("commands.difficulty.failure", difficulty));
 
    public DifficultyCommand() {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      LiteralArgumentBuilder var1 = Commands.literal("difficulty");
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      LiteralArgumentBuilder<CommandSourceStack> command = Commands.literal("difficulty");
 
-      for(Difficulty var5 : Difficulty.values()) {
-         var1.then(Commands.literal(var5.getKey()).executes((var1x) -> setDifficulty((CommandSourceStack)var1x.getSource(), var5)));
+      for(Difficulty difficulty : Difficulty.values()) {
+         command.then(Commands.literal(difficulty.getSerializedName()).executes((c) -> setDifficulty((CommandSourceStack)c.getSource(), difficulty)));
       }
 
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)var1.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).executes((var0x) -> {
-         Difficulty var1 = ((CommandSourceStack)var0x.getSource()).getLevel().getDifficulty();
-         ((CommandSourceStack)var0x.getSource()).sendSuccess(() -> Component.translatable("commands.difficulty.query", var1.getDisplayName()), false);
-         return var1.getId();
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)command.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).executes((c) -> {
+         Difficulty difficulty = ((CommandSourceStack)c.getSource()).getLevel().getDifficulty();
+         ((CommandSourceStack)c.getSource()).sendSuccess(() -> Component.translatable("commands.difficulty.query", difficulty.getDisplayName()), false);
+         return difficulty.getId();
       }));
    }
 
-   public static int setDifficulty(CommandSourceStack var0, Difficulty var1) throws CommandSyntaxException {
-      MinecraftServer var2 = var0.getServer();
-      if (var2.getWorldData().getDifficulty() == var1) {
-         throw ERROR_ALREADY_DIFFICULT.create(var1.getKey());
+   public static int setDifficulty(final CommandSourceStack source, final Difficulty difficulty) throws CommandSyntaxException {
+      MinecraftServer server = source.getServer();
+      if (server.getWorldData().getDifficulty() == difficulty) {
+         throw ERROR_ALREADY_SAME_DIFFICULTY.create(difficulty.getSerializedName());
       } else {
-         var2.setDifficulty(var1, true);
-         var0.sendSuccess(() -> Component.translatable("commands.difficulty.success", var1.getDisplayName()), true);
+         server.setDifficulty(difficulty, true);
+         source.sendSuccess(() -> Component.translatable("commands.difficulty.success", difficulty.getDisplayName()), true);
          return 0;
       }
    }

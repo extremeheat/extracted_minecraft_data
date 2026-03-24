@@ -8,11 +8,11 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 public interface ContainerSingleItem extends Container {
    ItemStack getTheItem();
 
-   default ItemStack splitTheItem(int var1) {
-      return this.getTheItem().split(var1);
+   default ItemStack splitTheItem(final int count) {
+      return this.getTheItem().split(count);
    }
 
-   void setTheItem(ItemStack var1);
+   void setTheItem(final ItemStack itemStack);
 
    default ItemStack removeTheItem() {
       return this.splitTheItem(this.getMaxStackSize());
@@ -30,21 +30,21 @@ public interface ContainerSingleItem extends Container {
       this.removeTheItem();
    }
 
-   default ItemStack removeItemNoUpdate(int var1) {
-      return this.removeItem(var1, this.getMaxStackSize());
+   default ItemStack removeItemNoUpdate(final int slot) {
+      return this.removeItem(slot, this.getMaxStackSize());
    }
 
-   default ItemStack getItem(int var1) {
-      return var1 == 0 ? this.getTheItem() : ItemStack.EMPTY;
+   default ItemStack getItem(final int slot) {
+      return slot == 0 ? this.getTheItem() : ItemStack.EMPTY;
    }
 
-   default ItemStack removeItem(int var1, int var2) {
-      return var1 != 0 ? ItemStack.EMPTY : this.splitTheItem(var2);
+   default ItemStack removeItem(final int slot, final int count) {
+      return slot != 0 ? ItemStack.EMPTY : this.splitTheItem(count);
    }
 
-   default void setItem(int var1, ItemStack var2) {
-      if (var1 == 0) {
-         this.setTheItem(var2);
+   default void setItem(final int slot, final ItemStack itemStack) {
+      if (slot == 0) {
+         this.setTheItem(itemStack);
       }
 
    }
@@ -52,8 +52,8 @@ public interface ContainerSingleItem extends Container {
    public interface BlockContainerSingleItem extends ContainerSingleItem {
       BlockEntity getContainerBlockEntity();
 
-      default boolean stillValid(Player var1) {
-         return Container.stillValidBlockEntity(this.getContainerBlockEntity(), var1);
+      default boolean stillValid(final Player player) {
+         return Container.stillValidBlockEntity(this.getContainerBlockEntity(), player);
       }
    }
 }

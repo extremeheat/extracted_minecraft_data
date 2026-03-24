@@ -4,25 +4,29 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.model.animal.golem.IronGolemModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.renderer.block.BlockModelResolver;
+import net.minecraft.client.renderer.block.model.BlockDisplayContext;
 import net.minecraft.client.renderer.entity.layers.IronGolemCrackinessLayer;
 import net.minecraft.client.renderer.entity.layers.IronGolemFlowerLayer;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.IronGolemRenderState;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.golem.IronGolem;
+import net.minecraft.world.level.block.Blocks;
 import org.joml.Quaternionfc;
 
 public class IronGolemRenderer extends MobRenderer<IronGolem, IronGolemRenderState, IronGolemModel> {
+   public static final BlockDisplayContext BLOCK_DISPLAY_CONTEXT = BlockDisplayContext.create();
    private static final Identifier GOLEM_LOCATION = Identifier.withDefaultNamespace("textures/entity/iron_golem/iron_golem.png");
+   private final BlockModelResolver blockModelResolver;
 
-   public IronGolemRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new IronGolemModel(var1.bakeLayer(ModelLayers.IRON_GOLEM)), 0.7F);
+   public IronGolemRenderer(final EntityRendererProvider.Context context) {
+      super(context, new IronGolemModel(context.bakeLayer(ModelLayers.IRON_GOLEM)), 0.7F);
+      this.blockModelResolver = context.getBlockModelResolver();
       this.addLayer(new IronGolemCrackinessLayer(this));
       this.addLayer(new IronGolemFlowerLayer(this));
    }
 
-   public Identifier getTextureLocation(IronGolemRenderState var1) {
+   public Identifier getTextureLocation(final IronGolemRenderState state) {
       return GOLEM_LOCATION;
    }
 
@@ -30,30 +34,26 @@ public class IronGolemRenderer extends MobRenderer<IronGolem, IronGolemRenderSta
       return new IronGolemRenderState();
    }
 
-   public void extractRenderState(IronGolem var1, IronGolemRenderState var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      var2.attackTicksRemaining = (float)var1.getAttackAnimationTick() > 0.0F ? (float)var1.getAttackAnimationTick() - var3 : 0.0F;
-      var2.offerFlowerTick = var1.getOfferFlowerTick();
-      var2.crackiness = var1.getCrackiness();
-   }
-
-   protected void setupRotations(IronGolemRenderState var1, PoseStack var2, float var3, float var4) {
-      super.setupRotations(var1, var2, var3, var4);
-      if (!((double)var1.walkAnimationSpeed < 0.01)) {
-         float var5 = 13.0F;
-         float var6 = var1.walkAnimationPos + 6.0F;
-         float var7 = (Math.abs(var6 % 13.0F - 6.5F) - 3.25F) / 3.25F;
-         var2.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(6.5F * var7));
+   public void extractRenderState(final IronGolem entity, final IronGolemRenderState state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      state.attackTicksRemaining = (float)entity.getAttackAnimationTick() > 0.0F ? (float)entity.getAttackAnimationTick() - partialTicks : 0.0F;
+      state.offerFlowerTick = entity.getOfferFlowerTick();
+      if (state.offerFlowerTick > 0) {
+         this.blockModelResolver.update(state.flowerBlock, Blocks.POPPY.defaultBlockState(), BLOCK_DISPLAY_CONTEXT);
+      } else {
+         state.flowerBlock.clear();
       }
+
+      state.crackiness = entity.getCrackiness();
    }
 
-   // $FF: synthetic method
-   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
-      return this.getTextureLocation((IronGolemRenderState)var1);
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
+   protected void setupRotations(final IronGolemRenderState state, final PoseStack poseStack, final float bodyRot, final float entityScale) {
+      super.setupRotations(state, poseStack, bodyRot, entityScale);
+      if (!((double)state.walkAnimationSpeed < 0.01)) {
+         float p = 13.0F;
+         float wp = state.walkAnimationPos + 6.0F;
+         float triangleWave = (Math.abs(wp % 13.0F - 6.5F) - 3.25F) / 3.25F;
+         poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(6.5F * triangleWave));
+      }
    }
 }

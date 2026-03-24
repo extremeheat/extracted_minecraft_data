@@ -14,8 +14,8 @@ public record BundleFullness() implements RangeSelectItemModelProperty {
       super();
    }
 
-   public float get(ItemStack var1, @Nullable ClientLevel var2, @Nullable ItemOwner var3, int var4) {
-      return BundleItem.getFullnessDisplay(var1);
+   public float get(final ItemStack itemStack, final @Nullable ClientLevel level, final @Nullable ItemOwner owner, final int seed) {
+      return BundleItem.getFullnessDisplay(itemStack);
    }
 
    public MapCodec<BundleFullness> type() {

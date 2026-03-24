@@ -26,25 +26,25 @@ public class TrialSpawnerBlock extends BaseEntityBlock {
       return CODEC;
    }
 
-   public TrialSpawnerBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public TrialSpawnerBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(STATE, TrialSpawnerState.INACTIVE)).setValue(OMINOUS, false));
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(STATE, OMINOUS);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(STATE, OMINOUS);
    }
 
-   public @Nullable BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new TrialSpawnerBlockEntity(var1, var2);
+   public @Nullable BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      return new TrialSpawnerBlockEntity(worldPosition, blockState);
    }
 
-   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
+   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(final Level level, final BlockState blockState, final BlockEntityType<T> type) {
       BlockEntityTicker var10000;
-      if (var1 instanceof ServerLevel var4) {
-         var10000 = createTickerHelper(var3, BlockEntityType.TRIAL_SPAWNER, (var1x, var2x, var3x, var4x) -> var4x.getTrialSpawner().tickServer(var4, var2x, (Boolean)var3x.getOptionalValue(BlockStateProperties.OMINOUS).orElse(false)));
+      if (level instanceof ServerLevel serverLevel) {
+         var10000 = createTickerHelper(type, BlockEntityType.TRIAL_SPAWNER, (innerLevel, pos, state, entity) -> entity.getTrialSpawner().tickServer(serverLevel, pos, (Boolean)state.getOptionalValue(BlockStateProperties.OMINOUS).orElse(false)));
       } else {
-         var10000 = createTickerHelper(var3, BlockEntityType.TRIAL_SPAWNER, (var0, var1x, var2x, var3x) -> var3x.getTrialSpawner().tickClient(var0, var1x, (Boolean)var2x.getOptionalValue(BlockStateProperties.OMINOUS).orElse(false)));
+         var10000 = createTickerHelper(type, BlockEntityType.TRIAL_SPAWNER, (innerLevel, pos, state, entity) -> entity.getTrialSpawner().tickClient(innerLevel, pos, (Boolean)state.getOptionalValue(BlockStateProperties.OMINOUS).orElse(false)));
       }
 
       return var10000;

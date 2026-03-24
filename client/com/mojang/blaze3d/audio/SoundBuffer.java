@@ -11,11 +11,13 @@ public class SoundBuffer {
    private final AudioFormat format;
    private boolean hasAlBuffer;
    private int alBuffer;
+   private final int size;
 
-   public SoundBuffer(ByteBuffer var1, AudioFormat var2) {
+   public SoundBuffer(final ByteBuffer data, final AudioFormat format) {
       super();
-      this.data = var1;
-      this.format = var2;
+      this.data = data;
+      this.format = format;
+      this.size = data.limit();
    }
 
    OptionalInt getAlBuffer() {
@@ -24,19 +26,19 @@ public class SoundBuffer {
             return OptionalInt.empty();
          }
 
-         int var1 = OpenAlUtil.audioFormatToOpenAl(this.format);
-         int[] var2 = new int[1];
-         AL10.alGenBuffers(var2);
+         int audioFormat = OpenAlUtil.audioFormatToOpenAl(this.format);
+         int[] intBuffer = new int[1];
+         AL10.alGenBuffers(intBuffer);
          if (OpenAlUtil.checkALError("Creating buffer")) {
             return OptionalInt.empty();
          }
 
-         AL10.alBufferData(var2[0], var1, this.data, (int)this.format.getSampleRate());
+         AL10.alBufferData(intBuffer[0], audioFormat, this.data, (int)this.format.getSampleRate());
          if (OpenAlUtil.checkALError("Assigning buffer data")) {
             return OptionalInt.empty();
          }
 
-         this.alBuffer = var2[0];
+         this.alBuffer = intBuffer[0];
          this.hasAlBuffer = true;
          this.data = null;
       }
@@ -56,8 +58,20 @@ public class SoundBuffer {
    }
 
    public OptionalInt releaseAlBuffer() {
-      OptionalInt var1 = this.getAlBuffer();
+      OptionalInt result = this.getAlBuffer();
       this.hasAlBuffer = false;
-      return var1;
+      return result;
+   }
+
+   public AudioFormat format() {
+      return this.format;
+   }
+
+   public int size() {
+      return this.size;
+   }
+
+   public boolean isValid() {
+      return this.data != null || this.hasAlBuffer;
    }
 }

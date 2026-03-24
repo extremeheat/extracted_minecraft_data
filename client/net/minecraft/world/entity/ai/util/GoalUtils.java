@@ -13,39 +13,39 @@ public class GoalUtils {
       super();
    }
 
-   public static boolean hasGroundPathNavigation(Mob var0) {
-      return var0.getNavigation().canNavigateGround();
+   public static boolean hasGroundPathNavigation(final Mob mob) {
+      return mob.getNavigation().canNavigateGround();
    }
 
-   public static boolean mobRestricted(PathfinderMob var0, double var1) {
-      return var0.hasHome() && var0.getHomePosition().closerToCenterThan(var0.position(), (double)var0.getHomeRadius() + var1 + 1.0);
+   public static boolean mobRestricted(final PathfinderMob mob, final double horizontalDist) {
+      return mob.hasHome() && mob.getHomePosition().closerToCenterThan(mob.position(), (double)mob.getHomeRadius() + horizontalDist + 1.0);
    }
 
-   public static boolean isOutsideLimits(BlockPos var0, PathfinderMob var1) {
-      return var1.level().isOutsideBuildHeight(var0.getY());
+   public static boolean isOutsideLimits(final BlockPos pos, final PathfinderMob mob) {
+      return mob.level().isOutsideBuildHeight(pos.getY());
    }
 
-   public static boolean isRestricted(boolean var0, PathfinderMob var1, BlockPos var2) {
-      return var0 && !var1.isWithinHome(var2);
+   public static boolean isRestricted(final boolean restrict, final PathfinderMob mob, final BlockPos pos) {
+      return restrict && !mob.isWithinHome(pos);
    }
 
-   public static boolean isRestricted(boolean var0, PathfinderMob var1, Vec3 var2) {
-      return var0 && !var1.isWithinHome(var2);
+   public static boolean isRestricted(final boolean restrict, final PathfinderMob mob, final Vec3 pos) {
+      return restrict && !mob.isWithinHome(pos);
    }
 
-   public static boolean isNotStable(PathNavigation var0, BlockPos var1) {
-      return !var0.isStableDestination(var1);
+   public static boolean isNotStable(final PathNavigation navigation, final BlockPos pos) {
+      return !navigation.isStableDestination(pos);
    }
 
-   public static boolean isWater(PathfinderMob var0, BlockPos var1) {
-      return var0.level().getFluidState(var1).is(FluidTags.WATER);
+   public static boolean isWater(final PathfinderMob mob, final BlockPos pos) {
+      return mob.level().getFluidState(pos).is(FluidTags.WATER);
    }
 
-   public static boolean hasMalus(PathfinderMob var0, BlockPos var1) {
-      return var0.getPathfindingMalus(WalkNodeEvaluator.getPathTypeStatic((Mob)var0, (BlockPos)var1)) != 0.0F;
+   public static boolean hasMalus(final PathfinderMob mob, final BlockPos pos) {
+      return mob.getPathfindingMalus(WalkNodeEvaluator.getPathTypeStatic((Mob)mob, (BlockPos)pos)) != 0.0F;
    }
 
-   public static boolean isSolid(PathfinderMob var0, BlockPos var1) {
-      return var0.level().getBlockState(var1).isSolid();
+   public static boolean isSolid(final PathfinderMob mob, final BlockPos pos) {
+      return mob.level().getBlockState(pos).isSolid();
    }
 }

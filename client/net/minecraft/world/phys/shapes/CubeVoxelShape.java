@@ -5,16 +5,16 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 
 public final class CubeVoxelShape extends VoxelShape {
-   protected CubeVoxelShape(DiscreteVoxelShape var1) {
-      super(var1);
+   protected CubeVoxelShape(final DiscreteVoxelShape shape) {
+      super(shape);
    }
 
-   public DoubleList getCoords(Direction.Axis var1) {
-      return new CubePointRange(this.shape.getSize(var1));
+   public DoubleList getCoords(final Direction.Axis axis) {
+      return new CubePointRange(this.shape.getSize(axis));
    }
 
-   protected int findIndex(Direction.Axis var1, double var2) {
-      int var4 = this.shape.getSize(var1);
-      return Mth.floor(Mth.clamp(var2 * (double)var4, -1.0, (double)var4));
+   protected int findIndex(final Direction.Axis axis, final double coord) {
+      int size = this.shape.getSize(axis);
+      return Mth.floor(Mth.clamp(coord * (double)size, -1.0, (double)size));
    }
 }

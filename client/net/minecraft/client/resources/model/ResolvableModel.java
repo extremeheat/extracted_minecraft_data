@@ -3,9 +3,9 @@ package net.minecraft.client.resources.model;
 import net.minecraft.resources.Identifier;
 
 public interface ResolvableModel {
-   void resolveDependencies(Resolver var1);
+   void resolveDependencies(Resolver resolver);
 
    public interface Resolver {
-      void markDependency(Identifier var1);
+      void markDependency(Identifier id);
    }
 }

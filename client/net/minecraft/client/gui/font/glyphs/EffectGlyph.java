@@ -3,5 +3,5 @@ package net.minecraft.client.gui.font.glyphs;
 import net.minecraft.client.gui.font.TextRenderable;
 
 public interface EffectGlyph {
-   TextRenderable createEffect(float var1, float var2, float var3, float var4, float var5, int var6, int var7, float var8);
+   TextRenderable createEffect(float x0, float y0, float x1, float y1, float depth, int color, int shadowColor, float shadowOffset);
 }

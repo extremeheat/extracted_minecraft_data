@@ -20,33 +20,33 @@ public class TryFindLand {
       super();
    }
 
-   public static BehaviorControl<PathfinderMob> create(int var0, float var1) {
-      MutableLong var2 = new MutableLong(0L);
-      return BehaviorBuilder.create((Function)((var3) -> var3.group(var3.absent(MemoryModuleType.ATTACK_TARGET), var3.absent(MemoryModuleType.WALK_TARGET), var3.registered(MemoryModuleType.LOOK_TARGET)).apply(var3, (var3x, var4, var5) -> (var5x, var6, var7) -> {
-               if (!var5x.getFluidState(var6.blockPosition()).is(FluidTags.WATER)) {
+   public static BehaviorControl<PathfinderMob> create(final int range, final float speedModifier) {
+      MutableLong nextOkStartTime = new MutableLong(0L);
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.absent(MemoryModuleType.ATTACK_TARGET), i.absent(MemoryModuleType.WALK_TARGET), i.registered(MemoryModuleType.LOOK_TARGET)).apply(i, (attackTarget, walkTarget, lookTarget) -> (level, body, timestamp) -> {
+               if (!level.getFluidState(body.blockPosition()).is(FluidTags.WATER)) {
                   return false;
-               } else if (var7 < var2.longValue()) {
-                  var2.setValue(var7 + 60L);
+               } else if (timestamp < nextOkStartTime.longValue()) {
+                  nextOkStartTime.setValue(timestamp + 60L);
                   return true;
                } else {
-                  BlockPos var9 = var6.blockPosition();
-                  BlockPos.MutableBlockPos var10 = new BlockPos.MutableBlockPos();
-                  CollisionContext var11 = CollisionContext.of(var6);
+                  BlockPos bodyBlockPos = body.blockPosition();
+                  BlockPos.MutableBlockPos belowPos = new BlockPos.MutableBlockPos();
+                  CollisionContext context = CollisionContext.of(body);
 
-                  for(BlockPos var13 : BlockPos.withinManhattan(var9, var0, var0, var0)) {
-                     if (var13.getX() != var9.getX() || var13.getZ() != var9.getZ()) {
-                        BlockState var14 = var5x.getBlockState(var13);
-                        BlockState var15 = var5x.getBlockState(var10.setWithOffset(var13, (Direction)Direction.DOWN));
-                        if (!var14.is(Blocks.WATER) && var5x.getFluidState(var13).isEmpty() && var14.getCollisionShape(var5x, var13, var11).isEmpty() && var15.isFaceSturdy(var5x, var10, Direction.UP)) {
-                           BlockPos var16 = var13.immutable();
-                           var5.set(new BlockPosTracker(var16));
-                           var4.set(new WalkTarget(new BlockPosTracker(var16), var1, 1));
+                  for(BlockPos pos : BlockPos.withinManhattan(bodyBlockPos, range, range, range)) {
+                     if (pos.getX() != bodyBlockPos.getX() || pos.getZ() != bodyBlockPos.getZ()) {
+                        BlockState state = level.getBlockState(pos);
+                        BlockState belowState = level.getBlockState(belowPos.setWithOffset(pos, (Direction)Direction.DOWN));
+                        if (!state.is(Blocks.WATER) && level.getFluidState(pos).isEmpty() && state.getCollisionShape(level, pos, context).isEmpty() && belowState.isFaceSturdy(level, belowPos, Direction.UP)) {
+                           BlockPos targetPos = pos.immutable();
+                           lookTarget.set(new BlockPosTracker(targetPos));
+                           walkTarget.set(new WalkTarget(new BlockPosTracker(targetPos), speedModifier, 1));
                            break;
                         }
                      }
                   }
 
-                  var2.setValue(var7 + 60L);
+                  nextOkStartTime.setValue(timestamp + 60L);
                   return true;
                }
             })));

@@ -1,6 +1,6 @@
 package net.minecraft.world.entity.animal.golem;
 
-import com.mojang.serialization.Dynamic;
+import java.util.List;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -34,6 +34,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.behavior.BehaviorUtils;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -67,6 +68,7 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
    private static final float TURN_TO_STATUE_CHANCE = 0.0058F;
    private static final int SPAWN_COOLDOWN_MIN = 60;
    private static final int SPAWN_COOLDOWN_MAX = 100;
+   private static final Brain.Provider<CopperGolem> BRAIN_PROVIDER;
    private static final EntityDataAccessor<WeatheringCopper.WeatherState> DATA_WEATHER_STATE;
    private static final EntityDataAccessor<CopperGolemState> COPPER_GOLEM_STATE;
    private @Nullable BlockPos openedChestPos;
@@ -80,15 +82,15 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
    private final AnimationState interactionDropNoItemAnimationState = new AnimationState();
    public static final EquipmentSlot EQUIPMENT_SLOT_ANTENNA;
 
-   public CopperGolem(EntityType<? extends AbstractGolem> var1, Level var2) {
-      super(var1, var2);
+   public CopperGolem(final EntityType<? extends AbstractGolem> type, final Level level) {
+      super(type, level);
       this.getNavigation().setRequiredPathLength(48.0F);
       this.getNavigation().setCanOpenDoors(true);
       this.setPersistenceRequired();
       this.setState(CopperGolemState.IDLE);
-      this.setPathfindingMalus(PathType.DANGER_FIRE, 16.0F);
-      this.setPathfindingMalus(PathType.DANGER_OTHER, 16.0F);
-      this.setPathfindingMalus(PathType.DAMAGE_FIRE, -1.0F);
+      this.setPathfindingMalus(PathType.FIRE_IN_NEIGHBOR, 16.0F);
+      this.setPathfindingMalus(PathType.DAMAGING_IN_NEIGHBOR, 16.0F);
+      this.setPathfindingMalus(PathType.FIRE, -1.0F);
       this.getBrain().setMemory(MemoryModuleType.TRANSPORT_ITEMS_COOLDOWN_TICKS, this.getRandom().nextInt(60, 100));
    }
 
@@ -100,20 +102,20 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
       return (CopperGolemState)this.entityData.get(COPPER_GOLEM_STATE);
    }
 
-   public void setState(CopperGolemState var1) {
-      this.entityData.set(COPPER_GOLEM_STATE, var1);
+   public void setState(final CopperGolemState state) {
+      this.entityData.set(COPPER_GOLEM_STATE, state);
    }
 
    public WeatheringCopper.WeatherState getWeatherState() {
       return (WeatheringCopper.WeatherState)this.entityData.get(DATA_WEATHER_STATE);
    }
 
-   public void setWeatherState(WeatheringCopper.WeatherState var1) {
-      this.entityData.set(DATA_WEATHER_STATE, var1);
+   public void setWeatherState(final WeatheringCopper.WeatherState state) {
+      this.entityData.set(DATA_WEATHER_STATE, state);
    }
 
-   public void setOpenedChestPos(BlockPos var1) {
-      this.openedChestPos = var1;
+   public void setOpenedChestPos(final BlockPos openedChestPos) {
+      this.openedChestPos = openedChestPos;
    }
 
    public void clearOpenedChestPos() {
@@ -140,45 +142,41 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
       return this.interactionDropNoItemAnimationState;
    }
 
-   protected Brain.Provider<CopperGolem> brainProvider() {
-      return CopperGolemAi.brainProvider();
-   }
-
-   protected Brain<?> makeBrain(Dynamic<?> var1) {
-      return CopperGolemAi.makeBrain(this.brainProvider().makeBrain(var1));
+   protected Brain<CopperGolem> makeBrain(final Brain.Packed packedBrain) {
+      return BRAIN_PROVIDER.makeBrain(this, packedBrain);
    }
 
    public Brain<CopperGolem> getBrain() {
       return super.getBrain();
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(DATA_WEATHER_STATE, WeatheringCopper.WeatherState.UNAFFECTED);
-      var1.define(COPPER_GOLEM_STATE, CopperGolemState.IDLE);
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(DATA_WEATHER_STATE, WeatheringCopper.WeatherState.UNAFFECTED);
+      entityData.define(COPPER_GOLEM_STATE, CopperGolemState.IDLE);
    }
 
-   public void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.putLong("next_weather_age", this.nextWeatheringTick);
-      var1.store("weather_state", WeatheringCopper.WeatherState.CODEC, this.getWeatherState());
+   public void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.putLong("next_weather_age", this.nextWeatheringTick);
+      output.store("weather_state", WeatheringCopper.WeatherState.CODEC, this.getWeatherState());
    }
 
-   public void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.nextWeatheringTick = var1.getLongOr("next_weather_age", -1L);
-      this.setWeatherState((WeatheringCopper.WeatherState)var1.read("weather_state", WeatheringCopper.WeatherState.CODEC).orElse(WeatheringCopper.WeatherState.UNAFFECTED));
+   public void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.nextWeatheringTick = input.getLongOr("next_weather_age", -1L);
+      this.setWeatherState((WeatheringCopper.WeatherState)input.read("weather_state", WeatheringCopper.WeatherState.CODEC).orElse(WeatheringCopper.WeatherState.UNAFFECTED));
    }
 
-   protected void customServerAiStep(ServerLevel var1) {
-      ProfilerFiller var2 = Profiler.get();
-      var2.push("copperGolemBrain");
-      this.getBrain().tick(var1, this);
-      var2.pop();
-      var2.push("copperGolemActivityUpdate");
+   protected void customServerAiStep(final ServerLevel level) {
+      ProfilerFiller profiler = Profiler.get();
+      profiler.push("copperGolemBrain");
+      this.getBrain().tick(level, this);
+      profiler.pop();
+      profiler.push("copperGolemActivityUpdate");
       CopperGolemAi.updateActivity(this);
-      var2.pop();
-      super.customServerAiStep(var1);
+      profiler.pop();
+      super.customServerAiStep(level);
    }
 
    public void tick() {
@@ -193,94 +191,94 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
 
    }
 
-   public InteractionResult mobInteract(Player var1, InteractionHand var2) {
-      ItemStack var3 = var1.getItemInHand(var2);
-      if (var3.isEmpty()) {
-         ItemStack var4 = this.getMainHandItem();
-         if (!var4.isEmpty()) {
-            BehaviorUtils.throwItem(this, var4, var1.position());
+   public InteractionResult mobInteract(final Player player, final InteractionHand hand) {
+      ItemStack itemStack = player.getItemInHand(hand);
+      if (itemStack.isEmpty()) {
+         ItemStack equippedItem = this.getMainHandItem();
+         if (!equippedItem.isEmpty()) {
+            BehaviorUtils.throwItem(this, equippedItem, player.position());
             this.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
             return InteractionResult.SUCCESS;
          }
       }
 
-      Level var6 = this.level();
-      if (var3.is(Items.SHEARS) && this.readyForShearing()) {
-         if (var6 instanceof ServerLevel) {
-            ServerLevel var7 = (ServerLevel)var6;
-            this.shear(var7, SoundSource.PLAYERS, var3);
-            this.gameEvent(GameEvent.SHEAR, var1);
-            var3.hurtAndBreak(1, var1, (InteractionHand)var2);
+      Level level = this.level();
+      if (itemStack.is(Items.SHEARS) && this.readyForShearing()) {
+         if (level instanceof ServerLevel) {
+            ServerLevel serverLevel = (ServerLevel)level;
+            this.shear(serverLevel, SoundSource.PLAYERS, itemStack);
+            this.gameEvent(GameEvent.SHEAR, player);
+            itemStack.hurtAndBreak(1, player, (InteractionHand)hand);
          }
 
          return InteractionResult.SUCCESS;
-      } else if (var6.isClientSide()) {
+      } else if (level.isClientSide()) {
          return InteractionResult.PASS;
-      } else if (var3.is(Items.HONEYCOMB) && this.nextWeatheringTick != -2L) {
-         var6.levelEvent(this, 3003, this.blockPosition(), 0);
+      } else if (itemStack.is(Items.HONEYCOMB) && this.nextWeatheringTick != -2L) {
+         level.levelEvent(this, 3003, this.blockPosition(), 0);
          this.nextWeatheringTick = -2L;
-         this.usePlayerItem(var1, var2, var3);
+         this.usePlayerItem(player, hand, itemStack);
          return InteractionResult.SUCCESS_SERVER;
-      } else if (var3.is(ItemTags.AXES) && this.nextWeatheringTick == -2L) {
-         var6.playSound((Entity)null, (Entity)this, SoundEvents.AXE_SCRAPE, this.getSoundSource(), 1.0F, 1.0F);
-         var6.levelEvent(this, 3004, this.blockPosition(), 0);
+      } else if (itemStack.is(ItemTags.AXES) && this.nextWeatheringTick == -2L) {
+         level.playSound((Entity)null, (Entity)this, SoundEvents.AXE_SCRAPE, this.getSoundSource(), 1.0F, 1.0F);
+         level.levelEvent(this, 3004, this.blockPosition(), 0);
          this.nextWeatheringTick = -1L;
-         var3.hurtAndBreak(1, var1, (EquipmentSlot)var2.asEquipmentSlot());
+         itemStack.hurtAndBreak(1, player, (EquipmentSlot)hand.asEquipmentSlot());
          return InteractionResult.SUCCESS_SERVER;
       } else {
-         if (var3.is(ItemTags.AXES)) {
-            WeatheringCopper.WeatherState var5 = this.getWeatherState();
-            if (var5 != WeatheringCopper.WeatherState.UNAFFECTED) {
-               var6.playSound((Entity)null, (Entity)this, SoundEvents.AXE_SCRAPE, this.getSoundSource(), 1.0F, 1.0F);
-               var6.levelEvent(this, 3005, this.blockPosition(), 0);
+         if (itemStack.is(ItemTags.AXES)) {
+            WeatheringCopper.WeatherState weatherState = this.getWeatherState();
+            if (weatherState != WeatheringCopper.WeatherState.UNAFFECTED) {
+               level.playSound((Entity)null, (Entity)this, SoundEvents.AXE_SCRAPE, this.getSoundSource(), 1.0F, 1.0F);
+               level.levelEvent(this, 3005, this.blockPosition(), 0);
                this.nextWeatheringTick = -1L;
-               this.entityData.set(DATA_WEATHER_STATE, var5.previous(), true);
-               var3.hurtAndBreak(1, var1, (EquipmentSlot)var2.asEquipmentSlot());
+               this.entityData.set(DATA_WEATHER_STATE, weatherState.previous(), true);
+               itemStack.hurtAndBreak(1, player, (EquipmentSlot)hand.asEquipmentSlot());
                return InteractionResult.SUCCESS_SERVER;
             }
          }
 
-         return super.mobInteract(var1, var2);
+         return super.mobInteract(player, hand);
       }
    }
 
-   private void updateWeathering(ServerLevel var1, RandomSource var2, long var3) {
+   private void updateWeathering(final ServerLevel level, final RandomSource random, final long gameTime) {
       if (this.nextWeatheringTick != -2L) {
          if (this.nextWeatheringTick == -1L) {
-            this.nextWeatheringTick = var3 + (long)var2.nextIntBetweenInclusive(504000, 552000);
+            this.nextWeatheringTick = gameTime + (long)random.nextIntBetweenInclusive(504000, 552000);
          } else {
-            WeatheringCopper.WeatherState var5 = (WeatheringCopper.WeatherState)this.entityData.get(DATA_WEATHER_STATE);
-            boolean var6 = var5.equals(WeatheringCopper.WeatherState.OXIDIZED);
-            if (var3 >= this.nextWeatheringTick && !var6) {
-               WeatheringCopper.WeatherState var7 = var5.next();
-               boolean var8 = var7.equals(WeatheringCopper.WeatherState.OXIDIZED);
-               this.setWeatherState(var7);
-               this.nextWeatheringTick = var8 ? 0L : this.nextWeatheringTick + (long)var2.nextIntBetweenInclusive(504000, 552000);
+            WeatheringCopper.WeatherState weatherState = (WeatheringCopper.WeatherState)this.entityData.get(DATA_WEATHER_STATE);
+            boolean isFullyOxidized = weatherState.equals(WeatheringCopper.WeatherState.OXIDIZED);
+            if (gameTime >= this.nextWeatheringTick && !isFullyOxidized) {
+               WeatheringCopper.WeatherState newState = weatherState.next();
+               boolean isNewStateFullyOxidized = newState.equals(WeatheringCopper.WeatherState.OXIDIZED);
+               this.setWeatherState(newState);
+               this.nextWeatheringTick = isNewStateFullyOxidized ? 0L : this.nextWeatheringTick + (long)random.nextIntBetweenInclusive(504000, 552000);
             }
 
-            if (var6 && this.canTurnToStatue(var1)) {
-               this.turnToStatue(var1);
+            if (isFullyOxidized && this.canTurnToStatue(level)) {
+               this.turnToStatue(level);
             }
 
          }
       }
    }
 
-   private boolean canTurnToStatue(Level var1) {
-      return var1.getBlockState(this.blockPosition()).isAir() && var1.random.nextFloat() <= 0.0058F;
+   private boolean canTurnToStatue(final Level level) {
+      return level.getBlockState(this.blockPosition()).isAir() && level.getRandom().nextFloat() <= 0.0058F;
    }
 
-   private void turnToStatue(ServerLevel var1) {
-      BlockPos var2 = this.blockPosition();
-      var1.setBlock(var2, (BlockState)((BlockState)Blocks.OXIDIZED_COPPER_GOLEM_STATUE.defaultBlockState().setValue(CopperGolemStatueBlock.POSE, CopperGolemStatueBlock.Pose.values()[this.random.nextInt(0, CopperGolemStatueBlock.Pose.values().length)])).setValue(CopperGolemStatueBlock.FACING, Direction.fromYRot((double)this.getYRot())), 3);
-      BlockEntity var4 = var1.getBlockEntity(var2);
-      if (var4 instanceof CopperGolemStatueBlockEntity var3) {
-         var3.createStatue(this);
-         this.dropPreservedEquipment(var1);
+   private void turnToStatue(final ServerLevel level) {
+      BlockPos pos = this.blockPosition();
+      level.setBlock(pos, (BlockState)((BlockState)Blocks.OXIDIZED_COPPER_GOLEM_STATUE.defaultBlockState().setValue(CopperGolemStatueBlock.POSE, CopperGolemStatueBlock.Pose.values()[this.random.nextInt(0, CopperGolemStatueBlock.Pose.values().length)])).setValue(CopperGolemStatueBlock.FACING, Direction.fromYRot((double)this.getYRot())), 3);
+      BlockEntity var4 = level.getBlockEntity(pos);
+      if (var4 instanceof CopperGolemStatueBlockEntity copperGolemStatueBlockEntity) {
+         copperGolemStatueBlockEntity.createStatue(this);
+         this.dropPreservedEquipment(level);
          this.discard();
          this.playSound(SoundEvents.COPPER_GOLEM_BECOME_STATUE);
          if (this.isLeashed()) {
-            if ((Boolean)var1.getGameRules().get(GameRules.ENTITY_DROPS)) {
+            if ((Boolean)level.getGameRules().get(GameRules.ENTITY_DROPS)) {
                this.dropLeash();
             } else {
                this.removeLeash();
@@ -343,14 +341,14 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
 
    }
 
-   public void spawn(WeatheringCopper.WeatherState var1) {
-      this.setWeatherState(var1);
+   public void spawn(final WeatheringCopper.WeatherState weatherState) {
+      this.setWeatherState(weatherState);
       this.playSpawnSound();
    }
 
-   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+   public @Nullable SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, final @Nullable SpawnGroupData groupData) {
       this.playSpawnSound();
-      return super.finalizeSpawn(var1, var2, var3, var4);
+      return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
    }
 
    public void playSpawnSound() {
@@ -364,7 +362,7 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
 
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return CopperGolemOxidationLevels.getOxidationLevel(this.getWeatherState()).hurtSound();
    }
 
@@ -372,7 +370,7 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
       return CopperGolemOxidationLevels.getOxidationLevel(this.getWeatherState()).deathSound();
    }
 
-   protected void playStepSound(BlockPos var1, BlockState var2) {
+   protected void playStepSound(final BlockPos pos, final BlockState blockState) {
       this.playSound(CopperGolemOxidationLevels.getOxidationLevel(this.getWeatherState()).stepSound(), 1.0F, 1.0F);
    }
 
@@ -384,12 +382,12 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
       return new Vec3(0.0, (double)(0.75F * this.getEyeHeight()), 0.0);
    }
 
-   public boolean hasContainerOpen(ContainerOpenersCounter var1, BlockPos var2) {
+   public boolean hasContainerOpen(final ContainerOpenersCounter container, final BlockPos blockPos) {
       if (this.openedChestPos == null) {
          return false;
       } else {
-         BlockState var3 = this.level().getBlockState(this.openedChestPos);
-         return this.openedChestPos.equals(var2) || var3.getBlock() instanceof ChestBlock && var3.getValue(ChestBlock.TYPE) != ChestType.SINGLE && ChestBlock.getConnectedBlockPos(this.openedChestPos, var3).equals(var2);
+         BlockState blockState = this.level().getBlockState(this.openedChestPos);
+         return this.openedChestPos.equals(blockPos) || blockState.getBlock() instanceof ChestBlock && blockState.getValue(ChestBlock.TYPE) != ChestType.SINGLE && ChestBlock.getConnectedBlockPos(this.openedChestPos, blockState).equals(blockPos);
       }
    }
 
@@ -397,42 +395,43 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
       return 3.0;
    }
 
-   public void shear(ServerLevel var1, SoundSource var2, ItemStack var3) {
-      var1.playSound((Entity)null, this, SoundEvents.COPPER_GOLEM_SHEAR, var2, 1.0F, 1.0F);
-      ItemStack var4 = this.getItemBySlot(EQUIPMENT_SLOT_ANTENNA);
+   public void shear(final ServerLevel level, final SoundSource soundSource, final ItemStack tool) {
+      level.playSound((Entity)null, this, SoundEvents.COPPER_GOLEM_SHEAR, soundSource, 1.0F, 1.0F);
+      ItemStack itemStack = this.getItemBySlot(EQUIPMENT_SLOT_ANTENNA);
       this.setItemSlot(EQUIPMENT_SLOT_ANTENNA, ItemStack.EMPTY);
-      this.spawnAtLocation(var1, var4, 1.5F);
+      this.spawnAtLocation(level, itemStack, 1.5F);
    }
 
    public boolean readyForShearing() {
       return this.isAlive() && this.getItemBySlot(EQUIPMENT_SLOT_ANTENNA).is(ItemTags.SHEARABLE_FROM_COPPER_GOLEM);
    }
 
-   protected void dropEquipment(ServerLevel var1) {
-      super.dropEquipment(var1);
-      this.dropPreservedEquipment(var1);
+   protected void dropEquipment(final ServerLevel level) {
+      super.dropEquipment(level);
+      this.dropPreservedEquipment(level);
    }
 
-   protected void actuallyHurt(ServerLevel var1, DamageSource var2, float var3) {
-      super.actuallyHurt(var1, var2, var3);
+   protected void actuallyHurt(final ServerLevel level, final DamageSource source, final float dmg) {
+      super.actuallyHurt(level, source, dmg);
       this.setState(CopperGolemState.IDLE);
    }
 
-   public void thunderHit(ServerLevel var1, LightningBolt var2) {
-      super.thunderHit(var1, var2);
-      UUID var3 = var2.getUUID();
-      if (!var3.equals(this.lastLightningBoltUUID)) {
-         this.lastLightningBoltUUID = var3;
-         WeatheringCopper.WeatherState var4 = this.getWeatherState();
-         if (var4 != WeatheringCopper.WeatherState.UNAFFECTED) {
+   public void thunderHit(final ServerLevel level, final LightningBolt lightningBolt) {
+      super.thunderHit(level, lightningBolt);
+      UUID lightningBoltUUID = lightningBolt.getUUID();
+      if (!lightningBoltUUID.equals(this.lastLightningBoltUUID)) {
+         this.lastLightningBoltUUID = lightningBoltUUID;
+         WeatheringCopper.WeatherState weatherState = this.getWeatherState();
+         if (weatherState != WeatheringCopper.WeatherState.UNAFFECTED) {
             this.nextWeatheringTick = -1L;
-            this.entityData.set(DATA_WEATHER_STATE, var4.previous(), true);
+            this.entityData.set(DATA_WEATHER_STATE, weatherState.previous(), true);
          }
       }
 
    }
 
    static {
+      BRAIN_PROVIDER = Brain.<CopperGolem>provider(List.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.HURT_BY), (var0) -> CopperGolemAi.getActivities());
       DATA_WEATHER_STATE = SynchedEntityData.<WeatheringCopper.WeatherState>defineId(CopperGolem.class, EntityDataSerializers.WEATHERING_COPPER_STATE);
       COPPER_GOLEM_STATE = SynchedEntityData.<CopperGolemState>defineId(CopperGolem.class, EntityDataSerializers.COPPER_GOLEM_STATE);
       EQUIPMENT_SLOT_ANTENNA = EquipmentSlot.SADDLE;

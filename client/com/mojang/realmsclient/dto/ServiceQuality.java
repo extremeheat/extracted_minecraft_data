@@ -16,18 +16,18 @@ public enum ServiceQuality {
    POOR(4, "icon/ping_2"),
    UNKNOWN(5, "icon/ping_unknown");
 
-   final int value;
+   private final int value;
    private final Identifier icon;
 
-   private ServiceQuality(final int var3, final String var4) {
-      this.value = var3;
-      this.icon = Identifier.withDefaultNamespace(var4);
+   private ServiceQuality(final int value, final String iconPath) {
+      this.value = value;
+      this.icon = Identifier.withDefaultNamespace(iconPath);
    }
 
-   public static @Nullable ServiceQuality byValue(int var0) {
-      for(ServiceQuality var4 : values()) {
-         if (var4.getValue() == var0) {
-            return var4;
+   public static @Nullable ServiceQuality byValue(final int value) {
+      for(ServiceQuality quality : values()) {
+         if (quality.getValue() == value) {
+            return quality;
          }
       }
 
@@ -54,29 +54,19 @@ public enum ServiceQuality {
          super();
       }
 
-      public void write(JsonWriter var1, ServiceQuality var2) throws IOException {
-         var1.value((long)var2.value);
+      public void write(final JsonWriter jsonWriter, final ServiceQuality quality) throws IOException {
+         jsonWriter.value((long)quality.value);
       }
 
-      public ServiceQuality read(JsonReader var1) throws IOException {
-         int var2 = var1.nextInt();
-         ServiceQuality var3 = ServiceQuality.byValue(var2);
-         if (var3 == null) {
-            LOGGER.warn("Unsupported ServiceQuality {}", var2);
+      public ServiceQuality read(final JsonReader jsonReader) throws IOException {
+         int value = jsonReader.nextInt();
+         ServiceQuality quality = ServiceQuality.byValue(value);
+         if (quality == null) {
+            LOGGER.warn("Unsupported ServiceQuality {}", value);
             return ServiceQuality.UNKNOWN;
          } else {
-            return var3;
+            return quality;
          }
-      }
-
-      // $FF: synthetic method
-      public Object read(final JsonReader var1) throws IOException {
-         return this.read(var1);
-      }
-
-      // $FF: synthetic method
-      public void write(final JsonWriter var1, final Object var2) throws IOException {
-         this.write(var1, (ServiceQuality)var2);
       }
    }
 }

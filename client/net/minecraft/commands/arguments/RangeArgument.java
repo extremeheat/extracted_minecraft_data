@@ -25,21 +25,16 @@ public interface RangeArgument<T extends MinMaxBounds<?>> extends ArgumentType<T
          super();
       }
 
-      public static MinMaxBounds.Ints getRange(CommandContext<CommandSourceStack> var0, String var1) {
-         return (MinMaxBounds.Ints)var0.getArgument(var1, MinMaxBounds.Ints.class);
+      public static MinMaxBounds.Ints getRange(final CommandContext<CommandSourceStack> context, final String name) {
+         return (MinMaxBounds.Ints)context.getArgument(name, MinMaxBounds.Ints.class);
       }
 
-      public MinMaxBounds.Ints parse(StringReader var1) throws CommandSyntaxException {
-         return MinMaxBounds.Ints.fromReader(var1);
+      public MinMaxBounds.Ints parse(final StringReader reader) throws CommandSyntaxException {
+         return MinMaxBounds.Ints.fromReader(reader);
       }
 
       public Collection<String> getExamples() {
          return EXAMPLES;
-      }
-
-      // $FF: synthetic method
-      public Object parse(final StringReader var1) throws CommandSyntaxException {
-         return this.parse(var1);
       }
    }
 
@@ -50,21 +45,16 @@ public interface RangeArgument<T extends MinMaxBounds<?>> extends ArgumentType<T
          super();
       }
 
-      public static MinMaxBounds.Doubles getRange(CommandContext<CommandSourceStack> var0, String var1) {
-         return (MinMaxBounds.Doubles)var0.getArgument(var1, MinMaxBounds.Doubles.class);
+      public static MinMaxBounds.Doubles getRange(final CommandContext<CommandSourceStack> context, final String name) {
+         return (MinMaxBounds.Doubles)context.getArgument(name, MinMaxBounds.Doubles.class);
       }
 
-      public MinMaxBounds.Doubles parse(StringReader var1) throws CommandSyntaxException {
-         return MinMaxBounds.Doubles.fromReader(var1);
+      public MinMaxBounds.Doubles parse(final StringReader reader) throws CommandSyntaxException {
+         return MinMaxBounds.Doubles.fromReader(reader);
       }
 
       public Collection<String> getExamples() {
          return EXAMPLES;
-      }
-
-      // $FF: synthetic method
-      public Object parse(final StringReader var1) throws CommandSyntaxException {
-         return this.parse(var1);
       }
    }
 }

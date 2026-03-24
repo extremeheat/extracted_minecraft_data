@@ -10,12 +10,12 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public interface Explosion {
-   static DamageSource getDefaultDamageSource(Level var0, @Nullable Entity var1) {
-      return var0.damageSources().explosion(var1, getIndirectSourceEntity(var1));
+   static DamageSource getDefaultDamageSource(final Level level, final @Nullable Entity source) {
+      return level.damageSources().explosion(source, getIndirectSourceEntity(source));
    }
 
-   static @Nullable LivingEntity getIndirectSourceEntity(@Nullable Entity var0) {
-      Entity var1 = var0;
+   static @Nullable LivingEntity getIndirectSourceEntity(final @Nullable Entity source) {
+      Entity var1 = source;
       byte var2 = 0;
 
       while(true) {
@@ -30,18 +30,18 @@ public interface Explosion {
                var10000 = null;
                return var10000;
             case 0:
-               PrimedTnt var3 = (PrimedTnt)var1;
-               var10000 = var3.getOwner();
+               PrimedTnt primedTnt = (PrimedTnt)var1;
+               var10000 = primedTnt.getOwner();
                return var10000;
             case 1:
-               LivingEntity var4 = (LivingEntity)var1;
-               var10000 = var4;
+               LivingEntity livingEntity = (LivingEntity)var1;
+               var10000 = livingEntity;
                return var10000;
             case 2:
-               Projectile var5 = (Projectile)var1;
-               Entity var7 = var5.getOwner();
-               if (var7 instanceof LivingEntity var6) {
-                  var10000 = var6;
+               Projectile projectile = (Projectile)var1;
+               Entity var7 = projectile.getOwner();
+               if (var7 instanceof LivingEntity livingEntity) {
+                  var10000 = livingEntity;
                   return var10000;
                }
 
@@ -74,8 +74,8 @@ public interface Explosion {
 
       private final boolean shouldAffectBlocklikeEntities;
 
-      private BlockInteraction(final boolean var3) {
-         this.shouldAffectBlocklikeEntities = var3;
+      private BlockInteraction(final boolean shouldAffectBlocklikeEntities) {
+         this.shouldAffectBlocklikeEntities = shouldAffectBlocklikeEntities;
       }
 
       public boolean shouldAffectBlocklikeEntities() {

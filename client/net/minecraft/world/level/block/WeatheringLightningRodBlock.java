@@ -9,32 +9,27 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class WeatheringLightningRodBlock extends LightningRodBlock implements WeatheringCopper {
-   public static final MapCodec<WeatheringLightningRodBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(WeatheringCopper.WeatherState.CODEC.fieldOf("weathering_state").forGetter(WeatheringLightningRodBlock::getAge), propertiesCodec()).apply(var0, WeatheringLightningRodBlock::new));
+   public static final MapCodec<WeatheringLightningRodBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(WeatheringCopper.WeatherState.CODEC.fieldOf("weathering_state").forGetter(WeatheringLightningRodBlock::getAge), propertiesCodec()).apply(i, WeatheringLightningRodBlock::new));
    private final WeatheringCopper.WeatherState weatherState;
 
    public MapCodec<WeatheringLightningRodBlock> codec() {
       return CODEC;
    }
 
-   protected WeatheringLightningRodBlock(WeatheringCopper.WeatherState var1, BlockBehaviour.Properties var2) {
-      super(var2);
-      this.weatherState = var1;
+   protected WeatheringLightningRodBlock(final WeatheringCopper.WeatherState weatherState, final BlockBehaviour.Properties properties) {
+      super(properties);
+      this.weatherState = weatherState;
    }
 
-   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      this.changeOverTime(var1, var2, var3, var4);
+   protected void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      this.changeOverTime(state, level, pos, random);
    }
 
-   protected boolean isRandomlyTicking(BlockState var1) {
-      return WeatheringCopper.getNext(var1.getBlock()).isPresent();
+   protected boolean isRandomlyTicking(final BlockState state) {
+      return WeatheringCopper.getNext(state.getBlock()).isPresent();
    }
 
    public WeatheringCopper.WeatherState getAge() {
       return this.weatherState;
-   }
-
-   // $FF: synthetic method
-   public Enum getAge() {
-      return this.getAge();
    }
 }

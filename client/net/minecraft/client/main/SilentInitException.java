@@ -1,11 +1,11 @@
 package net.minecraft.client.main;
 
 public class SilentInitException extends RuntimeException {
-   public SilentInitException(String var1) {
-      super(var1);
+   public SilentInitException(final String message) {
+      super(message);
    }
 
-   public SilentInitException(String var1, Throwable var2) {
-      super(var1, var2);
+   public SilentInitException(final String message, final Throwable cause) {
+      super(message, cause);
    }
 }

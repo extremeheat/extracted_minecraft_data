@@ -8,10 +8,10 @@ public class BlockDestructionProgress implements Comparable<BlockDestructionProg
    private int progress;
    private int updatedRenderTick;
 
-   public BlockDestructionProgress(int var1, BlockPos var2) {
+   public BlockDestructionProgress(final int id, final BlockPos pos) {
       super();
-      this.id = var1;
-      this.pos = var2;
+      this.id = id;
+      this.pos = pos;
    }
 
    public int getId() {
@@ -22,32 +22,32 @@ public class BlockDestructionProgress implements Comparable<BlockDestructionProg
       return this.pos;
    }
 
-   public void setProgress(int var1) {
-      if (var1 > 10) {
-         var1 = 10;
+   public void setProgress(int progress) {
+      if (progress > 10) {
+         progress = 10;
       }
 
-      this.progress = var1;
+      this.progress = progress;
    }
 
    public int getProgress() {
       return this.progress;
    }
 
-   public void updateTick(int var1) {
-      this.updatedRenderTick = var1;
+   public void updateTick(final int tick) {
+      this.updatedRenderTick = tick;
    }
 
    public int getUpdatedRenderTick() {
       return this.updatedRenderTick;
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
+   public boolean equals(final Object o) {
+      if (this == o) {
          return true;
-      } else if (var1 != null && this.getClass() == var1.getClass()) {
-         BlockDestructionProgress var2 = (BlockDestructionProgress)var1;
-         return this.id == var2.id;
+      } else if (o != null && this.getClass() == o.getClass()) {
+         BlockDestructionProgress that = (BlockDestructionProgress)o;
+         return this.id == that.id;
       } else {
          return false;
       }
@@ -57,12 +57,7 @@ public class BlockDestructionProgress implements Comparable<BlockDestructionProg
       return Integer.hashCode(this.id);
    }
 
-   public int compareTo(BlockDestructionProgress var1) {
-      return this.progress != var1.progress ? Integer.compare(this.progress, var1.progress) : Integer.compare(this.id, var1.id);
-   }
-
-   // $FF: synthetic method
-   public int compareTo(final Object var1) {
-      return this.compareTo((BlockDestructionProgress)var1);
+   public int compareTo(final BlockDestructionProgress o) {
+      return this.progress != o.progress ? Integer.compare(this.progress, o.progress) : Integer.compare(this.id, o.id);
    }
 }

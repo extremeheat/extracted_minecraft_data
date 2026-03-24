@@ -1,9 +1,9 @@
 package net.minecraft.util.debugchart;
 
 public interface SampleLogger {
-   void logFullSample(long[] var1);
+   void logFullSample(final long[] sample);
 
-   void logSample(long var1);
+   void logSample(final long sample);
 
-   void logPartialSample(long var1, int var3);
+   void logPartialSample(final long sample, final int dimension);
 }

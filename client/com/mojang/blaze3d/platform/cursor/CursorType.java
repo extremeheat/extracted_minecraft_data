@@ -8,22 +8,22 @@ public class CursorType {
    private final String name;
    private final long handle;
 
-   private CursorType(String var1, long var2) {
+   private CursorType(final String name, final long handle) {
       super();
-      this.name = var1;
-      this.handle = var2;
+      this.name = name;
+      this.handle = handle;
    }
 
-   public void select(Window var1) {
-      GLFW.glfwSetCursor(var1.handle(), this.handle);
+   public void select(final Window window) {
+      GLFW.glfwSetCursor(window.handle(), this.handle);
    }
 
    public String toString() {
       return this.name;
    }
 
-   public static CursorType createStandardCursor(int var0, String var1, CursorType var2) {
-      long var3 = GLFW.glfwCreateStandardCursor(var0);
-      return var3 == 0L ? var2 : new CursorType(var1, var3);
+   public static CursorType createStandardCursor(final int shape, final String name, final CursorType fallback) {
+      long handle = GLFW.glfwCreateStandardCursor(shape);
+      return handle == 0L ? fallback : new CursorType(name, handle);
    }
 }

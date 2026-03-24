@@ -13,15 +13,15 @@ public class OutputTarget {
    public static final OutputTarget WEATHER_TARGET = new OutputTarget("weather_target", () -> Minecraft.getInstance().levelRenderer.getWeatherTarget());
    public static final OutputTarget ITEM_ENTITY_TARGET = new OutputTarget("item_entity_target", () -> Minecraft.getInstance().levelRenderer.getItemEntityTarget());
 
-   public OutputTarget(String var1, Supplier<@Nullable RenderTarget> var2) {
+   public OutputTarget(final String name, final Supplier<@Nullable RenderTarget> renderTargetSupplier) {
       super();
-      this.name = var1;
-      this.renderTargetSupplier = var2;
+      this.name = name;
+      this.renderTargetSupplier = renderTargetSupplier;
    }
 
    public RenderTarget getRenderTarget() {
-      RenderTarget var1 = (RenderTarget)this.renderTargetSupplier.get();
-      return var1 != null ? var1 : Minecraft.getInstance().getMainRenderTarget();
+      RenderTarget preferredTarget = (RenderTarget)this.renderTargetSupplier.get();
+      return preferredTarget != null ? preferredTarget : Minecraft.getInstance().getMainRenderTarget();
    }
 
    public String toString() {

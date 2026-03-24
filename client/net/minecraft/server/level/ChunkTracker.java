@@ -4,25 +4,25 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.lighting.DynamicGraphMinFixedPoint;
 
 public abstract class ChunkTracker extends DynamicGraphMinFixedPoint {
-   protected ChunkTracker(int var1, int var2, int var3) {
-      super(var1, var2, var3);
+   protected ChunkTracker(final int levelCount, final int minQueueSize, final int minMapSize) {
+      super(levelCount, minQueueSize, minMapSize);
    }
 
-   protected boolean isSource(long var1) {
-      return var1 == ChunkPos.INVALID_CHUNK_POS;
+   protected boolean isSource(final long node) {
+      return node == ChunkPos.INVALID_CHUNK_POS;
    }
 
-   protected void checkNeighborsAfterUpdate(long var1, int var3, boolean var4) {
-      if (!var4 || var3 < this.levelCount - 2) {
-         ChunkPos var5 = new ChunkPos(var1);
-         int var6 = var5.x;
-         int var7 = var5.z;
+   protected void checkNeighborsAfterUpdate(final long node, final int level, final boolean onlyDecrease) {
+      if (!onlyDecrease || level < this.levelCount - 2) {
+         ChunkPos pos = ChunkPos.unpack(node);
+         int x = pos.x();
+         int z = pos.z();
 
-         for(int var8 = -1; var8 <= 1; ++var8) {
-            for(int var9 = -1; var9 <= 1; ++var9) {
-               long var10 = ChunkPos.asLong(var6 + var8, var7 + var9);
-               if (var10 != var1) {
-                  this.checkNeighbor(var1, var10, var3, var4);
+         for(int offsetX = -1; offsetX <= 1; ++offsetX) {
+            for(int offsetZ = -1; offsetZ <= 1; ++offsetZ) {
+               long neighbor = ChunkPos.pack(x + offsetX, z + offsetZ);
+               if (neighbor != node) {
+                  this.checkNeighbor(node, neighbor, level, onlyDecrease);
                }
             }
          }
@@ -30,42 +30,42 @@ public abstract class ChunkTracker extends DynamicGraphMinFixedPoint {
       }
    }
 
-   protected int getComputedLevel(long var1, long var3, int var5) {
-      int var6 = var5;
-      ChunkPos var7 = new ChunkPos(var1);
-      int var8 = var7.x;
-      int var9 = var7.z;
+   protected int getComputedLevel(final long node, final long knownParent, final int knownLevelFromParent) {
+      int computedLevel = knownLevelFromParent;
+      ChunkPos pos = ChunkPos.unpack(node);
+      int x = pos.x();
+      int z = pos.z();
 
-      for(int var10 = -1; var10 <= 1; ++var10) {
-         for(int var11 = -1; var11 <= 1; ++var11) {
-            long var12 = ChunkPos.asLong(var8 + var10, var9 + var11);
-            if (var12 == var1) {
-               var12 = ChunkPos.INVALID_CHUNK_POS;
+      for(int offsetX = -1; offsetX <= 1; ++offsetX) {
+         for(int offsetZ = -1; offsetZ <= 1; ++offsetZ) {
+            long neighbor = ChunkPos.pack(x + offsetX, z + offsetZ);
+            if (neighbor == node) {
+               neighbor = ChunkPos.INVALID_CHUNK_POS;
             }
 
-            if (var12 != var3) {
-               int var14 = this.computeLevelFromNeighbor(var12, var1, this.getLevel(var12));
-               if (var6 > var14) {
-                  var6 = var14;
+            if (neighbor != knownParent) {
+               int costFromNeighbor = this.computeLevelFromNeighbor(neighbor, node, this.getLevel(neighbor));
+               if (computedLevel > costFromNeighbor) {
+                  computedLevel = costFromNeighbor;
                }
 
-               if (var6 == 0) {
-                  return var6;
+               if (computedLevel == 0) {
+                  return computedLevel;
                }
             }
          }
       }
 
-      return var6;
+      return computedLevel;
    }
 
-   protected int computeLevelFromNeighbor(long var1, long var3, int var5) {
-      return var1 == ChunkPos.INVALID_CHUNK_POS ? this.getLevelFromSource(var3) : var5 + 1;
+   protected int computeLevelFromNeighbor(final long from, final long to, final int fromLevel) {
+      return from == ChunkPos.INVALID_CHUNK_POS ? this.getLevelFromSource(to) : fromLevel + 1;
    }
 
-   protected abstract int getLevelFromSource(long var1);
+   protected abstract int getLevelFromSource(long to);
 
-   public void update(long var1, int var3, boolean var4) {
-      this.checkEdge(ChunkPos.INVALID_CHUNK_POS, var1, var3, var4);
+   public void update(final long node, final int newLevelFrom, final boolean onlyDecreased) {
+      this.checkEdge(ChunkPos.INVALID_CHUNK_POS, node, newLevelFrom, onlyDecreased);
    }
 }

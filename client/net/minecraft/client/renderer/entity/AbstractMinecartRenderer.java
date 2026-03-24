@@ -6,9 +6,12 @@ import java.util.Objects;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.object.cart.MinecartModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.block.BlockModelRenderState;
+import net.minecraft.client.renderer.block.BlockModelResolver;
+import net.minecraft.client.renderer.block.model.BlockDisplayContext;
 import net.minecraft.client.renderer.entity.state.MinecartRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -16,155 +19,156 @@ import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.minecart.MinecartBehavior;
 import net.minecraft.world.entity.vehicle.minecart.NewMinecartBehavior;
 import net.minecraft.world.entity.vehicle.minecart.OldMinecartBehavior;
-import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionfc;
 
 public abstract class AbstractMinecartRenderer<T extends AbstractMinecart, S extends MinecartRenderState> extends EntityRenderer<T, S> {
-   private static final Identifier MINECART_LOCATION = Identifier.withDefaultNamespace("textures/entity/minecart.png");
+   private static final Identifier MINECART_LOCATION = Identifier.withDefaultNamespace("textures/entity/minecart/minecart.png");
    private static final float DISPLAY_BLOCK_SCALE = 0.75F;
+   public static final BlockDisplayContext BLOCK_DISPLAY_CONTEXT = BlockDisplayContext.create();
    protected final MinecartModel model;
+   private final BlockModelResolver blockModelResolver;
 
-   public AbstractMinecartRenderer(EntityRendererProvider.Context var1, ModelLayerLocation var2) {
-      super(var1);
+   public AbstractMinecartRenderer(final EntityRendererProvider.Context context, final ModelLayerLocation model) {
+      super(context);
       this.shadowRadius = 0.7F;
-      this.model = new MinecartModel(var1.bakeLayer(var2));
+      this.model = new MinecartModel(context.bakeLayer(model));
+      this.blockModelResolver = context.getBlockModelResolver();
    }
 
-   public void submit(S var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
-      super.submit(var1, var2, var3, var4);
-      var2.pushPose();
-      long var5 = var1.offsetSeed;
-      float var7 = (((float)(var5 >> 16 & 7L) + 0.5F) / 8.0F - 0.5F) * 0.004F;
-      float var8 = (((float)(var5 >> 20 & 7L) + 0.5F) / 8.0F - 0.5F) * 0.004F;
-      float var9 = (((float)(var5 >> 24 & 7L) + 0.5F) / 8.0F - 0.5F) * 0.004F;
-      var2.translate(var7, var8, var9);
-      if (var1.isNewRender) {
-         newRender(var1, var2);
+   public void submit(final S state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
+      super.submit(state, poseStack, submitNodeCollector, camera);
+      poseStack.pushPose();
+      long seed = state.offsetSeed;
+      float offsetX = (((float)(seed >> 16 & 7L) + 0.5F) / 8.0F - 0.5F) * 0.004F;
+      float offsetY = (((float)(seed >> 20 & 7L) + 0.5F) / 8.0F - 0.5F) * 0.004F;
+      float offsetZ = (((float)(seed >> 24 & 7L) + 0.5F) / 8.0F - 0.5F) * 0.004F;
+      poseStack.translate(offsetX, offsetY, offsetZ);
+      if (state.isNewRender) {
+         newRender(state, poseStack);
       } else {
-         oldRender(var1, var2);
+         oldRender(state, poseStack);
       }
 
-      float var10 = var1.hurtTime;
-      if (var10 > 0.0F) {
-         var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(Mth.sin((double)var10) * var10 * var1.damageTime / 10.0F * (float)var1.hurtDir));
+      float hurt = state.hurtTime;
+      if (hurt > 0.0F) {
+         poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(Mth.sin((double)hurt) * hurt * state.damageTime / 10.0F * (float)state.hurtDir));
       }
 
-      BlockState var11 = var1.displayBlockState;
-      if (var11.getRenderShape() != RenderShape.INVISIBLE) {
-         var2.pushPose();
-         var2.scale(0.75F, 0.75F, 0.75F);
-         var2.translate(-0.5F, (float)(var1.displayOffset - 8) / 16.0F, 0.5F);
-         var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(90.0F));
-         this.submitMinecartContents(var1, var11, var2, var3, var1.lightCoords);
-         var2.popPose();
+      BlockModelRenderState displayBlockModel = state.displayBlockModel;
+      if (!displayBlockModel.isEmpty()) {
+         poseStack.pushPose();
+         poseStack.scale(0.75F, 0.75F, 0.75F);
+         poseStack.translate(-0.5F, (float)(state.displayOffset - 8) / 16.0F, 0.5F);
+         poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(90.0F));
+         this.submitMinecartContents(state, displayBlockModel, poseStack, submitNodeCollector, state.lightCoords);
+         poseStack.popPose();
       }
 
-      var2.scale(-1.0F, -1.0F, 1.0F);
-      var3.submitModel(this.model, var1, var2, this.model.renderType(MINECART_LOCATION), var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
-      var2.popPose();
+      poseStack.scale(-1.0F, -1.0F, 1.0F);
+      submitNodeCollector.submitModel(this.model, state, poseStack, MINECART_LOCATION, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+      poseStack.popPose();
    }
 
-   private static <S extends MinecartRenderState> void newRender(S var0, PoseStack var1) {
-      var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var0.yRot));
-      var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(-var0.xRot));
-      var1.translate(0.0F, 0.375F, 0.0F);
+   private static <S extends MinecartRenderState> void newRender(final S state, final PoseStack poseStack) {
+      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(state.yRot));
+      poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(-state.xRot));
+      poseStack.translate(0.0F, 0.375F, 0.0F);
    }
 
-   private static <S extends MinecartRenderState> void oldRender(S var0, PoseStack var1) {
-      double var2 = var0.x;
-      double var4 = var0.y;
-      double var6 = var0.z;
-      float var8 = var0.xRot;
-      float var9 = var0.yRot;
-      if (var0.posOnRail != null && var0.frontPos != null && var0.backPos != null) {
-         Vec3 var10 = var0.frontPos;
-         Vec3 var11 = var0.backPos;
-         var1.translate(var0.posOnRail.x - var2, (var10.y + var11.y) / 2.0 - var4, var0.posOnRail.z - var6);
-         Vec3 var12 = var11.add(-var10.x, -var10.y, -var10.z);
-         if (var12.length() != 0.0) {
-            var12 = var12.normalize();
-            var9 = (float)(Math.atan2(var12.z, var12.x) * 180.0 / 3.141592653589793);
-            var8 = (float)(Math.atan(var12.y) * 73.0);
+   private static <S extends MinecartRenderState> void oldRender(final S state, final PoseStack poseStack) {
+      double entityX = state.x;
+      double entityY = state.y;
+      double entityZ = state.z;
+      float xRot = state.xRot;
+      float rotation = state.yRot;
+      if (state.posOnRail != null && state.frontPos != null && state.backPos != null) {
+         Vec3 frontPos = state.frontPos;
+         Vec3 backPos = state.backPos;
+         poseStack.translate(state.posOnRail.x - entityX, (frontPos.y + backPos.y) / 2.0 - entityY, state.posOnRail.z - entityZ);
+         Vec3 direction = backPos.add(-frontPos.x, -frontPos.y, -frontPos.z);
+         if (direction.length() != 0.0) {
+            direction = direction.normalize();
+            rotation = (float)(Math.atan2(direction.z, direction.x) * 180.0 / 3.141592653589793);
+            xRot = (float)(Math.atan(direction.y) * 73.0);
          }
       }
 
-      var1.translate(0.0F, 0.375F, 0.0F);
-      var1.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - var9));
-      var1.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(-var8));
+      poseStack.translate(0.0F, 0.375F, 0.0F);
+      poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(180.0F - rotation));
+      poseStack.mulPose((Quaternionfc)Axis.ZP.rotationDegrees(-xRot));
    }
 
-   public void extractRenderState(T var1, S var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      MinecartBehavior var6 = var1.getBehavior();
-      if (var6 instanceof NewMinecartBehavior var4) {
-         newExtractState(var1, var4, var2, var3);
-         var2.isNewRender = true;
+   public void extractRenderState(final T entity, final S state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      MinecartBehavior var6 = entity.getBehavior();
+      if (var6 instanceof NewMinecartBehavior behavior) {
+         newExtractState(entity, behavior, state, partialTicks);
+         state.isNewRender = true;
       } else {
-         var6 = var1.getBehavior();
-         if (var6 instanceof OldMinecartBehavior var5) {
-            oldExtractState(var1, var5, var2, var3);
-            var2.isNewRender = false;
+         var6 = entity.getBehavior();
+         if (var6 instanceof OldMinecartBehavior behavior) {
+            oldExtractState(entity, behavior, state, partialTicks);
+            state.isNewRender = false;
          }
       }
 
-      long var7 = (long)var1.getId() * 493286711L;
-      var2.offsetSeed = var7 * var7 * 4392167121L + var7 * 98761L;
-      var2.hurtTime = (float)var1.getHurtTime() - var3;
-      var2.hurtDir = var1.getHurtDir();
-      var2.damageTime = Math.max(var1.getDamage() - var3, 0.0F);
-      var2.displayOffset = var1.getDisplayOffset();
-      var2.displayBlockState = var1.getDisplayBlockState();
+      long seed = (long)entity.getId() * 493286711L;
+      state.offsetSeed = seed * seed * 4392167121L + seed * 98761L;
+      state.hurtTime = (float)entity.getHurtTime() - partialTicks;
+      state.hurtDir = entity.getHurtDir();
+      state.damageTime = Math.max(entity.getDamage() - partialTicks, 0.0F);
+      state.displayOffset = entity.getDisplayOffset();
+      this.blockModelResolver.update(state.displayBlockModel, entity.getDisplayBlockState(), BLOCK_DISPLAY_CONTEXT);
    }
 
-   private static <T extends AbstractMinecart, S extends MinecartRenderState> void newExtractState(T var0, NewMinecartBehavior var1, S var2, float var3) {
-      if (var1.cartHasPosRotLerp()) {
-         var2.renderPos = var1.getCartLerpPosition(var3);
-         var2.xRot = var1.getCartLerpXRot(var3);
-         var2.yRot = var1.getCartLerpYRot(var3);
+   private static <T extends AbstractMinecart, S extends MinecartRenderState> void newExtractState(final T entity, final NewMinecartBehavior behavior, final S state, final float partialTicks) {
+      if (behavior.cartHasPosRotLerp()) {
+         state.renderPos = behavior.getCartLerpPosition(partialTicks);
+         state.xRot = behavior.getCartLerpXRot(partialTicks);
+         state.yRot = behavior.getCartLerpYRot(partialTicks);
       } else {
-         var2.renderPos = null;
-         var2.xRot = var0.getXRot();
-         var2.yRot = var0.getYRot();
+         state.renderPos = null;
+         state.xRot = entity.getXRot();
+         state.yRot = entity.getYRot();
       }
 
    }
 
-   private static <T extends AbstractMinecart, S extends MinecartRenderState> void oldExtractState(T var0, OldMinecartBehavior var1, S var2, float var3) {
-      float var4 = 0.3F;
-      var2.xRot = var0.getXRot(var3);
-      var2.yRot = var0.getYRot(var3);
-      double var5 = var2.x;
-      double var7 = var2.y;
-      double var9 = var2.z;
-      Vec3 var11 = var1.getPos(var5, var7, var9);
-      if (var11 != null) {
-         var2.posOnRail = var11;
-         Vec3 var12 = var1.getPosOffs(var5, var7, var9, 0.30000001192092896);
-         Vec3 var13 = var1.getPosOffs(var5, var7, var9, -0.30000001192092896);
-         var2.frontPos = (Vec3)Objects.requireNonNullElse(var12, var11);
-         var2.backPos = (Vec3)Objects.requireNonNullElse(var13, var11);
+   private static <T extends AbstractMinecart, S extends MinecartRenderState> void oldExtractState(final T entity, final OldMinecartBehavior behavior, final S state, final float partialTicks) {
+      float HALF_LENGTH = 0.3F;
+      state.xRot = entity.getXRot(partialTicks);
+      state.yRot = entity.getYRot(partialTicks);
+      double entityX = state.x;
+      double entityY = state.y;
+      double entityZ = state.z;
+      Vec3 pos = behavior.getPos(entityX, entityY, entityZ);
+      if (pos != null) {
+         state.posOnRail = pos;
+         Vec3 p0 = behavior.getPosOffs(entityX, entityY, entityZ, 0.30000001192092896);
+         Vec3 p1 = behavior.getPosOffs(entityX, entityY, entityZ, -0.30000001192092896);
+         state.frontPos = (Vec3)Objects.requireNonNullElse(p0, pos);
+         state.backPos = (Vec3)Objects.requireNonNullElse(p1, pos);
       } else {
-         var2.posOnRail = null;
-         var2.frontPos = null;
-         var2.backPos = null;
+         state.posOnRail = null;
+         state.frontPos = null;
+         state.backPos = null;
       }
 
    }
 
-   protected void submitMinecartContents(S var1, BlockState var2, PoseStack var3, SubmitNodeCollector var4, int var5) {
-      var4.submitBlock(var3, var2, var5, OverlayTexture.NO_OVERLAY, var1.outlineColor);
+   protected void submitMinecartContents(final S state, final BlockModelRenderState blockModel, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords) {
+      blockModel.submit(poseStack, submitNodeCollector, lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
    }
 
-   protected AABB getBoundingBoxForCulling(T var1) {
-      AABB var2 = super.getBoundingBoxForCulling(var1);
-      return !var1.getDisplayBlockState().isAir() ? var2.expandTowards(0.0, (double)((float)var1.getDisplayOffset() * 0.75F / 16.0F), 0.0) : var2;
+   protected AABB getBoundingBoxForCulling(final T entity) {
+      AABB aabb = super.getBoundingBoxForCulling(entity);
+      return !entity.getDisplayBlockState().isAir() ? aabb.expandTowards(0.0, (double)((float)entity.getDisplayOffset() * 0.75F / 16.0F), 0.0) : aabb;
    }
 
-   public Vec3 getRenderOffset(S var1) {
-      Vec3 var2 = super.getRenderOffset(var1);
-      return var1.isNewRender && var1.renderPos != null ? var2.add(var1.renderPos.x - var1.x, var1.renderPos.y - var1.y, var1.renderPos.z - var1.z) : var2;
+   public Vec3 getRenderOffset(final S state) {
+      Vec3 offset = super.getRenderOffset(state);
+      return state.isNewRender && state.renderPos != null ? offset.add(state.renderPos.x - state.x, state.renderPos.y - state.y, state.renderPos.z - state.z) : offset;
    }
 }

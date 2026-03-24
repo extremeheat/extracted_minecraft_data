@@ -13,21 +13,20 @@ public record DebugStickState(Map<Holder<Block>, Property<?>> properties) {
    public static final DebugStickState EMPTY = new DebugStickState(Map.of());
    public static final Codec<DebugStickState> CODEC;
 
-   public DebugStickState(Map<Holder<Block>, Property<?>> var1) {
+   public DebugStickState {
       super();
-      this.properties = var1;
    }
 
-   public DebugStickState withProperty(Holder<Block> var1, Property<?> var2) {
-      return new DebugStickState(Util.copyAndPut(this.properties, var1, var2));
+   public DebugStickState withProperty(final Holder<Block> block, final Property<?> property) {
+      return new DebugStickState(Util.copyAndPut(this.properties, block, property));
    }
 
    static {
-      CODEC = Codec.dispatchedMap(BuiltInRegistries.BLOCK.holderByNameCodec(), (var0) -> Codec.STRING.comapFlatMap((var1) -> {
-            Property var2 = ((Block)var0.value()).getStateDefinition().getProperty(var1);
-            return var2 != null ? DataResult.success(var2) : DataResult.error(() -> {
-               String var10000 = var0.getRegisteredName();
-               return "No property on " + var10000 + " with name: " + var1;
+      CODEC = Codec.dispatchedMap(BuiltInRegistries.BLOCK.holderByNameCodec(), (block) -> Codec.STRING.comapFlatMap((name) -> {
+            Property<?> property = ((Block)block.value()).getStateDefinition().getProperty(name);
+            return property != null ? DataResult.success(property) : DataResult.error(() -> {
+               String var10000 = block.getRegisteredName();
+               return "No property on " + var10000 + " with name: " + name;
             });
          }, Property::getName)).xmap(DebugStickState::new, DebugStickState::properties);
    }

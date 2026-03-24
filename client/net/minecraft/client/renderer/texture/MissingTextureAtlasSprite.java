@@ -18,26 +18,26 @@ public final class MissingTextureAtlasSprite {
       return generateMissingImage(16, 16);
    }
 
-   public static NativeImage generateMissingImage(int var0, int var1) {
-      NativeImage var2 = new NativeImage(var0, var1, false);
-      int var3 = -524040;
+   public static NativeImage generateMissingImage(final int width, final int height) {
+      NativeImage result = new NativeImage(width, height, false);
+      int pink = -524040;
 
-      for(int var4 = 0; var4 < var1; ++var4) {
-         for(int var5 = 0; var5 < var0; ++var5) {
-            if (var4 < var1 / 2 ^ var5 < var0 / 2) {
-               var2.setPixel(var5, var4, -524040);
+      for(int y = 0; y < height; ++y) {
+         for(int x = 0; x < width; ++x) {
+            if (y < height / 2 ^ x < width / 2) {
+               result.setPixel(x, y, -524040);
             } else {
-               var2.setPixel(var5, var4, -16777216);
+               result.setPixel(x, y, -16777216);
             }
          }
       }
 
-      return var2;
+      return result;
    }
 
    public static SpriteContents create() {
-      NativeImage var0 = generateMissingImage(16, 16);
-      return new SpriteContents(MISSING_TEXTURE_LOCATION, new FrameSize(16, 16), var0);
+      NativeImage contents = generateMissingImage(16, 16);
+      return new SpriteContents(MISSING_TEXTURE_LOCATION, new FrameSize(16, 16), contents);
    }
 
    public static Identifier getLocation() {

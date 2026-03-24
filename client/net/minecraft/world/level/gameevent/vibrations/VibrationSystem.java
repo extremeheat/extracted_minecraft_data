@@ -34,51 +34,51 @@ import org.jspecify.annotations.Nullable;
 public interface VibrationSystem {
    List<ResourceKey<GameEvent>> RESONANCE_EVENTS = List.of(GameEvent.RESONATE_1.key(), GameEvent.RESONATE_2.key(), GameEvent.RESONATE_3.key(), GameEvent.RESONATE_4.key(), GameEvent.RESONATE_5.key(), GameEvent.RESONATE_6.key(), GameEvent.RESONATE_7.key(), GameEvent.RESONATE_8.key(), GameEvent.RESONATE_9.key(), GameEvent.RESONATE_10.key(), GameEvent.RESONATE_11.key(), GameEvent.RESONATE_12.key(), GameEvent.RESONATE_13.key(), GameEvent.RESONATE_14.key(), GameEvent.RESONATE_15.key());
    int NO_VIBRATION_FREQUENCY = 0;
-   ToIntFunction<ResourceKey<GameEvent>> VIBRATION_FREQUENCY_FOR_EVENT = (ToIntFunction)Util.make(new Reference2IntOpenHashMap(), (var0) -> {
-      var0.defaultReturnValue(0);
-      var0.put(GameEvent.STEP.key(), 1);
-      var0.put(GameEvent.SWIM.key(), 1);
-      var0.put(GameEvent.FLAP.key(), 1);
-      var0.put(GameEvent.PROJECTILE_LAND.key(), 2);
-      var0.put(GameEvent.HIT_GROUND.key(), 2);
-      var0.put(GameEvent.SPLASH.key(), 2);
-      var0.put(GameEvent.ITEM_INTERACT_FINISH.key(), 3);
-      var0.put(GameEvent.PROJECTILE_SHOOT.key(), 3);
-      var0.put(GameEvent.INSTRUMENT_PLAY.key(), 3);
-      var0.put(GameEvent.ENTITY_ACTION.key(), 4);
-      var0.put(GameEvent.ELYTRA_GLIDE.key(), 4);
-      var0.put(GameEvent.UNEQUIP.key(), 4);
-      var0.put(GameEvent.ENTITY_DISMOUNT.key(), 5);
-      var0.put(GameEvent.EQUIP.key(), 5);
-      var0.put(GameEvent.ENTITY_INTERACT.key(), 6);
-      var0.put(GameEvent.SHEAR.key(), 6);
-      var0.put(GameEvent.ENTITY_MOUNT.key(), 6);
-      var0.put(GameEvent.ENTITY_DAMAGE.key(), 7);
-      var0.put(GameEvent.DRINK.key(), 8);
-      var0.put(GameEvent.EAT.key(), 8);
-      var0.put(GameEvent.CONTAINER_CLOSE.key(), 9);
-      var0.put(GameEvent.BLOCK_CLOSE.key(), 9);
-      var0.put(GameEvent.BLOCK_DEACTIVATE.key(), 9);
-      var0.put(GameEvent.BLOCK_DETACH.key(), 9);
-      var0.put(GameEvent.CONTAINER_OPEN.key(), 10);
-      var0.put(GameEvent.BLOCK_OPEN.key(), 10);
-      var0.put(GameEvent.BLOCK_ACTIVATE.key(), 10);
-      var0.put(GameEvent.BLOCK_ATTACH.key(), 10);
-      var0.put(GameEvent.PRIME_FUSE.key(), 10);
-      var0.put(GameEvent.NOTE_BLOCK_PLAY.key(), 10);
-      var0.put(GameEvent.BLOCK_CHANGE.key(), 11);
-      var0.put(GameEvent.BLOCK_DESTROY.key(), 12);
-      var0.put(GameEvent.FLUID_PICKUP.key(), 12);
-      var0.put(GameEvent.BLOCK_PLACE.key(), 13);
-      var0.put(GameEvent.FLUID_PLACE.key(), 13);
-      var0.put(GameEvent.ENTITY_PLACE.key(), 14);
-      var0.put(GameEvent.LIGHTNING_STRIKE.key(), 14);
-      var0.put(GameEvent.TELEPORT.key(), 14);
-      var0.put(GameEvent.ENTITY_DIE.key(), 15);
-      var0.put(GameEvent.EXPLODE.key(), 15);
+   ToIntFunction<ResourceKey<GameEvent>> VIBRATION_FREQUENCY_FOR_EVENT = (ToIntFunction)Util.make(new Reference2IntOpenHashMap(), (map) -> {
+      map.defaultReturnValue(0);
+      map.put(GameEvent.STEP.key(), 1);
+      map.put(GameEvent.SWIM.key(), 1);
+      map.put(GameEvent.FLAP.key(), 1);
+      map.put(GameEvent.PROJECTILE_LAND.key(), 2);
+      map.put(GameEvent.HIT_GROUND.key(), 2);
+      map.put(GameEvent.SPLASH.key(), 2);
+      map.put(GameEvent.ITEM_INTERACT_FINISH.key(), 3);
+      map.put(GameEvent.PROJECTILE_SHOOT.key(), 3);
+      map.put(GameEvent.INSTRUMENT_PLAY.key(), 3);
+      map.put(GameEvent.ENTITY_ACTION.key(), 4);
+      map.put(GameEvent.ELYTRA_GLIDE.key(), 4);
+      map.put(GameEvent.UNEQUIP.key(), 4);
+      map.put(GameEvent.ENTITY_DISMOUNT.key(), 5);
+      map.put(GameEvent.EQUIP.key(), 5);
+      map.put(GameEvent.ENTITY_INTERACT.key(), 6);
+      map.put(GameEvent.SHEAR.key(), 6);
+      map.put(GameEvent.ENTITY_MOUNT.key(), 6);
+      map.put(GameEvent.ENTITY_DAMAGE.key(), 7);
+      map.put(GameEvent.DRINK.key(), 8);
+      map.put(GameEvent.EAT.key(), 8);
+      map.put(GameEvent.CONTAINER_CLOSE.key(), 9);
+      map.put(GameEvent.BLOCK_CLOSE.key(), 9);
+      map.put(GameEvent.BLOCK_DEACTIVATE.key(), 9);
+      map.put(GameEvent.BLOCK_DETACH.key(), 9);
+      map.put(GameEvent.CONTAINER_OPEN.key(), 10);
+      map.put(GameEvent.BLOCK_OPEN.key(), 10);
+      map.put(GameEvent.BLOCK_ACTIVATE.key(), 10);
+      map.put(GameEvent.BLOCK_ATTACH.key(), 10);
+      map.put(GameEvent.PRIME_FUSE.key(), 10);
+      map.put(GameEvent.NOTE_BLOCK_PLAY.key(), 10);
+      map.put(GameEvent.BLOCK_CHANGE.key(), 11);
+      map.put(GameEvent.BLOCK_DESTROY.key(), 12);
+      map.put(GameEvent.FLUID_PICKUP.key(), 12);
+      map.put(GameEvent.BLOCK_PLACE.key(), 13);
+      map.put(GameEvent.FLUID_PLACE.key(), 13);
+      map.put(GameEvent.ENTITY_PLACE.key(), 14);
+      map.put(GameEvent.LIGHTNING_STRIKE.key(), 14);
+      map.put(GameEvent.TELEPORT.key(), 14);
+      map.put(GameEvent.ENTITY_DIE.key(), 15);
+      map.put(GameEvent.EXPLODE.key(), 15);
 
-      for(int var1 = 1; var1 <= 15; ++var1) {
-         var0.put(getResonanceEventByFrequency(var1), var1);
+      for(int i = 1; i <= 15; ++i) {
+         map.put(getResonanceEventByFrequency(i), i);
       }
 
    });
@@ -87,37 +87,37 @@ public interface VibrationSystem {
 
    User getVibrationUser();
 
-   static int getGameEventFrequency(Holder<GameEvent> var0) {
-      return (Integer)var0.unwrapKey().map(VibrationSystem::getGameEventFrequency).orElse(0);
+   static int getGameEventFrequency(final Holder<GameEvent> event) {
+      return (Integer)event.unwrapKey().map(VibrationSystem::getGameEventFrequency).orElse(0);
    }
 
-   static int getGameEventFrequency(ResourceKey<GameEvent> var0) {
-      return VIBRATION_FREQUENCY_FOR_EVENT.applyAsInt(var0);
+   static int getGameEventFrequency(final ResourceKey<GameEvent> event) {
+      return VIBRATION_FREQUENCY_FOR_EVENT.applyAsInt(event);
    }
 
-   static ResourceKey<GameEvent> getResonanceEventByFrequency(int var0) {
-      return (ResourceKey)RESONANCE_EVENTS.get(var0 - 1);
+   static ResourceKey<GameEvent> getResonanceEventByFrequency(final int vibrationFrequency) {
+      return (ResourceKey)RESONANCE_EVENTS.get(vibrationFrequency - 1);
    }
 
-   static int getRedstoneStrengthForDistance(float var0, int var1) {
-      double var2 = 15.0 / (double)var1;
-      return Math.max(1, 15 - Mth.floor(var2 * (double)var0));
+   static int getRedstoneStrengthForDistance(final float distance, final int listenerRadius) {
+      double powerScale = 15.0 / (double)listenerRadius;
+      return Math.max(1, 15 - Mth.floor(powerScale * (double)distance));
    }
 
    public static final class Data {
-      public static Codec<Data> CODEC = RecordCodecBuilder.create((var0) -> var0.group(VibrationInfo.CODEC.lenientOptionalFieldOf("event").forGetter((var0x) -> Optional.ofNullable(var0x.currentVibration)), VibrationSelector.CODEC.fieldOf("selector").forGetter(Data::getSelectionStrategy), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("event_delay").orElse(0).forGetter(Data::getTravelTimeInTicks)).apply(var0, (var0x, var1, var2) -> new Data((VibrationInfo)var0x.orElse((Object)null), var1, var2, true)));
+      public static final Codec<Data> CODEC = RecordCodecBuilder.create((i) -> i.group(VibrationInfo.CODEC.lenientOptionalFieldOf("event").forGetter((o) -> Optional.ofNullable(o.currentVibration)), VibrationSelector.CODEC.fieldOf("selector").forGetter(Data::getSelectionStrategy), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("event_delay").orElse(0).forGetter(Data::getTravelTimeInTicks)).apply(i, (currentVibration, selectionStrategy, travelTimeInTicks) -> new Data((VibrationInfo)currentVibration.orElse((Object)null), selectionStrategy, travelTimeInTicks, true)));
       public static final String NBT_TAG_KEY = "listener";
-      @Nullable VibrationInfo currentVibration;
+      private @Nullable VibrationInfo currentVibration;
       private int travelTimeInTicks;
-      final VibrationSelector selectionStrategy;
+      private final VibrationSelector selectionStrategy;
       private boolean reloadVibrationParticle;
 
-      private Data(@Nullable VibrationInfo var1, VibrationSelector var2, int var3, boolean var4) {
+      private Data(final @Nullable VibrationInfo currentVibration, final VibrationSelector selectionStrategy, final int travelTimeInTicks, final boolean reloadVibrationParticle) {
          super();
-         this.currentVibration = var1;
-         this.travelTimeInTicks = var3;
-         this.selectionStrategy = var2;
-         this.reloadVibrationParticle = var4;
+         this.currentVibration = currentVibration;
+         this.travelTimeInTicks = travelTimeInTicks;
+         this.selectionStrategy = selectionStrategy;
+         this.reloadVibrationParticle = reloadVibrationParticle;
       }
 
       public Data() {
@@ -132,16 +132,16 @@ public interface VibrationSystem {
          return this.currentVibration;
       }
 
-      public void setCurrentVibration(@Nullable VibrationInfo var1) {
-         this.currentVibration = var1;
+      public void setCurrentVibration(final @Nullable VibrationInfo currentVibration) {
+         this.currentVibration = currentVibration;
       }
 
       public int getTravelTimeInTicks() {
          return this.travelTimeInTicks;
       }
 
-      public void setTravelTimeInTicks(int var1) {
-         this.travelTimeInTicks = var1;
+      public void setTravelTimeInTicks(final int travelTimeInTicks) {
+         this.travelTimeInTicks = travelTimeInTicks;
       }
 
       public void decrementTravelTime() {
@@ -152,17 +152,17 @@ public interface VibrationSystem {
          return this.reloadVibrationParticle;
       }
 
-      public void setReloadVibrationParticle(boolean var1) {
-         this.reloadVibrationParticle = var1;
+      public void setReloadVibrationParticle(final boolean reloadVibrationParticle) {
+         this.reloadVibrationParticle = reloadVibrationParticle;
       }
    }
 
    public static class Listener implements GameEventListener {
       private final VibrationSystem system;
 
-      public Listener(VibrationSystem var1) {
+      public Listener(final VibrationSystem system) {
          super();
-         this.system = var1;
+         this.system = system;
       }
 
       public PositionSource getListenerSource() {
@@ -173,50 +173,50 @@ public interface VibrationSystem {
          return this.system.getVibrationUser().getListenerRadius();
       }
 
-      public boolean handleGameEvent(ServerLevel var1, Holder<GameEvent> var2, GameEvent.Context var3, Vec3 var4) {
-         Data var5 = this.system.getVibrationData();
-         User var6 = this.system.getVibrationUser();
-         if (var5.getCurrentVibration() != null) {
+      public boolean handleGameEvent(final ServerLevel level, final Holder<GameEvent> event, final GameEvent.Context context, final Vec3 sourcePosition) {
+         Data data = this.system.getVibrationData();
+         User user = this.system.getVibrationUser();
+         if (data.getCurrentVibration() != null) {
             return false;
-         } else if (!var6.isValidVibration(var2, var3)) {
+         } else if (!user.isValidVibration(event, context)) {
             return false;
          } else {
-            Optional var7 = var6.getPositionSource().getPosition(var1);
-            if (var7.isEmpty()) {
+            Optional<Vec3> listenerSourcePos = user.getPositionSource().getPosition(level);
+            if (listenerSourcePos.isEmpty()) {
                return false;
             } else {
-               Vec3 var8 = (Vec3)var7.get();
-               if (!var6.canReceiveVibration(var1, BlockPos.containing(var4), var2, var3)) {
+               Vec3 destination = (Vec3)listenerSourcePos.get();
+               if (!user.canReceiveVibration(level, BlockPos.containing(sourcePosition), event, context)) {
                   return false;
-               } else if (isOccluded(var1, var4, var8)) {
+               } else if (isOccluded(level, sourcePosition, destination)) {
                   return false;
                } else {
-                  this.scheduleVibration(var1, var5, var2, var3, var4, var8);
+                  this.scheduleVibration(level, data, event, context, sourcePosition, destination);
                   return true;
                }
             }
          }
       }
 
-      public void forceScheduleVibration(ServerLevel var1, Holder<GameEvent> var2, GameEvent.Context var3, Vec3 var4) {
-         this.system.getVibrationUser().getPositionSource().getPosition(var1).ifPresent((var5) -> this.scheduleVibration(var1, this.system.getVibrationData(), var2, var3, var4, var5));
+      public void forceScheduleVibration(final ServerLevel level, final Holder<GameEvent> event, final GameEvent.Context context, final Vec3 origin) {
+         this.system.getVibrationUser().getPositionSource().getPosition(level).ifPresent((p) -> this.scheduleVibration(level, this.system.getVibrationData(), event, context, origin, p));
       }
 
-      private void scheduleVibration(ServerLevel var1, Data var2, Holder<GameEvent> var3, GameEvent.Context var4, Vec3 var5, Vec3 var6) {
-         var2.selectionStrategy.addCandidate(new VibrationInfo(var3, (float)var5.distanceTo(var6), var5, var4.sourceEntity()), var1.getGameTime());
+      private void scheduleVibration(final ServerLevel level, final Data data, final Holder<GameEvent> event, final GameEvent.Context context, final Vec3 origin, final Vec3 dest) {
+         data.selectionStrategy.addCandidate(new VibrationInfo(event, (float)origin.distanceTo(dest), origin, context.sourceEntity()), level.getGameTime());
       }
 
-      public static float distanceBetweenInBlocks(BlockPos var0, BlockPos var1) {
-         return (float)Math.sqrt(var0.distSqr(var1));
+      public static float distanceBetweenInBlocks(final BlockPos origin, final BlockPos dest) {
+         return (float)Math.sqrt(origin.distSqr(dest));
       }
 
-      private static boolean isOccluded(Level var0, Vec3 var1, Vec3 var2) {
-         Vec3 var3 = new Vec3((double)Mth.floor(var1.x) + 0.5, (double)Mth.floor(var1.y) + 0.5, (double)Mth.floor(var1.z) + 0.5);
-         Vec3 var4 = new Vec3((double)Mth.floor(var2.x) + 0.5, (double)Mth.floor(var2.y) + 0.5, (double)Mth.floor(var2.z) + 0.5);
+      private static boolean isOccluded(final Level level, final Vec3 origin, final Vec3 dest) {
+         Vec3 from = new Vec3((double)Mth.floor(origin.x) + 0.5, (double)Mth.floor(origin.y) + 0.5, (double)Mth.floor(origin.z) + 0.5);
+         Vec3 to = new Vec3((double)Mth.floor(dest.x) + 0.5, (double)Mth.floor(dest.y) + 0.5, (double)Mth.floor(dest.z) + 0.5);
 
-         for(Direction var8 : Direction.values()) {
-            Vec3 var9 = var3.relative(var8, 9.999999747378752E-6);
-            if (var0.isBlockInLine(new ClipBlockStateContext(var9, var4, (var0x) -> var0x.is(BlockTags.OCCLUDES_VIBRATION_SIGNALS))).getType() != HitResult.Type.BLOCK) {
+         for(Direction direction : Direction.values()) {
+            Vec3 nudgedSource = from.relative(direction, 9.999999747378752E-6);
+            if (level.isBlockInLine(new ClipBlockStateContext(nudgedSource, to, (state) -> state.is(BlockTags.OCCLUDES_VIBRATION_SIGNALS))).getType() != HitResult.Type.BLOCK) {
                return false;
             }
          }
@@ -226,80 +226,80 @@ public interface VibrationSystem {
    }
 
    public interface Ticker {
-      static void tick(Level var0, Data var1, User var2) {
-         if (var0 instanceof ServerLevel var3) {
-            if (var1.currentVibration == null) {
-               trySelectAndScheduleVibration(var3, var1, var2);
+      static void tick(final Level level, final Data data, final User user) {
+         if (level instanceof ServerLevel serverLevel) {
+            if (data.currentVibration == null) {
+               trySelectAndScheduleVibration(serverLevel, data, user);
             }
 
-            if (var1.currentVibration != null) {
-               boolean var4 = var1.getTravelTimeInTicks() > 0;
-               tryReloadVibrationParticle(var3, var1, var2);
-               var1.decrementTravelTime();
-               if (var1.getTravelTimeInTicks() <= 0) {
-                  var4 = receiveVibration(var3, var1, var2, var1.currentVibration);
+            if (data.currentVibration != null) {
+               boolean hasChanged = data.getTravelTimeInTicks() > 0;
+               tryReloadVibrationParticle(serverLevel, data, user);
+               data.decrementTravelTime();
+               if (data.getTravelTimeInTicks() <= 0) {
+                  hasChanged = receiveVibration(serverLevel, data, user, data.currentVibration);
                }
 
-               if (var4) {
-                  var2.onDataChanged();
+               if (hasChanged) {
+                  user.onDataChanged();
                }
 
             }
          }
       }
 
-      private static void trySelectAndScheduleVibration(ServerLevel var0, Data var1, User var2) {
-         var1.getSelectionStrategy().chosenCandidate(var0.getGameTime()).ifPresent((var3) -> {
-            var1.setCurrentVibration(var3);
-            Vec3 var4 = var3.pos();
-            var1.setTravelTimeInTicks(var2.calculateTravelTimeInTicks(var3.distance()));
-            var0.sendParticles(new VibrationParticleOption(var2.getPositionSource(), var1.getTravelTimeInTicks()), var4.x, var4.y, var4.z, 1, 0.0, 0.0, 0.0, 0.0);
-            var2.onDataChanged();
-            var1.getSelectionStrategy().startOver();
+      private static void trySelectAndScheduleVibration(final ServerLevel serverLevel, final Data data, final User user) {
+         data.getSelectionStrategy().chosenCandidate(serverLevel.getGameTime()).ifPresent((context) -> {
+            data.setCurrentVibration(context);
+            Vec3 origin = context.pos();
+            data.setTravelTimeInTicks(user.calculateTravelTimeInTicks(context.distance()));
+            serverLevel.sendParticles(new VibrationParticleOption(user.getPositionSource(), data.getTravelTimeInTicks()), origin.x, origin.y, origin.z, 1, 0.0, 0.0, 0.0, 0.0);
+            user.onDataChanged();
+            data.getSelectionStrategy().startOver();
          });
       }
 
-      private static void tryReloadVibrationParticle(ServerLevel var0, Data var1, User var2) {
-         if (var1.shouldReloadVibrationParticle()) {
-            if (var1.currentVibration == null) {
-               var1.setReloadVibrationParticle(false);
+      private static void tryReloadVibrationParticle(final ServerLevel level, final Data data, final User user) {
+         if (data.shouldReloadVibrationParticle()) {
+            if (data.currentVibration == null) {
+               data.setReloadVibrationParticle(false);
             } else {
-               Vec3 var3 = var1.currentVibration.pos();
-               PositionSource var4 = var2.getPositionSource();
-               Vec3 var5 = (Vec3)var4.getPosition(var0).orElse(var3);
-               int var6 = var1.getTravelTimeInTicks();
-               int var7 = var2.calculateTravelTimeInTicks(var1.currentVibration.distance());
-               double var8 = 1.0 - (double)var6 / (double)var7;
-               double var10 = Mth.lerp(var8, var3.x, var5.x);
-               double var12 = Mth.lerp(var8, var3.y, var5.y);
-               double var14 = Mth.lerp(var8, var3.z, var5.z);
-               boolean var16 = var0.sendParticles(new VibrationParticleOption(var4, var6), var10, var12, var14, 1, 0.0, 0.0, 0.0, 0.0) > 0;
-               if (var16) {
-                  var1.setReloadVibrationParticle(false);
+               Vec3 origin = data.currentVibration.pos();
+               PositionSource positionSource = user.getPositionSource();
+               Vec3 destination = (Vec3)positionSource.getPosition(level).orElse(origin);
+               int travelTimeInTicks = data.getTravelTimeInTicks();
+               int initialTravelTime = user.calculateTravelTimeInTicks(data.currentVibration.distance());
+               double alpha = 1.0 - (double)travelTimeInTicks / (double)initialTravelTime;
+               double newInitialX = Mth.lerp(alpha, origin.x, destination.x);
+               double newInitialY = Mth.lerp(alpha, origin.y, destination.y);
+               double newInitialZ = Mth.lerp(alpha, origin.z, destination.z);
+               boolean particleWasSent = level.sendParticles(new VibrationParticleOption(positionSource, travelTimeInTicks), newInitialX, newInitialY, newInitialZ, 1, 0.0, 0.0, 0.0, 0.0) > 0;
+               if (particleWasSent) {
+                  data.setReloadVibrationParticle(false);
                }
 
             }
          }
       }
 
-      private static boolean receiveVibration(ServerLevel var0, Data var1, User var2, VibrationInfo var3) {
-         BlockPos var4 = BlockPos.containing(var3.pos());
-         BlockPos var5 = (BlockPos)var2.getPositionSource().getPosition(var0).map(BlockPos::containing).orElse(var4);
-         if (var2.requiresAdjacentChunksToBeTicking() && !areAdjacentChunksTicking(var0, var5)) {
+      private static boolean receiveVibration(final ServerLevel serverLevel, final Data data, final User user, final VibrationInfo currentVibration) {
+         BlockPos origin = BlockPos.containing(currentVibration.pos());
+         BlockPos destination = (BlockPos)user.getPositionSource().getPosition(serverLevel).map(BlockPos::containing).orElse(origin);
+         if (user.requiresAdjacentChunksToBeTicking() && !areAdjacentChunksTicking(serverLevel, destination)) {
             return false;
          } else {
-            var2.onReceiveVibration(var0, var4, var3.gameEvent(), (Entity)var3.getEntity(var0).orElse((Object)null), (Entity)var3.getProjectileOwner(var0).orElse((Object)null), VibrationSystem.Listener.distanceBetweenInBlocks(var4, var5));
-            var1.setCurrentVibration((VibrationInfo)null);
+            user.onReceiveVibration(serverLevel, origin, currentVibration.gameEvent(), (Entity)currentVibration.getEntity(serverLevel).orElse((Object)null), (Entity)currentVibration.getProjectileOwner(serverLevel).orElse((Object)null), VibrationSystem.Listener.distanceBetweenInBlocks(origin, destination));
+            data.setCurrentVibration((VibrationInfo)null);
             return true;
          }
       }
 
-      private static boolean areAdjacentChunksTicking(Level var0, BlockPos var1) {
-         ChunkPos var2 = new ChunkPos(var1);
+      private static boolean areAdjacentChunksTicking(final Level level, final BlockPos listenerPos) {
+         ChunkPos listenerChunkPos = ChunkPos.containing(listenerPos);
 
-         for(int var3 = var2.x - 1; var3 <= var2.x + 1; ++var3) {
-            for(int var4 = var2.z - 1; var4 <= var2.z + 1; ++var4) {
-               if (!var0.shouldTickBlocksAt(ChunkPos.asLong(var3, var4)) || var0.getChunkSource().getChunkNow(var3, var4) == null) {
+         for(int x = listenerChunkPos.x() - 1; x <= listenerChunkPos.x() + 1; ++x) {
+            for(int z = listenerChunkPos.z() - 1; z <= listenerChunkPos.z() + 1; ++z) {
+               if (!level.shouldTickBlocksAt(ChunkPos.pack(x, z)) || level.getChunkSource().getChunkNow(x, z) == null) {
                   return false;
                }
             }
@@ -314,9 +314,9 @@ public interface VibrationSystem {
 
       PositionSource getPositionSource();
 
-      boolean canReceiveVibration(ServerLevel var1, BlockPos var2, Holder<GameEvent> var3, GameEvent.Context var4);
+      boolean canReceiveVibration(ServerLevel level, BlockPos pos, Holder<GameEvent> event, GameEvent.Context context);
 
-      void onReceiveVibration(ServerLevel var1, BlockPos var2, Holder<GameEvent> var3, @Nullable Entity var4, @Nullable Entity var5, float var6);
+      void onReceiveVibration(ServerLevel level, BlockPos pos, Holder<GameEvent> event, @Nullable Entity sourceEntity, @Nullable Entity projectileOwner, float receivingDistance);
 
       default TagKey<GameEvent> getListenableEvents() {
          return GameEventTags.VIBRATIONS;
@@ -330,36 +330,36 @@ public interface VibrationSystem {
          return false;
       }
 
-      default int calculateTravelTimeInTicks(float var1) {
-         return Mth.floor(var1);
+      default int calculateTravelTimeInTicks(final float distanceToDestination) {
+         return Mth.floor(distanceToDestination);
       }
 
-      default boolean isValidVibration(Holder<GameEvent> var1, GameEvent.Context var2) {
-         if (!var1.is(this.getListenableEvents())) {
+      default boolean isValidVibration(final Holder<GameEvent> event, final GameEvent.Context context) {
+         if (!event.is(this.getListenableEvents())) {
             return false;
          } else {
-            Entity var3 = var2.sourceEntity();
-            if (var3 != null) {
-               if (var3.isSpectator()) {
+            Entity sourceEntity = context.sourceEntity();
+            if (sourceEntity != null) {
+               if (sourceEntity.isSpectator()) {
                   return false;
                }
 
-               if (var3.isSteppingCarefully() && var1.is(GameEventTags.IGNORE_VIBRATIONS_SNEAKING)) {
-                  if (this.canTriggerAvoidVibration() && var3 instanceof ServerPlayer) {
-                     ServerPlayer var4 = (ServerPlayer)var3;
-                     CriteriaTriggers.AVOID_VIBRATION.trigger(var4);
+               if (sourceEntity.isSteppingCarefully() && event.is(GameEventTags.IGNORE_VIBRATIONS_SNEAKING)) {
+                  if (this.canTriggerAvoidVibration() && sourceEntity instanceof ServerPlayer) {
+                     ServerPlayer player = (ServerPlayer)sourceEntity;
+                     CriteriaTriggers.AVOID_VIBRATION.trigger(player);
                   }
 
                   return false;
                }
 
-               if (var3.dampensVibrations()) {
+               if (sourceEntity.dampensVibrations()) {
                   return false;
                }
             }
 
-            if (var2.affectedState() != null) {
-               return !var2.affectedState().is(BlockTags.DAMPENS_VIBRATIONS);
+            if (context.affectedState() != null) {
+               return !context.affectedState().is(BlockTags.DAMPENS_VIBRATIONS);
             } else {
                return true;
             }

@@ -16,33 +16,33 @@ public class GlSampler extends GpuSampler {
    private final OptionalDouble maxLod;
    private boolean closed;
 
-   public GlSampler(AddressMode var1, AddressMode var2, FilterMode var3, FilterMode var4, int var5, OptionalDouble var6) {
+   public GlSampler(final AddressMode addressModeU, final AddressMode addressModeV, final FilterMode minFilter, final FilterMode magFilter, final int maxAnisotropy, final OptionalDouble maxLod) {
       super();
-      this.addressModeU = var1;
-      this.addressModeV = var2;
-      this.minFilter = var3;
-      this.magFilter = var4;
-      this.maxAnisotropy = var5;
-      this.maxLod = var6;
+      this.addressModeU = addressModeU;
+      this.addressModeV = addressModeV;
+      this.minFilter = minFilter;
+      this.magFilter = magFilter;
+      this.maxAnisotropy = maxAnisotropy;
+      this.maxLod = maxLod;
       this.id = GL33C.glGenSamplers();
-      GL33C.glSamplerParameteri(this.id, 10242, GlConst.toGl(var1));
-      GL33C.glSamplerParameteri(this.id, 10243, GlConst.toGl(var2));
-      if (var5 > 1) {
-         GL33C.glSamplerParameterf(this.id, 34046, (float)var5);
+      GL33C.glSamplerParameteri(this.id, 10242, GlConst.toGl(addressModeU));
+      GL33C.glSamplerParameteri(this.id, 10243, GlConst.toGl(addressModeV));
+      if (maxAnisotropy > 1) {
+         GL33C.glSamplerParameterf(this.id, 34046, (float)maxAnisotropy);
       }
 
-      switch (var3) {
+      switch (minFilter) {
          case NEAREST -> GL33C.glSamplerParameteri(this.id, 10241, 9986);
          case LINEAR -> GL33C.glSamplerParameteri(this.id, 10241, 9987);
       }
 
-      switch (var4) {
+      switch (magFilter) {
          case NEAREST -> GL33C.glSamplerParameteri(this.id, 10240, 9728);
          case LINEAR -> GL33C.glSamplerParameteri(this.id, 10240, 9729);
       }
 
-      if (var6.isPresent()) {
-         GL33C.glSamplerParameterf(this.id, 33083, (float)var6.getAsDouble());
+      if (maxLod.isPresent()) {
+         GL33C.glSamplerParameterf(this.id, 33083, (float)maxLod.getAsDouble());
       }
 
    }

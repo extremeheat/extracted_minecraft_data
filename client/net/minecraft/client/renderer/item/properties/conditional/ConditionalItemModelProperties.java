@@ -29,6 +29,6 @@ public class ConditionalItemModelProperties {
    }
 
    static {
-      MAP_CODEC = ID_MAPPER.codec(Identifier.CODEC).dispatchMap("property", ConditionalItemModelProperty::type, (var0) -> var0);
+      MAP_CODEC = ID_MAPPER.codec(Identifier.CODEC).dispatchMap("property", ConditionalItemModelProperty::type, (c) -> c);
    }
 }

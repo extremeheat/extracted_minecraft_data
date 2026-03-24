@@ -21,7 +21,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class SkullBlock extends AbstractSkullBlock {
-   public static final MapCodec<SkullBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(SkullBlock.Type.CODEC.fieldOf("kind").forGetter(AbstractSkullBlock::getType), propertiesCodec()).apply(var0, SkullBlock::new));
+   public static final MapCodec<SkullBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(SkullBlock.Type.CODEC.fieldOf("kind").forGetter(AbstractSkullBlock::getType), propertiesCodec()).apply(i, SkullBlock::new));
    public static final int MAX = RotationSegment.getMaxSegmentIndex();
    private static final int ROTATIONS;
    public static final IntegerProperty ROTATION;
@@ -32,30 +32,30 @@ public class SkullBlock extends AbstractSkullBlock {
       return CODEC;
    }
 
-   protected SkullBlock(Type var1, BlockBehaviour.Properties var2) {
-      super(var1, var2);
+   protected SkullBlock(final Type type, final BlockBehaviour.Properties properties) {
+      super(type, properties);
       this.registerDefaultState((BlockState)this.defaultBlockState().setValue(ROTATION, 0));
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return this.getType() == SkullBlock.Types.PIGLIN ? SHAPE_PIGLIN : SHAPE;
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return (BlockState)super.getStateForPlacement(var1).setValue(ROTATION, RotationSegment.convertToSegment(var1.getRotation()));
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      return (BlockState)super.getStateForPlacement(context).setValue(ROTATION, RotationSegment.convertToSegment(context.getRotation()));
    }
 
-   protected BlockState rotate(BlockState var1, Rotation var2) {
-      return (BlockState)var1.setValue(ROTATION, var2.rotate((Integer)var1.getValue(ROTATION), ROTATIONS));
+   protected BlockState rotate(final BlockState state, final Rotation rotation) {
+      return (BlockState)state.setValue(ROTATION, rotation.rotate((Integer)state.getValue(ROTATION), ROTATIONS));
    }
 
-   protected BlockState mirror(BlockState var1, Mirror var2) {
-      return (BlockState)var1.setValue(ROTATION, var2.mirror((Integer)var1.getValue(ROTATION), ROTATIONS));
+   protected BlockState mirror(final BlockState state, final Mirror mirror) {
+      return (BlockState)state.setValue(ROTATION, mirror.mirror((Integer)state.getValue(ROTATION), ROTATIONS));
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      super.createBlockStateDefinition(var1);
-      var1.add(ROTATION);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      super.createBlockStateDefinition(builder);
+      builder.add(ROTATION);
    }
 
    static {
@@ -88,9 +88,9 @@ public class SkullBlock extends AbstractSkullBlock {
 
       private final String name;
 
-      private Types(final String var3) {
-         this.name = var3;
-         TYPES.put(var3, this);
+      private Types(final String name) {
+         this.name = name;
+         TYPES.put(name, this);
       }
 
       public String getSerializedName() {

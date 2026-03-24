@@ -13,50 +13,50 @@ public class CollectFields extends CollectToTag {
    private final Set<TagType<?>> wantedTypes;
    private final Deque<FieldTree> stack = new ArrayDeque();
 
-   public CollectFields(FieldSelector... var1) {
+   public CollectFields(final FieldSelector... wantedFields) {
       super();
-      this.fieldsToGetCount = var1.length;
-      ImmutableSet.Builder var2 = ImmutableSet.builder();
-      FieldTree var3 = FieldTree.createRoot();
+      this.fieldsToGetCount = wantedFields.length;
+      ImmutableSet.Builder<TagType<?>> wantedTypes = ImmutableSet.builder();
+      FieldTree rootFrame = FieldTree.createRoot();
 
-      for(FieldSelector var7 : var1) {
-         var3.addEntry(var7);
-         var2.add(var7.type());
+      for(FieldSelector wantedField : wantedFields) {
+         rootFrame.addEntry(wantedField);
+         wantedTypes.add(wantedField.type());
       }
 
-      this.stack.push(var3);
-      var2.add(CompoundTag.TYPE);
-      this.wantedTypes = var2.build();
+      this.stack.push(rootFrame);
+      wantedTypes.add(CompoundTag.TYPE);
+      this.wantedTypes = wantedTypes.build();
    }
 
-   public StreamTagVisitor.ValueResult visitRootEntry(TagType<?> var1) {
-      return var1 != CompoundTag.TYPE ? StreamTagVisitor.ValueResult.HALT : super.visitRootEntry(var1);
+   public StreamTagVisitor.ValueResult visitRootEntry(final TagType<?> type) {
+      return type != CompoundTag.TYPE ? StreamTagVisitor.ValueResult.HALT : super.visitRootEntry(type);
    }
 
-   public StreamTagVisitor.EntryResult visitEntry(TagType<?> var1) {
-      FieldTree var2 = (FieldTree)this.stack.element();
-      if (this.depth() > var2.depth()) {
-         return super.visitEntry(var1);
+   public StreamTagVisitor.EntryResult visitEntry(final TagType<?> type) {
+      FieldTree currentFrame = (FieldTree)this.stack.element();
+      if (this.depth() > currentFrame.depth()) {
+         return super.visitEntry(type);
       } else if (this.fieldsToGetCount <= 0) {
          return StreamTagVisitor.EntryResult.BREAK;
       } else {
-         return !this.wantedTypes.contains(var1) ? StreamTagVisitor.EntryResult.SKIP : super.visitEntry(var1);
+         return !this.wantedTypes.contains(type) ? StreamTagVisitor.EntryResult.SKIP : super.visitEntry(type);
       }
    }
 
-   public StreamTagVisitor.EntryResult visitEntry(TagType<?> var1, String var2) {
-      FieldTree var3 = (FieldTree)this.stack.element();
-      if (this.depth() > var3.depth()) {
-         return super.visitEntry(var1, var2);
-      } else if (var3.selectedFields().remove(var2, var1)) {
+   public StreamTagVisitor.EntryResult visitEntry(final TagType<?> type, final String id) {
+      FieldTree currentFrame = (FieldTree)this.stack.element();
+      if (this.depth() > currentFrame.depth()) {
+         return super.visitEntry(type, id);
+      } else if (currentFrame.selectedFields().remove(id, type)) {
          --this.fieldsToGetCount;
-         return super.visitEntry(var1, var2);
+         return super.visitEntry(type, id);
       } else {
-         if (var1 == CompoundTag.TYPE) {
-            FieldTree var4 = (FieldTree)var3.fieldsToRecurse().get(var2);
-            if (var4 != null) {
-               this.stack.push(var4);
-               return super.visitEntry(var1, var2);
+         if (type == CompoundTag.TYPE) {
+            FieldTree newFrame = (FieldTree)currentFrame.fieldsToRecurse().get(id);
+            if (newFrame != null) {
+               this.stack.push(newFrame);
+               return super.visitEntry(type, id);
             }
          }
 

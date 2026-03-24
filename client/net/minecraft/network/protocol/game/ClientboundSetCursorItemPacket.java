@@ -9,17 +9,16 @@ import net.minecraft.world.item.ItemStack;
 public record ClientboundSetCursorItemPacket(ItemStack contents) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSetCursorItemPacket> STREAM_CODEC;
 
-   public ClientboundSetCursorItemPacket(ItemStack var1) {
+   public ClientboundSetCursorItemPacket {
       super();
-      this.contents = var1;
    }
 
    public PacketType<ClientboundSetCursorItemPacket> type() {
       return GamePacketTypes.CLIENTBOUND_SET_CURSOR_ITEM;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleSetCursorItem(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleSetCursorItem(this);
    }
 
    static {

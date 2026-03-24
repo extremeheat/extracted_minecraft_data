@@ -9,8 +9,6 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +34,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemInstance;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -46,249 +45,249 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 
 public class LootCommand {
-   private static final DynamicCommandExceptionType ERROR_NO_HELD_ITEMS = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.drop.no_held_items", var0));
-   private static final DynamicCommandExceptionType ERROR_NO_ENTITY_LOOT_TABLE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.drop.no_loot_table.entity", var0));
-   private static final DynamicCommandExceptionType ERROR_NO_BLOCK_LOOT_TABLE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.drop.no_loot_table.block", var0));
+   private static final DynamicCommandExceptionType ERROR_NO_HELD_ITEMS = new DynamicCommandExceptionType((entity) -> Component.translatableEscape("commands.drop.no_held_items", entity));
+   private static final DynamicCommandExceptionType ERROR_NO_ENTITY_LOOT_TABLE = new DynamicCommandExceptionType((entity) -> Component.translatableEscape("commands.drop.no_loot_table.entity", entity));
+   private static final DynamicCommandExceptionType ERROR_NO_BLOCK_LOOT_TABLE = new DynamicCommandExceptionType((block) -> Component.translatableEscape("commands.drop.no_loot_table.block", block));
 
    public LootCommand() {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
-      var0.register((LiteralArgumentBuilder)addTargets((LiteralArgumentBuilder)Commands.literal("loot").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)), (var1x, var2) -> var1x.then(Commands.literal("fish").then(Commands.argument("loot_table", ResourceOrIdArgument.lootTable(var1)).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("pos", BlockPosArgument.blockPos()).executes((var1xx) -> dropFishingLoot(var1xx, ResourceOrIdArgument.getLootTable(var1xx, "loot_table"), BlockPosArgument.getLoadedBlockPos(var1xx, "pos"), ItemStack.EMPTY, var2))).then(Commands.argument("tool", ItemArgument.item(var1)).executes((var1xx) -> dropFishingLoot(var1xx, ResourceOrIdArgument.getLootTable(var1xx, "loot_table"), BlockPosArgument.getLoadedBlockPos(var1xx, "pos"), ItemArgument.getItem(var1xx, "tool").createItemStack(1, false), var2)))).then(Commands.literal("mainhand").executes((var1xx) -> dropFishingLoot(var1xx, ResourceOrIdArgument.getLootTable(var1xx, "loot_table"), BlockPosArgument.getLoadedBlockPos(var1xx, "pos"), getSourceHandItem((CommandSourceStack)var1xx.getSource(), EquipmentSlot.MAINHAND), var2)))).then(Commands.literal("offhand").executes((var1xx) -> dropFishingLoot(var1xx, ResourceOrIdArgument.getLootTable(var1xx, "loot_table"), BlockPosArgument.getLoadedBlockPos(var1xx, "pos"), getSourceHandItem((CommandSourceStack)var1xx.getSource(), EquipmentSlot.OFFHAND), var2)))))).then(Commands.literal("loot").then(Commands.argument("loot_table", ResourceOrIdArgument.lootTable(var1)).executes((var1xx) -> dropChestLoot(var1xx, ResourceOrIdArgument.getLootTable(var1xx, "loot_table"), var2)))).then(Commands.literal("kill").then(Commands.argument("target", EntityArgument.entity()).executes((var1xx) -> dropKillLoot(var1xx, EntityArgument.getEntity(var1xx, "target"), var2)))).then(Commands.literal("mine").then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("pos", BlockPosArgument.blockPos()).executes((var1xx) -> dropBlockLoot(var1xx, BlockPosArgument.getLoadedBlockPos(var1xx, "pos"), ItemStack.EMPTY, var2))).then(Commands.argument("tool", ItemArgument.item(var1)).executes((var1xx) -> dropBlockLoot(var1xx, BlockPosArgument.getLoadedBlockPos(var1xx, "pos"), ItemArgument.getItem(var1xx, "tool").createItemStack(1, false), var2)))).then(Commands.literal("mainhand").executes((var1xx) -> dropBlockLoot(var1xx, BlockPosArgument.getLoadedBlockPos(var1xx, "pos"), getSourceHandItem((CommandSourceStack)var1xx.getSource(), EquipmentSlot.MAINHAND), var2)))).then(Commands.literal("offhand").executes((var1xx) -> dropBlockLoot(var1xx, BlockPosArgument.getLoadedBlockPos(var1xx, "pos"), getSourceHandItem((CommandSourceStack)var1xx.getSource(), EquipmentSlot.OFFHAND), var2)))))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final CommandBuildContext context) {
+      dispatcher.register((LiteralArgumentBuilder)addTargets((LiteralArgumentBuilder)Commands.literal("loot").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)), (target, output) -> target.then(Commands.literal("fish").then(Commands.argument("loot_table", ResourceOrIdArgument.lootTable(context)).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("pos", BlockPosArgument.blockPos()).executes((c) -> dropFishingLoot(c, ResourceOrIdArgument.getLootTable(c, "loot_table"), BlockPosArgument.getLoadedBlockPos(c, "pos"), ItemStack.EMPTY, output))).then(Commands.argument("tool", ItemArgument.item(context)).executes((c) -> dropFishingLoot(c, ResourceOrIdArgument.getLootTable(c, "loot_table"), BlockPosArgument.getLoadedBlockPos(c, "pos"), ItemArgument.getItem(c, "tool").createItemStack(1), output)))).then(Commands.literal("mainhand").executes((c) -> dropFishingLoot(c, ResourceOrIdArgument.getLootTable(c, "loot_table"), BlockPosArgument.getLoadedBlockPos(c, "pos"), getSourceHandItem((CommandSourceStack)c.getSource(), EquipmentSlot.MAINHAND), output)))).then(Commands.literal("offhand").executes((c) -> dropFishingLoot(c, ResourceOrIdArgument.getLootTable(c, "loot_table"), BlockPosArgument.getLoadedBlockPos(c, "pos"), getSourceHandItem((CommandSourceStack)c.getSource(), EquipmentSlot.OFFHAND), output)))))).then(Commands.literal("loot").then(Commands.argument("loot_table", ResourceOrIdArgument.lootTable(context)).executes((c) -> dropChestLoot(c, ResourceOrIdArgument.getLootTable(c, "loot_table"), output)))).then(Commands.literal("kill").then(Commands.argument("target", EntityArgument.entity()).executes((c) -> dropKillLoot(c, EntityArgument.getEntity(c, "target"), output)))).then(Commands.literal("mine").then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("pos", BlockPosArgument.blockPos()).executes((c) -> dropBlockLoot(c, BlockPosArgument.getLoadedBlockPos(c, "pos"), ItemStack.EMPTY, output))).then(Commands.argument("tool", ItemArgument.item(context)).executes((c) -> dropBlockLoot(c, BlockPosArgument.getLoadedBlockPos(c, "pos"), ItemArgument.getItem(c, "tool").createItemStack(1), output)))).then(Commands.literal("mainhand").executes((c) -> dropBlockLoot(c, BlockPosArgument.getLoadedBlockPos(c, "pos"), getSourceHandItem((CommandSourceStack)c.getSource(), EquipmentSlot.MAINHAND), output)))).then(Commands.literal("offhand").executes((c) -> dropBlockLoot(c, BlockPosArgument.getLoadedBlockPos(c, "pos"), getSourceHandItem((CommandSourceStack)c.getSource(), EquipmentSlot.OFFHAND), output)))))));
    }
 
-   private static <T extends ArgumentBuilder<CommandSourceStack, T>> T addTargets(T var0, TailProvider var1) {
-      return (T)var0.then(((LiteralArgumentBuilder)Commands.literal("replace").then(Commands.literal("entity").then(Commands.argument("entities", EntityArgument.entities()).then(var1.construct(Commands.argument("slot", SlotArgument.slot()), (var0x, var1x, var2) -> entityReplace(EntityArgument.getEntities(var0x, "entities"), SlotArgument.getSlot(var0x, "slot"), var1x.size(), var1x, var2)).then(var1.construct(Commands.argument("count", IntegerArgumentType.integer(0)), (var0x, var1x, var2) -> entityReplace(EntityArgument.getEntities(var0x, "entities"), SlotArgument.getSlot(var0x, "slot"), IntegerArgumentType.getInteger(var0x, "count"), var1x, var2))))))).then(Commands.literal("block").then(Commands.argument("targetPos", BlockPosArgument.blockPos()).then(var1.construct(Commands.argument("slot", SlotArgument.slot()), (var0x, var1x, var2) -> blockReplace((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "targetPos"), SlotArgument.getSlot(var0x, "slot"), var1x.size(), var1x, var2)).then(var1.construct(Commands.argument("count", IntegerArgumentType.integer(0)), (var0x, var1x, var2) -> blockReplace((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "targetPos"), IntegerArgumentType.getInteger(var0x, "slot"), IntegerArgumentType.getInteger(var0x, "count"), var1x, var2))))))).then(Commands.literal("insert").then(var1.construct(Commands.argument("targetPos", BlockPosArgument.blockPos()), (var0x, var1x, var2) -> blockDistribute((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "targetPos"), var1x, var2)))).then(Commands.literal("give").then(var1.construct(Commands.argument("players", EntityArgument.players()), (var0x, var1x, var2) -> playerGive(EntityArgument.getPlayers(var0x, "players"), var1x, var2)))).then(Commands.literal("spawn").then(var1.construct(Commands.argument("targetPos", Vec3Argument.vec3()), (var0x, var1x, var2) -> dropInWorld((CommandSourceStack)var0x.getSource(), Vec3Argument.getVec3(var0x, "targetPos"), var1x, var2))));
+   private static <T extends ArgumentBuilder<CommandSourceStack, T>> T addTargets(final T root, final TailProvider tail) {
+      return (T)root.then(((LiteralArgumentBuilder)Commands.literal("replace").then(Commands.literal("entity").then(Commands.argument("entities", EntityArgument.entities()).then(tail.construct(Commands.argument("slot", SlotArgument.slot()), (c, drops, callback) -> entityReplace(EntityArgument.getEntities(c, "entities"), SlotArgument.getSlot(c, "slot"), drops.size(), drops, callback)).then(tail.construct(Commands.argument("count", IntegerArgumentType.integer(0)), (c, drops, callback) -> entityReplace(EntityArgument.getEntities(c, "entities"), SlotArgument.getSlot(c, "slot"), IntegerArgumentType.getInteger(c, "count"), drops, callback))))))).then(Commands.literal("block").then(Commands.argument("targetPos", BlockPosArgument.blockPos()).then(tail.construct(Commands.argument("slot", SlotArgument.slot()), (c, drops, callback) -> blockReplace((CommandSourceStack)c.getSource(), BlockPosArgument.getLoadedBlockPos(c, "targetPos"), SlotArgument.getSlot(c, "slot"), drops.size(), drops, callback)).then(tail.construct(Commands.argument("count", IntegerArgumentType.integer(0)), (c, drops, callback) -> blockReplace((CommandSourceStack)c.getSource(), BlockPosArgument.getLoadedBlockPos(c, "targetPos"), IntegerArgumentType.getInteger(c, "slot"), IntegerArgumentType.getInteger(c, "count"), drops, callback))))))).then(Commands.literal("insert").then(tail.construct(Commands.argument("targetPos", BlockPosArgument.blockPos()), (c, drops, callback) -> blockDistribute((CommandSourceStack)c.getSource(), BlockPosArgument.getLoadedBlockPos(c, "targetPos"), drops, callback)))).then(Commands.literal("give").then(tail.construct(Commands.argument("players", EntityArgument.players()), (c, drops, callback) -> playerGive(EntityArgument.getPlayers(c, "players"), drops, callback)))).then(Commands.literal("spawn").then(tail.construct(Commands.argument("targetPos", Vec3Argument.vec3()), (c, drops, callback) -> dropInWorld((CommandSourceStack)c.getSource(), Vec3Argument.getVec3(c, "targetPos"), drops, callback))));
    }
 
-   private static Container getContainer(CommandSourceStack var0, BlockPos var1) throws CommandSyntaxException {
-      BlockEntity var2 = var0.getLevel().getBlockEntity(var1);
-      if (!(var2 instanceof Container)) {
-         throw ItemCommands.ERROR_TARGET_NOT_A_CONTAINER.create(var1.getX(), var1.getY(), var1.getZ());
+   private static Container getContainer(final CommandSourceStack source, final BlockPos pos) throws CommandSyntaxException {
+      BlockEntity blockEntity = source.getLevel().getBlockEntity(pos);
+      if (!(blockEntity instanceof Container)) {
+         throw ItemCommands.ERROR_TARGET_NOT_A_CONTAINER.create(pos.getX(), pos.getY(), pos.getZ());
       } else {
-         return (Container)var2;
+         return (Container)blockEntity;
       }
    }
 
-   private static int blockDistribute(CommandSourceStack var0, BlockPos var1, List<ItemStack> var2, Callback var3) throws CommandSyntaxException {
-      Container var4 = getContainer(var0, var1);
-      ArrayList var5 = Lists.newArrayListWithCapacity(var2.size());
+   private static int blockDistribute(final CommandSourceStack source, final BlockPos pos, final List<ItemStack> drops, final Callback callback) throws CommandSyntaxException {
+      Container container = getContainer(source, pos);
+      List<ItemStack> usedItems = Lists.newArrayListWithCapacity(drops.size());
 
-      for(ItemStack var7 : var2) {
-         if (distributeToContainer(var4, var7.copy())) {
-            var4.setChanged();
-            var5.add(var7);
+      for(ItemStack drop : drops) {
+         if (distributeToContainer(container, drop.copy())) {
+            container.setChanged();
+            usedItems.add(drop);
          }
       }
 
-      var3.accept(var5);
-      return var5.size();
+      callback.accept(usedItems);
+      return usedItems.size();
    }
 
-   private static boolean distributeToContainer(Container var0, ItemStack var1) {
-      boolean var2 = false;
+   private static boolean distributeToContainer(final Container container, final ItemStack itemStack) {
+      boolean changed = false;
 
-      for(int var3 = 0; var3 < var0.getContainerSize() && !var1.isEmpty(); ++var3) {
-         ItemStack var4 = var0.getItem(var3);
-         if (var0.canPlaceItem(var3, var1)) {
-            if (var4.isEmpty()) {
-               var0.setItem(var3, var1);
-               var2 = true;
+      for(int slot = 0; slot < container.getContainerSize() && !itemStack.isEmpty(); ++slot) {
+         ItemStack current = container.getItem(slot);
+         if (container.canPlaceItem(slot, itemStack)) {
+            if (current.isEmpty()) {
+               container.setItem(slot, itemStack);
+               changed = true;
                break;
             }
 
-            if (canMergeItems(var4, var1)) {
-               int var5 = var1.getMaxStackSize() - var4.getCount();
-               int var6 = Math.min(var1.getCount(), var5);
-               var1.shrink(var6);
-               var4.grow(var6);
-               var2 = true;
+            if (canMergeItems(current, itemStack)) {
+               int space = itemStack.getMaxStackSize() - current.getCount();
+               int count = Math.min(itemStack.getCount(), space);
+               itemStack.shrink(count);
+               current.grow(count);
+               changed = true;
             }
          }
       }
 
-      return var2;
+      return changed;
    }
 
-   private static int blockReplace(CommandSourceStack var0, BlockPos var1, int var2, int var3, List<ItemStack> var4, Callback var5) throws CommandSyntaxException {
-      Container var6 = getContainer(var0, var1);
-      int var7 = var6.getContainerSize();
-      if (var2 >= 0 && var2 < var7) {
-         ArrayList var8 = Lists.newArrayListWithCapacity(var4.size());
+   private static int blockReplace(final CommandSourceStack source, final BlockPos pos, final int startSlot, final int slotCount, final List<ItemStack> drops, final Callback callback) throws CommandSyntaxException {
+      Container container = getContainer(source, pos);
+      int maxSlot = container.getContainerSize();
+      if (startSlot >= 0 && startSlot < maxSlot) {
+         List<ItemStack> usedItems = Lists.newArrayListWithCapacity(drops.size());
 
-         for(int var9 = 0; var9 < var3; ++var9) {
-            int var10 = var2 + var9;
-            ItemStack var11 = var9 < var4.size() ? (ItemStack)var4.get(var9) : ItemStack.EMPTY;
-            if (var6.canPlaceItem(var10, var11)) {
-               var6.setItem(var10, var11);
-               var8.add(var11);
+         for(int i = 0; i < slotCount; ++i) {
+            int slot = startSlot + i;
+            ItemStack toAdd = i < drops.size() ? (ItemStack)drops.get(i) : ItemStack.EMPTY;
+            if (container.canPlaceItem(slot, toAdd)) {
+               container.setItem(slot, toAdd);
+               usedItems.add(toAdd);
             }
          }
 
-         var5.accept(var8);
-         return var8.size();
+         callback.accept(usedItems);
+         return usedItems.size();
       } else {
-         throw ItemCommands.ERROR_TARGET_INAPPLICABLE_SLOT.create(var2);
+         throw ItemCommands.ERROR_TARGET_INAPPLICABLE_SLOT.create(startSlot);
       }
    }
 
-   private static boolean canMergeItems(ItemStack var0, ItemStack var1) {
-      return var0.getCount() <= var0.getMaxStackSize() && ItemStack.isSameItemSameComponents(var0, var1);
+   private static boolean canMergeItems(final ItemStack a, final ItemStack b) {
+      return a.getCount() <= a.getMaxStackSize() && ItemStack.isSameItemSameComponents(a, b);
    }
 
-   private static int playerGive(Collection<ServerPlayer> var0, List<ItemStack> var1, Callback var2) throws CommandSyntaxException {
-      ArrayList var3 = Lists.newArrayListWithCapacity(var1.size());
+   private static int playerGive(final Collection<ServerPlayer> players, final List<ItemStack> drops, final Callback callback) throws CommandSyntaxException {
+      List<ItemStack> usedItems = Lists.newArrayListWithCapacity(drops.size());
 
-      for(ItemStack var5 : var1) {
-         for(ServerPlayer var7 : var0) {
-            if (var7.getInventory().add(var5.copy())) {
-               var3.add(var5);
+      for(ItemStack drop : drops) {
+         for(ServerPlayer player : players) {
+            if (player.getInventory().add(drop.copy())) {
+               usedItems.add(drop);
             }
          }
       }
 
-      var2.accept(var3);
-      return var3.size();
+      callback.accept(usedItems);
+      return usedItems.size();
    }
 
-   private static void setSlots(Entity var0, List<ItemStack> var1, int var2, int var3, List<ItemStack> var4) {
-      for(int var5 = 0; var5 < var3; ++var5) {
-         ItemStack var6 = var5 < var1.size() ? (ItemStack)var1.get(var5) : ItemStack.EMPTY;
-         SlotAccess var7 = var0.getSlot(var2 + var5);
-         if (var7 != null && var7.set(var6.copy())) {
-            var4.add(var6);
+   private static void setSlots(final Entity entity, final List<ItemStack> itemsToSet, final int startSlot, final int count, final List<ItemStack> usedItems) {
+      for(int i = 0; i < count; ++i) {
+         ItemStack item = i < itemsToSet.size() ? (ItemStack)itemsToSet.get(i) : ItemStack.EMPTY;
+         SlotAccess slotAccess = entity.getSlot(startSlot + i);
+         if (slotAccess != null && slotAccess.set(item.copy())) {
+            usedItems.add(item);
          }
       }
 
    }
 
-   private static int entityReplace(Collection<? extends Entity> var0, int var1, int var2, List<ItemStack> var3, Callback var4) throws CommandSyntaxException {
-      ArrayList var5 = Lists.newArrayListWithCapacity(var3.size());
+   private static int entityReplace(final Collection<? extends Entity> entities, final int startSlot, final int count, final List<ItemStack> drops, final Callback callback) throws CommandSyntaxException {
+      List<ItemStack> usedItems = Lists.newArrayListWithCapacity(drops.size());
 
-      for(Entity var7 : var0) {
-         if (var7 instanceof ServerPlayer var8) {
-            setSlots(var7, var3, var1, var2, var5);
-            var8.containerMenu.broadcastChanges();
+      for(Entity entity : entities) {
+         if (entity instanceof ServerPlayer player) {
+            setSlots(entity, drops, startSlot, count, usedItems);
+            player.containerMenu.broadcastChanges();
          } else {
-            setSlots(var7, var3, var1, var2, var5);
+            setSlots(entity, drops, startSlot, count, usedItems);
          }
       }
 
-      var4.accept(var5);
-      return var5.size();
+      callback.accept(usedItems);
+      return usedItems.size();
    }
 
-   private static int dropInWorld(CommandSourceStack var0, Vec3 var1, List<ItemStack> var2, Callback var3) throws CommandSyntaxException {
-      ServerLevel var4 = var0.getLevel();
-      var2.forEach((var2x) -> {
-         ItemEntity var3 = new ItemEntity(var4, var1.x, var1.y, var1.z, var2x.copy());
-         var3.setDefaultPickUpDelay();
-         var4.addFreshEntity(var3);
+   private static int dropInWorld(final CommandSourceStack source, final Vec3 pos, final List<ItemStack> drops, final Callback callback) throws CommandSyntaxException {
+      ServerLevel level = source.getLevel();
+      drops.forEach((drop) -> {
+         ItemEntity entity = new ItemEntity(level, pos.x, pos.y, pos.z, drop.copy());
+         entity.setDefaultPickUpDelay();
+         level.addFreshEntity(entity);
       });
-      var3.accept(var2);
-      return var2.size();
+      callback.accept(drops);
+      return drops.size();
    }
 
-   private static void callback(CommandSourceStack var0, List<ItemStack> var1) {
-      if (var1.size() == 1) {
-         ItemStack var2 = (ItemStack)var1.get(0);
-         var0.sendSuccess(() -> Component.translatable("commands.drop.success.single", var2.getCount(), var2.getDisplayName()), false);
+   private static void callback(final CommandSourceStack source, final List<ItemStack> drops) {
+      if (drops.size() == 1) {
+         ItemStack drop = (ItemStack)drops.get(0);
+         source.sendSuccess(() -> Component.translatable("commands.drop.success.single", drop.getCount(), drop.getDisplayName()), false);
       } else {
-         var0.sendSuccess(() -> Component.translatable("commands.drop.success.multiple", var1.size()), false);
+         source.sendSuccess(() -> Component.translatable("commands.drop.success.multiple", drops.size()), false);
       }
 
    }
 
-   private static void callback(CommandSourceStack var0, List<ItemStack> var1, ResourceKey<LootTable> var2) {
-      if (var1.size() == 1) {
-         ItemStack var3 = (ItemStack)var1.get(0);
-         var0.sendSuccess(() -> Component.translatable("commands.drop.success.single_with_table", var3.getCount(), var3.getDisplayName(), Component.translationArg(var2.identifier())), false);
+   private static void callback(final CommandSourceStack source, final List<ItemStack> drops, final ResourceKey<LootTable> location) {
+      if (drops.size() == 1) {
+         ItemStack drop = (ItemStack)drops.get(0);
+         source.sendSuccess(() -> Component.translatable("commands.drop.success.single_with_table", drop.getCount(), drop.getDisplayName(), Component.translationArg(location.identifier())), false);
       } else {
-         var0.sendSuccess(() -> Component.translatable("commands.drop.success.multiple_with_table", var1.size(), Component.translationArg(var2.identifier())), false);
+         source.sendSuccess(() -> Component.translatable("commands.drop.success.multiple_with_table", drops.size(), Component.translationArg(location.identifier())), false);
       }
 
    }
 
-   private static ItemStack getSourceHandItem(CommandSourceStack var0, EquipmentSlot var1) throws CommandSyntaxException {
-      Entity var2 = var0.getEntityOrException();
-      if (var2 instanceof LivingEntity) {
-         return ((LivingEntity)var2).getItemBySlot(var1);
+   private static ItemStack getSourceHandItem(final CommandSourceStack source, final EquipmentSlot slot) throws CommandSyntaxException {
+      Entity entity = source.getEntityOrException();
+      if (entity instanceof LivingEntity) {
+         return ((LivingEntity)entity).getItemBySlot(slot);
       } else {
-         throw ERROR_NO_HELD_ITEMS.create(var2.getDisplayName());
+         throw ERROR_NO_HELD_ITEMS.create(entity.getDisplayName());
       }
    }
 
-   private static int dropBlockLoot(CommandContext<CommandSourceStack> var0, BlockPos var1, ItemStack var2, DropConsumer var3) throws CommandSyntaxException {
-      CommandSourceStack var4 = (CommandSourceStack)var0.getSource();
-      ServerLevel var5 = var4.getLevel();
-      BlockState var6 = var5.getBlockState(var1);
-      BlockEntity var7 = var5.getBlockEntity(var1);
-      Optional var8 = var6.getBlock().getLootTable();
-      if (var8.isEmpty()) {
-         throw ERROR_NO_BLOCK_LOOT_TABLE.create(var6.getBlock().getName());
+   private static int dropBlockLoot(final CommandContext<CommandSourceStack> context, final BlockPos pos, final ItemInstance tool, final DropConsumer output) throws CommandSyntaxException {
+      CommandSourceStack source = (CommandSourceStack)context.getSource();
+      ServerLevel level = source.getLevel();
+      BlockState blockState = level.getBlockState(pos);
+      BlockEntity blockEntity = level.getBlockEntity(pos);
+      Optional<ResourceKey<LootTable>> lootTable = blockState.getBlock().getLootTable();
+      if (lootTable.isEmpty()) {
+         throw ERROR_NO_BLOCK_LOOT_TABLE.create(blockState.getBlock().getName());
       } else {
-         LootParams.Builder var9 = (new LootParams.Builder(var5)).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(var1)).withParameter(LootContextParams.BLOCK_STATE, var6).withOptionalParameter(LootContextParams.BLOCK_ENTITY, var7).withOptionalParameter(LootContextParams.THIS_ENTITY, var4.getEntity()).withParameter(LootContextParams.TOOL, var2);
-         List var10 = var6.getDrops(var9);
-         return var3.accept(var0, var10, (var2x) -> callback(var4, var2x, (ResourceKey)var8.get()));
+         LootParams.Builder lootParams = (new LootParams.Builder(level)).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(pos)).withParameter(LootContextParams.BLOCK_STATE, blockState).withOptionalParameter(LootContextParams.BLOCK_ENTITY, blockEntity).withOptionalParameter(LootContextParams.THIS_ENTITY, source.getEntity()).withParameter(LootContextParams.TOOL, tool);
+         List<ItemStack> drops = blockState.getDrops(lootParams);
+         return output.accept(context, drops, (usedItems) -> callback(source, usedItems, (ResourceKey)lootTable.get()));
       }
    }
 
-   private static int dropKillLoot(CommandContext<CommandSourceStack> var0, Entity var1, DropConsumer var2) throws CommandSyntaxException {
-      Optional var3 = var1.getLootTable();
-      if (var3.isEmpty()) {
-         throw ERROR_NO_ENTITY_LOOT_TABLE.create(var1.getDisplayName());
+   private static int dropKillLoot(final CommandContext<CommandSourceStack> context, final Entity target, final DropConsumer output) throws CommandSyntaxException {
+      Optional<ResourceKey<LootTable>> lootTableId = target.getLootTable();
+      if (lootTableId.isEmpty()) {
+         throw ERROR_NO_ENTITY_LOOT_TABLE.create(target.getDisplayName());
       } else {
-         CommandSourceStack var4 = (CommandSourceStack)var0.getSource();
-         LootParams.Builder var5 = new LootParams.Builder(var4.getLevel());
-         Entity var6 = var4.getEntity();
-         if (var6 instanceof Player) {
-            Player var7 = (Player)var6;
-            var5.withParameter(LootContextParams.LAST_DAMAGE_PLAYER, var7);
+         CommandSourceStack source = (CommandSourceStack)context.getSource();
+         LootParams.Builder builder = new LootParams.Builder(source.getLevel());
+         Entity killer = source.getEntity();
+         if (killer instanceof Player) {
+            Player player = (Player)killer;
+            builder.withParameter(LootContextParams.LAST_DAMAGE_PLAYER, player);
          }
 
-         var5.withParameter(LootContextParams.DAMAGE_SOURCE, var1.damageSources().magic());
-         var5.withOptionalParameter(LootContextParams.DIRECT_ATTACKING_ENTITY, var6);
-         var5.withOptionalParameter(LootContextParams.ATTACKING_ENTITY, var6);
-         var5.withParameter(LootContextParams.THIS_ENTITY, var1);
-         var5.withParameter(LootContextParams.ORIGIN, var4.getPosition());
-         LootParams var10 = var5.create(LootContextParamSets.ENTITY);
-         LootTable var8 = var4.getServer().reloadableRegistries().getLootTable((ResourceKey)var3.get());
-         ObjectArrayList var9 = var8.getRandomItems(var10);
-         return var2.accept(var0, var9, (var2x) -> callback(var4, var2x, (ResourceKey)var3.get()));
+         builder.withParameter(LootContextParams.DAMAGE_SOURCE, target.damageSources().magic());
+         builder.withOptionalParameter(LootContextParams.DIRECT_ATTACKING_ENTITY, killer);
+         builder.withOptionalParameter(LootContextParams.ATTACKING_ENTITY, killer);
+         builder.withParameter(LootContextParams.THIS_ENTITY, target);
+         builder.withParameter(LootContextParams.ORIGIN, source.getPosition());
+         LootParams lootParams = builder.create(LootContextParamSets.ENTITY);
+         LootTable lootTable = source.getServer().reloadableRegistries().getLootTable((ResourceKey)lootTableId.get());
+         List<ItemStack> drops = lootTable.getRandomItems(lootParams);
+         return output.accept(context, drops, (usedItems) -> callback(source, usedItems, (ResourceKey)lootTableId.get()));
       }
    }
 
-   private static int dropChestLoot(CommandContext<CommandSourceStack> var0, Holder<LootTable> var1, DropConsumer var2) throws CommandSyntaxException {
-      CommandSourceStack var3 = (CommandSourceStack)var0.getSource();
-      LootParams var4 = (new LootParams.Builder(var3.getLevel())).withOptionalParameter(LootContextParams.THIS_ENTITY, var3.getEntity()).withParameter(LootContextParams.ORIGIN, var3.getPosition()).create(LootContextParamSets.CHEST);
-      return drop(var0, var1, var4, var2);
+   private static int dropChestLoot(final CommandContext<CommandSourceStack> context, final Holder<LootTable> lootTable, final DropConsumer output) throws CommandSyntaxException {
+      CommandSourceStack source = (CommandSourceStack)context.getSource();
+      LootParams lootParams = (new LootParams.Builder(source.getLevel())).withOptionalParameter(LootContextParams.THIS_ENTITY, source.getEntity()).withParameter(LootContextParams.ORIGIN, source.getPosition()).create(LootContextParamSets.CHEST);
+      return drop(context, lootTable, lootParams, output);
    }
 
-   private static int dropFishingLoot(CommandContext<CommandSourceStack> var0, Holder<LootTable> var1, BlockPos var2, ItemStack var3, DropConsumer var4) throws CommandSyntaxException {
-      CommandSourceStack var5 = (CommandSourceStack)var0.getSource();
-      LootParams var6 = (new LootParams.Builder(var5.getLevel())).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(var2)).withParameter(LootContextParams.TOOL, var3).withOptionalParameter(LootContextParams.THIS_ENTITY, var5.getEntity()).create(LootContextParamSets.FISHING);
-      return drop(var0, var1, var6, var4);
+   private static int dropFishingLoot(final CommandContext<CommandSourceStack> context, final Holder<LootTable> lootTable, final BlockPos pos, final ItemInstance tool, final DropConsumer output) throws CommandSyntaxException {
+      CommandSourceStack source = (CommandSourceStack)context.getSource();
+      LootParams lootParams = (new LootParams.Builder(source.getLevel())).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(pos)).withParameter(LootContextParams.TOOL, tool).withOptionalParameter(LootContextParams.THIS_ENTITY, source.getEntity()).create(LootContextParamSets.FISHING);
+      return drop(context, lootTable, lootParams, output);
    }
 
-   private static int drop(CommandContext<CommandSourceStack> var0, Holder<LootTable> var1, LootParams var2, DropConsumer var3) throws CommandSyntaxException {
-      CommandSourceStack var4 = (CommandSourceStack)var0.getSource();
-      ObjectArrayList var5 = ((LootTable)var1.value()).getRandomItems(var2);
-      return var3.accept(var0, var5, (var1x) -> callback(var4, var1x));
-   }
-
-   @FunctionalInterface
-   interface Callback {
-      void accept(List<ItemStack> var1) throws CommandSyntaxException;
+   private static int drop(final CommandContext<CommandSourceStack> context, final Holder<LootTable> lootTable, final LootParams lootParams, final DropConsumer output) throws CommandSyntaxException {
+      CommandSourceStack source = (CommandSourceStack)context.getSource();
+      List<ItemStack> drops = ((LootTable)lootTable.value()).getRandomItems(lootParams);
+      return output.accept(context, drops, (usedItems) -> callback(source, usedItems));
    }
 
    @FunctionalInterface
-   interface DropConsumer {
-      int accept(CommandContext<CommandSourceStack> var1, List<ItemStack> var2, Callback var3) throws CommandSyntaxException;
+   private interface Callback {
+      void accept(List<ItemStack> setItems) throws CommandSyntaxException;
    }
 
    @FunctionalInterface
-   interface TailProvider {
-      ArgumentBuilder<CommandSourceStack, ?> construct(ArgumentBuilder<CommandSourceStack, ?> var1, DropConsumer var2);
+   private interface DropConsumer {
+      int accept(CommandContext<CommandSourceStack> context, List<ItemStack> drops, Callback successCallback) throws CommandSyntaxException;
+   }
+
+   @FunctionalInterface
+   private interface TailProvider {
+      ArgumentBuilder<CommandSourceStack, ?> construct(final ArgumentBuilder<CommandSourceStack, ?> root, DropConsumer consumer);
    }
 }

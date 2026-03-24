@@ -14,17 +14,17 @@ public class AddFlagIfNotPresentFix extends DataFix {
    private final String flagKey;
    private final DSL.TypeReference typeReference;
 
-   public AddFlagIfNotPresentFix(Schema var1, DSL.TypeReference var2, String var3, boolean var4) {
-      super(var1, true);
-      this.flagValue = var4;
-      this.flagKey = var3;
+   public AddFlagIfNotPresentFix(final Schema outputSchema, final DSL.TypeReference typeReference, final String flagKey, final boolean flagValue) {
+      super(outputSchema, true);
+      this.flagValue = flagValue;
+      this.flagKey = flagKey;
       String var10001 = this.flagKey;
-      this.name = "AddFlagIfNotPresentFix_" + var10001 + "=" + this.flagValue + " for " + var1.getVersionKey();
-      this.typeReference = var2;
+      this.name = "AddFlagIfNotPresentFix_" + var10001 + "=" + this.flagValue + " for " + outputSchema.getVersionKey();
+      this.typeReference = typeReference;
    }
 
    protected TypeRewriteRule makeRule() {
-      Type var1 = this.getInputSchema().getType(this.typeReference);
-      return this.fixTypeEverywhereTyped(this.name, var1, (var1x) -> var1x.update(DSL.remainderFinder(), (var1) -> var1.set(this.flagKey, (Dynamic)DataFixUtils.orElseGet(var1.get(this.flagKey).result(), () -> var1.createBoolean(this.flagValue)))));
+      Type<?> worldGenSettingsType = this.getInputSchema().getType(this.typeReference);
+      return this.fixTypeEverywhereTyped(this.name, worldGenSettingsType, (settings) -> settings.update(DSL.remainderFinder(), (tag) -> tag.set(this.flagKey, (Dynamic)DataFixUtils.orElseGet(tag.get(this.flagKey).result(), () -> tag.createBoolean(this.flagValue)))));
    }
 }

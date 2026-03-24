@@ -20,8 +20,8 @@ public record ClearAllStatusEffectsConsumeEffect() implements ConsumeEffect {
       return ConsumeEffect.Type.CLEAR_ALL_EFFECTS;
    }
 
-   public boolean apply(Level var1, ItemStack var2, LivingEntity var3) {
-      return var3.removeAllEffects();
+   public boolean apply(final Level level, final ItemStack stack, final LivingEntity user) {
+      return user.removeAllEffects();
    }
 
    static {

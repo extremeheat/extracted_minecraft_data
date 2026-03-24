@@ -12,14 +12,14 @@ public class CacheableFunction {
    private boolean resolved;
    private Optional<CommandFunction<CommandSourceStack>> function = Optional.empty();
 
-   public CacheableFunction(Identifier var1) {
+   public CacheableFunction(final Identifier id) {
       super();
-      this.id = var1;
+      this.id = id;
    }
 
-   public Optional<CommandFunction<CommandSourceStack>> get(ServerFunctionManager var1) {
+   public Optional<CommandFunction<CommandSourceStack>> get(final ServerFunctionManager manager) {
       if (!this.resolved) {
-         this.function = var1.get(this.id);
+         this.function = manager.get(this.id);
          this.resolved = true;
       }
 
@@ -30,14 +30,14 @@ public class CacheableFunction {
       return this.id;
    }
 
-   public boolean equals(Object var1) {
-      if (var1 == this) {
+   public boolean equals(final Object obj) {
+      if (obj == this) {
          return true;
       } else {
          boolean var10000;
-         if (var1 instanceof CacheableFunction) {
-            CacheableFunction var2 = (CacheableFunction)var1;
-            if (this.getId().equals(var2.getId())) {
+         if (obj instanceof CacheableFunction) {
+            CacheableFunction cacheableFunction = (CacheableFunction)obj;
+            if (this.getId().equals(cacheableFunction.getId())) {
                var10000 = true;
                return var10000;
             }

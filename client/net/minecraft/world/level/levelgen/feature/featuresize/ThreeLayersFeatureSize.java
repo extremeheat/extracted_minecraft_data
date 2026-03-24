@@ -6,31 +6,31 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.OptionalInt;
 
 public class ThreeLayersFeatureSize extends FeatureSize {
-   public static final MapCodec<ThreeLayersFeatureSize> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.intRange(0, 80).fieldOf("limit").orElse(1).forGetter((var0x) -> var0x.limit), Codec.intRange(0, 80).fieldOf("upper_limit").orElse(1).forGetter((var0x) -> var0x.upperLimit), Codec.intRange(0, 16).fieldOf("lower_size").orElse(0).forGetter((var0x) -> var0x.lowerSize), Codec.intRange(0, 16).fieldOf("middle_size").orElse(1).forGetter((var0x) -> var0x.middleSize), Codec.intRange(0, 16).fieldOf("upper_size").orElse(1).forGetter((var0x) -> var0x.upperSize), minClippedHeightCodec()).apply(var0, ThreeLayersFeatureSize::new));
+   public static final MapCodec<ThreeLayersFeatureSize> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.intRange(0, 80).fieldOf("limit").orElse(1).forGetter((s) -> s.limit), Codec.intRange(0, 80).fieldOf("upper_limit").orElse(1).forGetter((s) -> s.upperLimit), Codec.intRange(0, 16).fieldOf("lower_size").orElse(0).forGetter((s) -> s.lowerSize), Codec.intRange(0, 16).fieldOf("middle_size").orElse(1).forGetter((s) -> s.middleSize), Codec.intRange(0, 16).fieldOf("upper_size").orElse(1).forGetter((s) -> s.upperSize), minClippedHeightCodec()).apply(i, ThreeLayersFeatureSize::new));
    private final int limit;
    private final int upperLimit;
    private final int lowerSize;
    private final int middleSize;
    private final int upperSize;
 
-   public ThreeLayersFeatureSize(int var1, int var2, int var3, int var4, int var5, OptionalInt var6) {
-      super(var6);
-      this.limit = var1;
-      this.upperLimit = var2;
-      this.lowerSize = var3;
-      this.middleSize = var4;
-      this.upperSize = var5;
+   public ThreeLayersFeatureSize(final int limit, final int upperLimit, final int lowerSize, final int middleSize, final int upperSize, final OptionalInt minClippedHeight) {
+      super(minClippedHeight);
+      this.limit = limit;
+      this.upperLimit = upperLimit;
+      this.lowerSize = lowerSize;
+      this.middleSize = middleSize;
+      this.upperSize = upperSize;
    }
 
    protected FeatureSizeType<?> type() {
       return FeatureSizeType.THREE_LAYERS_FEATURE_SIZE;
    }
 
-   public int getSizeAtHeight(int var1, int var2) {
-      if (var2 < this.limit) {
+   public int getSizeAtHeight(final int treeHeight, final int yo) {
+      if (yo < this.limit) {
          return this.lowerSize;
       } else {
-         return var2 >= var1 - this.upperLimit ? this.upperSize : this.middleSize;
+         return yo >= treeHeight - this.upperLimit ? this.upperSize : this.middleSize;
       }
    }
 }

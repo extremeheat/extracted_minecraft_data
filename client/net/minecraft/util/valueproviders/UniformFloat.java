@@ -7,42 +7,30 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
-public class UniformFloat extends FloatProvider {
-   public static final MapCodec<UniformFloat> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.FLOAT.fieldOf("min_inclusive").forGetter((var0x) -> var0x.minInclusive), Codec.FLOAT.fieldOf("max_exclusive").forGetter((var0x) -> var0x.maxExclusive)).apply(var0, UniformFloat::new)).validate((var0) -> var0.maxExclusive <= var0.minInclusive ? DataResult.error(() -> "Max must be larger than min, min_inclusive: " + var0.minInclusive + ", max_exclusive: " + var0.maxExclusive) : DataResult.success(var0));
-   private final float minInclusive;
-   private final float maxExclusive;
+public record UniformFloat(float min, float max) implements FloatProvider {
+   public static final MapCodec<UniformFloat> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.FLOAT.fieldOf("min_inclusive").forGetter(UniformFloat::min), Codec.FLOAT.fieldOf("max_exclusive").forGetter(UniformFloat::max)).apply(i, UniformFloat::new)).validate((u) -> u.max <= u.min ? DataResult.error(() -> "Max must be larger than min, min: " + u.min + ", max: " + u.max) : DataResult.success(u));
 
-   private UniformFloat(float var1, float var2) {
+   public UniformFloat {
       super();
-      this.minInclusive = var1;
-      this.maxExclusive = var2;
    }
 
-   public static UniformFloat of(float var0, float var1) {
-      if (var1 <= var0) {
+   public static UniformFloat of(final float min, final float max) {
+      if (max <= min) {
          throw new IllegalArgumentException("Max must exceed min");
       } else {
-         return new UniformFloat(var0, var1);
+         return new UniformFloat(min, max);
       }
    }
 
-   public float sample(RandomSource var1) {
-      return Mth.randomBetween(var1, this.minInclusive, this.maxExclusive);
+   public float sample(final RandomSource random) {
+      return Mth.randomBetween(random, this.min, this.max);
    }
 
-   public float getMinValue() {
-      return this.minInclusive;
-   }
-
-   public float getMaxValue() {
-      return this.maxExclusive;
-   }
-
-   public FloatProviderType<?> getType() {
-      return FloatProviderType.UNIFORM;
+   public MapCodec<UniformFloat> codec() {
+      return MAP_CODEC;
    }
 
    public String toString() {
-      return "[" + this.minInclusive + "-" + this.maxExclusive + "]";
+      return "[" + this.min + "-" + this.max + "]";
    }
 }

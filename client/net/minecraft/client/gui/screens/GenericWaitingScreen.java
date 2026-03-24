@@ -2,7 +2,7 @@ package net.minecraft.client.gui.screens;
 
 import java.util.Objects;
 import net.minecraft.client.gui.ActiveTextCollector;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
@@ -15,43 +15,54 @@ public class GenericWaitingScreen extends Screen {
    private static final int TITLE_Y = 80;
    private static final int MESSAGE_Y = 120;
    private static final int MESSAGE_MAX_WIDTH = 360;
-   private final @Nullable Component messageText;
+   private final boolean showLoadingDots;
+   private final Component messageText;
    private final Component buttonLabel;
    private final Runnable buttonCallback;
-   private @Nullable MultiLineLabel message;
-   private Button button;
+   private final boolean showButton;
+   private final boolean closeOnEscape;
+   private final MultiLineLabel message;
+   private @Nullable Button button;
    private int disableButtonTicks;
 
-   public static GenericWaitingScreen createWaiting(Component var0, Component var1, Runnable var2) {
-      return new GenericWaitingScreen(var0, (Component)null, var1, var2, 0);
+   public static GenericWaitingScreen createWaitingWithoutButton(final Component title, final Component messageText) {
+      return new GenericWaitingScreen(title, true, messageText, Component.empty(), () -> {
+      }, 0, false, false);
    }
 
-   public static GenericWaitingScreen createCompleted(Component var0, Component var1, Component var2, Runnable var3) {
-      return new GenericWaitingScreen(var0, var1, var2, var3, 20);
+   public static GenericWaitingScreen createWaiting(final Component title, final Component buttonLabel, final Runnable buttonCallback) {
+      return new GenericWaitingScreen(title, true, Component.empty(), buttonLabel, buttonCallback, 0, true, false);
    }
 
-   protected GenericWaitingScreen(Component var1, @Nullable Component var2, Component var3, Runnable var4, int var5) {
-      super(var1);
-      this.messageText = var2;
-      this.buttonLabel = var3;
-      this.buttonCallback = var4;
-      this.disableButtonTicks = var5;
+   public static GenericWaitingScreen createCompleted(final Component title, final Component messageText, final Component buttonLabel, final Runnable buttonCallback) {
+      return new GenericWaitingScreen(title, false, messageText, buttonLabel, buttonCallback, 20, true, true);
+   }
+
+   protected GenericWaitingScreen(final Component title, final boolean showLoadingDots, final Component messageText, final Component buttonLabel, final Runnable buttonCallback, final int disableButtonTicks, final boolean showButton, final boolean closeOnEscape) {
+      super(title);
+      this.showLoadingDots = showLoadingDots;
+      this.messageText = messageText;
+      this.buttonLabel = buttonLabel;
+      this.buttonCallback = buttonCallback;
+      this.disableButtonTicks = disableButtonTicks;
+      this.showButton = showButton;
+      this.closeOnEscape = closeOnEscape;
+      this.message = MultiLineLabel.create(this.font, messageText, 360);
    }
 
    protected void init() {
       super.init();
-      if (this.messageText != null) {
-         this.message = MultiLineLabel.create(this.font, this.messageText, 360);
+      int buttonWidth = 150;
+      int buttonHeight = 20;
+      int lineCount = this.message.getLineCount() + 1;
+      int var10000 = Math.max(lineCount, 5);
+      Objects.requireNonNull(this.font);
+      int messageButtonSpacing = var10000 * 9;
+      int buttonY = Math.min(120 + messageButtonSpacing, this.height - 40);
+      if (this.showButton) {
+         this.button = (Button)this.addRenderableWidget(Button.builder(this.buttonLabel, (b) -> this.onClose()).bounds((this.width - 150) / 2, buttonY, 150, 20).build());
       }
 
-      boolean var1 = true;
-      boolean var2 = true;
-      int var3 = this.message != null ? this.message.getLineCount() : 1;
-      int var10000 = Math.max(var3, 5);
-      Objects.requireNonNull(this.font);
-      int var4 = var10000 * 9;
-      int var5 = Math.min(120 + var4, this.height - 40);
-      this.button = (Button)this.addRenderableWidget(Button.builder(this.buttonLabel, (var1x) -> this.onClose()).bounds((this.width - 150) / 2, var5, 150, 20).build());
    }
 
    public void tick() {
@@ -59,28 +70,33 @@ public class GenericWaitingScreen extends Screen {
          --this.disableButtonTicks;
       }
 
-      this.button.active = this.disableButtonTicks == 0;
-   }
-
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      ActiveTextCollector var5 = var1.textRenderer();
-      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 80, -1);
-      if (this.message == null) {
-         String var6 = LoadingDotsText.get(Util.getMillis());
-         var1.drawCenteredString(this.font, (String)var6, this.width / 2, 120, -6250336);
-      } else {
-         MultiLineLabel var10000 = this.message;
-         TextAlignment var10001 = TextAlignment.CENTER;
-         int var10002 = this.width / 2;
-         Objects.requireNonNull(this.font);
-         var10000.visitLines(var10001, var10002, 120, 9, var5);
+      if (this.button != null) {
+         this.button.active = this.disableButtonTicks == 0;
       }
 
    }
 
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
+      ActiveTextCollector textRenderer = graphics.textRenderer();
+      graphics.centeredText(this.font, (Component)this.title, this.width / 2, 80, -1);
+      int messageY = 120;
+      if (this.showLoadingDots) {
+         String loadingDots = LoadingDotsText.get(Util.getMillis());
+         graphics.centeredText(this.font, loadingDots, this.width / 2, messageY, -6250336);
+         Objects.requireNonNull(this.font);
+         messageY += 9 + 3;
+      }
+
+      MultiLineLabel var10000 = this.message;
+      TextAlignment var10001 = TextAlignment.CENTER;
+      int var10002 = this.width / 2;
+      Objects.requireNonNull(this.font);
+      var10000.visitLines(var10001, var10002, messageY, 9, textRenderer);
+   }
+
    public boolean shouldCloseOnEsc() {
-      return this.message != null && this.button.active;
+      return this.closeOnEscape && this.button != null && this.button.active;
    }
 
    public void onClose() {
@@ -88,6 +104,6 @@ public class GenericWaitingScreen extends Screen {
    }
 
    public Component getNarrationMessage() {
-      return CommonComponents.joinForNarration(this.title, this.messageText != null ? this.messageText : CommonComponents.EMPTY);
+      return CommonComponents.joinForNarration(this.title, this.messageText);
    }
 }

@@ -23,15 +23,15 @@ import net.minecraft.world.ticks.ScheduledTick;
 import net.minecraft.world.ticks.TickPriority;
 import org.jspecify.annotations.Nullable;
 
-public interface LevelAccessor extends CommonLevelAccessor, LevelReader, ScheduledTickAccess {
+public interface LevelAccessor extends CommonLevelAccessor, ScheduledTickAccess {
    long nextSubTickCount();
 
-   default <T> ScheduledTick<T> createTick(BlockPos var1, T var2, int var3, TickPriority var4) {
-      return new ScheduledTick<T>(var2, var1, this.getGameTime() + (long)var3, var4, this.nextSubTickCount());
+   default <T> ScheduledTick<T> createTick(final BlockPos pos, final T type, final int tickDelay, final TickPriority priority) {
+      return new ScheduledTick<T>(type, pos, this.getGameTime() + (long)tickDelay, priority, this.nextSubTickCount());
    }
 
-   default <T> ScheduledTick<T> createTick(BlockPos var1, T var2, int var3) {
-      return new ScheduledTick<T>(var2, var1, this.getGameTime() + (long)var3, this.nextSubTickCount());
+   default <T> ScheduledTick<T> createTick(final BlockPos pos, final T type, final int tickDelay) {
+      return new ScheduledTick<T>(type, pos, this.getGameTime() + (long)tickDelay, this.nextSubTickCount());
    }
 
    LevelData getLevelData();
@@ -48,48 +48,48 @@ public interface LevelAccessor extends CommonLevelAccessor, LevelReader, Schedul
 
    ChunkSource getChunkSource();
 
-   default boolean hasChunk(int var1, int var2) {
-      return this.getChunkSource().hasChunk(var1, var2);
+   default boolean hasChunk(final int chunkX, final int chunkZ) {
+      return this.getChunkSource().hasChunk(chunkX, chunkZ);
    }
 
    RandomSource getRandom();
 
-   default void updateNeighborsAt(BlockPos var1, Block var2) {
+   default void updateNeighborsAt(final BlockPos pos, final Block sourceBlock) {
    }
 
-   default void neighborShapeChanged(Direction var1, BlockPos var2, BlockPos var3, BlockState var4, @Block.UpdateFlags int var5, int var6) {
-      NeighborUpdater.executeShapeUpdate(this, var1, var2, var3, var4, var5, var6 - 1);
+   default void neighborShapeChanged(final Direction direction, final BlockPos pos, final BlockPos neighborPos, final BlockState neighborState, final @Block.UpdateFlags int updateFlags, final int updateLimit) {
+      NeighborUpdater.executeShapeUpdate(this, direction, pos, neighborPos, neighborState, updateFlags, updateLimit - 1);
    }
 
-   default void playSound(@Nullable Entity var1, BlockPos var2, SoundEvent var3, SoundSource var4) {
-      this.playSound(var1, var2, var3, var4, 1.0F, 1.0F);
+   default void playSound(final @Nullable Entity except, final BlockPos pos, final SoundEvent soundEvent, final SoundSource source) {
+      this.playSound(except, pos, soundEvent, source, 1.0F, 1.0F);
    }
 
-   void playSound(@Nullable Entity var1, BlockPos var2, SoundEvent var3, SoundSource var4, float var5, float var6);
+   void playSound(final @Nullable Entity except, final BlockPos pos, final SoundEvent sound, final SoundSource source, final float volume, final float pitch);
 
-   void addParticle(ParticleOptions var1, double var2, double var4, double var6, double var8, double var10, double var12);
+   void addParticle(final ParticleOptions particle, final double x, final double y, final double z, final double xd, final double yd, final double zd);
 
-   void levelEvent(@Nullable Entity var1, int var2, BlockPos var3, int var4);
+   void levelEvent(final @Nullable Entity source, final int type, final BlockPos pos, final int data);
 
-   default void levelEvent(int var1, BlockPos var2, int var3) {
-      this.levelEvent((Entity)null, var1, var2, var3);
+   default void levelEvent(final int type, final BlockPos pos, final int data) {
+      this.levelEvent((Entity)null, type, pos, data);
    }
 
-   void gameEvent(Holder<GameEvent> var1, Vec3 var2, GameEvent.Context var3);
+   void gameEvent(Holder<GameEvent> gameEvent, Vec3 position, GameEvent.Context context);
 
-   default void gameEvent(@Nullable Entity var1, Holder<GameEvent> var2, Vec3 var3) {
-      this.gameEvent(var2, var3, new GameEvent.Context(var1, (BlockState)null));
+   default void gameEvent(final @Nullable Entity sourceEntity, final Holder<GameEvent> gameEvent, final Vec3 pos) {
+      this.gameEvent(gameEvent, pos, new GameEvent.Context(sourceEntity, (BlockState)null));
    }
 
-   default void gameEvent(@Nullable Entity var1, Holder<GameEvent> var2, BlockPos var3) {
-      this.gameEvent(var2, var3, new GameEvent.Context(var1, (BlockState)null));
+   default void gameEvent(final @Nullable Entity sourceEntity, final Holder<GameEvent> gameEvent, final BlockPos pos) {
+      this.gameEvent(gameEvent, pos, new GameEvent.Context(sourceEntity, (BlockState)null));
    }
 
-   default void gameEvent(Holder<GameEvent> var1, BlockPos var2, GameEvent.Context var3) {
-      this.gameEvent(var1, Vec3.atCenterOf(var2), var3);
+   default void gameEvent(final Holder<GameEvent> gameEvent, final BlockPos pos, final GameEvent.Context context) {
+      this.gameEvent(gameEvent, Vec3.atCenterOf(pos), context);
    }
 
-   default void gameEvent(ResourceKey<GameEvent> var1, BlockPos var2, GameEvent.Context var3) {
-      this.gameEvent(this.registryAccess().lookupOrThrow(Registries.GAME_EVENT).getOrThrow(var1), (BlockPos)var2, (GameEvent.Context)var3);
+   default void gameEvent(final ResourceKey<GameEvent> gameEvent, final BlockPos pos, final GameEvent.Context context) {
+      this.gameEvent(this.registryAccess().lookupOrThrow(Registries.GAME_EVENT).getOrThrow(gameEvent), (BlockPos)pos, (GameEvent.Context)context);
    }
 }

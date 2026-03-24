@@ -2,16 +2,16 @@ package net.minecraft.core;
 
 public enum AxisCycle {
    NONE {
-      public int cycle(int var1, int var2, int var3, Direction.Axis var4) {
-         return var4.choose(var1, var2, var3);
+      public int cycle(final int x, final int y, final int z, final Direction.Axis axis) {
+         return axis.choose(x, y, z);
       }
 
-      public double cycle(double var1, double var3, double var5, Direction.Axis var7) {
-         return var7.choose(var1, var3, var5);
+      public double cycle(final double x, final double y, final double z, final Direction.Axis axis) {
+         return axis.choose(x, y, z);
       }
 
-      public Direction.Axis cycle(Direction.Axis var1) {
-         return var1;
+      public Direction.Axis cycle(final Direction.Axis axis) {
+         return axis;
       }
 
       public AxisCycle inverse() {
@@ -19,16 +19,16 @@ public enum AxisCycle {
       }
    },
    FORWARD {
-      public int cycle(int var1, int var2, int var3, Direction.Axis var4) {
-         return var4.choose(var3, var1, var2);
+      public int cycle(final int x, final int y, final int z, final Direction.Axis axis) {
+         return axis.choose(z, x, y);
       }
 
-      public double cycle(double var1, double var3, double var5, Direction.Axis var7) {
-         return var7.choose(var5, var1, var3);
+      public double cycle(final double x, final double y, final double z, final Direction.Axis axis) {
+         return axis.choose(z, x, y);
       }
 
-      public Direction.Axis cycle(Direction.Axis var1) {
-         return AXIS_VALUES[Math.floorMod(var1.ordinal() + 1, 3)];
+      public Direction.Axis cycle(final Direction.Axis axis) {
+         return AXIS_VALUES[Math.floorMod(axis.ordinal() + 1, 3)];
       }
 
       public AxisCycle inverse() {
@@ -36,16 +36,16 @@ public enum AxisCycle {
       }
    },
    BACKWARD {
-      public int cycle(int var1, int var2, int var3, Direction.Axis var4) {
-         return var4.choose(var2, var3, var1);
+      public int cycle(final int x, final int y, final int z, final Direction.Axis axis) {
+         return axis.choose(y, z, x);
       }
 
-      public double cycle(double var1, double var3, double var5, Direction.Axis var7) {
-         return var7.choose(var3, var5, var1);
+      public double cycle(final double x, final double y, final double z, final Direction.Axis axis) {
+         return axis.choose(y, z, x);
       }
 
-      public Direction.Axis cycle(Direction.Axis var1) {
-         return AXIS_VALUES[Math.floorMod(var1.ordinal() - 1, 3)];
+      public Direction.Axis cycle(final Direction.Axis axis) {
+         return AXIS_VALUES[Math.floorMod(axis.ordinal() - 1, 3)];
       }
 
       public AxisCycle inverse() {
@@ -56,19 +56,19 @@ public enum AxisCycle {
    public static final Direction.Axis[] AXIS_VALUES = Direction.Axis.values();
    public static final AxisCycle[] VALUES = values();
 
-   AxisCycle() {
+   private AxisCycle() {
    }
 
-   public abstract int cycle(int var1, int var2, int var3, Direction.Axis var4);
+   public abstract int cycle(final int x, final int y, final int z, final Direction.Axis axis);
 
-   public abstract double cycle(double var1, double var3, double var5, Direction.Axis var7);
+   public abstract double cycle(final double x, final double y, final double z, final Direction.Axis axis);
 
-   public abstract Direction.Axis cycle(Direction.Axis var1);
+   public abstract Direction.Axis cycle(final Direction.Axis axis);
 
    public abstract AxisCycle inverse();
 
-   public static AxisCycle between(Direction.Axis var0, Direction.Axis var1) {
-      return VALUES[Math.floorMod(var1.ordinal() - var0.ordinal(), 3)];
+   public static AxisCycle between(final Direction.Axis from, final Direction.Axis to) {
+      return VALUES[Math.floorMod(to.ordinal() - from.ordinal(), 3)];
    }
 
    // $FF: synthetic method

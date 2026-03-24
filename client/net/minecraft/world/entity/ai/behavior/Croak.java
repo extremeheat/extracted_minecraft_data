@@ -2,7 +2,6 @@ package net.minecraft.world.entity.ai.behavior;
 
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
@@ -17,41 +16,26 @@ public class Croak extends Behavior<Frog> {
       super(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT), 100);
    }
 
-   protected boolean checkExtraStartConditions(ServerLevel var1, Frog var2) {
-      return var2.getPose() == Pose.STANDING;
+   protected boolean checkExtraStartConditions(final ServerLevel level, final Frog body) {
+      return body.getPose() == Pose.STANDING;
    }
 
-   protected boolean canStillUse(ServerLevel var1, Frog var2, long var3) {
+   protected boolean canStillUse(final ServerLevel level, final Frog body, final long timestamp) {
       return this.croakCounter < 60;
    }
 
-   protected void start(ServerLevel var1, Frog var2, long var3) {
-      if (!var2.isInLiquid()) {
-         var2.setPose(Pose.CROAKING);
+   protected void start(final ServerLevel level, final Frog body, final long timestamp) {
+      if (!body.isInLiquid()) {
+         body.setPose(Pose.CROAKING);
          this.croakCounter = 0;
       }
    }
 
-   protected void stop(ServerLevel var1, Frog var2, long var3) {
-      var2.setPose(Pose.STANDING);
+   protected void stop(final ServerLevel level, final Frog body, final long timestamp) {
+      body.setPose(Pose.STANDING);
    }
 
-   protected void tick(ServerLevel var1, Frog var2, long var3) {
+   protected void tick(final ServerLevel level, final Frog body, final long timestamp) {
       ++this.croakCounter;
-   }
-
-   // $FF: synthetic method
-   protected void stop(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.stop(var1, (Frog)var2, var3);
-   }
-
-   // $FF: synthetic method
-   protected void tick(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.tick(var1, (Frog)var2, var3);
-   }
-
-   // $FF: synthetic method
-   protected void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.start(var1, (Frog)var2, var3);
    }
 }

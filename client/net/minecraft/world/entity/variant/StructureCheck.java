@@ -8,23 +8,17 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.levelgen.structure.Structure;
 
 public record StructureCheck(HolderSet<Structure> requiredStructures) implements SpawnCondition {
-   public static final MapCodec<StructureCheck> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(RegistryCodecs.homogeneousList(Registries.STRUCTURE).fieldOf("structures").forGetter(StructureCheck::requiredStructures)).apply(var0, StructureCheck::new));
+   public static final MapCodec<StructureCheck> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(RegistryCodecs.homogeneousList(Registries.STRUCTURE).fieldOf("structures").forGetter(StructureCheck::requiredStructures)).apply(i, StructureCheck::new));
 
-   public StructureCheck(HolderSet<Structure> var1) {
+   public StructureCheck {
       super();
-      this.requiredStructures = var1;
    }
 
-   public boolean test(SpawnContext var1) {
-      return var1.level().getLevel().structureManager().getStructureWithPieceAt(var1.pos(), this.requiredStructures).isValid();
+   public boolean test(final SpawnContext context) {
+      return context.level().getLevel().structureManager().getStructureWithPieceAt(context.pos(), this.requiredStructures).isValid();
    }
 
    public MapCodec<StructureCheck> codec() {
       return MAP_CODEC;
-   }
-
-   // $FF: synthetic method
-   public boolean test(final Object var1) {
-      return this.test((SpawnContext)var1);
    }
 }

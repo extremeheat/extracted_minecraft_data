@@ -18,7 +18,7 @@ import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
 import java.util.stream.IntStream;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractOptionSliderButton;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.CycleButton;
@@ -38,71 +38,71 @@ public final class OptionInstance<T> {
    public static final Enum<Boolean> BOOLEAN_VALUES;
    public static final CaptionBasedToString<Boolean> BOOLEAN_TO_STRING;
    private final TooltipSupplier<T> tooltip;
-   final Function<T, Component> toString;
+   private final Function<T, Component> toString;
    private final ValueSet<T> values;
    private final Codec<T> codec;
    private final T initialValue;
    private final Consumer<T> onValueUpdate;
-   final Component caption;
+   private final Component caption;
    private T value;
 
-   public static OptionInstance<Boolean> createBoolean(String var0, boolean var1, Consumer<Boolean> var2) {
-      return createBoolean(var0, noTooltip(), var1, var2);
+   public static OptionInstance<Boolean> createBoolean(final String captionId, final boolean initialValue, final Consumer<Boolean> onValueUpdate) {
+      return createBoolean(captionId, noTooltip(), initialValue, onValueUpdate);
    }
 
-   public static OptionInstance<Boolean> createBoolean(String var0, boolean var1) {
-      return createBoolean(var0, noTooltip(), var1, (var0x) -> {
+   public static OptionInstance<Boolean> createBoolean(final String captionId, final boolean initialValue) {
+      return createBoolean(captionId, noTooltip(), initialValue, (value) -> {
       });
    }
 
-   public static OptionInstance<Boolean> createBoolean(String var0, TooltipSupplier<Boolean> var1, boolean var2) {
-      return createBoolean(var0, var1, var2, (var0x) -> {
+   public static OptionInstance<Boolean> createBoolean(final String captionId, final TooltipSupplier<Boolean> tooltip, final boolean initialValue) {
+      return createBoolean(captionId, tooltip, initialValue, (value) -> {
       });
    }
 
-   public static OptionInstance<Boolean> createBoolean(String var0, TooltipSupplier<Boolean> var1, boolean var2, Consumer<Boolean> var3) {
-      return createBoolean(var0, var1, BOOLEAN_TO_STRING, var2, var3);
+   public static OptionInstance<Boolean> createBoolean(final String captionId, final TooltipSupplier<Boolean> tooltip, final boolean initialValue, final Consumer<Boolean> onValueUpdate) {
+      return createBoolean(captionId, tooltip, BOOLEAN_TO_STRING, initialValue, onValueUpdate);
    }
 
-   public static OptionInstance<Boolean> createBoolean(String var0, TooltipSupplier<Boolean> var1, CaptionBasedToString<Boolean> var2, boolean var3, Consumer<Boolean> var4) {
-      return new OptionInstance<Boolean>(var0, var1, var2, BOOLEAN_VALUES, var3, var4);
+   public static OptionInstance<Boolean> createBoolean(final String captionId, final TooltipSupplier<Boolean> tooltip, final CaptionBasedToString<Boolean> toString, final boolean initialValue, final Consumer<Boolean> onValueUpdate) {
+      return new OptionInstance<Boolean>(captionId, tooltip, toString, BOOLEAN_VALUES, initialValue, onValueUpdate);
    }
 
-   public OptionInstance(String var1, TooltipSupplier<T> var2, CaptionBasedToString<T> var3, ValueSet<T> var4, T var5, Consumer<T> var6) {
-      this(var1, var2, var3, var4, var4.codec(), var5, var6);
+   public OptionInstance(final String captionId, final TooltipSupplier<T> tooltip, final CaptionBasedToString<T> toString, final ValueSet<T> values, final T initialValue, final Consumer<T> onValueUpdate) {
+      this(captionId, tooltip, toString, values, values.codec(), initialValue, onValueUpdate);
    }
 
-   public OptionInstance(String var1, TooltipSupplier<T> var2, CaptionBasedToString<T> var3, ValueSet<T> var4, Codec<T> var5, T var6, Consumer<T> var7) {
+   public OptionInstance(final String captionId, final TooltipSupplier<T> tooltip, final CaptionBasedToString<T> toString, final ValueSet<T> values, final Codec<T> codec, final T initialValue, final Consumer<T> onValueUpdate) {
       super();
-      this.caption = Component.translatable(var1);
-      this.tooltip = var2;
-      this.toString = (var2x) -> var3.toString(this.caption, var2x);
-      this.values = var4;
-      this.codec = var5;
-      this.initialValue = var6;
-      this.onValueUpdate = var7;
+      this.caption = Component.translatable(captionId);
+      this.tooltip = tooltip;
+      this.toString = (value) -> toString.toString(this.caption, value);
+      this.values = values;
+      this.codec = codec;
+      this.initialValue = initialValue;
+      this.onValueUpdate = onValueUpdate;
       this.value = this.initialValue;
    }
 
    public static <T> TooltipSupplier<T> noTooltip() {
-      return (var0) -> null;
+      return (value) -> null;
    }
 
-   public static <T> TooltipSupplier<T> cachedConstantTooltip(Component var0) {
-      return (var1) -> Tooltip.create(var0);
+   public static <T> TooltipSupplier<T> cachedConstantTooltip(final Component tooltipComponent) {
+      return (value) -> Tooltip.create(tooltipComponent);
    }
 
-   public AbstractWidget createButton(Options var1) {
-      return this.createButton(var1, 0, 0, 150);
+   public AbstractWidget createButton(final Options options) {
+      return this.createButton(options, 0, 0, 150);
    }
 
-   public AbstractWidget createButton(Options var1, int var2, int var3, int var4) {
-      return this.createButton(var1, var2, var3, var4, (var0) -> {
+   public AbstractWidget createButton(final Options options, final int x, final int y, final int width) {
+      return this.createButton(options, x, y, width, (value) -> {
       });
    }
 
-   public AbstractWidget createButton(Options var1, int var2, int var3, int var4, Consumer<T> var5) {
-      return (AbstractWidget)this.values.createButton(this.tooltip, var1, var2, var3, var4, var5).apply(this);
+   public AbstractWidget createButton(final Options options, final int x, final int y, final int width, final Consumer<T> onValueChanged) {
+      return (AbstractWidget)this.values.createButton(this.tooltip, options, x, y, width, onValueChanged).apply(this);
    }
 
    public T get() {
@@ -117,16 +117,16 @@ public final class OptionInstance<T> {
       return this.caption.getString();
    }
 
-   public void set(T var1) {
-      Object var2 = this.values.validateValue(var1).orElseGet(() -> {
-         LOGGER.error("Illegal option value {} for {}", var1, this.caption.getString());
+   public void set(final T value) {
+      T newValue = (T)this.values.validateValue(value).orElseGet(() -> {
+         LOGGER.error("Illegal option value {} for {}", value, this.caption.getString());
          return this.initialValue;
       });
       if (!Minecraft.getInstance().isRunning()) {
-         this.value = (T)var2;
+         this.value = newValue;
       } else {
-         if (!Objects.equals(this.value, var2)) {
-            this.value = (T)var2;
+         if (!Objects.equals(this.value, newValue)) {
+            this.value = newValue;
             this.onValueUpdate.accept(this.value);
          }
 
@@ -139,28 +139,28 @@ public final class OptionInstance<T> {
 
    static {
       BOOLEAN_VALUES = new Enum<Boolean>(ImmutableList.of(Boolean.TRUE, Boolean.FALSE), Codec.BOOL);
-      BOOLEAN_TO_STRING = (var0, var1) -> var1 ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF;
+      BOOLEAN_TO_STRING = (caption, b) -> b ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF;
    }
 
    interface SliderableValueSet<T> extends ValueSet<T> {
-      double toSliderValue(T var1);
+      double toSliderValue(final T value);
 
-      default Optional<T> next(T var1) {
+      default Optional<T> next(final T current) {
          return Optional.empty();
       }
 
-      default Optional<T> previous(T var1) {
+      default Optional<T> previous(final T current) {
          return Optional.empty();
       }
 
-      T fromSliderValue(double var1);
+      T fromSliderValue(final double slider);
 
       default boolean applyValueImmediately() {
          return true;
       }
 
-      default Function<OptionInstance<T>, AbstractWidget> createButton(TooltipSupplier<T> var1, Options var2, int var3, int var4, int var5, Consumer<T> var6) {
-         return (var7) -> new OptionInstanceSliderButton(var2, var3, var4, var5, 20, var7, this, var1, var6, this.applyValueImmediately());
+      default Function<OptionInstance<T>, AbstractWidget> createButton(final TooltipSupplier<T> tooltip, final Options options, final int x, final int y, final int width, final Consumer<T> onValueChanged) {
+         return (instance) -> new OptionInstanceSliderButton(options, x, y, width, 20, instance, this, tooltip, onValueChanged, this.applyValueImmediately());
       }
    }
 
@@ -171,59 +171,52 @@ public final class OptionInstance<T> {
          return OptionInstance::set;
       }
 
-      default Function<OptionInstance<T>, AbstractWidget> createButton(TooltipSupplier<T> var1, Options var2, int var3, int var4, int var5, Consumer<T> var6) {
-         return (var7) -> {
-            Function var10000 = var7.toString;
-            Objects.requireNonNull(var7);
-            return CycleButton.builder(var10000, var7::get).withValues(this.valueListSupplier()).withTooltip(var1).create(var3, var4, var5, 20, var7.caption, (var4x, var5x) -> {
-               this.valueSetter().set(var7, var5x);
-               var2.save();
-               var6.accept(var5x);
+      default Function<OptionInstance<T>, AbstractWidget> createButton(final TooltipSupplier<T> tooltip, final Options options, final int x, final int y, final int width, final Consumer<T> onValueChanged) {
+         return (instance) -> {
+            Function var10000 = instance.toString;
+            Objects.requireNonNull(instance);
+            return CycleButton.builder(var10000, instance::get).withValues(this.valueListSupplier()).withTooltip(tooltip).create(x, y, width, 20, instance.caption, (button, value) -> {
+               this.valueSetter().set(instance, value);
+               options.save();
+               onValueChanged.accept(value);
             });
          };
       }
 
       public interface ValueSetter<T> {
-         void set(OptionInstance<T> var1, T var2);
+         void set(final OptionInstance<T> instance, final T value);
       }
    }
 
-   interface SliderableOrCyclableValueSet<T> extends CycleableValueSet<T>, SliderableValueSet<T> {
+   interface SliderableOrCyclableValueSet<T> extends SliderableValueSet<T>, CycleableValueSet<T> {
       boolean createCycleButton();
 
-      default Function<OptionInstance<T>, AbstractWidget> createButton(TooltipSupplier<T> var1, Options var2, int var3, int var4, int var5, Consumer<T> var6) {
-         return this.createCycleButton() ? OptionInstance.CycleableValueSet.super.createButton(var1, var2, var3, var4, var5, var6) : OptionInstance.SliderableValueSet.super.createButton(var1, var2, var3, var4, var5, var6);
+      default Function<OptionInstance<T>, AbstractWidget> createButton(final TooltipSupplier<T> tooltip, final Options options, final int x, final int y, final int width, final Consumer<T> onValueChanged) {
+         return this.createCycleButton() ? OptionInstance.CycleableValueSet.super.createButton(tooltip, options, x, y, width, onValueChanged) : OptionInstance.SliderableValueSet.super.createButton(tooltip, options, x, y, width, onValueChanged);
       }
    }
 
    public static record AltEnum<T>(List<T> values, List<T> altValues, BooleanSupplier altCondition, CycleableValueSet.ValueSetter<T> valueSetter, Codec<T> codec) implements CycleableValueSet<T> {
-      public AltEnum(List<T> var1, List<T> var2, BooleanSupplier var3, CycleableValueSet.ValueSetter<T> var4, Codec<T> var5) {
+      public AltEnum {
          super();
-         this.values = var1;
-         this.altValues = var2;
-         this.altCondition = var3;
-         this.valueSetter = var4;
-         this.codec = var5;
       }
 
       public CycleButton.ValueListSupplier<T> valueListSupplier() {
          return CycleButton.ValueListSupplier.<T>create(this.altCondition, this.values, this.altValues);
       }
 
-      public Optional<T> validateValue(T var1) {
-         return (this.altCondition.getAsBoolean() ? this.altValues : this.values).contains(var1) ? Optional.of(var1) : Optional.empty();
+      public Optional<T> validateValue(final T value) {
+         return (this.altCondition.getAsBoolean() ? this.altValues : this.values).contains(value) ? Optional.of(value) : Optional.empty();
       }
    }
 
    public static record Enum<T>(List<T> values, Codec<T> codec) implements CycleableValueSet<T> {
-      public Enum(List<T> var1, Codec<T> var2) {
+      public Enum {
          super();
-         this.values = var1;
-         this.codec = var2;
       }
 
-      public Optional<T> validateValue(T var1) {
-         return this.values.contains(var1) ? Optional.of(var1) : Optional.empty();
+      public Optional<T> validateValue(final T value) {
+         return this.values.contains(value) ? Optional.of(value) : Optional.empty();
       }
 
       public CycleButton.ValueListSupplier<T> valueListSupplier() {
@@ -232,15 +225,12 @@ public final class OptionInstance<T> {
    }
 
    public static record LazyEnum<T>(Supplier<List<T>> values, Function<T, Optional<T>> validateValue, Codec<T> codec) implements CycleableValueSet<T> {
-      public LazyEnum(Supplier<List<T>> var1, Function<T, Optional<T>> var2, Codec<T> var3) {
+      public LazyEnum {
          super();
-         this.values = var1;
-         this.validateValue = var2;
-         this.codec = var3;
       }
 
-      public Optional<T> validateValue(T var1) {
-         return (Optional)this.validateValue.apply(var1);
+      public Optional<T> validateValue(final T value) {
+         return (Optional)this.validateValue.apply(value);
       }
 
       public CycleButton.ValueListSupplier<T> valueListSupplier() {
@@ -256,13 +246,13 @@ public final class OptionInstance<T> {
       private @Nullable Long delayedApplyAt;
       private final boolean applyValueImmediately;
 
-      OptionInstanceSliderButton(Options var1, int var2, int var3, int var4, int var5, OptionInstance<N> var6, SliderableValueSet<N> var7, TooltipSupplier<N> var8, Consumer<N> var9, boolean var10) {
-         super(var1, var2, var3, var4, var5, var7.toSliderValue(var6.get()));
-         this.instance = var6;
-         this.values = var7;
-         this.tooltipSupplier = var8;
-         this.onValueChanged = var9;
-         this.applyValueImmediately = var10;
+      private OptionInstanceSliderButton(final Options options, final int x, final int y, final int width, final int height, final OptionInstance<N> instance, final SliderableValueSet<N> values, final TooltipSupplier<N> tooltipSupplier, final Consumer<N> onValueChanged, final boolean applyValueImmediately) {
+         super(options, x, y, width, height, values.toSliderValue(instance.get()));
+         this.instance = instance;
+         this.values = values;
+         this.tooltipSupplier = tooltipSupplier;
+         this.onValueChanged = onValueChanged;
+         this.applyValueImmediately = applyValueImmediately;
          this.updateMessage();
       }
 
@@ -281,9 +271,9 @@ public final class OptionInstance<T> {
       }
 
       public void applyUnsavedValue() {
-         Object var1 = this.values.fromSliderValue(this.value);
-         if (!Objects.equals(var1, this.instance.get())) {
-            this.instance.set(var1);
+         N sliderValue = this.values.fromSliderValue(this.value);
+         if (!Objects.equals(sliderValue, this.instance.get())) {
+            this.instance.set(sliderValue);
             this.onValueChanged.accept(this.instance.get());
          }
 
@@ -298,8 +288,8 @@ public final class OptionInstance<T> {
 
       }
 
-      public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-         super.renderWidget(var1, var2, var3, var4);
+      public void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+         super.extractWidgetRenderState(graphics, mouseX, mouseY, a);
          if (this.delayedApplyAt != null && Util.getMillis() >= this.delayedApplyAt) {
             this.delayedApplyAt = null;
             this.applyUnsavedValue();
@@ -308,41 +298,41 @@ public final class OptionInstance<T> {
 
       }
 
-      public void onRelease(MouseButtonEvent var1) {
-         super.onRelease(var1);
+      public void onRelease(final MouseButtonEvent event) {
+         super.onRelease(event);
          if (this.applyValueImmediately) {
             this.resetValue();
          }
 
       }
 
-      public boolean keyPressed(KeyEvent var1) {
-         if (var1.isSelection()) {
+      public boolean keyPressed(final KeyEvent event) {
+         if (event.isSelection()) {
             this.canChangeValue = !this.canChangeValue;
             return true;
          } else {
             if (this.canChangeValue) {
-               boolean var2 = var1.isLeft();
-               boolean var3 = var1.isRight();
-               if (var2) {
-                  Optional var4 = this.values.previous(this.values.fromSliderValue(this.value));
-                  if (var4.isPresent()) {
-                     this.setValue(this.values.toSliderValue(var4.get()));
+               boolean left = event.isLeft();
+               boolean right = event.isRight();
+               if (left) {
+                  Optional<N> previous = this.values.previous(this.values.fromSliderValue(this.value));
+                  if (previous.isPresent()) {
+                     this.setValue(this.values.toSliderValue(previous.get()));
                      return true;
                   }
                }
 
-               if (var3) {
-                  Optional var5 = this.values.next(this.values.fromSliderValue(this.value));
-                  if (var5.isPresent()) {
-                     this.setValue(this.values.toSliderValue(var5.get()));
+               if (right) {
+                  Optional<N> next = this.values.next(this.values.fromSliderValue(this.value));
+                  if (next.isPresent()) {
+                     this.setValue(this.values.toSliderValue(next.get()));
                      return true;
                   }
                }
 
-               if (var2 || var3) {
-                  float var6 = var2 ? -1.0F : 1.0F;
-                  this.setValue(this.value + (double)(var6 / (float)(this.width - 8)));
+               if (left || right) {
+                  float direction = left ? -1.0F : 1.0F;
+                  this.setValue(this.value + (double)(direction / (float)(this.width - 8)));
                   return true;
                }
             }
@@ -357,107 +347,93 @@ public final class OptionInstance<T> {
 
       int maxInclusive();
 
-      default Optional<Integer> next(Integer var1) {
-         return Optional.of(var1 + 1);
+      default Optional<Integer> next(final Integer current) {
+         return Optional.of(current + 1);
       }
 
-      default Optional<Integer> previous(Integer var1) {
-         return Optional.of(var1 - 1);
+      default Optional<Integer> previous(final Integer current) {
+         return Optional.of(current - 1);
       }
 
-      default double toSliderValue(Integer var1) {
-         if (var1 == this.minInclusive()) {
+      default double toSliderValue(final Integer value) {
+         if (value == this.minInclusive()) {
             return 0.0;
          } else {
-            return var1 == this.maxInclusive() ? 1.0 : Mth.map((double)var1 + 0.5, (double)this.minInclusive(), (double)this.maxInclusive() + 1.0, 0.0, 1.0);
+            return value == this.maxInclusive() ? 1.0 : Mth.map((double)value + 0.5, (double)this.minInclusive(), (double)this.maxInclusive() + 1.0, 0.0, 1.0);
          }
       }
 
-      default Integer fromSliderValue(double var1) {
-         if (var1 >= 1.0) {
-            var1 = 0.9999899864196777;
+      default Integer fromSliderValue(double slider) {
+         if (slider >= 1.0) {
+            slider = 0.9999899864196777;
          }
 
-         return Mth.floor(Mth.map(var1, 0.0, 1.0, (double)this.minInclusive(), (double)this.maxInclusive() + 1.0));
+         return Mth.floor(Mth.map(slider, 0.0, 1.0, (double)this.minInclusive(), (double)this.maxInclusive() + 1.0));
       }
 
-      default <R> SliderableValueSet<R> xmap(final IntFunction<? extends R> var1, final ToIntFunction<? super R> var2, final boolean var3) {
+      default <R> SliderableValueSet<R> xmap(final IntFunction<? extends R> to, final ToIntFunction<? super R> from, final boolean discrete) {
          return new SliderableValueSet<R>() {
-            public Optional<R> validateValue(R var1x) {
-               Optional var10000 = IntRangeBase.this.validateValue(var2.applyAsInt(var1x));
-               IntFunction var10001 = var1;
+            {
+               Objects.requireNonNull(IntRangeBase.this);
+            }
+
+            public Optional<R> validateValue(final R value) {
+               Optional var10000 = IntRangeBase.this.validateValue(from.applyAsInt(value));
+               IntFunction var10001 = to;
                Objects.requireNonNull(var10001);
                return var10000.map(var10001::apply);
             }
 
-            public double toSliderValue(R var1x) {
-               return IntRangeBase.this.toSliderValue(var2.applyAsInt(var1x));
+            public double toSliderValue(final R value) {
+               return IntRangeBase.this.toSliderValue(from.applyAsInt(value));
             }
 
-            public Optional<R> next(R var1x) {
-               if (!var3) {
+            public Optional<R> next(final R current) {
+               if (!discrete) {
                   return Optional.empty();
                } else {
-                  int var2x = var2.applyAsInt(var1x);
-                  return Optional.of(var1.apply((Integer)IntRangeBase.this.validateValue(var2x + 1).orElse(var2x)));
+                  int currentIndex = from.applyAsInt(current);
+                  return Optional.of(to.apply((Integer)IntRangeBase.this.validateValue(currentIndex + 1).orElse(currentIndex)));
                }
             }
 
-            public Optional<R> previous(R var1x) {
-               if (!var3) {
+            public Optional<R> previous(final R current) {
+               if (!discrete) {
                   return Optional.empty();
                } else {
-                  int var2x = var2.applyAsInt(var1x);
-                  return Optional.of(var1.apply((Integer)IntRangeBase.this.validateValue(var2x - 1).orElse(var2x)));
+                  int currentIndex = from.applyAsInt(current);
+                  return Optional.of(to.apply((Integer)IntRangeBase.this.validateValue(currentIndex - 1).orElse(currentIndex)));
                }
             }
 
-            public R fromSliderValue(double var1x) {
-               return (R)var1.apply(IntRangeBase.this.fromSliderValue(var1x));
+            public R fromSliderValue(final double slider) {
+               return (R)to.apply(IntRangeBase.this.fromSliderValue(slider));
             }
 
             public Codec<R> codec() {
                Codec var10000 = IntRangeBase.this.codec();
-               IntFunction var10001 = var1;
+               IntFunction var10001 = to;
                Objects.requireNonNull(var10001);
-               Function var1x = var10001::apply;
-               ToIntFunction var10002 = var2;
+               Function var1 = var10001::apply;
+               ToIntFunction var10002 = from;
                Objects.requireNonNull(var10002);
-               return var10000.xmap(var1x, var10002::applyAsInt);
+               return var10000.xmap(var1, var10002::applyAsInt);
             }
          };
-      }
-
-      // $FF: synthetic method
-      default Object fromSliderValue(double var1) {
-         return this.fromSliderValue(var1);
-      }
-
-      // $FF: synthetic method
-      default Optional previous(final Object var1) {
-         return this.previous((Integer)var1);
-      }
-
-      // $FF: synthetic method
-      default Optional next(final Object var1) {
-         return this.next((Integer)var1);
       }
    }
 
    public static record IntRange(int minInclusive, int maxInclusive, boolean applyValueImmediately) implements IntRangeBase {
-      public IntRange(int var1, int var2) {
-         this(var1, var2, true);
+      public IntRange(final int minInclusive, final int maxInclusive) {
+         this(minInclusive, maxInclusive, true);
       }
 
-      public IntRange(int var1, int var2, boolean var3) {
+      public IntRange {
          super();
-         this.minInclusive = var1;
-         this.maxInclusive = var2;
-         this.applyValueImmediately = var3;
       }
 
-      public Optional<Integer> validateValue(Integer var1) {
-         return var1.compareTo(this.minInclusive()) >= 0 && var1.compareTo(this.maxInclusive()) <= 0 ? Optional.of(var1) : Optional.empty();
+      public Optional<Integer> validateValue(final Integer value) {
+         return value.compareTo(this.minInclusive()) >= 0 && value.compareTo(this.maxInclusive()) <= 0 ? Optional.of(value) : Optional.empty();
       }
 
       public Codec<Integer> codec() {
@@ -466,15 +442,12 @@ public final class OptionInstance<T> {
    }
 
    public static record ClampingLazyMaxIntRange(int minInclusive, IntSupplier maxSupplier, int encodableMaxInclusive) implements IntRangeBase, SliderableOrCyclableValueSet<Integer> {
-      public ClampingLazyMaxIntRange(int var1, IntSupplier var2, int var3) {
+      public ClampingLazyMaxIntRange {
          super();
-         this.minInclusive = var1;
-         this.maxSupplier = var2;
-         this.encodableMaxInclusive = var3;
       }
 
-      public Optional<Integer> validateValue(Integer var1) {
-         return Optional.of(Mth.clamp(var1, this.minInclusive(), this.maxInclusive()));
+      public Optional<Integer> validateValue(final Integer value) {
+         return Optional.of(Mth.clamp(value, this.minInclusive(), this.maxInclusive()));
       }
 
       public int maxInclusive() {
@@ -482,9 +455,9 @@ public final class OptionInstance<T> {
       }
 
       public Codec<Integer> codec() {
-         return Codec.INT.validate((var1) -> {
-            int var2 = this.encodableMaxInclusive + 1;
-            return var1.compareTo(this.minInclusive) >= 0 && var1.compareTo(var2) <= 0 ? DataResult.success(var1) : DataResult.error(() -> "Value " + var1 + " outside of range [" + this.minInclusive + ":" + var2 + "]", var1);
+         return Codec.INT.validate((value) -> {
+            int maxExclusive = this.encodableMaxInclusive + 1;
+            return value.compareTo(this.minInclusive) >= 0 && value.compareTo(maxExclusive) <= 0 ? DataResult.success(value) : DataResult.error(() -> "Value " + value + " outside of range [" + this.minInclusive + ":" + maxExclusive + "]", value);
          });
       }
 
@@ -498,44 +471,42 @@ public final class OptionInstance<T> {
    }
 
    public static record SliderableEnum<T>(List<T> values, Codec<T> codec) implements SliderableValueSet<T> {
-      public SliderableEnum(List<T> var1, Codec<T> var2) {
+      public SliderableEnum {
          super();
-         this.values = var1;
-         this.codec = var2;
       }
 
-      public double toSliderValue(T var1) {
-         if (var1 == this.values.getFirst()) {
+      public double toSliderValue(final T value) {
+         if (value == this.values.getFirst()) {
             return 0.0;
          } else {
-            return var1 == this.values.getLast() ? 1.0 : Mth.map((double)this.values.indexOf(var1), 0.0, (double)(this.values.size() - 1), 0.0, 1.0);
+            return value == this.values.getLast() ? 1.0 : Mth.map((double)this.values.indexOf(value), 0.0, (double)(this.values.size() - 1), 0.0, 1.0);
          }
       }
 
-      public Optional<T> next(T var1) {
-         int var2 = this.values.indexOf(var1);
-         int var3 = Mth.clamp(var2 + 1, 0, this.values.size() - 1);
-         return Optional.of(this.values.get(var3));
+      public Optional<T> next(final T current) {
+         int currentIntex = this.values.indexOf(current);
+         int nextIndex = Mth.clamp(currentIntex + 1, 0, this.values.size() - 1);
+         return Optional.of(this.values.get(nextIndex));
       }
 
-      public Optional<T> previous(T var1) {
-         int var2 = this.values.indexOf(var1);
-         int var3 = Mth.clamp(var2 - 1, 0, this.values.size() - 1);
-         return Optional.of(this.values.get(var3));
+      public Optional<T> previous(final T current) {
+         int currentIntex = this.values.indexOf(current);
+         int previousIndex = Mth.clamp(currentIntex - 1, 0, this.values.size() - 1);
+         return Optional.of(this.values.get(previousIndex));
       }
 
-      public T fromSliderValue(double var1) {
-         if (var1 >= 1.0) {
-            var1 = 0.9999899864196777;
+      public T fromSliderValue(double slider) {
+         if (slider >= 1.0) {
+            slider = 0.9999899864196777;
          }
 
-         int var3 = Mth.floor(Mth.map(var1, 0.0, 1.0, 0.0, (double)this.values.size()));
-         return (T)this.values.get(Mth.clamp(var3, 0, this.values.size() - 1));
+         int index = Mth.floor(Mth.map(slider, 0.0, 1.0, 0.0, (double)this.values.size()));
+         return (T)this.values.get(Mth.clamp(index, 0, this.values.size() - 1));
       }
 
-      public Optional<T> validateValue(T var1) {
-         int var2 = this.values.indexOf(var1);
-         return var2 > -1 ? Optional.of(var1) : Optional.empty();
+      public Optional<T> validateValue(final T value) {
+         int index = this.values.indexOf(value);
+         return index > -1 ? Optional.of(value) : Optional.empty();
       }
    }
 
@@ -545,59 +516,53 @@ public final class OptionInstance<T> {
       private UnitDouble() {
       }
 
-      public Optional<Double> validateValue(Double var1) {
-         return var1 >= 0.0 && var1 <= 1.0 ? Optional.of(var1) : Optional.empty();
+      public Optional<Double> validateValue(final Double value) {
+         return value >= 0.0 && value <= 1.0 ? Optional.of(value) : Optional.empty();
       }
 
-      public double toSliderValue(Double var1) {
-         return var1;
+      public double toSliderValue(final Double value) {
+         return value;
       }
 
-      public Double fromSliderValue(double var1) {
-         return var1;
+      public Double fromSliderValue(final double slider) {
+         return slider;
       }
 
-      public <R> SliderableValueSet<R> xmap(final DoubleFunction<? extends R> var1, final ToDoubleFunction<? super R> var2) {
+      public <R> SliderableValueSet<R> xmap(final DoubleFunction<? extends R> to, final ToDoubleFunction<? super R> from) {
          return new SliderableValueSet<R>() {
-            public Optional<R> validateValue(R var1x) {
-               Optional var10000 = UnitDouble.this.validateValue(var2.applyAsDouble(var1x));
-               DoubleFunction var10001 = var1;
+            {
+               Objects.requireNonNull(UnitDouble.this);
+            }
+
+            public Optional<R> validateValue(final R value) {
+               Optional var10000 = UnitDouble.this.validateValue(from.applyAsDouble(value));
+               DoubleFunction var10001 = to;
                Objects.requireNonNull(var10001);
                return var10000.map(var10001::apply);
             }
 
-            public double toSliderValue(R var1x) {
-               return UnitDouble.this.toSliderValue(var2.applyAsDouble(var1x));
+            public double toSliderValue(final R value) {
+               return UnitDouble.this.toSliderValue(from.applyAsDouble(value));
             }
 
-            public R fromSliderValue(double var1x) {
-               return (R)var1.apply(UnitDouble.this.fromSliderValue(var1x));
+            public R fromSliderValue(final double slider) {
+               return (R)to.apply(UnitDouble.this.fromSliderValue(slider));
             }
 
             public Codec<R> codec() {
                Codec var10000 = UnitDouble.this.codec();
-               DoubleFunction var10001 = var1;
+               DoubleFunction var10001 = to;
                Objects.requireNonNull(var10001);
-               Function var1x = var10001::apply;
-               ToDoubleFunction var10002 = var2;
+               Function var1 = var10001::apply;
+               ToDoubleFunction var10002 = from;
                Objects.requireNonNull(var10002);
-               return var10000.xmap(var1x, var10002::applyAsDouble);
+               return var10000.xmap(var1, var10002::applyAsDouble);
             }
          };
       }
 
       public Codec<Double> codec() {
-         return Codec.withAlternative(Codec.doubleRange(0.0, 1.0), Codec.BOOL, (var0) -> var0 ? 1.0 : 0.0);
-      }
-
-      // $FF: synthetic method
-      public Object fromSliderValue(final double var1) {
-         return this.fromSliderValue(var1);
-      }
-
-      // $FF: synthetic method
-      public double toSliderValue(final Object var1) {
-         return this.toSliderValue((Double)var1);
+         return Codec.withAlternative(Codec.doubleRange(0.0, 1.0), Codec.BOOL, (b) -> b ? 1.0 : 0.0);
       }
 
       // $FF: synthetic method
@@ -607,18 +572,18 @@ public final class OptionInstance<T> {
    }
 
    public interface CaptionBasedToString<T> {
-      Component toString(Component var1, T var2);
+      Component toString(final Component caption, final T value);
    }
 
    @FunctionalInterface
    public interface TooltipSupplier<T> {
-      @Nullable Tooltip apply(T var1);
+      @Nullable Tooltip apply(T value);
    }
 
    interface ValueSet<T> {
-      Function<OptionInstance<T>, AbstractWidget> createButton(TooltipSupplier<T> var1, Options var2, int var3, int var4, int var5, Consumer<T> var6);
+      Function<OptionInstance<T>, AbstractWidget> createButton(final TooltipSupplier<T> tooltip, Options options, final int x, final int y, final int width, final Consumer<T> onValueChanged);
 
-      Optional<T> validateValue(T var1);
+      Optional<T> validateValue(final T value);
 
       Codec<T> codec();
    }

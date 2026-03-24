@@ -11,10 +11,8 @@ import net.minecraft.world.phys.Vec3;
 public record DebugGameEventInfo(Holder<GameEvent> event, Vec3 pos) {
    public static final StreamCodec<RegistryFriendlyByteBuf, DebugGameEventInfo> STREAM_CODEC;
 
-   public DebugGameEventInfo(Holder<GameEvent> var1, Vec3 var2) {
+   public DebugGameEventInfo {
       super();
-      this.event = var1;
-      this.pos = var2;
    }
 
    static {

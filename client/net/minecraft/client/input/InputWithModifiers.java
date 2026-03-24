@@ -46,8 +46,8 @@ public interface InputWithModifiers {
    }
 
    default int getDigit() {
-      int var1 = this.input() - 48;
-      return var1 >= 0 && var1 <= 9 ? var1 : -1;
+      int value = this.input() - 48;
+      return value >= 0 && value <= 9 ? value : -1;
    }
 
    default boolean hasAltDown() {

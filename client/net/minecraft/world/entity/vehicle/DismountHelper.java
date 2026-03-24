@@ -23,78 +23,78 @@ public class DismountHelper {
       super();
    }
 
-   public static int[][] offsetsForDirection(Direction var0) {
-      Direction var1 = var0.getClockWise();
-      Direction var2 = var1.getOpposite();
-      Direction var3 = var0.getOpposite();
-      return new int[][]{{var1.getStepX(), var1.getStepZ()}, {var2.getStepX(), var2.getStepZ()}, {var3.getStepX() + var1.getStepX(), var3.getStepZ() + var1.getStepZ()}, {var3.getStepX() + var2.getStepX(), var3.getStepZ() + var2.getStepZ()}, {var0.getStepX() + var1.getStepX(), var0.getStepZ() + var1.getStepZ()}, {var0.getStepX() + var2.getStepX(), var0.getStepZ() + var2.getStepZ()}, {var3.getStepX(), var3.getStepZ()}, {var0.getStepX(), var0.getStepZ()}};
+   public static int[][] offsetsForDirection(final Direction forward) {
+      Direction right = forward.getClockWise();
+      Direction left = right.getOpposite();
+      Direction back = forward.getOpposite();
+      return new int[][]{{right.getStepX(), right.getStepZ()}, {left.getStepX(), left.getStepZ()}, {back.getStepX() + right.getStepX(), back.getStepZ() + right.getStepZ()}, {back.getStepX() + left.getStepX(), back.getStepZ() + left.getStepZ()}, {forward.getStepX() + right.getStepX(), forward.getStepZ() + right.getStepZ()}, {forward.getStepX() + left.getStepX(), forward.getStepZ() + left.getStepZ()}, {back.getStepX(), back.getStepZ()}, {forward.getStepX(), forward.getStepZ()}};
    }
 
-   public static boolean isBlockFloorValid(double var0) {
-      return !Double.isInfinite(var0) && var0 < 1.0;
+   public static boolean isBlockFloorValid(final double blockFloorHeight) {
+      return !Double.isInfinite(blockFloorHeight) && blockFloorHeight < 1.0;
    }
 
-   public static boolean canDismountTo(CollisionGetter var0, LivingEntity var1, AABB var2) {
-      for(VoxelShape var5 : var0.getBlockCollisions(var1, var2)) {
-         if (!var5.isEmpty()) {
+   public static boolean canDismountTo(final CollisionGetter level, final LivingEntity passenger, final AABB box) {
+      for(VoxelShape collision : level.getBlockCollisions(passenger, box)) {
+         if (!collision.isEmpty()) {
             return false;
          }
       }
 
-      if (!var0.getWorldBorder().isWithinBounds(var2)) {
+      if (!level.getWorldBorder().isWithinBounds(box)) {
          return false;
       } else {
          return true;
       }
    }
 
-   public static boolean canDismountTo(CollisionGetter var0, Vec3 var1, LivingEntity var2, Pose var3) {
-      return canDismountTo(var0, var2, var2.getLocalBoundsForPose(var3).move(var1));
+   public static boolean canDismountTo(final CollisionGetter level, final Vec3 location, final LivingEntity passenger, final Pose dismountPose) {
+      return canDismountTo(level, passenger, passenger.getLocalBoundsForPose(dismountPose).move(location));
    }
 
-   public static VoxelShape nonClimbableShape(BlockGetter var0, BlockPos var1) {
-      BlockState var2 = var0.getBlockState(var1);
-      return !var2.is(BlockTags.CLIMBABLE) && (!(var2.getBlock() instanceof TrapDoorBlock) || !(Boolean)var2.getValue(TrapDoorBlock.OPEN)) ? var2.getCollisionShape(var0, var1) : Shapes.empty();
+   public static VoxelShape nonClimbableShape(final BlockGetter level, final BlockPos pos) {
+      BlockState blockState = level.getBlockState(pos);
+      return !blockState.is(BlockTags.CLIMBABLE) && (!(blockState.getBlock() instanceof TrapDoorBlock) || !(Boolean)blockState.getValue(TrapDoorBlock.OPEN)) ? blockState.getCollisionShape(level, pos) : Shapes.empty();
    }
 
-   public static double findCeilingFrom(BlockPos var0, int var1, Function<BlockPos, VoxelShape> var2) {
-      BlockPos.MutableBlockPos var3 = var0.mutable();
-      int var4 = 0;
+   public static double findCeilingFrom(final BlockPos pos, final int blocks, final Function<BlockPos, VoxelShape> shapeGetter) {
+      BlockPos.MutableBlockPos cursor = pos.mutable();
+      int y = 0;
 
-      while(var4 < var1) {
-         VoxelShape var5 = (VoxelShape)var2.apply(var3);
-         if (!var5.isEmpty()) {
-            return (double)(var0.getY() + var4) + var5.min(Direction.Axis.Y);
+      while(y < blocks) {
+         VoxelShape collisionShape = (VoxelShape)shapeGetter.apply(cursor);
+         if (!collisionShape.isEmpty()) {
+            return (double)(pos.getY() + y) + collisionShape.min(Direction.Axis.Y);
          }
 
-         ++var4;
-         var3.move(Direction.UP);
+         ++y;
+         cursor.move(Direction.UP);
       }
 
       return 1.0 / 0.0;
    }
 
-   public static @Nullable Vec3 findSafeDismountLocation(EntityType<?> var0, CollisionGetter var1, BlockPos var2, boolean var3) {
-      if (var3 && var0.isBlockDangerous(var1.getBlockState(var2))) {
+   public static @Nullable Vec3 findSafeDismountLocation(final EntityType<?> type, final CollisionGetter level, final BlockPos blockPos, final boolean checkDangerous) {
+      if (checkDangerous && type.isBlockDangerous(level.getBlockState(blockPos))) {
          return null;
       } else {
-         double var4 = var1.getBlockFloorHeight(nonClimbableShape(var1, var2), () -> nonClimbableShape(var1, var2.below()));
-         if (!isBlockFloorValid(var4)) {
+         double floorHeight = level.getBlockFloorHeight(nonClimbableShape(level, blockPos), () -> nonClimbableShape(level, blockPos.below()));
+         if (!isBlockFloorValid(floorHeight)) {
             return null;
-         } else if (var3 && var4 <= 0.0 && var0.isBlockDangerous(var1.getBlockState(var2.below()))) {
+         } else if (checkDangerous && floorHeight <= 0.0 && type.isBlockDangerous(level.getBlockState(blockPos.below()))) {
             return null;
          } else {
-            Vec3 var6 = Vec3.upFromBottomCenterOf(var2, var4);
-            AABB var7 = var0.getDimensions().makeBoundingBox(var6);
+            Vec3 position = Vec3.upFromBottomCenterOf(blockPos, floorHeight);
+            AABB aabb = type.getDimensions().makeBoundingBox(position);
 
-            for(VoxelShape var10 : var1.getBlockCollisions((Entity)null, var7)) {
-               if (!var10.isEmpty()) {
+            for(VoxelShape shape : level.getBlockCollisions((Entity)null, aabb)) {
+               if (!shape.isEmpty()) {
                   return null;
                }
             }
 
-            if (var0 != EntityType.PLAYER || !var1.getBlockState(var2).is(BlockTags.INVALID_SPAWN_INSIDE) && !var1.getBlockState(var2.above()).is(BlockTags.INVALID_SPAWN_INSIDE)) {
-               return !var1.getWorldBorder().isWithinBounds(var7) ? null : var6;
+            if (type != EntityType.PLAYER || !level.getBlockState(blockPos).is(BlockTags.INVALID_SPAWN_INSIDE) && !level.getBlockState(blockPos.above()).is(BlockTags.INVALID_SPAWN_INSIDE)) {
+               return !level.getWorldBorder().isWithinBounds(aabb) ? null : position;
             } else {
                return null;
             }

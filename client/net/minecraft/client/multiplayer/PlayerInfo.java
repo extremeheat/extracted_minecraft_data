@@ -23,18 +23,18 @@ public class PlayerInfo {
    private SignedMessageValidator messageValidator;
    private int tabListOrder;
 
-   public PlayerInfo(GameProfile var1, boolean var2) {
+   public PlayerInfo(final GameProfile profile, final boolean enforcesSecureChat) {
       super();
       this.gameMode = GameType.DEFAULT_MODE;
       this.showHat = true;
-      this.profile = var1;
-      this.messageValidator = fallbackMessageValidator(var2);
+      this.profile = profile;
+      this.messageValidator = fallbackMessageValidator(enforcesSecureChat);
    }
 
-   private static Supplier<PlayerSkin> createSkinLookup(GameProfile var0) {
-      Minecraft var1 = Minecraft.getInstance();
-      boolean var2 = !var1.isLocalPlayer(var0.id());
-      return var1.getSkinManager().createLookup(var0, var2);
+   private static Supplier<PlayerSkin> createSkinLookup(final GameProfile profile) {
+      Minecraft minecraft = Minecraft.getInstance();
+      boolean requireSecure = !minecraft.isLocalPlayer(profile.id());
+      return minecraft.getSkinManager().createLookup(profile, requireSecure);
    }
 
    public GameProfile getProfile() {
@@ -53,34 +53,34 @@ public class PlayerInfo {
       return this.chatSession != null;
    }
 
-   protected void setChatSession(RemoteChatSession var1) {
-      this.chatSession = var1;
-      this.messageValidator = var1.createMessageValidator(ProfilePublicKey.EXPIRY_GRACE_PERIOD);
+   protected void setChatSession(final RemoteChatSession chatSession) {
+      this.chatSession = chatSession;
+      this.messageValidator = chatSession.createMessageValidator(ProfilePublicKey.EXPIRY_GRACE_PERIOD);
    }
 
-   protected void clearChatSession(boolean var1) {
+   protected void clearChatSession(final boolean enforcesSecureChat) {
       this.chatSession = null;
-      this.messageValidator = fallbackMessageValidator(var1);
+      this.messageValidator = fallbackMessageValidator(enforcesSecureChat);
    }
 
-   private static SignedMessageValidator fallbackMessageValidator(boolean var0) {
-      return var0 ? SignedMessageValidator.REJECT_ALL : SignedMessageValidator.ACCEPT_UNSIGNED;
+   private static SignedMessageValidator fallbackMessageValidator(final boolean enforcesSecureChat) {
+      return enforcesSecureChat ? SignedMessageValidator.REJECT_ALL : SignedMessageValidator.ACCEPT_UNSIGNED;
    }
 
    public GameType getGameMode() {
       return this.gameMode;
    }
 
-   protected void setGameMode(GameType var1) {
-      this.gameMode = var1;
+   protected void setGameMode(final GameType gameMode) {
+      this.gameMode = gameMode;
    }
 
    public int getLatency() {
       return this.latency;
    }
 
-   protected void setLatency(int var1) {
-      this.latency = var1;
+   protected void setLatency(final int latency) {
+      this.latency = latency;
    }
 
    public PlayerSkin getSkin() {
@@ -95,24 +95,24 @@ public class PlayerInfo {
       return Minecraft.getInstance().level.getScoreboard().getPlayersTeam(this.getProfile().name());
    }
 
-   public void setTabListDisplayName(@Nullable Component var1) {
-      this.tabListDisplayName = var1;
+   public void setTabListDisplayName(final @Nullable Component tabListDisplayName) {
+      this.tabListDisplayName = tabListDisplayName;
    }
 
    public @Nullable Component getTabListDisplayName() {
       return this.tabListDisplayName;
    }
 
-   public void setShowHat(boolean var1) {
-      this.showHat = var1;
+   public void setShowHat(final boolean showHat) {
+      this.showHat = showHat;
    }
 
    public boolean showHat() {
       return this.showHat;
    }
 
-   public void setTabListOrder(int var1) {
-      this.tabListOrder = var1;
+   public void setTabListOrder(final int tabListOrder) {
+      this.tabListOrder = tabListOrder;
    }
 
    public int getTabListOrder() {

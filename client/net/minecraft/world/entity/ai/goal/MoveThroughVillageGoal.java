@@ -31,15 +31,15 @@ public class MoveThroughVillageGoal extends Goal {
    private final int distanceToPoi;
    private final BooleanSupplier canDealWithDoors;
 
-   public MoveThroughVillageGoal(PathfinderMob var1, double var2, boolean var4, int var5, BooleanSupplier var6) {
+   public MoveThroughVillageGoal(final PathfinderMob mob, final double speedModifier, final boolean onlyAtNight, final int distanceToPoi, final BooleanSupplier canDealWithDoors) {
       super();
-      this.mob = var1;
-      this.speedModifier = var2;
-      this.onlyAtNight = var4;
-      this.distanceToPoi = var5;
-      this.canDealWithDoors = var6;
+      this.mob = mob;
+      this.speedModifier = speedModifier;
+      this.onlyAtNight = onlyAtNight;
+      this.distanceToPoi = distanceToPoi;
+      this.canDealWithDoors = canDealWithDoors;
       this.setFlags(EnumSet.of(Goal.Flag.MOVE));
-      if (!GoalUtils.hasGroundPathNavigation(var1)) {
+      if (!GoalUtils.hasGroundPathNavigation(mob)) {
          throw new IllegalArgumentException("Unsupported mob for MoveThroughVillageGoal");
       }
    }
@@ -52,50 +52,50 @@ public class MoveThroughVillageGoal extends Goal {
          if (this.onlyAtNight && this.mob.level().isBrightOutside()) {
             return false;
          } else {
-            ServerLevel var1 = (ServerLevel)this.mob.level();
-            BlockPos var2 = this.mob.blockPosition();
-            if (!var1.isCloseToVillage(var2, 6)) {
+            ServerLevel level = (ServerLevel)this.mob.level();
+            BlockPos pos = this.mob.blockPosition();
+            if (!level.isCloseToVillage(pos, 6)) {
                return false;
             } else {
-               Vec3 var3 = LandRandomPos.getPos(this.mob, 15, 7, (var3x) -> {
-                  if (!var1.isVillage(var3x)) {
+               Vec3 landPos = LandRandomPos.getPos(this.mob, 15, 7, (p) -> {
+                  if (!level.isVillage(p)) {
                      return -1.0 / 0.0;
                   } else {
-                     Optional var4 = var1.getPoiManager().find((var0) -> var0.is(PoiTypeTags.VILLAGE), this::hasNotVisited, var3x, 10, PoiManager.Occupancy.IS_OCCUPIED);
-                     return (Double)var4.map((var1x) -> -var1x.distSqr(var2)).orElse(-1.0 / 0.0);
+                     Optional<BlockPos> newPoiPos = level.getPoiManager().find((e) -> e.is(PoiTypeTags.VILLAGE), this::hasNotVisited, p, 10, PoiManager.Occupancy.IS_OCCUPIED);
+                     return (Double)newPoiPos.map((poiPos) -> -poiPos.distSqr(pos)).orElse(-1.0 / 0.0);
                   }
                });
-               if (var3 == null) {
+               if (landPos == null) {
                   return false;
                } else {
-                  Optional var4 = var1.getPoiManager().find((var0) -> var0.is(PoiTypeTags.VILLAGE), this::hasNotVisited, BlockPos.containing(var3), 10, PoiManager.Occupancy.IS_OCCUPIED);
-                  if (var4.isEmpty()) {
+                  Optional<BlockPos> target = level.getPoiManager().find((e) -> e.is(PoiTypeTags.VILLAGE), this::hasNotVisited, BlockPos.containing(landPos), 10, PoiManager.Occupancy.IS_OCCUPIED);
+                  if (target.isEmpty()) {
                      return false;
                   } else {
-                     this.poiPos = ((BlockPos)var4.get()).immutable();
-                     PathNavigation var5 = this.mob.getNavigation();
-                     var5.setCanOpenDoors(this.canDealWithDoors.getAsBoolean());
-                     this.path = var5.createPath(this.poiPos, 0);
-                     var5.setCanOpenDoors(true);
+                     this.poiPos = ((BlockPos)target.get()).immutable();
+                     PathNavigation navigation = this.mob.getNavigation();
+                     navigation.setCanOpenDoors(this.canDealWithDoors.getAsBoolean());
+                     this.path = navigation.createPath(this.poiPos, 0);
+                     navigation.setCanOpenDoors(true);
                      if (this.path == null) {
-                        Vec3 var6 = DefaultRandomPos.getPosTowards(this.mob, 10, 7, Vec3.atBottomCenterOf(this.poiPos), 1.5707963705062866);
-                        if (var6 == null) {
+                        Vec3 partialStep = DefaultRandomPos.getPosTowards(this.mob, 10, 7, Vec3.atBottomCenterOf(this.poiPos), 1.5707963705062866);
+                        if (partialStep == null) {
                            return false;
                         }
 
-                        var5.setCanOpenDoors(this.canDealWithDoors.getAsBoolean());
-                        this.path = this.mob.getNavigation().createPath(var6.x, var6.y, var6.z, 0);
-                        var5.setCanOpenDoors(true);
+                        navigation.setCanOpenDoors(this.canDealWithDoors.getAsBoolean());
+                        this.path = this.mob.getNavigation().createPath(partialStep.x, partialStep.y, partialStep.z, 0);
+                        navigation.setCanOpenDoors(true);
                         if (this.path == null) {
                            return false;
                         }
                      }
 
-                     for(int var9 = 0; var9 < this.path.getNodeCount(); ++var9) {
-                        Node var7 = this.path.getNode(var9);
-                        BlockPos var8 = new BlockPos(var7.x, var7.y + 1, var7.z);
-                        if (DoorBlock.isWoodenDoor(this.mob.level(), var8)) {
-                           this.path = this.mob.getNavigation().createPath((double)var7.x, (double)var7.y, (double)var7.z, 0);
+                     for(int i = 0; i < this.path.getNodeCount(); ++i) {
+                        Node node = this.path.getNode(i);
+                        BlockPos doorPos = new BlockPos(node.x, node.y + 1, node.z);
+                        if (DoorBlock.isWoodenDoor(this.mob.level(), doorPos)) {
+                           this.path = this.mob.getNavigation().createPath((double)node.x, (double)node.y, (double)node.z, 0);
                            break;
                         }
                      }
@@ -127,9 +127,9 @@ public class MoveThroughVillageGoal extends Goal {
 
    }
 
-   private boolean hasNotVisited(BlockPos var1) {
-      for(BlockPos var3 : this.visited) {
-         if (Objects.equals(var1, var3)) {
+   private boolean hasNotVisited(final BlockPos poi) {
+      for(BlockPos visitedPoi : this.visited) {
+         if (Objects.equals(poi, visitedPoi)) {
             return false;
          }
       }

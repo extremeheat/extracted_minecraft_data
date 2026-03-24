@@ -16,20 +16,20 @@ public class Stat<T> extends ObjectiveCriteria {
    private final T value;
    private final StatType<T> type;
 
-   protected Stat(StatType<T> var1, T var2, StatFormatter var3) {
-      super(buildName(var1, var2));
-      this.type = var1;
-      this.formatter = var3;
-      this.value = var2;
+   protected Stat(final StatType<T> type, final T value, final StatFormatter formatter) {
+      super(buildName(type, value));
+      this.type = type;
+      this.formatter = formatter;
+      this.value = value;
    }
 
-   public static <T> String buildName(StatType<T> var0, T var1) {
-      String var10000 = locationToKey(BuiltInRegistries.STAT_TYPE.getKey(var0));
-      return var10000 + ":" + locationToKey(var0.getRegistry().getKey(var1));
+   public static <T> String buildName(final StatType<T> type, final T value) {
+      String var10000 = locationToKey(BuiltInRegistries.STAT_TYPE.getKey(type));
+      return var10000 + ":" + locationToKey(type.getRegistry().getKey(value));
    }
 
-   private static String locationToKey(@Nullable Identifier var0) {
-      return var0.toString().replace(':', '.');
+   private static String locationToKey(final @Nullable Identifier location) {
+      return location.toString().replace(':', '.');
    }
 
    public StatType<T> getType() {
@@ -40,12 +40,12 @@ public class Stat<T> extends ObjectiveCriteria {
       return this.value;
    }
 
-   public String format(int var1) {
-      return this.formatter.format(var1);
+   public String format(final int value) {
+      return this.formatter.format(value);
    }
 
-   public boolean equals(Object var1) {
-      return this == var1 || var1 instanceof Stat && Objects.equals(this.getName(), ((Stat)var1).getName());
+   public boolean equals(final Object o) {
+      return this == o || o instanceof Stat && Objects.equals(this.getName(), ((Stat)o).getName());
    }
 
    public int hashCode() {

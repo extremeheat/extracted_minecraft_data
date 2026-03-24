@@ -16,15 +16,15 @@ import net.minecraft.world.level.material.Fluids;
 import org.jspecify.annotations.Nullable;
 
 public interface SimpleWaterloggedBlock extends BucketPickup, LiquidBlockContainer {
-   default boolean canPlaceLiquid(@Nullable LivingEntity var1, BlockGetter var2, BlockPos var3, BlockState var4, Fluid var5) {
-      return var5 == Fluids.WATER;
+   default boolean canPlaceLiquid(final @Nullable LivingEntity user, final BlockGetter level, final BlockPos pos, final BlockState state, final Fluid type) {
+      return type == Fluids.WATER;
    }
 
-   default boolean placeLiquid(LevelAccessor var1, BlockPos var2, BlockState var3, FluidState var4) {
-      if (!(Boolean)var3.getValue(BlockStateProperties.WATERLOGGED) && var4.getType() == Fluids.WATER) {
-         if (!var1.isClientSide()) {
-            var1.setBlock(var2, (BlockState)var3.setValue(BlockStateProperties.WATERLOGGED, true), 3);
-            var1.scheduleTick(var2, var4.getType(), var4.getType().getTickDelay(var1));
+   default boolean placeLiquid(final LevelAccessor level, final BlockPos pos, final BlockState state, final FluidState fluidState) {
+      if (!(Boolean)state.getValue(BlockStateProperties.WATERLOGGED) && fluidState.is(Fluids.WATER)) {
+         if (!level.isClientSide()) {
+            level.setBlock(pos, (BlockState)state.setValue(BlockStateProperties.WATERLOGGED, true), 3);
+            level.scheduleTick(pos, fluidState.getType(), fluidState.getType().getTickDelay(level));
          }
 
          return true;
@@ -33,11 +33,11 @@ public interface SimpleWaterloggedBlock extends BucketPickup, LiquidBlockContain
       }
    }
 
-   default ItemStack pickupBlock(@Nullable LivingEntity var1, LevelAccessor var2, BlockPos var3, BlockState var4) {
-      if ((Boolean)var4.getValue(BlockStateProperties.WATERLOGGED)) {
-         var2.setBlock(var3, (BlockState)var4.setValue(BlockStateProperties.WATERLOGGED, false), 3);
-         if (!var4.canSurvive(var2, var3)) {
-            var2.destroyBlock(var3, true);
+   default ItemStack pickupBlock(final @Nullable LivingEntity user, final LevelAccessor level, final BlockPos pos, final BlockState state) {
+      if ((Boolean)state.getValue(BlockStateProperties.WATERLOGGED)) {
+         level.setBlock(pos, (BlockState)state.setValue(BlockStateProperties.WATERLOGGED, false), 3);
+         if (!state.canSurvive(level, pos)) {
+            level.destroyBlock(pos, true);
          }
 
          return new ItemStack(Items.WATER_BUCKET);

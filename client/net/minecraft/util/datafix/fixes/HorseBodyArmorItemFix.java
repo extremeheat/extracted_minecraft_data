@@ -9,27 +9,27 @@ public class HorseBodyArmorItemFix extends NamedEntityWriteReadFix {
    private final String previousBodyArmorTag;
    private final boolean clearArmorItems;
 
-   public HorseBodyArmorItemFix(Schema var1, String var2, String var3, boolean var4) {
-      super(var1, true, "Horse armor fix for " + var2, References.ENTITY, var2);
-      this.previousBodyArmorTag = var3;
-      this.clearArmorItems = var4;
+   public HorseBodyArmorItemFix(final Schema outputSchema, final String entityName, final String previousBodyArmorTag, final boolean clearArmorItems) {
+      super(outputSchema, true, "Horse armor fix for " + entityName, References.ENTITY, entityName);
+      this.previousBodyArmorTag = previousBodyArmorTag;
+      this.clearArmorItems = clearArmorItems;
    }
 
-   protected <T> Dynamic<T> fix(Dynamic<T> var1) {
-      Optional var2 = var1.get(this.previousBodyArmorTag).result();
-      if (var2.isPresent()) {
-         Dynamic var3 = (Dynamic)var2.get();
-         Dynamic var4 = var1.remove(this.previousBodyArmorTag);
+   protected <T> Dynamic<T> fix(final Dynamic<T> input) {
+      Optional<? extends Dynamic<?>> previousBodyArmor = input.get(this.previousBodyArmorTag).result();
+      if (previousBodyArmor.isPresent()) {
+         Dynamic<?> bodyArmorItem = (Dynamic)previousBodyArmor.get();
+         Dynamic<T> output = input.remove(this.previousBodyArmorTag);
          if (this.clearArmorItems) {
-            var4 = var4.update("ArmorItems", (var0) -> var0.createList(Streams.mapWithIndex(var0.asStream(), (var0x, var1) -> var1 == 2L ? var0x.emptyMap() : var0x)));
-            var4 = var4.update("ArmorDropChances", (var0) -> var0.createList(Streams.mapWithIndex(var0.asStream(), (var0x, var1) -> var1 == 2L ? var0x.createFloat(0.085F) : var0x)));
+            output = output.update("ArmorItems", (armorItems) -> armorItems.createList(Streams.mapWithIndex(armorItems.asStream(), (entry, index) -> index == 2L ? entry.emptyMap() : entry)));
+            output = output.update("ArmorDropChances", (armorDropChances) -> armorDropChances.createList(Streams.mapWithIndex(armorDropChances.asStream(), (entry, index) -> index == 2L ? entry.createFloat(0.085F) : entry)));
          }
 
-         var4 = var4.set("body_armor_item", var3);
-         var4 = var4.set("body_armor_drop_chance", var1.createFloat(2.0F));
-         return var4;
+         output = output.set("body_armor_item", bodyArmorItem);
+         output = output.set("body_armor_drop_chance", input.createFloat(2.0F));
+         return output;
       } else {
-         return var1;
+         return input;
       }
    }
 }

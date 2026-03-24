@@ -6,15 +6,14 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.enchantment.LevelBasedValue;
 
 public record MultiplyValue(LevelBasedValue factor) implements EnchantmentValueEffect {
-   public static final MapCodec<MultiplyValue> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(LevelBasedValue.CODEC.fieldOf("factor").forGetter(MultiplyValue::factor)).apply(var0, MultiplyValue::new));
+   public static final MapCodec<MultiplyValue> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(LevelBasedValue.CODEC.fieldOf("factor").forGetter(MultiplyValue::factor)).apply(i, MultiplyValue::new));
 
-   public MultiplyValue(LevelBasedValue var1) {
+   public MultiplyValue {
       super();
-      this.factor = var1;
    }
 
-   public float process(int var1, RandomSource var2, float var3) {
-      return var3 * this.factor.calculate(var1);
+   public float process(final int enchantmentLevel, final RandomSource random, final float inputValue) {
+      return inputValue * this.factor.calculate(enchantmentLevel);
    }
 
    public MapCodec<MultiplyValue> codec() {

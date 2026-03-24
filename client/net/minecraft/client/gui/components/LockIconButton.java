@@ -1,6 +1,6 @@
 package net.minecraft.client.gui.components;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -10,8 +10,8 @@ import net.minecraft.resources.Identifier;
 public class LockIconButton extends Button {
    private boolean locked;
 
-   public LockIconButton(int var1, int var2, Button.OnPress var3) {
-      super(var1, var2, 20, 20, Component.translatable("narrator.button.difficulty_lock"), var3, DEFAULT_NARRATION);
+   public LockIconButton(final int x, final int y, final Button.OnPress onPress) {
+      super(x, y, 20, 20, Component.translatable("narrator.button.difficulty_lock"), onPress, DEFAULT_NARRATION);
    }
 
    protected MutableComponent createNarrationMessage() {
@@ -22,24 +22,24 @@ public class LockIconButton extends Button {
       return this.locked;
    }
 
-   public void setLocked(boolean var1) {
-      this.locked = var1;
+   public void setLocked(final boolean locked) {
+      this.locked = locked;
    }
 
-   public void renderContents(GuiGraphics var1, int var2, int var3, float var4) {
-      Icon var5;
+   public void extractContents(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      Icon icon;
       if (!this.active) {
-         var5 = this.locked ? LockIconButton.Icon.LOCKED_DISABLED : LockIconButton.Icon.UNLOCKED_DISABLED;
+         icon = this.locked ? LockIconButton.Icon.LOCKED_DISABLED : LockIconButton.Icon.UNLOCKED_DISABLED;
       } else if (this.isHoveredOrFocused()) {
-         var5 = this.locked ? LockIconButton.Icon.LOCKED_HOVER : LockIconButton.Icon.UNLOCKED_HOVER;
+         icon = this.locked ? LockIconButton.Icon.LOCKED_HOVER : LockIconButton.Icon.UNLOCKED_HOVER;
       } else {
-         var5 = this.locked ? LockIconButton.Icon.LOCKED : LockIconButton.Icon.UNLOCKED;
+         icon = this.locked ? LockIconButton.Icon.LOCKED : LockIconButton.Icon.UNLOCKED;
       }
 
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, var5.sprite, this.getX(), this.getY(), this.width, this.height);
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, icon.sprite, this.getX(), this.getY(), this.width, this.height);
    }
 
-   static enum Icon {
+   private static enum Icon {
       LOCKED(Identifier.withDefaultNamespace("widget/locked_button")),
       LOCKED_HOVER(Identifier.withDefaultNamespace("widget/locked_button_highlighted")),
       LOCKED_DISABLED(Identifier.withDefaultNamespace("widget/locked_button_disabled")),
@@ -47,10 +47,10 @@ public class LockIconButton extends Button {
       UNLOCKED_HOVER(Identifier.withDefaultNamespace("widget/unlocked_button_highlighted")),
       UNLOCKED_DISABLED(Identifier.withDefaultNamespace("widget/unlocked_button_disabled"));
 
-      final Identifier sprite;
+      private final Identifier sprite;
 
-      private Icon(final Identifier var3) {
-         this.sprite = var3;
+      private Icon(final Identifier sprite) {
+         this.sprite = sprite;
       }
 
       // $FF: synthetic method

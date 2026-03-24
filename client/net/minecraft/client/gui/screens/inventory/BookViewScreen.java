@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ActiveTextCollector;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
@@ -18,6 +18,7 @@ import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
+import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
@@ -54,34 +55,34 @@ public class BookViewScreen extends Screen {
    private PageButton backButton;
    private final boolean playTurnSound;
 
-   public BookViewScreen(BookAccess var1) {
-      this(var1, true);
+   public BookViewScreen(final BookAccess bookAccess) {
+      this(bookAccess, true);
    }
 
    public BookViewScreen() {
       this(EMPTY_ACCESS, false);
    }
 
-   private BookViewScreen(BookAccess var1, boolean var2) {
+   private BookViewScreen(final BookAccess bookAccess, final boolean playTurnSound) {
       super(TITLE);
       this.cachedPageComponents = Collections.emptyList();
       this.cachedPage = -1;
       this.pageMsg = CommonComponents.EMPTY;
-      this.bookAccess = var1;
-      this.playTurnSound = var2;
+      this.bookAccess = bookAccess;
+      this.playTurnSound = playTurnSound;
    }
 
-   public void setBookAccess(BookAccess var1) {
-      this.bookAccess = var1;
-      this.currentPage = Mth.clamp(this.currentPage, 0, var1.getPageCount());
+   public void setBookAccess(final BookAccess bookAccess) {
+      this.bookAccess = bookAccess;
+      this.currentPage = Mth.clamp(this.currentPage, 0, bookAccess.getPageCount());
       this.updateButtonVisibility();
       this.cachedPage = -1;
    }
 
-   public boolean setPage(int var1) {
-      int var2 = Mth.clamp(var1, 0, this.bookAccess.getPageCount() - 1);
-      if (var2 != this.currentPage) {
-         this.currentPage = var2;
+   public boolean setPage(final int page) {
+      int clampedPage = Mth.clamp(page, 0, this.bookAccess.getPageCount() - 1);
+      if (clampedPage != this.currentPage) {
+         this.currentPage = clampedPage;
          this.updateButtonVisibility();
          this.cachedPage = -1;
          return true;
@@ -90,8 +91,8 @@ public class BookViewScreen extends Screen {
       }
    }
 
-   protected boolean forcePage(int var1) {
-      return this.setPage(var1);
+   protected boolean forcePage(final int page) {
+      return this.setPage(page);
    }
 
    protected void init() {
@@ -108,14 +109,14 @@ public class BookViewScreen extends Screen {
    }
 
    protected void createMenuControls() {
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1) -> this.onClose()).pos((this.width - 200) / 2, this.menuControlsTop()).width(200).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (button) -> this.onClose()).pos((this.width - 200) / 2, this.menuControlsTop()).width(200).build());
    }
 
    protected void createPageControlButtons() {
-      int var1 = this.backgroundLeft();
-      int var2 = this.backgroundTop();
-      this.forwardButton = (PageButton)this.addRenderableWidget(new PageButton(var1 + 116, var2 + 157, true, (var1x) -> this.pageForward(), this.playTurnSound));
-      this.backButton = (PageButton)this.addRenderableWidget(new PageButton(var1 + 43, var2 + 157, false, (var1x) -> this.pageBack(), this.playTurnSound));
+      int left = this.backgroundLeft();
+      int top = this.backgroundTop();
+      this.forwardButton = (PageButton)this.addRenderableWidget(new PageButton(left + 116, top + 157, true, (button) -> this.pageForward(), this.playTurnSound));
+      this.backButton = (PageButton)this.addRenderableWidget(new PageButton(left + 43, top + 157, false, (button) -> this.pageBack(), this.playTurnSound));
       this.updateButtonVisibility();
    }
 
@@ -144,18 +145,18 @@ public class BookViewScreen extends Screen {
       this.backButton.visible = this.currentPage > 0;
    }
 
-   public boolean keyPressed(KeyEvent var1) {
-      if (super.keyPressed(var1)) {
+   public boolean keyPressed(final KeyEvent event) {
+      if (super.keyPressed(event)) {
          return true;
       } else {
          boolean var10000;
-         switch (var1.key()) {
+         switch (event.key()) {
             case 266:
-               this.backButton.onPress(var1);
+               this.backButton.onPress(event);
                var10000 = true;
                break;
             case 267:
-               this.forwardButton.onPress(var1);
+               this.forwardButton.onPress(event);
                var10000 = true;
                break;
             default:
@@ -166,41 +167,41 @@ public class BookViewScreen extends Screen {
       }
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      this.visitText(var1.textRenderer(GuiGraphics.HoveredTextEffects.TOOLTIP_AND_CURSOR), false);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
+      this.visitText(graphics.textRenderer(GuiGraphicsExtractor.HoveredTextEffects.TOOLTIP_AND_CURSOR), false);
    }
 
-   private void visitText(ActiveTextCollector var1, boolean var2) {
+   private void visitText(final ActiveTextCollector collector, final boolean clickableOnly) {
       if (this.cachedPage != this.currentPage) {
-         Component var3 = ComponentUtils.mergeStyles(this.bookAccess.getPage(this.currentPage), PAGE_TEXT_STYLE);
-         this.cachedPageComponents = this.font.split(var3, 114);
+         FormattedText pageText = ComponentUtils.mergeStyles(this.bookAccess.getPage(this.currentPage), PAGE_TEXT_STYLE);
+         this.cachedPageComponents = this.font.split(pageText, 114);
          this.pageMsg = this.getPageNumberMessage();
          this.cachedPage = this.currentPage;
       }
 
-      int var8 = this.backgroundLeft();
-      int var4 = this.backgroundTop();
-      if (!var2) {
-         var1.accept(TextAlignment.RIGHT, var8 + 148, var4 + 16, this.pageMsg);
+      int left = this.backgroundLeft();
+      int top = this.backgroundTop();
+      if (!clickableOnly) {
+         collector.accept(TextAlignment.RIGHT, left + 148, top + 16, this.pageMsg);
       }
 
       Objects.requireNonNull(this.font);
-      int var5 = Math.min(128 / 9, this.cachedPageComponents.size());
+      int shownLines = Math.min(128 / 9, this.cachedPageComponents.size());
 
-      for(int var6 = 0; var6 < var5; ++var6) {
-         FormattedCharSequence var7 = (FormattedCharSequence)this.cachedPageComponents.get(var6);
-         int var10001 = var8 + 36;
-         int var10002 = var4 + 30;
+      for(int i = 0; i < shownLines; ++i) {
+         FormattedCharSequence component = (FormattedCharSequence)this.cachedPageComponents.get(i);
+         int var10001 = left + 36;
+         int var10002 = top + 30;
          Objects.requireNonNull(this.font);
-         var1.accept(var10001, var10002 + var6 * 9, var7);
+         collector.accept(var10001, var10002 + i * 9, component);
       }
 
    }
 
-   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      super.renderBackground(var1, var2, var3, var4);
-      var1.blit(RenderPipelines.GUI_TEXTURED, BOOK_LOCATION, this.backgroundLeft(), this.backgroundTop(), 0.0F, 0.0F, 192, 192, 256, 256);
+   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractBackground(graphics, mouseX, mouseY, a);
+      graphics.blit(RenderPipelines.GUI_TEXTURED, BOOK_LOCATION, this.backgroundLeft(), this.backgroundTop(), 0.0F, 0.0F, 192, 192, 256, 256);
    }
 
    private int backgroundLeft() {
@@ -215,62 +216,70 @@ public class BookViewScreen extends Screen {
       return this.backgroundTop() + 192 + 2;
    }
 
-   public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
-      if (var1.button() == 0) {
-         ActiveTextCollector.ClickableStyleFinder var3 = new ActiveTextCollector.ClickableStyleFinder(this.font, (int)var1.x(), (int)var1.y());
-         this.visitText(var3, true);
-         Style var4 = var3.result();
-         if (var4 != null && this.handleClickEvent(var4.getClickEvent())) {
+   public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
+      if (event.button() == 0) {
+         ActiveTextCollector.ClickableStyleFinder finder = new ActiveTextCollector.ClickableStyleFinder(this.font, (int)event.x(), (int)event.y());
+         this.visitText(finder, true);
+         Style clickedStyle = finder.result();
+         if (clickedStyle != null && this.handleClickEvent(clickedStyle.getClickEvent())) {
             return true;
          }
       }
 
-      return super.mouseClicked(var1, var2);
+      return super.mouseClicked(event, doubleClick);
    }
 
-   protected boolean handleClickEvent(@Nullable ClickEvent var1) {
-      if (var1 == null) {
+   protected boolean handleClickEvent(final @Nullable ClickEvent event) {
+      if (event == null) {
          return false;
       } else {
-         LocalPlayer var2 = (LocalPlayer)Objects.requireNonNull(this.minecraft.player, "Player not available");
-         Objects.requireNonNull(var1);
+         LocalPlayer player = (LocalPlayer)Objects.requireNonNull(this.minecraft.player, "Player not available");
+         Objects.requireNonNull(event);
+         ClickEvent var3 = event;
          byte var4 = 0;
-         //$FF: var4->value
-         //0->net/minecraft/network/chat/ClickEvent$ChangePage
-         //1->net/minecraft/network/chat/ClickEvent$RunCommand
-         switch (var1.typeSwitch<invokedynamic>(var1, var4)) {
-            case 0:
-               ClickEvent.ChangePage var5 = (ClickEvent.ChangePage)var1;
-               ClickEvent.ChangePage var14 = var5;
 
-               try {
-                  var15 = var14.page();
-               } catch (Throwable var11) {
-                  throw new MatchException(var11.toString(), var11);
-               }
+         while(true) {
+            //$FF: var4->value
+            //0->net/minecraft/network/chat/ClickEvent$ChangePage
+            //1->net/minecraft/network/chat/ClickEvent$RunCommand
+            switch (var3.typeSwitch<invokedynamic>(var3, var4)) {
+               case 0:
+                  ClickEvent.ChangePage var5 = (ClickEvent.ChangePage)var3;
+                  ClickEvent.ChangePage var14 = var5;
 
-               int var12 = var15;
-               this.forcePage(var12 - 1);
-               break;
-            case 1:
-               ClickEvent.RunCommand var7 = (ClickEvent.RunCommand)var1;
-               ClickEvent.RunCommand var10000 = var7;
+                  try {
+                     var15 = var14.page();
+                  } catch (Throwable var11) {
+                     throw new MatchException(var11.toString(), var11);
+                  }
 
-               try {
-                  var13 = var10000.command();
-               } catch (Throwable var10) {
-                  throw new MatchException(var10.toString(), var10);
-               }
+                  int page = var15;
+                  if (true) {
+                     this.forcePage(page - 1);
+                     return true;
+                  }
 
-               String var9 = var13;
-               this.closeContainerOnServer();
-               clickCommandAction(var2, var9, (Screen)null);
-               break;
-            default:
-               defaultHandleGameClickEvent(var1, this.minecraft, this);
+                  var4 = 1;
+                  break;
+               case 1:
+                  ClickEvent.RunCommand page = (ClickEvent.RunCommand)var3;
+                  ClickEvent.RunCommand var10000 = page;
+
+                  try {
+                     var13 = var10000.command();
+                  } catch (Throwable var10) {
+                     throw new MatchException(var10.toString(), var10);
+                  }
+
+                  String command = var13;
+                  this.closeContainerOnServer();
+                  clickCommandAction(player, command, (Screen)null);
+                  return true;
+               default:
+                  defaultHandleGameClickEvent(event, this.minecraft, this);
+                  return true;
+            }
          }
-
-         return true;
       }
    }
 
@@ -288,27 +297,26 @@ public class BookViewScreen extends Screen {
    }
 
    public static record BookAccess(List<Component> pages) {
-      public BookAccess(List<Component> var1) {
+      public BookAccess {
          super();
-         this.pages = var1;
       }
 
       public int getPageCount() {
          return this.pages.size();
       }
 
-      public Component getPage(int var1) {
-         return var1 >= 0 && var1 < this.getPageCount() ? (Component)this.pages.get(var1) : CommonComponents.EMPTY;
+      public Component getPage(final int page) {
+         return page >= 0 && page < this.getPageCount() ? (Component)this.pages.get(page) : CommonComponents.EMPTY;
       }
 
-      public static @Nullable BookAccess fromItem(ItemStack var0) {
-         boolean var1 = Minecraft.getInstance().isTextFilteringEnabled();
-         WrittenBookContent var2 = (WrittenBookContent)var0.get(DataComponents.WRITTEN_BOOK_CONTENT);
-         if (var2 != null) {
-            return new BookAccess(var2.getPages(var1));
+      public static @Nullable BookAccess fromItem(final ItemStack itemStack) {
+         boolean filterEnabled = Minecraft.getInstance().isTextFilteringEnabled();
+         WrittenBookContent writtenContent = (WrittenBookContent)itemStack.get(DataComponents.WRITTEN_BOOK_CONTENT);
+         if (writtenContent != null) {
+            return new BookAccess(writtenContent.getPages(filterEnabled));
          } else {
-            WritableBookContent var3 = (WritableBookContent)var0.get(DataComponents.WRITABLE_BOOK_CONTENT);
-            return var3 != null ? new BookAccess(var3.getPages(var1).map(Component::literal).toList()) : null;
+            WritableBookContent writableContent = (WritableBookContent)itemStack.get(DataComponents.WRITABLE_BOOK_CONTENT);
+            return writableContent != null ? new BookAccess(writableContent.getPages(filterEnabled).map(Component::literal).toList()) : null;
          }
       }
    }

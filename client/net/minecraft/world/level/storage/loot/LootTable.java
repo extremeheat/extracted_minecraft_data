@@ -7,7 +7,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
-import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -20,7 +20,6 @@ import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
-import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
 import net.minecraft.util.context.ContextKeySet;
@@ -32,7 +31,7 @@ import net.minecraft.world.level.storage.loot.functions.LootItemFunctions;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import org.slf4j.Logger;
 
-public class LootTable {
+public class LootTable implements Validatable {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final Codec<ResourceKey<LootTable>> KEY_CODEC;
    public static final ContextKeySet DEFAULT_PARAM_SET;
@@ -46,27 +45,27 @@ public class LootTable {
    private final List<LootItemFunction> functions;
    private final BiFunction<ItemStack, LootContext, ItemStack> compositeFunction;
 
-   LootTable(ContextKeySet var1, Optional<Identifier> var2, List<LootPool> var3, List<LootItemFunction> var4) {
+   private LootTable(final ContextKeySet paramSet, final Optional<Identifier> randomSequence, final List<LootPool> pools, final List<LootItemFunction> functions) {
       super();
-      this.paramSet = var1;
-      this.randomSequence = var2;
-      this.pools = var3;
-      this.functions = var4;
-      this.compositeFunction = LootItemFunctions.compose(var4);
+      this.paramSet = paramSet;
+      this.randomSequence = randomSequence;
+      this.pools = pools;
+      this.functions = functions;
+      this.compositeFunction = LootItemFunctions.compose(functions);
    }
 
-   public static Consumer<ItemStack> createStackSplitter(ServerLevel var0, Consumer<ItemStack> var1) {
-      return (var2) -> {
-         if (var2.isItemEnabled(var0.enabledFeatures())) {
-            if (var2.getCount() < var2.getMaxStackSize()) {
-               var1.accept(var2);
+   public static Consumer<ItemStack> createStackSplitter(final ServerLevel level, final Consumer<ItemStack> output) {
+      return (result) -> {
+         if (result.isItemEnabled(level.enabledFeatures())) {
+            if (result.getCount() < result.getMaxStackSize()) {
+               output.accept(result);
             } else {
-               int var3 = var2.getCount();
+               int count = result.getCount();
 
-               while(var3 > 0) {
-                  ItemStack var4 = var2.copyWithCount(Math.min(var2.getMaxStackSize(), var3));
-                  var3 -= var4.getCount();
-                  var1.accept(var4);
+               while(count > 0) {
+                  ItemStack copy = result.copyWithCount(Math.min(result.getMaxStackSize(), count));
+                  count -= copy.getCount();
+                  output.accept(copy);
                }
             }
 
@@ -74,142 +73,136 @@ public class LootTable {
       };
    }
 
-   public void getRandomItemsRaw(LootParams var1, Consumer<ItemStack> var2) {
-      this.getRandomItemsRaw((new LootContext.Builder(var1)).create(this.randomSequence), var2);
+   public void getRandomItemsRaw(final LootParams params, final Consumer<ItemStack> output) {
+      this.getRandomItemsRaw((new LootContext.Builder(params)).create(this.randomSequence), output);
    }
 
-   public void getRandomItemsRaw(LootContext var1, Consumer<ItemStack> var2) {
-      LootContext.VisitedEntry var3 = LootContext.createVisitedEntry(this);
-      if (var1.pushVisitedElement(var3)) {
-         Consumer var4 = LootItemFunction.decorate(this.compositeFunction, var2, var1);
+   public void getRandomItemsRaw(final LootContext context, final Consumer<ItemStack> output) {
+      LootContext.VisitedEntry<?> breadcrumb = LootContext.createVisitedEntry(this);
+      if (context.pushVisitedElement(breadcrumb)) {
+         Consumer<ItemStack> decoratedOutput = LootItemFunction.decorate(this.compositeFunction, output, context);
 
-         for(LootPool var6 : this.pools) {
-            var6.addRandomItems(var4, var1);
+         for(LootPool pool : this.pools) {
+            pool.addRandomItems(decoratedOutput, context);
          }
 
-         var1.popVisitedElement(var3);
+         context.popVisitedElement(breadcrumb);
       } else {
          LOGGER.warn("Detected infinite loop in loot tables");
       }
 
    }
 
-   public void getRandomItems(LootParams var1, long var2, Consumer<ItemStack> var4) {
-      this.getRandomItemsRaw((new LootContext.Builder(var1)).withOptionalRandomSeed(var2).create(this.randomSequence), createStackSplitter(var1.getLevel(), var4));
+   public void getRandomItems(final LootParams params, final long optionalLootTableSeed, final Consumer<ItemStack> output) {
+      this.getRandomItemsRaw((new LootContext.Builder(params)).withOptionalRandomSeed(optionalLootTableSeed).create(this.randomSequence), createStackSplitter(params.getLevel(), output));
    }
 
-   public void getRandomItems(LootParams var1, Consumer<ItemStack> var2) {
-      this.getRandomItemsRaw(var1, createStackSplitter(var1.getLevel(), var2));
+   public void getRandomItems(final LootParams params, final Consumer<ItemStack> output) {
+      this.getRandomItemsRaw(params, createStackSplitter(params.getLevel(), output));
    }
 
-   public void getRandomItems(LootContext var1, Consumer<ItemStack> var2) {
-      this.getRandomItemsRaw(var1, createStackSplitter(var1.getLevel(), var2));
+   public void getRandomItems(final LootContext context, final Consumer<ItemStack> output) {
+      this.getRandomItemsRaw(context, createStackSplitter(context.getLevel(), output));
    }
 
-   public ObjectArrayList<ItemStack> getRandomItems(LootParams var1, RandomSource var2) {
-      return this.getRandomItems((new LootContext.Builder(var1)).withOptionalRandomSource(var2).create(this.randomSequence));
+   public ObjectArrayList<ItemStack> getRandomItems(final LootParams params, final RandomSource randomSource) {
+      return this.getRandomItems((new LootContext.Builder(params)).withOptionalRandomSource(randomSource).create(this.randomSequence));
    }
 
-   public ObjectArrayList<ItemStack> getRandomItems(LootParams var1, long var2) {
-      return this.getRandomItems((new LootContext.Builder(var1)).withOptionalRandomSeed(var2).create(this.randomSequence));
+   public ObjectArrayList<ItemStack> getRandomItems(final LootParams params, final long optionalLootTableSeed) {
+      return this.getRandomItems((new LootContext.Builder(params)).withOptionalRandomSeed(optionalLootTableSeed).create(this.randomSequence));
    }
 
-   public ObjectArrayList<ItemStack> getRandomItems(LootParams var1) {
-      return this.getRandomItems((new LootContext.Builder(var1)).create(this.randomSequence));
+   public ObjectArrayList<ItemStack> getRandomItems(final LootParams params) {
+      return this.getRandomItems((new LootContext.Builder(params)).create(this.randomSequence));
    }
 
-   private ObjectArrayList<ItemStack> getRandomItems(LootContext var1) {
-      ObjectArrayList var2 = new ObjectArrayList();
-      Objects.requireNonNull(var2);
-      this.getRandomItems(var1, var2::add);
-      return var2;
+   private ObjectArrayList<ItemStack> getRandomItems(final LootContext context) {
+      ObjectArrayList<ItemStack> result = new ObjectArrayList();
+      Objects.requireNonNull(result);
+      this.getRandomItems(context, result::add);
+      return result;
    }
 
    public ContextKeySet getParamSet() {
       return this.paramSet;
    }
 
-   public void validate(ValidationContext var1) {
-      for(int var2 = 0; var2 < this.pools.size(); ++var2) {
-         ((LootPool)this.pools.get(var2)).validate(var1.forChild(new ProblemReporter.IndexedFieldPathElement("pools", var2)));
-      }
-
-      for(int var3 = 0; var3 < this.functions.size(); ++var3) {
-         ((LootItemFunction)this.functions.get(var3)).validate(var1.forChild(new ProblemReporter.IndexedFieldPathElement("functions", var3)));
-      }
-
+   public void validate(final ValidationContext context) {
+      Validatable.validate(context, "pools", this.pools);
+      Validatable.validate(context, "functions", this.functions);
    }
 
-   public void fill(Container var1, LootParams var2, long var3) {
-      LootContext var5 = (new LootContext.Builder(var2)).withOptionalRandomSeed(var3).create(this.randomSequence);
-      ObjectArrayList var6 = this.getRandomItems(var5);
-      RandomSource var7 = var5.getRandom();
-      List var8 = this.getAvailableSlots(var1, var7);
-      this.shuffleAndSplitItems(var6, var8.size(), var7);
-      ObjectListIterator var9 = var6.iterator();
+   public void fill(final Container container, final LootParams params, final long optionalRandomSeed) {
+      LootContext context = (new LootContext.Builder(params)).withOptionalRandomSeed(optionalRandomSeed).create(this.randomSequence);
+      ObjectArrayList<ItemStack> itemStacks = this.getRandomItems(context);
+      RandomSource random = context.getRandom();
+      List<Integer> availableSlots = this.getAvailableSlots(container, random);
+      this.shuffleAndSplitItems(itemStacks, availableSlots.size(), random);
+      ObjectListIterator var9 = itemStacks.iterator();
 
       while(var9.hasNext()) {
-         ItemStack var10 = (ItemStack)var9.next();
-         if (var8.isEmpty()) {
+         ItemStack itemStack = (ItemStack)var9.next();
+         if (availableSlots.isEmpty()) {
             LOGGER.warn("Tried to over-fill a container");
             return;
          }
 
-         if (var10.isEmpty()) {
-            var1.setItem((Integer)var8.remove(var8.size() - 1), ItemStack.EMPTY);
+         if (itemStack.isEmpty()) {
+            container.setItem((Integer)availableSlots.remove(availableSlots.size() - 1), ItemStack.EMPTY);
          } else {
-            var1.setItem((Integer)var8.remove(var8.size() - 1), var10);
+            container.setItem((Integer)availableSlots.remove(availableSlots.size() - 1), itemStack);
          }
       }
 
    }
 
-   private void shuffleAndSplitItems(ObjectArrayList<ItemStack> var1, int var2, RandomSource var3) {
-      ArrayList var4 = Lists.newArrayList();
-      ObjectListIterator var5 = var1.iterator();
+   private void shuffleAndSplitItems(final ObjectArrayList<ItemStack> result, final int availableSlots, final RandomSource random) {
+      List<ItemStack> splittableItems = Lists.newArrayList();
+      Iterator<ItemStack> iterator = result.iterator();
 
-      while(var5.hasNext()) {
-         ItemStack var6 = (ItemStack)var5.next();
-         if (var6.isEmpty()) {
-            var5.remove();
-         } else if (var6.getCount() > 1) {
-            var4.add(var6);
-            var5.remove();
+      while(iterator.hasNext()) {
+         ItemStack itemStack = (ItemStack)iterator.next();
+         if (itemStack.isEmpty()) {
+            iterator.remove();
+         } else if (itemStack.getCount() > 1) {
+            splittableItems.add(itemStack);
+            iterator.remove();
          }
       }
 
-      while(var2 - var1.size() - var4.size() > 0 && !var4.isEmpty()) {
-         ItemStack var8 = (ItemStack)var4.remove(Mth.nextInt(var3, 0, var4.size() - 1));
-         int var9 = Mth.nextInt(var3, 1, var8.getCount() / 2);
-         ItemStack var7 = var8.split(var9);
-         if (var8.getCount() > 1 && var3.nextBoolean()) {
-            var4.add(var8);
+      while(availableSlots - result.size() - splittableItems.size() > 0 && !splittableItems.isEmpty()) {
+         ItemStack itemStack = (ItemStack)splittableItems.remove(Mth.nextInt(random, 0, splittableItems.size() - 1));
+         int remove = Mth.nextInt(random, 1, itemStack.getCount() / 2);
+         ItemStack copy = itemStack.split(remove);
+         if (itemStack.getCount() > 1 && random.nextBoolean()) {
+            splittableItems.add(itemStack);
          } else {
-            var1.add(var8);
+            result.add(itemStack);
          }
 
-         if (var7.getCount() > 1 && var3.nextBoolean()) {
-            var4.add(var7);
+         if (copy.getCount() > 1 && random.nextBoolean()) {
+            splittableItems.add(copy);
          } else {
-            var1.add(var7);
+            result.add(copy);
          }
       }
 
-      var1.addAll(var4);
-      Util.shuffle(var1, var3);
+      result.addAll(splittableItems);
+      Util.shuffle(result, random);
    }
 
-   private List<Integer> getAvailableSlots(Container var1, RandomSource var2) {
-      ObjectArrayList var3 = new ObjectArrayList();
+   private List<Integer> getAvailableSlots(final Container container, final RandomSource random) {
+      ObjectArrayList<Integer> slots = new ObjectArrayList();
 
-      for(int var4 = 0; var4 < var1.getContainerSize(); ++var4) {
-         if (var1.getItem(var4).isEmpty()) {
-            var3.add(var4);
+      for(int i = 0; i < container.getContainerSize(); ++i) {
+         if (container.getItem(i).isEmpty()) {
+            slots.add(i);
          }
       }
 
-      Util.shuffle(var3, var2);
-      return var3;
+      Util.shuffle(slots, random);
+      return slots;
    }
 
    public static Builder lootTable() {
@@ -219,7 +212,7 @@ public class LootTable {
    static {
       KEY_CODEC = ResourceKey.codec(Registries.LOOT_TABLE);
       DEFAULT_PARAM_SET = LootContextParamSets.ALL_PARAMS;
-      DIRECT_CODEC = Codec.lazyInitialized(() -> RecordCodecBuilder.create((var0) -> var0.group(LootContextParamSets.CODEC.lenientOptionalFieldOf("type", DEFAULT_PARAM_SET).forGetter((var0x) -> var0x.paramSet), Identifier.CODEC.optionalFieldOf("random_sequence").forGetter((var0x) -> var0x.randomSequence), LootPool.CODEC.listOf().optionalFieldOf("pools", List.of()).forGetter((var0x) -> var0x.pools), LootItemFunctions.ROOT_CODEC.listOf().optionalFieldOf("functions", List.of()).forGetter((var0x) -> var0x.functions)).apply(var0, LootTable::new)));
+      DIRECT_CODEC = Codec.lazyInitialized(() -> RecordCodecBuilder.create((i) -> i.group(LootContextParamSets.CODEC.lenientOptionalFieldOf("type", DEFAULT_PARAM_SET).forGetter((t) -> t.paramSet), Identifier.CODEC.optionalFieldOf("random_sequence").forGetter((t) -> t.randomSequence), LootPool.CODEC.listOf().optionalFieldOf("pools", List.of()).forGetter((t) -> t.pools), LootItemFunctions.ROOT_CODEC.listOf().optionalFieldOf("functions", List.of()).forGetter((t) -> t.functions)).apply(i, LootTable::new)));
       CODEC = RegistryFileCodec.<Holder<LootTable>>create(Registries.LOOT_TABLE, DIRECT_CODEC);
       EMPTY = new LootTable(LootContextParamSets.EMPTY, Optional.empty(), List.of(), List.of());
    }
@@ -236,23 +229,23 @@ public class LootTable {
          this.randomSequence = Optional.empty();
       }
 
-      public Builder withPool(LootPool.Builder var1) {
-         this.pools.add(var1.build());
+      public Builder withPool(final LootPool.Builder pool) {
+         this.pools.add(pool.build());
          return this;
       }
 
-      public Builder setParamSet(ContextKeySet var1) {
-         this.paramSet = var1;
+      public Builder setParamSet(final ContextKeySet paramSet) {
+         this.paramSet = paramSet;
          return this;
       }
 
-      public Builder setRandomSequence(Identifier var1) {
-         this.randomSequence = Optional.of(var1);
+      public Builder setRandomSequence(final Identifier key) {
+         this.randomSequence = Optional.of(key);
          return this;
       }
 
-      public Builder apply(LootItemFunction.Builder var1) {
-         this.functions.add(var1.build());
+      public Builder apply(final LootItemFunction.Builder function) {
+         this.functions.add(function.build());
          return this;
       }
 
@@ -262,16 +255,6 @@ public class LootTable {
 
       public LootTable build() {
          return new LootTable(this.paramSet, this.randomSequence, this.pools.build(), this.functions.build());
-      }
-
-      // $FF: synthetic method
-      public FunctionUserBuilder unwrap() {
-         return this.unwrap();
-      }
-
-      // $FF: synthetic method
-      public FunctionUserBuilder apply(final LootItemFunction.Builder var1) {
-         return this.apply(var1);
       }
    }
 }

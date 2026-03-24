@@ -8,7 +8,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
-import net.minecraft.world.level.LevelSimulatedReader;
+import net.minecraft.util.valueproviders.IntProviders;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.levelgen.feature.TreeFeature;
@@ -20,110 +21,110 @@ public abstract class FoliagePlacer {
    protected final IntProvider radius;
    protected final IntProvider offset;
 
-   protected static <P extends FoliagePlacer> Products.P2<RecordCodecBuilder.Mu<P>, IntProvider, IntProvider> foliagePlacerParts(RecordCodecBuilder.Instance<P> var0) {
-      return var0.group(IntProvider.codec(0, 16).fieldOf("radius").forGetter((var0x) -> var0x.radius), IntProvider.codec(0, 16).fieldOf("offset").forGetter((var0x) -> var0x.offset));
+   protected static <P extends FoliagePlacer> Products.P2<RecordCodecBuilder.Mu<P>, IntProvider, IntProvider> foliagePlacerParts(final RecordCodecBuilder.Instance<P> instance) {
+      return instance.group(IntProviders.codec(0, 16).fieldOf("radius").forGetter((p) -> p.radius), IntProviders.codec(0, 16).fieldOf("offset").forGetter((p) -> p.offset));
    }
 
-   public FoliagePlacer(IntProvider var1, IntProvider var2) {
+   public FoliagePlacer(final IntProvider radius, final IntProvider offset) {
       super();
-      this.radius = var1;
-      this.offset = var2;
+      this.radius = radius;
+      this.offset = offset;
    }
 
    protected abstract FoliagePlacerType<?> type();
 
-   public void createFoliage(LevelSimulatedReader var1, FoliageSetter var2, RandomSource var3, TreeConfiguration var4, int var5, FoliageAttachment var6, int var7, int var8) {
-      this.createFoliage(var1, var2, var3, var4, var5, var6, var7, var8, this.offset(var3));
+   public void createFoliage(final WorldGenLevel level, final FoliageSetter foliageSetter, final RandomSource random, final TreeConfiguration config, final int treeHeight, final FoliageAttachment foliageAttachment, final int foliageHeight, final int leafRadius) {
+      this.createFoliage(level, foliageSetter, random, config, treeHeight, foliageAttachment, foliageHeight, leafRadius, this.offset(random));
    }
 
-   protected abstract void createFoliage(LevelSimulatedReader var1, FoliageSetter var2, RandomSource var3, TreeConfiguration var4, int var5, FoliageAttachment var6, int var7, int var8, int var9);
+   protected abstract void createFoliage(final WorldGenLevel level, final FoliageSetter foliageSetter, final RandomSource random, final TreeConfiguration config, final int treeHeight, final FoliageAttachment foliageAttachment, final int foliageHeight, final int leafRadius, final int offset);
 
-   public abstract int foliageHeight(RandomSource var1, int var2, TreeConfiguration var3);
+   public abstract int foliageHeight(final RandomSource random, final int treeHeight, final TreeConfiguration config);
 
-   public int foliageRadius(RandomSource var1, int var2) {
-      return this.radius.sample(var1);
+   public int foliageRadius(final RandomSource random, final int trunkHeight) {
+      return this.radius.sample(random);
    }
 
-   private int offset(RandomSource var1) {
-      return this.offset.sample(var1);
+   private int offset(final RandomSource random) {
+      return this.offset.sample(random);
    }
 
-   protected abstract boolean shouldSkipLocation(RandomSource var1, int var2, int var3, int var4, int var5, boolean var6);
+   protected abstract boolean shouldSkipLocation(final RandomSource random, final int dx, final int y, final int dz, final int currentRadius, final boolean doubleTrunk);
 
-   protected boolean shouldSkipLocationSigned(RandomSource var1, int var2, int var3, int var4, int var5, boolean var6) {
-      int var7;
-      int var8;
-      if (var6) {
-         var7 = Math.min(Math.abs(var2), Math.abs(var2 - 1));
-         var8 = Math.min(Math.abs(var4), Math.abs(var4 - 1));
+   protected boolean shouldSkipLocationSigned(final RandomSource random, final int dx, final int y, final int dz, final int currentRadius, final boolean doubleTrunk) {
+      int minDx;
+      int minDz;
+      if (doubleTrunk) {
+         minDx = Math.min(Math.abs(dx), Math.abs(dx - 1));
+         minDz = Math.min(Math.abs(dz), Math.abs(dz - 1));
       } else {
-         var7 = Math.abs(var2);
-         var8 = Math.abs(var4);
+         minDx = Math.abs(dx);
+         minDz = Math.abs(dz);
       }
 
-      return this.shouldSkipLocation(var1, var7, var3, var8, var5, var6);
+      return this.shouldSkipLocation(random, minDx, y, minDz, currentRadius, doubleTrunk);
    }
 
-   protected void placeLeavesRow(LevelSimulatedReader var1, FoliageSetter var2, RandomSource var3, TreeConfiguration var4, BlockPos var5, int var6, int var7, boolean var8) {
-      int var9 = var8 ? 1 : 0;
-      BlockPos.MutableBlockPos var10 = new BlockPos.MutableBlockPos();
+   protected void placeLeavesRow(final WorldGenLevel level, final FoliageSetter foliageSetter, final RandomSource random, final TreeConfiguration config, final BlockPos origin, final int currentRadius, final int y, final boolean doubleTrunk) {
+      int offset = doubleTrunk ? 1 : 0;
+      BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 
-      for(int var11 = -var6; var11 <= var6 + var9; ++var11) {
-         for(int var12 = -var6; var12 <= var6 + var9; ++var12) {
-            if (!this.shouldSkipLocationSigned(var3, var11, var7, var12, var6, var8)) {
-               var10.setWithOffset(var5, var11, var7, var12);
-               tryPlaceLeaf(var1, var2, var3, var4, var10);
+      for(int dx = -currentRadius; dx <= currentRadius + offset; ++dx) {
+         for(int dz = -currentRadius; dz <= currentRadius + offset; ++dz) {
+            if (!this.shouldSkipLocationSigned(random, dx, y, dz, currentRadius, doubleTrunk)) {
+               pos.setWithOffset(origin, dx, y, dz);
+               tryPlaceLeaf(level, foliageSetter, random, config, pos);
             }
          }
       }
 
    }
 
-   protected final void placeLeavesRowWithHangingLeavesBelow(LevelSimulatedReader var1, FoliageSetter var2, RandomSource var3, TreeConfiguration var4, BlockPos var5, int var6, int var7, boolean var8, float var9, float var10) {
-      this.placeLeavesRow(var1, var2, var3, var4, var5, var6, var7, var8);
-      int var11 = var8 ? 1 : 0;
-      BlockPos var12 = var5.below();
-      BlockPos.MutableBlockPos var13 = new BlockPos.MutableBlockPos();
+   protected final void placeLeavesRowWithHangingLeavesBelow(final WorldGenLevel level, final FoliageSetter foliageSetter, final RandomSource random, final TreeConfiguration config, final BlockPos origin, final int currentRadius, final int y, final boolean doubleTrunk, final float hangingLeavesChance, final float hangingLeavesExtensionChance) {
+      this.placeLeavesRow(level, foliageSetter, random, config, origin, currentRadius, y, doubleTrunk);
+      int offset = doubleTrunk ? 1 : 0;
+      BlockPos logPos = origin.below();
+      BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 
-      for(Direction var15 : Direction.Plane.HORIZONTAL) {
-         Direction var16 = var15.getClockWise();
-         int var17 = var16.getAxisDirection() == Direction.AxisDirection.POSITIVE ? var6 + var11 : var6;
-         var13.setWithOffset(var5, 0, var7 - 1, 0).move(var16, var17).move(var15, -var6);
-         int var18 = -var6;
+      for(Direction alongEdge : Direction.Plane.HORIZONTAL) {
+         Direction toEdge = alongEdge.getClockWise();
+         int offsetToEdge = toEdge.getAxisDirection() == Direction.AxisDirection.POSITIVE ? currentRadius + offset : currentRadius;
+         pos.setWithOffset(origin, 0, y - 1, 0).move(toEdge, offsetToEdge).move(alongEdge, -currentRadius);
+         int offsetAlongEdge = -currentRadius;
 
-         while(var18 < var6 + var11) {
-            boolean var19 = var2.isSet(var13.move(Direction.UP));
-            var13.move(Direction.DOWN);
-            if (var19 && tryPlaceExtension(var1, var2, var3, var4, var9, var12, var13)) {
-               var13.move(Direction.DOWN);
-               tryPlaceExtension(var1, var2, var3, var4, var10, var12, var13);
-               var13.move(Direction.UP);
+         while(offsetAlongEdge < currentRadius + offset) {
+            boolean leavesAbove = foliageSetter.isSet(pos.move(Direction.UP));
+            pos.move(Direction.DOWN);
+            if (leavesAbove && tryPlaceExtension(level, foliageSetter, random, config, hangingLeavesChance, logPos, pos)) {
+               pos.move(Direction.DOWN);
+               tryPlaceExtension(level, foliageSetter, random, config, hangingLeavesExtensionChance, logPos, pos);
+               pos.move(Direction.UP);
             }
 
-            ++var18;
-            var13.move(var15);
+            ++offsetAlongEdge;
+            pos.move(alongEdge);
          }
       }
 
    }
 
-   private static boolean tryPlaceExtension(LevelSimulatedReader var0, FoliageSetter var1, RandomSource var2, TreeConfiguration var3, float var4, BlockPos var5, BlockPos.MutableBlockPos var6) {
-      if (var6.distManhattan(var5) >= 7) {
+   private static boolean tryPlaceExtension(final WorldGenLevel level, final FoliageSetter foliageSetter, final RandomSource random, final TreeConfiguration config, final float chance, final BlockPos logPos, final BlockPos.MutableBlockPos pos) {
+      if (pos.distManhattan(logPos) >= 7) {
          return false;
       } else {
-         return var2.nextFloat() > var4 ? false : tryPlaceLeaf(var0, var1, var2, var3, var6);
+         return random.nextFloat() > chance ? false : tryPlaceLeaf(level, foliageSetter, random, config, pos);
       }
    }
 
-   protected static boolean tryPlaceLeaf(LevelSimulatedReader var0, FoliageSetter var1, RandomSource var2, TreeConfiguration var3, BlockPos var4) {
-      boolean var5 = var0.isStateAtPosition(var4, (var0x) -> (Boolean)var0x.getValueOrElse(BlockStateProperties.PERSISTENT, false));
-      if (!var5 && TreeFeature.validTreePos(var0, var4)) {
-         BlockState var6 = var3.foliageProvider.getState(var2, var4);
-         if (var6.hasProperty(BlockStateProperties.WATERLOGGED)) {
-            var6 = (BlockState)var6.setValue(BlockStateProperties.WATERLOGGED, var0.isFluidAtPosition(var4, (var0x) -> var0x.isSourceOfType(Fluids.WATER)));
+   protected static boolean tryPlaceLeaf(final WorldGenLevel level, final FoliageSetter foliageSetter, final RandomSource random, final TreeConfiguration config, final BlockPos pos) {
+      boolean isPersistent = level.isStateAtPosition(pos, (state) -> (Boolean)state.getValueOrElse(BlockStateProperties.PERSISTENT, false));
+      if (!isPersistent && TreeFeature.validTreePos(level, pos)) {
+         BlockState foliageState = config.foliageProvider.getState(level, random, pos);
+         if (foliageState.hasProperty(BlockStateProperties.WATERLOGGED)) {
+            foliageState = (BlockState)foliageState.setValue(BlockStateProperties.WATERLOGGED, level.isFluidAtPosition(pos, (fluidState) -> fluidState.isSourceOfType(Fluids.WATER)));
          }
 
-         var1.set(var4, var6);
+         foliageSetter.set(pos, foliageState);
          return true;
       } else {
          return false;
@@ -139,11 +140,11 @@ public abstract class FoliagePlacer {
       private final int radiusOffset;
       private final boolean doubleTrunk;
 
-      public FoliageAttachment(BlockPos var1, int var2, boolean var3) {
+      public FoliageAttachment(final BlockPos pos, final int radiusOffset, final boolean doubleTrunk) {
          super();
-         this.pos = var1;
-         this.radiusOffset = var2;
-         this.doubleTrunk = var3;
+         this.pos = pos;
+         this.radiusOffset = radiusOffset;
+         this.doubleTrunk = doubleTrunk;
       }
 
       public BlockPos pos() {
@@ -160,8 +161,8 @@ public abstract class FoliagePlacer {
    }
 
    public interface FoliageSetter {
-      void set(BlockPos var1, BlockState var2);
+      void set(final BlockPos pos, final BlockState state);
 
-      boolean isSet(BlockPos var1);
+      boolean isSet(final BlockPos pos);
    }
 }

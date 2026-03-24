@@ -23,18 +23,18 @@ public class SmithingTableBlock extends CraftingTableBlock {
       return CODEC;
    }
 
-   protected SmithingTableBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   protected SmithingTableBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
-   protected MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
-      return new SimpleMenuProvider((var2x, var3x, var4) -> new SmithingMenu(var2x, var3x, ContainerLevelAccess.create(var2, var3)), CONTAINER_TITLE);
+   protected MenuProvider getMenuProvider(final BlockState state, final Level level, final BlockPos pos) {
+      return new SimpleMenuProvider((containerId, inventory, player) -> new SmithingMenu(containerId, inventory, ContainerLevelAccess.create(level, pos)), CONTAINER_TITLE);
    }
 
-   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (!var2.isClientSide()) {
-         var4.openMenu(var1.getMenuProvider(var2, var3));
-         var4.awardStat(Stats.INTERACT_WITH_SMITHING_TABLE);
+   protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
+      if (!level.isClientSide()) {
+         player.openMenu(state.getMenuProvider(level, pos));
+         player.awardStat(Stats.INTERACT_WITH_SMITHING_TABLE);
       }
 
       return InteractionResult.SUCCESS;

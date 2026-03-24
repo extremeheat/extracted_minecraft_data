@@ -8,21 +8,16 @@ import org.jspecify.annotations.Nullable;
 public class BlockPredicate implements Predicate<BlockState> {
    private final Block block;
 
-   public BlockPredicate(Block var1) {
+   public BlockPredicate(final Block block) {
       super();
-      this.block = var1;
+      this.block = block;
    }
 
-   public static BlockPredicate forBlock(Block var0) {
-      return new BlockPredicate(var0);
+   public static BlockPredicate forBlock(final Block block) {
+      return new BlockPredicate(block);
    }
 
-   public boolean test(@Nullable BlockState var1) {
-      return var1 != null && var1.is(this.block);
-   }
-
-   // $FF: synthetic method
-   public boolean test(final @Nullable Object var1) {
-      return this.test((BlockState)var1);
+   public boolean test(final @Nullable BlockState input) {
+      return input != null && input.is(this.block);
    }
 }

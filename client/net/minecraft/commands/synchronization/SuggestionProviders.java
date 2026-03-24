@@ -24,27 +24,27 @@ public class SuggestionProviders {
       super();
    }
 
-   public static <S extends SharedSuggestionProvider> SuggestionProvider<S> register(Identifier var0, SuggestionProvider<SharedSuggestionProvider> var1) {
-      SuggestionProvider var2 = (SuggestionProvider)PROVIDERS_BY_NAME.putIfAbsent(var0, var1);
-      if (var2 != null) {
-         throw new IllegalArgumentException("A command suggestion provider is already registered with the name '" + String.valueOf(var0) + "'");
+   public static <S extends SharedSuggestionProvider> SuggestionProvider<S> register(final Identifier name, final SuggestionProvider<SharedSuggestionProvider> provider) {
+      SuggestionProvider<SharedSuggestionProvider> previous = (SuggestionProvider)PROVIDERS_BY_NAME.putIfAbsent(name, provider);
+      if (previous != null) {
+         throw new IllegalArgumentException("A command suggestion provider is already registered with the name '" + String.valueOf(name) + "'");
       } else {
-         return new RegisteredSuggestion(var0, var1);
+         return new RegisteredSuggestion(name, provider);
       }
    }
 
-   public static <S extends SharedSuggestionProvider> SuggestionProvider<S> cast(SuggestionProvider<SharedSuggestionProvider> var0) {
-      return var0;
+   public static <S extends SharedSuggestionProvider> SuggestionProvider<S> cast(final SuggestionProvider<SharedSuggestionProvider> provider) {
+      return provider;
    }
 
-   public static <S extends SharedSuggestionProvider> SuggestionProvider<S> getProvider(Identifier var0) {
-      return cast((SuggestionProvider)PROVIDERS_BY_NAME.getOrDefault(var0, ASK_SERVER));
+   public static <S extends SharedSuggestionProvider> SuggestionProvider<S> getProvider(final Identifier name) {
+      return cast((SuggestionProvider)PROVIDERS_BY_NAME.getOrDefault(name, ASK_SERVER));
    }
 
-   public static Identifier getName(SuggestionProvider<?> var0) {
+   public static Identifier getName(final SuggestionProvider<?> provider) {
       Identifier var10000;
-      if (var0 instanceof RegisteredSuggestion var1) {
-         var10000 = var1.name;
+      if (provider instanceof RegisteredSuggestion registeredProvider) {
+         var10000 = registeredProvider.name;
       } else {
          var10000 = ID_ASK_SERVER;
       }
@@ -53,22 +53,18 @@ public class SuggestionProviders {
    }
 
    static {
-      ASK_SERVER = register(ID_ASK_SERVER, (var0, var1) -> ((SharedSuggestionProvider)var0.getSource()).customSuggestion(var0));
-      AVAILABLE_SOUNDS = register(Identifier.withDefaultNamespace("available_sounds"), (var0, var1) -> SharedSuggestionProvider.suggestResource(((SharedSuggestionProvider)var0.getSource()).getAvailableSounds(), var1));
-      SUMMONABLE_ENTITIES = register(Identifier.withDefaultNamespace("summonable_entities"), (var0, var1) -> SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.stream().filter((var1x) -> var1x.isEnabled(((SharedSuggestionProvider)var0.getSource()).enabledFeatures()) && var1x.canSummon()), var1, EntityType::getKey, EntityType::getDescription));
+      ASK_SERVER = register(ID_ASK_SERVER, (c, p) -> ((SharedSuggestionProvider)c.getSource()).customSuggestion(c));
+      AVAILABLE_SOUNDS = register(Identifier.withDefaultNamespace("available_sounds"), (c, p) -> SharedSuggestionProvider.suggestResource(((SharedSuggestionProvider)c.getSource()).getAvailableSounds(), p));
+      SUMMONABLE_ENTITIES = register(Identifier.withDefaultNamespace("summonable_entities"), (c, p) -> SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.stream().filter((entityType) -> entityType.isEnabled(((SharedSuggestionProvider)c.getSource()).enabledFeatures()) && entityType.canSummon()), p, EntityType::getKey, EntityType::getDescription));
    }
 
-   static record RegisteredSuggestion(Identifier name, SuggestionProvider<SharedSuggestionProvider> delegate) implements SuggestionProvider<SharedSuggestionProvider> {
-      final Identifier name;
-
-      RegisteredSuggestion(Identifier var1, SuggestionProvider<SharedSuggestionProvider> var2) {
+   private static record RegisteredSuggestion(Identifier name, SuggestionProvider<SharedSuggestionProvider> delegate) implements SuggestionProvider<SharedSuggestionProvider> {
+      private RegisteredSuggestion {
          super();
-         this.name = var1;
-         this.delegate = var2;
       }
 
-      public CompletableFuture<Suggestions> getSuggestions(CommandContext<SharedSuggestionProvider> var1, SuggestionsBuilder var2) throws CommandSyntaxException {
-         return this.delegate.getSuggestions(var1, var2);
+      public CompletableFuture<Suggestions> getSuggestions(final CommandContext<SharedSuggestionProvider> context, final SuggestionsBuilder builder) throws CommandSyntaxException {
+         return this.delegate.getSuggestions(context, builder);
       }
    }
 }

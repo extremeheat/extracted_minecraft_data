@@ -5,19 +5,19 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.ChunkPos;
 
 public interface LightEventListener {
-   void checkBlock(BlockPos var1);
+   void checkBlock(BlockPos pos);
 
    boolean hasLightWork();
 
    int runLightUpdates();
 
-   default void updateSectionStatus(BlockPos var1, boolean var2) {
-      this.updateSectionStatus(SectionPos.of(var1), var2);
+   default void updateSectionStatus(final BlockPos pos, final boolean sectionEmpty) {
+      this.updateSectionStatus(SectionPos.of(pos), sectionEmpty);
    }
 
-   void updateSectionStatus(SectionPos var1, boolean var2);
+   void updateSectionStatus(final SectionPos pos, boolean sectionEmpty);
 
-   void setLightEnabled(ChunkPos var1, boolean var2);
+   void setLightEnabled(ChunkPos pos, boolean enable);
 
-   void propagateLightSources(ChunkPos var1);
+   void propagateLightSources(ChunkPos pos);
 }

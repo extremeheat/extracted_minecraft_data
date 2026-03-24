@@ -12,31 +12,28 @@ import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public record SignedMessageLink(int index, UUID sender, UUID sessionId) {
-   public static final Codec<SignedMessageLink> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.NON_NEGATIVE_INT.fieldOf("index").forGetter(SignedMessageLink::index), UUIDUtil.CODEC.fieldOf("sender").forGetter(SignedMessageLink::sender), UUIDUtil.CODEC.fieldOf("session_id").forGetter(SignedMessageLink::sessionId)).apply(var0, SignedMessageLink::new));
+   public static final Codec<SignedMessageLink> CODEC = RecordCodecBuilder.create((i) -> i.group(ExtraCodecs.NON_NEGATIVE_INT.fieldOf("index").forGetter(SignedMessageLink::index), UUIDUtil.CODEC.fieldOf("sender").forGetter(SignedMessageLink::sender), UUIDUtil.CODEC.fieldOf("session_id").forGetter(SignedMessageLink::sessionId)).apply(i, SignedMessageLink::new));
 
-   public SignedMessageLink(int var1, UUID var2, UUID var3) {
+   public SignedMessageLink {
       super();
-      this.index = var1;
-      this.sender = var2;
-      this.sessionId = var3;
    }
 
-   public static SignedMessageLink unsigned(UUID var0) {
-      return root(var0, Util.NIL_UUID);
+   public static SignedMessageLink unsigned(final UUID sender) {
+      return root(sender, Util.NIL_UUID);
    }
 
-   public static SignedMessageLink root(UUID var0, UUID var1) {
-      return new SignedMessageLink(0, var0, var1);
+   public static SignedMessageLink root(final UUID sender, final UUID sessionId) {
+      return new SignedMessageLink(0, sender, sessionId);
    }
 
-   public void updateSignature(SignatureUpdater.Output var1) throws SignatureException {
-      var1.update(UUIDUtil.uuidToByteArray(this.sender));
-      var1.update(UUIDUtil.uuidToByteArray(this.sessionId));
-      var1.update(Ints.toByteArray(this.index));
+   public void updateSignature(final SignatureUpdater.Output output) throws SignatureException {
+      output.update(UUIDUtil.uuidToByteArray(this.sender));
+      output.update(UUIDUtil.uuidToByteArray(this.sessionId));
+      output.update(Ints.toByteArray(this.index));
    }
 
-   public boolean isDescendantOf(SignedMessageLink var1) {
-      return this.index > var1.index() && this.sender.equals(var1.sender()) && this.sessionId.equals(var1.sessionId());
+   public boolean isDescendantOf(final SignedMessageLink link) {
+      return this.index > link.index() && this.sender.equals(link.sender()) && this.sessionId.equals(link.sessionId());
    }
 
    public @Nullable SignedMessageLink advance() {

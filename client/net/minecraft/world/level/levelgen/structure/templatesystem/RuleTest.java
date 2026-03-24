@@ -12,7 +12,7 @@ public abstract class RuleTest {
       super();
    }
 
-   public abstract boolean test(BlockState var1, RandomSource var2);
+   public abstract boolean test(BlockState state, RandomSource random);
 
    protected abstract RuleTestType<?> getType();
 

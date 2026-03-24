@@ -17,10 +17,10 @@ public class InSquarePlacement extends PlacementModifier {
       return INSTANCE;
    }
 
-   public Stream<BlockPos> getPositions(PlacementContext var1, RandomSource var2, BlockPos var3) {
-      int var4 = var2.nextInt(16) + var3.getX();
-      int var5 = var2.nextInt(16) + var3.getZ();
-      return Stream.of(new BlockPos(var4, var3.getY(), var5));
+   public Stream<BlockPos> getPositions(final PlacementContext context, final RandomSource random, final BlockPos origin) {
+      int x = random.nextInt(16) + origin.getX();
+      int z = random.nextInt(16) + origin.getZ();
+      return Stream.of(new BlockPos(x, origin.getY(), z));
    }
 
    public PlacementModifierType<?> type() {

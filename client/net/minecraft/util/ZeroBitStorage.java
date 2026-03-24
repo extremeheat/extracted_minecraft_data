@@ -8,24 +8,24 @@ public class ZeroBitStorage implements BitStorage {
    public static final long[] RAW = new long[0];
    private final int size;
 
-   public ZeroBitStorage(int var1) {
+   public ZeroBitStorage(final int size) {
       super();
-      this.size = var1;
+      this.size = size;
    }
 
-   public int getAndSet(int var1, int var2) {
-      Validate.inclusiveBetween(0L, (long)(this.size - 1), (long)var1);
-      Validate.inclusiveBetween(0L, 0L, (long)var2);
+   public int getAndSet(final int index, final int value) {
+      Validate.inclusiveBetween(0L, (long)(this.size - 1), (long)index);
+      Validate.inclusiveBetween(0L, 0L, (long)value);
       return 0;
    }
 
-   public void set(int var1, int var2) {
-      Validate.inclusiveBetween(0L, (long)(this.size - 1), (long)var1);
-      Validate.inclusiveBetween(0L, 0L, (long)var2);
+   public void set(final int index, final int value) {
+      Validate.inclusiveBetween(0L, (long)(this.size - 1), (long)index);
+      Validate.inclusiveBetween(0L, 0L, (long)value);
    }
 
-   public int get(int var1) {
-      Validate.inclusiveBetween(0L, (long)(this.size - 1), (long)var1);
+   public int get(final int index) {
+      Validate.inclusiveBetween(0L, (long)(this.size - 1), (long)index);
       return 0;
    }
 
@@ -41,15 +41,15 @@ public class ZeroBitStorage implements BitStorage {
       return 0;
    }
 
-   public void getAll(IntConsumer var1) {
-      for(int var2 = 0; var2 < this.size; ++var2) {
-         var1.accept(0);
+   public void getAll(final IntConsumer output) {
+      for(int i = 0; i < this.size; ++i) {
+         output.accept(0);
       }
 
    }
 
-   public void unpack(int[] var1) {
-      Arrays.fill(var1, 0, this.size, 0);
+   public void unpack(final int[] output) {
+      Arrays.fill(output, 0, this.size, 0);
    }
 
    public BitStorage copy() {

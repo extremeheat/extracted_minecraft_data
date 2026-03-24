@@ -14,22 +14,20 @@ import org.jspecify.annotations.Nullable;
 public record ClientboundMoveMinecartPacket(int entityId, List<NewMinecartBehavior.MinecartStep> lerpSteps) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundMoveMinecartPacket> STREAM_CODEC;
 
-   public ClientboundMoveMinecartPacket(int var1, List<NewMinecartBehavior.MinecartStep> var2) {
+   public ClientboundMoveMinecartPacket {
       super();
-      this.entityId = var1;
-      this.lerpSteps = var2;
    }
 
    public PacketType<ClientboundMoveMinecartPacket> type() {
       return GamePacketTypes.CLIENTBOUND_MOVE_MINECART_ALONG_TRACK;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleMinecartAlongTrack(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleMinecartAlongTrack(this);
    }
 
-   public @Nullable Entity getEntity(Level var1) {
-      return var1.getEntity(this.entityId);
+   public @Nullable Entity getEntity(final Level level) {
+      return level.getEntity(this.entityId);
    }
 
    static {

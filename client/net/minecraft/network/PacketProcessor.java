@@ -10,25 +10,25 @@ import net.minecraft.network.protocol.PacketUtils;
 import org.slf4j.Logger;
 
 public class PacketProcessor implements AutoCloseable {
-   static final Logger LOGGER = LogUtils.getLogger();
+   private static final Logger LOGGER = LogUtils.getLogger();
    private final Queue<ListenerAndPacket<?>> packetsToBeHandled = Queues.newConcurrentLinkedQueue();
    private final Thread runningThread;
    private boolean closed;
 
-   public PacketProcessor(Thread var1) {
+   public PacketProcessor(final Thread runningThread) {
       super();
-      this.runningThread = var1;
+      this.runningThread = runningThread;
    }
 
    public boolean isSameThread() {
       return Thread.currentThread() == this.runningThread;
    }
 
-   public <T extends PacketListener> void scheduleIfPossible(T var1, Packet<T> var2) {
+   public <T extends PacketListener> void scheduleIfPossible(final T listener, final Packet<T> packet) {
       if (this.closed) {
          throw new RejectedExecutionException("Server already shutting down");
       } else {
-         this.packetsToBeHandled.add(new ListenerAndPacket(var1, var2));
+         this.packetsToBeHandled.add(new ListenerAndPacket(listener, packet));
       }
    }
 
@@ -45,11 +45,9 @@ public class PacketProcessor implements AutoCloseable {
       this.closed = true;
    }
 
-   static record ListenerAndPacket<T extends PacketListener>(T listener, Packet<T> packet) {
-      ListenerAndPacket(T var1, Packet<T> var2) {
+   private static record ListenerAndPacket<T extends PacketListener>(T listener, Packet<T> packet) {
+      private ListenerAndPacket {
          super();
-         this.listener = var1;
-         this.packet = var2;
       }
 
       public void handle() {
@@ -58,8 +56,8 @@ public class PacketProcessor implements AutoCloseable {
                this.packet.handle(this.listener);
             } catch (Exception var3) {
                if (var3 instanceof ReportedException) {
-                  ReportedException var2 = (ReportedException)var3;
-                  if (var2.getCause() instanceof OutOfMemoryError) {
+                  ReportedException re = (ReportedException)var3;
+                  if (re.getCause() instanceof OutOfMemoryError) {
                      throw PacketUtils.makeReportedException(var3, this.packet, this.listener);
                   }
                }

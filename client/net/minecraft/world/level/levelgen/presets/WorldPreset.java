@@ -15,25 +15,25 @@ import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.WorldDimensions;
 
 public class WorldPreset {
-   public static final Codec<WorldPreset> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.unboundedMap(ResourceKey.codec(Registries.LEVEL_STEM), LevelStem.CODEC).fieldOf("dimensions").forGetter((var0x) -> var0x.dimensions)).apply(var0, WorldPreset::new)).validate(WorldPreset::requireOverworld);
+   public static final Codec<WorldPreset> DIRECT_CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.unboundedMap(ResourceKey.codec(Registries.LEVEL_STEM), LevelStem.CODEC).fieldOf("dimensions").forGetter((e) -> e.dimensions)).apply(i, WorldPreset::new)).validate(WorldPreset::requireOverworld);
    public static final Codec<Holder<WorldPreset>> CODEC;
    private final Map<ResourceKey<LevelStem>, LevelStem> dimensions;
 
-   public WorldPreset(Map<ResourceKey<LevelStem>, LevelStem> var1) {
+   public WorldPreset(final Map<ResourceKey<LevelStem>, LevelStem> dimensions) {
       super();
-      this.dimensions = var1;
+      this.dimensions = dimensions;
    }
 
    private ImmutableMap<ResourceKey<LevelStem>, LevelStem> dimensionsInOrder() {
-      ImmutableMap.Builder var1 = ImmutableMap.builder();
-      WorldDimensions.keysInOrder(this.dimensions.keySet().stream()).forEach((var2) -> {
-         LevelStem var3 = (LevelStem)this.dimensions.get(var2);
-         if (var3 != null) {
-            var1.put(var2, var3);
+      ImmutableMap.Builder<ResourceKey<LevelStem>, LevelStem> builder = ImmutableMap.builder();
+      WorldDimensions.keysInOrder(this.dimensions.keySet()).forEach((key) -> {
+         LevelStem levelStem = (LevelStem)this.dimensions.get(key);
+         if (levelStem != null) {
+            builder.put(key, levelStem);
          }
 
       });
-      return var1.build();
+      return builder.build();
    }
 
    public WorldDimensions createWorldDimensions() {
@@ -44,8 +44,8 @@ public class WorldPreset {
       return Optional.ofNullable((LevelStem)this.dimensions.get(LevelStem.OVERWORLD));
    }
 
-   private static DataResult<WorldPreset> requireOverworld(WorldPreset var0) {
-      return var0.overworld().isEmpty() ? DataResult.error(() -> "Missing overworld dimension") : DataResult.success(var0, Lifecycle.stable());
+   private static DataResult<WorldPreset> requireOverworld(final WorldPreset preset) {
+      return preset.overworld().isEmpty() ? DataResult.error(() -> "Missing overworld dimension") : DataResult.success(preset, Lifecycle.stable());
    }
 
    static {

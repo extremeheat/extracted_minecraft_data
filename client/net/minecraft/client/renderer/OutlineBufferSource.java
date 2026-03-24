@@ -13,67 +13,65 @@ public class OutlineBufferSource implements MultiBufferSource {
       super();
    }
 
-   public VertexConsumer getBuffer(RenderType var1) {
-      if (var1.isOutline()) {
-         VertexConsumer var4 = this.outlineBufferSource.getBuffer(var1);
-         return new EntityOutlineGenerator(var4, this.outlineColor);
+   public VertexConsumer getBuffer(final RenderType renderType) {
+      if (renderType.isOutline()) {
+         VertexConsumer delegate = this.outlineBufferSource.getBuffer(renderType);
+         return new EntityOutlineGenerator(delegate, this.outlineColor);
       } else {
-         Optional var2 = var1.outline();
-         if (var2.isPresent()) {
-            VertexConsumer var3 = this.outlineBufferSource.getBuffer((RenderType)var2.get());
-            return new EntityOutlineGenerator(var3, this.outlineColor);
+         Optional<RenderType> outline = renderType.outline();
+         if (outline.isPresent()) {
+            VertexConsumer delegate = this.outlineBufferSource.getBuffer((RenderType)outline.get());
+            return new EntityOutlineGenerator(delegate, this.outlineColor);
          } else {
             throw new IllegalStateException("Can't render an outline for this rendertype!");
          }
       }
    }
 
-   public void setColor(int var1) {
-      this.outlineColor = var1;
+   public void setColor(final int color) {
+      this.outlineColor = color;
    }
 
    public void endOutlineBatch() {
       this.outlineBufferSource.endBatch();
    }
 
-   static record EntityOutlineGenerator(VertexConsumer delegate, int color) implements VertexConsumer {
-      EntityOutlineGenerator(VertexConsumer var1, int var2) {
+   private static record EntityOutlineGenerator(VertexConsumer delegate, int color) implements VertexConsumer {
+      private EntityOutlineGenerator {
          super();
-         this.delegate = var1;
-         this.color = var2;
       }
 
-      public VertexConsumer addVertex(float var1, float var2, float var3) {
-         this.delegate.addVertex(var1, var2, var3).setColor(this.color);
+      public VertexConsumer addVertex(final float x, final float y, final float z) {
+         this.delegate.addVertex(x, y, z).setColor(this.color);
          return this;
       }
 
-      public VertexConsumer setColor(int var1, int var2, int var3, int var4) {
+      public VertexConsumer setColor(final int r, final int g, final int b, final int a) {
          return this;
       }
 
-      public VertexConsumer setColor(int var1) {
+      public VertexConsumer setColor(final int color) {
          return this;
       }
 
-      public VertexConsumer setUv(float var1, float var2) {
-         this.delegate.setUv(var1, var2);
+      public VertexConsumer setUv(final float u, final float v) {
+         this.delegate.setUv(u, v);
          return this;
       }
 
-      public VertexConsumer setUv1(int var1, int var2) {
+      public VertexConsumer setUv1(final int u, final int v) {
          return this;
       }
 
-      public VertexConsumer setUv2(int var1, int var2) {
+      public VertexConsumer setUv2(final int u, final int v) {
          return this;
       }
 
-      public VertexConsumer setNormal(float var1, float var2, float var3) {
+      public VertexConsumer setNormal(final float x, final float y, final float z) {
          return this;
       }
 
-      public VertexConsumer setLineWidth(float var1) {
+      public VertexConsumer setLineWidth(final float width) {
          return this;
       }
    }

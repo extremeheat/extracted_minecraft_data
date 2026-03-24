@@ -37,16 +37,16 @@ public class SensorType<U extends Sensor<?>> {
    public static final SensorType<BreezeAttackEntitySensor> BREEZE_ATTACK_ENTITY_SENSOR = register("breeze_attack_entity_sensor", BreezeAttackEntitySensor::new);
    private final Supplier<U> factory;
 
-   private SensorType(Supplier<U> var1) {
+   private SensorType(final Supplier<U> factory) {
       super();
-      this.factory = var1;
+      this.factory = factory;
    }
 
    public U create() {
       return (U)(this.factory.get());
    }
 
-   private static <U extends Sensor<?>> SensorType<U> register(String var0, Supplier<U> var1) {
-      return (SensorType)Registry.register(BuiltInRegistries.SENSOR_TYPE, (Identifier)Identifier.withDefaultNamespace(var0), new SensorType(var1));
+   private static <U extends Sensor<?>> SensorType<U> register(final String name, final Supplier<U> factory) {
+      return (SensorType)Registry.register(BuiltInRegistries.SENSOR_TYPE, (Identifier)Identifier.withDefaultNamespace(name), new SensorType(factory));
    }
 }

@@ -21,6 +21,7 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
 import java.net.InetSocketAddress;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import net.minecraft.server.jsonrpc.internalapi.MinecraftApi;
@@ -33,75 +34,79 @@ import org.slf4j.Logger;
 public class ManagementServer {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final HostAndPort hostAndPort;
-   final AuthenticationHandler authenticationHandler;
+   private final AuthenticationHandler authenticationHandler;
    private @Nullable Channel serverChannel;
    private final NioEventLoopGroup nioEventLoopGroup;
    private final Set<Connection> connections = Sets.newIdentityHashSet();
 
-   public ManagementServer(HostAndPort var1, AuthenticationHandler var2) {
+   public ManagementServer(final HostAndPort hostAndPort, final AuthenticationHandler authenticationHandler) {
       super();
-      this.hostAndPort = var1;
-      this.authenticationHandler = var2;
+      this.hostAndPort = hostAndPort;
+      this.authenticationHandler = authenticationHandler;
       this.nioEventLoopGroup = new NioEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Management server IO #%d").setDaemon(true).build());
    }
 
-   public ManagementServer(HostAndPort var1, AuthenticationHandler var2, NioEventLoopGroup var3) {
+   public ManagementServer(final HostAndPort hostAndPort, final AuthenticationHandler authenticationHandler, final NioEventLoopGroup nioEventLoopGroup) {
       super();
-      this.hostAndPort = var1;
-      this.authenticationHandler = var2;
-      this.nioEventLoopGroup = var3;
+      this.hostAndPort = hostAndPort;
+      this.authenticationHandler = authenticationHandler;
+      this.nioEventLoopGroup = nioEventLoopGroup;
    }
 
-   public void onConnected(Connection var1) {
+   public void onConnected(final Connection connection) {
       synchronized(this.connections) {
-         this.connections.add(var1);
+         this.connections.add(connection);
       }
    }
 
-   public void onDisconnected(Connection var1) {
+   public void onDisconnected(final Connection connection) {
       synchronized(this.connections) {
-         this.connections.remove(var1);
+         this.connections.remove(connection);
       }
    }
 
-   public void startWithoutTls(MinecraftApi var1) {
-      this.start(var1, (SslContext)null);
+   public void startWithoutTls(final MinecraftApi minecraftApi) {
+      this.start(minecraftApi, (SslContext)null);
    }
 
-   public void startWithTls(MinecraftApi var1, SslContext var2) {
-      this.start(var1, var2);
+   public void startWithTls(final MinecraftApi minecraftApi, final SslContext sslContext) {
+      this.start(minecraftApi, sslContext);
    }
 
-   private void start(final MinecraftApi var1, final @Nullable SslContext var2) {
-      final JsonRpcLogger var3 = new JsonRpcLogger();
-      ChannelFuture var4 = ((ServerBootstrap)((ServerBootstrap)((ServerBootstrap)(new ServerBootstrap()).handler(new LoggingHandler(LogLevel.DEBUG))).channel(NioServerSocketChannel.class)).childHandler(new ChannelInitializer<Channel>() {
-         protected void initChannel(Channel var1x) {
+   private void start(final MinecraftApi minecraftApi, final @Nullable SslContext sslContext) {
+      final JsonRpcLogger jsonrpcLogger = new JsonRpcLogger();
+      ChannelFuture channel = ((ServerBootstrap)((ServerBootstrap)((ServerBootstrap)(new ServerBootstrap()).handler(new LoggingHandler(LogLevel.DEBUG))).channel(NioServerSocketChannel.class)).childHandler(new ChannelInitializer<Channel>() {
+         {
+            Objects.requireNonNull(ManagementServer.this);
+         }
+
+         protected void initChannel(final Channel channel) {
             try {
-               var1x.config().setOption(ChannelOption.TCP_NODELAY, true);
-            } catch (ChannelException var3x) {
+               channel.config().setOption(ChannelOption.TCP_NODELAY, true);
+            } catch (ChannelException var3) {
             }
 
-            ChannelPipeline var2x = var1x.pipeline();
-            if (var2 != null) {
-               var2x.addLast(new ChannelHandler[]{var2.newHandler(var1x.alloc())});
+            ChannelPipeline pipeline = channel.pipeline();
+            if (sslContext != null) {
+               pipeline.addLast(new ChannelHandler[]{sslContext.newHandler(channel.alloc())});
             }
 
-            var2x.addLast(new ChannelHandler[]{new HttpServerCodec()}).addLast(new ChannelHandler[]{new HttpObjectAggregator(65536)}).addLast(new ChannelHandler[]{ManagementServer.this.authenticationHandler}).addLast(new ChannelHandler[]{new WebSocketServerProtocolHandler("/")}).addLast(new ChannelHandler[]{new WebSocketToJsonCodec()}).addLast(new ChannelHandler[]{new JsonToWebSocketEncoder()}).addLast(new ChannelHandler[]{new Connection(var1x, ManagementServer.this, var1, var3)});
+            pipeline.addLast(new ChannelHandler[]{new HttpServerCodec()}).addLast(new ChannelHandler[]{new HttpObjectAggregator(65536)}).addLast(new ChannelHandler[]{ManagementServer.this.authenticationHandler}).addLast(new ChannelHandler[]{new WebSocketServerProtocolHandler("/")}).addLast(new ChannelHandler[]{new WebSocketToJsonCodec()}).addLast(new ChannelHandler[]{new JsonToWebSocketEncoder()}).addLast(new ChannelHandler[]{new Connection(channel, ManagementServer.this, minecraftApi, jsonrpcLogger)});
          }
       }).group(this.nioEventLoopGroup).localAddress(this.hostAndPort.getHost(), this.hostAndPort.getPort())).bind();
-      this.serverChannel = var4.channel();
-      var4.syncUninterruptibly();
+      this.serverChannel = channel.channel();
+      channel.syncUninterruptibly();
       LOGGER.info("Json-RPC Management connection listening on {}:{}", this.hostAndPort.getHost(), this.getPort());
    }
 
-   public void stop(boolean var1) throws InterruptedException {
+   public void stop(final boolean closeNioEventLoopGroup) throws InterruptedException {
       if (this.serverChannel != null) {
          this.serverChannel.close().sync();
          this.serverChannel = null;
       }
 
       this.connections.clear();
-      if (var1) {
+      if (closeNioEventLoopGroup) {
          this.nioEventLoopGroup.shutdownGracefully().sync();
       }
 
@@ -115,9 +120,9 @@ public class ManagementServer {
       return this.serverChannel != null ? ((InetSocketAddress)this.serverChannel.localAddress()).getPort() : this.hostAndPort.getPort();
    }
 
-   void forEachConnection(Consumer<Connection> var1) {
+   void forEachConnection(final Consumer<Connection> action) {
       synchronized(this.connections) {
-         this.connections.forEach(var1);
+         this.connections.forEach(action);
       }
    }
 }

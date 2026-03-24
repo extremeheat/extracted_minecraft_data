@@ -18,38 +18,35 @@ public class DistanceTrigger extends SimpleCriterionTrigger<TriggerInstance> {
       return DistanceTrigger.TriggerInstance.CODEC;
    }
 
-   public void trigger(ServerPlayer var1, Vec3 var2) {
-      Vec3 var3 = var1.position();
-      this.trigger(var1, (var3x) -> var3x.matches(var1.level(), var2, var3));
+   public void trigger(final ServerPlayer player, final Vec3 startPosition) {
+      Vec3 playerPosition = player.position();
+      this.trigger(player, (t) -> t.matches(player.level(), startPosition, playerPosition));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<LocationPredicate> startPosition, Optional<DistancePredicate> distance) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), LocationPredicate.CODEC.optionalFieldOf("start_position").forGetter(TriggerInstance::startPosition), DistancePredicate.CODEC.optionalFieldOf("distance").forGetter(TriggerInstance::distance)).apply(var0, TriggerInstance::new));
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((i) -> i.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), LocationPredicate.CODEC.optionalFieldOf("start_position").forGetter(TriggerInstance::startPosition), DistancePredicate.CODEC.optionalFieldOf("distance").forGetter(TriggerInstance::distance)).apply(i, TriggerInstance::new));
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<LocationPredicate> var2, Optional<DistancePredicate> var3) {
+      public TriggerInstance {
          super();
-         this.player = var1;
-         this.startPosition = var2;
-         this.distance = var3;
       }
 
-      public static Criterion<TriggerInstance> fallFromHeight(EntityPredicate.Builder var0, DistancePredicate var1, LocationPredicate.Builder var2) {
-         return CriteriaTriggers.FALL_FROM_HEIGHT.createCriterion(new TriggerInstance(Optional.of(EntityPredicate.wrap(var0)), Optional.of(var2.build()), Optional.of(var1)));
+      public static Criterion<TriggerInstance> fallFromHeight(final EntityPredicate.Builder player, final DistancePredicate distance, final LocationPredicate.Builder startPosition) {
+         return CriteriaTriggers.FALL_FROM_HEIGHT.createCriterion(new TriggerInstance(Optional.of(EntityPredicate.wrap(player)), Optional.of(startPosition.build()), Optional.of(distance)));
       }
 
-      public static Criterion<TriggerInstance> rideEntityInLava(EntityPredicate.Builder var0, DistancePredicate var1) {
-         return CriteriaTriggers.RIDE_ENTITY_IN_LAVA_TRIGGER.createCriterion(new TriggerInstance(Optional.of(EntityPredicate.wrap(var0)), Optional.empty(), Optional.of(var1)));
+      public static Criterion<TriggerInstance> rideEntityInLava(final EntityPredicate.Builder player, final DistancePredicate distance) {
+         return CriteriaTriggers.RIDE_ENTITY_IN_LAVA_TRIGGER.createCriterion(new TriggerInstance(Optional.of(EntityPredicate.wrap(player)), Optional.empty(), Optional.of(distance)));
       }
 
-      public static Criterion<TriggerInstance> travelledThroughNether(DistancePredicate var0) {
-         return CriteriaTriggers.NETHER_TRAVEL.createCriterion(new TriggerInstance(Optional.empty(), Optional.empty(), Optional.of(var0)));
+      public static Criterion<TriggerInstance> travelledThroughNether(final DistancePredicate distance) {
+         return CriteriaTriggers.NETHER_TRAVEL.createCriterion(new TriggerInstance(Optional.empty(), Optional.empty(), Optional.of(distance)));
       }
 
-      public boolean matches(ServerLevel var1, Vec3 var2, Vec3 var3) {
-         if (this.startPosition.isPresent() && !((LocationPredicate)this.startPosition.get()).matches(var1, var2.x, var2.y, var2.z)) {
+      public boolean matches(final ServerLevel level, final Vec3 enteredPosition, final Vec3 playerPosition) {
+         if (this.startPosition.isPresent() && !((LocationPredicate)this.startPosition.get()).matches(level, enteredPosition.x, enteredPosition.y, enteredPosition.z)) {
             return false;
          } else {
-            return !this.distance.isPresent() || ((DistancePredicate)this.distance.get()).matches(var2.x, var2.y, var2.z, var3.x, var3.y, var3.z);
+            return !this.distance.isPresent() || ((DistancePredicate)this.distance.get()).matches(enteredPosition.x, enteredPosition.y, enteredPosition.z, playerPosition.x, playerPosition.y, playerPosition.z);
          }
       }
    }

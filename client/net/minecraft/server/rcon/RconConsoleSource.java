@@ -16,9 +16,9 @@ public class RconConsoleSource implements CommandSource {
    private final StringBuffer buffer = new StringBuffer();
    private final MinecraftServer server;
 
-   public RconConsoleSource(MinecraftServer var1) {
+   public RconConsoleSource(final MinecraftServer server) {
       super();
-      this.server = var1;
+      this.server = server;
    }
 
    public void prepareForCommand() {
@@ -30,12 +30,12 @@ public class RconConsoleSource implements CommandSource {
    }
 
    public CommandSourceStack createCommandSourceStack() {
-      ServerLevel var1 = this.server.overworld();
-      return new CommandSourceStack(this, Vec3.atLowerCornerOf(var1.getRespawnData().pos()), Vec2.ZERO, var1, LevelBasedPermissionSet.OWNER, "Rcon", RCON_COMPONENT, this.server, (Entity)null);
+      ServerLevel level = this.server.overworld();
+      return new CommandSourceStack(this, Vec3.atLowerCornerOf(level.getRespawnData().pos()), Vec2.ZERO, level, LevelBasedPermissionSet.OWNER, "Rcon", RCON_COMPONENT, this.server, (Entity)null);
    }
 
-   public void sendSystemMessage(Component var1) {
-      this.buffer.append(var1.getString());
+   public void sendSystemMessage(final Component message) {
+      this.buffer.append(message.getString());
    }
 
    public boolean acceptsSuccess() {

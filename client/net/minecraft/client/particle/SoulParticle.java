@@ -2,21 +2,22 @@ package net.minecraft.client.particle;
 
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.RandomSource;
 
 public class SoulParticle extends RisingParticle {
    private final SpriteSet sprites;
    protected boolean isGlowing;
 
-   SoulParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, SpriteSet var14) {
-      super(var1, var2, var4, var6, var8, var10, var12, var14.first());
-      this.sprites = var14;
+   private SoulParticle(final ClientLevel level, final double x, final double y, final double z, final double xd, final double yd, final double zd, final SpriteSet sprites) {
+      super(level, x, y, z, xd, yd, zd, sprites.first());
+      this.sprites = sprites;
       this.scale(1.5F);
-      this.setSpriteFromAge(var14);
+      this.setSpriteFromAge(sprites);
    }
 
-   public int getLightColor(float var1) {
-      return this.isGlowing ? 240 : super.getLightColor(var1);
+   public int getLightCoords(final float a) {
+      return this.isGlowing ? LightCoordsUtil.withBlock(super.getLightCoords(a), 15) : super.getLightCoords(a);
    }
 
    public SingleQuadParticle.Layer getLayer() {
@@ -31,31 +32,31 @@ public class SoulParticle extends RisingParticle {
    public static class Provider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
 
-      public Provider(SpriteSet var1) {
+      public Provider(final SpriteSet sprite) {
          super();
-         this.sprite = var1;
+         this.sprite = sprite;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         SoulParticle var16 = new SoulParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite);
-         var16.setAlpha(1.0F);
-         return var16;
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         SoulParticle particle = new SoulParticle(level, x, y, z, xAux, yAux, zAux, this.sprite);
+         particle.setAlpha(1.0F);
+         return particle;
       }
    }
 
    public static class EmissiveProvider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
 
-      public EmissiveProvider(SpriteSet var1) {
+      public EmissiveProvider(final SpriteSet sprite) {
          super();
-         this.sprite = var1;
+         this.sprite = sprite;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         SoulParticle var16 = new SoulParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite);
-         var16.setAlpha(1.0F);
-         var16.isGlowing = true;
-         return var16;
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         SoulParticle particle = new SoulParticle(level, x, y, z, xAux, yAux, zAux, this.sprite);
+         particle.setAlpha(1.0F);
+         particle.isGlowing = true;
+         return particle;
       }
    }
 }

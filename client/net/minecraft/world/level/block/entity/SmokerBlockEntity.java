@@ -12,19 +12,19 @@ import net.minecraft.world.level.block.state.BlockState;
 public class SmokerBlockEntity extends AbstractFurnaceBlockEntity {
    private static final Component DEFAULT_NAME = Component.translatable("container.smoker");
 
-   public SmokerBlockEntity(BlockPos var1, BlockState var2) {
-      super(BlockEntityType.SMOKER, var1, var2, RecipeType.SMOKING);
+   public SmokerBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      super(BlockEntityType.SMOKER, worldPosition, blockState, RecipeType.SMOKING);
    }
 
    protected Component getDefaultName() {
       return DEFAULT_NAME;
    }
 
-   protected int getBurnDuration(FuelValues var1, ItemStack var2) {
-      return super.getBurnDuration(var1, var2) / 2;
+   protected int getBurnDuration(final FuelValues fuelValues, final ItemStack itemStack) {
+      return super.getBurnDuration(fuelValues, itemStack) / 2;
    }
 
-   protected AbstractContainerMenu createMenu(int var1, Inventory var2) {
-      return new SmokerMenu(var1, var2, this, this.dataAccess);
+   protected AbstractContainerMenu createMenu(final int containerId, final Inventory inventory) {
+      return new SmokerMenu(containerId, inventory, this, this.dataAccess);
    }
 }

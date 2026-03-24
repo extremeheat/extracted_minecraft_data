@@ -19,34 +19,33 @@ public record MapId(int id) implements TooltipProvider {
    public static final StreamCodec<ByteBuf, MapId> STREAM_CODEC;
    private static final Component LOCKED_TEXT;
 
-   public MapId(int var1) {
+   public MapId {
       super();
-      this.id = var1;
    }
 
    public String key() {
-      return "map_" + this.id;
+      return "maps/" + this.id;
    }
 
-   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
-      MapItemSavedData var5 = var1.mapData(this);
-      if (var5 == null) {
-         var2.accept(Component.translatable("filled_map.unknown").withStyle(ChatFormatting.GRAY));
+   public void addToTooltip(final Item.TooltipContext context, final Consumer<Component> consumer, final TooltipFlag flag, final DataComponentGetter components) {
+      MapItemSavedData data = context.mapData(this);
+      if (data == null) {
+         consumer.accept(Component.translatable("filled_map.unknown").withStyle(ChatFormatting.GRAY));
       } else {
-         MapPostProcessing var6 = (MapPostProcessing)var4.get(DataComponents.MAP_POST_PROCESSING);
-         if (var4.get(DataComponents.CUSTOM_NAME) == null && var6 == null) {
-            var2.accept(Component.translatable("filled_map.id", this.id).withStyle(ChatFormatting.GRAY));
+         MapPostProcessing postProcessing = (MapPostProcessing)components.get(DataComponents.MAP_POST_PROCESSING);
+         if (components.get(DataComponents.CUSTOM_NAME) == null && postProcessing == null) {
+            consumer.accept(Component.translatable("filled_map.id", this.id).withStyle(ChatFormatting.GRAY));
          }
 
-         if (var5.locked || var6 == MapPostProcessing.LOCK) {
-            var2.accept(LOCKED_TEXT);
+         if (data.locked || postProcessing == MapPostProcessing.LOCK) {
+            consumer.accept(LOCKED_TEXT);
          }
 
-         if (var3.isAdvanced()) {
-            int var7 = var6 == MapPostProcessing.SCALE ? 1 : 0;
-            int var8 = Math.min(var5.scale + var7, 4);
-            var2.accept(Component.translatable("filled_map.scale", 1 << var8).withStyle(ChatFormatting.GRAY));
-            var2.accept(Component.translatable("filled_map.level", var8, 4).withStyle(ChatFormatting.GRAY));
+         if (flag.isAdvanced()) {
+            int scaleToAdd = postProcessing == MapPostProcessing.SCALE ? 1 : 0;
+            int scale = Math.min(data.scale + scaleToAdd, 4);
+            consumer.accept(Component.translatable("filled_map.scale", 1 << scale).withStyle(ChatFormatting.GRAY));
+            consumer.accept(Component.translatable("filled_map.level", scale, 4).withStyle(ChatFormatting.GRAY));
          }
 
       }

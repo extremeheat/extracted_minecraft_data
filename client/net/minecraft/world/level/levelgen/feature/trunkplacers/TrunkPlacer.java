@@ -10,10 +10,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.LevelSimulatedReader;
-import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.TreeFeature;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
@@ -27,62 +25,63 @@ public abstract class TrunkPlacer {
    protected final int heightRandA;
    protected final int heightRandB;
 
-   protected static <P extends TrunkPlacer> Products.P3<RecordCodecBuilder.Mu<P>, Integer, Integer, Integer> trunkPlacerParts(RecordCodecBuilder.Instance<P> var0) {
-      return var0.group(Codec.intRange(0, 32).fieldOf("base_height").forGetter((var0x) -> var0x.baseHeight), Codec.intRange(0, 24).fieldOf("height_rand_a").forGetter((var0x) -> var0x.heightRandA), Codec.intRange(0, 24).fieldOf("height_rand_b").forGetter((var0x) -> var0x.heightRandB));
+   protected static <P extends TrunkPlacer> Products.P3<RecordCodecBuilder.Mu<P>, Integer, Integer, Integer> trunkPlacerParts(final RecordCodecBuilder.Instance<P> instance) {
+      return instance.group(Codec.intRange(0, 32).fieldOf("base_height").forGetter((p) -> p.baseHeight), Codec.intRange(0, 24).fieldOf("height_rand_a").forGetter((p) -> p.heightRandA), Codec.intRange(0, 24).fieldOf("height_rand_b").forGetter((p) -> p.heightRandB));
    }
 
-   public TrunkPlacer(int var1, int var2, int var3) {
+   public TrunkPlacer(final int baseHeight, final int heightRandA, final int heightRandB) {
       super();
-      this.baseHeight = var1;
-      this.heightRandA = var2;
-      this.heightRandB = var3;
+      this.baseHeight = baseHeight;
+      this.heightRandA = heightRandA;
+      this.heightRandB = heightRandB;
    }
 
    protected abstract TrunkPlacerType<?> type();
 
-   public abstract List<FoliagePlacer.FoliageAttachment> placeTrunk(LevelSimulatedReader var1, BiConsumer<BlockPos, BlockState> var2, RandomSource var3, int var4, BlockPos var5, TreeConfiguration var6);
+   public abstract List<FoliagePlacer.FoliageAttachment> placeTrunk(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeConfiguration config);
 
-   public int getTreeHeight(RandomSource var1) {
-      return this.baseHeight + var1.nextInt(this.heightRandA + 1) + var1.nextInt(this.heightRandB + 1);
+   public int getBaseHeight() {
+      return this.baseHeight;
    }
 
-   private static boolean isDirt(LevelSimulatedReader var0, BlockPos var1) {
-      return var0.isStateAtPosition(var1, (var0x) -> Feature.isDirt(var0x) && !var0x.is(Blocks.GRASS_BLOCK) && !var0x.is(Blocks.MYCELIUM));
+   public int getTreeHeight(final RandomSource random) {
+      return this.baseHeight + random.nextInt(this.heightRandA + 1) + random.nextInt(this.heightRandB + 1);
    }
 
-   protected static void setDirtAt(LevelSimulatedReader var0, BiConsumer<BlockPos, BlockState> var1, RandomSource var2, BlockPos var3, TreeConfiguration var4) {
-      if (var4.forceDirt || !isDirt(var0, var3)) {
-         var1.accept(var3, var4.dirtProvider.getState(var2, var3));
+   protected static void placeBelowTrunkBlock(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final BlockPos pos, final TreeConfiguration config) {
+      BlockState blockBelowTrunk = config.belowTrunkProvider.getOptionalState(level, random, pos);
+      if (blockBelowTrunk != null) {
+         trunkSetter.accept(pos, blockBelowTrunk);
       }
 
    }
 
-   protected boolean placeLog(LevelSimulatedReader var1, BiConsumer<BlockPos, BlockState> var2, RandomSource var3, BlockPos var4, TreeConfiguration var5) {
-      return this.placeLog(var1, var2, var3, var4, var5, Function.identity());
+   protected boolean placeLog(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final BlockPos pos, final TreeConfiguration config) {
+      return this.placeLog(level, trunkSetter, random, pos, config, Function.identity());
    }
 
-   protected boolean placeLog(LevelSimulatedReader var1, BiConsumer<BlockPos, BlockState> var2, RandomSource var3, BlockPos var4, TreeConfiguration var5, Function<BlockState, BlockState> var6) {
-      if (this.validTreePos(var1, var4)) {
-         var2.accept(var4, (BlockState)var6.apply(var5.trunkProvider.getState(var3, var4)));
+   protected boolean placeLog(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final BlockPos pos, final TreeConfiguration config, final Function<BlockState, BlockState> stateModifier) {
+      if (this.validTreePos(level, pos)) {
+         trunkSetter.accept(pos, (BlockState)stateModifier.apply(config.trunkProvider.getState(level, random, pos)));
          return true;
       } else {
          return false;
       }
    }
 
-   protected void placeLogIfFree(LevelSimulatedReader var1, BiConsumer<BlockPos, BlockState> var2, RandomSource var3, BlockPos.MutableBlockPos var4, TreeConfiguration var5) {
-      if (this.isFree(var1, var4)) {
-         this.placeLog(var1, var2, var3, var4, var5);
+   protected void placeLogIfFree(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final BlockPos.MutableBlockPos pos, final TreeConfiguration config) {
+      if (this.isFree(level, pos)) {
+         this.placeLog(level, trunkSetter, random, pos, config);
       }
 
    }
 
-   protected boolean validTreePos(LevelSimulatedReader var1, BlockPos var2) {
-      return TreeFeature.validTreePos(var1, var2);
+   protected boolean validTreePos(final WorldGenLevel level, final BlockPos pos) {
+      return TreeFeature.validTreePos(level, pos);
    }
 
-   public boolean isFree(LevelSimulatedReader var1, BlockPos var2) {
-      return this.validTreePos(var1, var2) || var1.isStateAtPosition(var2, (var0) -> var0.is(BlockTags.LOGS));
+   public boolean isFree(final WorldGenLevel level, final BlockPos pos) {
+      return this.validTreePos(level, pos) || level.isStateAtPosition(pos, (state) -> state.is(BlockTags.LOGS));
    }
 
    static {

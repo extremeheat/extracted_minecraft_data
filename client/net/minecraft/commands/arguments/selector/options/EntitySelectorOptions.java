@@ -8,7 +8,6 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.logging.LogUtils;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -16,6 +15,7 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.advancements.CriterionProgress;
 import net.minecraft.advancements.criterion.MinMaxBounds;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -32,7 +32,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.PlayerAdvancements;
 import net.minecraft.server.ServerAdvancementManager;
-import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
@@ -48,7 +47,6 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.scores.Objective;
-import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.ReadOnlyScoreInfo;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.Team;
@@ -57,107 +55,107 @@ import org.slf4j.Logger;
 public class EntitySelectorOptions {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Map<String, Option> OPTIONS = Maps.newHashMap();
-   public static final DynamicCommandExceptionType ERROR_UNKNOWN_OPTION = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.entity.options.unknown", var0));
-   public static final DynamicCommandExceptionType ERROR_INAPPLICABLE_OPTION = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.entity.options.inapplicable", var0));
+   public static final DynamicCommandExceptionType ERROR_UNKNOWN_OPTION = new DynamicCommandExceptionType((name) -> Component.translatableEscape("argument.entity.options.unknown", name));
+   public static final DynamicCommandExceptionType ERROR_INAPPLICABLE_OPTION = new DynamicCommandExceptionType((name) -> Component.translatableEscape("argument.entity.options.inapplicable", name));
    public static final SimpleCommandExceptionType ERROR_RANGE_NEGATIVE = new SimpleCommandExceptionType(Component.translatable("argument.entity.options.distance.negative"));
    public static final SimpleCommandExceptionType ERROR_LEVEL_NEGATIVE = new SimpleCommandExceptionType(Component.translatable("argument.entity.options.level.negative"));
    public static final SimpleCommandExceptionType ERROR_LIMIT_TOO_SMALL = new SimpleCommandExceptionType(Component.translatable("argument.entity.options.limit.toosmall"));
-   public static final DynamicCommandExceptionType ERROR_SORT_UNKNOWN = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.entity.options.sort.irreversible", var0));
-   public static final DynamicCommandExceptionType ERROR_GAME_MODE_INVALID = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.entity.options.mode.invalid", var0));
-   public static final DynamicCommandExceptionType ERROR_ENTITY_TYPE_INVALID = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.entity.options.type.invalid", var0));
+   public static final DynamicCommandExceptionType ERROR_SORT_UNKNOWN = new DynamicCommandExceptionType((name) -> Component.translatableEscape("argument.entity.options.sort.irreversible", name));
+   public static final DynamicCommandExceptionType ERROR_GAME_MODE_INVALID = new DynamicCommandExceptionType((name) -> Component.translatableEscape("argument.entity.options.mode.invalid", name));
+   public static final DynamicCommandExceptionType ERROR_ENTITY_TYPE_INVALID = new DynamicCommandExceptionType((type) -> Component.translatableEscape("argument.entity.options.type.invalid", type));
 
    public EntitySelectorOptions() {
       super();
    }
 
-   private static void register(String var0, Modifier var1, Predicate<EntitySelectorParser> var2, Component var3) {
-      OPTIONS.put(var0, new Option(var1, var2, var3));
+   private static void register(final String name, final Modifier modifier, final Predicate<EntitySelectorParser> predicate, final Component description) {
+      OPTIONS.put(name, new Option(modifier, predicate, description));
    }
 
    public static void bootStrap() {
       if (OPTIONS.isEmpty()) {
-         register("name", (var0) -> {
-            int var1 = var0.getReader().getCursor();
-            boolean var2 = var0.shouldInvertValue();
-            String var3 = var0.getReader().readString();
-            if (var0.hasNameNotEquals() && !var2) {
-               var0.getReader().setCursor(var1);
-               throw ERROR_INAPPLICABLE_OPTION.createWithContext(var0.getReader(), "name");
+         register("name", (parser) -> {
+            int start = parser.getReader().getCursor();
+            boolean not = parser.shouldInvertValue();
+            String name = parser.getReader().readString();
+            if (parser.hasNameNotEquals() && !not) {
+               parser.getReader().setCursor(start);
+               throw ERROR_INAPPLICABLE_OPTION.createWithContext(parser.getReader(), "name");
             } else {
-               if (var2) {
-                  var0.setHasNameNotEquals(true);
+               if (not) {
+                  parser.setHasNameNotEquals(true);
                } else {
-                  var0.setHasNameEquals(true);
+                  parser.setHasNameEquals(true);
                }
 
-               var0.addPredicate((var2x) -> var2x.getPlainTextName().equals(var3) != var2);
+               parser.addPredicate((e) -> e.getPlainTextName().equals(name) != not);
             }
-         }, (var0) -> !var0.hasNameEquals(), Component.translatable("argument.entity.options.name.description"));
-         register("distance", (var0) -> {
-            int var1 = var0.getReader().getCursor();
-            MinMaxBounds.Doubles var2 = MinMaxBounds.Doubles.fromReader(var0.getReader());
-            if ((!var2.min().isPresent() || !((Double)var2.min().get() < 0.0)) && (!var2.max().isPresent() || !((Double)var2.max().get() < 0.0))) {
-               var0.setDistance(var2);
-               var0.setWorldLimited();
+         }, (s) -> !s.hasNameEquals(), Component.translatable("argument.entity.options.name.description"));
+         register("distance", (parser) -> {
+            int start = parser.getReader().getCursor();
+            MinMaxBounds.Doubles value = MinMaxBounds.Doubles.fromReader(parser.getReader());
+            if ((!value.min().isPresent() || !((Double)value.min().get() < 0.0)) && (!value.max().isPresent() || !((Double)value.max().get() < 0.0))) {
+               parser.setDistance(value);
+               parser.setWorldLimited();
             } else {
-               var0.getReader().setCursor(var1);
-               throw ERROR_RANGE_NEGATIVE.createWithContext(var0.getReader());
+               parser.getReader().setCursor(start);
+               throw ERROR_RANGE_NEGATIVE.createWithContext(parser.getReader());
             }
-         }, (var0) -> var0.getDistance() == null, Component.translatable("argument.entity.options.distance.description"));
-         register("level", (var0) -> {
-            int var1 = var0.getReader().getCursor();
-            MinMaxBounds.Ints var2 = MinMaxBounds.Ints.fromReader(var0.getReader());
-            if ((!var2.min().isPresent() || (Integer)var2.min().get() >= 0) && (!var2.max().isPresent() || (Integer)var2.max().get() >= 0)) {
-               var0.setLevel(var2);
-               var0.setIncludesEntities(false);
+         }, (s) -> s.getDistance() == null, Component.translatable("argument.entity.options.distance.description"));
+         register("level", (parser) -> {
+            int start = parser.getReader().getCursor();
+            MinMaxBounds.Ints value = MinMaxBounds.Ints.fromReader(parser.getReader());
+            if ((!value.min().isPresent() || (Integer)value.min().get() >= 0) && (!value.max().isPresent() || (Integer)value.max().get() >= 0)) {
+               parser.setLevel(value);
+               parser.setIncludesEntities(false);
             } else {
-               var0.getReader().setCursor(var1);
-               throw ERROR_LEVEL_NEGATIVE.createWithContext(var0.getReader());
+               parser.getReader().setCursor(start);
+               throw ERROR_LEVEL_NEGATIVE.createWithContext(parser.getReader());
             }
-         }, (var0) -> var0.getLevel() == null, Component.translatable("argument.entity.options.level.description"));
-         register("x", (var0) -> {
-            var0.setWorldLimited();
-            var0.setX(var0.getReader().readDouble());
-         }, (var0) -> var0.getX() == null, Component.translatable("argument.entity.options.x.description"));
-         register("y", (var0) -> {
-            var0.setWorldLimited();
-            var0.setY(var0.getReader().readDouble());
-         }, (var0) -> var0.getY() == null, Component.translatable("argument.entity.options.y.description"));
-         register("z", (var0) -> {
-            var0.setWorldLimited();
-            var0.setZ(var0.getReader().readDouble());
-         }, (var0) -> var0.getZ() == null, Component.translatable("argument.entity.options.z.description"));
-         register("dx", (var0) -> {
-            var0.setWorldLimited();
-            var0.setDeltaX(var0.getReader().readDouble());
-         }, (var0) -> var0.getDeltaX() == null, Component.translatable("argument.entity.options.dx.description"));
-         register("dy", (var0) -> {
-            var0.setWorldLimited();
-            var0.setDeltaY(var0.getReader().readDouble());
-         }, (var0) -> var0.getDeltaY() == null, Component.translatable("argument.entity.options.dy.description"));
-         register("dz", (var0) -> {
-            var0.setWorldLimited();
-            var0.setDeltaZ(var0.getReader().readDouble());
-         }, (var0) -> var0.getDeltaZ() == null, Component.translatable("argument.entity.options.dz.description"));
-         register("x_rotation", (var0) -> var0.setRotX(MinMaxBounds.FloatDegrees.fromReader(var0.getReader())), (var0) -> var0.getRotX() == null, Component.translatable("argument.entity.options.x_rotation.description"));
-         register("y_rotation", (var0) -> var0.setRotY(MinMaxBounds.FloatDegrees.fromReader(var0.getReader())), (var0) -> var0.getRotY() == null, Component.translatable("argument.entity.options.y_rotation.description"));
-         register("limit", (var0) -> {
-            int var1 = var0.getReader().getCursor();
-            int var2 = var0.getReader().readInt();
-            if (var2 < 1) {
-               var0.getReader().setCursor(var1);
-               throw ERROR_LIMIT_TOO_SMALL.createWithContext(var0.getReader());
+         }, (s) -> s.getLevel() == null, Component.translatable("argument.entity.options.level.description"));
+         register("x", (parser) -> {
+            parser.setWorldLimited();
+            parser.setX(parser.getReader().readDouble());
+         }, (s) -> s.getX() == null, Component.translatable("argument.entity.options.x.description"));
+         register("y", (parser) -> {
+            parser.setWorldLimited();
+            parser.setY(parser.getReader().readDouble());
+         }, (s) -> s.getY() == null, Component.translatable("argument.entity.options.y.description"));
+         register("z", (parser) -> {
+            parser.setWorldLimited();
+            parser.setZ(parser.getReader().readDouble());
+         }, (s) -> s.getZ() == null, Component.translatable("argument.entity.options.z.description"));
+         register("dx", (parser) -> {
+            parser.setWorldLimited();
+            parser.setDeltaX(parser.getReader().readDouble());
+         }, (s) -> s.getDeltaX() == null, Component.translatable("argument.entity.options.dx.description"));
+         register("dy", (parser) -> {
+            parser.setWorldLimited();
+            parser.setDeltaY(parser.getReader().readDouble());
+         }, (s) -> s.getDeltaY() == null, Component.translatable("argument.entity.options.dy.description"));
+         register("dz", (parser) -> {
+            parser.setWorldLimited();
+            parser.setDeltaZ(parser.getReader().readDouble());
+         }, (s) -> s.getDeltaZ() == null, Component.translatable("argument.entity.options.dz.description"));
+         register("x_rotation", (parser) -> parser.setRotX(MinMaxBounds.FloatDegrees.fromReader(parser.getReader())), (s) -> s.getRotX() == null, Component.translatable("argument.entity.options.x_rotation.description"));
+         register("y_rotation", (parser) -> parser.setRotY(MinMaxBounds.FloatDegrees.fromReader(parser.getReader())), (s) -> s.getRotY() == null, Component.translatable("argument.entity.options.y_rotation.description"));
+         register("limit", (parser) -> {
+            int start = parser.getReader().getCursor();
+            int count = parser.getReader().readInt();
+            if (count < 1) {
+               parser.getReader().setCursor(start);
+               throw ERROR_LIMIT_TOO_SMALL.createWithContext(parser.getReader());
             } else {
-               var0.setMaxResults(var2);
-               var0.setLimited(true);
+               parser.setMaxResults(count);
+               parser.setLimited(true);
             }
-         }, (var0) -> !var0.isCurrentEntity() && !var0.isLimited(), Component.translatable("argument.entity.options.limit.description"));
-         register("sort", (var0) -> {
-            int var1 = var0.getReader().getCursor();
-            String var2 = var0.getReader().readUnquotedString();
-            var0.setSuggestions((var0x, var1x) -> SharedSuggestionProvider.suggest(Arrays.asList("nearest", "furthest", "random", "arbitrary"), var0x));
+         }, (s) -> !s.isCurrentEntity() && !s.isLimited(), Component.translatable("argument.entity.options.limit.description"));
+         register("sort", (parser) -> {
+            int start = parser.getReader().getCursor();
+            String name = parser.getReader().readUnquotedString();
+            parser.setSuggestions((b, n) -> SharedSuggestionProvider.suggest(Arrays.asList("nearest", "furthest", "random", "arbitrary"), b));
             BiConsumer var10001;
-            switch (var2) {
+            switch (name) {
                case "nearest":
                   var10001 = EntitySelectorParser.ORDER_NEAREST;
                   break;
@@ -171,194 +169,194 @@ public class EntitySelectorOptions {
                   var10001 = EntitySelector.ORDER_ARBITRARY;
                   break;
                default:
-                  var0.getReader().setCursor(var1);
-                  throw ERROR_SORT_UNKNOWN.createWithContext(var0.getReader(), var2);
+                  parser.getReader().setCursor(start);
+                  throw ERROR_SORT_UNKNOWN.createWithContext(parser.getReader(), name);
             }
 
-            var0.setOrder(var10001);
-            var0.setSorted(true);
-         }, (var0) -> !var0.isCurrentEntity() && !var0.isSorted(), Component.translatable("argument.entity.options.sort.description"));
-         register("gamemode", (var0) -> {
-            var0.setSuggestions((var1x, var2x) -> {
-               String var3 = var1x.getRemaining().toLowerCase(Locale.ROOT);
-               boolean var4 = !var0.hasGamemodeNotEquals();
-               boolean var5 = true;
-               if (!var3.isEmpty()) {
-                  if (var3.charAt(0) == '!') {
-                     var4 = false;
-                     var3 = var3.substring(1);
+            parser.setOrder(var10001);
+            parser.setSorted(true);
+         }, (s) -> !s.isCurrentEntity() && !s.isSorted(), Component.translatable("argument.entity.options.sort.description"));
+         register("gamemode", (parser) -> {
+            parser.setSuggestions((b, m) -> {
+               String prefix = b.getRemaining().toLowerCase(Locale.ROOT);
+               boolean addNormal = !parser.hasGamemodeNotEquals();
+               boolean addInverted = true;
+               if (!prefix.isEmpty()) {
+                  if (prefix.charAt(0) == '!') {
+                     addNormal = false;
+                     prefix = prefix.substring(1);
                   } else {
-                     var5 = false;
+                     addInverted = false;
                   }
                }
 
-               for(GameType var9 : GameType.values()) {
-                  if (var9.getName().toLowerCase(Locale.ROOT).startsWith(var3)) {
-                     if (var5) {
-                        var1x.suggest("!" + var9.getName());
+               for(GameType type : GameType.values()) {
+                  if (type.getName().toLowerCase(Locale.ROOT).startsWith(prefix)) {
+                     if (addInverted) {
+                        b.suggest("!" + type.getName());
                      }
 
-                     if (var4) {
-                        var1x.suggest(var9.getName());
+                     if (addNormal) {
+                        b.suggest(type.getName());
                      }
                   }
                }
 
-               return var1x.buildFuture();
+               return b.buildFuture();
             });
-            int var1 = var0.getReader().getCursor();
-            boolean var2 = var0.shouldInvertValue();
-            if (var0.hasGamemodeNotEquals() && !var2) {
-               var0.getReader().setCursor(var1);
-               throw ERROR_INAPPLICABLE_OPTION.createWithContext(var0.getReader(), "gamemode");
+            int start = parser.getReader().getCursor();
+            boolean inverted = parser.shouldInvertValue();
+            if (parser.hasGamemodeNotEquals() && !inverted) {
+               parser.getReader().setCursor(start);
+               throw ERROR_INAPPLICABLE_OPTION.createWithContext(parser.getReader(), "gamemode");
             } else {
-               String var3 = var0.getReader().readUnquotedString();
-               GameType var4 = GameType.byName(var3, (GameType)null);
-               if (var4 == null) {
-                  var0.getReader().setCursor(var1);
-                  throw ERROR_GAME_MODE_INVALID.createWithContext(var0.getReader(), var3);
+               String name = parser.getReader().readUnquotedString();
+               GameType expected = GameType.byName(name, (GameType)null);
+               if (expected == null) {
+                  parser.getReader().setCursor(start);
+                  throw ERROR_GAME_MODE_INVALID.createWithContext(parser.getReader(), name);
                } else {
-                  var0.setIncludesEntities(false);
-                  var0.addPredicate((var2x) -> {
-                     if (var2x instanceof ServerPlayer var3) {
-                        GameType var4x = var3.gameMode();
-                        return var4x == var4 ^ var2;
+                  parser.setIncludesEntities(false);
+                  parser.addPredicate((e) -> {
+                     if (e instanceof ServerPlayer player) {
+                        GameType current = player.gameMode();
+                        return current == expected ^ inverted;
                      } else {
                         return false;
                      }
                   });
-                  if (var2) {
-                     var0.setHasGamemodeNotEquals(true);
+                  if (inverted) {
+                     parser.setHasGamemodeNotEquals(true);
                   } else {
-                     var0.setHasGamemodeEquals(true);
+                     parser.setHasGamemodeEquals(true);
                   }
 
                }
             }
-         }, (var0) -> !var0.hasGamemodeEquals(), Component.translatable("argument.entity.options.gamemode.description"));
-         register("team", (var0) -> {
-            boolean var1 = var0.shouldInvertValue();
-            String var2 = var0.getReader().readUnquotedString();
-            var0.addPredicate((var2x) -> {
-               PlayerTeam var3 = var2x.getTeam();
-               String var4 = var3 == null ? "" : ((Team)var3).getName();
-               return var4.equals(var2) != var1;
+         }, (s) -> !s.hasGamemodeEquals(), Component.translatable("argument.entity.options.gamemode.description"));
+         register("team", (parser) -> {
+            boolean inverted = parser.shouldInvertValue();
+            String expected = parser.getReader().readUnquotedString();
+            parser.addPredicate((e) -> {
+               Team current = e.getTeam();
+               String currentName = current == null ? "" : current.getName();
+               return currentName.equals(expected) != inverted;
             });
-            if (var1) {
-               var0.setHasTeamNotEquals(true);
+            if (inverted) {
+               parser.setHasTeamNotEquals(true);
             } else {
-               var0.setHasTeamEquals(true);
+               parser.setHasTeamEquals(true);
             }
 
-         }, (var0) -> !var0.hasTeamEquals(), Component.translatable("argument.entity.options.team.description"));
-         register("type", (var0) -> {
-            var0.setSuggestions((var1x, var2x) -> {
-               SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.keySet(), var1x, String.valueOf('!'));
-               SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.getTags().map((var0x) -> var0x.key().location()), var1x, "!#");
-               if (!var0.isTypeLimitedInversely()) {
-                  SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.keySet(), var1x);
-                  SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.getTags().map((var0x) -> var0x.key().location()), var1x, String.valueOf('#'));
+         }, (s) -> !s.hasTeamEquals(), Component.translatable("argument.entity.options.team.description"));
+         register("type", (parser) -> {
+            parser.setSuggestions((b, m) -> {
+               SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.keySet(), b, String.valueOf('!'));
+               SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.getTags().map((tag) -> tag.key().location()), b, "!#");
+               if (!parser.isTypeLimitedInversely()) {
+                  SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.keySet(), b);
+                  SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.getTags().map((tag) -> tag.key().location()), b, String.valueOf('#'));
                }
 
-               return var1x.buildFuture();
+               return b.buildFuture();
             });
-            int var1 = var0.getReader().getCursor();
-            boolean var2 = var0.shouldInvertValue();
-            if (var0.isTypeLimitedInversely() && !var2) {
-               var0.getReader().setCursor(var1);
-               throw ERROR_INAPPLICABLE_OPTION.createWithContext(var0.getReader(), "type");
+            int start = parser.getReader().getCursor();
+            boolean inverted = parser.shouldInvertValue();
+            if (parser.isTypeLimitedInversely() && !inverted) {
+               parser.getReader().setCursor(start);
+               throw ERROR_INAPPLICABLE_OPTION.createWithContext(parser.getReader(), "type");
             } else {
-               if (var2) {
-                  var0.setTypeLimitedInversely();
+               if (inverted) {
+                  parser.setTypeLimitedInversely();
                }
 
-               if (var0.isTag()) {
-                  TagKey var3 = TagKey.create(Registries.ENTITY_TYPE, Identifier.read(var0.getReader()));
-                  var0.addPredicate((var2x) -> var2x.getType().is(var3) != var2);
+               if (parser.isTag()) {
+                  TagKey<EntityType<?>> id = TagKey.<EntityType<?>>create(Registries.ENTITY_TYPE, Identifier.read(parser.getReader()));
+                  parser.addPredicate((e) -> e.is(id) != inverted);
                } else {
-                  Identifier var5 = Identifier.read(var0.getReader());
-                  EntityType var4 = (EntityType)BuiltInRegistries.ENTITY_TYPE.getOptional(var5).orElseThrow(() -> {
-                     var0.getReader().setCursor(var1);
-                     return ERROR_ENTITY_TYPE_INVALID.createWithContext(var0.getReader(), var5.toString());
+                  Identifier id = Identifier.read(parser.getReader());
+                  EntityType<?> type = (EntityType)BuiltInRegistries.ENTITY_TYPE.getOptional(id).orElseThrow(() -> {
+                     parser.getReader().setCursor(start);
+                     return ERROR_ENTITY_TYPE_INVALID.createWithContext(parser.getReader(), id.toString());
                   });
-                  if (Objects.equals(EntityType.PLAYER, var4) && !var2) {
-                     var0.setIncludesEntities(false);
+                  if (Objects.equals(EntityType.PLAYER, type) && !inverted) {
+                     parser.setIncludesEntities(false);
                   }
 
-                  var0.addPredicate((var2x) -> Objects.equals(var4, var2x.getType()) != var2);
-                  if (!var2) {
-                     var0.limitToType(var4);
+                  parser.addPredicate((e) -> Objects.equals(type, e.getType()) != inverted);
+                  if (!inverted) {
+                     parser.limitToType(type);
                   }
                }
 
             }
-         }, (var0) -> !var0.isTypeLimited(), Component.translatable("argument.entity.options.type.description"));
-         register("tag", (var0) -> {
-            boolean var1 = var0.shouldInvertValue();
-            String var2 = var0.getReader().readUnquotedString();
-            var0.addPredicate((var2x) -> {
-               if ("".equals(var2)) {
-                  return var2x.getTags().isEmpty() != var1;
+         }, (s) -> !s.isTypeLimited(), Component.translatable("argument.entity.options.type.description"));
+         register("tag", (parser) -> {
+            boolean inverted = parser.shouldInvertValue();
+            String tag = parser.getReader().readUnquotedString();
+            parser.addPredicate((e) -> {
+               if ("".equals(tag)) {
+                  return e.entityTags().isEmpty() != inverted;
                } else {
-                  return var2x.getTags().contains(var2) != var1;
+                  return e.entityTags().contains(tag) != inverted;
                }
             });
-         }, (var0) -> true, Component.translatable("argument.entity.options.tag.description"));
-         register("nbt", (var0) -> {
-            boolean var1 = var0.shouldInvertValue();
-            CompoundTag var2 = TagParser.parseCompoundAsArgument(var0.getReader());
-            var0.addPredicate((var2x) -> {
-               try (ProblemReporter.ScopedCollector var3 = new ProblemReporter.ScopedCollector(var2x.problemPath(), LOGGER)) {
-                  TagValueOutput var4 = TagValueOutput.createWithContext(var3, var2x.registryAccess());
-                  var2x.saveWithoutId(var4);
-                  if (var2x instanceof ServerPlayer var5) {
-                     ItemStack var6 = var5.getInventory().getSelectedItem();
-                     if (!var6.isEmpty()) {
-                        var4.store("SelectedItem", ItemStack.CODEC, var6);
+         }, (s) -> true, Component.translatable("argument.entity.options.tag.description"));
+         register("nbt", (parser) -> {
+            boolean inverted = parser.shouldInvertValue();
+            CompoundTag tag = TagParser.parseCompoundAsArgument(parser.getReader());
+            parser.addPredicate((e) -> {
+               try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(e.problemPath(), LOGGER)) {
+                  TagValueOutput output = TagValueOutput.createWithContext(reporter, e.registryAccess());
+                  e.saveWithoutId(output);
+                  if (e instanceof ServerPlayer player) {
+                     ItemStack selected = player.getInventory().getSelectedItem();
+                     if (!selected.isEmpty()) {
+                        output.store("SelectedItem", ItemStack.CODEC, selected);
                      }
                   }
 
-                  return NbtUtils.compareNbt(var2, var4.buildResult(), true) != var1;
+                  return NbtUtils.compareNbt(tag, output.buildResult(), true) != inverted;
                }
             });
-         }, (var0) -> true, Component.translatable("argument.entity.options.nbt.description"));
-         register("scores", (var0) -> {
-            StringReader var1 = var0.getReader();
-            HashMap var2 = Maps.newHashMap();
-            var1.expect('{');
-            var1.skipWhitespace();
+         }, (s) -> true, Component.translatable("argument.entity.options.nbt.description"));
+         register("scores", (parser) -> {
+            StringReader reader = parser.getReader();
+            Map<String, MinMaxBounds.Ints> expected = Maps.newHashMap();
+            reader.expect('{');
+            reader.skipWhitespace();
 
-            while(var1.canRead() && var1.peek() != '}') {
-               var1.skipWhitespace();
-               String var3 = var1.readUnquotedString();
-               var1.skipWhitespace();
-               var1.expect('=');
-               var1.skipWhitespace();
-               MinMaxBounds.Ints var4 = MinMaxBounds.Ints.fromReader(var1);
-               var2.put(var3, var4);
-               var1.skipWhitespace();
-               if (var1.canRead() && var1.peek() == ',') {
-                  var1.skip();
+            while(reader.canRead() && reader.peek() != '}') {
+               reader.skipWhitespace();
+               String name = reader.readUnquotedString();
+               reader.skipWhitespace();
+               reader.expect('=');
+               reader.skipWhitespace();
+               MinMaxBounds.Ints value = MinMaxBounds.Ints.fromReader(reader);
+               expected.put(name, value);
+               reader.skipWhitespace();
+               if (reader.canRead() && reader.peek() == ',') {
+                  reader.skip();
                }
             }
 
-            var1.expect('}');
-            if (!var2.isEmpty()) {
-               var0.addPredicate((var1x) -> {
-                  ServerScoreboard var2x = var1x.level().getServer().getScoreboard();
+            reader.expect('}');
+            if (!expected.isEmpty()) {
+               parser.addPredicate((entity) -> {
+                  Scoreboard scoreboard = entity.level().getServer().getScoreboard();
 
-                  for(Map.Entry var4 : var2.entrySet()) {
-                     Objective var5 = ((Scoreboard)var2x).getObjective((String)var4.getKey());
-                     if (var5 == null) {
+                  for(Map.Entry<String, MinMaxBounds.Ints> entry : expected.entrySet()) {
+                     Objective objective = scoreboard.getObjective((String)entry.getKey());
+                     if (objective == null) {
                         return false;
                      }
 
-                     ReadOnlyScoreInfo var6 = ((Scoreboard)var2x).getPlayerScoreInfo(var1x, var5);
-                     if (var6 == null) {
+                     ReadOnlyScoreInfo scoreInfo = scoreboard.getPlayerScoreInfo(entity, objective);
+                     if (scoreInfo == null) {
                         return false;
                      }
 
-                     if (!((MinMaxBounds.Ints)var4.getValue()).matches(var6.value())) {
+                     if (!((MinMaxBounds.Ints)entry.getValue()).matches(scoreInfo.value())) {
                         return false;
                      }
                   }
@@ -367,47 +365,47 @@ public class EntitySelectorOptions {
                });
             }
 
-            var0.setHasScores(true);
-         }, (var0) -> !var0.hasScores(), Component.translatable("argument.entity.options.scores.description"));
-         register("advancements", (var0) -> {
-            StringReader var1 = var0.getReader();
-            HashMap var2 = Maps.newHashMap();
-            var1.expect('{');
-            var1.skipWhitespace();
+            parser.setHasScores(true);
+         }, (s) -> !s.hasScores(), Component.translatable("argument.entity.options.scores.description"));
+         register("advancements", (parser) -> {
+            StringReader reader = parser.getReader();
+            Map<Identifier, Predicate<AdvancementProgress>> expected = Maps.newHashMap();
+            reader.expect('{');
+            reader.skipWhitespace();
 
-            while(var1.canRead() && var1.peek() != '}') {
-               var1.skipWhitespace();
-               Identifier var3 = Identifier.read(var1);
-               var1.skipWhitespace();
-               var1.expect('=');
-               var1.skipWhitespace();
-               if (var1.canRead() && var1.peek() == '{') {
-                  HashMap var7 = Maps.newHashMap();
-                  var1.skipWhitespace();
-                  var1.expect('{');
-                  var1.skipWhitespace();
+            while(reader.canRead() && reader.peek() != '}') {
+               reader.skipWhitespace();
+               Identifier name = Identifier.read(reader);
+               reader.skipWhitespace();
+               reader.expect('=');
+               reader.skipWhitespace();
+               if (reader.canRead() && reader.peek() == '{') {
+                  Map<String, Predicate<CriterionProgress>> progress = Maps.newHashMap();
+                  reader.skipWhitespace();
+                  reader.expect('{');
+                  reader.skipWhitespace();
 
-                  while(var1.canRead() && var1.peek() != '}') {
-                     var1.skipWhitespace();
-                     String var5 = var1.readUnquotedString();
-                     var1.skipWhitespace();
-                     var1.expect('=');
-                     var1.skipWhitespace();
-                     boolean var6 = var1.readBoolean();
-                     var7.put(var5, (Predicate)(var1x) -> var1x.isDone() == var6);
-                     var1.skipWhitespace();
-                     if (var1.canRead() && var1.peek() == ',') {
-                        var1.skip();
+                  while(reader.canRead() && reader.peek() != '}') {
+                     reader.skipWhitespace();
+                     String criterion = reader.readUnquotedString();
+                     reader.skipWhitespace();
+                     reader.expect('=');
+                     reader.skipWhitespace();
+                     boolean value = reader.readBoolean();
+                     progress.put(criterion, (Predicate)(p) -> p.isDone() == value);
+                     reader.skipWhitespace();
+                     if (reader.canRead() && reader.peek() == ',') {
+                        reader.skip();
                      }
                   }
 
-                  var1.skipWhitespace();
-                  var1.expect('}');
-                  var1.skipWhitespace();
-                  var2.put(var3, (Predicate)(var1x) -> {
-                     for(Map.Entry var3 : var7.entrySet()) {
-                        CriterionProgress var4 = var1x.getCriterion((String)var3.getKey());
-                        if (var4 == null || !((Predicate)var3.getValue()).test(var4)) {
+                  reader.skipWhitespace();
+                  reader.expect('}');
+                  reader.skipWhitespace();
+                  expected.put(name, (Predicate)(p) -> {
+                     for(Map.Entry<String, Predicate<CriterionProgress>> entry : progress.entrySet()) {
+                        CriterionProgress criterion = p.getCriterion((String)entry.getKey());
+                        if (criterion == null || !((Predicate)entry.getValue()).test(criterion)) {
                            return false;
                         }
                      }
@@ -415,28 +413,28 @@ public class EntitySelectorOptions {
                      return true;
                   });
                } else {
-                  boolean var4 = var1.readBoolean();
-                  var2.put(var3, (Predicate)(var1x) -> var1x.isDone() == var4);
+                  boolean value = reader.readBoolean();
+                  expected.put(name, (Predicate)(p) -> p.isDone() == value);
                }
 
-               var1.skipWhitespace();
-               if (var1.canRead() && var1.peek() == ',') {
-                  var1.skip();
+               reader.skipWhitespace();
+               if (reader.canRead() && reader.peek() == ',') {
+                  reader.skip();
                }
             }
 
-            var1.expect('}');
-            if (!var2.isEmpty()) {
-               var0.addPredicate((var1x) -> {
-                  if (!(var1x instanceof ServerPlayer var2x)) {
+            reader.expect('}');
+            if (!expected.isEmpty()) {
+               parser.addPredicate((e) -> {
+                  if (!(e instanceof ServerPlayer player)) {
                      return false;
                   } else {
-                     PlayerAdvancements var3 = var2x.getAdvancements();
-                     ServerAdvancementManager var4 = var2x.level().getServer().getAdvancements();
+                     PlayerAdvancements advancements = player.getAdvancements();
+                     ServerAdvancementManager serverAdvancements = player.level().getServer().getAdvancements();
 
-                     for(Map.Entry var6 : var2.entrySet()) {
-                        AdvancementHolder var7 = var4.get((Identifier)var6.getKey());
-                        if (var7 == null || !((Predicate)var6.getValue()).test(var3.getOrStartProgress(var7))) {
+                     for(Map.Entry<Identifier, Predicate<AdvancementProgress>> entry : expected.entrySet()) {
+                        AdvancementHolder advancement = serverAdvancements.get((Identifier)entry.getKey());
+                        if (advancement == null || !((Predicate)entry.getValue()).test(advancements.getOrStartProgress(advancement))) {
                            return false;
                         }
                      }
@@ -444,74 +442,67 @@ public class EntitySelectorOptions {
                      return true;
                   }
                });
-               var0.setIncludesEntities(false);
+               parser.setIncludesEntities(false);
             }
 
-            var0.setHasAdvancements(true);
-         }, (var0) -> !var0.hasAdvancements(), Component.translatable("argument.entity.options.advancements.description"));
-         register("predicate", (var0) -> {
-            boolean var1 = var0.shouldInvertValue();
-            ResourceKey var2 = ResourceKey.create(Registries.PREDICATE, Identifier.read(var0.getReader()));
-            var0.addPredicate((var2x) -> {
-               Level var4 = var2x.level();
-               if (var4 instanceof ServerLevel var3) {
-                  Optional var7 = var3.getServer().reloadableRegistries().lookup().get(var2).map(Holder::value);
-                  if (var7.isEmpty()) {
+            parser.setHasAdvancements(true);
+         }, (s) -> !s.hasAdvancements(), Component.translatable("argument.entity.options.advancements.description"));
+         register("predicate", (parser) -> {
+            boolean inverted = parser.shouldInvertValue();
+            ResourceKey<LootItemCondition> id = ResourceKey.create(Registries.PREDICATE, Identifier.read(parser.getReader()));
+            parser.addPredicate((entity) -> {
+               Level patt0$temp = entity.level();
+               if (patt0$temp instanceof ServerLevel level) {
+                  Optional<LootItemCondition> condition = level.getServer().reloadableRegistries().lookup().get(id).map(Holder::value);
+                  if (condition.isEmpty()) {
                      return false;
                   } else {
-                     LootParams var5 = (new LootParams.Builder(var3)).withParameter(LootContextParams.THIS_ENTITY, var2x).withParameter(LootContextParams.ORIGIN, var2x.position()).create(LootContextParamSets.SELECTOR);
-                     LootContext var6 = (new LootContext.Builder(var5)).create(Optional.empty());
-                     var6.pushVisitedElement(LootContext.createVisitedEntry((LootItemCondition)var7.get()));
-                     return var1 ^ ((LootItemCondition)var7.get()).test(var6);
+                     LootParams lootParams = (new LootParams.Builder(level)).withParameter(LootContextParams.THIS_ENTITY, entity).withParameter(LootContextParams.ORIGIN, entity.position()).create(LootContextParamSets.SELECTOR);
+                     LootContext context = (new LootContext.Builder(lootParams)).create(Optional.empty());
+                     context.pushVisitedElement(LootContext.createVisitedEntry((LootItemCondition)condition.get()));
+                     return inverted ^ ((LootItemCondition)condition.get()).test(context);
                   }
                } else {
                   return false;
                }
             });
-         }, (var0) -> true, Component.translatable("argument.entity.options.predicate.description"));
+         }, (s) -> true, Component.translatable("argument.entity.options.predicate.description"));
       }
    }
 
-   public static Modifier get(EntitySelectorParser var0, String var1, int var2) throws CommandSyntaxException {
-      Option var3 = (Option)OPTIONS.get(var1);
-      if (var3 != null) {
-         if (var3.canUse.test(var0)) {
-            return var3.modifier;
+   public static Modifier get(final EntitySelectorParser parser, final String key, final int start) throws CommandSyntaxException {
+      Option option = (Option)OPTIONS.get(key);
+      if (option != null) {
+         if (option.canUse.test(parser)) {
+            return option.modifier;
          } else {
-            throw ERROR_INAPPLICABLE_OPTION.createWithContext(var0.getReader(), var1);
+            throw ERROR_INAPPLICABLE_OPTION.createWithContext(parser.getReader(), key);
          }
       } else {
-         var0.getReader().setCursor(var2);
-         throw ERROR_UNKNOWN_OPTION.createWithContext(var0.getReader(), var1);
+         parser.getReader().setCursor(start);
+         throw ERROR_UNKNOWN_OPTION.createWithContext(parser.getReader(), key);
       }
    }
 
-   public static void suggestNames(EntitySelectorParser var0, SuggestionsBuilder var1) {
-      String var2 = var1.getRemaining().toLowerCase(Locale.ROOT);
+   public static void suggestNames(final EntitySelectorParser parser, final SuggestionsBuilder builder) {
+      String lowerPrefix = builder.getRemaining().toLowerCase(Locale.ROOT);
 
-      for(Map.Entry var4 : OPTIONS.entrySet()) {
-         if (((Option)var4.getValue()).canUse.test(var0) && ((String)var4.getKey()).toLowerCase(Locale.ROOT).startsWith(var2)) {
-            var1.suggest((String)var4.getKey() + "=", ((Option)var4.getValue()).description);
+      for(Map.Entry<String, Option> entry : OPTIONS.entrySet()) {
+         if (((Option)entry.getValue()).canUse.test(parser) && ((String)entry.getKey()).toLowerCase(Locale.ROOT).startsWith(lowerPrefix)) {
+            builder.suggest((String)entry.getKey() + "=", ((Option)entry.getValue()).description);
          }
       }
 
    }
 
-   static record Option(Modifier modifier, Predicate<EntitySelectorParser> canUse, Component description) {
-      final Modifier modifier;
-      final Predicate<EntitySelectorParser> canUse;
-      final Component description;
-
-      Option(Modifier var1, Predicate<EntitySelectorParser> var2, Component var3) {
+   private static record Option(Modifier modifier, Predicate<EntitySelectorParser> canUse, Component description) {
+      private Option {
          super();
-         this.modifier = var1;
-         this.canUse = var2;
-         this.description = var3;
       }
    }
 
    @FunctionalInterface
    public interface Modifier {
-      void handle(EntitySelectorParser var1) throws CommandSyntaxException;
+      void handle(EntitySelectorParser parser) throws CommandSyntaxException;
    }
 }

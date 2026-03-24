@@ -20,16 +20,16 @@ import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.MapRenderer;
 import net.minecraft.client.renderer.PlayerSkinRenderCache;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.renderer.block.BlockModelResolver;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.player.AvatarRenderer;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.item.ItemModelResolver;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.client.resources.model.AtlasManager;
 import net.minecraft.client.resources.model.EquipmentAssetManager;
+import net.minecraft.client.resources.model.sprite.AtlasManager;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.util.Mth;
@@ -48,9 +48,9 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
    public final TextureManager textureManager;
    public @Nullable Camera camera;
    public Entity crosshairPickEntity;
+   private final BlockModelResolver blockModelResolver;
    private final ItemModelResolver itemModelResolver;
    private final MapRenderer mapRenderer;
-   private final BlockRenderDispatcher blockRenderDispatcher;
    private final ItemInHandRenderer itemInHandRenderer;
    private final AtlasManager atlasManager;
    private final Font font;
@@ -59,152 +59,152 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
    private final EquipmentAssetManager equipmentAssets;
    private final PlayerSkinRenderCache playerSkinRenderCache;
 
-   public <E extends Entity> int getPackedLightCoords(E var1, float var2) {
-      return this.getRenderer(var1).getPackedLightCoords(var1, var2);
+   public <E extends Entity> int getPackedLightCoords(final E entity, final float partialTickTime) {
+      return this.getRenderer(entity).getPackedLightCoords(entity, partialTickTime);
    }
 
-   public EntityRenderDispatcher(Minecraft var1, TextureManager var2, ItemModelResolver var3, MapRenderer var4, BlockRenderDispatcher var5, AtlasManager var6, Font var7, Options var8, Supplier<EntityModelSet> var9, EquipmentAssetManager var10, PlayerSkinRenderCache var11) {
+   public EntityRenderDispatcher(final Minecraft minecraft, final TextureManager textureManager, final BlockModelResolver blockModelResolver, final ItemModelResolver itemModelResolver, final MapRenderer mapRenderer, final AtlasManager atlasManager, final Font font, final Options options, final Supplier<EntityModelSet> entityModels, final EquipmentAssetManager equipmentAssets, final PlayerSkinRenderCache playerSkinRenderCache) {
       super();
-      this.textureManager = var2;
-      this.itemModelResolver = var3;
-      this.mapRenderer = var4;
-      this.atlasManager = var6;
-      this.playerSkinRenderCache = var11;
-      this.itemInHandRenderer = new ItemInHandRenderer(var1, this, var3);
-      this.blockRenderDispatcher = var5;
-      this.font = var7;
-      this.options = var8;
-      this.entityModels = var9;
-      this.equipmentAssets = var10;
+      this.textureManager = textureManager;
+      this.blockModelResolver = blockModelResolver;
+      this.itemModelResolver = itemModelResolver;
+      this.mapRenderer = mapRenderer;
+      this.atlasManager = atlasManager;
+      this.playerSkinRenderCache = playerSkinRenderCache;
+      this.itemInHandRenderer = new ItemInHandRenderer(minecraft, this, itemModelResolver);
+      this.font = font;
+      this.options = options;
+      this.entityModels = entityModels;
+      this.equipmentAssets = equipmentAssets;
    }
 
-   public <T extends Entity> EntityRenderer<? super T, ?> getRenderer(T var1) {
-      Objects.requireNonNull(var1);
+   public <T extends Entity> EntityRenderer<? super T, ?> getRenderer(final T entity) {
+      Objects.requireNonNull(entity);
       byte var3 = 0;
       Object var10000;
       //$FF: var3->value
       //0->net/minecraft/client/player/AbstractClientPlayer
       //1->net/minecraft/client/entity/ClientMannequin
-      switch (var1.typeSwitch<invokedynamic>(var1, var3)) {
+      switch (entity.typeSwitch<invokedynamic>(entity, var3)) {
          case 0:
-            AbstractClientPlayer var4 = (AbstractClientPlayer)var1;
-            var10000 = this.getAvatarRenderer(this.playerRenderers, var4);
+            AbstractClientPlayer player = (AbstractClientPlayer)entity;
+            var10000 = this.getAvatarRenderer(this.playerRenderers, player);
             break;
          case 1:
-            ClientMannequin var5 = (ClientMannequin)var1;
-            var10000 = this.getAvatarRenderer(this.mannequinRenderers, var5);
+            ClientMannequin mannequin = (ClientMannequin)entity;
+            var10000 = this.getAvatarRenderer(this.mannequinRenderers, mannequin);
             break;
          default:
-            var10000 = (EntityRenderer)this.renderers.get(var1.getType());
+            var10000 = (EntityRenderer)this.renderers.get(((Entity)entity).getType());
       }
 
       return (EntityRenderer<? super T, ?>)var10000;
    }
 
-   public AvatarRenderer<AbstractClientPlayer> getPlayerRenderer(AbstractClientPlayer var1) {
-      return this.<AbstractClientPlayer>getAvatarRenderer(this.playerRenderers, var1);
+   public AvatarRenderer<AbstractClientPlayer> getPlayerRenderer(final AbstractClientPlayer player) {
+      return this.<AbstractClientPlayer>getAvatarRenderer(this.playerRenderers, player);
    }
 
-   private <T extends Avatar & ClientAvatarEntity> AvatarRenderer<T> getAvatarRenderer(Map<PlayerModelType, AvatarRenderer<T>> var1, T var2) {
-      PlayerModelType var3 = ((ClientAvatarEntity)var2).getSkin().model();
-      AvatarRenderer var4 = (AvatarRenderer)var1.get(var3);
-      return var4 != null ? var4 : (AvatarRenderer)var1.get(PlayerModelType.WIDE);
+   private <T extends Avatar & ClientAvatarEntity> AvatarRenderer<T> getAvatarRenderer(final Map<PlayerModelType, AvatarRenderer<T>> renderers, final T entity) {
+      PlayerModelType model = ((ClientAvatarEntity)entity).getSkin().model();
+      AvatarRenderer<T> playerRenderer = (AvatarRenderer)renderers.get(model);
+      return playerRenderer != null ? playerRenderer : (AvatarRenderer)renderers.get(PlayerModelType.WIDE);
    }
 
-   public <S extends EntityRenderState> EntityRenderer<?, ? super S> getRenderer(S var1) {
-      if (var1 instanceof AvatarRenderState var2) {
-         PlayerModelType var3 = var2.skin.model();
-         EntityRenderer var4 = (EntityRenderer)this.playerRenderers.get(var3);
-         return var4 != null ? var4 : (EntityRenderer)this.playerRenderers.get(PlayerModelType.WIDE);
+   public <S extends EntityRenderState> EntityRenderer<?, ? super S> getRenderer(final S entityRenderState) {
+      if (entityRenderState instanceof AvatarRenderState player) {
+         PlayerModelType model = player.skin.model();
+         EntityRenderer<? extends Avatar, ?> playerRenderer = (EntityRenderer)this.playerRenderers.get(model);
+         return playerRenderer != null ? playerRenderer : (EntityRenderer)this.playerRenderers.get(PlayerModelType.WIDE);
       } else {
-         return (EntityRenderer)this.renderers.get(var1.entityType);
+         return (EntityRenderer)this.renderers.get(entityRenderState.entityType);
       }
    }
 
-   public void prepare(Camera var1, Entity var2) {
-      this.camera = var1;
-      this.crosshairPickEntity = var2;
+   public void prepare(final Camera camera, final Entity crosshairPickEntity) {
+      this.camera = camera;
+      this.crosshairPickEntity = crosshairPickEntity;
    }
 
-   public <E extends Entity> boolean shouldRender(E var1, Frustum var2, double var3, double var5, double var7) {
-      EntityRenderer var9 = this.getRenderer(var1);
-      return var9.shouldRender(var1, var2, var3, var5, var7);
+   public <E extends Entity> boolean shouldRender(final E entity, final Frustum culler, final double camX, final double camY, final double camZ) {
+      EntityRenderer<? super E, ?> renderer = this.getRenderer(entity);
+      return renderer.shouldRender(entity, culler, camX, camY, camZ);
    }
 
-   public <E extends Entity> EntityRenderState extractEntity(E var1, float var2) {
-      EntityRenderer var3 = this.getRenderer(var1);
+   public <E extends Entity> EntityRenderState extractEntity(final E entity, final float partialTicks) {
+      EntityRenderer<? super E, ?> renderer = this.getRenderer(entity);
 
       try {
-         return var3.createRenderState(var1, var2);
-      } catch (Throwable var8) {
-         CrashReport var5 = CrashReport.forThrowable(var8, "Extracting render state for an entity in world");
-         CrashReportCategory var6 = var5.addCategory("Entity being extracted");
-         var1.fillCrashReportCategory(var6);
-         CrashReportCategory var7 = this.fillRendererDetails(var3, var5);
-         var7.setDetail("Delta", var2);
-         throw new ReportedException(var5);
+         return renderer.createRenderState(entity, partialTicks);
+      } catch (Throwable t) {
+         CrashReport report = CrashReport.forThrowable(t, "Extracting render state for an entity in world");
+         CrashReportCategory entityCat = report.addCategory("Entity being extracted");
+         entity.fillCrashReportCategory(entityCat);
+         CrashReportCategory rendererCategory = this.fillRendererDetails(renderer, report);
+         rendererCategory.setDetail("Delta", partialTicks);
+         throw new ReportedException(report);
       }
    }
 
-   public <S extends EntityRenderState> void submit(S var1, CameraRenderState var2, double var3, double var5, double var7, PoseStack var9, SubmitNodeCollector var10) {
-      EntityRenderer var11 = this.getRenderer(var1);
+   public <S extends EntityRenderState> void submit(final S renderState, final CameraRenderState camera, final double x, final double y, final double z, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector) {
+      EntityRenderer<?, ? super S> renderer = this.getRenderer(renderState);
 
       try {
-         Vec3 var12 = var11.getRenderOffset(var1);
-         double var20 = var3 + var12.x();
-         double var15 = var5 + var12.y();
-         double var17 = var7 + var12.z();
-         var9.pushPose();
-         var9.translate(var20, var15, var17);
-         var11.submit(var1, var9, var10, var2);
-         if (var1.displayFireAnimation) {
-            var10.submitFlame(var9, var1, Mth.rotationAroundAxis(Mth.Y_AXIS, var2.orientation, new Quaternionf()));
+         Vec3 pos = renderer.getRenderOffset(renderState);
+         double relativeX = x + pos.x();
+         double relativeY = y + pos.y();
+         double relativeZ = z + pos.z();
+         poseStack.pushPose();
+         poseStack.translate(relativeX, relativeY, relativeZ);
+         renderer.submit(renderState, poseStack, submitNodeCollector, camera);
+         if (renderState.displayFireAnimation) {
+            submitNodeCollector.submitFlame(poseStack, renderState, Mth.rotationAroundAxis(Mth.Y_AXIS, camera.orientation, new Quaternionf()));
          }
 
-         if (var1 instanceof AvatarRenderState) {
-            var9.translate(-var12.x(), -var12.y(), -var12.z());
+         if (renderState instanceof AvatarRenderState) {
+            poseStack.translate(-pos.x(), -pos.y(), -pos.z());
          }
 
-         if (!var1.shadowPieces.isEmpty()) {
-            var10.submitShadow(var9, var1.shadowRadius, var1.shadowPieces);
+         if (!renderState.shadowPieces.isEmpty()) {
+            submitNodeCollector.submitShadow(poseStack, renderState.shadowRadius, renderState.shadowPieces);
          }
 
-         if (!(var1 instanceof AvatarRenderState)) {
-            var9.translate(-var12.x(), -var12.y(), -var12.z());
+         if (!(renderState instanceof AvatarRenderState)) {
+            poseStack.translate(-pos.x(), -pos.y(), -pos.z());
          }
 
-         var9.popPose();
-      } catch (Throwable var19) {
-         CrashReport var13 = CrashReport.forThrowable(var19, "Rendering entity in world");
-         CrashReportCategory var14 = var13.addCategory("EntityRenderState being rendered");
-         var1.fillCrashReportCategory(var14);
-         this.fillRendererDetails(var11, var13);
-         throw new ReportedException(var13);
+         poseStack.popPose();
+      } catch (Throwable t) {
+         CrashReport report = CrashReport.forThrowable(t, "Rendering entity in world");
+         CrashReportCategory entityCat = report.addCategory("EntityRenderState being rendered");
+         renderState.fillCrashReportCategory(entityCat);
+         this.fillRendererDetails(renderer, report);
+         throw new ReportedException(report);
       }
    }
 
-   private <S extends EntityRenderState> CrashReportCategory fillRendererDetails(EntityRenderer<?, S> var1, CrashReport var2) {
-      CrashReportCategory var3 = var2.addCategory("Renderer details");
-      var3.setDetail("Assigned renderer", var1);
-      return var3;
+   private <S extends EntityRenderState> CrashReportCategory fillRendererDetails(final EntityRenderer<?, S> renderer, final CrashReport report) {
+      CrashReportCategory category = report.addCategory("Renderer details");
+      category.setDetail("Assigned renderer", renderer);
+      return category;
    }
 
    public void resetCamera() {
       this.camera = null;
    }
 
-   public double distanceToSqr(Entity var1) {
-      return this.camera.position().distanceToSqr(var1.position());
+   public double distanceToSqr(final Entity entity) {
+      return this.camera.position().distanceToSqr(entity.position());
    }
 
    public ItemInHandRenderer getItemInHandRenderer() {
       return this.itemInHandRenderer;
    }
 
-   public void onResourceManagerReload(ResourceManager var1) {
-      EntityRendererProvider.Context var2 = new EntityRendererProvider.Context(this, this.itemModelResolver, this.mapRenderer, this.blockRenderDispatcher, var1, (EntityModelSet)this.entityModels.get(), this.equipmentAssets, this.atlasManager, this.font, this.playerSkinRenderCache);
-      this.renderers = EntityRenderers.createEntityRenderers(var2);
-      this.playerRenderers = EntityRenderers.createAvatarRenderers(var2);
-      this.mannequinRenderers = EntityRenderers.createAvatarRenderers(var2);
+   public void onResourceManagerReload(final ResourceManager resourceManager) {
+      EntityRendererProvider.Context context = new EntityRendererProvider.Context(this, this.blockModelResolver, this.itemModelResolver, this.mapRenderer, resourceManager, (EntityModelSet)this.entityModels.get(), this.equipmentAssets, this.atlasManager, this.font, this.playerSkinRenderCache);
+      this.renderers = EntityRenderers.createEntityRenderers(context);
+      this.playerRenderers = EntityRenderers.createAvatarRenderers(context);
+      this.mannequinRenderers = EntityRenderers.createAvatarRenderers(context);
    }
 }

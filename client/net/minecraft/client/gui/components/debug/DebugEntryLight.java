@@ -19,27 +19,27 @@ public class DebugEntryLight implements DebugScreenEntry {
       super();
    }
 
-   public void display(DebugScreenDisplayer var1, @Nullable Level var2, @Nullable LevelChunk var3, @Nullable LevelChunk var4) {
-      Minecraft var5 = Minecraft.getInstance();
-      Entity var6 = var5.getCameraEntity();
-      if (var6 != null && var5.level != null) {
-         BlockPos var7 = var6.blockPosition();
-         int var8 = var5.level.getChunkSource().getLightEngine().getRawBrightness(var7, 0);
-         int var9 = var5.level.getBrightness(LightLayer.SKY, var7);
-         int var10 = var5.level.getBrightness(LightLayer.BLOCK, var7);
-         String var11 = "Client Light: " + var8 + " (" + var9 + " sky, " + var10 + " block)";
+   public void display(final DebugScreenDisplayer displayer, final @Nullable Level serverOrClientLevel, final @Nullable LevelChunk clientChunk, final @Nullable LevelChunk serverChunk) {
+      Minecraft minecraft = Minecraft.getInstance();
+      Entity entity = minecraft.getCameraEntity();
+      if (entity != null && minecraft.level != null) {
+         BlockPos feetPos = entity.blockPosition();
+         int rawBrightness = minecraft.level.getChunkSource().getLightEngine().getRawBrightness(feetPos, 0);
+         int sky = minecraft.level.getBrightness(LightLayer.SKY, feetPos);
+         int block = minecraft.level.getBrightness(LightLayer.BLOCK, feetPos);
+         String clientLight = "Client Light: " + rawBrightness + " (" + sky + " sky, " + block + " block)";
          if (SharedConstants.DEBUG_SHOW_SERVER_DEBUG_VALUES) {
-            String var12;
-            if (var4 != null) {
-               LevelLightEngine var13 = var4.getLevel().getLightEngine();
-               var12 = "Server Light: (" + var13.getLayerListener(LightLayer.SKY).getLightValue(var7) + " sky, " + var13.getLayerListener(LightLayer.BLOCK).getLightValue(var7) + " block)";
+            String serverLight;
+            if (serverChunk != null) {
+               LevelLightEngine lightEngine = serverChunk.getLevel().getLightEngine();
+               serverLight = "Server Light: (" + lightEngine.getLayerListener(LightLayer.SKY).getLightValue(feetPos) + " sky, " + lightEngine.getLayerListener(LightLayer.BLOCK).getLightValue(feetPos) + " block)";
             } else {
-               var12 = "Server Light: (?? sky, ?? block)";
+               serverLight = "Server Light: (?? sky, ?? block)";
             }
 
-            var1.addToGroup(GROUP, List.of(var11, var12));
+            displayer.addToGroup(GROUP, List.of(clientLight, serverLight));
          } else {
-            var1.addToGroup(GROUP, var11);
+            displayer.addToGroup(GROUP, clientLight);
          }
 
       }

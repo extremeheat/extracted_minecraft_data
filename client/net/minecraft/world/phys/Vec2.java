@@ -18,35 +18,35 @@ public class Vec2 {
    public final float x;
    public final float y;
 
-   public Vec2(float var1, float var2) {
+   public Vec2(final float x, final float y) {
       super();
-      this.x = var1;
-      this.y = var2;
+      this.x = x;
+      this.y = y;
    }
 
-   public Vec2 scale(float var1) {
-      return new Vec2(this.x * var1, this.y * var1);
+   public Vec2 scale(final float s) {
+      return new Vec2(this.x * s, this.y * s);
    }
 
-   public float dot(Vec2 var1) {
-      return this.x * var1.x + this.y * var1.y;
+   public float dot(final Vec2 v) {
+      return this.x * v.x + this.y * v.y;
    }
 
-   public Vec2 add(Vec2 var1) {
-      return new Vec2(this.x + var1.x, this.y + var1.y);
+   public Vec2 add(final Vec2 rhs) {
+      return new Vec2(this.x + rhs.x, this.y + rhs.y);
    }
 
-   public Vec2 add(float var1) {
-      return new Vec2(this.x + var1, this.y + var1);
+   public Vec2 add(final float v) {
+      return new Vec2(this.x + v, this.y + v);
    }
 
-   public boolean equals(Vec2 var1) {
-      return this.x == var1.x && this.y == var1.y;
+   public boolean equals(final Vec2 rhs) {
+      return this.x == rhs.x && this.y == rhs.y;
    }
 
    public Vec2 normalized() {
-      float var1 = Mth.sqrt(this.x * this.x + this.y * this.y);
-      return var1 < 1.0E-4F ? ZERO : new Vec2(this.x / var1, this.y / var1);
+      float dist = Mth.sqrt(this.x * this.x + this.y * this.y);
+      return dist < 1.0E-4F ? ZERO : new Vec2(this.x / dist, this.y / dist);
    }
 
    public float length() {
@@ -57,10 +57,10 @@ public class Vec2 {
       return this.x * this.x + this.y * this.y;
    }
 
-   public float distanceToSqr(Vec2 var1) {
-      float var2 = var1.x - this.x;
-      float var3 = var1.y - this.y;
-      return var2 * var2 + var3 * var3;
+   public float distanceToSqr(final Vec2 p) {
+      float xd = p.x - this.x;
+      float yd = p.y - this.y;
+      return xd * xd + yd * yd;
    }
 
    public Vec2 negated() {
@@ -68,6 +68,6 @@ public class Vec2 {
    }
 
    static {
-      CODEC = Codec.FLOAT.listOf().comapFlatMap((var0) -> Util.fixedSize((List)var0, 2).map((var0x) -> new Vec2((Float)var0x.get(0), (Float)var0x.get(1))), (var0) -> List.of(var0.x, var0.y));
+      CODEC = Codec.FLOAT.listOf().comapFlatMap((input) -> Util.fixedSize((List)input, 2).map((floats) -> new Vec2((Float)floats.get(0), (Float)floats.get(1))), (vec) -> List.of(vec.x, vec.y));
    }
 }

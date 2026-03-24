@@ -38,87 +38,82 @@ public class RamTarget extends Behavior<Goat> {
    private final Function<Goat, SoundEvent> getImpactSound;
    private final Function<Goat, SoundEvent> getHornBreakSound;
 
-   public RamTarget(Function<Goat, UniformInt> var1, TargetingConditions var2, float var3, ToDoubleFunction<Goat> var4, Function<Goat, SoundEvent> var5, Function<Goat, SoundEvent> var6) {
+   public RamTarget(final Function<Goat, UniformInt> getTimeBetweenRams, final TargetingConditions ramTargeting, final float speed, final ToDoubleFunction<Goat> getKnockbackForce, final Function<Goat, SoundEvent> getImpactSound, final Function<Goat, SoundEvent> getHornBreakSound) {
       super(ImmutableMap.of(MemoryModuleType.RAM_COOLDOWN_TICKS, MemoryStatus.VALUE_ABSENT, MemoryModuleType.RAM_TARGET, MemoryStatus.VALUE_PRESENT), 200);
-      this.getTimeBetweenRams = var1;
-      this.ramTargeting = var2;
-      this.speed = var3;
-      this.getKnockbackForce = var4;
-      this.getImpactSound = var5;
-      this.getHornBreakSound = var6;
+      this.getTimeBetweenRams = getTimeBetweenRams;
+      this.ramTargeting = ramTargeting;
+      this.speed = speed;
+      this.getKnockbackForce = getKnockbackForce;
+      this.getImpactSound = getImpactSound;
+      this.getHornBreakSound = getHornBreakSound;
       this.ramDirection = Vec3.ZERO;
    }
 
-   protected boolean checkExtraStartConditions(ServerLevel var1, Goat var2) {
-      return var2.getBrain().hasMemoryValue(MemoryModuleType.RAM_TARGET);
+   protected boolean checkExtraStartConditions(final ServerLevel level, final Goat body) {
+      return body.getBrain().hasMemoryValue(MemoryModuleType.RAM_TARGET);
    }
 
-   protected boolean canStillUse(ServerLevel var1, Goat var2, long var3) {
-      return var2.getBrain().hasMemoryValue(MemoryModuleType.RAM_TARGET);
+   protected boolean canStillUse(final ServerLevel level, final Goat body, final long timestamp) {
+      return body.getBrain().hasMemoryValue(MemoryModuleType.RAM_TARGET);
    }
 
-   protected void start(ServerLevel var1, Goat var2, long var3) {
-      BlockPos var5 = var2.blockPosition();
-      Brain var6 = var2.getBrain();
-      Vec3 var7 = (Vec3)var6.getMemory(MemoryModuleType.RAM_TARGET).get();
-      this.ramDirection = (new Vec3((double)var5.getX() - var7.x(), 0.0, (double)var5.getZ() - var7.z())).normalize();
-      var6.setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(var7, this.speed, 0));
+   protected void start(final ServerLevel level, final Goat body, final long timestamp) {
+      BlockPos curPos = body.blockPosition();
+      Brain<?> brain = body.getBrain();
+      Vec3 ramTargetPos = (Vec3)brain.getMemory(MemoryModuleType.RAM_TARGET).get();
+      this.ramDirection = (new Vec3((double)curPos.getX() - ramTargetPos.x(), 0.0, (double)curPos.getZ() - ramTargetPos.z())).normalize();
+      brain.setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(ramTargetPos, this.speed, 0));
    }
 
-   protected void tick(ServerLevel var1, Goat var2, long var3) {
-      List var5 = var1.getNearbyEntities(LivingEntity.class, this.ramTargeting, var2, var2.getBoundingBox());
-      Brain var6 = var2.getBrain();
-      if (!var5.isEmpty()) {
-         LivingEntity var7 = (LivingEntity)var5.get(0);
-         DamageSource var8 = var1.damageSources().noAggroMobAttack(var2);
-         float var9 = (float)var2.getAttributeValue(Attributes.ATTACK_DAMAGE);
-         if (var7.hurtServer(var1, var8, var9)) {
-            EnchantmentHelper.doPostAttackEffects(var1, var7, var8);
+   protected void tick(final ServerLevel level, final Goat body, final long timestamp) {
+      List<LivingEntity> nearbyEntities = level.getNearbyEntities(LivingEntity.class, this.ramTargeting, body, body.getBoundingBox());
+      Brain<?> brain = body.getBrain();
+      if (!nearbyEntities.isEmpty()) {
+         LivingEntity ramTarget = (LivingEntity)nearbyEntities.get(0);
+         DamageSource damageSource = level.damageSources().noAggroMobAttack(body);
+         float damage = (float)body.getAttributeValue(Attributes.ATTACK_DAMAGE);
+         if (ramTarget.hurtServer(level, damageSource, damage)) {
+            EnchantmentHelper.doPostAttackEffects(level, ramTarget, damageSource);
          }
 
-         int var10 = var2.hasEffect(MobEffects.SPEED) ? var2.getEffect(MobEffects.SPEED).getAmplifier() + 1 : 0;
-         int var11 = var2.hasEffect(MobEffects.SLOWNESS) ? var2.getEffect(MobEffects.SLOWNESS).getAmplifier() + 1 : 0;
-         float var12 = 0.25F * (float)(var10 - var11);
-         float var13 = Mth.clamp(var2.getSpeed() * 1.65F, 0.2F, 3.0F) + var12;
-         DamageSource var14 = var1.damageSources().mobAttack(var2);
-         float var15 = var7.applyItemBlocking(var1, var14, var9);
-         float var16 = var15 > 0.0F ? 0.5F : 1.0F;
-         var7.knockback((double)(var16 * var13) * this.getKnockbackForce.applyAsDouble(var2), this.ramDirection.x(), this.ramDirection.z());
-         this.finishRam(var1, var2);
-         var1.playSound((Entity)null, var2, (SoundEvent)this.getImpactSound.apply(var2), SoundSource.NEUTRAL, 1.0F, 1.0F);
-      } else if (this.hasRammedHornBreakingBlock(var1, var2)) {
-         var1.playSound((Entity)null, var2, (SoundEvent)this.getImpactSound.apply(var2), SoundSource.NEUTRAL, 1.0F, 1.0F);
-         boolean var17 = var2.dropHorn();
-         if (var17) {
-            var1.playSound((Entity)null, var2, (SoundEvent)this.getHornBreakSound.apply(var2), SoundSource.NEUTRAL, 1.0F, 1.0F);
+         int movementSpeedLevel = body.hasEffect(MobEffects.SPEED) ? body.getEffect(MobEffects.SPEED).getAmplifier() + 1 : 0;
+         int movementSlowdownLevel = body.hasEffect(MobEffects.SLOWNESS) ? body.getEffect(MobEffects.SLOWNESS).getAmplifier() + 1 : 0;
+         float speedBoostPower = 0.25F * (float)(movementSpeedLevel - movementSlowdownLevel);
+         float speedFactor = Mth.clamp(body.getSpeed() * 1.65F, 0.2F, 3.0F) + speedBoostPower;
+         DamageSource source = level.damageSources().mobAttack(body);
+         float blockedDamage = ramTarget.applyItemBlocking(level, source, damage);
+         float blockingFactor = blockedDamage > 0.0F ? 0.5F : 1.0F;
+         ramTarget.knockback((double)(blockingFactor * speedFactor) * this.getKnockbackForce.applyAsDouble(body), this.ramDirection.x(), this.ramDirection.z());
+         this.finishRam(level, body);
+         level.playSound((Entity)null, body, (SoundEvent)this.getImpactSound.apply(body), SoundSource.NEUTRAL, 1.0F, 1.0F);
+      } else if (this.hasRammedHornBreakingBlock(level, body)) {
+         level.playSound((Entity)null, body, (SoundEvent)this.getImpactSound.apply(body), SoundSource.NEUTRAL, 1.0F, 1.0F);
+         boolean dropped = body.dropHorn();
+         if (dropped) {
+            level.playSound((Entity)null, body, (SoundEvent)this.getHornBreakSound.apply(body), SoundSource.NEUTRAL, 1.0F, 1.0F);
          }
 
-         this.finishRam(var1, var2);
+         this.finishRam(level, body);
       } else {
-         Optional var18 = var6.getMemory(MemoryModuleType.WALK_TARGET);
-         Optional var19 = var6.getMemory(MemoryModuleType.RAM_TARGET);
-         boolean var20 = var18.isEmpty() || var19.isEmpty() || ((WalkTarget)var18.get()).getTarget().currentPosition().closerThan((Position)var19.get(), 0.25);
-         if (var20) {
-            this.finishRam(var1, var2);
+         Optional<WalkTarget> walkTarget = brain.<WalkTarget>getMemory(MemoryModuleType.WALK_TARGET);
+         Optional<Vec3> ramTarget = brain.<Vec3>getMemory(MemoryModuleType.RAM_TARGET);
+         boolean lostOrReachedTarget = walkTarget.isEmpty() || ramTarget.isEmpty() || ((WalkTarget)walkTarget.get()).getTarget().currentPosition().closerThan((Position)ramTarget.get(), 0.25);
+         if (lostOrReachedTarget) {
+            this.finishRam(level, body);
          }
       }
 
    }
 
-   private boolean hasRammedHornBreakingBlock(ServerLevel var1, Goat var2) {
-      Vec3 var3 = var2.getDeltaMovement().multiply(1.0, 0.0, 1.0).normalize();
-      BlockPos var4 = BlockPos.containing(var2.position().add(var3));
-      return var1.getBlockState(var4).is(BlockTags.SNAPS_GOAT_HORN) || var1.getBlockState(var4.above()).is(BlockTags.SNAPS_GOAT_HORN);
+   private boolean hasRammedHornBreakingBlock(final ServerLevel level, final Goat body) {
+      Vec3 horizontalMovementNormalized = body.getDeltaMovement().multiply(1.0, 0.0, 1.0).normalize();
+      BlockPos facingBlockPosition = BlockPos.containing(body.position().add(horizontalMovementNormalized));
+      return level.getBlockState(facingBlockPosition).is(BlockTags.SNAPS_GOAT_HORN) || level.getBlockState(facingBlockPosition.above()).is(BlockTags.SNAPS_GOAT_HORN);
    }
 
-   protected void finishRam(ServerLevel var1, Goat var2) {
-      var1.broadcastEntityEvent(var2, (byte)59);
-      var2.getBrain().setMemory(MemoryModuleType.RAM_COOLDOWN_TICKS, ((UniformInt)this.getTimeBetweenRams.apply(var2)).sample(var1.random));
-      var2.getBrain().eraseMemory(MemoryModuleType.RAM_TARGET);
-   }
-
-   // $FF: synthetic method
-   protected void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.start(var1, (Goat)var2, var3);
+   protected void finishRam(final ServerLevel level, final Goat body) {
+      level.broadcastEntityEvent(body, (byte)59);
+      body.getBrain().setMemory(MemoryModuleType.RAM_COOLDOWN_TICKS, ((UniformInt)this.getTimeBetweenRams.apply(body)).sample(level.getRandom()));
+      body.getBrain().eraseMemory(MemoryModuleType.RAM_TARGET);
    }
 }

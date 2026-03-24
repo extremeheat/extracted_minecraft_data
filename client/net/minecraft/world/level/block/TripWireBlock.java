@@ -29,7 +29,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class TripWireBlock extends Block {
-   public static final MapCodec<TripWireBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("hook").forGetter((var0x) -> var0x.hook), propertiesCodec()).apply(var0, TripWireBlock::new));
+   public static final MapCodec<TripWireBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("hook").forGetter((b) -> b.hook), propertiesCodec()).apply(i, TripWireBlock::new));
    public static final BooleanProperty POWERED;
    public static final BooleanProperty ATTACHED;
    public static final BooleanProperty DISARMED;
@@ -47,61 +47,61 @@ public class TripWireBlock extends Block {
       return CODEC;
    }
 
-   public TripWireBlock(Block var1, BlockBehaviour.Properties var2) {
-      super(var2);
+   public TripWireBlock(final Block hook, final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(POWERED, false)).setValue(ATTACHED, false)).setValue(DISARMED, false)).setValue(NORTH, false)).setValue(EAST, false)).setValue(SOUTH, false)).setValue(WEST, false));
-      this.hook = var1;
+      this.hook = hook;
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (Boolean)var1.getValue(ATTACHED) ? SHAPE_ATTACHED : SHAPE_NOT_ATTACHED;
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return (Boolean)state.getValue(ATTACHED) ? SHAPE_ATTACHED : SHAPE_NOT_ATTACHED;
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      Level var2 = var1.getLevel();
-      BlockPos var3 = var1.getClickedPos();
-      return (BlockState)((BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(NORTH, this.shouldConnectTo(var2.getBlockState(var3.north()), Direction.NORTH))).setValue(EAST, this.shouldConnectTo(var2.getBlockState(var3.east()), Direction.EAST))).setValue(SOUTH, this.shouldConnectTo(var2.getBlockState(var3.south()), Direction.SOUTH))).setValue(WEST, this.shouldConnectTo(var2.getBlockState(var3.west()), Direction.WEST));
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      BlockGetter level = context.getLevel();
+      BlockPos pos = context.getClickedPos();
+      return (BlockState)((BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(NORTH, this.shouldConnectTo(level.getBlockState(pos.north()), Direction.NORTH))).setValue(EAST, this.shouldConnectTo(level.getBlockState(pos.east()), Direction.EAST))).setValue(SOUTH, this.shouldConnectTo(level.getBlockState(pos.south()), Direction.SOUTH))).setValue(WEST, this.shouldConnectTo(level.getBlockState(pos.west()), Direction.WEST));
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      return var5.getAxis().isHorizontal() ? (BlockState)var1.setValue((Property)PROPERTY_BY_DIRECTION.get(var5), this.shouldConnectTo(var7, var5)) : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      return directionToNeighbour.getAxis().isHorizontal() ? (BlockState)state.setValue((Property)PROPERTY_BY_DIRECTION.get(directionToNeighbour), this.shouldConnectTo(neighbourState, directionToNeighbour)) : super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var4.is(var1.getBlock())) {
-         this.updateSource(var2, var3, var1);
+   protected void onPlace(final BlockState state, final Level level, final BlockPos pos, final BlockState oldState, final boolean movedByPiston) {
+      if (!oldState.is(state.getBlock())) {
+         this.updateSource(level, pos, state);
       }
    }
 
-   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
-      if (!var4) {
-         this.updateSource(var2, var3, (BlockState)var1.setValue(POWERED, true));
+   protected void affectNeighborsAfterRemoval(final BlockState state, final ServerLevel level, final BlockPos pos, final boolean movedByPiston) {
+      if (!movedByPiston) {
+         this.updateSource(level, pos, (BlockState)state.setValue(POWERED, true));
       }
 
    }
 
-   public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
-      if (!var1.isClientSide() && !var4.getMainHandItem().isEmpty() && var4.getMainHandItem().is(Items.SHEARS)) {
-         var1.setBlock(var2, (BlockState)var3.setValue(DISARMED, true), 260);
-         var1.gameEvent(var4, GameEvent.SHEAR, var2);
+   public BlockState playerWillDestroy(final Level level, final BlockPos pos, final BlockState state, final Player player) {
+      if (!level.isClientSide() && !player.getMainHandItem().isEmpty() && player.getMainHandItem().is(Items.SHEARS)) {
+         level.setBlock(pos, (BlockState)state.setValue(DISARMED, true), 260);
+         level.gameEvent(player, GameEvent.SHEAR, pos);
       }
 
-      return super.playerWillDestroy(var1, var2, var3, var4);
+      return super.playerWillDestroy(level, pos, state, player);
    }
 
-   private void updateSource(Level var1, BlockPos var2, BlockState var3) {
-      for(Direction var7 : new Direction[]{Direction.SOUTH, Direction.WEST}) {
-         for(int var8 = 1; var8 < 42; ++var8) {
-            BlockPos var9 = var2.relative(var7, var8);
-            BlockState var10 = var1.getBlockState(var9);
-            if (var10.is(this.hook)) {
-               if (var10.getValue(TripWireHookBlock.FACING) == var7.getOpposite()) {
-                  TripWireHookBlock.calculateState(var1, var9, var10, false, true, var8, var3);
+   private void updateSource(final Level level, final BlockPos pos, final BlockState state) {
+      for(Direction direction : new Direction[]{Direction.SOUTH, Direction.WEST}) {
+         for(int i = 1; i < 42; ++i) {
+            BlockPos testPos = pos.relative(direction, i);
+            BlockState block = level.getBlockState(testPos);
+            if (block.is(this.hook)) {
+               if (block.getValue(TripWireHookBlock.FACING) == direction.getOpposite()) {
+                  TripWireHookBlock.calculateState(level, testPos, block, false, true, i, state);
                }
                break;
             }
 
-            if (!var10.is(this)) {
+            if (!block.is(this)) {
                break;
             }
          }
@@ -109,96 +109,96 @@ public class TripWireBlock extends Block {
 
    }
 
-   protected VoxelShape getEntityInsideCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, Entity var4) {
-      return var1.getShape(var2, var3);
+   protected VoxelShape getEntityInsideCollisionShape(final BlockState state, final BlockGetter level, final BlockPos pos, final Entity entity) {
+      return state.getShape(level, pos);
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
-      if (!var2.isClientSide()) {
-         if (!(Boolean)var1.getValue(POWERED)) {
-            this.checkPressed(var2, var3, List.of(var4));
+   protected void entityInside(final BlockState state, final Level level, final BlockPos pos, final Entity entity, final InsideBlockEffectApplier effectApplier, final boolean isPrecise) {
+      if (!level.isClientSide()) {
+         if (!(Boolean)state.getValue(POWERED)) {
+            this.checkPressed(level, pos, List.of(entity));
          }
       }
    }
 
-   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if ((Boolean)var2.getBlockState(var3).getValue(POWERED)) {
-         this.checkPressed(var2, var3);
+   protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if ((Boolean)level.getBlockState(pos).getValue(POWERED)) {
+         this.checkPressed(level, pos);
       }
    }
 
-   private void checkPressed(Level var1, BlockPos var2) {
-      BlockState var3 = var1.getBlockState(var2);
-      List var4 = var1.getEntities((Entity)null, var3.getShape(var1, var2).bounds().move(var2));
-      this.checkPressed(var1, var2, var4);
+   private void checkPressed(final Level level, final BlockPos pos) {
+      BlockState state = level.getBlockState(pos);
+      List<? extends Entity> entities = level.getEntities((Entity)null, state.getShape(level, pos).bounds().move(pos));
+      this.checkPressed(level, pos, entities);
    }
 
-   private void checkPressed(Level var1, BlockPos var2, List<? extends Entity> var3) {
-      BlockState var4 = var1.getBlockState(var2);
-      boolean var5 = (Boolean)var4.getValue(POWERED);
-      boolean var6 = false;
-      if (!var3.isEmpty()) {
-         for(Entity var8 : var3) {
-            if (!var8.isIgnoringBlockTriggers()) {
-               var6 = true;
+   private void checkPressed(final Level level, final BlockPos pos, final List<? extends Entity> entities) {
+      BlockState state = level.getBlockState(pos);
+      boolean wasPressed = (Boolean)state.getValue(POWERED);
+      boolean shouldBePressed = false;
+      if (!entities.isEmpty()) {
+         for(Entity entity : entities) {
+            if (!entity.isIgnoringBlockTriggers()) {
+               shouldBePressed = true;
                break;
             }
          }
       }
 
-      if (var6 != var5) {
-         var4 = (BlockState)var4.setValue(POWERED, var6);
-         var1.setBlock(var2, var4, 3);
-         this.updateSource(var1, var2, var4);
+      if (shouldBePressed != wasPressed) {
+         state = (BlockState)state.setValue(POWERED, shouldBePressed);
+         level.setBlock(pos, state, 3);
+         this.updateSource(level, pos, state);
       }
 
-      if (var6) {
-         var1.scheduleTick(new BlockPos(var2), this, 10);
+      if (shouldBePressed) {
+         level.scheduleTick(new BlockPos(pos), this, 10);
       }
 
    }
 
-   public boolean shouldConnectTo(BlockState var1, Direction var2) {
-      if (var1.is(this.hook)) {
-         return var1.getValue(TripWireHookBlock.FACING) == var2.getOpposite();
+   public boolean shouldConnectTo(final BlockState blockState, final Direction direction) {
+      if (blockState.is(this.hook)) {
+         return blockState.getValue(TripWireHookBlock.FACING) == direction.getOpposite();
       } else {
-         return var1.is(this);
+         return blockState.is(this);
       }
    }
 
-   protected BlockState rotate(BlockState var1, Rotation var2) {
-      switch (var2) {
+   protected BlockState rotate(final BlockState state, final Rotation rotation) {
+      switch (rotation) {
          case CLOCKWISE_180 -> {
-            return (BlockState)((BlockState)((BlockState)((BlockState)var1.setValue(NORTH, (Boolean)var1.getValue(SOUTH))).setValue(EAST, (Boolean)var1.getValue(WEST))).setValue(SOUTH, (Boolean)var1.getValue(NORTH))).setValue(WEST, (Boolean)var1.getValue(EAST));
+            return (BlockState)((BlockState)((BlockState)((BlockState)state.setValue(NORTH, (Boolean)state.getValue(SOUTH))).setValue(EAST, (Boolean)state.getValue(WEST))).setValue(SOUTH, (Boolean)state.getValue(NORTH))).setValue(WEST, (Boolean)state.getValue(EAST));
          }
          case COUNTERCLOCKWISE_90 -> {
-            return (BlockState)((BlockState)((BlockState)((BlockState)var1.setValue(NORTH, (Boolean)var1.getValue(EAST))).setValue(EAST, (Boolean)var1.getValue(SOUTH))).setValue(SOUTH, (Boolean)var1.getValue(WEST))).setValue(WEST, (Boolean)var1.getValue(NORTH));
+            return (BlockState)((BlockState)((BlockState)((BlockState)state.setValue(NORTH, (Boolean)state.getValue(EAST))).setValue(EAST, (Boolean)state.getValue(SOUTH))).setValue(SOUTH, (Boolean)state.getValue(WEST))).setValue(WEST, (Boolean)state.getValue(NORTH));
          }
          case CLOCKWISE_90 -> {
-            return (BlockState)((BlockState)((BlockState)((BlockState)var1.setValue(NORTH, (Boolean)var1.getValue(WEST))).setValue(EAST, (Boolean)var1.getValue(NORTH))).setValue(SOUTH, (Boolean)var1.getValue(EAST))).setValue(WEST, (Boolean)var1.getValue(SOUTH));
+            return (BlockState)((BlockState)((BlockState)((BlockState)state.setValue(NORTH, (Boolean)state.getValue(WEST))).setValue(EAST, (Boolean)state.getValue(NORTH))).setValue(SOUTH, (Boolean)state.getValue(EAST))).setValue(WEST, (Boolean)state.getValue(SOUTH));
          }
          default -> {
-            return var1;
+            return state;
          }
       }
    }
 
-   protected BlockState mirror(BlockState var1, Mirror var2) {
-      switch (var2) {
+   protected BlockState mirror(final BlockState state, final Mirror mirror) {
+      switch (mirror) {
          case LEFT_RIGHT -> {
-            return (BlockState)((BlockState)var1.setValue(NORTH, (Boolean)var1.getValue(SOUTH))).setValue(SOUTH, (Boolean)var1.getValue(NORTH));
+            return (BlockState)((BlockState)state.setValue(NORTH, (Boolean)state.getValue(SOUTH))).setValue(SOUTH, (Boolean)state.getValue(NORTH));
          }
          case FRONT_BACK -> {
-            return (BlockState)((BlockState)var1.setValue(EAST, (Boolean)var1.getValue(WEST))).setValue(WEST, (Boolean)var1.getValue(EAST));
+            return (BlockState)((BlockState)state.setValue(EAST, (Boolean)state.getValue(WEST))).setValue(WEST, (Boolean)state.getValue(EAST));
          }
          default -> {
-            return super.mirror(var1, var2);
+            return super.mirror(state, mirror);
          }
       }
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(POWERED, ATTACHED, DISARMED, NORTH, EAST, WEST, SOUTH);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(POWERED, ATTACHED, DISARMED, NORTH, EAST, WEST, SOUTH);
    }
 
    static {

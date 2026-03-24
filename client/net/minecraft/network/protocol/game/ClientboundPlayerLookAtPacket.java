@@ -20,39 +20,39 @@ public class ClientboundPlayerLookAtPacket implements Packet<ClientGamePacketLis
    private final EntityAnchorArgument.Anchor toAnchor;
    private final boolean atEntity;
 
-   public ClientboundPlayerLookAtPacket(EntityAnchorArgument.Anchor var1, double var2, double var4, double var6) {
+   public ClientboundPlayerLookAtPacket(final EntityAnchorArgument.Anchor fromAnchor, final double x, final double y, final double z) {
       super();
-      this.fromAnchor = var1;
-      this.x = var2;
-      this.y = var4;
-      this.z = var6;
+      this.fromAnchor = fromAnchor;
+      this.x = x;
+      this.y = y;
+      this.z = z;
       this.entity = 0;
       this.atEntity = false;
       this.toAnchor = null;
    }
 
-   public ClientboundPlayerLookAtPacket(EntityAnchorArgument.Anchor var1, Entity var2, EntityAnchorArgument.Anchor var3) {
+   public ClientboundPlayerLookAtPacket(final EntityAnchorArgument.Anchor fromAnchor, final Entity entity, final EntityAnchorArgument.Anchor toAnchor) {
       super();
-      this.fromAnchor = var1;
-      this.entity = var2.getId();
-      this.toAnchor = var3;
-      Vec3 var4 = var3.apply(var2);
-      this.x = var4.x;
-      this.y = var4.y;
-      this.z = var4.z;
+      this.fromAnchor = fromAnchor;
+      this.entity = entity.getId();
+      this.toAnchor = toAnchor;
+      Vec3 pos = toAnchor.apply(entity);
+      this.x = pos.x;
+      this.y = pos.y;
+      this.z = pos.z;
       this.atEntity = true;
    }
 
-   private ClientboundPlayerLookAtPacket(FriendlyByteBuf var1) {
+   private ClientboundPlayerLookAtPacket(final FriendlyByteBuf input) {
       super();
-      this.fromAnchor = (EntityAnchorArgument.Anchor)var1.readEnum(EntityAnchorArgument.Anchor.class);
-      this.x = var1.readDouble();
-      this.y = var1.readDouble();
-      this.z = var1.readDouble();
-      this.atEntity = var1.readBoolean();
+      this.fromAnchor = (EntityAnchorArgument.Anchor)input.readEnum(EntityAnchorArgument.Anchor.class);
+      this.x = input.readDouble();
+      this.y = input.readDouble();
+      this.z = input.readDouble();
+      this.atEntity = input.readBoolean();
       if (this.atEntity) {
-         this.entity = var1.readVarInt();
-         this.toAnchor = (EntityAnchorArgument.Anchor)var1.readEnum(EntityAnchorArgument.Anchor.class);
+         this.entity = input.readVarInt();
+         this.toAnchor = (EntityAnchorArgument.Anchor)input.readEnum(EntityAnchorArgument.Anchor.class);
       } else {
          this.entity = 0;
          this.toAnchor = null;
@@ -60,15 +60,15 @@ public class ClientboundPlayerLookAtPacket implements Packet<ClientGamePacketLis
 
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeEnum(this.fromAnchor);
-      var1.writeDouble(this.x);
-      var1.writeDouble(this.y);
-      var1.writeDouble(this.z);
-      var1.writeBoolean(this.atEntity);
+   private void write(final FriendlyByteBuf output) {
+      output.writeEnum(this.fromAnchor);
+      output.writeDouble(this.x);
+      output.writeDouble(this.y);
+      output.writeDouble(this.z);
+      output.writeBoolean(this.atEntity);
       if (this.atEntity) {
-         var1.writeVarInt(this.entity);
-         var1.writeEnum(this.toAnchor);
+         output.writeVarInt(this.entity);
+         output.writeEnum(this.toAnchor);
       }
 
    }
@@ -77,18 +77,18 @@ public class ClientboundPlayerLookAtPacket implements Packet<ClientGamePacketLis
       return GamePacketTypes.CLIENTBOUND_PLAYER_LOOK_AT;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleLookAt(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleLookAt(this);
    }
 
    public EntityAnchorArgument.Anchor getFromAnchor() {
       return this.fromAnchor;
    }
 
-   public @Nullable Vec3 getPosition(Level var1) {
+   public @Nullable Vec3 getPosition(final Level level) {
       if (this.atEntity) {
-         Entity var2 = var1.getEntity(this.entity);
-         return var2 == null ? new Vec3(this.x, this.y, this.z) : this.toAnchor.apply(var2);
+         Entity entity = level.getEntity(this.entity);
+         return entity == null ? new Vec3(this.x, this.y, this.z) : this.toAnchor.apply(entity);
       } else {
          return new Vec3(this.x, this.y, this.z);
       }

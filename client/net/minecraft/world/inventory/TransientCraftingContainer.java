@@ -13,16 +13,16 @@ public class TransientCraftingContainer implements CraftingContainer {
    private final int height;
    private final AbstractContainerMenu menu;
 
-   public TransientCraftingContainer(AbstractContainerMenu var1, int var2, int var3) {
-      this(var1, var2, var3, NonNullList.withSize(var2 * var3, ItemStack.EMPTY));
+   public TransientCraftingContainer(final AbstractContainerMenu menu, final int width, final int height) {
+      this(menu, width, height, NonNullList.withSize(width * height, ItemStack.EMPTY));
    }
 
-   private TransientCraftingContainer(AbstractContainerMenu var1, int var2, int var3, NonNullList<ItemStack> var4) {
+   private TransientCraftingContainer(final AbstractContainerMenu menu, final int width, final int height, final NonNullList<ItemStack> items) {
       super();
-      this.items = var4;
-      this.menu = var1;
-      this.width = var2;
-      this.height = var3;
+      this.items = items;
+      this.menu = menu;
+      this.width = width;
+      this.height = height;
    }
 
    public int getContainerSize() {
@@ -30,8 +30,8 @@ public class TransientCraftingContainer implements CraftingContainer {
    }
 
    public boolean isEmpty() {
-      for(ItemStack var2 : this.items) {
-         if (!var2.isEmpty()) {
+      for(ItemStack itemStack : this.items) {
+         if (!itemStack.isEmpty()) {
             return false;
          }
       }
@@ -39,32 +39,32 @@ public class TransientCraftingContainer implements CraftingContainer {
       return true;
    }
 
-   public ItemStack getItem(int var1) {
-      return var1 >= this.getContainerSize() ? ItemStack.EMPTY : (ItemStack)this.items.get(var1);
+   public ItemStack getItem(final int slot) {
+      return slot >= this.getContainerSize() ? ItemStack.EMPTY : (ItemStack)this.items.get(slot);
    }
 
-   public ItemStack removeItemNoUpdate(int var1) {
-      return ContainerHelper.takeItem(this.items, var1);
+   public ItemStack removeItemNoUpdate(final int slot) {
+      return ContainerHelper.takeItem(this.items, slot);
    }
 
-   public ItemStack removeItem(int var1, int var2) {
-      ItemStack var3 = ContainerHelper.removeItem(this.items, var1, var2);
-      if (!var3.isEmpty()) {
+   public ItemStack removeItem(final int slot, final int count) {
+      ItemStack result = ContainerHelper.removeItem(this.items, slot, count);
+      if (!result.isEmpty()) {
          this.menu.slotsChanged(this);
       }
 
-      return var3;
+      return result;
    }
 
-   public void setItem(int var1, ItemStack var2) {
-      this.items.set(var1, var2);
+   public void setItem(final int slot, final ItemStack itemStack) {
+      this.items.set(slot, itemStack);
       this.menu.slotsChanged(this);
    }
 
    public void setChanged() {
    }
 
-   public boolean stillValid(Player var1) {
+   public boolean stillValid(final Player player) {
       return true;
    }
 
@@ -84,9 +84,9 @@ public class TransientCraftingContainer implements CraftingContainer {
       return List.copyOf(this.items);
    }
 
-   public void fillStackedContents(StackedItemContents var1) {
-      for(ItemStack var3 : this.items) {
-         var1.accountSimpleStack(var3);
+   public void fillStackedContents(final StackedItemContents contents) {
+      for(ItemStack itemStack : this.items) {
+         contents.accountSimpleStack(itemStack);
       }
 
    }

@@ -17,55 +17,55 @@ public class PlayerEnderChestContainer extends SimpleContainer {
       super(27);
    }
 
-   public void setActiveChest(EnderChestBlockEntity var1) {
-      this.activeChest = var1;
+   public void setActiveChest(final EnderChestBlockEntity activeChest) {
+      this.activeChest = activeChest;
    }
 
-   public boolean isActiveChest(EnderChestBlockEntity var1) {
-      return this.activeChest == var1;
+   public boolean isActiveChest(final EnderChestBlockEntity chest) {
+      return this.activeChest == chest;
    }
 
-   public void fromSlots(ValueInput.TypedInputList<ItemStackWithSlot> var1) {
-      for(int var2 = 0; var2 < this.getContainerSize(); ++var2) {
-         this.setItem(var2, ItemStack.EMPTY);
+   public void fromSlots(final ValueInput.TypedInputList<ItemStackWithSlot> list) {
+      for(int i = 0; i < this.getContainerSize(); ++i) {
+         this.setItem(i, ItemStack.EMPTY);
       }
 
-      for(ItemStackWithSlot var3 : var1) {
-         if (var3.isValidInContainer(this.getContainerSize())) {
-            this.setItem(var3.slot(), var3.stack());
+      for(ItemStackWithSlot item : list) {
+         if (item.isValidInContainer(this.getContainerSize())) {
+            this.setItem(item.slot(), item.stack());
          }
       }
 
    }
 
-   public void storeAsSlots(ValueOutput.TypedOutputList<ItemStackWithSlot> var1) {
-      for(int var2 = 0; var2 < this.getContainerSize(); ++var2) {
-         ItemStack var3 = this.getItem(var2);
-         if (!var3.isEmpty()) {
-            var1.add(new ItemStackWithSlot(var2, var3));
+   public void storeAsSlots(final ValueOutput.TypedOutputList<ItemStackWithSlot> output) {
+      for(int i = 0; i < this.getContainerSize(); ++i) {
+         ItemStack itemStack = this.getItem(i);
+         if (!itemStack.isEmpty()) {
+            output.add(new ItemStackWithSlot(i, itemStack));
          }
       }
 
    }
 
-   public boolean stillValid(Player var1) {
-      return this.activeChest != null && !this.activeChest.stillValid(var1) ? false : super.stillValid(var1);
+   public boolean stillValid(final Player player) {
+      return this.activeChest != null && !this.activeChest.stillValid(player) ? false : super.stillValid(player);
    }
 
-   public void startOpen(ContainerUser var1) {
+   public void startOpen(final ContainerUser containerUser) {
       if (this.activeChest != null) {
-         this.activeChest.startOpen(var1);
+         this.activeChest.startOpen(containerUser);
       }
 
-      super.startOpen(var1);
+      super.startOpen(containerUser);
    }
 
-   public void stopOpen(ContainerUser var1) {
+   public void stopOpen(final ContainerUser containerUser) {
       if (this.activeChest != null) {
-         this.activeChest.stopOpen(var1);
+         this.activeChest.stopOpen(containerUser);
       }
 
-      super.stopOpen(var1);
+      super.stopOpen(containerUser);
       this.activeChest = null;
    }
 }

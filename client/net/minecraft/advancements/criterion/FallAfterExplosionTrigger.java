@@ -9,6 +9,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.Validatable;
+import net.minecraft.world.level.storage.loot.ValidationContextSource;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
@@ -21,39 +23,35 @@ public class FallAfterExplosionTrigger extends SimpleCriterionTrigger<TriggerIns
       return FallAfterExplosionTrigger.TriggerInstance.CODEC;
    }
 
-   public void trigger(ServerPlayer var1, Vec3 var2, @Nullable Entity var3) {
-      Vec3 var4 = var1.position();
-      LootContext var5 = var3 != null ? EntityPredicate.createContext(var1, var3) : null;
-      this.trigger(var1, (var4x) -> var4x.matches(var1.level(), var2, var4, var5));
+   public void trigger(final ServerPlayer player, final Vec3 startPosition, final @Nullable Entity cause) {
+      Vec3 playerPosition = player.position();
+      LootContext wrappedCause = cause != null ? EntityPredicate.createContext(player, cause) : null;
+      this.trigger(player, (t) -> t.matches(player.level(), startPosition, playerPosition, wrappedCause));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<LocationPredicate> startPosition, Optional<DistancePredicate> distance, Optional<ContextAwarePredicate> cause) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), LocationPredicate.CODEC.optionalFieldOf("start_position").forGetter(TriggerInstance::startPosition), DistancePredicate.CODEC.optionalFieldOf("distance").forGetter(TriggerInstance::distance), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("cause").forGetter(TriggerInstance::cause)).apply(var0, TriggerInstance::new));
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((i) -> i.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), LocationPredicate.CODEC.optionalFieldOf("start_position").forGetter(TriggerInstance::startPosition), DistancePredicate.CODEC.optionalFieldOf("distance").forGetter(TriggerInstance::distance), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("cause").forGetter(TriggerInstance::cause)).apply(i, TriggerInstance::new));
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<LocationPredicate> var2, Optional<DistancePredicate> var3, Optional<ContextAwarePredicate> var4) {
+      public TriggerInstance {
          super();
-         this.player = var1;
-         this.startPosition = var2;
-         this.distance = var3;
-         this.cause = var4;
       }
 
-      public static Criterion<TriggerInstance> fallAfterExplosion(DistancePredicate var0, EntityPredicate.Builder var1) {
-         return CriteriaTriggers.FALL_AFTER_EXPLOSION.createCriterion(new TriggerInstance(Optional.empty(), Optional.empty(), Optional.of(var0), Optional.of(EntityPredicate.wrap(var1))));
+      public static Criterion<TriggerInstance> fallAfterExplosion(final DistancePredicate distance, final EntityPredicate.Builder cause) {
+         return CriteriaTriggers.FALL_AFTER_EXPLOSION.createCriterion(new TriggerInstance(Optional.empty(), Optional.empty(), Optional.of(distance), Optional.of(EntityPredicate.wrap(cause))));
       }
 
-      public void validate(CriterionValidator var1) {
-         SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
-         var1.validateEntity(this.cause(), "cause");
+      public void validate(final ValidationContextSource validator) {
+         SimpleCriterionTrigger.SimpleInstance.super.validate(validator);
+         Validatable.validate(validator.entityContext(), "cause", this.cause);
       }
 
-      public boolean matches(ServerLevel var1, Vec3 var2, Vec3 var3, @Nullable LootContext var4) {
-         if (this.startPosition.isPresent() && !((LocationPredicate)this.startPosition.get()).matches(var1, var2.x, var2.y, var2.z)) {
+      public boolean matches(final ServerLevel level, final Vec3 enteredPosition, final Vec3 playerPosition, final @Nullable LootContext cause) {
+         if (this.startPosition.isPresent() && !((LocationPredicate)this.startPosition.get()).matches(level, enteredPosition.x, enteredPosition.y, enteredPosition.z)) {
             return false;
-         } else if (this.distance.isPresent() && !((DistancePredicate)this.distance.get()).matches(var2.x, var2.y, var2.z, var3.x, var3.y, var3.z)) {
+         } else if (this.distance.isPresent() && !((DistancePredicate)this.distance.get()).matches(enteredPosition.x, enteredPosition.y, enteredPosition.z, playerPosition.x, playerPosition.y, playerPosition.z)) {
             return false;
          } else {
-            return !this.cause.isPresent() || var4 != null && ((ContextAwarePredicate)this.cause.get()).matches(var4);
+            return !this.cause.isPresent() || cause != null && ((ContextAwarePredicate)this.cause.get()).matches(cause);
          }
       }
    }

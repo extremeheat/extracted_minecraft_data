@@ -18,18 +18,17 @@ public record FallLocation(String id) {
    public static final FallLocation OTHER_CLIMBABLE = new FallLocation("other_climbable");
    public static final FallLocation WATER = new FallLocation("water");
 
-   public FallLocation(String var1) {
+   public FallLocation {
       super();
-      this.id = var1;
    }
 
-   public static FallLocation blockToFallLocation(BlockState var0) {
-      if (!var0.is(Blocks.LADDER) && !var0.is(BlockTags.TRAPDOORS)) {
-         if (var0.is(Blocks.VINE)) {
+   public static FallLocation blockToFallLocation(final BlockState blockState) {
+      if (!blockState.is(Blocks.LADDER) && !blockState.is(BlockTags.TRAPDOORS)) {
+         if (blockState.is(Blocks.VINE)) {
             return VINES;
-         } else if (!var0.is(Blocks.WEEPING_VINES) && !var0.is(Blocks.WEEPING_VINES_PLANT)) {
-            if (!var0.is(Blocks.TWISTING_VINES) && !var0.is(Blocks.TWISTING_VINES_PLANT)) {
-               return var0.is(Blocks.SCAFFOLDING) ? SCAFFOLDING : OTHER_CLIMBABLE;
+         } else if (!blockState.is(Blocks.WEEPING_VINES) && !blockState.is(Blocks.WEEPING_VINES_PLANT)) {
+            if (!blockState.is(Blocks.TWISTING_VINES) && !blockState.is(Blocks.TWISTING_VINES_PLANT)) {
+               return blockState.is(Blocks.SCAFFOLDING) ? SCAFFOLDING : OTHER_CLIMBABLE;
             } else {
                return TWISTING_VINES;
             }
@@ -41,13 +40,13 @@ public record FallLocation(String id) {
       }
    }
 
-   public static @Nullable FallLocation getCurrentFallLocation(LivingEntity var0) {
-      Optional var1 = var0.getLastClimbablePos();
-      if (var1.isPresent()) {
-         BlockState var2 = var0.level().getBlockState((BlockPos)var1.get());
-         return blockToFallLocation(var2);
+   public static @Nullable FallLocation getCurrentFallLocation(final LivingEntity mob) {
+      Optional<BlockPos> lastClimbablePos = mob.getLastClimbablePos();
+      if (lastClimbablePos.isPresent()) {
+         BlockState blockState = mob.level().getBlockState((BlockPos)lastClimbablePos.get());
+         return blockToFallLocation(blockState);
       } else {
-         return var0.isInWater() ? WATER : null;
+         return mob.isInWater() ? WATER : null;
       }
    }
 

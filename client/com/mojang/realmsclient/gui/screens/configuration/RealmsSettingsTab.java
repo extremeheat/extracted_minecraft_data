@@ -45,17 +45,17 @@ public class RealmsSettingsTab extends GridLayoutTab implements RealmsConfigurat
    private final ImageWidget selectedRegionImageWidget;
    private RegionSelection preferredRegionSelection;
 
-   RealmsSettingsTab(RealmsConfigureWorldScreen var1, Minecraft var2, RealmsServer var3, Map<RealmsRegion, ServiceQuality> var4) {
+   RealmsSettingsTab(final RealmsConfigureWorldScreen configurationScreen, final Minecraft minecraft, final RealmsServer serverData, final Map<RealmsRegion, ServiceQuality> regionServiceQuality) {
       super(TITLE);
-      this.configurationScreen = var1;
-      this.minecraft = var2;
-      this.serverData = var3;
-      this.regionServiceQuality = var4;
-      GridLayout.RowHelper var5 = this.layout.rowSpacing(6).createRowHelper(1);
-      var5.addChild(new StringWidget(NAME_LABEL, var1.getFont()));
-      this.nameEdit = new EditBox(var2.font, 0, 0, 212, 20, Component.translatable("mco.configure.world.name"));
+      this.configurationScreen = configurationScreen;
+      this.minecraft = minecraft;
+      this.serverData = serverData;
+      this.regionServiceQuality = regionServiceQuality;
+      GridLayout.RowHelper helper = this.layout.rowSpacing(6).createRowHelper(1);
+      helper.addChild(new StringWidget(NAME_LABEL, configurationScreen.getFont()));
+      this.nameEdit = new EditBox(minecraft.font, 0, 0, 212, 20, Component.translatable("mco.configure.world.name"));
       this.nameEdit.setMaxLength(32);
-      this.nameEdit.setResponder((var1x) -> {
+      this.nameEdit.setResponder((value) -> {
          if (!this.isRealmNameValid()) {
             this.nameEdit.setTextColor(-2142128);
             this.nameEdit.setTooltip(REALM_NAME_VALIDATION_ERROR_TOOLTIP);
@@ -64,63 +64,63 @@ public class RealmsSettingsTab extends GridLayoutTab implements RealmsConfigurat
             this.nameEdit.setTextColor(-2039584);
          }
       });
-      var5.addChild(this.nameEdit);
-      var5.addChild(SpacerElement.height(2));
-      var5.addChild(new StringWidget(DESCRIPTION_LABEL, var1.getFont()));
-      this.descEdit = new EditBox(var2.font, 0, 0, 212, 20, Component.translatable("mco.configure.world.description"));
+      helper.addChild(this.nameEdit);
+      helper.addChild(SpacerElement.height(2));
+      helper.addChild(new StringWidget(DESCRIPTION_LABEL, configurationScreen.getFont()));
+      this.descEdit = new EditBox(minecraft.font, 0, 0, 212, 20, Component.translatable("mco.configure.world.description"));
       this.descEdit.setMaxLength(32);
-      var5.addChild(this.descEdit);
-      var5.addChild(SpacerElement.height(2));
-      var5.addChild(new StringWidget(REGION_PREFERENCE_LABEL, var1.getFont()));
-      Objects.requireNonNull(var1.getFont());
-      EqualSpacingLayout var6 = new EqualSpacingLayout(0, 0, 212, 9, EqualSpacingLayout.Orientation.HORIZONTAL);
-      Objects.requireNonNull(var1.getFont());
-      this.selectedRegionStringWidget = (StringWidget)var6.addChild(new StringWidget(192, 9, Component.empty(), var1.getFont()));
-      this.selectedRegionImageWidget = (ImageWidget)var6.addChild(ImageWidget.sprite(10, 8, ServiceQuality.UNKNOWN.getIcon()));
-      var5.addChild(var6);
-      var5.addChild(Button.builder(Component.translatable("mco.configure.world.buttons.region_preference"), (var1x) -> this.openPreferenceSelector()).bounds(0, 0, 212, 20).build());
-      var5.addChild(SpacerElement.height(2));
-      this.closeOpenButton = (Button)var5.addChild(Button.builder(Component.empty(), (var4x) -> {
-         if (var3.state == RealmsServer.State.OPEN) {
-            var2.setScreen(RealmsPopups.customPopupScreen(var1, Component.translatable("mco.configure.world.close.question.title"), Component.translatable("mco.configure.world.close.question.line1"), (var2x) -> {
+      helper.addChild(this.descEdit);
+      helper.addChild(SpacerElement.height(2));
+      helper.addChild(new StringWidget(REGION_PREFERENCE_LABEL, configurationScreen.getFont()));
+      Objects.requireNonNull(configurationScreen.getFont());
+      EqualSpacingLayout selectedRegion = new EqualSpacingLayout(0, 0, 212, 9, EqualSpacingLayout.Orientation.HORIZONTAL);
+      Objects.requireNonNull(configurationScreen.getFont());
+      this.selectedRegionStringWidget = (StringWidget)selectedRegion.addChild(new StringWidget(192, 9, Component.empty(), configurationScreen.getFont()));
+      this.selectedRegionImageWidget = (ImageWidget)selectedRegion.addChild(ImageWidget.sprite(10, 8, ServiceQuality.UNKNOWN.getIcon()));
+      helper.addChild(selectedRegion);
+      helper.addChild(Button.builder(Component.translatable("mco.configure.world.buttons.region_preference"), (button) -> this.openPreferenceSelector()).bounds(0, 0, 212, 20).build());
+      helper.addChild(SpacerElement.height(2));
+      this.closeOpenButton = (Button)helper.addChild(Button.builder(Component.empty(), (button) -> {
+         if (serverData.state == RealmsServer.State.OPEN) {
+            minecraft.setScreen(RealmsPopups.customPopupScreen(configurationScreen, Component.translatable("mco.configure.world.close.question.title"), Component.translatable("mco.configure.world.close.question.line1"), (popup) -> {
                this.save();
-               var1.closeTheWorld();
+               configurationScreen.closeTheWorld();
             }));
          } else {
             this.save();
-            var1.openTheWorld(false);
+            configurationScreen.openTheWorld(false);
          }
 
       }).bounds(0, 0, 212, 20).build());
       this.closeOpenButton.active = false;
-      this.updateData(var3);
+      this.updateData(serverData);
    }
 
-   private static MutableComponent getTranslatableFromPreference(RegionSelection var0) {
-      return (var0.preference().equals(RegionSelectionPreference.MANUAL) && var0.region() != null ? Component.translatable(var0.region().translationKey) : Component.translatable(var0.preference().translationKey)).withStyle(ChatFormatting.GRAY);
+   private static MutableComponent getTranslatableFromPreference(final RegionSelection regionSelection) {
+      return (regionSelection.preference().equals(RegionSelectionPreference.MANUAL) && regionSelection.region() != null ? Component.translatable(regionSelection.region().translationKey) : Component.translatable(regionSelection.preference().translationKey)).withStyle(ChatFormatting.GRAY);
    }
 
-   private static Identifier getServiceQualityIcon(RegionSelection var0, Map<RealmsRegion, ServiceQuality> var1) {
-      if (var0.region() != null && var1.containsKey(var0.region())) {
-         ServiceQuality var2 = (ServiceQuality)var1.getOrDefault(var0.region(), ServiceQuality.UNKNOWN);
-         return var2.getIcon();
+   private static Identifier getServiceQualityIcon(final RegionSelection regionSelection, final Map<RealmsRegion, ServiceQuality> regionServiceQuality) {
+      if (regionSelection.region() != null && regionServiceQuality.containsKey(regionSelection.region())) {
+         ServiceQuality serviceQuality = (ServiceQuality)regionServiceQuality.getOrDefault(regionSelection.region(), ServiceQuality.UNKNOWN);
+         return serviceQuality.getIcon();
       } else {
          return ServiceQuality.UNKNOWN.getIcon();
       }
    }
 
    private boolean isRealmNameValid() {
-      String var1 = this.nameEdit.getValue();
-      String var2 = var1.trim();
-      return !var2.isEmpty() && var1.length() == var2.length();
+      String name = this.nameEdit.getValue();
+      String trimmedName = name.trim();
+      return !trimmedName.isEmpty() && name.length() == trimmedName.length();
    }
 
    private void openPreferenceSelector() {
       this.minecraft.setScreen(new RealmsPreferredRegionSelectionScreen(this.configurationScreen, this::applyRegionPreferenceSelection, this.regionServiceQuality, this.preferredRegionSelection));
    }
 
-   private void applyRegionPreferenceSelection(RegionSelectionPreference var1, RealmsRegion var2) {
-      this.preferredRegionSelection = new RegionSelection(var1, var2);
+   private void applyRegionPreferenceSelection(final RegionSelectionPreference preference, final RealmsRegion region) {
+      this.preferredRegionSelection = new RegionSelection(preference, region);
       this.updateRegionPreferenceValues();
    }
 
@@ -130,48 +130,44 @@ public class RealmsSettingsTab extends GridLayoutTab implements RealmsConfigurat
       this.selectedRegionImageWidget.visible = this.preferredRegionSelection.preference == RegionSelectionPreference.MANUAL;
    }
 
-   public void onSelected(RealmsServer var1) {
-      this.updateData(var1);
+   public void onSelected(final RealmsServer serverData) {
+      this.updateData(serverData);
    }
 
-   public void updateData(RealmsServer var1) {
-      this.serverData = var1;
-      if (var1.regionSelectionPreference == null) {
-         var1.regionSelectionPreference = RegionSelectionPreferenceDto.DEFAULT;
+   public void updateData(final RealmsServer serverData) {
+      this.serverData = serverData;
+      if (serverData.regionSelectionPreference == null) {
+         serverData.regionSelectionPreference = RegionSelectionPreferenceDto.DEFAULT;
       }
 
-      if (var1.regionSelectionPreference.regionSelectionPreference == RegionSelectionPreference.MANUAL && var1.regionSelectionPreference.preferredRegion == null) {
-         Optional var2 = this.regionServiceQuality.keySet().stream().findFirst();
-         var2.ifPresent((var1x) -> var1.regionSelectionPreference.preferredRegion = var1x);
+      if (serverData.regionSelectionPreference.regionSelectionPreference == RegionSelectionPreference.MANUAL && serverData.regionSelectionPreference.preferredRegion == null) {
+         Optional<RealmsRegion> first = this.regionServiceQuality.keySet().stream().findFirst();
+         first.ifPresent((region) -> serverData.regionSelectionPreference.preferredRegion = region);
       }
 
-      String var3 = var1.state == RealmsServer.State.OPEN ? "mco.configure.world.buttons.close" : "mco.configure.world.buttons.open";
-      this.closeOpenButton.setMessage(Component.translatable(var3));
+      String key = serverData.state == RealmsServer.State.OPEN ? "mco.configure.world.buttons.close" : "mco.configure.world.buttons.open";
+      this.closeOpenButton.setMessage(Component.translatable(key));
       this.closeOpenButton.active = true;
-      this.preferredRegionSelection = new RegionSelection(var1.regionSelectionPreference.regionSelectionPreference, var1.regionSelectionPreference.preferredRegion);
-      this.nameEdit.setValue((String)Objects.requireNonNullElse(var1.getName(), ""));
-      this.descEdit.setValue(var1.getDescription());
+      this.preferredRegionSelection = new RegionSelection(serverData.regionSelectionPreference.regionSelectionPreference, serverData.regionSelectionPreference.preferredRegion);
+      this.nameEdit.setValue((String)Objects.requireNonNullElse(serverData.getName(), ""));
+      this.descEdit.setValue(serverData.getDescription());
       this.updateRegionPreferenceValues();
    }
 
-   public void onDeselected(RealmsServer var1) {
+   public void onDeselected(final RealmsServer serverData) {
       this.save();
    }
 
    public void save() {
-      String var1 = this.nameEdit.getValue().trim();
-      if (this.serverData.regionSelectionPreference == null || !Objects.equals(var1, this.serverData.name) || !Objects.equals(this.descEdit.getValue(), this.serverData.motd) || this.preferredRegionSelection.preference() != this.serverData.regionSelectionPreference.regionSelectionPreference || this.preferredRegionSelection.region() != this.serverData.regionSelectionPreference.preferredRegion) {
-         this.configurationScreen.saveSettings(var1, this.descEdit.getValue(), this.preferredRegionSelection.preference(), this.preferredRegionSelection.region());
+      String realmName = this.nameEdit.getValue().trim();
+      if (this.serverData.regionSelectionPreference == null || !Objects.equals(realmName, this.serverData.name) || !Objects.equals(this.descEdit.getValue(), this.serverData.motd) || this.preferredRegionSelection.preference() != this.serverData.regionSelectionPreference.regionSelectionPreference || this.preferredRegionSelection.region() != this.serverData.regionSelectionPreference.preferredRegion) {
+         this.configurationScreen.saveSettings(realmName, this.descEdit.getValue(), this.preferredRegionSelection.preference(), this.preferredRegionSelection.region());
       }
    }
 
    public static record RegionSelection(RegionSelectionPreference preference, @Nullable RealmsRegion region) {
-      final RegionSelectionPreference preference;
-
-      public RegionSelection(RegionSelectionPreference var1, @Nullable RealmsRegion var2) {
+      public RegionSelection {
          super();
-         this.preference = var1;
-         this.region = var2;
       }
    }
 }

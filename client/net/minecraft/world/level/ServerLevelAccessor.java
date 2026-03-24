@@ -8,9 +8,9 @@ import net.minecraft.world.entity.Entity;
 public interface ServerLevelAccessor extends LevelAccessor {
    ServerLevel getLevel();
 
-   DifficultyInstance getCurrentDifficultyAt(BlockPos var1);
+   DifficultyInstance getCurrentDifficultyAt(BlockPos pos);
 
-   default void addFreshEntityWithPassengers(Entity var1) {
-      var1.getSelfAndPassengers().forEach(this::addFreshEntity);
+   default void addFreshEntityWithPassengers(final Entity entity) {
+      entity.getSelfAndPassengers().forEach(this::addFreshEntity);
    }
 }

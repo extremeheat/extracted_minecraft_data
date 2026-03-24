@@ -5,8 +5,8 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 
 public abstract class SkullModelBase extends Model<State> {
-   public SkullModelBase(ModelPart var1) {
-      super(var1, RenderTypes::entityTranslucent);
+   public SkullModelBase(final ModelPart root) {
+      super(root, RenderTypes::entityTranslucent);
    }
 
    public static class State {

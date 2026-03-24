@@ -10,26 +10,26 @@ public class ClientboundSetBorderSizePacket implements Packet<ClientGamePacketLi
    public static final StreamCodec<FriendlyByteBuf, ClientboundSetBorderSizePacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundSetBorderSizePacket>codec(ClientboundSetBorderSizePacket::write, ClientboundSetBorderSizePacket::new);
    private final double size;
 
-   public ClientboundSetBorderSizePacket(WorldBorder var1) {
+   public ClientboundSetBorderSizePacket(final WorldBorder border) {
       super();
-      this.size = var1.getLerpTarget();
+      this.size = border.getLerpTarget();
    }
 
-   private ClientboundSetBorderSizePacket(FriendlyByteBuf var1) {
+   private ClientboundSetBorderSizePacket(final FriendlyByteBuf input) {
       super();
-      this.size = var1.readDouble();
+      this.size = input.readDouble();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeDouble(this.size);
+   private void write(final FriendlyByteBuf output) {
+      output.writeDouble(this.size);
    }
 
    public PacketType<ClientboundSetBorderSizePacket> type() {
       return GamePacketTypes.CLIENTBOUND_SET_BORDER_SIZE;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleSetBorderSize(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleSetBorderSize(this);
    }
 
    public double getSize() {

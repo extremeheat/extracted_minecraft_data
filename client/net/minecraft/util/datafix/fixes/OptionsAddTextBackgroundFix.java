@@ -8,21 +8,21 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
 
 public class OptionsAddTextBackgroundFix extends DataFix {
-   public OptionsAddTextBackgroundFix(Schema var1, boolean var2) {
-      super(var1, var2);
+   public OptionsAddTextBackgroundFix(final Schema outputSchema, final boolean changesType) {
+      super(outputSchema, changesType);
    }
 
    public TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped("OptionsAddTextBackgroundFix", this.getInputSchema().getType(References.OPTIONS), (var1) -> var1.update(DSL.remainderFinder(), (var1x) -> (Dynamic)DataFixUtils.orElse(var1x.get("chatOpacity").asString().map((var2) -> {
-               double var3 = this.calculateBackground(var2);
-               return var1x.set("textBackgroundOpacity", var1x.createString(String.valueOf(var3)));
-            }).result(), var1x)));
+      return this.fixTypeEverywhereTyped("OptionsAddTextBackgroundFix", this.getInputSchema().getType(References.OPTIONS), (input) -> input.update(DSL.remainderFinder(), (tag) -> (Dynamic)DataFixUtils.orElse(tag.get("chatOpacity").asString().map((value) -> {
+               double opacity = this.calculateBackground(value);
+               return tag.set("textBackgroundOpacity", tag.createString(String.valueOf(opacity)));
+            }).result(), tag)));
    }
 
-   private double calculateBackground(String var1) {
+   private double calculateBackground(final String textOpacity) {
       try {
-         double var2 = 0.9 * Double.parseDouble(var1) + 0.1;
-         return var2 / 2.0;
+         double textAlpha = 0.9 * Double.parseDouble(textOpacity) + 0.1;
+         return textAlpha / 2.0;
       } catch (NumberFormatException var4) {
          return 0.5;
       }

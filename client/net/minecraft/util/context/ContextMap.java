@@ -4,37 +4,38 @@ import com.google.common.collect.Sets;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.Nullable;
 
 public class ContextMap {
    private final Map<ContextKey<?>, Object> params;
 
-   ContextMap(Map<ContextKey<?>, Object> var1) {
+   private ContextMap(final Map<ContextKey<?>, Object> params) {
       super();
-      this.params = var1;
+      this.params = params;
    }
 
-   public boolean has(ContextKey<?> var1) {
-      return this.params.containsKey(var1);
+   public boolean has(final ContextKey<?> key) {
+      return this.params.containsKey(key);
    }
 
-   public <T> T getOrThrow(ContextKey<T> var1) {
-      Object var2 = this.params.get(var1);
-      if (var2 == null) {
-         throw new NoSuchElementException(var1.name().toString());
+   public <T> T getOrThrow(final ContextKey<T> key) {
+      T value = (T)this.params.get(key);
+      if (value == null) {
+         throw new NoSuchElementException(key.name().toString());
       } else {
-         return (T)var2;
+         return value;
       }
    }
 
-   public <T> @Nullable T getOptional(ContextKey<T> var1) {
-      return (T)this.params.get(var1);
+   public <T> @Nullable T getOptional(final ContextKey<T> key) {
+      return (T)this.params.get(key);
    }
 
    @Contract("_,!null->!null; _,_->_")
-   public <T> @Nullable T getOrDefault(ContextKey<T> var1, @Nullable T var2) {
-      return (T)this.params.getOrDefault(var1, var2);
+   public <T> @Nullable T getOrDefault(final ContextKey<T> param, final @Nullable T _default) {
+      return (T)this.params.getOrDefault(param, _default);
    }
 
    public static class Builder {
@@ -44,42 +45,42 @@ public class ContextMap {
          super();
       }
 
-      public <T> Builder withParameter(ContextKey<T> var1, T var2) {
-         this.params.put(var1, var2);
+      public <T> Builder withParameter(final ContextKey<T> param, final T value) {
+         this.params.put(param, value);
          return this;
       }
 
-      public <T> Builder withOptionalParameter(ContextKey<T> var1, @Nullable T var2) {
-         if (var2 == null) {
-            this.params.remove(var1);
+      public <T> Builder withOptionalParameter(final ContextKey<T> param, final @Nullable T value) {
+         if (value == null) {
+            this.params.remove(param);
          } else {
-            this.params.put(var1, var2);
+            this.params.put(param, value);
          }
 
          return this;
       }
 
-      public <T> T getParameter(ContextKey<T> var1) {
-         Object var2 = this.params.get(var1);
-         if (var2 == null) {
-            throw new NoSuchElementException(var1.name().toString());
+      public <T> T getParameter(final ContextKey<T> param) {
+         T value = (T)this.params.get(param);
+         if (value == null) {
+            throw new NoSuchElementException(param.name().toString());
          } else {
-            return (T)var2;
+            return value;
          }
       }
 
-      public <T> @Nullable T getOptionalParameter(ContextKey<T> var1) {
-         return (T)this.params.get(var1);
+      public <T> @Nullable T getOptionalParameter(final ContextKey<T> param) {
+         return (T)this.params.get(param);
       }
 
-      public ContextMap create(ContextKeySet var1) {
-         Sets.SetView var2 = Sets.difference(this.params.keySet(), var1.allowed());
-         if (!var2.isEmpty()) {
-            throw new IllegalArgumentException("Parameters not allowed in this parameter set: " + String.valueOf(var2));
+      public ContextMap create(final ContextKeySet paramSet) {
+         Set<ContextKey<?>> notAllowed = Sets.difference(this.params.keySet(), paramSet.allowed());
+         if (!notAllowed.isEmpty()) {
+            throw new IllegalArgumentException("Parameters not allowed in this parameter set: " + String.valueOf(notAllowed));
          } else {
-            Sets.SetView var3 = Sets.difference(var1.required(), this.params.keySet());
-            if (!var3.isEmpty()) {
-               throw new IllegalArgumentException("Missing required parameters: " + String.valueOf(var3));
+            Set<ContextKey<?>> missingRequired = Sets.difference(paramSet.required(), this.params.keySet());
+            if (!missingRequired.isEmpty()) {
+               throw new IllegalArgumentException("Missing required parameters: " + String.valueOf(missingRequired));
             } else {
                return new ContextMap(this.params);
             }

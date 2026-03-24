@@ -9,6 +9,6 @@ public record DiscardedQueryAnswerPayload() implements CustomQueryAnswerPayload 
       super();
    }
 
-   public void write(FriendlyByteBuf var1) {
+   public void write(final FriendlyByteBuf output) {
    }
 }

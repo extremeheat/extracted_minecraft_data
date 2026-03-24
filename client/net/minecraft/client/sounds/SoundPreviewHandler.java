@@ -5,6 +5,8 @@ import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.animal.cow.CowSoundVariant;
+import net.minecraft.world.entity.animal.cow.CowSoundVariants;
 import org.jspecify.annotations.Nullable;
 
 public final class SoundPreviewHandler {
@@ -15,42 +17,42 @@ public final class SoundPreviewHandler {
       super();
    }
 
-   public static void preview(SoundManager var0, SoundSource var1, float var2) {
-      stopOtherCategoryPreview(var0, var1);
-      if (canPlaySound(var0)) {
+   public static void preview(final SoundManager soundManager, final SoundSource category, final float volume) {
+      stopOtherCategoryPreview(soundManager, category);
+      if (canPlaySound(soundManager)) {
          SoundEvent var10000;
-         switch (var1) {
+         switch (category) {
             case RECORDS -> var10000 = SoundEvents.NOTE_BLOCK_GUITAR.value();
             case WEATHER -> var10000 = SoundEvents.LIGHTNING_BOLT_THUNDER;
             case BLOCKS -> var10000 = SoundEvents.GRASS_PLACE;
             case HOSTILE -> var10000 = SoundEvents.ZOMBIE_AMBIENT;
-            case NEUTRAL -> var10000 = SoundEvents.COW_AMBIENT;
+            case NEUTRAL -> var10000 = (SoundEvent)((CowSoundVariant)SoundEvents.COW_SOUNDS.get(CowSoundVariants.SoundSet.CLASSIC)).ambientSound().value();
             case PLAYERS -> var10000 = SoundEvents.GENERIC_EAT.value();
             case AMBIENT -> var10000 = SoundEvents.AMBIENT_CAVE.value();
             case UI -> var10000 = SoundEvents.UI_BUTTON_CLICK.value();
             default -> var10000 = SoundEvents.EMPTY;
          }
 
-         SoundEvent var3 = var10000;
-         if (var3 != SoundEvents.EMPTY) {
-            activePreview = SimpleSoundInstance.forUI(var3, 1.0F, var2);
-            var0.play(activePreview);
+         SoundEvent previewSound = var10000;
+         if (previewSound != SoundEvents.EMPTY) {
+            activePreview = SimpleSoundInstance.forUI(previewSound, 1.0F, volume);
+            soundManager.play(activePreview);
          }
       }
 
    }
 
-   private static void stopOtherCategoryPreview(SoundManager var0, SoundSource var1) {
-      if (previousCategory != var1) {
-         previousCategory = var1;
+   private static void stopOtherCategoryPreview(final SoundManager soundManager, final SoundSource category) {
+      if (previousCategory != category) {
+         previousCategory = category;
          if (activePreview != null) {
-            var0.stop(activePreview);
+            soundManager.stop(activePreview);
          }
       }
 
    }
 
-   private static boolean canPlaySound(SoundManager var0) {
-      return activePreview == null || !var0.isActive(activePreview);
+   private static boolean canPlaySound(final SoundManager soundManager) {
+      return activePreview == null || !soundManager.isActive(activePreview);
    }
 }

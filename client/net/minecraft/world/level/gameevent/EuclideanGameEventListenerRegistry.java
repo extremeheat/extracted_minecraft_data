@@ -24,50 +24,50 @@ public class EuclideanGameEventListenerRegistry implements GameEventListenerRegi
    private final int sectionY;
    private final OnEmptyAction onEmptyAction;
 
-   public EuclideanGameEventListenerRegistry(ServerLevel var1, int var2, OnEmptyAction var3) {
+   public EuclideanGameEventListenerRegistry(final ServerLevel level, final int sectionY, final OnEmptyAction onEmptyAction) {
       super();
-      this.level = var1;
-      this.sectionY = var2;
-      this.onEmptyAction = var3;
+      this.level = level;
+      this.sectionY = sectionY;
+      this.onEmptyAction = onEmptyAction;
    }
 
    public boolean isEmpty() {
       return this.listeners.isEmpty();
    }
 
-   public void register(GameEventListener var1) {
+   public void register(final GameEventListener listener) {
       if (this.processing) {
-         this.listenersToAdd.add(var1);
+         this.listenersToAdd.add(listener);
       } else {
-         this.listeners.add(var1);
+         this.listeners.add(listener);
       }
 
-      sendDebugInfo(this.level, var1);
+      sendDebugInfo(this.level, listener);
    }
 
-   private static void sendDebugInfo(ServerLevel var0, GameEventListener var1) {
-      if (var0.debugSynchronizers().hasAnySubscriberFor(DebugSubscriptions.GAME_EVENT_LISTENERS)) {
-         DebugGameEventListenerInfo var2 = new DebugGameEventListenerInfo(var1.getListenerRadius());
-         PositionSource var3 = var1.getListenerSource();
-         if (var3 instanceof BlockPositionSource) {
-            BlockPositionSource var4 = (BlockPositionSource)var3;
-            var0.debugSynchronizers().sendBlockValue(var4.pos(), DebugSubscriptions.GAME_EVENT_LISTENERS, var2);
-         } else if (var3 instanceof EntityPositionSource) {
-            EntityPositionSource var5 = (EntityPositionSource)var3;
-            Entity var6 = var0.getEntity(var5.getUuid());
-            if (var6 != null) {
-               var0.debugSynchronizers().sendEntityValue(var6, DebugSubscriptions.GAME_EVENT_LISTENERS, var2);
+   private static void sendDebugInfo(final ServerLevel level, final GameEventListener listener) {
+      if (level.debugSynchronizers().hasAnySubscriberFor(DebugSubscriptions.GAME_EVENT_LISTENERS)) {
+         DebugGameEventListenerInfo info = new DebugGameEventListenerInfo(listener.getListenerRadius());
+         PositionSource listenerSource = listener.getListenerSource();
+         if (listenerSource instanceof BlockPositionSource) {
+            BlockPositionSource blockSource = (BlockPositionSource)listenerSource;
+            level.debugSynchronizers().sendBlockValue(blockSource.pos(), DebugSubscriptions.GAME_EVENT_LISTENERS, info);
+         } else if (listenerSource instanceof EntityPositionSource) {
+            EntityPositionSource entitySource = (EntityPositionSource)listenerSource;
+            Entity entity = level.getEntity(entitySource.getUuid());
+            if (entity != null) {
+               level.debugSynchronizers().sendEntityValue(entity, DebugSubscriptions.GAME_EVENT_LISTENERS, info);
             }
          }
 
       }
    }
 
-   public void unregister(GameEventListener var1) {
+   public void unregister(final GameEventListener listener) {
       if (this.processing) {
-         this.listenersToRemove.add(var1);
+         this.listenersToRemove.add(listener);
       } else {
-         this.listeners.remove(var1);
+         this.listeners.remove(listener);
       }
 
       if (this.listeners.isEmpty()) {
@@ -76,22 +76,22 @@ public class EuclideanGameEventListenerRegistry implements GameEventListenerRegi
 
    }
 
-   public boolean visitInRangeListeners(Holder<GameEvent> var1, Vec3 var2, GameEvent.Context var3, GameEventListenerRegistry.ListenerVisitor var4) {
+   public boolean visitInRangeListeners(final Holder<GameEvent> event, final Vec3 sourcePosition, final GameEvent.Context context, final GameEventListenerRegistry.ListenerVisitor action) {
       this.processing = true;
-      boolean var5 = false;
+      boolean applicable = false;
 
       try {
-         Iterator var6 = this.listeners.iterator();
+         Iterator<GameEventListener> iterator = this.listeners.iterator();
 
-         while(var6.hasNext()) {
-            GameEventListener var7 = (GameEventListener)var6.next();
-            if (this.listenersToRemove.remove(var7)) {
-               var6.remove();
+         while(iterator.hasNext()) {
+            GameEventListener listener = (GameEventListener)iterator.next();
+            if (this.listenersToRemove.remove(listener)) {
+               iterator.remove();
             } else {
-               Optional var8 = getPostableListenerPosition(this.level, var2, var7);
-               if (var8.isPresent()) {
-                  var4.visit(var7, (Vec3)var8.get());
-                  var5 = true;
+               Optional<Vec3> optionalPosition = getPostableListenerPosition(this.level, sourcePosition, listener);
+               if (optionalPosition.isPresent()) {
+                  action.visit(listener, (Vec3)optionalPosition.get());
+                  applicable = true;
                }
             }
          }
@@ -109,22 +109,22 @@ public class EuclideanGameEventListenerRegistry implements GameEventListenerRegi
          this.listenersToRemove.clear();
       }
 
-      return var5;
+      return applicable;
    }
 
-   private static Optional<Vec3> getPostableListenerPosition(ServerLevel var0, Vec3 var1, GameEventListener var2) {
-      Optional var3 = var2.getListenerSource().getPosition(var0);
-      if (var3.isEmpty()) {
+   private static Optional<Vec3> getPostableListenerPosition(final ServerLevel level, final Vec3 sourcePosition, final GameEventListener listener) {
+      Optional<Vec3> position = listener.getListenerSource().getPosition(level);
+      if (position.isEmpty()) {
          return Optional.empty();
       } else {
-         double var4 = BlockPos.containing((Position)var3.get()).distSqr(BlockPos.containing(var1));
-         int var6 = var2.getListenerRadius() * var2.getListenerRadius();
-         return var4 > (double)var6 ? Optional.empty() : var3;
+         double distanceFromOrigin = BlockPos.containing((Position)position.get()).distSqr(BlockPos.containing(sourcePosition));
+         int radiusSqr = listener.getListenerRadius() * listener.getListenerRadius();
+         return distanceFromOrigin > (double)radiusSqr ? Optional.empty() : position;
       }
    }
 
    @FunctionalInterface
    public interface OnEmptyAction {
-      void apply(int var1);
+      void apply(final int sectionY);
    }
 }

@@ -1,6 +1,8 @@
 package net.minecraft.client.renderer.item;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -8,15 +10,16 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.ItemTransform;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.cuboid.ItemTransform;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
@@ -35,14 +38,14 @@ public class ItemStackRenderState {
       this.layers = new LayerRenderState[]{new LayerRenderState()};
    }
 
-   public void ensureCapacity(int var1) {
-      int var2 = this.layers.length;
-      int var3 = this.activeLayerCount + var1;
-      if (var3 > var2) {
-         this.layers = (LayerRenderState[])Arrays.copyOf(this.layers, var3);
+   public void ensureCapacity(final int requestedCount) {
+      int currentCapacity = this.layers.length;
+      int requiredNewCapacity = this.activeLayerCount + requestedCount;
+      if (requiredNewCapacity > currentCapacity) {
+         this.layers = (LayerRenderState[])Arrays.copyOf(this.layers, requiredNewCapacity);
 
-         for(int var4 = var2; var4 < var3; ++var4) {
-            this.layers[var4] = new LayerRenderState();
+         for(int i = currentCapacity; i < requiredNewCapacity; ++i) {
+            this.layers[i] = new LayerRenderState();
          }
       }
 
@@ -56,8 +59,8 @@ public class ItemStackRenderState {
    public void clear() {
       this.displayContext = ItemDisplayContext.NONE;
 
-      for(int var1 = 0; var1 < this.activeLayerCount; ++var1) {
-         this.layers[var1].clear();
+      for(int i = 0; i < this.activeLayerCount; ++i) {
+         this.layers[i].clear();
       }
 
       this.activeLayerCount = 0;
@@ -74,7 +77,7 @@ public class ItemStackRenderState {
       return this.animated;
    }
 
-   public void appendModelIdentityElement(Object var1) {
+   public void appendModelIdentityElement(final Object element) {
    }
 
    private LayerRenderState firstLayer() {
@@ -89,32 +92,32 @@ public class ItemStackRenderState {
       return this.firstLayer().usesBlockLight;
    }
 
-   public @Nullable TextureAtlasSprite pickParticleIcon(RandomSource var1) {
-      return this.activeLayerCount == 0 ? null : this.layers[var1.nextInt(this.activeLayerCount)].particleIcon;
+   public Material.@Nullable Baked pickParticleMaterial(final RandomSource randomSource) {
+      return this.activeLayerCount == 0 ? null : this.layers[randomSource.nextInt(this.activeLayerCount)].particleMaterial;
    }
 
-   public void visitExtents(Consumer<Vector3fc> var1) {
-      Vector3f var2 = new Vector3f();
-      PoseStack.Pose var3 = new PoseStack.Pose();
+   public void visitExtents(final Consumer<Vector3fc> output) {
+      Vector3f scratch = new Vector3f();
+      PoseStack.Pose pose = new PoseStack.Pose();
 
-      for(int var4 = 0; var4 < this.activeLayerCount; ++var4) {
-         LayerRenderState var5 = this.layers[var4];
-         var5.transform.apply(this.displayContext.leftHand(), var3);
-         Matrix4f var6 = var3.pose();
-         Vector3fc[] var7 = (Vector3fc[])var5.extents.get();
+      for(int i = 0; i < this.activeLayerCount; ++i) {
+         LayerRenderState layer = this.layers[i];
+         layer.applyTransform(pose);
+         Matrix4f poseTransform = pose.pose();
+         Vector3fc[] layerExtents = (Vector3fc[])layer.extents.get();
 
-         for(Vector3fc var11 : var7) {
-            var1.accept(var2.set(var11).mulPosition(var6));
+         for(Vector3fc extent : layerExtents) {
+            output.accept(scratch.set(extent).mulPosition(poseTransform));
          }
 
-         var3.setIdentity();
+         pose.setIdentity();
       }
 
    }
 
-   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, int var4, int var5) {
-      for(int var6 = 0; var6 < this.activeLayerCount; ++var6) {
-         this.layers[var6].submit(var1, var2, var3, var4, var5);
+   public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final int outlineColor) {
+      for(int i = 0; i < this.activeLayerCount; ++i) {
+         this.layers[i].submit(poseStack, submitNodeCollector, lightCoords, overlayCoords, outlineColor);
       }
 
    }
@@ -123,17 +126,17 @@ public class ItemStackRenderState {
       if (this.cachedModelBoundingBox != null) {
          return this.cachedModelBoundingBox;
       } else {
-         AABB.Builder var1 = new AABB.Builder();
-         Objects.requireNonNull(var1);
-         this.visitExtents(var1::include);
-         AABB var2 = var1.build();
-         this.cachedModelBoundingBox = var2;
-         return var2;
+         AABB.Builder collector = new AABB.Builder();
+         Objects.requireNonNull(collector);
+         this.visitExtents(collector::include);
+         AABB aabb = collector.isDefined() ? collector.build() : AABB.ofSize(Vec3.ZERO, 0.0, 0.0, 0.0);
+         this.cachedModelBoundingBox = aabb;
+         return aabb;
       }
    }
 
-   public void setOversizedInGui(boolean var1) {
-      this.oversizedInGui = var1;
+   public void setOversizedInGui(final boolean oversizedInGui) {
+      this.oversizedInGui = oversizedInGui;
    }
 
    public boolean isOversizedInGui() {
@@ -157,35 +160,41 @@ public class ItemStackRenderState {
    public class LayerRenderState {
       private static final Vector3fc[] NO_EXTENTS = new Vector3fc[0];
       public static final Supplier<Vector3fc[]> NO_EXTENTS_SUPPLIER = () -> NO_EXTENTS;
-      private final List<BakedQuad> quads = new ArrayList();
-      boolean usesBlockLight;
-      @Nullable TextureAtlasSprite particleIcon;
-      ItemTransform transform;
-      private @Nullable RenderType renderType;
+      public static final int[] EMPTY_TINTS = new int[0];
+      private final List<BakedQuad> quads;
+      private boolean usesBlockLight;
+      private Material.@Nullable Baked particleMaterial;
+      private ItemTransform itemTransform;
+      private final Matrix4f localTransform;
       private FoilType foilType;
-      private int[] tintLayers;
+      private @Nullable IntList tintLayers;
       private @Nullable SpecialModelRenderer<Object> specialRenderer;
       private @Nullable Object argumentForSpecialRendering;
-      Supplier<Vector3fc[]> extents;
+      private Supplier<Vector3fc[]> extents;
 
       public LayerRenderState() {
+         Objects.requireNonNull(ItemStackRenderState.this);
          super();
-         this.transform = ItemTransform.NO_TRANSFORM;
+         this.quads = new ArrayList();
+         this.itemTransform = ItemTransform.NO_TRANSFORM;
+         this.localTransform = new Matrix4f();
          this.foilType = ItemStackRenderState.FoilType.NONE;
-         this.tintLayers = new int[0];
          this.extents = NO_EXTENTS_SUPPLIER;
       }
 
       public void clear() {
          this.quads.clear();
-         this.renderType = null;
          this.foilType = ItemStackRenderState.FoilType.NONE;
          this.specialRenderer = null;
          this.argumentForSpecialRendering = null;
-         Arrays.fill(this.tintLayers, -1);
+         if (this.tintLayers != null) {
+            this.tintLayers.clear();
+         }
+
          this.usesBlockLight = false;
-         this.particleIcon = null;
-         this.transform = ItemTransform.NO_TRANSFORM;
+         this.particleMaterial = null;
+         this.itemTransform = ItemTransform.NO_TRANSFORM;
+         this.localTransform.identity();
          this.extents = NO_EXTENTS_SUPPLIER;
       }
 
@@ -193,58 +202,63 @@ public class ItemStackRenderState {
          return this.quads;
       }
 
-      public void setRenderType(RenderType var1) {
-         this.renderType = var1;
+      public void setUsesBlockLight(final boolean usesBlockLight) {
+         this.usesBlockLight = usesBlockLight;
       }
 
-      public void setUsesBlockLight(boolean var1) {
-         this.usesBlockLight = var1;
+      public void setExtents(final Supplier<Vector3fc[]> extents) {
+         this.extents = extents;
       }
 
-      public void setExtents(Supplier<Vector3fc[]> var1) {
-         this.extents = var1;
+      public void setParticleMaterial(final Material.Baked particleMaterial) {
+         this.particleMaterial = particleMaterial;
       }
 
-      public void setParticleIcon(TextureAtlasSprite var1) {
-         this.particleIcon = var1;
+      public void setItemTransform(final ItemTransform transform) {
+         this.itemTransform = transform;
       }
 
-      public void setTransform(ItemTransform var1) {
-         this.transform = var1;
+      public void setLocalTransform(final Matrix4fc transform) {
+         this.localTransform.set(transform);
       }
 
-      public <T> void setupSpecialModel(SpecialModelRenderer<T> var1, @Nullable T var2) {
-         this.specialRenderer = eraseSpecialRenderer(var1);
-         this.argumentForSpecialRendering = var2;
+      public <T> void setupSpecialModel(final SpecialModelRenderer<T> renderer, final @Nullable T argument) {
+         this.specialRenderer = eraseSpecialRenderer(renderer);
+         this.argumentForSpecialRendering = argument;
       }
 
-      private static SpecialModelRenderer<Object> eraseSpecialRenderer(SpecialModelRenderer<?> var0) {
-         return var0;
+      private static SpecialModelRenderer<Object> eraseSpecialRenderer(final SpecialModelRenderer<?> renderer) {
+         return renderer;
       }
 
-      public void setFoilType(FoilType var1) {
-         this.foilType = var1;
+      public void setFoilType(final FoilType foilType) {
+         this.foilType = foilType;
       }
 
-      public int[] prepareTintLayers(int var1) {
-         if (var1 > this.tintLayers.length) {
-            this.tintLayers = new int[var1];
-            Arrays.fill(this.tintLayers, -1);
+      public IntList tintLayers() {
+         if (this.tintLayers == null) {
+            this.tintLayers = new IntArrayList();
          }
 
          return this.tintLayers;
       }
 
-      void submit(PoseStack var1, SubmitNodeCollector var2, int var3, int var4, int var5) {
-         var1.pushPose();
-         this.transform.apply(ItemStackRenderState.this.displayContext.leftHand(), var1.last());
+      private void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final int outlineColor) {
+         poseStack.pushPose();
+         this.applyTransform(poseStack.last());
          if (this.specialRenderer != null) {
-            this.specialRenderer.submit(this.argumentForSpecialRendering, ItemStackRenderState.this.displayContext, var1, var2, var3, var4, this.foilType != ItemStackRenderState.FoilType.NONE, var5);
-         } else if (this.renderType != null) {
-            var2.submitItem(var1, ItemStackRenderState.this.displayContext, var3, var4, var5, this.tintLayers, this.quads, this.renderType, this.foilType);
+            this.specialRenderer.submit(this.argumentForSpecialRendering, poseStack, submitNodeCollector, lightCoords, overlayCoords, this.foilType != ItemStackRenderState.FoilType.NONE, outlineColor);
+         } else {
+            int[] tints = this.tintLayers != null ? this.tintLayers.toArray(EMPTY_TINTS) : EMPTY_TINTS;
+            submitNodeCollector.submitItem(poseStack, ItemStackRenderState.this.displayContext, lightCoords, overlayCoords, outlineColor, tints, this.quads, this.foilType);
          }
 
-         var1.popPose();
+         poseStack.popPose();
+      }
+
+      private void applyTransform(final PoseStack.Pose localPose) {
+         this.itemTransform.apply(ItemStackRenderState.this.displayContext.leftHand(), localPose);
+         localPose.mulPose((Matrix4fc)this.localTransform);
       }
    }
 }

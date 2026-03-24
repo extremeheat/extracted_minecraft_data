@@ -9,17 +9,17 @@ public class ProtocolCodecBuilder<B extends ByteBuf, L extends PacketListener> {
    private final IdDispatchCodec.Builder<B, Packet<? super L>, PacketType<? extends Packet<? super L>>> dispatchBuilder = IdDispatchCodec.<B, Packet<? super L>, PacketType<? extends Packet<? super L>>>builder(Packet::type);
    private final PacketFlow flow;
 
-   public ProtocolCodecBuilder(PacketFlow var1) {
+   public ProtocolCodecBuilder(final PacketFlow flow) {
       super();
-      this.flow = var1;
+      this.flow = flow;
    }
 
-   public <T extends Packet<? super L>> ProtocolCodecBuilder<B, L> add(PacketType<T> var1, StreamCodec<? super B, T> var2) {
-      if (var1.flow() != this.flow) {
-         String var10002 = String.valueOf(var1);
+   public <T extends Packet<? super L>> ProtocolCodecBuilder<B, L> add(final PacketType<T> type, final StreamCodec<? super B, T> serializer) {
+      if (type.flow() != this.flow) {
+         String var10002 = String.valueOf(type);
          throw new IllegalArgumentException("Invalid packet flow for packet " + var10002 + ", expected " + this.flow.name());
       } else {
-         this.dispatchBuilder.add(var1, var2);
+         this.dispatchBuilder.add(type, serializer);
          return this;
       }
    }

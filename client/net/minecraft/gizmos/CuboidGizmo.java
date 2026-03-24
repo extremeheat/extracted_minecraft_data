@@ -5,44 +5,41 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 public record CuboidGizmo(AABB aabb, GizmoStyle style, boolean coloredCornerStroke) implements Gizmo {
-   public CuboidGizmo(AABB var1, GizmoStyle var2, boolean var3) {
+   public CuboidGizmo {
       super();
-      this.aabb = var1;
-      this.style = var2;
-      this.coloredCornerStroke = var3;
    }
 
-   public void emit(GizmoPrimitives var1, float var2) {
-      double var3 = this.aabb.minX;
-      double var5 = this.aabb.minY;
-      double var7 = this.aabb.minZ;
-      double var9 = this.aabb.maxX;
-      double var11 = this.aabb.maxY;
-      double var13 = this.aabb.maxZ;
+   public void emit(final GizmoPrimitives primitives, final float alphaMultiplier) {
+      double x0 = this.aabb.minX;
+      double y0 = this.aabb.minY;
+      double z0 = this.aabb.minZ;
+      double x1 = this.aabb.maxX;
+      double y1 = this.aabb.maxY;
+      double z1 = this.aabb.maxZ;
       if (this.style.hasFill()) {
-         int var15 = this.style.multipliedFill(var2);
-         var1.addQuad(new Vec3(var9, var5, var7), new Vec3(var9, var11, var7), new Vec3(var9, var11, var13), new Vec3(var9, var5, var13), var15);
-         var1.addQuad(new Vec3(var3, var5, var7), new Vec3(var3, var5, var13), new Vec3(var3, var11, var13), new Vec3(var3, var11, var7), var15);
-         var1.addQuad(new Vec3(var3, var5, var7), new Vec3(var3, var11, var7), new Vec3(var9, var11, var7), new Vec3(var9, var5, var7), var15);
-         var1.addQuad(new Vec3(var3, var5, var13), new Vec3(var9, var5, var13), new Vec3(var9, var11, var13), new Vec3(var3, var11, var13), var15);
-         var1.addQuad(new Vec3(var3, var11, var7), new Vec3(var3, var11, var13), new Vec3(var9, var11, var13), new Vec3(var9, var11, var7), var15);
-         var1.addQuad(new Vec3(var3, var5, var7), new Vec3(var9, var5, var7), new Vec3(var9, var5, var13), new Vec3(var3, var5, var13), var15);
+         int color = this.style.multipliedFill(alphaMultiplier);
+         primitives.addQuad(new Vec3(x1, y0, z0), new Vec3(x1, y1, z0), new Vec3(x1, y1, z1), new Vec3(x1, y0, z1), color);
+         primitives.addQuad(new Vec3(x0, y0, z0), new Vec3(x0, y0, z1), new Vec3(x0, y1, z1), new Vec3(x0, y1, z0), color);
+         primitives.addQuad(new Vec3(x0, y0, z0), new Vec3(x0, y1, z0), new Vec3(x1, y1, z0), new Vec3(x1, y0, z0), color);
+         primitives.addQuad(new Vec3(x0, y0, z1), new Vec3(x1, y0, z1), new Vec3(x1, y1, z1), new Vec3(x0, y1, z1), color);
+         primitives.addQuad(new Vec3(x0, y1, z0), new Vec3(x0, y1, z1), new Vec3(x1, y1, z1), new Vec3(x1, y1, z0), color);
+         primitives.addQuad(new Vec3(x0, y0, z0), new Vec3(x1, y0, z0), new Vec3(x1, y0, z1), new Vec3(x0, y0, z1), color);
       }
 
       if (this.style.hasStroke()) {
-         int var16 = this.style.multipliedStroke(var2);
-         var1.addLine(new Vec3(var3, var5, var7), new Vec3(var9, var5, var7), this.coloredCornerStroke ? ARGB.multiply(var16, -34953) : var16, this.style.strokeWidth());
-         var1.addLine(new Vec3(var3, var5, var7), new Vec3(var3, var11, var7), this.coloredCornerStroke ? ARGB.multiply(var16, -8913033) : var16, this.style.strokeWidth());
-         var1.addLine(new Vec3(var3, var5, var7), new Vec3(var3, var5, var13), this.coloredCornerStroke ? ARGB.multiply(var16, -8947713) : var16, this.style.strokeWidth());
-         var1.addLine(new Vec3(var9, var5, var7), new Vec3(var9, var11, var7), var16, this.style.strokeWidth());
-         var1.addLine(new Vec3(var9, var11, var7), new Vec3(var3, var11, var7), var16, this.style.strokeWidth());
-         var1.addLine(new Vec3(var3, var11, var7), new Vec3(var3, var11, var13), var16, this.style.strokeWidth());
-         var1.addLine(new Vec3(var3, var11, var13), new Vec3(var3, var5, var13), var16, this.style.strokeWidth());
-         var1.addLine(new Vec3(var3, var5, var13), new Vec3(var9, var5, var13), var16, this.style.strokeWidth());
-         var1.addLine(new Vec3(var9, var5, var13), new Vec3(var9, var5, var7), var16, this.style.strokeWidth());
-         var1.addLine(new Vec3(var3, var11, var13), new Vec3(var9, var11, var13), var16, this.style.strokeWidth());
-         var1.addLine(new Vec3(var9, var5, var13), new Vec3(var9, var11, var13), var16, this.style.strokeWidth());
-         var1.addLine(new Vec3(var9, var11, var7), new Vec3(var9, var11, var13), var16, this.style.strokeWidth());
+         int color = this.style.multipliedStroke(alphaMultiplier);
+         primitives.addLine(new Vec3(x0, y0, z0), new Vec3(x1, y0, z0), this.coloredCornerStroke ? ARGB.multiply(color, -34953) : color, this.style.strokeWidth());
+         primitives.addLine(new Vec3(x0, y0, z0), new Vec3(x0, y1, z0), this.coloredCornerStroke ? ARGB.multiply(color, -8913033) : color, this.style.strokeWidth());
+         primitives.addLine(new Vec3(x0, y0, z0), new Vec3(x0, y0, z1), this.coloredCornerStroke ? ARGB.multiply(color, -8947713) : color, this.style.strokeWidth());
+         primitives.addLine(new Vec3(x1, y0, z0), new Vec3(x1, y1, z0), color, this.style.strokeWidth());
+         primitives.addLine(new Vec3(x1, y1, z0), new Vec3(x0, y1, z0), color, this.style.strokeWidth());
+         primitives.addLine(new Vec3(x0, y1, z0), new Vec3(x0, y1, z1), color, this.style.strokeWidth());
+         primitives.addLine(new Vec3(x0, y1, z1), new Vec3(x0, y0, z1), color, this.style.strokeWidth());
+         primitives.addLine(new Vec3(x0, y0, z1), new Vec3(x1, y0, z1), color, this.style.strokeWidth());
+         primitives.addLine(new Vec3(x1, y0, z1), new Vec3(x1, y0, z0), color, this.style.strokeWidth());
+         primitives.addLine(new Vec3(x0, y1, z1), new Vec3(x1, y1, z1), color, this.style.strokeWidth());
+         primitives.addLine(new Vec3(x1, y0, z1), new Vec3(x1, y1, z1), color, this.style.strokeWidth());
+         primitives.addLine(new Vec3(x1, y1, z0), new Vec3(x1, y1, z1), color, this.style.strokeWidth());
       }
 
    }

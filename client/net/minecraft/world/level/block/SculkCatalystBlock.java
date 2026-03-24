@@ -28,34 +28,34 @@ public class SculkCatalystBlock extends BaseEntityBlock {
       return CODEC;
    }
 
-   public SculkCatalystBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public SculkCatalystBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(PULSE, false));
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(PULSE);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(PULSE);
    }
 
-   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if ((Boolean)var1.getValue(PULSE)) {
-         var2.setBlock(var3, (BlockState)var1.setValue(PULSE, false), 3);
+   protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if ((Boolean)state.getValue(PULSE)) {
+         level.setBlock(pos, (BlockState)state.setValue(PULSE, false), 3);
       }
 
    }
 
-   public @Nullable BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new SculkCatalystBlockEntity(var1, var2);
+   public @Nullable BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      return new SculkCatalystBlockEntity(worldPosition, blockState);
    }
 
-   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return var1.isClientSide() ? null : createTickerHelper(var3, BlockEntityType.SCULK_CATALYST, SculkCatalystBlockEntity::serverTick);
+   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(final Level level, final BlockState blockState, final BlockEntityType<T> type) {
+      return level.isClientSide() ? null : createTickerHelper(type, BlockEntityType.SCULK_CATALYST, SculkCatalystBlockEntity::serverTick);
    }
 
-   protected void spawnAfterBreak(BlockState var1, ServerLevel var2, BlockPos var3, ItemStack var4, boolean var5) {
-      super.spawnAfterBreak(var1, var2, var3, var4, var5);
-      if (var5) {
-         this.tryDropExperience(var2, var3, var4, this.xpRange);
+   protected void spawnAfterBreak(final BlockState state, final ServerLevel level, final BlockPos pos, final ItemStack tool, final boolean dropExperience) {
+      super.spawnAfterBreak(state, level, pos, tool, dropExperience);
+      if (dropExperience) {
+         this.tryDropExperience(level, pos, tool, this.xpRange);
       }
 
    }

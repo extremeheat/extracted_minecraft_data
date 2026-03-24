@@ -49,7 +49,7 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class DedicatedServerProperties extends Settings<DedicatedServerProperties> {
-   static final Logger LOGGER = LogUtils.getLogger();
+   private static final Logger LOGGER = LogUtils.getLogger();
    private static final Pattern SHA1 = Pattern.compile("^[a-fA-F0-9]{40}$");
    private static final Splitter COMMA_SPLITTER = Splitter.on(',').trimResults();
    public static final String MANAGEMENT_SERVER_TLS_ENABLED_KEY = "management-server-tls-enabled";
@@ -115,11 +115,11 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
    public final Settings<DedicatedServerProperties>.MutableValue<Integer> pauseWhenEmptySeconds;
    private final WorldDimensionData worldDimensionData;
    public final WorldOptions worldOptions;
-   public Settings<DedicatedServerProperties>.MutableValue<Boolean> acceptsTransfers;
+   public final Settings<DedicatedServerProperties>.MutableValue<Boolean> acceptsTransfers;
 
-   public DedicatedServerProperties(Properties var1) {
-      super(var1);
-      this.difficulty = this.getMutable("difficulty", dispatchNumberOrString(Difficulty::byId, Difficulty::byName), Difficulty::getKey, Difficulty.EASY);
+   public DedicatedServerProperties(final Properties settings) {
+      super(settings);
+      this.difficulty = this.getMutable("difficulty", dispatchNumberOrString(Difficulty::byId, Difficulty::byName), Difficulty::getSerializedName, Difficulty.EASY);
       this.gameMode = this.getMutable("gamemode", dispatchNumberOrString(GameType::byId, GameType::byName), GameType::getName, GameType.SURVIVAL);
       this.levelName = this.get("level-name", "world");
       this.serverPort = this.get("server-port", 25565);
@@ -151,13 +151,13 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
       this.networkCompressionThreshold = this.get("network-compression-threshold", 256);
       this.broadcastRconToOps = this.get("broadcast-rcon-to-ops", true);
       this.broadcastConsoleToOps = this.get("broadcast-console-to-ops", true);
-      this.maxWorldSize = this.get("max-world-size", (var0) -> Mth.clamp(var0, 1, 29999984), 29999984);
+      this.maxWorldSize = this.get("max-world-size", (v) -> Mth.clamp(v, 1, 29999984), 29999984);
       this.syncChunkWrites = this.get("sync-chunk-writes", true);
       this.regionFileComression = this.get("region-file-compression", "deflate");
       this.enableJmxMonitoring = this.get("enable-jmx-monitoring", false);
       this.enableStatus = this.getMutable("enable-status", true);
       this.hideOnlinePlayers = this.getMutable("hide-online-players", false);
-      this.entityBroadcastRangePercentage = this.getMutable("entity-broadcast-range-percentage", (var0) -> Mth.clamp(Integer.parseInt(var0), 10, 1000), 100);
+      this.entityBroadcastRangePercentage = this.getMutable("entity-broadcast-range-percentage", (v) -> Mth.clamp(Integer.parseInt(v), 10, 1000), 100);
       this.textFilteringConfig = this.get("text-filtering-config", "");
       this.textFilteringVersion = this.get("text-filtering-version", 0);
       this.playerIdleTimeout = this.getMutable("player-idle-timeout", 0);
@@ -167,136 +167,129 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
       this.logIPs = this.get("log-ips", true);
       this.pauseWhenEmptySeconds = this.getMutable("pause-when-empty-seconds", 60);
       this.acceptsTransfers = this.getMutable("accepts-transfers", false);
-      String var2 = this.get("level-seed", "");
-      boolean var3 = this.get("generate-structures", true);
-      long var4 = WorldOptions.parseSeed(var2).orElse(WorldOptions.randomSeed());
-      this.worldOptions = new WorldOptions(var4, var3, false);
-      this.worldDimensionData = new WorldDimensionData((JsonObject)this.get("generator-settings", (var0) -> GsonHelper.parse(!var0.isEmpty() ? var0 : "{}"), new JsonObject()), (String)this.get("level-type", (var0) -> var0.toLowerCase(Locale.ROOT), WorldPresets.NORMAL.identifier().toString()));
+      String levelSeed = this.get("level-seed", "");
+      boolean generateStructures = this.get("generate-structures", true);
+      long seed = WorldOptions.parseSeed(levelSeed).orElse(WorldOptions.randomSeed());
+      this.worldOptions = new WorldOptions(seed, generateStructures, false);
+      this.worldDimensionData = new WorldDimensionData((JsonObject)this.get("generator-settings", (s) -> GsonHelper.parse(!s.isEmpty() ? s : "{}"), new JsonObject()), (String)this.get("level-type", (v) -> v.toLowerCase(Locale.ROOT), WorldPresets.NORMAL.identifier().toString()));
       this.serverResourcePackInfo = getServerPackInfo(this.get("resource-pack-id", ""), this.get("resource-pack", ""), this.get("resource-pack-sha1", ""), this.getLegacyString("resource-pack-hash"), this.get("require-resource-pack", false), this.get("resource-pack-prompt", ""));
       this.initialDataPackConfiguration = getDatapackConfig(this.get("initial-enabled-packs", String.join(",", WorldDataConfiguration.DEFAULT.dataPacks().getEnabled())), this.get("initial-disabled-packs", String.join(",", WorldDataConfiguration.DEFAULT.dataPacks().getDisabled())));
    }
 
-   public static DedicatedServerProperties fromFile(Path var0) {
-      return new DedicatedServerProperties(loadFromFile(var0));
+   public static DedicatedServerProperties fromFile(final Path file) {
+      return new DedicatedServerProperties(loadFromFile(file));
    }
 
-   protected DedicatedServerProperties reload(RegistryAccess var1, Properties var2) {
-      return new DedicatedServerProperties(var2);
+   protected DedicatedServerProperties reload(final RegistryAccess registryAccess, final Properties properties) {
+      return new DedicatedServerProperties(properties);
    }
 
-   private static @Nullable Component parseResourcePackPrompt(String var0) {
-      if (!Strings.isNullOrEmpty(var0)) {
+   private static @Nullable Component parseResourcePackPrompt(final String prompt) {
+      if (!Strings.isNullOrEmpty(prompt)) {
          try {
-            JsonElement var1 = StrictJsonParser.parse(var0);
-            return (Component)ComponentSerialization.CODEC.parse(RegistryAccess.EMPTY.createSerializationContext(JsonOps.INSTANCE), var1).resultOrPartial((var1x) -> LOGGER.warn("Failed to parse resource pack prompt '{}': {}", var0, var1x)).orElse((Object)null);
-         } catch (Exception var2) {
-            LOGGER.warn("Failed to parse resource pack prompt '{}'", var0, var2);
+            JsonElement element = StrictJsonParser.parse(prompt);
+            return (Component)ComponentSerialization.CODEC.parse(RegistryAccess.EMPTY.createSerializationContext(JsonOps.INSTANCE), element).resultOrPartial((msg) -> LOGGER.warn("Failed to parse resource pack prompt '{}': {}", prompt, msg)).orElse((Object)null);
+         } catch (Exception e) {
+            LOGGER.warn("Failed to parse resource pack prompt '{}'", prompt, e);
          }
       }
 
       return null;
    }
 
-   private static Optional<MinecraftServer.ServerResourcePackInfo> getServerPackInfo(String var0, String var1, String var2, @Nullable String var3, boolean var4, String var5) {
-      if (var1.isEmpty()) {
+   private static Optional<MinecraftServer.ServerResourcePackInfo> getServerPackInfo(final String id, final String url, final String resourcePackSha1, final @Nullable String resourcePackHash, final boolean requireResourcePack, final String resourcePackPrompt) {
+      if (url.isEmpty()) {
          return Optional.empty();
       } else {
-         String var6;
-         if (!var2.isEmpty()) {
-            var6 = var2;
-            if (!Strings.isNullOrEmpty(var3)) {
+         String hash;
+         if (!resourcePackSha1.isEmpty()) {
+            hash = resourcePackSha1;
+            if (!Strings.isNullOrEmpty(resourcePackHash)) {
                LOGGER.warn("resource-pack-hash is deprecated and found along side resource-pack-sha1. resource-pack-hash will be ignored.");
             }
-         } else if (!Strings.isNullOrEmpty(var3)) {
+         } else if (!Strings.isNullOrEmpty(resourcePackHash)) {
             LOGGER.warn("resource-pack-hash is deprecated. Please use resource-pack-sha1 instead.");
-            var6 = var3;
+            hash = resourcePackHash;
          } else {
-            var6 = "";
+            hash = "";
          }
 
-         if (var6.isEmpty()) {
+         if (hash.isEmpty()) {
             LOGGER.warn("You specified a resource pack without providing a sha1 hash. Pack will be updated on the client only if you change the name of the pack.");
-         } else if (!SHA1.matcher(var6).matches()) {
+         } else if (!SHA1.matcher(hash).matches()) {
             LOGGER.warn("Invalid sha1 for resource-pack-sha1");
          }
 
-         Component var7 = parseResourcePackPrompt(var5);
-         UUID var8;
-         if (var0.isEmpty()) {
-            var8 = UUID.nameUUIDFromBytes(var1.getBytes(StandardCharsets.UTF_8));
-            LOGGER.warn("resource-pack-id missing, using default of {}", var8);
+         Component prompt = parseResourcePackPrompt(resourcePackPrompt);
+         UUID parsedId;
+         if (id.isEmpty()) {
+            parsedId = UUID.nameUUIDFromBytes(url.getBytes(StandardCharsets.UTF_8));
+            LOGGER.warn("resource-pack-id missing, using default of {}", parsedId);
          } else {
             try {
-               var8 = UUID.fromString(var0);
+               parsedId = UUID.fromString(id);
             } catch (IllegalArgumentException var10) {
-               LOGGER.warn("Failed to parse '{}' into UUID", var0);
+               LOGGER.warn("Failed to parse '{}' into UUID", id);
                return Optional.empty();
             }
          }
 
-         return Optional.of(new MinecraftServer.ServerResourcePackInfo(var8, var1, var6, var4, var7));
+         return Optional.of(new MinecraftServer.ServerResourcePackInfo(parsedId, url, hash, requireResourcePack, prompt));
       }
    }
 
-   private static DataPackConfig getDatapackConfig(String var0, String var1) {
-      List var2 = COMMA_SPLITTER.splitToList(var0);
-      List var3 = COMMA_SPLITTER.splitToList(var1);
-      return new DataPackConfig(var2, var3);
+   private static DataPackConfig getDatapackConfig(final String enabledPacks, final String disabledPacks) {
+      List<String> enabledPacksIds = COMMA_SPLITTER.splitToList(enabledPacks);
+      List<String> disabledPacksIds = COMMA_SPLITTER.splitToList(disabledPacks);
+      return new DataPackConfig(enabledPacksIds, disabledPacksIds);
    }
 
-   public static @Nullable LevelBasedPermissionSet deserializePermission(String var0) {
+   public static @Nullable LevelBasedPermissionSet deserializePermission(final String value) {
       try {
-         PermissionLevel var1 = PermissionLevel.byId(Integer.parseInt(var0));
-         return LevelBasedPermissionSet.forLevel(var1);
+         PermissionLevel permissionLevel = PermissionLevel.byId(Integer.parseInt(value));
+         return LevelBasedPermissionSet.forLevel(permissionLevel);
       } catch (NumberFormatException var2) {
          return null;
       }
    }
 
-   public static String serializePermission(LevelBasedPermissionSet var0) {
-      return Integer.toString(var0.level().id());
+   public static String serializePermission(final LevelBasedPermissionSet permission) {
+      return Integer.toString(permission.level().id());
    }
 
-   public WorldDimensions createDimensions(HolderLookup.Provider var1) {
-      return this.worldDimensionData.create(var1);
+   public WorldDimensions createDimensions(final HolderLookup.Provider registries) {
+      return this.worldDimensionData.create(registries);
    }
 
-   // $FF: synthetic method
-   protected Settings reload(final RegistryAccess var1, final Properties var2) {
-      return this.reload(var1, var2);
-   }
-
-   static record WorldDimensionData(JsonObject generatorSettings, String levelType) {
+   private static record WorldDimensionData(JsonObject generatorSettings, String levelType) {
       private static final Map<String, ResourceKey<WorldPreset>> LEGACY_PRESET_NAMES;
 
-      WorldDimensionData(JsonObject var1, String var2) {
+      private WorldDimensionData {
          super();
-         this.generatorSettings = var1;
-         this.levelType = var2;
       }
 
-      public WorldDimensions create(HolderLookup.Provider var1) {
-         HolderLookup.RegistryLookup var2 = var1.lookupOrThrow(Registries.WORLD_PRESET);
-         Holder.Reference var3 = (Holder.Reference)var2.get(WorldPresets.NORMAL).or(() -> var2.listElements().findAny()).orElseThrow(() -> new IllegalStateException("Invalid datapack contents: can't find default preset"));
-         Optional var10000 = Optional.ofNullable(Identifier.tryParse(this.levelType)).map((var0) -> ResourceKey.create(Registries.WORLD_PRESET, var0)).or(() -> Optional.ofNullable((ResourceKey)LEGACY_PRESET_NAMES.get(this.levelType)));
-         Objects.requireNonNull(var2);
-         Holder var4 = (Holder)var10000.flatMap(var2::get).orElseGet(() -> {
-            DedicatedServerProperties.LOGGER.warn("Failed to parse level-type {}, defaulting to {}", this.levelType, var3.key().identifier());
-            return var3;
+      public WorldDimensions create(final HolderLookup.Provider registries) {
+         HolderLookup<WorldPreset> worldPresets = registries.lookupOrThrow(Registries.WORLD_PRESET);
+         Holder.Reference<WorldPreset> defaultHolder = (Holder.Reference)worldPresets.get(WorldPresets.NORMAL).or(() -> worldPresets.listElements().findAny()).orElseThrow(() -> new IllegalStateException("Invalid datapack contents: can't find default preset"));
+         Optional var10000 = Optional.ofNullable(Identifier.tryParse(this.levelType)).map((id) -> ResourceKey.create(Registries.WORLD_PRESET, id)).or(() -> Optional.ofNullable((ResourceKey)LEGACY_PRESET_NAMES.get(this.levelType)));
+         Objects.requireNonNull(worldPresets);
+         Holder<WorldPreset> worldPreset = (Holder)var10000.flatMap(worldPresets::get).orElseGet(() -> {
+            DedicatedServerProperties.LOGGER.warn("Failed to parse level-type {}, defaulting to {}", this.levelType, defaultHolder.key().identifier());
+            return defaultHolder;
          });
-         WorldDimensions var5 = ((WorldPreset)var4.value()).createWorldDimensions();
-         if (var4.is(WorldPresets.FLAT)) {
-            RegistryOps var6 = var1.createSerializationContext(JsonOps.INSTANCE);
-            DataResult var8 = FlatLevelGeneratorSettings.CODEC.parse(new Dynamic(var6, this.generatorSettings()));
+         WorldDimensions worldDimensions = ((WorldPreset)worldPreset.value()).createWorldDimensions();
+         if (worldPreset.is(WorldPresets.FLAT)) {
+            RegistryOps<JsonElement> ops = registries.<JsonElement>createSerializationContext(JsonOps.INSTANCE);
+            DataResult var8 = FlatLevelGeneratorSettings.CODEC.parse(new Dynamic(ops, this.generatorSettings()));
             Logger var10001 = DedicatedServerProperties.LOGGER;
             Objects.requireNonNull(var10001);
-            Optional var7 = var8.resultOrPartial(var10001::error);
-            if (var7.isPresent()) {
-               return var5.replaceOverworldGenerator(var1, new FlatLevelSource((FlatLevelGeneratorSettings)var7.get()));
+            Optional<FlatLevelGeneratorSettings> parsedSettings = var8.resultOrPartial(var10001::error);
+            if (parsedSettings.isPresent()) {
+               return worldDimensions.replaceOverworldGenerator(registries, new FlatLevelSource((FlatLevelGeneratorSettings)parsedSettings.get()));
             }
          }
 
-         return var5;
+         return worldDimensions;
       }
 
       static {

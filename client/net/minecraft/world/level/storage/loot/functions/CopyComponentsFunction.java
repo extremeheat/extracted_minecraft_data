@@ -28,48 +28,48 @@ import net.minecraft.world.level.storage.loot.LootContextArg;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class CopyComponentsFunction extends LootItemConditionalFunction {
-   private static final Codec<LootContextArg<DataComponentGetter>> GETTER_CODEC = LootContextArg.createArgCodec((var0) -> var0.anyEntity(DirectSource::new).anyBlockEntity(BlockEntitySource::new).anyItemStack(DirectSource::new));
-   public static final MapCodec<CopyComponentsFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(var0.group(GETTER_CODEC.fieldOf("source").forGetter((var0x) -> var0x.source), DataComponentType.CODEC.listOf().optionalFieldOf("include").forGetter((var0x) -> var0x.include), DataComponentType.CODEC.listOf().optionalFieldOf("exclude").forGetter((var0x) -> var0x.exclude))).apply(var0, CopyComponentsFunction::new));
+   private static final Codec<LootContextArg<DataComponentGetter>> GETTER_CODEC = LootContextArg.createArgCodec((builder) -> builder.anyEntity(DirectSource::new).anyBlockEntity(BlockEntitySource::new).anyItemStack(DirectSource::new));
+   public static final MapCodec<CopyComponentsFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(GETTER_CODEC.fieldOf("source").forGetter((f) -> f.source), DataComponentType.CODEC.listOf().optionalFieldOf("include").forGetter((f) -> f.include), DataComponentType.CODEC.listOf().optionalFieldOf("exclude").forGetter((f) -> f.exclude))).apply(i, CopyComponentsFunction::new));
    private final LootContextArg<DataComponentGetter> source;
    private final Optional<List<DataComponentType<?>>> include;
    private final Optional<List<DataComponentType<?>>> exclude;
    private final Predicate<DataComponentType<?>> bakedPredicate;
 
-   CopyComponentsFunction(List<LootItemCondition> var1, LootContextArg<DataComponentGetter> var2, Optional<List<DataComponentType<?>>> var3, Optional<List<DataComponentType<?>>> var4) {
-      super(var1);
-      this.source = var2;
-      this.include = var3.map(List::copyOf);
-      this.exclude = var4.map(List::copyOf);
-      ArrayList var5 = new ArrayList(2);
-      var4.ifPresent((var1x) -> var5.add((Predicate)(var1) -> !var1x.contains(var1)));
-      var3.ifPresent((var1x) -> {
-         Objects.requireNonNull(var1x);
-         var5.add(var1x::contains);
+   private CopyComponentsFunction(final List<LootItemCondition> predicates, final LootContextArg<DataComponentGetter> source, final Optional<List<DataComponentType<?>>> include, final Optional<List<DataComponentType<?>>> exclude) {
+      super(predicates);
+      this.source = source;
+      this.include = include.map(List::copyOf);
+      this.exclude = exclude.map(List::copyOf);
+      List<Predicate<DataComponentType<?>>> componentPredicates = new ArrayList(2);
+      exclude.ifPresent((s) -> componentPredicates.add((Predicate)(e) -> !s.contains(e)));
+      include.ifPresent((s) -> {
+         Objects.requireNonNull(s);
+         componentPredicates.add(s::contains);
       });
-      this.bakedPredicate = Util.allOf(var5);
+      this.bakedPredicate = Util.allOf(componentPredicates);
    }
 
-   public LootItemFunctionType<CopyComponentsFunction> getType() {
-      return LootItemFunctions.COPY_COMPONENTS;
+   public MapCodec<CopyComponentsFunction> codec() {
+      return MAP_CODEC;
    }
 
    public Set<ContextKey<?>> getReferencedContextParams() {
       return Set.of(this.source.contextParam());
    }
 
-   public ItemStack run(ItemStack var1, LootContext var2) {
-      DataComponentGetter var3 = this.source.get(var2);
-      if (var3 != null) {
-         if (var3 instanceof DataComponentMap) {
-            DataComponentMap var4 = (DataComponentMap)var3;
-            var1.applyComponents(var4.filter(this.bakedPredicate));
+   public ItemStack run(final ItemStack itemStack, final LootContext context) {
+      DataComponentGetter data = this.source.get(context);
+      if (data != null) {
+         if (data instanceof DataComponentMap) {
+            DataComponentMap sourceComponents = (DataComponentMap)data;
+            itemStack.applyComponents(sourceComponents.filter(this.bakedPredicate));
          } else {
-            Collection var5 = (Collection)this.exclude.orElse(List.of());
-            ((Stream)this.include.map(Collection::stream).orElse(BuiltInRegistries.DATA_COMPONENT_TYPE.listElements().map(Holder::value))).forEach((var3x) -> {
-               if (!var5.contains(var3x)) {
-                  TypedDataComponent var4 = var3.getTyped(var3x);
-                  if (var4 != null) {
-                     var1.set(var4);
+            Collection<DataComponentType<?>> exclude = (Collection)this.exclude.orElse(List.of());
+            ((Stream)this.include.map(Collection::stream).orElse(BuiltInRegistries.DATA_COMPONENT_TYPE.listElements().map(Holder::value))).forEach((componentType) -> {
+               if (!exclude.contains(componentType)) {
+                  TypedDataComponent<?> value = data.getTyped(componentType);
+                  if (value != null) {
+                     itemStack.set(value);
                   }
 
                }
@@ -77,15 +77,15 @@ public class CopyComponentsFunction extends LootItemConditionalFunction {
          }
       }
 
-      return var1;
+      return itemStack;
    }
 
-   public static Builder copyComponentsFromEntity(ContextKey<? extends Entity> var0) {
-      return new Builder(new DirectSource(var0));
+   public static Builder copyComponentsFromEntity(final ContextKey<? extends Entity> source) {
+      return new Builder(new DirectSource(source));
    }
 
-   public static Builder copyComponentsFromBlockEntity(ContextKey<? extends BlockEntity> var0) {
-      return new Builder(new BlockEntitySource(var0));
+   public static Builder copyComponentsFromBlockEntity(final ContextKey<? extends BlockEntity> source) {
+      return new Builder(new BlockEntitySource(source));
    }
 
    public static class Builder extends LootItemConditionalFunction.Builder<Builder> {
@@ -93,26 +93,26 @@ public class CopyComponentsFunction extends LootItemConditionalFunction {
       private Optional<ImmutableList.Builder<DataComponentType<?>>> include = Optional.empty();
       private Optional<ImmutableList.Builder<DataComponentType<?>>> exclude = Optional.empty();
 
-      Builder(LootContextArg<DataComponentGetter> var1) {
+      private Builder(final LootContextArg<DataComponentGetter> source) {
          super();
-         this.source = var1;
+         this.source = source;
       }
 
-      public Builder include(DataComponentType<?> var1) {
+      public Builder include(final DataComponentType<?> type) {
          if (this.include.isEmpty()) {
             this.include = Optional.of(ImmutableList.builder());
          }
 
-         ((ImmutableList.Builder)this.include.get()).add(var1);
+         ((ImmutableList.Builder)this.include.get()).add(type);
          return this;
       }
 
-      public Builder exclude(DataComponentType<?> var1) {
+      public Builder exclude(final DataComponentType<?> type) {
          if (this.exclude.isEmpty()) {
             this.exclude = Optional.of(ImmutableList.builder());
          }
 
-         ((ImmutableList.Builder)this.exclude.get()).add(var1);
+         ((ImmutableList.Builder)this.exclude.get()).add(type);
          return this;
       }
 
@@ -123,32 +123,25 @@ public class CopyComponentsFunction extends LootItemConditionalFunction {
       public LootItemFunction build() {
          return new CopyComponentsFunction(this.getConditions(), this.source, this.include.map(ImmutableList.Builder::build), this.exclude.map(ImmutableList.Builder::build));
       }
+   }
 
-      // $FF: synthetic method
-      protected LootItemConditionalFunction.Builder getThis() {
-         return this.getThis();
+   private static record DirectSource<T extends DataComponentGetter>(ContextKey<? extends T> contextParam) implements LootContextArg.Getter<T, DataComponentGetter> {
+      private DirectSource {
+         super();
+      }
+
+      public DataComponentGetter get(final T value) {
+         return value;
       }
    }
 
-   static record DirectSource<T extends DataComponentGetter>(ContextKey<? extends T> contextParam) implements LootContextArg.Getter<T, DataComponentGetter> {
-      DirectSource(ContextKey<? extends T> var1) {
+   private static record BlockEntitySource(ContextKey<? extends BlockEntity> contextParam) implements LootContextArg.Getter<BlockEntity, DataComponentGetter> {
+      private BlockEntitySource {
          super();
-         this.contextParam = var1;
       }
 
-      public DataComponentGetter get(T var1) {
-         return var1;
-      }
-   }
-
-   static record BlockEntitySource(ContextKey<? extends BlockEntity> contextParam) implements LootContextArg.Getter<BlockEntity, DataComponentGetter> {
-      BlockEntitySource(ContextKey<? extends BlockEntity> var1) {
-         super();
-         this.contextParam = var1;
-      }
-
-      public DataComponentGetter get(BlockEntity var1) {
-         return var1.collectComponents();
+      public DataComponentGetter get(final BlockEntity blockEntity) {
+         return blockEntity.collectComponents();
       }
    }
 }

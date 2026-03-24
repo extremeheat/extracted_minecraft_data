@@ -3,13 +3,13 @@ package net.minecraft.world.item.crafting;
 import net.minecraft.world.item.ItemStack;
 
 public interface RecipeInput {
-   ItemStack getItem(int var1);
+   ItemStack getItem(int index);
 
    int size();
 
    default boolean isEmpty() {
-      for(int var1 = 0; var1 < this.size(); ++var1) {
-         if (!this.getItem(var1).isEmpty()) {
+      for(int i = 0; i < this.size(); ++i) {
+         if (!this.getItem(i).isEmpty()) {
             return false;
          }
       }

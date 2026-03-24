@@ -12,20 +12,20 @@ public class BabyFollowAdult {
       super();
    }
 
-   public static OneShot<LivingEntity> create(UniformInt var0, float var1) {
-      return create(var0, (var1x) -> var1, MemoryModuleType.NEAREST_VISIBLE_ADULT, false);
+   public static OneShot<LivingEntity> create(final UniformInt followRange, final float speedModifier) {
+      return create(followRange, (mob) -> speedModifier, MemoryModuleType.NEAREST_VISIBLE_ADULT, false);
    }
 
-   public static OneShot<LivingEntity> create(UniformInt var0, Function<LivingEntity, Float> var1, MemoryModuleType<? extends LivingEntity> var2, boolean var3) {
-      return BehaviorBuilder.create((Function)((var4) -> var4.group(var4.present(var2), var4.registered(MemoryModuleType.LOOK_TARGET), var4.absent(MemoryModuleType.WALK_TARGET)).apply(var4, (var4x, var5, var6) -> (var7, var8, var9) -> {
-               if (!var8.isBaby()) {
+   public static OneShot<LivingEntity> create(final UniformInt followRange, final Function<LivingEntity, Float> speedModifier, final MemoryModuleType<? extends LivingEntity> nearestVisibleType, final boolean targetEye) {
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.present(nearestVisibleType), i.registered(MemoryModuleType.LOOK_TARGET), i.absent(MemoryModuleType.WALK_TARGET)).apply(i, (nearestAdult, lookTarget, walkTarget) -> (level, body, timestamp) -> {
+               if (!body.isBaby()) {
                   return false;
                } else {
-                  LivingEntity var11 = (LivingEntity)var4.get(var4x);
-                  if (var8.closerThan(var11, (double)(var0.getMaxValue() + 1)) && !var8.closerThan(var11, (double)var0.getMinValue())) {
-                     WalkTarget var12 = new WalkTarget(new EntityTracker(var11, var3, var3), (Float)var1.apply(var8), var0.getMinValue() - 1);
-                     var5.set(new EntityTracker(var11, true, var3));
-                     var6.set(var12);
+                  LivingEntity adult = (LivingEntity)i.get(nearestAdult);
+                  if (body.closerThan(adult, (double)(followRange.maxInclusive() + 1)) && !body.closerThan(adult, (double)followRange.minInclusive())) {
+                     WalkTarget target = new WalkTarget(new EntityTracker(adult, targetEye, targetEye), (Float)speedModifier.apply(body), followRange.minInclusive() - 1);
+                     lookTarget.set(new EntityTracker(adult, true, targetEye));
+                     walkTarget.set(target);
                      return true;
                   } else {
                      return false;

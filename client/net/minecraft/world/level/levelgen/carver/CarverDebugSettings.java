@@ -14,25 +14,25 @@ public class CarverDebugSettings {
    private final BlockState lavaState;
    private final BlockState barrierState;
 
-   public static CarverDebugSettings of(boolean var0, BlockState var1, BlockState var2, BlockState var3, BlockState var4) {
-      return new CarverDebugSettings(var0, var1, var2, var3, var4);
+   public static CarverDebugSettings of(final boolean enabled, final BlockState airState, final BlockState waterState, final BlockState lavaState, final BlockState barrierState) {
+      return new CarverDebugSettings(enabled, airState, waterState, lavaState, barrierState);
    }
 
-   public static CarverDebugSettings of(BlockState var0, BlockState var1, BlockState var2, BlockState var3) {
-      return new CarverDebugSettings(false, var0, var1, var2, var3);
+   public static CarverDebugSettings of(final BlockState airState, final BlockState waterState, final BlockState lavaState, final BlockState barrierState) {
+      return new CarverDebugSettings(false, airState, waterState, lavaState, barrierState);
    }
 
-   public static CarverDebugSettings of(boolean var0, BlockState var1) {
-      return new CarverDebugSettings(var0, var1, DEFAULT.getWaterState(), DEFAULT.getLavaState(), DEFAULT.getBarrierState());
+   public static CarverDebugSettings of(final boolean debugMode, final BlockState airState) {
+      return new CarverDebugSettings(debugMode, airState, DEFAULT.getWaterState(), DEFAULT.getLavaState(), DEFAULT.getBarrierState());
    }
 
-   private CarverDebugSettings(boolean var1, BlockState var2, BlockState var3, BlockState var4, BlockState var5) {
+   private CarverDebugSettings(final boolean debugMode, final BlockState airState, final BlockState waterState, final BlockState lavaState, final BlockState barrierState) {
       super();
-      this.debugMode = var1;
-      this.airState = var2;
-      this.waterState = var3;
-      this.lavaState = var4;
-      this.barrierState = var5;
+      this.debugMode = debugMode;
+      this.airState = airState;
+      this.waterState = waterState;
+      this.lavaState = lavaState;
+      this.barrierState = barrierState;
    }
 
    public boolean isDebugMode() {
@@ -57,6 +57,6 @@ public class CarverDebugSettings {
 
    static {
       DEFAULT = new CarverDebugSettings(false, Blocks.ACACIA_BUTTON.defaultBlockState(), Blocks.CANDLE.defaultBlockState(), Blocks.ORANGE_STAINED_GLASS.defaultBlockState(), Blocks.GLASS.defaultBlockState());
-      CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.BOOL.optionalFieldOf("debug_mode", false).forGetter(CarverDebugSettings::isDebugMode), BlockState.CODEC.optionalFieldOf("air_state", DEFAULT.getAirState()).forGetter(CarverDebugSettings::getAirState), BlockState.CODEC.optionalFieldOf("water_state", DEFAULT.getAirState()).forGetter(CarverDebugSettings::getWaterState), BlockState.CODEC.optionalFieldOf("lava_state", DEFAULT.getAirState()).forGetter(CarverDebugSettings::getLavaState), BlockState.CODEC.optionalFieldOf("barrier_state", DEFAULT.getAirState()).forGetter(CarverDebugSettings::getBarrierState)).apply(var0, CarverDebugSettings::new));
+      CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.BOOL.optionalFieldOf("debug_mode", false).forGetter(CarverDebugSettings::isDebugMode), BlockState.CODEC.optionalFieldOf("air_state", DEFAULT.getAirState()).forGetter(CarverDebugSettings::getAirState), BlockState.CODEC.optionalFieldOf("water_state", DEFAULT.getAirState()).forGetter(CarverDebugSettings::getWaterState), BlockState.CODEC.optionalFieldOf("lava_state", DEFAULT.getAirState()).forGetter(CarverDebugSettings::getLavaState), BlockState.CODEC.optionalFieldOf("barrier_state", DEFAULT.getAirState()).forGetter(CarverDebugSettings::getBarrierState)).apply(i, CarverDebugSettings::new));
    }
 }

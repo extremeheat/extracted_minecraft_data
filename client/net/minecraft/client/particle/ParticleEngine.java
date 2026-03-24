@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -12,7 +11,7 @@ import java.util.Queue;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.client.renderer.state.ParticlesRenderState;
+import net.minecraft.client.renderer.state.level.ParticlesRenderState;
 import net.minecraft.core.particles.ParticleLimit;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -31,102 +30,102 @@ public class ParticleEngine {
    private final ParticleResources resourceManager;
    private final RandomSource random = RandomSource.create();
 
-   public ParticleEngine(ClientLevel var1, ParticleResources var2) {
+   public ParticleEngine(final ClientLevel level, final ParticleResources resourceManager) {
       super();
-      this.level = var1;
-      this.resourceManager = var2;
+      this.level = level;
+      this.resourceManager = resourceManager;
    }
 
-   public void createTrackingEmitter(Entity var1, ParticleOptions var2) {
-      this.trackingEmitters.add(new TrackingEmitter(this.level, var1, var2));
+   public void createTrackingEmitter(final Entity entity, final ParticleOptions particle) {
+      this.trackingEmitters.add(new TrackingEmitter(this.level, entity, particle));
    }
 
-   public void createTrackingEmitter(Entity var1, ParticleOptions var2, int var3) {
-      this.trackingEmitters.add(new TrackingEmitter(this.level, var1, var2, var3));
+   public void createTrackingEmitter(final Entity entity, final ParticleOptions particle, final int lifeTime) {
+      this.trackingEmitters.add(new TrackingEmitter(this.level, entity, particle, lifeTime));
    }
 
-   public @Nullable Particle createParticle(ParticleOptions var1, double var2, double var4, double var6, double var8, double var10, double var12) {
-      Particle var14 = this.makeParticle(var1, var2, var4, var6, var8, var10, var12);
-      if (var14 != null) {
-         this.add(var14);
-         return var14;
+   public @Nullable Particle createParticle(final ParticleOptions options, final double x, final double y, final double z, final double xa, final double ya, final double za) {
+      Particle particle = this.makeParticle(options, x, y, z, xa, ya, za);
+      if (particle != null) {
+         this.add(particle);
+         return particle;
       } else {
          return null;
       }
    }
 
-   private <T extends ParticleOptions> @Nullable Particle makeParticle(T var1, double var2, double var4, double var6, double var8, double var10, double var12) {
-      ParticleProvider var14 = (ParticleProvider)this.resourceManager.getProviders().get(BuiltInRegistries.PARTICLE_TYPE.getId(var1.getType()));
-      return var14 == null ? null : var14.createParticle(var1, this.level, var2, var4, var6, var8, var10, var12, this.random);
+   private <T extends ParticleOptions> @Nullable Particle makeParticle(final T options, final double x, final double y, final double z, final double xa, final double ya, final double za) {
+      ParticleProvider<T> provider = (ParticleProvider)this.resourceManager.getProviders().get(BuiltInRegistries.PARTICLE_TYPE.getId(options.getType()));
+      return provider == null ? null : provider.createParticle(options, this.level, x, y, z, xa, ya, za, this.random);
    }
 
-   public void add(Particle var1) {
-      Optional var2 = var1.getParticleLimit();
-      if (var2.isPresent()) {
-         if (this.hasSpaceInParticleLimit((ParticleLimit)var2.get())) {
-            this.particlesToAdd.add(var1);
-            this.updateCount((ParticleLimit)var2.get(), 1);
+   public void add(final Particle p) {
+      Optional<ParticleLimit> limit = p.getParticleLimit();
+      if (limit.isPresent()) {
+         if (this.hasSpaceInParticleLimit((ParticleLimit)limit.get())) {
+            this.particlesToAdd.add(p);
+            this.updateCount((ParticleLimit)limit.get(), 1);
          }
       } else {
-         this.particlesToAdd.add(var1);
+         this.particlesToAdd.add(p);
       }
 
    }
 
    public void tick() {
-      this.particles.forEach((var0, var1x) -> {
-         Profiler.get().push(var0.name());
-         var1x.tickParticles();
+      this.particles.forEach((type, group) -> {
+         Profiler.get().push(type.name());
+         group.tickParticles();
          Profiler.get().pop();
       });
       if (!this.trackingEmitters.isEmpty()) {
-         ArrayList var1 = Lists.newArrayList();
+         List<TrackingEmitter> removed = Lists.newArrayList();
 
-         for(TrackingEmitter var3 : this.trackingEmitters) {
-            var3.tick();
-            if (!var3.isAlive()) {
-               var1.add(var3);
+         for(TrackingEmitter emitter : this.trackingEmitters) {
+            emitter.tick();
+            if (!emitter.isAlive()) {
+               removed.add(emitter);
             }
          }
 
-         this.trackingEmitters.removeAll(var1);
+         this.trackingEmitters.removeAll(removed);
       }
 
-      Particle var4;
+      Particle particle;
       if (!this.particlesToAdd.isEmpty()) {
-         while((var4 = (Particle)this.particlesToAdd.poll()) != null) {
-            ((ParticleGroup)this.particles.computeIfAbsent(var4.getGroup(), this::createParticleGroup)).add(var4);
+         while((particle = (Particle)this.particlesToAdd.poll()) != null) {
+            ((ParticleGroup)this.particles.computeIfAbsent(particle.getGroup(), this::createParticleGroup)).add(particle);
          }
       }
 
    }
 
-   private ParticleGroup<?> createParticleGroup(ParticleRenderType var1) {
-      if (var1 == ParticleRenderType.ITEM_PICKUP) {
+   private ParticleGroup<?> createParticleGroup(final ParticleRenderType type) {
+      if (type == ParticleRenderType.ITEM_PICKUP) {
          return new ItemPickupParticleGroup(this);
-      } else if (var1 == ParticleRenderType.ELDER_GUARDIANS) {
+      } else if (type == ParticleRenderType.ELDER_GUARDIANS) {
          return new ElderGuardianParticleGroup(this);
       } else {
-         return (ParticleGroup<?>)(var1 == ParticleRenderType.NO_RENDER ? new NoRenderParticleGroup(this) : new QuadParticleGroup(this, var1));
+         return (ParticleGroup<?>)(type == ParticleRenderType.NO_RENDER ? new NoRenderParticleGroup(this) : new QuadParticleGroup(this, type));
       }
    }
 
-   protected void updateCount(ParticleLimit var1, int var2) {
-      this.trackedParticleCounts.addTo(var1, var2);
+   protected void updateCount(final ParticleLimit limit, final int change) {
+      this.trackedParticleCounts.addTo(limit, change);
    }
 
-   public void extract(ParticlesRenderState var1, Frustum var2, Camera var3, float var4) {
-      for(ParticleRenderType var6 : RENDER_ORDER) {
-         ParticleGroup var7 = (ParticleGroup)this.particles.get(var6);
-         if (var7 != null && !var7.isEmpty()) {
-            var1.add(var7.extractRenderState(var2, var3, var4));
+   public void extract(final ParticlesRenderState particlesRenderState, final Frustum frustum, final Camera camera, final float partialTickTime) {
+      for(ParticleRenderType particleType : RENDER_ORDER) {
+         ParticleGroup<?> particles = (ParticleGroup)this.particles.get(particleType);
+         if (particles != null && !particles.isEmpty()) {
+            particlesRenderState.add(particles.extractRenderState(frustum, camera, partialTickTime));
          }
       }
 
    }
 
-   public void setLevel(@Nullable ClientLevel var1) {
-      this.level = var1;
+   public void setLevel(final @Nullable ClientLevel level) {
+      this.level = level;
       this.clearParticles();
       this.trackingEmitters.clear();
    }
@@ -135,8 +134,8 @@ public class ParticleEngine {
       return String.valueOf(this.particles.values().stream().mapToInt(ParticleGroup::size).sum());
    }
 
-   private boolean hasSpaceInParticleLimit(ParticleLimit var1) {
-      return this.trackedParticleCounts.getInt(var1) < var1.limit();
+   private boolean hasSpaceInParticleLimit(final ParticleLimit limit) {
+      return this.trackedParticleCounts.getInt(limit) < limit.limit();
    }
 
    public void clearParticles() {

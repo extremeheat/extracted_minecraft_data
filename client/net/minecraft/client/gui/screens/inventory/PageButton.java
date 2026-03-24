@@ -1,6 +1,6 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -19,26 +19,26 @@ public class PageButton extends Button {
    private final boolean isForward;
    private final boolean playTurnSound;
 
-   public PageButton(int var1, int var2, boolean var3, Button.OnPress var4, boolean var5) {
-      super(var1, var2, 23, 13, var3 ? PAGE_BUTTON_NEXT : PAGE_BUTTON_PREVIOUS, var4, DEFAULT_NARRATION);
-      this.isForward = var3;
-      this.playTurnSound = var5;
+   public PageButton(final int x, final int y, final boolean isForward, final Button.OnPress onPress, final boolean playTurnSound) {
+      super(x, y, 23, 13, isForward ? PAGE_BUTTON_NEXT : PAGE_BUTTON_PREVIOUS, onPress, DEFAULT_NARRATION);
+      this.isForward = isForward;
+      this.playTurnSound = playTurnSound;
    }
 
-   public void renderContents(GuiGraphics var1, int var2, int var3, float var4) {
-      Identifier var5;
+   public void extractContents(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      Identifier sprite;
       if (this.isForward) {
-         var5 = this.isHoveredOrFocused() ? PAGE_FORWARD_HIGHLIGHTED_SPRITE : PAGE_FORWARD_SPRITE;
+         sprite = this.isHoveredOrFocused() ? PAGE_FORWARD_HIGHLIGHTED_SPRITE : PAGE_FORWARD_SPRITE;
       } else {
-         var5 = this.isHoveredOrFocused() ? PAGE_BACKWARD_HIGHLIGHTED_SPRITE : PAGE_BACKWARD_SPRITE;
+         sprite = this.isHoveredOrFocused() ? PAGE_BACKWARD_HIGHLIGHTED_SPRITE : PAGE_BACKWARD_SPRITE;
       }
 
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var5, this.getX(), this.getY(), 23, 13);
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)sprite, this.getX(), this.getY(), 23, 13);
    }
 
-   public void playDownSound(SoundManager var1) {
+   public void playDownSound(final SoundManager soundManager) {
       if (this.playTurnSound) {
-         var1.play(SimpleSoundInstance.forUI(SoundEvents.BOOK_PAGE_TURN, 1.0F));
+         soundManager.play(SimpleSoundInstance.forUI(SoundEvents.BOOK_PAGE_TURN, 1.0F));
       }
 
    }

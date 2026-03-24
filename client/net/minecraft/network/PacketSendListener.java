@@ -14,25 +14,25 @@ public class PacketSendListener {
       super();
    }
 
-   public static ChannelFutureListener thenRun(Runnable var0) {
-      return (var1) -> {
-         var0.run();
-         if (!var1.isSuccess()) {
-            var1.channel().pipeline().fireExceptionCaught(var1.cause());
+   public static ChannelFutureListener thenRun(final Runnable runnable) {
+      return (future) -> {
+         runnable.run();
+         if (!future.isSuccess()) {
+            future.channel().pipeline().fireExceptionCaught(future.cause());
          }
 
       };
    }
 
-   public static ChannelFutureListener exceptionallySend(Supplier<@Nullable Packet<?>> var0) {
-      return (var1) -> {
-         if (!var1.isSuccess()) {
-            Packet var2 = (Packet)var0.get();
-            if (var2 != null) {
-               LOGGER.warn("Failed to deliver packet, sending fallback {}", var2.type(), var1.cause());
-               var1.channel().writeAndFlush(var2, var1.channel().voidPromise());
+   public static ChannelFutureListener exceptionallySend(final Supplier<@Nullable Packet<?>> handler) {
+      return (future) -> {
+         if (!future.isSuccess()) {
+            Packet<?> newPacket = (Packet)handler.get();
+            if (newPacket != null) {
+               LOGGER.warn("Failed to deliver packet, sending fallback {}", newPacket.type(), future.cause());
+               future.channel().writeAndFlush(newPacket, future.channel().voidPromise());
             } else {
-               var1.channel().pipeline().fireExceptionCaught(var1.cause());
+               future.channel().pipeline().fireExceptionCaught(future.cause());
             }
          }
 

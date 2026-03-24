@@ -15,12 +15,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
-import joptsimple.AbstractOptionSpec;
-import joptsimple.ArgumentAcceptingOptionSpec;
-import joptsimple.NonOptionArgumentSpec;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
-import joptsimple.OptionSpecBuilder;
+import joptsimple.OptionSpec;
 import joptsimple.util.PathConverter;
 import joptsimple.util.PathProperties;
 import net.minecraft.CrashReport;
@@ -34,7 +31,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.NbtException;
 import net.minecraft.nbt.ReportedNbtException;
 import net.minecraft.network.chat.Component;
-import net.minecraft.obfuscate.DontObfuscate;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.dedicated.DedicatedServerProperties;
 import net.minecraft.server.dedicated.DedicatedServerSettings;
@@ -45,14 +41,15 @@ import net.minecraft.util.Util;
 import net.minecraft.util.datafix.DataFixers;
 import net.minecraft.util.profiling.jfr.Environment;
 import net.minecraft.util.profiling.jfr.JvmProfiler;
+import net.minecraft.util.worldupdate.UpgradeProgress;
 import net.minecraft.util.worldupdate.WorldUpgrader;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.chunk.storage.RegionFileVersion;
 import net.minecraft.world.level.dimension.LevelStem;
-import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.WorldDimensions;
+import net.minecraft.world.level.levelgen.WorldGenSettings;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.presets.WorldPresets;
 import net.minecraft.world.level.storage.LevelDataAndDimensions;
@@ -71,235 +68,224 @@ public class Main {
    }
 
    @SuppressForbidden(
-      a = "System.out needed before bootstrap"
+      reason = "System.out needed before bootstrap"
    )
-   @DontObfuscate
-   public static void main(String[] var0) {
+   public static void main(final String[] args) {
       SharedConstants.tryDetectVersion();
-      OptionParser var1 = new OptionParser();
-      OptionSpecBuilder var2 = var1.accepts("nogui");
-      OptionSpecBuilder var3 = var1.accepts("initSettings", "Initializes 'server.properties' and 'eula.txt', then quits");
-      OptionSpecBuilder var4 = var1.accepts("demo");
-      OptionSpecBuilder var5 = var1.accepts("bonusChest");
-      OptionSpecBuilder var6 = var1.accepts("forceUpgrade");
-      OptionSpecBuilder var7 = var1.accepts("eraseCache");
-      OptionSpecBuilder var8 = var1.accepts("recreateRegionFiles");
-      OptionSpecBuilder var9 = var1.accepts("safeMode", "Loads level with vanilla datapack only");
-      AbstractOptionSpec var10 = var1.accepts("help").forHelp();
-      ArgumentAcceptingOptionSpec var11 = var1.accepts("universe").withRequiredArg().defaultsTo(".", new String[0]);
-      ArgumentAcceptingOptionSpec var12 = var1.accepts("world").withRequiredArg();
-      ArgumentAcceptingOptionSpec var13 = var1.accepts("port").withRequiredArg().ofType(Integer.class).defaultsTo(-1, new Integer[0]);
-      ArgumentAcceptingOptionSpec var14 = var1.accepts("serverId").withRequiredArg();
-      OptionSpecBuilder var15 = var1.accepts("jfrProfile");
-      ArgumentAcceptingOptionSpec var16 = var1.accepts("pidFile").withRequiredArg().withValuesConvertedBy(new PathConverter(new PathProperties[0]));
-      NonOptionArgumentSpec var17 = var1.nonOptions();
+      OptionParser parser = new OptionParser();
+      OptionSpec<Void> nogui = parser.accepts("nogui");
+      OptionSpec<Void> initSettings = parser.accepts("initSettings", "Initializes 'server.properties' and 'eula.txt', then quits");
+      OptionSpec<Void> demo = parser.accepts("demo");
+      OptionSpec<Void> bonusChest = parser.accepts("bonusChest");
+      OptionSpec<Void> forceUpgrade = parser.accepts("forceUpgrade");
+      OptionSpec<Void> eraseCache = parser.accepts("eraseCache");
+      OptionSpec<Void> recreateRegionFiles = parser.accepts("recreateRegionFiles");
+      OptionSpec<Void> safeMode = parser.accepts("safeMode", "Loads level with vanilla datapack only");
+      OptionSpec<Void> help = parser.accepts("help").forHelp();
+      OptionSpec<String> universe = parser.accepts("universe").withRequiredArg().defaultsTo(".", new String[0]);
+      OptionSpec<String> worldName = parser.accepts("world").withRequiredArg();
+      OptionSpec<Integer> port = parser.accepts("port").withRequiredArg().ofType(Integer.class).defaultsTo(-1, new Integer[0]);
+      OptionSpec<String> serverId = parser.accepts("serverId").withRequiredArg();
+      OptionSpec<Void> jfrProfilingOption = parser.accepts("jfrProfile");
+      OptionSpec<Path> pidFile = parser.accepts("pidFile").withRequiredArg().withValuesConvertedBy(new PathConverter(new PathProperties[0]));
+      OptionSpec<String> nonOptions = parser.nonOptions();
 
       try {
-         OptionSet var18 = var1.parse(var0);
-         if (var18.has(var10)) {
-            var1.printHelpOn(System.err);
+         OptionSet options = parser.parse(args);
+         if (options.has(help)) {
+            parser.printHelpOn(System.err);
             return;
          }
 
-         Path var19 = (Path)var18.valueOf(var16);
-         if (var19 != null) {
-            writePidFile(var19);
+         Path pidFilePath = (Path)options.valueOf(pidFile);
+         if (pidFilePath != null) {
+            writePidFile(pidFilePath);
          }
 
          CrashReport.preload();
-         if (var18.has(var15)) {
+         if (options.has(jfrProfilingOption)) {
             JvmProfiler.INSTANCE.start(Environment.SERVER);
          }
 
          Bootstrap.bootStrap();
          Bootstrap.validate();
          Util.startTimerHackThread();
-         Path var20 = Paths.get("server.properties");
-         DedicatedServerSettings var21 = new DedicatedServerSettings(var20);
-         var21.forceSave();
-         RegionFileVersion.configure(var21.getProperties().regionFileComression);
-         Path var22 = Paths.get("eula.txt");
-         Eula var23 = new Eula(var22);
-         if (var18.has(var3)) {
-            LOGGER.info("Initialized '{}' and '{}'", var20.toAbsolutePath(), var22.toAbsolutePath());
+         Path settingsFile = Paths.get("server.properties");
+         DedicatedServerSettings settings = new DedicatedServerSettings(settingsFile);
+         settings.forceSave();
+         RegionFileVersion.configure(settings.getProperties().regionFileComression);
+         Path eulaFile = Paths.get("eula.txt");
+         Eula eula = new Eula(eulaFile);
+         if (options.has(initSettings)) {
+            LOGGER.info("Initialized '{}' and '{}'", settingsFile.toAbsolutePath(), eulaFile.toAbsolutePath());
             return;
          }
 
-         if (!var23.hasAgreedToEULA()) {
+         if (!eula.hasAgreedToEULA()) {
             LOGGER.info("You need to agree to the EULA in order to run the server. Go to eula.txt for more info.");
             return;
          }
 
-         File var24 = new File((String)var18.valueOf(var11));
-         Services var25 = Services.create(new YggdrasilAuthenticationService(Proxy.NO_PROXY), var24);
-         String var26 = (String)Optional.ofNullable((String)var18.valueOf(var12)).orElse(var21.getProperties().levelName);
-         LevelStorageSource var27 = LevelStorageSource.createDefault(var24.toPath());
-         LevelStorageSource.LevelStorageAccess var28 = var27.validateAndCreateAccess(var26);
-         Dynamic var29;
-         if (var28.hasWorldData()) {
-            LevelSummary var30;
+         File universePath = new File((String)options.valueOf(universe));
+         Services services = Services.create(new YggdrasilAuthenticationService(Proxy.NO_PROXY), universePath);
+         String levelName = (String)Optional.ofNullable((String)options.valueOf(worldName)).orElse(settings.getProperties().levelName);
+         LevelStorageSource levelStorageSource = LevelStorageSource.createDefault(universePath.toPath());
+         LevelStorageSource.LevelStorageAccess access = levelStorageSource.validateAndCreateAccess(levelName);
+         Dynamic<?> levelDataTag;
+         if (access.hasWorldData()) {
+            Dynamic<?> levelDataUnfixed;
             try {
-               var29 = var28.getDataTag();
-               var30 = var28.getSummary(var29);
-            } catch (NbtException | ReportedNbtException | IOException var41) {
-               LevelStorageSource.LevelDirectory var32 = var28.getLevelDirectory();
-               LOGGER.warn("Failed to load world data from {}", var32.dataFile(), var41);
-               LOGGER.info("Attempting to use fallback");
-
-               try {
-                  var29 = var28.getDataTagFallback();
-                  var30 = var28.getSummary(var29);
-               } catch (NbtException | ReportedNbtException | IOException var40) {
-                  LOGGER.error("Failed to load world data from {}", var32.oldDataFile(), var40);
-                  LOGGER.error("Failed to load world data from {} and {}. World files may be corrupted. Shutting down.", var32.dataFile(), var32.oldDataFile());
-                  return;
-               }
-
-               var28.restoreLevelDataFromOld();
+               levelDataUnfixed = access.getUnfixedDataTagWithFallback();
+            } catch (NbtException | ReportedNbtException | IOException ex) {
+               LOGGER.error("Failed to load world data. World files may be corrupted. Shutting down.", ex);
+               return;
             }
 
-            if (var30.requiresManualConversion()) {
+            LevelSummary summary = access.fixAndGetSummaryFromTag(levelDataUnfixed);
+            if (summary.requiresManualConversion()) {
                LOGGER.info("This world must be opened in an older version (like 1.6.4) to be safely converted");
                return;
             }
 
-            if (!var30.isCompatible()) {
+            if (!summary.isCompatible()) {
                LOGGER.info("This world was created by an incompatible version.");
                return;
             }
+
+            levelDataTag = DataFixers.getFileFixer().fix(access, levelDataUnfixed, new UpgradeProgress());
          } else {
-            var29 = null;
+            levelDataTag = null;
          }
 
-         Dynamic var43 = var29;
-         boolean var31 = var18.has(var9);
-         if (var31) {
+         boolean safeModeEnabled = options.has(safeMode);
+         if (safeModeEnabled) {
             LOGGER.warn("Safe mode active, only vanilla datapack will be loaded");
          }
 
-         PackRepository var44 = ServerPacksSource.createPackRepository(var28);
+         PackRepository packRepository = ServerPacksSource.createPackRepository(access);
 
-         WorldStem var33;
+         WorldStem worldStem;
          try {
-            WorldLoader.InitConfig var34 = loadOrCreateConfig(var21.getProperties(), var43, var31, var44);
-            var33 = (WorldStem)Util.blockUntilDone((var6x) -> WorldLoader.load(var34, (var5x) -> {
-                  Registry var6 = var5x.datapackDimensions().lookupOrThrow(Registries.LEVEL_STEM);
-                  if (var43 != null) {
-                     LevelDataAndDimensions var7 = LevelStorageSource.getLevelDataAndDimensions(var43, var5x.dataConfiguration(), var6, var5x.datapackWorldgen());
-                     return new WorldLoader.DataLoadOutput(var7.worldData(), var7.dimensions().dimensionsRegistryAccess());
+            WorldLoader.InitConfig worldLoadConfig = loadOrCreateConfig(settings.getProperties(), levelDataTag, safeModeEnabled, packRepository);
+            worldStem = (WorldStem)Util.blockUntilDone((executor) -> WorldLoader.load(worldLoadConfig, (context) -> {
+                  Registry<LevelStem> datapackDimensions = context.datapackDimensions().lookupOrThrow(Registries.LEVEL_STEM);
+                  if (levelDataTag != null) {
+                     LevelDataAndDimensions worldData = LevelStorageSource.getLevelDataAndDimensions(access, levelDataTag, context.dataConfiguration(), datapackDimensions, context.datapackWorldgen());
+                     return new WorldLoader.DataLoadOutput(worldData.worldDataAndGenSettings(), worldData.dimensions().dimensionsRegistryAccess());
                   } else {
                      LOGGER.info("No existing world data, creating new world");
-                     return createNewWorldData(var21, var5x, var6, var18.has(var4), var18.has(var5));
+                     return createNewWorldData(settings, context, datapackDimensions, options.has(demo), options.has(bonusChest));
                   }
-               }, WorldStem::new, Util.backgroundExecutor(), var6x)).get();
-         } catch (Exception var39) {
-            LOGGER.warn("Failed to load datapacks, can't proceed with server load. You can either fix your datapacks or reset to vanilla with --safeMode", var39);
+               }, WorldStem::new, Util.backgroundExecutor(), executor)).get();
+         } catch (Exception e) {
+            LOGGER.warn("Failed to load datapacks, can't proceed with server load. You can either fix your datapacks or reset to vanilla with --safeMode", e);
             return;
          }
 
-         RegistryAccess.Frozen var45 = var33.registries().compositeAccess();
-         WorldData var35 = var33.worldData();
-         boolean var36 = var18.has(var8);
-         if (var18.has(var6) || var36) {
-            forceUpgrade(var28, var35, DataFixers.getDataFixer(), var18.has(var7), () -> true, var45, var36);
+         RegistryAccess.Frozen registryHolder = worldStem.registries().compositeAccess();
+         WorldData data = worldStem.worldDataAndGenSettings().data();
+         boolean recreateRegionFilesValue = options.has(recreateRegionFiles);
+         if (options.has(forceUpgrade) || recreateRegionFilesValue) {
+            forceUpgrade(access, DataFixers.getDataFixer(), options.has(eraseCache), () -> true, registryHolder, recreateRegionFilesValue);
          }
 
-         var28.saveDataTag(var45, var35);
-         final DedicatedServer var37 = (DedicatedServer)MinecraftServer.spin((var11x) -> {
-            DedicatedServer var12 = new DedicatedServer(var11x, var28, var44, var33, var21, DataFixers.getDataFixer(), var25);
-            var12.setPort((Integer)var18.valueOf(var13));
-            var12.setDemo(var18.has(var4));
-            var12.setId((String)var18.valueOf(var14));
-            boolean var13x = !var18.has(var2) && !var18.valuesOf(var17).contains("nogui");
-            if (var13x && !GraphicsEnvironment.isHeadless()) {
-               var12.showGui();
+         access.saveDataTag(data);
+         final DedicatedServer dedicatedServer = (DedicatedServer)MinecraftServer.spin((thread) -> {
+            DedicatedServer server = new DedicatedServer(thread, access, packRepository, worldStem, Optional.empty(), settings, DataFixers.getDataFixer(), services);
+            server.setPort((Integer)options.valueOf(port));
+            server.setDemo(options.has(demo));
+            server.setId((String)options.valueOf(serverId));
+            boolean gui = !options.has(nogui) && !options.valuesOf(nonOptions).contains("nogui");
+            if (gui && !GraphicsEnvironment.isHeadless()) {
+               server.showGui();
             }
 
-            return var12;
+            return server;
          });
-         Thread var38 = new Thread("Server Shutdown Thread") {
+         Thread shutdownThread = new Thread("Server Shutdown Thread") {
             public void run() {
-               var37.halt(true);
+               dedicatedServer.halt(true);
             }
          };
-         var38.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
-         Runtime.getRuntime().addShutdownHook(var38);
-      } catch (Throwable var42) {
-         LOGGER.error(LogUtils.FATAL_MARKER, "Failed to start the minecraft server", var42);
+         shutdownThread.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
+         Runtime.getRuntime().addShutdownHook(shutdownThread);
+      } catch (Throwable t) {
+         LOGGER.error(LogUtils.FATAL_MARKER, "Failed to start the minecraft server", t);
       }
 
    }
 
-   private static WorldLoader.DataLoadOutput<WorldData> createNewWorldData(DedicatedServerSettings var0, WorldLoader.DataLoadContext var1, Registry<LevelStem> var2, boolean var3, boolean var4) {
-      LevelSettings var5;
-      WorldOptions var6;
-      WorldDimensions var7;
-      if (var3) {
-         var5 = MinecraftServer.DEMO_SETTINGS;
-         var6 = WorldOptions.DEMO_OPTIONS;
-         var7 = WorldPresets.createNormalWorldDimensions(var1.datapackWorldgen());
+   private static WorldLoader.DataLoadOutput<LevelDataAndDimensions.WorldDataAndGenSettings> createNewWorldData(final DedicatedServerSettings settings, final WorldLoader.DataLoadContext context, final Registry<LevelStem> datapackDimensions, final boolean demoMode, final boolean bonusChest) {
+      LevelSettings createLevelSettings;
+      WorldOptions worldOptions;
+      WorldDimensions dimensions;
+      if (demoMode) {
+         createLevelSettings = MinecraftServer.DEMO_SETTINGS;
+         worldOptions = WorldOptions.DEMO_OPTIONS;
+         dimensions = WorldPresets.createNormalWorldDimensions(context.datapackWorldgen());
       } else {
-         DedicatedServerProperties var8 = var0.getProperties();
-         var5 = new LevelSettings(var8.levelName, var8.gameMode.get(), var8.hardcore, var8.difficulty.get(), false, new GameRules(var1.dataConfiguration().enabledFeatures()), var1.dataConfiguration());
-         var6 = var4 ? var8.worldOptions.withBonusChest(true) : var8.worldOptions;
-         var7 = var8.createDimensions(var1.datapackWorldgen());
+         DedicatedServerProperties properties = settings.getProperties();
+         createLevelSettings = new LevelSettings(properties.levelName, properties.gameMode.get(), new LevelSettings.DifficultySettings(properties.difficulty.get(), properties.hardcore, false), false, context.dataConfiguration());
+         worldOptions = bonusChest ? properties.worldOptions.withBonusChest(true) : properties.worldOptions;
+         dimensions = properties.createDimensions(context.datapackWorldgen());
       }
 
-      WorldDimensions.Complete var10 = var7.bake(var2);
-      Lifecycle var9 = var10.lifecycle().add(var1.datapackWorldgen().allRegistriesLifecycle());
-      return new WorldLoader.DataLoadOutput<WorldData>(new PrimaryLevelData(var5, var6, var10.specialWorldProperty(), var9), var10.dimensionsRegistryAccess());
+      WorldDimensions.Complete finalDimensions = dimensions.bake(datapackDimensions);
+      Lifecycle lifecycle = finalDimensions.lifecycle().add(context.datapackWorldgen().allRegistriesLifecycle());
+      PrimaryLevelData primaryLevelData = new PrimaryLevelData(createLevelSettings, finalDimensions.specialWorldProperty(), lifecycle);
+      return new WorldLoader.DataLoadOutput<LevelDataAndDimensions.WorldDataAndGenSettings>(new LevelDataAndDimensions.WorldDataAndGenSettings(primaryLevelData, new WorldGenSettings(worldOptions, dimensions)), finalDimensions.dimensionsRegistryAccess());
    }
 
-   private static void writePidFile(Path var0) {
+   private static void writePidFile(final Path path) {
       try {
-         long var1 = ProcessHandle.current().pid();
-         Files.writeString(var0, Long.toString(var1));
-      } catch (IOException var3) {
-         throw new UncheckedIOException(var3);
+         long pid = ProcessHandle.current().pid();
+         Files.writeString(path, Long.toString(pid));
+      } catch (IOException e) {
+         throw new UncheckedIOException(e);
       }
    }
 
-   private static WorldLoader.InitConfig loadOrCreateConfig(DedicatedServerProperties var0, @Nullable Dynamic<?> var1, boolean var2, PackRepository var3) {
-      boolean var4;
-      WorldDataConfiguration var5;
-      if (var1 != null) {
-         WorldDataConfiguration var6 = LevelStorageSource.readDataConfig(var1);
-         var4 = false;
-         var5 = var6;
+   private static WorldLoader.InitConfig loadOrCreateConfig(final DedicatedServerProperties properties, final @Nullable Dynamic<?> levelDataTag, final boolean safeModeEnabled, final PackRepository packRepository) {
+      boolean initMode;
+      WorldDataConfiguration dataConfigToUse;
+      if (levelDataTag != null) {
+         WorldDataConfiguration storedConfiguration = LevelStorageSource.readDataConfig(levelDataTag);
+         initMode = false;
+         dataConfigToUse = storedConfiguration;
       } else {
-         var4 = true;
-         var5 = new WorldDataConfiguration(var0.initialDataPackConfiguration, FeatureFlags.DEFAULT_FLAGS);
+         initMode = true;
+         dataConfigToUse = new WorldDataConfiguration(properties.initialDataPackConfiguration, FeatureFlags.DEFAULT_FLAGS);
       }
 
-      WorldLoader.PackConfig var7 = new WorldLoader.PackConfig(var3, var5, var2, var4);
-      return new WorldLoader.InitConfig(var7, Commands.CommandSelection.DEDICATED, var0.functionPermissions);
+      WorldLoader.PackConfig packConfig = new WorldLoader.PackConfig(packRepository, dataConfigToUse, safeModeEnabled, initMode);
+      return new WorldLoader.InitConfig(packConfig, Commands.CommandSelection.DEDICATED, properties.functionPermissions);
    }
 
-   private static void forceUpgrade(LevelStorageSource.LevelStorageAccess var0, WorldData var1, DataFixer var2, boolean var3, BooleanSupplier var4, RegistryAccess var5, boolean var6) {
+   private static void forceUpgrade(final LevelStorageSource.LevelStorageAccess storageSource, final DataFixer fixerUpper, final boolean eraseCache, final BooleanSupplier isRunning, final RegistryAccess registryAccess, final boolean recreateRegionFiles) {
       LOGGER.info("Forcing world upgrade!");
 
-      try (WorldUpgrader var7 = new WorldUpgrader(var0, var2, var1, var5, var3, var6)) {
-         Component var8 = null;
+      try (WorldUpgrader upgrader = new WorldUpgrader(storageSource, fixerUpper, registryAccess, eraseCache, recreateRegionFiles)) {
+         Component lastStatus = null;
 
-         while(!var7.isFinished()) {
-            Component var9 = var7.getStatus();
-            if (var8 != var9) {
-               var8 = var9;
-               LOGGER.info(var7.getStatus().getString());
+         while(!upgrader.isFinished()) {
+            Component status = upgrader.getStatus();
+            if (lastStatus != status) {
+               lastStatus = status;
+               LOGGER.info(upgrader.getStatus().getString());
             }
 
-            int var10 = var7.getTotalChunks();
-            if (var10 > 0) {
-               int var11 = var7.getConverted() + var7.getSkipped();
-               LOGGER.info("{}% completed ({} / {} chunks)...", new Object[]{Mth.floor((float)var11 / (float)var10 * 100.0F), var11, var10});
+            int totalChunks = upgrader.getTotalChunks();
+            if (totalChunks > 0) {
+               int done = upgrader.getConverted() + upgrader.getSkipped();
+               LOGGER.info("{}% completed ({} / {} chunks)...", new Object[]{Mth.floor((float)done / (float)totalChunks * 100.0F), done, totalChunks});
             }
 
-            if (!var4.getAsBoolean()) {
-               var7.cancel();
+            if (!isRunning.getAsBoolean()) {
+               upgrader.cancel();
             } else {
                try {
                   Thread.sleep(1000L);
-               } catch (InterruptedException var13) {
+               } catch (InterruptedException var12) {
                }
             }
          }

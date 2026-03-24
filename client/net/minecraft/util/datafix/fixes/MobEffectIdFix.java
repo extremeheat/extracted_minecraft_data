@@ -20,166 +20,166 @@ import net.minecraft.util.Util;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
 public class MobEffectIdFix extends DataFix {
-   private static final Int2ObjectMap<String> ID_MAP = (Int2ObjectMap)Util.make(new Int2ObjectOpenHashMap(), (var0) -> {
-      var0.put(1, "minecraft:speed");
-      var0.put(2, "minecraft:slowness");
-      var0.put(3, "minecraft:haste");
-      var0.put(4, "minecraft:mining_fatigue");
-      var0.put(5, "minecraft:strength");
-      var0.put(6, "minecraft:instant_health");
-      var0.put(7, "minecraft:instant_damage");
-      var0.put(8, "minecraft:jump_boost");
-      var0.put(9, "minecraft:nausea");
-      var0.put(10, "minecraft:regeneration");
-      var0.put(11, "minecraft:resistance");
-      var0.put(12, "minecraft:fire_resistance");
-      var0.put(13, "minecraft:water_breathing");
-      var0.put(14, "minecraft:invisibility");
-      var0.put(15, "minecraft:blindness");
-      var0.put(16, "minecraft:night_vision");
-      var0.put(17, "minecraft:hunger");
-      var0.put(18, "minecraft:weakness");
-      var0.put(19, "minecraft:poison");
-      var0.put(20, "minecraft:wither");
-      var0.put(21, "minecraft:health_boost");
-      var0.put(22, "minecraft:absorption");
-      var0.put(23, "minecraft:saturation");
-      var0.put(24, "minecraft:glowing");
-      var0.put(25, "minecraft:levitation");
-      var0.put(26, "minecraft:luck");
-      var0.put(27, "minecraft:unluck");
-      var0.put(28, "minecraft:slow_falling");
-      var0.put(29, "minecraft:conduit_power");
-      var0.put(30, "minecraft:dolphins_grace");
-      var0.put(31, "minecraft:bad_omen");
-      var0.put(32, "minecraft:hero_of_the_village");
-      var0.put(33, "minecraft:darkness");
+   private static final Int2ObjectMap<String> ID_MAP = (Int2ObjectMap)Util.make(new Int2ObjectOpenHashMap(), (m) -> {
+      m.put(1, "minecraft:speed");
+      m.put(2, "minecraft:slowness");
+      m.put(3, "minecraft:haste");
+      m.put(4, "minecraft:mining_fatigue");
+      m.put(5, "minecraft:strength");
+      m.put(6, "minecraft:instant_health");
+      m.put(7, "minecraft:instant_damage");
+      m.put(8, "minecraft:jump_boost");
+      m.put(9, "minecraft:nausea");
+      m.put(10, "minecraft:regeneration");
+      m.put(11, "minecraft:resistance");
+      m.put(12, "minecraft:fire_resistance");
+      m.put(13, "minecraft:water_breathing");
+      m.put(14, "minecraft:invisibility");
+      m.put(15, "minecraft:blindness");
+      m.put(16, "minecraft:night_vision");
+      m.put(17, "minecraft:hunger");
+      m.put(18, "minecraft:weakness");
+      m.put(19, "minecraft:poison");
+      m.put(20, "minecraft:wither");
+      m.put(21, "minecraft:health_boost");
+      m.put(22, "minecraft:absorption");
+      m.put(23, "minecraft:saturation");
+      m.put(24, "minecraft:glowing");
+      m.put(25, "minecraft:levitation");
+      m.put(26, "minecraft:luck");
+      m.put(27, "minecraft:unluck");
+      m.put(28, "minecraft:slow_falling");
+      m.put(29, "minecraft:conduit_power");
+      m.put(30, "minecraft:dolphins_grace");
+      m.put(31, "minecraft:bad_omen");
+      m.put(32, "minecraft:hero_of_the_village");
+      m.put(33, "minecraft:darkness");
    });
    private static final Set<String> MOB_EFFECT_INSTANCE_CARRIER_ITEMS = Set.of("minecraft:potion", "minecraft:splash_potion", "minecraft:lingering_potion", "minecraft:tipped_arrow");
 
-   public MobEffectIdFix(Schema var1) {
-      super(var1, false);
+   public MobEffectIdFix(final Schema outputSchema) {
+      super(outputSchema, false);
    }
 
-   private static <T> Optional<Dynamic<T>> getAndConvertMobEffectId(Dynamic<T> var0, String var1) {
-      Optional var10000 = var0.get(var1).asNumber().result().map((var0x) -> (String)ID_MAP.get(var0x.intValue()));
-      Objects.requireNonNull(var0);
-      return var10000.map(var0::createString);
+   private static <T> Optional<Dynamic<T>> getAndConvertMobEffectId(final Dynamic<T> obj, final String fieldName) {
+      Optional var10000 = obj.get(fieldName).asNumber().result().map((id) -> (String)ID_MAP.get(id.intValue()));
+      Objects.requireNonNull(obj);
+      return var10000.map(obj::createString);
    }
 
-   private static <T> Dynamic<T> updateMobEffectIdField(Dynamic<T> var0, String var1, Dynamic<T> var2, String var3) {
-      Optional var4 = getAndConvertMobEffectId(var0, var1);
-      return var2.replaceField(var1, var3, var4);
+   private static <T> Dynamic<T> updateMobEffectIdField(final Dynamic<T> input, final String oldFieldName, final Dynamic<T> output, final String newFieldName) {
+      Optional<Dynamic<T>> mappedId = getAndConvertMobEffectId(input, oldFieldName);
+      return output.replaceField(oldFieldName, newFieldName, mappedId);
    }
 
-   private static <T> Dynamic<T> updateMobEffectIdField(Dynamic<T> var0, String var1, String var2) {
-      return updateMobEffectIdField(var0, var1, var0, var2);
+   private static <T> Dynamic<T> updateMobEffectIdField(final Dynamic<T> input, final String oldFieldName, final String newFieldName) {
+      return updateMobEffectIdField(input, oldFieldName, input, newFieldName);
    }
 
-   private static <T> Dynamic<T> updateMobEffectInstance(Dynamic<T> var0) {
-      var0 = updateMobEffectIdField(var0, "Id", "id");
-      var0 = var0.renameField("Ambient", "ambient");
-      var0 = var0.renameField("Amplifier", "amplifier");
-      var0 = var0.renameField("Duration", "duration");
-      var0 = var0.renameField("ShowParticles", "show_particles");
-      var0 = var0.renameField("ShowIcon", "show_icon");
-      Optional var1 = var0.get("HiddenEffect").result().map(MobEffectIdFix::updateMobEffectInstance);
-      return var0.replaceField("HiddenEffect", "hidden_effect", var1);
+   private static <T> Dynamic<T> updateMobEffectInstance(Dynamic<T> input) {
+      input = updateMobEffectIdField(input, "Id", "id");
+      input = input.renameField("Ambient", "ambient");
+      input = input.renameField("Amplifier", "amplifier");
+      input = input.renameField("Duration", "duration");
+      input = input.renameField("ShowParticles", "show_particles");
+      input = input.renameField("ShowIcon", "show_icon");
+      Optional<Dynamic<T>> hiddenEffect = input.get("HiddenEffect").result().map(MobEffectIdFix::updateMobEffectInstance);
+      return input.replaceField("HiddenEffect", "hidden_effect", hiddenEffect);
    }
 
-   private static <T> Dynamic<T> updateMobEffectInstanceList(Dynamic<T> var0, String var1, String var2) {
-      Optional var3 = var0.get(var1).asStreamOpt().result().map((var1x) -> var0.createList(var1x.map(MobEffectIdFix::updateMobEffectInstance)));
-      return var0.replaceField(var1, var2, var3);
+   private static <T> Dynamic<T> updateMobEffectInstanceList(final Dynamic<T> input, final String oldField, final String newField) {
+      Optional<Dynamic<T>> newValue = input.get(oldField).asStreamOpt().result().map((effects) -> input.createList(effects.map(MobEffectIdFix::updateMobEffectInstance)));
+      return input.replaceField(oldField, newField, newValue);
    }
 
-   private static <T> Dynamic<T> updateSuspiciousStewEntry(Dynamic<T> var0, Dynamic<T> var1) {
-      var1 = updateMobEffectIdField(var0, "EffectId", var1, "id");
-      Optional var2 = var0.get("EffectDuration").result();
-      return var1.replaceField("EffectDuration", "duration", var2);
+   private static <T> Dynamic<T> updateSuspiciousStewEntry(final Dynamic<T> input, Dynamic<T> output) {
+      output = updateMobEffectIdField(input, "EffectId", output, "id");
+      Optional<Dynamic<T>> duration = input.get("EffectDuration").result();
+      return output.replaceField("EffectDuration", "duration", duration);
    }
 
-   private static <T> Dynamic<T> updateSuspiciousStewEntry(Dynamic<T> var0) {
-      return updateSuspiciousStewEntry(var0, var0);
+   private static <T> Dynamic<T> updateSuspiciousStewEntry(final Dynamic<T> input) {
+      return updateSuspiciousStewEntry(input, input);
    }
 
-   private Typed<?> updateNamedChoice(Typed<?> var1, DSL.TypeReference var2, String var3, Function<Dynamic<?>, Dynamic<?>> var4) {
-      Type var5 = this.getInputSchema().getChoiceType(var2, var3);
-      Type var6 = this.getOutputSchema().getChoiceType(var2, var3);
-      return var1.updateTyped(DSL.namedChoice(var3, var5), var6, (var1x) -> var1x.update(DSL.remainderFinder(), var4));
+   private Typed<?> updateNamedChoice(final Typed<?> input, final DSL.TypeReference typeReference, final String name, final Function<Dynamic<?>, Dynamic<?>> function) {
+      Type<?> oldType = this.getInputSchema().getChoiceType(typeReference, name);
+      Type<?> newType = this.getOutputSchema().getChoiceType(typeReference, name);
+      return input.updateTyped(DSL.namedChoice(name, oldType), newType, (typedTag) -> typedTag.update(DSL.remainderFinder(), function));
    }
 
    private TypeRewriteRule blockEntityFixer() {
-      Type var1 = this.getInputSchema().getType(References.BLOCK_ENTITY);
-      return this.fixTypeEverywhereTyped("BlockEntityMobEffectIdFix", var1, (var1x) -> {
-         var1x = this.updateNamedChoice(var1x, References.BLOCK_ENTITY, "minecraft:beacon", (var0) -> {
-            var0 = updateMobEffectIdField(var0, "Primary", "primary_effect");
-            return updateMobEffectIdField(var0, "Secondary", "secondary_effect");
+      Type<?> blockEntityType = this.getInputSchema().getType(References.BLOCK_ENTITY);
+      return this.fixTypeEverywhereTyped("BlockEntityMobEffectIdFix", blockEntityType, (input) -> {
+         input = this.updateNamedChoice(input, References.BLOCK_ENTITY, "minecraft:beacon", (tag) -> {
+            tag = updateMobEffectIdField(tag, "Primary", "primary_effect");
+            return updateMobEffectIdField(tag, "Secondary", "secondary_effect");
          });
-         return var1x;
+         return input;
       });
    }
 
-   private static <T> Dynamic<T> fixMooshroomTag(Dynamic<T> var0) {
-      Dynamic var1 = var0.emptyMap();
-      Dynamic var2 = updateSuspiciousStewEntry(var0, var1);
-      if (!var2.equals(var1)) {
-         var0 = var0.set("stew_effects", var0.createList(Stream.of(var2)));
+   private static <T> Dynamic<T> fixMooshroomTag(Dynamic<T> entityTag) {
+      Dynamic<T> initialEntry = entityTag.emptyMap();
+      Dynamic<T> entry = updateSuspiciousStewEntry(entityTag, initialEntry);
+      if (!entry.equals(initialEntry)) {
+         entityTag = entityTag.set("stew_effects", entityTag.createList(Stream.of(entry)));
       }
 
-      return var0.remove("EffectId").remove("EffectDuration");
+      return entityTag.remove("EffectId").remove("EffectDuration");
    }
 
-   private static <T> Dynamic<T> fixArrowTag(Dynamic<T> var0) {
-      return updateMobEffectInstanceList(var0, "CustomPotionEffects", "custom_potion_effects");
+   private static <T> Dynamic<T> fixArrowTag(final Dynamic<T> data) {
+      return updateMobEffectInstanceList(data, "CustomPotionEffects", "custom_potion_effects");
    }
 
-   private static <T> Dynamic<T> fixAreaEffectCloudTag(Dynamic<T> var0) {
-      return updateMobEffectInstanceList(var0, "Effects", "effects");
+   private static <T> Dynamic<T> fixAreaEffectCloudTag(final Dynamic<T> data) {
+      return updateMobEffectInstanceList(data, "Effects", "effects");
    }
 
-   private static Dynamic<?> updateLivingEntityTag(Dynamic<?> var0) {
-      return updateMobEffectInstanceList(var0, "ActiveEffects", "active_effects");
+   private static Dynamic<?> updateLivingEntityTag(final Dynamic<?> data) {
+      return updateMobEffectInstanceList(data, "ActiveEffects", "active_effects");
    }
 
    private TypeRewriteRule entityFixer() {
-      Type var1 = this.getInputSchema().getType(References.ENTITY);
-      return this.fixTypeEverywhereTyped("EntityMobEffectIdFix", var1, (var1x) -> {
-         var1x = this.updateNamedChoice(var1x, References.ENTITY, "minecraft:mooshroom", MobEffectIdFix::fixMooshroomTag);
-         var1x = this.updateNamedChoice(var1x, References.ENTITY, "minecraft:arrow", MobEffectIdFix::fixArrowTag);
-         var1x = this.updateNamedChoice(var1x, References.ENTITY, "minecraft:area_effect_cloud", MobEffectIdFix::fixAreaEffectCloudTag);
-         var1x = var1x.update(DSL.remainderFinder(), MobEffectIdFix::updateLivingEntityTag);
-         return var1x;
+      Type<?> entityType = this.getInputSchema().getType(References.ENTITY);
+      return this.fixTypeEverywhereTyped("EntityMobEffectIdFix", entityType, (input) -> {
+         input = this.updateNamedChoice(input, References.ENTITY, "minecraft:mooshroom", MobEffectIdFix::fixMooshroomTag);
+         input = this.updateNamedChoice(input, References.ENTITY, "minecraft:arrow", MobEffectIdFix::fixArrowTag);
+         input = this.updateNamedChoice(input, References.ENTITY, "minecraft:area_effect_cloud", MobEffectIdFix::fixAreaEffectCloudTag);
+         input = input.update(DSL.remainderFinder(), MobEffectIdFix::updateLivingEntityTag);
+         return input;
       });
    }
 
    private TypeRewriteRule playerFixer() {
-      Type var1 = this.getInputSchema().getType(References.PLAYER);
-      return this.fixTypeEverywhereTyped("PlayerMobEffectIdFix", var1, (var0) -> var0.update(DSL.remainderFinder(), MobEffectIdFix::updateLivingEntityTag));
+      Type<?> playerType = this.getInputSchema().getType(References.PLAYER);
+      return this.fixTypeEverywhereTyped("PlayerMobEffectIdFix", playerType, (input) -> input.update(DSL.remainderFinder(), MobEffectIdFix::updateLivingEntityTag));
    }
 
-   private static <T> Dynamic<T> fixSuspiciousStewTag(Dynamic<T> var0) {
-      Optional var1 = var0.get("Effects").asStreamOpt().result().map((var1x) -> var0.createList(var1x.map(MobEffectIdFix::updateSuspiciousStewEntry)));
-      return var0.replaceField("Effects", "effects", var1);
+   private static <T> Dynamic<T> fixSuspiciousStewTag(final Dynamic<T> tag) {
+      Optional<Dynamic<T>> effectsList = tag.get("Effects").asStreamOpt().result().map((list) -> tag.createList(list.map(MobEffectIdFix::updateSuspiciousStewEntry)));
+      return tag.replaceField("Effects", "effects", effectsList);
    }
 
    private TypeRewriteRule itemStackFixer() {
-      OpticFinder var1 = DSL.fieldFinder("id", DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString()));
-      Type var2 = this.getInputSchema().getType(References.ITEM_STACK);
-      OpticFinder var3 = var2.findField("tag");
-      return this.fixTypeEverywhereTyped("ItemStackMobEffectIdFix", var2, (var2x) -> {
-         Optional var3x = var2x.getOptional(var1);
-         if (var3x.isPresent()) {
-            String var4 = (String)((Pair)var3x.get()).getSecond();
-            if (var4.equals("minecraft:suspicious_stew")) {
-               return var2x.updateTyped(var3, (var0) -> var0.update(DSL.remainderFinder(), MobEffectIdFix::fixSuspiciousStewTag));
+      OpticFinder<Pair<String, String>> idF = DSL.fieldFinder("id", DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString()));
+      Type<?> itemStackType = this.getInputSchema().getType(References.ITEM_STACK);
+      OpticFinder<?> tagF = itemStackType.findField("tag");
+      return this.fixTypeEverywhereTyped("ItemStackMobEffectIdFix", itemStackType, (input) -> {
+         Optional<Pair<String, String>> idOpt = input.getOptional(idF);
+         if (idOpt.isPresent()) {
+            String id = (String)((Pair)idOpt.get()).getSecond();
+            if (id.equals("minecraft:suspicious_stew")) {
+               return input.updateTyped(tagF, (itemTag) -> itemTag.update(DSL.remainderFinder(), MobEffectIdFix::fixSuspiciousStewTag));
             }
 
-            if (MOB_EFFECT_INSTANCE_CARRIER_ITEMS.contains(var4)) {
-               return var2x.updateTyped(var3, (var0) -> var0.update(DSL.remainderFinder(), (var0x) -> updateMobEffectInstanceList(var0x, "CustomPotionEffects", "custom_potion_effects")));
+            if (MOB_EFFECT_INSTANCE_CARRIER_ITEMS.contains(id)) {
+               return input.updateTyped(tagF, (itemTag) -> itemTag.update(DSL.remainderFinder(), (tag) -> updateMobEffectInstanceList(tag, "CustomPotionEffects", "custom_potion_effects")));
             }
          }
 
-         return var2x;
+         return input;
       });
    }
 

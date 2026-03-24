@@ -16,23 +16,23 @@ public class BulkSectionAccess implements AutoCloseable {
    private @Nullable LevelChunkSection lastSection;
    private long lastSectionKey;
 
-   public BulkSectionAccess(LevelAccessor var1) {
+   public BulkSectionAccess(final LevelAccessor level) {
       super();
-      this.level = var1;
+      this.level = level;
    }
 
-   public @Nullable LevelChunkSection getSection(BlockPos var1) {
-      int var2 = this.level.getSectionIndex(var1.getY());
-      if (var2 >= 0 && var2 < this.level.getSectionsCount()) {
-         long var3 = SectionPos.asLong(var1);
-         if (this.lastSection == null || this.lastSectionKey != var3) {
-            this.lastSection = (LevelChunkSection)this.acquiredSections.computeIfAbsent(var3, (var3x) -> {
-               ChunkAccess var5 = this.level.getChunk(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getZ()));
-               LevelChunkSection var6 = var5.getSection(var2);
-               var6.acquire();
-               return var6;
+   public @Nullable LevelChunkSection getSection(final BlockPos pos) {
+      int sectionIndex = this.level.getSectionIndex(pos.getY());
+      if (sectionIndex >= 0 && sectionIndex < this.level.getSectionsCount()) {
+         long sectionKey = SectionPos.asLong(pos);
+         if (this.lastSection == null || this.lastSectionKey != sectionKey) {
+            this.lastSection = (LevelChunkSection)this.acquiredSections.computeIfAbsent(sectionKey, (key) -> {
+               ChunkAccess chunk = this.level.getChunk(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ()));
+               LevelChunkSection result = chunk.getSection(sectionIndex);
+               result.acquire();
+               return result;
             });
-            this.lastSectionKey = var3;
+            this.lastSectionKey = sectionKey;
          }
 
          return this.lastSection;
@@ -41,15 +41,15 @@ public class BulkSectionAccess implements AutoCloseable {
       }
    }
 
-   public BlockState getBlockState(BlockPos var1) {
-      LevelChunkSection var2 = this.getSection(var1);
-      if (var2 == null) {
+   public BlockState getBlockState(final BlockPos pos) {
+      LevelChunkSection section = this.getSection(pos);
+      if (section == null) {
          return Blocks.AIR.defaultBlockState();
       } else {
-         int var3 = SectionPos.sectionRelative(var1.getX());
-         int var4 = SectionPos.sectionRelative(var1.getY());
-         int var5 = SectionPos.sectionRelative(var1.getZ());
-         return var2.getBlockState(var3, var4, var5);
+         int sectionRelativeX = SectionPos.sectionRelative(pos.getX());
+         int sectionRelativeY = SectionPos.sectionRelative(pos.getY());
+         int sectionRelativeZ = SectionPos.sectionRelative(pos.getZ());
+         return section.getBlockState(sectionRelativeX, sectionRelativeY, sectionRelativeZ);
       }
    }
 
@@ -57,8 +57,8 @@ public class BulkSectionAccess implements AutoCloseable {
       ObjectIterator var1 = this.acquiredSections.values().iterator();
 
       while(var1.hasNext()) {
-         LevelChunkSection var2 = (LevelChunkSection)var1.next();
-         var2.release();
+         LevelChunkSection section = (LevelChunkSection)var1.next();
+         section.release();
       }
 
    }

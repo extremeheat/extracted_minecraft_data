@@ -9,17 +9,17 @@ import net.minecraft.util.Mth;
 public class SpatialLongSet extends LongLinkedOpenHashSet {
    private final InternalMap map;
 
-   public SpatialLongSet(int var1, float var2) {
-      super(var1, var2);
-      this.map = new InternalMap(var1 / 64, var2);
+   public SpatialLongSet(final int expected, final float f) {
+      super(expected, f);
+      this.map = new InternalMap(expected / 64, f);
    }
 
-   public boolean add(long var1) {
-      return this.map.addBit(var1);
+   public boolean add(final long k) {
+      return this.map.addBit(k);
    }
 
-   public boolean rem(long var1) {
-      return this.map.removeBit(var1);
+   public boolean rem(final long k) {
+      return this.map.removeBit(k);
    }
 
    public long removeFirstLong() {
@@ -46,71 +46,71 @@ public class SpatialLongSet extends LongLinkedOpenHashSet {
       private long lastOuterKey;
       private final int minSize;
 
-      public InternalMap(int var1, float var2) {
-         super(var1, var2);
-         this.minSize = var1;
+      public InternalMap(final int expected, final float f) {
+         super(expected, f);
+         this.minSize = expected;
       }
 
-      static long getOuterKey(long var0) {
-         return var0 & ~OUTER_MASK;
+      static long getOuterKey(final long key) {
+         return key & ~OUTER_MASK;
       }
 
-      static int getInnerKey(long var0) {
-         int var2 = (int)(var0 >>> X_OFFSET & 3L);
-         int var3 = (int)(var0 >>> 0 & 3L);
-         int var4 = (int)(var0 >>> Z_OFFSET & 3L);
-         return var2 << 4 | var4 << 2 | var3;
+      static int getInnerKey(final long key) {
+         int innerX = (int)(key >>> X_OFFSET & 3L);
+         int innerY = (int)(key >>> 0 & 3L);
+         int innerZ = (int)(key >>> Z_OFFSET & 3L);
+         return innerX << 4 | innerZ << 2 | innerY;
       }
 
-      static long getFullKey(long var0, int var2) {
-         var0 |= (long)(var2 >>> 4 & 3) << X_OFFSET;
-         var0 |= (long)(var2 >>> 2 & 3) << Z_OFFSET;
-         var0 |= (long)(var2 >>> 0 & 3) << 0;
-         return var0;
+      static long getFullKey(long outerKey, final int innerKey) {
+         outerKey |= (long)(innerKey >>> 4 & 3) << X_OFFSET;
+         outerKey |= (long)(innerKey >>> 2 & 3) << Z_OFFSET;
+         outerKey |= (long)(innerKey >>> 0 & 3) << 0;
+         return outerKey;
       }
 
-      public boolean addBit(long var1) {
-         long var3 = getOuterKey(var1);
-         int var5 = getInnerKey(var1);
-         long var6 = 1L << var5;
-         int var8;
-         if (var3 == 0L) {
+      public boolean addBit(final long key) {
+         long outerKey = getOuterKey(key);
+         int innerKey = getInnerKey(key);
+         long bitMask = 1L << innerKey;
+         int pos;
+         if (outerKey == 0L) {
             if (this.containsNullKey) {
-               return this.replaceBit(this.n, var6);
+               return this.replaceBit(this.n, bitMask);
             }
 
             this.containsNullKey = true;
-            var8 = this.n;
+            pos = this.n;
          } else {
-            if (this.lastPos != -1 && var3 == this.lastOuterKey) {
-               return this.replaceBit(this.lastPos, var6);
+            if (this.lastPos != -1 && outerKey == this.lastOuterKey) {
+               return this.replaceBit(this.lastPos, bitMask);
             }
 
-            long[] var9 = this.key;
-            var8 = (int)HashCommon.mix(var3) & this.mask;
+            long[] keys = this.key;
+            pos = (int)HashCommon.mix(outerKey) & this.mask;
 
-            for(long var10 = var9[var8]; var10 != 0L; var10 = var9[var8]) {
-               if (var10 == var3) {
-                  this.lastPos = var8;
-                  this.lastOuterKey = var3;
-                  return this.replaceBit(var8, var6);
+            for(long curr = keys[pos]; curr != 0L; curr = keys[pos]) {
+               if (curr == outerKey) {
+                  this.lastPos = pos;
+                  this.lastOuterKey = outerKey;
+                  return this.replaceBit(pos, bitMask);
                }
 
-               var8 = var8 + 1 & this.mask;
+               pos = pos + 1 & this.mask;
             }
          }
 
-         this.key[var8] = var3;
-         this.value[var8] = var6;
+         this.key[pos] = outerKey;
+         this.value[pos] = bitMask;
          if (this.size == 0) {
-            this.first = this.last = var8;
-            this.link[var8] = -1L;
+            this.first = this.last = pos;
+            this.link[pos] = -1L;
          } else {
             long[] var10000 = this.link;
             int var10001 = this.last;
-            var10000[var10001] ^= (this.link[this.last] ^ (long)var8 & 4294967295L) & 4294967295L;
-            this.link[var8] = ((long)this.last & 4294967295L) << 32 | 4294967295L;
-            this.last = var8;
+            var10000[var10001] ^= (this.link[this.last] ^ (long)pos & 4294967295L) & 4294967295L;
+            this.link[pos] = ((long)this.last & 4294967295L) << 32 | 4294967295L;
+            this.last = pos;
          }
 
          if (this.size++ >= this.maxFill) {
@@ -120,46 +120,46 @@ public class SpatialLongSet extends LongLinkedOpenHashSet {
          return false;
       }
 
-      private boolean replaceBit(int var1, long var2) {
-         boolean var4 = (this.value[var1] & var2) != 0L;
+      private boolean replaceBit(final int pos, final long bitMask) {
+         boolean oldValue = (this.value[pos] & bitMask) != 0L;
          long[] var10000 = this.value;
-         var10000[var1] |= var2;
-         return var4;
+         var10000[pos] |= bitMask;
+         return oldValue;
       }
 
-      public boolean removeBit(long var1) {
-         long var3 = getOuterKey(var1);
-         int var5 = getInnerKey(var1);
-         long var6 = 1L << var5;
-         if (var3 == 0L) {
-            return this.containsNullKey ? this.removeFromNullEntry(var6) : false;
-         } else if (this.lastPos != -1 && var3 == this.lastOuterKey) {
-            return this.removeFromEntry(this.lastPos, var6);
+      public boolean removeBit(final long key) {
+         long outerKey = getOuterKey(key);
+         int innerKey = getInnerKey(key);
+         long bitMask = 1L << innerKey;
+         if (outerKey == 0L) {
+            return this.containsNullKey ? this.removeFromNullEntry(bitMask) : false;
+         } else if (this.lastPos != -1 && outerKey == this.lastOuterKey) {
+            return this.removeFromEntry(this.lastPos, bitMask);
          } else {
-            long[] var8 = this.key;
-            int var9 = (int)HashCommon.mix(var3) & this.mask;
+            long[] keys = this.key;
+            int pos = (int)HashCommon.mix(outerKey) & this.mask;
 
-            for(long var10 = var8[var9]; var10 != 0L; var10 = var8[var9]) {
-               if (var3 == var10) {
-                  this.lastPos = var9;
-                  this.lastOuterKey = var3;
-                  return this.removeFromEntry(var9, var6);
+            for(long curr = keys[pos]; curr != 0L; curr = keys[pos]) {
+               if (outerKey == curr) {
+                  this.lastPos = pos;
+                  this.lastOuterKey = outerKey;
+                  return this.removeFromEntry(pos, bitMask);
                }
 
-               var9 = var9 + 1 & this.mask;
+               pos = pos + 1 & this.mask;
             }
 
             return false;
          }
       }
 
-      private boolean removeFromNullEntry(long var1) {
-         if ((this.value[this.n] & var1) == 0L) {
+      private boolean removeFromNullEntry(final long bitMask) {
+         if ((this.value[this.n] & bitMask) == 0L) {
             return false;
          } else {
             long[] var10000 = this.value;
             int var10001 = this.n;
-            var10000[var10001] &= ~var1;
+            var10000[var10001] &= ~bitMask;
             if (this.value[this.n] != 0L) {
                return true;
             } else {
@@ -175,19 +175,19 @@ public class SpatialLongSet extends LongLinkedOpenHashSet {
          }
       }
 
-      private boolean removeFromEntry(int var1, long var2) {
-         if ((this.value[var1] & var2) == 0L) {
+      private boolean removeFromEntry(final int pos, final long bitMask) {
+         if ((this.value[pos] & bitMask) == 0L) {
             return false;
          } else {
             long[] var10000 = this.value;
-            var10000[var1] &= ~var2;
-            if (this.value[var1] != 0L) {
+            var10000[pos] &= ~bitMask;
+            if (this.value[pos] != 0L) {
                return true;
             } else {
                this.lastPos = -1;
                --this.size;
-               this.fixPointers(var1);
-               this.shiftKeys(var1);
+               this.fixPointers(pos);
+               this.shiftKeys(pos);
                if (this.size < this.maxFill / 4 && this.n > 16) {
                   this.rehash(this.n / 2);
                }
@@ -201,23 +201,23 @@ public class SpatialLongSet extends LongLinkedOpenHashSet {
          if (this.size == 0) {
             throw new NoSuchElementException();
          } else {
-            int var1 = this.first;
-            long var2 = this.key[var1];
-            int var4 = Long.numberOfTrailingZeros(this.value[var1]);
+            int pos = this.first;
+            long outerKey = this.key[pos];
+            int innerKey = Long.numberOfTrailingZeros(this.value[pos]);
             long[] var10000 = this.value;
-            var10000[var1] &= ~(1L << var4);
-            if (this.value[var1] == 0L) {
+            var10000[pos] &= ~(1L << innerKey);
+            if (this.value[pos] == 0L) {
                this.removeFirstLong();
                this.lastPos = -1;
             }
 
-            return getFullKey(var2, var4);
+            return getFullKey(outerKey, innerKey);
          }
       }
 
-      protected void rehash(int var1) {
-         if (var1 > this.minSize) {
-            super.rehash(var1);
+      protected void rehash(final int newN) {
+         if (newN > this.minSize) {
+            super.rehash(newN);
          }
 
       }

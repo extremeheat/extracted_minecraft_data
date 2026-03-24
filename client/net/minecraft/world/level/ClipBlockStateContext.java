@@ -9,11 +9,11 @@ public class ClipBlockStateContext {
    private final Vec3 to;
    private final Predicate<BlockState> block;
 
-   public ClipBlockStateContext(Vec3 var1, Vec3 var2, Predicate<BlockState> var3) {
+   public ClipBlockStateContext(final Vec3 from, final Vec3 to, final Predicate<BlockState> block) {
       super();
-      this.from = var1;
-      this.to = var2;
-      this.block = var3;
+      this.from = from;
+      this.to = to;
+      this.block = block;
    }
 
    public Vec3 getTo() {

@@ -9,113 +9,119 @@ public interface ServerGamePacketListener extends ServerCommonPacketListener, Se
       return ConnectionProtocol.PLAY;
    }
 
-   void handleAnimate(ServerboundSwingPacket var1);
+   void handleAnimate(ServerboundSwingPacket packet);
 
-   void handleChat(ServerboundChatPacket var1);
+   void handleChat(ServerboundChatPacket packet);
 
-   void handleChatCommand(ServerboundChatCommandPacket var1);
+   void handleChatCommand(ServerboundChatCommandPacket packet);
 
-   void handleSignedChatCommand(ServerboundChatCommandSignedPacket var1);
+   void handleSignedChatCommand(ServerboundChatCommandSignedPacket packet);
 
-   void handleChatAck(ServerboundChatAckPacket var1);
+   void handleChatAck(ServerboundChatAckPacket packet);
 
-   void handleClientCommand(ServerboundClientCommandPacket var1);
+   void handleClientCommand(ServerboundClientCommandPacket packet);
 
-   void handleContainerButtonClick(ServerboundContainerButtonClickPacket var1);
+   void handleContainerButtonClick(ServerboundContainerButtonClickPacket packet);
 
-   void handleContainerClick(ServerboundContainerClickPacket var1);
+   void handleContainerClick(ServerboundContainerClickPacket packet);
 
-   void handlePlaceRecipe(ServerboundPlaceRecipePacket var1);
+   void handlePlaceRecipe(final ServerboundPlaceRecipePacket packet);
 
-   void handleContainerClose(ServerboundContainerClosePacket var1);
+   void handleContainerClose(ServerboundContainerClosePacket packet);
 
-   void handleInteract(ServerboundInteractPacket var1);
+   void handleAttack(ServerboundAttackPacket packet);
 
-   void handleMovePlayer(ServerboundMovePlayerPacket var1);
+   void handleInteract(ServerboundInteractPacket packet);
 
-   void handlePlayerAbilities(ServerboundPlayerAbilitiesPacket var1);
+   void handleSpectateEntity(ServerboundSpectateEntityPacket packet);
 
-   void handlePlayerAction(ServerboundPlayerActionPacket var1);
+   void handleMovePlayer(ServerboundMovePlayerPacket packet);
 
-   void handlePlayerCommand(ServerboundPlayerCommandPacket var1);
+   void handlePlayerAbilities(ServerboundPlayerAbilitiesPacket packet);
 
-   void handlePlayerInput(ServerboundPlayerInputPacket var1);
+   void handlePlayerAction(ServerboundPlayerActionPacket packet);
 
-   void handleSetCarriedItem(ServerboundSetCarriedItemPacket var1);
+   void handlePlayerCommand(ServerboundPlayerCommandPacket packet);
 
-   void handleSetCreativeModeSlot(ServerboundSetCreativeModeSlotPacket var1);
+   void handlePlayerInput(ServerboundPlayerInputPacket packet);
 
-   void handleSignUpdate(ServerboundSignUpdatePacket var1);
+   void handleSetCarriedItem(ServerboundSetCarriedItemPacket packet);
 
-   void handleUseItemOn(ServerboundUseItemOnPacket var1);
+   void handleSetCreativeModeSlot(ServerboundSetCreativeModeSlotPacket packet);
 
-   void handleUseItem(ServerboundUseItemPacket var1);
+   void handleSignUpdate(ServerboundSignUpdatePacket packet);
 
-   void handleTeleportToEntityPacket(ServerboundTeleportToEntityPacket var1);
+   void handleUseItemOn(ServerboundUseItemOnPacket packet);
 
-   void handlePaddleBoat(ServerboundPaddleBoatPacket var1);
+   void handleUseItem(ServerboundUseItemPacket packet);
 
-   void handleMoveVehicle(ServerboundMoveVehiclePacket var1);
+   void handleTeleportToEntityPacket(ServerboundTeleportToEntityPacket packet);
 
-   void handleAcceptTeleportPacket(ServerboundAcceptTeleportationPacket var1);
+   void handlePaddleBoat(ServerboundPaddleBoatPacket packet);
 
-   void handleAcceptPlayerLoad(ServerboundPlayerLoadedPacket var1);
+   void handleMoveVehicle(ServerboundMoveVehiclePacket packet);
 
-   void handleRecipeBookSeenRecipePacket(ServerboundRecipeBookSeenRecipePacket var1);
+   void handleAcceptTeleportPacket(ServerboundAcceptTeleportationPacket packet);
 
-   void handleBundleItemSelectedPacket(ServerboundSelectBundleItemPacket var1);
+   void handleAcceptPlayerLoad(ServerboundPlayerLoadedPacket packet);
 
-   void handleRecipeBookChangeSettingsPacket(ServerboundRecipeBookChangeSettingsPacket var1);
+   void handleRecipeBookSeenRecipePacket(ServerboundRecipeBookSeenRecipePacket packet);
 
-   void handleSeenAdvancements(ServerboundSeenAdvancementsPacket var1);
+   void handleBundleItemSelectedPacket(ServerboundSelectBundleItemPacket packet);
 
-   void handleCustomCommandSuggestions(ServerboundCommandSuggestionPacket var1);
+   void handleRecipeBookChangeSettingsPacket(ServerboundRecipeBookChangeSettingsPacket packet);
 
-   void handleSetCommandBlock(ServerboundSetCommandBlockPacket var1);
+   void handleSeenAdvancements(ServerboundSeenAdvancementsPacket packet);
 
-   void handleSetCommandMinecart(ServerboundSetCommandMinecartPacket var1);
+   void handleCustomCommandSuggestions(ServerboundCommandSuggestionPacket packet);
 
-   void handlePickItemFromBlock(ServerboundPickItemFromBlockPacket var1);
+   void handleSetCommandBlock(ServerboundSetCommandBlockPacket packet);
 
-   void handlePickItemFromEntity(ServerboundPickItemFromEntityPacket var1);
+   void handleSetCommandMinecart(ServerboundSetCommandMinecartPacket packet);
 
-   void handleRenameItem(ServerboundRenameItemPacket var1);
+   void handlePickItemFromBlock(ServerboundPickItemFromBlockPacket packet);
 
-   void handleSetBeaconPacket(ServerboundSetBeaconPacket var1);
+   void handlePickItemFromEntity(ServerboundPickItemFromEntityPacket packet);
 
-   void handleSetStructureBlock(ServerboundSetStructureBlockPacket var1);
+   void handleRenameItem(ServerboundRenameItemPacket packet);
 
-   void handleSetTestBlock(ServerboundSetTestBlockPacket var1);
+   void handleSetBeaconPacket(ServerboundSetBeaconPacket packet);
 
-   void handleTestInstanceBlockAction(ServerboundTestInstanceBlockActionPacket var1);
+   void handleSetGameRule(ServerboundSetGameRulePacket packet);
 
-   void handleSelectTrade(ServerboundSelectTradePacket var1);
+   void handleSetStructureBlock(ServerboundSetStructureBlockPacket packet);
 
-   void handleEditBook(ServerboundEditBookPacket var1);
+   void handleSetTestBlock(ServerboundSetTestBlockPacket packet);
 
-   void handleEntityTagQuery(ServerboundEntityTagQueryPacket var1);
+   void handleTestInstanceBlockAction(ServerboundTestInstanceBlockActionPacket packet);
 
-   void handleContainerSlotStateChanged(ServerboundContainerSlotStateChangedPacket var1);
+   void handleSelectTrade(ServerboundSelectTradePacket packet);
 
-   void handleBlockEntityTagQuery(ServerboundBlockEntityTagQueryPacket var1);
+   void handleEditBook(ServerboundEditBookPacket packet);
 
-   void handleSetJigsawBlock(ServerboundSetJigsawBlockPacket var1);
+   void handleEntityTagQuery(ServerboundEntityTagQueryPacket packet);
 
-   void handleJigsawGenerate(ServerboundJigsawGeneratePacket var1);
+   void handleContainerSlotStateChanged(ServerboundContainerSlotStateChangedPacket packet);
 
-   void handleChangeDifficulty(ServerboundChangeDifficultyPacket var1);
+   void handleBlockEntityTagQuery(ServerboundBlockEntityTagQueryPacket packet);
 
-   void handleChangeGameMode(ServerboundChangeGameModePacket var1);
+   void handleSetJigsawBlock(ServerboundSetJigsawBlockPacket packet);
 
-   void handleLockDifficulty(ServerboundLockDifficultyPacket var1);
+   void handleJigsawGenerate(ServerboundJigsawGeneratePacket packet);
 
-   void handleChatSessionUpdate(ServerboundChatSessionUpdatePacket var1);
+   void handleChangeDifficulty(ServerboundChangeDifficultyPacket packet);
 
-   void handleConfigurationAcknowledged(ServerboundConfigurationAcknowledgedPacket var1);
+   void handleChangeGameMode(ServerboundChangeGameModePacket packet);
 
-   void handleChunkBatchReceived(ServerboundChunkBatchReceivedPacket var1);
+   void handleLockDifficulty(ServerboundLockDifficultyPacket packet);
 
-   void handleDebugSubscriptionRequest(ServerboundDebugSubscriptionRequestPacket var1);
+   void handleChatSessionUpdate(ServerboundChatSessionUpdatePacket packet);
 
-   void handleClientTickEnd(ServerboundClientTickEndPacket var1);
+   void handleConfigurationAcknowledged(ServerboundConfigurationAcknowledgedPacket packet);
+
+   void handleChunkBatchReceived(ServerboundChunkBatchReceivedPacket packet);
+
+   void handleDebugSubscriptionRequest(ServerboundDebugSubscriptionRequestPacket packet);
+
+   void handleClientTickEnd(ServerboundClientTickEndPacket packet);
 }

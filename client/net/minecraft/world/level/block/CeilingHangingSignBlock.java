@@ -40,8 +40,8 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
-public class CeilingHangingSignBlock extends SignBlock {
-   public static final MapCodec<CeilingHangingSignBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(WoodType.CODEC.fieldOf("wood_type").forGetter(SignBlock::type), propertiesCodec()).apply(var0, CeilingHangingSignBlock::new));
+public class CeilingHangingSignBlock extends SignBlock implements HangingSignBlock {
+   public static final MapCodec<CeilingHangingSignBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(WoodType.CODEC.fieldOf("wood_type").forGetter(SignBlock::type), propertiesCodec()).apply(i, CeilingHangingSignBlock::new));
    public static final IntegerProperty ROTATION;
    public static final BooleanProperty ATTACHED;
    private static final VoxelShape SHAPE_DEFAULT;
@@ -51,96 +51,104 @@ public class CeilingHangingSignBlock extends SignBlock {
       return CODEC;
    }
 
-   public CeilingHangingSignBlock(WoodType var1, BlockBehaviour.Properties var2) {
-      super(var1, var2.sound(var1.hangingSignSoundType()));
-      this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(ROTATION, 0)).setValue(ATTACHED, false)).setValue(WATERLOGGED, false));
+   public CeilingHangingSignBlock(final WoodType type, final BlockBehaviour.Properties properties) {
+      super(type, properties.sound(type.hangingSignSoundType()));
+      this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(ROTATION, 8)).setValue(ATTACHED, false)).setValue(WATERLOGGED, false));
    }
 
-   protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
-      BlockEntity var9 = var3.getBlockEntity(var4);
-      if (var9 instanceof SignBlockEntity var8) {
-         if (this.shouldTryToChainAnotherHangingSign(var5, var7, var8, var1)) {
+   protected InteractionResult useItemOn(final ItemStack itemStack, final BlockState state, final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final BlockHitResult hitResult) {
+      BlockEntity var9 = level.getBlockEntity(pos);
+      if (var9 instanceof SignBlockEntity signEntity) {
+         if (this.shouldTryToChainAnotherHangingSign(player, hitResult, signEntity, itemStack)) {
             return InteractionResult.PASS;
          }
       }
 
-      return super.useItemOn(var1, var2, var3, var4, var5, var6, var7);
+      return super.useItemOn(itemStack, state, level, pos, player, hand, hitResult);
    }
 
-   private boolean shouldTryToChainAnotherHangingSign(Player var1, BlockHitResult var2, SignBlockEntity var3, ItemStack var4) {
-      return !var3.canExecuteClickCommands(var3.isFacingFrontText(var1), var1) && var4.getItem() instanceof HangingSignItem && var2.getDirection().equals(Direction.DOWN);
+   private boolean shouldTryToChainAnotherHangingSign(final Player player, final BlockHitResult hitResult, final SignBlockEntity signEntity, final ItemStack itemStack) {
+      return !signEntity.canExecuteClickCommands(signEntity.isFacingFrontText(player), player) && itemStack.getItem() instanceof HangingSignItem && hitResult.getDirection().equals(Direction.DOWN);
    }
 
-   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      return var2.getBlockState(var3.above()).isFaceSturdy(var2, var3.above(), Direction.DOWN, SupportType.CENTER);
+   protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
+      return level.getBlockState(pos.above()).isFaceSturdy(level, pos.above(), Direction.DOWN, SupportType.CENTER);
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      Level var2 = var1.getLevel();
-      FluidState var3 = var2.getFluidState(var1.getClickedPos());
-      BlockPos var4 = var1.getClickedPos().above();
-      BlockState var5 = var2.getBlockState(var4);
-      boolean var6 = var5.is(BlockTags.ALL_HANGING_SIGNS);
-      Direction var7 = Direction.fromYRot((double)var1.getRotation());
-      boolean var8 = !Block.isFaceFull(var5.getCollisionShape(var2, var4), Direction.DOWN) || var1.isSecondaryUseActive();
-      if (var6 && !var1.isSecondaryUseActive()) {
-         if (var5.hasProperty(WallHangingSignBlock.FACING)) {
-            Direction var9 = (Direction)var5.getValue(WallHangingSignBlock.FACING);
-            if (var9.getAxis().test(var7)) {
-               var8 = false;
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      Level level = context.getLevel();
+      FluidState replacedFluidState = level.getFluidState(context.getClickedPos());
+      BlockPos above = context.getClickedPos().above();
+      BlockState stateAbove = level.getBlockState(above);
+      boolean isBelowHangingSign = stateAbove.is(BlockTags.ALL_HANGING_SIGNS);
+      Direction direction = Direction.fromYRot((double)context.getRotation());
+      boolean attachedToMiddle = !Block.isFaceFull(stateAbove.getCollisionShape(level, above), Direction.DOWN) || context.isSecondaryUseActive();
+      if (isBelowHangingSign && !context.isSecondaryUseActive()) {
+         if (stateAbove.hasProperty(WallHangingSignBlock.FACING)) {
+            Direction aboveDirection = (Direction)stateAbove.getValue(WallHangingSignBlock.FACING);
+            if (aboveDirection.getAxis().test(direction)) {
+               attachedToMiddle = false;
             }
-         } else if (var5.hasProperty(ROTATION)) {
-            Optional var10 = RotationSegment.convertToDirection((Integer)var5.getValue(ROTATION));
-            if (var10.isPresent() && ((Direction)var10.get()).getAxis().test(var7)) {
-               var8 = false;
+         } else if (stateAbove.hasProperty(ROTATION)) {
+            Optional<Direction> aboveDirection = RotationSegment.convertToDirection((Integer)stateAbove.getValue(ROTATION));
+            if (aboveDirection.isPresent() && ((Direction)aboveDirection.get()).getAxis().test(direction)) {
+               attachedToMiddle = false;
             }
          }
       }
 
-      int var11 = !var8 ? RotationSegment.convertToSegment(var7.getOpposite()) : RotationSegment.convertToSegment(var1.getRotation() + 180.0F);
-      return (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(ATTACHED, var8)).setValue(ROTATION, var11)).setValue(WATERLOGGED, var3.getType() == Fluids.WATER);
+      int rotationSegment = !attachedToMiddle ? RotationSegment.convertToSegment(direction.getOpposite()) : RotationSegment.convertToSegment(context.getRotation() + 180.0F);
+      return (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(ATTACHED, attachedToMiddle)).setValue(ROTATION, rotationSegment)).setValue(WATERLOGGED, replacedFluidState.is(Fluids.WATER));
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (VoxelShape)SHAPES.getOrDefault(var1.getValue(ROTATION), SHAPE_DEFAULT);
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return (VoxelShape)SHAPES.getOrDefault(state.getValue(ROTATION), SHAPE_DEFAULT);
    }
 
-   protected VoxelShape getBlockSupportShape(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return this.getShape(var1, var2, var3, CollisionContext.empty());
+   protected VoxelShape getBlockSupportShape(final BlockState state, final BlockGetter level, final BlockPos pos) {
+      return this.getShape(state, level, pos, CollisionContext.empty());
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      return var5 == Direction.UP && !this.canSurvive(var1, var2, var4) ? Blocks.AIR.defaultBlockState() : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      return directionToNeighbour == Direction.UP && !this.canSurvive(state, level, pos) ? Blocks.AIR.defaultBlockState() : super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   public float getYRotationDegrees(BlockState var1) {
-      return RotationSegment.convertToDegrees((Integer)var1.getValue(ROTATION));
+   public float getYRotationDegrees(final BlockState state) {
+      return RotationSegment.convertToDegrees((Integer)state.getValue(ROTATION));
    }
 
-   protected BlockState rotate(BlockState var1, Rotation var2) {
-      return (BlockState)var1.setValue(ROTATION, var2.rotate((Integer)var1.getValue(ROTATION), 16));
+   protected BlockState rotate(final BlockState state, final Rotation rotation) {
+      return (BlockState)state.setValue(ROTATION, rotation.rotate((Integer)state.getValue(ROTATION), 16));
    }
 
-   protected BlockState mirror(BlockState var1, Mirror var2) {
-      return (BlockState)var1.setValue(ROTATION, var2.mirror((Integer)var1.getValue(ROTATION), 16));
+   protected BlockState mirror(final BlockState state, final Mirror mirror) {
+      return (BlockState)state.setValue(ROTATION, mirror.mirror((Integer)state.getValue(ROTATION), 16));
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(ROTATION, ATTACHED, WATERLOGGED);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(ROTATION, ATTACHED, WATERLOGGED);
    }
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new HangingSignBlockEntity(var1, var2);
+   public BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      return new HangingSignBlockEntity(worldPosition, blockState);
    }
 
-   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return createTickerHelper(var3, BlockEntityType.HANGING_SIGN, SignBlockEntity::tick);
+   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(final Level level, final BlockState blockState, final BlockEntityType<T> type) {
+      return createTickerHelper(type, BlockEntityType.HANGING_SIGN, SignBlockEntity::tick);
+   }
+
+   public HangingSignBlock.Attachment attachmentPoint(final BlockState state) {
+      return getAttachmentPoint((Boolean)state.getValue(BlockStateProperties.ATTACHED));
+   }
+
+   public static HangingSignBlock.Attachment getAttachmentPoint(final boolean isAttached) {
+      return isAttached ? HangingSignBlock.Attachment.CEILING_MIDDLE : HangingSignBlock.Attachment.CEILING;
    }
 
    static {
       ROTATION = BlockStateProperties.ROTATION_16;
       ATTACHED = BlockStateProperties.ATTACHED;
       SHAPE_DEFAULT = Block.column(10.0, 0.0, 16.0);
-      SHAPES = (Map)Shapes.rotateHorizontal(Block.column(14.0, 2.0, 0.0, 10.0)).entrySet().stream().collect(Collectors.toMap((var0) -> RotationSegment.convertToSegment((Direction)var0.getKey()), Map.Entry::getValue));
+      SHAPES = (Map)Shapes.rotateHorizontal(Block.column(14.0, 2.0, 0.0, 10.0)).entrySet().stream().collect(Collectors.toMap((e) -> RotationSegment.convertToSegment((Direction)e.getKey()), Map.Entry::getValue));
    }
 }

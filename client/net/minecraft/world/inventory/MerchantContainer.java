@@ -17,10 +17,10 @@ public class MerchantContainer implements Container {
    private int selectionHint;
    private int futureXp;
 
-   public MerchantContainer(Merchant var1) {
+   public MerchantContainer(final Merchant villager) {
       super();
       this.itemStacks = NonNullList.<ItemStack>withSize(3, ItemStack.EMPTY);
-      this.merchant = var1;
+      this.merchant = villager;
    }
 
    public int getContainerSize() {
@@ -28,8 +28,8 @@ public class MerchantContainer implements Container {
    }
 
    public boolean isEmpty() {
-      for(ItemStack var2 : this.itemStacks) {
-         if (!var2.isEmpty()) {
+      for(ItemStack itemStack : this.itemStacks) {
+         if (!itemStack.isEmpty()) {
             return false;
          }
       }
@@ -37,43 +37,43 @@ public class MerchantContainer implements Container {
       return true;
    }
 
-   public ItemStack getItem(int var1) {
-      return this.itemStacks.get(var1);
+   public ItemStack getItem(final int slot) {
+      return this.itemStacks.get(slot);
    }
 
-   public ItemStack removeItem(int var1, int var2) {
-      ItemStack var3 = this.itemStacks.get(var1);
-      if (var1 == 2 && !var3.isEmpty()) {
-         return ContainerHelper.removeItem(this.itemStacks, var1, var3.getCount());
+   public ItemStack removeItem(final int slot, final int count) {
+      ItemStack itemStack = this.itemStacks.get(slot);
+      if (slot == 2 && !itemStack.isEmpty()) {
+         return ContainerHelper.removeItem(this.itemStacks, slot, itemStack.getCount());
       } else {
-         ItemStack var4 = ContainerHelper.removeItem(this.itemStacks, var1, var2);
-         if (!var4.isEmpty() && this.isPaymentSlot(var1)) {
+         ItemStack result = ContainerHelper.removeItem(this.itemStacks, slot, count);
+         if (!result.isEmpty() && this.isPaymentSlot(slot)) {
             this.updateSellItem();
          }
 
-         return var4;
+         return result;
       }
    }
 
-   private boolean isPaymentSlot(int var1) {
-      return var1 == 0 || var1 == 1;
+   private boolean isPaymentSlot(final int slot) {
+      return slot == 0 || slot == 1;
    }
 
-   public ItemStack removeItemNoUpdate(int var1) {
-      return ContainerHelper.takeItem(this.itemStacks, var1);
+   public ItemStack removeItemNoUpdate(final int slot) {
+      return ContainerHelper.takeItem(this.itemStacks, slot);
    }
 
-   public void setItem(int var1, ItemStack var2) {
-      this.itemStacks.set(var1, var2);
-      var2.limitSize(this.getMaxStackSize(var2));
-      if (this.isPaymentSlot(var1)) {
+   public void setItem(final int slot, final ItemStack itemStack) {
+      this.itemStacks.set(slot, itemStack);
+      itemStack.limitSize(this.getMaxStackSize(itemStack));
+      if (this.isPaymentSlot(slot)) {
          this.updateSellItem();
       }
 
    }
 
-   public boolean stillValid(Player var1) {
-      return this.merchant.getTradingPlayer() == var1;
+   public boolean stillValid(final Player player) {
+      return this.merchant.getTradingPlayer() == player;
    }
 
    public void setChanged() {
@@ -82,32 +82,32 @@ public class MerchantContainer implements Container {
 
    public void updateSellItem() {
       this.activeOffer = null;
-      ItemStack var1;
-      ItemStack var2;
+      ItemStack buyA;
+      ItemStack buyB;
       if (((ItemStack)this.itemStacks.get(0)).isEmpty()) {
-         var1 = this.itemStacks.get(1);
-         var2 = ItemStack.EMPTY;
+         buyA = this.itemStacks.get(1);
+         buyB = ItemStack.EMPTY;
       } else {
-         var1 = this.itemStacks.get(0);
-         var2 = this.itemStacks.get(1);
+         buyA = this.itemStacks.get(0);
+         buyB = this.itemStacks.get(1);
       }
 
-      if (var1.isEmpty()) {
+      if (buyA.isEmpty()) {
          this.setItem(2, ItemStack.EMPTY);
          this.futureXp = 0;
       } else {
-         MerchantOffers var3 = this.merchant.getOffers();
-         if (!var3.isEmpty()) {
-            MerchantOffer var4 = var3.getRecipeFor(var1, var2, this.selectionHint);
-            if (var4 == null || var4.isOutOfStock()) {
-               this.activeOffer = var4;
-               var4 = var3.getRecipeFor(var2, var1, this.selectionHint);
+         MerchantOffers offers = this.merchant.getOffers();
+         if (!offers.isEmpty()) {
+            MerchantOffer offer = offers.getRecipeFor(buyA, buyB, this.selectionHint);
+            if (offer == null || offer.isOutOfStock()) {
+               this.activeOffer = offer;
+               offer = offers.getRecipeFor(buyB, buyA, this.selectionHint);
             }
 
-            if (var4 != null && !var4.isOutOfStock()) {
-               this.activeOffer = var4;
-               this.setItem(2, var4.assemble());
-               this.futureXp = var4.getXp();
+            if (offer != null && !offer.isOutOfStock()) {
+               this.activeOffer = offer;
+               this.setItem(2, offer.assemble());
+               this.futureXp = offer.getXp();
             } else {
                this.setItem(2, ItemStack.EMPTY);
                this.futureXp = 0;
@@ -122,8 +122,8 @@ public class MerchantContainer implements Container {
       return this.activeOffer;
    }
 
-   public void setSelectionHint(int var1) {
-      this.selectionHint = var1;
+   public void setSelectionHint(final int selectionHint) {
+      this.selectionHint = selectionHint;
       this.updateSellItem();
    }
 

@@ -11,8 +11,8 @@ public class AdultSensorAnyType extends AdultSensor {
       super();
    }
 
-   protected void setNearestVisibleAdult(LivingEntity var1, NearestVisibleLivingEntities var2) {
-      Optional var3 = var2.findClosest((var0) -> var0.getType().is(EntityTypeTags.FOLLOWABLE_FRIENDLY_MOBS) && !var0.isBaby());
-      var1.getBrain().setMemory(MemoryModuleType.NEAREST_VISIBLE_ADULT, var3);
+   protected void setNearestVisibleAdult(final LivingEntity body, final NearestVisibleLivingEntities visibleLivingEntities) {
+      Optional<LivingEntity> adult = visibleLivingEntities.findClosest((entity) -> entity.is(EntityTypeTags.FOLLOWABLE_FRIENDLY_MOBS) && !entity.isBaby());
+      body.getBrain().setMemory(MemoryModuleType.NEAREST_VISIBLE_ADULT, adult);
    }
 }

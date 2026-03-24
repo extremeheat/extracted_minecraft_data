@@ -7,36 +7,36 @@ import net.minecraft.network.FriendlyByteBuf;
 public class GlobalPalette<T> implements Palette<T> {
    private final IdMap<T> registry;
 
-   public GlobalPalette(IdMap<T> var1) {
+   public GlobalPalette(final IdMap<T> registry) {
       super();
-      this.registry = var1;
+      this.registry = registry;
    }
 
-   public int idFor(T var1, PaletteResize<T> var2) {
-      int var3 = this.registry.getId(var1);
-      return var3 == -1 ? 0 : var3;
+   public int idFor(final T value, final PaletteResize<T> resizeHandler) {
+      int id = this.registry.getId(value);
+      return id == -1 ? 0 : id;
    }
 
-   public boolean maybeHas(Predicate<T> var1) {
+   public boolean maybeHas(final Predicate<T> predicate) {
       return true;
    }
 
-   public T valueFor(int var1) {
-      Object var2 = this.registry.byId(var1);
-      if (var2 == null) {
-         throw new MissingPaletteEntryException(var1);
+   public T valueFor(final int index) {
+      T value = this.registry.byId(index);
+      if (value == null) {
+         throw new MissingPaletteEntryException(index);
       } else {
-         return (T)var2;
+         return value;
       }
    }
 
-   public void read(FriendlyByteBuf var1, IdMap<T> var2) {
+   public void read(final FriendlyByteBuf buffer, final IdMap<T> globalMap) {
    }
 
-   public void write(FriendlyByteBuf var1, IdMap<T> var2) {
+   public void write(final FriendlyByteBuf buffer, final IdMap<T> globalMap) {
    }
 
-   public int getSerializedSize(IdMap<T> var1) {
+   public int getSerializedSize(final IdMap<T> globalMap) {
       return 0;
    }
 

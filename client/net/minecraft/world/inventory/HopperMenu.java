@@ -10,53 +10,53 @@ public class HopperMenu extends AbstractContainerMenu {
    public static final int CONTAINER_SIZE = 5;
    private final Container hopper;
 
-   public HopperMenu(int var1, Inventory var2) {
-      this(var1, var2, new SimpleContainer(5));
+   public HopperMenu(final int containerId, final Inventory inventory) {
+      this(containerId, inventory, new SimpleContainer(5));
    }
 
-   public HopperMenu(int var1, Inventory var2, Container var3) {
-      super(MenuType.HOPPER, var1);
-      this.hopper = var3;
-      checkContainerSize(var3, 5);
-      var3.startOpen(var2.player);
+   public HopperMenu(final int containerId, final Inventory inventory, final Container hopper) {
+      super(MenuType.HOPPER, containerId);
+      this.hopper = hopper;
+      checkContainerSize(hopper, 5);
+      hopper.startOpen(inventory.player);
 
-      for(int var4 = 0; var4 < 5; ++var4) {
-         this.addSlot(new Slot(var3, var4, 44 + var4 * 18, 20));
+      for(int x = 0; x < 5; ++x) {
+         this.addSlot(new Slot(hopper, x, 44 + x * 18, 20));
       }
 
-      this.addStandardInventorySlots(var2, 8, 51);
+      this.addStandardInventorySlots(inventory, 8, 51);
    }
 
-   public boolean stillValid(Player var1) {
-      return this.hopper.stillValid(var1);
+   public boolean stillValid(final Player player) {
+      return this.hopper.stillValid(player);
    }
 
-   public ItemStack quickMoveStack(Player var1, int var2) {
-      ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = this.slots.get(var2);
-      if (var4 != null && var4.hasItem()) {
-         ItemStack var5 = var4.getItem();
-         var3 = var5.copy();
-         if (var2 < this.hopper.getContainerSize()) {
-            if (!this.moveItemStackTo(var5, this.hopper.getContainerSize(), this.slots.size(), true)) {
+   public ItemStack quickMoveStack(final Player player, final int slotIndex) {
+      ItemStack clicked = ItemStack.EMPTY;
+      Slot slot = this.slots.get(slotIndex);
+      if (slot != null && slot.hasItem()) {
+         ItemStack stack = slot.getItem();
+         clicked = stack.copy();
+         if (slotIndex < this.hopper.getContainerSize()) {
+            if (!this.moveItemStackTo(stack, this.hopper.getContainerSize(), this.slots.size(), true)) {
                return ItemStack.EMPTY;
             }
-         } else if (!this.moveItemStackTo(var5, 0, this.hopper.getContainerSize(), false)) {
+         } else if (!this.moveItemStackTo(stack, 0, this.hopper.getContainerSize(), false)) {
             return ItemStack.EMPTY;
          }
 
-         if (var5.isEmpty()) {
-            var4.setByPlayer(ItemStack.EMPTY);
+         if (stack.isEmpty()) {
+            slot.setByPlayer(ItemStack.EMPTY);
          } else {
-            var4.setChanged();
+            slot.setChanged();
          }
       }
 
-      return var3;
+      return clicked;
    }
 
-   public void removed(Player var1) {
-      super.removed(var1);
-      this.hopper.stopOpen(var1);
+   public void removed(final Player player) {
+      super.removed(player);
+      this.hopper.stopOpen(player);
    }
 }

@@ -41,37 +41,37 @@ public class MenuScreens {
       super();
    }
 
-   public static <T extends AbstractContainerMenu> void create(MenuType<T> var0, Minecraft var1, int var2, Component var3) {
-      ScreenConstructor var4 = getConstructor(var0);
-      if (var4 == null) {
-         LOGGER.warn("Failed to create screen for menu type: {}", BuiltInRegistries.MENU.getKey(var0));
+   public static <T extends AbstractContainerMenu> void create(final MenuType<T> type, final Minecraft minecraft, final int containerId, final Component title) {
+      ScreenConstructor<T, ?> constructor = getConstructor(type);
+      if (constructor == null) {
+         LOGGER.warn("Failed to create screen for menu type: {}", BuiltInRegistries.MENU.getKey(type));
       } else {
-         var4.fromPacket(var3, var0, var1, var2);
+         constructor.fromPacket(title, type, minecraft, containerId);
       }
    }
 
-   private static <T extends AbstractContainerMenu> @Nullable ScreenConstructor<T, ?> getConstructor(MenuType<T> var0) {
-      return (ScreenConstructor)SCREENS.get(var0);
+   private static <T extends AbstractContainerMenu> @Nullable ScreenConstructor<T, ?> getConstructor(final MenuType<T> type) {
+      return (ScreenConstructor)SCREENS.get(type);
    }
 
-   private static <M extends AbstractContainerMenu, U extends Screen & MenuAccess<M>> void register(MenuType<? extends M> var0, ScreenConstructor<M, U> var1) {
-      ScreenConstructor var2 = (ScreenConstructor)SCREENS.put(var0, var1);
-      if (var2 != null) {
-         throw new IllegalStateException("Duplicate registration for " + String.valueOf(BuiltInRegistries.MENU.getKey(var0)));
+   private static <M extends AbstractContainerMenu, U extends Screen & MenuAccess<M>> void register(final MenuType<? extends M> type, final ScreenConstructor<M, U> factory) {
+      ScreenConstructor<?, ?> prev = (ScreenConstructor)SCREENS.put(type, factory);
+      if (prev != null) {
+         throw new IllegalStateException("Duplicate registration for " + String.valueOf(BuiltInRegistries.MENU.getKey(type)));
       }
    }
 
    public static boolean selfTest() {
-      boolean var0 = false;
+      boolean failed = false;
 
-      for(MenuType var2 : BuiltInRegistries.MENU) {
-         if (!SCREENS.containsKey(var2)) {
-            LOGGER.debug("Menu {} has no matching screen", BuiltInRegistries.MENU.getKey(var2));
-            var0 = true;
+      for(MenuType<?> menuType : BuiltInRegistries.MENU) {
+         if (!SCREENS.containsKey(menuType)) {
+            LOGGER.debug("Menu {} has no matching screen", BuiltInRegistries.MENU.getKey(menuType));
+            failed = true;
          }
       }
 
-      return var0;
+      return failed;
    }
 
    static {
@@ -102,13 +102,13 @@ public class MenuScreens {
       register(MenuType.STONECUTTER, StonecutterScreen::new);
    }
 
-   interface ScreenConstructor<T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>> {
-      default void fromPacket(Component var1, MenuType<T> var2, Minecraft var3, int var4) {
-         Screen var5 = this.create(var2.create(var4, var3.player.getInventory()), var3.player.getInventory(), var1);
-         var3.player.containerMenu = ((MenuAccess)var5).getMenu();
-         var3.setScreen(var5);
+   private interface ScreenConstructor<T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>> {
+      default void fromPacket(final Component title, final MenuType<T> type, final Minecraft minecraft, final int containerId) {
+         U screen = this.create(type.create(containerId, minecraft.player.getInventory()), minecraft.player.getInventory(), title);
+         minecraft.player.containerMenu = (screen).getMenu();
+         minecraft.setScreen(screen);
       }
 
-      U create(T var1, Inventory var2, Component var3);
+      U create(T menu, Inventory inventory, final Component title);
    }
 }

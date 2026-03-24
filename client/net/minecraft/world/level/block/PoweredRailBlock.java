@@ -21,98 +21,98 @@ public class PoweredRailBlock extends BaseRailBlock {
       return CODEC;
    }
 
-   protected PoweredRailBlock(BlockBehaviour.Properties var1) {
-      super(true, var1);
+   protected PoweredRailBlock(final BlockBehaviour.Properties properties) {
+      super(true, properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(SHAPE, RailShape.NORTH_SOUTH)).setValue(POWERED, false)).setValue(WATERLOGGED, false));
    }
 
-   protected boolean findPoweredRailSignal(Level var1, BlockPos var2, BlockState var3, boolean var4, int var5) {
-      if (var5 >= 8) {
+   protected boolean findPoweredRailSignal(final Level level, final BlockPos pos, final BlockState state, final boolean forward, final int searchDepth) {
+      if (searchDepth >= 8) {
          return false;
       } else {
-         int var6 = var2.getX();
-         int var7 = var2.getY();
-         int var8 = var2.getZ();
-         boolean var9 = true;
-         RailShape var10 = (RailShape)var3.getValue(SHAPE);
-         switch (var10) {
+         int x = pos.getX();
+         int y = pos.getY();
+         int z = pos.getZ();
+         boolean checkBelow = true;
+         RailShape shape = (RailShape)state.getValue(SHAPE);
+         switch (shape) {
             case NORTH_SOUTH:
-               if (var4) {
-                  ++var8;
+               if (forward) {
+                  ++z;
                } else {
-                  --var8;
+                  --z;
                }
                break;
             case EAST_WEST:
-               if (var4) {
-                  --var6;
+               if (forward) {
+                  --x;
                } else {
-                  ++var6;
+                  ++x;
                }
                break;
             case ASCENDING_EAST:
-               if (var4) {
-                  --var6;
+               if (forward) {
+                  --x;
                } else {
-                  ++var6;
-                  ++var7;
-                  var9 = false;
+                  ++x;
+                  ++y;
+                  checkBelow = false;
                }
 
-               var10 = RailShape.EAST_WEST;
+               shape = RailShape.EAST_WEST;
                break;
             case ASCENDING_WEST:
-               if (var4) {
-                  --var6;
-                  ++var7;
-                  var9 = false;
+               if (forward) {
+                  --x;
+                  ++y;
+                  checkBelow = false;
                } else {
-                  ++var6;
+                  ++x;
                }
 
-               var10 = RailShape.EAST_WEST;
+               shape = RailShape.EAST_WEST;
                break;
             case ASCENDING_NORTH:
-               if (var4) {
-                  ++var8;
+               if (forward) {
+                  ++z;
                } else {
-                  --var8;
-                  ++var7;
-                  var9 = false;
+                  --z;
+                  ++y;
+                  checkBelow = false;
                }
 
-               var10 = RailShape.NORTH_SOUTH;
+               shape = RailShape.NORTH_SOUTH;
                break;
             case ASCENDING_SOUTH:
-               if (var4) {
-                  ++var8;
-                  ++var7;
-                  var9 = false;
+               if (forward) {
+                  ++z;
+                  ++y;
+                  checkBelow = false;
                } else {
-                  --var8;
+                  --z;
                }
 
-               var10 = RailShape.NORTH_SOUTH;
+               shape = RailShape.NORTH_SOUTH;
          }
 
-         if (this.isSameRailWithPower(var1, new BlockPos(var6, var7, var8), var4, var5, var10)) {
+         if (this.isSameRailWithPower(level, new BlockPos(x, y, z), forward, searchDepth, shape)) {
             return true;
          } else {
-            return var9 && this.isSameRailWithPower(var1, new BlockPos(var6, var7 - 1, var8), var4, var5, var10);
+            return checkBelow && this.isSameRailWithPower(level, new BlockPos(x, y - 1, z), forward, searchDepth, shape);
          }
       }
    }
 
-   protected boolean isSameRailWithPower(Level var1, BlockPos var2, boolean var3, int var4, RailShape var5) {
-      BlockState var6 = var1.getBlockState(var2);
-      if (!var6.is(this)) {
+   protected boolean isSameRailWithPower(final Level level, final BlockPos pos, final boolean forward, final int searchDepth, final RailShape dir) {
+      BlockState state = level.getBlockState(pos);
+      if (!state.is(this)) {
          return false;
       } else {
-         RailShape var7 = (RailShape)var6.getValue(SHAPE);
-         if (var5 != RailShape.EAST_WEST || var7 != RailShape.NORTH_SOUTH && var7 != RailShape.ASCENDING_NORTH && var7 != RailShape.ASCENDING_SOUTH) {
-            if (var5 != RailShape.NORTH_SOUTH || var7 != RailShape.EAST_WEST && var7 != RailShape.ASCENDING_EAST && var7 != RailShape.ASCENDING_WEST) {
-               if ((Boolean)var6.getValue(POWERED)) {
-                  return var1.hasNeighborSignal(var2) ? true : this.findPoweredRailSignal(var1, var2, var6, var3, var4 + 1);
+         RailShape myShape = (RailShape)state.getValue(SHAPE);
+         if (dir != RailShape.EAST_WEST || myShape != RailShape.NORTH_SOUTH && myShape != RailShape.ASCENDING_NORTH && myShape != RailShape.ASCENDING_SOUTH) {
+            if (dir != RailShape.NORTH_SOUTH || myShape != RailShape.EAST_WEST && myShape != RailShape.ASCENDING_EAST && myShape != RailShape.ASCENDING_WEST) {
+               if ((Boolean)state.getValue(POWERED)) {
+                  return level.hasNeighborSignal(pos) ? true : this.findPoweredRailSignal(level, pos, state, forward, searchDepth + 1);
                } else {
                   return false;
                }
@@ -125,14 +125,14 @@ public class PoweredRailBlock extends BaseRailBlock {
       }
    }
 
-   protected void updateState(BlockState var1, Level var2, BlockPos var3, Block var4) {
-      boolean var5 = (Boolean)var1.getValue(POWERED);
-      boolean var6 = var2.hasNeighborSignal(var3) || this.findPoweredRailSignal(var2, var3, var1, true, 0) || this.findPoweredRailSignal(var2, var3, var1, false, 0);
-      if (var6 != var5) {
-         var2.setBlock(var3, (BlockState)var1.setValue(POWERED, var6), 3);
-         var2.updateNeighborsAt(var3.below(), this);
-         if (((RailShape)var1.getValue(SHAPE)).isSlope()) {
-            var2.updateNeighborsAt(var3.above(), this);
+   protected void updateState(final BlockState state, final Level level, final BlockPos pos, final Block block) {
+      boolean isPowered = (Boolean)state.getValue(POWERED);
+      boolean shouldPower = level.hasNeighborSignal(pos) || this.findPoweredRailSignal(level, pos, state, true, 0) || this.findPoweredRailSignal(level, pos, state, false, 0);
+      if (shouldPower != isPowered) {
+         level.setBlock(pos, (BlockState)state.setValue(POWERED, shouldPower), 3);
+         level.updateNeighborsAt(pos.below(), this);
+         if (((RailShape)state.getValue(SHAPE)).isSlope()) {
+            level.updateNeighborsAt(pos.above(), this);
          }
       }
 
@@ -142,20 +142,20 @@ public class PoweredRailBlock extends BaseRailBlock {
       return SHAPE;
    }
 
-   protected BlockState rotate(BlockState var1, Rotation var2) {
-      RailShape var3 = (RailShape)var1.getValue(SHAPE);
-      RailShape var4 = this.rotate(var3, var2);
-      return (BlockState)var1.setValue(SHAPE, var4);
+   protected BlockState rotate(final BlockState state, final Rotation rotation) {
+      RailShape currentShape = (RailShape)state.getValue(SHAPE);
+      RailShape newShape = this.rotate(currentShape, rotation);
+      return (BlockState)state.setValue(SHAPE, newShape);
    }
 
-   protected BlockState mirror(BlockState var1, Mirror var2) {
-      RailShape var3 = (RailShape)var1.getValue(SHAPE);
-      RailShape var4 = this.mirror(var3, var2);
-      return (BlockState)var1.setValue(SHAPE, var4);
+   protected BlockState mirror(final BlockState state, final Mirror mirror) {
+      RailShape currentShape = (RailShape)state.getValue(SHAPE);
+      RailShape newShape = this.mirror(currentShape, mirror);
+      return (BlockState)state.setValue(SHAPE, newShape);
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(SHAPE, POWERED, WATERLOGGED);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(SHAPE, POWERED, WATERLOGGED);
    }
 
    static {

@@ -9,17 +9,16 @@ import net.minecraft.world.item.crafting.display.RecipeDisplayId;
 public record ServerboundRecipeBookSeenRecipePacket(RecipeDisplayId recipe) implements Packet<ServerGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ServerboundRecipeBookSeenRecipePacket> STREAM_CODEC;
 
-   public ServerboundRecipeBookSeenRecipePacket(RecipeDisplayId var1) {
+   public ServerboundRecipeBookSeenRecipePacket {
       super();
-      this.recipe = var1;
    }
 
    public PacketType<ServerboundRecipeBookSeenRecipePacket> type() {
       return GamePacketTypes.SERVERBOUND_RECIPE_BOOK_SEEN_RECIPE;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handleRecipeBookSeenRecipePacket(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handleRecipeBookSeenRecipePacket(this);
    }
 
    static {

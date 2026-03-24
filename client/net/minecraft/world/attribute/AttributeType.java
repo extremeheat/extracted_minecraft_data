@@ -7,51 +7,54 @@ import java.util.Objects;
 import java.util.function.Function;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.util.ToFloatFunction;
 import net.minecraft.util.Util;
 import net.minecraft.world.attribute.modifier.AttributeModifier;
+import org.jspecify.annotations.Nullable;
 
-public record AttributeType<Value>(Codec<Value> valueCodec, Map<AttributeModifier.OperationId, AttributeModifier<Value, ?>> modifierLibrary, Codec<AttributeModifier<Value, ?>> modifierCodec, LerpFunction<Value> keyframeLerp, LerpFunction<Value> stateChangeLerp, LerpFunction<Value> spatialLerp, LerpFunction<Value> partialTickLerp) {
-   public AttributeType(Codec<Value> var1, Map<AttributeModifier.OperationId, AttributeModifier<Value, ?>> var2, Codec<AttributeModifier<Value, ?>> var3, LerpFunction<Value> var4, LerpFunction<Value> var5, LerpFunction<Value> var6, LerpFunction<Value> var7) {
+public record AttributeType<Value>(Codec<Value> valueCodec, Map<AttributeModifier.OperationId, AttributeModifier<Value, ?>> modifierLibrary, Codec<AttributeModifier<Value, ?>> modifierCodec, LerpFunction<Value> keyframeLerp, LerpFunction<Value> stateChangeLerp, LerpFunction<Value> spatialLerp, LerpFunction<Value> partialTickLerp, @Nullable ToFloatFunction<Value> toFloat) {
+   public AttributeType {
       super();
-      this.valueCodec = var1;
-      this.modifierLibrary = var2;
-      this.modifierCodec = var3;
-      this.keyframeLerp = var4;
-      this.stateChangeLerp = var5;
-      this.spatialLerp = var6;
-      this.partialTickLerp = var7;
    }
 
-   public static <Value> AttributeType<Value> ofInterpolated(Codec<Value> var0, Map<AttributeModifier.OperationId, AttributeModifier<Value, ?>> var1, LerpFunction<Value> var2) {
-      return ofInterpolated(var0, var1, var2, var2);
+   public static <Value> AttributeType<Value> ofInterpolated(final Codec<Value> valueCodec, final Map<AttributeModifier.OperationId, AttributeModifier<Value, ?>> modifierLibrary, final LerpFunction<Value> lerp) {
+      return ofInterpolated(valueCodec, modifierLibrary, lerp, lerp, (ToFloatFunction)null);
    }
 
-   public static <Value> AttributeType<Value> ofInterpolated(Codec<Value> var0, Map<AttributeModifier.OperationId, AttributeModifier<Value, ?>> var1, LerpFunction<Value> var2, LerpFunction<Value> var3) {
-      return new AttributeType<Value>(var0, var1, createModifierCodec(var1), var2, var2, var2, var3);
+   public static <Value> AttributeType<Value> ofInterpolated(final Codec<Value> valueCodec, final Map<AttributeModifier.OperationId, AttributeModifier<Value, ?>> modifierLibrary, final LerpFunction<Value> lerp, final LerpFunction<Value> partialTickLerp, final @Nullable ToFloatFunction<Value> toFloat) {
+      return new AttributeType<Value>(valueCodec, modifierLibrary, createModifierCodec(modifierLibrary), lerp, lerp, lerp, partialTickLerp, toFloat);
    }
 
-   public static <Value> AttributeType<Value> ofNotInterpolated(Codec<Value> var0, Map<AttributeModifier.OperationId, AttributeModifier<Value, ?>> var1) {
-      return new AttributeType<Value>(var0, var1, createModifierCodec(var1), LerpFunction.ofStep(1.0F), LerpFunction.ofStep(0.0F), LerpFunction.ofStep(0.5F), LerpFunction.ofStep(0.0F));
+   public static <Value> AttributeType<Value> ofNotInterpolated(final Codec<Value> valueCodec, final Map<AttributeModifier.OperationId, AttributeModifier<Value, ?>> modifierLibrary) {
+      return new AttributeType<Value>(valueCodec, modifierLibrary, createModifierCodec(modifierLibrary), LerpFunction.ofStep(1.0F), LerpFunction.ofStep(0.0F), LerpFunction.ofStep(0.5F), LerpFunction.ofStep(0.0F), (ToFloatFunction)null);
    }
 
-   public static <Value> AttributeType<Value> ofNotInterpolated(Codec<Value> var0) {
-      return ofNotInterpolated(var0, Map.of());
+   public static <Value> AttributeType<Value> ofNotInterpolated(final Codec<Value> valueCodec) {
+      return ofNotInterpolated(valueCodec, Map.of());
    }
 
-   private static <Value> Codec<AttributeModifier<Value, ?>> createModifierCodec(Map<AttributeModifier.OperationId, AttributeModifier<Value, ?>> var0) {
-      ImmutableBiMap var1 = ImmutableBiMap.builder().put(AttributeModifier.OperationId.OVERRIDE, AttributeModifier.override()).putAll(var0).buildOrThrow();
+   private static <Value> Codec<AttributeModifier<Value, ?>> createModifierCodec(final Map<AttributeModifier.OperationId, AttributeModifier<Value, ?>> modifiers) {
+      ImmutableBiMap<AttributeModifier.OperationId, AttributeModifier<Value, ?>> modifierLookup = ImmutableBiMap.builder().put(AttributeModifier.OperationId.OVERRIDE, AttributeModifier.override()).putAll(modifiers).buildOrThrow();
       Codec var10000 = AttributeModifier.OperationId.CODEC;
-      Objects.requireNonNull(var1);
-      Function var10001 = var1::get;
-      ImmutableBiMap var10002 = var1.inverse();
+      Objects.requireNonNull(modifierLookup);
+      Function var10001 = modifierLookup::get;
+      ImmutableBiMap var10002 = modifierLookup.inverse();
       Objects.requireNonNull(var10002);
       return ExtraCodecs.idResolverCodec(var10000, var10001, var10002::get);
    }
 
-   public void checkAllowedModifier(AttributeModifier<Value, ?> var1) {
-      if (var1 != AttributeModifier.override() && !this.modifierLibrary.containsValue(var1)) {
-         String var10002 = String.valueOf(var1);
+   public void checkAllowedModifier(final AttributeModifier<Value, ?> modifier) {
+      if (modifier != AttributeModifier.override() && !this.modifierLibrary.containsValue(modifier)) {
+         String var10002 = String.valueOf(modifier);
          throw new IllegalArgumentException("Modifier " + var10002 + " is not valid for " + String.valueOf(this));
+      }
+   }
+
+   public float toFloat(final Value value) {
+      if (this.toFloat == null) {
+         throw new IllegalStateException(String.valueOf(value) + " cannot be represented as a float");
+      } else {
+         return this.toFloat.applyAsFloat(value);
       }
    }
 

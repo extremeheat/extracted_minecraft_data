@@ -19,36 +19,36 @@ public class PacketUtils {
       super();
    }
 
-   public static <T extends PacketListener> void ensureRunningOnSameThread(Packet<T> var0, T var1, ServerLevel var2) throws RunningOnDifferentThreadException {
-      ensureRunningOnSameThread(var0, var1, var2.getServer().packetProcessor());
+   public static <T extends PacketListener> void ensureRunningOnSameThread(final Packet<T> packet, final T listener, final ServerLevel level) throws RunningOnDifferentThreadException {
+      ensureRunningOnSameThread(packet, listener, level.getServer().packetProcessor());
    }
 
-   public static <T extends PacketListener> void ensureRunningOnSameThread(Packet<T> var0, T var1, PacketProcessor var2) throws RunningOnDifferentThreadException {
-      if (!var2.isSameThread()) {
-         var2.scheduleIfPossible(var1, var0);
+   public static <T extends PacketListener> void ensureRunningOnSameThread(final Packet<T> packet, final T listener, final PacketProcessor packetProcessor) throws RunningOnDifferentThreadException {
+      if (!packetProcessor.isSameThread()) {
+         packetProcessor.scheduleIfPossible(listener, packet);
          throw RunningOnDifferentThreadException.RUNNING_ON_DIFFERENT_THREAD;
       }
    }
 
-   public static <T extends PacketListener> ReportedException makeReportedException(Exception var0, Packet<T> var1, T var2) {
-      if (var0 instanceof ReportedException var3) {
-         fillCrashReport(var3.getReport(), var2, var1);
-         return var3;
+   public static <T extends PacketListener> ReportedException makeReportedException(final Exception cause, final Packet<T> packet, final T listener) {
+      if (cause instanceof ReportedException re) {
+         fillCrashReport(re.getReport(), listener, packet);
+         return re;
       } else {
-         CrashReport var4 = CrashReport.forThrowable(var0, "Main thread packet handler");
-         fillCrashReport(var4, var2, var1);
-         return new ReportedException(var4);
+         CrashReport report = CrashReport.forThrowable(cause, "Main thread packet handler");
+         fillCrashReport(report, listener, packet);
+         return new ReportedException(report);
       }
    }
 
-   public static <T extends PacketListener> void fillCrashReport(CrashReport var0, T var1, @Nullable Packet<T> var2) {
-      if (var2 != null) {
-         CrashReportCategory var3 = var0.addCategory("Incoming Packet");
-         var3.setDetail("Type", (CrashReportDetail)(() -> var2.type().toString()));
-         var3.setDetail("Is Terminal", (CrashReportDetail)(() -> Boolean.toString(var2.isTerminal())));
-         var3.setDetail("Is Skippable", (CrashReportDetail)(() -> Boolean.toString(var2.isSkippable())));
+   public static <T extends PacketListener> void fillCrashReport(final CrashReport report, final T listener, final @Nullable Packet<T> packet) {
+      if (packet != null) {
+         CrashReportCategory details = report.addCategory("Incoming Packet");
+         details.setDetail("Type", (CrashReportDetail)(() -> packet.type().toString()));
+         details.setDetail("Is Terminal", (CrashReportDetail)(() -> Boolean.toString(packet.isTerminal())));
+         details.setDetail("Is Skippable", (CrashReportDetail)(() -> Boolean.toString(packet.isSkippable())));
       }
 
-      var1.fillCrashReport(var0);
+      listener.fillCrashReport(report);
    }
 }

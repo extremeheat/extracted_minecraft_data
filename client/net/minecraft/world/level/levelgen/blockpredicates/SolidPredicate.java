@@ -8,14 +8,14 @@ import net.minecraft.world.level.block.state.BlockState;
 /** @deprecated */
 @Deprecated
 public class SolidPredicate extends StateTestingPredicate {
-   public static final MapCodec<SolidPredicate> CODEC = RecordCodecBuilder.mapCodec((var0) -> stateTestingCodec(var0).apply(var0, SolidPredicate::new));
+   public static final MapCodec<SolidPredicate> CODEC = RecordCodecBuilder.mapCodec((i) -> stateTestingCodec(i).apply(i, SolidPredicate::new));
 
-   public SolidPredicate(Vec3i var1) {
-      super(var1);
+   public SolidPredicate(final Vec3i offset) {
+      super(offset);
    }
 
-   protected boolean test(BlockState var1) {
-      return var1.isSolid();
+   protected boolean test(final BlockState state) {
+      return state.isSolid();
    }
 
    public BlockPredicateType<?> type() {

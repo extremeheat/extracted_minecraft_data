@@ -10,17 +10,17 @@ public class CompassAngle implements RangeSelectItemModelProperty {
    public static final MapCodec<CompassAngle> MAP_CODEC;
    private final CompassAngleState state;
 
-   public CompassAngle(boolean var1, CompassAngleState.CompassTarget var2) {
-      this(new CompassAngleState(var1, var2));
+   public CompassAngle(final boolean wobble, final CompassAngleState.CompassTarget compassTarget) {
+      this(new CompassAngleState(wobble, compassTarget));
    }
 
-   private CompassAngle(CompassAngleState var1) {
+   private CompassAngle(final CompassAngleState state) {
       super();
-      this.state = var1;
+      this.state = state;
    }
 
-   public float get(ItemStack var1, @Nullable ClientLevel var2, @Nullable ItemOwner var3, int var4) {
-      return this.state.get(var1, var2, var3, var4);
+   public float get(final ItemStack itemStack, final @Nullable ClientLevel level, final @Nullable ItemOwner owner, final int seed) {
+      return this.state.get(itemStack, level, owner, seed);
    }
 
    public MapCodec<CompassAngle> type() {
@@ -28,6 +28,6 @@ public class CompassAngle implements RangeSelectItemModelProperty {
    }
 
    static {
-      MAP_CODEC = CompassAngleState.MAP_CODEC.xmap(CompassAngle::new, (var0) -> var0.state);
+      MAP_CODEC = CompassAngleState.MAP_CODEC.xmap(CompassAngle::new, (c) -> c.state);
    }
 }

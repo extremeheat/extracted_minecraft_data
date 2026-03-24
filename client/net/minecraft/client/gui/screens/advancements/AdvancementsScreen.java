@@ -8,8 +8,7 @@ import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementNode;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.screens.Screen;
@@ -51,16 +50,16 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
    private @Nullable AdvancementTab selectedTab;
    private boolean isScrolling;
 
-   public AdvancementsScreen(ClientAdvancements var1) {
-      this(var1, (Screen)null);
+   public AdvancementsScreen(final ClientAdvancements advancements) {
+      this(advancements, (Screen)null);
    }
 
-   public AdvancementsScreen(ClientAdvancements var1, @Nullable Screen var2) {
+   public AdvancementsScreen(final ClientAdvancements advancements, final @Nullable Screen lastScreen) {
       super(TITLE);
       this.layout = new HeaderAndFooterLayout(this);
       this.tabs = Maps.newLinkedHashMap();
-      this.advancements = var1;
-      this.lastScreen = var2;
+      this.advancements = advancements;
+      this.lastScreen = lastScreen;
    }
 
    protected void init() {
@@ -69,16 +68,14 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
       this.selectedTab = null;
       this.advancements.setListener(this);
       if (this.selectedTab == null && !this.tabs.isEmpty()) {
-         AdvancementTab var1 = (AdvancementTab)this.tabs.values().iterator().next();
-         this.advancements.setSelectedTab(var1.getRootNode().holder(), true);
+         AdvancementTab firstTab = (AdvancementTab)this.tabs.values().iterator().next();
+         this.advancements.setSelectedTab(firstTab.getRootNode().holder(), true);
       } else {
          this.advancements.setSelectedTab(this.selectedTab == null ? null : this.selectedTab.getRootNode().holder(), true);
       }
 
-      this.layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.onClose()).width(200).build());
-      this.layout.visitWidgets((var1x) -> {
-         AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
-      });
+      this.layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, (button) -> this.onClose()).width(200).build());
+      this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
       this.repositionElements();
    }
 
@@ -92,174 +89,174 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
 
    public void removed() {
       this.advancements.setListener((ClientAdvancements.Listener)null);
-      ClientPacketListener var1 = this.minecraft.getConnection();
-      if (var1 != null) {
-         var1.send(ServerboundSeenAdvancementsPacket.closedScreen());
+      ClientPacketListener connection = this.minecraft.getConnection();
+      if (connection != null) {
+         connection.send(ServerboundSeenAdvancementsPacket.closedScreen());
       }
 
    }
 
-   public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
-      if (var1.button() == 0) {
-         int var3 = (this.width - 252) / 2;
-         int var4 = (this.height - 140) / 2;
+   public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
+      if (event.button() == 0) {
+         int xo = (this.width - 252) / 2;
+         int yo = (this.height - 140) / 2;
 
-         for(AdvancementTab var6 : this.tabs.values()) {
-            if (var6.isMouseOver(var3, var4, var1.x(), var1.y())) {
-               this.advancements.setSelectedTab(var6.getRootNode().holder(), true);
+         for(AdvancementTab tab : this.tabs.values()) {
+            if (tab.isMouseOver(xo, yo, event.x(), event.y())) {
+               this.advancements.setSelectedTab(tab.getRootNode().holder(), true);
                break;
             }
          }
       }
 
-      return super.mouseClicked(var1, var2);
+      return super.mouseClicked(event, doubleClick);
    }
 
-   public boolean keyPressed(KeyEvent var1) {
-      if (this.minecraft.options.keyAdvancements.matches(var1)) {
+   public boolean keyPressed(final KeyEvent event) {
+      if (this.minecraft.options.keyAdvancements.matches(event)) {
          this.minecraft.setScreen((Screen)null);
          this.minecraft.mouseHandler.grabMouse();
          return true;
       } else {
-         return super.keyPressed(var1);
+         return super.keyPressed(event);
       }
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      int var5 = (this.width - 252) / 2;
-      int var6 = (this.height - 140) / 2;
-      var1.nextStratum();
-      this.renderInside(var1, var5, var6);
-      var1.nextStratum();
-      this.renderWindow(var1, var5, var6, var2, var3);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
+      int xo = (this.width - 252) / 2;
+      int yo = (this.height - 140) / 2;
+      graphics.nextStratum();
+      this.extractInside(graphics, xo, yo);
+      graphics.nextStratum();
+      this.extractWindow(graphics, xo, yo, mouseX, mouseY);
       if (this.isScrolling && this.selectedTab != null) {
          if (this.selectedTab.canScrollHorizontally() && this.selectedTab.canScrollVertically()) {
-            var1.requestCursor(CursorTypes.RESIZE_ALL);
+            graphics.requestCursor(CursorTypes.RESIZE_ALL);
          } else if (this.selectedTab.canScrollHorizontally()) {
-            var1.requestCursor(CursorTypes.RESIZE_EW);
+            graphics.requestCursor(CursorTypes.RESIZE_EW);
          } else if (this.selectedTab.canScrollVertically()) {
-            var1.requestCursor(CursorTypes.RESIZE_NS);
+            graphics.requestCursor(CursorTypes.RESIZE_NS);
          }
       }
 
-      this.renderTooltips(var1, var2, var3, var5, var6);
+      this.extractTooltips(graphics, mouseX, mouseY, xo, yo);
    }
 
-   public boolean mouseDragged(MouseButtonEvent var1, double var2, double var4) {
-      if (var1.button() != 0) {
+   public boolean mouseDragged(final MouseButtonEvent event, final double dx, final double dy) {
+      if (event.button() != 0) {
          this.isScrolling = false;
          return false;
       } else {
          if (!this.isScrolling) {
             this.isScrolling = true;
          } else if (this.selectedTab != null) {
-            this.selectedTab.scroll(var2, var4);
+            this.selectedTab.scroll(dx, dy);
          }
 
          return true;
       }
    }
 
-   public boolean mouseReleased(MouseButtonEvent var1) {
+   public boolean mouseReleased(final MouseButtonEvent event) {
       this.isScrolling = false;
-      return super.mouseReleased(var1);
+      return super.mouseReleased(event);
    }
 
-   public boolean mouseScrolled(double var1, double var3, double var5, double var7) {
+   public boolean mouseScrolled(final double x, final double y, final double scrollX, final double scrollY) {
       if (this.selectedTab != null) {
-         this.selectedTab.scroll(var5 * 16.0, var7 * 16.0);
+         this.selectedTab.scroll(scrollX * 16.0, scrollY * 16.0);
          return true;
       } else {
          return false;
       }
    }
 
-   private void renderInside(GuiGraphics var1, int var2, int var3) {
-      AdvancementTab var4 = this.selectedTab;
-      if (var4 == null) {
-         var1.fill(var2 + 9, var3 + 18, var2 + 9 + 234, var3 + 18 + 113, -16777216);
-         int var5 = var2 + 9 + 117;
+   private void extractInside(final GuiGraphicsExtractor graphics, final int xo, final int yo) {
+      AdvancementTab tab = this.selectedTab;
+      if (tab == null) {
+         graphics.fill(xo + 9, yo + 18, xo + 9 + 234, yo + 18 + 113, -16777216);
+         int midX = xo + 9 + 117;
          Font var10001 = this.font;
          Component var10002 = NO_ADVANCEMENTS_LABEL;
-         int var10004 = var3 + 18 + 56;
+         int var10004 = yo + 18 + 56;
          Objects.requireNonNull(this.font);
-         var1.drawCenteredString(var10001, (Component)var10002, var5, var10004 - 9 / 2, -1);
+         graphics.centeredText(var10001, (Component)var10002, midX, var10004 - 9 / 2, -1);
          var10001 = this.font;
          var10002 = VERY_SAD_LABEL;
-         var10004 = var3 + 18 + 113;
+         var10004 = yo + 18 + 113;
          Objects.requireNonNull(this.font);
-         var1.drawCenteredString(var10001, (Component)var10002, var5, var10004 - 9, -1);
+         graphics.centeredText(var10001, (Component)var10002, midX, var10004 - 9, -1);
       } else {
-         var4.drawContents(var1, var2 + 9, var3 + 18);
+         tab.extractContents(graphics, xo + 9, yo + 18);
       }
    }
 
-   public void renderWindow(GuiGraphics var1, int var2, int var3, int var4, int var5) {
-      var1.blit(RenderPipelines.GUI_TEXTURED, WINDOW_LOCATION, var2, var3, 0.0F, 0.0F, 252, 140, 256, 256);
+   public void extractWindow(final GuiGraphicsExtractor graphics, final int xo, final int yo, final int mouseX, final int mouseY) {
+      graphics.blit(RenderPipelines.GUI_TEXTURED, WINDOW_LOCATION, xo, yo, 0.0F, 0.0F, 252, 140, 256, 256);
       if (this.tabs.size() > 1) {
-         for(AdvancementTab var7 : this.tabs.values()) {
-            var7.drawTab(var1, var2, var3, var4, var5, var7 == this.selectedTab);
+         for(AdvancementTab tab : this.tabs.values()) {
+            tab.extractTab(graphics, xo, yo, mouseX, mouseY, tab == this.selectedTab);
          }
 
-         for(AdvancementTab var9 : this.tabs.values()) {
-            var9.drawIcon(var1, var2, var3);
+         for(AdvancementTab tab : this.tabs.values()) {
+            tab.extractIcon(graphics, xo, yo);
          }
       }
 
-      var1.drawString(this.font, this.selectedTab != null ? this.selectedTab.getTitle() : TITLE, var2 + 8, var3 + 6, -12566464, false);
+      graphics.text(this.font, this.selectedTab != null ? this.selectedTab.getTitle() : TITLE, xo + 8, yo + 6, -12566464, false);
    }
 
-   private void renderTooltips(GuiGraphics var1, int var2, int var3, int var4, int var5) {
+   private void extractTooltips(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final int xo, final int yo) {
       if (this.selectedTab != null) {
-         var1.pose().pushMatrix();
-         var1.pose().translate((float)(var4 + 9), (float)(var5 + 18));
-         var1.nextStratum();
-         this.selectedTab.drawTooltips(var1, var2 - var4 - 9, var3 - var5 - 18, var4, var5);
-         var1.pose().popMatrix();
+         graphics.pose().pushMatrix();
+         graphics.pose().translate((float)(xo + 9), (float)(yo + 18));
+         graphics.nextStratum();
+         this.selectedTab.extractTooltips(graphics, mouseX - xo - 9, mouseY - yo - 18, xo, yo);
+         graphics.pose().popMatrix();
       }
 
       if (this.tabs.size() > 1) {
-         for(AdvancementTab var7 : this.tabs.values()) {
-            if (var7.isMouseOver(var4, var5, (double)var2, (double)var3)) {
-               var1.setTooltipForNextFrame(this.font, var7.getTitle(), var2, var3);
+         for(AdvancementTab tab : this.tabs.values()) {
+            if (tab.isMouseOver(xo, yo, (double)mouseX, (double)mouseY)) {
+               graphics.setTooltipForNextFrame(this.font, tab.getTitle(), mouseX, mouseY);
             }
          }
       }
 
    }
 
-   public void onAddAdvancementRoot(AdvancementNode var1) {
-      AdvancementTab var2 = AdvancementTab.create(this.minecraft, this, this.tabs.size(), var1);
-      if (var2 != null) {
-         this.tabs.put(var1.holder(), var2);
+   public void onAddAdvancementRoot(final AdvancementNode root) {
+      AdvancementTab tab = AdvancementTab.create(this.minecraft, this, this.tabs.size(), root);
+      if (tab != null) {
+         this.tabs.put(root.holder(), tab);
       }
    }
 
-   public void onRemoveAdvancementRoot(AdvancementNode var1) {
+   public void onRemoveAdvancementRoot(final AdvancementNode root) {
    }
 
-   public void onAddAdvancementTask(AdvancementNode var1) {
-      AdvancementTab var2 = this.getTab(var1);
-      if (var2 != null) {
-         var2.addAdvancement(var1);
-      }
-
-   }
-
-   public void onRemoveAdvancementTask(AdvancementNode var1) {
-   }
-
-   public void onUpdateAdvancementProgress(AdvancementNode var1, AdvancementProgress var2) {
-      AdvancementWidget var3 = this.getAdvancementWidget(var1);
-      if (var3 != null) {
-         var3.setProgress(var2);
+   public void onAddAdvancementTask(final AdvancementNode task) {
+      AdvancementTab tab = this.getTab(task);
+      if (tab != null) {
+         tab.addAdvancement(task);
       }
 
    }
 
-   public void onSelectedTabChanged(@Nullable AdvancementHolder var1) {
-      this.selectedTab = (AdvancementTab)this.tabs.get(var1);
+   public void onRemoveAdvancementTask(final AdvancementNode task) {
+   }
+
+   public void onUpdateAdvancementProgress(final AdvancementNode advancement, final AdvancementProgress progress) {
+      AdvancementWidget widget = this.getAdvancementWidget(advancement);
+      if (widget != null) {
+         widget.setProgress(progress);
+      }
+
+   }
+
+   public void onSelectedTabChanged(final @Nullable AdvancementHolder selectedTab) {
+      this.selectedTab = (AdvancementTab)this.tabs.get(selectedTab);
    }
 
    public void onAdvancementsCleared() {
@@ -267,13 +264,13 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
       this.selectedTab = null;
    }
 
-   public @Nullable AdvancementWidget getAdvancementWidget(AdvancementNode var1) {
-      AdvancementTab var2 = this.getTab(var1);
-      return var2 == null ? null : var2.getWidget(var1.holder());
+   public @Nullable AdvancementWidget getAdvancementWidget(final AdvancementNode node) {
+      AdvancementTab tab = this.getTab(node);
+      return tab == null ? null : tab.getWidget(node.holder());
    }
 
-   private @Nullable AdvancementTab getTab(AdvancementNode var1) {
-      AdvancementNode var2 = var1.root();
-      return (AdvancementTab)this.tabs.get(var2.holder());
+   private @Nullable AdvancementTab getTab(final AdvancementNode node) {
+      AdvancementNode root = node.root();
+      return (AdvancementTab)this.tabs.get(root.holder());
    }
 }

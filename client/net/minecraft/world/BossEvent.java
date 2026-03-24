@@ -16,12 +16,12 @@ public abstract class BossEvent {
    protected boolean playBossMusic;
    protected boolean createWorldFog;
 
-   public BossEvent(UUID var1, Component var2, BossBarColor var3, BossBarOverlay var4) {
+   public BossEvent(final UUID id, final Component name, final BossBarColor color, final BossBarOverlay overlay) {
       super();
-      this.id = var1;
-      this.name = var2;
-      this.color = var3;
-      this.overlay = var4;
+      this.id = id;
+      this.name = name;
+      this.color = color;
+      this.overlay = overlay;
       this.progress = 1.0F;
    }
 
@@ -33,40 +33,40 @@ public abstract class BossEvent {
       return this.name;
    }
 
-   public void setName(Component var1) {
-      this.name = var1;
+   public void setName(final Component name) {
+      this.name = name;
    }
 
    public float getProgress() {
       return this.progress;
    }
 
-   public void setProgress(float var1) {
-      this.progress = var1;
+   public void setProgress(final float progress) {
+      this.progress = progress;
    }
 
    public BossBarColor getColor() {
       return this.color;
    }
 
-   public void setColor(BossBarColor var1) {
-      this.color = var1;
+   public void setColor(final BossBarColor color) {
+      this.color = color;
    }
 
    public BossBarOverlay getOverlay() {
       return this.overlay;
    }
 
-   public void setOverlay(BossBarOverlay var1) {
-      this.overlay = var1;
+   public void setOverlay(final BossBarOverlay overlay) {
+      this.overlay = overlay;
    }
 
    public boolean shouldDarkenScreen() {
       return this.darkenScreen;
    }
 
-   public BossEvent setDarkenScreen(boolean var1) {
-      this.darkenScreen = var1;
+   public BossEvent setDarkenScreen(final boolean darkenScreen) {
+      this.darkenScreen = darkenScreen;
       return this;
    }
 
@@ -74,13 +74,13 @@ public abstract class BossEvent {
       return this.playBossMusic;
    }
 
-   public BossEvent setPlayBossMusic(boolean var1) {
-      this.playBossMusic = var1;
+   public BossEvent setPlayBossMusic(final boolean playBossMusic) {
+      this.playBossMusic = playBossMusic;
       return this;
    }
 
-   public BossEvent setCreateWorldFog(boolean var1) {
-      this.createWorldFog = var1;
+   public BossEvent setCreateWorldFog(final boolean createWorldFog) {
+      this.createWorldFog = createWorldFog;
       return this;
    }
 
@@ -101,9 +101,9 @@ public abstract class BossEvent {
       private final String name;
       private final ChatFormatting formatting;
 
-      private BossBarColor(final String var3, final ChatFormatting var4) {
-         this.name = var3;
-         this.formatting = var4;
+      private BossBarColor(final String name, final ChatFormatting formatting) {
+         this.name = name;
+         this.formatting = formatting;
       }
 
       public ChatFormatting getFormatting() {
@@ -134,8 +134,8 @@ public abstract class BossEvent {
       public static final Codec<BossBarOverlay> CODEC = StringRepresentable.<BossBarOverlay>fromEnum(BossBarOverlay::values);
       private final String name;
 
-      private BossBarOverlay(final String var3) {
-         this.name = var3;
+      private BossBarOverlay(final String name) {
+         this.name = name;
       }
 
       public String getName() {

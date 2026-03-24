@@ -12,15 +12,15 @@ public class CommonLayouts {
       super();
    }
 
-   public static Layout labeledElement(Font var0, LayoutElement var1, Component var2) {
-      return labeledElement(var0, var1, var2, (var0x) -> {
+   public static Layout labeledElement(final Font font, final LayoutElement element, final Component label) {
+      return labeledElement(font, element, label, (s) -> {
       });
    }
 
-   public static Layout labeledElement(Font var0, LayoutElement var1, Component var2, Consumer<LayoutSettings> var3) {
-      LinearLayout var4 = LinearLayout.vertical().spacing(4);
-      var4.addChild(new StringWidget(var2, var0));
-      var4.addChild(var1, var3);
-      return var4;
+   public static Layout labeledElement(final Font font, final LayoutElement element, final Component label, final Consumer<LayoutSettings> settings) {
+      LinearLayout layout = LinearLayout.vertical().spacing(4);
+      layout.addChild(new StringWidget(label, font));
+      layout.addChild(element, settings);
+      return layout;
    }
 }

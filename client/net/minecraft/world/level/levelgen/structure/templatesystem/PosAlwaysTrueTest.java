@@ -12,7 +12,7 @@ public class PosAlwaysTrueTest extends PosRuleTest {
       super();
    }
 
-   public boolean test(BlockPos var1, BlockPos var2, BlockPos var3, RandomSource var4) {
+   public boolean test(final BlockPos inTemplatePos, final BlockPos worldPos, final BlockPos worldReference, final RandomSource random) {
       return true;
    }
 

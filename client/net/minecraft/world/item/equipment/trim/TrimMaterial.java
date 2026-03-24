@@ -12,15 +12,13 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.RegistryFileCodec;
 
 public record TrimMaterial(MaterialAssetGroup assets, Component description) {
-   public static final Codec<TrimMaterial> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(MaterialAssetGroup.MAP_CODEC.forGetter(TrimMaterial::assets), ComponentSerialization.CODEC.fieldOf("description").forGetter(TrimMaterial::description)).apply(var0, TrimMaterial::new));
+   public static final Codec<TrimMaterial> DIRECT_CODEC = RecordCodecBuilder.create((i) -> i.group(MaterialAssetGroup.MAP_CODEC.forGetter(TrimMaterial::assets), ComponentSerialization.CODEC.fieldOf("description").forGetter(TrimMaterial::description)).apply(i, TrimMaterial::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, TrimMaterial> DIRECT_STREAM_CODEC;
    public static final Codec<Holder<TrimMaterial>> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<TrimMaterial>> STREAM_CODEC;
 
-   public TrimMaterial(MaterialAssetGroup var1, Component var2) {
+   public TrimMaterial {
       super();
-      this.assets = var1;
-      this.description = var2;
    }
 
    static {

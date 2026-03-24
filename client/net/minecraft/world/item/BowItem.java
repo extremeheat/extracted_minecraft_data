@@ -19,68 +19,68 @@ public class BowItem extends ProjectileWeaponItem {
    public static final int MAX_DRAW_DURATION = 20;
    public static final int DEFAULT_RANGE = 15;
 
-   public BowItem(Item.Properties var1) {
-      super(var1);
+   public BowItem(final Item.Properties properties) {
+      super(properties);
    }
 
-   public boolean releaseUsing(ItemStack var1, Level var2, LivingEntity var3, int var4) {
-      if (!(var3 instanceof Player var5)) {
+   public boolean releaseUsing(final ItemStack itemStack, final Level level, final LivingEntity entity, final int remainingTime) {
+      if (!(entity instanceof Player player)) {
          return false;
       } else {
-         ItemStack var6 = var5.getProjectile(var1);
-         if (var6.isEmpty()) {
+         ItemStack projectile = player.getProjectile(itemStack);
+         if (projectile.isEmpty()) {
             return false;
          } else {
-            int var7 = this.getUseDuration(var1, var3) - var4;
-            float var8 = getPowerForTime(var7);
-            if ((double)var8 < 0.1) {
+            int timeHeld = this.getUseDuration(itemStack, entity) - remainingTime;
+            float pow = getPowerForTime(timeHeld);
+            if ((double)pow < 0.1) {
                return false;
             } else {
-               List var9 = draw(var1, var6, var5);
-               if (var2 instanceof ServerLevel) {
-                  ServerLevel var10 = (ServerLevel)var2;
-                  if (!var9.isEmpty()) {
-                     this.shoot(var10, var5, var5.getUsedItemHand(), var1, var9, var8 * 3.0F, 1.0F, var8 == 1.0F, (LivingEntity)null);
+               List<ItemStack> firedProjectiles = draw(itemStack, projectile, player);
+               if (level instanceof ServerLevel) {
+                  ServerLevel serverLevel = (ServerLevel)level;
+                  if (!firedProjectiles.isEmpty()) {
+                     this.shoot(serverLevel, player, player.getUsedItemHand(), itemStack, firedProjectiles, pow * 3.0F, 1.0F, pow == 1.0F, (LivingEntity)null);
                   }
                }
 
-               var2.playSound((Entity)null, var5.getX(), var5.getY(), var5.getZ(), SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 1.0F, 1.0F / (var2.getRandom().nextFloat() * 0.4F + 1.2F) + var8 * 0.5F);
-               var5.awardStat(Stats.ITEM_USED.get(this));
+               level.playSound((Entity)null, player.getX(), player.getY(), player.getZ(), SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 1.0F, 1.0F / (level.getRandom().nextFloat() * 0.4F + 1.2F) + pow * 0.5F);
+               player.awardStat(Stats.ITEM_USED.get(this));
                return true;
             }
          }
       }
    }
 
-   protected void shootProjectile(LivingEntity var1, Projectile var2, int var3, float var4, float var5, float var6, @Nullable LivingEntity var7) {
-      var2.shootFromRotation(var1, var1.getXRot(), var1.getYRot() + var6, 0.0F, var4, var5);
+   protected void shootProjectile(final LivingEntity shooter, final Projectile projectileEntity, final int index, final float power, final float uncertainty, final float angle, final @Nullable LivingEntity targetOverrride) {
+      projectileEntity.shootFromRotation(shooter, shooter.getXRot(), shooter.getYRot() + angle, 0.0F, power, uncertainty);
    }
 
-   public static float getPowerForTime(int var0) {
-      float var1 = (float)var0 / 20.0F;
-      var1 = (var1 * var1 + var1 * 2.0F) / 3.0F;
-      if (var1 > 1.0F) {
-         var1 = 1.0F;
+   public static float getPowerForTime(final int timeHeld) {
+      float pow = (float)timeHeld / 20.0F;
+      pow = (pow * pow + pow * 2.0F) / 3.0F;
+      if (pow > 1.0F) {
+         pow = 1.0F;
       }
 
-      return var1;
+      return pow;
    }
 
-   public int getUseDuration(ItemStack var1, LivingEntity var2) {
+   public int getUseDuration(final ItemStack itemStack, final LivingEntity user) {
       return 72000;
    }
 
-   public ItemUseAnimation getUseAnimation(ItemStack var1) {
+   public ItemUseAnimation getUseAnimation(final ItemStack itemStack) {
       return ItemUseAnimation.BOW;
    }
 
-   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
-      ItemStack var4 = var2.getItemInHand(var3);
-      boolean var5 = !var2.getProjectile(var4).isEmpty();
-      if (!var2.hasInfiniteMaterials() && !var5) {
+   public InteractionResult use(final Level level, final Player player, final InteractionHand hand) {
+      ItemStack itemStack = player.getItemInHand(hand);
+      boolean foundProjectile = !player.getProjectile(itemStack).isEmpty();
+      if (!player.hasInfiniteMaterials() && !foundProjectile) {
          return InteractionResult.FAIL;
       } else {
-         var2.startUsingItem(var3);
+         player.startUsingItem(hand);
          return InteractionResult.CONSUME;
       }
    }

@@ -9,29 +9,29 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 
 public class EndPlatformFeature extends Feature<NoneFeatureConfiguration> {
-   public EndPlatformFeature(Codec<NoneFeatureConfiguration> var1) {
-      super(var1);
+   public EndPlatformFeature(final Codec<NoneFeatureConfiguration> codec) {
+      super(codec);
    }
 
-   public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> var1) {
-      createEndPlatform(var1.level(), var1.origin(), false);
+   public boolean place(final FeaturePlaceContext<NoneFeatureConfiguration> context) {
+      createEndPlatform(context.level(), context.origin(), false);
       return true;
    }
 
-   public static void createEndPlatform(ServerLevelAccessor var0, BlockPos var1, boolean var2) {
-      BlockPos.MutableBlockPos var3 = var1.mutable();
+   public static void createEndPlatform(final ServerLevelAccessor newLevel, final BlockPos origin, final boolean dropResources) {
+      BlockPos.MutableBlockPos pos = origin.mutable();
 
-      for(int var4 = -2; var4 <= 2; ++var4) {
-         for(int var5 = -2; var5 <= 2; ++var5) {
-            for(int var6 = -1; var6 < 3; ++var6) {
-               BlockPos.MutableBlockPos var7 = var3.set(var1).move(var5, var6, var4);
-               Block var8 = var6 == -1 ? Blocks.OBSIDIAN : Blocks.AIR;
-               if (!var0.getBlockState(var7).is(var8)) {
-                  if (var2) {
-                     var0.destroyBlock(var7, true, (Entity)null);
+      for(int dz = -2; dz <= 2; ++dz) {
+         for(int dx = -2; dx <= 2; ++dx) {
+            for(int dy = -1; dy < 3; ++dy) {
+               BlockPos blockPos = pos.set(origin).move(dx, dy, dz);
+               Block block = dy == -1 ? Blocks.OBSIDIAN : Blocks.AIR;
+               if (!newLevel.getBlockState(blockPos).is(block)) {
+                  if (dropResources) {
+                     newLevel.destroyBlock(blockPos, true, (Entity)null);
                   }
 
-                  var0.setBlock(var7, var8.defaultBlockState(), 3);
+                  newLevel.setBlock(blockPos, block.defaultBlockState(), 3);
                }
             }
          }

@@ -23,7 +23,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 public class WallTorchBlock extends TorchBlock {
-   public static final MapCodec<WallTorchBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(PARTICLE_OPTIONS_FIELD.forGetter((var0x) -> var0x.flameParticle), propertiesCodec()).apply(var0, WallTorchBlock::new));
+   public static final MapCodec<WallTorchBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(PARTICLE_OPTIONS_FIELD.forGetter((b) -> b.flameParticle), propertiesCodec()).apply(i, WallTorchBlock::new));
    public static final EnumProperty<Direction> FACING;
    private static final Map<Direction, VoxelShape> SHAPES;
 
@@ -31,41 +31,41 @@ public class WallTorchBlock extends TorchBlock {
       return CODEC;
    }
 
-   protected WallTorchBlock(SimpleParticleType var1, BlockBehaviour.Properties var2) {
-      super(var1, var2);
+   protected WallTorchBlock(final SimpleParticleType flameParticle, final BlockBehaviour.Properties properties) {
+      super(flameParticle, properties);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH));
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return getShape(var1);
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return getShape(state);
    }
 
-   public static VoxelShape getShape(BlockState var0) {
-      return (VoxelShape)SHAPES.get(var0.getValue(FACING));
+   public static VoxelShape getShape(final BlockState state) {
+      return (VoxelShape)SHAPES.get(state.getValue(FACING));
    }
 
-   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      return canSurvive(var2, var3, (Direction)var1.getValue(FACING));
+   protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
+      return canSurvive(level, pos, (Direction)state.getValue(FACING));
    }
 
-   public static boolean canSurvive(LevelReader var0, BlockPos var1, Direction var2) {
-      BlockPos var3 = var1.relative(var2.getOpposite());
-      BlockState var4 = var0.getBlockState(var3);
-      return var4.isFaceSturdy(var0, var3, var2);
+   public static boolean canSurvive(final LevelReader level, final BlockPos pos, final Direction facing) {
+      BlockPos relativePos = pos.relative(facing.getOpposite());
+      BlockState relativeState = level.getBlockState(relativePos);
+      return relativeState.isFaceSturdy(level, relativePos, facing);
    }
 
-   public @Nullable BlockState getStateForPlacement(BlockPlaceContext var1) {
-      BlockState var2 = this.defaultBlockState();
-      Level var3 = var1.getLevel();
-      BlockPos var4 = var1.getClickedPos();
-      Direction[] var5 = var1.getNearestLookingDirections();
+   public @Nullable BlockState getStateForPlacement(final BlockPlaceContext context) {
+      BlockState state = this.defaultBlockState();
+      LevelReader level = context.getLevel();
+      BlockPos pos = context.getClickedPos();
+      Direction[] directions = context.getNearestLookingDirections();
 
-      for(Direction var9 : var5) {
-         if (var9.getAxis().isHorizontal()) {
-            Direction var10 = var9.getOpposite();
-            var2 = (BlockState)var2.setValue(FACING, var10);
-            if (var2.canSurvive(var3, var4)) {
-               return var2;
+      for(Direction direction : directions) {
+         if (direction.getAxis().isHorizontal()) {
+            Direction facing = direction.getOpposite();
+            state = (BlockState)state.setValue(FACING, facing);
+            if (state.canSurvive(level, pos)) {
+               return state;
             }
          }
       }
@@ -73,32 +73,32 @@ public class WallTorchBlock extends TorchBlock {
       return null;
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      return var5.getOpposite() == var1.getValue(FACING) && !var1.canSurvive(var2, var4) ? Blocks.AIR.defaultBlockState() : var1;
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      return directionToNeighbour.getOpposite() == state.getValue(FACING) && !state.canSurvive(level, pos) ? Blocks.AIR.defaultBlockState() : state;
    }
 
-   public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
-      Direction var5 = (Direction)var1.getValue(FACING);
-      double var6 = (double)var3.getX() + 0.5;
-      double var8 = (double)var3.getY() + 0.7;
-      double var10 = (double)var3.getZ() + 0.5;
-      double var12 = 0.22;
-      double var14 = 0.27;
-      Direction var16 = var5.getOpposite();
-      var2.addParticle(ParticleTypes.SMOKE, var6 + 0.27 * (double)var16.getStepX(), var8 + 0.22, var10 + 0.27 * (double)var16.getStepZ(), 0.0, 0.0, 0.0);
-      var2.addParticle(this.flameParticle, var6 + 0.27 * (double)var16.getStepX(), var8 + 0.22, var10 + 0.27 * (double)var16.getStepZ(), 0.0, 0.0, 0.0);
+   public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {
+      Direction direction = (Direction)state.getValue(FACING);
+      double x = (double)pos.getX() + 0.5;
+      double y = (double)pos.getY() + 0.7;
+      double z = (double)pos.getZ() + 0.5;
+      double h = 0.22;
+      double r = 0.27;
+      Direction opposite = direction.getOpposite();
+      level.addParticle(ParticleTypes.SMOKE, x + 0.27 * (double)opposite.getStepX(), y + 0.22, z + 0.27 * (double)opposite.getStepZ(), 0.0, 0.0, 0.0);
+      level.addParticle(this.flameParticle, x + 0.27 * (double)opposite.getStepX(), y + 0.22, z + 0.27 * (double)opposite.getStepZ(), 0.0, 0.0, 0.0);
    }
 
-   protected BlockState rotate(BlockState var1, Rotation var2) {
-      return (BlockState)var1.setValue(FACING, var2.rotate((Direction)var1.getValue(FACING)));
+   protected BlockState rotate(final BlockState state, final Rotation rotation) {
+      return (BlockState)state.setValue(FACING, rotation.rotate((Direction)state.getValue(FACING)));
    }
 
-   protected BlockState mirror(BlockState var1, Mirror var2) {
-      return var1.rotate(var2.getRotation((Direction)var1.getValue(FACING)));
+   protected BlockState mirror(final BlockState state, final Mirror mirror) {
+      return state.rotate(mirror.getRotation((Direction)state.getValue(FACING)));
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(FACING);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(FACING);
    }
 
    static {

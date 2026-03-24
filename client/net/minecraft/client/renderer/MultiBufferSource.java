@@ -13,15 +13,15 @@ import net.minecraft.client.renderer.rendertype.RenderType;
 import org.jspecify.annotations.Nullable;
 
 public interface MultiBufferSource {
-   static BufferSource immediate(ByteBufferBuilder var0) {
-      return immediateWithBuffers(Object2ObjectSortedMaps.emptyMap(), var0);
+   static BufferSource immediate(final ByteBufferBuilder buffer) {
+      return immediateWithBuffers(Object2ObjectSortedMaps.emptyMap(), buffer);
    }
 
-   static BufferSource immediateWithBuffers(SequencedMap<RenderType, ByteBufferBuilder> var0, ByteBufferBuilder var1) {
-      return new BufferSource(var1, var0);
+   static BufferSource immediateWithBuffers(final SequencedMap<RenderType, ByteBufferBuilder> fixedBuffers, final ByteBufferBuilder sharedBuffer) {
+      return new BufferSource(sharedBuffer, fixedBuffers);
    }
 
-   VertexConsumer getBuffer(RenderType var1);
+   VertexConsumer getBuffer(final RenderType renderType);
 
    public static class BufferSource implements MultiBufferSource {
       protected final ByteBufferBuilder sharedBuffer;
@@ -29,36 +29,36 @@ public interface MultiBufferSource {
       protected final Map<RenderType, BufferBuilder> startedBuilders = new HashMap();
       protected @Nullable RenderType lastSharedType;
 
-      protected BufferSource(ByteBufferBuilder var1, SequencedMap<RenderType, ByteBufferBuilder> var2) {
+      protected BufferSource(final ByteBufferBuilder sharedBuffer, final SequencedMap<RenderType, ByteBufferBuilder> fixedBuffers) {
          super();
-         this.sharedBuffer = var1;
-         this.fixedBuffers = var2;
+         this.sharedBuffer = sharedBuffer;
+         this.fixedBuffers = fixedBuffers;
       }
 
-      public VertexConsumer getBuffer(RenderType var1) {
-         BufferBuilder var2 = (BufferBuilder)this.startedBuilders.get(var1);
-         if (var2 != null && !var1.canConsolidateConsecutiveGeometry()) {
-            this.endBatch(var1, var2);
-            var2 = null;
+      public VertexConsumer getBuffer(final RenderType renderType) {
+         BufferBuilder builder = (BufferBuilder)this.startedBuilders.get(renderType);
+         if (builder != null && !renderType.canConsolidateConsecutiveGeometry()) {
+            this.endBatch(renderType, builder);
+            builder = null;
          }
 
-         if (var2 != null) {
-            return var2;
+         if (builder != null) {
+            return builder;
          } else {
-            ByteBufferBuilder var3 = (ByteBufferBuilder)this.fixedBuffers.get(var1);
-            if (var3 != null) {
-               var2 = new BufferBuilder(var3, var1.mode(), var1.format());
+            ByteBufferBuilder fixedBuffer = (ByteBufferBuilder)this.fixedBuffers.get(renderType);
+            if (fixedBuffer != null) {
+               builder = new BufferBuilder(fixedBuffer, renderType.mode(), renderType.format());
             } else {
                if (this.lastSharedType != null) {
                   this.endBatch(this.lastSharedType);
                }
 
-               var2 = new BufferBuilder(this.sharedBuffer, var1.mode(), var1.format());
-               this.lastSharedType = var1;
+               builder = new BufferBuilder(this.sharedBuffer, renderType.mode(), renderType.format());
+               this.lastSharedType = renderType;
             }
 
-            this.startedBuilders.put(var1, var2);
-            return var2;
+            this.startedBuilders.put(renderType, builder);
+            return builder;
          }
       }
 
@@ -73,32 +73,32 @@ public interface MultiBufferSource {
       public void endBatch() {
          this.endLastBatch();
 
-         for(RenderType var2 : this.fixedBuffers.keySet()) {
-            this.endBatch(var2);
+         for(RenderType renderType : this.fixedBuffers.keySet()) {
+            this.endBatch(renderType);
          }
 
       }
 
-      public void endBatch(RenderType var1) {
-         BufferBuilder var2 = (BufferBuilder)this.startedBuilders.remove(var1);
-         if (var2 != null) {
-            this.endBatch(var1, var2);
+      public void endBatch(final RenderType type) {
+         BufferBuilder builder = (BufferBuilder)this.startedBuilders.remove(type);
+         if (builder != null) {
+            this.endBatch(type, builder);
          }
 
       }
 
-      private void endBatch(RenderType var1, BufferBuilder var2) {
-         MeshData var3 = var2.build();
-         if (var3 != null) {
-            if (var1.sortOnUpload()) {
-               ByteBufferBuilder var4 = (ByteBufferBuilder)this.fixedBuffers.getOrDefault(var1, this.sharedBuffer);
-               var3.sortQuads(var4, RenderSystem.getProjectionType().vertexSorting());
+      private void endBatch(final RenderType type, final BufferBuilder builder) {
+         MeshData mesh = builder.build();
+         if (mesh != null) {
+            if (type.sortOnUpload()) {
+               ByteBufferBuilder buffer = (ByteBufferBuilder)this.fixedBuffers.getOrDefault(type, this.sharedBuffer);
+               mesh.sortQuads(buffer, RenderSystem.getProjectionType().vertexSorting());
             }
 
-            var1.draw(var3);
+            type.draw(mesh);
          }
 
-         if (var1.equals(this.lastSharedType)) {
+         if (type.equals(this.lastSharedType)) {
             this.lastSharedType = null;
          }
 

@@ -29,59 +29,59 @@ public class OperationArgument implements ArgumentType<Operation> {
       return new OperationArgument();
    }
 
-   public static Operation getOperation(CommandContext<CommandSourceStack> var0, String var1) {
-      return (Operation)var0.getArgument(var1, Operation.class);
+   public static Operation getOperation(final CommandContext<CommandSourceStack> context, final String name) {
+      return (Operation)context.getArgument(name, Operation.class);
    }
 
-   public Operation parse(StringReader var1) throws CommandSyntaxException {
-      if (!var1.canRead()) {
-         throw ERROR_INVALID_OPERATION.createWithContext(var1);
+   public Operation parse(final StringReader reader) throws CommandSyntaxException {
+      if (!reader.canRead()) {
+         throw ERROR_INVALID_OPERATION.createWithContext(reader);
       } else {
-         int var2 = var1.getCursor();
+         int start = reader.getCursor();
 
-         while(var1.canRead() && var1.peek() != ' ') {
-            var1.skip();
+         while(reader.canRead() && reader.peek() != ' ') {
+            reader.skip();
          }
 
-         return getOperation(var1.getString().substring(var2, var1.getCursor()));
+         return getOperation(reader.getString().substring(start, reader.getCursor()));
       }
    }
 
-   public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      return SharedSuggestionProvider.suggest(new String[]{"=", "+=", "-=", "*=", "/=", "%=", "<", ">", "><"}, var2);
+   public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
+      return SharedSuggestionProvider.suggest(new String[]{"=", "+=", "-=", "*=", "/=", "%=", "<", ">", "><"}, builder);
    }
 
    public Collection<String> getExamples() {
       return EXAMPLES;
    }
 
-   private static Operation getOperation(String var0) throws CommandSyntaxException {
-      return (Operation)(var0.equals("><") ? (var0x, var1) -> {
-         int var2 = var0x.get();
-         var0x.set(var1.get());
-         var1.set(var2);
-      } : getSimpleOperation(var0));
+   private static Operation getOperation(final String op) throws CommandSyntaxException {
+      return (Operation)(op.equals("><") ? (a, b) -> {
+         int swap = a.get();
+         a.set(b.get());
+         b.set(swap);
+      } : getSimpleOperation(op));
    }
 
-   private static SimpleOperation getSimpleOperation(String var0) throws CommandSyntaxException {
+   private static SimpleOperation getSimpleOperation(final String op) throws CommandSyntaxException {
       SimpleOperation var10000;
-      switch (var0) {
-         case "=" -> var10000 = (var0x, var1) -> var1;
+      switch (op) {
+         case "=" -> var10000 = (a, b) -> b;
          case "+=" -> var10000 = Integer::sum;
-         case "-=" -> var10000 = (var0x, var1) -> var0x - var1;
-         case "*=" -> var10000 = (var0x, var1) -> var0x * var1;
-         case "/=" -> var10000 = (var0x, var1) -> {
-   if (var1 == 0) {
+         case "-=" -> var10000 = (a, b) -> a - b;
+         case "*=" -> var10000 = (a, b) -> a * b;
+         case "/=" -> var10000 = (a, b) -> {
+   if (b == 0) {
       throw ERROR_DIVIDE_BY_ZERO.create();
    } else {
-      return Mth.floorDiv(var0x, var1);
+      return Mth.floorDiv(a, b);
    }
 };
-         case "%=" -> var10000 = (var0x, var1) -> {
-   if (var1 == 0) {
+         case "%=" -> var10000 = (a, b) -> {
+   if (b == 0) {
       throw ERROR_DIVIDE_BY_ZERO.create();
    } else {
-      return Mth.positiveModulo(var0x, var1);
+      return Mth.positiveModulo(a, b);
    }
 };
          case "<" -> var10000 = Math::min;
@@ -92,22 +92,17 @@ public class OperationArgument implements ArgumentType<Operation> {
       return var10000;
    }
 
-   // $FF: synthetic method
-   public Object parse(final StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1);
-   }
-
    @FunctionalInterface
-   interface SimpleOperation extends Operation {
-      int apply(int var1, int var2) throws CommandSyntaxException;
+   private interface SimpleOperation extends Operation {
+      int apply(int a, int b) throws CommandSyntaxException;
 
-      default void apply(ScoreAccess var1, ScoreAccess var2) throws CommandSyntaxException {
-         var1.set(this.apply(var1.get(), var2.get()));
+      default void apply(final ScoreAccess a, final ScoreAccess b) throws CommandSyntaxException {
+         a.set(this.apply(a.get(), b.get()));
       }
    }
 
    @FunctionalInterface
    public interface Operation {
-      void apply(ScoreAccess var1, ScoreAccess var2) throws CommandSyntaxException;
+      void apply(ScoreAccess a, ScoreAccess b) throws CommandSyntaxException;
    }
 }

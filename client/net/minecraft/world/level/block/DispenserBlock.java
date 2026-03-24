@@ -13,6 +13,7 @@ import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.core.dispenser.EquipmentDispenseItemBehavior;
 import net.minecraft.core.dispenser.ProjectileDispenseBehavior;
+import net.minecraft.core.dispenser.SpawnEggItemBehavior;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.RandomSource;
@@ -22,6 +23,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
@@ -55,121 +57,125 @@ public class DispenserBlock extends BaseEntityBlock {
       return CODEC;
    }
 
-   public static void registerBehavior(ItemLike var0, DispenseItemBehavior var1) {
-      DISPENSER_REGISTRY.put(var0.asItem(), var1);
+   public static void registerBehavior(final ItemLike item, final DispenseItemBehavior behavior) {
+      DISPENSER_REGISTRY.put(item.asItem(), behavior);
    }
 
-   public static void registerProjectileBehavior(ItemLike var0) {
-      DISPENSER_REGISTRY.put(var0.asItem(), new ProjectileDispenseBehavior(var0.asItem()));
+   public static void registerProjectileBehavior(final ItemLike item) {
+      DISPENSER_REGISTRY.put(item.asItem(), new ProjectileDispenseBehavior(item.asItem()));
    }
 
-   protected DispenserBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   protected DispenserBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(TRIGGERED, false));
    }
 
-   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (!var2.isClientSide()) {
-         BlockEntity var7 = var2.getBlockEntity(var3);
+   protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
+      if (!level.isClientSide()) {
+         BlockEntity var7 = level.getBlockEntity(pos);
          if (var7 instanceof DispenserBlockEntity) {
-            DispenserBlockEntity var6 = (DispenserBlockEntity)var7;
-            var4.openMenu(var6);
-            var4.awardStat(var6 instanceof DropperBlockEntity ? Stats.INSPECT_DROPPER : Stats.INSPECT_DISPENSER);
+            DispenserBlockEntity dispenser = (DispenserBlockEntity)var7;
+            player.openMenu(dispenser);
+            player.awardStat(dispenser instanceof DropperBlockEntity ? Stats.INSPECT_DROPPER : Stats.INSPECT_DISPENSER);
          }
       }
 
       return InteractionResult.SUCCESS;
    }
 
-   protected void dispenseFrom(ServerLevel var1, BlockState var2, BlockPos var3) {
-      DispenserBlockEntity var4 = (DispenserBlockEntity)var1.getBlockEntity(var3, BlockEntityType.DISPENSER).orElse((Object)null);
-      if (var4 == null) {
-         LOGGER.warn("Ignoring dispensing attempt for Dispenser without matching block entity at {}", var3);
+   protected void dispenseFrom(final ServerLevel level, final BlockState state, final BlockPos pos) {
+      DispenserBlockEntity blockEntity = (DispenserBlockEntity)level.getBlockEntity(pos, BlockEntityType.DISPENSER).orElse((Object)null);
+      if (blockEntity == null) {
+         LOGGER.warn("Ignoring dispensing attempt for Dispenser without matching block entity at {}", pos);
       } else {
-         BlockSource var5 = new BlockSource(var1, var3, var2, var4);
-         int var6 = var4.getRandomSlot(var1.random);
-         if (var6 < 0) {
-            var1.levelEvent(1001, var3, 0);
-            var1.gameEvent(GameEvent.BLOCK_ACTIVATE, var3, GameEvent.Context.of(var4.getBlockState()));
+         BlockSource source = new BlockSource(level, pos, state, blockEntity);
+         int slot = blockEntity.getRandomSlot(level.getRandom());
+         if (slot < 0) {
+            level.levelEvent(1001, pos, 0);
+            level.gameEvent(GameEvent.BLOCK_ACTIVATE, pos, GameEvent.Context.of(blockEntity.getBlockState()));
          } else {
-            ItemStack var7 = var4.getItem(var6);
-            DispenseItemBehavior var8 = this.getDispenseMethod(var1, var7);
-            if (var8 != DispenseItemBehavior.NOOP) {
-               var4.setItem(var6, var8.dispense(var5, var7));
+            ItemStack itemStack = blockEntity.getItem(slot);
+            DispenseItemBehavior behavior = this.getDispenseMethod(level, itemStack);
+            if (behavior != DispenseItemBehavior.NOOP) {
+               blockEntity.setItem(slot, behavior.dispense(source, itemStack));
             }
 
          }
       }
    }
 
-   protected DispenseItemBehavior getDispenseMethod(Level var1, ItemStack var2) {
-      if (!var2.isItemEnabled(var1.enabledFeatures())) {
+   protected DispenseItemBehavior getDispenseMethod(final Level level, final ItemStack itemStack) {
+      if (!itemStack.isItemEnabled(level.enabledFeatures())) {
          return DEFAULT_BEHAVIOR;
       } else {
-         DispenseItemBehavior var3 = (DispenseItemBehavior)DISPENSER_REGISTRY.get(var2.getItem());
-         return var3 != null ? var3 : getDefaultDispenseMethod(var2);
+         DispenseItemBehavior behavior = (DispenseItemBehavior)DISPENSER_REGISTRY.get(itemStack.getItem());
+         return behavior != null ? behavior : getDefaultDispenseMethod(itemStack);
       }
    }
 
-   private static DispenseItemBehavior getDefaultDispenseMethod(ItemStack var0) {
-      return (DispenseItemBehavior)(var0.has(DataComponents.EQUIPPABLE) ? EquipmentDispenseItemBehavior.INSTANCE : DEFAULT_BEHAVIOR);
+   private static DispenseItemBehavior getDefaultDispenseMethod(final ItemStack itemStack) {
+      if (itemStack.has(DataComponents.EQUIPPABLE)) {
+         return EquipmentDispenseItemBehavior.INSTANCE;
+      } else {
+         return (DispenseItemBehavior)(itemStack.getItem() instanceof SpawnEggItem && itemStack.has(DataComponents.ENTITY_DATA) ? SpawnEggItemBehavior.INSTANCE : DEFAULT_BEHAVIOR);
+      }
    }
 
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
-      boolean var7 = var2.hasNeighborSignal(var3) || var2.hasNeighborSignal(var3.above());
-      boolean var8 = (Boolean)var1.getValue(TRIGGERED);
-      if (var7 && !var8) {
-         var2.scheduleTick(var3, this, 4);
-         var2.setBlock(var3, (BlockState)var1.setValue(TRIGGERED, true), 2);
-      } else if (!var7 && var8) {
-         var2.setBlock(var3, (BlockState)var1.setValue(TRIGGERED, false), 2);
+   protected void neighborChanged(final BlockState state, final Level level, final BlockPos pos, final Block block, final @Nullable Orientation orientation, final boolean movedByPiston) {
+      boolean shouldTrigger = level.hasNeighborSignal(pos) || level.hasNeighborSignal(pos.above());
+      boolean isTriggered = (Boolean)state.getValue(TRIGGERED);
+      if (shouldTrigger && !isTriggered) {
+         level.scheduleTick(pos, this, 4);
+         level.setBlock(pos, (BlockState)state.setValue(TRIGGERED, true), 2);
+      } else if (!shouldTrigger && isTriggered) {
+         level.setBlock(pos, (BlockState)state.setValue(TRIGGERED, false), 2);
       }
 
    }
 
-   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      this.dispenseFrom(var2, var1, var3);
+   protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      this.dispenseFrom(level, state, pos);
    }
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new DispenserBlockEntity(var1, var2);
+   public BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      return new DispenserBlockEntity(worldPosition, blockState);
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return (BlockState)this.defaultBlockState().setValue(FACING, var1.getNearestLookingDirection().getOpposite());
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      return (BlockState)this.defaultBlockState().setValue(FACING, context.getNearestLookingDirection().getOpposite());
    }
 
-   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
-      Containers.updateNeighboursAfterDestroy(var1, var2, var3);
+   protected void affectNeighborsAfterRemoval(final BlockState state, final ServerLevel level, final BlockPos pos, final boolean movedByPiston) {
+      Containers.updateNeighboursAfterDestroy(state, level, pos);
    }
 
-   public static Position getDispensePosition(BlockSource var0) {
-      return getDispensePosition(var0, 0.7, Vec3.ZERO);
+   public static Position getDispensePosition(final BlockSource source) {
+      return getDispensePosition(source, 0.7, Vec3.ZERO);
    }
 
-   public static Position getDispensePosition(BlockSource var0, double var1, Vec3 var3) {
-      Direction var4 = (Direction)var0.state().getValue(FACING);
-      return var0.center().add(var1 * (double)var4.getStepX() + var3.x(), var1 * (double)var4.getStepY() + var3.y(), var1 * (double)var4.getStepZ() + var3.z());
+   public static Position getDispensePosition(final BlockSource source, final double scale, final Vec3 offset) {
+      Direction direction = (Direction)source.state().getValue(FACING);
+      return source.center().add(scale * (double)direction.getStepX() + offset.x(), scale * (double)direction.getStepY() + offset.y(), scale * (double)direction.getStepZ() + offset.z());
    }
 
-   protected boolean hasAnalogOutputSignal(BlockState var1) {
+   protected boolean hasAnalogOutputSignal(final BlockState state) {
       return true;
    }
 
-   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
-      return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(var2.getBlockEntity(var3));
+   protected int getAnalogOutputSignal(final BlockState state, final Level level, final BlockPos pos, final Direction direction) {
+      return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(level.getBlockEntity(pos));
    }
 
-   protected BlockState rotate(BlockState var1, Rotation var2) {
-      return (BlockState)var1.setValue(FACING, var2.rotate((Direction)var1.getValue(FACING)));
+   protected BlockState rotate(final BlockState state, final Rotation rotation) {
+      return (BlockState)state.setValue(FACING, rotation.rotate((Direction)state.getValue(FACING)));
    }
 
-   protected BlockState mirror(BlockState var1, Mirror var2) {
-      return var1.rotate(var2.getRotation((Direction)var1.getValue(FACING)));
+   protected BlockState mirror(final BlockState state, final Mirror mirror) {
+      return state.rotate(mirror.getRotation((Direction)state.getValue(FACING)));
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(FACING, TRIGGERED);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(FACING, TRIGGERED);
    }
 
    static {

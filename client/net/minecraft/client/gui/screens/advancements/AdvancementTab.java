@@ -8,7 +8,7 @@ import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementNode;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.core.ClientAsset;
@@ -38,18 +38,18 @@ public class AdvancementTab {
    private float fade;
    private boolean centered;
 
-   public AdvancementTab(Minecraft var1, AdvancementsScreen var2, AdvancementTabType var3, int var4, AdvancementNode var5, DisplayInfo var6) {
+   public AdvancementTab(final Minecraft minecraft, final AdvancementsScreen screen, final AdvancementTabType type, final int index, final AdvancementNode rootNode, final DisplayInfo display) {
       super();
-      this.minecraft = var1;
-      this.screen = var2;
-      this.type = var3;
-      this.index = var4;
-      this.rootNode = var5;
-      this.display = var6;
-      this.icon = var6.getIcon();
-      this.title = var6.getTitle();
-      this.root = new AdvancementWidget(this, var1, var5, var6);
-      this.addWidget(this.root, var5.holder());
+      this.minecraft = minecraft;
+      this.screen = screen;
+      this.type = type;
+      this.index = index;
+      this.rootNode = rootNode;
+      this.display = display;
+      this.icon = display.getIcon().create();
+      this.title = display.getTitle();
+      this.root = new AdvancementWidget(this, minecraft, rootNode, display);
+      this.addWidget(this.root, rootNode.holder());
    }
 
    public AdvancementTabType getType() {
@@ -72,65 +72,65 @@ public class AdvancementTab {
       return this.display;
    }
 
-   public void drawTab(GuiGraphics var1, int var2, int var3, int var4, int var5, boolean var6) {
-      int var7 = var2 + this.type.getX(this.index);
-      int var8 = var3 + this.type.getY(this.index);
-      this.type.draw(var1, var7, var8, var6, this.index);
-      if (!var6 && var4 > var7 && var5 > var8 && var4 < var7 + this.type.getWidth() && var5 < var8 + this.type.getHeight()) {
-         var1.requestCursor(CursorTypes.POINTING_HAND);
+   public void extractTab(final GuiGraphicsExtractor graphics, final int xo, final int yo, final int mouseX, final int mouseY, final boolean selected) {
+      int tabX = xo + this.type.getX(this.index);
+      int tabY = yo + this.type.getY(this.index);
+      this.type.extractRenderState(graphics, tabX, tabY, selected, this.index);
+      if (!selected && mouseX > tabX && mouseY > tabY && mouseX < tabX + this.type.getWidth() && mouseY < tabY + this.type.getHeight()) {
+         graphics.requestCursor(CursorTypes.POINTING_HAND);
       }
 
    }
 
-   public void drawIcon(GuiGraphics var1, int var2, int var3) {
-      this.type.drawIcon(var1, var2, var3, this.index, this.icon);
+   public void extractIcon(final GuiGraphicsExtractor graphics, final int xo, final int yo) {
+      this.type.extractIcon(graphics, xo, yo, this.index, this.icon);
    }
 
-   public void drawContents(GuiGraphics var1, int var2, int var3) {
+   public void extractContents(final GuiGraphicsExtractor graphics, final int windowLeft, final int windowTop) {
       if (!this.centered) {
          this.scrollX = (double)(117 - (this.maxX + this.minX) / 2);
          this.scrollY = (double)(56 - (this.maxY + this.minY) / 2);
          this.centered = true;
       }
 
-      var1.enableScissor(var2, var3, var2 + 234, var3 + 113);
-      var1.pose().pushMatrix();
-      var1.pose().translate((float)var2, (float)var3);
-      Identifier var4 = (Identifier)this.display.getBackground().map(ClientAsset.ResourceTexture::texturePath).orElse(TextureManager.INTENTIONAL_MISSING_TEXTURE);
-      int var5 = Mth.floor(this.scrollX);
-      int var6 = Mth.floor(this.scrollY);
-      int var7 = var5 % 16;
-      int var8 = var6 % 16;
+      graphics.enableScissor(windowLeft, windowTop, windowLeft + 234, windowTop + 113);
+      graphics.pose().pushMatrix();
+      graphics.pose().translate((float)windowLeft, (float)windowTop);
+      Identifier background = (Identifier)this.display.getBackground().map(ClientAsset.ResourceTexture::texturePath).orElse(TextureManager.INTENTIONAL_MISSING_TEXTURE);
+      int intScrollX = Mth.floor(this.scrollX);
+      int intScrollY = Mth.floor(this.scrollY);
+      int left = intScrollX % 16;
+      int top = intScrollY % 16;
 
-      for(int var9 = -1; var9 <= 15; ++var9) {
-         for(int var10 = -1; var10 <= 8; ++var10) {
-            var1.blit(RenderPipelines.GUI_TEXTURED, var4, var7 + 16 * var9, var8 + 16 * var10, 0.0F, 0.0F, 16, 16, 16, 16);
+      for(int x = -1; x <= 15; ++x) {
+         for(int y = -1; y <= 8; ++y) {
+            graphics.blit(RenderPipelines.GUI_TEXTURED, background, left + 16 * x, top + 16 * y, 0.0F, 0.0F, 16, 16, 16, 16);
          }
       }
 
-      this.root.drawConnectivity(var1, var5, var6, true);
-      this.root.drawConnectivity(var1, var5, var6, false);
-      this.root.draw(var1, var5, var6);
-      var1.pose().popMatrix();
-      var1.disableScissor();
+      this.root.extractConnectivity(graphics, intScrollX, intScrollY, true);
+      this.root.extractConnectivity(graphics, intScrollX, intScrollY, false);
+      this.root.extractRenderState(graphics, intScrollX, intScrollY);
+      graphics.pose().popMatrix();
+      graphics.disableScissor();
    }
 
-   public void drawTooltips(GuiGraphics var1, int var2, int var3, int var4, int var5) {
-      var1.fill(0, 0, 234, 113, Mth.floor(this.fade * 255.0F) << 24);
-      boolean var6 = false;
-      int var7 = Mth.floor(this.scrollX);
-      int var8 = Mth.floor(this.scrollY);
-      if (var2 > 0 && var2 < 234 && var3 > 0 && var3 < 113) {
-         for(AdvancementWidget var10 : this.widgets.values()) {
-            if (var10.isMouseOver(var7, var8, var2, var3)) {
-               var6 = true;
-               var10.drawHover(var1, var7, var8, this.fade, var4, var5);
+   public void extractTooltips(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final int xo, final int yo) {
+      graphics.fill(0, 0, 234, 113, Mth.floor(this.fade * 255.0F) << 24);
+      boolean hovering = false;
+      int intScrollX = Mth.floor(this.scrollX);
+      int intScrollY = Mth.floor(this.scrollY);
+      if (mouseX > 0 && mouseX < 234 && mouseY > 0 && mouseY < 113) {
+         for(AdvancementWidget widget : this.widgets.values()) {
+            if (widget.isMouseOver(intScrollX, intScrollY, mouseX, mouseY)) {
+               hovering = true;
+               widget.extractHover(graphics, intScrollX, intScrollY, this.fade, xo, yo);
                break;
             }
          }
       }
 
-      if (var6) {
+      if (hovering) {
          this.fade = Mth.clamp(this.fade + 0.02F, 0.0F, 0.3F);
       } else {
          this.fade = Mth.clamp(this.fade - 0.04F, 0.0F, 1.0F);
@@ -138,34 +138,34 @@ public class AdvancementTab {
 
    }
 
-   public boolean isMouseOver(int var1, int var2, double var3, double var5) {
-      return this.type.isMouseOver(var1, var2, this.index, var3, var5);
+   public boolean isMouseOver(final int xo, final int yo, final double mx, final double my) {
+      return this.type.isMouseOver(xo, yo, this.index, mx, my);
    }
 
-   public static @Nullable AdvancementTab create(Minecraft var0, AdvancementsScreen var1, int var2, AdvancementNode var3) {
-      Optional var4 = var3.advancement().display();
-      if (var4.isEmpty()) {
+   public static @Nullable AdvancementTab create(final Minecraft minecraft, final AdvancementsScreen screen, int index, final AdvancementNode root) {
+      Optional<DisplayInfo> display = root.advancement().display();
+      if (display.isEmpty()) {
          return null;
       } else {
-         for(AdvancementTabType var8 : AdvancementTabType.values()) {
-            if (var2 < var8.getMax()) {
-               return new AdvancementTab(var0, var1, var8, var2, var3, (DisplayInfo)var4.get());
+         for(AdvancementTabType type : AdvancementTabType.values()) {
+            if (index < type.getMax()) {
+               return new AdvancementTab(minecraft, screen, type, index, root, (DisplayInfo)display.get());
             }
 
-            var2 -= var8.getMax();
+            index -= type.getMax();
          }
 
          return null;
       }
    }
 
-   public void scroll(double var1, double var3) {
+   public void scroll(final double x, final double y) {
       if (this.canScrollHorizontally()) {
-         this.scrollX = Mth.clamp(this.scrollX + var1, (double)(-(this.maxX - 234)), 0.0);
+         this.scrollX = Mth.clamp(this.scrollX + x, (double)(-(this.maxX - 234)), 0.0);
       }
 
       if (this.canScrollVertically()) {
-         this.scrollY = Mth.clamp(this.scrollY + var3, (double)(-(this.maxY - 113)), 0.0);
+         this.scrollY = Mth.clamp(this.scrollY + y, (double)(-(this.maxY - 113)), 0.0);
       }
 
    }
@@ -178,33 +178,33 @@ public class AdvancementTab {
       return this.maxY - this.minY > 113;
    }
 
-   public void addAdvancement(AdvancementNode var1) {
-      Optional var2 = var1.advancement().display();
-      if (!var2.isEmpty()) {
-         AdvancementWidget var3 = new AdvancementWidget(this, this.minecraft, var1, (DisplayInfo)var2.get());
-         this.addWidget(var3, var1.holder());
+   public void addAdvancement(final AdvancementNode node) {
+      Optional<DisplayInfo> display = node.advancement().display();
+      if (!display.isEmpty()) {
+         AdvancementWidget widget = new AdvancementWidget(this, this.minecraft, node, (DisplayInfo)display.get());
+         this.addWidget(widget, node.holder());
       }
    }
 
-   private void addWidget(AdvancementWidget var1, AdvancementHolder var2) {
-      this.widgets.put(var2, var1);
-      int var3 = var1.getX();
-      int var4 = var3 + 28;
-      int var5 = var1.getY();
-      int var6 = var5 + 27;
-      this.minX = Math.min(this.minX, var3);
-      this.maxX = Math.max(this.maxX, var4);
-      this.minY = Math.min(this.minY, var5);
-      this.maxY = Math.max(this.maxY, var6);
+   private void addWidget(final AdvancementWidget widget, final AdvancementHolder advancement) {
+      this.widgets.put(advancement, widget);
+      int x0 = widget.getX();
+      int x1 = x0 + 28;
+      int y0 = widget.getY();
+      int y1 = y0 + 27;
+      this.minX = Math.min(this.minX, x0);
+      this.maxX = Math.max(this.maxX, x1);
+      this.minY = Math.min(this.minY, y0);
+      this.maxY = Math.max(this.maxY, y1);
 
-      for(AdvancementWidget var8 : this.widgets.values()) {
-         var8.attachToParent();
+      for(AdvancementWidget other : this.widgets.values()) {
+         other.attachToParent();
       }
 
    }
 
-   public @Nullable AdvancementWidget getWidget(AdvancementHolder var1) {
-      return (AdvancementWidget)this.widgets.get(var1);
+   public @Nullable AdvancementWidget getWidget(final AdvancementHolder advancement) {
+      return (AdvancementWidget)this.widgets.get(advancement);
    }
 
    public AdvancementsScreen getScreen() {

@@ -16,11 +16,11 @@ public class TimerCallbacks<C> {
    @VisibleForTesting
    public TimerCallbacks() {
       super();
-      this.codec = this.idMapper.codec(Identifier.CODEC).dispatch("Type", TimerCallback::codec, Function.identity());
+      this.codec = this.idMapper.codec(Identifier.CODEC).dispatch("type", TimerCallback::codec, Function.identity());
    }
 
-   public TimerCallbacks<C> register(Identifier var1, MapCodec<? extends TimerCallback<C>> var2) {
-      this.idMapper.put(var1, var2);
+   public TimerCallbacks<C> register(final Identifier id, final MapCodec<? extends TimerCallback<C>> codec) {
+      this.idMapper.put(id, codec);
       return this;
    }
 

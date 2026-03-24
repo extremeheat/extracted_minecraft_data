@@ -9,32 +9,32 @@ import net.minecraft.util.RandomSource;
 public class EntityZombieVillagerTypeFix extends NamedEntityFix {
    private static final int PROFESSION_MAX = 6;
 
-   public EntityZombieVillagerTypeFix(Schema var1, boolean var2) {
-      super(var1, var2, "EntityZombieVillagerTypeFix", References.ENTITY, "Zombie");
+   public EntityZombieVillagerTypeFix(final Schema outputSchema, final boolean changesType) {
+      super(outputSchema, changesType, "EntityZombieVillagerTypeFix", References.ENTITY, "Zombie");
    }
 
-   public Dynamic<?> fixTag(Dynamic<?> var1) {
-      if (var1.get("IsVillager").asBoolean(false)) {
-         if (var1.get("ZombieType").result().isEmpty()) {
-            int var2 = this.getVillagerProfession(var1.get("VillagerProfession").asInt(-1));
-            if (var2 == -1) {
-               var2 = this.getVillagerProfession(RandomSource.create().nextInt(6));
+   public Dynamic<?> fixTag(Dynamic<?> input) {
+      if (input.get("IsVillager").asBoolean(false)) {
+         if (input.get("ZombieType").result().isEmpty()) {
+            int type = this.getVillagerProfession(input.get("VillagerProfession").asInt(-1));
+            if (type == -1) {
+               type = this.getVillagerProfession(RandomSource.createThreadLocalInstance().nextInt(6));
             }
 
-            var1 = var1.set("ZombieType", var1.createInt(var2));
+            input = input.set("ZombieType", input.createInt(type));
          }
 
-         var1 = var1.remove("IsVillager");
+         input = input.remove("IsVillager");
       }
 
-      return var1;
+      return input;
    }
 
-   private int getVillagerProfession(int var1) {
-      return var1 >= 0 && var1 < 6 ? var1 : -1;
+   private int getVillagerProfession(final int profession) {
+      return profession >= 0 && profession < 6 ? profession : -1;
    }
 
-   protected Typed<?> fix(Typed<?> var1) {
-      return var1.update(DSL.remainderFinder(), this::fixTag);
+   protected Typed<?> fix(final Typed<?> entity) {
+      return entity.update(DSL.remainderFinder(), this::fixTag);
    }
 }

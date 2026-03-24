@@ -36,8 +36,8 @@ public abstract class AbstractFish extends WaterAnimal implements Bucketable {
    private static final EntityDataAccessor<Boolean> FROM_BUCKET;
    private static final boolean DEFAULT_FROM_BUCKET = false;
 
-   public AbstractFish(EntityType<? extends AbstractFish> var1, Level var2) {
-      super(var1, var2);
+   public AbstractFish(final EntityType<? extends AbstractFish> type, final Level level) {
+      super(type, level);
       this.moveControl = new FishMoveControl(this);
    }
 
@@ -49,7 +49,7 @@ public abstract class AbstractFish extends WaterAnimal implements Bucketable {
       return super.requiresCustomPersistence() || this.fromBucket();
    }
 
-   public boolean removeWhenFarAway(double var1) {
+   public boolean removeWhenFarAway(final double distSqr) {
       return !this.fromBucket() && !this.hasCustomName();
    }
 
@@ -57,27 +57,27 @@ public abstract class AbstractFish extends WaterAnimal implements Bucketable {
       return 8;
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(FROM_BUCKET, false);
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(FROM_BUCKET, false);
    }
 
    public boolean fromBucket() {
       return (Boolean)this.entityData.get(FROM_BUCKET);
    }
 
-   public void setFromBucket(boolean var1) {
-      this.entityData.set(FROM_BUCKET, var1);
+   public void setFromBucket(final boolean fromBucket) {
+      this.entityData.set(FROM_BUCKET, fromBucket);
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.putBoolean("FromBucket", this.fromBucket());
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.putBoolean("FromBucket", this.fromBucket());
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.setFromBucket(var1.getBooleanOr("FromBucket", false));
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.setFromBucket(input.getBooleanOr("FromBucket", false));
    }
 
    protected void registerGoals() {
@@ -87,12 +87,12 @@ public abstract class AbstractFish extends WaterAnimal implements Bucketable {
       this.goalSelector.addGoal(4, new FishSwimGoal(this));
    }
 
-   protected PathNavigation createNavigation(Level var1) {
-      return new WaterBoundPathNavigation(this, var1);
+   protected PathNavigation createNavigation(final Level level) {
+      return new WaterBoundPathNavigation(this, level);
    }
 
-   protected void travelInWater(Vec3 var1, double var2, boolean var4, double var5) {
-      this.moveRelative(0.01F, var1);
+   protected void travelInWater(final Vec3 input, final double baseGravity, final boolean isFalling, final double oldY) {
+      this.moveRelative(0.01F, input);
       this.move(MoverType.SELF, this.getDeltaMovement());
       this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
       if (this.getTarget() == null) {
@@ -112,16 +112,16 @@ public abstract class AbstractFish extends WaterAnimal implements Bucketable {
       super.aiStep();
    }
 
-   protected InteractionResult mobInteract(Player var1, InteractionHand var2) {
-      return (InteractionResult)Bucketable.bucketMobPickup(var1, var2, this).orElse(super.mobInteract(var1, var2));
+   protected InteractionResult mobInteract(final Player player, final InteractionHand hand) {
+      return (InteractionResult)Bucketable.bucketMobPickup(player, hand, this).orElse(super.mobInteract(player, hand));
    }
 
-   public void saveToBucketTag(ItemStack var1) {
-      Bucketable.saveDefaultDataToBucketTag(this, var1);
+   public void saveToBucketTag(final ItemStack bucket) {
+      Bucketable.saveDefaultDataToBucketTag(this, bucket);
    }
 
-   public void loadFromBucketTag(CompoundTag var1) {
-      Bucketable.loadDefaultDataFromBucketTag(this, var1);
+   public void loadFromBucketTag(final CompoundTag tag) {
+      Bucketable.loadDefaultDataFromBucketTag(this, tag);
    }
 
    public SoundEvent getPickupSound() {
@@ -138,19 +138,19 @@ public abstract class AbstractFish extends WaterAnimal implements Bucketable {
       return SoundEvents.FISH_SWIM;
    }
 
-   protected void playStepSound(BlockPos var1, BlockState var2) {
+   protected void playStepSound(final BlockPos pos, final BlockState blockState) {
    }
 
    static {
       FROM_BUCKET = SynchedEntityData.<Boolean>defineId(AbstractFish.class, EntityDataSerializers.BOOLEAN);
    }
 
-   static class FishSwimGoal extends RandomSwimmingGoal {
+   private static class FishSwimGoal extends RandomSwimmingGoal {
       private final AbstractFish fish;
 
-      public FishSwimGoal(AbstractFish var1) {
-         super(var1, 1.0, 40);
-         this.fish = var1;
+      public FishSwimGoal(final AbstractFish fish) {
+         super(fish, 1.0, 40);
+         this.fish = fish;
       }
 
       public boolean canUse() {
@@ -158,12 +158,12 @@ public abstract class AbstractFish extends WaterAnimal implements Bucketable {
       }
    }
 
-   static class FishMoveControl extends MoveControl {
+   private static class FishMoveControl extends MoveControl {
       private final AbstractFish fish;
 
-      FishMoveControl(AbstractFish var1) {
-         super(var1);
-         this.fish = var1;
+      FishMoveControl(final AbstractFish fish) {
+         super(fish);
+         this.fish = fish;
       }
 
       public void tick() {
@@ -172,19 +172,19 @@ public abstract class AbstractFish extends WaterAnimal implements Bucketable {
          }
 
          if (this.operation == MoveControl.Operation.MOVE_TO && !this.fish.getNavigation().isDone()) {
-            float var1 = (float)(this.speedModifier * this.fish.getAttributeValue(Attributes.MOVEMENT_SPEED));
-            this.fish.setSpeed(Mth.lerp(0.125F, this.fish.getSpeed(), var1));
-            double var2 = this.wantedX - this.fish.getX();
-            double var4 = this.wantedY - this.fish.getY();
-            double var6 = this.wantedZ - this.fish.getZ();
-            if (var4 != 0.0) {
-               double var8 = Math.sqrt(var2 * var2 + var4 * var4 + var6 * var6);
-               this.fish.setDeltaMovement(this.fish.getDeltaMovement().add(0.0, (double)this.fish.getSpeed() * (var4 / var8) * 0.1, 0.0));
+            float targetSpeed = (float)(this.speedModifier * this.fish.getAttributeValue(Attributes.MOVEMENT_SPEED));
+            this.fish.setSpeed(Mth.lerp(0.125F, this.fish.getSpeed(), targetSpeed));
+            double xd = this.wantedX - this.fish.getX();
+            double yd = this.wantedY - this.fish.getY();
+            double zd = this.wantedZ - this.fish.getZ();
+            if (yd != 0.0) {
+               double dd = Math.sqrt(xd * xd + yd * yd + zd * zd);
+               this.fish.setDeltaMovement(this.fish.getDeltaMovement().add(0.0, (double)this.fish.getSpeed() * (yd / dd) * 0.1, 0.0));
             }
 
-            if (var2 != 0.0 || var6 != 0.0) {
-               float var10 = (float)(Mth.atan2(var6, var2) * 57.2957763671875) - 90.0F;
-               this.fish.setYRot(this.rotlerp(this.fish.getYRot(), var10, 90.0F));
+            if (xd != 0.0 || zd != 0.0) {
+               float yRotD = (float)(Mth.atan2(zd, xd) * 57.2957763671875) - 90.0F;
+               this.fish.setYRot(this.rotlerp(this.fish.getYRot(), yRotD, 90.0F));
                this.fish.yBodyRot = this.fish.getYRot();
             }
 

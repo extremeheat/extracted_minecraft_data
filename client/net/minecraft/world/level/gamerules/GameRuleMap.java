@@ -9,49 +9,60 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.datafix.DataFixTypes;
+import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 import org.jspecify.annotations.Nullable;
 
-public final class GameRuleMap {
+public final class GameRuleMap extends SavedData {
    public static final Codec<GameRuleMap> CODEC;
+   public static final SavedDataType<GameRuleMap> TYPE;
    private final Reference2ObjectMap<GameRule<?>, Object> map;
 
-   GameRuleMap(Reference2ObjectMap<GameRule<?>, Object> var1) {
+   private GameRuleMap(final Reference2ObjectMap<GameRule<?>, Object> map) {
       super();
-      this.map = var1;
+      this.map = map;
    }
 
-   private static GameRuleMap ofTrusted(Map<GameRule<?>, Object> var0) {
-      return new GameRuleMap(new Reference2ObjectOpenHashMap(var0));
+   private static GameRuleMap ofTrusted(final Map<GameRule<?>, Object> map) {
+      return new GameRuleMap(new Reference2ObjectOpenHashMap(map));
    }
 
    public static GameRuleMap of() {
       return new GameRuleMap(new Reference2ObjectOpenHashMap());
    }
 
-   public static GameRuleMap of(Stream<GameRule<?>> var0) {
-      Reference2ObjectOpenHashMap var1 = new Reference2ObjectOpenHashMap();
-      var0.forEach((var1x) -> var1.put(var1x, var1x.defaultValue()));
-      return new GameRuleMap(var1);
+   public static GameRuleMap of(final Stream<GameRule<?>> gameRuleTypeStream) {
+      Reference2ObjectOpenHashMap<GameRule<?>, Object> map = new Reference2ObjectOpenHashMap();
+      gameRuleTypeStream.forEach((gameRule) -> map.put(gameRule, gameRule.defaultValue()));
+      return new GameRuleMap(map);
    }
 
-   public static GameRuleMap copyOf(GameRuleMap var0) {
-      return new GameRuleMap(new Reference2ObjectOpenHashMap(var0.map));
+   public static GameRuleMap copyOf(final GameRuleMap gameRuleMap) {
+      return new GameRuleMap(new Reference2ObjectOpenHashMap(gameRuleMap.map));
    }
 
-   public boolean has(GameRule<?> var1) {
-      return this.map.containsKey(var1);
+   public boolean has(final GameRule<?> gameRule) {
+      return this.map.containsKey(gameRule);
    }
 
-   public <T> @Nullable T get(GameRule<T> var1) {
-      return (T)this.map.get(var1);
+   public <T> @Nullable T get(final GameRule<T> gameRule) {
+      return (T)this.map.get(gameRule);
    }
 
-   public <T> void set(GameRule<T> var1, T var2) {
-      this.map.put(var1, var2);
+   public <T> void set(final GameRule<T> gameRule, final T value) {
+      this.setDirty();
+      this.map.put(gameRule, value);
    }
 
-   public <T> @Nullable T remove(GameRule<T> var1) {
-      return (T)this.map.remove(var1);
+   public <T> void reset(final GameRule<T> gameRule) {
+      this.set(gameRule, gameRule.defaultValue());
+   }
+
+   public <T> @Nullable T remove(final GameRule<T> gameRule) {
+      this.setDirty();
+      return (T)this.map.remove(gameRule);
    }
 
    public Set<GameRule<?>> keySet() {
@@ -66,35 +77,35 @@ public final class GameRuleMap {
       return this.map.toString();
    }
 
-   public GameRuleMap withOther(GameRuleMap var1) {
-      GameRuleMap var2 = copyOf(this);
-      var2.setFromIf(var1, (var0) -> true);
-      return var2;
+   public GameRuleMap withOther(final GameRuleMap other) {
+      GameRuleMap result = copyOf(this);
+      result.setFromIf(other, (r) -> true);
+      return result;
    }
 
-   public void setFromIf(GameRuleMap var1, Predicate<GameRule<?>> var2) {
-      for(GameRule var4 : var1.keySet()) {
-         if (var2.test(var4)) {
-            setGameRule(var1, var4, this);
+   public void setFromIf(final GameRuleMap other, final Predicate<GameRule<?>> predicate) {
+      for(GameRule<?> gameRule : other.keySet()) {
+         if (predicate.test(gameRule)) {
+            setGameRule(other, gameRule, this);
          }
       }
 
    }
 
-   private static <T> void setGameRule(GameRuleMap var0, GameRule<T> var1, GameRuleMap var2) {
-      var2.set(var1, Objects.requireNonNull(var0.get(var1)));
+   private static <T> void setGameRule(final GameRuleMap other, final GameRule<T> gameRule, final GameRuleMap result) {
+      result.set(gameRule, Objects.requireNonNull(other.get(gameRule)));
    }
 
    private Reference2ObjectMap<GameRule<?>, Object> map() {
       return this.map;
    }
 
-   public boolean equals(Object var1) {
-      if (var1 == this) {
+   public boolean equals(final Object obj) {
+      if (obj == this) {
          return true;
-      } else if (var1 != null && var1.getClass() == this.getClass()) {
-         GameRuleMap var2 = (GameRuleMap)var1;
-         return Objects.equals(this.map, var2.map);
+      } else if (obj != null && obj.getClass() == this.getClass()) {
+         GameRuleMap that = (GameRuleMap)obj;
+         return Objects.equals(this.map, that.map);
       } else {
          return false;
       }
@@ -106,6 +117,7 @@ public final class GameRuleMap {
 
    static {
       CODEC = Codec.dispatchedMap(BuiltInRegistries.GAME_RULE.byNameCodec(), GameRule::valueCodec).xmap(GameRuleMap::ofTrusted, GameRuleMap::map);
+      TYPE = new SavedDataType<GameRuleMap>(Identifier.withDefaultNamespace("game_rules"), GameRuleMap::of, CODEC, DataFixTypes.SAVED_DATA_GAME_RULES);
    }
 
    public static class Builder {
@@ -115,8 +127,8 @@ public final class GameRuleMap {
          super();
       }
 
-      public <T> Builder set(GameRule<T> var1, T var2) {
-         this.map.put(var1, var2);
+      public <T> Builder set(final GameRule<T> gameRule, final T value) {
+         this.map.put(gameRule, value);
          return this;
       }
 

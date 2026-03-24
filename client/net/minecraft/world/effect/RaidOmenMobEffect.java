@@ -7,21 +7,21 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 
 class RaidOmenMobEffect extends MobEffect {
-   protected RaidOmenMobEffect(MobEffectCategory var1, int var2, ParticleOptions var3) {
-      super(var1, var2, var3);
+   protected RaidOmenMobEffect(final MobEffectCategory category, final int color, final ParticleOptions particleOptions) {
+      super(category, color, particleOptions);
    }
 
-   public boolean shouldApplyEffectTickThisTick(int var1, int var2) {
-      return var1 == 1;
+   public boolean shouldApplyEffectTickThisTick(final int remainingDuration, final int amplification) {
+      return remainingDuration == 1;
    }
 
-   public boolean applyEffectTick(ServerLevel var1, LivingEntity var2, int var3) {
-      if (var2 instanceof ServerPlayer var4) {
-         if (!var2.isSpectator()) {
-            BlockPos var5 = var4.getRaidOmenPosition();
-            if (var5 != null) {
-               var1.getRaids().createOrExtendRaid(var4, var5);
-               var4.clearRaidOmenPosition();
+   public boolean applyEffectTick(final ServerLevel level, final LivingEntity mob, final int amplification) {
+      if (mob instanceof ServerPlayer player) {
+         if (!mob.isSpectator()) {
+            BlockPos raidOmenPosition = player.getRaidOmenPosition();
+            if (raidOmenPosition != null) {
+               level.getRaids().createOrExtendRaid(player, raidOmenPosition);
+               player.clearRaidOmenPosition();
                return false;
             }
          }

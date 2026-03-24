@@ -1,82 +1,108 @@
 package net.minecraft.world.item.crafting;
 
-import net.minecraft.core.HolderLookup;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.BannerItem;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
 
 public class ShieldDecorationRecipe extends CustomRecipe {
-   public ShieldDecorationRecipe(CraftingBookCategory var1) {
-      super(var1);
+   public static final MapCodec<ShieldDecorationRecipe> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Ingredient.CODEC.fieldOf("banner").forGetter((o) -> o.banner), Ingredient.CODEC.fieldOf("target").forGetter((o) -> o.target), ItemStackTemplate.CODEC.fieldOf("result").forGetter((o) -> o.result)).apply(i, ShieldDecorationRecipe::new));
+   public static final StreamCodec<RegistryFriendlyByteBuf, ShieldDecorationRecipe> STREAM_CODEC;
+   public static final RecipeSerializer<ShieldDecorationRecipe> SERIALIZER;
+   private final Ingredient banner;
+   private final Ingredient target;
+   private final ItemStackTemplate result;
+
+   public ShieldDecorationRecipe(final Ingredient banner, final Ingredient target, final ItemStackTemplate result) {
+      super();
+      this.banner = banner;
+      this.target = target;
+      this.result = result;
    }
 
-   public boolean matches(CraftingInput var1, Level var2) {
-      if (var1.ingredientCount() != 2) {
+   public boolean matches(final CraftingInput input, final Level level) {
+      if (input.ingredientCount() != 2) {
          return false;
       } else {
-         boolean var3 = false;
-         boolean var4 = false;
+         boolean hasClearTarget = false;
+         boolean hasPatternBanner = false;
 
-         for(int var5 = 0; var5 < var1.size(); ++var5) {
-            ItemStack var6 = var1.getItem(var5);
-            if (!var6.isEmpty()) {
-               if (var6.getItem() instanceof BannerItem) {
-                  if (var4) {
+         for(int slot = 0; slot < input.size(); ++slot) {
+            ItemStack itemStack = input.getItem(slot);
+            if (!itemStack.isEmpty()) {
+               if (this.banner.test(itemStack) && itemStack.getItem() instanceof BannerItem) {
+                  if (hasPatternBanner) {
                      return false;
                   }
 
-                  var4 = true;
+                  hasPatternBanner = true;
                } else {
-                  if (!var6.is(Items.SHIELD)) {
+                  if (!this.target.test(itemStack)) {
                      return false;
                   }
 
-                  if (var3) {
+                  if (hasClearTarget) {
                      return false;
                   }
 
-                  BannerPatternLayers var7 = (BannerPatternLayers)var6.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
-                  if (!var7.layers().isEmpty()) {
+                  BannerPatternLayers patterns = (BannerPatternLayers)itemStack.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
+                  if (!patterns.layers().isEmpty()) {
                      return false;
                   }
 
-                  var3 = true;
+                  hasClearTarget = true;
                }
             }
          }
 
-         return var3 && var4;
+         return hasClearTarget && hasPatternBanner;
       }
    }
 
-   public ItemStack assemble(CraftingInput var1, HolderLookup.Provider var2) {
-      ItemStack var3 = ItemStack.EMPTY;
-      ItemStack var4 = ItemStack.EMPTY;
+   public ItemStack assemble(final CraftingInput input) {
+      BannerPatternLayers patterns = null;
+      DyeColor baseColor = DyeColor.WHITE;
+      ItemStack target = ItemStack.EMPTY;
 
-      for(int var5 = 0; var5 < var1.size(); ++var5) {
-         ItemStack var6 = var1.getItem(var5);
-         if (!var6.isEmpty()) {
-            if (var6.getItem() instanceof BannerItem) {
-               var3 = var6;
-            } else if (var6.is(Items.SHIELD)) {
-               var4 = var6.copy();
+      for(int slot = 0; slot < input.size(); ++slot) {
+         ItemStack itemStack = input.getItem(slot);
+         if (!itemStack.isEmpty()) {
+            if (this.banner.test(itemStack)) {
+               Item var8 = itemStack.getItem();
+               if (var8 instanceof BannerItem) {
+                  BannerItem bannerItem = (BannerItem)var8;
+                  patterns = (BannerPatternLayers)itemStack.get(DataComponents.BANNER_PATTERNS);
+                  baseColor = bannerItem.getColor();
+                  continue;
+               }
+            }
+
+            if (this.target.test(itemStack)) {
+               target = itemStack;
             }
          }
       }
 
-      if (var4.isEmpty()) {
-         return var4;
-      } else {
-         var4.set(DataComponents.BANNER_PATTERNS, (BannerPatternLayers)var3.get(DataComponents.BANNER_PATTERNS));
-         var4.set(DataComponents.BASE_COLOR, ((BannerItem)var3.getItem()).getColor());
-         return var4;
-      }
+      ItemStack result = TransmuteRecipe.createWithOriginalComponents(this.result, target);
+      result.set(DataComponents.BANNER_PATTERNS, patterns);
+      result.set(DataComponents.BASE_COLOR, baseColor);
+      return result;
    }
 
    public RecipeSerializer<ShieldDecorationRecipe> getSerializer() {
-      return RecipeSerializer.SHIELD_DECORATION;
+      return SERIALIZER;
+   }
+
+   static {
+      STREAM_CODEC = StreamCodec.composite(Ingredient.CONTENTS_STREAM_CODEC, (o) -> o.banner, Ingredient.CONTENTS_STREAM_CODEC, (o) -> o.target, ItemStackTemplate.STREAM_CODEC, (o) -> o.result, ShieldDecorationRecipe::new);
+      SERIALIZER = new RecipeSerializer<ShieldDecorationRecipe>(MAP_CODEC, STREAM_CODEC);
    }
 }

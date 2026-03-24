@@ -16,21 +16,25 @@ public class LecternScreen extends BookViewScreen implements MenuAccess<LecternM
    private static final Component TAKE_BOOK_LABEL = Component.translatable("lectern.take_book");
    private final LecternMenu menu;
    private final ContainerListener listener = new ContainerListener() {
-      public void slotChanged(AbstractContainerMenu var1, int var2, ItemStack var3) {
+      {
+         Objects.requireNonNull(LecternScreen.this);
+      }
+
+      public void slotChanged(final AbstractContainerMenu container, final int slotIndex, final ItemStack itemStack) {
          LecternScreen.this.bookChanged();
       }
 
-      public void dataChanged(AbstractContainerMenu var1, int var2, int var3) {
-         if (var2 == 0) {
+      public void dataChanged(final AbstractContainerMenu container, final int id, final int value) {
+         if (id == 0) {
             LecternScreen.this.pageChanged();
          }
 
       }
    };
 
-   public LecternScreen(LecternMenu var1, Inventory var2, Component var3) {
+   public LecternScreen(final LecternMenu menu, final Inventory inventory, final Component title) {
       super();
-      this.menu = var1;
+      this.menu = menu;
    }
 
    public LecternMenu getMenu() {
@@ -54,10 +58,10 @@ public class LecternScreen extends BookViewScreen implements MenuAccess<LecternM
 
    protected void createMenuControls() {
       if (this.minecraft.player.mayBuild()) {
-         int var1 = this.menuControlsTop();
-         int var2 = this.width / 2;
-         this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.onClose()).pos(var2 - 98 - 2, var1).width(98).build());
-         this.addRenderableWidget(Button.builder(TAKE_BOOK_LABEL, (var1x) -> this.sendButtonClick(3)).pos(var2 + 2, var1).width(98).build());
+         int buttonY = this.menuControlsTop();
+         int middle = this.width / 2;
+         this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (button) -> this.onClose()).pos(middle - 98 - 2, buttonY).width(98).build());
+         this.addRenderableWidget(Button.builder(TAKE_BOOK_LABEL, (button) -> this.sendButtonClick(3)).pos(middle + 2, buttonY).width(98).build());
       } else {
          super.createMenuControls();
       }
@@ -72,38 +76,33 @@ public class LecternScreen extends BookViewScreen implements MenuAccess<LecternM
       this.sendButtonClick(2);
    }
 
-   protected boolean forcePage(int var1) {
-      if (var1 != this.menu.getPage()) {
-         this.sendButtonClick(100 + var1);
+   protected boolean forcePage(final int page) {
+      if (page != this.menu.getPage()) {
+         this.sendButtonClick(100 + page);
          return true;
       } else {
          return false;
       }
    }
 
-   private void sendButtonClick(int var1) {
-      this.minecraft.gameMode.handleInventoryButtonClick(this.menu.containerId, var1);
+   private void sendButtonClick(final int button) {
+      this.minecraft.gameMode.handleInventoryButtonClick(this.menu.containerId, button);
    }
 
    public boolean isPauseScreen() {
       return false;
    }
 
-   void bookChanged() {
-      ItemStack var1 = this.menu.getBook();
-      this.setBookAccess((BookViewScreen.BookAccess)Objects.requireNonNullElse(BookViewScreen.BookAccess.fromItem(var1), BookViewScreen.EMPTY_ACCESS));
+   private void bookChanged() {
+      ItemStack book = this.menu.getBook();
+      this.setBookAccess((BookViewScreen.BookAccess)Objects.requireNonNullElse(BookViewScreen.BookAccess.fromItem(book), BookViewScreen.EMPTY_ACCESS));
    }
 
-   void pageChanged() {
+   private void pageChanged() {
       this.setPage(this.menu.getPage());
    }
 
    protected void closeContainerOnServer() {
       this.minecraft.player.closeContainer();
-   }
-
-   // $FF: synthetic method
-   public AbstractContainerMenu getMenu() {
-      return this.getMenu();
    }
 }

@@ -14,29 +14,29 @@ public interface PacketListener {
 
    ConnectionProtocol protocol();
 
-   void onDisconnect(DisconnectionDetails var1);
+   void onDisconnect(DisconnectionDetails details);
 
-   default void onPacketError(Packet var1, Exception var2) throws ReportedException {
-      throw PacketUtils.makeReportedException(var2, var1, this);
+   default void onPacketError(final Packet packet, final Exception cause) throws ReportedException {
+      throw PacketUtils.makeReportedException(cause, packet, this);
    }
 
-   default DisconnectionDetails createDisconnectionInfo(Component var1, Throwable var2) {
-      return new DisconnectionDetails(var1);
+   default DisconnectionDetails createDisconnectionInfo(final Component reason, final Throwable cause) {
+      return new DisconnectionDetails(reason);
    }
 
    boolean isAcceptingMessages();
 
-   default boolean shouldHandleMessage(Packet<?> var1) {
+   default boolean shouldHandleMessage(final Packet<?> packet) {
       return this.isAcceptingMessages();
    }
 
-   default void fillCrashReport(CrashReport var1) {
-      CrashReportCategory var2 = var1.addCategory("Connection");
-      var2.setDetail("Protocol", (CrashReportDetail)(() -> this.protocol().id()));
-      var2.setDetail("Flow", (CrashReportDetail)(() -> this.flow().toString()));
-      this.fillListenerSpecificCrashDetails(var1, var2);
+   default void fillCrashReport(final CrashReport crashReport) {
+      CrashReportCategory connection = crashReport.addCategory("Connection");
+      connection.setDetail("Protocol", (CrashReportDetail)(() -> this.protocol().id()));
+      connection.setDetail("Flow", (CrashReportDetail)(() -> this.flow().toString()));
+      this.fillListenerSpecificCrashDetails(crashReport, connection);
    }
 
-   default void fillListenerSpecificCrashDetails(CrashReport var1, CrashReportCategory var2) {
+   default void fillListenerSpecificCrashDetails(final CrashReport report, final CrashReportCategory connectionDetails) {
    }
 }

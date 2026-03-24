@@ -19,23 +19,23 @@ public class TagValueOutput implements ValueOutput {
    private final DynamicOps<Tag> ops;
    private final CompoundTag output;
 
-   TagValueOutput(ProblemReporter var1, DynamicOps<Tag> var2, CompoundTag var3) {
+   private TagValueOutput(final ProblemReporter problemReporter, final DynamicOps<Tag> ops, final CompoundTag output) {
       super();
-      this.problemReporter = var1;
-      this.ops = var2;
-      this.output = var3;
+      this.problemReporter = problemReporter;
+      this.ops = ops;
+      this.output = output;
    }
 
-   public static TagValueOutput createWithContext(ProblemReporter var0, HolderLookup.Provider var1) {
-      return new TagValueOutput(var0, var1.createSerializationContext(NbtOps.INSTANCE), new CompoundTag());
+   public static TagValueOutput createWithContext(final ProblemReporter problemReporter, final HolderLookup.Provider provider) {
+      return new TagValueOutput(problemReporter, provider.createSerializationContext(NbtOps.INSTANCE), new CompoundTag());
    }
 
-   public static TagValueOutput createWithoutContext(ProblemReporter var0) {
-      return new TagValueOutput(var0, NbtOps.INSTANCE, new CompoundTag());
+   public static TagValueOutput createWithoutContext(final ProblemReporter problemReporter) {
+      return new TagValueOutput(problemReporter, NbtOps.INSTANCE, new CompoundTag());
    }
 
-   public <T> void store(String var1, Codec<T> var2, T var3) {
-      DataResult var10000 = var2.encodeStart(this.ops, var3);
+   public <T> void store(final String name, final Codec<T> codec, final T value) {
+      DataResult var10000 = codec.encodeStart(this.ops, value);
       Objects.requireNonNull(var10000);
       DataResult var4 = var10000;
       byte var5 = 0;
@@ -44,13 +44,13 @@ public class TagValueOutput implements ValueOutput {
       //1->com/mojang/serialization/DataResult$Error
       switch (var4.typeSwitch<invokedynamic>(var4, var5)) {
          case 0:
-            DataResult.Success var6 = (DataResult.Success)var4;
-            this.output.put(var1, (Tag)var6.value());
+            DataResult.Success<Tag> success = (DataResult.Success)var4;
+            this.output.put(name, (Tag)success.value());
             break;
          case 1:
-            DataResult.Error var7 = (DataResult.Error)var4;
-            this.problemReporter.report(new EncodeToFieldFailedProblem(var1, var3, var7));
-            var7.partialValue().ifPresent((var2x) -> this.output.put(var1, var2x));
+            DataResult.Error<Tag> error = (DataResult.Error)var4;
+            this.problemReporter.report(new EncodeToFieldFailedProblem(name, value, error));
+            error.partialValue().ifPresent((partial) -> this.output.put(name, partial));
             break;
          default:
             throw new MatchException((String)null, (Throwable)null);
@@ -58,15 +58,15 @@ public class TagValueOutput implements ValueOutput {
 
    }
 
-   public <T> void storeNullable(String var1, Codec<T> var2, @Nullable T var3) {
-      if (var3 != null) {
-         this.store(var1, var2, var3);
+   public <T> void storeNullable(final String name, final Codec<T> codec, final @Nullable T value) {
+      if (value != null) {
+         this.store(name, codec, value);
       }
 
    }
 
-   public <T> void store(MapCodec<T> var1, T var2) {
-      DataResult var10000 = var1.encoder().encodeStart(this.ops, var2);
+   public <T> void store(final MapCodec<T> codec, final T value) {
+      DataResult var10000 = codec.encoder().encodeStart(this.ops, value);
       Objects.requireNonNull(var10000);
       DataResult var3 = var10000;
       byte var4 = 0;
@@ -75,13 +75,13 @@ public class TagValueOutput implements ValueOutput {
       //1->com/mojang/serialization/DataResult$Error
       switch (var3.typeSwitch<invokedynamic>(var3, var4)) {
          case 0:
-            DataResult.Success var5 = (DataResult.Success)var3;
-            this.output.merge((CompoundTag)var5.value());
+            DataResult.Success<Tag> success = (DataResult.Success)var3;
+            this.output.merge((CompoundTag)success.value());
             break;
          case 1:
-            DataResult.Error var6 = (DataResult.Error)var3;
-            this.problemReporter.report(new EncodeToMapFailedProblem(var2, var6));
-            var6.partialValue().ifPresent((var1x) -> this.output.merge((CompoundTag)var1x));
+            DataResult.Error<Tag> error = (DataResult.Error)var3;
+            this.problemReporter.report(new EncodeToMapFailedProblem(value, error));
+            error.partialValue().ifPresent((partial) -> this.output.merge((CompoundTag)partial));
             break;
          default:
             throw new MatchException((String)null, (Throwable)null);
@@ -89,66 +89,66 @@ public class TagValueOutput implements ValueOutput {
 
    }
 
-   public void putBoolean(String var1, boolean var2) {
-      this.output.putBoolean(var1, var2);
+   public void putBoolean(final String name, final boolean value) {
+      this.output.putBoolean(name, value);
    }
 
-   public void putByte(String var1, byte var2) {
-      this.output.putByte(var1, var2);
+   public void putByte(final String name, final byte value) {
+      this.output.putByte(name, value);
    }
 
-   public void putShort(String var1, short var2) {
-      this.output.putShort(var1, var2);
+   public void putShort(final String name, final short value) {
+      this.output.putShort(name, value);
    }
 
-   public void putInt(String var1, int var2) {
-      this.output.putInt(var1, var2);
+   public void putInt(final String name, final int value) {
+      this.output.putInt(name, value);
    }
 
-   public void putLong(String var1, long var2) {
-      this.output.putLong(var1, var2);
+   public void putLong(final String name, final long value) {
+      this.output.putLong(name, value);
    }
 
-   public void putFloat(String var1, float var2) {
-      this.output.putFloat(var1, var2);
+   public void putFloat(final String name, final float value) {
+      this.output.putFloat(name, value);
    }
 
-   public void putDouble(String var1, double var2) {
-      this.output.putDouble(var1, var2);
+   public void putDouble(final String name, final double value) {
+      this.output.putDouble(name, value);
    }
 
-   public void putString(String var1, String var2) {
-      this.output.putString(var1, var2);
+   public void putString(final String name, final String value) {
+      this.output.putString(name, value);
    }
 
-   public void putIntArray(String var1, int[] var2) {
-      this.output.putIntArray(var1, var2);
+   public void putIntArray(final String name, final int[] value) {
+      this.output.putIntArray(name, value);
    }
 
-   private ProblemReporter reporterForChild(String var1) {
-      return this.problemReporter.forChild(new ProblemReporter.FieldPathElement(var1));
+   private ProblemReporter reporterForChild(final String name) {
+      return this.problemReporter.forChild(new ProblemReporter.FieldPathElement(name));
    }
 
-   public ValueOutput child(String var1) {
-      CompoundTag var2 = new CompoundTag();
-      this.output.put(var1, var2);
-      return new TagValueOutput(this.reporterForChild(var1), this.ops, var2);
+   public ValueOutput child(final String name) {
+      CompoundTag childTag = new CompoundTag();
+      this.output.put(name, childTag);
+      return new TagValueOutput(this.reporterForChild(name), this.ops, childTag);
    }
 
-   public ValueOutput.ValueOutputList childrenList(String var1) {
-      ListTag var2 = new ListTag();
-      this.output.put(var1, var2);
-      return new ListWrapper(var1, this.problemReporter, this.ops, var2);
+   public ValueOutput.ValueOutputList childrenList(final String name) {
+      ListTag childList = new ListTag();
+      this.output.put(name, childList);
+      return new ListWrapper(name, this.problemReporter, this.ops, childList);
    }
 
-   public <T> ValueOutput.TypedOutputList<T> list(String var1, Codec<T> var2) {
-      ListTag var3 = new ListTag();
-      this.output.put(var1, var3);
-      return new TypedListWrapper<T>(this.problemReporter, var1, this.ops, var2, var3);
+   public <T> ValueOutput.TypedOutputList<T> list(final String name, final Codec<T> codec) {
+      ListTag childList = new ListTag();
+      this.output.put(name, childList);
+      return new TypedListWrapper<T>(this.problemReporter, name, this.ops, codec, childList);
    }
 
-   public void discard(String var1) {
-      this.output.remove(var1);
+   public void discard(final String name) {
+      this.output.remove(name);
    }
 
    public boolean isEmpty() {
@@ -159,25 +159,25 @@ public class TagValueOutput implements ValueOutput {
       return this.output;
    }
 
-   static class ListWrapper implements ValueOutput.ValueOutputList {
+   private static class ListWrapper implements ValueOutput.ValueOutputList {
       private final String fieldName;
       private final ProblemReporter problemReporter;
       private final DynamicOps<Tag> ops;
       private final ListTag output;
 
-      ListWrapper(String var1, ProblemReporter var2, DynamicOps<Tag> var3, ListTag var4) {
+      private ListWrapper(final String fieldName, final ProblemReporter problemReporter, final DynamicOps<Tag> ops, final ListTag output) {
          super();
-         this.fieldName = var1;
-         this.problemReporter = var2;
-         this.ops = var3;
-         this.output = var4;
+         this.fieldName = fieldName;
+         this.problemReporter = problemReporter;
+         this.ops = ops;
+         this.output = output;
       }
 
       public ValueOutput addChild() {
-         int var1 = this.output.size();
-         CompoundTag var2 = new CompoundTag();
-         this.output.add(var2);
-         return new TagValueOutput(this.problemReporter.forChild(new ProblemReporter.IndexedFieldPathElement(this.fieldName, var1)), this.ops, var2);
+         int newChildIndex = this.output.size();
+         CompoundTag child = new CompoundTag();
+         this.output.add(child);
+         return new TagValueOutput(this.problemReporter.forChild(new ProblemReporter.IndexedFieldPathElement(this.fieldName, newChildIndex)), this.ops, child);
       }
 
       public void discardLast() {
@@ -189,24 +189,24 @@ public class TagValueOutput implements ValueOutput {
       }
    }
 
-   static class TypedListWrapper<T> implements ValueOutput.TypedOutputList<T> {
+   private static class TypedListWrapper<T> implements ValueOutput.TypedOutputList<T> {
       private final ProblemReporter problemReporter;
       private final String name;
       private final DynamicOps<Tag> ops;
       private final Codec<T> codec;
       private final ListTag output;
 
-      TypedListWrapper(ProblemReporter var1, String var2, DynamicOps<Tag> var3, Codec<T> var4, ListTag var5) {
+      private TypedListWrapper(final ProblemReporter problemReporter, final String name, final DynamicOps<Tag> ops, final Codec<T> codec, final ListTag output) {
          super();
-         this.problemReporter = var1;
-         this.name = var2;
-         this.ops = var3;
-         this.codec = var4;
-         this.output = var5;
+         this.problemReporter = problemReporter;
+         this.name = name;
+         this.ops = ops;
+         this.codec = codec;
+         this.output = output;
       }
 
-      public void add(T var1) {
-         DataResult var10000 = this.codec.encodeStart(this.ops, var1);
+      public void add(final T value) {
+         DataResult var10000 = this.codec.encodeStart(this.ops, value);
          Objects.requireNonNull(var10000);
          DataResult var2 = var10000;
          byte var3 = 0;
@@ -215,13 +215,13 @@ public class TagValueOutput implements ValueOutput {
          //1->com/mojang/serialization/DataResult$Error
          switch (var2.typeSwitch<invokedynamic>(var2, var3)) {
             case 0:
-               DataResult.Success var4 = (DataResult.Success)var2;
-               this.output.add((Tag)var4.value());
+               DataResult.Success<Tag> success = (DataResult.Success)var2;
+               this.output.add((Tag)success.value());
                break;
             case 1:
-               DataResult.Error var5 = (DataResult.Error)var2;
-               this.problemReporter.report(new EncodeToListFailedProblem(this.name, var1, var5));
-               Optional var6 = var5.partialValue();
+               DataResult.Error<Tag> error = (DataResult.Error)var2;
+               this.problemReporter.report(new EncodeToListFailedProblem(this.name, value, error));
+               Optional var6 = error.partialValue();
                ListTag var10001 = this.output;
                Objects.requireNonNull(var10001);
                var6.ifPresent(var10001::add);
@@ -238,11 +238,8 @@ public class TagValueOutput implements ValueOutput {
    }
 
    public static record EncodeToFieldFailedProblem(String name, Object value, DataResult.Error<?> error) implements ProblemReporter.Problem {
-      public EncodeToFieldFailedProblem(String var1, Object var2, DataResult.Error<?> var3) {
+      public EncodeToFieldFailedProblem {
          super();
-         this.name = var1;
-         this.value = var2;
-         this.error = var3;
       }
 
       public String description() {
@@ -252,11 +249,8 @@ public class TagValueOutput implements ValueOutput {
    }
 
    public static record EncodeToListFailedProblem(String name, Object value, DataResult.Error<?> error) implements ProblemReporter.Problem {
-      public EncodeToListFailedProblem(String var1, Object var2, DataResult.Error<?> var3) {
+      public EncodeToListFailedProblem {
          super();
-         this.name = var1;
-         this.value = var2;
-         this.error = var3;
       }
 
       public String description() {
@@ -266,10 +260,8 @@ public class TagValueOutput implements ValueOutput {
    }
 
    public static record EncodeToMapFailedProblem(Object value, DataResult.Error<?> error) implements ProblemReporter.Problem {
-      public EncodeToMapFailedProblem(Object var1, DataResult.Error<?> var2) {
+      public EncodeToMapFailedProblem {
          super();
-         this.value = var1;
-         this.error = var2;
       }
 
       public String description() {

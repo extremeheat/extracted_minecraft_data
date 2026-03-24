@@ -13,12 +13,12 @@ public class ResetProfession {
    }
 
    public static BehaviorControl<Villager> create() {
-      return BehaviorBuilder.create((Function)((var0) -> var0.group(var0.absent(MemoryModuleType.JOB_SITE)).apply(var0, (var0x) -> (var0, var1, var2) -> {
-               VillagerData var4 = var1.getVillagerData();
-               boolean var5 = !var4.profession().is(VillagerProfession.NONE) && !var4.profession().is(VillagerProfession.NITWIT);
-               if (var5 && var1.getVillagerXp() == 0 && var4.level() <= 1) {
-                  var1.setVillagerData(var1.getVillagerData().withProfession(var0.registryAccess(), VillagerProfession.NONE));
-                  var1.refreshBrain(var0);
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.absent(MemoryModuleType.JOB_SITE)).apply(i, (jobSite) -> (level, body, timestamp) -> {
+               VillagerData bodyData = body.getVillagerData();
+               boolean canBeFired = !bodyData.profession().is(VillagerProfession.NONE) && !bodyData.profession().is(VillagerProfession.NITWIT);
+               if (canBeFired && body.getVillagerXp() == 0 && bodyData.level() <= 1) {
+                  body.setVillagerData(body.getVillagerData().withProfession(level.registryAccess(), VillagerProfession.NONE));
+                  body.refreshBrain(level);
                   return true;
                } else {
                   return false;

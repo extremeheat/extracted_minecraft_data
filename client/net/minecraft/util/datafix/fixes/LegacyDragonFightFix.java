@@ -9,22 +9,22 @@ import com.mojang.serialization.OptionalDynamic;
 import net.minecraft.util.datafix.ExtraDataFixUtils;
 
 public class LegacyDragonFightFix extends DataFix {
-   public LegacyDragonFightFix(Schema var1) {
-      super(var1, false);
+   public LegacyDragonFightFix(final Schema outputSchema) {
+      super(outputSchema, false);
    }
 
-   private static <T> Dynamic<T> fixDragonFight(Dynamic<T> var0) {
-      return var0.update("ExitPortalLocation", ExtraDataFixUtils::fixBlockPos);
+   private static <T> Dynamic<T> fixDragonFight(final Dynamic<T> tag) {
+      return tag.update("ExitPortalLocation", ExtraDataFixUtils::fixBlockPos);
    }
 
    protected TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped("LegacyDragonFightFix", this.getInputSchema().getType(References.LEVEL), (var0) -> var0.update(DSL.remainderFinder(), (var0x) -> {
-            OptionalDynamic var1 = var0x.get("DragonFight");
-            if (var1.result().isPresent()) {
-               return var0x;
+      return this.fixTypeEverywhereTyped("LegacyDragonFightFix", this.getInputSchema().getType(References.LEVEL), (input) -> input.update(DSL.remainderFinder(), (tag) -> {
+            OptionalDynamic<?> dragonFight = tag.get("DragonFight");
+            if (dragonFight.result().isPresent()) {
+               return tag;
             } else {
-               Dynamic var2 = var0x.get("DimensionData").get("1").get("DragonFight").orElseEmptyMap();
-               return var0x.set("DragonFight", fixDragonFight(var2));
+               Dynamic<?> legacyFight = tag.get("DimensionData").get("1").get("DragonFight").orElseEmptyMap();
+               return tag.set("DragonFight", fixDragonFight(legacyFight));
             }
          }));
    }

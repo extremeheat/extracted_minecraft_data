@@ -16,25 +16,25 @@ public class AddFieldFix extends DataFix {
    private final String[] path;
    private final Function<Dynamic<?>, Dynamic<?>> fieldGenerator;
 
-   public AddFieldFix(Schema var1, DSL.TypeReference var2, String var3, Function<Dynamic<?>, Dynamic<?>> var4, String... var5) {
-      super(var1, false);
-      this.name = "Adding field `" + var3 + "` to type `" + var2.typeName().toLowerCase(Locale.ROOT) + "`";
-      this.type = var2;
-      this.fieldName = var3;
-      this.path = var5;
-      this.fieldGenerator = var4;
+   public AddFieldFix(final Schema outputSchema, final DSL.TypeReference type, final String fieldName, final Function<Dynamic<?>, Dynamic<?>> fieldGenerator, final String... path) {
+      super(outputSchema, false);
+      this.name = "Adding field `" + fieldName + "` to type `" + type.typeName().toLowerCase(Locale.ROOT) + "`";
+      this.type = type;
+      this.fieldName = fieldName;
+      this.path = path;
+      this.fieldGenerator = fieldGenerator;
    }
 
    protected TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped(this.name, this.getInputSchema().getType(this.type), this.getOutputSchema().getType(this.type), (var1) -> var1.update(DSL.remainderFinder(), (var1x) -> this.addField(var1x, 0)));
+      return this.fixTypeEverywhereTyped(this.name, this.getInputSchema().getType(this.type), this.getOutputSchema().getType(this.type), (input) -> input.update(DSL.remainderFinder(), (dynamic) -> this.addField(dynamic, 0)));
    }
 
-   private Dynamic<?> addField(Dynamic<?> var1, int var2) {
-      if (var2 >= this.path.length) {
-         return var1.set(this.fieldName, (Dynamic)this.fieldGenerator.apply(var1));
+   private Dynamic<?> addField(final Dynamic<?> dynamic, final int pathIndex) {
+      if (pathIndex >= this.path.length) {
+         return dynamic.set(this.fieldName, (Dynamic)this.fieldGenerator.apply(dynamic));
       } else {
-         Optional var3 = var1.get(this.path[var2]).result();
-         return var3.isEmpty() ? var1 : this.addField((Dynamic)var3.get(), var2 + 1);
+         Optional<? extends Dynamic<?>> field = dynamic.get(this.path[pathIndex]).result();
+         return field.isEmpty() ? dynamic : this.addField((Dynamic)field.get(), pathIndex + 1);
       }
    }
 }

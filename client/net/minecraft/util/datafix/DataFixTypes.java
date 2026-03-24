@@ -24,15 +24,23 @@ public enum DataFixTypes {
    STRUCTURE(References.STRUCTURE),
    STATS(References.STATS),
    SAVED_DATA_COMMAND_STORAGE(References.SAVED_DATA_COMMAND_STORAGE),
+   SAVED_DATA_CUSTOM_BOSS_EVENTS(References.SAVED_DATA_CUSTOM_BOSS_EVENTS),
+   SAVED_DATA_ENDER_DRAGON_FIGHT(References.SAVED_DATA_ENDER_DRAGON_FIGHT),
+   SAVED_DATA_GAME_RULES(References.SAVED_DATA_GAME_RULES),
    SAVED_DATA_FORCED_CHUNKS(References.SAVED_DATA_TICKETS),
    SAVED_DATA_MAP_DATA(References.SAVED_DATA_MAP_DATA),
    SAVED_DATA_MAP_INDEX(References.SAVED_DATA_MAP_INDEX),
    SAVED_DATA_RAIDS(References.SAVED_DATA_RAIDS),
    SAVED_DATA_RANDOM_SEQUENCES(References.SAVED_DATA_RANDOM_SEQUENCES),
+   SAVED_DATA_SCHEDULED_EVENTS(References.SAVED_DATA_SCHEDULED_EVENTS),
    SAVED_DATA_SCOREBOARD(References.SAVED_DATA_SCOREBOARD),
    SAVED_DATA_STOPWATCHES(References.SAVED_DATA_STOPWATCHES),
    SAVED_DATA_STRUCTURE_FEATURE_INDICES(References.SAVED_DATA_STRUCTURE_FEATURE_INDICES),
+   SAVED_DATA_WANDERING_TRADER(References.SAVED_DATA_WANDERING_TRADER),
+   SAVED_DATA_WEATHER(References.SAVED_DATA_WEATHER),
    SAVED_DATA_WORLD_BORDER(References.SAVED_DATA_WORLD_BORDER),
+   SAVED_DATA_WORLD_CLOCKS(References.SAVED_DATA_WORLD_CLOCKS),
+   SAVED_DATA_WORLD_GEN_SETTINGS(References.SAVED_DATA_WORLD_GEN_SETTINGS),
    ADVANCEMENTS(References.ADVANCEMENTS),
    POI_CHUNK(References.POI_CHUNK),
    WORLD_GEN_SETTINGS(References.WORLD_GEN_SETTINGS),
@@ -42,49 +50,53 @@ public enum DataFixTypes {
    public static final Set<DSL.TypeReference> TYPES_FOR_LEVEL_LIST = Set.of(LEVEL_SUMMARY.type);
    private final DSL.TypeReference type;
 
-   private DataFixTypes(final DSL.TypeReference var3) {
-      this.type = var3;
+   private DataFixTypes(final DSL.TypeReference type) {
+      this.type = type;
    }
 
-   static int currentVersion() {
+   private static int currentVersion() {
       return SharedConstants.getCurrentVersion().dataVersion().version();
    }
 
-   public <A> Codec<A> wrapCodec(final Codec<A> var1, final DataFixer var2, final int var3) {
+   public <A> Codec<A> wrapCodec(final Codec<A> codec, final DataFixer dataFixer, final int defaultVersion) {
       return new Codec<A>() {
-         public <T> DataResult<T> encode(A var1x, DynamicOps<T> var2x, T var3x) {
-            return var1.encode(var1x, var2x, var3x).flatMap((var1xx) -> var2x.mergeToMap(var1xx, var2x.createString("DataVersion"), var2x.createInt(DataFixTypes.currentVersion())));
+         {
+            Objects.requireNonNull(DataFixTypes.this);
          }
 
-         public <T> DataResult<Pair<A, T>> decode(DynamicOps<T> var1x, T var2x) {
-            DataResult var10000 = var1x.get(var2x, "DataVersion");
-            Objects.requireNonNull(var1x);
-            int var3x = (Integer)var10000.flatMap(var1x::getNumberValue).map(Number::intValue).result().orElse(var3);
-            Dynamic var4 = new Dynamic(var1x, var1x.remove(var2x, "DataVersion"));
-            Dynamic var5 = DataFixTypes.this.updateToCurrentVersion(var2, var4, var3x);
-            return var1.decode(var5);
+         public <T> DataResult<T> encode(final A input, final DynamicOps<T> ops, final T prefix) {
+            return codec.encode(input, ops, prefix).flatMap((data) -> ops.mergeToMap(data, ops.createString("DataVersion"), ops.createInt(DataFixTypes.currentVersion())));
+         }
+
+         public <T> DataResult<Pair<A, T>> decode(final DynamicOps<T> ops, final T input) {
+            DataResult var10000 = ops.get(input, "DataVersion");
+            Objects.requireNonNull(ops);
+            int fromVersion = (Integer)var10000.flatMap(ops::getNumberValue).map(Number::intValue).result().orElse(defaultVersion);
+            Dynamic<T> dataWithoutVersion = new Dynamic(ops, ops.remove(input, "DataVersion"));
+            Dynamic<T> fixedData = DataFixTypes.this.updateToCurrentVersion(dataFixer, dataWithoutVersion, fromVersion);
+            return codec.decode(fixedData);
          }
       };
    }
 
-   public <T> Dynamic<T> update(DataFixer var1, Dynamic<T> var2, int var3, int var4) {
-      return var1.update(this.type, var2, var3, var4);
+   public <T> Dynamic<T> update(final DataFixer fixerUpper, final Dynamic<T> input, final int fromVersion, final int toVersion) {
+      return fixerUpper.update(this.type, input, fromVersion, toVersion);
    }
 
-   public <T> Dynamic<T> updateToCurrentVersion(DataFixer var1, Dynamic<T> var2, int var3) {
-      return this.update(var1, var2, var3, currentVersion());
+   public <T> Dynamic<T> updateToCurrentVersion(final DataFixer fixerUpper, final Dynamic<T> input, final int dataVersion) {
+      return this.update(fixerUpper, input, dataVersion, currentVersion());
    }
 
-   public CompoundTag update(DataFixer var1, CompoundTag var2, int var3, int var4) {
-      return (CompoundTag)this.update(var1, new Dynamic(NbtOps.INSTANCE, var2), var3, var4).getValue();
+   public CompoundTag update(final DataFixer fixer, final CompoundTag tag, final int fromVersion, final int toVersion) {
+      return (CompoundTag)this.update(fixer, new Dynamic(NbtOps.INSTANCE, tag), fromVersion, toVersion).getValue();
    }
 
-   public CompoundTag updateToCurrentVersion(DataFixer var1, CompoundTag var2, int var3) {
-      return this.update(var1, var2, var3, currentVersion());
+   public CompoundTag updateToCurrentVersion(final DataFixer fixer, final CompoundTag tag, final int fromVersion) {
+      return this.update(fixer, tag, fromVersion, currentVersion());
    }
 
    // $FF: synthetic method
    private static DataFixTypes[] $values() {
-      return new DataFixTypes[]{LEVEL, LEVEL_SUMMARY, PLAYER, CHUNK, HOTBAR, OPTIONS, STRUCTURE, STATS, SAVED_DATA_COMMAND_STORAGE, SAVED_DATA_FORCED_CHUNKS, SAVED_DATA_MAP_DATA, SAVED_DATA_MAP_INDEX, SAVED_DATA_RAIDS, SAVED_DATA_RANDOM_SEQUENCES, SAVED_DATA_SCOREBOARD, SAVED_DATA_STOPWATCHES, SAVED_DATA_STRUCTURE_FEATURE_INDICES, SAVED_DATA_WORLD_BORDER, ADVANCEMENTS, POI_CHUNK, WORLD_GEN_SETTINGS, ENTITY_CHUNK, DEBUG_PROFILE};
+      return new DataFixTypes[]{LEVEL, LEVEL_SUMMARY, PLAYER, CHUNK, HOTBAR, OPTIONS, STRUCTURE, STATS, SAVED_DATA_COMMAND_STORAGE, SAVED_DATA_CUSTOM_BOSS_EVENTS, SAVED_DATA_ENDER_DRAGON_FIGHT, SAVED_DATA_GAME_RULES, SAVED_DATA_FORCED_CHUNKS, SAVED_DATA_MAP_DATA, SAVED_DATA_MAP_INDEX, SAVED_DATA_RAIDS, SAVED_DATA_RANDOM_SEQUENCES, SAVED_DATA_SCHEDULED_EVENTS, SAVED_DATA_SCOREBOARD, SAVED_DATA_STOPWATCHES, SAVED_DATA_STRUCTURE_FEATURE_INDICES, SAVED_DATA_WANDERING_TRADER, SAVED_DATA_WEATHER, SAVED_DATA_WORLD_BORDER, SAVED_DATA_WORLD_CLOCKS, SAVED_DATA_WORLD_GEN_SETTINGS, ADVANCEMENTS, POI_CHUNK, WORLD_GEN_SETTINGS, ENTITY_CHUNK, DEBUG_PROFILE};
    }
 }

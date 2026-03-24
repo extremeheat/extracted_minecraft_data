@@ -7,11 +7,11 @@ import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 
 public interface BootstrapContext<T> {
-   Holder.Reference<T> register(ResourceKey<T> var1, T var2, Lifecycle var3);
+   Holder.Reference<T> register(ResourceKey<T> key, T value, Lifecycle lifecycle);
 
-   default Holder.Reference<T> register(ResourceKey<T> var1, T var2) {
-      return this.register(var1, var2, Lifecycle.stable());
+   default Holder.Reference<T> register(final ResourceKey<T> key, final T value) {
+      return this.register(key, value, Lifecycle.stable());
    }
 
-   <S> HolderGetter<S> lookup(ResourceKey<? extends Registry<? extends S>> var1);
+   <S> HolderGetter<S> lookup(ResourceKey<? extends Registry<? extends S>> key);
 }

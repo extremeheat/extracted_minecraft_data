@@ -17,36 +17,36 @@ public abstract class BanListEntry<T> extends StoredUserEntry<T> {
    protected final @Nullable Date expires;
    protected final @Nullable String reason;
 
-   public BanListEntry(@Nullable T var1, @Nullable Date var2, @Nullable String var3, @Nullable Date var4, @Nullable String var5) {
-      super(var1);
-      this.created = var2 == null ? new Date() : var2;
-      this.source = var3 == null ? "(Unknown)" : var3;
-      this.expires = var4;
-      this.reason = var5;
+   public BanListEntry(final @Nullable T user, final @Nullable Date created, final @Nullable String source, final @Nullable Date expires, final @Nullable String reason) {
+      super(user);
+      this.created = created == null ? new Date() : created;
+      this.source = source == null ? "(Unknown)" : source;
+      this.expires = expires;
+      this.reason = reason;
    }
 
-   protected BanListEntry(@Nullable T var1, JsonObject var2) {
-      super(var1);
+   protected BanListEntry(final @Nullable T user, final JsonObject object) {
+      super(user);
 
-      Date var3;
+      Date created;
       try {
-         var3 = var2.has("created") ? DATE_FORMAT.parse(var2.get("created").getAsString()) : new Date();
+         created = object.has("created") ? DATE_FORMAT.parse(object.get("created").getAsString()) : new Date();
       } catch (ParseException var7) {
-         var3 = new Date();
+         created = new Date();
       }
 
-      this.created = var3;
-      this.source = var2.has("source") ? var2.get("source").getAsString() : "(Unknown)";
+      this.created = created;
+      this.source = object.has("source") ? object.get("source").getAsString() : "(Unknown)";
 
-      Date var4;
+      Date expires;
       try {
-         var4 = var2.has("expires") ? DATE_FORMAT.parse(var2.get("expires").getAsString()) : null;
+         expires = object.has("expires") ? DATE_FORMAT.parse(object.get("expires").getAsString()) : null;
       } catch (ParseException var6) {
-         var4 = null;
+         expires = null;
       }
 
-      this.expires = var4;
-      this.reason = var2.has("reason") ? var2.get("reason").getAsString() : null;
+      this.expires = expires;
+      this.reason = object.has("reason") ? object.get("reason").getAsString() : null;
    }
 
    public Date getCreated() {
@@ -66,8 +66,8 @@ public abstract class BanListEntry<T> extends StoredUserEntry<T> {
    }
 
    public Component getReasonMessage() {
-      String var1 = this.getReason();
-      return var1 == null ? Component.translatable("multiplayer.disconnect.banned.reason.default") : Component.literal(var1);
+      String reason = this.getReason();
+      return reason == null ? Component.translatable("multiplayer.disconnect.banned.reason.default") : Component.literal(reason);
    }
 
    public abstract Component getDisplayName();
@@ -76,19 +76,19 @@ public abstract class BanListEntry<T> extends StoredUserEntry<T> {
       return this.expires == null ? false : this.expires.before(new Date());
    }
 
-   protected void serialize(JsonObject var1) {
-      var1.addProperty("created", DATE_FORMAT.format(this.created));
-      var1.addProperty("source", this.source);
-      var1.addProperty("expires", this.expires == null ? "forever" : DATE_FORMAT.format(this.expires));
-      var1.addProperty("reason", this.reason);
+   protected void serialize(final JsonObject object) {
+      object.addProperty("created", DATE_FORMAT.format(this.created));
+      object.addProperty("source", this.source);
+      object.addProperty("expires", this.expires == null ? "forever" : DATE_FORMAT.format(this.expires));
+      object.addProperty("reason", this.reason);
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
+   public boolean equals(final Object o) {
+      if (this == o) {
          return true;
-      } else if (var1 != null && this.getClass() == var1.getClass()) {
-         BanListEntry var2 = (BanListEntry)var1;
-         return Objects.equals(this.source, var2.source) && Objects.equals(this.expires, var2.expires) && Objects.equals(this.reason, var2.reason) && Objects.equals(this.getUser(), var2.getUser());
+      } else if (o != null && this.getClass() == o.getClass()) {
+         BanListEntry<?> that = (BanListEntry)o;
+         return Objects.equals(this.source, that.source) && Objects.equals(this.expires, that.expires) && Objects.equals(this.reason, that.reason) && Objects.equals(this.getUser(), that.getUser());
       } else {
          return false;
       }

@@ -49,8 +49,8 @@ public class CrafterBlock extends BaseEntityBlock {
    private static final RecipeCache RECIPE_CACHE;
    private static final int CRAFTER_ADVANCEMENT_DIAMETER = 17;
 
-   public CrafterBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public CrafterBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(ORIENTATION, FrontAndTop.NORTH_UP)).setValue(TRIGGERED, false)).setValue(CRAFTING, false));
    }
 
@@ -58,64 +58,64 @@ public class CrafterBlock extends BaseEntityBlock {
       return CODEC;
    }
 
-   protected boolean hasAnalogOutputSignal(BlockState var1) {
+   protected boolean hasAnalogOutputSignal(final BlockState state) {
       return true;
    }
 
-   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
-      BlockEntity var5 = var2.getBlockEntity(var3);
-      if (var5 instanceof CrafterBlockEntity var6) {
-         return var6.getRedstoneSignal();
+   protected int getAnalogOutputSignal(final BlockState state, final Level level, final BlockPos pos, final Direction direction) {
+      BlockEntity blockEntity = level.getBlockEntity(pos);
+      if (blockEntity instanceof CrafterBlockEntity crafterBlockEntity) {
+         return crafterBlockEntity.getRedstoneSignal();
       } else {
          return 0;
       }
    }
 
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
-      boolean var7 = var2.hasNeighborSignal(var3);
-      boolean var8 = (Boolean)var1.getValue(TRIGGERED);
-      BlockEntity var9 = var2.getBlockEntity(var3);
-      if (var7 && !var8) {
-         var2.scheduleTick(var3, this, 4);
-         var2.setBlock(var3, (BlockState)var1.setValue(TRIGGERED, true), 2);
-         this.setBlockEntityTriggered(var9, true);
-      } else if (!var7 && var8) {
-         var2.setBlock(var3, (BlockState)((BlockState)var1.setValue(TRIGGERED, false)).setValue(CRAFTING, false), 2);
-         this.setBlockEntityTriggered(var9, false);
+   protected void neighborChanged(final BlockState state, final Level level, final BlockPos pos, final Block block, final @Nullable Orientation orientation, final boolean movedByPiston) {
+      boolean shouldTrigger = level.hasNeighborSignal(pos);
+      boolean isTriggered = (Boolean)state.getValue(TRIGGERED);
+      BlockEntity blockEntity = level.getBlockEntity(pos);
+      if (shouldTrigger && !isTriggered) {
+         level.scheduleTick(pos, this, 4);
+         level.setBlock(pos, (BlockState)state.setValue(TRIGGERED, true), 2);
+         this.setBlockEntityTriggered(blockEntity, true);
+      } else if (!shouldTrigger && isTriggered) {
+         level.setBlock(pos, (BlockState)((BlockState)state.setValue(TRIGGERED, false)).setValue(CRAFTING, false), 2);
+         this.setBlockEntityTriggered(blockEntity, false);
       }
 
    }
 
-   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      this.dispenseFrom(var1, var2, var3);
+   protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      this.dispenseFrom(state, level, pos);
    }
 
-   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return var1.isClientSide() ? null : createTickerHelper(var3, BlockEntityType.CRAFTER, CrafterBlockEntity::serverTick);
+   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(final Level level, final BlockState blockState, final BlockEntityType<T> type) {
+      return level.isClientSide() ? null : createTickerHelper(type, BlockEntityType.CRAFTER, CrafterBlockEntity::serverTick);
    }
 
-   private void setBlockEntityTriggered(@Nullable BlockEntity var1, boolean var2) {
-      if (var1 instanceof CrafterBlockEntity var3) {
-         var3.setTriggered(var2);
+   private void setBlockEntityTriggered(final @Nullable BlockEntity blockEntity, final boolean triggered) {
+      if (blockEntity instanceof CrafterBlockEntity crafterBlockEntity) {
+         crafterBlockEntity.setTriggered(triggered);
       }
 
    }
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      CrafterBlockEntity var3 = new CrafterBlockEntity(var1, var2);
-      var3.setTriggered(var2.hasProperty(TRIGGERED) && (Boolean)var2.getValue(TRIGGERED));
-      return var3;
+   public BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      CrafterBlockEntity crafterBlockEntity = new CrafterBlockEntity(worldPosition, blockState);
+      crafterBlockEntity.setTriggered(blockState.hasProperty(TRIGGERED) && (Boolean)blockState.getValue(TRIGGERED));
+      return crafterBlockEntity;
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      Direction var2 = var1.getNearestLookingDirection().getOpposite();
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      Direction nearestLookingDirection = context.getNearestLookingDirection().getOpposite();
       Direction var10000;
-      switch (var2) {
+      switch (nearestLookingDirection) {
          case DOWN:
-            var10000 = var1.getHorizontalDirection().getOpposite();
+            var10000 = context.getHorizontalDirection().getOpposite();
             break;
          case UP:
-            var10000 = var1.getHorizontalDirection();
+            var10000 = context.getHorizontalDirection();
             break;
          case NORTH:
          case SOUTH:
@@ -127,121 +127,121 @@ public class CrafterBlock extends BaseEntityBlock {
             throw new MatchException((String)null, (Throwable)null);
       }
 
-      Direction var3 = var10000;
-      return (BlockState)((BlockState)this.defaultBlockState().setValue(ORIENTATION, FrontAndTop.fromFrontAndTop(var2, var3))).setValue(TRIGGERED, var1.getLevel().hasNeighborSignal(var1.getClickedPos()));
+      Direction verticalDirection = var10000;
+      return (BlockState)((BlockState)this.defaultBlockState().setValue(ORIENTATION, FrontAndTop.fromFrontAndTop(nearestLookingDirection, verticalDirection))).setValue(TRIGGERED, context.getLevel().hasNeighborSignal(context.getClickedPos()));
    }
 
-   public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, @Nullable LivingEntity var4, ItemStack var5) {
-      if ((Boolean)var3.getValue(TRIGGERED)) {
-         var1.scheduleTick(var2, this, 4);
+   public void setPlacedBy(final Level level, final BlockPos pos, final BlockState state, final @Nullable LivingEntity by, final ItemStack itemStack) {
+      if ((Boolean)state.getValue(TRIGGERED)) {
+         level.scheduleTick(pos, this, 4);
       }
 
    }
 
-   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
-      Containers.updateNeighboursAfterDestroy(var1, var2, var3);
+   protected void affectNeighborsAfterRemoval(final BlockState state, final ServerLevel level, final BlockPos pos, final boolean movedByPiston) {
+      Containers.updateNeighboursAfterDestroy(state, level, pos);
    }
 
-   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (!var2.isClientSide()) {
-         BlockEntity var7 = var2.getBlockEntity(var3);
+   protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
+      if (!level.isClientSide()) {
+         BlockEntity var7 = level.getBlockEntity(pos);
          if (var7 instanceof CrafterBlockEntity) {
-            CrafterBlockEntity var6 = (CrafterBlockEntity)var7;
-            var4.openMenu(var6);
+            CrafterBlockEntity crafter = (CrafterBlockEntity)var7;
+            player.openMenu(crafter);
          }
       }
 
       return InteractionResult.SUCCESS;
    }
 
-   protected void dispenseFrom(BlockState var1, ServerLevel var2, BlockPos var3) {
-      BlockEntity var5 = var2.getBlockEntity(var3);
-      if (var5 instanceof CrafterBlockEntity var4) {
-         CraftingInput var11 = var4.asCraftInput();
-         Optional var6 = getPotentialResults(var2, var11);
-         if (var6.isEmpty()) {
-            var2.levelEvent(1050, var3, 0);
+   protected void dispenseFrom(final BlockState state, final ServerLevel level, final BlockPos pos) {
+      BlockEntity var5 = level.getBlockEntity(pos);
+      if (var5 instanceof CrafterBlockEntity blockEntity) {
+         CraftingInput var11 = blockEntity.asCraftInput();
+         Optional<RecipeHolder<CraftingRecipe>> recipe = getPotentialResults(level, var11);
+         if (recipe.isEmpty()) {
+            level.levelEvent(1050, pos, 0);
          } else {
-            RecipeHolder var7 = (RecipeHolder)var6.get();
-            ItemStack var8 = ((CraftingRecipe)var7.value()).assemble(var11, var2.registryAccess());
-            if (var8.isEmpty()) {
-               var2.levelEvent(1050, var3, 0);
+            RecipeHolder<CraftingRecipe> pickedRecipe = (RecipeHolder)recipe.get();
+            ItemStack results = ((CraftingRecipe)pickedRecipe.value()).assemble(var11);
+            if (results.isEmpty()) {
+               level.levelEvent(1050, pos, 0);
             } else {
-               var4.setCraftingTicksRemaining(6);
-               var2.setBlock(var3, (BlockState)var1.setValue(CRAFTING, true), 2);
-               var8.onCraftedBySystem(var2);
-               this.dispenseItem(var2, var3, var4, var8, var1, var7);
+               blockEntity.setCraftingTicksRemaining(6);
+               level.setBlock(pos, (BlockState)state.setValue(CRAFTING, true), 2);
+               results.onCraftedBySystem(level);
+               this.dispenseItem(level, pos, blockEntity, results, state, pickedRecipe);
 
-               for(ItemStack var10 : ((CraftingRecipe)var7.value()).getRemainingItems(var11)) {
-                  if (!var10.isEmpty()) {
-                     this.dispenseItem(var2, var3, var4, var10, var1, var7);
+               for(ItemStack remainingItem : (pickedRecipe.value()).getRemainingItems(var11)) {
+                  if (!remainingItem.isEmpty()) {
+                     this.dispenseItem(level, pos, blockEntity, remainingItem, state, pickedRecipe);
                   }
                }
 
-               var4.getItems().forEach((var0) -> {
-                  if (!var0.isEmpty()) {
-                     var0.shrink(1);
+               blockEntity.getItems().forEach((it) -> {
+                  if (!it.isEmpty()) {
+                     it.shrink(1);
                   }
                });
-               var4.setChanged();
+               blockEntity.setChanged();
             }
          }
       }
    }
 
-   public static Optional<RecipeHolder<CraftingRecipe>> getPotentialResults(ServerLevel var0, CraftingInput var1) {
-      return RECIPE_CACHE.get(var0, var1);
+   public static Optional<RecipeHolder<CraftingRecipe>> getPotentialResults(final ServerLevel level, final CraftingInput input) {
+      return RECIPE_CACHE.get(level, input);
    }
 
-   private void dispenseItem(ServerLevel var1, BlockPos var2, CrafterBlockEntity var3, ItemStack var4, BlockState var5, RecipeHolder<?> var6) {
-      Direction var7 = ((FrontAndTop)var5.getValue(ORIENTATION)).front();
-      Container var8 = HopperBlockEntity.getContainerAt(var1, var2.relative(var7));
-      ItemStack var9 = var4.copy();
-      if (var8 != null && (var8 instanceof CrafterBlockEntity || var4.getCount() > var8.getMaxStackSize(var4))) {
-         while(!var9.isEmpty()) {
-            ItemStack var14 = var9.copyWithCount(1);
-            ItemStack var11 = HopperBlockEntity.addItem(var3, var8, var14, var7.getOpposite());
-            if (!var11.isEmpty()) {
+   private void dispenseItem(final ServerLevel level, final BlockPos pos, final CrafterBlockEntity blockEntity, final ItemStack results, final BlockState blockState, final RecipeHolder<?> recipe) {
+      Direction direction = ((FrontAndTop)blockState.getValue(ORIENTATION)).front();
+      Container into = HopperBlockEntity.getContainerAt(level, pos.relative(direction));
+      ItemStack remaining = results.copy();
+      if (into != null && (into instanceof CrafterBlockEntity || results.getCount() > into.getMaxStackSize(results))) {
+         while(!remaining.isEmpty()) {
+            ItemStack copy = remaining.copyWithCount(1);
+            ItemStack itemStack = HopperBlockEntity.addItem(blockEntity, into, copy, direction.getOpposite());
+            if (!itemStack.isEmpty()) {
                break;
             }
 
-            var9.shrink(1);
+            remaining.shrink(1);
          }
-      } else if (var8 != null) {
-         while(!var9.isEmpty()) {
-            int var10 = var9.getCount();
-            var9 = HopperBlockEntity.addItem(var3, var8, var9, var7.getOpposite());
-            if (var10 == var9.getCount()) {
+      } else if (into != null) {
+         while(!remaining.isEmpty()) {
+            int oldSize = remaining.getCount();
+            remaining = HopperBlockEntity.addItem(blockEntity, into, remaining, direction.getOpposite());
+            if (oldSize == remaining.getCount()) {
                break;
             }
          }
       }
 
-      if (!var9.isEmpty()) {
-         Vec3 var15 = Vec3.atCenterOf(var2);
-         Vec3 var16 = var15.relative(var7, 0.7);
-         DefaultDispenseItemBehavior.spawnItem(var1, var9, 6, var7, var16);
+      if (!remaining.isEmpty()) {
+         Vec3 centerPos = Vec3.atCenterOf(pos);
+         Vec3 itemSpawnOffset = centerPos.relative(direction, 0.7);
+         DefaultDispenseItemBehavior.spawnItem(level, remaining, 6, direction, itemSpawnOffset);
 
-         for(ServerPlayer var13 : var1.getEntitiesOfClass(ServerPlayer.class, AABB.ofSize(var15, 17.0, 17.0, 17.0))) {
-            CriteriaTriggers.CRAFTER_RECIPE_CRAFTED.trigger(var13, var6.id(), var3.getItems());
+         for(ServerPlayer player : level.getEntitiesOfClass(ServerPlayer.class, AABB.ofSize(centerPos, 17.0, 17.0, 17.0))) {
+            CriteriaTriggers.CRAFTER_RECIPE_CRAFTED.trigger(player, recipe.id(), blockEntity.getItems());
          }
 
-         var1.levelEvent(1049, var2, 0);
-         var1.levelEvent(2010, var2, var7.get3DDataValue());
+         level.levelEvent(1049, pos, 0);
+         level.levelEvent(2010, pos, direction.get3DDataValue());
       }
 
    }
 
-   protected BlockState rotate(BlockState var1, Rotation var2) {
-      return (BlockState)var1.setValue(ORIENTATION, var2.rotation().rotate((FrontAndTop)var1.getValue(ORIENTATION)));
+   protected BlockState rotate(final BlockState state, final Rotation rotation) {
+      return (BlockState)state.setValue(ORIENTATION, rotation.rotation().rotate((FrontAndTop)state.getValue(ORIENTATION)));
    }
 
-   protected BlockState mirror(BlockState var1, Mirror var2) {
-      return (BlockState)var1.setValue(ORIENTATION, var2.rotation().rotate((FrontAndTop)var1.getValue(ORIENTATION)));
+   protected BlockState mirror(final BlockState state, final Mirror mirror) {
+      return (BlockState)state.setValue(ORIENTATION, mirror.rotation().rotate((FrontAndTop)state.getValue(ORIENTATION)));
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(ORIENTATION, TRIGGERED, CRAFTING);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(ORIENTATION, TRIGGERED, CRAFTING);
    }
 
    static {

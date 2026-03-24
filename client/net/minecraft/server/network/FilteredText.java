@@ -7,18 +7,16 @@ import org.jspecify.annotations.Nullable;
 public record FilteredText(String raw, FilterMask mask) {
    public static final FilteredText EMPTY = passThrough("");
 
-   public FilteredText(String var1, FilterMask var2) {
+   public FilteredText {
       super();
-      this.raw = var1;
-      this.mask = var2;
    }
 
-   public static FilteredText passThrough(String var0) {
-      return new FilteredText(var0, FilterMask.PASS_THROUGH);
+   public static FilteredText passThrough(final String message) {
+      return new FilteredText(message, FilterMask.PASS_THROUGH);
    }
 
-   public static FilteredText fullyFiltered(String var0) {
-      return new FilteredText(var0, FilterMask.FULLY_FILTERED);
+   public static FilteredText fullyFiltered(final String message) {
+      return new FilteredText(message, FilterMask.FULLY_FILTERED);
    }
 
    public @Nullable String filtered() {

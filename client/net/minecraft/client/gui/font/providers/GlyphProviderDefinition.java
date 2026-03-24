@@ -18,23 +18,20 @@ public interface GlyphProviderDefinition {
    Either<Loader, Reference> unpack();
 
    public static record Reference(Identifier id) {
-      public Reference(Identifier var1) {
+      public Reference {
          super();
-         this.id = var1;
       }
    }
 
    public static record Conditional(GlyphProviderDefinition definition, FontOption.Filter filter) {
-      public static final Codec<Conditional> CODEC = RecordCodecBuilder.create((var0) -> var0.group(GlyphProviderDefinition.MAP_CODEC.forGetter(Conditional::definition), FontOption.Filter.CODEC.optionalFieldOf("filter", FontOption.Filter.ALWAYS_PASS).forGetter(Conditional::filter)).apply(var0, Conditional::new));
+      public static final Codec<Conditional> CODEC = RecordCodecBuilder.create((i) -> i.group(GlyphProviderDefinition.MAP_CODEC.forGetter(Conditional::definition), FontOption.Filter.CODEC.optionalFieldOf("filter", FontOption.Filter.ALWAYS_PASS).forGetter(Conditional::filter)).apply(i, Conditional::new));
 
-      public Conditional(GlyphProviderDefinition var1, FontOption.Filter var2) {
+      public Conditional {
          super();
-         this.definition = var1;
-         this.filter = var2;
       }
    }
 
    public interface Loader {
-      GlyphProvider load(ResourceManager var1) throws IOException;
+      GlyphProvider load(ResourceManager resourceManager) throws IOException;
    }
 }

@@ -1,14 +1,14 @@
 package net.minecraft.client.gui.spectator;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 
 public interface SpectatorMenuItem {
-   void selectItem(SpectatorMenu var1);
+   void selectItem(SpectatorMenu menu);
 
    Component getName();
 
-   void renderIcon(GuiGraphics var1, float var2, float var3);
+   void extractIcon(final GuiGraphicsExtractor graphics, float brightness, float alpha);
 
    boolean isEnabled();
 }

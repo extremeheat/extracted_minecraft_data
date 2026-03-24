@@ -2,6 +2,7 @@ package net.minecraft.world.entity;
 
 import java.util.Optional;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gamerules.GameRules;
@@ -16,69 +17,81 @@ public interface NeutralMob {
 
    long getPersistentAngerEndTime();
 
-   default void setTimeToRemainAngry(long var1) {
-      this.setPersistentAngerEndTime(this.level().getGameTime() + var1);
+   default void setTimeToRemainAngry(final long remainingTime) {
+      this.setPersistentAngerEndTime(this.level().getGameTime() + remainingTime);
    }
 
-   void setPersistentAngerEndTime(long var1);
+   void setPersistentAngerEndTime(long endTime);
 
    @Nullable EntityReference<LivingEntity> getPersistentAngerTarget();
 
-   void setPersistentAngerTarget(@Nullable EntityReference<LivingEntity> var1);
+   void setPersistentAngerTarget(final @Nullable EntityReference<LivingEntity> persistentAngerTarget);
 
    void startPersistentAngerTimer();
 
    Level level();
 
-   default void addPersistentAngerSaveData(ValueOutput var1) {
-      var1.putLong("anger_end_time", this.getPersistentAngerEndTime());
-      var1.storeNullable("angry_at", EntityReference.codec(), this.getPersistentAngerTarget());
+   default void addPersistentAngerSaveData(final ValueOutput output) {
+      output.putLong("anger_end_time", this.getPersistentAngerEndTime());
+      output.storeNullable("angry_at", EntityReference.codec(), this.getPersistentAngerTarget());
    }
 
-   default void readPersistentAngerSaveData(Level var1, ValueInput var2) {
-      Optional var3 = var2.getLong("anger_end_time");
-      if (var3.isPresent()) {
-         this.setPersistentAngerEndTime((Long)var3.get());
+   default void readPersistentAngerSaveData(final Level level, final ValueInput input) {
+      Optional<Long> endTime = input.getLong("anger_end_time");
+      if (endTime.isPresent()) {
+         this.setPersistentAngerEndTime((Long)endTime.get());
       } else {
-         Optional var4 = var2.getInt("AngerTime");
-         if (var4.isPresent()) {
-            this.setTimeToRemainAngry((long)(Integer)var4.get());
+         Optional<Integer> angerTime = input.getInt("AngerTime");
+         if (angerTime.isPresent()) {
+            this.setTimeToRemainAngry((long)(Integer)angerTime.get());
          } else {
             this.setPersistentAngerEndTime(-1L);
          }
       }
 
-      if (var1 instanceof ServerLevel) {
-         this.setPersistentAngerTarget(EntityReference.read(var2, "angry_at"));
-         this.setTarget(EntityReference.getLivingEntity(this.getPersistentAngerTarget(), var1));
+      if (level instanceof ServerLevel) {
+         this.setPersistentAngerTarget(EntityReference.read(input, "angry_at"));
+         this.setTarget(EntityReference.getLivingEntity(this.getPersistentAngerTarget(), level));
       }
    }
 
-   default void updatePersistentAnger(ServerLevel var1, boolean var2) {
-      LivingEntity var3 = this.getTarget();
-      EntityReference var4 = this.getPersistentAngerTarget();
-      if (var3 != null && var3.isDeadOrDying() && var4 != null && var4.matches(var3) && var3 instanceof Mob) {
+   default void updatePersistentAnger(final ServerLevel level, final boolean stayAngryIfTargetPresent) {
+      LivingEntity previousTarget = this.getTargetUnchecked();
+      EntityReference<LivingEntity> persistentAngerTarget = this.getPersistentAngerTarget();
+      if (previousTarget != null && previousTarget.isDeadOrDying() && persistentAngerTarget != null && persistentAngerTarget.matches(previousTarget) && previousTarget instanceof Mob) {
          this.stopBeingAngry();
       } else {
-         if (var3 != null) {
-            if (var4 == null || !var4.matches(var3)) {
-               this.setPersistentAngerTarget(EntityReference.of(var3));
+         LivingEntity target = this.getTarget();
+         if (target != null) {
+            boolean newTarget = persistentAngerTarget == null || !persistentAngerTarget.matches(target);
+            if (newTarget) {
+               this.setPersistentAngerTarget(EntityReference.of(target));
             }
 
-            this.startPersistentAngerTimer();
+            if (newTarget || stayAngryIfTargetPresent) {
+               this.startPersistentAngerTimer();
+            }
          }
 
-         if (var4 != null && !this.isAngry() && (var3 == null || !isValidPlayerTarget(var3) || !var2)) {
+         if (persistentAngerTarget != null && !this.isAngry() && (target == null || !isValidPlayerTarget(target) || !stayAngryIfTargetPresent)) {
             this.stopBeingAngry();
          }
 
+         LivingEntity persistentTarget = EntityReference.getLivingEntity(persistentAngerTarget, level);
+         if (persistentTarget instanceof Player) {
+            Player player = (Player)persistentTarget;
+            if (player.isCreative() || player.isSpectator() || level.getDifficulty() == Difficulty.PEACEFUL) {
+               this.stopBeingAngry();
+            }
+         }
+
       }
    }
 
-   private static boolean isValidPlayerTarget(LivingEntity var0) {
+   private static boolean isValidPlayerTarget(final LivingEntity target) {
       boolean var10000;
-      if (var0 instanceof Player var1) {
-         if (!var1.isCreative() && !var1.isSpectator()) {
+      if (target instanceof Player player) {
+         if (!player.isCreative() && !player.isSpectator() && player.level().getDifficulty() != Difficulty.PEACEFUL) {
             var10000 = true;
             return var10000;
          }
@@ -88,35 +101,35 @@ public interface NeutralMob {
       return var10000;
    }
 
-   default boolean isAngryAt(LivingEntity var1, ServerLevel var2) {
-      if (!this.canAttack(var1)) {
+   default boolean isAngryAt(final LivingEntity entity, final ServerLevel level) {
+      if (!this.canAttack(entity)) {
          return false;
-      } else if (isValidPlayerTarget(var1) && this.isAngryAtAllPlayers(var2)) {
+      } else if (isValidPlayerTarget(entity) && this.isAngryAtAllPlayers(level)) {
          return true;
       } else {
-         EntityReference var3 = this.getPersistentAngerTarget();
-         return var3 != null && var3.matches(var1);
+         EntityReference<LivingEntity> persistentAngerTarget = this.getPersistentAngerTarget();
+         return persistentAngerTarget != null && persistentAngerTarget.matches(entity);
       }
    }
 
-   default boolean isAngryAtAllPlayers(ServerLevel var1) {
-      return (Boolean)var1.getGameRules().get(GameRules.UNIVERSAL_ANGER) && this.isAngry() && this.getPersistentAngerTarget() == null;
+   default boolean isAngryAtAllPlayers(final ServerLevel level) {
+      return (Boolean)level.getGameRules().get(GameRules.UNIVERSAL_ANGER) && this.isAngry() && this.getPersistentAngerTarget() == null;
    }
 
    default boolean isAngry() {
-      long var1 = this.getPersistentAngerEndTime();
-      if (var1 > 0L) {
-         long var3 = var1 - this.level().getGameTime();
-         return var3 > 0L;
+      long endTime = this.getPersistentAngerEndTime();
+      if (endTime > 0L) {
+         long remaining = endTime - this.level().getGameTime();
+         return remaining > 0L;
       } else {
          return false;
       }
    }
 
-   default void playerDied(ServerLevel var1, Player var2) {
-      if ((Boolean)var1.getGameRules().get(GameRules.FORGIVE_DEAD_PLAYERS)) {
-         EntityReference var3 = this.getPersistentAngerTarget();
-         if (var3 != null && var3.matches(var2)) {
+   default void playerDied(final ServerLevel level, final Player player) {
+      if ((Boolean)level.getGameRules().get(GameRules.FORGIVE_DEAD_PLAYERS)) {
+         EntityReference<LivingEntity> persistentAngerTarget = this.getPersistentAngerTarget();
+         if (persistentAngerTarget != null && persistentAngerTarget.matches(player)) {
             this.stopBeingAngry();
          }
       }
@@ -136,11 +149,13 @@ public interface NeutralMob {
 
    @Nullable LivingEntity getLastHurtByMob();
 
-   void setLastHurtByMob(@Nullable LivingEntity var1);
+   void setLastHurtByMob(final @Nullable LivingEntity hurtBy);
 
-   void setTarget(@Nullable LivingEntity var1);
+   void setTarget(final @Nullable LivingEntity target);
 
-   boolean canAttack(LivingEntity var1);
+   boolean canAttack(final LivingEntity target);
 
    @Nullable LivingEntity getTarget();
+
+   @Nullable LivingEntity getTargetUnchecked();
 }

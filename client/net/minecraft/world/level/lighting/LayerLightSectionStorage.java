@@ -31,109 +31,109 @@ public abstract class LayerLightSectionStorage<M extends DataLayerStorageMap<M>>
    private final LongSet toRemove = new LongOpenHashSet();
    protected volatile boolean hasInconsistencies;
 
-   protected LayerLightSectionStorage(LightLayer var1, LightChunkGetter var2, M var3) {
+   protected LayerLightSectionStorage(final LightLayer layer, final LightChunkGetter chunkSource, final M initialMap) {
       super();
-      this.layer = var1;
-      this.chunkSource = var2;
-      this.updatingSectionData = var3;
-      this.visibleSectionData = var3.copy();
+      this.layer = layer;
+      this.chunkSource = chunkSource;
+      this.updatingSectionData = initialMap;
+      this.visibleSectionData = ((DataLayerStorageMap)initialMap).copy();
       this.visibleSectionData.disableCache();
       this.sectionStates.defaultReturnValue((byte)0);
    }
 
-   protected boolean storingLightForSection(long var1) {
-      return this.getDataLayer(var1, true) != null;
+   protected boolean storingLightForSection(final long sectionNode) {
+      return this.getDataLayer(sectionNode, true) != null;
    }
 
-   protected @Nullable DataLayer getDataLayer(long var1, boolean var3) {
-      return this.getDataLayer(var3 ? this.updatingSectionData : this.visibleSectionData, var1);
+   protected @Nullable DataLayer getDataLayer(final long sectionNode, final boolean updating) {
+      return this.getDataLayer(updating ? this.updatingSectionData : this.visibleSectionData, sectionNode);
    }
 
-   protected @Nullable DataLayer getDataLayer(M var1, long var2) {
-      return var1.getLayer(var2);
+   protected @Nullable DataLayer getDataLayer(final M sections, final long sectionNode) {
+      return sections.getLayer(sectionNode);
    }
 
-   protected @Nullable DataLayer getDataLayerToWrite(long var1) {
-      DataLayer var3 = this.updatingSectionData.getLayer(var1);
-      if (var3 == null) {
+   protected @Nullable DataLayer getDataLayerToWrite(final long sectionNode) {
+      DataLayer dataLayer = this.updatingSectionData.getLayer(sectionNode);
+      if (dataLayer == null) {
          return null;
       } else {
-         if (this.changedSections.add(var1)) {
-            var3 = var3.copy();
-            this.updatingSectionData.setLayer(var1, var3);
+         if (this.changedSections.add(sectionNode)) {
+            dataLayer = dataLayer.copy();
+            this.updatingSectionData.setLayer(sectionNode, dataLayer);
             this.updatingSectionData.clearCache();
          }
 
-         return var3;
+         return dataLayer;
       }
    }
 
-   public @Nullable DataLayer getDataLayerData(long var1) {
-      DataLayer var3 = (DataLayer)this.queuedSections.get(var1);
-      return var3 != null ? var3 : this.getDataLayer(var1, false);
+   public @Nullable DataLayer getDataLayerData(final long sectionNode) {
+      DataLayer layer = (DataLayer)this.queuedSections.get(sectionNode);
+      return layer != null ? layer : this.getDataLayer(sectionNode, false);
    }
 
-   protected abstract int getLightValue(long var1);
+   protected abstract int getLightValue(final long blockNode);
 
-   protected int getStoredLevel(long var1) {
-      long var3 = SectionPos.blockToSection(var1);
-      DataLayer var5 = this.getDataLayer(var3, true);
-      return var5.get(SectionPos.sectionRelative(BlockPos.getX(var1)), SectionPos.sectionRelative(BlockPos.getY(var1)), SectionPos.sectionRelative(BlockPos.getZ(var1)));
+   protected int getStoredLevel(final long blockNode) {
+      long sectionNode = SectionPos.blockToSection(blockNode);
+      DataLayer layer = this.getDataLayer(sectionNode, true);
+      return layer.get(SectionPos.sectionRelative(BlockPos.getX(blockNode)), SectionPos.sectionRelative(BlockPos.getY(blockNode)), SectionPos.sectionRelative(BlockPos.getZ(blockNode)));
    }
 
-   protected void setStoredLevel(long var1, int var3) {
-      long var4 = SectionPos.blockToSection(var1);
-      DataLayer var6;
-      if (this.changedSections.add(var4)) {
-         var6 = this.updatingSectionData.copyDataLayer(var4);
+   protected void setStoredLevel(final long blockNode, final int level) {
+      long sectionNode = SectionPos.blockToSection(blockNode);
+      DataLayer layer;
+      if (this.changedSections.add(sectionNode)) {
+         layer = this.updatingSectionData.copyDataLayer(sectionNode);
       } else {
-         var6 = this.getDataLayer(var4, true);
+         layer = this.getDataLayer(sectionNode, true);
       }
 
-      var6.set(SectionPos.sectionRelative(BlockPos.getX(var1)), SectionPos.sectionRelative(BlockPos.getY(var1)), SectionPos.sectionRelative(BlockPos.getZ(var1)), var3);
+      layer.set(SectionPos.sectionRelative(BlockPos.getX(blockNode)), SectionPos.sectionRelative(BlockPos.getY(blockNode)), SectionPos.sectionRelative(BlockPos.getZ(blockNode)), level);
       LongSet var10001 = this.sectionsAffectedByLightUpdates;
       Objects.requireNonNull(var10001);
-      SectionPos.aroundAndAtBlockPos(var1, var10001::add);
+      SectionPos.aroundAndAtBlockPos(blockNode, var10001::add);
    }
 
-   protected void markSectionAndNeighborsAsAffected(long var1) {
-      int var3 = SectionPos.x(var1);
-      int var4 = SectionPos.y(var1);
-      int var5 = SectionPos.z(var1);
+   protected void markSectionAndNeighborsAsAffected(final long sectionNode) {
+      int x = SectionPos.x(sectionNode);
+      int y = SectionPos.y(sectionNode);
+      int z = SectionPos.z(sectionNode);
 
-      for(int var6 = -1; var6 <= 1; ++var6) {
-         for(int var7 = -1; var7 <= 1; ++var7) {
-            for(int var8 = -1; var8 <= 1; ++var8) {
-               this.sectionsAffectedByLightUpdates.add(SectionPos.asLong(var3 + var7, var4 + var8, var5 + var6));
+      for(int offsetZ = -1; offsetZ <= 1; ++offsetZ) {
+         for(int offsetX = -1; offsetX <= 1; ++offsetX) {
+            for(int offsetY = -1; offsetY <= 1; ++offsetY) {
+               this.sectionsAffectedByLightUpdates.add(SectionPos.asLong(x + offsetX, y + offsetY, z + offsetZ));
             }
          }
       }
 
    }
 
-   protected DataLayer createDataLayer(long var1) {
-      DataLayer var3 = (DataLayer)this.queuedSections.get(var1);
-      return var3 != null ? var3 : new DataLayer();
+   protected DataLayer createDataLayer(final long sectionNode) {
+      DataLayer queuedLayer = (DataLayer)this.queuedSections.get(sectionNode);
+      return queuedLayer != null ? queuedLayer : new DataLayer();
    }
 
    protected boolean hasInconsistencies() {
       return this.hasInconsistencies;
    }
 
-   protected void markNewInconsistencies(LightEngine<M, ?> var1) {
+   protected void markNewInconsistencies(final LightEngine<M, ?> engine) {
       if (this.hasInconsistencies) {
          this.hasInconsistencies = false;
          LongIterator var2 = this.toRemove.iterator();
 
          while(var2.hasNext()) {
-            long var3 = (Long)var2.next();
-            DataLayer var5 = (DataLayer)this.queuedSections.remove(var3);
-            DataLayer var6 = this.updatingSectionData.removeLayer(var3);
-            if (this.columnsToRetainQueuedDataFor.contains(SectionPos.getZeroNode(var3))) {
-               if (var5 != null) {
-                  this.queuedSections.put(var3, var5);
-               } else if (var6 != null) {
-                  this.queuedSections.put(var3, var6);
+            long node = (Long)var2.next();
+            DataLayer queued = (DataLayer)this.queuedSections.remove(node);
+            DataLayer stored = this.updatingSectionData.removeLayer(node);
+            if (this.columnsToRetainQueuedDataFor.contains(SectionPos.getZeroNode(node))) {
+               if (queued != null) {
+                  this.queuedSections.put(node, queued);
+               } else if (stored != null) {
+                  this.queuedSections.put(node, stored);
                }
             }
          }
@@ -142,25 +142,25 @@ public abstract class LayerLightSectionStorage<M extends DataLayerStorageMap<M>>
          var2 = this.toRemove.iterator();
 
          while(var2.hasNext()) {
-            long var9 = (Long)var2.next();
-            this.onNodeRemoved(var9);
-            this.changedSections.add(var9);
+            long node = (Long)var2.next();
+            this.onNodeRemoved(node);
+            this.changedSections.add(node);
          }
 
          this.toRemove.clear();
-         ObjectIterator var8 = Long2ObjectMaps.fastIterator(this.queuedSections);
+         ObjectIterator<Long2ObjectMap.Entry<DataLayer>> iterator = Long2ObjectMaps.fastIterator(this.queuedSections);
 
-         while(var8.hasNext()) {
-            Long2ObjectMap.Entry var10 = (Long2ObjectMap.Entry)var8.next();
-            long var4 = var10.getLongKey();
-            if (this.storingLightForSection(var4)) {
-               DataLayer var11 = (DataLayer)var10.getValue();
-               if (this.updatingSectionData.getLayer(var4) != var11) {
-                  this.updatingSectionData.setLayer(var4, var11);
-                  this.changedSections.add(var4);
+         while(iterator.hasNext()) {
+            Long2ObjectMap.Entry<DataLayer> entry = (Long2ObjectMap.Entry)iterator.next();
+            long sectionNode = entry.getLongKey();
+            if (this.storingLightForSection(sectionNode)) {
+               DataLayer data = (DataLayer)entry.getValue();
+               if (this.updatingSectionData.getLayer(sectionNode) != data) {
+                  this.updatingSectionData.setLayer(sectionNode, data);
+                  this.changedSections.add(sectionNode);
                }
 
-               var8.remove();
+               iterator.remove();
             }
          }
 
@@ -168,63 +168,63 @@ public abstract class LayerLightSectionStorage<M extends DataLayerStorageMap<M>>
       }
    }
 
-   protected void onNodeAdded(long var1) {
+   protected void onNodeAdded(final long sectionNode) {
    }
 
-   protected void onNodeRemoved(long var1) {
+   protected void onNodeRemoved(final long sectionNode) {
    }
 
-   protected void setLightEnabled(long var1, boolean var3) {
-      if (var3) {
-         this.columnsWithSources.add(var1);
+   protected void setLightEnabled(final long zeroNode, final boolean enable) {
+      if (enable) {
+         this.columnsWithSources.add(zeroNode);
       } else {
-         this.columnsWithSources.remove(var1);
+         this.columnsWithSources.remove(zeroNode);
       }
 
    }
 
-   protected boolean lightOnInSection(long var1) {
-      long var3 = SectionPos.getZeroNode(var1);
-      return this.columnsWithSources.contains(var3);
+   protected boolean lightOnInSection(final long sectionNode) {
+      long zeroNode = SectionPos.getZeroNode(sectionNode);
+      return this.columnsWithSources.contains(zeroNode);
    }
 
-   protected boolean lightOnInColumn(long var1) {
-      return this.columnsWithSources.contains(var1);
+   protected boolean lightOnInColumn(final long sectionZeroNode) {
+      return this.columnsWithSources.contains(sectionZeroNode);
    }
 
-   public void retainData(long var1, boolean var3) {
-      if (var3) {
-         this.columnsToRetainQueuedDataFor.add(var1);
+   public void retainData(final long zeroNode, final boolean retain) {
+      if (retain) {
+         this.columnsToRetainQueuedDataFor.add(zeroNode);
       } else {
-         this.columnsToRetainQueuedDataFor.remove(var1);
+         this.columnsToRetainQueuedDataFor.remove(zeroNode);
       }
 
    }
 
-   protected void queueSectionData(long var1, @Nullable DataLayer var3) {
-      if (var3 != null) {
-         this.queuedSections.put(var1, var3);
+   protected void queueSectionData(final long sectionNode, final @Nullable DataLayer data) {
+      if (data != null) {
+         this.queuedSections.put(sectionNode, data);
          this.hasInconsistencies = true;
       } else {
-         this.queuedSections.remove(var1);
+         this.queuedSections.remove(sectionNode);
       }
 
    }
 
-   protected void updateSectionStatus(long var1, boolean var3) {
-      byte var4 = this.sectionStates.get(var1);
-      byte var5 = LayerLightSectionStorage.SectionState.hasData(var4, !var3);
-      if (var4 != var5) {
-         this.putSectionState(var1, var5);
-         int var6 = var3 ? -1 : 1;
+   protected void updateSectionStatus(final long sectionNode, final boolean sectionEmpty) {
+      byte state = this.sectionStates.get(sectionNode);
+      byte newState = LayerLightSectionStorage.SectionState.hasData(state, !sectionEmpty);
+      if (state != newState) {
+         this.putSectionState(sectionNode, newState);
+         int neighborIncrement = sectionEmpty ? -1 : 1;
 
-         for(int var7 = -1; var7 <= 1; ++var7) {
-            for(int var8 = -1; var8 <= 1; ++var8) {
-               for(int var9 = -1; var9 <= 1; ++var9) {
-                  if (var7 != 0 || var8 != 0 || var9 != 0) {
-                     long var10 = SectionPos.offset(var1, var7, var8, var9);
-                     byte var12 = this.sectionStates.get(var10);
-                     this.putSectionState(var10, LayerLightSectionStorage.SectionState.neighborCount(var12, LayerLightSectionStorage.SectionState.neighborCount(var12) + var6));
+         for(int offsetX = -1; offsetX <= 1; ++offsetX) {
+            for(int offsetY = -1; offsetY <= 1; ++offsetY) {
+               for(int offsetZ = -1; offsetZ <= 1; ++offsetZ) {
+                  if (offsetX != 0 || offsetY != 0 || offsetZ != 0) {
+                     long neighborNode = SectionPos.offset(sectionNode, offsetX, offsetY, offsetZ);
+                     byte neighborState = this.sectionStates.get(neighborNode);
+                     this.putSectionState(neighborNode, LayerLightSectionStorage.SectionState.neighborCount(neighborState, LayerLightSectionStorage.SectionState.neighborCount(neighborState) + neighborIncrement));
                   }
                }
             }
@@ -233,47 +233,47 @@ public abstract class LayerLightSectionStorage<M extends DataLayerStorageMap<M>>
       }
    }
 
-   protected void putSectionState(long var1, byte var3) {
-      if (var3 != 0) {
-         if (this.sectionStates.put(var1, var3) == 0) {
-            this.initializeSection(var1);
+   protected void putSectionState(final long sectionNode, final byte state) {
+      if (state != 0) {
+         if (this.sectionStates.put(sectionNode, state) == 0) {
+            this.initializeSection(sectionNode);
          }
-      } else if (this.sectionStates.remove(var1) != 0) {
-         this.removeSection(var1);
+      } else if (this.sectionStates.remove(sectionNode) != 0) {
+         this.removeSection(sectionNode);
       }
 
    }
 
-   private void initializeSection(long var1) {
-      if (!this.toRemove.remove(var1)) {
-         this.updatingSectionData.setLayer(var1, this.createDataLayer(var1));
-         this.changedSections.add(var1);
-         this.onNodeAdded(var1);
-         this.markSectionAndNeighborsAsAffected(var1);
+   private void initializeSection(final long sectionNode) {
+      if (!this.toRemove.remove(sectionNode)) {
+         this.updatingSectionData.setLayer(sectionNode, this.createDataLayer(sectionNode));
+         this.changedSections.add(sectionNode);
+         this.onNodeAdded(sectionNode);
+         this.markSectionAndNeighborsAsAffected(sectionNode);
          this.hasInconsistencies = true;
       }
 
    }
 
-   private void removeSection(long var1) {
-      this.toRemove.add(var1);
+   private void removeSection(final long sectionNode) {
+      this.toRemove.add(sectionNode);
       this.hasInconsistencies = true;
    }
 
    protected void swapSectionMap() {
       if (!this.changedSections.isEmpty()) {
-         DataLayerStorageMap var1 = this.updatingSectionData.copy();
-         var1.disableCache();
-         this.visibleSectionData = var1;
+         M copy = this.updatingSectionData.copy();
+         copy.disableCache();
+         this.visibleSectionData = copy;
          this.changedSections.clear();
       }
 
       if (!this.sectionsAffectedByLightUpdates.isEmpty()) {
-         LongIterator var4 = this.sectionsAffectedByLightUpdates.iterator();
+         LongIterator iterator = this.sectionsAffectedByLightUpdates.iterator();
 
-         while(var4.hasNext()) {
-            long var2 = var4.nextLong();
-            this.chunkSource.onLightUpdate(this.layer, SectionPos.of(var2));
+         while(iterator.hasNext()) {
+            long sectionNode = iterator.nextLong();
+            this.chunkSource.onLightUpdate(this.layer, SectionPos.of(sectionNode));
          }
 
          this.sectionsAffectedByLightUpdates.clear();
@@ -281,8 +281,8 @@ public abstract class LayerLightSectionStorage<M extends DataLayerStorageMap<M>>
 
    }
 
-   public SectionType getDebugSectionType(long var1) {
-      return LayerLightSectionStorage.SectionState.type(this.sectionStates.get(var1));
+   public SectionType getDebugSectionType(final long sectionNode) {
+      return LayerLightSectionStorage.SectionState.type(this.sectionStates.get(sectionNode));
    }
 
    protected static class SectionState {
@@ -296,31 +296,31 @@ public abstract class LayerLightSectionStorage<M extends DataLayerStorageMap<M>>
          super();
       }
 
-      public static byte hasData(byte var0, boolean var1) {
-         return (byte)(var1 ? var0 | 32 : var0 & -33);
+      public static byte hasData(final byte state, final boolean hasData) {
+         return (byte)(hasData ? state | 32 : state & -33);
       }
 
-      public static byte neighborCount(byte var0, int var1) {
-         if (var1 >= 0 && var1 <= 26) {
-            return (byte)(var0 & -32 | var1 & 31);
+      public static byte neighborCount(final byte state, final int neighborCount) {
+         if (neighborCount >= 0 && neighborCount <= 26) {
+            return (byte)(state & -32 | neighborCount & 31);
          } else {
             throw new IllegalArgumentException("Neighbor count was not within range [0; 26]");
          }
       }
 
-      public static boolean hasData(byte var0) {
-         return (var0 & 32) != 0;
+      public static boolean hasData(final byte state) {
+         return (state & 32) != 0;
       }
 
-      public static int neighborCount(byte var0) {
-         return var0 & 31;
+      public static int neighborCount(final byte state) {
+         return state & 31;
       }
 
-      public static SectionType type(byte var0) {
-         if (var0 == 0) {
+      public static SectionType type(final byte state) {
+         if (state == 0) {
             return LayerLightSectionStorage.SectionType.EMPTY;
          } else {
-            return hasData(var0) ? LayerLightSectionStorage.SectionType.LIGHT_AND_DATA : LayerLightSectionStorage.SectionType.LIGHT_ONLY;
+            return hasData(state) ? LayerLightSectionStorage.SectionType.LIGHT_AND_DATA : LayerLightSectionStorage.SectionType.LIGHT_ONLY;
          }
       }
    }
@@ -332,8 +332,8 @@ public abstract class LayerLightSectionStorage<M extends DataLayerStorageMap<M>>
 
       private final String display;
 
-      private SectionType(final String var3) {
-         this.display = var3;
+      private SectionType(final String display) {
+         this.display = display;
       }
 
       public String display() {

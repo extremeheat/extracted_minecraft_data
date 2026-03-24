@@ -9,26 +9,24 @@ import org.jspecify.annotations.Nullable;
 public record ClientboundResetScorePacket(String owner, @Nullable String objectiveName) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ClientboundResetScorePacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundResetScorePacket>codec(ClientboundResetScorePacket::write, ClientboundResetScorePacket::new);
 
-   private ClientboundResetScorePacket(FriendlyByteBuf var1) {
-      this(var1.readUtf(), (String)var1.readNullable(FriendlyByteBuf::readUtf));
+   private ClientboundResetScorePacket(final FriendlyByteBuf input) {
+      this(input.readUtf(), (String)input.readNullable(FriendlyByteBuf::readUtf));
    }
 
-   public ClientboundResetScorePacket(String var1, @Nullable String var2) {
+   public ClientboundResetScorePacket {
       super();
-      this.owner = var1;
-      this.objectiveName = var2;
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeUtf(this.owner);
-      var1.writeNullable(this.objectiveName, FriendlyByteBuf::writeUtf);
+   private void write(final FriendlyByteBuf output) {
+      output.writeUtf(this.owner);
+      output.writeNullable(this.objectiveName, FriendlyByteBuf::writeUtf);
    }
 
    public PacketType<ClientboundResetScorePacket> type() {
       return GamePacketTypes.CLIENTBOUND_RESET_SCORE;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleResetScore(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleResetScore(this);
    }
 }

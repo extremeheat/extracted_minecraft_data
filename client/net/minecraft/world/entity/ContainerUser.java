@@ -4,7 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 
 public interface ContainerUser {
-   boolean hasContainerOpen(ContainerOpenersCounter var1, BlockPos var2);
+   boolean hasContainerOpen(final ContainerOpenersCounter container, final BlockPos blockPos);
 
    double getContainerInteractionRange();
 

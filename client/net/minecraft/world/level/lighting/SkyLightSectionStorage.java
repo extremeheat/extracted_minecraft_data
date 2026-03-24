@@ -10,116 +10,116 @@ import net.minecraft.world.level.chunk.DataLayer;
 import net.minecraft.world.level.chunk.LightChunkGetter;
 
 public class SkyLightSectionStorage extends LayerLightSectionStorage<SkyDataLayerStorageMap> {
-   protected SkyLightSectionStorage(LightChunkGetter var1) {
-      super(LightLayer.SKY, var1, new SkyDataLayerStorageMap(new Long2ObjectOpenHashMap(), new Long2IntOpenHashMap(), 2147483647));
+   protected SkyLightSectionStorage(final LightChunkGetter chunkSource) {
+      super(LightLayer.SKY, chunkSource, new SkyDataLayerStorageMap(new Long2ObjectOpenHashMap(), new Long2IntOpenHashMap(), 2147483647));
    }
 
-   protected int getLightValue(long var1) {
-      return this.getLightValue(var1, false);
+   protected int getLightValue(final long blockNode) {
+      return this.getLightValue(blockNode, false);
    }
 
-   protected int getLightValue(long var1, boolean var3) {
-      long var4 = SectionPos.blockToSection(var1);
-      int var6 = SectionPos.y(var4);
-      SkyDataLayerStorageMap var7 = var3 ? (SkyDataLayerStorageMap)this.updatingSectionData : (SkyDataLayerStorageMap)this.visibleSectionData;
-      int var8 = var7.topSections.get(SectionPos.getZeroNode(var4));
-      if (var8 != var7.currentLowestY && var6 < var8) {
-         DataLayer var9 = this.getDataLayer(var7, var4);
-         if (var9 == null) {
-            for(var1 = BlockPos.getFlatIndex(var1); var9 == null; var9 = this.getDataLayer(var7, var4)) {
-               ++var6;
-               if (var6 >= var8) {
+   protected int getLightValue(long blockNode, final boolean updating) {
+      long sectionNode = SectionPos.blockToSection(blockNode);
+      int sectionY = SectionPos.y(sectionNode);
+      SkyDataLayerStorageMap sections = updating ? (SkyDataLayerStorageMap)this.updatingSectionData : (SkyDataLayerStorageMap)this.visibleSectionData;
+      int topSection = sections.topSections.get(SectionPos.getZeroNode(sectionNode));
+      if (topSection != sections.currentLowestY && sectionY < topSection) {
+         DataLayer layer = this.getDataLayer(sections, sectionNode);
+         if (layer == null) {
+            for(blockNode = BlockPos.getFlatIndex(blockNode); layer == null; layer = this.getDataLayer(sections, sectionNode)) {
+               ++sectionY;
+               if (sectionY >= topSection) {
                   return 15;
                }
 
-               var4 = SectionPos.offset(var4, Direction.UP);
+               sectionNode = SectionPos.offset(sectionNode, Direction.UP);
             }
          }
 
-         return var9.get(SectionPos.sectionRelative(BlockPos.getX(var1)), SectionPos.sectionRelative(BlockPos.getY(var1)), SectionPos.sectionRelative(BlockPos.getZ(var1)));
+         return layer.get(SectionPos.sectionRelative(BlockPos.getX(blockNode)), SectionPos.sectionRelative(BlockPos.getY(blockNode)), SectionPos.sectionRelative(BlockPos.getZ(blockNode)));
       } else {
-         return var3 && !this.lightOnInSection(var4) ? 0 : 15;
+         return updating && !this.lightOnInSection(sectionNode) ? 0 : 15;
       }
    }
 
-   protected void onNodeAdded(long var1) {
-      int var3 = SectionPos.y(var1);
-      if ((this.updatingSectionData).currentLowestY > var3) {
-         (this.updatingSectionData).currentLowestY = var3;
+   protected void onNodeAdded(final long sectionNode) {
+      int y = SectionPos.y(sectionNode);
+      if ((this.updatingSectionData).currentLowestY > y) {
+         (this.updatingSectionData).currentLowestY = y;
          (this.updatingSectionData).topSections.defaultReturnValue((this.updatingSectionData).currentLowestY);
       }
 
-      long var4 = SectionPos.getZeroNode(var1);
-      int var6 = (this.updatingSectionData).topSections.get(var4);
-      if (var6 < var3 + 1) {
-         (this.updatingSectionData).topSections.put(var4, var3 + 1);
+      long zeroNode = SectionPos.getZeroNode(sectionNode);
+      int oldTop = (this.updatingSectionData).topSections.get(zeroNode);
+      if (oldTop < y + 1) {
+         (this.updatingSectionData).topSections.put(zeroNode, y + 1);
       }
 
    }
 
-   protected void onNodeRemoved(long var1) {
-      long var3 = SectionPos.getZeroNode(var1);
-      int var5 = SectionPos.y(var1);
-      if ((this.updatingSectionData).topSections.get(var3) == var5 + 1) {
-         long var6;
-         for(var6 = var1; !this.storingLightForSection(var6) && this.hasLightDataAtOrBelow(var5); var6 = SectionPos.offset(var6, Direction.DOWN)) {
-            --var5;
+   protected void onNodeRemoved(final long sectionNode) {
+      long zeroNode = SectionPos.getZeroNode(sectionNode);
+      int y = SectionPos.y(sectionNode);
+      if ((this.updatingSectionData).topSections.get(zeroNode) == y + 1) {
+         long newTopSection;
+         for(newTopSection = sectionNode; !this.storingLightForSection(newTopSection) && this.hasLightDataAtOrBelow(y); newTopSection = SectionPos.offset(newTopSection, Direction.DOWN)) {
+            --y;
          }
 
-         if (this.storingLightForSection(var6)) {
-            (this.updatingSectionData).topSections.put(var3, var5 + 1);
+         if (this.storingLightForSection(newTopSection)) {
+            (this.updatingSectionData).topSections.put(zeroNode, y + 1);
          } else {
-            (this.updatingSectionData).topSections.remove(var3);
+            (this.updatingSectionData).topSections.remove(zeroNode);
          }
       }
 
    }
 
-   protected DataLayer createDataLayer(long var1) {
-      DataLayer var3 = (DataLayer)this.queuedSections.get(var1);
-      if (var3 != null) {
-         return var3;
+   protected DataLayer createDataLayer(final long sectionNode) {
+      DataLayer queuedLayer = (DataLayer)this.queuedSections.get(sectionNode);
+      if (queuedLayer != null) {
+         return queuedLayer;
       } else {
-         int var4 = (this.updatingSectionData).topSections.get(SectionPos.getZeroNode(var1));
-         if (var4 != (this.updatingSectionData).currentLowestY && SectionPos.y(var1) < var4) {
-            DataLayer var7;
-            for(long var5 = SectionPos.offset(var1, Direction.UP); (var7 = this.getDataLayer(var5, true)) == null; var5 = SectionPos.offset(var5, Direction.UP)) {
+         int topSection = (this.updatingSectionData).topSections.get(SectionPos.getZeroNode(sectionNode));
+         if (topSection != (this.updatingSectionData).currentLowestY && SectionPos.y(sectionNode) < topSection) {
+            DataLayer aboveData;
+            for(long aboveSection = SectionPos.offset(sectionNode, Direction.UP); (aboveData = this.getDataLayer(aboveSection, true)) == null; aboveSection = SectionPos.offset(aboveSection, Direction.UP)) {
             }
 
-            return repeatFirstLayer(var7);
+            return repeatFirstLayer(aboveData);
          } else {
-            return this.lightOnInSection(var1) ? new DataLayer(15) : new DataLayer();
+            return this.lightOnInSection(sectionNode) ? new DataLayer(15) : new DataLayer();
          }
       }
    }
 
-   private static DataLayer repeatFirstLayer(DataLayer var0) {
-      if (var0.isDefinitelyHomogenous()) {
-         return var0.copy();
+   private static DataLayer repeatFirstLayer(final DataLayer data) {
+      if (data.isDefinitelyHomogenous()) {
+         return data.copy();
       } else {
-         byte[] var1 = var0.getData();
-         byte[] var2 = new byte[2048];
+         byte[] input = data.getData();
+         byte[] output = new byte[2048];
 
-         for(int var3 = 0; var3 < 16; ++var3) {
-            System.arraycopy(var1, 0, var2, var3 * 128, 128);
+         for(int i = 0; i < 16; ++i) {
+            System.arraycopy(input, 0, output, i * 128, 128);
          }
 
-         return new DataLayer(var2);
+         return new DataLayer(output);
       }
    }
 
-   protected boolean hasLightDataAtOrBelow(int var1) {
-      return var1 >= (this.updatingSectionData).currentLowestY;
+   protected boolean hasLightDataAtOrBelow(final int sectionY) {
+      return sectionY >= (this.updatingSectionData).currentLowestY;
    }
 
-   protected boolean isAboveData(long var1) {
-      long var3 = SectionPos.getZeroNode(var1);
-      int var5 = (this.updatingSectionData).topSections.get(var3);
-      return var5 == (this.updatingSectionData).currentLowestY || SectionPos.y(var1) >= var5;
+   protected boolean isAboveData(final long sectionNode) {
+      long zeroNode = SectionPos.getZeroNode(sectionNode);
+      int topSection = (this.updatingSectionData).topSections.get(zeroNode);
+      return topSection == (this.updatingSectionData).currentLowestY || SectionPos.y(sectionNode) >= topSection;
    }
 
-   protected int getTopSectionY(long var1) {
-      return (this.updatingSectionData).topSections.get(var1);
+   protected int getTopSectionY(final long zeroNode) {
+      return (this.updatingSectionData).topSections.get(zeroNode);
    }
 
    protected int getBottomSectionY() {
@@ -127,23 +127,18 @@ public class SkyLightSectionStorage extends LayerLightSectionStorage<SkyDataLaye
    }
 
    protected static final class SkyDataLayerStorageMap extends DataLayerStorageMap<SkyDataLayerStorageMap> {
-      int currentLowestY;
-      final Long2IntOpenHashMap topSections;
+      private int currentLowestY;
+      private final Long2IntOpenHashMap topSections;
 
-      public SkyDataLayerStorageMap(Long2ObjectOpenHashMap<DataLayer> var1, Long2IntOpenHashMap var2, int var3) {
-         super(var1);
-         this.topSections = var2;
-         var2.defaultReturnValue(var3);
-         this.currentLowestY = var3;
+      public SkyDataLayerStorageMap(final Long2ObjectOpenHashMap<DataLayer> map, final Long2IntOpenHashMap topSections, final int currentLowestY) {
+         super(map);
+         this.topSections = topSections;
+         topSections.defaultReturnValue(currentLowestY);
+         this.currentLowestY = currentLowestY;
       }
 
       public SkyDataLayerStorageMap copy() {
          return new SkyDataLayerStorageMap(this.map.clone(), this.topSections.clone(), this.currentLowestY);
-      }
-
-      // $FF: synthetic method
-      public DataLayerStorageMap copy() {
-         return this.copy();
       }
    }
 }

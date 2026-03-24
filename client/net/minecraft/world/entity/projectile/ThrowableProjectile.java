@@ -13,30 +13,30 @@ import net.minecraft.world.phys.Vec3;
 public abstract class ThrowableProjectile extends Projectile {
    private static final float MIN_CAMERA_DISTANCE_SQUARED = 12.25F;
 
-   protected ThrowableProjectile(EntityType<? extends ThrowableProjectile> var1, Level var2) {
-      super(var1, var2);
+   protected ThrowableProjectile(final EntityType<? extends ThrowableProjectile> type, final Level level) {
+      super(type, level);
    }
 
-   protected ThrowableProjectile(EntityType<? extends ThrowableProjectile> var1, double var2, double var4, double var6, Level var8) {
-      this(var1, var8);
-      this.setPos(var2, var4, var6);
+   protected ThrowableProjectile(final EntityType<? extends ThrowableProjectile> type, final double x, final double y, final double z, final Level level) {
+      this(type, level);
+      this.setPos(x, y, z);
    }
 
-   public boolean shouldRenderAtSqrDistance(double var1) {
-      if (this.tickCount < 2 && var1 < 12.25) {
+   public boolean shouldRenderAtSqrDistance(final double distance) {
+      if (this.tickCount < 2 && distance < 12.25) {
          return false;
       } else {
-         double var3 = this.getBoundingBox().getSize() * 4.0;
-         if (Double.isNaN(var3)) {
-            var3 = 4.0;
+         double size = this.getBoundingBox().getSize() * 4.0;
+         if (Double.isNaN(size)) {
+            size = 4.0;
          }
 
-         var3 *= 64.0;
-         return var1 < var3 * var3;
+         size *= 64.0;
+         return distance < size * size;
       }
    }
 
-   public boolean canUsePortal(boolean var1) {
+   public boolean canUsePortal(final boolean ignorePassenger) {
       return true;
    }
 
@@ -44,48 +44,48 @@ public abstract class ThrowableProjectile extends Projectile {
       this.handleFirstTickBubbleColumn();
       this.applyGravity();
       this.applyInertia();
-      HitResult var1 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
-      Vec3 var2;
-      if (var1.getType() != HitResult.Type.MISS) {
-         var2 = var1.getLocation();
+      HitResult result = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
+      Vec3 newPosition;
+      if (result.getType() != HitResult.Type.MISS) {
+         newPosition = result.getLocation();
       } else {
-         var2 = this.position().add(this.getDeltaMovement());
+         newPosition = this.position().add(this.getDeltaMovement());
       }
 
-      this.setPos(var2);
+      this.setPos(newPosition);
       this.updateRotation();
       this.applyEffectsFromBlocks();
       super.tick();
-      if (var1.getType() != HitResult.Type.MISS && this.isAlive()) {
-         this.hitTargetOrDeflectSelf(var1);
+      if (result.getType() != HitResult.Type.MISS && this.isAlive()) {
+         this.hitTargetOrDeflectSelf(result);
       }
 
    }
 
    private void applyInertia() {
-      Vec3 var1 = this.getDeltaMovement();
-      Vec3 var2 = this.position();
-      float var3;
+      Vec3 movement = this.getDeltaMovement();
+      Vec3 position = this.position();
+      float inertia;
       if (this.isInWater()) {
-         for(int var4 = 0; var4 < 4; ++var4) {
-            float var5 = 0.25F;
-            this.level().addParticle(ParticleTypes.BUBBLE, var2.x - var1.x * 0.25, var2.y - var1.y * 0.25, var2.z - var1.z * 0.25, var1.x, var1.y, var1.z);
+         for(int i = 0; i < 4; ++i) {
+            float s = 0.25F;
+            this.level().addParticle(ParticleTypes.BUBBLE, position.x - movement.x * 0.25, position.y - movement.y * 0.25, position.z - movement.z * 0.25, movement.x, movement.y, movement.z);
          }
 
-         var3 = 0.8F;
+         inertia = 0.8F;
       } else {
-         var3 = 0.99F;
+         inertia = 0.99F;
       }
 
-      this.setDeltaMovement(var1.scale((double)var3));
+      this.setDeltaMovement(movement.scale((double)inertia));
    }
 
    private void handleFirstTickBubbleColumn() {
       if (this.firstTick) {
-         for(BlockPos var2 : BlockPos.betweenClosed(this.getBoundingBox())) {
-            BlockState var3 = this.level().getBlockState(var2);
-            if (var3.is(Blocks.BUBBLE_COLUMN)) {
-               var3.entityInside(this.level(), var2, this, InsideBlockEffectApplier.NOOP, true);
+         for(BlockPos pos : BlockPos.betweenClosed(this.getBoundingBox())) {
+            BlockState state = this.level().getBlockState(pos);
+            if (state.is(Blocks.BUBBLE_COLUMN)) {
+               state.entityInside(this.level(), pos, this, InsideBlockEffectApplier.NOOP, true);
             }
          }
       }

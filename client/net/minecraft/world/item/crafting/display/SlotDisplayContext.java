@@ -16,8 +16,8 @@ public class SlotDisplayContext {
       super();
    }
 
-   public static ContextMap fromLevel(Level var0) {
-      return (new ContextMap.Builder()).withParameter(FUEL_VALUES, var0.fuelValues()).withParameter(REGISTRIES, var0.registryAccess()).create(CONTEXT);
+   public static ContextMap fromLevel(final Level level) {
+      return (new ContextMap.Builder()).withParameter(FUEL_VALUES, level.fuelValues()).withParameter(REGISTRIES, level.registryAccess()).create(CONTEXT);
    }
 
    static {

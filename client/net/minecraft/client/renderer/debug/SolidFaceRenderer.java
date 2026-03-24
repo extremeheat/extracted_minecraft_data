@@ -8,7 +8,6 @@ import net.minecraft.gizmos.GizmoStyle;
 import net.minecraft.gizmos.Gizmos;
 import net.minecraft.util.debug.DebugValueAccess;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -18,40 +17,40 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class SolidFaceRenderer implements DebugRenderer.SimpleDebugRenderer {
    private final Minecraft minecraft;
 
-   public SolidFaceRenderer(Minecraft var1) {
+   public SolidFaceRenderer(final Minecraft minecraft) {
       super();
-      this.minecraft = var1;
+      this.minecraft = minecraft;
    }
 
-   public void emitGizmos(double var1, double var3, double var5, DebugValueAccess var7, Frustum var8, float var9) {
-      Level var10 = this.minecraft.player.level();
-      BlockPos var11 = BlockPos.containing(var1, var3, var5);
+   public void emitGizmos(final double camX, final double camY, final double camZ, final DebugValueAccess debugValues, final Frustum frustum, final float partialTicks) {
+      BlockGetter level = this.minecraft.player.level();
+      BlockPos playerPos = BlockPos.containing(camX, camY, camZ);
 
-      for(BlockPos var13 : BlockPos.betweenClosed(var11.offset(-6, -6, -6), var11.offset(6, 6, 6))) {
-         BlockState var14 = var10.getBlockState(var13);
-         if (!var14.is(Blocks.AIR)) {
-            VoxelShape var15 = var14.getShape(var10, var13);
+      for(BlockPos blockPos : BlockPos.betweenClosed(playerPos.offset(-6, -6, -6), playerPos.offset(6, 6, 6))) {
+         BlockState blockState = level.getBlockState(blockPos);
+         if (!blockState.is(Blocks.AIR)) {
+            VoxelShape shape = blockState.getShape(level, blockPos);
 
-            for(AABB var17 : var15.toAabbs()) {
-               AABB var18 = var17.move(var13).inflate(0.002);
-               int var19 = -2130771968;
-               Vec3 var20 = var18.getMinPosition();
-               Vec3 var21 = var18.getMaxPosition();
-               addFaceIfSturdy(var13, var14, var10, Direction.WEST, var20, var21, -2130771968);
-               addFaceIfSturdy(var13, var14, var10, Direction.SOUTH, var20, var21, -2130771968);
-               addFaceIfSturdy(var13, var14, var10, Direction.EAST, var20, var21, -2130771968);
-               addFaceIfSturdy(var13, var14, var10, Direction.NORTH, var20, var21, -2130771968);
-               addFaceIfSturdy(var13, var14, var10, Direction.DOWN, var20, var21, -2130771968);
-               addFaceIfSturdy(var13, var14, var10, Direction.UP, var20, var21, -2130771968);
+            for(AABB outlineBox : shape.toAabbs()) {
+               AABB aabb = outlineBox.move(blockPos).inflate(0.002);
+               int color = -2130771968;
+               Vec3 min = aabb.getMinPosition();
+               Vec3 max = aabb.getMaxPosition();
+               addFaceIfSturdy(blockPos, blockState, level, Direction.WEST, min, max, -2130771968);
+               addFaceIfSturdy(blockPos, blockState, level, Direction.SOUTH, min, max, -2130771968);
+               addFaceIfSturdy(blockPos, blockState, level, Direction.EAST, min, max, -2130771968);
+               addFaceIfSturdy(blockPos, blockState, level, Direction.NORTH, min, max, -2130771968);
+               addFaceIfSturdy(blockPos, blockState, level, Direction.DOWN, min, max, -2130771968);
+               addFaceIfSturdy(blockPos, blockState, level, Direction.UP, min, max, -2130771968);
             }
          }
       }
 
    }
 
-   private static void addFaceIfSturdy(BlockPos var0, BlockState var1, BlockGetter var2, Direction var3, Vec3 var4, Vec3 var5, int var6) {
-      if (var1.isFaceSturdy(var2, var0, var3)) {
-         Gizmos.rect(var4, var5, var3, GizmoStyle.fill(var6));
+   private static void addFaceIfSturdy(final BlockPos blockPos, final BlockState blockState, final BlockGetter level, final Direction direction, final Vec3 cornerA, final Vec3 cornerB, final int color) {
+      if (blockState.isFaceSturdy(level, blockPos, direction)) {
+         Gizmos.rect(cornerA, cornerB, direction, GizmoStyle.fill(color));
       }
 
    }

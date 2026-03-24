@@ -14,41 +14,41 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.levelgen.Aquifer;
 
 public class CaveWorldCarver extends WorldCarver<CaveCarverConfiguration> {
-   public CaveWorldCarver(Codec<CaveCarverConfiguration> var1) {
-      super(var1);
+   public CaveWorldCarver(final Codec<CaveCarverConfiguration> configurationFactory) {
+      super(configurationFactory);
    }
 
-   public boolean isStartChunk(CaveCarverConfiguration var1, RandomSource var2) {
-      return var2.nextFloat() <= var1.probability;
+   public boolean isStartChunk(final CaveCarverConfiguration configuration, final RandomSource random) {
+      return random.nextFloat() <= configuration.probability;
    }
 
-   public boolean carve(CarvingContext var1, CaveCarverConfiguration var2, ChunkAccess var3, Function<BlockPos, Holder<Biome>> var4, RandomSource var5, Aquifer var6, ChunkPos var7, CarvingMask var8) {
-      int var9 = SectionPos.sectionToBlockCoord(this.getRange() * 2 - 1);
-      int var10 = var5.nextInt(var5.nextInt(var5.nextInt(this.getCaveBound()) + 1) + 1);
+   public boolean carve(final CarvingContext context, final CaveCarverConfiguration configuration, final ChunkAccess chunk, final Function<BlockPos, Holder<Biome>> biomeGetter, final RandomSource random, final Aquifer aquifer, final ChunkPos sourceChunkPos, final CarvingMask mask) {
+      int maxDistance = SectionPos.sectionToBlockCoord(this.getRange() * 2 - 1);
+      int caveCount = random.nextInt(random.nextInt(random.nextInt(this.getCaveBound()) + 1) + 1);
 
-      for(int var11 = 0; var11 < var10; ++var11) {
-         double var12 = (double)var7.getBlockX(var5.nextInt(16));
-         double var14 = (double)var2.y.sample(var5, var1);
-         double var16 = (double)var7.getBlockZ(var5.nextInt(16));
-         double var18 = (double)var2.horizontalRadiusMultiplier.sample(var5);
-         double var20 = (double)var2.verticalRadiusMultiplier.sample(var5);
-         double var22 = (double)var2.floorLevel.sample(var5);
-         WorldCarver.CarveSkipChecker var24 = (var2x, var3x, var5x, var7x, var9x) -> shouldSkip(var3x, var5x, var7x, var22);
-         int var25 = 1;
-         if (var5.nextInt(4) == 0) {
-            double var26 = (double)var2.yScale.sample(var5);
-            float var28 = 1.0F + var5.nextFloat() * 6.0F;
-            this.createRoom(var1, var2, var3, var4, var6, var12, var14, var16, var28, var26, var8, var24);
-            var25 += var5.nextInt(4);
+      for(int cave = 0; cave < caveCount; ++cave) {
+         double x = (double)sourceChunkPos.getBlockX(random.nextInt(16));
+         double y = (double)configuration.y.sample(random, context);
+         double z = (double)sourceChunkPos.getBlockZ(random.nextInt(16));
+         double horizontalRadiusMultiplier = (double)configuration.horizontalRadiusMultiplier.sample(random);
+         double verticalRadiusMultiplier = (double)configuration.verticalRadiusMultiplier.sample(random);
+         double floorLevel = (double)configuration.floorLevel.sample(random);
+         WorldCarver.CarveSkipChecker skipChecker = (c, xd, yd, zd, worldY) -> shouldSkip(xd, yd, zd, floorLevel);
+         int tunnels = 1;
+         if (random.nextInt(4) == 0) {
+            double yScale = (double)configuration.yScale.sample(random);
+            float thickness = 1.0F + random.nextFloat() * 6.0F;
+            this.createRoom(context, configuration, chunk, biomeGetter, aquifer, x, y, z, thickness, yScale, mask, skipChecker);
+            tunnels += random.nextInt(4);
          }
 
-         for(int var32 = 0; var32 < var25; ++var32) {
-            float var27 = var5.nextFloat() * 6.2831855F;
-            float var33 = (var5.nextFloat() - 0.5F) / 4.0F;
-            float var29 = this.getThickness(var5);
-            int var30 = var9 - var5.nextInt(var9 / 4);
-            boolean var31 = false;
-            this.createTunnel(var1, var2, var3, var4, var5.nextLong(), var6, var12, var14, var16, var18, var20, var29, var27, var33, 0, var30, this.getYScale(), var8, var24);
+         for(int i = 0; i < tunnels; ++i) {
+            float horizontalRotation = random.nextFloat() * 6.2831855F;
+            float verticalRotation = (random.nextFloat() - 0.5F) / 4.0F;
+            float thickness = this.getThickness(random);
+            int distance = maxDistance - random.nextInt(maxDistance / 4);
+            int initialStep = 0;
+            this.createTunnel(context, configuration, chunk, biomeGetter, random.nextLong(), aquifer, x, y, z, horizontalRadiusMultiplier, verticalRadiusMultiplier, thickness, horizontalRotation, verticalRotation, 0, distance, this.getYScale(), mask, skipChecker);
          }
       }
 
@@ -59,68 +59,68 @@ public class CaveWorldCarver extends WorldCarver<CaveCarverConfiguration> {
       return 15;
    }
 
-   protected float getThickness(RandomSource var1) {
-      float var2 = var1.nextFloat() * 2.0F + var1.nextFloat();
-      if (var1.nextInt(10) == 0) {
-         var2 *= var1.nextFloat() * var1.nextFloat() * 3.0F + 1.0F;
+   protected float getThickness(final RandomSource random) {
+      float thickness = random.nextFloat() * 2.0F + random.nextFloat();
+      if (random.nextInt(10) == 0) {
+         thickness *= random.nextFloat() * random.nextFloat() * 3.0F + 1.0F;
       }
 
-      return var2;
+      return thickness;
    }
 
    protected double getYScale() {
       return 1.0;
    }
 
-   protected void createRoom(CarvingContext var1, CaveCarverConfiguration var2, ChunkAccess var3, Function<BlockPos, Holder<Biome>> var4, Aquifer var5, double var6, double var8, double var10, float var12, double var13, CarvingMask var15, WorldCarver.CarveSkipChecker var16) {
-      double var17 = 1.5 + (double)(Mth.sin(1.5707963705062866) * var12);
-      double var19 = var17 * var13;
-      this.carveEllipsoid(var1, var2, var3, var4, var5, var6 + 1.0, var8, var10, var17, var19, var15, var16);
+   protected void createRoom(final CarvingContext context, final CaveCarverConfiguration configuration, final ChunkAccess chunk, final Function<BlockPos, Holder<Biome>> biomeGetter, final Aquifer aquifer, final double x, final double y, final double z, final float thickness, final double yScale, final CarvingMask mask, final WorldCarver.CarveSkipChecker skipChecker) {
+      double horizontalRadius = 1.5 + (double)(Mth.sin(1.5707963705062866) * thickness);
+      double verticalRadius = horizontalRadius * yScale;
+      this.carveEllipsoid(context, configuration, chunk, biomeGetter, aquifer, x + 1.0, y, z, horizontalRadius, verticalRadius, mask, skipChecker);
    }
 
-   protected void createTunnel(CarvingContext var1, CaveCarverConfiguration var2, ChunkAccess var3, Function<BlockPos, Holder<Biome>> var4, long var5, Aquifer var7, double var8, double var10, double var12, double var14, double var16, float var18, float var19, float var20, int var21, int var22, double var23, CarvingMask var25, WorldCarver.CarveSkipChecker var26) {
-      RandomSource var27 = RandomSource.create(var5);
-      int var28 = var27.nextInt(var22 / 2) + var22 / 4;
-      boolean var29 = var27.nextInt(6) == 0;
-      float var30 = 0.0F;
-      float var31 = 0.0F;
+   protected void createTunnel(final CarvingContext context, final CaveCarverConfiguration configuration, final ChunkAccess chunk, final Function<BlockPos, Holder<Biome>> biomeGetter, final long tunnelSeed, final Aquifer aquifer, double x, double y, double z, final double horizontalRadiusMultiplier, final double verticalRadiusMultiplier, final float thickness, float horizontalRotation, float verticalRotation, final int step, final int dist, final double yScale, final CarvingMask mask, final WorldCarver.CarveSkipChecker skipChecker) {
+      RandomSource random = RandomSource.createThreadLocalInstance(tunnelSeed);
+      int splitPoint = random.nextInt(dist / 2) + dist / 4;
+      boolean steep = random.nextInt(6) == 0;
+      float yRota = 0.0F;
+      float xRota = 0.0F;
 
-      for(int var32 = var21; var32 < var22; ++var32) {
-         double var33 = 1.5 + (double)(Mth.sin((double)(3.1415927F * (float)var32 / (float)var22)) * var18);
-         double var35 = var33 * var23;
-         float var37 = Mth.cos((double)var20);
-         var8 += (double)(Mth.cos((double)var19) * var37);
-         var10 += (double)Mth.sin((double)var20);
-         var12 += (double)(Mth.sin((double)var19) * var37);
-         var20 *= var29 ? 0.92F : 0.7F;
-         var20 += var31 * 0.1F;
-         var19 += var30 * 0.1F;
-         var31 *= 0.9F;
-         var30 *= 0.75F;
-         var31 += (var27.nextFloat() - var27.nextFloat()) * var27.nextFloat() * 2.0F;
-         var30 += (var27.nextFloat() - var27.nextFloat()) * var27.nextFloat() * 4.0F;
-         if (var32 == var28 && var18 > 1.0F) {
-            this.createTunnel(var1, var2, var3, var4, var27.nextLong(), var7, var8, var10, var12, var14, var16, var27.nextFloat() * 0.5F + 0.5F, var19 - 1.5707964F, var20 / 3.0F, var32, var22, 1.0, var25, var26);
-            this.createTunnel(var1, var2, var3, var4, var27.nextLong(), var7, var8, var10, var12, var14, var16, var27.nextFloat() * 0.5F + 0.5F, var19 + 1.5707964F, var20 / 3.0F, var32, var22, 1.0, var25, var26);
+      for(int currentStep = step; currentStep < dist; ++currentStep) {
+         double horizontalRadius = 1.5 + (double)(Mth.sin((double)(3.1415927F * (float)currentStep / (float)dist)) * thickness);
+         double verticalRadius = horizontalRadius * yScale;
+         float cosX = Mth.cos((double)verticalRotation);
+         x += (double)(Mth.cos((double)horizontalRotation) * cosX);
+         y += (double)Mth.sin((double)verticalRotation);
+         z += (double)(Mth.sin((double)horizontalRotation) * cosX);
+         verticalRotation *= steep ? 0.92F : 0.7F;
+         verticalRotation += xRota * 0.1F;
+         horizontalRotation += yRota * 0.1F;
+         xRota *= 0.9F;
+         yRota *= 0.75F;
+         xRota += (random.nextFloat() - random.nextFloat()) * random.nextFloat() * 2.0F;
+         yRota += (random.nextFloat() - random.nextFloat()) * random.nextFloat() * 4.0F;
+         if (currentStep == splitPoint && thickness > 1.0F) {
+            this.createTunnel(context, configuration, chunk, biomeGetter, random.nextLong(), aquifer, x, y, z, horizontalRadiusMultiplier, verticalRadiusMultiplier, random.nextFloat() * 0.5F + 0.5F, horizontalRotation - 1.5707964F, verticalRotation / 3.0F, currentStep, dist, 1.0, mask, skipChecker);
+            this.createTunnel(context, configuration, chunk, biomeGetter, random.nextLong(), aquifer, x, y, z, horizontalRadiusMultiplier, verticalRadiusMultiplier, random.nextFloat() * 0.5F + 0.5F, horizontalRotation + 1.5707964F, verticalRotation / 3.0F, currentStep, dist, 1.0, mask, skipChecker);
             return;
          }
 
-         if (var27.nextInt(4) != 0) {
-            if (!canReach(var3.getPos(), var8, var12, var32, var22, var18)) {
+         if (random.nextInt(4) != 0) {
+            if (!canReach(chunk.getPos(), x, z, currentStep, dist, thickness)) {
                return;
             }
 
-            this.carveEllipsoid(var1, var2, var3, var4, var7, var8, var10, var12, var33 * var14, var35 * var16, var25, var26);
+            this.carveEllipsoid(context, configuration, chunk, biomeGetter, aquifer, x, y, z, horizontalRadius * horizontalRadiusMultiplier, verticalRadius * verticalRadiusMultiplier, mask, skipChecker);
          }
       }
 
    }
 
-   private static boolean shouldSkip(double var0, double var2, double var4, double var6) {
-      if (var2 <= var6) {
+   private static boolean shouldSkip(final double xd, final double yd, final double zd, final double floorLevel) {
+      if (yd <= floorLevel) {
          return true;
       } else {
-         return var0 * var0 + var2 * var2 + var4 * var4 >= 1.0;
+         return xd * xd + yd * yd + zd * zd >= 1.0;
       }
    }
 }

@@ -19,41 +19,38 @@ public class PlayerService {
       super();
    }
 
-   public static List<PlayerDto> get(MinecraftApi var0) {
-      return var0.playerListService().getPlayers().stream().map(PlayerDto::from).toList();
+   public static List<PlayerDto> get(final MinecraftApi minecraftApi) {
+      return minecraftApi.playerListService().getPlayers().stream().map(PlayerDto::from).toList();
    }
 
-   public static List<PlayerDto> kick(MinecraftApi var0, List<KickDto> var1, ClientInfo var2) {
-      ArrayList var3 = new ArrayList();
+   public static List<PlayerDto> kick(final MinecraftApi minecraftApi, final List<KickDto> kick, final ClientInfo clientInfo) {
+      List<PlayerDto> kicked = new ArrayList();
 
-      for(KickDto var5 : var1) {
-         ServerPlayer var6 = getServerPlayer(var0, var5.player());
-         if (var6 != null) {
-            var0.playerListService().remove(var6, var2);
-            var6.connection.disconnect((Component)var5.message.flatMap(Message::asComponent).orElse(DEFAULT_KICK_MESSAGE));
-            var3.add(var5.player());
+      for(KickDto kickDto : kick) {
+         ServerPlayer serverPlayer = getServerPlayer(minecraftApi, kickDto.player());
+         if (serverPlayer != null) {
+            minecraftApi.playerListService().remove(serverPlayer, clientInfo);
+            serverPlayer.connection.disconnect((Component)kickDto.message.flatMap(Message::asComponent).orElse(DEFAULT_KICK_MESSAGE));
+            kicked.add(kickDto.player());
          }
       }
 
-      return var3;
+      return kicked;
    }
 
-   private static @Nullable ServerPlayer getServerPlayer(MinecraftApi var0, PlayerDto var1) {
-      if (var1.id().isPresent()) {
-         return var0.playerListService().getPlayer((UUID)var1.id().get());
+   private static @Nullable ServerPlayer getServerPlayer(final MinecraftApi minecraftApi, final PlayerDto playerDto) {
+      if (playerDto.id().isPresent()) {
+         return minecraftApi.playerListService().getPlayer((UUID)playerDto.id().get());
       } else {
-         return var1.name().isPresent() ? var0.playerListService().getPlayerByName((String)var1.name().get()) : null;
+         return playerDto.name().isPresent() ? minecraftApi.playerListService().getPlayerByName((String)playerDto.name().get()) : null;
       }
    }
 
    public static record KickDto(PlayerDto player, Optional<Message> message) {
-      final Optional<Message> message;
-      public static final MapCodec<KickDto> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(PlayerDto.CODEC.codec().fieldOf("player").forGetter(KickDto::player), Message.CODEC.optionalFieldOf("message").forGetter(KickDto::message)).apply(var0, KickDto::new));
+      public static final MapCodec<KickDto> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(PlayerDto.CODEC.codec().fieldOf("player").forGetter(KickDto::player), Message.CODEC.optionalFieldOf("message").forGetter(KickDto::message)).apply(i, KickDto::new));
 
-      public KickDto(PlayerDto var1, Optional<Message> var2) {
+      public KickDto {
          super();
-         this.player = var1;
-         this.message = var2;
       }
    }
 }

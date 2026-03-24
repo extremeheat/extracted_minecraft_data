@@ -31,39 +31,39 @@ public class LocalTime implements SelectItemModelProperty<String> {
    private long nextUpdateTimeMs;
    private String lastResult = "";
 
-   private LocalTime(Data var1, DateFormat var2) {
+   private LocalTime(final Data data, final DateFormat parsedFormat) {
       super();
-      this.data = var1;
-      this.parsedFormat = var2;
+      this.data = data;
+      this.parsedFormat = parsedFormat;
    }
 
-   public static LocalTime create(String var0, String var1, Optional<TimeZone> var2) {
-      return (LocalTime)create(new Data(var0, var1, var2)).getOrThrow((var0x) -> new IllegalStateException("Failed to validate format: " + var0x));
+   public static LocalTime create(final String format, final String localeId, final Optional<TimeZone> timeZone) {
+      return (LocalTime)create(new Data(format, localeId, timeZone)).getOrThrow((msg) -> new IllegalStateException("Failed to validate format: " + msg));
    }
 
-   private static DataResult<LocalTime> create(Data var0) {
-      ULocale var1 = new ULocale(var0.localeId);
-      Calendar var2 = (Calendar)var0.timeZone.map((var1x) -> Calendar.getInstance(var1x, var1)).orElseGet(() -> Calendar.getInstance(var1));
-      SimpleDateFormat var3 = new SimpleDateFormat(var0.format, var1);
-      var3.setCalendar(var2);
+   private static DataResult<LocalTime> create(final Data data) {
+      ULocale locale = new ULocale(data.localeId);
+      Calendar calendar = (Calendar)data.timeZone.map((tz) -> Calendar.getInstance(tz, locale)).orElseGet(() -> Calendar.getInstance(locale));
+      SimpleDateFormat parsedFormat = new SimpleDateFormat(data.format, locale);
+      parsedFormat.setCalendar(calendar);
 
       try {
-         var3.format(new Date());
-      } catch (Exception var5) {
+         parsedFormat.format(new Date());
+      } catch (Exception e) {
          return DataResult.error(() -> {
-            String var10000 = String.valueOf(var3);
-            return "Invalid time format '" + var10000 + "': " + var5.getMessage();
+            String var10000 = String.valueOf(parsedFormat);
+            return "Invalid time format '" + var10000 + "': " + e.getMessage();
          });
       }
 
-      return DataResult.success(new LocalTime(var0, var3));
+      return DataResult.success(new LocalTime(data, parsedFormat));
    }
 
-   public @Nullable String get(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3, int var4, ItemDisplayContext var5) {
-      long var6 = Util.getMillis();
-      if (var6 > this.nextUpdateTimeMs) {
+   public @Nullable String get(final ItemStack itemStack, final @Nullable ClientLevel level, final @Nullable LivingEntity owner, final int seed, final ItemDisplayContext displayContext) {
+      long currentTimeMs = Util.getMillis();
+      if (currentTimeMs > this.nextUpdateTimeMs) {
          this.lastResult = this.update();
-         this.nextUpdateTimeMs = var6 + UPDATE_INTERVAL_MS;
+         this.nextUpdateTimeMs = currentTimeMs + UPDATE_INTERVAL_MS;
       }
 
       return this.lastResult;
@@ -81,32 +81,20 @@ public class LocalTime implements SelectItemModelProperty<String> {
       return VALUE_CODEC;
    }
 
-   // $FF: synthetic method
-   public @Nullable Object get(final ItemStack var1, final @Nullable ClientLevel var2, final @Nullable LivingEntity var3, final int var4, final ItemDisplayContext var5) {
-      return this.get(var1, var2, var3, var4, var5);
-   }
-
    static {
       UPDATE_INTERVAL_MS = TimeUnit.SECONDS.toMillis(1L);
       VALUE_CODEC = Codec.STRING;
-      TIME_ZONE_CODEC = VALUE_CODEC.comapFlatMap((var0) -> {
-         TimeZone var1 = TimeZone.getTimeZone(var0);
-         return var1.equals(TimeZone.UNKNOWN_ZONE) ? DataResult.error(() -> "Unknown timezone: " + var0) : DataResult.success(var1);
+      TIME_ZONE_CODEC = VALUE_CODEC.comapFlatMap((s) -> {
+         TimeZone tz = TimeZone.getTimeZone(s);
+         return tz.equals(TimeZone.UNKNOWN_ZONE) ? DataResult.error(() -> "Unknown timezone: " + s) : DataResult.success(tz);
       }, TimeZone::getID);
-      DATA_MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("pattern").forGetter((var0x) -> var0x.format), Codec.STRING.optionalFieldOf("locale", "").forGetter((var0x) -> var0x.localeId), TIME_ZONE_CODEC.optionalFieldOf("time_zone").forGetter((var0x) -> var0x.timeZone)).apply(var0, Data::new));
-      TYPE = SelectItemModelProperty.Type.<LocalTime, String>create(DATA_MAP_CODEC.flatXmap(LocalTime::create, (var0) -> DataResult.success(var0.data)), VALUE_CODEC);
+      DATA_MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.STRING.fieldOf("pattern").forGetter((o) -> o.format), Codec.STRING.optionalFieldOf("locale", "").forGetter((o) -> o.localeId), TIME_ZONE_CODEC.optionalFieldOf("time_zone").forGetter((o) -> o.timeZone)).apply(i, Data::new));
+      TYPE = SelectItemModelProperty.Type.<LocalTime, String>create(DATA_MAP_CODEC.flatXmap(LocalTime::create, (d) -> DataResult.success(d.data)), VALUE_CODEC);
    }
 
-   static record Data(String format, String localeId, Optional<TimeZone> timeZone) {
-      final String format;
-      final String localeId;
-      final Optional<TimeZone> timeZone;
-
-      Data(String var1, String var2, Optional<TimeZone> var3) {
+   private static record Data(String format, String localeId, Optional<TimeZone> timeZone) {
+      private Data {
          super();
-         this.format = var1;
-         this.localeId = var2;
-         this.timeZone = var3;
       }
    }
 }

@@ -15,23 +15,22 @@ public record OverlayMetadataSection(List<OverlayEntry> overlays) {
    public static final MetadataSectionType<OverlayMetadataSection> CLIENT_TYPE;
    public static final MetadataSectionType<OverlayMetadataSection> SERVER_TYPE;
 
-   public OverlayMetadataSection(List<OverlayEntry> var1) {
+   public OverlayMetadataSection {
       super();
-      this.overlays = var1;
    }
 
-   private static DataResult<String> validateOverlayDir(String var0) {
-      return !DIR_VALIDATOR.matcher(var0).matches() ? DataResult.error(() -> var0 + " is not accepted directory name") : DataResult.success(var0);
+   private static DataResult<String> validateOverlayDir(final String path) {
+      return !DIR_VALIDATOR.matcher(path).matches() ? DataResult.error(() -> path + " is not accepted directory name") : DataResult.success(path);
    }
 
    @VisibleForTesting
-   public static Codec<OverlayMetadataSection> codecForPackType(PackType var0) {
-      return RecordCodecBuilder.create((var1) -> var1.group(OverlayMetadataSection.OverlayEntry.listCodecForPackType(var0).fieldOf("entries").forGetter(OverlayMetadataSection::overlays)).apply(var1, OverlayMetadataSection::new));
+   public static Codec<OverlayMetadataSection> codecForPackType(final PackType packType) {
+      return RecordCodecBuilder.create((i) -> i.group(OverlayMetadataSection.OverlayEntry.listCodecForPackType(packType).fieldOf("entries").forGetter(OverlayMetadataSection::overlays)).apply(i, OverlayMetadataSection::new));
    }
 
-   public static MetadataSectionType<OverlayMetadataSection> forPackType(PackType var0) {
+   public static MetadataSectionType<OverlayMetadataSection> forPackType(final PackType packType) {
       MetadataSectionType var10000;
-      switch (var0) {
+      switch (packType) {
          case CLIENT_RESOURCES -> var10000 = CLIENT_TYPE;
          case SERVER_DATA -> var10000 = SERVER_TYPE;
          default -> throw new MatchException((String)null, (Throwable)null);
@@ -40,8 +39,8 @@ public record OverlayMetadataSection(List<OverlayEntry> overlays) {
       return var10000;
    }
 
-   public List<String> overlaysForVersion(PackFormat var1) {
-      return this.overlays.stream().filter((var1x) -> var1x.isApplicable(var1)).map(OverlayEntry::overlay).toList();
+   public List<String> overlaysForVersion(final PackFormat version) {
+      return this.overlays.stream().filter((entry) -> entry.isApplicable(version)).map(OverlayEntry::overlay).toList();
    }
 
    static {
@@ -50,28 +49,24 @@ public record OverlayMetadataSection(List<OverlayEntry> overlays) {
    }
 
    public static record OverlayEntry(InclusiveRange<PackFormat> format, String overlay) {
-      public OverlayEntry(InclusiveRange<PackFormat> var1, String var2) {
+      public OverlayEntry {
          super();
-         this.format = var1;
-         this.overlay = var2;
       }
 
-      static Codec<List<OverlayEntry>> listCodecForPackType(PackType var0) {
-         int var1 = PackFormat.lastPreMinorVersion(var0);
-         return OverlayMetadataSection.OverlayEntry.IntermediateEntry.CODEC.listOf().flatXmap((var1x) -> PackFormat.validateHolderList(var1x, var1, (var0, var1xx) -> new OverlayEntry(var1xx, var0.overlay())), (var1x) -> DataResult.success(var1x.stream().map((var1xx) -> new IntermediateEntry(PackFormat.IntermediaryFormat.fromRange(var1xx.format(), var1), var1xx.overlay())).toList()));
+      private static Codec<List<OverlayEntry>> listCodecForPackType(final PackType packType) {
+         int lastPreMinorVersion = PackFormat.lastPreMinorVersion(packType);
+         return OverlayMetadataSection.OverlayEntry.IntermediateEntry.CODEC.listOf().flatXmap((list) -> PackFormat.validateHolderList(list, lastPreMinorVersion, (entry, formats) -> new OverlayEntry(formats, entry.overlay())), (list) -> DataResult.success(list.stream().map((entry) -> new IntermediateEntry(PackFormat.IntermediaryFormat.fromRange(entry.format(), lastPreMinorVersion), entry.overlay())).toList()));
       }
 
-      public boolean isApplicable(PackFormat var1) {
-         return this.format.isValueInRange(var1);
+      public boolean isApplicable(final PackFormat formatToTest) {
+         return this.format.isValueInRange(formatToTest);
       }
 
-      static record IntermediateEntry(PackFormat.IntermediaryFormat format, String overlay) implements PackFormat.IntermediaryFormatHolder {
-         static final Codec<IntermediateEntry> CODEC = RecordCodecBuilder.create((var0) -> var0.group(PackFormat.IntermediaryFormat.OVERLAY_CODEC.forGetter(IntermediateEntry::format), Codec.STRING.validate(OverlayMetadataSection::validateOverlayDir).fieldOf("directory").forGetter(IntermediateEntry::overlay)).apply(var0, IntermediateEntry::new));
+      private static record IntermediateEntry(PackFormat.IntermediaryFormat format, String overlay) implements PackFormat.IntermediaryFormatHolder {
+         private static final Codec<IntermediateEntry> CODEC = RecordCodecBuilder.create((i) -> i.group(PackFormat.IntermediaryFormat.OVERLAY_CODEC.forGetter(IntermediateEntry::format), Codec.STRING.validate(OverlayMetadataSection::validateOverlayDir).fieldOf("directory").forGetter(IntermediateEntry::overlay)).apply(i, IntermediateEntry::new));
 
-         IntermediateEntry(PackFormat.IntermediaryFormat var1, String var2) {
+         private IntermediateEntry {
             super();
-            this.format = var1;
-            this.overlay = var2;
          }
 
          public String toString() {

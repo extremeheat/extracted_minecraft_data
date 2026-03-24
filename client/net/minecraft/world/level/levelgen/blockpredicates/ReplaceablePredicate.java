@@ -6,14 +6,14 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.block.state.BlockState;
 
 class ReplaceablePredicate extends StateTestingPredicate {
-   public static final MapCodec<ReplaceablePredicate> CODEC = RecordCodecBuilder.mapCodec((var0) -> stateTestingCodec(var0).apply(var0, ReplaceablePredicate::new));
+   public static final MapCodec<ReplaceablePredicate> CODEC = RecordCodecBuilder.mapCodec((i) -> stateTestingCodec(i).apply(i, ReplaceablePredicate::new));
 
-   public ReplaceablePredicate(Vec3i var1) {
-      super(var1);
+   public ReplaceablePredicate(final Vec3i offset) {
+      super(offset);
    }
 
-   protected boolean test(BlockState var1) {
-      return var1.canBeReplaced();
+   protected boolean test(final BlockState state) {
+      return state.canBeReplaced();
    }
 
    public BlockPredicateType<?> type() {

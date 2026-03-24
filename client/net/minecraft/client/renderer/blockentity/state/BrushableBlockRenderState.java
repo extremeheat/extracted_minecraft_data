@@ -5,7 +5,7 @@ import net.minecraft.core.Direction;
 import org.jspecify.annotations.Nullable;
 
 public class BrushableBlockRenderState extends BlockEntityRenderState {
-   public ItemStackRenderState itemState = new ItemStackRenderState();
+   public final ItemStackRenderState itemState = new ItemStackRenderState();
    public int dustProgress;
    public @Nullable Direction hitDirection;
 

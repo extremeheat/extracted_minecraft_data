@@ -7,7 +7,6 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -40,79 +39,79 @@ public class ServerFunctionLibrary implements PreparableReloadListener {
    private final PermissionSet functionCompilationPermissions;
    private final CommandDispatcher<CommandSourceStack> dispatcher;
 
-   public Optional<CommandFunction<CommandSourceStack>> getFunction(Identifier var1) {
-      return Optional.ofNullable((CommandFunction)this.functions.get(var1));
+   public Optional<CommandFunction<CommandSourceStack>> getFunction(final Identifier id) {
+      return Optional.ofNullable((CommandFunction)this.functions.get(id));
    }
 
    public Map<Identifier, CommandFunction<CommandSourceStack>> getFunctions() {
       return this.functions;
    }
 
-   public List<CommandFunction<CommandSourceStack>> getTag(Identifier var1) {
-      return (List)this.tags.getOrDefault(var1, List.of());
+   public List<CommandFunction<CommandSourceStack>> getTag(final Identifier tag) {
+      return (List)this.tags.getOrDefault(tag, List.of());
    }
 
    public Iterable<Identifier> getAvailableTags() {
       return this.tags.keySet();
    }
 
-   public ServerFunctionLibrary(PermissionSet var1, CommandDispatcher<CommandSourceStack> var2) {
+   public ServerFunctionLibrary(final PermissionSet functionCompilationPermissions, final CommandDispatcher<CommandSourceStack> dispatcher) {
       super();
-      this.tagsLoader = new TagLoader<CommandFunction<CommandSourceStack>>((var1x, var2x) -> this.getFunction(var1x), Registries.tagsDirPath(TYPE_KEY));
+      this.tagsLoader = new TagLoader<CommandFunction<CommandSourceStack>>((id, required) -> this.getFunction(id), Registries.tagsDirPath(TYPE_KEY));
       this.tags = Map.of();
-      this.functionCompilationPermissions = var1;
-      this.dispatcher = var2;
+      this.functionCompilationPermissions = functionCompilationPermissions;
+      this.dispatcher = dispatcher;
    }
 
-   public CompletableFuture<Void> reload(PreparableReloadListener.SharedState var1, Executor var2, PreparableReloadListener.PreparationBarrier var3, Executor var4) {
-      ResourceManager var5 = var1.resourceManager();
-      CompletableFuture var6 = CompletableFuture.supplyAsync(() -> this.tagsLoader.load(var5), var2);
-      CompletableFuture var7 = CompletableFuture.supplyAsync(() -> LISTER.listMatchingResources(var5), var2).thenCompose((var2x) -> {
-         HashMap var3 = Maps.newHashMap();
-         CommandSourceStack var4 = Commands.createCompilationContext(this.functionCompilationPermissions);
+   public CompletableFuture<Void> reload(final PreparableReloadListener.SharedState currentReload, final Executor taskExecutor, final PreparableReloadListener.PreparationBarrier preparationBarrier, final Executor reloadExecutor) {
+      ResourceManager manager = currentReload.resourceManager();
+      CompletableFuture<Map<Identifier, List<TagLoader.EntryWithSource>>> tags = CompletableFuture.supplyAsync(() -> this.tagsLoader.load(manager), taskExecutor);
+      CompletableFuture<Map<Identifier, CompletableFuture<CommandFunction<CommandSourceStack>>>> functions = CompletableFuture.supplyAsync(() -> LISTER.listMatchingResources(manager), taskExecutor).thenCompose((functionsToLoad) -> {
+         Map<Identifier, CompletableFuture<CommandFunction<CommandSourceStack>>> result = Maps.newHashMap();
+         CommandSourceStack compilationContext = Commands.createCompilationContext(this.functionCompilationPermissions);
 
-         for(Map.Entry var6 : var2x.entrySet()) {
-            Identifier var7 = (Identifier)var6.getKey();
-            Identifier var8 = LISTER.fileToId(var7);
-            var3.put(var8, CompletableFuture.supplyAsync(() -> {
-               List var4x = readLines((Resource)var6.getValue());
-               return CommandFunction.fromLines(var8, this.dispatcher, var4, var4x);
-            }, var2));
+         for(Map.Entry<Identifier, Resource> entry : functionsToLoad.entrySet()) {
+            Identifier resourceId = (Identifier)entry.getKey();
+            Identifier id = LISTER.fileToId(resourceId);
+            result.put(id, CompletableFuture.supplyAsync(() -> {
+               List<String> lines = readLines((Resource)entry.getValue());
+               return CommandFunction.fromLines(id, this.dispatcher, compilationContext, lines);
+            }, taskExecutor));
          }
 
-         CompletableFuture[] var9 = (CompletableFuture[])var3.values().toArray(new CompletableFuture[0]);
-         return CompletableFuture.allOf(var9).handle((var1, var2xx) -> var3);
+         CompletableFuture<?>[] futuresToCollect = (CompletableFuture[])result.values().toArray(new CompletableFuture[0]);
+         return CompletableFuture.allOf(futuresToCollect).handle((ignore, throwable) -> result);
       });
-      CompletableFuture var10000 = var6.thenCombine(var7, Pair::of);
-      Objects.requireNonNull(var3);
-      return var10000.thenCompose(var3::wait).thenAcceptAsync((var1x) -> {
-         Map var2 = (Map)var1x.getSecond();
-         ImmutableMap.Builder var3 = ImmutableMap.builder();
-         var2.forEach((var1, var2x) -> var2x.handle((var2, var3x) -> {
-               if (var3x != null) {
-                  LOGGER.error("Failed to load function {}", var1, var3x);
+      CompletableFuture var10000 = tags.thenCombine(functions, Pair::of);
+      Objects.requireNonNull(preparationBarrier);
+      return var10000.thenCompose(preparationBarrier::wait).thenAcceptAsync((data) -> {
+         Map<Identifier, CompletableFuture<CommandFunction<CommandSourceStack>>> functionFutures = (Map)data.getSecond();
+         ImmutableMap.Builder<Identifier, CommandFunction<CommandSourceStack>> newFunctions = ImmutableMap.builder();
+         functionFutures.forEach((id, functionFuture) -> functionFuture.handle((function, throwable) -> {
+               if (throwable != null) {
+                  LOGGER.error("Failed to load function {}", id, throwable);
                } else {
-                  var3.put(var1, var2);
+                  newFunctions.put(id, function);
                }
 
                return null;
             }).join());
-         this.functions = var3.build();
-         this.tags = this.tagsLoader.build((Map)var1x.getFirst());
-      }, var4);
+         this.functions = newFunctions.build();
+         this.tags = this.tagsLoader.build((Map)data.getFirst());
+      }, reloadExecutor);
    }
 
-   private static List<String> readLines(Resource var0) {
+   private static List<String> readLines(final Resource resource) {
       try {
-         BufferedReader var1 = var0.openAsReader();
+         BufferedReader reader = resource.openAsReader();
 
          List var2;
          try {
-            var2 = var1.lines().toList();
+            var2 = reader.lines().toList();
          } catch (Throwable var5) {
-            if (var1 != null) {
+            if (reader != null) {
                try {
-                  var1.close();
+                  reader.close();
                } catch (Throwable var4) {
                   var5.addSuppressed(var4);
                }
@@ -121,13 +120,13 @@ public class ServerFunctionLibrary implements PreparableReloadListener {
             throw var5;
          }
 
-         if (var1 != null) {
-            var1.close();
+         if (reader != null) {
+            reader.close();
          }
 
          return var2;
-      } catch (IOException var6) {
-         throw new CompletionException(var6);
+      } catch (IOException ex) {
+         throw new CompletionException(ex);
       }
    }
 

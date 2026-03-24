@@ -6,62 +6,73 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.block.MovingBlockRenderState;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.resources.model.sprite.SpriteGetter;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
 import org.jspecify.annotations.Nullable;
 
 public interface OrderedSubmitNodeCollector {
-   void submitShadow(PoseStack var1, float var2, List<EntityRenderState.ShadowPiece> var3);
+   void submitShadow(PoseStack poseStack, float radius, List<EntityRenderState.ShadowPiece> pieces);
 
-   void submitNameTag(PoseStack var1, @Nullable Vec3 var2, int var3, Component var4, boolean var5, int var6, double var7, CameraRenderState var9);
+   void submitNameTag(PoseStack poseStack, @Nullable Vec3 nameTagAttachment, final int offset, Component name, boolean seeThrough, int lightCoords, double distanceToCameraSq, final CameraRenderState camera);
 
-   void submitText(PoseStack var1, float var2, float var3, FormattedCharSequence var4, boolean var5, Font.DisplayMode var6, int var7, int var8, int var9, int var10);
+   void submitText(PoseStack poseStack, float x, float y, FormattedCharSequence string, boolean dropShadow, Font.DisplayMode displayMode, int lightCoords, int color, int backgroundColor, int outlineColor);
 
-   void submitFlame(PoseStack var1, EntityRenderState var2, Quaternionf var3);
+   void submitFlame(PoseStack poseStack, EntityRenderState renderState, Quaternionf rotation);
 
-   void submitLeash(PoseStack var1, EntityRenderState.LeashState var2);
+   void submitLeash(PoseStack poseStack, EntityRenderState.LeashState leashState);
 
-   <S> void submitModel(Model<? super S> var1, S var2, PoseStack var3, RenderType var4, int var5, int var6, int var7, @Nullable TextureAtlasSprite var8, int var9, ModelFeatureRenderer.@Nullable CrumblingOverlay var10);
+   <S> void submitModel(Model<? super S> model, S state, PoseStack poseStack, RenderType renderType, int lightCoords, int overlayCoords, int tintedColor, @Nullable TextureAtlasSprite sprite, int outlineColor, final ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay);
 
-   default <S> void submitModel(Model<? super S> var1, S var2, PoseStack var3, RenderType var4, int var5, int var6, int var7, ModelFeatureRenderer.@Nullable CrumblingOverlay var8) {
-      this.submitModel(var1, var2, var3, var4, var5, var6, -1, (TextureAtlasSprite)null, var7, var8);
+   default <S> void submitModel(final Model<? super S> model, final S state, final PoseStack poseStack, final RenderType renderType, final int lightCoords, final int overlayCoords, final int outlineColor, final ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay) {
+      this.submitModel(model, state, poseStack, renderType, lightCoords, overlayCoords, -1, (TextureAtlasSprite)null, outlineColor, crumblingOverlay);
    }
 
-   default void submitModelPart(ModelPart var1, PoseStack var2, RenderType var3, int var4, int var5, @Nullable TextureAtlasSprite var6) {
-      this.submitModelPart(var1, var2, var3, var4, var5, var6, false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, 0);
+   default <S> void submitModel(final Model<? super S> model, final S state, final PoseStack poseStack, final Identifier texture, final int lightCoords, final int overlayCoords, final int outlineColor, final ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay) {
+      this.submitModel(model, state, poseStack, model.renderType(texture), lightCoords, overlayCoords, -1, (TextureAtlasSprite)null, outlineColor, crumblingOverlay);
    }
 
-   default void submitModelPart(ModelPart var1, PoseStack var2, RenderType var3, int var4, int var5, @Nullable TextureAtlasSprite var6, int var7, ModelFeatureRenderer.@Nullable CrumblingOverlay var8) {
-      this.submitModelPart(var1, var2, var3, var4, var5, var6, false, false, var7, var8, 0);
+   default <S> void submitModel(final Model<S> model, final S state, final PoseStack poseStack, final int lightCoords, final int overlayCoords, final int tintedColor, final SpriteId sprite, final SpriteGetter sprites, final int outlineColor, final ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay) {
+      this.submitModel(model, state, poseStack, sprite.renderType(model.renderType()), lightCoords, overlayCoords, tintedColor, sprites.get(sprite), outlineColor, crumblingOverlay);
    }
 
-   default void submitModelPart(ModelPart var1, PoseStack var2, RenderType var3, int var4, int var5, @Nullable TextureAtlasSprite var6, boolean var7, boolean var8) {
-      this.submitModelPart(var1, var2, var3, var4, var5, var6, var7, var8, -1, (ModelFeatureRenderer.CrumblingOverlay)null, 0);
+   default void submitModelPart(final ModelPart modelPart, final PoseStack poseStack, final RenderType renderType, final int lightCoords, final int overlayCoords, final @Nullable TextureAtlasSprite sprite) {
+      this.submitModelPart(modelPart, poseStack, renderType, lightCoords, overlayCoords, sprite, false, false, -1, (ModelFeatureRenderer.CrumblingOverlay)null, 0);
    }
 
-   void submitModelPart(ModelPart var1, PoseStack var2, RenderType var3, int var4, int var5, @Nullable TextureAtlasSprite var6, boolean var7, boolean var8, int var9, ModelFeatureRenderer.@Nullable CrumblingOverlay var10, int var11);
+   default void submitModelPart(final ModelPart modelPart, final PoseStack poseStack, final RenderType renderType, final int lightCoords, final int overlayCoords, final @Nullable TextureAtlasSprite sprite, final int tintedColor, final ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay) {
+      this.submitModelPart(modelPart, poseStack, renderType, lightCoords, overlayCoords, sprite, false, false, tintedColor, crumblingOverlay, 0);
+   }
 
-   void submitBlock(PoseStack var1, BlockState var2, int var3, int var4, int var5);
+   default void submitModelPart(final ModelPart modelPart, final PoseStack poseStack, final RenderType renderType, final int lightCoords, final int overlayCoords, final @Nullable TextureAtlasSprite sprite, final boolean sheeted, final boolean hasFoil) {
+      this.submitModelPart(modelPart, poseStack, renderType, lightCoords, overlayCoords, sprite, sheeted, hasFoil, -1, (ModelFeatureRenderer.CrumblingOverlay)null, 0);
+   }
 
-   void submitMovingBlock(PoseStack var1, MovingBlockRenderState var2);
+   void submitModelPart(ModelPart modelPart, PoseStack poseStack, RenderType renderType, int lightCoords, int overlayCoords, @Nullable TextureAtlasSprite sprite, boolean sheeted, boolean hasFoil, int tintedColor, final ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay, final int outlineColor);
 
-   void submitBlockModel(PoseStack var1, RenderType var2, BlockStateModel var3, float var4, float var5, float var6, int var7, int var8, int var9);
+   void submitMovingBlock(PoseStack poseStack, MovingBlockRenderState movingBlockRenderState);
 
-   void submitItem(PoseStack var1, ItemDisplayContext var2, int var3, int var4, int var5, int[] var6, List<BakedQuad> var7, RenderType var8, ItemStackRenderState.FoilType var9);
+   void submitBlockModel(PoseStack poseStack, RenderType renderType, List<BlockStateModelPart> parts, int[] tintLayers, int lightCoords, int overlayCoords, int outlineColor);
 
-   void submitCustomGeometry(PoseStack var1, RenderType var2, SubmitNodeCollector.CustomGeometryRenderer var3);
+   void submitBreakingBlockModel(PoseStack poseStack, BlockStateModel model, long seed, int progress);
 
-   void submitParticleGroup(SubmitNodeCollector.ParticleGroupRenderer var1);
+   void submitItem(PoseStack poseStack, ItemDisplayContext displayContext, int lightCoords, int overlayCoords, int outlineColor, int[] tintLayers, List<BakedQuad> quads, ItemStackRenderState.FoilType foilType);
+
+   void submitCustomGeometry(PoseStack poseStack, RenderType renderType, SubmitNodeCollector.CustomGeometryRenderer customGeometryRenderer);
+
+   void submitParticleGroup(SubmitNodeCollector.ParticleGroupRenderer particleGroupRenderer);
 }

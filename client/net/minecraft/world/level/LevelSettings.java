@@ -1,87 +1,51 @@
 package net.minecraft.world.level;
 
-import com.mojang.logging.LogUtils;
-import com.mojang.serialization.DataResult;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
-import java.util.Objects;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.level.gamerules.GameRules;
-import org.slf4j.Logger;
 
-public final class LevelSettings {
-   private static final Logger LOGGER = LogUtils.getLogger();
-   private final String levelName;
-   private final GameType gameType;
-   private final boolean hardcore;
-   private final Difficulty difficulty;
-   private final boolean allowCommands;
-   private final GameRules gameRules;
-   private final WorldDataConfiguration dataConfiguration;
-
-   public LevelSettings(String var1, GameType var2, boolean var3, Difficulty var4, boolean var5, GameRules var6, WorldDataConfiguration var7) {
+public record LevelSettings(String levelName, GameType gameType, DifficultySettings difficultySettings, boolean allowCommands, WorldDataConfiguration dataConfiguration) {
+   public LevelSettings {
       super();
-      this.levelName = var1;
-      this.gameType = var2;
-      this.hardcore = var3;
-      this.difficulty = var4;
-      this.allowCommands = var5;
-      this.gameRules = var6;
-      this.dataConfiguration = var7;
    }
 
-   public static LevelSettings parse(Dynamic<?> var0, WorldDataConfiguration var1) {
-      GameType var2 = GameType.byId(var0.get("GameType").asInt(0));
-      String var10002 = var0.get("LevelName").asString("");
-      boolean var10004 = var0.get("hardcore").asBoolean(false);
-      Difficulty var10005 = (Difficulty)var0.get("Difficulty").asNumber().map((var0x) -> Difficulty.byId(var0x.byteValue())).result().orElse(Difficulty.NORMAL);
-      boolean var10006 = var0.get("allowCommands").asBoolean(var2 == GameType.CREATIVE);
-      DataResult var10007 = GameRules.codec(var1.enabledFeatures()).parse(var0.get("game_rules").orElseEmptyMap());
-      Logger var10008 = LOGGER;
-      Objects.requireNonNull(var10008);
-      return new LevelSettings(var10002, var2, var10004, var10005, var10006, (GameRules)var10007.resultOrPartial(var10008::warn).orElseThrow(), var1);
+   public static LevelSettings parse(final Dynamic<?> input, final WorldDataConfiguration loadConfig) {
+      GameType gameType = GameType.byId(input.get("GameType").asInt(0));
+      return new LevelSettings(input.get("LevelName").asString(""), gameType, (DifficultySettings)input.get("difficulty_settings").read(LevelSettings.DifficultySettings.CODEC).result().orElse(LevelSettings.DifficultySettings.DEFAULT), input.get("allowCommands").asBoolean(gameType == GameType.CREATIVE), loadConfig);
    }
 
-   public String levelName() {
-      return this.levelName;
+   public LevelSettings withGameType(final GameType gameType) {
+      return new LevelSettings(this.levelName, gameType, this.difficultySettings, this.allowCommands, this.dataConfiguration);
    }
 
-   public GameType gameType() {
-      return this.gameType;
+   public LevelSettings withDifficulty(final Difficulty difficulty) {
+      return new LevelSettings(this.levelName, this.gameType, new DifficultySettings(difficulty, this.difficultySettings.hardcore(), this.difficultySettings.locked()), this.allowCommands, this.dataConfiguration);
    }
 
-   public boolean hardcore() {
-      return this.hardcore;
+   public LevelSettings withDifficultyLock(final boolean locked) {
+      return new LevelSettings(this.levelName, this.gameType, new DifficultySettings(this.difficultySettings.difficulty(), this.difficultySettings.hardcore(), locked), this.allowCommands, this.dataConfiguration);
    }
 
-   public Difficulty difficulty() {
-      return this.difficulty;
-   }
-
-   public boolean allowCommands() {
-      return this.allowCommands;
-   }
-
-   public GameRules gameRules() {
-      return this.gameRules;
-   }
-
-   public WorldDataConfiguration getDataConfiguration() {
-      return this.dataConfiguration;
-   }
-
-   public LevelSettings withGameType(GameType var1) {
-      return new LevelSettings(this.levelName, var1, this.hardcore, this.difficulty, this.allowCommands, this.gameRules, this.dataConfiguration);
-   }
-
-   public LevelSettings withDifficulty(Difficulty var1) {
-      return new LevelSettings(this.levelName, this.gameType, this.hardcore, var1, this.allowCommands, this.gameRules, this.dataConfiguration);
-   }
-
-   public LevelSettings withDataConfiguration(WorldDataConfiguration var1) {
-      return new LevelSettings(this.levelName, this.gameType, this.hardcore, this.difficulty, this.allowCommands, this.gameRules, var1);
+   public LevelSettings withDataConfiguration(final WorldDataConfiguration dataConfiguration) {
+      return new LevelSettings(this.levelName, this.gameType, this.difficultySettings, this.allowCommands, dataConfiguration);
    }
 
    public LevelSettings copy() {
-      return new LevelSettings(this.levelName, this.gameType, this.hardcore, this.difficulty, this.allowCommands, this.gameRules.copy(this.dataConfiguration.enabledFeatures()), this.dataConfiguration);
+      return new LevelSettings(this.levelName, this.gameType, this.difficultySettings, this.allowCommands, this.dataConfiguration);
+   }
+
+   public static record DifficultySettings(Difficulty difficulty, boolean hardcore, boolean locked) {
+      public static final DifficultySettings DEFAULT;
+      public static final Codec<DifficultySettings> CODEC;
+
+      public DifficultySettings {
+         super();
+      }
+
+      static {
+         DEFAULT = new DifficultySettings(Difficulty.NORMAL, false, false);
+         CODEC = RecordCodecBuilder.create((i) -> i.group(Difficulty.CODEC.fieldOf("difficulty").forGetter(DifficultySettings::difficulty), Codec.BOOL.fieldOf("hardcore").forGetter(DifficultySettings::hardcore), Codec.BOOL.fieldOf("locked").forGetter(DifficultySettings::locked)).apply(i, DifficultySettings::new));
+      }
    }
 }

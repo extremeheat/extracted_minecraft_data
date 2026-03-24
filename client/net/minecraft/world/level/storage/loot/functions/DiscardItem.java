@@ -8,17 +8,17 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class DiscardItem extends LootItemConditionalFunction {
-   public static final MapCodec<DiscardItem> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).apply(var0, DiscardItem::new));
+   public static final MapCodec<DiscardItem> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).apply(i, DiscardItem::new));
 
-   protected DiscardItem(List<LootItemCondition> var1) {
-      super(var1);
+   protected DiscardItem(final List<LootItemCondition> predicates) {
+      super(predicates);
    }
 
-   public LootItemFunctionType<DiscardItem> getType() {
-      return LootItemFunctions.DISCARD;
+   public MapCodec<DiscardItem> codec() {
+      return MAP_CODEC;
    }
 
-   protected ItemStack run(ItemStack var1, LootContext var2) {
+   protected ItemStack run(final ItemStack itemStack, final LootContext context) {
       return ItemStack.EMPTY;
    }
 

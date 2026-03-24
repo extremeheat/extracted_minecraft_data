@@ -8,8 +8,8 @@ public enum RemoteDebugSampleType {
 
    private final DebugSubscription<?> subscription;
 
-   private RemoteDebugSampleType(final DebugSubscription<?> var3) {
-      this.subscription = var3;
+   private RemoteDebugSampleType(final DebugSubscription<?> subscription) {
+      this.subscription = subscription;
    }
 
    public DebugSubscription<?> subscription() {

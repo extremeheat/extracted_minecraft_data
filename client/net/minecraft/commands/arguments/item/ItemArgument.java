@@ -15,34 +15,28 @@ public class ItemArgument implements ArgumentType<ItemInput> {
    private static final Collection<String> EXAMPLES = Arrays.asList("stick", "minecraft:stick", "stick{foo=bar}");
    private final ItemParser parser;
 
-   public ItemArgument(CommandBuildContext var1) {
+   public ItemArgument(final CommandBuildContext context) {
       super();
-      this.parser = new ItemParser(var1);
+      this.parser = new ItemParser(context);
    }
 
-   public static ItemArgument item(CommandBuildContext var0) {
-      return new ItemArgument(var0);
+   public static ItemArgument item(final CommandBuildContext context) {
+      return new ItemArgument(context);
    }
 
-   public ItemInput parse(StringReader var1) throws CommandSyntaxException {
-      ItemParser.ItemResult var2 = this.parser.parse(var1);
-      return new ItemInput(var2.item(), var2.components());
+   public ItemInput parse(final StringReader reader) throws CommandSyntaxException {
+      return this.parser.parse(reader);
    }
 
-   public static <S> ItemInput getItem(CommandContext<S> var0, String var1) {
-      return (ItemInput)var0.getArgument(var1, ItemInput.class);
+   public static <S> ItemInput getItem(final CommandContext<S> context, final String name) {
+      return (ItemInput)context.getArgument(name, ItemInput.class);
    }
 
-   public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      return this.parser.fillSuggestions(var2);
+   public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
+      return this.parser.fillSuggestions(builder);
    }
 
    public Collection<String> getExamples() {
       return EXAMPLES;
-   }
-
-   // $FF: synthetic method
-   public Object parse(final StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1);
    }
 }

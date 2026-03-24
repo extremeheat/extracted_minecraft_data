@@ -3,17 +3,17 @@ package net.minecraft.world.inventory;
 public class SimpleContainerData implements ContainerData {
    private final int[] ints;
 
-   public SimpleContainerData(int var1) {
+   public SimpleContainerData(final int count) {
       super();
-      this.ints = new int[var1];
+      this.ints = new int[count];
    }
 
-   public int get(int var1) {
-      return this.ints[var1];
+   public int get(final int dataId) {
+      return this.ints[dataId];
    }
 
-   public void set(int var1, int var2) {
-      this.ints[var1] = var2;
+   public void set(final int dataId, final int value) {
+      this.ints[dataId] = value;
    }
 
    public int getCount() {

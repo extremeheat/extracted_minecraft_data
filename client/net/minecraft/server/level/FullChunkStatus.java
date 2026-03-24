@@ -9,8 +9,8 @@ public enum FullChunkStatus {
    private FullChunkStatus() {
    }
 
-   public boolean isOrAfter(FullChunkStatus var1) {
-      return this.ordinal() >= var1.ordinal();
+   public boolean isOrAfter(final FullChunkStatus step) {
+      return this.ordinal() >= step.ordinal();
    }
 
    // $FF: synthetic method

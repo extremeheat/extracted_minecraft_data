@@ -31,28 +31,28 @@ public class PathNavigationRegion implements CollisionGetter {
    protected final Level level;
    private final Supplier<Holder<Biome>> plains;
 
-   public PathNavigationRegion(Level var1, BlockPos var2, BlockPos var3) {
+   public PathNavigationRegion(final Level level, final BlockPos start, final BlockPos end) {
       super();
-      this.level = var1;
-      this.plains = Suppliers.memoize(() -> var1.registryAccess().lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.PLAINS));
-      this.centerX = SectionPos.blockToSectionCoord(var2.getX());
-      this.centerZ = SectionPos.blockToSectionCoord(var2.getZ());
-      int var4 = SectionPos.blockToSectionCoord(var3.getX());
-      int var5 = SectionPos.blockToSectionCoord(var3.getZ());
-      this.chunks = new ChunkAccess[var4 - this.centerX + 1][var5 - this.centerZ + 1];
-      ChunkSource var6 = var1.getChunkSource();
+      this.level = level;
+      this.plains = Suppliers.memoize(() -> level.registryAccess().lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.PLAINS));
+      this.centerX = SectionPos.blockToSectionCoord(start.getX());
+      this.centerZ = SectionPos.blockToSectionCoord(start.getZ());
+      int xc2 = SectionPos.blockToSectionCoord(end.getX());
+      int zc2 = SectionPos.blockToSectionCoord(end.getZ());
+      this.chunks = new ChunkAccess[xc2 - this.centerX + 1][zc2 - this.centerZ + 1];
+      ChunkSource chunkSource = level.getChunkSource();
       this.allEmpty = true;
 
-      for(int var7 = this.centerX; var7 <= var4; ++var7) {
-         for(int var8 = this.centerZ; var8 <= var5; ++var8) {
-            this.chunks[var7 - this.centerX][var8 - this.centerZ] = var6.getChunkNow(var7, var8);
+      for(int xc = this.centerX; xc <= xc2; ++xc) {
+         for(int zc = this.centerZ; zc <= zc2; ++zc) {
+            this.chunks[xc - this.centerX][zc - this.centerZ] = chunkSource.getChunkNow(xc, zc);
          }
       }
 
-      for(int var10 = SectionPos.blockToSectionCoord(var2.getX()); var10 <= SectionPos.blockToSectionCoord(var3.getX()); ++var10) {
-         for(int var11 = SectionPos.blockToSectionCoord(var2.getZ()); var11 <= SectionPos.blockToSectionCoord(var3.getZ()); ++var11) {
-            ChunkAccess var9 = this.chunks[var10 - this.centerX][var11 - this.centerZ];
-            if (var9 != null && !var9.isYSpaceEmpty(var2.getY(), var3.getY())) {
+      for(int xc = SectionPos.blockToSectionCoord(start.getX()); xc <= SectionPos.blockToSectionCoord(end.getX()); ++xc) {
+         for(int zc = SectionPos.blockToSectionCoord(start.getZ()); zc <= SectionPos.blockToSectionCoord(end.getZ()); ++zc) {
+            ChunkAccess chunk = this.chunks[xc - this.centerX][zc - this.centerZ];
+            if (chunk != null && !chunk.isYSpaceEmpty(start.getY(), end.getY())) {
                this.allEmpty = false;
                return;
             }
@@ -61,18 +61,18 @@ public class PathNavigationRegion implements CollisionGetter {
 
    }
 
-   private ChunkAccess getChunk(BlockPos var1) {
-      return this.getChunk(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getZ()));
+   private ChunkAccess getChunk(final BlockPos pos) {
+      return this.getChunk(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ()));
    }
 
-   private ChunkAccess getChunk(int var1, int var2) {
-      int var3 = var1 - this.centerX;
-      int var4 = var2 - this.centerZ;
-      if (var3 >= 0 && var3 < this.chunks.length && var4 >= 0 && var4 < this.chunks[var3].length) {
-         ChunkAccess var5 = this.chunks[var3][var4];
-         return (ChunkAccess)(var5 != null ? var5 : new EmptyLevelChunk(this.level, new ChunkPos(var1, var2), (Holder)this.plains.get()));
+   private ChunkAccess getChunk(final int chunkX, final int chunkZ) {
+      int xc = chunkX - this.centerX;
+      int zc = chunkZ - this.centerZ;
+      if (xc >= 0 && xc < this.chunks.length && zc >= 0 && zc < this.chunks[xc].length) {
+         ChunkAccess chunk = this.chunks[xc][zc];
+         return (ChunkAccess)(chunk != null ? chunk : new EmptyLevelChunk(this.level, new ChunkPos(chunkX, chunkZ), (Holder)this.plains.get()));
       } else {
-         return new EmptyLevelChunk(this.level, new ChunkPos(var1, var2), (Holder)this.plains.get());
+         return new EmptyLevelChunk(this.level, new ChunkPos(chunkX, chunkZ), (Holder)this.plains.get());
       }
    }
 
@@ -80,34 +80,34 @@ public class PathNavigationRegion implements CollisionGetter {
       return this.level.getWorldBorder();
    }
 
-   public BlockGetter getChunkForCollisions(int var1, int var2) {
-      return this.getChunk(var1, var2);
+   public BlockGetter getChunkForCollisions(final int chunkX, final int chunkZ) {
+      return this.getChunk(chunkX, chunkZ);
    }
 
-   public List<VoxelShape> getEntityCollisions(@Nullable Entity var1, AABB var2) {
+   public List<VoxelShape> getEntityCollisions(final @Nullable Entity source, final AABB testArea) {
       return List.of();
    }
 
-   public @Nullable BlockEntity getBlockEntity(BlockPos var1) {
-      ChunkAccess var2 = this.getChunk(var1);
-      return var2.getBlockEntity(var1);
+   public @Nullable BlockEntity getBlockEntity(final BlockPos pos) {
+      ChunkAccess chunk = this.getChunk(pos);
+      return chunk.getBlockEntity(pos);
    }
 
-   public BlockState getBlockState(BlockPos var1) {
-      if (this.isOutsideBuildHeight(var1)) {
+   public BlockState getBlockState(final BlockPos pos) {
+      if (this.isOutsideBuildHeight(pos)) {
          return Blocks.AIR.defaultBlockState();
       } else {
-         ChunkAccess var2 = this.getChunk(var1);
-         return var2.getBlockState(var1);
+         ChunkAccess chunk = this.getChunk(pos);
+         return chunk.getBlockState(pos);
       }
    }
 
-   public FluidState getFluidState(BlockPos var1) {
-      if (this.isOutsideBuildHeight(var1)) {
+   public FluidState getFluidState(final BlockPos pos) {
+      if (this.isOutsideBuildHeight(pos)) {
          return Fluids.EMPTY.defaultFluidState();
       } else {
-         ChunkAccess var2 = this.getChunk(var1);
-         return var2.getFluidState(var1);
+         ChunkAccess chunk = this.getChunk(pos);
+         return chunk.getFluidState(pos);
       }
    }
 

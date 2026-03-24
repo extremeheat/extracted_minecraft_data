@@ -14,10 +14,10 @@ public class TextureTransform {
    public static final TextureTransform ENTITY_GLINT_TEXTURING = new TextureTransform("entity_glint_texturing", () -> setupGlintTexturing(0.5F));
    public static final TextureTransform ARMOR_ENTITY_GLINT_TEXTURING = new TextureTransform("armor_entity_glint_texturing", () -> setupGlintTexturing(0.16F));
 
-   public TextureTransform(String var1, Supplier<Matrix4f> var2) {
+   public TextureTransform(final String name, final Supplier<Matrix4f> matrix) {
       super();
-      this.name = var1;
-      this.supplier = var2;
+      this.name = name;
+      this.supplier = matrix;
    }
 
    public Matrix4f getMatrix() {
@@ -28,18 +28,18 @@ public class TextureTransform {
       return "TexturingStateShard[" + this.name + "]";
    }
 
-   private static Matrix4f setupGlintTexturing(float var0) {
-      long var1 = (long)((double)Util.getMillis() * (Double)Minecraft.getInstance().options.glintSpeed().get() * 8.0);
-      float var3 = (float)(var1 % 110000L) / 110000.0F;
-      float var4 = (float)(var1 % 30000L) / 30000.0F;
-      Matrix4f var5 = (new Matrix4f()).translation(-var3, var4, 0.0F);
-      var5.rotateZ(0.17453292F).scale(var0);
-      return var5;
+   private static Matrix4f setupGlintTexturing(final float scale) {
+      long millis = (long)((double)Util.getMillis() * Minecraft.getInstance().gameRenderer.getGameRenderState().optionsRenderState.glintSpeed * 8.0);
+      float layerOffset0 = (float)(millis % 110000L) / 110000.0F;
+      float layerOffset1 = (float)(millis % 30000L) / 30000.0F;
+      Matrix4f matrix = (new Matrix4f()).translation(-layerOffset0, layerOffset1, 0.0F);
+      matrix.rotateZ(0.17453292F).scale(scale);
+      return matrix;
    }
 
    public static final class OffsetTextureTransform extends TextureTransform {
-      public OffsetTextureTransform(float var1, float var2) {
-         super("offset_texturing", () -> (new Matrix4f()).translation(var1, var2, 0.0F));
+      public OffsetTextureTransform(final float uOffset, final float vOffset) {
+         super("offset_texturing", () -> (new Matrix4f()).translation(uOffset, vOffset, 0.0F));
       }
    }
 }

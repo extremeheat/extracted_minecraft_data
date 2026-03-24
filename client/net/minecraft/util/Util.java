@@ -18,15 +18,19 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectLists;
+import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceImmutableList;
+import it.unimi.dsi.fastutil.objects.ReferenceList;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
@@ -38,6 +42,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Arrays;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -46,6 +51,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -74,21 +80,20 @@ import net.minecraft.CharPredicate;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.DefaultUncaughtExceptionHandler;
-import net.minecraft.ReportType;
 import net.minecraft.ReportedException;
 import net.minecraft.SharedConstants;
 import net.minecraft.SuppressForbidden;
 import net.minecraft.TracingExecutor;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.Bootstrap;
 import net.minecraft.util.datafix.DataFixers;
+import net.minecraft.util.thread.BlockableEventLoop;
 import net.minecraft.world.level.block.state.properties.Property;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class Util {
-   static final Logger LOGGER = LogUtils.getLogger();
+   private static final Logger LOGGER = LogUtils.getLogger();
    private static final int DEFAULT_MAX_THREADS = 255;
    private static final int DEFAULT_SAFE_FILE_OPERATION_RETRIES = 10;
    private static final String MAX_THREADS_SYSTEM_PROPERTY = "max.bg.threads";
@@ -117,12 +122,12 @@ public class Util {
       return Collectors.toCollection(Lists::newArrayList);
    }
 
-   public static <T extends Comparable<T>> String getPropertyName(Property<T> var0, Object var1) {
-      return var0.getName((Comparable)var1);
+   public static <T extends Comparable<T>> String getPropertyName(final Property<T> key, final Object value) {
+      return key.getName((Comparable)value);
    }
 
-   public static String makeDescriptionId(String var0, @Nullable Identifier var1) {
-      return var1 == null ? var0 + ".unregistered_sadface" : var0 + "." + var1.getNamespace() + "." + var1.getPath().replace('/', '.');
+   public static String makeDescriptionId(final String prefix, final @Nullable Identifier location) {
+      return location == null ? prefix + ".unregistered_sadface" : prefix + "." + location.getNamespace() + "." + location.getPath().replace('/', '.');
    }
 
    public static long getMillis() {
@@ -141,37 +146,37 @@ public class Util {
       return FILENAME_DATE_TIME_FORMATTER.format(ZonedDateTime.now());
    }
 
-   private static TracingExecutor makeExecutor(String var0) {
-      int var1 = maxAllowedExecutorThreads();
-      Object var2;
-      if (var1 <= 0) {
-         var2 = MoreExecutors.newDirectExecutorService();
+   private static TracingExecutor makeExecutor(final String name) {
+      int threads = maxAllowedExecutorThreads();
+      ExecutorService executor;
+      if (threads <= 0) {
+         executor = MoreExecutors.newDirectExecutorService();
       } else {
-         AtomicInteger var3 = new AtomicInteger(1);
-         var2 = new ForkJoinPool(var1, (var2x) -> {
-            final String var3x = "Worker-" + var0 + "-" + var3.getAndIncrement();
-            ForkJoinWorkerThread var4 = new ForkJoinWorkerThread(var2x) {
+         AtomicInteger workerCount = new AtomicInteger(1);
+         executor = new ForkJoinPool(threads, (pool) -> {
+            final String threadName = "Worker-" + name + "-" + workerCount.getAndIncrement();
+            ForkJoinWorkerThread thread = new ForkJoinWorkerThread(pool) {
                protected void onStart() {
-                  TracyClient.setThreadName(var3x, var0.hashCode());
+                  TracyClient.setThreadName(threadName, name.hashCode());
                   super.onStart();
                }
 
-               protected void onTermination(@Nullable Throwable var1) {
-                  if (var1 != null) {
-                     Util.LOGGER.warn("{} died", this.getName(), var1);
+               protected void onTermination(final @Nullable Throwable exception) {
+                  if (exception != null) {
+                     Util.LOGGER.warn("{} died", this.getName(), exception);
                   } else {
                      Util.LOGGER.debug("{} shutdown", this.getName());
                   }
 
-                  super.onTermination(var1);
+                  super.onTermination(exception);
                }
             };
-            var4.setName(var3x);
-            return var4;
+            thread.setName(threadName);
+            return thread;
          }, Util::onThreadException, true);
       }
 
-      return new TracingExecutor((ExecutorService)var2);
+      return new TracingExecutor(executor);
    }
 
    public static int maxAllowedExecutorThreads() {
@@ -179,17 +184,17 @@ public class Util {
    }
 
    private static int getMaxThreads() {
-      String var0 = System.getProperty("max.bg.threads");
-      if (var0 != null) {
+      String maxThreadsString = System.getProperty("max.bg.threads");
+      if (maxThreadsString != null) {
          try {
-            int var1 = Integer.parseInt(var0);
-            if (var1 >= 1 && var1 <= 255) {
-               return var1;
+            int maxThreads = Integer.parseInt(maxThreadsString);
+            if (maxThreads >= 1 && maxThreads <= 255) {
+               return maxThreads;
             }
 
-            LOGGER.error("Wrong {} property value '{}'. Should be an integer value between 1 and {}.", new Object[]{"max.bg.threads", var0, 255});
+            LOGGER.error("Wrong {} property value '{}'. Should be an integer value between 1 and {}.", new Object[]{"max.bg.threads", maxThreadsString, 255});
          } catch (NumberFormatException var2) {
-            LOGGER.error("Could not parse {} property value '{}'. Should be an integer value between 1 and {}.", new Object[]{"max.bg.threads", var0, 255});
+            LOGGER.error("Could not parse {} property value '{}'. Should be an integer value between 1 and {}.", new Object[]{"max.bg.threads", maxThreadsString, 255});
          }
       }
 
@@ -213,71 +218,76 @@ public class Util {
       IO_POOL.shutdownAndAwait(3L, TimeUnit.SECONDS);
    }
 
-   private static TracingExecutor makeIoExecutor(String var0, boolean var1) {
-      AtomicInteger var2 = new AtomicInteger(1);
-      return new TracingExecutor(Executors.newCachedThreadPool((var3) -> {
-         Thread var4 = new Thread(var3);
-         String var5 = var0 + var2.getAndIncrement();
-         TracyClient.setThreadName(var5, var0.hashCode());
-         var4.setName(var5);
-         var4.setDaemon(var1);
-         var4.setUncaughtExceptionHandler(Util::onThreadException);
-         return var4;
+   private static TracingExecutor makeIoExecutor(final String prefix, final boolean daemon) {
+      AtomicInteger workerCount = new AtomicInteger(1);
+      return new TracingExecutor(Executors.newCachedThreadPool((runnable) -> {
+         Thread thread = new Thread(runnable);
+         String name = prefix + workerCount.getAndIncrement();
+         TracyClient.setThreadName(name, prefix.hashCode());
+         thread.setName(name);
+         thread.setDaemon(daemon);
+         thread.setUncaughtExceptionHandler(Util::onThreadException);
+         return thread;
       }));
    }
 
-   public static void throwAsRuntime(Throwable var0) {
-      throw var0 instanceof RuntimeException ? (RuntimeException)var0 : new RuntimeException(var0);
+   public static void throwAsRuntime(final Throwable throwable) {
+      throw throwable instanceof RuntimeException ? (RuntimeException)throwable : new RuntimeException(throwable);
    }
 
-   private static void onThreadException(Thread var0, Throwable var1) {
-      pauseInIde(var1);
-      if (var1 instanceof CompletionException) {
-         var1 = var1.getCause();
+   private static void onThreadException(final Thread thread, Throwable throwable) {
+      pauseInIde(throwable);
+      if (throwable instanceof CompletionException) {
+         throwable = throwable.getCause();
       }
 
-      if (var1 instanceof ReportedException var2) {
-         Bootstrap.realStdoutPrintln(var2.getReport().getFriendlyReport(ReportType.CRASH));
-         System.exit(-1);
+      LOGGER.error("Caught exception in thread {}", thread, throwable);
+      CrashReport report;
+      if (throwable instanceof ReportedException reportedException) {
+         report = reportedException.getReport();
+      } else {
+         report = CrashReport.forThrowable(throwable, "Exception on worker thread");
       }
 
-      LOGGER.error("Caught exception in thread {}", var0, var1);
+      CrashReportCategory threadInfo = report.addCategory("ThreadInfo");
+      threadInfo.setDetail("Name", thread.getName());
+      BlockableEventLoop.relayDelayCrash(report);
    }
 
-   public static @Nullable Type<?> fetchChoiceType(DSL.TypeReference var0, String var1) {
-      return !SharedConstants.CHECK_DATA_FIXER_SCHEMA ? null : doFetchChoiceType(var0, var1);
+   public static @Nullable Type<?> fetchChoiceType(final DSL.TypeReference reference, final String name) {
+      return !SharedConstants.CHECK_DATA_FIXER_SCHEMA ? null : doFetchChoiceType(reference, name);
    }
 
-   private static @Nullable Type<?> doFetchChoiceType(DSL.TypeReference var0, String var1) {
-      Type var2 = null;
+   private static @Nullable Type<?> doFetchChoiceType(final DSL.TypeReference reference, final String name) {
+      Type<?> dataType = null;
 
       try {
-         var2 = DataFixers.getDataFixer().getSchema(DataFixUtils.makeKey(SharedConstants.getCurrentVersion().dataVersion().version())).getChoiceType(var0, var1);
-      } catch (IllegalArgumentException var4) {
-         LOGGER.error("No data fixer registered for {}", var1);
+         dataType = DataFixers.getDataFixer().getSchema(DataFixUtils.makeKey(SharedConstants.getCurrentVersion().dataVersion().version())).getChoiceType(reference, name);
+      } catch (IllegalArgumentException e) {
+         LOGGER.error("No data fixer registered for {}", name);
          if (SharedConstants.IS_RUNNING_IN_IDE) {
-            throw var4;
+            throw e;
          }
       }
 
-      return var2;
+      return dataType;
    }
 
-   public static void runNamed(Runnable var0, String var1) {
+   public static void runNamed(final Runnable runnable, final String name) {
       if (SharedConstants.IS_RUNNING_IN_IDE) {
-         Thread var2 = Thread.currentThread();
-         String var3 = var2.getName();
-         var2.setName(var1);
+         Thread thread = Thread.currentThread();
+         String oldName = thread.getName();
+         thread.setName(name);
 
          try {
-            Zone var4 = TracyClient.beginZone(var1, SharedConstants.IS_RUNNING_IN_IDE);
+            Zone ignored = TracyClient.beginZone(name, SharedConstants.IS_RUNNING_IN_IDE);
 
             try {
-               var0.run();
+               runnable.run();
             } catch (Throwable var16) {
-               if (var4 != null) {
+               if (ignored != null) {
                   try {
-                     var4.close();
+                     ignored.close();
                   } catch (Throwable var14) {
                      var16.addSuppressed(var14);
                   }
@@ -286,21 +296,21 @@ public class Util {
                throw var16;
             }
 
-            if (var4 != null) {
-               var4.close();
+            if (ignored != null) {
+               ignored.close();
             }
          } finally {
-            var2.setName(var3);
+            thread.setName(oldName);
          }
       } else {
-         Zone var18 = TracyClient.beginZone(var1, SharedConstants.IS_RUNNING_IN_IDE);
+         Zone ignored = TracyClient.beginZone(name, SharedConstants.IS_RUNNING_IN_IDE);
 
          try {
-            var0.run();
+            runnable.run();
          } catch (Throwable var15) {
-            if (var18 != null) {
+            if (ignored != null) {
                try {
-                  var18.close();
+                  ignored.close();
                } catch (Throwable var13) {
                   var15.addSuppressed(var13);
                }
@@ -309,47 +319,47 @@ public class Util {
             throw var15;
          }
 
-         if (var18 != null) {
-            var18.close();
+         if (ignored != null) {
+            ignored.close();
          }
       }
 
    }
 
-   public static <T> String getRegisteredName(Registry<T> var0, T var1) {
-      Identifier var2 = var0.getKey(var1);
-      return var2 == null ? "[unregistered]" : var2.toString();
+   public static <T> String getRegisteredName(final Registry<T> registry, final T entry) {
+      Identifier key = registry.getKey(entry);
+      return key == null ? "[unregistered]" : key.toString();
    }
 
    public static <T> Predicate<T> allOf() {
-      return (var0) -> true;
+      return (context) -> true;
    }
 
-   public static <T> Predicate<T> allOf(Predicate<? super T> var0) {
-      return var0;
+   public static <T> Predicate<T> allOf(final Predicate<? super T> condition) {
+      return condition;
    }
 
-   public static <T> Predicate<T> allOf(Predicate<? super T> var0, Predicate<? super T> var1) {
-      return (var2) -> var0.test(var2) && var1.test(var2);
+   public static <T> Predicate<T> allOf(final Predicate<? super T> condition1, final Predicate<? super T> condition2) {
+      return (context) -> condition1.test(context) && condition2.test(context);
    }
 
-   public static <T> Predicate<T> allOf(Predicate<? super T> var0, Predicate<? super T> var1, Predicate<? super T> var2) {
-      return (var3) -> var0.test(var3) && var1.test(var3) && var2.test(var3);
+   public static <T> Predicate<T> allOf(final Predicate<? super T> condition1, final Predicate<? super T> condition2, final Predicate<? super T> condition3) {
+      return (context) -> condition1.test(context) && condition2.test(context) && condition3.test(context);
    }
 
-   public static <T> Predicate<T> allOf(Predicate<? super T> var0, Predicate<? super T> var1, Predicate<? super T> var2, Predicate<? super T> var3) {
-      return (var4) -> var0.test(var4) && var1.test(var4) && var2.test(var4) && var3.test(var4);
+   public static <T> Predicate<T> allOf(final Predicate<? super T> condition1, final Predicate<? super T> condition2, final Predicate<? super T> condition3, final Predicate<? super T> condition4) {
+      return (context) -> condition1.test(context) && condition2.test(context) && condition3.test(context) && condition4.test(context);
    }
 
-   public static <T> Predicate<T> allOf(Predicate<? super T> var0, Predicate<? super T> var1, Predicate<? super T> var2, Predicate<? super T> var3, Predicate<? super T> var4) {
-      return (var5) -> var0.test(var5) && var1.test(var5) && var2.test(var5) && var3.test(var5) && var4.test(var5);
+   public static <T> Predicate<T> allOf(final Predicate<? super T> condition1, final Predicate<? super T> condition2, final Predicate<? super T> condition3, final Predicate<? super T> condition4, final Predicate<? super T> condition5) {
+      return (context) -> condition1.test(context) && condition2.test(context) && condition3.test(context) && condition4.test(context) && condition5.test(context);
    }
 
    @SafeVarargs
-   public static <T> Predicate<T> allOf(Predicate<? super T>... var0) {
-      return (var1) -> {
-         for(Predicate var5 : var0) {
-            if (!var5.test(var1)) {
+   public static <T> Predicate<T> allOf(final Predicate<? super T>... conditions) {
+      return (context) -> {
+         for(Predicate<? super T> entry : conditions) {
+            if (!entry.test(context)) {
                return false;
             }
          }
@@ -358,64 +368,64 @@ public class Util {
       };
    }
 
-   public static <T> Predicate<T> allOf(List<? extends Predicate<? super T>> var0) {
+   public static <T> Predicate<T> allOf(final List<? extends Predicate<? super T>> conditions) {
       Predicate var10000;
-      switch (var0.size()) {
+      switch (conditions.size()) {
          case 0:
             var10000 = allOf();
             break;
          case 1:
-            var10000 = allOf((Predicate)var0.get(0));
+            var10000 = allOf((Predicate)conditions.get(0));
             break;
          case 2:
-            var10000 = allOf((Predicate)var0.get(0), (Predicate)var0.get(1));
+            var10000 = allOf((Predicate)conditions.get(0), (Predicate)conditions.get(1));
             break;
          case 3:
-            var10000 = allOf((Predicate)var0.get(0), (Predicate)var0.get(1), (Predicate)var0.get(2));
+            var10000 = allOf((Predicate)conditions.get(0), (Predicate)conditions.get(1), (Predicate)conditions.get(2));
             break;
          case 4:
-            var10000 = allOf((Predicate)var0.get(0), (Predicate)var0.get(1), (Predicate)var0.get(2), (Predicate)var0.get(3));
+            var10000 = allOf((Predicate)conditions.get(0), (Predicate)conditions.get(1), (Predicate)conditions.get(2), (Predicate)conditions.get(3));
             break;
          case 5:
-            var10000 = allOf((Predicate)var0.get(0), (Predicate)var0.get(1), (Predicate)var0.get(2), (Predicate)var0.get(3), (Predicate)var0.get(4));
+            var10000 = allOf((Predicate)conditions.get(0), (Predicate)conditions.get(1), (Predicate)conditions.get(2), (Predicate)conditions.get(3), (Predicate)conditions.get(4));
             break;
          default:
-            Predicate[] var1 = (Predicate[])var0.toArray((var0x) -> new Predicate[var0x]);
-            var10000 = allOf(var1);
+            Predicate<? super T>[] conditionsCopy = (Predicate[])conditions.toArray((x$0) -> new Predicate[x$0]);
+            var10000 = allOf(conditionsCopy);
       }
 
       return var10000;
    }
 
    public static <T> Predicate<T> anyOf() {
-      return (var0) -> false;
+      return (context) -> false;
    }
 
-   public static <T> Predicate<T> anyOf(Predicate<? super T> var0) {
-      return var0;
+   public static <T> Predicate<T> anyOf(final Predicate<? super T> condition1) {
+      return condition1;
    }
 
-   public static <T> Predicate<T> anyOf(Predicate<? super T> var0, Predicate<? super T> var1) {
-      return (var2) -> var0.test(var2) || var1.test(var2);
+   public static <T> Predicate<T> anyOf(final Predicate<? super T> condition1, final Predicate<? super T> condition2) {
+      return (context) -> condition1.test(context) || condition2.test(context);
    }
 
-   public static <T> Predicate<T> anyOf(Predicate<? super T> var0, Predicate<? super T> var1, Predicate<? super T> var2) {
-      return (var3) -> var0.test(var3) || var1.test(var3) || var2.test(var3);
+   public static <T> Predicate<T> anyOf(final Predicate<? super T> condition1, final Predicate<? super T> condition2, final Predicate<? super T> condition3) {
+      return (context) -> condition1.test(context) || condition2.test(context) || condition3.test(context);
    }
 
-   public static <T> Predicate<T> anyOf(Predicate<? super T> var0, Predicate<? super T> var1, Predicate<? super T> var2, Predicate<? super T> var3) {
-      return (var4) -> var0.test(var4) || var1.test(var4) || var2.test(var4) || var3.test(var4);
+   public static <T> Predicate<T> anyOf(final Predicate<? super T> condition1, final Predicate<? super T> condition2, final Predicate<? super T> condition3, final Predicate<? super T> condition4) {
+      return (context) -> condition1.test(context) || condition2.test(context) || condition3.test(context) || condition4.test(context);
    }
 
-   public static <T> Predicate<T> anyOf(Predicate<? super T> var0, Predicate<? super T> var1, Predicate<? super T> var2, Predicate<? super T> var3, Predicate<? super T> var4) {
-      return (var5) -> var0.test(var5) || var1.test(var5) || var2.test(var5) || var3.test(var5) || var4.test(var5);
+   public static <T> Predicate<T> anyOf(final Predicate<? super T> condition1, final Predicate<? super T> condition2, final Predicate<? super T> condition3, final Predicate<? super T> condition4, final Predicate<? super T> condition5) {
+      return (context) -> condition1.test(context) || condition2.test(context) || condition3.test(context) || condition4.test(context) || condition5.test(context);
    }
 
    @SafeVarargs
-   public static <T> Predicate<T> anyOf(Predicate<? super T>... var0) {
-      return (var1) -> {
-         for(Predicate var5 : var0) {
-            if (var5.test(var1)) {
+   public static <T> Predicate<T> anyOf(final Predicate<? super T>... conditions) {
+      return (context) -> {
+         for(Predicate<? super T> entry : conditions) {
+            if (entry.test(context)) {
                return true;
             }
          }
@@ -424,47 +434,47 @@ public class Util {
       };
    }
 
-   public static <T> Predicate<T> anyOf(List<? extends Predicate<? super T>> var0) {
+   public static <T> Predicate<T> anyOf(final List<? extends Predicate<? super T>> conditions) {
       Predicate var10000;
-      switch (var0.size()) {
+      switch (conditions.size()) {
          case 0:
             var10000 = anyOf();
             break;
          case 1:
-            var10000 = anyOf((Predicate)var0.get(0));
+            var10000 = anyOf((Predicate)conditions.get(0));
             break;
          case 2:
-            var10000 = anyOf((Predicate)var0.get(0), (Predicate)var0.get(1));
+            var10000 = anyOf((Predicate)conditions.get(0), (Predicate)conditions.get(1));
             break;
          case 3:
-            var10000 = anyOf((Predicate)var0.get(0), (Predicate)var0.get(1), (Predicate)var0.get(2));
+            var10000 = anyOf((Predicate)conditions.get(0), (Predicate)conditions.get(1), (Predicate)conditions.get(2));
             break;
          case 4:
-            var10000 = anyOf((Predicate)var0.get(0), (Predicate)var0.get(1), (Predicate)var0.get(2), (Predicate)var0.get(3));
+            var10000 = anyOf((Predicate)conditions.get(0), (Predicate)conditions.get(1), (Predicate)conditions.get(2), (Predicate)conditions.get(3));
             break;
          case 5:
-            var10000 = anyOf((Predicate)var0.get(0), (Predicate)var0.get(1), (Predicate)var0.get(2), (Predicate)var0.get(3), (Predicate)var0.get(4));
+            var10000 = anyOf((Predicate)conditions.get(0), (Predicate)conditions.get(1), (Predicate)conditions.get(2), (Predicate)conditions.get(3), (Predicate)conditions.get(4));
             break;
          default:
-            Predicate[] var1 = (Predicate[])var0.toArray((var0x) -> new Predicate[var0x]);
-            var10000 = anyOf(var1);
+            Predicate<? super T>[] conditionsCopy = (Predicate[])conditions.toArray((x$0) -> new Predicate[x$0]);
+            var10000 = anyOf(conditionsCopy);
       }
 
       return var10000;
    }
 
-   public static <T> boolean isSymmetrical(int var0, int var1, List<T> var2) {
-      if (var0 == 1) {
+   public static <T> boolean isSymmetrical(final int width, final int height, final List<T> ingredients) {
+      if (width == 1) {
          return true;
       } else {
-         int var3 = var0 / 2;
+         int centerX = width / 2;
 
-         for(int var4 = 0; var4 < var1; ++var4) {
-            for(int var5 = 0; var5 < var3; ++var5) {
-               int var6 = var0 - 1 - var5;
-               Object var7 = var2.get(var5 + var4 * var0);
-               Object var8 = var2.get(var6 + var4 * var0);
-               if (!var7.equals(var8)) {
+         for(int y = 0; y < height; ++y) {
+            for(int leftX = 0; leftX < centerX; ++leftX) {
+               int rightX = width - 1 - leftX;
+               T left = (T)ingredients.get(leftX + y * width);
+               T right = (T)ingredients.get(rightX + y * width);
+               if (!left.equals(right)) {
                   return false;
                }
             }
@@ -474,339 +484,343 @@ public class Util {
       }
    }
 
-   public static int growByHalf(int var0, int var1) {
-      return (int)Math.max(Math.min((long)var0 + (long)(var0 >> 1), 2147483639L), (long)var1);
+   public static int growByHalf(final int currentSize, final int minimalNewSize) {
+      return (int)Math.max(Math.min((long)currentSize + (long)(currentSize >> 1), 2147483639L), (long)minimalNewSize);
    }
 
    @SuppressForbidden(
-      a = "Intentional use of default locale for user-visible date"
+      reason = "Intentional use of default locale for user-visible date"
    )
-   public static DateTimeFormatter localizedDateFormatter(FormatStyle var0) {
-      return DateTimeFormatter.ofLocalizedDateTime(var0);
+   public static DateTimeFormatter localizedDateFormatter(final FormatStyle formatStyle) {
+      return DateTimeFormatter.ofLocalizedDateTime(formatStyle);
    }
 
    public static OS getPlatform() {
-      String var0 = System.getProperty("os.name").toLowerCase(Locale.ROOT);
-      if (var0.contains("win")) {
+      String osName = System.getProperty("os.name").toLowerCase(Locale.ROOT);
+      if (osName.contains("win")) {
          return Util.OS.WINDOWS;
-      } else if (var0.contains("mac")) {
+      } else if (osName.contains("mac")) {
          return Util.OS.OSX;
-      } else if (var0.contains("solaris")) {
+      } else if (osName.contains("solaris")) {
          return Util.OS.SOLARIS;
-      } else if (var0.contains("sunos")) {
+      } else if (osName.contains("sunos")) {
          return Util.OS.SOLARIS;
-      } else if (var0.contains("linux")) {
+      } else if (osName.contains("linux")) {
          return Util.OS.LINUX;
       } else {
-         return var0.contains("unix") ? Util.OS.LINUX : Util.OS.UNKNOWN;
+         return osName.contains("unix") ? Util.OS.LINUX : Util.OS.UNKNOWN;
       }
    }
 
    public static boolean isAarch64() {
-      String var0 = System.getProperty("os.arch").toLowerCase(Locale.ROOT);
-      return var0.equals("aarch64");
+      String arch = System.getProperty("os.arch").toLowerCase(Locale.ROOT);
+      return arch.equals("aarch64");
    }
 
-   public static URI parseAndValidateUntrustedUri(String var0) throws URISyntaxException {
-      URI var1 = new URI(var0);
-      String var2 = var1.getScheme();
-      if (var2 == null) {
-         throw new URISyntaxException(var0, "Missing protocol in URI: " + var0);
+   public static URI parseAndValidateUntrustedUri(final String uri) throws URISyntaxException {
+      URI parsedUri = new URI(uri);
+      String scheme = parsedUri.getScheme();
+      if (scheme == null) {
+         throw new URISyntaxException(uri, "Missing protocol in URI: " + uri);
       } else {
-         String var3 = var2.toLowerCase(Locale.ROOT);
-         if (!ALLOWED_UNTRUSTED_LINK_PROTOCOLS.contains(var3)) {
-            throw new URISyntaxException(var0, "Unsupported protocol in URI: " + var0);
+         String protocol = scheme.toLowerCase(Locale.ROOT);
+         if (!ALLOWED_UNTRUSTED_LINK_PROTOCOLS.contains(protocol)) {
+            throw new URISyntaxException(uri, "Unsupported protocol in URI: " + uri);
          } else {
-            return var1;
+            return parsedUri;
          }
       }
    }
 
-   public static <T> T findNextInIterable(Iterable<T> var0, @Nullable T var1) {
-      Iterator var2 = var0.iterator();
-      Object var3 = var2.next();
-      if (var1 != null) {
-         Object var4 = var3;
+   public static <T> T findNextInIterable(final Iterable<T> collection, final @Nullable T current) {
+      Iterator<T> iterator = collection.iterator();
+      T first = (T)iterator.next();
+      if (current != null) {
+         T property = first;
 
-         while(var4 != var1) {
-            if (var2.hasNext()) {
-               var4 = var2.next();
+         while(property != current) {
+            if (iterator.hasNext()) {
+               property = (T)iterator.next();
             }
          }
 
-         if (var2.hasNext()) {
-            return (T)var2.next();
+         if (iterator.hasNext()) {
+            return (T)iterator.next();
          }
       }
 
-      return (T)var3;
+      return first;
    }
 
-   public static <T> T findPreviousInIterable(Iterable<T> var0, @Nullable T var1) {
-      Iterator var2 = var0.iterator();
+   public static <T> T findPreviousInIterable(final Iterable<T> collection, final @Nullable T current) {
+      Iterator<T> iterator = collection.iterator();
 
-      Object var3;
-      Object var4;
-      for(var3 = null; var2.hasNext(); var3 = var4) {
-         var4 = var2.next();
-         if (var4 == var1) {
-            if (var3 == null) {
-               var3 = var2.hasNext() ? Iterators.getLast(var2) : var1;
+      T last;
+      T next;
+      for(last = null; iterator.hasNext(); last = next) {
+         next = (T)iterator.next();
+         if (next == current) {
+            if (last == null) {
+               last = (T)(iterator.hasNext() ? Iterators.getLast(iterator) : current);
             }
             break;
          }
       }
 
-      return (T)var3;
+      return last;
    }
 
-   public static <T> T make(Supplier<T> var0) {
-      return (T)var0.get();
+   public static <T> T make(final Supplier<T> factory) {
+      return (T)factory.get();
    }
 
-   public static <T> T make(T var0, Consumer<? super T> var1) {
-      var1.accept(var0);
-      return var0;
+   public static <T> T make(final T t, final Consumer<? super T> consumer) {
+      consumer.accept(t);
+      return t;
    }
 
-   public static <K extends Enum<K>, V> Map<K, V> makeEnumMap(Class<K> var0, Function<K, V> var1) {
-      EnumMap var2 = new EnumMap(var0);
+   public static <K extends Enum<K>, V> Map<K, V> makeEnumMap(final Class<K> keyType, final Function<K, V> function) {
+      EnumMap<K, V> map = new EnumMap(keyType);
 
-      for(Enum var6 : (Enum[])var0.getEnumConstants()) {
-         var2.put(var6, var1.apply(var6));
+      for(K key : (Enum[])keyType.getEnumConstants()) {
+         map.put(key, function.apply(key));
       }
 
-      return var2;
+      return map;
    }
 
-   public static <K, V1, V2> Map<K, V2> mapValues(Map<K, V1> var0, Function<? super V1, V2> var1) {
-      return (Map)var0.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, (var1x) -> var1.apply(var1x.getValue())));
+   public static <K, V1, V2> Map<K, V2> mapValues(final Map<K, V1> map, final Function<? super V1, V2> valueMapper) {
+      return (Map)map.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, (e) -> valueMapper.apply(e.getValue())));
    }
 
-   public static <K, V1, V2> Map<K, V2> mapValuesLazy(Map<K, V1> var0, com.google.common.base.Function<V1, V2> var1) {
-      return Maps.transformValues(var0, var1);
+   public static <K, V1, V2> Map<K, V2> mapValuesLazy(final Map<K, V1> map, final com.google.common.base.Function<V1, V2> valueMapper) {
+      return Maps.transformValues(map, valueMapper);
    }
 
-   public static <V extends @Nullable Object> CompletableFuture<List<V>> sequence(List<? extends CompletableFuture<V>> var0) {
-      if (var0.isEmpty()) {
+   public static <T extends Enum<T>> Set<T> allOfEnumExcept(final T value) {
+      return EnumSet.complementOf(EnumSet.of(value));
+   }
+
+   public static <V extends @Nullable Object> CompletableFuture<List<V>> sequence(final List<? extends CompletableFuture<V>> futures) {
+      if (futures.isEmpty()) {
          return CompletableFuture.completedFuture(List.of());
-      } else if (var0.size() == 1) {
-         return ((CompletableFuture)var0.getFirst()).thenApply(ObjectLists::singleton);
+      } else if (futures.size() == 1) {
+         return ((CompletableFuture)futures.getFirst()).thenApply(ObjectLists::singleton);
       } else {
-         CompletableFuture var1 = CompletableFuture.allOf((CompletableFuture[])var0.toArray(new CompletableFuture[0]));
-         return var1.thenApply((var1x) -> var0.stream().map(CompletableFuture::join).toList());
+         CompletableFuture<Void> all = CompletableFuture.allOf((CompletableFuture[])futures.toArray(new CompletableFuture[0]));
+         return all.thenApply((ignored) -> futures.stream().map(CompletableFuture::join).toList());
       }
    }
 
-   public static <V extends @Nullable Object> CompletableFuture<List<V>> sequenceFailFast(List<? extends CompletableFuture<? extends V>> var0) {
-      CompletableFuture var1 = new CompletableFuture();
-      Objects.requireNonNull(var1);
-      return fallibleSequence(var0, var1::completeExceptionally).applyToEither(var1, Function.identity());
+   public static <V extends @Nullable Object> CompletableFuture<List<V>> sequenceFailFast(final List<? extends CompletableFuture<? extends V>> futures) {
+      CompletableFuture<List<V>> failureFuture = new CompletableFuture();
+      Objects.requireNonNull(failureFuture);
+      return fallibleSequence(futures, failureFuture::completeExceptionally).applyToEither(failureFuture, Function.identity());
    }
 
-   public static <V extends @Nullable Object> CompletableFuture<List<V>> sequenceFailFastAndCancel(List<? extends CompletableFuture<? extends V>> var0) {
-      CompletableFuture var1 = new CompletableFuture();
-      return fallibleSequence(var0, (var2) -> {
-         if (var1.completeExceptionally(var2)) {
-            for(CompletableFuture var4 : var0) {
-               var4.cancel(true);
+   public static <V extends @Nullable Object> CompletableFuture<List<V>> sequenceFailFastAndCancel(final List<? extends CompletableFuture<? extends V>> futures) {
+      CompletableFuture<List<V>> failureFuture = new CompletableFuture();
+      return fallibleSequence(futures, (exception) -> {
+         if (failureFuture.completeExceptionally(exception)) {
+            for(CompletableFuture<? extends V> future : futures) {
+               future.cancel(true);
             }
          }
 
-      }).applyToEither(var1, Function.identity());
+      }).applyToEither(failureFuture, Function.identity());
    }
 
-   private static <V extends @Nullable Object> CompletableFuture<List<V>> fallibleSequence(List<? extends CompletableFuture<? extends V>> var0, Consumer<Throwable> var1) {
-      ObjectArrayList var2 = new ObjectArrayList();
-      var2.size(var0.size());
-      CompletableFuture[] var3 = new CompletableFuture[var0.size()];
+   private static <V extends @Nullable Object> CompletableFuture<List<V>> fallibleSequence(final List<? extends CompletableFuture<? extends V>> futures, final Consumer<Throwable> failureHandler) {
+      ObjectArrayList<V> results = new ObjectArrayList();
+      results.size(futures.size());
+      CompletableFuture<?>[] decoratedFutures = new CompletableFuture[futures.size()];
 
-      for(int var4 = 0; var4 < var0.size(); ++var4) {
-         var3[var4] = ((CompletableFuture)var0.get(var4)).whenComplete((var3x, var4x) -> {
-            if (var4x != null) {
-               var1.accept(var4x);
+      for(int i = 0; i < futures.size(); ++i) {
+         decoratedFutures[i] = ((CompletableFuture)futures.get(i)).whenComplete((result, exception) -> {
+            if (exception != null) {
+               failureHandler.accept(exception);
             } else {
-               var2.set(var4, var3x);
+               results.set(i, result);
             }
 
          });
       }
 
-      return CompletableFuture.allOf(var3).thenApply((var1x) -> var2);
+      return CompletableFuture.allOf(decoratedFutures).thenApply((nothing) -> results);
    }
 
-   public static <T> Optional<T> ifElse(Optional<T> var0, Consumer<T> var1, Runnable var2) {
-      if (var0.isPresent()) {
-         var1.accept(var0.get());
+   public static <T> Optional<T> ifElse(final Optional<T> input, final Consumer<T> onTrue, final Runnable onFalse) {
+      if (input.isPresent()) {
+         onTrue.accept(input.get());
       } else {
-         var2.run();
+         onFalse.run();
       }
 
-      return var0;
+      return input;
    }
 
-   public static <T> Supplier<T> name(final Supplier<T> var0, Supplier<String> var1) {
+   public static <T> Supplier<T> name(final Supplier<T> task, final Supplier<String> nameGetter) {
       if (SharedConstants.DEBUG_NAMED_RUNNABLES) {
-         final String var2 = (String)var1.get();
+         final String name = (String)nameGetter.get();
          return new Supplier<T>() {
             public T get() {
-               return (T)var0.get();
+               return (T)task.get();
             }
 
             public String toString() {
-               return var2;
+               return name;
             }
          };
       } else {
-         return var0;
+         return task;
       }
    }
 
-   public static Runnable name(final Runnable var0, Supplier<String> var1) {
+   public static Runnable name(final Runnable task, final Supplier<String> nameGetter) {
       if (SharedConstants.DEBUG_NAMED_RUNNABLES) {
-         final String var2 = (String)var1.get();
+         final String name = (String)nameGetter.get();
          return new Runnable() {
             public void run() {
-               var0.run();
+               task.run();
             }
 
             public String toString() {
-               return var2;
+               return name;
             }
          };
       } else {
-         return var0;
+         return task;
       }
    }
 
-   public static void logAndPauseIfInIde(String var0) {
-      LOGGER.error(var0);
+   public static void logAndPauseIfInIde(final String message) {
+      LOGGER.error(message);
       if (SharedConstants.IS_RUNNING_IN_IDE) {
-         doPause(var0);
+         doPause(message);
       }
 
    }
 
-   public static void logAndPauseIfInIde(String var0, Throwable var1) {
-      LOGGER.error(var0, var1);
+   public static void logAndPauseIfInIde(final String message, final Throwable throwable) {
+      LOGGER.error(message, throwable);
       if (SharedConstants.IS_RUNNING_IN_IDE) {
-         doPause(var0);
+         doPause(message);
       }
 
    }
 
-   public static <T extends Throwable> T pauseInIde(T var0) {
+   public static <T extends Throwable> T pauseInIde(final T t) {
       if (SharedConstants.IS_RUNNING_IN_IDE) {
-         LOGGER.error("Trying to throw a fatal exception, pausing in IDE", var0);
-         doPause(var0.getMessage());
+         LOGGER.error("Trying to throw a fatal exception, pausing in IDE", t);
+         doPause(t.getMessage());
       }
 
-      return (T)var0;
+      return t;
    }
 
-   public static void setPause(Consumer<String> var0) {
-      thePauser = var0;
+   public static void setPause(final Consumer<String> pauseFunction) {
+      thePauser = pauseFunction;
    }
 
-   private static void doPause(String var0) {
-      Instant var1 = Instant.now();
+   private static void doPause(final String message) {
+      Instant preLog = Instant.now();
       LOGGER.warn("Did you remember to set a breakpoint here?");
-      boolean var2 = Duration.between(var1, Instant.now()).toMillis() > 500L;
-      if (!var2) {
-         thePauser.accept(var0);
+      boolean dontBotherWithPause = Duration.between(preLog, Instant.now()).toMillis() > 500L;
+      if (!dontBotherWithPause) {
+         thePauser.accept(message);
       }
 
    }
 
-   public static String describeError(Throwable var0) {
-      if (var0.getCause() != null) {
-         return describeError(var0.getCause());
+   public static String describeError(final Throwable err) {
+      if (err.getCause() != null) {
+         return describeError(err.getCause());
       } else {
-         return var0.getMessage() != null ? var0.getMessage() : var0.toString();
+         return err.getMessage() != null ? err.getMessage() : err.toString();
       }
    }
 
-   public static <T> T getRandom(T[] var0, RandomSource var1) {
-      return (T)var0[var1.nextInt(var0.length)];
+   public static <T> T getRandom(final T[] array, final RandomSource random) {
+      return (T)array[random.nextInt(array.length)];
    }
 
-   public static int getRandom(int[] var0, RandomSource var1) {
-      return var0[var1.nextInt(var0.length)];
+   public static int getRandom(final int[] array, final RandomSource random) {
+      return array[random.nextInt(array.length)];
    }
 
-   public static <T> T getRandom(List<T> var0, RandomSource var1) {
-      return (T)var0.get(var1.nextInt(var0.size()));
+   public static <T> T getRandom(final List<T> list, final RandomSource random) {
+      return (T)list.get(random.nextInt(list.size()));
    }
 
-   public static <T> Optional<T> getRandomSafe(List<T> var0, RandomSource var1) {
-      return var0.isEmpty() ? Optional.empty() : Optional.of(getRandom(var0, var1));
+   public static <T> Optional<T> getRandomSafe(final List<T> list, final RandomSource random) {
+      return list.isEmpty() ? Optional.empty() : Optional.of(getRandom(list, random));
    }
 
-   private static BooleanSupplier createRenamer(final Path var0, final Path var1) {
+   private static BooleanSupplier createRenamer(final Path from, final Path to, final CopyOption... options) {
       return new BooleanSupplier() {
          public boolean getAsBoolean() {
             try {
-               Files.move(var0, var1);
+               Files.move(from, to, options);
                return true;
-            } catch (IOException var2) {
-               Util.LOGGER.error("Failed to rename", var2);
+            } catch (IOException e) {
+               Util.LOGGER.error("Failed to rename", e);
                return false;
             }
          }
 
          public String toString() {
-            String var10000 = String.valueOf(var0);
-            return "rename " + var10000 + " to " + String.valueOf(var1);
+            String var10000 = String.valueOf(from);
+            return "rename " + var10000 + " to " + String.valueOf(to);
          }
       };
    }
 
-   private static BooleanSupplier createDeleter(final Path var0) {
+   private static BooleanSupplier createDeleter(final Path target) {
       return new BooleanSupplier() {
          public boolean getAsBoolean() {
             try {
-               Files.deleteIfExists(var0);
+               Files.deleteIfExists(target);
                return true;
-            } catch (IOException var2) {
-               Util.LOGGER.warn("Failed to delete", var2);
+            } catch (IOException e) {
+               Util.LOGGER.warn("Failed to delete", e);
                return false;
             }
          }
 
          public String toString() {
-            return "delete old " + String.valueOf(var0);
+            return "delete old " + String.valueOf(target);
          }
       };
    }
 
-   private static BooleanSupplier createFileDeletedCheck(final Path var0) {
+   private static BooleanSupplier createFileDeletedCheck(final Path target) {
       return new BooleanSupplier() {
          public boolean getAsBoolean() {
-            return !Files.exists(var0, new LinkOption[0]);
+            return !Files.exists(target, new LinkOption[0]);
          }
 
          public String toString() {
-            return "verify that " + String.valueOf(var0) + " is deleted";
+            return "verify that " + String.valueOf(target) + " is deleted";
          }
       };
    }
 
-   private static BooleanSupplier createFileCreatedCheck(final Path var0) {
+   private static BooleanSupplier createFileCreatedCheck(final Path target) {
       return new BooleanSupplier() {
          public boolean getAsBoolean() {
-            return Files.isRegularFile(var0, new LinkOption[0]);
+            return Files.isRegularFile(target, new LinkOption[0]);
          }
 
          public String toString() {
-            return "verify that " + String.valueOf(var0) + " is present";
+            return "verify that " + String.valueOf(target) + " is present";
          }
       };
    }
 
-   private static boolean executeInSequence(BooleanSupplier... var0) {
-      for(BooleanSupplier var4 : var0) {
-         if (!var4.getAsBoolean()) {
-            LOGGER.warn("Failed to execute {}", var4);
+   private static boolean executeInSequence(final BooleanSupplier... operations) {
+      for(BooleanSupplier operation : operations) {
+         if (!operation.getAsBoolean()) {
+            LOGGER.warn("Failed to execute {}", operation);
             return false;
          }
       }
@@ -814,91 +828,95 @@ public class Util {
       return true;
    }
 
-   private static boolean runWithRetries(int var0, String var1, BooleanSupplier... var2) {
-      for(int var3 = 0; var3 < var0; ++var3) {
-         if (executeInSequence(var2)) {
+   private static boolean runWithRetries(final int numberOfRetries, final String description, final BooleanSupplier... operations) {
+      for(int retry = 0; retry < numberOfRetries; ++retry) {
+         if (executeInSequence(operations)) {
             return true;
          }
 
-         LOGGER.error("Failed to {}, retrying {}/{}", new Object[]{var1, var3, var0});
+         LOGGER.error("Failed to {}, retrying {}/{}", new Object[]{description, retry, numberOfRetries});
       }
 
-      LOGGER.error("Failed to {}, aborting, progress might be lost", var1);
+      LOGGER.error("Failed to {}, aborting, progress might be lost", description);
       return false;
    }
 
-   public static void safeReplaceFile(Path var0, Path var1, Path var2) {
-      safeReplaceOrMoveFile(var0, var1, var2, false);
+   public static boolean safeMoveFile(final Path fromPath, final Path toPath, final CopyOption... options) {
+      return runWithRetries(10, "move from  " + String.valueOf(fromPath) + " to " + String.valueOf(toPath), createRenamer(fromPath, toPath, options), createFileCreatedCheck(toPath));
    }
 
-   public static boolean safeReplaceOrMoveFile(Path var0, Path var1, Path var2, boolean var3) {
-      if (Files.exists(var0, new LinkOption[0]) && !runWithRetries(10, "create backup " + String.valueOf(var2), createDeleter(var2), createRenamer(var0, var2), createFileCreatedCheck(var2))) {
+   public static void safeReplaceFile(final Path targetPath, final Path newPath, final Path backupPath) {
+      safeReplaceOrMoveFile(targetPath, newPath, backupPath, false);
+   }
+
+   public static boolean safeReplaceOrMoveFile(final Path targetPath, final Path newPath, final Path backupPath, final boolean noRollback) {
+      if (Files.exists(targetPath, new LinkOption[0]) && !runWithRetries(10, "create backup " + String.valueOf(backupPath), createDeleter(backupPath), createRenamer(targetPath, backupPath), createFileCreatedCheck(backupPath))) {
          return false;
-      } else if (!runWithRetries(10, "remove old " + String.valueOf(var0), createDeleter(var0), createFileDeletedCheck(var0))) {
+      } else if (!runWithRetries(10, "remove old " + String.valueOf(targetPath), createDeleter(targetPath), createFileDeletedCheck(targetPath))) {
          return false;
-      } else if (!runWithRetries(10, "replace " + String.valueOf(var0) + " with " + String.valueOf(var1), createRenamer(var1, var0), createFileCreatedCheck(var0)) && !var3) {
-         runWithRetries(10, "restore " + String.valueOf(var0) + " from " + String.valueOf(var2), createRenamer(var2, var0), createFileCreatedCheck(var0));
+      } else if (!runWithRetries(10, "replace " + String.valueOf(targetPath) + " with " + String.valueOf(newPath), createRenamer(newPath, targetPath), createFileCreatedCheck(targetPath)) && !noRollback) {
+         runWithRetries(10, "restore " + String.valueOf(targetPath) + " from " + String.valueOf(backupPath), createRenamer(backupPath, targetPath), createFileCreatedCheck(targetPath));
          return false;
       } else {
          return true;
       }
    }
 
-   public static int offsetByCodepoints(String var0, int var1, int var2) {
-      int var3 = var0.length();
-      if (var2 >= 0) {
-         for(int var4 = 0; var1 < var3 && var4 < var2; ++var4) {
-            if (Character.isHighSurrogate(var0.charAt(var1++)) && var1 < var3 && Character.isLowSurrogate(var0.charAt(var1))) {
-               ++var1;
+   public static int offsetByCodepoints(final String input, int pos, final int offset) {
+      int length = input.length();
+      if (offset >= 0) {
+         for(int i = 0; pos < length && i < offset; ++i) {
+            if (Character.isHighSurrogate(input.charAt(pos++)) && pos < length && Character.isLowSurrogate(input.charAt(pos))) {
+               ++pos;
             }
          }
       } else {
-         for(int var5 = var2; var1 > 0 && var5 < 0; ++var5) {
-            --var1;
-            if (Character.isLowSurrogate(var0.charAt(var1)) && var1 > 0 && Character.isHighSurrogate(var0.charAt(var1 - 1))) {
-               --var1;
+         for(int i = offset; pos > 0 && i < 0; ++i) {
+            --pos;
+            if (Character.isLowSurrogate(input.charAt(pos)) && pos > 0 && Character.isHighSurrogate(input.charAt(pos - 1))) {
+               --pos;
             }
          }
       }
 
-      return var1;
+      return pos;
    }
 
-   public static Consumer<String> prefix(String var0, Consumer<String> var1) {
-      return (var2) -> var1.accept(var0 + var2);
+   public static Consumer<String> prefix(final String prefix, final Consumer<String> consumer) {
+      return (s) -> consumer.accept(prefix + s);
    }
 
-   public static DataResult<int[]> fixedSize(IntStream var0, int var1) {
-      int[] var2 = var0.limit((long)(var1 + 1)).toArray();
-      if (var2.length != var1) {
-         Supplier var3 = () -> "Input is not a list of " + var1 + " ints";
-         return var2.length >= var1 ? DataResult.error(var3, Arrays.copyOf(var2, var1)) : DataResult.error(var3);
+   public static DataResult<int[]> fixedSize(final IntStream stream, final int size) {
+      int[] ints = stream.limit((long)(size + 1)).toArray();
+      if (ints.length != size) {
+         Supplier<String> message = () -> "Input is not a list of " + size + " ints";
+         return ints.length >= size ? DataResult.error(message, Arrays.copyOf(ints, size)) : DataResult.error(message);
       } else {
-         return DataResult.success(var2);
+         return DataResult.success(ints);
       }
    }
 
-   public static DataResult<long[]> fixedSize(LongStream var0, int var1) {
-      long[] var2 = var0.limit((long)(var1 + 1)).toArray();
-      if (var2.length != var1) {
-         Supplier var3 = () -> "Input is not a list of " + var1 + " longs";
-         return var2.length >= var1 ? DataResult.error(var3, Arrays.copyOf(var2, var1)) : DataResult.error(var3);
+   public static DataResult<long[]> fixedSize(final LongStream stream, final int size) {
+      long[] longs = stream.limit((long)(size + 1)).toArray();
+      if (longs.length != size) {
+         Supplier<String> message = () -> "Input is not a list of " + size + " longs";
+         return longs.length >= size ? DataResult.error(message, Arrays.copyOf(longs, size)) : DataResult.error(message);
       } else {
-         return DataResult.success(var2);
+         return DataResult.success(longs);
       }
    }
 
-   public static <T> DataResult<List<T>> fixedSize(List<T> var0, int var1) {
-      if (var0.size() != var1) {
-         Supplier var2 = () -> "Input is not a list of " + var1 + " elements";
-         return var0.size() >= var1 ? DataResult.error(var2, var0.subList(0, var1)) : DataResult.error(var2);
+   public static <T> DataResult<List<T>> fixedSize(final List<T> list, final int size) {
+      if (list.size() != size) {
+         Supplier<String> message = () -> "Input is not a list of " + size + " elements";
+         return list.size() >= size ? DataResult.error(message, list.subList(0, size)) : DataResult.error(message);
       } else {
-         return DataResult.success(var0);
+         return DataResult.success(list);
       }
    }
 
    public static void startTimerHackThread() {
-      Thread var0 = new Thread("Timer hack thread") {
+      Thread timerThread = new Thread("Timer hack thread") {
          public void run() {
             while(true) {
                try {
@@ -910,109 +928,109 @@ public class Util {
             }
          }
       };
-      var0.setDaemon(true);
-      var0.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
-      var0.start();
+      timerThread.setDaemon(true);
+      timerThread.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
+      timerThread.start();
    }
 
-   public static void copyBetweenDirs(Path var0, Path var1, Path var2) throws IOException {
-      Path var3 = var0.relativize(var2);
-      Path var4 = var1.resolve(var3);
-      Files.copy(var2, var4);
+   public static void copyBetweenDirs(final Path sourceDir, final Path targetDir, final Path sourcePath) throws IOException {
+      Path relative = sourceDir.relativize(sourcePath);
+      Path target = targetDir.resolve(relative);
+      Files.copy(sourcePath, target);
    }
 
-   public static String sanitizeName(String var0, CharPredicate var1) {
-      return (String)var0.toLowerCase(Locale.ROOT).chars().mapToObj((var1x) -> var1.test((char)var1x) ? Character.toString((char)var1x) : "_").collect(Collectors.joining());
+   public static String sanitizeName(final String value, final CharPredicate isAllowedChar) {
+      return (String)value.toLowerCase(Locale.ROOT).chars().mapToObj((c) -> isAllowedChar.test((char)c) ? Character.toString((char)c) : "_").collect(Collectors.joining());
    }
 
-   public static <K, V> SingleKeyCache<K, V> singleKeyCache(Function<K, V> var0) {
-      return new SingleKeyCache<K, V>(var0);
+   public static <K, V> SingleKeyCache<K, V> singleKeyCache(final Function<K, V> computeValueFunction) {
+      return new SingleKeyCache<K, V>(computeValueFunction);
    }
 
-   public static <T, R> Function<T, R> memoize(final Function<T, R> var0) {
+   public static <T, R> Function<T, R> memoize(final Function<T, R> function) {
       return new Function<T, R>() {
          private final Map<T, R> cache = new ConcurrentHashMap();
 
-         public R apply(T var1) {
-            return (R)this.cache.computeIfAbsent(var1, var0);
+         public R apply(final T arg) {
+            return (R)this.cache.computeIfAbsent(arg, function);
          }
 
          public String toString() {
-            String var10000 = String.valueOf(var0);
+            String var10000 = String.valueOf(function);
             return "memoize/1[function=" + var10000 + ", size=" + this.cache.size() + "]";
          }
       };
    }
 
-   public static <T, U, R> BiFunction<T, U, R> memoize(final BiFunction<T, U, R> var0) {
+   public static <T, U, R> BiFunction<T, U, R> memoize(final BiFunction<T, U, R> function) {
       return new BiFunction<T, U, R>() {
          private final Map<Pair<T, U>, R> cache = new ConcurrentHashMap();
 
-         public R apply(T var1, U var2) {
-            return (R)this.cache.computeIfAbsent(Pair.of(var1, var2), (var1x) -> var0.apply(var1x.getFirst(), var1x.getSecond()));
+         public R apply(final T a, final U b) {
+            return (R)this.cache.computeIfAbsent(Pair.of(a, b), (args) -> function.apply(args.getFirst(), args.getSecond()));
          }
 
          public String toString() {
-            String var10000 = String.valueOf(var0);
+            String var10000 = String.valueOf(function);
             return "memoize/2[function=" + var10000 + ", size=" + this.cache.size() + "]";
          }
       };
    }
 
-   public static <T> List<T> toShuffledList(Stream<T> var0, RandomSource var1) {
-      ObjectArrayList var2 = (ObjectArrayList)var0.collect(ObjectArrayList.toList());
-      shuffle(var2, var1);
-      return var2;
+   public static <T> List<T> toShuffledList(final Stream<T> stream, final RandomSource random) {
+      ObjectArrayList<T> result = (ObjectArrayList)stream.collect(ObjectArrayList.toList());
+      shuffle(result, random);
+      return result;
    }
 
-   public static IntArrayList toShuffledList(IntStream var0, RandomSource var1) {
-      IntArrayList var2 = IntArrayList.wrap(var0.toArray());
-      int var3 = var2.size();
+   public static IntArrayList toShuffledList(final IntStream stream, final RandomSource random) {
+      IntArrayList result = IntArrayList.wrap(stream.toArray());
+      int size = result.size();
 
-      for(int var4 = var3; var4 > 1; --var4) {
-         int var5 = var1.nextInt(var4);
-         var2.set(var4 - 1, var2.set(var5, var2.getInt(var4 - 1)));
+      for(int i = size; i > 1; --i) {
+         int swapTo = random.nextInt(i);
+         result.set(i - 1, result.set(swapTo, result.getInt(i - 1)));
       }
 
-      return var2;
+      return result;
    }
 
-   public static <T> List<T> shuffledCopy(T[] var0, RandomSource var1) {
-      ObjectArrayList var2 = new ObjectArrayList(var0);
-      shuffle(var2, var1);
-      return var2;
+   public static <T> List<T> shuffledCopy(final T[] array, final RandomSource random) {
+      ObjectArrayList<T> copy = new ObjectArrayList(array);
+      shuffle(copy, random);
+      return copy;
    }
 
-   public static <T> List<T> shuffledCopy(ObjectArrayList<T> var0, RandomSource var1) {
-      ObjectArrayList var2 = new ObjectArrayList(var0);
-      shuffle(var2, var1);
-      return var2;
+   public static <T> List<T> shuffledCopy(final ObjectArrayList<T> list, final RandomSource random) {
+      ObjectArrayList<T> copy = new ObjectArrayList(list);
+      shuffle(copy, random);
+      return copy;
    }
 
-   public static <T> void shuffle(List<T> var0, RandomSource var1) {
-      int var2 = var0.size();
+   public static <T> void shuffle(final List<T> list, final RandomSource random) {
+      int size = list.size();
 
-      for(int var3 = var2; var3 > 1; --var3) {
-         int var4 = var1.nextInt(var3);
-         var0.set(var3 - 1, var0.set(var4, var0.get(var3 - 1)));
+      for(int i = size; i > 1; --i) {
+         int swapTo = random.nextInt(i);
+         list.set(i - 1, list.set(swapTo, list.get(i - 1)));
       }
 
    }
 
-   public static <T> CompletableFuture<T> blockUntilDone(Function<Executor, CompletableFuture<T>> var0) {
-      return (CompletableFuture)blockUntilDone(var0, CompletableFuture::isDone);
+   public static <T> CompletableFuture<T> blockUntilDone(final Function<Executor, CompletableFuture<T>> task) {
+      return (CompletableFuture)blockUntilDone(task, CompletableFuture::isDone);
    }
 
-   public static <T> T blockUntilDone(Function<Executor, T> var0, Predicate<T> var1) {
-      LinkedBlockingQueue var2 = new LinkedBlockingQueue();
-      Objects.requireNonNull(var2);
-      Object var3 = var0.apply(var2::add);
+   public static <T> T blockUntilDone(final Function<Executor, T> task, final Predicate<T> completionCheck) {
+      BlockingQueue<Runnable> tasks = new LinkedBlockingQueue();
+      Objects.requireNonNull(tasks);
+      T result = (T)task.apply(tasks::add);
 
-      while(!var1.test(var3)) {
+      while(!completionCheck.test(result)) {
          try {
-            Runnable var4 = (Runnable)var2.poll(100L, TimeUnit.MILLISECONDS);
-            if (var4 != null) {
-               var4.run();
+            Runnable runnable = (Runnable)tasks.poll(100L, TimeUnit.MILLISECONDS);
+            if (runnable != null) {
+               runnable.run();
             }
          } catch (InterruptedException var5) {
             LOGGER.warn("Interrupted wait");
@@ -1020,82 +1038,86 @@ public class Util {
          }
       }
 
-      int var6 = var2.size();
-      if (var6 > 0) {
-         LOGGER.warn("Tasks left in queue: {}", var6);
+      int remainingSize = tasks.size();
+      if (remainingSize > 0) {
+         LOGGER.warn("Tasks left in queue: {}", remainingSize);
       }
 
-      return (T)var3;
+      return result;
    }
 
-   public static <T> ToIntFunction<T> createIndexLookup(List<T> var0) {
-      int var1 = var0.size();
-      if (var1 < 8) {
-         Objects.requireNonNull(var0);
-         return var0::indexOf;
+   public static <T> ToIntFunction<T> createIndexLookup(final List<T> values) {
+      int size = values.size();
+      if (size < 8) {
+         Objects.requireNonNull(values);
+         return values::indexOf;
       } else {
-         Object2IntOpenHashMap var2 = new Object2IntOpenHashMap(var1);
-         var2.defaultReturnValue(-1);
+         Object2IntMap<T> lookup = new Object2IntOpenHashMap(size);
+         lookup.defaultReturnValue(-1);
 
-         for(int var3 = 0; var3 < var1; ++var3) {
-            var2.put(var0.get(var3), var3);
+         for(int i = 0; i < size; ++i) {
+            lookup.put(values.get(i), i);
          }
 
-         return var2;
+         return lookup;
       }
    }
 
-   public static <T> ToIntFunction<T> createIndexIdentityLookup(List<T> var0) {
-      int var1 = var0.size();
-      if (var1 < 8) {
-         ReferenceImmutableList var4 = new ReferenceImmutableList(var0);
-         Objects.requireNonNull(var4);
-         return var4::indexOf;
+   public static <T> ToIntFunction<T> createIndexIdentityLookup(final List<T> values) {
+      int size = values.size();
+      if (size < 8) {
+         ReferenceList<T> referenceLookup = new ReferenceImmutableList(values);
+         Objects.requireNonNull(referenceLookup);
+         return referenceLookup::indexOf;
       } else {
-         Reference2IntOpenHashMap var2 = new Reference2IntOpenHashMap(var1);
-         var2.defaultReturnValue(-1);
+         Reference2IntMap<T> lookup = new Reference2IntOpenHashMap(size);
+         lookup.defaultReturnValue(-1);
 
-         for(int var3 = 0; var3 < var1; ++var3) {
-            var2.put(var0.get(var3), var3);
+         for(int i = 0; i < size; ++i) {
+            lookup.put(values.get(i), i);
          }
 
-         return var2;
+         return lookup;
       }
    }
 
-   public static <A, B> Typed<B> writeAndReadTypedOrThrow(Typed<A> var0, Type<B> var1, UnaryOperator<Dynamic<?>> var2) {
-      Dynamic var3 = (Dynamic)var0.write().getOrThrow();
-      return readTypedOrThrow(var1, (Dynamic)var2.apply(var3), true);
+   public static <A, B> Typed<B> writeAndReadTypedOrThrow(final Typed<A> typed, final Type<B> newType, final UnaryOperator<Dynamic<?>> function) {
+      Dynamic<?> dynamic = (Dynamic)typed.write().getOrThrow();
+      return readTypedOrThrow(newType, (Dynamic)function.apply(dynamic), true);
    }
 
-   public static <T> Typed<T> readTypedOrThrow(Type<T> var0, Dynamic<?> var1) {
-      return readTypedOrThrow(var0, var1, false);
+   public static <T> Typed<T> readTypedOrThrow(final Type<T> type, final Dynamic<?> dynamic) {
+      return readTypedOrThrow(type, dynamic, false);
    }
 
-   public static <T> Typed<T> readTypedOrThrow(Type<T> var0, Dynamic<?> var1, boolean var2) {
-      DataResult var3 = var0.readTyped(var1).map(Pair::getFirst);
+   public static <T> Typed<T> readTypedOrThrow(final Type<T> type, final Dynamic<?> dynamic, final boolean acceptPartial) {
+      DataResult<Typed<T>> result = type.readTyped(dynamic).map(Pair::getFirst);
 
       try {
-         return var2 ? (Typed)var3.getPartialOrThrow(IllegalStateException::new) : (Typed)var3.getOrThrow(IllegalStateException::new);
-      } catch (IllegalStateException var7) {
-         CrashReport var5 = CrashReport.forThrowable(var7, "Reading type");
-         CrashReportCategory var6 = var5.addCategory("Info");
-         var6.setDetail("Data", var1);
-         var6.setDetail("Type", var0);
-         throw new ReportedException(var5);
+         return acceptPartial ? (Typed)result.getPartialOrThrow(IllegalStateException::new) : (Typed)result.getOrThrow(IllegalStateException::new);
+      } catch (IllegalStateException e) {
+         CrashReport report = CrashReport.forThrowable(e, "Reading type");
+         CrashReportCategory category = report.addCategory("Info");
+         category.setDetail("Data", dynamic);
+         category.setDetail("Type", type);
+         throw new ReportedException(report);
       }
    }
 
-   public static <T> List<T> copyAndAdd(List<T> var0, T var1) {
-      return ImmutableList.builderWithExpectedSize(var0.size() + 1).addAll(var0).add(var1).build();
+   public static <T> List<T> copyAndAdd(final List<T> list, final T element) {
+      return ImmutableList.builderWithExpectedSize(list.size() + 1).addAll(list).add(element).build();
    }
 
-   public static <T> List<T> copyAndAdd(T var0, List<T> var1) {
-      return ImmutableList.builderWithExpectedSize(var1.size() + 1).add(var0).addAll(var1).build();
+   public static <T> List<T> copyAndAdd(final List<T> list, final T... elements) {
+      return ImmutableList.builderWithExpectedSize(list.size() + elements.length).addAll(list).add(elements).build();
    }
 
-   public static <K, V> Map<K, V> copyAndPut(Map<K, V> var0, K var1, V var2) {
-      return ImmutableMap.builderWithExpectedSize(var0.size() + 1).putAll(var0).put(var1, var2).buildKeepingLast();
+   public static <T> List<T> copyAndAdd(final T element, final List<T> list) {
+      return ImmutableList.builderWithExpectedSize(list.size() + 1).add(element).addAll(list).build();
+   }
+
+   public static <K, V> Map<K, V> copyAndPut(final Map<K, V> map, final K key, final V value) {
+      return ImmutableMap.builderWithExpectedSize(map.size() + 1).putAll(map).put(key, value).buildKeepingLast();
    }
 
    static {
@@ -1108,8 +1130,8 @@ public class Util {
          }
       };
       NIL_UUID = new UUID(0L, 0L);
-      ZIP_FILE_SYSTEM_PROVIDER = (FileSystemProvider)FileSystemProvider.installedProviders().stream().filter((var0) -> var0.getScheme().equalsIgnoreCase("jar")).findFirst().orElseThrow(() -> new IllegalStateException("No jar file system provider found"));
-      thePauser = (var0) -> {
+      ZIP_FILE_SYSTEM_PROVIDER = (FileSystemProvider)FileSystemProvider.installedProviders().stream().filter((p) -> p.getScheme().equalsIgnoreCase("jar")).findFirst().orElseThrow(() -> new IllegalStateException("No jar file system provider found"));
+      thePauser = (msg) -> {
       };
    }
 
@@ -1117,57 +1139,57 @@ public class Util {
       LINUX("linux"),
       SOLARIS("solaris"),
       WINDOWS("windows") {
-         protected String[] getOpenUriArguments(URI var1) {
-            return new String[]{"rundll32", "url.dll,FileProtocolHandler", var1.toString()};
+         protected String[] getOpenUriArguments(final URI uri) {
+            return new String[]{"rundll32", "url.dll,FileProtocolHandler", uri.toString()};
          }
       },
       OSX("mac") {
-         protected String[] getOpenUriArguments(URI var1) {
-            return new String[]{"open", var1.toString()};
+         protected String[] getOpenUriArguments(final URI uri) {
+            return new String[]{"open", uri.toString()};
          }
       },
       UNKNOWN("unknown");
 
       private final String telemetryName;
 
-      OS(final String var3) {
-         this.telemetryName = var3;
+      private OS(final String telemetryName) {
+         this.telemetryName = telemetryName;
       }
 
-      public void openUri(URI var1) {
+      public void openUri(final URI uri) {
          try {
-            Process var2 = Runtime.getRuntime().exec(this.getOpenUriArguments(var1));
-            var2.getInputStream().close();
-            var2.getErrorStream().close();
-            var2.getOutputStream().close();
-         } catch (IOException var3) {
-            Util.LOGGER.error("Couldn't open location '{}'", var1, var3);
+            Process process = Runtime.getRuntime().exec(this.getOpenUriArguments(uri));
+            process.getInputStream().close();
+            process.getErrorStream().close();
+            process.getOutputStream().close();
+         } catch (IOException e) {
+            Util.LOGGER.error("Couldn't open location '{}'", uri, e);
          }
 
       }
 
-      public void openFile(File var1) {
-         this.openUri(var1.toURI());
+      public void openFile(final File file) {
+         this.openUri(file.toURI());
       }
 
-      public void openPath(Path var1) {
-         this.openUri(var1.toUri());
+      public void openPath(final Path path) {
+         this.openUri(path.toUri());
       }
 
-      protected String[] getOpenUriArguments(URI var1) {
-         String var2 = var1.toString();
-         if ("file".equals(var1.getScheme())) {
-            var2 = var2.replace("file:", "file://");
+      protected String[] getOpenUriArguments(final URI uri) {
+         String string = uri.toString();
+         if ("file".equals(uri.getScheme())) {
+            string = string.replace("file:", "file://");
          }
 
-         return new String[]{"xdg-open", var2};
+         return new String[]{"xdg-open", string};
       }
 
-      public void openUri(String var1) {
+      public void openUri(final String uri) {
          try {
-            this.openUri(new URI(var1));
-         } catch (IllegalArgumentException | URISyntaxException var3) {
-            Util.LOGGER.error("Couldn't open uri '{}'", var1, var3);
+            this.openUri(new URI(uri));
+         } catch (IllegalArgumentException | URISyntaxException e) {
+            Util.LOGGER.error("Couldn't open uri '{}'", uri, e);
          }
 
       }

@@ -15,27 +15,27 @@ public final class PlayerMap {
       return this.players.keySet();
    }
 
-   public void addPlayer(ServerPlayer var1, boolean var2) {
-      this.players.put(var1, var2);
+   public void addPlayer(final ServerPlayer player, final boolean ignored) {
+      this.players.put(player, ignored);
    }
 
-   public void removePlayer(ServerPlayer var1) {
-      this.players.removeBoolean(var1);
+   public void removePlayer(final ServerPlayer player) {
+      this.players.removeBoolean(player);
    }
 
-   public void ignorePlayer(ServerPlayer var1) {
-      this.players.replace(var1, true);
+   public void ignorePlayer(final ServerPlayer player) {
+      this.players.replace(player, true);
    }
 
-   public void unIgnorePlayer(ServerPlayer var1) {
-      this.players.replace(var1, false);
+   public void unIgnorePlayer(final ServerPlayer player) {
+      this.players.replace(player, false);
    }
 
-   public boolean ignoredOrUnknown(ServerPlayer var1) {
-      return this.players.getOrDefault(var1, true);
+   public boolean ignoredOrUnknown(final ServerPlayer player) {
+      return this.players.getOrDefault(player, true);
    }
 
-   public boolean ignored(ServerPlayer var1) {
-      return this.players.getBoolean(var1);
+   public boolean ignored(final ServerPlayer player) {
+      return this.players.getBoolean(player);
    }
 }

@@ -14,8 +14,8 @@ public class ElderGuardianParticle extends Particle {
    protected final GuardianParticleModel model;
    protected final RenderType renderType;
 
-   ElderGuardianParticle(ClientLevel var1, double var2, double var4, double var6) {
-      super(var1, var2, var4, var6);
+   private ElderGuardianParticle(final ClientLevel level, final double x, final double y, final double z) {
+      super(level, x, y, z);
       this.renderType = RenderTypes.entityTranslucent(ElderGuardianRenderer.GUARDIAN_ELDER_LOCATION);
       this.model = new GuardianParticleModel(Minecraft.getInstance().getEntityModels().bakeLayer(ModelLayers.ELDER_GUARDIAN));
       this.gravity = 0.0F;
@@ -31,8 +31,8 @@ public class ElderGuardianParticle extends Particle {
          super();
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         return new ElderGuardianParticle(var2, var3, var5, var7);
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         return new ElderGuardianParticle(level, x, y, z);
       }
    }
 }

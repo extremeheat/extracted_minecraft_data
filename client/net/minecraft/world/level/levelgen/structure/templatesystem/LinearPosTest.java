@@ -8,28 +8,28 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
 public class LinearPosTest extends PosRuleTest {
-   public static final MapCodec<LinearPosTest> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.FLOAT.fieldOf("min_chance").orElse(0.0F).forGetter((var0x) -> var0x.minChance), Codec.FLOAT.fieldOf("max_chance").orElse(0.0F).forGetter((var0x) -> var0x.maxChance), Codec.INT.fieldOf("min_dist").orElse(0).forGetter((var0x) -> var0x.minDist), Codec.INT.fieldOf("max_dist").orElse(0).forGetter((var0x) -> var0x.maxDist)).apply(var0, LinearPosTest::new));
+   public static final MapCodec<LinearPosTest> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.FLOAT.fieldOf("min_chance").orElse(0.0F).forGetter((p) -> p.minChance), Codec.FLOAT.fieldOf("max_chance").orElse(0.0F).forGetter((p) -> p.maxChance), Codec.INT.fieldOf("min_dist").orElse(0).forGetter((p) -> p.minDist), Codec.INT.fieldOf("max_dist").orElse(0).forGetter((p) -> p.maxDist)).apply(i, LinearPosTest::new));
    private final float minChance;
    private final float maxChance;
    private final int minDist;
    private final int maxDist;
 
-   public LinearPosTest(float var1, float var2, int var3, int var4) {
+   public LinearPosTest(final float minChance, final float maxChance, final int minDist, final int maxDist) {
       super();
-      if (var3 >= var4) {
-         throw new IllegalArgumentException("Invalid range: [" + var3 + "," + var4 + "]");
+      if (minDist >= maxDist) {
+         throw new IllegalArgumentException("Invalid range: [" + minDist + "," + maxDist + "]");
       } else {
-         this.minChance = var1;
-         this.maxChance = var2;
-         this.minDist = var3;
-         this.maxDist = var4;
+         this.minChance = minChance;
+         this.maxChance = maxChance;
+         this.minDist = minDist;
+         this.maxDist = maxDist;
       }
    }
 
-   public boolean test(BlockPos var1, BlockPos var2, BlockPos var3, RandomSource var4) {
-      int var5 = var2.distManhattan(var3);
-      float var6 = var4.nextFloat();
-      return var6 <= Mth.clampedLerp(Mth.inverseLerp((float)var5, (float)this.minDist, (float)this.maxDist), this.minChance, this.maxChance);
+   public boolean test(final BlockPos inTemplatePos, final BlockPos worldPos, final BlockPos worldReference, final RandomSource random) {
+      int dist = worldPos.distManhattan(worldReference);
+      float rnd = random.nextFloat();
+      return rnd <= Mth.clampedLerp(Mth.inverseLerp((float)dist, (float)this.minDist, (float)this.maxDist), this.minChance, this.maxChance);
    }
 
    protected PosRuleTestType<?> getType() {

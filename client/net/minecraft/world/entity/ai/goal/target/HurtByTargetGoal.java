@@ -23,35 +23,35 @@ public class HurtByTargetGoal extends TargetGoal {
    private final Class<?>[] toIgnoreDamage;
    private Class<?> @Nullable [] toIgnoreAlert;
 
-   public HurtByTargetGoal(PathfinderMob var1, Class<?>... var2) {
-      super(var1, true);
-      this.toIgnoreDamage = var2;
+   public HurtByTargetGoal(final PathfinderMob mob, final Class<?>... ignoreDamageFromTheseTypes) {
+      super(mob, true);
+      this.toIgnoreDamage = ignoreDamageFromTheseTypes;
       this.setFlags(EnumSet.of(Goal.Flag.TARGET));
    }
 
    public boolean canUse() {
-      int var1 = this.mob.getLastHurtByMobTimestamp();
-      LivingEntity var2 = this.mob.getLastHurtByMob();
-      if (var1 != this.timestamp && var2 != null) {
-         if (var2.getType() == EntityType.PLAYER && (Boolean)getServerLevel(this.mob).getGameRules().get(GameRules.UNIVERSAL_ANGER)) {
+      int timestamp = this.mob.getLastHurtByMobTimestamp();
+      LivingEntity lastHurtByMob = this.mob.getLastHurtByMob();
+      if (timestamp != this.timestamp && lastHurtByMob != null) {
+         if (lastHurtByMob.is(EntityType.PLAYER) && (Boolean)getServerLevel(this.mob).getGameRules().get(GameRules.UNIVERSAL_ANGER)) {
             return false;
          } else {
-            for(Class var6 : this.toIgnoreDamage) {
-               if (var6.isAssignableFrom(var2.getClass())) {
+            for(Class<?> ignoreClass : this.toIgnoreDamage) {
+               if (ignoreClass.isAssignableFrom(lastHurtByMob.getClass())) {
                   return false;
                }
             }
 
-            return this.canAttack(var2, HURT_BY_TARGETING);
+            return this.canAttack(lastHurtByMob, HURT_BY_TARGETING);
          }
       } else {
          return false;
       }
    }
 
-   public HurtByTargetGoal setAlertOthers(Class<?>... var1) {
+   public HurtByTargetGoal setAlertOthers(final Class<?>... exceptTheseTypes) {
       this.alertSameType = true;
-      this.toIgnoreAlert = var1;
+      this.toIgnoreAlert = exceptTheseTypes;
       return this;
    }
 
@@ -68,44 +68,44 @@ public class HurtByTargetGoal extends TargetGoal {
    }
 
    protected void alertOthers() {
-      double var1 = this.getFollowDistance();
-      AABB var3 = AABB.unitCubeFromLowerCorner(this.mob.position()).inflate(var1, 10.0, var1);
-      List var4 = this.mob.level().getEntitiesOfClass(this.mob.getClass(), var3, EntitySelector.NO_SPECTATORS);
-      Iterator var5 = var4.iterator();
+      double within = this.getFollowDistance();
+      AABB searchAabb = AABB.unitCubeFromLowerCorner(this.mob.position()).inflate(within, 10.0, within);
+      List<? extends Mob> nearby = this.mob.level().getEntitiesOfClass(this.mob.getClass(), searchAabb, EntitySelector.NO_SPECTATORS);
+      Iterator var5 = nearby.iterator();
 
       while(true) {
-         Mob var6;
+         Mob other;
          while(true) {
             if (!var5.hasNext()) {
                return;
             }
 
-            var6 = (Mob)var5.next();
-            if (this.mob != var6 && var6.getTarget() == null && (!(this.mob instanceof TamableAnimal) || ((TamableAnimal)this.mob).getOwner() == ((TamableAnimal)var6).getOwner()) && !var6.isAlliedTo(this.mob.getLastHurtByMob())) {
+            other = (Mob)var5.next();
+            if (this.mob != other && other.getTarget() == null && (!(this.mob instanceof TamableAnimal) || ((TamableAnimal)this.mob).getOwner() == ((TamableAnimal)other).getOwner()) && !other.isAlliedTo(this.mob.getLastHurtByMob())) {
                if (this.toIgnoreAlert == null) {
                   break;
                }
 
-               boolean var7 = false;
+               boolean ignore = false;
 
-               for(Class var11 : this.toIgnoreAlert) {
-                  if (var6.getClass() == var11) {
-                     var7 = true;
+               for(Class<?> ignoreClass : this.toIgnoreAlert) {
+                  if (other.getClass() == ignoreClass) {
+                     ignore = true;
                      break;
                   }
                }
 
-               if (!var7) {
+               if (!ignore) {
                   break;
                }
             }
          }
 
-         this.alertOther(var6, this.mob.getLastHurtByMob());
+         this.alertOther(other, this.mob.getLastHurtByMob());
       }
    }
 
-   protected void alertOther(Mob var1, LivingEntity var2) {
-      var1.setTarget(var2);
+   protected void alertOther(final Mob other, final LivingEntity hurtByMob) {
+      other.setTarget(hurtByMob);
    }
 }

@@ -26,21 +26,21 @@ public class GlowSquid extends Squid {
    private static final EntityDataAccessor<Integer> DATA_DARK_TICKS_REMAINING;
    private static final int DEFAULT_DARK_TICKS_REMAINING = 0;
 
-   public GlowSquid(EntityType<? extends GlowSquid> var1, Level var2) {
-      super(var1, var2);
+   public GlowSquid(final EntityType<? extends GlowSquid> type, final Level level) {
+      super(type, level);
    }
 
    protected ParticleOptions getInkParticle() {
       return ParticleTypes.GLOW_SQUID_INK;
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(DATA_DARK_TICKS_REMAINING, 0);
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(DATA_DARK_TICKS_REMAINING, 0);
    }
 
-   public @Nullable AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return EntityType.GLOW_SQUID.create(var1, EntitySpawnReason.BREEDING);
+   public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
+      return EntityType.GLOW_SQUID.create(level, EntitySpawnReason.BREEDING);
    }
 
    protected SoundEvent getSquirtSound() {
@@ -51,7 +51,7 @@ public class GlowSquid extends Squid {
       return SoundEvents.GLOW_SQUID_AMBIENT;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return SoundEvents.GLOW_SQUID_HURT;
    }
 
@@ -59,45 +59,45 @@ public class GlowSquid extends Squid {
       return SoundEvents.GLOW_SQUID_DEATH;
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.putInt("DarkTicksRemaining", this.getDarkTicksRemaining());
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.putInt("DarkTicksRemaining", this.getDarkTicksRemaining());
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.setDarkTicks(var1.getIntOr("DarkTicksRemaining", 0));
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.setDarkTicks(input.getIntOr("DarkTicksRemaining", 0));
    }
 
    public void aiStep() {
       super.aiStep();
-      int var1 = this.getDarkTicksRemaining();
-      if (var1 > 0) {
-         this.setDarkTicks(var1 - 1);
+      int darkTicks = this.getDarkTicksRemaining();
+      if (darkTicks > 0) {
+         this.setDarkTicks(darkTicks - 1);
       }
 
       this.level().addParticle(ParticleTypes.GLOW, this.getRandomX(0.6), this.getRandomY(), this.getRandomZ(0.6), 0.0, 0.0, 0.0);
    }
 
-   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
-      boolean var4 = super.hurtServer(var1, var2, var3);
-      if (var4) {
+   public boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {
+      boolean hurt = super.hurtServer(level, source, damage);
+      if (hurt) {
          this.setDarkTicks(100);
       }
 
-      return var4;
+      return hurt;
    }
 
-   private void setDarkTicks(int var1) {
-      this.entityData.set(DATA_DARK_TICKS_REMAINING, var1);
+   private void setDarkTicks(final int ticks) {
+      this.entityData.set(DATA_DARK_TICKS_REMAINING, ticks);
    }
 
    public int getDarkTicksRemaining() {
       return (Integer)this.entityData.get(DATA_DARK_TICKS_REMAINING);
    }
 
-   public static boolean checkGlowSquidSpawnRules(EntityType<? extends LivingEntity> var0, ServerLevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
-      return var3.getY() <= var1.getSeaLevel() - 33 && var1.getRawBrightness(var3, 0) == 0 && var1.getBlockState(var3).is(Blocks.WATER);
+   public static boolean checkGlowSquidSpawnRules(final EntityType<? extends LivingEntity> type, final ServerLevelAccessor level, final EntitySpawnReason spawnReason, final BlockPos pos, final RandomSource random) {
+      return pos.getY() <= level.getSeaLevel() - 33 && level.getRawBrightness(pos, 0) == 0 && level.getBlockState(pos).is(Blocks.WATER);
    }
 
    static {

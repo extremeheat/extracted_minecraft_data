@@ -5,37 +5,37 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 
 public interface LevelLoadListener {
-   static LevelLoadListener compose(final LevelLoadListener var0, final LevelLoadListener var1) {
+   static LevelLoadListener compose(final LevelLoadListener first, final LevelLoadListener second) {
       return new LevelLoadListener() {
-         public void start(Stage var1x, int var2) {
-            var0.start(var1x, var2);
-            var1.start(var1x, var2);
+         public void start(final Stage stage, final int totalChunks) {
+            first.start(stage, totalChunks);
+            second.start(stage, totalChunks);
          }
 
-         public void update(Stage var1x, int var2, int var3) {
-            var0.update(var1x, var2, var3);
-            var1.update(var1x, var2, var3);
+         public void update(final Stage stage, final int currentChunks, final int totalChunks) {
+            first.update(stage, currentChunks, totalChunks);
+            second.update(stage, currentChunks, totalChunks);
          }
 
-         public void finish(Stage var1x) {
-            var0.finish(var1x);
-            var1.finish(var1x);
+         public void finish(final Stage stage) {
+            first.finish(stage);
+            second.finish(stage);
          }
 
-         public void updateFocus(ResourceKey<Level> var1x, ChunkPos var2) {
-            var0.updateFocus(var1x, var2);
-            var1.updateFocus(var1x, var2);
+         public void updateFocus(final ResourceKey<Level> dimension, final ChunkPos chunkPos) {
+            first.updateFocus(dimension, chunkPos);
+            second.updateFocus(dimension, chunkPos);
          }
       };
    }
 
-   void start(Stage var1, int var2);
+   void start(Stage stage, int totalChunks);
 
-   void update(Stage var1, int var2, int var3);
+   void update(Stage stage, int currentChunks, int totalChunks);
 
-   void finish(Stage var1);
+   void finish(Stage stage);
 
-   void updateFocus(ResourceKey<Level> var1, ChunkPos var2);
+   void updateFocus(ResourceKey<Level> dimension, ChunkPos chunkPos);
 
    public static enum Stage {
       START_SERVER,

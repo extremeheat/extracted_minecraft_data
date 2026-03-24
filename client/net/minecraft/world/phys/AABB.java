@@ -19,246 +19,246 @@ public class AABB {
    public final double maxY;
    public final double maxZ;
 
-   public AABB(double var1, double var3, double var5, double var7, double var9, double var11) {
+   public AABB(final double minX, final double minY, final double minZ, final double maxX, final double maxY, final double maxZ) {
       super();
-      this.minX = Math.min(var1, var7);
-      this.minY = Math.min(var3, var9);
-      this.minZ = Math.min(var5, var11);
-      this.maxX = Math.max(var1, var7);
-      this.maxY = Math.max(var3, var9);
-      this.maxZ = Math.max(var5, var11);
+      this.minX = Math.min(minX, maxX);
+      this.minY = Math.min(minY, maxY);
+      this.minZ = Math.min(minZ, maxZ);
+      this.maxX = Math.max(minX, maxX);
+      this.maxY = Math.max(minY, maxY);
+      this.maxZ = Math.max(minZ, maxZ);
    }
 
-   public AABB(BlockPos var1) {
-      this((double)var1.getX(), (double)var1.getY(), (double)var1.getZ(), (double)(var1.getX() + 1), (double)(var1.getY() + 1), (double)(var1.getZ() + 1));
+   public AABB(final BlockPos pos) {
+      this((double)pos.getX(), (double)pos.getY(), (double)pos.getZ(), (double)(pos.getX() + 1), (double)(pos.getY() + 1), (double)(pos.getZ() + 1));
    }
 
-   public AABB(Vec3 var1, Vec3 var2) {
-      this(var1.x, var1.y, var1.z, var2.x, var2.y, var2.z);
+   public AABB(final Vec3 begin, final Vec3 end) {
+      this(begin.x, begin.y, begin.z, end.x, end.y, end.z);
    }
 
-   public static AABB of(BoundingBox var0) {
-      return new AABB((double)var0.minX(), (double)var0.minY(), (double)var0.minZ(), (double)(var0.maxX() + 1), (double)(var0.maxY() + 1), (double)(var0.maxZ() + 1));
+   public static AABB of(final BoundingBox box) {
+      return new AABB((double)box.minX(), (double)box.minY(), (double)box.minZ(), (double)(box.maxX() + 1), (double)(box.maxY() + 1), (double)(box.maxZ() + 1));
    }
 
-   public static AABB unitCubeFromLowerCorner(Vec3 var0) {
-      return new AABB(var0.x, var0.y, var0.z, var0.x + 1.0, var0.y + 1.0, var0.z + 1.0);
+   public static AABB unitCubeFromLowerCorner(final Vec3 pos) {
+      return new AABB(pos.x, pos.y, pos.z, pos.x + 1.0, pos.y + 1.0, pos.z + 1.0);
    }
 
-   public static AABB encapsulatingFullBlocks(BlockPos var0, BlockPos var1) {
-      return new AABB((double)Math.min(var0.getX(), var1.getX()), (double)Math.min(var0.getY(), var1.getY()), (double)Math.min(var0.getZ(), var1.getZ()), (double)(Math.max(var0.getX(), var1.getX()) + 1), (double)(Math.max(var0.getY(), var1.getY()) + 1), (double)(Math.max(var0.getZ(), var1.getZ()) + 1));
+   public static AABB encapsulatingFullBlocks(final BlockPos pos0, final BlockPos pos1) {
+      return new AABB((double)Math.min(pos0.getX(), pos1.getX()), (double)Math.min(pos0.getY(), pos1.getY()), (double)Math.min(pos0.getZ(), pos1.getZ()), (double)(Math.max(pos0.getX(), pos1.getX()) + 1), (double)(Math.max(pos0.getY(), pos1.getY()) + 1), (double)(Math.max(pos0.getZ(), pos1.getZ()) + 1));
    }
 
-   public AABB setMinX(double var1) {
-      return new AABB(var1, this.minY, this.minZ, this.maxX, this.maxY, this.maxZ);
+   public AABB setMinX(final double minX) {
+      return new AABB(minX, this.minY, this.minZ, this.maxX, this.maxY, this.maxZ);
    }
 
-   public AABB setMinY(double var1) {
-      return new AABB(this.minX, var1, this.minZ, this.maxX, this.maxY, this.maxZ);
+   public AABB setMinY(final double minY) {
+      return new AABB(this.minX, minY, this.minZ, this.maxX, this.maxY, this.maxZ);
    }
 
-   public AABB setMinZ(double var1) {
-      return new AABB(this.minX, this.minY, var1, this.maxX, this.maxY, this.maxZ);
+   public AABB setMinZ(final double minZ) {
+      return new AABB(this.minX, this.minY, minZ, this.maxX, this.maxY, this.maxZ);
    }
 
-   public AABB setMaxX(double var1) {
-      return new AABB(this.minX, this.minY, this.minZ, var1, this.maxY, this.maxZ);
+   public AABB setMaxX(final double maxX) {
+      return new AABB(this.minX, this.minY, this.minZ, maxX, this.maxY, this.maxZ);
    }
 
-   public AABB setMaxY(double var1) {
-      return new AABB(this.minX, this.minY, this.minZ, this.maxX, var1, this.maxZ);
+   public AABB setMaxY(final double maxY) {
+      return new AABB(this.minX, this.minY, this.minZ, this.maxX, maxY, this.maxZ);
    }
 
-   public AABB setMaxZ(double var1) {
-      return new AABB(this.minX, this.minY, this.minZ, this.maxX, this.maxY, var1);
+   public AABB setMaxZ(final double maxZ) {
+      return new AABB(this.minX, this.minY, this.minZ, this.maxX, this.maxY, maxZ);
    }
 
-   public double min(Direction.Axis var1) {
-      return var1.choose(this.minX, this.minY, this.minZ);
+   public double min(final Direction.Axis axis) {
+      return axis.choose(this.minX, this.minY, this.minZ);
    }
 
-   public double max(Direction.Axis var1) {
-      return var1.choose(this.maxX, this.maxY, this.maxZ);
+   public double max(final Direction.Axis axis) {
+      return axis.choose(this.maxX, this.maxY, this.maxZ);
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
+   public boolean equals(final Object o) {
+      if (this == o) {
          return true;
-      } else if (!(var1 instanceof AABB)) {
+      } else if (!(o instanceof AABB)) {
          return false;
       } else {
-         AABB var2 = (AABB)var1;
-         if (Double.compare(var2.minX, this.minX) != 0) {
+         AABB aabb = (AABB)o;
+         if (Double.compare(aabb.minX, this.minX) != 0) {
             return false;
-         } else if (Double.compare(var2.minY, this.minY) != 0) {
+         } else if (Double.compare(aabb.minY, this.minY) != 0) {
             return false;
-         } else if (Double.compare(var2.minZ, this.minZ) != 0) {
+         } else if (Double.compare(aabb.minZ, this.minZ) != 0) {
             return false;
-         } else if (Double.compare(var2.maxX, this.maxX) != 0) {
+         } else if (Double.compare(aabb.maxX, this.maxX) != 0) {
             return false;
-         } else if (Double.compare(var2.maxY, this.maxY) != 0) {
+         } else if (Double.compare(aabb.maxY, this.maxY) != 0) {
             return false;
          } else {
-            return Double.compare(var2.maxZ, this.maxZ) == 0;
+            return Double.compare(aabb.maxZ, this.maxZ) == 0;
          }
       }
    }
 
    public int hashCode() {
-      long var1 = Double.doubleToLongBits(this.minX);
-      int var3 = (int)(var1 ^ var1 >>> 32);
-      var1 = Double.doubleToLongBits(this.minY);
-      var3 = 31 * var3 + (int)(var1 ^ var1 >>> 32);
-      var1 = Double.doubleToLongBits(this.minZ);
-      var3 = 31 * var3 + (int)(var1 ^ var1 >>> 32);
-      var1 = Double.doubleToLongBits(this.maxX);
-      var3 = 31 * var3 + (int)(var1 ^ var1 >>> 32);
-      var1 = Double.doubleToLongBits(this.maxY);
-      var3 = 31 * var3 + (int)(var1 ^ var1 >>> 32);
-      var1 = Double.doubleToLongBits(this.maxZ);
-      var3 = 31 * var3 + (int)(var1 ^ var1 >>> 32);
-      return var3;
+      long temp = Double.doubleToLongBits(this.minX);
+      int result = (int)(temp ^ temp >>> 32);
+      temp = Double.doubleToLongBits(this.minY);
+      result = 31 * result + (int)(temp ^ temp >>> 32);
+      temp = Double.doubleToLongBits(this.minZ);
+      result = 31 * result + (int)(temp ^ temp >>> 32);
+      temp = Double.doubleToLongBits(this.maxX);
+      result = 31 * result + (int)(temp ^ temp >>> 32);
+      temp = Double.doubleToLongBits(this.maxY);
+      result = 31 * result + (int)(temp ^ temp >>> 32);
+      temp = Double.doubleToLongBits(this.maxZ);
+      result = 31 * result + (int)(temp ^ temp >>> 32);
+      return result;
    }
 
-   public AABB contract(double var1, double var3, double var5) {
-      double var7 = this.minX;
-      double var9 = this.minY;
-      double var11 = this.minZ;
-      double var13 = this.maxX;
-      double var15 = this.maxY;
-      double var17 = this.maxZ;
-      if (var1 < 0.0) {
-         var7 -= var1;
-      } else if (var1 > 0.0) {
-         var13 -= var1;
+   public AABB contract(final double xa, final double ya, final double za) {
+      double minX = this.minX;
+      double minY = this.minY;
+      double minZ = this.minZ;
+      double maxX = this.maxX;
+      double maxY = this.maxY;
+      double maxZ = this.maxZ;
+      if (xa < 0.0) {
+         minX -= xa;
+      } else if (xa > 0.0) {
+         maxX -= xa;
       }
 
-      if (var3 < 0.0) {
-         var9 -= var3;
-      } else if (var3 > 0.0) {
-         var15 -= var3;
+      if (ya < 0.0) {
+         minY -= ya;
+      } else if (ya > 0.0) {
+         maxY -= ya;
       }
 
-      if (var5 < 0.0) {
-         var11 -= var5;
-      } else if (var5 > 0.0) {
-         var17 -= var5;
+      if (za < 0.0) {
+         minZ -= za;
+      } else if (za > 0.0) {
+         maxZ -= za;
       }
 
-      return new AABB(var7, var9, var11, var13, var15, var17);
+      return new AABB(minX, minY, minZ, maxX, maxY, maxZ);
    }
 
-   public AABB expandTowards(Vec3 var1) {
-      return this.expandTowards(var1.x, var1.y, var1.z);
+   public AABB expandTowards(final Vec3 delta) {
+      return this.expandTowards(delta.x, delta.y, delta.z);
    }
 
-   public AABB expandTowards(double var1, double var3, double var5) {
-      double var7 = this.minX;
-      double var9 = this.minY;
-      double var11 = this.minZ;
-      double var13 = this.maxX;
-      double var15 = this.maxY;
-      double var17 = this.maxZ;
-      if (var1 < 0.0) {
-         var7 += var1;
-      } else if (var1 > 0.0) {
-         var13 += var1;
+   public AABB expandTowards(final double xa, final double ya, final double za) {
+      double minX = this.minX;
+      double minY = this.minY;
+      double minZ = this.minZ;
+      double maxX = this.maxX;
+      double maxY = this.maxY;
+      double maxZ = this.maxZ;
+      if (xa < 0.0) {
+         minX += xa;
+      } else if (xa > 0.0) {
+         maxX += xa;
       }
 
-      if (var3 < 0.0) {
-         var9 += var3;
-      } else if (var3 > 0.0) {
-         var15 += var3;
+      if (ya < 0.0) {
+         minY += ya;
+      } else if (ya > 0.0) {
+         maxY += ya;
       }
 
-      if (var5 < 0.0) {
-         var11 += var5;
-      } else if (var5 > 0.0) {
-         var17 += var5;
+      if (za < 0.0) {
+         minZ += za;
+      } else if (za > 0.0) {
+         maxZ += za;
       }
 
-      return new AABB(var7, var9, var11, var13, var15, var17);
+      return new AABB(minX, minY, minZ, maxX, maxY, maxZ);
    }
 
-   public AABB inflate(double var1, double var3, double var5) {
-      double var7 = this.minX - var1;
-      double var9 = this.minY - var3;
-      double var11 = this.minZ - var5;
-      double var13 = this.maxX + var1;
-      double var15 = this.maxY + var3;
-      double var17 = this.maxZ + var5;
-      return new AABB(var7, var9, var11, var13, var15, var17);
+   public AABB inflate(final double xAdd, final double yAdd, final double zAdd) {
+      double minX = this.minX - xAdd;
+      double minY = this.minY - yAdd;
+      double minZ = this.minZ - zAdd;
+      double maxX = this.maxX + xAdd;
+      double maxY = this.maxY + yAdd;
+      double maxZ = this.maxZ + zAdd;
+      return new AABB(minX, minY, minZ, maxX, maxY, maxZ);
    }
 
-   public AABB inflate(double var1) {
-      return this.inflate(var1, var1, var1);
+   public AABB inflate(final double amountToAddInAllDirections) {
+      return this.inflate(amountToAddInAllDirections, amountToAddInAllDirections, amountToAddInAllDirections);
    }
 
-   public AABB intersect(AABB var1) {
-      double var2 = Math.max(this.minX, var1.minX);
-      double var4 = Math.max(this.minY, var1.minY);
-      double var6 = Math.max(this.minZ, var1.minZ);
-      double var8 = Math.min(this.maxX, var1.maxX);
-      double var10 = Math.min(this.maxY, var1.maxY);
-      double var12 = Math.min(this.maxZ, var1.maxZ);
-      return new AABB(var2, var4, var6, var8, var10, var12);
+   public AABB intersect(final AABB other) {
+      double minX = Math.max(this.minX, other.minX);
+      double minY = Math.max(this.minY, other.minY);
+      double minZ = Math.max(this.minZ, other.minZ);
+      double maxX = Math.min(this.maxX, other.maxX);
+      double maxY = Math.min(this.maxY, other.maxY);
+      double maxZ = Math.min(this.maxZ, other.maxZ);
+      return new AABB(minX, minY, minZ, maxX, maxY, maxZ);
    }
 
-   public AABB minmax(AABB var1) {
-      double var2 = Math.min(this.minX, var1.minX);
-      double var4 = Math.min(this.minY, var1.minY);
-      double var6 = Math.min(this.minZ, var1.minZ);
-      double var8 = Math.max(this.maxX, var1.maxX);
-      double var10 = Math.max(this.maxY, var1.maxY);
-      double var12 = Math.max(this.maxZ, var1.maxZ);
-      return new AABB(var2, var4, var6, var8, var10, var12);
+   public AABB minmax(final AABB other) {
+      double minX = Math.min(this.minX, other.minX);
+      double minY = Math.min(this.minY, other.minY);
+      double minZ = Math.min(this.minZ, other.minZ);
+      double maxX = Math.max(this.maxX, other.maxX);
+      double maxY = Math.max(this.maxY, other.maxY);
+      double maxZ = Math.max(this.maxZ, other.maxZ);
+      return new AABB(minX, minY, minZ, maxX, maxY, maxZ);
    }
 
-   public AABB move(double var1, double var3, double var5) {
-      return new AABB(this.minX + var1, this.minY + var3, this.minZ + var5, this.maxX + var1, this.maxY + var3, this.maxZ + var5);
+   public AABB move(final double xa, final double ya, final double za) {
+      return new AABB(this.minX + xa, this.minY + ya, this.minZ + za, this.maxX + xa, this.maxY + ya, this.maxZ + za);
    }
 
-   public AABB move(BlockPos var1) {
-      return new AABB(this.minX + (double)var1.getX(), this.minY + (double)var1.getY(), this.minZ + (double)var1.getZ(), this.maxX + (double)var1.getX(), this.maxY + (double)var1.getY(), this.maxZ + (double)var1.getZ());
+   public AABB move(final BlockPos pos) {
+      return new AABB(this.minX + (double)pos.getX(), this.minY + (double)pos.getY(), this.minZ + (double)pos.getZ(), this.maxX + (double)pos.getX(), this.maxY + (double)pos.getY(), this.maxZ + (double)pos.getZ());
    }
 
-   public AABB move(Vec3 var1) {
-      return this.move(var1.x, var1.y, var1.z);
+   public AABB move(final Vec3 pos) {
+      return this.move(pos.x, pos.y, pos.z);
    }
 
-   public AABB move(Vector3f var1) {
-      return this.move((double)var1.x, (double)var1.y, (double)var1.z);
+   public AABB move(final Vector3f pos) {
+      return this.move((double)pos.x, (double)pos.y, (double)pos.z);
    }
 
-   public boolean intersects(AABB var1) {
-      return this.intersects(var1.minX, var1.minY, var1.minZ, var1.maxX, var1.maxY, var1.maxZ);
+   public boolean intersects(final AABB aabb) {
+      return this.intersects(aabb.minX, aabb.minY, aabb.minZ, aabb.maxX, aabb.maxY, aabb.maxZ);
    }
 
-   public boolean intersects(double var1, double var3, double var5, double var7, double var9, double var11) {
-      return this.minX < var7 && this.maxX > var1 && this.minY < var9 && this.maxY > var3 && this.minZ < var11 && this.maxZ > var5;
+   public boolean intersects(final double minX, final double minY, final double minZ, final double maxX, final double maxY, final double maxZ) {
+      return this.minX < maxX && this.maxX > minX && this.minY < maxY && this.maxY > minY && this.minZ < maxZ && this.maxZ > minZ;
    }
 
-   public boolean intersects(Vec3 var1, Vec3 var2) {
-      return this.intersects(Math.min(var1.x, var2.x), Math.min(var1.y, var2.y), Math.min(var1.z, var2.z), Math.max(var1.x, var2.x), Math.max(var1.y, var2.y), Math.max(var1.z, var2.z));
+   public boolean intersects(final Vec3 min, final Vec3 max) {
+      return this.intersects(Math.min(min.x, max.x), Math.min(min.y, max.y), Math.min(min.z, max.z), Math.max(min.x, max.x), Math.max(min.y, max.y), Math.max(min.z, max.z));
    }
 
-   public boolean intersects(BlockPos var1) {
-      return this.intersects((double)var1.getX(), (double)var1.getY(), (double)var1.getZ(), (double)(var1.getX() + 1), (double)(var1.getY() + 1), (double)(var1.getZ() + 1));
+   public boolean intersects(final BlockPos pos) {
+      return this.intersects((double)pos.getX(), (double)pos.getY(), (double)pos.getZ(), (double)(pos.getX() + 1), (double)(pos.getY() + 1), (double)(pos.getZ() + 1));
    }
 
-   public boolean contains(Vec3 var1) {
-      return this.contains(var1.x, var1.y, var1.z);
+   public boolean contains(final Vec3 vec) {
+      return this.contains(vec.x, vec.y, vec.z);
    }
 
-   public boolean contains(double var1, double var3, double var5) {
-      return var1 >= this.minX && var1 < this.maxX && var3 >= this.minY && var3 < this.maxY && var5 >= this.minZ && var5 < this.maxZ;
+   public boolean contains(final double x, final double y, final double z) {
+      return x >= this.minX && x < this.maxX && y >= this.minY && y < this.maxY && z >= this.minZ && z < this.maxZ;
    }
 
    public double getSize() {
-      double var1 = this.getXsize();
-      double var3 = this.getYsize();
-      double var5 = this.getZsize();
-      return (var1 + var3 + var5) / 3.0;
+      double xs = this.getXsize();
+      double ys = this.getYsize();
+      double zs = this.getZsize();
+      return (xs + ys + zs) / 3.0;
    }
 
    public double getXsize() {
@@ -273,100 +273,100 @@ public class AABB {
       return this.maxZ - this.minZ;
    }
 
-   public AABB deflate(double var1, double var3, double var5) {
-      return this.inflate(-var1, -var3, -var5);
+   public AABB deflate(final double xSubstract, final double ySubtract, final double zSubtract) {
+      return this.inflate(-xSubstract, -ySubtract, -zSubtract);
    }
 
-   public AABB deflate(double var1) {
-      return this.inflate(-var1);
+   public AABB deflate(final double amount) {
+      return this.inflate(-amount);
    }
 
-   public Optional<Vec3> clip(Vec3 var1, Vec3 var2) {
-      return clip(this.minX, this.minY, this.minZ, this.maxX, this.maxY, this.maxZ, var1, var2);
+   public Optional<Vec3> clip(final Vec3 from, final Vec3 to) {
+      return clip(this.minX, this.minY, this.minZ, this.maxX, this.maxY, this.maxZ, from, to);
    }
 
-   public static Optional<Vec3> clip(double var0, double var2, double var4, double var6, double var8, double var10, Vec3 var12, Vec3 var13) {
-      double[] var14 = new double[]{1.0};
-      double var15 = var13.x - var12.x;
-      double var17 = var13.y - var12.y;
-      double var19 = var13.z - var12.z;
-      Direction var21 = getDirection(var0, var2, var4, var6, var8, var10, var12, var14, (Direction)null, var15, var17, var19);
-      if (var21 == null) {
+   public static Optional<Vec3> clip(final double minX, final double minY, final double minZ, final double maxX, final double maxY, final double maxZ, final Vec3 from, final Vec3 to) {
+      double[] scaleReference = new double[]{1.0};
+      double dx = to.x - from.x;
+      double dy = to.y - from.y;
+      double dz = to.z - from.z;
+      Direction direction = getDirection(minX, minY, minZ, maxX, maxY, maxZ, from, scaleReference, (Direction)null, dx, dy, dz);
+      if (direction == null) {
          return Optional.empty();
       } else {
-         double var22 = var14[0];
-         return Optional.of(var12.add(var22 * var15, var22 * var17, var22 * var19));
+         double scale = scaleReference[0];
+         return Optional.of(from.add(scale * dx, scale * dy, scale * dz));
       }
    }
 
-   public static @Nullable BlockHitResult clip(Iterable<AABB> var0, Vec3 var1, Vec3 var2, BlockPos var3) {
-      double[] var4 = new double[]{1.0};
-      Direction var5 = null;
-      double var6 = var2.x - var1.x;
-      double var8 = var2.y - var1.y;
-      double var10 = var2.z - var1.z;
+   public static @Nullable BlockHitResult clip(final Iterable<AABB> aabBs, final Vec3 from, final Vec3 to, final BlockPos pos) {
+      double[] scaleReference = new double[]{1.0};
+      Direction direction = null;
+      double dx = to.x - from.x;
+      double dy = to.y - from.y;
+      double dz = to.z - from.z;
 
-      for(AABB var13 : var0) {
-         var5 = getDirection(var13.move(var3), var1, var4, var5, var6, var8, var10);
+      for(AABB aabb : aabBs) {
+         direction = getDirection(aabb.move(pos), from, scaleReference, direction, dx, dy, dz);
       }
 
-      if (var5 == null) {
+      if (direction == null) {
          return null;
       } else {
-         double var14 = var4[0];
-         return new BlockHitResult(var1.add(var14 * var6, var14 * var8, var14 * var10), var5, var3, false);
+         double scale = scaleReference[0];
+         return new BlockHitResult(from.add(scale * dx, scale * dy, scale * dz), direction, pos, false);
       }
    }
 
-   private static @Nullable Direction getDirection(AABB var0, Vec3 var1, double[] var2, @Nullable Direction var3, double var4, double var6, double var8) {
-      return getDirection(var0.minX, var0.minY, var0.minZ, var0.maxX, var0.maxY, var0.maxZ, var1, var2, var3, var4, var6, var8);
+   private static @Nullable Direction getDirection(final AABB aabb, final Vec3 from, final double[] scaleReference, final @Nullable Direction direction, final double dx, final double dy, final double dz) {
+      return getDirection(aabb.minX, aabb.minY, aabb.minZ, aabb.maxX, aabb.maxY, aabb.maxZ, from, scaleReference, direction, dx, dy, dz);
    }
 
-   private static @Nullable Direction getDirection(double var0, double var2, double var4, double var6, double var8, double var10, Vec3 var12, double[] var13, @Nullable Direction var14, double var15, double var17, double var19) {
-      if (var15 > 1.0E-7) {
-         var14 = clipPoint(var13, var14, var15, var17, var19, var0, var2, var8, var4, var10, Direction.WEST, var12.x, var12.y, var12.z);
-      } else if (var15 < -1.0E-7) {
-         var14 = clipPoint(var13, var14, var15, var17, var19, var6, var2, var8, var4, var10, Direction.EAST, var12.x, var12.y, var12.z);
+   private static @Nullable Direction getDirection(final double minX, final double minY, final double minZ, final double maxX, final double maxY, final double maxZ, final Vec3 from, final double[] scaleReference, @Nullable Direction direction, final double dx, final double dy, final double dz) {
+      if (dx > 1.0E-7) {
+         direction = clipPoint(scaleReference, direction, dx, dy, dz, minX, minY, maxY, minZ, maxZ, Direction.WEST, from.x, from.y, from.z);
+      } else if (dx < -1.0E-7) {
+         direction = clipPoint(scaleReference, direction, dx, dy, dz, maxX, minY, maxY, minZ, maxZ, Direction.EAST, from.x, from.y, from.z);
       }
 
-      if (var17 > 1.0E-7) {
-         var14 = clipPoint(var13, var14, var17, var19, var15, var2, var4, var10, var0, var6, Direction.DOWN, var12.y, var12.z, var12.x);
-      } else if (var17 < -1.0E-7) {
-         var14 = clipPoint(var13, var14, var17, var19, var15, var8, var4, var10, var0, var6, Direction.UP, var12.y, var12.z, var12.x);
+      if (dy > 1.0E-7) {
+         direction = clipPoint(scaleReference, direction, dy, dz, dx, minY, minZ, maxZ, minX, maxX, Direction.DOWN, from.y, from.z, from.x);
+      } else if (dy < -1.0E-7) {
+         direction = clipPoint(scaleReference, direction, dy, dz, dx, maxY, minZ, maxZ, minX, maxX, Direction.UP, from.y, from.z, from.x);
       }
 
-      if (var19 > 1.0E-7) {
-         var14 = clipPoint(var13, var14, var19, var15, var17, var4, var0, var6, var2, var8, Direction.NORTH, var12.z, var12.x, var12.y);
-      } else if (var19 < -1.0E-7) {
-         var14 = clipPoint(var13, var14, var19, var15, var17, var10, var0, var6, var2, var8, Direction.SOUTH, var12.z, var12.x, var12.y);
+      if (dz > 1.0E-7) {
+         direction = clipPoint(scaleReference, direction, dz, dx, dy, minZ, minX, maxX, minY, maxY, Direction.NORTH, from.z, from.x, from.y);
+      } else if (dz < -1.0E-7) {
+         direction = clipPoint(scaleReference, direction, dz, dx, dy, maxZ, minX, maxX, minY, maxY, Direction.SOUTH, from.z, from.x, from.y);
       }
 
-      return var14;
+      return direction;
    }
 
-   private static @Nullable Direction clipPoint(double[] var0, @Nullable Direction var1, double var2, double var4, double var6, double var8, double var10, double var12, double var14, double var16, Direction var18, double var19, double var21, double var23) {
-      double var25 = (var8 - var19) / var2;
-      double var27 = var21 + var25 * var4;
-      double var29 = var23 + var25 * var6;
-      if (0.0 < var25 && var25 < var0[0] && var10 - 1.0E-7 < var27 && var27 < var12 + 1.0E-7 && var14 - 1.0E-7 < var29 && var29 < var16 + 1.0E-7) {
-         var0[0] = var25;
-         return var18;
+   private static @Nullable Direction clipPoint(final double[] scaleReference, final @Nullable Direction direction, final double da, final double db, final double dc, final double point, final double minB, final double maxB, final double minC, final double maxC, final Direction newDirection, final double fromA, final double fromB, final double fromC) {
+      double s = (point - fromA) / da;
+      double pb = fromB + s * db;
+      double pc = fromC + s * dc;
+      if (0.0 < s && s < scaleReference[0] && minB - 1.0E-7 < pb && pb < maxB + 1.0E-7 && minC - 1.0E-7 < pc && pc < maxC + 1.0E-7) {
+         scaleReference[0] = s;
+         return newDirection;
       } else {
-         return var1;
+         return direction;
       }
    }
 
-   public boolean collidedAlongVector(Vec3 var1, List<AABB> var2) {
-      Vec3 var3 = this.getCenter();
-      Vec3 var4 = var3.add(var1);
+   public boolean collidedAlongVector(final Vec3 vector, final List<AABB> aabbs) {
+      Vec3 from = this.getCenter();
+      Vec3 to = from.add(vector);
 
-      for(AABB var6 : var2) {
-         AABB var7 = var6.inflate(this.getXsize() * 0.5 - 1.0E-7, this.getYsize() * 0.5 - 1.0E-7, this.getZsize() * 0.5 - 1.0E-7);
-         if (var7.contains(var4) || var7.contains(var3)) {
+      for(AABB shapePart : aabbs) {
+         AABB inflated = shapePart.inflate(this.getXsize() * 0.5 - 1.0E-7, this.getYsize() * 0.5 - 1.0E-7, this.getZsize() * 0.5 - 1.0E-7);
+         if (inflated.contains(to) || inflated.contains(from)) {
             return true;
          }
 
-         if (var7.clip(var3, var4).isPresent()) {
+         if (inflated.clip(from, to).isPresent()) {
             return true;
          }
       }
@@ -374,18 +374,18 @@ public class AABB {
       return false;
    }
 
-   public double distanceToSqr(Vec3 var1) {
-      double var2 = Math.max(Math.max(this.minX - var1.x, var1.x - this.maxX), 0.0);
-      double var4 = Math.max(Math.max(this.minY - var1.y, var1.y - this.maxY), 0.0);
-      double var6 = Math.max(Math.max(this.minZ - var1.z, var1.z - this.maxZ), 0.0);
-      return Mth.lengthSquared(var2, var4, var6);
+   public double distanceToSqr(final Vec3 point) {
+      double dx = Math.max(Math.max(this.minX - point.x, point.x - this.maxX), 0.0);
+      double dy = Math.max(Math.max(this.minY - point.y, point.y - this.maxY), 0.0);
+      double dz = Math.max(Math.max(this.minZ - point.z, point.z - this.maxZ), 0.0);
+      return Mth.lengthSquared(dx, dy, dz);
    }
 
-   public double distanceToSqr(AABB var1) {
-      double var2 = Math.max(Math.max(this.minX - var1.maxX, var1.minX - this.maxX), 0.0);
-      double var4 = Math.max(Math.max(this.minY - var1.maxY, var1.minY - this.maxY), 0.0);
-      double var6 = Math.max(Math.max(this.minZ - var1.maxZ, var1.minZ - this.maxZ), 0.0);
-      return Mth.lengthSquared(var2, var4, var6);
+   public double distanceToSqr(final AABB boundingBox) {
+      double dx = Math.max(Math.max(this.minX - boundingBox.maxX, boundingBox.minX - this.maxX), 0.0);
+      double dy = Math.max(Math.max(this.minY - boundingBox.maxY, boundingBox.minY - this.maxY), 0.0);
+      double dz = Math.max(Math.max(this.minZ - boundingBox.maxZ, boundingBox.minZ - this.maxZ), 0.0);
+      return Mth.lengthSquared(dx, dy, dz);
    }
 
    public String toString() {
@@ -412,8 +412,8 @@ public class AABB {
       return new Vec3(this.maxX, this.maxY, this.maxZ);
    }
 
-   public static AABB ofSize(Vec3 var0, double var1, double var3, double var5) {
-      return new AABB(var0.x - var1 / 2.0, var0.y - var3 / 2.0, var0.z - var5 / 2.0, var0.x + var1 / 2.0, var0.y + var3 / 2.0, var0.z + var5 / 2.0);
+   public static AABB ofSize(final Vec3 center, final double sizeX, final double sizeY, final double sizeZ) {
+      return new AABB(center.x - sizeX / 2.0, center.y - sizeY / 2.0, center.z - sizeZ / 2.0, center.x + sizeX / 2.0, center.y + sizeY / 2.0, center.z + sizeZ / 2.0);
    }
 
    public static class Builder {
@@ -423,22 +423,32 @@ public class AABB {
       private float maxX = -1.0F / 0.0F;
       private float maxY = -1.0F / 0.0F;
       private float maxZ = -1.0F / 0.0F;
+      private boolean defined;
 
       public Builder() {
          super();
       }
 
-      public void include(Vector3fc var1) {
-         this.minX = Math.min(this.minX, var1.x());
-         this.minY = Math.min(this.minY, var1.y());
-         this.minZ = Math.min(this.minZ, var1.z());
-         this.maxX = Math.max(this.maxX, var1.x());
-         this.maxY = Math.max(this.maxY, var1.y());
-         this.maxZ = Math.max(this.maxZ, var1.z());
+      public void include(final Vector3fc v) {
+         this.minX = Math.min(this.minX, v.x());
+         this.minY = Math.min(this.minY, v.y());
+         this.minZ = Math.min(this.minZ, v.z());
+         this.maxX = Math.max(this.maxX, v.x());
+         this.maxY = Math.max(this.maxY, v.y());
+         this.maxZ = Math.max(this.maxZ, v.z());
+         this.defined = true;
+      }
+
+      public boolean isDefined() {
+         return this.defined;
       }
 
       public AABB build() {
-         return new AABB((double)this.minX, (double)this.minY, (double)this.minZ, (double)this.maxX, (double)this.maxY, (double)this.maxZ);
+         if (!this.defined) {
+            throw new IllegalStateException("Cannot build an undefined AABB. Include at least one point.");
+         } else {
+            return new AABB((double)this.minX, (double)this.minY, (double)this.minZ, (double)this.maxX, (double)this.maxY, (double)this.maxZ);
+         }
       }
    }
 }

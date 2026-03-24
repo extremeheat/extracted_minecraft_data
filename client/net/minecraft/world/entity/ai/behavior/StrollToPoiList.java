@@ -14,19 +14,19 @@ public class StrollToPoiList {
       super();
    }
 
-   public static BehaviorControl<Villager> create(MemoryModuleType<List<GlobalPos>> var0, float var1, int var2, int var3, MemoryModuleType<GlobalPos> var4) {
-      MutableLong var5 = new MutableLong(0L);
-      return BehaviorBuilder.create((Function)((var6) -> var6.group(var6.registered(MemoryModuleType.WALK_TARGET), var6.present(var0), var6.present(var4)).apply(var6, (var5x, var6x, var7) -> (var8, var9, var10) -> {
-               List var12 = (List)var6.get(var6x);
-               GlobalPos var13 = (GlobalPos)var6.get(var7);
-               if (var12.isEmpty()) {
+   public static BehaviorControl<Villager> create(final MemoryModuleType<List<GlobalPos>> strollToMemoryType, final float speedModifier, final int closeEnoughDist, final int maxDistanceFromPoi, final MemoryModuleType<GlobalPos> mustBeCloseToMemoryType) {
+      MutableLong nextOkStartTime = new MutableLong(0L);
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.registered(MemoryModuleType.WALK_TARGET), i.present(strollToMemoryType), i.present(mustBeCloseToMemoryType)).apply(i, (walkTarget, strollToMemory, mustBeCloseToMemory) -> (level, body, timestamp) -> {
+               List<GlobalPos> strollTo = (List)i.get(strollToMemory);
+               GlobalPos stayCloseTo = (GlobalPos)i.get(mustBeCloseToMemory);
+               if (strollTo.isEmpty()) {
                   return false;
                } else {
-                  GlobalPos var14 = (GlobalPos)var12.get(var8.getRandom().nextInt(var12.size()));
-                  if (var14 != null && var8.dimension() == var14.dimension() && var13.pos().closerToCenterThan(var9.position(), (double)var3)) {
-                     if (var10 > var5.longValue()) {
-                        var5x.set(new WalkTarget(var14.pos(), var1, var2));
-                        var5.setValue(var10 + 100L);
+                  GlobalPos targetPos = (GlobalPos)strollTo.get(level.getRandom().nextInt(strollTo.size()));
+                  if (targetPos != null && level.dimension() == targetPos.dimension() && stayCloseTo.pos().closerToCenterThan(body.position(), (double)maxDistanceFromPoi)) {
+                     if (timestamp > nextOkStartTime.longValue()) {
+                        walkTarget.set(new WalkTarget(targetPos.pos(), speedModifier, closeEnoughDist));
+                        nextOkStartTime.setValue(timestamp + 100L);
                      }
 
                      return true;

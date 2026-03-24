@@ -13,10 +13,10 @@ public class VillageSectionsDebugRenderer implements DebugRenderer.SimpleDebugRe
       super();
    }
 
-   public void emitGizmos(double var1, double var3, double var5, DebugValueAccess var7, Frustum var8, float var9) {
-      var7.forEachBlock(DebugSubscriptions.VILLAGE_SECTIONS, (var0, var1x) -> {
-         SectionPos var2 = SectionPos.of(var0);
-         Gizmos.cuboid(var2.center(), GizmoStyle.fill(ARGB.colorFromFloat(0.15F, 0.2F, 1.0F, 0.2F)));
+   public void emitGizmos(final double camX, final double camY, final double camZ, final DebugValueAccess debugValues, final Frustum frustum, final float partialTicks) {
+      debugValues.forEachBlock(DebugSubscriptions.VILLAGE_SECTIONS, (pos, ignored) -> {
+         SectionPos villageSection = SectionPos.of(pos);
+         Gizmos.cuboid(villageSection.center(), GizmoStyle.fill(ARGB.colorFromFloat(0.15F, 0.2F, 1.0F, 0.2F)));
       });
    }
 }

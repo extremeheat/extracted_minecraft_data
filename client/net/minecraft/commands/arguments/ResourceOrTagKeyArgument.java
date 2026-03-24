@@ -11,6 +11,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.datafixers.util.Either;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
@@ -27,107 +28,90 @@ import net.minecraft.tags.TagKey;
 
 public class ResourceOrTagKeyArgument<T> implements ArgumentType<Result<T>> {
    private static final Collection<String> EXAMPLES = Arrays.asList("foo", "foo:bar", "012", "#skeletons", "#minecraft:skeletons");
-   final ResourceKey<? extends Registry<T>> registryKey;
+   private final ResourceKey<? extends Registry<T>> registryKey;
 
-   public ResourceOrTagKeyArgument(ResourceKey<? extends Registry<T>> var1) {
+   public ResourceOrTagKeyArgument(final ResourceKey<? extends Registry<T>> registryKey) {
       super();
-      this.registryKey = var1;
+      this.registryKey = registryKey;
    }
 
-   public static <T> ResourceOrTagKeyArgument<T> resourceOrTagKey(ResourceKey<? extends Registry<T>> var0) {
-      return new ResourceOrTagKeyArgument<T>(var0);
+   public static <T> ResourceOrTagKeyArgument<T> resourceOrTagKey(final ResourceKey<? extends Registry<T>> key) {
+      return new ResourceOrTagKeyArgument<T>(key);
    }
 
-   public static <T> Result<T> getResourceOrTagKey(CommandContext<CommandSourceStack> var0, String var1, ResourceKey<Registry<T>> var2, DynamicCommandExceptionType var3) throws CommandSyntaxException {
-      Result var4 = (Result)var0.getArgument(var1, Result.class);
-      Optional var5 = var4.cast(var2);
-      return (Result)var5.orElseThrow(() -> var3.create(var4));
+   public static <T> Result<T> getResourceOrTagKey(final CommandContext<CommandSourceStack> context, final String name, final ResourceKey<Registry<T>> registryKey, final DynamicCommandExceptionType exceptionType) throws CommandSyntaxException {
+      Result<?> argument = (Result)context.getArgument(name, Result.class);
+      Optional<Result<T>> value = argument.cast(registryKey);
+      return (Result)value.orElseThrow(() -> exceptionType.create(argument));
    }
 
-   public Result<T> parse(StringReader var1) throws CommandSyntaxException {
-      if (var1.canRead() && var1.peek() == '#') {
-         int var5 = var1.getCursor();
+   public Result<T> parse(final StringReader reader) throws CommandSyntaxException {
+      if (reader.canRead() && reader.peek() == '#') {
+         int cursor = reader.getCursor();
 
          try {
-            var1.skip();
-            Identifier var3 = Identifier.read(var1);
-            return new TagResult<T>(TagKey.create(this.registryKey, var3));
-         } catch (CommandSyntaxException var4) {
-            var1.setCursor(var5);
-            throw var4;
+            reader.skip();
+            Identifier tagId = Identifier.read(reader);
+            return new TagResult<T>(TagKey.create(this.registryKey, tagId));
+         } catch (CommandSyntaxException e) {
+            reader.setCursor(cursor);
+            throw e;
          }
       } else {
-         Identifier var2 = Identifier.read(var1);
-         return new ResourceResult<T>(ResourceKey.create(this.registryKey, var2));
+         Identifier resourceId = Identifier.read(reader);
+         return new ResourceResult<T>(ResourceKey.create(this.registryKey, resourceId));
       }
    }
 
-   public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      return SharedSuggestionProvider.listSuggestions(var1, var2, this.registryKey, SharedSuggestionProvider.ElementSuggestionType.ALL);
+   public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
+      return SharedSuggestionProvider.listSuggestions(context, builder, this.registryKey, SharedSuggestionProvider.ElementSuggestionType.ALL);
    }
 
    public Collection<String> getExamples() {
       return EXAMPLES;
    }
 
-   // $FF: synthetic method
-   public Object parse(final StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1);
-   }
-
-   static record ResourceResult<T>(ResourceKey<T> key) implements Result<T> {
-      ResourceResult(ResourceKey<T> var1) {
+   private static record ResourceResult<T>(ResourceKey<T> key) implements Result<T> {
+      private ResourceResult {
          super();
-         this.key = var1;
       }
 
       public Either<ResourceKey<T>, TagKey<T>> unwrap() {
          return Either.left(this.key);
       }
 
-      public <E> Optional<Result<E>> cast(ResourceKey<? extends Registry<E>> var1) {
-         return this.key.cast(var1).map(ResourceResult::new);
+      public <E> Optional<Result<E>> cast(final ResourceKey<? extends Registry<E>> registryKey) {
+         return this.key.cast(registryKey).map(ResourceResult::new);
       }
 
-      public boolean test(Holder<T> var1) {
-         return var1.is(this.key);
+      public boolean test(final Holder<T> holder) {
+         return holder.is(this.key);
       }
 
       public String asPrintable() {
          return this.key.identifier().toString();
       }
-
-      // $FF: synthetic method
-      public boolean test(final Object var1) {
-         return this.test((Holder)var1);
-      }
    }
 
-   static record TagResult<T>(TagKey<T> key) implements Result<T> {
-      TagResult(TagKey<T> var1) {
+   private static record TagResult<T>(TagKey<T> key) implements Result<T> {
+      private TagResult {
          super();
-         this.key = var1;
       }
 
       public Either<ResourceKey<T>, TagKey<T>> unwrap() {
          return Either.right(this.key);
       }
 
-      public <E> Optional<Result<E>> cast(ResourceKey<? extends Registry<E>> var1) {
-         return this.key.cast(var1).map(TagResult::new);
+      public <E> Optional<Result<E>> cast(final ResourceKey<? extends Registry<E>> registryKey) {
+         return this.key.cast(registryKey).map(TagResult::new);
       }
 
-      public boolean test(Holder<T> var1) {
-         return var1.is(this.key);
+      public boolean test(final Holder<T> holder) {
+         return holder.is(this.key);
       }
 
       public String asPrintable() {
          return "#" + String.valueOf(this.key.location());
-      }
-
-      // $FF: synthetic method
-      public boolean test(final Object var1) {
-         return this.test((Holder)var1);
       }
    }
 
@@ -136,46 +120,37 @@ public class ResourceOrTagKeyArgument<T> implements ArgumentType<Result<T>> {
          super();
       }
 
-      public void serializeToNetwork(Info<T>.Template var1, FriendlyByteBuf var2) {
-         var2.writeResourceKey(var1.registryKey);
+      public void serializeToNetwork(final Info<T>.Template template, final FriendlyByteBuf out) {
+         out.writeResourceKey(template.registryKey);
       }
 
-      public Info<T>.Template deserializeFromNetwork(FriendlyByteBuf var1) {
-         return new Template(var1.readRegistryKey());
+      public Info<T>.Template deserializeFromNetwork(final FriendlyByteBuf in) {
+         return new Template(in.readRegistryKey());
       }
 
-      public void serializeToJson(Info<T>.Template var1, JsonObject var2) {
-         var2.addProperty("registry", var1.registryKey.identifier().toString());
+      public void serializeToJson(final Info<T>.Template template, final JsonObject out) {
+         out.addProperty("registry", template.registryKey.identifier().toString());
       }
 
-      public Info<T>.Template unpack(ResourceOrTagKeyArgument<T> var1) {
-         return new Template(var1.registryKey);
-      }
-
-      // $FF: synthetic method
-      public ArgumentTypeInfo.Template deserializeFromNetwork(final FriendlyByteBuf var1) {
-         return this.deserializeFromNetwork(var1);
+      public Info<T>.Template unpack(final ResourceOrTagKeyArgument<T> argument) {
+         return new Template(argument.registryKey);
       }
 
       public final class Template implements ArgumentTypeInfo.Template<ResourceOrTagKeyArgument<T>> {
-         final ResourceKey<? extends Registry<T>> registryKey;
+         private final ResourceKey<? extends Registry<T>> registryKey;
 
-         Template(final ResourceKey<? extends Registry<T>> var2) {
+         private Template(final ResourceKey<? extends Registry<T>> registryKey) {
+            Objects.requireNonNull(Info.this);
             super();
-            this.registryKey = var2;
+            this.registryKey = registryKey;
          }
 
-         public ResourceOrTagKeyArgument<T> instantiate(CommandBuildContext var1) {
+         public ResourceOrTagKeyArgument<T> instantiate(final CommandBuildContext context) {
             return new ResourceOrTagKeyArgument<T>(this.registryKey);
          }
 
          public ArgumentTypeInfo<ResourceOrTagKeyArgument<T>, ?> type() {
             return Info.this;
-         }
-
-         // $FF: synthetic method
-         public ArgumentType instantiate(final CommandBuildContext var1) {
-            return this.instantiate(var1);
          }
       }
    }
@@ -183,7 +158,7 @@ public class ResourceOrTagKeyArgument<T> implements ArgumentType<Result<T>> {
    public interface Result<T> extends Predicate<Holder<T>> {
       Either<ResourceKey<T>, TagKey<T>> unwrap();
 
-      <E> Optional<Result<E>> cast(ResourceKey<? extends Registry<E>> var1);
+      <E> Optional<Result<E>> cast(final ResourceKey<? extends Registry<E>> registryKey);
 
       String asPrintable();
    }

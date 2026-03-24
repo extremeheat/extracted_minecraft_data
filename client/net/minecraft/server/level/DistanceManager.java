@@ -17,6 +17,7 @@ import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -27,75 +28,76 @@ import net.minecraft.util.thread.TaskScheduler;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.NaturalSpawner;
 import net.minecraft.world.level.TicketStorage;
+import net.minecraft.world.level.chunk.LevelChunk;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public abstract class DistanceManager {
    private static final Logger LOGGER = LogUtils.getLogger();
-   static final int PLAYER_TICKET_LEVEL;
-   final Long2ObjectMap<ObjectSet<ServerPlayer>> playersPerChunk = new Long2ObjectOpenHashMap();
+   private static final int PLAYER_TICKET_LEVEL;
+   private final Long2ObjectMap<ObjectSet<ServerPlayer>> playersPerChunk = new Long2ObjectOpenHashMap();
    private final LoadingChunkTracker loadingChunkTracker;
    private final SimulationChunkTracker simulationChunkTracker;
-   final TicketStorage ticketStorage;
+   private final TicketStorage ticketStorage;
    private final FixedPlayerDistanceChunkTracker naturalSpawnChunkCounter = new FixedPlayerDistanceChunkTracker(8);
    private final PlayerTicketTracker playerTicketManager = new PlayerTicketTracker(32);
    protected final Set<ChunkHolder> chunksToUpdateFutures = new ReferenceOpenHashSet();
-   final ThrottlingChunkTaskDispatcher ticketDispatcher;
-   final LongSet ticketsToRelease = new LongOpenHashSet();
-   final Executor mainThreadExecutor;
+   private final ThrottlingChunkTaskDispatcher ticketDispatcher;
+   private final LongSet ticketsToRelease = new LongOpenHashSet();
+   private final Executor mainThreadExecutor;
    private int simulationDistance = 10;
 
-   protected DistanceManager(TicketStorage var1, Executor var2, Executor var3) {
+   protected DistanceManager(final TicketStorage ticketStorage, final Executor executor, final Executor mainThreadExecutor) {
       super();
-      this.ticketStorage = var1;
-      this.loadingChunkTracker = new LoadingChunkTracker(this, var1);
-      this.simulationChunkTracker = new SimulationChunkTracker(var1);
-      TaskScheduler var4 = TaskScheduler.wrapExecutor("player ticket throttler", var3);
-      this.ticketDispatcher = new ThrottlingChunkTaskDispatcher(var4, var2, 4);
-      this.mainThreadExecutor = var3;
+      this.ticketStorage = ticketStorage;
+      this.loadingChunkTracker = new LoadingChunkTracker(this, ticketStorage);
+      this.simulationChunkTracker = new SimulationChunkTracker(ticketStorage);
+      TaskScheduler<Runnable> mainThreadTaskScheduler = TaskScheduler.wrapExecutor("player ticket throttler", mainThreadExecutor);
+      this.ticketDispatcher = new ThrottlingChunkTaskDispatcher(mainThreadTaskScheduler, executor, 4);
+      this.mainThreadExecutor = mainThreadExecutor;
    }
 
-   protected abstract boolean isChunkToRemove(long var1);
+   protected abstract boolean isChunkToRemove(final long node);
 
-   protected abstract @Nullable ChunkHolder getChunk(long var1);
+   protected abstract @Nullable ChunkHolder getChunk(final long node);
 
-   protected abstract @Nullable ChunkHolder updateChunkScheduling(long var1, int var3, @Nullable ChunkHolder var4, int var5);
+   protected abstract @Nullable ChunkHolder updateChunkScheduling(final long node, final int level, final @Nullable ChunkHolder chunk, final int oldLevel);
 
-   public boolean runAllUpdates(ChunkMap var1) {
+   public boolean runAllUpdates(final ChunkMap scheduler) {
       this.naturalSpawnChunkCounter.runAllUpdates();
       this.simulationChunkTracker.runAllUpdates();
       this.playerTicketManager.runAllUpdates();
-      int var2 = 2147483647 - this.loadingChunkTracker.runDistanceUpdates(2147483647);
-      boolean var3 = var2 != 0;
-      if (var3 && SharedConstants.DEBUG_VERBOSE_SERVER_EVENTS) {
-         LOGGER.debug("DMU {}", var2);
+      int updates = 2147483647 - this.loadingChunkTracker.runDistanceUpdates(2147483647);
+      boolean updated = updates != 0;
+      if (updated && SharedConstants.DEBUG_VERBOSE_SERVER_EVENTS) {
+         LOGGER.debug("DMU {}", updates);
       }
 
       if (!this.chunksToUpdateFutures.isEmpty()) {
-         for(ChunkHolder var11 : this.chunksToUpdateFutures) {
-            var11.updateHighestAllowedStatus(var1);
+         for(ChunkHolder chunksToUpdateFuture : this.chunksToUpdateFutures) {
+            chunksToUpdateFuture.updateHighestAllowedStatus(scheduler);
          }
 
-         for(ChunkHolder var12 : this.chunksToUpdateFutures) {
-            var12.updateFutures(var1, this.mainThreadExecutor);
+         for(ChunkHolder chunkHolder : this.chunksToUpdateFutures) {
+            chunkHolder.updateFutures(scheduler, this.mainThreadExecutor);
          }
 
          this.chunksToUpdateFutures.clear();
          return true;
       } else {
          if (!this.ticketsToRelease.isEmpty()) {
-            LongIterator var4 = this.ticketsToRelease.iterator();
+            LongIterator iterator = this.ticketsToRelease.iterator();
 
-            while(var4.hasNext()) {
-               long var5 = var4.nextLong();
-               if (this.ticketStorage.getTickets(var5).stream().anyMatch((var0) -> var0.getType() == TicketType.PLAYER_LOADING)) {
-                  ChunkHolder var7 = var1.getUpdatingChunkIfPresent(var5);
-                  if (var7 == null) {
+            while(iterator.hasNext()) {
+               long pos = iterator.nextLong();
+               if (this.ticketStorage.getTickets(pos).stream().anyMatch((t) -> t.getType() == TicketType.PLAYER_LOADING)) {
+                  ChunkHolder chunk = scheduler.getUpdatingChunkIfPresent(pos);
+                  if (chunk == null) {
                      throw new IllegalStateException();
                   }
 
-                  CompletableFuture var8 = var7.getEntityTickingChunkFuture();
-                  var8.thenAccept((var3x) -> this.mainThreadExecutor.execute(() -> this.ticketDispatcher.release(var5, () -> {
+                  CompletableFuture<ChunkResult<LevelChunk>> future = chunk.getEntityTickingChunkFuture();
+                  future.thenAccept((c) -> this.mainThreadExecutor.execute(() -> this.ticketDispatcher.release(pos, () -> {
                         }, false)));
                }
             }
@@ -103,29 +105,29 @@ public abstract class DistanceManager {
             this.ticketsToRelease.clear();
          }
 
-         return var3;
+         return updated;
       }
    }
 
-   public void addPlayer(SectionPos var1, ServerPlayer var2) {
-      ChunkPos var3 = var1.chunk();
-      long var4 = var3.toLong();
-      ((ObjectSet)this.playersPerChunk.computeIfAbsent(var4, (var0) -> new ObjectOpenHashSet())).add(var2);
-      this.naturalSpawnChunkCounter.update(var4, 0, true);
-      this.playerTicketManager.update(var4, 0, true);
-      this.ticketStorage.addTicket(new Ticket(TicketType.PLAYER_SIMULATION, this.getPlayerTicketLevel()), var3);
+   public void addPlayer(final SectionPos pos, final ServerPlayer player) {
+      ChunkPos chunk = pos.chunk();
+      long chunkPos = chunk.pack();
+      ((ObjectSet)this.playersPerChunk.computeIfAbsent(chunkPos, (k) -> new ObjectOpenHashSet())).add(player);
+      this.naturalSpawnChunkCounter.update(chunkPos, 0, true);
+      this.playerTicketManager.update(chunkPos, 0, true);
+      this.ticketStorage.addTicket(new Ticket(TicketType.PLAYER_SIMULATION, this.getPlayerTicketLevel()), chunk);
    }
 
-   public void removePlayer(SectionPos var1, ServerPlayer var2) {
-      ChunkPos var3 = var1.chunk();
-      long var4 = var3.toLong();
-      ObjectSet var6 = (ObjectSet)this.playersPerChunk.get(var4);
-      var6.remove(var2);
-      if (var6.isEmpty()) {
-         this.playersPerChunk.remove(var4);
-         this.naturalSpawnChunkCounter.update(var4, 2147483647, false);
-         this.playerTicketManager.update(var4, 2147483647, false);
-         this.ticketStorage.removeTicket(new Ticket(TicketType.PLAYER_SIMULATION, this.getPlayerTicketLevel()), var3);
+   public void removePlayer(final SectionPos pos, final ServerPlayer player) {
+      ChunkPos chunk = pos.chunk();
+      long chunkPos = chunk.pack();
+      ObjectSet<ServerPlayer> chunkPlayers = (ObjectSet)this.playersPerChunk.get(chunkPos);
+      chunkPlayers.remove(player);
+      if (chunkPlayers.isEmpty()) {
+         this.playersPerChunk.remove(chunkPos);
+         this.naturalSpawnChunkCounter.update(chunkPos, 2147483647, false);
+         this.playerTicketManager.update(chunkPos, 2147483647, false);
+         this.ticketStorage.removeTicket(new Ticket(TicketType.PLAYER_SIMULATION, this.getPlayerTicketLevel()), chunk);
       }
 
    }
@@ -134,25 +136,25 @@ public abstract class DistanceManager {
       return Math.max(0, ChunkLevel.byStatus(FullChunkStatus.ENTITY_TICKING) - this.simulationDistance);
    }
 
-   public boolean inEntityTickingRange(long var1) {
-      return ChunkLevel.isEntityTicking(this.simulationChunkTracker.getLevel(var1));
+   public boolean inEntityTickingRange(final long key) {
+      return ChunkLevel.isEntityTicking(this.simulationChunkTracker.getLevel(key));
    }
 
-   public boolean inBlockTickingRange(long var1) {
-      return ChunkLevel.isBlockTicking(this.simulationChunkTracker.getLevel(var1));
+   public boolean inBlockTickingRange(final long key) {
+      return ChunkLevel.isBlockTicking(this.simulationChunkTracker.getLevel(key));
    }
 
-   public int getChunkLevel(long var1, boolean var3) {
-      return var3 ? this.simulationChunkTracker.getLevel(var1) : this.loadingChunkTracker.getLevel(var1);
+   public int getChunkLevel(final long key, final boolean simulation) {
+      return simulation ? this.simulationChunkTracker.getLevel(key) : this.loadingChunkTracker.getLevel(key);
    }
 
-   protected void updatePlayerTickets(int var1) {
-      this.playerTicketManager.updateViewDistance(var1);
+   protected void updatePlayerTickets(final int viewDistance) {
+      this.playerTicketManager.updateViewDistance(viewDistance);
    }
 
-   public void updateSimulationDistance(int var1) {
-      if (var1 != this.simulationDistance) {
-         this.simulationDistance = var1;
+   public void updateSimulationDistance(final int newDistance) {
+      if (newDistance != this.simulationDistance) {
+         this.simulationDistance = newDistance;
          this.ticketStorage.replaceTicketLevelOfType(this.getPlayerTicketLevel(), TicketType.PLAYER_SIMULATION);
       }
 
@@ -163,25 +165,25 @@ public abstract class DistanceManager {
       return this.naturalSpawnChunkCounter.chunks.size();
    }
 
-   public TriState hasPlayersNearby(long var1) {
+   public TriState hasPlayersNearby(final long pos) {
       this.naturalSpawnChunkCounter.runAllUpdates();
-      int var3 = this.naturalSpawnChunkCounter.getLevel(var1);
-      if (var3 <= NaturalSpawner.INSCRIBED_SQUARE_SPAWN_DISTANCE_CHUNK) {
+      int distance = this.naturalSpawnChunkCounter.getLevel(pos);
+      if (distance <= NaturalSpawner.INSCRIBED_SQUARE_SPAWN_DISTANCE_CHUNK) {
          return TriState.TRUE;
       } else {
-         return var3 > 8 ? TriState.FALSE : TriState.DEFAULT;
+         return distance > 8 ? TriState.FALSE : TriState.DEFAULT;
       }
    }
 
-   public void forEachEntityTickingChunk(LongConsumer var1) {
+   public void forEachEntityTickingChunk(final LongConsumer consumer) {
       ObjectIterator var2 = Long2ByteMaps.fastIterable(this.simulationChunkTracker.chunks).iterator();
 
       while(var2.hasNext()) {
-         Long2ByteMap.Entry var3 = (Long2ByteMap.Entry)var2.next();
-         byte var4 = var3.getByteValue();
-         long var5 = var3.getLongKey();
-         if (ChunkLevel.isEntityTicking(var4)) {
-            var1.accept(var5);
+         Long2ByteMap.Entry entry = (Long2ByteMap.Entry)var2.next();
+         byte level = entry.getByteValue();
+         long key = entry.getLongKey();
+         if (ChunkLevel.isEntityTicking(level)) {
+            consumer.accept(key);
          }
       }
 
@@ -204,41 +206,43 @@ public abstract class DistanceManager {
       PLAYER_TICKET_LEVEL = ChunkLevel.byStatus(FullChunkStatus.ENTITY_TICKING);
    }
 
-   class FixedPlayerDistanceChunkTracker extends ChunkTracker {
-      protected final Long2ByteMap chunks = new Long2ByteOpenHashMap();
+   private class FixedPlayerDistanceChunkTracker extends ChunkTracker {
+      protected final Long2ByteMap chunks;
       protected final int maxDistance;
 
-      protected FixedPlayerDistanceChunkTracker(final int var2) {
-         super(var2 + 2, 16, 256);
-         this.maxDistance = var2;
-         this.chunks.defaultReturnValue((byte)(var2 + 2));
+      protected FixedPlayerDistanceChunkTracker(final int maxDistance) {
+         Objects.requireNonNull(DistanceManager.this);
+         super(maxDistance + 2, 16, 256);
+         this.chunks = new Long2ByteOpenHashMap();
+         this.maxDistance = maxDistance;
+         this.chunks.defaultReturnValue((byte)(maxDistance + 2));
       }
 
-      protected int getLevel(long var1) {
-         return this.chunks.get(var1);
+      protected int getLevel(final long node) {
+         return this.chunks.get(node);
       }
 
-      protected void setLevel(long var1, int var3) {
-         byte var4;
-         if (var3 > this.maxDistance) {
-            var4 = this.chunks.remove(var1);
+      protected void setLevel(final long node, final int level) {
+         byte oldLevel;
+         if (level > this.maxDistance) {
+            oldLevel = this.chunks.remove(node);
          } else {
-            var4 = this.chunks.put(var1, (byte)var3);
+            oldLevel = this.chunks.put(node, (byte)level);
          }
 
-         this.onLevelChange(var1, var4, var3);
+         this.onLevelChange(node, oldLevel, level);
       }
 
-      protected void onLevelChange(long var1, int var3, int var4) {
+      protected void onLevelChange(final long node, final int oldLevel, final int level) {
       }
 
-      protected int getLevelFromSource(long var1) {
-         return this.havePlayer(var1) ? 0 : 2147483647;
+      protected int getLevelFromSource(final long to) {
+         return this.havePlayer(to) ? 0 : 2147483647;
       }
 
-      private boolean havePlayer(long var1) {
-         ObjectSet var3 = (ObjectSet)DistanceManager.this.playersPerChunk.get(var1);
-         return var3 != null && !var3.isEmpty();
+      private boolean havePlayer(final long chunkPos) {
+         ObjectSet<ServerPlayer> players = (ObjectSet)DistanceManager.this.playersPerChunk.get(chunkPos);
+         return players != null && !players.isEmpty();
       }
 
       public void runAllUpdates() {
@@ -246,49 +250,53 @@ public abstract class DistanceManager {
       }
    }
 
-   class PlayerTicketTracker extends FixedPlayerDistanceChunkTracker {
-      private int viewDistance = 0;
-      private final Long2IntMap queueLevels = Long2IntMaps.synchronize(new Long2IntOpenHashMap());
-      private final LongSet toUpdate = new LongOpenHashSet();
+   private class PlayerTicketTracker extends FixedPlayerDistanceChunkTracker {
+      private int viewDistance;
+      private final Long2IntMap queueLevels;
+      private final LongSet toUpdate;
 
-      protected PlayerTicketTracker(final int var2) {
-         super(var2);
-         this.queueLevels.defaultReturnValue(var2 + 2);
+      protected PlayerTicketTracker(final int maxDistance) {
+         Objects.requireNonNull(DistanceManager.this);
+         super(maxDistance);
+         this.queueLevels = Long2IntMaps.synchronize(new Long2IntOpenHashMap());
+         this.toUpdate = new LongOpenHashSet();
+         this.viewDistance = 0;
+         this.queueLevels.defaultReturnValue(maxDistance + 2);
       }
 
-      protected void onLevelChange(long var1, int var3, int var4) {
-         this.toUpdate.add(var1);
+      protected void onLevelChange(final long node, final int oldLevel, final int level) {
+         this.toUpdate.add(node);
       }
 
-      public void updateViewDistance(int var1) {
+      public void updateViewDistance(final int viewDistance) {
          ObjectIterator var2 = this.chunks.long2ByteEntrySet().iterator();
 
          while(var2.hasNext()) {
-            Long2ByteMap.Entry var3 = (Long2ByteMap.Entry)var2.next();
-            byte var4 = var3.getByteValue();
-            long var5 = var3.getLongKey();
-            this.onLevelChange(var5, var4, this.haveTicketFor(var4), var4 <= var1);
+            Long2ByteMap.Entry entry = (Long2ByteMap.Entry)var2.next();
+            byte level = entry.getByteValue();
+            long key = entry.getLongKey();
+            this.onLevelChange(key, level, this.haveTicketFor(level), level <= viewDistance);
          }
 
-         this.viewDistance = var1;
+         this.viewDistance = viewDistance;
       }
 
-      private void onLevelChange(long var1, int var3, boolean var4, boolean var5) {
-         if (var4 != var5) {
-            Ticket var6 = new Ticket(TicketType.PLAYER_LOADING, DistanceManager.PLAYER_TICKET_LEVEL);
-            if (var5) {
+      private void onLevelChange(final long key, final int level, final boolean saw, final boolean sees) {
+         if (saw != sees) {
+            Ticket ticket = new Ticket(TicketType.PLAYER_LOADING, DistanceManager.PLAYER_TICKET_LEVEL);
+            if (sees) {
                DistanceManager.this.ticketDispatcher.submit(() -> DistanceManager.this.mainThreadExecutor.execute(() -> {
-                     if (this.haveTicketFor(this.getLevel(var1))) {
-                        DistanceManager.this.ticketStorage.addTicket(var1, var6);
-                        DistanceManager.this.ticketsToRelease.add(var1);
+                     if (this.haveTicketFor(this.getLevel(key))) {
+                        DistanceManager.this.ticketStorage.addTicket(key, ticket);
+                        DistanceManager.this.ticketsToRelease.add(key);
                      } else {
-                        DistanceManager.this.ticketDispatcher.release(var1, () -> {
+                        DistanceManager.this.ticketDispatcher.release(key, () -> {
                         }, false);
                      }
 
-                  }), var1, () -> var3);
+                  }), key, () -> level);
             } else {
-               DistanceManager.this.ticketDispatcher.release(var1, () -> DistanceManager.this.mainThreadExecutor.execute(() -> DistanceManager.this.ticketStorage.removeTicket(var1, var6)), true);
+               DistanceManager.this.ticketDispatcher.release(key, () -> DistanceManager.this.mainThreadExecutor.execute(() -> DistanceManager.this.ticketStorage.removeTicket(key, ticket)), true);
             }
          }
 
@@ -297,22 +305,22 @@ public abstract class DistanceManager {
       public void runAllUpdates() {
          super.runAllUpdates();
          if (!this.toUpdate.isEmpty()) {
-            LongIterator var1 = this.toUpdate.iterator();
+            LongIterator iterator = this.toUpdate.iterator();
 
-            while(var1.hasNext()) {
-               long var2 = var1.nextLong();
-               int var4 = this.queueLevels.get(var2);
-               int var5 = this.getLevel(var2);
-               if (var4 != var5) {
-                  DistanceManager.this.ticketDispatcher.onLevelChange(new ChunkPos(var2), () -> this.queueLevels.get(var2), var5, (var3) -> {
-                     if (var3 >= this.queueLevels.defaultReturnValue()) {
-                        this.queueLevels.remove(var2);
+            while(iterator.hasNext()) {
+               long node = iterator.nextLong();
+               int oldLevel = this.queueLevels.get(node);
+               int level = this.getLevel(node);
+               if (oldLevel != level) {
+                  DistanceManager.this.ticketDispatcher.onLevelChange(ChunkPos.unpack(node), () -> this.queueLevels.get(node), level, (l) -> {
+                     if (l >= this.queueLevels.defaultReturnValue()) {
+                        this.queueLevels.remove(node);
                      } else {
-                        this.queueLevels.put(var2, var3);
+                        this.queueLevels.put(node, l);
                      }
 
                   });
-                  this.onLevelChange(var2, var5, this.haveTicketFor(var4), this.haveTicketFor(var5));
+                  this.onLevelChange(node, level, this.haveTicketFor(oldLevel), this.haveTicketFor(level));
                }
             }
 
@@ -321,8 +329,8 @@ public abstract class DistanceManager {
 
       }
 
-      private boolean haveTicketFor(int var1) {
-         return var1 <= this.viewDistance;
+      private boolean haveTicketFor(final int level) {
+         return level <= this.viewDistance;
       }
    }
 }

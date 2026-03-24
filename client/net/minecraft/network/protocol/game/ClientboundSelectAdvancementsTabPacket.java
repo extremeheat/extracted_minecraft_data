@@ -11,26 +11,26 @@ public class ClientboundSelectAdvancementsTabPacket implements Packet<ClientGame
    public static final StreamCodec<FriendlyByteBuf, ClientboundSelectAdvancementsTabPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundSelectAdvancementsTabPacket>codec(ClientboundSelectAdvancementsTabPacket::write, ClientboundSelectAdvancementsTabPacket::new);
    private final @Nullable Identifier tab;
 
-   public ClientboundSelectAdvancementsTabPacket(@Nullable Identifier var1) {
+   public ClientboundSelectAdvancementsTabPacket(final @Nullable Identifier tab) {
       super();
-      this.tab = var1;
+      this.tab = tab;
    }
 
-   private ClientboundSelectAdvancementsTabPacket(FriendlyByteBuf var1) {
+   private ClientboundSelectAdvancementsTabPacket(final FriendlyByteBuf input) {
       super();
-      this.tab = (Identifier)var1.readNullable(FriendlyByteBuf::readIdentifier);
+      this.tab = (Identifier)input.readNullable(FriendlyByteBuf::readIdentifier);
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeNullable(this.tab, FriendlyByteBuf::writeIdentifier);
+   private void write(final FriendlyByteBuf output) {
+      output.writeNullable(this.tab, FriendlyByteBuf::writeIdentifier);
    }
 
    public PacketType<ClientboundSelectAdvancementsTabPacket> type() {
       return GamePacketTypes.CLIENTBOUND_SELECT_ADVANCEMENTS_TAB;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleSelectAdvancementsTab(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleSelectAdvancementsTab(this);
    }
 
    public @Nullable Identifier getTab() {

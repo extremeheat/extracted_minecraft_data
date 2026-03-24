@@ -9,28 +9,22 @@ import net.minecraft.util.profiling.jfr.Percentiles;
 import org.jspecify.annotations.Nullable;
 
 public record TimedStatSummary<T extends TimedStat>(T fastest, T slowest, @Nullable T secondSlowest, int count, Map<Integer, Double> percentilesNanos, Duration totalDuration) {
-   public TimedStatSummary(T var1, T var2, @Nullable T var3, int var4, Map<Integer, Double> var5, Duration var6) {
+   public TimedStatSummary {
       super();
-      this.fastest = var1;
-      this.slowest = var2;
-      this.secondSlowest = var3;
-      this.count = var4;
-      this.percentilesNanos = var5;
-      this.totalDuration = var6;
    }
 
-   public static <T extends TimedStat> Optional<TimedStatSummary<T>> summary(List<T> var0) {
-      if (var0.isEmpty()) {
+   public static <T extends TimedStat> Optional<TimedStatSummary<T>> summary(final List<T> values) {
+      if (values.isEmpty()) {
          return Optional.empty();
       } else {
-         List var1 = var0.stream().sorted(Comparator.comparing(TimedStat::duration)).toList();
-         Duration var2 = (Duration)var1.stream().map(TimedStat::duration).reduce(Duration::plus).orElse(Duration.ZERO);
-         TimedStat var3 = (TimedStat)var1.getFirst();
-         TimedStat var4 = (TimedStat)var1.getLast();
-         TimedStat var5 = var1.size() > 1 ? (TimedStat)var1.get(var1.size() - 2) : null;
-         int var6 = var1.size();
-         Map var7 = Percentiles.evaluate(var1.stream().mapToLong((var0x) -> var0x.duration().toNanos()).toArray());
-         return Optional.of(new TimedStatSummary(var3, var4, var5, var6, var7, var2));
+         List<T> sorted = values.stream().sorted(Comparator.comparing(TimedStat::duration)).toList();
+         Duration totalDuration = (Duration)sorted.stream().map(TimedStat::duration).reduce(Duration::plus).orElse(Duration.ZERO);
+         T fastest = (T)(sorted.getFirst());
+         T slowest = (T)(sorted.getLast());
+         T secondSlowest = sorted.size() > 1 ? (TimedStat)sorted.get(sorted.size() - 2) : null;
+         int count = sorted.size();
+         Map<Integer, Double> percentilesNanos = Percentiles.evaluate(sorted.stream().mapToLong((it) -> it.duration().toNanos()).toArray());
+         return Optional.of(new TimedStatSummary(fastest, slowest, secondSlowest, count, percentilesNanos, totalDuration));
       }
    }
 }

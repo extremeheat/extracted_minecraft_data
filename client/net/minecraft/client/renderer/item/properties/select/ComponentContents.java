@@ -15,23 +15,22 @@ import org.jspecify.annotations.Nullable;
 public record ComponentContents<T>(DataComponentType<T> componentType) implements SelectItemModelProperty<T> {
    private static final SelectItemModelProperty.Type<? extends ComponentContents<?>, ?> TYPE = createType();
 
-   public ComponentContents(DataComponentType<T> var1) {
+   public ComponentContents {
       super();
-      this.componentType = var1;
    }
 
    private static <T> SelectItemModelProperty.Type<ComponentContents<T>, T> createType() {
-      Codec var0 = BuiltInRegistries.DATA_COMPONENT_TYPE.byNameCodec().validate((var0x) -> var0x.isTransient() ? DataResult.error(() -> "Component can't be serialized") : DataResult.success(var0x));
-      MapCodec var2 = var0.dispatchMap("component", (var0x) -> ((ComponentContents)var0x.property()).componentType, (var0x) -> SelectItemModelProperty.Type.createCasesFieldCodec(var0x.codecOrThrow()).xmap((var1) -> new SelectItemModel.UnbakedSwitch(new ComponentContents(var0x), var1), SelectItemModel.UnbakedSwitch::cases));
-      return new SelectItemModelProperty.Type<ComponentContents<T>, T>(var2);
+      Codec<? extends DataComponentType<?>> rawComponentCodec = BuiltInRegistries.DATA_COMPONENT_TYPE.byNameCodec().validate((t) -> t.isTransient() ? DataResult.error(() -> "Component can't be serialized") : DataResult.success(t));
+      MapCodec<SelectItemModel.UnbakedSwitch<ComponentContents<T>, T>> switchCodec = rawComponentCodec.dispatchMap("component", (switchObject) -> ((ComponentContents)switchObject.property()).componentType, (componentType) -> SelectItemModelProperty.Type.createCasesFieldCodec(componentType.codecOrThrow()).xmap((cases) -> new SelectItemModel.UnbakedSwitch(new ComponentContents(componentType), cases), SelectItemModel.UnbakedSwitch::cases));
+      return new SelectItemModelProperty.Type<ComponentContents<T>, T>(switchCodec);
    }
 
    public static <T> SelectItemModelProperty.Type<ComponentContents<T>, T> castType() {
       return TYPE;
    }
 
-   public @Nullable T get(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3, int var4, ItemDisplayContext var5) {
-      return (T)var1.get(this.componentType);
+   public @Nullable T get(final ItemStack itemStack, final @Nullable ClientLevel level, final @Nullable LivingEntity owner, final int seed, final ItemDisplayContext displayContext) {
+      return (T)itemStack.get(this.componentType);
    }
 
    public SelectItemModelProperty.Type<ComponentContents<T>, T> type() {

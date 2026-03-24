@@ -6,18 +6,18 @@ import com.mojang.datafixers.schemas.Schema;
 import java.util.Optional;
 
 public class ZombieVillagerRebuildXpFix extends NamedEntityFix {
-   public ZombieVillagerRebuildXpFix(Schema var1, boolean var2) {
-      super(var1, var2, "Zombie Villager XP rebuild", References.ENTITY, "minecraft:zombie_villager");
+   public ZombieVillagerRebuildXpFix(final Schema outputSchema, final boolean changesType) {
+      super(outputSchema, changesType, "Zombie Villager XP rebuild", References.ENTITY, "minecraft:zombie_villager");
    }
 
-   protected Typed<?> fix(Typed<?> var1) {
-      return var1.update(DSL.remainderFinder(), (var0) -> {
-         Optional var1 = var0.get("Xp").asNumber().result();
-         if (var1.isEmpty()) {
-            int var2 = var0.get("VillagerData").get("level").asInt(1);
-            return var0.set("Xp", var0.createInt(VillagerRebuildLevelAndXpFix.getMinXpPerLevel(var2)));
+   protected Typed<?> fix(final Typed<?> entity) {
+      return entity.update(DSL.remainderFinder(), (remainder) -> {
+         Optional<Number> xp = remainder.get("Xp").asNumber().result();
+         if (xp.isEmpty()) {
+            int level = remainder.get("VillagerData").get("level").asInt(1);
+            return remainder.set("Xp", remainder.createInt(VillagerRebuildLevelAndXpFix.getMinXpPerLevel(level)));
          } else {
-            return var0;
+            return remainder;
          }
       });
    }

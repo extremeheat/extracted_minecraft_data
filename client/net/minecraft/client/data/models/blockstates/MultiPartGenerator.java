@@ -4,56 +4,54 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.client.data.models.MultiVariant;
-import net.minecraft.client.renderer.block.model.BlockModelDefinition;
-import net.minecraft.client.renderer.block.model.multipart.Condition;
-import net.minecraft.client.renderer.block.model.multipart.Selector;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelDispatcher;
+import net.minecraft.client.renderer.block.dispatch.multipart.Condition;
+import net.minecraft.client.renderer.block.dispatch.multipart.Selector;
 import net.minecraft.world.level.block.Block;
 
 public class MultiPartGenerator implements BlockModelDefinitionGenerator {
    private final Block block;
    private final List<Entry> parts = new ArrayList();
 
-   private MultiPartGenerator(Block var1) {
+   private MultiPartGenerator(final Block block) {
       super();
-      this.block = var1;
+      this.block = block;
    }
 
    public Block block() {
       return this.block;
    }
 
-   public static MultiPartGenerator multiPart(Block var0) {
-      return new MultiPartGenerator(var0);
+   public static MultiPartGenerator multiPart(final Block block) {
+      return new MultiPartGenerator(block);
    }
 
-   public MultiPartGenerator with(MultiVariant var1) {
-      this.parts.add(new Entry(Optional.empty(), var1));
+   public MultiPartGenerator with(final MultiVariant variants) {
+      this.parts.add(new Entry(Optional.empty(), variants));
       return this;
    }
 
-   private void validateCondition(Condition var1) {
-      var1.instantiate(this.block.getStateDefinition());
+   private void validateCondition(final Condition condition) {
+      condition.instantiate(this.block.getStateDefinition());
    }
 
-   public MultiPartGenerator with(Condition var1, MultiVariant var2) {
-      this.validateCondition(var1);
-      this.parts.add(new Entry(Optional.of(var1), var2));
+   public MultiPartGenerator with(final Condition condition, final MultiVariant variants) {
+      this.validateCondition(condition);
+      this.parts.add(new Entry(Optional.of(condition), variants));
       return this;
    }
 
-   public MultiPartGenerator with(ConditionBuilder var1, MultiVariant var2) {
-      return this.with(var1.build(), var2);
+   public MultiPartGenerator with(final ConditionBuilder condition, final MultiVariant variants) {
+      return this.with(condition.build(), variants);
    }
 
-   public BlockModelDefinition create() {
-      return new BlockModelDefinition(Optional.empty(), Optional.of(new BlockModelDefinition.MultiPartDefinition(this.parts.stream().map(Entry::toUnbaked).toList())));
+   public BlockStateModelDispatcher create() {
+      return new BlockStateModelDispatcher(Optional.empty(), Optional.of(new BlockStateModelDispatcher.MultiPartDefinition(this.parts.stream().map(Entry::toUnbaked).toList())));
    }
 
-   static record Entry(Optional<Condition> condition, MultiVariant variants) {
-      Entry(Optional<Condition> var1, MultiVariant var2) {
+   private static record Entry(Optional<Condition> condition, MultiVariant variants) {
+      private Entry {
          super();
-         this.condition = var1;
-         this.variants = var2;
       }
 
       public Selector toUnbaked() {

@@ -14,9 +14,9 @@ import net.minecraft.world.phys.Vec3;
 public class BreathAirGoal extends Goal {
    private final PathfinderMob mob;
 
-   public BreathAirGoal(PathfinderMob var1) {
+   public BreathAirGoal(final PathfinderMob mob) {
       super();
-      this.mob = var1;
+      this.mob = mob;
       this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
    }
 
@@ -34,24 +34,25 @@ public class BreathAirGoal extends Goal {
 
    public void start() {
       this.findAirPosition();
+      this.mob.getNavigation().stop();
    }
 
    private void findAirPosition() {
-      Iterable var1 = BlockPos.betweenClosed(Mth.floor(this.mob.getX() - 1.0), this.mob.getBlockY(), Mth.floor(this.mob.getZ() - 1.0), Mth.floor(this.mob.getX() + 1.0), Mth.floor(this.mob.getY() + 8.0), Mth.floor(this.mob.getZ() + 1.0));
-      BlockPos var2 = null;
+      Iterable<BlockPos> between = BlockPos.betweenClosed(Mth.floor(this.mob.getX() - 1.0), this.mob.getBlockY(), Mth.floor(this.mob.getZ() - 1.0), Mth.floor(this.mob.getX() + 1.0), Mth.floor(this.mob.getY() + 8.0), Mth.floor(this.mob.getZ() + 1.0));
+      BlockPos destinationPos = null;
 
-      for(BlockPos var4 : var1) {
-         if (this.givesAir(this.mob.level(), var4)) {
-            var2 = var4;
+      for(BlockPos pos : between) {
+         if (this.givesAir(this.mob.level(), pos)) {
+            destinationPos = pos;
             break;
          }
       }
 
-      if (var2 == null) {
-         var2 = BlockPos.containing(this.mob.getX(), this.mob.getY() + 8.0, this.mob.getZ());
+      if (destinationPos == null) {
+         destinationPos = BlockPos.containing(this.mob.getX(), this.mob.getY() + 8.0, this.mob.getZ());
       }
 
-      this.mob.getNavigation().moveTo((double)var2.getX(), (double)(var2.getY() + 1), (double)var2.getZ(), 1.0);
+      this.mob.getNavigation().moveTo((double)destinationPos.getX(), (double)(destinationPos.getY() + 1), (double)destinationPos.getZ(), 1.0);
    }
 
    public void tick() {
@@ -60,8 +61,8 @@ public class BreathAirGoal extends Goal {
       this.mob.move(MoverType.SELF, this.mob.getDeltaMovement());
    }
 
-   private boolean givesAir(LevelReader var1, BlockPos var2) {
-      BlockState var3 = var1.getBlockState(var2);
-      return (var1.getFluidState(var2).isEmpty() || var3.is(Blocks.BUBBLE_COLUMN)) && var3.isPathfindable(PathComputationType.LAND);
+   private boolean givesAir(final LevelReader level, final BlockPos pos) {
+      BlockState state = level.getBlockState(pos);
+      return (level.getFluidState(pos).isEmpty() || state.is(Blocks.BUBBLE_COLUMN)) && state.isPathfindable(PathComputationType.LAND);
    }
 }

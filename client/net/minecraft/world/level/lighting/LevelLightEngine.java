@@ -16,11 +16,11 @@ public class LevelLightEngine implements LightEventListener {
    private final @Nullable LightEngine<?, ?> blockEngine;
    private final @Nullable LightEngine<?, ?> skyEngine;
 
-   public LevelLightEngine(LightChunkGetter var1, boolean var2, boolean var3) {
+   public LevelLightEngine(final LightChunkGetter chunkSource, final boolean hasBlockLight, final boolean hasSkyLight) {
       super();
-      this.levelHeightAccessor = var1.getLevel();
-      this.blockEngine = var2 ? new BlockLightEngine(var1) : null;
-      this.skyEngine = var3 ? new SkyLightEngine(var1) : null;
+      this.levelHeightAccessor = chunkSource.getLevel();
+      this.blockEngine = hasBlockLight ? new BlockLightEngine(chunkSource) : null;
+      this.skyEngine = hasSkyLight ? new SkyLightEngine(chunkSource) : null;
    }
 
    private LevelLightEngine() {
@@ -30,13 +30,13 @@ public class LevelLightEngine implements LightEventListener {
       this.skyEngine = null;
    }
 
-   public void checkBlock(BlockPos var1) {
+   public void checkBlock(final BlockPos pos) {
       if (this.blockEngine != null) {
-         this.blockEngine.checkBlock(var1);
+         this.blockEngine.checkBlock(pos);
       }
 
       if (this.skyEngine != null) {
-         this.skyEngine.checkBlock(var1);
+         this.skyEngine.checkBlock(pos);
       }
 
    }
@@ -50,113 +50,113 @@ public class LevelLightEngine implements LightEventListener {
    }
 
    public int runLightUpdates() {
-      int var1 = 0;
+      int count = 0;
       if (this.blockEngine != null) {
-         var1 += this.blockEngine.runLightUpdates();
+         count += this.blockEngine.runLightUpdates();
       }
 
       if (this.skyEngine != null) {
-         var1 += this.skyEngine.runLightUpdates();
+         count += this.skyEngine.runLightUpdates();
       }
 
-      return var1;
+      return count;
    }
 
-   public void updateSectionStatus(SectionPos var1, boolean var2) {
+   public void updateSectionStatus(final SectionPos pos, final boolean sectionEmpty) {
       if (this.blockEngine != null) {
-         this.blockEngine.updateSectionStatus(var1, var2);
+         this.blockEngine.updateSectionStatus(pos, sectionEmpty);
       }
 
       if (this.skyEngine != null) {
-         this.skyEngine.updateSectionStatus(var1, var2);
-      }
-
-   }
-
-   public void setLightEnabled(ChunkPos var1, boolean var2) {
-      if (this.blockEngine != null) {
-         this.blockEngine.setLightEnabled(var1, var2);
-      }
-
-      if (this.skyEngine != null) {
-         this.skyEngine.setLightEnabled(var1, var2);
+         this.skyEngine.updateSectionStatus(pos, sectionEmpty);
       }
 
    }
 
-   public void propagateLightSources(ChunkPos var1) {
+   public void setLightEnabled(final ChunkPos pos, final boolean enable) {
       if (this.blockEngine != null) {
-         this.blockEngine.propagateLightSources(var1);
+         this.blockEngine.setLightEnabled(pos, enable);
       }
 
       if (this.skyEngine != null) {
-         this.skyEngine.propagateLightSources(var1);
+         this.skyEngine.setLightEnabled(pos, enable);
       }
 
    }
 
-   public LayerLightEventListener getLayerListener(LightLayer var1) {
-      if (var1 == LightLayer.BLOCK) {
+   public void propagateLightSources(final ChunkPos pos) {
+      if (this.blockEngine != null) {
+         this.blockEngine.propagateLightSources(pos);
+      }
+
+      if (this.skyEngine != null) {
+         this.skyEngine.propagateLightSources(pos);
+      }
+
+   }
+
+   public LayerLightEventListener getLayerListener(final LightLayer layer) {
+      if (layer == LightLayer.BLOCK) {
          return (LayerLightEventListener)(this.blockEngine == null ? LayerLightEventListener.DummyLightLayerEventListener.INSTANCE : this.blockEngine);
       } else {
          return (LayerLightEventListener)(this.skyEngine == null ? LayerLightEventListener.DummyLightLayerEventListener.INSTANCE : this.skyEngine);
       }
    }
 
-   public String getDebugData(LightLayer var1, SectionPos var2) {
-      if (var1 == LightLayer.BLOCK) {
+   public String getDebugData(final LightLayer layer, final SectionPos pos) {
+      if (layer == LightLayer.BLOCK) {
          if (this.blockEngine != null) {
-            return this.blockEngine.getDebugData(var2.asLong());
+            return this.blockEngine.getDebugData(pos.asLong());
          }
       } else if (this.skyEngine != null) {
-         return this.skyEngine.getDebugData(var2.asLong());
+         return this.skyEngine.getDebugData(pos.asLong());
       }
 
       return "n/a";
    }
 
-   public LayerLightSectionStorage.SectionType getDebugSectionType(LightLayer var1, SectionPos var2) {
-      if (var1 == LightLayer.BLOCK) {
+   public LayerLightSectionStorage.SectionType getDebugSectionType(final LightLayer layer, final SectionPos pos) {
+      if (layer == LightLayer.BLOCK) {
          if (this.blockEngine != null) {
-            return this.blockEngine.getDebugSectionType(var2.asLong());
+            return this.blockEngine.getDebugSectionType(pos.asLong());
          }
       } else if (this.skyEngine != null) {
-         return this.skyEngine.getDebugSectionType(var2.asLong());
+         return this.skyEngine.getDebugSectionType(pos.asLong());
       }
 
       return LayerLightSectionStorage.SectionType.EMPTY;
    }
 
-   public void queueSectionData(LightLayer var1, SectionPos var2, @Nullable DataLayer var3) {
-      if (var1 == LightLayer.BLOCK) {
+   public void queueSectionData(final LightLayer layer, final SectionPos pos, final @Nullable DataLayer data) {
+      if (layer == LightLayer.BLOCK) {
          if (this.blockEngine != null) {
-            this.blockEngine.queueSectionData(var2.asLong(), var3);
+            this.blockEngine.queueSectionData(pos.asLong(), data);
          }
       } else if (this.skyEngine != null) {
-         this.skyEngine.queueSectionData(var2.asLong(), var3);
+         this.skyEngine.queueSectionData(pos.asLong(), data);
       }
 
    }
 
-   public void retainData(ChunkPos var1, boolean var2) {
+   public void retainData(final ChunkPos pos, final boolean retain) {
       if (this.blockEngine != null) {
-         this.blockEngine.retainData(var1, var2);
+         this.blockEngine.retainData(pos, retain);
       }
 
       if (this.skyEngine != null) {
-         this.skyEngine.retainData(var1, var2);
+         this.skyEngine.retainData(pos, retain);
       }
 
    }
 
-   public int getRawBrightness(BlockPos var1, int var2) {
-      int var3 = this.skyEngine == null ? 0 : this.skyEngine.getLightValue(var1) - var2;
-      int var4 = this.blockEngine == null ? 0 : this.blockEngine.getLightValue(var1);
-      return Math.max(var4, var3);
+   public int getRawBrightness(final BlockPos pos, final int skyDampen) {
+      int skyLight = this.skyEngine == null ? 0 : this.skyEngine.getLightValue(pos) - skyDampen;
+      int blockLight = this.blockEngine == null ? 0 : this.blockEngine.getLightValue(pos);
+      return Math.max(blockLight, skyLight);
    }
 
-   public boolean lightOnInColumn(long var1) {
-      return this.blockEngine == null || this.blockEngine.storage.lightOnInColumn(var1) && (this.skyEngine == null || this.skyEngine.storage.lightOnInColumn(var1));
+   public boolean lightOnInColumn(final long sectionZeroNode) {
+      return this.blockEngine == null || this.blockEngine.storage.lightOnInColumn(sectionZeroNode) && (this.skyEngine == null || this.skyEngine.storage.lightOnInColumn(sectionZeroNode));
    }
 
    public int getLightSectionCount() {

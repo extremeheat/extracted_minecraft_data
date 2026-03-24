@@ -2,43 +2,32 @@ package net.minecraft.world.level.storage.loot.predicates;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Set;
-import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.Validatable;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 
 public record InvertedLootItemCondition(LootItemCondition term) implements LootItemCondition {
-   public static final MapCodec<InvertedLootItemCondition> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(LootItemCondition.DIRECT_CODEC.fieldOf("term").forGetter(InvertedLootItemCondition::term)).apply(var0, InvertedLootItemCondition::new));
+   public static final MapCodec<InvertedLootItemCondition> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(LootItemCondition.DIRECT_CODEC.fieldOf("term").forGetter(InvertedLootItemCondition::term)).apply(i, InvertedLootItemCondition::new));
 
-   public InvertedLootItemCondition(LootItemCondition var1) {
+   public InvertedLootItemCondition {
       super();
-      this.term = var1;
    }
 
-   public LootItemConditionType getType() {
-      return LootItemConditions.INVERTED;
+   public MapCodec<InvertedLootItemCondition> codec() {
+      return MAP_CODEC;
    }
 
-   public boolean test(LootContext var1) {
-      return !this.term.test(var1);
+   public boolean test(final LootContext context) {
+      return !this.term.test(context);
    }
 
-   public Set<ContextKey<?>> getReferencedContextParams() {
-      return this.term.getReferencedContextParams();
+   public void validate(final ValidationContext output) {
+      LootItemCondition.super.validate(output);
+      Validatable.validate(output, "term", this.term);
    }
 
-   public void validate(ValidationContext var1) {
-      LootItemCondition.super.validate(var1);
-      this.term.validate(var1);
-   }
-
-   public static LootItemCondition.Builder invert(LootItemCondition.Builder var0) {
-      InvertedLootItemCondition var1 = new InvertedLootItemCondition(var0.build());
-      return () -> var1;
-   }
-
-   // $FF: synthetic method
-   public boolean test(final Object var1) {
-      return this.test((LootContext)var1);
+   public static LootItemCondition.Builder invert(final LootItemCondition.Builder term) {
+      InvertedLootItemCondition result = new InvertedLootItemCondition(term.build());
+      return () -> result;
    }
 }

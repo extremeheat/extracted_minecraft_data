@@ -8,7 +8,7 @@ public class UndeadRenderState extends HumanoidRenderState {
       super();
    }
 
-   public ItemStack getUseItemStackForArm(HumanoidArm var1) {
+   public ItemStack getUseItemStackForArm(final HumanoidArm arm) {
       return this.getMainHandItemStack();
    }
 }

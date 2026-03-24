@@ -8,43 +8,43 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTest;
 
 public class OreConfiguration implements FeatureConfiguration {
-   public static final Codec<OreConfiguration> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.list(OreConfiguration.TargetBlockState.CODEC).fieldOf("targets").forGetter((var0x) -> var0x.targetStates), Codec.intRange(0, 64).fieldOf("size").forGetter((var0x) -> var0x.size), Codec.floatRange(0.0F, 1.0F).fieldOf("discard_chance_on_air_exposure").forGetter((var0x) -> var0x.discardChanceOnAirExposure)).apply(var0, OreConfiguration::new));
+   public static final Codec<OreConfiguration> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.list(OreConfiguration.TargetBlockState.CODEC).fieldOf("targets").forGetter((c) -> c.targetStates), Codec.intRange(0, 64).fieldOf("size").forGetter((c) -> c.size), Codec.floatRange(0.0F, 1.0F).fieldOf("discard_chance_on_air_exposure").forGetter((c) -> c.discardChanceOnAirExposure)).apply(i, OreConfiguration::new));
    public final List<TargetBlockState> targetStates;
    public final int size;
    public final float discardChanceOnAirExposure;
 
-   public OreConfiguration(List<TargetBlockState> var1, int var2, float var3) {
+   public OreConfiguration(final List<TargetBlockState> targetBlockStates, final int size, final float discardChanceOnAirExposure) {
       super();
-      this.size = var2;
-      this.targetStates = var1;
-      this.discardChanceOnAirExposure = var3;
+      this.size = size;
+      this.targetStates = targetBlockStates;
+      this.discardChanceOnAirExposure = discardChanceOnAirExposure;
    }
 
-   public OreConfiguration(List<TargetBlockState> var1, int var2) {
-      this(var1, var2, 0.0F);
+   public OreConfiguration(final List<TargetBlockState> targetBlockStates, final int size) {
+      this(targetBlockStates, size, 0.0F);
    }
 
-   public OreConfiguration(RuleTest var1, BlockState var2, int var3, float var4) {
-      this(ImmutableList.of(new TargetBlockState(var1, var2)), var3, var4);
+   public OreConfiguration(final RuleTest target, final BlockState state, final int size, final float discardChanceOnAirExposure) {
+      this(ImmutableList.of(new TargetBlockState(target, state)), size, discardChanceOnAirExposure);
    }
 
-   public OreConfiguration(RuleTest var1, BlockState var2, int var3) {
-      this(ImmutableList.of(new TargetBlockState(var1, var2)), var3, 0.0F);
+   public OreConfiguration(final RuleTest target, final BlockState state, final int size) {
+      this(ImmutableList.of(new TargetBlockState(target, state)), size, 0.0F);
    }
 
-   public static TargetBlockState target(RuleTest var0, BlockState var1) {
-      return new TargetBlockState(var0, var1);
+   public static TargetBlockState target(final RuleTest rule, final BlockState state) {
+      return new TargetBlockState(rule, state);
    }
 
    public static class TargetBlockState {
-      public static final Codec<TargetBlockState> CODEC = RecordCodecBuilder.create((var0) -> var0.group(RuleTest.CODEC.fieldOf("target").forGetter((var0x) -> var0x.target), BlockState.CODEC.fieldOf("state").forGetter((var0x) -> var0x.state)).apply(var0, TargetBlockState::new));
+      public static final Codec<TargetBlockState> CODEC = RecordCodecBuilder.create((i) -> i.group(RuleTest.CODEC.fieldOf("target").forGetter((c) -> c.target), BlockState.CODEC.fieldOf("state").forGetter((c) -> c.state)).apply(i, TargetBlockState::new));
       public final RuleTest target;
       public final BlockState state;
 
-      TargetBlockState(RuleTest var1, BlockState var2) {
+      private TargetBlockState(final RuleTest target, final BlockState state) {
          super();
-         this.target = var1;
-         this.state = var2;
+         this.target = target;
+         this.state = state;
       }
    }
 }

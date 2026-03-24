@@ -3,7 +3,6 @@ package net.minecraft.world.phys.shapes;
 import com.google.common.collect.Lists;
 import com.google.common.math.DoubleMath;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -23,19 +22,19 @@ public abstract class VoxelShape {
    protected final DiscreteVoxelShape shape;
    private @Nullable VoxelShape @Nullable [] faces;
 
-   protected VoxelShape(DiscreteVoxelShape var1) {
+   protected VoxelShape(final DiscreteVoxelShape shape) {
       super();
-      this.shape = var1;
+      this.shape = shape;
    }
 
-   public double min(Direction.Axis var1) {
-      int var2 = this.shape.firstFull(var1);
-      return var2 >= this.shape.getSize(var1) ? 1.0 / 0.0 : this.get(var1, var2);
+   public double min(final Direction.Axis axis) {
+      int i = this.shape.firstFull(axis);
+      return i >= this.shape.getSize(axis) ? 1.0 / 0.0 : this.get(axis, i);
    }
 
-   public double max(Direction.Axis var1) {
-      int var2 = this.shape.lastFull(var1);
-      return var2 <= 0 ? -1.0 / 0.0 : this.get(var1, var2);
+   public double max(final Direction.Axis axis) {
+      int i = this.shape.lastFull(axis);
+      return i <= 0 ? -1.0 / 0.0 : this.get(axis, i);
    }
 
    public AABB bounds() {
@@ -50,144 +49,144 @@ public abstract class VoxelShape {
       return this.isEmpty() ? Shapes.empty() : Shapes.box(this.min(Direction.Axis.X), this.min(Direction.Axis.Y), this.min(Direction.Axis.Z), this.max(Direction.Axis.X), this.max(Direction.Axis.Y), this.max(Direction.Axis.Z));
    }
 
-   protected double get(Direction.Axis var1, int var2) {
-      return this.getCoords(var1).getDouble(var2);
+   protected double get(final Direction.Axis axis, final int i) {
+      return this.getCoords(axis).getDouble(i);
    }
 
-   public abstract DoubleList getCoords(Direction.Axis var1);
+   public abstract DoubleList getCoords(final Direction.Axis axis);
 
    public boolean isEmpty() {
       return this.shape.isEmpty();
    }
 
-   public VoxelShape move(Vec3 var1) {
-      return this.move(var1.x, var1.y, var1.z);
+   public VoxelShape move(final Vec3 delta) {
+      return this.move(delta.x, delta.y, delta.z);
    }
 
-   public VoxelShape move(Vec3i var1) {
-      return this.move((double)var1.getX(), (double)var1.getY(), (double)var1.getZ());
+   public VoxelShape move(final Vec3i delta) {
+      return this.move((double)delta.getX(), (double)delta.getY(), (double)delta.getZ());
    }
 
-   public VoxelShape move(double var1, double var3, double var5) {
-      return (VoxelShape)(this.isEmpty() ? Shapes.empty() : new ArrayVoxelShape(this.shape, new OffsetDoubleList(this.getCoords(Direction.Axis.X), var1), new OffsetDoubleList(this.getCoords(Direction.Axis.Y), var3), new OffsetDoubleList(this.getCoords(Direction.Axis.Z), var5)));
+   public VoxelShape move(final double dx, final double dy, final double dz) {
+      return (VoxelShape)(this.isEmpty() ? Shapes.empty() : new ArrayVoxelShape(this.shape, new OffsetDoubleList(this.getCoords(Direction.Axis.X), dx), new OffsetDoubleList(this.getCoords(Direction.Axis.Y), dy), new OffsetDoubleList(this.getCoords(Direction.Axis.Z), dz)));
    }
 
    public VoxelShape optimize() {
-      VoxelShape[] var1 = new VoxelShape[]{Shapes.empty()};
-      this.forAllBoxes((var1x, var3, var5, var7, var9, var11) -> var1[0] = Shapes.joinUnoptimized(var1[0], Shapes.box(var1x, var3, var5, var7, var9, var11), BooleanOp.OR));
-      return var1[0];
+      VoxelShape[] result = new VoxelShape[]{Shapes.empty()};
+      this.forAllBoxes((x1, y1, z1, x2, y2, z2) -> result[0] = Shapes.joinUnoptimized(result[0], Shapes.box(x1, y1, z1, x2, y2, z2), BooleanOp.OR));
+      return result[0];
    }
 
-   public void forAllEdges(Shapes.DoubleLineConsumer var1) {
-      this.shape.forAllEdges((var2, var3, var4, var5, var6, var7) -> var1.consume(this.get(Direction.Axis.X, var2), this.get(Direction.Axis.Y, var3), this.get(Direction.Axis.Z, var4), this.get(Direction.Axis.X, var5), this.get(Direction.Axis.Y, var6), this.get(Direction.Axis.Z, var7)), true);
+   public void forAllEdges(final Shapes.DoubleLineConsumer consumer) {
+      this.shape.forAllEdges((xi1, yi1, zi1, xi2, yi2, zi2) -> consumer.consume(this.get(Direction.Axis.X, xi1), this.get(Direction.Axis.Y, yi1), this.get(Direction.Axis.Z, zi1), this.get(Direction.Axis.X, xi2), this.get(Direction.Axis.Y, yi2), this.get(Direction.Axis.Z, zi2)), true);
    }
 
-   public void forAllBoxes(Shapes.DoubleLineConsumer var1) {
-      DoubleList var2 = this.getCoords(Direction.Axis.X);
-      DoubleList var3 = this.getCoords(Direction.Axis.Y);
-      DoubleList var4 = this.getCoords(Direction.Axis.Z);
-      this.shape.forAllBoxes((var4x, var5, var6, var7, var8, var9) -> var1.consume(var2.getDouble(var4x), var3.getDouble(var5), var4.getDouble(var6), var2.getDouble(var7), var3.getDouble(var8), var4.getDouble(var9)), true);
+   public void forAllBoxes(final Shapes.DoubleLineConsumer consumer) {
+      DoubleList xCoords = this.getCoords(Direction.Axis.X);
+      DoubleList yCoords = this.getCoords(Direction.Axis.Y);
+      DoubleList zCoords = this.getCoords(Direction.Axis.Z);
+      this.shape.forAllBoxes((xi1, yi1, zi1, xi2, yi2, zi2) -> consumer.consume(xCoords.getDouble(xi1), yCoords.getDouble(yi1), zCoords.getDouble(zi1), xCoords.getDouble(xi2), yCoords.getDouble(yi2), zCoords.getDouble(zi2)), true);
    }
 
    public List<AABB> toAabbs() {
-      ArrayList var1 = Lists.newArrayList();
-      this.forAllBoxes((var1x, var3, var5, var7, var9, var11) -> var1.add(new AABB(var1x, var3, var5, var7, var9, var11)));
-      return var1;
+      List<AABB> list = Lists.newArrayList();
+      this.forAllBoxes((x1, y1, z1, x2, y2, z2) -> list.add(new AABB(x1, y1, z1, x2, y2, z2)));
+      return list;
    }
 
-   public double min(Direction.Axis var1, double var2, double var4) {
-      Direction.Axis var6 = AxisCycle.FORWARD.cycle(var1);
-      Direction.Axis var7 = AxisCycle.BACKWARD.cycle(var1);
-      int var8 = this.findIndex(var6, var2);
-      int var9 = this.findIndex(var7, var4);
-      int var10 = this.shape.firstFull(var1, var8, var9);
-      return var10 >= this.shape.getSize(var1) ? 1.0 / 0.0 : this.get(var1, var10);
+   public double min(final Direction.Axis aAxis, final double b, final double c) {
+      Direction.Axis bAxis = AxisCycle.FORWARD.cycle(aAxis);
+      Direction.Axis cAxis = AxisCycle.BACKWARD.cycle(aAxis);
+      int bi = this.findIndex(bAxis, b);
+      int ci = this.findIndex(cAxis, c);
+      int i = this.shape.firstFull(aAxis, bi, ci);
+      return i >= this.shape.getSize(aAxis) ? 1.0 / 0.0 : this.get(aAxis, i);
    }
 
-   public double max(Direction.Axis var1, double var2, double var4) {
-      Direction.Axis var6 = AxisCycle.FORWARD.cycle(var1);
-      Direction.Axis var7 = AxisCycle.BACKWARD.cycle(var1);
-      int var8 = this.findIndex(var6, var2);
-      int var9 = this.findIndex(var7, var4);
-      int var10 = this.shape.lastFull(var1, var8, var9);
-      return var10 <= 0 ? -1.0 / 0.0 : this.get(var1, var10);
+   public double max(final Direction.Axis aAxis, final double b, final double c) {
+      Direction.Axis bAxis = AxisCycle.FORWARD.cycle(aAxis);
+      Direction.Axis cAxis = AxisCycle.BACKWARD.cycle(aAxis);
+      int bi = this.findIndex(bAxis, b);
+      int ci = this.findIndex(cAxis, c);
+      int i = this.shape.lastFull(aAxis, bi, ci);
+      return i <= 0 ? -1.0 / 0.0 : this.get(aAxis, i);
    }
 
-   protected int findIndex(Direction.Axis var1, double var2) {
-      return Mth.binarySearch(0, this.shape.getSize(var1) + 1, (var4) -> var2 < this.get(var1, var4)) - 1;
+   protected int findIndex(final Direction.Axis axis, final double coord) {
+      return Mth.binarySearch(0, this.shape.getSize(axis) + 1, (index) -> coord < this.get(axis, index)) - 1;
    }
 
-   public @Nullable BlockHitResult clip(Vec3 var1, Vec3 var2, BlockPos var3) {
+   public @Nullable BlockHitResult clip(final Vec3 from, final Vec3 to, final BlockPos pos) {
       if (this.isEmpty()) {
          return null;
       } else {
-         Vec3 var4 = var2.subtract(var1);
-         if (var4.lengthSqr() < 1.0E-7) {
+         Vec3 diff = to.subtract(from);
+         if (diff.lengthSqr() < 1.0E-7) {
             return null;
          } else {
-            Vec3 var5 = var1.add(var4.scale(0.001));
-            return this.shape.isFullWide(this.findIndex(Direction.Axis.X, var5.x - (double)var3.getX()), this.findIndex(Direction.Axis.Y, var5.y - (double)var3.getY()), this.findIndex(Direction.Axis.Z, var5.z - (double)var3.getZ())) ? new BlockHitResult(var5, Direction.getApproximateNearest(var4.x, var4.y, var4.z).getOpposite(), var3, true) : AABB.clip(this.toAabbs(), var1, var2, var3);
+            Vec3 testPoint = from.add(diff.scale(0.001));
+            return this.shape.isFullWide(this.findIndex(Direction.Axis.X, testPoint.x - (double)pos.getX()), this.findIndex(Direction.Axis.Y, testPoint.y - (double)pos.getY()), this.findIndex(Direction.Axis.Z, testPoint.z - (double)pos.getZ())) ? new BlockHitResult(testPoint, Direction.getApproximateNearest(diff.x, diff.y, diff.z).getOpposite(), pos, true) : AABB.clip(this.toAabbs(), from, to, pos);
          }
       }
    }
 
-   public Optional<Vec3> closestPointTo(Vec3 var1) {
+   public Optional<Vec3> closestPointTo(final Vec3 point) {
       if (this.isEmpty()) {
          return Optional.empty();
       } else {
-         MutableObject var2 = new MutableObject();
-         this.forAllBoxes((var2x, var4, var6, var8, var10, var12) -> {
-            double var14 = Mth.clamp(var1.x(), var2x, var8);
-            double var16 = Mth.clamp(var1.y(), var4, var10);
-            double var18 = Mth.clamp(var1.z(), var6, var12);
-            Vec3 var20 = (Vec3)var2.get();
-            if (var20 == null || var1.distanceToSqr(var14, var16, var18) < var1.distanceToSqr(var20)) {
-               var2.setValue(new Vec3(var14, var16, var18));
+         MutableObject<Vec3> closest = new MutableObject();
+         this.forAllBoxes((x1, y1, z1, x2, y2, z2) -> {
+            double x = Mth.clamp(point.x(), x1, x2);
+            double y = Mth.clamp(point.y(), y1, y2);
+            double z = Mth.clamp(point.z(), z1, z2);
+            Vec3 currentClosest = (Vec3)closest.get();
+            if (currentClosest == null || point.distanceToSqr(x, y, z) < point.distanceToSqr(currentClosest)) {
+               closest.setValue(new Vec3(x, y, z));
             }
 
          });
-         return Optional.of((Vec3)Objects.requireNonNull((Vec3)var2.get()));
+         return Optional.of((Vec3)Objects.requireNonNull((Vec3)closest.get()));
       }
    }
 
-   public VoxelShape getFaceShape(Direction var1) {
+   public VoxelShape getFaceShape(final Direction direction) {
       if (!this.isEmpty() && this != Shapes.block()) {
          if (this.faces != null) {
-            VoxelShape var2 = this.faces[var1.ordinal()];
-            if (var2 != null) {
-               return var2;
+            VoxelShape face = this.faces[direction.ordinal()];
+            if (face != null) {
+               return face;
             }
          } else {
             this.faces = new VoxelShape[6];
          }
 
-         VoxelShape var3 = this.calculateFace(var1);
-         this.faces[var1.ordinal()] = var3;
-         return var3;
+         VoxelShape face = this.calculateFace(direction);
+         this.faces[direction.ordinal()] = face;
+         return face;
       } else {
          return this;
       }
    }
 
-   private VoxelShape calculateFace(Direction var1) {
-      Direction.Axis var2 = var1.getAxis();
-      if (this.isCubeLikeAlong(var2)) {
+   private VoxelShape calculateFace(final Direction direction) {
+      Direction.Axis axis = direction.getAxis();
+      if (this.isCubeLikeAlong(axis)) {
          return this;
       } else {
-         Direction.AxisDirection var3 = var1.getAxisDirection();
-         int var4 = this.findIndex(var2, var3 == Direction.AxisDirection.POSITIVE ? 0.9999999 : 1.0E-7);
-         SliceShape var5 = new SliceShape(this, var2, var4);
-         if (var5.isEmpty()) {
+         Direction.AxisDirection sign = direction.getAxisDirection();
+         int index = this.findIndex(axis, sign == Direction.AxisDirection.POSITIVE ? 0.9999999 : 1.0E-7);
+         SliceShape slice = new SliceShape(this, axis, index);
+         if (slice.isEmpty()) {
             return Shapes.empty();
          } else {
-            return (VoxelShape)(var5.isCubeLike() ? Shapes.block() : var5);
+            return (VoxelShape)(slice.isCubeLike() ? Shapes.block() : slice);
          }
       }
    }
 
    protected boolean isCubeLike() {
-      for(Direction.Axis var4 : Direction.Axis.VALUES) {
-         if (!this.isCubeLikeAlong(var4)) {
+      for(Direction.Axis axis : Direction.Axis.VALUES) {
+         if (!this.isCubeLikeAlong(axis)) {
             return false;
          }
       }
@@ -195,72 +194,72 @@ public abstract class VoxelShape {
       return true;
    }
 
-   private boolean isCubeLikeAlong(Direction.Axis var1) {
-      DoubleList var2 = this.getCoords(var1);
-      return var2.size() == 2 && DoubleMath.fuzzyEquals(var2.getDouble(0), 0.0, 1.0E-7) && DoubleMath.fuzzyEquals(var2.getDouble(1), 1.0, 1.0E-7);
+   private boolean isCubeLikeAlong(final Direction.Axis axis) {
+      DoubleList coords = this.getCoords(axis);
+      return coords.size() == 2 && DoubleMath.fuzzyEquals(coords.getDouble(0), 0.0, 1.0E-7) && DoubleMath.fuzzyEquals(coords.getDouble(1), 1.0, 1.0E-7);
    }
 
-   public double collide(Direction.Axis var1, AABB var2, double var3) {
-      return this.collideX(AxisCycle.between(var1, Direction.Axis.X), var2, var3);
+   public double collide(final Direction.Axis axis, final AABB moving, final double distance) {
+      return this.collideX(AxisCycle.between(axis, Direction.Axis.X), moving, distance);
    }
 
-   protected double collideX(AxisCycle var1, AABB var2, double var3) {
+   protected double collideX(final AxisCycle transform, final AABB moving, double distance) {
       if (this.isEmpty()) {
-         return var3;
-      } else if (Math.abs(var3) < 1.0E-7) {
+         return distance;
+      } else if (Math.abs(distance) < 1.0E-7) {
          return 0.0;
       } else {
-         AxisCycle var5 = var1.inverse();
-         Direction.Axis var6 = var5.cycle(Direction.Axis.X);
-         Direction.Axis var7 = var5.cycle(Direction.Axis.Y);
-         Direction.Axis var8 = var5.cycle(Direction.Axis.Z);
-         double var9 = var2.max(var6);
-         double var11 = var2.min(var6);
-         int var13 = this.findIndex(var6, var11 + 1.0E-7);
-         int var14 = this.findIndex(var6, var9 - 1.0E-7);
-         int var15 = Math.max(0, this.findIndex(var7, var2.min(var7) + 1.0E-7));
-         int var16 = Math.min(this.shape.getSize(var7), this.findIndex(var7, var2.max(var7) - 1.0E-7) + 1);
-         int var17 = Math.max(0, this.findIndex(var8, var2.min(var8) + 1.0E-7));
-         int var18 = Math.min(this.shape.getSize(var8), this.findIndex(var8, var2.max(var8) - 1.0E-7) + 1);
-         int var19 = this.shape.getSize(var6);
-         if (var3 > 0.0) {
-            for(int var20 = var14 + 1; var20 < var19; ++var20) {
-               for(int var21 = var15; var21 < var16; ++var21) {
-                  for(int var22 = var17; var22 < var18; ++var22) {
-                     if (this.shape.isFullWide(var5, var20, var21, var22)) {
-                        double var23 = this.get(var6, var20) - var9;
-                        if (var23 >= -1.0E-7) {
-                           var3 = Math.min(var3, var23);
+         AxisCycle inverse = transform.inverse();
+         Direction.Axis aAxis = inverse.cycle(Direction.Axis.X);
+         Direction.Axis bAxis = inverse.cycle(Direction.Axis.Y);
+         Direction.Axis cAxis = inverse.cycle(Direction.Axis.Z);
+         double maxA = moving.max(aAxis);
+         double minA = moving.min(aAxis);
+         int aMin = this.findIndex(aAxis, minA + 1.0E-7);
+         int aMax = this.findIndex(aAxis, maxA - 1.0E-7);
+         int bMin = Math.max(0, this.findIndex(bAxis, moving.min(bAxis) + 1.0E-7));
+         int bMax = Math.min(this.shape.getSize(bAxis), this.findIndex(bAxis, moving.max(bAxis) - 1.0E-7) + 1);
+         int cMin = Math.max(0, this.findIndex(cAxis, moving.min(cAxis) + 1.0E-7));
+         int cMax = Math.min(this.shape.getSize(cAxis), this.findIndex(cAxis, moving.max(cAxis) - 1.0E-7) + 1);
+         int aSize = this.shape.getSize(aAxis);
+         if (distance > 0.0) {
+            for(int a = aMax + 1; a < aSize; ++a) {
+               for(int b = bMin; b < bMax; ++b) {
+                  for(int c = cMin; c < cMax; ++c) {
+                     if (this.shape.isFullWide(inverse, a, b, c)) {
+                        double newDistance = this.get(aAxis, a) - maxA;
+                        if (newDistance >= -1.0E-7) {
+                           distance = Math.min(distance, newDistance);
                         }
 
-                        return var3;
+                        return distance;
                      }
                   }
                }
             }
-         } else if (var3 < 0.0) {
-            for(int var25 = var13 - 1; var25 >= 0; --var25) {
-               for(int var26 = var15; var26 < var16; ++var26) {
-                  for(int var27 = var17; var27 < var18; ++var27) {
-                     if (this.shape.isFullWide(var5, var25, var26, var27)) {
-                        double var28 = this.get(var6, var25 + 1) - var11;
-                        if (var28 <= 1.0E-7) {
-                           var3 = Math.max(var3, var28);
+         } else if (distance < 0.0) {
+            for(int a = aMin - 1; a >= 0; --a) {
+               for(int b = bMin; b < bMax; ++b) {
+                  for(int c = cMin; c < cMax; ++c) {
+                     if (this.shape.isFullWide(inverse, a, b, c)) {
+                        double newDistance = this.get(aAxis, a + 1) - minA;
+                        if (newDistance <= 1.0E-7) {
+                           distance = Math.max(distance, newDistance);
                         }
 
-                        return var3;
+                        return distance;
                      }
                   }
                }
             }
          }
 
-         return var3;
+         return distance;
       }
    }
 
-   public boolean equals(Object var1) {
-      return super.equals(var1);
+   public boolean equals(final Object obj) {
+      return super.equals(obj);
    }
 
    public String toString() {

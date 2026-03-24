@@ -10,17 +10,17 @@ import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.FormattedText;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
+import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
 public class AdvancementWidget {
@@ -43,6 +43,7 @@ public class AdvancementWidget {
    private final AdvancementTab tab;
    private final AdvancementNode advancementNode;
    private final DisplayInfo display;
+   private final ItemStack icon;
    private final List<FormattedCharSequence> titleLines;
    private final int width;
    private final List<FormattedCharSequence> description;
@@ -53,126 +54,127 @@ public class AdvancementWidget {
    private final int x;
    private final int y;
 
-   public AdvancementWidget(AdvancementTab var1, Minecraft var2, AdvancementNode var3, DisplayInfo var4) {
+   public AdvancementWidget(final AdvancementTab tab, final Minecraft minecraft, final AdvancementNode advancementNode, final DisplayInfo display) {
       super();
-      this.tab = var1;
-      this.advancementNode = var3;
-      this.display = var4;
-      this.minecraft = var2;
-      this.titleLines = var2.font.split(var4.getTitle(), 163);
-      this.x = Mth.floor(var4.getX() * 28.0F);
-      this.y = Mth.floor(var4.getY() * 27.0F);
+      this.tab = tab;
+      this.advancementNode = advancementNode;
+      this.display = display;
+      this.minecraft = minecraft;
+      this.titleLines = minecraft.font.split(display.getTitle(), 163);
+      this.x = Mth.floor(display.getX() * 28.0F);
+      this.y = Mth.floor(display.getY() * 27.0F);
       Stream var10000 = this.titleLines.stream();
-      Font var10001 = var2.font;
+      Font var10001 = minecraft.font;
       Objects.requireNonNull(var10001);
-      int var5 = Math.max(var10000.mapToInt(var10001::width).max().orElse(0), 80);
-      int var6 = this.getMaxProgressWidth();
-      int var7 = 29 + var5 + var6;
-      this.description = Language.getInstance().getVisualOrder(this.findOptimalLines(ComponentUtils.mergeStyles(var4.getDescription(), Style.EMPTY.withColor(var4.getType().getChatColor())), var7));
+      int titleWidth = Math.max(var10000.mapToInt(var10001::width).max().orElse(0), 80);
+      int maxProgressWidth = this.getMaxProgressWidth();
+      int longestDescLine = 29 + titleWidth + maxProgressWidth;
+      this.description = Language.getInstance().getVisualOrder(this.findOptimalLines(ComponentUtils.mergeStyles(display.getDescription(), Style.EMPTY.withColor(display.getType().getChatColor())), longestDescLine));
 
-      for(FormattedCharSequence var9 : this.description) {
-         var7 = Math.max(var7, var2.font.width(var9));
+      for(FormattedCharSequence line : this.description) {
+         longestDescLine = Math.max(longestDescLine, minecraft.font.width(line));
       }
 
-      this.width = var7 + 3 + 5;
+      this.width = longestDescLine + 3 + 5;
+      this.icon = display.getIcon().create();
    }
 
    private int getMaxProgressWidth() {
-      int var1 = this.advancementNode.advancement().requirements().size();
-      if (var1 <= 1) {
+      int maxCriteraRequired = this.advancementNode.advancement().requirements().size();
+      if (maxCriteraRequired <= 1) {
          return 0;
       } else {
-         boolean var2 = true;
-         MutableComponent var3 = Component.translatable("advancements.progress", var1, var1);
-         return this.minecraft.font.width((FormattedText)var3) + 8;
+         int spacing = 8;
+         Component fakeMaxProgress = Component.translatable("advancements.progress", maxCriteraRequired, maxCriteraRequired);
+         return this.minecraft.font.width((FormattedText)fakeMaxProgress) + 8;
       }
    }
 
-   private static float getMaxWidth(StringSplitter var0, List<FormattedText> var1) {
-      Stream var10000 = var1.stream();
-      Objects.requireNonNull(var0);
-      return (float)var10000.mapToDouble(var0::stringWidth).max().orElse(0.0);
+   private static float getMaxWidth(final StringSplitter splitter, final List<FormattedText> input) {
+      Stream var10000 = input.stream();
+      Objects.requireNonNull(splitter);
+      return (float)var10000.mapToDouble(splitter::stringWidth).max().orElse(0.0);
    }
 
-   private List<FormattedText> findOptimalLines(Component var1, int var2) {
-      StringSplitter var3 = this.minecraft.font.getSplitter();
-      List var4 = null;
-      float var5 = 3.4028235E38F;
+   private List<FormattedText> findOptimalLines(final Component input, final int preferredWidth) {
+      StringSplitter splitter = this.minecraft.font.getSplitter();
+      List<FormattedText> bestSplit = null;
+      float bestDistance = 3.4028235E38F;
 
-      for(int var9 : TEST_SPLIT_OFFSETS) {
-         List var10 = var3.splitLines((FormattedText)var1, var2 - var9, Style.EMPTY);
-         float var11 = Math.abs(getMaxWidth(var3, var10) - (float)var2);
-         if (var11 <= 10.0F) {
-            return var10;
+      for(int testMargin : TEST_SPLIT_OFFSETS) {
+         List<FormattedText> testSplit = splitter.splitLines((FormattedText)input, preferredWidth - testMargin, Style.EMPTY);
+         float distance = Math.abs(getMaxWidth(splitter, testSplit) - (float)preferredWidth);
+         if (distance <= 10.0F) {
+            return testSplit;
          }
 
-         if (var11 < var5) {
-            var5 = var11;
-            var4 = var10;
+         if (distance < bestDistance) {
+            bestDistance = distance;
+            bestSplit = testSplit;
          }
       }
 
-      return var4;
+      return bestSplit;
    }
 
-   private @Nullable AdvancementWidget getFirstVisibleParent(AdvancementNode var1) {
+   private @Nullable AdvancementWidget getFirstVisibleParent(AdvancementNode node) {
       do {
-         var1 = var1.parent();
-      } while(var1 != null && var1.advancement().display().isEmpty());
+         node = node.parent();
+      } while(node != null && node.advancement().display().isEmpty());
 
-      if (var1 != null && !var1.advancement().display().isEmpty()) {
-         return this.tab.getWidget(var1.holder());
+      if (node != null && !node.advancement().display().isEmpty()) {
+         return this.tab.getWidget(node.holder());
       } else {
          return null;
       }
    }
 
-   public void drawConnectivity(GuiGraphics var1, int var2, int var3, boolean var4) {
+   public void extractConnectivity(final GuiGraphicsExtractor graphics, final int xo, final int yo, final boolean background) {
       if (this.parent != null) {
-         int var5 = var2 + this.parent.x + 13;
-         int var6 = var2 + this.parent.x + 26 + 4;
-         int var7 = var3 + this.parent.y + 13;
-         int var8 = var2 + this.x + 13;
-         int var9 = var3 + this.y + 13;
-         int var10 = var4 ? -16777216 : -1;
-         if (var4) {
-            var1.hLine(var6, var5, var7 - 1, var10);
-            var1.hLine(var6 + 1, var5, var7, var10);
-            var1.hLine(var6, var5, var7 + 1, var10);
-            var1.hLine(var8, var6 - 1, var9 - 1, var10);
-            var1.hLine(var8, var6 - 1, var9, var10);
-            var1.hLine(var8, var6 - 1, var9 + 1, var10);
-            var1.vLine(var6 - 1, var9, var7, var10);
-            var1.vLine(var6 + 1, var9, var7, var10);
+         int depX = xo + this.parent.x + 13;
+         int splitX = xo + this.parent.x + 26 + 4;
+         int depY = yo + this.parent.y + 13;
+         int myX = xo + this.x + 13;
+         int myY = yo + this.y + 13;
+         int col = background ? -16777216 : -1;
+         if (background) {
+            graphics.horizontalLine(splitX, depX, depY - 1, col);
+            graphics.horizontalLine(splitX + 1, depX, depY, col);
+            graphics.horizontalLine(splitX, depX, depY + 1, col);
+            graphics.horizontalLine(myX, splitX - 1, myY - 1, col);
+            graphics.horizontalLine(myX, splitX - 1, myY, col);
+            graphics.horizontalLine(myX, splitX - 1, myY + 1, col);
+            graphics.verticalLine(splitX - 1, myY, depY, col);
+            graphics.verticalLine(splitX + 1, myY, depY, col);
          } else {
-            var1.hLine(var6, var5, var7, var10);
-            var1.hLine(var8, var6, var9, var10);
-            var1.vLine(var6, var9, var7, var10);
+            graphics.horizontalLine(splitX, depX, depY, col);
+            graphics.horizontalLine(myX, splitX, myY, col);
+            graphics.verticalLine(splitX, myY, depY, col);
          }
       }
 
-      for(AdvancementWidget var12 : this.children) {
-         var12.drawConnectivity(var1, var2, var3, var4);
+      for(AdvancementWidget child : this.children) {
+         child.extractConnectivity(graphics, xo, yo, background);
       }
 
    }
 
-   public void draw(GuiGraphics var1, int var2, int var3) {
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int xo, final int yo) {
       if (!this.display.isHidden() || this.progress != null && this.progress.isDone()) {
-         float var4 = this.progress == null ? 0.0F : this.progress.getPercent();
-         AdvancementWidgetType var5;
-         if (var4 >= 1.0F) {
-            var5 = AdvancementWidgetType.OBTAINED;
+         float amount = this.progress == null ? 0.0F : this.progress.getPercent();
+         AdvancementWidgetType iconFrame;
+         if (amount >= 1.0F) {
+            iconFrame = AdvancementWidgetType.OBTAINED;
          } else {
-            var5 = AdvancementWidgetType.UNOBTAINED;
+            iconFrame = AdvancementWidgetType.UNOBTAINED;
          }
 
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var5.frameSprite(this.display.getType()), var2 + this.x + 3, var3 + this.y, 26, 26);
-         var1.renderFakeItem(this.display.getIcon(), var2 + this.x + 8, var3 + this.y + 5);
+         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)iconFrame.frameSprite(this.display.getType()), xo + this.x + 3, yo + this.y, 26, 26);
+         graphics.fakeItem(this.icon, xo + this.x + 8, yo + this.y + 5);
       }
 
-      for(AdvancementWidget var7 : this.children) {
-         var7.draw(var1, var2, var3);
+      for(AdvancementWidget child : this.children) {
+         child.extractRenderState(graphics, xo, yo);
       }
 
    }
@@ -181,119 +183,119 @@ public class AdvancementWidget {
       return this.width;
    }
 
-   public void setProgress(AdvancementProgress var1) {
-      this.progress = var1;
+   public void setProgress(final AdvancementProgress progress) {
+      this.progress = progress;
    }
 
-   public void addChild(AdvancementWidget var1) {
-      this.children.add(var1);
+   public void addChild(final AdvancementWidget widget) {
+      this.children.add(widget);
    }
 
-   public void drawHover(GuiGraphics var1, int var2, int var3, float var4, int var5, int var6) {
-      Font var7 = this.minecraft.font;
-      Objects.requireNonNull(var7);
-      int var8 = 9 * this.titleLines.size() + 9 + 8;
-      int var9 = var3 + this.y + (26 - var8) / 2;
-      int var10 = var9 + var8;
+   public void extractHover(final GuiGraphicsExtractor graphics, final int xo, final int yo, final float fade, final int screenxo, final int screenyo) {
+      Font font = this.minecraft.font;
+      Objects.requireNonNull(font);
+      int titleBarHeight = 9 * this.titleLines.size() + 9 + 8;
+      int titleTop = yo + this.y + (26 - titleBarHeight) / 2;
+      int titleBarBottom = titleTop + titleBarHeight;
       int var10000 = this.description.size();
-      Objects.requireNonNull(var7);
-      int var11 = var10000 * 9;
-      int var12 = 6 + var11;
-      boolean var13 = var5 + var2 + this.x + this.width + 26 >= this.tab.getScreen().width;
-      Component var14 = this.progress == null ? null : this.progress.getProgressText();
-      int var15 = var14 == null ? 0 : var7.width((FormattedText)var14);
-      boolean var16 = var10 + var12 >= 113;
-      float var17 = this.progress == null ? 0.0F : this.progress.getPercent();
-      int var21 = Mth.floor(var17 * (float)this.width);
-      AdvancementWidgetType var18;
-      AdvancementWidgetType var19;
-      AdvancementWidgetType var20;
-      if (var17 >= 1.0F) {
-         var21 = this.width / 2;
-         var18 = AdvancementWidgetType.OBTAINED;
-         var19 = AdvancementWidgetType.OBTAINED;
-         var20 = AdvancementWidgetType.OBTAINED;
-      } else if (var21 < 2) {
-         var21 = this.width / 2;
-         var18 = AdvancementWidgetType.UNOBTAINED;
-         var19 = AdvancementWidgetType.UNOBTAINED;
-         var20 = AdvancementWidgetType.UNOBTAINED;
-      } else if (var21 > this.width - 2) {
-         var21 = this.width / 2;
-         var18 = AdvancementWidgetType.OBTAINED;
-         var19 = AdvancementWidgetType.OBTAINED;
-         var20 = AdvancementWidgetType.UNOBTAINED;
+      Objects.requireNonNull(font);
+      int descriptionTextHeight = var10000 * 9;
+      int descriptionHeight = 6 + descriptionTextHeight;
+      boolean leftSide = screenxo + xo + this.x + this.width + 26 >= this.tab.getScreen().width;
+      Component progressText = this.progress == null ? null : this.progress.getProgressText();
+      int progressWidth = progressText == null ? 0 : font.width((FormattedText)progressText);
+      boolean topSide = titleBarBottom + descriptionHeight >= 113;
+      float amount = this.progress == null ? 0.0F : this.progress.getPercent();
+      int firstHalfWidth = Mth.floor(amount * (float)this.width);
+      AdvancementWidgetType firstHalf;
+      AdvancementWidgetType secondHalf;
+      AdvancementWidgetType iconFrame;
+      if (amount >= 1.0F) {
+         firstHalfWidth = this.width / 2;
+         firstHalf = AdvancementWidgetType.OBTAINED;
+         secondHalf = AdvancementWidgetType.OBTAINED;
+         iconFrame = AdvancementWidgetType.OBTAINED;
+      } else if (firstHalfWidth < 2) {
+         firstHalfWidth = this.width / 2;
+         firstHalf = AdvancementWidgetType.UNOBTAINED;
+         secondHalf = AdvancementWidgetType.UNOBTAINED;
+         iconFrame = AdvancementWidgetType.UNOBTAINED;
+      } else if (firstHalfWidth > this.width - 2) {
+         firstHalfWidth = this.width / 2;
+         firstHalf = AdvancementWidgetType.OBTAINED;
+         secondHalf = AdvancementWidgetType.OBTAINED;
+         iconFrame = AdvancementWidgetType.UNOBTAINED;
       } else {
-         var18 = AdvancementWidgetType.OBTAINED;
-         var19 = AdvancementWidgetType.UNOBTAINED;
-         var20 = AdvancementWidgetType.UNOBTAINED;
+         firstHalf = AdvancementWidgetType.OBTAINED;
+         secondHalf = AdvancementWidgetType.UNOBTAINED;
+         iconFrame = AdvancementWidgetType.UNOBTAINED;
       }
 
-      int var22 = this.width - var21;
-      int var23;
-      if (var13) {
-         var23 = var2 + this.x - this.width + 26 + 6;
+      int secondBarWidth = this.width - firstHalfWidth;
+      int titleLeft;
+      if (leftSide) {
+         titleLeft = xo + this.x - this.width + 26 + 6;
       } else {
-         var23 = var2 + this.x;
+         titleLeft = xo + this.x;
       }
 
-      int var24 = var8 + var12;
+      int backgroundHeight = titleBarHeight + descriptionHeight;
       if (!this.description.isEmpty()) {
-         if (var16) {
-            var1.blitSprite(RenderPipelines.GUI_TEXTURED, TITLE_BOX_SPRITE, var23, var10 - var24, this.width, var24);
+         if (topSide) {
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, TITLE_BOX_SPRITE, titleLeft, titleBarBottom - backgroundHeight, this.width, backgroundHeight);
          } else {
-            var1.blitSprite(RenderPipelines.GUI_TEXTURED, TITLE_BOX_SPRITE, var23, var9, this.width, var24);
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, TITLE_BOX_SPRITE, titleLeft, titleTop, this.width, backgroundHeight);
          }
       }
 
-      if (var18 != var19) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, var18.boxSprite(), 200, var8, 0, 0, var23, var9, var21, var8);
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, var19.boxSprite(), 200, var8, 200 - var22, 0, var23 + var21, var9, var22, var8);
+      if (firstHalf != secondHalf) {
+         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, firstHalf.boxSprite(), 200, titleBarHeight, 0, 0, titleLeft, titleTop, firstHalfWidth, titleBarHeight);
+         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, secondHalf.boxSprite(), 200, titleBarHeight, 200 - secondBarWidth, 0, titleLeft + firstHalfWidth, titleTop, secondBarWidth, titleBarHeight);
       } else {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, var18.boxSprite(), var23, var9, this.width, var8);
+         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, firstHalf.boxSprite(), titleLeft, titleTop, this.width, titleBarHeight);
       }
 
-      var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)var20.frameSprite(this.display.getType()), var2 + this.x + 3, var3 + this.y, 26, 26);
-      int var25 = var23 + 5;
-      if (var13) {
-         this.drawMultilineText(var1, this.titleLines, var25, var9 + 9, -1);
-         if (var14 != null) {
-            var1.drawString(var7, (Component)var14, var2 + this.x - var15, var9 + 9, -1);
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)iconFrame.frameSprite(this.display.getType()), xo + this.x + 3, yo + this.y, 26, 26);
+      int descriptionLeft = titleLeft + 5;
+      if (leftSide) {
+         this.extractMultilineText(graphics, this.titleLines, descriptionLeft, titleTop + 9, -1);
+         if (progressText != null) {
+            graphics.text(font, (Component)progressText, xo + this.x - progressWidth, titleTop + 9, -1);
          }
       } else {
-         this.drawMultilineText(var1, this.titleLines, var2 + this.x + 32, var9 + 9, -1);
-         if (var14 != null) {
-            var1.drawString(var7, (Component)var14, var2 + this.x + this.width - var15 - 5, var9 + 9, -1);
+         this.extractMultilineText(graphics, this.titleLines, xo + this.x + 32, titleTop + 9, -1);
+         if (progressText != null) {
+            graphics.text(font, (Component)progressText, xo + this.x + this.width - progressWidth - 5, titleTop + 9, -1);
          }
       }
 
-      if (var16) {
-         this.drawMultilineText(var1, this.description, var25, var9 - var11 + 1, -16711936);
+      if (topSide) {
+         this.extractMultilineText(graphics, this.description, descriptionLeft, titleTop - descriptionTextHeight + 1, -16711936);
       } else {
-         this.drawMultilineText(var1, this.description, var25, var10, -16711936);
+         this.extractMultilineText(graphics, this.description, descriptionLeft, titleBarBottom, -16711936);
       }
 
-      var1.renderFakeItem(this.display.getIcon(), var2 + this.x + 8, var3 + this.y + 5);
+      graphics.fakeItem(this.icon, xo + this.x + 8, yo + this.y + 5);
    }
 
-   private void drawMultilineText(GuiGraphics var1, List<FormattedCharSequence> var2, int var3, int var4, int var5) {
-      Font var6 = this.minecraft.font;
+   private void extractMultilineText(final GuiGraphicsExtractor graphics, final List<FormattedCharSequence> lines, final int x, final int y, final int color) {
+      Font font = this.minecraft.font;
 
-      for(int var7 = 0; var7 < var2.size(); ++var7) {
-         FormattedCharSequence var10002 = (FormattedCharSequence)var2.get(var7);
-         Objects.requireNonNull(var6);
-         var1.drawString(var6, var10002, var3, var4 + var7 * 9, var5);
+      for(int i = 0; i < lines.size(); ++i) {
+         FormattedCharSequence var10002 = (FormattedCharSequence)lines.get(i);
+         Objects.requireNonNull(font);
+         graphics.text(font, var10002, x, y + i * 9, color);
       }
 
    }
 
-   public boolean isMouseOver(int var1, int var2, int var3, int var4) {
+   public boolean isMouseOver(final int xo, final int yo, final int mouseX, final int mouseY) {
       if (!this.display.isHidden() || this.progress != null && this.progress.isDone()) {
-         int var5 = var1 + this.x;
-         int var6 = var5 + 26;
-         int var7 = var2 + this.y;
-         int var8 = var7 + 26;
-         return var3 >= var5 && var3 <= var6 && var4 >= var7 && var4 <= var8;
+         int x0 = xo + this.x;
+         int x1 = x0 + 26;
+         int y0 = yo + this.y;
+         int y1 = y0 + 26;
+         return mouseX >= x0 && mouseX <= x1 && mouseY >= y0 && mouseY <= y1;
       } else {
          return false;
       }

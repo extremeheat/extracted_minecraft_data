@@ -8,13 +8,13 @@ public class BlockStateMatchTest extends RuleTest {
    public static final MapCodec<BlockStateMatchTest> CODEC;
    private final BlockState blockState;
 
-   public BlockStateMatchTest(BlockState var1) {
+   public BlockStateMatchTest(final BlockState blockState) {
       super();
-      this.blockState = var1;
+      this.blockState = blockState;
    }
 
-   public boolean test(BlockState var1, RandomSource var2) {
-      return var1 == this.blockState;
+   public boolean test(final BlockState blockState, final RandomSource random) {
+      return blockState == this.blockState;
    }
 
    protected RuleTestType<?> getType() {
@@ -22,6 +22,6 @@ public class BlockStateMatchTest extends RuleTest {
    }
 
    static {
-      CODEC = BlockState.CODEC.fieldOf("block_state").xmap(BlockStateMatchTest::new, (var0) -> var0.blockState);
+      CODEC = BlockState.CODEC.fieldOf("block_state").xmap(BlockStateMatchTest::new, (t) -> t.blockState);
    }
 }

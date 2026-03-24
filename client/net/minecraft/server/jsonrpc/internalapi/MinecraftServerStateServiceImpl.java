@@ -13,53 +13,53 @@ public class MinecraftServerStateServiceImpl implements MinecraftServerStateServ
    private final DedicatedServer server;
    private final JsonRpcLogger jsonrpcLogger;
 
-   public MinecraftServerStateServiceImpl(DedicatedServer var1, JsonRpcLogger var2) {
+   public MinecraftServerStateServiceImpl(final DedicatedServer server, final JsonRpcLogger jsonrpcLogger) {
       super();
-      this.server = var1;
-      this.jsonrpcLogger = var2;
+      this.server = server;
+      this.jsonrpcLogger = jsonrpcLogger;
    }
 
    public boolean isReady() {
       return this.server.isReady();
    }
 
-   public boolean saveEverything(boolean var1, boolean var2, boolean var3, ClientInfo var4) {
-      this.jsonrpcLogger.log(var4, "Save everything. SuppressLogs: {}, flush: {}, force: {}", var1, var2, var3);
-      return this.server.saveEverything(var1, var2, var3);
+   public boolean saveEverything(final boolean suppressLogs, final boolean flush, final boolean force, final ClientInfo clientInfo) {
+      this.jsonrpcLogger.log(clientInfo, "Save everything. SuppressLogs: {}, flush: {}, force: {}", suppressLogs, flush, force);
+      return this.server.saveEverything(suppressLogs, flush, force);
    }
 
-   public void halt(boolean var1, ClientInfo var2) {
-      this.jsonrpcLogger.log(var2, "Halt server. WaitForShutdown: {}", var1);
-      this.server.halt(var1);
+   public void halt(final boolean waitForShutdown, final ClientInfo clientInfo) {
+      this.jsonrpcLogger.log(clientInfo, "Halt server. WaitForShutdown: {}", waitForShutdown);
+      this.server.halt(waitForShutdown);
    }
 
-   public void sendSystemMessage(Component var1, ClientInfo var2) {
-      this.jsonrpcLogger.log(var2, "Send system message: '{}'", var1.getString());
-      this.server.sendSystemMessage(var1);
+   public void sendSystemMessage(final Component message, final ClientInfo clientInfo) {
+      this.jsonrpcLogger.log(clientInfo, "Send system message: '{}'", message.getString());
+      this.server.sendSystemMessage(message);
    }
 
-   public void sendSystemMessage(Component var1, boolean var2, Collection<ServerPlayer> var3, ClientInfo var4) {
-      List var5 = var3.stream().map(Player::getPlainTextName).toList();
-      this.jsonrpcLogger.log(var4, "Send system message to '{}' players (overlay: {}): '{}'", var5.size(), var2, var1.getString());
+   public void sendSystemMessage(final Component message, final boolean overlay, final Collection<ServerPlayer> players, final ClientInfo clientInfo) {
+      List<String> playerNames = players.stream().map(Player::getPlainTextName).toList();
+      this.jsonrpcLogger.log(clientInfo, "Send system message to '{}' players (overlay: {}): '{}'", playerNames.size(), overlay, message.getString());
 
-      for(ServerPlayer var7 : var3) {
-         if (var2) {
-            var7.sendSystemMessage(var1, true);
+      for(ServerPlayer player : players) {
+         if (overlay) {
+            player.sendOverlayMessage(message);
          } else {
-            var7.sendSystemMessage(var1);
+            player.sendSystemMessage(message);
          }
       }
 
    }
 
-   public void broadcastSystemMessage(Component var1, boolean var2, ClientInfo var3) {
-      this.jsonrpcLogger.log(var3, "Broadcast system message (overlay: {}): '{}'", var2, var1.getString());
+   public void broadcastSystemMessage(final Component message, final boolean overlay, final ClientInfo clientInfo) {
+      this.jsonrpcLogger.log(clientInfo, "Broadcast system message (overlay: {}): '{}'", overlay, message.getString());
 
-      for(ServerPlayer var5 : this.server.getPlayerList().getPlayers()) {
-         if (var2) {
-            var5.sendSystemMessage(var1, true);
+      for(ServerPlayer player : this.server.getPlayerList().getPlayers()) {
+         if (overlay) {
+            player.sendOverlayMessage(message);
          } else {
-            var5.sendSystemMessage(var1);
+            player.sendSystemMessage(message);
          }
       }
 

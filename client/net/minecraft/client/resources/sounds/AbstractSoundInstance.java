@@ -21,39 +21,39 @@ public abstract class AbstractSoundInstance implements SoundInstance {
    protected int delay;
    protected SoundInstance.Attenuation attenuation;
    protected boolean relative;
-   protected RandomSource random;
+   protected final RandomSource random;
 
-   protected AbstractSoundInstance(SoundEvent var1, SoundSource var2, RandomSource var3) {
-      this(var1.location(), var2, var3);
+   protected AbstractSoundInstance(final SoundEvent event, final SoundSource source, final RandomSource random) {
+      this(event.location(), source, random);
    }
 
-   protected AbstractSoundInstance(Identifier var1, SoundSource var2, RandomSource var3) {
+   protected AbstractSoundInstance(final Identifier identifier, final SoundSource source, final RandomSource random) {
       super();
       this.volume = 1.0F;
       this.pitch = 1.0F;
       this.attenuation = SoundInstance.Attenuation.LINEAR;
-      this.identifier = var1;
-      this.source = var2;
-      this.random = var3;
+      this.identifier = identifier;
+      this.source = source;
+      this.random = random;
    }
 
    public Identifier getIdentifier() {
       return this.identifier;
    }
 
-   public @Nullable WeighedSoundEvents resolve(SoundManager var1) {
+   public @Nullable WeighedSoundEvents resolve(final SoundManager soundManager) {
       if (this.identifier.equals(SoundManager.INTENTIONALLY_EMPTY_SOUND_LOCATION)) {
          this.sound = SoundManager.INTENTIONALLY_EMPTY_SOUND;
          return SoundManager.INTENTIONALLY_EMPTY_SOUND_EVENT;
       } else {
-         WeighedSoundEvents var2 = var1.getSoundEvent(this.identifier);
-         if (var2 == null) {
+         WeighedSoundEvents soundEvent = soundManager.getSoundEvent(this.identifier);
+         if (soundEvent == null) {
             this.sound = SoundManager.EMPTY_SOUND;
          } else {
-            this.sound = var2.getSound(this.random);
+            this.sound = soundEvent.getSound(this.random);
          }
 
-         return var2;
+         return soundEvent;
       }
    }
 

@@ -4,32 +4,32 @@ import net.minecraft.util.FormattedCharSequence;
 
 public enum TextAlignment {
    LEFT {
-      public int calculateLeft(int var1, int var2) {
-         return var1;
+      public int calculateLeft(final int anchor, final int width) {
+         return anchor;
       }
 
-      public int calculateLeft(int var1, Font var2, FormattedCharSequence var3) {
-         return var1;
+      public int calculateLeft(final int anchor, final Font font, final FormattedCharSequence text) {
+         return anchor;
       }
    },
    CENTER {
-      public int calculateLeft(int var1, int var2) {
-         return var1 - var2 / 2;
+      public int calculateLeft(final int anchor, final int width) {
+         return anchor - width / 2;
       }
    },
    RIGHT {
-      public int calculateLeft(int var1, int var2) {
-         return var1 - var2;
+      public int calculateLeft(final int anchor, final int width) {
+         return anchor - width;
       }
    };
 
-   TextAlignment() {
+   private TextAlignment() {
    }
 
-   public abstract int calculateLeft(int var1, int var2);
+   public abstract int calculateLeft(int anchor, int width);
 
-   public int calculateLeft(int var1, Font var2, FormattedCharSequence var3) {
-      return this.calculateLeft(var1, var2.width(var3));
+   public int calculateLeft(final int anchor, final Font font, final FormattedCharSequence text) {
+      return this.calculateLeft(anchor, font.width(text));
    }
 
    // $FF: synthetic method

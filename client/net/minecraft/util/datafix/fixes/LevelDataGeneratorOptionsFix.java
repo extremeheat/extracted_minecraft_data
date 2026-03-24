@@ -13,9 +13,7 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -27,181 +25,181 @@ import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public class LevelDataGeneratorOptionsFix extends DataFix {
-   static final Map<String, String> MAP = (Map)Util.make(Maps.newHashMap(), (var0) -> {
-      var0.put("0", "minecraft:ocean");
-      var0.put("1", "minecraft:plains");
-      var0.put("2", "minecraft:desert");
-      var0.put("3", "minecraft:mountains");
-      var0.put("4", "minecraft:forest");
-      var0.put("5", "minecraft:taiga");
-      var0.put("6", "minecraft:swamp");
-      var0.put("7", "minecraft:river");
-      var0.put("8", "minecraft:nether");
-      var0.put("9", "minecraft:the_end");
-      var0.put("10", "minecraft:frozen_ocean");
-      var0.put("11", "minecraft:frozen_river");
-      var0.put("12", "minecraft:snowy_tundra");
-      var0.put("13", "minecraft:snowy_mountains");
-      var0.put("14", "minecraft:mushroom_fields");
-      var0.put("15", "minecraft:mushroom_field_shore");
-      var0.put("16", "minecraft:beach");
-      var0.put("17", "minecraft:desert_hills");
-      var0.put("18", "minecraft:wooded_hills");
-      var0.put("19", "minecraft:taiga_hills");
-      var0.put("20", "minecraft:mountain_edge");
-      var0.put("21", "minecraft:jungle");
-      var0.put("22", "minecraft:jungle_hills");
-      var0.put("23", "minecraft:jungle_edge");
-      var0.put("24", "minecraft:deep_ocean");
-      var0.put("25", "minecraft:stone_shore");
-      var0.put("26", "minecraft:snowy_beach");
-      var0.put("27", "minecraft:birch_forest");
-      var0.put("28", "minecraft:birch_forest_hills");
-      var0.put("29", "minecraft:dark_forest");
-      var0.put("30", "minecraft:snowy_taiga");
-      var0.put("31", "minecraft:snowy_taiga_hills");
-      var0.put("32", "minecraft:giant_tree_taiga");
-      var0.put("33", "minecraft:giant_tree_taiga_hills");
-      var0.put("34", "minecraft:wooded_mountains");
-      var0.put("35", "minecraft:savanna");
-      var0.put("36", "minecraft:savanna_plateau");
-      var0.put("37", "minecraft:badlands");
-      var0.put("38", "minecraft:wooded_badlands_plateau");
-      var0.put("39", "minecraft:badlands_plateau");
-      var0.put("40", "minecraft:small_end_islands");
-      var0.put("41", "minecraft:end_midlands");
-      var0.put("42", "minecraft:end_highlands");
-      var0.put("43", "minecraft:end_barrens");
-      var0.put("44", "minecraft:warm_ocean");
-      var0.put("45", "minecraft:lukewarm_ocean");
-      var0.put("46", "minecraft:cold_ocean");
-      var0.put("47", "minecraft:deep_warm_ocean");
-      var0.put("48", "minecraft:deep_lukewarm_ocean");
-      var0.put("49", "minecraft:deep_cold_ocean");
-      var0.put("50", "minecraft:deep_frozen_ocean");
-      var0.put("127", "minecraft:the_void");
-      var0.put("129", "minecraft:sunflower_plains");
-      var0.put("130", "minecraft:desert_lakes");
-      var0.put("131", "minecraft:gravelly_mountains");
-      var0.put("132", "minecraft:flower_forest");
-      var0.put("133", "minecraft:taiga_mountains");
-      var0.put("134", "minecraft:swamp_hills");
-      var0.put("140", "minecraft:ice_spikes");
-      var0.put("149", "minecraft:modified_jungle");
-      var0.put("151", "minecraft:modified_jungle_edge");
-      var0.put("155", "minecraft:tall_birch_forest");
-      var0.put("156", "minecraft:tall_birch_hills");
-      var0.put("157", "minecraft:dark_forest_hills");
-      var0.put("158", "minecraft:snowy_taiga_mountains");
-      var0.put("160", "minecraft:giant_spruce_taiga");
-      var0.put("161", "minecraft:giant_spruce_taiga_hills");
-      var0.put("162", "minecraft:modified_gravelly_mountains");
-      var0.put("163", "minecraft:shattered_savanna");
-      var0.put("164", "minecraft:shattered_savanna_plateau");
-      var0.put("165", "minecraft:eroded_badlands");
-      var0.put("166", "minecraft:modified_wooded_badlands_plateau");
-      var0.put("167", "minecraft:modified_badlands_plateau");
+   static final Map<String, String> MAP = (Map)Util.make(Maps.newHashMap(), (map) -> {
+      map.put("0", "minecraft:ocean");
+      map.put("1", "minecraft:plains");
+      map.put("2", "minecraft:desert");
+      map.put("3", "minecraft:mountains");
+      map.put("4", "minecraft:forest");
+      map.put("5", "minecraft:taiga");
+      map.put("6", "minecraft:swamp");
+      map.put("7", "minecraft:river");
+      map.put("8", "minecraft:nether");
+      map.put("9", "minecraft:the_end");
+      map.put("10", "minecraft:frozen_ocean");
+      map.put("11", "minecraft:frozen_river");
+      map.put("12", "minecraft:snowy_tundra");
+      map.put("13", "minecraft:snowy_mountains");
+      map.put("14", "minecraft:mushroom_fields");
+      map.put("15", "minecraft:mushroom_field_shore");
+      map.put("16", "minecraft:beach");
+      map.put("17", "minecraft:desert_hills");
+      map.put("18", "minecraft:wooded_hills");
+      map.put("19", "minecraft:taiga_hills");
+      map.put("20", "minecraft:mountain_edge");
+      map.put("21", "minecraft:jungle");
+      map.put("22", "minecraft:jungle_hills");
+      map.put("23", "minecraft:jungle_edge");
+      map.put("24", "minecraft:deep_ocean");
+      map.put("25", "minecraft:stone_shore");
+      map.put("26", "minecraft:snowy_beach");
+      map.put("27", "minecraft:birch_forest");
+      map.put("28", "minecraft:birch_forest_hills");
+      map.put("29", "minecraft:dark_forest");
+      map.put("30", "minecraft:snowy_taiga");
+      map.put("31", "minecraft:snowy_taiga_hills");
+      map.put("32", "minecraft:giant_tree_taiga");
+      map.put("33", "minecraft:giant_tree_taiga_hills");
+      map.put("34", "minecraft:wooded_mountains");
+      map.put("35", "minecraft:savanna");
+      map.put("36", "minecraft:savanna_plateau");
+      map.put("37", "minecraft:badlands");
+      map.put("38", "minecraft:wooded_badlands_plateau");
+      map.put("39", "minecraft:badlands_plateau");
+      map.put("40", "minecraft:small_end_islands");
+      map.put("41", "minecraft:end_midlands");
+      map.put("42", "minecraft:end_highlands");
+      map.put("43", "minecraft:end_barrens");
+      map.put("44", "minecraft:warm_ocean");
+      map.put("45", "minecraft:lukewarm_ocean");
+      map.put("46", "minecraft:cold_ocean");
+      map.put("47", "minecraft:deep_warm_ocean");
+      map.put("48", "minecraft:deep_lukewarm_ocean");
+      map.put("49", "minecraft:deep_cold_ocean");
+      map.put("50", "minecraft:deep_frozen_ocean");
+      map.put("127", "minecraft:the_void");
+      map.put("129", "minecraft:sunflower_plains");
+      map.put("130", "minecraft:desert_lakes");
+      map.put("131", "minecraft:gravelly_mountains");
+      map.put("132", "minecraft:flower_forest");
+      map.put("133", "minecraft:taiga_mountains");
+      map.put("134", "minecraft:swamp_hills");
+      map.put("140", "minecraft:ice_spikes");
+      map.put("149", "minecraft:modified_jungle");
+      map.put("151", "minecraft:modified_jungle_edge");
+      map.put("155", "minecraft:tall_birch_forest");
+      map.put("156", "minecraft:tall_birch_hills");
+      map.put("157", "minecraft:dark_forest_hills");
+      map.put("158", "minecraft:snowy_taiga_mountains");
+      map.put("160", "minecraft:giant_spruce_taiga");
+      map.put("161", "minecraft:giant_spruce_taiga_hills");
+      map.put("162", "minecraft:modified_gravelly_mountains");
+      map.put("163", "minecraft:shattered_savanna");
+      map.put("164", "minecraft:shattered_savanna_plateau");
+      map.put("165", "minecraft:eroded_badlands");
+      map.put("166", "minecraft:modified_wooded_badlands_plateau");
+      map.put("167", "minecraft:modified_badlands_plateau");
    });
    public static final String GENERATOR_OPTIONS = "generatorOptions";
 
-   public LevelDataGeneratorOptionsFix(Schema var1, boolean var2) {
-      super(var1, var2);
+   public LevelDataGeneratorOptionsFix(final Schema outputSchema, final boolean changesType) {
+      super(outputSchema, changesType);
    }
 
    protected TypeRewriteRule makeRule() {
-      Type var1 = this.getOutputSchema().getType(References.LEVEL);
-      return this.fixTypeEverywhereTyped("LevelDataGeneratorOptionsFix", this.getInputSchema().getType(References.LEVEL), var1, (var1x) -> Util.writeAndReadTypedOrThrow(var1x, var1, (var0) -> {
-            Optional var1 = var0.get("generatorOptions").asString().result();
-            if ("flat".equalsIgnoreCase(var0.get("generatorName").asString(""))) {
-               String var3 = (String)var1.orElse("");
-               return var0.set("generatorOptions", convert(var3, var0.getOps()));
-            } else if ("buffet".equalsIgnoreCase(var0.get("generatorName").asString("")) && var1.isPresent()) {
-               JsonElement var2 = LenientJsonParser.parse((String)var1.get());
-               return var0.set("generatorOptions", (new Dynamic(JsonOps.INSTANCE, var2)).convert(var0.getOps()));
+      Type<?> resultType = this.getOutputSchema().getType(References.LEVEL);
+      return this.fixTypeEverywhereTyped("LevelDataGeneratorOptionsFix", this.getInputSchema().getType(References.LEVEL), resultType, (input) -> Util.writeAndReadTypedOrThrow(input, resultType, (tag) -> {
+            Optional<String> generatorOptions = tag.get("generatorOptions").asString().result();
+            if ("flat".equalsIgnoreCase(tag.get("generatorName").asString(""))) {
+               String flatOptionString = (String)generatorOptions.orElse("");
+               return tag.set("generatorOptions", convert(flatOptionString, tag.getOps()));
+            } else if ("buffet".equalsIgnoreCase(tag.get("generatorName").asString("")) && generatorOptions.isPresent()) {
+               JsonElement legacyOptions = LenientJsonParser.parse((String)generatorOptions.get());
+               return tag.set("generatorOptions", (new Dynamic(JsonOps.INSTANCE, legacyOptions)).convert(tag.getOps()));
             } else {
-               return var0;
+               return tag;
             }
          }));
    }
 
-   private static <T> Dynamic<T> convert(String var0, DynamicOps<T> var1) {
-      Iterator var2 = Splitter.on(';').split(var0).iterator();
-      String var4 = "minecraft:plains";
-      HashMap var5 = Maps.newHashMap();
-      Object var3;
-      if (!var0.isEmpty() && var2.hasNext()) {
-         var3 = getLayersInfoFromString((String)var2.next());
-         if (!((List)var3).isEmpty()) {
-            if (var2.hasNext()) {
-               var4 = (String)MAP.getOrDefault(var2.next(), "minecraft:plains");
+   private static <T> Dynamic<T> convert(final String flatOptionString, final DynamicOps<T> ops) {
+      Iterator<String> parts = Splitter.on(';').split(flatOptionString).iterator();
+      String biome = "minecraft:plains";
+      Map<String, Map<String, String>> structuresOptions = Maps.newHashMap();
+      List<Pair<Integer, String>> layerList;
+      if (!flatOptionString.isEmpty() && parts.hasNext()) {
+         layerList = getLayersInfoFromString((String)parts.next());
+         if (!layerList.isEmpty()) {
+            if (parts.hasNext()) {
+               biome = (String)MAP.getOrDefault(parts.next(), "minecraft:plains");
             }
 
-            if (var2.hasNext()) {
-               String[] var6 = ((String)var2.next()).toLowerCase(Locale.ROOT).split(",");
+            if (parts.hasNext()) {
+               String[] structures1 = ((String)parts.next()).toLowerCase(Locale.ROOT).split(",");
 
-               for(String var10 : var6) {
-                  String[] var11 = var10.split("\\(", 2);
-                  if (!var11[0].isEmpty()) {
-                     var5.put(var11[0], Maps.newHashMap());
-                     if (var11.length > 1 && var11[1].endsWith(")") && var11[1].length() > 1) {
-                        String[] var12 = var11[1].substring(0, var11[1].length() - 1).split(" ");
+               for(String structure : structures1) {
+                  String[] separated = structure.split("\\(", 2);
+                  if (!separated[0].isEmpty()) {
+                     structuresOptions.put(separated[0], Maps.newHashMap());
+                     if (separated.length > 1 && separated[1].endsWith(")") && separated[1].length() > 1) {
+                        String[] options = separated[1].substring(0, separated[1].length() - 1).split(" ");
 
-                        for(String var16 : var12) {
-                           String[] var17 = var16.split("=", 2);
-                           if (var17.length == 2) {
-                              ((Map)var5.get(var11[0])).put(var17[0], var17[1]);
+                        for(String part : options) {
+                           String[] split = part.split("=", 2);
+                           if (split.length == 2) {
+                              ((Map)structuresOptions.get(separated[0])).put(split[0], split[1]);
                            }
                         }
                      }
                   }
                }
             } else {
-               var5.put("village", Maps.newHashMap());
+               structuresOptions.put("village", Maps.newHashMap());
             }
          }
       } else {
-         var3 = Lists.newArrayList();
-         ((List)var3).add(Pair.of(1, "minecraft:bedrock"));
-         ((List)var3).add(Pair.of(2, "minecraft:dirt"));
-         ((List)var3).add(Pair.of(1, "minecraft:grass_block"));
-         var5.put("village", Maps.newHashMap());
+         layerList = Lists.newArrayList();
+         layerList.add(Pair.of(1, "minecraft:bedrock"));
+         layerList.add(Pair.of(2, "minecraft:dirt"));
+         layerList.add(Pair.of(1, "minecraft:grass_block"));
+         structuresOptions.put("village", Maps.newHashMap());
       }
 
-      Object var18 = var1.createList(((List)var3).stream().map((var1x) -> var1.createMap(ImmutableMap.of(var1.createString("height"), var1.createInt((Integer)var1x.getFirst()), var1.createString("block"), var1.createString((String)var1x.getSecond())))));
-      Object var19 = var1.createMap((Map)var5.entrySet().stream().map((var1x) -> Pair.of(var1.createString(((String)var1x.getKey()).toLowerCase(Locale.ROOT)), var1.createMap((Map)((Map)var1x.getValue()).entrySet().stream().map((var1xx) -> Pair.of(var1.createString((String)var1xx.getKey()), var1.createString((String)var1xx.getValue()))).collect(Collectors.toMap(Pair::getFirst, Pair::getSecond))))).collect(Collectors.toMap(Pair::getFirst, Pair::getSecond)));
-      return new Dynamic(var1, var1.createMap(ImmutableMap.of(var1.createString("layers"), var18, var1.createString("biome"), var1.createString(var4), var1.createString("structures"), var19)));
+      T layers = (T)ops.createList(layerList.stream().map((layer) -> ops.createMap(ImmutableMap.of(ops.createString("height"), ops.createInt((Integer)layer.getFirst()), ops.createString("block"), ops.createString((String)layer.getSecond())))));
+      T structures = (T)ops.createMap((Map)structuresOptions.entrySet().stream().map((entry) -> Pair.of(ops.createString(((String)entry.getKey()).toLowerCase(Locale.ROOT)), ops.createMap((Map)((Map)entry.getValue()).entrySet().stream().map((option) -> Pair.of(ops.createString((String)option.getKey()), ops.createString((String)option.getValue()))).collect(Collectors.toMap(Pair::getFirst, Pair::getSecond))))).collect(Collectors.toMap(Pair::getFirst, Pair::getSecond)));
+      return new Dynamic(ops, ops.createMap(ImmutableMap.of(ops.createString("layers"), layers, ops.createString("biome"), ops.createString(biome), ops.createString("structures"), structures)));
    }
 
-   private static @Nullable Pair<Integer, String> getLayerInfoFromString(String var0) {
-      String[] var1 = var0.split("\\*", 2);
-      int var2;
-      if (var1.length == 2) {
+   private static @Nullable Pair<Integer, String> getLayerInfoFromString(final String input) {
+      String[] parts = input.split("\\*", 2);
+      int height;
+      if (parts.length == 2) {
          try {
-            var2 = Integer.parseInt(var1[0]);
+            height = Integer.parseInt(parts[0]);
          } catch (NumberFormatException var4) {
             return null;
          }
       } else {
-         var2 = 1;
+         height = 1;
       }
 
-      String var3 = var1[var1.length - 1];
-      return Pair.of(var2, var3);
+      String block = parts[parts.length - 1];
+      return Pair.of(height, block);
    }
 
-   private static List<Pair<Integer, String>> getLayersInfoFromString(String var0) {
-      ArrayList var1 = Lists.newArrayList();
-      String[] var2 = var0.split(",");
+   private static List<Pair<Integer, String>> getLayersInfoFromString(final String input) {
+      List<Pair<Integer, String>> result = Lists.newArrayList();
+      String[] depths = input.split(",");
 
-      for(String var6 : var2) {
-         Pair var7 = getLayerInfoFromString(var6);
-         if (var7 == null) {
+      for(String depth : depths) {
+         Pair<Integer, String> layer = getLayerInfoFromString(depth);
+         if (layer == null) {
             return Collections.emptyList();
          }
 
-         var1.add(var7);
+         result.add(layer);
       }
 
-      return var1;
+      return result;
    }
 }

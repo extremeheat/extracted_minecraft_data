@@ -17,32 +17,27 @@ import org.jspecify.annotations.Nullable;
 public record ClientboundMapItemDataPacket(MapId mapId, byte scale, boolean locked, Optional<List<MapDecoration>> decorations, Optional<MapItemSavedData.MapPatch> colorPatch) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundMapItemDataPacket> STREAM_CODEC;
 
-   public ClientboundMapItemDataPacket(MapId var1, byte var2, boolean var3, @Nullable Collection<MapDecoration> var4, MapItemSavedData.@Nullable MapPatch var5) {
-      this(var1, var2, var3, var4 != null ? Optional.of(List.copyOf(var4)) : Optional.empty(), Optional.ofNullable(var5));
+   public ClientboundMapItemDataPacket(final MapId mapId, final byte scale, final boolean locked, final @Nullable Collection<MapDecoration> decorations, final MapItemSavedData.@Nullable MapPatch colorPatch) {
+      this(mapId, scale, locked, decorations != null ? Optional.of(List.copyOf(decorations)) : Optional.empty(), Optional.ofNullable(colorPatch));
    }
 
-   public ClientboundMapItemDataPacket(MapId var1, byte var2, boolean var3, Optional<List<MapDecoration>> var4, Optional<MapItemSavedData.MapPatch> var5) {
+   public ClientboundMapItemDataPacket {
       super();
-      this.mapId = var1;
-      this.scale = var2;
-      this.locked = var3;
-      this.decorations = var4;
-      this.colorPatch = var5;
    }
 
    public PacketType<ClientboundMapItemDataPacket> type() {
       return GamePacketTypes.CLIENTBOUND_MAP_ITEM_DATA;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleMapItemData(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleMapItemData(this);
    }
 
-   public void applyToMap(MapItemSavedData var1) {
+   public void applyToMap(final MapItemSavedData map) {
       Optional var10000 = this.decorations;
-      Objects.requireNonNull(var1);
-      var10000.ifPresent(var1::addClientSideDecorations);
-      this.colorPatch.ifPresent((var1x) -> var1x.applyToMap(var1));
+      Objects.requireNonNull(map);
+      var10000.ifPresent(map::addClientSideDecorations);
+      this.colorPatch.ifPresent((patch) -> patch.applyToMap(map));
    }
 
    static {

@@ -1,13 +1,12 @@
 package net.minecraft.world.item;
 
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -17,13 +16,11 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.AgeableMob;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.ClipContext;
@@ -39,92 +36,85 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class SpawnEggItem extends Item {
-   private static final Map<EntityType<?>, SpawnEggItem> BY_ID = Maps.newIdentityHashMap();
-
-   public SpawnEggItem(Item.Properties var1) {
-      super(var1);
-      TypedEntityData var2 = (TypedEntityData)this.components().get(DataComponents.ENTITY_DATA);
-      if (var2 != null) {
-         BY_ID.put((EntityType)var2.type(), this);
-      }
-
+   public SpawnEggItem(final Item.Properties properties) {
+      super(properties);
    }
 
-   public InteractionResult useOn(UseOnContext var1) {
-      Level var2 = var1.getLevel();
-      if (!(var2 instanceof ServerLevel var3)) {
+   public InteractionResult useOn(final UseOnContext context) {
+      Level level = context.getLevel();
+      if (!(level instanceof ServerLevel serverLevel)) {
          return InteractionResult.SUCCESS;
       } else {
-         ItemStack var4 = var1.getItemInHand();
-         BlockPos var5 = var1.getClickedPos();
-         Direction var6 = var1.getClickedFace();
-         BlockState var7 = var2.getBlockState(var5);
-         BlockEntity var9 = var2.getBlockEntity(var5);
-         if (var9 instanceof Spawner var12) {
-            EntityType var13 = this.getType(var4);
-            if (var13 == null) {
+         ItemStack itemStack = context.getItemInHand();
+         BlockPos pos = context.getClickedPos();
+         Direction clickedFace = context.getClickedFace();
+         BlockState blockState = level.getBlockState(pos);
+         BlockEntity var9 = level.getBlockEntity(pos);
+         if (var9 instanceof Spawner spawnerHolder) {
+            EntityType<?> type = getType(itemStack);
+            if (type == null) {
                return InteractionResult.FAIL;
-            } else if (!var3.isSpawnerBlockEnabled()) {
-               Player var11 = var1.getPlayer();
+            } else if (!serverLevel.isSpawnerBlockEnabled()) {
+               Player var11 = context.getPlayer();
                if (var11 instanceof ServerPlayer) {
-                  ServerPlayer var10 = (ServerPlayer)var11;
-                  var10.sendSystemMessage(Component.translatable("advMode.notEnabled.spawner"));
+                  ServerPlayer serverPlayer = (ServerPlayer)var11;
+                  serverPlayer.sendSystemMessage(Component.translatable("advMode.notEnabled.spawner"));
                }
 
                return InteractionResult.FAIL;
             } else {
-               var12.setEntityId(var13, var2.getRandom());
-               var2.sendBlockUpdated(var5, var7, var7, 3);
-               var2.gameEvent(var1.getPlayer(), GameEvent.BLOCK_CHANGE, var5);
-               var4.shrink(1);
+               spawnerHolder.setEntityId(type, level.getRandom());
+               level.sendBlockUpdated(pos, blockState, blockState, 3);
+               level.gameEvent(context.getPlayer(), GameEvent.BLOCK_CHANGE, pos);
+               itemStack.shrink(1);
                return InteractionResult.SUCCESS;
             }
          } else {
-            BlockPos var8;
-            if (var7.getCollisionShape(var2, var5).isEmpty()) {
-               var8 = var5;
+            BlockPos spawnPos;
+            if (blockState.getCollisionShape(level, pos).isEmpty()) {
+               spawnPos = pos;
             } else {
-               var8 = var5.relative(var6);
+               spawnPos = pos.relative(clickedFace);
             }
 
-            return this.spawnMob(var1.getPlayer(), var4, var2, var8, true, !Objects.equals(var5, var8) && var6 == Direction.UP);
+            return spawnMob(context.getPlayer(), itemStack, level, spawnPos, true, !Objects.equals(pos, spawnPos) && clickedFace == Direction.UP);
          }
       }
    }
 
-   private InteractionResult spawnMob(@Nullable LivingEntity var1, ItemStack var2, Level var3, BlockPos var4, boolean var5, boolean var6) {
-      EntityType var7 = this.getType(var2);
-      if (var7 == null) {
+   private static InteractionResult spawnMob(final @Nullable LivingEntity user, final ItemStack itemStack, final Level level, final BlockPos spawnPos, final boolean tryMoveDown, final boolean movedUp) {
+      EntityType<?> type = getType(itemStack);
+      if (type == null) {
          return InteractionResult.FAIL;
-      } else if (!var7.isAllowedInPeaceful() && var3.getDifficulty() == Difficulty.PEACEFUL) {
+      } else if (!type.isAllowedInPeaceful() && level.getDifficulty() == Difficulty.PEACEFUL) {
          return InteractionResult.FAIL;
       } else {
-         if (var7.spawn((ServerLevel)var3, var2, var1, var4, EntitySpawnReason.SPAWN_ITEM_USE, var5, var6) != null) {
-            var2.consume(1, var1);
-            var3.gameEvent(var1, GameEvent.ENTITY_PLACE, var4);
+         if (type.spawn((ServerLevel)level, itemStack, user, spawnPos, EntitySpawnReason.SPAWN_ITEM_USE, tryMoveDown, movedUp) != null) {
+            itemStack.consume(1, user);
+            level.gameEvent(user, GameEvent.ENTITY_PLACE, spawnPos);
          }
 
          return InteractionResult.SUCCESS;
       }
    }
 
-   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
-      ItemStack var4 = var2.getItemInHand(var3);
-      BlockHitResult var5 = getPlayerPOVHitResult(var1, var2, ClipContext.Fluid.SOURCE_ONLY);
-      if (var5.getType() != HitResult.Type.BLOCK) {
+   public InteractionResult use(final Level level, final Player player, final InteractionHand hand) {
+      ItemStack itemStack = player.getItemInHand(hand);
+      BlockHitResult hitResult = getPlayerPOVHitResult(level, player, ClipContext.Fluid.SOURCE_ONLY);
+      if (hitResult.getType() != HitResult.Type.BLOCK) {
          return InteractionResult.PASS;
-      } else if (var1 instanceof ServerLevel) {
-         ServerLevel var6 = (ServerLevel)var1;
-         BlockPos var7 = var5.getBlockPos();
-         if (!(var1.getBlockState(var7).getBlock() instanceof LiquidBlock)) {
+      } else if (level instanceof ServerLevel) {
+         ServerLevel serverLevel = (ServerLevel)level;
+         BlockPos pos = hitResult.getBlockPos();
+         if (!(level.getBlockState(pos).getBlock() instanceof LiquidBlock)) {
             return InteractionResult.PASS;
-         } else if (var1.mayInteract(var2, var7) && var2.mayUseItemAt(var7, var5.getDirection(), var4)) {
-            InteractionResult var8 = this.spawnMob(var2, var4, var1, var7, false, false);
-            if (var8 == InteractionResult.SUCCESS) {
-               var2.awardStat(Stats.ITEM_USED.get(this));
+         } else if (level.mayInteract(player, pos) && player.mayUseItemAt(pos, hitResult.getDirection(), itemStack)) {
+            InteractionResult result = spawnMob(player, itemStack, level, pos, false, false);
+            if (result == InteractionResult.SUCCESS) {
+               player.awardStat(Stats.ITEM_USED.get(this));
             }
 
-            return var8;
+            return result;
          } else {
             return InteractionResult.FAIL;
          }
@@ -133,60 +123,52 @@ public class SpawnEggItem extends Item {
       }
    }
 
-   public boolean spawnsEntity(ItemStack var1, EntityType<?> var2) {
-      return Objects.equals(this.getType(var1), var2);
+   public static boolean spawnsEntity(final ItemStack itemStack, final EntityType<?> type) {
+      return Objects.equals(getType(itemStack), type);
    }
 
-   public static @Nullable SpawnEggItem byId(@Nullable EntityType<?> var0) {
-      return (SpawnEggItem)BY_ID.get(var0);
+   public static Optional<Holder<Item>> byId(final EntityType<?> type) {
+      return BuiltInRegistries.ITEM.componentLookup().findMatching(DataComponents.ENTITY_DATA, (c) -> c.type() == type).findAny();
    }
 
-   public static Iterable<SpawnEggItem> eggs() {
-      return Iterables.unmodifiableIterable(BY_ID.values());
+   public static @Nullable EntityType<?> getType(final ItemStack itemStack) {
+      TypedEntityData<EntityType<?>> entityData = (TypedEntityData)itemStack.get(DataComponents.ENTITY_DATA);
+      return entityData != null ? (EntityType)entityData.type() : null;
    }
 
-   public @Nullable EntityType<?> getType(ItemStack var1) {
-      TypedEntityData var2 = (TypedEntityData)var1.get(DataComponents.ENTITY_DATA);
-      return var2 != null ? (EntityType)var2.type() : null;
-   }
-
-   public FeatureFlagSet requiredFeatures() {
-      return (FeatureFlagSet)Optional.ofNullable((TypedEntityData)this.components().get(DataComponents.ENTITY_DATA)).map(TypedEntityData::type).map(EntityType::requiredFeatures).orElseGet(FeatureFlagSet::of);
-   }
-
-   public Optional<Mob> spawnOffspringFromSpawnEgg(Player var1, Mob var2, EntityType<? extends Mob> var3, ServerLevel var4, Vec3 var5, ItemStack var6) {
-      if (!this.spawnsEntity(var6, var3)) {
+   public static Optional<Mob> spawnOffspringFromSpawnEgg(final Player player, final Mob parent, final EntityType<? extends Mob> type, final ServerLevel level, final Vec3 pos, final ItemStack spawnEggStack) {
+      if (!spawnsEntity(spawnEggStack, type)) {
          return Optional.empty();
       } else {
-         Object var7;
-         if (var2 instanceof AgeableMob) {
-            var7 = ((AgeableMob)var2).getBreedOffspring(var4, (AgeableMob)var2);
+         Mob offspring;
+         if (parent instanceof AgeableMob) {
+            offspring = ((AgeableMob)parent).getBreedOffspring(level, (AgeableMob)parent);
          } else {
-            var7 = (Mob)var3.create(var4, EntitySpawnReason.SPAWN_ITEM_USE);
+            offspring = type.create(level, EntitySpawnReason.SPAWN_ITEM_USE);
          }
 
-         if (var7 == null) {
+         if (offspring == null) {
             return Optional.empty();
          } else {
-            ((Mob)var7).setBaby(true);
-            if (!((Mob)var7).isBaby()) {
+            offspring.setBaby(true);
+            if (!offspring.isBaby()) {
                return Optional.empty();
             } else {
-               ((Mob)var7).snapTo(var5.x(), var5.y(), var5.z(), 0.0F, 0.0F);
-               ((Mob)var7).applyComponentsFromItemStack(var6);
-               var4.addFreshEntityWithPassengers((Entity)var7);
-               var6.consume(1, var1);
-               return Optional.of(var7);
+               offspring.snapTo(pos.x(), pos.y(), pos.z(), 0.0F, 0.0F);
+               offspring.applyComponentsFromItemStack(spawnEggStack);
+               level.addFreshEntityWithPassengers(offspring);
+               spawnEggStack.consume(1, player);
+               return Optional.of(offspring);
             }
          }
       }
    }
 
-   public boolean shouldPrintOpWarning(ItemStack var1, @Nullable Player var2) {
-      if (var2 != null && var2.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)) {
-         TypedEntityData var3 = (TypedEntityData)var1.get(DataComponents.ENTITY_DATA);
-         if (var3 != null) {
-            return ((EntityType)var3.type()).onlyOpCanSetNbt();
+   public boolean shouldPrintOpWarning(final ItemStack stack, final @Nullable Player player) {
+      if (player != null && player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)) {
+         TypedEntityData<EntityType<?>> entityData = (TypedEntityData)stack.get(DataComponents.ENTITY_DATA);
+         if (entityData != null) {
+            return ((EntityType)entityData.type()).onlyOpCanSetNbt();
          }
       }
 

@@ -12,50 +12,48 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 
 public record EnchantmentPredicate(Optional<HolderSet<Enchantment>> enchantments, MinMaxBounds.Ints level) {
-   public static final Codec<EnchantmentPredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(RegistryCodecs.homogeneousList(Registries.ENCHANTMENT).optionalFieldOf("enchantments").forGetter(EnchantmentPredicate::enchantments), MinMaxBounds.Ints.CODEC.optionalFieldOf("levels", MinMaxBounds.Ints.ANY).forGetter(EnchantmentPredicate::level)).apply(var0, EnchantmentPredicate::new));
+   public static final Codec<EnchantmentPredicate> CODEC = RecordCodecBuilder.create((i) -> i.group(RegistryCodecs.homogeneousList(Registries.ENCHANTMENT).optionalFieldOf("enchantments").forGetter(EnchantmentPredicate::enchantments), MinMaxBounds.Ints.CODEC.optionalFieldOf("levels", MinMaxBounds.Ints.ANY).forGetter(EnchantmentPredicate::level)).apply(i, EnchantmentPredicate::new));
 
-   public EnchantmentPredicate(Holder<Enchantment> var1, MinMaxBounds.Ints var2) {
-      this(Optional.of(HolderSet.direct(var1)), var2);
+   public EnchantmentPredicate(final Holder<Enchantment> enchantment, final MinMaxBounds.Ints level) {
+      this(Optional.of(HolderSet.direct(enchantment)), level);
    }
 
-   public EnchantmentPredicate(HolderSet<Enchantment> var1, MinMaxBounds.Ints var2) {
-      this(Optional.of(var1), var2);
+   public EnchantmentPredicate(final HolderSet<Enchantment> enchantments, final MinMaxBounds.Ints level) {
+      this(Optional.of(enchantments), level);
    }
 
-   public EnchantmentPredicate(Optional<HolderSet<Enchantment>> var1, MinMaxBounds.Ints var2) {
+   public EnchantmentPredicate {
       super();
-      this.enchantments = var1;
-      this.level = var2;
    }
 
-   public boolean containedIn(ItemEnchantments var1) {
+   public boolean containedIn(final ItemEnchantments itemEnchantments) {
       if (this.enchantments.isPresent()) {
-         for(Holder var5 : (HolderSet)this.enchantments.get()) {
-            if (this.matchesEnchantment(var1, var5)) {
+         for(Holder<Enchantment> enchantment : (HolderSet)this.enchantments.get()) {
+            if (this.matchesEnchantment(itemEnchantments, enchantment)) {
                return true;
             }
          }
 
          return false;
       } else if (this.level != MinMaxBounds.Ints.ANY) {
-         for(Object2IntMap.Entry var3 : var1.entrySet()) {
-            if (this.level.matches(var3.getIntValue())) {
+         for(Object2IntMap.Entry<Holder<Enchantment>> entry : itemEnchantments.entrySet()) {
+            if (this.level.matches(entry.getIntValue())) {
                return true;
             }
          }
 
          return false;
       } else {
-         return !var1.isEmpty();
+         return !itemEnchantments.isEmpty();
       }
    }
 
-   private boolean matchesEnchantment(ItemEnchantments var1, Holder<Enchantment> var2) {
-      int var3 = var1.getLevel(var2);
-      if (var3 == 0) {
+   private boolean matchesEnchantment(final ItemEnchantments itemEnchantments, final Holder<Enchantment> enchantment) {
+      int level = itemEnchantments.getLevel(enchantment);
+      if (level == 0) {
          return false;
       } else {
-         return this.level == MinMaxBounds.Ints.ANY ? true : this.level.matches(var3);
+         return this.level == MinMaxBounds.Ints.ANY ? true : this.level.matches(level);
       }
    }
 }

@@ -14,14 +14,14 @@ public class SaveOffCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("save-off").requires(Commands.hasPermission(Commands.LEVEL_OWNERS))).executes((var0x) -> {
-         CommandSourceStack var1 = (CommandSourceStack)var0x.getSource();
-         boolean var2 = var1.getServer().setAutoSave(false);
-         if (!var2) {
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("save-off").requires(Commands.hasPermission(Commands.LEVEL_OWNERS))).executes((c) -> {
+         CommandSourceStack source = (CommandSourceStack)c.getSource();
+         boolean success = source.getServer().setAutoSave(false);
+         if (!success) {
             throw ERROR_ALREADY_OFF.create();
          } else {
-            var1.sendSuccess(() -> Component.translatable("commands.save.disabled"), true);
+            source.sendSuccess(() -> Component.translatable("commands.save.disabled"), true);
             return 1;
          }
       }));

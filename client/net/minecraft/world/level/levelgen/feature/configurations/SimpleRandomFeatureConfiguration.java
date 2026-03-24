@@ -2,6 +2,7 @@ package net.minecraft.world.level.levelgen.feature.configurations;
 
 import com.mojang.serialization.Codec;
 import java.util.stream.Stream;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
@@ -11,16 +12,16 @@ public class SimpleRandomFeatureConfiguration implements FeatureConfiguration {
    public static final Codec<SimpleRandomFeatureConfiguration> CODEC;
    public final HolderSet<PlacedFeature> features;
 
-   public SimpleRandomFeatureConfiguration(HolderSet<PlacedFeature> var1) {
+   public SimpleRandomFeatureConfiguration(final HolderSet<PlacedFeature> features) {
       super();
-      this.features = var1;
+      this.features = features;
    }
 
-   public Stream<ConfiguredFeature<?, ?>> getFeatures() {
-      return this.features.stream().flatMap((var0) -> ((PlacedFeature)var0.value()).getFeatures());
+   public Stream<Holder<ConfiguredFeature<?, ?>>> getSubFeatures() {
+      return this.features.stream().flatMap((f) -> ((PlacedFeature)f.value()).getFeatures());
    }
 
    static {
-      CODEC = ExtraCodecs.nonEmptyHolderSet(PlacedFeature.LIST_CODEC).fieldOf("features").xmap(SimpleRandomFeatureConfiguration::new, (var0) -> var0.features).codec();
+      CODEC = ExtraCodecs.nonEmptyHolderSet(PlacedFeature.LIST_CODEC).fieldOf("features").xmap(SimpleRandomFeatureConfiguration::new, (c) -> c.features).codec();
    }
 }

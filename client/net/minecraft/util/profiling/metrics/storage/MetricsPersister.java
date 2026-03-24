@@ -1,9 +1,9 @@
 package net.minecraft.util.profiling.metrics.storage;
 
 import com.mojang.logging.LogUtils;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,90 +33,90 @@ public class MetricsPersister {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final String rootFolderName;
 
-   public MetricsPersister(String var1) {
+   public MetricsPersister(final String rootFolderName) {
       super();
-      this.rootFolderName = var1;
+      this.rootFolderName = rootFolderName;
    }
 
-   public Path saveReports(Set<MetricSampler> var1, Map<MetricSampler, List<RecordedDeviation>> var2, ProfileResults var3) {
+   public Path saveReports(final Set<MetricSampler> samplers, final Map<MetricSampler, List<RecordedDeviation>> deviationsBySampler, final ProfileResults profilerResults) {
       try {
          Files.createDirectories(PROFILING_RESULTS_DIR);
-      } catch (IOException var8) {
-         throw new UncheckedIOException(var8);
+      } catch (IOException e) {
+         throw new UncheckedIOException(e);
       }
 
       try {
-         Path var4 = Files.createTempDirectory("minecraft-profiling");
-         var4.toFile().deleteOnExit();
+         Path tempDir = Files.createTempDirectory("minecraft-profiling");
+         tempDir.toFile().deleteOnExit();
          Files.createDirectories(PROFILING_RESULTS_DIR);
-         Path var5 = var4.resolve(this.rootFolderName);
-         Path var6 = var5.resolve("metrics");
-         this.saveMetrics(var1, var6);
-         if (!var2.isEmpty()) {
-            this.saveDeviations(var2, var5.resolve("deviations"));
+         Path workingDir = tempDir.resolve(this.rootFolderName);
+         Path metricsDir = workingDir.resolve("metrics");
+         this.saveMetrics(samplers, metricsDir);
+         if (!deviationsBySampler.isEmpty()) {
+            this.saveDeviations(deviationsBySampler, workingDir.resolve("deviations"));
          }
 
-         this.saveProfilingTaskExecutionResult(var3, var5);
-         return var4;
-      } catch (IOException var7) {
-         throw new UncheckedIOException(var7);
+         this.saveProfilingTaskExecutionResult(profilerResults, workingDir);
+         return tempDir;
+      } catch (IOException e) {
+         throw new UncheckedIOException(e);
       }
    }
 
-   private void saveMetrics(Set<MetricSampler> var1, Path var2) {
-      if (var1.isEmpty()) {
+   private void saveMetrics(final Set<MetricSampler> samplers, final Path dir) {
+      if (samplers.isEmpty()) {
          throw new IllegalArgumentException("Expected at least one sampler to persist");
       } else {
-         Map var3 = (Map)var1.stream().collect(Collectors.groupingBy(MetricSampler::getCategory));
-         var3.forEach((var2x, var3x) -> this.saveCategory(var2x, var3x, var2));
+         Map<MetricCategory, List<MetricSampler>> samplersByCategory = (Map)samplers.stream().collect(Collectors.groupingBy(MetricSampler::getCategory));
+         samplersByCategory.forEach((category, samplersInCategory) -> this.saveCategory(category, samplersInCategory, dir));
       }
    }
 
-   private void saveCategory(MetricCategory var1, List<MetricSampler> var2, Path var3) {
-      String var10001 = var1.getDescription();
-      Path var4 = var3.resolve(Util.sanitizeName(var10001, Identifier::validPathChar) + ".csv");
-      BufferedWriter var5 = null;
+   private void saveCategory(final MetricCategory category, final List<MetricSampler> samplers, final Path dir) {
+      String var10001 = category.getDescription();
+      Path file = dir.resolve(Util.sanitizeName(var10001, Identifier::validPathChar) + ".csv");
+      Writer writer = null;
 
       try {
-         Files.createDirectories(var4.getParent());
-         var5 = Files.newBufferedWriter(var4, StandardCharsets.UTF_8);
-         CsvOutput.Builder var6 = CsvOutput.builder();
-         var6.addColumn("@tick");
+         Files.createDirectories(file.getParent());
+         writer = Files.newBufferedWriter(file, StandardCharsets.UTF_8);
+         CsvOutput.Builder csvBuilder = CsvOutput.builder();
+         csvBuilder.addColumn("@tick");
 
-         for(MetricSampler var8 : var2) {
-            var6.addColumn(var8.getName());
+         for(MetricSampler sampler : samplers) {
+            csvBuilder.addColumn(sampler.getName());
          }
 
-         CsvOutput var20 = var6.build(var5);
-         List var21 = (List)var2.stream().map(MetricSampler::result).collect(Collectors.toList());
-         int var9 = var21.stream().mapToInt(MetricSampler.SamplerResult::getFirstTick).summaryStatistics().getMin();
-         int var10 = var21.stream().mapToInt(MetricSampler.SamplerResult::getLastTick).summaryStatistics().getMax();
+         CsvOutput csvOutput = csvBuilder.build(writer);
+         List<MetricSampler.SamplerResult> results = (List)samplers.stream().map(MetricSampler::result).collect(Collectors.toList());
+         int firstTick = results.stream().mapToInt(MetricSampler.SamplerResult::getFirstTick).summaryStatistics().getMin();
+         int lastTick = results.stream().mapToInt(MetricSampler.SamplerResult::getLastTick).summaryStatistics().getMax();
 
-         for(int var11 = var9; var11 <= var10; ++var11) {
-            Stream var13 = var21.stream().map((var1x) -> String.valueOf(var1x.valueAtTick(var11)));
-            Object[] var14 = Stream.concat(Stream.of(String.valueOf(var11)), var13).toArray((var0) -> new String[var0]);
-            var20.writeRow(var14);
+         for(int tick = firstTick; tick <= lastTick; ++tick) {
+            Stream<String> valuesStream = results.stream().map((it) -> String.valueOf(it.valueAtTick(tick)));
+            Object[] row = Stream.concat(Stream.of(String.valueOf(tick)), valuesStream).toArray((x$0) -> new String[x$0]);
+            csvOutput.writeRow(row);
          }
 
-         LOGGER.info("Flushed metrics to {}", var4);
-      } catch (Exception var18) {
-         LOGGER.error("Could not save profiler results to {}", var4, var18);
+         LOGGER.info("Flushed metrics to {}", file);
+      } catch (Exception e) {
+         LOGGER.error("Could not save profiler results to {}", file, e);
       } finally {
-         IOUtils.closeQuietly(var5);
+         IOUtils.closeQuietly(writer);
       }
 
    }
 
-   private void saveDeviations(Map<MetricSampler, List<RecordedDeviation>> var1, Path var2) {
-      DateTimeFormatter var3 = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss.SSS", Locale.UK).withZone(ZoneId.systemDefault());
-      var1.forEach((var2x, var3x) -> var3x.forEach((var3xx) -> {
-            String var4 = var3.format(var3xx.timestamp);
-            Path var5 = var2.resolve(Util.sanitizeName(var2x.getName(), Identifier::validPathChar)).resolve(String.format(Locale.ROOT, "%d@%s.txt", var3xx.tick, var4));
-            var3xx.profilerResultAtTick.saveResults(var5);
+   private void saveDeviations(final Map<MetricSampler, List<RecordedDeviation>> deviationsBySampler, final Path directory) {
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss.SSS", Locale.UK).withZone(ZoneId.systemDefault());
+      deviationsBySampler.forEach((sampler, deviations) -> deviations.forEach((deviation) -> {
+            String timestamp = formatter.format(deviation.timestamp);
+            Path deviationLogFile = directory.resolve(Util.sanitizeName(sampler.getName(), Identifier::validPathChar)).resolve(String.format(Locale.ROOT, "%d@%s.txt", deviation.tick, timestamp));
+            deviation.profilerResultAtTick.saveResults(deviationLogFile);
          }));
    }
 
-   private void saveProfilingTaskExecutionResult(ProfileResults var1, Path var2) {
-      var1.saveResults(var2.resolve("profiling.txt"));
+   private void saveProfilingTaskExecutionResult(final ProfileResults results, final Path directory) {
+      results.saveResults(directory.resolve("profiling.txt"));
    }
 }

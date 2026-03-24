@@ -29,7 +29,7 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.blending.Blender;
 
 public class DebugLevelSource extends ChunkGenerator {
-   public static final MapCodec<DebugLevelSource> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(RegistryOps.retrieveElement(Biomes.PLAINS)).apply(var0, var0.stable(DebugLevelSource::new)));
+   public static final MapCodec<DebugLevelSource> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(RegistryOps.retrieveElement(Biomes.PLAINS)).apply(i, i.stable(DebugLevelSource::new)));
    private static final int BLOCK_MARGIN = 2;
    private static final List<BlockState> ALL_BLOCKS;
    private static final int GRID_WIDTH;
@@ -39,70 +39,70 @@ public class DebugLevelSource extends ChunkGenerator {
    public static final int HEIGHT = 70;
    public static final int BARRIER_HEIGHT = 60;
 
-   public DebugLevelSource(Holder.Reference<Biome> var1) {
-      super(new FixedBiomeSource(var1));
+   public DebugLevelSource(final Holder.Reference<Biome> plains) {
+      super(new FixedBiomeSource(plains));
    }
 
    protected MapCodec<? extends ChunkGenerator> codec() {
       return CODEC;
    }
 
-   public void buildSurface(WorldGenRegion var1, StructureManager var2, RandomState var3, ChunkAccess var4) {
+   public void buildSurface(final WorldGenRegion level, final StructureManager structureManager, final RandomState randomState, final ChunkAccess protoChunk) {
    }
 
-   public void applyBiomeDecoration(WorldGenLevel var1, ChunkAccess var2, StructureManager var3) {
-      BlockPos.MutableBlockPos var4 = new BlockPos.MutableBlockPos();
-      ChunkPos var5 = var2.getPos();
-      int var6 = var5.x;
-      int var7 = var5.z;
+   public void applyBiomeDecoration(final WorldGenLevel level, final ChunkAccess chunk, final StructureManager structureManager) {
+      BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos();
+      ChunkPos centerPos = chunk.getPos();
+      int chunkX = centerPos.x();
+      int chunkZ = centerPos.z();
 
-      for(int var8 = 0; var8 < 16; ++var8) {
-         for(int var9 = 0; var9 < 16; ++var9) {
-            int var10 = SectionPos.sectionToBlockCoord(var6, var8);
-            int var11 = SectionPos.sectionToBlockCoord(var7, var9);
-            var1.setBlock(var4.set(var10, 60, var11), BARRIER, 2);
-            BlockState var12 = getBlockStateFor(var10, var11);
-            var1.setBlock(var4.set(var10, 70, var11), var12, 2);
+      for(int x = 0; x < 16; ++x) {
+         for(int z = 0; z < 16; ++z) {
+            int worldX = SectionPos.sectionToBlockCoord(chunkX, x);
+            int worldZ = SectionPos.sectionToBlockCoord(chunkZ, z);
+            level.setBlock(blockPos.set(worldX, 60, worldZ), BARRIER, 2);
+            BlockState state = getBlockStateFor(worldX, worldZ);
+            level.setBlock(blockPos.set(worldX, 70, worldZ), state, 2);
          }
       }
 
    }
 
-   public CompletableFuture<ChunkAccess> fillFromNoise(Blender var1, RandomState var2, StructureManager var3, ChunkAccess var4) {
-      return CompletableFuture.completedFuture(var4);
+   public CompletableFuture<ChunkAccess> fillFromNoise(final Blender blender, final RandomState randomState, final StructureManager structureManager, final ChunkAccess centerChunk) {
+      return CompletableFuture.completedFuture(centerChunk);
    }
 
-   public int getBaseHeight(int var1, int var2, Heightmap.Types var3, LevelHeightAccessor var4, RandomState var5) {
+   public int getBaseHeight(final int x, final int z, final Heightmap.Types type, final LevelHeightAccessor heightAccessor, final RandomState randomState) {
       return 0;
    }
 
-   public NoiseColumn getBaseColumn(int var1, int var2, LevelHeightAccessor var3, RandomState var4) {
+   public NoiseColumn getBaseColumn(final int x, final int z, final LevelHeightAccessor heightAccessor, final RandomState randomState) {
       return new NoiseColumn(0, new BlockState[0]);
    }
 
-   public void addDebugScreenInfo(List<String> var1, RandomState var2, BlockPos var3) {
+   public void addDebugScreenInfo(final List<String> result, final RandomState randomState, final BlockPos feetPos) {
    }
 
-   public static BlockState getBlockStateFor(int var0, int var1) {
-      BlockState var2 = AIR;
-      if (var0 > 0 && var1 > 0 && var0 % 2 != 0 && var1 % 2 != 0) {
-         var0 /= 2;
-         var1 /= 2;
-         if (var0 <= GRID_WIDTH && var1 <= GRID_HEIGHT) {
-            int var3 = Mth.abs(var0 * GRID_WIDTH + var1);
-            if (var3 < ALL_BLOCKS.size()) {
-               var2 = (BlockState)ALL_BLOCKS.get(var3);
+   public static BlockState getBlockStateFor(int worldX, int worldZ) {
+      BlockState state = AIR;
+      if (worldX > 0 && worldZ > 0 && worldX % 2 != 0 && worldZ % 2 != 0) {
+         worldX /= 2;
+         worldZ /= 2;
+         if (worldX <= GRID_WIDTH && worldZ <= GRID_HEIGHT) {
+            int index = Mth.abs(worldX * GRID_WIDTH + worldZ);
+            if (index < ALL_BLOCKS.size()) {
+               state = (BlockState)ALL_BLOCKS.get(index);
             }
          }
       }
 
-      return var2;
+      return state;
    }
 
-   public void applyCarvers(WorldGenRegion var1, long var2, RandomState var4, BiomeManager var5, StructureManager var6, ChunkAccess var7) {
+   public void applyCarvers(final WorldGenRegion region, final long seed, final RandomState randomState, final BiomeManager biomeManager, final StructureManager structureManager, final ChunkAccess chunk) {
    }
 
-   public void spawnOriginalMobs(WorldGenRegion var1) {
+   public void spawnOriginalMobs(final WorldGenRegion worldGenRegion) {
    }
 
    public int getMinY() {
@@ -118,7 +118,7 @@ public class DebugLevelSource extends ChunkGenerator {
    }
 
    static {
-      ALL_BLOCKS = (List)StreamSupport.stream(BuiltInRegistries.BLOCK.spliterator(), false).flatMap((var0) -> var0.getStateDefinition().getPossibleStates().stream()).collect(Collectors.toList());
+      ALL_BLOCKS = (List)StreamSupport.stream(BuiltInRegistries.BLOCK.spliterator(), false).flatMap((b) -> b.getStateDefinition().getPossibleStates().stream()).collect(Collectors.toList());
       GRID_WIDTH = Mth.ceil(Mth.sqrt((float)ALL_BLOCKS.size()));
       GRID_HEIGHT = Mth.ceil((float)ALL_BLOCKS.size() / (float)GRID_WIDTH);
       AIR = Blocks.AIR.defaultBlockState();

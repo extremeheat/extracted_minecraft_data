@@ -8,18 +8,18 @@ public class LandOnOwnersShoulderGoal extends Goal {
    private final ShoulderRidingEntity entity;
    private boolean isSittingOnShoulder;
 
-   public LandOnOwnersShoulderGoal(ShoulderRidingEntity var1) {
+   public LandOnOwnersShoulderGoal(final ShoulderRidingEntity entity) {
       super();
-      this.entity = var1;
+      this.entity = entity;
    }
 
    public boolean canUse() {
       LivingEntity var2 = this.entity.getOwner();
-      if (!(var2 instanceof ServerPlayer var1)) {
+      if (!(var2 instanceof ServerPlayer owner)) {
          return false;
       } else {
-         boolean var3 = !var1.isSpectator() && !var1.getAbilities().flying && !var1.isInWater() && !var1.isInPowderSnow;
-         return !this.entity.isOrderedToSit() && var3 && this.entity.canSitOnShoulder();
+         boolean ownerThatCanBeSatOn = !owner.isSpectator() && !owner.getAbilities().flying && !owner.isInWater() && !owner.isInPowderSnow;
+         return !this.entity.isOrderedToSit() && ownerThatCanBeSatOn && this.entity.canSitOnShoulder();
       }
    }
 
@@ -35,9 +35,9 @@ public class LandOnOwnersShoulderGoal extends Goal {
       if (!this.isSittingOnShoulder && !this.entity.isInSittingPose() && !this.entity.isLeashed()) {
          LivingEntity var2 = this.entity.getOwner();
          if (var2 instanceof ServerPlayer) {
-            ServerPlayer var1 = (ServerPlayer)var2;
-            if (this.entity.getBoundingBox().intersects(var1.getBoundingBox())) {
-               this.isSittingOnShoulder = this.entity.setEntityOnShoulder(var1);
+            ServerPlayer owner = (ServerPlayer)var2;
+            if (this.entity.getBoundingBox().intersects(owner.getBoundingBox())) {
+               this.isSittingOnShoulder = this.entity.setEntityOnShoulder(owner);
             }
          }
 

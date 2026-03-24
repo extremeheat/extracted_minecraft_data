@@ -7,16 +7,16 @@ public class GlobalTestReporter {
       super();
    }
 
-   public static void replaceWith(TestReporter var0) {
-      DELEGATE = var0;
+   public static void replaceWith(final TestReporter testReporter) {
+      DELEGATE = testReporter;
    }
 
-   public static void onTestFailed(GameTestInfo var0) {
-      DELEGATE.onTestFailed(var0);
+   public static void onTestFailed(final GameTestInfo testInfo) {
+      DELEGATE.onTestFailed(testInfo);
    }
 
-   public static void onTestSuccess(GameTestInfo var0) {
-      DELEGATE.onTestSuccess(var0);
+   public static void onTestSuccess(final GameTestInfo testInfo) {
+      DELEGATE.onTestSuccess(testInfo);
    }
 
    public static void finish() {

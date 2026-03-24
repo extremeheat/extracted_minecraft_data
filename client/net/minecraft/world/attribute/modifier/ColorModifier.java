@@ -11,21 +11,16 @@ import net.minecraft.world.attribute.LerpFunction;
 
 public interface ColorModifier<Argument> extends AttributeModifier<Integer, Argument> {
    ColorModifier<Integer> ALPHA_BLEND = new ColorModifier<Integer>() {
-      public Integer apply(Integer var1, Integer var2) {
-         return ARGB.alphaBlend(var1, var2);
+      public Integer apply(final Integer subject, final Integer argument) {
+         return ARGB.alphaBlend(subject, argument);
       }
 
-      public Codec<Integer> argumentCodec(EnvironmentAttribute<Integer> var1) {
+      public Codec<Integer> argumentCodec(final EnvironmentAttribute<Integer> type) {
          return ExtraCodecs.STRING_ARGB_COLOR;
       }
 
-      public LerpFunction<Integer> argumentKeyframeLerp(EnvironmentAttribute<Integer> var1) {
+      public LerpFunction<Integer> argumentKeyframeLerp(final EnvironmentAttribute<Integer> type) {
          return LerpFunction.ofColor();
-      }
-
-      // $FF: synthetic method
-      public Object apply(final Object var1, final Object var2) {
-         return this.apply((Integer)var1, (Integer)var2);
       }
    };
    ColorModifier<Integer> ADD = ARGB::addRgb;
@@ -33,56 +28,47 @@ public interface ColorModifier<Argument> extends AttributeModifier<Integer, Argu
    ColorModifier<Integer> MULTIPLY_RGB = ARGB::multiply;
    ColorModifier<Integer> MULTIPLY_ARGB = ARGB::multiply;
    ColorModifier<BlendToGray> BLEND_TO_GRAY = new ColorModifier<BlendToGray>() {
-      public Integer apply(Integer var1, BlendToGray var2) {
-         int var3 = ARGB.scaleRGB(ARGB.greyscale(var1), var2.brightness);
-         return ARGB.srgbLerp(var2.factor, var1, var3);
+      public Integer apply(final Integer subject, final BlendToGray argument) {
+         int multipliedGreyscale = ARGB.scaleRGB(ARGB.greyscale(subject), argument.brightness);
+         return ARGB.srgbLerp(argument.factor, subject, multipliedGreyscale);
       }
 
-      public Codec<BlendToGray> argumentCodec(EnvironmentAttribute<Integer> var1) {
+      public Codec<BlendToGray> argumentCodec(final EnvironmentAttribute<Integer> type) {
          return ColorModifier.BlendToGray.CODEC;
       }
 
-      public LerpFunction<BlendToGray> argumentKeyframeLerp(EnvironmentAttribute<Integer> var1) {
-         return (var0, var1x, var2) -> new BlendToGray(Mth.lerp(var0, var1x.brightness, var2.brightness), Mth.lerp(var0, var1x.factor, var2.factor));
-      }
-
-      // $FF: synthetic method
-      public Object apply(final Object var1, final Object var2) {
-         return this.apply((Integer)var1, (BlendToGray)var2);
+      public LerpFunction<BlendToGray> argumentKeyframeLerp(final EnvironmentAttribute<Integer> type) {
+         return (alpha, from, to) -> new BlendToGray(Mth.lerp(alpha, from.brightness, to.brightness), Mth.lerp(alpha, from.factor, to.factor));
       }
    };
 
    @FunctionalInterface
    public interface RgbModifier extends ColorModifier<Integer> {
-      default Codec<Integer> argumentCodec(EnvironmentAttribute<Integer> var1) {
+      default Codec<Integer> argumentCodec(final EnvironmentAttribute<Integer> type) {
          return ExtraCodecs.STRING_RGB_COLOR;
       }
 
-      default LerpFunction<Integer> argumentKeyframeLerp(EnvironmentAttribute<Integer> var1) {
+      default LerpFunction<Integer> argumentKeyframeLerp(final EnvironmentAttribute<Integer> type) {
          return LerpFunction.ofColor();
       }
    }
 
    @FunctionalInterface
    public interface ArgbModifier extends ColorModifier<Integer> {
-      default Codec<Integer> argumentCodec(EnvironmentAttribute<Integer> var1) {
-         return Codec.either(ExtraCodecs.STRING_ARGB_COLOR, ExtraCodecs.RGB_COLOR_CODEC).xmap(Either::unwrap, (var0) -> ARGB.alpha(var0) == 255 ? Either.right(var0) : Either.left(var0));
+      default Codec<Integer> argumentCodec(final EnvironmentAttribute<Integer> type) {
+         return Codec.either(ExtraCodecs.STRING_ARGB_COLOR, ExtraCodecs.RGB_COLOR_CODEC).xmap(Either::unwrap, (color) -> ARGB.alpha(color) == 255 ? Either.right(color) : Either.left(color));
       }
 
-      default LerpFunction<Integer> argumentKeyframeLerp(EnvironmentAttribute<Integer> var1) {
+      default LerpFunction<Integer> argumentKeyframeLerp(final EnvironmentAttribute<Integer> type) {
          return LerpFunction.ofColor();
       }
    }
 
    public static record BlendToGray(float brightness, float factor) {
-      final float brightness;
-      final float factor;
-      public static final Codec<BlendToGray> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.floatRange(0.0F, 1.0F).fieldOf("brightness").forGetter(BlendToGray::brightness), Codec.floatRange(0.0F, 1.0F).fieldOf("factor").forGetter(BlendToGray::factor)).apply(var0, BlendToGray::new));
+      public static final Codec<BlendToGray> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.floatRange(0.0F, 1.0F).fieldOf("brightness").forGetter(BlendToGray::brightness), Codec.floatRange(0.0F, 1.0F).fieldOf("factor").forGetter(BlendToGray::factor)).apply(i, BlendToGray::new));
 
-      public BlendToGray(float var1, float var2) {
+      public BlendToGray {
          super();
-         this.brightness = var1;
-         this.factor = var2;
       }
    }
 }

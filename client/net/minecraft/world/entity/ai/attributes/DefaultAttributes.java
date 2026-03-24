@@ -100,19 +100,19 @@ public class DefaultAttributes {
       super();
    }
 
-   public static AttributeSupplier getSupplier(EntityType<? extends LivingEntity> var0) {
-      return (AttributeSupplier)SUPPLIERS.get(var0);
+   public static AttributeSupplier getSupplier(final EntityType<? extends LivingEntity> type) {
+      return (AttributeSupplier)SUPPLIERS.get(type);
    }
 
-   public static boolean hasSupplier(EntityType<?> var0) {
-      return SUPPLIERS.containsKey(var0);
+   public static boolean hasSupplier(final EntityType<?> type) {
+      return SUPPLIERS.containsKey(type);
    }
 
    public static void validate() {
-      Stream var10000 = BuiltInRegistries.ENTITY_TYPE.stream().filter((var0) -> var0.getCategory() != MobCategory.MISC).filter((var0) -> !hasSupplier(var0));
+      Stream var10000 = BuiltInRegistries.ENTITY_TYPE.stream().filter((entityType) -> entityType.getCategory() != MobCategory.MISC).filter((entityType) -> !hasSupplier(entityType));
       DefaultedRegistry var10001 = BuiltInRegistries.ENTITY_TYPE;
       Objects.requireNonNull(var10001);
-      var10000.map(var10001::getKey).forEach((var0) -> Util.logAndPauseIfInIde("Entity " + String.valueOf(var0) + " has no attributes"));
+      var10000.map(var10001::getKey).forEach((id) -> Util.logAndPauseIfInIde("Entity " + String.valueOf(id) + " has no attributes"));
    }
 
    static {

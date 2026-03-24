@@ -3,6 +3,7 @@ package net.minecraft;
 import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
 import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryUsage;
 import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
@@ -41,124 +42,130 @@ public class SystemReport {
       this.setDetail("Java Version", JAVA_VERSION);
       this.setDetail("Java VM Version", JAVA_VM_VERSION);
       this.setDetail("Memory", (Supplier)(() -> {
-         Runtime var0 = Runtime.getRuntime();
-         long var1 = var0.maxMemory();
-         long var3 = var0.totalMemory();
-         long var5 = var0.freeMemory();
-         long var7 = var1 / 1048576L;
-         long var9 = var3 / 1048576L;
-         long var11 = var5 / 1048576L;
-         return var5 + " bytes (" + var11 + " MiB) / " + var3 + " bytes (" + var9 + " MiB) up to " + var1 + " bytes (" + var7 + " MiB)";
+         Runtime runtime = Runtime.getRuntime();
+         long max = runtime.maxMemory();
+         long total = runtime.totalMemory();
+         long free = runtime.freeMemory();
+         long maxMb = max / 1048576L;
+         long totalMb = total / 1048576L;
+         long freeMb = free / 1048576L;
+         return free + " bytes (" + freeMb + " MiB) / " + total + " bytes (" + totalMb + " MiB) up to " + max + " bytes (" + maxMb + " MiB)";
       }));
+      this.setDetail("Memory (heap)", (Supplier)(() -> printMemoryUsage(ManagementFactory.getMemoryMXBean().getHeapMemoryUsage())));
+      this.setDetail("Memory (non-head)", (Supplier)(() -> printMemoryUsage(ManagementFactory.getMemoryMXBean().getNonHeapMemoryUsage())));
       this.setDetail("CPUs", (Supplier)(() -> String.valueOf(Runtime.getRuntime().availableProcessors())));
       this.ignoreErrors("hardware", () -> this.putHardware(new SystemInfo()));
-      this.setDetail("JVM Flags", (Supplier)(() -> printJvmFlags((var0) -> var0.startsWith("-X"))));
-      this.setDetail("Debug Flags", (Supplier)(() -> printJvmFlags((var0) -> var0.startsWith("-DMC_DEBUG_"))));
+      this.setDetail("JVM Flags", (Supplier)(() -> printJvmFlags((arg) -> arg.startsWith("-X"))));
+      this.setDetail("Debug Flags", (Supplier)(() -> printJvmFlags((arg) -> arg.startsWith("-DMC_DEBUG_"))));
    }
 
-   private static String printJvmFlags(Predicate<String> var0) {
-      List var1 = ManagementFactory.getRuntimeMXBean().getInputArguments();
-      List var2 = var1.stream().filter(var0).toList();
-      return String.format(Locale.ROOT, "%d total; %s", var2.size(), String.join(" ", var2));
+   private static String printMemoryUsage(final MemoryUsage memoryUsage) {
+      return String.format(Locale.ROOT, "init: %03dMiB, used: %03dMiB, committed: %03dMiB, max: %03dMiB", memoryUsage.getInit() / 1048576L, memoryUsage.getUsed() / 1048576L, memoryUsage.getCommitted() / 1048576L, memoryUsage.getMax() / 1048576L);
    }
 
-   public void setDetail(String var1, String var2) {
-      this.entries.put(var1, var2);
+   private static String printJvmFlags(final Predicate<String> selector) {
+      List<String> allArguments = ManagementFactory.getRuntimeMXBean().getInputArguments();
+      List<String> selectedArguments = allArguments.stream().filter(selector).toList();
+      return String.format(Locale.ROOT, "%d total; %s", selectedArguments.size(), String.join(" ", selectedArguments));
    }
 
-   public void setDetail(String var1, Supplier<String> var2) {
+   public void setDetail(final String key, final String value) {
+      this.entries.put(key, value);
+   }
+
+   public void setDetail(final String key, final Supplier<String> valueSupplier) {
       try {
-         this.setDetail(var1, (String)var2.get());
-      } catch (Exception var4) {
-         LOGGER.warn("Failed to get system info for {}", var1, var4);
-         this.setDetail(var1, "ERR");
+         this.setDetail(key, (String)valueSupplier.get());
+      } catch (Exception e) {
+         LOGGER.warn("Failed to get system info for {}", key, e);
+         this.setDetail(key, "ERR");
       }
 
    }
 
-   private void putHardware(SystemInfo var1) {
-      HardwareAbstractionLayer var2 = var1.getHardware();
-      this.ignoreErrors("processor", () -> this.putProcessor(var2.getProcessor()));
-      this.ignoreErrors("graphics", () -> this.putGraphics(var2.getGraphicsCards()));
-      this.ignoreErrors("memory", () -> this.putMemory(var2.getMemory()));
+   private void putHardware(final SystemInfo systemInfo) {
+      HardwareAbstractionLayer hardware = systemInfo.getHardware();
+      this.ignoreErrors("processor", () -> this.putProcessor(hardware.getProcessor()));
+      this.ignoreErrors("graphics", () -> this.putGraphics(hardware.getGraphicsCards()));
+      this.ignoreErrors("memory", () -> this.putMemory(hardware.getMemory()));
       this.ignoreErrors("storage", this::putStorage);
    }
 
-   private void ignoreErrors(String var1, Runnable var2) {
+   private void ignoreErrors(final String group, final Runnable action) {
       try {
-         var2.run();
-      } catch (Throwable var4) {
-         LOGGER.warn("Failed retrieving info for group {}", var1, var4);
+         action.run();
+      } catch (Throwable t) {
+         LOGGER.warn("Failed retrieving info for group {}", group, t);
       }
 
    }
 
-   public static float sizeInMiB(long var0) {
-      return (float)var0 / 1048576.0F;
+   public static float sizeInMiB(final long bytes) {
+      return (float)bytes / 1048576.0F;
    }
 
-   private void putPhysicalMemory(List<PhysicalMemory> var1) {
-      int var2 = 0;
+   private void putPhysicalMemory(final List<PhysicalMemory> memoryPackages) {
+      int memorySlot = 0;
 
-      for(PhysicalMemory var4 : var1) {
-         String var5 = String.format(Locale.ROOT, "Memory slot #%d ", var2++);
-         this.setDetail(var5 + "capacity (MiB)", (Supplier)(() -> String.format(Locale.ROOT, "%.2f", sizeInMiB(var4.getCapacity()))));
-         this.setDetail(var5 + "clockSpeed (GHz)", (Supplier)(() -> String.format(Locale.ROOT, "%.2f", (float)var4.getClockSpeed() / 1.0E9F)));
-         String var10001 = var5 + "type";
-         Objects.requireNonNull(var4);
-         this.setDetail(var10001, var4::getMemoryType);
+      for(PhysicalMemory physicalMemory : memoryPackages) {
+         String prefix = String.format(Locale.ROOT, "Memory slot #%d ", memorySlot++);
+         this.setDetail(prefix + "capacity (MiB)", (Supplier)(() -> String.format(Locale.ROOT, "%.2f", sizeInMiB(physicalMemory.getCapacity()))));
+         this.setDetail(prefix + "clockSpeed (GHz)", (Supplier)(() -> String.format(Locale.ROOT, "%.2f", (float)physicalMemory.getClockSpeed() / 1.0E9F)));
+         String var10001 = prefix + "type";
+         Objects.requireNonNull(physicalMemory);
+         this.setDetail(var10001, physicalMemory::getMemoryType);
       }
 
    }
 
-   private void putVirtualMemory(VirtualMemory var1) {
-      this.setDetail("Virtual memory max (MiB)", (Supplier)(() -> String.format(Locale.ROOT, "%.2f", sizeInMiB(var1.getVirtualMax()))));
-      this.setDetail("Virtual memory used (MiB)", (Supplier)(() -> String.format(Locale.ROOT, "%.2f", sizeInMiB(var1.getVirtualInUse()))));
-      this.setDetail("Swap memory total (MiB)", (Supplier)(() -> String.format(Locale.ROOT, "%.2f", sizeInMiB(var1.getSwapTotal()))));
-      this.setDetail("Swap memory used (MiB)", (Supplier)(() -> String.format(Locale.ROOT, "%.2f", sizeInMiB(var1.getSwapUsed()))));
+   private void putVirtualMemory(final VirtualMemory virtualMemory) {
+      this.setDetail("Virtual memory max (MiB)", (Supplier)(() -> String.format(Locale.ROOT, "%.2f", sizeInMiB(virtualMemory.getVirtualMax()))));
+      this.setDetail("Virtual memory used (MiB)", (Supplier)(() -> String.format(Locale.ROOT, "%.2f", sizeInMiB(virtualMemory.getVirtualInUse()))));
+      this.setDetail("Swap memory total (MiB)", (Supplier)(() -> String.format(Locale.ROOT, "%.2f", sizeInMiB(virtualMemory.getSwapTotal()))));
+      this.setDetail("Swap memory used (MiB)", (Supplier)(() -> String.format(Locale.ROOT, "%.2f", sizeInMiB(virtualMemory.getSwapUsed()))));
    }
 
-   private void putMemory(GlobalMemory var1) {
-      this.ignoreErrors("physical memory", () -> this.putPhysicalMemory(var1.getPhysicalMemory()));
-      this.ignoreErrors("virtual memory", () -> this.putVirtualMemory(var1.getVirtualMemory()));
+   private void putMemory(final GlobalMemory memory) {
+      this.ignoreErrors("physical memory", () -> this.putPhysicalMemory(memory.getPhysicalMemory()));
+      this.ignoreErrors("virtual memory", () -> this.putVirtualMemory(memory.getVirtualMemory()));
    }
 
-   private void putGraphics(List<GraphicsCard> var1) {
-      int var2 = 0;
+   private void putGraphics(final List<GraphicsCard> graphicsCards) {
+      int gpuIndex = 0;
 
-      for(GraphicsCard var4 : var1) {
-         String var5 = String.format(Locale.ROOT, "Graphics card #%d ", var2++);
-         String var10001 = var5 + "name";
-         Objects.requireNonNull(var4);
-         this.setDetail(var10001, var4::getName);
-         var10001 = var5 + "vendor";
-         Objects.requireNonNull(var4);
-         this.setDetail(var10001, var4::getVendor);
-         this.setDetail(var5 + "VRAM (MiB)", (Supplier)(() -> String.format(Locale.ROOT, "%.2f", sizeInMiB(var4.getVRam()))));
-         var10001 = var5 + "deviceId";
-         Objects.requireNonNull(var4);
-         this.setDetail(var10001, var4::getDeviceId);
-         var10001 = var5 + "versionInfo";
-         Objects.requireNonNull(var4);
-         this.setDetail(var10001, var4::getVersionInfo);
+      for(GraphicsCard graphicsCard : graphicsCards) {
+         String prefix = String.format(Locale.ROOT, "Graphics card #%d ", gpuIndex++);
+         String var10001 = prefix + "name";
+         Objects.requireNonNull(graphicsCard);
+         this.setDetail(var10001, graphicsCard::getName);
+         var10001 = prefix + "vendor";
+         Objects.requireNonNull(graphicsCard);
+         this.setDetail(var10001, graphicsCard::getVendor);
+         this.setDetail(prefix + "VRAM (MiB)", (Supplier)(() -> String.format(Locale.ROOT, "%.2f", sizeInMiB(graphicsCard.getVRam()))));
+         var10001 = prefix + "deviceId";
+         Objects.requireNonNull(graphicsCard);
+         this.setDetail(var10001, graphicsCard::getDeviceId);
+         var10001 = prefix + "versionInfo";
+         Objects.requireNonNull(graphicsCard);
+         this.setDetail(var10001, graphicsCard::getVersionInfo);
       }
 
    }
 
-   private void putProcessor(CentralProcessor var1) {
-      CentralProcessor.ProcessorIdentifier var2 = var1.getProcessorIdentifier();
-      Objects.requireNonNull(var2);
-      this.setDetail("Processor Vendor", var2::getVendor);
-      Objects.requireNonNull(var2);
-      this.setDetail("Processor Name", var2::getName);
-      Objects.requireNonNull(var2);
-      this.setDetail("Identifier", var2::getIdentifier);
-      Objects.requireNonNull(var2);
-      this.setDetail("Microarchitecture", var2::getMicroarchitecture);
-      this.setDetail("Frequency (GHz)", (Supplier)(() -> String.format(Locale.ROOT, "%.2f", (float)var2.getVendorFreq() / 1.0E9F)));
-      this.setDetail("Number of physical packages", (Supplier)(() -> String.valueOf(var1.getPhysicalPackageCount())));
-      this.setDetail("Number of physical CPUs", (Supplier)(() -> String.valueOf(var1.getPhysicalProcessorCount())));
-      this.setDetail("Number of logical CPUs", (Supplier)(() -> String.valueOf(var1.getLogicalProcessorCount())));
+   private void putProcessor(final CentralProcessor processor) {
+      CentralProcessor.ProcessorIdentifier processorIdentifier = processor.getProcessorIdentifier();
+      Objects.requireNonNull(processorIdentifier);
+      this.setDetail("Processor Vendor", processorIdentifier::getVendor);
+      Objects.requireNonNull(processorIdentifier);
+      this.setDetail("Processor Name", processorIdentifier::getName);
+      Objects.requireNonNull(processorIdentifier);
+      this.setDetail("Identifier", processorIdentifier::getIdentifier);
+      Objects.requireNonNull(processorIdentifier);
+      this.setDetail("Microarchitecture", processorIdentifier::getMicroarchitecture);
+      this.setDetail("Frequency (GHz)", (Supplier)(() -> String.format(Locale.ROOT, "%.2f", (float)processorIdentifier.getVendorFreq() / 1.0E9F)));
+      this.setDetail("Number of physical packages", (Supplier)(() -> String.valueOf(processor.getPhysicalPackageCount())));
+      this.setDetail("Number of physical CPUs", (Supplier)(() -> String.valueOf(processor.getPhysicalProcessorCount())));
+      this.setDetail("Number of logical CPUs", (Supplier)(() -> String.valueOf(processor.getLogicalProcessorCount())));
    }
 
    private void putStorage() {
@@ -169,47 +176,47 @@ public class SystemReport {
       this.putSpaceForPath("workdir", () -> "");
    }
 
-   private void putSpaceForProperty(String var1) {
-      this.putSpaceForPath(var1, () -> System.getProperty(var1));
+   private void putSpaceForProperty(final String env) {
+      this.putSpaceForPath(env, () -> System.getProperty(env));
    }
 
-   private void putSpaceForPath(String var1, Supplier<@Nullable String> var2) {
-      String var3 = "Space in storage for " + var1 + " (MiB)";
+   private void putSpaceForPath(final String id, final Supplier<@Nullable String> pathSupplier) {
+      String key = "Space in storage for " + id + " (MiB)";
 
       try {
-         String var4 = (String)var2.get();
-         if (var4 == null) {
-            this.setDetail(var3, "<path not set>");
+         String path = (String)pathSupplier.get();
+         if (path == null) {
+            this.setDetail(key, "<path not set>");
             return;
          }
 
-         FileStore var5 = Files.getFileStore(Path.of(var4));
-         this.setDetail(var3, String.format(Locale.ROOT, "available: %.2f, total: %.2f", sizeInMiB(var5.getUsableSpace()), sizeInMiB(var5.getTotalSpace())));
-      } catch (InvalidPathException var6) {
-         LOGGER.warn("{} is not a path", var1, var6);
-         this.setDetail(var3, "<invalid path>");
-      } catch (Exception var7) {
-         LOGGER.warn("Failed retrieving storage space for {}", var1, var7);
-         this.setDetail(var3, "ERR");
+         FileStore store = Files.getFileStore(Path.of(path));
+         this.setDetail(key, String.format(Locale.ROOT, "available: %.2f, total: %.2f", sizeInMiB(store.getUsableSpace()), sizeInMiB(store.getTotalSpace())));
+      } catch (InvalidPathException e) {
+         LOGGER.warn("{} is not a path", id, e);
+         this.setDetail(key, "<invalid path>");
+      } catch (Exception e) {
+         LOGGER.warn("Failed retrieving storage space for {}", id, e);
+         this.setDetail(key, "ERR");
       }
 
    }
 
-   public void appendToCrashReportString(StringBuilder var1) {
-      var1.append("-- ").append("System Details").append(" --\n");
-      var1.append("Details:");
-      this.entries.forEach((var1x, var2) -> {
-         var1.append("\n\t");
-         var1.append(var1x);
-         var1.append(": ");
-         var1.append(var2);
+   public void appendToCrashReportString(final StringBuilder sb) {
+      sb.append("-- ").append("System Details").append(" --\n");
+      sb.append("Details:");
+      this.entries.forEach((key, value) -> {
+         sb.append("\n\t");
+         sb.append(key);
+         sb.append(": ");
+         sb.append(value);
       });
    }
 
    public String toLineSeparatedString() {
-      return (String)this.entries.entrySet().stream().map((var0) -> {
-         String var10000 = (String)var0.getKey();
-         return var10000 + ": " + (String)var0.getValue();
+      return (String)this.entries.entrySet().stream().map((e) -> {
+         String var10000 = (String)e.getKey();
+         return var10000 + ": " + (String)e.getValue();
       }).collect(Collectors.joining(System.lineSeparator()));
    }
 

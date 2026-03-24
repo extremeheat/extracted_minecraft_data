@@ -8,21 +8,20 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import net.minecraft.Optionull;
-import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ActiveTextCollector;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.TextAlignment;
-import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.components.ObjectSelectionList;
-import net.minecraft.client.gui.components.PlayerFaceRenderer;
+import net.minecraft.client.gui.components.PlayerFaceExtractor;
 import net.minecraft.client.gui.navigation.ScreenDirection;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.chat.ChatTrustLevel;
+import net.minecraft.client.multiplayer.chat.GuiMessageTag;
 import net.minecraft.client.multiplayer.chat.LoggedChatMessage;
 import net.minecraft.client.multiplayer.chat.report.ChatReport;
 import net.minecraft.client.multiplayer.chat.report.ReportingContext;
@@ -31,7 +30,6 @@ import net.minecraft.locale.Language;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
@@ -39,7 +37,7 @@ import net.minecraft.world.entity.player.PlayerSkin;
 import org.jspecify.annotations.Nullable;
 
 public class ChatSelectionScreen extends Screen {
-   static final Identifier CHECKMARK_SPRITE = Identifier.withDefaultNamespace("icon/checkmark");
+   private static final Identifier CHECKMARK_SPRITE = Identifier.withDefaultNamespace("icon/checkmark");
    private static final Component TITLE = Component.translatable("gui.chatSelection.title");
    private static final Component CONTEXT_INFO = Component.translatable("gui.chatSelection.context");
    private final @Nullable Screen lastScreen;
@@ -47,16 +45,16 @@ public class ChatSelectionScreen extends Screen {
    private Button confirmSelectedButton;
    private MultiLineLabel contextInfoLabel;
    private @Nullable ChatSelectionList chatSelectionList;
-   final ChatReport.Builder report;
+   private final ChatReport.Builder report;
    private final Consumer<ChatReport.Builder> onSelected;
    private ChatSelectionLogFiller chatLogFiller;
 
-   public ChatSelectionScreen(@Nullable Screen var1, ReportingContext var2, ChatReport.Builder var3, Consumer<ChatReport.Builder> var4) {
+   public ChatSelectionScreen(final @Nullable Screen lastScreen, final ReportingContext reportingContext, final ChatReport.Builder report, final Consumer<ChatReport.Builder> onSelected) {
       super(TITLE);
-      this.lastScreen = var1;
-      this.reportingContext = var2;
-      this.report = var3.copy();
-      this.onSelected = var4;
+      this.lastScreen = lastScreen;
+      this.reportingContext = reportingContext;
+      this.report = report.copy();
+      this.onSelected = onSelected;
    }
 
    protected void init() {
@@ -66,8 +64,8 @@ public class ChatSelectionScreen extends Screen {
       int var10006 = this.contextInfoLabel.getLineCount() + 1;
       Objects.requireNonNull(this.font);
       this.chatSelectionList = (ChatSelectionList)this.addRenderableWidget(new ChatSelectionList(var10005, var10006 * 9));
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, (var1) -> this.onClose()).bounds(this.width / 2 - 155, this.height - 32, 150, 20).build());
-      this.confirmSelectedButton = (Button)this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1) -> {
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, (b) -> this.onClose()).bounds(this.width / 2 - 155, this.height - 32, 150, 20).build());
+      this.confirmSelectedButton = (Button)this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (b) -> {
          this.onSelected.accept(this.report);
          this.onClose();
       }).bounds(this.width / 2 - 155 + 160, this.height - 32, 150, 20).build());
@@ -76,38 +74,38 @@ public class ChatSelectionScreen extends Screen {
       this.chatSelectionList.setScrollAmount((double)this.chatSelectionList.maxScrollAmount());
    }
 
-   private boolean canReport(LoggedChatMessage var1) {
-      return var1.canReport(this.report.reportedProfileId());
+   private boolean canReport(final LoggedChatMessage message) {
+      return message.canReport(this.report.reportedProfileId());
    }
 
    private void extendLog() {
-      int var1 = this.chatSelectionList.getMaxVisibleEntries();
-      this.chatLogFiller.fillNextPage(var1, this.chatSelectionList);
+      int pageSize = this.chatSelectionList.getMaxVisibleEntries();
+      this.chatLogFiller.fillNextPage(pageSize, this.chatSelectionList);
    }
 
-   void onReachedScrollTop() {
+   private void onReachedScrollTop() {
       this.extendLog();
    }
 
-   void updateConfirmSelectedButton() {
+   private void updateConfirmSelectedButton() {
       this.confirmSelectedButton.active = !this.report.reportedMessages().isEmpty();
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      ActiveTextCollector var5 = var1.textRenderer();
-      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 10, -1);
-      AbuseReportLimits var6 = this.reportingContext.sender().reportLimits();
-      int var7 = this.report.reportedMessages().size();
-      int var8 = var6.maxReportedMessageCount();
-      MutableComponent var9 = Component.translatable("gui.chatSelection.selected", var7, var8);
-      var1.drawCenteredString(this.font, (Component)var9, this.width / 2, 26, -1);
-      int var10 = this.chatSelectionList.getFooterTop();
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
+      ActiveTextCollector textRenderer = graphics.textRenderer();
+      graphics.centeredText(this.font, (Component)this.title, this.width / 2, 10, -1);
+      AbuseReportLimits reportLimits = this.reportingContext.sender().reportLimits();
+      int messageCount = this.report.reportedMessages().size();
+      int maxMessageCount = reportLimits.maxReportedMessageCount();
+      Component selectedText = Component.translatable("gui.chatSelection.selected", messageCount, maxMessageCount);
+      graphics.centeredText(this.font, (Component)selectedText, this.width / 2, 26, -1);
+      int topY = this.chatSelectionList.getFooterTop();
       MultiLineLabel var10000 = this.contextInfoLabel;
       TextAlignment var10001 = TextAlignment.CENTER;
       int var10002 = this.width / 2;
       Objects.requireNonNull(this.font);
-      var10000.visitLines(var10001, var10002, var10, 9, var5);
+      var10000.visitLines(var10001, var10002, topY, 9, textRenderer);
    }
 
    public void onClose() {
@@ -122,42 +120,43 @@ public class ChatSelectionScreen extends Screen {
       public static final int ITEM_HEIGHT = 16;
       private @Nullable Heading previousHeading;
 
-      public ChatSelectionList(final Minecraft var2, final int var3) {
-         super(var2, ChatSelectionScreen.this.width, ChatSelectionScreen.this.height - var3 - 80, 40, 16);
+      public ChatSelectionList(final Minecraft minecraft, final int upperMargin) {
+         Objects.requireNonNull(ChatSelectionScreen.this);
+         super(minecraft, ChatSelectionScreen.this.width, ChatSelectionScreen.this.height - upperMargin - 80, 40, 16);
       }
 
-      public void setScrollAmount(double var1) {
-         double var3 = this.scrollAmount();
-         super.setScrollAmount(var1);
-         if ((float)this.maxScrollAmount() > 1.0E-5F && var1 <= 9.999999747378752E-6 && !Mth.equal(var1, var3)) {
+      public void setScrollAmount(final double scrollAmount) {
+         double prevScrollAmount = this.scrollAmount();
+         super.setScrollAmount(scrollAmount);
+         if ((float)this.maxScrollAmount() > 1.0E-5F && scrollAmount <= 9.999999747378752E-6 && !Mth.equal(scrollAmount, prevScrollAmount)) {
             ChatSelectionScreen.this.onReachedScrollTop();
          }
 
       }
 
-      public void acceptMessage(int var1, LoggedChatMessage.Player var2) {
-         boolean var3 = var2.canReport(ChatSelectionScreen.this.report.reportedProfileId());
-         ChatTrustLevel var4 = var2.trustLevel();
-         GuiMessageTag var5 = var4.createTag(var2.message());
-         MessageEntry var6 = new MessageEntry(var1, var2.toContentComponent(), var2.toNarrationComponent(), var5, var3, true);
-         this.addEntryToTop(var6);
-         this.updateHeading(var2, var3);
+      public void acceptMessage(final int id, final LoggedChatMessage.Player message) {
+         boolean canReport = message.canReport(ChatSelectionScreen.this.report.reportedProfileId());
+         ChatTrustLevel trustLevel = message.trustLevel();
+         GuiMessageTag tag = trustLevel.createTag(message.message());
+         Entry entry = new MessageEntry(id, message.toContentComponent(), message.toNarrationComponent(), tag, canReport, true);
+         this.addEntryToTop(entry);
+         this.updateHeading(message, canReport);
       }
 
-      private void updateHeading(LoggedChatMessage.Player var1, boolean var2) {
-         MessageHeadingEntry var3 = new MessageHeadingEntry(var1.profile(), var1.toHeadingComponent(), var2);
-         this.addEntryToTop(var3);
-         Heading var4 = new Heading(var1.profileId(), var3);
-         if (this.previousHeading != null && this.previousHeading.canCombine(var4)) {
+      private void updateHeading(final LoggedChatMessage.Player message, final boolean canReport) {
+         Entry entry = new MessageHeadingEntry(message.profile(), message.toHeadingComponent(), canReport);
+         this.addEntryToTop(entry);
+         Heading heading = new Heading(message.profileId(), entry);
+         if (this.previousHeading != null && this.previousHeading.canCombine(heading)) {
             this.removeEntryFromTop(this.previousHeading.entry());
          }
 
-         this.previousHeading = var4;
+         this.previousHeading = heading;
       }
 
-      public void acceptDivider(Component var1) {
+      public void acceptDivider(final Component text) {
          this.addEntryToTop(new PaddingEntry());
-         this.addEntryToTop(new DividerEntry(var1));
+         this.addEntryToTop(new DividerEntry(text));
          this.addEntryToTop(new PaddingEntry());
          this.previousHeading = null;
       }
@@ -170,43 +169,43 @@ public class ChatSelectionScreen extends Screen {
          return Mth.positiveCeilDiv(this.height, 16);
       }
 
-      protected void renderItem(GuiGraphics var1, int var2, int var3, float var4, Entry var5) {
-         if (this.shouldHighlightEntry(var5)) {
-            boolean var6 = this.getSelected() == var5;
-            int var7 = this.isFocused() && var6 ? -1 : -8355712;
-            this.renderSelection(var1, var5, var7);
+      protected void extractItem(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a, final Entry entry) {
+         if (this.shouldHighlightEntry(entry)) {
+            boolean selected = this.getSelected() == entry;
+            int outlineColor = this.isFocused() && selected ? -1 : -8355712;
+            this.extractSelection(graphics, entry, outlineColor);
          }
 
-         var5.renderContent(var1, var2, var3, this.getHovered() == var5, var4);
+         entry.extractContent(graphics, mouseX, mouseY, this.getHovered() == entry, a);
       }
 
-      private boolean shouldHighlightEntry(Entry var1) {
-         if (var1.canSelect()) {
-            boolean var2 = this.getSelected() == var1;
-            boolean var3 = this.getSelected() == null;
-            boolean var4 = this.getHovered() == var1;
-            return var2 || var3 && var4 && var1.canReport();
+      private boolean shouldHighlightEntry(final Entry entry) {
+         if (entry.canSelect()) {
+            boolean entrySelected = this.getSelected() == entry;
+            boolean nothingSelected = this.getSelected() == null;
+            boolean entryHovered = this.getHovered() == entry;
+            return entrySelected || nothingSelected && entryHovered && entry.canReport();
          } else {
             return false;
          }
       }
 
-      protected @Nullable Entry nextEntry(ScreenDirection var1) {
-         return (Entry)this.nextEntry(var1, Entry::canSelect);
+      protected @Nullable Entry nextEntry(final ScreenDirection dir) {
+         return (Entry)this.nextEntry(dir, Entry::canSelect);
       }
 
-      public void setSelected(@Nullable Entry var1) {
-         super.setSelected(var1);
-         Entry var2 = this.nextEntry(ScreenDirection.UP);
-         if (var2 == null) {
+      public void setSelected(final @Nullable Entry selected) {
+         super.setSelected(selected);
+         Entry entry = this.nextEntry(ScreenDirection.UP);
+         if (entry == null) {
             ChatSelectionScreen.this.onReachedScrollTop();
          }
 
       }
 
-      public boolean keyPressed(KeyEvent var1) {
-         Entry var2 = (Entry)this.getSelected();
-         return var2 != null && var2.keyPressed(var1) ? true : super.keyPressed(var1);
+      public boolean keyPressed(final KeyEvent event) {
+         Entry selected = (Entry)this.getSelected();
+         return selected != null && selected.keyPressed(event) ? true : super.keyPressed(event);
       }
 
       public int getFooterTop() {
@@ -215,20 +214,13 @@ public class ChatSelectionScreen extends Screen {
          return var10000 + 9;
       }
 
-      // $FF: synthetic method
-      protected AbstractSelectionList.@Nullable Entry nextEntry(final ScreenDirection var1) {
-         return this.nextEntry(var1);
-      }
-
-      static record Heading(UUID sender, Entry entry) {
-         Heading(UUID var1, Entry var2) {
+      private static record Heading(UUID sender, Entry entry) {
+         private Heading {
             super();
-            this.sender = var1;
-            this.entry = var2;
          }
 
-         public boolean canCombine(Heading var1) {
-            return var1.sender.equals(this.sender);
+         public boolean canCombine(final Heading other) {
+            return other.sender.equals(this.sender);
          }
       }
 
@@ -253,7 +245,7 @@ public class ChatSelectionScreen extends Screen {
             return this.canSelect();
          }
 
-         public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+         public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
             return this.canSelect();
          }
       }
@@ -272,63 +264,64 @@ public class ChatSelectionScreen extends Screen {
          private final boolean canReport;
          private final boolean playerMessage;
 
-         public MessageEntry(final int var2, final Component var3, final @Nullable Component var4, final GuiMessageTag var5, final boolean var6, final boolean var7) {
+         public MessageEntry(final int chatId, final Component text, final @Nullable Component narration, final GuiMessageTag tag, final boolean canReport, final boolean playerMessage) {
+            Objects.requireNonNull(ChatSelectionList.this);
             super();
-            this.chatId = var2;
-            this.tagIcon = (GuiMessageTag.Icon)Optionull.map(var5, GuiMessageTag::icon);
-            this.tagHoverText = var5 != null && var5.text() != null ? ChatSelectionScreen.this.font.split(var5.text(), ChatSelectionList.this.getRowWidth()) : null;
-            this.canReport = var6;
-            this.playerMessage = var7;
-            FormattedText var8 = ChatSelectionScreen.this.font.substrByWidth(var3, this.getMaximumTextWidth() - ChatSelectionScreen.this.font.width((FormattedText)CommonComponents.ELLIPSIS));
-            if (var3 != var8) {
-               this.text = FormattedText.composite(var8, CommonComponents.ELLIPSIS);
-               this.hoverText = ChatSelectionScreen.this.font.split(var3, ChatSelectionList.this.getRowWidth());
+            this.chatId = chatId;
+            this.tagIcon = (GuiMessageTag.Icon)Optionull.map(tag, GuiMessageTag::icon);
+            this.tagHoverText = tag != null && tag.text() != null ? ChatSelectionScreen.this.font.split(tag.text(), ChatSelectionList.this.getRowWidth()) : null;
+            this.canReport = canReport;
+            this.playerMessage = playerMessage;
+            FormattedText shortText = ChatSelectionScreen.this.font.substrByWidth(text, this.getMaximumTextWidth() - ChatSelectionScreen.this.font.width((FormattedText)CommonComponents.ELLIPSIS));
+            if (text != shortText) {
+               this.text = FormattedText.composite(shortText, CommonComponents.ELLIPSIS);
+               this.hoverText = ChatSelectionScreen.this.font.split(text, ChatSelectionList.this.getRowWidth());
             } else {
-               this.text = var3;
+               this.text = text;
                this.hoverText = null;
             }
 
-            this.narration = var4;
+            this.narration = narration;
          }
 
-         public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
+         public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
             if (this.isSelected() && this.canReport) {
-               this.renderSelectedCheckmark(var1, this.getContentY(), this.getContentX(), this.getContentHeight());
+               this.extractSelectedCheckmark(graphics, this.getContentY(), this.getContentX(), this.getContentHeight());
             }
 
-            int var6 = this.getContentX() + this.getTextIndent();
+            int textX = this.getContentX() + this.getTextIndent();
             int var10000 = this.getContentY() + 1;
             int var10001 = this.getContentHeight();
             Objects.requireNonNull(ChatSelectionScreen.this.font);
-            int var7 = var10000 + (var10001 - 9) / 2;
-            var1.drawString(ChatSelectionScreen.this.font, Language.getInstance().getVisualOrder(this.text), var6, var7, this.canReport ? -1 : -1593835521);
-            if (this.hoverText != null && var4) {
-               var1.setTooltipForNextFrame(this.hoverText, var2, var3);
+            int textY = var10000 + (var10001 - 9) / 2;
+            graphics.text(ChatSelectionScreen.this.font, Language.getInstance().getVisualOrder(this.text), textX, textY, this.canReport ? -1 : -1593835521);
+            if (this.hoverText != null && hovered) {
+               graphics.setTooltipForNextFrame(this.hoverText, mouseX, mouseY);
             }
 
-            int var8 = ChatSelectionScreen.this.font.width(this.text);
-            this.renderTag(var1, var6 + var8 + 4, this.getContentY(), this.getContentHeight(), var2, var3);
+            int textWidth = ChatSelectionScreen.this.font.width(this.text);
+            this.extractTag(graphics, textX + textWidth + 4, this.getContentY(), this.getContentHeight(), mouseX, mouseY);
          }
 
-         private void renderTag(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6) {
+         private void extractTag(final GuiGraphicsExtractor graphics, final int iconLeft, final int rowTop, final int rowHeight, final int mouseX, final int mouseY) {
             if (this.tagIcon != null) {
-               int var7 = var3 + (var4 - this.tagIcon.height) / 2;
-               this.tagIcon.draw(var1, var2, var7);
-               if (this.tagHoverText != null && var5 >= var2 && var5 <= var2 + this.tagIcon.width && var6 >= var7 && var6 <= var7 + this.tagIcon.height) {
-                  var1.setTooltipForNextFrame(this.tagHoverText, var5, var6);
+               int iconTop = rowTop + (rowHeight - this.tagIcon.height) / 2;
+               this.tagIcon.extractRenderState(graphics, iconLeft, iconTop);
+               if (this.tagHoverText != null && mouseX >= iconLeft && mouseX <= iconLeft + this.tagIcon.width && mouseY >= iconTop && mouseY <= iconTop + this.tagIcon.height) {
+                  graphics.setTooltipForNextFrame(this.tagHoverText, mouseX, mouseY);
                }
             }
 
          }
 
-         private void renderSelectedCheckmark(GuiGraphics var1, int var2, int var3, int var4) {
-            int var6 = var2 + (var4 - 8) / 2;
-            var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ChatSelectionScreen.CHECKMARK_SPRITE, var3, var6, 9, 8);
+         private void extractSelectedCheckmark(final GuiGraphicsExtractor graphics, final int rowTop, final int rowLeft, final int rowHeight) {
+            int top = rowTop + (rowHeight - 8) / 2;
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ChatSelectionScreen.CHECKMARK_SPRITE, rowLeft, top, 9, 8);
          }
 
          private int getMaximumTextWidth() {
-            int var1 = this.tagIcon != null ? this.tagIcon.width + 4 : 0;
-            return ChatSelectionList.this.getRowWidth() - this.getTextIndent() - 4 - var1;
+            int tagMargin = this.tagIcon != null ? this.tagIcon.width + 4 : 0;
+            return ChatSelectionList.this.getRowWidth() - this.getTextIndent() - 4 - tagMargin;
          }
 
          private int getTextIndent() {
@@ -339,13 +332,13 @@ public class ChatSelectionScreen extends Screen {
             return (Component)(this.isSelected() ? Component.translatable("narrator.select", this.narration) : this.narration);
          }
 
-         public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+         public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
             ChatSelectionList.this.setSelected((Entry)null);
             return this.toggleReport();
          }
 
-         public boolean keyPressed(KeyEvent var1) {
-            return var1.isSelection() ? this.toggleReport() : false;
+         public boolean keyPressed(final KeyEvent event) {
+            return event.isSelection() ? this.toggleReport() : false;
          }
 
          public boolean isSelected() {
@@ -378,41 +371,43 @@ public class ChatSelectionScreen extends Screen {
          private final Supplier<PlayerSkin> skin;
          private final boolean canReport;
 
-         public MessageHeadingEntry(final GameProfile var2, final Component var3, final boolean var4) {
+         public MessageHeadingEntry(final GameProfile profile, final Component heading, final boolean canReport) {
+            Objects.requireNonNull(ChatSelectionList.this);
             super();
-            this.heading = var3;
-            this.canReport = var4;
-            this.skin = ChatSelectionList.this.minecraft.getSkinManager().createLookup(var2, true);
+            this.heading = heading;
+            this.canReport = canReport;
+            this.skin = ChatSelectionList.this.minecraft.getSkinManager().createLookup(profile, true);
          }
 
-         public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
-            int var6 = this.getContentX() - 12 + 4;
-            int var7 = this.getContentY() + (this.getContentHeight() - 12) / 2;
-            PlayerFaceRenderer.draw(var1, (PlayerSkin)this.skin.get(), var6, var7, 12);
+         public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+            int faceX = this.getContentX() - 12 + 4;
+            int faceY = this.getContentY() + (this.getContentHeight() - 12) / 2;
+            PlayerFaceExtractor.extractRenderState(graphics, (PlayerSkin)this.skin.get(), faceX, faceY, 12);
             int var10000 = this.getContentY() + 1;
             int var10001 = this.getContentHeight();
             Objects.requireNonNull(ChatSelectionScreen.this.font);
-            int var8 = var10000 + (var10001 - 9) / 2;
-            var1.drawString(ChatSelectionScreen.this.font, this.heading, var6 + 12 + 4, var8, this.canReport ? -1 : -1593835521);
+            int textY = var10000 + (var10001 - 9) / 2;
+            graphics.text(ChatSelectionScreen.this.font, this.heading, faceX + 12 + 4, textY, this.canReport ? -1 : -1593835521);
          }
       }
 
       public class DividerEntry extends Entry {
          private final Component text;
 
-         public DividerEntry(final Component var2) {
+         public DividerEntry(final Component text) {
+            Objects.requireNonNull(ChatSelectionList.this);
             super();
-            this.text = var2;
+            this.text = text;
          }
 
-         public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
-            int var6 = this.getContentYMiddle();
-            int var7 = this.getContentRight() - 8;
-            int var8 = ChatSelectionScreen.this.font.width((FormattedText)this.text);
-            int var9 = (this.getContentX() + var7 - var8) / 2;
+         public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+            int centerY = this.getContentYMiddle();
+            int rowRight = this.getContentRight() - 8;
+            int textWidth = ChatSelectionScreen.this.font.width((FormattedText)this.text);
+            int textLeft = (this.getContentX() + rowRight - textWidth) / 2;
             Objects.requireNonNull(ChatSelectionScreen.this.font);
-            int var10 = var6 - 9 / 2;
-            var1.drawString(ChatSelectionScreen.this.font, this.text, var9, var10, -6250336);
+            int textTop = centerY - 9 / 2;
+            graphics.text(ChatSelectionScreen.this.font, this.text, textLeft, textTop, -6250336);
          }
 
          public Component getNarration() {
@@ -425,7 +420,7 @@ public class ChatSelectionScreen extends Screen {
             super();
          }
 
-         public void renderContent(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
+         public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
          }
       }
    }

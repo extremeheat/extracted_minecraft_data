@@ -14,15 +14,15 @@ public class PoweredBlock extends Block {
       return CODEC;
    }
 
-   public PoweredBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public PoweredBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
-   protected boolean isSignalSource(BlockState var1) {
+   protected boolean isSignalSource(final BlockState state) {
       return true;
    }
 
-   protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
+   protected int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
       return 15;
    }
 }

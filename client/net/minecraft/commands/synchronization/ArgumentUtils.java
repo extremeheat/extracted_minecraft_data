@@ -31,124 +31,124 @@ public class ArgumentUtils {
       super();
    }
 
-   public static int createNumberFlags(boolean var0, boolean var1) {
-      int var2 = 0;
-      if (var0) {
-         var2 |= 1;
+   public static int createNumberFlags(final boolean hasMin, final boolean hasMax) {
+      int result = 0;
+      if (hasMin) {
+         result |= 1;
       }
 
-      if (var1) {
-         var2 |= 2;
+      if (hasMax) {
+         result |= 2;
       }
 
-      return var2;
+      return result;
    }
 
-   public static boolean numberHasMin(byte var0) {
-      return (var0 & 1) != 0;
+   public static boolean numberHasMin(final byte flags) {
+      return (flags & 1) != 0;
    }
 
-   public static boolean numberHasMax(byte var0) {
-      return (var0 & 2) != 0;
+   public static boolean numberHasMax(final byte flags) {
+      return (flags & 2) != 0;
    }
 
-   private static <A extends ArgumentType<?>, T extends ArgumentTypeInfo.Template<A>> void serializeArgumentCap(JsonObject var0, ArgumentTypeInfo<A, T> var1, ArgumentTypeInfo.Template<A> var2) {
-      var1.serializeToJson(var2, var0);
+   private static <A extends ArgumentType<?>, T extends ArgumentTypeInfo.Template<A>> void serializeArgumentCap(final JsonObject result, final ArgumentTypeInfo<A, T> info, final ArgumentTypeInfo.Template<A> argumentType) {
+      info.serializeToJson(argumentType, result);
    }
 
-   private static <T extends ArgumentType<?>> void serializeArgumentToJson(JsonObject var0, T var1) {
-      ArgumentTypeInfo.Template var2 = ArgumentTypeInfos.unpack(var1);
-      var0.addProperty("type", "argument");
-      var0.addProperty("parser", String.valueOf(BuiltInRegistries.COMMAND_ARGUMENT_TYPE.getKey(var2.type())));
-      JsonObject var3 = new JsonObject();
-      serializeArgumentCap(var3, var2.type(), var2);
-      if (!var3.isEmpty()) {
-         var0.add("properties", var3);
+   private static <T extends ArgumentType<?>> void serializeArgumentToJson(final JsonObject result, final T argument) {
+      ArgumentTypeInfo.Template<T> template = ArgumentTypeInfos.<T>unpack(argument);
+      result.addProperty("type", "argument");
+      result.addProperty("parser", String.valueOf(BuiltInRegistries.COMMAND_ARGUMENT_TYPE.getKey(template.type())));
+      JsonObject type = new JsonObject();
+      serializeArgumentCap(type, template.type(), template);
+      if (!type.isEmpty()) {
+         result.add("properties", type);
       }
 
    }
 
-   public static <S> JsonObject serializeNodeToJson(CommandDispatcher<S> var0, CommandNode<S> var1) {
-      JsonObject var2 = new JsonObject();
-      Objects.requireNonNull(var1);
+   public static <S> JsonObject serializeNodeToJson(final CommandDispatcher<S> dispatcher, final CommandNode<S> node) {
+      JsonObject result = new JsonObject();
+      Objects.requireNonNull(node);
       byte var4 = 0;
       //$FF: var4->value
       //0->com/mojang/brigadier/tree/RootCommandNode
       //1->com/mojang/brigadier/tree/LiteralCommandNode
       //2->com/mojang/brigadier/tree/ArgumentCommandNode
-      switch (var1.typeSwitch<invokedynamic>(var1, var4)) {
+      switch (node.typeSwitch<invokedynamic>(node, var4)) {
          case 0:
-            RootCommandNode var5 = (RootCommandNode)var1;
-            var2.addProperty("type", "root");
+            RootCommandNode<S> rootNode = (RootCommandNode)node;
+            result.addProperty("type", "root");
             break;
          case 1:
-            LiteralCommandNode var6 = (LiteralCommandNode)var1;
-            var2.addProperty("type", "literal");
+            LiteralCommandNode<S> literalNode = (LiteralCommandNode)node;
+            result.addProperty("type", "literal");
             break;
          case 2:
-            ArgumentCommandNode var7 = (ArgumentCommandNode)var1;
-            serializeArgumentToJson(var2, var7.getType());
+            ArgumentCommandNode<S, ?> argumentNode = (ArgumentCommandNode)node;
+            serializeArgumentToJson(result, argumentNode.getType());
             break;
          default:
-            LOGGER.error("Could not serialize node {} ({})!", var1, var1.getClass());
-            var2.addProperty("type", "unknown");
+            LOGGER.error("Could not serialize node {} ({})!", node, node.getClass());
+            result.addProperty("type", "unknown");
       }
 
-      Collection var3 = var1.getChildren();
-      if (!var3.isEmpty()) {
-         JsonObject var8 = new JsonObject();
+      Collection<CommandNode<S>> children = node.getChildren();
+      if (!children.isEmpty()) {
+         JsonObject childrenObject = new JsonObject();
 
-         for(CommandNode var15 : var3) {
-            var8.add(var15.getName(), serializeNodeToJson(var0, var15));
+         for(CommandNode<S> child : children) {
+            childrenObject.add(child.getName(), serializeNodeToJson(dispatcher, child));
          }
 
-         var2.add("children", var8);
+         result.add("children", childrenObject);
       }
 
-      if (var1.getCommand() != null) {
-         var2.addProperty("executable", true);
+      if (node.getCommand() != null) {
+         result.addProperty("executable", true);
       }
 
-      Predicate var12 = var1.getRequirement();
-      if (var12 instanceof PermissionProviderCheck var9) {
-         JsonElement var13 = (JsonElement)PermissionCheck.CODEC.encodeStart(JsonOps.INSTANCE, var9.test()).getOrThrow((var0x) -> new IllegalStateException("Failed to serialize requirement: " + var0x));
-         var2.add("permissions", var13);
+      Predicate target = node.getRequirement();
+      if (target instanceof PermissionProviderCheck<?> permissionCheck) {
+         JsonElement permissions = (JsonElement)PermissionCheck.CODEC.encodeStart(JsonOps.INSTANCE, permissionCheck.test()).getOrThrow((error) -> new IllegalStateException("Failed to serialize requirement: " + error));
+         result.add("permissions", permissions);
       }
 
-      if (var1.getRedirect() != null) {
-         Collection var10 = var0.getPath(var1.getRedirect());
-         if (!var10.isEmpty()) {
-            JsonArray var14 = new JsonArray();
+      if (node.getRedirect() != null) {
+         Collection<String> path = dispatcher.getPath(node.getRedirect());
+         if (!path.isEmpty()) {
+            JsonArray target = new JsonArray();
 
-            for(String var17 : var10) {
-               var14.add(var17);
+            for(String piece : path) {
+               target.add(piece);
             }
 
-            var2.add("redirect", var14);
+            result.add("redirect", target);
          }
       }
 
-      return var2;
+      return result;
    }
 
-   public static <T> Set<ArgumentType<?>> findUsedArgumentTypes(CommandNode<T> var0) {
-      ReferenceOpenHashSet var1 = new ReferenceOpenHashSet();
-      HashSet var2 = new HashSet();
-      findUsedArgumentTypes(var0, var2, var1);
-      return var2;
+   public static <T> Set<ArgumentType<?>> findUsedArgumentTypes(final CommandNode<T> node) {
+      Set<CommandNode<T>> visitedNodes = new ReferenceOpenHashSet();
+      Set<ArgumentType<?>> result = new HashSet();
+      findUsedArgumentTypes(node, result, visitedNodes);
+      return result;
    }
 
-   private static <T> void findUsedArgumentTypes(CommandNode<T> var0, Set<ArgumentType<?>> var1, Set<CommandNode<T>> var2) {
-      if (var2.add(var0)) {
-         if (var0 instanceof ArgumentCommandNode) {
-            ArgumentCommandNode var3 = (ArgumentCommandNode)var0;
-            var1.add(var3.getType());
+   private static <T> void findUsedArgumentTypes(final CommandNode<T> node, final Set<ArgumentType<?>> output, final Set<CommandNode<T>> visitedNodes) {
+      if (visitedNodes.add(node)) {
+         if (node instanceof ArgumentCommandNode) {
+            ArgumentCommandNode<T, ?> arg = (ArgumentCommandNode)node;
+            output.add(arg.getType());
          }
 
-         var0.getChildren().forEach((var2x) -> findUsedArgumentTypes(var2x, var1, var2));
-         CommandNode var4 = var0.getRedirect();
-         if (var4 != null) {
-            findUsedArgumentTypes(var4, var1, var2);
+         node.getChildren().forEach((child) -> findUsedArgumentTypes(child, output, visitedNodes));
+         CommandNode<T> redirect = node.getRedirect();
+         if (redirect != null) {
+            findUsedArgumentTypes(redirect, output, visitedNodes);
          }
 
       }

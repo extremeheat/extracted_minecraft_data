@@ -26,31 +26,31 @@ import org.slf4j.Logger;
 public class EntityDataAccessor implements DataAccessor {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final SimpleCommandExceptionType ERROR_NO_PLAYERS = new SimpleCommandExceptionType(Component.translatable("commands.data.entity.invalid"));
-   public static final Function<String, DataCommands.DataProvider> PROVIDER = (var0) -> new DataCommands.DataProvider() {
-         public DataAccessor access(CommandContext<CommandSourceStack> var1) throws CommandSyntaxException {
-            return new EntityDataAccessor(EntityArgument.getEntity(var1, var0));
+   public static final Function<String, DataCommands.DataProvider> PROVIDER = (arg) -> new DataCommands.DataProvider() {
+         public DataAccessor access(final CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+            return new EntityDataAccessor(EntityArgument.getEntity(context, arg));
          }
 
-         public ArgumentBuilder<CommandSourceStack, ?> wrap(ArgumentBuilder<CommandSourceStack, ?> var1, Function<ArgumentBuilder<CommandSourceStack, ?>, ArgumentBuilder<CommandSourceStack, ?>> var2) {
-            return var1.then(Commands.literal("entity").then((ArgumentBuilder)var2.apply(Commands.argument(var0, EntityArgument.entity()))));
+         public ArgumentBuilder<CommandSourceStack, ?> wrap(final ArgumentBuilder<CommandSourceStack, ?> parent, final Function<ArgumentBuilder<CommandSourceStack, ?>, ArgumentBuilder<CommandSourceStack, ?>> function) {
+            return parent.then(Commands.literal("entity").then((ArgumentBuilder)function.apply(Commands.argument(arg, EntityArgument.entity()))));
          }
       };
    private final Entity entity;
 
-   public EntityDataAccessor(Entity var1) {
+   public EntityDataAccessor(final Entity entity) {
       super();
-      this.entity = var1;
+      this.entity = entity;
    }
 
-   public void setData(CompoundTag var1) throws CommandSyntaxException {
+   public void setData(final CompoundTag tag) throws CommandSyntaxException {
       if (this.entity instanceof Player) {
          throw ERROR_NO_PLAYERS.create();
       } else {
-         UUID var2 = this.entity.getUUID();
+         UUID uuid = this.entity.getUUID();
 
-         try (ProblemReporter.ScopedCollector var3 = new ProblemReporter.ScopedCollector(this.entity.problemPath(), LOGGER)) {
-            this.entity.load(TagValueInput.create(var3, this.entity.registryAccess(), var1));
-            this.entity.setUUID(var2);
+         try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(this.entity.problemPath(), LOGGER)) {
+            this.entity.load(TagValueInput.create(reporter, this.entity.registryAccess(), tag));
+            this.entity.setUUID(uuid);
          }
 
       }
@@ -64,11 +64,11 @@ public class EntityDataAccessor implements DataAccessor {
       return Component.translatable("commands.data.entity.modified", this.entity.getDisplayName());
    }
 
-   public Component getPrintSuccess(Tag var1) {
-      return Component.translatable("commands.data.entity.query", this.entity.getDisplayName(), NbtUtils.toPrettyComponent(var1));
+   public Component getPrintSuccess(final Tag data) {
+      return Component.translatable("commands.data.entity.query", this.entity.getDisplayName(), NbtUtils.toPrettyComponent(data));
    }
 
-   public Component getPrintSuccess(NbtPathArgument.NbtPath var1, double var2, int var4) {
-      return Component.translatable("commands.data.entity.get", var1.asString(), this.entity.getDisplayName(), String.format(Locale.ROOT, "%.2f", var2), var4);
+   public Component getPrintSuccess(final NbtPathArgument.NbtPath path, final double scale, final int value) {
+      return Component.translatable("commands.data.entity.get", path.asString(), this.entity.getDisplayName(), String.format(Locale.ROOT, "%.2f", scale), value);
    }
 }

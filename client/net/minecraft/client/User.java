@@ -11,13 +11,13 @@ public class User {
    private final Optional<String> xuid;
    private final Optional<String> clientId;
 
-   public User(String var1, UUID var2, String var3, Optional<String> var4, Optional<String> var5) {
+   public User(final String name, final UUID uuid, final String accessToken, final Optional<String> xuid, final Optional<String> clientId) {
       super();
-      this.name = var1;
-      this.uuid = var2;
-      this.accessToken = var3;
-      this.xuid = var4;
-      this.clientId = var5;
+      this.name = name;
+      this.uuid = uuid;
+      this.accessToken = accessToken;
+      this.xuid = xuid;
+      this.clientId = clientId;
    }
 
    public String getSessionId() {

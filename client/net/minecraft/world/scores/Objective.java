@@ -24,16 +24,16 @@ public class Objective {
    private boolean displayAutoUpdate;
    private @Nullable NumberFormat numberFormat;
 
-   public Objective(Scoreboard var1, String var2, ObjectiveCriteria var3, Component var4, ObjectiveCriteria.RenderType var5, boolean var6, @Nullable NumberFormat var7) {
+   public Objective(final Scoreboard scoreboard, final String name, final ObjectiveCriteria criteria, final Component displayName, final ObjectiveCriteria.RenderType renderType, final boolean displayAutoUpdate, final @Nullable NumberFormat numberFormat) {
       super();
-      this.scoreboard = var1;
-      this.name = var2;
-      this.criteria = var3;
-      this.displayName = var4;
+      this.scoreboard = scoreboard;
+      this.name = name;
+      this.criteria = criteria;
+      this.displayName = displayName;
       this.formattedDisplayName = this.createFormattedDisplayName();
-      this.renderType = var5;
-      this.displayAutoUpdate = var6;
-      this.numberFormat = var7;
+      this.renderType = renderType;
+      this.displayAutoUpdate = displayAutoUpdate;
+      this.numberFormat = numberFormat;
    }
 
    public Packed pack() {
@@ -64,20 +64,20 @@ public class Objective {
       return this.numberFormat;
    }
 
-   public NumberFormat numberFormatOrDefault(NumberFormat var1) {
-      return (NumberFormat)Objects.requireNonNullElse(this.numberFormat, var1);
+   public NumberFormat numberFormatOrDefault(final NumberFormat _default) {
+      return (NumberFormat)Objects.requireNonNullElse(this.numberFormat, _default);
    }
 
    private Component createFormattedDisplayName() {
-      return ComponentUtils.wrapInSquareBrackets(this.displayName.copy().withStyle((UnaryOperator)((var1) -> var1.withHoverEvent(new HoverEvent.ShowText(Component.literal(this.name))))));
+      return ComponentUtils.wrapInSquareBrackets(this.displayName.copy().withStyle((UnaryOperator)((s) -> s.withHoverEvent(new HoverEvent.ShowText(Component.literal(this.name))))));
    }
 
    public Component getFormattedDisplayName() {
       return this.formattedDisplayName;
    }
 
-   public void setDisplayName(Component var1) {
-      this.displayName = var1;
+   public void setDisplayName(final Component name) {
+      this.displayName = name;
       this.formattedDisplayName = this.createFormattedDisplayName();
       this.scoreboard.onObjectiveChanged(this);
    }
@@ -86,32 +86,26 @@ public class Objective {
       return this.renderType;
    }
 
-   public void setRenderType(ObjectiveCriteria.RenderType var1) {
-      this.renderType = var1;
+   public void setRenderType(final ObjectiveCriteria.RenderType renderType) {
+      this.renderType = renderType;
       this.scoreboard.onObjectiveChanged(this);
    }
 
-   public void setDisplayAutoUpdate(boolean var1) {
-      this.displayAutoUpdate = var1;
+   public void setDisplayAutoUpdate(final boolean displayAutoUpdate) {
+      this.displayAutoUpdate = displayAutoUpdate;
       this.scoreboard.onObjectiveChanged(this);
    }
 
-   public void setNumberFormat(@Nullable NumberFormat var1) {
-      this.numberFormat = var1;
+   public void setNumberFormat(final @Nullable NumberFormat numberFormat) {
+      this.numberFormat = numberFormat;
       this.scoreboard.onObjectiveChanged(this);
    }
 
    public static record Packed(String name, ObjectiveCriteria criteria, Component displayName, ObjectiveCriteria.RenderType renderType, boolean displayAutoUpdate, Optional<NumberFormat> numberFormat) {
-      public static final Codec<Packed> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.STRING.fieldOf("Name").forGetter(Packed::name), ObjectiveCriteria.CODEC.optionalFieldOf("CriteriaName", ObjectiveCriteria.DUMMY).forGetter(Packed::criteria), ComponentSerialization.CODEC.fieldOf("DisplayName").forGetter(Packed::displayName), ObjectiveCriteria.RenderType.CODEC.optionalFieldOf("RenderType", ObjectiveCriteria.RenderType.INTEGER).forGetter(Packed::renderType), Codec.BOOL.optionalFieldOf("display_auto_update", false).forGetter(Packed::displayAutoUpdate), NumberFormatTypes.CODEC.optionalFieldOf("format").forGetter(Packed::numberFormat)).apply(var0, Packed::new));
+      public static final Codec<Packed> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.STRING.fieldOf("Name").forGetter(Packed::name), ObjectiveCriteria.CODEC.optionalFieldOf("CriteriaName", ObjectiveCriteria.DUMMY).forGetter(Packed::criteria), ComponentSerialization.CODEC.fieldOf("DisplayName").forGetter(Packed::displayName), ObjectiveCriteria.RenderType.CODEC.optionalFieldOf("RenderType", ObjectiveCriteria.RenderType.INTEGER).forGetter(Packed::renderType), Codec.BOOL.optionalFieldOf("display_auto_update", false).forGetter(Packed::displayAutoUpdate), NumberFormatTypes.CODEC.optionalFieldOf("format").forGetter(Packed::numberFormat)).apply(i, Packed::new));
 
-      public Packed(String var1, ObjectiveCriteria var2, Component var3, ObjectiveCriteria.RenderType var4, boolean var5, Optional<NumberFormat> var6) {
+      public Packed {
          super();
-         this.name = var1;
-         this.criteria = var2;
-         this.displayName = var3;
-         this.renderType = var4;
-         this.displayAutoUpdate = var5;
-         this.numberFormat = var6;
       }
    }
 }

@@ -15,35 +15,35 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.ComponentUtils;
+import net.minecraft.network.chat.ResolutionContext;
 import net.minecraft.util.parsing.packrat.commands.CommandArgumentParser;
 import net.minecraft.util.parsing.packrat.commands.ParserBasedArgument;
 import net.minecraft.world.entity.Entity;
-import org.jspecify.annotations.Nullable;
 
 public class ComponentArgument extends ParserBasedArgument<Component> {
    private static final Collection<String> EXAMPLES = Arrays.asList("\"hello world\"", "'hello world'", "\"\"", "{text:\"hello world\"}", "[\"\"]");
-   public static final DynamicCommandExceptionType ERROR_INVALID_COMPONENT = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.component.invalid", var0));
+   public static final DynamicCommandExceptionType ERROR_INVALID_COMPONENT = new DynamicCommandExceptionType((message) -> Component.translatableEscape("argument.component.invalid", message));
    private static final DynamicOps<Tag> OPS;
    private static final CommandArgumentParser<Tag> TAG_PARSER;
 
-   private ComponentArgument(HolderLookup.Provider var1) {
-      super(TAG_PARSER.withCodec(var1.createSerializationContext(OPS), TAG_PARSER, ComponentSerialization.CODEC, ERROR_INVALID_COMPONENT));
+   private ComponentArgument(final HolderLookup.Provider registries) {
+      super(TAG_PARSER.withCodec(registries.createSerializationContext(OPS), TAG_PARSER, ComponentSerialization.CODEC, ERROR_INVALID_COMPONENT));
    }
 
-   public static Component getRawComponent(CommandContext<CommandSourceStack> var0, String var1) {
-      return (Component)var0.getArgument(var1, Component.class);
+   public static Component getRawComponent(final CommandContext<CommandSourceStack> context, final String name) {
+      return (Component)context.getArgument(name, Component.class);
    }
 
-   public static Component getResolvedComponent(CommandContext<CommandSourceStack> var0, String var1, @Nullable Entity var2) throws CommandSyntaxException {
-      return ComponentUtils.updateForEntity((CommandSourceStack)var0.getSource(), getRawComponent(var0, var1), var2, 0);
+   public static Component getResolvedComponent(final CommandContext<CommandSourceStack> context, final String name, final Entity contentEntity) throws CommandSyntaxException {
+      return ComponentUtils.resolve(ResolutionContext.builder().withSource((CommandSourceStack)context.getSource()).withEntityOverride(contentEntity).build(), getRawComponent(context, name));
    }
 
-   public static Component getResolvedComponent(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
-      return getResolvedComponent(var0, var1, ((CommandSourceStack)var0.getSource()).getEntity());
+   public static Component getResolvedComponent(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
+      return ComponentUtils.resolve(ResolutionContext.create((CommandSourceStack)context.getSource()), getRawComponent(context, name));
    }
 
-   public static ComponentArgument textComponent(CommandBuildContext var0) {
-      return new ComponentArgument(var0);
+   public static ComponentArgument textComponent(final CommandBuildContext context) {
+      return new ComponentArgument(context);
    }
 
    public Collection<String> getExamples() {

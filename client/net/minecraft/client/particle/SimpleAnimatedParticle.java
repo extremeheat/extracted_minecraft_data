@@ -9,25 +9,25 @@ public abstract class SimpleAnimatedParticle extends SingleQuadParticle {
    private float fadeB;
    private boolean hasFade;
 
-   protected SimpleAnimatedParticle(ClientLevel var1, double var2, double var4, double var6, SpriteSet var8, float var9) {
-      super(var1, var2, var4, var6, var8.first());
+   protected SimpleAnimatedParticle(final ClientLevel level, final double x, final double y, final double z, final SpriteSet sprites, final float gravity) {
+      super(level, x, y, z, sprites.first());
       this.friction = 0.91F;
-      this.gravity = var9;
-      this.sprites = var8;
+      this.gravity = gravity;
+      this.sprites = sprites;
    }
 
-   public void setColor(int var1) {
-      float var2 = (float)((var1 & 16711680) >> 16) / 255.0F;
-      float var3 = (float)((var1 & '\uff00') >> 8) / 255.0F;
-      float var4 = (float)((var1 & 255) >> 0) / 255.0F;
-      float var5 = 1.0F;
-      this.setColor(var2 * 1.0F, var3 * 1.0F, var4 * 1.0F);
+   public void setColor(final int rgb) {
+      float r = (float)((rgb & 16711680) >> 16) / 255.0F;
+      float g = (float)((rgb & '\uff00') >> 8) / 255.0F;
+      float b = (float)((rgb & 255) >> 0) / 255.0F;
+      float scale = 1.0F;
+      this.setColor(r * 1.0F, g * 1.0F, b * 1.0F);
    }
 
-   public void setFadeColor(int var1) {
-      this.fadeR = (float)((var1 & 16711680) >> 16) / 255.0F;
-      this.fadeG = (float)((var1 & '\uff00') >> 8) / 255.0F;
-      this.fadeB = (float)((var1 & 255) >> 0) / 255.0F;
+   public void setFadeColor(final int rgb) {
+      this.fadeR = (float)((rgb & 16711680) >> 16) / 255.0F;
+      this.fadeG = (float)((rgb & '\uff00') >> 8) / 255.0F;
+      this.fadeB = (float)((rgb & 255) >> 0) / 255.0F;
       this.hasFade = true;
    }
 
@@ -49,7 +49,7 @@ public abstract class SimpleAnimatedParticle extends SingleQuadParticle {
 
    }
 
-   public int getLightColor(float var1) {
+   public int getLightCoords(final float a) {
       return 15728880;
    }
 }

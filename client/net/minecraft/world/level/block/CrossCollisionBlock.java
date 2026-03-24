@@ -29,77 +29,77 @@ public abstract class CrossCollisionBlock extends Block implements SimpleWaterlo
    private final Function<BlockState, VoxelShape> collisionShapes;
    private final Function<BlockState, VoxelShape> shapes;
 
-   protected CrossCollisionBlock(float var1, float var2, float var3, float var4, float var5, BlockBehaviour.Properties var6) {
-      super(var6);
-      this.collisionShapes = this.makeShapes(var1, var5, var3, 0.0F, var5);
-      this.shapes = this.makeShapes(var1, var2, var3, 0.0F, var4);
+   protected CrossCollisionBlock(final float postWidth, final float postHeight, final float wallWidth, final float wallHeight, final float collisionHeight, final BlockBehaviour.Properties properties) {
+      super(properties);
+      this.collisionShapes = this.makeShapes(postWidth, collisionHeight, wallWidth, 0.0F, collisionHeight);
+      this.shapes = this.makeShapes(postWidth, postHeight, wallWidth, 0.0F, wallHeight);
    }
 
    protected abstract MapCodec<? extends CrossCollisionBlock> codec();
 
-   protected Function<BlockState, VoxelShape> makeShapes(float var1, float var2, float var3, float var4, float var5) {
-      VoxelShape var6 = Block.column((double)var1, 0.0, (double)var2);
-      Map var7 = Shapes.rotateHorizontal(Block.boxZ((double)var3, (double)var4, (double)var5, 0.0, 8.0));
-      return this.getShapeForEachState((var2x) -> {
-         VoxelShape var3 = var6;
+   protected Function<BlockState, VoxelShape> makeShapes(final float postWidth, final float postHeight, final float wallWidth, final float wallBottom, final float wallTop) {
+      VoxelShape post = Block.column((double)postWidth, 0.0, (double)postHeight);
+      Map<Direction, VoxelShape> arms = Shapes.rotateHorizontal(Block.boxZ((double)wallWidth, (double)wallBottom, (double)wallTop, 0.0, 8.0));
+      return this.getShapeForEachState((state) -> {
+         VoxelShape shape = post;
 
-         for(Map.Entry var5 : PROPERTY_BY_DIRECTION.entrySet()) {
-            if ((Boolean)var2x.getValue((Property)var5.getValue())) {
-               var3 = Shapes.or(var3, (VoxelShape)var7.get(var5.getKey()));
+         for(Map.Entry<Direction, BooleanProperty> entry : PROPERTY_BY_DIRECTION.entrySet()) {
+            if ((Boolean)state.getValue((Property)entry.getValue())) {
+               shape = Shapes.or(shape, (VoxelShape)arms.get(entry.getKey()));
             }
          }
 
-         return var3;
+         return shape;
       }, new Property[]{WATERLOGGED});
    }
 
-   protected boolean propagatesSkylightDown(BlockState var1) {
-      return !(Boolean)var1.getValue(WATERLOGGED);
+   protected boolean propagatesSkylightDown(final BlockState state) {
+      return !(Boolean)state.getValue(WATERLOGGED);
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (VoxelShape)this.shapes.apply(var1);
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return (VoxelShape)this.shapes.apply(state);
    }
 
-   protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (VoxelShape)this.collisionShapes.apply(var1);
+   protected VoxelShape getCollisionShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return (VoxelShape)this.collisionShapes.apply(state);
    }
 
-   protected FluidState getFluidState(BlockState var1) {
-      return (Boolean)var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
+   protected FluidState getFluidState(final BlockState state) {
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
    }
 
-   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
+   protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
       return false;
    }
 
-   protected BlockState rotate(BlockState var1, Rotation var2) {
-      switch (var2) {
+   protected BlockState rotate(final BlockState state, final Rotation rotation) {
+      switch (rotation) {
          case CLOCKWISE_180 -> {
-            return (BlockState)((BlockState)((BlockState)((BlockState)var1.setValue(NORTH, (Boolean)var1.getValue(SOUTH))).setValue(EAST, (Boolean)var1.getValue(WEST))).setValue(SOUTH, (Boolean)var1.getValue(NORTH))).setValue(WEST, (Boolean)var1.getValue(EAST));
+            return (BlockState)((BlockState)((BlockState)((BlockState)state.setValue(NORTH, (Boolean)state.getValue(SOUTH))).setValue(EAST, (Boolean)state.getValue(WEST))).setValue(SOUTH, (Boolean)state.getValue(NORTH))).setValue(WEST, (Boolean)state.getValue(EAST));
          }
          case COUNTERCLOCKWISE_90 -> {
-            return (BlockState)((BlockState)((BlockState)((BlockState)var1.setValue(NORTH, (Boolean)var1.getValue(EAST))).setValue(EAST, (Boolean)var1.getValue(SOUTH))).setValue(SOUTH, (Boolean)var1.getValue(WEST))).setValue(WEST, (Boolean)var1.getValue(NORTH));
+            return (BlockState)((BlockState)((BlockState)((BlockState)state.setValue(NORTH, (Boolean)state.getValue(EAST))).setValue(EAST, (Boolean)state.getValue(SOUTH))).setValue(SOUTH, (Boolean)state.getValue(WEST))).setValue(WEST, (Boolean)state.getValue(NORTH));
          }
          case CLOCKWISE_90 -> {
-            return (BlockState)((BlockState)((BlockState)((BlockState)var1.setValue(NORTH, (Boolean)var1.getValue(WEST))).setValue(EAST, (Boolean)var1.getValue(NORTH))).setValue(SOUTH, (Boolean)var1.getValue(EAST))).setValue(WEST, (Boolean)var1.getValue(SOUTH));
+            return (BlockState)((BlockState)((BlockState)((BlockState)state.setValue(NORTH, (Boolean)state.getValue(WEST))).setValue(EAST, (Boolean)state.getValue(NORTH))).setValue(SOUTH, (Boolean)state.getValue(EAST))).setValue(WEST, (Boolean)state.getValue(SOUTH));
          }
          default -> {
-            return var1;
+            return state;
          }
       }
    }
 
-   protected BlockState mirror(BlockState var1, Mirror var2) {
-      switch (var2) {
+   protected BlockState mirror(final BlockState state, final Mirror mirror) {
+      switch (mirror) {
          case LEFT_RIGHT -> {
-            return (BlockState)((BlockState)var1.setValue(NORTH, (Boolean)var1.getValue(SOUTH))).setValue(SOUTH, (Boolean)var1.getValue(NORTH));
+            return (BlockState)((BlockState)state.setValue(NORTH, (Boolean)state.getValue(SOUTH))).setValue(SOUTH, (Boolean)state.getValue(NORTH));
          }
          case FRONT_BACK -> {
-            return (BlockState)((BlockState)var1.setValue(EAST, (Boolean)var1.getValue(WEST))).setValue(WEST, (Boolean)var1.getValue(EAST));
+            return (BlockState)((BlockState)state.setValue(EAST, (Boolean)state.getValue(WEST))).setValue(WEST, (Boolean)state.getValue(EAST));
          }
          default -> {
-            return super.mirror(var1, var2);
+            return super.mirror(state, mirror);
          }
       }
    }
@@ -110,6 +110,6 @@ public abstract class CrossCollisionBlock extends Block implements SimpleWaterlo
       SOUTH = PipeBlock.SOUTH;
       WEST = PipeBlock.WEST;
       WATERLOGGED = BlockStateProperties.WATERLOGGED;
-      PROPERTY_BY_DIRECTION = (Map)PipeBlock.PROPERTY_BY_DIRECTION.entrySet().stream().filter((var0) -> ((Direction)var0.getKey()).getAxis().isHorizontal()).collect(Util.toMap());
+      PROPERTY_BY_DIRECTION = (Map)PipeBlock.PROPERTY_BY_DIRECTION.entrySet().stream().filter((e) -> ((Direction)e.getKey()).getAxis().isHorizontal()).collect(Util.toMap());
    }
 }

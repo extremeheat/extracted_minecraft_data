@@ -5,11 +5,11 @@ import it.unimi.dsi.fastutil.doubles.DoubleList;
 interface IndexMerger {
    DoubleList getList();
 
-   boolean forMergedIndexes(IndexConsumer var1);
+   boolean forMergedIndexes(IndexConsumer consumer);
 
    int size();
 
    public interface IndexConsumer {
-      boolean merge(int var1, int var2, int var3);
+      boolean merge(int firstIndex, int secondIndex, int resultIndex);
    }
 }

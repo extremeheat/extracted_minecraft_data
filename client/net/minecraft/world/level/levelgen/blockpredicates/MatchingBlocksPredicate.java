@@ -11,15 +11,15 @@ import net.minecraft.world.level.block.state.BlockState;
 
 class MatchingBlocksPredicate extends StateTestingPredicate {
    private final HolderSet<Block> blocks;
-   public static final MapCodec<MatchingBlocksPredicate> CODEC = RecordCodecBuilder.mapCodec((var0) -> stateTestingCodec(var0).and(RegistryCodecs.homogeneousList(Registries.BLOCK).fieldOf("blocks").forGetter((var0x) -> var0x.blocks)).apply(var0, MatchingBlocksPredicate::new));
+   public static final MapCodec<MatchingBlocksPredicate> CODEC = RecordCodecBuilder.mapCodec((i) -> stateTestingCodec(i).and(RegistryCodecs.homogeneousList(Registries.BLOCK).fieldOf("blocks").forGetter((c) -> c.blocks)).apply(i, MatchingBlocksPredicate::new));
 
-   public MatchingBlocksPredicate(Vec3i var1, HolderSet<Block> var2) {
-      super(var1);
-      this.blocks = var2;
+   public MatchingBlocksPredicate(final Vec3i offset, final HolderSet<Block> blocks) {
+      super(offset);
+      this.blocks = blocks;
    }
 
-   protected boolean test(BlockState var1) {
-      return var1.is(this.blocks);
+   protected boolean test(final BlockState state) {
+      return state.is(this.blocks);
    }
 
    public BlockPredicateType<?> type() {

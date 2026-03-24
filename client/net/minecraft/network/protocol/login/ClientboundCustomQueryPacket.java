@@ -12,41 +12,39 @@ public record ClientboundCustomQueryPacket(int transactionId, CustomQueryPayload
    public static final StreamCodec<FriendlyByteBuf, ClientboundCustomQueryPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundCustomQueryPacket>codec(ClientboundCustomQueryPacket::write, ClientboundCustomQueryPacket::new);
    private static final int MAX_PAYLOAD_SIZE = 1048576;
 
-   private ClientboundCustomQueryPacket(FriendlyByteBuf var1) {
-      this(var1.readVarInt(), readPayload(var1.readIdentifier(), var1));
+   private ClientboundCustomQueryPacket(final FriendlyByteBuf input) {
+      this(input.readVarInt(), readPayload(input.readIdentifier(), input));
    }
 
-   public ClientboundCustomQueryPacket(int var1, CustomQueryPayload var2) {
+   public ClientboundCustomQueryPacket {
       super();
-      this.transactionId = var1;
-      this.payload = var2;
    }
 
-   private static CustomQueryPayload readPayload(Identifier var0, FriendlyByteBuf var1) {
-      return readUnknownPayload(var0, var1);
+   private static CustomQueryPayload readPayload(final Identifier identifier, final FriendlyByteBuf input) {
+      return readUnknownPayload(identifier, input);
    }
 
-   private static DiscardedQueryPayload readUnknownPayload(Identifier var0, FriendlyByteBuf var1) {
-      int var2 = var1.readableBytes();
-      if (var2 >= 0 && var2 <= 1048576) {
-         var1.skipBytes(var2);
-         return new DiscardedQueryPayload(var0);
+   private static DiscardedQueryPayload readUnknownPayload(final Identifier identifier, final FriendlyByteBuf input) {
+      int length = input.readableBytes();
+      if (length >= 0 && length <= 1048576) {
+         input.skipBytes(length);
+         return new DiscardedQueryPayload(identifier);
       } else {
          throw new IllegalArgumentException("Payload may not be larger than 1048576 bytes");
       }
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeVarInt(this.transactionId);
-      var1.writeIdentifier(this.payload.id());
-      this.payload.write(var1);
+   private void write(final FriendlyByteBuf output) {
+      output.writeVarInt(this.transactionId);
+      output.writeIdentifier(this.payload.id());
+      this.payload.write(output);
    }
 
    public PacketType<ClientboundCustomQueryPacket> type() {
       return LoginPacketTypes.CLIENTBOUND_CUSTOM_QUERY;
    }
 
-   public void handle(ClientLoginPacketListener var1) {
-      var1.handleCustomQuery(this);
+   public void handle(final ClientLoginPacketListener listener) {
+      listener.handleCustomQuery(this);
    }
 }

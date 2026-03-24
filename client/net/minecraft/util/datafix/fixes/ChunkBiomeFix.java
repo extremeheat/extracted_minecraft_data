@@ -11,38 +11,38 @@ import java.util.Optional;
 import java.util.stream.IntStream;
 
 public class ChunkBiomeFix extends DataFix {
-   public ChunkBiomeFix(Schema var1, boolean var2) {
-      super(var1, var2);
+   public ChunkBiomeFix(final Schema outputSchema, final boolean changesType) {
+      super(outputSchema, changesType);
    }
 
    protected TypeRewriteRule makeRule() {
-      Type var1 = this.getInputSchema().getType(References.CHUNK);
-      OpticFinder var2 = var1.findField("Level");
-      return this.fixTypeEverywhereTyped("Leaves fix", var1, (var1x) -> var1x.updateTyped(var2, (var0) -> var0.update(DSL.remainderFinder(), (var0x) -> {
-               Optional var1 = var0x.get("Biomes").asIntStreamOpt().result();
-               if (var1.isEmpty()) {
-                  return var0x;
+      Type<?> chunkType = this.getInputSchema().getType(References.CHUNK);
+      OpticFinder<?> levelFinder = chunkType.findField("Level");
+      return this.fixTypeEverywhereTyped("Leaves fix", chunkType, (chunk) -> chunk.updateTyped(levelFinder, (level) -> level.update(DSL.remainderFinder(), (tag) -> {
+               Optional<IntStream> biomes = tag.get("Biomes").asIntStreamOpt().result();
+               if (biomes.isEmpty()) {
+                  return tag;
                } else {
-                  int[] var2 = ((IntStream)var1.get()).toArray();
-                  if (var2.length != 256) {
-                     return var0x;
+                  int[] oldBiomes = ((IntStream)biomes.get()).toArray();
+                  if (oldBiomes.length != 256) {
+                     return tag;
                   } else {
-                     int[] var3 = new int[1024];
+                     int[] newBiomes = new int[1024];
 
-                     for(int var4 = 0; var4 < 4; ++var4) {
-                        for(int var5 = 0; var5 < 4; ++var5) {
-                           int var6 = (var5 << 2) + 2;
-                           int var7 = (var4 << 2) + 2;
-                           int var8 = var7 << 4 | var6;
-                           var3[var4 << 2 | var5] = var2[var8];
+                     for(int z = 0; z < 4; ++z) {
+                        for(int x = 0; x < 4; ++x) {
+                           int oldX = (x << 2) + 2;
+                           int oldZ = (z << 2) + 2;
+                           int index = oldZ << 4 | oldX;
+                           newBiomes[z << 2 | x] = oldBiomes[index];
                         }
                      }
 
-                     for(int var9 = 1; var9 < 64; ++var9) {
-                        System.arraycopy(var3, 0, var3, var9 * 16, 16);
+                     for(int ySlice = 1; ySlice < 64; ++ySlice) {
+                        System.arraycopy(newBiomes, 0, newBiomes, ySlice * 16, 16);
                      }
 
-                     return var0x.set("Biomes", var0x.createIntList(Arrays.stream(var3)));
+                     return tag.set("Biomes", tag.createIntList(Arrays.stream(newBiomes)));
                   }
                }
             })));

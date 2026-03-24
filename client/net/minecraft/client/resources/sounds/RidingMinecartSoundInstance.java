@@ -11,11 +11,11 @@ public class RidingMinecartSoundInstance extends RidingEntitySoundInstance {
    private final AbstractMinecart minecart;
    private final boolean underwaterSound;
 
-   public RidingMinecartSoundInstance(Player var1, AbstractMinecart var2, boolean var3, SoundEvent var4, float var5, float var6, float var7) {
-      super(var1, var2, var3, var4, SoundSource.NEUTRAL, var5, var6, var7);
-      this.player = var1;
-      this.minecart = var2;
-      this.underwaterSound = var3;
+   public RidingMinecartSoundInstance(final Player player, final AbstractMinecart minecart, final boolean underwaterSound, final SoundEvent soundEvent, final float volumeMin, final float volumeMax, final float volumeAmplifier) {
+      super(player, minecart, underwaterSound, soundEvent, SoundSource.NEUTRAL, volumeMin, volumeMax, volumeAmplifier);
+      this.player = player;
+      this.minecart = minecart;
+      this.underwaterSound = underwaterSound;
    }
 
    protected boolean shouldNotPlayUnderwaterSound() {

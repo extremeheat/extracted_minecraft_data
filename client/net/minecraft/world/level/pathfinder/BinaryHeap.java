@@ -10,20 +10,20 @@ public class BinaryHeap {
       super();
    }
 
-   public Node insert(Node var1) {
-      if (var1.heapIdx >= 0) {
+   public Node insert(final Node node) {
+      if (node.heapIdx >= 0) {
          throw new IllegalStateException("OW KNOWS!");
       } else {
          if (this.size == this.heap.length) {
-            Node[] var2 = new Node[this.size << 1];
-            System.arraycopy(this.heap, 0, var2, 0, this.size);
-            this.heap = var2;
+            Node[] newHeap = new Node[this.size << 1];
+            System.arraycopy(this.heap, 0, newHeap, 0, this.size);
+            this.heap = newHeap;
          }
 
-         this.heap[this.size] = var1;
-         var1.heapIdx = this.size;
+         this.heap[this.size] = node;
+         node.heapIdx = this.size;
          this.upHeap(this.size++);
-         return var1;
+         return node;
       }
    }
 
@@ -36,38 +36,38 @@ public class BinaryHeap {
    }
 
    public Node pop() {
-      Node var1 = this.heap[0];
+      Node popped = this.heap[0];
       this.heap[0] = this.heap[--this.size];
       this.heap[this.size] = null;
       if (this.size > 0) {
          this.downHeap(0);
       }
 
-      var1.heapIdx = -1;
-      return var1;
+      popped.heapIdx = -1;
+      return popped;
    }
 
-   public void remove(Node var1) {
-      this.heap[var1.heapIdx] = this.heap[--this.size];
+   public void remove(final Node node) {
+      this.heap[node.heapIdx] = this.heap[--this.size];
       this.heap[this.size] = null;
-      if (this.size > var1.heapIdx) {
-         if (this.heap[var1.heapIdx].f < var1.f) {
-            this.upHeap(var1.heapIdx);
+      if (this.size > node.heapIdx) {
+         if (this.heap[node.heapIdx].f < node.f) {
+            this.upHeap(node.heapIdx);
          } else {
-            this.downHeap(var1.heapIdx);
+            this.downHeap(node.heapIdx);
          }
       }
 
-      var1.heapIdx = -1;
+      node.heapIdx = -1;
    }
 
-   public void changeCost(Node var1, float var2) {
-      float var3 = var1.f;
-      var1.f = var2;
-      if (var2 < var3) {
-         this.upHeap(var1.heapIdx);
+   public void changeCost(final Node node, final float newCost) {
+      float oldCost = node.f;
+      node.f = newCost;
+      if (newCost < oldCost) {
+         this.upHeap(node.heapIdx);
       } else {
-         this.downHeap(var1.heapIdx);
+         this.downHeap(node.heapIdx);
       }
 
    }
@@ -76,69 +76,69 @@ public class BinaryHeap {
       return this.size;
    }
 
-   private void upHeap(int var1) {
-      Node var2 = this.heap[var1];
+   private void upHeap(int idx) {
+      Node node = this.heap[idx];
 
-      int var4;
-      for(float var3 = var2.f; var1 > 0; var1 = var4) {
-         var4 = var1 - 1 >> 1;
-         Node var5 = this.heap[var4];
-         if (!(var3 < var5.f)) {
+      int parentIdx;
+      for(float cost = node.f; idx > 0; idx = parentIdx) {
+         parentIdx = idx - 1 >> 1;
+         Node parent = this.heap[parentIdx];
+         if (!(cost < parent.f)) {
             break;
          }
 
-         this.heap[var1] = var5;
-         var5.heapIdx = var1;
+         this.heap[idx] = parent;
+         parent.heapIdx = idx;
       }
 
-      this.heap[var1] = var2;
-      var2.heapIdx = var1;
+      this.heap[idx] = node;
+      node.heapIdx = idx;
    }
 
-   private void downHeap(int var1) {
-      Node var2 = this.heap[var1];
-      float var3 = var2.f;
+   private void downHeap(int idx) {
+      Node node = this.heap[idx];
+      float cost = node.f;
 
       while(true) {
-         int var4 = 1 + (var1 << 1);
-         int var5 = var4 + 1;
-         if (var4 >= this.size) {
+         int leftIdx = 1 + (idx << 1);
+         int rightIdx = leftIdx + 1;
+         if (leftIdx >= this.size) {
             break;
          }
 
-         Node var6 = this.heap[var4];
-         float var7 = var6.f;
-         Node var8;
-         float var9;
-         if (var5 >= this.size) {
-            var8 = null;
-            var9 = 1.0F / 0.0F;
+         Node leftNode = this.heap[leftIdx];
+         float leftCost = leftNode.f;
+         Node rightNode;
+         float rightCost;
+         if (rightIdx >= this.size) {
+            rightNode = null;
+            rightCost = 1.0F / 0.0F;
          } else {
-            var8 = this.heap[var5];
-            var9 = var8.f;
+            rightNode = this.heap[rightIdx];
+            rightCost = rightNode.f;
          }
 
-         if (var7 < var9) {
-            if (!(var7 < var3)) {
+         if (leftCost < rightCost) {
+            if (!(leftCost < cost)) {
                break;
             }
 
-            this.heap[var1] = var6;
-            var6.heapIdx = var1;
-            var1 = var4;
+            this.heap[idx] = leftNode;
+            leftNode.heapIdx = idx;
+            idx = leftIdx;
          } else {
-            if (!(var9 < var3)) {
+            if (!(rightCost < cost)) {
                break;
             }
 
-            this.heap[var1] = var8;
-            var8.heapIdx = var1;
-            var1 = var5;
+            this.heap[idx] = rightNode;
+            rightNode.heapIdx = idx;
+            idx = rightIdx;
          }
       }
 
-      this.heap[var1] = var2;
-      var2.heapIdx = var1;
+      this.heap[idx] = node;
+      node.heapIdx = idx;
    }
 
    public boolean isEmpty() {

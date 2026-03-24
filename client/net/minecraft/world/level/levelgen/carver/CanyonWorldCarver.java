@@ -13,87 +13,87 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.levelgen.Aquifer;
 
 public class CanyonWorldCarver extends WorldCarver<CanyonCarverConfiguration> {
-   public CanyonWorldCarver(Codec<CanyonCarverConfiguration> var1) {
-      super(var1);
+   public CanyonWorldCarver(final Codec<CanyonCarverConfiguration> configurationFactory) {
+      super(configurationFactory);
    }
 
-   public boolean isStartChunk(CanyonCarverConfiguration var1, RandomSource var2) {
-      return var2.nextFloat() <= var1.probability;
+   public boolean isStartChunk(final CanyonCarverConfiguration configuration, final RandomSource random) {
+      return random.nextFloat() <= configuration.probability;
    }
 
-   public boolean carve(CarvingContext var1, CanyonCarverConfiguration var2, ChunkAccess var3, Function<BlockPos, Holder<Biome>> var4, RandomSource var5, Aquifer var6, ChunkPos var7, CarvingMask var8) {
-      int var9 = (this.getRange() * 2 - 1) * 16;
-      double var10 = (double)var7.getBlockX(var5.nextInt(16));
-      int var12 = var2.y.sample(var5, var1);
-      double var13 = (double)var7.getBlockZ(var5.nextInt(16));
-      float var15 = var5.nextFloat() * 6.2831855F;
-      float var16 = var2.verticalRotation.sample(var5);
-      double var17 = (double)var2.yScale.sample(var5);
-      float var19 = var2.shape.thickness.sample(var5);
-      int var20 = (int)((float)var9 * var2.shape.distanceFactor.sample(var5));
-      boolean var21 = false;
-      this.doCarve(var1, var2, var3, var4, var5.nextLong(), var6, var10, (double)var12, var13, var19, var15, var16, 0, var20, var17, var8);
+   public boolean carve(final CarvingContext context, final CanyonCarverConfiguration configuration, final ChunkAccess chunk, final Function<BlockPos, Holder<Biome>> biomeGetter, final RandomSource random, final Aquifer aquifer, final ChunkPos sourceChunkPos, final CarvingMask mask) {
+      int maxDistance = (this.getRange() * 2 - 1) * 16;
+      double x = (double)sourceChunkPos.getBlockX(random.nextInt(16));
+      int y = configuration.y.sample(random, context);
+      double z = (double)sourceChunkPos.getBlockZ(random.nextInt(16));
+      float horizontalRotation = random.nextFloat() * 6.2831855F;
+      float verticalRotation = configuration.verticalRotation.sample(random);
+      double yScale = (double)configuration.yScale.sample(random);
+      float thickness = configuration.shape.thickness.sample(random);
+      int distance = (int)((float)maxDistance * configuration.shape.distanceFactor.sample(random));
+      int initialStep = 0;
+      this.doCarve(context, configuration, chunk, biomeGetter, random.nextLong(), aquifer, x, (double)y, z, thickness, horizontalRotation, verticalRotation, 0, distance, yScale, mask);
       return true;
    }
 
-   private void doCarve(CarvingContext var1, CanyonCarverConfiguration var2, ChunkAccess var3, Function<BlockPos, Holder<Biome>> var4, long var5, Aquifer var7, double var8, double var10, double var12, float var14, float var15, float var16, int var17, int var18, double var19, CarvingMask var21) {
-      RandomSource var22 = RandomSource.create(var5);
-      float[] var23 = this.initWidthFactors(var1, var2, var22);
-      float var24 = 0.0F;
-      float var25 = 0.0F;
+   private void doCarve(final CarvingContext context, final CanyonCarverConfiguration configuration, final ChunkAccess chunk, final Function<BlockPos, Holder<Biome>> biomeGetter, final long tunnelSeed, final Aquifer aquifer, double x, double y, double z, final float thickness, float horizontalRotation, float verticalRotation, final int step, final int distance, final double yScale, final CarvingMask mask) {
+      RandomSource random = RandomSource.createThreadLocalInstance(tunnelSeed);
+      float[] widthFactorPerHeight = this.initWidthFactors(context, configuration, random);
+      float yRota = 0.0F;
+      float xRota = 0.0F;
 
-      for(int var26 = var17; var26 < var18; ++var26) {
-         double var27 = 1.5 + (double)(Mth.sin((double)((float)var26 * 3.1415927F / (float)var18)) * var14);
-         double var29 = var27 * var19;
-         var27 *= (double)var2.shape.horizontalRadiusFactor.sample(var22);
-         var29 = this.updateVerticalRadius(var2, var22, var29, (float)var18, (float)var26);
-         float var31 = Mth.cos((double)var16);
-         float var32 = Mth.sin((double)var16);
-         var8 += (double)(Mth.cos((double)var15) * var31);
-         var10 += (double)var32;
-         var12 += (double)(Mth.sin((double)var15) * var31);
-         var16 *= 0.7F;
-         var16 += var25 * 0.05F;
-         var15 += var24 * 0.05F;
-         var25 *= 0.8F;
-         var24 *= 0.5F;
-         var25 += (var22.nextFloat() - var22.nextFloat()) * var22.nextFloat() * 2.0F;
-         var24 += (var22.nextFloat() - var22.nextFloat()) * var22.nextFloat() * 4.0F;
-         if (var22.nextInt(4) != 0) {
-            if (!canReach(var3.getPos(), var8, var12, var26, var18, var14)) {
+      for(int currentStep = step; currentStep < distance; ++currentStep) {
+         double horizontalRadius = 1.5 + (double)(Mth.sin((double)((float)currentStep * 3.1415927F / (float)distance)) * thickness);
+         double verticalRadius = horizontalRadius * yScale;
+         horizontalRadius *= (double)configuration.shape.horizontalRadiusFactor.sample(random);
+         verticalRadius = this.updateVerticalRadius(configuration, random, verticalRadius, (float)distance, (float)currentStep);
+         float xc = Mth.cos((double)verticalRotation);
+         float xs = Mth.sin((double)verticalRotation);
+         x += (double)(Mth.cos((double)horizontalRotation) * xc);
+         y += (double)xs;
+         z += (double)(Mth.sin((double)horizontalRotation) * xc);
+         verticalRotation *= 0.7F;
+         verticalRotation += xRota * 0.05F;
+         horizontalRotation += yRota * 0.05F;
+         xRota *= 0.8F;
+         yRota *= 0.5F;
+         xRota += (random.nextFloat() - random.nextFloat()) * random.nextFloat() * 2.0F;
+         yRota += (random.nextFloat() - random.nextFloat()) * random.nextFloat() * 4.0F;
+         if (random.nextInt(4) != 0) {
+            if (!canReach(chunk.getPos(), x, z, currentStep, distance, thickness)) {
                return;
             }
 
-            this.carveEllipsoid(var1, var2, var3, var4, var7, var8, var10, var12, var27, var29, var21, (var2x, var3x, var5x, var7x, var9) -> this.shouldSkip(var2x, var23, var3x, var5x, var7x, var9));
+            this.carveEllipsoid(context, configuration, chunk, biomeGetter, aquifer, x, y, z, horizontalRadius, verticalRadius, mask, (context1, xd, yd, zd, y1) -> this.shouldSkip(context1, widthFactorPerHeight, xd, yd, zd, y1));
          }
       }
 
    }
 
-   private float[] initWidthFactors(CarvingContext var1, CanyonCarverConfiguration var2, RandomSource var3) {
-      int var4 = var1.getGenDepth();
-      float[] var5 = new float[var4];
-      float var6 = 1.0F;
+   private float[] initWidthFactors(final CarvingContext context, final CanyonCarverConfiguration configuration, final RandomSource random) {
+      int depth = context.getGenDepth();
+      float[] widthFactorPerHeight = new float[depth];
+      float widthFactor = 1.0F;
 
-      for(int var7 = 0; var7 < var4; ++var7) {
-         if (var7 == 0 || var3.nextInt(var2.shape.widthSmoothness) == 0) {
-            var6 = 1.0F + var3.nextFloat() * var3.nextFloat();
+      for(int yIndex = 0; yIndex < depth; ++yIndex) {
+         if (yIndex == 0 || random.nextInt(configuration.shape.widthSmoothness) == 0) {
+            widthFactor = 1.0F + random.nextFloat() * random.nextFloat();
          }
 
-         var5[var7] = var6 * var6;
+         widthFactorPerHeight[yIndex] = widthFactor * widthFactor;
       }
 
-      return var5;
+      return widthFactorPerHeight;
    }
 
-   private double updateVerticalRadius(CanyonCarverConfiguration var1, RandomSource var2, double var3, float var5, float var6) {
-      float var7 = 1.0F - Mth.abs(0.5F - var6 / var5) * 2.0F;
-      float var8 = var1.shape.verticalRadiusDefaultFactor + var1.shape.verticalRadiusCenterFactor * var7;
-      return (double)var8 * var3 * (double)Mth.randomBetween(var2, 0.75F, 1.0F);
+   private double updateVerticalRadius(final CanyonCarverConfiguration configuration, final RandomSource random, final double verticalRadius, final float distance, final float currentStep) {
+      float verticalMultiplier = 1.0F - Mth.abs(0.5F - currentStep / distance) * 2.0F;
+      float factor = configuration.shape.verticalRadiusDefaultFactor + configuration.shape.verticalRadiusCenterFactor * verticalMultiplier;
+      return (double)factor * verticalRadius * (double)Mth.randomBetween(random, 0.75F, 1.0F);
    }
 
-   private boolean shouldSkip(CarvingContext var1, float[] var2, double var3, double var5, double var7, int var9) {
-      int var10 = var9 - var1.getMinGenY();
-      return (var3 * var3 + var7 * var7) * (double)var2[var10 - 1] + var5 * var5 / 6.0 >= 1.0;
+   private boolean shouldSkip(final CarvingContext context, final float[] widthFactorPerHeight, final double xd, final double yd, final double zd, final int y) {
+      int yIndex = y - context.getMinGenY();
+      return (xd * xd + zd * zd) * (double)widthFactorPerHeight[yIndex - 1] + yd * yd / 6.0 >= 1.0;
    }
 }

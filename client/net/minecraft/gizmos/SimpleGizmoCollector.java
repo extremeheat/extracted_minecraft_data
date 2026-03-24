@@ -14,27 +14,27 @@ public class SimpleGizmoCollector implements GizmoCollector {
       super();
    }
 
-   public GizmoProperties add(Gizmo var1) {
-      GizmoInstance var2 = new GizmoInstance(var1);
-      this.gizmos.add(var2);
-      return var2;
+   public GizmoProperties add(final Gizmo gizmo) {
+      GizmoInstance instance = new GizmoInstance(gizmo);
+      this.gizmos.add(instance);
+      return instance;
    }
 
    public List<GizmoInstance> drainGizmos() {
-      ArrayList var1 = new ArrayList(this.gizmos);
-      var1.addAll(this.temporaryGizmos);
-      long var2 = Util.getMillis();
-      this.gizmos.removeIf((var2x) -> var2x.getExpireTimeMillis() < var2);
+      ArrayList<GizmoInstance> result = new ArrayList(this.gizmos);
+      result.addAll(this.temporaryGizmos);
+      long currentMillis = Util.getMillis();
+      this.gizmos.removeIf((gizmo) -> gizmo.getExpireTimeMillis() < currentMillis);
       this.temporaryGizmos.clear();
-      return var1;
+      return result;
    }
 
    public List<GizmoInstance> getGizmos() {
       return this.gizmos;
    }
 
-   public void addTemporaryGizmos(Collection<GizmoInstance> var1) {
-      this.temporaryGizmos.addAll(var1);
+   public void addTemporaryGizmos(final Collection<GizmoInstance> gizmos) {
+      this.temporaryGizmos.addAll(gizmos);
    }
 
    public static class GizmoInstance implements GizmoProperties {
@@ -44,9 +44,9 @@ public class SimpleGizmoCollector implements GizmoCollector {
       private long expireTimeMillis;
       private boolean shouldFadeOut;
 
-      GizmoInstance(Gizmo var1) {
+      private GizmoInstance(final Gizmo gizmo) {
          super();
-         this.gizmo = var1;
+         this.gizmo = gizmo;
       }
 
       public GizmoProperties setAlwaysOnTop() {
@@ -54,9 +54,9 @@ public class SimpleGizmoCollector implements GizmoCollector {
          return this;
       }
 
-      public GizmoProperties persistForMillis(int var1) {
+      public GizmoProperties persistForMillis(final int milliseconds) {
          this.startTimeMillis = Util.getMillis();
-         this.expireTimeMillis = this.startTimeMillis + (long)var1;
+         this.expireTimeMillis = this.startTimeMillis + (long)milliseconds;
          return this;
       }
 
@@ -65,11 +65,11 @@ public class SimpleGizmoCollector implements GizmoCollector {
          return this;
       }
 
-      public float getAlphaMultiplier(long var1) {
+      public float getAlphaMultiplier(final long currentMillis) {
          if (this.shouldFadeOut) {
-            long var3 = this.expireTimeMillis - this.startTimeMillis;
-            long var5 = var1 - this.startTimeMillis;
-            return 1.0F - Mth.clamp((float)var5 / (float)var3, 0.0F, 1.0F);
+            long duration = this.expireTimeMillis - this.startTimeMillis;
+            long timeSinceStart = currentMillis - this.startTimeMillis;
+            return 1.0F - Mth.clamp((float)timeSinceStart / (float)duration, 0.0F, 1.0F);
          } else {
             return 1.0F;
          }

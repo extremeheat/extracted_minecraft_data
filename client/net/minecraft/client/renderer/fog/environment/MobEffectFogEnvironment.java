@@ -22,10 +22,10 @@ public abstract class MobEffectFogEnvironment extends FogEnvironment {
       return true;
    }
 
-   public boolean isApplicable(@Nullable FogType var1, Entity var2) {
+   public boolean isApplicable(final @Nullable FogType fogType, final Entity entity) {
       boolean var10000;
-      if (var2 instanceof LivingEntity var3) {
-         if (var3.hasEffect(this.getMobEffect())) {
+      if (entity instanceof LivingEntity livingEntity) {
+         if (livingEntity.hasEffect(this.getMobEffect())) {
             var10000 = true;
             return var10000;
          }

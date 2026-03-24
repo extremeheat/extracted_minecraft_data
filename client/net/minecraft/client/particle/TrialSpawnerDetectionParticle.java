@@ -2,6 +2,7 @@ package net.minecraft.client.particle;
 
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
@@ -9,22 +10,22 @@ public class TrialSpawnerDetectionParticle extends SingleQuadParticle {
    private final SpriteSet sprites;
    private static final int BASE_LIFETIME = 8;
 
-   protected TrialSpawnerDetectionParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, float var14, SpriteSet var15) {
-      super(var1, var2, var4, var6, 0.0, 0.0, 0.0, var15.first());
-      this.sprites = var15;
+   protected TrialSpawnerDetectionParticle(final ClientLevel level, final double x, final double y, final double z, final double xa, final double ya, final double za, final float scale, final SpriteSet sprites) {
+      super(level, x, y, z, 0.0, 0.0, 0.0, sprites.first());
+      this.sprites = sprites;
       this.friction = 0.96F;
       this.gravity = -0.1F;
       this.speedUpWhenYMotionIsBlocked = true;
       this.xd *= 0.0;
       this.yd *= 0.9;
       this.zd *= 0.0;
-      this.xd += var8;
-      this.yd += var10;
-      this.zd += var12;
-      this.quadSize *= 0.75F * var14;
-      this.lifetime = (int)(8.0F / Mth.randomBetween(this.random, 0.5F, 1.0F) * var14);
+      this.xd += xa;
+      this.yd += ya;
+      this.zd += za;
+      this.quadSize *= 0.75F * scale;
+      this.lifetime = (int)(8.0F / Mth.randomBetween(this.random, 0.5F, 1.0F) * scale);
       this.lifetime = Math.max(this.lifetime, 1);
-      this.setSpriteFromAge(var15);
+      this.setSpriteFromAge(sprites);
       this.hasPhysics = true;
    }
 
@@ -32,8 +33,8 @@ public class TrialSpawnerDetectionParticle extends SingleQuadParticle {
       return SingleQuadParticle.Layer.OPAQUE;
    }
 
-   public int getLightColor(float var1) {
-      return 240;
+   public int getLightCoords(final float a) {
+      return LightCoordsUtil.withBlock(super.getLightCoords(a), 15);
    }
 
    public SingleQuadParticle.FacingCameraMode getFacingCameraMode() {
@@ -45,20 +46,20 @@ public class TrialSpawnerDetectionParticle extends SingleQuadParticle {
       this.setSpriteFromAge(this.sprites);
    }
 
-   public float getQuadSize(float var1) {
-      return this.quadSize * Mth.clamp(((float)this.age + var1) / (float)this.lifetime * 32.0F, 0.0F, 1.0F);
+   public float getQuadSize(final float a) {
+      return this.quadSize * Mth.clamp(((float)this.age + a) / (float)this.lifetime * 32.0F, 0.0F, 1.0F);
    }
 
    public static class Provider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprites;
 
-      public Provider(SpriteSet var1) {
+      public Provider(final SpriteSet sprites) {
          super();
-         this.sprites = var1;
+         this.sprites = sprites;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13, RandomSource var15) {
-         return new TrialSpawnerDetectionParticle(var2, var3, var5, var7, var9, var11, var13, 1.5F, this.sprites);
+      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         return new TrialSpawnerDetectionParticle(level, x, y, z, xAux, yAux, zAux, 1.5F, this.sprites);
       }
    }
 }

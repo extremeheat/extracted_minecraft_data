@@ -9,9 +9,9 @@ import net.minecraft.world.entity.ai.util.GoalUtils;
 public class RestrictSunGoal extends Goal {
    private final PathfinderMob mob;
 
-   public RestrictSunGoal(PathfinderMob var1) {
+   public RestrictSunGoal(final PathfinderMob mob) {
       super();
-      this.mob = var1;
+      this.mob = mob;
    }
 
    public boolean canUse() {
@@ -20,8 +20,8 @@ public class RestrictSunGoal extends Goal {
 
    public void start() {
       PathNavigation var2 = this.mob.getNavigation();
-      if (var2 instanceof GroundPathNavigation var1) {
-         var1.setAvoidSun(true);
+      if (var2 instanceof GroundPathNavigation pathNavigation) {
+         pathNavigation.setAvoidSun(true);
       }
 
    }
@@ -30,8 +30,8 @@ public class RestrictSunGoal extends Goal {
       if (GoalUtils.hasGroundPathNavigation(this.mob)) {
          PathNavigation var2 = this.mob.getNavigation();
          if (var2 instanceof GroundPathNavigation) {
-            GroundPathNavigation var1 = (GroundPathNavigation)var2;
-            var1.setAvoidSun(false);
+            GroundPathNavigation pathNavigation = (GroundPathNavigation)var2;
+            pathNavigation.setAvoidSun(false);
          }
       }
 

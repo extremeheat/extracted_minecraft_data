@@ -3,44 +3,35 @@ package net.minecraft.client.model.geom;
 public record PartPose(float x, float y, float z, float xRot, float yRot, float zRot, float xScale, float yScale, float zScale) {
    public static final PartPose ZERO = offsetAndRotation(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
 
-   public PartPose(float var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9) {
+   public PartPose {
       super();
-      this.x = var1;
-      this.y = var2;
-      this.z = var3;
-      this.xRot = var4;
-      this.yRot = var5;
-      this.zRot = var6;
-      this.xScale = var7;
-      this.yScale = var8;
-      this.zScale = var9;
    }
 
-   public static PartPose offset(float var0, float var1, float var2) {
-      return offsetAndRotation(var0, var1, var2, 0.0F, 0.0F, 0.0F);
+   public static PartPose offset(final float x, final float y, final float z) {
+      return offsetAndRotation(x, y, z, 0.0F, 0.0F, 0.0F);
    }
 
-   public static PartPose rotation(float var0, float var1, float var2) {
-      return offsetAndRotation(0.0F, 0.0F, 0.0F, var0, var1, var2);
+   public static PartPose rotation(final float x, final float y, final float z) {
+      return offsetAndRotation(0.0F, 0.0F, 0.0F, x, y, z);
    }
 
-   public static PartPose offsetAndRotation(float var0, float var1, float var2, float var3, float var4, float var5) {
-      return new PartPose(var0, var1, var2, var3, var4, var5, 1.0F, 1.0F, 1.0F);
+   public static PartPose offsetAndRotation(final float offsetX, final float offsetY, final float offsetZ, final float rotationX, final float rotationY, final float rotationZ) {
+      return new PartPose(offsetX, offsetY, offsetZ, rotationX, rotationY, rotationZ, 1.0F, 1.0F, 1.0F);
    }
 
-   public PartPose translated(float var1, float var2, float var3) {
-      return new PartPose(this.x + var1, this.y + var2, this.z + var3, this.xRot, this.yRot, this.zRot, this.xScale, this.yScale, this.zScale);
+   public PartPose translated(final float x, final float y, final float z) {
+      return new PartPose(this.x + x, this.y + y, this.z + z, this.xRot, this.yRot, this.zRot, this.xScale, this.yScale, this.zScale);
    }
 
-   public PartPose withScale(float var1) {
-      return new PartPose(this.x, this.y, this.z, this.xRot, this.yRot, this.zRot, var1, var1, var1);
+   public PartPose withScale(final float scale) {
+      return new PartPose(this.x, this.y, this.z, this.xRot, this.yRot, this.zRot, scale, scale, scale);
    }
 
-   public PartPose scaled(float var1) {
-      return var1 == 1.0F ? this : this.scaled(var1, var1, var1);
+   public PartPose scaled(final float factor) {
+      return factor == 1.0F ? this : this.scaled(factor, factor, factor);
    }
 
-   public PartPose scaled(float var1, float var2, float var3) {
-      return new PartPose(this.x * var1, this.y * var2, this.z * var3, this.xRot, this.yRot, this.zRot, this.xScale * var1, this.yScale * var2, this.zScale * var3);
+   public PartPose scaled(final float scaleX, final float scaleY, final float scaleZ) {
+      return new PartPose(this.x * scaleX, this.y * scaleY, this.z * scaleZ, this.xRot, this.yRot, this.zRot, this.xScale * scaleX, this.yScale * scaleY, this.zScale * scaleZ);
    }
 }

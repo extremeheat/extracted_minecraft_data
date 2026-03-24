@@ -13,6 +13,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -23,58 +24,53 @@ import net.minecraft.network.chat.Component;
 public class TimeArgument implements ArgumentType<Integer> {
    private static final Collection<String> EXAMPLES = Arrays.asList("0d", "0s", "0t", "0");
    private static final SimpleCommandExceptionType ERROR_INVALID_UNIT = new SimpleCommandExceptionType(Component.translatable("argument.time.invalid_unit"));
-   private static final Dynamic2CommandExceptionType ERROR_TICK_COUNT_TOO_LOW = new Dynamic2CommandExceptionType((var0, var1) -> Component.translatableEscape("argument.time.tick_count_too_low", var1, var0));
+   private static final Dynamic2CommandExceptionType ERROR_TICK_COUNT_TOO_LOW = new Dynamic2CommandExceptionType((value, limit) -> Component.translatableEscape("argument.time.tick_count_too_low", limit, value));
    private static final Object2IntMap<String> UNITS = new Object2IntOpenHashMap();
-   final int minimum;
+   private final int minimum;
 
-   private TimeArgument(int var1) {
+   private TimeArgument(final int minimum) {
       super();
-      this.minimum = var1;
+      this.minimum = minimum;
    }
 
    public static TimeArgument time() {
       return new TimeArgument(0);
    }
 
-   public static TimeArgument time(int var0) {
-      return new TimeArgument(var0);
+   public static TimeArgument time(final int minimum) {
+      return new TimeArgument(minimum);
    }
 
-   public Integer parse(StringReader var1) throws CommandSyntaxException {
-      float var2 = var1.readFloat();
-      String var3 = var1.readUnquotedString();
-      int var4 = UNITS.getOrDefault(var3, 0);
-      if (var4 == 0) {
-         throw ERROR_INVALID_UNIT.createWithContext(var1);
+   public Integer parse(final StringReader reader) throws CommandSyntaxException {
+      float value = reader.readFloat();
+      String unit = reader.readUnquotedString();
+      int factor = UNITS.getOrDefault(unit, 0);
+      if (factor == 0) {
+         throw ERROR_INVALID_UNIT.createWithContext(reader);
       } else {
-         int var5 = Math.round(var2 * (float)var4);
-         if (var5 < this.minimum) {
-            throw ERROR_TICK_COUNT_TOO_LOW.createWithContext(var1, var5, this.minimum);
+         int ticks = Math.round(value * (float)factor);
+         if (ticks < this.minimum) {
+            throw ERROR_TICK_COUNT_TOO_LOW.createWithContext(reader, ticks, this.minimum);
          } else {
-            return var5;
+            return ticks;
          }
       }
    }
 
-   public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      StringReader var3 = new StringReader(var2.getRemaining());
+   public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
+      StringReader reader = new StringReader(builder.getRemaining());
 
       try {
-         var3.readFloat();
+         reader.readFloat();
       } catch (CommandSyntaxException var5) {
-         return var2.buildFuture();
+         return builder.buildFuture();
       }
 
-      return SharedSuggestionProvider.suggest(UNITS.keySet(), var2.createOffset(var2.getStart() + var3.getCursor()));
+      return SharedSuggestionProvider.suggest(UNITS.keySet(), builder.createOffset(builder.getStart() + reader.getCursor()));
    }
 
    public Collection<String> getExamples() {
       return EXAMPLES;
-   }
-
-   // $FF: synthetic method
-   public Object parse(final StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1);
    }
 
    static {
@@ -89,47 +85,38 @@ public class TimeArgument implements ArgumentType<Integer> {
          super();
       }
 
-      public void serializeToNetwork(Template var1, FriendlyByteBuf var2) {
-         var2.writeInt(var1.min);
+      public void serializeToNetwork(final Template template, final FriendlyByteBuf out) {
+         out.writeInt(template.min);
       }
 
-      public Template deserializeFromNetwork(FriendlyByteBuf var1) {
-         int var2 = var1.readInt();
-         return new Template(var2);
+      public Template deserializeFromNetwork(final FriendlyByteBuf in) {
+         int min = in.readInt();
+         return new Template(min);
       }
 
-      public void serializeToJson(Template var1, JsonObject var2) {
-         var2.addProperty("min", var1.min);
+      public void serializeToJson(final Template template, final JsonObject out) {
+         out.addProperty("min", template.min);
       }
 
-      public Template unpack(TimeArgument var1) {
-         return new Template(var1.minimum);
-      }
-
-      // $FF: synthetic method
-      public ArgumentTypeInfo.Template deserializeFromNetwork(final FriendlyByteBuf var1) {
-         return this.deserializeFromNetwork(var1);
+      public Template unpack(final TimeArgument argument) {
+         return new Template(argument.minimum);
       }
 
       public final class Template implements ArgumentTypeInfo.Template<TimeArgument> {
-         final int min;
+         private final int min;
 
-         Template(final int var2) {
+         private Template(final int min) {
+            Objects.requireNonNull(Info.this);
             super();
-            this.min = var2;
+            this.min = min;
          }
 
-         public TimeArgument instantiate(CommandBuildContext var1) {
+         public TimeArgument instantiate(final CommandBuildContext context) {
             return TimeArgument.time(this.min);
          }
 
          public ArgumentTypeInfo<TimeArgument, ?> type() {
             return Info.this;
-         }
-
-         // $FF: synthetic method
-         public ArgumentType instantiate(final CommandBuildContext var1) {
-            return this.instantiate(var1);
          }
       }
    }

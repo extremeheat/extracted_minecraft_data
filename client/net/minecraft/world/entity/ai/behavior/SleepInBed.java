@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.ai.behavior;
 
 import com.google.common.collect.ImmutableMap;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
@@ -21,70 +22,73 @@ public class SleepInBed extends Behavior<LivingEntity> {
    private long nextOkStartTime;
 
    public SleepInBed() {
-      super(ImmutableMap.of(MemoryModuleType.HOME, MemoryStatus.VALUE_PRESENT, MemoryModuleType.LAST_WOKEN, MemoryStatus.REGISTERED));
+      super(ImmutableMap.of(MemoryModuleType.HOME, MemoryStatus.VALUE_PRESENT, MemoryModuleType.LAST_WOKEN, MemoryStatus.REGISTERED, MemoryModuleType.LAST_SLEPT, MemoryStatus.REGISTERED, MemoryModuleType.WALK_TARGET, MemoryStatus.REGISTERED, MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, MemoryStatus.REGISTERED));
    }
 
-   protected boolean checkExtraStartConditions(ServerLevel var1, LivingEntity var2) {
-      if (var2.isPassenger()) {
+   protected boolean checkExtraStartConditions(final ServerLevel level, final LivingEntity body) {
+      if (body.isPassenger()) {
          return false;
       } else {
-         Brain var3 = var2.getBrain();
-         GlobalPos var4 = (GlobalPos)var3.getMemory(MemoryModuleType.HOME).get();
-         if (var1.dimension() != var4.dimension()) {
+         Brain<?> brain = body.getBrain();
+         GlobalPos target = (GlobalPos)brain.getMemory(MemoryModuleType.HOME).get();
+         if (level.dimension() != target.dimension()) {
             return false;
          } else {
-            Optional var5 = var3.getMemory(MemoryModuleType.LAST_WOKEN);
-            if (var5.isPresent()) {
-               long var6 = var1.getGameTime() - (Long)var5.get();
-               if (var6 > 0L && var6 < 100L) {
+            Optional<Long> lastWokenMemory = brain.<Long>getMemory(MemoryModuleType.LAST_WOKEN);
+            if (lastWokenMemory.isPresent()) {
+               long timeSinceLastWoken = level.getGameTime() - (Long)lastWokenMemory.get();
+               if (timeSinceLastWoken > 0L && timeSinceLastWoken < 100L) {
                   return false;
                }
             }
 
-            BlockState var8 = var1.getBlockState(var4.pos());
-            return var4.pos().closerToCenterThan(var2.position(), 2.0) && var8.is(BlockTags.BEDS) && !(Boolean)var8.getValue(BedBlock.OCCUPIED);
+            BlockState blockState = level.getBlockState(target.pos());
+            return target.pos().closerToCenterThan(body.position(), 2.0) && blockState.is(BlockTags.BEDS) && !(Boolean)blockState.getValue(BedBlock.OCCUPIED);
          }
       }
    }
 
-   protected boolean canStillUse(ServerLevel var1, LivingEntity var2, long var3) {
-      Optional var5 = var2.getBrain().getMemory(MemoryModuleType.HOME);
-      if (var5.isEmpty()) {
+   protected boolean canStillUse(final ServerLevel level, final LivingEntity body, final long timestamp) {
+      Optional<GlobalPos> memory = body.getBrain().<GlobalPos>getMemory(MemoryModuleType.HOME);
+      if (memory.isEmpty()) {
          return false;
       } else {
-         BlockPos var6 = ((GlobalPos)var5.get()).pos();
-         return var2.getBrain().isActive(Activity.REST) && var2.getY() > (double)var6.getY() + 0.4 && var6.closerToCenterThan(var2.position(), 1.14);
+         BlockPos bedPos = ((GlobalPos)memory.get()).pos();
+         return body.getBrain().isActive(Activity.REST) && body.getY() > (double)bedPos.getY() + 0.4 && bedPos.closerToCenterThan(body.position(), 1.14);
       }
    }
 
-   protected void start(ServerLevel var1, LivingEntity var2, long var3) {
-      if (var3 > this.nextOkStartTime) {
-         Brain var5 = var2.getBrain();
-         if (var5.hasMemoryValue(MemoryModuleType.DOORS_TO_CLOSE)) {
-            Set var6 = (Set)var5.getMemory(MemoryModuleType.DOORS_TO_CLOSE).get();
-            Optional var7;
-            if (var5.hasMemoryValue(MemoryModuleType.NEAREST_LIVING_ENTITIES)) {
-               var7 = var5.getMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES);
+   protected void start(final ServerLevel level, final LivingEntity body, final long timestamp) {
+      if (timestamp > this.nextOkStartTime) {
+         Brain<?> brain = body.getBrain();
+         if (brain.hasMemoryValue(MemoryModuleType.DOORS_TO_CLOSE)) {
+            Set<GlobalPos> doors = (Set)brain.getMemory(MemoryModuleType.DOORS_TO_CLOSE).get();
+            Optional<List<LivingEntity>> nearestEntities;
+            if (brain.hasMemoryValue(MemoryModuleType.NEAREST_LIVING_ENTITIES)) {
+               nearestEntities = brain.<List<LivingEntity>>getMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES);
             } else {
-               var7 = Optional.empty();
+               nearestEntities = Optional.empty();
             }
 
-            InteractWithDoor.closeDoorsThatIHaveOpenedOrPassedThrough(var1, var2, (Node)null, (Node)null, var6, var7);
+            InteractWithDoor.closeDoorsThatIHaveOpenedOrPassedThrough(level, body, (Node)null, (Node)null, doors, nearestEntities);
          }
 
-         var2.startSleeping(((GlobalPos)var2.getBrain().getMemory(MemoryModuleType.HOME).get()).pos());
+         body.startSleeping(((GlobalPos)body.getBrain().getMemory(MemoryModuleType.HOME).get()).pos());
+         brain.setMemory(MemoryModuleType.LAST_SLEPT, timestamp);
+         brain.eraseMemory(MemoryModuleType.WALK_TARGET);
+         brain.eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
       }
 
    }
 
-   protected boolean timedOut(long var1) {
+   protected boolean timedOut(final long timestamp) {
       return false;
    }
 
-   protected void stop(ServerLevel var1, LivingEntity var2, long var3) {
-      if (var2.isSleeping()) {
-         var2.stopSleeping();
-         this.nextOkStartTime = var3 + 40L;
+   protected void stop(final ServerLevel level, final LivingEntity body, final long timestamp) {
+      if (body.isSleeping()) {
+         body.stopSleeping();
+         this.nextOkStartTime = timestamp + 40L;
       }
 
    }

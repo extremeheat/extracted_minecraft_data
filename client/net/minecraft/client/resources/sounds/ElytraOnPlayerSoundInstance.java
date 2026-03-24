@@ -10,9 +10,9 @@ public class ElytraOnPlayerSoundInstance extends AbstractTickableSoundInstance {
    private final LocalPlayer player;
    private int time;
 
-   public ElytraOnPlayerSoundInstance(LocalPlayer var1) {
+   public ElytraOnPlayerSoundInstance(final LocalPlayer player) {
       super(SoundEvents.ELYTRA_FLYING, SoundSource.PLAYERS, SoundInstance.createUnseededRandom());
-      this.player = var1;
+      this.player = player;
       this.looping = true;
       this.delay = 0;
       this.volume = 0.1F;
@@ -24,9 +24,9 @@ public class ElytraOnPlayerSoundInstance extends AbstractTickableSoundInstance {
          this.x = (double)((float)this.player.getX());
          this.y = (double)((float)this.player.getY());
          this.z = (double)((float)this.player.getZ());
-         float var1 = (float)this.player.getDeltaMovement().lengthSqr();
-         if ((double)var1 >= 1.0E-7) {
-            this.volume = Mth.clamp(var1 / 4.0F, 0.0F, 1.0F);
+         float speed = (float)this.player.getDeltaMovement().lengthSqr();
+         if ((double)speed >= 1.0E-7) {
+            this.volume = Mth.clamp(speed / 4.0F, 0.0F, 1.0F);
          } else {
             this.volume = 0.0F;
          }
@@ -37,7 +37,7 @@ public class ElytraOnPlayerSoundInstance extends AbstractTickableSoundInstance {
             this.volume *= (float)(this.time - 20) / 20.0F;
          }
 
-         float var2 = 0.8F;
+         float pitchThreshold = 0.8F;
          if (this.volume > 0.8F) {
             this.pitch = 1.0F + (this.volume - 0.8F);
          } else {

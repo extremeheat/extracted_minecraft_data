@@ -8,10 +8,10 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.Identifier;
 
 public class PhantomEyesLayer extends EyesLayer<PhantomRenderState, PhantomModel> {
-   private static final RenderType PHANTOM_EYES = RenderTypes.eyes(Identifier.withDefaultNamespace("textures/entity/phantom_eyes.png"));
+   private static final RenderType PHANTOM_EYES = RenderTypes.eyes(Identifier.withDefaultNamespace("textures/entity/phantom/phantom_eyes.png"));
 
-   public PhantomEyesLayer(RenderLayerParent<PhantomRenderState, PhantomModel> var1) {
-      super(var1);
+   public PhantomEyesLayer(final RenderLayerParent<PhantomRenderState, PhantomModel> renderer) {
+      super(renderer);
    }
 
    public RenderType renderType() {

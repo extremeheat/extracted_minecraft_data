@@ -2,6 +2,7 @@ package net.minecraft.client.renderer.debug;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientChunkCache;
@@ -17,104 +18,106 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Util;
 import net.minecraft.util.debug.DebugValueAccess;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class ChunkDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
-   final Minecraft minecraft;
+   private final Minecraft minecraft;
    private double lastUpdateTime = 4.9E-324;
    private final int radius = 12;
    private @Nullable ChunkData data;
 
-   public ChunkDebugRenderer(Minecraft var1) {
+   public ChunkDebugRenderer(final Minecraft minecraft) {
       super();
-      this.minecraft = var1;
+      this.minecraft = minecraft;
    }
 
-   public void emitGizmos(double var1, double var3, double var5, DebugValueAccess var7, Frustum var8, float var9) {
-      double var10 = (double)Util.getNanos();
-      if (var10 - this.lastUpdateTime > 3.0E9) {
-         this.lastUpdateTime = var10;
-         IntegratedServer var12 = this.minecraft.getSingleplayerServer();
-         if (var12 != null) {
-            this.data = new ChunkData(var12, var1, var5);
+   public void emitGizmos(final double camX, final double camY, final double camZ, final DebugValueAccess debugValues, final Frustum frustum, final float partialTicks) {
+      double time = (double)Util.getNanos();
+      if (time - this.lastUpdateTime > 3.0E9) {
+         this.lastUpdateTime = time;
+         IntegratedServer server = this.minecraft.getSingleplayerServer();
+         if (server != null) {
+            this.data = new ChunkData(server, camX, camZ);
          } else {
             this.data = null;
          }
       }
 
       if (this.data != null) {
-         Map var25 = (Map)this.data.serverData.getNow((Object)null);
-         double var13 = this.minecraft.gameRenderer.getMainCamera().position().y * 0.85;
+         Map<ChunkPos, String> serverData = (Map)this.data.serverData.getNow((Object)null);
+         double y = this.minecraft.gameRenderer.getMainCamera().position().y * 0.85;
 
-         for(Map.Entry var16 : this.data.clientData.entrySet()) {
-            ChunkPos var17 = (ChunkPos)var16.getKey();
-            String var18 = (String)var16.getValue();
-            if (var25 != null) {
-               var18 = var18 + (String)var25.get(var17);
+         for(Map.Entry<ChunkPos, String> entry : this.data.clientData.entrySet()) {
+            ChunkPos pos = (ChunkPos)entry.getKey();
+            String value = (String)entry.getValue();
+            if (serverData != null) {
+               value = value + (String)serverData.get(pos);
             }
 
-            String[] var19 = var18.split("\n");
-            int var20 = 0;
+            String[] parts = value.split("\n");
+            int yOffset = 0;
 
-            for(String var24 : var19) {
-               Gizmos.billboardText(var24, new Vec3((double)SectionPos.sectionToBlockCoord(var17.x, 8), var13 + (double)var20, (double)SectionPos.sectionToBlockCoord(var17.z, 8)), TextGizmo.Style.whiteAndCentered().withScale(2.4F)).setAlwaysOnTop();
-               var20 -= 2;
+            for(String part : parts) {
+               Gizmos.billboardText(part, new Vec3((double)SectionPos.sectionToBlockCoord(pos.x(), 8), y + (double)yOffset, (double)SectionPos.sectionToBlockCoord(pos.z(), 8)), TextGizmo.Style.whiteAndCentered().withScale(2.4F)).setAlwaysOnTop();
+               yOffset -= 2;
             }
          }
       }
 
    }
 
-   final class ChunkData {
-      final Map<ChunkPos, String> clientData;
-      final CompletableFuture<Map<ChunkPos, String>> serverData;
+   private final class ChunkData {
+      private final Map<ChunkPos, String> clientData;
+      private final CompletableFuture<Map<ChunkPos, String>> serverData;
 
-      ChunkData(final IntegratedServer var2, final double var3, final double var5) {
+      private ChunkData(final IntegratedServer server, final double camX, final double camZ) {
+         Objects.requireNonNull(ChunkDebugRenderer.this);
          super();
-         ClientLevel var7 = ChunkDebugRenderer.this.minecraft.level;
-         ResourceKey var8 = var7.dimension();
-         int var9 = SectionPos.posToSectionCoord(var3);
-         int var10 = SectionPos.posToSectionCoord(var5);
-         ImmutableMap.Builder var11 = ImmutableMap.builder();
-         ClientChunkCache var12 = var7.getChunkSource();
+         ClientLevel clientLevel = ChunkDebugRenderer.this.minecraft.level;
+         ResourceKey<Level> dimension = clientLevel.dimension();
+         int cx = SectionPos.posToSectionCoord(camX);
+         int cz = SectionPos.posToSectionCoord(camZ);
+         ImmutableMap.Builder<ChunkPos, String> builder = ImmutableMap.builder();
+         ClientChunkCache clientChunkSource = clientLevel.getChunkSource();
 
-         for(int var13 = var9 - 12; var13 <= var9 + 12; ++var13) {
-            for(int var14 = var10 - 12; var14 <= var10 + 12; ++var14) {
-               ChunkPos var15 = new ChunkPos(var13, var14);
-               String var16 = "";
-               LevelChunk var17 = var12.getChunk(var13, var14, false);
-               var16 = var16 + "Client: ";
-               if (var17 == null) {
-                  var16 = var16 + "0n/a\n";
+         for(int x = cx - 12; x <= cx + 12; ++x) {
+            for(int z = cz - 12; z <= cz + 12; ++z) {
+               ChunkPos pos = new ChunkPos(x, z);
+               String result = "";
+               LevelChunk clientChunk = clientChunkSource.getChunk(x, z, false);
+               result = result + "Client: ";
+               if (clientChunk == null) {
+                  result = result + "0n/a\n";
                } else {
-                  var16 = var16 + (var17.isEmpty() ? " E" : "");
-                  var16 = var16 + "\n";
+                  result = result + (clientChunk.isEmpty() ? " E" : "");
+                  result = result + "\n";
                }
 
-               var11.put(var15, var16);
+               builder.put(pos, result);
             }
          }
 
-         this.clientData = var11.build();
-         this.serverData = var2.submit(() -> {
-            ServerLevel var5 = var2.getLevel(var8);
-            if (var5 == null) {
+         this.clientData = builder.build();
+         this.serverData = server.submit(() -> {
+            ServerLevel serverLevel = server.getLevel(dimension);
+            if (serverLevel == null) {
                return ImmutableMap.of();
             } else {
-               ImmutableMap.Builder var6 = ImmutableMap.builder();
-               ServerChunkCache var7 = var5.getChunkSource();
+               ImmutableMap.Builder<ChunkPos, String> serverBuilder = ImmutableMap.builder();
+               ServerChunkCache serverChunkSource = serverLevel.getChunkSource();
 
-               for(int var8x = var9 - 12; var8x <= var9 + 12; ++var8x) {
-                  for(int var9x = var10 - 12; var9x <= var10 + 12; ++var9x) {
-                     ChunkPos var10x = new ChunkPos(var8x, var9x);
-                     String var10002 = var7.getChunkDebugData(var10x);
-                     var6.put(var10x, "Server: " + var10002);
+               for(int x = cx - 12; x <= cx + 12; ++x) {
+                  for(int z = cz - 12; z <= cz + 12; ++z) {
+                     ChunkPos pos = new ChunkPos(x, z);
+                     String var10002 = serverChunkSource.getChunkDebugData(pos);
+                     serverBuilder.put(pos, "Server: " + var10002);
                   }
                }
 
-               return var6.build();
+               return serverBuilder.build();
             }
          });
       }

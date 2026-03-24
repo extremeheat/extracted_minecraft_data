@@ -14,41 +14,41 @@ public final class Monitor {
    private int x;
    private int y;
 
-   public Monitor(long var1) {
+   public Monitor(final long monitor) {
       super();
-      this.monitor = var1;
+      this.monitor = monitor;
       this.videoModes = Lists.newArrayList();
       this.refreshVideoModes();
    }
 
    public void refreshVideoModes() {
       this.videoModes.clear();
-      GLFWVidMode.Buffer var1 = GLFW.glfwGetVideoModes(this.monitor);
+      GLFWVidMode.Buffer modes = GLFW.glfwGetVideoModes(this.monitor);
 
-      for(int var2 = var1.limit() - 1; var2 >= 0; --var2) {
-         var1.position(var2);
-         VideoMode var3 = new VideoMode(var1);
-         if (var3.getRedBits() >= 8 && var3.getGreenBits() >= 8 && var3.getBlueBits() >= 8) {
-            this.videoModes.add(var3);
+      for(int i = modes.limit() - 1; i >= 0; --i) {
+         modes.position(i);
+         VideoMode mode = new VideoMode(modes);
+         if (mode.getRedBits() >= 8 && mode.getGreenBits() >= 8 && mode.getBlueBits() >= 8) {
+            this.videoModes.add(mode);
          }
       }
 
-      int[] var5 = new int[1];
-      int[] var6 = new int[1];
-      GLFW.glfwGetMonitorPos(this.monitor, var5, var6);
-      this.x = var5[0];
-      this.y = var6[0];
-      GLFWVidMode var4 = GLFW.glfwGetVideoMode(this.monitor);
-      this.currentMode = new VideoMode(var4);
+      int[] x = new int[1];
+      int[] y = new int[1];
+      GLFW.glfwGetMonitorPos(this.monitor, x, y);
+      this.x = x[0];
+      this.y = y[0];
+      GLFWVidMode mode = GLFW.glfwGetVideoMode(this.monitor);
+      this.currentMode = new VideoMode(mode);
    }
 
-   public VideoMode getPreferredVidMode(Optional<VideoMode> var1) {
-      if (var1.isPresent()) {
-         VideoMode var2 = (VideoMode)var1.get();
+   public VideoMode getPreferredVidMode(final Optional<VideoMode> expectedMode) {
+      if (expectedMode.isPresent()) {
+         VideoMode videoMode = (VideoMode)expectedMode.get();
 
-         for(VideoMode var4 : this.videoModes) {
-            if (var4.equals(var2)) {
-               return var4;
+         for(VideoMode mode : this.videoModes) {
+            if (mode.equals(videoMode)) {
+               return mode;
             }
          }
       }
@@ -56,8 +56,8 @@ public final class Monitor {
       return this.getCurrentMode();
    }
 
-   public int getVideoModeIndex(VideoMode var1) {
-      return this.videoModes.indexOf(var1);
+   public int getVideoModeIndex(final VideoMode videoMode) {
+      return this.videoModes.indexOf(videoMode);
    }
 
    public VideoMode getCurrentMode() {
@@ -72,8 +72,8 @@ public final class Monitor {
       return this.y;
    }
 
-   public VideoMode getMode(int var1) {
-      return (VideoMode)this.videoModes.get(var1);
+   public VideoMode getMode(final int mode) {
+      return (VideoMode)this.videoModes.get(mode);
    }
 
    public int getModeCount() {

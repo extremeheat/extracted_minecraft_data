@@ -8,20 +8,20 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Util;
 
 public class Ticket {
-   public static final MapCodec<Ticket> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BuiltInRegistries.TICKET_TYPE.byNameCodec().fieldOf("type").forGetter(Ticket::getType), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("level").forGetter(Ticket::getTicketLevel), Codec.LONG.optionalFieldOf("ticks_left", 0L).forGetter((var0x) -> var0x.ticksLeft)).apply(var0, Ticket::new));
+   public static final MapCodec<Ticket> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BuiltInRegistries.TICKET_TYPE.byNameCodec().fieldOf("type").forGetter(Ticket::getType), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("level").forGetter(Ticket::getTicketLevel), Codec.LONG.optionalFieldOf("ticks_left", 0L).forGetter((t) -> t.ticksLeft)).apply(i, Ticket::new));
    private final TicketType type;
    private final int ticketLevel;
    private long ticksLeft;
 
-   public Ticket(TicketType var1, int var2) {
-      this(var1, var2, var1.timeout());
+   public Ticket(final TicketType type, final int ticketLevel) {
+      this(type, ticketLevel, type.timeout());
    }
 
-   private Ticket(TicketType var1, int var2, long var3) {
+   private Ticket(final TicketType type, final int ticketLevel, final long ticksLeft) {
       super();
-      this.type = var1;
-      this.ticketLevel = var2;
-      this.ticksLeft = var3;
+      this.type = type;
+      this.ticketLevel = ticketLevel;
+      this.ticksLeft = ticksLeft;
    }
 
    public String toString() {

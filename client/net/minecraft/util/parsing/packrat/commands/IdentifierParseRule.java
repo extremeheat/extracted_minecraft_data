@@ -14,18 +14,13 @@ public class IdentifierParseRule implements Rule<StringReader, Identifier> {
       super();
    }
 
-   public @Nullable Identifier parse(ParseState<StringReader> var1) {
-      ((StringReader)var1.input()).skipWhitespace();
+   public @Nullable Identifier parse(final ParseState<StringReader> state) {
+      ((StringReader)state.input()).skipWhitespace();
 
       try {
-         return Identifier.readNonEmpty((StringReader)var1.input());
+         return Identifier.readNonEmpty(state.input());
       } catch (CommandSyntaxException var3) {
          return null;
       }
-   }
-
-   // $FF: synthetic method
-   public @Nullable Object parse(final ParseState var1) {
-      return this.parse(var1);
    }
 }

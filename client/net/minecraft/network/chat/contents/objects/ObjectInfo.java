@@ -6,7 +6,7 @@ import net.minecraft.network.chat.FontDescription;
 public interface ObjectInfo {
    FontDescription fontDescription();
 
-   String description();
+   String defaultFallback();
 
    MapCodec<? extends ObjectInfo> codec();
 }

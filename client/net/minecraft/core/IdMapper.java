@@ -18,45 +18,45 @@ public class IdMapper<T> implements IdMap<T> {
       this(512);
    }
 
-   public IdMapper(int var1) {
+   public IdMapper(final int expectedSize) {
       super();
-      this.idToT = Lists.newArrayListWithExpectedSize(var1);
-      this.tToId = new Reference2IntOpenHashMap(var1);
+      this.idToT = Lists.newArrayListWithExpectedSize(expectedSize);
+      this.tToId = new Reference2IntOpenHashMap(expectedSize);
       this.tToId.defaultReturnValue(-1);
    }
 
-   public void addMapping(T var1, int var2) {
-      this.tToId.put(var1, var2);
+   public void addMapping(final T thing, final int id) {
+      this.tToId.put(thing, id);
 
-      while(this.idToT.size() <= var2) {
+      while(this.idToT.size() <= id) {
          this.idToT.add((Object)null);
       }
 
-      this.idToT.set(var2, var1);
-      if (this.nextId <= var2) {
-         this.nextId = var2 + 1;
+      this.idToT.set(id, thing);
+      if (this.nextId <= id) {
+         this.nextId = id + 1;
       }
 
    }
 
-   public void add(T var1) {
-      this.addMapping(var1, this.nextId);
+   public void add(final T thing) {
+      this.addMapping(thing, this.nextId);
    }
 
-   public int getId(T var1) {
-      return this.tToId.getInt(var1);
+   public int getId(final T thing) {
+      return this.tToId.getInt(thing);
    }
 
-   public final @Nullable T byId(int var1) {
-      return (T)(var1 >= 0 && var1 < this.idToT.size() ? this.idToT.get(var1) : null);
+   public final @Nullable T byId(final int id) {
+      return (T)(id >= 0 && id < this.idToT.size() ? this.idToT.get(id) : null);
    }
 
    public Iterator<T> iterator() {
       return Iterators.filter(this.idToT.iterator(), Objects::nonNull);
    }
 
-   public boolean contains(int var1) {
-      return this.byId(var1) != null;
+   public boolean contains(final int id) {
+      return this.byId(id) != null;
    }
 
    public int size() {

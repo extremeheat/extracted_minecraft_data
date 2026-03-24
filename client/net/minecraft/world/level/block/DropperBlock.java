@@ -29,46 +29,46 @@ public class DropperBlock extends DispenserBlock {
       return CODEC;
    }
 
-   public DropperBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public DropperBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
-   protected DispenseItemBehavior getDispenseMethod(Level var1, ItemStack var2) {
+   protected DispenseItemBehavior getDispenseMethod(final Level level, final ItemStack itemStack) {
       return DISPENSE_BEHAVIOUR;
    }
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new DropperBlockEntity(var1, var2);
+   public BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      return new DropperBlockEntity(worldPosition, blockState);
    }
 
-   protected void dispenseFrom(ServerLevel var1, BlockState var2, BlockPos var3) {
-      DispenserBlockEntity var4 = (DispenserBlockEntity)var1.getBlockEntity(var3, BlockEntityType.DROPPER).orElse((Object)null);
-      if (var4 == null) {
-         LOGGER.warn("Ignoring dispensing attempt for Dropper without matching block entity at {}", var3);
+   protected void dispenseFrom(final ServerLevel level, final BlockState state, final BlockPos pos) {
+      DispenserBlockEntity blockEntity = (DispenserBlockEntity)level.getBlockEntity(pos, BlockEntityType.DROPPER).orElse((Object)null);
+      if (blockEntity == null) {
+         LOGGER.warn("Ignoring dispensing attempt for Dropper without matching block entity at {}", pos);
       } else {
-         BlockSource var5 = new BlockSource(var1, var3, var2, var4);
-         int var6 = var4.getRandomSlot(var1.random);
-         if (var6 < 0) {
-            var1.levelEvent(1001, var3, 0);
+         BlockSource source = new BlockSource(level, pos, state, blockEntity);
+         int slot = blockEntity.getRandomSlot(level.getRandom());
+         if (slot < 0) {
+            level.levelEvent(1001, pos, 0);
          } else {
-            ItemStack var7 = var4.getItem(var6);
-            if (!var7.isEmpty()) {
-               Direction var8 = (Direction)var1.getBlockState(var3).getValue(FACING);
-               Container var9 = HopperBlockEntity.getContainerAt(var1, var3.relative(var8));
-               ItemStack var10;
-               if (var9 == null) {
-                  var10 = DISPENSE_BEHAVIOUR.dispense(var5, var7);
+            ItemStack itemStack = blockEntity.getItem(slot);
+            if (!itemStack.isEmpty()) {
+               Direction direction = (Direction)level.getBlockState(pos).getValue(FACING);
+               Container into = HopperBlockEntity.getContainerAt(level, pos.relative(direction));
+               ItemStack remaining;
+               if (into == null) {
+                  remaining = DISPENSE_BEHAVIOUR.dispense(source, itemStack);
                } else {
-                  var10 = HopperBlockEntity.addItem(var4, var9, var7.copyWithCount(1), var8.getOpposite());
-                  if (var10.isEmpty()) {
-                     var10 = var7.copy();
-                     var10.shrink(1);
+                  remaining = HopperBlockEntity.addItem(blockEntity, into, itemStack.copyWithCount(1), direction.getOpposite());
+                  if (remaining.isEmpty()) {
+                     remaining = itemStack.copy();
+                     remaining.shrink(1);
                   } else {
-                     var10 = var7.copy();
+                     remaining = itemStack.copy();
                   }
                }
 
-               var4.setItem(var6, var10);
+               blockEntity.setItem(slot, remaining);
             }
          }
       }

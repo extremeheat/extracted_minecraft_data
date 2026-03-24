@@ -7,7 +7,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.projectile.hurtingprojectile.windcharge.AbstractWindCharge;
@@ -16,18 +16,18 @@ public class WindChargeRenderer extends EntityRenderer<AbstractWindCharge, Entit
    private static final Identifier TEXTURE_LOCATION = Identifier.withDefaultNamespace("textures/entity/projectiles/wind_charge.png");
    private final WindChargeModel model;
 
-   public WindChargeRenderer(EntityRendererProvider.Context var1) {
-      super(var1);
-      this.model = new WindChargeModel(var1.bakeLayer(ModelLayers.WIND_CHARGE));
+   public WindChargeRenderer(final EntityRendererProvider.Context context) {
+      super(context);
+      this.model = new WindChargeModel(context.bakeLayer(ModelLayers.WIND_CHARGE));
    }
 
-   public void submit(EntityRenderState var1, PoseStack var2, SubmitNodeCollector var3, CameraRenderState var4) {
-      var3.submitModel(this.model, var1, var2, RenderTypes.breezeWind(TEXTURE_LOCATION, this.xOffset(var1.ageInTicks) % 1.0F, 0.0F), var1.lightCoords, OverlayTexture.NO_OVERLAY, var1.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
-      super.submit(var1, var2, var3, var4);
+   public void submit(final EntityRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
+      submitNodeCollector.submitModel(this.model, state, poseStack, RenderTypes.breezeWind(TEXTURE_LOCATION, this.xOffset(state.ageInTicks) % 1.0F, 0.0F), state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+      super.submit(state, poseStack, submitNodeCollector, camera);
    }
 
-   protected float xOffset(float var1) {
-      return var1 * 0.03F;
+   protected float xOffset(final float t) {
+      return t * 0.03F;
    }
 
    public EntityRenderState createRenderState() {

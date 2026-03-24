@@ -1,16 +1,17 @@
 package net.minecraft.server.network.config;
 
+import com.mojang.serialization.DynamicOps;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.RegistrySynchronization;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.common.ClientboundUpdateTagsPacket;
 import net.minecraft.network.protocol.configuration.ClientboundRegistryDataPacket;
 import net.minecraft.network.protocol.configuration.ClientboundSelectKnownPacks;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.RegistryLayer;
 import net.minecraft.server.network.ConfigurationTask;
 import net.minecraft.server.packs.repository.KnownPack;
@@ -21,27 +22,27 @@ public class SynchronizeRegistriesTask implements ConfigurationTask {
    private final List<KnownPack> requestedPacks;
    private final LayeredRegistryAccess<RegistryLayer> registries;
 
-   public SynchronizeRegistriesTask(List<KnownPack> var1, LayeredRegistryAccess<RegistryLayer> var2) {
+   public SynchronizeRegistriesTask(final List<KnownPack> knownPacks, final LayeredRegistryAccess<RegistryLayer> registries) {
       super();
-      this.requestedPacks = var1;
-      this.registries = var2;
+      this.requestedPacks = knownPacks;
+      this.registries = registries;
    }
 
-   public void start(Consumer<Packet<?>> var1) {
-      var1.accept(new ClientboundSelectKnownPacks(this.requestedPacks));
+   public void start(final Consumer<Packet<?>> connection) {
+      connection.accept(new ClientboundSelectKnownPacks(this.requestedPacks));
    }
 
-   private void sendRegistries(Consumer<Packet<?>> var1, Set<KnownPack> var2) {
-      RegistryOps var3 = this.registries.compositeAccess().createSerializationContext(NbtOps.INSTANCE);
-      RegistrySynchronization.packRegistries(var3, this.registries.getAccessFrom(RegistryLayer.WORLDGEN), var2, (var1x, var2x) -> var1.accept(new ClientboundRegistryDataPacket(var1x, var2x)));
-      var1.accept(new ClientboundUpdateTagsPacket(TagNetworkSerialization.serializeTagsToNetwork(this.registries)));
+   private void sendRegistries(final Consumer<Packet<?>> connection, final Set<KnownPack> negotiatedPacks) {
+      DynamicOps<Tag> ops = this.registries.compositeAccess().createSerializationContext(NbtOps.INSTANCE);
+      RegistrySynchronization.packRegistries(ops, this.registries.getAccessFrom(RegistryLayer.WORLDGEN), negotiatedPacks, (registryKey, entries) -> connection.accept(new ClientboundRegistryDataPacket(registryKey, entries)));
+      connection.accept(new ClientboundUpdateTagsPacket(TagNetworkSerialization.serializeTagsToNetwork(this.registries)));
    }
 
-   public void handleResponse(List<KnownPack> var1, Consumer<Packet<?>> var2) {
-      if (var1.equals(this.requestedPacks)) {
-         this.sendRegistries(var2, Set.copyOf(this.requestedPacks));
+   public void handleResponse(final List<KnownPack> acceptedPacks, final Consumer<Packet<?>> connection) {
+      if (acceptedPacks.equals(this.requestedPacks)) {
+         this.sendRegistries(connection, Set.copyOf(this.requestedPacks));
       } else {
-         this.sendRegistries(var2, Set.of());
+         this.sendRegistries(connection, Set.of());
       }
 
    }

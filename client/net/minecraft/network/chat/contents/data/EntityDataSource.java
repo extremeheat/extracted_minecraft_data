@@ -1,8 +1,6 @@
 package net.minecraft.network.chat.contents.data;
 
-import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
@@ -10,68 +8,23 @@ import java.util.stream.Stream;
 import net.minecraft.advancements.criterion.NbtPredicate;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.selector.EntitySelector;
-import net.minecraft.commands.arguments.selector.EntitySelectorParser;
 import net.minecraft.nbt.CompoundTag;
-import org.jspecify.annotations.Nullable;
+import net.minecraft.util.CompilableString;
+import net.minecraft.world.entity.Entity;
 
-public record EntityDataSource(String selectorPattern, @Nullable EntitySelector compiledSelector) implements DataSource {
-   public static final MapCodec<EntityDataSource> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("entity").forGetter(EntityDataSource::selectorPattern)).apply(var0, EntityDataSource::new));
+public record EntityDataSource(CompilableString<EntitySelector> selector) implements DataSource {
+   public static final MapCodec<EntityDataSource> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(EntitySelector.COMPILABLE_CODEC.fieldOf("entity").forGetter(EntityDataSource::selector)).apply(i, EntityDataSource::new));
 
-   public EntityDataSource(String var1) {
-      this(var1, compileSelector(var1));
-   }
-
-   public EntityDataSource(String var1, @Nullable EntitySelector var2) {
+   public EntityDataSource {
       super();
-      this.selectorPattern = var1;
-      this.compiledSelector = var2;
    }
 
-   private static @Nullable EntitySelector compileSelector(String var0) {
-      try {
-         EntitySelectorParser var1 = new EntitySelectorParser(new StringReader(var0), true);
-         return var1.parse();
-      } catch (CommandSyntaxException var2) {
-         return null;
-      }
-   }
-
-   public Stream<CompoundTag> getData(CommandSourceStack var1) throws CommandSyntaxException {
-      if (this.compiledSelector != null) {
-         List var2 = this.compiledSelector.findEntities(var1);
-         return var2.stream().map(NbtPredicate::getEntityTagToCompare);
-      } else {
-         return Stream.empty();
-      }
+   public Stream<CompoundTag> getData(final CommandSourceStack sender) throws CommandSyntaxException {
+      List<? extends Entity> entities = ((EntitySelector)this.selector.compiled()).findEntities(sender);
+      return entities.stream().map(NbtPredicate::getEntityTagToCompare);
    }
 
    public MapCodec<EntityDataSource> codec() {
       return MAP_CODEC;
-   }
-
-   public String toString() {
-      return "entity=" + this.selectorPattern;
-   }
-
-   public boolean equals(Object var1) {
-      if (this == var1) {
-         return true;
-      } else {
-         boolean var10000;
-         if (var1 instanceof EntityDataSource) {
-            EntityDataSource var2 = (EntityDataSource)var1;
-            if (this.selectorPattern.equals(var2.selectorPattern)) {
-               var10000 = true;
-               return var10000;
-            }
-         }
-
-         var10000 = false;
-         return var10000;
-      }
-   }
-
-   public int hashCode() {
-      return this.selectorPattern.hashCode();
    }
 }

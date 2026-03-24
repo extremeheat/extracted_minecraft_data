@@ -18,15 +18,15 @@ public class NearestLivingEntitySensor<T extends LivingEntity> extends Sensor<T>
       super();
    }
 
-   protected void doTick(ServerLevel var1, T var2) {
-      double var3 = var2.getAttributeValue(Attributes.FOLLOW_RANGE);
-      AABB var5 = var2.getBoundingBox().inflate(var3, var3, var3);
-      List var6 = var1.getEntitiesOfClass(LivingEntity.class, var5, (var1x) -> var1x != var2 && var1x.isAlive());
-      Objects.requireNonNull(var2);
-      var6.sort(Comparator.comparingDouble(var2::distanceToSqr));
-      Brain var7 = var2.getBrain();
-      var7.setMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES, var6);
-      var7.setMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, new NearestVisibleLivingEntities(var1, var2, var6));
+   protected void doTick(final ServerLevel level, final T body) {
+      double followRange = ((LivingEntity)body).getAttributeValue(Attributes.FOLLOW_RANGE);
+      AABB boundingBox = body.getBoundingBox().inflate(followRange, followRange, followRange);
+      List<LivingEntity> livingEntities = level.getEntitiesOfClass(LivingEntity.class, boundingBox, (mob) -> mob != body && mob.isAlive());
+      Objects.requireNonNull(body);
+      livingEntities.sort(Comparator.comparingDouble(body::distanceToSqr));
+      Brain<?> brain = ((LivingEntity)body).getBrain();
+      brain.setMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES, livingEntities);
+      brain.setMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, new NearestVisibleLivingEntities(level, body, livingEntities));
    }
 
    public Set<MemoryModuleType<?>> requires() {

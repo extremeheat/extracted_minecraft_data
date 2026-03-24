@@ -15,17 +15,16 @@ public record ClientboundCustomReportDetailsPacket(Map<String, String> details) 
    private static final StreamCodec<ByteBuf, Map<String, String>> DETAILS_STREAM_CODEC = ByteBufCodecs.map(HashMap::new, ByteBufCodecs.stringUtf8(128), ByteBufCodecs.stringUtf8(4096), 32);
    public static final StreamCodec<ByteBuf, ClientboundCustomReportDetailsPacket> STREAM_CODEC;
 
-   public ClientboundCustomReportDetailsPacket(Map<String, String> var1) {
+   public ClientboundCustomReportDetailsPacket {
       super();
-      this.details = var1;
    }
 
    public PacketType<ClientboundCustomReportDetailsPacket> type() {
       return CommonPacketTypes.CLIENTBOUND_CUSTOM_REPORT_DETAILS;
    }
 
-   public void handle(ClientCommonPacketListener var1) {
-      var1.handleCustomReportDetails(this);
+   public void handle(final ClientCommonPacketListener listener) {
+      listener.handleCustomReportDetails(this);
    }
 
    static {

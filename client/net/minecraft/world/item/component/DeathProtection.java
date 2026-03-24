@@ -15,18 +15,17 @@ import net.minecraft.world.item.consume_effects.ClearAllStatusEffectsConsumeEffe
 import net.minecraft.world.item.consume_effects.ConsumeEffect;
 
 public record DeathProtection(List<ConsumeEffect> deathEffects) {
-   public static final Codec<DeathProtection> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ConsumeEffect.CODEC.listOf().optionalFieldOf("death_effects", List.of()).forGetter(DeathProtection::deathEffects)).apply(var0, DeathProtection::new));
+   public static final Codec<DeathProtection> CODEC = RecordCodecBuilder.create((i) -> i.group(ConsumeEffect.CODEC.listOf().optionalFieldOf("death_effects", List.of()).forGetter(DeathProtection::deathEffects)).apply(i, DeathProtection::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, DeathProtection> STREAM_CODEC;
    public static final DeathProtection TOTEM_OF_UNDYING;
 
-   public DeathProtection(List<ConsumeEffect> var1) {
+   public DeathProtection {
       super();
-      this.deathEffects = var1;
    }
 
-   public void applyEffects(ItemStack var1, LivingEntity var2) {
-      for(ConsumeEffect var4 : this.deathEffects) {
-         var4.apply(var2.level(), var1, var2);
+   public void applyEffects(final ItemStack itemStack, final LivingEntity entity) {
+      for(ConsumeEffect effect : this.deathEffects) {
+         effect.apply(entity.level(), itemStack, entity);
       }
 
    }

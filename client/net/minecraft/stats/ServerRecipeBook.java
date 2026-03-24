@@ -22,6 +22,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.display.RecipeDisplayEntry;
+import net.minecraft.world.item.crafting.display.RecipeDisplayId;
 import org.slf4j.Logger;
 
 public class ServerRecipeBook extends RecipeBook {
@@ -33,136 +34,130 @@ public class ServerRecipeBook extends RecipeBook {
    @VisibleForTesting
    protected final Set<ResourceKey<Recipe<?>>> highlight = Sets.newIdentityHashSet();
 
-   public ServerRecipeBook(DisplayResolver var1) {
+   public ServerRecipeBook(final DisplayResolver displayResolver) {
       super();
-      this.displayResolver = var1;
+      this.displayResolver = displayResolver;
    }
 
-   public void add(ResourceKey<Recipe<?>> var1) {
-      this.known.add(var1);
+   public void add(final ResourceKey<Recipe<?>> id) {
+      this.known.add(id);
    }
 
-   public boolean contains(ResourceKey<Recipe<?>> var1) {
-      return this.known.contains(var1);
+   public boolean contains(final ResourceKey<Recipe<?>> id) {
+      return this.known.contains(id);
    }
 
-   public void remove(ResourceKey<Recipe<?>> var1) {
-      this.known.remove(var1);
-      this.highlight.remove(var1);
+   public void remove(final ResourceKey<Recipe<?>> id) {
+      this.known.remove(id);
+      this.highlight.remove(id);
    }
 
-   public void removeHighlight(ResourceKey<Recipe<?>> var1) {
-      this.highlight.remove(var1);
+   public void removeHighlight(final ResourceKey<Recipe<?>> id) {
+      this.highlight.remove(id);
    }
 
-   private void addHighlight(ResourceKey<Recipe<?>> var1) {
-      this.highlight.add(var1);
+   private void addHighlight(final ResourceKey<Recipe<?>> id) {
+      this.highlight.add(id);
    }
 
-   public int addRecipes(Collection<RecipeHolder<?>> var1, ServerPlayer var2) {
-      ArrayList var3 = new ArrayList();
+   public int addRecipes(final Collection<RecipeHolder<?>> recipes, final ServerPlayer player) {
+      List<ClientboundRecipeBookAddPacket.Entry> recipesToAdd = new ArrayList();
 
-      for(RecipeHolder var5 : var1) {
-         ResourceKey var6 = var5.id();
-         if (!this.known.contains(var6) && !var5.value().isSpecial()) {
-            this.add(var6);
-            this.addHighlight(var6);
-            this.displayResolver.displaysForRecipe(var6, (var2x) -> var3.add(new ClientboundRecipeBookAddPacket.Entry(var2x, var5.value().showNotification(), true)));
-            CriteriaTriggers.RECIPE_UNLOCKED.trigger(var2, var5);
+      for(RecipeHolder<?> recipe : recipes) {
+         ResourceKey<Recipe<?>> id = recipe.id();
+         if (!this.known.contains(id) && !recipe.value().isSpecial()) {
+            this.add(id);
+            this.addHighlight(id);
+            this.displayResolver.displaysForRecipe(id, (display) -> recipesToAdd.add(new ClientboundRecipeBookAddPacket.Entry(display, recipe.value().showNotification(), true)));
+            CriteriaTriggers.RECIPE_UNLOCKED.trigger(player, recipe);
          }
       }
 
-      if (!var3.isEmpty()) {
-         var2.connection.send(new ClientboundRecipeBookAddPacket(var3, false));
+      if (!recipesToAdd.isEmpty()) {
+         player.connection.send(new ClientboundRecipeBookAddPacket(recipesToAdd, false));
       }
 
-      return var3.size();
+      return recipesToAdd.size();
    }
 
-   public int removeRecipes(Collection<RecipeHolder<?>> var1, ServerPlayer var2) {
-      ArrayList var3 = Lists.newArrayList();
+   public int removeRecipes(final Collection<RecipeHolder<?>> recipes, final ServerPlayer player) {
+      List<RecipeDisplayId> recipesToRemove = Lists.newArrayList();
 
-      for(RecipeHolder var5 : var1) {
-         ResourceKey var6 = var5.id();
-         if (this.known.contains(var6)) {
-            this.remove(var6);
-            this.displayResolver.displaysForRecipe(var6, (var1x) -> var3.add(var1x.id()));
+      for(RecipeHolder<?> recipe : recipes) {
+         ResourceKey<Recipe<?>> id = recipe.id();
+         if (this.known.contains(id)) {
+            this.remove(id);
+            this.displayResolver.displaysForRecipe(id, (display) -> recipesToRemove.add(display.id()));
          }
       }
 
-      if (!var3.isEmpty()) {
-         var2.connection.send(new ClientboundRecipeBookRemovePacket(var3));
+      if (!recipesToRemove.isEmpty()) {
+         player.connection.send(new ClientboundRecipeBookRemovePacket(recipesToRemove));
       }
 
-      return var3.size();
+      return recipesToRemove.size();
    }
 
-   private void loadRecipes(List<ResourceKey<Recipe<?>>> var1, Consumer<ResourceKey<Recipe<?>>> var2, Predicate<ResourceKey<Recipe<?>>> var3) {
-      for(ResourceKey var5 : var1) {
-         if (!var3.test(var5)) {
-            LOGGER.error("Tried to load unrecognized recipe: {} removed now.", var5);
+   private void loadRecipes(final List<ResourceKey<Recipe<?>>> recipes, final Consumer<ResourceKey<Recipe<?>>> recipeAddingMethod, final Predicate<ResourceKey<Recipe<?>>> validator) {
+      for(ResourceKey<Recipe<?>> recipe : recipes) {
+         if (!validator.test(recipe)) {
+            LOGGER.error("Tried to load unrecognized recipe: {} removed now.", recipe);
          } else {
-            var2.accept(var5);
+            recipeAddingMethod.accept(recipe);
          }
       }
 
    }
 
-   public void sendInitialRecipeBook(ServerPlayer var1) {
-      var1.connection.send(new ClientboundRecipeBookSettingsPacket(this.getBookSettings().copy()));
-      ArrayList var2 = new ArrayList(this.known.size());
+   public void sendInitialRecipeBook(final ServerPlayer player) {
+      player.connection.send(new ClientboundRecipeBookSettingsPacket(this.getBookSettings().copy()));
+      List<ClientboundRecipeBookAddPacket.Entry> recipesToSend = new ArrayList(this.known.size());
 
-      for(ResourceKey var4 : this.known) {
-         this.displayResolver.displaysForRecipe(var4, (var3) -> var2.add(new ClientboundRecipeBookAddPacket.Entry(var3, false, this.highlight.contains(var4))));
+      for(ResourceKey<Recipe<?>> id : this.known) {
+         this.displayResolver.displaysForRecipe(id, (r) -> recipesToSend.add(new ClientboundRecipeBookAddPacket.Entry(r, false, this.highlight.contains(id))));
       }
 
-      var1.connection.send(new ClientboundRecipeBookAddPacket(var2, true));
+      player.connection.send(new ClientboundRecipeBookAddPacket(recipesToSend, true));
    }
 
-   public void copyOverData(ServerRecipeBook var1) {
-      this.apply(var1.pack());
+   public void copyOverData(final ServerRecipeBook bookToCopy) {
+      this.apply(bookToCopy.pack());
    }
 
    public Packed pack() {
       return new Packed(this.bookSettings.copy(), List.copyOf(this.known), List.copyOf(this.highlight));
    }
 
-   private void apply(Packed var1) {
+   private void apply(final Packed packed) {
       this.known.clear();
       this.highlight.clear();
-      this.bookSettings.replaceFrom(var1.settings);
-      this.known.addAll(var1.known);
-      this.highlight.addAll(var1.highlight);
+      this.bookSettings.replaceFrom(packed.settings);
+      this.known.addAll(packed.known);
+      this.highlight.addAll(packed.highlight);
    }
 
-   public void loadUntrusted(Packed var1, Predicate<ResourceKey<Recipe<?>>> var2) {
-      this.bookSettings.replaceFrom(var1.settings);
-      List var10001 = var1.known;
+   public void loadUntrusted(final Packed packed, final Predicate<ResourceKey<Recipe<?>>> validator) {
+      this.bookSettings.replaceFrom(packed.settings);
+      List var10001 = packed.known;
       Set var10002 = this.known;
       Objects.requireNonNull(var10002);
-      this.loadRecipes(var10001, var10002::add, var2);
-      var10001 = var1.highlight;
+      this.loadRecipes(var10001, var10002::add, validator);
+      var10001 = packed.highlight;
       var10002 = this.highlight;
       Objects.requireNonNull(var10002);
-      this.loadRecipes(var10001, var10002::add, var2);
+      this.loadRecipes(var10001, var10002::add, validator);
    }
 
    public static record Packed(RecipeBookSettings settings, List<ResourceKey<Recipe<?>>> known, List<ResourceKey<Recipe<?>>> highlight) {
-      final RecipeBookSettings settings;
-      final List<ResourceKey<Recipe<?>>> known;
-      final List<ResourceKey<Recipe<?>>> highlight;
-      public static final Codec<Packed> CODEC = RecordCodecBuilder.create((var0) -> var0.group(RecipeBookSettings.MAP_CODEC.forGetter(Packed::settings), Recipe.KEY_CODEC.listOf().fieldOf("recipes").forGetter(Packed::known), Recipe.KEY_CODEC.listOf().fieldOf("toBeDisplayed").forGetter(Packed::highlight)).apply(var0, Packed::new));
+      public static final Codec<Packed> CODEC = RecordCodecBuilder.create((i) -> i.group(RecipeBookSettings.MAP_CODEC.forGetter(Packed::settings), Recipe.KEY_CODEC.listOf().fieldOf("recipes").forGetter(Packed::known), Recipe.KEY_CODEC.listOf().fieldOf("toBeDisplayed").forGetter(Packed::highlight)).apply(i, Packed::new));
 
-      public Packed(RecipeBookSettings var1, List<ResourceKey<Recipe<?>>> var2, List<ResourceKey<Recipe<?>>> var3) {
+      public Packed {
          super();
-         this.settings = var1;
-         this.known = var2;
-         this.highlight = var3;
       }
    }
 
    @FunctionalInterface
    public interface DisplayResolver {
-      void displaysForRecipe(ResourceKey<Recipe<?>> var1, Consumer<RecipeDisplayEntry> var2);
+      void displaysForRecipe(ResourceKey<Recipe<?>> id, Consumer<RecipeDisplayEntry> output);
    }
 }

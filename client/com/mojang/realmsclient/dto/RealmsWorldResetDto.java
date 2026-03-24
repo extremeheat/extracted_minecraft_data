@@ -4,13 +4,8 @@ import com.google.gson.annotations.SerializedName;
 import java.util.Set;
 
 public record RealmsWorldResetDto(String seed, long worldTemplateId, int levelType, boolean generateStructures, Set<String> experiments) implements ReflectionBasedSerialization {
-   public RealmsWorldResetDto(String var1, long var2, int var4, boolean var5, Set<String> var6) {
+   public RealmsWorldResetDto {
       super();
-      this.seed = var1;
-      this.worldTemplateId = var2;
-      this.levelType = var4;
-      this.generateStructures = var5;
-      this.experiments = var6;
    }
 
    @SerializedName("seed")

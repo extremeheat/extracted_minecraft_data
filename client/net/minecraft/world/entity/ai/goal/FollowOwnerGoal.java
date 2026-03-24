@@ -20,29 +20,29 @@ public class FollowOwnerGoal extends Goal {
    private final float startDistance;
    private float oldWaterCost;
 
-   public FollowOwnerGoal(TamableAnimal var1, double var2, float var4, float var5) {
+   public FollowOwnerGoal(final TamableAnimal tamable, final double speedModifier, final float startDistance, final float stopDistance) {
       super();
-      this.tamable = var1;
-      this.speedModifier = var2;
-      this.navigation = var1.getNavigation();
-      this.startDistance = var4;
-      this.stopDistance = var5;
+      this.tamable = tamable;
+      this.speedModifier = speedModifier;
+      this.navigation = tamable.getNavigation();
+      this.startDistance = startDistance;
+      this.stopDistance = stopDistance;
       this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
-      if (!(var1.getNavigation() instanceof GroundPathNavigation) && !(var1.getNavigation() instanceof FlyingPathNavigation)) {
+      if (!(tamable.getNavigation() instanceof GroundPathNavigation) && !(tamable.getNavigation() instanceof FlyingPathNavigation)) {
          throw new IllegalArgumentException("Unsupported mob type for FollowOwnerGoal");
       }
    }
 
    public boolean canUse() {
-      LivingEntity var1 = this.tamable.getOwner();
-      if (var1 == null) {
+      LivingEntity owner = this.tamable.getOwner();
+      if (owner == null) {
          return false;
       } else if (this.tamable.unableToMoveToOwner()) {
          return false;
-      } else if (this.tamable.distanceToSqr(var1) < (double)(this.startDistance * this.startDistance)) {
+      } else if (this.tamable.distanceToSqr(owner) < (double)(this.startDistance * this.startDistance)) {
          return false;
       } else {
-         this.owner = var1;
+         this.owner = owner;
          return true;
       }
    }
@@ -70,14 +70,14 @@ public class FollowOwnerGoal extends Goal {
    }
 
    public void tick() {
-      boolean var1 = this.tamable.shouldTryTeleportToOwner();
-      if (!var1) {
+      boolean isOwnerFarAway = this.tamable.shouldTryTeleportToOwner();
+      if (!isOwnerFarAway) {
          this.tamable.getLookControl().setLookAt(this.owner, 10.0F, (float)this.tamable.getMaxHeadXRot());
       }
 
       if (--this.timeToRecalcPath <= 0) {
          this.timeToRecalcPath = this.adjustedTickDelay(10);
-         if (var1) {
+         if (isOwnerFarAway) {
             this.tamable.tryToTeleportToOwner();
          } else {
             this.navigation.moveTo((Entity)this.owner, this.speedModifier);

@@ -7,11 +7,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 public record KeyEvent(@InputConstants.Value int key, int scancode, @InputWithModifiers.Modifiers int modifiers) implements InputWithModifiers {
-   public KeyEvent(@InputConstants.Value int var1, int var2, @InputWithModifiers.Modifiers int var3) {
+   public KeyEvent {
       super();
-      this.key = var1;
-      this.scancode = var2;
-      this.modifiers = var3;
    }
 
    public int input() {

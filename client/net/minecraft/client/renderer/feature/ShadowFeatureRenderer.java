@@ -11,7 +11,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.phys.AABB;
-import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.Vector3f;
 
 public class ShadowFeatureRenderer {
@@ -21,34 +21,34 @@ public class ShadowFeatureRenderer {
       super();
    }
 
-   public void render(SubmitNodeCollection var1, MultiBufferSource.BufferSource var2) {
-      VertexConsumer var3 = var2.getBuffer(SHADOW_RENDER_TYPE);
+   public void renderTranslucent(final SubmitNodeCollection nodeCollection, final MultiBufferSource.BufferSource bufferSource) {
+      VertexConsumer buffer = bufferSource.getBuffer(SHADOW_RENDER_TYPE);
 
-      for(SubmitNodeStorage.ShadowSubmit var5 : var1.getShadowSubmits()) {
-         for(EntityRenderState.ShadowPiece var7 : var5.pieces()) {
-            AABB var8 = var7.shapeBelow().bounds();
-            float var9 = var7.relativeX() + (float)var8.minX;
-            float var10 = var7.relativeX() + (float)var8.maxX;
-            float var11 = var7.relativeY() + (float)var8.minY;
-            float var12 = var7.relativeZ() + (float)var8.minZ;
-            float var13 = var7.relativeZ() + (float)var8.maxZ;
-            float var14 = var5.radius();
-            float var15 = -var9 / 2.0F / var14 + 0.5F;
-            float var16 = -var10 / 2.0F / var14 + 0.5F;
-            float var17 = -var12 / 2.0F / var14 + 0.5F;
-            float var18 = -var13 / 2.0F / var14 + 0.5F;
-            int var19 = ARGB.white(var7.alpha());
-            shadowVertex(var5.pose(), var3, var19, var9, var11, var12, var15, var17);
-            shadowVertex(var5.pose(), var3, var19, var9, var11, var13, var15, var18);
-            shadowVertex(var5.pose(), var3, var19, var10, var11, var13, var16, var18);
-            shadowVertex(var5.pose(), var3, var19, var10, var11, var12, var16, var17);
+      for(SubmitNodeStorage.ShadowSubmit submit : nodeCollection.getShadowSubmits()) {
+         for(EntityRenderState.ShadowPiece piece : submit.pieces()) {
+            AABB aabb = piece.shapeBelow().bounds();
+            float x01 = piece.relativeX() + (float)aabb.minX;
+            float x11 = piece.relativeX() + (float)aabb.maxX;
+            float y01 = piece.relativeY() + (float)aabb.minY;
+            float z01 = piece.relativeZ() + (float)aabb.minZ;
+            float z11 = piece.relativeZ() + (float)aabb.maxZ;
+            float radius = submit.radius();
+            float u0 = -x01 / 2.0F / radius + 0.5F;
+            float u1 = -x11 / 2.0F / radius + 0.5F;
+            float v0 = -z01 / 2.0F / radius + 0.5F;
+            float v1 = -z11 / 2.0F / radius + 0.5F;
+            int color = ARGB.white(piece.alpha());
+            shadowVertex(submit.pose(), buffer, color, x01, y01, z01, u0, v0);
+            shadowVertex(submit.pose(), buffer, color, x01, y01, z11, u0, v1);
+            shadowVertex(submit.pose(), buffer, color, x11, y01, z11, u1, v1);
+            shadowVertex(submit.pose(), buffer, color, x11, y01, z01, u1, v0);
          }
       }
 
    }
 
-   private static void shadowVertex(Matrix4f var0, VertexConsumer var1, int var2, float var3, float var4, float var5, float var6, float var7) {
-      Vector3f var8 = var0.transformPosition(var3, var4, var5, new Vector3f());
-      var1.addVertex(var8.x(), var8.y(), var8.z(), var2, var6, var7, OverlayTexture.NO_OVERLAY, 15728880, 0.0F, 1.0F, 0.0F);
+   private static void shadowVertex(final Matrix4fc pose, final VertexConsumer buffer, final int color, final float x, final float y, final float z, final float u, final float v) {
+      Vector3f position = pose.transformPosition(x, y, z, new Vector3f());
+      buffer.addVertex(position.x(), position.y(), position.z(), color, u, v, OverlayTexture.NO_OVERLAY, 15728880, 0.0F, 1.0F, 0.0F);
    }
 }

@@ -21,79 +21,79 @@ public class Node {
    public float costMalus;
    public PathType type;
 
-   public Node(int var1, int var2, int var3) {
+   public Node(final int x, final int y, final int z) {
       super();
       this.type = PathType.BLOCKED;
-      this.x = var1;
-      this.y = var2;
-      this.z = var3;
-      this.hash = createHash(var1, var2, var3);
+      this.x = x;
+      this.y = y;
+      this.z = z;
+      this.hash = createHash(x, y, z);
    }
 
-   public Node cloneAndMove(int var1, int var2, int var3) {
-      Node var4 = new Node(var1, var2, var3);
-      var4.heapIdx = this.heapIdx;
-      var4.g = this.g;
-      var4.h = this.h;
-      var4.f = this.f;
-      var4.cameFrom = this.cameFrom;
-      var4.closed = this.closed;
-      var4.walkedDistance = this.walkedDistance;
-      var4.costMalus = this.costMalus;
-      var4.type = this.type;
-      return var4;
+   public Node cloneAndMove(final int x, final int y, final int z) {
+      Node node = new Node(x, y, z);
+      node.heapIdx = this.heapIdx;
+      node.g = this.g;
+      node.h = this.h;
+      node.f = this.f;
+      node.cameFrom = this.cameFrom;
+      node.closed = this.closed;
+      node.walkedDistance = this.walkedDistance;
+      node.costMalus = this.costMalus;
+      node.type = this.type;
+      return node;
    }
 
-   public static int createHash(int var0, int var1, int var2) {
-      return var1 & 255 | (var0 & 32767) << 8 | (var2 & 32767) << 24 | (var0 < 0 ? -2147483648 : 0) | (var2 < 0 ? '\u8000' : 0);
+   public static int createHash(final int x, final int y, final int z) {
+      return y & 255 | (x & 32767) << 8 | (z & 32767) << 24 | (x < 0 ? -2147483648 : 0) | (z < 0 ? '\u8000' : 0);
    }
 
-   public float distanceTo(Node var1) {
-      float var2 = (float)(var1.x - this.x);
-      float var3 = (float)(var1.y - this.y);
-      float var4 = (float)(var1.z - this.z);
-      return Mth.sqrt(var2 * var2 + var3 * var3 + var4 * var4);
+   public float distanceTo(final Node to) {
+      float xd = (float)(to.x - this.x);
+      float yd = (float)(to.y - this.y);
+      float zd = (float)(to.z - this.z);
+      return Mth.sqrt(xd * xd + yd * yd + zd * zd);
    }
 
-   public float distanceToXZ(Node var1) {
-      float var2 = (float)(var1.x - this.x);
-      float var3 = (float)(var1.z - this.z);
-      return Mth.sqrt(var2 * var2 + var3 * var3);
+   public float distanceToXZ(final Node to) {
+      float xd = (float)(to.x - this.x);
+      float zd = (float)(to.z - this.z);
+      return Mth.sqrt(xd * xd + zd * zd);
    }
 
-   public float distanceTo(BlockPos var1) {
-      float var2 = (float)(var1.getX() - this.x);
-      float var3 = (float)(var1.getY() - this.y);
-      float var4 = (float)(var1.getZ() - this.z);
-      return Mth.sqrt(var2 * var2 + var3 * var3 + var4 * var4);
+   public float distanceTo(final BlockPos pos) {
+      float xd = (float)(pos.getX() - this.x);
+      float yd = (float)(pos.getY() - this.y);
+      float zd = (float)(pos.getZ() - this.z);
+      return Mth.sqrt(xd * xd + yd * yd + zd * zd);
    }
 
-   public float distanceToSqr(Node var1) {
-      float var2 = (float)(var1.x - this.x);
-      float var3 = (float)(var1.y - this.y);
-      float var4 = (float)(var1.z - this.z);
-      return var2 * var2 + var3 * var3 + var4 * var4;
+   public float distanceToSqr(final Node to) {
+      float xd = (float)(to.x - this.x);
+      float yd = (float)(to.y - this.y);
+      float zd = (float)(to.z - this.z);
+      return xd * xd + yd * yd + zd * zd;
    }
 
-   public float distanceToSqr(BlockPos var1) {
-      float var2 = (float)(var1.getX() - this.x);
-      float var3 = (float)(var1.getY() - this.y);
-      float var4 = (float)(var1.getZ() - this.z);
-      return var2 * var2 + var3 * var3 + var4 * var4;
+   public float distanceToSqr(final BlockPos pos) {
+      float xd = (float)(pos.getX() - this.x);
+      float yd = (float)(pos.getY() - this.y);
+      float zd = (float)(pos.getZ() - this.z);
+      return xd * xd + yd * yd + zd * zd;
    }
 
-   public float distanceManhattan(Node var1) {
-      float var2 = (float)Math.abs(var1.x - this.x);
-      float var3 = (float)Math.abs(var1.y - this.y);
-      float var4 = (float)Math.abs(var1.z - this.z);
-      return var2 + var3 + var4;
+   public float distanceManhattan(final Node to) {
+      float xd = (float)Math.abs(to.x - this.x);
+      float yd = (float)Math.abs(to.y - this.y);
+      float zd = (float)Math.abs(to.z - this.z);
+      return xd + yd + zd;
    }
 
-   public float distanceManhattan(BlockPos var1) {
-      float var2 = (float)Math.abs(var1.getX() - this.x);
-      float var3 = (float)Math.abs(var1.getY() - this.y);
-      float var4 = (float)Math.abs(var1.getZ() - this.z);
-      return var2 + var3 + var4;
+   public float distanceManhattan(final BlockPos pos) {
+      float xd = (float)Math.abs(pos.getX() - this.x);
+      float yd = (float)Math.abs(pos.getY() - this.y);
+      float zd = (float)Math.abs(pos.getZ() - this.z);
+      return xd + yd + zd;
    }
 
    public BlockPos asBlockPos() {
@@ -104,11 +104,11 @@ public class Node {
       return new Vec3((double)this.x, (double)this.y, (double)this.z);
    }
 
-   public boolean equals(Object var1) {
-      if (!(var1 instanceof Node var2)) {
+   public boolean equals(final Object o) {
+      if (!(o instanceof Node no)) {
          return false;
       } else {
-         return this.hash == var2.hash && this.x == var2.x && this.y == var2.y && this.z == var2.z;
+         return this.hash == no.hash && this.x == no.x && this.y == no.y && this.z == no.z;
       }
    }
 
@@ -124,28 +124,28 @@ public class Node {
       return "Node{x=" + this.x + ", y=" + this.y + ", z=" + this.z + "}";
    }
 
-   public void writeToStream(FriendlyByteBuf var1) {
-      var1.writeInt(this.x);
-      var1.writeInt(this.y);
-      var1.writeInt(this.z);
-      var1.writeFloat(this.walkedDistance);
-      var1.writeFloat(this.costMalus);
-      var1.writeBoolean(this.closed);
-      var1.writeEnum(this.type);
-      var1.writeFloat(this.f);
+   public void writeToStream(final FriendlyByteBuf buffer) {
+      buffer.writeInt(this.x);
+      buffer.writeInt(this.y);
+      buffer.writeInt(this.z);
+      buffer.writeFloat(this.walkedDistance);
+      buffer.writeFloat(this.costMalus);
+      buffer.writeBoolean(this.closed);
+      buffer.writeEnum(this.type);
+      buffer.writeFloat(this.f);
    }
 
-   public static Node createFromStream(FriendlyByteBuf var0) {
-      Node var1 = new Node(var0.readInt(), var0.readInt(), var0.readInt());
-      readContents(var0, var1);
-      return var1;
+   public static Node createFromStream(final FriendlyByteBuf buffer) {
+      Node node = new Node(buffer.readInt(), buffer.readInt(), buffer.readInt());
+      readContents(buffer, node);
+      return node;
    }
 
-   protected static void readContents(FriendlyByteBuf var0, Node var1) {
-      var1.walkedDistance = var0.readFloat();
-      var1.costMalus = var0.readFloat();
-      var1.closed = var0.readBoolean();
-      var1.type = (PathType)var0.readEnum(PathType.class);
-      var1.f = var0.readFloat();
+   protected static void readContents(final FriendlyByteBuf buffer, final Node node) {
+      node.walkedDistance = buffer.readFloat();
+      node.costMalus = buffer.readFloat();
+      node.closed = buffer.readBoolean();
+      node.type = (PathType)buffer.readEnum(PathType.class);
+      node.f = buffer.readFloat();
    }
 }

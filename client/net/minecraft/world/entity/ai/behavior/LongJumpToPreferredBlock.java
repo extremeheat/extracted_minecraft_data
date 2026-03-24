@@ -11,7 +11,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.valueproviders.UniformInt;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.block.Block;
 
@@ -21,33 +20,33 @@ public class LongJumpToPreferredBlock<E extends Mob> extends LongJumpToRandomPos
    private final List<LongJumpToRandomPos.PossibleJump> notPrefferedJumpCandidates = new ArrayList();
    private boolean currentlyWantingPreferredOnes;
 
-   public LongJumpToPreferredBlock(UniformInt var1, int var2, int var3, float var4, Function<E, SoundEvent> var5, TagKey<Block> var6, float var7, BiPredicate<E, BlockPos> var8) {
-      super(var1, var2, var3, var4, var5, var8);
-      this.preferredBlockTag = var6;
-      this.preferredBlocksChance = var7;
+   public LongJumpToPreferredBlock(final UniformInt timeBetweenLongJumps, final int maxLongJumpHeight, final int maxLongJumpWidth, final float maxJumpVelocity, final Function<E, SoundEvent> getJumpSound, final TagKey<Block> preferredBlockTag, final float preferredBlocksChance, final BiPredicate<E, BlockPos> acceptableLandingSpot) {
+      super(timeBetweenLongJumps, maxLongJumpHeight, maxLongJumpWidth, maxJumpVelocity, getJumpSound, acceptableLandingSpot);
+      this.preferredBlockTag = preferredBlockTag;
+      this.preferredBlocksChance = preferredBlocksChance;
    }
 
-   protected void start(ServerLevel var1, E var2, long var3) {
-      super.start(var1, var2, var3);
+   protected void start(final ServerLevel level, final E body, final long timestamp) {
+      super.start(level, body, timestamp);
       this.notPrefferedJumpCandidates.clear();
-      this.currentlyWantingPreferredOnes = var2.getRandom().nextFloat() < this.preferredBlocksChance;
+      this.currentlyWantingPreferredOnes = body.getRandom().nextFloat() < this.preferredBlocksChance;
    }
 
-   protected Optional<LongJumpToRandomPos.PossibleJump> getJumpCandidate(ServerLevel var1) {
+   protected Optional<LongJumpToRandomPos.PossibleJump> getJumpCandidate(final ServerLevel level) {
       if (!this.currentlyWantingPreferredOnes) {
-         return super.getJumpCandidate(var1);
+         return super.getJumpCandidate(level);
       } else {
-         BlockPos.MutableBlockPos var2 = new BlockPos.MutableBlockPos();
+         BlockPos.MutableBlockPos testPos = new BlockPos.MutableBlockPos();
 
          while(!this.jumpCandidates.isEmpty()) {
-            Optional var3 = super.getJumpCandidate(var1);
-            if (var3.isPresent()) {
-               LongJumpToRandomPos.PossibleJump var4 = (LongJumpToRandomPos.PossibleJump)var3.get();
-               if (var1.getBlockState(var2.setWithOffset(var4.targetPos(), (Direction)Direction.DOWN)).is(this.preferredBlockTag)) {
-                  return var3;
+            Optional<LongJumpToRandomPos.PossibleJump> jumpCandidate = super.getJumpCandidate(level);
+            if (jumpCandidate.isPresent()) {
+               LongJumpToRandomPos.PossibleJump possibleJump = (LongJumpToRandomPos.PossibleJump)jumpCandidate.get();
+               if (level.getBlockState(testPos.setWithOffset(possibleJump.targetPos(), (Direction)Direction.DOWN)).is(this.preferredBlockTag)) {
+                  return jumpCandidate;
                }
 
-               this.notPrefferedJumpCandidates.add(var4);
+               this.notPrefferedJumpCandidates.add(possibleJump);
             }
          }
 
@@ -57,10 +56,5 @@ public class LongJumpToPreferredBlock<E extends Mob> extends LongJumpToRandomPos
             return Optional.empty();
          }
       }
-   }
-
-   // $FF: synthetic method
-   protected void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
-      this.start(var1, (Mob)var2, var3);
    }
 }

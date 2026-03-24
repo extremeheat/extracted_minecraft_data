@@ -8,21 +8,21 @@ import com.mojang.serialization.Dynamic;
 import java.util.Optional;
 
 public class CauldronRenameFix extends DataFix {
-   public CauldronRenameFix(Schema var1, boolean var2) {
-      super(var1, var2);
+   public CauldronRenameFix(final Schema outputSchema, final boolean changesType) {
+      super(outputSchema, changesType);
    }
 
-   private static Dynamic<?> fix(Dynamic<?> var0) {
-      Optional var1 = var0.get("Name").asString().result();
-      if (var1.equals(Optional.of("minecraft:cauldron"))) {
-         Dynamic var2 = var0.get("Properties").orElseEmptyMap();
-         return var2.get("level").asString("0").equals("0") ? var0.remove("Properties") : var0.set("Name", var0.createString("minecraft:water_cauldron"));
+   private static Dynamic<?> fix(final Dynamic<?> tag) {
+      Optional<String> name = tag.get("Name").asString().result();
+      if (name.equals(Optional.of("minecraft:cauldron"))) {
+         Dynamic<?> properties = tag.get("Properties").orElseEmptyMap();
+         return properties.get("level").asString("0").equals("0") ? tag.remove("Properties") : tag.set("Name", tag.createString("minecraft:water_cauldron"));
       } else {
-         return var0;
+         return tag;
       }
    }
 
    protected TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped("cauldron_rename_fix", this.getInputSchema().getType(References.BLOCK_STATE), (var0) -> var0.update(DSL.remainderFinder(), CauldronRenameFix::fix));
+      return this.fixTypeEverywhereTyped("cauldron_rename_fix", this.getInputSchema().getType(References.BLOCK_STATE), (input) -> input.update(DSL.remainderFinder(), CauldronRenameFix::fix));
    }
 }

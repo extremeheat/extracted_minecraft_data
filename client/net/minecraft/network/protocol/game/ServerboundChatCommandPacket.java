@@ -8,24 +8,23 @@ import net.minecraft.network.protocol.PacketType;
 public record ServerboundChatCommandPacket(String command) implements Packet<ServerGamePacketListener> {
    public static final StreamCodec<FriendlyByteBuf, ServerboundChatCommandPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundChatCommandPacket>codec(ServerboundChatCommandPacket::write, ServerboundChatCommandPacket::new);
 
-   private ServerboundChatCommandPacket(FriendlyByteBuf var1) {
-      this(var1.readUtf());
+   private ServerboundChatCommandPacket(final FriendlyByteBuf input) {
+      this(input.readUtf());
    }
 
-   public ServerboundChatCommandPacket(String var1) {
+   public ServerboundChatCommandPacket {
       super();
-      this.command = var1;
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeUtf(this.command);
+   private void write(final FriendlyByteBuf output) {
+      output.writeUtf(this.command);
    }
 
    public PacketType<ServerboundChatCommandPacket> type() {
       return GamePacketTypes.SERVERBOUND_CHAT_COMMAND;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handleChatCommand(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handleChatCommand(this);
    }
 }

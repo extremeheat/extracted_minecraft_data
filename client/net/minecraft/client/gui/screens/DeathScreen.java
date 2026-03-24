@@ -5,7 +5,7 @@ import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.ActiveTextCollector;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -15,7 +15,6 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
@@ -31,24 +30,24 @@ public class DeathScreen extends Screen {
    private final List<Button> exitButtons = Lists.newArrayList();
    private @Nullable Button exitToTitleButton;
 
-   public DeathScreen(@Nullable Component var1, boolean var2, LocalPlayer var3) {
-      super(Component.translatable(var2 ? "deathScreen.title.hardcore" : "deathScreen.title"));
-      this.causeOfDeath = var1;
-      this.hardcore = var2;
-      this.player = var3;
-      MutableComponent var4 = Component.literal(Integer.toString(var3.getScore())).withStyle(ChatFormatting.YELLOW);
-      this.deathScore = Component.translatable("deathScreen.score.value", var4);
+   public DeathScreen(final @Nullable Component causeOfDeath, final boolean hardcore, final LocalPlayer player) {
+      super(Component.translatable(hardcore ? "deathScreen.title.hardcore" : "deathScreen.title"));
+      this.causeOfDeath = causeOfDeath;
+      this.hardcore = hardcore;
+      this.player = player;
+      Component scoreValue = Component.literal(Integer.toString(player.getScore())).withStyle(ChatFormatting.YELLOW);
+      this.deathScore = Component.translatable("deathScreen.score.value", scoreValue);
    }
 
    protected void init() {
       this.delayTicker = 0;
       this.exitButtons.clear();
-      MutableComponent var1 = this.hardcore ? Component.translatable("deathScreen.spectate") : Component.translatable("deathScreen.respawn");
-      this.exitButtons.add((Button)this.addRenderableWidget(Button.builder(var1, (var1x) -> {
+      Component message = this.hardcore ? Component.translatable("deathScreen.spectate") : Component.translatable("deathScreen.respawn");
+      this.exitButtons.add((Button)this.addRenderableWidget(Button.builder(message, (button) -> {
          this.player.respawn();
-         var1x.active = false;
+         button.active = false;
       }).bounds(this.width / 2 - 100, this.height / 4 + 72, 200, 20).build()));
-      this.exitToTitleButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("deathScreen.titleScreen"), (var1x) -> this.minecraft.getReportingContext().draftReportHandled(this.minecraft, this, this::handleExitToTitleScreen, true)).bounds(this.width / 2 - 100, this.height / 4 + 96, 200, 20).build());
+      this.exitToTitleButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("deathScreen.titleScreen"), (button) -> this.minecraft.getReportingContext().draftReportHandled(this.minecraft, this, this::handleExitToTitleScreen, true)).bounds(this.width / 2 - 100, this.height / 4 + 96, 200, 20).build());
       this.exitButtons.add(this.exitToTitleButton);
       this.setButtonsActive(false);
    }
@@ -61,8 +60,8 @@ public class DeathScreen extends Screen {
       if (this.hardcore) {
          this.exitToTitleScreen();
       } else {
-         TitleConfirmScreen var1 = new TitleConfirmScreen((var1x) -> {
-            if (var1x) {
+         ConfirmScreen confirm = new TitleConfirmScreen((result) -> {
+            if (result) {
                this.exitToTitleScreen();
             } else {
                this.player.respawn();
@@ -70,8 +69,8 @@ public class DeathScreen extends Screen {
             }
 
          }, Component.translatable("deathScreen.quit.confirm"), CommonComponents.EMPTY, Component.translatable("deathScreen.titleScreen"), Component.translatable("deathScreen.respawn"));
-         this.minecraft.setScreen(var1);
-         ((ConfirmScreen)var1).setDelay(20);
+         this.minecraft.setScreen(confirm);
+         confirm.setDelay(20);
       }
    }
 
@@ -84,49 +83,49 @@ public class DeathScreen extends Screen {
       this.minecraft.setScreen(new TitleScreen());
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      this.visitText(var1.textRenderer(GuiGraphics.HoveredTextEffects.TOOLTIP_AND_CURSOR));
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
+      this.visitText(graphics.textRenderer(GuiGraphicsExtractor.HoveredTextEffects.TOOLTIP_AND_CURSOR));
       if (this.exitToTitleButton != null && this.minecraft.getReportingContext().hasDraftReport()) {
-         var1.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)DRAFT_REPORT_SPRITE, this.exitToTitleButton.getX() + this.exitToTitleButton.getWidth() - 17, this.exitToTitleButton.getY() + 3, 15, 15);
+         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)DRAFT_REPORT_SPRITE, this.exitToTitleButton.getX() + this.exitToTitleButton.getWidth() - 17, this.exitToTitleButton.getY() + 3, 15, 15);
       }
 
    }
 
-   private void visitText(ActiveTextCollector var1) {
-      ActiveTextCollector.Parameters var2 = var1.defaultParameters();
-      int var3 = this.width / 2;
-      var1.defaultParameters(var2.withScale(2.0F));
-      var1.accept(TextAlignment.CENTER, var3 / 2, 30, (Component)this.title);
-      var1.defaultParameters(var2);
+   private void visitText(final ActiveTextCollector output) {
+      ActiveTextCollector.Parameters normalParameters = output.defaultParameters();
+      int middleLine = this.width / 2;
+      output.defaultParameters(normalParameters.withScale(2.0F));
+      output.accept(TextAlignment.CENTER, middleLine / 2, 30, (Component)this.title);
+      output.defaultParameters(normalParameters);
       if (this.causeOfDeath != null) {
-         var1.accept(TextAlignment.CENTER, var3, 85, (Component)this.causeOfDeath);
+         output.accept(TextAlignment.CENTER, middleLine, 85, (Component)this.causeOfDeath);
       }
 
-      var1.accept(TextAlignment.CENTER, var3, 100, (Component)this.deathScore);
+      output.accept(TextAlignment.CENTER, middleLine, 100, (Component)this.deathScore);
    }
 
-   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      renderDeathBackground(var1, this.width, this.height);
+   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      extractDeathBackground(graphics, this.width, this.height);
    }
 
-   static void renderDeathBackground(GuiGraphics var0, int var1, int var2) {
-      var0.fillGradient(0, 0, var1, var2, 1615855616, -1602211792);
+   private static void extractDeathBackground(final GuiGraphicsExtractor graphics, final int width, final int height) {
+      graphics.fillGradient(0, 0, width, height, 1615855616, -1602211792);
    }
 
-   public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
-      ActiveTextCollector.ClickableStyleFinder var3 = new ActiveTextCollector.ClickableStyleFinder(this.getFont(), (int)var1.x(), (int)var1.y());
-      this.visitText(var3);
-      Style var4 = var3.result();
-      if (var4 != null) {
-         ClickEvent var6 = var4.getClickEvent();
+   public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
+      ActiveTextCollector.ClickableStyleFinder finder = new ActiveTextCollector.ClickableStyleFinder(this.getFont(), (int)event.x(), (int)event.y());
+      this.visitText(finder);
+      Style clickedStyle = finder.result();
+      if (clickedStyle != null) {
+         ClickEvent var6 = clickedStyle.getClickEvent();
          if (var6 instanceof ClickEvent.OpenUrl) {
-            ClickEvent.OpenUrl var5 = (ClickEvent.OpenUrl)var6;
-            return clickUrlAction(this.minecraft, this, var5.uri());
+            ClickEvent.OpenUrl openUrl = (ClickEvent.OpenUrl)var6;
+            return clickUrlAction(this.minecraft, this, openUrl.uri());
          }
       }
 
-      return super.mouseClicked(var1, var2);
+      return super.mouseClicked(event, doubleClick);
    }
 
    public boolean isPauseScreen() {
@@ -146,20 +145,20 @@ public class DeathScreen extends Screen {
 
    }
 
-   private void setButtonsActive(boolean var1) {
-      for(Button var3 : this.exitButtons) {
-         var3.active = var1;
+   private void setButtonsActive(final boolean isActive) {
+      for(Button button : this.exitButtons) {
+         button.active = isActive;
       }
 
    }
 
    public static class TitleConfirmScreen extends ConfirmScreen {
-      public TitleConfirmScreen(BooleanConsumer var1, Component var2, Component var3, Component var4, Component var5) {
-         super(var1, var2, var3, var4, var5);
+      public TitleConfirmScreen(final BooleanConsumer callback, final Component title, final Component message, final Component yesButton, final Component noButton) {
+         super(callback, title, message, yesButton, noButton);
       }
 
-      public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-         DeathScreen.renderDeathBackground(var1, this.width, this.height);
+      public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+         DeathScreen.extractDeathBackground(graphics, this.width, this.height);
       }
    }
 }

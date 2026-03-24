@@ -19,25 +19,23 @@ public class RecipeUnlockedTrigger extends SimpleCriterionTrigger<TriggerInstanc
       return RecipeUnlockedTrigger.TriggerInstance.CODEC;
    }
 
-   public void trigger(ServerPlayer var1, RecipeHolder<?> var2) {
-      this.trigger(var1, (var1x) -> var1x.matches(var2));
+   public void trigger(final ServerPlayer player, final RecipeHolder<?> recipe) {
+      this.trigger(player, (t) -> t.matches(recipe));
    }
 
-   public static Criterion<TriggerInstance> unlocked(ResourceKey<Recipe<?>> var0) {
-      return CriteriaTriggers.RECIPE_UNLOCKED.createCriterion(new TriggerInstance(Optional.empty(), var0));
+   public static Criterion<TriggerInstance> unlocked(final ResourceKey<Recipe<?>> recipe) {
+      return CriteriaTriggers.RECIPE_UNLOCKED.createCriterion(new TriggerInstance(Optional.empty(), recipe));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, ResourceKey<Recipe<?>> recipe) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), Recipe.KEY_CODEC.fieldOf("recipe").forGetter(TriggerInstance::recipe)).apply(var0, TriggerInstance::new));
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((i) -> i.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), Recipe.KEY_CODEC.fieldOf("recipe").forGetter(TriggerInstance::recipe)).apply(i, TriggerInstance::new));
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, ResourceKey<Recipe<?>> var2) {
+      public TriggerInstance {
          super();
-         this.player = var1;
-         this.recipe = var2;
       }
 
-      public boolean matches(RecipeHolder<?> var1) {
-         return this.recipe == var1.id();
+      public boolean matches(final RecipeHolder<?> recipe) {
+         return this.recipe == recipe.id();
       }
    }
 }

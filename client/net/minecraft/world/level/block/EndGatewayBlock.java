@@ -31,82 +31,82 @@ public class EndGatewayBlock extends BaseEntityBlock implements Portal {
       return CODEC;
    }
 
-   protected EndGatewayBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   protected EndGatewayBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new TheEndGatewayBlockEntity(var1, var2);
+   public BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      return new TheEndGatewayBlockEntity(worldPosition, blockState);
    }
 
-   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return createTickerHelper(var3, BlockEntityType.END_GATEWAY, var1.isClientSide() ? TheEndGatewayBlockEntity::beamAnimationTick : TheEndGatewayBlockEntity::portalTick);
+   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(final Level level, final BlockState blockState, final BlockEntityType<T> type) {
+      return createTickerHelper(type, BlockEntityType.END_GATEWAY, level.isClientSide() ? TheEndGatewayBlockEntity::beamAnimationTick : TheEndGatewayBlockEntity::portalTick);
    }
 
-   public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
-      BlockEntity var5 = var2.getBlockEntity(var3);
-      if (var5 instanceof TheEndGatewayBlockEntity) {
-         int var6 = ((TheEndGatewayBlockEntity)var5).getParticleAmount();
+   public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {
+      BlockEntity blockEntity = level.getBlockEntity(pos);
+      if (blockEntity instanceof TheEndGatewayBlockEntity) {
+         int particleCount = ((TheEndGatewayBlockEntity)blockEntity).getParticleAmount();
 
-         for(int var7 = 0; var7 < var6; ++var7) {
-            double var8 = (double)var3.getX() + var4.nextDouble();
-            double var10 = (double)var3.getY() + var4.nextDouble();
-            double var12 = (double)var3.getZ() + var4.nextDouble();
-            double var14 = (var4.nextDouble() - 0.5) * 0.5;
-            double var16 = (var4.nextDouble() - 0.5) * 0.5;
-            double var18 = (var4.nextDouble() - 0.5) * 0.5;
-            int var20 = var4.nextInt(2) * 2 - 1;
-            if (var4.nextBoolean()) {
-               var12 = (double)var3.getZ() + 0.5 + 0.25 * (double)var20;
-               var18 = (double)(var4.nextFloat() * 2.0F * (float)var20);
+         for(int i = 0; i < particleCount; ++i) {
+            double x = (double)pos.getX() + random.nextDouble();
+            double y = (double)pos.getY() + random.nextDouble();
+            double z = (double)pos.getZ() + random.nextDouble();
+            double xa = (random.nextDouble() - 0.5) * 0.5;
+            double ya = (random.nextDouble() - 0.5) * 0.5;
+            double za = (random.nextDouble() - 0.5) * 0.5;
+            int flip = random.nextInt(2) * 2 - 1;
+            if (random.nextBoolean()) {
+               z = (double)pos.getZ() + 0.5 + 0.25 * (double)flip;
+               za = (double)(random.nextFloat() * 2.0F * (float)flip);
             } else {
-               var8 = (double)var3.getX() + 0.5 + 0.25 * (double)var20;
-               var14 = (double)(var4.nextFloat() * 2.0F * (float)var20);
+               x = (double)pos.getX() + 0.5 + 0.25 * (double)flip;
+               xa = (double)(random.nextFloat() * 2.0F * (float)flip);
             }
 
-            var2.addParticle(ParticleTypes.PORTAL, var8, var10, var12, var14, var16, var18);
+            level.addParticle(ParticleTypes.PORTAL, x, y, z, xa, ya, za);
          }
 
       }
    }
 
-   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
+   protected ItemStack getCloneItemStack(final LevelReader level, final BlockPos pos, final BlockState state, final boolean includeData) {
       return ItemStack.EMPTY;
    }
 
-   protected boolean canBeReplaced(BlockState var1, Fluid var2) {
+   protected boolean canBeReplaced(final BlockState state, final Fluid fluid) {
       return false;
    }
 
-   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4, InsideBlockEffectApplier var5, boolean var6) {
-      if (var4.canUsePortal(false)) {
-         BlockEntity var7 = var2.getBlockEntity(var3);
-         if (!var2.isClientSide() && var7 instanceof TheEndGatewayBlockEntity) {
-            TheEndGatewayBlockEntity var8 = (TheEndGatewayBlockEntity)var7;
-            if (!var8.isCoolingDown()) {
-               var4.setAsInsidePortal(this, var3);
-               TheEndGatewayBlockEntity.triggerCooldown(var2, var3, var1, var8);
+   protected void entityInside(final BlockState state, final Level level, final BlockPos pos, final Entity entity, final InsideBlockEffectApplier effectApplier, final boolean isPrecise) {
+      if (entity.canUsePortal(false)) {
+         BlockEntity blockEntity = level.getBlockEntity(pos);
+         if (!level.isClientSide() && blockEntity instanceof TheEndGatewayBlockEntity) {
+            TheEndGatewayBlockEntity endGatewayBlockEntity = (TheEndGatewayBlockEntity)blockEntity;
+            if (!endGatewayBlockEntity.isCoolingDown()) {
+               entity.setAsInsidePortal(this, pos);
+               TheEndGatewayBlockEntity.triggerCooldown(level, pos, state, endGatewayBlockEntity);
             }
          }
       }
 
    }
 
-   public @Nullable TeleportTransition getPortalDestination(ServerLevel var1, Entity var2, BlockPos var3) {
-      BlockEntity var4 = var1.getBlockEntity(var3);
-      if (var4 instanceof TheEndGatewayBlockEntity var5) {
-         Vec3 var6 = var5.getPortalPosition(var1, var3);
-         if (var6 == null) {
+   public @Nullable TeleportTransition getPortalDestination(final ServerLevel currentLevel, final Entity entity, final BlockPos portalEntryPos) {
+      BlockEntity blockEntity = currentLevel.getBlockEntity(portalEntryPos);
+      if (blockEntity instanceof TheEndGatewayBlockEntity endGatewayBlockEntity) {
+         Vec3 teleportPosition = endGatewayBlockEntity.getPortalPosition(currentLevel, portalEntryPos);
+         if (teleportPosition == null) {
             return null;
          } else {
-            return var2 instanceof ThrownEnderpearl ? new TeleportTransition(var1, var6, Vec3.ZERO, 0.0F, 0.0F, Set.of(), TeleportTransition.PLACE_PORTAL_TICKET) : new TeleportTransition(var1, var6, Vec3.ZERO, 0.0F, 0.0F, Relative.union(Relative.DELTA, Relative.ROTATION), TeleportTransition.PLACE_PORTAL_TICKET);
+            return entity instanceof ThrownEnderpearl ? new TeleportTransition(currentLevel, teleportPosition, Vec3.ZERO, 0.0F, 0.0F, Set.of(), TeleportTransition.PLACE_PORTAL_TICKET) : new TeleportTransition(currentLevel, teleportPosition, Vec3.ZERO, 0.0F, 0.0F, Relative.union(Relative.DELTA, Relative.ROTATION), TeleportTransition.PLACE_PORTAL_TICKET);
          }
       } else {
          return null;
       }
    }
 
-   protected RenderShape getRenderShape(BlockState var1) {
+   protected RenderShape getRenderShape(final BlockState state) {
       return RenderShape.INVISIBLE;
    }
 }

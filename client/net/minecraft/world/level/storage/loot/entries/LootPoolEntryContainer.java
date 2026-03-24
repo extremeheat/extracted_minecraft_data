@@ -2,42 +2,40 @@ package net.minecraft.world.level.storage.loot.entries;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.Products;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.function.Predicate;
-import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.Util;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.Validatable;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.predicates.ConditionUserBuilder;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
-public abstract class LootPoolEntryContainer implements ComposableEntryContainer {
+public abstract class LootPoolEntryContainer implements ComposableEntryContainer, Validatable {
    protected final List<LootItemCondition> conditions;
    private final Predicate<LootContext> compositeCondition;
 
-   protected LootPoolEntryContainer(List<LootItemCondition> var1) {
+   protected LootPoolEntryContainer(final List<LootItemCondition> conditions) {
       super();
-      this.conditions = var1;
-      this.compositeCondition = Util.allOf(var1);
+      this.conditions = conditions;
+      this.compositeCondition = Util.allOf(conditions);
    }
 
-   protected static <T extends LootPoolEntryContainer> Products.P1<RecordCodecBuilder.Mu<T>, List<LootItemCondition>> commonFields(RecordCodecBuilder.Instance<T> var0) {
-      return var0.group(LootItemCondition.DIRECT_CODEC.listOf().optionalFieldOf("conditions", List.of()).forGetter((var0x) -> var0x.conditions));
+   protected static <T extends LootPoolEntryContainer> Products.P1<RecordCodecBuilder.Mu<T>, List<LootItemCondition>> commonFields(final RecordCodecBuilder.Instance<T> i) {
+      return i.group(LootItemCondition.DIRECT_CODEC.listOf().optionalFieldOf("conditions", List.of()).forGetter((e) -> e.conditions));
    }
 
-   public void validate(ValidationContext var1) {
-      for(int var2 = 0; var2 < this.conditions.size(); ++var2) {
-         ((LootItemCondition)this.conditions.get(var2)).validate(var1.forChild(new ProblemReporter.IndexedFieldPathElement("conditions", var2)));
-      }
-
+   public void validate(final ValidationContext output) {
+      Validatable.validate(output, "conditions", this.conditions);
    }
 
-   protected final boolean canRun(LootContext var1) {
-      return this.compositeCondition.test(var1);
+   protected final boolean canRun(final LootContext context) {
+      return this.compositeCondition.test(context);
    }
 
-   public abstract LootPoolEntryType getType();
+   public abstract MapCodec<? extends LootPoolEntryContainer> codec();
 
    public abstract static class Builder<T extends Builder<T>> implements ConditionUserBuilder<T> {
       private final ImmutableList.Builder<LootItemCondition> conditions = ImmutableList.builder();
@@ -48,8 +46,8 @@ public abstract class LootPoolEntryContainer implements ComposableEntryContainer
 
       protected abstract T getThis();
 
-      public T when(LootItemCondition.Builder var1) {
-         this.conditions.add(var1.build());
+      public T when(final LootItemCondition.Builder condition) {
+         this.conditions.add(condition.build());
          return (T)this.getThis();
       }
 
@@ -61,28 +59,18 @@ public abstract class LootPoolEntryContainer implements ComposableEntryContainer
          return this.conditions.build();
       }
 
-      public AlternativesEntry.Builder otherwise(Builder<?> var1) {
-         return new AlternativesEntry.Builder(new Builder[]{this, var1});
+      public AlternativesEntry.Builder otherwise(final Builder<?> other) {
+         return new AlternativesEntry.Builder(new Builder[]{this, other});
       }
 
-      public EntryGroup.Builder append(Builder<?> var1) {
-         return new EntryGroup.Builder(new Builder[]{this, var1});
+      public EntryGroup.Builder append(final Builder<?> other) {
+         return new EntryGroup.Builder(new Builder[]{this, other});
       }
 
-      public SequentialEntry.Builder then(Builder<?> var1) {
-         return new SequentialEntry.Builder(new Builder[]{this, var1});
+      public SequentialEntry.Builder then(final Builder<?> other) {
+         return new SequentialEntry.Builder(new Builder[]{this, other});
       }
 
       public abstract LootPoolEntryContainer build();
-
-      // $FF: synthetic method
-      public ConditionUserBuilder unwrap() {
-         return this.unwrap();
-      }
-
-      // $FF: synthetic method
-      public ConditionUserBuilder when(final LootItemCondition.Builder var1) {
-         return this.when(var1);
-      }
    }
 }

@@ -8,15 +8,14 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 
 public abstract class EyesLayer<S extends EntityRenderState, M extends EntityModel<S>> extends RenderLayer<S, M> {
-   public EyesLayer(RenderLayerParent<S, M> var1) {
-      super(var1);
+   public EyesLayer(final RenderLayerParent<S, M> renderer) {
+      super(renderer);
    }
 
-   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, S var4, float var5, float var6) {
-      var2.order(1).submitModel(this.getParentModel(), var4, var1, this.renderType(), var3, OverlayTexture.NO_OVERLAY, -1, (TextureAtlasSprite)null, var4.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+   public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final S state, final float yRot, final float xRot) {
+      submitNodeCollector.order(1).submitModel(this.getParentModel(), state, poseStack, (RenderType)this.renderType(), lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
    }
 
    public abstract RenderType renderType();

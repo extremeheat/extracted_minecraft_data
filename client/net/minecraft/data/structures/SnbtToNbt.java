@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
@@ -29,97 +28,102 @@ public class SnbtToNbt implements DataProvider {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final PackOutput output;
    private final Iterable<Path> inputFolders;
-   private final List<Filter> filters = Lists.newArrayList();
+   private final List<Filter> filters;
 
-   public SnbtToNbt(PackOutput var1, Iterable<Path> var2) {
-      super();
-      this.output = var1;
-      this.inputFolders = var2;
+   public SnbtToNbt(final PackOutput output, final Path inputFolder) {
+      this(output, (Iterable)List.of(inputFolder));
    }
 
-   public SnbtToNbt addFilter(Filter var1) {
-      this.filters.add(var1);
+   public SnbtToNbt(final PackOutput output, final Iterable<Path> inputFolders) {
+      super();
+      this.filters = Lists.newArrayList();
+      this.output = output;
+      this.inputFolders = inputFolders;
+   }
+
+   public SnbtToNbt addFilter(final Filter filter) {
+      this.filters.add(filter);
       return this;
    }
 
-   private CompoundTag applyFilters(String var1, CompoundTag var2) {
-      CompoundTag var3 = var2;
+   private CompoundTag applyFilters(final String name, final CompoundTag input) {
+      CompoundTag result = input;
 
-      for(Filter var5 : this.filters) {
-         var3 = var5.apply(var1, var3);
+      for(Filter filter : this.filters) {
+         result = filter.apply(name, result);
       }
 
-      return var3;
+      return result;
    }
 
-   public CompletableFuture<?> run(CachedOutput var1) {
-      Path var2 = this.output.getOutputFolder();
-      ArrayList var3 = Lists.newArrayList();
+   public CompletableFuture<?> run(final CachedOutput cache) {
+      Path output = this.output.getOutputFolder();
+      List<CompletableFuture<?>> tasks = Lists.newArrayList();
 
-      for(Path var5 : this.inputFolders) {
-         var3.add(CompletableFuture.supplyAsync(() -> {
+      for(Path input : this.inputFolders) {
+         tasks.add(CompletableFuture.supplyAsync(() -> {
             try {
-               Stream var4 = Files.walk(var5);
+               Stream<Path> files = Files.walk(input);
 
-               CompletableFuture var5x;
+               CompletableFuture var5;
                try {
-                  var5x = CompletableFuture.allOf((CompletableFuture[])var4.filter((var0) -> var0.toString().endsWith(".snbt")).map((var4x) -> CompletableFuture.runAsync(() -> {
-                        TaskResult var5x = this.readStructure(var4x, this.getName(var5, var4x));
-                        this.storeStructureIfChanged(var1, var5x, var2);
-                     }, Util.backgroundExecutor().forName("SnbtToNbt"))).toArray((var0) -> new CompletableFuture[var0]));
+                  var5 = CompletableFuture.allOf((CompletableFuture[])files.filter((path) -> path.toString().endsWith(".snbt")).map((path) -> CompletableFuture.runAsync(() -> {
+                        TaskResult structure = this.readStructure(path, this.getName(input, path));
+                        this.storeStructureIfChanged(cache, structure, output);
+                     }, Util.backgroundExecutor().forName("SnbtToNbt"))).toArray((x$0) -> new CompletableFuture[x$0]));
                } catch (Throwable var8) {
-                  if (var4 != null) {
+                  if (files != null) {
                      try {
-                        var4.close();
-                     } catch (Throwable var7) {
-                        var8.addSuppressed(var7);
+                        files.close();
+                     } catch (Throwable x2) {
+                        var8.addSuppressed(x2);
                      }
                   }
 
                   throw var8;
                }
 
-               if (var4 != null) {
-                  var4.close();
+               if (files != null) {
+                  files.close();
                }
 
-               return var5x;
-            } catch (Exception var9) {
-               throw new RuntimeException("Failed to read structure input directory, aborting", var9);
+               return var5;
+            } catch (Exception e) {
+               throw new RuntimeException("Failed to read structure input directory, aborting", e);
             }
-         }, Util.backgroundExecutor().forName("SnbtToNbt")).thenCompose((var0) -> var0));
+         }, Util.backgroundExecutor().forName("SnbtToNbt")).thenCompose((v) -> v));
       }
 
-      return Util.sequenceFailFast(var3);
+      return Util.sequenceFailFast(tasks);
    }
 
    public final String getName() {
       return "SNBT -> NBT";
    }
 
-   private String getName(Path var1, Path var2) {
-      String var3 = var1.relativize(var2).toString().replaceAll("\\\\", "/");
-      return var3.substring(0, var3.length() - ".snbt".length());
+   private String getName(final Path root, final Path path) {
+      String name = root.relativize(path).toString().replaceAll("\\\\", "/");
+      return name.substring(0, name.length() - ".snbt".length());
    }
 
-   private TaskResult readStructure(Path var1, String var2) {
+   private TaskResult readStructure(final Path path, final String name) {
       try {
-         BufferedReader var3 = Files.newBufferedReader(var1);
+         BufferedReader reader = Files.newBufferedReader(path);
 
          TaskResult var10;
          try {
-            String var4 = IOUtils.toString(var3);
-            CompoundTag var5 = this.applyFilters(var2, NbtUtils.snbtToStructure(var4));
-            ByteArrayOutputStream var6 = new ByteArrayOutputStream();
-            HashingOutputStream var7 = new HashingOutputStream(Hashing.sha1(), var6);
-            NbtIo.writeCompressed(var5, (OutputStream)var7);
-            byte[] var8 = var6.toByteArray();
-            HashCode var9 = var7.hash();
-            var10 = new TaskResult(var2, var8, var9);
+            String input = IOUtils.toString(reader);
+            CompoundTag updated = this.applyFilters(name, NbtUtils.snbtToStructure(input));
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            HashingOutputStream hos = new HashingOutputStream(Hashing.sha1(), bos);
+            NbtIo.writeCompressed(updated, (OutputStream)hos);
+            byte[] bytes = bos.toByteArray();
+            HashCode hash = hos.hash();
+            var10 = new TaskResult(name, bytes, hash);
          } catch (Throwable var12) {
-            if (var3 != null) {
+            if (reader != null) {
                try {
-                  var3.close();
+                  reader.close();
                } catch (Throwable var11) {
                   var12.addSuppressed(var11);
                }
@@ -128,48 +132,41 @@ public class SnbtToNbt implements DataProvider {
             throw var12;
          }
 
-         if (var3 != null) {
-            var3.close();
+         if (reader != null) {
+            reader.close();
          }
 
          return var10;
-      } catch (Throwable var13) {
-         throw new StructureConversionException(var1, var13);
+      } catch (Throwable t) {
+         throw new StructureConversionException(path, t);
       }
    }
 
-   private void storeStructureIfChanged(CachedOutput var1, TaskResult var2, Path var3) {
-      Path var4 = var3.resolve(var2.name + ".nbt");
+   private void storeStructureIfChanged(final CachedOutput cache, final TaskResult task, final Path output) {
+      Path destination = output.resolve(task.name + ".nbt");
 
       try {
-         var1.writeIfNeeded(var4, var2.payload, var2.hash);
-      } catch (IOException var6) {
-         LOGGER.error("Couldn't write structure {} at {}", new Object[]{var2.name, var4, var6});
+         cache.writeIfNeeded(destination, task.payload, task.hash);
+      } catch (IOException e) {
+         LOGGER.error("Couldn't write structure {} at {}", new Object[]{task.name, destination, e});
       }
 
    }
 
-   static record TaskResult(String name, byte[] payload, HashCode hash) {
-      final String name;
-      final byte[] payload;
-      final HashCode hash;
-
-      TaskResult(String var1, byte[] var2, HashCode var3) {
+   private static record TaskResult(String name, byte[] payload, HashCode hash) {
+      private TaskResult {
          super();
-         this.name = var1;
-         this.payload = var2;
-         this.hash = var3;
       }
    }
 
-   static class StructureConversionException extends RuntimeException {
-      public StructureConversionException(Path var1, Throwable var2) {
-         super(var1.toAbsolutePath().toString(), var2);
+   private static class StructureConversionException extends RuntimeException {
+      public StructureConversionException(final Path path, final Throwable t) {
+         super(path.toAbsolutePath().toString(), t);
       }
    }
 
    @FunctionalInterface
    public interface Filter {
-      CompoundTag apply(String var1, CompoundTag var2);
+      CompoundTag apply(final String name, final CompoundTag input);
    }
 }

@@ -4,10 +4,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.datafixers.util.Pair;
+import java.util.List;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.ai.Brain;
+import net.minecraft.world.entity.ai.ActivityData;
 import net.minecraft.world.entity.ai.behavior.AnimalPanic;
 import net.minecraft.world.entity.ai.behavior.CountDownCooldownTicks;
 import net.minecraft.world.entity.ai.behavior.FollowTemptation;
@@ -31,24 +32,19 @@ public class TadpoleAi {
       super();
    }
 
-   protected static Brain<?> makeBrain(Brain<Tadpole> var0) {
-      initCoreActivity(var0);
-      initIdleActivity(var0);
-      var0.setCoreActivities(ImmutableSet.of(Activity.CORE));
-      var0.setDefaultActivity(Activity.IDLE);
-      var0.useDefaultActivity();
-      return var0;
+   public static List<ActivityData<Tadpole>> getActivities() {
+      return List.of(initCoreActivity(), initIdleActivity());
    }
 
-   private static void initCoreActivity(Brain<Tadpole> var0) {
-      var0.addActivity(Activity.CORE, 0, ImmutableList.of(new AnimalPanic(2.0F), new LookAtTargetSink(45, 90), new MoveToTargetSink(), new CountDownCooldownTicks(MemoryModuleType.TEMPTATION_COOLDOWN_TICKS)));
+   private static ActivityData<Tadpole> initCoreActivity() {
+      return ActivityData.<Tadpole>create(Activity.CORE, 0, ImmutableList.of(new AnimalPanic(2.0F), new LookAtTargetSink(45, 90), new MoveToTargetSink(), new CountDownCooldownTicks(MemoryModuleType.TEMPTATION_COOLDOWN_TICKS)));
    }
 
-   private static void initIdleActivity(Brain<Tadpole> var0) {
-      var0.addActivity(Activity.IDLE, ImmutableList.of(Pair.of(0, SetEntityLookTargetSometimes.create(EntityType.PLAYER, 6.0F, UniformInt.of(30, 60))), Pair.of(1, new FollowTemptation((var0x) -> 1.25F)), Pair.of(2, new GateBehavior(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT), ImmutableSet.of(), GateBehavior.OrderPolicy.ORDERED, GateBehavior.RunningPolicy.TRY_ALL, ImmutableList.of(Pair.of(RandomStroll.swim(0.5F), 2), Pair.of(SetWalkTargetFromLookTarget.create(0.5F, 3), 3), Pair.of(BehaviorBuilder.triggerIf(Entity::isInWater), 5))))));
+   private static ActivityData<Tadpole> initIdleActivity() {
+      return ActivityData.<Tadpole>create(Activity.IDLE, ImmutableList.of(Pair.of(0, SetEntityLookTargetSometimes.create(EntityType.PLAYER, 6.0F, UniformInt.of(30, 60))), Pair.of(1, new FollowTemptation((s) -> 1.25F)), Pair.of(2, new GateBehavior(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT), ImmutableSet.of(), GateBehavior.OrderPolicy.ORDERED, GateBehavior.RunningPolicy.TRY_ALL, ImmutableList.of(Pair.of(RandomStroll.swim(0.5F), 2), Pair.of(SetWalkTargetFromLookTarget.create(0.5F, 3), 3), Pair.of(BehaviorBuilder.triggerIf(Entity::isInWater), 5))))));
    }
 
-   public static void updateActivity(Tadpole var0) {
-      var0.getBrain().setActiveActivityToFirstValid(ImmutableList.of(Activity.IDLE));
+   public static void updateActivity(final Tadpole body) {
+      body.getBrain().setActiveActivityToFirstValid(ImmutableList.of(Activity.IDLE));
    }
 }

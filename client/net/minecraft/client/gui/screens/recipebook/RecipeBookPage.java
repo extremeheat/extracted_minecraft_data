@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.Tooltip;
@@ -15,7 +15,6 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.ItemStack;
@@ -46,36 +45,36 @@ public class RecipeBookPage {
    private @Nullable RecipeCollection lastClickedRecipeCollection;
    private boolean isFiltering;
 
-   public RecipeBookPage(RecipeBookComponent<?> var1, SlotSelectTime var2, boolean var3) {
+   public RecipeBookPage(final RecipeBookComponent<?> parent, final SlotSelectTime slotSelectTime, final boolean isFurnaceMenu) {
       super();
-      this.parent = var1;
-      this.overlay = new OverlayRecipeComponent(var2, var3);
+      this.parent = parent;
+      this.overlay = new OverlayRecipeComponent(slotSelectTime, isFurnaceMenu);
 
-      for(int var4 = 0; var4 < 20; ++var4) {
-         this.buttons.add(new RecipeButton(var2));
+      for(int i = 0; i < 20; ++i) {
+         this.buttons.add(new RecipeButton(slotSelectTime));
       }
 
    }
 
-   public void init(Minecraft var1, int var2, int var3) {
-      this.minecraft = var1;
-      this.recipeBook = var1.player.getRecipeBook();
+   public void init(final Minecraft minecraft, final int xo, final int yo) {
+      this.minecraft = minecraft;
+      this.recipeBook = minecraft.player.getRecipeBook();
 
-      for(int var4 = 0; var4 < this.buttons.size(); ++var4) {
-         ((RecipeButton)this.buttons.get(var4)).setPosition(var2 + 11 + 25 * (var4 % 5), var3 + 31 + 25 * (var4 / 5));
+      for(int i = 0; i < this.buttons.size(); ++i) {
+         ((RecipeButton)this.buttons.get(i)).setPosition(xo + 11 + 25 * (i % 5), yo + 31 + 25 * (i / 5));
       }
 
-      this.forwardButton = new ImageButton(var2 + 93, var3 + 137, 12, 17, PAGE_FORWARD_SPRITES, (var1x) -> this.updateArrowButtons(), NEXT_PAGE_TEXT);
+      this.forwardButton = new ImageButton(xo + 93, yo + 137, 12, 17, PAGE_FORWARD_SPRITES, (button) -> this.updateArrowButtons(), NEXT_PAGE_TEXT);
       this.forwardButton.setTooltip(Tooltip.create(NEXT_PAGE_TEXT));
-      this.backButton = new ImageButton(var2 + 38, var3 + 137, 12, 17, PAGE_BACKWARD_SPRITES, (var1x) -> this.updateArrowButtons(), PREVIOUS_PAGE_TEXT);
+      this.backButton = new ImageButton(xo + 38, yo + 137, 12, 17, PAGE_BACKWARD_SPRITES, (button) -> this.updateArrowButtons(), PREVIOUS_PAGE_TEXT);
       this.backButton.setTooltip(Tooltip.create(PREVIOUS_PAGE_TEXT));
    }
 
-   public void updateCollections(List<RecipeCollection> var1, boolean var2, boolean var3) {
-      this.recipeCollections = var1;
-      this.isFiltering = var3;
-      this.totalPages = (int)Math.ceil((double)var1.size() / 20.0);
-      if (this.totalPages <= this.currentPage || var2) {
+   public void updateCollections(final List<RecipeCollection> recipeCollections, final boolean resetPage, final boolean isFiltering) {
+      this.recipeCollections = recipeCollections;
+      this.isFiltering = isFiltering;
+      this.totalPages = (int)Math.ceil((double)recipeCollections.size() / 20.0);
+      if (this.totalPages <= this.currentPage || resetPage) {
          this.currentPage = 0;
       }
 
@@ -83,17 +82,17 @@ public class RecipeBookPage {
    }
 
    private void updateButtonsForPage() {
-      int var1 = 20 * this.currentPage;
-      ContextMap var2 = SlotDisplayContext.fromLevel(this.minecraft.level);
+      int startOffset = 20 * this.currentPage;
+      ContextMap context = SlotDisplayContext.fromLevel(this.minecraft.level);
 
-      for(int var3 = 0; var3 < this.buttons.size(); ++var3) {
-         RecipeButton var4 = (RecipeButton)this.buttons.get(var3);
-         if (var1 + var3 < this.recipeCollections.size()) {
-            RecipeCollection var5 = (RecipeCollection)this.recipeCollections.get(var1 + var3);
-            var4.init(var5, this.isFiltering, this, var2);
-            var4.visible = true;
+      for(int i = 0; i < this.buttons.size(); ++i) {
+         RecipeButton button = (RecipeButton)this.buttons.get(i);
+         if (startOffset + i < this.recipeCollections.size()) {
+            RecipeCollection recipeCollection = (RecipeCollection)this.recipeCollections.get(startOffset + i);
+            button.init(recipeCollection, this.isFiltering, this, context);
+            button.visible = true;
          } else {
-            var4.visible = false;
+            button.visible = false;
          }
       }
 
@@ -111,39 +110,39 @@ public class RecipeBookPage {
 
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, float var6) {
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int xo, final int yo, final int mouseX, final int mouseY, final float a) {
       if (this.totalPages > 1) {
-         MutableComponent var7 = Component.translatable("gui.recipebook.page", this.currentPage + 1, this.totalPages);
-         int var8 = this.minecraft.font.width((FormattedText)var7);
-         var1.drawString(this.minecraft.font, (Component)var7, var2 - var8 / 2 + 73, var3 + 141, -1);
+         Component pageNumbers = Component.translatable("gui.recipebook.page", this.currentPage + 1, this.totalPages);
+         int pWidth = this.minecraft.font.width((FormattedText)pageNumbers);
+         graphics.text(this.minecraft.font, (Component)pageNumbers, xo - pWidth / 2 + 73, yo + 141, -1);
       }
 
       this.hoveredButton = null;
 
-      for(RecipeButton var10 : this.buttons) {
-         var10.render(var1, var4, var5, var6);
-         if (var10.visible && var10.isHoveredOrFocused()) {
-            this.hoveredButton = var10;
+      for(RecipeButton recipeBookButton : this.buttons) {
+         recipeBookButton.extractRenderState(graphics, mouseX, mouseY, a);
+         if (recipeBookButton.visible && recipeBookButton.isHoveredOrFocused()) {
+            this.hoveredButton = recipeBookButton;
          }
       }
 
       if (this.forwardButton != null) {
-         this.forwardButton.render(var1, var4, var5, var6);
+         this.forwardButton.extractRenderState(graphics, mouseX, mouseY, a);
       }
 
       if (this.backButton != null) {
-         this.backButton.render(var1, var4, var5, var6);
+         this.backButton.extractRenderState(graphics, mouseX, mouseY, a);
       }
 
-      var1.nextStratum();
-      this.overlay.render(var1, var4, var5, var6);
+      graphics.nextStratum();
+      this.overlay.extractRenderState(graphics, mouseX, mouseY, a);
    }
 
-   public void renderTooltip(GuiGraphics var1, int var2, int var3) {
+   public void extractTooltip(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY) {
       if (this.minecraft.screen != null && this.hoveredButton != null && !this.overlay.isVisible()) {
-         ItemStack var4 = this.hoveredButton.getDisplayStack();
-         Identifier var5 = (Identifier)var4.get(DataComponents.TOOLTIP_STYLE);
-         var1.setComponentTooltipForNextFrame(this.minecraft.font, this.hoveredButton.getTooltipText(var4), var2, var3, var5);
+         ItemStack displayStack = this.hoveredButton.getDisplayStack();
+         Identifier tooltipStyle = (Identifier)displayStack.get(DataComponents.TOOLTIP_STYLE);
+         graphics.setComponentTooltipForNextFrame(this.minecraft.font, this.hoveredButton.getTooltipText(displayStack), mouseX, mouseY, tooltipStyle);
       }
 
    }
@@ -160,11 +159,11 @@ public class RecipeBookPage {
       this.overlay.setVisible(false);
    }
 
-   public boolean mouseClicked(MouseButtonEvent var1, int var2, int var3, int var4, int var5, boolean var6) {
+   public boolean mouseClicked(final MouseButtonEvent event, final int xo, final int yo, final int imageWidth, final int imageHeight, final boolean doubleClick) {
       this.lastClickedRecipe = null;
       this.lastClickedRecipeCollection = null;
       if (this.overlay.isVisible()) {
-         if (this.overlay.mouseClicked(var1, var6)) {
+         if (this.overlay.mouseClicked(event, doubleClick)) {
             this.lastClickedRecipe = this.overlay.getLastRecipeClicked();
             this.lastClickedRecipeCollection = this.overlay.getRecipeCollection();
          } else {
@@ -172,24 +171,24 @@ public class RecipeBookPage {
          }
 
          return true;
-      } else if (this.forwardButton.mouseClicked(var1, var6)) {
+      } else if (this.forwardButton.mouseClicked(event, doubleClick)) {
          ++this.currentPage;
          this.updateButtonsForPage();
          return true;
-      } else if (this.backButton.mouseClicked(var1, var6)) {
+      } else if (this.backButton.mouseClicked(event, doubleClick)) {
          --this.currentPage;
          this.updateButtonsForPage();
          return true;
       } else {
-         ContextMap var7 = SlotDisplayContext.fromLevel(this.minecraft.level);
+         ContextMap context = SlotDisplayContext.fromLevel(this.minecraft.level);
 
-         for(RecipeButton var9 : this.buttons) {
-            if (var9.mouseClicked(var1, var6)) {
-               if (var1.button() == 0) {
-                  this.lastClickedRecipe = var9.getCurrentRecipe();
-                  this.lastClickedRecipeCollection = var9.getCollection();
-               } else if (var1.button() == 1 && !this.overlay.isVisible() && !var9.isOnlyOption()) {
-                  this.overlay.init(var9.getCollection(), var7, this.isFiltering, var9.getX(), var9.getY(), var2 + var4 / 2, var3 + 13 + var5 / 2, (float)var9.getWidth());
+         for(RecipeButton button : this.buttons) {
+            if (button.mouseClicked(event, doubleClick)) {
+               if (event.button() == 0) {
+                  this.lastClickedRecipe = button.getCurrentRecipe();
+                  this.lastClickedRecipeCollection = button.getCollection();
+               } else if (event.button() == 1 && !this.overlay.isVisible() && !button.isOnlyOption()) {
+                  this.overlay.init(button.getCollection(), context, this.isFiltering, button.getX(), button.getY(), xo + imageWidth / 2, yo + 13 + imageHeight / 2, (float)button.getWidth());
                }
 
                return true;
@@ -200,15 +199,15 @@ public class RecipeBookPage {
       }
    }
 
-   public void recipeShown(RecipeDisplayId var1) {
-      this.parent.recipeShown(var1);
+   public void recipeShown(final RecipeDisplayId recipe) {
+      this.parent.recipeShown(recipe);
    }
 
    public ClientRecipeBook getRecipeBook() {
       return this.recipeBook;
    }
 
-   protected void listButtons(Consumer<AbstractWidget> var1) {
-      this.buttons.forEach(var1);
+   protected void listButtons(final Consumer<AbstractWidget> buttonConsumer) {
+      this.buttons.forEach(buttonConsumer);
    }
 }

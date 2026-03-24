@@ -37,82 +37,82 @@ public class RealmsWorldOptions extends ValueObject implements ReflectionBasedSe
       this.templateImage = null;
    }
 
-   public RealmsWorldOptions(int var1, int var2, int var3, boolean var4, String var5, String var6, RealmsServer.Compatibility var7) {
+   public RealmsWorldOptions(final int spawnProtection, final int difficulty, final int gameMode, final boolean forceGameMode, final String slotName, final String version, final RealmsServer.Compatibility compatibility) {
       super();
       this.compatibility = RealmsServer.Compatibility.UNVERIFIABLE;
       this.templateId = -1L;
       this.templateImage = null;
-      this.spawnProtection = var1;
-      this.difficulty = var2;
-      this.gameMode = var3;
-      this.forceGameMode = var4;
-      this.slotName = var5;
-      this.version = var6;
-      this.compatibility = var7;
+      this.spawnProtection = spawnProtection;
+      this.difficulty = difficulty;
+      this.gameMode = gameMode;
+      this.forceGameMode = forceGameMode;
+      this.slotName = slotName;
+      this.version = version;
+      this.compatibility = compatibility;
    }
 
    public static RealmsWorldOptions createDefaults() {
       return new RealmsWorldOptions();
    }
 
-   public static RealmsWorldOptions createDefaultsWith(GameType var0, Difficulty var1, boolean var2, String var3, String var4) {
-      RealmsWorldOptions var5 = createDefaults();
-      var5.difficulty = var1.getId();
-      var5.gameMode = var0.getId();
-      var5.slotName = var4;
-      var5.version = var3;
-      return var5;
+   public static RealmsWorldOptions createDefaultsWith(final GameType gameMode, final Difficulty difficulty, final boolean hardcore, final String version, final String worldName) {
+      RealmsWorldOptions options = createDefaults();
+      options.difficulty = difficulty.getId();
+      options.gameMode = gameMode.getId();
+      options.slotName = worldName;
+      options.version = version;
+      return options;
    }
 
-   public static RealmsWorldOptions createFromSettings(LevelSettings var0, String var1) {
-      return createDefaultsWith(var0.gameType(), var0.difficulty(), var0.hardcore(), var1, var0.levelName());
+   public static RealmsWorldOptions createFromSettings(final LevelSettings settings, final String worldVersion) {
+      return createDefaultsWith(settings.gameType(), settings.difficultySettings().difficulty(), settings.difficultySettings().hardcore(), worldVersion, settings.levelName());
    }
 
    public static RealmsWorldOptions createEmptyDefaults() {
-      RealmsWorldOptions var0 = createDefaults();
-      var0.setEmpty(true);
-      return var0;
+      RealmsWorldOptions options = createDefaults();
+      options.setEmpty(true);
+      return options;
    }
 
-   public void setEmpty(boolean var1) {
-      this.empty = var1;
+   public void setEmpty(final boolean empty) {
+      this.empty = empty;
    }
 
-   public static RealmsWorldOptions parse(GuardedSerializer var0, String var1) {
-      RealmsWorldOptions var2 = (RealmsWorldOptions)var0.fromJson(var1, RealmsWorldOptions.class);
-      if (var2 == null) {
+   public static RealmsWorldOptions parse(final GuardedSerializer gson, final String json) {
+      RealmsWorldOptions options = (RealmsWorldOptions)gson.fromJson(json, RealmsWorldOptions.class);
+      if (options == null) {
          return createDefaults();
       } else {
-         finalize(var2);
-         return var2;
+         finalize(options);
+         return options;
       }
    }
 
-   private static void finalize(RealmsWorldOptions var0) {
-      if (var0.slotName == null) {
-         var0.slotName = "";
+   private static void finalize(final RealmsWorldOptions options) {
+      if (options.slotName == null) {
+         options.slotName = "";
       }
 
-      if (var0.version == null) {
-         var0.version = "";
+      if (options.version == null) {
+         options.version = "";
       }
 
-      if (var0.compatibility == null) {
-         var0.compatibility = RealmsServer.Compatibility.UNVERIFIABLE;
+      if (options.compatibility == null) {
+         options.compatibility = RealmsServer.Compatibility.UNVERIFIABLE;
       }
 
    }
 
-   public String getSlotName(int var1) {
+   public String getSlotName(final int i) {
       if (StringUtil.isBlank(this.slotName)) {
-         return this.empty ? I18n.get("mco.configure.world.slot.empty") : this.getDefaultSlotName(var1);
+         return this.empty ? I18n.get("mco.configure.world.slot.empty") : this.getDefaultSlotName(i);
       } else {
          return this.slotName;
       }
    }
 
-   public String getDefaultSlotName(int var1) {
-      return I18n.get("mco.configure.world.slot", var1);
+   public String getDefaultSlotName(final int i) {
+      return I18n.get("mco.configure.world.slot", i);
    }
 
    public RealmsWorldOptions copy() {

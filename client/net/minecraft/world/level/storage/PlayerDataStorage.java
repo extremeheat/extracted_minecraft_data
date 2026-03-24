@@ -25,70 +25,70 @@ public class PlayerDataStorage {
    private final File playerDir;
    protected final DataFixer fixerUpper;
 
-   public PlayerDataStorage(LevelStorageSource.LevelStorageAccess var1, DataFixer var2) {
+   public PlayerDataStorage(final LevelStorageSource.LevelStorageAccess levelAccess, final DataFixer fixerUpper) {
       super();
-      this.fixerUpper = var2;
-      this.playerDir = var1.getLevelPath(LevelResource.PLAYER_DATA_DIR).toFile();
+      this.fixerUpper = fixerUpper;
+      this.playerDir = levelAccess.getLevelPath(LevelResource.PLAYER_DATA_DIR).toFile();
       this.playerDir.mkdirs();
    }
 
-   public void save(Player var1) {
-      try (ProblemReporter.ScopedCollector var2 = new ProblemReporter.ScopedCollector(var1.problemPath(), LOGGER)) {
-         TagValueOutput var3 = TagValueOutput.createWithContext(var2, var1.registryAccess());
-         var1.saveWithoutId(var3);
-         Path var4 = this.playerDir.toPath();
-         Path var5 = Files.createTempFile(var4, var1.getStringUUID() + "-", ".dat");
-         CompoundTag var6 = var3.buildResult();
-         NbtIo.writeCompressed(var6, var5);
-         Path var7 = var4.resolve(var1.getStringUUID() + ".dat");
-         Path var8 = var4.resolve(var1.getStringUUID() + ".dat_old");
-         Util.safeReplaceFile(var7, var5, var8);
+   public void save(final Player player) {
+      try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(player.problemPath(), LOGGER)) {
+         TagValueOutput output = TagValueOutput.createWithContext(reporter, player.registryAccess());
+         player.saveWithoutId(output);
+         Path playerDirPath = this.playerDir.toPath();
+         Path tmpFile = Files.createTempFile(playerDirPath, player.getStringUUID() + "-", ".dat");
+         CompoundTag dataToStore = output.buildResult();
+         NbtIo.writeCompressed(dataToStore, tmpFile);
+         Path realFile = playerDirPath.resolve(player.getStringUUID() + ".dat");
+         Path oldFile = playerDirPath.resolve(player.getStringUUID() + ".dat_old");
+         Util.safeReplaceFile(realFile, tmpFile, oldFile);
       } catch (Exception var11) {
-         LOGGER.warn("Failed to save player data for {}", var1.getPlainTextName());
+         LOGGER.warn("Failed to save player data for {}", player.getPlainTextName());
       }
 
    }
 
-   private void backup(NameAndId var1, String var2) {
-      Path var3 = this.playerDir.toPath();
-      String var4 = var1.id().toString();
-      Path var5 = var3.resolve(var4 + var2);
-      Path var6 = var3.resolve(var4 + "_corrupted_" + ZonedDateTime.now().format(FileNameDateFormatter.FORMATTER) + var2);
-      if (Files.isRegularFile(var5, new LinkOption[0])) {
+   private void backup(final NameAndId nameAndId, final String suffix) {
+      Path playerDirPath = this.playerDir.toPath();
+      String idString = nameAndId.id().toString();
+      Path realPath = playerDirPath.resolve(idString + suffix);
+      Path backupPath = playerDirPath.resolve(idString + "_corrupted_" + ZonedDateTime.now().format(FileNameDateFormatter.FORMATTER) + suffix);
+      if (Files.isRegularFile(realPath, new LinkOption[0])) {
          try {
-            Files.copy(var5, var6, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
-         } catch (Exception var8) {
-            LOGGER.warn("Failed to copy the player.dat file for {}", var1.name(), var8);
+            Files.copy(realPath, backupPath, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+         } catch (Exception e) {
+            LOGGER.warn("Failed to copy the player.dat file for {}", nameAndId.name(), e);
          }
 
       }
    }
 
-   private Optional<CompoundTag> load(NameAndId var1, String var2) {
+   private Optional<CompoundTag> load(final NameAndId nameAndId, final String suffix) {
       File var10002 = this.playerDir;
-      String var10003 = String.valueOf(var1.id());
-      File var3 = new File(var10002, var10003 + var2);
-      if (var3.exists() && var3.isFile()) {
+      String var10003 = String.valueOf(nameAndId.id());
+      File realFile = new File(var10002, var10003 + suffix);
+      if (realFile.exists() && realFile.isFile()) {
          try {
-            return Optional.of(NbtIo.readCompressed(var3.toPath(), NbtAccounter.unlimitedHeap()));
+            return Optional.of(NbtIo.readCompressed(realFile.toPath(), NbtAccounter.unlimitedHeap()));
          } catch (Exception var5) {
-            LOGGER.warn("Failed to load player data for {}", var1.name());
+            LOGGER.warn("Failed to load player data for {}", nameAndId.name());
          }
       }
 
       return Optional.empty();
    }
 
-   public Optional<CompoundTag> load(NameAndId var1) {
-      Optional var2 = this.load(var1, ".dat");
-      if (var2.isEmpty()) {
-         this.backup(var1, ".dat");
+   public Optional<CompoundTag> load(final NameAndId nameAndId) {
+      Optional<CompoundTag> optTag = this.load(nameAndId, ".dat");
+      if (optTag.isEmpty()) {
+         this.backup(nameAndId, ".dat");
       }
 
-      return var2.or(() -> this.load(var1, ".dat_old")).map((var1x) -> {
-         int var2 = NbtUtils.getDataVersion(var1x);
-         var1x = DataFixTypes.PLAYER.updateToCurrentVersion(this.fixerUpper, var1x, var2);
-         return var1x;
+      return optTag.or(() -> this.load(nameAndId, ".dat_old")).map((tag) -> {
+         int version = NbtUtils.getDataVersion(tag);
+         tag = DataFixTypes.PLAYER.updateToCurrentVersion(this.fixerUpper, tag, version);
+         return tag;
       });
    }
 }

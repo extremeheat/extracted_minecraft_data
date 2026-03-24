@@ -15,11 +15,11 @@ import net.minecraft.network.chat.ThrowingComponent;
 import net.minecraft.util.Util;
 
 public interface AbuseReportSender {
-   static AbuseReportSender create(ReportEnvironment var0, UserApiService var1) {
-      return new Services(var0, var1);
+   static AbuseReportSender create(final ReportEnvironment environment, final UserApiService userApiService) {
+      return new Services(environment, userApiService);
    }
 
-   CompletableFuture<Unit> send(UUID var1, ReportType var2, AbuseReport var3);
+   CompletableFuture<Unit> send(UUID id, ReportType reportType, AbuseReport report);
 
    boolean isEnabled();
 
@@ -32,25 +32,23 @@ public interface AbuseReportSender {
       private static final Component HTTP_ERROR_TEXT = Component.translatable("gui.abuseReport.send.http_error");
       private static final Component JSON_ERROR_TEXT = Component.translatable("gui.abuseReport.send.json_error");
 
-      public Services(ReportEnvironment var1, UserApiService var2) {
+      public Services {
          super();
-         this.environment = var1;
-         this.userApiService = var2;
       }
 
-      public CompletableFuture<Unit> send(UUID var1, ReportType var2, AbuseReport var3) {
+      public CompletableFuture<Unit> send(final UUID id, final ReportType reportType, final AbuseReport report) {
          return CompletableFuture.supplyAsync(() -> {
-            AbuseReportRequest var4 = new AbuseReportRequest(1, var1, var3, this.environment.clientInfo(), this.environment.thirdPartyServerInfo(), this.environment.realmInfo(), var2.backendName());
+            AbuseReportRequest request = new AbuseReportRequest(1, id, report, this.environment.clientInfo(), this.environment.thirdPartyServerInfo(), this.environment.realmInfo(), reportType.backendName());
 
             try {
-               this.userApiService.reportAbuse(var4);
+               this.userApiService.reportAbuse(request);
                return Unit.INSTANCE;
-            } catch (MinecraftClientHttpException var7) {
-               Component var9 = this.getHttpErrorDescription(var7);
-               throw new CompletionException(new SendException(var9, var7));
-            } catch (MinecraftClientException var8) {
-               Component var6 = this.getErrorDescription(var8);
-               throw new CompletionException(new SendException(var6, var8));
+            } catch (MinecraftClientHttpException e) {
+               Component description = this.getHttpErrorDescription(e);
+               throw new CompletionException(new SendException(description, e));
+            } catch (MinecraftClientException e) {
+               Component description = this.getErrorDescription(e);
+               throw new CompletionException(new SendException(description, e));
             }
          }, Util.ioPool());
       }
@@ -59,13 +57,13 @@ public interface AbuseReportSender {
          return this.userApiService.canSendReports();
       }
 
-      private Component getHttpErrorDescription(MinecraftClientHttpException var1) {
-         return Component.translatable("gui.abuseReport.send.error_message", var1.getMessage());
+      private Component getHttpErrorDescription(final MinecraftClientHttpException e) {
+         return Component.translatable("gui.abuseReport.send.error_message", e.getMessage());
       }
 
-      private Component getErrorDescription(MinecraftClientException var1) {
+      private Component getErrorDescription(final MinecraftClientException e) {
          Component var10000;
-         switch (var1.getType()) {
+         switch (e.getType()) {
             case SERVICE_UNAVAILABLE -> var10000 = SERVICE_UNAVAILABLE_TEXT;
             case HTTP_ERROR -> var10000 = HTTP_ERROR_TEXT;
             case JSON_ERROR -> var10000 = JSON_ERROR_TEXT;
@@ -81,8 +79,8 @@ public interface AbuseReportSender {
    }
 
    public static class SendException extends ThrowingComponent {
-      public SendException(Component var1, Throwable var2) {
-         super(var1, var2);
+      public SendException(final Component component, final Throwable cause) {
+         super(component, cause);
       }
    }
 }

@@ -16,10 +16,10 @@ public class CommandBlockEditScreen extends AbstractCommandBlockEditScreen {
    private boolean conditional;
    private boolean autoexec;
 
-   public CommandBlockEditScreen(CommandBlockEntity var1) {
+   public CommandBlockEditScreen(final CommandBlockEntity commandBlock) {
       super();
       this.mode = CommandBlockEntity.Mode.REDSTONE;
-      this.autoCommandBlock = var1;
+      this.autoCommandBlock = commandBlock;
    }
 
    BaseCommandBlock getCommandBlock() {
@@ -36,9 +36,9 @@ public class CommandBlockEditScreen extends AbstractCommandBlockEditScreen {
    }
 
    protected void addExtraControls() {
-      this.modeButton = (CycleButton)this.addRenderableWidget(CycleButton.builder((var0) -> {
+      this.modeButton = (CycleButton)this.addRenderableWidget(CycleButton.builder((mode) -> {
          MutableComponent var10000;
-         switch (var0) {
+         switch (mode) {
             case SEQUENCE -> var10000 = Component.translatable("advMode.mode.sequence");
             case AUTO -> var10000 = Component.translatable("advMode.mode.auto");
             case REDSTONE -> var10000 = Component.translatable("advMode.mode.redstone");
@@ -46,36 +46,36 @@ public class CommandBlockEditScreen extends AbstractCommandBlockEditScreen {
          }
 
          return var10000;
-      }, this.mode).withValues(CommandBlockEntity.Mode.values()).displayOnlyValue().create(this.width / 2 - 50 - 100 - 4, 165, 100, 20, Component.translatable("advMode.mode"), (var1, var2) -> this.mode = var2));
-      this.conditionalButton = (CycleButton)this.addRenderableWidget(CycleButton.booleanBuilder(Component.translatable("advMode.mode.conditional"), Component.translatable("advMode.mode.unconditional"), this.conditional).displayOnlyValue().create(this.width / 2 - 50, 165, 100, 20, Component.translatable("advMode.type"), (var1, var2) -> this.conditional = var2));
-      this.autoexecButton = (CycleButton)this.addRenderableWidget(CycleButton.booleanBuilder(Component.translatable("advMode.mode.autoexec.bat"), Component.translatable("advMode.mode.redstoneTriggered"), this.autoexec).displayOnlyValue().create(this.width / 2 + 50 + 4, 165, 100, 20, Component.translatable("advMode.triggering"), (var1, var2) -> this.autoexec = var2));
+      }, this.mode).withValues(CommandBlockEntity.Mode.values()).displayOnlyValue().create(this.width / 2 - 50 - 100 - 4, 165, 100, 20, Component.translatable("advMode.mode"), (button, value) -> this.mode = value));
+      this.conditionalButton = (CycleButton)this.addRenderableWidget(CycleButton.booleanBuilder(Component.translatable("advMode.mode.conditional"), Component.translatable("advMode.mode.unconditional"), this.conditional).displayOnlyValue().create(this.width / 2 - 50, 165, 100, 20, Component.translatable("advMode.type"), (button, value) -> this.conditional = value));
+      this.autoexecButton = (CycleButton)this.addRenderableWidget(CycleButton.booleanBuilder(Component.translatable("advMode.mode.autoexec.bat"), Component.translatable("advMode.mode.redstoneTriggered"), this.autoexec).displayOnlyValue().create(this.width / 2 + 50 + 4, 165, 100, 20, Component.translatable("advMode.triggering"), (button, value) -> this.autoexec = value));
    }
 
-   private void enableControls(boolean var1) {
-      this.doneButton.active = var1;
-      this.outputButton.active = var1;
-      this.modeButton.active = var1;
-      this.conditionalButton.active = var1;
-      this.autoexecButton.active = var1;
+   private void enableControls(final boolean state) {
+      this.doneButton.active = state;
+      this.outputButton.active = state;
+      this.modeButton.active = state;
+      this.conditionalButton.active = state;
+      this.autoexecButton.active = state;
    }
 
    public void updateGui() {
-      BaseCommandBlock var1 = this.autoCommandBlock.getCommandBlock();
-      this.commandEdit.setValue(var1.getCommand());
-      boolean var2 = var1.isTrackOutput();
+      BaseCommandBlock commandBlock = this.autoCommandBlock.getCommandBlock();
+      this.commandEdit.setValue(commandBlock.getCommand());
+      boolean trackOutput = commandBlock.isTrackOutput();
       this.mode = this.autoCommandBlock.getMode();
       this.conditional = this.autoCommandBlock.isConditional();
       this.autoexec = this.autoCommandBlock.isAutomatic();
-      this.outputButton.setValue(var2);
+      this.outputButton.setValue(trackOutput);
       this.modeButton.setValue(this.mode);
       this.conditionalButton.setValue(this.conditional);
       this.autoexecButton.setValue(this.autoexec);
-      this.updatePreviousOutput(var2);
+      this.updatePreviousOutput(trackOutput);
       this.enableControls(true);
    }
 
-   public void resize(int var1, int var2) {
-      super.resize(var1, var2);
+   public void resize(final int width, final int height) {
+      super.resize(width, height);
       this.enableControls(true);
    }
 

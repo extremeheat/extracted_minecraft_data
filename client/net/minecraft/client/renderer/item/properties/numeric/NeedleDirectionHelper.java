@@ -10,42 +10,38 @@ import org.jspecify.annotations.Nullable;
 public abstract class NeedleDirectionHelper {
    private final boolean wobble;
 
-   protected NeedleDirectionHelper(boolean var1) {
+   protected NeedleDirectionHelper(final boolean wobble) {
       super();
-      this.wobble = var1;
+      this.wobble = wobble;
    }
 
-   public float get(ItemStack var1, @Nullable ClientLevel var2, @Nullable ItemOwner var3, int var4) {
-      if (var3 == null) {
-         var3 = var1.getEntityRepresentation();
-      }
-
-      if (var3 == null) {
+   public float get(final ItemStack itemStack, @Nullable ClientLevel clientLevel, @Nullable ItemOwner owner, final int seed) {
+      if (owner == null) {
          return 0.0F;
       } else {
-         if (var2 == null) {
-            Level var6 = ((ItemOwner)var3).level();
+         if (clientLevel == null) {
+            Level var6 = owner.level();
             if (var6 instanceof ClientLevel) {
-               ClientLevel var5 = (ClientLevel)var6;
-               var2 = var5;
+               ClientLevel level = (ClientLevel)var6;
+               clientLevel = level;
             }
          }
 
-         return var2 == null ? 0.0F : this.calculate(var1, var2, var4, (ItemOwner)var3);
+         return clientLevel == null ? 0.0F : this.calculate(itemStack, clientLevel, seed, owner);
       }
    }
 
-   protected abstract float calculate(ItemStack var1, ClientLevel var2, int var3, ItemOwner var4);
+   protected abstract float calculate(final ItemStack itemStack, final ClientLevel level, final int seed, final ItemOwner owner);
 
    protected boolean wobble() {
       return this.wobble;
    }
 
-   protected Wobbler newWobbler(float var1) {
-      return this.wobble ? standardWobbler(var1) : nonWobbler();
+   protected Wobbler newWobbler(final float factor) {
+      return this.wobble ? standardWobbler(factor) : nonWobbler();
    }
 
-   public static Wobbler standardWobbler(final float var0) {
+   public static Wobbler standardWobbler(final float factor) {
       return new Wobbler() {
          private float rotation;
          private float deltaRotation;
@@ -55,15 +51,15 @@ public abstract class NeedleDirectionHelper {
             return this.rotation;
          }
 
-         public boolean shouldUpdate(long var1) {
-            return this.lastUpdateTick != var1;
+         public boolean shouldUpdate(final long tick) {
+            return this.lastUpdateTick != tick;
          }
 
-         public void update(long var1, float var3) {
-            this.lastUpdateTick = var1;
-            float var4 = Mth.positiveModulo(var3 - this.rotation + 0.5F, 1.0F) - 0.5F;
-            this.deltaRotation += var4 * 0.1F;
-            this.deltaRotation *= var0;
+         public void update(final long tick, final float targetRotation) {
+            this.lastUpdateTick = tick;
+            float tempDeltaRotation = Mth.positiveModulo(targetRotation - this.rotation + 0.5F, 1.0F) - 0.5F;
+            this.deltaRotation += tempDeltaRotation * 0.1F;
+            this.deltaRotation *= factor;
             this.rotation = Mth.positiveModulo(this.rotation + this.deltaRotation, 1.0F);
          }
       };
@@ -77,12 +73,12 @@ public abstract class NeedleDirectionHelper {
             return this.targetValue;
          }
 
-         public boolean shouldUpdate(long var1) {
+         public boolean shouldUpdate(final long tick) {
             return true;
          }
 
-         public void update(long var1, float var3) {
-            this.targetValue = var3;
+         public void update(final long tick, final float targetRotation) {
+            this.targetValue = targetRotation;
          }
       };
    }
@@ -90,8 +86,8 @@ public abstract class NeedleDirectionHelper {
    public interface Wobbler {
       float rotation();
 
-      boolean shouldUpdate(long var1);
+      boolean shouldUpdate(long tick);
 
-      void update(long var1, float var3);
+      void update(long tick, float targetRotation);
    }
 }

@@ -6,21 +6,21 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
 
 public class CopperGolemWeatherStateFix extends NamedEntityFix {
-   public CopperGolemWeatherStateFix(Schema var1) {
-      super(var1, false, "CopperGolemWeatherStateFix", References.ENTITY, "minecraft:copper_golem");
+   public CopperGolemWeatherStateFix(final Schema outputSchema) {
+      super(outputSchema, false, "CopperGolemWeatherStateFix", References.ENTITY, "minecraft:copper_golem");
    }
 
-   protected Typed<?> fix(Typed<?> var1) {
-      return var1.update(DSL.remainderFinder(), (var0) -> var0.update("weather_state", CopperGolemWeatherStateFix::fixWeatherState));
+   protected Typed<?> fix(final Typed<?> entity) {
+      return entity.update(DSL.remainderFinder(), (tag) -> tag.update("weather_state", CopperGolemWeatherStateFix::fixWeatherState));
    }
 
-   private static Dynamic<?> fixWeatherState(Dynamic<?> var0) {
+   private static Dynamic<?> fixWeatherState(final Dynamic<?> value) {
       Dynamic var10000;
-      switch (var0.asInt(0)) {
-         case 1 -> var10000 = var0.createString("exposed");
-         case 2 -> var10000 = var0.createString("weathered");
-         case 3 -> var10000 = var0.createString("oxidized");
-         default -> var10000 = var0.createString("unaffected");
+      switch (value.asInt(0)) {
+         case 1 -> var10000 = value.createString("exposed");
+         case 2 -> var10000 = value.createString("weathered");
+         case 3 -> var10000 = value.createString("oxidized");
+         default -> var10000 = value.createString("unaffected");
       }
 
       return var10000;

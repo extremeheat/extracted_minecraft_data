@@ -8,18 +8,18 @@ import java.util.function.Supplier;
 import net.minecraft.util.datafix.fixes.References;
 
 public class V3938 extends NamespacedSchema {
-   public V3938(int var1, Schema var2) {
-      super(var1, var2);
+   public V3938(final int versionKey, final Schema parent) {
+      super(versionKey, parent);
    }
 
-   protected static TypeTemplate abstractArrow(Schema var0) {
-      return DSL.optionalFields("inBlockState", References.BLOCK_STATE.in(var0), "item", References.ITEM_STACK.in(var0), "weapon", References.ITEM_STACK.in(var0));
+   protected static TypeTemplate abstractArrow(final Schema schema) {
+      return DSL.optionalFields("inBlockState", References.BLOCK_STATE.in(schema), "item", References.ITEM_STACK.in(schema), "weapon", References.ITEM_STACK.in(schema));
    }
 
-   public Map<String, Supplier<TypeTemplate>> registerEntities(Schema var1) {
-      Map var2 = super.registerEntities(var1);
-      var1.register(var2, "minecraft:spectral_arrow", () -> abstractArrow(var1));
-      var1.register(var2, "minecraft:arrow", () -> abstractArrow(var1));
-      return var2;
+   public Map<String, Supplier<TypeTemplate>> registerEntities(final Schema schema) {
+      Map<String, Supplier<TypeTemplate>> map = super.registerEntities(schema);
+      schema.register(map, "minecraft:spectral_arrow", () -> abstractArrow(schema));
+      schema.register(map, "minecraft:arrow", () -> abstractArrow(schema));
+      return map;
    }
 }

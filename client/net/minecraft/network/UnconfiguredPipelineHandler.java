@@ -17,23 +17,23 @@ public class UnconfiguredPipelineHandler {
       super();
    }
 
-   public static <T extends PacketListener> InboundConfigurationTask setupInboundProtocol(ProtocolInfo<T> var0) {
-      return setupInboundHandler(new PacketDecoder(var0));
+   public static <T extends PacketListener> InboundConfigurationTask setupInboundProtocol(final ProtocolInfo<T> protocolInfo) {
+      return setupInboundHandler(new PacketDecoder(protocolInfo));
    }
 
-   private static InboundConfigurationTask setupInboundHandler(ChannelInboundHandler var0) {
-      return (var1) -> {
-         var1.pipeline().replace(var1.name(), "decoder", var0);
-         var1.channel().config().setAutoRead(true);
+   private static InboundConfigurationTask setupInboundHandler(final ChannelInboundHandler newHandler) {
+      return (ctx) -> {
+         ctx.pipeline().replace(ctx.name(), "decoder", newHandler);
+         ctx.channel().config().setAutoRead(true);
       };
    }
 
-   public static <T extends PacketListener> OutboundConfigurationTask setupOutboundProtocol(ProtocolInfo<T> var0) {
-      return setupOutboundHandler(new PacketEncoder(var0));
+   public static <T extends PacketListener> OutboundConfigurationTask setupOutboundProtocol(final ProtocolInfo<T> codecData) {
+      return setupOutboundHandler(new PacketEncoder(codecData));
    }
 
-   private static OutboundConfigurationTask setupOutboundHandler(ChannelOutboundHandler var0) {
-      return (var1) -> var1.pipeline().replace(var1.name(), "encoder", var0);
+   private static OutboundConfigurationTask setupOutboundHandler(final ChannelOutboundHandler newHandler) {
+      return (ctx) -> ctx.pipeline().replace(ctx.name(), "encoder", newHandler);
    }
 
    public static class Inbound extends ChannelDuplexHandler {
@@ -41,26 +41,26 @@ public class UnconfiguredPipelineHandler {
          super();
       }
 
-      public void channelRead(ChannelHandlerContext var1, Object var2) {
-         if (!(var2 instanceof ByteBuf) && !(var2 instanceof Packet)) {
-            var1.fireChannelRead(var2);
+      public void channelRead(final ChannelHandlerContext ctx, final Object msg) {
+         if (!(msg instanceof ByteBuf) && !(msg instanceof Packet)) {
+            ctx.fireChannelRead(msg);
          } else {
-            ReferenceCountUtil.release(var2);
-            throw new DecoderException("Pipeline has no inbound protocol configured, can't process packet " + String.valueOf(var2));
+            ReferenceCountUtil.release(msg);
+            throw new DecoderException("Pipeline has no inbound protocol configured, can't process packet " + String.valueOf(msg));
          }
       }
 
-      public void write(ChannelHandlerContext var1, Object var2, ChannelPromise var3) throws Exception {
-         if (var2 instanceof InboundConfigurationTask var4) {
+      public void write(final ChannelHandlerContext ctx, final Object msg, final ChannelPromise promise) throws Exception {
+         if (msg instanceof InboundConfigurationTask configurationTask) {
             try {
-               var4.run(var1);
+               configurationTask.run(ctx);
             } finally {
-               ReferenceCountUtil.release(var2);
+               ReferenceCountUtil.release(msg);
             }
 
-            var3.setSuccess();
+            promise.setSuccess();
          } else {
-            var1.write(var2, var3);
+            ctx.write(msg, promise);
          }
 
       }
@@ -71,23 +71,23 @@ public class UnconfiguredPipelineHandler {
          super();
       }
 
-      public void write(ChannelHandlerContext var1, Object var2, ChannelPromise var3) throws Exception {
-         if (var2 instanceof Packet) {
-            ReferenceCountUtil.release(var2);
-            throw new EncoderException("Pipeline has no outbound protocol configured, can't process packet " + String.valueOf(var2));
+      public void write(final ChannelHandlerContext ctx, final Object msg, final ChannelPromise promise) throws Exception {
+         if (msg instanceof Packet) {
+            ReferenceCountUtil.release(msg);
+            throw new EncoderException("Pipeline has no outbound protocol configured, can't process packet " + String.valueOf(msg));
          } else {
-            if (var2 instanceof OutboundConfigurationTask) {
-               OutboundConfigurationTask var4 = (OutboundConfigurationTask)var2;
+            if (msg instanceof OutboundConfigurationTask) {
+               OutboundConfigurationTask configurationTask = (OutboundConfigurationTask)msg;
 
                try {
-                  var4.run(var1);
+                  configurationTask.run(ctx);
                } finally {
-                  ReferenceCountUtil.release(var2);
+                  ReferenceCountUtil.release(msg);
                }
 
-               var3.setSuccess();
+               promise.setSuccess();
             } else {
-               var1.write(var2, var3);
+               ctx.write(msg, promise);
             }
 
          }
@@ -96,24 +96,24 @@ public class UnconfiguredPipelineHandler {
 
    @FunctionalInterface
    public interface InboundConfigurationTask {
-      void run(ChannelHandlerContext var1);
+      void run(ChannelHandlerContext ctx);
 
-      default InboundConfigurationTask andThen(InboundConfigurationTask var1) {
-         return (var2) -> {
-            this.run(var2);
-            var1.run(var2);
+      default InboundConfigurationTask andThen(final InboundConfigurationTask otherTask) {
+         return (ctx) -> {
+            this.run(ctx);
+            otherTask.run(ctx);
          };
       }
    }
 
    @FunctionalInterface
    public interface OutboundConfigurationTask {
-      void run(ChannelHandlerContext var1);
+      void run(ChannelHandlerContext ctx);
 
-      default OutboundConfigurationTask andThen(OutboundConfigurationTask var1) {
-         return (var2) -> {
-            this.run(var2);
-            var1.run(var2);
+      default OutboundConfigurationTask andThen(final OutboundConfigurationTask otherTask) {
+         return (ctx) -> {
+            this.run(ctx);
+            otherTask.run(ctx);
          };
       }
    }

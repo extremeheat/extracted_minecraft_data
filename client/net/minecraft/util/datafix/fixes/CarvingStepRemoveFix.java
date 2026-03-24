@@ -9,26 +9,26 @@ import com.mojang.serialization.Dynamic;
 import java.util.Optional;
 
 public class CarvingStepRemoveFix extends DataFix {
-   public CarvingStepRemoveFix(Schema var1) {
-      super(var1, false);
+   public CarvingStepRemoveFix(final Schema outputSchema) {
+      super(outputSchema, false);
    }
 
    protected TypeRewriteRule makeRule() {
       return this.fixTypeEverywhereTyped("CarvingStepRemoveFix", this.getInputSchema().getType(References.CHUNK), CarvingStepRemoveFix::fixChunk);
    }
 
-   private static Typed<?> fixChunk(Typed<?> var0) {
-      return var0.update(DSL.remainderFinder(), (var0x) -> {
-         Dynamic var1 = var0x;
-         Optional var2 = var0x.get("CarvingMasks").result();
-         if (var2.isPresent()) {
-            Optional var3 = ((Dynamic)var2.get()).get("AIR").result();
-            if (var3.isPresent()) {
-               var1 = var0x.set("carving_mask", (Dynamic)var3.get());
+   private static Typed<?> fixChunk(final Typed<?> input) {
+      return input.update(DSL.remainderFinder(), (chunkIn) -> {
+         Dynamic<?> chunk = chunkIn;
+         Optional<? extends Dynamic<?>> carvingMasks = chunkIn.get("CarvingMasks").result();
+         if (carvingMasks.isPresent()) {
+            Optional<? extends Dynamic<?>> mask = ((Dynamic)carvingMasks.get()).get("AIR").result();
+            if (mask.isPresent()) {
+               chunk = chunkIn.set("carving_mask", (Dynamic)mask.get());
             }
          }
 
-         return var1.remove("CarvingMasks");
+         return chunk.remove("CarvingMasks");
       });
    }
 }

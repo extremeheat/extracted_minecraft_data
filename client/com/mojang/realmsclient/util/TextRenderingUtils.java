@@ -2,7 +2,6 @@ package com.mojang.realmsclient.util;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -14,86 +13,86 @@ public class TextRenderingUtils {
    }
 
    @VisibleForTesting
-   protected static List<String> lineBreak(String var0) {
-      return Arrays.asList(var0.split("\\n"));
+   protected static List<String> lineBreak(final String text) {
+      return Arrays.asList(text.split("\\n"));
    }
 
-   public static List<Line> decompose(String var0, LineSegment... var1) {
-      return decompose(var0, Arrays.asList(var1));
+   public static List<Line> decompose(final String text, final LineSegment... links) {
+      return decompose(text, Arrays.asList(links));
    }
 
-   private static List<Line> decompose(String var0, List<LineSegment> var1) {
-      List var2 = lineBreak(var0);
-      return insertLinks(var2, var1);
+   private static List<Line> decompose(final String text, final List<LineSegment> links) {
+      List<String> brokenLines = lineBreak(text);
+      return insertLinks(brokenLines, links);
    }
 
-   private static List<Line> insertLinks(List<String> var0, List<LineSegment> var1) {
-      int var2 = 0;
-      ArrayList var3 = Lists.newArrayList();
+   private static List<Line> insertLinks(final List<String> lines, final List<LineSegment> links) {
+      int linkCount = 0;
+      List<Line> processedLines = Lists.newArrayList();
 
-      for(String var5 : var0) {
-         ArrayList var6 = Lists.newArrayList();
+      for(String line : lines) {
+         List<LineSegment> segments = Lists.newArrayList();
 
-         for(String var9 : split(var5, "%link")) {
-            if ("%link".equals(var9)) {
-               var6.add((LineSegment)var1.get(var2++));
+         for(String part : split(line, "%link")) {
+            if ("%link".equals(part)) {
+               segments.add((LineSegment)links.get(linkCount++));
             } else {
-               var6.add(TextRenderingUtils.LineSegment.text(var9));
+               segments.add(TextRenderingUtils.LineSegment.text(part));
             }
          }
 
-         var3.add(new Line(var6));
+         processedLines.add(new Line(segments));
       }
 
-      return var3;
+      return processedLines;
    }
 
-   public static List<String> split(String var0, String var1) {
-      if (var1.isEmpty()) {
+   public static List<String> split(final String line, final String delimiter) {
+      if (delimiter.isEmpty()) {
          throw new IllegalArgumentException("Delimiter cannot be the empty string");
       } else {
-         ArrayList var2 = Lists.newArrayList();
+         List<String> parts = Lists.newArrayList();
 
-         int var3;
-         int var4;
-         for(var3 = 0; (var4 = var0.indexOf(var1, var3)) != -1; var3 = var4 + var1.length()) {
-            if (var4 > var3) {
-               var2.add(var0.substring(var3, var4));
+         int searchStart;
+         int matchIndex;
+         for(searchStart = 0; (matchIndex = line.indexOf(delimiter, searchStart)) != -1; searchStart = matchIndex + delimiter.length()) {
+            if (matchIndex > searchStart) {
+               parts.add(line.substring(searchStart, matchIndex));
             }
 
-            var2.add(var1);
+            parts.add(delimiter);
          }
 
-         if (var3 < var0.length()) {
-            var2.add(var0.substring(var3));
+         if (searchStart < line.length()) {
+            parts.add(line.substring(searchStart));
          }
 
-         return var2;
+         return parts;
       }
    }
 
    public static class Line {
       public final List<LineSegment> segments;
 
-      Line(LineSegment... var1) {
-         this(Arrays.asList(var1));
+      Line(final LineSegment... segments) {
+         this(Arrays.asList(segments));
       }
 
-      Line(List<LineSegment> var1) {
+      Line(final List<LineSegment> segments) {
          super();
-         this.segments = var1;
+         this.segments = segments;
       }
 
       public String toString() {
          return "Line{segments=" + String.valueOf(this.segments) + "}";
       }
 
-      public boolean equals(Object var1) {
-         if (this == var1) {
+      public boolean equals(final Object o) {
+         if (this == o) {
             return true;
-         } else if (var1 != null && this.getClass() == var1.getClass()) {
-            Line var2 = (Line)var1;
-            return Objects.equals(this.segments, var2.segments);
+         } else if (o != null && this.getClass() == o.getClass()) {
+            Line line = (Line)o;
+            return Objects.equals(this.segments, line.segments);
          } else {
             return false;
          }
@@ -109,26 +108,26 @@ public class TextRenderingUtils {
       private final @Nullable String linkTitle;
       private final @Nullable String linkUrl;
 
-      private LineSegment(String var1) {
+      private LineSegment(final String fullText) {
          super();
-         this.fullText = var1;
+         this.fullText = fullText;
          this.linkTitle = null;
          this.linkUrl = null;
       }
 
-      private LineSegment(String var1, @Nullable String var2, @Nullable String var3) {
+      private LineSegment(final String fullText, final @Nullable String linkTitle, final @Nullable String linkUrl) {
          super();
-         this.fullText = var1;
-         this.linkTitle = var2;
-         this.linkUrl = var3;
+         this.fullText = fullText;
+         this.linkTitle = linkTitle;
+         this.linkUrl = linkUrl;
       }
 
-      public boolean equals(Object var1) {
-         if (this == var1) {
+      public boolean equals(final Object o) {
+         if (this == o) {
             return true;
-         } else if (var1 != null && this.getClass() == var1.getClass()) {
-            LineSegment var2 = (LineSegment)var1;
-            return Objects.equals(this.fullText, var2.fullText) && Objects.equals(this.linkTitle, var2.linkTitle) && Objects.equals(this.linkUrl, var2.linkUrl);
+         } else if (o != null && this.getClass() == o.getClass()) {
+            LineSegment segment = (LineSegment)o;
+            return Objects.equals(this.fullText, segment.fullText) && Objects.equals(this.linkTitle, segment.linkTitle) && Objects.equals(this.linkUrl, segment.linkUrl);
          } else {
             return false;
          }
@@ -158,13 +157,13 @@ public class TextRenderingUtils {
          }
       }
 
-      public static LineSegment link(String var0, String var1) {
-         return new LineSegment((String)null, var0, var1);
+      public static LineSegment link(final String linkTitle, final String linkUrl) {
+         return new LineSegment((String)null, linkTitle, linkUrl);
       }
 
       @VisibleForTesting
-      protected static LineSegment text(String var0) {
-         return new LineSegment(var0);
+      protected static LineSegment text(final String fullText) {
+         return new LineSegment(fullText);
       }
    }
 }

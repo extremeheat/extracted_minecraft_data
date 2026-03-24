@@ -6,9 +6,9 @@ import net.minecraft.network.chat.Component;
 public class RealmsUploadTooLargeException extends RealmsUploadException {
    final long sizeLimit;
 
-   public RealmsUploadTooLargeException(long var1) {
+   public RealmsUploadTooLargeException(final long sizeLimit) {
       super();
-      this.sizeLimit = var1;
+      this.sizeLimit = sizeLimit;
    }
 
    public Component[] getErrorMessages() {

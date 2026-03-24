@@ -1,30 +1,48 @@
 package net.minecraft.data.recipes;
 
-import java.util.function.Function;
+import java.util.function.Supplier;
 import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.advancements.Criterion;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.Recipe;
+import org.jspecify.annotations.Nullable;
 
 public class SpecialRecipeBuilder {
-   private final Function<CraftingBookCategory, Recipe<?>> factory;
+   private @Nullable RecipeUnlockAdvancementBuilder advancementBuilder;
+   private final Supplier<Recipe<?>> factory;
 
-   public SpecialRecipeBuilder(Function<CraftingBookCategory, Recipe<?>> var1) {
+   public SpecialRecipeBuilder(final Supplier<Recipe<?>> factory) {
       super();
-      this.factory = var1;
+      this.factory = factory;
    }
 
-   public static SpecialRecipeBuilder special(Function<CraftingBookCategory, Recipe<?>> var0) {
-      return new SpecialRecipeBuilder(var0);
+   public static SpecialRecipeBuilder special(final Supplier<Recipe<?>> factory) {
+      return new SpecialRecipeBuilder(factory);
    }
 
-   public void save(RecipeOutput var1, String var2) {
-      this.save(var1, ResourceKey.create(Registries.RECIPE, Identifier.parse(var2)));
+   public SpecialRecipeBuilder unlockedBy(final String name, final Criterion<?> criterion) {
+      if (this.advancementBuilder == null) {
+         this.advancementBuilder = new RecipeUnlockAdvancementBuilder();
+      }
+
+      this.advancementBuilder.unlockedBy(name, criterion);
+      return this;
    }
 
-   public void save(RecipeOutput var1, ResourceKey<Recipe<?>> var2) {
-      var1.accept(var2, (Recipe)this.factory.apply(CraftingBookCategory.MISC), (AdvancementHolder)null);
+   public void save(final RecipeOutput output, final String name) {
+      this.save(output, ResourceKey.create(Registries.RECIPE, Identifier.parse(name)));
+   }
+
+   public void save(final RecipeOutput output, final ResourceKey<Recipe<?>> id) {
+      AdvancementHolder advancement;
+      if (this.advancementBuilder != null) {
+         advancement = this.advancementBuilder.build(output, id, RecipeCategory.MISC);
+      } else {
+         advancement = null;
+      }
+
+      output.accept(id, (Recipe)this.factory.get(), advancement);
    }
 }

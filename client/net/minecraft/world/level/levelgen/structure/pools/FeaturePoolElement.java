@@ -27,42 +27,42 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
 public class FeaturePoolElement extends StructurePoolElement {
-   public static final MapCodec<FeaturePoolElement> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(PlacedFeature.CODEC.fieldOf("feature").forGetter((var0x) -> var0x.feature), projectionCodec()).apply(var0, FeaturePoolElement::new));
+   public static final MapCodec<FeaturePoolElement> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(PlacedFeature.CODEC.fieldOf("feature").forGetter((e) -> e.feature), projectionCodec()).apply(i, FeaturePoolElement::new));
    private static final Identifier DEFAULT_JIGSAW_NAME = Identifier.withDefaultNamespace("bottom");
    private final Holder<PlacedFeature> feature;
    private final CompoundTag defaultJigsawNBT;
 
-   protected FeaturePoolElement(Holder<PlacedFeature> var1, StructureTemplatePool.Projection var2) {
-      super(var2);
-      this.feature = var1;
+   protected FeaturePoolElement(final Holder<PlacedFeature> feature, final StructureTemplatePool.Projection projection) {
+      super(projection);
+      this.feature = feature;
       this.defaultJigsawNBT = this.fillDefaultJigsawNBT();
    }
 
    private CompoundTag fillDefaultJigsawNBT() {
-      CompoundTag var1 = new CompoundTag();
-      var1.store("name", Identifier.CODEC, DEFAULT_JIGSAW_NAME);
-      var1.putString("final_state", "minecraft:air");
-      var1.store("pool", JigsawBlockEntity.POOL_CODEC, Pools.EMPTY);
-      var1.store("target", Identifier.CODEC, JigsawBlockEntity.EMPTY_ID);
-      var1.store("joint", JigsawBlockEntity.JointType.CODEC, JigsawBlockEntity.JointType.ROLLABLE);
-      return var1;
+      CompoundTag tag = new CompoundTag();
+      tag.store("name", Identifier.CODEC, DEFAULT_JIGSAW_NAME);
+      tag.putString("final_state", "minecraft:air");
+      tag.store("pool", JigsawBlockEntity.POOL_CODEC, Pools.EMPTY);
+      tag.store("target", Identifier.CODEC, JigsawBlockEntity.EMPTY_ID);
+      tag.store("joint", JigsawBlockEntity.JointType.CODEC, JigsawBlockEntity.JointType.ROLLABLE);
+      return tag;
    }
 
-   public Vec3i getSize(StructureTemplateManager var1, Rotation var2) {
+   public Vec3i getSize(final StructureTemplateManager structureTemplateManager, final Rotation rotation) {
       return Vec3i.ZERO;
    }
 
-   public List<StructureTemplate.JigsawBlockInfo> getShuffledJigsawBlocks(StructureTemplateManager var1, BlockPos var2, Rotation var3, RandomSource var4) {
-      return List.of(StructureTemplate.JigsawBlockInfo.of(new StructureTemplate.StructureBlockInfo(var2, (BlockState)Blocks.JIGSAW.defaultBlockState().setValue(JigsawBlock.ORIENTATION, FrontAndTop.fromFrontAndTop(Direction.DOWN, Direction.SOUTH)), this.defaultJigsawNBT)));
+   public List<StructureTemplate.JigsawBlockInfo> getShuffledJigsawBlocks(final StructureTemplateManager structureTemplateManager, final BlockPos position, final Rotation rotation, final RandomSource random) {
+      return List.of(StructureTemplate.JigsawBlockInfo.of(new StructureTemplate.StructureBlockInfo(position, (BlockState)Blocks.JIGSAW.defaultBlockState().setValue(JigsawBlock.ORIENTATION, FrontAndTop.fromFrontAndTop(Direction.DOWN, Direction.SOUTH)), this.defaultJigsawNBT)));
    }
 
-   public BoundingBox getBoundingBox(StructureTemplateManager var1, BlockPos var2, Rotation var3) {
-      Vec3i var4 = this.getSize(var1, var3);
-      return new BoundingBox(var2.getX(), var2.getY(), var2.getZ(), var2.getX() + var4.getX(), var2.getY() + var4.getY(), var2.getZ() + var4.getZ());
+   public BoundingBox getBoundingBox(final StructureTemplateManager structureTemplateManager, final BlockPos position, final Rotation rotation) {
+      Vec3i size = this.getSize(structureTemplateManager, rotation);
+      return new BoundingBox(position.getX(), position.getY(), position.getZ(), position.getX() + size.getX(), position.getY() + size.getY(), position.getZ() + size.getZ());
    }
 
-   public boolean place(StructureTemplateManager var1, WorldGenLevel var2, StructureManager var3, ChunkGenerator var4, BlockPos var5, BlockPos var6, Rotation var7, BoundingBox var8, RandomSource var9, LiquidSettings var10, boolean var11) {
-      return ((PlacedFeature)this.feature.value()).place(var2, var4, var9, var5);
+   public boolean place(final StructureTemplateManager structureTemplateManager, final WorldGenLevel level, final StructureManager structureManager, final ChunkGenerator generator, final BlockPos position, final BlockPos referencePos, final Rotation rotation, final BoundingBox chunkBB, final RandomSource random, final LiquidSettings liquidSettings, final boolean keepJigsaws) {
+      return ((PlacedFeature)this.feature.value()).place(level, generator, random, position);
    }
 
    public StructurePoolElementType<?> getType() {

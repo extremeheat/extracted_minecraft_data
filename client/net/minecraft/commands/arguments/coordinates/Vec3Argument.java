@@ -23,53 +23,48 @@ public class Vec3Argument implements ArgumentType<Coordinates> {
    public static final SimpleCommandExceptionType ERROR_MIXED_TYPE = new SimpleCommandExceptionType(Component.translatable("argument.pos.mixed"));
    private final boolean centerCorrect;
 
-   public Vec3Argument(boolean var1) {
+   public Vec3Argument(final boolean centerCorrect) {
       super();
-      this.centerCorrect = var1;
+      this.centerCorrect = centerCorrect;
    }
 
    public static Vec3Argument vec3() {
       return new Vec3Argument(true);
    }
 
-   public static Vec3Argument vec3(boolean var0) {
-      return new Vec3Argument(var0);
+   public static Vec3Argument vec3(final boolean centerCorrect) {
+      return new Vec3Argument(centerCorrect);
    }
 
-   public static Vec3 getVec3(CommandContext<CommandSourceStack> var0, String var1) {
-      return ((Coordinates)var0.getArgument(var1, Coordinates.class)).getPosition((CommandSourceStack)var0.getSource());
+   public static Vec3 getVec3(final CommandContext<CommandSourceStack> context, final String name) {
+      return ((Coordinates)context.getArgument(name, Coordinates.class)).getPosition((CommandSourceStack)context.getSource());
    }
 
-   public static Coordinates getCoordinates(CommandContext<CommandSourceStack> var0, String var1) {
-      return (Coordinates)var0.getArgument(var1, Coordinates.class);
+   public static Coordinates getCoordinates(final CommandContext<CommandSourceStack> context, final String name) {
+      return (Coordinates)context.getArgument(name, Coordinates.class);
    }
 
-   public Coordinates parse(StringReader var1) throws CommandSyntaxException {
-      return (Coordinates)(var1.canRead() && var1.peek() == '^' ? LocalCoordinates.parse(var1) : WorldCoordinates.parseDouble(var1, this.centerCorrect));
+   public Coordinates parse(final StringReader reader) throws CommandSyntaxException {
+      return (Coordinates)(reader.canRead() && reader.peek() == '^' ? LocalCoordinates.parse(reader) : WorldCoordinates.parseDouble(reader, this.centerCorrect));
    }
 
-   public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      if (!(var1.getSource() instanceof SharedSuggestionProvider)) {
+   public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
+      if (!(context.getSource() instanceof SharedSuggestionProvider)) {
          return Suggestions.empty();
       } else {
-         String var3 = var2.getRemaining();
-         Object var4;
-         if (!var3.isEmpty() && var3.charAt(0) == '^') {
-            var4 = Collections.singleton(SharedSuggestionProvider.TextCoordinates.DEFAULT_LOCAL);
+         String remainder = builder.getRemaining();
+         Collection<SharedSuggestionProvider.TextCoordinates> suggestedCoordinates;
+         if (!remainder.isEmpty() && remainder.charAt(0) == '^') {
+            suggestedCoordinates = Collections.singleton(SharedSuggestionProvider.TextCoordinates.DEFAULT_LOCAL);
          } else {
-            var4 = ((SharedSuggestionProvider)var1.getSource()).getAbsoluteCoordinates();
+            suggestedCoordinates = ((SharedSuggestionProvider)context.getSource()).getAbsoluteCoordinates();
          }
 
-         return SharedSuggestionProvider.suggestCoordinates(var3, (Collection)var4, var2, Commands.createValidator(this::parse));
+         return SharedSuggestionProvider.suggestCoordinates(remainder, suggestedCoordinates, builder, Commands.createValidator(this::parse));
       }
    }
 
    public Collection<String> getExamples() {
       return EXAMPLES;
-   }
-
-   // $FF: synthetic method
-   public Object parse(final StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1);
    }
 }

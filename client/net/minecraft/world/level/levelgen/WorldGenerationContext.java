@@ -7,10 +7,10 @@ public class WorldGenerationContext {
    private final int minY;
    private final int height;
 
-   public WorldGenerationContext(ChunkGenerator var1, LevelHeightAccessor var2) {
+   public WorldGenerationContext(final ChunkGenerator generator, final LevelHeightAccessor heightAccessor) {
       super();
-      this.minY = Math.max(var2.getMinY(), var1.getMinY());
-      this.height = Math.min(var2.getHeight(), var1.getGenDepth());
+      this.minY = Math.max(heightAccessor.getMinY(), generator.getMinY());
+      this.height = Math.min(heightAccessor.getHeight(), generator.getGenDepth());
    }
 
    public int getMinGenY() {

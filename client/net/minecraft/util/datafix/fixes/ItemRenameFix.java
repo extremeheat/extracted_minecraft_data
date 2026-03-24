@@ -5,6 +5,7 @@ import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
+import com.mojang.datafixers.util.Pair;
 import java.util.Objects;
 import java.util.function.Function;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
@@ -12,26 +13,26 @@ import net.minecraft.util.datafix.schemas.NamespacedSchema;
 public abstract class ItemRenameFix extends DataFix {
    private final String name;
 
-   public ItemRenameFix(Schema var1, String var2) {
-      super(var1, false);
-      this.name = var2;
+   public ItemRenameFix(final Schema outputSchema, final String name) {
+      super(outputSchema, false);
+      this.name = name;
    }
 
    public TypeRewriteRule makeRule() {
-      Type var1 = DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString());
-      if (!Objects.equals(this.getInputSchema().getType(References.ITEM_NAME), var1)) {
+      Type<Pair<String, String>> itemNameType = DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString());
+      if (!Objects.equals(this.getInputSchema().getType(References.ITEM_NAME), itemNameType)) {
          throw new IllegalStateException("item name type is not what was expected.");
       } else {
-         return this.fixTypeEverywhere(this.name, var1, (var1x) -> (var1) -> var1.mapSecond(this::fixItem));
+         return this.fixTypeEverywhere(this.name, itemNameType, (ops) -> (input) -> input.mapSecond(this::fixItem));
       }
    }
 
-   protected abstract String fixItem(String var1);
+   protected abstract String fixItem(final String item);
 
-   public static DataFix create(Schema var0, String var1, final Function<String, String> var2) {
-      return new ItemRenameFix(var0, var1) {
-         protected String fixItem(String var1) {
-            return (String)var2.apply(var1);
+   public static DataFix create(final Schema outputSchema, final String name, final Function<String, String> fixItem) {
+      return new ItemRenameFix(outputSchema, name) {
+         protected String fixItem(final String item) {
+            return (String)fixItem.apply(item);
          }
       };
    }

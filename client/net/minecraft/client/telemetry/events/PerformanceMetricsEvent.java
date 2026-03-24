@@ -17,9 +17,9 @@ public final class PerformanceMetricsEvent extends AggregatedTelemetryEvent {
       super();
    }
 
-   public void tick(TelemetryEventSender var1) {
+   public void tick(final TelemetryEventSender eventSender) {
       if (Minecraft.getInstance().telemetryOptInExtra()) {
-         super.tick(var1);
+         super.tick(eventSender);
       }
 
    }
@@ -37,25 +37,25 @@ public final class PerformanceMetricsEvent extends AggregatedTelemetryEvent {
    }
 
    private void takeUsedMemorySample() {
-      long var1 = Runtime.getRuntime().totalMemory();
-      long var3 = Runtime.getRuntime().freeMemory();
-      long var5 = var1 - var3;
-      this.usedMemorySamples.add(toKilobytes(var5));
+      long totalMemory = Runtime.getRuntime().totalMemory();
+      long freeMemory = Runtime.getRuntime().freeMemory();
+      long usedMemorySample = totalMemory - freeMemory;
+      this.usedMemorySamples.add(toKilobytes(usedMemorySample));
    }
 
-   public void sendEvent(TelemetryEventSender var1) {
-      var1.send(TelemetryEventType.PERFORMANCE_METRICS, (var1x) -> {
-         var1x.put(TelemetryProperty.FRAME_RATE_SAMPLES, new LongArrayList(this.fpsSamples));
-         var1x.put(TelemetryProperty.RENDER_TIME_SAMPLES, new LongArrayList(this.frameTimeSamples));
-         var1x.put(TelemetryProperty.USED_MEMORY_SAMPLES, new LongArrayList(this.usedMemorySamples));
-         var1x.put(TelemetryProperty.NUMBER_OF_SAMPLES, this.getSampleCount());
-         var1x.put(TelemetryProperty.RENDER_DISTANCE, Minecraft.getInstance().options.getEffectiveRenderDistance());
-         var1x.put(TelemetryProperty.DEDICATED_MEMORY_KB, (int)DEDICATED_MEMORY_KB);
+   public void sendEvent(final TelemetryEventSender eventSender) {
+      eventSender.send(TelemetryEventType.PERFORMANCE_METRICS, (properties) -> {
+         properties.put(TelemetryProperty.FRAME_RATE_SAMPLES, new LongArrayList(this.fpsSamples));
+         properties.put(TelemetryProperty.RENDER_TIME_SAMPLES, new LongArrayList(this.frameTimeSamples));
+         properties.put(TelemetryProperty.USED_MEMORY_SAMPLES, new LongArrayList(this.usedMemorySamples));
+         properties.put(TelemetryProperty.NUMBER_OF_SAMPLES, this.getSampleCount());
+         properties.put(TelemetryProperty.RENDER_DISTANCE, Minecraft.getInstance().options.getEffectiveRenderDistance());
+         properties.put(TelemetryProperty.DEDICATED_MEMORY_KB, (int)DEDICATED_MEMORY_KB);
       });
       this.resetValues();
    }
 
-   private static long toKilobytes(long var0) {
-      return var0 / 1000L;
+   private static long toKilobytes(final long bytes) {
+      return bytes / 1000L;
    }
 }

@@ -30,39 +30,39 @@ public class TestBlock extends BaseEntityBlock implements GameMasterBlock {
    public static final MapCodec<TestBlock> CODEC = simpleCodec(TestBlock::new);
    public static final EnumProperty<TestBlockMode> MODE;
 
-   public TestBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public TestBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
-   public @Nullable BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new TestBlockEntity(var1, var2);
+   public @Nullable BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      return new TestBlockEntity(worldPosition, blockState);
    }
 
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      BlockItemStateProperties var2 = (BlockItemStateProperties)var1.getItemInHand().get(DataComponents.BLOCK_STATE);
-      BlockState var3 = this.defaultBlockState();
-      if (var2 != null) {
-         TestBlockMode var4 = (TestBlockMode)var2.get(MODE);
-         if (var4 != null) {
-            var3 = (BlockState)var3.setValue(MODE, var4);
+   public BlockState getStateForPlacement(final BlockPlaceContext context) {
+      BlockItemStateProperties stateProperties = (BlockItemStateProperties)context.getItemInHand().get(DataComponents.BLOCK_STATE);
+      BlockState toPlace = this.defaultBlockState();
+      if (stateProperties != null) {
+         TestBlockMode mode = (TestBlockMode)stateProperties.get(MODE);
+         if (mode != null) {
+            toPlace = (BlockState)toPlace.setValue(MODE, mode);
          }
       }
 
-      return var3;
+      return toPlace;
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(MODE);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(MODE);
    }
 
-   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      BlockEntity var6 = var2.getBlockEntity(var3);
-      if (var6 instanceof TestBlockEntity var7) {
-         if (!var4.canUseGameMasterBlocks()) {
+   protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
+      BlockEntity blockEntity = level.getBlockEntity(pos);
+      if (blockEntity instanceof TestBlockEntity testBlockEntity) {
+         if (!player.canUseGameMasterBlocks()) {
             return InteractionResult.PASS;
          } else {
-            if (var2.isClientSide()) {
-               var4.openTestBlock(var7);
+            if (level.isClientSide()) {
+               player.openTestBlock(testBlockEntity);
             }
 
             return InteractionResult.SUCCESS;
@@ -72,63 +72,63 @@ public class TestBlock extends BaseEntityBlock implements GameMasterBlock {
       }
    }
 
-   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      TestBlockEntity var5 = getServerTestBlockEntity(var2, var3);
-      if (var5 != null) {
-         var5.reset();
+   protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      TestBlockEntity testBlock = getServerTestBlockEntity(level, pos);
+      if (testBlock != null) {
+         testBlock.reset();
       }
    }
 
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
-      TestBlockEntity var7 = getServerTestBlockEntity(var2, var3);
-      if (var7 != null) {
-         if (var7.getMode() != TestBlockMode.START) {
-            boolean var8 = var2.hasNeighborSignal(var3);
-            boolean var9 = var7.isPowered();
-            if (var8 && !var9) {
-               var7.setPowered(true);
-               var7.trigger();
-            } else if (!var8 && var9) {
-               var7.setPowered(false);
+   protected void neighborChanged(final BlockState state, final Level level, final BlockPos pos, final Block block, final @Nullable Orientation orientation, final boolean movedByPiston) {
+      TestBlockEntity testBlock = getServerTestBlockEntity(level, pos);
+      if (testBlock != null) {
+         if (testBlock.getMode() != TestBlockMode.START) {
+            boolean shouldTrigger = level.hasNeighborSignal(pos);
+            boolean isPowered = testBlock.isPowered();
+            if (shouldTrigger && !isPowered) {
+               testBlock.setPowered(true);
+               testBlock.trigger();
+            } else if (!shouldTrigger && isPowered) {
+               testBlock.setPowered(false);
             }
 
          }
       }
    }
 
-   private static @Nullable TestBlockEntity getServerTestBlockEntity(Level var0, BlockPos var1) {
-      if (var0 instanceof ServerLevel var2) {
-         BlockEntity var4 = var2.getBlockEntity(var1);
-         if (var4 instanceof TestBlockEntity var3) {
-            return var3;
+   private static @Nullable TestBlockEntity getServerTestBlockEntity(final Level level, final BlockPos pos) {
+      if (level instanceof ServerLevel serverLevel) {
+         BlockEntity var4 = serverLevel.getBlockEntity(pos);
+         if (var4 instanceof TestBlockEntity testBlockEntity) {
+            return testBlockEntity;
          }
       }
 
       return null;
    }
 
-   public int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
-      if (var1.getValue(MODE) != TestBlockMode.START) {
+   public int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
+      if (state.getValue(MODE) != TestBlockMode.START) {
          return 0;
       } else {
-         BlockEntity var5 = var2.getBlockEntity(var3);
-         if (var5 instanceof TestBlockEntity) {
-            TestBlockEntity var6 = (TestBlockEntity)var5;
-            return var6.isPowered() ? 15 : 0;
+         BlockEntity blockEntity = level.getBlockEntity(pos);
+         if (blockEntity instanceof TestBlockEntity) {
+            TestBlockEntity testBlock = (TestBlockEntity)blockEntity;
+            return testBlock.isPowered() ? 15 : 0;
          } else {
             return 0;
          }
       }
    }
 
-   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
-      ItemStack var5 = super.getCloneItemStack(var1, var2, var3, var4);
-      return setModeOnStack(var5, (TestBlockMode)var3.getValue(MODE));
+   protected ItemStack getCloneItemStack(final LevelReader level, final BlockPos pos, final BlockState state, final boolean includeData) {
+      ItemStack itemStack = super.getCloneItemStack(level, pos, state, includeData);
+      return setModeOnStack(itemStack, (TestBlockMode)state.getValue(MODE));
    }
 
-   public static ItemStack setModeOnStack(ItemStack var0, TestBlockMode var1) {
-      var0.set(DataComponents.BLOCK_STATE, ((BlockItemStateProperties)var0.getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY)).with(MODE, var1));
-      return var0;
+   public static ItemStack setModeOnStack(final ItemStack itemStack, final TestBlockMode mode) {
+      itemStack.set(DataComponents.BLOCK_STATE, ((BlockItemStateProperties)itemStack.getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY)).with(MODE, mode));
+      return itemStack;
    }
 
    protected MapCodec<TestBlock> codec() {

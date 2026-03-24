@@ -4,17 +4,15 @@ import com.google.common.collect.Lists;
 import com.mojang.brigadier.Message;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.datafixers.DataFixUtils;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import javax.annotation.CheckReturnValue;
 import net.minecraft.ChatFormatting;
-import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.contents.TranslatableContents;
-import net.minecraft.world.entity.Entity;
 import org.jspecify.annotations.Nullable;
 
 public class ComponentUtils {
@@ -27,148 +25,159 @@ public class ComponentUtils {
    }
 
    @CheckReturnValue
-   public static MutableComponent mergeStyles(MutableComponent var0, Style var1) {
-      if (var1.isEmpty()) {
-         return var0;
+   public static MutableComponent mergeStyles(final MutableComponent component, final Style style) {
+      if (style.isEmpty()) {
+         return component;
       } else {
-         Style var2 = var0.getStyle();
-         if (var2.isEmpty()) {
-            return var0.setStyle(var1);
+         Style inner = component.getStyle();
+         if (inner.isEmpty()) {
+            return component.setStyle(style);
          } else {
-            return var2.equals(var1) ? var0 : var0.setStyle(var2.applyTo(var1));
+            return inner.equals(style) ? component : component.setStyle(inner.applyTo(style));
          }
       }
    }
 
    @CheckReturnValue
-   public static Component mergeStyles(Component var0, Style var1) {
-      if (var1.isEmpty()) {
-         return var0;
+   public static Component mergeStyles(final Component component, final Style style) {
+      if (style.isEmpty()) {
+         return component;
       } else {
-         Style var2 = var0.getStyle();
-         if (var2.isEmpty()) {
-            return var0.copy().setStyle(var1);
+         Style inner = component.getStyle();
+         if (inner.isEmpty()) {
+            return component.copy().setStyle(style);
          } else {
-            return (Component)(var2.equals(var1) ? var0 : var0.copy().setStyle(var2.applyTo(var1)));
+            return (Component)(inner.equals(style) ? component : component.copy().setStyle(inner.applyTo(style)));
          }
       }
    }
 
-   public static Optional<MutableComponent> updateForEntity(@Nullable CommandSourceStack var0, Optional<Component> var1, @Nullable Entity var2, int var3) throws CommandSyntaxException {
-      return var1.isPresent() ? Optional.of(updateForEntity(var0, (Component)var1.get(), var2, var3)) : Optional.empty();
+   public static Optional<MutableComponent> resolve(final ResolutionContext context, final Optional<Component> component, final int recursionDepth) throws CommandSyntaxException {
+      return component.isPresent() ? Optional.of(resolve(context, (Component)component.get(), recursionDepth)) : Optional.empty();
    }
 
-   public static MutableComponent updateForEntity(@Nullable CommandSourceStack var0, Component var1, @Nullable Entity var2, int var3) throws CommandSyntaxException {
-      if (var3 > 100) {
-         return var1.copy();
+   public static MutableComponent resolve(final ResolutionContext context, final Component component) throws CommandSyntaxException {
+      return resolve(context, component, 0);
+   }
+
+   public static MutableComponent resolve(final ResolutionContext context, final Component component, final int recursionDepth) throws CommandSyntaxException {
+      if (recursionDepth > context.depthLimit()) {
+         MutableComponent var10000;
+         switch (context.depthLimitBehavior()) {
+            case DISCARD_REMAINING -> var10000 = CommonComponents.ELLIPSIS.copy();
+            case STOP_PROCESSING_AND_COPY_REMAINING -> var10000 = component.copy();
+            default -> throw new MatchException((String)null, (Throwable)null);
+         }
+
+         return var10000;
       } else {
-         MutableComponent var4 = var1.getContents().resolve(var0, var2, var3 + 1);
+         MutableComponent result = component.getContents().resolve(context, recursionDepth + 1);
 
-         for(Component var6 : var1.getSiblings()) {
-            var4.append((Component)updateForEntity(var0, var6, var2, var3 + 1));
+         for(Component sibling : component.getSiblings()) {
+            result.append((Component)resolve(context, sibling, recursionDepth + 1));
          }
 
-         return var4.withStyle(resolveStyle(var0, var1.getStyle(), var2, var3));
+         return result.withStyle(resolveStyle(context, component.getStyle(), recursionDepth));
       }
    }
 
-   private static Style resolveStyle(@Nullable CommandSourceStack var0, Style var1, @Nullable Entity var2, int var3) throws CommandSyntaxException {
-      HoverEvent var4 = var1.getHoverEvent();
-      if (var4 instanceof HoverEvent.ShowText var5) {
-         HoverEvent.ShowText var10000 = var5;
+   private static Style resolveStyle(final ResolutionContext context, final Style style, final int recursionDepth) throws CommandSyntaxException {
+      HoverEvent hoverEvent = style.getHoverEvent();
+      if (hoverEvent instanceof HoverEvent.ShowText var4) {
+         HoverEvent.ShowText var10000 = var4;
 
          try {
-            var10 = var10000.value();
-         } catch (Throwable var8) {
-            throw new MatchException(var8.toString(), var8);
+            var9 = var10000.value();
+         } catch (Throwable var7) {
+            throw new MatchException(var7.toString(), var7);
          }
 
-         Component var7 = var10;
-         HoverEvent.ShowText var9 = new HoverEvent.ShowText(updateForEntity(var0, var7, var2, var3 + 1));
-         return var1.withHoverEvent(var9);
+         HoverEvent resolved = var9;
+         resolved = new HoverEvent.ShowText(resolve(context, resolved, recursionDepth + 1));
+         return style.withHoverEvent(resolved);
       } else {
-         return var1;
+         return style;
       }
    }
 
-   public static Component formatList(Collection<String> var0) {
-      return formatAndSortList(var0, (var0x) -> Component.literal(var0x).withStyle(ChatFormatting.GREEN));
+   public static Component formatList(final Collection<String> values) {
+      return formatAndSortList(values, (v) -> Component.literal(v).withStyle(ChatFormatting.GREEN));
    }
 
-   public static <T extends Comparable<T>> Component formatAndSortList(Collection<T> var0, Function<T, Component> var1) {
-      if (var0.isEmpty()) {
+   public static <T extends Comparable<T>> Component formatAndSortList(final Collection<T> values, final Function<T, Component> formatter) {
+      if (values.isEmpty()) {
          return CommonComponents.EMPTY;
-      } else if (var0.size() == 1) {
-         return (Component)var1.apply((Comparable)var0.iterator().next());
+      } else if (values.size() == 1) {
+         return (Component)formatter.apply((Comparable)values.iterator().next());
       } else {
-         ArrayList var2 = Lists.newArrayList(var0);
-         var2.sort(Comparable::compareTo);
-         return formatList(var2, var1);
+         List<T> sorted = Lists.newArrayList(values);
+         sorted.sort(Comparable::compareTo);
+         return formatList(sorted, formatter);
       }
    }
 
-   public static <T> Component formatList(Collection<? extends T> var0, Function<T, Component> var1) {
-      return formatList(var0, DEFAULT_SEPARATOR, var1);
+   public static <T> Component formatList(final Collection<? extends T> values, final Function<T, Component> formatter) {
+      return formatList(values, DEFAULT_SEPARATOR, formatter);
    }
 
-   public static <T> MutableComponent formatList(Collection<? extends T> var0, Optional<? extends Component> var1, Function<T, Component> var2) {
-      return formatList(var0, (Component)DataFixUtils.orElse(var1, DEFAULT_SEPARATOR), var2);
+   public static <T> MutableComponent formatList(final Collection<? extends T> values, final Optional<? extends Component> separator, final Function<T, Component> formatter) {
+      return formatList(values, (Component)DataFixUtils.orElse(separator, DEFAULT_SEPARATOR), formatter);
    }
 
-   public static Component formatList(Collection<? extends Component> var0, Component var1) {
-      return formatList(var0, var1, Function.identity());
+   public static Component formatList(final Collection<? extends Component> values, final Component separator) {
+      return formatList(values, separator, Function.identity());
    }
 
-   public static <T> MutableComponent formatList(Collection<? extends T> var0, Component var1, Function<T, Component> var2) {
-      if (var0.isEmpty()) {
+   public static <T> MutableComponent formatList(final Collection<? extends T> values, final Component separator, final Function<T, Component> formatter) {
+      if (values.isEmpty()) {
          return Component.empty();
-      } else if (var0.size() == 1) {
-         return ((Component)var2.apply(var0.iterator().next())).copy();
+      } else if (values.size() == 1) {
+         return ((Component)formatter.apply(values.iterator().next())).copy();
       } else {
-         MutableComponent var3 = Component.empty();
-         boolean var4 = true;
+         MutableComponent result = Component.empty();
+         boolean first = true;
 
-         for(Object var6 : var0) {
-            if (!var4) {
-               var3.append(var1);
+         for(T value : values) {
+            if (!first) {
+               result.append(separator);
             }
 
-            var3.append((Component)var2.apply(var6));
-            var4 = false;
+            result.append((Component)formatter.apply(value));
+            first = false;
          }
 
-         return var3;
+         return result;
       }
    }
 
-   public static MutableComponent wrapInSquareBrackets(Component var0) {
-      return Component.translatable("chat.square_brackets", var0);
+   public static MutableComponent wrapInSquareBrackets(final Component inner) {
+      return Component.translatable("chat.square_brackets", inner);
    }
 
-   public static Component fromMessage(Message var0) {
-      if (var0 instanceof Component var1) {
-         return var1;
+   public static Component fromMessage(final Message message) {
+      if (message instanceof Component component) {
+         return component;
       } else {
-         return Component.literal(var0.getString());
+         return Component.literal(message.getString());
       }
    }
 
-   public static boolean isTranslationResolvable(@Nullable Component var0) {
-      if (var0 != null) {
-         ComponentContents var2 = var0.getContents();
+   public static boolean isTranslationResolvable(final @Nullable Component component) {
+      if (component != null) {
+         ComponentContents var2 = component.getContents();
          if (var2 instanceof TranslatableContents) {
-            TranslatableContents var1 = (TranslatableContents)var2;
-            String var4 = var1.getKey();
-            String var3 = var1.getFallback();
-            return var3 != null || Language.getInstance().has(var4);
+            TranslatableContents translatable = (TranslatableContents)var2;
+            String key = translatable.getKey();
+            String fallback = translatable.getFallback();
+            return fallback != null || Language.getInstance().has(key);
          }
       }
 
       return true;
    }
 
-   public static MutableComponent copyOnClickText(String var0) {
-      return wrapInSquareBrackets(Component.literal(var0).withStyle((UnaryOperator)((var1) -> var1.withColor(ChatFormatting.GREEN).withClickEvent(new ClickEvent.CopyToClipboard(var0)).withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.copy.click"))).withInsertion(var0))));
+   public static MutableComponent copyOnClickText(final String text) {
+      return wrapInSquareBrackets(Component.literal(text).withStyle((UnaryOperator)((s) -> s.withColor(ChatFormatting.GREEN).withClickEvent(new ClickEvent.CopyToClipboard(text)).withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.copy.click"))).withInsertion(text))));
    }
 
    static {

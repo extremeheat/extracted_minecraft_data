@@ -6,11 +6,10 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.Identifier;
 
 public record ProviderReferenceDefinition(Identifier id) implements GlyphProviderDefinition {
-   public static final MapCodec<ProviderReferenceDefinition> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Identifier.CODEC.fieldOf("id").forGetter(ProviderReferenceDefinition::id)).apply(var0, ProviderReferenceDefinition::new));
+   public static final MapCodec<ProviderReferenceDefinition> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Identifier.CODEC.fieldOf("id").forGetter(ProviderReferenceDefinition::id)).apply(i, ProviderReferenceDefinition::new));
 
-   public ProviderReferenceDefinition(Identifier var1) {
+   public ProviderReferenceDefinition {
       super();
-      this.id = var1;
    }
 
    public GlyphProviderType type() {

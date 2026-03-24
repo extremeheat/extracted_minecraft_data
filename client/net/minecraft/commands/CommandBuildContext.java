@@ -8,18 +8,18 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.flag.FeatureFlagSet;
 
 public interface CommandBuildContext extends HolderLookup.Provider {
-   static CommandBuildContext simple(final HolderLookup.Provider var0, final FeatureFlagSet var1) {
+   static CommandBuildContext simple(final HolderLookup.Provider access, final FeatureFlagSet enabledFeatures) {
       return new CommandBuildContext() {
          public Stream<ResourceKey<? extends Registry<?>>> listRegistryKeys() {
-            return var0.listRegistryKeys();
+            return access.listRegistryKeys();
          }
 
-         public <T> Optional<HolderLookup.RegistryLookup<T>> lookup(ResourceKey<? extends Registry<? extends T>> var1x) {
-            return var0.lookup(var1x).map((var1xx) -> var1xx.filterFeatures(var1));
+         public <T> Optional<HolderLookup.RegistryLookup<T>> lookup(final ResourceKey<? extends Registry<? extends T>> key) {
+            return access.lookup(key).map((lookup) -> lookup.filterFeatures(enabledFeatures));
          }
 
          public FeatureFlagSet enabledFeatures() {
-            return var1;
+            return enabledFeatures;
          }
       };
    }

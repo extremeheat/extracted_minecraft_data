@@ -3,13 +3,13 @@ package net.minecraft.commands.execution;
 import net.minecraft.resources.Identifier;
 
 public interface TraceCallbacks extends AutoCloseable {
-   void onCommand(int var1, String var2);
+   void onCommand(int depth, String command);
 
-   void onReturn(int var1, String var2, int var3);
+   void onReturn(int depth, String command, int result);
 
-   void onError(String var1);
+   void onError(String message);
 
-   void onCall(int var1, Identifier var2, int var3);
+   void onCall(int depth, Identifier function, int size);
 
    void close();
 }

@@ -12,27 +12,27 @@ public class ExplosionDamageCalculator {
       super();
    }
 
-   public Optional<Float> getBlockExplosionResistance(Explosion var1, BlockGetter var2, BlockPos var3, BlockState var4, FluidState var5) {
-      return var4.isAir() && var5.isEmpty() ? Optional.empty() : Optional.of(Math.max(var4.getBlock().getExplosionResistance(), var5.getExplosionResistance()));
+   public Optional<Float> getBlockExplosionResistance(final Explosion explosion, final BlockGetter level, final BlockPos pos, final BlockState block, final FluidState fluid) {
+      return block.isAir() && fluid.isEmpty() ? Optional.empty() : Optional.of(Math.max(block.getBlock().getExplosionResistance(), fluid.getExplosionResistance()));
    }
 
-   public boolean shouldBlockExplode(Explosion var1, BlockGetter var2, BlockPos var3, BlockState var4, float var5) {
+   public boolean shouldBlockExplode(final Explosion explosion, final BlockGetter level, final BlockPos pos, final BlockState state, final float power) {
       return true;
    }
 
-   public boolean shouldDamageEntity(Explosion var1, Entity var2) {
+   public boolean shouldDamageEntity(final Explosion explosion, final Entity entity) {
       return true;
    }
 
-   public float getKnockbackMultiplier(Entity var1) {
+   public float getKnockbackMultiplier(final Entity entity) {
       return 1.0F;
    }
 
-   public float getEntityDamageAmount(Explosion var1, Entity var2, float var3) {
-      float var4 = var1.radius() * 2.0F;
-      Vec3 var5 = var1.center();
-      double var6 = Math.sqrt(var2.distanceToSqr(var5)) / (double)var4;
-      double var8 = (1.0 - var6) * (double)var3;
-      return (float)((var8 * var8 + var8) / 2.0 * 7.0 * (double)var4 + 1.0);
+   public float getEntityDamageAmount(final Explosion explosion, final Entity entity, final float exposure) {
+      float doubleRadius = explosion.radius() * 2.0F;
+      Vec3 center = explosion.center();
+      double dist = Math.sqrt(entity.distanceToSqr(center)) / (double)doubleRadius;
+      double pow = (1.0 - dist) * (double)exposure;
+      return (float)((pow * pow + pow) / 2.0 * 7.0 * (double)doubleRadius + 1.0);
    }
 }

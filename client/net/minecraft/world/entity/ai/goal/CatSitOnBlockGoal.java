@@ -14,9 +14,9 @@ import net.minecraft.world.level.block.state.properties.BedPart;
 public class CatSitOnBlockGoal extends MoveToBlockGoal {
    private final Cat cat;
 
-   public CatSitOnBlockGoal(Cat var1, double var2) {
-      super(var1, var2, 8);
-      this.cat = var1;
+   public CatSitOnBlockGoal(final Cat cat, final double speedModifier) {
+      super(cat, speedModifier, 8);
+      this.cat = cat;
    }
 
    public boolean canUse() {
@@ -38,15 +38,15 @@ public class CatSitOnBlockGoal extends MoveToBlockGoal {
       this.cat.setInSittingPose(this.isReachedTarget());
    }
 
-   protected boolean isValidTarget(LevelReader var1, BlockPos var2) {
-      if (!var1.isEmptyBlock(var2.above())) {
+   protected boolean isValidTarget(final LevelReader level, final BlockPos pos) {
+      if (!level.isEmptyBlock(pos.above())) {
          return false;
       } else {
-         BlockState var3 = var1.getBlockState(var2);
-         if (var3.is(Blocks.CHEST)) {
-            return ChestBlockEntity.getOpenCount(var1, var2) < 1;
+         BlockState blockState = level.getBlockState(pos);
+         if (blockState.is(Blocks.CHEST)) {
+            return ChestBlockEntity.getOpenCount(level, pos) < 1;
          } else {
-            return var3.is(Blocks.FURNACE) && (Boolean)var3.getValue(FurnaceBlock.LIT) ? true : var3.is(BlockTags.BEDS, (var0) -> (Boolean)var0.getOptionalValue(BedBlock.PART).map((var0x) -> var0x != BedPart.HEAD).orElse(true));
+            return blockState.is(Blocks.FURNACE) && (Boolean)blockState.getValue(FurnaceBlock.LIT) ? true : blockState.is(BlockTags.BEDS, (s) -> (Boolean)s.getOptionalValue(BedBlock.PART).map((v) -> v != BedPart.HEAD).orElse(true));
          }
       }
    }

@@ -8,10 +8,10 @@ public class BiomeSources {
       super();
    }
 
-   public static MapCodec<? extends BiomeSource> bootstrap(Registry<MapCodec<? extends BiomeSource>> var0) {
-      Registry.register(var0, (String)"fixed", FixedBiomeSource.CODEC);
-      Registry.register(var0, (String)"multi_noise", MultiNoiseBiomeSource.CODEC);
-      Registry.register(var0, (String)"checkerboard", CheckerboardColumnBiomeSource.CODEC);
-      return (MapCodec)Registry.register(var0, (String)"the_end", TheEndBiomeSource.CODEC);
+   public static MapCodec<? extends BiomeSource> bootstrap(final Registry<MapCodec<? extends BiomeSource>> registry) {
+      Registry.register(registry, (String)"fixed", FixedBiomeSource.CODEC);
+      Registry.register(registry, (String)"multi_noise", MultiNoiseBiomeSource.CODEC);
+      Registry.register(registry, (String)"checkerboard", CheckerboardColumnBiomeSource.CODEC);
+      return (MapCodec)Registry.register(registry, (String)"the_end", TheEndBiomeSource.CODEC);
    }
 }

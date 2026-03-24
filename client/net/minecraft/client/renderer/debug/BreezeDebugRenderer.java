@@ -21,26 +21,26 @@ public class BreezeDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    private static final int OUTER_CIRCLE_COLOR = ARGB.color(255, 255, 0, 0);
    private final Minecraft minecraft;
 
-   public BreezeDebugRenderer(Minecraft var1) {
+   public BreezeDebugRenderer(final Minecraft minecraft) {
       super();
-      this.minecraft = var1;
+      this.minecraft = minecraft;
    }
 
-   public void emitGizmos(double var1, double var3, double var5, DebugValueAccess var7, Frustum var8, float var9) {
-      ClientLevel var10 = this.minecraft.level;
-      var7.forEachEntity(DebugSubscriptions.BREEZES, (var2, var3x) -> {
-         Optional var10000 = var3x.attackTarget();
-         Objects.requireNonNull(var10);
-         var10000.map(var10::getEntity).map((var1) -> var1.getPosition(this.minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(true))).ifPresent((var1) -> {
-            Gizmos.arrow(var2.position(), var1, TARGET_LINE_COLOR);
-            Vec3 var2x = var1.add(0.0, 0.009999999776482582, 0.0);
-            Gizmos.circle(var2x, 4.0F, GizmoStyle.stroke(INNER_CIRCLE_COLOR));
-            Gizmos.circle(var2x, 8.0F, GizmoStyle.stroke(MIDDLE_CIRCLE_COLOR));
-            Gizmos.circle(var2x, 24.0F, GizmoStyle.stroke(OUTER_CIRCLE_COLOR));
+   public void emitGizmos(final double camX, final double camY, final double camZ, final DebugValueAccess debugValues, final Frustum frustum, final float partialTicks) {
+      ClientLevel level = this.minecraft.level;
+      debugValues.forEachEntity(DebugSubscriptions.BREEZES, (entity, info) -> {
+         Optional var10000 = info.attackTarget();
+         Objects.requireNonNull(level);
+         var10000.map(level::getEntity).map((targetEntity) -> targetEntity.getPosition(this.minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(true))).ifPresent((attackTargetPosition) -> {
+            Gizmos.arrow(entity.position(), attackTargetPosition, TARGET_LINE_COLOR);
+            Vec3 drawCenter = attackTargetPosition.add(0.0, 0.009999999776482582, 0.0);
+            Gizmos.circle(drawCenter, 4.0F, GizmoStyle.stroke(INNER_CIRCLE_COLOR));
+            Gizmos.circle(drawCenter, 8.0F, GizmoStyle.stroke(MIDDLE_CIRCLE_COLOR));
+            Gizmos.circle(drawCenter, 24.0F, GizmoStyle.stroke(OUTER_CIRCLE_COLOR));
          });
-         var3x.jumpTarget().ifPresent((var1) -> {
-            Gizmos.arrow(var2.position(), var1.getCenter(), JUMP_TARGET_LINE_COLOR);
-            Gizmos.cuboid(AABB.unitCubeFromLowerCorner(Vec3.atLowerCornerOf(var1)), GizmoStyle.fill(ARGB.colorFromFloat(1.0F, 1.0F, 0.0F, 0.0F)));
+         info.jumpTarget().ifPresent((blockPos) -> {
+            Gizmos.arrow(entity.position(), blockPos.getCenter(), JUMP_TARGET_LINE_COLOR);
+            Gizmos.cuboid(AABB.unitCubeFromLowerCorner(Vec3.atLowerCornerOf(blockPos)), GizmoStyle.fill(ARGB.colorFromFloat(1.0F, 1.0F, 0.0F, 0.0F)));
          });
       });
    }

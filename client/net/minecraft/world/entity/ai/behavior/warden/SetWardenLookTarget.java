@@ -16,12 +16,12 @@ public class SetWardenLookTarget {
    }
 
    public static BehaviorControl<LivingEntity> create() {
-      return BehaviorBuilder.create((Function)((var0) -> var0.group(var0.registered(MemoryModuleType.LOOK_TARGET), var0.registered(MemoryModuleType.DISTURBANCE_LOCATION), var0.registered(MemoryModuleType.ROAR_TARGET), var0.absent(MemoryModuleType.ATTACK_TARGET)).apply(var0, (var1, var2, var3, var4) -> (var4x, var5, var6) -> {
-               Optional var8 = var0.tryGet(var3).map(Entity::blockPosition).or(() -> var0.tryGet(var2));
-               if (var8.isEmpty()) {
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.registered(MemoryModuleType.LOOK_TARGET), i.registered(MemoryModuleType.DISTURBANCE_LOCATION), i.registered(MemoryModuleType.ROAR_TARGET), i.absent(MemoryModuleType.ATTACK_TARGET)).apply(i, (lookTarget, disturbance, roarTarget, attackTarget) -> (level, body, timestamp) -> {
+               Optional<BlockPos> target = i.tryGet(roarTarget).map(Entity::blockPosition).or(() -> i.tryGet(disturbance));
+               if (target.isEmpty()) {
                   return false;
                } else {
-                  var1.set(new BlockPosTracker((BlockPos)var8.get()));
+                  lookTarget.set(new BlockPosTracker((BlockPos)target.get()));
                   return true;
                }
             })));

@@ -10,7 +10,7 @@ import net.minecraft.util.Mth;
 import org.jspecify.annotations.Nullable;
 
 public class Stitcher<T extends Stitcher.Entry> {
-   private static final Comparator<Holder<?>> HOLDER_COMPARATOR = Comparator.comparing((var0) -> -var0.height).thenComparing((var0) -> -var0.width).thenComparing((var0) -> var0.entry.name());
+   private static final Comparator<Holder<?>> HOLDER_COMPARATOR = Comparator.comparing((h) -> -h.height).thenComparing((h) -> -h.width).thenComparing((h) -> h.entry.name());
    private final int mipLevel;
    private final List<Holder<T>> texturesToBeStitched = new ArrayList();
    private final List<Region<T>> storage = new ArrayList();
@@ -20,12 +20,12 @@ public class Stitcher<T extends Stitcher.Entry> {
    private final int maxHeight;
    private final int padding;
 
-   public Stitcher(int var1, int var2, int var3, int var4) {
+   public Stitcher(final int maxWidth, final int maxHeight, final int mipLevel, final int anisotropyBit) {
       super();
-      this.mipLevel = var3;
-      this.maxWidth = var1;
-      this.maxHeight = var2;
-      this.padding = 1 << var3 << Mth.clamp(var4 - 1, 0, 4);
+      this.mipLevel = mipLevel;
+      this.maxWidth = maxWidth;
+      this.maxHeight = maxHeight;
+      this.padding = 1 << mipLevel << Mth.clamp(anisotropyBit - 1, 0, 4);
    }
 
    public int getWidth() {
@@ -36,92 +36,85 @@ public class Stitcher<T extends Stitcher.Entry> {
       return this.storageY;
    }
 
-   public void registerSprite(T var1) {
-      Holder var2 = new Holder(var1, smallestFittingMinTexel(var1.width() + this.padding * 2, this.mipLevel), smallestFittingMinTexel(var1.height() + this.padding * 2, this.mipLevel));
-      this.texturesToBeStitched.add(var2);
+   public void registerSprite(final T entry) {
+      Holder<T> holder = new Holder<T>(entry, smallestFittingMinTexel(entry.width() + this.padding * 2, this.mipLevel), smallestFittingMinTexel(entry.height() + this.padding * 2, this.mipLevel));
+      this.texturesToBeStitched.add(holder);
    }
 
    public void stitch() {
-      ArrayList var1 = new ArrayList(this.texturesToBeStitched);
-      var1.sort(HOLDER_COMPARATOR);
+      List<Holder<T>> holders = new ArrayList(this.texturesToBeStitched);
+      holders.sort(HOLDER_COMPARATOR);
 
-      for(Holder var3 : var1) {
-         if (!this.addToStorage(var3)) {
-            throw new StitcherException(var3.entry, (Collection)var1.stream().map((var0) -> var0.entry).collect(ImmutableList.toImmutableList()));
+      for(Holder<T> holder : holders) {
+         if (!this.addToStorage(holder)) {
+            throw new StitcherException(holder.entry, (Collection)holders.stream().map((h) -> h.entry).collect(ImmutableList.toImmutableList()));
          }
       }
 
    }
 
-   public void gatherSprites(SpriteLoader<T> var1) {
-      for(Region var3 : this.storage) {
-         var3.walk(var1, this.padding);
+   public void gatherSprites(final SpriteLoader<T> loader) {
+      for(Region<T> topRegion : this.storage) {
+         topRegion.walk(loader, this.padding);
       }
 
    }
 
-   private static int smallestFittingMinTexel(int var0, int var1) {
-      return (var0 >> var1) + ((var0 & (1 << var1) - 1) == 0 ? 0 : 1) << var1;
+   private static int smallestFittingMinTexel(final int input, final int maxMipLevel) {
+      return (input >> maxMipLevel) + ((input & (1 << maxMipLevel) - 1) == 0 ? 0 : 1) << maxMipLevel;
    }
 
-   private boolean addToStorage(Holder<T> var1) {
-      for(Region var3 : this.storage) {
-         if (var3.add(var1)) {
+   private boolean addToStorage(final Holder<T> holder) {
+      for(Region<T> region : this.storage) {
+         if (region.add(holder)) {
             return true;
          }
       }
 
-      return this.expand(var1);
+      return this.expand(holder);
    }
 
-   private boolean expand(Holder<T> var1) {
-      int var3 = Mth.smallestEncompassingPowerOfTwo(this.storageX);
-      int var4 = Mth.smallestEncompassingPowerOfTwo(this.storageY);
-      int var5 = Mth.smallestEncompassingPowerOfTwo(this.storageX + var1.width);
-      int var6 = Mth.smallestEncompassingPowerOfTwo(this.storageY + var1.height);
-      boolean var7 = var5 <= this.maxWidth;
-      boolean var8 = var6 <= this.maxHeight;
-      if (!var7 && !var8) {
+   private boolean expand(final Holder<T> holder) {
+      int xCurrentSize = Mth.smallestEncompassingPowerOfTwo(this.storageX);
+      int yCurrentSize = Mth.smallestEncompassingPowerOfTwo(this.storageY);
+      int xNewSize = Mth.smallestEncompassingPowerOfTwo(this.storageX + holder.width);
+      int yNewSize = Mth.smallestEncompassingPowerOfTwo(this.storageY + holder.height);
+      boolean xCanGrow = xNewSize <= this.maxWidth;
+      boolean yCanGrow = yNewSize <= this.maxHeight;
+      if (!xCanGrow && !yCanGrow) {
          return false;
       } else {
-         boolean var9 = var7 && var3 != var5;
-         boolean var10 = var8 && var4 != var6;
-         boolean var2;
-         if (var9 ^ var10) {
-            var2 = var9;
+         boolean xWillGrow = xCanGrow && xCurrentSize != xNewSize;
+         boolean yWillGrow = yCanGrow && yCurrentSize != yNewSize;
+         boolean growOnX;
+         if (xWillGrow ^ yWillGrow) {
+            growOnX = xWillGrow;
          } else {
-            var2 = var7 && var3 <= var4;
+            growOnX = xCanGrow && xCurrentSize <= yCurrentSize;
          }
 
-         Region var11;
-         if (var2) {
+         Region<T> slot;
+         if (growOnX) {
             if (this.storageY == 0) {
-               this.storageY = var6;
+               this.storageY = yNewSize;
             }
 
-            var11 = new Region(this.storageX, 0, var5 - this.storageX, this.storageY);
-            this.storageX = var5;
+            slot = new Region<T>(this.storageX, 0, xNewSize - this.storageX, this.storageY);
+            this.storageX = xNewSize;
          } else {
-            var11 = new Region(0, this.storageY, this.storageX, var6 - this.storageY);
-            this.storageY = var6;
+            slot = new Region<T>(0, this.storageY, this.storageX, yNewSize - this.storageY);
+            this.storageY = yNewSize;
          }
 
-         var11.add(var1);
-         this.storage.add(var11);
+         slot.add(holder);
+         this.storage.add(slot);
          return true;
       }
    }
 
-   static record Holder<T extends Entry>(T entry, int width, int height) {
-      final T entry;
-      final int width;
-      final int height;
-
-      Holder(T var1, int var2, int var3) {
+   private static record Holder<T extends Entry>(T entry, int width, int height) {
+      private Holder {
          super();
-         this.entry = var1;
-         this.width = var2;
-         this.height = var3;
       }
    }
 
@@ -133,12 +126,12 @@ public class Stitcher<T extends Stitcher.Entry> {
       private @Nullable List<Region<T>> subSlots;
       private @Nullable Holder<T> holder;
 
-      public Region(int var1, int var2, int var3, int var4) {
+      public Region(final int originX, final int originY, final int width, final int height) {
          super();
-         this.originX = var1;
-         this.originY = var2;
-         this.width = var3;
-         this.height = var4;
+         this.originX = originX;
+         this.originY = originY;
+         this.width = width;
+         this.height = height;
       }
 
       public int getX() {
@@ -149,41 +142,41 @@ public class Stitcher<T extends Stitcher.Entry> {
          return this.originY;
       }
 
-      public boolean add(Holder<T> var1) {
+      public boolean add(final Holder<T> holder) {
          if (this.holder != null) {
             return false;
          } else {
-            int var2 = var1.width;
-            int var3 = var1.height;
-            if (var2 <= this.width && var3 <= this.height) {
-               if (var2 == this.width && var3 == this.height) {
-                  this.holder = var1;
+            int textureWidth = holder.width;
+            int textureHeight = holder.height;
+            if (textureWidth <= this.width && textureHeight <= this.height) {
+               if (textureWidth == this.width && textureHeight == this.height) {
+                  this.holder = holder;
                   return true;
                } else {
                   if (this.subSlots == null) {
                      this.subSlots = new ArrayList(1);
-                     this.subSlots.add(new Region(this.originX, this.originY, var2, var3));
-                     int var4 = this.width - var2;
-                     int var5 = this.height - var3;
-                     if (var5 > 0 && var4 > 0) {
-                        int var6 = Math.max(this.height, var4);
-                        int var7 = Math.max(this.width, var5);
-                        if (var6 >= var7) {
-                           this.subSlots.add(new Region(this.originX, this.originY + var3, var2, var5));
-                           this.subSlots.add(new Region(this.originX + var2, this.originY, var4, this.height));
+                     this.subSlots.add(new Region(this.originX, this.originY, textureWidth, textureHeight));
+                     int spareWidth = this.width - textureWidth;
+                     int spareHeight = this.height - textureHeight;
+                     if (spareHeight > 0 && spareWidth > 0) {
+                        int right = Math.max(this.height, spareWidth);
+                        int bottom = Math.max(this.width, spareHeight);
+                        if (right >= bottom) {
+                           this.subSlots.add(new Region(this.originX, this.originY + textureHeight, textureWidth, spareHeight));
+                           this.subSlots.add(new Region(this.originX + textureWidth, this.originY, spareWidth, this.height));
                         } else {
-                           this.subSlots.add(new Region(this.originX + var2, this.originY, var4, var3));
-                           this.subSlots.add(new Region(this.originX, this.originY + var3, this.width, var5));
+                           this.subSlots.add(new Region(this.originX + textureWidth, this.originY, spareWidth, textureHeight));
+                           this.subSlots.add(new Region(this.originX, this.originY + textureHeight, this.width, spareHeight));
                         }
-                     } else if (var4 == 0) {
-                        this.subSlots.add(new Region(this.originX, this.originY + var3, var2, var5));
-                     } else if (var5 == 0) {
-                        this.subSlots.add(new Region(this.originX + var2, this.originY, var4, var3));
+                     } else if (spareWidth == 0) {
+                        this.subSlots.add(new Region(this.originX, this.originY + textureHeight, textureWidth, spareHeight));
+                     } else if (spareHeight == 0) {
+                        this.subSlots.add(new Region(this.originX + textureWidth, this.originY, spareWidth, textureHeight));
                      }
                   }
 
-                  for(Region var9 : this.subSlots) {
-                     if (var9.add(var1)) {
+                  for(Region<T> subSlot : this.subSlots) {
+                     if (subSlot.add(holder)) {
                         return true;
                      }
                   }
@@ -196,12 +189,12 @@ public class Stitcher<T extends Stitcher.Entry> {
          }
       }
 
-      public void walk(SpriteLoader<T> var1, int var2) {
+      public void walk(final SpriteLoader<T> output, final int padding) {
          if (this.holder != null) {
-            var1.load(this.holder.entry, this.getX(), this.getY(), var2);
+            output.load(this.holder.entry, this.getX(), this.getY(), padding);
          } else if (this.subSlots != null) {
-            for(Region var4 : this.subSlots) {
-               var4.walk(var1, var2);
+            for(Region<T> subSlot : this.subSlots) {
+               subSlot.walk(output, padding);
             }
          }
 
@@ -222,6 +215,6 @@ public class Stitcher<T extends Stitcher.Entry> {
    }
 
    public interface SpriteLoader<T extends Entry> {
-      void load(T var1, int var2, int var3, int var4);
+      void load(T entry, int x, int z, int padding);
    }
 }

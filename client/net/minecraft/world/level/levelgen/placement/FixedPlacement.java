@@ -9,35 +9,35 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.util.RandomSource;
 
 public class FixedPlacement extends PlacementModifier {
-   public static final MapCodec<FixedPlacement> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BlockPos.CODEC.listOf().fieldOf("positions").forGetter((var0x) -> var0x.positions)).apply(var0, FixedPlacement::new));
+   public static final MapCodec<FixedPlacement> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockPos.CODEC.listOf().fieldOf("positions").forGetter((c) -> c.positions)).apply(i, FixedPlacement::new));
    private final List<BlockPos> positions;
 
-   public static FixedPlacement of(BlockPos... var0) {
-      return new FixedPlacement(List.of(var0));
+   public static FixedPlacement of(final BlockPos... pos) {
+      return new FixedPlacement(List.of(pos));
    }
 
-   private FixedPlacement(List<BlockPos> var1) {
+   private FixedPlacement(final List<BlockPos> positions) {
       super();
-      this.positions = var1;
+      this.positions = positions;
    }
 
-   public Stream<BlockPos> getPositions(PlacementContext var1, RandomSource var2, BlockPos var3) {
-      int var4 = SectionPos.blockToSectionCoord(var3.getX());
-      int var5 = SectionPos.blockToSectionCoord(var3.getZ());
-      boolean var6 = false;
+   public Stream<BlockPos> getPositions(final PlacementContext context, final RandomSource random, final BlockPos origin) {
+      int chunkX = SectionPos.blockToSectionCoord(origin.getX());
+      int chunkZ = SectionPos.blockToSectionCoord(origin.getZ());
+      boolean hasPositions = false;
 
-      for(BlockPos var8 : this.positions) {
-         if (isSameChunk(var4, var5, var8)) {
-            var6 = true;
+      for(BlockPos position : this.positions) {
+         if (isSameChunk(chunkX, chunkZ, position)) {
+            hasPositions = true;
             break;
          }
       }
 
-      return !var6 ? Stream.empty() : this.positions.stream().filter((var2x) -> isSameChunk(var4, var5, var2x));
+      return !hasPositions ? Stream.empty() : this.positions.stream().filter((pos) -> isSameChunk(chunkX, chunkZ, pos));
    }
 
-   private static boolean isSameChunk(int var0, int var1, BlockPos var2) {
-      return var0 == SectionPos.blockToSectionCoord(var2.getX()) && var1 == SectionPos.blockToSectionCoord(var2.getZ());
+   private static boolean isSameChunk(final int chunkX, final int chunkZ, final BlockPos position) {
+      return chunkX == SectionPos.blockToSectionCoord(position.getX()) && chunkZ == SectionPos.blockToSectionCoord(position.getZ());
    }
 
    public PlacementModifierType<?> type() {

@@ -22,10 +22,10 @@ public class FlyNodeEvaluator extends WalkNodeEvaluator {
       super();
    }
 
-   public void prepare(PathNavigationRegion var1, Mob var2) {
-      super.prepare(var1, var2);
+   public void prepare(final PathNavigationRegion level, final Mob entity) {
+      super.prepare(level, entity);
       this.pathTypeByPosCache.clear();
-      var2.onPathfindingStart();
+      entity.onPathfindingStart();
    }
 
    public void done() {
@@ -35,243 +35,243 @@ public class FlyNodeEvaluator extends WalkNodeEvaluator {
    }
 
    public Node getStart() {
-      int var1;
+      int startY;
       if (this.canFloat() && this.mob.isInWater()) {
-         var1 = this.mob.getBlockY();
-         BlockPos.MutableBlockPos var2 = new BlockPos.MutableBlockPos(this.mob.getX(), (double)var1, this.mob.getZ());
+         startY = this.mob.getBlockY();
+         BlockPos.MutableBlockPos reusableBlockPos = new BlockPos.MutableBlockPos(this.mob.getX(), (double)startY, this.mob.getZ());
 
-         for(BlockState var3 = this.currentContext.getBlockState(var2); var3.is(Blocks.WATER); var3 = this.currentContext.getBlockState(var2)) {
-            ++var1;
-            var2.set(this.mob.getX(), (double)var1, this.mob.getZ());
+         for(BlockState state = this.currentContext.getBlockState(reusableBlockPos); state.is(Blocks.WATER); state = this.currentContext.getBlockState(reusableBlockPos)) {
+            ++startY;
+            reusableBlockPos.set(this.mob.getX(), (double)startY, this.mob.getZ());
          }
       } else {
-         var1 = Mth.floor(this.mob.getY() + 0.5);
+         startY = Mth.floor(this.mob.getY() + 0.5);
       }
 
-      BlockPos var5 = BlockPos.containing(this.mob.getX(), (double)var1, this.mob.getZ());
-      if (!this.canStartAt(var5)) {
-         for(BlockPos var4 : this.iteratePathfindingStartNodeCandidatePositions(this.mob)) {
-            if (this.canStartAt(var4)) {
-               return super.getStartNode(var4);
+      BlockPos startPos = BlockPos.containing(this.mob.getX(), (double)startY, this.mob.getZ());
+      if (!this.canStartAt(startPos)) {
+         for(BlockPos testedPosition : this.iteratePathfindingStartNodeCandidatePositions(this.mob)) {
+            if (this.canStartAt(testedPosition)) {
+               return super.getStartNode(testedPosition);
             }
          }
       }
 
-      return super.getStartNode(var5);
+      return super.getStartNode(startPos);
    }
 
-   protected boolean canStartAt(BlockPos var1) {
-      PathType var2 = this.getCachedPathType(var1.getX(), var1.getY(), var1.getZ());
-      return this.mob.getPathfindingMalus(var2) >= 0.0F;
+   protected boolean canStartAt(final BlockPos pos) {
+      PathType blockPathType = this.getCachedPathType(pos.getX(), pos.getY(), pos.getZ());
+      return this.mob.getPathfindingMalus(blockPathType) >= 0.0F;
    }
 
-   public Target getTarget(double var1, double var3, double var5) {
-      return this.getTargetNodeAt(var1, var3, var5);
+   public Target getTarget(final double x, final double y, final double z) {
+      return this.getTargetNodeAt(x, y, z);
    }
 
-   public int getNeighbors(Node[] var1, Node var2) {
-      int var3 = 0;
-      Node var4 = this.findAcceptedNode(var2.x, var2.y, var2.z + 1);
-      if (this.isOpen(var4)) {
-         var1[var3++] = var4;
+   public int getNeighbors(final Node[] neighbors, final Node pos) {
+      int count = 0;
+      Node south = this.findAcceptedNode(pos.x, pos.y, pos.z + 1);
+      if (this.isOpen(south)) {
+         neighbors[count++] = south;
       }
 
-      Node var5 = this.findAcceptedNode(var2.x - 1, var2.y, var2.z);
-      if (this.isOpen(var5)) {
-         var1[var3++] = var5;
+      Node west = this.findAcceptedNode(pos.x - 1, pos.y, pos.z);
+      if (this.isOpen(west)) {
+         neighbors[count++] = west;
       }
 
-      Node var6 = this.findAcceptedNode(var2.x + 1, var2.y, var2.z);
-      if (this.isOpen(var6)) {
-         var1[var3++] = var6;
+      Node east = this.findAcceptedNode(pos.x + 1, pos.y, pos.z);
+      if (this.isOpen(east)) {
+         neighbors[count++] = east;
       }
 
-      Node var7 = this.findAcceptedNode(var2.x, var2.y, var2.z - 1);
-      if (this.isOpen(var7)) {
-         var1[var3++] = var7;
+      Node north = this.findAcceptedNode(pos.x, pos.y, pos.z - 1);
+      if (this.isOpen(north)) {
+         neighbors[count++] = north;
       }
 
-      Node var8 = this.findAcceptedNode(var2.x, var2.y + 1, var2.z);
-      if (this.isOpen(var8)) {
-         var1[var3++] = var8;
+      Node up = this.findAcceptedNode(pos.x, pos.y + 1, pos.z);
+      if (this.isOpen(up)) {
+         neighbors[count++] = up;
       }
 
-      Node var9 = this.findAcceptedNode(var2.x, var2.y - 1, var2.z);
-      if (this.isOpen(var9)) {
-         var1[var3++] = var9;
+      Node down = this.findAcceptedNode(pos.x, pos.y - 1, pos.z);
+      if (this.isOpen(down)) {
+         neighbors[count++] = down;
       }
 
-      Node var10 = this.findAcceptedNode(var2.x, var2.y + 1, var2.z + 1);
-      if (this.isOpen(var10) && this.hasMalus(var4) && this.hasMalus(var8)) {
-         var1[var3++] = var10;
+      Node southUp = this.findAcceptedNode(pos.x, pos.y + 1, pos.z + 1);
+      if (this.isOpen(southUp) && this.hasMalus(south) && this.hasMalus(up)) {
+         neighbors[count++] = southUp;
       }
 
-      Node var11 = this.findAcceptedNode(var2.x - 1, var2.y + 1, var2.z);
-      if (this.isOpen(var11) && this.hasMalus(var5) && this.hasMalus(var8)) {
-         var1[var3++] = var11;
+      Node westUp = this.findAcceptedNode(pos.x - 1, pos.y + 1, pos.z);
+      if (this.isOpen(westUp) && this.hasMalus(west) && this.hasMalus(up)) {
+         neighbors[count++] = westUp;
       }
 
-      Node var12 = this.findAcceptedNode(var2.x + 1, var2.y + 1, var2.z);
-      if (this.isOpen(var12) && this.hasMalus(var6) && this.hasMalus(var8)) {
-         var1[var3++] = var12;
+      Node eastUp = this.findAcceptedNode(pos.x + 1, pos.y + 1, pos.z);
+      if (this.isOpen(eastUp) && this.hasMalus(east) && this.hasMalus(up)) {
+         neighbors[count++] = eastUp;
       }
 
-      Node var13 = this.findAcceptedNode(var2.x, var2.y + 1, var2.z - 1);
-      if (this.isOpen(var13) && this.hasMalus(var7) && this.hasMalus(var8)) {
-         var1[var3++] = var13;
+      Node northUp = this.findAcceptedNode(pos.x, pos.y + 1, pos.z - 1);
+      if (this.isOpen(northUp) && this.hasMalus(north) && this.hasMalus(up)) {
+         neighbors[count++] = northUp;
       }
 
-      Node var14 = this.findAcceptedNode(var2.x, var2.y - 1, var2.z + 1);
-      if (this.isOpen(var14) && this.hasMalus(var4) && this.hasMalus(var9)) {
-         var1[var3++] = var14;
+      Node southDown = this.findAcceptedNode(pos.x, pos.y - 1, pos.z + 1);
+      if (this.isOpen(southDown) && this.hasMalus(south) && this.hasMalus(down)) {
+         neighbors[count++] = southDown;
       }
 
-      Node var15 = this.findAcceptedNode(var2.x - 1, var2.y - 1, var2.z);
-      if (this.isOpen(var15) && this.hasMalus(var5) && this.hasMalus(var9)) {
-         var1[var3++] = var15;
+      Node westDown = this.findAcceptedNode(pos.x - 1, pos.y - 1, pos.z);
+      if (this.isOpen(westDown) && this.hasMalus(west) && this.hasMalus(down)) {
+         neighbors[count++] = westDown;
       }
 
-      Node var16 = this.findAcceptedNode(var2.x + 1, var2.y - 1, var2.z);
-      if (this.isOpen(var16) && this.hasMalus(var6) && this.hasMalus(var9)) {
-         var1[var3++] = var16;
+      Node eastDown = this.findAcceptedNode(pos.x + 1, pos.y - 1, pos.z);
+      if (this.isOpen(eastDown) && this.hasMalus(east) && this.hasMalus(down)) {
+         neighbors[count++] = eastDown;
       }
 
-      Node var17 = this.findAcceptedNode(var2.x, var2.y - 1, var2.z - 1);
-      if (this.isOpen(var17) && this.hasMalus(var7) && this.hasMalus(var9)) {
-         var1[var3++] = var17;
+      Node northDown = this.findAcceptedNode(pos.x, pos.y - 1, pos.z - 1);
+      if (this.isOpen(northDown) && this.hasMalus(north) && this.hasMalus(down)) {
+         neighbors[count++] = northDown;
       }
 
-      Node var18 = this.findAcceptedNode(var2.x + 1, var2.y, var2.z - 1);
-      if (this.isOpen(var18) && this.hasMalus(var7) && this.hasMalus(var6)) {
-         var1[var3++] = var18;
+      Node northEast = this.findAcceptedNode(pos.x + 1, pos.y, pos.z - 1);
+      if (this.isOpen(northEast) && this.hasMalus(north) && this.hasMalus(east)) {
+         neighbors[count++] = northEast;
       }
 
-      Node var19 = this.findAcceptedNode(var2.x + 1, var2.y, var2.z + 1);
-      if (this.isOpen(var19) && this.hasMalus(var4) && this.hasMalus(var6)) {
-         var1[var3++] = var19;
+      Node southEast = this.findAcceptedNode(pos.x + 1, pos.y, pos.z + 1);
+      if (this.isOpen(southEast) && this.hasMalus(south) && this.hasMalus(east)) {
+         neighbors[count++] = southEast;
       }
 
-      Node var20 = this.findAcceptedNode(var2.x - 1, var2.y, var2.z - 1);
-      if (this.isOpen(var20) && this.hasMalus(var7) && this.hasMalus(var5)) {
-         var1[var3++] = var20;
+      Node northWest = this.findAcceptedNode(pos.x - 1, pos.y, pos.z - 1);
+      if (this.isOpen(northWest) && this.hasMalus(north) && this.hasMalus(west)) {
+         neighbors[count++] = northWest;
       }
 
-      Node var21 = this.findAcceptedNode(var2.x - 1, var2.y, var2.z + 1);
-      if (this.isOpen(var21) && this.hasMalus(var4) && this.hasMalus(var5)) {
-         var1[var3++] = var21;
+      Node southWest = this.findAcceptedNode(pos.x - 1, pos.y, pos.z + 1);
+      if (this.isOpen(southWest) && this.hasMalus(south) && this.hasMalus(west)) {
+         neighbors[count++] = southWest;
       }
 
-      Node var22 = this.findAcceptedNode(var2.x + 1, var2.y + 1, var2.z - 1);
-      if (this.isOpen(var22) && this.hasMalus(var18) && this.hasMalus(var7) && this.hasMalus(var6) && this.hasMalus(var8) && this.hasMalus(var13) && this.hasMalus(var12)) {
-         var1[var3++] = var22;
+      Node northEastUp = this.findAcceptedNode(pos.x + 1, pos.y + 1, pos.z - 1);
+      if (this.isOpen(northEastUp) && this.hasMalus(northEast) && this.hasMalus(north) && this.hasMalus(east) && this.hasMalus(up) && this.hasMalus(northUp) && this.hasMalus(eastUp)) {
+         neighbors[count++] = northEastUp;
       }
 
-      Node var23 = this.findAcceptedNode(var2.x + 1, var2.y + 1, var2.z + 1);
-      if (this.isOpen(var23) && this.hasMalus(var19) && this.hasMalus(var4) && this.hasMalus(var6) && this.hasMalus(var8) && this.hasMalus(var10) && this.hasMalus(var12)) {
-         var1[var3++] = var23;
+      Node southEastUp = this.findAcceptedNode(pos.x + 1, pos.y + 1, pos.z + 1);
+      if (this.isOpen(southEastUp) && this.hasMalus(southEast) && this.hasMalus(south) && this.hasMalus(east) && this.hasMalus(up) && this.hasMalus(southUp) && this.hasMalus(eastUp)) {
+         neighbors[count++] = southEastUp;
       }
 
-      Node var24 = this.findAcceptedNode(var2.x - 1, var2.y + 1, var2.z - 1);
-      if (this.isOpen(var24) && this.hasMalus(var20) && this.hasMalus(var7) && this.hasMalus(var5) && this.hasMalus(var8) && this.hasMalus(var13) && this.hasMalus(var11)) {
-         var1[var3++] = var24;
+      Node northWestUp = this.findAcceptedNode(pos.x - 1, pos.y + 1, pos.z - 1);
+      if (this.isOpen(northWestUp) && this.hasMalus(northWest) && this.hasMalus(north) && this.hasMalus(west) && this.hasMalus(up) && this.hasMalus(northUp) && this.hasMalus(westUp)) {
+         neighbors[count++] = northWestUp;
       }
 
-      Node var25 = this.findAcceptedNode(var2.x - 1, var2.y + 1, var2.z + 1);
-      if (this.isOpen(var25) && this.hasMalus(var21) && this.hasMalus(var4) && this.hasMalus(var5) && this.hasMalus(var8) && this.hasMalus(var10) && this.hasMalus(var11)) {
-         var1[var3++] = var25;
+      Node southWestUp = this.findAcceptedNode(pos.x - 1, pos.y + 1, pos.z + 1);
+      if (this.isOpen(southWestUp) && this.hasMalus(southWest) && this.hasMalus(south) && this.hasMalus(west) && this.hasMalus(up) && this.hasMalus(southUp) && this.hasMalus(westUp)) {
+         neighbors[count++] = southWestUp;
       }
 
-      Node var26 = this.findAcceptedNode(var2.x + 1, var2.y - 1, var2.z - 1);
-      if (this.isOpen(var26) && this.hasMalus(var18) && this.hasMalus(var7) && this.hasMalus(var6) && this.hasMalus(var9) && this.hasMalus(var17) && this.hasMalus(var16)) {
-         var1[var3++] = var26;
+      Node northEastDown = this.findAcceptedNode(pos.x + 1, pos.y - 1, pos.z - 1);
+      if (this.isOpen(northEastDown) && this.hasMalus(northEast) && this.hasMalus(north) && this.hasMalus(east) && this.hasMalus(down) && this.hasMalus(northDown) && this.hasMalus(eastDown)) {
+         neighbors[count++] = northEastDown;
       }
 
-      Node var27 = this.findAcceptedNode(var2.x + 1, var2.y - 1, var2.z + 1);
-      if (this.isOpen(var27) && this.hasMalus(var19) && this.hasMalus(var4) && this.hasMalus(var6) && this.hasMalus(var9) && this.hasMalus(var14) && this.hasMalus(var16)) {
-         var1[var3++] = var27;
+      Node southEastDown = this.findAcceptedNode(pos.x + 1, pos.y - 1, pos.z + 1);
+      if (this.isOpen(southEastDown) && this.hasMalus(southEast) && this.hasMalus(south) && this.hasMalus(east) && this.hasMalus(down) && this.hasMalus(southDown) && this.hasMalus(eastDown)) {
+         neighbors[count++] = southEastDown;
       }
 
-      Node var28 = this.findAcceptedNode(var2.x - 1, var2.y - 1, var2.z - 1);
-      if (this.isOpen(var28) && this.hasMalus(var20) && this.hasMalus(var7) && this.hasMalus(var5) && this.hasMalus(var9) && this.hasMalus(var17) && this.hasMalus(var15)) {
-         var1[var3++] = var28;
+      Node northWestDown = this.findAcceptedNode(pos.x - 1, pos.y - 1, pos.z - 1);
+      if (this.isOpen(northWestDown) && this.hasMalus(northWest) && this.hasMalus(north) && this.hasMalus(west) && this.hasMalus(down) && this.hasMalus(northDown) && this.hasMalus(westDown)) {
+         neighbors[count++] = northWestDown;
       }
 
-      Node var29 = this.findAcceptedNode(var2.x - 1, var2.y - 1, var2.z + 1);
-      if (this.isOpen(var29) && this.hasMalus(var21) && this.hasMalus(var4) && this.hasMalus(var5) && this.hasMalus(var9) && this.hasMalus(var14) && this.hasMalus(var15)) {
-         var1[var3++] = var29;
+      Node southWestDown = this.findAcceptedNode(pos.x - 1, pos.y - 1, pos.z + 1);
+      if (this.isOpen(southWestDown) && this.hasMalus(southWest) && this.hasMalus(south) && this.hasMalus(west) && this.hasMalus(down) && this.hasMalus(southDown) && this.hasMalus(westDown)) {
+         neighbors[count++] = southWestDown;
       }
 
-      return var3;
+      return count;
    }
 
-   private boolean hasMalus(@Nullable Node var1) {
-      return var1 != null && var1.costMalus >= 0.0F;
+   private boolean hasMalus(final @Nullable Node node) {
+      return node != null && node.costMalus >= 0.0F;
    }
 
-   private boolean isOpen(@Nullable Node var1) {
-      return var1 != null && !var1.closed;
+   private boolean isOpen(final @Nullable Node node) {
+      return node != null && !node.closed;
    }
 
-   protected @Nullable Node findAcceptedNode(int var1, int var2, int var3) {
-      Node var4 = null;
-      PathType var5 = this.getCachedPathType(var1, var2, var3);
-      float var6 = this.mob.getPathfindingMalus(var5);
-      if (var6 >= 0.0F) {
-         var4 = this.getNode(var1, var2, var3);
-         var4.type = var5;
-         var4.costMalus = Math.max(var4.costMalus, var6);
-         if (var5 == PathType.WALKABLE) {
-            ++var4.costMalus;
+   protected @Nullable Node findAcceptedNode(final int x, final int y, final int z) {
+      Node best = null;
+      PathType pathType = this.getCachedPathType(x, y, z);
+      float pathCost = this.mob.getPathfindingMalus(pathType);
+      if (pathCost >= 0.0F) {
+         best = this.getNode(x, y, z);
+         best.type = pathType;
+         best.costMalus = Math.max(best.costMalus, pathCost);
+         if (pathType == PathType.WALKABLE) {
+            ++best.costMalus;
          }
       }
 
-      return var4;
+      return best;
    }
 
-   protected PathType getCachedPathType(int var1, int var2, int var3) {
-      return (PathType)this.pathTypeByPosCache.computeIfAbsent(BlockPos.asLong(var1, var2, var3), (var4) -> this.getPathTypeOfMob(this.currentContext, var1, var2, var3, this.mob));
+   protected PathType getCachedPathType(final int x, final int y, final int z) {
+      return (PathType)this.pathTypeByPosCache.computeIfAbsent(BlockPos.asLong(x, y, z), (key) -> this.getPathTypeOfMob(this.currentContext, x, y, z, this.mob));
    }
 
-   public PathType getPathType(PathfindingContext var1, int var2, int var3, int var4) {
-      PathType var5 = var1.getPathTypeFromState(var2, var3, var4);
-      if (var5 == PathType.OPEN && var3 >= var1.level().getMinY() + 1) {
-         BlockPos var6 = new BlockPos(var2, var3 - 1, var4);
-         PathType var7 = var1.getPathTypeFromState(var6.getX(), var6.getY(), var6.getZ());
-         if (var7 != PathType.DAMAGE_FIRE && var7 != PathType.LAVA) {
-            if (var7 == PathType.DAMAGE_OTHER) {
-               var5 = PathType.DAMAGE_OTHER;
-            } else if (var7 == PathType.COCOA) {
-               var5 = PathType.COCOA;
-            } else if (var7 == PathType.FENCE) {
-               if (!var6.equals(var1.mobPosition())) {
-                  var5 = PathType.FENCE;
+   public PathType getPathType(final PathfindingContext context, final int x, final int y, final int z) {
+      PathType blockPathType = context.getPathTypeFromState(x, y, z);
+      if (blockPathType == PathType.OPEN && y >= context.level().getMinY() + 1) {
+         BlockPos belowPos = new BlockPos(x, y - 1, z);
+         PathType belowType = context.getPathTypeFromState(belowPos.getX(), belowPos.getY(), belowPos.getZ());
+         if (belowType != PathType.FIRE && belowType != PathType.LAVA) {
+            if (belowType == PathType.DAMAGING) {
+               blockPathType = PathType.DAMAGING;
+            } else if (belowType == PathType.COCOA) {
+               blockPathType = PathType.COCOA;
+            } else if (belowType == PathType.FENCE) {
+               if (!belowPos.equals(context.mobPosition())) {
+                  blockPathType = PathType.FENCE;
                }
             } else {
-               var5 = var7 != PathType.WALKABLE && var7 != PathType.OPEN && var7 != PathType.WATER ? PathType.WALKABLE : PathType.OPEN;
+               blockPathType = belowType != PathType.WALKABLE && belowType != PathType.OPEN && belowType != PathType.WATER ? PathType.WALKABLE : PathType.OPEN;
             }
          } else {
-            var5 = PathType.DAMAGE_FIRE;
+            blockPathType = PathType.FIRE;
          }
       }
 
-      if (var5 == PathType.WALKABLE || var5 == PathType.OPEN) {
-         var5 = checkNeighbourBlocks(var1, var2, var3, var4, var5);
+      if (blockPathType == PathType.WALKABLE || blockPathType == PathType.OPEN) {
+         blockPathType = checkNeighbourBlocks(context, x, y, z, blockPathType);
       }
 
-      return var5;
+      return blockPathType;
    }
 
-   private Iterable<BlockPos> iteratePathfindingStartNodeCandidatePositions(Mob var1) {
-      AABB var2 = var1.getBoundingBox();
-      boolean var3 = var2.getSize() < 1.0;
-      if (!var3) {
-         return List.of(BlockPos.containing(var2.minX, (double)var1.getBlockY(), var2.minZ), BlockPos.containing(var2.minX, (double)var1.getBlockY(), var2.maxZ), BlockPos.containing(var2.maxX, (double)var1.getBlockY(), var2.minZ), BlockPos.containing(var2.maxX, (double)var1.getBlockY(), var2.maxZ));
+   private Iterable<BlockPos> iteratePathfindingStartNodeCandidatePositions(final Mob mob) {
+      AABB boundingBox = mob.getBoundingBox();
+      boolean isSmallMob = boundingBox.getSize() < 1.0;
+      if (!isSmallMob) {
+         return List.of(BlockPos.containing(boundingBox.minX, (double)mob.getBlockY(), boundingBox.minZ), BlockPos.containing(boundingBox.minX, (double)mob.getBlockY(), boundingBox.maxZ), BlockPos.containing(boundingBox.maxX, (double)mob.getBlockY(), boundingBox.minZ), BlockPos.containing(boundingBox.maxX, (double)mob.getBlockY(), boundingBox.maxZ));
       } else {
-         double var4 = Math.max(0.0, 1.100000023841858 - var2.getZsize());
-         double var6 = Math.max(0.0, 1.100000023841858 - var2.getXsize());
-         double var8 = Math.max(0.0, 1.100000023841858 - var2.getYsize());
-         AABB var10 = var2.inflate(var6, var8, var4);
-         return BlockPos.randomBetweenClosed(var1.getRandom(), 10, Mth.floor(var10.minX), Mth.floor(var10.minY), Mth.floor(var10.minZ), Mth.floor(var10.maxX), Mth.floor(var10.maxY), Mth.floor(var10.maxZ));
+         double zPadding = Math.max(0.0, 1.100000023841858 - boundingBox.getZsize());
+         double xPadding = Math.max(0.0, 1.100000023841858 - boundingBox.getXsize());
+         double yPadding = Math.max(0.0, 1.100000023841858 - boundingBox.getYsize());
+         AABB inflatedBoundingBox = boundingBox.inflate(xPadding, yPadding, zPadding);
+         return BlockPos.randomBetweenClosed(mob.getRandom(), 10, Mth.floor(inflatedBoundingBox.minX), Mth.floor(inflatedBoundingBox.minY), Mth.floor(inflatedBoundingBox.minZ), Mth.floor(inflatedBoundingBox.maxX), Mth.floor(inflatedBoundingBox.maxY), Mth.floor(inflatedBoundingBox.maxZ));
       }
    }
 }

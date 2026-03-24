@@ -10,26 +10,26 @@ public class ServerboundSwingPacket implements Packet<ServerGamePacketListener> 
    public static final StreamCodec<FriendlyByteBuf, ServerboundSwingPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundSwingPacket>codec(ServerboundSwingPacket::write, ServerboundSwingPacket::new);
    private final InteractionHand hand;
 
-   public ServerboundSwingPacket(InteractionHand var1) {
+   public ServerboundSwingPacket(final InteractionHand hand) {
       super();
-      this.hand = var1;
+      this.hand = hand;
    }
 
-   private ServerboundSwingPacket(FriendlyByteBuf var1) {
+   private ServerboundSwingPacket(final FriendlyByteBuf input) {
       super();
-      this.hand = (InteractionHand)var1.readEnum(InteractionHand.class);
+      this.hand = (InteractionHand)input.readEnum(InteractionHand.class);
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeEnum(this.hand);
+   private void write(final FriendlyByteBuf output) {
+      output.writeEnum(this.hand);
    }
 
    public PacketType<ServerboundSwingPacket> type() {
       return GamePacketTypes.SERVERBOUND_SWING;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handleAnimate(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handleAnimate(this);
    }
 
    public InteractionHand getHand() {

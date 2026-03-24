@@ -5,26 +5,27 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.util.valueproviders.IntProvider;
+import net.minecraft.util.valueproviders.IntProviders;
 
 public class CountPlacement extends RepeatingPlacement {
-   public static final MapCodec<CountPlacement> CODEC = IntProvider.codec(0, 256).fieldOf("count").xmap(CountPlacement::new, (var0) -> var0.count);
+   public static final MapCodec<CountPlacement> CODEC = IntProviders.codec(0, 4096).fieldOf("count").xmap(CountPlacement::new, (c) -> c.count);
    private final IntProvider count;
 
-   private CountPlacement(IntProvider var1) {
+   private CountPlacement(final IntProvider count) {
       super();
-      this.count = var1;
+      this.count = count;
    }
 
-   public static CountPlacement of(IntProvider var0) {
-      return new CountPlacement(var0);
+   public static CountPlacement of(final IntProvider count) {
+      return new CountPlacement(count);
    }
 
-   public static CountPlacement of(int var0) {
-      return of(ConstantInt.of(var0));
+   public static CountPlacement of(final int count) {
+      return of(ConstantInt.of(count));
    }
 
-   protected int count(RandomSource var1, BlockPos var2) {
-      return this.count.sample(var1);
+   protected int count(final RandomSource random, final BlockPos origin) {
+      return this.count.sample(random);
    }
 
    public PlacementModifierType<?> type() {

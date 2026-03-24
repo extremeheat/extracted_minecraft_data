@@ -13,10 +13,12 @@ import java.util.function.UnaryOperator;
 import net.minecraft.ChatFormatting;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
+import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.debug.DebugScreenEntries;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.debug.DebugOptionsScreen;
@@ -25,6 +27,7 @@ import net.minecraft.client.gui.screens.options.VideoSettingsScreen;
 import net.minecraft.client.gui.screens.options.controls.KeyBindsScreen;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.PreeditEvent;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
@@ -36,7 +39,6 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ServerboundChangeGameModePacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.commands.GameModeCommand;
@@ -69,25 +71,26 @@ public class KeyboardHandler {
    private long debugCrashKeyReportedTime = -1L;
    private long debugCrashKeyReportedCount = -1L;
    private boolean usedDebugKeyAsModifier;
+   private @Nullable PreeditEvent lastPreeditEvent;
 
-   public KeyboardHandler(Minecraft var1) {
+   public KeyboardHandler(final Minecraft minecraft) {
       super();
-      this.minecraft = var1;
+      this.minecraft = minecraft;
    }
 
-   private boolean handleChunkDebugKeys(KeyEvent var1) {
-      switch (var1.key()) {
+   private boolean handleChunkDebugKeys(final KeyEvent event) {
+      switch (event.key()) {
          case 69:
             if (this.minecraft.player == null) {
                return false;
             }
 
-            boolean var2 = this.minecraft.debugEntries.toggleStatus(DebugScreenEntries.CHUNK_SECTION_PATHS);
-            this.debugFeedback("SectionPath: " + (var2 ? "shown" : "hidden"));
+            boolean chunkSectionPaths = this.minecraft.debugEntries.toggleStatus(DebugScreenEntries.CHUNK_SECTION_PATHS);
+            this.debugFeedback("SectionPath: " + (chunkSectionPaths ? "shown" : "hidden"));
             return true;
          case 70:
-            boolean var4 = FogRenderer.toggleFog();
-            this.debugFeedbackEnabledStatus("Fog: ", var4);
+            boolean fogEnabled = FogRenderer.toggleFog();
+            this.debugFeedbackEnabledStatus("Fog: ", fogEnabled);
             return true;
          case 71:
          case 72:
@@ -112,15 +115,15 @@ public class KeyboardHandler {
                return false;
             }
 
-            boolean var3 = this.minecraft.debugEntries.toggleStatus(DebugScreenEntries.CHUNK_SECTION_OCTREE);
-            this.debugFeedbackEnabledStatus("Frustum culling Octree: ", var3);
+            boolean renderOctree = this.minecraft.debugEntries.toggleStatus(DebugScreenEntries.CHUNK_SECTION_OCTREE);
+            this.debugFeedbackEnabledStatus("Frustum culling Octree: ", renderOctree);
             return true;
          case 85:
-            if (var1.hasShiftDown()) {
-               this.minecraft.levelRenderer.killFrustum();
+            if (event.hasShiftDown()) {
+               this.minecraft.gameRenderer.getMainCamera().killFrustum();
                this.debugFeedback("Killed frustum");
             } else {
-               this.minecraft.levelRenderer.captureFrustum();
+               this.minecraft.gameRenderer.getMainCamera().captureFrustum();
                this.debugFeedback("Captured frustum");
             }
 
@@ -130,8 +133,8 @@ public class KeyboardHandler {
                return false;
             }
 
-            boolean var5 = this.minecraft.debugEntries.toggleStatus(DebugScreenEntries.CHUNK_SECTION_VISIBILITY);
-            this.debugFeedbackEnabledStatus("SectionVisibility: ", var5);
+            boolean sectionVisibility = this.minecraft.debugEntries.toggleStatus(DebugScreenEntries.CHUNK_SECTION_VISIBILITY);
+            this.debugFeedbackEnabledStatus("SectionVisibility: ", sectionVisibility);
             return true;
          case 87:
             this.minecraft.wireframe = !this.minecraft.wireframe;
@@ -140,43 +143,43 @@ public class KeyboardHandler {
       }
    }
 
-   private void debugFeedbackEnabledStatus(String var1, boolean var2) {
-      this.debugFeedback(var1 + (var2 ? "enabled" : "disabled"));
+   private void debugFeedbackEnabledStatus(final String prefix, final boolean isEnabled) {
+      this.debugFeedback(prefix + (isEnabled ? "enabled" : "disabled"));
    }
 
-   private void showDebugChat(Component var1) {
-      this.minecraft.gui.getChat().addMessage(var1);
-      this.minecraft.getNarrator().saySystemQueued(var1);
+   private void showDebugChat(final Component message) {
+      this.minecraft.gui.getChat().addClientSystemMessage(message);
+      this.minecraft.getNarrator().saySystemQueued(message);
    }
 
-   private static Component decorateDebugComponent(ChatFormatting var0, Component var1) {
-      return Component.empty().append((Component)Component.translatable("debug.prefix").withStyle(var0, ChatFormatting.BOLD)).append(CommonComponents.SPACE).append(var1);
+   private static Component decorateDebugComponent(final ChatFormatting formatting, final Component component) {
+      return Component.empty().append((Component)Component.translatable("debug.prefix").withStyle(formatting, ChatFormatting.BOLD)).append(CommonComponents.SPACE).append(component);
    }
 
-   private void debugWarningComponent(Component var1) {
-      this.showDebugChat(decorateDebugComponent(ChatFormatting.RED, var1));
+   private void debugWarningComponent(final Component component) {
+      this.showDebugChat(decorateDebugComponent(ChatFormatting.RED, component));
    }
 
-   private void debugFeedbackComponent(Component var1) {
-      this.showDebugChat(decorateDebugComponent(ChatFormatting.YELLOW, var1));
+   private void debugFeedbackComponent(final Component component) {
+      this.showDebugChat(decorateDebugComponent(ChatFormatting.YELLOW, component));
    }
 
-   private void debugFeedbackTranslated(String var1, Object... var2) {
-      this.debugFeedbackComponent(Component.translatable(var1, var2));
+   private void debugFeedbackTranslated(final String pattern, final Object... args) {
+      this.debugFeedbackComponent(Component.translatable(pattern, args));
    }
 
-   private void debugFeedback(String var1) {
-      this.debugFeedbackComponent(Component.literal(var1));
+   private void debugFeedback(final String message) {
+      this.debugFeedbackComponent(Component.literal(message));
    }
 
-   private boolean handleDebugKeys(KeyEvent var1) {
+   private boolean handleDebugKeys(final KeyEvent event) {
       if (this.debugCrashKeyTime > 0L && this.debugCrashKeyTime < Util.getMillis() - 100L) {
          return true;
-      } else if (SharedConstants.DEBUG_HOTKEYS && this.handleChunkDebugKeys(var1)) {
+      } else if (SharedConstants.DEBUG_HOTKEYS && this.handleChunkDebugKeys(event)) {
          return true;
       } else {
          if (SharedConstants.DEBUG_FEATURE_COUNT) {
-            switch (var1.key()) {
+            switch (event.key()) {
                case 76:
                   FeatureCountTracker.logCounts();
                   return true;
@@ -186,72 +189,72 @@ public class KeyboardHandler {
             }
          }
 
-         Options var2 = this.minecraft.options;
-         boolean var3 = false;
-         if (var2.keyDebugReloadChunk.matches(var1)) {
+         Options options = this.minecraft.options;
+         boolean debugAction = false;
+         if (options.keyDebugReloadChunk.matches(event)) {
             this.minecraft.levelRenderer.allChanged();
             this.debugFeedbackTranslated("debug.reload_chunks.message");
-            var3 = true;
+            debugAction = true;
          }
 
-         if (var2.keyDebugShowHitboxes.matches(var1) && this.minecraft.player != null && !this.minecraft.player.isReducedDebugInfo()) {
-            boolean var4 = this.minecraft.debugEntries.toggleStatus(DebugScreenEntries.ENTITY_HITBOXES);
-            this.debugFeedbackTranslated(var4 ? "debug.show_hitboxes.on" : "debug.show_hitboxes.off");
-            var3 = true;
+         if (options.keyDebugShowHitboxes.matches(event) && this.minecraft.player != null && !this.minecraft.player.isReducedDebugInfo()) {
+            boolean renderHitBoxes = this.minecraft.debugEntries.toggleStatus(DebugScreenEntries.ENTITY_HITBOXES);
+            this.debugFeedbackTranslated(renderHitBoxes ? "debug.show_hitboxes.on" : "debug.show_hitboxes.off");
+            debugAction = true;
          }
 
-         if (var2.keyDebugClearChat.matches(var1)) {
+         if (options.keyDebugClearChat.matches(event)) {
             this.minecraft.gui.getChat().clearMessages(false);
-            var3 = true;
+            debugAction = true;
          }
 
-         if (var2.keyDebugShowChunkBorders.matches(var1) && this.minecraft.player != null && !this.minecraft.player.isReducedDebugInfo()) {
-            boolean var7 = this.minecraft.debugEntries.toggleStatus(DebugScreenEntries.CHUNK_BORDERS);
-            this.debugFeedbackTranslated(var7 ? "debug.chunk_boundaries.on" : "debug.chunk_boundaries.off");
-            var3 = true;
+         if (options.keyDebugShowChunkBorders.matches(event) && this.minecraft.player != null && !this.minecraft.player.isReducedDebugInfo()) {
+            boolean displayChunkborder = this.minecraft.debugEntries.toggleStatus(DebugScreenEntries.CHUNK_BORDERS);
+            this.debugFeedbackTranslated(displayChunkborder ? "debug.chunk_boundaries.on" : "debug.chunk_boundaries.off");
+            debugAction = true;
          }
 
-         if (var2.keyDebugShowAdvancedTooltips.matches(var1)) {
-            var2.advancedItemTooltips = !var2.advancedItemTooltips;
-            this.debugFeedbackTranslated(var2.advancedItemTooltips ? "debug.advanced_tooltips.on" : "debug.advanced_tooltips.off");
-            var2.save();
-            var3 = true;
+         if (options.keyDebugShowAdvancedTooltips.matches(event)) {
+            options.advancedItemTooltips = !options.advancedItemTooltips;
+            this.debugFeedbackTranslated(options.advancedItemTooltips ? "debug.advanced_tooltips.on" : "debug.advanced_tooltips.off");
+            options.save();
+            debugAction = true;
          }
 
-         if (var2.keyDebugCopyRecreateCommand.matches(var1)) {
+         if (options.keyDebugCopyRecreateCommand.matches(event)) {
             if (this.minecraft.player != null && !this.minecraft.player.isReducedDebugInfo()) {
-               this.copyRecreateCommand(this.minecraft.player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER), !var1.hasShiftDown());
+               this.copyRecreateCommand(this.minecraft.player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER), !event.hasShiftDown());
             }
 
-            var3 = true;
+            debugAction = true;
          }
 
-         if (var2.keyDebugSpectate.matches(var1)) {
+         if (options.keyDebugSpectate.matches(event)) {
             if (this.minecraft.player != null && GameModeCommand.PERMISSION_CHECK.check(this.minecraft.player.permissions())) {
                if (!this.minecraft.player.isSpectator()) {
                   this.minecraft.player.connection.send(new ServerboundChangeGameModePacket(GameType.SPECTATOR));
                } else {
-                  GameType var8 = (GameType)MoreObjects.firstNonNull(this.minecraft.gameMode.getPreviousPlayerMode(), GameType.CREATIVE);
-                  this.minecraft.player.connection.send(new ServerboundChangeGameModePacket(var8));
+                  GameType newGameType = (GameType)MoreObjects.firstNonNull(this.minecraft.gameMode.getPreviousPlayerMode(), GameType.CREATIVE);
+                  this.minecraft.player.connection.send(new ServerboundChangeGameModePacket(newGameType));
                }
             } else {
                this.debugFeedbackTranslated("debug.creative_spectator.error");
             }
 
-            var3 = true;
+            debugAction = true;
          }
 
-         if (var2.keyDebugSwitchGameMode.matches(var1) && this.minecraft.level != null && this.minecraft.screen == null) {
+         if (options.keyDebugSwitchGameMode.matches(event) && this.minecraft.level != null && this.minecraft.screen == null) {
             if (this.minecraft.canSwitchGameMode() && GameModeCommand.PERMISSION_CHECK.check(this.minecraft.player.permissions())) {
                this.minecraft.setScreen(new GameModeSwitcherScreen());
             } else {
                this.debugFeedbackTranslated("debug.gamemodes.error");
             }
 
-            var3 = true;
+            debugAction = true;
          }
 
-         if (var2.keyDebugDebugOptions.matches(var1)) {
+         if (options.keyDebugDebugOptions.matches(event)) {
             if (this.minecraft.screen instanceof DebugOptionsScreen) {
                this.minecraft.screen.onClose();
             } else if (this.minecraft.canInterruptScreen()) {
@@ -262,115 +265,120 @@ public class KeyboardHandler {
                this.minecraft.setScreen(new DebugOptionsScreen());
             }
 
-            var3 = true;
+            debugAction = true;
          }
 
-         if (var2.keyDebugFocusPause.matches(var1)) {
-            var2.pauseOnLostFocus = !var2.pauseOnLostFocus;
-            var2.save();
-            this.debugFeedbackTranslated(var2.pauseOnLostFocus ? "debug.pause_focus.on" : "debug.pause_focus.off");
-            var3 = true;
+         if (options.keyDebugFocusPause.matches(event)) {
+            options.pauseOnLostFocus = !options.pauseOnLostFocus;
+            options.save();
+            this.debugFeedbackTranslated(options.pauseOnLostFocus ? "debug.pause_focus.on" : "debug.pause_focus.off");
+            debugAction = true;
          }
 
-         if (var2.keyDebugDumpDynamicTextures.matches(var1)) {
-            Path var9 = this.minecraft.gameDirectory.toPath().toAbsolutePath();
-            Path var5 = TextureUtil.getDebugTexturePath(var9);
-            this.minecraft.getTextureManager().dumpAllSheets(var5);
-            MutableComponent var6 = Component.literal(var9.relativize(var5).toString()).withStyle(ChatFormatting.UNDERLINE).withStyle((UnaryOperator)((var1x) -> var1x.withClickEvent(new ClickEvent.OpenFile(var5))));
-            this.debugFeedbackComponent(Component.translatable("debug.dump_dynamic_textures", var6));
-            var3 = true;
+         if (options.keyDebugDumpDynamicTextures.matches(event)) {
+            Path gameDirectory = this.minecraft.gameDirectory.toPath().toAbsolutePath();
+            Path debugTexturePath = TextureUtil.getDebugTexturePath(gameDirectory);
+            this.minecraft.getTextureManager().dumpAllSheets(debugTexturePath);
+            Component pathComponent = Component.literal(gameDirectory.relativize(debugTexturePath).toString()).withStyle(ChatFormatting.UNDERLINE).withStyle((UnaryOperator)((s) -> s.withClickEvent(new ClickEvent.OpenFile(debugTexturePath))));
+            this.debugFeedbackComponent(Component.translatable("debug.dump_dynamic_textures", pathComponent));
+            debugAction = true;
          }
 
-         if (var2.keyDebugReloadResourcePacks.matches(var1)) {
+         if (options.keyDebugReloadResourcePacks.matches(event)) {
             this.debugFeedbackTranslated("debug.reload_resourcepacks.message");
             this.minecraft.reloadResourcePacks();
-            var3 = true;
+            debugAction = true;
          }
 
-         if (var2.keyDebugProfiling.matches(var1)) {
+         if (options.keyDebugProfiling.matches(event)) {
             if (this.minecraft.debugClientMetricsStart(this::debugFeedbackComponent)) {
-               this.debugFeedbackComponent(Component.translatable("debug.profiling.start", 10, var2.keyDebugModifier.getTranslatedKeyMessage(), var2.keyDebugProfiling.getTranslatedKeyMessage()));
+               this.debugFeedbackComponent(Component.translatable("debug.profiling.start", 10, options.keyDebugModifier.getTranslatedKeyMessage(), options.keyDebugProfiling.getTranslatedKeyMessage()));
             }
 
-            var3 = true;
+            debugAction = true;
          }
 
-         if (var2.keyDebugCopyLocation.matches(var1) && this.minecraft.player != null && !this.minecraft.player.isReducedDebugInfo()) {
+         if (options.keyDebugCopyLocation.matches(event) && this.minecraft.player != null && !this.minecraft.player.isReducedDebugInfo()) {
             this.debugFeedbackTranslated("debug.copy_location.message");
             this.setClipboard(String.format(Locale.ROOT, "/execute in %s run tp @s %.2f %.2f %.2f %.2f %.2f", this.minecraft.player.level().dimension().identifier(), this.minecraft.player.getX(), this.minecraft.player.getY(), this.minecraft.player.getZ(), this.minecraft.player.getYRot(), this.minecraft.player.getXRot()));
-            var3 = true;
+            debugAction = true;
          }
 
-         if (var2.keyDebugDumpVersion.matches(var1)) {
+         if (options.keyDebugDumpVersion.matches(event)) {
             this.debugFeedbackTranslated("debug.version.header");
             VersionCommand.dumpVersion(this::showDebugChat);
-            var3 = true;
+            debugAction = true;
          }
 
-         if (var2.keyDebugPofilingChart.matches(var1)) {
+         if (options.keyDebugPofilingChart.matches(event)) {
             this.minecraft.getDebugOverlay().toggleProfilerChart();
-            var3 = true;
+            debugAction = true;
          }
 
-         if (var2.keyDebugFpsCharts.matches(var1)) {
+         if (options.keyDebugFpsCharts.matches(event)) {
             this.minecraft.getDebugOverlay().toggleFpsCharts();
-            var3 = true;
+            debugAction = true;
          }
 
-         if (var2.keyDebugNetworkCharts.matches(var1)) {
+         if (options.keyDebugNetworkCharts.matches(event)) {
             this.minecraft.getDebugOverlay().toggleNetworkCharts();
-            var3 = true;
+            debugAction = true;
          }
 
-         return var3;
+         if (options.keyDebugLightmapTexture.matches(event)) {
+            this.minecraft.getDebugOverlay().toggleLightmapTexture();
+            debugAction = true;
+         }
+
+         return debugAction;
       }
    }
 
-   private void copyRecreateCommand(boolean var1, boolean var2) {
-      HitResult var3 = this.minecraft.hitResult;
-      if (var3 != null) {
-         switch (var3.getType()) {
+   private void copyRecreateCommand(final boolean addNbt, final boolean pullFromServer) {
+      HitResult hitResult = this.minecraft.hitResult;
+      if (hitResult != null) {
+         switch (hitResult.getType()) {
             case BLOCK:
-               BlockPos var11 = ((BlockHitResult)var3).getBlockPos();
-               Level var12 = this.minecraft.player.level();
-               BlockState var13 = var12.getBlockState(var11);
-               if (var1) {
-                  if (var2) {
-                     this.minecraft.player.connection.getDebugQueryHandler().queryBlockEntityTag(var11, (var3x) -> {
-                        this.copyCreateBlockCommand(var13, var11, var3x);
+               BlockPos blockPos = ((BlockHitResult)hitResult).getBlockPos();
+               Level level = this.minecraft.player.level();
+               BlockState state = level.getBlockState(blockPos);
+               if (addNbt) {
+                  if (pullFromServer) {
+                     this.minecraft.player.connection.getDebugQueryHandler().queryBlockEntityTag(blockPos, (tagx) -> {
+                        this.copyCreateBlockCommand(state, blockPos, tagx);
                         this.debugFeedbackTranslated("debug.inspect.server.block");
                      });
                   } else {
-                     BlockEntity var14 = var12.getBlockEntity(var11);
-                     CompoundTag var8 = var14 != null ? var14.saveWithoutMetadata((HolderLookup.Provider)var12.registryAccess()) : null;
-                     this.copyCreateBlockCommand(var13, var11, var8);
+                     BlockEntity blockEntity = level.getBlockEntity(blockPos);
+                     CompoundTag tag = blockEntity != null ? blockEntity.saveWithoutMetadata((HolderLookup.Provider)level.registryAccess()) : null;
+                     this.copyCreateBlockCommand(state, blockPos, tag);
                      this.debugFeedbackTranslated("debug.inspect.client.block");
                   }
                } else {
-                  this.copyCreateBlockCommand(var13, var11, (CompoundTag)null);
+                  this.copyCreateBlockCommand(state, blockPos, (CompoundTag)null);
                   this.debugFeedbackTranslated("debug.inspect.client.block");
                }
                break;
             case ENTITY:
-               Entity var4 = ((EntityHitResult)var3).getEntity();
-               Identifier var5 = BuiltInRegistries.ENTITY_TYPE.getKey(var4.getType());
-               if (var1) {
-                  if (var2) {
-                     this.minecraft.player.connection.getDebugQueryHandler().queryEntityTag(var4.getId(), (var3x) -> {
-                        this.copyCreateEntityCommand(var5, var4.position(), var3x);
+               Entity entity = ((EntityHitResult)hitResult).getEntity();
+               Identifier id = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+               if (addNbt) {
+                  if (pullFromServer) {
+                     this.minecraft.player.connection.getDebugQueryHandler().queryEntityTag(entity.getId(), (tagx) -> {
+                        this.copyCreateEntityCommand(id, entity.position(), tagx);
                         this.debugFeedbackTranslated("debug.inspect.server.entity");
                      });
                   } else {
-                     try (ProblemReporter.ScopedCollector var6 = new ProblemReporter.ScopedCollector(var4.problemPath(), LOGGER)) {
-                        TagValueOutput var7 = TagValueOutput.createWithContext(var6, var4.registryAccess());
-                        var4.saveWithoutId(var7);
-                        this.copyCreateEntityCommand(var5, var4.position(), var7.buildResult());
+                     try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(entity.problemPath(), LOGGER)) {
+                        TagValueOutput output = TagValueOutput.createWithContext(reporter, entity.registryAccess());
+                        entity.saveWithoutId(output);
+                        this.copyCreateEntityCommand(id, entity.position(), output.buildResult());
                      }
 
                      this.debugFeedbackTranslated("debug.inspect.client.entity");
                   }
                } else {
-                  this.copyCreateEntityCommand(var5, var4.position(), (CompoundTag)null);
+                  this.copyCreateEntityCommand(id, entity.position(), (CompoundTag)null);
                   this.debugFeedbackTranslated("debug.inspect.client.entity");
                }
          }
@@ -378,52 +386,52 @@ public class KeyboardHandler {
       }
    }
 
-   private void copyCreateBlockCommand(BlockState var1, BlockPos var2, @Nullable CompoundTag var3) {
-      StringBuilder var4 = new StringBuilder(BlockStateParser.serialize(var1));
-      if (var3 != null) {
-         var4.append(var3);
+   private void copyCreateBlockCommand(final BlockState state, final BlockPos blockPos, final @Nullable CompoundTag entityTag) {
+      StringBuilder description = new StringBuilder(BlockStateParser.serialize(state));
+      if (entityTag != null) {
+         description.append(entityTag);
       }
 
-      String var5 = String.format(Locale.ROOT, "/setblock %d %d %d %s", var2.getX(), var2.getY(), var2.getZ(), var4);
-      this.setClipboard(var5);
+      String command = String.format(Locale.ROOT, "/setblock %d %d %d %s", blockPos.getX(), blockPos.getY(), blockPos.getZ(), description);
+      this.setClipboard(command);
    }
 
-   private void copyCreateEntityCommand(Identifier var1, Vec3 var2, @Nullable CompoundTag var3) {
-      String var4;
-      if (var3 != null) {
-         var3.remove("UUID");
-         var3.remove("Pos");
-         String var5 = NbtUtils.toPrettyComponent(var3).getString();
-         var4 = String.format(Locale.ROOT, "/summon %s %.2f %.2f %.2f %s", var1, var2.x, var2.y, var2.z, var5);
+   private void copyCreateEntityCommand(final Identifier id, final Vec3 pos, final @Nullable CompoundTag entityTag) {
+      String command;
+      if (entityTag != null) {
+         entityTag.remove("UUID");
+         entityTag.remove("Pos");
+         String snbt = NbtUtils.toPrettyComponent(entityTag).getString();
+         command = String.format(Locale.ROOT, "/summon %s %.2f %.2f %.2f %s", id, pos.x, pos.y, pos.z, snbt);
       } else {
-         var4 = String.format(Locale.ROOT, "/summon %s %.2f %.2f %.2f", var1, var2.x, var2.y, var2.z);
+         command = String.format(Locale.ROOT, "/summon %s %.2f %.2f %.2f", id, pos.x, pos.y, pos.z);
       }
 
-      this.setClipboard(var4);
+      this.setClipboard(command);
    }
 
-   private void keyPress(long var1, @KeyEvent.Action int var3, KeyEvent var4) {
-      Window var5 = this.minecraft.getWindow();
-      if (var1 == var5.handle()) {
+   private void keyPress(final long handle, final @KeyEvent.Action int action, final KeyEvent event) {
+      Window window = this.minecraft.getWindow();
+      if (handle == window.handle()) {
          this.minecraft.getFramerateLimitTracker().onInputReceived();
-         Options var6 = this.minecraft.options;
-         boolean var7 = var6.keyDebugModifier.key.getValue() == var6.keyDebugOverlay.key.getValue();
-         boolean var8 = var6.keyDebugModifier.isDown();
-         boolean var9 = !var6.keyDebugCrash.isUnbound() && InputConstants.isKeyDown(this.minecraft.getWindow(), var6.keyDebugCrash.key.getValue());
+         Options options = this.minecraft.options;
+         boolean modifierAndOverlayIsSame = options.keyDebugModifier.key.getValue() == options.keyDebugOverlay.key.getValue();
+         boolean debugModifierDown = options.keyDebugModifier.isDown();
+         boolean debugCrash = !options.keyDebugCrash.isUnbound() && InputConstants.isKeyDown(this.minecraft.getWindow(), options.keyDebugCrash.key.getValue());
          if (this.debugCrashKeyTime > 0L) {
-            if (!var9 || !var8) {
+            if (!debugCrash || !debugModifierDown) {
                this.debugCrashKeyTime = -1L;
             }
-         } else if (var9 && var8) {
-            this.usedDebugKeyAsModifier = var7;
+         } else if (debugCrash && debugModifierDown) {
+            this.usedDebugKeyAsModifier = modifierAndOverlayIsSame;
             this.debugCrashKeyTime = Util.getMillis();
             this.debugCrashKeyReportedTime = Util.getMillis();
             this.debugCrashKeyReportedCount = 0L;
          }
 
-         Screen var10 = this.minecraft.screen;
-         if (var10 != null) {
-            switch (var4.key()) {
+         Screen screen = this.minecraft.screen;
+         if (screen != null) {
+            switch (event.key()) {
                case 258:
                   this.minecraft.setLastInputType(InputType.KEYBOARD_TAB);
                case 259:
@@ -439,99 +447,99 @@ public class KeyboardHandler {
             }
          }
 
-         if (var3 == 1 && (!(this.minecraft.screen instanceof KeyBindsScreen) || ((KeyBindsScreen)var10).lastKeySelection <= Util.getMillis() - 20L)) {
-            if (var6.keyFullscreen.matches(var4)) {
-               var5.toggleFullScreen();
-               boolean var20 = var5.isFullscreen();
-               var6.fullscreen().set(var20);
-               var6.save();
+         if (action == 1 && (!(this.minecraft.screen instanceof KeyBindsScreen) || ((KeyBindsScreen)screen).lastKeySelection <= Util.getMillis() - 20L)) {
+            if (options.keyFullscreen.matches(event)) {
+               window.toggleFullScreen();
+               boolean fullscreen = window.isFullscreen();
+               options.fullscreen().set(fullscreen);
+               options.save();
                Screen var26 = this.minecraft.screen;
                if (var26 instanceof VideoSettingsScreen) {
-                  VideoSettingsScreen var24 = (VideoSettingsScreen)var26;
-                  var24.updateFullscreenButton(var20);
+                  VideoSettingsScreen videoSettingsScreen = (VideoSettingsScreen)var26;
+                  videoSettingsScreen.updateFullscreenButton(fullscreen);
                }
 
                return;
             }
 
-            if (var6.keyScreenshot.matches(var4)) {
-               if (var4.hasControlDownWithQuirk() && SharedConstants.DEBUG_PANORAMA_SCREENSHOT) {
+            if (options.keyScreenshot.matches(event)) {
+               if (event.hasControlDownWithQuirk() && SharedConstants.DEBUG_PANORAMA_SCREENSHOT) {
                   this.showDebugChat(this.minecraft.grabPanoramixScreenshot(this.minecraft.gameDirectory));
                } else {
-                  Screenshot.grab(this.minecraft.gameDirectory, this.minecraft.getMainRenderTarget(), (var1x) -> this.minecraft.execute(() -> this.showDebugChat(var1x)));
+                  Screenshot.grab(this.minecraft.gameDirectory, this.minecraft.getMainRenderTarget(), (message) -> this.minecraft.execute(() -> this.showDebugChat(message)));
                }
 
                return;
             }
          }
 
-         if (var3 != 0) {
-            boolean var11 = var10 == null || !(var10.getFocused() instanceof EditBox) || !((EditBox)var10.getFocused()).canConsumeInput();
-            if (var11) {
-               if (var4.hasControlDownWithQuirk() && var4.key() == 66 && this.minecraft.getNarrator().isActive() && (Boolean)var6.narratorHotkey().get()) {
-                  boolean var12 = var6.narrator().get() == NarratorStatus.OFF;
-                  var6.narrator().set(NarratorStatus.byId(((NarratorStatus)var6.narrator().get()).getId() + 1));
-                  var6.save();
-                  if (var10 != null) {
-                     var10.updateNarratorStatus(var12);
+         if (action != 0) {
+            boolean hasNoEditboxFocused = screen == null || !(screen.getFocused() instanceof EditBox) || !((EditBox)screen.getFocused()).canConsumeInput();
+            if (hasNoEditboxFocused) {
+               if (event.hasControlDownWithQuirk() && event.key() == 66 && this.minecraft.getNarrator().isActive() && (Boolean)options.narratorHotkey().get()) {
+                  boolean wasDisabled = options.narrator().get() == NarratorStatus.OFF;
+                  options.narrator().set(NarratorStatus.byId(((NarratorStatus)options.narrator().get()).getId() + 1));
+                  options.save();
+                  if (screen != null) {
+                     screen.updateNarratorStatus(wasDisabled);
                   }
                }
 
-               LocalPlayer var21 = this.minecraft.player;
+               LocalPlayer wasDisabled = this.minecraft.player;
             }
          }
 
-         if (var10 != null) {
+         if (screen != null) {
             try {
-               if (var3 != 1 && var3 != 2) {
-                  if (var3 == 0 && var10.keyReleased(var4)) {
-                     if (var6.keyDebugModifier.matches(var4)) {
+               if (action != 1 && action != 2) {
+                  if (action == 0 && screen.keyReleased(event)) {
+                     if (options.keyDebugModifier.matches(event)) {
                         this.usedDebugKeyAsModifier = false;
                      }
 
                      return;
                   }
                } else {
-                  var10.afterKeyboardAction();
-                  if (var10.keyPressed(var4)) {
+                  screen.afterKeyboardAction();
+                  if (screen.keyPressed(event)) {
                      if (this.minecraft.screen == null) {
-                        InputConstants.Key var18 = InputConstants.getKey(var4);
-                        KeyMapping.set(var18, false);
+                        InputConstants.Key key = InputConstants.getKey(event);
+                        KeyMapping.set(key, false);
                      }
 
                      return;
                   }
                }
-            } catch (Throwable var17) {
-               CrashReport var22 = CrashReport.forThrowable(var17, "keyPressed event handler");
-               var10.fillCrashDetails(var22);
-               CrashReportCategory var13 = var22.addCategory("Key");
-               var13.setDetail("Key", var4.key());
-               var13.setDetail("Scancode", var4.scancode());
-               var13.setDetail("Mods", var4.modifiers());
-               throw new ReportedException(var22);
+            } catch (Throwable t) {
+               CrashReport report = CrashReport.forThrowable(t, "keyPressed event handler");
+               screen.fillCrashDetails(report);
+               CrashReportCategory keyDetails = report.addCategory("Key");
+               keyDetails.setDetail("Key", event.key());
+               keyDetails.setDetail("Scancode", event.scancode());
+               keyDetails.setDetail("Mods", event.modifiers());
+               throw new ReportedException(report);
             }
          }
 
-         InputConstants.Key var19;
-         boolean var23;
+         InputConstants.Key key;
+         boolean handlesGameInput;
          boolean var10000;
-         label204: {
-            var19 = InputConstants.getKey(var4);
-            var23 = this.minecraft.screen == null;
-            if (!var23) {
-               label202: {
+         label186: {
+            key = InputConstants.getKey(event);
+            handlesGameInput = this.minecraft.screen == null;
+            if (!handlesGameInput) {
+               label184: {
                   Screen var15 = this.minecraft.screen;
                   if (var15 instanceof PauseScreen) {
-                     PauseScreen var14 = (PauseScreen)var15;
-                     if (!var14.showsPauseMenu()) {
-                        break label202;
+                     PauseScreen pauseScreen = (PauseScreen)var15;
+                     if (!pauseScreen.showsPauseMenu()) {
+                        break label184;
                      }
                   }
 
                   if (!(this.minecraft.screen instanceof GameModeSwitcherScreen)) {
                      var10000 = false;
-                     break label204;
+                     break label186;
                   }
                }
             }
@@ -539,56 +547,52 @@ public class KeyboardHandler {
             var10000 = true;
          }
 
-         boolean var25 = var10000;
-         if (var7 && var6.keyDebugModifier.matches(var4) && var3 == 0) {
+         boolean handlesGlobalInput = var10000;
+         if (modifierAndOverlayIsSame && options.keyDebugModifier.matches(event) && action == 0) {
             if (this.usedDebugKeyAsModifier) {
                this.usedDebugKeyAsModifier = false;
             } else {
                this.minecraft.debugEntries.toggleDebugOverlay();
             }
-         } else if (!var7 && var6.keyDebugOverlay.matches(var4) && var3 == 1) {
+         } else if (!modifierAndOverlayIsSame && options.keyDebugOverlay.matches(event) && action == 1) {
             this.minecraft.debugEntries.toggleDebugOverlay();
          }
 
-         if (var3 == 0) {
-            KeyMapping.set(var19, false);
+         if (action == 0) {
+            KeyMapping.set(key, false);
          } else {
-            boolean var27 = false;
-            if (var25 && var4.isEscape()) {
-               this.minecraft.pauseGame(var8);
-               var27 = var8;
-            } else if (var8) {
-               var27 = this.handleDebugKeys(var4);
-               if (var27 && var10 instanceof DebugOptionsScreen) {
-                  DebugOptionsScreen var28 = (DebugOptionsScreen)var10;
-                  DebugOptionsScreen.OptionList var16 = var28.getOptionList();
-                  if (var16 != null) {
-                     var16.children().forEach(DebugOptionsScreen.AbstractOptionEntry::refreshEntry);
+            boolean didDebugAction = false;
+            if (handlesGlobalInput && event.isEscape()) {
+               this.minecraft.pauseGame(debugModifierDown);
+               didDebugAction = debugModifierDown;
+            } else if (debugModifierDown) {
+               didDebugAction = this.handleDebugKeys(event);
+               if (didDebugAction && screen instanceof DebugOptionsScreen) {
+                  DebugOptionsScreen debugOptionsScreen = (DebugOptionsScreen)screen;
+                  DebugOptionsScreen.OptionList optionList = debugOptionsScreen.getOptionList();
+                  if (optionList != null) {
+                     optionList.children().forEach(DebugOptionsScreen.AbstractOptionEntry::refreshEntry);
                   }
                }
-            } else if (var25 && var6.keyToggleGui.matches(var4)) {
-               var6.hideGui = !var6.hideGui;
-            } else if (var25 && var6.keyToggleSpectatorShaderEffects.matches(var4)) {
-               this.minecraft.gameRenderer.togglePostEffect();
             }
 
-            if (var7) {
-               this.usedDebugKeyAsModifier |= var27;
+            if (modifierAndOverlayIsSame) {
+               this.usedDebugKeyAsModifier |= didDebugAction;
             }
 
-            if (this.minecraft.getDebugOverlay().showProfilerChart() && !var8) {
-               int var29 = var4.getDigit();
-               if (var29 != -1) {
-                  this.minecraft.getDebugOverlay().getProfilerPieChart().profilerPieChartKeyPress(var29);
+            if (this.minecraft.getDebugOverlay().showProfilerChart() && !debugModifierDown) {
+               int digit = event.getDigit();
+               if (digit != -1) {
+                  this.minecraft.getDebugOverlay().getProfilerPieChart().profilerPieChartKeyPress(digit);
                }
             }
 
-            if (var23 || var19 == var6.keyDebugModifier.key) {
-               if (var27) {
-                  KeyMapping.set(var19, false);
+            if (handlesGameInput || key == options.keyDebugModifier.key) {
+               if (didDebugAction) {
+                  KeyMapping.set(key, false);
                } else {
-                  KeyMapping.set(var19, true);
-                  KeyMapping.click(var19);
+                  KeyMapping.set(key, true);
+                  KeyMapping.click(key);
                }
             }
 
@@ -596,75 +600,106 @@ public class KeyboardHandler {
       }
    }
 
-   private void charTyped(long var1, CharacterEvent var3) {
-      if (var1 == this.minecraft.getWindow().handle()) {
-         Screen var4 = this.minecraft.screen;
-         if (var4 != null && this.minecraft.getOverlay() == null) {
+   private void charTyped(final long handle, final CharacterEvent event) {
+      if (handle == this.minecraft.getWindow().handle()) {
+         Screen screen = this.minecraft.screen;
+         if (screen != null && this.minecraft.getOverlay() == null) {
             try {
-               var4.charTyped(var3);
-            } catch (Throwable var8) {
-               CrashReport var6 = CrashReport.forThrowable(var8, "charTyped event handler");
-               var4.fillCrashDetails(var6);
-               CrashReportCategory var7 = var6.addCategory("Key");
-               var7.setDetail("Codepoint", var3.codepoint());
-               var7.setDetail("Mods", var3.modifiers());
-               throw new ReportedException(var6);
+               screen.charTyped(event);
+            } catch (Throwable t) {
+               CrashReport report = CrashReport.forThrowable(t, "charTyped event handler");
+               screen.fillCrashDetails(report);
+               CrashReportCategory keyDetails = report.addCategory("Key");
+               keyDetails.setDetail("Codepoint", event.codepoint());
+               throw new ReportedException(report);
             }
          }
       }
    }
 
-   public void setup(Window var1) {
-      InputConstants.setupKeyboardCallbacks(var1, (var1x, var3, var4, var5, var6) -> {
-         KeyEvent var7 = new KeyEvent(var3, var4, var6);
-         this.minecraft.execute(() -> this.keyPress(var1x, var5, var7));
-      }, (var1x, var3, var4) -> {
-         CharacterEvent var5 = new CharacterEvent(var3, var4);
-         this.minecraft.execute(() -> this.charTyped(var1x, var5));
-      });
+   private void preeditCallback(final long handle, final @Nullable PreeditEvent event) {
+      if (handle == this.minecraft.getWindow().handle()) {
+         this.lastPreeditEvent = event;
+         Screen screen = this.minecraft.screen;
+         if (screen != null && this.minecraft.getOverlay() == null) {
+            submitPreeditEvent(screen, event);
+         }
+      }
+   }
+
+   public void resubmitLastPreeditEvent(final GuiEventListener screen) {
+      submitPreeditEvent(screen, this.lastPreeditEvent);
+   }
+
+   public static void submitPreeditEvent(final GuiEventListener element, final @Nullable PreeditEvent event) {
+      try {
+         element.preeditUpdated(event);
+      } catch (Throwable t) {
+         CrashReport report = CrashReport.forThrowable(t, "IME pre-edit event handler");
+         if (element instanceof Screen screen) {
+            screen.fillCrashDetails(report);
+         }
+
+         CrashReportCategory keyDetails = report.addCategory("Event");
+         keyDetails.setDetail("Contents", (CrashReportDetail)(() -> String.valueOf(event)));
+         throw new ReportedException(report);
+      }
+   }
+
+   public void setup(final Window window) {
+      InputConstants.setupKeyboardCallbacks(window, (window1, keysym, scancode, action, mods) -> {
+         KeyEvent event = new KeyEvent(keysym, scancode, mods);
+         this.minecraft.execute(() -> this.keyPress(window1, action, event));
+      }, (window1, codepoint) -> {
+         CharacterEvent event = new CharacterEvent(codepoint);
+         this.minecraft.execute(() -> this.charTyped(window1, event));
+      }, (window1, preeditSize, preeditPtr, blockCount, blockSizesPtr, focusedBlock, caret) -> {
+         PreeditEvent event = PreeditEvent.createFromCallback(preeditSize, preeditPtr, blockCount, blockSizesPtr, focusedBlock, caret);
+         this.minecraft.execute(() -> this.preeditCallback(window1, event));
+      }, (window1) -> this.minecraft.textInputManager().notifyIMEChanged());
    }
 
    public String getClipboard() {
-      return this.clipboardManager.getClipboard(this.minecraft.getWindow(), (var1, var2) -> {
-         if (var1 != 65545) {
-            this.minecraft.getWindow().defaultErrorCallback(var1, var2);
+      return this.clipboardManager.getClipboard(this.minecraft.getWindow(), (error, description) -> {
+         if (error != 65545) {
+            this.minecraft.getWindow().defaultErrorCallback(error, description);
          }
 
       });
    }
 
-   public void setClipboard(String var1) {
-      if (!var1.isEmpty()) {
-         this.clipboardManager.setClipboard(this.minecraft.getWindow(), var1);
+   public void setClipboard(final String clipboard) {
+      if (!clipboard.isEmpty()) {
+         this.clipboardManager.setClipboard(this.minecraft.getWindow(), clipboard);
       }
 
    }
 
    public void tick() {
       if (this.debugCrashKeyTime > 0L) {
-         long var1 = Util.getMillis();
-         long var3 = 10000L - (var1 - this.debugCrashKeyTime);
-         long var5 = var1 - this.debugCrashKeyReportedTime;
-         if (var3 < 0L) {
+         long now = Util.getMillis();
+         long remainingTime = 10000L - (now - this.debugCrashKeyTime);
+         long reportedTime = now - this.debugCrashKeyReportedTime;
+         if (remainingTime < 0L) {
             if (this.minecraft.hasControlDown()) {
                Blaze3D.youJustLostTheGame();
             }
 
-            String var7 = "Manually triggered debug crash";
-            CrashReport var8 = new CrashReport("Manually triggered debug crash", new Throwable("Manually triggered debug crash"));
-            CrashReportCategory var9 = var8.addCategory("Manual crash details");
-            NativeModuleLister.addCrashSection(var9);
-            throw new ReportedException(var8);
+            String message = "Manually triggered debug crash";
+            CrashReport report = new CrashReport("Manually triggered debug crash", new Throwable("Manually triggered debug crash"));
+            CrashReportCategory manualCrashDetails = report.addCategory("Manual crash details");
+            NativeModuleLister.addCrashSection(manualCrashDetails);
+            throw new ReportedException(report);
          }
 
-         if (var5 >= 1000L) {
+         if (reportedTime >= 1000L) {
             if (this.debugCrashKeyReportedCount == 0L) {
                this.debugFeedbackTranslated("debug.crash.message", this.minecraft.options.keyDebugModifier.getTranslatedKeyMessage().getString(), this.minecraft.options.keyDebugCrash.getTranslatedKeyMessage().getString());
             } else {
-               this.debugWarningComponent(Component.translatable("debug.crash.warning", Mth.ceil((float)var3 / 1000.0F)));
+               this.debugWarningComponent(Component.translatable("debug.crash.warning", Mth.ceil((float)remainingTime / 1000.0F)));
             }
 
-            this.debugCrashKeyReportedTime = var1;
+            this.debugCrashKeyReportedTime = now;
             ++this.debugCrashKeyReportedCount;
          }
       }

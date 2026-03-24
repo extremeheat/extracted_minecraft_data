@@ -12,11 +12,11 @@ public interface ReadOnlyScoreInfo {
 
    @Nullable NumberFormat numberFormat();
 
-   default MutableComponent formatValue(NumberFormat var1) {
-      return ((NumberFormat)Objects.requireNonNullElse(this.numberFormat(), var1)).format(this.value());
+   default MutableComponent formatValue(final NumberFormat defaultFormat) {
+      return ((NumberFormat)Objects.requireNonNullElse(this.numberFormat(), defaultFormat)).format(this.value());
    }
 
-   static MutableComponent safeFormatValue(@Nullable ReadOnlyScoreInfo var0, NumberFormat var1) {
-      return var0 != null ? var0.formatValue(var1) : var1.format(0);
+   static MutableComponent safeFormatValue(final @Nullable ReadOnlyScoreInfo scoreInfo, final NumberFormat defaultFormat) {
+      return scoreInfo != null ? scoreInfo.formatValue(defaultFormat) : defaultFormat.format(0);
    }
 }

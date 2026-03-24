@@ -4,18 +4,17 @@ import com.google.common.base.Predicates;
 import java.util.function.Predicate;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Team;
 
 public final class EntitySelector {
    public static final Predicate<Entity> ENTITY_STILL_ALIVE = Entity::isAlive;
-   public static final Predicate<Entity> LIVING_ENTITY_STILL_ALIVE = (var0) -> var0.isAlive() && var0 instanceof LivingEntity;
-   public static final Predicate<Entity> ENTITY_NOT_BEING_RIDDEN = (var0) -> var0.isAlive() && !var0.isVehicle() && !var0.isPassenger();
-   public static final Predicate<Entity> CONTAINER_ENTITY_SELECTOR = (var0) -> var0 instanceof Container && var0.isAlive();
-   public static final Predicate<Entity> NO_CREATIVE_OR_SPECTATOR = (var0) -> {
+   public static final Predicate<Entity> LIVING_ENTITY_STILL_ALIVE = (entity) -> entity.isAlive() && entity instanceof LivingEntity;
+   public static final Predicate<Entity> ENTITY_NOT_BEING_RIDDEN = (entity) -> entity.isAlive() && !entity.isVehicle() && !entity.isPassenger();
+   public static final Predicate<Entity> CONTAINER_ENTITY_SELECTOR = (entity) -> entity instanceof Container && entity.isAlive();
+   public static final Predicate<Entity> NO_CREATIVE_OR_SPECTATOR = (entity) -> {
       boolean var10000;
-      if (var0 instanceof Player var1) {
-         if (var0.isSpectator() || var1.isCreative()) {
+      if (entity instanceof Player player) {
+         if (entity.isSpectator() || player.isCreative()) {
             var10000 = false;
             return var10000;
          }
@@ -24,7 +23,7 @@ public final class EntitySelector {
       var10000 = true;
       return var10000;
    };
-   public static final Predicate<Entity> NO_SPECTATORS = (var0) -> !var0.isSpectator();
+   public static final Predicate<Entity> NO_SPECTATORS = (entity) -> !entity.isSpectator();
    public static final Predicate<Entity> CAN_BE_COLLIDED_WITH;
    public static final Predicate<Entity> CAN_BE_PICKED;
 
@@ -32,38 +31,38 @@ public final class EntitySelector {
       super();
    }
 
-   public static Predicate<Entity> withinDistance(double var0, double var2, double var4, double var6) {
-      double var8 = var6 * var6;
-      return (var8x) -> var8x.distanceToSqr(var0, var2, var4) <= var8;
+   public static Predicate<Entity> withinDistance(final double centerX, final double centerY, final double centerZ, final double distance) {
+      double distanceSqr = distance * distance;
+      return (input) -> input.distanceToSqr(centerX, centerY, centerZ) <= distanceSqr;
    }
 
-   public static Predicate<Entity> pushableBy(Entity var0) {
-      PlayerTeam var1 = var0.getTeam();
-      Team.CollisionRule var2 = var1 == null ? Team.CollisionRule.ALWAYS : ((Team)var1).getCollisionRule();
-      return (Predicate<Entity>)(var2 == Team.CollisionRule.NEVER ? Predicates.alwaysFalse() : NO_SPECTATORS.and((var3) -> {
-         if (!var3.isPushable()) {
+   public static Predicate<Entity> pushableBy(final Entity entity) {
+      Team ownTeam = entity.getTeam();
+      Team.CollisionRule ownCollisionRule = ownTeam == null ? Team.CollisionRule.ALWAYS : ownTeam.getCollisionRule();
+      return (Predicate<Entity>)(ownCollisionRule == Team.CollisionRule.NEVER ? Predicates.alwaysFalse() : NO_SPECTATORS.and((input) -> {
+         if (!input.isPushable()) {
             return false;
          } else {
-            if (var0.level().isClientSide()) {
-               if (!(var3 instanceof Player)) {
+            if (entity.level().isClientSide()) {
+               if (!(input instanceof Player)) {
                   return false;
                }
 
-               Player var4 = (Player)var3;
-               if (!var4.isLocalPlayer()) {
+               Player player = (Player)input;
+               if (!player.isLocalPlayer()) {
                   return false;
                }
             }
 
-            PlayerTeam var7 = var3.getTeam();
-            Team.CollisionRule var5 = var7 == null ? Team.CollisionRule.ALWAYS : ((Team)var7).getCollisionRule();
-            if (var5 == Team.CollisionRule.NEVER) {
+            Team theirTeam = input.getTeam();
+            Team.CollisionRule theirCollisionRule = theirTeam == null ? Team.CollisionRule.ALWAYS : theirTeam.getCollisionRule();
+            if (theirCollisionRule == Team.CollisionRule.NEVER) {
                return false;
             } else {
-               boolean var6 = var1 != null && var1.isAlliedTo(var7);
-               if ((var2 == Team.CollisionRule.PUSH_OWN_TEAM || var5 == Team.CollisionRule.PUSH_OWN_TEAM) && var6) {
+               boolean sameTeam = ownTeam != null && ownTeam.isAlliedTo(theirTeam);
+               if ((ownCollisionRule == Team.CollisionRule.PUSH_OWN_TEAM || theirCollisionRule == Team.CollisionRule.PUSH_OWN_TEAM) && sameTeam) {
                   return false;
-               } else if ((var2 == Team.CollisionRule.PUSH_OTHER_TEAMS || var5 == Team.CollisionRule.PUSH_OTHER_TEAMS) && !var6) {
+               } else if ((ownCollisionRule == Team.CollisionRule.PUSH_OTHER_TEAMS || theirCollisionRule == Team.CollisionRule.PUSH_OTHER_TEAMS) && !sameTeam) {
                   return false;
                } else {
                   return true;
@@ -73,12 +72,12 @@ public final class EntitySelector {
       }));
    }
 
-   public static Predicate<Entity> notRiding(Entity var0) {
-      return (var1) -> {
+   public static Predicate<Entity> notRiding(final Entity entity) {
+      return (input) -> {
          while(true) {
-            if (var1.isPassenger()) {
-               var1 = var1.getVehicle();
-               if (var1 != var0) {
+            if (input.isPassenger()) {
+               input = input.getVehicle();
+               if (input != entity) {
                   continue;
                }
 
@@ -91,7 +90,7 @@ public final class EntitySelector {
    }
 
    static {
-      CAN_BE_COLLIDED_WITH = NO_SPECTATORS.and((var0) -> var0.canBeCollidedWith((Entity)null));
-      CAN_BE_PICKED = NO_SPECTATORS.and(Entity::isPickable);
+      CAN_BE_COLLIDED_WITH = NO_SPECTATORS.and((entity) -> entity.canBeCollidedWith((Entity)null));
+      CAN_BE_PICKED = Entity::isPickable;
    }
 }

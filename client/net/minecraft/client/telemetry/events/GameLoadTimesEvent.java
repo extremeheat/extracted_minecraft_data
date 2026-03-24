@@ -21,67 +21,66 @@ public class GameLoadTimesEvent {
    private final Map<TelemetryProperty<Measurement>, Stopwatch> measurements = new HashMap();
    private OptionalLong bootstrapTime = OptionalLong.empty();
 
-   protected GameLoadTimesEvent(Ticker var1) {
+   protected GameLoadTimesEvent(final Ticker timeSource) {
       super();
-      this.timeSource = var1;
+      this.timeSource = timeSource;
    }
 
-   public synchronized void beginStep(TelemetryProperty<Measurement> var1) {
-      this.beginStep(var1, (Function)((var1x) -> Stopwatch.createStarted(this.timeSource)));
+   public synchronized void beginStep(final TelemetryProperty<Measurement> property) {
+      this.beginStep(property, (Function)((p) -> Stopwatch.createStarted(this.timeSource)));
    }
 
-   public synchronized void beginStep(TelemetryProperty<Measurement> var1, Stopwatch var2) {
-      this.beginStep(var1, (Function)((var1x) -> var2));
+   public synchronized void beginStep(final TelemetryProperty<Measurement> property, final Stopwatch measurement) {
+      this.beginStep(property, (Function)((p) -> measurement));
    }
 
-   private synchronized void beginStep(TelemetryProperty<Measurement> var1, Function<TelemetryProperty<Measurement>, Stopwatch> var2) {
-      this.measurements.computeIfAbsent(var1, var2);
+   private synchronized void beginStep(final TelemetryProperty<Measurement> property, final Function<TelemetryProperty<Measurement>, Stopwatch> measurement) {
+      this.measurements.computeIfAbsent(property, measurement);
    }
 
-   public synchronized void endStep(TelemetryProperty<Measurement> var1) {
-      Stopwatch var2 = (Stopwatch)this.measurements.get(var1);
-      if (var2 == null) {
-         LOGGER.warn("Attempted to end step for {} before starting it", var1.id());
+   public synchronized void endStep(final TelemetryProperty<Measurement> property) {
+      Stopwatch stepMeasurement = (Stopwatch)this.measurements.get(property);
+      if (stepMeasurement == null) {
+         LOGGER.warn("Attempted to end step for {} before starting it", property.id());
       } else {
-         if (var2.isRunning()) {
-            var2.stop();
+         if (stepMeasurement.isRunning()) {
+            stepMeasurement.stop();
          }
 
       }
    }
 
-   public void send(TelemetryEventSender var1) {
-      var1.send(TelemetryEventType.GAME_LOAD_TIMES, (var1x) -> {
+   public void send(final TelemetryEventSender eventSender) {
+      eventSender.send(TelemetryEventType.GAME_LOAD_TIMES, (properties) -> {
          synchronized(this) {
-            this.measurements.forEach((var1, var2) -> {
-               if (!var2.isRunning()) {
-                  long var3 = var2.elapsed(TimeUnit.MILLISECONDS);
-                  var1x.put(var1, new Measurement((int)var3));
+            this.measurements.forEach((key, stepMeasurement) -> {
+               if (!stepMeasurement.isRunning()) {
+                  long elapsed = stepMeasurement.elapsed(TimeUnit.MILLISECONDS);
+                  properties.put(key, new Measurement((int)elapsed));
                } else {
-                  LOGGER.warn("Measurement {} was discarded since it was still ongoing when the event {} was sent.", var1.id(), TelemetryEventType.GAME_LOAD_TIMES.id());
+                  LOGGER.warn("Measurement {} was discarded since it was still ongoing when the event {} was sent.", key.id(), TelemetryEventType.GAME_LOAD_TIMES.id());
                }
 
             });
-            this.bootstrapTime.ifPresent((var1) -> var1x.put(TelemetryProperty.LOAD_TIME_BOOTSTRAP_MS, new Measurement((int)var1)));
+            this.bootstrapTime.ifPresent((duration) -> properties.put(TelemetryProperty.LOAD_TIME_BOOTSTRAP_MS, new Measurement((int)duration)));
             this.measurements.clear();
          }
       });
    }
 
-   public synchronized void setBootstrapTime(long var1) {
-      this.bootstrapTime = OptionalLong.of(var1);
+   public synchronized void setBootstrapTime(final long duration) {
+      this.bootstrapTime = OptionalLong.of(duration);
    }
 
    public static record Measurement(int millis) {
       public static final Codec<Measurement> CODEC;
 
-      public Measurement(int var1) {
+      public Measurement {
          super();
-         this.millis = var1;
       }
 
       static {
-         CODEC = Codec.INT.xmap(Measurement::new, (var0) -> var0.millis);
+         CODEC = Codec.INT.xmap(Measurement::new, (o) -> o.millis);
       }
    }
 }

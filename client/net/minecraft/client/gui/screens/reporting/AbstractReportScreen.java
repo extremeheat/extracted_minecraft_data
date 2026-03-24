@@ -2,12 +2,12 @@ package net.minecraft.client.gui.screens.reporting;
 
 import com.mojang.authlib.minecraft.report.AbuseReportLimits;
 import com.mojang.logging.LogUtils;
+import java.util.Objects;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Optionull;
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Checkbox;
 import net.minecraft.client.gui.components.MultiLineEditBox;
@@ -23,7 +23,6 @@ import net.minecraft.client.multiplayer.chat.report.Report;
 import net.minecraft.client.multiplayer.chat.report.ReportingContext;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.ThrowingComponent;
 import org.slf4j.Logger;
 
@@ -52,20 +51,20 @@ public abstract class AbstractReportScreen<B extends Report.Builder<?>> extends 
    private Checkbox attestation;
    protected Button sendButton;
 
-   protected AbstractReportScreen(Component var1, Screen var2, ReportingContext var3, B var4) {
-      super(var1);
-      this.lastScreen = var2;
-      this.reportingContext = var3;
-      this.reportBuilder = var4;
+   protected AbstractReportScreen(final Component title, final Screen lastScreen, final ReportingContext reportingContext, final B reportBuilder) {
+      super(title);
+      this.lastScreen = lastScreen;
+      this.reportingContext = reportingContext;
+      this.reportBuilder = reportBuilder;
    }
 
-   protected MultiLineEditBox createCommentBox(int var1, int var2, Consumer<String> var3) {
-      AbuseReportLimits var4 = this.reportingContext.sender().reportLimits();
-      MultiLineEditBox var5 = MultiLineEditBox.builder().setPlaceholder(DESCRIBE_PLACEHOLDER).build(this.font, var1, var2, MORE_COMMENTS_NARRATION);
-      var5.setValue(this.reportBuilder.comments());
-      var5.setCharacterLimit(var4.maxOpinionCommentsLength());
-      var5.setValueListener(var3);
-      return var5;
+   protected MultiLineEditBox createCommentBox(final int width, final int height, final Consumer<String> valueListener) {
+      AbuseReportLimits reportLimits = this.reportingContext.sender().reportLimits();
+      MultiLineEditBox commentBox = MultiLineEditBox.builder().setPlaceholder(DESCRIBE_PLACEHOLDER).build(this.font, width, height, MORE_COMMENTS_NARRATION);
+      commentBox.setValue(this.reportBuilder.comments());
+      commentBox.setCharacterLimit(reportLimits.maxOpinionCommentsLength());
+      commentBox.setValueListener(valueListener);
+      return commentBox;
    }
 
    protected void init() {
@@ -74,9 +73,7 @@ public abstract class AbstractReportScreen<B extends Report.Builder<?>> extends 
       this.addContent();
       this.createFooter();
       this.onReportChanged();
-      this.layout.visitWidgets((var1) -> {
-         AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1);
-      });
+      this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
       this.repositionElements();
    }
 
@@ -87,19 +84,19 @@ public abstract class AbstractReportScreen<B extends Report.Builder<?>> extends 
    protected abstract void addContent();
 
    protected void createFooter() {
-      this.attestation = (Checkbox)this.layout.addChild(Checkbox.builder(ATTESTATION_CHECKBOX, this.font).selected(this.reportBuilder.attested()).maxWidth(280).onValueChange((var1x, var2) -> {
-         this.reportBuilder.setAttested(var2);
+      this.attestation = (Checkbox)this.layout.addChild(Checkbox.builder(ATTESTATION_CHECKBOX, this.font).selected(this.reportBuilder.attested()).maxWidth(280).onValueChange((checkbox, value) -> {
+         this.reportBuilder.setAttested(value);
          this.onReportChanged();
       }).build());
-      LinearLayout var1 = (LinearLayout)this.layout.addChild(LinearLayout.horizontal().spacing(8));
-      var1.addChild(Button.builder(CommonComponents.GUI_BACK, (var1x) -> this.onClose()).width(120).build());
-      this.sendButton = (Button)var1.addChild(Button.builder(SEND_REPORT, (var1x) -> this.sendReport()).width(120).build());
+      LinearLayout buttonsLayout = (LinearLayout)this.layout.addChild(LinearLayout.horizontal().spacing(8));
+      buttonsLayout.addChild(Button.builder(CommonComponents.GUI_BACK, (b) -> this.onClose()).width(120).build());
+      this.sendButton = (Button)buttonsLayout.addChild(Button.builder(SEND_REPORT, (b) -> this.sendReport()).width(120).build());
    }
 
    protected void onReportChanged() {
-      Report.CannotBuildReason var1 = this.reportBuilder.checkBuildable();
-      this.sendButton.active = var1 == null && this.attestation.selected();
-      this.sendButton.setTooltip((Tooltip)Optionull.map(var1, Report.CannotBuildReason::tooltip));
+      Report.CannotBuildReason cannotBuildReason = this.reportBuilder.checkBuildable();
+      this.sendButton.active = cannotBuildReason == null && this.attestation.selected();
+      this.sendButton.setTooltip((Tooltip)Optionull.map(cannotBuildReason, Report.CannotBuildReason::tooltip));
    }
 
    protected void repositionElements() {
@@ -108,26 +105,26 @@ public abstract class AbstractReportScreen<B extends Report.Builder<?>> extends 
    }
 
    protected void sendReport() {
-      this.reportBuilder.build(this.reportingContext).ifLeft((var1) -> {
-         CompletableFuture var2 = this.reportingContext.sender().send(var1.id(), var1.reportType(), var1.report());
+      this.reportBuilder.build(this.reportingContext).ifLeft((result) -> {
+         CompletableFuture<?> sendFuture = this.reportingContext.sender().send(result.id(), result.reportType(), result.report());
          this.minecraft.setScreen(GenericWaitingScreen.createWaiting(REPORT_SENDING_TITLE, CommonComponents.GUI_CANCEL, () -> {
             this.minecraft.setScreen(this);
-            var2.cancel(true);
+            sendFuture.cancel(true);
          }));
-         var2.handleAsync((var1x, var2x) -> {
-            if (var2x == null) {
+         sendFuture.handleAsync((ok, throwable) -> {
+            if (throwable == null) {
                this.onReportSendSuccess();
             } else {
-               if (var2x instanceof CancellationException) {
+               if (throwable instanceof CancellationException) {
                   return null;
                }
 
-               this.onReportSendError(var2x);
+               this.onReportSendError(throwable);
             }
 
             return null;
          }, this.minecraft);
-      }).ifRight((var1) -> this.displayReportSendError(var1.message()));
+      }).ifRight((reason) -> this.displayReportSendError(reason.message()));
    }
 
    private void onReportSendSuccess() {
@@ -135,32 +132,32 @@ public abstract class AbstractReportScreen<B extends Report.Builder<?>> extends 
       this.minecraft.setScreen(GenericWaitingScreen.createCompleted(REPORT_SENT_TITLE, REPORT_SENT_MESSAGE, CommonComponents.GUI_DONE, () -> this.minecraft.setScreen((Screen)null)));
    }
 
-   private void onReportSendError(Throwable var1) {
-      LOGGER.error("Encountered error while sending abuse report", var1);
-      Throwable var4 = var1.getCause();
-      Component var2;
-      if (var4 instanceof ThrowingComponent var3) {
-         var2 = var3.getComponent();
+   private void onReportSendError(final Throwable throwable) {
+      LOGGER.error("Encountered error while sending abuse report", throwable);
+      Throwable var4 = throwable.getCause();
+      Component message;
+      if (var4 instanceof ThrowingComponent error) {
+         message = error.getComponent();
       } else {
-         var2 = REPORT_SEND_GENERIC_ERROR;
+         message = REPORT_SEND_GENERIC_ERROR;
       }
 
-      this.displayReportSendError(var2);
+      this.displayReportSendError(message);
    }
 
-   private void displayReportSendError(Component var1) {
-      MutableComponent var2 = var1.copy().withStyle(ChatFormatting.RED);
-      this.minecraft.setScreen(GenericWaitingScreen.createCompleted(REPORT_ERROR_TITLE, var2, CommonComponents.GUI_BACK, () -> this.minecraft.setScreen(this)));
+   private void displayReportSendError(final Component message) {
+      Component styledMessage = message.copy().withStyle(ChatFormatting.RED);
+      this.minecraft.setScreen(GenericWaitingScreen.createCompleted(REPORT_ERROR_TITLE, styledMessage, CommonComponents.GUI_BACK, () -> this.minecraft.setScreen(this)));
    }
 
-   void saveDraft() {
+   private void saveDraft() {
       if (this.reportBuilder.hasContent()) {
          this.reportingContext.setReportDraft(this.reportBuilder.report().copy());
       }
 
    }
 
-   void clearDraft() {
+   private void clearDraft() {
       this.reportingContext.setReportDraft((Report)null);
    }
 
@@ -193,7 +190,7 @@ public abstract class AbstractReportScreen<B extends Report.Builder<?>> extends 
       LOGGER = LogUtils.getLogger();
    }
 
-   class DiscardReportWarningScreen extends WarningScreen {
+   private class DiscardReportWarningScreen extends WarningScreen {
       private static final Component TITLE;
       private static final Component MESSAGE;
       private static final Component RETURN;
@@ -201,23 +198,24 @@ public abstract class AbstractReportScreen<B extends Report.Builder<?>> extends 
       private static final Component DISCARD;
 
       protected DiscardReportWarningScreen() {
+         Objects.requireNonNull(AbstractReportScreen.this);
          super(TITLE, MESSAGE, MESSAGE);
       }
 
       protected Layout addFooterButtons() {
-         LinearLayout var1 = LinearLayout.vertical().spacing(8);
-         var1.defaultCellSetting().alignHorizontallyCenter();
-         LinearLayout var2 = (LinearLayout)var1.addChild(LinearLayout.horizontal().spacing(8));
-         var2.addChild(Button.builder(RETURN, (var1x) -> this.onClose()).build());
-         var2.addChild(Button.builder(DRAFT, (var1x) -> {
+         LinearLayout footer = LinearLayout.vertical().spacing(8);
+         footer.defaultCellSetting().alignHorizontallyCenter();
+         LinearLayout firstFooterRow = (LinearLayout)footer.addChild(LinearLayout.horizontal().spacing(8));
+         firstFooterRow.addChild(Button.builder(RETURN, (button) -> this.onClose()).build());
+         firstFooterRow.addChild(Button.builder(DRAFT, (button) -> {
             AbstractReportScreen.this.saveDraft();
             this.minecraft.setScreen(AbstractReportScreen.this.lastScreen);
          }).build());
-         var1.addChild(Button.builder(DISCARD, (var1x) -> {
+         footer.addChild(Button.builder(DISCARD, (button) -> {
             AbstractReportScreen.this.clearDraft();
             this.minecraft.setScreen(AbstractReportScreen.this.lastScreen);
          }).build());
-         return var1;
+         return footer;
       }
 
       public void onClose() {

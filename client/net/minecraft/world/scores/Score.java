@@ -20,12 +20,12 @@ public class Score implements ReadOnlyScoreInfo {
       super();
    }
 
-   public Score(Packed var1) {
+   public Score(final Packed packed) {
       super();
-      this.value = var1.value;
-      this.locked = var1.locked;
-      this.display = (Component)var1.display.orElse((Object)null);
-      this.numberFormat = (NumberFormat)var1.numberFormat.orElse((Object)null);
+      this.value = packed.value;
+      this.locked = packed.locked;
+      this.display = (Component)packed.display.orElse((Object)null);
+      this.numberFormat = (NumberFormat)packed.numberFormat.orElse((Object)null);
    }
 
    public Packed pack() {
@@ -36,47 +36,39 @@ public class Score implements ReadOnlyScoreInfo {
       return this.value;
    }
 
-   public void value(int var1) {
-      this.value = var1;
+   public void value(final int score) {
+      this.value = score;
    }
 
    public boolean isLocked() {
       return this.locked;
    }
 
-   public void setLocked(boolean var1) {
-      this.locked = var1;
+   public void setLocked(final boolean locked) {
+      this.locked = locked;
    }
 
    public @Nullable Component display() {
       return this.display;
    }
 
-   public void display(@Nullable Component var1) {
-      this.display = var1;
+   public void display(final @Nullable Component display) {
+      this.display = display;
    }
 
    public @Nullable NumberFormat numberFormat() {
       return this.numberFormat;
    }
 
-   public void numberFormat(@Nullable NumberFormat var1) {
-      this.numberFormat = var1;
+   public void numberFormat(final @Nullable NumberFormat numberFormat) {
+      this.numberFormat = numberFormat;
    }
 
    public static record Packed(int value, boolean locked, Optional<Component> display, Optional<NumberFormat> numberFormat) {
-      final int value;
-      final boolean locked;
-      final Optional<Component> display;
-      final Optional<NumberFormat> numberFormat;
-      public static final MapCodec<Packed> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.INT.optionalFieldOf("Score", 0).forGetter(Packed::value), Codec.BOOL.optionalFieldOf("Locked", false).forGetter(Packed::locked), ComponentSerialization.CODEC.optionalFieldOf("display").forGetter(Packed::display), NumberFormatTypes.CODEC.optionalFieldOf("format").forGetter(Packed::numberFormat)).apply(var0, Packed::new));
+      public static final MapCodec<Packed> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.INT.optionalFieldOf("Score", 0).forGetter(Packed::value), Codec.BOOL.optionalFieldOf("Locked", false).forGetter(Packed::locked), ComponentSerialization.CODEC.optionalFieldOf("display").forGetter(Packed::display), NumberFormatTypes.CODEC.optionalFieldOf("format").forGetter(Packed::numberFormat)).apply(i, Packed::new));
 
-      public Packed(int var1, boolean var2, Optional<Component> var3, Optional<NumberFormat> var4) {
+      public Packed {
          super();
-         this.value = var1;
-         this.locked = var2;
-         this.display = var3;
-         this.numberFormat = var4;
       }
    }
 }

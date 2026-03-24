@@ -16,15 +16,15 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 public class Deadmau5EarsLayer extends RenderLayer<AvatarRenderState, PlayerModel> {
    private final HumanoidModel<AvatarRenderState> model;
 
-   public Deadmau5EarsLayer(RenderLayerParent<AvatarRenderState, PlayerModel> var1, EntityModelSet var2) {
-      super(var1);
-      this.model = new PlayerEarsModel(var2.bakeLayer(ModelLayers.PLAYER_EARS));
+   public Deadmau5EarsLayer(final RenderLayerParent<AvatarRenderState, PlayerModel> renderer, final EntityModelSet modelSet) {
+      super(renderer);
+      this.model = new PlayerEarsModel(modelSet.bakeLayer(ModelLayers.PLAYER_EARS));
    }
 
-   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, AvatarRenderState var4, float var5, float var6) {
-      if (var4.showExtraEars && !var4.isInvisible) {
-         int var7 = LivingEntityRenderer.getOverlayCoords(var4, 0.0F);
-         var2.submitModel(this.model, var4, var1, RenderTypes.entitySolid(var4.skin.body().texturePath()), var3, var7, var4.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+   public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final AvatarRenderState state, final float yRot, final float xRot) {
+      if (state.showExtraEars && !state.isInvisible) {
+         int overlayCoords = LivingEntityRenderer.getOverlayCoords(state, 0.0F);
+         submitNodeCollector.submitModel(this.model, state, poseStack, RenderTypes.entitySolid(state.skin.body().texturePath()), lightCoords, overlayCoords, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       }
    }
 }

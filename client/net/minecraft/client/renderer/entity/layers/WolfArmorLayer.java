@@ -3,6 +3,7 @@ package net.minecraft.client.renderer.entity.layers;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Map;
 import net.minecraft.client.model.Model;
+import net.minecraft.client.model.animal.wolf.AdultWolfModel;
 import net.minecraft.client.model.animal.wolf.WolfModel;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
@@ -22,32 +23,29 @@ import net.minecraft.world.item.equipment.Equippable;
 
 public class WolfArmorLayer extends RenderLayer<WolfRenderState, WolfModel> {
    private final WolfModel adultModel;
-   private final WolfModel babyModel;
    private final EquipmentLayerRenderer equipmentRenderer;
    private static final Map<Crackiness.Level, Identifier> ARMOR_CRACK_LOCATIONS;
 
-   public WolfArmorLayer(RenderLayerParent<WolfRenderState, WolfModel> var1, EntityModelSet var2, EquipmentLayerRenderer var3) {
-      super(var1);
-      this.adultModel = new WolfModel(var2.bakeLayer(ModelLayers.WOLF_ARMOR));
-      this.babyModel = new WolfModel(var2.bakeLayer(ModelLayers.WOLF_BABY_ARMOR));
-      this.equipmentRenderer = var3;
+   public WolfArmorLayer(final RenderLayerParent<WolfRenderState, WolfModel> renderer, final EntityModelSet modelSet, final EquipmentLayerRenderer equipmentRenderer) {
+      super(renderer);
+      this.adultModel = new AdultWolfModel(modelSet.bakeLayer(ModelLayers.WOLF_ARMOR));
+      this.equipmentRenderer = equipmentRenderer;
    }
 
-   public void submit(PoseStack var1, SubmitNodeCollector var2, int var3, WolfRenderState var4, float var5, float var6) {
-      ItemStack var7 = var4.bodyArmorItem;
-      Equippable var8 = (Equippable)var7.get(DataComponents.EQUIPPABLE);
-      if (var8 != null && !var8.assetId().isEmpty()) {
-         WolfModel var9 = var4.isBaby ? this.babyModel : this.adultModel;
-         this.equipmentRenderer.renderLayers(EquipmentClientInfo.LayerType.WOLF_BODY, (ResourceKey)var8.assetId().get(), var9, var4, var7, var1, var2, var3, var4.outlineColor);
-         this.maybeRenderCracks(var1, var2, var3, var7, var9, var4);
+   public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final WolfRenderState state, final float yRot, final float xRot) {
+      ItemStack armorItem = state.bodyArmorItem;
+      Equippable equippable = (Equippable)armorItem.get(DataComponents.EQUIPPABLE);
+      if (equippable != null && !equippable.assetId().isEmpty() && !state.isBaby) {
+         this.equipmentRenderer.renderLayers(EquipmentClientInfo.LayerType.WOLF_BODY, (ResourceKey)equippable.assetId().get(), this.adultModel, state, armorItem, poseStack, submitNodeCollector, lightCoords, state.outlineColor);
+         this.maybeRenderCracks(poseStack, submitNodeCollector, lightCoords, armorItem, this.adultModel, state);
       }
    }
 
-   private void maybeRenderCracks(PoseStack var1, SubmitNodeCollector var2, int var3, ItemStack var4, Model<WolfRenderState> var5, WolfRenderState var6) {
-      Crackiness.Level var7 = Crackiness.WOLF_ARMOR.byDamage(var4);
-      if (var7 != Crackiness.Level.NONE) {
-         Identifier var8 = (Identifier)ARMOR_CRACK_LOCATIONS.get(var7);
-         var2.submitModel(var5, var6, var1, RenderTypes.armorTranslucent(var8), var3, OverlayTexture.NO_OVERLAY, var6.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
+   private void maybeRenderCracks(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final ItemStack armorItem, final Model<WolfRenderState> model, final WolfRenderState state) {
+      Crackiness.Level crackiness = Crackiness.WOLF_ARMOR.byDamage(armorItem);
+      if (crackiness != Crackiness.Level.NONE) {
+         Identifier damageTexture = (Identifier)ARMOR_CRACK_LOCATIONS.get(crackiness);
+         submitNodeCollector.submitModel(model, state, poseStack, RenderTypes.armorTranslucent(damageTexture), lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor, (ModelFeatureRenderer.CrumblingOverlay)null);
       }
    }
 

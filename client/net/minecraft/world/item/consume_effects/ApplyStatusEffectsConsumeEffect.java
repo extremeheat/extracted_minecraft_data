@@ -13,44 +13,42 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 public record ApplyStatusEffectsConsumeEffect(List<MobEffectInstance> effects, float probability) implements ConsumeEffect {
-   public static final MapCodec<ApplyStatusEffectsConsumeEffect> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(MobEffectInstance.CODEC.listOf().fieldOf("effects").forGetter(ApplyStatusEffectsConsumeEffect::effects), Codec.floatRange(0.0F, 1.0F).optionalFieldOf("probability", 1.0F).forGetter(ApplyStatusEffectsConsumeEffect::probability)).apply(var0, ApplyStatusEffectsConsumeEffect::new));
+   public static final MapCodec<ApplyStatusEffectsConsumeEffect> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(MobEffectInstance.CODEC.listOf().fieldOf("effects").forGetter(ApplyStatusEffectsConsumeEffect::effects), Codec.floatRange(0.0F, 1.0F).optionalFieldOf("probability", 1.0F).forGetter(ApplyStatusEffectsConsumeEffect::probability)).apply(i, ApplyStatusEffectsConsumeEffect::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, ApplyStatusEffectsConsumeEffect> STREAM_CODEC;
 
-   public ApplyStatusEffectsConsumeEffect(MobEffectInstance var1, float var2) {
-      this(List.of(var1), var2);
+   public ApplyStatusEffectsConsumeEffect(final MobEffectInstance effect, final float probability) {
+      this(List.of(effect), probability);
    }
 
-   public ApplyStatusEffectsConsumeEffect(List<MobEffectInstance> var1) {
-      this(var1, 1.0F);
+   public ApplyStatusEffectsConsumeEffect(final List<MobEffectInstance> effects) {
+      this(effects, 1.0F);
    }
 
-   public ApplyStatusEffectsConsumeEffect(MobEffectInstance var1) {
-      this(var1, 1.0F);
+   public ApplyStatusEffectsConsumeEffect(final MobEffectInstance effect) {
+      this(effect, 1.0F);
    }
 
-   public ApplyStatusEffectsConsumeEffect(List<MobEffectInstance> var1, float var2) {
+   public ApplyStatusEffectsConsumeEffect {
       super();
-      this.effects = var1;
-      this.probability = var2;
    }
 
    public ConsumeEffect.Type<ApplyStatusEffectsConsumeEffect> getType() {
       return ConsumeEffect.Type.APPLY_EFFECTS;
    }
 
-   public boolean apply(Level var1, ItemStack var2, LivingEntity var3) {
-      if (var3.getRandom().nextFloat() >= this.probability) {
+   public boolean apply(final Level level, final ItemStack stack, final LivingEntity user) {
+      if (user.getRandom().nextFloat() >= this.probability) {
          return false;
       } else {
-         boolean var4 = false;
+         boolean anyApplied = false;
 
-         for(MobEffectInstance var6 : this.effects) {
-            if (var3.addEffect(new MobEffectInstance(var6))) {
-               var4 = true;
+         for(MobEffectInstance effect : this.effects) {
+            if (user.addEffect(new MobEffectInstance(effect))) {
+               anyApplied = true;
             }
          }
 
-         return var4;
+         return anyApplied;
       }
    }
 

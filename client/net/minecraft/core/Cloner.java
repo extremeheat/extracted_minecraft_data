@@ -1,26 +1,26 @@
 package net.minecraft.core;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JavaOps;
 import java.util.HashMap;
 import java.util.Map;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import org.jspecify.annotations.Nullable;
 
 public class Cloner<T> {
    private final Codec<T> directCodec;
 
-   Cloner(Codec<T> var1) {
+   private Cloner(final Codec<T> directCodec) {
       super();
-      this.directCodec = var1;
+      this.directCodec = directCodec;
    }
 
-   public T clone(T var1, HolderLookup.Provider var2, HolderLookup.Provider var3) {
-      RegistryOps var4 = var2.createSerializationContext(JavaOps.INSTANCE);
-      RegistryOps var5 = var3.createSerializationContext(JavaOps.INSTANCE);
-      Object var6 = this.directCodec.encodeStart(var4, var1).getOrThrow((var0) -> new IllegalStateException("Failed to encode: " + var0));
-      return (T)this.directCodec.parse(var5, var6).getOrThrow((var0) -> new IllegalStateException("Failed to decode: " + var0));
+   public T clone(final T value, final HolderLookup.Provider from, final HolderLookup.Provider to) {
+      DynamicOps<Object> sourceOps = from.<Object>createSerializationContext(JavaOps.INSTANCE);
+      DynamicOps<Object> targetOps = to.<Object>createSerializationContext(JavaOps.INSTANCE);
+      Object serialized = this.directCodec.encodeStart(sourceOps, value).getOrThrow((error) -> new IllegalStateException("Failed to encode: " + error));
+      return (T)this.directCodec.parse(targetOps, serialized).getOrThrow((error) -> new IllegalStateException("Failed to decode: " + error));
    }
 
    public static class Factory {
@@ -30,13 +30,13 @@ public class Cloner<T> {
          super();
       }
 
-      public <T> Factory addCodec(ResourceKey<? extends Registry<? extends T>> var1, Codec<T> var2) {
-         this.codecs.put(var1, new Cloner(var2));
+      public <T> Factory addCodec(final ResourceKey<? extends Registry<? extends T>> key, final Codec<T> codec) {
+         this.codecs.put(key, new Cloner(codec));
          return this;
       }
 
-      public <T> @Nullable Cloner<T> cloner(ResourceKey<? extends Registry<? extends T>> var1) {
-         return (Cloner)this.codecs.get(var1);
+      public <T> @Nullable Cloner<T> cloner(final ResourceKey<? extends Registry<? extends T>> key) {
+         return (Cloner)this.codecs.get(key);
       }
    }
 }

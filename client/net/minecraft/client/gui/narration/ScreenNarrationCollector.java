@@ -3,60 +3,62 @@ package net.minecraft.client.gui.narration;
 import com.google.common.collect.Maps;
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 public class ScreenNarrationCollector {
-   int generation;
-   final Map<EntryKey, NarrationEntry> entries = Maps.newTreeMap(Comparator.comparing((var0) -> var0.type).thenComparing((var0) -> var0.depth));
+   private int generation;
+   private final Map<EntryKey, NarrationEntry> entries = Maps.newTreeMap(Comparator.comparing((e) -> e.type).thenComparing((e) -> e.depth));
 
    public ScreenNarrationCollector() {
       super();
    }
 
-   public void update(Consumer<NarrationElementOutput> var1) {
+   public void update(final Consumer<NarrationElementOutput> updater) {
       ++this.generation;
-      var1.accept(new Output(0));
+      updater.accept(new Output(0));
    }
 
-   public String collectNarrationText(boolean var1) {
-      final StringBuilder var2 = new StringBuilder();
-      Consumer var3 = new Consumer<String>() {
-         private boolean firstEntry = true;
+   public String collectNarrationText(final boolean force) {
+      final StringBuilder result = new StringBuilder();
+      Consumer<String> appender = new Consumer<String>() {
+         private boolean firstEntry;
 
-         public void accept(String var1) {
+         {
+            Objects.requireNonNull(ScreenNarrationCollector.this);
+            this.firstEntry = true;
+         }
+
+         public void accept(final String s) {
             if (!this.firstEntry) {
-               var2.append(". ");
+               result.append(". ");
             }
 
             this.firstEntry = false;
-            var2.append(var1);
-         }
-
-         // $FF: synthetic method
-         public void accept(final Object var1) {
-            this.accept((String)var1);
+            result.append(s);
          }
       };
-      this.entries.forEach((var3x, var4) -> {
-         if (var4.generation == this.generation && (var1 || !var4.alreadyNarrated)) {
-            var4.contents.getText(var3);
-            var4.alreadyNarrated = true;
+      this.entries.forEach((k, v) -> {
+         if (v.generation == this.generation && (force || !v.alreadyNarrated)) {
+            v.contents.getText(appender);
+            v.alreadyNarrated = true;
          }
 
       });
-      return var2.toString();
+      return result.toString();
    }
 
-   class Output implements NarrationElementOutput {
+   private class Output implements NarrationElementOutput {
       private final int depth;
 
-      Output(final int var2) {
+      private Output(final int depth) {
+         Objects.requireNonNull(ScreenNarrationCollector.this);
          super();
-         this.depth = var2;
+         this.depth = depth;
       }
 
-      public void add(NarratedElementType var1, NarrationThunk<?> var2) {
-         ((NarrationEntry)ScreenNarrationCollector.this.entries.computeIfAbsent(new EntryKey(var1, this.depth), (var0) -> new NarrationEntry())).update(ScreenNarrationCollector.this.generation, var2);
+      public void add(final NarratedElementType type, final NarrationThunk<?> contents) {
+         ((NarrationEntry)ScreenNarrationCollector.this.entries.computeIfAbsent(new EntryKey(type, this.depth), (k) -> new NarrationEntry())).update(ScreenNarrationCollector.this.generation, contents);
       }
 
       public NarrationElementOutput nest() {
@@ -64,37 +66,32 @@ public class ScreenNarrationCollector {
       }
    }
 
-   static record EntryKey(NarratedElementType type, int depth) {
-      final NarratedElementType type;
-      final int depth;
-
-      EntryKey(NarratedElementType var1, int var2) {
+   private static record EntryKey(NarratedElementType type, int depth) {
+      private EntryKey {
          super();
-         this.type = var1;
-         this.depth = var2;
       }
    }
 
-   static class NarrationEntry {
-      NarrationThunk<?> contents;
-      int generation;
-      boolean alreadyNarrated;
+   private static class NarrationEntry {
+      private NarrationThunk<?> contents;
+      private int generation;
+      private boolean alreadyNarrated;
 
-      NarrationEntry() {
+      private NarrationEntry() {
          super();
          this.contents = NarrationThunk.EMPTY;
          this.generation = -1;
       }
 
-      public NarrationEntry update(int var1, NarrationThunk<?> var2) {
-         if (!this.contents.equals(var2)) {
-            this.contents = var2;
+      public NarrationEntry update(final int generation, final NarrationThunk<?> contents) {
+         if (!this.contents.equals(contents)) {
+            this.contents = contents;
             this.alreadyNarrated = false;
-         } else if (this.generation + 1 != var1) {
+         } else if (this.generation + 1 != generation) {
             this.alreadyNarrated = false;
          }
 
-         this.generation = var1;
+         this.generation = generation;
          return this;
       }
    }

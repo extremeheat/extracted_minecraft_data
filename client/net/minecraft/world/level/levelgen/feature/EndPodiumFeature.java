@@ -18,65 +18,65 @@ public class EndPodiumFeature extends Feature<NoneFeatureConfiguration> {
    private static final BlockPos END_PODIUM_LOCATION;
    private final boolean active;
 
-   public static BlockPos getLocation(BlockPos var0) {
-      return END_PODIUM_LOCATION.offset(var0);
+   public static BlockPos getLocation(final BlockPos offset) {
+      return END_PODIUM_LOCATION.offset(offset);
    }
 
-   public EndPodiumFeature(boolean var1) {
+   public EndPodiumFeature(final boolean active) {
       super(NoneFeatureConfiguration.CODEC);
-      this.active = var1;
+      this.active = active;
    }
 
-   public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> var1) {
-      BlockPos var2 = var1.origin();
-      WorldGenLevel var3 = var1.level();
+   public boolean place(final FeaturePlaceContext<NoneFeatureConfiguration> context) {
+      BlockPos origin = context.origin();
+      WorldGenLevel level = context.level();
 
-      for(BlockPos var5 : BlockPos.betweenClosed(new BlockPos(var2.getX() - 4, var2.getY() - 1, var2.getZ() - 4), new BlockPos(var2.getX() + 4, var2.getY() + 32, var2.getZ() + 4))) {
-         boolean var6 = var5.closerThan(var2, 2.5);
-         if (var6 || var5.closerThan(var2, 3.5)) {
-            if (var5.getY() < var2.getY()) {
-               if (var6) {
-                  this.setBlock(var3, var5, Blocks.BEDROCK.defaultBlockState());
-               } else if (var5.getY() < var2.getY()) {
+      for(BlockPos pos : BlockPos.betweenClosed(new BlockPos(origin.getX() - 4, origin.getY() - 1, origin.getZ() - 4), new BlockPos(origin.getX() + 4, origin.getY() + 32, origin.getZ() + 4))) {
+         boolean insideRim = pos.closerThan(origin, 2.5);
+         if (insideRim || pos.closerThan(origin, 3.5)) {
+            if (pos.getY() < origin.getY()) {
+               if (insideRim) {
+                  this.setBlock(level, pos, Blocks.BEDROCK.defaultBlockState());
+               } else if (pos.getY() < origin.getY()) {
                   if (this.active) {
-                     this.dropPreviousAndSetBlock(var3, var5, Blocks.END_STONE);
+                     this.dropPreviousAndSetBlock(level, pos, Blocks.END_STONE);
                   } else {
-                     this.setBlock(var3, var5, Blocks.END_STONE.defaultBlockState());
+                     this.setBlock(level, pos, Blocks.END_STONE.defaultBlockState());
                   }
                }
-            } else if (var5.getY() > var2.getY()) {
+            } else if (pos.getY() > origin.getY()) {
                if (this.active) {
-                  this.dropPreviousAndSetBlock(var3, var5, Blocks.AIR);
+                  this.dropPreviousAndSetBlock(level, pos, Blocks.AIR);
                } else {
-                  this.setBlock(var3, var5, Blocks.AIR.defaultBlockState());
+                  this.setBlock(level, pos, Blocks.AIR.defaultBlockState());
                }
-            } else if (!var6) {
-               this.setBlock(var3, var5, Blocks.BEDROCK.defaultBlockState());
+            } else if (!insideRim) {
+               this.setBlock(level, pos, Blocks.BEDROCK.defaultBlockState());
             } else if (this.active) {
-               this.dropPreviousAndSetBlock(var3, new BlockPos(var5), Blocks.END_PORTAL);
+               this.dropPreviousAndSetBlock(level, new BlockPos(pos), Blocks.END_PORTAL);
             } else {
-               this.setBlock(var3, new BlockPos(var5), Blocks.AIR.defaultBlockState());
+               this.setBlock(level, new BlockPos(pos), Blocks.AIR.defaultBlockState());
             }
          }
       }
 
-      for(int var7 = 0; var7 < 4; ++var7) {
-         this.setBlock(var3, var2.above(var7), Blocks.BEDROCK.defaultBlockState());
+      for(int y = 0; y < 4; ++y) {
+         this.setBlock(level, origin.above(y), Blocks.BEDROCK.defaultBlockState());
       }
 
-      BlockPos var8 = var2.above(2);
+      BlockPos centerOfPillar = origin.above(2);
 
-      for(Direction var10 : Direction.Plane.HORIZONTAL) {
-         this.setBlock(var3, var8.relative(var10), (BlockState)Blocks.WALL_TORCH.defaultBlockState().setValue(WallTorchBlock.FACING, var10));
+      for(Direction face : Direction.Plane.HORIZONTAL) {
+         this.setBlock(level, centerOfPillar.relative(face), (BlockState)Blocks.WALL_TORCH.defaultBlockState().setValue(WallTorchBlock.FACING, face));
       }
 
       return true;
    }
 
-   private void dropPreviousAndSetBlock(WorldGenLevel var1, BlockPos var2, Block var3) {
-      if (!var1.getBlockState(var2).is(var3)) {
-         var1.destroyBlock(var2, true, (Entity)null);
-         this.setBlock(var1, var2, var3.defaultBlockState());
+   private void dropPreviousAndSetBlock(final WorldGenLevel level, final BlockPos pos, final Block block) {
+      if (!level.getBlockState(pos).is(block)) {
+         level.destroyBlock(pos, true, (Entity)null);
+         this.setBlock(level, pos, block.defaultBlockState());
       }
 
    }

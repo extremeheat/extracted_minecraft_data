@@ -9,18 +9,18 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class RandomBlockMatchTest extends RuleTest {
-   public static final MapCodec<RandomBlockMatchTest> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("block").forGetter((var0x) -> var0x.block), Codec.FLOAT.fieldOf("probability").forGetter((var0x) -> var0x.probability)).apply(var0, RandomBlockMatchTest::new));
+   public static final MapCodec<RandomBlockMatchTest> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("block").forGetter((t) -> t.block), Codec.FLOAT.fieldOf("probability").forGetter((t) -> t.probability)).apply(i, RandomBlockMatchTest::new));
    private final Block block;
    private final float probability;
 
-   public RandomBlockMatchTest(Block var1, float var2) {
+   public RandomBlockMatchTest(final Block block, final float probability) {
       super();
-      this.block = var1;
-      this.probability = var2;
+      this.block = block;
+      this.probability = probability;
    }
 
-   public boolean test(BlockState var1, RandomSource var2) {
-      return var1.is(this.block) && var2.nextFloat() < this.probability;
+   public boolean test(final BlockState blockState, final RandomSource random) {
+      return blockState.is(this.block) && random.nextFloat() < this.probability;
    }
 
    protected RuleTestType<?> getType() {

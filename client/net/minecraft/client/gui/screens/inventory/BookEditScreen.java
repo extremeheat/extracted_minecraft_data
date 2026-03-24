@@ -8,7 +8,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ActiveTextCollector;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineEditBox;
@@ -52,13 +52,13 @@ public class BookEditScreen extends Screen {
    private Component numberOfPages;
    private MultiLineEditBox page;
 
-   public BookEditScreen(Player var1, ItemStack var2, InteractionHand var3, WritableBookContent var4) {
+   public BookEditScreen(final Player owner, final ItemStack book, final InteractionHand hand, final WritableBookContent content) {
       super(TITLE);
       this.numberOfPages = CommonComponents.EMPTY;
-      this.owner = var1;
-      this.book = var2;
-      this.hand = var3;
-      Stream var10000 = var4.getPages(Minecraft.getInstance().isTextFilteringEnabled());
+      this.owner = owner;
+      this.book = book;
+      this.hand = hand;
+      Stream var10000 = content.getPages(Minecraft.getInstance().isTextFilteringEnabled());
       List var10001 = this.pages;
       Objects.requireNonNull(var10001);
       var10000.forEach(var10001::add);
@@ -66,7 +66,7 @@ public class BookEditScreen extends Screen {
          this.pages.add("");
       }
 
-      this.signScreen = new BookSignScreen(this, var1, var3, this.pages);
+      this.signScreen = new BookSignScreen(this, owner, hand, this.pages);
    }
 
    private int getNumPages() {
@@ -74,22 +74,22 @@ public class BookEditScreen extends Screen {
    }
 
    protected void init() {
-      int var1 = this.backgroundLeft();
-      int var2 = this.backgroundTop();
-      boolean var3 = true;
+      int left = this.backgroundLeft();
+      int top = this.backgroundTop();
+      int padding = 8;
       this.page = MultiLineEditBox.builder().setShowDecorations(false).setTextColor(-16777216).setCursorColor(-16777216).setShowBackground(false).setTextShadow(false).setX((this.width - 114) / 2 - 8).setY(28).build(this.font, 122, 134, CommonComponents.EMPTY);
       this.page.setCharacterLimit(1024);
       MultiLineEditBox var10000 = this.page;
       Objects.requireNonNull(this.font);
       var10000.setLineLimit(126 / 9);
-      this.page.setValueListener((var1x) -> this.pages.set(this.currentPage, var1x));
+      this.page.setValueListener((value) -> this.pages.set(this.currentPage, value));
       this.addRenderableWidget(this.page);
       this.updatePageContent();
       this.numberOfPages = this.getPageNumberMessage();
-      this.backButton = (PageButton)this.addRenderableWidget(new PageButton(var1 + 43, var2 + 157, false, (var1x) -> this.pageBack(), true));
-      this.forwardButton = (PageButton)this.addRenderableWidget(new PageButton(var1 + 116, var2 + 157, true, (var1x) -> this.pageForward(), true));
-      this.addRenderableWidget(Button.builder(SIGN_BOOK_LABEL, (var1x) -> this.minecraft.setScreen(this.signScreen)).pos(this.width / 2 - 98 - 2, this.menuControlsTop()).width(98).build());
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1x) -> {
+      this.backButton = (PageButton)this.addRenderableWidget(new PageButton(left + 43, top + 157, false, (button) -> this.pageBack(), true));
+      this.forwardButton = (PageButton)this.addRenderableWidget(new PageButton(left + 116, top + 157, true, (button) -> this.pageForward(), true));
+      this.addRenderableWidget(Button.builder(SIGN_BOOK_LABEL, (button) -> this.minecraft.setScreen(this.signScreen)).pos(this.width / 2 - 98 - 2, this.menuControlsTop()).width(98).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (button) -> {
          this.minecraft.setScreen((Screen)null);
          this.saveChanges();
       }).pos(this.width / 2 + 2, this.menuControlsTop()).width(98).build());
@@ -153,10 +153,10 @@ public class BookEditScreen extends Screen {
    }
 
    private void eraseEmptyTrailingPages() {
-      ListIterator var1 = this.pages.listIterator(this.pages.size());
+      ListIterator<String> pagesIt = this.pages.listIterator(this.pages.size());
 
-      while(var1.hasPrevious() && ((String)var1.previous()).isEmpty()) {
-         var1.remove();
+      while(pagesIt.hasPrevious() && ((String)pagesIt.previous()).isEmpty()) {
+         pagesIt.remove();
       }
 
    }
@@ -164,8 +164,8 @@ public class BookEditScreen extends Screen {
    private void saveChanges() {
       this.eraseEmptyTrailingPages();
       this.updateLocalCopy();
-      int var1 = this.hand == InteractionHand.MAIN_HAND ? this.owner.getInventory().getSelectedSlot() : 40;
-      this.minecraft.getConnection().send(new ServerboundEditBookPacket(var1, this.pages, Optional.empty()));
+      int slot = this.hand == InteractionHand.MAIN_HAND ? this.owner.getInventory().getSelectedSlot() : 40;
+      this.minecraft.getConnection().send(new ServerboundEditBookPacket(slot, this.pages, Optional.empty()));
    }
 
    private void updateLocalCopy() {
@@ -182,32 +182,32 @@ public class BookEditScreen extends Screen {
       return true;
    }
 
-   public boolean keyPressed(KeyEvent var1) {
-      switch (var1.key()) {
+   public boolean keyPressed(final KeyEvent event) {
+      switch (event.key()) {
          case 266:
-            this.backButton.onPress(var1);
+            this.backButton.onPress(event);
             return true;
          case 267:
-            this.forwardButton.onPress(var1);
+            this.forwardButton.onPress(event);
             return true;
          default:
-            return super.keyPressed(var1);
+            return super.keyPressed(event);
       }
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      this.visitText(var1.textRenderer());
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
+      this.visitText(graphics.textRenderer());
    }
 
-   private void visitText(ActiveTextCollector var1) {
-      int var2 = this.backgroundLeft();
-      int var3 = this.backgroundTop();
-      var1.accept(TextAlignment.RIGHT, var2 + 148, var3 + 16, this.numberOfPages);
+   private void visitText(final ActiveTextCollector collector) {
+      int left = this.backgroundLeft();
+      int top = this.backgroundTop();
+      collector.accept(TextAlignment.RIGHT, left + 148, top + 16, this.numberOfPages);
    }
 
-   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      super.renderBackground(var1, var2, var3, var4);
-      var1.blit(RenderPipelines.GUI_TEXTURED, BookViewScreen.BOOK_LOCATION, this.backgroundLeft(), this.backgroundTop(), 0.0F, 0.0F, 192, 192, 256, 256);
+   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractBackground(graphics, mouseX, mouseY, a);
+      graphics.blit(RenderPipelines.GUI_TEXTURED, BookViewScreen.BOOK_LOCATION, this.backgroundLeft(), this.backgroundTop(), 0.0F, 0.0F, 192, 192, 256, 256);
    }
 }

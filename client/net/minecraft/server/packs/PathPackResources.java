@@ -1,7 +1,6 @@
 package net.minecraft.server.packs;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,79 +34,89 @@ public class PathPackResources extends AbstractPackResources {
    private static final Joiner PATH_JOINER = Joiner.on("/");
    private final Path root;
 
-   public PathPackResources(PackLocationInfo var1, Path var2) {
-      super(var1);
-      this.root = var2;
+   public PathPackResources(final PackLocationInfo location, final Path root) {
+      super(location);
+      this.root = root;
    }
 
-   public @Nullable IoSupplier<InputStream> getRootResource(String... var1) {
-      FileUtil.validatePath(var1);
-      Path var2 = FileUtil.resolvePath(this.root, List.of(var1));
-      return Files.exists(var2, new LinkOption[0]) ? IoSupplier.create(var2) : null;
+   public @Nullable IoSupplier<InputStream> getRootResource(final String... path) {
+      FileUtil.validatePath(path);
+      Path pathInRoot = FileUtil.resolvePath(this.root, List.of(path));
+      return Files.exists(pathInRoot, new LinkOption[0]) ? IoSupplier.create(pathInRoot) : null;
    }
 
-   public static boolean validatePath(Path var0) {
+   public static boolean validatePath(final Path path) {
       if (!SharedConstants.DEBUG_VALIDATE_RESOURCE_PATH_CASE) {
          return true;
-      } else if (var0.getFileSystem() != FileSystems.getDefault()) {
+      } else if (path.getFileSystem() != FileSystems.getDefault()) {
          return true;
       } else {
          try {
-            return var0.toRealPath().endsWith(var0);
-         } catch (IOException var2) {
-            LOGGER.warn("Failed to resolve real path for {}", var0, var2);
+            return path.toRealPath().endsWith(path);
+         } catch (IOException e) {
+            LOGGER.warn("Failed to resolve real path for {}", path, e);
             return false;
          }
       }
    }
 
-   public @Nullable IoSupplier<InputStream> getResource(PackType var1, Identifier var2) {
-      Path var3 = this.root.resolve(var1.getDirectory()).resolve(var2.getNamespace());
-      return getResource(var2, var3);
+   private Path topPackDir(final PackType type) {
+      return this.root.resolve(type.getDirectory());
    }
 
-   public static @Nullable IoSupplier<InputStream> getResource(Identifier var0, Path var1) {
-      return (IoSupplier)FileUtil.decomposePath(var0.getPath()).mapOrElse((var1x) -> {
-         Path var2 = FileUtil.resolvePath(var1, var1x);
-         return returnFileIfExists(var2);
-      }, (var1x) -> {
-         LOGGER.error("Invalid path {}: {}", var0, var1x.message());
+   public @Nullable IoSupplier<InputStream> getResource(final PackType type, final Identifier location) {
+      Path topDir = this.topPackDir(type);
+      return getResource(topDir, location);
+   }
+
+   public static @Nullable IoSupplier<InputStream> getResource(final Path topDir, final Identifier location) {
+      Path namespaceDir = topDir.resolve(location.getNamespace());
+      return (IoSupplier)FileUtil.decomposePath(location.getPath()).mapOrElse((decomposedPath) -> {
+         Path resolvedPath = FileUtil.resolvePath(namespaceDir, decomposedPath);
+         return returnFileIfExists(resolvedPath);
+      }, (error) -> {
+         LOGGER.error("Invalid path {}: {}", location, error.message());
          return null;
       });
    }
 
-   private static @Nullable IoSupplier<InputStream> returnFileIfExists(Path var0) {
-      return Files.exists(var0, new LinkOption[0]) && validatePath(var0) ? IoSupplier.create(var0) : null;
+   private static @Nullable IoSupplier<InputStream> returnFileIfExists(final Path resolvedPath) {
+      return Files.exists(resolvedPath, new LinkOption[0]) && validatePath(resolvedPath) ? IoSupplier.create(resolvedPath) : null;
    }
 
-   public void listResources(PackType var1, String var2, String var3, PackResources.ResourceOutput var4) {
-      FileUtil.decomposePath(var3).ifSuccess((var4x) -> {
-         Path var5 = this.root.resolve(var1.getDirectory()).resolve(var2);
-         listPath(var2, var5, var4x, var4);
-      }).ifError((var1x) -> LOGGER.error("Invalid path {}: {}", var3, var1x.message()));
+   public void listResources(final PackType type, final String namespace, final String directory, final PackResources.ResourceOutput output) {
+      Path topDir = this.topPackDir(type);
+      listResources(topDir, namespace, directory, output);
    }
 
-   public static void listPath(String var0, Path var1, List<String> var2, PackResources.ResourceOutput var3) {
-      Path var4 = FileUtil.resolvePath(var1, var2);
+   public static void listResources(final Path topPath, final String namespace, final String directory, final PackResources.ResourceOutput output) {
+      FileUtil.decomposePath(directory).ifSuccess((decomposedPath) -> {
+         Path namespaceDir = topPath.resolve(namespace);
+         listPath(namespace, namespaceDir, decomposedPath, output);
+      }).ifError((error) -> LOGGER.error("Invalid path {}: {}", directory, error.message()));
+   }
+
+   public static void listPath(final String namespace, final Path topDir, final List<String> decomposedPrefixPath, final PackResources.ResourceOutput output) {
+      Path targetPath = FileUtil.resolvePath(topDir, decomposedPrefixPath);
 
       try {
-         Stream var5 = Files.find(var4, 2147483647, PathPackResources::isRegularFile, new FileVisitOption[0]);
+         Stream<Path> files = Files.find(targetPath, 2147483647, PathPackResources::isRegularFile, new FileVisitOption[0]);
 
          try {
-            var5.forEach((var3x) -> {
-               String var4 = PATH_JOINER.join(var1.relativize(var3x));
-               Identifier var5 = Identifier.tryBuild(var0, var4);
-               if (var5 == null) {
-                  Util.logAndPauseIfInIde(String.format(Locale.ROOT, "Invalid path in pack: %s:%s, ignoring", var0, var4));
+            files.forEach((file) -> {
+               String resourcePath = PATH_JOINER.join(topDir.relativize(file));
+               Identifier identifier = Identifier.tryBuild(namespace, resourcePath);
+               if (identifier == null) {
+                  Util.logAndPauseIfInIde(String.format(Locale.ROOT, "Invalid path in pack: %s:%s, ignoring", namespace, resourcePath));
                } else {
-                  var3.accept(var5, IoSupplier.create(var3x));
+                  output.accept(identifier, IoSupplier.create(file));
                }
 
             });
          } catch (Throwable var9) {
-            if (var5 != null) {
+            if (files != null) {
                try {
-                  var5.close();
+                  files.close();
                } catch (Throwable var8) {
                   var9.addSuppressed(var8);
                }
@@ -116,61 +125,69 @@ public class PathPackResources extends AbstractPackResources {
             throw var9;
          }
 
-         if (var5 != null) {
-            var5.close();
+         if (files != null) {
+            files.close();
          }
       } catch (NotDirectoryException | NoSuchFileException var10) {
-      } catch (IOException var11) {
-         LOGGER.error("Failed to list path {}", var4, var11);
+      } catch (IOException e) {
+         LOGGER.error("Failed to list path {}", targetPath, e);
       }
 
    }
 
-   private static boolean isRegularFile(Path var0, BasicFileAttributes var1) {
+   private static boolean isRegularFile(final Path file, final BasicFileAttributes attributes) {
       if (!SharedConstants.IS_RUNNING_IN_IDE) {
-         return var1.isRegularFile();
+         return attributes.isRegularFile();
       } else {
-         return var1.isRegularFile() && !StringUtils.equalsIgnoreCase(var0.getFileName().toString(), ".ds_store");
+         return attributes.isRegularFile() && !StringUtils.equalsIgnoreCase(file.getFileName().toString(), ".ds_store");
       }
    }
 
-   public Set<String> getNamespaces(PackType var1) {
-      HashSet var2 = Sets.newHashSet();
-      Path var3 = this.root.resolve(var1.getDirectory());
+   public Set<String> getNamespaces(final PackType type) {
+      Path assetRoot = this.topPackDir(type);
+      return getNamespaces(assetRoot);
+   }
+
+   public static Set<String> getNamespaces(final Path rootDir) {
+      Set<String> namespaces = new HashSet();
 
       try {
-         DirectoryStream var4 = Files.newDirectoryStream(var3);
+         DirectoryStream<Path> directDirs = Files.newDirectoryStream(rootDir);
 
          try {
-            for(Path var6 : var4) {
-               String var7 = var6.getFileName().toString();
-               if (Identifier.isValidNamespace(var7)) {
-                  var2.add(var7);
+            for(Path directDir : directDirs) {
+               if (!Files.isDirectory(directDir, new LinkOption[0])) {
+                  LOGGER.warn("Non-directory entry {} found in namespace directory, rejecting", directDir);
                } else {
-                  LOGGER.warn("Non [a-z0-9_.-] character in namespace {} in pack {}, ignoring", var7, this.root);
+                  String namespace = directDir.getFileName().toString();
+                  if (Identifier.isValidNamespace(namespace)) {
+                     namespaces.add(namespace);
+                  } else {
+                     LOGGER.warn("Non {} character in namespace {} in pack directory {}, ignoring", new Object[]{"[a-z0-9_.-]", namespace, rootDir});
+                  }
                }
             }
-         } catch (Throwable var9) {
-            if (var4 != null) {
+         } catch (Throwable var7) {
+            if (directDirs != null) {
                try {
-                  var4.close();
-               } catch (Throwable var8) {
-                  var9.addSuppressed(var8);
+                  directDirs.close();
+               } catch (Throwable var6) {
+                  var7.addSuppressed(var6);
                }
             }
 
-            throw var9;
+            throw var7;
          }
 
-         if (var4 != null) {
-            var4.close();
+         if (directDirs != null) {
+            directDirs.close();
          }
-      } catch (NotDirectoryException | NoSuchFileException var10) {
-      } catch (IOException var11) {
-         LOGGER.error("Failed to list path {}", var3, var11);
+      } catch (NotDirectoryException | NoSuchFileException var8) {
+      } catch (IOException e) {
+         LOGGER.error("Failed to list path {}", rootDir, e);
       }
 
-      return var2;
+      return namespaces;
    }
 
    public void close() {
@@ -179,29 +196,29 @@ public class PathPackResources extends AbstractPackResources {
    public static class PathResourcesSupplier implements Pack.ResourcesSupplier {
       private final Path content;
 
-      public PathResourcesSupplier(Path var1) {
+      public PathResourcesSupplier(final Path content) {
          super();
-         this.content = var1;
+         this.content = content;
       }
 
-      public PackResources openPrimary(PackLocationInfo var1) {
-         return new PathPackResources(var1, this.content);
+      public PackResources openPrimary(final PackLocationInfo location) {
+         return new PathPackResources(location, this.content);
       }
 
-      public PackResources openFull(PackLocationInfo var1, Pack.Metadata var2) {
-         PackResources var3 = this.openPrimary(var1);
-         List var4 = var2.overlays();
-         if (var4.isEmpty()) {
-            return var3;
+      public PackResources openFull(final PackLocationInfo location, final Pack.Metadata metadata) {
+         PackResources primary = this.openPrimary(location);
+         List<String> overlays = metadata.overlays();
+         if (overlays.isEmpty()) {
+            return primary;
          } else {
-            ArrayList var5 = new ArrayList(var4.size());
+            List<PackResources> overlayResources = new ArrayList(overlays.size());
 
-            for(String var7 : var4) {
-               Path var8 = this.content.resolve(var7);
-               var5.add(new PathPackResources(var1, var8));
+            for(String overlay : overlays) {
+               Path overlayRoot = this.content.resolve(overlay);
+               overlayResources.add(new PathPackResources(location, overlayRoot));
             }
 
-            return new CompositePackResources(var3, var5);
+            return new CompositePackResources(primary, overlayResources);
          }
       }
    }

@@ -28,12 +28,12 @@ public abstract class AbstractPiglin extends Monster {
    private static final int DEFAULT_TIME_IN_OVERWORLD = 0;
    protected int timeInOverworld = 0;
 
-   public AbstractPiglin(EntityType<? extends AbstractPiglin> var1, Level var2) {
-      super(var1, var2);
+   public AbstractPiglin(final EntityType<? extends AbstractPiglin> type, final Level level) {
+      super(type, level);
       this.setCanPickUpLoot(true);
       this.applyOpenDoorsAbility();
-      this.setPathfindingMalus(PathType.DANGER_FIRE, 16.0F);
-      this.setPathfindingMalus(PathType.DAMAGE_FIRE, -1.0F);
+      this.setPathfindingMalus(PathType.FIRE_IN_NEIGHBOR, 16.0F);
+      this.setPathfindingMalus(PathType.FIRE, -1.0F);
    }
 
    private void applyOpenDoorsAbility() {
@@ -45,34 +45,34 @@ public abstract class AbstractPiglin extends Monster {
 
    protected abstract boolean canHunt();
 
-   public void setImmuneToZombification(boolean var1) {
-      this.getEntityData().set(DATA_IMMUNE_TO_ZOMBIFICATION, var1);
+   public void setImmuneToZombification(final boolean isImmuneToZombification) {
+      this.getEntityData().set(DATA_IMMUNE_TO_ZOMBIFICATION, isImmuneToZombification);
    }
 
    protected boolean isImmuneToZombification() {
       return (Boolean)this.getEntityData().get(DATA_IMMUNE_TO_ZOMBIFICATION);
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(DATA_IMMUNE_TO_ZOMBIFICATION, false);
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(DATA_IMMUNE_TO_ZOMBIFICATION, false);
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.putBoolean("IsImmuneToZombification", this.isImmuneToZombification());
-      var1.putInt("TimeInOverworld", this.timeInOverworld);
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.putBoolean("IsImmuneToZombification", this.isImmuneToZombification());
+      output.putInt("TimeInOverworld", this.timeInOverworld);
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.setCanPickUpLoot(var1.getBooleanOr("CanPickUpLoot", true));
-      this.setImmuneToZombification(var1.getBooleanOr("IsImmuneToZombification", false));
-      this.timeInOverworld = var1.getIntOr("TimeInOverworld", 0);
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.setCanPickUpLoot(input.getBooleanOr("CanPickUpLoot", true));
+      this.setImmuneToZombification(input.getBooleanOr("IsImmuneToZombification", false));
+      this.timeInOverworld = input.getIntOr("TimeInOverworld", 0);
    }
 
-   protected void customServerAiStep(ServerLevel var1) {
-      super.customServerAiStep(var1);
+   protected void customServerAiStep(final ServerLevel level) {
+      super.customServerAiStep(level);
       if (this.isConverting()) {
          ++this.timeInOverworld;
       } else {
@@ -81,22 +81,22 @@ public abstract class AbstractPiglin extends Monster {
 
       if (this.timeInOverworld > 300) {
          this.playConvertedSound();
-         this.finishConversion(var1);
+         this.finishConversion(level);
       }
 
    }
 
    @VisibleForTesting
-   public void setTimeInOverworld(int var1) {
-      this.timeInOverworld = var1;
+   public void setTimeInOverworld(final int timeInOverworld) {
+      this.timeInOverworld = timeInOverworld;
    }
 
    public boolean isConverting() {
       return !this.isImmuneToZombification() && !this.isNoAi() && (Boolean)this.level().environmentAttributes().getValue(EnvironmentAttributes.PIGLINS_ZOMBIFY, this.position());
    }
 
-   protected void finishConversion(ServerLevel var1) {
-      this.convertTo(EntityType.ZOMBIFIED_PIGLIN, ConversionParams.single(this, true, true), (var0) -> var0.addEffect(new MobEffectInstance(MobEffects.NAUSEA, 200, 0)));
+   protected void finishConversion(final ServerLevel level) {
+      this.convertTo(EntityType.ZOMBIFIED_PIGLIN, ConversionParams.single(this, true, true), (zombified) -> zombified.addEffect(new MobEffectInstance(MobEffects.NAUSEA, 200, 0)));
    }
 
    public boolean isAdult() {

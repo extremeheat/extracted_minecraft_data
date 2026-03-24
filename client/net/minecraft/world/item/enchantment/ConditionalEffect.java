@@ -1,36 +1,27 @@
 package net.minecraft.world.item.enchantment;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
-import net.minecraft.util.ProblemReporter;
-import net.minecraft.util.context.ContextKeySet;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.Validatable;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
-public record ConditionalEffect<T>(T effect, Optional<LootItemCondition> requirements) {
-   public ConditionalEffect(T var1, Optional<LootItemCondition> var2) {
+public record ConditionalEffect<T>(T effect, Optional<LootItemCondition> requirements) implements Validatable {
+   public ConditionalEffect {
       super();
-      this.effect = var1;
-      this.requirements = var2;
    }
 
-   public static Codec<LootItemCondition> conditionCodec(ContextKeySet var0) {
-      return LootItemCondition.DIRECT_CODEC.validate((var1) -> {
-         ProblemReporter.Collector var2 = new ProblemReporter.Collector();
-         ValidationContext var3 = new ValidationContext(var2, var0);
-         var1.validate(var3);
-         return !var2.isEmpty() ? DataResult.error(() -> "Validation error in enchantment effect condition: " + var2.getReport()) : DataResult.success(var1);
-      });
+   public static <T> Codec<ConditionalEffect<T>> codec(final Codec<T> effectCodec) {
+      return RecordCodecBuilder.create((i) -> i.group(effectCodec.fieldOf("effect").forGetter(ConditionalEffect::effect), LootItemCondition.DIRECT_CODEC.optionalFieldOf("requirements").forGetter(ConditionalEffect::requirements)).apply(i, ConditionalEffect::new));
    }
 
-   public static <T> Codec<ConditionalEffect<T>> codec(Codec<T> var0, ContextKeySet var1) {
-      return RecordCodecBuilder.create((var2) -> var2.group(var0.fieldOf("effect").forGetter(ConditionalEffect::effect), conditionCodec(var1).optionalFieldOf("requirements").forGetter(ConditionalEffect::requirements)).apply(var2, ConditionalEffect::new));
+   public boolean matches(final LootContext context) {
+      return this.requirements.isEmpty() || ((LootItemCondition)this.requirements.get()).test(context);
    }
 
-   public boolean matches(LootContext var1) {
-      return this.requirements.isEmpty() ? true : ((LootItemCondition)this.requirements.get()).test(var1);
+   public void validate(final ValidationContext context) {
+      Validatable.validate(context, "requirements", this.requirements);
    }
 }

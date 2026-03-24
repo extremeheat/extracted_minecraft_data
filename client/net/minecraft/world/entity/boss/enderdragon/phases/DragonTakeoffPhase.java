@@ -16,14 +16,14 @@ public class DragonTakeoffPhase extends AbstractDragonPhaseInstance {
    private @Nullable Path currentPath;
    private @Nullable Vec3 targetLocation;
 
-   public DragonTakeoffPhase(EnderDragon var1) {
-      super(var1);
+   public DragonTakeoffPhase(final EnderDragon dragon) {
+      super(dragon);
    }
 
-   public void doServerTick(ServerLevel var1) {
+   public void doServerTick(final ServerLevel level) {
       if (!this.firstTick && this.currentPath != null) {
-         BlockPos var2 = var1.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EndPodiumFeature.getLocation(this.dragon.getFightOrigin()));
-         if (!var2.closerToCenterThan(this.dragon.position(), 10.0)) {
+         BlockPos egg = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EndPodiumFeature.getLocation(this.dragon.getFightOrigin()));
+         if (!egg.closerToCenterThan(this.dragon.position(), 10.0)) {
             this.dragon.getPhaseManager().setPhase(EnderDragonPhase.HOLDING_PATTERN);
          }
       } else {
@@ -40,21 +40,21 @@ public class DragonTakeoffPhase extends AbstractDragonPhaseInstance {
    }
 
    private void findNewTarget() {
-      int var1 = this.dragon.findClosestNode();
-      Vec3 var2 = this.dragon.getHeadLookVector(1.0F);
-      int var3 = this.dragon.findClosestNode(-var2.x * 40.0, 105.0, -var2.z * 40.0);
-      if (this.dragon.getDragonFight() != null && this.dragon.getDragonFight().getCrystalsAlive() > 0) {
-         var3 %= 12;
-         if (var3 < 0) {
-            var3 += 12;
+      int currentNodeIndex = this.dragon.findClosestNode();
+      Vec3 lookVector = this.dragon.getHeadLookVector(1.0F);
+      int targetNodeIndex = this.dragon.findClosestNode(-lookVector.x * 40.0, 105.0, -lookVector.z * 40.0);
+      if (this.dragon.getDragonFight() != null && this.dragon.getDragonFight().aliveCrystals() > 0) {
+         targetNodeIndex %= 12;
+         if (targetNodeIndex < 0) {
+            targetNodeIndex += 12;
          }
       } else {
-         var3 -= 12;
-         var3 &= 7;
-         var3 += 12;
+         targetNodeIndex -= 12;
+         targetNodeIndex &= 7;
+         targetNodeIndex += 12;
       }
 
-      this.currentPath = this.dragon.findPath(var1, var3, (Node)null);
+      this.currentPath = this.dragon.findPath(currentNodeIndex, targetNodeIndex, (Node)null);
       this.navigateToNextPathNode();
    }
 
@@ -62,15 +62,15 @@ public class DragonTakeoffPhase extends AbstractDragonPhaseInstance {
       if (this.currentPath != null) {
          this.currentPath.advance();
          if (!this.currentPath.isDone()) {
-            BlockPos var1 = this.currentPath.getNextNodePos();
+            Vec3i current = this.currentPath.getNextNodePos();
             this.currentPath.advance();
 
-            double var2;
+            double yTarget;
             do {
-               var2 = (double)((float)((Vec3i)var1).getY() + this.dragon.getRandom().nextFloat() * 20.0F);
-            } while(var2 < (double)((Vec3i)var1).getY());
+               yTarget = (double)((float)current.getY() + this.dragon.getRandom().nextFloat() * 20.0F);
+            } while(yTarget < (double)current.getY());
 
-            this.targetLocation = new Vec3((double)((Vec3i)var1).getX(), var2, (double)((Vec3i)var1).getZ());
+            this.targetLocation = new Vec3((double)current.getX(), yTarget, (double)current.getZ());
          }
       }
 

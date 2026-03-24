@@ -13,29 +13,29 @@ public class ServerboundTeleportToEntityPacket implements Packet<ServerGamePacke
    public static final StreamCodec<FriendlyByteBuf, ServerboundTeleportToEntityPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundTeleportToEntityPacket>codec(ServerboundTeleportToEntityPacket::write, ServerboundTeleportToEntityPacket::new);
    private final UUID uuid;
 
-   public ServerboundTeleportToEntityPacket(UUID var1) {
+   public ServerboundTeleportToEntityPacket(final UUID uuid) {
       super();
-      this.uuid = var1;
+      this.uuid = uuid;
    }
 
-   private ServerboundTeleportToEntityPacket(FriendlyByteBuf var1) {
+   private ServerboundTeleportToEntityPacket(final FriendlyByteBuf input) {
       super();
-      this.uuid = var1.readUUID();
+      this.uuid = input.readUUID();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeUUID(this.uuid);
+   private void write(final FriendlyByteBuf output) {
+      output.writeUUID(this.uuid);
    }
 
    public PacketType<ServerboundTeleportToEntityPacket> type() {
       return GamePacketTypes.SERVERBOUND_TELEPORT_TO_ENTITY;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handleTeleportToEntityPacket(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handleTeleportToEntityPacket(this);
    }
 
-   public @Nullable Entity getEntity(ServerLevel var1) {
-      return var1.getEntity(this.uuid);
+   public @Nullable Entity getEntity(final ServerLevel level) {
+      return level.getEntity(this.uuid);
    }
 }

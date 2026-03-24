@@ -26,23 +26,17 @@ public record WoodType(String name, BlockSetType setType, SoundType soundType, S
    public static final WoodType MANGROVE;
    public static final WoodType BAMBOO;
 
-   public WoodType(String var1, BlockSetType var2) {
-      this(var1, var2, SoundType.WOOD, SoundType.HANGING_SIGN, SoundEvents.FENCE_GATE_CLOSE, SoundEvents.FENCE_GATE_OPEN);
+   public WoodType(final String name, final BlockSetType setType) {
+      this(name, setType, SoundType.WOOD, SoundType.HANGING_SIGN, SoundEvents.FENCE_GATE_CLOSE, SoundEvents.FENCE_GATE_OPEN);
    }
 
-   public WoodType(String var1, BlockSetType var2, SoundType var3, SoundType var4, SoundEvent var5, SoundEvent var6) {
+   public WoodType {
       super();
-      this.name = var1;
-      this.setType = var2;
-      this.soundType = var3;
-      this.hangingSignSoundType = var4;
-      this.fenceGateClose = var5;
-      this.fenceGateOpen = var6;
    }
 
-   private static WoodType register(WoodType var0) {
-      TYPES.put(var0.name(), var0);
-      return var0;
+   private static WoodType register(final WoodType type) {
+      TYPES.put(type.name(), type);
+      return type;
    }
 
    public static Stream<WoodType> values() {

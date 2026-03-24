@@ -23,29 +23,29 @@ public class BeaconBlock extends BaseEntityBlock implements BeaconBeamBlock {
       return CODEC;
    }
 
-   public BeaconBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public BeaconBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
    public DyeColor getColor() {
       return DyeColor.WHITE;
    }
 
-   public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
-      return new BeaconBlockEntity(var1, var2);
+   public BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      return new BeaconBlockEntity(worldPosition, blockState);
    }
 
-   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return createTickerHelper(var3, BlockEntityType.BEACON, BeaconBlockEntity::tick);
+   public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(final Level level, final BlockState blockState, final BlockEntityType<T> type) {
+      return createTickerHelper(type, BlockEntityType.BEACON, BeaconBlockEntity::tick);
    }
 
-   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (!var2.isClientSide()) {
-         BlockEntity var7 = var2.getBlockEntity(var3);
+   protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
+      if (!level.isClientSide()) {
+         BlockEntity var7 = level.getBlockEntity(pos);
          if (var7 instanceof BeaconBlockEntity) {
-            BeaconBlockEntity var6 = (BeaconBlockEntity)var7;
-            var4.openMenu(var6);
-            var4.awardStat(Stats.INTERACT_WITH_BEACON);
+            BeaconBlockEntity beacon = (BeaconBlockEntity)var7;
+            player.openMenu(beacon);
+            player.awardStat(Stats.INTERACT_WITH_BEACON);
          }
       }
 

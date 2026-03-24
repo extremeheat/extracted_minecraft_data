@@ -14,7 +14,7 @@ public record EmptySlotSource() implements SlotSource {
       return MAP_CODEC;
    }
 
-   public SlotCollection provide(LootContext var1) {
+   public SlotCollection provide(final LootContext context) {
       return SlotCollection.EMPTY;
    }
 }

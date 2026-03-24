@@ -19,15 +19,13 @@ public interface RecipeDisplay {
 
    Type<? extends RecipeDisplay> type();
 
-   default boolean isEnabled(FeatureFlagSet var1) {
-      return this.result().isEnabled(var1) && this.craftingStation().isEnabled(var1);
+   default boolean isEnabled(final FeatureFlagSet enabledFeatures) {
+      return this.result().isEnabled(enabledFeatures) && this.craftingStation().isEnabled(enabledFeatures);
    }
 
    public static record Type<T extends RecipeDisplay>(MapCodec<T> codec, StreamCodec<RegistryFriendlyByteBuf, T> streamCodec) {
-      public Type(MapCodec<T> var1, StreamCodec<RegistryFriendlyByteBuf, T> var2) {
+      public Type {
          super();
-         this.codec = var1;
-         this.streamCodec = var2;
       }
    }
 }

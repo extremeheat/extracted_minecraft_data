@@ -7,39 +7,38 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 
-public class FileToIdConverter {
-   private final String prefix;
-   private final String extension;
-
-   public FileToIdConverter(String var1, String var2) {
+public record FileToIdConverter(String prefix, String extension) {
+   public FileToIdConverter {
       super();
-      this.prefix = var1;
-      this.extension = var2;
    }
 
-   public static FileToIdConverter json(String var0) {
-      return new FileToIdConverter(var0, ".json");
+   public static FileToIdConverter json(final String prefix) {
+      return new FileToIdConverter(prefix, ".json");
    }
 
-   public static FileToIdConverter registry(ResourceKey<? extends Registry<?>> var0) {
-      return json(Registries.elementsDirPath(var0));
+   public static FileToIdConverter registry(final ResourceKey<? extends Registry<?>> registry) {
+      return json(Registries.elementsDirPath(registry));
    }
 
-   public Identifier idToFile(Identifier var1) {
+   public Identifier idToFile(final Identifier id) {
       String var10001 = this.prefix;
-      return var1.withPath(var10001 + "/" + var1.getPath() + this.extension);
+      return id.withPath(var10001 + "/" + id.getPath() + this.extension);
    }
 
-   public Identifier fileToId(Identifier var1) {
-      String var2 = var1.getPath();
-      return var1.withPath(var2.substring(this.prefix.length() + 1, var2.length() - this.extension.length()));
+   public Identifier fileToId(final Identifier file) {
+      String path = file.getPath();
+      return file.withPath(path.substring(this.prefix.length() + 1, path.length() - this.extension.length()));
    }
 
-   public Map<Identifier, Resource> listMatchingResources(ResourceManager var1) {
-      return var1.listResources(this.prefix, (var1x) -> var1x.getPath().endsWith(this.extension));
+   public boolean extensionMatches(final Identifier id) {
+      return id.getPath().endsWith(this.extension);
    }
 
-   public Map<Identifier, List<Resource>> listMatchingResourceStacks(ResourceManager var1) {
-      return var1.listResourceStacks(this.prefix, (var1x) -> var1x.getPath().endsWith(this.extension));
+   public Map<Identifier, Resource> listMatchingResources(final ResourceManager manager) {
+      return manager.listResources(this.prefix, this::extensionMatches);
+   }
+
+   public Map<Identifier, List<Resource>> listMatchingResourceStacks(final ResourceManager manager) {
+      return manager.listResourceStacks(this.prefix, this::extensionMatches);
    }
 }

@@ -4,10 +4,8 @@ import com.google.gson.annotations.SerializedName;
 import java.util.List;
 
 public record PingResult(List<RegionPingResult> pingResults, List<Long> realmIds) implements ReflectionBasedSerialization {
-   public PingResult(List<RegionPingResult> var1, List<Long> var2) {
+   public PingResult {
       super();
-      this.pingResults = var1;
-      this.realmIds = var2;
    }
 
    @SerializedName("pingResults")

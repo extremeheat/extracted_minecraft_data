@@ -4,12 +4,11 @@ import com.google.common.collect.Maps;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import java.util.Map;
+import net.minecraft.client.model.animal.panda.BabyPandaModel;
 import net.minecraft.client.model.animal.panda.PandaModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.PandaHoldsItemLayer;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.HoldingEntityRenderState;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.PandaRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -18,112 +17,105 @@ import org.joml.Quaternionfc;
 
 public class PandaRenderer extends AgeableMobRenderer<Panda, PandaRenderState, PandaModel> {
    private static final Map<Panda.Gene, Identifier> TEXTURES;
+   private static final Map<Panda.Gene, Identifier> BABY_TEXTURES;
 
-   public PandaRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new PandaModel(var1.bakeLayer(ModelLayers.PANDA)), new PandaModel(var1.bakeLayer(ModelLayers.PANDA_BABY)), 0.9F);
+   public PandaRenderer(final EntityRendererProvider.Context context) {
+      super(context, new PandaModel(context.bakeLayer(ModelLayers.PANDA)), new BabyPandaModel(context.bakeLayer(ModelLayers.PANDA_BABY)), 0.9F);
       this.addLayer(new PandaHoldsItemLayer(this));
    }
 
-   public Identifier getTextureLocation(PandaRenderState var1) {
-      return (Identifier)TEXTURES.getOrDefault(var1.variant, (Identifier)TEXTURES.get(Panda.Gene.NORMAL));
+   public Identifier getTextureLocation(final PandaRenderState state) {
+      Map<Panda.Gene, Identifier> textures = state.isBaby ? BABY_TEXTURES : TEXTURES;
+      return (Identifier)textures.getOrDefault(state.variant, (Identifier)textures.get(Panda.Gene.NORMAL));
    }
 
    public PandaRenderState createRenderState() {
       return new PandaRenderState();
    }
 
-   public void extractRenderState(Panda var1, PandaRenderState var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      HoldingEntityRenderState.extractHoldingEntityRenderState(var1, var2, this.itemModelResolver);
-      var2.variant = var1.getVariant();
-      var2.isUnhappy = var1.getUnhappyCounter() > 0;
-      var2.isSneezing = var1.isSneezing();
-      var2.sneezeTime = var1.getSneezeCounter();
-      var2.isEating = var1.isEating();
-      var2.isScared = var1.isScared();
-      var2.isSitting = var1.isSitting();
-      var2.sitAmount = var1.getSitAmount(var3);
-      var2.lieOnBackAmount = var1.getLieOnBackAmount(var3);
-      var2.rollAmount = var1.isBaby() ? 0.0F : var1.getRollAmount(var3);
-      var2.rollTime = var1.rollCounter > 0 ? (float)var1.rollCounter + var3 : 0.0F;
+   public void extractRenderState(final Panda entity, final PandaRenderState state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      HoldingEntityRenderState.extractHoldingEntityRenderState(entity, state, this.itemModelResolver);
+      state.variant = entity.getVariant();
+      state.isUnhappy = entity.getUnhappyCounter() > 0;
+      state.isSneezing = entity.isSneezing();
+      state.sneezeTime = entity.getSneezeCounter();
+      state.isEating = entity.isEating();
+      state.isScared = entity.isScared();
+      state.isSitting = entity.isSitting();
+      state.sitAmount = entity.getSitAmount(partialTicks);
+      state.lieOnBackAmount = entity.getLieOnBackAmount(partialTicks);
+      state.rollAmount = entity.isBaby() ? 0.0F : entity.getRollAmount(partialTicks);
+      state.rollTime = entity.rollCounter > 0 ? (float)entity.rollCounter + partialTicks : 0.0F;
    }
 
-   protected void setupRotations(PandaRenderState var1, PoseStack var2, float var3, float var4) {
-      super.setupRotations(var1, var2, var3, var4);
-      if (var1.rollTime > 0.0F) {
-         float var5 = Mth.frac(var1.rollTime);
-         int var6 = Mth.floor(var1.rollTime);
-         int var7 = var6 + 1;
-         float var8 = 7.0F;
-         float var9 = var1.isBaby ? 0.3F : 0.8F;
-         if ((float)var6 < 8.0F) {
-            float var11 = 90.0F * (float)var6 / 7.0F;
-            float var12 = 90.0F * (float)var7 / 7.0F;
-            float var10 = this.getAngle(var11, var12, var7, var5, 8.0F);
-            var2.translate(0.0F, (var9 + 0.2F) * (var10 / 90.0F), 0.0F);
-            var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-var10));
-         } else if ((float)var6 < 16.0F) {
-            float var21 = ((float)var6 - 8.0F) / 7.0F;
-            float var24 = 90.0F + 90.0F * var21;
-            float var13 = 90.0F + 90.0F * ((float)var7 - 8.0F) / 7.0F;
-            float var18 = this.getAngle(var24, var13, var7, var5, 16.0F);
-            var2.translate(0.0F, var9 + 0.2F + (var9 - 0.2F) * (var18 - 90.0F) / 90.0F, 0.0F);
-            var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-var18));
-         } else if ((float)var6 < 24.0F) {
-            float var22 = ((float)var6 - 16.0F) / 7.0F;
-            float var25 = 180.0F + 90.0F * var22;
-            float var27 = 180.0F + 90.0F * ((float)var7 - 16.0F) / 7.0F;
-            float var19 = this.getAngle(var25, var27, var7, var5, 24.0F);
-            var2.translate(0.0F, var9 + var9 * (270.0F - var19) / 90.0F, 0.0F);
-            var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-var19));
-         } else if (var6 < 32) {
-            float var23 = ((float)var6 - 24.0F) / 7.0F;
-            float var26 = 270.0F + 90.0F * var23;
-            float var28 = 270.0F + 90.0F * ((float)var7 - 24.0F) / 7.0F;
-            float var20 = this.getAngle(var26, var28, var7, var5, 32.0F);
-            var2.translate(0.0F, var9 * ((360.0F - var20) / 90.0F), 0.0F);
-            var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-var20));
+   protected void setupRotations(final PandaRenderState state, final PoseStack poseStack, final float bodyRot, final float entityScale) {
+      super.setupRotations(state, poseStack, bodyRot, entityScale);
+      if (state.rollTime > 0.0F) {
+         float rollTransitionTime = Mth.frac(state.rollTime);
+         int rollPos = Mth.floor(state.rollTime);
+         int nextRollPos = rollPos + 1;
+         float divider = 7.0F;
+         float y = state.isBaby ? 0.3F : 0.8F;
+         if ((float)rollPos < 8.0F) {
+            float thisAngle = 90.0F * (float)rollPos / 7.0F;
+            float nextAngle = 90.0F * (float)nextRollPos / 7.0F;
+            float angle = this.getAngle(thisAngle, nextAngle, nextRollPos, rollTransitionTime, 8.0F);
+            poseStack.translate(0.0F, (y + 0.2F) * (angle / 90.0F), 0.0F);
+            poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-angle));
+         } else if ((float)rollPos < 16.0F) {
+            float internalRollCounter = ((float)rollPos - 8.0F) / 7.0F;
+            float thisAngle = 90.0F + 90.0F * internalRollCounter;
+            float nextAngle = 90.0F + 90.0F * ((float)nextRollPos - 8.0F) / 7.0F;
+            float angle = this.getAngle(thisAngle, nextAngle, nextRollPos, rollTransitionTime, 16.0F);
+            poseStack.translate(0.0F, y + 0.2F + (y - 0.2F) * (angle - 90.0F) / 90.0F, 0.0F);
+            poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-angle));
+         } else if ((float)rollPos < 24.0F) {
+            float internalRollCounter = ((float)rollPos - 16.0F) / 7.0F;
+            float thisAngle = 180.0F + 90.0F * internalRollCounter;
+            float nextAngle = 180.0F + 90.0F * ((float)nextRollPos - 16.0F) / 7.0F;
+            float angle = this.getAngle(thisAngle, nextAngle, nextRollPos, rollTransitionTime, 24.0F);
+            poseStack.translate(0.0F, y + y * (270.0F - angle) / 90.0F, 0.0F);
+            poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-angle));
+         } else if (rollPos < 32) {
+            float internalRollCounter = ((float)rollPos - 24.0F) / 7.0F;
+            float thisAngle = 270.0F + 90.0F * internalRollCounter;
+            float nextAngle = 270.0F + 90.0F * ((float)nextRollPos - 24.0F) / 7.0F;
+            float angle = this.getAngle(thisAngle, nextAngle, nextRollPos, rollTransitionTime, 32.0F);
+            poseStack.translate(0.0F, y * ((360.0F - angle) / 90.0F), 0.0F);
+            poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(-angle));
          }
       }
 
-      float var14 = var1.sitAmount;
-      if (var14 > 0.0F) {
-         var2.translate(0.0F, 0.8F * var14, 0.0F);
-         var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(Mth.lerp(var14, var1.xRot, var1.xRot + 90.0F)));
-         var2.translate(0.0F, -1.0F * var14, 0.0F);
-         if (var1.isScared) {
-            float var15 = (float)(Math.cos((double)(var1.ageInTicks * 1.25F)) * 3.141592653589793 * 0.05000000074505806);
-            var2.mulPose((Quaternionfc)Axis.YP.rotationDegrees(var15));
-            if (var1.isBaby) {
-               var2.translate(0.0F, 0.8F, 0.55F);
+      float sitAmount = state.sitAmount;
+      if (sitAmount > 0.0F) {
+         poseStack.translate(0.0F, 0.8F * sitAmount, 0.0F);
+         poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(Mth.lerp(sitAmount, state.xRot, state.xRot + 90.0F)));
+         poseStack.translate(0.0F, -1.0F * sitAmount, 0.0F);
+         if (state.isScared) {
+            float shakeRot = (float)(Math.cos((double)(state.ageInTicks * 1.25F)) * 3.141592653589793 * 0.05000000074505806);
+            poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(shakeRot));
+            if (state.isBaby) {
+               poseStack.translate(0.0F, 0.8F, 0.55F);
             }
          }
       }
 
-      float var16 = var1.lieOnBackAmount;
-      if (var16 > 0.0F) {
-         float var17 = var1.isBaby ? 0.5F : 1.3F;
-         var2.translate(0.0F, var17 * var16, 0.0F);
-         var2.mulPose((Quaternionfc)Axis.XP.rotationDegrees(Mth.lerp(var16, var1.xRot, var1.xRot + 180.0F)));
+      float lieOnBackAmount = state.lieOnBackAmount;
+      if (lieOnBackAmount > 0.0F) {
+         float y = state.isBaby ? 0.5F : 1.3F;
+         poseStack.translate(0.0F, y * lieOnBackAmount, 0.0F);
+         poseStack.mulPose((Quaternionfc)Axis.XP.rotationDegrees(Mth.lerp(lieOnBackAmount, state.xRot, state.xRot + 180.0F)));
       }
 
    }
 
-   private float getAngle(float var1, float var2, int var3, float var4, float var5) {
-      return (float)var3 < var5 ? Mth.lerp(var4, var1, var2) : var1;
-   }
-
-   // $FF: synthetic method
-   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
-      return this.getTextureLocation((PandaRenderState)var1);
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
+   private float getAngle(final float thisAngle, final float nextAngle, final int nextRollPos, final float rollTransitionTime, final float threshold) {
+      return (float)nextRollPos < threshold ? Mth.lerp(rollTransitionTime, thisAngle, nextAngle) : thisAngle;
    }
 
    static {
-      TEXTURES = Maps.newEnumMap(Map.of(Panda.Gene.NORMAL, Identifier.withDefaultNamespace("textures/entity/panda/panda.png"), Panda.Gene.LAZY, Identifier.withDefaultNamespace("textures/entity/panda/lazy_panda.png"), Panda.Gene.WORRIED, Identifier.withDefaultNamespace("textures/entity/panda/worried_panda.png"), Panda.Gene.PLAYFUL, Identifier.withDefaultNamespace("textures/entity/panda/playful_panda.png"), Panda.Gene.BROWN, Identifier.withDefaultNamespace("textures/entity/panda/brown_panda.png"), Panda.Gene.WEAK, Identifier.withDefaultNamespace("textures/entity/panda/weak_panda.png"), Panda.Gene.AGGRESSIVE, Identifier.withDefaultNamespace("textures/entity/panda/aggressive_panda.png")));
+      TEXTURES = Maps.newEnumMap(Map.of(Panda.Gene.NORMAL, Identifier.withDefaultNamespace("textures/entity/panda/panda.png"), Panda.Gene.LAZY, Identifier.withDefaultNamespace("textures/entity/panda/panda_lazy.png"), Panda.Gene.WORRIED, Identifier.withDefaultNamespace("textures/entity/panda/panda_worried.png"), Panda.Gene.PLAYFUL, Identifier.withDefaultNamespace("textures/entity/panda/panda_playful.png"), Panda.Gene.BROWN, Identifier.withDefaultNamespace("textures/entity/panda/panda_brown.png"), Panda.Gene.WEAK, Identifier.withDefaultNamespace("textures/entity/panda/panda_weak.png"), Panda.Gene.AGGRESSIVE, Identifier.withDefaultNamespace("textures/entity/panda/panda_aggressive.png")));
+      BABY_TEXTURES = Maps.newEnumMap(Map.of(Panda.Gene.NORMAL, Identifier.withDefaultNamespace("textures/entity/panda/panda_baby.png"), Panda.Gene.LAZY, Identifier.withDefaultNamespace("textures/entity/panda/lazy_panda_baby.png"), Panda.Gene.WORRIED, Identifier.withDefaultNamespace("textures/entity/panda/worried_panda_baby.png"), Panda.Gene.PLAYFUL, Identifier.withDefaultNamespace("textures/entity/panda/playful_panda_baby.png"), Panda.Gene.BROWN, Identifier.withDefaultNamespace("textures/entity/panda/brown_panda_baby.png"), Panda.Gene.WEAK, Identifier.withDefaultNamespace("textures/entity/panda/weak_panda_baby.png"), Panda.Gene.AGGRESSIVE, Identifier.withDefaultNamespace("textures/entity/panda/aggressive_panda_baby.png")));
    }
 }

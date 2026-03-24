@@ -5,34 +5,34 @@ public class RunningTrimmedMean {
    private int count;
    private int cursor;
 
-   public RunningTrimmedMean(int var1) {
+   public RunningTrimmedMean(final int maxCount) {
       super();
-      this.values = new long[var1];
+      this.values = new long[maxCount];
    }
 
-   public long registerValueAndGetMean(long var1) {
+   public long registerValueAndGetMean(final long value) {
       if (this.count < this.values.length) {
          ++this.count;
       }
 
-      this.values[this.cursor] = var1;
+      this.values[this.cursor] = value;
       this.cursor = (this.cursor + 1) % this.values.length;
-      long var3 = 9223372036854775807L;
-      long var5 = -9223372036854775808L;
-      long var7 = 0L;
+      long min = 9223372036854775807L;
+      long max = -9223372036854775808L;
+      long total = 0L;
 
-      for(int var9 = 0; var9 < this.count; ++var9) {
-         long var10 = this.values[var9];
-         var7 += var10;
-         var3 = Math.min(var3, var10);
-         var5 = Math.max(var5, var10);
+      for(int i = 0; i < this.count; ++i) {
+         long current = this.values[i];
+         total += current;
+         min = Math.min(min, current);
+         max = Math.max(max, current);
       }
 
       if (this.count > 2) {
-         var7 -= var3 + var5;
-         return var7 / (long)(this.count - 2);
+         total -= min + max;
+         return total / (long)(this.count - 2);
       } else {
-         return var7 > 0L ? (long)this.count / var7 : 0L;
+         return total > 0L ? (long)this.count / total : 0L;
       }
    }
 }

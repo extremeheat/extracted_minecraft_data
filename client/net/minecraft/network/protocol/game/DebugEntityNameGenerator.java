@@ -15,26 +15,22 @@ public class DebugEntityNameGenerator {
       super();
    }
 
-   public static String getEntityName(Entity var0) {
-      if (var0 instanceof Player) {
-         return var0.getPlainTextName();
+   public static String getEntityName(final Entity entity) {
+      if (entity instanceof Player) {
+         return entity.getPlainTextName();
       } else {
-         Component var1 = var0.getCustomName();
-         return var1 != null ? var1.getString() : getEntityName(var0.getUUID());
+         Component customName = entity.getCustomName();
+         return customName != null ? customName.getString() : getEntityName(entity.getUUID());
       }
    }
 
-   public static String getEntityName(UUID var0) {
-      RandomSource var1 = getRandom(var0);
-      String var10000 = getRandomString(var1, NAMES_FIRST_PART);
-      return var10000 + getRandomString(var1, NAMES_SECOND_PART);
+   public static String getEntityName(final UUID uuid) {
+      RandomSource random = RandomSource.createThreadLocalInstance((long)(uuid.hashCode() >> 2));
+      String var10000 = getRandomString(random, NAMES_FIRST_PART);
+      return var10000 + getRandomString(random, NAMES_SECOND_PART);
    }
 
-   private static String getRandomString(RandomSource var0, String[] var1) {
-      return (String)Util.getRandom(var1, var0);
-   }
-
-   private static RandomSource getRandom(UUID var0) {
-      return RandomSource.create((long)(var0.hashCode() >> 2));
+   private static String getRandomString(final RandomSource random, final String[] names) {
+      return (String)Util.getRandom(names, random);
    }
 }

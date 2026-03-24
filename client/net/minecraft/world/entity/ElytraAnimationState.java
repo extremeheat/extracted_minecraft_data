@@ -14,53 +14,53 @@ public class ElytraAnimationState {
    private float rotZOld;
    private final LivingEntity entity;
 
-   public ElytraAnimationState(LivingEntity var1) {
+   public ElytraAnimationState(final LivingEntity entity) {
       super();
-      this.entity = var1;
+      this.entity = entity;
    }
 
    public void tick() {
       this.rotXOld = this.rotX;
       this.rotYOld = this.rotY;
       this.rotZOld = this.rotZ;
-      float var1;
-      float var2;
-      float var3;
+      float targetXRot;
+      float targetZRot;
+      float targetYRot;
       if (this.entity.isFallFlying()) {
-         float var4 = 1.0F;
-         Vec3 var5 = this.entity.getDeltaMovement();
-         if (var5.y < 0.0) {
-            Vec3 var6 = var5.normalize();
-            var4 = 1.0F - (float)Math.pow(-var6.y, 1.5);
+         float ratio = 1.0F;
+         Vec3 movement = this.entity.getDeltaMovement();
+         if (movement.y < 0.0) {
+            Vec3 vec = movement.normalize();
+            ratio = 1.0F - (float)Math.pow(-vec.y, 1.5);
          }
 
-         var1 = Mth.lerp(var4, 0.2617994F, 0.34906584F);
-         var2 = Mth.lerp(var4, -0.2617994F, -1.5707964F);
-         var3 = 0.0F;
+         targetXRot = Mth.lerp(ratio, 0.2617994F, 0.34906584F);
+         targetZRot = Mth.lerp(ratio, -0.2617994F, -1.5707964F);
+         targetYRot = 0.0F;
       } else if (this.entity.isCrouching()) {
-         var1 = 0.6981317F;
-         var2 = -0.7853982F;
-         var3 = 0.08726646F;
+         targetXRot = 0.6981317F;
+         targetZRot = -0.7853982F;
+         targetYRot = 0.08726646F;
       } else {
-         var1 = 0.2617994F;
-         var2 = -0.2617994F;
-         var3 = 0.0F;
+         targetXRot = 0.2617994F;
+         targetZRot = -0.2617994F;
+         targetYRot = 0.0F;
       }
 
-      this.rotX += (var1 - this.rotX) * 0.3F;
-      this.rotY += (var3 - this.rotY) * 0.3F;
-      this.rotZ += (var2 - this.rotZ) * 0.3F;
+      this.rotX += (targetXRot - this.rotX) * 0.3F;
+      this.rotY += (targetYRot - this.rotY) * 0.3F;
+      this.rotZ += (targetZRot - this.rotZ) * 0.3F;
    }
 
-   public float getRotX(float var1) {
-      return Mth.lerp(var1, this.rotXOld, this.rotX);
+   public float getRotX(final float partialTicks) {
+      return Mth.lerp(partialTicks, this.rotXOld, this.rotX);
    }
 
-   public float getRotY(float var1) {
-      return Mth.lerp(var1, this.rotYOld, this.rotY);
+   public float getRotY(final float partialTicks) {
+      return Mth.lerp(partialTicks, this.rotYOld, this.rotY);
    }
 
-   public float getRotZ(float var1) {
-      return Mth.lerp(var1, this.rotZOld, this.rotZ);
+   public float getRotZ(final float partialTicks) {
+      return Mth.lerp(partialTicks, this.rotZOld, this.rotZ);
    }
 }

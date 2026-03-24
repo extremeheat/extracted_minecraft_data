@@ -5,27 +5,24 @@ import net.minecraft.util.ARGB;
 public record GizmoStyle(int stroke, float strokeWidth, int fill) {
    private static final float DEFAULT_WIDTH = 2.5F;
 
-   public GizmoStyle(int var1, float var2, int var3) {
+   public GizmoStyle {
       super();
-      this.stroke = var1;
-      this.strokeWidth = var2;
-      this.fill = var3;
    }
 
-   public static GizmoStyle stroke(int var0) {
-      return new GizmoStyle(var0, 2.5F, 0);
+   public static GizmoStyle stroke(final int argb) {
+      return new GizmoStyle(argb, 2.5F, 0);
    }
 
-   public static GizmoStyle stroke(int var0, float var1) {
-      return new GizmoStyle(var0, var1, 0);
+   public static GizmoStyle stroke(final int argb, final float width) {
+      return new GizmoStyle(argb, width, 0);
    }
 
-   public static GizmoStyle fill(int var0) {
-      return new GizmoStyle(0, 0.0F, var0);
+   public static GizmoStyle fill(final int argb) {
+      return new GizmoStyle(0, 0.0F, argb);
    }
 
-   public static GizmoStyle strokeAndFill(int var0, float var1, int var2) {
-      return new GizmoStyle(var0, var1, var2);
+   public static GizmoStyle strokeAndFill(final int stroke, final float strokeWidth, final int fill) {
+      return new GizmoStyle(stroke, strokeWidth, fill);
    }
 
    public boolean hasFill() {
@@ -36,11 +33,11 @@ public record GizmoStyle(int stroke, float strokeWidth, int fill) {
       return this.stroke != 0 && this.strokeWidth > 0.0F;
    }
 
-   public int multipliedStroke(float var1) {
-      return ARGB.multiplyAlpha(this.stroke, var1);
+   public int multipliedStroke(final float alphaMultiplier) {
+      return ARGB.multiplyAlpha(this.stroke, alphaMultiplier);
    }
 
-   public int multipliedFill(float var1) {
-      return ARGB.multiplyAlpha(this.fill, var1);
+   public int multipliedFill(final float alphaMultiplier) {
+      return ARGB.multiplyAlpha(this.fill, alphaMultiplier);
    }
 }

@@ -9,6 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -25,58 +26,60 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class AttachedStemBlock extends VegetationBlock {
-   public static final MapCodec<AttachedStemBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceKey.codec(Registries.BLOCK).fieldOf("fruit").forGetter((var0x) -> var0x.fruit), ResourceKey.codec(Registries.BLOCK).fieldOf("stem").forGetter((var0x) -> var0x.stem), ResourceKey.codec(Registries.ITEM).fieldOf("seed").forGetter((var0x) -> var0x.seed), propertiesCodec()).apply(var0, AttachedStemBlock::new));
+   public static final MapCodec<AttachedStemBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ResourceKey.codec(Registries.BLOCK).fieldOf("fruit").forGetter((b) -> b.fruit), ResourceKey.codec(Registries.BLOCK).fieldOf("stem").forGetter((b) -> b.stem), ResourceKey.codec(Registries.ITEM).fieldOf("seed").forGetter((b) -> b.seed), TagKey.codec(Registries.BLOCK).fieldOf("support_blocks").forGetter((b) -> b.supportBlocks), propertiesCodec()).apply(i, AttachedStemBlock::new));
    public static final EnumProperty<Direction> FACING;
    private static final Map<Direction, VoxelShape> SHAPES;
    private final ResourceKey<Block> fruit;
    private final ResourceKey<Block> stem;
    private final ResourceKey<Item> seed;
+   private final TagKey<Block> supportBlocks;
 
    public MapCodec<AttachedStemBlock> codec() {
       return CODEC;
    }
 
-   protected AttachedStemBlock(ResourceKey<Block> var1, ResourceKey<Block> var2, ResourceKey<Item> var3, BlockBehaviour.Properties var4) {
-      super(var4);
+   protected AttachedStemBlock(final ResourceKey<Block> stem, final ResourceKey<Block> fruit, final ResourceKey<Item> seed, final TagKey<Block> supportBlocks, final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH));
-      this.stem = var1;
-      this.fruit = var2;
-      this.seed = var3;
+      this.stem = stem;
+      this.fruit = fruit;
+      this.seed = seed;
+      this.supportBlocks = supportBlocks;
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (VoxelShape)SHAPES.get(var1.getValue(FACING));
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
+      return (VoxelShape)SHAPES.get(state.getValue(FACING));
    }
 
-   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      if (!var7.is(this.fruit) && var5 == var1.getValue(FACING)) {
-         Optional var9 = var2.registryAccess().lookupOrThrow(Registries.BLOCK).getOptional(this.stem);
-         if (var9.isPresent()) {
-            return (BlockState)((Block)var9.get()).defaultBlockState().trySetValue(StemBlock.AGE, 7);
+   protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {
+      if (!neighbourState.is(this.fruit) && directionToNeighbour == state.getValue(FACING)) {
+         Optional<Block> stem = level.registryAccess().lookupOrThrow(Registries.BLOCK).getOptional(this.stem);
+         if (stem.isPresent()) {
+            return (BlockState)((Block)stem.get()).defaultBlockState().trySetValue(StemBlock.AGE, 7);
          }
       }
 
-      return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+      return super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return var1.is(Blocks.FARMLAND);
+   protected boolean mayPlaceOn(final BlockState state, final BlockGetter level, final BlockPos pos) {
+      return state.is(this.supportBlocks);
    }
 
-   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
-      return new ItemStack((ItemLike)DataFixUtils.orElse(var1.registryAccess().lookupOrThrow(Registries.ITEM).getOptional(this.seed), this));
+   protected ItemStack getCloneItemStack(final LevelReader level, final BlockPos pos, final BlockState state, final boolean includeData) {
+      return new ItemStack((ItemLike)DataFixUtils.orElse(level.registryAccess().lookupOrThrow(Registries.ITEM).getOptional(this.seed), this));
    }
 
-   protected BlockState rotate(BlockState var1, Rotation var2) {
-      return (BlockState)var1.setValue(FACING, var2.rotate((Direction)var1.getValue(FACING)));
+   protected BlockState rotate(final BlockState state, final Rotation rotation) {
+      return (BlockState)state.setValue(FACING, rotation.rotate((Direction)state.getValue(FACING)));
    }
 
-   protected BlockState mirror(BlockState var1, Mirror var2) {
-      return var1.rotate(var2.getRotation((Direction)var1.getValue(FACING)));
+   protected BlockState mirror(final BlockState state, final Mirror mirror) {
+      return state.rotate(mirror.getRotation((Direction)state.getValue(FACING)));
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(FACING);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(FACING);
    }
 
    static {

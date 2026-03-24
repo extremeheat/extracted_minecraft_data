@@ -11,61 +11,61 @@ import org.jspecify.annotations.Nullable;
 public class SingleValuePalette<T> implements Palette<T> {
    private @Nullable T value;
 
-   public SingleValuePalette(List<T> var1) {
+   public SingleValuePalette(final List<T> paletteEntries) {
       super();
-      if (!var1.isEmpty()) {
-         Validate.isTrue(var1.size() <= 1, "Can't initialize SingleValuePalette with %d values.", (long)var1.size());
-         this.value = (T)var1.getFirst();
+      if (!paletteEntries.isEmpty()) {
+         Validate.isTrue(paletteEntries.size() <= 1, "Can't initialize SingleValuePalette with %d values.", (long)paletteEntries.size());
+         this.value = (T)paletteEntries.getFirst();
       }
 
    }
 
-   public static <A> Palette<A> create(int var0, List<A> var1) {
-      return new SingleValuePalette<A>(var1);
+   public static <A> Palette<A> create(final int bits, final List<A> paletteEntries) {
+      return new SingleValuePalette<A>(paletteEntries);
    }
 
-   public int idFor(T var1, PaletteResize<T> var2) {
-      if (this.value != null && this.value != var1) {
-         return var2.onResize(1, var1);
+   public int idFor(final T value, final PaletteResize<T> resizeHandler) {
+      if (this.value != null && this.value != value) {
+         return resizeHandler.onResize(1, value);
       } else {
-         this.value = var1;
+         this.value = value;
          return 0;
       }
    }
 
-   public boolean maybeHas(Predicate<T> var1) {
+   public boolean maybeHas(final Predicate<T> predicate) {
       if (this.value == null) {
          throw new IllegalStateException("Use of an uninitialized palette");
       } else {
-         return var1.test(this.value);
+         return predicate.test(this.value);
       }
    }
 
-   public T valueFor(int var1) {
-      if (this.value != null && var1 == 0) {
+   public T valueFor(final int index) {
+      if (this.value != null && index == 0) {
          return this.value;
       } else {
-         throw new IllegalStateException("Missing Palette entry for id " + var1 + ".");
+         throw new IllegalStateException("Missing Palette entry for id " + index + ".");
       }
    }
 
-   public void read(FriendlyByteBuf var1, IdMap<T> var2) {
-      this.value = (T)var2.byIdOrThrow(var1.readVarInt());
+   public void read(final FriendlyByteBuf buffer, final IdMap<T> globalMap) {
+      this.value = globalMap.byIdOrThrow(buffer.readVarInt());
    }
 
-   public void write(FriendlyByteBuf var1, IdMap<T> var2) {
+   public void write(final FriendlyByteBuf buffer, final IdMap<T> globalMap) {
       if (this.value == null) {
          throw new IllegalStateException("Use of an uninitialized palette");
       } else {
-         var1.writeVarInt(var2.getId(this.value));
+         buffer.writeVarInt(globalMap.getId(this.value));
       }
    }
 
-   public int getSerializedSize(IdMap<T> var1) {
+   public int getSerializedSize(final IdMap<T> globalMap) {
       if (this.value == null) {
          throw new IllegalStateException("Use of an uninitialized palette");
       } else {
-         return VarInt.getByteSize(var1.getId(this.value));
+         return VarInt.getByteSize(globalMap.getId(this.value));
       }
    }
 

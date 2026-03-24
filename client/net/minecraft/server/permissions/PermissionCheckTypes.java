@@ -9,8 +9,8 @@ public class PermissionCheckTypes {
       super();
    }
 
-   public static MapCodec<? extends PermissionCheck> bootstrap(Registry<MapCodec<? extends PermissionCheck>> var0) {
-      Registry.register(var0, (Identifier)Identifier.withDefaultNamespace("always_pass"), PermissionCheck.AlwaysPass.MAP_CODEC);
-      return (MapCodec)Registry.register(var0, (Identifier)Identifier.withDefaultNamespace("require"), PermissionCheck.Require.MAP_CODEC);
+   public static MapCodec<? extends PermissionCheck> bootstrap(final Registry<MapCodec<? extends PermissionCheck>> registry) {
+      Registry.register(registry, (Identifier)Identifier.withDefaultNamespace("always_pass"), PermissionCheck.AlwaysPass.MAP_CODEC);
+      return (MapCodec)Registry.register(registry, (Identifier)Identifier.withDefaultNamespace("require"), PermissionCheck.Require.MAP_CODEC);
    }
 }

@@ -2,10 +2,12 @@ package net.minecraft.core;
 
 import com.mojang.datafixers.util.Either;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
@@ -16,19 +18,23 @@ public interface Holder<T> {
 
    boolean isBound();
 
-   boolean is(Identifier var1);
+   boolean areComponentsBound();
 
-   boolean is(ResourceKey<T> var1);
+   boolean is(Identifier key);
 
-   boolean is(Predicate<ResourceKey<T>> var1);
+   boolean is(ResourceKey<T> key);
 
-   boolean is(TagKey<T> var1);
+   boolean is(Predicate<ResourceKey<T>> predicate);
+
+   boolean is(TagKey<T> tag);
 
    /** @deprecated */
    @Deprecated
-   boolean is(Holder<T> var1);
+   boolean is(Holder<T> holder);
 
    Stream<TagKey<T>> tags();
+
+   DataComponentMap components();
 
    Either<ResourceKey<T>, T> unwrap();
 
@@ -36,14 +42,18 @@ public interface Holder<T> {
 
    Kind kind();
 
-   boolean canSerializeIn(HolderOwner<T> var1);
+   boolean canSerializeIn(HolderOwner<T> registry);
 
    default String getRegisteredName() {
-      return (String)this.unwrapKey().map((var0) -> var0.identifier().toString()).orElse("[unregistered]");
+      return (String)this.unwrapKey().map((key) -> key.identifier().toString()).orElse("[unregistered]");
    }
 
-   static <T> Holder<T> direct(T var0) {
-      return new Direct<T>(var0);
+   static <T> Holder<T> direct(final T value) {
+      return new Direct<T>(value, DataComponentMap.EMPTY);
+   }
+
+   static <T> Holder<T> direct(final T value, final DataComponentMap components) {
+      return new Direct<T>(value, components);
    }
 
    public static enum Kind {
@@ -59,33 +69,36 @@ public interface Holder<T> {
       }
    }
 
-   public static record Direct<T>(T value) implements Holder<T> {
-      public Direct(T var1) {
+   public static record Direct<T>(T value, DataComponentMap components) implements Holder<T> {
+      public Direct {
          super();
-         this.value = var1;
       }
 
       public boolean isBound() {
          return true;
       }
 
-      public boolean is(Identifier var1) {
+      public boolean areComponentsBound() {
+         return true;
+      }
+
+      public boolean is(final Identifier key) {
          return false;
       }
 
-      public boolean is(ResourceKey<T> var1) {
+      public boolean is(final ResourceKey<T> key) {
          return false;
       }
 
-      public boolean is(TagKey<T> var1) {
+      public boolean is(final TagKey<T> tag) {
          return false;
       }
 
-      public boolean is(Holder<T> var1) {
-         return this.value.equals(var1.value());
+      public boolean is(final Holder<T> holder) {
+         return this.value.equals(holder.value());
       }
 
-      public boolean is(Predicate<ResourceKey<T>> var1) {
+      public boolean is(final Predicate<ResourceKey<T>> predicate) {
          return false;
       }
 
@@ -105,7 +118,7 @@ public interface Holder<T> {
          return "Direct{" + String.valueOf(this.value) + "}";
       }
 
-      public boolean canSerializeIn(HolderOwner<T> var1) {
+      public boolean canSerializeIn(final HolderOwner<T> registry) {
          return true;
       }
 
@@ -117,26 +130,27 @@ public interface Holder<T> {
    public static class Reference<T> implements Holder<T> {
       private final HolderOwner<T> owner;
       private @Nullable Set<TagKey<T>> tags;
+      private @Nullable DataComponentMap components;
       private final Type type;
       private @Nullable ResourceKey<T> key;
       private @Nullable T value;
 
-      protected Reference(Type var1, HolderOwner<T> var2, @Nullable ResourceKey<T> var3, @Nullable T var4) {
+      protected Reference(final Type type, final HolderOwner<T> owner, final @Nullable ResourceKey<T> key, final @Nullable T value) {
          super();
-         this.owner = var2;
-         this.type = var1;
-         this.key = var3;
-         this.value = var4;
+         this.owner = owner;
+         this.type = type;
+         this.key = key;
+         this.value = value;
       }
 
-      public static <T> Reference<T> createStandAlone(HolderOwner<T> var0, ResourceKey<T> var1) {
-         return new Reference<T>(Holder.Reference.Type.STAND_ALONE, var0, var1, (Object)null);
+      public static <T> Reference<T> createStandAlone(final HolderOwner<T> owner, final ResourceKey<T> key) {
+         return new Reference<T>(Holder.Reference.Type.STAND_ALONE, owner, key, (Object)null);
       }
 
       /** @deprecated */
       @Deprecated
-      public static <T> Reference<T> createIntrusive(HolderOwner<T> var0, @Nullable T var1) {
-         return new Reference<T>(Holder.Reference.Type.INTRUSIVE, var0, (ResourceKey)null, var1);
+      public static <T> Reference<T> createIntrusive(final HolderOwner<T> owner, final @Nullable T value) {
+         return new Reference<T>(Holder.Reference.Type.INTRUSIVE, owner, (ResourceKey)null, value);
       }
 
       public ResourceKey<T> key() {
@@ -157,12 +171,12 @@ public interface Holder<T> {
          }
       }
 
-      public boolean is(Identifier var1) {
-         return this.key().identifier().equals(var1);
+      public boolean is(final Identifier key) {
+         return this.key().identifier().equals(key);
       }
 
-      public boolean is(ResourceKey<T> var1) {
-         return this.key() == var1;
+      public boolean is(final ResourceKey<T> key) {
+         return this.key() == key;
       }
 
       private Set<TagKey<T>> boundTags() {
@@ -173,20 +187,20 @@ public interface Holder<T> {
          }
       }
 
-      public boolean is(TagKey<T> var1) {
-         return this.boundTags().contains(var1);
+      public boolean is(final TagKey<T> tag) {
+         return this.boundTags().contains(tag);
       }
 
-      public boolean is(Holder<T> var1) {
-         return var1.is(this.key());
+      public boolean is(final Holder<T> holder) {
+         return holder.is(this.key());
       }
 
-      public boolean is(Predicate<ResourceKey<T>> var1) {
-         return var1.test(this.key());
+      public boolean is(final Predicate<ResourceKey<T>> predicate) {
+         return predicate.test(this.key());
       }
 
-      public boolean canSerializeIn(HolderOwner<T> var1) {
-         return this.owner.canSerializeIn(var1);
+      public boolean canSerializeIn(final HolderOwner<T> context) {
+         return this.owner.canSerializeIn(context);
       }
 
       public Either<ResourceKey<T>, T> unwrap() {
@@ -205,30 +219,42 @@ public interface Holder<T> {
          return this.key != null && this.value != null;
       }
 
-      void bindKey(ResourceKey<T> var1) {
-         if (this.key != null && var1 != this.key) {
+      public boolean areComponentsBound() {
+         return this.components != null;
+      }
+
+      void bindKey(final ResourceKey<T> key) {
+         if (this.key != null && key != this.key) {
             String var10002 = String.valueOf(this.key);
-            throw new IllegalStateException("Can't change holder key: existing=" + var10002 + ", new=" + String.valueOf(var1));
+            throw new IllegalStateException("Can't change holder key: existing=" + var10002 + ", new=" + String.valueOf(key));
          } else {
-            this.key = var1;
+            this.key = key;
          }
       }
 
-      protected void bindValue(T var1) {
-         if (this.type == Holder.Reference.Type.INTRUSIVE && this.value != var1) {
+      protected void bindValue(final T value) {
+         if (this.type == Holder.Reference.Type.INTRUSIVE && this.value != value) {
             String var10002 = String.valueOf(this.key);
-            throw new IllegalStateException("Can't change holder " + var10002 + " value: existing=" + String.valueOf(this.value) + ", new=" + String.valueOf(var1));
+            throw new IllegalStateException("Can't change holder " + var10002 + " value: existing=" + String.valueOf(this.value) + ", new=" + String.valueOf(value));
          } else {
-            this.value = var1;
+            this.value = value;
          }
       }
 
-      void bindTags(Collection<TagKey<T>> var1) {
-         this.tags = Set.copyOf(var1);
+      void bindTags(final Collection<TagKey<T>> tags) {
+         this.tags = Set.copyOf(tags);
+      }
+
+      public void bindComponents(final DataComponentMap components) {
+         this.components = components;
       }
 
       public Stream<TagKey<T>> tags() {
          return this.boundTags().stream();
+      }
+
+      public DataComponentMap components() {
+         return (DataComponentMap)Objects.requireNonNull(this.components, "Components not bound yet");
       }
 
       public String toString() {

@@ -6,14 +6,14 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public class V701 extends Schema {
-   public V701(int var1, Schema var2) {
-      super(var1, var2);
+   public V701(final int versionKey, final Schema parent) {
+      super(versionKey, parent);
    }
 
-   public Map<String, Supplier<TypeTemplate>> registerEntities(Schema var1) {
-      Map var2 = super.registerEntities(var1);
-      var1.registerSimple(var2, "WitherSkeleton");
-      var1.registerSimple(var2, "Stray");
-      return var2;
+   public Map<String, Supplier<TypeTemplate>> registerEntities(final Schema schema) {
+      Map<String, Supplier<TypeTemplate>> map = super.registerEntities(schema);
+      schema.registerSimple(map, "WitherSkeleton");
+      schema.registerSimple(map, "Stray");
+      return map;
    }
 }

@@ -15,14 +15,14 @@ public class GlBuffer extends GpuBuffer {
    protected final int handle;
    protected @Nullable ByteBuffer persistentBuffer;
 
-   protected GlBuffer(@Nullable Supplier<String> var1, DirectStateAccess var2, @GpuBuffer.Usage int var3, long var4, int var6, @Nullable ByteBuffer var7) {
-      super(var3, var4);
-      this.label = var1;
-      this.dsa = var2;
-      this.handle = var6;
-      this.persistentBuffer = var7;
-      int var8 = (int)Math.min(var4, 2147483647L);
-      MEMORY_POOl.malloc((long)var6, var8);
+   protected GlBuffer(final @Nullable Supplier<String> label, final DirectStateAccess dsa, final @GpuBuffer.Usage int usage, final long size, final int handle, final @Nullable ByteBuffer persistentBuffer) {
+      super(usage, size);
+      this.label = label;
+      this.dsa = dsa;
+      this.handle = handle;
+      this.persistentBuffer = persistentBuffer;
+      int clampedSize = (int)Math.min(size, 2147483647L);
+      MEMORY_POOl.malloc((long)handle, clampedSize);
    }
 
    public boolean isClosed() {
@@ -48,11 +48,11 @@ public class GlBuffer extends GpuBuffer {
       private final ByteBuffer data;
       private boolean closed;
 
-      protected GlMappedView(Runnable var1, GlBuffer var2, ByteBuffer var3) {
+      protected GlMappedView(final Runnable unmap, final GlBuffer buffer, final ByteBuffer data) {
          super();
-         this.unmap = var1;
-         this.buffer = var2;
-         this.data = var3;
+         this.unmap = unmap;
+         this.buffer = buffer;
+         this.data = data;
       }
 
       public ByteBuffer data() {

@@ -13,31 +13,31 @@ public class ModelLocationUtils {
 
    /** @deprecated */
    @Deprecated
-   public static Identifier decorateBlockModelLocation(String var0) {
-      return Identifier.withDefaultNamespace("block/" + var0);
+   public static Identifier decorateBlockModelLocation(final String id) {
+      return Identifier.withDefaultNamespace("block/" + id);
    }
 
-   public static Identifier decorateItemModelLocation(String var0) {
-      return Identifier.withDefaultNamespace("item/" + var0);
+   public static Identifier decorateItemModelLocation(final String id) {
+      return Identifier.withDefaultNamespace("item/" + id);
    }
 
-   public static Identifier getModelLocation(Block var0, String var1) {
-      Identifier var2 = BuiltInRegistries.BLOCK.getKey(var0);
-      return var2.withPath((UnaryOperator)((var1x) -> "block/" + var1x + var1));
+   public static Identifier getModelLocation(final Block block, final String suffix) {
+      Identifier key = BuiltInRegistries.BLOCK.getKey(block);
+      return key.withPath((UnaryOperator)((path) -> "block/" + path + suffix));
    }
 
-   public static Identifier getModelLocation(Block var0) {
-      Identifier var1 = BuiltInRegistries.BLOCK.getKey(var0);
-      return var1.withPrefix("block/");
+   public static Identifier getModelLocation(final Block block) {
+      Identifier key = BuiltInRegistries.BLOCK.getKey(block);
+      return key.withPrefix("block/");
    }
 
-   public static Identifier getModelLocation(Item var0) {
-      Identifier var1 = BuiltInRegistries.ITEM.getKey(var0);
-      return var1.withPrefix("item/");
+   public static Identifier getModelLocation(final Item item) {
+      Identifier key = BuiltInRegistries.ITEM.getKey(item);
+      return key.withPrefix("item/");
    }
 
-   public static Identifier getModelLocation(Item var0, String var1) {
-      Identifier var2 = BuiltInRegistries.ITEM.getKey(var0);
-      return var2.withPath((UnaryOperator)((var1x) -> "item/" + var1x + var1));
+   public static Identifier getModelLocation(final Item item, final String suffix) {
+      Identifier key = BuiltInRegistries.ITEM.getKey(item);
+      return key.withPath((UnaryOperator)((path) -> "item/" + path + suffix));
    }
 }

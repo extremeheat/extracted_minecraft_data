@@ -8,11 +8,11 @@ import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.entity.EntityType;
 
 public class EntityTypeTagsProvider extends IntrinsicHolderTagsProvider<EntityType<?>> {
-   public EntityTypeTagsProvider(PackOutput var1, CompletableFuture<HolderLookup.Provider> var2) {
-      super(var1, Registries.ENTITY_TYPE, var2, (var0) -> var0.builtInRegistryHolder().key());
+   public EntityTypeTagsProvider(final PackOutput output, final CompletableFuture<HolderLookup.Provider> lookupProvider) {
+      super(output, Registries.ENTITY_TYPE, lookupProvider, (e) -> e.builtInRegistryHolder().key());
    }
 
-   protected void addTags(HolderLookup.Provider var1) {
+   protected void addTags(final HolderLookup.Provider registries) {
       this.tag(EntityTypeTags.SKELETONS).add(EntityType.SKELETON, EntityType.STRAY, EntityType.WITHER_SKELETON, EntityType.SKELETON_HORSE, EntityType.BOGGED, EntityType.PARCHED);
       this.tag(EntityTypeTags.ZOMBIES).add(EntityType.ZOMBIE_HORSE, EntityType.CAMEL_HUSK, EntityType.ZOMBIE, EntityType.ZOMBIE_VILLAGER, EntityType.ZOMBIFIED_PIGLIN, EntityType.ZOGLIN, EntityType.DROWNED, EntityType.HUSK, EntityType.ZOMBIE_NAUTILUS);
       this.tag(EntityTypeTags.RAIDERS).add(EntityType.EVOKER, EntityType.PILLAGER, EntityType.RAVAGER, EntityType.VINDICATOR, EntityType.ILLUSIONER, EntityType.WITCH);
@@ -59,5 +59,6 @@ public class EntityTypeTagsProvider extends IntrinsicHolderTagsProvider<EntityTy
       this.tag(EntityTypeTags.CANDIDATE_FOR_IRON_GOLEM_GIFT).add(EntityType.VILLAGER).addTag(EntityTypeTags.ACCEPTS_IRON_GOLEM_GIFT);
       this.tag(EntityTypeTags.NAUTILUS_HOSTILES).add(EntityType.PUFFERFISH);
       this.tag(EntityTypeTags.CAN_FLOAT_WHILE_RIDDEN).add(EntityType.HORSE, EntityType.ZOMBIE_HORSE, EntityType.MULE, EntityType.DONKEY, EntityType.CAMEL, EntityType.CAMEL_HUSK);
+      this.tag(EntityTypeTags.CANNOT_BE_AGE_LOCKED).add(EntityType.ZOMBIE_HORSE, EntityType.SKELETON_HORSE, EntityType.VILLAGER);
    }
 }

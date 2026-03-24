@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.JsonOps;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,12 +15,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.FileToIdConverter;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -46,86 +49,86 @@ public class RecipeManager extends SimplePreparableReloadListener<RecipeMap> imp
    private List<ServerDisplayInfo> allDisplays;
    private Map<ResourceKey<Recipe<?>>, List<ServerDisplayInfo>> recipeToDisplay;
 
-   public RecipeManager(HolderLookup.Provider var1) {
+   public RecipeManager(final HolderLookup.Provider registries) {
       super();
       this.recipes = RecipeMap.EMPTY;
       this.propertySets = Map.of();
       this.stonecutterRecipes = SelectableRecipe.SingleInputSet.<StonecutterRecipe>empty();
       this.allDisplays = List.of();
       this.recipeToDisplay = Map.of();
-      this.registries = var1;
+      this.registries = registries;
    }
 
-   protected RecipeMap prepare(ResourceManager var1, ProfilerFiller var2) {
-      TreeMap var3 = new TreeMap();
-      SimpleJsonResourceReloadListener.scanDirectory(var1, RECIPE_LISTER, this.registries.createSerializationContext(JsonOps.INSTANCE), Recipe.CODEC, var3);
-      ArrayList var4 = new ArrayList(var3.size());
-      var3.forEach((var1x, var2x) -> {
-         ResourceKey var3 = ResourceKey.create(Registries.RECIPE, var1x);
-         RecipeHolder var4x = new RecipeHolder(var3, var2x);
-         var4.add(var4x);
+   protected RecipeMap prepare(final ResourceManager manager, final ProfilerFiller profiler) {
+      SortedMap<Identifier, Recipe<?>> recipes = new TreeMap();
+      SimpleJsonResourceReloadListener.scanDirectory(manager, RECIPE_LISTER, this.registries.createSerializationContext(JsonOps.INSTANCE), Recipe.CODEC, recipes);
+      List<RecipeHolder<?>> recipeHolders = new ArrayList(recipes.size());
+      recipes.forEach((id, recipe) -> {
+         ResourceKey<Recipe<?>> key = ResourceKey.create(Registries.RECIPE, id);
+         RecipeHolder<?> holder = new RecipeHolder(key, recipe);
+         recipeHolders.add(holder);
       });
-      return RecipeMap.create(var4);
+      return RecipeMap.create(recipeHolders);
    }
 
-   protected void apply(RecipeMap var1, ResourceManager var2, ProfilerFiller var3) {
-      this.recipes = var1;
-      LOGGER.info("Loaded {} recipes", var1.values().size());
+   protected void apply(final RecipeMap recipes, final ResourceManager manager, final ProfilerFiller profiler) {
+      this.recipes = recipes;
+      LOGGER.info("Loaded {} recipes", recipes.values().size());
    }
 
-   public void finalizeRecipeLoading(FeatureFlagSet var1) {
-      ArrayList var2 = new ArrayList();
-      List var3 = RECIPE_PROPERTY_SETS.entrySet().stream().map((var0) -> new IngredientCollector((ResourceKey)var0.getKey(), (IngredientExtractor)var0.getValue())).toList();
-      this.recipes.values().forEach((var3x) -> {
-         Recipe var4 = var3x.value();
-         if (!var4.isSpecial() && var4.placementInfo().isImpossibleToPlace()) {
-            LOGGER.warn("Recipe {} can't be placed due to empty ingredients and will be ignored", var3x.id().identifier());
+   public void finalizeRecipeLoading(final FeatureFlagSet enabledFlags) {
+      List<SelectableRecipe.SingleInputEntry<StonecutterRecipe>> stonecutterRecipes = new ArrayList();
+      List<IngredientCollector> propertySetCollectors = RECIPE_PROPERTY_SETS.entrySet().stream().map((e) -> new IngredientCollector((ResourceKey)e.getKey(), (IngredientExtractor)e.getValue())).toList();
+      this.recipes.values().forEach((recipeHolder) -> {
+         Recipe<?> recipe = recipeHolder.value();
+         if (!recipe.isSpecial() && recipe.placementInfo().isImpossibleToPlace()) {
+            LOGGER.warn("Recipe {} can't be placed due to empty ingredients and will be ignored", recipeHolder.id().identifier());
          } else {
-            var3.forEach((var1x) -> var1x.accept(var4));
-            if (var4 instanceof StonecutterRecipe) {
-               StonecutterRecipe var5 = (StonecutterRecipe)var4;
-               if (isIngredientEnabled(var1, var5.input()) && var5.resultDisplay().isEnabled(var1)) {
-                  var2.add(new SelectableRecipe.SingleInputEntry(var5.input(), new SelectableRecipe(var5.resultDisplay(), Optional.of(var3x))));
+            propertySetCollectors.forEach((c) -> c.accept(recipe));
+            if (recipe instanceof StonecutterRecipe) {
+               StonecutterRecipe stonecutterRecipe = (StonecutterRecipe)recipe;
+               if (isIngredientEnabled(enabledFlags, stonecutterRecipe.input()) && stonecutterRecipe.resultDisplay().isEnabled(enabledFlags)) {
+                  stonecutterRecipes.add(new SelectableRecipe.SingleInputEntry(stonecutterRecipe.input(), new SelectableRecipe(stonecutterRecipe.resultDisplay(), Optional.of(recipeHolder))));
                }
             }
 
          }
       });
-      this.propertySets = (Map)var3.stream().collect(Collectors.toUnmodifiableMap((var0) -> var0.key, (var1x) -> var1x.asPropertySet(var1)));
-      this.stonecutterRecipes = new SelectableRecipe.SingleInputSet<StonecutterRecipe>(var2);
-      this.allDisplays = unpackRecipeInfo(this.recipes.values(), var1);
-      this.recipeToDisplay = (Map)this.allDisplays.stream().collect(Collectors.groupingBy((var0) -> var0.parent.id(), IdentityHashMap::new, Collectors.toList()));
+      this.propertySets = (Map)propertySetCollectors.stream().collect(Collectors.toUnmodifiableMap((c) -> c.key, (c) -> c.asPropertySet(enabledFlags)));
+      this.stonecutterRecipes = new SelectableRecipe.SingleInputSet<StonecutterRecipe>(stonecutterRecipes);
+      this.allDisplays = unpackRecipeInfo(this.recipes.values(), enabledFlags);
+      this.recipeToDisplay = (Map)this.allDisplays.stream().collect(Collectors.groupingBy((r) -> r.parent.id(), IdentityHashMap::new, Collectors.toList()));
    }
 
-   static List<Ingredient> filterDisabled(FeatureFlagSet var0, List<Ingredient> var1) {
-      var1.removeIf((var1x) -> !isIngredientEnabled(var0, var1x));
-      return var1;
+   private static List<Ingredient> filterDisabled(final FeatureFlagSet enabledFlags, final List<Ingredient> ingredients) {
+      ingredients.removeIf((e) -> !isIngredientEnabled(enabledFlags, e));
+      return ingredients;
    }
 
-   private static boolean isIngredientEnabled(FeatureFlagSet var0, Ingredient var1) {
-      return var1.items().allMatch((var1x) -> ((Item)var1x.value()).isEnabled(var0));
+   private static boolean isIngredientEnabled(final FeatureFlagSet enabledFlags, final Ingredient ingredient) {
+      return ingredient.items().allMatch((i) -> ((Item)i.value()).isEnabled(enabledFlags));
    }
 
-   public <I extends RecipeInput, T extends Recipe<I>> Optional<RecipeHolder<T>> getRecipeFor(RecipeType<T> var1, I var2, Level var3, @Nullable ResourceKey<Recipe<?>> var4) {
-      RecipeHolder var5 = var4 != null ? this.byKeyTyped(var1, var4) : null;
-      return this.getRecipeFor(var1, var2, var3, var5);
+   public <I extends RecipeInput, T extends Recipe<I>> Optional<RecipeHolder<T>> getRecipeFor(final RecipeType<T> type, final I input, final Level level, final @Nullable ResourceKey<Recipe<?>> recipeHint) {
+      RecipeHolder<T> hintedRecipe = recipeHint != null ? this.byKeyTyped(type, recipeHint) : null;
+      return this.getRecipeFor(type, input, level, hintedRecipe);
    }
 
-   public <I extends RecipeInput, T extends Recipe<I>> Optional<RecipeHolder<T>> getRecipeFor(RecipeType<T> var1, I var2, Level var3, @Nullable RecipeHolder<T> var4) {
-      return var4 != null && var4.value().matches(var2, var3) ? Optional.of(var4) : this.getRecipeFor(var1, var2, var3);
+   public <I extends RecipeInput, T extends Recipe<I>> Optional<RecipeHolder<T>> getRecipeFor(final RecipeType<T> type, final I input, final Level level, final @Nullable RecipeHolder<T> recipeHint) {
+      return recipeHint != null && recipeHint.value().matches(input, level) ? Optional.of(recipeHint) : this.getRecipeFor(type, input, level);
    }
 
-   public <I extends RecipeInput, T extends Recipe<I>> Optional<RecipeHolder<T>> getRecipeFor(RecipeType<T> var1, I var2, Level var3) {
-      return this.recipes.getRecipesFor(var1, var2, var3).findFirst();
+   public <I extends RecipeInput, T extends Recipe<I>> Optional<RecipeHolder<T>> getRecipeFor(final RecipeType<T> type, final I input, final Level level) {
+      return this.recipes.getRecipesFor(type, input, level).findFirst();
    }
 
-   public Optional<RecipeHolder<?>> byKey(ResourceKey<Recipe<?>> var1) {
-      return Optional.ofNullable(this.recipes.byKey(var1));
+   public Optional<RecipeHolder<?>> byKey(final ResourceKey<Recipe<?>> recipeId) {
+      return Optional.ofNullable(this.recipes.byKey(recipeId));
    }
 
-   private <T extends Recipe<?>> @Nullable RecipeHolder<T> byKeyTyped(RecipeType<T> var1, ResourceKey<Recipe<?>> var2) {
-      RecipeHolder var3 = this.recipes.byKey(var2);
-      return var3 != null && var3.value().getType().equals(var1) ? var3 : null;
+   private <T extends Recipe<?>> @Nullable RecipeHolder<T> byKeyTyped(final RecipeType<T> type, final ResourceKey<Recipe<?>> recipeId) {
+      RecipeHolder<?> recipe = this.recipes.byKey(recipeId);
+      return recipe != null && recipe.value().getType().equals(type) ? recipe : null;
    }
 
    public Map<ResourceKey<RecipePropertySet>, RecipePropertySet> getSynchronizedItemProperties() {
@@ -136,8 +139,8 @@ public class RecipeManager extends SimplePreparableReloadListener<RecipeMap> imp
       return this.stonecutterRecipes;
    }
 
-   public RecipePropertySet propertySet(ResourceKey<RecipePropertySet> var1) {
-      return (RecipePropertySet)this.propertySets.getOrDefault(var1, RecipePropertySet.EMPTY);
+   public RecipePropertySet propertySet(final ResourceKey<RecipePropertySet> id) {
+      return (RecipePropertySet)this.propertySets.getOrDefault(id, RecipePropertySet.EMPTY);
    }
 
    public SelectableRecipe.SingleInputSet<StonecutterRecipe> stonecutterRecipes() {
@@ -148,36 +151,36 @@ public class RecipeManager extends SimplePreparableReloadListener<RecipeMap> imp
       return this.recipes.values();
    }
 
-   public @Nullable ServerDisplayInfo getRecipeFromDisplay(RecipeDisplayId var1) {
-      int var2 = var1.index();
-      return var2 >= 0 && var2 < this.allDisplays.size() ? (ServerDisplayInfo)this.allDisplays.get(var2) : null;
+   public @Nullable ServerDisplayInfo getRecipeFromDisplay(final RecipeDisplayId id) {
+      int index = id.index();
+      return index >= 0 && index < this.allDisplays.size() ? (ServerDisplayInfo)this.allDisplays.get(index) : null;
    }
 
-   public void listDisplaysForRecipe(ResourceKey<Recipe<?>> var1, Consumer<RecipeDisplayEntry> var2) {
-      List var3 = (List)this.recipeToDisplay.get(var1);
-      if (var3 != null) {
-         var3.forEach((var1x) -> var2.accept(var1x.display));
+   public void listDisplaysForRecipe(final ResourceKey<Recipe<?>> id, final Consumer<RecipeDisplayEntry> output) {
+      List<ServerDisplayInfo> recipes = (List)this.recipeToDisplay.get(id);
+      if (recipes != null) {
+         recipes.forEach((e) -> output.accept(e.display));
       }
 
    }
 
    @VisibleForTesting
-   protected static RecipeHolder<?> fromJson(ResourceKey<Recipe<?>> var0, JsonObject var1, HolderLookup.Provider var2) {
-      Recipe var3 = (Recipe)Recipe.CODEC.parse(var2.createSerializationContext(JsonOps.INSTANCE), var1).getOrThrow(JsonParseException::new);
-      return new RecipeHolder(var0, var3);
+   protected static RecipeHolder<?> fromJson(final ResourceKey<Recipe<?>> id, final JsonObject object, final HolderLookup.Provider registries) {
+      Recipe<?> recipe = (Recipe)Recipe.CODEC.parse(registries.createSerializationContext(JsonOps.INSTANCE), object).getOrThrow(JsonParseException::new);
+      return new RecipeHolder(id, recipe);
    }
 
-   public static <I extends RecipeInput, T extends Recipe<I>> CachedCheck<I, T> createCheck(final RecipeType<T> var0) {
+   public static <I extends RecipeInput, T extends Recipe<I>> CachedCheck<I, T> createCheck(final RecipeType<T> type) {
       return new CachedCheck<I, T>() {
          private @Nullable ResourceKey<Recipe<?>> lastRecipe;
 
-         public Optional<RecipeHolder<T>> getRecipeFor(I var1, ServerLevel var2) {
-            RecipeManager var3 = var2.recipeAccess();
-            Optional var4 = var3.getRecipeFor(var0, var1, var2, this.lastRecipe);
-            if (var4.isPresent()) {
-               RecipeHolder var5 = (RecipeHolder)var4.get();
-               this.lastRecipe = var5.id();
-               return Optional.of(var5);
+         public Optional<RecipeHolder<T>> getRecipeFor(final I input, final ServerLevel level) {
+            RecipeManager recipeManager = level.recipeAccess();
+            Optional<RecipeHolder<T>> result = recipeManager.getRecipeFor(type, input, level, this.lastRecipe);
+            if (result.isPresent()) {
+               RecipeHolder<T> unpackedResult = (RecipeHolder)result.get();
+               this.lastRecipe = unpackedResult.id();
+               return Optional.of(unpackedResult);
             } else {
                return Optional.empty();
             }
@@ -185,44 +188,44 @@ public class RecipeManager extends SimplePreparableReloadListener<RecipeMap> imp
       };
    }
 
-   private static List<ServerDisplayInfo> unpackRecipeInfo(Iterable<RecipeHolder<?>> var0, FeatureFlagSet var1) {
-      ArrayList var2 = new ArrayList();
-      Object2IntOpenHashMap var3 = new Object2IntOpenHashMap();
+   private static List<ServerDisplayInfo> unpackRecipeInfo(final Iterable<RecipeHolder<?>> recipes, final FeatureFlagSet enabledFeatures) {
+      List<ServerDisplayInfo> result = new ArrayList();
+      Object2IntMap<String> recipeGroups = new Object2IntOpenHashMap();
 
-      for(RecipeHolder var5 : var0) {
-         Recipe var6 = var5.value();
-         OptionalInt var7;
-         if (var6.group().isEmpty()) {
-            var7 = OptionalInt.empty();
+      for(RecipeHolder<?> recipeHolder : recipes) {
+         Recipe<?> recipe = recipeHolder.value();
+         OptionalInt groupId;
+         if (recipe.group().isEmpty()) {
+            groupId = OptionalInt.empty();
          } else {
-            var7 = OptionalInt.of(var3.computeIfAbsent(var6.group(), (var1x) -> var3.size()));
+            groupId = OptionalInt.of(recipeGroups.computeIfAbsent(recipe.group(), (idx) -> recipeGroups.size()));
          }
 
-         Optional var8;
-         if (var6.isSpecial()) {
-            var8 = Optional.empty();
+         Optional<List<Ingredient>> placementCheck;
+         if (recipe.isSpecial()) {
+            placementCheck = Optional.empty();
          } else {
-            var8 = Optional.of(var6.placementInfo().ingredients());
+            placementCheck = Optional.of(recipe.placementInfo().ingredients());
          }
 
-         for(RecipeDisplay var10 : var6.display()) {
-            if (var10.isEnabled(var1)) {
-               int var11 = var2.size();
-               RecipeDisplayId var12 = new RecipeDisplayId(var11);
-               RecipeDisplayEntry var13 = new RecipeDisplayEntry(var12, var10, var7, var6.recipeBookCategory(), var8);
-               var2.add(new ServerDisplayInfo(var13, var5));
+         for(RecipeDisplay recipeDisplay : recipe.display()) {
+            if (recipeDisplay.isEnabled(enabledFeatures)) {
+               int nextDisplayId = result.size();
+               RecipeDisplayId id = new RecipeDisplayId(nextDisplayId);
+               RecipeDisplayEntry entry = new RecipeDisplayEntry(id, recipeDisplay, groupId, recipe.recipeBookCategory(), placementCheck);
+               result.add(new ServerDisplayInfo(entry, recipeHolder));
             }
          }
       }
 
-      return var2;
+      return result;
    }
 
-   private static IngredientExtractor forSingleInput(RecipeType<? extends SingleItemRecipe> var0) {
-      return (var1) -> {
+   private static IngredientExtractor forSingleInput(final RecipeType<? extends SingleItemRecipe> type) {
+      return (recipe) -> {
          Optional var10000;
-         if (var1.getType() == var0 && var1 instanceof SingleItemRecipe var2) {
-            var10000 = Optional.of(var2.input());
+         if (recipe.getType() == type && recipe instanceof SingleItemRecipe singleItemRecipe) {
+            var10000 = Optional.of(singleItemRecipe.input());
          } else {
             var10000 = Optional.empty();
          }
@@ -231,34 +234,29 @@ public class RecipeManager extends SimplePreparableReloadListener<RecipeMap> imp
       };
    }
 
-   // $FF: synthetic method
-   protected Object prepare(final ResourceManager var1, final ProfilerFiller var2) {
-      return this.prepare(var1, var2);
-   }
-
    static {
-      RECIPE_PROPERTY_SETS = Map.of(RecipePropertySet.SMITHING_ADDITION, (IngredientExtractor)(var0) -> {
+      RECIPE_PROPERTY_SETS = Map.of(RecipePropertySet.SMITHING_ADDITION, (IngredientExtractor)(recipe) -> {
          Optional var10000;
-         if (var0 instanceof SmithingRecipe var1) {
-            var10000 = var1.additionIngredient();
+         if (recipe instanceof SmithingRecipe smithingRecipe) {
+            var10000 = smithingRecipe.additionIngredient();
          } else {
             var10000 = Optional.empty();
          }
 
          return var10000;
-      }, RecipePropertySet.SMITHING_BASE, (IngredientExtractor)(var0) -> {
+      }, RecipePropertySet.SMITHING_BASE, (IngredientExtractor)(recipe) -> {
          Optional var10000;
-         if (var0 instanceof SmithingRecipe var1) {
-            var10000 = Optional.of(var1.baseIngredient());
+         if (recipe instanceof SmithingRecipe smithingRecipe) {
+            var10000 = Optional.of(smithingRecipe.baseIngredient());
          } else {
             var10000 = Optional.empty();
          }
 
          return var10000;
-      }, RecipePropertySet.SMITHING_TEMPLATE, (IngredientExtractor)(var0) -> {
+      }, RecipePropertySet.SMITHING_TEMPLATE, (IngredientExtractor)(recipe) -> {
          Optional var10000;
-         if (var0 instanceof SmithingRecipe var1) {
-            var10000 = var1.templateIngredient();
+         if (recipe instanceof SmithingRecipe smithingRecipe) {
+            var10000 = smithingRecipe.templateIngredient();
          } else {
             var10000 = Optional.empty();
          }
@@ -269,50 +267,40 @@ public class RecipeManager extends SimplePreparableReloadListener<RecipeMap> imp
    }
 
    public static record ServerDisplayInfo(RecipeDisplayEntry display, RecipeHolder<?> parent) {
-      final RecipeDisplayEntry display;
-      final RecipeHolder<?> parent;
-
-      public ServerDisplayInfo(RecipeDisplayEntry var1, RecipeHolder<?> var2) {
+      public ServerDisplayInfo {
          super();
-         this.display = var1;
-         this.parent = var2;
       }
    }
 
    public static class IngredientCollector implements Consumer<Recipe<?>> {
-      final ResourceKey<RecipePropertySet> key;
+      private final ResourceKey<RecipePropertySet> key;
       private final IngredientExtractor extractor;
       private final List<Ingredient> ingredients = new ArrayList();
 
-      protected IngredientCollector(ResourceKey<RecipePropertySet> var1, IngredientExtractor var2) {
+      protected IngredientCollector(final ResourceKey<RecipePropertySet> key, final IngredientExtractor extractor) {
          super();
-         this.key = var1;
-         this.extractor = var2;
+         this.key = key;
+         this.extractor = extractor;
       }
 
-      public void accept(Recipe<?> var1) {
-         Optional var10000 = this.extractor.apply(var1);
+      public void accept(final Recipe<?> recipe) {
+         Optional var10000 = this.extractor.apply(recipe);
          List var10001 = this.ingredients;
          Objects.requireNonNull(var10001);
          var10000.ifPresent(var10001::add);
       }
 
-      public RecipePropertySet asPropertySet(FeatureFlagSet var1) {
-         return RecipePropertySet.create(RecipeManager.filterDisabled(var1, this.ingredients));
-      }
-
-      // $FF: synthetic method
-      public void accept(final Object var1) {
-         this.accept((Recipe)var1);
+      public RecipePropertySet asPropertySet(final FeatureFlagSet enabledFeatures) {
+         return RecipePropertySet.create(RecipeManager.filterDisabled(enabledFeatures, this.ingredients));
       }
    }
 
    public interface CachedCheck<I extends RecipeInput, T extends Recipe<I>> {
-      Optional<RecipeHolder<T>> getRecipeFor(I var1, ServerLevel var2);
+      Optional<RecipeHolder<T>> getRecipeFor(I input, ServerLevel level);
    }
 
    @FunctionalInterface
    public interface IngredientExtractor {
-      Optional<Ingredient> apply(Recipe<?> var1);
+      Optional<Ingredient> apply(Recipe<?> recipe);
    }
 }

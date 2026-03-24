@@ -12,7 +12,7 @@ public class HandshakePacketTypes {
       super();
    }
 
-   private static <T extends Packet<ServerHandshakePacketListener>> PacketType<T> createServerbound(String var0) {
-      return new PacketType<T>(PacketFlow.SERVERBOUND, Identifier.withDefaultNamespace(var0));
+   private static <T extends Packet<ServerHandshakePacketListener>> PacketType<T> createServerbound(final String id) {
+      return new PacketType<T>(PacketFlow.SERVERBOUND, Identifier.withDefaultNamespace(id));
    }
 }

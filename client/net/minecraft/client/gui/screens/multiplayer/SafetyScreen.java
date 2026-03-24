@@ -15,14 +15,14 @@ public class SafetyScreen extends WarningScreen {
    private static final Component NARRATION;
    private final Screen previous;
 
-   public SafetyScreen(Screen var1) {
+   public SafetyScreen(final Screen previous) {
       super(TITLE, CONTENT, CHECK, NARRATION);
-      this.previous = var1;
+      this.previous = previous;
    }
 
    protected Layout addFooterButtons() {
-      LinearLayout var1 = LinearLayout.horizontal().spacing(8);
-      var1.addChild(Button.builder(CommonComponents.GUI_PROCEED, (var1x) -> {
+      LinearLayout footer = LinearLayout.horizontal().spacing(8);
+      footer.addChild(Button.builder(CommonComponents.GUI_PROCEED, (button) -> {
          if (this.stopShowing.selected()) {
             this.minecraft.options.skipMultiplayerWarning = true;
             this.minecraft.options.save();
@@ -30,8 +30,8 @@ public class SafetyScreen extends WarningScreen {
 
          this.minecraft.setScreen(new JoinMultiplayerScreen(this.previous));
       }).build());
-      var1.addChild(Button.builder(CommonComponents.GUI_BACK, (var1x) -> this.onClose()).build());
-      return var1;
+      footer.addChild(Button.builder(CommonComponents.GUI_BACK, (button) -> this.onClose()).build());
+      return footer;
    }
 
    public void onClose() {

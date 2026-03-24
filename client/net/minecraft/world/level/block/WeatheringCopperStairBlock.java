@@ -9,32 +9,27 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class WeatheringCopperStairBlock extends StairBlock implements WeatheringCopper {
-   public static final MapCodec<WeatheringCopperStairBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(WeatheringCopper.WeatherState.CODEC.fieldOf("weathering_state").forGetter(ChangeOverTimeBlock::getAge), BlockState.CODEC.fieldOf("base_state").forGetter((var0x) -> var0x.baseState), propertiesCodec()).apply(var0, WeatheringCopperStairBlock::new));
+   public static final MapCodec<WeatheringCopperStairBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(WeatheringCopper.WeatherState.CODEC.fieldOf("weathering_state").forGetter(ChangeOverTimeBlock::getAge), BlockState.CODEC.fieldOf("base_state").forGetter((b) -> b.baseState), propertiesCodec()).apply(i, WeatheringCopperStairBlock::new));
    private final WeatheringCopper.WeatherState weatherState;
 
    public MapCodec<WeatheringCopperStairBlock> codec() {
       return CODEC;
    }
 
-   public WeatheringCopperStairBlock(WeatheringCopper.WeatherState var1, BlockState var2, BlockBehaviour.Properties var3) {
-      super(var2, var3);
-      this.weatherState = var1;
+   public WeatheringCopperStairBlock(final WeatheringCopper.WeatherState weatherState, final BlockState baseState, final BlockBehaviour.Properties properties) {
+      super(baseState, properties);
+      this.weatherState = weatherState;
    }
 
-   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      this.changeOverTime(var1, var2, var3, var4);
+   protected void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      this.changeOverTime(state, level, pos, random);
    }
 
-   protected boolean isRandomlyTicking(BlockState var1) {
-      return WeatheringCopper.getNext(var1.getBlock()).isPresent();
+   protected boolean isRandomlyTicking(final BlockState state) {
+      return WeatheringCopper.getNext(state.getBlock()).isPresent();
    }
 
    public WeatheringCopper.WeatherState getAge() {
       return this.weatherState;
-   }
-
-   // $FF: synthetic method
-   public Enum getAge() {
-      return this.getAge();
    }
 }

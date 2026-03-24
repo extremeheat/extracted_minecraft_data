@@ -36,140 +36,140 @@ public class RuinedPortalStructure extends Structure {
    private static final float PROBABILITY_OF_GIANT_PORTAL = 0.05F;
    private static final int MIN_Y_INDEX = 15;
    private final List<Setup> setups;
-   public static final MapCodec<RuinedPortalStructure> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(settingsCodec(var0), ExtraCodecs.nonEmptyList(RuinedPortalStructure.Setup.CODEC.listOf()).fieldOf("setups").forGetter((var0x) -> var0x.setups)).apply(var0, RuinedPortalStructure::new));
+   public static final MapCodec<RuinedPortalStructure> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(settingsCodec(i), ExtraCodecs.nonEmptyList(RuinedPortalStructure.Setup.CODEC.listOf()).fieldOf("setups").forGetter((s) -> s.setups)).apply(i, RuinedPortalStructure::new));
 
-   public RuinedPortalStructure(Structure.StructureSettings var1, List<Setup> var2) {
-      super(var1);
-      this.setups = var2;
+   public RuinedPortalStructure(final Structure.StructureSettings settings, final List<Setup> setups) {
+      super(settings);
+      this.setups = setups;
    }
 
-   public RuinedPortalStructure(Structure.StructureSettings var1, Setup var2) {
-      this(var1, List.of(var2));
+   public RuinedPortalStructure(final Structure.StructureSettings settings, final Setup setup) {
+      this(settings, List.of(setup));
    }
 
-   public Optional<Structure.GenerationStub> findGenerationPoint(Structure.GenerationContext var1) {
-      RuinedPortalPiece.Properties var2 = new RuinedPortalPiece.Properties();
-      WorldgenRandom var3 = var1.random();
-      Setup var4 = null;
+   public Optional<Structure.GenerationStub> findGenerationPoint(final Structure.GenerationContext context) {
+      RuinedPortalPiece.Properties properties = new RuinedPortalPiece.Properties();
+      WorldgenRandom random = context.random();
+      Setup chosenSetup = null;
       if (this.setups.size() > 1) {
-         float var5 = 0.0F;
+         float total = 0.0F;
 
-         for(Setup var7 : this.setups) {
-            var5 += var7.weight();
+         for(Setup s : this.setups) {
+            total += s.weight();
          }
 
-         float var20 = var3.nextFloat();
+         float pick = random.nextFloat();
 
-         for(Setup var8 : this.setups) {
-            var20 -= var8.weight() / var5;
-            if (var20 < 0.0F) {
-               var4 = var8;
+         for(Setup s : this.setups) {
+            pick -= s.weight() / total;
+            if (pick < 0.0F) {
+               chosenSetup = s;
                break;
             }
          }
       } else {
-         var4 = (Setup)this.setups.get(0);
+         chosenSetup = (Setup)this.setups.get(0);
       }
 
-      if (var4 == null) {
+      if (chosenSetup == null) {
          throw new IllegalStateException();
       } else {
-         var2.airPocket = sample(var3, var4.airPocketProbability());
-         var2.mossiness = var4.mossiness();
-         var2.overgrown = var4.overgrown();
-         var2.vines = var4.vines();
-         var2.replaceWithBlackstone = var4.replaceWithBlackstone();
-         Identifier var21;
-         if (var3.nextFloat() < 0.05F) {
-            var21 = Identifier.withDefaultNamespace(STRUCTURE_LOCATION_GIANT_PORTALS[var3.nextInt(STRUCTURE_LOCATION_GIANT_PORTALS.length)]);
+         properties.airPocket = sample(random, chosenSetup.airPocketProbability());
+         properties.mossiness = chosenSetup.mossiness();
+         properties.overgrown = chosenSetup.overgrown();
+         properties.vines = chosenSetup.vines();
+         properties.replaceWithBlackstone = chosenSetup.replaceWithBlackstone();
+         Identifier templateLocation;
+         if (random.nextFloat() < 0.05F) {
+            templateLocation = Identifier.withDefaultNamespace(STRUCTURE_LOCATION_GIANT_PORTALS[random.nextInt(STRUCTURE_LOCATION_GIANT_PORTALS.length)]);
          } else {
-            var21 = Identifier.withDefaultNamespace(STRUCTURE_LOCATION_PORTALS[var3.nextInt(STRUCTURE_LOCATION_PORTALS.length)]);
+            templateLocation = Identifier.withDefaultNamespace(STRUCTURE_LOCATION_PORTALS[random.nextInt(STRUCTURE_LOCATION_PORTALS.length)]);
          }
 
-         StructureTemplate var23 = var1.structureTemplateManager().getOrCreate(var21);
-         Rotation var24 = (Rotation)Util.getRandom(Rotation.values(), var3);
-         Mirror var9 = var3.nextFloat() < 0.5F ? Mirror.NONE : Mirror.FRONT_BACK;
-         BlockPos var10 = new BlockPos(var23.getSize().getX() / 2, 0, var23.getSize().getZ() / 2);
-         ChunkGenerator var11 = var1.chunkGenerator();
-         LevelHeightAccessor var12 = var1.heightAccessor();
-         RandomState var13 = var1.randomState();
-         BlockPos var14 = var1.chunkPos().getWorldPosition();
-         BoundingBox var15 = var23.getBoundingBox(var14, var24, var10, var9);
-         BlockPos var16 = var15.getCenter();
-         int var17 = var11.getBaseHeight(var16.getX(), var16.getZ(), RuinedPortalPiece.getHeightMapType(var4.placement()), var12, var13) - 1;
-         int var18 = findSuitableY(var3, var11, var4.placement(), var2.airPocket, var17, var15.getYSpan(), var15, var12, var13);
-         BlockPos var19 = new BlockPos(var14.getX(), var18, var14.getZ());
-         return Optional.of(new Structure.GenerationStub(var19, (var11x) -> {
-            if (var4.canBeCold()) {
-               var2.cold = isCold(var19, var1.chunkGenerator().getBiomeSource().getNoiseBiome(QuartPos.fromBlock(var19.getX()), QuartPos.fromBlock(var19.getY()), QuartPos.fromBlock(var19.getZ()), var13.sampler()), var11.getSeaLevel());
+         StructureTemplate template = context.structureTemplateManager().getOrCreate(templateLocation);
+         Rotation rotation = (Rotation)Util.getRandom(Rotation.values(), random);
+         Mirror mirror = random.nextFloat() < 0.5F ? Mirror.NONE : Mirror.FRONT_BACK;
+         BlockPos pivot = new BlockPos(template.getSize().getX() / 2, 0, template.getSize().getZ() / 2);
+         ChunkGenerator chunkGenerator = context.chunkGenerator();
+         LevelHeightAccessor heightAccessor = context.heightAccessor();
+         RandomState randomState = context.randomState();
+         BlockPos basePosition = context.chunkPos().getWorldPosition();
+         BoundingBox boundingBox = template.getBoundingBox(basePosition, rotation, pivot, mirror);
+         BlockPos center = boundingBox.getCenter();
+         int surfaceY = chunkGenerator.getBaseHeight(center.getX(), center.getZ(), RuinedPortalPiece.getHeightMapType(chosenSetup.placement()), heightAccessor, randomState) - 1;
+         int projectedY = findSuitableY(random, chunkGenerator, chosenSetup.placement(), properties.airPocket, surfaceY, boundingBox.getYSpan(), boundingBox, heightAccessor, randomState);
+         BlockPos origin = new BlockPos(basePosition.getX(), projectedY, basePosition.getZ());
+         return Optional.of(new Structure.GenerationStub(origin, (builder) -> {
+            if (chosenSetup.canBeCold()) {
+               properties.cold = isCold(origin, context.chunkGenerator().getBiomeSource().getNoiseBiome(QuartPos.fromBlock(origin.getX()), QuartPos.fromBlock(origin.getY()), QuartPos.fromBlock(origin.getZ()), randomState.sampler()), chunkGenerator.getSeaLevel());
             }
 
-            var11x.addPiece(new RuinedPortalPiece(var1.structureTemplateManager(), var19, var4.placement(), var2, var21, var23, var24, var9, var10));
+            builder.addPiece(new RuinedPortalPiece(context.structureTemplateManager(), origin, chosenSetup.placement(), properties, templateLocation, template, rotation, mirror, pivot));
          }));
       }
    }
 
-   private static boolean sample(WorldgenRandom var0, float var1) {
-      if (var1 == 0.0F) {
+   private static boolean sample(final WorldgenRandom random, final float limit) {
+      if (limit == 0.0F) {
          return false;
-      } else if (var1 == 1.0F) {
+      } else if (limit == 1.0F) {
          return true;
       } else {
-         return var0.nextFloat() < var1;
+         return random.nextFloat() < limit;
       }
    }
 
-   private static boolean isCold(BlockPos var0, Holder<Biome> var1, int var2) {
-      return ((Biome)var1.value()).coldEnoughToSnow(var0, var2);
+   private static boolean isCold(final BlockPos pos, final Holder<Biome> biome, final int seaLevel) {
+      return ((Biome)biome.value()).coldEnoughToSnow(pos, seaLevel);
    }
 
-   private static int findSuitableY(RandomSource var0, ChunkGenerator var1, RuinedPortalPiece.VerticalPlacement var2, boolean var3, int var4, int var5, BoundingBox var6, LevelHeightAccessor var7, RandomState var8) {
-      int var10 = var7.getMinY() + 15;
-      int var9;
-      if (var2 == RuinedPortalPiece.VerticalPlacement.IN_NETHER) {
-         if (var3) {
-            var9 = Mth.randomBetweenInclusive(var0, 32, 100);
-         } else if (var0.nextFloat() < 0.5F) {
-            var9 = Mth.randomBetweenInclusive(var0, 27, 29);
+   private static int findSuitableY(final RandomSource random, final ChunkGenerator generator, final RuinedPortalPiece.VerticalPlacement verticalPlacement, final boolean airPocket, final int surfaceYAtCenter, final int ySpan, final BoundingBox boundingBox, final LevelHeightAccessor heightAccessor, final RandomState randomState) {
+      int minY = heightAccessor.getMinY() + 15;
+      int newY;
+      if (verticalPlacement == RuinedPortalPiece.VerticalPlacement.IN_NETHER) {
+         if (airPocket) {
+            newY = Mth.randomBetweenInclusive(random, 32, 100);
+         } else if (random.nextFloat() < 0.5F) {
+            newY = Mth.randomBetweenInclusive(random, 27, 29);
          } else {
-            var9 = Mth.randomBetweenInclusive(var0, 29, 100);
+            newY = Mth.randomBetweenInclusive(random, 29, 100);
          }
-      } else if (var2 == RuinedPortalPiece.VerticalPlacement.IN_MOUNTAIN) {
-         int var11 = var4 - var5;
-         var9 = getRandomWithinInterval(var0, 70, var11);
-      } else if (var2 == RuinedPortalPiece.VerticalPlacement.UNDERGROUND) {
-         int var19 = var4 - var5;
-         var9 = getRandomWithinInterval(var0, var10, var19);
-      } else if (var2 == RuinedPortalPiece.VerticalPlacement.PARTLY_BURIED) {
-         var9 = var4 - var5 + Mth.randomBetweenInclusive(var0, 2, 8);
+      } else if (verticalPlacement == RuinedPortalPiece.VerticalPlacement.IN_MOUNTAIN) {
+         int maxY = surfaceYAtCenter - ySpan;
+         newY = getRandomWithinInterval(random, 70, maxY);
+      } else if (verticalPlacement == RuinedPortalPiece.VerticalPlacement.UNDERGROUND) {
+         int maxY = surfaceYAtCenter - ySpan;
+         newY = getRandomWithinInterval(random, minY, maxY);
+      } else if (verticalPlacement == RuinedPortalPiece.VerticalPlacement.PARTLY_BURIED) {
+         newY = surfaceYAtCenter - ySpan + Mth.randomBetweenInclusive(random, 2, 8);
       } else {
-         var9 = var4;
+         newY = surfaceYAtCenter;
       }
 
-      ImmutableList var20 = ImmutableList.of(new BlockPos(var6.minX(), 0, var6.minZ()), new BlockPos(var6.maxX(), 0, var6.minZ()), new BlockPos(var6.minX(), 0, var6.maxZ()), new BlockPos(var6.maxX(), 0, var6.maxZ()));
-      List var12 = (List)var20.stream().map((var3x) -> var1.getBaseColumn(var3x.getX(), var3x.getZ(), var7, var8)).collect(Collectors.toList());
-      Heightmap.Types var13 = var2 == RuinedPortalPiece.VerticalPlacement.ON_OCEAN_FLOOR ? Heightmap.Types.OCEAN_FLOOR_WG : Heightmap.Types.WORLD_SURFACE_WG;
+      List<BlockPos> bottomCorners = ImmutableList.of(new BlockPos(boundingBox.minX(), 0, boundingBox.minZ()), new BlockPos(boundingBox.maxX(), 0, boundingBox.minZ()), new BlockPos(boundingBox.minX(), 0, boundingBox.maxZ()), new BlockPos(boundingBox.maxX(), 0, boundingBox.maxZ()));
+      List<NoiseColumn> columns = (List)bottomCorners.stream().map((p) -> generator.getBaseColumn(p.getX(), p.getZ(), heightAccessor, randomState)).collect(Collectors.toList());
+      Heightmap.Types heightmap = verticalPlacement == RuinedPortalPiece.VerticalPlacement.ON_OCEAN_FLOOR ? Heightmap.Types.OCEAN_FLOOR_WG : Heightmap.Types.WORLD_SURFACE_WG;
 
-      int var14;
-      for(var14 = var9; var14 > var10; --var14) {
-         int var15 = 0;
+      int projectedY;
+      for(projectedY = newY; projectedY > minY; --projectedY) {
+         int cornersOnSolidGround = 0;
 
-         for(NoiseColumn var17 : var12) {
-            BlockState var18 = var17.getBlock(var14);
-            if (var13.isOpaque().test(var18)) {
-               ++var15;
-               if (var15 == 3) {
-                  return var14;
+         for(NoiseColumn column : columns) {
+            BlockState blockState = column.getBlock(projectedY);
+            if (heightmap.isOpaque().test(blockState)) {
+               ++cornersOnSolidGround;
+               if (cornersOnSolidGround == 3) {
+                  return projectedY;
                }
             }
          }
       }
 
-      return var14;
+      return projectedY;
    }
 
-   private static int getRandomWithinInterval(RandomSource var0, int var1, int var2) {
-      return var1 < var2 ? Mth.randomBetweenInclusive(var0, var1, var2) : var2;
+   private static int getRandomWithinInterval(final RandomSource random, final int minPreferred, final int max) {
+      return minPreferred < max ? Mth.randomBetweenInclusive(random, minPreferred, max) : max;
    }
 
    public StructureType<?> type() {
@@ -177,18 +177,10 @@ public class RuinedPortalStructure extends Structure {
    }
 
    public static record Setup(RuinedPortalPiece.VerticalPlacement placement, float airPocketProbability, float mossiness, boolean overgrown, boolean vines, boolean canBeCold, boolean replaceWithBlackstone, float weight) {
-      public static final Codec<Setup> CODEC = RecordCodecBuilder.create((var0) -> var0.group(RuinedPortalPiece.VerticalPlacement.CODEC.fieldOf("placement").forGetter(Setup::placement), Codec.floatRange(0.0F, 1.0F).fieldOf("air_pocket_probability").forGetter(Setup::airPocketProbability), Codec.floatRange(0.0F, 1.0F).fieldOf("mossiness").forGetter(Setup::mossiness), Codec.BOOL.fieldOf("overgrown").forGetter(Setup::overgrown), Codec.BOOL.fieldOf("vines").forGetter(Setup::vines), Codec.BOOL.fieldOf("can_be_cold").forGetter(Setup::canBeCold), Codec.BOOL.fieldOf("replace_with_blackstone").forGetter(Setup::replaceWithBlackstone), ExtraCodecs.POSITIVE_FLOAT.fieldOf("weight").forGetter(Setup::weight)).apply(var0, Setup::new));
+      public static final Codec<Setup> CODEC = RecordCodecBuilder.create((i) -> i.group(RuinedPortalPiece.VerticalPlacement.CODEC.fieldOf("placement").forGetter(Setup::placement), Codec.floatRange(0.0F, 1.0F).fieldOf("air_pocket_probability").forGetter(Setup::airPocketProbability), Codec.floatRange(0.0F, 1.0F).fieldOf("mossiness").forGetter(Setup::mossiness), Codec.BOOL.fieldOf("overgrown").forGetter(Setup::overgrown), Codec.BOOL.fieldOf("vines").forGetter(Setup::vines), Codec.BOOL.fieldOf("can_be_cold").forGetter(Setup::canBeCold), Codec.BOOL.fieldOf("replace_with_blackstone").forGetter(Setup::replaceWithBlackstone), ExtraCodecs.POSITIVE_FLOAT.fieldOf("weight").forGetter(Setup::weight)).apply(i, Setup::new));
 
-      public Setup(RuinedPortalPiece.VerticalPlacement var1, float var2, float var3, boolean var4, boolean var5, boolean var6, boolean var7, float var8) {
+      public Setup {
          super();
-         this.placement = var1;
-         this.airPocketProbability = var2;
-         this.mossiness = var3;
-         this.overgrown = var4;
-         this.vines = var5;
-         this.canBeCold = var6;
-         this.replaceWithBlackstone = var7;
-         this.weight = var8;
       }
    }
 }

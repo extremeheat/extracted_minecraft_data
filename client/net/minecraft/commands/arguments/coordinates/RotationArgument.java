@@ -22,33 +22,28 @@ public class RotationArgument implements ArgumentType<Coordinates> {
       return new RotationArgument();
    }
 
-   public static Coordinates getRotation(CommandContext<CommandSourceStack> var0, String var1) {
-      return (Coordinates)var0.getArgument(var1, Coordinates.class);
+   public static Coordinates getRotation(final CommandContext<CommandSourceStack> context, final String name) {
+      return (Coordinates)context.getArgument(name, Coordinates.class);
    }
 
-   public Coordinates parse(StringReader var1) throws CommandSyntaxException {
-      int var2 = var1.getCursor();
-      if (!var1.canRead()) {
-         throw ERROR_NOT_COMPLETE.createWithContext(var1);
+   public Coordinates parse(final StringReader reader) throws CommandSyntaxException {
+      int start = reader.getCursor();
+      if (!reader.canRead()) {
+         throw ERROR_NOT_COMPLETE.createWithContext(reader);
       } else {
-         WorldCoordinate var3 = WorldCoordinate.parseDouble(var1, false);
-         if (var1.canRead() && var1.peek() == ' ') {
-            var1.skip();
-            WorldCoordinate var4 = WorldCoordinate.parseDouble(var1, false);
-            return new WorldCoordinates(var4, var3, new WorldCoordinate(true, 0.0));
+         WorldCoordinate y = WorldCoordinate.parseDouble(reader, false);
+         if (reader.canRead() && reader.peek() == ' ') {
+            reader.skip();
+            WorldCoordinate x = WorldCoordinate.parseDouble(reader, false);
+            return new WorldCoordinates(x, y, new WorldCoordinate(true, 0.0));
          } else {
-            var1.setCursor(var2);
-            throw ERROR_NOT_COMPLETE.createWithContext(var1);
+            reader.setCursor(start);
+            throw ERROR_NOT_COMPLETE.createWithContext(reader);
          }
       }
    }
 
    public Collection<String> getExamples() {
       return EXAMPLES;
-   }
-
-   // $FF: synthetic method
-   public Object parse(final StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1);
    }
 }

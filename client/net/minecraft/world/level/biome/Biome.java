@@ -5,6 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.Long2FloatLinkedOpenHashMap;
+import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -33,12 +34,12 @@ import net.minecraft.world.level.material.Fluids;
 import org.jspecify.annotations.Nullable;
 
 public final class Biome {
-   public static final Codec<Biome> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(Biome.ClimateSettings.CODEC.forGetter((var0x) -> var0x.climateSettings), EnvironmentAttributeMap.CODEC_ONLY_POSITIONAL.optionalFieldOf("attributes", EnvironmentAttributeMap.EMPTY).forGetter((var0x) -> var0x.attributes), BiomeSpecialEffects.CODEC.fieldOf("effects").forGetter((var0x) -> var0x.specialEffects), BiomeGenerationSettings.CODEC.forGetter((var0x) -> var0x.generationSettings), MobSpawnSettings.CODEC.forGetter((var0x) -> var0x.mobSettings)).apply(var0, Biome::new));
-   public static final Codec<Biome> NETWORK_CODEC = RecordCodecBuilder.create((var0) -> var0.group(Biome.ClimateSettings.CODEC.forGetter((var0x) -> var0x.climateSettings), EnvironmentAttributeMap.NETWORK_CODEC.optionalFieldOf("attributes", EnvironmentAttributeMap.EMPTY).forGetter((var0x) -> var0x.attributes), BiomeSpecialEffects.CODEC.fieldOf("effects").forGetter((var0x) -> var0x.specialEffects)).apply(var0, (var0x, var1, var2) -> new Biome(var0x, var1, var2, BiomeGenerationSettings.EMPTY, MobSpawnSettings.EMPTY)));
+   public static final Codec<Biome> DIRECT_CODEC = RecordCodecBuilder.create((i) -> i.group(Biome.ClimateSettings.CODEC.forGetter((b) -> b.climateSettings), EnvironmentAttributeMap.CODEC_ONLY_POSITIONAL.optionalFieldOf("attributes", EnvironmentAttributeMap.EMPTY).forGetter((b) -> b.attributes), BiomeSpecialEffects.CODEC.fieldOf("effects").forGetter((b) -> b.specialEffects), BiomeGenerationSettings.CODEC.forGetter((b) -> b.generationSettings), MobSpawnSettings.CODEC.forGetter((b) -> b.mobSettings)).apply(i, Biome::new));
+   public static final Codec<Biome> NETWORK_CODEC = RecordCodecBuilder.create((i) -> i.group(Biome.ClimateSettings.CODEC.forGetter((b) -> b.climateSettings), EnvironmentAttributeMap.NETWORK_CODEC.optionalFieldOf("attributes", EnvironmentAttributeMap.EMPTY).forGetter((b) -> b.attributes), BiomeSpecialEffects.CODEC.fieldOf("effects").forGetter((b) -> b.specialEffects)).apply(i, (climateSettings, attributes, specialEffects) -> new Biome(climateSettings, attributes, specialEffects, BiomeGenerationSettings.EMPTY, MobSpawnSettings.EMPTY)));
    public static final Codec<Holder<Biome>> CODEC;
    public static final Codec<HolderSet<Biome>> LIST_CODEC;
    private static final PerlinSimplexNoise TEMPERATURE_NOISE;
-   static final PerlinSimplexNoise FROZEN_TEMPERATURE_NOISE;
+   private static final PerlinSimplexNoise FROZEN_TEMPERATURE_NOISE;
    /** @deprecated */
    @Deprecated(
       forRemoval = true
@@ -51,21 +52,25 @@ public final class Biome {
    private final EnvironmentAttributeMap attributes;
    private final BiomeSpecialEffects specialEffects;
    private final ThreadLocal<Long2FloatLinkedOpenHashMap> temperatureCache = ThreadLocal.withInitial(() -> {
-      Long2FloatLinkedOpenHashMap var1 = new Long2FloatLinkedOpenHashMap(1024, 0.25F) {
-         protected void rehash(int var1) {
+      Long2FloatLinkedOpenHashMap map = new Long2FloatLinkedOpenHashMap(1024, 0.25F) {
+         {
+            Objects.requireNonNull(Biome.this);
+         }
+
+         protected void rehash(final int newN) {
          }
       };
-      var1.defaultReturnValue(0.0F / 0.0F);
-      return var1;
+      map.defaultReturnValue(0.0F / 0.0F);
+      return map;
    });
 
-   Biome(ClimateSettings var1, EnvironmentAttributeMap var2, BiomeSpecialEffects var3, BiomeGenerationSettings var4, MobSpawnSettings var5) {
+   private Biome(final ClimateSettings climateSettings, final EnvironmentAttributeMap attributes, final BiomeSpecialEffects specialEffects, final BiomeGenerationSettings generationSettings, final MobSpawnSettings mobSettings) {
       super();
-      this.climateSettings = var1;
-      this.generationSettings = var4;
-      this.mobSettings = var5;
-      this.attributes = var2;
-      this.specialEffects = var3;
+      this.climateSettings = climateSettings;
+      this.generationSettings = generationSettings;
+      this.mobSettings = mobSettings;
+      this.attributes = attributes;
+      this.specialEffects = specialEffects;
    }
 
    public MobSpawnSettings getMobSettings() {
@@ -76,62 +81,62 @@ public final class Biome {
       return this.climateSettings.hasPrecipitation();
    }
 
-   public Precipitation getPrecipitationAt(BlockPos var1, int var2) {
+   public Precipitation getPrecipitationAt(final BlockPos pos, final int seaLevel) {
       if (!this.hasPrecipitation()) {
          return Biome.Precipitation.NONE;
       } else {
-         return this.coldEnoughToSnow(var1, var2) ? Biome.Precipitation.SNOW : Biome.Precipitation.RAIN;
+         return this.coldEnoughToSnow(pos, seaLevel) ? Biome.Precipitation.SNOW : Biome.Precipitation.RAIN;
       }
    }
 
-   private float getHeightAdjustedTemperature(BlockPos var1, int var2) {
-      float var3 = this.climateSettings.temperatureModifier.modifyTemperature(var1, this.getBaseTemperature());
-      int var4 = var2 + 17;
-      if (var1.getY() > var4) {
-         float var5 = (float)(TEMPERATURE_NOISE.getValue((double)((float)var1.getX() / 8.0F), (double)((float)var1.getZ() / 8.0F), false) * 8.0);
-         return var3 - (var5 + (float)var1.getY() - (float)var4) * 0.05F / 40.0F;
+   private float getHeightAdjustedTemperature(final BlockPos pos, final int seaLevel) {
+      float adjustedTemperature = this.climateSettings.temperatureModifier.modifyTemperature(pos, this.getBaseTemperature());
+      int snowLevel = seaLevel + 17;
+      if (pos.getY() > snowLevel) {
+         float v = (float)(TEMPERATURE_NOISE.getValue((double)((float)pos.getX() / 8.0F), (double)((float)pos.getZ() / 8.0F), false) * 8.0);
+         return adjustedTemperature - (v + (float)pos.getY() - (float)snowLevel) * 0.05F / 40.0F;
       } else {
-         return var3;
+         return adjustedTemperature;
       }
    }
 
    /** @deprecated */
    @Deprecated
-   private float getTemperature(BlockPos var1, int var2) {
-      long var3 = var1.asLong();
-      Long2FloatLinkedOpenHashMap var5 = (Long2FloatLinkedOpenHashMap)this.temperatureCache.get();
-      float var6 = var5.get(var3);
-      if (!Float.isNaN(var6)) {
-         return var6;
+   private float getTemperature(final BlockPos pos, final int seaLevel) {
+      long key = pos.asLong();
+      Long2FloatLinkedOpenHashMap cache = (Long2FloatLinkedOpenHashMap)this.temperatureCache.get();
+      float cached = cache.get(key);
+      if (!Float.isNaN(cached)) {
+         return cached;
       } else {
-         float var7 = this.getHeightAdjustedTemperature(var1, var2);
-         if (var5.size() == 1024) {
-            var5.removeFirstFloat();
+         float temp = this.getHeightAdjustedTemperature(pos, seaLevel);
+         if (cache.size() == 1024) {
+            cache.removeFirstFloat();
          }
 
-         var5.put(var3, var7);
-         return var7;
+         cache.put(key, temp);
+         return temp;
       }
    }
 
-   public boolean shouldFreeze(LevelReader var1, BlockPos var2) {
-      return this.shouldFreeze(var1, var2, true);
+   public boolean shouldFreeze(final LevelReader level, final BlockPos pos) {
+      return this.shouldFreeze(level, pos, true);
    }
 
-   public boolean shouldFreeze(LevelReader var1, BlockPos var2, boolean var3) {
-      if (this.warmEnoughToRain(var2, var1.getSeaLevel())) {
+   public boolean shouldFreeze(final LevelReader level, final BlockPos pos, final boolean checkNeighbors) {
+      if (this.warmEnoughToRain(pos, level.getSeaLevel())) {
          return false;
       } else {
-         if (var1.isInsideBuildHeight(var2.getY()) && var1.getBrightness(LightLayer.BLOCK, var2) < 10) {
-            BlockState var4 = var1.getBlockState(var2);
-            FluidState var5 = var1.getFluidState(var2);
-            if (var5.getType() == Fluids.WATER && var4.getBlock() instanceof LiquidBlock) {
-               if (!var3) {
+         if (level.isInsideBuildHeight(pos.getY()) && level.getBrightness(LightLayer.BLOCK, pos) < 10) {
+            BlockState blockState = level.getBlockState(pos);
+            FluidState fluidState = level.getFluidState(pos);
+            if (fluidState.is(Fluids.WATER) && blockState.getBlock() instanceof LiquidBlock) {
+               if (!checkNeighbors) {
                   return true;
                }
 
-               boolean var6 = var1.isWaterAt(var2.west()) && var1.isWaterAt(var2.east()) && var1.isWaterAt(var2.north()) && var1.isWaterAt(var2.south());
-               if (!var6) {
+               boolean surroundedByWater = level.isWaterAt(pos.west()) && level.isWaterAt(pos.east()) && level.isWaterAt(pos.north()) && level.isWaterAt(pos.south());
+               if (!surroundedByWater) {
                   return true;
                }
             }
@@ -141,25 +146,25 @@ public final class Biome {
       }
    }
 
-   public boolean coldEnoughToSnow(BlockPos var1, int var2) {
-      return !this.warmEnoughToRain(var1, var2);
+   public boolean coldEnoughToSnow(final BlockPos pos, final int seaLevel) {
+      return !this.warmEnoughToRain(pos, seaLevel);
    }
 
-   public boolean warmEnoughToRain(BlockPos var1, int var2) {
-      return this.getTemperature(var1, var2) >= 0.15F;
+   public boolean warmEnoughToRain(final BlockPos pos, final int seaLevel) {
+      return this.getTemperature(pos, seaLevel) >= 0.15F;
    }
 
-   public boolean shouldMeltFrozenOceanIcebergSlightly(BlockPos var1, int var2) {
-      return this.getTemperature(var1, var2) > 0.1F;
+   public boolean shouldMeltFrozenOceanIcebergSlightly(final BlockPos pos, final int seaLevel) {
+      return this.getTemperature(pos, seaLevel) > 0.1F;
    }
 
-   public boolean shouldSnow(LevelReader var1, BlockPos var2) {
-      if (this.getPrecipitationAt(var2, var1.getSeaLevel()) != Biome.Precipitation.SNOW) {
+   public boolean shouldSnow(final LevelReader level, final BlockPos pos) {
+      if (this.getPrecipitationAt(pos, level.getSeaLevel()) != Biome.Precipitation.SNOW) {
          return false;
       } else {
-         if (var1.isInsideBuildHeight(var2.getY()) && var1.getBrightness(LightLayer.BLOCK, var2) < 10) {
-            BlockState var3 = var1.getBlockState(var2);
-            if ((var3.isAir() || var3.is(Blocks.SNOW)) && Blocks.SNOW.defaultBlockState().canSurvive(var1, var2)) {
+         if (level.isInsideBuildHeight(pos.getY()) && level.getBrightness(LightLayer.BLOCK, pos) < 10) {
+            BlockState state = level.getBlockState(pos);
+            if ((state.isAir() || state.is(Blocks.SNOW)) && Blocks.SNOW.defaultBlockState().canSurvive(level, pos)) {
                return true;
             }
          }
@@ -172,20 +177,20 @@ public final class Biome {
       return this.generationSettings;
    }
 
-   public int getGrassColor(double var1, double var3) {
-      int var5 = this.getBaseGrassColor();
-      return this.specialEffects.grassColorModifier().modifyColor(var1, var3, var5);
+   public int getGrassColor(final double x, final double z) {
+      int baseGrassColor = this.getBaseGrassColor();
+      return this.specialEffects.grassColorModifier().modifyColor(x, z, baseGrassColor);
    }
 
    private int getBaseGrassColor() {
-      Optional var1 = this.specialEffects.grassColorOverride();
-      return var1.isPresent() ? (Integer)var1.get() : this.getGrassColorFromTexture();
+      Optional<Integer> colorOverride = this.specialEffects.grassColorOverride();
+      return colorOverride.isPresent() ? (Integer)colorOverride.get() : this.getGrassColorFromTexture();
    }
 
    private int getGrassColorFromTexture() {
-      double var1 = (double)Mth.clamp(this.climateSettings.temperature, 0.0F, 1.0F);
-      double var3 = (double)Mth.clamp(this.climateSettings.downfall, 0.0F, 1.0F);
-      return GrassColor.get(var1, var3);
+      double temp = (double)Mth.clamp(this.climateSettings.temperature, 0.0F, 1.0F);
+      double rain = (double)Mth.clamp(this.climateSettings.downfall, 0.0F, 1.0F);
+      return GrassColor.get(temp, rain);
    }
 
    public int getFoliageColor() {
@@ -193,9 +198,9 @@ public final class Biome {
    }
 
    private int getFoliageColorFromTexture() {
-      double var1 = (double)Mth.clamp(this.climateSettings.temperature, 0.0F, 1.0F);
-      double var3 = (double)Mth.clamp(this.climateSettings.downfall, 0.0F, 1.0F);
-      return FoliageColor.get(var1, var3);
+      double temp = (double)Mth.clamp(this.climateSettings.temperature, 0.0F, 1.0F);
+      double rain = (double)Mth.clamp(this.climateSettings.downfall, 0.0F, 1.0F);
+      return FoliageColor.get(temp, rain);
    }
 
    public int getDryFoliageColor() {
@@ -203,9 +208,9 @@ public final class Biome {
    }
 
    private int getDryFoliageColorFromTexture() {
-      double var1 = (double)Mth.clamp(this.climateSettings.temperature, 0.0F, 1.0F);
-      double var3 = (double)Mth.clamp(this.climateSettings.downfall, 0.0F, 1.0F);
-      return DryFoliageColor.get(var1, var3);
+      double temp = (double)Mth.clamp(this.climateSettings.temperature, 0.0F, 1.0F);
+      double rain = (double)Mth.clamp(this.climateSettings.downfall, 0.0F, 1.0F);
+      return DryFoliageColor.get(temp, rain);
    }
 
    public float getBaseTemperature() {
@@ -240,8 +245,8 @@ public final class Biome {
       public static final Codec<Precipitation> CODEC = StringRepresentable.<Precipitation>fromEnum(Precipitation::values);
       private final String name;
 
-      private Precipitation(final String var3) {
-         this.name = var3;
+      private Precipitation(final String name) {
+         this.name = name;
       }
 
       public String getSerializedName() {
@@ -256,33 +261,33 @@ public final class Biome {
 
    public static enum TemperatureModifier implements StringRepresentable {
       NONE("none") {
-         public float modifyTemperature(BlockPos var1, float var2) {
-            return var2;
+         public float modifyTemperature(final BlockPos pos, final float baseTemperature) {
+            return baseTemperature;
          }
       },
       FROZEN("frozen") {
-         public float modifyTemperature(BlockPos var1, float var2) {
-            double var3 = Biome.FROZEN_TEMPERATURE_NOISE.getValue((double)var1.getX() * 0.05, (double)var1.getZ() * 0.05, false) * 7.0;
-            double var5 = Biome.BIOME_INFO_NOISE.getValue((double)var1.getX() * 0.2, (double)var1.getZ() * 0.2, false);
-            double var7 = var3 + var5;
-            if (var7 < 0.3) {
-               double var9 = Biome.BIOME_INFO_NOISE.getValue((double)var1.getX() * 0.09, (double)var1.getZ() * 0.09, false);
-               if (var9 < 0.8) {
+         public float modifyTemperature(final BlockPos pos, final float baseTemperature) {
+            double groundValueLargeVariation = Biome.FROZEN_TEMPERATURE_NOISE.getValue((double)pos.getX() * 0.05, (double)pos.getZ() * 0.05, false) * 7.0;
+            double groundValueEdgeVariation = Biome.BIOME_INFO_NOISE.getValue((double)pos.getX() * 0.2, (double)pos.getZ() * 0.2, false);
+            double icePatches = groundValueLargeVariation + groundValueEdgeVariation;
+            if (icePatches < 0.3) {
+               double groundValueSmallVariation = Biome.BIOME_INFO_NOISE.getValue((double)pos.getX() * 0.09, (double)pos.getZ() * 0.09, false);
+               if (groundValueSmallVariation < 0.8) {
                   return 0.2F;
                }
             }
 
-            return var2;
+            return baseTemperature;
          }
       };
 
       private final String name;
       public static final Codec<TemperatureModifier> CODEC = StringRepresentable.<TemperatureModifier>fromEnum(TemperatureModifier::values);
 
-      public abstract float modifyTemperature(BlockPos var1, float var2);
+      public abstract float modifyTemperature(final BlockPos pos, final float baseTemperature);
 
-      TemperatureModifier(final String var3) {
-         this.name = var3;
+      private TemperatureModifier(final String name) {
+         this.name = name;
       }
 
       public String getName() {
@@ -315,57 +320,57 @@ public final class Biome {
          this.attributes = EnvironmentAttributeMap.builder();
       }
 
-      public BiomeBuilder hasPrecipitation(boolean var1) {
-         this.hasPrecipitation = var1;
+      public BiomeBuilder hasPrecipitation(final boolean hasPrecipitation) {
+         this.hasPrecipitation = hasPrecipitation;
          return this;
       }
 
-      public BiomeBuilder temperature(float var1) {
-         this.temperature = var1;
+      public BiomeBuilder temperature(final float temperature) {
+         this.temperature = temperature;
          return this;
       }
 
-      public BiomeBuilder downfall(float var1) {
-         this.downfall = var1;
+      public BiomeBuilder downfall(final float downfall) {
+         this.downfall = downfall;
          return this;
       }
 
-      public BiomeBuilder putAttributes(EnvironmentAttributeMap var1) {
-         this.attributes.putAll(var1);
+      public BiomeBuilder putAttributes(final EnvironmentAttributeMap attributes) {
+         this.attributes.putAll(attributes);
          return this;
       }
 
-      public BiomeBuilder putAttributes(EnvironmentAttributeMap.Builder var1) {
-         return this.putAttributes(var1.build());
+      public BiomeBuilder putAttributes(final EnvironmentAttributeMap.Builder attributes) {
+         return this.putAttributes(attributes.build());
       }
 
-      public <Value> BiomeBuilder setAttribute(EnvironmentAttribute<Value> var1, Value var2) {
-         this.attributes.set(var1, var2);
+      public <Value> BiomeBuilder setAttribute(final EnvironmentAttribute<Value> attribute, final Value value) {
+         this.attributes.set(attribute, value);
          return this;
       }
 
-      public <Value, Parameter> BiomeBuilder modifyAttribute(EnvironmentAttribute<Value> var1, AttributeModifier<Value, Parameter> var2, Parameter var3) {
-         this.attributes.modify(var1, var2, var3);
+      public <Value, Parameter> BiomeBuilder modifyAttribute(final EnvironmentAttribute<Value> attribute, final AttributeModifier<Value, Parameter> modifier, final Parameter value) {
+         this.attributes.modify(attribute, modifier, value);
          return this;
       }
 
-      public BiomeBuilder specialEffects(BiomeSpecialEffects var1) {
-         this.specialEffects = var1;
+      public BiomeBuilder specialEffects(final BiomeSpecialEffects specialEffects) {
+         this.specialEffects = specialEffects;
          return this;
       }
 
-      public BiomeBuilder mobSpawnSettings(MobSpawnSettings var1) {
-         this.mobSpawnSettings = var1;
+      public BiomeBuilder mobSpawnSettings(final MobSpawnSettings mobSpawnSettings) {
+         this.mobSpawnSettings = mobSpawnSettings;
          return this;
       }
 
-      public BiomeBuilder generationSettings(BiomeGenerationSettings var1) {
-         this.generationSettings = var1;
+      public BiomeBuilder generationSettings(final BiomeGenerationSettings generationSettings) {
+         this.generationSettings = generationSettings;
          return this;
       }
 
-      public BiomeBuilder temperatureAdjustment(TemperatureModifier var1) {
-         this.temperatureModifier = var1;
+      public BiomeBuilder temperatureAdjustment(final TemperatureModifier temperatureModifier) {
+         this.temperatureModifier = temperatureModifier;
          return this;
       }
 
@@ -383,18 +388,11 @@ public final class Biome {
       }
    }
 
-   static record ClimateSettings(boolean hasPrecipitation, float temperature, TemperatureModifier temperatureModifier, float downfall) {
-      final float temperature;
-      final TemperatureModifier temperatureModifier;
-      final float downfall;
-      public static final MapCodec<ClimateSettings> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.fieldOf("has_precipitation").forGetter((var0x) -> var0x.hasPrecipitation), Codec.FLOAT.fieldOf("temperature").forGetter((var0x) -> var0x.temperature), Biome.TemperatureModifier.CODEC.optionalFieldOf("temperature_modifier", Biome.TemperatureModifier.NONE).forGetter((var0x) -> var0x.temperatureModifier), Codec.FLOAT.fieldOf("downfall").forGetter((var0x) -> var0x.downfall)).apply(var0, ClimateSettings::new));
+   private static record ClimateSettings(boolean hasPrecipitation, float temperature, TemperatureModifier temperatureModifier, float downfall) {
+      public static final MapCodec<ClimateSettings> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.BOOL.fieldOf("has_precipitation").forGetter((b) -> b.hasPrecipitation), Codec.FLOAT.fieldOf("temperature").forGetter((b) -> b.temperature), Biome.TemperatureModifier.CODEC.optionalFieldOf("temperature_modifier", Biome.TemperatureModifier.NONE).forGetter((b) -> b.temperatureModifier), Codec.FLOAT.fieldOf("downfall").forGetter((b) -> b.downfall)).apply(i, ClimateSettings::new));
 
-      ClimateSettings(boolean var1, float var2, TemperatureModifier var3, float var4) {
+      private ClimateSettings {
          super();
-         this.hasPrecipitation = var1;
-         this.temperature = var2;
-         this.temperatureModifier = var3;
-         this.downfall = var4;
       }
    }
 }

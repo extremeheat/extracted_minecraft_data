@@ -33,77 +33,77 @@ public class TargetBlock extends Block {
       return CODEC;
    }
 
-   public TargetBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public TargetBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(OUTPUT_POWER, 0));
    }
 
-   protected void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
-      int var5 = updateRedstoneOutput(var1, var2, var3, var4);
-      Entity var6 = var4.getOwner();
-      if (var6 instanceof ServerPlayer var7) {
-         var7.awardStat(Stats.TARGET_HIT);
-         CriteriaTriggers.TARGET_BLOCK_HIT.trigger(var7, var4, var3.getLocation(), var5);
+   protected void onProjectileHit(final Level level, final BlockState state, final BlockHitResult hitResult, final Projectile projectile) {
+      int outputStrength = updateRedstoneOutput(level, state, hitResult, projectile);
+      Entity owner = projectile.getOwner();
+      if (owner instanceof ServerPlayer playerOwner) {
+         playerOwner.awardStat(Stats.TARGET_HIT);
+         CriteriaTriggers.TARGET_BLOCK_HIT.trigger(playerOwner, projectile, hitResult.getLocation(), outputStrength);
       }
 
    }
 
-   private static int updateRedstoneOutput(LevelAccessor var0, BlockState var1, BlockHitResult var2, Entity var3) {
-      int var4 = getRedstoneStrength(var2, var2.getLocation());
-      int var5 = var3 instanceof AbstractArrow ? 20 : 8;
-      if (!var0.getBlockTicks().hasScheduledTick(var2.getBlockPos(), var1.getBlock())) {
-         setOutputPower(var0, var1, var4, var2.getBlockPos(), var5);
+   private static int updateRedstoneOutput(final LevelAccessor level, final BlockState state, final BlockHitResult hitResult, final Entity entity) {
+      int redstoneStrength = getRedstoneStrength(hitResult, hitResult.getLocation());
+      int duration = entity instanceof AbstractArrow ? 20 : 8;
+      if (!level.getBlockTicks().hasScheduledTick(hitResult.getBlockPos(), state.getBlock())) {
+         setOutputPower(level, state, redstoneStrength, hitResult.getBlockPos(), duration);
       }
 
-      return var4;
+      return redstoneStrength;
    }
 
-   private static int getRedstoneStrength(BlockHitResult var0, Vec3 var1) {
-      Direction var2 = var0.getDirection();
-      double var3 = Math.abs(Mth.frac(var1.x) - 0.5);
-      double var5 = Math.abs(Mth.frac(var1.y) - 0.5);
-      double var7 = Math.abs(Mth.frac(var1.z) - 0.5);
-      Direction.Axis var11 = var2.getAxis();
-      double var9;
-      if (var11 == Direction.Axis.Y) {
-         var9 = Math.max(var3, var7);
-      } else if (var11 == Direction.Axis.Z) {
-         var9 = Math.max(var3, var5);
+   private static int getRedstoneStrength(final BlockHitResult hitResult, final Vec3 hitLocation) {
+      Direction hitDirection = hitResult.getDirection();
+      double distX = Math.abs(Mth.frac(hitLocation.x) - 0.5);
+      double distY = Math.abs(Mth.frac(hitLocation.y) - 0.5);
+      double distZ = Math.abs(Mth.frac(hitLocation.z) - 0.5);
+      Direction.Axis axis = hitDirection.getAxis();
+      double distance;
+      if (axis == Direction.Axis.Y) {
+         distance = Math.max(distX, distZ);
+      } else if (axis == Direction.Axis.Z) {
+         distance = Math.max(distX, distY);
       } else {
-         var9 = Math.max(var5, var7);
+         distance = Math.max(distY, distZ);
       }
 
-      return Math.max(1, Mth.ceil(15.0 * Mth.clamp((0.5 - var9) / 0.5, 0.0, 1.0)));
+      return Math.max(1, Mth.ceil(15.0 * Mth.clamp((0.5 - distance) / 0.5, 0.0, 1.0)));
    }
 
-   private static void setOutputPower(LevelAccessor var0, BlockState var1, int var2, BlockPos var3, int var4) {
-      var0.setBlock(var3, (BlockState)var1.setValue(OUTPUT_POWER, var2), 3);
-      var0.scheduleTick(var3, var1.getBlock(), var4);
+   private static void setOutputPower(final LevelAccessor level, final BlockState state, final int outputStrength, final BlockPos pos, final int duration) {
+      level.setBlock(pos, (BlockState)state.setValue(OUTPUT_POWER, outputStrength), 3);
+      level.scheduleTick(pos, state.getBlock(), duration);
    }
 
-   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if ((Integer)var1.getValue(OUTPUT_POWER) != 0) {
-         var2.setBlock(var3, (BlockState)var1.setValue(OUTPUT_POWER, 0), 3);
+   protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if ((Integer)state.getValue(OUTPUT_POWER) != 0) {
+         level.setBlock(pos, (BlockState)state.setValue(OUTPUT_POWER, 0), 3);
       }
 
    }
 
-   protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
-      return (Integer)var1.getValue(OUTPUT_POWER);
+   protected int getSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
+      return (Integer)state.getValue(OUTPUT_POWER);
    }
 
-   protected boolean isSignalSource(BlockState var1) {
+   protected boolean isSignalSource(final BlockState state) {
       return true;
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(OUTPUT_POWER);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(OUTPUT_POWER);
    }
 
-   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var2.isClientSide() && !var1.is(var4.getBlock())) {
-         if ((Integer)var1.getValue(OUTPUT_POWER) > 0 && !var2.getBlockTicks().hasScheduledTick(var3, this)) {
-            var2.setBlock(var3, (BlockState)var1.setValue(OUTPUT_POWER, 0), 18);
+   protected void onPlace(final BlockState state, final Level level, final BlockPos pos, final BlockState oldState, final boolean movedByPiston) {
+      if (!level.isClientSide() && !state.is(oldState.getBlock())) {
+         if ((Integer)state.getValue(OUTPUT_POWER) > 0 && !level.getBlockTicks().hasScheduledTick(pos, this)) {
+            level.setBlock(pos, (BlockState)state.setValue(OUTPUT_POWER, 0), 18);
          }
 
       }

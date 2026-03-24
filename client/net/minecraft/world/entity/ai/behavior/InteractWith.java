@@ -15,21 +15,21 @@ public class InteractWith {
       super();
    }
 
-   public static <T extends LivingEntity> BehaviorControl<LivingEntity> of(EntityType<? extends T> var0, int var1, MemoryModuleType<T> var2, float var3, int var4) {
-      return of(var0, var1, (var0x) -> true, (var0x) -> true, var2, var3, var4);
+   public static <T extends LivingEntity> BehaviorControl<LivingEntity> of(final EntityType<? extends T> type, final int interactionRange, final MemoryModuleType<T> interactionTarget, final float speedModifier, final int stopDistance) {
+      return of(type, interactionRange, (mob) -> true, (mob) -> true, interactionTarget, speedModifier, stopDistance);
    }
 
-   public static <E extends LivingEntity, T extends LivingEntity> BehaviorControl<E> of(EntityType<? extends T> var0, int var1, Predicate<E> var2, Predicate<T> var3, MemoryModuleType<T> var4, float var5, int var6) {
-      int var7 = var1 * var1;
-      Predicate var8 = (var2x) -> var0.equals(var2x.getType()) && var3.test(var2x);
-      return BehaviorBuilder.create((Function)((var6x) -> var6x.group(var6x.registered(var4), var6x.registered(MemoryModuleType.LOOK_TARGET), var6x.absent(MemoryModuleType.WALK_TARGET), var6x.present(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)).apply(var6x, (var6xx, var7x, var8x, var9) -> (var10, var11, var12) -> {
-               NearestVisibleLivingEntities var14 = (NearestVisibleLivingEntities)var6x.get(var9);
-               if (var2.test(var11) && var14.contains(var8)) {
-                  Optional var15 = var14.findClosest((var3) -> var3.distanceToSqr(var11) <= (double)var7 && var8.test(var3));
-                  var15.ifPresent((var5x) -> {
-                     var6xx.set(var5x);
-                     var7x.set(new EntityTracker(var5x, true));
-                     var8x.set(new WalkTarget(new EntityTracker(var5x, false), var5, var6));
+   public static <E extends LivingEntity, T extends LivingEntity> BehaviorControl<E> of(final EntityType<? extends T> type, final int interactionRange, final Predicate<E> selfFilter, final Predicate<T> targetFilter, final MemoryModuleType<T> interactionTarget, final float speedModifier, final int stopDistance) {
+      int interactionRangeSqr = interactionRange * interactionRange;
+      Predicate<LivingEntity> isTargetValid = (mob) -> mob.is(type) && targetFilter.test(mob);
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.registered(interactionTarget), i.registered(MemoryModuleType.LOOK_TARGET), i.absent(MemoryModuleType.WALK_TARGET), i.present(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)).apply(i, (target, lookTarget, walkTarget, nearestEntities) -> (level, body, timestamp) -> {
+               NearestVisibleLivingEntities entities = (NearestVisibleLivingEntities)i.get(nearestEntities);
+               if (selfFilter.test(body) && entities.contains(isTargetValid)) {
+                  Optional<LivingEntity> closest = entities.findClosest((mob) -> mob.distanceToSqr(body) <= (double)interactionRangeSqr && isTargetValid.test(mob));
+                  closest.ifPresent((mob) -> {
+                     target.set(mob);
+                     lookTarget.set(new EntityTracker(mob, true));
+                     walkTarget.set(new WalkTarget(new EntityTracker(mob, false), speedModifier, stopDistance));
                   });
                   return true;
                } else {

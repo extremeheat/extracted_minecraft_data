@@ -13,7 +13,6 @@ import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
@@ -31,7 +30,6 @@ import net.minecraft.world.attribute.EnvironmentAttributeReader;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.WorldGenLevel;
@@ -73,91 +71,91 @@ public class WorldGenRegion implements WorldGenLevel {
    private final LevelData levelData;
    private final RandomSource random;
    private final DimensionType dimensionType;
-   private final WorldGenTickAccess<Block> blockTicks = new WorldGenTickAccess<Block>((var1x) -> this.getChunk(var1x).getBlockTicks());
-   private final WorldGenTickAccess<Fluid> fluidTicks = new WorldGenTickAccess<Fluid>((var1x) -> this.getChunk(var1x).getFluidTicks());
+   private final WorldGenTickAccess<Block> blockTicks = new WorldGenTickAccess<Block>((pos) -> this.getChunk(pos).getBlockTicks());
+   private final WorldGenTickAccess<Fluid> fluidTicks = new WorldGenTickAccess<Fluid>((pos) -> this.getChunk(pos).getFluidTicks());
    private final BiomeManager biomeManager;
    private final ChunkStep generatingStep;
    private @Nullable Supplier<String> currentlyGenerating;
    private final AtomicLong subTickCount = new AtomicLong();
    private static final Identifier WORLDGEN_REGION_RANDOM = Identifier.withDefaultNamespace("worldgen_region_random");
 
-   public WorldGenRegion(ServerLevel var1, StaticCache2D<GenerationChunkHolder> var2, ChunkStep var3, ChunkAccess var4) {
+   public WorldGenRegion(final ServerLevel level, final StaticCache2D<GenerationChunkHolder> cache, final ChunkStep generatingStep, final ChunkAccess center) {
       super();
-      this.generatingStep = var3;
-      this.cache = var2;
-      this.center = var4;
-      this.level = var1;
-      this.seed = var1.getSeed();
-      this.levelData = var1.getLevelData();
-      this.random = var1.getChunkSource().randomState().getOrCreateRandomFactory(WORLDGEN_REGION_RANDOM).at(this.center.getPos().getWorldPosition());
-      this.dimensionType = var1.dimensionType();
+      this.generatingStep = generatingStep;
+      this.cache = cache;
+      this.center = center;
+      this.level = level;
+      this.seed = level.getSeed();
+      this.levelData = level.getLevelData();
+      this.random = level.getChunkSource().randomState().getOrCreateRandomFactory(WORLDGEN_REGION_RANDOM).at(this.center.getPos().getWorldPosition());
+      this.dimensionType = level.dimensionType();
       this.biomeManager = new BiomeManager(this, BiomeManager.obfuscateSeed(this.seed));
    }
 
-   public boolean isOldChunkAround(ChunkPos var1, int var2) {
-      return this.level.getChunkSource().chunkMap.isOldChunkAround(var1, var2);
+   public boolean isOldChunkAround(final ChunkPos pos, final int range) {
+      return this.level.getChunkSource().chunkMap.isOldChunkAround(pos, range);
    }
 
    public ChunkPos getCenter() {
       return this.center.getPos();
    }
 
-   public void setCurrentlyGenerating(@Nullable Supplier<String> var1) {
-      this.currentlyGenerating = var1;
+   public void setCurrentlyGenerating(final @Nullable Supplier<String> currentlyGenerating) {
+      this.currentlyGenerating = currentlyGenerating;
    }
 
-   public ChunkAccess getChunk(int var1, int var2) {
-      return this.getChunk(var1, var2, ChunkStatus.EMPTY);
+   public ChunkAccess getChunk(final int chunkX, final int chunkZ) {
+      return this.getChunk(chunkX, chunkZ, ChunkStatus.EMPTY);
    }
 
-   public @Nullable ChunkAccess getChunk(int var1, int var2, ChunkStatus var3, boolean var4) {
-      int var5 = this.center.getPos().getChessboardDistance(var1, var2);
-      ChunkStatus var6 = var5 >= this.generatingStep.directDependencies().size() ? null : this.generatingStep.directDependencies().get(var5);
-      GenerationChunkHolder var7;
-      if (var6 != null) {
-         var7 = this.cache.get(var1, var2);
-         if (var3.isOrBefore(var6)) {
-            ChunkAccess var8 = var7.getChunkIfPresentUnchecked(var6);
-            if (var8 != null) {
-               return var8;
+   public @Nullable ChunkAccess getChunk(final int chunkX, final int chunkZ, final ChunkStatus targetStatus, final boolean loadOrGenerate) {
+      int distance = this.center.getPos().getChessboardDistance(chunkX, chunkZ);
+      ChunkStatus maxAllowedStatus = distance >= this.generatingStep.directDependencies().size() ? null : this.generatingStep.directDependencies().get(distance);
+      GenerationChunkHolder chunkHolder;
+      if (maxAllowedStatus != null) {
+         chunkHolder = this.cache.get(chunkX, chunkZ);
+         if (targetStatus.isOrBefore(maxAllowedStatus)) {
+            ChunkAccess chunk = chunkHolder.getChunkIfPresentUnchecked(maxAllowedStatus);
+            if (chunk != null) {
+               return chunk;
             }
          }
       } else {
-         var7 = null;
+         chunkHolder = null;
       }
 
-      CrashReport var10 = CrashReport.forThrowable(new IllegalStateException("Requested chunk unavailable during world generation"), "Exception generating new chunk");
-      CrashReportCategory var9 = var10.addCategory("Chunk request details");
-      var9.setDetail("Requested chunk", String.format(Locale.ROOT, "%d, %d", var1, var2));
-      var9.setDetail("Generating status", (CrashReportDetail)(() -> this.generatingStep.targetStatus().getName()));
-      Objects.requireNonNull(var3);
-      var9.setDetail("Requested status", var3::getName);
-      var9.setDetail("Actual status", (CrashReportDetail)(() -> var7 == null ? "[out of cache bounds]" : var7.getPersistedStatus().getName()));
-      var9.setDetail("Maximum allowed status", (CrashReportDetail)(() -> var6 == null ? "null" : var6.getName()));
+      CrashReport report = CrashReport.forThrowable(new IllegalStateException("Requested chunk unavailable during world generation"), "Exception generating new chunk");
+      CrashReportCategory category = report.addCategory("Chunk request details");
+      category.setDetail("Requested chunk", String.format(Locale.ROOT, "%d, %d", chunkX, chunkZ));
+      category.setDetail("Generating status", (CrashReportDetail)(() -> this.generatingStep.targetStatus().getName()));
+      Objects.requireNonNull(targetStatus);
+      category.setDetail("Requested status", targetStatus::getName);
+      category.setDetail("Actual status", (CrashReportDetail)(() -> chunkHolder == null ? "[out of cache bounds]" : chunkHolder.getPersistedStatus().getName()));
+      category.setDetail("Maximum allowed status", (CrashReportDetail)(() -> maxAllowedStatus == null ? "null" : maxAllowedStatus.getName()));
       ChunkDependencies var10002 = this.generatingStep.directDependencies();
       Objects.requireNonNull(var10002);
-      var9.setDetail("Dependencies", var10002::toString);
-      var9.setDetail("Requested distance", var5);
+      category.setDetail("Dependencies", var10002::toString);
+      category.setDetail("Requested distance", distance);
       ChunkPos var11 = this.center.getPos();
       Objects.requireNonNull(var11);
-      var9.setDetail("Generating chunk", var11::toString);
-      throw new ReportedException(var10);
+      category.setDetail("Generating chunk", var11::toString);
+      throw new ReportedException(report);
    }
 
-   public boolean hasChunk(int var1, int var2) {
-      int var3 = this.center.getPos().getChessboardDistance(var1, var2);
-      return var3 < this.generatingStep.directDependencies().size();
+   public boolean hasChunk(final int chunkX, final int chunkZ) {
+      int distance = this.center.getPos().getChessboardDistance(chunkX, chunkZ);
+      return distance < this.generatingStep.directDependencies().size();
    }
 
-   public BlockState getBlockState(BlockPos var1) {
-      return this.getChunk(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getZ())).getBlockState(var1);
+   public BlockState getBlockState(final BlockPos pos) {
+      return this.getChunk(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ())).getBlockState(pos);
    }
 
-   public FluidState getFluidState(BlockPos var1) {
-      return this.getChunk(var1).getFluidState(var1);
+   public FluidState getFluidState(final BlockPos pos) {
+      return this.getChunk(pos).getFluidState(pos);
    }
 
-   public @Nullable Player getNearestPlayer(double var1, double var3, double var5, double var7, @Nullable Predicate<Entity> var9) {
+   public @Nullable Player getNearestPlayer(final double x, final double y, final double z, final double maxDist, final @Nullable Predicate<Entity> predicate) {
       return null;
    }
 
@@ -169,137 +167,127 @@ public class WorldGenRegion implements WorldGenLevel {
       return this.biomeManager;
    }
 
-   public Holder<Biome> getUncachedNoiseBiome(int var1, int var2, int var3) {
-      return this.level.getUncachedNoiseBiome(var1, var2, var3);
-   }
-
-   public float getShade(Direction var1, boolean var2) {
-      return 1.0F;
+   public Holder<Biome> getUncachedNoiseBiome(final int quartX, final int quartY, final int quartZ) {
+      return this.level.getUncachedNoiseBiome(quartX, quartY, quartZ);
    }
 
    public LevelLightEngine getLightEngine() {
       return this.level.getLightEngine();
    }
 
-   public boolean destroyBlock(BlockPos var1, boolean var2, @Nullable Entity var3, int var4) {
-      BlockState var5 = this.getBlockState(var1);
-      if (var5.isAir()) {
-         return false;
-      } else {
-         if (var2) {
-            BlockEntity var6 = var5.hasBlockEntity() ? this.getBlockEntity(var1) : null;
-            Block.dropResources(var5, this.level, var1, var6, var3, ItemStack.EMPTY);
-         }
-
-         return this.setBlock(var1, Blocks.AIR.defaultBlockState(), 3, var4);
-      }
+   public boolean destroyBlock(final BlockPos pos, final boolean dropResources, final @Nullable Entity breaker, final int updateLimit) {
+      BlockState blockState = this.getBlockState(pos);
+      return blockState.isAir() ? false : this.setBlock(pos, Blocks.AIR.defaultBlockState(), 3, updateLimit);
    }
 
-   public @Nullable BlockEntity getBlockEntity(BlockPos var1) {
-      ChunkAccess var2 = this.getChunk(var1);
-      BlockEntity var3 = var2.getBlockEntity(var1);
-      if (var3 != null) {
-         return var3;
+   public @Nullable BlockEntity getBlockEntity(final BlockPos pos) {
+      ChunkAccess chunk = this.getChunk(pos);
+      BlockEntity blockEntity = chunk.getBlockEntity(pos);
+      if (blockEntity != null) {
+         return blockEntity;
       } else {
-         CompoundTag var4 = var2.getBlockEntityNbt(var1);
-         BlockState var5 = var2.getBlockState(var1);
-         if (var4 != null) {
-            if ("DUMMY".equals(var4.getStringOr("id", ""))) {
-               if (!var5.hasBlockEntity()) {
+         CompoundTag tag = chunk.getBlockEntityNbt(pos);
+         BlockState state = chunk.getBlockState(pos);
+         if (tag != null) {
+            if ("DUMMY".equals(tag.getStringOr("id", ""))) {
+               if (!state.hasBlockEntity()) {
                   return null;
                }
 
-               var3 = ((EntityBlock)var5.getBlock()).newBlockEntity(var1, var5);
+               blockEntity = ((EntityBlock)state.getBlock()).newBlockEntity(pos, state);
             } else {
-               var3 = BlockEntity.loadStatic(var1, var5, var4, this.level.registryAccess());
+               blockEntity = BlockEntity.loadStatic(pos, state, tag, this.level.registryAccess());
             }
 
-            if (var3 != null) {
-               var2.setBlockEntity(var3);
-               return var3;
+            if (blockEntity != null) {
+               chunk.setBlockEntity(blockEntity);
+               return blockEntity;
             }
          }
 
-         if (var5.hasBlockEntity()) {
-            LOGGER.warn("Tried to access a block entity before it was created. {}", var1);
+         if (state.hasBlockEntity()) {
+            LOGGER.warn("Tried to access a block entity before it was created. {}", pos);
          }
 
          return null;
       }
    }
 
-   public boolean ensureCanWrite(BlockPos var1) {
-      int var2 = SectionPos.blockToSectionCoord(var1.getX());
-      int var3 = SectionPos.blockToSectionCoord(var1.getZ());
-      ChunkPos var4 = this.getCenter();
-      int var5 = Math.abs(var4.x - var2);
-      int var6 = Math.abs(var4.z - var3);
-      if (var5 <= this.generatingStep.blockStateWriteRadius() && var6 <= this.generatingStep.blockStateWriteRadius()) {
+   public boolean ensureCanWrite(final BlockPos pos) {
+      int chunkX = SectionPos.blockToSectionCoord(pos.getX());
+      int chunkZ = SectionPos.blockToSectionCoord(pos.getZ());
+      ChunkPos centerPos = this.getCenter();
+      int distanceX = Math.abs(centerPos.x() - chunkX);
+      int distanceZ = Math.abs(centerPos.z() - chunkZ);
+      if (distanceX <= this.generatingStep.blockStateWriteRadius() && distanceZ <= this.generatingStep.blockStateWriteRadius()) {
          if (this.center.isUpgrading()) {
-            LevelHeightAccessor var7 = this.center.getHeightAccessorForGeneration();
-            if (var7.isOutsideBuildHeight(var1.getY())) {
+            LevelHeightAccessor levelHeightAccessor = this.center.getHeightAccessorForGeneration();
+            if (levelHeightAccessor.isOutsideBuildHeight(pos.getY())) {
                return false;
             }
          }
 
          return true;
       } else {
-         Util.logAndPauseIfInIde("Detected setBlock in a far chunk [" + var2 + ", " + var3 + "], pos: " + String.valueOf(var1) + ", status: " + String.valueOf(this.generatingStep.targetStatus()) + (this.currentlyGenerating == null ? "" : ", currently generating: " + (String)this.currentlyGenerating.get()));
+         Util.logAndPauseIfInIde("Detected setBlock in a far chunk [" + chunkX + ", " + chunkZ + "], pos: " + String.valueOf(pos) + ", status: " + String.valueOf(this.generatingStep.targetStatus()) + (this.currentlyGenerating == null ? "" : ", currently generating: " + (String)this.currentlyGenerating.get()));
          return false;
       }
    }
 
-   public boolean setBlock(BlockPos var1, BlockState var2, @Block.UpdateFlags int var3, int var4) {
-      if (!this.ensureCanWrite(var1)) {
+   public boolean setBlock(final BlockPos pos, final BlockState blockState, final @Block.UpdateFlags int updateFlags, final int updateLimit) {
+      if (!this.ensureCanWrite(pos)) {
          return false;
       } else {
-         ChunkAccess var5 = this.getChunk(var1);
-         BlockState var6 = var5.setBlockState(var1, var2, var3);
-         if (var6 != null) {
-            this.level.updatePOIOnBlockStateChange(var1, var6, var2);
+         ChunkAccess chunk = this.getChunk(pos);
+         BlockState oldState = chunk.setBlockState(pos, blockState, updateFlags);
+         if (oldState != null) {
+            this.level.updatePOIOnBlockStateChange(pos, oldState, blockState);
          }
 
-         if (var2.hasBlockEntity()) {
-            if (var5.getPersistedStatus().getChunkType() == ChunkType.LEVELCHUNK) {
-               BlockEntity var7 = ((EntityBlock)var2.getBlock()).newBlockEntity(var1, var2);
-               if (var7 != null) {
-                  var5.setBlockEntity(var7);
+         if (blockState.hasBlockEntity()) {
+            if (chunk.getPersistedStatus().getChunkType() == ChunkType.LEVELCHUNK) {
+               BlockEntity blockEntity = ((EntityBlock)blockState.getBlock()).newBlockEntity(pos, blockState);
+               if (blockEntity != null) {
+                  chunk.setBlockEntity(blockEntity);
                } else {
-                  var5.removeBlockEntity(var1);
+                  chunk.removeBlockEntity(pos);
                }
             } else {
-               CompoundTag var8 = new CompoundTag();
-               var8.putInt("x", var1.getX());
-               var8.putInt("y", var1.getY());
-               var8.putInt("z", var1.getZ());
-               var8.putString("id", "DUMMY");
-               var5.setBlockEntityNbt(var8);
+               CompoundTag tag = new CompoundTag();
+               tag.putInt("x", pos.getX());
+               tag.putInt("y", pos.getY());
+               tag.putInt("z", pos.getZ());
+               tag.putString("id", "DUMMY");
+               chunk.setBlockEntityNbt(tag);
             }
-         } else if (var6 != null && var6.hasBlockEntity()) {
-            var5.removeBlockEntity(var1);
+         } else if (oldState != null && oldState.hasBlockEntity()) {
+            chunk.removeBlockEntity(pos);
          }
 
-         if (var2.hasPostProcess(this, var1) && (var3 & 16) == 0) {
-            this.markPosForPostprocessing(var1);
+         if ((updateFlags & 16) == 0) {
+            BlockPos postProcessPos = blockState.getPostProcessPos(this, pos);
+            if (postProcessPos != null) {
+               this.markPosForPostprocessing(postProcessPos);
+            }
          }
 
          return true;
       }
    }
 
-   private void markPosForPostprocessing(BlockPos var1) {
-      this.getChunk(var1).markPosForPostprocessing(var1);
+   private void markPosForPostprocessing(final BlockPos blockPos) {
+      this.getChunk(blockPos).markPosForPostprocessing(blockPos);
    }
 
-   public boolean addFreshEntity(Entity var1) {
-      int var2 = SectionPos.blockToSectionCoord(var1.getBlockX());
-      int var3 = SectionPos.blockToSectionCoord(var1.getBlockZ());
-      this.getChunk(var2, var3).addEntity(var1);
+   public boolean addFreshEntity(final Entity entity) {
+      int xc = SectionPos.blockToSectionCoord(entity.getBlockX());
+      int zc = SectionPos.blockToSectionCoord(entity.getBlockZ());
+      this.getChunk(xc, zc).addEntity(entity);
       return true;
    }
 
-   public boolean removeBlock(BlockPos var1, boolean var2) {
-      return this.setBlock(var1, Blocks.AIR.defaultBlockState(), 3);
+   public boolean removeBlock(final BlockPos pos, final boolean movedByPiston) {
+      return this.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
    }
 
    public WorldBorder getWorldBorder() {
@@ -328,11 +316,11 @@ public class WorldGenRegion implements WorldGenLevel {
       return this.levelData;
    }
 
-   public DifficultyInstance getCurrentDifficultyAt(BlockPos var1) {
-      if (!this.hasChunk(SectionPos.blockToSectionCoord(var1.getX()), SectionPos.blockToSectionCoord(var1.getZ()))) {
+   public DifficultyInstance getCurrentDifficultyAt(final BlockPos pos) {
+      if (!this.hasChunk(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ()))) {
          throw new RuntimeException("We are asking a region for a chunk out of bound");
       } else {
-         return new DifficultyInstance(this.level.getDifficulty(), this.level.getDayTime(), 0L, this.level.getMoonBrightness(var1));
+         return new DifficultyInstance(this.level.getDifficulty(), this.level.getOverworldClockTime(), 0L, this.level.getMoonBrightness(pos));
       }
    }
 
@@ -364,39 +352,39 @@ public class WorldGenRegion implements WorldGenLevel {
       return this.random;
    }
 
-   public int getHeight(Heightmap.Types var1, int var2, int var3) {
-      return this.getChunk(SectionPos.blockToSectionCoord(var2), SectionPos.blockToSectionCoord(var3)).getHeight(var1, var2 & 15, var3 & 15) + 1;
+   public int getHeight(final Heightmap.Types type, final int x, final int z) {
+      return this.getChunk(SectionPos.blockToSectionCoord(x), SectionPos.blockToSectionCoord(z)).getHeight(type, x & 15, z & 15) + 1;
    }
 
-   public void playSound(@Nullable Entity var1, BlockPos var2, SoundEvent var3, SoundSource var4, float var5, float var6) {
+   public void playSound(final @Nullable Entity except, final BlockPos pos, final SoundEvent sound, final SoundSource source, final float volume, final float pitch) {
    }
 
-   public void addParticle(ParticleOptions var1, double var2, double var4, double var6, double var8, double var10, double var12) {
+   public void addParticle(final ParticleOptions particle, final double x, final double y, final double z, final double xd, final double yd, final double zd) {
    }
 
-   public void levelEvent(@Nullable Entity var1, int var2, BlockPos var3, int var4) {
+   public void levelEvent(final @Nullable Entity source, final int type, final BlockPos pos, final int data) {
    }
 
-   public void gameEvent(Holder<GameEvent> var1, Vec3 var2, GameEvent.Context var3) {
+   public void gameEvent(final Holder<GameEvent> gameEvent, final Vec3 position, final GameEvent.Context context) {
    }
 
    public DimensionType dimensionType() {
       return this.dimensionType;
    }
 
-   public boolean isStateAtPosition(BlockPos var1, Predicate<BlockState> var2) {
-      return var2.test(this.getBlockState(var1));
+   public boolean isStateAtPosition(final BlockPos pos, final Predicate<BlockState> predicate) {
+      return predicate.test(this.getBlockState(pos));
    }
 
-   public boolean isFluidAtPosition(BlockPos var1, Predicate<FluidState> var2) {
-      return var2.test(this.getFluidState(var1));
+   public boolean isFluidAtPosition(final BlockPos pos, final Predicate<FluidState> predicate) {
+      return predicate.test(this.getFluidState(pos));
    }
 
-   public <T extends Entity> List<T> getEntities(EntityTypeTest<Entity, T> var1, AABB var2, Predicate<? super T> var3) {
+   public <T extends Entity> List<T> getEntities(final EntityTypeTest<Entity, T> type, final AABB bb, final Predicate<? super T> selector) {
       return Collections.emptyList();
    }
 
-   public List<Entity> getEntities(@Nullable Entity var1, AABB var2, @Nullable Predicate<? super Entity> var3) {
+   public List<Entity> getEntities(final @Nullable Entity except, final AABB bb, final @Nullable Predicate<? super Entity> selector) {
       return Collections.emptyList();
    }
 

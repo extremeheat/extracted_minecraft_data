@@ -6,10 +6,11 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.player.PlayerModelPart;
+import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
-public class Avatar extends LivingEntity {
+public abstract class Avatar extends LivingEntity {
    public static final HumanoidArm DEFAULT_MAIN_HAND;
    public static final int DEFAULT_MODEL_CUSTOMIZATION = 0;
    public static final float DEFAULT_EYE_HEIGHT = 1.62F;
@@ -22,31 +23,33 @@ public class Avatar extends LivingEntity {
    protected static final EntityDataAccessor<HumanoidArm> DATA_PLAYER_MAIN_HAND;
    protected static final EntityDataAccessor<Byte> DATA_PLAYER_MODE_CUSTOMISATION;
 
-   protected Avatar(EntityType<? extends LivingEntity> var1, Level var2) {
-      super(var1, var2);
+   protected Avatar(final EntityType<? extends LivingEntity> type, final Level level) {
+      super(type, level);
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(DATA_PLAYER_MAIN_HAND, DEFAULT_MAIN_HAND);
-      var1.define(DATA_PLAYER_MODE_CUSTOMISATION, (byte)0);
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(DATA_PLAYER_MAIN_HAND, DEFAULT_MAIN_HAND);
+      entityData.define(DATA_PLAYER_MODE_CUSTOMISATION, (byte)0);
    }
 
    public HumanoidArm getMainArm() {
       return (HumanoidArm)this.entityData.get(DATA_PLAYER_MAIN_HAND);
    }
 
-   public void setMainArm(HumanoidArm var1) {
-      this.entityData.set(DATA_PLAYER_MAIN_HAND, var1);
+   public void setMainArm(final HumanoidArm mainArm) {
+      this.entityData.set(DATA_PLAYER_MAIN_HAND, mainArm);
    }
 
-   public boolean isModelPartShown(PlayerModelPart var1) {
-      return ((Byte)this.getEntityData().get(DATA_PLAYER_MODE_CUSTOMISATION) & var1.getMask()) == var1.getMask();
+   public boolean isModelPartShown(final PlayerModelPart part) {
+      return ((Byte)this.getEntityData().get(DATA_PLAYER_MODE_CUSTOMISATION) & part.getMask()) == part.getMask();
    }
 
-   public EntityDimensions getDefaultDimensions(Pose var1) {
-      return (EntityDimensions)POSES.getOrDefault(var1, STANDING_DIMENSIONS);
+   public EntityDimensions getDefaultDimensions(final Pose pose) {
+      return (EntityDimensions)POSES.getOrDefault(pose, STANDING_DIMENSIONS);
    }
+
+   public abstract ResolvableProfile getProfile();
 
    static {
       DEFAULT_MAIN_HAND = HumanoidArm.RIGHT;

@@ -36,23 +36,23 @@ public class AdventureModePredicate {
    private boolean lastResult;
    private boolean checksBlockEntity;
 
-   public AdventureModePredicate(List<BlockPredicate> var1) {
+   public AdventureModePredicate(final List<BlockPredicate> predicates) {
       super();
-      this.predicates = var1;
+      this.predicates = predicates;
    }
 
-   private static boolean areSameBlocks(BlockInWorld var0, @Nullable BlockInWorld var1, boolean var2) {
-      if (var1 != null && var0.getState() == var1.getState()) {
-         if (!var2) {
+   private static boolean areSameBlocks(final BlockInWorld blockInWorld, final @Nullable BlockInWorld cachedBlock, final boolean checkBlockEntity) {
+      if (cachedBlock != null && blockInWorld.getState() == cachedBlock.getState()) {
+         if (!checkBlockEntity) {
             return true;
-         } else if (var0.getEntity() == null && var1.getEntity() == null) {
+         } else if (blockInWorld.getEntity() == null && cachedBlock.getEntity() == null) {
             return true;
-         } else if (var0.getEntity() != null && var1.getEntity() != null) {
-            try (ProblemReporter.ScopedCollector var3 = new ProblemReporter.ScopedCollector(LOGGER)) {
-               RegistryAccess var4 = var0.getLevel().registryAccess();
-               CompoundTag var5 = saveBlockEntity(var0.getEntity(), var4, var3);
-               CompoundTag var6 = saveBlockEntity(var1.getEntity(), var4, var3);
-               return Objects.equals(var5, var6);
+         } else if (blockInWorld.getEntity() != null && cachedBlock.getEntity() != null) {
+            try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(LOGGER)) {
+               RegistryAccess registryAccess = blockInWorld.getLevel().registryAccess();
+               CompoundTag inWorldTag = saveBlockEntity(blockInWorld.getEntity(), registryAccess, reporter);
+               CompoundTag cachedTag = saveBlockEntity(cachedBlock.getEntity(), registryAccess, reporter);
+               return Objects.equals(inWorldTag, cachedTag);
             }
          } else {
             return false;
@@ -62,22 +62,22 @@ public class AdventureModePredicate {
       }
    }
 
-   private static CompoundTag saveBlockEntity(BlockEntity var0, RegistryAccess var1, ProblemReporter var2) {
-      TagValueOutput var3 = TagValueOutput.createWithContext(var2.forChild(var0.problemPath()), var1);
-      var0.saveWithId(var3);
-      return var3.buildResult();
+   private static CompoundTag saveBlockEntity(final BlockEntity blockEntity, final RegistryAccess registryAccess, final ProblemReporter reporter) {
+      TagValueOutput inWorldOutput = TagValueOutput.createWithContext(reporter.forChild(blockEntity.problemPath()), registryAccess);
+      blockEntity.saveWithId(inWorldOutput);
+      return inWorldOutput.buildResult();
    }
 
-   public boolean test(BlockInWorld var1) {
-      if (areSameBlocks(var1, this.lastCheckedBlock, this.checksBlockEntity)) {
+   public boolean test(final BlockInWorld blockInWorld) {
+      if (areSameBlocks(blockInWorld, this.lastCheckedBlock, this.checksBlockEntity)) {
          return this.lastResult;
       } else {
-         this.lastCheckedBlock = var1;
+         this.lastCheckedBlock = blockInWorld;
          this.checksBlockEntity = false;
 
-         for(BlockPredicate var3 : this.predicates) {
-            if (var3.matches(var1)) {
-               this.checksBlockEntity |= var3.requiresNbt();
+         for(BlockPredicate predicate : this.predicates) {
+            if (predicate.matches(blockInWorld)) {
+               this.checksBlockEntity |= predicate.requiresNbt();
                this.lastResult = true;
                return true;
             }
@@ -96,26 +96,26 @@ public class AdventureModePredicate {
       return this.cachedTooltip;
    }
 
-   public void addToTooltip(Consumer<Component> var1) {
-      this.tooltip().forEach(var1);
+   public void addToTooltip(final Consumer<Component> consumer) {
+      this.tooltip().forEach(consumer);
    }
 
-   private static List<Component> computeTooltip(List<BlockPredicate> var0) {
-      for(BlockPredicate var2 : var0) {
-         if (var2.blocks().isEmpty()) {
+   private static List<Component> computeTooltip(final List<BlockPredicate> predicates) {
+      for(BlockPredicate predicate : predicates) {
+         if (predicate.blocks().isEmpty()) {
             return List.of(UNKNOWN_USE);
          }
       }
 
-      return var0.stream().flatMap((var0x) -> ((HolderSet)var0x.blocks().orElseThrow()).stream()).distinct().map((var0x) -> ((Block)var0x.value()).getName().withStyle(ChatFormatting.DARK_GRAY)).toList();
+      return predicates.stream().flatMap((predicatex) -> ((HolderSet)predicatex.blocks().orElseThrow()).stream()).distinct().map((block) -> ((Block)block.value()).getName().withStyle(ChatFormatting.DARK_GRAY)).toList();
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
+   public boolean equals(final Object obj) {
+      if (this == obj) {
          return true;
-      } else if (var1 instanceof AdventureModePredicate) {
-         AdventureModePredicate var2 = (AdventureModePredicate)var1;
-         return this.predicates.equals(var2.predicates);
+      } else if (obj instanceof AdventureModePredicate) {
+         AdventureModePredicate predicate = (AdventureModePredicate)obj;
+         return this.predicates.equals(predicate.predicates);
       } else {
          return false;
       }
@@ -130,8 +130,8 @@ public class AdventureModePredicate {
    }
 
    static {
-      CODEC = ExtraCodecs.compactListCodec(BlockPredicate.CODEC, ExtraCodecs.nonEmptyList(BlockPredicate.CODEC.listOf())).xmap(AdventureModePredicate::new, (var0) -> var0.predicates);
-      STREAM_CODEC = StreamCodec.composite(BlockPredicate.STREAM_CODEC.apply(ByteBufCodecs.list()), (var0) -> var0.predicates, AdventureModePredicate::new);
+      CODEC = ExtraCodecs.compactListCodec(BlockPredicate.CODEC, ExtraCodecs.nonEmptyList(BlockPredicate.CODEC.listOf())).xmap(AdventureModePredicate::new, (p) -> p.predicates);
+      STREAM_CODEC = StreamCodec.composite(BlockPredicate.STREAM_CODEC.apply(ByteBufCodecs.list()), (predicate) -> predicate.predicates, AdventureModePredicate::new);
       CAN_BREAK_HEADER = Component.translatable("item.canBreak").withStyle(ChatFormatting.GRAY);
       CAN_PLACE_HEADER = Component.translatable("item.canPlace").withStyle(ChatFormatting.GRAY);
       UNKNOWN_USE = Component.translatable("item.canUse.unknown").withStyle(ChatFormatting.GRAY);

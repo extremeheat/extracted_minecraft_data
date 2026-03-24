@@ -11,16 +11,16 @@ public class RateKickingConnection extends Connection {
    private static final Component EXCEED_REASON = Component.translatable("disconnect.exceeded_packet_rate");
    private final int rateLimitPacketsPerSecond;
 
-   public RateKickingConnection(int var1) {
+   public RateKickingConnection(final int rateLimitPacketsPerSecond) {
       super(PacketFlow.SERVERBOUND);
-      this.rateLimitPacketsPerSecond = var1;
+      this.rateLimitPacketsPerSecond = rateLimitPacketsPerSecond;
    }
 
    protected void tickSecond() {
       super.tickSecond();
-      float var1 = this.getAverageReceivedPackets();
-      if (var1 > (float)this.rateLimitPacketsPerSecond) {
-         LOGGER.warn("Player exceeded rate-limit (sent {} packets per second)", var1);
+      float averageReceivedPackets = this.getAverageReceivedPackets();
+      if (averageReceivedPackets > (float)this.rateLimitPacketsPerSecond) {
+         LOGGER.warn("Player exceeded rate-limit (sent {} packets per second)", averageReceivedPackets);
          this.send(new ClientboundDisconnectPacket(EXCEED_REASON), PacketSendListener.thenRun(() -> this.disconnect(EXCEED_REASON)));
          this.setReadOnly();
       }

@@ -27,30 +27,26 @@ import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import org.jspecify.annotations.Nullable;
 
 public record BlockPredicate(Optional<HolderSet<Block>> blocks, Optional<StatePropertiesPredicate> properties, Optional<NbtPredicate> nbt, DataComponentMatchers components) {
-   public static final Codec<BlockPredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(RegistryCodecs.homogeneousList(Registries.BLOCK).optionalFieldOf("blocks").forGetter(BlockPredicate::blocks), StatePropertiesPredicate.CODEC.optionalFieldOf("state").forGetter(BlockPredicate::properties), NbtPredicate.CODEC.optionalFieldOf("nbt").forGetter(BlockPredicate::nbt), DataComponentMatchers.CODEC.forGetter(BlockPredicate::components)).apply(var0, BlockPredicate::new));
+   public static final Codec<BlockPredicate> CODEC = RecordCodecBuilder.create((i) -> i.group(RegistryCodecs.homogeneousList(Registries.BLOCK).optionalFieldOf("blocks").forGetter(BlockPredicate::blocks), StatePropertiesPredicate.CODEC.optionalFieldOf("state").forGetter(BlockPredicate::properties), NbtPredicate.CODEC.optionalFieldOf("nbt").forGetter(BlockPredicate::nbt), DataComponentMatchers.CODEC.forGetter(BlockPredicate::components)).apply(i, BlockPredicate::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, BlockPredicate> STREAM_CODEC;
 
-   public BlockPredicate(Optional<HolderSet<Block>> var1, Optional<StatePropertiesPredicate> var2, Optional<NbtPredicate> var3, DataComponentMatchers var4) {
+   public BlockPredicate {
       super();
-      this.blocks = var1;
-      this.properties = var2;
-      this.nbt = var3;
-      this.components = var4;
    }
 
-   public boolean matches(ServerLevel var1, BlockPos var2) {
-      if (!var1.isLoaded(var2)) {
+   public boolean matches(final ServerLevel level, final BlockPos pos) {
+      if (!level.isLoaded(pos)) {
          return false;
-      } else if (!this.matchesState(var1.getBlockState(var2))) {
+      } else if (!this.matchesState(level.getBlockState(pos))) {
          return false;
       } else {
          if (this.nbt.isPresent() || !this.components.isEmpty()) {
-            BlockEntity var3 = var1.getBlockEntity(var2);
-            if (this.nbt.isPresent() && !matchesBlockEntity(var1, var3, (NbtPredicate)this.nbt.get())) {
+            BlockEntity blockEntity = level.getBlockEntity(pos);
+            if (this.nbt.isPresent() && !matchesBlockEntity(level, blockEntity, (NbtPredicate)this.nbt.get())) {
                return false;
             }
 
-            if (!this.components.isEmpty() && !matchesComponents(var3, this.components)) {
+            if (!this.components.isEmpty() && !matchesComponents(blockEntity, this.components)) {
                return false;
             }
          }
@@ -59,28 +55,28 @@ public record BlockPredicate(Optional<HolderSet<Block>> blocks, Optional<StatePr
       }
    }
 
-   public boolean matches(BlockInWorld var1) {
-      if (!this.matchesState(var1.getState())) {
+   public boolean matches(final BlockInWorld blockInWorld) {
+      if (!this.matchesState(blockInWorld.getState())) {
          return false;
       } else {
-         return !this.nbt.isPresent() || matchesBlockEntity(var1.getLevel(), var1.getEntity(), (NbtPredicate)this.nbt.get());
+         return !this.nbt.isPresent() || matchesBlockEntity(blockInWorld.getLevel(), blockInWorld.getEntity(), (NbtPredicate)this.nbt.get());
       }
    }
 
-   private boolean matchesState(BlockState var1) {
-      if (this.blocks.isPresent() && !var1.is((HolderSet)this.blocks.get())) {
+   private boolean matchesState(final BlockState state) {
+      if (this.blocks.isPresent() && !state.is((HolderSet)this.blocks.get())) {
          return false;
       } else {
-         return !this.properties.isPresent() || ((StatePropertiesPredicate)this.properties.get()).matches(var1);
+         return !this.properties.isPresent() || ((StatePropertiesPredicate)this.properties.get()).matches(state);
       }
    }
 
-   private static boolean matchesBlockEntity(LevelReader var0, @Nullable BlockEntity var1, NbtPredicate var2) {
-      return var1 != null && var2.matches((Tag)var1.saveWithFullMetadata((HolderLookup.Provider)var0.registryAccess()));
+   private static boolean matchesBlockEntity(final LevelReader level, final @Nullable BlockEntity entity, final NbtPredicate nbt) {
+      return entity != null && nbt.matches((Tag)entity.saveWithFullMetadata((HolderLookup.Provider)level.registryAccess()));
    }
 
-   private static boolean matchesComponents(@Nullable BlockEntity var0, DataComponentMatchers var1) {
-      return var0 != null && var1.test((DataComponentGetter)var0.collectComponents());
+   private static boolean matchesComponents(final @Nullable BlockEntity entity, final DataComponentMatchers components) {
+      return entity != null && components.test((DataComponentGetter)entity.collectComponents());
    }
 
    public boolean requiresNbt() {
@@ -106,32 +102,32 @@ public record BlockPredicate(Optional<HolderSet<Block>> blocks, Optional<StatePr
          return new Builder();
       }
 
-      public Builder of(HolderGetter<Block> var1, Block... var2) {
-         return this.of(var1, (Collection)Arrays.asList(var2));
+      public Builder of(final HolderGetter<Block> lookup, final Block... blocks) {
+         return this.of(lookup, (Collection)Arrays.asList(blocks));
       }
 
-      public Builder of(HolderGetter<Block> var1, Collection<Block> var2) {
-         this.blocks = Optional.of(HolderSet.direct(Block::builtInRegistryHolder, var2));
+      public Builder of(final HolderGetter<Block> lookup, final Collection<Block> blocks) {
+         this.blocks = Optional.of(HolderSet.direct(Block::builtInRegistryHolder, blocks));
          return this;
       }
 
-      public Builder of(HolderGetter<Block> var1, TagKey<Block> var2) {
-         this.blocks = Optional.of(var1.getOrThrow(var2));
+      public Builder of(final HolderGetter<Block> lookup, final TagKey<Block> tag) {
+         this.blocks = Optional.of(lookup.getOrThrow(tag));
          return this;
       }
 
-      public Builder hasNbt(CompoundTag var1) {
-         this.nbt = Optional.of(new NbtPredicate(var1));
+      public Builder hasNbt(final CompoundTag nbt) {
+         this.nbt = Optional.of(new NbtPredicate(nbt));
          return this;
       }
 
-      public Builder setProperties(StatePropertiesPredicate.Builder var1) {
-         this.properties = var1.build();
+      public Builder setProperties(final StatePropertiesPredicate.Builder properties) {
+         this.properties = properties.build();
          return this;
       }
 
-      public Builder components(DataComponentMatchers var1) {
-         this.components = var1;
+      public Builder components(final DataComponentMatchers components) {
+         this.components = components;
          return this;
       }
 

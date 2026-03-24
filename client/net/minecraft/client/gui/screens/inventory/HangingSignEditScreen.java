@@ -1,6 +1,6 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -14,8 +14,8 @@ public class HangingSignEditScreen extends AbstractSignEditScreen {
    private static final int TEXTURE_HEIGHT = 16;
    private final Identifier texture;
 
-   public HangingSignEditScreen(SignBlockEntity var1, boolean var2, boolean var3) {
-      super(var1, var2, var3, Component.translatable("hanging_sign.edit"));
+   public HangingSignEditScreen(final SignBlockEntity sign, final boolean isFrontText, final boolean shouldFilter) {
+      super(sign, isFrontText, shouldFilter, Component.translatable("hanging_sign.edit"));
       this.texture = Identifier.withDefaultNamespace("textures/gui/hanging_signs/" + this.woodType.name() + ".png");
    }
 
@@ -23,10 +23,10 @@ public class HangingSignEditScreen extends AbstractSignEditScreen {
       return 125.0F;
    }
 
-   protected void renderSignBackground(GuiGraphics var1) {
-      var1.pose().translate(0.0F, -13.0F);
-      var1.pose().scale(4.5F, 4.5F);
-      var1.blit(RenderPipelines.GUI_TEXTURED, this.texture, -8, -8, 0.0F, 0.0F, 16, 16, 16, 16);
+   protected void extractSignBackground(final GuiGraphicsExtractor graphics) {
+      graphics.pose().translate(0.0F, -13.0F);
+      graphics.pose().scale(4.5F, 4.5F);
+      graphics.blit(RenderPipelines.GUI_TEXTURED, this.texture, -8, -8, 0.0F, 0.0F, 16, 16, 16, 16);
    }
 
    protected Vector3f getSignTextScale() {

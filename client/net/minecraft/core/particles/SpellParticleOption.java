@@ -14,19 +14,19 @@ public class SpellParticleOption implements ParticleOptions {
    private final int color;
    private final float power;
 
-   public static MapCodec<SpellParticleOption> codec(ParticleType<SpellParticleOption> var0) {
-      return RecordCodecBuilder.mapCodec((var1) -> var1.group(ExtraCodecs.RGB_COLOR_CODEC.optionalFieldOf("color", -1).forGetter((var0x) -> var0x.color), Codec.FLOAT.optionalFieldOf("power", 1.0F).forGetter((var0x) -> var0x.power)).apply(var1, (var1x, var2) -> new SpellParticleOption(var0, var1x, var2)));
+   public static MapCodec<SpellParticleOption> codec(final ParticleType<SpellParticleOption> type) {
+      return RecordCodecBuilder.mapCodec((i) -> i.group(ExtraCodecs.RGB_COLOR_CODEC.optionalFieldOf("color", -1).forGetter((o) -> o.color), Codec.FLOAT.optionalFieldOf("power", 1.0F).forGetter((o) -> o.power)).apply(i, (color, power) -> new SpellParticleOption(type, color, power)));
    }
 
-   public static StreamCodec<? super ByteBuf, SpellParticleOption> streamCodec(ParticleType<SpellParticleOption> var0) {
-      return StreamCodec.composite(ByteBufCodecs.INT, (var0x) -> var0x.color, ByteBufCodecs.FLOAT, (var0x) -> var0x.power, (var1, var2) -> new SpellParticleOption(var0, var1, var2));
+   public static StreamCodec<? super ByteBuf, SpellParticleOption> streamCodec(final ParticleType<SpellParticleOption> type) {
+      return StreamCodec.composite(ByteBufCodecs.INT, (o) -> o.color, ByteBufCodecs.FLOAT, (o) -> o.power, (color, power) -> new SpellParticleOption(type, color, power));
    }
 
-   private SpellParticleOption(ParticleType<SpellParticleOption> var1, int var2, float var3) {
+   private SpellParticleOption(final ParticleType<SpellParticleOption> type, final int color, final float power) {
       super();
-      this.type = var1;
-      this.color = var2;
-      this.power = var3;
+      this.type = type;
+      this.color = color;
+      this.power = power;
    }
 
    public ParticleType<SpellParticleOption> getType() {
@@ -49,11 +49,11 @@ public class SpellParticleOption implements ParticleOptions {
       return this.power;
    }
 
-   public static SpellParticleOption create(ParticleType<SpellParticleOption> var0, int var1, float var2) {
-      return new SpellParticleOption(var0, var1, var2);
+   public static SpellParticleOption create(final ParticleType<SpellParticleOption> type, final int color, final float power) {
+      return new SpellParticleOption(type, color, power);
    }
 
-   public static SpellParticleOption create(ParticleType<SpellParticleOption> var0, float var1, float var2, float var3, float var4) {
-      return create(var0, ARGB.colorFromFloat(1.0F, var1, var2, var3), var4);
+   public static SpellParticleOption create(final ParticleType<SpellParticleOption> type, final float red, final float green, final float blue, final float power) {
+      return create(type, ARGB.colorFromFloat(1.0F, red, green, blue), power);
    }
 }

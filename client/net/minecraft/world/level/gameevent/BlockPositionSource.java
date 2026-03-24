@@ -10,15 +10,14 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 public record BlockPositionSource(BlockPos pos) implements PositionSource {
-   public static final MapCodec<BlockPositionSource> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BlockPos.CODEC.fieldOf("pos").forGetter(BlockPositionSource::pos)).apply(var0, BlockPositionSource::new));
+   public static final MapCodec<BlockPositionSource> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockPos.CODEC.fieldOf("pos").forGetter(BlockPositionSource::pos)).apply(i, BlockPositionSource::new));
    public static final StreamCodec<ByteBuf, BlockPositionSource> STREAM_CODEC;
 
-   public BlockPositionSource(BlockPos var1) {
+   public BlockPositionSource {
       super();
-      this.pos = var1;
    }
 
-   public Optional<Vec3> getPosition(Level var1) {
+   public Optional<Vec3> getPosition(final Level level) {
       return Optional.of(Vec3.atCenterOf(this.pos));
    }
 

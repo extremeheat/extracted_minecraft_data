@@ -15,15 +15,15 @@ public class TracyBootstrap {
       if (!setup) {
          TracyClient.load();
          if (TracyClient.isAvailable()) {
-            LogListeners.addListener("Tracy", (var0, var1) -> TracyClient.message(var0, messageColor(var1)));
+            LogListeners.addListener("Tracy", (message, level) -> TracyClient.message(message, messageColor(level)));
             setup = true;
          }
       }
    }
 
-   private static int messageColor(Level var0) {
+   private static int messageColor(final Level level) {
       int var10000;
-      switch (var0) {
+      switch (level) {
          case DEBUG -> var10000 = 11184810;
          case WARN -> var10000 = 16777130;
          case ERROR -> var10000 = 16755370;

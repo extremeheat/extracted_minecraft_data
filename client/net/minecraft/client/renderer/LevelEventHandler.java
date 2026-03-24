@@ -26,10 +26,10 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.ParticleUtils;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.BoneMealItem;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.JukeboxSong;
 import net.minecraft.world.level.Level;
@@ -53,478 +53,480 @@ public class LevelEventHandler {
    private final ClientLevel level;
    private final Map<BlockPos, SoundInstance> playingJukeboxSongs = new HashMap();
 
-   public LevelEventHandler(Minecraft var1, ClientLevel var2) {
+   public LevelEventHandler(final Minecraft minecraft, final ClientLevel level) {
       super();
-      this.minecraft = var1;
-      this.level = var2;
+      this.minecraft = minecraft;
+      this.level = level;
    }
 
-   public void globalLevelEvent(int var1, BlockPos var2, int var3) {
-      switch (var1) {
+   public void globalLevelEvent(final int type, final BlockPos pos, final int data) {
+      switch (type) {
          case 1023:
          case 1028:
          case 1038:
-            Camera var4 = this.minecraft.gameRenderer.getMainCamera();
-            if (var4.isInitialized()) {
-               Vec3 var5 = Vec3.atCenterOf(var2).subtract(var4.position()).normalize();
-               Vec3 var6 = var4.position().add(var5.scale(2.0));
-               if (var1 == 1023) {
-                  this.level.playLocalSound(var6.x, var6.y, var6.z, SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE, 1.0F, 1.0F, false);
-               } else if (var1 == 1038) {
-                  this.level.playLocalSound(var6.x, var6.y, var6.z, SoundEvents.END_PORTAL_SPAWN, SoundSource.HOSTILE, 1.0F, 1.0F, false);
+            Camera camera = this.minecraft.gameRenderer.getMainCamera();
+            if (camera.isInitialized()) {
+               Vec3 directionToEvent = Vec3.atCenterOf(pos).subtract(camera.position()).normalize();
+               Vec3 soundPos = camera.position().add(directionToEvent.scale(2.0));
+               if (type == 1023) {
+                  this.level.playLocalSound(soundPos.x, soundPos.y, soundPos.z, SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE, 1.0F, 1.0F, false);
+               } else if (type == 1038) {
+                  this.level.playLocalSound(soundPos.x, soundPos.y, soundPos.z, SoundEvents.END_PORTAL_SPAWN, SoundSource.HOSTILE, 1.0F, 1.0F, false);
                } else {
-                  this.level.playLocalSound(var6.x, var6.y, var6.z, SoundEvents.ENDER_DRAGON_DEATH, SoundSource.HOSTILE, 5.0F, 1.0F, false);
+                  this.level.playLocalSound(soundPos.x, soundPos.y, soundPos.z, SoundEvents.ENDER_DRAGON_DEATH, SoundSource.HOSTILE, 5.0F, 1.0F, false);
                }
             }
          default:
       }
    }
 
-   public void levelEvent(int var1, BlockPos var2, int var3) {
-      RandomSource var4 = this.level.random;
-      switch (var1) {
+   public void levelEvent(final int eventType, final BlockPos pos, final int data) {
+      RandomSource random = this.level.getRandom();
+      switch (eventType) {
          case 1000:
-            this.level.playLocalSound(var2, SoundEvents.DISPENSER_DISPENSE, SoundSource.BLOCKS, 1.0F, 1.0F, false);
+            this.level.playLocalSound(pos, SoundEvents.DISPENSER_DISPENSE, SoundSource.BLOCKS, 1.0F, 1.0F, false);
             break;
          case 1001:
-            this.level.playLocalSound(var2, SoundEvents.DISPENSER_FAIL, SoundSource.BLOCKS, 1.0F, 1.2F, false);
+            this.level.playLocalSound(pos, SoundEvents.DISPENSER_FAIL, SoundSource.BLOCKS, 1.0F, 1.2F, false);
             break;
          case 1002:
-            this.level.playLocalSound(var2, SoundEvents.DISPENSER_LAUNCH, SoundSource.BLOCKS, 1.0F, 1.2F, false);
+            this.level.playLocalSound(pos, SoundEvents.DISPENSER_LAUNCH, SoundSource.BLOCKS, 1.0F, 1.2F, false);
             break;
          case 1004:
-            this.level.playLocalSound(var2, SoundEvents.FIREWORK_ROCKET_SHOOT, SoundSource.NEUTRAL, 1.0F, 1.2F, false);
+            this.level.playLocalSound(pos, SoundEvents.FIREWORK_ROCKET_SHOOT, SoundSource.NEUTRAL, 1.0F, 1.2F, false);
             break;
          case 1009:
-            if (var3 == 0) {
-               this.level.playLocalSound(var2, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5F, 2.6F + (var4.nextFloat() - var4.nextFloat()) * 0.8F, false);
-            } else if (var3 == 1) {
-               this.level.playLocalSound(var2, SoundEvents.GENERIC_EXTINGUISH_FIRE, SoundSource.BLOCKS, 0.7F, 1.6F + (var4.nextFloat() - var4.nextFloat()) * 0.4F, false);
+            if (data == 0) {
+               this.level.playLocalSound(pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5F, 2.6F + (random.nextFloat() - random.nextFloat()) * 0.8F, false);
+            } else if (data == 1) {
+               this.level.playLocalSound(pos, SoundEvents.GENERIC_EXTINGUISH_FIRE, SoundSource.BLOCKS, 0.7F, 1.6F + (random.nextFloat() - random.nextFloat()) * 0.4F, false);
             }
             break;
          case 1010:
-            this.level.registryAccess().lookupOrThrow(Registries.JUKEBOX_SONG).get(var3).ifPresent((var2x) -> this.playJukeboxSong(var2x, var2));
+            this.level.registryAccess().lookupOrThrow(Registries.JUKEBOX_SONG).get(data).ifPresent((song) -> this.playJukeboxSong(song, pos));
             break;
          case 1011:
-            this.stopJukeboxSongAndNotifyNearby(var2);
+            this.stopJukeboxSongAndNotifyNearby(pos);
             break;
          case 1015:
-            this.level.playLocalSound(var2, SoundEvents.GHAST_WARN, SoundSource.HOSTILE, 10.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, false);
+            this.level.playLocalSound(pos, SoundEvents.GHAST_WARN, SoundSource.HOSTILE, 10.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F, false);
             break;
          case 1016:
-            this.level.playLocalSound(var2, SoundEvents.GHAST_SHOOT, SoundSource.HOSTILE, 10.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, false);
+            this.level.playLocalSound(pos, SoundEvents.GHAST_SHOOT, SoundSource.HOSTILE, 10.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F, false);
             break;
          case 1017:
-            this.level.playLocalSound(var2, SoundEvents.ENDER_DRAGON_SHOOT, SoundSource.HOSTILE, 10.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, false);
+            this.level.playLocalSound(pos, SoundEvents.ENDER_DRAGON_SHOOT, SoundSource.HOSTILE, 10.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F, false);
             break;
          case 1018:
-            this.level.playLocalSound(var2, SoundEvents.BLAZE_SHOOT, SoundSource.HOSTILE, 2.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, false);
+            this.level.playLocalSound(pos, SoundEvents.BLAZE_SHOOT, SoundSource.HOSTILE, 2.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F, false);
             break;
          case 1019:
-            this.level.playLocalSound(var2, SoundEvents.ZOMBIE_ATTACK_WOODEN_DOOR, SoundSource.HOSTILE, 2.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, false);
+            this.level.playLocalSound(pos, SoundEvents.ZOMBIE_ATTACK_WOODEN_DOOR, SoundSource.HOSTILE, 2.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F, false);
             break;
          case 1020:
-            this.level.playLocalSound(var2, SoundEvents.ZOMBIE_ATTACK_IRON_DOOR, SoundSource.HOSTILE, 2.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, false);
+            this.level.playLocalSound(pos, SoundEvents.ZOMBIE_ATTACK_IRON_DOOR, SoundSource.HOSTILE, 2.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F, false);
             break;
          case 1021:
-            this.level.playLocalSound(var2, SoundEvents.ZOMBIE_BREAK_WOODEN_DOOR, SoundSource.HOSTILE, 2.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, false);
+            this.level.playLocalSound(pos, SoundEvents.ZOMBIE_BREAK_WOODEN_DOOR, SoundSource.HOSTILE, 2.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F, false);
             break;
          case 1022:
-            this.level.playLocalSound(var2, SoundEvents.WITHER_BREAK_BLOCK, SoundSource.HOSTILE, 2.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, false);
+            this.level.playLocalSound(pos, SoundEvents.WITHER_BREAK_BLOCK, SoundSource.HOSTILE, 2.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F, false);
             break;
          case 1024:
-            this.level.playLocalSound(var2, SoundEvents.WITHER_SHOOT, SoundSource.HOSTILE, 2.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, false);
+            this.level.playLocalSound(pos, SoundEvents.WITHER_SHOOT, SoundSource.HOSTILE, 2.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F, false);
             break;
          case 1025:
-            this.level.playLocalSound(var2, SoundEvents.BAT_TAKEOFF, SoundSource.NEUTRAL, 0.05F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, false);
+            this.level.playLocalSound(pos, SoundEvents.BAT_TAKEOFF, SoundSource.NEUTRAL, 0.05F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F, false);
             break;
          case 1026:
-            this.level.playLocalSound(var2, SoundEvents.ZOMBIE_INFECT, SoundSource.HOSTILE, 2.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, false);
+            this.level.playLocalSound(pos, SoundEvents.ZOMBIE_INFECT, SoundSource.HOSTILE, 2.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F, false);
             break;
          case 1027:
-            this.level.playLocalSound(var2, SoundEvents.ZOMBIE_VILLAGER_CONVERTED, SoundSource.HOSTILE, 2.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, false);
+            this.level.playLocalSound(pos, SoundEvents.ZOMBIE_VILLAGER_CONVERTED, SoundSource.HOSTILE, 2.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F, false);
             break;
          case 1029:
-            this.level.playLocalSound(var2, SoundEvents.ANVIL_DESTROY, SoundSource.BLOCKS, 1.0F, var4.nextFloat() * 0.1F + 0.9F, false);
+            this.level.playLocalSound(pos, SoundEvents.ANVIL_DESTROY, SoundSource.BLOCKS, 1.0F, random.nextFloat() * 0.1F + 0.9F, false);
             break;
          case 1030:
-            this.level.playLocalSound(var2, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1.0F, var4.nextFloat() * 0.1F + 0.9F, false);
+            this.level.playLocalSound(pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 1.0F, random.nextFloat() * 0.1F + 0.9F, false);
             break;
          case 1031:
-            this.level.playLocalSound(var2, SoundEvents.ANVIL_LAND, SoundSource.BLOCKS, 0.3F, this.level.random.nextFloat() * 0.1F + 0.9F, false);
+            this.level.playLocalSound(pos, SoundEvents.ANVIL_LAND, SoundSource.BLOCKS, 0.3F, random.nextFloat() * 0.1F + 0.9F, false);
             break;
          case 1032:
-            this.minecraft.getSoundManager().play(SimpleSoundInstance.forLocalAmbience(SoundEvents.PORTAL_TRAVEL, var4.nextFloat() * 0.4F + 0.8F, 0.25F));
+            this.minecraft.getSoundManager().play(SimpleSoundInstance.forLocalAmbience(SoundEvents.PORTAL_TRAVEL, random.nextFloat() * 0.4F + 0.8F, 0.25F));
             break;
          case 1033:
-            this.level.playLocalSound(var2, SoundEvents.CHORUS_FLOWER_GROW, SoundSource.BLOCKS, 1.0F, 1.0F, false);
+            this.level.playLocalSound(pos, SoundEvents.CHORUS_FLOWER_GROW, SoundSource.BLOCKS, 1.0F, 1.0F, false);
             break;
          case 1034:
-            this.level.playLocalSound(var2, SoundEvents.CHORUS_FLOWER_DEATH, SoundSource.BLOCKS, 1.0F, 1.0F, false);
+            this.level.playLocalSound(pos, SoundEvents.CHORUS_FLOWER_DEATH, SoundSource.BLOCKS, 1.0F, 1.0F, false);
             break;
          case 1035:
-            this.level.playLocalSound(var2, SoundEvents.BREWING_STAND_BREW, SoundSource.BLOCKS, 1.0F, 1.0F, false);
+            this.level.playLocalSound(pos, SoundEvents.BREWING_STAND_BREW, SoundSource.BLOCKS, 1.0F, 1.0F, false);
             break;
          case 1039:
-            this.level.playLocalSound(var2, SoundEvents.PHANTOM_BITE, SoundSource.HOSTILE, 0.3F, this.level.random.nextFloat() * 0.1F + 0.9F, false);
+            this.level.playLocalSound(pos, SoundEvents.PHANTOM_BITE, SoundSource.HOSTILE, 0.3F, random.nextFloat() * 0.1F + 0.9F, false);
             break;
          case 1040:
-            this.level.playLocalSound(var2, SoundEvents.ZOMBIE_CONVERTED_TO_DROWNED, SoundSource.HOSTILE, 2.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, false);
+            this.level.playLocalSound(pos, SoundEvents.ZOMBIE_CONVERTED_TO_DROWNED, SoundSource.HOSTILE, 2.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F, false);
             break;
          case 1041:
-            this.level.playLocalSound(var2, SoundEvents.HUSK_CONVERTED_TO_ZOMBIE, SoundSource.HOSTILE, 2.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, false);
+            this.level.playLocalSound(pos, SoundEvents.HUSK_CONVERTED_TO_ZOMBIE, SoundSource.HOSTILE, 2.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F, false);
             break;
          case 1042:
-            this.level.playLocalSound(var2, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, 1.0F, this.level.random.nextFloat() * 0.1F + 0.9F, false);
+            this.level.playLocalSound(pos, SoundEvents.GRINDSTONE_USE, SoundSource.BLOCKS, 1.0F, random.nextFloat() * 0.1F + 0.9F, false);
             break;
          case 1043:
-            this.level.playLocalSound(var2, SoundEvents.BOOK_PAGE_TURN, SoundSource.BLOCKS, 1.0F, this.level.random.nextFloat() * 0.1F + 0.9F, false);
+            this.level.playLocalSound(pos, SoundEvents.BOOK_PAGE_TURN, SoundSource.BLOCKS, 1.0F, random.nextFloat() * 0.1F + 0.9F, false);
             break;
          case 1044:
-            this.level.playLocalSound(var2, SoundEvents.SMITHING_TABLE_USE, SoundSource.BLOCKS, 1.0F, this.level.random.nextFloat() * 0.1F + 0.9F, false);
+            this.level.playLocalSound(pos, SoundEvents.SMITHING_TABLE_USE, SoundSource.BLOCKS, 1.0F, random.nextFloat() * 0.1F + 0.9F, false);
             break;
          case 1045:
-            this.level.playLocalSound(var2, SoundEvents.POINTED_DRIPSTONE_LAND, SoundSource.BLOCKS, 2.0F, this.level.random.nextFloat() * 0.1F + 0.9F, false);
+            this.level.playLocalSound(pos, SoundEvents.POINTED_DRIPSTONE_LAND, SoundSource.BLOCKS, 2.0F, random.nextFloat() * 0.1F + 0.9F, false);
             break;
          case 1046:
-            this.level.playLocalSound(var2, SoundEvents.POINTED_DRIPSTONE_DRIP_LAVA_INTO_CAULDRON, SoundSource.BLOCKS, 2.0F, this.level.random.nextFloat() * 0.1F + 0.9F, false);
+            this.level.playLocalSound(pos, SoundEvents.POINTED_DRIPSTONE_DRIP_LAVA_INTO_CAULDRON, SoundSource.BLOCKS, 2.0F, random.nextFloat() * 0.1F + 0.9F, false);
             break;
          case 1047:
-            this.level.playLocalSound(var2, SoundEvents.POINTED_DRIPSTONE_DRIP_WATER_INTO_CAULDRON, SoundSource.BLOCKS, 2.0F, this.level.random.nextFloat() * 0.1F + 0.9F, false);
+            this.level.playLocalSound(pos, SoundEvents.POINTED_DRIPSTONE_DRIP_WATER_INTO_CAULDRON, SoundSource.BLOCKS, 2.0F, random.nextFloat() * 0.1F + 0.9F, false);
             break;
          case 1048:
-            this.level.playLocalSound(var2, SoundEvents.SKELETON_CONVERTED_TO_STRAY, SoundSource.HOSTILE, 2.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, false);
+            this.level.playLocalSound(pos, SoundEvents.SKELETON_CONVERTED_TO_STRAY, SoundSource.HOSTILE, 2.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F, false);
             break;
          case 1049:
-            this.level.playLocalSound(var2, SoundEvents.CRAFTER_CRAFT, SoundSource.BLOCKS, 1.0F, 1.0F, false);
+            this.level.playLocalSound(pos, SoundEvents.CRAFTER_CRAFT, SoundSource.BLOCKS, 1.0F, 1.0F, false);
             break;
          case 1050:
-            this.level.playLocalSound(var2, SoundEvents.CRAFTER_FAIL, SoundSource.BLOCKS, 1.0F, 1.0F, false);
+            this.level.playLocalSound(pos, SoundEvents.CRAFTER_FAIL, SoundSource.BLOCKS, 1.0F, 1.0F, false);
             break;
          case 1051:
-            this.level.playLocalSound(var2, SoundEvents.WIND_CHARGE_THROW, SoundSource.BLOCKS, 0.5F, 0.4F / (this.level.getRandom().nextFloat() * 0.4F + 0.8F), false);
+            this.level.playLocalSound(pos, SoundEvents.WIND_CHARGE_THROW, SoundSource.BLOCKS, 0.5F, 0.4F / (this.level.getRandom().nextFloat() * 0.4F + 0.8F), false);
             break;
          case 1500:
-            ComposterBlock.handleFill(this.level, var2, var3 > 0);
+            ComposterBlock.handleFill(this.level, pos, data > 0);
             break;
          case 1501:
-            this.level.playLocalSound(var2, SoundEvents.LAVA_EXTINGUISH, SoundSource.BLOCKS, 0.5F, 2.6F + (var4.nextFloat() - var4.nextFloat()) * 0.8F, false);
+            this.level.playLocalSound(pos, SoundEvents.LAVA_EXTINGUISH, SoundSource.BLOCKS, 0.5F, 2.6F + (random.nextFloat() - random.nextFloat()) * 0.8F, false);
 
-            for(int var56 = 0; var56 < 8; ++var56) {
-               this.level.addParticle(ParticleTypes.LARGE_SMOKE, (double)var2.getX() + var4.nextDouble(), (double)var2.getY() + 1.2, (double)var2.getZ() + var4.nextDouble(), 0.0, 0.0, 0.0);
+            for(int i = 0; i < 8; ++i) {
+               this.level.addParticle(ParticleTypes.LARGE_SMOKE, (double)pos.getX() + random.nextDouble(), (double)pos.getY() + 1.2, (double)pos.getZ() + random.nextDouble(), 0.0, 0.0, 0.0);
             }
             break;
          case 1502:
-            this.level.playLocalSound(var2, SoundEvents.REDSTONE_TORCH_BURNOUT, SoundSource.BLOCKS, 0.5F, 2.6F + (var4.nextFloat() - var4.nextFloat()) * 0.8F, false);
+            this.level.playLocalSound(pos, SoundEvents.REDSTONE_TORCH_BURNOUT, SoundSource.BLOCKS, 0.5F, 2.6F + (random.nextFloat() - random.nextFloat()) * 0.8F, false);
 
-            for(int var55 = 0; var55 < 5; ++var55) {
-               double var63 = (double)var2.getX() + var4.nextDouble() * 0.6 + 0.2;
-               double var74 = (double)var2.getY() + var4.nextDouble() * 0.6 + 0.2;
-               double var82 = (double)var2.getZ() + var4.nextDouble() * 0.6 + 0.2;
-               this.level.addParticle(ParticleTypes.SMOKE, var63, var74, var82, 0.0, 0.0, 0.0);
+            for(int i = 0; i < 5; ++i) {
+               double x = (double)pos.getX() + random.nextDouble() * 0.6 + 0.2;
+               double y = (double)pos.getY() + random.nextDouble() * 0.6 + 0.2;
+               double z = (double)pos.getZ() + random.nextDouble() * 0.6 + 0.2;
+               this.level.addParticle(ParticleTypes.SMOKE, x, y, z, 0.0, 0.0, 0.0);
             }
             break;
          case 1503:
-            this.level.playLocalSound(var2, SoundEvents.END_PORTAL_FRAME_FILL, SoundSource.BLOCKS, 1.0F, 1.0F, false);
+            this.level.playLocalSound(pos, SoundEvents.END_PORTAL_FRAME_FILL, SoundSource.BLOCKS, 1.0F, 1.0F, false);
 
-            for(int var54 = 0; var54 < 16; ++var54) {
-               double var62 = (double)var2.getX() + (5.0 + var4.nextDouble() * 6.0) / 16.0;
-               double var73 = (double)var2.getY() + 0.8125;
-               double var81 = (double)var2.getZ() + (5.0 + var4.nextDouble() * 6.0) / 16.0;
-               this.level.addParticle(ParticleTypes.SMOKE, var62, var73, var81, 0.0, 0.0, 0.0);
+            for(int i = 0; i < 16; ++i) {
+               double x = (double)pos.getX() + (5.0 + random.nextDouble() * 6.0) / 16.0;
+               double y = (double)pos.getY() + 0.8125;
+               double z = (double)pos.getZ() + (5.0 + random.nextDouble() * 6.0) / 16.0;
+               this.level.addParticle(ParticleTypes.SMOKE, x, y, z, 0.0, 0.0, 0.0);
             }
             break;
          case 1504:
-            PointedDripstoneBlock.spawnDripParticle(this.level, var2, this.level.getBlockState(var2));
+            PointedDripstoneBlock.spawnDripParticle(this.level, pos, this.level.getBlockState(pos));
             break;
          case 1505:
-            BoneMealItem.addGrowthParticles(this.level, var2, var3);
-            this.level.playLocalSound(var2, SoundEvents.BONE_MEAL_USE, SoundSource.BLOCKS, 1.0F, 1.0F, false);
+            BoneMealItem.addGrowthParticles(this.level, pos, data);
+            this.level.playLocalSound(pos, SoundEvents.BONE_MEAL_USE, SoundSource.BLOCKS, 1.0F, 1.0F, false);
             break;
          case 2000:
-            this.shootParticles(var3, var2, var4, ParticleTypes.SMOKE);
+            this.shootParticles(data, pos, random, ParticleTypes.SMOKE);
             break;
          case 2001:
-            BlockState var24 = Block.stateById(var3);
-            if (!var24.isAir()) {
-               SoundType var27 = var24.getSoundType();
-               this.level.playLocalSound(var2, var27.getBreakSound(), SoundSource.BLOCKS, (var27.getVolume() + 1.0F) / 2.0F, var27.getPitch() * 0.8F, false);
+            BlockState blockState = Block.stateById(data);
+            if (!blockState.isAir()) {
+               SoundType soundType = blockState.getSoundType();
+               this.level.playLocalSound(pos, soundType.getBreakSound(), SoundSource.BLOCKS, (soundType.getVolume() + 1.0F) / 2.0F, soundType.getPitch() * 0.8F, false);
             }
 
-            this.level.addDestroyBlockEffect(var2, var24);
+            this.level.addDestroyBlockEffect(pos, blockState);
             break;
          case 2002:
          case 2007:
-            Vec3 var23 = Vec3.atBottomCenterOf(var2);
+            Vec3 particlePos = Vec3.atBottomCenterOf(pos);
+            ItemParticleOption breakParticle = new ItemParticleOption(ParticleTypes.ITEM, Items.SPLASH_POTION);
 
-            for(int var25 = 0; var25 < 8; ++var25) {
-               this.level.addParticle(new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(Items.SPLASH_POTION)), var23.x, var23.y, var23.z, var4.nextGaussian() * 0.15, var4.nextDouble() * 0.2, var4.nextGaussian() * 0.15);
+            for(int i = 0; i < 8; ++i) {
+               this.level.addParticle(breakParticle, particlePos.x, particlePos.y, particlePos.z, random.nextGaussian() * 0.15, random.nextDouble() * 0.2, random.nextGaussian() * 0.15);
             }
 
-            float var26 = (float)(var3 >> 16 & 255) / 255.0F;
-            float var33 = (float)(var3 >> 8 & 255) / 255.0F;
-            float var42 = (float)(var3 >> 0 & 255) / 255.0F;
-            ParticleType var47 = var1 == 2007 ? ParticleTypes.INSTANT_EFFECT : ParticleTypes.EFFECT;
+            float red = (float)(data >> 16 & 255) / 255.0F;
+            float green = (float)(data >> 8 & 255) / 255.0F;
+            float blue = (float)(data >> 0 & 255) / 255.0F;
+            ParticleType<SpellParticleOption> particleType = eventType == 2007 ? ParticleTypes.INSTANT_EFFECT : ParticleTypes.EFFECT;
 
-            for(int var53 = 0; var53 < 100; ++var53) {
-               double var61 = var4.nextDouble() * 4.0;
-               double var72 = var4.nextDouble() * 3.141592653589793 * 2.0;
-               double var80 = Math.cos(var72) * var61;
-               double var84 = 0.01 + var4.nextDouble() * 0.5;
-               double var19 = Math.sin(var72) * var61;
-               float var21 = 0.75F + var4.nextFloat() * 0.25F;
-               SpellParticleOption var22 = SpellParticleOption.create(var47, var26 * var21, var33 * var21, var42 * var21, (float)var61);
-               this.level.addParticle(var22, var23.x + var80 * 0.1, var23.y + 0.3, var23.z + var19 * 0.1, var80, var84, var19);
+            for(int i = 0; i < 100; ++i) {
+               double dist = random.nextDouble() * 4.0;
+               double angle = random.nextDouble() * 3.141592653589793 * 2.0;
+               double velocityX = Math.cos(angle) * dist;
+               double velocityY = 0.01 + random.nextDouble() * 0.5;
+               double velocityZ = Math.sin(angle) * dist;
+               float randomBrightness = 0.75F + random.nextFloat() * 0.25F;
+               SpellParticleOption particle = SpellParticleOption.create(particleType, red * randomBrightness, green * randomBrightness, blue * randomBrightness, (float)dist);
+               this.level.addParticle(particle, particlePos.x + velocityX * 0.1, particlePos.y + 0.3, particlePos.z + velocityZ * 0.1, velocityX, velocityY, velocityZ);
             }
 
-            this.level.playLocalSound(var2, SoundEvents.SPLASH_POTION_BREAK, SoundSource.NEUTRAL, 1.0F, var4.nextFloat() * 0.1F + 0.9F, false);
+            this.level.playLocalSound(pos, SoundEvents.SPLASH_POTION_BREAK, SoundSource.NEUTRAL, 1.0F, random.nextFloat() * 0.1F + 0.9F, false);
             break;
          case 2003:
-            double var5 = (double)var2.getX() + 0.5;
-            double var32 = (double)var2.getY();
-            double var46 = (double)var2.getZ() + 0.5;
+            double x = (double)pos.getX() + 0.5;
+            double y = (double)pos.getY();
+            double z = (double)pos.getZ() + 0.5;
+            ItemParticleOption breakParticle = new ItemParticleOption(ParticleTypes.ITEM, Items.ENDER_EYE);
 
-            for(int var59 = 0; var59 < 8; ++var59) {
-               this.level.addParticle(new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(Items.ENDER_EYE)), var5, var32, var46, var4.nextGaussian() * 0.15, var4.nextDouble() * 0.2, var4.nextGaussian() * 0.15);
+            for(int i = 0; i < 8; ++i) {
+               this.level.addParticle(breakParticle, x, y, z, random.nextGaussian() * 0.15, random.nextDouble() * 0.2, random.nextGaussian() * 0.15);
             }
 
-            for(double var60 = 0.0; var60 < 6.283185307179586; var60 += 0.15707963267948966) {
-               this.level.addParticle(ParticleTypes.PORTAL, var5 + Math.cos(var60) * 5.0, var32 - 0.4, var46 + Math.sin(var60) * 5.0, Math.cos(var60) * -5.0, 0.0, Math.sin(var60) * -5.0);
-               this.level.addParticle(ParticleTypes.PORTAL, var5 + Math.cos(var60) * 5.0, var32 - 0.4, var46 + Math.sin(var60) * 5.0, Math.cos(var60) * -7.0, 0.0, Math.sin(var60) * -7.0);
+            for(double angle = 0.0; angle < 6.283185307179586; angle += 0.15707963267948966) {
+               this.level.addParticle(ParticleTypes.PORTAL, x + Math.cos(angle) * 5.0, y - 0.4, z + Math.sin(angle) * 5.0, Math.cos(angle) * -5.0, 0.0, Math.sin(angle) * -5.0);
+               this.level.addParticle(ParticleTypes.PORTAL, x + Math.cos(angle) * 5.0, y - 0.4, z + Math.sin(angle) * 5.0, Math.cos(angle) * -7.0, 0.0, Math.sin(angle) * -7.0);
             }
             break;
          case 2004:
-            for(int var31 = 0; var31 < 20; ++var31) {
-               double var41 = (double)var2.getX() + 0.5 + (var4.nextDouble() - 0.5) * 2.0;
-               double var52 = (double)var2.getY() + 0.5 + (var4.nextDouble() - 0.5) * 2.0;
-               double var68 = (double)var2.getZ() + 0.5 + (var4.nextDouble() - 0.5) * 2.0;
-               this.level.addParticle(ParticleTypes.SMOKE, var41, var52, var68, 0.0, 0.0, 0.0);
-               this.level.addParticle(ParticleTypes.FLAME, var41, var52, var68, 0.0, 0.0, 0.0);
+            for(int i = 0; i < 20; ++i) {
+               double x = (double)pos.getX() + 0.5 + (random.nextDouble() - 0.5) * 2.0;
+               double y = (double)pos.getY() + 0.5 + (random.nextDouble() - 0.5) * 2.0;
+               double z = (double)pos.getZ() + 0.5 + (random.nextDouble() - 0.5) * 2.0;
+               this.level.addParticle(ParticleTypes.SMOKE, x, y, z, 0.0, 0.0, 0.0);
+               this.level.addParticle(ParticleTypes.FLAME, x, y, z, 0.0, 0.0, 0.0);
             }
             break;
          case 2006:
-            for(int var51 = 0; var51 < 200; ++var51) {
-               float var58 = var4.nextFloat() * 4.0F;
-               float var67 = var4.nextFloat() * 6.2831855F;
-               double var71 = (double)(Mth.cos((double)var67) * var58);
-               double var79 = 0.01 + var4.nextDouble() * 0.5;
-               double var83 = (double)(Mth.sin((double)var67) * var58);
-               this.level.addParticle(PowerParticleOption.create(ParticleTypes.DRAGON_BREATH, var58), (double)var2.getX() + var71 * 0.1, (double)var2.getY() + 0.3, (double)var2.getZ() + var83 * 0.1, var71, var79, var83);
+            for(int i = 0; i < 200; ++i) {
+               float dist = random.nextFloat() * 4.0F;
+               float angle = random.nextFloat() * 6.2831855F;
+               double velocityX = (double)(Mth.cos((double)angle) * dist);
+               double velocityY = 0.01 + random.nextDouble() * 0.5;
+               double velocityZ = (double)(Mth.sin((double)angle) * dist);
+               this.level.addParticle(PowerParticleOption.create(ParticleTypes.DRAGON_BREATH, dist), (double)pos.getX() + velocityX * 0.1, (double)pos.getY() + 0.3, (double)pos.getZ() + velocityZ * 0.1, velocityX, velocityY, velocityZ);
             }
 
-            if (var3 == 1) {
-               this.level.playLocalSound(var2, SoundEvents.DRAGON_FIREBALL_EXPLODE, SoundSource.HOSTILE, 1.0F, var4.nextFloat() * 0.1F + 0.9F, false);
+            if (data == 1) {
+               this.level.playLocalSound(pos, SoundEvents.DRAGON_FIREBALL_EXPLODE, SoundSource.HOSTILE, 1.0F, random.nextFloat() * 0.1F + 0.9F, false);
             }
             break;
          case 2008:
-            this.level.addParticle(ParticleTypes.EXPLOSION, (double)var2.getX() + 0.5, (double)var2.getY() + 0.5, (double)var2.getZ() + 0.5, 0.0, 0.0, 0.0);
+            this.level.addParticle(ParticleTypes.EXPLOSION, (double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5, 0.0, 0.0, 0.0);
             break;
          case 2009:
-            for(int var50 = 0; var50 < 8; ++var50) {
-               this.level.addParticle(ParticleTypes.CLOUD, (double)var2.getX() + var4.nextDouble(), (double)var2.getY() + 1.2, (double)var2.getZ() + var4.nextDouble(), 0.0, 0.0, 0.0);
+            for(int i = 0; i < 8; ++i) {
+               this.level.addParticle(ParticleTypes.CLOUD, (double)pos.getX() + random.nextDouble(), (double)pos.getY() + 1.2, (double)pos.getZ() + random.nextDouble(), 0.0, 0.0, 0.0);
             }
             break;
          case 2010:
-            this.shootParticles(var3, var2, var4, ParticleTypes.WHITE_SMOKE);
+            this.shootParticles(data, pos, random, ParticleTypes.WHITE_SMOKE);
             break;
          case 2011:
-            ParticleUtils.spawnParticleInBlock(this.level, var2, var3, ParticleTypes.HAPPY_VILLAGER);
+            ParticleUtils.spawnParticleInBlock(this.level, pos, data, ParticleTypes.HAPPY_VILLAGER);
             break;
          case 2012:
-            ParticleUtils.spawnParticleInBlock(this.level, var2, var3, ParticleTypes.HAPPY_VILLAGER);
+            ParticleUtils.spawnParticleInBlock(this.level, pos, data, ParticleTypes.HAPPY_VILLAGER);
             break;
          case 2013:
-            ParticleUtils.spawnSmashAttackParticles(this.level, var2, var3);
+            ParticleUtils.spawnSmashAttackParticles(this.level, pos, data);
             break;
          case 3000:
-            this.level.addAlwaysVisibleParticle(ParticleTypes.EXPLOSION_EMITTER, true, (double)var2.getX() + 0.5, (double)var2.getY() + 0.5, (double)var2.getZ() + 0.5, 0.0, 0.0, 0.0);
-            this.level.playLocalSound(var2, SoundEvents.END_GATEWAY_SPAWN, SoundSource.BLOCKS, 10.0F, (1.0F + (this.level.random.nextFloat() - this.level.random.nextFloat()) * 0.2F) * 0.7F, false);
+            this.level.addAlwaysVisibleParticle(ParticleTypes.EXPLOSION_EMITTER, true, (double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5, 0.0, 0.0, 0.0);
+            this.level.playLocalSound(pos, SoundEvents.END_GATEWAY_SPAWN, SoundSource.BLOCKS, 10.0F, (1.0F + (random.nextFloat() - random.nextFloat()) * 0.2F) * 0.7F, false);
             break;
          case 3001:
-            this.level.playLocalSound(var2, SoundEvents.ENDER_DRAGON_GROWL, SoundSource.HOSTILE, 64.0F, 0.8F + this.level.random.nextFloat() * 0.3F, false);
+            this.level.playLocalSound(pos, SoundEvents.ENDER_DRAGON_GROWL, SoundSource.HOSTILE, 64.0F, 0.8F + random.nextFloat() * 0.3F, false);
             break;
          case 3002:
-            if (var3 >= 0 && var3 < Direction.Axis.VALUES.length) {
-               ParticleUtils.spawnParticlesAlongAxis(Direction.Axis.VALUES[var3], this.level, var2, 0.125, ParticleTypes.ELECTRIC_SPARK, UniformInt.of(10, 19));
+            if (data >= 0 && data < Direction.Axis.VALUES.length) {
+               ParticleUtils.spawnParticlesAlongAxis(Direction.Axis.VALUES[data], this.level, pos, 0.125, ParticleTypes.ELECTRIC_SPARK, UniformInt.of(10, 19));
             } else {
-               ParticleUtils.spawnParticlesOnBlockFaces(this.level, var2, ParticleTypes.ELECTRIC_SPARK, UniformInt.of(3, 5));
+               ParticleUtils.spawnParticlesOnBlockFaces(this.level, pos, ParticleTypes.ELECTRIC_SPARK, UniformInt.of(3, 5));
             }
             break;
          case 3003:
-            ParticleUtils.spawnParticlesOnBlockFaces(this.level, var2, ParticleTypes.WAX_ON, UniformInt.of(3, 5));
-            this.level.playLocalSound(var2, SoundEvents.HONEYCOMB_WAX_ON, SoundSource.BLOCKS, 1.0F, 1.0F, false);
+            ParticleUtils.spawnParticlesOnBlockFaces(this.level, pos, ParticleTypes.WAX_ON, UniformInt.of(3, 5));
+            this.level.playLocalSound(pos, SoundEvents.HONEYCOMB_WAX_ON, SoundSource.BLOCKS, 1.0F, 1.0F, false);
             break;
          case 3004:
-            ParticleUtils.spawnParticlesOnBlockFaces(this.level, var2, ParticleTypes.WAX_OFF, UniformInt.of(3, 5));
+            ParticleUtils.spawnParticlesOnBlockFaces(this.level, pos, ParticleTypes.WAX_OFF, UniformInt.of(3, 5));
             break;
          case 3005:
-            ParticleUtils.spawnParticlesOnBlockFaces(this.level, var2, ParticleTypes.SCRAPE, UniformInt.of(3, 5));
+            ParticleUtils.spawnParticlesOnBlockFaces(this.level, pos, ParticleTypes.SCRAPE, UniformInt.of(3, 5));
             break;
          case 3006:
-            int var30 = var3 >> 6;
-            if (var30 > 0) {
-               if (var4.nextFloat() < 0.3F + (float)var30 * 0.1F) {
-                  float var38 = 0.15F + 0.02F * (float)var30 * (float)var30 * var4.nextFloat();
-                  float var43 = 0.4F + 0.3F * (float)var30 * var4.nextFloat();
-                  this.level.playLocalSound(var2, SoundEvents.SCULK_BLOCK_CHARGE, SoundSource.BLOCKS, var38, var43, false);
+            int count = data >> 6;
+            if (count > 0) {
+               if (random.nextFloat() < 0.3F + (float)count * 0.1F) {
+                  float volume = 0.15F + 0.02F * (float)count * (float)count * random.nextFloat();
+                  float pitch = 0.4F + 0.3F * (float)count * random.nextFloat();
+                  this.level.playLocalSound(pos, SoundEvents.SCULK_BLOCK_CHARGE, SoundSource.BLOCKS, volume, pitch, false);
                }
 
-               byte var39 = (byte)(var3 & 63);
-               UniformInt var44 = UniformInt.of(0, var30);
-               float var48 = 0.005F;
-               Supplier var11 = () -> new Vec3(Mth.nextDouble(var4, -0.004999999888241291, 0.004999999888241291), Mth.nextDouble(var4, -0.004999999888241291, 0.004999999888241291), Mth.nextDouble(var4, -0.004999999888241291, 0.004999999888241291));
-               if (var39 == 0) {
-                  for(Direction var15 : Direction.values()) {
-                     float var16 = var15 == Direction.DOWN ? 3.1415927F : 0.0F;
-                     double var17 = var15.getAxis() == Direction.Axis.Y ? 0.65 : 0.57;
-                     ParticleUtils.spawnParticlesOnBlockFace(this.level, var2, new SculkChargeParticleOptions(var16), var44, var15, var11, var17);
+               byte particleData = (byte)(data & 63);
+               IntProvider repetition = UniformInt.of(0, count);
+               float speedVar = 0.005F;
+               Supplier<Vec3> speedSupplier = () -> new Vec3(Mth.nextDouble(random, -0.004999999888241291, 0.004999999888241291), Mth.nextDouble(random, -0.004999999888241291, 0.004999999888241291), Mth.nextDouble(random, -0.004999999888241291, 0.004999999888241291));
+               if (particleData == 0) {
+                  for(Direction direction : Direction.values()) {
+                     float fullBlockRotation = direction == Direction.DOWN ? 3.1415927F : 0.0F;
+                     double fullBlockFactor = direction.getAxis() == Direction.Axis.Y ? 0.65 : 0.57;
+                     ParticleUtils.spawnParticlesOnBlockFace(this.level, pos, new SculkChargeParticleOptions(fullBlockRotation), repetition, direction, speedSupplier, fullBlockFactor);
                   }
                } else {
-                  for(Direction var69 : MultifaceBlock.unpack(var39)) {
-                     float var75 = var69 == Direction.UP ? 3.1415927F : 0.0F;
-                     double var77 = 0.35;
-                     ParticleUtils.spawnParticlesOnBlockFace(this.level, var2, new SculkChargeParticleOptions(var75), var44, var69, var11, 0.35);
+                  for(Direction direction : MultifaceBlock.unpack(particleData)) {
+                     float facesBlockRotation = direction == Direction.UP ? 3.1415927F : 0.0F;
+                     double facesBlockFactor = 0.35;
+                     ParticleUtils.spawnParticlesOnBlockFace(this.level, pos, new SculkChargeParticleOptions(facesBlockRotation), repetition, direction, speedSupplier, 0.35);
                   }
                }
             } else {
-               this.level.playLocalSound(var2, SoundEvents.SCULK_BLOCK_CHARGE, SoundSource.BLOCKS, 1.0F, 1.0F, false);
-               boolean var40 = this.level.getBlockState(var2).isCollisionShapeFullBlock(this.level, var2);
-               int var45 = var40 ? 40 : 20;
-               float var49 = var40 ? 0.45F : 0.25F;
-               float var57 = 0.07F;
+               this.level.playLocalSound(pos, SoundEvents.SCULK_BLOCK_CHARGE, SoundSource.BLOCKS, 1.0F, 1.0F, false);
+               boolean isSolid = this.level.getBlockState(pos).isCollisionShapeFullBlock(this.level, pos);
+               int particleCount = isSolid ? 40 : 20;
+               float spread = isSolid ? 0.45F : 0.25F;
+               float speed = 0.07F;
 
-               for(int var66 = 0; var66 < var45; ++var66) {
-                  float var70 = 2.0F * var4.nextFloat() - 1.0F;
-                  float var76 = 2.0F * var4.nextFloat() - 1.0F;
-                  float var78 = 2.0F * var4.nextFloat() - 1.0F;
-                  this.level.addParticle(ParticleTypes.SCULK_CHARGE_POP, (double)var2.getX() + 0.5 + (double)(var70 * var49), (double)var2.getY() + 0.5 + (double)(var76 * var49), (double)var2.getZ() + 0.5 + (double)(var78 * var49), (double)(var70 * 0.07F), (double)(var76 * 0.07F), (double)(var78 * 0.07F));
+               for(int i = 0; i < particleCount; ++i) {
+                  float velocityX = 2.0F * random.nextFloat() - 1.0F;
+                  float velocityY = 2.0F * random.nextFloat() - 1.0F;
+                  float velocityZ = 2.0F * random.nextFloat() - 1.0F;
+                  this.level.addParticle(ParticleTypes.SCULK_CHARGE_POP, (double)pos.getX() + 0.5 + (double)(velocityX * spread), (double)pos.getY() + 0.5 + (double)(velocityY * spread), (double)pos.getZ() + 0.5 + (double)(velocityZ * spread), (double)(velocityX * 0.07F), (double)(velocityY * 0.07F), (double)(velocityZ * 0.07F));
                }
             }
             break;
          case 3007:
-            for(int var36 = 0; var36 < 10; ++var36) {
-               this.level.addParticle(new ShriekParticleOption(var36 * 5), (double)var2.getX() + 0.5, (double)var2.getY() + SculkShriekerBlock.TOP_Y, (double)var2.getZ() + 0.5, 0.0, 0.0, 0.0);
+            for(int i = 0; i < 10; ++i) {
+               this.level.addParticle(new ShriekParticleOption(i * 5), (double)pos.getX() + 0.5, (double)pos.getY() + SculkShriekerBlock.TOP_Y, (double)pos.getZ() + 0.5, 0.0, 0.0, 0.0);
             }
 
-            BlockState var37 = this.level.getBlockState(var2);
-            boolean var9 = var37.hasProperty(BlockStateProperties.WATERLOGGED) && (Boolean)var37.getValue(BlockStateProperties.WATERLOGGED);
-            if (!var9) {
-               this.level.playLocalSound((double)var2.getX() + 0.5, (double)var2.getY() + SculkShriekerBlock.TOP_Y, (double)var2.getZ() + 0.5, SoundEvents.SCULK_SHRIEKER_SHRIEK, SoundSource.BLOCKS, 2.0F, 0.6F + this.level.random.nextFloat() * 0.4F, false);
+            BlockState state = this.level.getBlockState(pos);
+            boolean isWaterlogged = state.hasProperty(BlockStateProperties.WATERLOGGED) && (Boolean)state.getValue(BlockStateProperties.WATERLOGGED);
+            if (!isWaterlogged) {
+               this.level.playLocalSound((double)pos.getX() + 0.5, (double)pos.getY() + SculkShriekerBlock.TOP_Y, (double)pos.getZ() + 0.5, SoundEvents.SCULK_SHRIEKER_SHRIEK, SoundSource.BLOCKS, 2.0F, 0.6F + random.nextFloat() * 0.4F, false);
             }
             break;
          case 3008:
-            BlockState var6 = Block.stateById(var3);
-            Block var35 = var6.getBlock();
-            if (var35 instanceof BrushableBlock var29) {
-               this.level.playLocalSound(var2, var29.getBrushCompletedSound(), SoundSource.PLAYERS, 1.0F, 1.0F, false);
+            BlockState blockStateForBrushing = Block.stateById(data);
+            Block velocityX = blockStateForBrushing.getBlock();
+            if (velocityX instanceof BrushableBlock brushableBlock) {
+               this.level.playLocalSound(pos, brushableBlock.getBrushCompletedSound(), SoundSource.PLAYERS, 1.0F, 1.0F, false);
             }
 
-            this.level.addDestroyBlockEffect(var2, var6);
+            this.level.addDestroyBlockEffect(pos, blockStateForBrushing);
             break;
          case 3009:
-            ParticleUtils.spawnParticlesOnBlockFaces(this.level, var2, ParticleTypes.EGG_CRACK, UniformInt.of(3, 6));
+            ParticleUtils.spawnParticlesOnBlockFaces(this.level, pos, ParticleTypes.EGG_CRACK, UniformInt.of(3, 6));
             break;
          case 3011:
-            TrialSpawner.addSpawnParticles(this.level, var2, var4, TrialSpawner.FlameParticle.decode(var3).particleType);
+            TrialSpawner.addSpawnParticles(this.level, pos, random, TrialSpawner.FlameParticle.decode(data).particleType);
             break;
          case 3012:
-            this.level.playLocalSound(var2, SoundEvents.TRIAL_SPAWNER_SPAWN_MOB, SoundSource.BLOCKS, 1.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, true);
-            TrialSpawner.addSpawnParticles(this.level, var2, var4, TrialSpawner.FlameParticle.decode(var3).particleType);
+            this.level.playLocalSound(pos, SoundEvents.TRIAL_SPAWNER_SPAWN_MOB, SoundSource.BLOCKS, 1.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F, true);
+            TrialSpawner.addSpawnParticles(this.level, pos, random, TrialSpawner.FlameParticle.decode(data).particleType);
             break;
          case 3013:
-            this.level.playLocalSound(var2, SoundEvents.TRIAL_SPAWNER_DETECT_PLAYER, SoundSource.BLOCKS, 1.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, true);
-            TrialSpawner.addDetectPlayerParticles(this.level, var2, var4, var3, ParticleTypes.TRIAL_SPAWNER_DETECTED_PLAYER);
+            this.level.playLocalSound(pos, SoundEvents.TRIAL_SPAWNER_DETECT_PLAYER, SoundSource.BLOCKS, 1.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F, true);
+            TrialSpawner.addDetectPlayerParticles(this.level, pos, random, data, ParticleTypes.TRIAL_SPAWNER_DETECTED_PLAYER);
             break;
          case 3014:
-            this.level.playLocalSound(var2, SoundEvents.TRIAL_SPAWNER_EJECT_ITEM, SoundSource.BLOCKS, 1.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, true);
-            TrialSpawner.addEjectItemParticles(this.level, var2, var4);
+            this.level.playLocalSound(pos, SoundEvents.TRIAL_SPAWNER_EJECT_ITEM, SoundSource.BLOCKS, 1.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F, true);
+            TrialSpawner.addEjectItemParticles(this.level, pos, random);
             break;
          case 3015:
-            BlockEntity var34 = this.level.getBlockEntity(var2);
-            if (var34 instanceof VaultBlockEntity var28) {
-               VaultBlockEntity.Client.emitActivationParticles(this.level, var28.getBlockPos(), var28.getBlockState(), var28.getSharedData(), var3 == 0 ? ParticleTypes.SMALL_FLAME : ParticleTypes.SOUL_FIRE_FLAME);
-               this.level.playLocalSound(var2, SoundEvents.VAULT_ACTIVATE, SoundSource.BLOCKS, 1.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, true);
+            BlockEntity x = this.level.getBlockEntity(pos);
+            if (x instanceof VaultBlockEntity entity) {
+               VaultBlockEntity.Client.emitActivationParticles(this.level, entity.getBlockPos(), entity.getBlockState(), entity.getSharedData(), data == 0 ? ParticleTypes.SMALL_FLAME : ParticleTypes.SOUL_FIRE_FLAME);
+               this.level.playLocalSound(pos, SoundEvents.VAULT_ACTIVATE, SoundSource.BLOCKS, 1.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F, true);
             }
             break;
          case 3016:
-            VaultBlockEntity.Client.emitDeactivationParticles(this.level, var2, var3 == 0 ? ParticleTypes.SMALL_FLAME : ParticleTypes.SOUL_FIRE_FLAME);
-            this.level.playLocalSound(var2, SoundEvents.VAULT_DEACTIVATE, SoundSource.BLOCKS, 1.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, true);
+            VaultBlockEntity.Client.emitDeactivationParticles(this.level, pos, data == 0 ? ParticleTypes.SMALL_FLAME : ParticleTypes.SOUL_FIRE_FLAME);
+            this.level.playLocalSound(pos, SoundEvents.VAULT_DEACTIVATE, SoundSource.BLOCKS, 1.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F, true);
             break;
          case 3017:
-            TrialSpawner.addEjectItemParticles(this.level, var2, var4);
+            TrialSpawner.addEjectItemParticles(this.level, pos, random);
             break;
          case 3018:
-            for(int var7 = 0; var7 < 10; ++var7) {
-               double var8 = var4.nextGaussian() * 0.02;
-               double var10 = var4.nextGaussian() * 0.02;
-               double var12 = var4.nextGaussian() * 0.02;
-               this.level.addParticle(ParticleTypes.POOF, (double)var2.getX() + var4.nextDouble(), (double)var2.getY() + var4.nextDouble(), (double)var2.getZ() + var4.nextDouble(), var8, var10, var12);
+            for(int i = 0; i < 10; ++i) {
+               double velocityX = random.nextGaussian() * 0.02;
+               double velocityY = random.nextGaussian() * 0.02;
+               double velocityZ = random.nextGaussian() * 0.02;
+               this.level.addParticle(ParticleTypes.POOF, (double)pos.getX() + random.nextDouble(), (double)pos.getY() + random.nextDouble(), (double)pos.getZ() + random.nextDouble(), velocityX, velocityY, velocityZ);
             }
 
-            this.level.playLocalSound(var2, SoundEvents.COBWEB_PLACE, SoundSource.BLOCKS, 1.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, true);
+            this.level.playLocalSound(pos, SoundEvents.COBWEB_PLACE, SoundSource.BLOCKS, 1.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F, true);
             break;
          case 3019:
-            this.level.playLocalSound(var2, SoundEvents.TRIAL_SPAWNER_DETECT_PLAYER, SoundSource.BLOCKS, 1.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, true);
-            TrialSpawner.addDetectPlayerParticles(this.level, var2, var4, var3, ParticleTypes.TRIAL_SPAWNER_DETECTED_PLAYER_OMINOUS);
+            this.level.playLocalSound(pos, SoundEvents.TRIAL_SPAWNER_DETECT_PLAYER, SoundSource.BLOCKS, 1.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F, true);
+            TrialSpawner.addDetectPlayerParticles(this.level, pos, random, data, ParticleTypes.TRIAL_SPAWNER_DETECTED_PLAYER_OMINOUS);
             break;
          case 3020:
-            this.level.playLocalSound(var2, SoundEvents.TRIAL_SPAWNER_OMINOUS_ACTIVATE, SoundSource.BLOCKS, var3 == 0 ? 0.3F : 1.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, true);
-            TrialSpawner.addDetectPlayerParticles(this.level, var2, var4, 0, ParticleTypes.TRIAL_SPAWNER_DETECTED_PLAYER_OMINOUS);
-            TrialSpawner.addBecomeOminousParticles(this.level, var2, var4);
+            this.level.playLocalSound(pos, SoundEvents.TRIAL_SPAWNER_OMINOUS_ACTIVATE, SoundSource.BLOCKS, data == 0 ? 0.3F : 1.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F, true);
+            TrialSpawner.addDetectPlayerParticles(this.level, pos, random, 0, ParticleTypes.TRIAL_SPAWNER_DETECTED_PLAYER_OMINOUS);
+            TrialSpawner.addBecomeOminousParticles(this.level, pos, random);
             break;
          case 3021:
-            this.level.playLocalSound(var2, SoundEvents.TRIAL_SPAWNER_SPAWN_ITEM, SoundSource.BLOCKS, 1.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, true);
-            TrialSpawner.addSpawnParticles(this.level, var2, var4, TrialSpawner.FlameParticle.decode(var3).particleType);
+            this.level.playLocalSound(pos, SoundEvents.TRIAL_SPAWNER_SPAWN_ITEM, SoundSource.BLOCKS, 1.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F, true);
+            TrialSpawner.addSpawnParticles(this.level, pos, random, TrialSpawner.FlameParticle.decode(data).particleType);
       }
 
    }
 
-   private void shootParticles(int var1, BlockPos var2, RandomSource var3, SimpleParticleType var4) {
-      Direction var5 = Direction.from3DDataValue(var1);
-      int var6 = var5.getStepX();
-      int var7 = var5.getStepY();
-      int var8 = var5.getStepZ();
+   private void shootParticles(final int data, final BlockPos pos, final RandomSource random, final SimpleParticleType particle) {
+      Direction direction = Direction.from3DDataValue(data);
+      int normalX = direction.getStepX();
+      int normalY = direction.getStepY();
+      int normalZ = direction.getStepZ();
 
-      for(int var9 = 0; var9 < 10; ++var9) {
-         double var10 = var3.nextDouble() * 0.2 + 0.01;
-         double var12 = (double)var2.getX() + (double)var6 * 0.6 + 0.5 + (double)var6 * 0.01 + (var3.nextDouble() - 0.5) * (double)var8 * 0.5;
-         double var14 = (double)var2.getY() + (double)var7 * 0.6 + 0.5 + (double)var7 * 0.01 + (var3.nextDouble() - 0.5) * (double)var7 * 0.5;
-         double var16 = (double)var2.getZ() + (double)var8 * 0.6 + 0.5 + (double)var8 * 0.01 + (var3.nextDouble() - 0.5) * (double)var6 * 0.5;
-         double var18 = (double)var6 * var10 + var3.nextGaussian() * 0.01;
-         double var20 = (double)var7 * var10 + var3.nextGaussian() * 0.01;
-         double var22 = (double)var8 * var10 + var3.nextGaussian() * 0.01;
-         this.level.addParticle(var4, var12, var14, var16, var18, var20, var22);
+      for(int i = 0; i < 10; ++i) {
+         double pow = random.nextDouble() * 0.2 + 0.01;
+         double x = (double)pos.getX() + (double)normalX * 0.6 + 0.5 + (double)normalX * 0.01 + (random.nextDouble() - 0.5) * (double)normalZ * 0.5;
+         double y = (double)pos.getY() + (double)normalY * 0.6 + 0.5 + (double)normalY * 0.01 + (random.nextDouble() - 0.5) * (double)normalY * 0.5;
+         double z = (double)pos.getZ() + (double)normalZ * 0.6 + 0.5 + (double)normalZ * 0.01 + (random.nextDouble() - 0.5) * (double)normalX * 0.5;
+         double velocityX = (double)normalX * pow + random.nextGaussian() * 0.01;
+         double velocityY = (double)normalY * pow + random.nextGaussian() * 0.01;
+         double velocityZ = (double)normalZ * pow + random.nextGaussian() * 0.01;
+         this.level.addParticle(particle, x, y, z, velocityX, velocityY, velocityZ);
       }
 
    }
 
-   private void playJukeboxSong(Holder<JukeboxSong> var1, BlockPos var2) {
-      this.stopJukeboxSong(var2);
-      JukeboxSong var3 = (JukeboxSong)var1.value();
-      SoundEvent var4 = (SoundEvent)var3.soundEvent().value();
-      SimpleSoundInstance var5 = SimpleSoundInstance.forJukeboxSong(var4, Vec3.atCenterOf(var2));
-      this.playingJukeboxSongs.put(var2, var5);
-      this.minecraft.getSoundManager().play(var5);
-      this.minecraft.gui.setNowPlaying(var3.description());
-      this.notifyNearbyEntities(this.level, var2, true);
+   private void playJukeboxSong(final Holder<JukeboxSong> songHolder, final BlockPos pos) {
+      this.stopJukeboxSong(pos);
+      JukeboxSong song = songHolder.value();
+      SoundEvent sound = (SoundEvent)song.soundEvent().value();
+      SoundInstance instance = SimpleSoundInstance.forJukeboxSong(sound, Vec3.atCenterOf(pos));
+      this.playingJukeboxSongs.put(pos, instance);
+      this.minecraft.getSoundManager().play(instance);
+      this.minecraft.gui.setNowPlaying(song.description());
+      this.notifyNearbyEntities(this.level, pos, true);
    }
 
-   private void stopJukeboxSong(BlockPos var1) {
-      SoundInstance var2 = (SoundInstance)this.playingJukeboxSongs.remove(var1);
-      if (var2 != null) {
-         this.minecraft.getSoundManager().stop(var2);
+   private void stopJukeboxSong(final BlockPos pos) {
+      SoundInstance removedInstance = (SoundInstance)this.playingJukeboxSongs.remove(pos);
+      if (removedInstance != null) {
+         this.minecraft.getSoundManager().stop(removedInstance);
       }
 
    }
 
-   private void stopJukeboxSongAndNotifyNearby(BlockPos var1) {
-      this.stopJukeboxSong(var1);
-      this.notifyNearbyEntities(this.level, var1, false);
+   private void stopJukeboxSongAndNotifyNearby(final BlockPos pos) {
+      this.stopJukeboxSong(pos);
+      this.notifyNearbyEntities(this.level, pos, false);
    }
 
-   private void notifyNearbyEntities(Level var1, BlockPos var2, boolean var3) {
-      for(LivingEntity var6 : var1.getEntitiesOfClass(LivingEntity.class, (new AABB(var2)).inflate(3.0))) {
-         var6.setRecordPlayingNearby(var2, var3);
+   private void notifyNearbyEntities(final Level level, final BlockPos pos, final boolean isPlaying) {
+      for(LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, (new AABB(pos)).inflate(3.0))) {
+         entity.setRecordPlayingNearby(pos, isPlaying);
       }
 
    }

@@ -14,26 +14,26 @@ public class PathfindingContext {
    private final BlockPos mobPosition;
    private final BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
 
-   public PathfindingContext(CollisionGetter var1, Mob var2) {
+   public PathfindingContext(final CollisionGetter level, final Mob mob) {
       super();
-      this.level = var1;
-      Level var4 = var2.level();
-      if (var4 instanceof ServerLevel var3) {
-         this.cache = var3.getPathTypeCache();
+      this.level = level;
+      Level var4 = mob.level();
+      if (var4 instanceof ServerLevel serverLevel) {
+         this.cache = serverLevel.getPathTypeCache();
       } else {
          this.cache = null;
       }
 
-      this.mobPosition = var2.blockPosition();
+      this.mobPosition = mob.blockPosition();
    }
 
-   public PathType getPathTypeFromState(int var1, int var2, int var3) {
-      BlockPos.MutableBlockPos var4 = this.mutablePos.set(var1, var2, var3);
-      return this.cache == null ? WalkNodeEvaluator.getPathTypeFromState(this.level, var4) : this.cache.getOrCompute(this.level, var4);
+   public PathType getPathTypeFromState(final int x, final int y, final int z) {
+      BlockPos pos = this.mutablePos.set(x, y, z);
+      return this.cache == null ? WalkNodeEvaluator.getPathTypeFromState(this.level, pos) : this.cache.getOrCompute(this.level, pos);
    }
 
-   public BlockState getBlockState(BlockPos var1) {
-      return this.level.getBlockState(var1);
+   public BlockState getBlockState(final BlockPos pos) {
+      return this.level.getBlockState(pos);
    }
 
    public CollisionGetter level() {

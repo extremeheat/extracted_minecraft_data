@@ -11,10 +11,10 @@ public class AdvancementNode {
    private final Set<AdvancementNode> children = new ReferenceOpenHashSet();
 
    @VisibleForTesting
-   public AdvancementNode(AdvancementHolder var1, @Nullable AdvancementNode var2) {
+   public AdvancementNode(final AdvancementHolder holder, final @Nullable AdvancementNode parent) {
       super();
-      this.holder = var1;
-      this.parent = var2;
+      this.holder = holder;
+      this.parent = parent;
    }
 
    public Advancement advancement() {
@@ -33,16 +33,16 @@ public class AdvancementNode {
       return getRoot(this);
    }
 
-   public static AdvancementNode getRoot(AdvancementNode var0) {
-      AdvancementNode var1 = var0;
+   public static AdvancementNode getRoot(final AdvancementNode advancement) {
+      AdvancementNode root = advancement;
 
       while(true) {
-         AdvancementNode var2 = var1.parent();
-         if (var2 == null) {
-            return var1;
+         AdvancementNode parent = root.parent();
+         if (parent == null) {
+            return root;
          }
 
-         var1 = var2;
+         root = parent;
       }
    }
 
@@ -51,18 +51,18 @@ public class AdvancementNode {
    }
 
    @VisibleForTesting
-   public void addChild(AdvancementNode var1) {
-      this.children.add(var1);
+   public void addChild(final AdvancementNode child) {
+      this.children.add(child);
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
+   public boolean equals(final Object obj) {
+      if (this == obj) {
          return true;
       } else {
          boolean var10000;
-         if (var1 instanceof AdvancementNode) {
-            AdvancementNode var2 = (AdvancementNode)var1;
-            if (this.holder.equals(var2.holder)) {
+         if (obj instanceof AdvancementNode) {
+            AdvancementNode that = (AdvancementNode)obj;
+            if (this.holder.equals(that.holder)) {
                var10000 = true;
                return var10000;
             }

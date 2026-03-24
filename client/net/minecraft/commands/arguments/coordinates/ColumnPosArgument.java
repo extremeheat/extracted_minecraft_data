@@ -30,50 +30,45 @@ public class ColumnPosArgument implements ArgumentType<Coordinates> {
       return new ColumnPosArgument();
    }
 
-   public static ColumnPos getColumnPos(CommandContext<CommandSourceStack> var0, String var1) {
-      BlockPos var2 = ((Coordinates)var0.getArgument(var1, Coordinates.class)).getBlockPos((CommandSourceStack)var0.getSource());
-      return new ColumnPos(var2.getX(), var2.getZ());
+   public static ColumnPos getColumnPos(final CommandContext<CommandSourceStack> context, final String name) {
+      BlockPos pos = ((Coordinates)context.getArgument(name, Coordinates.class)).getBlockPos((CommandSourceStack)context.getSource());
+      return new ColumnPos(pos.getX(), pos.getZ());
    }
 
-   public Coordinates parse(StringReader var1) throws CommandSyntaxException {
-      int var2 = var1.getCursor();
-      if (!var1.canRead()) {
-         throw ERROR_NOT_COMPLETE.createWithContext(var1);
+   public Coordinates parse(final StringReader reader) throws CommandSyntaxException {
+      int start = reader.getCursor();
+      if (!reader.canRead()) {
+         throw ERROR_NOT_COMPLETE.createWithContext(reader);
       } else {
-         WorldCoordinate var3 = WorldCoordinate.parseInt(var1);
-         if (var1.canRead() && var1.peek() == ' ') {
-            var1.skip();
-            WorldCoordinate var4 = WorldCoordinate.parseInt(var1);
-            return new WorldCoordinates(var3, new WorldCoordinate(true, 0.0), var4);
+         WorldCoordinate x = WorldCoordinate.parseInt(reader);
+         if (reader.canRead() && reader.peek() == ' ') {
+            reader.skip();
+            WorldCoordinate z = WorldCoordinate.parseInt(reader);
+            return new WorldCoordinates(x, new WorldCoordinate(true, 0.0), z);
          } else {
-            var1.setCursor(var2);
-            throw ERROR_NOT_COMPLETE.createWithContext(var1);
+            reader.setCursor(start);
+            throw ERROR_NOT_COMPLETE.createWithContext(reader);
          }
       }
    }
 
-   public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      if (!(var1.getSource() instanceof SharedSuggestionProvider)) {
+   public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
+      if (!(context.getSource() instanceof SharedSuggestionProvider)) {
          return Suggestions.empty();
       } else {
-         String var3 = var2.getRemaining();
-         Object var4;
-         if (!var3.isEmpty() && var3.charAt(0) == '^') {
-            var4 = Collections.singleton(SharedSuggestionProvider.TextCoordinates.DEFAULT_LOCAL);
+         String remainder = builder.getRemaining();
+         Collection<SharedSuggestionProvider.TextCoordinates> suggestedCoordinates;
+         if (!remainder.isEmpty() && remainder.charAt(0) == '^') {
+            suggestedCoordinates = Collections.singleton(SharedSuggestionProvider.TextCoordinates.DEFAULT_LOCAL);
          } else {
-            var4 = ((SharedSuggestionProvider)var1.getSource()).getRelevantCoordinates();
+            suggestedCoordinates = ((SharedSuggestionProvider)context.getSource()).getRelevantCoordinates();
          }
 
-         return SharedSuggestionProvider.suggest2DCoordinates(var3, (Collection)var4, var2, Commands.createValidator(this::parse));
+         return SharedSuggestionProvider.suggest2DCoordinates(remainder, suggestedCoordinates, builder, Commands.createValidator(this::parse));
       }
    }
 
    public Collection<String> getExamples() {
       return EXAMPLES;
-   }
-
-   // $FF: synthetic method
-   public Object parse(final StringReader var1) throws CommandSyntaxException {
-      return this.parse(var1);
    }
 }

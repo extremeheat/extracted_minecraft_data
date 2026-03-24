@@ -18,45 +18,45 @@ public class BlockTintCache {
    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
    private final ToIntFunction<BlockPos> source;
 
-   public BlockTintCache(ToIntFunction<BlockPos> var1) {
+   public BlockTintCache(final ToIntFunction<BlockPos> source) {
       super();
-      this.source = var1;
+      this.source = source;
    }
 
-   public int getColor(BlockPos var1) {
-      int var2 = SectionPos.blockToSectionCoord(var1.getX());
-      int var3 = SectionPos.blockToSectionCoord(var1.getZ());
-      LatestCacheInfo var4 = (LatestCacheInfo)this.latestChunkOnThread.get();
-      if (var4.x != var2 || var4.z != var3 || var4.cache == null || var4.cache.isInvalidated()) {
-         var4.x = var2;
-         var4.z = var3;
-         var4.cache = this.findOrCreateChunkCache(var2, var3);
+   public int getColor(final BlockPos pos) {
+      int chunkX = SectionPos.blockToSectionCoord(pos.getX());
+      int chunkZ = SectionPos.blockToSectionCoord(pos.getZ());
+      LatestCacheInfo chunkInfo = (LatestCacheInfo)this.latestChunkOnThread.get();
+      if (chunkInfo.x != chunkX || chunkInfo.z != chunkZ || chunkInfo.cache == null || chunkInfo.cache.isInvalidated()) {
+         chunkInfo.x = chunkX;
+         chunkInfo.z = chunkZ;
+         chunkInfo.cache = this.findOrCreateChunkCache(chunkX, chunkZ);
       }
 
-      int[] var5 = var4.cache.getLayer(var1.getY());
-      int var6 = var1.getX() & 15;
-      int var7 = var1.getZ() & 15;
-      int var8 = var7 << 4 | var6;
-      int var9 = var5[var8];
-      if (var9 != -1) {
-         return var9;
+      int[] layer = chunkInfo.cache.getLayer(pos.getY());
+      int x = pos.getX() & 15;
+      int z = pos.getZ() & 15;
+      int index = z << 4 | x;
+      int cached = layer[index];
+      if (cached != -1) {
+         return cached;
       } else {
-         int var10 = this.source.applyAsInt(var1);
-         var5[var8] = var10;
-         return var10;
+         int calculated = this.source.applyAsInt(pos);
+         layer[index] = calculated;
+         return calculated;
       }
    }
 
-   public void invalidateForChunk(int var1, int var2) {
+   public void invalidateForChunk(final int chunkX, final int chunkZ) {
       try {
          this.lock.writeLock().lock();
 
-         for(int var3 = -1; var3 <= 1; ++var3) {
-            for(int var4 = -1; var4 <= 1; ++var4) {
-               long var5 = ChunkPos.asLong(var1 + var3, var2 + var4);
-               CacheData var7 = (CacheData)this.cache.remove(var5);
-               if (var7 != null) {
-                  var7.invalidate();
+         for(int offsetX = -1; offsetX <= 1; ++offsetX) {
+            for(int offsetZ = -1; offsetZ <= 1; ++offsetZ) {
+               long key = ChunkPos.pack(chunkX + offsetX, chunkZ + offsetZ);
+               CacheData removed = (CacheData)this.cache.remove(key);
+               if (removed != null) {
+                  removed.invalidate();
                }
             }
          }
@@ -77,14 +77,14 @@ public class BlockTintCache {
 
    }
 
-   private CacheData findOrCreateChunkCache(int var1, int var2) {
-      long var3 = ChunkPos.asLong(var1, var2);
+   private CacheData findOrCreateChunkCache(final int x, final int z) {
+      long key = ChunkPos.pack(x, z);
       this.lock.readLock().lock();
 
       try {
-         CacheData var5 = (CacheData)this.cache.get(var3);
-         if (var5 != null) {
-            CacheData var6 = var5;
+         CacheData existing = (CacheData)this.cache.get(key);
+         if (existing != null) {
+            CacheData var6 = existing;
             return var6;
          }
       } finally {
@@ -93,48 +93,48 @@ public class BlockTintCache {
 
       this.lock.writeLock().lock();
 
-      CacheData var16;
+      CacheData newCache;
       try {
-         CacheData var15 = (CacheData)this.cache.get(var3);
-         if (var15 == null) {
-            var16 = new CacheData();
+         CacheData existingNow = (CacheData)this.cache.get(key);
+         if (existingNow == null) {
+            newCache = new CacheData();
             if (this.cache.size() >= 256) {
-               CacheData var7 = (CacheData)this.cache.removeFirst();
-               if (var7 != null) {
-                  var7.invalidate();
+               CacheData cacheData = (CacheData)this.cache.removeFirst();
+               if (cacheData != null) {
+                  cacheData.invalidate();
                }
             }
 
-            this.cache.put(var3, var16);
-            CacheData var18 = var16;
+            this.cache.put(key, newCache);
+            CacheData var18 = newCache;
             return var18;
          }
 
-         var16 = var15;
+         newCache = existingNow;
       } finally {
          this.lock.writeLock().unlock();
       }
 
-      return var16;
+      return newCache;
    }
 
-   static class CacheData {
+   private static class CacheData {
       private final Int2ObjectArrayMap<int[]> cache = new Int2ObjectArrayMap(16);
       private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
       private static final int BLOCKS_PER_LAYER = Mth.square(16);
       private volatile boolean invalidated;
 
-      CacheData() {
+      private CacheData() {
          super();
       }
 
-      public int[] getLayer(int var1) {
+      public int[] getLayer(final int y) {
          this.lock.readLock().lock();
 
          try {
-            int[] var2 = (int[])this.cache.get(var1);
-            if (var2 != null) {
-               int[] var3 = var2;
+            int[] existing = (int[])this.cache.get(y);
+            if (existing != null) {
+               int[] var3 = existing;
                return var3;
             }
          } finally {
@@ -145,7 +145,7 @@ public class BlockTintCache {
 
          int[] var12;
          try {
-            var12 = (int[])this.cache.computeIfAbsent(var1, (var1x) -> this.allocateLayer());
+            var12 = (int[])this.cache.computeIfAbsent(y, (n) -> this.allocateLayer());
          } finally {
             this.lock.writeLock().unlock();
          }
@@ -154,9 +154,9 @@ public class BlockTintCache {
       }
 
       private int[] allocateLayer() {
-         int[] var1 = new int[BLOCKS_PER_LAYER];
-         Arrays.fill(var1, -1);
-         return var1;
+         int[] newCache = new int[BLOCKS_PER_LAYER];
+         Arrays.fill(newCache, -1);
+         return newCache;
       }
 
       public boolean isInvalidated() {
@@ -168,7 +168,7 @@ public class BlockTintCache {
       }
    }
 
-   static class LatestCacheInfo {
+   private static class LatestCacheInfo {
       public int x = -2147483648;
       public int z = -2147483648;
       @Nullable CacheData cache;

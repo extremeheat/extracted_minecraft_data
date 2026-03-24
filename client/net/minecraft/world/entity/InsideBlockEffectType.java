@@ -4,10 +4,10 @@ import java.util.function.Consumer;
 import net.minecraft.world.level.block.BaseFireBlock;
 
 public enum InsideBlockEffectType {
-   FREEZE((var0) -> {
-      var0.setIsInPowderSnow(true);
-      if (var0.canFreeze()) {
-         var0.setTicksFrozen(Math.min(var0.getTicksRequiredToFreeze(), var0.getTicksFrozen() + 1));
+   FREEZE((entity) -> {
+      entity.setIsInPowderSnow(true);
+      if (entity.canFreeze()) {
+         entity.setTicksFrozen(Math.min(entity.getTicksRequiredToFreeze(), entity.getTicksFrozen() + 1));
       }
 
    }),
@@ -18,8 +18,8 @@ public enum InsideBlockEffectType {
 
    private final Consumer<Entity> effect;
 
-   private InsideBlockEffectType(final Consumer<Entity> var3) {
-      this.effect = var3;
+   private InsideBlockEffectType(final Consumer<Entity> effect) {
+      this.effect = effect;
    }
 
    public Consumer<Entity> effect() {

@@ -6,7 +6,7 @@ import java.util.function.Consumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.ComponentPath;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.LayoutElement;
 import net.minecraft.client.gui.narration.NarratableEntry;
@@ -26,7 +26,7 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.sounds.SoundEvents;
 import org.jspecify.annotations.Nullable;
 
-public abstract class AbstractWidget implements Renderable, GuiEventListener, LayoutElement, NarratableEntry {
+public abstract class AbstractWidget implements LayoutElement, Renderable, GuiEventListener, NarratableEntry {
    protected int width;
    protected int height;
    private int x;
@@ -40,78 +40,78 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
    private boolean focused;
    private final WidgetTooltipHolder tooltip = new WidgetTooltipHolder();
 
-   public AbstractWidget(int var1, int var2, int var3, int var4, Component var5) {
+   public AbstractWidget(final int x, final int y, final int width, final int height, final Component message) {
       super();
-      this.x = var1;
-      this.y = var2;
-      this.width = var3;
-      this.height = var4;
-      this.message = var5;
+      this.x = x;
+      this.y = y;
+      this.width = width;
+      this.height = height;
+      this.message = message;
    }
 
    public int getHeight() {
       return this.height;
    }
 
-   public final void render(GuiGraphics var1, int var2, int var3, float var4) {
+   public final void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       if (this.visible) {
-         this.isHovered = var1.containsPointInScissor(var2, var3) && this.areCoordinatesInRectangle((double)var2, (double)var3);
-         this.renderWidget(var1, var2, var3, var4);
-         this.tooltip.refreshTooltipForNextRenderPass(var1, var2, var3, this.isHovered(), this.isFocused(), this.getRectangle());
+         this.isHovered = graphics.containsPointInScissor(mouseX, mouseY) && this.areCoordinatesInRectangle((double)mouseX, (double)mouseY);
+         this.extractWidgetRenderState(graphics, mouseX, mouseY, a);
+         this.tooltip.refreshTooltipForNextRenderPass(graphics, mouseX, mouseY, this.isHovered(), this.isFocused(), this.getRectangle());
       }
    }
 
-   protected void handleCursor(GuiGraphics var1) {
+   protected void handleCursor(final GuiGraphicsExtractor graphics) {
       if (this.isHovered()) {
-         var1.requestCursor(this.isActive() ? CursorTypes.POINTING_HAND : CursorTypes.NOT_ALLOWED);
+         graphics.requestCursor(this.isActive() ? CursorTypes.POINTING_HAND : CursorTypes.NOT_ALLOWED);
       }
 
    }
 
-   public void setTooltip(@Nullable Tooltip var1) {
-      this.tooltip.set(var1);
+   public void setTooltip(final @Nullable Tooltip tooltip) {
+      this.tooltip.set(tooltip);
    }
 
-   public void setTooltipDelay(Duration var1) {
-      this.tooltip.setDelay(var1);
+   public void setTooltipDelay(final Duration delay) {
+      this.tooltip.setDelay(delay);
    }
 
    protected MutableComponent createNarrationMessage() {
       return wrapDefaultNarrationMessage(this.getMessage());
    }
 
-   public static MutableComponent wrapDefaultNarrationMessage(Component var0) {
-      return Component.translatable("gui.narrate.button", var0);
+   public static MutableComponent wrapDefaultNarrationMessage(final Component message) {
+      return Component.translatable("gui.narrate.button", message);
    }
 
-   protected abstract void renderWidget(GuiGraphics var1, int var2, int var3, float var4);
+   protected abstract void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a);
 
-   protected void renderScrollingStringOverContents(ActiveTextCollector var1, Component var2, int var3) {
-      int var4 = this.getX() + var3;
-      int var5 = this.getX() + this.getWidth() - var3;
-      int var6 = this.getY();
-      int var7 = this.getY() + this.getHeight();
-      var1.acceptScrollingWithDefaultCenter(var2, var4, var5, var6, var7);
+   protected void extractScrollingStringOverContents(final ActiveTextCollector output, final Component message, final int margin) {
+      int left = this.getX() + margin;
+      int right = this.getX() + this.getWidth() - margin;
+      int top = this.getY();
+      int bottom = this.getY() + this.getHeight();
+      output.acceptScrollingWithDefaultCenter(message, left, right, top, bottom);
    }
 
-   public void onClick(MouseButtonEvent var1, boolean var2) {
+   public void onClick(final MouseButtonEvent event, final boolean doubleClick) {
    }
 
-   public void onRelease(MouseButtonEvent var1) {
+   public void onRelease(final MouseButtonEvent event) {
    }
 
-   protected void onDrag(MouseButtonEvent var1, double var2, double var4) {
+   protected void onDrag(final MouseButtonEvent event, final double dx, final double dy) {
    }
 
-   public boolean mouseClicked(MouseButtonEvent var1, boolean var2) {
+   public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
       if (!this.isActive()) {
          return false;
       } else {
-         if (this.isValidClickButton(var1.buttonInfo())) {
-            boolean var3 = this.isMouseOver(var1.x(), var1.y());
-            if (var3) {
+         if (this.isValidClickButton(event.buttonInfo())) {
+            boolean isMouseOver = this.isMouseOver(event.x(), event.y());
+            if (isMouseOver) {
                this.playDownSound(Minecraft.getInstance().getSoundManager());
-               this.onClick(var1, var2);
+               this.onClick(event, doubleClick);
                return true;
             }
          }
@@ -120,29 +120,29 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
       }
    }
 
-   public boolean mouseReleased(MouseButtonEvent var1) {
-      if (this.isValidClickButton(var1.buttonInfo())) {
-         this.onRelease(var1);
+   public boolean mouseReleased(final MouseButtonEvent event) {
+      if (this.isValidClickButton(event.buttonInfo())) {
+         this.onRelease(event);
          return true;
       } else {
          return false;
       }
    }
 
-   protected boolean isValidClickButton(MouseButtonInfo var1) {
-      return var1.button() == 0;
+   protected boolean isValidClickButton(final MouseButtonInfo buttonInfo) {
+      return buttonInfo.button() == 0;
    }
 
-   public boolean mouseDragged(MouseButtonEvent var1, double var2, double var4) {
-      if (this.isValidClickButton(var1.buttonInfo())) {
-         this.onDrag(var1, var2, var4);
+   public boolean mouseDragged(final MouseButtonEvent event, final double dx, final double dy) {
+      if (this.isValidClickButton(event.buttonInfo())) {
+         this.onDrag(event, dx, dy);
          return true;
       } else {
          return false;
       }
    }
 
-   public @Nullable ComponentPath nextFocusPath(FocusNavigationEvent var1) {
+   public @Nullable ComponentPath nextFocusPath(final FocusNavigationEvent navigationEvent) {
       if (!this.isActive()) {
          return null;
       } else {
@@ -150,40 +150,40 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
       }
    }
 
-   public boolean isMouseOver(double var1, double var3) {
-      return this.isActive() && this.areCoordinatesInRectangle(var1, var3);
+   public boolean isMouseOver(final double mouseX, final double mouseY) {
+      return this.isActive() && this.areCoordinatesInRectangle(mouseX, mouseY);
    }
 
-   public void playDownSound(SoundManager var1) {
-      playButtonClickSound(var1);
+   public void playDownSound(final SoundManager soundManager) {
+      playButtonClickSound(soundManager);
    }
 
-   public static void playButtonClickSound(SoundManager var0) {
-      var0.play(SimpleSoundInstance.forUI((Holder)SoundEvents.UI_BUTTON_CLICK, 1.0F));
+   public static void playButtonClickSound(final SoundManager soundManager) {
+      soundManager.play(SimpleSoundInstance.forUI((Holder)SoundEvents.UI_BUTTON_CLICK, 1.0F));
    }
 
    public int getWidth() {
       return this.width;
    }
 
-   public void setWidth(int var1) {
-      this.width = var1;
+   public void setWidth(final int width) {
+      this.width = width;
    }
 
-   public void setHeight(int var1) {
-      this.height = var1;
+   public void setHeight(final int height) {
+      this.height = height;
    }
 
-   public void setAlpha(float var1) {
-      this.alpha = var1;
+   public void setAlpha(final float alpha) {
+      this.alpha = alpha;
    }
 
    public float getAlpha() {
       return this.alpha;
    }
 
-   public void setMessage(Component var1) {
-      this.message = var1;
+   public void setMessage(final Component message) {
+      this.message = message;
    }
 
    public Component getMessage() {
@@ -206,8 +206,8 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
       return this.visible && this.active;
    }
 
-   public void setFocused(boolean var1) {
-      this.focused = var1;
+   public void setFocused(final boolean focused) {
+      this.focused = focused;
    }
 
    public NarratableEntry.NarrationPriority narrationPriority() {
@@ -218,20 +218,20 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
       }
    }
 
-   public final void updateNarration(NarrationElementOutput var1) {
-      this.updateWidgetNarration(var1);
-      this.tooltip.updateNarration(var1);
+   public final void updateNarration(final NarrationElementOutput output) {
+      this.updateWidgetNarration(output);
+      this.tooltip.updateNarration(output);
    }
 
-   protected abstract void updateWidgetNarration(NarrationElementOutput var1);
+   protected abstract void updateWidgetNarration(final NarrationElementOutput output);
 
-   protected void defaultButtonNarrationText(NarrationElementOutput var1) {
-      var1.add(NarratedElementType.TITLE, (Component)this.createNarrationMessage());
+   protected void defaultButtonNarrationText(final NarrationElementOutput output) {
+      output.add(NarratedElementType.TITLE, (Component)this.createNarrationMessage());
       if (this.active) {
          if (this.isFocused()) {
-            var1.add(NarratedElementType.USAGE, (Component)Component.translatable("narration.button.usage.focused"));
+            output.add(NarratedElementType.USAGE, (Component)Component.translatable("narration.button.usage.focused"));
          } else {
-            var1.add(NarratedElementType.USAGE, (Component)Component.translatable("narration.button.usage.hovered"));
+            output.add(NarratedElementType.USAGE, (Component)Component.translatable("narration.button.usage.hovered"));
          }
       }
 
@@ -241,16 +241,16 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
       return this.x;
    }
 
-   public void setX(int var1) {
-      this.x = var1;
+   public void setX(final int x) {
+      this.x = x;
    }
 
    public int getY() {
       return this.y;
    }
 
-   public void setY(int var1) {
-      this.y = var1;
+   public void setY(final int y) {
+      this.y = y;
    }
 
    public int getRight() {
@@ -261,55 +261,55 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
       return this.getY() + this.getHeight();
    }
 
-   public void visitWidgets(Consumer<AbstractWidget> var1) {
-      var1.accept(this);
+   public void visitWidgets(final Consumer<AbstractWidget> widgetVisitor) {
+      widgetVisitor.accept(this);
    }
 
-   public void setSize(int var1, int var2) {
-      this.width = var1;
-      this.height = var2;
+   public void setSize(final int width, final int height) {
+      this.width = width;
+      this.height = height;
    }
 
    public ScreenRectangle getRectangle() {
       return LayoutElement.super.getRectangle();
    }
 
-   private boolean areCoordinatesInRectangle(double var1, double var3) {
-      return var1 >= (double)this.getX() && var3 >= (double)this.getY() && var1 < (double)this.getRight() && var3 < (double)this.getBottom();
+   private boolean areCoordinatesInRectangle(final double x, final double y) {
+      return x >= (double)this.getX() && y >= (double)this.getY() && x < (double)this.getRight() && y < (double)this.getBottom();
    }
 
-   public void setRectangle(int var1, int var2, int var3, int var4) {
-      this.setSize(var1, var2);
-      this.setPosition(var3, var4);
+   public void setRectangle(final int width, final int height, final int x, final int y) {
+      this.setSize(width, height);
+      this.setPosition(x, y);
    }
 
    public int getTabOrderGroup() {
       return this.tabOrderGroup;
    }
 
-   public void setTabOrderGroup(int var1) {
-      this.tabOrderGroup = var1;
+   public void setTabOrderGroup(final int tabOrderGroup) {
+      this.tabOrderGroup = tabOrderGroup;
    }
 
    public abstract static class WithInactiveMessage extends AbstractWidget {
       private Component inactiveMessage;
 
-      public static Component defaultInactiveMessage(Component var0) {
-         return ComponentUtils.mergeStyles(var0, Style.EMPTY.withColor(-6250336));
+      public static Component defaultInactiveMessage(final Component activeMessage) {
+         return ComponentUtils.mergeStyles(activeMessage, Style.EMPTY.withColor(-6250336));
       }
 
-      public WithInactiveMessage(int var1, int var2, int var3, int var4, Component var5) {
-         super(var1, var2, var3, var4, var5);
-         this.inactiveMessage = defaultInactiveMessage(var5);
+      public WithInactiveMessage(final int x, final int y, final int width, final int height, final Component message) {
+         super(x, y, width, height, message);
+         this.inactiveMessage = defaultInactiveMessage(message);
       }
 
       public Component getMessage() {
          return this.active ? super.getMessage() : this.inactiveMessage;
       }
 
-      public void setMessage(Component var1) {
-         super.setMessage(var1);
-         this.inactiveMessage = defaultInactiveMessage(var1);
+      public void setMessage(final Component message) {
+         super.setMessage(message);
+         this.inactiveMessage = defaultInactiveMessage(message);
       }
    }
 }

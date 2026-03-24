@@ -7,35 +7,35 @@ import java.util.function.Consumer;
 public interface TaskScheduler<R extends Runnable> extends AutoCloseable {
    String name();
 
-   void schedule(R var1);
+   void schedule(final R r);
 
    default void close() {
    }
 
-   R wrapRunnable(Runnable var1);
+   R wrapRunnable(final Runnable runnable);
 
-   default <Source> CompletableFuture<Source> scheduleWithResult(Consumer<CompletableFuture<Source>> var1) {
-      CompletableFuture var2 = new CompletableFuture();
-      this.schedule(this.wrapRunnable(() -> var1.accept(var2)));
-      return var2;
+   default <Source> CompletableFuture<Source> scheduleWithResult(final Consumer<CompletableFuture<Source>> futureConsumer) {
+      CompletableFuture<Source> future = new CompletableFuture();
+      this.schedule(this.wrapRunnable(() -> futureConsumer.accept(future)));
+      return future;
    }
 
-   static TaskScheduler<Runnable> wrapExecutor(final String var0, final Executor var1) {
+   static TaskScheduler<Runnable> wrapExecutor(final String name, final Executor executor) {
       return new TaskScheduler<Runnable>() {
          public String name() {
-            return var0;
+            return name;
          }
 
-         public void schedule(Runnable var1x) {
-            var1.execute(var1x);
+         public void schedule(final Runnable runnable) {
+            executor.execute(runnable);
          }
 
-         public Runnable wrapRunnable(Runnable var1x) {
-            return var1x;
+         public Runnable wrapRunnable(final Runnable runnable) {
+            return runnable;
          }
 
          public String toString() {
-            return var0;
+            return name;
          }
       };
    }

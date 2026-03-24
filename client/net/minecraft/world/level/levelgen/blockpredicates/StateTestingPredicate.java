@@ -10,23 +10,18 @@ import net.minecraft.world.level.block.state.BlockState;
 public abstract class StateTestingPredicate implements BlockPredicate {
    protected final Vec3i offset;
 
-   protected static <P extends StateTestingPredicate> Products.P1<RecordCodecBuilder.Mu<P>, Vec3i> stateTestingCodec(RecordCodecBuilder.Instance<P> var0) {
-      return var0.group(Vec3i.offsetCodec(16).optionalFieldOf("offset", Vec3i.ZERO).forGetter((var0x) -> var0x.offset));
+   protected static <P extends StateTestingPredicate> Products.P1<RecordCodecBuilder.Mu<P>, Vec3i> stateTestingCodec(final RecordCodecBuilder.Instance<P> instance) {
+      return instance.group(Vec3i.offsetCodec(16).optionalFieldOf("offset", Vec3i.ZERO).forGetter((c) -> c.offset));
    }
 
-   protected StateTestingPredicate(Vec3i var1) {
+   protected StateTestingPredicate(final Vec3i offset) {
       super();
-      this.offset = var1;
+      this.offset = offset;
    }
 
-   public final boolean test(WorldGenLevel var1, BlockPos var2) {
-      return this.test(var1.getBlockState(var2.offset(this.offset)));
+   public final boolean test(final WorldGenLevel level, final BlockPos origin) {
+      return this.test(level.getBlockState(origin.offset(this.offset)));
    }
 
-   protected abstract boolean test(BlockState var1);
-
-   // $FF: synthetic method
-   public boolean test(final Object var1, final Object var2) {
-      return this.test((WorldGenLevel)var1, (BlockPos)var2);
-   }
+   protected abstract boolean test(final BlockState state);
 }

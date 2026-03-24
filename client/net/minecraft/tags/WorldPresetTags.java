@@ -12,7 +12,7 @@ public class WorldPresetTags {
       super();
    }
 
-   private static TagKey<WorldPreset> create(String var0) {
-      return TagKey.<WorldPreset>create(Registries.WORLD_PRESET, Identifier.withDefaultNamespace(var0));
+   private static TagKey<WorldPreset> create(final String name) {
+      return TagKey.<WorldPreset>create(Registries.WORLD_PRESET, Identifier.withDefaultNamespace(name));
    }
 }

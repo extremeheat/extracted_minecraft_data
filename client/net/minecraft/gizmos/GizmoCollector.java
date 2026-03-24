@@ -6,7 +6,7 @@ public interface GizmoCollector {
          return this;
       }
 
-      public GizmoProperties persistForMillis(int var1) {
+      public GizmoProperties persistForMillis(final int milliseconds) {
          return this;
       }
 
@@ -14,7 +14,7 @@ public interface GizmoCollector {
          return this;
       }
    };
-   GizmoCollector NOOP = (var0) -> IGNORED;
+   GizmoCollector NOOP = (gizmo) -> IGNORED;
 
-   GizmoProperties add(Gizmo var1);
+   GizmoProperties add(final Gizmo gizmo);
 }

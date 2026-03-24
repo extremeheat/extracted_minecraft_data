@@ -16,67 +16,67 @@ public class JsonRPCUtils {
       super();
    }
 
-   public static JsonObject createSuccessResult(JsonElement var0, JsonElement var1) {
-      JsonObject var2 = new JsonObject();
-      var2.addProperty("jsonrpc", "2.0");
-      var2.add("id", var0);
-      var2.add("result", var1);
-      return var2;
+   public static JsonObject createSuccessResult(final JsonElement id, final JsonElement result) {
+      JsonObject response = new JsonObject();
+      response.addProperty("jsonrpc", "2.0");
+      response.add("id", id);
+      response.add("result", result);
+      return response;
    }
 
-   public static JsonObject createRequest(@Nullable Integer var0, Identifier var1, List<JsonElement> var2) {
-      JsonObject var3 = new JsonObject();
-      var3.addProperty("jsonrpc", "2.0");
-      if (var0 != null) {
-         var3.addProperty("id", var0);
+   public static JsonObject createRequest(final @Nullable Integer id, final Identifier method, final List<JsonElement> params) {
+      JsonObject request = new JsonObject();
+      request.addProperty("jsonrpc", "2.0");
+      if (id != null) {
+         request.addProperty("id", id);
       }
 
-      var3.addProperty("method", var1.toString());
-      if (!var2.isEmpty()) {
-         JsonArray var4 = new JsonArray(var2.size());
+      request.addProperty("method", method.toString());
+      if (!params.isEmpty()) {
+         JsonArray jsonArray = new JsonArray(params.size());
 
-         for(JsonElement var6 : var2) {
-            var4.add(var6);
+         for(JsonElement param : params) {
+            jsonArray.add(param);
          }
 
-         var3.add("params", var4);
+         request.add("params", jsonArray);
       }
 
-      return var3;
+      return request;
    }
 
-   public static JsonObject createError(JsonElement var0, String var1, int var2, @Nullable String var3) {
-      JsonObject var4 = new JsonObject();
-      var4.addProperty("jsonrpc", "2.0");
-      var4.add("id", var0);
-      JsonObject var5 = new JsonObject();
-      var5.addProperty("code", var2);
-      var5.addProperty("message", var1);
-      if (var3 != null && !var3.isBlank()) {
-         var5.addProperty("data", var3);
+   public static JsonObject createError(final JsonElement id, final String message, final int errorCode, final @Nullable String data) {
+      JsonObject errorResponse = new JsonObject();
+      errorResponse.addProperty("jsonrpc", "2.0");
+      errorResponse.add("id", id);
+      JsonObject error = new JsonObject();
+      error.addProperty("code", errorCode);
+      error.addProperty("message", message);
+      if (data != null && !data.isBlank()) {
+         error.addProperty("data", data);
       }
 
-      var4.add("error", var5);
-      return var4;
+      errorResponse.add("error", error);
+      return errorResponse;
    }
 
-   public static @Nullable JsonElement getRequestId(JsonObject var0) {
-      return var0.get("id");
+   public static @Nullable JsonElement getRequestId(final JsonObject jsonObject) {
+      return jsonObject.get("id");
    }
 
-   public static @Nullable String getMethodName(JsonObject var0) {
-      return GsonHelper.getAsString(var0, "method", (String)null);
+   public static @Nullable String getMethodName(final JsonObject jsonObject) {
+      return GsonHelper.getAsString(jsonObject, "method", (String)null);
    }
 
-   public static @Nullable JsonElement getParams(JsonObject var0) {
-      return var0.get("params");
+   public static @Nullable JsonElement getParams(final JsonObject jsonObject) {
+      return jsonObject.get("params");
    }
 
-   public static @Nullable JsonElement getResult(JsonObject var0) {
-      return var0.get("result");
+   public static @Nullable JsonElement getResult(final JsonObject jsonObject) {
+      return jsonObject.get("result");
    }
 
-   public static @Nullable JsonObject getError(JsonObject var0) {
-      return GsonHelper.getAsJsonObject(var0, "error", (JsonObject)null);
+   public static @Nullable JsonObject getError(final JsonObject jsonObject) {
+      return GsonHelper.getAsJsonObject(jsonObject, "error", (JsonObject)null);
    }
 }

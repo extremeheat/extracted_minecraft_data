@@ -17,25 +17,23 @@ public class SpearMobsTrigger extends SimpleCriterionTrigger<TriggerInstance> {
       return SpearMobsTrigger.TriggerInstance.CODEC;
    }
 
-   public void trigger(ServerPlayer var1, int var2) {
-      this.trigger(var1, (var1x) -> var1x.matches(var2));
+   public void trigger(final ServerPlayer player, final int number) {
+      this.trigger(player, (t) -> t.matches(number));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<Integer> count) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ExtraCodecs.POSITIVE_INT.optionalFieldOf("count").forGetter(TriggerInstance::count)).apply(var0, TriggerInstance::new));
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((i) -> i.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ExtraCodecs.POSITIVE_INT.optionalFieldOf("count").forGetter(TriggerInstance::count)).apply(i, TriggerInstance::new));
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<Integer> var2) {
+      public TriggerInstance {
          super();
-         this.player = var1;
-         this.count = var2;
       }
 
-      public static Criterion<TriggerInstance> spearMobs(int var0) {
-         return CriteriaTriggers.SPEAR_MOBS_TRIGGER.createCriterion(new TriggerInstance(Optional.empty(), Optional.of(var0)));
+      public static Criterion<TriggerInstance> spearMobs(final int requiredCount) {
+         return CriteriaTriggers.SPEAR_MOBS_TRIGGER.createCriterion(new TriggerInstance(Optional.empty(), Optional.of(requiredCount)));
       }
 
-      public boolean matches(int var1) {
-         return this.count.isEmpty() || var1 >= (Integer)this.count.get();
+      public boolean matches(final int requiredCount) {
+         return this.count.isEmpty() || requiredCount >= (Integer)this.count.get();
       }
    }
 }

@@ -2,7 +2,7 @@ package net.minecraft.client.gui.components;
 
 import java.util.Objects;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.sounds.SoundManager;
@@ -17,40 +17,40 @@ public class FocusableTextWidget extends MultiLineTextWidget {
    private final boolean alwaysShowBorder;
    private final BackgroundFill backgroundFill;
 
-   FocusableTextWidget(Component var1, Font var2, int var3, int var4, BackgroundFill var5, boolean var6) {
-      super(var1, var2);
+   private FocusableTextWidget(final Component message, final Font font, final int padding, final int maxWidth, final BackgroundFill backgroundFill, final boolean alwaysShowBorder) {
+      super(message, font);
       this.active = true;
-      this.padding = var3;
-      this.maxWidth = var4;
-      this.alwaysShowBorder = var6;
-      this.backgroundFill = var5;
+      this.padding = padding;
+      this.maxWidth = maxWidth;
+      this.alwaysShowBorder = alwaysShowBorder;
+      this.backgroundFill = backgroundFill;
       this.updateWidth();
       this.updateHeight();
       this.setCentered(true);
    }
 
-   protected void updateWidgetNarration(NarrationElementOutput var1) {
-      var1.add(NarratedElementType.TITLE, this.getMessage());
+   protected void updateWidgetNarration(final NarrationElementOutput output) {
+      output.add(NarratedElementType.TITLE, this.getMessage());
    }
 
-   public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-      int var5 = this.alwaysShowBorder && !this.isFocused() ? ARGB.color(this.alpha, -6250336) : ARGB.white(this.alpha);
+   public void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      int borderColor = this.alwaysShowBorder && !this.isFocused() ? ARGB.color(this.alpha, -6250336) : ARGB.white(this.alpha);
       switch (this.backgroundFill.ordinal()) {
          case 0:
-            var1.fill(this.getX() + 1, this.getY(), this.getRight(), this.getBottom(), ARGB.black(this.alpha));
+            graphics.fill(this.getX() + 1, this.getY(), this.getRight(), this.getBottom(), ARGB.black(this.alpha));
             break;
          case 1:
             if (this.isFocused()) {
-               var1.fill(this.getX() + 1, this.getY(), this.getRight(), this.getBottom(), ARGB.black(this.alpha));
+               graphics.fill(this.getX() + 1, this.getY(), this.getRight(), this.getBottom(), ARGB.black(this.alpha));
             }
          case 2:
       }
 
       if (this.isFocused() || this.alwaysShowBorder) {
-         var1.renderOutline(this.getX(), this.getY(), this.getWidth(), this.getHeight(), var5);
+         graphics.outline(this.getX(), this.getY(), this.getWidth(), this.getHeight(), borderColor);
       }
 
-      super.renderWidget(var1, var2, var3, var4);
+      super.extractWidgetRenderState(graphics, mouseX, mouseY, a);
    }
 
    protected int getTextX() {
@@ -61,8 +61,8 @@ public class FocusableTextWidget extends MultiLineTextWidget {
       return super.getTextY() + this.padding;
    }
 
-   public MultiLineTextWidget setMaxWidth(int var1) {
-      return super.setMaxWidth(var1 - this.padding * 2);
+   public MultiLineTextWidget setMaxWidth(final int maxWidth) {
+      return super.setMaxWidth(maxWidth - this.padding * 2);
    }
 
    public int getWidth() {
@@ -89,32 +89,32 @@ public class FocusableTextWidget extends MultiLineTextWidget {
 
    public void updateHeight() {
       Objects.requireNonNull(this.getFont());
-      int var1 = 9 * this.getFont().split(this.getMessage(), super.getWidth()).size();
-      this.setHeight(var1 + this.padding * 2);
+      int textHeight = 9 * this.getFont().split(this.getMessage(), super.getWidth()).size();
+      this.setHeight(textHeight + this.padding * 2);
    }
 
-   public void setMessage(Component var1) {
-      this.message = var1;
-      int var2;
+   public void setMessage(final Component message) {
+      this.message = message;
+      int width;
       if (this.maxWidth != -1) {
-         var2 = this.maxWidth;
+         width = this.maxWidth;
       } else {
-         var2 = this.getFont().width((FormattedText)var1) + this.padding * 2;
+         width = this.getFont().width((FormattedText)message) + this.padding * 2;
       }
 
-      this.setWidth(var2);
+      this.setWidth(width);
       this.updateHeight();
    }
 
-   public void playDownSound(SoundManager var1) {
+   public void playDownSound(final SoundManager soundManager) {
    }
 
-   public static Builder builder(Component var0, Font var1) {
-      return new Builder(var0, var1);
+   public static Builder builder(final Component message, final Font font) {
+      return new Builder(message, font);
    }
 
-   public static Builder builder(Component var0, Font var1, int var2) {
-      return new Builder(var0, var1, var2);
+   public static Builder builder(final Component message, final Font font, final int padding) {
+      return new Builder(message, font, padding);
    }
 
    public static class Builder {
@@ -125,37 +125,37 @@ public class FocusableTextWidget extends MultiLineTextWidget {
       private boolean alwaysShowBorder;
       private BackgroundFill backgroundFill;
 
-      Builder(Component var1, Font var2) {
-         this(var1, var2, 4);
+      private Builder(final Component message, final Font font) {
+         this(message, font, 4);
       }
 
-      Builder(Component var1, Font var2, int var3) {
+      private Builder(final Component message, final Font font, final int padding) {
          super();
          this.maxWidth = -1;
          this.alwaysShowBorder = true;
          this.backgroundFill = FocusableTextWidget.BackgroundFill.ALWAYS;
-         this.message = var1;
-         this.font = var2;
-         this.padding = var3;
+         this.message = message;
+         this.font = font;
+         this.padding = padding;
       }
 
-      public Builder maxWidth(int var1) {
-         this.maxWidth = var1;
+      public Builder maxWidth(final int maxWidth) {
+         this.maxWidth = maxWidth;
          return this;
       }
 
-      public Builder textWidth(int var1) {
-         this.maxWidth = var1 + this.padding * 2;
+      public Builder textWidth(final int textWidth) {
+         this.maxWidth = textWidth + this.padding * 2;
          return this;
       }
 
-      public Builder alwaysShowBorder(boolean var1) {
-         this.alwaysShowBorder = var1;
+      public Builder alwaysShowBorder(final boolean alwaysShowBorder) {
+         this.alwaysShowBorder = alwaysShowBorder;
          return this;
       }
 
-      public Builder backgroundFill(BackgroundFill var1) {
-         this.backgroundFill = var1;
+      public Builder backgroundFill(final BackgroundFill backgroundFill) {
+         this.backgroundFill = backgroundFill;
          return this;
       }
 

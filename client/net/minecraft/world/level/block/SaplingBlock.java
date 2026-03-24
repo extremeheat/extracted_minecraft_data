@@ -18,7 +18,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class SaplingBlock extends VegetationBlock implements BonemealableBlock {
-   public static final MapCodec<SaplingBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(TreeGrower.CODEC.fieldOf("tree").forGetter((var0x) -> var0x.treeGrower), propertiesCodec()).apply(var0, SaplingBlock::new));
+   public static final MapCodec<SaplingBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(TreeGrower.CODEC.fieldOf("tree").forGetter((b) -> b.treeGrower), propertiesCodec()).apply(i, SaplingBlock::new));
    public static final IntegerProperty STAGE;
    private static final VoxelShape SHAPE;
    protected final TreeGrower treeGrower;
@@ -27,46 +27,51 @@ public class SaplingBlock extends VegetationBlock implements BonemealableBlock {
       return CODEC;
    }
 
-   protected SaplingBlock(TreeGrower var1, BlockBehaviour.Properties var2) {
-      super(var2);
-      this.treeGrower = var1;
+   protected SaplingBlock(final TreeGrower treeGrower, final BlockBehaviour.Properties properties) {
+      super(properties);
+      this.treeGrower = treeGrower;
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(STAGE, 0));
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return SHAPE;
    }
 
-   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if (var2.getMaxLocalRawBrightness(var3.above()) >= 9 && var4.nextInt(7) == 0) {
-         this.advanceTree(var2, var3, var1, var4);
+   protected void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if (level.getMaxLocalRawBrightness(pos.above()) >= 9 && random.nextInt(7) == 0) {
+         this.advanceTree(level, pos, state, random);
       }
 
    }
 
-   public void advanceTree(ServerLevel var1, BlockPos var2, BlockState var3, RandomSource var4) {
-      if ((Integer)var3.getValue(STAGE) == 0) {
-         var1.setBlock(var2, (BlockState)var3.cycle(STAGE), 260);
+   public void advanceTree(final ServerLevel level, final BlockPos pos, final BlockState state, final RandomSource random) {
+      if ((Integer)state.getValue(STAGE) == 0) {
+         level.setBlock(pos, (BlockState)state.cycle(STAGE), 260);
       } else {
-         this.treeGrower.growTree(var1, var1.getChunkSource().getGenerator(), var2, var3, var4);
+         this.treeGrower.growTree(level, level.getChunkSource().getGenerator(), pos, state, random);
       }
 
    }
 
-   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
-      return true;
+   public boolean isValidBonemealTarget(final LevelReader level, final BlockPos pos, final BlockState state) {
+      if (level instanceof ServerLevel serverLevel) {
+         int heightOffset = this.treeGrower.getMinimumHeight(serverLevel).orElse(0);
+         return level.isInsideBuildHeight(pos.above(heightOffset));
+      } else {
+         return false;
+      }
    }
 
-   public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      return (double)var1.random.nextFloat() < 0.45;
+   public boolean isBonemealSuccess(final Level level, final RandomSource random, final BlockPos pos, final BlockState state) {
+      return (double)level.getRandom().nextFloat() < 0.45;
    }
 
-   public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      this.advanceTree(var1, var3, var4, var2);
+   public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
+      this.advanceTree(level, pos, state, random);
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(STAGE);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(STAGE);
    }
 
    static {

@@ -7,35 +7,35 @@ public abstract class Strategy<T> {
    private static final Palette.Factory SINGLE_VALUE_PALETTE_FACTORY = SingleValuePalette::create;
    private static final Palette.Factory LINEAR_PALETTE_FACTORY = LinearPalette::create;
    private static final Palette.Factory HASHMAP_PALETTE_FACTORY = HashMapPalette::create;
-   static final Configuration ZERO_BITS;
-   static final Configuration ONE_BIT_LINEAR;
-   static final Configuration TWO_BITS_LINEAR;
-   static final Configuration THREE_BITS_LINEAR;
-   static final Configuration FOUR_BITS_LINEAR;
-   static final Configuration FIVE_BITS_HASHMAP;
-   static final Configuration SIX_BITS_HASHMAP;
-   static final Configuration SEVEN_BITS_HASHMAP;
-   static final Configuration EIGHT_BITS_HASHMAP;
+   private static final Configuration ZERO_BITS;
+   private static final Configuration ONE_BIT_LINEAR;
+   private static final Configuration TWO_BITS_LINEAR;
+   private static final Configuration THREE_BITS_LINEAR;
+   private static final Configuration FOUR_BITS_LINEAR;
+   private static final Configuration FIVE_BITS_HASHMAP;
+   private static final Configuration SIX_BITS_HASHMAP;
+   private static final Configuration SEVEN_BITS_HASHMAP;
+   private static final Configuration EIGHT_BITS_HASHMAP;
    private final IdMap<T> globalMap;
    private final GlobalPalette<T> globalPalette;
    protected final int globalPaletteBitsInMemory;
    private final int bitsPerAxis;
    private final int entryCount;
 
-   Strategy(IdMap<T> var1, int var2) {
+   private Strategy(final IdMap<T> globalMap, final int bitsPerAxis) {
       super();
-      this.globalMap = var1;
-      this.globalPalette = new GlobalPalette<T>(var1);
-      this.globalPaletteBitsInMemory = minimumBitsRequiredForDistinctValues(var1.size());
-      this.bitsPerAxis = var2;
-      this.entryCount = 1 << var2 * 3;
+      this.globalMap = globalMap;
+      this.globalPalette = new GlobalPalette<T>(globalMap);
+      this.globalPaletteBitsInMemory = minimumBitsRequiredForDistinctValues(globalMap.size());
+      this.bitsPerAxis = bitsPerAxis;
+      this.entryCount = 1 << bitsPerAxis * 3;
    }
 
-   public static <T> Strategy<T> createForBlockStates(IdMap<T> var0) {
-      return new Strategy<T>(var0, 4) {
-         public Configuration getConfigurationForBitCount(int var1) {
+   public static <T> Strategy<T> createForBlockStates(final IdMap<T> registry) {
+      return new Strategy<T>(registry, 4) {
+         public Configuration getConfigurationForBitCount(final int entryBits) {
             Object var10000;
-            switch (var1) {
+            switch (entryBits) {
                case 0:
                   var10000 = Strategy.ZERO_BITS;
                   break;
@@ -58,7 +58,7 @@ public abstract class Strategy<T> {
                   var10000 = Strategy.EIGHT_BITS_HASHMAP;
                   break;
                default:
-                  var10000 = new Configuration.Global(this.globalPaletteBitsInMemory, var1);
+                  var10000 = new Configuration.Global(this.globalPaletteBitsInMemory, entryBits);
             }
 
             return (Configuration)var10000;
@@ -66,16 +66,16 @@ public abstract class Strategy<T> {
       };
    }
 
-   public static <T> Strategy<T> createForBiomes(IdMap<T> var0) {
-      return new Strategy<T>(var0, 2) {
-         public Configuration getConfigurationForBitCount(int var1) {
+   public static <T> Strategy<T> createForBiomes(final IdMap<T> registry) {
+      return new Strategy<T>(registry, 2) {
+         public Configuration getConfigurationForBitCount(final int entryBits) {
             Object var10000;
-            switch (var1) {
+            switch (entryBits) {
                case 0 -> var10000 = Strategy.ZERO_BITS;
                case 1 -> var10000 = Strategy.ONE_BIT_LINEAR;
                case 2 -> var10000 = Strategy.TWO_BITS_LINEAR;
                case 3 -> var10000 = Strategy.THREE_BITS_LINEAR;
-               default -> var10000 = new Configuration.Global(this.globalPaletteBitsInMemory, var1);
+               default -> var10000 = new Configuration.Global(this.globalPaletteBitsInMemory, entryBits);
             }
 
             return (Configuration)var10000;
@@ -87,8 +87,8 @@ public abstract class Strategy<T> {
       return this.entryCount;
    }
 
-   public int getIndex(int var1, int var2, int var3) {
-      return (var2 << this.bitsPerAxis | var3) << this.bitsPerAxis | var1;
+   public int getIndex(final int x, final int y, final int z) {
+      return (y << this.bitsPerAxis | z) << this.bitsPerAxis | x;
    }
 
    public IdMap<T> globalMap() {
@@ -99,15 +99,15 @@ public abstract class Strategy<T> {
       return this.globalPalette;
    }
 
-   protected abstract Configuration getConfigurationForBitCount(int var1);
+   protected abstract Configuration getConfigurationForBitCount(int entryBits);
 
-   protected Configuration getConfigurationForPaletteSize(int var1) {
-      int var2 = minimumBitsRequiredForDistinctValues(var1);
-      return this.getConfigurationForBitCount(var2);
+   protected Configuration getConfigurationForPaletteSize(final int paletteSize) {
+      int bits = minimumBitsRequiredForDistinctValues(paletteSize);
+      return this.getConfigurationForBitCount(bits);
    }
 
-   private static int minimumBitsRequiredForDistinctValues(int var0) {
-      return Mth.ceillog2(var0);
+   private static int minimumBitsRequiredForDistinctValues(final int count) {
+      return Mth.ceillog2(count);
    }
 
    static {

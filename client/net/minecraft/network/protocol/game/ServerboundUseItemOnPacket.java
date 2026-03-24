@@ -13,32 +13,32 @@ public class ServerboundUseItemOnPacket implements Packet<ServerGamePacketListen
    private final InteractionHand hand;
    private final int sequence;
 
-   public ServerboundUseItemOnPacket(InteractionHand var1, BlockHitResult var2, int var3) {
+   public ServerboundUseItemOnPacket(final InteractionHand hand, final BlockHitResult blockHit, final int sequence) {
       super();
-      this.hand = var1;
-      this.blockHit = var2;
-      this.sequence = var3;
+      this.hand = hand;
+      this.blockHit = blockHit;
+      this.sequence = sequence;
    }
 
-   private ServerboundUseItemOnPacket(FriendlyByteBuf var1) {
+   private ServerboundUseItemOnPacket(final FriendlyByteBuf input) {
       super();
-      this.hand = (InteractionHand)var1.readEnum(InteractionHand.class);
-      this.blockHit = var1.readBlockHitResult();
-      this.sequence = var1.readVarInt();
+      this.hand = (InteractionHand)input.readEnum(InteractionHand.class);
+      this.blockHit = input.readBlockHitResult();
+      this.sequence = input.readVarInt();
    }
 
-   private void write(FriendlyByteBuf var1) {
-      var1.writeEnum(this.hand);
-      var1.writeBlockHitResult(this.blockHit);
-      var1.writeVarInt(this.sequence);
+   private void write(final FriendlyByteBuf output) {
+      output.writeEnum(this.hand);
+      output.writeBlockHitResult(this.blockHit);
+      output.writeVarInt(this.sequence);
    }
 
    public PacketType<ServerboundUseItemOnPacket> type() {
       return GamePacketTypes.SERVERBOUND_USE_ITEM_ON;
    }
 
-   public void handle(ServerGamePacketListener var1) {
-      var1.handleUseItemOn(this);
+   public void handle(final ServerGamePacketListener listener) {
+      listener.handleUseItemOn(this);
    }
 
    public InteractionHand getHand() {

@@ -34,50 +34,50 @@ public class ServerData {
    private int acceptedCodeOfConduct;
    private State state;
 
-   public ServerData(String var1, String var2, Type var3) {
+   public ServerData(final String name, final String ip, final Type type) {
       super();
       this.packStatus = ServerData.ServerPackStatus.PROMPT;
       this.state = ServerData.State.INITIAL;
-      this.name = var1;
-      this.ip = var2;
-      this.type = var3;
+      this.name = name;
+      this.ip = ip;
+      this.type = type;
    }
 
    public CompoundTag write() {
-      CompoundTag var1 = new CompoundTag();
-      var1.putString("name", this.name);
-      var1.putString("ip", this.ip);
-      var1.storeNullable("icon", ExtraCodecs.BASE64_STRING, this.iconBytes);
-      var1.store(ServerData.ServerPackStatus.FIELD_CODEC, this.packStatus);
+      CompoundTag tag = new CompoundTag();
+      tag.putString("name", this.name);
+      tag.putString("ip", this.ip);
+      tag.storeNullable("icon", ExtraCodecs.BASE64_STRING, this.iconBytes);
+      tag.store(ServerData.ServerPackStatus.FIELD_CODEC, this.packStatus);
       if (this.acceptedCodeOfConduct != 0) {
-         var1.putInt("acceptedCodeOfConduct", this.acceptedCodeOfConduct);
+         tag.putInt("acceptedCodeOfConduct", this.acceptedCodeOfConduct);
       }
 
-      return var1;
+      return tag;
    }
 
    public ServerPackStatus getResourcePackStatus() {
       return this.packStatus;
    }
 
-   public void setResourcePackStatus(ServerPackStatus var1) {
-      this.packStatus = var1;
+   public void setResourcePackStatus(final ServerPackStatus packStatus) {
+      this.packStatus = packStatus;
    }
 
-   public static ServerData read(CompoundTag var0) {
-      ServerData var1 = new ServerData(var0.getStringOr("name", ""), var0.getStringOr("ip", ""), ServerData.Type.OTHER);
-      var1.setIconBytes((byte[])var0.read("icon", ExtraCodecs.BASE64_STRING).orElse((Object)null));
-      var1.setResourcePackStatus((ServerPackStatus)var0.read(ServerData.ServerPackStatus.FIELD_CODEC).orElse(ServerData.ServerPackStatus.PROMPT));
-      var1.acceptedCodeOfConduct = var0.getIntOr("acceptedCodeOfConduct", 0);
-      return var1;
+   public static ServerData read(final CompoundTag tag) {
+      ServerData server = new ServerData(tag.getStringOr("name", ""), tag.getStringOr("ip", ""), ServerData.Type.OTHER);
+      server.setIconBytes((byte[])tag.read("icon", ExtraCodecs.BASE64_STRING).orElse((Object)null));
+      server.setResourcePackStatus((ServerPackStatus)tag.read(ServerData.ServerPackStatus.FIELD_CODEC).orElse(ServerData.ServerPackStatus.PROMPT));
+      server.acceptedCodeOfConduct = tag.getIntOr("acceptedCodeOfConduct", 0);
+      return server;
    }
 
    public byte @Nullable [] getIconBytes() {
       return this.iconBytes;
    }
 
-   public void setIconBytes(byte @Nullable [] var1) {
-      this.iconBytes = var1;
+   public void setIconBytes(final byte @Nullable [] iconBytes) {
+      this.iconBytes = iconBytes;
    }
 
    public boolean isLan() {
@@ -92,47 +92,47 @@ public class ServerData {
       return this.type;
    }
 
-   public boolean hasAcceptedCodeOfConduct(String var1) {
-      return this.acceptedCodeOfConduct == var1.hashCode();
+   public boolean hasAcceptedCodeOfConduct(final String codeOfConduct) {
+      return this.acceptedCodeOfConduct == codeOfConduct.hashCode();
    }
 
-   public void acceptCodeOfConduct(String var1) {
-      this.acceptedCodeOfConduct = var1.hashCode();
+   public void acceptCodeOfConduct(final String codeOfConduct) {
+      this.acceptedCodeOfConduct = codeOfConduct.hashCode();
    }
 
    public void clearCodeOfConduct() {
       this.acceptedCodeOfConduct = 0;
    }
 
-   public void copyNameIconFrom(ServerData var1) {
-      this.ip = var1.ip;
-      this.name = var1.name;
-      this.iconBytes = var1.iconBytes;
+   public void copyNameIconFrom(final ServerData other) {
+      this.ip = other.ip;
+      this.name = other.name;
+      this.iconBytes = other.iconBytes;
    }
 
-   public void copyFrom(ServerData var1) {
-      this.copyNameIconFrom(var1);
-      this.setResourcePackStatus(var1.getResourcePackStatus());
-      this.type = var1.type;
+   public void copyFrom(final ServerData other) {
+      this.copyNameIconFrom(other);
+      this.setResourcePackStatus(other.getResourcePackStatus());
+      this.type = other.type;
    }
 
    public State state() {
       return this.state;
    }
 
-   public void setState(State var1) {
-      this.state = var1;
+   public void setState(final State state) {
+      this.state = state;
    }
 
-   public static byte @Nullable [] validateIcon(byte @Nullable [] var0) {
-      if (var0 != null) {
+   public static byte @Nullable [] validateIcon(final byte @Nullable [] bytes) {
+      if (bytes != null) {
          try {
-            PngInfo var1 = PngInfo.fromBytes(var0);
-            if (var1.width() <= 1024 && var1.height() <= 1024) {
-               return var0;
+            PngInfo iconInfo = PngInfo.fromBytes(bytes);
+            if (iconInfo.width() <= 1024 && iconInfo.height() <= 1024) {
+               return bytes;
             }
-         } catch (IOException var2) {
-            LOGGER.warn("Failed to decode server icon", var2);
+         } catch (IOException e) {
+            LOGGER.warn("Failed to decode server icon", e);
          }
       }
 
@@ -144,9 +144,9 @@ public class ServerData {
       DISABLED("disabled"),
       PROMPT("prompt");
 
-      public static final MapCodec<ServerPackStatus> FIELD_CODEC = Codec.BOOL.optionalFieldOf("acceptTextures").xmap((var0) -> (ServerPackStatus)var0.map((var0x) -> var0x ? ENABLED : DISABLED).orElse(PROMPT), (var0) -> {
+      public static final MapCodec<ServerPackStatus> FIELD_CODEC = Codec.BOOL.optionalFieldOf("acceptTextures").xmap((acceptTextures) -> (ServerPackStatus)acceptTextures.map((b) -> b ? ENABLED : DISABLED).orElse(PROMPT), (status) -> {
          Optional var10000;
-         switch (var0.ordinal()) {
+         switch (status.ordinal()) {
             case 0 -> var10000 = Optional.of(true);
             case 1 -> var10000 = Optional.of(false);
             case 2 -> var10000 = Optional.empty();
@@ -157,8 +157,8 @@ public class ServerData {
       });
       private final Component name;
 
-      private ServerPackStatus(final String var3) {
-         this.name = Component.translatable("manageServer.resourcePack." + var3);
+      private ServerPackStatus(final String name) {
+         this.name = Component.translatable("manageServer.resourcePack." + name);
       }
 
       public Component getName() {

@@ -23,40 +23,40 @@ public abstract class AbstractHurtingProjectile extends Projectile {
    public static final double DEFLECTION_SCALE = 0.5;
    public double accelerationPower;
 
-   protected AbstractHurtingProjectile(EntityType<? extends AbstractHurtingProjectile> var1, Level var2) {
-      super(var1, var2);
+   protected AbstractHurtingProjectile(final EntityType<? extends AbstractHurtingProjectile> type, final Level level) {
+      super(type, level);
       this.accelerationPower = 0.1;
    }
 
-   protected AbstractHurtingProjectile(EntityType<? extends AbstractHurtingProjectile> var1, double var2, double var4, double var6, Level var8) {
-      this(var1, var8);
-      this.setPos(var2, var4, var6);
+   protected AbstractHurtingProjectile(final EntityType<? extends AbstractHurtingProjectile> type, final double x, final double y, final double z, final Level level) {
+      this(type, level);
+      this.setPos(x, y, z);
    }
 
-   public AbstractHurtingProjectile(EntityType<? extends AbstractHurtingProjectile> var1, double var2, double var4, double var6, Vec3 var8, Level var9) {
-      this(var1, var9);
-      this.snapTo(var2, var4, var6, this.getYRot(), this.getXRot());
+   public AbstractHurtingProjectile(final EntityType<? extends AbstractHurtingProjectile> type, final double x, final double y, final double z, final Vec3 direction, final Level level) {
+      this(type, level);
+      this.snapTo(x, y, z, this.getYRot(), this.getXRot());
       this.reapplyPosition();
-      this.assignDirectionalMovement(var8, this.accelerationPower);
+      this.assignDirectionalMovement(direction, this.accelerationPower);
    }
 
-   public AbstractHurtingProjectile(EntityType<? extends AbstractHurtingProjectile> var1, LivingEntity var2, Vec3 var3, Level var4) {
-      this(var1, var2.getX(), var2.getY(), var2.getZ(), var3, var4);
-      this.setOwner(var2);
-      this.setRot(var2.getYRot(), var2.getXRot());
+   public AbstractHurtingProjectile(final EntityType<? extends AbstractHurtingProjectile> type, final LivingEntity mob, final Vec3 direction, final Level level) {
+      this(type, mob.getX(), mob.getY(), mob.getZ(), direction, level);
+      this.setOwner(mob);
+      this.setRot(mob.getYRot(), mob.getXRot());
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
    }
 
-   public boolean shouldRenderAtSqrDistance(double var1) {
-      double var3 = this.getBoundingBox().getSize() * 4.0;
-      if (Double.isNaN(var3)) {
-         var3 = 4.0;
+   public boolean shouldRenderAtSqrDistance(final double distance) {
+      double size = this.getBoundingBox().getSize() * 4.0;
+      if (Double.isNaN(size)) {
+         size = 4.0;
       }
 
-      var3 *= 64.0;
-      return var1 < var3 * var3;
+      size *= 64.0;
+      return distance < size * size;
    }
 
    protected ClipContext.Block getClipType() {
@@ -64,27 +64,27 @@ public abstract class AbstractHurtingProjectile extends Projectile {
    }
 
    public void tick() {
-      Entity var1 = this.getOwner();
+      Entity owner = this.getOwner();
       this.applyInertia();
-      if (this.level().isClientSide() || (var1 == null || !var1.isRemoved()) && this.level().hasChunkAt(this.blockPosition())) {
-         HitResult var2 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity, this.getClipType());
-         Vec3 var3;
-         if (var2.getType() != HitResult.Type.MISS) {
-            var3 = var2.getLocation();
+      if (this.level().isClientSide() || (owner == null || !owner.isRemoved()) && this.level().hasChunkAt(this.blockPosition())) {
+         HitResult hitResult = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity, this.getClipType());
+         Vec3 newPosition;
+         if (hitResult.getType() != HitResult.Type.MISS) {
+            newPosition = hitResult.getLocation();
          } else {
-            var3 = this.position().add(this.getDeltaMovement());
+            newPosition = this.position().add(this.getDeltaMovement());
          }
 
          ProjectileUtil.rotateTowardsMovement(this, 0.2F);
-         this.setPos(var3);
+         this.setPos(newPosition);
          this.applyEffectsFromBlocks();
          super.tick();
          if (this.shouldBurn()) {
             this.igniteForSeconds(1.0F);
          }
 
-         if (var2.getType() != HitResult.Type.MISS && this.isAlive()) {
-            this.hitTargetOrDeflectSelf(var2);
+         if (hitResult.getType() != HitResult.Type.MISS && this.isAlive()) {
+            this.hitTargetOrDeflectSelf(hitResult);
          }
 
          this.createParticleTrail();
@@ -94,38 +94,38 @@ public abstract class AbstractHurtingProjectile extends Projectile {
    }
 
    private void applyInertia() {
-      Vec3 var1 = this.getDeltaMovement();
-      Vec3 var2 = this.position();
-      float var3;
+      Vec3 movement = this.getDeltaMovement();
+      Vec3 position = this.position();
+      float inertia;
       if (this.isInWater()) {
-         for(int var4 = 0; var4 < 4; ++var4) {
-            float var5 = 0.25F;
-            this.level().addParticle(ParticleTypes.BUBBLE, var2.x - var1.x * 0.25, var2.y - var1.y * 0.25, var2.z - var1.z * 0.25, var1.x, var1.y, var1.z);
+         for(int i = 0; i < 4; ++i) {
+            float s = 0.25F;
+            this.level().addParticle(ParticleTypes.BUBBLE, position.x - movement.x * 0.25, position.y - movement.y * 0.25, position.z - movement.z * 0.25, movement.x, movement.y, movement.z);
          }
 
-         var3 = this.getLiquidInertia();
+         inertia = this.getLiquidInertia();
       } else {
-         var3 = this.getInertia();
+         inertia = this.getInertia();
       }
 
-      this.setDeltaMovement(var1.add(var1.normalize().scale(this.accelerationPower)).scale((double)var3));
+      this.setDeltaMovement(movement.add(movement.normalize().scale(this.accelerationPower)).scale((double)inertia));
    }
 
    private void createParticleTrail() {
-      ParticleOptions var1 = this.getTrailParticle();
-      Vec3 var2 = this.position();
-      if (var1 != null) {
-         this.level().addParticle(var1, var2.x, var2.y + 0.5, var2.z, 0.0, 0.0, 0.0);
+      ParticleOptions trailParticle = this.getTrailParticle();
+      Vec3 position = this.position();
+      if (trailParticle != null) {
+         this.level().addParticle(trailParticle, position.x, position.y + 0.5, position.z, 0.0, 0.0, 0.0);
       }
 
    }
 
-   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+   public boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {
       return false;
    }
 
-   protected boolean canHitEntity(Entity var1) {
-      return super.canHitEntity(var1) && !var1.noPhysics;
+   protected boolean canHitEntity(final Entity entity) {
+      return super.canHitEntity(entity) && !entity.noPhysics;
    }
 
    protected boolean shouldBurn() {
@@ -144,28 +144,28 @@ public abstract class AbstractHurtingProjectile extends Projectile {
       return 0.8F;
    }
 
-   protected void addAdditionalSaveData(ValueOutput var1) {
-      super.addAdditionalSaveData(var1);
-      var1.putDouble("acceleration_power", this.accelerationPower);
+   protected void addAdditionalSaveData(final ValueOutput output) {
+      super.addAdditionalSaveData(output);
+      output.putDouble("acceleration_power", this.accelerationPower);
    }
 
-   protected void readAdditionalSaveData(ValueInput var1) {
-      super.readAdditionalSaveData(var1);
-      this.accelerationPower = var1.getDoubleOr("acceleration_power", 0.1);
+   protected void readAdditionalSaveData(final ValueInput input) {
+      super.readAdditionalSaveData(input);
+      this.accelerationPower = input.getDoubleOr("acceleration_power", 0.1);
    }
 
    public float getLightLevelDependentMagicValue() {
       return 1.0F;
    }
 
-   private void assignDirectionalMovement(Vec3 var1, double var2) {
-      this.setDeltaMovement(var1.normalize().scale(var2));
+   private void assignDirectionalMovement(final Vec3 direction, final double speed) {
+      this.setDeltaMovement(direction.normalize().scale(speed));
       this.needsSync = true;
    }
 
-   protected void onDeflection(boolean var1) {
-      super.onDeflection(var1);
-      if (var1) {
+   protected void onDeflection(final boolean byAttack) {
+      super.onDeflection(byAttack);
+      if (byAttack) {
          this.accelerationPower = 0.1;
       } else {
          this.accelerationPower *= 0.5;

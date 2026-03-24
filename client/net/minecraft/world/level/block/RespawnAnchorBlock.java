@@ -56,37 +56,37 @@ public class RespawnAnchorBlock extends Block {
       return CODEC;
    }
 
-   public RespawnAnchorBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public RespawnAnchorBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(CHARGE, 0));
    }
 
-   protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
-      if (isRespawnFuel(var1) && canBeCharged(var2)) {
-         charge(var5, var3, var4, var2);
-         var1.consume(1, var5);
+   protected InteractionResult useItemOn(final ItemStack itemStack, final BlockState state, final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final BlockHitResult hitResult) {
+      if (isRespawnFuel(itemStack) && canBeCharged(state)) {
+         charge(player, level, pos, state);
+         itemStack.consume(1, player);
          return InteractionResult.SUCCESS;
       } else {
-         return (InteractionResult)(var6 == InteractionHand.MAIN_HAND && isRespawnFuel(var5.getItemInHand(InteractionHand.OFF_HAND)) && canBeCharged(var2) ? InteractionResult.PASS : InteractionResult.TRY_WITH_EMPTY_HAND);
+         return (InteractionResult)(hand == InteractionHand.MAIN_HAND && isRespawnFuel(player.getItemInHand(InteractionHand.OFF_HAND)) && canBeCharged(state) ? InteractionResult.PASS : InteractionResult.TRY_WITH_EMPTY_HAND);
       }
    }
 
-   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if ((Integer)var1.getValue(CHARGE) == 0) {
+   protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
+      if ((Integer)state.getValue(CHARGE) == 0) {
          return InteractionResult.PASS;
-      } else if (var2 instanceof ServerLevel) {
-         ServerLevel var6 = (ServerLevel)var2;
-         if (!canSetSpawn(var6, var3)) {
-            this.explode(var1, var6, var3);
+      } else if (level instanceof ServerLevel) {
+         ServerLevel serverLevel = (ServerLevel)level;
+         if (!canSetSpawn(serverLevel, pos)) {
+            this.explode(state, serverLevel, pos);
             return InteractionResult.SUCCESS_SERVER;
          } else {
-            if (var4 instanceof ServerPlayer) {
-               ServerPlayer var7 = (ServerPlayer)var4;
-               ServerPlayer.RespawnConfig var8 = var7.getRespawnConfig();
-               ServerPlayer.RespawnConfig var9 = new ServerPlayer.RespawnConfig(LevelData.RespawnData.of(var6.dimension(), var3, 0.0F, 0.0F), false);
-               if (var8 == null || !var8.isSamePosition(var9)) {
-                  var7.setRespawnPosition(var9, true);
-                  var6.playSound((Entity)null, (double)var3.getX() + 0.5, (double)var3.getY() + 0.5, (double)var3.getZ() + 0.5, SoundEvents.RESPAWN_ANCHOR_SET_SPAWN, SoundSource.BLOCKS, 1.0F, 1.0F);
+            if (player instanceof ServerPlayer) {
+               ServerPlayer serverPlayer = (ServerPlayer)player;
+               ServerPlayer.RespawnConfig respawnConfig = serverPlayer.getRespawnConfig();
+               ServerPlayer.RespawnConfig newRespawnConfig = new ServerPlayer.RespawnConfig(LevelData.RespawnData.of(serverLevel.dimension(), pos, 0.0F, 0.0F), false);
+               if (respawnConfig == null || !respawnConfig.isSamePosition(newRespawnConfig)) {
+                  serverPlayer.setRespawnPosition(newRespawnConfig, true);
+                  serverLevel.playSound((Entity)null, (double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5, SoundEvents.RESPAWN_ANCHOR_SET_SPAWN, SoundSource.BLOCKS, 1.0F, 1.0F);
                   return InteractionResult.SUCCESS_SERVER;
                }
             }
@@ -98,109 +98,113 @@ public class RespawnAnchorBlock extends Block {
       }
    }
 
-   private static boolean isRespawnFuel(ItemStack var0) {
-      return var0.is(Items.GLOWSTONE);
+   private static boolean isRespawnFuel(final ItemStack itemInHand) {
+      return itemInHand.is(Items.GLOWSTONE);
    }
 
-   private static boolean canBeCharged(BlockState var0) {
-      return (Integer)var0.getValue(CHARGE) < 4;
+   private static boolean canBeCharged(final BlockState state) {
+      return (Integer)state.getValue(CHARGE) < 4;
    }
 
-   private static boolean isWaterThatWouldFlow(BlockPos var0, Level var1) {
-      FluidState var2 = var1.getFluidState(var0);
-      if (!var2.is(FluidTags.WATER)) {
+   private static boolean isWaterThatWouldFlow(final BlockPos pos, final Level level) {
+      FluidState fluid = level.getFluidState(pos);
+      if (!fluid.is(FluidTags.WATER)) {
          return false;
-      } else if (var2.isSource()) {
+      } else if (fluid.isSource()) {
          return true;
       } else {
-         float var3 = (float)var2.getAmount();
-         if (var3 < 2.0F) {
+         float amount = (float)fluid.getAmount();
+         if (amount < 2.0F) {
             return false;
          } else {
-            FluidState var4 = var1.getFluidState(var0.below());
-            return !var4.is(FluidTags.WATER);
+            FluidState fluidBelow = level.getFluidState(pos.below());
+            return !fluidBelow.is(FluidTags.WATER);
          }
       }
    }
 
-   private void explode(BlockState var1, ServerLevel var2, final BlockPos var3) {
-      var2.removeBlock(var3, false);
+   private void explode(final BlockState state, final ServerLevel level, final BlockPos pos) {
+      level.removeBlock(pos, false);
       Stream var10000 = Direction.Plane.HORIZONTAL.stream();
-      Objects.requireNonNull(var3);
-      boolean var4 = var10000.map(var3::relative).anyMatch((var1x) -> isWaterThatWouldFlow(var1x, var2));
-      final boolean var5 = var4 || var2.getFluidState(var3.above()).is(FluidTags.WATER);
-      ExplosionDamageCalculator var6 = new ExplosionDamageCalculator() {
-         public Optional<Float> getBlockExplosionResistance(Explosion var1, BlockGetter var2, BlockPos var3x, BlockState var4, FluidState var5x) {
-            return var3x.equals(var3) && var5 ? Optional.of(Blocks.WATER.getExplosionResistance()) : super.getBlockExplosionResistance(var1, var2, var3x, var4, var5x);
+      Objects.requireNonNull(pos);
+      boolean anyWaterNeighbors = var10000.map(pos::relative).anyMatch((neighborPos) -> isWaterThatWouldFlow(neighborPos, level));
+      final boolean inWater = anyWaterNeighbors || level.getFluidState(pos.above()).is(FluidTags.WATER);
+      ExplosionDamageCalculator damageCalculator = new ExplosionDamageCalculator() {
+         {
+            Objects.requireNonNull(RespawnAnchorBlock.this);
+         }
+
+         public Optional<Float> getBlockExplosionResistance(final Explosion explosion, final BlockGetter level, final BlockPos testPos, final BlockState block, final FluidState fluid) {
+            return testPos.equals(pos) && inWater ? Optional.of(Blocks.WATER.getExplosionResistance()) : super.getBlockExplosionResistance(explosion, level, testPos, block, fluid);
          }
       };
-      Vec3 var7 = var3.getCenter();
-      var2.explode((Entity)null, var2.damageSources().badRespawnPointExplosion(var7), var6, var7, 5.0F, true, Level.ExplosionInteraction.BLOCK);
+      Vec3 boomPos = pos.getCenter();
+      level.explode((Entity)null, level.damageSources().badRespawnPointExplosion(boomPos), damageCalculator, boomPos, 5.0F, true, Level.ExplosionInteraction.BLOCK);
    }
 
-   public static boolean canSetSpawn(ServerLevel var0, BlockPos var1) {
-      return (Boolean)var0.environmentAttributes().getValue(EnvironmentAttributes.RESPAWN_ANCHOR_WORKS, var1);
+   public static boolean canSetSpawn(final ServerLevel level, final BlockPos pos) {
+      return (Boolean)level.environmentAttributes().getValue(EnvironmentAttributes.RESPAWN_ANCHOR_WORKS, pos);
    }
 
-   public static void charge(@Nullable Entity var0, Level var1, BlockPos var2, BlockState var3) {
-      BlockState var4 = (BlockState)var3.setValue(CHARGE, (Integer)var3.getValue(CHARGE) + 1);
-      var1.setBlock(var2, var4, 3);
-      var1.gameEvent(GameEvent.BLOCK_CHANGE, var2, GameEvent.Context.of(var0, var4));
-      var1.playSound((Entity)null, (double)var2.getX() + 0.5, (double)var2.getY() + 0.5, (double)var2.getZ() + 0.5, SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.BLOCKS, 1.0F, 1.0F);
+   public static void charge(final @Nullable Entity sourceEntity, final Level level, final BlockPos pos, final BlockState state) {
+      BlockState newState = (BlockState)state.setValue(CHARGE, (Integer)state.getValue(CHARGE) + 1);
+      level.setBlock(pos, newState, 3);
+      level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(sourceEntity, newState));
+      level.playSound((Entity)null, (double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5, SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.BLOCKS, 1.0F, 1.0F);
    }
 
-   public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
-      if ((Integer)var1.getValue(CHARGE) != 0) {
-         if (var4.nextInt(100) == 0) {
-            var2.playLocalSound(var3, SoundEvents.RESPAWN_ANCHOR_AMBIENT, SoundSource.BLOCKS, 1.0F, 1.0F, false);
+   public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {
+      if ((Integer)state.getValue(CHARGE) != 0) {
+         if (random.nextInt(100) == 0) {
+            level.playLocalSound(pos, SoundEvents.RESPAWN_ANCHOR_AMBIENT, SoundSource.BLOCKS, 1.0F, 1.0F, false);
          }
 
-         double var5 = (double)var3.getX() + 0.5 + (0.5 - var4.nextDouble());
-         double var7 = (double)var3.getY() + 1.0;
-         double var9 = (double)var3.getZ() + 0.5 + (0.5 - var4.nextDouble());
-         double var11 = (double)var4.nextFloat() * 0.04;
-         var2.addParticle(ParticleTypes.REVERSE_PORTAL, var5, var7, var9, 0.0, var11, 0.0);
+         double x = (double)pos.getX() + 0.5 + (0.5 - random.nextDouble());
+         double y = (double)pos.getY() + 1.0;
+         double z = (double)pos.getZ() + 0.5 + (0.5 - random.nextDouble());
+         double ya = (double)random.nextFloat() * 0.04;
+         level.addParticle(ParticleTypes.REVERSE_PORTAL, x, y, z, 0.0, ya, 0.0);
       }
    }
 
-   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(CHARGE);
+   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
+      builder.add(CHARGE);
    }
 
-   protected boolean hasAnalogOutputSignal(BlockState var1) {
+   protected boolean hasAnalogOutputSignal(final BlockState state) {
       return true;
    }
 
-   public static int getScaledChargeLevel(BlockState var0, int var1) {
-      return Mth.floor((float)((Integer)var0.getValue(CHARGE) - 0) / 4.0F * (float)var1);
+   public static int getScaledChargeLevel(final BlockState state, final int maximum) {
+      return Mth.floor((float)((Integer)state.getValue(CHARGE) - 0) / 4.0F * (float)maximum);
    }
 
-   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3, Direction var4) {
-      return getScaledChargeLevel(var1, 15);
+   protected int getAnalogOutputSignal(final BlockState state, final Level level, final BlockPos pos, final Direction direction) {
+      return getScaledChargeLevel(state, 15);
    }
 
-   public static Optional<Vec3> findStandUpPosition(EntityType<?> var0, CollisionGetter var1, BlockPos var2) {
-      Optional var3 = findStandUpPosition(var0, var1, var2, true);
-      return var3.isPresent() ? var3 : findStandUpPosition(var0, var1, var2, false);
+   public static Optional<Vec3> findStandUpPosition(final EntityType<?> type, final CollisionGetter level, final BlockPos pos) {
+      Optional<Vec3> safePosition = findStandUpPosition(type, level, pos, true);
+      return safePosition.isPresent() ? safePosition : findStandUpPosition(type, level, pos, false);
    }
 
-   private static Optional<Vec3> findStandUpPosition(EntityType<?> var0, CollisionGetter var1, BlockPos var2, boolean var3) {
-      BlockPos.MutableBlockPos var4 = new BlockPos.MutableBlockPos();
+   private static Optional<Vec3> findStandUpPosition(final EntityType<?> type, final CollisionGetter level, final BlockPos pos, final boolean checkDangerous) {
+      BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos();
       UnmodifiableIterator var5 = RESPAWN_OFFSETS.iterator();
 
       while(var5.hasNext()) {
-         Vec3i var6 = (Vec3i)var5.next();
-         var4.set(var2).move(var6);
-         Vec3 var7 = DismountHelper.findSafeDismountLocation(var0, var1, var4, var3);
-         if (var7 != null) {
-            return Optional.of(var7);
+         Vec3i offset = (Vec3i)var5.next();
+         blockPos.set(pos).move(offset);
+         Vec3 position = DismountHelper.findSafeDismountLocation(type, level, blockPos, checkDangerous);
+         if (position != null) {
+            return Optional.of(position);
          }
       }
 
       return Optional.empty();
    }
 
-   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
+   protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
       return false;
    }
 

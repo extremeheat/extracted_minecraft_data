@@ -8,9 +8,9 @@ import net.minecraft.world.entity.PathfinderMob;
 public class TryFindWaterGoal extends Goal {
    private final PathfinderMob mob;
 
-   public TryFindWaterGoal(PathfinderMob var1) {
+   public TryFindWaterGoal(final PathfinderMob mob) {
       super();
-      this.mob = var1;
+      this.mob = mob;
    }
 
    public boolean canUse() {
@@ -18,17 +18,17 @@ public class TryFindWaterGoal extends Goal {
    }
 
    public void start() {
-      BlockPos var1 = null;
+      BlockPos waterPos = null;
 
-      for(BlockPos var4 : BlockPos.betweenClosed(Mth.floor(this.mob.getX() - 2.0), Mth.floor(this.mob.getY() - 2.0), Mth.floor(this.mob.getZ() - 2.0), Mth.floor(this.mob.getX() + 2.0), this.mob.getBlockY(), Mth.floor(this.mob.getZ() + 2.0))) {
-         if (this.mob.level().getFluidState(var4).is(FluidTags.WATER)) {
-            var1 = var4;
+      for(BlockPos pos : BlockPos.betweenClosed(Mth.floor(this.mob.getX() - 2.0), Mth.floor(this.mob.getY() - 2.0), Mth.floor(this.mob.getZ() - 2.0), Mth.floor(this.mob.getX() + 2.0), this.mob.getBlockY(), Mth.floor(this.mob.getZ() + 2.0))) {
+         if (this.mob.level().getFluidState(pos).is(FluidTags.WATER)) {
+            waterPos = pos;
             break;
          }
       }
 
-      if (var1 != null) {
-         this.mob.getMoveControl().setWantedPosition((double)var1.getX(), (double)var1.getY(), (double)var1.getZ(), 1.0);
+      if (waterPos != null) {
+         this.mob.getMoveControl().setWantedPosition((double)waterPos.getX(), (double)waterPos.getY(), (double)waterPos.getZ(), 1.0);
       }
 
    }

@@ -3,9 +3,7 @@ package net.minecraft.client.renderer.entity;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.monster.witch.WitchModel;
 import net.minecraft.client.renderer.entity.layers.WitchItemLayer;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.HoldingEntityRenderState;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.WitchRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.monster.Witch;
@@ -13,14 +11,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 public class WitchRenderer extends MobRenderer<Witch, WitchRenderState, WitchModel> {
-   private static final Identifier WITCH_LOCATION = Identifier.withDefaultNamespace("textures/entity/witch.png");
+   private static final Identifier WITCH_LOCATION = Identifier.withDefaultNamespace("textures/entity/witch/witch.png");
 
-   public WitchRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new WitchModel(var1.bakeLayer(ModelLayers.WITCH)), 0.5F);
+   public WitchRenderer(final EntityRendererProvider.Context context) {
+      super(context, new WitchModel(context.bakeLayer(ModelLayers.WITCH)), 0.5F);
       this.addLayer(new WitchItemLayer(this));
    }
 
-   public Identifier getTextureLocation(WitchRenderState var1) {
+   public Identifier getTextureLocation(final WitchRenderState state) {
       return WITCH_LOCATION;
    }
 
@@ -28,22 +26,12 @@ public class WitchRenderer extends MobRenderer<Witch, WitchRenderState, WitchMod
       return new WitchRenderState();
    }
 
-   public void extractRenderState(Witch var1, WitchRenderState var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      HoldingEntityRenderState.extractHoldingEntityRenderState(var1, var2, this.itemModelResolver);
-      var2.entityId = var1.getId();
-      ItemStack var4 = var1.getMainHandItem();
-      var2.isHoldingItem = !var4.isEmpty();
-      var2.isHoldingPotion = var4.is(Items.POTION);
-   }
-
-   // $FF: synthetic method
-   public Identifier getTextureLocation(final LivingEntityRenderState var1) {
-      return this.getTextureLocation((WitchRenderState)var1);
-   }
-
-   // $FF: synthetic method
-   public EntityRenderState createRenderState() {
-      return this.createRenderState();
+   public void extractRenderState(final Witch entity, final WitchRenderState state, final float partialTicks) {
+      super.extractRenderState(entity, state, partialTicks);
+      HoldingEntityRenderState.extractHoldingEntityRenderState(entity, state, this.itemModelResolver);
+      state.entityId = entity.getId();
+      ItemStack mainHandItem = entity.getMainHandItem();
+      state.isHoldingItem = !mainHandItem.isEmpty();
+      state.isHoldingPotion = mainHandItem.is(Items.POTION);
    }
 }

@@ -15,41 +15,41 @@ public class ClientboundMerchantOffersPacket implements Packet<ClientGamePacketL
    private final boolean showProgress;
    private final boolean canRestock;
 
-   public ClientboundMerchantOffersPacket(int var1, MerchantOffers var2, int var3, int var4, boolean var5, boolean var6) {
+   public ClientboundMerchantOffersPacket(final int containerId, final MerchantOffers offers, final int merchantLevel, final int merchantXp, final boolean showProgress, final boolean canRestock) {
       super();
-      this.containerId = var1;
-      this.offers = var2.copy();
-      this.villagerLevel = var3;
-      this.villagerXp = var4;
-      this.showProgress = var5;
-      this.canRestock = var6;
+      this.containerId = containerId;
+      this.offers = offers.copy();
+      this.villagerLevel = merchantLevel;
+      this.villagerXp = merchantXp;
+      this.showProgress = showProgress;
+      this.canRestock = canRestock;
    }
 
-   private ClientboundMerchantOffersPacket(RegistryFriendlyByteBuf var1) {
+   private ClientboundMerchantOffersPacket(final RegistryFriendlyByteBuf input) {
       super();
-      this.containerId = var1.readContainerId();
-      this.offers = (MerchantOffers)MerchantOffers.STREAM_CODEC.decode(var1);
-      this.villagerLevel = var1.readVarInt();
-      this.villagerXp = var1.readVarInt();
-      this.showProgress = var1.readBoolean();
-      this.canRestock = var1.readBoolean();
+      this.containerId = input.readContainerId();
+      this.offers = (MerchantOffers)MerchantOffers.STREAM_CODEC.decode(input);
+      this.villagerLevel = input.readVarInt();
+      this.villagerXp = input.readVarInt();
+      this.showProgress = input.readBoolean();
+      this.canRestock = input.readBoolean();
    }
 
-   private void write(RegistryFriendlyByteBuf var1) {
-      var1.writeContainerId(this.containerId);
-      MerchantOffers.STREAM_CODEC.encode(var1, this.offers);
-      var1.writeVarInt(this.villagerLevel);
-      var1.writeVarInt(this.villagerXp);
-      var1.writeBoolean(this.showProgress);
-      var1.writeBoolean(this.canRestock);
+   private void write(final RegistryFriendlyByteBuf output) {
+      output.writeContainerId(this.containerId);
+      MerchantOffers.STREAM_CODEC.encode(output, this.offers);
+      output.writeVarInt(this.villagerLevel);
+      output.writeVarInt(this.villagerXp);
+      output.writeBoolean(this.showProgress);
+      output.writeBoolean(this.canRestock);
    }
 
    public PacketType<ClientboundMerchantOffersPacket> type() {
       return GamePacketTypes.CLIENTBOUND_MERCHANT_OFFERS;
    }
 
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleMerchantOffers(this);
+   public void handle(final ClientGamePacketListener listener) {
+      listener.handleMerchantOffers(this);
    }
 
    public int getContainerId() {

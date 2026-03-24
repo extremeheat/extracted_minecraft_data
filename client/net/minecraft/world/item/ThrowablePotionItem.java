@@ -13,29 +13,29 @@ import net.minecraft.world.entity.projectile.throwableitemprojectile.AbstractThr
 import net.minecraft.world.level.Level;
 
 public abstract class ThrowablePotionItem extends PotionItem implements ProjectileItem {
-   public static float PROJECTILE_SHOOT_POWER = 0.5F;
+   public static final float PROJECTILE_SHOOT_POWER = 0.5F;
 
-   public ThrowablePotionItem(Item.Properties var1) {
-      super(var1);
+   public ThrowablePotionItem(final Item.Properties properties) {
+      super(properties);
    }
 
-   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
-      ItemStack var4 = var2.getItemInHand(var3);
-      if (var1 instanceof ServerLevel var5) {
-         Projectile.spawnProjectileFromRotation(this::createPotion, var5, var4, var2, -20.0F, PROJECTILE_SHOOT_POWER, 1.0F);
+   public InteractionResult use(final Level level, final Player player, final InteractionHand hand) {
+      ItemStack itemStack = player.getItemInHand(hand);
+      if (level instanceof ServerLevel serverLevel) {
+         Projectile.spawnProjectileFromRotation(this::createPotion, serverLevel, itemStack, player, -20.0F, 0.5F, 1.0F);
       }
 
-      var2.awardStat(Stats.ITEM_USED.get(this));
-      var4.consume(1, var2);
+      player.awardStat(Stats.ITEM_USED.get(this));
+      itemStack.consume(1, player);
       return InteractionResult.SUCCESS;
    }
 
-   protected abstract AbstractThrownPotion createPotion(ServerLevel var1, LivingEntity var2, ItemStack var3);
+   protected abstract AbstractThrownPotion createPotion(ServerLevel level, LivingEntity owner, ItemStack itemStack);
 
-   protected abstract AbstractThrownPotion createPotion(Level var1, Position var2, ItemStack var3);
+   protected abstract AbstractThrownPotion createPotion(Level level, Position position, ItemStack itemStack);
 
-   public Projectile asProjectile(Level var1, Position var2, ItemStack var3, Direction var4) {
-      return this.createPotion(var1, var2, var3);
+   public Projectile asProjectile(final Level level, final Position position, final ItemStack itemStack, final Direction direction) {
+      return this.createPotion(level, position, itemStack);
    }
 
    public ProjectileItem.DispenseConfig createDispenseConfig() {

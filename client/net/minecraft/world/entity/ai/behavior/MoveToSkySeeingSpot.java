@@ -18,33 +18,33 @@ public class MoveToSkySeeingSpot {
       super();
    }
 
-   public static OneShot<LivingEntity> create(float var0) {
-      return BehaviorBuilder.create((Function)((var1) -> var1.group(var1.absent(MemoryModuleType.WALK_TARGET)).apply(var1, (var1x) -> (var2, var3, var4) -> {
-               if (var2.canSeeSky(var3.blockPosition())) {
+   public static OneShot<LivingEntity> create(final float speedModifier) {
+      return BehaviorBuilder.create((Function)((i) -> i.group(i.absent(MemoryModuleType.WALK_TARGET)).apply(i, (walkTarget) -> (level, body, timestamp) -> {
+               if (level.canSeeSky(body.blockPosition())) {
                   return false;
                } else {
-                  Optional var6 = Optional.ofNullable(getOutdoorPosition(var2, var3));
-                  var6.ifPresent((var2x) -> var1x.set(new WalkTarget(var2x, var0, 0)));
+                  Optional<Vec3> landPos = Optional.ofNullable(getOutdoorPosition(level, body));
+                  landPos.ifPresent((pos) -> walkTarget.set(new WalkTarget(pos, speedModifier, 0)));
                   return true;
                }
             })));
    }
 
-   private static @Nullable Vec3 getOutdoorPosition(ServerLevel var0, LivingEntity var1) {
-      RandomSource var2 = var1.getRandom();
-      BlockPos var3 = var1.blockPosition();
+   private static @Nullable Vec3 getOutdoorPosition(final ServerLevel level, final LivingEntity body) {
+      RandomSource random = body.getRandom();
+      BlockPos pos = body.blockPosition();
 
-      for(int var4 = 0; var4 < 10; ++var4) {
-         BlockPos var5 = var3.offset(var2.nextInt(20) - 10, var2.nextInt(6) - 3, var2.nextInt(20) - 10);
-         if (hasNoBlocksAbove(var0, var1, var5)) {
-            return Vec3.atBottomCenterOf(var5);
+      for(int i = 0; i < 10; ++i) {
+         BlockPos randomPos = pos.offset(random.nextInt(20) - 10, random.nextInt(6) - 3, random.nextInt(20) - 10);
+         if (hasNoBlocksAbove(level, body, randomPos)) {
+            return Vec3.atBottomCenterOf(randomPos);
          }
       }
 
       return null;
    }
 
-   public static boolean hasNoBlocksAbove(ServerLevel var0, LivingEntity var1, BlockPos var2) {
-      return var0.canSeeSky(var2) && (double)var0.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, var2).getY() <= var1.getY();
+   public static boolean hasNoBlocksAbove(final ServerLevel level, final LivingEntity body, final BlockPos target) {
+      return level.canSeeSky(target) && (double)level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, target).getY() <= body.getY();
    }
 }

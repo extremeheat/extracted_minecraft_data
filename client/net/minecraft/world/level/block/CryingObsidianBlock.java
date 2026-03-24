@@ -16,21 +16,21 @@ public class CryingObsidianBlock extends Block {
       return CODEC;
    }
 
-   public CryingObsidianBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public CryingObsidianBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
-   public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
-      if (var4.nextInt(5) == 0) {
-         Direction var5 = Direction.getRandom(var4);
-         if (var5 != Direction.UP) {
-            BlockPos var6 = var3.relative(var5);
-            BlockState var7 = var2.getBlockState(var6);
-            if (!var1.canOcclude() || !var7.isFaceSturdy(var2, var6, var5.getOpposite())) {
-               double var8 = var5.getStepX() == 0 ? var4.nextDouble() : 0.5 + (double)var5.getStepX() * 0.6;
-               double var10 = var5.getStepY() == 0 ? var4.nextDouble() : 0.5 + (double)var5.getStepY() * 0.6;
-               double var12 = var5.getStepZ() == 0 ? var4.nextDouble() : 0.5 + (double)var5.getStepZ() * 0.6;
-               var2.addParticle(ParticleTypes.DRIPPING_OBSIDIAN_TEAR, (double)var3.getX() + var8, (double)var3.getY() + var10, (double)var3.getZ() + var12, 0.0, 0.0, 0.0);
+   public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {
+      if (random.nextInt(5) == 0) {
+         Direction dir = Direction.getRandom(random);
+         if (dir != Direction.UP) {
+            BlockPos relativePos = pos.relative(dir);
+            BlockState blockState = level.getBlockState(relativePos);
+            if (!state.canOcclude() || !blockState.isFaceSturdy(level, relativePos, dir.getOpposite())) {
+               double xOffset = dir.getStepX() == 0 ? random.nextDouble() : 0.5 + (double)dir.getStepX() * 0.6;
+               double yOffset = dir.getStepY() == 0 ? random.nextDouble() : 0.5 + (double)dir.getStepY() * 0.6;
+               double zOffset = dir.getStepZ() == 0 ? random.nextDouble() : 0.5 + (double)dir.getStepZ() * 0.6;
+               level.addParticle(ParticleTypes.DRIPPING_OBSIDIAN_TEAR, (double)pos.getX() + xOffset, (double)pos.getY() + yOffset, (double)pos.getZ() + zOffset, 0.0, 0.0, 0.0);
             }
          }
       }

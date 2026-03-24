@@ -7,15 +7,15 @@ import net.minecraft.world.level.levelgen.structure.StructureStart;
 import org.jspecify.annotations.Nullable;
 
 public interface StructureAccess {
-   @Nullable StructureStart getStartForStructure(Structure var1);
+   @Nullable StructureStart getStartForStructure(Structure structure);
 
-   void setStartForStructure(Structure var1, StructureStart var2);
+   void setStartForStructure(Structure structure, StructureStart structureStart);
 
-   LongSet getReferencesForStructure(Structure var1);
+   LongSet getReferencesForStructure(Structure structure);
 
-   void addReferenceForStructure(Structure var1, long var2);
+   void addReferenceForStructure(Structure structure, long reference);
 
    Map<Structure, LongSet> getAllReferences();
 
-   void setAllReferences(Map<Structure, LongSet> var1);
+   void setAllReferences(Map<Structure, LongSet> data);
 }

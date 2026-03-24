@@ -12,29 +12,29 @@ public class GaussianSampler {
       super();
    }
 
-   public static <V> void sample(Vec3 var0, Sampler<V> var1, Accumulator<V> var2) {
-      var0 = var0.subtract(0.5, 0.5, 0.5);
-      int var3 = Mth.floor(var0.x());
-      int var4 = Mth.floor(var0.y());
-      int var5 = Mth.floor(var0.z());
-      double var6 = var0.x() - (double)var3;
-      double var8 = var0.y() - (double)var4;
-      double var10 = var0.z() - (double)var5;
+   public static <V> void sample(Vec3 position, final Sampler<V> sampler, final Accumulator<V> accumulator) {
+      position = position.subtract(0.5, 0.5, 0.5);
+      int integralX = Mth.floor(position.x());
+      int integralY = Mth.floor(position.y());
+      int integralZ = Mth.floor(position.z());
+      double relativeX = position.x() - (double)integralX;
+      double relativeY = position.y() - (double)integralY;
+      double relativeZ = position.z() - (double)integralZ;
 
-      for(int var12 = 0; var12 < 6; ++var12) {
-         double var13 = Mth.lerp(var10, GAUSSIAN_SAMPLE_KERNEL[var12 + 1], GAUSSIAN_SAMPLE_KERNEL[var12]);
-         int var15 = var5 - 2 + var12;
+      for(int z = 0; z < 6; ++z) {
+         double weightZ = Mth.lerp(relativeZ, GAUSSIAN_SAMPLE_KERNEL[z + 1], GAUSSIAN_SAMPLE_KERNEL[z]);
+         int sampleZ = integralZ - 2 + z;
 
-         for(int var16 = 0; var16 < 6; ++var16) {
-            double var17 = Mth.lerp(var6, GAUSSIAN_SAMPLE_KERNEL[var16 + 1], GAUSSIAN_SAMPLE_KERNEL[var16]);
-            int var19 = var3 - 2 + var16;
+         for(int x = 0; x < 6; ++x) {
+            double weightX = Mth.lerp(relativeX, GAUSSIAN_SAMPLE_KERNEL[x + 1], GAUSSIAN_SAMPLE_KERNEL[x]);
+            int sampleX = integralX - 2 + x;
 
-            for(int var20 = 0; var20 < 6; ++var20) {
-               double var21 = Mth.lerp(var8, GAUSSIAN_SAMPLE_KERNEL[var20 + 1], GAUSSIAN_SAMPLE_KERNEL[var20]);
-               int var23 = var4 - 2 + var20;
-               double var24 = var17 * var21 * var13;
-               Object var26 = var1.get(var19, var23, var15);
-               var2.accumulate(var24, var26);
+            for(int y = 0; y < 6; ++y) {
+               double weightY = Mth.lerp(relativeY, GAUSSIAN_SAMPLE_KERNEL[y + 1], GAUSSIAN_SAMPLE_KERNEL[y]);
+               int sampleY = integralY - 2 + y;
+               double sampleWeight = weightX * weightY * weightZ;
+               V value = sampler.get(sampleX, sampleY, sampleZ);
+               accumulator.accumulate(sampleWeight, value);
             }
          }
       }
@@ -43,11 +43,11 @@ public class GaussianSampler {
 
    @FunctionalInterface
    public interface Accumulator<V> {
-      void accumulate(double var1, V var3);
+      void accumulate(double weight, V value);
    }
 
    @FunctionalInterface
    public interface Sampler<V> {
-      V get(int var1, int var2, int var3);
+      V get(int x, int y, int z);
    }
 }

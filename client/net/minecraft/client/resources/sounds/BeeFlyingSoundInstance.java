@@ -5,8 +5,8 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.animal.bee.Bee;
 
 public class BeeFlyingSoundInstance extends BeeSoundInstance {
-   public BeeFlyingSoundInstance(Bee var1) {
-      super(var1, SoundEvents.BEE_LOOP, SoundSource.NEUTRAL);
+   public BeeFlyingSoundInstance(final Bee bee) {
+      super(bee, SoundEvents.BEE_LOOP, SoundSource.NEUTRAL);
    }
 
    protected AbstractTickableSoundInstance getAlternativeSoundInstance() {

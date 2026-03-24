@@ -11,15 +11,15 @@ import net.minecraft.world.level.material.Fluid;
 
 class MatchingFluidsPredicate extends StateTestingPredicate {
    private final HolderSet<Fluid> fluids;
-   public static final MapCodec<MatchingFluidsPredicate> CODEC = RecordCodecBuilder.mapCodec((var0) -> stateTestingCodec(var0).and(RegistryCodecs.homogeneousList(Registries.FLUID).fieldOf("fluids").forGetter((var0x) -> var0x.fluids)).apply(var0, MatchingFluidsPredicate::new));
+   public static final MapCodec<MatchingFluidsPredicate> CODEC = RecordCodecBuilder.mapCodec((i) -> stateTestingCodec(i).and(RegistryCodecs.homogeneousList(Registries.FLUID).fieldOf("fluids").forGetter((c) -> c.fluids)).apply(i, MatchingFluidsPredicate::new));
 
-   public MatchingFluidsPredicate(Vec3i var1, HolderSet<Fluid> var2) {
-      super(var1);
-      this.fluids = var2;
+   public MatchingFluidsPredicate(final Vec3i offset, final HolderSet<Fluid> fluids) {
+      super(offset);
+      this.fluids = fluids;
    }
 
-   protected boolean test(BlockState var1) {
-      return var1.getFluidState().is(this.fluids);
+   protected boolean test(final BlockState state) {
+      return state.getFluidState().is(this.fluids);
    }
 
    public BlockPredicateType<?> type() {

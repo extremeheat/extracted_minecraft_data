@@ -18,66 +18,63 @@ public record UploadInfo(boolean worldClosed, @Nullable String token, URI upload
    private static final int DEFAULT_PORT = 8080;
    private static final Pattern URI_SCHEMA_PATTERN = Pattern.compile("^[a-zA-Z][-a-zA-Z0-9+.]+:");
 
-   public UploadInfo(boolean var1, @Nullable String var2, URI var3) {
+   public UploadInfo {
       super();
-      this.worldClosed = var1;
-      this.token = var2;
-      this.uploadEndpoint = var3;
    }
 
-   public static @Nullable UploadInfo parse(String var0) {
+   public static @Nullable UploadInfo parse(final String json) {
       try {
-         JsonObject var1 = LenientJsonParser.parse(var0).getAsJsonObject();
-         String var2 = JsonUtils.getStringOr("uploadEndpoint", var1, (String)null);
-         if (var2 != null) {
-            int var3 = JsonUtils.getIntOr("port", var1, -1);
-            URI var4 = assembleUri(var2, var3);
-            if (var4 != null) {
-               boolean var5 = JsonUtils.getBooleanOr("worldClosed", var1, false);
-               String var6 = JsonUtils.getStringOr("token", var1, (String)null);
-               return new UploadInfo(var5, var6, var4);
+         JsonObject jsonObject = LenientJsonParser.parse(json).getAsJsonObject();
+         String endpointStr = JsonUtils.getStringOr("uploadEndpoint", jsonObject, (String)null);
+         if (endpointStr != null) {
+            int endpointPort = JsonUtils.getIntOr("port", jsonObject, -1);
+            URI uploadEndpoint = assembleUri(endpointStr, endpointPort);
+            if (uploadEndpoint != null) {
+               boolean worldClosed = JsonUtils.getBooleanOr("worldClosed", jsonObject, false);
+               String token = JsonUtils.getStringOr("token", jsonObject, (String)null);
+               return new UploadInfo(worldClosed, token, uploadEndpoint);
             }
          }
-      } catch (Exception var7) {
-         LOGGER.error("Could not parse UploadInfo", var7);
+      } catch (Exception e) {
+         LOGGER.error("Could not parse UploadInfo", e);
       }
 
       return null;
    }
 
    @VisibleForTesting
-   public static @Nullable URI assembleUri(String var0, int var1) {
-      Matcher var2 = URI_SCHEMA_PATTERN.matcher(var0);
-      String var3 = ensureEndpointSchema(var0, var2);
+   public static @Nullable URI assembleUri(final String endpoint, final int portOverride) {
+      Matcher matcher = URI_SCHEMA_PATTERN.matcher(endpoint);
+      String endpointWithSchema = ensureEndpointSchema(endpoint, matcher);
 
       try {
-         URI var4 = new URI(var3);
-         int var5 = selectPortOrDefault(var1, var4.getPort());
-         return var5 != var4.getPort() ? new URI(var4.getScheme(), var4.getUserInfo(), var4.getHost(), var5, var4.getPath(), var4.getQuery(), var4.getFragment()) : var4;
-      } catch (URISyntaxException var6) {
-         LOGGER.warn("Failed to parse URI {}", var3, var6);
+         URI result = new URI(endpointWithSchema);
+         int selectedPort = selectPortOrDefault(portOverride, result.getPort());
+         return selectedPort != result.getPort() ? new URI(result.getScheme(), result.getUserInfo(), result.getHost(), selectedPort, result.getPath(), result.getQuery(), result.getFragment()) : result;
+      } catch (URISyntaxException e) {
+         LOGGER.warn("Failed to parse URI {}", endpointWithSchema, e);
          return null;
       }
    }
 
-   private static int selectPortOrDefault(int var0, int var1) {
-      if (var0 != -1) {
-         return var0;
+   private static int selectPortOrDefault(final int portOverride, final int parsedPort) {
+      if (portOverride != -1) {
+         return portOverride;
       } else {
-         return var1 != -1 ? var1 : 8080;
+         return parsedPort != -1 ? parsedPort : 8080;
       }
    }
 
-   private static String ensureEndpointSchema(String var0, Matcher var1) {
-      return var1.find() ? var0 : "http://" + var0;
+   private static String ensureEndpointSchema(final String endpoint, final Matcher matcher) {
+      return matcher.find() ? endpoint : "http://" + endpoint;
    }
 
-   public static String createRequest(@Nullable String var0) {
-      JsonObject var1 = new JsonObject();
-      if (var0 != null) {
-         var1.addProperty("token", var0);
+   public static String createRequest(final @Nullable String uploadToken) {
+      JsonObject request = new JsonObject();
+      if (uploadToken != null) {
+         request.addProperty("token", uploadToken);
       }
 
-      return var1.toString();
+      return request.toString();
    }
 }

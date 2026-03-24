@@ -1,9 +1,9 @@
 package net.minecraft.world.level.block.entity;
 
+import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,8 +19,6 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.CachedOutput;
-import net.minecraft.data.structures.NbtToSnbt;
 import net.minecraft.gametest.framework.FailedTestTracker;
 import net.minecraft.gametest.framework.GameTestInfo;
 import net.minecraft.gametest.framework.GameTestInstance;
@@ -35,14 +33,12 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.ByIdMap;
-import net.minecraft.util.FileUtil;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -53,11 +49,15 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
+import net.minecraft.world.level.levelgen.structure.templatesystem.loader.TemplatePathFactory;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
+import org.slf4j.Logger;
 
-public class TestInstanceBlockEntity extends BlockEntity implements BeaconBeamOwner, BoundingBoxRenderable {
+public class TestInstanceBlockEntity extends BlockEntity implements BoundingBoxRenderable, BeaconBeamOwner {
+   private static final Logger LOGGER = LogUtils.getLogger();
    private static final Component INVALID_TEST_NAME = Component.translatable("test_instance_block.invalid_test");
    private static final List<BeaconBeamOwner.Section> BEAM_CLEARED = List.of();
    private static final List<BeaconBeamOwner.Section> BEAM_RUNNING = List.of(new BeaconBeamOwner.Section(ARGB.color(128, 128, 128)));
@@ -68,32 +68,40 @@ public class TestInstanceBlockEntity extends BlockEntity implements BeaconBeamOw
    private Data data;
    private final List<ErrorMarker> errorMarkers = new ArrayList();
 
-   public TestInstanceBlockEntity(BlockPos var1, BlockState var2) {
-      super(BlockEntityType.TEST_INSTANCE_BLOCK, var1, var2);
+   public TestInstanceBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
+      super(BlockEntityType.TEST_INSTANCE_BLOCK, worldPosition, blockState);
       this.data = new Data(Optional.empty(), Vec3i.ZERO, Rotation.NONE, false, TestInstanceBlockEntity.Status.CLEARED, Optional.empty());
    }
 
-   public void set(Data var1) {
-      this.data = var1;
+   public void set(final Data data) {
+      this.data = data;
       this.setChanged();
    }
 
-   public static Optional<Vec3i> getStructureSize(ServerLevel var0, ResourceKey<GameTestInstance> var1) {
-      return getStructureTemplate(var0, var1).map(StructureTemplate::getSize);
+   public static Optional<Vec3i> getStructureSize(final ServerLevel level, final ResourceKey<GameTestInstance> testKey) {
+      return getStructureTemplate(level, testKey).map(StructureTemplate::getSize);
    }
 
    public BoundingBox getStructureBoundingBox() {
-      BlockPos var1 = this.getStructurePos();
-      BlockPos var2 = var1.offset(this.getTransformedSize()).offset(-1, -1, -1);
-      return BoundingBox.fromCorners(var1, var2);
+      BlockPos corner1 = this.getStructurePos();
+      BlockPos corner2 = corner1.offset(this.getTransformedSize()).offset(-1, -1, -1);
+      return BoundingBox.fromCorners(corner1, corner2);
+   }
+
+   public BoundingBox getTestBoundingBox() {
+      return this.getStructureBoundingBox().inflatedBy(this.getPadding());
    }
 
    public AABB getStructureBounds() {
       return AABB.of(this.getStructureBoundingBox());
    }
 
-   private static Optional<StructureTemplate> getStructureTemplate(ServerLevel var0, ResourceKey<GameTestInstance> var1) {
-      return var0.registryAccess().get(var1).map((var0x) -> ((GameTestInstance)var0x.value()).structure()).flatMap((var1x) -> var0.getStructureManager().get(var1x));
+   public AABB getTestBounds() {
+      return this.getStructureBounds().inflate((double)this.getPadding());
+   }
+
+   private static Optional<StructureTemplate> getStructureTemplate(final ServerLevel level, final ResourceKey<GameTestInstance> testKey) {
+      return level.registryAccess().get(testKey).map((test) -> ((GameTestInstance)test.value()).structure()).flatMap((template) -> level.getStructureManager().get(template));
    }
 
    public Optional<ResourceKey<GameTestInstance>> test() {
@@ -101,7 +109,7 @@ public class TestInstanceBlockEntity extends BlockEntity implements BeaconBeamOw
    }
 
    public Component getTestName() {
-      return (Component)this.test().map((var0) -> Component.literal(var0.identifier().toString())).orElse(INVALID_TEST_NAME);
+      return (Component)this.test().map((key) -> Component.literal(key.identifier().toString())).orElse(INVALID_TEST_NAME);
    }
 
    private Optional<Holder.Reference<GameTestInstance>> getTestHolder() {
@@ -127,8 +135,8 @@ public class TestInstanceBlockEntity extends BlockEntity implements BeaconBeamOw
       return this.data.errorMessage();
    }
 
-   public void setErrorMessage(Component var1) {
-      this.set(this.data.withError(var1));
+   public void setErrorMessage(final Component errorMessage) {
+      this.set(this.data.withError(errorMessage));
    }
 
    public void setSuccess() {
@@ -151,20 +159,20 @@ public class TestInstanceBlockEntity extends BlockEntity implements BeaconBeamOw
       return ClientboundBlockEntityDataPacket.create(this);
    }
 
-   public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
-      return this.saveCustomOnly(var1);
+   public CompoundTag getUpdateTag(final HolderLookup.Provider registries) {
+      return this.saveCustomOnly(registries);
    }
 
-   protected void loadAdditional(ValueInput var1) {
-      var1.read("data", TestInstanceBlockEntity.Data.CODEC).ifPresent(this::set);
+   protected void loadAdditional(final ValueInput input) {
+      input.read("data", TestInstanceBlockEntity.Data.CODEC).ifPresent(this::set);
       this.errorMarkers.clear();
-      this.errorMarkers.addAll((Collection)var1.read("errors", TestInstanceBlockEntity.ErrorMarker.LIST_CODEC).orElse(List.of()));
+      this.errorMarkers.addAll((Collection)input.read("errors", TestInstanceBlockEntity.ErrorMarker.LIST_CODEC).orElse(List.of()));
    }
 
-   protected void saveAdditional(ValueOutput var1) {
-      var1.store("data", TestInstanceBlockEntity.Data.CODEC, this.data);
+   protected void saveAdditional(final ValueOutput output) {
+      output.store("data", TestInstanceBlockEntity.Data.CODEC, this.data);
       if (!this.errorMarkers.isEmpty()) {
-         var1.store("errors", TestInstanceBlockEntity.ErrorMarker.LIST_CODEC, this.errorMarkers);
+         output.store("errors", TestInstanceBlockEntity.ErrorMarker.LIST_CODEC, this.errorMarkers);
       }
 
    }
@@ -174,15 +182,17 @@ public class TestInstanceBlockEntity extends BlockEntity implements BeaconBeamOw
    }
 
    public BlockPos getStructurePos() {
-      return getStructurePos(this.getBlockPos());
+      int padding = this.getPadding();
+      return getStructurePos(this.getBlockPos().offset(padding, padding, padding));
    }
 
-   public static BlockPos getStructurePos(BlockPos var0) {
-      return var0.offset(STRUCTURE_OFFSET);
+   public static BlockPos getStructurePos(final BlockPos blockPos) {
+      return blockPos.offset(STRUCTURE_OFFSET);
    }
 
    public BoundingBoxRenderable.RenderableBox getRenderableBox() {
-      return new BoundingBoxRenderable.RenderableBox(new BlockPos(STRUCTURE_OFFSET), this.getTransformedSize());
+      int padding = this.getPadding();
+      return new BoundingBoxRenderable.RenderableBox((new BlockPos(STRUCTURE_OFFSET)).offset(padding, padding, padding), this.getTransformedSize());
    }
 
    public List<BeaconBeamOwner.Section> getBeamSections() {
@@ -198,111 +208,120 @@ public class TestInstanceBlockEntity extends BlockEntity implements BeaconBeamOw
    }
 
    private Vec3i getTransformedSize() {
-      Vec3i var1 = this.getSize();
-      Rotation var2 = this.getRotation();
-      boolean var3 = var2 == Rotation.CLOCKWISE_90 || var2 == Rotation.COUNTERCLOCKWISE_90;
-      int var4 = var3 ? var1.getZ() : var1.getX();
-      int var5 = var3 ? var1.getX() : var1.getZ();
-      return new Vec3i(var4, var1.getY(), var5);
+      Vec3i size = this.getSize();
+      Rotation rotation = this.getRotation();
+      boolean axesSwitched = rotation == Rotation.CLOCKWISE_90 || rotation == Rotation.COUNTERCLOCKWISE_90;
+      int xSize = axesSwitched ? size.getZ() : size.getX();
+      int zSize = axesSwitched ? size.getX() : size.getZ();
+      return new Vec3i(xSize, size.getY(), zSize);
    }
 
-   public void resetTest(Consumer<Component> var1) {
+   public void resetTest(final Consumer<Component> feedbackOutput) {
       this.removeBarriers();
       this.clearErrorMarkers();
-      boolean var2 = this.placeStructure();
-      if (var2) {
-         var1.accept(Component.translatable("test_instance_block.reset_success", this.getTestName()).withStyle(ChatFormatting.GREEN));
+      boolean placed = this.placeStructure();
+      if (placed) {
+         feedbackOutput.accept(Component.translatable("test_instance_block.reset_success", this.getTestName()).withStyle(ChatFormatting.GREEN));
       }
 
       this.set(this.data.withStatus(TestInstanceBlockEntity.Status.CLEARED));
    }
 
-   public Optional<Identifier> saveTest(Consumer<Component> var1) {
-      Optional var2 = this.getTestHolder();
-      Optional var3;
-      if (var2.isPresent()) {
-         var3 = Optional.of(((GameTestInstance)((Holder.Reference)var2.get()).value()).structure());
+   public Optional<Identifier> saveTest(final Consumer<Component> feedbackOutput) {
+      Optional<Holder.Reference<GameTestInstance>> test = this.getTestHolder();
+      Optional<Identifier> identifier;
+      if (test.isPresent()) {
+         identifier = Optional.of(((GameTestInstance)((Holder.Reference)test.get()).value()).structure());
       } else {
-         var3 = this.test().map(ResourceKey::identifier);
+         identifier = this.test().map(ResourceKey::identifier);
       }
 
-      if (var3.isEmpty()) {
-         BlockPos var6 = this.getBlockPos();
-         var1.accept(Component.translatable("test_instance_block.error.unable_to_save", var6.getX(), var6.getY(), var6.getZ()).withStyle(ChatFormatting.RED));
-         return var3;
+      if (identifier.isEmpty()) {
+         BlockPos pos = this.getBlockPos();
+         feedbackOutput.accept(Component.translatable("test_instance_block.error.unable_to_save", pos.getX(), pos.getY(), pos.getZ()).withStyle(ChatFormatting.RED));
+         return identifier;
       } else {
          Level var5 = this.level;
          if (var5 instanceof ServerLevel) {
-            ServerLevel var4 = (ServerLevel)var5;
-            StructureBlockEntity.saveStructure(var4, (Identifier)var3.get(), this.getStructurePos(), this.getSize(), this.ignoreEntities(), "", true, List.of(Blocks.AIR));
+            ServerLevel serverLevel = (ServerLevel)var5;
+            StructureBlockEntity.saveStructure(serverLevel, (Identifier)identifier.get(), this.getStructurePos(), this.getSize(), this.ignoreEntities(), "", true, List.of(Blocks.AIR));
          }
 
-         return var3;
+         return identifier;
       }
    }
 
-   public boolean exportTest(Consumer<Component> var1) {
-      Optional var2 = this.saveTest(var1);
-      if (!var2.isEmpty()) {
+   public boolean exportTest(final Consumer<Component> feedbackOutput) {
+      Optional<Identifier> saved = this.saveTest(feedbackOutput);
+      if (!saved.isEmpty()) {
          Level var4 = this.level;
          if (var4 instanceof ServerLevel) {
-            ServerLevel var3 = (ServerLevel)var4;
-            return export(var3, (Identifier)var2.get(), var1);
+            ServerLevel serverLevel = (ServerLevel)var4;
+            return export(serverLevel, (Identifier)saved.get(), feedbackOutput);
          }
       }
 
       return false;
    }
 
-   public static boolean export(ServerLevel var0, Identifier var1, Consumer<Component> var2) {
-      Path var3 = StructureUtils.testStructuresDir;
-      Path var4 = var0.getStructureManager().createAndValidatePathToGeneratedStructure(var1, ".nbt");
-      Path var5 = NbtToSnbt.convertStructure(CachedOutput.NO_CACHE, var4, var1.getPath(), var3.resolve(var1.getNamespace()).resolve("structure"));
-      if (var5 == null) {
-         var2.accept(Component.literal("Failed to export " + String.valueOf(var4)).withStyle(ChatFormatting.RED));
+   public static boolean export(final ServerLevel level, final Identifier structureId, final Consumer<Component> feedbackOutput) {
+      StructureTemplateManager structureManager = level.getStructureManager();
+      TemplatePathFactory testTemplatePathFactory = structureManager.testTemplates();
+      if (testTemplatePathFactory == null) {
+         feedbackOutput.accept(Component.literal("Test structure exporting is disabled").withStyle(ChatFormatting.RED));
          return true;
       } else {
-         try {
-            FileUtil.createDirectoriesSafe(var5.getParent());
-         } catch (IOException var7) {
-            var2.accept(Component.literal("Could not create folder " + String.valueOf(var5.getParent())).withStyle(ChatFormatting.RED));
+         Optional<StructureTemplate> structureTemplate = structureManager.get(structureId);
+         if (structureTemplate.isEmpty()) {
+            feedbackOutput.accept(Component.literal("Could not find structure " + String.valueOf(structureId)).withStyle(ChatFormatting.RED));
             return true;
-         }
+         } else {
+            Path outputFile = testTemplatePathFactory.createAndValidatePathToStructure(structureId, StructureTemplateManager.RESOURCE_TEXT_STRUCTURE_LISTER);
 
-         String var10001 = String.valueOf(var1);
-         var2.accept(Component.literal("Exported " + var10001 + " to " + String.valueOf(var5.toAbsolutePath())));
-         return false;
+            try {
+               StructureTemplateManager.save(outputFile, (StructureTemplate)structureTemplate.get(), true);
+            } catch (Exception e) {
+               LOGGER.error("Failed to save structure file {} to {}", new Object[]{structureId, outputFile, e});
+               String var10001 = String.valueOf(structureId);
+               feedbackOutput.accept(Component.literal("Failed to save structure file " + var10001 + " to " + String.valueOf(outputFile)).withStyle(ChatFormatting.RED));
+               return true;
+            }
+
+            String var9 = String.valueOf(structureId);
+            feedbackOutput.accept(Component.literal("Exported " + var9 + " to " + String.valueOf(outputFile.toAbsolutePath())));
+            return false;
+         }
       }
    }
 
-   public void runTest(Consumer<Component> var1) {
+   public void runTest(final Consumer<Component> feedbackOutput) {
       Level var3 = this.level;
-      if (var3 instanceof ServerLevel var2) {
+      if (var3 instanceof ServerLevel serverLevel) {
          Optional var7 = this.getTestHolder();
-         BlockPos var4 = this.getBlockPos();
+         BlockPos pos = this.getBlockPos();
          if (var7.isEmpty()) {
-            var1.accept(Component.translatable("test_instance_block.error.no_test", var4.getX(), var4.getY(), var4.getZ()).withStyle(ChatFormatting.RED));
+            feedbackOutput.accept(Component.translatable("test_instance_block.error.no_test", pos.getX(), pos.getY(), pos.getZ()).withStyle(ChatFormatting.RED));
          } else if (!this.placeStructure()) {
-            var1.accept(Component.translatable("test_instance_block.error.no_test_structure", var4.getX(), var4.getY(), var4.getZ()).withStyle(ChatFormatting.RED));
+            feedbackOutput.accept(Component.translatable("test_instance_block.error.no_test_structure", pos.getX(), pos.getY(), pos.getZ()).withStyle(ChatFormatting.RED));
          } else {
             this.clearErrorMarkers();
             GameTestTicker.SINGLETON.clear();
             FailedTestTracker.forgetFailedTests();
-            var1.accept(Component.translatable("test_instance_block.starting", ((Holder.Reference)var7.get()).getRegisteredName()));
-            GameTestInfo var5 = new GameTestInfo((Holder.Reference)var7.get(), this.data.rotation(), var2, RetryOptions.noRetries());
-            var5.setTestBlockPos(var4);
-            GameTestRunner var6 = GameTestRunner.Builder.fromInfo(List.of(var5), var2).build();
-            TestCommand.trackAndStartRunner(var2.getServer().createCommandSourceStack(), var6);
+            feedbackOutput.accept(Component.translatable("test_instance_block.starting", ((Holder.Reference)var7.get()).getRegisteredName()));
+            GameTestInfo gameTestInfo = new GameTestInfo((Holder.Reference)var7.get(), this.data.rotation(), serverLevel, RetryOptions.noRetries());
+            gameTestInfo.setTestBlockPos(pos);
+            GameTestRunner runner = GameTestRunner.Builder.fromInfo(List.of(gameTestInfo), serverLevel).build();
+            TestCommand.trackAndStartRunner(serverLevel.getServer().createCommandSourceStack(), runner);
          }
       }
    }
 
    public boolean placeStructure() {
       Level var2 = this.level;
-      if (var2 instanceof ServerLevel var1) {
-         Optional var3 = this.data.test().flatMap((var1x) -> getStructureTemplate(var1, var1x));
-         if (var3.isPresent()) {
-            this.placeStructure(var1, (StructureTemplate)var3.get());
+      if (var2 instanceof ServerLevel serverLevel) {
+         Optional<StructureTemplate> template = this.data.test().flatMap((test) -> getStructureTemplate(serverLevel, test));
+         if (template.isPresent()) {
+            this.placeStructure(serverLevel, (StructureTemplate)template.get());
             return true;
          }
       }
@@ -310,37 +329,42 @@ public class TestInstanceBlockEntity extends BlockEntity implements BeaconBeamOw
       return false;
    }
 
-   private void placeStructure(ServerLevel var1, StructureTemplate var2) {
-      StructurePlaceSettings var3 = (new StructurePlaceSettings()).setRotation(this.getRotation()).setIgnoreEntities(this.data.ignoreEntities()).setKnownShape(true);
-      BlockPos var4 = this.getStartCorner();
+   private void placeStructure(final ServerLevel level, final StructureTemplate template) {
+      StructurePlaceSettings placeSettings = (new StructurePlaceSettings()).setRotation(this.getRotation()).setIgnoreEntities(this.data.ignoreEntities()).setKnownShape(true);
+      BlockPos pos = this.getStartCorner();
       this.forceLoadChunks();
-      StructureUtils.clearSpaceForStructure(this.getStructureBoundingBox(), var1);
+      int padding = this.getPadding();
+      StructureUtils.clearSpaceForStructure(this.getTestBoundingBox(), level);
       this.removeEntities();
-      var2.placeInWorld(var1, var4, var4, var3, var1.getRandom(), 818);
+      template.placeInWorld(level, pos, pos, placeSettings, level.getRandom(), 818);
+   }
+
+   private int getPadding() {
+      return (Integer)this.getTestHolder().map((r) -> ((GameTestInstance)r.value()).padding()).orElse(0);
    }
 
    private void removeEntities() {
-      this.level.getEntities((Entity)null, this.getStructureBounds()).stream().filter((var0) -> !(var0 instanceof Player)).forEach(Entity::discard);
+      this.level.getEntities((Entity)null, this.getTestBounds()).stream().filter((entity) -> !(entity instanceof Player)).forEach(Entity::discard);
    }
 
    private void forceLoadChunks() {
       Level var2 = this.level;
-      if (var2 instanceof ServerLevel var1) {
-         this.getStructureBoundingBox().intersectingChunks().forEach((var1x) -> var1.setChunkForced(var1x.x, var1x.z, true));
+      if (var2 instanceof ServerLevel serverLevel) {
+         this.getStructureBoundingBox().intersectingChunks().forEach((pos) -> serverLevel.setChunkForced(pos.x(), pos.z(), true));
       }
 
    }
 
    public BlockPos getStartCorner() {
-      Vec3i var1 = this.getSize();
-      Rotation var2 = this.getRotation();
-      BlockPos var3 = this.getStructurePos();
+      Vec3i structureSize = this.getSize();
+      Rotation rotation = this.getRotation();
+      BlockPos northWestCorner = this.getStructurePos();
       BlockPos var10000;
-      switch (var2) {
-         case NONE -> var10000 = var3;
-         case CLOCKWISE_90 -> var10000 = var3.offset(var1.getZ() - 1, 0, 0);
-         case CLOCKWISE_180 -> var10000 = var3.offset(var1.getX() - 1, 0, var1.getZ() - 1);
-         case COUNTERCLOCKWISE_90 -> var10000 = var3.offset(0, 0, var1.getX() - 1);
+      switch (rotation) {
+         case NONE -> var10000 = northWestCorner;
+         case CLOCKWISE_90 -> var10000 = northWestCorner.offset(structureSize.getZ() - 1, 0, 0);
+         case CLOCKWISE_180 -> var10000 = northWestCorner.offset(structureSize.getX() - 1, 0, structureSize.getZ() - 1);
+         case COUNTERCLOCKWISE_90 -> var10000 = northWestCorner.offset(0, 0, structureSize.getX() - 1);
          default -> throw new MatchException((String)null, (Throwable)null);
       }
 
@@ -348,40 +372,40 @@ public class TestInstanceBlockEntity extends BlockEntity implements BeaconBeamOw
    }
 
    public void encaseStructure() {
-      this.processStructureBoundary((var1) -> {
-         if (!this.level.getBlockState(var1).is(Blocks.TEST_INSTANCE_BLOCK)) {
-            this.level.setBlockAndUpdate(var1, Blocks.BARRIER.defaultBlockState());
+      this.processStructureBoundary((blockPos) -> {
+         if (!this.level.getBlockState(blockPos).is(Blocks.TEST_INSTANCE_BLOCK)) {
+            this.level.setBlockAndUpdate(blockPos, Blocks.BARRIER.defaultBlockState());
          }
 
       });
    }
 
    public void removeBarriers() {
-      this.processStructureBoundary((var1) -> {
-         if (this.level.getBlockState(var1).is(Blocks.BARRIER)) {
-            this.level.setBlockAndUpdate(var1, Blocks.AIR.defaultBlockState());
+      this.processStructureBoundary((blockPos) -> {
+         if (this.level.getBlockState(blockPos).is(Blocks.BARRIER)) {
+            this.level.setBlockAndUpdate(blockPos, Blocks.AIR.defaultBlockState());
          }
 
       });
    }
 
-   public void processStructureBoundary(Consumer<BlockPos> var1) {
-      AABB var2 = this.getStructureBounds();
-      boolean var3 = !(Boolean)this.getTestHolder().map((var0) -> ((GameTestInstance)var0.value()).skyAccess()).orElse(false);
-      BlockPos var4 = BlockPos.containing(var2.minX, var2.minY, var2.minZ).offset(-1, -1, -1);
-      BlockPos var5 = BlockPos.containing(var2.maxX, var2.maxY, var2.maxZ);
-      BlockPos.betweenClosedStream(var4, var5).forEach((var4x) -> {
-         boolean var5x = var4x.getX() == var4.getX() || var4x.getX() == var5.getX() || var4x.getZ() == var4.getZ() || var4x.getZ() == var5.getZ() || var4x.getY() == var4.getY();
-         boolean var6 = var4x.getY() == var5.getY();
-         if (var5x || var6 && var3) {
-            var1.accept(var4x);
+   public void processStructureBoundary(final Consumer<BlockPos> action) {
+      AABB bounds = this.getStructureBounds();
+      boolean hasCeiling = !(Boolean)this.getTestHolder().map((h) -> ((GameTestInstance)h.value()).skyAccess()).orElse(false);
+      BlockPos low = BlockPos.containing(bounds.minX, bounds.minY, bounds.minZ).offset(-1, -1, -1);
+      BlockPos high = BlockPos.containing(bounds.maxX, bounds.maxY, bounds.maxZ);
+      BlockPos.betweenClosedStream(low, high).forEach((blockPos) -> {
+         boolean isNonCeilingEdge = blockPos.getX() == low.getX() || blockPos.getX() == high.getX() || blockPos.getZ() == low.getZ() || blockPos.getZ() == high.getZ() || blockPos.getY() == low.getY();
+         boolean isCeiling = blockPos.getY() == high.getY();
+         if (isNonCeilingEdge || isCeiling && hasCeiling) {
+            action.accept(blockPos);
          }
 
       });
    }
 
-   public void markError(BlockPos var1, Component var2) {
-      this.errorMarkers.add(new ErrorMarker(var1, var2));
+   public void markError(final BlockPos pos, final Component text) {
+      this.errorMarkers.add(new ErrorMarker(pos, text));
       this.setChanged();
    }
 
@@ -397,33 +421,28 @@ public class TestInstanceBlockEntity extends BlockEntity implements BeaconBeamOw
       return this.errorMarkers;
    }
 
-   // $FF: synthetic method
-   public Packet getUpdatePacket() {
-      return this.getUpdatePacket();
-   }
-
    public static enum Status implements StringRepresentable {
       CLEARED("cleared", 0),
       RUNNING("running", 1),
       FINISHED("finished", 2);
 
-      private static final IntFunction<Status> ID_MAP = ByIdMap.<Status>continuous((var0) -> var0.index, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+      private static final IntFunction<Status> ID_MAP = ByIdMap.<Status>continuous((s) -> s.index, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
       public static final Codec<Status> CODEC = StringRepresentable.<Status>fromEnum(Status::values);
-      public static final StreamCodec<ByteBuf, Status> STREAM_CODEC = ByteBufCodecs.idMapper(Status::byIndex, (var0) -> var0.index);
+      public static final StreamCodec<ByteBuf, Status> STREAM_CODEC = ByteBufCodecs.idMapper(Status::byIndex, (s) -> s.index);
       private final String id;
       private final int index;
 
-      private Status(final String var3, final int var4) {
-         this.id = var3;
-         this.index = var4;
+      private Status(final String id, final int index) {
+         this.id = id;
+         this.index = index;
       }
 
       public String getSerializedName() {
          return this.id;
       }
 
-      public static Status byIndex(int var0) {
-         return (Status)ID_MAP.apply(var0);
+      public static Status byIndex(final int index) {
+         return (Status)ID_MAP.apply(index);
       }
 
       // $FF: synthetic method
@@ -433,29 +452,23 @@ public class TestInstanceBlockEntity extends BlockEntity implements BeaconBeamOw
    }
 
    public static record Data(Optional<ResourceKey<GameTestInstance>> test, Vec3i size, Rotation rotation, boolean ignoreEntities, Status status, Optional<Component> errorMessage) {
-      public static final Codec<Data> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ResourceKey.codec(Registries.TEST_INSTANCE).optionalFieldOf("test").forGetter(Data::test), Vec3i.CODEC.fieldOf("size").forGetter(Data::size), Rotation.CODEC.fieldOf("rotation").forGetter(Data::rotation), Codec.BOOL.fieldOf("ignore_entities").forGetter(Data::ignoreEntities), TestInstanceBlockEntity.Status.CODEC.fieldOf("status").forGetter(Data::status), ComponentSerialization.CODEC.optionalFieldOf("error_message").forGetter(Data::errorMessage)).apply(var0, Data::new));
+      public static final Codec<Data> CODEC = RecordCodecBuilder.create((i) -> i.group(ResourceKey.codec(Registries.TEST_INSTANCE).optionalFieldOf("test").forGetter(Data::test), Vec3i.CODEC.fieldOf("size").forGetter(Data::size), Rotation.CODEC.fieldOf("rotation").forGetter(Data::rotation), Codec.BOOL.fieldOf("ignore_entities").forGetter(Data::ignoreEntities), TestInstanceBlockEntity.Status.CODEC.fieldOf("status").forGetter(Data::status), ComponentSerialization.CODEC.optionalFieldOf("error_message").forGetter(Data::errorMessage)).apply(i, Data::new));
       public static final StreamCodec<RegistryFriendlyByteBuf, Data> STREAM_CODEC;
 
-      public Data(Optional<ResourceKey<GameTestInstance>> var1, Vec3i var2, Rotation var3, boolean var4, Status var5, Optional<Component> var6) {
+      public Data {
          super();
-         this.test = var1;
-         this.size = var2;
-         this.rotation = var3;
-         this.ignoreEntities = var4;
-         this.status = var5;
-         this.errorMessage = var6;
       }
 
-      public Data withSize(Vec3i var1) {
-         return new Data(this.test, var1, this.rotation, this.ignoreEntities, this.status, this.errorMessage);
+      public Data withSize(final Vec3i size) {
+         return new Data(this.test, size, this.rotation, this.ignoreEntities, this.status, this.errorMessage);
       }
 
-      public Data withStatus(Status var1) {
-         return new Data(this.test, this.size, this.rotation, this.ignoreEntities, var1, Optional.empty());
+      public Data withStatus(final Status status) {
+         return new Data(this.test, this.size, this.rotation, this.ignoreEntities, status, Optional.empty());
       }
 
-      public Data withError(Component var1) {
-         return new Data(this.test, this.size, this.rotation, this.ignoreEntities, TestInstanceBlockEntity.Status.FINISHED, Optional.of(var1));
+      public Data withError(final Component error) {
+         return new Data(this.test, this.size, this.rotation, this.ignoreEntities, TestInstanceBlockEntity.Status.FINISHED, Optional.of(error));
       }
 
       static {
@@ -464,13 +477,11 @@ public class TestInstanceBlockEntity extends BlockEntity implements BeaconBeamOw
    }
 
    public static record ErrorMarker(BlockPos pos, Component text) {
-      public static final Codec<ErrorMarker> CODEC = RecordCodecBuilder.create((var0) -> var0.group(BlockPos.CODEC.fieldOf("pos").forGetter(ErrorMarker::pos), ComponentSerialization.CODEC.fieldOf("text").forGetter(ErrorMarker::text)).apply(var0, ErrorMarker::new));
+      public static final Codec<ErrorMarker> CODEC = RecordCodecBuilder.create((i) -> i.group(BlockPos.CODEC.fieldOf("pos").forGetter(ErrorMarker::pos), ComponentSerialization.CODEC.fieldOf("text").forGetter(ErrorMarker::text)).apply(i, ErrorMarker::new));
       public static final Codec<List<ErrorMarker>> LIST_CODEC;
 
-      public ErrorMarker(BlockPos var1, Component var2) {
+      public ErrorMarker {
          super();
-         this.pos = var1;
-         this.text = var2;
       }
 
       static {

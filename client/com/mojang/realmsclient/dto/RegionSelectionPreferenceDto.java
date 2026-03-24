@@ -13,10 +13,10 @@ public class RegionSelectionPreferenceDto implements ReflectionBasedSerializatio
    @JsonAdapter(RealmsRegion.RealmsRegionJsonAdapter.class)
    public @Nullable RealmsRegion preferredRegion;
 
-   public RegionSelectionPreferenceDto(RegionSelectionPreference var1, @Nullable RealmsRegion var2) {
+   public RegionSelectionPreferenceDto(final RegionSelectionPreference regionSelectionPreference, final @Nullable RealmsRegion preferredRegion) {
       super();
-      this.regionSelectionPreference = var1;
-      this.preferredRegion = var2;
+      this.regionSelectionPreference = regionSelectionPreference;
+      this.preferredRegion = preferredRegion;
    }
 
    public RegionSelectionPreferenceDto copy() {

@@ -4,7 +4,8 @@ import com.google.common.collect.ImmutableList;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
-import net.minecraft.client.gui.GuiGraphics;
+import java.util.Objects;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
@@ -68,13 +69,13 @@ public class StructureBlockEditScreen extends Screen {
    private CycleButton<Boolean> toggleBoundingBox;
    private final DecimalFormat decimalFormat;
 
-   public StructureBlockEditScreen(StructureBlockEntity var1) {
+   public StructureBlockEditScreen(final StructureBlockEntity structure) {
       super(Component.translatable(Blocks.STRUCTURE_BLOCK.getDescriptionId()));
       this.initialMirror = Mirror.NONE;
       this.initialRotation = Rotation.NONE;
       this.initialMode = StructureMode.DATA;
       this.decimalFormat = new DecimalFormat("0.0###", DecimalFormatSymbols.getInstance(Locale.ROOT));
-      this.structure = var1;
+      this.structure = structure;
    }
 
    private void onDone() {
@@ -96,8 +97,8 @@ public class StructureBlockEditScreen extends Screen {
    }
 
    protected void init() {
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.onDone()).bounds(this.width / 2 - 4 - 150, 210, 150, 20).build());
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> this.onCancel()).bounds(this.width / 2 + 4, 210, 150, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (button) -> this.onDone()).bounds(this.width / 2 - 4 - 150, 210, 150, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (button) -> this.onCancel()).bounds(this.width / 2 + 4, 210, 150, 20).build());
       this.initialMirror = this.structure.getMirror();
       this.initialRotation = this.structure.getRotation();
       this.initialMode = this.structure.getMode();
@@ -105,85 +106,89 @@ public class StructureBlockEditScreen extends Screen {
       this.initialStrict = this.structure.isStrict();
       this.initialShowAir = this.structure.getShowAir();
       this.initialShowBoundingBox = this.structure.getShowBoundingBox();
-      this.saveButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("structure_block.button.save"), (var1x) -> {
+      this.saveButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("structure_block.button.save"), (button) -> {
          if (this.structure.getMode() == StructureMode.SAVE) {
             this.sendToServer(StructureBlockEntity.UpdateType.SAVE_AREA);
             this.minecraft.setScreen((Screen)null);
          }
 
       }).bounds(this.width / 2 + 4 + 100, 185, 50, 20).build());
-      this.loadButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("structure_block.button.load"), (var1x) -> {
+      this.loadButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("structure_block.button.load"), (button) -> {
          if (this.structure.getMode() == StructureMode.LOAD) {
             this.sendToServer(StructureBlockEntity.UpdateType.LOAD_AREA);
             this.minecraft.setScreen((Screen)null);
          }
 
       }).bounds(this.width / 2 + 4 + 100, 185, 50, 20).build());
-      this.addRenderableWidget(CycleButton.builder((var0) -> Component.translatable("structure_block.mode." + var0.getSerializedName()), this.initialMode).withValues(DEFAULT_MODES, ALL_MODES).displayOnlyValue().create(this.width / 2 - 4 - 150, 185, 50, 20, Component.literal("MODE"), (var1x, var2x) -> {
-         this.structure.setMode(var2x);
-         this.updateMode(var2x);
+      this.addRenderableWidget(CycleButton.builder((value) -> Component.translatable("structure_block.mode." + value.getSerializedName()), this.initialMode).withValues(DEFAULT_MODES, ALL_MODES).displayOnlyValue().create(this.width / 2 - 4 - 150, 185, 50, 20, Component.literal("MODE"), (button, value) -> {
+         this.structure.setMode(value);
+         this.updateMode(value);
       }));
-      this.detectButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("structure_block.button.detect_size"), (var1x) -> {
+      this.detectButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("structure_block.button.detect_size"), (button) -> {
          if (this.structure.getMode() == StructureMode.SAVE) {
             this.sendToServer(StructureBlockEntity.UpdateType.SCAN_AREA);
             this.minecraft.setScreen((Screen)null);
          }
 
       }).bounds(this.width / 2 + 4 + 100, 120, 50, 20).build());
-      this.includeEntitiesButton = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(!this.structure.isIgnoreEntities()).displayOnlyValue().create(this.width / 2 + 4 + 100, 160, 50, 20, INCLUDE_ENTITIES_LABEL, (var1x, var2x) -> this.structure.setIgnoreEntities(!var2x)));
-      this.strictButton = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(this.structure.isStrict()).displayOnlyValue().create(this.width / 2 + 4 + 100, 120, 50, 20, STRICT_LABEL, (var1x, var2x) -> this.structure.setStrict(var2x)));
-      this.mirrorButton = (CycleButton)this.addRenderableWidget(CycleButton.builder(Mirror::symbol, this.initialMirror).withValues(Mirror.values()).displayOnlyValue().create(this.width / 2 - 20, 185, 40, 20, Component.literal("MIRROR"), (var1x, var2x) -> this.structure.setMirror(var2x)));
-      this.toggleAirButton = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(this.structure.getShowAir()).displayOnlyValue().create(this.width / 2 + 4 + 100, 80, 50, 20, SHOW_AIR_LABEL, (var1x, var2x) -> this.structure.setShowAir(var2x)));
-      this.toggleBoundingBox = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(this.structure.getShowBoundingBox()).displayOnlyValue().create(this.width / 2 + 4 + 100, 80, 50, 20, SHOW_BOUNDING_BOX_LABEL, (var1x, var2x) -> this.structure.setShowBoundingBox(var2x)));
-      this.rot0Button = (Button)this.addRenderableWidget(Button.builder(Component.literal("0"), (var1x) -> {
+      this.includeEntitiesButton = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(!this.structure.isIgnoreEntities()).displayOnlyValue().create(this.width / 2 + 4 + 100, 160, 50, 20, INCLUDE_ENTITIES_LABEL, (button, value) -> this.structure.setIgnoreEntities(!value)));
+      this.strictButton = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(this.structure.isStrict()).displayOnlyValue().create(this.width / 2 + 4 + 100, 120, 50, 20, STRICT_LABEL, (button, value) -> this.structure.setStrict(value)));
+      this.mirrorButton = (CycleButton)this.addRenderableWidget(CycleButton.builder(Mirror::symbol, this.initialMirror).withValues(Mirror.values()).displayOnlyValue().create(this.width / 2 - 20, 185, 40, 20, Component.literal("MIRROR"), (button, value) -> this.structure.setMirror(value)));
+      this.toggleAirButton = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(this.structure.getShowAir()).displayOnlyValue().create(this.width / 2 + 4 + 100, 80, 50, 20, SHOW_AIR_LABEL, (button, value) -> this.structure.setShowAir(value)));
+      this.toggleBoundingBox = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(this.structure.getShowBoundingBox()).displayOnlyValue().create(this.width / 2 + 4 + 100, 80, 50, 20, SHOW_BOUNDING_BOX_LABEL, (button, value) -> this.structure.setShowBoundingBox(value)));
+      this.rot0Button = (Button)this.addRenderableWidget(Button.builder(Component.literal("0"), (button) -> {
          this.structure.setRotation(Rotation.NONE);
          this.updateDirectionButtons();
       }).bounds(this.width / 2 - 1 - 40 - 1 - 40 - 20, 185, 40, 20).build());
-      this.rot90Button = (Button)this.addRenderableWidget(Button.builder(Component.literal("90"), (var1x) -> {
+      this.rot90Button = (Button)this.addRenderableWidget(Button.builder(Component.literal("90"), (button) -> {
          this.structure.setRotation(Rotation.CLOCKWISE_90);
          this.updateDirectionButtons();
       }).bounds(this.width / 2 - 1 - 40 - 20, 185, 40, 20).build());
-      this.rot180Button = (Button)this.addRenderableWidget(Button.builder(Component.literal("180"), (var1x) -> {
+      this.rot180Button = (Button)this.addRenderableWidget(Button.builder(Component.literal("180"), (button) -> {
          this.structure.setRotation(Rotation.CLOCKWISE_180);
          this.updateDirectionButtons();
       }).bounds(this.width / 2 + 1 + 20, 185, 40, 20).build());
-      this.rot270Button = (Button)this.addRenderableWidget(Button.builder(Component.literal("270"), (var1x) -> {
+      this.rot270Button = (Button)this.addRenderableWidget(Button.builder(Component.literal("270"), (button) -> {
          this.structure.setRotation(Rotation.COUNTERCLOCKWISE_90);
          this.updateDirectionButtons();
       }).bounds(this.width / 2 + 1 + 40 + 1 + 20, 185, 40, 20).build());
       this.nameEdit = new EditBox(this.font, this.width / 2 - 152, 40, 300, 20, Component.translatable("structure_block.structure_name")) {
-         public boolean charTyped(CharacterEvent var1) {
-            return !StructureBlockEditScreen.this.isValidCharacterForName(this.getValue(), var1.codepoint(), this.getCursorPosition()) ? false : super.charTyped(var1);
+         {
+            Objects.requireNonNull(StructureBlockEditScreen.this);
+         }
+
+         public boolean charTyped(final CharacterEvent event) {
+            return !StructureBlockEditScreen.this.isValidCharacterForName(this.getValue(), event.codepoint(), this.getCursorPosition()) ? false : super.charTyped(event);
          }
       };
       this.nameEdit.setMaxLength(128);
       this.nameEdit.setValue(this.structure.getStructureName());
       this.addWidget(this.nameEdit);
-      BlockPos var1 = this.structure.getStructurePos();
+      BlockPos minPos = this.structure.getStructurePos();
       this.posXEdit = new EditBox(this.font, this.width / 2 - 152, 80, 80, 20, Component.translatable("structure_block.position.x"));
       this.posXEdit.setMaxLength(15);
-      this.posXEdit.setValue(Integer.toString(var1.getX()));
+      this.posXEdit.setValue(Integer.toString(minPos.getX()));
       this.addWidget(this.posXEdit);
       this.posYEdit = new EditBox(this.font, this.width / 2 - 72, 80, 80, 20, Component.translatable("structure_block.position.y"));
       this.posYEdit.setMaxLength(15);
-      this.posYEdit.setValue(Integer.toString(var1.getY()));
+      this.posYEdit.setValue(Integer.toString(minPos.getY()));
       this.addWidget(this.posYEdit);
       this.posZEdit = new EditBox(this.font, this.width / 2 + 8, 80, 80, 20, Component.translatable("structure_block.position.z"));
       this.posZEdit.setMaxLength(15);
-      this.posZEdit.setValue(Integer.toString(var1.getZ()));
+      this.posZEdit.setValue(Integer.toString(minPos.getZ()));
       this.addWidget(this.posZEdit);
-      Vec3i var2 = this.structure.getStructureSize();
+      Vec3i maxPos = this.structure.getStructureSize();
       this.sizeXEdit = new EditBox(this.font, this.width / 2 - 152, 120, 80, 20, Component.translatable("structure_block.size.x"));
       this.sizeXEdit.setMaxLength(15);
-      this.sizeXEdit.setValue(Integer.toString(var2.getX()));
+      this.sizeXEdit.setValue(Integer.toString(maxPos.getX()));
       this.addWidget(this.sizeXEdit);
       this.sizeYEdit = new EditBox(this.font, this.width / 2 - 72, 120, 80, 20, Component.translatable("structure_block.size.y"));
       this.sizeYEdit.setMaxLength(15);
-      this.sizeYEdit.setValue(Integer.toString(var2.getY()));
+      this.sizeYEdit.setValue(Integer.toString(maxPos.getY()));
       this.addWidget(this.sizeYEdit);
       this.sizeZEdit = new EditBox(this.font, this.width / 2 + 8, 120, 80, 20, Component.translatable("structure_block.size.z"));
       this.sizeZEdit.setMaxLength(15);
-      this.sizeZEdit.setValue(Integer.toString(var2.getZ()));
+      this.sizeZEdit.setValue(Integer.toString(maxPos.getZ()));
       this.addWidget(this.sizeZEdit);
       this.integrityEdit = new EditBox(this.font, this.width / 2 - 152, 120, 80, 20, Component.translatable("structure_block.integrity.integrity"));
       this.integrityEdit.setMaxLength(15);
@@ -205,28 +210,28 @@ public class StructureBlockEditScreen extends Screen {
       this.setInitialFocus(this.nameEdit);
    }
 
-   public void resize(int var1, int var2) {
-      String var3 = this.nameEdit.getValue();
-      String var4 = this.posXEdit.getValue();
-      String var5 = this.posYEdit.getValue();
-      String var6 = this.posZEdit.getValue();
-      String var7 = this.sizeXEdit.getValue();
-      String var8 = this.sizeYEdit.getValue();
-      String var9 = this.sizeZEdit.getValue();
-      String var10 = this.integrityEdit.getValue();
-      String var11 = this.seedEdit.getValue();
-      String var12 = this.dataEdit.getValue();
-      this.init(var1, var2);
-      this.nameEdit.setValue(var3);
-      this.posXEdit.setValue(var4);
-      this.posYEdit.setValue(var5);
-      this.posZEdit.setValue(var6);
-      this.sizeXEdit.setValue(var7);
-      this.sizeYEdit.setValue(var8);
-      this.sizeZEdit.setValue(var9);
-      this.integrityEdit.setValue(var10);
-      this.seedEdit.setValue(var11);
-      this.dataEdit.setValue(var12);
+   public void resize(final int width, final int height) {
+      String oldNameEdit = this.nameEdit.getValue();
+      String oldPosXEdit = this.posXEdit.getValue();
+      String oldPosYEdit = this.posYEdit.getValue();
+      String oldPosZEdit = this.posZEdit.getValue();
+      String oldSizeXEdit = this.sizeXEdit.getValue();
+      String oldSizeYEdit = this.sizeYEdit.getValue();
+      String oldSizeZEdit = this.sizeZEdit.getValue();
+      String oldIntegrityEdit = this.integrityEdit.getValue();
+      String oldSeedEdit = this.seedEdit.getValue();
+      String oldDataEdit = this.dataEdit.getValue();
+      this.init(width, height);
+      this.nameEdit.setValue(oldNameEdit);
+      this.posXEdit.setValue(oldPosXEdit);
+      this.posYEdit.setValue(oldPosYEdit);
+      this.posZEdit.setValue(oldPosZEdit);
+      this.sizeXEdit.setValue(oldSizeXEdit);
+      this.sizeYEdit.setValue(oldSizeYEdit);
+      this.sizeZEdit.setValue(oldSizeZEdit);
+      this.integrityEdit.setValue(oldIntegrityEdit);
+      this.seedEdit.setValue(oldSeedEdit);
+      this.dataEdit.setValue(oldDataEdit);
    }
 
    private void updateDirectionButtons() {
@@ -243,7 +248,7 @@ public class StructureBlockEditScreen extends Screen {
 
    }
 
-   private void updateMode(StructureMode var1) {
+   private void updateMode(final StructureMode mode) {
       this.nameEdit.setVisible(false);
       this.posXEdit.setVisible(false);
       this.posYEdit.setVisible(false);
@@ -266,7 +271,7 @@ public class StructureBlockEditScreen extends Screen {
       this.rot270Button.visible = false;
       this.toggleAirButton.visible = false;
       this.toggleBoundingBox.visible = false;
-      switch (var1) {
+      switch (mode) {
          case SAVE:
             this.nameEdit.setVisible(true);
             this.posXEdit.setVisible(true);
@@ -308,34 +313,34 @@ public class StructureBlockEditScreen extends Screen {
 
    }
 
-   private boolean sendToServer(StructureBlockEntity.UpdateType var1) {
-      BlockPos var2 = new BlockPos(this.parseCoordinate(this.posXEdit.getValue()), this.parseCoordinate(this.posYEdit.getValue()), this.parseCoordinate(this.posZEdit.getValue()));
-      Vec3i var3 = new Vec3i(this.parseCoordinate(this.sizeXEdit.getValue()), this.parseCoordinate(this.sizeYEdit.getValue()), this.parseCoordinate(this.sizeZEdit.getValue()));
-      float var4 = this.parseIntegrity(this.integrityEdit.getValue());
-      long var5 = this.parseSeed(this.seedEdit.getValue());
-      this.minecraft.getConnection().send(new ServerboundSetStructureBlockPacket(this.structure.getBlockPos(), var1, this.structure.getMode(), this.nameEdit.getValue(), var2, var3, this.structure.getMirror(), this.structure.getRotation(), this.dataEdit.getValue(), this.structure.isIgnoreEntities(), this.structure.isStrict(), this.structure.getShowAir(), this.structure.getShowBoundingBox(), var4, var5));
+   private boolean sendToServer(final StructureBlockEntity.UpdateType updateType) {
+      BlockPos offset = new BlockPos(this.parseCoordinate(this.posXEdit.getValue()), this.parseCoordinate(this.posYEdit.getValue()), this.parseCoordinate(this.posZEdit.getValue()));
+      Vec3i size = new Vec3i(this.parseCoordinate(this.sizeXEdit.getValue()), this.parseCoordinate(this.sizeYEdit.getValue()), this.parseCoordinate(this.sizeZEdit.getValue()));
+      float integrity = this.parseIntegrity(this.integrityEdit.getValue());
+      long seed = this.parseSeed(this.seedEdit.getValue());
+      this.minecraft.getConnection().send(new ServerboundSetStructureBlockPacket(this.structure.getBlockPos(), updateType, this.structure.getMode(), this.nameEdit.getValue(), offset, size, this.structure.getMirror(), this.structure.getRotation(), this.dataEdit.getValue(), this.structure.isIgnoreEntities(), this.structure.isStrict(), this.structure.getShowAir(), this.structure.getShowBoundingBox(), integrity, seed));
       return true;
    }
 
-   private long parseSeed(String var1) {
+   private long parseSeed(final String value) {
       try {
-         return Long.valueOf(var1);
+         return Long.valueOf(value);
       } catch (NumberFormatException var3) {
          return 0L;
       }
    }
 
-   private float parseIntegrity(String var1) {
+   private float parseIntegrity(final String value) {
       try {
-         return Float.valueOf(var1);
+         return Float.valueOf(value);
       } catch (NumberFormatException var3) {
          return 1.0F;
       }
    }
 
-   private int parseCoordinate(String var1) {
+   private int parseCoordinate(final String value) {
       try {
-         return Integer.parseInt(var1);
+         return Integer.parseInt(value);
       } catch (NumberFormatException var3) {
          return 0;
       }
@@ -345,10 +350,10 @@ public class StructureBlockEditScreen extends Screen {
       this.onCancel();
    }
 
-   public boolean keyPressed(KeyEvent var1) {
-      if (super.keyPressed(var1)) {
+   public boolean keyPressed(final KeyEvent event) {
+      if (super.keyPressed(event)) {
          return true;
-      } else if (var1.isConfirmation()) {
+      } else if (event.isConfirmation()) {
          this.onDone();
          return true;
       } else {
@@ -356,46 +361,46 @@ public class StructureBlockEditScreen extends Screen {
       }
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      StructureMode var5 = this.structure.getMode();
-      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 10, -1);
-      if (var5 != StructureMode.DATA) {
-         var1.drawString(this.font, (Component)NAME_LABEL, this.width / 2 - 153, 30, -6250336);
-         this.nameEdit.render(var1, var2, var3, var4);
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractRenderState(graphics, mouseX, mouseY, a);
+      StructureMode mode = this.structure.getMode();
+      graphics.centeredText(this.font, (Component)this.title, this.width / 2, 10, -1);
+      if (mode != StructureMode.DATA) {
+         graphics.text(this.font, (Component)NAME_LABEL, this.width / 2 - 153, 30, -6250336);
+         this.nameEdit.extractRenderState(graphics, mouseX, mouseY, a);
       }
 
-      if (var5 == StructureMode.LOAD || var5 == StructureMode.SAVE) {
-         var1.drawString(this.font, (Component)POSITION_LABEL, this.width / 2 - 153, 70, -6250336);
-         this.posXEdit.render(var1, var2, var3, var4);
-         this.posYEdit.render(var1, var2, var3, var4);
-         this.posZEdit.render(var1, var2, var3, var4);
-         var1.drawString(this.font, (Component)INCLUDE_ENTITIES_LABEL, this.width / 2 + 154 - this.font.width((FormattedText)INCLUDE_ENTITIES_LABEL), 150, -6250336);
+      if (mode == StructureMode.LOAD || mode == StructureMode.SAVE) {
+         graphics.text(this.font, (Component)POSITION_LABEL, this.width / 2 - 153, 70, -6250336);
+         this.posXEdit.extractRenderState(graphics, mouseX, mouseY, a);
+         this.posYEdit.extractRenderState(graphics, mouseX, mouseY, a);
+         this.posZEdit.extractRenderState(graphics, mouseX, mouseY, a);
+         graphics.text(this.font, (Component)INCLUDE_ENTITIES_LABEL, this.width / 2 + 154 - this.font.width((FormattedText)INCLUDE_ENTITIES_LABEL), 150, -6250336);
       }
 
-      if (var5 == StructureMode.SAVE) {
-         var1.drawString(this.font, (Component)SIZE_LABEL, this.width / 2 - 153, 110, -6250336);
-         this.sizeXEdit.render(var1, var2, var3, var4);
-         this.sizeYEdit.render(var1, var2, var3, var4);
-         this.sizeZEdit.render(var1, var2, var3, var4);
-         var1.drawString(this.font, (Component)DETECT_SIZE_LABEL, this.width / 2 + 154 - this.font.width((FormattedText)DETECT_SIZE_LABEL), 110, -6250336);
-         var1.drawString(this.font, (Component)SHOW_AIR_LABEL, this.width / 2 + 154 - this.font.width((FormattedText)SHOW_AIR_LABEL), 70, -6250336);
+      if (mode == StructureMode.SAVE) {
+         graphics.text(this.font, (Component)SIZE_LABEL, this.width / 2 - 153, 110, -6250336);
+         this.sizeXEdit.extractRenderState(graphics, mouseX, mouseY, a);
+         this.sizeYEdit.extractRenderState(graphics, mouseX, mouseY, a);
+         this.sizeZEdit.extractRenderState(graphics, mouseX, mouseY, a);
+         graphics.text(this.font, (Component)DETECT_SIZE_LABEL, this.width / 2 + 154 - this.font.width((FormattedText)DETECT_SIZE_LABEL), 110, -6250336);
+         graphics.text(this.font, (Component)SHOW_AIR_LABEL, this.width / 2 + 154 - this.font.width((FormattedText)SHOW_AIR_LABEL), 70, -6250336);
       }
 
-      if (var5 == StructureMode.LOAD) {
-         var1.drawString(this.font, (Component)INTEGRITY_LABEL, this.width / 2 - 153, 110, -6250336);
-         this.integrityEdit.render(var1, var2, var3, var4);
-         this.seedEdit.render(var1, var2, var3, var4);
-         var1.drawString(this.font, (Component)STRICT_LABEL, this.width / 2 + 154 - this.font.width((FormattedText)STRICT_LABEL), 110, -6250336);
-         var1.drawString(this.font, (Component)SHOW_BOUNDING_BOX_LABEL, this.width / 2 + 154 - this.font.width((FormattedText)SHOW_BOUNDING_BOX_LABEL), 70, -6250336);
+      if (mode == StructureMode.LOAD) {
+         graphics.text(this.font, (Component)INTEGRITY_LABEL, this.width / 2 - 153, 110, -6250336);
+         this.integrityEdit.extractRenderState(graphics, mouseX, mouseY, a);
+         this.seedEdit.extractRenderState(graphics, mouseX, mouseY, a);
+         graphics.text(this.font, (Component)STRICT_LABEL, this.width / 2 + 154 - this.font.width((FormattedText)STRICT_LABEL), 110, -6250336);
+         graphics.text(this.font, (Component)SHOW_BOUNDING_BOX_LABEL, this.width / 2 + 154 - this.font.width((FormattedText)SHOW_BOUNDING_BOX_LABEL), 70, -6250336);
       }
 
-      if (var5 == StructureMode.DATA) {
-         var1.drawString(this.font, (Component)CUSTOM_DATA_LABEL, this.width / 2 - 153, 110, -6250336);
-         this.dataEdit.render(var1, var2, var3, var4);
+      if (mode == StructureMode.DATA) {
+         graphics.text(this.font, (Component)CUSTOM_DATA_LABEL, this.width / 2 - 153, 110, -6250336);
+         this.dataEdit.extractRenderState(graphics, mouseX, mouseY, a);
       }
 
-      var1.drawString(this.font, (Component)var5.getDisplayName(), this.width / 2 - 153, 174, -6250336);
+      graphics.text(this.font, (Component)mode.getDisplayName(), this.width / 2 - 153, 174, -6250336);
    }
 
    public boolean isPauseScreen() {
@@ -407,6 +412,6 @@ public class StructureBlockEditScreen extends Screen {
    }
 
    static {
-      DEFAULT_MODES = (ImmutableList)ALL_MODES.stream().filter((var0) -> var0 != StructureMode.DATA).collect(ImmutableList.toImmutableList());
+      DEFAULT_MODES = (ImmutableList)ALL_MODES.stream().filter((m) -> m != StructureMode.DATA).collect(ImmutableList.toImmutableList());
    }
 }

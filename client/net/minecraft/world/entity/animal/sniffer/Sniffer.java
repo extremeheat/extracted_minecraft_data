@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.animal.sniffer;
 
-import com.mojang.serialization.Dynamic;
 import io.netty.buffer.ByteBuf;
 import java.util.Collection;
 import java.util.List;
@@ -45,6 +44,7 @@ import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.ai.util.LandRandomPos;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -61,11 +61,12 @@ import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.phys.Vec3;
 
 public class Sniffer extends Animal {
+   private static final Brain.Provider<Sniffer> BRAIN_PROVIDER;
    private static final int DIGGING_PARTICLES_DELAY_TICKS = 1700;
    private static final int DIGGING_PARTICLES_DURATION_TICKS = 6000;
    private static final int DIGGING_PARTICLES_AMOUNT = 30;
    private static final int DIGGING_DROP_SEED_OFFSET_TICKS = 120;
-   private static final int SNIFFER_BABY_AGE_TICKS = 48000;
+   private static final int SNIFFER_BABY_START_AGE = -48000;
    private static final float DIGGING_BB_HEIGHT_OFFSET = 0.4F;
    private static final EntityDimensions DIGGING_DIMENSIONS;
    private static final EntityDataAccessor<State> DATA_STATE;
@@ -80,18 +81,18 @@ public class Sniffer extends Animal {
       return Animal.createAnimalAttributes().add(Attributes.MOVEMENT_SPEED, 0.10000000149011612).add(Attributes.MAX_HEALTH, 14.0);
    }
 
-   public Sniffer(EntityType<? extends Animal> var1, Level var2) {
-      super(var1, var2);
+   public Sniffer(final EntityType<? extends Animal> type, final Level level) {
+      super(type, level);
       this.getNavigation().setCanFloat(true);
       this.setPathfindingMalus(PathType.WATER, -1.0F);
-      this.setPathfindingMalus(PathType.DANGER_POWDER_SNOW, -1.0F);
+      this.setPathfindingMalus(PathType.ON_TOP_OF_POWDER_SNOW, -1.0F);
       this.setPathfindingMalus(PathType.DAMAGE_CAUTIOUS, -1.0F);
    }
 
-   protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      super.defineSynchedData(var1);
-      var1.define(DATA_STATE, Sniffer.State.IDLING);
-      var1.define(DATA_DROP_SEED_AT_TICK, 0);
+   protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
+      super.defineSynchedData(entityData);
+      entityData.define(DATA_STATE, Sniffer.State.IDLING);
+      entityData.define(DATA_DROP_SEED_AT_TICK, 0);
    }
 
    public void onPathfindingStart() {
@@ -106,8 +107,12 @@ public class Sniffer extends Animal {
       this.setPathfindingMalus(PathType.WATER, -1.0F);
    }
 
-   public EntityDimensions getDefaultDimensions(Pose var1) {
-      return this.getState() == Sniffer.State.DIGGING ? DIGGING_DIMENSIONS.scale(this.getAgeScale()) : super.getDefaultDimensions(var1);
+   public int getBabyStartAge() {
+      return -48000;
+   }
+
+   public EntityDimensions getDefaultDimensions(final Pose pose) {
+      return this.getState() == Sniffer.State.DIGGING ? DIGGING_DIMENSIONS.scale(this.getAgeScale()) : super.getDefaultDimensions(pose);
    }
 
    public boolean isSearching() {
@@ -127,8 +132,8 @@ public class Sniffer extends Animal {
    }
 
    private BlockPos getHeadBlock() {
-      Vec3 var1 = this.getHeadPosition();
-      return BlockPos.containing(var1.x(), this.getY() + 0.20000000298023224, var1.z());
+      Vec3 position = this.getHeadPosition();
+      return BlockPos.containing(position.x(), this.getY() + 0.20000000298023224, position.z());
    }
 
    private Vec3 getHeadPosition() {
@@ -147,16 +152,16 @@ public class Sniffer extends Animal {
       return (State)this.entityData.get(DATA_STATE);
    }
 
-   private Sniffer setState(State var1) {
-      this.entityData.set(DATA_STATE, var1);
+   private Sniffer setState(final State state) {
+      this.entityData.set(DATA_STATE, state);
       return this;
    }
 
-   public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
-      if (DATA_STATE.equals(var1)) {
-         State var2 = this.getState();
+   public void onSyncedDataUpdated(final EntityDataAccessor<?> accessor) {
+      if (DATA_STATE.equals(accessor)) {
+         State state = this.getState();
          this.resetAnimations();
-         switch (var2.ordinal()) {
+         switch (state.ordinal()) {
             case 1:
                this.feelingHappyAnimationState.startIfStopped(this.tickCount);
                break;
@@ -178,7 +183,7 @@ public class Sniffer extends Animal {
          this.refreshDimensions();
       }
 
-      super.onSyncedDataUpdated(var1);
+      super.onSyncedDataUpdated(accessor);
    }
 
    private void resetAnimations() {
@@ -189,8 +194,8 @@ public class Sniffer extends Animal {
       this.scentingAnimationState.stop();
    }
 
-   public Sniffer transitionTo(State var1) {
-      switch (var1.ordinal()) {
+   public Sniffer transitionTo(final State state) {
+      switch (state.ordinal()) {
          case 0:
             this.setState(Sniffer.State.IDLING);
             break;
@@ -230,8 +235,8 @@ public class Sniffer extends Animal {
       return this;
    }
 
-   public Sniffer onDiggingComplete(boolean var1) {
-      if (var1) {
+   public Sniffer onDiggingComplete(final boolean success) {
+      if (success) {
          this.storeExploredPosition(this.getOnPos());
       }
 
@@ -239,26 +244,26 @@ public class Sniffer extends Animal {
    }
 
    Optional<BlockPos> calculateDigPosition() {
-      return IntStream.range(0, 5).mapToObj((var1) -> LandRandomPos.getPos(this, 10 + 2 * var1, 3)).filter(Objects::nonNull).map(BlockPos::containing).filter((var1) -> this.level().getWorldBorder().isWithinBounds(var1)).map(BlockPos::below).filter(this::canDig).findFirst();
+      return IntStream.range(0, 5).mapToObj((idx) -> LandRandomPos.getPos(this, 10 + 2 * idx, 3)).filter(Objects::nonNull).map(BlockPos::containing).filter((position) -> this.level().getWorldBorder().isWithinBounds(position)).map(BlockPos::below).filter(this::canDig).findFirst();
    }
 
    boolean canDig() {
       return !this.isPanicking() && !this.isTempted() && !this.isBaby() && !this.isInWater() && this.onGround() && !this.isPassenger() && this.canDig(this.getHeadBlock().below());
    }
 
-   private boolean canDig(BlockPos var1) {
-      return this.level().getBlockState(var1).is(BlockTags.SNIFFER_DIGGABLE_BLOCK) && this.getExploredPositions().noneMatch((var2) -> GlobalPos.of(this.level().dimension(), var1).equals(var2)) && (Boolean)Optional.ofNullable(this.getNavigation().createPath(var1, 1)).map(Path::canReach).orElse(false);
+   private boolean canDig(final BlockPos position) {
+      return this.level().getBlockState(position).is(BlockTags.SNIFFER_DIGGABLE_BLOCK) && this.getExploredPositions().noneMatch((explored) -> GlobalPos.of(this.level().dimension(), position).equals(explored)) && (Boolean)Optional.ofNullable(this.getNavigation().createPath(position, 1)).map(Path::canReach).orElse(false);
    }
 
    private void dropSeed() {
       Level var2 = this.level();
-      if (var2 instanceof ServerLevel var1) {
+      if (var2 instanceof ServerLevel level) {
          if ((Integer)this.entityData.get(DATA_DROP_SEED_AT_TICK) == this.tickCount) {
-            BlockPos var3 = this.getHeadBlock();
-            this.dropFromGiftLootTable(var1, BuiltInLootTables.SNIFFER_DIGGING, (var2x, var3x) -> {
-               ItemEntity var4 = new ItemEntity(this.level(), (double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), var3x);
-               var4.setDefaultPickUpDelay();
-               var2x.addFreshEntity(var4);
+            BlockPos head = this.getHeadBlock();
+            this.dropFromGiftLootTable(level, BuiltInLootTables.SNIFFER_DIGGING, (l, itemStack) -> {
+               ItemEntity entity = new ItemEntity(this.level(), (double)head.getX(), (double)head.getY(), (double)head.getZ(), itemStack);
+               entity.setDefaultPickUpDelay();
+               l.addFreshEntity(entity);
             });
             this.playSound(SoundEvents.SNIFFER_DROP_SEED, 1.0F, 1.0F);
             return;
@@ -267,19 +272,19 @@ public class Sniffer extends Animal {
 
    }
 
-   private Sniffer emitDiggingParticles(AnimationState var1) {
-      boolean var2 = var1.getTimeInMillis((float)this.tickCount) > 1700L && var1.getTimeInMillis((float)this.tickCount) < 6000L;
-      if (var2) {
-         BlockPos var3 = this.getHeadBlock();
-         BlockState var4 = this.level().getBlockState(var3.below());
-         if (var4.getRenderShape() != RenderShape.INVISIBLE) {
-            for(int var5 = 0; var5 < 30; ++var5) {
-               Vec3 var6 = Vec3.atCenterOf(var3).add(0.0, -0.6499999761581421, 0.0);
-               this.level().addParticle(new BlockParticleOption(ParticleTypes.BLOCK, var4), var6.x, var6.y, var6.z, 0.0, 0.0, 0.0);
+   private Sniffer emitDiggingParticles(final AnimationState state) {
+      boolean emit = state.getTimeInMillis((float)this.tickCount) > 1700L && state.getTimeInMillis((float)this.tickCount) < 6000L;
+      if (emit) {
+         BlockPos head = this.getHeadBlock();
+         BlockState stateBelow = this.level().getBlockState(head.below());
+         if (stateBelow.getRenderShape() != RenderShape.INVISIBLE) {
+            for(int i = 0; i < 30; ++i) {
+               Vec3 centered = Vec3.atCenterOf(head).add(0.0, -0.6499999761581421, 0.0);
+               this.level().addParticle(new BlockParticleOption(ParticleTypes.BLOCK, stateBelow), centered.x, centered.y, centered.z, 0.0, 0.0, 0.0);
             }
 
             if (this.tickCount % 10 == 0) {
-               this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), var4.getSoundType().getHitSound(), this.getSoundSource(), 0.5F, 0.5F, false);
+               this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), stateBelow.getSoundType().getHitSound(), this.getSoundSource(), 0.5F, 0.5F, false);
             }
          }
       }
@@ -291,10 +296,10 @@ public class Sniffer extends Animal {
       return this;
    }
 
-   private Sniffer storeExploredPosition(BlockPos var1) {
-      List var2 = (List)this.getExploredPositions().limit(20L).collect(Collectors.toList());
-      var2.add(0, GlobalPos.of(this.level().dimension(), var1));
-      this.getBrain().setMemory(MemoryModuleType.SNIFFER_EXPLORED_POSITIONS, var2);
+   private Sniffer storeExploredPosition(final BlockPos position) {
+      List<GlobalPos> updated = (List)this.getExploredPositions().limit(20L).collect(Collectors.toList());
+      updated.add(0, GlobalPos.of(this.level().dimension(), position));
+      this.getBrain().setMemory(MemoryModuleType.SNIFFER_EXPLORED_POSITIONS, updated);
       return this;
    }
 
@@ -304,28 +309,28 @@ public class Sniffer extends Animal {
 
    public void jumpFromGround() {
       super.jumpFromGround();
-      double var1 = this.moveControl.getSpeedModifier();
-      if (var1 > 0.0) {
-         double var3 = this.getDeltaMovement().horizontalDistanceSqr();
-         if (var3 < 0.01) {
+      double speedModifier = this.moveControl.getSpeedModifier();
+      if (speedModifier > 0.0) {
+         double current = this.getDeltaMovement().horizontalDistanceSqr();
+         if (current < 0.01) {
             this.moveRelative(0.1F, new Vec3(0.0, 0.0, 1.0));
          }
       }
 
    }
 
-   public void spawnChildFromBreeding(ServerLevel var1, Animal var2) {
-      ItemStack var3 = new ItemStack(Items.SNIFFER_EGG);
-      ItemEntity var4 = new ItemEntity(var1, this.position().x(), this.position().y(), this.position().z(), var3);
-      var4.setDefaultPickUpDelay();
-      this.finalizeSpawnChildFromBreeding(var1, var2, (AgeableMob)null);
+   public void spawnChildFromBreeding(final ServerLevel level, final Animal partner) {
+      ItemStack itemStack = new ItemStack(Items.SNIFFER_EGG);
+      ItemEntity entity = new ItemEntity(level, this.position().x(), this.position().y(), this.position().z(), itemStack);
+      entity.setDefaultPickUpDelay();
+      this.finalizeSpawnChildFromBreeding(level, partner, (AgeableMob)null);
       this.playSound(SoundEvents.SNIFFER_EGG_PLOP, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 0.5F);
-      var1.addFreshEntity(var4);
+      level.addFreshEntity(entity);
    }
 
-   public void die(DamageSource var1) {
+   public void die(final DamageSource source) {
       this.transitionTo(Sniffer.State.IDLING);
-      super.die(var1);
+      super.die(source);
    }
 
    public void tick() {
@@ -337,19 +342,19 @@ public class Sniffer extends Animal {
       super.tick();
    }
 
-   public InteractionResult mobInteract(Player var1, InteractionHand var2) {
-      ItemStack var3 = var1.getItemInHand(var2);
-      boolean var4 = this.isFood(var3);
-      InteractionResult var5 = super.mobInteract(var1, var2);
-      if (var5.consumesAction() && var4) {
+   public InteractionResult mobInteract(final Player player, final InteractionHand hand) {
+      ItemStack heldItem = player.getItemInHand(hand);
+      boolean isFood = this.isFood(heldItem);
+      InteractionResult interactionResult = super.mobInteract(player, hand);
+      if (interactionResult.consumesAction() && isFood) {
          this.playEatingSound();
       }
 
-      return var5;
+      return interactionResult;
    }
 
    protected void playEatingSound() {
-      this.level().playSound((Entity)null, (Entity)this, SoundEvents.SNIFFER_EAT, SoundSource.NEUTRAL, 1.0F, Mth.randomBetween(this.level().random, 0.8F, 1.2F));
+      this.level().playSound((Entity)null, (Entity)this, SoundEvents.SNIFFER_EAT, SoundSource.NEUTRAL, 1.0F, Mth.randomBetween(this.level().getRandom(), 0.8F, 1.2F));
    }
 
    private void playSearchingSound() {
@@ -359,7 +364,7 @@ public class Sniffer extends Animal {
 
    }
 
-   protected void playStepSound(BlockPos var1, BlockState var2) {
+   protected void playStepSound(final BlockPos pos, final BlockState blockState) {
       this.playSound(SoundEvents.SNIFFER_STEP, 0.15F, 1.0F);
    }
 
@@ -367,7 +372,7 @@ public class Sniffer extends Animal {
       return Set.of(Sniffer.State.DIGGING, Sniffer.State.SEARCHING).contains(this.getState()) ? null : SoundEvents.SNIFFER_IDLE;
    }
 
-   protected SoundEvent getHurtSound(DamageSource var1) {
+   protected SoundEvent getHurtSound(final DamageSource source) {
       return SoundEvents.SNIFFER_HURT;
    }
 
@@ -379,50 +384,43 @@ public class Sniffer extends Animal {
       return 50;
    }
 
-   public void setBaby(boolean var1) {
-      this.setAge(var1 ? -48000 : 0);
+   public AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {
+      return EntityType.SNIFFER.create(level, EntitySpawnReason.BREEDING);
    }
 
-   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return EntityType.SNIFFER.create(var1, EntitySpawnReason.BREEDING);
-   }
-
-   public boolean canMate(Animal var1) {
-      if (!(var1 instanceof Sniffer var2)) {
+   public boolean canMate(final Animal partner) {
+      if (!(partner instanceof Sniffer snifferPartner)) {
          return false;
       } else {
-         Set var3 = Set.of(Sniffer.State.IDLING, Sniffer.State.SCENTING, Sniffer.State.FEELING_HAPPY);
-         return var3.contains(this.getState()) && var3.contains(var2.getState()) && super.canMate(var1);
+         Set<State> states = Set.of(Sniffer.State.IDLING, Sniffer.State.SCENTING, Sniffer.State.FEELING_HAPPY);
+         return states.contains(this.getState()) && states.contains(snifferPartner.getState()) && super.canMate(partner);
       }
    }
 
-   public boolean isFood(ItemStack var1) {
-      return var1.is(ItemTags.SNIFFER_FOOD);
+   public boolean isFood(final ItemStack itemStack) {
+      return itemStack.is(ItemTags.SNIFFER_FOOD);
    }
 
-   protected Brain<?> makeBrain(Dynamic<?> var1) {
-      return SnifferAi.makeBrain(this.brainProvider().makeBrain(var1));
+   protected Brain<Sniffer> makeBrain(final Brain.Packed packedBrain) {
+      return BRAIN_PROVIDER.makeBrain(this, packedBrain);
    }
 
    public Brain<Sniffer> getBrain() {
       return super.getBrain();
    }
 
-   protected Brain.Provider<Sniffer> brainProvider() {
-      return Brain.<Sniffer>provider(SnifferAi.MEMORY_TYPES, SnifferAi.SENSOR_TYPES);
-   }
-
-   protected void customServerAiStep(ServerLevel var1) {
-      ProfilerFiller var2 = Profiler.get();
-      var2.push("snifferBrain");
-      this.getBrain().tick(var1, this);
-      var2.popPush("snifferActivityUpdate");
+   protected void customServerAiStep(final ServerLevel level) {
+      ProfilerFiller profiler = Profiler.get();
+      profiler.push("snifferBrain");
+      this.getBrain().tick(level, this);
+      profiler.popPush("snifferActivityUpdate");
       SnifferAi.updateActivity(this);
-      var2.pop();
-      super.customServerAiStep(var1);
+      profiler.pop();
+      super.customServerAiStep(level);
    }
 
    static {
+      BRAIN_PROVIDER = Brain.<Sniffer>provider(List.of(MemoryModuleType.SNIFFER_EXPLORED_POSITIONS), List.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.HURT_BY, SensorType.NEAREST_PLAYERS, SensorType.FOOD_TEMPTATIONS), (var0) -> SnifferAi.getActivities());
       DIGGING_DIMENSIONS = EntityDimensions.scalable(EntityType.SNIFFER.getWidth(), EntityType.SNIFFER.getHeight() - 0.4F).withEyeHeight(0.81F);
       DATA_STATE = SynchedEntityData.<State>defineId(Sniffer.class, EntityDataSerializers.SNIFFER_STATE);
       DATA_DROP_SEED_AT_TICK = SynchedEntityData.<Integer>defineId(Sniffer.class, EntityDataSerializers.INT);
@@ -441,8 +439,8 @@ public class Sniffer extends Animal {
       public static final StreamCodec<ByteBuf, State> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, State::id);
       private final int id;
 
-      private State(final int var3) {
-         this.id = var3;
+      private State(final int id) {
+         this.id = id;
       }
 
       public int id() {

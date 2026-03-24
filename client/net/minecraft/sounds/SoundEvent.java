@@ -13,31 +13,29 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryFileCodec;
 
 public record SoundEvent(Identifier location, Optional<Float> fixedRange) {
-   public static final Codec<SoundEvent> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(Identifier.CODEC.fieldOf("sound_id").forGetter(SoundEvent::location), Codec.FLOAT.lenientOptionalFieldOf("range").forGetter(SoundEvent::fixedRange)).apply(var0, SoundEvent::create));
+   public static final Codec<SoundEvent> DIRECT_CODEC = RecordCodecBuilder.create((i) -> i.group(Identifier.CODEC.fieldOf("sound_id").forGetter(SoundEvent::location), Codec.FLOAT.lenientOptionalFieldOf("range").forGetter(SoundEvent::fixedRange)).apply(i, SoundEvent::create));
    public static final Codec<Holder<SoundEvent>> CODEC;
    public static final StreamCodec<ByteBuf, SoundEvent> DIRECT_STREAM_CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<SoundEvent>> STREAM_CODEC;
 
-   public SoundEvent(Identifier var1, Optional<Float> var2) {
+   public SoundEvent {
       super();
-      this.location = var1;
-      this.fixedRange = var2;
    }
 
-   private static SoundEvent create(Identifier var0, Optional<Float> var1) {
-      return (SoundEvent)var1.map((var1x) -> createFixedRangeEvent(var0, var1x)).orElseGet(() -> createVariableRangeEvent(var0));
+   private static SoundEvent create(final Identifier location, final Optional<Float> range) {
+      return (SoundEvent)range.map((r) -> createFixedRangeEvent(location, r)).orElseGet(() -> createVariableRangeEvent(location));
    }
 
-   public static SoundEvent createVariableRangeEvent(Identifier var0) {
-      return new SoundEvent(var0, Optional.empty());
+   public static SoundEvent createVariableRangeEvent(final Identifier location) {
+      return new SoundEvent(location, Optional.empty());
    }
 
-   public static SoundEvent createFixedRangeEvent(Identifier var0, float var1) {
-      return new SoundEvent(var0, Optional.of(var1));
+   public static SoundEvent createFixedRangeEvent(final Identifier location, final float range) {
+      return new SoundEvent(location, Optional.of(range));
    }
 
-   public float getRange(float var1) {
-      return (Float)this.fixedRange.orElse(var1 > 1.0F ? 16.0F * var1 : 16.0F);
+   public float getRange(final float volume) {
+      return (Float)this.fixedRange.orElse(volume > 1.0F ? 16.0F * volume : 16.0F);
    }
 
    static {

@@ -17,15 +17,15 @@ public class NetherSproutsBlock extends VegetationBlock {
       return CODEC;
    }
 
-   public NetherSproutsBlock(BlockBehaviour.Properties var1) {
-      super(var1);
+   public NetherSproutsBlock(final BlockBehaviour.Properties properties) {
+      super(properties);
    }
 
-   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
       return SHAPE;
    }
 
-   protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return var1.is(BlockTags.NYLIUM) || var1.is(Blocks.SOUL_SOIL) || super.mayPlaceOn(var1, var2, var3);
+   protected boolean mayPlaceOn(final BlockState state, final BlockGetter level, final BlockPos pos) {
+      return state.is(BlockTags.SUPPORTS_NETHER_SPROUTS);
    }
 }

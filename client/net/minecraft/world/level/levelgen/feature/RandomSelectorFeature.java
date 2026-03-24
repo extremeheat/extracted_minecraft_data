@@ -9,23 +9,23 @@ import net.minecraft.world.level.levelgen.feature.configurations.RandomFeatureCo
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 public class RandomSelectorFeature extends Feature<RandomFeatureConfiguration> {
-   public RandomSelectorFeature(Codec<RandomFeatureConfiguration> var1) {
-      super(var1);
+   public RandomSelectorFeature(final Codec<RandomFeatureConfiguration> codec) {
+      super(codec);
    }
 
-   public boolean place(FeaturePlaceContext<RandomFeatureConfiguration> var1) {
-      RandomFeatureConfiguration var2 = (RandomFeatureConfiguration)var1.config();
-      RandomSource var3 = var1.random();
-      WorldGenLevel var4 = var1.level();
-      ChunkGenerator var5 = var1.chunkGenerator();
-      BlockPos var6 = var1.origin();
+   public boolean place(final FeaturePlaceContext<RandomFeatureConfiguration> context) {
+      RandomFeatureConfiguration config = context.config();
+      RandomSource random = context.random();
+      WorldGenLevel level = context.level();
+      ChunkGenerator chunkGenerator = context.chunkGenerator();
+      BlockPos origin = context.origin();
 
-      for(WeightedPlacedFeature var8 : var2.features) {
-         if (var3.nextFloat() < var8.chance) {
-            return var8.place(var4, var5, var3, var6);
+      for(WeightedPlacedFeature feature : config.features) {
+         if (random.nextFloat() < feature.chance) {
+            return feature.place(level, chunkGenerator, random, origin);
          }
       }
 
-      return ((PlacedFeature)var2.defaultFeature.value()).place(var4, var5, var3, var6);
+      return ((PlacedFeature)config.defaultFeature.value()).place(level, chunkGenerator, random, origin);
    }
 }

@@ -9,15 +9,13 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 
 public record LevelStem(Holder<DimensionType> type, ChunkGenerator generator) {
-   public static final Codec<LevelStem> CODEC = RecordCodecBuilder.create((var0) -> var0.group(DimensionType.CODEC.fieldOf("type").forGetter(LevelStem::type), ChunkGenerator.CODEC.fieldOf("generator").forGetter(LevelStem::generator)).apply(var0, var0.stable(LevelStem::new)));
+   public static final Codec<LevelStem> CODEC = RecordCodecBuilder.create((i) -> i.group(DimensionType.CODEC.fieldOf("type").forGetter(LevelStem::type), ChunkGenerator.CODEC.fieldOf("generator").forGetter(LevelStem::generator)).apply(i, i.stable(LevelStem::new)));
    public static final ResourceKey<LevelStem> OVERWORLD;
    public static final ResourceKey<LevelStem> NETHER;
    public static final ResourceKey<LevelStem> END;
 
-   public LevelStem(Holder<DimensionType> var1, ChunkGenerator var2) {
+   public LevelStem {
       super();
-      this.type = var1;
-      this.generator = var2;
    }
 
    static {

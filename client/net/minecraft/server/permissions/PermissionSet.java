@@ -1,12 +1,12 @@
 package net.minecraft.server.permissions;
 
 public interface PermissionSet {
-   PermissionSet NO_PERMISSIONS = (var0) -> false;
-   PermissionSet ALL_PERMISSIONS = (var0) -> true;
+   PermissionSet NO_PERMISSIONS = (permission) -> false;
+   PermissionSet ALL_PERMISSIONS = (permission) -> true;
 
-   boolean hasPermission(Permission var1);
+   boolean hasPermission(Permission permission);
 
-   default PermissionSet union(PermissionSet var1) {
-      return (PermissionSet)(var1 instanceof PermissionSetUnion ? var1.union(this) : new PermissionSetUnion(this, var1));
+   default PermissionSet union(final PermissionSet other) {
+      return (PermissionSet)(other instanceof PermissionSetUnion ? other.union(this) : new PermissionSetUnion(this, other));
    }
 }

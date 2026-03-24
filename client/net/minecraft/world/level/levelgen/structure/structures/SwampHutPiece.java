@@ -27,93 +27,93 @@ public class SwampHutPiece extends ScatteredFeaturePiece {
    private boolean spawnedWitch;
    private boolean spawnedCat;
 
-   public SwampHutPiece(RandomSource var1, int var2, int var3) {
-      super(StructurePieceType.SWAMPLAND_HUT, var2, 64, var3, 7, 7, 9, getRandomHorizontalDirection(var1));
+   public SwampHutPiece(final RandomSource random, final int west, final int north) {
+      super(StructurePieceType.SWAMPLAND_HUT, west, 64, north, 7, 7, 9, getRandomHorizontalDirection(random));
    }
 
-   public SwampHutPiece(CompoundTag var1) {
-      super(StructurePieceType.SWAMPLAND_HUT, var1);
-      this.spawnedWitch = var1.getBooleanOr("Witch", false);
-      this.spawnedCat = var1.getBooleanOr("Cat", false);
+   public SwampHutPiece(final CompoundTag tag) {
+      super(StructurePieceType.SWAMPLAND_HUT, tag);
+      this.spawnedWitch = tag.getBooleanOr("Witch", false);
+      this.spawnedCat = tag.getBooleanOr("Cat", false);
    }
 
-   protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
-      super.addAdditionalSaveData(var1, var2);
-      var2.putBoolean("Witch", this.spawnedWitch);
-      var2.putBoolean("Cat", this.spawnedCat);
+   protected void addAdditionalSaveData(final StructurePieceSerializationContext context, final CompoundTag tag) {
+      super.addAdditionalSaveData(context, tag);
+      tag.putBoolean("Witch", this.spawnedWitch);
+      tag.putBoolean("Cat", this.spawnedCat);
    }
 
-   public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
-      if (this.updateAverageGroundHeight(var1, var5, 0)) {
-         this.generateBox(var1, var5, 1, 1, 1, 5, 1, 7, Blocks.SPRUCE_PLANKS.defaultBlockState(), Blocks.SPRUCE_PLANKS.defaultBlockState(), false);
-         this.generateBox(var1, var5, 1, 4, 2, 5, 4, 7, Blocks.SPRUCE_PLANKS.defaultBlockState(), Blocks.SPRUCE_PLANKS.defaultBlockState(), false);
-         this.generateBox(var1, var5, 2, 1, 0, 4, 1, 0, Blocks.SPRUCE_PLANKS.defaultBlockState(), Blocks.SPRUCE_PLANKS.defaultBlockState(), false);
-         this.generateBox(var1, var5, 2, 2, 2, 3, 3, 2, Blocks.SPRUCE_PLANKS.defaultBlockState(), Blocks.SPRUCE_PLANKS.defaultBlockState(), false);
-         this.generateBox(var1, var5, 1, 2, 3, 1, 3, 6, Blocks.SPRUCE_PLANKS.defaultBlockState(), Blocks.SPRUCE_PLANKS.defaultBlockState(), false);
-         this.generateBox(var1, var5, 5, 2, 3, 5, 3, 6, Blocks.SPRUCE_PLANKS.defaultBlockState(), Blocks.SPRUCE_PLANKS.defaultBlockState(), false);
-         this.generateBox(var1, var5, 2, 2, 7, 4, 3, 7, Blocks.SPRUCE_PLANKS.defaultBlockState(), Blocks.SPRUCE_PLANKS.defaultBlockState(), false);
-         this.generateBox(var1, var5, 1, 0, 2, 1, 3, 2, Blocks.OAK_LOG.defaultBlockState(), Blocks.OAK_LOG.defaultBlockState(), false);
-         this.generateBox(var1, var5, 5, 0, 2, 5, 3, 2, Blocks.OAK_LOG.defaultBlockState(), Blocks.OAK_LOG.defaultBlockState(), false);
-         this.generateBox(var1, var5, 1, 0, 7, 1, 3, 7, Blocks.OAK_LOG.defaultBlockState(), Blocks.OAK_LOG.defaultBlockState(), false);
-         this.generateBox(var1, var5, 5, 0, 7, 5, 3, 7, Blocks.OAK_LOG.defaultBlockState(), Blocks.OAK_LOG.defaultBlockState(), false);
-         this.placeBlock(var1, Blocks.OAK_FENCE.defaultBlockState(), 2, 3, 2, var5);
-         this.placeBlock(var1, Blocks.OAK_FENCE.defaultBlockState(), 3, 3, 7, var5);
-         this.placeBlock(var1, Blocks.AIR.defaultBlockState(), 1, 3, 4, var5);
-         this.placeBlock(var1, Blocks.AIR.defaultBlockState(), 5, 3, 4, var5);
-         this.placeBlock(var1, Blocks.AIR.defaultBlockState(), 5, 3, 5, var5);
-         this.placeBlock(var1, Blocks.POTTED_RED_MUSHROOM.defaultBlockState(), 1, 3, 5, var5);
-         this.placeBlock(var1, Blocks.CRAFTING_TABLE.defaultBlockState(), 3, 2, 6, var5);
-         this.placeBlock(var1, Blocks.CAULDRON.defaultBlockState(), 4, 2, 6, var5);
-         this.placeBlock(var1, Blocks.OAK_FENCE.defaultBlockState(), 1, 2, 1, var5);
-         this.placeBlock(var1, Blocks.OAK_FENCE.defaultBlockState(), 5, 2, 1, var5);
-         BlockState var8 = (BlockState)Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH);
-         BlockState var9 = (BlockState)Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.EAST);
-         BlockState var10 = (BlockState)Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.WEST);
-         BlockState var11 = (BlockState)Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.SOUTH);
-         this.generateBox(var1, var5, 0, 4, 1, 6, 4, 1, var8, var8, false);
-         this.generateBox(var1, var5, 0, 4, 2, 0, 4, 7, var9, var9, false);
-         this.generateBox(var1, var5, 6, 4, 2, 6, 4, 7, var10, var10, false);
-         this.generateBox(var1, var5, 0, 4, 8, 6, 4, 8, var11, var11, false);
-         this.placeBlock(var1, (BlockState)var8.setValue(StairBlock.SHAPE, StairsShape.OUTER_RIGHT), 0, 4, 1, var5);
-         this.placeBlock(var1, (BlockState)var8.setValue(StairBlock.SHAPE, StairsShape.OUTER_LEFT), 6, 4, 1, var5);
-         this.placeBlock(var1, (BlockState)var11.setValue(StairBlock.SHAPE, StairsShape.OUTER_LEFT), 0, 4, 8, var5);
-         this.placeBlock(var1, (BlockState)var11.setValue(StairBlock.SHAPE, StairsShape.OUTER_RIGHT), 6, 4, 8, var5);
+   public void postProcess(final WorldGenLevel level, final StructureManager structureManager, final ChunkGenerator generator, final RandomSource random, final BoundingBox chunkBB, final ChunkPos chunkPos, final BlockPos referencePos) {
+      if (this.updateAverageGroundHeight(level, chunkBB, 0)) {
+         this.generateBox(level, chunkBB, 1, 1, 1, 5, 1, 7, Blocks.SPRUCE_PLANKS.defaultBlockState(), Blocks.SPRUCE_PLANKS.defaultBlockState(), false);
+         this.generateBox(level, chunkBB, 1, 4, 2, 5, 4, 7, Blocks.SPRUCE_PLANKS.defaultBlockState(), Blocks.SPRUCE_PLANKS.defaultBlockState(), false);
+         this.generateBox(level, chunkBB, 2, 1, 0, 4, 1, 0, Blocks.SPRUCE_PLANKS.defaultBlockState(), Blocks.SPRUCE_PLANKS.defaultBlockState(), false);
+         this.generateBox(level, chunkBB, 2, 2, 2, 3, 3, 2, Blocks.SPRUCE_PLANKS.defaultBlockState(), Blocks.SPRUCE_PLANKS.defaultBlockState(), false);
+         this.generateBox(level, chunkBB, 1, 2, 3, 1, 3, 6, Blocks.SPRUCE_PLANKS.defaultBlockState(), Blocks.SPRUCE_PLANKS.defaultBlockState(), false);
+         this.generateBox(level, chunkBB, 5, 2, 3, 5, 3, 6, Blocks.SPRUCE_PLANKS.defaultBlockState(), Blocks.SPRUCE_PLANKS.defaultBlockState(), false);
+         this.generateBox(level, chunkBB, 2, 2, 7, 4, 3, 7, Blocks.SPRUCE_PLANKS.defaultBlockState(), Blocks.SPRUCE_PLANKS.defaultBlockState(), false);
+         this.generateBox(level, chunkBB, 1, 0, 2, 1, 3, 2, Blocks.OAK_LOG.defaultBlockState(), Blocks.OAK_LOG.defaultBlockState(), false);
+         this.generateBox(level, chunkBB, 5, 0, 2, 5, 3, 2, Blocks.OAK_LOG.defaultBlockState(), Blocks.OAK_LOG.defaultBlockState(), false);
+         this.generateBox(level, chunkBB, 1, 0, 7, 1, 3, 7, Blocks.OAK_LOG.defaultBlockState(), Blocks.OAK_LOG.defaultBlockState(), false);
+         this.generateBox(level, chunkBB, 5, 0, 7, 5, 3, 7, Blocks.OAK_LOG.defaultBlockState(), Blocks.OAK_LOG.defaultBlockState(), false);
+         this.placeBlock(level, Blocks.OAK_FENCE.defaultBlockState(), 2, 3, 2, chunkBB);
+         this.placeBlock(level, Blocks.OAK_FENCE.defaultBlockState(), 3, 3, 7, chunkBB);
+         this.placeBlock(level, Blocks.AIR.defaultBlockState(), 1, 3, 4, chunkBB);
+         this.placeBlock(level, Blocks.AIR.defaultBlockState(), 5, 3, 4, chunkBB);
+         this.placeBlock(level, Blocks.AIR.defaultBlockState(), 5, 3, 5, chunkBB);
+         this.placeBlock(level, Blocks.POTTED_RED_MUSHROOM.defaultBlockState(), 1, 3, 5, chunkBB);
+         this.placeBlock(level, Blocks.CRAFTING_TABLE.defaultBlockState(), 3, 2, 6, chunkBB);
+         this.placeBlock(level, Blocks.CAULDRON.defaultBlockState(), 4, 2, 6, chunkBB);
+         this.placeBlock(level, Blocks.OAK_FENCE.defaultBlockState(), 1, 2, 1, chunkBB);
+         this.placeBlock(level, Blocks.OAK_FENCE.defaultBlockState(), 5, 2, 1, chunkBB);
+         BlockState northStairs = (BlockState)Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH);
+         BlockState eastStairs = (BlockState)Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.EAST);
+         BlockState westStairs = (BlockState)Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.WEST);
+         BlockState southStairs = (BlockState)Blocks.SPRUCE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.SOUTH);
+         this.generateBox(level, chunkBB, 0, 4, 1, 6, 4, 1, northStairs, northStairs, false);
+         this.generateBox(level, chunkBB, 0, 4, 2, 0, 4, 7, eastStairs, eastStairs, false);
+         this.generateBox(level, chunkBB, 6, 4, 2, 6, 4, 7, westStairs, westStairs, false);
+         this.generateBox(level, chunkBB, 0, 4, 8, 6, 4, 8, southStairs, southStairs, false);
+         this.placeBlock(level, (BlockState)northStairs.setValue(StairBlock.SHAPE, StairsShape.OUTER_RIGHT), 0, 4, 1, chunkBB);
+         this.placeBlock(level, (BlockState)northStairs.setValue(StairBlock.SHAPE, StairsShape.OUTER_LEFT), 6, 4, 1, chunkBB);
+         this.placeBlock(level, (BlockState)southStairs.setValue(StairBlock.SHAPE, StairsShape.OUTER_LEFT), 0, 4, 8, chunkBB);
+         this.placeBlock(level, (BlockState)southStairs.setValue(StairBlock.SHAPE, StairsShape.OUTER_RIGHT), 6, 4, 8, chunkBB);
 
-         for(int var12 = 2; var12 <= 7; var12 += 5) {
-            for(int var13 = 1; var13 <= 5; var13 += 4) {
-               this.fillColumnDown(var1, Blocks.OAK_LOG.defaultBlockState(), var13, -1, var12, var5);
+         for(int z = 2; z <= 7; z += 5) {
+            for(int x = 1; x <= 5; x += 4) {
+               this.fillColumnDown(level, Blocks.OAK_LOG.defaultBlockState(), x, -1, z, chunkBB);
             }
          }
 
          if (!this.spawnedWitch) {
-            BlockPos.MutableBlockPos var14 = this.getWorldPos(2, 2, 5);
-            if (var5.isInside(var14)) {
+            BlockPos pos = this.getWorldPos(2, 2, 5);
+            if (chunkBB.isInside(pos)) {
                this.spawnedWitch = true;
-               Witch var15 = EntityType.WITCH.create(var1.getLevel(), EntitySpawnReason.STRUCTURE);
-               if (var15 != null) {
-                  var15.setPersistenceRequired();
-                  var15.snapTo((double)((BlockPos)var14).getX() + 0.5, (double)((BlockPos)var14).getY(), (double)((BlockPos)var14).getZ() + 0.5, 0.0F, 0.0F);
-                  var15.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var14), EntitySpawnReason.STRUCTURE, (SpawnGroupData)null);
-                  var1.addFreshEntityWithPassengers(var15);
+               Witch witch = EntityType.WITCH.create(level.getLevel(), EntitySpawnReason.STRUCTURE);
+               if (witch != null) {
+                  witch.setPersistenceRequired();
+                  witch.snapTo((double)pos.getX() + 0.5, (double)pos.getY(), (double)pos.getZ() + 0.5, 0.0F, 0.0F);
+                  witch.finalizeSpawn(level, level.getCurrentDifficultyAt(pos), EntitySpawnReason.STRUCTURE, (SpawnGroupData)null);
+                  level.addFreshEntityWithPassengers(witch);
                }
             }
          }
 
-         this.spawnCat(var1, var5);
+         this.spawnCat(level, chunkBB);
       }
    }
 
-   private void spawnCat(ServerLevelAccessor var1, BoundingBox var2) {
+   private void spawnCat(final ServerLevelAccessor level, final BoundingBox chunkBB) {
       if (!this.spawnedCat) {
-         BlockPos.MutableBlockPos var3 = this.getWorldPos(2, 2, 5);
-         if (var2.isInside(var3)) {
+         BlockPos pos = this.getWorldPos(2, 2, 5);
+         if (chunkBB.isInside(pos)) {
             this.spawnedCat = true;
-            Cat var4 = EntityType.CAT.create(var1.getLevel(), EntitySpawnReason.STRUCTURE);
-            if (var4 != null) {
-               var4.setPersistenceRequired();
-               var4.snapTo((double)((BlockPos)var3).getX() + 0.5, (double)((BlockPos)var3).getY(), (double)((BlockPos)var3).getZ() + 0.5, 0.0F, 0.0F);
-               var4.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var3), EntitySpawnReason.STRUCTURE, (SpawnGroupData)null);
-               var1.addFreshEntityWithPassengers(var4);
+            Cat cat = EntityType.CAT.create(level.getLevel(), EntitySpawnReason.STRUCTURE);
+            if (cat != null) {
+               cat.setPersistenceRequired();
+               cat.snapTo((double)pos.getX() + 0.5, (double)pos.getY(), (double)pos.getZ() + 0.5, 0.0F, 0.0F);
+               cat.finalizeSpawn(level, level.getCurrentDifficultyAt(pos), EntitySpawnReason.STRUCTURE, (SpawnGroupData)null);
+               level.addFreshEntityWithPassengers(cat);
             }
          }
       }

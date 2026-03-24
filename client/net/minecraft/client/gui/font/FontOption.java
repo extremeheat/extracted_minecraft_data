@@ -13,8 +13,8 @@ public enum FontOption implements StringRepresentable {
    public static final Codec<FontOption> CODEC = StringRepresentable.<FontOption>fromEnum(FontOption::values);
    private final String name;
 
-   private FontOption(final String var3) {
-      this.name = var3;
+   private FontOption(final String name) {
+      this.name = name;
    }
 
    public String getSerializedName() {
@@ -31,14 +31,14 @@ public enum FontOption implements StringRepresentable {
       public static final Codec<Filter> CODEC;
       public static final Filter ALWAYS_PASS;
 
-      public Filter(Map<FontOption, Boolean> var1) {
+      public Filter(final Map<FontOption, Boolean> values) {
          super();
-         this.values = var1;
+         this.values = values;
       }
 
-      public boolean apply(Set<FontOption> var1) {
-         for(Map.Entry var3 : this.values.entrySet()) {
-            if (var1.contains(var3.getKey()) != (Boolean)var3.getValue()) {
+      public boolean apply(final Set<FontOption> options) {
+         for(Map.Entry<FontOption, Boolean> e : this.values.entrySet()) {
+            if (options.contains(e.getKey()) != (Boolean)e.getValue()) {
                return false;
             }
          }
@@ -46,14 +46,14 @@ public enum FontOption implements StringRepresentable {
          return true;
       }
 
-      public Filter merge(Filter var1) {
-         HashMap var2 = new HashMap(var1.values);
-         var2.putAll(this.values);
-         return new Filter(Map.copyOf(var2));
+      public Filter merge(final Filter other) {
+         Map<FontOption, Boolean> options = new HashMap(other.values);
+         options.putAll(this.values);
+         return new Filter(Map.copyOf(options));
       }
 
       static {
-         CODEC = Codec.unboundedMap(FontOption.CODEC, Codec.BOOL).xmap(Filter::new, (var0) -> var0.values);
+         CODEC = Codec.unboundedMap(FontOption.CODEC, Codec.BOOL).xmap(Filter::new, (p) -> p.values);
          ALWAYS_PASS = new Filter(Map.of());
       }
    }

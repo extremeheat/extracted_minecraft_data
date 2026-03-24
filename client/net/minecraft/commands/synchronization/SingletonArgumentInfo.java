@@ -2,6 +2,7 @@ package net.minecraft.commands.synchronization;
 
 import com.google.gson.JsonObject;
 import com.mojang.brigadier.arguments.ArgumentType;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import net.minecraft.commands.CommandBuildContext;
@@ -10,53 +11,44 @@ import net.minecraft.network.FriendlyByteBuf;
 public class SingletonArgumentInfo<A extends ArgumentType<?>> implements ArgumentTypeInfo<A, SingletonArgumentInfo<A>.Template> {
    private final SingletonArgumentInfo<A>.Template template;
 
-   private SingletonArgumentInfo(Function<CommandBuildContext, A> var1) {
+   private SingletonArgumentInfo(final Function<CommandBuildContext, A> constructor) {
       super();
-      this.template = new Template(var1);
+      this.template = new Template(constructor);
    }
 
-   public static <T extends ArgumentType<?>> SingletonArgumentInfo<T> contextFree(Supplier<T> var0) {
-      return new SingletonArgumentInfo<T>((var1) -> (ArgumentType)var0.get());
+   public static <T extends ArgumentType<?>> SingletonArgumentInfo<T> contextFree(final Supplier<T> constructor) {
+      return new SingletonArgumentInfo<T>((context) -> (ArgumentType)constructor.get());
    }
 
-   public static <T extends ArgumentType<?>> SingletonArgumentInfo<T> contextAware(Function<CommandBuildContext, T> var0) {
-      return new SingletonArgumentInfo<T>(var0);
+   public static <T extends ArgumentType<?>> SingletonArgumentInfo<T> contextAware(final Function<CommandBuildContext, T> constructor) {
+      return new SingletonArgumentInfo<T>(constructor);
    }
 
-   public void serializeToNetwork(SingletonArgumentInfo<A>.Template var1, FriendlyByteBuf var2) {
+   public void serializeToNetwork(final SingletonArgumentInfo<A>.Template template, final FriendlyByteBuf out) {
    }
 
-   public void serializeToJson(SingletonArgumentInfo<A>.Template var1, JsonObject var2) {
+   public void serializeToJson(final SingletonArgumentInfo<A>.Template template, final JsonObject out) {
    }
 
-   public SingletonArgumentInfo<A>.Template deserializeFromNetwork(FriendlyByteBuf var1) {
+   public SingletonArgumentInfo<A>.Template deserializeFromNetwork(final FriendlyByteBuf in) {
       return this.template;
    }
 
-   public SingletonArgumentInfo<A>.Template unpack(A var1) {
+   public SingletonArgumentInfo<A>.Template unpack(final A argument) {
       return this.template;
-   }
-
-   // $FF: synthetic method
-   public ArgumentTypeInfo.Template unpack(final ArgumentType var1) {
-      return this.unpack(var1);
-   }
-
-   // $FF: synthetic method
-   public ArgumentTypeInfo.Template deserializeFromNetwork(final FriendlyByteBuf var1) {
-      return this.deserializeFromNetwork(var1);
    }
 
    public final class Template implements ArgumentTypeInfo.Template<A> {
       private final Function<CommandBuildContext, A> constructor;
 
-      public Template(final Function<CommandBuildContext, A> var2) {
+      public Template(final Function<CommandBuildContext, A> constructor) {
+         Objects.requireNonNull(SingletonArgumentInfo.this);
          super();
-         this.constructor = var2;
+         this.constructor = constructor;
       }
 
-      public A instantiate(CommandBuildContext var1) {
-         return (A)((ArgumentType)this.constructor.apply(var1));
+      public A instantiate(final CommandBuildContext context) {
+         return (A)((ArgumentType)this.constructor.apply(context));
       }
 
       public ArgumentTypeInfo<A, ?> type() {

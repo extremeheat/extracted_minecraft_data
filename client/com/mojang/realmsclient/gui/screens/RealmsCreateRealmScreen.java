@@ -7,7 +7,6 @@ import com.mojang.realmsclient.exception.RealmsServiceException;
 import com.mojang.realmsclient.util.task.RealmCreationTask;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.layouts.CommonLayouts;
@@ -32,28 +31,26 @@ public class RealmsCreateRealmScreen extends RealmsScreen {
    private EditBox descriptionBox;
    private final Runnable createWorldRunnable;
 
-   public RealmsCreateRealmScreen(RealmsMainScreen var1, RealmsServer var2, boolean var3) {
+   public RealmsCreateRealmScreen(final RealmsMainScreen lastScreen, final RealmsServer server, final boolean isSnapshot) {
       super(CREATE_REALM_TEXT);
-      this.lastScreen = var1;
-      this.createWorldRunnable = () -> this.createWorld(var2, var3);
+      this.lastScreen = lastScreen;
+      this.createWorldRunnable = () -> this.createWorld(server, isSnapshot);
    }
 
    public void init() {
       this.layout.addTitleHeader(this.title, this.font);
-      LinearLayout var1 = ((LinearLayout)this.layout.addToContents(LinearLayout.vertical())).spacing(10);
-      Button var2 = Button.builder(CommonComponents.GUI_CONTINUE, (var1x) -> this.createWorldRunnable.run()).build();
-      var2.active = false;
+      LinearLayout content = ((LinearLayout)this.layout.addToContents(LinearLayout.vertical())).spacing(10);
+      Button createButton = Button.builder(CommonComponents.GUI_CONTINUE, (button) -> this.createWorldRunnable.run()).build();
+      createButton.active = false;
       this.nameBox = new EditBox(this.font, 210, 20, NAME_LABEL);
-      this.nameBox.setResponder((var1x) -> var2.active = !StringUtil.isBlank(var1x));
+      this.nameBox.setResponder((value) -> createButton.active = !StringUtil.isBlank(value));
       this.descriptionBox = new EditBox(this.font, 210, 20, DESCRIPTION_LABEL);
-      var1.addChild(CommonLayouts.labeledElement(this.font, this.nameBox, NAME_LABEL));
-      var1.addChild(CommonLayouts.labeledElement(this.font, this.descriptionBox, DESCRIPTION_LABEL));
-      LinearLayout var3 = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(10));
-      var3.addChild(var2);
-      var3.addChild(Button.builder(CommonComponents.GUI_BACK, (var1x) -> this.onClose()).build());
-      this.layout.visitWidgets((var1x) -> {
-         AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
-      });
+      content.addChild(CommonLayouts.labeledElement(this.font, this.nameBox, NAME_LABEL));
+      content.addChild(CommonLayouts.labeledElement(this.font, this.descriptionBox, DESCRIPTION_LABEL));
+      LinearLayout bottomButtons = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(10));
+      bottomButtons.addChild(createButton);
+      bottomButtons.addChild(Button.builder(CommonComponents.GUI_BACK, (button) -> this.onClose()).build());
+      this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
       this.repositionElements();
    }
 
@@ -65,55 +62,55 @@ public class RealmsCreateRealmScreen extends RealmsScreen {
       this.layout.arrangeElements();
    }
 
-   private void createWorld(RealmsServer var1, boolean var2) {
-      if (!var1.isSnapshotRealm() && var2) {
-         AtomicBoolean var3 = new AtomicBoolean();
+   private void createWorld(final RealmsServer server, final boolean initializeSnapshotRealm) {
+      if (!server.isSnapshotRealm() && initializeSnapshotRealm) {
+         AtomicBoolean canceled = new AtomicBoolean();
          this.minecraft.setScreen(new AlertScreen(() -> {
-            var3.set(true);
+            canceled.set(true);
             this.lastScreen.resetScreen();
             this.minecraft.setScreen(this.lastScreen);
          }, Component.translatable("mco.upload.preparing"), Component.empty()));
-         CompletableFuture.supplyAsync(() -> createSnapshotRealm(var1), Util.backgroundExecutor()).thenAcceptAsync((var2x) -> {
-            if (!var3.get()) {
-               this.showResetWorldScreen(var2x);
+         CompletableFuture.supplyAsync(() -> createSnapshotRealm(server), Util.backgroundExecutor()).thenAcceptAsync((snapshotServer) -> {
+            if (!canceled.get()) {
+               this.showResetWorldScreen(snapshotServer);
             }
 
-         }, this.minecraft).exceptionallyAsync((var1x) -> {
+         }, this.minecraft).exceptionallyAsync((ex) -> {
             this.lastScreen.resetScreen();
-            Throwable var4 = var1x.getCause();
-            Object var2;
-            if (var4 instanceof RealmsServiceException var3) {
-               var2 = var3.realmsError.errorMessage();
+            Throwable patt0$temp = ex.getCause();
+            Component errorMessage;
+            if (patt0$temp instanceof RealmsServiceException realmsServiceException) {
+               errorMessage = realmsServiceException.realmsError.errorMessage();
             } else {
-               var2 = Component.translatable("mco.errorMessage.initialize.failed");
+               errorMessage = Component.translatable("mco.errorMessage.initialize.failed");
             }
 
-            this.minecraft.setScreen(new RealmsGenericErrorScreen((Component)var2, this.lastScreen));
+            this.minecraft.setScreen(new RealmsGenericErrorScreen(errorMessage, this.lastScreen));
             return null;
          }, this.minecraft);
       } else {
-         this.showResetWorldScreen(var1);
+         this.showResetWorldScreen(server);
       }
 
    }
 
-   private static RealmsServer createSnapshotRealm(RealmsServer var0) {
-      RealmsClient var1 = RealmsClient.getOrCreate();
+   private static RealmsServer createSnapshotRealm(final RealmsServer server) {
+      RealmsClient client = RealmsClient.getOrCreate();
 
       try {
-         return var1.createSnapshotRealm(var0.id);
-      } catch (RealmsServiceException var3) {
-         throw new RuntimeException(var3);
+         return client.createSnapshotRealm(server.id);
+      } catch (RealmsServiceException e) {
+         throw new RuntimeException(e);
       }
    }
 
-   private void showResetWorldScreen(RealmsServer var1) {
-      RealmCreationTask var2 = new RealmCreationTask(var1.id, this.nameBox.getValue(), this.descriptionBox.getValue());
-      RealmsResetWorldScreen var3 = RealmsResetWorldScreen.forNewRealm(this, var1, var2, () -> this.minecraft.execute(() -> {
+   private void showResetWorldScreen(final RealmsServer server) {
+      RealmCreationTask realmCreationTask = new RealmCreationTask(server.id, this.nameBox.getValue(), this.descriptionBox.getValue());
+      RealmsResetWorldScreen resetWorldScreen = RealmsResetWorldScreen.forNewRealm(this, server, realmCreationTask, () -> this.minecraft.execute(() -> {
             RealmsMainScreen.refreshServerList();
             this.minecraft.setScreen(this.lastScreen);
          }));
-      this.minecraft.setScreen(var3);
+      this.minecraft.setScreen(resetWorldScreen);
    }
 
    public void onClose() {

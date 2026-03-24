@@ -15,33 +15,33 @@ class ArmorSlot extends Slot {
    private final EquipmentSlot slot;
    private final @Nullable Identifier emptyIcon;
 
-   public ArmorSlot(Container var1, LivingEntity var2, EquipmentSlot var3, int var4, int var5, int var6, @Nullable Identifier var7) {
-      super(var1, var4, var5, var6);
-      this.owner = var2;
-      this.slot = var3;
-      this.emptyIcon = var7;
+   public ArmorSlot(final Container inventory, final LivingEntity owner, final EquipmentSlot slot, final int slotIndex, final int x, final int y, final @Nullable Identifier emptyIcon) {
+      super(inventory, slotIndex, x, y);
+      this.owner = owner;
+      this.slot = slot;
+      this.emptyIcon = emptyIcon;
    }
 
-   public void setByPlayer(ItemStack var1, ItemStack var2) {
-      this.owner.onEquipItem(this.slot, var2, var1);
-      super.setByPlayer(var1, var2);
+   public void setByPlayer(final ItemStack itemStack, final ItemStack previous) {
+      this.owner.onEquipItem(this.slot, previous, itemStack);
+      super.setByPlayer(itemStack, previous);
    }
 
    public int getMaxStackSize() {
       return 1;
    }
 
-   public boolean mayPlace(ItemStack var1) {
-      return this.owner.isEquippableInSlot(var1, this.slot);
+   public boolean mayPlace(final ItemStack itemStack) {
+      return this.owner.isEquippableInSlot(itemStack, this.slot);
    }
 
    public boolean isActive() {
       return this.owner.canUseSlot(this.slot);
    }
 
-   public boolean mayPickup(Player var1) {
-      ItemStack var2 = this.getItem();
-      return !var2.isEmpty() && !var1.isCreative() && EnchantmentHelper.has(var2, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE) ? false : super.mayPickup(var1);
+   public boolean mayPickup(final Player player) {
+      ItemStack itemStack = this.getItem();
+      return !itemStack.isEmpty() && !player.isCreative() && EnchantmentHelper.has(itemStack, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE) ? false : super.mayPickup(player);
    }
 
    public @Nullable Identifier getNoItemIcon() {

@@ -15,96 +15,96 @@ public class SimpleBitStorage implements BitStorage {
    private final int divideAdd;
    private final int divideShift;
 
-   public SimpleBitStorage(int var1, int var2, int[] var3) {
-      this(var1, var2);
-      int var5 = 0;
+   public SimpleBitStorage(final int bits, final int size, final int[] values) {
+      this(bits, size);
+      int outputIndex = 0;
 
-      int var4;
-      for(var4 = 0; var4 <= var2 - this.valuesPerLong; var4 += this.valuesPerLong) {
-         long var6 = 0L;
+      int inputOffset;
+      for(inputOffset = 0; inputOffset <= size - this.valuesPerLong; inputOffset += this.valuesPerLong) {
+         long packedValue = 0L;
 
-         for(int var8 = this.valuesPerLong - 1; var8 >= 0; --var8) {
-            var6 <<= var1;
-            var6 |= (long)var3[var4 + var8] & this.mask;
+         for(int indexInLong = this.valuesPerLong - 1; indexInLong >= 0; --indexInLong) {
+            packedValue <<= bits;
+            packedValue |= (long)values[inputOffset + indexInLong] & this.mask;
          }
 
-         this.data[var5++] = var6;
+         this.data[outputIndex++] = packedValue;
       }
 
-      int var11 = var2 - var4;
-      if (var11 > 0) {
-         long var7 = 0L;
+      int remainderCount = size - inputOffset;
+      if (remainderCount > 0) {
+         long lastPackedValue = 0L;
 
-         for(int var9 = var11 - 1; var9 >= 0; --var9) {
-            var7 <<= var1;
-            var7 |= (long)var3[var4 + var9] & this.mask;
+         for(int indexInLong = remainderCount - 1; indexInLong >= 0; --indexInLong) {
+            lastPackedValue <<= bits;
+            lastPackedValue |= (long)values[inputOffset + indexInLong] & this.mask;
          }
 
-         this.data[var5] = var7;
+         this.data[outputIndex] = lastPackedValue;
       }
 
    }
 
-   public SimpleBitStorage(int var1, int var2) {
-      this(var1, var2, (long[])null);
+   public SimpleBitStorage(final int bits, final int size) {
+      this(bits, size, (long[])null);
    }
 
-   public SimpleBitStorage(int var1, int var2, long @Nullable [] var3) {
+   public SimpleBitStorage(final int bits, final int size, final long @Nullable [] data) {
       super();
-      Validate.inclusiveBetween(1L, 32L, (long)var1);
-      this.size = var2;
-      this.bits = var1;
-      this.mask = (1L << var1) - 1L;
-      this.valuesPerLong = (char)(64 / var1);
-      int var4 = 3 * (this.valuesPerLong - 1);
-      this.divideMul = MAGIC[var4 + 0];
-      this.divideAdd = MAGIC[var4 + 1];
-      this.divideShift = MAGIC[var4 + 2];
-      int var5 = (var2 + this.valuesPerLong - 1) / this.valuesPerLong;
-      if (var3 != null) {
-         if (var3.length != var5) {
-            throw new InitializationException("Invalid length given for storage, got: " + var3.length + " but expected: " + var5);
+      Validate.inclusiveBetween(1L, 32L, (long)bits);
+      this.size = size;
+      this.bits = bits;
+      this.mask = (1L << bits) - 1L;
+      this.valuesPerLong = (char)(64 / bits);
+      int row = 3 * (this.valuesPerLong - 1);
+      this.divideMul = MAGIC[row + 0];
+      this.divideAdd = MAGIC[row + 1];
+      this.divideShift = MAGIC[row + 2];
+      int requiredLength = (size + this.valuesPerLong - 1) / this.valuesPerLong;
+      if (data != null) {
+         if (data.length != requiredLength) {
+            throw new InitializationException("Invalid length given for storage, got: " + data.length + " but expected: " + requiredLength);
          }
 
-         this.data = var3;
+         this.data = data;
       } else {
-         this.data = new long[var5];
+         this.data = new long[requiredLength];
       }
 
    }
 
-   private int cellIndex(int var1) {
-      long var2 = Integer.toUnsignedLong(this.divideMul);
-      long var4 = Integer.toUnsignedLong(this.divideAdd);
-      return (int)((long)var1 * var2 + var4 >> 32 >> this.divideShift);
+   private int cellIndex(final int bitIndex) {
+      long mul = Integer.toUnsignedLong(this.divideMul);
+      long add = Integer.toUnsignedLong(this.divideAdd);
+      return (int)((long)bitIndex * mul + add >> 32 >> this.divideShift);
    }
 
-   public int getAndSet(int var1, int var2) {
-      Validate.inclusiveBetween(0L, (long)(this.size - 1), (long)var1);
-      Validate.inclusiveBetween(0L, this.mask, (long)var2);
-      int var3 = this.cellIndex(var1);
-      long var4 = this.data[var3];
-      int var6 = (var1 - var3 * this.valuesPerLong) * this.bits;
-      int var7 = (int)(var4 >> var6 & this.mask);
-      this.data[var3] = var4 & ~(this.mask << var6) | ((long)var2 & this.mask) << var6;
-      return var7;
+   public int getAndSet(final int index, final int value) {
+      Validate.inclusiveBetween(0L, (long)(this.size - 1), (long)index);
+      Validate.inclusiveBetween(0L, this.mask, (long)value);
+      int cellIndex = this.cellIndex(index);
+      long cellValue = this.data[cellIndex];
+      int bitIndex = (index - cellIndex * this.valuesPerLong) * this.bits;
+      int oldValue = (int)(cellValue >> bitIndex & this.mask);
+      this.data[cellIndex] = cellValue & ~(this.mask << bitIndex) | ((long)value & this.mask) << bitIndex;
+      return oldValue;
    }
 
-   public void set(int var1, int var2) {
-      Validate.inclusiveBetween(0L, (long)(this.size - 1), (long)var1);
-      Validate.inclusiveBetween(0L, this.mask, (long)var2);
-      int var3 = this.cellIndex(var1);
-      long var4 = this.data[var3];
-      int var6 = (var1 - var3 * this.valuesPerLong) * this.bits;
-      this.data[var3] = var4 & ~(this.mask << var6) | ((long)var2 & this.mask) << var6;
+   public void set(final int index, final int value) {
+      Validate.inclusiveBetween(0L, (long)(this.size - 1), (long)index);
+      Validate.inclusiveBetween(0L, this.mask, (long)value);
+      int cellIndex = this.cellIndex(index);
+      long cellValue = this.data[cellIndex];
+      int bitIndex = (index - cellIndex * this.valuesPerLong) * this.bits;
+      this.data[cellIndex] = cellValue & ~(this.mask << bitIndex) | ((long)value & this.mask) << bitIndex;
    }
 
-   public int get(int var1) {
-      Validate.inclusiveBetween(0L, (long)(this.size - 1), (long)var1);
-      int var2 = this.cellIndex(var1);
-      long var3 = this.data[var2];
-      int var5 = (var1 - var2 * this.valuesPerLong) * this.bits;
-      return (int)(var3 >> var5 & this.mask);
+   public int get(final int index) {
+      Validate.inclusiveBetween(0L, (long)(this.size - 1), (long)index);
+      int cellIndex = this.cellIndex(index);
+      long cellValue = this.data[cellIndex];
+      int bitIndex = (index - cellIndex * this.valuesPerLong) * this.bits;
+      return (int)(cellValue >> bitIndex & this.mask);
    }
 
    public long[] getRaw() {
@@ -119,15 +119,15 @@ public class SimpleBitStorage implements BitStorage {
       return this.bits;
    }
 
-   public void getAll(IntConsumer var1) {
-      int var2 = 0;
+   public void getAll(final IntConsumer output) {
+      int count = 0;
 
-      for(long var6 : this.data) {
-         for(int var8 = 0; var8 < this.valuesPerLong; ++var8) {
-            var1.accept((int)(var6 & this.mask));
-            var6 >>= this.bits;
-            ++var2;
-            if (var2 >= this.size) {
+      for(long cellValue : this.data) {
+         for(int value = 0; value < this.valuesPerLong; ++value) {
+            output.accept((int)(cellValue & this.mask));
+            cellValue >>= this.bits;
+            ++count;
+            if (count >= this.size) {
                return;
             }
          }
@@ -135,28 +135,28 @@ public class SimpleBitStorage implements BitStorage {
 
    }
 
-   public void unpack(int[] var1) {
-      int var2 = this.data.length;
-      int var3 = 0;
+   public void unpack(final int[] output) {
+      int dataLength = this.data.length;
+      int outputOffset = 0;
 
-      for(int var4 = 0; var4 < var2 - 1; ++var4) {
-         long var5 = this.data[var4];
+      for(int i = 0; i < dataLength - 1; ++i) {
+         long cellValue = this.data[i];
 
-         for(int var7 = 0; var7 < this.valuesPerLong; ++var7) {
-            var1[var3 + var7] = (int)(var5 & this.mask);
-            var5 >>= this.bits;
+         for(int indexInLong = 0; indexInLong < this.valuesPerLong; ++indexInLong) {
+            output[outputOffset + indexInLong] = (int)(cellValue & this.mask);
+            cellValue >>= this.bits;
          }
 
-         var3 += this.valuesPerLong;
+         outputOffset += this.valuesPerLong;
       }
 
-      int var8 = this.size - var3;
-      if (var8 > 0) {
-         long var9 = this.data[var2 - 1];
+      int remainder = this.size - outputOffset;
+      if (remainder > 0) {
+         long cellValue = this.data[dataLength - 1];
 
-         for(int var10 = 0; var10 < var8; ++var10) {
-            var1[var3 + var10] = (int)(var9 & this.mask);
-            var9 >>= this.bits;
+         for(int indexInLong = 0; indexInLong < remainder; ++indexInLong) {
+            output[outputOffset + indexInLong] = (int)(cellValue & this.mask);
+            cellValue >>= this.bits;
          }
       }
 
@@ -167,8 +167,8 @@ public class SimpleBitStorage implements BitStorage {
    }
 
    public static class InitializationException extends RuntimeException {
-      InitializationException(String var1) {
-         super(var1);
+      private InitializationException(final String message) {
+         super(message);
       }
    }
 }

@@ -10,9 +10,8 @@ public record MapItemColor(int rgb) {
    public static final StreamCodec<ByteBuf, MapItemColor> STREAM_CODEC;
    public static final MapItemColor DEFAULT;
 
-   public MapItemColor(int var1) {
+   public MapItemColor {
       super();
-      this.rgb = var1;
    }
 
    static {

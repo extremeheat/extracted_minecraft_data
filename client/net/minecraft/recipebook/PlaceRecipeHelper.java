@@ -6,49 +6,49 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 
 public interface PlaceRecipeHelper {
-   static <T> void placeRecipe(int var0, int var1, Recipe<?> var2, Iterable<T> var3, Output<T> var4) {
-      if (var2 instanceof ShapedRecipe var5) {
-         placeRecipe(var0, var1, var5.getWidth(), var5.getHeight(), var3, var4);
+   static <T> void placeRecipe(final int gridWidth, final int gridHeight, final Recipe<?> recipe, final Iterable<T> entries, final Output<T> output) {
+      if (recipe instanceof ShapedRecipe shapedRecipe) {
+         placeRecipe(gridWidth, gridHeight, shapedRecipe.getWidth(), shapedRecipe.getHeight(), entries, output);
       } else {
-         placeRecipe(var0, var1, var0, var1, var3, var4);
+         placeRecipe(gridWidth, gridHeight, gridWidth, gridHeight, entries, output);
       }
 
    }
 
-   static <T> void placeRecipe(int var0, int var1, int var2, int var3, Iterable<T> var4, Output<T> var5) {
-      Iterator var6 = var4.iterator();
-      int var7 = 0;
+   static <T> void placeRecipe(final int gridWidth, final int gridHeight, final int recipeWidth, final int recipeHeight, final Iterable<T> entries, final Output<T> output) {
+      Iterator<T> iterator = entries.iterator();
+      int gridIndex = 0;
 
-      for(int var8 = 0; var8 < var1; ++var8) {
-         boolean var9 = (float)var3 < (float)var1 / 2.0F;
-         int var10 = Mth.floor((float)var1 / 2.0F - (float)var3 / 2.0F);
-         if (var9 && var10 > var8) {
-            var7 += var0;
-            ++var8;
+      for(int gridYPos = 0; gridYPos < gridHeight; ++gridYPos) {
+         boolean shouldCenterRecipe = (float)recipeHeight < (float)gridHeight / 2.0F;
+         int startPosCenterRecipe = Mth.floor((float)gridHeight / 2.0F - (float)recipeHeight / 2.0F);
+         if (shouldCenterRecipe && startPosCenterRecipe > gridYPos) {
+            gridIndex += gridWidth;
+            ++gridYPos;
          }
 
-         for(int var11 = 0; var11 < var0; ++var11) {
-            if (!var6.hasNext()) {
+         for(int gridXPos = 0; gridXPos < gridWidth; ++gridXPos) {
+            if (!iterator.hasNext()) {
                return;
             }
 
-            var9 = (float)var2 < (float)var0 / 2.0F;
-            var10 = Mth.floor((float)var0 / 2.0F - (float)var2 / 2.0F);
-            int var12 = var2;
-            boolean var13 = var11 < var2;
-            if (var9) {
-               var12 = var10 + var2;
-               var13 = var10 <= var11 && var11 < var10 + var2;
+            shouldCenterRecipe = (float)recipeWidth < (float)gridWidth / 2.0F;
+            startPosCenterRecipe = Mth.floor((float)gridWidth / 2.0F - (float)recipeWidth / 2.0F);
+            int totalRecipeWidthInGrid = recipeWidth;
+            boolean addIngredientToSlot = gridXPos < recipeWidth;
+            if (shouldCenterRecipe) {
+               totalRecipeWidthInGrid = startPosCenterRecipe + recipeWidth;
+               addIngredientToSlot = startPosCenterRecipe <= gridXPos && gridXPos < startPosCenterRecipe + recipeWidth;
             }
 
-            if (var13) {
-               var5.addItemToSlot(var6.next(), var7, var11, var8);
-            } else if (var12 == var11) {
-               var7 += var0 - var11;
+            if (addIngredientToSlot) {
+               output.addItemToSlot(iterator.next(), gridIndex, gridXPos, gridYPos);
+            } else if (totalRecipeWidthInGrid == gridXPos) {
+               gridIndex += gridWidth - gridXPos;
                break;
             }
 
-            ++var7;
+            ++gridIndex;
          }
       }
 
@@ -56,6 +56,6 @@ public interface PlaceRecipeHelper {
 
    @FunctionalInterface
    public interface Output<T> {
-      void addItemToSlot(T var1, int var2, int var3, int var4);
+      void addItemToSlot(T item, int gridIndex, int gridXPos, int gridYPos);
    }
 }

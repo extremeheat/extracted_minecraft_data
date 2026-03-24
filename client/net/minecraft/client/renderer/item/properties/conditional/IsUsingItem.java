@@ -14,11 +14,11 @@ public record IsUsingItem() implements ConditionalItemModelProperty {
       super();
    }
 
-   public boolean get(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3, int var4, ItemDisplayContext var5) {
-      if (var3 == null) {
+   public boolean get(final ItemStack itemStack, final @Nullable ClientLevel level, final @Nullable LivingEntity owner, final int seed, final ItemDisplayContext displayContext) {
+      if (owner == null) {
          return false;
       } else {
-         return var3.isUsingItem() && var3.getUseItem() == var1;
+         return owner.isUsingItem() && owner.getUseItem() == itemStack;
       }
    }
 

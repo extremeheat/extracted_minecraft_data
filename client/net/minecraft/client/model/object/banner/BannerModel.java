@@ -17,18 +17,18 @@ public class BannerModel extends Model<Unit> {
    private static final String POLE = "pole";
    private static final String BAR = "bar";
 
-   public BannerModel(ModelPart var1) {
-      super(var1, RenderTypes::entitySolid);
+   public BannerModel(final ModelPart root) {
+      super(root, RenderTypes::entitySolid);
    }
 
-   public static LayerDefinition createBodyLayer(boolean var0) {
-      MeshDefinition var1 = new MeshDefinition();
-      PartDefinition var2 = var1.getRoot();
-      if (var0) {
-         var2.addOrReplaceChild("pole", CubeListBuilder.create().texOffs(44, 0).addBox(-1.0F, -42.0F, -1.0F, 2.0F, 42.0F, 2.0F), PartPose.ZERO);
+   public static LayerDefinition createBodyLayer(final boolean standing) {
+      MeshDefinition mesh = new MeshDefinition();
+      PartDefinition root = mesh.getRoot();
+      if (standing) {
+         root.addOrReplaceChild("pole", CubeListBuilder.create().texOffs(44, 0).addBox(-1.0F, -42.0F, -1.0F, 2.0F, 42.0F, 2.0F), PartPose.ZERO);
       }
 
-      var2.addOrReplaceChild("bar", CubeListBuilder.create().texOffs(0, 42).addBox(-10.0F, var0 ? -44.0F : -20.5F, var0 ? -1.0F : 9.5F, 20.0F, 2.0F, 2.0F), PartPose.ZERO);
-      return LayerDefinition.create(var1, 64, 64);
+      root.addOrReplaceChild("bar", CubeListBuilder.create().texOffs(0, 42).addBox(-10.0F, standing ? -44.0F : -20.5F, standing ? -1.0F : 9.5F, 20.0F, 2.0F, 2.0F), PartPose.ZERO);
+      return LayerDefinition.create(mesh, 64, 64);
    }
 }

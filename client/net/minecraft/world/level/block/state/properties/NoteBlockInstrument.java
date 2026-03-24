@@ -22,6 +22,10 @@ public enum NoteBlockInstrument implements StringRepresentable {
    BIT("bit", SoundEvents.NOTE_BLOCK_BIT, NoteBlockInstrument.Type.BASE_BLOCK),
    BANJO("banjo", SoundEvents.NOTE_BLOCK_BANJO, NoteBlockInstrument.Type.BASE_BLOCK),
    PLING("pling", SoundEvents.NOTE_BLOCK_PLING, NoteBlockInstrument.Type.BASE_BLOCK),
+   TRUMPET("trumpet", SoundEvents.NOTE_BLOCK_TRUMPET, NoteBlockInstrument.Type.BASE_BLOCK),
+   TRUMPET_EXPOSED("trumpet_exposed", SoundEvents.NOTE_BLOCK_TRUMPET_EXPOSED, NoteBlockInstrument.Type.BASE_BLOCK),
+   TRUMPET_OXIDIZED("trumpet_oxidized", SoundEvents.NOTE_BLOCK_TRUMPET_OXIDIZED, NoteBlockInstrument.Type.BASE_BLOCK),
+   TRUMPET_WEATHERED("trumpet_weathered", SoundEvents.NOTE_BLOCK_TRUMPET_WEATHERED, NoteBlockInstrument.Type.BASE_BLOCK),
    ZOMBIE("zombie", SoundEvents.NOTE_BLOCK_IMITATE_ZOMBIE, NoteBlockInstrument.Type.MOB_HEAD),
    SKELETON("skeleton", SoundEvents.NOTE_BLOCK_IMITATE_SKELETON, NoteBlockInstrument.Type.MOB_HEAD),
    CREEPER("creeper", SoundEvents.NOTE_BLOCK_IMITATE_CREEPER, NoteBlockInstrument.Type.MOB_HEAD),
@@ -34,10 +38,10 @@ public enum NoteBlockInstrument implements StringRepresentable {
    private final Holder<SoundEvent> soundEvent;
    private final Type type;
 
-   private NoteBlockInstrument(final String var3, final Holder<SoundEvent> var4, final Type var5) {
-      this.name = var3;
-      this.soundEvent = var4;
-      this.type = var5;
+   private NoteBlockInstrument(final String name, final Holder<SoundEvent> soundEvent, final Type type) {
+      this.name = name;
+      this.soundEvent = soundEvent;
+      this.type = type;
    }
 
    public String getSerializedName() {
@@ -62,10 +66,10 @@ public enum NoteBlockInstrument implements StringRepresentable {
 
    // $FF: synthetic method
    private static NoteBlockInstrument[] $values() {
-      return new NoteBlockInstrument[]{HARP, BASEDRUM, SNARE, HAT, BASS, FLUTE, BELL, GUITAR, CHIME, XYLOPHONE, IRON_XYLOPHONE, COW_BELL, DIDGERIDOO, BIT, BANJO, PLING, ZOMBIE, SKELETON, CREEPER, DRAGON, WITHER_SKELETON, PIGLIN, CUSTOM_HEAD};
+      return new NoteBlockInstrument[]{HARP, BASEDRUM, SNARE, HAT, BASS, FLUTE, BELL, GUITAR, CHIME, XYLOPHONE, IRON_XYLOPHONE, COW_BELL, DIDGERIDOO, BIT, BANJO, PLING, TRUMPET, TRUMPET_EXPOSED, TRUMPET_OXIDIZED, TRUMPET_WEATHERED, ZOMBIE, SKELETON, CREEPER, DRAGON, WITHER_SKELETON, PIGLIN, CUSTOM_HEAD};
    }
 
-   static enum Type {
+   private static enum Type {
       BASE_BLOCK,
       MOB_HEAD,
       CUSTOM;

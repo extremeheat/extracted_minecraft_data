@@ -1,5 +1,6 @@
 package net.minecraft.world.item;
 
+import java.util.stream.Stream;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -11,41 +12,41 @@ public class ItemUtils {
       super();
    }
 
-   public static InteractionResult startUsingInstantly(Level var0, Player var1, InteractionHand var2) {
-      var1.startUsingItem(var2);
+   public static InteractionResult startUsingInstantly(final Level level, final Player player, final InteractionHand hand) {
+      player.startUsingItem(hand);
       return InteractionResult.CONSUME;
    }
 
-   public static ItemStack createFilledResult(ItemStack var0, Player var1, ItemStack var2, boolean var3) {
-      boolean var4 = var1.hasInfiniteMaterials();
-      if (var3 && var4) {
-         if (!var1.getInventory().contains(var2)) {
-            var1.getInventory().add(var2);
+   public static ItemStack createFilledResult(final ItemStack itemStack, final Player player, final ItemStack newItemStack, final boolean limitCreativeStackSize) {
+      boolean isCreative = player.hasInfiniteMaterials();
+      if (limitCreativeStackSize && isCreative) {
+         if (!player.getInventory().contains(newItemStack)) {
+            player.getInventory().add(newItemStack);
          }
 
-         return var0;
+         return itemStack;
       } else {
-         var0.consume(1, var1);
-         if (var0.isEmpty()) {
-            return var2;
+         itemStack.consume(1, player);
+         if (itemStack.isEmpty()) {
+            return newItemStack;
          } else {
-            if (!var1.getInventory().add(var2)) {
-               var1.drop(var2, false);
+            if (!player.getInventory().add(newItemStack)) {
+               player.drop(newItemStack, false);
             }
 
-            return var0;
+            return itemStack;
          }
       }
    }
 
-   public static ItemStack createFilledResult(ItemStack var0, Player var1, ItemStack var2) {
-      return createFilledResult(var0, var1, var2, true);
+   public static ItemStack createFilledResult(final ItemStack itemStack, final Player player, final ItemStack newItemStack) {
+      return createFilledResult(itemStack, player, newItemStack, true);
    }
 
-   public static void onContainerDestroyed(ItemEntity var0, Iterable<ItemStack> var1) {
-      Level var2 = var0.level();
-      if (!var2.isClientSide()) {
-         var1.forEach((var2x) -> var2.addFreshEntity(new ItemEntity(var2, var0.getX(), var0.getY(), var0.getZ(), var2x)));
+   public static void onContainerDestroyed(final ItemEntity container, final Stream<ItemStack> contents) {
+      Level level = container.level();
+      if (!level.isClientSide()) {
+         contents.forEach((stack) -> level.addFreshEntity(new ItemEntity(level, container.getX(), container.getY(), container.getZ(), stack)));
       }
    }
 }

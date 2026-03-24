@@ -18,46 +18,44 @@ public final class RandomSupport {
    }
 
    @VisibleForTesting
-   public static long mixStafford13(long var0) {
-      var0 = (var0 ^ var0 >>> 30) * -4658895280553007687L;
-      var0 = (var0 ^ var0 >>> 27) * -7723592293110705685L;
-      return var0 ^ var0 >>> 31;
+   public static long mixStafford13(long z) {
+      z = (z ^ z >>> 30) * -4658895280553007687L;
+      z = (z ^ z >>> 27) * -7723592293110705685L;
+      return z ^ z >>> 31;
    }
 
-   public static Seed128bit upgradeSeedTo128bitUnmixed(long var0) {
-      long var2 = var0 ^ 7640891576956012809L;
-      long var4 = var2 + -7046029254386353131L;
-      return new Seed128bit(var2, var4);
+   public static Seed128bit upgradeSeedTo128bitUnmixed(final long legacySeed) {
+      long lowBits = legacySeed ^ 7640891576956012809L;
+      long highBits = lowBits + -7046029254386353131L;
+      return new Seed128bit(lowBits, highBits);
    }
 
-   public static Seed128bit upgradeSeedTo128bit(long var0) {
-      return upgradeSeedTo128bitUnmixed(var0).mixed();
+   public static Seed128bit upgradeSeedTo128bit(final long legacySeed) {
+      return upgradeSeedTo128bitUnmixed(legacySeed).mixed();
    }
 
-   public static Seed128bit seedFromHashOf(String var0) {
-      byte[] var1 = MD5_128.hashString(var0, StandardCharsets.UTF_8).asBytes();
-      long var2 = Longs.fromBytes(var1[0], var1[1], var1[2], var1[3], var1[4], var1[5], var1[6], var1[7]);
-      long var4 = Longs.fromBytes(var1[8], var1[9], var1[10], var1[11], var1[12], var1[13], var1[14], var1[15]);
-      return new Seed128bit(var2, var4);
+   public static Seed128bit seedFromHashOf(final String input) {
+      byte[] hashCode = MD5_128.hashString(input, StandardCharsets.UTF_8).asBytes();
+      long hashLo = Longs.fromBytes(hashCode[0], hashCode[1], hashCode[2], hashCode[3], hashCode[4], hashCode[5], hashCode[6], hashCode[7]);
+      long hashHi = Longs.fromBytes(hashCode[8], hashCode[9], hashCode[10], hashCode[11], hashCode[12], hashCode[13], hashCode[14], hashCode[15]);
+      return new Seed128bit(hashLo, hashHi);
    }
 
    public static long generateUniqueSeed() {
-      return SEED_UNIQUIFIER.updateAndGet((var0) -> var0 * 1181783497276652981L) ^ System.nanoTime();
+      return SEED_UNIQUIFIER.updateAndGet((current) -> current * 1181783497276652981L) ^ System.nanoTime();
    }
 
    public static record Seed128bit(long seedLo, long seedHi) {
-      public Seed128bit(long var1, long var3) {
+      public Seed128bit {
          super();
-         this.seedLo = var1;
-         this.seedHi = var3;
       }
 
-      public Seed128bit xor(long var1, long var3) {
-         return new Seed128bit(this.seedLo ^ var1, this.seedHi ^ var3);
+      public Seed128bit xor(final long lo, final long hi) {
+         return new Seed128bit(this.seedLo ^ lo, this.seedHi ^ hi);
       }
 
-      public Seed128bit xor(Seed128bit var1) {
-         return this.xor(var1.seedLo, var1.seedHi);
+      public Seed128bit xor(final Seed128bit other) {
+         return this.xor(other.seedLo, other.seedHi);
       }
 
       public Seed128bit mixed() {
