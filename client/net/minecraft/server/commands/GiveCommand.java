@@ -14,10 +14,7 @@ import net.minecraft.commands.arguments.item.ItemArgument;
 import net.minecraft.commands.arguments.item.ItemInput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.item.ItemStack;
 
 public class GiveCommand {
@@ -40,28 +37,8 @@ public class GiveCommand {
          return 0;
       } else {
          for(ServerPlayer player : players) {
-            int remaining = count;
-
-            while(remaining > 0) {
-               int size = Math.min(maxStackSize, remaining);
-               remaining -= size;
-               ItemStack copyToDrop = prototypeItemStack.copyWithCount(size);
-               boolean added = player.getInventory().add(copyToDrop);
-               if (added && copyToDrop.isEmpty()) {
-                  ItemEntity drop = player.drop(prototypeItemStack.copy(), false);
-                  if (drop != null) {
-                     drop.makeFakeItem();
-                  }
-
-                  player.level().playSound((Entity)null, player.getX(), player.getY(), player.getZ(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F, ((player.getRandom().nextFloat() - player.getRandom().nextFloat()) * 0.7F + 1.0F) * 2.0F);
-                  player.containerMenu.broadcastChanges();
-               } else {
-                  ItemEntity drop = player.drop(copyToDrop, false);
-                  if (drop != null) {
-                     drop.setNoPickUpDelay();
-                     drop.setTarget(player.getUUID());
-                  }
-               }
+            for(int i = 0; i < count; ++i) {
+               LivingBlock.createStack(player.level(), player.blockPosition(), player, prototypeItemStack);
             }
          }
 

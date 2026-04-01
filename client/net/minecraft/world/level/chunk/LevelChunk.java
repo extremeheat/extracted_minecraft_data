@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import net.minecraft.CrashReport;
@@ -34,6 +35,7 @@ import net.minecraft.util.debug.DebugValueSource;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseRailBlock;
@@ -91,6 +93,7 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
    private final Int2ObjectMap<GameEventListenerRegistry> gameEventListenerRegistrySections;
    private final LevelChunkTicks<Block> blockTicks;
    private final LevelChunkTicks<Fluid> fluidTicks;
+   private final List<LivingBlock> livingLightBlocks;
    private UnsavedListener unsavedListener;
 
    public LevelChunk(final Level level, final ChunkPos pos) {
@@ -100,6 +103,7 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
    public LevelChunk(final Level level, final ChunkPos pos, final UpgradeData upgradeData, final LevelChunkTicks<Block> blockTicks, final LevelChunkTicks<Fluid> fluidTicks, final long inhabitedTime, final LevelChunkSection @Nullable [] sections, final @Nullable PostLoadProcessor postLoad, final @Nullable BlendingData blendingData) {
       super(pos, upgradeData, level, level.palettedContainerFactory(), inhabitedTime, sections, blendingData);
       this.tickersInLevel = Maps.newHashMap();
+      this.livingLightBlocks = new ArrayList();
       this.unsavedListener = (chunkPos) -> {
       };
       this.level = level;
@@ -723,6 +727,59 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
 
    private <T extends BlockEntity> TickingBlockEntity createTicker(final T blockEntity, final BlockEntityTicker<T> ticker) {
       return new BoundTickingBlockEntity(blockEntity, ticker);
+   }
+
+   public void findBlockLightSources(final BiConsumer<BlockPos, BlockState> consumer) {
+      for(LivingBlock livingBlock : this.livingLightBlocks) {
+         BlockState blockState = livingBlock.getBlockState();
+         if (blockState.getLightEmission() > 0) {
+            consumer.accept(livingBlock.blockPosition(), blockState);
+         }
+      }
+
+      super.findBlockLightSources(consumer);
+   }
+
+   public void removeLivingBlock(final LivingBlock block, final BlockPos pos) {
+      this.livingLightBlocks.remove(block);
+      BlockState blockState = block.getBlockState();
+      if (blockState.getLightEmission() > 0) {
+         this.level.getChunkSource().getLightEngine().checkBlock(pos);
+      }
+
+   }
+
+   public void addLivingBlock(final LivingBlock block) {
+      BlockState blockState = block.getBlockState();
+      if (blockState.getLightEmission() > 0) {
+         this.livingLightBlocks.add(block);
+         this.level.getChunkSource().getLightEngine().checkBlock(block.blockPosition());
+      }
+
+   }
+
+   public void livingBlockMoved(final LivingBlock block, final BlockPos from, final BlockPos to) {
+      BlockState blockState = block.getBlockState();
+      if (blockState.getLightEmission() > 0) {
+         this.level.getChunkSource().getLightEngine().checkBlock(from);
+         this.level.getChunkSource().getLightEngine().checkBlock(to);
+      }
+
+   }
+
+   public BlockState getBlockStateForLight(final BlockPos pos) {
+      BlockState actualBlockState = super.getBlockStateForLight(pos);
+
+      for(LivingBlock block : this.livingLightBlocks) {
+         if (block.blockPosition().equals(pos)) {
+            BlockState livingBlockState = block.getBlockState();
+            if (livingBlockState.getLightEmission() > actualBlockState.getLightEmission()) {
+               return livingBlockState;
+            }
+         }
+      }
+
+      return actualBlockState;
    }
 
    public static enum EntityCreationType {

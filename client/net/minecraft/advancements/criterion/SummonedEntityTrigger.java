@@ -2,7 +2,9 @@ package net.minecraft.advancements.criterion;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Collection;
 import java.util.Optional;
+import java.util.function.Predicate;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.server.level.ServerPlayer;
@@ -22,7 +24,11 @@ public class SummonedEntityTrigger extends SimpleCriterionTrigger<TriggerInstanc
 
    public void trigger(final ServerPlayer player, final Entity entity) {
       LootContext context = EntityPredicate.createContext(player, entity);
-      this.trigger(player, (t) -> t.matches(context));
+      this.trigger(player, (Predicate)((t) -> t.matches(context)));
+   }
+
+   public void trigger(final ServerPlayer player, final Collection<? extends Entity> entities) {
+      entities.forEach((e) -> this.trigger(player, e));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ContextAwarePredicate> entity) implements SimpleCriterionTrigger.SimpleInstance {

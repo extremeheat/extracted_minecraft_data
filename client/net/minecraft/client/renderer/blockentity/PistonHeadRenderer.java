@@ -78,7 +78,7 @@ public class PistonHeadRenderer implements BlockEntityRenderer<PistonMovingBlock
    private static MovingBlockRenderState createMovingBlock(final BlockPos pos, final BlockState blockState, final Holder<Biome> biome, final ClientLevel level) {
       MovingBlockRenderState movingBlockRenderState = new MovingBlockRenderState();
       movingBlockRenderState.randomSeedPos = pos;
-      movingBlockRenderState.blockPos = pos;
+      movingBlockRenderState.pos = new Vec3(pos);
       movingBlockRenderState.blockState = blockState;
       movingBlockRenderState.biome = biome;
       movingBlockRenderState.cardinalLighting = level.cardinalLighting();

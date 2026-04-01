@@ -11,7 +11,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Unit;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.ActivityData;
@@ -48,7 +47,7 @@ public class BreezeAi {
    }
 
    private static ActivityData<Breeze> initIdleActivity() {
-      return ActivityData.<Breeze>create(Activity.IDLE, ImmutableList.of(Pair.of(0, StartAttacking.create((var0, breeze) -> breeze.getBrain().getMemory(MemoryModuleType.NEAREST_ATTACKABLE))), Pair.of(1, StartAttacking.create((var0, breeze) -> breeze.getBrain().getMemory(MemoryModuleType.HURT_BY).map(DamageSource::getEntity).filter((entity) -> entity instanceof LivingEntity).map((entity) -> (LivingEntity)entity))), Pair.of(2, new SlideToTargetSink(20, 40)), Pair.of(3, new RunOne(ImmutableList.of(Pair.of(new DoNothing(20, 100), 1), Pair.of(RandomStroll.stroll(0.6F), 2))))));
+      return ActivityData.<Breeze>create(Activity.IDLE, ImmutableList.of(Pair.of(0, StartAttacking.create((var0, breeze) -> breeze.getBrain().getMemory(MemoryModuleType.NEAREST_ATTACKABLE))), Pair.of(1, StartAttacking.create((var0, breeze) -> breeze.getBrain().getMemory(MemoryModuleType.HURT_BY).map(DamageSource::getEntity))), Pair.of(2, new SlideToTargetSink(20, 40)), Pair.of(3, new RunOne(ImmutableList.of(Pair.of(new DoNothing(20, 100), 1), Pair.of(RandomStroll.stroll(0.6F), 2))))));
    }
 
    private static ActivityData<Breeze> initFightActivity(final Breeze body) {

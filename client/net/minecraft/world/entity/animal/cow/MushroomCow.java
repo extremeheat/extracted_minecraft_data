@@ -34,7 +34,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.Shearable;
-import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUtils;
@@ -153,12 +153,7 @@ public class MushroomCow extends AbstractCow implements Shearable {
       level.playSound((Entity)null, this, SoundEvents.MOOSHROOM_SHEAR, soundSource, 1.0F, 1.0F);
       this.convertTo(EntityType.COW, ConversionParams.single(this, false, false), (cow) -> {
          level.sendParticles(ParticleTypes.EXPLOSION, this.getX(), this.getY(0.5), this.getZ(), 1, 0.0, 0.0, 0.0, 0.0);
-         this.dropFromShearingLootTable(level, BuiltInLootTables.SHEAR_MOOSHROOM, tool, (l, drop) -> {
-            for(int i = 0; i < drop.getCount(); ++i) {
-               l.addFreshEntity(new ItemEntity(this.level(), this.getX(), this.getY(1.0), this.getZ(), drop.copyWithCount(1)));
-            }
-
-         });
+         this.dropFromShearingLootTable(level, BuiltInLootTables.SHEAR_MOOSHROOM, tool, (l, drop) -> LivingBlock.createStack(l, this.blockPosition().above(), this, drop));
       });
    }
 

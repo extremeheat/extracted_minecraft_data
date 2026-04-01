@@ -4,7 +4,6 @@ import java.util.Objects;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.OpenDoorGoal;
 import net.minecraft.world.entity.npc.villager.AbstractVillager;
 import net.minecraft.world.entity.raid.Raider;
@@ -23,8 +22,14 @@ public abstract class AbstractIllager extends Raider {
       return AbstractIllager.IllagerArmPose.CROSSED;
    }
 
-   public boolean canAttack(final LivingEntity target) {
-      return target instanceof AbstractVillager && target.isBaby() ? false : super.canAttack(target);
+   public boolean canAttack(final Entity target) {
+      if (target instanceof AbstractVillager villager) {
+         if (villager.isBaby()) {
+            return false;
+         }
+      }
+
+      return super.canAttack(target);
    }
 
    protected boolean considersEntityAsAlly(final Entity other) {

@@ -357,7 +357,7 @@ public class Shulker extends AbstractGolem implements Enemy {
                   this.setPos((double)target.getX() + 0.5, (double)target.getY(), (double)target.getZ() + 0.5);
                   this.level().gameEvent(GameEvent.TELEPORT, current, GameEvent.Context.of((Entity)this));
                   this.entityData.set(DATA_PEEK_ID, (byte)0);
-                  this.setTarget((LivingEntity)null);
+                  this.setTarget((Entity)null);
                   return true;
                }
             }
@@ -623,7 +623,7 @@ public class Shulker extends AbstractGolem implements Enemy {
       }
 
       public boolean canUse() {
-         LivingEntity target = Shulker.this.getTarget();
+         Entity target = Shulker.this.getTarget();
          if (target != null && target.isAlive()) {
             return Shulker.this.level().getDifficulty() != Difficulty.PEACEFUL;
          } else {
@@ -647,7 +647,7 @@ public class Shulker extends AbstractGolem implements Enemy {
       public void tick() {
          if (Shulker.this.level().getDifficulty() != Difficulty.PEACEFUL) {
             --this.attackTime;
-            LivingEntity target = Shulker.this.getTarget();
+            Entity target = Shulker.this.getTarget();
             if (target != null) {
                Shulker.this.getLookControl().setLookAt(target, 180.0F, 180.0F);
                double distance = Shulker.this.distanceToSqr(target);
@@ -658,7 +658,7 @@ public class Shulker extends AbstractGolem implements Enemy {
                      Shulker.this.playSound(SoundEvents.SHULKER_SHOOT, 2.0F, (Shulker.this.random.nextFloat() - Shulker.this.random.nextFloat()) * 0.2F + 1.0F);
                   }
                } else {
-                  Shulker.this.setTarget((LivingEntity)null);
+                  Shulker.this.setTarget((Entity)null);
                }
 
                super.tick();

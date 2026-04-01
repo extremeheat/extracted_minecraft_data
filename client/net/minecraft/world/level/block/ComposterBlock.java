@@ -3,10 +3,12 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Object2FloatMap;
 import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
+import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
@@ -18,7 +20,7 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -34,7 +36,6 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -264,10 +265,15 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
 
    public static BlockState extractProduce(final Entity sourceEntity, final BlockState state, final Level level, final BlockPos pos) {
       if (!level.isClientSide()) {
-         Vec3 itemPos = Vec3.atLowerCornerWithOffset(pos, 0.5, 1.01, 0.5).offsetRandomXZ(level.getRandom(), 0.7F);
-         ItemEntity entity = new ItemEntity(level, itemPos.x(), itemPos.y(), itemPos.z(), new ItemStack(Items.BONE_MEAL));
-         entity.setDefaultPickUpDelay();
-         level.addFreshEntity(entity);
+         LivingBlock block = LivingBlock.createAt(level, pos.above(), new ItemStack(Items.BONE_MEAL));
+         RandomSource random = level.getRandom();
+         if (block != null) {
+            block.setDeltaMovement((double)random.nextFloat() - 0.5, (double)random.nextFloat(), (double)random.nextFloat() - 0.5);
+            if (sourceEntity instanceof ServerPlayer) {
+               ServerPlayer serverPlayer = (ServerPlayer)sourceEntity;
+               CriteriaTriggers.SUMMONED_ENTITY.trigger(serverPlayer, block);
+            }
+         }
       }
 
       BlockState emptyState = empty(sourceEntity, state, level, pos);

@@ -10,11 +10,12 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class MovingBlockRenderState implements BlockAndTintGetter {
    public BlockPos randomSeedPos;
-   public BlockPos blockPos;
+   public Vec3 pos;
    public BlockState blockState;
    public @Nullable Holder<Biome> biome;
    public CardinalLighting cardinalLighting;
@@ -23,7 +24,7 @@ public class MovingBlockRenderState implements BlockAndTintGetter {
    public MovingBlockRenderState() {
       super();
       this.randomSeedPos = BlockPos.ZERO;
-      this.blockPos = BlockPos.ZERO;
+      this.pos = Vec3.ZERO;
       this.blockState = Blocks.AIR.defaultBlockState();
       this.cardinalLighting = CardinalLighting.DEFAULT;
       this.lightEngine = LevelLightEngine.EMPTY;
@@ -46,7 +47,7 @@ public class MovingBlockRenderState implements BlockAndTintGetter {
    }
 
    public BlockState getBlockState(final BlockPos pos) {
-      return pos.equals(this.blockPos) ? this.blockState : Blocks.AIR.defaultBlockState();
+      return (double)pos.getX() == this.pos.x() && (double)pos.getY() == this.pos.y() && (double)pos.getZ() == this.pos.z() ? this.blockState : Blocks.AIR.defaultBlockState();
    }
 
    public FluidState getFluidState(final BlockPos pos) {
@@ -58,6 +59,6 @@ public class MovingBlockRenderState implements BlockAndTintGetter {
    }
 
    public int getMinY() {
-      return this.blockPos.getY();
+      return (int)this.pos.y();
    }
 }

@@ -3,6 +3,7 @@ package net.minecraft.world.entity.ai.behavior;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
@@ -22,8 +23,8 @@ public class SocializeAtBell {
                GlobalPos memory = (GlobalPos)i.get(meetingPoint);
                NearestVisibleLivingEntities visibleEntities = (NearestVisibleLivingEntities)i.get(nearestEntities);
                if (level.getRandom().nextInt(100) == 0 && level.dimension() == memory.dimension() && memory.pos().closerToCenterThan(body.position(), 4.0) && visibleEntities.contains((Predicate)((mob) -> mob.is(EntityType.VILLAGER)))) {
-                  visibleEntities.findClosest((mob) -> mob.is(EntityType.VILLAGER) && mob.distanceToSqr(body) <= 32.0).ifPresent((mob) -> {
-                     interactionTarget.set(mob);
+                  visibleEntities.findClosest((mob) -> mob.is(EntityType.VILLAGER) && mob.distanceToSqr((Entity)body) <= 32.0).ifPresent((mob) -> {
+                     interactionTarget.set((LivingEntity)mob);
                      lookTarget.set(new EntityTracker(mob, true));
                      walkTarget.set(new WalkTarget(new EntityTracker(mob, false), 0.3F, 1));
                   });

@@ -115,7 +115,7 @@ public class Guardian extends Monster {
       return (Integer)this.entityData.get(DATA_ID_ATTACK_TARGET) != 0;
    }
 
-   public @Nullable LivingEntity getActiveAttackTarget() {
+   public @Nullable Entity getActiveAttackTarget() {
       if (!this.hasActiveAttackTarget()) {
          return null;
       } else if (this.level().isClientSide()) {
@@ -213,7 +213,7 @@ public class Guardian extends Monster {
                   ++this.clientSideAttackTime;
                }
 
-               LivingEntity attackTarget = this.getActiveAttackTarget();
+               Entity attackTarget = this.getActiveAttackTarget();
                if (attackTarget != null) {
                   this.getLookControl().setLookAt(attackTarget, 90.0F, 90.0F);
                   this.getLookControl().tick();
@@ -323,8 +323,8 @@ public class Guardian extends Monster {
          this.guardian = guardian;
       }
 
-      public boolean test(final @Nullable LivingEntity target, final ServerLevel level) {
-         return (target instanceof Player || target instanceof Squid || target instanceof Axolotl) && target.distanceToSqr(this.guardian) > 9.0;
+      public boolean test(final @Nullable Entity target, final ServerLevel level) {
+         return (target instanceof Player || target instanceof Squid || target instanceof Axolotl) && target.distanceToSqr((Entity)this.guardian) > 9.0;
       }
    }
 
@@ -341,7 +341,7 @@ public class Guardian extends Monster {
       }
 
       public boolean canUse() {
-         LivingEntity target = this.guardian.getTarget();
+         Entity target = this.guardian.getTarget();
          return target != null && target.isAlive();
       }
 
@@ -352,7 +352,7 @@ public class Guardian extends Monster {
       public void start() {
          this.attackTime = -10;
          this.guardian.getNavigation().stop();
-         LivingEntity target = this.guardian.getTarget();
+         Entity target = this.guardian.getTarget();
          if (target != null) {
             this.guardian.getLookControl().setLookAt(target, 90.0F, 90.0F);
          }
@@ -362,7 +362,7 @@ public class Guardian extends Monster {
 
       public void stop() {
          this.guardian.setActiveAttackTarget(0);
-         this.guardian.setTarget((LivingEntity)null);
+         this.guardian.setTarget((Entity)null);
          this.guardian.randomStrollGoal.trigger();
       }
 
@@ -371,12 +371,12 @@ public class Guardian extends Monster {
       }
 
       public void tick() {
-         LivingEntity target = this.guardian.getTarget();
+         Entity target = this.guardian.getTarget();
          if (target != null) {
             this.guardian.getNavigation().stop();
             this.guardian.getLookControl().setLookAt(target, 90.0F, 90.0F);
             if (!this.guardian.hasLineOfSight(target)) {
-               this.guardian.setTarget((LivingEntity)null);
+               this.guardian.setTarget((Entity)null);
             } else {
                ++this.attackTime;
                if (this.attackTime == 0) {
@@ -397,7 +397,7 @@ public class Guardian extends Monster {
                   ServerLevel serverLevel = getServerLevel(this.guardian);
                   target.hurtServer(serverLevel, this.guardian.damageSources().indirectMagic(this.guardian, this.guardian), magicDamage);
                   this.guardian.doHurtTarget(serverLevel, target);
-                  this.guardian.setTarget((LivingEntity)null);
+                  this.guardian.setTarget((Entity)null);
                }
 
                super.tick();

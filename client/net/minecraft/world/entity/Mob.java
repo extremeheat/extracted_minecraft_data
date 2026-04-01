@@ -56,7 +56,7 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.sensing.Sensing;
-import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
@@ -126,7 +126,7 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
    protected PathNavigation navigation;
    protected final GoalSelector goalSelector;
    protected final GoalSelector targetSelector;
-   private @Nullable LivingEntity target;
+   private @Nullable Entity target;
    private final Sensing sensing;
    private DropChances dropChances;
    private boolean canPickUpLoot;
@@ -252,15 +252,15 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
       return this.sensing;
    }
 
-   public @Nullable LivingEntity getTarget() {
+   public @Nullable Entity getTarget() {
       return this.asValidTarget(this.target);
    }
 
-   public @Nullable LivingEntity getTargetUnchecked() {
+   public @Nullable Entity getTargetUnchecked() {
       return this.target;
    }
 
-   protected @Nullable LivingEntity asValidTarget(final @Nullable LivingEntity target) {
+   protected @Nullable Entity asValidTarget(final @Nullable Entity target) {
       if (target instanceof Player player) {
          if (player.isCreative() || player.isSpectator()) {
             return null;
@@ -274,15 +274,15 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
       }
    }
 
-   protected final @Nullable LivingEntity getTargetFromBrain() {
-      return this.asValidTarget((LivingEntity)this.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse((Object)null));
+   protected final @Nullable Entity getTargetFromBrain() {
+      return this.asValidTarget((Entity)this.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse((Object)null));
    }
 
-   public void setTarget(final @Nullable LivingEntity target) {
+   public void setTarget(final @Nullable Entity target) {
       this.target = this.asValidTarget(target);
    }
 
-   public boolean canAttack(final LivingEntity target) {
+   public boolean canAttack(final Entity target) {
       return !target.is(EntityType.GHAST) && super.canAttack(target);
    }
 
@@ -484,8 +484,8 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
          if (this.canPickUpLoot() && this.isAlive() && !this.dead && (Boolean)serverLevel.getGameRules().get(GameRules.MOB_GRIEFING)) {
             Vec3i pickupReach = this.getPickupReach();
 
-            for(ItemEntity entity : this.level().getEntitiesOfClass(ItemEntity.class, this.getBoundingBox().inflate((double)pickupReach.getX(), (double)pickupReach.getY(), (double)pickupReach.getZ()))) {
-               if (!entity.isRemoved() && !entity.getItem().isEmpty() && !entity.hasPickUpDelay() && this.wantsToPickUp(serverLevel, entity.getItem())) {
+            for(LivingBlock entity : this.level().getEntitiesOfClass(LivingBlock.class, this.getBoundingBox().inflate((double)pickupReach.getX(), (double)pickupReach.getY(), (double)pickupReach.getZ()))) {
+               if (!entity.isRemoved() && !entity.isDeadOrDying() && !entity.getItemStack().isEmpty() && this.wantsToPickUp(serverLevel, entity.getItemStack())) {
                   this.pickUpItem(serverLevel, entity);
                }
             }
@@ -536,8 +536,8 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
       return ITEM_PICKUP_REACH;
    }
 
-   protected void pickUpItem(final ServerLevel level, final ItemEntity entity) {
-      ItemStack itemStack = entity.getItem();
+   protected void pickUpItem(final ServerLevel level, final LivingBlock entity) {
+      ItemStack itemStack = entity.getItemStack();
       ItemStack equippedWithStack = this.equipItemIfPossible(level, itemStack.copy());
       if (!equippedWithStack.isEmpty()) {
          this.onItemPickup(entity);
@@ -895,12 +895,20 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
          float dropChance = this.dropChances.byEquipment(slot);
          if (dropChance != 0.0F) {
             boolean preserve = this.dropChances.isPreserved(slot);
-            Entity var11 = source.getEntity();
-            if (var11 instanceof LivingEntity) {
-               LivingEntity livingSource = (LivingEntity)var11;
-               Level var12 = this.level();
-               if (var12 instanceof ServerLevel) {
-                  ServerLevel serverLevel = (ServerLevel)var12;
+            Level var10 = this.level();
+            if (var10 instanceof ServerLevel) {
+               ServerLevel serverLevel = (ServerLevel)var10;
+               Entity var11 = source.getEntity();
+               if (var11 instanceof LivingBlock) {
+                  LivingBlock livingBlock = (LivingBlock)var11;
+                  if (livingBlock.getCommander() != null) {
+                     dropChance = EnchantmentHelper.processEquipmentDropChance(serverLevel, livingBlock.getCommander(), source, dropChance);
+                  }
+               }
+
+               var11 = source.getEntity();
+               if (var11 instanceof LivingEntity) {
+                  LivingEntity livingSource = (LivingEntity)var11;
                   dropChance = EnchantmentHelper.processEquipmentDropChance(serverLevel, livingSource, source, dropChance);
                }
             }
@@ -1336,20 +1344,24 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
       return this.isLeftHanded() ? HumanoidArm.LEFT : HumanoidArm.RIGHT;
    }
 
-   public boolean isWithinMeleeAttackRange(final LivingEntity target) {
-      AttackRange attackRange = (AttackRange)this.getActiveItem().get(DataComponents.ATTACK_RANGE);
-      double maxRange;
-      double minRange;
-      if (attackRange == null) {
-         maxRange = DEFAULT_ATTACK_REACH;
-         minRange = 0.0;
-      } else {
-         maxRange = (double)attackRange.effectiveMaxRange(this);
-         minRange = (double)attackRange.effectiveMinRange(this);
-      }
+   public boolean isWithinMeleeAttackRange(final Entity target) {
+      if (target instanceof Targetable targetable) {
+         AttackRange attackRange = (AttackRange)this.getActiveItem().get(DataComponents.ATTACK_RANGE);
+         double maxRange;
+         double minRange;
+         if (attackRange == null) {
+            maxRange = DEFAULT_ATTACK_REACH;
+            minRange = 0.0;
+         } else {
+            maxRange = (double)attackRange.effectiveMaxRange(this);
+            minRange = (double)attackRange.effectiveMinRange(this);
+         }
 
-      AABB hitbox = target.getHitbox();
-      return this.getAttackBoundingBox(maxRange).intersects(hitbox) && (minRange <= 0.0 || !this.getAttackBoundingBox(minRange).intersects(hitbox));
+         AABB hitbox = targetable.getHitbox();
+         return this.getAttackBoundingBox(maxRange).intersects(hitbox) && (minRange <= 0.0 || !this.getAttackBoundingBox(minRange).intersects(hitbox));
+      } else {
+         return false;
+      }
    }
 
    protected AABB getAttackBoundingBox(final double horizontalExpansion) {

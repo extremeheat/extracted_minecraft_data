@@ -242,7 +242,7 @@ public class WinScreen extends Screen {
 
    private void addPoemLines(final String line) {
       Component component = Component.literal(line);
-      this.lines.addAll(this.minecraft.font.split(component, 256));
+      this.lines.addAll(this.minecraft.font.split(component, 358));
       this.narratorComponents.add(component);
    }
 
@@ -262,14 +262,14 @@ public class WinScreen extends Screen {
       super.extractRenderState(graphics, mouseX, mouseY, a);
       this.extractVignette(graphics);
       this.scroll = Math.max(0.0F, this.scroll + a * this.scrollSpeed);
-      int logoX = this.width / 2 - 128;
+      int logoX = this.width / 2 - 179;
       int logoY = this.height + 50;
       float yOffs = -this.scroll;
       graphics.pose().pushMatrix();
       graphics.pose().translate(0.0F, yOffs);
       graphics.nextStratum();
       this.logoRenderer.extractRenderState(graphics, this.width, 1.0F, logoY);
-      int yPos = logoY + 100;
+      int yPos = logoY + 130;
 
       for(int i = 0; i < this.lines.size(); ++i) {
          if (i == this.lines.size() - 1) {
@@ -282,7 +282,7 @@ public class WinScreen extends Screen {
          if ((float)yPos + yOffs + 12.0F + 8.0F > 0.0F && (float)yPos + yOffs < (float)this.height) {
             FormattedCharSequence line = (FormattedCharSequence)this.lines.get(i);
             if (this.centeredLines.contains(i)) {
-               graphics.centeredText(this.font, (FormattedCharSequence)line, logoX + 128, yPos, -1);
+               graphics.centeredText(this.font, (FormattedCharSequence)line, logoX + 179, yPos, -1);
             } else {
                graphics.text(this.font, (FormattedCharSequence)line, logoX, yPos, -1);
             }

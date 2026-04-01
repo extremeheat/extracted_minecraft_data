@@ -10,4 +10,8 @@ public interface LightChunk extends BlockGetter {
    void findBlockLightSources(BiConsumer<BlockPos, BlockState> consumer);
 
    ChunkSkyLightSources getSkyLightSources();
+
+   default BlockState getBlockStateForLight(final BlockPos pos) {
+      return this.getBlockState(pos);
+   }
 }

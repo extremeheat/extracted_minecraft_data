@@ -8,7 +8,7 @@ import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.item.ItemInstance;
 import net.minecraft.world.item.ItemStack;
@@ -51,9 +51,9 @@ public class FishingRodHookedTrigger extends SimpleCriterionTrigger<TriggerInsta
             if (this.item.isPresent()) {
                boolean matched = false;
                Entity hookedInEntity = (Entity)hookedIn.getOptionalParameter(LootContextParams.THIS_ENTITY);
-               if (hookedInEntity instanceof ItemEntity) {
-                  ItemEntity item = (ItemEntity)hookedInEntity;
-                  if (((ItemPredicate)this.item.get()).test((ItemInstance)item.getItem())) {
+               if (hookedInEntity instanceof LivingBlock) {
+                  LivingBlock item = (LivingBlock)hookedInEntity;
+                  if (((ItemPredicate)this.item.get()).test((ItemInstance)item.getItemStack())) {
                      matched = true;
                   }
                }

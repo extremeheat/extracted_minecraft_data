@@ -56,7 +56,7 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
    private boolean isDragging;
 
    public MerchantScreen(final MerchantMenu menu, final Inventory inventory, final Component title) {
-      super(menu, inventory, title, 276, 166);
+      super(menu, inventory, title, 276, 78);
       this.inventoryLabelX = 107;
    }
 

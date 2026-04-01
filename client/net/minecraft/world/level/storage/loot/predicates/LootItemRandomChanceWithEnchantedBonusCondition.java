@@ -10,6 +10,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
@@ -33,15 +34,15 @@ public record LootItemRandomChanceWithEnchantedBonusCondition(float unenchantedC
    }
 
    public boolean test(final LootContext context) {
+      Entity directEntity = (Entity)context.getOptionalParameter(LootContextParams.DIRECT_ATTACKING_ENTITY);
       Entity killerEntity = (Entity)context.getOptionalParameter(LootContextParams.ATTACKING_ENTITY);
-      int var10000;
-      if (killerEntity instanceof LivingEntity livingKiller) {
-         var10000 = EnchantmentHelper.getEnchantmentLevel(this.enchantment, livingKiller);
-      } else {
-         var10000 = 0;
+      int enchantmentLevel = 0;
+      if (directEntity instanceof LivingBlock livingBlock) {
+         enchantmentLevel = EnchantmentHelper.getEnchantmentLevel(this.enchantment, livingBlock);
+      } else if (killerEntity instanceof LivingEntity livingKiller) {
+         enchantmentLevel = EnchantmentHelper.getEnchantmentLevel(this.enchantment, livingKiller);
       }
 
-      int enchantmentLevel = var10000;
       float chance = enchantmentLevel > 0 ? this.enchantedChance.calculate(enchantmentLevel) : this.unenchantedChance;
       return context.getRandom().nextFloat() < chance;
    }

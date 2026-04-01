@@ -62,6 +62,14 @@ public class NoteBlock extends Block {
       }
    }
 
+   public BlockState setInstrumentRolling(final LevelReader level, final BlockPos position, final BlockState state) {
+      return (BlockState)state.setValue(INSTRUMENT, level.getBlockState(position).instrument());
+   }
+
+   public BlockState tuneRolling(final BlockState state) {
+      return (BlockState)state.cycle(NOTE);
+   }
+
    public BlockState getStateForPlacement(final BlockPlaceContext context) {
       return this.setInstrument(context.getLevel(), context.getClickedPos(), this.defaultBlockState());
    }

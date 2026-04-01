@@ -33,6 +33,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
@@ -83,14 +84,14 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
    }
 
    public boolean doHurtTarget(final ServerLevel level, final Entity target) {
-      if (target instanceof LivingEntity livingEntity) {
+      if (!(target instanceof LivingEntity) && !(target instanceof LivingBlock)) {
+         return false;
+      } else {
          this.attackAnimationRemainingTicks = 10;
          this.level().broadcastEntityEvent(this, (byte)4);
          this.makeSound(SoundEvents.HOGLIN_ATTACK);
-         HoglinAi.onHitTarget(this, livingEntity);
-         return HoglinBase.hurtAndThrowTarget(level, this, livingEntity);
-      } else {
-         return false;
+         HoglinAi.onHitTarget(this, target);
+         return HoglinBase.hurtAndThrowTarget(level, this, target);
       }
    }
 
@@ -103,12 +104,8 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
 
    public boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {
       boolean wasHurt = super.hurtServer(level, source, damage);
-      if (wasHurt) {
-         Entity var6 = source.getEntity();
-         if (var6 instanceof LivingEntity) {
-            LivingEntity sourceEntity = (LivingEntity)var6;
-            HoglinAi.wasHurtBy(level, this, sourceEntity);
-         }
+      if (wasHurt && source.getEntity() != null) {
+         HoglinAi.wasHurtBy(level, this, source.getEntity());
       }
 
       return wasHurt;
@@ -306,7 +303,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
       this.playSound(SoundEvents.HOGLIN_STEP, 0.15F, 1.0F);
    }
 
-   public @Nullable LivingEntity getTarget() {
+   public @Nullable Entity getTarget() {
       return this.getTargetFromBrain();
    }
 

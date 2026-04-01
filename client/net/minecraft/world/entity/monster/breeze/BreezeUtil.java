@@ -2,6 +2,7 @@ package net.minecraft.world.entity.monster.breeze;
 
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.ClipContext;
@@ -15,9 +16,17 @@ public class BreezeUtil {
       super();
    }
 
-   public static Vec3 randomPointBehindTarget(final LivingEntity enemy, final RandomSource random) {
+   public static Vec3 randomPointBehindTarget(final Entity enemy, final RandomSource random) {
       int spreadDegrees = 90;
-      float viewAngle = enemy.yHeadRot + 180.0F + (float)random.nextGaussian() * 90.0F / 2.0F;
+      float var10000;
+      if (enemy instanceof LivingEntity livingEntity) {
+         var10000 = livingEntity.getYHeadRot();
+      } else {
+         var10000 = enemy.getYRot();
+      }
+
+      float yHeadRot = var10000;
+      float viewAngle = yHeadRot + 180.0F + (float)random.nextGaussian() * 90.0F / 2.0F;
       float r = Mth.lerp(random.nextFloat(), 4.0F, 8.0F);
       Vec3 direction = Vec3.directionFromRotation(0.0F, viewAngle).scale((double)r);
       return enemy.position().add(direction);

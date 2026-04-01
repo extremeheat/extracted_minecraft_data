@@ -3,7 +3,8 @@ package net.minecraft.world.item;
 import java.util.stream.Stream;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
@@ -43,10 +44,10 @@ public class ItemUtils {
       return createFilledResult(itemStack, player, newItemStack, true);
    }
 
-   public static void onContainerDestroyed(final ItemEntity container, final Stream<ItemStack> contents) {
+   public static void onContainerDestroyed(final LivingBlock container, final Stream<ItemStack> contents) {
       Level level = container.level();
       if (!level.isClientSide()) {
-         contents.forEach((stack) -> level.addFreshEntity(new ItemEntity(level, container.getX(), container.getY(), container.getZ(), stack)));
+         contents.forEach((stack) -> LivingBlock.createStack(level, container.blockPosition(), (Entity)null, stack));
       }
    }
 }

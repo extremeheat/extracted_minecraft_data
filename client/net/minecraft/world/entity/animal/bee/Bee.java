@@ -131,7 +131,7 @@ public class Bee extends Animal implements FlyingAnimal, NeutralMob {
    private static final int DEFAULT_CANNOT_ENTER_HIVE_TICKS = 0;
    private static final int DEFAULT_CROPS_GROWN_SINCE_POLLINATION = 0;
    private static final UniformInt PERSISTENT_ANGER_TIME;
-   private @Nullable EntityReference<LivingEntity> persistentAngerTarget;
+   private @Nullable EntityReference<Entity> persistentAngerTarget;
    private float rollAmount;
    private float rollAmountO;
    private int timeSinceSting;
@@ -395,11 +395,11 @@ public class Bee extends Animal implements FlyingAnimal, NeutralMob {
       this.entityData.set(DATA_ANGER_END_TIME, endTime);
    }
 
-   public @Nullable EntityReference<LivingEntity> getPersistentAngerTarget() {
+   public @Nullable EntityReference<Entity> getPersistentAngerTarget() {
       return this.persistentAngerTarget;
    }
 
-   public void setPersistentAngerTarget(final @Nullable EntityReference<LivingEntity> persistentAngerTarget) {
+   public void setPersistentAngerTarget(final @Nullable EntityReference<Entity> persistentAngerTarget) {
       this.persistentAngerTarget = persistentAngerTarget;
    }
 
@@ -458,7 +458,7 @@ public class Bee extends Animal implements FlyingAnimal, NeutralMob {
             --this.remainingCooldownBeforeLocatingNewFlower;
          }
 
-         boolean shouldRoll = this.isAngry() && !this.hasStung() && this.getTarget() != null && this.getTarget().distanceToSqr(this) < 4.0;
+         boolean shouldRoll = this.isAngry() && !this.hasStung() && this.getTarget() != null && this.getTarget().distanceToSqr((Entity)this) < 4.0;
          this.setRolling(shouldRoll);
          if (this.tickCount % 20 == 0 && !this.isHiveValid()) {
             this.hivePos = null;

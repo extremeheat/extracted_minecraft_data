@@ -10,6 +10,7 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -26,6 +27,7 @@ import net.minecraft.world.entity.ai.goal.RangedBowAttackGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.animal.golem.IronGolem;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.world.entity.monster.creaking.Creaking;
@@ -74,6 +76,7 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
       this.goalSelector.addGoal(10, new LookAtPlayerGoal(this, Mob.class, 8.0F));
       this.targetSelector.addGoal(1, (new HurtByTargetGoal(this, new Class[]{Raider.class})).setAlertOthers());
       this.targetSelector.addGoal(2, (new NearestAttackableTargetGoal(this, Player.class, true)).setUnseenMemoryTicks(300));
+      this.targetSelector.addGoal(2, (new NearestAttackableTargetGoal(this, LivingBlock.class, true)).setUnseenMemoryTicks(300));
       this.targetSelector.addGoal(3, (new NearestAttackableTargetGoal(this, AbstractVillager.class, false)).setUnseenMemoryTicks(300));
       this.targetSelector.addGoal(3, (new NearestAttackableTargetGoal(this, IronGolem.class, false)).setUnseenMemoryTicks(300));
    }
@@ -163,7 +166,7 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
    public void applyRaidBuffs(final ServerLevel level, final int wave, final boolean isCaptain) {
    }
 
-   public void performRangedAttack(final LivingEntity target, final float power) {
+   public void performRangedAttack(final Entity target, final float power) {
       ItemStack bowItem = this.getItemInHand(ProjectileUtil.getWeaponHoldingHand(this, Items.BOW));
       ItemStack projectile = this.getProjectile(bowItem);
       AbstractArrow arrow = ProjectileUtil.getMobArrow(this, projectile, power, bowItem);
@@ -244,7 +247,7 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
 
       public void start() {
          super.start();
-         LivingEntity target = Illusioner.this.getTarget();
+         Entity target = Illusioner.this.getTarget();
          if (target != null) {
             this.lastTargetId = target.getId();
          }
@@ -260,7 +263,11 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
       }
 
       protected void performSpellCasting() {
-         Illusioner.this.getTarget().addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 400), Illusioner.this);
+         Entity var2 = Illusioner.this.getTarget();
+         if (var2 instanceof LivingEntity livingEntity) {
+            livingEntity.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 400), Illusioner.this);
+         }
+
       }
 
       protected SoundEvent getSpellPrepareSound() {

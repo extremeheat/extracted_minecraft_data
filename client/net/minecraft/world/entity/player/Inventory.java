@@ -22,6 +22,7 @@ import net.minecraft.world.ItemStackWithSlot;
 import net.minecraft.world.Nameable;
 import net.minecraft.world.entity.EntityEquipment;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ActionItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
@@ -438,7 +439,7 @@ public class Inventory implements Container, Nameable {
       for(int i = 0; i < this.items.size(); ++i) {
          ItemStack itemStack = this.items.get(i);
          if (!itemStack.isEmpty()) {
-            this.player.drop(itemStack, true, false);
+            this.player.drop(itemStack, false);
             this.items.set(i, ItemStack.EMPTY);
          }
       }
@@ -510,7 +511,7 @@ public class Inventory implements Container, Nameable {
 
    public ItemStack removeFromSelected(final boolean all) {
       ItemStack selectedItem = this.getSelectedItem();
-      return selectedItem.isEmpty() ? ItemStack.EMPTY : this.removeItem(this.selected, all ? selectedItem.getCount() : 1);
+      return !selectedItem.isEmpty() && !(selectedItem.getItem() instanceof ActionItem) ? this.removeItem(this.selected, all ? selectedItem.getCount() : 1) : ItemStack.EMPTY;
    }
 
    static {

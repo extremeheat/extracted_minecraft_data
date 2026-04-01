@@ -11,6 +11,7 @@ import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityAttachment;
 import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
@@ -19,7 +20,6 @@ import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -32,6 +32,7 @@ import net.minecraft.world.entity.ai.goal.ZombieAttackGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.ResetUniversalAngerTargetGoal;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -53,7 +54,7 @@ public class ZombifiedPiglin extends Zombie implements NeutralMob {
    private int playFirstAngerSoundIn;
    private static final UniformInt PERSISTENT_ANGER_TIME;
    private long persistentAngerEndTime;
-   private @Nullable EntityReference<LivingEntity> persistentAngerTarget;
+   private @Nullable EntityReference<Entity> persistentAngerTarget;
    private static final int ALERT_RANGE_Y = 10;
    private static final UniformInt ALERT_INTERVAL;
    private int ticksUntilNextAlert;
@@ -69,6 +70,7 @@ public class ZombifiedPiglin extends Zombie implements NeutralMob {
       this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 1.0));
       this.targetSelector.addGoal(1, (new HurtByTargetGoal(this, new Class[0])).setAlertOthers());
       this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, Player.class, 10, true, false, this::isAngryAt));
+      this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, LivingBlock.class, 10, true, false, this::isAngryAt));
       this.targetSelector.addGoal(3, new ResetUniversalAngerTargetGoal(this, true));
    }
 
@@ -136,7 +138,7 @@ public class ZombifiedPiglin extends Zombie implements NeutralMob {
       this.playSound(SoundEvents.ZOMBIFIED_PIGLIN_ANGRY, this.getSoundVolume() * 2.0F, this.getVoicePitch() * 1.8F);
    }
 
-   public void setTarget(final @Nullable LivingEntity target) {
+   public void setTarget(final @Nullable Entity target) {
       if (this.getTarget() == null && target != null) {
          this.playFirstAngerSoundIn = FIRST_ANGER_SOUND_DELAY.sample(this.random);
          this.ticksUntilNextAlert = ALERT_INTERVAL.sample(this.random);
@@ -175,7 +177,7 @@ public class ZombifiedPiglin extends Zombie implements NeutralMob {
       return this.persistentAngerEndTime;
    }
 
-   public void setPersistentAngerTarget(final @Nullable EntityReference<LivingEntity> persistentAngerTarget) {
+   public void setPersistentAngerTarget(final @Nullable EntityReference<Entity> persistentAngerTarget) {
       this.persistentAngerTarget = persistentAngerTarget;
    }
 
@@ -199,7 +201,7 @@ public class ZombifiedPiglin extends Zombie implements NeutralMob {
       this.getAttribute(Attributes.SPAWN_REINFORCEMENTS_CHANCE).setBaseValue(0.0);
    }
 
-   public @Nullable EntityReference<LivingEntity> getPersistentAngerTarget() {
+   public @Nullable EntityReference<Entity> getPersistentAngerTarget() {
       return this.persistentAngerTarget;
    }
 

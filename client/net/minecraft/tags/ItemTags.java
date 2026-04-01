@@ -189,6 +189,7 @@ public final class ItemTags {
    public static final TagKey<Item> WITHER_SKELETON_DISLIKED_WEAPONS = bind("wither_skeleton_disliked_weapons");
    public static final TagKey<Item> SHEARABLE_FROM_COPPER_GOLEM = bind("shearable_from_copper_golem");
    public static final TagKey<Item> METAL_NUGGETS = bind("metal_nuggets");
+   public static final TagKey<Item> BLOCK_PLACERS = bind("block_placers");
    public static final TagKey<Item> FOOT_ARMOR_ENCHANTABLE = bind("enchantable/foot_armor");
    public static final TagKey<Item> LEG_ARMOR_ENCHANTABLE = bind("enchantable/leg_armor");
    public static final TagKey<Item> CHEST_ARMOR_ENCHANTABLE = bind("enchantable/chest_armor");

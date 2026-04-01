@@ -213,7 +213,7 @@ public class Breeze extends Monster {
       super.customServerAiStep(level);
    }
 
-   public boolean canAttack(final LivingEntity target) {
+   public boolean canAttack(final Entity target) {
       return (target.is(EntityType.PLAYER) || target.is(EntityType.IRON_GOLEM)) && super.canAttack(target);
    }
 
@@ -249,7 +249,7 @@ public class Breeze extends Monster {
       return Entity.MovementEmission.EVENTS;
    }
 
-   public @Nullable LivingEntity getTarget() {
+   public @Nullable Entity getTarget() {
       return this.getTargetFromBrain();
    }
 

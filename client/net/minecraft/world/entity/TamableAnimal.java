@@ -171,11 +171,11 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
 
    }
 
-   public boolean canAttack(final LivingEntity target) {
+   public boolean canAttack(final Entity target) {
       return this.isOwnedBy(target) ? false : super.canAttack(target);
    }
 
-   public boolean isOwnedBy(final LivingEntity entity) {
+   public boolean isOwnedBy(final Entity entity) {
       return entity == this.getOwner();
    }
 

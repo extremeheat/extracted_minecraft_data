@@ -32,6 +32,7 @@ import net.minecraft.world.entity.ai.goal.target.DefendVillageTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.ResetUniversalAngerTargetGoal;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
@@ -56,7 +57,7 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
    private int offerFlowerTick;
    private static final UniformInt PERSISTENT_ANGER_TIME;
    private long persistentAngerEndTime;
-   private @Nullable EntityReference<LivingEntity> persistentAngerTarget;
+   private @Nullable EntityReference<Entity> persistentAngerTarget;
 
    public IronGolem(final EntityType<? extends IronGolem> type, final Level level) {
       super(type, level);
@@ -73,6 +74,7 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
       this.targetSelector.addGoal(1, new DefendVillageTargetGoal(this));
       this.targetSelector.addGoal(2, new HurtByTargetGoal(this, new Class[0]));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, Player.class, 10, true, false, this::isAngryAt));
+      this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, LivingBlock.class, 10, true, false, this::isAngryAt));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, Mob.class, 5, false, false, (target, var1) -> target instanceof Enemy && !(target instanceof Creeper)));
       this.targetSelector.addGoal(4, new ResetUniversalAngerTargetGoal(this, false));
    }
@@ -118,7 +120,7 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
       return this.getDeltaMovement().horizontalDistanceSqr() > 2.500000277905201E-7 && this.random.nextInt(5) == 0;
    }
 
-   public boolean canAttack(final LivingEntity target) {
+   public boolean canAttack(final Entity target) {
       if (this.isPlayerCreated() && target.is(EntityType.PLAYER)) {
          return false;
       } else {
@@ -150,11 +152,11 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
       return this.persistentAngerEndTime;
    }
 
-   public void setPersistentAngerTarget(final @Nullable EntityReference<LivingEntity> persistentAngerTarget) {
+   public void setPersistentAngerTarget(final @Nullable EntityReference<Entity> persistentAngerTarget) {
       this.persistentAngerTarget = persistentAngerTarget;
    }
 
-   public @Nullable EntityReference<LivingEntity> getPersistentAngerTarget() {
+   public @Nullable EntityReference<Entity> getPersistentAngerTarget() {
       return this.persistentAngerTarget;
    }
 

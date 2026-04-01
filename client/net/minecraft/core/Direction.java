@@ -384,16 +384,16 @@ public enum Direction implements StringRepresentable {
    }
 
    @Contract("_,_,_,!null->!null;_,_,_,_->_")
-   public static @Nullable Direction getNearest(final int x, final int y, final int z, final @Nullable Direction orElse) {
-      int absX = Math.abs(x);
-      int absY = Math.abs(y);
-      int absZ = Math.abs(z);
+   public static @Nullable Direction getNearest(final float x, final float y, final float z, final @Nullable Direction orElse) {
+      float absX = Math.abs(x);
+      float absY = Math.abs(y);
+      float absZ = Math.abs(z);
       if (absX > absZ && absX > absY) {
-         return x < 0 ? WEST : EAST;
+         return x < 0.0F ? WEST : EAST;
       } else if (absZ > absX && absZ > absY) {
-         return z < 0 ? NORTH : SOUTH;
+         return z < 0.0F ? NORTH : SOUTH;
       } else if (absY > absX && absY > absZ) {
-         return y < 0 ? DOWN : UP;
+         return y < 0.0F ? DOWN : UP;
       } else {
          return orElse;
       }
@@ -401,7 +401,12 @@ public enum Direction implements StringRepresentable {
 
    @Contract("_,!null->!null;_,_->_")
    public static @Nullable Direction getNearest(final Vec3i vec, final @Nullable Direction orElse) {
-      return getNearest(vec.getX(), vec.getY(), vec.getZ(), orElse);
+      return getNearest((float)vec.getX(), (float)vec.getY(), (float)vec.getZ(), orElse);
+   }
+
+   @Contract("_,!null->!null;_,_->_")
+   public static @Nullable Direction getNearest(final Vector3fc vec, final @Nullable Direction orElse) {
+      return getNearest(vec.x(), vec.y(), vec.z(), orElse);
    }
 
    public String toString() {

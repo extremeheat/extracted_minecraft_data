@@ -358,11 +358,11 @@ public class RenderTypes {
          return RenderType.create("entity_translucent_cull_item_target", state);
       }));
       ITEM_CUTOUT = Util.memoize((Function)((texture) -> {
-         RenderSetup state = RenderSetup.builder(RenderPipelines.ITEM_CUTOUT).withTexture("Sampler0", texture).useLightmap().affectsCrumbling().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup();
+         RenderSetup state = RenderSetup.builder(RenderPipelines.ITEM_CUTOUT).withTexture("Sampler0", texture).useOverlay().useLightmap().affectsCrumbling().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup();
          return RenderType.create("item_cutout", state);
       }));
       ITEM_TRANSLUCENT = Util.memoize((Function)((texture) -> {
-         RenderSetup state = RenderSetup.builder(RenderPipelines.ITEM_TRANSLUCENT).withTexture("Sampler0", texture).setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET).useLightmap().affectsCrumbling().sortOnUpload().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup();
+         RenderSetup state = RenderSetup.builder(RenderPipelines.ITEM_TRANSLUCENT).withTexture("Sampler0", texture).useOverlay().setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET).useLightmap().affectsCrumbling().sortOnUpload().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup();
          return RenderType.create("item_translucent", state);
       }));
       ENTITY_TRANSLUCENT = Util.memoize((BiFunction)((texture, affectsOutline) -> {

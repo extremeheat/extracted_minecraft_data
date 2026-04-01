@@ -11,7 +11,7 @@ import org.jspecify.annotations.Nullable;
 public class RangedAttackGoal extends Goal {
    private final Mob mob;
    private final RangedAttackMob rangedAttackMob;
-   private @Nullable LivingEntity target;
+   private @Nullable Entity target;
    private int attackTime;
    private final double speedModifier;
    private int seeTime;
@@ -42,7 +42,7 @@ public class RangedAttackGoal extends Goal {
    }
 
    public boolean canUse() {
-      LivingEntity bestTarget = this.mob.getTarget();
+      Entity bestTarget = this.mob.getTarget();
       if (bestTarget != null && bestTarget.isAlive()) {
          this.target = bestTarget;
          return true;
@@ -77,7 +77,7 @@ public class RangedAttackGoal extends Goal {
       if (!(targetDistSqr > (double)this.attackRadiusSqr) && this.seeTime >= 5) {
          this.mob.getNavigation().stop();
       } else {
-         this.mob.getNavigation().moveTo((Entity)this.target, this.speedModifier);
+         this.mob.getNavigation().moveTo(this.target, this.speedModifier);
       }
 
       this.mob.getLookControl().setLookAt(this.target, 30.0F, 30.0F);

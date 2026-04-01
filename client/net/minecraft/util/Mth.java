@@ -4,13 +4,16 @@ import java.util.Locale;
 import java.util.UUID;
 import java.util.function.IntPredicate;
 import java.util.stream.IntStream;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.math.Fraction;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.joml.Quaternionf;
+import org.joml.Quaternionfc;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 public class Mth {
    private static final long UUID_VERSION = 61440L;
@@ -727,6 +730,12 @@ public class Mth {
 
    public static int mulAndTruncate(final Fraction fraction, final int factor) {
       return fraction.getNumerator() * factor / fraction.getDenominator();
+   }
+
+   public static Quaternionf snapToNearestRightAngle(final Quaternionfc rotation) {
+      Vector3f localForward = Direction.NORTH.step().rotate(rotation);
+      Vector3f localUp = Direction.UP.step().rotate(rotation);
+      return (new Quaternionf()).lookAlong(Direction.getNearest((Vector3fc)localForward, Direction.NORTH).getUnitVec3f(), Direction.getNearest((Vector3fc)localUp, Direction.UP).getUnitVec3f()).conjugate();
    }
 
    static {

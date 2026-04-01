@@ -326,7 +326,7 @@ public abstract class BlockBehaviour implements FeatureElement {
    }
 
    protected float getDestroyProgress(final BlockState state, final Player player, final BlockGetter level, final BlockPos pos) {
-      float destroySpeed = state.getDestroySpeed(level, pos);
+      float destroySpeed = state.getDestroySpeed();
       if (destroySpeed == -1.0F) {
          return 0.0F;
       } else {
@@ -970,7 +970,7 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this.getBlock().getAnalogOutputSignal(this.asState(), level, pos, direction);
       }
 
-      public float getDestroySpeed(final BlockGetter level, final BlockPos pos) {
+      public float getDestroySpeed() {
          return this.destroySpeed;
       }
 

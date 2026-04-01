@@ -16,7 +16,6 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Shearable;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -112,7 +111,7 @@ public class SnowGolem extends AbstractGolem implements RangedAttackMob, Shearab
 
    }
 
-   public void performRangedAttack(final LivingEntity target, final float power) {
+   public void performRangedAttack(final Entity target, final float power) {
       double xd = target.getX() - this.getX();
       double yd = target.getEyeY() - 1.100000023841858;
       double zd = target.getZ() - this.getZ();

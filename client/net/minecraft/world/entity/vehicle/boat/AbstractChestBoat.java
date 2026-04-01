@@ -93,7 +93,6 @@ public abstract class AbstractChestBoat extends AbstractBoat implements HasCusto
    }
 
    public void openCustomInventoryScreen(final Player player) {
-      player.openMenu(this);
       Level var3 = player.level();
       if (var3 instanceof ServerLevel level) {
          this.gameEvent(GameEvent.CONTAINER_OPEN, player);

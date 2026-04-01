@@ -28,7 +28,6 @@ public class ShulkerBoxMenu extends AbstractContainerMenu {
          }
       }
 
-      this.addStandardInventorySlots(inventory, 8, 84);
    }
 
    public boolean stillValid(final Player player) {

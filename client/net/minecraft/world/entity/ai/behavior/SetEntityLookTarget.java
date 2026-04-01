@@ -31,7 +31,7 @@ public class SetEntityLookTarget {
    public static OneShot<LivingEntity> create(final Predicate<LivingEntity> predicate, final float maxDist) {
       float maxDistSqr = maxDist * maxDist;
       return BehaviorBuilder.create((Function)((i) -> i.group(i.absent(MemoryModuleType.LOOK_TARGET), i.present(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)).apply(i, (lookTarget, nearestEntities) -> (level, body, timestamp) -> {
-               Optional<LivingEntity> target = ((NearestVisibleLivingEntities)i.get(nearestEntities)).findClosest(predicate.and((mob) -> mob.distanceToSqr(body) <= (double)maxDistSqr && !body.hasPassenger(mob)));
+               Optional<Entity> target = ((NearestVisibleLivingEntities)i.get(nearestEntities)).findClosestMatchingLivingEntityPredicate(predicate.and((mob) -> mob.distanceToSqr(body) <= (double)maxDistSqr && !body.hasPassenger(mob)));
                if (target.isEmpty()) {
                   return false;
                } else {

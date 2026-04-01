@@ -3,7 +3,7 @@ package net.minecraft.world.item;
 import java.util.OptionalInt;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Position;
-import net.minecraft.core.dispenser.BlockSource;
+import net.minecraft.core.dispenser.DispenseSource;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DispenserBlock;
@@ -69,6 +69,6 @@ public interface ProjectileItem {
 
    @FunctionalInterface
    public interface PositionFunction {
-      Position getDispensePosition(final BlockSource source, final Direction direction);
+      Position getDispensePosition(final DispenseSource source, final Direction direction);
    }
 }

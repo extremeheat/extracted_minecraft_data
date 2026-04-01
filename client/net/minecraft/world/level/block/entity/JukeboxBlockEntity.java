@@ -6,7 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.Container;
-import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.JukeboxSong;
 import net.minecraft.world.item.JukeboxSongPlayer;
@@ -55,9 +55,7 @@ public class JukeboxBlockEntity extends BlockEntity implements ContainerSingleIt
             this.removeTheItem();
             Vec3 itemPos = Vec3.atLowerCornerWithOffset(pos, 0.5, 1.01, 0.5).offsetRandomXZ(this.level.getRandom(), 0.7F);
             ItemStack itemStack = itemBeforePoppingOut.copy();
-            ItemEntity entity = new ItemEntity(this.level, itemPos.x(), itemPos.y(), itemPos.z(), itemStack);
-            entity.setDefaultPickUpDelay();
-            this.level.addFreshEntity(entity);
+            LivingBlock.createAt(this.level, BlockPos.containing(itemPos), itemStack);
             this.onSongChanged();
          }
       }

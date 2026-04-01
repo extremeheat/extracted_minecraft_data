@@ -145,7 +145,7 @@ public class Creeper extends Monster {
       super.tick();
    }
 
-   public void setTarget(final @Nullable LivingEntity target) {
+   public void setTarget(final @Nullable Entity target) {
       if (!(target instanceof Goat)) {
          super.setTarget(target);
       }

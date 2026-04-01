@@ -78,8 +78,7 @@ public class TitleScreen extends Screen {
    }
 
    public static void registerTextures(final TextureManager textureManager) {
-      textureManager.registerForNextReload(LogoRenderer.MINECRAFT_LOGO);
-      textureManager.registerForNextReload(LogoRenderer.MINECRAFT_EDITION);
+      textureManager.registerForNextReload(LogoRenderer.HERDCRAFT_LOGO);
       textureManager.registerForNextReload(Panorama.PANORAMA_OVERLAY);
    }
 

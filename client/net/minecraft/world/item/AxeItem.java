@@ -29,7 +29,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import org.jspecify.annotations.Nullable;
 
 public class AxeItem extends Item {
-   protected static final Map<Block, Block> STRIPPABLES;
+   public static final Map<Block, Block> STRIPPABLES;
 
    public AxeItem(final ToolMaterial material, final float attackDamageBaseline, final float attackSpeedBaseline, final Item.Properties properties) {
       super(properties.axe(material, attackDamageBaseline, attackSpeedBaseline));

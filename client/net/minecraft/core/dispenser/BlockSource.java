@@ -1,17 +1,23 @@
 package net.minecraft.core.dispenser;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.entity.DispenserBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.Vec3;
 
-public record BlockSource(ServerLevel level, BlockPos pos, BlockState state, DispenserBlockEntity blockEntity) {
+public record BlockSource(ServerLevel level, BlockPos pos, BlockState state, DispenserBlockEntity blockEntity) implements DispenseSource {
    public BlockSource {
       super();
    }
 
-   public Vec3 center() {
-      return this.pos.getCenter();
+   public Direction direction() {
+      return (Direction)this.state.getValue(DispenserBlock.FACING);
+   }
+
+   public ItemStack insertItem(final ItemStack stack) {
+      return this.blockEntity.insertItem(stack);
    }
 }

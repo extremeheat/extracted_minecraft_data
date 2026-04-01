@@ -14,6 +14,7 @@ import net.minecraft.world.entity.player.StackedItemContents;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipePropertySet;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
@@ -151,7 +152,7 @@ public abstract class AbstractFurnaceMenu extends RecipeBookMenu {
       return this.recipeBookType;
    }
 
-   public RecipeBookMenu.PostPlaceAction handlePlacement(final boolean useMaxItems, final boolean allowDroppingItemsToClear, final RecipeHolder<?> recipe, final ServerLevel level, final Inventory inventory) {
+   public RecipeBookMenu.PostPlaceAction handlePlacement(final boolean useMaxItems, final boolean allowDroppingItemsToClear, final RecipeHolder<?> recipe, final ServerLevel level, final Inventory inventory, final RecipeManager.ServerDisplayInfo displayInfo) {
       final List<Slot> slotsToClear = List.of(this.getSlot(0), this.getSlot(2));
       return ServerPlaceRecipe.placeRecipe(new ServerPlaceRecipe.CraftingMenuAccess<AbstractCookingRecipe>() {
          {

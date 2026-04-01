@@ -11,6 +11,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
@@ -26,6 +27,7 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LightningBolt;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
@@ -40,6 +42,7 @@ import net.minecraft.world.entity.ai.goal.MoveToBlockGoal;
 import net.minecraft.world.entity.ai.goal.PanicGoal;
 import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.TemptGoal;
+import net.minecraft.world.entity.ai.goal.TemptedByLivingBlockGoal;
 import net.minecraft.world.entity.ai.navigation.AmphibiousPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
@@ -139,6 +142,7 @@ public class Turtle extends Animal {
       this.goalSelector.addGoal(1, new TurtleBreedGoal(this, 1.0));
       this.goalSelector.addGoal(1, new TurtleLayEggGoal(this, 1.0));
       this.goalSelector.addGoal(2, new TemptGoal(this, 1.1, (i) -> i.is(ItemTags.TURTLE_FOOD), false));
+      this.goalSelector.addGoal(2, new TemptedByLivingBlockGoal(this, 1.1, BlockTags.TURTLE_FOOD, false));
       this.goalSelector.addGoal(3, new TurtleGoToWaterGoal(this, 1.0));
       this.goalSelector.addGoal(4, new TurtleGoHomeGoal(this, 1.0));
       this.goalSelector.addGoal(7, new TurtleTravelGoal(this, 1.0));
@@ -267,7 +271,18 @@ public class Turtle extends Animal {
       HAS_EGG = SynchedEntityData.<Boolean>defineId(Turtle.class, EntityDataSerializers.BOOLEAN);
       LAYING_EGG = SynchedEntityData.<Boolean>defineId(Turtle.class, EntityDataSerializers.BOOLEAN);
       BABY_DIMENSIONS = EntityType.TURTLE.getDimensions().withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, EntityType.TURTLE.getHeight(), -0.25F)).scale(0.3F);
-      BABY_ON_LAND_SELECTOR = (target, level) -> target.isBaby() && !target.isInWater();
+      BABY_ON_LAND_SELECTOR = (target, level) -> {
+         boolean var10000;
+         if (target instanceof LivingEntity livingEntity) {
+            if (livingEntity.isBaby() && !target.isInWater()) {
+               var10000 = true;
+               return var10000;
+            }
+         }
+
+         var10000 = false;
+         return var10000;
+      };
    }
 
    private static class TurtlePanicGoal extends PanicGoal {

@@ -22,6 +22,7 @@ public class ItemTintSources {
       ID_MAPPER.put(Identifier.withDefaultNamespace("potion"), Potion.MAP_CODEC);
       ID_MAPPER.put(Identifier.withDefaultNamespace("map_color"), MapColor.MAP_CODEC);
       ID_MAPPER.put(Identifier.withDefaultNamespace("team"), TeamColor.MAP_CODEC);
+      ID_MAPPER.put(Identifier.withDefaultNamespace("jeb"), Jeb.CODEC);
    }
 
    static {

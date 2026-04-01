@@ -49,9 +49,10 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SlotAccess;
+import net.minecraft.world.entity.Targetable;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureElement;
 import net.minecraft.world.flag.FeatureFlag;
@@ -136,7 +137,7 @@ public class Item implements ItemLike, FeatureElement {
       this.requiredFeatures = properties.requiredFeatures;
       if (SharedConstants.IS_RUNNING_IN_IDE) {
          String className = this.getClass().getSimpleName();
-         if (!className.endsWith("Item")) {
+         if (!className.endsWith("Item") && !className.endsWith("Action")) {
             LOGGER.error("Item classes should end with Item and {} doesn't.", className);
          }
       }
@@ -160,7 +161,7 @@ public class Item implements ItemLike, FeatureElement {
    public void onUseTick(final Level level, final LivingEntity livingEntity, final ItemStack itemStack, final int ticksRemaining) {
    }
 
-   public void onDestroyed(final ItemEntity itemEntity) {
+   public void onDestroyed(final LivingBlock itemEntity) {
    }
 
    public boolean canDestroyBlock(final ItemStack itemStack, final BlockState state, final Level level, final BlockPos pos, final LivingEntity user) {
@@ -268,7 +269,7 @@ public class Item implements ItemLike, FeatureElement {
       if (tool == null) {
          return false;
       } else {
-         if (!level.isClientSide() && state.getDestroySpeed(level, pos) != 0.0F && tool.damagePerBlock() > 0) {
+         if (!level.isClientSide() && state.getDestroySpeed() != 0.0F && tool.damagePerBlock() > 0) {
             itemStack.hurtAndBreak(tool.damagePerBlock(), owner, EquipmentSlot.MAINHAND);
          }
 
@@ -282,6 +283,10 @@ public class Item implements ItemLike, FeatureElement {
    }
 
    public InteractionResult interactLivingEntity(final ItemStack itemStack, final Player player, final LivingEntity target, final InteractionHand type) {
+      return InteractionResult.PASS;
+   }
+
+   public InteractionResult interactLivingEntity(final ItemStack itemStack, final Player player, final Targetable target, final InteractionHand type) {
       return InteractionResult.PASS;
    }
 

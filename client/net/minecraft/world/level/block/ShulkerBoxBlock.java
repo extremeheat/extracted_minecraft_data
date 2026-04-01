@@ -9,12 +9,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.stats.Stats;
 import net.minecraft.world.Containers;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.monster.Shulker;
-import net.minecraft.world.entity.monster.piglin.PiglinAi;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.DyeColor;
@@ -32,8 +28,6 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -64,30 +58,6 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
       return createTickerHelper(type, BlockEntityType.SHULKER_BOX, ShulkerBoxBlockEntity::tick);
    }
 
-   protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
-      if (level instanceof ServerLevel serverLevel) {
-         BlockEntity var8 = level.getBlockEntity(pos);
-         if (var8 instanceof ShulkerBoxBlockEntity shulkerBoxBlockEntity) {
-            if (canOpen(state, level, pos, shulkerBoxBlockEntity)) {
-               player.openMenu(shulkerBoxBlockEntity);
-               player.awardStat(Stats.OPEN_SHULKER_BOX);
-               PiglinAi.angerNearbyPiglins(serverLevel, player, true);
-            }
-         }
-      }
-
-      return InteractionResult.SUCCESS;
-   }
-
-   private static boolean canOpen(final BlockState state, final Level level, final BlockPos pos, final ShulkerBoxBlockEntity blockEntity) {
-      if (blockEntity.getAnimationStatus() != ShulkerBoxBlockEntity.AnimationStatus.CLOSED) {
-         return true;
-      } else {
-         AABB lidOpenBoundingBox = Shulker.getProgressDeltaAabb(1.0F, (Direction)state.getValue(FACING), 0.0F, 0.5F, pos.getBottomCenter()).deflate(1.0E-6);
-         return level.noCollision(lidOpenBoundingBox);
-      }
-   }
-
    public BlockState getStateForPlacement(final BlockPlaceContext context) {
       return (BlockState)this.defaultBlockState().setValue(FACING, context.getClickedFace());
    }
@@ -102,9 +72,7 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
          if (!level.isClientSide() && player.preventsBlockDrops() && !shulkerBoxBlockEntity.isEmpty()) {
             ItemStack itemStack = new ItemStack(state.getBlock());
             itemStack.applyComponents(blockEntity.collectComponents());
-            ItemEntity entity = new ItemEntity(level, (double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5, itemStack);
-            entity.setDefaultPickUpDelay();
-            level.addFreshEntity(entity);
+            LivingBlock.createAt(level, pos, itemStack);
          } else {
             shulkerBoxBlockEntity.unpackLootTable(player);
          }

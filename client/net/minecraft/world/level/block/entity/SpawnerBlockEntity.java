@@ -79,6 +79,10 @@ public class SpawnerBlockEntity extends BlockEntity implements Spawner {
       this.setChanged();
    }
 
+   public void setMaxNearbyEntities(final int maxNearbyEntities) {
+      this.spawner.setMaxNearbyEntities(maxNearbyEntities);
+   }
+
    public BaseSpawner getSpawner() {
       return this.spawner;
    }

@@ -13,10 +13,8 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Renderable;
-import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
@@ -32,7 +30,6 @@ import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.language.LanguageInfo;
 import net.minecraft.client.resources.language.LanguageManager;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundRecipeBookChangeSettingsPacket;
 import net.minecraft.resources.Identifier;
@@ -74,7 +71,6 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements G
    private final GhostSlots ghostSlots;
    private final List<RecipeBookTabButton> tabButtons = Lists.newArrayList();
    private @Nullable RecipeBookTabButton selectedTab;
-   protected CycleButton<Boolean> filterButton;
    protected final T menu;
    protected Minecraft minecraft;
    private @Nullable EditBox searchBox;
@@ -116,7 +112,7 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements G
 
    private void initVisuals() {
       boolean isFiltering = this.isFiltering();
-      this.xOffset = this.widthTooNarrow ? 0 : 86;
+      this.xOffset = 0;
       int xo = this.getXOrigin();
       int yo = this.getYOrigin();
       this.stackedContents.clear();
@@ -135,11 +131,7 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements G
       this.searchBox.setHint(SEARCH_HINT);
       this.magnifierIconPlacement = ScreenRectangle.of(ScreenAxis.HORIZONTAL, xo + 8, this.searchBox.getY(), this.searchBox.getX() - this.getXOrigin(), this.searchBox.getHeight());
       this.recipeBookPage.init(this.minecraft, xo, yo);
-      this.filterButton = CycleButton.booleanBuilder(this.getRecipeFilterName(), ALL_RECIPES_TOOLTIP, isFiltering).withTooltip((filtering) -> filtering ? Tooltip.create(this.getRecipeFilterName()) : Tooltip.create(ALL_RECIPES_TOOLTIP)).withSprite((cycleButton, filtering) -> this.getFilterButtonTextures().get(filtering, cycleButton.isHoveredOrFocused())).displayState(CycleButton.DisplayState.HIDE).create(xo + 110, yo + 12, 26, 16, CommonComponents.EMPTY, (button, value) -> {
-         this.toggleFiltering();
-         this.sendUpdateSettings();
-         this.updateCollections(false, value);
-      });
+      this.book.setFiltering(this.menu.getRecipeBookType(), false);
       this.tabButtons.clear();
 
       for(TabInfo tabInfo : this.tabInfos) {
@@ -165,7 +157,7 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements G
    }
 
    private int getXOrigin() {
-      return (this.width - 147) / 2 - this.xOffset;
+      return (this.width - 147) / 2;
    }
 
    protected abstract WidgetSprites getFilterButtonTextures();
@@ -190,7 +182,12 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements G
    }
 
    private boolean isVisibleAccordingToBookData() {
-      return this.book.isOpen(this.menu.getRecipeBookType());
+      boolean open = this.book.isOpen(this.menu.getRecipeBookType());
+      if (!open) {
+         this.book.setOpen(this.menu.getRecipeBookType(), true);
+      }
+
+      return true;
    }
 
    protected void setVisible(final boolean visible) {
@@ -312,7 +309,6 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements G
             tabButton.extractRenderState(graphics, mouseX, mouseY, a);
          }
 
-         this.filterButton.extractRenderState(graphics, mouseX, mouseY, a);
          this.recipeBookPage.extractRenderState(graphics, xo, yo, mouseX, mouseY, a);
       }
    }
@@ -359,17 +355,13 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements G
                this.searchBox.setFocused(false);
             }
 
-            if (this.filterButton.mouseClicked(event, doubleClick)) {
-               return true;
-            } else {
-               for(RecipeBookTabButton tabButton : this.tabButtons) {
-                  if (tabButton.mouseClicked(event, doubleClick)) {
-                     return true;
-                  }
+            for(RecipeBookTabButton tabButton : this.tabButtons) {
+               if (tabButton.mouseClicked(event, doubleClick)) {
+                  return true;
                }
-
-               return false;
             }
+
+            return false;
          }
       } else {
          return false;
@@ -427,10 +419,7 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements G
    public boolean keyPressed(final KeyEvent event) {
       this.ignoreTextInput = false;
       if (this.isVisible() && !this.minecraft.player.isSpectator()) {
-         if (event.isEscape() && !this.isOffsetNextToMainGUI()) {
-            this.setVisible(false);
-            return true;
-         } else if (this.searchBox.keyPressed(event)) {
+         if (this.searchBox.keyPressed(event)) {
             this.checkSearchStringUpdate();
             return true;
          } else if (this.searchBox.isFocused() && this.searchBox.isVisible() && !event.isEscape()) {
@@ -566,7 +555,6 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements G
 
       });
       narratableEntries.add(this.searchBox);
-      narratableEntries.add(this.filterButton);
       narratableEntries.addAll(this.tabButtons);
       Screen.NarratableSearchResult narratable = Screen.findNarratableWidget(narratableEntries, (NarratableEntry)null);
       if (narratable != null) {

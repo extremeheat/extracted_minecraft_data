@@ -550,11 +550,11 @@ public abstract class Display extends Entity {
 
       }
 
-      private BlockState getBlockState() {
+      public BlockState getBlockState() {
          return (BlockState)this.entityData.get(DATA_BLOCK_STATE_ID);
       }
 
-      private void setBlockState(final BlockState blockState) {
+      public void setBlockState(final BlockState blockState) {
          this.entityData.set(DATA_BLOCK_STATE_ID, blockState);
       }
 

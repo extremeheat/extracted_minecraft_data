@@ -60,7 +60,6 @@ public class BrewingStandBlock extends BaseEntityBlock {
          BlockEntity var7 = level.getBlockEntity(pos);
          if (var7 instanceof BrewingStandBlockEntity) {
             BrewingStandBlockEntity brewingStandBlockEntity = (BrewingStandBlockEntity)var7;
-            player.openMenu(brewingStandBlockEntity);
             player.awardStat(Stats.INTERACT_WITH_BREWINGSTAND);
          }
       }

@@ -2,8 +2,10 @@ package net.minecraft.world.entity.ai.targeting;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.Targetable;
 import org.jspecify.annotations.Nullable;
 
 public class TargetingConditions {
@@ -13,9 +15,9 @@ public class TargetingConditions {
    private double range = -1.0;
    private boolean checkLineOfSight = true;
    private boolean testInvisible = true;
-   private @Nullable Selector selector;
+   protected @Nullable Selector selector;
 
-   private TargetingConditions(final boolean isCombat) {
+   protected TargetingConditions(final boolean isCombat) {
       super();
       this.isCombat = isCombat;
    }
@@ -26,6 +28,10 @@ public class TargetingConditions {
 
    public static TargetingConditions forNonCombat() {
       return new TargetingConditions(false);
+   }
+
+   public static TargetingConditions livingBlock() {
+      return new LivingBlockTargetingConditions();
    }
 
    public TargetingConditions copy() {
@@ -57,46 +63,56 @@ public class TargetingConditions {
       return this;
    }
 
-   public boolean test(final ServerLevel level, final @Nullable LivingEntity targeter, final LivingEntity target) {
-      if (targeter == target) {
-         return false;
-      } else if (!target.canBeSeenByAnyone()) {
-         return false;
-      } else if (this.selector != null && !this.selector.test(target, level)) {
-         return false;
-      } else {
-         if (targeter == null) {
-            if (this.isCombat && (!target.canBeSeenAsEnemy() || level.getDifficulty() == Difficulty.PEACEFUL)) {
-               return false;
-            }
-         } else {
-            if (this.isCombat && (!targeter.canAttack(target) || targeter.isAlliedTo(target))) {
+   public <T extends Entity & Targetable> boolean test(final ServerLevel level, final @Nullable Entity targeter, final Entity target) {
+      if (targeter instanceof LivingEntity livingEntity) {
+         if (target instanceof Targetable) {
+            if (livingEntity == target) {
                return false;
             }
 
-            if (this.range > 0.0) {
-               double modifier = this.testInvisible ? target.getVisibilityPercent(targeter) : 1.0;
-               double visibilityDistance = Math.max(this.range * modifier, 2.0);
-               double distanceToSqr = targeter.distanceToSqr(target.getX(), target.getY(), target.getZ());
-               if (distanceToSqr > visibilityDistance * visibilityDistance) {
+            if (!((Targetable)target).canBeSeenByAnyone()) {
+               return false;
+            }
+
+            if (this.selector != null && !this.selector.test(target, level)) {
+               return false;
+            }
+
+            if (livingEntity == null) {
+               if (this.isCombat && (!((Targetable)target).canBeSeenAsEnemy() || level.getDifficulty() == Difficulty.PEACEFUL)) {
                   return false;
+               }
+            } else {
+               if (this.isCombat && (!livingEntity.canAttack(target) || livingEntity.isAlliedTo(target))) {
+                  return false;
+               }
+
+               if (this.range > 0.0) {
+                  double modifier = this.testInvisible ? ((Targetable)target).getVisibilityPercent(livingEntity) : 1.0;
+                  double visibilityDistance = Math.max(this.range * modifier, 2.0);
+                  double distanceToSqr = livingEntity.distanceToSqr(target.getX(), target.getY(), target.getZ());
+                  if (distanceToSqr > visibilityDistance * visibilityDistance) {
+                     return false;
+                  }
+               }
+
+               if (this.checkLineOfSight && livingEntity instanceof Mob) {
+                  Mob mob = (Mob)livingEntity;
+                  if (!mob.getSensing().hasLineOfSight(target)) {
+                     return false;
+                  }
                }
             }
 
-            if (this.checkLineOfSight && targeter instanceof Mob) {
-               Mob mob = (Mob)targeter;
-               if (!mob.getSensing().hasLineOfSight(target)) {
-                  return false;
-               }
-            }
+            return true;
          }
-
-         return true;
       }
+
+      return false;
    }
 
    @FunctionalInterface
    public interface Selector {
-      boolean test(LivingEntity target, ServerLevel level);
+      boolean test(Entity target, ServerLevel level);
    }
 }

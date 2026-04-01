@@ -28,7 +28,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -53,7 +52,7 @@ import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.entity.animal.AgeableWaterCreature;
 import net.minecraft.world.entity.animal.nautilus.AbstractNautilus;
-import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.monster.Guardian;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
@@ -72,7 +71,7 @@ public class Dolphin extends AgeableWaterCreature {
    private static final TargetingConditions SWIM_WITH_PLAYER_TARGETING;
    public static final int TOTAL_AIR_SUPPLY = 4800;
    private static final int TOTAL_MOISTNESS_LEVEL = 2400;
-   public static final Predicate<ItemEntity> ALLOWED_ITEMS;
+   public static final Predicate<LivingBlock> ALLOWED_ITEMS;
    public static final float BABY_SCALE = 0.65F;
    private static final boolean DEFAULT_GOT_FISH = false;
    private @Nullable BlockPos treasurePos;
@@ -165,7 +164,7 @@ public class Dolphin extends AgeableWaterCreature {
       this.playSound(SoundEvents.DOLPHIN_ATTACK, 1.0F, 1.0F);
    }
 
-   public boolean canAttack(final LivingEntity target) {
+   public boolean canAttack(final Entity target) {
       return !this.isBaby() && super.canAttack(target);
    }
 
@@ -193,9 +192,9 @@ public class Dolphin extends AgeableWaterCreature {
       return slot == EquipmentSlot.MAINHAND && this.canPickUpLoot();
    }
 
-   protected void pickUpItem(final ServerLevel level, final ItemEntity entity) {
+   protected void pickUpItem(final ServerLevel level, final LivingBlock entity) {
       if (this.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty()) {
-         ItemStack itemStack = entity.getItem();
+         ItemStack itemStack = entity.getItemStack();
          if (this.canHoldItem(itemStack)) {
             this.onItemPickup(entity);
             this.setItemSlot(EquipmentSlot.MAINHAND, itemStack);
@@ -326,7 +325,7 @@ public class Dolphin extends AgeableWaterCreature {
       GOT_FISH = SynchedEntityData.<Boolean>defineId(Dolphin.class, EntityDataSerializers.BOOLEAN);
       MOISTNESS_LEVEL = SynchedEntityData.<Integer>defineId(Dolphin.class, EntityDataSerializers.INT);
       SWIM_WITH_PLAYER_TARGETING = TargetingConditions.forNonCombat().range(10.0).ignoreLineOfSight();
-      ALLOWED_ITEMS = (e) -> !e.hasPickUpDelay() && e.isAlive() && e.isInWater();
+      ALLOWED_ITEMS = (e) -> e.isAlive() && e.isInWater();
    }
 
    private class PlayWithItemsGoal extends Goal {
@@ -342,13 +341,13 @@ public class Dolphin extends AgeableWaterCreature {
          if (this.cooldown > Dolphin.this.tickCount) {
             return false;
          } else {
-            List<ItemEntity> items = Dolphin.this.level().getEntitiesOfClass(ItemEntity.class, Dolphin.this.getBoundingBox().inflate(8.0, 8.0, 8.0), Dolphin.ALLOWED_ITEMS);
+            List<LivingBlock> items = Dolphin.this.level().getEntitiesOfClass(LivingBlock.class, Dolphin.this.getBoundingBox().inflate(8.0, 8.0, 8.0), Dolphin.ALLOWED_ITEMS);
             return !items.isEmpty() || !Dolphin.this.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty();
          }
       }
 
       public void start() {
-         List<ItemEntity> items = Dolphin.this.level().getEntitiesOfClass(ItemEntity.class, Dolphin.this.getBoundingBox().inflate(8.0, 8.0, 8.0), Dolphin.ALLOWED_ITEMS);
+         List<LivingBlock> items = Dolphin.this.level().getEntitiesOfClass(LivingBlock.class, Dolphin.this.getBoundingBox().inflate(8.0, 8.0, 8.0), Dolphin.ALLOWED_ITEMS);
          if (!items.isEmpty()) {
             Dolphin.this.getNavigation().moveTo((Entity)items.get(0), 1.2000000476837158);
             Dolphin.this.playSound(SoundEvents.DOLPHIN_PLAY, 1.0F, 1.0F);
@@ -368,7 +367,7 @@ public class Dolphin extends AgeableWaterCreature {
       }
 
       public void tick() {
-         List<ItemEntity> items = Dolphin.this.level().getEntitiesOfClass(ItemEntity.class, Dolphin.this.getBoundingBox().inflate(8.0, 8.0, 8.0), Dolphin.ALLOWED_ITEMS);
+         List<LivingBlock> items = Dolphin.this.level().getEntitiesOfClass(LivingBlock.class, Dolphin.this.getBoundingBox().inflate(8.0, 8.0, 8.0), Dolphin.ALLOWED_ITEMS);
          ItemStack itemStack = Dolphin.this.getItemBySlot(EquipmentSlot.MAINHAND);
          if (!itemStack.isEmpty()) {
             this.drop(itemStack);
@@ -382,14 +381,11 @@ public class Dolphin extends AgeableWaterCreature {
       private void drop(final ItemStack itemStack) {
          if (!itemStack.isEmpty()) {
             double yHandPos = Dolphin.this.getEyeY() - 0.30000001192092896;
-            ItemEntity thrownItem = new ItemEntity(Dolphin.this.level(), Dolphin.this.getX(), yHandPos, Dolphin.this.getZ(), itemStack);
-            thrownItem.setPickUpDelay(40);
-            thrownItem.setThrower(Dolphin.this);
+            LivingBlock thrownItem = LivingBlock.createAt(Dolphin.this.level(), BlockPos.containing(Dolphin.this.getX(), yHandPos, Dolphin.this.getZ()), itemStack);
             float pow = 0.3F;
             float dir = Dolphin.this.random.nextFloat() * 6.2831855F;
             float pow2 = 0.02F * Dolphin.this.random.nextFloat();
             thrownItem.setDeltaMovement((double)(0.3F * -Mth.sin((double)(Dolphin.this.getYRot() * 0.017453292F)) * Mth.cos((double)(Dolphin.this.getXRot() * 0.017453292F)) + Mth.cos((double)dir) * pow2), (double)(0.3F * Mth.sin((double)(Dolphin.this.getXRot() * 0.017453292F)) * 1.5F), (double)(0.3F * Mth.cos((double)(Dolphin.this.getYRot() * 0.017453292F)) * Mth.cos((double)(Dolphin.this.getXRot() * 0.017453292F)) + Mth.sin((double)dir) * pow2));
-            Dolphin.this.level().addFreshEntity(thrownItem);
          }
       }
    }

@@ -23,7 +23,6 @@ import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.Pose;
@@ -45,6 +44,7 @@ import net.minecraft.world.entity.animal.axolotl.Axolotl;
 import net.minecraft.world.entity.animal.golem.IronGolem;
 import net.minecraft.world.entity.animal.nautilus.ZombieNautilus;
 import net.minecraft.world.entity.animal.turtle.Turtle;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.world.entity.npc.villager.AbstractVillager;
 import net.minecraft.world.entity.player.Player;
@@ -93,6 +93,7 @@ public class Drowned extends Zombie implements RangedAttackMob {
       this.goalSelector.addGoal(7, new RandomStrollGoal(this, 1.0));
       this.targetSelector.addGoal(1, (new HurtByTargetGoal(this, new Class[]{Drowned.class})).setAlertOthers(ZombifiedPiglin.class));
       this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, Player.class, 10, true, false, (target, level) -> this.okTarget(target)));
+      this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, LivingBlock.class, 10, true, false, (target, level) -> this.okTarget(target)));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, AbstractVillager.class, false));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, IronGolem.class, true));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, Axolotl.class, true, false));
@@ -197,7 +198,7 @@ public class Drowned extends Zombie implements RangedAttackMob {
       return level.isUnobstructed(this);
    }
 
-   public boolean okTarget(final @Nullable LivingEntity target) {
+   public boolean okTarget(final @Nullable Entity target) {
       if (target != null) {
          return !this.level().isBrightOutside() || target.isInWater();
       } else {
@@ -213,7 +214,7 @@ public class Drowned extends Zombie implements RangedAttackMob {
       if (this.searchingForLand) {
          return true;
       } else {
-         LivingEntity target = this.getTarget();
+         Entity target = this.getTarget();
          return target != null && target.isInWater();
       }
    }
@@ -255,7 +256,7 @@ public class Drowned extends Zombie implements RangedAttackMob {
       return false;
    }
 
-   public void performRangedAttack(final LivingEntity target, final float power) {
+   public void performRangedAttack(final Entity target, final float power) {
       ItemStack mainHandItem = this.getMainHandItem();
       ItemStack tridentItemStack = mainHandItem.is(Items.TRIDENT) ? mainHandItem : new ItemStack(Items.TRIDENT);
       ThrownTrident trident = new ThrownTrident(this.level(), this, tridentItemStack);
@@ -479,7 +480,7 @@ public class Drowned extends Zombie implements RangedAttackMob {
       }
 
       public void tick() {
-         LivingEntity target = this.drowned.getTarget();
+         Entity target = this.drowned.getTarget();
          if (this.drowned.wantsToSwim() && this.drowned.isInWater()) {
             if (target != null && target.getY() > this.drowned.getY() || this.drowned.searchingForLand) {
                this.drowned.setDeltaMovement(this.drowned.getDeltaMovement().add(0.0, 0.002, 0.0));

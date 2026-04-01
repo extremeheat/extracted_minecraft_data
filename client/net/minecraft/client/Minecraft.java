@@ -195,7 +195,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.contents.KeybindResolver;
 import net.minecraft.network.protocol.game.ServerboundClientTickEndPacket;
-import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.network.protocol.login.ServerboundHelloPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.Bootstrap;
@@ -1676,14 +1675,22 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
                         if (this.level.getBlockState(pos).isAir()) {
                            endAttack = true;
                         }
-                        break;
-                     }
-                  case MISS:
-                     if (this.gameMode.hasMissTime()) {
-                        this.missTime = 10;
-                     }
+                     } else {
+                        if (this.gameMode.hasMissTime()) {
+                           this.missTime = 10;
+                        }
 
-                     this.player.resetAttackStrengthTicker();
+                        this.player.resetAttackStrengthTicker();
+                     }
+                     break;
+                  case MISS:
+                     if (!this.gameMode.attackNothing()) {
+                        if (this.gameMode.hasMissTime()) {
+                           this.missTime = 10;
+                        }
+
+                        this.player.resetAttackStrengthTicker();
+                     }
                }
 
                this.player.swing(InteractionHand.MAIN_HAND);
@@ -1939,7 +1946,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.gameRenderer.togglePostEffect();
       }
 
-      for(int i = 0; i < 9; ++i) {
+      for(int i = 0; i < 8; ++i) {
          boolean savePressed = this.options.keySaveHotbarActivator.isDown();
          boolean loadPressed = this.options.keyLoadHotbarActivator.isDown();
          if (this.options.keyHotbarSlots[i].consumeClick()) {
@@ -1982,12 +1989,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
       while(this.options.keyQuickActions.consumeClick()) {
          this.getQuickActionsDialog().ifPresent((dialog) -> this.player.connection.showDialog(dialog, this.screen));
-      }
-
-      while(this.options.keySwapOffhand.consumeClick()) {
-         if (!this.player.isSpectator()) {
-            this.getConnection().send(new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.SWAP_ITEM_WITH_OFFHAND, BlockPos.ZERO, Direction.DOWN));
-         }
       }
 
       while(this.options.keyDrop.consumeClick()) {
@@ -2036,10 +2037,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
                this.gui.getSpectatorGui().onHotbarActionKeyPressed();
             }
          }
-      }
-
-      if (this.options.keyUse.isDown() && this.rightClickDelay == 0 && !this.player.isUsingItem()) {
-         this.startUseItem();
       }
 
       this.continueAttack(this.screen == null && !instantAttack && this.options.keyAttack.isDown() && this.mouseHandler.isMouseGrabbed());
@@ -2376,7 +2373,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          switch (var2.typeSwitch<invokedynamic>(var2, var3)) {
             case 0:
                BlockHitResult blockHitResult = (BlockHitResult)var2;
-               this.gameMode.handlePickItemFromBlock(blockHitResult.getBlockPos(), includeData);
+               this.gameMode.handlePickItemFromBlock(blockHitResult, includeData);
                break;
             case 1:
                EntityHitResult entityHitResult = (EntityHitResult)var2;

@@ -28,15 +28,14 @@ import org.joml.Vector2i;
 import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> extends Screen implements MenuAccess<T> {
-   public static final Identifier INVENTORY_LOCATION = Identifier.withDefaultNamespace("textures/gui/container/inventory.png");
    private static final Identifier SLOT_HIGHLIGHT_BACK_SPRITE = Identifier.withDefaultNamespace("container/slot_highlight_back");
    private static final Identifier SLOT_HIGHLIGHT_FRONT_SPRITE = Identifier.withDefaultNamespace("container/slot_highlight_front");
    protected static final int BACKGROUND_TEXTURE_WIDTH = 256;
    protected static final int BACKGROUND_TEXTURE_HEIGHT = 256;
    private static final float SNAPBACK_SPEED = 100.0F;
    private static final int QUICKDROP_DELAY = 500;
-   protected static final int DEFAULT_IMAGE_WIDTH = 176;
-   protected static final int DEFAULT_IMAGE_HEIGHT = 166;
+   protected static final int DEFAULT_IMAGE_WIDTH = 175;
+   protected static final int DEFAULT_IMAGE_HEIGHT = 78;
    protected final int imageWidth;
    protected final int imageHeight;
    protected int titleLabelX;
@@ -66,7 +65,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
    private ItemStack lastQuickMoved;
 
    public AbstractContainerScreen(final T menu, final Inventory inventory, final Component title) {
-      this(menu, inventory, title, 176, 166);
+      this(menu, inventory, title, 175, 78);
    }
 
    public AbstractContainerScreen(final T menu, final Inventory inventory, final Component title, final int imageWidth, final int imageHeight) {
@@ -181,14 +180,14 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       return false;
    }
 
-   private void extractSlotHighlightBack(final GuiGraphicsExtractor graphics) {
+   void extractSlotHighlightBack(final GuiGraphicsExtractor graphics) {
       if (this.hoveredSlot != null && this.hoveredSlot.isHighlightable()) {
          graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SLOT_HIGHLIGHT_BACK_SPRITE, this.hoveredSlot.x - 4, this.hoveredSlot.y - 4, 24, 24);
       }
 
    }
 
-   private void extractSlotHighlightFront(final GuiGraphicsExtractor graphics) {
+   void extractSlotHighlightFront(final GuiGraphicsExtractor graphics) {
       if (this.hoveredSlot != null && this.hoveredSlot.isHighlightable()) {
          graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SLOT_HIGHLIGHT_FRONT_SPRITE, this.hoveredSlot.x - 4, this.hoveredSlot.y - 4, 24, 24);
       }
@@ -220,7 +219,6 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
 
    protected void extractLabels(final GuiGraphicsExtractor graphics, final int xm, final int ym) {
       graphics.text(this.font, this.title, this.titleLabelX, this.titleLabelY, -12566464, false);
-      graphics.text(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, -12566464, false);
    }
 
    protected void extractSlot(final GuiGraphicsExtractor graphics, final Slot slot, final int mouseX, final int mouseY) {
@@ -301,7 +299,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       }
    }
 
-   private @Nullable Slot getHoveredSlot(final double x, final double y) {
+   @Nullable Slot getHoveredSlot(final double x, final double y) {
       for(Slot slot : this.menu.slots) {
          if (slot.isActive() && this.isHovering(slot, x, y)) {
             return slot;
@@ -389,11 +387,6 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
 
    private void checkHotbarMouseClicked(final MouseButtonEvent event) {
       if (this.hoveredSlot != null && this.menu.getCarried().isEmpty()) {
-         if (this.minecraft.options.keySwapOffhand.matchesMouse(event)) {
-            this.slotClicked(this.hoveredSlot, this.hoveredSlot.index, 40, ContainerInput.SWAP);
-            return;
-         }
-
          for(int i = 0; i < 9; ++i) {
             if (this.minecraft.options.keyHotbarSlots[i].matchesMouse(event)) {
                this.slotClicked(this.hoveredSlot, this.hoveredSlot.index, i, ContainerInput.SWAP);
@@ -542,7 +535,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       return xm >= (double)(left - 1) && xm < (double)(left + w + 1) && ym >= (double)(top - 1) && ym < (double)(top + h + 1);
    }
 
-   private void onStopHovering(final Slot slot) {
+   void onStopHovering(final Slot slot) {
       if (slot.hasItem()) {
          for(ItemSlotMouseAction itemMouseAction : this.itemSlotMouseActions) {
             if (itemMouseAction.matches(slot)) {
@@ -599,11 +592,6 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
 
    protected boolean checkHotbarKeyPressed(final KeyEvent event) {
       if (this.menu.getCarried().isEmpty() && this.hoveredSlot != null) {
-         if (this.minecraft.options.keySwapOffhand.matches(event)) {
-            this.slotClicked(this.hoveredSlot, this.hoveredSlot.index, 40, ContainerInput.SWAP);
-            return true;
-         }
-
          for(int i = 0; i < 9; ++i) {
             if (this.minecraft.options.keyHotbarSlots[i].matches(event)) {
                this.slotClicked(this.hoveredSlot, this.hoveredSlot.index, i, ContainerInput.SWAP);

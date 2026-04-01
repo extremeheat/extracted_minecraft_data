@@ -47,7 +47,7 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.ai.util.LandRandomPos;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -260,11 +260,7 @@ public class Sniffer extends Animal {
       if (var2 instanceof ServerLevel level) {
          if ((Integer)this.entityData.get(DATA_DROP_SEED_AT_TICK) == this.tickCount) {
             BlockPos head = this.getHeadBlock();
-            this.dropFromGiftLootTable(level, BuiltInLootTables.SNIFFER_DIGGING, (l, itemStack) -> {
-               ItemEntity entity = new ItemEntity(this.level(), (double)head.getX(), (double)head.getY(), (double)head.getZ(), itemStack);
-               entity.setDefaultPickUpDelay();
-               l.addFreshEntity(entity);
-            });
+            this.dropFromGiftLootTable(level, BuiltInLootTables.SNIFFER_DIGGING, (l, itemStack) -> LivingBlock.createStack(this.level(), head, this, itemStack));
             this.playSound(SoundEvents.SNIFFER_DROP_SEED, 1.0F, 1.0F);
             return;
          }
@@ -321,11 +317,9 @@ public class Sniffer extends Animal {
 
    public void spawnChildFromBreeding(final ServerLevel level, final Animal partner) {
       ItemStack itemStack = new ItemStack(Items.SNIFFER_EGG);
-      ItemEntity entity = new ItemEntity(level, this.position().x(), this.position().y(), this.position().z(), itemStack);
-      entity.setDefaultPickUpDelay();
+      LivingBlock.createAt(level, this.blockPosition(), (ItemStack)itemStack);
       this.finalizeSpawnChildFromBreeding(level, partner, (AgeableMob)null);
       this.playSound(SoundEvents.SNIFFER_EGG_PLOP, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 0.5F);
-      level.addFreshEntity(entity);
    }
 
    public void die(final DamageSource source) {

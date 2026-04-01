@@ -11,6 +11,7 @@ import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 
 public class FallingBlockRenderer extends EntityRenderer<FallingBlockEntity, FallingBlockRenderState> {
    public FallingBlockRenderer(final EntityRendererProvider.Context context) {
@@ -45,7 +46,7 @@ public class FallingBlockRenderer extends EntityRenderer<FallingBlockEntity, Fal
       super.extractRenderState(entity, state, partialTicks);
       BlockPos pos = BlockPos.containing(entity.getX(), entity.getBoundingBox().maxY, entity.getZ());
       state.movingBlockRenderState.randomSeedPos = entity.getStartPos();
-      state.movingBlockRenderState.blockPos = pos;
+      state.movingBlockRenderState.pos = new Vec3(pos);
       state.movingBlockRenderState.blockState = entity.getBlockState();
       Level var6 = entity.level();
       if (var6 instanceof ClientLevel clientLevel) {

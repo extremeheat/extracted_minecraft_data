@@ -20,7 +20,7 @@ import org.slf4j.Logger;
 
 public class Hotbar {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final int SIZE = Inventory.getSelectionSize();
+   private static final int SIZE = Inventory.getSelectionSize() - 1;
    public static final Codec<Hotbar> CODEC;
    private static final DynamicOps<Tag> DEFAULT_OPS;
    private static final Dynamic<?> EMPTY_STACK;

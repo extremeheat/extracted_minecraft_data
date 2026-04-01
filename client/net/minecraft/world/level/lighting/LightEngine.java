@@ -71,7 +71,7 @@ public abstract class LightEngine<M extends DataLayerStorageMap<M>, S extends La
       int chunkX = SectionPos.blockToSectionCoord(pos.getX());
       int chunkZ = SectionPos.blockToSectionCoord(pos.getZ());
       LightChunk chunk = this.getChunk(chunkX, chunkZ);
-      return chunk == null ? Blocks.BEDROCK.defaultBlockState() : chunk.getBlockState(pos);
+      return chunk == null ? Blocks.BEDROCK.defaultBlockState() : chunk.getBlockStateForLight(pos);
    }
 
    protected int getOpacity(final BlockState state) {

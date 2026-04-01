@@ -2,12 +2,16 @@ package net.minecraft.server.level;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Targetable;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.EntityGetter;
+import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.AABB;
 import org.jspecify.annotations.Nullable;
 
@@ -26,8 +30,46 @@ public interface ServerEntityGetter extends EntityGetter {
       return (Player)this.getNearestEntity(this.players(), targetConditions, (LivingEntity)null, x, y, z);
    }
 
-   default <T extends LivingEntity> @Nullable T getNearestEntity(final Class<? extends T> type, final TargetingConditions targetConditions, final @Nullable LivingEntity source, final double x, final double y, final double z, final AABB bb) {
+   default <T extends Entity & Targetable> @Nullable T getNearestEntity(final Class<? extends T> type, final TargetingConditions targetConditions, final @Nullable LivingEntity source, final double x, final double y, final double z, final AABB bb) {
       return (T)this.getNearestEntity(this.getEntitiesOfClass(type, bb, (entity) -> true), targetConditions, source, x, y, z);
+   }
+
+   default <T extends Entity> @Nullable T getNearestEntity(final Class<T> type, final double x, final double y, final double z, final AABB bb) {
+      return (T)this.getNearestEntity(type, x, y, z, bb, (var0) -> true);
+   }
+
+   default <T extends Entity> @Nullable T getNearestEntity(final Class<T> type, final double x, final double y, final double z, final AABB bb, final Predicate<? super T> selector) {
+      double bestDistance = 1.7976931348623157E308;
+      T nearestEntity = null;
+
+      for(T entity : this.getEntitiesOfClass(type, bb, selector)) {
+         double distance = entity.distanceToSqr(x, y, z);
+         if (distance < bestDistance) {
+            bestDistance = distance;
+            nearestEntity = entity;
+         }
+      }
+
+      return nearestEntity;
+   }
+
+   default <T extends Entity> @Nullable T getNearestEntity(final EntityTypeTest<Entity, T> type, final double x, final double y, final double z, final AABB bb) {
+      return (T)this.getNearestEntity(type, x, y, z, bb, (var0) -> true);
+   }
+
+   default <T extends Entity> @Nullable T getNearestEntity(final EntityTypeTest<Entity, T> type, final double x, final double y, final double z, final AABB bb, final Predicate<? super T> selector) {
+      double bestDistance = 1.7976931348623157E308;
+      T nearestEntity = null;
+
+      for(T entity : this.getEntities(type, bb, selector)) {
+         double distance = entity.distanceToSqr(x, y, z);
+         if (distance < bestDistance) {
+            bestDistance = distance;
+            nearestEntity = entity;
+         }
+      }
+
+      return nearestEntity;
    }
 
    default @Nullable LivingEntity getNearestEntity(final TagKey<EntityType<?>> tag, final TargetingConditions targetConditions, final @Nullable LivingEntity source, final double x, final double y, final double z, final AABB bb) {
@@ -47,7 +89,7 @@ public interface ServerEntityGetter extends EntityGetter {
       return nearestEntity;
    }
 
-   default <T extends LivingEntity> @Nullable T getNearestEntity(final List<? extends T> entities, final TargetingConditions targetConditions, final @Nullable LivingEntity source, final double x, final double y, final double z) {
+   default <T extends Entity & Targetable> @Nullable T getNearestEntity(final List<? extends T> entities, final TargetingConditions targetConditions, final @Nullable LivingEntity source, final double x, final double y, final double z) {
       double best = -1.0;
       T result = null;
 
@@ -76,7 +118,7 @@ public interface ServerEntityGetter extends EntityGetter {
       return foundPlayers;
    }
 
-   default <T extends LivingEntity> List<T> getNearbyEntities(final Class<T> type, final TargetingConditions targetConditions, final LivingEntity source, final AABB bb) {
+   default <T extends Entity & Targetable> List<T> getNearbyEntities(final Class<T> type, final TargetingConditions targetConditions, final LivingEntity source, final AABB bb) {
       List<T> nearby = this.getEntitiesOfClass(type, bb, (entityx) -> true);
       List<T> entities = new ArrayList();
 

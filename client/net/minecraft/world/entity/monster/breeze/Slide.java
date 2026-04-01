@@ -4,7 +4,7 @@ import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -23,13 +23,13 @@ public class Slide extends Behavior<Breeze> {
    }
 
    protected void start(final ServerLevel level, final Breeze breeze, final long timestamp) {
-      LivingEntity enemy = (LivingEntity)breeze.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse((Object)null);
+      Entity enemy = (Entity)breeze.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse((Object)null);
       if (enemy != null) {
          boolean isWithinInnerRing = breeze.withinInnerCircleRange(enemy.position());
          Vec3 position = null;
          if (isWithinInnerRing) {
             Vec3 position0 = DefaultRandomPos.getPosAway(breeze, 5, 5, enemy.position());
-            if (position0 != null && BreezeUtil.hasLineOfSight(breeze, position0) && enemy.distanceToSqr(position0.x, position0.y, position0.z) > enemy.distanceToSqr(breeze)) {
+            if (position0 != null && BreezeUtil.hasLineOfSight(breeze, position0) && enemy.distanceToSqr(position0.x, position0.y, position0.z) > enemy.distanceToSqr((Entity)breeze)) {
                position = position0;
             }
          }
@@ -42,7 +42,7 @@ public class Slide extends Behavior<Breeze> {
       }
    }
 
-   private static Vec3 randomPointInMiddleCircle(final Breeze breeze, final LivingEntity enemy) {
+   private static Vec3 randomPointInMiddleCircle(final Breeze breeze, final Entity enemy) {
       Vec3 direction = enemy.position().subtract(breeze.position());
       double distance = direction.length() - Mth.lerp(breeze.getRandom().nextDouble(), 8.0, 4.0);
       Vec3 target = direction.normalize().multiply(distance, distance, distance);

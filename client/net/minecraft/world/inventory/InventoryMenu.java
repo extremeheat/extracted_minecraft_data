@@ -3,15 +3,26 @@ package net.minecraft.world.inventory;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import net.minecraft.network.chat.Component;
+import net.minecraft.recipebook.PlaceRecipeHelper;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.Container;
+import net.minecraft.world.entity.CraftingGrid;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.display.RecipeDisplay;
+import net.minecraft.world.item.crafting.display.ShapedCraftingRecipeDisplay;
+import net.minecraft.world.item.crafting.display.ShapelessCraftingRecipeDisplay;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
+import net.minecraft.world.item.crafting.display.SlotDisplayContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.entity.EntityTypeTest;
 
 public class InventoryMenu extends AbstractCraftingMenu {
    public static final int CONTAINER_ID = 0;
@@ -43,8 +54,8 @@ public class InventoryMenu extends AbstractCraftingMenu {
       super((MenuType)null, 0, 2, 2);
       this.active = active;
       this.owner = owner;
-      this.addResultSlot(owner, 154, 28);
-      this.addCraftingGridSlots(98, 18);
+      this.addResultSlot(owner, 155, 33);
+      this.addCraftingGridSlots(96, 15);
 
       for(int i = 0; i < 4; ++i) {
          EquipmentSlot slot = SLOT_IDS[i];
@@ -176,6 +187,46 @@ public class InventoryMenu extends AbstractCraftingMenu {
 
    protected Player owner() {
       return this.owner;
+   }
+
+   public RecipeBookMenu.PostPlaceAction handlePlacement(final boolean useMaxItems, final boolean allowDroppingItemsToClear, final RecipeHolder<?> recipe, final ServerLevel level, final Inventory inventory, final RecipeManager.ServerDisplayInfo displayInfo) {
+      List<? extends CraftingGrid> grids = level.<CraftingGrid>getEntities(EntityTypeTest.forClass(CraftingGrid.class), (entity) -> entity.isOwnedBy(inventory.player));
+      if (!grids.isEmpty()) {
+         grids.forEach(CraftingGrid::clearGhostItems);
+         ContextMap context = SlotDisplayContext.fromLevel(level);
+         RecipeDisplay var10000 = displayInfo.display().display();
+         Objects.requireNonNull(var10000);
+         RecipeDisplay var9 = var10000;
+         byte var10 = 0;
+         //$FF: var10->value
+         //0->net/minecraft/world/item/crafting/display/ShapedCraftingRecipeDisplay
+         //1->net/minecraft/world/item/crafting/display/ShapelessCraftingRecipeDisplay
+         switch (var9.typeSwitch<invokedynamic>(var9, var10)) {
+            case 0:
+               ShapedCraftingRecipeDisplay shaped = (ShapedCraftingRecipeDisplay)var9;
+               PlaceRecipeHelper.placeRecipe(2, 2, shaped.width(), shaped.height(), shaped.ingredients(), (ingredientx, gridIndex, gridXPos, gridYPos) -> grids.forEach((grid) -> grid.setGhostItem(gridXPos, gridYPos, ingredientx)));
+               break;
+            case 1:
+               ShapelessCraftingRecipeDisplay shapeless = (ShapelessCraftingRecipeDisplay)var9;
+               int slotCount = Math.min(shapeless.ingredients().size(), 4);
+               int y = 0;
+               int x = 0;
+
+               for(int i = 0; i < slotCount; ++i) {
+                  SlotDisplay ingredient = (SlotDisplay)shapeless.ingredients().get(i);
+                  grids.forEach((grid) -> grid.setGhostItem(x, y, ingredient));
+                  ++x;
+                  if (x > 2) {
+                     ++y;
+                     x = 0;
+                  }
+               }
+         }
+      } else {
+         inventory.player.sendOverlayMessage(Component.translatable("inventory.place_grid"));
+      }
+
+      return RecipeBookMenu.PostPlaceAction.NOTHING;
    }
 
    static {

@@ -9,6 +9,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.StackedItemContents;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeManager;
 
 public abstract class AbstractCraftingMenu extends RecipeBookMenu {
    private final int width;
@@ -36,14 +37,14 @@ public abstract class AbstractCraftingMenu extends RecipeBookMenu {
 
    }
 
-   public RecipeBookMenu.PostPlaceAction handlePlacement(final boolean useMaxItems, final boolean allowDroppingItemsToClear, final RecipeHolder<?> recipe, final ServerLevel level, final Inventory inventory) {
+   public RecipeBookMenu.PostPlaceAction handlePlacement(final boolean useMaxItems, final boolean allowDroppingItemsToClear, final RecipeHolder<?> recipe, final ServerLevel level, final Inventory inventory, final RecipeManager.ServerDisplayInfo displayInfo) {
       RecipeHolder<CraftingRecipe> typedRecipe = recipe;
       this.beginPlacingRecipe();
 
-      RecipeBookMenu.PostPlaceAction var8;
+      RecipeBookMenu.PostPlaceAction var9;
       try {
          List<Slot> inputSlots = this.getInputGridSlots();
-         var8 = ServerPlaceRecipe.placeRecipe(new ServerPlaceRecipe.CraftingMenuAccess<CraftingRecipe>() {
+         var9 = ServerPlaceRecipe.placeRecipe(new ServerPlaceRecipe.CraftingMenuAccess<CraftingRecipe>() {
             {
                Objects.requireNonNull(AbstractCraftingMenu.this);
             }
@@ -65,7 +66,7 @@ public abstract class AbstractCraftingMenu extends RecipeBookMenu {
          this.finishPlacingRecipe(level, recipe);
       }
 
-      return var8;
+      return var9;
    }
 
    protected void beginPlacingRecipe() {

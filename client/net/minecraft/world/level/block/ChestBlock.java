@@ -22,10 +22,8 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.CompoundContainer;
 import net.minecraft.world.Container;
 import net.minecraft.world.Containers;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.animal.feline.Cat;
-import net.minecraft.world.entity.monster.piglin.PiglinAi;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -54,7 +52,6 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -182,19 +179,6 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
 
    protected void affectNeighborsAfterRemoval(final BlockState state, final ServerLevel level, final BlockPos pos, final boolean movedByPiston) {
       Containers.updateNeighboursAfterDestroy(state, level, pos);
-   }
-
-   protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
-      if (level instanceof ServerLevel serverLevel) {
-         MenuProvider menuProvider = this.getMenuProvider(state, level, pos);
-         if (menuProvider != null) {
-            player.openMenu(menuProvider);
-            player.awardStat(this.getOpenChestStat());
-            PiglinAi.angerNearbyPiglins(serverLevel, player, true);
-         }
-      }
-
-      return InteractionResult.SUCCESS;
    }
 
    protected Stat<Identifier> getOpenChestStat() {

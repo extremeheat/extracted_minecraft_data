@@ -35,6 +35,7 @@ import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.animal.golem.IronGolem;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.ChunkPos;
@@ -72,6 +73,7 @@ public class Slime extends Mob implements Enemy {
       this.goalSelector.addGoal(3, new SlimeRandomDirectionGoal(this));
       this.goalSelector.addGoal(5, new SlimeKeepOnJumpingGoal(this));
       this.targetSelector.addGoal(1, new NearestAttackableTargetGoal(this, Player.class, 10, true, false, (target, level) -> Math.abs(target.getY() - this.getY()) <= 4.0));
+      this.targetSelector.addGoal(1, new NearestAttackableTargetGoal(this, LivingBlock.class, 10, true, false, (target, level) -> Math.abs(target.getY() - this.getY()) <= 4.0));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, IronGolem.class, true));
    }
 
@@ -398,7 +400,7 @@ public class Slime extends Mob implements Enemy {
       }
 
       public boolean canUse() {
-         LivingEntity target = this.slime.getTarget();
+         Entity target = this.slime.getTarget();
          if (target == null) {
             return false;
          } else {
@@ -412,7 +414,7 @@ public class Slime extends Mob implements Enemy {
       }
 
       public boolean canContinueToUse() {
-         LivingEntity target = this.slime.getTarget();
+         Entity target = this.slime.getTarget();
          if (target == null) {
             return false;
          } else if (!this.slime.canAttack(target)) {
@@ -427,7 +429,7 @@ public class Slime extends Mob implements Enemy {
       }
 
       public void tick() {
-         LivingEntity target = this.slime.getTarget();
+         Entity target = this.slime.getTarget();
          if (target != null) {
             this.slime.lookAt(target, 10.0F, 10.0F);
          }

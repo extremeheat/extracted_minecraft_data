@@ -8,6 +8,7 @@ import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.Brain;
@@ -48,7 +49,7 @@ public class PiglinSpecificSensor extends Sensor<LivingEntity> {
       List<AbstractPiglin> visibleAdultPiglins = new ArrayList();
       NearestVisibleLivingEntities visibleLivingEntities = (NearestVisibleLivingEntities)brain.getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).orElse(NearestVisibleLivingEntities.empty());
 
-      for(LivingEntity entity : visibleLivingEntities.findAll((ignored) -> true)) {
+      for(Entity entity : visibleLivingEntities.findAll((ignored) -> true)) {
          if (entity instanceof Hoglin hoglin) {
             if (hoglin.isBaby() && babyHoglin.isEmpty()) {
                babyHoglin = Optional.of(hoglin);
@@ -76,7 +77,7 @@ public class PiglinSpecificSensor extends Sensor<LivingEntity> {
             }
          } else if (!nemesis.isEmpty() || !(entity instanceof WitherSkeleton) && !(entity instanceof WitherBoss)) {
             if (zombified.isEmpty() && PiglinAi.isZombified(entity)) {
-               zombified = Optional.of(entity);
+               zombified = Optional.of((LivingEntity)entity);
             }
          } else {
             nemesis = Optional.of((Mob)entity);

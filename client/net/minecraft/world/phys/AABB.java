@@ -41,6 +41,10 @@ public class AABB {
       return new AABB((double)box.minX(), (double)box.minY(), (double)box.minZ(), (double)(box.maxX() + 1), (double)(box.maxY() + 1), (double)(box.maxZ() + 1));
    }
 
+   public static AABB around(final Vec3 pos, final double amountToAddInAllDirections) {
+      return new AABB(pos.x - amountToAddInAllDirections, pos.y - amountToAddInAllDirections, pos.z - amountToAddInAllDirections, pos.x + amountToAddInAllDirections, pos.y + amountToAddInAllDirections, pos.z + amountToAddInAllDirections);
+   }
+
    public static AABB unitCubeFromLowerCorner(final Vec3 pos) {
       return new AABB(pos.x, pos.y, pos.z, pos.x + 1.0, pos.y + 1.0, pos.z + 1.0);
    }
@@ -79,6 +83,11 @@ public class AABB {
 
    public double max(final Direction.Axis axis) {
       return axis.choose(this.maxX, this.maxY, this.maxZ);
+   }
+
+   public double edge(final Direction face) {
+      Direction.Axis axis = face.getAxis();
+      return face.getAxisDirection() == Direction.AxisDirection.POSITIVE ? this.max(axis) : this.min(axis);
    }
 
    public boolean equals(final Object o) {

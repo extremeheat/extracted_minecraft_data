@@ -165,7 +165,9 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.pathfinder.PathTypeCache;
+import net.minecraft.world.level.portal.HouseForcer;
 import net.minecraft.world.level.portal.PortalForcer;
+import net.minecraft.world.level.portal.WitherForcer;
 import net.minecraft.world.level.redstone.ExperimentalRedstoneUtils;
 import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.level.saveddata.WeatherData;
@@ -208,6 +210,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
    private final SleepStatus sleepStatus;
    private int emptyTime;
    private final PortalForcer portalForcer;
+   private final WitherForcer witherForcer;
+   private final HouseForcer houseForcer;
    private final LevelTicks<Block> blockTicks = new LevelTicks<Block>(this::isPositionTickingWithEntitiesLoaded);
    private final LevelTicks<Fluid> fluidTicks = new LevelTicks<Fluid>(this::isPositionTickingWithEntitiesLoaded);
    private final PathTypeCache pathTypesByPosCache = new PathTypeCache();
@@ -244,6 +248,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
       this.chunkSource = new ServerChunkCache(this, levelStorage, fixerUpper, var10006, executor, generator, var10009, var10010, syncWrites, var10012::updateChunkStatus, () -> server.overworld().getDataStorage());
       this.chunkSource.getGeneratorState().ensureStructuresGenerated();
       this.portalForcer = new PortalForcer(this);
+      this.witherForcer = new WitherForcer(this);
+      this.houseForcer = new HouseForcer(this);
       if (this.canHaveWeather()) {
          this.prepareWeather(server.getWeatherData());
       }
@@ -440,7 +446,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
 
    private void wakeUpAllPlayers() {
       this.sleepStatus.removeAllSleepers();
-      ((List)this.players.stream().filter(LivingEntity::isSleeping).collect(Collectors.toList())).forEach((player) -> player.stopSleepInBed(false, false));
+      ((List)this.players.stream().filter(Player::isSleeping).collect(Collectors.toList())).forEach((player) -> player.stopSleepInBed(false, false));
    }
 
    public void tickChunk(final LevelChunk chunk, final int tickSpeed) {
@@ -1203,6 +1209,14 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
       return this.portalForcer;
    }
 
+   public WitherForcer getWitherForcer() {
+      return this.witherForcer;
+   }
+
+   public HouseForcer getHouseForcer() {
+      return this.houseForcer;
+   }
+
    public StructureTemplateManager getStructureManager() {
       return this.server.getStructureManager();
    }
@@ -1641,7 +1655,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
       }
    }
 
-   protected LevelEntityGetter<Entity> getEntities() {
+   public LevelEntityGetter<Entity> getEntities() {
       return this.entityManager.getEntityGetter();
    }
 

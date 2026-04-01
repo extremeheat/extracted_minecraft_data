@@ -21,6 +21,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.FireworkRocketEntity;
 import net.minecraft.world.entity.projectile.Projectile;
@@ -62,7 +63,7 @@ public class CrossbowItem extends ProjectileWeaponItem {
       ItemStack itemStack = player.getItemInHand(hand);
       ChargedProjectiles chargedProjectiles = (ChargedProjectiles)itemStack.get(DataComponents.CHARGED_PROJECTILES);
       if (chargedProjectiles != null && !chargedProjectiles.isEmpty()) {
-         this.performShooting(level, player, hand, itemStack, getShootingPower(chargedProjectiles), 1.0F, (LivingEntity)null);
+         this.performShooting(level, player, hand, itemStack, getShootingPower(chargedProjectiles), 1.0F, (Entity)null);
          return InteractionResult.CONSUME;
       } else if (!player.getProjectile(itemStack).isEmpty()) {
          this.startSoundPlayed = false;
@@ -98,13 +99,14 @@ public class CrossbowItem extends ProjectileWeaponItem {
       return !projectiles.isEmpty();
    }
 
-   protected void shootProjectile(final LivingEntity livingEntity, final Projectile projectileEntity, final int index, final float power, final float uncertainty, final float angle, final @Nullable LivingEntity targetOverride) {
+   protected void shootProjectile(final LivingEntity livingEntity, final Projectile projectileEntity, final int index, final float power, final float uncertainty, final float angle, final @Nullable Entity targetOverride) {
       Vector3f shotVector;
       if (targetOverride != null) {
          double xd = targetOverride.getX() - livingEntity.getX();
          double zd = targetOverride.getZ() - livingEntity.getZ();
          double distanceToTarget = Math.sqrt(xd * xd + zd * zd);
-         double yd = targetOverride.getY(0.3333333333333333) - projectileEntity.getY() + distanceToTarget * 0.20000000298023224;
+         float gravityCompensationFactor = targetOverride instanceof LivingBlock ? 0.1F : 0.2F;
+         double yd = targetOverride.getY(0.3333333333333333) - projectileEntity.getY() + distanceToTarget * (double)gravityCompensationFactor;
          shotVector = getProjectileShotVector(livingEntity, new Vec3(xd, yd, zd), angle);
       } else {
          Vec3 upVector = livingEntity.getUpVector(1.0F);
@@ -148,7 +150,7 @@ public class CrossbowItem extends ProjectileWeaponItem {
       return projectile.is(Items.FIREWORK_ROCKET) ? 3 : 1;
    }
 
-   public void performShooting(final Level level, final LivingEntity shooter, final InteractionHand hand, final ItemStack weapon, final float power, final float uncertainty, final @Nullable LivingEntity targetOverride) {
+   public void performShooting(final Level level, final LivingEntity shooter, final InteractionHand hand, final ItemStack weapon, final float power, final float uncertainty, final @Nullable Entity targetOverride) {
       if (level instanceof ServerLevel serverLevel) {
          ChargedProjectiles charged = (ChargedProjectiles)weapon.set(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
          if (charged != null && !charged.isEmpty()) {

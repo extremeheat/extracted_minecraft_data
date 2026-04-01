@@ -85,8 +85,8 @@ import net.minecraft.world.entity.decoration.LeashFenceKnotEntity;
 import net.minecraft.world.entity.decoration.Mannequin;
 import net.minecraft.world.entity.decoration.painting.Painting;
 import net.minecraft.world.entity.item.FallingBlockEntity;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.item.PrimedTnt;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.monster.Blaze;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.ElderGuardian;
@@ -210,6 +210,7 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
    public static final EntityType<ChestBoat> BIRCH_CHEST_BOAT;
    public static final EntityType<Blaze> BLAZE;
    public static final EntityType<Display.BlockDisplay> BLOCK_DISPLAY;
+   public static final EntityType<LivingBlock> LIVING_BLOCK;
    public static final EntityType<Bogged> BOGGED;
    public static final EntityType<Breeze> BREEZE;
    public static final EntityType<BreezeWindCharge> BREEZE_WIND_CHARGE;
@@ -223,6 +224,7 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
    public static final EntityType<Chicken> CHICKEN;
    public static final EntityType<Cod> COD;
    public static final EntityType<CopperGolem> COPPER_GOLEM;
+   public static final EntityType<CraftingGrid> CRAFTING_GRID;
    public static final EntityType<MinecartCommandBlock> COMMAND_BLOCK_MINECART;
    public static final EntityType<Cow> COW;
    public static final EntityType<Creaking> CREAKING;
@@ -261,17 +263,18 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
    public static final EntityType<Hoglin> HOGLIN;
    public static final EntityType<MinecartHopper> HOPPER_MINECART;
    public static final EntityType<Horse> HORSE;
+   public static final EntityType<CraftingGrid.HoveringItem> HOVERING_ITEM;
    public static final EntityType<Husk> HUSK;
    public static final EntityType<Illusioner> ILLUSIONER;
    public static final EntityType<Interaction> INTERACTION;
    public static final EntityType<IronGolem> IRON_GOLEM;
-   public static final EntityType<ItemEntity> ITEM;
    public static final EntityType<Display.ItemDisplay> ITEM_DISPLAY;
    public static final EntityType<ItemFrame> ITEM_FRAME;
    public static final EntityType<Boat> JUNGLE_BOAT;
    public static final EntityType<ChestBoat> JUNGLE_CHEST_BOAT;
    public static final EntityType<LeashFenceKnotEntity> LEASH_KNOT;
    public static final EntityType<LightningBolt> LIGHTNING_BOLT;
+   public static final EntityType<LivingBlockCommand> LIVING_BLOCK_COMMAND;
    public static final EntityType<Llama> LLAMA;
    public static final EntityType<LlamaSpit> LLAMA_SPIT;
    public static final EntityType<MagmaCube> MAGMA_CUBE;
@@ -352,6 +355,7 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
    public static final EntityType<Player> PLAYER;
    public static final EntityType<FishingHook> FISHING_BOBBER;
    private static final Set<EntityType<?>> OP_ONLY_CUSTOM_DATA;
+   private final Class<? super T> entityClass;
    private final EntityFactory<T> factory;
    private final MobCategory category;
    private final ImmutableSet<Block> immuneTo;
@@ -389,9 +393,10 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
       return BuiltInRegistries.ENTITY_TYPE.getOptional(Identifier.tryParse(id));
    }
 
-   public EntityType(final EntityFactory<T> factory, final MobCategory category, final boolean serialize, final boolean summon, final boolean fireImmune, final boolean canSpawnFarFromPlayer, final ImmutableSet<Block> immuneTo, final EntityDimensions dimensions, final float spawnDimensionsScale, final int clientTrackingRange, final int updateInterval, final String descriptionId, final Optional<ResourceKey<LootTable>> lootTable, final FeatureFlagSet requiredFeatures, final boolean allowedInPeaceful) {
+   public EntityType(final Class<? super T> entityClass, final EntityFactory<T> factory, final MobCategory category, final boolean serialize, final boolean summon, final boolean fireImmune, final boolean canSpawnFarFromPlayer, final ImmutableSet<Block> immuneTo, final EntityDimensions dimensions, final float spawnDimensionsScale, final int clientTrackingRange, final int updateInterval, final String descriptionId, final Optional<ResourceKey<LootTable>> lootTable, final FeatureFlagSet requiredFeatures, final boolean allowedInPeaceful) {
       super();
       this.builtInRegistryHolder = BuiltInRegistries.ENTITY_TYPE.createIntrusiveHolder(this);
+      this.entityClass = entityClass;
       this.factory = factory;
       this.category = category;
       this.canSpawnFarFromPlayer = canSpawnFarFromPlayer;
@@ -513,6 +518,10 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
             entityData.loadInto(entity);
          }
       }
+   }
+
+   public boolean isInstance(final Entity entity) {
+      return this.entityClass.isInstance(entity);
    }
 
    public boolean canSerialize() {
@@ -739,6 +748,7 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
       BIRCH_CHEST_BOAT = register("birch_chest_boat", EntityType.Builder.of(chestBoatFactory(() -> Items.BIRCH_CHEST_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       BLAZE = register("blaze", EntityType.Builder.of(Blaze::new, MobCategory.MONSTER).fireImmune().sized(0.6F, 1.8F).clientTrackingRange(8).notInPeaceful());
       BLOCK_DISPLAY = register("block_display", EntityType.Builder.of(Display.BlockDisplay::new, MobCategory.MISC).noLootTable().sized(0.0F, 0.0F).clientTrackingRange(10).updateInterval(1));
+      LIVING_BLOCK = register("living_block", EntityType.Builder.of(LivingBlock.class, LivingBlock::new, MobCategory.MISC).noLootTable().sized(0.98F, 0.98F).eyeHeight(0.15F).clientTrackingRange(10).updateInterval(3));
       BOGGED = register("bogged", EntityType.Builder.of(Bogged::new, MobCategory.MONSTER).sized(0.6F, 1.99F).eyeHeight(1.74F).ridingOffset(-0.7F).clientTrackingRange(8).notInPeaceful());
       BREEZE = register("breeze", EntityType.Builder.of(Breeze::new, MobCategory.MONSTER).sized(0.6F, 1.77F).eyeHeight(1.3452F).clientTrackingRange(10).notInPeaceful());
       BREEZE_WIND_CHARGE = register("breeze_wind_charge", EntityType.Builder.of(BreezeWindCharge::new, MobCategory.MISC).noLootTable().sized(0.3125F, 0.3125F).eyeHeight(0.0F).clientTrackingRange(4).updateInterval(10));
@@ -752,6 +762,7 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
       CHICKEN = register("chicken", EntityType.Builder.of(Chicken::new, MobCategory.CREATURE).sized(0.4F, 0.7F).eyeHeight(0.644F).passengerAttachments(new Vec3(0.0, 0.7, -0.1)).clientTrackingRange(10));
       COD = register("cod", EntityType.Builder.of(Cod::new, MobCategory.WATER_AMBIENT).sized(0.5F, 0.3F).eyeHeight(0.195F).clientTrackingRange(4));
       COPPER_GOLEM = register("copper_golem", EntityType.Builder.of(CopperGolem::new, MobCategory.MISC).sized(0.49F, 0.98F).eyeHeight(0.8125F).clientTrackingRange(10));
+      CRAFTING_GRID = register("crafting_grid", EntityType.Builder.of(CraftingGrid::new, MobCategory.MISC).sized(3.0F, 1.0F).clientTrackingRange(10).noLootTable());
       COMMAND_BLOCK_MINECART = register("command_block_minecart", EntityType.Builder.of(MinecartCommandBlock::new, MobCategory.MISC).noLootTable().sized(0.98F, 0.7F).passengerAttachments(0.1875F).clientTrackingRange(8));
       COW = register("cow", EntityType.Builder.of(Cow::new, MobCategory.CREATURE).sized(0.9F, 1.4F).eyeHeight(1.3F).passengerAttachments(1.36875F).clientTrackingRange(10));
       CREAKING = register("creaking", EntityType.Builder.of(Creaking::new, MobCategory.MONSTER).sized(0.9F, 2.7F).eyeHeight(2.3F).clientTrackingRange(8).notInPeaceful());
@@ -790,17 +801,18 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
       HOGLIN = register("hoglin", EntityType.Builder.of(Hoglin::new, MobCategory.MONSTER).sized(1.3964844F, 1.4F).passengerAttachments(1.49375F).clientTrackingRange(8));
       HOPPER_MINECART = register("hopper_minecart", EntityType.Builder.of(MinecartHopper::new, MobCategory.MISC).noLootTable().sized(0.98F, 0.7F).passengerAttachments(0.1875F).clientTrackingRange(8));
       HORSE = register("horse", EntityType.Builder.of(Horse::new, MobCategory.CREATURE).sized(1.3964844F, 1.6F).eyeHeight(1.52F).passengerAttachments(1.44375F).clientTrackingRange(10));
+      HOVERING_ITEM = register("hovering_item", EntityType.Builder.of(CraftingGrid.HoveringItem::new, MobCategory.MISC).fireImmune().noLootTable().sized(0.25F, 0.25F).eyeHeight(0.2125F).clientTrackingRange(6).updateInterval(20));
       HUSK = register("husk", EntityType.Builder.of(Husk::new, MobCategory.MONSTER).sized(0.6F, 1.95F).eyeHeight(1.74F).passengerAttachments(2.075F).ridingOffset(-0.7F).clientTrackingRange(8).notInPeaceful());
       ILLUSIONER = register("illusioner", EntityType.Builder.of(Illusioner::new, MobCategory.MONSTER).sized(0.6F, 1.95F).passengerAttachments(2.0F).ridingOffset(-0.6F).clientTrackingRange(8).notInPeaceful());
       INTERACTION = register("interaction", EntityType.Builder.of(Interaction::new, MobCategory.MISC).noLootTable().sized(0.0F, 0.0F).clientTrackingRange(10));
       IRON_GOLEM = register("iron_golem", EntityType.Builder.of(IronGolem::new, MobCategory.MISC).sized(1.4F, 2.7F).clientTrackingRange(10));
-      ITEM = register("item", EntityType.Builder.of(ItemEntity::new, MobCategory.MISC).noLootTable().sized(0.25F, 0.25F).eyeHeight(0.2125F).clientTrackingRange(6).updateInterval(20));
       ITEM_DISPLAY = register("item_display", EntityType.Builder.of(Display.ItemDisplay::new, MobCategory.MISC).noLootTable().sized(0.0F, 0.0F).clientTrackingRange(10).updateInterval(1));
       ITEM_FRAME = register("item_frame", EntityType.Builder.of(ItemFrame::new, MobCategory.MISC).noLootTable().sized(0.5F, 0.5F).eyeHeight(0.0F).clientTrackingRange(10).updateInterval(2147483647));
       JUNGLE_BOAT = register("jungle_boat", EntityType.Builder.of(boatFactory(() -> Items.JUNGLE_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       JUNGLE_CHEST_BOAT = register("jungle_chest_boat", EntityType.Builder.of(chestBoatFactory(() -> Items.JUNGLE_CHEST_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       LEASH_KNOT = register("leash_knot", EntityType.Builder.of(LeashFenceKnotEntity::new, MobCategory.MISC).noLootTable().noSave().sized(0.375F, 0.5F).eyeHeight(0.0625F).clientTrackingRange(10).updateInterval(2147483647));
       LIGHTNING_BOLT = register("lightning_bolt", EntityType.Builder.of(LightningBolt::new, MobCategory.MISC).noLootTable().noSave().sized(0.0F, 0.0F).clientTrackingRange(16).updateInterval(2147483647));
+      LIVING_BLOCK_COMMAND = register("living_block_command", EntityType.Builder.of(LivingBlockCommand::new, MobCategory.MISC).noLootTable().sized(1.0F, 0.0F));
       LLAMA = register("llama", EntityType.Builder.of(Llama::new, MobCategory.CREATURE).sized(0.9F, 1.87F).eyeHeight(1.7765F).passengerAttachments(new Vec3(0.0, 1.37, -0.3)).clientTrackingRange(10));
       LLAMA_SPIT = register("llama_spit", EntityType.Builder.of(LlamaSpit::new, MobCategory.MISC).noLootTable().sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
       MAGMA_CUBE = register("magma_cube", EntityType.Builder.of(MagmaCube::new, MobCategory.MONSTER).fireImmune().sized(0.52F, 0.52F).eyeHeight(0.325F).spawnDimensionsScale(4.0F).clientTrackingRange(8).notInPeaceful());
@@ -884,6 +896,7 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
    }
 
    public static class Builder<T extends Entity> {
+      private final Class<? super T> entityClass;
       private final EntityFactory<T> factory;
       private final MobCategory category;
       private ImmutableSet<Block> immuneTo = ImmutableSet.of();
@@ -901,23 +914,28 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
       private final DependantName<EntityType<?>, String> descriptionId;
       private boolean allowedInPeaceful;
 
-      private Builder(final EntityFactory<T> factory, final MobCategory category) {
+      private Builder(final Class<? super T> entityClass, final EntityFactory<T> factory, final MobCategory category) {
          super();
          this.requiredFeatures = FeatureFlags.VANILLA_SET;
          this.lootTable = (id) -> Optional.of(ResourceKey.create(Registries.LOOT_TABLE, id.identifier().withPrefix("entities/")));
          this.descriptionId = (id) -> Util.makeDescriptionId("entity", id.identifier());
          this.allowedInPeaceful = true;
+         this.entityClass = entityClass;
          this.factory = factory;
          this.category = category;
          this.canSpawnFarFromPlayer = category == MobCategory.CREATURE || category == MobCategory.MISC;
       }
 
+      public static <T extends Entity> Builder<T> of(final Class<? super T> entityClass, final EntityFactory<T> factory, final MobCategory category) {
+         return new Builder<T>(entityClass, factory, category);
+      }
+
       public static <T extends Entity> Builder<T> of(final EntityFactory<T> factory, final MobCategory category) {
-         return new Builder<T>(factory, category);
+         return new Builder<T>(Entity.class, factory, category);
       }
 
       public static <T extends Entity> Builder<T> createNothing(final MobCategory category) {
-         return new Builder<T>((t, l) -> null, category);
+         return new Builder<T>(Entity.class, (t, l) -> null, category);
       }
 
       public Builder<T> sized(final float width, final float height) {
@@ -1028,7 +1046,7 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
             Util.fetchChoiceType(References.ENTITY_TREE, name.identifier().toString());
          }
 
-         return new EntityType<T>(this.factory, this.category, this.serialize, this.summon, this.fireImmune, this.canSpawnFarFromPlayer, this.immuneTo, this.dimensions.withAttachments(this.attachments), this.spawnDimensionsScale, this.clientTrackingRange, this.updateInterval, this.descriptionId.get(name), this.lootTable.get(name), this.requiredFeatures, this.allowedInPeaceful);
+         return new EntityType<T>(this.entityClass, this.factory, this.category, this.serialize, this.summon, this.fireImmune, this.canSpawnFarFromPlayer, this.immuneTo, this.dimensions.withAttachments(this.attachments), this.spawnDimensionsScale, this.clientTrackingRange, this.updateInterval, this.descriptionId.get(name), this.lootTable.get(name), this.requiredFeatures, this.allowedInPeaceful);
       }
    }
 

@@ -3,6 +3,7 @@ package net.minecraft.world.entity.ai.behavior;
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -26,7 +27,7 @@ public class CrossbowAttack<E extends Mob & CrossbowAttackMob, T extends LivingE
    }
 
    protected boolean checkExtraStartConditions(final ServerLevel level, final E body) {
-      LivingEntity attackTarget = getAttackTarget(body);
+      Entity attackTarget = getAttackTarget(body);
       return body.isHolding(Items.CROSSBOW) && BehaviorUtils.canSee(body, attackTarget) && BehaviorUtils.isWithinAttackRange(body, attackTarget, 0);
    }
 
@@ -35,7 +36,7 @@ public class CrossbowAttack<E extends Mob & CrossbowAttackMob, T extends LivingE
    }
 
    protected void tick(final ServerLevel level, final E body, final long timestamp) {
-      LivingEntity target = getAttackTarget(body);
+      Entity target = getAttackTarget(body);
       this.lookAtTarget(body, target);
       this.crossbowAttack(body, target);
    }
@@ -52,7 +53,7 @@ public class CrossbowAttack<E extends Mob & CrossbowAttackMob, T extends LivingE
 
    }
 
-   private void crossbowAttack(final E body, final LivingEntity target) {
+   private void crossbowAttack(final E body, final Entity target) {
       if (this.crossbowState == CrossbowAttack.CrossbowState.UNCHARGED) {
          body.startUsingItem(ProjectileUtil.getWeaponHoldingHand(body, Items.CROSSBOW));
          this.crossbowState = CrossbowAttack.CrossbowState.CHARGING;
@@ -82,12 +83,12 @@ public class CrossbowAttack<E extends Mob & CrossbowAttackMob, T extends LivingE
 
    }
 
-   private void lookAtTarget(final Mob body, final LivingEntity target) {
+   private void lookAtTarget(final Mob body, final Entity target) {
       body.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(target, true));
    }
 
-   private static LivingEntity getAttackTarget(final LivingEntity body) {
-      return (LivingEntity)body.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).get();
+   private static Entity getAttackTarget(final LivingEntity body) {
+      return (Entity)body.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).get();
    }
 
    private static enum CrossbowState {

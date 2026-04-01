@@ -47,7 +47,18 @@ public class TemptGoal extends Goal {
       this.canScare = canScare;
       this.stopDistance = stopDistance;
       this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
-      this.targetingConditions = TEMPT_TARGETING.copy().selector((target, level) -> this.shouldFollow(target));
+      this.targetingConditions = TEMPT_TARGETING.copy().selector((target, level) -> {
+         boolean var10000;
+         if (target instanceof LivingEntity livingEntity) {
+            if (this.shouldFollow(livingEntity)) {
+               var10000 = true;
+               return var10000;
+            }
+         }
+
+         var10000 = false;
+         return var10000;
+      });
    }
 
    public boolean canUse() {

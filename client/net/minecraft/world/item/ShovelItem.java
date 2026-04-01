@@ -20,7 +20,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 
 public class ShovelItem extends Item {
-   protected static final Map<Block, BlockState> FLATTENABLES;
+   public static final Map<Block, BlockState> FLATTENABLES;
 
    public ShovelItem(final ToolMaterial material, final float attackDamageBaseline, final float attackSpeedBaseline, final Item.Properties properties) {
       super(properties.shovel(material, attackDamageBaseline, attackSpeedBaseline));

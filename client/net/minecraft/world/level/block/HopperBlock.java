@@ -96,7 +96,6 @@ public class HopperBlock extends BaseEntityBlock {
          BlockEntity var7 = level.getBlockEntity(pos);
          if (var7 instanceof HopperBlockEntity) {
             HopperBlockEntity hopper = (HopperBlockEntity)var7;
-            player.openMenu(hopper);
             player.awardStat(Stats.INSPECT_HOPPER);
          }
       }

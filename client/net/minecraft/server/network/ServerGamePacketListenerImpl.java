@@ -174,7 +174,6 @@ import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PlayerRideableJumping;
 import net.minecraft.world.entity.PositionMoveRotation;
 import net.minecraft.world.entity.Relative;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.ChatVisiblity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.PlayerModelPart;
@@ -187,6 +186,7 @@ import net.minecraft.world.inventory.BeaconMenu;
 import net.minecraft.world.inventory.CrafterMenu;
 import net.minecraft.world.inventory.MerchantMenu;
 import net.minecraft.world.inventory.RecipeBookMenu;
+import net.minecraft.world.item.ActionItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.Item;
@@ -201,6 +201,7 @@ import net.minecraft.world.level.BaseCommandBlock;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CommandBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -673,7 +674,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    public void handlePickItemFromBlock(final ServerboundPickItemFromBlockPacket packet) {
       ServerLevel level = this.player.level();
       PacketUtils.ensureRunningOnSameThread(packet, this, (ServerLevel)level);
-      BlockPos pos = packet.pos();
+      BlockPos pos = packet.hitResult().getBlockPos();
       if (this.player.isWithinBlockInteractionRange(pos, 1.0)) {
          if (level.isLoaded(pos)) {
             BlockState blockState = level.getBlockState(pos);
@@ -684,7 +685,10 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                   addBlockDataToItem(blockState, level, pos, itemStack);
                }
 
-               this.tryPickItem(itemStack);
+               if (this.player.hasInfiniteMaterials()) {
+                  Block.popResource(level, pos.relative((Direction)packet.hitResult().getDirection(), 1), itemStack, blockState);
+               }
+
             }
          }
       }
@@ -1266,13 +1270,13 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
                return;
             case DROP_ITEM:
-               if (!this.player.isSpectator()) {
+               if (this.player.isCreative()) {
                   this.player.drop(false);
                }
 
                return;
             case DROP_ALL_ITEMS:
-               if (!this.player.isSpectator()) {
+               if (this.player.isCreative()) {
                   this.player.drop(true);
                }
 
@@ -1285,6 +1289,22 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             case STOP_DESTROY_BLOCK:
                this.player.gameMode.handleBlockBreakAction(pos, action, packet.getDirection(), this.player.level().getMaxY(), packet.getSequence());
                this.ackBlockChangesUpTo(packet.getSequence());
+               return;
+            case COMMAND_POS:
+               Item var10 = this.player.getItemInHand(InteractionHand.MAIN_HAND).getItem();
+               if (var10 instanceof ActionItem) {
+                  ActionItem command = (ActionItem)var10;
+                  command.actionOnBlock(this.player, pos, packet.getDirection());
+               }
+
+               return;
+            case COMMAND:
+               Item var7 = this.player.getItemInHand(InteractionHand.MAIN_HAND).getItem();
+               if (var7 instanceof ActionItem) {
+                  ActionItem command = (ActionItem)var7;
+                  command.actionOnNothing(this.player);
+               }
+
                return;
             default:
                throw new IllegalArgumentException("Invalid player action");
@@ -1464,7 +1484,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    public void handleSetCarriedItem(final ServerboundSetCarriedItemPacket packet) {
       PacketUtils.ensureRunningOnSameThread(packet, this, (ServerLevel)this.player.level());
-      if (packet.getSlot() >= 0 && packet.getSlot() < Inventory.getSelectionSize()) {
+      if (packet.getSlot() >= 0 && packet.getSlot() < Inventory.getSelectionSize() - 1) {
          if (this.player.getInventory().getSelectedSlot() != packet.getSlot() && this.player.getUsedItemHand() == InteractionHand.MAIN_HAND) {
             this.player.stopUsingItem();
          }
@@ -1684,6 +1704,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                break;
             case STOP_SLEEPING:
                if (this.player.isSleeping()) {
+                  this.player.stopSleepOnEntity();
                   this.player.stopSleepInBed(false, true);
                   this.awaitingPositionFromClient = this.player.position();
                }
@@ -1772,17 +1793,25 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             ItemStack mainHandItem = this.player.getMainHandItem();
             if (this.player.isWithinAttackRange(mainHandItem, targetBounds, 3.0)) {
                if (!mainHandItem.has(DataComponents.PIERCING_WEAPON)) {
-                  if (!(target instanceof ItemEntity) && !(target instanceof ExperienceOrb) && target != this.player) {
-                     label55: {
+                  if (!(target instanceof ExperienceOrb) && target != this.player) {
+                     label57: {
                         if (target instanceof AbstractArrow) {
                            AbstractArrow abstractArrow = (AbstractArrow)target;
                            if (!abstractArrow.isAttackable()) {
-                              break label55;
+                              break label57;
                            }
                         }
 
                         if (!mainHandItem.isItemEnabled(level.enabledFeatures())) {
                            return;
+                        }
+
+                        Item var7 = mainHandItem.getItem();
+                        if (var7 instanceof ActionItem) {
+                           ActionItem action = (ActionItem)var7;
+                           if (action.actionOnEntity(this.player, target)) {
+                              return;
+                           }
                         }
 
                         if (this.player.cannotAttackWithItem(mainHandItem, 5)) {
@@ -1959,7 +1988,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                         return;
                      }
 
-                     RecipeBookMenu.PostPlaceAction postPlaceAction = recipeBookMenu.handlePlacement(packet.useMaxItems(), this.player.isCreative(), recipe, this.player.level(), this.player.getInventory());
+                     RecipeBookMenu.PostPlaceAction postPlaceAction = recipeBookMenu.handlePlacement(packet.useMaxItems(), this.player.isCreative(), recipe, this.player.level(), this.player.getInventory(), displayInfo);
                      if (postPlaceAction == RecipeBookMenu.PostPlaceAction.PLACE_GHOST_RECIPE) {
                         this.send(new ClientboundPlaceGhostRecipePacket(this.player.containerMenu.containerId, displayInfo.display().display()));
                      }

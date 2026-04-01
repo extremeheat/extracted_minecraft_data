@@ -1,18 +1,18 @@
 {
-    "id": "26.1.1",
-    "name": "26.1.1",
-    "world_version": 4788,
-    "series_id": "main",
-    "protocol_version": 775,
+    "id": "26w14a",
+    "name": "26w14a",
+    "world_version": 5000,
+    "series_id": "april2026",
+    "protocol_version": 1073742129,
     "pack_version": {
         "resource_major": 84,
         "resource_minor": 0,
         "data_major": 101,
         "data_minor": 1
     },
-    "build_time": "2026-04-01T09:05:14+00:00",
+    "build_time": "2026-04-01T12:12:09+00:00",
     "java_component": "java-runtime-epsilon",
     "java_version": 25,
-    "stable": true,
+    "stable": false,
     "use_editor": false
 }

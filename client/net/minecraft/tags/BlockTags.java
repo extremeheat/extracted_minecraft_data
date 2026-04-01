@@ -76,6 +76,18 @@ public final class BlockTags {
    public static final TagKey<Block> COPPER_GOLEM_STATUES = create("copper_golem_statues");
    public static final TagKey<Block> LANTERNS = create("lanterns");
    public static final TagKey<Block> BARS = create("bars");
+   public static final TagKey<Block> COW_FOOD = create("cow_food");
+   public static final TagKey<Block> PIG_FOOD = create("pig_food");
+   public static final TagKey<Block> SHEEP_FOOD = create("sheep_food");
+   public static final TagKey<Block> CHICKEN_FOOD = create("chicken_food");
+   public static final TagKey<Block> HORSE_FOOD = create("horse_food");
+   public static final TagKey<Block> LLAMA_TEMPT_ITEMS = create("llama_tempt_items");
+   public static final TagKey<Block> ZOMBIE_HORSE_FOOD = create("zombie_horse_food");
+   public static final TagKey<Block> PANDA_FOOD = create("panda_food");
+   public static final TagKey<Block> TURTLE_FOOD = create("turtle_food");
+   public static final TagKey<Block> STRIDER_TEMPT_ITEMS = create("strider_tempt_items");
+   public static final TagKey<Block> CAT_FOOD = create("cat_food");
+   public static final TagKey<Block> RABBIT_FOOD = create("rabbit_food");
    public static final TagKey<Block> CEILING_HANGING_SIGNS = create("ceiling_hanging_signs");
    public static final TagKey<Block> STANDING_SIGNS = create("standing_signs");
    public static final TagKey<Block> BEE_ATTRACTIVE = create("bee_attractive");
@@ -202,6 +214,7 @@ public final class BlockTags {
    public static final TagKey<Block> REPLACEABLE_BY_MUSHROOMS = create("replaceable_by_mushrooms");
    public static final TagKey<Block> ENABLES_BUBBLE_COLUMN_DRAG_DOWN = create("enables_bubble_column_drag_down");
    public static final TagKey<Block> ENABLES_BUBBLE_COLUMN_PUSH_UP = create("enables_bubble_column_push_up");
+   public static final TagKey<Block> LIVING_BLOCK_TAKES_FALL_DAMAGE = create("living_block_takes_fall_damage");
    public static final TagKey<Block> SUPPORTS_VEGETATION = create("supports_vegetation");
    public static final TagKey<Block> SUPPORTS_DRY_VEGETATION = create("supports_dry_vegetation");
    public static final TagKey<Block> SUPPORTS_CROPS = create("supports_crops");
@@ -252,6 +265,7 @@ public final class BlockTags {
    public static final TagKey<Block> TRIGGERS_AMBIENT_DESERT_SAND_BLOCK_SOUNDS = create("triggers_ambient_desert_sand_block_sounds");
    public static final TagKey<Block> TRIGGERS_AMBIENT_DESERT_DRY_VEGETATION_BLOCK_SOUNDS = create("triggers_ambient_desert_dry_vegetation_block_sounds");
    public static final TagKey<Block> TRIGGERS_AMBIENT_DRIED_GHAST_BLOCK_SOUNDS = create("triggers_ambient_dried_ghast_block_sounds");
+   public static final TagKey<Block> BUILDS_INTO_HOUSE = create("builds_into_house");
    public static final TagKey<Block> AIR = create("air");
 
    private BlockTags() {

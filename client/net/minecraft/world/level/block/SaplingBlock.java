@@ -17,7 +17,7 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class SaplingBlock extends VegetationBlock implements BonemealableBlock {
+public class SaplingBlock extends VegetationBlock implements TreeGrowingBlock {
    public static final MapCodec<SaplingBlock> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(TreeGrower.CODEC.fieldOf("tree").forGetter((b) -> b.treeGrower), propertiesCodec()).apply(i, SaplingBlock::new));
    public static final IntegerProperty STAGE;
    private static final VoxelShape SHAPE;
@@ -72,6 +72,10 @@ public class SaplingBlock extends VegetationBlock implements BonemealableBlock {
 
    protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
       builder.add(STAGE);
+   }
+
+   public TreeGrower treeGrower() {
+      return this.treeGrower;
    }
 
    static {

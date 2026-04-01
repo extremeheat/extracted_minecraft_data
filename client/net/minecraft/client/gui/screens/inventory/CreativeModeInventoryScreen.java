@@ -827,7 +827,6 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
             }
          }
 
-         this.addInventoryHotbarSlots(inventory, 9, 112);
          this.scrollTo(0.0F);
       }
 

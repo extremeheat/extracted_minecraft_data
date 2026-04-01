@@ -45,7 +45,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.npc.InventoryCarrier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
@@ -130,32 +129,6 @@ public class GameTestHelper {
       AABB bounds = this.getBounds();
       List<? extends Entity> entities = this.getLevel().getEntitiesOfClass(baseClass, bounds.inflate(1.0), (mob) -> !(mob instanceof Player));
       entities.forEach((entity) -> entity.kill(this.getLevel()));
-   }
-
-   public ItemEntity spawnItem(final Item item, final Vec3 pos) {
-      ServerLevel level = this.getLevel();
-      Vec3 absoluteVec = this.absoluteVec(pos);
-      ItemEntity itemEntity = new ItemEntity(level, absoluteVec.x, absoluteVec.y, absoluteVec.z, new ItemStack(item, 1));
-      itemEntity.setDeltaMovement(0.0, 0.0, 0.0);
-      level.addFreshEntity(itemEntity);
-      return itemEntity;
-   }
-
-   public ItemEntity spawnItem(final Item item, final float x, final float y, final float z) {
-      return this.spawnItem(item, new Vec3((double)x, (double)y, (double)z));
-   }
-
-   public ItemEntity spawnItem(final Item item, final BlockPos pos) {
-      return this.spawnItem(item, (float)pos.getX(), (float)pos.getY(), (float)pos.getZ());
-   }
-
-   public void despawnItem(final BlockPos pos, final double distance) {
-      BlockPos absolutePos = this.absolutePos(pos);
-
-      for(ItemEntity entity : this.getLevel().getEntities(EntityType.ITEM, (new AABB(absolutePos)).inflate(distance), Entity::isAlive)) {
-         entity.remove(Entity.RemovalReason.KILLED);
-      }
-
    }
 
    public <E extends Entity> E spawn(final EntityType<E> entityType, final BlockPos pos) {
@@ -349,19 +322,7 @@ public class GameTestHelper {
    }
 
    public Player makeMockPlayer(final GameType gameType) {
-      return new Player(this.getLevel(), new GameProfile(UUID.randomUUID(), "test-mock-player")) {
-         {
-            Objects.requireNonNull(GameTestHelper.this);
-         }
-
-         public GameType gameMode() {
-            return gameType;
-         }
-
-         public boolean isClientAuthoritative() {
-            return false;
-         }
-      };
+      return new MockPlayer(gameType);
    }
 
    /** @deprecated */
@@ -625,53 +586,6 @@ public class GameTestHelper {
       BlockPos absolutePos = this.absolutePos(pos);
       List<? extends Entity> entities = this.getLevel().getEntities(entity.getType(), (new AABB(absolutePos)).inflate(inflate), Entity::isAlive);
       entities.stream().filter((it) -> it == entity).findFirst().orElseThrow(() -> this.assertionException(pos, "test.error.expected_entity", entity.getType().getDescription()));
-   }
-
-   public void assertItemEntityCountIs(final Item itemType, final BlockPos pos, final double distance, final int count) {
-      BlockPos absolutePos = this.absolutePos(pos);
-      List<ItemEntity> entities = this.getLevel().getEntities(EntityType.ITEM, (new AABB(absolutePos)).inflate(distance), Entity::isAlive);
-      int num = 0;
-
-      for(ItemEntity entity : entities) {
-         ItemStack itemStack = entity.getItem();
-         if (itemStack.is(itemType)) {
-            num += itemStack.getCount();
-         }
-      }
-
-      if (num != count) {
-         throw this.assertionException(pos, "test.error.expected_items_count", count, getItemName(itemType), num);
-      }
-   }
-
-   public void assertItemEntityPresent(final Item itemType, final BlockPos pos, final double distance) {
-      BlockPos absolutePos = this.absolutePos(pos);
-      Predicate<ItemEntity> isSameItem = (entity) -> entity.isAlive() && entity.getItem().is(itemType);
-      if (!this.getLevel().hasEntities(EntityType.ITEM, (new AABB(absolutePos)).inflate(distance), isSameItem)) {
-         throw this.assertionException(pos, "test.error.expected_item", getItemName(itemType));
-      }
-   }
-
-   public void assertItemEntityNotPresent(final Item itemType, final BlockPos pos, final double distance) {
-      BlockPos absolutePos = this.absolutePos(pos);
-      Predicate<ItemEntity> isSameItem = (entity) -> entity.isAlive() && entity.getItem().is(itemType);
-      if (this.getLevel().hasEntities(EntityType.ITEM, (new AABB(absolutePos)).inflate(distance), isSameItem)) {
-         throw this.assertionException(pos, "test.error.unexpected_item", getItemName(itemType));
-      }
-   }
-
-   public void assertItemEntityPresent(final Item itemType) {
-      Predicate<ItemEntity> isSameItem = (entity) -> entity.isAlive() && entity.getItem().is(itemType);
-      if (!this.getLevel().hasEntities(EntityType.ITEM, this.getBounds(), isSameItem)) {
-         throw this.assertionException("test.error.expected_item", getItemName(itemType));
-      }
-   }
-
-   public void assertItemEntityNotPresent(final Item itemType) {
-      Predicate<ItemEntity> isSameItem = (entity) -> entity.isAlive() && entity.getItem().is(itemType);
-      if (this.getLevel().hasEntities(EntityType.ITEM, this.getBounds(), isSameItem)) {
-         throw this.assertionException("test.error.unexpected_item", getItemName(itemType));
-      }
    }
 
    public void assertEntityNotPresent(final EntityType<?> entityType) {
@@ -1132,6 +1046,25 @@ public class GameTestHelper {
          Direction[] directions = Direction.values();
          Arrays.sort(directions, Comparator.comparingDouble((d) -> d.getUnitVec3().distanceTo(this.placeDirection.getUnitVec3())));
          return directions;
+      }
+   }
+
+   private class MockPlayer extends Player {
+      private final GameType gameType;
+
+      public MockPlayer(final GameType gameType) {
+         Objects.requireNonNull(GameTestHelper.this);
+         super(GameTestHelper.this.getLevel(), new GameProfile(UUID.randomUUID(), "test-mock-player"));
+         this.gameType = gameType;
+         this.getInventory().clearContent();
+      }
+
+      public GameType gameMode() {
+         return this.gameType;
+      }
+
+      public boolean isClientAuthoritative() {
+         return false;
       }
    }
 }

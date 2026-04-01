@@ -224,7 +224,10 @@ public class BuiltInBlockModels {
    }
 
    private static SpecialModelFactory createBed(final DyeColor color) {
-      return specialModelWithPropertyDispatch(BedBlock.FACING, BedBlock.PART, (facing, part) -> special(new BedSpecialRenderer.Unbaked(color, part), BedRenderer.modelTransform(facing)));
+      return (state) -> {
+         Direction facing = (Direction)state.getValue(BedBlock.FACING);
+         return special(new BedSpecialRenderer.Unbaked(color), BedRenderer.modelTransform(facing));
+      };
    }
 
    private static SpecialModelFactory createShulkerBox() {

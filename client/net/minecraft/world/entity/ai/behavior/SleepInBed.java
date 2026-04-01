@@ -8,6 +8,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -63,9 +64,9 @@ public class SleepInBed extends Behavior<LivingEntity> {
          Brain<?> brain = body.getBrain();
          if (brain.hasMemoryValue(MemoryModuleType.DOORS_TO_CLOSE)) {
             Set<GlobalPos> doors = (Set)brain.getMemory(MemoryModuleType.DOORS_TO_CLOSE).get();
-            Optional<List<LivingEntity>> nearestEntities;
+            Optional<List<Entity>> nearestEntities;
             if (brain.hasMemoryValue(MemoryModuleType.NEAREST_LIVING_ENTITIES)) {
-               nearestEntities = brain.<List<LivingEntity>>getMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES);
+               nearestEntities = brain.<List<Entity>>getMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES);
             } else {
                nearestEntities = Optional.empty();
             }

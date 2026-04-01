@@ -35,7 +35,6 @@ import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
@@ -281,7 +280,7 @@ public class Frog extends Animal {
       this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
    }
 
-   public static boolean canEat(final LivingEntity entity) {
+   public static boolean canEat(final Entity entity) {
       if (entity instanceof Slime slime) {
          if (slime.getSize() != 1) {
             return false;
@@ -295,7 +294,7 @@ public class Frog extends Animal {
       return new FrogPathNavigation(this, level);
    }
 
-   public @Nullable LivingEntity getTarget() {
+   public @Nullable Entity getTarget() {
       return this.getTargetFromBrain();
    }
 

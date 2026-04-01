@@ -43,6 +43,7 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.monster.hoglin.HoglinBase;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.level.Level;
@@ -93,7 +94,7 @@ public class Zoglin extends Monster implements HoglinBase {
       return ActivityData.create(Activity.FIGHT, 10, ImmutableList.of(SetWalkTargetFromAttackTargetIfTargetOutOfReach.create(1.0F), BehaviorBuilder.triggerIf(Zoglin::isAdult, MeleeAttack.create(40)), BehaviorBuilder.triggerIf(Zoglin::isBaby, MeleeAttack.create(15)), StopAttackingIfTargetInvalid.create()), MemoryModuleType.ATTACK_TARGET);
    }
 
-   private static Optional<? extends LivingEntity> findNearestValidAttackTarget(final ServerLevel level, final Mob mob) {
+   private static Optional<? extends Entity> findNearestValidAttackTarget(final ServerLevel level, final Mob mob) {
       return ((NearestVisibleLivingEntities)mob.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).orElse(NearestVisibleLivingEntities.empty())).findClosest((target) -> !target.is(EntityType.ZOGLIN) && !target.is(EntityType.CREEPER) && Sensor.isEntityAttackable(level, mob, target));
    }
 
@@ -127,13 +128,13 @@ public class Zoglin extends Monster implements HoglinBase {
    }
 
    public boolean doHurtTarget(final ServerLevel level, final Entity target) {
-      if (target instanceof LivingEntity entity) {
+      if (!(target instanceof LivingEntity) && !(target instanceof LivingBlock)) {
+         return false;
+      } else {
          this.attackAnimationRemainingTicks = 10;
          level.broadcastEntityEvent(this, (byte)4);
          this.makeSound(SoundEvents.ZOGLIN_ATTACK);
-         return HoglinBase.hurtAndThrowTarget(level, this, entity);
-      } else {
-         return false;
+         return HoglinBase.hurtAndThrowTarget(level, this, target);
       }
    }
 
@@ -151,9 +152,8 @@ public class Zoglin extends Monster implements HoglinBase {
    public boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {
       boolean wasHurt = super.hurtServer(level, source, damage);
       if (wasHurt) {
-         Entity var6 = source.getEntity();
-         if (var6 instanceof LivingEntity) {
-            LivingEntity attacker = (LivingEntity)var6;
+         Entity attacker = source.getEntity();
+         if (attacker instanceof Entity) {
             if (this.canAttack(attacker) && !BehaviorUtils.isOtherTargetMuchFurtherAwayThanCurrentAttackTarget(this, attacker, 4.0)) {
                this.setAttackTarget(attacker);
             }
@@ -165,7 +165,7 @@ public class Zoglin extends Monster implements HoglinBase {
       return wasHurt;
    }
 
-   private void setAttackTarget(final LivingEntity target) {
+   private void setAttackTarget(final Entity target) {
       this.brain.eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
       this.brain.setMemoryWithExpiry(MemoryModuleType.ATTACK_TARGET, target, 200L);
    }
@@ -251,7 +251,7 @@ public class Zoglin extends Monster implements HoglinBase {
       this.makeSound(SoundEvents.ZOGLIN_ANGRY);
    }
 
-   public @Nullable LivingEntity getTarget() {
+   public @Nullable Entity getTarget() {
       return this.getTargetFromBrain();
    }
 

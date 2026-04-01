@@ -9,6 +9,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.Brain;
@@ -51,11 +52,11 @@ public class ChargeAttack extends Behavior<Animal> {
 
    protected boolean canStillUse(final ServerLevel level, final Animal body, final long timestamp) {
       Brain<?> brain = body.getBrain();
-      Optional<LivingEntity> attackCandidate = brain.<LivingEntity>getMemory(MemoryModuleType.ATTACK_TARGET);
+      Optional<Entity> attackCandidate = brain.<Entity>getMemory(MemoryModuleType.ATTACK_TARGET);
       if (attackCandidate.isEmpty()) {
          return false;
       } else {
-         LivingEntity attackTarget = (LivingEntity)attackCandidate.get();
+         Entity attackTarget = (Entity)attackCandidate.get();
          if (body instanceof TamableAnimal) {
             TamableAnimal tamedAnimal = (TamableAnimal)body;
             if (tamedAnimal.isTame()) {
@@ -78,7 +79,7 @@ public class ChargeAttack extends Behavior<Animal> {
    protected void start(final ServerLevel level, final Animal body, final long timestamp) {
       Brain<?> brain = body.getBrain();
       this.startPosition = body.position();
-      LivingEntity attackCandidate = (LivingEntity)brain.getMemory(MemoryModuleType.ATTACK_TARGET).get();
+      Entity attackCandidate = (Entity)brain.getMemory(MemoryModuleType.ATTACK_TARGET).get();
       Vec3 direction = attackCandidate.position().subtract(body.position()).normalize();
       this.chargeVelocityVector = direction.scale((double)this.speed);
       if (this.canStillUse(level, body, timestamp)) {
@@ -89,7 +90,7 @@ public class ChargeAttack extends Behavior<Animal> {
 
    protected void tick(final ServerLevel level, final Animal body, final long timestamp) {
       Brain<?> brain = body.getBrain();
-      LivingEntity attackTarget = (LivingEntity)brain.getMemory(MemoryModuleType.ATTACK_TARGET).orElseThrow();
+      Entity attackTarget = (Entity)brain.getMemory(MemoryModuleType.ATTACK_TARGET).orElseThrow();
       body.lookAt(attackTarget, 360.0F, 360.0F);
       body.setDeltaMovement(this.chargeVelocityVector);
       List<LivingEntity> collidingEntities = new ArrayList(1);

@@ -32,7 +32,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SlotAccess;
-import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemInstance;
 import net.minecraft.world.item.ItemStack;
@@ -180,11 +180,7 @@ public class LootCommand {
 
    private static int dropInWorld(final CommandSourceStack source, final Vec3 pos, final List<ItemStack> drops, final Callback callback) throws CommandSyntaxException {
       ServerLevel level = source.getLevel();
-      drops.forEach((drop) -> {
-         ItemEntity entity = new ItemEntity(level, pos.x, pos.y, pos.z, drop.copy());
-         entity.setDefaultPickUpDelay();
-         level.addFreshEntity(entity);
-      });
+      drops.forEach((drop) -> LivingBlock.createStack(level, BlockPos.containing(pos), source.getEntity(), drop));
       callback.accept(drops);
       return drops.size();
    }

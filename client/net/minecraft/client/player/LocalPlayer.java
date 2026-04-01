@@ -301,10 +301,14 @@ public class LocalPlayer extends AbstractClientPlayer {
    }
 
    public boolean drop(final boolean all) {
-      ServerboundPlayerActionPacket.Action action = all ? ServerboundPlayerActionPacket.Action.DROP_ALL_ITEMS : ServerboundPlayerActionPacket.Action.DROP_ITEM;
-      ItemStack prediction = this.getInventory().removeFromSelected(all);
-      this.connection.send(new ServerboundPlayerActionPacket(action, BlockPos.ZERO, Direction.DOWN));
-      return !prediction.isEmpty();
+      if (this.isCreative()) {
+         ServerboundPlayerActionPacket.Action action = all ? ServerboundPlayerActionPacket.Action.DROP_ALL_ITEMS : ServerboundPlayerActionPacket.Action.DROP_ITEM;
+         ItemStack prediction = this.getInventory().removeFromSelected(all);
+         this.connection.send(new ServerboundPlayerActionPacket(action, BlockPos.ZERO, Direction.DOWN));
+         return !prediction.isEmpty();
+      } else {
+         return false;
+      }
    }
 
    public void swing(final InteractionHand hand) {

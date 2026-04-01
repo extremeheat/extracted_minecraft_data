@@ -33,7 +33,6 @@ public class SmithingTableBlock extends CraftingTableBlock {
 
    protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
       if (!level.isClientSide()) {
-         player.openMenu(state.getMenuProvider(level, pos));
          player.awardStat(Stats.INTERACT_WITH_SMITHING_TABLE);
       }
 

@@ -21,7 +21,6 @@ import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -178,7 +177,7 @@ public class Phantom extends Mob implements Enemy {
       return originalDimensions.scale(1.0F + 0.15F * (float)size);
    }
 
-   private boolean canAttack(final ServerLevel level, final LivingEntity target, final TargetingConditions targetConditions) {
+   private boolean canAttack(final ServerLevel level, final Entity target, final TargetingConditions targetConditions) {
       return targetConditions.test(level, this, target);
    }
 
@@ -363,7 +362,7 @@ public class Phantom extends Mob implements Enemy {
       }
 
       public boolean canContinueToUse() {
-         LivingEntity target = Phantom.this.getTarget();
+         Entity target = Phantom.this.getTarget();
          if (target == null) {
             return false;
          } else if (!target.isAlive()) {
@@ -396,12 +395,12 @@ public class Phantom extends Mob implements Enemy {
       }
 
       public void stop() {
-         Phantom.this.setTarget((LivingEntity)null);
+         Phantom.this.setTarget((Entity)null);
          Phantom.this.attackPhase = Phantom.AttackPhase.CIRCLE;
       }
 
       public void tick() {
-         LivingEntity target = Phantom.this.getTarget();
+         Entity target = Phantom.this.getTarget();
          if (target != null) {
             Phantom.this.moveTargetPoint = new Vec3(target.getX(), target.getY(0.5), target.getZ());
             if (Phantom.this.getBoundingBox().inflate(0.20000000298023224).intersects(target.getBoundingBox())) {
@@ -427,7 +426,7 @@ public class Phantom extends Mob implements Enemy {
       }
 
       public boolean canUse() {
-         LivingEntity target = Phantom.this.getTarget();
+         Entity target = Phantom.this.getTarget();
          return target != null ? Phantom.this.canAttack(getServerLevel(Phantom.this.level()), target, TargetingConditions.DEFAULT) : false;
       }
 
@@ -503,7 +502,7 @@ public class Phantom extends Mob implements Enemy {
       }
 
       public boolean canContinueToUse() {
-         LivingEntity target = Phantom.this.getTarget();
+         Entity target = Phantom.this.getTarget();
          return target != null ? Phantom.this.canAttack(getServerLevel(Phantom.this.level()), target, TargetingConditions.DEFAULT) : false;
       }
    }

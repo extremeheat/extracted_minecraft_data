@@ -82,7 +82,7 @@ public class SpawnEggItem extends Item {
       }
    }
 
-   private static InteractionResult spawnMob(final @Nullable LivingEntity user, final ItemStack itemStack, final Level level, final BlockPos spawnPos, final boolean tryMoveDown, final boolean movedUp) {
+   public static InteractionResult spawnMob(final @Nullable LivingEntity user, final ItemStack itemStack, final Level level, final BlockPos spawnPos, final boolean tryMoveDown, final boolean movedUp) {
       EntityType<?> type = getType(itemStack);
       if (type == null) {
          return InteractionResult.FAIL;

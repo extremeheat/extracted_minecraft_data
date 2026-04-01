@@ -13,6 +13,7 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.CommonLinks;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
@@ -50,7 +51,7 @@ public class CombatTracker {
    }
 
    private static boolean shouldEnterCombat(final DamageSource source) {
-      return source.getEntity() instanceof LivingEntity;
+      return source.getEntity() instanceof LivingEntity || source.getEntity() instanceof LivingBlock;
    }
 
    private Component getMessageForAssistedFall(final Entity attackerEntity, final Component attackerName, final String messageWithItem, final String messageWithoutItem) {

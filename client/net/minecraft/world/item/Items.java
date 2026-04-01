@@ -52,6 +52,7 @@ import net.minecraft.world.level.block.BeehiveBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CopperGolemStatueBlock;
+import net.minecraft.world.level.block.CraftingAction;
 import net.minecraft.world.level.block.LightBlock;
 import net.minecraft.world.level.block.TestBlock;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
@@ -1546,6 +1547,16 @@ public class Items {
    public static final Item OMINOUS_TRIAL_KEY;
    public static final Item VAULT;
    public static final Item OMINOUS_BOTTLE;
+   public static final Item IRON_TRAP;
+   public static final WeatheringCopperItems COPPER_TRAP;
+   public static final ActionItem PUNCH_ACTION;
+   public static final ActionItem FOLLOW_ACTION;
+   public static final ActionItem CRAFTING_ACTION;
+   public static final ActionItem MOVE_ACTION;
+   public static final ActionItem ATTACK_ACTION;
+   public static final ActionItem BUILD_ACTION;
+   public static final ActionItem GROUP_ACTION;
+   public static final ActionItem HIGHLIGHT_ACTION;
 
    public Items() {
       super();
@@ -1597,12 +1608,12 @@ public class Items {
       return registerItem((ResourceKey)blockIdToItemId(block.builtInRegistryHolder().key()), (p) -> (Item)itemFactory.apply(block, p), properties.useBlockDescriptionPrefix().requiredFeatures(block.requiredFeatures()));
    }
 
-   private static Item registerItem(final String name, final Function<Item.Properties, Item> itemFactory) {
-      return registerItem(vanillaItemId(name), itemFactory, new Item.Properties());
+   private static <T extends Item> T registerItem(final String name, final Function<Item.Properties, T> itemFactory) {
+      return (T)registerItem(vanillaItemId(name), itemFactory, new Item.Properties());
    }
 
-   private static Item registerItem(final String name, final Function<Item.Properties, Item> itemFactory, final Item.Properties properties) {
-      return registerItem(vanillaItemId(name), itemFactory, properties);
+   private static <T extends Item> T registerItem(final String name, final Function<Item.Properties, T> itemFactory, final Item.Properties properties) {
+      return (T)registerItem(vanillaItemId(name), itemFactory, properties);
    }
 
    private static Item registerItem(final String name, final Item.Properties properties) {
@@ -1613,17 +1624,17 @@ public class Items {
       return registerItem(vanillaItemId(name), Item::new, new Item.Properties());
    }
 
-   private static Item registerItem(final ResourceKey<Item> key, final Function<Item.Properties, Item> itemFactory) {
-      return registerItem(key, itemFactory, new Item.Properties());
+   private static <T extends Item> T registerItem(final ResourceKey<Item> key, final Function<Item.Properties, T> itemFactory) {
+      return (T)registerItem(key, itemFactory, new Item.Properties());
    }
 
-   private static Item registerItem(final ResourceKey<Item> key, final Function<Item.Properties, Item> itemFactory, final Item.Properties properties) {
+   private static <T extends Item> T registerItem(final ResourceKey<Item> key, final Function<Item.Properties, T> itemFactory, final Item.Properties properties) {
       Item item = (Item)itemFactory.apply(properties.setId(key));
       if (item instanceof BlockItem blockItem) {
          blockItem.registerBlocks(Item.BY_BLOCK, item);
       }
 
-      return (Item)Registry.register(BuiltInRegistries.ITEM, (ResourceKey)key, item);
+      return (T)(Registry.register(BuiltInRegistries.ITEM, (ResourceKey)key, item));
    }
 
    static {
@@ -2508,7 +2519,7 @@ public class Items {
       FLINT_AND_STEEL = registerItem("flint_and_steel", FlintAndSteelItem::new, (new Item.Properties()).durability(64));
       BOWL = registerItem("bowl");
       APPLE = registerItem("apple", (new Item.Properties()).food(Foods.APPLE));
-      BOW = registerItem("bow", BowItem::new, (new Item.Properties()).durability(384).enchantable(1));
+      BOW = registerItem("bow", BowItem::new, (new Item.Properties()).enchantable(1));
       ARROW = registerItem("arrow", ArrowItem::new);
       COAL = registerItem("coal");
       CHARCOAL = registerItem("charcoal");
@@ -2667,7 +2678,7 @@ public class Items {
       GREEN_BUNDLE = registerItem("green_bundle", BundleItem::new, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
       RED_BUNDLE = registerItem("red_bundle", BundleItem::new, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
       BLACK_BUNDLE = registerItem("black_bundle", BundleItem::new, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
-      FISHING_ROD = registerItem("fishing_rod", FishingRodItem::new, (new Item.Properties()).durability(64).enchantable(1));
+      FISHING_ROD = registerItem("fishing_rod", FishingRodItem::new, (new Item.Properties()).enchantable(1));
       CLOCK = registerItem("clock");
       SPYGLASS = registerItem("spyglass", SpyglassItem::new, (new Item.Properties()).stacksTo(1));
       GLOWSTONE_DUST = registerItem("glowstone_dust");
@@ -3112,5 +3123,15 @@ public class Items {
       OMINOUS_TRIAL_KEY = registerItem("ominous_trial_key");
       VAULT = registerBlock(Blocks.VAULT);
       OMINOUS_BOTTLE = registerItem("ominous_bottle", (new Item.Properties()).rarity(Rarity.UNCOMMON).component(DataComponents.CONSUMABLE, Consumables.OMINOUS_BOTTLE).component(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, new OminousBottleAmplifier(0)));
+      IRON_TRAP = registerBlock(Blocks.IRON_TRAP);
+      COPPER_TRAP = WeatheringCopperItems.create(Blocks.COPPER_TRAP, Items::registerBlock);
+      PUNCH_ACTION = (ActionItem)registerItem("punch_action", PunchAction::new, (new Item.Properties()).stacksTo(1));
+      FOLLOW_ACTION = (ActionItem)registerItem("follow_action", FollowAction::new, (new Item.Properties()).stacksTo(1).component(DataComponents.FOLLOW, false));
+      CRAFTING_ACTION = (ActionItem)registerItem("crafting_action", CraftingAction::new, (new Item.Properties()).stacksTo(1));
+      MOVE_ACTION = (ActionItem)registerItem("move_action", MoveAction::new, (new Item.Properties()).stacksTo(1).attributes(MoveAction.createAttributes()));
+      ATTACK_ACTION = (ActionItem)registerItem("attack_action", AttackAction::new, (new Item.Properties()).stacksTo(1).attributes(AttackAction.createAttributes()));
+      BUILD_ACTION = (ActionItem)registerItem("build_action", BuildAction::new, (new Item.Properties()).stacksTo(1).attributes(MoveAction.createAttributes()));
+      GROUP_ACTION = (ActionItem)registerItem("group_action", GroupAction::new, (new Item.Properties()).stacksTo(1).attributes(GroupAction.createGroupAttributes()));
+      HIGHLIGHT_ACTION = (ActionItem)registerItem("highlight_action", ActionItem::new, (new Item.Properties()).stacksTo(1));
    }
 }

@@ -108,12 +108,18 @@ public class PlaceCommand {
 
    public static int placeTemplate(final CommandSourceStack source, final Identifier template, final BlockPos pos, final Rotation rotation, final Mirror mirror, final float integrity, final int seed, final boolean strict) throws CommandSyntaxException {
       ServerLevel level = source.getLevel();
+      placeTemplate(template, pos, rotation, mirror, integrity, seed, strict, level);
+      source.sendSuccess(() -> Component.translatable("commands.place.template.success", Component.translationArg(template), pos.getX(), pos.getY(), pos.getZ()), true);
+      return 1;
+   }
+
+   public static void placeTemplate(final Identifier template, final BlockPos pos, final Rotation rotation, final Mirror mirror, final float integrity, final int seed, final boolean strict, final ServerLevel level) throws CommandSyntaxException {
       StructureTemplateManager manager = level.getStructureManager();
 
       Optional<StructureTemplate> maybeStructureTemplate;
       try {
          maybeStructureTemplate = manager.get(template);
-      } catch (IdentifierException var14) {
+      } catch (IdentifierException var13) {
          throw ERROR_TEMPLATE_INVALID.create(template);
       }
 
@@ -130,9 +136,6 @@ public class PlaceCommand {
          boolean placed = structureTemplate.placeInWorld(level, pos, pos, placeSettings, StructureBlockEntity.createRandom((long)seed), 2 | (strict ? 816 : 0));
          if (!placed) {
             throw ERROR_TEMPLATE_FAILED.create();
-         } else {
-            source.sendSuccess(() -> Component.translatable("commands.place.template.success", Component.translationArg(template), pos.getX(), pos.getY(), pos.getZ()), true);
-            return 1;
          }
       }
    }

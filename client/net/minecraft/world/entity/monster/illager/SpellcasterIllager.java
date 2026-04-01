@@ -12,8 +12,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
@@ -146,7 +146,7 @@ public abstract class SpellcasterIllager extends AbstractIllager {
       }
 
       public boolean canUse() {
-         LivingEntity target = SpellcasterIllager.this.getTarget();
+         Entity target = SpellcasterIllager.this.getTarget();
          if (target != null && target.isAlive()) {
             if (SpellcasterIllager.this.isCastingSpell()) {
                return false;
@@ -159,7 +159,7 @@ public abstract class SpellcasterIllager extends AbstractIllager {
       }
 
       public boolean canContinueToUse() {
-         LivingEntity target = SpellcasterIllager.this.getTarget();
+         Entity target = SpellcasterIllager.this.getTarget();
          return target != null && target.isAlive() && this.attackWarmupDelay > 0;
       }
 

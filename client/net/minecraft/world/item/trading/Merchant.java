@@ -1,11 +1,8 @@
 package net.minecraft.world.item.trading;
 
-import java.util.OptionalInt;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.MerchantMenu;
 import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
@@ -35,14 +32,6 @@ public interface Merchant {
    }
 
    default void openTradingScreen(final Player player, final Component title, final int level) {
-      OptionalInt containerId = player.openMenu(new SimpleMenuProvider((id, inventory, p) -> new MerchantMenu(id, inventory, this), title));
-      if (containerId.isPresent()) {
-         MerchantOffers offers = this.getOffers();
-         if (!offers.isEmpty()) {
-            player.sendMerchantOffers(containerId.getAsInt(), offers, level, this.getVillagerXp(), this.showProgressBar(), this.canRestock());
-         }
-      }
-
    }
 
    boolean isClientSide();

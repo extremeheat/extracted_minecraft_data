@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.valueproviders.UniformInt;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.ActivityData;
 import net.minecraft.world.entity.ai.behavior.DoNothing;
@@ -47,7 +48,7 @@ public class CreakingAi {
       return ActivityData.create(Activity.FIGHT, 10, ImmutableList.of(SetWalkTargetFromAttackTargetIfTargetOutOfReach.create(1.0F), MeleeAttack.create(Creaking::canMove, 40), StopAttackingIfTargetInvalid.create((StopAttackingIfTargetInvalid.StopAttackCondition)((level, target) -> !isAttackTargetStillReachable(body, target)))), ImmutableSet.of(Pair.of(MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_PRESENT)));
    }
 
-   private static boolean isAttackTargetStillReachable(final Creaking creaking, final LivingEntity target) {
+   private static boolean isAttackTargetStillReachable(final Creaking creaking, final Entity target) {
       Optional<List<Player>> visibleAttackablePlayers = creaking.getBrain().<List<Player>>getMemory(MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYERS);
       return (Boolean)visibleAttackablePlayers.map((players) -> {
          boolean var10000;

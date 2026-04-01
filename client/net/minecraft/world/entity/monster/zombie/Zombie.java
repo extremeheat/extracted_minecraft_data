@@ -53,6 +53,7 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.animal.chicken.Chicken;
 import net.minecraft.world.entity.animal.golem.IronGolem;
 import net.minecraft.world.entity.animal.turtle.Turtle;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.npc.villager.AbstractVillager;
 import net.minecraft.world.entity.npc.villager.Villager;
@@ -119,6 +120,7 @@ public class Zombie extends Monster {
       this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 1.0));
       this.targetSelector.addGoal(1, (new HurtByTargetGoal(this, new Class[0])).setAlertOthers(ZombifiedPiglin.class));
       this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, Player.class, true));
+      this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, LivingBlock.class, true));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, AbstractVillager.class, false));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, IronGolem.class, true));
       this.targetSelector.addGoal(5, new NearestAttackableTargetGoal(this, Turtle.class, 10, true, false, Turtle.BABY_ON_LAND_SELECTOR));
@@ -263,9 +265,9 @@ public class Zombie extends Monster {
       if (!super.hurtServer(level, source, damage)) {
          return false;
       } else {
-         LivingEntity target = this.getTarget();
-         if (target == null && source.getEntity() instanceof LivingEntity) {
-            target = (LivingEntity)source.getEntity();
+         Entity target = this.getTarget();
+         if (target == null && source.getEntity() != null) {
+            target = source.getEntity();
          }
 
          if (target != null && level.getDifficulty() == Difficulty.HARD && (double)this.random.nextFloat() < this.getAttributeValue(Attributes.SPAWN_REINFORCEMENTS_CHANCE) && level.isSpawningMonsters()) {

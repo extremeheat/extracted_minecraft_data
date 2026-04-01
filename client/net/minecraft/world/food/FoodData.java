@@ -103,7 +103,7 @@ public class FoodData {
    }
 
    public void addExhaustion(final float amount) {
-      this.exhaustionLevel = Math.min(this.exhaustionLevel + amount, 40.0F);
+      this.exhaustionLevel = Math.min(this.exhaustionLevel + amount / 2.0F, 40.0F);
    }
 
    public float getSaturationLevel() {

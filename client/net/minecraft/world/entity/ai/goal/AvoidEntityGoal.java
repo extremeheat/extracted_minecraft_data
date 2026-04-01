@@ -2,6 +2,7 @@ package net.minecraft.world.entity.ai.goal;
 
 import java.util.EnumSet;
 import java.util.function.Predicate;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
@@ -29,7 +30,7 @@ public class AvoidEntityGoal<T extends LivingEntity> extends Goal {
       this(mob, avoidClass, (t) -> true, maxDist, walkSpeedModifier, sprintSpeedModifier, EntitySelector.NO_CREATIVE_OR_SPECTATOR);
    }
 
-   public AvoidEntityGoal(final PathfinderMob mob, final Class<T> avoidClass, final Predicate<LivingEntity> avoidPredicate, final float maxDist, final double walkSpeedModifier, final double sprintSpeedModifier, final Predicate<? super LivingEntity> predicateOnAvoidEntity) {
+   public AvoidEntityGoal(final PathfinderMob mob, final Class<T> avoidClass, final Predicate<Entity> avoidPredicate, final float maxDist, final double walkSpeedModifier, final double sprintSpeedModifier, final Predicate<? super Entity> predicateOnAvoidEntity) {
       super();
       this.mob = mob;
       this.avoidClass = avoidClass;
@@ -43,12 +44,12 @@ public class AvoidEntityGoal<T extends LivingEntity> extends Goal {
       this.avoidEntityTargeting = TargetingConditions.forCombat().range((double)maxDist).selector((target, level) -> predicateOnAvoidEntity.test(target) && avoidPredicate.test(target));
    }
 
-   public AvoidEntityGoal(final PathfinderMob mob, final Class<T> avoidClass, final float maxDist, final double walkSpeedModifier, final double sprintSpeedModifier, final Predicate<? super LivingEntity> predicateOnAvoidEntity) {
+   public AvoidEntityGoal(final PathfinderMob mob, final Class<T> avoidClass, final float maxDist, final double walkSpeedModifier, final double sprintSpeedModifier, final Predicate<? super Entity> predicateOnAvoidEntity) {
       this(mob, avoidClass, (t) -> true, maxDist, walkSpeedModifier, sprintSpeedModifier, predicateOnAvoidEntity);
    }
 
    public boolean canUse() {
-      this.toAvoid = getServerLevel(this.mob).getNearestEntity(this.mob.level().getEntitiesOfClass(this.avoidClass, this.mob.getBoundingBox().inflate((double)this.maxDist, 3.0, (double)this.maxDist), (entity) -> true), this.avoidEntityTargeting, this.mob, this.mob.getX(), this.mob.getY(), this.mob.getZ());
+      this.toAvoid = (T)(getServerLevel(this.mob).getNearestEntity(this.mob.level().getEntitiesOfClass(this.avoidClass, this.mob.getBoundingBox().inflate((double)this.maxDist, 3.0, (double)this.maxDist), (entity) -> true), this.avoidEntityTargeting, this.mob, this.mob.getX(), this.mob.getY(), this.mob.getZ()));
       if (this.toAvoid == null) {
          return false;
       } else {

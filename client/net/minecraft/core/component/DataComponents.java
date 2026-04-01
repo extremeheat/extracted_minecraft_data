@@ -127,6 +127,7 @@ public class DataComponents {
    public static final DataComponentType<Integer> REPAIR_COST = register("repair_cost", (b) -> b.persistent(ExtraCodecs.NON_NEGATIVE_INT).networkSynchronized(ByteBufCodecs.VAR_INT));
    public static final DataComponentType<Unit> CREATIVE_SLOT_LOCK = register("creative_slot_lock", (b) -> b.networkSynchronized(Unit.STREAM_CODEC));
    public static final DataComponentType<Boolean> ENCHANTMENT_GLINT_OVERRIDE = register("enchantment_glint_override", (b) -> b.persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL));
+   public static final DataComponentType<Boolean> FOLLOW = register("follow", (b) -> b.persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL));
    public static final DataComponentType<Unit> INTANGIBLE_PROJECTILE = register("intangible_projectile", (b) -> b.persistent(Unit.CODEC));
    public static final DataComponentType<FoodProperties> FOOD = register("food", (b) -> b.persistent(FoodProperties.DIRECT_CODEC).networkSynchronized(FoodProperties.DIRECT_STREAM_CODEC).cacheEncoding());
    public static final DataComponentType<Consumable> CONSUMABLE = register("consumable", (b) -> b.persistent(Consumable.CODEC).networkSynchronized(Consumable.STREAM_CODEC).cacheEncoding());

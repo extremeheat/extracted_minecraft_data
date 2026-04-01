@@ -22,7 +22,7 @@ public class AdultSensor extends Sensor<LivingEntity> {
    }
 
    protected void setNearestVisibleAdult(final LivingEntity body, final NearestVisibleLivingEntities visibleLivingEntities) {
-      Optional<LivingEntity> adult = visibleLivingEntities.findClosest((entity) -> entity.getType() == body.getType() && !entity.isBaby());
+      Optional<LivingEntity> adult = visibleLivingEntities.findClosestMatchingLivingEntityPredicate((entity) -> entity.getType() == body.getType() && !entity.isBaby()).map((entity) -> (LivingEntity)entity);
       body.getBrain().setMemory(MemoryModuleType.NEAREST_VISIBLE_ADULT, adult);
    }
 }

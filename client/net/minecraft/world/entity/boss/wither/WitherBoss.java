@@ -42,7 +42,7 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
-import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.world.entity.player.Player;
@@ -373,7 +373,7 @@ public class WitherBoss extends Monster implements RangedAttackMob {
       return a + diff;
    }
 
-   private void performRangedAttack(final int head, final LivingEntity target) {
+   private void performRangedAttack(final int head, final Entity target) {
       this.performRangedAttack(head, target.getX(), target.getY() + (double)target.getEyeHeight() * 0.5, target.getZ(), head == 0 && this.random.nextFloat() < 0.001F);
    }
 
@@ -399,7 +399,7 @@ public class WitherBoss extends Monster implements RangedAttackMob {
       this.level().addFreshEntity(entity);
    }
 
-   public void performRangedAttack(final LivingEntity target, final float power) {
+   public void performRangedAttack(final Entity target, final float power) {
       this.performRangedAttack(0, target);
    }
 
@@ -440,11 +440,7 @@ public class WitherBoss extends Monster implements RangedAttackMob {
 
    protected void dropCustomDeathLoot(final ServerLevel level, final DamageSource source, final boolean killedByPlayer) {
       super.dropCustomDeathLoot(level, source, killedByPlayer);
-      ItemEntity netherStar = this.spawnAtLocation(level, Items.NETHER_STAR);
-      if (netherStar != null) {
-         netherStar.setExtendedLifetime();
-      }
-
+      this.spawnAtLocation(level, Items.NETHER_STAR);
    }
 
    public void checkDespawn() {
@@ -509,7 +505,7 @@ public class WitherBoss extends Monster implements RangedAttackMob {
       DATA_TARGET_C = SynchedEntityData.<Integer>defineId(WitherBoss.class, EntityDataSerializers.INT);
       DATA_TARGETS = ImmutableList.of(DATA_TARGET_A, DATA_TARGET_B, DATA_TARGET_C);
       DATA_ID_INV = SynchedEntityData.<Integer>defineId(WitherBoss.class, EntityDataSerializers.INT);
-      LIVING_ENTITY_SELECTOR = (target, level) -> !target.is(EntityTypeTags.WITHER_FRIENDS) && target.attackable();
+      LIVING_ENTITY_SELECTOR = (target, level) -> !target.is(EntityTypeTags.WITHER_FRIENDS) && !(target instanceof ArmorStand);
       TARGETING_CONDITIONS = TargetingConditions.forCombat().range(20.0).selector(LIVING_ENTITY_SELECTOR);
    }
 

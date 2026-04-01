@@ -1,7 +1,7 @@
 package net.minecraft.world.entity.ai.goal;
 
 import java.util.EnumSet;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.phys.Vec3;
@@ -9,7 +9,7 @@ import org.jspecify.annotations.Nullable;
 
 public class MoveTowardsTargetGoal extends Goal {
    private final PathfinderMob mob;
-   private @Nullable LivingEntity target;
+   private @Nullable Entity target;
    private double wantedX;
    private double wantedY;
    private double wantedZ;
@@ -28,7 +28,7 @@ public class MoveTowardsTargetGoal extends Goal {
       this.target = this.mob.getTarget();
       if (this.target == null) {
          return false;
-      } else if (this.target.distanceToSqr(this.mob) > (double)(this.within * this.within)) {
+      } else if (this.target.distanceToSqr((Entity)this.mob) > (double)(this.within * this.within)) {
          return false;
       } else {
          Vec3 pos = DefaultRandomPos.getPosTowards(this.mob, 16, 7, this.target.position(), 1.5707963705062866);
@@ -44,7 +44,7 @@ public class MoveTowardsTargetGoal extends Goal {
    }
 
    public boolean canContinueToUse() {
-      return !this.mob.getNavigation().isDone() && this.target.isAlive() && this.target.distanceToSqr(this.mob) < (double)(this.within * this.within);
+      return !this.mob.getNavigation().isDone() && this.target.isAlive() && this.target.distanceToSqr((Entity)this.mob) < (double)(this.within * this.within);
    }
 
    public void stop() {

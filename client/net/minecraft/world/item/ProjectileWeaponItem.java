@@ -8,8 +8,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Unit;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -40,7 +40,7 @@ public abstract class ProjectileWeaponItem extends Item {
 
    public abstract int getDefaultProjectileRange();
 
-   protected void shoot(final ServerLevel level, final LivingEntity shooter, final InteractionHand hand, final ItemStack weapon, final List<ItemStack> projectiles, final float power, final float uncertainty, final boolean isCrit, final @Nullable LivingEntity targetOverride) {
+   protected void shoot(final ServerLevel level, final LivingEntity shooter, final InteractionHand hand, final ItemStack weapon, final List<ItemStack> projectiles, final float power, final float uncertainty, final boolean isCrit, final @Nullable Entity targetOverride) {
       float maxAngle = EnchantmentHelper.processProjectileSpread(level, weapon, shooter, 0.0F);
       float angleStep = projectiles.size() == 1 ? 0.0F : 2.0F * maxAngle / (float)(projectiles.size() - 1);
       float angleOffset = (float)((projectiles.size() - 1) % 2) * angleStep / 2.0F;
@@ -65,7 +65,7 @@ public abstract class ProjectileWeaponItem extends Item {
       return 1;
    }
 
-   protected abstract void shootProjectile(final LivingEntity shooter, final Projectile projectileEntity, final int index, final float power, final float uncertainty, final float angle, final @Nullable LivingEntity targetOverrride);
+   protected abstract void shootProjectile(final LivingEntity shooter, final Projectile projectileEntity, final int index, final float power, final float uncertainty, final float angle, final @Nullable Entity targetOverrride);
 
    protected Projectile createProjectile(final Level level, final LivingEntity shooter, final ItemStack weapon, final ItemStack projectile, final boolean isCrit) {
       Item var8 = projectile.getItem();
@@ -114,36 +114,9 @@ public abstract class ProjectileWeaponItem extends Item {
    }
 
    protected static ItemStack useAmmo(final ItemStack weapon, final ItemStack projectile, final LivingEntity holder, final boolean forceInfinite) {
-      int var10000;
-      label28: {
-         if (!forceInfinite && !holder.hasInfiniteMaterials()) {
-            Level var6 = holder.level();
-            if (var6 instanceof ServerLevel) {
-               ServerLevel serverLevel = (ServerLevel)var6;
-               var10000 = EnchantmentHelper.processAmmoUse(serverLevel, weapon, projectile, 1);
-               break label28;
-            }
-         }
-
-         var10000 = 0;
-      }
-
-      int ammoToUse = var10000;
-      if (ammoToUse > projectile.getCount()) {
-         return ItemStack.EMPTY;
-      } else if (ammoToUse == 0) {
-         ItemStack copy = projectile.copyWithCount(1);
-         copy.set(DataComponents.INTANGIBLE_PROJECTILE, Unit.INSTANCE);
-         return copy;
-      } else {
-         ItemStack used = projectile.split(ammoToUse);
-         if (projectile.isEmpty() && holder instanceof Player) {
-            Player player = (Player)holder;
-            player.getInventory().removeItem(projectile);
-         }
-
-         return used;
-      }
+      ItemStack copy = projectile.copyWithCount(1);
+      copy.set(DataComponents.INTANGIBLE_PROJECTILE, Unit.INSTANCE);
+      return copy;
    }
 
    static {

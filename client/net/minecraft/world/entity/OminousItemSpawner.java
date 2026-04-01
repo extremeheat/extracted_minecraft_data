@@ -9,7 +9,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -83,8 +83,7 @@ public class OminousItemSpawner extends Entity {
                ProjectileItem projectileItem = (ProjectileItem)var5;
                spawnedEntity = this.spawnProjectile(level, projectileItem, item);
             } else {
-               spawnedEntity = new ItemEntity(level, this.getX(), this.getY(), this.getZ(), item);
-               level.addFreshEntity(spawnedEntity);
+               spawnedEntity = LivingBlock.createAt(level, this.blockPosition(), (ItemStack)item);
             }
 
             level.levelEvent(3021, this.blockPosition(), 1);

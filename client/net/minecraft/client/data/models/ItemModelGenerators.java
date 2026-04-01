@@ -7,6 +7,7 @@ import java.util.function.BiConsumer;
 import net.minecraft.client.color.item.Dye;
 import net.minecraft.client.color.item.Firework;
 import net.minecraft.client.color.item.ItemTintSource;
+import net.minecraft.client.color.item.Jeb;
 import net.minecraft.client.color.item.MapColor;
 import net.minecraft.client.color.item.Potion;
 import net.minecraft.client.data.models.model.ItemModelUtils;
@@ -31,6 +32,7 @@ import net.minecraft.client.renderer.item.properties.numeric.Time;
 import net.minecraft.client.renderer.item.properties.numeric.UseCycle;
 import net.minecraft.client.renderer.item.properties.numeric.UseDuration;
 import net.minecraft.client.renderer.item.properties.select.Charge;
+import net.minecraft.client.renderer.item.properties.select.ComponentContents;
 import net.minecraft.client.renderer.item.properties.select.DisplayContext;
 import net.minecraft.client.renderer.item.properties.select.TrimMaterialProperty;
 import net.minecraft.client.renderer.special.ShieldSpecialRenderer;
@@ -39,11 +41,14 @@ import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.livingblock.LivingBlockGroup;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.DyedItemColor;
 import net.minecraft.world.item.equipment.EquipmentAsset;
 import net.minecraft.world.item.equipment.EquipmentAssets;
 import net.minecraft.world.item.equipment.trim.MaterialAssetGroup;
@@ -807,6 +812,23 @@ public class ItemModelGenerators {
       this.declareCustomModelItem(Items.COD);
       this.declareCustomModelItem(Items.FEATHER);
       this.declareCustomModelItem(Items.LEAD);
+      this.generateFlatItem(Items.PUNCH_ACTION, ModelTemplates.FLAT_HANDHELD_ITEM);
+      this.generateFlatItem(Items.FOLLOW_ACTION, ModelTemplates.FLAT_HANDHELD_ITEM);
+      this.generateFlatItem(Items.CRAFTING_ACTION, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.BUILD_ACTION, ModelTemplates.FLAT_HANDHELD_ITEM);
+      this.generateFlatItem(Items.MOVE_ACTION, ModelTemplates.FLAT_HANDHELD_ITEM);
+      this.generateFlatItem(Items.ATTACK_ACTION, ModelTemplates.FLAT_HANDHELD_ITEM);
+      this.generateGroupAction();
+      this.generateFlatItem(Items.HIGHLIGHT_ACTION, ModelTemplates.FLAT_HANDHELD_ITEM);
+   }
+
+   private void generateGroupAction() {
+      int defaultColor = ARGB.white(1.0F);
+      Material tintedLayer = TextureMapping.getItemTexture(Items.GROUP_ACTION);
+      Material untintedLayer = TextureMapping.getItemTexture(Items.GROUP_ACTION, "_overlay");
+      Identifier model = ModelLocationUtils.getModelLocation((Item)Items.GROUP_ACTION);
+      Identifier dyed = ModelTemplates.TWO_LAYERED_ITEM.create(model, TextureMapping.layered(tintedLayer, untintedLayer), this.modelOutput);
+      this.itemModelOutput.accept(Items.GROUP_ACTION, ItemModelUtils.select(new ComponentContents(DataComponents.DYED_COLOR), ItemModelUtils.tintedModel(dyed, new Dye(defaultColor)), new SelectItemModel.SwitchCase(List.of(new DyedItemColor(LivingBlockGroup.ALL.color())), ItemModelUtils.tintedModel(dyed, new Jeb()))));
    }
 
    static {

@@ -553,8 +553,8 @@ public class Gui {
          int screenCenter = graphics.guiWidth() / 2;
          int hotbarWidth = 182;
          int halfHotbar = 91;
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)HOTBAR_SPRITE, screenCenter - 91, graphics.guiHeight() - 22, 182, 22);
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)HOTBAR_SELECTION_SPRITE, screenCenter - 91 - 1 + player.getInventory().getSelectedSlot() * 20, graphics.guiHeight() - 22 - 1, 24, 23);
+         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)HOTBAR_SPRITE, screenCenter - 91 + 10, graphics.guiHeight() - 22, 182, 22);
+         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)HOTBAR_SELECTION_SPRITE, screenCenter - 91 + 10 - 1 + player.getInventory().getSelectedSlot() * 20, graphics.guiHeight() - 22 - 1, 24, 23);
          if (!offhand.isEmpty()) {
             if (offhandArm == HumanoidArm.LEFT) {
                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)HOTBAR_OFFHAND_LEFT_SPRITE, screenCenter - 91 - 29, graphics.guiHeight() - 23, 29, 24);
@@ -565,8 +565,8 @@ public class Gui {
 
          int seed = 1;
 
-         for(int i = 0; i < 9; ++i) {
-            int x = screenCenter - 90 + i * 20 + 2;
+         for(int i = 0; i < 8; ++i) {
+            int x = screenCenter - 80 + i * 20 + 2;
             int y = graphics.guiHeight() - 16 - 3;
             this.extractSlot(graphics, x, y, deltaTracker, player, player.getInventory().getItem(i), seed++);
          }

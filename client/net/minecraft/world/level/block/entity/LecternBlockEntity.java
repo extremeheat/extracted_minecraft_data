@@ -15,7 +15,7 @@ import net.minecraft.world.Clearable;
 import net.minecraft.world.Container;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -225,9 +225,7 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
          ItemStack book = this.getBook().copy();
          float xo = 0.25F * (float)direction.getStepX();
          float zo = 0.25F * (float)direction.getStepZ();
-         ItemEntity entity = new ItemEntity(this.level, (double)pos.getX() + 0.5 + (double)xo, (double)(pos.getY() + 1), (double)pos.getZ() + 0.5 + (double)zo, book);
-         entity.setDefaultPickUpDelay();
-         this.level.addFreshEntity(entity);
+         LivingBlock.createAt(this.level, BlockPos.containing((double)pos.getX() + 0.5 + (double)xo, (double)(pos.getY() + 1), (double)pos.getZ() + 0.5 + (double)zo), book);
       }
 
    }

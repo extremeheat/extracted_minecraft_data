@@ -10,6 +10,8 @@ import net.minecraft.world.item.DyeColor;
 
 public class ColorLerper {
    public static final DyeColor[] MUSIC_NOTE_COLORS;
+   public static final DyeColor[] LIVING_BLOCK_GROUP_COLORS;
+   public static final DyeColor[] HIGHLIGHT_COLORS;
 
    public ColorLerper() {
       super();
@@ -38,11 +40,15 @@ public class ColorLerper {
 
    static {
       MUSIC_NOTE_COLORS = new DyeColor[]{DyeColor.WHITE, DyeColor.LIGHT_GRAY, DyeColor.LIGHT_BLUE, DyeColor.BLUE, DyeColor.CYAN, DyeColor.GREEN, DyeColor.LIME, DyeColor.YELLOW, DyeColor.ORANGE, DyeColor.PINK, DyeColor.RED, DyeColor.MAGENTA};
+      LIVING_BLOCK_GROUP_COLORS = new DyeColor[]{DyeColor.RED, DyeColor.YELLOW, DyeColor.LIME, DyeColor.CYAN, DyeColor.BLUE, DyeColor.PURPLE};
+      HIGHLIGHT_COLORS = new DyeColor[]{DyeColor.WHITE, DyeColor.GRAY};
    }
 
    public static enum Type {
       SHEEP(25, DyeColor.values(), 0.75F),
-      MUSIC_NOTE(30, ColorLerper.MUSIC_NOTE_COLORS, 1.25F);
+      MUSIC_NOTE(30, ColorLerper.MUSIC_NOTE_COLORS, 1.25F),
+      LIVING_BLOCK_GROUPS(30, ColorLerper.LIVING_BLOCK_GROUP_COLORS, 1.0F),
+      HIGHLIGHT(30, ColorLerper.HIGHLIGHT_COLORS, 1.0F);
 
       private final int colorDuration;
       private final Map<DyeColor, Integer> colorByDye;
@@ -60,7 +66,7 @@ public class ColorLerper {
 
       // $FF: synthetic method
       private static Type[] $values() {
-         return new Type[]{SHEEP, MUSIC_NOTE};
+         return new Type[]{SHEEP, MUSIC_NOTE, LIVING_BLOCK_GROUPS, HIGHLIGHT};
       }
    }
 }

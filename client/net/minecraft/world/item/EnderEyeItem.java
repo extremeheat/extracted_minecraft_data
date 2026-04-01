@@ -75,6 +75,15 @@ public class EnderEyeItem extends Item {
 
    public InteractionResult use(final Level level, final Player player, final InteractionHand hand) {
       ItemStack itemStack = player.getItemInHand(hand);
+      InteractionResult result = this.throwEnderEye(level, player, hand, itemStack);
+      if (result == InteractionResult.SUCCESS_SERVER && !level.isClientSide()) {
+         itemStack.consume(1, player);
+      }
+
+      return result;
+   }
+
+   public InteractionResult throwEnderEye(final Level level, final Player player, final InteractionHand hand, final ItemStack itemStack) {
       BlockHitResult hitResult = getPlayerPOVHitResult(level, player, ClipContext.Fluid.NONE);
       if (hitResult.getType() == HitResult.Type.BLOCK && level.getBlockState(hitResult.getBlockPos()).is(Blocks.END_PORTAL_FRAME)) {
          return InteractionResult.PASS;
@@ -99,7 +108,6 @@ public class EnderEyeItem extends Item {
 
             float pitch = Mth.lerp(level.getRandom().nextFloat(), 0.33F, 0.5F);
             level.playSound((Entity)null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENDER_EYE_LAUNCH, SoundSource.NEUTRAL, 1.0F, pitch);
-            itemStack.consume(1, player);
             player.awardStat(Stats.ITEM_USED.get(this));
          }
 

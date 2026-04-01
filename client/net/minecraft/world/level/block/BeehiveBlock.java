@@ -25,8 +25,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.animal.bee.Bee;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.item.PrimedTnt;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.hurtingprojectile.WitherSkull;
@@ -123,7 +123,7 @@ public class BeehiveBlock extends BaseEntityBlock {
    }
 
    public static void dropHoneycomb(final ServerLevel level, final ItemStack tool, final BlockState blockState, final @Nullable BlockEntity blockEntity, final @Nullable Entity entity, final BlockPos pos) {
-      dropFromBlockInteractLootTable(level, BuiltInLootTables.HARVEST_BEEHIVE, blockState, blockEntity, tool, entity, (serverLevel, stack) -> popResource(serverLevel, pos, stack));
+      dropFromBlockInteractLootTable(level, BuiltInLootTables.HARVEST_BEEHIVE, blockState, blockEntity, tool, entity, (serverLevel, stack) -> popResource(serverLevel, pos, stack, blockState));
    }
 
    protected InteractionResult useItemOn(final ItemStack itemStack, final BlockState state, final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final BlockHitResult hitResult) {
@@ -270,9 +270,7 @@ public class BeehiveBlock extends BaseEntityBlock {
                   ItemStack itemStack = new ItemStack(this);
                   itemStack.applyComponents(beehiveBlockEntity.collectComponents());
                   itemStack.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(HONEY_LEVEL, honeyLevel));
-                  ItemEntity entity = new ItemEntity(level, (double)pos.getX(), (double)pos.getY(), (double)pos.getZ(), itemStack);
-                  entity.setDefaultPickUpDelay();
-                  level.addFreshEntity(entity);
+                  LivingBlock.createStack(level, pos, player, itemStack);
                }
             }
          }

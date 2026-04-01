@@ -13,7 +13,7 @@ import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
-import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -225,7 +225,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
       } else {
          boolean isBlocked = hopper.isGridAligned() && blockState.isCollisionShapeFullBlock(level, blockPos) && !blockState.is(BlockTags.DOES_NOT_BLOCK_HOPPERS);
          if (!isBlocked) {
-            for(ItemEntity entity : getItemsAtAndAbove(level, hopper)) {
+            for(LivingBlock entity : getItemsAtAndAbove(level, hopper)) {
                if (addItem(hopper, entity)) {
                   return true;
                }
@@ -255,16 +255,16 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
       return false;
    }
 
-   public static boolean addItem(final Container container, final ItemEntity entity) {
+   public static boolean addItem(final Container container, final LivingBlock entity) {
       boolean changed = false;
-      ItemStack copy = entity.getItem().copy();
+      ItemStack copy = entity.getItemStack().copy();
       ItemStack result = addItem((Container)null, container, copy, (Direction)null);
       if (result.isEmpty()) {
          changed = true;
-         entity.setItem(ItemStack.EMPTY);
+         entity.setItemStack(ItemStack.EMPTY);
          entity.discard();
       } else {
-         entity.setItem(result);
+         entity.setItemStack(result);
       }
 
       return changed;
@@ -376,9 +376,9 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
       return getContainerAt(level, pos, state, hopper.getLevelX(), hopper.getLevelY() + 1.0, hopper.getLevelZ());
    }
 
-   public static List<ItemEntity> getItemsAtAndAbove(final Level level, final Hopper hopper) {
+   public static List<LivingBlock> getItemsAtAndAbove(final Level level, final Hopper hopper) {
       AABB aabb = hopper.getSuckAabb().move(hopper.getLevelX() - 0.5, hopper.getLevelY() - 0.5, hopper.getLevelZ() - 0.5);
-      return level.getEntitiesOfClass(ItemEntity.class, aabb, EntitySelector.ENTITY_STILL_ALIVE);
+      return level.getEntitiesOfClass(LivingBlock.class, aabb, EntitySelector.ENTITY_STILL_ALIVE);
    }
 
    public static @Nullable Container getContainerAt(final Level level, final BlockPos pos) {
@@ -461,8 +461,8 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
    }
 
    public static void entityInside(final Level level, final BlockPos pos, final BlockState blockState, final Entity entity, final HopperBlockEntity hopper) {
-      if (entity instanceof ItemEntity itemEntity) {
-         if (!itemEntity.getItem().isEmpty() && entity.getBoundingBox().move((double)(-pos.getX()), (double)(-pos.getY()), (double)(-pos.getZ())).intersects(hopper.getSuckAabb())) {
+      if (entity instanceof LivingBlock itemEntity) {
+         if (!itemEntity.getItemStack().isEmpty() && entity.getBoundingBox().move((double)(-pos.getX()), (double)(-pos.getY()), (double)(-pos.getZ())).intersects(hopper.getSuckAabb())) {
             tryMoveItems(level, pos, blockState, hopper, () -> addItem(hopper, itemEntity));
          }
       }

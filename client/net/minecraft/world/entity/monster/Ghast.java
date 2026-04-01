@@ -21,13 +21,13 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.hurtingprojectile.LargeFireball;
 import net.minecraft.world.level.BlockGetter;
@@ -58,6 +58,7 @@ public class Ghast extends Mob implements Enemy {
       this.goalSelector.addGoal(7, new GhastLookGoal(this));
       this.goalSelector.addGoal(7, new GhastShootFireballGoal(this));
       this.targetSelector.addGoal(1, new NearestAttackableTargetGoal(this, Player.class, 10, true, false, (target, level) -> Math.abs(target.getY() - this.getY()) <= 4.0));
+      this.targetSelector.addGoal(1, new NearestAttackableTargetGoal(this, LivingBlock.class, 10, true, false, (target, level) -> Math.abs(target.getY() - this.getY()) <= 4.0));
    }
 
    public boolean isCharging() {
@@ -165,9 +166,9 @@ public class Ghast extends Mob implements Enemy {
          ghast.setYRot(-((float)Mth.atan2(movement.x, movement.z)) * 57.295776F);
          ghast.yBodyRot = ghast.getYRot();
       } else {
-         LivingEntity target = ghast.getTarget();
+         Entity target = ghast.getTarget();
          double maxDist = 64.0;
-         if (target.distanceToSqr(ghast) < 4096.0) {
+         if (target.distanceToSqr((Entity)ghast) < 4096.0) {
             double xdd = target.getX() - ghast.getX();
             double zdd = target.getZ() - ghast.getZ();
             ghast.setYRot(-((float)Mth.atan2(xdd, zdd)) * 57.295776F);
@@ -408,10 +409,10 @@ public class Ghast extends Mob implements Enemy {
       }
 
       public void tick() {
-         LivingEntity target = this.ghast.getTarget();
+         Entity target = this.ghast.getTarget();
          if (target != null) {
             double maxDist = 64.0;
-            if (target.distanceToSqr(this.ghast) < 4096.0 && this.ghast.hasLineOfSight(target)) {
+            if (target.distanceToSqr((Entity)this.ghast) < 4096.0 && this.ghast.hasLineOfSight(target)) {
                Level level = this.ghast.level();
                ++this.chargeTime;
                if (this.chargeTime == 10 && !this.ghast.isSilent()) {

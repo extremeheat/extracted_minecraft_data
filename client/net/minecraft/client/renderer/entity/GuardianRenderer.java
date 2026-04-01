@@ -17,7 +17,6 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Guardian;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -42,7 +41,7 @@ public class GuardianRenderer extends MobRenderer<Guardian, GuardianRenderState,
          return true;
       } else {
          if (entity.hasActiveAttackTarget()) {
-            LivingEntity lookAtEntity = entity.getActiveAttackTarget();
+            Entity lookAtEntity = entity.getActiveAttackTarget();
             if (lookAtEntity != null) {
                Vec3 targetPos = this.getPosition(lookAtEntity, (double)lookAtEntity.getBbHeight() * 0.5, 1.0F);
                Vec3 startPos = this.getPosition(entity, (double)entity.getEyeHeight(), 1.0F);
@@ -54,7 +53,7 @@ public class GuardianRenderer extends MobRenderer<Guardian, GuardianRenderState,
       }
    }
 
-   private Vec3 getPosition(final LivingEntity entity, final double yOffset, final float partialTicks) {
+   private Vec3 getPosition(final Entity entity, final double yOffset, final float partialTicks) {
       double sx = Mth.lerp((double)partialTicks, entity.xOld, entity.getX());
       double sy = Mth.lerp((double)partialTicks, entity.yOld, entity.getY()) + yOffset;
       double sz = Mth.lerp((double)partialTicks, entity.zOld, entity.getZ());
@@ -151,7 +150,7 @@ public class GuardianRenderer extends MobRenderer<Guardian, GuardianRenderState,
          state.lookAtPosition = null;
       }
 
-      LivingEntity targetEntity = entity.getActiveAttackTarget();
+      Entity targetEntity = entity.getActiveAttackTarget();
       if (targetEntity != null) {
          state.attackScale = entity.getAttackAnimationScale(partialTicks);
          state.attackTime = entity.getClientSideAttackTime() + partialTicks;
@@ -164,7 +163,7 @@ public class GuardianRenderer extends MobRenderer<Guardian, GuardianRenderState,
 
    private static @Nullable Entity getEntityToLookAt(final Guardian entity) {
       Entity lookAtEntity = Minecraft.getInstance().getCameraEntity();
-      return (Entity)(entity.hasActiveAttackTarget() ? entity.getActiveAttackTarget() : lookAtEntity);
+      return entity.hasActiveAttackTarget() ? entity.getActiveAttackTarget() : lookAtEntity;
    }
 
    static {

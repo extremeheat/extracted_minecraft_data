@@ -12,6 +12,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -22,32 +23,35 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import net.minecraft.SharedConstants;
+import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.IdMapper;
 import net.minecraft.core.Vec3i;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.monster.piglin.PiglinAi;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemInstance;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.BlockGetter;
@@ -325,7 +329,7 @@ public class Block extends BlockBehaviour implements ItemLike {
 
    public static void dropResources(final BlockState state, final Level level, final BlockPos pos) {
       if (level instanceof ServerLevel serverLevel) {
-         getDrops(state, serverLevel, pos, (BlockEntity)null).forEach((stack) -> popResource(level, pos, stack));
+         getDrops(state, serverLevel, pos, (BlockEntity)null).forEach((stack) -> popResource(level, pos, stack, state));
          state.spawnAfterBreak(serverLevel, pos, ItemStack.EMPTY, true);
       }
 
@@ -333,7 +337,7 @@ public class Block extends BlockBehaviour implements ItemLike {
 
    public static void dropResources(final BlockState state, final LevelAccessor level, final BlockPos pos, final @Nullable BlockEntity blockEntity) {
       if (level instanceof ServerLevel serverLevel) {
-         getDrops(state, serverLevel, pos, blockEntity).forEach((stack) -> popResource(serverLevel, pos, stack));
+         getDrops(state, serverLevel, pos, blockEntity).forEach((stack) -> popResource(serverLevel, pos, stack, state));
          state.spawnAfterBreak(serverLevel, pos, ItemStack.EMPTY, true);
       }
 
@@ -341,43 +345,77 @@ public class Block extends BlockBehaviour implements ItemLike {
 
    public static void dropResources(final BlockState state, final Level level, final BlockPos pos, final @Nullable BlockEntity blockEntity, final @Nullable Entity breaker, final ItemStack tool) {
       if (level instanceof ServerLevel serverLevel) {
-         getDrops(state, serverLevel, pos, blockEntity, breaker, tool).forEach((stack) -> popResource(level, pos, stack));
+         List<ItemStack> drops = getDrops(state, serverLevel, pos, blockEntity, breaker, tool);
+         drops.forEach((stack) -> {
+            Collection<LivingBlock> livingBlocks = popResource(level, pos, stack, state);
+            if (breaker instanceof ServerPlayer serverPlayer) {
+               CriteriaTriggers.INVENTORY_CHANGED.trigger(serverPlayer, serverPlayer.getInventory(), stack);
+               CriteriaTriggers.SUMMONED_ENTITY.trigger(serverPlayer, livingBlocks);
+            } else if (breaker instanceof LivingBlock livingBlock) {
+               Player patt0$temp = livingBlock.getCommander();
+               if (patt0$temp instanceof ServerPlayer serverPlayer) {
+                  CriteriaTriggers.INVENTORY_CHANGED.trigger(serverPlayer, serverPlayer.getInventory(), stack);
+                  CriteriaTriggers.SUMMONED_ENTITY.trigger(serverPlayer, livingBlocks);
+               }
+            }
+
+         });
          state.spawnAfterBreak(serverLevel, pos, tool, true);
       }
 
    }
 
    public static void popResource(final Level level, final BlockPos pos, final ItemStack itemStack) {
-      double halfHeight = (double)EntityType.ITEM.getHeight() / 2.0;
-      RandomSource random = level.getRandom();
-      double x = (double)pos.getX() + 0.5 + Mth.nextDouble(random, -0.25, 0.25);
-      double y = (double)pos.getY() + 0.5 + Mth.nextDouble(random, -0.25, 0.25) - halfHeight;
-      double z = (double)pos.getZ() + 0.5 + Mth.nextDouble(random, -0.25, 0.25);
-      popResource(level, (Supplier)(() -> new ItemEntity(level, x, y, z, itemStack)), itemStack);
+      popResource(level, pos, itemStack, (BlockState)null);
+   }
+
+   public static Collection<LivingBlock> popResource(final Level level, final BlockPos pos, ItemStack itemStack, final @Nullable BlockState state) {
+      if (state != null) {
+         Item var5 = itemStack.getItem();
+         if (var5 instanceof BlockItem) {
+            BlockItem blockItem = (BlockItem)var5;
+            if (blockItem.getBlock() == state.getBlock()) {
+               itemStack = itemStack.copy();
+               itemStack.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.from(state));
+            }
+         }
+      }
+
+      return LivingBlock.createStack(level, pos, (Entity)null, itemStack);
    }
 
    public static void popResourceFromFace(final Level level, final BlockPos pos, final Direction face, final ItemStack itemStack) {
       int stepX = face.getStepX();
       int stepY = face.getStepY();
       int stepZ = face.getStepZ();
-      double halfWidth = (double)EntityType.ITEM.getWidth() / 2.0;
-      double halfHeight = (double)EntityType.ITEM.getHeight() / 2.0;
+      double halfWidth = 0.125;
+      double halfHeight = 0.125;
       RandomSource random = level.getRandom();
-      double x = (double)pos.getX() + 0.5 + (stepX == 0 ? Mth.nextDouble(random, -0.25, 0.25) : (double)stepX * (0.5 + halfWidth));
-      double y = (double)pos.getY() + 0.5 + (stepY == 0 ? Mth.nextDouble(random, -0.25, 0.25) : (double)stepY * (0.5 + halfHeight)) - halfHeight;
-      double z = (double)pos.getZ() + 0.5 + (stepZ == 0 ? Mth.nextDouble(random, -0.25, 0.25) : (double)stepZ * (0.5 + halfWidth));
+      double x = (double)pos.getX() + 0.5 + (stepX == 0 ? Mth.nextDouble(random, -0.25, 0.25) : (double)stepX * 0.625);
+      double y = (double)pos.getY() + 0.5 + (stepY == 0 ? Mth.nextDouble(random, -0.25, 0.25) : (double)stepY * 0.625) - 0.125;
+      double z = (double)pos.getZ() + 0.5 + (stepZ == 0 ? Mth.nextDouble(random, -0.25, 0.25) : (double)stepZ * 0.625);
       double deltaX = stepX == 0 ? Mth.nextDouble(random, -0.1, 0.1) : (double)stepX * 0.1;
       double deltaY = stepY == 0 ? Mth.nextDouble(random, 0.0, 0.1) : (double)stepY * 0.1 + 0.1;
       double deltaZ = stepZ == 0 ? Mth.nextDouble(random, -0.1, 0.1) : (double)stepZ * 0.1;
-      popResource(level, (Supplier)(() -> new ItemEntity(level, x, y, z, itemStack, deltaX, deltaY, deltaZ)), itemStack);
+      popResource(level, (Supplier)(() -> {
+         LivingBlock block = LivingBlock.createAt(level, BlockPos.containing(x, y, z), itemStack);
+         if (block != null) {
+            block.setDeltaMovement(deltaX, deltaY, deltaZ);
+            return block;
+         } else {
+            throw new IllegalStateException("y u no block?");
+         }
+      }), itemStack);
    }
 
-   private static void popResource(final Level level, final Supplier<ItemEntity> entityFactory, final ItemStack itemStack) {
+   private static void popResource(final Level level, final Supplier<Entity> entityFactory, final ItemStack itemStack) {
       if (level instanceof ServerLevel serverLevel) {
          if (!itemStack.isEmpty() && (Boolean)serverLevel.getGameRules().get(GameRules.BLOCK_DROPS)) {
-            ItemEntity entity = (ItemEntity)entityFactory.get();
-            entity.setDefaultPickUpDelay();
-            level.addFreshEntity(entity);
+            Entity entity = (Entity)entityFactory.get();
+            if (!(entity instanceof LivingBlock)) {
+               level.addFreshEntity(entity);
+            }
+
             return;
          }
       }

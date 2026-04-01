@@ -5,12 +5,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiPredicate;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Targetable;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 
-public abstract class Sensor<E extends LivingEntity> {
+public abstract class Sensor<E extends Entity & Targetable> {
    private static final int DEFAULT_SCAN_RATE = 20;
    private static final int DEFAULT_TARGETING_RANGE = 16;
    private static final TargetingConditions TARGET_CONDITIONS = TargetingConditions.forNonCombat().range(16.0);
@@ -45,32 +47,41 @@ public abstract class Sensor<E extends LivingEntity> {
    }
 
    private void updateTargetingConditionRanges(final E body) {
-      double followRange = ((LivingEntity)body).getAttributeValue(Attributes.FOLLOW_RANGE);
-      TARGET_CONDITIONS.range(followRange);
-      TARGET_CONDITIONS_IGNORE_INVISIBILITY_TESTING.range(followRange);
-      ATTACK_TARGET_CONDITIONS.range(followRange);
-      ATTACK_TARGET_CONDITIONS_IGNORE_INVISIBILITY_TESTING.range(followRange);
-      ATTACK_TARGET_CONDITIONS_IGNORE_LINE_OF_SIGHT.range(followRange);
-      ATTACK_TARGET_CONDITIONS_IGNORE_INVISIBILITY_AND_LINE_OF_SIGHT.range(followRange);
+      if (body instanceof LivingEntity livingEntity) {
+         double followRange = livingEntity.getAttributeValue(Attributes.FOLLOW_RANGE);
+         TARGET_CONDITIONS.range(followRange);
+         TARGET_CONDITIONS_IGNORE_INVISIBILITY_TESTING.range(followRange);
+         ATTACK_TARGET_CONDITIONS.range(followRange);
+         ATTACK_TARGET_CONDITIONS_IGNORE_INVISIBILITY_TESTING.range(followRange);
+         ATTACK_TARGET_CONDITIONS_IGNORE_LINE_OF_SIGHT.range(followRange);
+         ATTACK_TARGET_CONDITIONS_IGNORE_INVISIBILITY_AND_LINE_OF_SIGHT.range(followRange);
+      }
+
    }
 
    protected abstract void doTick(final ServerLevel level, final E body);
 
    public abstract Set<MemoryModuleType<?>> requires();
 
-   public static boolean isEntityTargetable(final ServerLevel level, final LivingEntity body, final LivingEntity entity) {
-      return body.getBrain().isMemoryValue(MemoryModuleType.ATTACK_TARGET, entity) ? TARGET_CONDITIONS_IGNORE_INVISIBILITY_TESTING.test(level, body, entity) : TARGET_CONDITIONS.test(level, body, entity);
+   public static boolean isEntityTargetable(final ServerLevel level, final Entity body, final Entity entity) {
+      if (entity instanceof LivingEntity livingEntity) {
+         if (livingEntity.getBrain().isMemoryValue(MemoryModuleType.ATTACK_TARGET, entity)) {
+            return TARGET_CONDITIONS_IGNORE_INVISIBILITY_TESTING.test(level, body, entity);
+         }
+      }
+
+      return TARGET_CONDITIONS.test(level, body, entity);
    }
 
-   public static boolean isEntityAttackable(final ServerLevel level, final LivingEntity body, final LivingEntity target) {
+   public static boolean isEntityAttackable(final ServerLevel level, final LivingEntity body, final Entity target) {
       return body.getBrain().isMemoryValue(MemoryModuleType.ATTACK_TARGET, target) ? ATTACK_TARGET_CONDITIONS_IGNORE_INVISIBILITY_TESTING.test(level, body, target) : ATTACK_TARGET_CONDITIONS.test(level, body, target);
    }
 
-   public static BiPredicate<ServerLevel, LivingEntity> wasEntityAttackableLastNTicks(final LivingEntity body, final int ticks) {
+   public static BiPredicate<ServerLevel, Entity> wasEntityAttackableLastNTicks(final LivingEntity body, final int ticks) {
       return rememberPositives(ticks, (level, target) -> isEntityAttackable(level, body, target));
    }
 
-   public static boolean isEntityAttackableIgnoringLineOfSight(final ServerLevel level, final LivingEntity body, final LivingEntity target) {
+   public static boolean isEntityAttackableIgnoringLineOfSight(final ServerLevel level, final LivingEntity body, final Entity target) {
       return body.getBrain().isMemoryValue(MemoryModuleType.ATTACK_TARGET, target) ? ATTACK_TARGET_CONDITIONS_IGNORE_INVISIBILITY_AND_LINE_OF_SIGHT.test(level, body, target) : ATTACK_TARGET_CONDITIONS_IGNORE_LINE_OF_SIGHT.test(level, body, target);
    }
 

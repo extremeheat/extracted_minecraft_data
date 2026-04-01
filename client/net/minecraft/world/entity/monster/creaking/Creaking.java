@@ -409,7 +409,7 @@ public class Creaking extends Monster {
       this.playSound(SoundEvents.CREAKING_STEP, 0.15F, 1.0F);
    }
 
-   public @Nullable LivingEntity getTarget() {
+   public @Nullable Entity getTarget() {
       return this.getTargetFromBrain();
    }
 

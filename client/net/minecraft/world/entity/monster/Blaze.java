@@ -11,7 +11,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -21,6 +20,7 @@ import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.hurtingprojectile.SmallFireball;
 import net.minecraft.world.level.Level;
@@ -49,6 +49,7 @@ public class Blaze extends Monster {
       this.goalSelector.addGoal(8, new RandomLookAroundGoal(this));
       this.targetSelector.addGoal(1, (new HurtByTargetGoal(this, new Class[0])).setAlertOthers());
       this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, Player.class, true));
+      this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, LivingBlock.class, true));
    }
 
    public static AttributeSupplier.Builder createAttributes() {
@@ -105,7 +106,7 @@ public class Blaze extends Monster {
          this.allowedHeightOffset = (float)this.random.triangle(0.5, 6.891);
       }
 
-      LivingEntity target = this.getTarget();
+      Entity target = this.getTarget();
       if (target != null && target.getEyeY() > this.getEyeY() + (double)this.allowedHeightOffset && this.canAttack(target)) {
          Vec3 movement = this.getDeltaMovement();
          this.setDeltaMovement(this.getDeltaMovement().add(0.0, (0.30000001192092896 - movement.y) * 0.30000001192092896, 0.0));
@@ -151,7 +152,7 @@ public class Blaze extends Monster {
       }
 
       public boolean canUse() {
-         LivingEntity target = this.blaze.getTarget();
+         Entity target = this.blaze.getTarget();
          return target != null && target.isAlive() && this.blaze.canAttack(target);
       }
 
@@ -170,7 +171,7 @@ public class Blaze extends Monster {
 
       public void tick() {
          --this.attackTime;
-         LivingEntity target = this.blaze.getTarget();
+         Entity target = this.blaze.getTarget();
          if (target != null) {
             boolean hasLineOfSight = this.blaze.getSensing().hasLineOfSight(target);
             if (hasLineOfSight) {

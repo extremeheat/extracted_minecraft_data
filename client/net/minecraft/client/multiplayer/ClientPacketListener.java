@@ -263,6 +263,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stat;
 import net.minecraft.stats.StatsCounter;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagNetworkSerialization;
 import net.minecraft.util.CommonLinks;
 import net.minecraft.util.Crypt;
@@ -294,7 +295,7 @@ import net.minecraft.world.entity.animal.bee.Bee;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.animal.nautilus.AbstractNautilus;
 import net.minecraft.world.entity.animal.sniffer.Sniffer;
-import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.monster.Guardian;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -914,9 +915,9 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
          EntityRenderState itemState = this.minecraft.getEntityRenderDispatcher().extractEntity(from, 1.0F);
          this.minecraft.particleEngine.add(new ItemPickupParticle(this.level, itemState, to, from.getDeltaMovement()));
-         if (from instanceof ItemEntity) {
-            ItemEntity itemEntity = (ItemEntity)from;
-            ItemStack itemStack = itemEntity.getItem();
+         if (from instanceof LivingBlock) {
+            LivingBlock itemEntity = (LivingBlock)from;
+            ItemStack itemStack = itemEntity.getItemStack();
             if (!itemStack.isEmpty()) {
                itemStack.shrink(packet.getAmount());
             }
@@ -1064,6 +1065,13 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
                         this.minecraft.player.yRotO = vehicle.getYRot();
                         this.minecraft.player.setYRot(vehicle.getYRot());
                         this.minecraft.player.setYHeadRot(vehicle.getYRot());
+                     }
+
+                     if (vehicle instanceof LivingBlock) {
+                        LivingBlock livingBlock = (LivingBlock)vehicle;
+                        if (livingBlock.isBlock(BlockTags.BEDS)) {
+                           continue;
+                        }
                      }
 
                      Component message = Component.translatable("mount.onboard", this.minecraft.options.keyShift.getTranslatedKeyMessage());

@@ -17,6 +17,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -54,6 +55,7 @@ import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.RandomStandGoal;
 import net.minecraft.world.entity.ai.goal.RunAroundLikeCrazyGoal;
 import net.minecraft.world.entity.ai.goal.TemptGoal;
+import net.minecraft.world.entity.ai.goal.TemptedByLivingBlockGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.animal.Animal;
@@ -157,6 +159,7 @@ public abstract class AbstractHorse extends Animal implements PlayerRideableJump
       this.goalSelector.addGoal(0, new FloatGoal(this));
       this.goalSelector.addGoal(1, new MountPanicGoal(1.2));
       this.goalSelector.addGoal(3, new TemptGoal(this, 1.25, (i) -> i.is(ItemTags.HORSE_TEMPT_ITEMS), false));
+      this.goalSelector.addGoal(4, new TemptedByLivingBlockGoal(this, 1.25, BlockTags.HORSE_FOOD, false));
    }
 
    protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
@@ -544,7 +547,7 @@ public abstract class AbstractHorse extends Animal implements PlayerRideableJump
 
    protected void followMommy(final ServerLevel level) {
       if (this.isBred() && this.isBaby() && !this.isEating()) {
-         LivingEntity mommy = level.getNearestEntity(AbstractHorse.class, MOMMY_TARGETING, this, this.getX(), this.getY(), this.getZ(), this.getBoundingBox().inflate(16.0));
+         LivingEntity mommy = (LivingEntity)level.getNearestEntity(AbstractHorse.class, MOMMY_TARGETING, this, this.getX(), this.getY(), this.getZ(), this.getBoundingBox().inflate(16.0));
          if (mommy != null && this.distanceToSqr(mommy) > 4.0) {
             this.navigation.createPath(mommy, 0);
          }

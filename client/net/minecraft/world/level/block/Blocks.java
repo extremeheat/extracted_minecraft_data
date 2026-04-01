@@ -1206,6 +1206,8 @@ public class Blocks {
    public static final Block POTTED_OPEN_EYEBLOSSOM;
    public static final Block POTTED_CLOSED_EYEBLOSSOM;
    public static final Block FIREFLY_BUSH;
+   public static final Block IRON_TRAP;
+   public static final WeatheringCopperBlocks COPPER_TRAP;
 
    public Blocks() {
       super();
@@ -1528,7 +1530,7 @@ public class Blocks {
       SPAWNER = register("spawner", SpawnerBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.STONE).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(5.0F).sound(SoundType.SPAWNER).noOcclusion());
       CREAKING_HEART = register("creaking_heart", CreakingHeartBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).instrument(NoteBlockInstrument.BASEDRUM).strength(10.0F).sound(SoundType.CREAKING_HEART));
       OAK_STAIRS = registerLegacyStair("oak_stairs", OAK_PLANKS);
-      CHEST = register("chest", (p) -> new ChestBlock(() -> BlockEntityType.CHEST, SoundEvents.CHEST_OPEN, SoundEvents.CHEST_CLOSE, p), BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).strength(2.5F).sound(SoundType.WOOD).ignitedByLava());
+      CHEST = register("chest", (p) -> new ChestBlock(() -> BlockEntityType.CHEST, SoundEvents.CHEST_OPEN, SoundEvents.CHEST_CLOSE, p), BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).strength(2.5F).sound(SoundType.WOOD).explosionResistance(6.0F).ignitedByLava());
       REDSTONE_WIRE = register("redstone_wire", RedStoneWireBlock::new, BlockBehaviour.Properties.of().noCollision().instabreak().pushReaction(PushReaction.DESTROY));
       DIAMOND_ORE = register("diamond_ore", (p) -> new DropExperienceBlock(UniformInt.of(3, 7), p), BlockBehaviour.Properties.of().mapColor(MapColor.STONE).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(3.0F, 3.0F));
       DEEPSLATE_DIAMOND_ORE = register("deepslate_diamond_ore", (p) -> new DropExperienceBlock(UniformInt.of(3, 7), p), BlockBehaviour.Properties.ofLegacyCopy(DIAMOND_ORE).mapColor(MapColor.DEEPSLATE).strength(4.5F, 3.0F).sound(SoundType.DEEPSLATE));
@@ -2474,6 +2476,8 @@ public class Blocks {
       POTTED_OPEN_EYEBLOSSOM = register("potted_open_eyeblossom", (p) -> new FlowerPotBlock(OPEN_EYEBLOSSOM, p), flowerPotProperties().randomTicks());
       POTTED_CLOSED_EYEBLOSSOM = register("potted_closed_eyeblossom", (p) -> new FlowerPotBlock(CLOSED_EYEBLOSSOM, p), flowerPotProperties().randomTicks());
       FIREFLY_BUSH = register("firefly_bush", FireflyBushBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).ignitedByLava().lightLevel((statex) -> 2).noCollision().instabreak().sound(SoundType.SWEET_BERRY_BUSH).pushReaction(PushReaction.DESTROY));
+      IRON_TRAP = register("iron_trap", Block::new, BlockBehaviour.Properties.of().requiresCorrectToolForDrops().strength(5.0F, 6.0F).sound(SoundType.IRON).noOcclusion());
+      COPPER_TRAP = WeatheringCopperBlocks.create("copper_trap", Blocks::register, Block::new, WeatheringCopperFullBlock::new, (p) -> BlockBehaviour.Properties.of().requiresCorrectToolForDrops().strength(5.0F, 6.0F).sound(SoundType.COPPER).noOcclusion());
 
       for(Block block : BuiltInRegistries.BLOCK) {
          UnmodifiableIterator var2 = block.getStateDefinition().getPossibleStates().iterator();

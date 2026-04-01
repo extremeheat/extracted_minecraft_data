@@ -113,10 +113,6 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
 
    }
 
-   public AnimationStatus getAnimationStatus() {
-      return this.animationStatus;
-   }
-
    public AABB getBoundingBox(final BlockState state) {
       Vec3 bottomCenter = new Vec3(0.5, 0.0, 0.5);
       return Shulker.getProgressAabb(1.0F, (Direction)state.getValue(ShulkerBoxBlock.FACING), 0.5F * this.getProgress(1.0F), bottomCenter);

@@ -83,7 +83,7 @@ public record Enchantment(Component description, EnchantmentDefinition definitio
       return new EnchantmentDefinition(supportedItems, Optional.empty(), weight, maxLevel, minCost, maxCost, anvilCost, List.of(slots));
    }
 
-   public Map<EquipmentSlot, ItemStack> getSlotItems(final LivingEntity entity) {
+   public Map<EquipmentSlot, ItemStack> getSlotItems(final Entity entity) {
       Map<EquipmentSlot, ItemStack> itemStacks = Maps.newEnumMap(EquipmentSlot.class);
 
       for(EquipmentSlot slot : EquipmentSlot.VALUES) {

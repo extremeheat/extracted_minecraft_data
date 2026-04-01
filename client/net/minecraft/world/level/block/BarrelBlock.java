@@ -4,12 +4,8 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.stats.Stats;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Containers;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.monster.piglin.PiglinAi;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
@@ -21,7 +17,6 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
-import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 public class BarrelBlock extends BaseEntityBlock {
@@ -36,19 +31,6 @@ public class BarrelBlock extends BaseEntityBlock {
    public BarrelBlock(final BlockBehaviour.Properties properties) {
       super(properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(OPEN, false));
-   }
-
-   protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
-      if (level instanceof ServerLevel serverLevel) {
-         BlockEntity var8 = level.getBlockEntity(pos);
-         if (var8 instanceof BarrelBlockEntity barrelBlockEntity) {
-            player.openMenu(barrelBlockEntity);
-            player.awardStat(Stats.OPEN_BARREL);
-            PiglinAi.angerNearbyPiglins(serverLevel, player, true);
-         }
-      }
-
-      return InteractionResult.SUCCESS;
    }
 
    protected void affectNeighborsAfterRemoval(final BlockState state, final ServerLevel level, final BlockPos pos, final boolean movedByPiston) {

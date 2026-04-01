@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.projectile;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -10,7 +11,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -93,18 +94,27 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
          this.spawnParticles(particleOrigin, this.getDeltaMovement());
       }
 
-      this.setPos(newPosition);
-      if (!this.level().isClientSide()) {
-         ++this.life;
-         if (this.life > 80 && !this.level().isClientSide()) {
-            this.playSound(SoundEvents.ENDER_EYE_DEATH, 1.0F, 1.0F);
-            this.discard();
-            if (this.surviveAfterDeath) {
-               this.level().addFreshEntity(new ItemEntity(this.level(), this.getX(), this.getY(), this.getZ(), this.getItem()));
-            } else {
-               this.level().levelEvent(2003, this.blockPosition(), 0);
+      if (!this.level().getBlockState(BlockPos.containing(newPosition)).canBeReplaced()) {
+         this.ded();
+      } else {
+         this.setPos(newPosition);
+         if (!this.level().isClientSide()) {
+            ++this.life;
+            if (this.life > 80 && !this.level().isClientSide()) {
+               this.ded();
             }
          }
+
+      }
+   }
+
+   private void ded() {
+      this.playSound(SoundEvents.ENDER_EYE_DEATH, 1.0F, 1.0F);
+      this.discard();
+      if (this.surviveAfterDeath) {
+         LivingBlock.createAt(this.level(), this.blockPosition(), this.getItem());
+      } else {
+         this.level().levelEvent(2003, this.blockPosition(), 0);
       }
 
    }

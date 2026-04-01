@@ -419,7 +419,7 @@ public class Warden extends Monster implements VibrationSystem {
       return this.getAngerLevel().isAngry() ? this.angerManagement.getActiveEntity() : Optional.empty();
    }
 
-   public @Nullable LivingEntity getTarget() {
+   public @Nullable Entity getTarget() {
       return this.getTargetFromBrain();
    }
 
@@ -443,18 +443,15 @@ public class Warden extends Monster implements VibrationSystem {
       if (!this.isNoAi() && !this.isDiggingOrEmerging()) {
          Entity attacker = source.getEntity();
          this.increaseAngerAt(attacker, AngerLevel.ANGRY.getMinimumAnger() + 20, false);
-         if (this.brain.getMemory(MemoryModuleType.ATTACK_TARGET).isEmpty() && attacker instanceof LivingEntity) {
-            LivingEntity livingAttacker = (LivingEntity)attacker;
-            if (source.isDirect() || this.closerThan(livingAttacker, 5.0)) {
-               this.setAttackTarget(livingAttacker);
-            }
+         if (this.brain.getMemory(MemoryModuleType.ATTACK_TARGET).isEmpty() && attacker != null && (source.isDirect() || this.closerThan(attacker, 5.0))) {
+            this.setAttackTarget(attacker);
          }
       }
 
       return wasHurt;
    }
 
-   public void setAttackTarget(final LivingEntity target) {
+   public void setAttackTarget(final Entity target) {
       this.getBrain().eraseMemory(MemoryModuleType.ROAR_TARGET);
       this.getBrain().setMemory(MemoryModuleType.ATTACK_TARGET, target);
       this.getBrain().eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);

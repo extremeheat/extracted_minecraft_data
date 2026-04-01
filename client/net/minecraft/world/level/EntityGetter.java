@@ -4,9 +4,11 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.AABB;
@@ -83,6 +85,23 @@ public interface EntityGetter {
 
       for(Player player : this.players()) {
          if (predicate == null || predicate.test(player)) {
+            double dist = player.distanceToSqr(x, y, z);
+            if ((range < 0.0 || dist < range * range) && (best == -1.0 || dist < best)) {
+               best = dist;
+               result = player;
+            }
+         }
+      }
+
+      return result;
+   }
+
+   default @Nullable Player getNearestPlayer(final double x, final double y, final double z, final double range, final LivingBlock livingBlock, final @Nullable BiPredicate<Entity, LivingBlock> predicate) {
+      double best = -1.0;
+      Player result = null;
+
+      for(Player player : this.players()) {
+         if (predicate == null || predicate.test(player, livingBlock)) {
             double dist = player.distanceToSqr(x, y, z);
             if ((range < 0.0 || dist < range * range) && (best == -1.0 || dist < best)) {
                best = dist;

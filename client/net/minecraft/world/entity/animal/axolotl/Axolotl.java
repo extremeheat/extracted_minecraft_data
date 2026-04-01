@@ -49,6 +49,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.Targetable;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -438,16 +439,18 @@ public class Axolotl extends Animal implements Bucketable {
       return !this.isPlayingDead() && super.canBeSeenAsEnemy();
    }
 
-   public static void onStopAttacking(final ServerLevel level, final Axolotl body, final LivingEntity target) {
-      if (target.isDeadOrDying()) {
-         DamageSource lastDamageSource = target.getLastDamageSource();
-         if (lastDamageSource != null) {
-            Entity entity = lastDamageSource.getEntity();
-            if (entity instanceof Player) {
-               Player player = (Player)entity;
-               List<Player> playersInRange = level.getEntitiesOfClass(Player.class, body.getBoundingBox().inflate(20.0));
-               if (playersInRange.contains(player)) {
-                  body.applySupportingEffects(player);
+   public static void onStopAttacking(final ServerLevel level, final Axolotl body, final Entity target) {
+      if (target instanceof Targetable targetable) {
+         if (targetable.isDeadOrDying()) {
+            DamageSource lastDamageSource = targetable.getLastDamageSource();
+            if (lastDamageSource != null) {
+               Entity entity = lastDamageSource.getEntity();
+               if (entity instanceof Player) {
+                  Player player = (Player)entity;
+                  List<Player> playersInRange = level.getEntitiesOfClass(Player.class, body.getBoundingBox().inflate(20.0));
+                  if (playersInRange.contains(player)) {
+                     body.applySupportingEffects(player);
+                  }
                }
             }
          }
@@ -517,7 +520,7 @@ public class Axolotl extends Animal implements Bucketable {
       return !this.fromBucket() && !this.hasCustomName();
    }
 
-   public @Nullable LivingEntity getTarget() {
+   public @Nullable Entity getTarget() {
       return this.getTargetFromBrain();
    }
 

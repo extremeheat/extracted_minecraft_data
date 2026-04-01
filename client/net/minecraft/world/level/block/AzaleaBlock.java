@@ -16,7 +16,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class AzaleaBlock extends VegetationBlock implements BonemealableBlock {
+public class AzaleaBlock extends VegetationBlock implements TreeGrowingBlock {
    public static final MapCodec<AzaleaBlock> CODEC = simpleCodec(AzaleaBlock::new);
    private static final VoxelShape SHAPE = Shapes.or(Block.column(16.0, 8.0, 16.0), Block.column(4.0, 0.0, 8.0));
 
@@ -40,7 +40,7 @@ public class AzaleaBlock extends VegetationBlock implements BonemealableBlock {
       if (!(level instanceof ServerLevel serverLevel)) {
          return false;
       } else {
-         int minHeight = TreeGrower.AZALEA.getMinimumHeight(serverLevel).orElse(0);
+         int minHeight = this.treeGrower().getMinimumHeight(serverLevel).orElse(0);
          return level.isInsideBuildHeight(pos.above(minHeight + 2)) && level.getFluidState(pos.above()).isEmpty();
       }
    }
@@ -50,10 +50,14 @@ public class AzaleaBlock extends VegetationBlock implements BonemealableBlock {
    }
 
    public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
-      TreeGrower.AZALEA.growTree(level, level.getChunkSource().getGenerator(), pos, state, random);
+      this.treeGrower().growTree(level, level.getChunkSource().getGenerator(), pos, state, random);
    }
 
    protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
       return false;
+   }
+
+   public TreeGrower treeGrower() {
+      return TreeGrower.AZALEA;
    }
 }

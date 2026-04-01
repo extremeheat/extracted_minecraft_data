@@ -56,9 +56,9 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SlotAccess;
+import net.minecraft.world.entity.Targetable;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.inventory.ClickAction;
@@ -172,6 +172,17 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
             codec.encode(output, value);
          }
       };
+   }
+
+   public static boolean areMergable(final ItemStack thisItemStack, final ItemStack otherItemStack) {
+      return otherItemStack.getCount() + thisItemStack.getCount() > otherItemStack.getMaxStackSize() ? false : isSameItemSameComponents(thisItemStack, otherItemStack);
+   }
+
+   public static ItemStack merge(final ItemStack toStack, final ItemStack fromStack, final int maxCount) {
+      int delta = Math.min(Math.min(toStack.getMaxStackSize(), maxCount) - toStack.getCount(), fromStack.getCount());
+      ItemStack newToStack = toStack.copyWithCount(toStack.getCount() + delta);
+      fromStack.shrink(delta);
+      return newToStack;
    }
 
    public Optional<TooltipComponent> getTooltipImage() {
@@ -329,6 +340,10 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
             InteractionResult.Success success = (InteractionResult.Success)result;
             if (success.wasItemInteraction()) {
                player.awardStat(Stats.ITEM_USED.get(usedItem));
+               if (player instanceof ServerPlayer) {
+                  ServerPlayer serverPlayer = (ServerPlayer)player;
+                  CriteriaTriggers.USE_ITEM.trigger(serverPlayer, usedItem);
+               }
             }
          }
 
@@ -345,6 +360,10 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
       boolean isInstantlyUsed = this.getUseDuration(player) <= 0;
       InteractionResult result = this.getItem().use(level, player, hand);
       if (isInstantlyUsed && result instanceof InteractionResult.Success success) {
+         if (player instanceof ServerPlayer serverPlayer) {
+            CriteriaTriggers.USE_ITEM.trigger(serverPlayer, stackBeforeUse.getItem());
+         }
+
          return success.heldItemTransformedTo(success.heldItemTransformedTo() == null ? this.applyAfterUseComponentSideEffects(player, stackBeforeUse) : success.heldItemTransformedTo().applyAfterUseComponentSideEffects(player, stackBeforeUse));
       } else {
          return result;
@@ -542,10 +561,10 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
       return this.getItem().isCorrectToolForDrops(this, state);
    }
 
-   public InteractionResult interactLivingEntity(final Player player, final LivingEntity target, final InteractionHand hand) {
+   public InteractionResult interactLivingEntity(final Player player, final Targetable target, final InteractionHand hand) {
       Equippable equippable = (Equippable)this.get(DataComponents.EQUIPPABLE);
-      if (equippable != null && equippable.equipOnInteract()) {
-         InteractionResult result = equippable.equipOnTarget(player, target, this);
+      if (equippable != null && equippable.equipOnInteract() && target instanceof LivingEntity livingEntity) {
+         InteractionResult result = equippable.equipOnTarget(player, livingEntity, this);
          if (result != InteractionResult.PASS) {
             return result;
          }
@@ -1078,10 +1097,6 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
       } else {
          this.getItem().onUseTick(level, livingEntity, this, ticksRemaining);
       }
-   }
-
-   public void onDestroyed(final ItemEntity itemEntity) {
-      this.getItem().onDestroyed(itemEntity);
    }
 
    public boolean canBeHurtBy(final DamageSource source) {

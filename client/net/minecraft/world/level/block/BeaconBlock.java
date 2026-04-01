@@ -44,7 +44,6 @@ public class BeaconBlock extends BaseEntityBlock implements BeaconBeamBlock {
          BlockEntity var7 = level.getBlockEntity(pos);
          if (var7 instanceof BeaconBlockEntity) {
             BeaconBlockEntity beacon = (BeaconBlockEntity)var7;
-            player.openMenu(beacon);
             player.awardStat(Stats.INTERACT_WITH_BEACON);
          }
       }

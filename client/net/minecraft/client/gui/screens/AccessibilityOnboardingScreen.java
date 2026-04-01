@@ -93,7 +93,7 @@ public class AccessibilityOnboardingScreen extends Screen {
    }
 
    private int initTitleYPos() {
-      return 90;
+      return 122;
    }
 
    public void onClose() {

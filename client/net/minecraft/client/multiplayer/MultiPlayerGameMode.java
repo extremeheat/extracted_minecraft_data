@@ -50,7 +50,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ActionItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.PunchAction;
 import net.minecraft.world.item.component.PiercingWeapon;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.crafting.display.RecipeDisplayId;
@@ -60,7 +63,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.GameMasterBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -80,6 +82,7 @@ public class MultiPlayerGameMode {
    private boolean isDestroying;
    private GameType localPlayerMode;
    private @Nullable GameType previousLocalPlayerMode;
+   private boolean isActioning;
    private int carriedIndex;
 
    public MultiPlayerGameMode(final Minecraft minecraft, final ClientPacketListener connection) {
@@ -129,23 +132,43 @@ public class MultiPlayerGameMode {
                return false;
             } else {
                oldBlock.playerWillDestroy(level, pos, oldState, this.minecraft.player);
-               FluidState fluidState = level.getFluidState(pos);
-               boolean changed = level.setBlock(pos, fluidState.createLegacyBlock(), 11);
-               if (changed) {
-                  oldBlock.destroy(level, pos, oldState);
-               }
-
+               oldBlock.destroy(level, pos, oldState);
                if (SharedConstants.DEBUG_BLOCK_BREAK) {
                   LOGGER.error("client broke {} {} -> {}", new Object[]{pos, oldState, level.getBlockState(pos)});
                }
 
-               return changed;
+               return true;
             }
          }
       }
    }
 
+   public boolean attackNothing() {
+      Item var2 = this.minecraft.player.getItemInHand(InteractionHand.MAIN_HAND).getItem();
+      if (var2 instanceof ActionItem action) {
+         if (action.actionOnNothing(this.minecraft.player)) {
+            this.startPrediction(this.minecraft.level, (sequence) -> new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.COMMAND, this.minecraft.player.blockPosition(), Direction.NORTH, sequence));
+         }
+
+         return true;
+      } else {
+         return false;
+      }
+   }
+
    public boolean startDestroyBlock(final BlockPos pos, final Direction direction) {
+      Item var4 = this.minecraft.player.getItemInHand(InteractionHand.MAIN_HAND).getItem();
+      if (var4 instanceof ActionItem action) {
+         if (!(action instanceof PunchAction)) {
+            if (!this.isActioning && action.actionOnBlock(this.minecraft.player, pos, direction)) {
+               this.isActioning = true;
+               this.startPrediction(this.minecraft.level, (sequence) -> new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.COMMAND_POS, pos, direction, sequence));
+            }
+
+            return true;
+         }
+      }
+
       if (this.minecraft.player.blockActionRestricted(this.minecraft.level, pos, this.localPlayerMode)) {
          return false;
       } else if (!this.minecraft.level.getWorldBorder().isWithinBounds(pos)) {
@@ -218,11 +241,14 @@ public class MultiPlayerGameMode {
          this.minecraft.player.resetAttackStrengthTicker();
       }
 
+      this.isActioning = false;
    }
 
    public boolean continueDestroyBlock(final BlockPos pos, final Direction direction) {
       this.ensureHasSentCarriedItem();
-      if (this.destroyDelay > 0) {
+      if (this.isActioning) {
+         return true;
+      } else if (this.destroyDelay > 0) {
          --this.destroyDelay;
          return true;
       } else if (this.minecraft.player.getAbilities().instabuild && this.minecraft.level.getWorldBorder().isWithinBounds(pos)) {
@@ -412,6 +438,13 @@ public class MultiPlayerGameMode {
    public void attack(final Player player, final Entity entity) {
       this.ensureHasSentCarriedItem();
       this.connection.send(new ServerboundAttackPacket(entity.getId()));
+      Item var4 = player.getItemInHand(InteractionHand.MAIN_HAND).getItem();
+      if (var4 instanceof ActionItem action) {
+         if (action.actionOnEntity(player, entity)) {
+            return;
+         }
+      }
+
       player.attack(entity);
       player.resetAttackStrengthTicker();
    }
@@ -526,8 +559,8 @@ public class MultiPlayerGameMode {
       return this.destroyProgress > 0.0F ? (int)(this.destroyProgress * 10.0F) : -1;
    }
 
-   public void handlePickItemFromBlock(final BlockPos pos, final boolean includeData) {
-      this.connection.send(new ServerboundPickItemFromBlockPacket(pos, includeData));
+   public void handlePickItemFromBlock(final BlockHitResult hitResult, final boolean includeData) {
+      this.connection.send(new ServerboundPickItemFromBlockPacket(hitResult, includeData));
    }
 
    public void handlePickItemFromEntity(final Entity entity, final boolean includeData) {

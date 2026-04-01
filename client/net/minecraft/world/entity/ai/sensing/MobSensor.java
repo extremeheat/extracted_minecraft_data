@@ -6,16 +6,17 @@ import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 
 public class MobSensor<T extends LivingEntity> extends Sensor<T> {
-   private final BiPredicate<T, LivingEntity> mobTest;
+   private final BiPredicate<T, Entity> mobTest;
    private final Predicate<T> readyTest;
    private final MemoryModuleType<Boolean> toSet;
    private final int memoryTimeToLive;
 
-   public MobSensor(final int scanRate, final BiPredicate<T, LivingEntity> mobTest, final Predicate<T> readyTest, final MemoryModuleType<Boolean> toSet, final int memoryTimeToLive) {
+   public MobSensor(final int scanRate, final BiPredicate<T, Entity> mobTest, final Predicate<T> readyTest, final MemoryModuleType<Boolean> toSet, final int memoryTimeToLive) {
       super(scanRate);
       this.mobTest = mobTest;
       this.readyTest = readyTest;
@@ -37,7 +38,7 @@ public class MobSensor<T extends LivingEntity> extends Sensor<T> {
    }
 
    public void checkForMobsNearby(final T body) {
-      Optional<List<LivingEntity>> livingEntitiesMemory = ((LivingEntity)body).getBrain().<List<LivingEntity>>getMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES);
+      Optional<List<Entity>> livingEntitiesMemory = ((LivingEntity)body).getBrain().<List<Entity>>getMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES);
       if (!livingEntitiesMemory.isEmpty()) {
          boolean mobPresent = ((List)livingEntitiesMemory.get()).stream().anyMatch((entity) -> this.mobTest.test(body, entity));
          if (mobPresent) {

@@ -3,7 +3,7 @@ package net.minecraft.world.entity.npc;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -13,8 +13,8 @@ public interface InventoryCarrier {
 
    SimpleContainer getInventory();
 
-   static void pickUpItem(final ServerLevel level, final Mob mob, final InventoryCarrier inventoryCarrier, final ItemEntity itemEntity) {
-      ItemStack itemStack = itemEntity.getItem();
+   static void pickUpItem(final ServerLevel level, final Mob mob, final InventoryCarrier inventoryCarrier, final LivingBlock itemEntity) {
+      ItemStack itemStack = itemEntity.getItemStack();
       if (mob.wantsToPickUp(level, itemStack)) {
          SimpleContainer inventory = inventoryCarrier.getInventory();
          boolean hasSpace = inventory.canAddItem(itemStack);

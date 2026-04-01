@@ -1,17 +1,25 @@
 package net.minecraft.network.protocol.game;
 
-import io.netty.buffer.ByteBuf;
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
+import net.minecraft.world.phys.BlockHitResult;
 
-public record ServerboundPickItemFromBlockPacket(BlockPos pos, boolean includeData) implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<ByteBuf, ServerboundPickItemFromBlockPacket> STREAM_CODEC;
+public record ServerboundPickItemFromBlockPacket(BlockHitResult hitResult, boolean includeData) implements Packet<ServerGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ServerboundPickItemFromBlockPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundPickItemFromBlockPacket>codec(ServerboundPickItemFromBlockPacket::write, ServerboundPickItemFromBlockPacket::new);
+
+   private ServerboundPickItemFromBlockPacket(final FriendlyByteBuf input) {
+      this(input.readBlockHitResult(), input.readBoolean());
+   }
 
    public ServerboundPickItemFromBlockPacket {
       super();
+   }
+
+   private void write(final FriendlyByteBuf output) {
+      output.writeBlockHitResult(this.hitResult);
+      output.writeBoolean(this.includeData);
    }
 
    public PacketType<ServerboundPickItemFromBlockPacket> type() {
@@ -20,9 +28,5 @@ public record ServerboundPickItemFromBlockPacket(BlockPos pos, boolean includeDa
 
    public void handle(final ServerGamePacketListener listener) {
       listener.handlePickItemFromBlock(this);
-   }
-
-   static {
-      STREAM_CODEC = StreamCodec.composite(BlockPos.STREAM_CODEC, ServerboundPickItemFromBlockPacket::pos, ByteBufCodecs.BOOL, ServerboundPickItemFromBlockPacket::includeData, ServerboundPickItemFromBlockPacket::new);
    }
 }

@@ -52,8 +52,6 @@ public abstract class AbstractRecipeBookScreen<T extends RecipeBookMenu> extends
    public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       if (this.recipeBookComponent.isVisible() && this.widthTooNarrow) {
          this.extractBackground(graphics, mouseX, mouseY, a);
-      } else {
-         super.extractContents(graphics, mouseX, mouseY, a);
       }
 
       graphics.nextStratum();
@@ -65,9 +63,26 @@ public abstract class AbstractRecipeBookScreen<T extends RecipeBookMenu> extends
       this.recipeBookComponent.extractTooltip(graphics, mouseX, mouseY, this.hoveredSlot);
    }
 
+   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      if (this.isInGameUi()) {
+         this.extractTransparentBackground(graphics);
+      } else {
+         if (this.minecraft.level == null) {
+            this.extractPanorama(graphics, a);
+         }
+
+         this.extractBlurredBackground(graphics);
+         this.extractMenuBackground(graphics);
+      }
+
+      this.minecraft.gui.extractDeferredSubtitles();
+   }
+
+   public void extractContents(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   }
+
    protected void extractSlots(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY) {
       super.extractSlots(graphics, mouseX, mouseY);
-      this.recipeBookComponent.extractGhostRecipe(graphics, this.isBiggerResultSlot());
    }
 
    protected boolean isBiggerResultSlot() {
@@ -105,8 +120,6 @@ public abstract class AbstractRecipeBookScreen<T extends RecipeBookMenu> extends
    }
 
    protected void slotClicked(final Slot slot, final int slotId, final int buttonNum, final ContainerInput containerInput) {
-      super.slotClicked(slot, slotId, buttonNum, containerInput);
-      this.recipeBookComponent.slotClicked(slot);
    }
 
    public void containerTick() {

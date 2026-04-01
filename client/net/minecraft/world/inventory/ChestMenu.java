@@ -54,8 +54,6 @@ public class ChestMenu extends AbstractContainerMenu {
       container.startOpen(inventory.player);
       int chestGridTop = 18;
       this.addChestGrid(container, 8, 18);
-      int inventoryTop = 18 + this.containerRows * 18 + 13;
-      this.addStandardInventorySlots(inventory, 8, inventoryTop);
    }
 
    private void addChestGrid(final Container container, final int left, final int top) {

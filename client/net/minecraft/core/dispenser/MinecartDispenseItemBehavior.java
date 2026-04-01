@@ -11,7 +11,6 @@ import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.BaseRailBlock;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.phys.Vec3;
@@ -25,8 +24,8 @@ public class MinecartDispenseItemBehavior extends DefaultDispenseItemBehavior {
       this.entityType = entityType;
    }
 
-   public ItemStack execute(final BlockSource source, final ItemStack dispensed) {
-      Direction direction = (Direction)source.state().getValue(DispenserBlock.FACING);
+   public ItemStack execute(final DispenseSource source, final ItemStack dispensed) {
+      Direction direction = source.direction();
       ServerLevel level = source.level();
       Vec3 center = source.center();
       double spawnX = center.x() + (double)direction.getStepX() * 1.125;
@@ -80,7 +79,7 @@ public class MinecartDispenseItemBehavior extends DefaultDispenseItemBehavior {
       return var10000;
    }
 
-   protected void playSound(final BlockSource source) {
+   protected void playSound(final DispenseSource source) {
       source.level().levelEvent(1000, source.pos(), 0);
    }
 }

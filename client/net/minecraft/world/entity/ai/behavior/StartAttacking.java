@@ -3,7 +3,7 @@ package net.minecraft.world.entity.ai.behavior;
 import java.util.Optional;
 import java.util.function.Function;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -22,11 +22,11 @@ public class StartAttacking {
                if (!canAttackPredicate.test(level, body)) {
                   return false;
                } else {
-                  Optional<? extends LivingEntity> target = targetFinderFunction.get(level, body);
+                  Optional<? extends Entity> target = targetFinderFunction.get(level, body);
                   if (target.isEmpty()) {
                      return false;
                   } else {
-                     LivingEntity targetEntity = (LivingEntity)target.get();
+                     Entity targetEntity = (Entity)target.get();
                      if (!body.canAttack(targetEntity)) {
                         return false;
                      } else {
@@ -46,6 +46,6 @@ public class StartAttacking {
 
    @FunctionalInterface
    public interface TargetFinder<E> {
-      Optional<? extends LivingEntity> get(ServerLevel level, E body);
+      Optional<? extends Entity> get(ServerLevel level, E body);
    }
 }

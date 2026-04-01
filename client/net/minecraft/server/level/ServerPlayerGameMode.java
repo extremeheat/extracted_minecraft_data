@@ -17,6 +17,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Abilities;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.GameType;
@@ -285,6 +286,10 @@ public class ServerPlayerGameMode {
                boolean canDestroy = this.player.hasCorrectToolForDrops(adjustedState);
                itemStack.mineBlock(this.level, adjustedState, pos, this.player);
                if (changed && canDestroy) {
+                  if (itemStack.is(Items.PUNCH_ACTION)) {
+                     destroyedWith = ItemStack.EMPTY;
+                  }
+
                   block.playerDestroy(this.level, this.player, pos, adjustedState, blockEntity, destroyedWith);
                }
 
@@ -340,12 +345,7 @@ public class ServerPlayerGameMode {
          return InteractionResult.FAIL;
       } else if (this.gameModeForPlayer == GameType.SPECTATOR) {
          MenuProvider menuProvider = state.getMenuProvider(level, pos);
-         if (menuProvider != null) {
-            player.openMenu(menuProvider);
-            return InteractionResult.CONSUME;
-         } else {
-            return InteractionResult.PASS;
-         }
+         return (InteractionResult)(menuProvider != null ? InteractionResult.CONSUME : InteractionResult.PASS);
       } else {
          boolean haveSomethingInOurHands = !player.getMainHandItem().isEmpty() || !player.getOffhandItem().isEmpty();
          boolean suppressUsingBlock = player.isSecondaryUseActive() && haveSomethingInOurHands;

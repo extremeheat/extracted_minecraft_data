@@ -11,7 +11,7 @@ public class HopperScreen extends AbstractContainerScreen<HopperMenu> {
    private static final Identifier HOPPER_LOCATION = Identifier.withDefaultNamespace("textures/gui/container/hopper.png");
 
    public HopperScreen(final HopperMenu menu, final Inventory inventory, final Component title) {
-      super(menu, inventory, title, 176, 133);
+      super(menu, inventory, title, 175, 133);
       this.inventoryLabelY = this.imageHeight - 94;
    }
 

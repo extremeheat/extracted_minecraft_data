@@ -90,10 +90,10 @@ import net.minecraft.world.level.block.SnifferEggBlock;
 import net.minecraft.world.level.block.TestBlock;
 import net.minecraft.world.level.block.VaultBlock;
 import net.minecraft.world.level.block.WeatheringCopper;
+import net.minecraft.world.level.block.WeatheringCopperBlocks;
 import net.minecraft.world.level.block.state.StateHolder;
 import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BambooLeaves;
-import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.level.block.state.properties.BellAttachType;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
@@ -412,6 +412,10 @@ public class BlockModelGenerators {
 
    private void createTrivialCube(final Block block) {
       this.createTrivialBlock(block, TexturedModel.CUBE);
+   }
+
+   private void createTrivialCubeCopyingTexture(final Block block, final Block copyFrom) {
+      this.blockStateOutput.accept(createSimpleBlock(block, plainVariant(TexturedModel.CUBE.updateTexture((textureMapping) -> textureMapping.put(TextureSlot.ALL, TextureMapping.getBlockTexture(copyFrom))).create(block, this.modelOutput))));
    }
 
    private void createTrivialBlock(final Block block, final TexturedModel.Provider modelProvider) {
@@ -1928,11 +1932,8 @@ public class BlockModelGenerators {
       this.blockStateOutput.accept(createSimpleBlock(bed, blockModel));
       Item bedItem = bed.asItem();
       Identifier baseModel = ModelTemplates.BED_INVENTORY.create(ModelLocationUtils.getModelLocation(bedItem), TextureMapping.particle(itemParticle), this.modelOutput);
-      Transformation headTransformation = BedRenderer.modelTransform(Direction.SOUTH);
-      ItemModel.Unbaked headPart = ItemModelUtils.specialModel(baseModel, headTransformation, new BedSpecialRenderer.Unbaked(dyeColor, BedPart.HEAD));
-      Transformation footTransformation = (new Transformation(new Vector3f(0.0F, 0.0F, -1.0F), (Quaternionfc)null, (Vector3fc)null, (Quaternionfc)null)).compose(headTransformation);
-      ItemModel.Unbaked footPart = ItemModelUtils.specialModel(baseModel, footTransformation, new BedSpecialRenderer.Unbaked(dyeColor, BedPart.FOOT));
-      this.itemModelOutput.accept(bedItem, ItemModelUtils.composite(headPart, footPart));
+      Transformation transformation = BedRenderer.modelTransform(Direction.SOUTH);
+      this.itemModelOutput.accept(bedItem, ItemModelUtils.specialModel(baseModel, transformation, new BedSpecialRenderer.Unbaked(dyeColor)));
    }
 
    private void createBeds() {
@@ -2137,6 +2138,15 @@ public class BlockModelGenerators {
       this.createLightningRod(Blocks.EXPOSED_LIGHTNING_ROD, Blocks.WAXED_EXPOSED_LIGHTNING_ROD);
       this.createLightningRod(Blocks.WEATHERED_LIGHTNING_ROD, Blocks.WAXED_WEATHERED_LIGHTNING_ROD);
       this.createLightningRod(Blocks.OXIDIZED_LIGHTNING_ROD, Blocks.WAXED_OXIDIZED_LIGHTNING_ROD);
+      this.createTrivialCubeCopyingTexture(Blocks.IRON_TRAP, Blocks.IRON_BARS);
+      WeatheringCopperBlocks bars = Blocks.COPPER_BARS;
+      List<Block> copperTraps = Blocks.COPPER_TRAP.asList();
+      List<Block> copperBars = List.of(bars.unaffected(), bars.unaffected(), bars.exposed(), bars.exposed(), bars.weathered(), bars.weathered(), bars.oxidized(), bars.oxidized());
+
+      for(int i = 0; i < copperTraps.size(); ++i) {
+         this.createTrivialCubeCopyingTexture((Block)copperTraps.get(i), (Block)copperBars.get(i));
+      }
+
       this.createWeightedPressurePlate(Blocks.LIGHT_WEIGHTED_PRESSURE_PLATE, Blocks.GOLD_BLOCK);
       this.createWeightedPressurePlate(Blocks.HEAVY_WEIGHTED_PRESSURE_PLATE, Blocks.IRON_BLOCK);
       this.createShelf(Blocks.ACACIA_SHELF, Blocks.STRIPPED_ACACIA_LOG);

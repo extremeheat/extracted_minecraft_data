@@ -29,6 +29,10 @@ public class BoatItem extends Item {
 
    public InteractionResult use(final Level level, final Player player, final InteractionHand hand) {
       ItemStack itemStack = player.getItemInHand(hand);
+      return summonBoat(level, player, itemStack, this.entityType);
+   }
+
+   public static InteractionResult summonBoat(final Level level, final Player player, final ItemStack itemStack, final EntityType<? extends AbstractBoat> entityType) {
       HitResult hitResult = getPlayerPOVHitResult(level, player, ClipContext.Fluid.ANY);
       if (hitResult.getType() == HitResult.Type.MISS) {
          return InteractionResult.PASS;
@@ -48,23 +52,19 @@ public class BoatItem extends Item {
          }
 
          if (hitResult.getType() == HitResult.Type.BLOCK) {
-            AbstractBoat boat = this.getBoat(level, hitResult, itemStack, player);
+            AbstractBoat boat = getBoat(level, hitResult, itemStack, player, entityType);
             if (boat == null) {
                return InteractionResult.FAIL;
             } else {
                boat.setYRot(player.getYRot());
-               if (!level.noCollision(boat, boat.getBoundingBox())) {
-                  return InteractionResult.FAIL;
-               } else {
-                  if (!level.isClientSide()) {
-                     level.addFreshEntity(boat);
-                     level.gameEvent(player, GameEvent.ENTITY_PLACE, hitResult.getLocation());
-                     itemStack.consume(1, player);
-                  }
-
-                  player.awardStat(Stats.ITEM_USED.get(this));
-                  return InteractionResult.SUCCESS;
+               if (!level.isClientSide()) {
+                  level.addFreshEntity(boat);
+                  level.gameEvent(player, GameEvent.ENTITY_PLACE, hitResult.getLocation());
+                  itemStack.consume(1, player);
                }
+
+               player.awardStat(Stats.ITEM_USED.get(itemStack.getItem()));
+               return InteractionResult.SUCCESS;
             }
          } else {
             return InteractionResult.PASS;
@@ -72,8 +72,8 @@ public class BoatItem extends Item {
       }
    }
 
-   private @Nullable AbstractBoat getBoat(final Level level, final HitResult hitResult, final ItemStack itemStack, final Player player) {
-      AbstractBoat boat = this.entityType.create(level, EntitySpawnReason.SPAWN_ITEM_USE);
+   private static @Nullable AbstractBoat getBoat(final Level level, final HitResult hitResult, final ItemStack itemStack, final Player player, final EntityType<? extends AbstractBoat> entityType) {
+      AbstractBoat boat = entityType.create(level, EntitySpawnReason.SPAWN_ITEM_USE);
       if (boat != null) {
          Vec3 location = hitResult.getLocation();
          boat.setInitialPos(location.x, location.y, location.z);
@@ -84,5 +84,9 @@ public class BoatItem extends Item {
       }
 
       return boat;
+   }
+
+   public EntityType<? extends AbstractBoat> getEntityType() {
+      return this.entityType;
    }
 }

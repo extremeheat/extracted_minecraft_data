@@ -11,6 +11,7 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.WidgetSprites;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -142,7 +143,7 @@ public class RecipeBookPage {
       if (this.minecraft.screen != null && this.hoveredButton != null && !this.overlay.isVisible()) {
          ItemStack displayStack = this.hoveredButton.getDisplayStack();
          Identifier tooltipStyle = (Identifier)displayStack.get(DataComponents.TOOLTIP_STYLE);
-         graphics.setComponentTooltipForNextFrame(this.minecraft.font, this.hoveredButton.getTooltipText(displayStack), mouseX, mouseY, tooltipStyle);
+         graphics.setTooltipForNextFrame(this.minecraft.font, this.hoveredButton.getTooltipText(displayStack), this.hoveredButton.getTooltipImage(), mouseX, mouseY, tooltipStyle);
       }
 
    }
@@ -180,17 +181,11 @@ public class RecipeBookPage {
          this.updateButtonsForPage();
          return true;
       } else {
-         ContextMap context = SlotDisplayContext.fromLevel(this.minecraft.level);
-
          for(RecipeButton button : this.buttons) {
-            if (button.mouseClicked(event, doubleClick)) {
-               if (event.button() == 0) {
-                  this.lastClickedRecipe = button.getCurrentRecipe();
-                  this.lastClickedRecipeCollection = button.getCollection();
-               } else if (event.button() == 1 && !this.overlay.isVisible() && !button.isOnlyOption()) {
-                  this.overlay.init(button.getCollection(), context, this.isFiltering, button.getX(), button.getY(), xo + imageWidth / 2, yo + 13 + imageHeight / 2, (float)button.getWidth());
-               }
-
+            if (button.mouseClicked(event, doubleClick) && event.button() == 0) {
+               this.lastClickedRecipe = button.getCurrentRecipe();
+               this.lastClickedRecipeCollection = button.getCollection();
+               this.minecraft.setScreen((Screen)null);
                return true;
             }
          }

@@ -19,6 +19,7 @@ import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -43,6 +44,7 @@ import net.minecraft.world.entity.ai.goal.target.ResetUniversalAngerTargetGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.fox.Fox;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -62,7 +64,7 @@ public class PolarBear extends Animal implements NeutralMob {
    private int warningSoundTicks;
    private static final UniformInt PERSISTENT_ANGER_TIME;
    private long persistentAngerEndTime;
-   private @Nullable EntityReference<LivingEntity> persistentAngerTarget;
+   private @Nullable EntityReference<Entity> persistentAngerTarget;
 
    public PolarBear(final EntityType<? extends PolarBear> type, final Level level) {
       super(type, level);
@@ -88,6 +90,7 @@ public class PolarBear extends Animal implements NeutralMob {
       this.targetSelector.addGoal(1, new PolarBearHurtByTargetGoal());
       this.targetSelector.addGoal(2, new PolarBearAttackPlayersGoal());
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, Player.class, 10, true, false, this::isAngryAt));
+      this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, LivingBlock.class, 10, true, false, this::isAngryAt));
       this.targetSelector.addGoal(4, new NearestAttackableTargetGoal(this, Fox.class, 10, true, true, (target, level) -> !this.isBaby()));
       this.targetSelector.addGoal(5, new ResetUniversalAngerTargetGoal(this, false));
    }
@@ -127,11 +130,11 @@ public class PolarBear extends Animal implements NeutralMob {
       return this.persistentAngerEndTime;
    }
 
-   public void setPersistentAngerTarget(final @Nullable EntityReference<LivingEntity> persistentAngerTarget) {
+   public void setPersistentAngerTarget(final @Nullable EntityReference<Entity> persistentAngerTarget) {
       this.persistentAngerTarget = persistentAngerTarget;
    }
 
-   public @Nullable EntityReference<LivingEntity> getPersistentAngerTarget() {
+   public @Nullable EntityReference<Entity> getPersistentAngerTarget() {
       return this.persistentAngerTarget;
    }
 
@@ -284,7 +287,7 @@ public class PolarBear extends Animal implements NeutralMob {
          super(PolarBear.this, 1.25, true);
       }
 
-      protected void checkAndPerformAttack(final LivingEntity target) {
+      protected void checkAndPerformAttack(final Entity target) {
          if (this.canPerformAttack(target)) {
             this.resetAttackCooldown();
             this.mob.doHurtTarget(getServerLevel(this.mob), target);

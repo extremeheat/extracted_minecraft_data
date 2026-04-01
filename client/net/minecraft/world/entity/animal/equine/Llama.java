@@ -18,6 +18,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.RandomSource;
@@ -33,7 +34,6 @@ import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -48,6 +48,7 @@ import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.RangedAttackGoal;
 import net.minecraft.world.entity.ai.goal.RunAroundLikeCrazyGoal;
 import net.minecraft.world.entity.ai.goal.TemptGoal;
+import net.minecraft.world.entity.ai.goal.TemptedByLivingBlockGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
@@ -118,10 +119,11 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
       this.goalSelector.addGoal(3, new PanicGoal(this, 1.2));
       this.goalSelector.addGoal(4, new BreedGoal(this, 1.0));
       this.goalSelector.addGoal(5, new TemptGoal(this, 1.25, (i) -> i.is(ItemTags.LLAMA_TEMPT_ITEMS), false));
-      this.goalSelector.addGoal(6, new FollowParentGoal(this, 1.0));
-      this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 0.7));
-      this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 6.0F));
-      this.goalSelector.addGoal(9, new RandomLookAroundGoal(this));
+      this.goalSelector.addGoal(6, new TemptedByLivingBlockGoal(this, 1.25, BlockTags.LLAMA_TEMPT_ITEMS, false));
+      this.goalSelector.addGoal(7, new FollowParentGoal(this, 1.0));
+      this.goalSelector.addGoal(8, new WaterAvoidingRandomStrollGoal(this, 0.7));
+      this.goalSelector.addGoal(9, new LookAtPlayerGoal(this, Player.class, 6.0F));
+      this.goalSelector.addGoal(10, new RandomLookAroundGoal(this));
       this.targetSelector.addGoal(1, new LlamaHurtByTargetGoal(this));
       this.targetSelector.addGoal(2, new LlamaAttackWolfGoal(this));
    }
@@ -301,7 +303,7 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
       return EntityType.LLAMA.create(this.level(), EntitySpawnReason.BREEDING);
    }
 
-   private void spit(final LivingEntity target) {
+   private void spit(final Entity target) {
       LlamaSpit spit = new LlamaSpit(this.level(), this);
       double xd = target.getX() - this.getX();
       double yd = target.getY(0.3333333333333333) - spit.getY();
@@ -382,7 +384,7 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
       return false;
    }
 
-   public void performRangedAttack(final LivingEntity target, final float power) {
+   public void performRangedAttack(final Entity target, final float power) {
       this.spit(target);
    }
 

@@ -221,7 +221,7 @@ public class PistonBaseBlock extends DirectionalBlock {
                return false;
             } else {
                if (!state.is(Blocks.PISTON) && !state.is(Blocks.STICKY_PISTON)) {
-                  if (state.getDestroySpeed(level, pos) == -1.0F) {
+                  if (state.getDestroySpeed() == -1.0F) {
                      return false;
                   }
 

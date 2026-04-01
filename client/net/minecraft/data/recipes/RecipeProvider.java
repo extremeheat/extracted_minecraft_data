@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.mojang.datafixers.util.Pair;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -17,12 +16,12 @@ import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
-import net.minecraft.advancements.criterion.BredAnimalsTrigger;
 import net.minecraft.advancements.criterion.EnterBlockTrigger;
+import net.minecraft.advancements.criterion.EntityPredicate;
 import net.minecraft.advancements.criterion.ImpossibleTrigger;
-import net.minecraft.advancements.criterion.InventoryChangeTrigger;
 import net.minecraft.advancements.criterion.ItemPredicate;
-import net.minecraft.advancements.criterion.MinMaxBounds;
+import net.minecraft.advancements.criterion.LivingBlockPredicate;
+import net.minecraft.advancements.criterion.SummonedEntityTrigger;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
@@ -40,6 +39,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.HoneycombItem;
 import net.minecraft.world.item.Item;
@@ -62,7 +62,8 @@ import org.jspecify.annotations.Nullable;
 
 public abstract class RecipeProvider {
    protected final HolderLookup.Provider registries;
-   private final HolderGetter<Item> items;
+   protected final HolderGetter<Item> items;
+   protected final HolderLookup<EntityType<?>> entityTypes;
    protected final RecipeOutput output;
    private static final Map<BlockFamily.Variant, FamilyCraftingRecipeProvider> SHAPE_BUILDERS;
    private static final Map<BlockFamily.Variant, FamilyStonecutterRecipeProvider> STONECUTTER_RECIPE_BUILDERS;
@@ -71,6 +72,7 @@ public abstract class RecipeProvider {
       super();
       this.registries = registries;
       this.items = registries.lookupOrThrow(Registries.ITEM);
+      this.entityTypes = registries.lookupOrThrow(Registries.ENTITY_TYPE);
       this.output = output;
    }
 
@@ -469,28 +471,12 @@ public abstract class RecipeProvider {
       return CriteriaTriggers.ENTER_BLOCK.createCriterion(new EnterBlockTrigger.TriggerInstance(Optional.empty(), Optional.of(block.builtInRegistryHolder()), Optional.empty()));
    }
 
-   protected Criterion<BredAnimalsTrigger.TriggerInstance> bredAnimal() {
-      return CriteriaTriggers.BRED_ANIMALS.createCriterion(new BredAnimalsTrigger.TriggerInstance(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()));
+   protected Criterion<SummonedEntityTrigger.TriggerInstance> has(final ItemLike item) {
+      return SummonedEntityTrigger.TriggerInstance.summonedEntity(EntityPredicate.Builder.entity().of(this.entityTypes, EntityType.LIVING_BLOCK).subPredicate(LivingBlockPredicate.ofItem(ItemPredicate.Builder.item().of(this.items, item).build())));
    }
 
-   private Criterion<InventoryChangeTrigger.TriggerInstance> has(final MinMaxBounds.Ints count, final ItemLike item) {
-      return inventoryTrigger(ItemPredicate.Builder.item().of(this.items, item).withCount(count));
-   }
-
-   protected Criterion<InventoryChangeTrigger.TriggerInstance> has(final ItemLike item) {
-      return inventoryTrigger(ItemPredicate.Builder.item().of(this.items, item));
-   }
-
-   protected Criterion<InventoryChangeTrigger.TriggerInstance> has(final TagKey<Item> tag) {
-      return inventoryTrigger(ItemPredicate.Builder.item().of(this.items, tag));
-   }
-
-   private static Criterion<InventoryChangeTrigger.TriggerInstance> inventoryTrigger(final ItemPredicate.Builder... predicates) {
-      return inventoryTrigger((ItemPredicate[])Arrays.stream(predicates).map(ItemPredicate.Builder::build).toArray((x$0) -> new ItemPredicate[x$0]));
-   }
-
-   private static Criterion<InventoryChangeTrigger.TriggerInstance> inventoryTrigger(final ItemPredicate... predicates) {
-      return CriteriaTriggers.INVENTORY_CHANGED.createCriterion(new InventoryChangeTrigger.TriggerInstance(Optional.empty(), InventoryChangeTrigger.TriggerInstance.Slots.ANY, List.of(predicates)));
+   protected Criterion<SummonedEntityTrigger.TriggerInstance> has(final TagKey<Item> tag) {
+      return SummonedEntityTrigger.TriggerInstance.summonedEntity(EntityPredicate.Builder.entity().of(this.entityTypes, EntityType.LIVING_BLOCK).subPredicate(LivingBlockPredicate.ofItem(ItemPredicate.Builder.item().of(this.items, tag).build())));
    }
 
    protected static String getHasName(final ItemLike baseBlock) {

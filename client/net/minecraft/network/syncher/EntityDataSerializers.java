@@ -38,9 +38,12 @@ import net.minecraft.world.entity.animal.sniffer.Sniffer;
 import net.minecraft.world.entity.animal.wolf.WolfSoundVariant;
 import net.minecraft.world.entity.animal.wolf.WolfVariant;
 import net.minecraft.world.entity.decoration.painting.PaintingVariant;
+import net.minecraft.world.entity.livingblock.Target;
+import net.minecraft.world.entity.livingblock.movement.MovementData;
 import net.minecraft.world.entity.npc.villager.VillagerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ResolvableProfile;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.WeatheringCopper;
 import net.minecraft.world.level.block.state.BlockState;
@@ -95,6 +98,9 @@ public class EntityDataSerializers {
    public static final EntityDataSerializer<Quaternionfc> QUATERNION;
    public static final EntityDataSerializer<ResolvableProfile> RESOLVABLE_PROFILE;
    public static final EntityDataSerializer<HumanoidArm> HUMANOID_ARM;
+   public static final EntityDataSerializer<Target> TARGET;
+   public static final EntityDataSerializer<MovementData> MOVEMENT_DATA;
+   public static final EntityDataSerializer<SlotDisplay> SLOT_DISPLAY;
 
    public static void registerSerializer(final EntityDataSerializer<?> serializer) {
       SERIALIZERS.add(serializer);
@@ -189,6 +195,9 @@ public class EntityDataSerializers {
       QUATERNION = EntityDataSerializer.<Quaternionfc>forValueType(ByteBufCodecs.QUATERNIONF);
       RESOLVABLE_PROFILE = EntityDataSerializer.<ResolvableProfile>forValueType(ResolvableProfile.STREAM_CODEC);
       HUMANOID_ARM = EntityDataSerializer.<HumanoidArm>forValueType(HumanoidArm.STREAM_CODEC);
+      TARGET = EntityDataSerializer.<Target>forValueType(Target.STREAM_CODEC);
+      MOVEMENT_DATA = EntityDataSerializer.<MovementData>forValueType(MovementData.STREAM_CODEC);
+      SLOT_DISPLAY = EntityDataSerializer.<SlotDisplay>forValueType(SlotDisplay.STREAM_CODEC);
       registerSerializer(BYTE);
       registerSerializer(INT);
       registerSerializer(LONG);
@@ -232,5 +241,8 @@ public class EntityDataSerializers {
       registerSerializer(QUATERNION);
       registerSerializer(RESOLVABLE_PROFILE);
       registerSerializer(HUMANOID_ARM);
+      registerSerializer(TARGET);
+      registerSerializer(MOVEMENT_DATA);
+      registerSerializer(SLOT_DISPLAY);
    }
 }

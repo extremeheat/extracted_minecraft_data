@@ -63,12 +63,15 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.debug.DebugRenderer;
 import net.minecraft.client.renderer.debug.GameTestBlockHighlightRenderer;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.entity.LivingBlockRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.LivingBlockRenderState;
 import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.gizmos.DrawableGizmoPrimitives;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.GameRenderState;
+import net.minecraft.client.renderer.state.LivingBlockBreakingRenderState;
 import net.minecraft.client.renderer.state.OptionsRenderState;
 import net.minecraft.client.renderer.state.WindowRenderState;
 import net.minecraft.client.renderer.state.level.BlockBreakingRenderState;
@@ -100,7 +103,9 @@ import net.minecraft.util.profiling.Zone;
 import net.minecraft.world.TickRateManager;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.level.BlockAndLightGetter;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
@@ -112,6 +117,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.material.FogType;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -537,7 +543,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       profiler.popPush("blockOutline");
       this.extractBlockOutline(camera, this.levelRenderState);
       profiler.popPush("blockBreaking");
-      this.extractBlockDestroyAnimation(camera, this.levelRenderState);
+      this.extractBlockDestroyAnimation(camera, this.levelRenderState, deltaPartialTick);
       profiler.popPush("weather");
       this.weatherEffectRenderer.extractRenderState(this.level, this.ticks, deltaPartialTick, cameraPos, this.levelRenderState.weatherRenderState);
       profiler.popPush("sky");
@@ -829,22 +835,47 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
    }
 
-   private void extractBlockDestroyAnimation(final Camera camera, final LevelRenderState levelRenderState) {
+   private void extractBlockDestroyAnimation(final Camera camera, final LevelRenderState levelRenderState, final float partialTicks) {
       Vec3 cameraPos = camera.position();
       double camX = cameraPos.x();
       double camY = cameraPos.y();
       double camZ = cameraPos.z();
       levelRenderState.blockBreakingRenderStates.clear();
-      ObjectIterator var10 = this.destructionProgress.long2ObjectEntrySet().iterator();
+      ObjectIterator var11 = this.destructionProgress.long2ObjectEntrySet().iterator();
 
-      while(var10.hasNext()) {
-         Long2ObjectMap.Entry<SortedSet<BlockDestructionProgress>> entry = (Long2ObjectMap.Entry)var10.next();
+      while(var11.hasNext()) {
+         Long2ObjectMap.Entry<SortedSet<BlockDestructionProgress>> entry = (Long2ObjectMap.Entry)var11.next();
          BlockPos pos = BlockPos.of(entry.getLongKey());
          if (!(pos.distToCenterSqr(camX, camY, camZ) > 1024.0)) {
             SortedSet<BlockDestructionProgress> progresses = (SortedSet)entry.getValue();
             if (progresses != null && !progresses.isEmpty()) {
                int progress = ((BlockDestructionProgress)progresses.last()).getProgress();
-               levelRenderState.blockBreakingRenderStates.add(new BlockBreakingRenderState(pos, this.level.getBlockState(pos), progress));
+               levelRenderState.blockBreakingRenderStates.add(new BlockBreakingRenderState(Vec3.atLowerCornerOf(pos), this.level.getBlockState(pos), progress));
+            }
+         }
+      }
+
+      List<LivingBlock> entities = this.level.getEntities(EntityType.LIVING_BLOCK, AABB.unitCubeFromLowerCorner(cameraPos).inflate(32.0), (var0) -> true);
+      LivingBlockRenderState livingBlockRenderState = new LivingBlockRenderState();
+
+      for(LivingBlock livingBlock : entities) {
+         BlockState blockState = livingBlock.getBlockState();
+         if (!blockState.isAir() && !(livingBlock.blockPosition().distToCenterSqr(camX, camY, camZ) > 1024.0)) {
+            float health = livingBlock.getHealth();
+            float maxHealth = livingBlock.getMaxHealth();
+            if (health < maxHealth) {
+               float cappedHealth = Math.min(health, maxHealth);
+               float healthPercentage = cappedHealth / maxHealth;
+               int maxIndex = 9;
+               float stage = healthPercentage * 9.0F;
+               int result = 9 - Mth.ceil(stage);
+               livingBlockRenderState.ageInTicks = (float)livingBlock.tickCount + partialTicks;
+               livingBlockRenderState.x = Mth.lerp((double)partialTicks, livingBlock.xOld, livingBlock.getX());
+               livingBlockRenderState.y = Mth.lerp((double)partialTicks, livingBlock.yOld, livingBlock.getY());
+               livingBlockRenderState.z = Mth.lerp((double)partialTicks, livingBlock.zOld, livingBlock.getZ());
+               LivingBlockRenderer.extractRotation(livingBlock, livingBlockRenderState, partialTicks);
+               Vec3 position = new Vec3(livingBlockRenderState.x, livingBlockRenderState.y, livingBlockRenderState.z);
+               levelRenderState.blockBreakingRenderStates.add(new LivingBlockBreakingRenderState(position, result, blockState, livingBlockRenderState));
             }
          }
       }
@@ -859,11 +890,12 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
       for(BlockBreakingRenderState state : levelRenderState.blockBreakingRenderStates) {
          if (state.blockState().getRenderShape() == RenderShape.MODEL) {
-            BlockPos pos = state.blockPos();
+            Vec3 pos = state.pos();
             poseStack.pushPose();
-            poseStack.translate((double)pos.getX() - camX, (double)pos.getY() - camY, (double)pos.getZ() - camZ);
+            poseStack.translate(pos.x - camX, pos.y - camY, pos.z - camZ);
+            state.applyRotation(poseStack);
             BlockStateModel model = this.minecraft.getModelManager().getBlockStateModelSet().get(state.blockState());
-            submitNodeCollector.submitBreakingBlockModel(poseStack, model, state.blockState().getSeed(pos), state.progress());
+            submitNodeCollector.submitBreakingBlockModel(poseStack, model, state.blockState().getSeed(BlockPos.containing(pos)), state.progress());
             poseStack.popPose();
          }
       }
