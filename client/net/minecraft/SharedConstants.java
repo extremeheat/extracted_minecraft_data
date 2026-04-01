@@ -14,10 +14,10 @@ import org.jspecify.annotations.Nullable;
 public class SharedConstants {
    /** @deprecated */
    @Deprecated
-   public static final boolean SNAPSHOT = true;
+   public static final boolean SNAPSHOT = false;
    /** @deprecated */
    @Deprecated
-   public static final int WORLD_VERSION = 4787;
+   public static final int WORLD_VERSION = 4788;
    /** @deprecated */
    @Deprecated
    public static final String SERIES = "main";
@@ -220,7 +220,7 @@ public class SharedConstants {
    }
 
    public static int getProtocolVersion() {
-      return 1073742128;
+      return 775;
    }
 
    public static boolean debugVoidTerrain(final ChunkPos pos) {
