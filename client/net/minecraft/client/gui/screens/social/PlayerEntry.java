@@ -82,7 +82,7 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
       Component hideNarration = Component.translatable("gui.socialInteractions.narration.hide", playerName);
       Component showNarration = Component.translatable("gui.socialInteractions.narration.show", playerName);
       PlayerSocialManager socialManager = minecraft.getPlayerSocialManager();
-      boolean chatDisabledOrBlocked = minecraft.player.chatAbilities().canReceivePlayerMessages() || socialManager.isBlocked(id);
+      boolean chatDisabledOrBlocked = !minecraft.player.chatAbilities().canReceivePlayerMessages() || socialManager.isBlocked(id);
       boolean notLocalPlayer = !minecraft.player.getUUID().equals(id);
       if (!SharedConstants.DEBUG_SOCIAL_INTERACTIONS && !notLocalPlayer) {
          this.children = ImmutableList.of();

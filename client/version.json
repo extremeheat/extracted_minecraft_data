@@ -1,7 +1,7 @@
 {
-    "id": "26.1",
-    "name": "26.1",
-    "world_version": 4786,
+    "id": "26.1.1",
+    "name": "26.1.1",
+    "world_version": 4788,
     "series_id": "main",
     "protocol_version": 775,
     "pack_version": {
@@ -10,7 +10,7 @@
         "data_major": 101,
         "data_minor": 1
     },
-    "build_time": "2026-03-24T12:09:43+00:00",
+    "build_time": "2026-04-01T09:05:14+00:00",
     "java_component": "java-runtime-epsilon",
     "java_version": 25,
     "stable": true,
