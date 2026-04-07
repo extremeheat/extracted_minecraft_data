@@ -5,7 +5,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.livingblock.LivingBlock;
+import net.minecraft.world.entity.item.ItemEntity;
 
 public class StartAdmiringItemIfSeen {
    public StartAdmiringItemIfSeen() {
@@ -14,8 +14,8 @@ public class StartAdmiringItemIfSeen {
 
    public static BehaviorControl<LivingEntity> create(final int admireDuration) {
       return BehaviorBuilder.create((Function)((i) -> i.group(i.present(MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM), i.absent(MemoryModuleType.ADMIRING_ITEM), i.absent(MemoryModuleType.ADMIRING_DISABLED), i.absent(MemoryModuleType.DISABLE_WALK_TO_ADMIRE_ITEM)).apply(i, (nearestItem, admiring, admiringDisabled, walkDisabled) -> (level, body, timestamp) -> {
-               LivingBlock itemEntity = (LivingBlock)i.get(nearestItem);
-               if (!PiglinAi.isLovedItem(itemEntity.getItemStack())) {
+               ItemEntity itemEntity = (ItemEntity)i.get(nearestItem);
+               if (!PiglinAi.isLovedItem(itemEntity.getItem())) {
                   return false;
                } else {
                   admiring.setWithExpiry(true, (long)admireDuration);

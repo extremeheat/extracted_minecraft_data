@@ -1,29 +1,19 @@
 package net.minecraft.world.inventory;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
-import net.minecraft.recipebook.PlaceRecipeHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.Container;
-import net.minecraft.world.entity.CraftingGrid;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.item.crafting.display.RecipeDisplay;
-import net.minecraft.world.item.crafting.display.ShapedCraftingRecipeDisplay;
-import net.minecraft.world.item.crafting.display.ShapelessCraftingRecipeDisplay;
-import net.minecraft.world.item.crafting.display.SlotDisplay;
-import net.minecraft.world.item.crafting.display.SlotDisplayContext;
+import net.minecraft.world.level.block.Blocks;
 import org.jspecify.annotations.Nullable;
 
 public class CraftingMenu extends AbstractCraftingMenu {
@@ -39,7 +29,6 @@ public class CraftingMenu extends AbstractCraftingMenu {
    private static final int USE_ROW_SLOT_END = 46;
    private final ContainerLevelAccess access;
    private final Player player;
-   private @Nullable CraftingGrid forGrid;
    private boolean placingRecipe;
 
    public CraftingMenu(final int containerId, final Inventory inventory) {
@@ -50,16 +39,6 @@ public class CraftingMenu extends AbstractCraftingMenu {
       super(MenuType.CRAFTING, containerId, 3, 3);
       this.access = access;
       this.player = inventory.player;
-      this.addResultSlot(this.player, 124, 35);
-      this.addCraftingGridSlots(30, 17);
-      this.addStandardInventorySlots(inventory, 8, 84);
-   }
-
-   public CraftingMenu(final int containerId, final Inventory inventory, final ContainerLevelAccess access, final CraftingGrid forGrid) {
-      super(MenuType.CRAFTING, containerId, 3, 3);
-      this.access = access;
-      this.player = inventory.player;
-      this.forGrid = forGrid;
       this.addResultSlot(this.player, 124, 35);
       this.addCraftingGridSlots(30, 17);
       this.addStandardInventorySlots(inventory, 8, 84);
@@ -113,45 +92,7 @@ public class CraftingMenu extends AbstractCraftingMenu {
    }
 
    public boolean stillValid(final Player player) {
-      return (Boolean)this.access.evaluate((level, pos) -> player.isWithinBlockInteractionRange(pos, 4.0), true);
-   }
-
-   public RecipeBookMenu.PostPlaceAction handlePlacement(final boolean useMaxItems, final boolean allowDroppingItemsToClear, final RecipeHolder<?> recipe, final ServerLevel level, final Inventory inventory, final RecipeManager.ServerDisplayInfo displayInfo) {
-      if (this.forGrid != null) {
-         this.forGrid.clearGhostItems();
-         ContextMap context = SlotDisplayContext.fromLevel(level);
-         RecipeDisplay var10000 = displayInfo.display().display();
-         Objects.requireNonNull(var10000);
-         RecipeDisplay var8 = var10000;
-         byte var9 = 0;
-         //$FF: var9->value
-         //0->net/minecraft/world/item/crafting/display/ShapedCraftingRecipeDisplay
-         //1->net/minecraft/world/item/crafting/display/ShapelessCraftingRecipeDisplay
-         switch (var8.typeSwitch<invokedynamic>(var8, var9)) {
-            case 0:
-               ShapedCraftingRecipeDisplay shaped = (ShapedCraftingRecipeDisplay)var8;
-               PlaceRecipeHelper.placeRecipe(3, 3, shaped.width(), shaped.height(), shaped.ingredients(), (ingredient, var2, gridXPos, gridYPos) -> this.forGrid.setGhostItem(gridXPos, gridYPos, ingredient));
-               break;
-            case 1:
-               ShapelessCraftingRecipeDisplay shapeless = (ShapelessCraftingRecipeDisplay)var8;
-               int slotCount = Math.min(shapeless.ingredients().size(), 9);
-               int y = 0;
-               int x = 0;
-
-               for(int i = 0; i < slotCount; ++i) {
-                  this.forGrid.setGhostItem(x, y, (SlotDisplay)shapeless.ingredients().get(i));
-                  ++x;
-                  if (x > 3) {
-                     ++y;
-                     x = 0;
-                  }
-               }
-         }
-      } else {
-         inventory.player.sendOverlayMessage(Component.translatable("inventory.place_grid"));
-      }
-
-      return RecipeBookMenu.PostPlaceAction.NOTHING;
+      return stillValid(this.access, player, Blocks.CRAFTING_TABLE);
    }
 
    public ItemStack quickMoveStack(final Player player, final int slotIndex) {

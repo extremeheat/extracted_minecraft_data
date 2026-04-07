@@ -15,6 +15,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -32,7 +33,6 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.animal.golem.IronGolem;
 import net.minecraft.world.entity.animal.turtle.Turtle;
 import net.minecraft.world.entity.animal.wolf.Wolf;
-import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.world.entity.player.Player;
@@ -85,7 +85,6 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
       this.goalSelector.addGoal(6, new RandomLookAroundGoal(this));
       this.targetSelector.addGoal(1, new HurtByTargetGoal(this, new Class[0]));
       this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, Player.class, true));
-      this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, LivingBlock.class, true));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, IronGolem.class, true));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, Turtle.class, 10, true, false, Turtle.BABY_ON_LAND_SELECTOR));
    }
@@ -157,7 +156,7 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
       return 40;
    }
 
-   public void performRangedAttack(final Entity target, final float power) {
+   public void performRangedAttack(final LivingEntity target, final float power) {
       ItemStack bowItem = this.getItemInHand(ProjectileUtil.getWeaponHoldingHand(this, Items.BOW));
       ItemStack projectile = this.getProjectile(bowItem);
       AbstractArrow arrow = this.getArrow(projectile, power, bowItem);
@@ -167,8 +166,7 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
       double distanceToTarget = Math.sqrt(xd * xd + zd * zd);
       Level var15 = this.level();
       if (var15 instanceof ServerLevel serverLevel) {
-         float gravityCompensationFactor = target instanceof LivingBlock ? 0.1F : 0.2F;
-         Projectile.spawnProjectileUsingShoot(arrow, serverLevel, projectile, xd, yd + distanceToTarget * (double)gravityCompensationFactor, zd, 1.6F, (float)(14 - serverLevel.getDifficulty().getId() * 4));
+         Projectile.spawnProjectileUsingShoot(arrow, serverLevel, projectile, xd, yd + distanceToTarget * 0.20000000298023224, zd, 1.6F, (float)(14 - serverLevel.getDifficulty().getId() * 4));
       }
 
       this.playSound(SoundEvents.SKELETON_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));

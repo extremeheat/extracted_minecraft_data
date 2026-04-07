@@ -60,7 +60,10 @@ public class Projection {
       } else {
          this.isMatrixDirty = false;
          ++this.matrixVersion;
-         return this.projectionType == ProjectionType.PERSPECTIVE ? dest.set(this.matrix.setPerspective(this.perspectiveFov * 0.017453292F, this.width / this.height, this.zNear, this.zFar, RenderSystem.getDevice().isZZeroToOne())) : dest.set(this.matrix.setOrtho(0.0F, this.width, this.orthoInvertY ? this.height : 0.0F, this.orthoInvertY ? 0.0F : this.height, this.zNear, this.zFar, RenderSystem.getDevice().isZZeroToOne()));
+         float near = this.zFar;
+         float far = this.zNear;
+         boolean zZeroToOne = RenderSystem.getDevice().getDeviceInfo().isZZeroToOne();
+         return this.projectionType == ProjectionType.PERSPECTIVE ? dest.set(this.matrix.setPerspective(this.perspectiveFov * 0.017453292F, this.width / this.height, near, far, zZeroToOne)) : dest.set(this.matrix.setOrtho(0.0F, this.width, this.orthoInvertY ? this.height : 0.0F, this.orthoInvertY ? 0.0F : this.height, near, far, zZeroToOne));
       }
    }
 

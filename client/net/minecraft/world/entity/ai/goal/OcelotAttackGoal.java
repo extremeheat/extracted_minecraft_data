@@ -2,11 +2,12 @@ package net.minecraft.world.entity.ai.goal;
 
 import java.util.EnumSet;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 
 public class OcelotAttackGoal extends Goal {
    private final Mob mob;
-   private Entity target;
+   private LivingEntity target;
    private int attackTime;
 
    public OcelotAttackGoal(final Mob mob) {
@@ -16,7 +17,7 @@ public class OcelotAttackGoal extends Goal {
    }
 
    public boolean canUse() {
-      Entity bestTarget = this.mob.getTarget();
+      LivingEntity bestTarget = this.mob.getTarget();
       if (bestTarget == null) {
          return false;
       } else {
@@ -55,7 +56,7 @@ public class OcelotAttackGoal extends Goal {
          speedModifier = 0.6;
       }
 
-      this.mob.getNavigation().moveTo(this.target, speedModifier);
+      this.mob.getNavigation().moveTo((Entity)this.target, speedModifier);
       this.attackTime = Math.max(this.attackTime - 1, 0);
       if (!(distSqr > meleeRadiusSqr)) {
          if (this.attackTime <= 0) {

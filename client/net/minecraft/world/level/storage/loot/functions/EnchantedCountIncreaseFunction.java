@@ -11,7 +11,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -56,16 +55,9 @@ public class EnchantedCountIncreaseFunction extends LootItemConditionalFunction 
    }
 
    public ItemStack run(final ItemStack itemStack, final LootContext context) {
-      Entity directEntity = (Entity)context.getOptionalParameter(LootContextParams.DIRECT_ATTACKING_ENTITY);
-      Entity killerEntity = (Entity)context.getOptionalParameter(LootContextParams.ATTACKING_ENTITY);
-      int level = 0;
-      if (directEntity instanceof LivingBlock livingBlock) {
-         level = EnchantmentHelper.getEnchantmentLevel(this.enchantment, livingBlock);
-      } else if (killerEntity instanceof LivingEntity livingKiller) {
-         level = EnchantmentHelper.getEnchantmentLevel(this.enchantment, livingKiller);
-      }
-
-      if (killerEntity instanceof LivingEntity entity) {
+      Entity killer = (Entity)context.getOptionalParameter(LootContextParams.ATTACKING_ENTITY);
+      if (killer instanceof LivingEntity entity) {
+         int level = EnchantmentHelper.getEnchantmentLevel(this.enchantment, entity);
          if (level == 0) {
             return itemStack;
          }

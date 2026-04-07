@@ -30,7 +30,7 @@ public record ChickenSoundVariant(ChickenSoundSet adultSounds, ChickenSoundSet b
    }
 
    public static record ChickenSoundSet(Holder<SoundEvent> ambientSound, Holder<SoundEvent> hurtSound, Holder<SoundEvent> deathSound, Holder<SoundEvent> stepSound) {
-      private static Codec<ChickenSoundSet> CODEC = RecordCodecBuilder.create((i) -> i.group(SoundEvent.CODEC.fieldOf("ambient_sound").forGetter(ChickenSoundSet::ambientSound), SoundEvent.CODEC.fieldOf("hurt_sound").forGetter(ChickenSoundSet::hurtSound), SoundEvent.CODEC.fieldOf("death_sound").forGetter(ChickenSoundSet::deathSound), SoundEvent.CODEC.fieldOf("step_sound").forGetter(ChickenSoundSet::stepSound)).apply(i, ChickenSoundSet::new));
+      private static final Codec<ChickenSoundSet> CODEC = RecordCodecBuilder.create((i) -> i.group(SoundEvent.CODEC.fieldOf("ambient_sound").forGetter(ChickenSoundSet::ambientSound), SoundEvent.CODEC.fieldOf("hurt_sound").forGetter(ChickenSoundSet::hurtSound), SoundEvent.CODEC.fieldOf("death_sound").forGetter(ChickenSoundSet::deathSound), SoundEvent.CODEC.fieldOf("step_sound").forGetter(ChickenSoundSet::stepSound)).apply(i, ChickenSoundSet::new));
 
       public ChickenSoundSet {
          super();

@@ -5,6 +5,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Containers;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
@@ -18,6 +20,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractFurnaceBlock extends BaseEntityBlock {
@@ -30,6 +33,16 @@ public abstract class AbstractFurnaceBlock extends BaseEntityBlock {
    }
 
    protected abstract MapCodec<? extends AbstractFurnaceBlock> codec();
+
+   protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
+      if (!level.isClientSide()) {
+         this.openContainer(level, pos, player);
+      }
+
+      return InteractionResult.SUCCESS;
+   }
+
+   protected abstract void openContainer(final Level level, final BlockPos pos, final Player player);
 
    public BlockState getStateForPlacement(final BlockPlaceContext context) {
       return (BlockState)this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());

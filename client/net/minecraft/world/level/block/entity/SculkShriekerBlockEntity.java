@@ -22,10 +22,9 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.livingblock.LivingBlock;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.warden.Warden;
 import net.minecraft.world.entity.monster.warden.WardenSpawnTracker;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.SculkShriekerBlock;
@@ -103,16 +102,9 @@ public class SculkShriekerBlockEntity extends BlockEntity implements GameEventLi
             }
          }
 
-         if (sourceEntity instanceof LivingBlock item) {
-            Player var11 = item.getOwner();
-            if (var11 instanceof ServerPlayer player) {
-               return player;
-            }
-         }
-
-         if (sourceEntity instanceof LivingBlock item) {
-            Player var12 = item.getCommander();
-            if (var12 instanceof ServerPlayer player) {
+         if (sourceEntity instanceof ItemEntity item) {
+            Entity var9 = item.getOwner();
+            if (var9 instanceof ServerPlayer player) {
                return player;
             }
          }

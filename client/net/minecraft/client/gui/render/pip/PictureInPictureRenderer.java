@@ -1,27 +1,28 @@
 package net.minecraft.client.gui.render.pip;
 
+import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
-import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.function.Supplier;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.Projection;
 import net.minecraft.client.renderer.ProjectionMatrixBuffer;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.SubmitNodeStorage;
+import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.state.gui.BlitRenderState;
 import net.minecraft.client.renderer.state.gui.GuiRenderState;
 import net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState;
 import org.jspecify.annotations.Nullable;
 
 public abstract class PictureInPictureRenderer<T extends PictureInPictureRenderState> implements AutoCloseable {
-   protected final MultiBufferSource.BufferSource bufferSource;
    private @Nullable GpuTexture texture;
    private @Nullable GpuTextureView textureView;
    private @Nullable GpuTexture depthTexture;
@@ -29,12 +30,11 @@ public abstract class PictureInPictureRenderer<T extends PictureInPictureRenderS
    private final Projection projection = new Projection();
    private final ProjectionMatrixBuffer projectionMatrixBuffer = new ProjectionMatrixBuffer("PIP - " + this.getClass().getSimpleName());
 
-   protected PictureInPictureRenderer(final MultiBufferSource.BufferSource bufferSource) {
+   public PictureInPictureRenderer() {
       super();
-      this.bufferSource = bufferSource;
    }
 
-   public void prepare(final T renderState, final GuiRenderState guiRenderState, final int guiScale) {
+   public void prepare(final T renderState, final GuiRenderState guiRenderState, final FeatureRenderDispatcher featureRenderDispatcher, final int guiScale) {
       int width = (renderState.x1() - renderState.x0()) * guiScale;
       int height = (renderState.y1() - renderState.y0()) * guiScale;
       boolean needsAResize = this.texture == null || this.texture.getWidth(0) != width || this.texture.getHeight(0) != height;
@@ -48,8 +48,9 @@ public abstract class PictureInPictureRenderer<T extends PictureInPictureRenderS
          poseStack.translate((float)width / 2.0F, this.getTranslateY(height, guiScale), 0.0F);
          float scale = (float)guiScale * renderState.scale();
          poseStack.scale(scale, scale, -scale);
-         this.renderToTexture(renderState, poseStack);
-         this.bufferSource.endBatch();
+         SubmitNodeStorage submitNodeStorage = featureRenderDispatcher.getSubmitNodeStorage();
+         this.renderToTexture(renderState, poseStack, submitNodeStorage);
+         featureRenderDispatcher.renderAllFeatures();
          RenderSystem.outputColorTextureOverride = null;
          RenderSystem.outputDepthTextureOverride = null;
          this.blitTexture(renderState, guiRenderState);
@@ -74,13 +75,13 @@ public abstract class PictureInPictureRenderer<T extends PictureInPictureRenderS
 
       GpuDevice device = RenderSystem.getDevice();
       if (this.texture == null) {
-         this.texture = device.createTexture((Supplier)(() -> "UI " + this.getTextureLabel() + " texture"), 13, TextureFormat.RGBA8, width, height, 1, 1);
+         this.texture = device.createTexture((Supplier)(() -> "UI " + this.getTextureLabel() + " texture"), 13, GpuFormat.RGBA8_UNORM, width, height, 1, 1);
          this.textureView = device.createTextureView(this.texture);
-         this.depthTexture = device.createTexture((Supplier)(() -> "UI " + this.getTextureLabel() + " depth texture"), 9, TextureFormat.DEPTH32, width, height, 1, 1);
+         this.depthTexture = device.createTexture((Supplier)(() -> "UI " + this.getTextureLabel() + " depth texture"), 9, GpuFormat.D32_FLOAT, width, height, 1, 1);
          this.depthTextureView = device.createTextureView(this.depthTexture);
       }
 
-      device.createCommandEncoder().clearColorAndDepthTextures(this.texture, 0, this.depthTexture, 1.0);
+      device.createCommandEncoder().clearColorAndDepthTextures(this.texture, 0, this.depthTexture, 0.0);
       this.projection.setupOrtho(-1000.0F, 1000.0F, (float)width, (float)height, true);
       RenderSystem.setProjectionMatrix(this.projectionMatrixBuffer.getBuffer(this.projection), ProjectionType.ORTHOGRAPHIC);
    }
@@ -115,7 +116,7 @@ public abstract class PictureInPictureRenderer<T extends PictureInPictureRenderS
 
    public abstract Class<T> getRenderStateClass();
 
-   protected abstract void renderToTexture(final T renderState, final PoseStack poseStack);
+   protected abstract void renderToTexture(T renderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector);
 
    protected abstract String getTextureLabel();
 }

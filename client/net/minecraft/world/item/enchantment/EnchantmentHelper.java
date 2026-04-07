@@ -135,7 +135,7 @@ public class EnchantmentHelper {
 
    }
 
-   private static void runIterationOnItem(final ItemStack piece, final EquipmentSlot slot, final Entity owner, final EnchantmentInSlotVisitor method) {
+   private static void runIterationOnItem(final ItemStack piece, final EquipmentSlot slot, final LivingEntity owner, final EnchantmentInSlotVisitor method) {
       if (!piece.isEmpty()) {
          ItemEnchantments itemEnchantments = (ItemEnchantments)piece.get(DataComponents.ENCHANTMENTS);
          if (itemEnchantments != null && !itemEnchantments.isEmpty()) {
@@ -152,7 +152,7 @@ public class EnchantmentHelper {
       }
    }
 
-   private static void runIterationOnEquipment(final Entity owner, final EnchantmentInSlotVisitor method) {
+   private static void runIterationOnEquipment(final LivingEntity owner, final EnchantmentInSlotVisitor method) {
       for(EquipmentSlot slot : EquipmentSlot.VALUES) {
          runIterationOnItem(owner.getItemBySlot(slot), slot, owner, method);
       }
@@ -219,11 +219,12 @@ public class EnchantmentHelper {
       }
 
       if (source != null) {
-         Entity attacker = damageSource.getEntity();
-         if (attacker instanceof Entity) {
+         Entity var6 = damageSource.getEntity();
+         if (var6 instanceof LivingEntity) {
+            LivingEntity attacker = (LivingEntity)var6;
             runIterationOnItem(source, EquipmentSlot.MAINHAND, attacker, (enchantment, level, item) -> ((Enchantment)enchantment.value()).doPostAttack(serverLevel, level, item, EnchantmentTarget.ATTACKER, victim, damageSource));
          } else if (attackerlessOnBreak != null) {
-            EnchantedItemInUse item = new EnchantedItemInUse(source, (EquipmentSlot)null, (Entity)null, attackerlessOnBreak);
+            EnchantedItemInUse item = new EnchantedItemInUse(source, (EquipmentSlot)null, (LivingEntity)null, attackerlessOnBreak);
             runIterationOnItem(source, (enchantment, level) -> ((Enchantment)enchantment.value()).doPostAttack(serverLevel, level, item, EnchantmentTarget.ATTACKER, victim, damageSource));
          }
       }
@@ -250,7 +251,7 @@ public class EnchantmentHelper {
       runIterationOnEquipment(entity, (enchantment, level, item) -> ((Enchantment)enchantment.value()).tick(serverLevel, level, item, entity));
    }
 
-   public static int getEnchantmentLevel(final Holder<Enchantment> enchantment, final Entity entity) {
+   public static int getEnchantmentLevel(final Holder<Enchantment> enchantment, final LivingEntity entity) {
       Iterable<ItemStack> allowedSlots = ((Enchantment)enchantment.value()).getSlotItems(entity).values();
       int bestLevel = 0;
 
@@ -307,7 +308,7 @@ public class EnchantmentHelper {
       return Math.max(0, modifiedDurability.intValue());
    }
 
-   public static float processEquipmentDropChance(final ServerLevel serverLevel, final Entity entity, final DamageSource killingBlow, final float chance) {
+   public static float processEquipmentDropChance(final ServerLevel serverLevel, final LivingEntity entity, final DamageSource killingBlow, final float chance) {
       MutableFloat modifiedChance = new MutableFloat(chance);
       RandomSource random = entity.getRandom();
       runIterationOnEquipment(entity, (enchantment, level, item) -> {

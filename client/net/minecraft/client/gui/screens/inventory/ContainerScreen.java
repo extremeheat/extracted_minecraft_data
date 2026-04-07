@@ -12,7 +12,7 @@ public class ContainerScreen extends AbstractContainerScreen<ChestMenu> {
    private final int containerRows;
 
    public ContainerScreen(final ChestMenu menu, final Inventory inventory, final Component title) {
-      super(menu, inventory, title, 175, 24 + menu.getRowCount() * 18);
+      super(menu, inventory, title, 176, 114 + menu.getRowCount() * 18);
       this.containerRows = menu.getRowCount();
       this.inventoryLabelY = this.imageHeight - 94;
    }

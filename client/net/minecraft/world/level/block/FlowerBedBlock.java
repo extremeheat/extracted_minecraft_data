@@ -85,7 +85,7 @@ public class FlowerBedBlock extends VegetationBlock implements BonemealableBlock
       if (currentAmount < 4) {
          level.setBlock(pos, (BlockState)state.setValue(AMOUNT, currentAmount + 1), 2);
       } else {
-         popResource(level, pos, new ItemStack(this), state);
+         popResource(level, pos, new ItemStack(this));
       }
 
    }

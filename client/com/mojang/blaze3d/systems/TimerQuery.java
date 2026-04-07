@@ -3,103 +3,83 @@ package com.mojang.blaze3d.systems;
 import java.util.OptionalLong;
 import org.jspecify.annotations.Nullable;
 
-public class TimerQuery {
+public class TimerQuery implements AutoCloseable {
+   private static final int ROTATIONS = 3;
    private @Nullable CommandEncoder activeEncoder;
-   private @Nullable GpuQuery activeGpuQuery;
+   private final GpuQueryPool queryPool;
+   private int currentRotationIndex;
+   private Status status;
+   private final long[] results;
 
    public TimerQuery() {
       super();
-   }
-
-   public static TimerQuery getInstance() {
-      return TimerQuery.TimerQueryLazyLoader.INSTANCE;
-   }
-
-   public boolean isRecording() {
-      return this.activeGpuQuery != null;
+      this.status = TimerQuery.Status.NOT_RECORDING;
+      this.results = new long[3];
+      this.queryPool = RenderSystem.getDevice().createTimestampQueryPool(6);
    }
 
    public void beginProfile() {
-      RenderSystem.assertOnRenderThread();
-      if (this.activeGpuQuery != null) {
+      if (this.status != TimerQuery.Status.NOT_RECORDING) {
          throw new IllegalStateException("Current profile not ended");
       } else {
+         ++this.currentRotationIndex;
+         this.currentRotationIndex %= 3;
          this.activeEncoder = RenderSystem.getDevice().createCommandEncoder();
-         this.activeGpuQuery = this.activeEncoder.timerQueryBegin();
+         this.activeEncoder.writeTimestamp(this.queryPool, this.currentRotationIndex * 2);
+         this.status = TimerQuery.Status.STARTED;
       }
    }
 
-   public FrameProfile endProfile() {
-      RenderSystem.assertOnRenderThread();
-      if (this.activeGpuQuery != null && this.activeEncoder != null) {
-         this.activeEncoder.timerQueryEnd(this.activeGpuQuery);
-         FrameProfile frameProfile = new FrameProfile(this.activeGpuQuery);
-         this.activeGpuQuery = null;
+   public void endProfile() {
+      if (this.status == TimerQuery.Status.STARTED && this.activeEncoder != null) {
+         this.activeEncoder.writeTimestamp(this.queryPool, this.currentRotationIndex * 2 + 1);
          this.activeEncoder = null;
-         return frameProfile;
+         this.status = TimerQuery.Status.AWAITING_VALUES;
       } else {
          throw new IllegalStateException("endProfile called before beginProfile");
       }
    }
 
-   public static class FrameProfile {
-      private static final long NO_RESULT = 0L;
-      private static final long CANCELLED_RESULT = -1L;
-      private final GpuQuery gpuQuery;
-      private long timerResult = 0L;
+   public long get() {
+      long average = 0L;
 
-      private FrameProfile(final GpuQuery gpuQuery) {
-         super();
-         this.gpuQuery = gpuQuery;
+      for(int i = 0; i < this.results.length; ++i) {
+         average += this.results[i];
       }
 
-      public void cancel() {
-         RenderSystem.assertOnRenderThread();
-         if (this.timerResult == 0L) {
-            this.timerResult = -1L;
-            this.gpuQuery.close();
-         }
-      }
-
-      public boolean isDone() {
-         RenderSystem.assertOnRenderThread();
-         if (this.timerResult != 0L) {
-            return true;
-         } else {
-            OptionalLong value = this.gpuQuery.getValue();
-            if (value.isPresent()) {
-               this.timerResult = value.getAsLong();
-               this.gpuQuery.close();
-               return true;
-            } else {
-               return false;
-            }
-         }
-      }
-
-      public long get() {
-         RenderSystem.assertOnRenderThread();
-         if (this.timerResult == 0L) {
-            OptionalLong value = this.gpuQuery.getValue();
-            if (value.isPresent()) {
-               this.timerResult = value.getAsLong();
-               this.gpuQuery.close();
-            }
-         }
-
-         return this.timerResult;
-      }
+      return average / (long)this.results.length;
    }
 
-   private static class TimerQueryLazyLoader {
-      private static final TimerQuery INSTANCE = instantiate();
+   public void close() {
+      this.queryPool.close();
+   }
 
-      private TimerQueryLazyLoader() {
-         super();
+   public Status getStatus() {
+      if (this.status == TimerQuery.Status.AWAITING_VALUES) {
+         OptionalLong[] timestamps = this.queryPool.getValues(this.currentRotationIndex * 2, 2);
+         OptionalLong startValue = timestamps[0];
+         OptionalLong endValue = timestamps[1];
+         if (startValue.isPresent() && endValue.isPresent()) {
+            long delta = endValue.getAsLong() - startValue.getAsLong();
+            this.results[this.currentRotationIndex] = (long)((float)delta * RenderSystem.getDevice().getDeviceInfo().timestampPeriod());
+            this.status = TimerQuery.Status.NOT_RECORDING;
+         }
       }
 
-      private static TimerQuery instantiate() {
-         return new TimerQuery();
+      return this.status;
+   }
+
+   public static enum Status {
+      NOT_RECORDING,
+      STARTED,
+      AWAITING_VALUES;
+
+      private Status() {
+      }
+
+      // $FF: synthetic method
+      private static Status[] $values() {
+         return new Status[]{NOT_RECORDING, STARTED, AWAITING_VALUES};
       }
    }
 }

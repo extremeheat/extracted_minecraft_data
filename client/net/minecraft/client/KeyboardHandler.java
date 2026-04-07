@@ -148,7 +148,7 @@ public class KeyboardHandler {
    }
 
    private void showDebugChat(final Component message) {
-      this.minecraft.gui.getChat().addClientSystemMessage(message);
+      this.minecraft.gui.hud.getChat().addClientSystemMessage(message);
       this.minecraft.getNarrator().saySystemQueued(message);
    }
 
@@ -204,7 +204,7 @@ public class KeyboardHandler {
          }
 
          if (options.keyDebugClearChat.matches(event)) {
-            this.minecraft.gui.getChat().clearMessages(false);
+            this.minecraft.gui.hud.getChat().clearMessages(false);
             debugAction = true;
          }
 
@@ -244,9 +244,9 @@ public class KeyboardHandler {
             debugAction = true;
          }
 
-         if (options.keyDebugSwitchGameMode.matches(event) && this.minecraft.level != null && this.minecraft.screen == null) {
+         if (options.keyDebugSwitchGameMode.matches(event) && this.minecraft.level != null && this.minecraft.gui.screen() == null) {
             if (this.minecraft.canSwitchGameMode() && GameModeCommand.PERMISSION_CHECK.check(this.minecraft.player.permissions())) {
-               this.minecraft.setScreen(new GameModeSwitcherScreen());
+               this.minecraft.gui.setScreen(new GameModeSwitcherScreen());
             } else {
                this.debugFeedbackTranslated("debug.gamemodes.error");
             }
@@ -255,14 +255,14 @@ public class KeyboardHandler {
          }
 
          if (options.keyDebugDebugOptions.matches(event)) {
-            if (this.minecraft.screen instanceof DebugOptionsScreen) {
-               this.minecraft.screen.onClose();
+            if (this.minecraft.gui.screen() instanceof DebugOptionsScreen) {
+               this.minecraft.gui.screen().onClose();
             } else if (this.minecraft.canInterruptScreen()) {
-               if (this.minecraft.screen != null) {
-                  this.minecraft.screen.onClose();
+               if (this.minecraft.gui.screen() != null) {
+                  this.minecraft.gui.screen().onClose();
                }
 
-               this.minecraft.setScreen(new DebugOptionsScreen());
+               this.minecraft.gui.setScreen(new DebugOptionsScreen());
             }
 
             debugAction = true;
@@ -429,7 +429,7 @@ public class KeyboardHandler {
             this.debugCrashKeyReportedCount = 0L;
          }
 
-         Screen screen = this.minecraft.screen;
+         Screen screen = this.minecraft.gui.screen();
          if (screen != null) {
             switch (event.key()) {
                case 258:
@@ -447,13 +447,13 @@ public class KeyboardHandler {
             }
          }
 
-         if (action == 1 && (!(this.minecraft.screen instanceof KeyBindsScreen) || ((KeyBindsScreen)screen).lastKeySelection <= Util.getMillis() - 20L)) {
+         if (action == 1 && (!(screen instanceof KeyBindsScreen) || ((KeyBindsScreen)screen).lastKeySelection <= Util.getMillis() - 20L)) {
             if (options.keyFullscreen.matches(event)) {
                window.toggleFullScreen();
                boolean fullscreen = window.isFullscreen();
                options.fullscreen().set(fullscreen);
                options.save();
-               Screen var26 = this.minecraft.screen;
+               Screen var26 = this.minecraft.gui.screen();
                if (var26 instanceof VideoSettingsScreen) {
                   VideoSettingsScreen videoSettingsScreen = (VideoSettingsScreen)var26;
                   videoSettingsScreen.updateFullscreenButton(fullscreen);
@@ -502,7 +502,7 @@ public class KeyboardHandler {
                } else {
                   screen.afterKeyboardAction();
                   if (screen.keyPressed(event)) {
-                     if (this.minecraft.screen == null) {
+                     if (this.minecraft.gui.screen() == null) {
                         InputConstants.Key key = InputConstants.getKey(event);
                         KeyMapping.set(key, false);
                      }
@@ -526,10 +526,10 @@ public class KeyboardHandler {
          boolean var10000;
          label186: {
             key = InputConstants.getKey(event);
-            handlesGameInput = this.minecraft.screen == null;
+            handlesGameInput = this.minecraft.gui.screen() == null;
             if (!handlesGameInput) {
                label184: {
-                  Screen var15 = this.minecraft.screen;
+                  Screen var15 = this.minecraft.gui.screen();
                   if (var15 instanceof PauseScreen) {
                      PauseScreen pauseScreen = (PauseScreen)var15;
                      if (!pauseScreen.showsPauseMenu()) {
@@ -537,7 +537,7 @@ public class KeyboardHandler {
                      }
                   }
 
-                  if (!(this.minecraft.screen instanceof GameModeSwitcherScreen)) {
+                  if (!(this.minecraft.gui.screen() instanceof GameModeSwitcherScreen)) {
                      var10000 = false;
                      break label186;
                   }
@@ -602,8 +602,8 @@ public class KeyboardHandler {
 
    private void charTyped(final long handle, final CharacterEvent event) {
       if (handle == this.minecraft.getWindow().handle()) {
-         Screen screen = this.minecraft.screen;
-         if (screen != null && this.minecraft.getOverlay() == null) {
+         Screen screen = this.minecraft.gui.screen();
+         if (screen != null && this.minecraft.gui.overlay() == null) {
             try {
                screen.charTyped(event);
             } catch (Throwable t) {
@@ -620,8 +620,8 @@ public class KeyboardHandler {
    private void preeditCallback(final long handle, final @Nullable PreeditEvent event) {
       if (handle == this.minecraft.getWindow().handle()) {
          this.lastPreeditEvent = event;
-         Screen screen = this.minecraft.screen;
-         if (screen != null && this.minecraft.getOverlay() == null) {
+         Screen screen = this.minecraft.gui.screen();
+         if (screen != null && this.minecraft.gui.overlay() == null) {
             submitPreeditEvent(screen, event);
          }
       }

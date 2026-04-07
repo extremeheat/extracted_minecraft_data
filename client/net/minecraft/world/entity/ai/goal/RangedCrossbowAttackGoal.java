@@ -5,6 +5,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.util.TimeUtil;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.CrossbowAttackMob;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.RangedAttackMob;
@@ -52,7 +53,7 @@ public class RangedCrossbowAttackGoal<T extends Monster & RangedAttackMob & Cros
    public void stop() {
       super.stop();
       this.mob.setAggressive(false);
-      this.mob.setTarget((Entity)null);
+      this.mob.setTarget((LivingEntity)null);
       this.seeTime = 0;
       if (this.mob.isUsingItem()) {
          this.mob.stopUsingItem();
@@ -67,7 +68,7 @@ public class RangedCrossbowAttackGoal<T extends Monster & RangedAttackMob & Cros
    }
 
    public void tick() {
-      Entity target = this.mob.getTarget();
+      LivingEntity target = this.mob.getTarget();
       if (target != null) {
          boolean hasLineOfSight = this.mob.getSensing().hasLineOfSight(target);
          boolean hadLineOfSight = this.seeTime > 0;
@@ -86,7 +87,7 @@ public class RangedCrossbowAttackGoal<T extends Monster & RangedAttackMob & Cros
          if (needsToMove) {
             --this.updatePathDelay;
             if (this.updatePathDelay <= 0) {
-               this.mob.getNavigation().moveTo(target, this.canRun() ? this.speedModifier : this.speedModifier * 0.5);
+               this.mob.getNavigation().moveTo((Entity)target, this.canRun() ? this.speedModifier : this.speedModifier * 0.5);
                this.updatePathDelay = PATHFINDING_DELAY_RANGE.sample(this.mob.getRandom());
             }
          } else {

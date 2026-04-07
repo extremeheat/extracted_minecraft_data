@@ -6,7 +6,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.livingblock.LivingBlock;
+import net.minecraft.world.entity.item.ItemEntity;
 
 public class StopAdmiringIfItemTooFarAway<E extends Piglin> {
    public StopAdmiringIfItemTooFarAway() {
@@ -18,8 +18,8 @@ public class StopAdmiringIfItemTooFarAway<E extends Piglin> {
                if (!body.getOffhandItem().isEmpty()) {
                   return false;
                } else {
-                  Optional<LivingBlock> nearestVisibleWantedItem = i.<LivingBlock>tryGet(nearest);
-                  if (nearestVisibleWantedItem.isPresent() && ((LivingBlock)nearestVisibleWantedItem.get()).closerThan(body, (double)maxDistanceToItem)) {
+                  Optional<ItemEntity> nearestVisibleWantedItem = i.<ItemEntity>tryGet(nearest);
+                  if (nearestVisibleWantedItem.isPresent() && ((ItemEntity)nearestVisibleWantedItem.get()).closerThan(body, (double)maxDistanceToItem)) {
                      return false;
                   } else {
                      admiring.erase();

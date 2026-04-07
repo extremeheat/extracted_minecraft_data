@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.projectile;
 
 import com.mojang.logging.LogUtils;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import net.minecraft.advancements.CriteriaTriggers;
@@ -27,7 +26,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.InterpolationHandler;
 import net.minecraft.world.entity.MoverType;
-import net.minecraft.world.entity.livingblock.LivingBlock;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -261,7 +260,7 @@ public class FishingHook extends Projectile {
    }
 
    protected boolean canHitEntity(final Entity entity) {
-      return super.canHitEntity(entity);
+      return super.canHitEntity(entity) || entity.isAlive() && entity instanceof ItemEntity;
    }
 
    protected void onHitEntity(final EntityHitResult hitResult) {
@@ -422,7 +421,7 @@ public class FishingHook extends Projectile {
             this.pullEntity(this.hookedIn);
             CriteriaTriggers.FISHING_ROD_HOOKED.trigger((ServerPlayer)owner, rod, this, Collections.emptyList());
             this.level().broadcastEntityEvent(this, (byte)31);
-            dmg = 5;
+            dmg = this.hookedIn instanceof ItemEntity ? 3 : 5;
          } else if (this.nibble > 0) {
             LootParams params = (new LootParams.Builder((ServerLevel)this.level())).withParameter(LootContextParams.ORIGIN, this.position()).withParameter(LootContextParams.TOOL, rod).withParameter(LootContextParams.THIS_ENTITY, this).withLuck((float)this.luck + owner.getLuck()).create(LootContextParamSets.FISHING);
             LootTable lootTable = this.level().getServer().reloadableRegistries().getLootTable(BuiltInLootTables.FISHING);
@@ -430,12 +429,13 @@ public class FishingHook extends Projectile {
             CriteriaTriggers.FISHING_ROD_HOOKED.trigger((ServerPlayer)owner, rod, this, items);
 
             for(ItemStack itemStack : items) {
-               Collection<LivingBlock> stacks = LivingBlock.createStack(this.level(), this.blockPosition(), owner, itemStack);
+               ItemEntity entity = new ItemEntity(this.level(), this.getX(), this.getY(), this.getZ(), itemStack);
                double xa = owner.getX() - this.getX();
                double ya = owner.getY() - this.getY();
                double za = owner.getZ() - this.getZ();
                double speed = 0.1;
-               stacks.forEach((stack) -> stack.setDeltaMovement(xa * 0.1, ya * 0.1 + Math.sqrt(Math.sqrt(xa * xa + ya * ya + za * za)) * 0.08, za * 0.1));
+               entity.setDeltaMovement(xa * 0.1, ya * 0.1 + Math.sqrt(Math.sqrt(xa * xa + ya * ya + za * za)) * 0.08, za * 0.1);
+               this.level().addFreshEntity(entity);
                owner.level().addFreshEntity(new ExperienceOrb(owner.level(), owner.getX(), owner.getY() + 0.5, owner.getZ() + 0.5, this.random.nextInt(6) + 1));
                if (itemStack.is(ItemTags.FISHES)) {
                   owner.awardStat(Stats.FISH_CAUGHT, 1);

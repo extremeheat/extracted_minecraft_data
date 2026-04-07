@@ -24,7 +24,7 @@ public record EntityEquipmentPredicate(Optional<ItemPredicate> head, Optional<It
    }
 
    public static EntityEquipmentPredicate captainPredicate(final HolderGetter<Item> items, final HolderGetter<BannerPattern> patternGetter) {
-      return EntityEquipmentPredicate.Builder.equipment().head(ItemPredicate.Builder.item().of(items, Items.WHITE_BANNER).withComponents(DataComponentMatchers.Builder.components().exact(DataComponentExactPredicate.someOf(Raid.getBannerComponentPatch(patternGetter).split().added(), DataComponents.BANNER_PATTERNS, DataComponents.ITEM_NAME)).build())).build();
+      return EntityEquipmentPredicate.Builder.equipment().head(ItemPredicate.Builder.item().of(items, Items.BANNER.white()).withComponents(DataComponentMatchers.Builder.components().exact(DataComponentExactPredicate.someOf(Raid.getBannerComponentPatch(patternGetter).split().added(), DataComponents.BANNER_PATTERNS, DataComponents.ITEM_NAME)).build())).build();
    }
 
    public boolean matches(final @Nullable Entity entity) {

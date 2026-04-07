@@ -96,55 +96,10 @@ public class BuiltInBlockModels {
       createMobHeads(builder, SkullBlock.Types.WITHER_SKELETON, Blocks.WITHER_SKELETON_SKULL, Blocks.WITHER_SKELETON_WALL_SKULL);
       builder.put((ModelFactory)createPlayerHead(), Blocks.PLAYER_HEAD);
       builder.put((ModelFactory)createPlayerWallHead(), Blocks.PLAYER_WALL_HEAD);
-      createBanners(builder, DyeColor.WHITE, Blocks.WHITE_BANNER, Blocks.WHITE_WALL_BANNER);
-      createBanners(builder, DyeColor.ORANGE, Blocks.ORANGE_BANNER, Blocks.ORANGE_WALL_BANNER);
-      createBanners(builder, DyeColor.MAGENTA, Blocks.MAGENTA_BANNER, Blocks.MAGENTA_WALL_BANNER);
-      createBanners(builder, DyeColor.LIGHT_BLUE, Blocks.LIGHT_BLUE_BANNER, Blocks.LIGHT_BLUE_WALL_BANNER);
-      createBanners(builder, DyeColor.YELLOW, Blocks.YELLOW_BANNER, Blocks.YELLOW_WALL_BANNER);
-      createBanners(builder, DyeColor.LIME, Blocks.LIME_BANNER, Blocks.LIME_WALL_BANNER);
-      createBanners(builder, DyeColor.PINK, Blocks.PINK_BANNER, Blocks.PINK_WALL_BANNER);
-      createBanners(builder, DyeColor.GRAY, Blocks.GRAY_BANNER, Blocks.GRAY_WALL_BANNER);
-      createBanners(builder, DyeColor.LIGHT_GRAY, Blocks.LIGHT_GRAY_BANNER, Blocks.LIGHT_GRAY_WALL_BANNER);
-      createBanners(builder, DyeColor.CYAN, Blocks.CYAN_BANNER, Blocks.CYAN_WALL_BANNER);
-      createBanners(builder, DyeColor.PURPLE, Blocks.PURPLE_BANNER, Blocks.PURPLE_WALL_BANNER);
-      createBanners(builder, DyeColor.BLUE, Blocks.BLUE_BANNER, Blocks.BLUE_WALL_BANNER);
-      createBanners(builder, DyeColor.BROWN, Blocks.BROWN_BANNER, Blocks.BROWN_WALL_BANNER);
-      createBanners(builder, DyeColor.GREEN, Blocks.GREEN_BANNER, Blocks.GREEN_WALL_BANNER);
-      createBanners(builder, DyeColor.RED, Blocks.RED_BANNER, Blocks.RED_WALL_BANNER);
-      createBanners(builder, DyeColor.BLACK, Blocks.BLACK_BANNER, Blocks.BLACK_WALL_BANNER);
-      builder.put((ModelFactory)createBed(DyeColor.WHITE), Blocks.WHITE_BED);
-      builder.put((ModelFactory)createBed(DyeColor.ORANGE), Blocks.ORANGE_BED);
-      builder.put((ModelFactory)createBed(DyeColor.MAGENTA), Blocks.MAGENTA_BED);
-      builder.put((ModelFactory)createBed(DyeColor.LIGHT_BLUE), Blocks.LIGHT_BLUE_BED);
-      builder.put((ModelFactory)createBed(DyeColor.YELLOW), Blocks.YELLOW_BED);
-      builder.put((ModelFactory)createBed(DyeColor.LIME), Blocks.LIME_BED);
-      builder.put((ModelFactory)createBed(DyeColor.PINK), Blocks.PINK_BED);
-      builder.put((ModelFactory)createBed(DyeColor.GRAY), Blocks.GRAY_BED);
-      builder.put((ModelFactory)createBed(DyeColor.LIGHT_GRAY), Blocks.LIGHT_GRAY_BED);
-      builder.put((ModelFactory)createBed(DyeColor.CYAN), Blocks.CYAN_BED);
-      builder.put((ModelFactory)createBed(DyeColor.PURPLE), Blocks.PURPLE_BED);
-      builder.put((ModelFactory)createBed(DyeColor.BLUE), Blocks.BLUE_BED);
-      builder.put((ModelFactory)createBed(DyeColor.BROWN), Blocks.BROWN_BED);
-      builder.put((ModelFactory)createBed(DyeColor.GREEN), Blocks.GREEN_BED);
-      builder.put((ModelFactory)createBed(DyeColor.RED), Blocks.RED_BED);
-      builder.put((ModelFactory)createBed(DyeColor.BLACK), Blocks.BLACK_BED);
+      DyeColor.VALUES.forEach((color) -> createBanners(builder, color));
+      DyeColor.VALUES.forEach((color) -> builder.put((ModelFactory)createBed(color), Blocks.BED.pick(color)));
       builder.put((ModelFactory)createShulkerBox(), Blocks.SHULKER_BOX);
-      builder.put((ModelFactory)createDyedShulkerBox(DyeColor.WHITE), Blocks.WHITE_SHULKER_BOX);
-      builder.put((ModelFactory)createDyedShulkerBox(DyeColor.ORANGE), Blocks.ORANGE_SHULKER_BOX);
-      builder.put((ModelFactory)createDyedShulkerBox(DyeColor.MAGENTA), Blocks.MAGENTA_SHULKER_BOX);
-      builder.put((ModelFactory)createDyedShulkerBox(DyeColor.LIGHT_BLUE), Blocks.LIGHT_BLUE_SHULKER_BOX);
-      builder.put((ModelFactory)createDyedShulkerBox(DyeColor.YELLOW), Blocks.YELLOW_SHULKER_BOX);
-      builder.put((ModelFactory)createDyedShulkerBox(DyeColor.LIME), Blocks.LIME_SHULKER_BOX);
-      builder.put((ModelFactory)createDyedShulkerBox(DyeColor.PINK), Blocks.PINK_SHULKER_BOX);
-      builder.put((ModelFactory)createDyedShulkerBox(DyeColor.GRAY), Blocks.GRAY_SHULKER_BOX);
-      builder.put((ModelFactory)createDyedShulkerBox(DyeColor.LIGHT_GRAY), Blocks.LIGHT_GRAY_SHULKER_BOX);
-      builder.put((ModelFactory)createDyedShulkerBox(DyeColor.CYAN), Blocks.CYAN_SHULKER_BOX);
-      builder.put((ModelFactory)createDyedShulkerBox(DyeColor.PURPLE), Blocks.PURPLE_SHULKER_BOX);
-      builder.put((ModelFactory)createDyedShulkerBox(DyeColor.BLUE), Blocks.BLUE_SHULKER_BOX);
-      builder.put((ModelFactory)createDyedShulkerBox(DyeColor.BROWN), Blocks.BROWN_SHULKER_BOX);
-      builder.put((ModelFactory)createDyedShulkerBox(DyeColor.GREEN), Blocks.GREEN_SHULKER_BOX);
-      builder.put((ModelFactory)createDyedShulkerBox(DyeColor.RED), Blocks.RED_SHULKER_BOX);
-      builder.put((ModelFactory)createDyedShulkerBox(DyeColor.BLACK), Blocks.BLACK_SHULKER_BOX);
+      DyeColor.VALUES.forEach((color) -> builder.put((ModelFactory)createDyedShulkerBox(color), Blocks.DYED_SHULKER_BOX.pick(color)));
       createSigns(builder, WoodType.OAK, Blocks.OAK_SIGN, Blocks.OAK_WALL_SIGN, Blocks.OAK_HANGING_SIGN, Blocks.OAK_WALL_HANGING_SIGN);
       createSigns(builder, WoodType.SPRUCE, Blocks.SPRUCE_SIGN, Blocks.SPRUCE_WALL_SIGN, Blocks.SPRUCE_HANGING_SIGN, Blocks.SPRUCE_WALL_HANGING_SIGN);
       createSigns(builder, WoodType.BIRCH, Blocks.BIRCH_SIGN, Blocks.BIRCH_WALL_SIGN, Blocks.BIRCH_HANGING_SIGN, Blocks.BIRCH_WALL_HANGING_SIGN);
@@ -160,14 +115,11 @@ public class BuiltInBlockModels {
       builder.put((ModelFactory)createSingletonChest(ChestSpecialRenderer.ENDER_CHEST), Blocks.ENDER_CHEST);
       builder.put((ModelFactory)createXmasChest(ChestSpecialRenderer.REGULAR), Blocks.CHEST);
       builder.put((ModelFactory)createXmasChest(ChestSpecialRenderer.TRAPPED), Blocks.TRAPPED_CHEST);
-      builder.put(createChest(ChestSpecialRenderer.COPPER_UNAFFECTED), Blocks.COPPER_CHEST, Blocks.WAXED_COPPER_CHEST);
-      builder.put(createChest(ChestSpecialRenderer.COPPER_EXPOSED), Blocks.EXPOSED_COPPER_CHEST, Blocks.WAXED_EXPOSED_COPPER_CHEST);
-      builder.put(createChest(ChestSpecialRenderer.COPPER_WEATHERED), Blocks.WEATHERED_COPPER_CHEST, Blocks.WAXED_WEATHERED_COPPER_CHEST);
-      builder.put(createChest(ChestSpecialRenderer.COPPER_OXIDIZED), Blocks.OXIDIZED_COPPER_CHEST, Blocks.WAXED_OXIDIZED_COPPER_CHEST);
-      builder.put(createCopperGolem(WeatheringCopper.WeatherState.UNAFFECTED), Blocks.COPPER_GOLEM_STATUE, Blocks.WAXED_COPPER_GOLEM_STATUE);
-      builder.put(createCopperGolem(WeatheringCopper.WeatherState.EXPOSED), Blocks.EXPOSED_COPPER_GOLEM_STATUE, Blocks.WAXED_EXPOSED_COPPER_GOLEM_STATUE);
-      builder.put(createCopperGolem(WeatheringCopper.WeatherState.WEATHERED), Blocks.WEATHERED_COPPER_GOLEM_STATUE, Blocks.WAXED_WEATHERED_COPPER_GOLEM_STATUE);
-      builder.put(createCopperGolem(WeatheringCopper.WeatherState.OXIDIZED), Blocks.OXIDIZED_COPPER_GOLEM_STATUE, Blocks.WAXED_OXIDIZED_COPPER_GOLEM_STATUE);
+      builder.put(createChest(ChestSpecialRenderer.COPPER_UNAFFECTED), Blocks.COPPER_CHEST.unaffected(), Blocks.COPPER_CHEST.waxed());
+      builder.put(createChest(ChestSpecialRenderer.COPPER_EXPOSED), Blocks.COPPER_CHEST.exposed(), Blocks.COPPER_CHEST.waxedExposed());
+      builder.put(createChest(ChestSpecialRenderer.COPPER_WEATHERED), Blocks.COPPER_CHEST.weathered(), Blocks.COPPER_CHEST.waxedWeathered());
+      builder.put(createChest(ChestSpecialRenderer.COPPER_OXIDIZED), Blocks.COPPER_CHEST.oxidized(), Blocks.COPPER_CHEST.waxedOxidized());
+      WeatheringCopper.WeatherState.forEach((state) -> builder.put(createCopperGolem(state), Blocks.COPPER_GOLEM_STATUE.pick(state, false), Blocks.COPPER_GOLEM_STATUE.pick(state, true)));
       builder.put(special(new BellSpecialRenderer.Unbaked()), Blocks.BELL);
       builder.put(special(new ConduitSpecialRenderer.Unbaked(), ConduitRenderer.DEFAULT_TRANSFORMATION), Blocks.CONDUIT);
       builder.put((ModelFactory)createDecoratedPot(), Blocks.DECORATED_POT);
@@ -218,16 +170,13 @@ public class BuiltInBlockModels {
       return specialModelWithPropertyDispatch(WallBannerBlock.FACING, (facing) -> special(new BannerSpecialRenderer.Unbaked(color, BannerBlock.AttachmentType.WALL), BannerRenderer.TRANSFORMATIONS.wallTransformation(facing)));
    }
 
-   private static void createBanners(final Builder builder, final DyeColor dye, final Block ground, final Block wall) {
-      builder.put((ModelFactory)createBanner(dye), ground);
-      builder.put((ModelFactory)createWallBanner(dye), wall);
+   private static void createBanners(final Builder builder, final DyeColor dye) {
+      builder.put((ModelFactory)createBanner(dye), Blocks.BANNER.pick(dye));
+      builder.put((ModelFactory)createWallBanner(dye), Blocks.WALL_BANNER.pick(dye));
    }
 
    private static SpecialModelFactory createBed(final DyeColor color) {
-      return (state) -> {
-         Direction facing = (Direction)state.getValue(BedBlock.FACING);
-         return special(new BedSpecialRenderer.Unbaked(color), BedRenderer.modelTransform(facing));
-      };
+      return specialModelWithPropertyDispatch(BedBlock.FACING, BedBlock.PART, (facing, part) -> special(new BedSpecialRenderer.Unbaked(color, part), BedRenderer.modelTransform(facing)));
    }
 
    private static SpecialModelFactory createShulkerBox() {

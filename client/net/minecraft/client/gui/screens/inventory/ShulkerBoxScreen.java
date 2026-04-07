@@ -11,7 +11,7 @@ public class ShulkerBoxScreen extends AbstractContainerScreen<ShulkerBoxMenu> {
    private static final Identifier CONTAINER_TEXTURE = Identifier.withDefaultNamespace("textures/gui/container/shulker_box.png");
 
    public ShulkerBoxScreen(final ShulkerBoxMenu menu, final Inventory inventory, final Component title) {
-      super(menu, inventory, title, 175, 79);
+      super(menu, inventory, title, 176, 167);
    }
 
    public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {

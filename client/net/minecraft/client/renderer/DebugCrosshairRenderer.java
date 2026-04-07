@@ -1,0 +1,87 @@
+package net.minecraft.client.renderer;
+
+import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.systems.RenderPass;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.ByteBufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.MeshData;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
+import org.joml.Matrix4f;
+import org.joml.Matrix4fStack;
+
+public class DebugCrosshairRenderer implements AutoCloseable {
+   private static final float CROSSHAIR_SCALE = 0.01F;
+   private static final int CROSSHAIR_INDEX_COUNT = 36;
+   private final GpuBuffer crosshairBuffer;
+   private final RenderSystem.AutoStorageIndexBuffer crosshairIndicies;
+
+   public DebugCrosshairRenderer() {
+      super();
+      this.crosshairIndicies = RenderSystem.getSequentialBuffer(VertexFormat.Mode.LINES);
+
+      try (ByteBufferBuilder byteBufferBuilder = ByteBufferBuilder.exactlySized(DefaultVertexFormat.POSITION_COLOR_NORMAL_LINE_WIDTH.getVertexSize() * 12 * 2)) {
+         BufferBuilder bufferBuilder = new BufferBuilder(byteBufferBuilder, VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL_LINE_WIDTH);
+         bufferBuilder.addVertex(0.0F, 0.0F, 0.0F).setColor(-16777216).setNormal(1.0F, 0.0F, 0.0F).setLineWidth(4.0F);
+         bufferBuilder.addVertex(1.0F, 0.0F, 0.0F).setColor(-16777216).setNormal(1.0F, 0.0F, 0.0F).setLineWidth(4.0F);
+         bufferBuilder.addVertex(0.0F, 0.0F, 0.0F).setColor(-16777216).setNormal(0.0F, 1.0F, 0.0F).setLineWidth(4.0F);
+         bufferBuilder.addVertex(0.0F, 1.0F, 0.0F).setColor(-16777216).setNormal(0.0F, 1.0F, 0.0F).setLineWidth(4.0F);
+         bufferBuilder.addVertex(0.0F, 0.0F, 0.0F).setColor(-16777216).setNormal(0.0F, 0.0F, 1.0F).setLineWidth(4.0F);
+         bufferBuilder.addVertex(0.0F, 0.0F, 1.0F).setColor(-16777216).setNormal(0.0F, 0.0F, 1.0F).setLineWidth(4.0F);
+         bufferBuilder.addVertex(0.0F, 0.0F, 0.0F).setColor(-65536).setNormal(1.0F, 0.0F, 0.0F).setLineWidth(2.0F);
+         bufferBuilder.addVertex(1.0F, 0.0F, 0.0F).setColor(-65536).setNormal(1.0F, 0.0F, 0.0F).setLineWidth(2.0F);
+         bufferBuilder.addVertex(0.0F, 0.0F, 0.0F).setColor(-16711936).setNormal(0.0F, 1.0F, 0.0F).setLineWidth(2.0F);
+         bufferBuilder.addVertex(0.0F, 1.0F, 0.0F).setColor(-16711936).setNormal(0.0F, 1.0F, 0.0F).setLineWidth(2.0F);
+         bufferBuilder.addVertex(0.0F, 0.0F, 0.0F).setColor(-8421377).setNormal(0.0F, 0.0F, 1.0F).setLineWidth(2.0F);
+         bufferBuilder.addVertex(0.0F, 0.0F, 1.0F).setColor(-8421377).setNormal(0.0F, 0.0F, 1.0F).setLineWidth(2.0F);
+
+         try (MeshData meshData = bufferBuilder.buildOrThrow()) {
+            this.crosshairBuffer = RenderSystem.getDevice().createBuffer(() -> "Crosshair vertex buffer", 32, meshData.vertexBuffer());
+         }
+      }
+
+   }
+
+   public void close() {
+      this.crosshairBuffer.close();
+   }
+
+   public void render(final CameraRenderState cameraState, final int guiScale) {
+      Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
+      modelViewStack.pushMatrix();
+      modelViewStack.translate(0.0F, 0.0F, -1.0F);
+      modelViewStack.rotateX(cameraState.xRot * 0.017453292F);
+      modelViewStack.rotateY(cameraState.yRot * 0.017453292F);
+      float crosshairScale = 0.01F * (float)guiScale;
+      modelViewStack.scale(-crosshairScale, crosshairScale, -crosshairScale);
+      RenderPipeline renderPipelineOutline = RenderPipelines.LINES;
+      RenderPipeline renderPipelineFill = RenderPipelines.LINES_DEPTH_BIAS;
+      RenderTarget mainRenderTarget = Minecraft.getInstance().getMainRenderTarget();
+      GpuTextureView colorTexture = mainRenderTarget.getColorTextureView();
+      GpuTextureView depthTexture = mainRenderTarget.getDepthTextureView();
+      GpuBuffer indexBuffer = this.crosshairIndicies.getBuffer(36);
+      GpuBufferSlice dynamicTransform = RenderSystem.getDynamicUniforms().writeTransform(new Matrix4f(modelViewStack));
+
+      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "3d crosshair", colorTexture, OptionalInt.empty(), depthTexture, OptionalDouble.empty())) {
+         renderPass.setPipeline(renderPipelineOutline);
+         RenderSystem.bindDefaultUniforms(renderPass);
+         renderPass.setVertexBuffer(0, this.crosshairBuffer);
+         renderPass.setIndexBuffer(indexBuffer, this.crosshairIndicies.type());
+         renderPass.setUniform("DynamicTransforms", dynamicTransform);
+         renderPass.drawIndexed(0, 0, 18, 1);
+         renderPass.setPipeline(renderPipelineFill);
+         renderPass.drawIndexed(0, 18, 18, 1);
+      }
+
+      modelViewStack.popMatrix();
+   }
+}

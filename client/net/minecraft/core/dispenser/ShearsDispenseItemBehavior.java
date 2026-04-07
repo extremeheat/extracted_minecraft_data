@@ -1,6 +1,7 @@
 package net.minecraft.core.dispenser;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -12,6 +13,7 @@ import net.minecraft.world.entity.Shearable;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.BeehiveBlock;
+import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -22,10 +24,10 @@ public class ShearsDispenseItemBehavior extends OptionalDispenseItemBehavior {
       super();
    }
 
-   protected ItemStack execute(final DispenseSource source, final ItemStack dispensed) {
+   protected ItemStack execute(final BlockSource source, final ItemStack dispensed) {
       ServerLevel level = source.level();
       if (!level.isClientSide()) {
-         BlockPos pos = source.pos().relative(source.direction());
+         BlockPos pos = source.pos().relative((Direction)source.state().getValue(DispenserBlock.FACING));
          this.setSuccess(tryShearBeehive(level, dispensed, pos) || tryShearEntity(level, pos, dispensed));
          if (this.isSuccess()) {
             dispensed.hurtAndBreak(1, level, (ServerPlayer)null, (item) -> {
@@ -58,7 +60,7 @@ public class ShearsDispenseItemBehavior extends OptionalDispenseItemBehavior {
             return true;
          }
 
-         if (entity instanceof Shearable shearable) {
+         if (entity.isAlive() && entity instanceof Shearable shearable) {
             if (shearable.readyForShearing()) {
                shearable.shear(level, SoundSource.BLOCKS, tool);
                level.gameEvent((Entity)null, GameEvent.SHEAR, pos);

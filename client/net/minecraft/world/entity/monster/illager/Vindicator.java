@@ -30,8 +30,6 @@ import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.util.GoalUtils;
 import net.minecraft.world.entity.animal.golem.IronGolem;
-import net.minecraft.world.entity.decoration.ArmorStand;
-import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.creaking.Creaking;
 import net.minecraft.world.entity.npc.villager.AbstractVillager;
@@ -69,7 +67,6 @@ public class Vindicator extends AbstractIllager {
       this.goalSelector.addGoal(5, new MeleeAttackGoal(this, 1.0, false));
       this.targetSelector.addGoal(1, (new HurtByTargetGoal(this, new Class[]{Raider.class})).setAlertOthers());
       this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, Player.class, true));
-      this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, LivingBlock.class, true));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, AbstractVillager.class, true));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, IronGolem.class, true));
       this.targetSelector.addGoal(4, new VindicatorJohnnyAttackGoal(this));
@@ -188,7 +185,7 @@ public class Vindicator extends AbstractIllager {
 
    private static class VindicatorJohnnyAttackGoal extends NearestAttackableTargetGoal<LivingEntity> {
       public VindicatorJohnnyAttackGoal(final Vindicator mob) {
-         super(mob, LivingEntity.class, 0, true, true, (target, level) -> !(target instanceof ArmorStand));
+         super(mob, LivingEntity.class, 0, true, true, (target, level) -> target.attackable());
       }
 
       public boolean canUse() {

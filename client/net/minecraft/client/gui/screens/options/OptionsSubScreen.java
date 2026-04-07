@@ -70,7 +70,7 @@ public abstract class OptionsSubScreen extends Screen {
          this.list.applyUnsavedChanges();
       }
 
-      this.minecraft.setScreen(this.lastScreen);
+      this.minecraft.gui.setScreen(this.lastScreen);
    }
 
    public void resetOption(final OptionInstance<?> option) {

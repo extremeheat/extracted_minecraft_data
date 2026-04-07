@@ -254,7 +254,7 @@ public class SkyRenderer implements AutoCloseable {
    }
 
    public void renderSkyDisc(final int skyColor) {
-      GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), ARGB.vector4fFromARGB32(skyColor), new Vector3f(), new Matrix4f());
+      GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrixCopy(), ARGB.vector4fFromARGB32(skyColor));
       GpuTextureView colorTexture = Minecraft.getInstance().getMainRenderTarget().getColorTextureView();
       GpuTextureView depthTexture = Minecraft.getInstance().getMainRenderTarget().getDepthTextureView();
 
@@ -294,14 +294,14 @@ public class SkyRenderer implements AutoCloseable {
    }
 
    private boolean shouldRenderDarkDisc(final float deltaPartialTick, final ClientLevel level) {
-      return Minecraft.getInstance().player.getEyePosition(deltaPartialTick).y - level.getLevelData().getHorizonHeight(level) < 0.0;
+      return Minecraft.getInstance().player.getEyePosition(deltaPartialTick).y - level.getLevelData().getHorizonHeight(level) < 0.0 && !Minecraft.getInstance().player.isUnderWater();
    }
 
    public void renderDarkDisc() {
       Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
       modelViewStack.pushMatrix();
       modelViewStack.translate(0.0F, 12.0F, 0.0F);
-      GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(modelViewStack, new Vector4f(0.0F, 0.0F, 0.0F, 1.0F), new Vector3f(), new Matrix4f());
+      GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(new Matrix4f(modelViewStack), new Vector4f(0.0F, 0.0F, 0.0F, 1.0F));
       GpuTextureView colorTexture = Minecraft.getInstance().getMainRenderTarget().getColorTextureView();
       GpuTextureView depthTexture = Minecraft.getInstance().getMainRenderTarget().getDepthTextureView();
 
@@ -343,7 +343,7 @@ public class SkyRenderer implements AutoCloseable {
       modelViewStack.mul(poseStack.last().pose());
       modelViewStack.translate(0.0F, 100.0F, 0.0F);
       modelViewStack.scale(30.0F, 1.0F, 30.0F);
-      GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(modelViewStack, new Vector4f(1.0F, 1.0F, 1.0F, rainBrightness), new Vector3f(), new Matrix4f());
+      GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(new Matrix4f(modelViewStack), new Vector4f(1.0F, 1.0F, 1.0F, rainBrightness));
       GpuTextureView color = Minecraft.getInstance().getMainRenderTarget().getColorTextureView();
       GpuTextureView depth = Minecraft.getInstance().getMainRenderTarget().getDepthTextureView();
       GpuBuffer indexBuffer = this.quadIndices.getBuffer(6);
@@ -368,7 +368,7 @@ public class SkyRenderer implements AutoCloseable {
       modelViewStack.mul(poseStack.last().pose());
       modelViewStack.translate(0.0F, 100.0F, 0.0F);
       modelViewStack.scale(20.0F, 1.0F, 20.0F);
-      GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(modelViewStack, new Vector4f(1.0F, 1.0F, 1.0F, rainBrightness), new Vector3f(), new Matrix4f());
+      GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(new Matrix4f(modelViewStack), new Vector4f(1.0F, 1.0F, 1.0F, rainBrightness));
       GpuTextureView color = Minecraft.getInstance().getMainRenderTarget().getColorTextureView();
       GpuTextureView depth = Minecraft.getInstance().getMainRenderTarget().getDepthTextureView();
       GpuBuffer indexBuffer = this.quadIndices.getBuffer(6);
@@ -394,7 +394,7 @@ public class SkyRenderer implements AutoCloseable {
       GpuTextureView colorTexture = Minecraft.getInstance().getMainRenderTarget().getColorTextureView();
       GpuTextureView depthTexture = Minecraft.getInstance().getMainRenderTarget().getDepthTextureView();
       GpuBuffer indexBuffer = this.quadIndices.getBuffer(this.starIndexCount);
-      GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(modelViewStack, new Vector4f(starBrightness, starBrightness, starBrightness, starBrightness), new Vector3f(), new Matrix4f());
+      GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(new Matrix4f(modelViewStack), new Vector4f(starBrightness, starBrightness, starBrightness, starBrightness));
 
       try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Stars", colorTexture, OptionalInt.empty(), depthTexture, OptionalDouble.empty())) {
          renderPass.setPipeline(renderPipeline);
@@ -419,7 +419,7 @@ public class SkyRenderer implements AutoCloseable {
          modelViewStack.pushMatrix();
          modelViewStack.mul(poseStack.last().pose());
          modelViewStack.scale(1.0F, 1.0F, alpha);
-         GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(modelViewStack, ARGB.vector4fFromARGB32(sunriseAndSunsetColor), new Vector3f(), new Matrix4f());
+         GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(new Matrix4f(modelViewStack), ARGB.vector4fFromARGB32(sunriseAndSunsetColor));
          GpuTextureView color = Minecraft.getInstance().getMainRenderTarget().getColorTextureView();
          GpuTextureView depth = Minecraft.getInstance().getMainRenderTarget().getDepthTextureView();
 
@@ -441,7 +441,7 @@ public class SkyRenderer implements AutoCloseable {
       GpuBuffer indexBuffer = autoIndices.getBuffer(36);
       GpuTextureView colorTexture = Minecraft.getInstance().getMainRenderTarget().getColorTextureView();
       GpuTextureView depthTexture = Minecraft.getInstance().getMainRenderTarget().getDepthTextureView();
-      GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f());
+      GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrixCopy());
 
       try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "End sky", colorTexture, OptionalInt.empty(), depthTexture, OptionalDouble.empty())) {
          renderPass.setPipeline(RenderPipelines.END_SKY);
@@ -463,7 +463,7 @@ public class SkyRenderer implements AutoCloseable {
       modelViewStack.mul(poseStack.last().pose());
       modelViewStack.translate(0.0F, 100.0F, 0.0F);
       modelViewStack.scale(60.0F, 1.0F, 60.0F);
-      GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(modelViewStack, new Vector4f(intensity, intensity, intensity, intensity), new Vector3f(), new Matrix4f());
+      GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(new Matrix4f(modelViewStack), new Vector4f(intensity, intensity, intensity, intensity));
       GpuTextureView color = Minecraft.getInstance().getMainRenderTarget().getColorTextureView();
       GpuTextureView depth = Minecraft.getInstance().getMainRenderTarget().getDepthTextureView();
       GpuBuffer indexBuffer = this.quadIndices.getBuffer(6);

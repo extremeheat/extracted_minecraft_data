@@ -54,7 +54,7 @@ public class EntityEquipment {
 
    public void dropAll(final LivingEntity dropper) {
       for(ItemStack item : this.items.values()) {
-         dropper.drop(item, false);
+         dropper.drop(item, true, false);
       }
 
       this.clear();

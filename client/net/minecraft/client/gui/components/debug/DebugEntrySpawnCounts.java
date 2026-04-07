@@ -29,7 +29,7 @@ public class DebugEntrySpawnCounts implements DebugScreenEntry {
             Object2IntMap<MobCategory> mobCategoryCounts = lastSpawnState.getMobCategoryCounts();
             int chunkCount = lastSpawnState.getSpawnableChunkCount();
             displayer.addLine("SC: " + chunkCount + ", " + (String)Stream.of(MobCategory.values()).map((c) -> {
-               char var10000 = Character.toUpperCase(c.getName().charAt(0));
+               String var10000 = c.getDebugAbbreviation();
                return var10000 + ": " + mobCategoryCounts.getInt(c);
             }).collect(Collectors.joining(", ")));
          }

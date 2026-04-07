@@ -309,7 +309,7 @@ public abstract class ChunkAccess implements LightChunk, StructureAccess, BiomeM
 
    public abstract @Nullable CompoundTag getBlockEntityNbtForSaving(BlockPos blockPos, HolderLookup.Provider registryAccess);
 
-   public void findBlockLightSources(final BiConsumer<BlockPos, BlockState> consumer) {
+   public final void findBlockLightSources(final BiConsumer<BlockPos, BlockState> consumer) {
       this.findBlocks((state) -> state.getLightEmission() != 0, consumer);
    }
 

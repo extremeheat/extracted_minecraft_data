@@ -28,6 +28,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.commands.FillBiomeCommand;
+import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
@@ -45,6 +46,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.npc.InventoryCarrier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
@@ -131,6 +133,32 @@ public class GameTestHelper {
       entities.forEach((entity) -> entity.kill(this.getLevel()));
    }
 
+   public ItemEntity spawnItem(final Item item, final Vec3 pos) {
+      ServerLevel level = this.getLevel();
+      Vec3 absoluteVec = this.absoluteVec(pos);
+      ItemEntity itemEntity = new ItemEntity(level, absoluteVec.x, absoluteVec.y, absoluteVec.z, new ItemStack(item, 1));
+      itemEntity.setDeltaMovement(0.0, 0.0, 0.0);
+      level.addFreshEntity(itemEntity);
+      return itemEntity;
+   }
+
+   public ItemEntity spawnItem(final Item item, final float x, final float y, final float z) {
+      return this.spawnItem(item, new Vec3((double)x, (double)y, (double)z));
+   }
+
+   public ItemEntity spawnItem(final Item item, final BlockPos pos) {
+      return this.spawnItem(item, (float)pos.getX(), (float)pos.getY(), (float)pos.getZ());
+   }
+
+   public void despawnItem(final BlockPos pos, final double distance) {
+      BlockPos absolutePos = this.absolutePos(pos);
+
+      for(ItemEntity entity : this.getLevel().getEntities(EntityType.ITEM, (new AABB(absolutePos)).inflate(distance), Entity::isAlive)) {
+         entity.remove(Entity.RemovalReason.KILLED);
+      }
+
+   }
+
    public <E extends Entity> E spawn(final EntityType<E> entityType, final BlockPos pos) {
       return (E)this.spawn(entityType, Vec3.atBottomCenterOf(pos));
    }
@@ -149,11 +177,24 @@ public class GameTestHelper {
       return entities;
    }
 
+   public <E extends Entity> E spawn(final EntityType<E> entityType, final BlockPos pos, final Rotation rotation) {
+      Rotation rot = this.getTestRotation().getRotated(rotation);
+      return (E)this.spawn(entityType, Vec3.atBottomCenterOf(pos), (EntitySpawnReason)null, rot);
+   }
+
    public <E extends Entity> E spawn(final EntityType<E> entityType, final Vec3 pos) {
-      return (E)this.spawn(entityType, pos, (EntitySpawnReason)null);
+      return (E)this.spawn(entityType, pos, (EntitySpawnReason)null, (Rotation)null);
+   }
+
+   public <E extends Mob> E spawn(final EntityType<E> entityType, final int x, final int y, final int z, final EntitySpawnReason entitySpawnReason) {
+      return (E)(this.spawn(entityType, new Vec3((double)x, (double)y, (double)z), entitySpawnReason));
    }
 
    public <E extends Entity> E spawn(final EntityType<E> entityType, final Vec3 pos, final @Nullable EntitySpawnReason spawnReason) {
+      return (E)this.spawn(entityType, pos, spawnReason, (Rotation)null);
+   }
+
+   public <E extends Entity> E spawn(final EntityType<E> entityType, final Vec3 pos, final @Nullable EntitySpawnReason spawnReason, final @Nullable Rotation rotation) {
       ServerLevel level = this.getLevel();
       E entity = entityType.create(level, EntitySpawnReason.STRUCTURE);
       if (entity == null) {
@@ -165,7 +206,7 @@ public class GameTestHelper {
          }
 
          Vec3 absoluteVec = this.absoluteVec(pos);
-         float yRot = entity.rotate(this.getTestRotation());
+         float yRot = entity.rotate(rotation == null ? this.getTestRotation() : rotation);
          entity.snapTo(absoluteVec.x, absoluteVec.y, absoluteVec.z, yRot, entity.getXRot());
          entity.setYBodyRot(yRot);
          entity.setYHeadRot(yRot);
@@ -177,10 +218,6 @@ public class GameTestHelper {
          level.addFreshEntityWithPassengers(entity);
          return entity;
       }
-   }
-
-   public <E extends Mob> E spawn(final EntityType<E> entityType, final int x, final int y, final int z, final EntitySpawnReason entitySpawnReason) {
-      return (E)(this.spawn(entityType, new Vec3((double)x, (double)y, (double)z), entitySpawnReason));
    }
 
    public void hurt(final Entity entity, final DamageSource source, final float damage) {
@@ -256,6 +293,12 @@ public class GameTestHelper {
       return (E)this.spawnWithNoFreeWill(entityType, new Vec3((double)x, (double)y, (double)z));
    }
 
+   public <E extends Mob> E spawnWithNoFreeWill(final EntityType<E> entityType, final BlockPos pos, final Rotation rotation) {
+      E entity = (E)(this.spawn(entityType, pos, rotation));
+      entity.removeFreeWill();
+      return entity;
+   }
+
    public void moveTo(final Mob mob, final float x, final float y, final float z) {
       this.moveTo(mob, new Vec3((double)x, (double)y, (double)z));
    }
@@ -322,7 +365,37 @@ public class GameTestHelper {
    }
 
    public Player makeMockPlayer(final GameType gameType) {
-      return new MockPlayer(gameType);
+      return new Player(this.getLevel(), new GameProfile(UUID.randomUUID(), "test-mock-player")) {
+         {
+            Objects.requireNonNull(GameTestHelper.this);
+         }
+
+         public GameType gameMode() {
+            return gameType;
+         }
+
+         public boolean isClientAuthoritative() {
+            return false;
+         }
+      };
+   }
+
+   public Player makeMockServerPlayer(final GameType gameType) {
+      <undefinedtype> player = new ServerPlayer(this.getLevel().getServer(), this.getLevel(), new GameProfile(UUID.randomUUID(), "test-mock-player"), ClientInformation.createDefault()) {
+         {
+            Objects.requireNonNull(GameTestHelper.this);
+         }
+
+         public GameType gameMode() {
+            return gameType;
+         }
+
+         public boolean isClientAuthoritative() {
+            return false;
+         }
+      };
+      gameType.updatePlayerAbilities(player.getAbilities());
+      return player;
    }
 
    /** @deprecated */
@@ -586,6 +659,53 @@ public class GameTestHelper {
       BlockPos absolutePos = this.absolutePos(pos);
       List<? extends Entity> entities = this.getLevel().getEntities(entity.getType(), (new AABB(absolutePos)).inflate(inflate), Entity::isAlive);
       entities.stream().filter((it) -> it == entity).findFirst().orElseThrow(() -> this.assertionException(pos, "test.error.expected_entity", entity.getType().getDescription()));
+   }
+
+   public void assertItemEntityCountIs(final Item itemType, final BlockPos pos, final double distance, final int count) {
+      BlockPos absolutePos = this.absolutePos(pos);
+      List<ItemEntity> entities = this.getLevel().getEntities(EntityType.ITEM, (new AABB(absolutePos)).inflate(distance), Entity::isAlive);
+      int num = 0;
+
+      for(ItemEntity entity : entities) {
+         ItemStack itemStack = entity.getItem();
+         if (itemStack.is(itemType)) {
+            num += itemStack.getCount();
+         }
+      }
+
+      if (num != count) {
+         throw this.assertionException(pos, "test.error.expected_items_count", count, getItemName(itemType), num);
+      }
+   }
+
+   public void assertItemEntityPresent(final Item itemType, final BlockPos pos, final double distance) {
+      BlockPos absolutePos = this.absolutePos(pos);
+      Predicate<ItemEntity> isSameItem = (entity) -> entity.isAlive() && entity.getItem().is(itemType);
+      if (!this.getLevel().hasEntities(EntityType.ITEM, (new AABB(absolutePos)).inflate(distance), isSameItem)) {
+         throw this.assertionException(pos, "test.error.expected_item", getItemName(itemType));
+      }
+   }
+
+   public void assertItemEntityNotPresent(final Item itemType, final BlockPos pos, final double distance) {
+      BlockPos absolutePos = this.absolutePos(pos);
+      Predicate<ItemEntity> isSameItem = (entity) -> entity.isAlive() && entity.getItem().is(itemType);
+      if (this.getLevel().hasEntities(EntityType.ITEM, (new AABB(absolutePos)).inflate(distance), isSameItem)) {
+         throw this.assertionException(pos, "test.error.unexpected_item", getItemName(itemType));
+      }
+   }
+
+   public void assertItemEntityPresent(final Item itemType) {
+      Predicate<ItemEntity> isSameItem = (entity) -> entity.isAlive() && entity.getItem().is(itemType);
+      if (!this.getLevel().hasEntities(EntityType.ITEM, this.getBounds(), isSameItem)) {
+         throw this.assertionException("test.error.expected_item", getItemName(itemType));
+      }
+   }
+
+   public void assertItemEntityNotPresent(final Item itemType) {
+      Predicate<ItemEntity> isSameItem = (entity) -> entity.isAlive() && entity.getItem().is(itemType);
+      if (this.getLevel().hasEntities(EntityType.ITEM, this.getBounds(), isSameItem)) {
+         throw this.assertionException("test.error.unexpected_item", getItemName(itemType));
+      }
    }
 
    public void assertEntityNotPresent(final EntityType<?> entityType) {
@@ -959,7 +1079,17 @@ public class GameTestHelper {
 
    public <N> void assertValueEqual(final N value, final N expected, final Component valueName) {
       if (!value.equals(expected)) {
-         throw this.assertionException("test.error.value_not_equal", valueName, value, expected);
+         throw this.assertionException("test.error.value_not_equal", valueName, expected, value);
+      }
+   }
+
+   public <N extends Comparable<N>> void assertValueInBetween(final N lowerBound, final N value, final N upperBound, final String valueName) {
+      this.assertValueInBetween(lowerBound, value, upperBound, (Component)Component.literal(valueName));
+   }
+
+   public <N extends Comparable<N>> void assertValueInBetween(final N lowerBound, final N value, final N upperBound, final Component valueName) {
+      if (value.compareTo(lowerBound) < 0 || value.compareTo(upperBound) > 0) {
+         throw this.assertionException("test.error.value_not_in_between", valueName, lowerBound, upperBound, value);
       }
    }
 
@@ -1046,25 +1176,6 @@ public class GameTestHelper {
          Direction[] directions = Direction.values();
          Arrays.sort(directions, Comparator.comparingDouble((d) -> d.getUnitVec3().distanceTo(this.placeDirection.getUnitVec3())));
          return directions;
-      }
-   }
-
-   private class MockPlayer extends Player {
-      private final GameType gameType;
-
-      public MockPlayer(final GameType gameType) {
-         Objects.requireNonNull(GameTestHelper.this);
-         super(GameTestHelper.this.getLevel(), new GameProfile(UUID.randomUUID(), "test-mock-player"));
-         this.gameType = gameType;
-         this.getInventory().clearContent();
-      }
-
-      public GameType gameMode() {
-         return this.gameType;
-      }
-
-      public boolean isClientAuthoritative() {
-         return false;
       }
    }
 }

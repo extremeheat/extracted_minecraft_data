@@ -46,7 +46,6 @@ import net.minecraft.world.entity.ai.goal.PanicGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.TemptGoal;
-import net.minecraft.world.entity.ai.goal.TemptedByLivingBlockGoal;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.animal.Animal;
@@ -139,7 +138,6 @@ public class Strider extends Animal implements ItemSteerable {
       this.goalSelector.addGoal(2, new BreedGoal(this, 1.0));
       this.temptGoal = new TemptGoal(this, 1.4, (i) -> i.is(ItemTags.STRIDER_TEMPT_ITEMS), false);
       this.goalSelector.addGoal(3, this.temptGoal);
-      this.goalSelector.addGoal(3, new TemptedByLivingBlockGoal(this, 1.4, BlockTags.STRIDER_TEMPT_ITEMS, false));
       this.goalSelector.addGoal(4, new StriderGoToLavaGoal(this, 1.0));
       this.goalSelector.addGoal(5, new FollowParentGoal(this, 1.0));
       this.goalSelector.addGoal(7, new RandomStrollGoal(this, 1.0, 60));

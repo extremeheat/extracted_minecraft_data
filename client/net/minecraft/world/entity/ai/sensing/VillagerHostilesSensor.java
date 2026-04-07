@@ -2,7 +2,6 @@ package net.minecraft.world.entity.ai.sensing;
 
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -14,20 +13,20 @@ public class VillagerHostilesSensor extends NearestVisibleLivingEntitySensor {
       super();
    }
 
-   protected boolean isMatchingEntity(final ServerLevel level, final LivingEntity body, final Entity mob) {
+   protected boolean isMatchingEntity(final ServerLevel level, final LivingEntity body, final LivingEntity mob) {
       return this.isHostile(mob) && this.isClose(body, mob);
    }
 
-   private boolean isClose(final LivingEntity body, final Entity mob) {
+   private boolean isClose(final LivingEntity body, final LivingEntity mob) {
       float distThreshold = (Float)ACCEPTABLE_DISTANCE_FROM_HOSTILES.get(mob.getType());
-      return mob.distanceToSqr((Entity)body) <= (double)(distThreshold * distThreshold);
+      return mob.distanceToSqr(body) <= (double)(distThreshold * distThreshold);
    }
 
-   protected MemoryModuleType<Entity> getMemoryToSet() {
+   protected MemoryModuleType<LivingEntity> getMemoryToSet() {
       return MemoryModuleType.NEAREST_HOSTILE;
    }
 
-   private boolean isHostile(final Entity entity) {
+   private boolean isHostile(final LivingEntity entity) {
       return ACCEPTABLE_DISTANCE_FROM_HOSTILES.containsKey(entity.getType());
    }
 

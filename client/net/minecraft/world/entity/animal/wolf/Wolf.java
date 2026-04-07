@@ -32,7 +32,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Crackiness;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -66,7 +65,6 @@ import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.animal.equine.Llama;
 import net.minecraft.world.entity.animal.turtle.Turtle;
 import net.minecraft.world.entity.decoration.ArmorStand;
-import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Ghast;
 import net.minecraft.world.entity.monster.skeleton.AbstractSkeleton;
@@ -106,7 +104,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
    private float shakeAnim;
    private float shakeAnimO;
    private static final UniformInt PERSISTENT_ANGER_TIME;
-   private @Nullable EntityReference<Entity> persistentAngerTarget;
+   private @Nullable EntityReference<LivingEntity> persistentAngerTarget;
 
    public Wolf(final EntityType<? extends Wolf> type, final Level level) {
       super(type, level);
@@ -132,7 +130,6 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       this.targetSelector.addGoal(2, new OwnerHurtTargetGoal(this));
       this.targetSelector.addGoal(3, (new HurtByTargetGoal(this, new Class[0])).setAlertOthers());
       this.targetSelector.addGoal(4, new NearestAttackableTargetGoal(this, Player.class, 10, true, false, this::isAngryAt));
-      this.targetSelector.addGoal(4, new NearestAttackableTargetGoal(this, LivingBlock.class, 10, true, false, this::isAngryAt));
       this.targetSelector.addGoal(5, new NonTameRandomTargetGoal(this, Animal.class, false, PREY_SELECTOR));
       this.targetSelector.addGoal(6, new NonTameRandomTargetGoal(this, Turtle.class, false, Turtle.BABY_ON_LAND_SELECTOR));
       this.targetSelector.addGoal(7, new NearestAttackableTargetGoal(this, AbstractSkeleton.class, false));
@@ -424,7 +421,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
 
          if (!itemStack.is(ItemTags.WOLF_COLLAR_DYES) || !this.isOwnedBy(player)) {
             if (this.isEquippableInSlot(itemStack, EquipmentSlot.BODY) && !this.isWearingBodyArmor() && this.isOwnedBy(player) && !this.isBaby()) {
-               this.setBodyArmorItem(itemStack.copyWithCount(1));
+               this.setItemSlotAndDropWhenKilled(EquipmentSlot.BODY, itemStack.copyWithCount(1));
                itemStack.consume(1, player);
                return InteractionResult.SUCCESS;
             }
@@ -443,7 +440,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
                this.setOrderedToSit(!this.isOrderedToSit());
                this.jumping = false;
                this.navigation.stop();
-               this.setTarget((Entity)null);
+               this.setTarget((LivingEntity)null);
                return InteractionResult.SUCCESS.withoutItem();
             }
 
@@ -469,7 +466,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       if (this.random.nextInt(3) == 0) {
          this.tame(player);
          this.navigation.stop();
-         this.setTarget((Entity)null);
+         this.setTarget((LivingEntity)null);
          this.setOrderedToSit(true);
          this.level().broadcastEntityEvent(this, (byte)7);
       } else {
@@ -523,11 +520,11 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       this.setTimeToRemainAngry((long)PERSISTENT_ANGER_TIME.sample(this.random));
    }
 
-   public @Nullable EntityReference<Entity> getPersistentAngerTarget() {
+   public @Nullable EntityReference<LivingEntity> getPersistentAngerTarget() {
       return this.persistentAngerTarget;
    }
 
-   public void setPersistentAngerTarget(final @Nullable EntityReference<Entity> persistentAngerTarget) {
+   public void setPersistentAngerTarget(final @Nullable EntityReference<LivingEntity> persistentAngerTarget) {
       this.persistentAngerTarget = persistentAngerTarget;
    }
 
@@ -683,12 +680,12 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       }
 
       public void start() {
-         Wolf.this.setTarget((Entity)null);
+         Wolf.this.setTarget((LivingEntity)null);
          super.start();
       }
 
       public void tick() {
-         Wolf.this.setTarget((Entity)null);
+         Wolf.this.setTarget((LivingEntity)null);
          super.tick();
       }
    }

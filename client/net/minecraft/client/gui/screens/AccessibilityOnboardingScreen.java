@@ -93,7 +93,7 @@ public class AccessibilityOnboardingScreen extends Screen {
    }
 
    private int initTitleYPos() {
-      return 122;
+      return 90;
    }
 
    public void onClose() {
@@ -104,7 +104,7 @@ public class AccessibilityOnboardingScreen extends Screen {
    }
 
    private void closeAndSetScreen(final Screen screen) {
-      this.close(false, () -> this.minecraft.setScreen(screen));
+      this.close(false, () -> this.minecraft.gui.setScreen(screen));
    }
 
    private void close(final boolean onboardingFinished, final Runnable runnable) {

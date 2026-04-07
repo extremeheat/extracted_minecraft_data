@@ -12,7 +12,9 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.Containers;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.crafting.CraftingInput;
@@ -33,6 +35,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
@@ -137,6 +140,18 @@ public class CrafterBlock extends BaseEntityBlock {
 
    protected void affectNeighborsAfterRemoval(final BlockState state, final ServerLevel level, final BlockPos pos, final boolean movedByPiston) {
       Containers.updateNeighboursAfterDestroy(state, level, pos);
+   }
+
+   protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
+      if (!level.isClientSide()) {
+         BlockEntity var7 = level.getBlockEntity(pos);
+         if (var7 instanceof CrafterBlockEntity) {
+            CrafterBlockEntity crafter = (CrafterBlockEntity)var7;
+            player.openMenu(crafter);
+         }
+      }
+
+      return InteractionResult.SUCCESS;
    }
 
    protected void dispenseFrom(final BlockState state, final ServerLevel level, final BlockPos pos) {

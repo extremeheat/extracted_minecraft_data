@@ -67,7 +67,7 @@ public interface DispenseItemBehavior {
    Logger LOGGER = LogUtils.getLogger();
    DispenseItemBehavior NOOP = (source, dispensed) -> dispensed;
 
-   ItemStack dispense(DispenseSource source, ItemStack dispensed);
+   ItemStack dispense(BlockSource source, ItemStack dispensed);
 
    static void bootStrap() {
       DispenserBlock.registerProjectileBehavior(Items.ARROW);
@@ -84,8 +84,8 @@ public interface DispenseItemBehavior {
       DispenserBlock.registerProjectileBehavior(Items.FIRE_CHARGE);
       DispenserBlock.registerProjectileBehavior(Items.WIND_CHARGE);
       DispenserBlock.registerBehavior(Items.ARMOR_STAND, new DefaultDispenseItemBehavior() {
-         public ItemStack execute(final DispenseSource source, final ItemStack dispensed) {
-            Direction direction = source.direction();
+         public ItemStack execute(final BlockSource source, final ItemStack dispensed) {
+            Direction direction = (Direction)source.state().getValue(DispenserBlock.FACING);
             BlockPos pos = source.pos().relative(direction);
             ServerLevel serverLevel = source.level();
             Consumer<ArmorStand> postSpawnConfig = EntityType.<ArmorStand>appendDefaultStackConfig((armorStandx) -> armorStandx.setYRot(direction.toYRot()), serverLevel, dispensed, (LivingEntity)null);
@@ -98,8 +98,8 @@ public interface DispenseItemBehavior {
          }
       });
       DispenserBlock.registerBehavior(Items.CHEST, new OptionalDispenseItemBehavior() {
-         public ItemStack execute(final DispenseSource source, final ItemStack dispensed) {
-            BlockPos pos = source.pos().relative(source.direction());
+         public ItemStack execute(final BlockSource source, final ItemStack dispensed) {
+            BlockPos pos = source.pos().relative((Direction)source.state().getValue(DispenserBlock.FACING));
 
             for(AbstractChestedHorse abstractChestedHorse : source.level().getEntitiesOfClass(AbstractChestedHorse.class, new AABB(pos), (entity) -> entity.isAlive() && !entity.hasChest())) {
                if (abstractChestedHorse.isTamed()) {
@@ -138,9 +138,9 @@ public interface DispenseItemBehavior {
       DispenseItemBehavior filledBucketBehavior = new DefaultDispenseItemBehavior() {
          private final DefaultDispenseItemBehavior defaultDispenseItemBehavior = new DefaultDispenseItemBehavior();
 
-         public ItemStack execute(final DispenseSource source, final ItemStack dispensed) {
+         public ItemStack execute(final BlockSource source, final ItemStack dispensed) {
             DispensibleContainerItem bucket = (DispensibleContainerItem)dispensed.getItem();
-            BlockPos target = source.pos().relative(source.direction());
+            BlockPos target = source.pos().relative((Direction)source.state().getValue(DispenserBlock.FACING));
             Level level = source.level();
             if (bucket.emptyContents((LivingEntity)null, level, target, (BlockHitResult)null)) {
                bucket.checkExtraContent((LivingEntity)null, level, dispensed, target);
@@ -158,11 +158,12 @@ public interface DispenseItemBehavior {
       DispenserBlock.registerBehavior(Items.PUFFERFISH_BUCKET, filledBucketBehavior);
       DispenserBlock.registerBehavior(Items.TROPICAL_FISH_BUCKET, filledBucketBehavior);
       DispenserBlock.registerBehavior(Items.AXOLOTL_BUCKET, filledBucketBehavior);
+      DispenserBlock.registerBehavior(Items.SULFUR_CUBE_BUCKET, filledBucketBehavior);
       DispenserBlock.registerBehavior(Items.TADPOLE_BUCKET, filledBucketBehavior);
       DispenserBlock.registerBehavior(Items.BUCKET, new DefaultDispenseItemBehavior() {
-         public ItemStack execute(final DispenseSource source, final ItemStack dispensed) {
+         public ItemStack execute(final BlockSource source, final ItemStack dispensed) {
             LevelAccessor level = source.level();
-            BlockPos target = source.pos().relative(source.direction());
+            BlockPos target = source.pos().relative((Direction)source.state().getValue(DispenserBlock.FACING));
             BlockState blockState = level.getBlockState(target);
             Block block = blockState.getBlock();
             if (block instanceof BucketPickup bucket) {
@@ -180,10 +181,10 @@ public interface DispenseItemBehavior {
          }
       });
       DispenserBlock.registerBehavior(Items.FLINT_AND_STEEL, new OptionalDispenseItemBehavior() {
-         protected ItemStack execute(final DispenseSource source, final ItemStack dispensed) {
+         protected ItemStack execute(final BlockSource source, final ItemStack dispensed) {
             ServerLevel level = source.level();
             this.setSuccess(true);
-            Direction facing = source.direction();
+            Direction facing = (Direction)source.state().getValue(DispenserBlock.FACING);
             BlockPos targetPos = source.pos().relative(facing);
             BlockState target = level.getBlockState(targetPos);
             if (BaseFireBlock.canBePlacedAt(level, targetPos, facing)) {
@@ -213,10 +214,10 @@ public interface DispenseItemBehavior {
          }
       });
       DispenserBlock.registerBehavior(Items.BONE_MEAL, new OptionalDispenseItemBehavior() {
-         protected ItemStack execute(final DispenseSource source, final ItemStack dispensed) {
+         protected ItemStack execute(final BlockSource source, final ItemStack dispensed) {
             this.setSuccess(true);
             Level level = source.level();
-            BlockPos target = source.pos().relative(source.direction());
+            BlockPos target = source.pos().relative((Direction)source.state().getValue(DispenserBlock.FACING));
             if (!BoneMealItem.growCrop(dispensed, level, target) && !BoneMealItem.growWaterPlant(dispensed, level, target, (Direction)null)) {
                this.setSuccess(false);
             } else if (!level.isClientSide()) {
@@ -227,13 +228,13 @@ public interface DispenseItemBehavior {
          }
       });
       DispenserBlock.registerBehavior(Blocks.TNT, new OptionalDispenseItemBehavior() {
-         protected ItemStack execute(final DispenseSource source, final ItemStack dispensed) {
+         protected ItemStack execute(final BlockSource source, final ItemStack dispensed) {
             ServerLevel level = source.level();
             if (!(Boolean)level.getGameRules().get(GameRules.TNT_EXPLODES)) {
                this.setSuccess(false);
                return dispensed;
             } else {
-               BlockPos target = source.pos().relative(source.direction());
+               BlockPos target = source.pos().relative((Direction)source.state().getValue(DispenserBlock.FACING));
                PrimedTnt tnt = new PrimedTnt(level, (double)target.getX() + 0.5, (double)target.getY(), (double)target.getZ() + 0.5, (LivingEntity)null);
                level.addFreshEntity(tnt);
                level.playSound((Entity)null, tnt.getX(), tnt.getY(), tnt.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
@@ -245,9 +246,9 @@ public interface DispenseItemBehavior {
          }
       });
       DispenserBlock.registerBehavior(Items.WITHER_SKELETON_SKULL, new OptionalDispenseItemBehavior() {
-         protected ItemStack execute(final DispenseSource source, final ItemStack dispensed) {
+         protected ItemStack execute(final BlockSource source, final ItemStack dispensed) {
             Level level = source.level();
-            Direction direction = source.direction();
+            Direction direction = (Direction)source.state().getValue(DispenserBlock.FACING);
             BlockPos target = source.pos().relative(direction);
             if (level.isEmptyBlock(target) && WitherSkullBlock.canSpawnMob(level, target, dispensed)) {
                level.setBlock(target, (BlockState)Blocks.WITHER_SKELETON_SKULL.defaultBlockState().setValue(SkullBlock.ROTATION, RotationSegment.convertToSegment(direction)), 3);
@@ -267,9 +268,9 @@ public interface DispenseItemBehavior {
          }
       });
       DispenserBlock.registerBehavior(Blocks.CARVED_PUMPKIN, new OptionalDispenseItemBehavior() {
-         protected ItemStack execute(final DispenseSource source, final ItemStack dispensed) {
+         protected ItemStack execute(final BlockSource source, final ItemStack dispensed) {
             Level level = source.level();
-            BlockPos target = source.pos().relative(source.direction());
+            BlockPos target = source.pos().relative((Direction)source.state().getValue(DispenserBlock.FACING));
             CarvedPumpkinBlock pumpkinBlock = (CarvedPumpkinBlock)Blocks.CARVED_PUMPKIN;
             if (level.isEmptyBlock(target) && pumpkinBlock.canSpawnGolem(level, target)) {
                if (!level.isClientSide()) {
@@ -288,32 +289,17 @@ public interface DispenseItemBehavior {
       });
       ShulkerBoxDispenseBehavior shulkerBoxDispenseBehavior = new ShulkerBoxDispenseBehavior();
       DispenserBlock.registerBehavior(Items.SHULKER_BOX, shulkerBoxDispenseBehavior);
-      DispenserBlock.registerBehavior(Items.WHITE_SHULKER_BOX, shulkerBoxDispenseBehavior);
-      DispenserBlock.registerBehavior(Items.ORANGE_SHULKER_BOX, shulkerBoxDispenseBehavior);
-      DispenserBlock.registerBehavior(Items.MAGENTA_SHULKER_BOX, shulkerBoxDispenseBehavior);
-      DispenserBlock.registerBehavior(Items.LIGHT_BLUE_SHULKER_BOX, shulkerBoxDispenseBehavior);
-      DispenserBlock.registerBehavior(Items.YELLOW_SHULKER_BOX, shulkerBoxDispenseBehavior);
-      DispenserBlock.registerBehavior(Items.LIME_SHULKER_BOX, shulkerBoxDispenseBehavior);
-      DispenserBlock.registerBehavior(Items.PINK_SHULKER_BOX, shulkerBoxDispenseBehavior);
-      DispenserBlock.registerBehavior(Items.GRAY_SHULKER_BOX, shulkerBoxDispenseBehavior);
-      DispenserBlock.registerBehavior(Items.LIGHT_GRAY_SHULKER_BOX, shulkerBoxDispenseBehavior);
-      DispenserBlock.registerBehavior(Items.CYAN_SHULKER_BOX, shulkerBoxDispenseBehavior);
-      DispenserBlock.registerBehavior(Items.PURPLE_SHULKER_BOX, shulkerBoxDispenseBehavior);
-      DispenserBlock.registerBehavior(Items.BLUE_SHULKER_BOX, shulkerBoxDispenseBehavior);
-      DispenserBlock.registerBehavior(Items.BROWN_SHULKER_BOX, shulkerBoxDispenseBehavior);
-      DispenserBlock.registerBehavior(Items.GREEN_SHULKER_BOX, shulkerBoxDispenseBehavior);
-      DispenserBlock.registerBehavior(Items.RED_SHULKER_BOX, shulkerBoxDispenseBehavior);
-      DispenserBlock.registerBehavior(Items.BLACK_SHULKER_BOX, shulkerBoxDispenseBehavior);
+      Items.DYED_SHULKER_BOX.forEach((item) -> DispenserBlock.registerBehavior(item, shulkerBoxDispenseBehavior));
       DispenserBlock.registerBehavior(Items.GLASS_BOTTLE, new OptionalDispenseItemBehavior() {
-         private ItemStack takeLiquid(final DispenseSource source, final ItemStack dispensed, final ItemStack filledItemStack) {
+         private ItemStack takeLiquid(final BlockSource source, final ItemStack dispensed, final ItemStack filledItemStack) {
             source.level().gameEvent((Entity)null, GameEvent.FLUID_PICKUP, source.pos());
             return this.consumeWithRemainder(source, dispensed, filledItemStack);
          }
 
-         public ItemStack execute(final DispenseSource source, final ItemStack dispensed) {
+         public ItemStack execute(final BlockSource source, final ItemStack dispensed) {
             this.setSuccess(false);
             ServerLevel level = source.level();
-            BlockPos target = source.pos().relative(source.direction());
+            BlockPos target = source.pos().relative((Direction)source.state().getValue(DispenserBlock.FACING));
             BlockState state = level.getBlockState(target);
             if (state.is(BlockTags.BEEHIVES, (s) -> s.hasProperty(BeehiveBlock.HONEY_LEVEL) && s.getBlock() instanceof BeehiveBlock) && (Integer)state.getValue(BeehiveBlock.HONEY_LEVEL) >= 5) {
                ((BeehiveBlock)state.getBlock()).releaseBeesAndResetHoneyLevel(level, state, target, (Player)null, BeehiveBlockEntity.BeeReleaseStatus.BEE_RELEASED);
@@ -328,8 +314,8 @@ public interface DispenseItemBehavior {
          }
       });
       DispenserBlock.registerBehavior(Items.GLOWSTONE, new OptionalDispenseItemBehavior() {
-         public ItemStack execute(final DispenseSource source, final ItemStack dispensed) {
-            Direction direction = source.direction();
+         public ItemStack execute(final BlockSource source, final ItemStack dispensed) {
+            Direction direction = (Direction)source.state().getValue(DispenserBlock.FACING);
             BlockPos pos = source.pos().relative(direction);
             Level level = source.level();
             BlockState blockState = level.getBlockState(pos);
@@ -350,9 +336,9 @@ public interface DispenseItemBehavior {
       });
       DispenserBlock.registerBehavior(Items.SHEARS, new ShearsDispenseItemBehavior());
       DispenserBlock.registerBehavior(Items.BRUSH, new OptionalDispenseItemBehavior() {
-         protected ItemStack execute(final DispenseSource source, final ItemStack dispensed) {
+         protected ItemStack execute(final BlockSource source, final ItemStack dispensed) {
             ServerLevel level = source.level();
-            BlockPos pos = source.pos().relative(source.direction());
+            BlockPos pos = source.pos().relative((Direction)source.state().getValue(DispenserBlock.FACING));
             List<Armadillo> armadillos = level.getEntitiesOfClass(Armadillo.class, new AABB(pos), EntitySelector.NO_SPECTATORS);
             if (armadillos.isEmpty()) {
                this.setSuccess(false);
@@ -372,8 +358,8 @@ public interface DispenseItemBehavior {
          }
       });
       DispenserBlock.registerBehavior(Items.HONEYCOMB, new OptionalDispenseItemBehavior() {
-         public ItemStack execute(final DispenseSource source, final ItemStack dispensed) {
-            BlockPos pos = source.pos().relative(source.direction());
+         public ItemStack execute(final BlockSource source, final ItemStack dispensed) {
+            BlockPos pos = source.pos().relative((Direction)source.state().getValue(DispenserBlock.FACING));
             Level level = source.level();
             BlockState blockState = level.getBlockState(pos);
             Optional<BlockState> maybeWaxed = HoneycombItem.getWaxed(blockState);
@@ -391,14 +377,14 @@ public interface DispenseItemBehavior {
       DispenserBlock.registerBehavior(Items.POTION, new DefaultDispenseItemBehavior() {
          private final DefaultDispenseItemBehavior defaultDispenseItemBehavior = new DefaultDispenseItemBehavior();
 
-         public ItemStack execute(final DispenseSource source, final ItemStack dispensed) {
+         public ItemStack execute(final BlockSource source, final ItemStack dispensed) {
             PotionContents potion = (PotionContents)dispensed.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
             if (!potion.is(Potions.WATER)) {
                return this.defaultDispenseItemBehavior.dispense(source, dispensed);
             } else {
                ServerLevel level = source.level();
                BlockPos pos = source.pos();
-               BlockPos target = source.pos().relative(source.direction());
+               BlockPos target = source.pos().relative((Direction)source.state().getValue(DispenserBlock.FACING));
                if (!level.getBlockState(target).is(BlockTags.CONVERTABLE_TO_MUD)) {
                   return this.defaultDispenseItemBehavior.dispense(source, dispensed);
                } else {

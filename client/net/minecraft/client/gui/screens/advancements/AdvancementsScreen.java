@@ -84,7 +84,7 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
    }
 
    public void onClose() {
-      this.minecraft.setScreen(this.lastScreen);
+      this.minecraft.gui.setScreen(this.lastScreen);
    }
 
    public void removed() {
@@ -114,7 +114,7 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
 
    public boolean keyPressed(final KeyEvent event) {
       if (this.minecraft.options.keyAdvancements.matches(event)) {
-         this.minecraft.setScreen((Screen)null);
+         this.minecraft.gui.setScreen((Screen)null);
          this.minecraft.mouseHandler.grabMouse();
          return true;
       } else {

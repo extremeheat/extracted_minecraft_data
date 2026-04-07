@@ -7,6 +7,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.resources.Identifier;
@@ -53,14 +55,14 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
    private final VerticalPlacement verticalPlacement;
    private final Properties properties;
 
-   public RuinedPortalPiece(final StructureTemplateManager structureTemplateManager, final BlockPos templatePosition, final VerticalPlacement verticalPlacement, final Properties properties, final Identifier templateLocation, final StructureTemplate template, final Rotation rotation, final Mirror mirror, final BlockPos pivot) {
-      super(StructurePieceType.RUINED_PORTAL, 0, structureTemplateManager, templateLocation, templateLocation.toString(), makeSettings(mirror, rotation, verticalPlacement, pivot, properties), templatePosition);
+   public RuinedPortalPiece(final HolderLookup.Provider registries, final StructureTemplateManager structureTemplateManager, final BlockPos templatePosition, final VerticalPlacement verticalPlacement, final Properties properties, final Identifier templateLocation, final StructureTemplate template, final Rotation rotation, final Mirror mirror, final BlockPos pivot) {
+      super(StructurePieceType.RUINED_PORTAL, 0, structureTemplateManager, templateLocation, templateLocation.toString(), makeSettings(registries, mirror, rotation, verticalPlacement, pivot, properties), templatePosition);
       this.verticalPlacement = verticalPlacement;
       this.properties = properties;
    }
 
-   public RuinedPortalPiece(final StructureTemplateManager structureTemplateManager, final CompoundTag tag) {
-      super(StructurePieceType.RUINED_PORTAL, tag, structureTemplateManager, (location) -> makeSettings(structureTemplateManager, tag, location));
+   public RuinedPortalPiece(final StructurePieceSerializationContext context, final CompoundTag tag) {
+      super(StructurePieceType.RUINED_PORTAL, tag, context.structureTemplateManager(), (location) -> makeSettings(context.registryAccess(), context.structureTemplateManager(), tag, location));
       this.verticalPlacement = (VerticalPlacement)tag.read("VerticalPlacement", RuinedPortalPiece.VerticalPlacement.CODEC).orElseThrow();
       this.properties = (Properties)tag.read("Properties", RuinedPortalPiece.Properties.CODEC).orElseThrow();
    }
@@ -73,13 +75,14 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
       tag.store("Properties", RuinedPortalPiece.Properties.CODEC, this.properties);
    }
 
-   private static StructurePlaceSettings makeSettings(final StructureTemplateManager structureTemplateManager, final CompoundTag tag, final Identifier location) {
+   private static StructurePlaceSettings makeSettings(final HolderLookup.Provider registries, final StructureTemplateManager structureTemplateManager, final CompoundTag tag, final Identifier location) {
       StructureTemplate template = structureTemplateManager.getOrCreate(location);
       BlockPos pivot = new BlockPos(template.getSize().getX() / 2, 0, template.getSize().getZ() / 2);
-      return makeSettings((Mirror)tag.read("Mirror", Mirror.LEGACY_CODEC).orElseThrow(), (Rotation)tag.read("Rotation", Rotation.LEGACY_CODEC).orElseThrow(), (VerticalPlacement)tag.read("VerticalPlacement", RuinedPortalPiece.VerticalPlacement.CODEC).orElseThrow(), pivot, (Properties)RuinedPortalPiece.Properties.CODEC.parse(new Dynamic(NbtOps.INSTANCE, tag.get("Properties"))).getPartialOrThrow());
+      return makeSettings(registries, (Mirror)tag.read("Mirror", Mirror.LEGACY_CODEC).orElseThrow(), (Rotation)tag.read("Rotation", Rotation.LEGACY_CODEC).orElseThrow(), (VerticalPlacement)tag.read("VerticalPlacement", RuinedPortalPiece.VerticalPlacement.CODEC).orElseThrow(), pivot, (Properties)RuinedPortalPiece.Properties.CODEC.parse(new Dynamic(NbtOps.INSTANCE, tag.get("Properties"))).getPartialOrThrow());
    }
 
-   private static StructurePlaceSettings makeSettings(final Mirror mirror, final Rotation rotation, final VerticalPlacement verticalPlacement, final BlockPos pivot, final Properties properties) {
+   private static StructurePlaceSettings makeSettings(final HolderLookup.Provider registries, final Mirror mirror, final Rotation rotation, final VerticalPlacement verticalPlacement, final BlockPos pivot, final Properties properties) {
+      HolderLookup.RegistryLookup<Block> blocks = registries.lookupOrThrow(Registries.BLOCK);
       BlockIgnoreProcessor ignoreProcessor = properties.airPocket ? BlockIgnoreProcessor.STRUCTURE_BLOCK : BlockIgnoreProcessor.STRUCTURE_AND_AIR;
       List<ProcessorRule> rules = Lists.newArrayList();
       rules.add(getBlockReplaceRule(Blocks.GOLD_BLOCK, 0.3F, Blocks.AIR));
@@ -88,7 +91,7 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
          rules.add(getBlockReplaceRule(Blocks.NETHERRACK, 0.07F, Blocks.MAGMA_BLOCK));
       }
 
-      StructurePlaceSettings settings = (new StructurePlaceSettings()).setRotation(rotation).setMirror(mirror).setRotationPivot(pivot).addProcessor(ignoreProcessor).addProcessor(new RuleProcessor(rules)).addProcessor(new BlockAgeProcessor(properties.mossiness)).addProcessor(new ProtectedBlockProcessor(BlockTags.FEATURES_CANNOT_REPLACE)).addProcessor(new LavaSubmergedBlockProcessor());
+      StructurePlaceSettings settings = (new StructurePlaceSettings()).setRotation(rotation).setMirror(mirror).setRotationPivot(pivot).addProcessor(ignoreProcessor).addProcessor(new RuleProcessor(rules)).addProcessor(new BlockAgeProcessor(properties.mossiness)).addProcessor(new ProtectedBlockProcessor(blocks.getOrThrow(BlockTags.FEATURES_CANNOT_REPLACE))).addProcessor(new LavaSubmergedBlockProcessor());
       if (properties.replaceWithBlackstone) {
          settings.addProcessor(BlackstoneReplaceProcessor.INSTANCE);
       }
@@ -244,27 +247,11 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
       return new ProcessorRule(new BlockMatchTest(source), AlwaysTrueTest.INSTANCE, target.defaultBlockState());
    }
 
-   public static class Properties {
-      public static final Codec<Properties> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.BOOL.fieldOf("cold").forGetter((p) -> p.cold), Codec.FLOAT.fieldOf("mossiness").forGetter((p) -> p.mossiness), Codec.BOOL.fieldOf("air_pocket").forGetter((p) -> p.airPocket), Codec.BOOL.fieldOf("overgrown").forGetter((p) -> p.overgrown), Codec.BOOL.fieldOf("vines").forGetter((p) -> p.vines), Codec.BOOL.fieldOf("replace_with_blackstone").forGetter((p) -> p.replaceWithBlackstone)).apply(i, Properties::new));
-      public boolean cold;
-      public float mossiness;
-      public boolean airPocket;
-      public boolean overgrown;
-      public boolean vines;
-      public boolean replaceWithBlackstone;
+   public static record Properties(boolean cold, float mossiness, boolean airPocket, boolean overgrown, boolean vines, boolean replaceWithBlackstone) {
+      public static final Codec<Properties> CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.BOOL.fieldOf("cold").forGetter(Properties::cold), Codec.FLOAT.fieldOf("mossiness").forGetter(Properties::mossiness), Codec.BOOL.fieldOf("air_pocket").forGetter(Properties::airPocket), Codec.BOOL.fieldOf("overgrown").forGetter(Properties::overgrown), Codec.BOOL.fieldOf("vines").forGetter(Properties::vines), Codec.BOOL.fieldOf("replace_with_blackstone").forGetter(Properties::replaceWithBlackstone)).apply(i, Properties::new));
 
-      public Properties() {
+      public Properties {
          super();
-      }
-
-      public Properties(final boolean cold, final float mossiness, final boolean airPocket, final boolean overgrown, final boolean vines, final boolean replaceWithBlackstone) {
-         super();
-         this.cold = cold;
-         this.mossiness = mossiness;
-         this.airPocket = airPocket;
-         this.overgrown = overgrown;
-         this.vines = vines;
-         this.replaceWithBlackstone = replaceWithBlackstone;
       }
    }
 

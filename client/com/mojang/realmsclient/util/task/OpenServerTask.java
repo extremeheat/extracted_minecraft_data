@@ -48,7 +48,7 @@ public class OpenServerTask extends LongRunningTask {
                   if (this.join) {
                      RealmsMainScreen.play(this.serverData, this.returnScreen);
                   } else {
-                     this.minecraft.setScreen(this.returnScreen);
+                     this.minecraft.gui.setScreen(this.returnScreen);
                   }
 
                });

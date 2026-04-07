@@ -23,7 +23,9 @@ import net.minecraft.world.item.SmithingTemplateItem;
 import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.Level;
 import org.joml.Quaternionf;
+import org.joml.Quaternionfc;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
    private static final Identifier ERROR_SPRITE = Identifier.withDefaultNamespace("container/smithing/error");
@@ -41,8 +43,8 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
    private static final int TOOLTIP_WIDTH = 115;
    private static final int ARMOR_STAND_Y_ROT = 210;
    private static final int ARMOR_STAND_X_ROT = 25;
-   private static final Vector3f ARMOR_STAND_TRANSLATION;
-   private static final Quaternionf ARMOR_STAND_ANGLE;
+   private static final Vector3fc ARMOR_STAND_TRANSLATION;
+   private static final Quaternionfc ARMOR_STAND_ANGLE;
    private static final int ARMOR_STAND_SCALE = 25;
    private static final int ARMOR_STAND_LEFT = 121;
    private static final int ARMOR_STAND_TOP = 20;
@@ -103,7 +105,7 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
       int y0 = this.topPos + 20;
       int x1 = this.leftPos + 161;
       int y1 = this.topPos + 80;
-      graphics.entity(this.armorStandPreview, 25.0F, ARMOR_STAND_TRANSLATION, ARMOR_STAND_ANGLE, (Quaternionf)null, x0, y0, x1, y1);
+      graphics.entity(this.armorStandPreview, 25.0F, ARMOR_STAND_TRANSLATION, ARMOR_STAND_ANGLE, (Quaternionfc)null, x0, y0, x1, y1);
    }
 
    public void slotChanged(final AbstractContainerMenu container, final int slotIndex, final ItemStack itemStack) {

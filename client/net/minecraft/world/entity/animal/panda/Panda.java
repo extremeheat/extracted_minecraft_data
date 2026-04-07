@@ -14,7 +14,6 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.ByIdMap;
@@ -51,12 +50,11 @@ import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.PanicGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.TemptGoal;
-import net.minecraft.world.entity.ai.goal.TemptedByLivingBlockGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.livingblock.LivingBlock;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -263,7 +261,6 @@ public class Panda extends Animal {
       this.goalSelector.addGoal(2, new PandaBreedGoal(this, 1.0));
       this.goalSelector.addGoal(3, new PandaAttackGoal(this, 1.2000000476837158, true));
       this.goalSelector.addGoal(4, new TemptGoal(this, 1.0, (i) -> i.is(ItemTags.PANDA_FOOD), false));
-      this.goalSelector.addGoal(5, new TemptedByLivingBlockGoal(this, 1.0, BlockTags.PANDA_FOOD, false));
       this.goalSelector.addGoal(6, new PandaAvoidGoal(this, Player.class, 8.0F, 2.0, 2.0));
       this.goalSelector.addGoal(6, new PandaAvoidGoal(this, Monster.class, 4.0F, 2.0, 2.0));
       this.goalSelector.addGoal(7, new PandaSitGoal());
@@ -337,7 +334,7 @@ public class Panda extends Animal {
          }
       }
 
-      Entity target = this.getTarget();
+      LivingEntity target = this.getTarget();
       if (target == null) {
          this.gotBamboo = false;
          this.didBite = false;
@@ -515,10 +512,10 @@ public class Panda extends Animal {
 
    }
 
-   protected void pickUpItem(final ServerLevel level, final LivingBlock entity) {
+   protected void pickUpItem(final ServerLevel level, final ItemEntity entity) {
       if (this.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty() && canPickUpAndEat(entity)) {
          this.onItemPickup(entity);
-         ItemStack itemStack = entity.getItemStack();
+         ItemStack itemStack = entity.getItem();
          this.setItemSlot(EquipmentSlot.MAINHAND, itemStack);
          this.setGuaranteedDrop(EquipmentSlot.MAINHAND);
          this.take(entity, itemStack.getCount());
@@ -679,8 +676,8 @@ public class Panda extends Animal {
       return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(pose);
    }
 
-   private static boolean canPickUpAndEat(final LivingBlock entity) {
-      return entity.getItemStack().is(ItemTags.PANDA_EATS_FROM_GROUND) && entity.isAlive();
+   private static boolean canPickUpAndEat(final ItemEntity entity) {
+      return entity.getItem().is(ItemTags.PANDA_EATS_FROM_GROUND) && entity.isAlive() && !entity.hasPickUpDelay();
    }
 
    static {
@@ -763,16 +760,13 @@ public class Panda extends Animal {
       }
    }
 
-   private static class PandaMoveControl extends MoveControl {
-      private final Panda panda;
-
-      public PandaMoveControl(final Panda mob) {
+   private static class PandaMoveControl<T extends Panda> extends MoveControl<T> {
+      public PandaMoveControl(final T mob) {
          super(mob);
-         this.panda = mob;
       }
 
       public void tick() {
-         if (this.panda.canPerformAction()) {
+         if (((Panda)this.mob).canPerformAction()) {
             super.tick();
          }
       }
@@ -984,7 +978,7 @@ public class Panda extends Animal {
             if (!Panda.this.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty()) {
                return true;
             } else {
-               return !Panda.this.level().getEntitiesOfClass(LivingBlock.class, Panda.this.getBoundingBox().inflate(6.0, 6.0, 6.0), Panda::canPickUpAndEat).isEmpty();
+               return !Panda.this.level().getEntitiesOfClass(ItemEntity.class, Panda.this.getBoundingBox().inflate(6.0, 6.0, 6.0), Panda::canPickUpAndEat).isEmpty();
             }
          } else {
             return false;
@@ -1008,7 +1002,7 @@ public class Panda extends Animal {
 
       public void start() {
          if (Panda.this.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty()) {
-            List<LivingBlock> items = Panda.this.level().getEntitiesOfClass(LivingBlock.class, Panda.this.getBoundingBox().inflate(8.0, 8.0, 8.0), Panda::canPickUpAndEat);
+            List<ItemEntity> items = Panda.this.level().getEntitiesOfClass(ItemEntity.class, Panda.this.getBoundingBox().inflate(8.0, 8.0, 8.0), Panda::canPickUpAndEat);
             if (!items.isEmpty()) {
                Panda.this.getNavigation().moveTo((Entity)items.getFirst(), 1.2000000476837158);
             }
@@ -1076,7 +1070,7 @@ public class Panda extends Animal {
          if (!this.panda.gotBamboo && !this.panda.didBite) {
             return super.canContinueToUse();
          } else {
-            this.panda.setTarget((Entity)null);
+            this.panda.setTarget((LivingEntity)null);
             return false;
          }
       }

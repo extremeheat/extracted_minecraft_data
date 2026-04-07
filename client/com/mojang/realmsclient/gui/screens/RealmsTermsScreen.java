@@ -39,12 +39,12 @@ public class RealmsTermsScreen extends RealmsScreen {
    public void init() {
       int columnWidth = this.width / 4 - 2;
       this.addRenderableWidget(Button.builder(Component.translatable("mco.terms.buttons.agree"), (button) -> this.agreedToTos()).bounds(this.width / 4, row(12), columnWidth, 20).build());
-      this.addRenderableWidget(Button.builder(Component.translatable("mco.terms.buttons.disagree"), (button) -> this.minecraft.setScreen(this.lastScreen)).bounds(this.width / 2 + 4, row(12), columnWidth, 20).build());
+      this.addRenderableWidget(Button.builder(Component.translatable("mco.terms.buttons.disagree"), (button) -> this.minecraft.gui.setScreen(this.lastScreen)).bounds(this.width / 2 + 4, row(12), columnWidth, 20).build());
    }
 
    public boolean keyPressed(final KeyEvent event) {
       if (event.isEscape()) {
-         this.minecraft.setScreen(this.lastScreen);
+         this.minecraft.gui.setScreen(this.lastScreen);
          return true;
       } else {
          return super.keyPressed(event);
@@ -56,7 +56,7 @@ public class RealmsTermsScreen extends RealmsScreen {
 
       try {
          client.agreeToTos();
-         this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(this.lastScreen, new LongRunningTask[]{new GetServerDetailsTask(this.lastScreen, this.realmsServer)}));
+         this.minecraft.gui.setScreen(new RealmsLongRunningMcoTaskScreen(this.lastScreen, new LongRunningTask[]{new GetServerDetailsTask(this.lastScreen, this.realmsServer)}));
       } catch (RealmsServiceException e) {
          LOGGER.error("Couldn't agree to TOS", e);
       }

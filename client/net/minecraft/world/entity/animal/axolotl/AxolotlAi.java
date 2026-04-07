@@ -106,7 +106,7 @@ public class AxolotlAi {
       return mob.isInWater() ? 0.5F : 0.15F;
    }
 
-   private static Optional<? extends Entity> findNearestValidAttackTarget(final ServerLevel level, final Axolotl body) {
+   private static Optional<? extends LivingEntity> findNearestValidAttackTarget(final ServerLevel level, final Axolotl body) {
       return BehaviorUtils.isBreeding(body) ? Optional.empty() : body.getBrain().getMemory(MemoryModuleType.NEAREST_ATTACKABLE);
    }
 }

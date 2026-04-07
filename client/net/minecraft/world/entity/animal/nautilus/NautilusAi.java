@@ -13,8 +13,8 @@ import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.UniformInt;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.ActivityData;
 import net.minecraft.world.entity.ai.behavior.AnimalMakeLove;
 import net.minecraft.world.entity.ai.behavior.AnimalPanic;
@@ -75,9 +75,9 @@ public class NautilusAi {
       return ActivityData.<Nautilus>create(Activity.FIGHT, ImmutableList.of(Pair.of(0, new ChargeAttack(80, ATTACK_TARGET_CONDITIONS, 0.6F, 2.0F, 12.0, 11.0, SoundEvents.NAUTILUS_DASH))), ImmutableSet.of(Pair.of(MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_PRESENT), Pair.of(MemoryModuleType.TEMPTING_PLAYER, MemoryStatus.VALUE_ABSENT), Pair.of(MemoryModuleType.BREED_TARGET, MemoryStatus.VALUE_ABSENT), Pair.of(MemoryModuleType.CHARGE_COOLDOWN_TICKS, MemoryStatus.VALUE_ABSENT)));
    }
 
-   protected static Optional<? extends Entity> findNearestValidAttackTarget(final ServerLevel level, final AbstractNautilus body) {
+   protected static Optional<? extends LivingEntity> findNearestValidAttackTarget(final ServerLevel level, final AbstractNautilus body) {
       if (!BehaviorUtils.isBreeding(body) && body.isInWater() && !body.isBaby() && !body.isTame()) {
-         Optional<Entity> angryAt = BehaviorUtils.getLivingEntityFromUUIDMemory(body, MemoryModuleType.ANGRY_AT).filter((entity) -> entity.isInWater() && Sensor.isEntityAttackableIgnoringLineOfSight(level, body, entity));
+         Optional<LivingEntity> angryAt = BehaviorUtils.getLivingEntityFromUUIDMemory(body, MemoryModuleType.ANGRY_AT).filter((entity) -> entity.isInWater() && Sensor.isEntityAttackableIgnoringLineOfSight(level, body, entity));
          if (angryAt.isPresent()) {
             return angryAt;
          } else if (body.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_TARGET_COOLDOWN)) {
@@ -88,7 +88,7 @@ public class NautilusAi {
             if (random.nextFloat() < 0.5F) {
                return Optional.empty();
             } else {
-               Optional<Entity> target = ((NearestVisibleLivingEntities)body.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).orElse(NearestVisibleLivingEntities.empty())).findClosest(NautilusAi::isHostileTarget);
+               Optional<LivingEntity> target = ((NearestVisibleLivingEntities)body.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).orElse(NearestVisibleLivingEntities.empty())).findClosest(NautilusAi::isHostileTarget);
                return target;
             }
          }
@@ -97,7 +97,7 @@ public class NautilusAi {
       }
    }
 
-   protected static void setAngerTarget(final ServerLevel level, final AbstractNautilus body, final Entity target) {
+   protected static void setAngerTarget(final ServerLevel level, final AbstractNautilus body, final LivingEntity target) {
       if (Sensor.isEntityAttackableIgnoringLineOfSight(level, body, target)) {
          body.getBrain().eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
          body.getBrain().setMemoryWithExpiry(MemoryModuleType.ANGRY_AT, target.getUUID(), 400L);
@@ -105,7 +105,7 @@ public class NautilusAi {
 
    }
 
-   private static boolean isHostileTarget(final Entity mob) {
+   private static boolean isHostileTarget(final LivingEntity mob) {
       return mob.isInWater() && mob.is(EntityTypeTags.NAUTILUS_HOSTILES);
    }
 

@@ -15,10 +15,10 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -32,7 +32,7 @@ import net.minecraft.world.entity.ai.goal.RangedCrossbowAttackGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.animal.golem.IronGolem;
-import net.minecraft.world.entity.livingblock.LivingBlock;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.CrossbowAttackMob;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.creaking.Creaking;
@@ -76,7 +76,6 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
       this.goalSelector.addGoal(10, new LookAtPlayerGoal(this, Mob.class, 15.0F));
       this.targetSelector.addGoal(1, (new HurtByTargetGoal(this, new Class[]{Raider.class})).setAlertOthers());
       this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, Player.class, true));
-      this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, LivingBlock.class, true));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, AbstractVillager.class, false));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, IronGolem.class, true));
    }
@@ -173,7 +172,7 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
       return SoundEvents.PILLAGER_HURT;
    }
 
-   public void performRangedAttack(final Entity target, final float power) {
+   public void performRangedAttack(final LivingEntity target, final float power) {
       this.performCrossbowAttack(this, 1.6F);
    }
 
@@ -181,8 +180,8 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
       return this.inventory;
    }
 
-   protected void pickUpItem(final ServerLevel level, final LivingBlock entity) {
-      ItemStack itemStack = entity.getItemStack();
+   protected void pickUpItem(final ServerLevel level, final ItemEntity entity) {
+      ItemStack itemStack = entity.getItem();
       if (itemStack.getItem() instanceof BannerItem) {
          super.pickUpItem(level, entity);
       } else if (this.wantsItem(itemStack)) {
@@ -198,7 +197,7 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
    }
 
    private boolean wantsItem(final ItemStack itemStack) {
-      return this.hasActiveRaid() && itemStack.is(Items.WHITE_BANNER);
+      return this.hasActiveRaid() && itemStack.is(Items.BANNER.white());
    }
 
    public @Nullable SlotAccess getSlot(final int slot) {

@@ -72,8 +72,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       OptionalDynamic var10002 = input.get("singleplayer_uuid");
       Codec var10003 = UUIDUtil.CODEC;
       Objects.requireNonNull(var10003);
-      PrimaryLevelData result = new PrimaryLevelData((UUID)var10002.flatMap(var10003::parse).result().orElse((Object)null), input.get("WasModded").asBoolean(false), (LevelData.RespawnData)input.get("spawn").read(LevelData.RespawnData.CODEC).result().orElse(LevelData.RespawnData.DEFAULT), gameTime, levelVersion.levelDataVersion(), input.get("initialized").asBoolean(true), (Set)input.get("ServerBrands").asStream().flatMap((b) -> b.asString().result().stream()).collect(Collectors.toCollection(Sets::newLinkedHashSet)), (Set)input.get("removed_features").asStream().flatMap((b) -> b.asString().result().stream()).collect(Collectors.toSet()), settings, specialWorldProperty, worldGenSettingsLifecycle);
-      return result;
+      return new PrimaryLevelData((UUID)var10002.flatMap(var10003::parse).result().orElse((Object)null), input.get("WasModded").asBoolean(false), (LevelData.RespawnData)input.get("spawn").read(LevelData.RespawnData.CODEC).result().orElse(LevelData.RespawnData.DEFAULT), gameTime, levelVersion.levelDataVersion(), input.get("initialized").asBoolean(true), (Set)input.get("ServerBrands").asStream().flatMap((b) -> b.asString().result().stream()).collect(Collectors.toCollection(Sets::newLinkedHashSet)), (Set)input.get("removed_features").asStream().flatMap((b) -> b.asString().result().stream()).collect(Collectors.toSet()), settings, specialWorldProperty, worldGenSettingsLifecycle);
    }
 
    public CompoundTag createTag(@Nullable UUID singlePlayerUUID) {

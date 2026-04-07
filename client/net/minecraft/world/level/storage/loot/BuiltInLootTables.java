@@ -2,13 +2,11 @@ package net.minecraft.world.level.storage.loot;
 
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.util.Util;
-import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.level.block.ColorCollection;
 
 public class BuiltInLootTables {
    private static final Set<ResourceKey<LootTable>> LOCATIONS = new HashSet();
@@ -76,7 +74,7 @@ public class BuiltInLootTables {
    public static final ResourceKey<LootTable> EQUIPMENT_TRIAL_CHAMBER;
    public static final ResourceKey<LootTable> EQUIPMENT_TRIAL_CHAMBER_RANGED;
    public static final ResourceKey<LootTable> EQUIPMENT_TRIAL_CHAMBER_MELEE;
-   public static final Map<DyeColor, ResourceKey<LootTable>> SHEEP_BY_DYE;
+   public static final ColorCollection<ResourceKey<LootTable>> SHEEP;
    public static final ResourceKey<LootTable> FISHING;
    public static final ResourceKey<LootTable> FISHING_JUNK;
    public static final ResourceKey<LootTable> FISHING_TREASURE;
@@ -119,7 +117,7 @@ public class BuiltInLootTables {
    public static final ResourceKey<LootTable> SHEAR_BROWN_MOOSHROOM;
    public static final ResourceKey<LootTable> SHEAR_SNOW_GOLEM;
    public static final ResourceKey<LootTable> SHEAR_SHEEP;
-   public static final Map<DyeColor, ResourceKey<LootTable>> SHEAR_SHEEP_BY_DYE;
+   public static final ColorCollection<ResourceKey<LootTable>> SHEAR_DYED_SHEEP;
    public static final ResourceKey<LootTable> CHARGED_CREEPER;
    public static final ResourceKey<LootTable> CHARGED_CREEPER_PIGLIN;
    public static final ResourceKey<LootTable> CHARGED_CREEPER_CREEPER;
@@ -135,10 +133,6 @@ public class BuiltInLootTables {
 
    public BuiltInLootTables() {
       super();
-   }
-
-   private static Map<DyeColor, ResourceKey<LootTable>> makeDyeKeyMap(final String prefix) {
-      return Util.<DyeColor, ResourceKey<LootTable>>makeEnumMap(DyeColor.class, (dye) -> register(prefix + "/" + dye.getName()));
    }
 
    private static ResourceKey<LootTable> register(final String location) {
@@ -222,7 +216,7 @@ public class BuiltInLootTables {
       EQUIPMENT_TRIAL_CHAMBER = register("equipment/trial_chamber");
       EQUIPMENT_TRIAL_CHAMBER_RANGED = register("equipment/trial_chamber_ranged");
       EQUIPMENT_TRIAL_CHAMBER_MELEE = register("equipment/trial_chamber_melee");
-      SHEEP_BY_DYE = makeDyeKeyMap("entities/sheep");
+      SHEEP = ColorCollection.<ResourceKey<LootTable>>make((color) -> register("entities/sheep/" + color.getName()));
       FISHING = register("gameplay/fishing");
       FISHING_JUNK = register("gameplay/fishing/junk");
       FISHING_TREASURE = register("gameplay/fishing/treasure");
@@ -265,7 +259,7 @@ public class BuiltInLootTables {
       SHEAR_BROWN_MOOSHROOM = register("shearing/mooshroom/brown");
       SHEAR_SNOW_GOLEM = register("shearing/snow_golem");
       SHEAR_SHEEP = register("shearing/sheep");
-      SHEAR_SHEEP_BY_DYE = makeDyeKeyMap("shearing/sheep");
+      SHEAR_DYED_SHEEP = ColorCollection.<ResourceKey<LootTable>>make((color) -> register("shearing/sheep/" + color.getName()));
       CHARGED_CREEPER = register("charged_creeper/root");
       CHARGED_CREEPER_PIGLIN = register("charged_creeper/piglin");
       CHARGED_CREEPER_CREEPER = register("charged_creeper/creeper");

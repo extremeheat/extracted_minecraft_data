@@ -17,22 +17,22 @@ public class SharedConstants {
    public static final boolean SNAPSHOT = true;
    /** @deprecated */
    @Deprecated
-   public static final int WORLD_VERSION = 5000;
+   public static final int WORLD_VERSION = 4883;
    /** @deprecated */
    @Deprecated
-   public static final String SERIES = "april2026";
+   public static final String SERIES = "main";
    /** @deprecated */
    @Deprecated
    public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 775;
    /** @deprecated */
    @Deprecated
-   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 305;
-   public static final int SNBT_NAG_VERSION = 4763;
+   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 306;
+   public static final int SNBT_NAG_VERSION = 4882;
    private static final int SNAPSHOT_PROTOCOL_BIT = 30;
-   public static final boolean CRASH_EAGERLY = false;
+   public static final boolean CRASH_EAGERLY = true;
    /** @deprecated */
    @Deprecated
-   public static final int RESOURCE_PACK_FORMAT_MAJOR = 84;
+   public static final int RESOURCE_PACK_FORMAT_MAJOR = 85;
    /** @deprecated */
    @Deprecated
    public static final int RESOURCE_PACK_FORMAT_MINOR = 0;
@@ -41,7 +41,7 @@ public class SharedConstants {
    public static final int DATA_PACK_FORMAT_MAJOR = 101;
    /** @deprecated */
    @Deprecated
-   public static final int DATA_PACK_FORMAT_MINOR = 1;
+   public static final int DATA_PACK_FORMAT_MINOR = 2;
    public static final String RPC_MANAGEMENT_SERVER_API_VERSION = "2.0.0";
    /** @deprecated */
    @Deprecated
@@ -220,7 +220,7 @@ public class SharedConstants {
    }
 
    public static int getProtocolVersion() {
-      return 1073742129;
+      return 1073742130;
    }
 
    public static boolean debugVoidTerrain(final ChunkPos pos) {

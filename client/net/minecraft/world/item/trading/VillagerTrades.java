@@ -27,6 +27,7 @@ import net.minecraft.tags.StructureTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.npc.villager.VillagerType;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
@@ -34,7 +35,7 @@ import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.level.ItemLike;
+import net.minecraft.world.level.block.ColorCollection;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.saveddata.maps.MapDecorationType;
 import net.minecraft.world.level.saveddata.maps.MapDecorationTypes;
@@ -57,9 +58,6 @@ import net.minecraft.world.level.storage.loot.providers.number.BinomialDistribut
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.Sum;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
-import org.apache.commons.lang3.tuple.ImmutableTriple;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
 
 public class VillagerTrades {
    public static final ResourceKey<VillagerTrade> FARMER_1_WHEAT_EMERALD = resourceKey("farmer/1/wheat_emerald");
@@ -102,81 +100,21 @@ public class VillagerTrades {
    public static final ResourceKey<VillagerTrade> SHEPHERD_2_BLACK_DYE_EMERALD = resourceKey("shepherd/2/black_dye_emerald");
    public static final ResourceKey<VillagerTrade> SHEPHERD_2_LIGHT_BLUE_DYE_EMERALD = resourceKey("shepherd/2/light_blue_dye_emerald");
    public static final ResourceKey<VillagerTrade> SHEPHERD_2_LIME_DYE_EMERALD = resourceKey("shepherd/2/lime_dye_emerald");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_2_EMERALD_WHITE_WOOL = resourceKey("shepherd/2/emerald_white_wool");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_2_EMERALD_ORANGE_WOOL = resourceKey("shepherd/2/emerald_orange_wool");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_2_EMERALD_MAGENTA_WOOL = resourceKey("shepherd/2/emerald_magenta_wool");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_2_EMERALD_BLUE_WOOL = resourceKey("shepherd/2/emerald_blue_wool");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_2_EMERALD_LIGHT_BLUE_WOOL = resourceKey("shepherd/2/emerald_light_blue_wool");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_2_EMERALD_YELLOW_WOOL = resourceKey("shepherd/2/emerald_yellow_wool");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_2_EMERALD_LIME_WOOL = resourceKey("shepherd/2/emerald_lime_wool");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_2_EMERALD_PINK_WOOL = resourceKey("shepherd/2/emerald_pink_wool");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_2_EMERALD_GRAY_WOOL = resourceKey("shepherd/2/emerald_gray_wool");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_2_EMERALD_LIGHT_GRAY_WOOL = resourceKey("shepherd/2/emerald_light_gray_wool");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_2_EMERALD_CYAN_WOOL = resourceKey("shepherd/2/emerald_cyan_wool");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_2_EMERALD_PURPLE_WOOL = resourceKey("shepherd/2/emerald_purple_wool");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_2_EMERALD_BROWN_WOOL = resourceKey("shepherd/2/emerald_brown_wool");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_2_EMERALD_GREEN_WOOL = resourceKey("shepherd/2/emerald_green_wool");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_2_EMERALD_RED_WOOL = resourceKey("shepherd/2/emerald_red_wool");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_2_EMERALD_BLACK_WOOL = resourceKey("shepherd/2/emerald_black_wool");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_2_EMERALD_WHITE_CARPET = resourceKey("shepherd/2/emerald_white_carpet");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_2_EMERALD_ORANGE_CARPET = resourceKey("shepherd/2/emerald_orange_carpet");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_2_EMERALD_MAGENTA_CARPET = resourceKey("shepherd/2/emerald_magenta_carpet");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_2_EMERALD_BLUE_CARPET = resourceKey("shepherd/2/emerald_blue_carpet");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_2_EMERALD_LIGHT_BLUE_CARPET = resourceKey("shepherd/2/emerald_light_blue_carpet");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_2_EMERALD_YELLOW_CARPET = resourceKey("shepherd/2/emerald_yellow_carpet");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_2_EMERALD_LIME_CARPET = resourceKey("shepherd/2/emerald_lime_carpet");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_2_EMERALD_PINK_CARPET = resourceKey("shepherd/2/emerald_pink_carpet");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_2_EMERALD_GRAY_CARPET = resourceKey("shepherd/2/emerald_gray_carpet");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_2_EMERALD_LIGHT_GRAY_CARPET = resourceKey("shepherd/2/emerald_light_gray_carpet");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_2_EMERALD_CYAN_CARPET = resourceKey("shepherd/2/emerald_cyan_carpet");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_2_EMERALD_PURPLE_CARPET = resourceKey("shepherd/2/emerald_purple_carpet");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_2_EMERALD_BROWN_CARPET = resourceKey("shepherd/2/emerald_brown_carpet");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_2_EMERALD_GREEN_CARPET = resourceKey("shepherd/2/emerald_green_carpet");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_2_EMERALD_RED_CARPET = resourceKey("shepherd/2/emerald_red_carpet");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_2_EMERALD_BLACK_CARPET = resourceKey("shepherd/2/emerald_black_carpet");
+   public static final ColorCollection<ResourceKey<VillagerTrade>> SHEPHERD_2_EMERALD_WOOL = ColorCollection.<ResourceKey<VillagerTrade>>make((color) -> resourceKey("shepherd/2/emerald_" + color.getName() + "_wool"));
+   public static final ColorCollection<ResourceKey<VillagerTrade>> SHEPHERD_2_EMERALD_CARPETS = ColorCollection.<ResourceKey<VillagerTrade>>make((color) -> resourceKey("shepherd/2/emerald_" + color.getName() + "_carpet"));
    public static final ResourceKey<VillagerTrade> SHEPHERD_3_YELLOW_DYE_EMERALD = resourceKey("shepherd/3/yellow_dye_emerald");
    public static final ResourceKey<VillagerTrade> SHEPHERD_3_LIGHT_GRAY_DYE_EMERALD = resourceKey("shepherd/3/light_gray_dye_emerald");
    public static final ResourceKey<VillagerTrade> SHEPHERD_3_ORANGE_DYE_EMERALD = resourceKey("shepherd/3/orange_dye_emerald");
    public static final ResourceKey<VillagerTrade> SHEPHERD_3_RED_DYE_EMERALD = resourceKey("shepherd/3/red_dye_emerald");
    public static final ResourceKey<VillagerTrade> SHEPHERD_3_PINK_DYE_EMERALD = resourceKey("shepherd/3/pink_dye_emerald");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_3_EMERALD_WHITE_BED = resourceKey("shepherd/3/emerald_white_bed");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_3_EMERALD_ORANGE_BED = resourceKey("shepherd/3/emerald_orange_bed");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_3_EMERALD_MAGENTA_BED = resourceKey("shepherd/3/emerald_magenta_bed");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_3_EMERALD_BLUE_BED = resourceKey("shepherd/3/emerald_blue_bed");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_3_EMERALD_LIGHT_BLUE_BED = resourceKey("shepherd/3/emerald_light_blue_bed");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_3_EMERALD_YELLOW_BED = resourceKey("shepherd/3/emerald_yellow_bed");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_3_EMERALD_LIME_BED = resourceKey("shepherd/3/emerald_lime_bed");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_3_EMERALD_PINK_BED = resourceKey("shepherd/3/emerald_pink_bed");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_3_EMERALD_GRAY_BED = resourceKey("shepherd/3/emerald_gray_bed");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_3_EMERALD_LIGHT_GRAY_BED = resourceKey("shepherd/3/emerald_light_gray_bed");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_3_EMERALD_CYAN_BED = resourceKey("shepherd/3/emerald_cyan_bed");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_3_EMERALD_PURPLE_BED = resourceKey("shepherd/3/emerald_purple_bed");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_3_EMERALD_BROWN_BED = resourceKey("shepherd/3/emerald_brown_bed");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_3_EMERALD_GREEN_BED = resourceKey("shepherd/3/emerald_green_bed");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_3_EMERALD_RED_BED = resourceKey("shepherd/3/emerald_red_bed");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_3_EMERALD_BLACK_BED = resourceKey("shepherd/3/emerald_black_bed");
+   public static final ColorCollection<ResourceKey<VillagerTrade>> SHEPHERD_3_EMERALD_BED = ColorCollection.<ResourceKey<VillagerTrade>>make((color) -> resourceKey("shepherd/3/emerald_" + color.getName() + "_bed"));
    public static final ResourceKey<VillagerTrade> SHEPHERD_4_BROWN_DYE_EMERALD = resourceKey("shepherd/4/brown_dye_emerald");
    public static final ResourceKey<VillagerTrade> SHEPHERD_4_PURPLE_DYE_EMERALD = resourceKey("shepherd/4/purple_dye_emerald");
    public static final ResourceKey<VillagerTrade> SHEPHERD_4_BLUE_DYE_EMERALD = resourceKey("shepherd/4/blue_dye_emerald");
    public static final ResourceKey<VillagerTrade> SHEPHERD_4_GREEN_DYE_EMERALD = resourceKey("shepherd/4/green_dye_emerald");
    public static final ResourceKey<VillagerTrade> SHEPHERD_4_MAGENTA_DYE_EMERALD = resourceKey("shepherd/4/magenta_dye_emerald");
    public static final ResourceKey<VillagerTrade> SHEPHERD_4_CYAN_DYE_EMERALD = resourceKey("shepherd/4/cyan_dye_emerald");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_4_EMERALD_WHITE_BANNER = resourceKey("shepherd/4/emerald_white_banner");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_4_EMERALD_ORANGE_BANNER = resourceKey("shepherd/4/emerald_orange_banner");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_4_EMERALD_MAGENTA_BANNER = resourceKey("shepherd/4/emerald_magenta_banner");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_4_EMERALD_BLUE_BANNER = resourceKey("shepherd/4/emerald_blue_banner");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_4_EMERALD_LIGHT_BLUE_BANNER = resourceKey("shepherd/4/emerald_light_blue_banner");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_4_EMERALD_YELLOW_BANNER = resourceKey("shepherd/4/emerald_yellow_banner");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_4_EMERALD_LIME_BANNER = resourceKey("shepherd/4/emerald_lime_banner");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_4_EMERALD_PINK_BANNER = resourceKey("shepherd/4/emerald_pink_banner");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_4_EMERALD_GRAY_BANNER = resourceKey("shepherd/4/emerald_gray_banner");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_4_EMERALD_LIGHT_GRAY_BANNER = resourceKey("shepherd/4/emerald_light_gray_banner");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_4_EMERALD_CYAN_BANNER = resourceKey("shepherd/4/emerald_cyan_banner");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_4_EMERALD_PURPLE_BANNER = resourceKey("shepherd/4/emerald_purple_banner");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_4_EMERALD_BROWN_BANNER = resourceKey("shepherd/4/emerald_brown_banner");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_4_EMERALD_GREEN_BANNER = resourceKey("shepherd/4/emerald_green_banner");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_4_EMERALD_RED_BANNER = resourceKey("shepherd/4/emerald_red_banner");
-   public static final ResourceKey<VillagerTrade> SHEPHERD_4_EMERALD_BLACK_BANNER = resourceKey("shepherd/4/emerald_black_banner");
+   public static final ColorCollection<ResourceKey<VillagerTrade>> SHEPHERD_4_EMERALD_BANNER = ColorCollection.<ResourceKey<VillagerTrade>>make((color) -> resourceKey("shepherd/4/emerald_" + color.getName() + "_banner"));
    public static final ResourceKey<VillagerTrade> SHEPHERD_5_EMERALD_PAINTING = resourceKey("shepherd/5/emerald_painting");
    public static final ResourceKey<VillagerTrade> FLETCHER_1_STICK_EMERALD = resourceKey("fletcher/1/stick_emerald");
    public static final ResourceKey<VillagerTrade> FLETCHER_1_EMERALD_ARROW = resourceKey("fletcher/1/emerald_arrow");
@@ -319,38 +257,8 @@ public class VillagerTrades {
    public static final ResourceKey<VillagerTrade> MASON_3_EMERALD_POLISHED_DIORITE = resourceKey("mason/3/emerald_polished_diorite");
    public static final ResourceKey<VillagerTrade> MASON_3_EMERALD_POLISHED_GRANTITE = resourceKey("mason/3/emerald_polished_granite");
    public static final ResourceKey<VillagerTrade> MASON_4_QUARTZ_EMERALD = resourceKey("mason/4/quartz_emerald");
-   public static final ResourceKey<VillagerTrade> MASON_4_EMERALD_ORANGE_TERRACOTTA = resourceKey("mason/4/emerald_orange_terracotta");
-   public static final ResourceKey<VillagerTrade> MASON_4_EMERALD_WHITE_TERRACOTTA = resourceKey("mason/4/emerald_white_terracotta");
-   public static final ResourceKey<VillagerTrade> MASON_4_EMERALD_BLUE_TERRACOTTA = resourceKey("mason/4/emerald_blue_terracotta");
-   public static final ResourceKey<VillagerTrade> MASON_4_EMERALD_LIGHT_BLUE_TERRACOTTA = resourceKey("mason/4/emerald_light_blue_terracotta");
-   public static final ResourceKey<VillagerTrade> MASON_4_EMERALD_GRAY_TERRACOTTA = resourceKey("mason/4/emerald_gray_terracotta");
-   public static final ResourceKey<VillagerTrade> MASON_4_EMERALD_LIGHT_GRAY_TERRACOTTA = resourceKey("mason/4/emerald_light_gray_terracotta");
-   public static final ResourceKey<VillagerTrade> MASON_4_EMERALD_BLACK_TERRACOTTA = resourceKey("mason/4/emerald_black_terracotta");
-   public static final ResourceKey<VillagerTrade> MASON_4_EMERALD_RED_TERRACOTTA = resourceKey("mason/4/emerald_red_terracotta");
-   public static final ResourceKey<VillagerTrade> MASON_4_EMERALD_PINK_TERRACOTTA = resourceKey("mason/4/emerald_pink_terracotta");
-   public static final ResourceKey<VillagerTrade> MASON_4_EMERALD_MAGENTA_TERRACOTTA = resourceKey("mason/4/emerald_magenta_terracotta");
-   public static final ResourceKey<VillagerTrade> MASON_4_EMERALD_LIME_TERRACOTTA = resourceKey("mason/4/emerald_lime_terracotta");
-   public static final ResourceKey<VillagerTrade> MASON_4_EMERALD_GREEN_TERRACOTTA = resourceKey("mason/4/emerald_green_terracotta");
-   public static final ResourceKey<VillagerTrade> MASON_4_EMERALD_CYAN_TERRACOTTA = resourceKey("mason/4/emerald_cyan_terracotta");
-   public static final ResourceKey<VillagerTrade> MASON_4_EMERALD_PURPLE_TERRACOTTA = resourceKey("mason/4/emerald_purple_terracotta");
-   public static final ResourceKey<VillagerTrade> MASON_4_EMERALD_YELLOW_TERRACOTTA = resourceKey("mason/4/emerald_yellow_terracotta");
-   public static final ResourceKey<VillagerTrade> MASON_4_EMERALD_BROWN_TERRACOTTA = resourceKey("mason/4/emerald_brown_terracotta");
-   public static final ResourceKey<VillagerTrade> MASON_4_EMERALD_ORANGE_GLAZED_TERRACOTTA = resourceKey("mason/4/emerald_orange_glazed_terracotta");
-   public static final ResourceKey<VillagerTrade> MASON_4_EMERALD_WHITE_GLAZED_TERRACOTTA = resourceKey("mason/4/emerald_white_glazed_terracotta");
-   public static final ResourceKey<VillagerTrade> MASON_4_EMERALD_BLUE_GLAZED_TERRACOTTA = resourceKey("mason/4/emerald_blue_glazed_terracotta");
-   public static final ResourceKey<VillagerTrade> MASON_4_EMERALD_LIGHT_BLUE_GLAZED_TERRACOTTA = resourceKey("mason/4/emerald_light_blue_glazed_terracotta");
-   public static final ResourceKey<VillagerTrade> MASON_4_EMERALD_GRAY_GLAZED_TERRACOTTA = resourceKey("mason/4/emerald_gray_glazed_terracotta");
-   public static final ResourceKey<VillagerTrade> MASON_4_EMERALD_LIGHT_GRAY_GLAZED_TERRACOTTA = resourceKey("mason/4/emerald_light_gray_glazed_terracotta");
-   public static final ResourceKey<VillagerTrade> MASON_4_EMERALD_BLACK_GLAZED_TERRACOTTA = resourceKey("mason/4/emerald_black_glazed_terracotta");
-   public static final ResourceKey<VillagerTrade> MASON_4_EMERALD_RED_GLAZED_TERRACOTTA = resourceKey("mason/4/emerald_red_glazed_terracotta");
-   public static final ResourceKey<VillagerTrade> MASON_4_EMERALD_PINK_GLAZED_TERRACOTTA = resourceKey("mason/4/emerald_pink_glazed_terracotta");
-   public static final ResourceKey<VillagerTrade> MASON_4_EMERALD_MAGENTA_GLAZED_TERRACOTTA = resourceKey("mason/4/emerald_magenta_glazed_terracotta");
-   public static final ResourceKey<VillagerTrade> MASON_4_EMERALD_LIME_GLAZED_TERRACOTTA = resourceKey("mason/4/emerald_lime_glazed_terracotta");
-   public static final ResourceKey<VillagerTrade> MASON_4_EMERALD_GREEN_GLAZED_TERRACOTTA = resourceKey("mason/4/emerald_green_glazed_terracotta");
-   public static final ResourceKey<VillagerTrade> MASON_4_EMERALD_CYAN_GLAZED_TERRACOTTA = resourceKey("mason/4/emerald_cyan_glazed_terracotta");
-   public static final ResourceKey<VillagerTrade> MASON_4_EMERALD_PURPLE_GLAZED_TERRACOTTA = resourceKey("mason/4/emerald_purple_glazed_terracotta");
-   public static final ResourceKey<VillagerTrade> MASON_4_EMERALD_YELLOW_GLAZED_TERRACOTTA = resourceKey("mason/4/emerald_yellow_glazed_terracotta");
-   public static final ResourceKey<VillagerTrade> MASON_4_EMERALD_BROWN_GLAZED_TERRACOTTA = resourceKey("mason/4/emerald_brown_glazed_terracotta");
+   public static final ColorCollection<ResourceKey<VillagerTrade>> MASON_4_EMERALD_TERRACOTTA = ColorCollection.<ResourceKey<VillagerTrade>>make((color) -> resourceKey("mason/4/emerald_" + color.getName() + "_terracotta"));
+   public static final ColorCollection<ResourceKey<VillagerTrade>> MASON_4_EMERALD_GLAZED_TERRACOTTA = ColorCollection.<ResourceKey<VillagerTrade>>make((color) -> resourceKey("mason/4/emerald_" + color.getName() + "_glazed_terracotta"));
    public static final ResourceKey<VillagerTrade> MASON_5_EMERALD_QUARTZ_PILLAR = resourceKey("mason/5/emerald_quartz_pillar");
    public static final ResourceKey<VillagerTrade> MASON_5_EMERALD_QUARTZ_BLOCK = resourceKey("mason/5/emerald_quartz_block");
    public static final ResourceKey<VillagerTrade> WANDERING_TRADER_WATER_BOTTLE_EMERALD = resourceKey("wandering_trader/water_bottle_emerald");
@@ -412,22 +320,7 @@ public class VillagerTrades {
    public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_CHERRY_SAPLING = resourceKey("wandering_trader/emerald_cherry_sapling");
    public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_PALE_OAK_SAPLING = resourceKey("wandering_trader/emerald_pale_oak_sapling");
    public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_MANGROVE_PROPAGULE = resourceKey("wandering_trader/emerald_mangrove_propagule");
-   public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_RED_DYE = resourceKey("wandering_trader/emerald_red_dye");
-   public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_WHITE_DYE = resourceKey("wandering_trader/emerald_white_dye");
-   public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_BLUE_DYE = resourceKey("wandering_trader/emerald_blue_dye");
-   public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_PINK_DYE = resourceKey("wandering_trader/emerald_pink_dye");
-   public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_BLACK_DYE = resourceKey("wandering_trader/emerald_black_dye");
-   public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_GREEN_DYE = resourceKey("wandering_trader/emerald_green_dye");
-   public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_LIGHT_GRAY_DYE = resourceKey("wandering_trader/emerald_light_gray_dye");
-   public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_MAGENTA_DYE = resourceKey("wandering_trader/emerald_magenta_dye");
-   public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_YELLOW_DYE = resourceKey("wandering_trader/emerald_yellow_dye");
-   public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_GRAY_DYE = resourceKey("wandering_trader/emerald_gray_dye");
-   public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_PURPLE_DYE = resourceKey("wandering_trader/emerald_purple_dye");
-   public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_LIGHT_BLUE_DYE = resourceKey("wandering_trader/emerald_light_blue_dye");
-   public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_LIME_DYE = resourceKey("wandering_trader/emerald_lime_dye");
-   public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_ORANGE_DYE = resourceKey("wandering_trader/emerald_orange_dye");
-   public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_BROWN_DYE = resourceKey("wandering_trader/emerald_brown_dye");
-   public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_CYAN_DYE = resourceKey("wandering_trader/emerald_cyan_dye");
+   public static final ColorCollection<ResourceKey<VillagerTrade>> WANDERING_TRADER_EMERALD_DYE = ColorCollection.<ResourceKey<VillagerTrade>>make((color) -> resourceKey("wandering_trader/emerald_" + color.getName() + "_dye"));
    public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_BRAIN_CORAL_BLOCK = resourceKey("wandering_trader/emerald_brain_coral_block");
    public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_BUBBLE_CORAL_BLOCK = resourceKey("wandering_trader/emerald_bubble_coral_block");
    public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_FIRE_CORAL_BLOCK = resourceKey("wandering_trader/emerald_fire_coral_block");
@@ -456,10 +349,12 @@ public class VillagerTrades {
 
    public static Holder<VillagerTrade> bootstrap(final BootstrapContext<VillagerTrade> context) {
       HolderGetter<Item> items = context.<Item>lookup(Registries.ITEM);
-      Optional<HolderSet<Enchantment>> enchantmentsForTradedEquipment = context.lookup(Registries.ENCHANTMENT).get(EnchantmentTags.ON_TRADED_EQUIPMENT).map((named) -> named);
-      Optional<HolderSet<Enchantment>> enchantmentsForBooks = context.lookup(Registries.ENCHANTMENT).get(EnchantmentTags.TRADEABLE).map((named) -> named);
-      Optional<HolderSet<Enchantment>> doubleTradePrice = context.lookup(Registries.ENCHANTMENT).get(EnchantmentTags.DOUBLE_TRADE_PRICE).map((named) -> named);
-      Optional<HolderSet<Potion>> potionsForTippedArrows = context.lookup(Registries.POTION).get(PotionTags.TRADEABLE).map((named) -> named);
+      HolderGetter<Enchantment> enchantments = context.<Enchantment>lookup(Registries.ENCHANTMENT);
+      HolderSet<Enchantment> enchantmentsForTradedEquipment = enchantments.getOrThrow(EnchantmentTags.ON_TRADED_EQUIPMENT);
+      HolderSet<Enchantment> enchantmentsForBooks = enchantments.getOrThrow(EnchantmentTags.TRADEABLE);
+      HolderSet<Enchantment> doubleTradePrice = enchantments.getOrThrow(EnchantmentTags.DOUBLE_TRADE_PRICE);
+      HolderGetter<Potion> potions = context.<Potion>lookup(Registries.POTION);
+      HolderSet<Potion> potionsForTippedArrows = potions.getOrThrow(PotionTags.TRADEABLE);
       HolderGetter<VillagerType> villagerVariants = context.<VillagerType>lookup(Registries.VILLAGER_TYPE);
       register(context, FARMER_1_WHEAT_EMERALD, new VillagerTrade(new TradeCost(Items.WHEAT, 20), new ItemStackTemplate(Items.EMERALD), 16, 2, 0.05F, Optional.empty(), List.of()));
       register(context, FARMER_1_POTATO_EMERALD, new VillagerTrade(new TradeCost(Items.POTATO, 26), new ItemStackTemplate(Items.EMERALD), 16, 2, 0.05F, Optional.empty(), List.of()));
@@ -487,12 +382,12 @@ public class VillagerTrades {
       register(context, FISHERMAN_4_TROPICAL_FISH_EMERALD, new VillagerTrade(new TradeCost(Items.TROPICAL_FISH, 6), new ItemStackTemplate(Items.EMERALD), 12, 30, 0.05F, Optional.empty(), List.of()));
       register(context, FISHERMAN_5_PUFFERFISH_EMERALD, new VillagerTrade(new TradeCost(Items.PUFFERFISH, 4), new ItemStackTemplate(Items.EMERALD), 12, 30, 0.05F, Optional.empty(), List.of()));
       registerBoatTrades(context, villagerVariants);
-      registerWoolSales(context);
+      registerShepherdWoolSales(context);
       register(context, SHEPHERD_1_EMERALD_SHEARS, new VillagerTrade(new TradeCost(Items.EMERALD, 2), new ItemStackTemplate(Items.SHEARS), 12, 1, 0.05F, Optional.empty(), List.of()));
-      registerLevelTwoDyeTrades(context);
+      registerShepherdLevelTwoDyeTrades(context);
       registerWoolPurchases(context);
       registerCarpetPurchases(context);
-      registerLevelThreeDyeTrades(context);
+      registerShepherdLevelThreeDyeTrades(context);
       registerBedTrades(context);
       registerLevelFourDyeTrades(context);
       registerShepherdBannerTrades(context);
@@ -522,8 +417,8 @@ public class VillagerTrades {
       register(context, LIBRARIAN_4_EMERALD_AND_BOOK_ENCHANTED_BOOK, new VillagerTrade(new TradeCost(Items.EMERALD, 0), Optional.of(new TradeCost(Items.BOOK, 1)), new ItemStackTemplate(Items.ENCHANTED_BOOK), 12, 15, 0.2F, Optional.empty(), enchantedBook(items, enchantmentsForBooks), doubleTradePrice));
       register(context, LIBRARIAN_4_EMERALD_CLOCK, new VillagerTrade(new TradeCost(Items.EMERALD, 5), new ItemStackTemplate(Items.CLOCK), 12, 15, 0.05F, Optional.empty(), List.of()));
       register(context, LIBRARIAN_4_EMERALD_COMPASS, new VillagerTrade(new TradeCost(Items.EMERALD, 4), new ItemStackTemplate(Items.COMPASS), 12, 15, 0.05F, Optional.empty(), List.of()));
-      register(context, LIBRARIAN_5_EMERALD_YELLOW_CANDLE, new VillagerTrade(new TradeCost(Items.EMERALD, 3), new ItemStackTemplate(Items.YELLOW_CANDLE), 12, 30, 0.05F, Optional.empty(), List.of()));
-      register(context, LIBRARIAN_5_EMERALD_RED_CANDLE, new VillagerTrade(new TradeCost(Items.EMERALD, 3), new ItemStackTemplate(Items.RED_CANDLE), 12, 30, 0.05F, Optional.empty(), List.of()));
+      register(context, LIBRARIAN_5_EMERALD_YELLOW_CANDLE, new VillagerTrade(new TradeCost(Items.EMERALD, 3), new ItemStackTemplate(Items.DYED_CANDLE.yellow()), 12, 30, 0.05F, Optional.empty(), List.of()));
+      register(context, LIBRARIAN_5_EMERALD_RED_CANDLE, new VillagerTrade(new TradeCost(Items.EMERALD, 3), new ItemStackTemplate(Items.DYED_CANDLE.red()), 12, 30, 0.05F, Optional.empty(), List.of()));
       register(context, CARTOGRAPHER_1_PAPER_EMERALD, new VillagerTrade(new TradeCost(Items.PAPER, 24), new ItemStackTemplate(Items.EMERALD), 12, 2, 0.05F, Optional.empty(), List.of()));
       register(context, CARTOGRAPHER_1_EMERALD_MAP, new VillagerTrade(new TradeCost(Items.EMERALD, 7), new ItemStackTemplate(Items.MAP), 12, 1, 0.05F, Optional.empty(), List.of()));
       register(context, CARTOGRAPHER_2_GLASS_PANE_EMERALD, new VillagerTrade(new TradeCost(Items.GLASS_PANE, 11), new ItemStackTemplate(Items.EMERALD), 12, 10, 0.05F, Optional.empty(), List.of()));
@@ -626,11 +521,15 @@ public class VillagerTrades {
       context.register(WANDERING_TRADER_EMERALD_BLUE_ICE, new VillagerTrade(new TradeCost(Items.EMERALD, 6), new ItemStackTemplate(Items.BLUE_ICE), 6, 1, 0.05F, Optional.empty(), List.of()));
       context.register(WANDERING_TRADER_EMERALD_GUNPOWDER, new VillagerTrade(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.GUNPOWDER, 4), 2, 1, 0.05F, Optional.empty(), List.of()));
       context.register(WANDERING_TRADER_EMERALD_PODZOL, new VillagerTrade(new TradeCost(Items.EMERALD, 3), new ItemStackTemplate(Items.PODZOL, 3), 6, 1, 0.05F, Optional.empty(), List.of()));
-
-      for(Pair<ResourceKey<VillagerTrade>, Item> pair : List.of(Pair.of(WANDERING_TRADER_EMERALD_ACACIA_LOG, Items.ACACIA_LOG), Pair.of(WANDERING_TRADER_EMERALD_BIRCH_LOG, Items.BIRCH_LOG), Pair.of(WANDERING_TRADER_EMERALD_DARK_OAK_LOG, Items.DARK_OAK_LOG), Pair.of(WANDERING_TRADER_EMERALD_JUNGLE_LOG, Items.JUNGLE_LOG), Pair.of(WANDERING_TRADER_EMERALD_OAK_LOG, Items.OAK_LOG), Pair.of(WANDERING_TRADER_EMERALD_SPRUCE_LOG, Items.SPRUCE_LOG), Pair.of(WANDERING_TRADER_EMERALD_CHERRY_LOG, Items.CHERRY_LOG), Pair.of(WANDERING_TRADER_EMERALD_MANGROVE_LOG, Items.MANGROVE_LOG), Pair.of(WANDERING_TRADER_EMERALD_PALE_OAK_LOG, Items.PALE_OAK_LOG))) {
-         context.register((ResourceKey)pair.getLeft(), new VillagerTrade(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate((Item)pair.getRight(), 8), 4, 1, 0.05F, Optional.empty(), List.of()));
-      }
-
+      context.register(WANDERING_TRADER_EMERALD_ACACIA_LOG, createWanderingTraderLogSell(Items.ACACIA_LOG));
+      context.register(WANDERING_TRADER_EMERALD_BIRCH_LOG, createWanderingTraderLogSell(Items.BIRCH_LOG));
+      context.register(WANDERING_TRADER_EMERALD_DARK_OAK_LOG, createWanderingTraderLogSell(Items.DARK_OAK_LOG));
+      context.register(WANDERING_TRADER_EMERALD_JUNGLE_LOG, createWanderingTraderLogSell(Items.JUNGLE_LOG));
+      context.register(WANDERING_TRADER_EMERALD_OAK_LOG, createWanderingTraderLogSell(Items.OAK_LOG));
+      context.register(WANDERING_TRADER_EMERALD_SPRUCE_LOG, createWanderingTraderLogSell(Items.SPRUCE_LOG));
+      context.register(WANDERING_TRADER_EMERALD_CHERRY_LOG, createWanderingTraderLogSell(Items.CHERRY_LOG));
+      context.register(WANDERING_TRADER_EMERALD_MANGROVE_LOG, createWanderingTraderLogSell(Items.MANGROVE_LOG));
+      context.register(WANDERING_TRADER_EMERALD_PALE_OAK_LOG, createWanderingTraderLogSell(Items.PALE_OAK_LOG));
       context.register(WANDERING_TRADER_EMERALD_ENCHANTED_IRON_PICKAXE, new VillagerTrade(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.IRON_PICKAXE), 1, 1, 0.2F, Optional.empty(), enchantedItem(items, enchantmentsForTradedEquipment, Items.IRON_PICKAXE)));
       context.register(WANDERING_TRADER_EMERALD_LONG_INVISIBILITY_POTION, new VillagerTrade(new TradeCost(Items.EMERALD, 5), new ItemStackTemplate(Items.POTION), 1, 1, 0.05F, Optional.empty(), List.of(SetPotionFunction.setPotion(Potions.LONG_INVISIBILITY).build())));
       context.register(WANDERING_TRADER_EMERALD_TROPICAL_FISH_BUCKET, new VillagerTrade(new TradeCost(Items.EMERALD, 3), new ItemStackTemplate(Items.TROPICAL_FISH_BUCKET), 4, 1, 0.05F, Optional.empty(), List.of()));
@@ -648,11 +547,11 @@ public class VillagerTrades {
       registerWanderingTraderSeeds(context);
       registerWanderingTraderSaplings(context);
       registerWanderingTraderDyes(context);
-
-      for(Pair<ResourceKey<VillagerTrade>, Item> entry : List.of(Pair.of(WANDERING_TRADER_EMERALD_BRAIN_CORAL_BLOCK, Items.BRAIN_CORAL_BLOCK), Pair.of(WANDERING_TRADER_EMERALD_BUBBLE_CORAL_BLOCK, Items.BUBBLE_CORAL_BLOCK), Pair.of(WANDERING_TRADER_EMERALD_FIRE_CORAL_BLOCK, Items.FIRE_CORAL_BLOCK), Pair.of(WANDERING_TRADER_EMERALD_HORN_CORAL_BLOCK, Items.HORN_CORAL_BLOCK), Pair.of(WANDERING_TRADER_EMERALD_TUBE_CORAL_BLOCK, Items.TUBE_CORAL_BLOCK))) {
-         context.register((ResourceKey)entry.getLeft(), new VillagerTrade(new TradeCost(Items.EMERALD, 3), new ItemStackTemplate((Item)entry.getRight()), 8, 1, 0.05F, Optional.empty(), List.of()));
-      }
-
+      context.register(WANDERING_TRADER_EMERALD_BRAIN_CORAL_BLOCK, createWanderingTraderCoralBlockSell(Items.BRAIN_CORAL_BLOCK));
+      context.register(WANDERING_TRADER_EMERALD_BUBBLE_CORAL_BLOCK, createWanderingTraderCoralBlockSell(Items.BUBBLE_CORAL_BLOCK));
+      context.register(WANDERING_TRADER_EMERALD_FIRE_CORAL_BLOCK, createWanderingTraderCoralBlockSell(Items.FIRE_CORAL_BLOCK));
+      context.register(WANDERING_TRADER_EMERALD_HORN_CORAL_BLOCK, createWanderingTraderCoralBlockSell(Items.HORN_CORAL_BLOCK));
+      context.register(WANDERING_TRADER_EMERALD_TUBE_CORAL_BLOCK, createWanderingTraderCoralBlockSell(Items.TUBE_CORAL_BLOCK));
       context.register(WANDERING_TRADER_EMERALD_VINE, new VillagerTrade(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.VINE, 3), 4, 1, 0.05F, Optional.empty(), List.of()));
       context.register(WANDERING_TRADER_EMERALD_PALE_HANGING_MOSS, new VillagerTrade(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.PALE_HANGING_MOSS, 3), 4, 1, 0.05F, Optional.empty(), List.of()));
       context.register(WANDERING_TRADER_EMERALD_BROWN_MUSHROOM, new VillagerTrade(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.BROWN_MUSHROOM, 3), 4, 1, 0.05F, Optional.empty(), List.of()));
@@ -669,137 +568,218 @@ public class VillagerTrades {
       return context.register(WANDERING_TRADER_EMERALD_NAME_TAG, new VillagerTrade(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.NAME_TAG), 5, 1, 0.05F, Optional.empty(), List.of()));
    }
 
+   private static VillagerTrade createWanderingTraderCoralBlockSell(final Item item) {
+      return new VillagerTrade(new TradeCost(Items.EMERALD, 3), new ItemStackTemplate(item), 8, 1, 0.05F, Optional.empty(), List.of());
+   }
+
+   private static VillagerTrade createWanderingTraderLogSell(final Item item) {
+      return new VillagerTrade(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(item, 8), 4, 1, 0.05F, Optional.empty(), List.of());
+   }
+
    private static void registerWanderingTraderFlowers(final BootstrapContext<VillagerTrade> context) {
-      context.register(WANDERING_TRADER_EMERALD_BLUE_ORCHID, new VillagerTrade(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.BLUE_ORCHID), 8, 1, 0.05F, Optional.empty(), List.of()));
-
-      for(Pair<ResourceKey<VillagerTrade>, Item> entry : List.of(Pair.of(WANDERING_TRADER_EMERALD_DANDELION, Items.DANDELION), Pair.of(WANDERING_TRADER_EMERALD_POPPY, Items.POPPY), Pair.of(WANDERING_TRADER_EMERALD_ALLIUM, Items.ALLIUM), Pair.of(WANDERING_TRADER_EMERALD_AZURE_BLUET, Items.AZURE_BLUET), Pair.of(WANDERING_TRADER_EMERALD_RED_TULIP, Items.RED_TULIP), Pair.of(WANDERING_TRADER_EMERALD_ORANGE_TULIP, Items.ORANGE_TULIP), Pair.of(WANDERING_TRADER_EMERALD_WHITE_TULIP, Items.WHITE_TULIP), Pair.of(WANDERING_TRADER_EMERALD_PINK_TULIP, Items.PINK_TULIP), Pair.of(WANDERING_TRADER_EMERALD_OXEYE_DAISY, Items.OXEYE_DAISY), Pair.of(WANDERING_TRADER_EMERALD_CORNFLOWER, Items.CORNFLOWER), Pair.of(WANDERING_TRADER_EMERALD_WILDFLOWERS, Items.WILDFLOWERS), Pair.of(WANDERING_TRADER_EMERALD_DRY_TALL_GRASS, Items.DRY_TALL_GRASS))) {
-         context.register((ResourceKey)entry.getLeft(), new VillagerTrade(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate((Item)entry.getRight()), 12, 1, 0.05F, Optional.empty(), List.of()));
-      }
-
+      context.register(WANDERING_TRADER_EMERALD_BLUE_ORCHID, createWanderingTraderFlowerSell(Items.BLUE_ORCHID, 8));
+      context.register(WANDERING_TRADER_EMERALD_DANDELION, createWanderingTraderFlowerSell(Items.DANDELION, 12));
+      context.register(WANDERING_TRADER_EMERALD_POPPY, createWanderingTraderFlowerSell(Items.POPPY, 12));
+      context.register(WANDERING_TRADER_EMERALD_ALLIUM, createWanderingTraderFlowerSell(Items.ALLIUM, 12));
+      context.register(WANDERING_TRADER_EMERALD_AZURE_BLUET, createWanderingTraderFlowerSell(Items.AZURE_BLUET, 12));
+      context.register(WANDERING_TRADER_EMERALD_RED_TULIP, createWanderingTraderFlowerSell(Items.RED_TULIP, 12));
+      context.register(WANDERING_TRADER_EMERALD_ORANGE_TULIP, createWanderingTraderFlowerSell(Items.ORANGE_TULIP, 12));
+      context.register(WANDERING_TRADER_EMERALD_WHITE_TULIP, createWanderingTraderFlowerSell(Items.WHITE_TULIP, 12));
+      context.register(WANDERING_TRADER_EMERALD_PINK_TULIP, createWanderingTraderFlowerSell(Items.PINK_TULIP, 12));
+      context.register(WANDERING_TRADER_EMERALD_OXEYE_DAISY, createWanderingTraderFlowerSell(Items.OXEYE_DAISY, 12));
+      context.register(WANDERING_TRADER_EMERALD_CORNFLOWER, createWanderingTraderFlowerSell(Items.CORNFLOWER, 12));
+      context.register(WANDERING_TRADER_EMERALD_WILDFLOWERS, createWanderingTraderFlowerSell(Items.WILDFLOWERS, 12));
+      context.register(WANDERING_TRADER_EMERALD_DRY_TALL_GRASS, createWanderingTraderFlowerSell(Items.DRY_TALL_GRASS, 12));
+      context.register(WANDERING_TRADER_EMERALD_LILY_OF_THE_VALLEY, createWanderingTraderFlowerSell(Items.LILY_OF_THE_VALLEY, 7));
+      context.register(WANDERING_TRADER_EMERALD_OPEN_EYEBLOSSOM, createWanderingTraderFlowerSell(Items.OPEN_EYEBLOSSOM, 7));
       context.register(WANDERING_TRADER_EMERALD_GOLDEN_DANDELION, new VillagerTrade(new TradeCost(Items.EMERALD, 2), new ItemStackTemplate(Items.GOLDEN_DANDELION), 12, 1, 0.05F, Optional.empty(), List.of()));
-      context.register(WANDERING_TRADER_EMERALD_LILY_OF_THE_VALLEY, new VillagerTrade(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.LILY_OF_THE_VALLEY), 7, 1, 0.05F, Optional.empty(), List.of()));
-      context.register(WANDERING_TRADER_EMERALD_OPEN_EYEBLOSSOM, new VillagerTrade(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.OPEN_EYEBLOSSOM), 7, 1, 0.05F, Optional.empty(), List.of()));
+   }
+
+   private static VillagerTrade createWanderingTraderFlowerSell(final Item item, final int maxUses) {
+      return new VillagerTrade(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(item), maxUses, 1, 0.05F, Optional.empty(), List.of());
    }
 
    private static void registerWanderingTraderSeeds(final BootstrapContext<VillagerTrade> context) {
-      for(Pair<ResourceKey<VillagerTrade>, Item> entry : List.of(Pair.of(WANDERING_TRADER_EMERALD_WHEAT_SEEDS, Items.WHEAT_SEEDS), Pair.of(WANDERING_TRADER_EMERALD_BEETROOT_SEEDS, Items.BEETROOT_SEEDS), Pair.of(WANDERING_TRADER_EMERALD_PUMPKIN_SEEDS, Items.PUMPKIN_SEEDS), Pair.of(WANDERING_TRADER_EMERALD_MELON_SEEDS, Items.MELON_SEEDS))) {
-         context.register((ResourceKey)entry.getLeft(), new VillagerTrade(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate((Item)entry.getRight()), 12, 1, 0.05F, Optional.empty(), List.of()));
-      }
+      context.register(WANDERING_TRADER_EMERALD_WHEAT_SEEDS, createWanderingTraderSeedSell(Items.WHEAT_SEEDS));
+      context.register(WANDERING_TRADER_EMERALD_BEETROOT_SEEDS, createWanderingTraderSeedSell(Items.BEETROOT_SEEDS));
+      context.register(WANDERING_TRADER_EMERALD_PUMPKIN_SEEDS, createWanderingTraderSeedSell(Items.PUMPKIN_SEEDS));
+      context.register(WANDERING_TRADER_EMERALD_MELON_SEEDS, createWanderingTraderSeedSell(Items.MELON_SEEDS));
+   }
 
+   private static VillagerTrade createWanderingTraderSeedSell(final Item item) {
+      return new VillagerTrade(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(item), 12, 1, 0.05F, Optional.empty(), List.of());
    }
 
    private static void registerWanderingTraderSaplings(final BootstrapContext<VillagerTrade> context) {
-      for(Pair<ResourceKey<VillagerTrade>, Item> entry : List.of(Pair.of(WANDERING_TRADER_EMERALD_ACACIA_SAPLING, Items.ACACIA_SAPLING), Pair.of(WANDERING_TRADER_EMERALD_BIRCH_SAPLING, Items.BIRCH_SAPLING), Pair.of(WANDERING_TRADER_EMERALD_DARK_OAK_SAPLING, Items.DARK_OAK_SAPLING), Pair.of(WANDERING_TRADER_EMERALD_JUNGLE_SAPLING, Items.JUNGLE_SAPLING), Pair.of(WANDERING_TRADER_EMERALD_OAK_SAPLING, Items.OAK_SAPLING), Pair.of(WANDERING_TRADER_EMERALD_SPRUCE_SAPLING, Items.SPRUCE_SAPLING), Pair.of(WANDERING_TRADER_EMERALD_CHERRY_SAPLING, Items.CHERRY_SAPLING), Pair.of(WANDERING_TRADER_EMERALD_PALE_OAK_SAPLING, Items.PALE_OAK_SAPLING), Pair.of(WANDERING_TRADER_EMERALD_MANGROVE_PROPAGULE, Items.MANGROVE_PROPAGULE))) {
-         context.register((ResourceKey)entry.getLeft(), new VillagerTrade(new TradeCost(Items.EMERALD, 5), new ItemStackTemplate((Item)entry.getRight()), 8, 1, 0.05F, Optional.empty(), List.of()));
-      }
+      context.register(WANDERING_TRADER_EMERALD_ACACIA_SAPLING, createWanderingTraderSaplingSell(Items.ACACIA_SAPLING));
+      context.register(WANDERING_TRADER_EMERALD_BIRCH_SAPLING, createWanderingTraderSaplingSell(Items.BIRCH_SAPLING));
+      context.register(WANDERING_TRADER_EMERALD_DARK_OAK_SAPLING, createWanderingTraderSaplingSell(Items.DARK_OAK_SAPLING));
+      context.register(WANDERING_TRADER_EMERALD_JUNGLE_SAPLING, createWanderingTraderSaplingSell(Items.JUNGLE_SAPLING));
+      context.register(WANDERING_TRADER_EMERALD_OAK_SAPLING, createWanderingTraderSaplingSell(Items.OAK_SAPLING));
+      context.register(WANDERING_TRADER_EMERALD_SPRUCE_SAPLING, createWanderingTraderSaplingSell(Items.SPRUCE_SAPLING));
+      context.register(WANDERING_TRADER_EMERALD_CHERRY_SAPLING, createWanderingTraderSaplingSell(Items.CHERRY_SAPLING));
+      context.register(WANDERING_TRADER_EMERALD_PALE_OAK_SAPLING, createWanderingTraderSaplingSell(Items.PALE_OAK_SAPLING));
+      context.register(WANDERING_TRADER_EMERALD_MANGROVE_PROPAGULE, createWanderingTraderSaplingSell(Items.MANGROVE_PROPAGULE));
+   }
 
+   private static VillagerTrade createWanderingTraderSaplingSell(final Item item) {
+      return new VillagerTrade(new TradeCost(Items.EMERALD, 5), new ItemStackTemplate(item), 8, 1, 0.05F, Optional.empty(), List.of());
    }
 
    private static void registerWanderingTraderDyes(final BootstrapContext<VillagerTrade> context) {
-      for(Pair<ResourceKey<VillagerTrade>, Item> entry : List.of(Pair.of(WANDERING_TRADER_EMERALD_RED_DYE, Items.RED_DYE), Pair.of(WANDERING_TRADER_EMERALD_WHITE_DYE, Items.WHITE_DYE), Pair.of(WANDERING_TRADER_EMERALD_BLUE_DYE, Items.BLUE_DYE), Pair.of(WANDERING_TRADER_EMERALD_PINK_DYE, Items.PINK_DYE), Pair.of(WANDERING_TRADER_EMERALD_BLACK_DYE, Items.BLACK_DYE), Pair.of(WANDERING_TRADER_EMERALD_GREEN_DYE, Items.GREEN_DYE), Pair.of(WANDERING_TRADER_EMERALD_LIGHT_GRAY_DYE, Items.LIGHT_GRAY_DYE), Pair.of(WANDERING_TRADER_EMERALD_MAGENTA_DYE, Items.MAGENTA_DYE), Pair.of(WANDERING_TRADER_EMERALD_YELLOW_DYE, Items.YELLOW_DYE), Pair.of(WANDERING_TRADER_EMERALD_GRAY_DYE, Items.GRAY_DYE), Pair.of(WANDERING_TRADER_EMERALD_PURPLE_DYE, Items.PURPLE_DYE), Pair.of(WANDERING_TRADER_EMERALD_LIGHT_BLUE_DYE, Items.LIGHT_BLUE_DYE), Pair.of(WANDERING_TRADER_EMERALD_LIME_DYE, Items.LIME_DYE), Pair.of(WANDERING_TRADER_EMERALD_ORANGE_DYE, Items.ORANGE_DYE), Pair.of(WANDERING_TRADER_EMERALD_BROWN_DYE, Items.BROWN_DYE), Pair.of(WANDERING_TRADER_EMERALD_CYAN_DYE, Items.CYAN_DYE))) {
-         context.register((ResourceKey)entry.getLeft(), new VillagerTrade(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate((Item)entry.getRight(), 3), 12, 1, 0.05F, Optional.empty(), List.of()));
+      for(DyeColor color : DyeColor.VALUES) {
+         context.register(WANDERING_TRADER_EMERALD_DYE.pick(color), new VillagerTrade(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.DYE.pick(color), 3), 12, 1, 0.05F, Optional.empty(), List.of()));
       }
 
    }
 
    private static void registerMasonLevelFourTerracotta(final BootstrapContext<VillagerTrade> context) {
-      for(Pair<ResourceKey<VillagerTrade>, Item> block : List.of(Pair.of(MASON_4_EMERALD_ORANGE_TERRACOTTA, Items.ORANGE_TERRACOTTA), Pair.of(MASON_4_EMERALD_WHITE_TERRACOTTA, Items.WHITE_TERRACOTTA), Pair.of(MASON_4_EMERALD_BLUE_TERRACOTTA, Items.BLUE_TERRACOTTA), Pair.of(MASON_4_EMERALD_LIGHT_BLUE_TERRACOTTA, Items.LIGHT_BLUE_TERRACOTTA), Pair.of(MASON_4_EMERALD_GRAY_TERRACOTTA, Items.GRAY_TERRACOTTA), Pair.of(MASON_4_EMERALD_LIGHT_GRAY_TERRACOTTA, Items.LIGHT_GRAY_TERRACOTTA), Pair.of(MASON_4_EMERALD_BLACK_TERRACOTTA, Items.BLACK_TERRACOTTA), Pair.of(MASON_4_EMERALD_RED_TERRACOTTA, Items.RED_TERRACOTTA), Pair.of(MASON_4_EMERALD_PINK_TERRACOTTA, Items.PINK_TERRACOTTA), Pair.of(MASON_4_EMERALD_MAGENTA_TERRACOTTA, Items.MAGENTA_TERRACOTTA), Pair.of(MASON_4_EMERALD_LIME_TERRACOTTA, Items.LIME_TERRACOTTA), Pair.of(MASON_4_EMERALD_GREEN_TERRACOTTA, Items.GREEN_TERRACOTTA), Pair.of(MASON_4_EMERALD_CYAN_TERRACOTTA, Items.CYAN_TERRACOTTA), Pair.of(MASON_4_EMERALD_PURPLE_TERRACOTTA, Items.PURPLE_TERRACOTTA), Pair.of(MASON_4_EMERALD_YELLOW_TERRACOTTA, Items.YELLOW_TERRACOTTA), Pair.of(MASON_4_EMERALD_BROWN_TERRACOTTA, Items.BROWN_TERRACOTTA), Pair.of(MASON_4_EMERALD_ORANGE_GLAZED_TERRACOTTA, Items.ORANGE_GLAZED_TERRACOTTA), Pair.of(MASON_4_EMERALD_WHITE_GLAZED_TERRACOTTA, Items.WHITE_GLAZED_TERRACOTTA), Pair.of(MASON_4_EMERALD_BLUE_GLAZED_TERRACOTTA, Items.BLUE_GLAZED_TERRACOTTA), Pair.of(MASON_4_EMERALD_LIGHT_BLUE_GLAZED_TERRACOTTA, Items.LIGHT_BLUE_GLAZED_TERRACOTTA), Pair.of(MASON_4_EMERALD_GRAY_GLAZED_TERRACOTTA, Items.GRAY_GLAZED_TERRACOTTA), Pair.of(MASON_4_EMERALD_LIGHT_GRAY_GLAZED_TERRACOTTA, Items.LIGHT_GRAY_GLAZED_TERRACOTTA), Pair.of(MASON_4_EMERALD_BLACK_GLAZED_TERRACOTTA, Items.BLACK_GLAZED_TERRACOTTA), Pair.of(MASON_4_EMERALD_RED_GLAZED_TERRACOTTA, Items.RED_GLAZED_TERRACOTTA), Pair.of(MASON_4_EMERALD_PINK_GLAZED_TERRACOTTA, Items.PINK_GLAZED_TERRACOTTA), Pair.of(MASON_4_EMERALD_MAGENTA_GLAZED_TERRACOTTA, Items.MAGENTA_GLAZED_TERRACOTTA), Pair.of(MASON_4_EMERALD_LIME_GLAZED_TERRACOTTA, Items.LIME_GLAZED_TERRACOTTA), Pair.of(MASON_4_EMERALD_GREEN_GLAZED_TERRACOTTA, Items.GREEN_GLAZED_TERRACOTTA), Pair.of(MASON_4_EMERALD_CYAN_GLAZED_TERRACOTTA, Items.CYAN_GLAZED_TERRACOTTA), Pair.of(MASON_4_EMERALD_PURPLE_GLAZED_TERRACOTTA, Items.PURPLE_GLAZED_TERRACOTTA), Pair.of(MASON_4_EMERALD_YELLOW_GLAZED_TERRACOTTA, Items.YELLOW_GLAZED_TERRACOTTA), Pair.of(MASON_4_EMERALD_BROWN_GLAZED_TERRACOTTA, Items.BROWN_GLAZED_TERRACOTTA))) {
-         register(context, (ResourceKey)block.getLeft(), new VillagerTrade(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate((Item)block.getRight()), 12, 15, 0.05F, Optional.empty(), List.of()));
+      registerWanderingTraderTerracottaSellTrades(context, MASON_4_EMERALD_TERRACOTTA, Items.DYED_TERRACOTTA);
+      registerWanderingTraderTerracottaSellTrades(context, MASON_4_EMERALD_GLAZED_TERRACOTTA, Items.GLAZED_TERRACOTTA);
+   }
+
+   private static void registerWanderingTraderTerracottaSellTrades(final BootstrapContext<VillagerTrade> context, final ColorCollection<ResourceKey<VillagerTrade>> trade, final ColorCollection<Item> item) {
+      for(DyeColor color : DyeColor.VALUES) {
+         register(context, trade.pick(color), new VillagerTrade(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(item.pick(color)), 12, 15, 0.05F, Optional.empty(), List.of()));
       }
 
    }
 
    private static void registerMasonLevelThreeBlocks(final BootstrapContext<VillagerTrade> context) {
-      for(Pair<ResourceKey<VillagerTrade>, Item> block : List.of(Pair.of(MASON_3_EMERALD_DRIPSTONE_BLOCK, Items.DRIPSTONE_BLOCK), Pair.of(MASON_3_EMERALD_POLISHED_ANDESITE, Items.POLISHED_ANDESITE), Pair.of(MASON_3_EMERALD_POLISHED_DIORITE, Items.POLISHED_DIORITE), Pair.of(MASON_3_EMERALD_POLISHED_GRANTITE, Items.POLISHED_GRANITE))) {
-         register(context, (ResourceKey)block.getLeft(), new VillagerTrade(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate((Item)block.getRight(), 4), 16, 10, 0.05F, Optional.empty(), List.of()));
-      }
+      register(context, MASON_3_EMERALD_DRIPSTONE_BLOCK, createMasonStoneSell(Items.DRIPSTONE_BLOCK));
+      register(context, MASON_3_EMERALD_POLISHED_ANDESITE, createMasonStoneSell(Items.POLISHED_ANDESITE));
+      register(context, MASON_3_EMERALD_POLISHED_DIORITE, createMasonStoneSell(Items.POLISHED_DIORITE));
+      register(context, MASON_3_EMERALD_POLISHED_GRANTITE, createMasonStoneSell(Items.POLISHED_GRANITE));
+   }
 
+   private static VillagerTrade createMasonStoneSell(final Item item) {
+      return new VillagerTrade(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(item, 4), 16, 10, 0.05F, Optional.empty(), List.of());
    }
 
    private static void registerMasonLevelThreeStones(final BootstrapContext<VillagerTrade> context) {
-      for(Pair<ResourceKey<VillagerTrade>, Item> stone : List.of(Pair.of(MASON_3_GRANITE_EMERALD, Items.GRANITE), Pair.of(MASON_3_ANDESITE_EMERALD, Items.ANDESITE), Pair.of(MASON_3_DIORITE_EMERALD, Items.DIORITE))) {
-         register(context, (ResourceKey)stone.getLeft(), new VillagerTrade(new TradeCost((ItemLike)stone.getRight(), 16), new ItemStackTemplate(Items.EMERALD), 16, 20, 0.05F, Optional.empty(), List.of()));
-      }
+      register(context, MASON_3_GRANITE_EMERALD, createMasonStoneBuy(Items.GRANITE));
+      register(context, MASON_3_ANDESITE_EMERALD, createMasonStoneBuy(Items.ANDESITE));
+      register(context, MASON_3_DIORITE_EMERALD, createMasonStoneBuy(Items.DIORITE));
+   }
 
+   private static VillagerTrade createMasonStoneBuy(final Item item) {
+      return new VillagerTrade(new TradeCost(item, 16), new ItemStackTemplate(Items.EMERALD), 16, 20, 0.05F, Optional.empty(), List.of());
    }
 
    private static void registerBoatTrades(final BootstrapContext<VillagerTrade> context, final HolderGetter<VillagerType> villagerVariants) {
-      for(ImmutableTriple<ResourceKey<VillagerTrade>, Item, List<ResourceKey<VillagerType>>> entry : List.of(ImmutableTriple.of(FISHERMAN_5_OAK_BOAT_EMERALD, Items.OAK_BOAT, List.of(VillagerType.PLAINS)), ImmutableTriple.of(FISHERMAN_5_SPRUCE_BOAT_EMERALD, Items.SPRUCE_BOAT, List.of(VillagerType.TAIGA, VillagerType.SNOW)), ImmutableTriple.of(FISHERMAN_5_JUNGLE_BOAT_EMERALD, Items.JUNGLE_BOAT, List.of(VillagerType.DESERT, VillagerType.JUNGLE)), ImmutableTriple.of(FISHERMAN_5_ACACIA_BOAT_EMERALD, Items.ACACIA_BOAT, List.of(VillagerType.SAVANNA)), ImmutableTriple.of(FISHERMAN_5_DARK_OAK_BOAT_EMERALD, Items.DARK_OAK_BOAT, List.of(VillagerType.SWAMP)))) {
-         ResourceKey<VillagerTrade> resouceKey = (ResourceKey)entry.left;
-         Item item = (Item)entry.middle;
-         register(context, resouceKey, new VillagerTrade(new TradeCost(item, 1), new ItemStackTemplate(Items.EMERALD), 12, 30, 0.05F, villagerTypeRestriction(villagerTypeHolderSet(villagerVariants, (List)entry.right)), List.of()));
-      }
-
+      register(context, FISHERMAN_5_OAK_BOAT_EMERALD, createMasonBoatBuyTrade(villagerVariants, Items.OAK_BOAT, List.of(VillagerType.PLAINS)));
+      register(context, FISHERMAN_5_SPRUCE_BOAT_EMERALD, createMasonBoatBuyTrade(villagerVariants, Items.SPRUCE_BOAT, List.of(VillagerType.TAIGA, VillagerType.SNOW)));
+      register(context, FISHERMAN_5_JUNGLE_BOAT_EMERALD, createMasonBoatBuyTrade(villagerVariants, Items.JUNGLE_BOAT, List.of(VillagerType.DESERT, VillagerType.JUNGLE)));
+      register(context, FISHERMAN_5_ACACIA_BOAT_EMERALD, createMasonBoatBuyTrade(villagerVariants, Items.ACACIA_BOAT, List.of(VillagerType.SAVANNA)));
+      register(context, FISHERMAN_5_DARK_OAK_BOAT_EMERALD, createMasonBoatBuyTrade(villagerVariants, Items.DARK_OAK_BOAT, List.of(VillagerType.SWAMP)));
    }
 
-   private static void registerWoolSales(final BootstrapContext<VillagerTrade> context) {
-      for(Pair<ResourceKey<VillagerTrade>, Item> entry : List.of(Pair.of(SHEPHERD_1_WHITE_WOOL_EMERALD, Items.WHITE_WOOL), Pair.of(SHEPHERD_1_BROWN_WOOL_EMERALD, Items.BROWN_WOOL), Pair.of(SHEPHERD_1_GRAY_WOOL_EMERALD, Items.GRAY_WOOL), Pair.of(SHEPHERD_1_BLACK_WOOL_EMERALD, Items.BLACK_WOOL))) {
-         register(context, (ResourceKey)entry.getLeft(), new VillagerTrade(new TradeCost((ItemLike)entry.getRight(), 18), new ItemStackTemplate(Items.EMERALD), 16, 2, 0.05F, Optional.empty(), List.of()));
-      }
-
+   private static VillagerTrade createMasonBoatBuyTrade(final HolderGetter<VillagerType> villagerVariants, final Item item, final List<ResourceKey<VillagerType>> villagerTypes) {
+      return new VillagerTrade(new TradeCost(item, 1), new ItemStackTemplate(Items.EMERALD), 12, 30, 0.05F, villagerTypeRestriction(villagerTypeHolderSet(villagerVariants, villagerTypes)), List.of());
    }
 
-   private static void registerLevelTwoDyeTrades(final BootstrapContext<VillagerTrade> context) {
-      for(Pair<ResourceKey<VillagerTrade>, Item> entry : List.of(Pair.of(SHEPHERD_2_WHITE_DYE_EMERALD, Items.WHITE_DYE), Pair.of(SHEPHERD_2_GRAY_DYE_EMERALD, Items.GRAY_DYE), Pair.of(SHEPHERD_2_BLACK_DYE_EMERALD, Items.BLACK_DYE), Pair.of(SHEPHERD_2_LIGHT_BLUE_DYE_EMERALD, Items.LIGHT_BLUE_DYE), Pair.of(SHEPHERD_2_LIME_DYE_EMERALD, Items.LIME_DYE))) {
-         register(context, (ResourceKey)entry.getLeft(), new VillagerTrade(new TradeCost((ItemLike)entry.getRight(), 12), new ItemStackTemplate(Items.EMERALD), 16, 10, 0.05F, Optional.empty(), List.of()));
-      }
-
+   private static void registerShepherdWoolSales(final BootstrapContext<VillagerTrade> context) {
+      register(context, SHEPHERD_1_WHITE_WOOL_EMERALD, createShepherdWoolBuy(Items.WOOL.white()));
+      register(context, SHEPHERD_1_BROWN_WOOL_EMERALD, createShepherdWoolBuy(Items.WOOL.brown()));
+      register(context, SHEPHERD_1_GRAY_WOOL_EMERALD, createShepherdWoolBuy(Items.WOOL.gray()));
+      register(context, SHEPHERD_1_BLACK_WOOL_EMERALD, createShepherdWoolBuy(Items.WOOL.black()));
    }
 
-   private static void registerLevelThreeDyeTrades(final BootstrapContext<VillagerTrade> context) {
-      for(Pair<ResourceKey<VillagerTrade>, Item> entry : List.of(Pair.of(SHEPHERD_3_YELLOW_DYE_EMERALD, Items.YELLOW_DYE), Pair.of(SHEPHERD_3_LIGHT_GRAY_DYE_EMERALD, Items.LIGHT_GRAY_DYE), Pair.of(SHEPHERD_3_ORANGE_DYE_EMERALD, Items.ORANGE_DYE), Pair.of(SHEPHERD_3_RED_DYE_EMERALD, Items.RED_DYE), Pair.of(SHEPHERD_3_PINK_DYE_EMERALD, Items.PINK_DYE))) {
-         register(context, (ResourceKey)entry.getLeft(), new VillagerTrade(new TradeCost((ItemLike)entry.getRight(), 12), new ItemStackTemplate(Items.EMERALD), 16, 20, 0.05F, Optional.empty(), List.of()));
-      }
+   private static VillagerTrade createShepherdWoolBuy(final Item item) {
+      return new VillagerTrade(new TradeCost(item, 18), new ItemStackTemplate(Items.EMERALD), 16, 2, 0.05F, Optional.empty(), List.of());
+   }
 
+   private static void registerShepherdLevelTwoDyeTrades(final BootstrapContext<VillagerTrade> context) {
+      register(context, SHEPHERD_2_WHITE_DYE_EMERALD, createShepherdDyeBuy(Items.DYE.white(), 10));
+      register(context, SHEPHERD_2_GRAY_DYE_EMERALD, createShepherdDyeBuy(Items.DYE.gray(), 10));
+      register(context, SHEPHERD_2_BLACK_DYE_EMERALD, createShepherdDyeBuy(Items.DYE.black(), 10));
+      register(context, SHEPHERD_2_LIGHT_BLUE_DYE_EMERALD, createShepherdDyeBuy(Items.DYE.lightBlue(), 10));
+      register(context, SHEPHERD_2_LIME_DYE_EMERALD, createShepherdDyeBuy(Items.DYE.lime(), 10));
+   }
+
+   private static void registerShepherdLevelThreeDyeTrades(final BootstrapContext<VillagerTrade> context) {
+      register(context, SHEPHERD_3_YELLOW_DYE_EMERALD, createShepherdDyeBuy(Items.DYE.yellow(), 20));
+      register(context, SHEPHERD_3_LIGHT_GRAY_DYE_EMERALD, createShepherdDyeBuy(Items.DYE.lightGray(), 20));
+      register(context, SHEPHERD_3_ORANGE_DYE_EMERALD, createShepherdDyeBuy(Items.DYE.orange(), 20));
+      register(context, SHEPHERD_3_RED_DYE_EMERALD, createShepherdDyeBuy(Items.DYE.red(), 20));
+      register(context, SHEPHERD_3_PINK_DYE_EMERALD, createShepherdDyeBuy(Items.DYE.pink(), 20));
    }
 
    private static void registerLevelFourDyeTrades(final BootstrapContext<VillagerTrade> context) {
-      for(Pair<ResourceKey<VillagerTrade>, Item> entry : List.of(Pair.of(SHEPHERD_4_BROWN_DYE_EMERALD, Items.BROWN_DYE), Pair.of(SHEPHERD_4_PURPLE_DYE_EMERALD, Items.PURPLE_DYE), Pair.of(SHEPHERD_4_BLUE_DYE_EMERALD, Items.BLUE_DYE), Pair.of(SHEPHERD_4_GREEN_DYE_EMERALD, Items.GREEN_DYE), Pair.of(SHEPHERD_4_MAGENTA_DYE_EMERALD, Items.MAGENTA_DYE), Pair.of(SHEPHERD_4_CYAN_DYE_EMERALD, Items.CYAN_DYE))) {
-         register(context, (ResourceKey)entry.getLeft(), new VillagerTrade(new TradeCost((ItemLike)entry.getRight(), 12), new ItemStackTemplate(Items.EMERALD), 16, 30, 0.05F, Optional.empty(), List.of()));
-      }
+      register(context, SHEPHERD_4_BROWN_DYE_EMERALD, createShepherdDyeBuy(Items.DYE.brown(), 30));
+      register(context, SHEPHERD_4_PURPLE_DYE_EMERALD, createShepherdDyeBuy(Items.DYE.purple(), 30));
+      register(context, SHEPHERD_4_BLUE_DYE_EMERALD, createShepherdDyeBuy(Items.DYE.blue(), 30));
+      register(context, SHEPHERD_4_GREEN_DYE_EMERALD, createShepherdDyeBuy(Items.DYE.green(), 30));
+      register(context, SHEPHERD_4_MAGENTA_DYE_EMERALD, createShepherdDyeBuy(Items.DYE.magenta(), 30));
+      register(context, SHEPHERD_4_CYAN_DYE_EMERALD, createShepherdDyeBuy(Items.DYE.cyan(), 30));
+   }
 
+   private static VillagerTrade createShepherdDyeBuy(final Item item, final int xp) {
+      return new VillagerTrade(new TradeCost(item, 12), new ItemStackTemplate(Items.EMERALD), 16, xp, 0.05F, Optional.empty(), List.of());
    }
 
    private static void registerWoolPurchases(final BootstrapContext<VillagerTrade> context) {
-      for(Pair<ResourceKey<VillagerTrade>, Item> entry : List.of(Pair.of(SHEPHERD_2_EMERALD_WHITE_WOOL, Items.WHITE_WOOL), Pair.of(SHEPHERD_2_EMERALD_ORANGE_WOOL, Items.ORANGE_WOOL), Pair.of(SHEPHERD_2_EMERALD_MAGENTA_WOOL, Items.MAGENTA_WOOL), Pair.of(SHEPHERD_2_EMERALD_BLUE_WOOL, Items.BLUE_WOOL), Pair.of(SHEPHERD_2_EMERALD_LIGHT_BLUE_WOOL, Items.LIGHT_BLUE_WOOL), Pair.of(SHEPHERD_2_EMERALD_YELLOW_WOOL, Items.YELLOW_WOOL), Pair.of(SHEPHERD_2_EMERALD_LIME_WOOL, Items.LIME_WOOL), Pair.of(SHEPHERD_2_EMERALD_PINK_WOOL, Items.PINK_WOOL), Pair.of(SHEPHERD_2_EMERALD_GRAY_WOOL, Items.GRAY_WOOL), Pair.of(SHEPHERD_2_EMERALD_LIGHT_GRAY_WOOL, Items.LIGHT_GRAY_WOOL), Pair.of(SHEPHERD_2_EMERALD_CYAN_WOOL, Items.CYAN_WOOL), Pair.of(SHEPHERD_2_EMERALD_PURPLE_WOOL, Items.PURPLE_WOOL), Pair.of(SHEPHERD_2_EMERALD_BROWN_WOOL, Items.BROWN_WOOL), Pair.of(SHEPHERD_2_EMERALD_GREEN_WOOL, Items.GREEN_WOOL), Pair.of(SHEPHERD_2_EMERALD_RED_WOOL, Items.RED_WOOL), Pair.of(SHEPHERD_2_EMERALD_BLACK_WOOL, Items.BLACK_WOOL))) {
-         register(context, (ResourceKey)entry.getLeft(), new VillagerTrade(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate((Item)entry.getRight()), 16, 5, 0.05F, Optional.empty(), List.of()));
+      for(DyeColor color : DyeColor.VALUES) {
+         register(context, SHEPHERD_2_EMERALD_WOOL.pick(color), new VillagerTrade(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.WOOL.pick(color)), 16, 5, 0.05F, Optional.empty(), List.of()));
       }
 
    }
 
    private static void registerCarpetPurchases(final BootstrapContext<VillagerTrade> context) {
-      for(Pair<ResourceKey<VillagerTrade>, Item> entry : List.of(Pair.of(SHEPHERD_2_EMERALD_WHITE_CARPET, Items.WHITE_CARPET), Pair.of(SHEPHERD_2_EMERALD_ORANGE_CARPET, Items.ORANGE_CARPET), Pair.of(SHEPHERD_2_EMERALD_MAGENTA_CARPET, Items.MAGENTA_CARPET), Pair.of(SHEPHERD_2_EMERALD_BLUE_CARPET, Items.BLUE_CARPET), Pair.of(SHEPHERD_2_EMERALD_LIGHT_BLUE_CARPET, Items.LIGHT_BLUE_CARPET), Pair.of(SHEPHERD_2_EMERALD_YELLOW_CARPET, Items.YELLOW_CARPET), Pair.of(SHEPHERD_2_EMERALD_LIME_CARPET, Items.LIME_CARPET), Pair.of(SHEPHERD_2_EMERALD_PINK_CARPET, Items.PINK_CARPET), Pair.of(SHEPHERD_2_EMERALD_GRAY_CARPET, Items.GRAY_CARPET), Pair.of(SHEPHERD_2_EMERALD_LIGHT_GRAY_CARPET, Items.LIGHT_GRAY_CARPET), Pair.of(SHEPHERD_2_EMERALD_CYAN_CARPET, Items.CYAN_CARPET), Pair.of(SHEPHERD_2_EMERALD_PURPLE_CARPET, Items.PURPLE_CARPET), Pair.of(SHEPHERD_2_EMERALD_BROWN_CARPET, Items.BROWN_CARPET), Pair.of(SHEPHERD_2_EMERALD_GREEN_CARPET, Items.GREEN_CARPET), Pair.of(SHEPHERD_2_EMERALD_RED_CARPET, Items.RED_CARPET), Pair.of(SHEPHERD_2_EMERALD_BLACK_CARPET, Items.BLACK_CARPET))) {
-         register(context, (ResourceKey)entry.getLeft(), new VillagerTrade(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate((Item)entry.getRight(), 4), 16, 5, 0.05F, Optional.empty(), List.of()));
+      for(DyeColor color : DyeColor.VALUES) {
+         register(context, SHEPHERD_2_EMERALD_CARPETS.pick(color), new VillagerTrade(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.CARPET.pick(color), 4), 16, 5, 0.05F, Optional.empty(), List.of()));
       }
 
    }
 
    private static void registerBedTrades(final BootstrapContext<VillagerTrade> context) {
-      for(Pair<ResourceKey<VillagerTrade>, Item> entry : List.of(Pair.of(SHEPHERD_3_EMERALD_WHITE_BED, Items.WHITE_BED), Pair.of(SHEPHERD_3_EMERALD_ORANGE_BED, Items.ORANGE_BED), Pair.of(SHEPHERD_3_EMERALD_MAGENTA_BED, Items.MAGENTA_BED), Pair.of(SHEPHERD_3_EMERALD_BLUE_BED, Items.BLUE_BED), Pair.of(SHEPHERD_3_EMERALD_LIGHT_BLUE_BED, Items.LIGHT_BLUE_BED), Pair.of(SHEPHERD_3_EMERALD_YELLOW_BED, Items.YELLOW_BED), Pair.of(SHEPHERD_3_EMERALD_LIME_BED, Items.LIME_BED), Pair.of(SHEPHERD_3_EMERALD_PINK_BED, Items.PINK_BED), Pair.of(SHEPHERD_3_EMERALD_GRAY_BED, Items.GRAY_BED), Pair.of(SHEPHERD_3_EMERALD_LIGHT_GRAY_BED, Items.LIGHT_GRAY_BED), Pair.of(SHEPHERD_3_EMERALD_CYAN_BED, Items.CYAN_BED), Pair.of(SHEPHERD_3_EMERALD_PURPLE_BED, Items.PURPLE_BED), Pair.of(SHEPHERD_3_EMERALD_BROWN_BED, Items.BROWN_BED), Pair.of(SHEPHERD_3_EMERALD_GREEN_BED, Items.GREEN_BED), Pair.of(SHEPHERD_3_EMERALD_RED_BED, Items.RED_BED), Pair.of(SHEPHERD_3_EMERALD_BLACK_BED, Items.BLACK_BED))) {
-         register(context, (ResourceKey)entry.getLeft(), new VillagerTrade(new TradeCost(Items.EMERALD, 3), new ItemStackTemplate((Item)entry.getRight()), 12, 10, 0.05F, Optional.empty(), List.of()));
+      for(DyeColor color : DyeColor.VALUES) {
+         register(context, SHEPHERD_3_EMERALD_BED.pick(color), new VillagerTrade(new TradeCost(Items.EMERALD, 3), new ItemStackTemplate(Items.BED.pick(color)), 12, 10, 0.05F, Optional.empty(), List.of()));
       }
 
    }
 
    private static void registerShepherdBannerTrades(final BootstrapContext<VillagerTrade> context) {
-      for(Pair<ResourceKey<VillagerTrade>, Item> entry : List.of(Pair.of(SHEPHERD_4_EMERALD_WHITE_BANNER, Items.WHITE_BANNER), Pair.of(SHEPHERD_4_EMERALD_ORANGE_BANNER, Items.ORANGE_BANNER), Pair.of(SHEPHERD_4_EMERALD_MAGENTA_BANNER, Items.MAGENTA_BANNER), Pair.of(SHEPHERD_4_EMERALD_BLUE_BANNER, Items.BLUE_BANNER), Pair.of(SHEPHERD_4_EMERALD_LIGHT_BLUE_BANNER, Items.LIGHT_BLUE_BANNER), Pair.of(SHEPHERD_4_EMERALD_YELLOW_BANNER, Items.YELLOW_BANNER), Pair.of(SHEPHERD_4_EMERALD_LIME_BANNER, Items.LIME_BANNER), Pair.of(SHEPHERD_4_EMERALD_PINK_BANNER, Items.PINK_BANNER), Pair.of(SHEPHERD_4_EMERALD_GRAY_BANNER, Items.GRAY_BANNER), Pair.of(SHEPHERD_4_EMERALD_LIGHT_GRAY_BANNER, Items.LIGHT_GRAY_BANNER), Pair.of(SHEPHERD_4_EMERALD_CYAN_BANNER, Items.CYAN_BANNER), Pair.of(SHEPHERD_4_EMERALD_PURPLE_BANNER, Items.PURPLE_BANNER), Pair.of(SHEPHERD_4_EMERALD_BROWN_BANNER, Items.BROWN_BANNER), Pair.of(SHEPHERD_4_EMERALD_GREEN_BANNER, Items.GREEN_BANNER), Pair.of(SHEPHERD_4_EMERALD_RED_BANNER, Items.RED_BANNER), Pair.of(SHEPHERD_4_EMERALD_BLACK_BANNER, Items.BLACK_BANNER))) {
-         register(context, (ResourceKey)entry.getLeft(), new VillagerTrade(new TradeCost(Items.EMERALD, 3), new ItemStackTemplate((Item)entry.getRight()), 12, 15, 0.05F, Optional.empty(), List.of()));
+      for(DyeColor color : DyeColor.VALUES) {
+         register(context, SHEPHERD_4_EMERALD_BANNER.pick(color), new VillagerTrade(new TradeCost(Items.EMERALD, 3), new ItemStackTemplate(Items.BANNER.pick(color)), 12, 15, 0.05F, Optional.empty(), List.of()));
       }
 
    }
 
    private static void registerCartographerBannerTrades(final BootstrapContext<VillagerTrade> context, final HolderGetter<VillagerType> villagerVariants) {
-      for(Triple<ResourceKey<VillagerTrade>, Item, List<ResourceKey<VillagerType>>> entry : List.of(Triple.of(CARTOGRAPHER_4_EMERALD_WHITE_BANNER, Items.WHITE_BANNER, List.of(VillagerType.SNOW, VillagerType.PLAINS)), Triple.of(CARTOGRAPHER_4_EMERALD_ORANGE_BANNER, Items.ORANGE_BANNER, List.of(VillagerType.SAVANNA, VillagerType.DESERT)), Triple.of(CARTOGRAPHER_4_EMERALD_MAGENTA_BANNER, Items.MAGENTA_BANNER, List.of(VillagerType.SAVANNA)), Triple.of(CARTOGRAPHER_4_EMERALD_BLUE_BANNER, Items.BLUE_BANNER, List.of(VillagerType.SNOW, VillagerType.TAIGA)), Triple.of(CARTOGRAPHER_4_EMERALD_LIGHT_BLUE_BANNER, Items.LIGHT_BLUE_BANNER, List.of(VillagerType.SNOW, VillagerType.SWAMP)), Triple.of(CARTOGRAPHER_4_EMERALD_YELLOW_BANNER, Items.YELLOW_BANNER, List.of(VillagerType.PLAINS, VillagerType.JUNGLE)), Triple.of(CARTOGRAPHER_4_EMERALD_LIME_BANNER, Items.LIME_BANNER, List.of(VillagerType.DESERT, VillagerType.TAIGA)), Triple.of(CARTOGRAPHER_4_EMERALD_PINK_BANNER, Items.PINK_BANNER, List.of(VillagerType.TAIGA, VillagerType.PLAINS)), Triple.of(CARTOGRAPHER_4_EMERALD_GRAY_BANNER, Items.GRAY_BANNER, List.of(VillagerType.DESERT)), Triple.of(CARTOGRAPHER_4_EMERALD_CYAN_BANNER, Items.CYAN_BANNER, List.of(VillagerType.DESERT, VillagerType.SNOW)), Triple.of(CARTOGRAPHER_4_EMERALD_PURPLE_BANNER, Items.PURPLE_BANNER, List.of(VillagerType.TAIGA, VillagerType.SWAMP)), Triple.of(CARTOGRAPHER_4_EMERALD_BROWN_BANNER, Items.BROWN_BANNER, List.of(VillagerType.PLAINS, VillagerType.JUNGLE)), Triple.of(CARTOGRAPHER_4_EMERALD_GREEN_BANNER, Items.GREEN_BANNER, List.of(VillagerType.DESERT, VillagerType.SAVANNA, VillagerType.JUNGLE)), Triple.of(CARTOGRAPHER_4_EMERALD_RED_BANNER, Items.RED_BANNER, List.of(VillagerType.SNOW, VillagerType.SAVANNA)), Triple.of(CARTOGRAPHER_4_EMERALD_BLACK_BANNER, Items.BLACK_BANNER, List.of(VillagerType.SWAMP)))) {
-         register(context, (ResourceKey)entry.getLeft(), new VillagerTrade(new TradeCost(Items.EMERALD, 2), new ItemStackTemplate((Item)entry.getMiddle()), 12, 15, 0.05F, villagerTypeRestriction(villagerTypeHolderSet(villagerVariants, (List)entry.getRight())), List.of()));
-      }
+      register(context, CARTOGRAPHER_4_EMERALD_WHITE_BANNER, createCartographerBannerSell(villagerVariants, Items.BANNER.white(), List.of(VillagerType.SNOW, VillagerType.PLAINS)));
+      register(context, CARTOGRAPHER_4_EMERALD_ORANGE_BANNER, createCartographerBannerSell(villagerVariants, Items.BANNER.orange(), List.of(VillagerType.SAVANNA, VillagerType.DESERT)));
+      register(context, CARTOGRAPHER_4_EMERALD_MAGENTA_BANNER, createCartographerBannerSell(villagerVariants, Items.BANNER.magenta(), List.of(VillagerType.SAVANNA)));
+      register(context, CARTOGRAPHER_4_EMERALD_BLUE_BANNER, createCartographerBannerSell(villagerVariants, Items.BANNER.blue(), List.of(VillagerType.SNOW, VillagerType.TAIGA)));
+      register(context, CARTOGRAPHER_4_EMERALD_LIGHT_BLUE_BANNER, createCartographerBannerSell(villagerVariants, Items.BANNER.lightBlue(), List.of(VillagerType.SNOW, VillagerType.SWAMP)));
+      register(context, CARTOGRAPHER_4_EMERALD_YELLOW_BANNER, createCartographerBannerSell(villagerVariants, Items.BANNER.yellow(), List.of(VillagerType.PLAINS, VillagerType.JUNGLE)));
+      register(context, CARTOGRAPHER_4_EMERALD_LIME_BANNER, createCartographerBannerSell(villagerVariants, Items.BANNER.lime(), List.of(VillagerType.DESERT, VillagerType.TAIGA)));
+      register(context, CARTOGRAPHER_4_EMERALD_PINK_BANNER, createCartographerBannerSell(villagerVariants, Items.BANNER.pink(), List.of(VillagerType.TAIGA, VillagerType.PLAINS)));
+      register(context, CARTOGRAPHER_4_EMERALD_GRAY_BANNER, createCartographerBannerSell(villagerVariants, Items.BANNER.gray(), List.of(VillagerType.DESERT)));
+      register(context, CARTOGRAPHER_4_EMERALD_CYAN_BANNER, createCartographerBannerSell(villagerVariants, Items.BANNER.cyan(), List.of(VillagerType.DESERT, VillagerType.SNOW)));
+      register(context, CARTOGRAPHER_4_EMERALD_PURPLE_BANNER, createCartographerBannerSell(villagerVariants, Items.BANNER.purple(), List.of(VillagerType.TAIGA, VillagerType.SWAMP)));
+      register(context, CARTOGRAPHER_4_EMERALD_BROWN_BANNER, createCartographerBannerSell(villagerVariants, Items.BANNER.brown(), List.of(VillagerType.PLAINS, VillagerType.JUNGLE)));
+      register(context, CARTOGRAPHER_4_EMERALD_GREEN_BANNER, createCartographerBannerSell(villagerVariants, Items.BANNER.green(), List.of(VillagerType.DESERT, VillagerType.SAVANNA, VillagerType.JUNGLE)));
+      register(context, CARTOGRAPHER_4_EMERALD_RED_BANNER, createCartographerBannerSell(villagerVariants, Items.BANNER.red(), List.of(VillagerType.SNOW, VillagerType.SAVANNA)));
+      register(context, CARTOGRAPHER_4_EMERALD_BLACK_BANNER, createCartographerBannerSell(villagerVariants, Items.BANNER.black(), List.of(VillagerType.SWAMP)));
+   }
 
+   private static VillagerTrade createCartographerBannerSell(final HolderGetter<VillagerType> villagerVariants, final Item item, final List<ResourceKey<VillagerType>> villagerTypes) {
+      return new VillagerTrade(new TradeCost(Items.EMERALD, 2), new ItemStackTemplate(item), 12, 15, 0.05F, villagerTypeRestriction(villagerTypeHolderSet(villagerVariants, villagerTypes)), List.of());
    }
 
    private static void registerBasicExplorerMapTrades(final BootstrapContext<VillagerTrade> context, final HolderGetter<Item> items, final HolderGetter<VillagerType> villagerVariants) {
-      for(VillagerExplorerMapEntry entry : List.of(new VillagerExplorerMapEntry(CARTOGRAPHER_2_EMERALD_AND_COMPASS_VILLAGE_TAIGA_MAP, StructureTags.ON_TAIGA_VILLAGE_MAPS, MapDecorationTypes.TAIGA_VILLAGE, "village_taiga", List.of(VillagerType.SWAMP, VillagerType.SNOW, VillagerType.PLAINS)), new VillagerExplorerMapEntry(CARTOGRAPHER_2_EMERALD_AND_COMPASS_EXPLORER_SWAMP_MAP, StructureTags.ON_SWAMP_EXPLORER_MAPS, MapDecorationTypes.SWAMP_HUT, "explorer_swamp", List.of(VillagerType.TAIGA, VillagerType.SNOW, VillagerType.JUNGLE)), new VillagerExplorerMapEntry(CARTOGRAPHER_2_EMERALD_AND_COMPASS_VILLAGE_SNOWY_MAP, StructureTags.ON_SNOWY_VILLAGE_MAPS, MapDecorationTypes.SNOWY_VILLAGE, "village_snowy", List.of(VillagerType.TAIGA, VillagerType.SWAMP)), new VillagerExplorerMapEntry(CARTOGRAPHER_2_EMERALD_AND_COMPASS_VILLAGE_SAVANNA_MAP, StructureTags.ON_SAVANNA_VILLAGE_MAPS, MapDecorationTypes.SAVANNA_VILLAGE, "village_savanna", List.of(VillagerType.PLAINS, VillagerType.JUNGLE, VillagerType.DESERT)), new VillagerExplorerMapEntry(CARTOGRAPHER_2_EMERALD_AND_COMPASS_VILLAGE_PLAINS_MAP, StructureTags.ON_PLAINS_VILLAGE_MAPS, MapDecorationTypes.PLAINS_VILLAGE, "village_plains", List.of(VillagerType.TAIGA, VillagerType.SNOW, VillagerType.SAVANNA, VillagerType.DESERT)), new VillagerExplorerMapEntry(CARTOGRAPHER_2_EMERALD_AND_COMPASS_EXPLORER_JUNGLE_MAP, StructureTags.ON_JUNGLE_EXPLORER_MAPS, MapDecorationTypes.JUNGLE_TEMPLE, "explorer_jungle", List.of(VillagerType.SWAMP, VillagerType.SAVANNA, VillagerType.DESERT)), new VillagerExplorerMapEntry(CARTOGRAPHER_2_EMERALD_AND_COMPASS_VILLAGE_DESERT_MAP, StructureTags.ON_DESERT_VILLAGE_MAPS, MapDecorationTypes.DESERT_VILLAGE, "village_desert", List.of(VillagerType.SAVANNA, VillagerType.JUNGLE)))) {
-         register(context, entry.resourceKey, new VillagerTrade(new TradeCost(Items.EMERALD, 8), Optional.of(new TradeCost(Items.COMPASS, 1)), new ItemStackTemplate(Items.MAP), 12, 5, 0.2F, villagerTypeRestriction(villagerTypeHolderSet(villagerVariants, entry.villagerTypes)), List.of(ExplorationMapFunction.makeExplorationMap().setDestination(entry.structureTagKey).setMapDecoration(entry.mapDecorationType).setSearchRadius(100).setSkipKnownStructures(true).build(), SetNameFunction.setName(Component.translatable("filled_map." + entry.translationKey), SetNameFunction.Target.ITEM_NAME).build(), FilteredFunction.filtered((new ItemPredicate.Builder()).of(items, Items.FILLED_MAP).withComponents(DataComponentMatchers.Builder.components().any(DataComponents.MAP_ID).build()).build()).onFail(Optional.of(DiscardItem.discardItem().build())).build())));
-      }
+      register(context, CARTOGRAPHER_2_EMERALD_AND_COMPASS_VILLAGE_TAIGA_MAP, createBasicExplorerMapTrades(items, villagerVariants, StructureTags.ON_TAIGA_VILLAGE_MAPS, MapDecorationTypes.TAIGA_VILLAGE, "village_taiga", List.of(VillagerType.SWAMP, VillagerType.SNOW, VillagerType.PLAINS)));
+      register(context, CARTOGRAPHER_2_EMERALD_AND_COMPASS_EXPLORER_SWAMP_MAP, createBasicExplorerMapTrades(items, villagerVariants, StructureTags.ON_SWAMP_EXPLORER_MAPS, MapDecorationTypes.SWAMP_HUT, "explorer_swamp", List.of(VillagerType.TAIGA, VillagerType.SNOW, VillagerType.JUNGLE)));
+      register(context, CARTOGRAPHER_2_EMERALD_AND_COMPASS_VILLAGE_SNOWY_MAP, createBasicExplorerMapTrades(items, villagerVariants, StructureTags.ON_SNOWY_VILLAGE_MAPS, MapDecorationTypes.SNOWY_VILLAGE, "village_snowy", List.of(VillagerType.TAIGA, VillagerType.SWAMP)));
+      register(context, CARTOGRAPHER_2_EMERALD_AND_COMPASS_VILLAGE_SAVANNA_MAP, createBasicExplorerMapTrades(items, villagerVariants, StructureTags.ON_SAVANNA_VILLAGE_MAPS, MapDecorationTypes.SAVANNA_VILLAGE, "village_savanna", List.of(VillagerType.PLAINS, VillagerType.JUNGLE, VillagerType.DESERT)));
+      register(context, CARTOGRAPHER_2_EMERALD_AND_COMPASS_VILLAGE_PLAINS_MAP, createBasicExplorerMapTrades(items, villagerVariants, StructureTags.ON_PLAINS_VILLAGE_MAPS, MapDecorationTypes.PLAINS_VILLAGE, "village_plains", List.of(VillagerType.TAIGA, VillagerType.SNOW, VillagerType.SAVANNA, VillagerType.DESERT)));
+      register(context, CARTOGRAPHER_2_EMERALD_AND_COMPASS_EXPLORER_JUNGLE_MAP, createBasicExplorerMapTrades(items, villagerVariants, StructureTags.ON_JUNGLE_EXPLORER_MAPS, MapDecorationTypes.JUNGLE_TEMPLE, "explorer_jungle", List.of(VillagerType.SWAMP, VillagerType.SAVANNA, VillagerType.DESERT)));
+      register(context, CARTOGRAPHER_2_EMERALD_AND_COMPASS_VILLAGE_DESERT_MAP, createBasicExplorerMapTrades(items, villagerVariants, StructureTags.ON_DESERT_VILLAGE_MAPS, MapDecorationTypes.DESERT_VILLAGE, "village_desert", List.of(VillagerType.SAVANNA, VillagerType.JUNGLE)));
+   }
 
+   private static VillagerTrade createBasicExplorerMapTrades(final HolderGetter<Item> items, final HolderGetter<VillagerType> villagerVariants, final TagKey<Structure> structureTagKey, final Holder<MapDecorationType> mapDecorationType, final String translationKey, final List<ResourceKey<VillagerType>> villagerTypes) {
+      return new VillagerTrade(new TradeCost(Items.EMERALD, 8), Optional.of(new TradeCost(Items.COMPASS, 1)), new ItemStackTemplate(Items.MAP), 12, 5, 0.2F, villagerTypeRestriction(villagerTypeHolderSet(villagerVariants, villagerTypes)), List.of(ExplorationMapFunction.makeExplorationMap().setDestination(structureTagKey).setMapDecoration(mapDecorationType).setSearchRadius(100).setSkipKnownStructures(true).build(), SetNameFunction.setName(Component.translatable("filled_map." + translationKey), SetNameFunction.Target.ITEM_NAME).build(), FilteredFunction.filtered((new ItemPredicate.Builder()).of(items, Items.FILLED_MAP).withComponents(DataComponentMatchers.Builder.components().any(DataComponents.MAP_ID).build()).build()).onFail(Optional.of(DiscardItem.discardItem().build())).build()));
    }
 
    public static Holder.Reference<VillagerTrade> register(final BootstrapContext<VillagerTrade> context, final ResourceKey<VillagerTrade> resourceKey, final VillagerTrade villagerTrade) {
@@ -811,8 +791,7 @@ public class VillagerTrades {
    }
 
    public static HolderSet<VillagerType> villagerTypeHolderSet(final HolderGetter<VillagerType> villagerVariants, final ResourceKey<VillagerType> resourceKey) {
-      Optional<Holder.Reference<VillagerType>> holder = villagerVariants.get(resourceKey);
-      return (HolderSet<VillagerType>)(holder.isPresent() ? HolderSet.direct((Holder)holder.get()) : HolderSet.empty());
+      return HolderSet.direct(villagerVariants.getOrThrow(resourceKey));
    }
 
    public static HolderSet<VillagerType> villagerTypeHolderSet(final HolderGetter<VillagerType> villagerVariants, final List<ResourceKey<VillagerType>> resourceKeys) {
@@ -837,7 +816,7 @@ public class VillagerTrades {
       return SetRandomDyesFunction.withCount(Sum.sum(ConstantValue.exactly(1.0F), new BinomialDistributionGenerator(ConstantValue.exactly(2.0F), ConstantValue.exactly(0.75F)))).build();
    }
 
-   public static List<LootItemFunction> enchantedBook(final HolderGetter<Item> items, final Optional<HolderSet<Enchantment>> options) {
+   public static List<LootItemFunction> enchantedBook(final HolderGetter<Item> items, final HolderSet<Enchantment> options) {
       return List.of((new EnchantRandomlyFunction.Builder()).withOptions(options).allowingIncompatibleEnchantments().includeAdditionalCostComponent().build(), FilteredFunction.filtered((new ItemPredicate.Builder()).of(items, Items.ENCHANTED_BOOK).withComponents(DataComponentMatchers.Builder.components().partial(DataComponentPredicates.STORED_ENCHANTMENTS, EnchantmentsPredicate.storedEnchantments(List.of(new EnchantmentPredicate(Optional.empty(), MinMaxBounds.Ints.ANY)))).build()).build()).onFail(Optional.of(DiscardItem.discardItem().build())).build());
    }
 
@@ -845,17 +824,11 @@ public class VillagerTrades {
       return List.of((new SetEnchantmentsFunction.Builder()).withEnchantment(enchantment, ConstantValue.exactly((float)level)).build(), FilteredFunction.filtered((new ItemPredicate.Builder()).of(items, Items.ENCHANTED_BOOK).withComponents(DataComponentMatchers.Builder.components().partial(DataComponentPredicates.STORED_ENCHANTMENTS, EnchantmentsPredicate.storedEnchantments(List.of(new EnchantmentPredicate(Optional.empty(), MinMaxBounds.Ints.exactly(level))))).build()).build()).onFail(Optional.of(DiscardItem.discardItem().build())).build());
    }
 
-   public static List<LootItemFunction> enchantedItem(final HolderGetter<Item> items, final Optional<HolderSet<Enchantment>> options, final Item expectedItem) {
+   public static List<LootItemFunction> enchantedItem(final HolderGetter<Item> items, final HolderSet<Enchantment> options, final Item expectedItem) {
       return List.of((new EnchantWithLevelsFunction.Builder(UniformGenerator.between(5.0F, 19.0F))).withOptions(options).includeAdditionalCostComponent().build(), FilteredFunction.filtered((new ItemPredicate.Builder()).of(items, expectedItem).withComponents(DataComponentMatchers.Builder.components().partial(DataComponentPredicates.ENCHANTMENTS, EnchantmentsPredicate.enchantments(List.of(new EnchantmentPredicate(Optional.empty(), MinMaxBounds.Ints.ANY)))).build()).build()).onFail(Optional.of(DiscardItem.discardItem().build())).build());
    }
 
    public static List<LootItemFunction> enchantedItem(final HolderGetter<Item> items, final Holder<Enchantment> enchantment, final int level, final Item expectedItem) {
       return List.of((new SetEnchantmentsFunction.Builder()).withEnchantment(enchantment, ConstantValue.exactly((float)level)).build(), FilteredFunction.filtered((new ItemPredicate.Builder()).of(items, expectedItem).withComponents(DataComponentMatchers.Builder.components().partial(DataComponentPredicates.ENCHANTMENTS, EnchantmentsPredicate.enchantments(List.of(new EnchantmentPredicate(Optional.empty(), MinMaxBounds.Ints.exactly(level))))).build()).build()).onFail(Optional.of(DiscardItem.discardItem().build())).build());
-   }
-
-   private static record VillagerExplorerMapEntry(ResourceKey<VillagerTrade> resourceKey, TagKey<Structure> structureTagKey, Holder<MapDecorationType> mapDecorationType, String translationKey, List<ResourceKey<VillagerType>> villagerTypes) {
-      private VillagerExplorerMapEntry {
-         super();
-      }
    }
 }

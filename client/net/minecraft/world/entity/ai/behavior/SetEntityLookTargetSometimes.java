@@ -31,7 +31,7 @@ public class SetEntityLookTargetSometimes {
       float maxDistSqr = maxDist * maxDist;
       Ticker ticker = new Ticker(interval);
       return BehaviorBuilder.create((Function)((i) -> i.group(i.absent(MemoryModuleType.LOOK_TARGET), i.present(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)).apply(i, (lookTarget, nearestEntities) -> (level, body, timestamp) -> {
-               Optional<Entity> target = ((NearestVisibleLivingEntities)i.get(nearestEntities)).findClosestMatchingLivingEntityPredicate(predicate.and((mob) -> mob.distanceToSqr(body) <= (double)maxDistSqr));
+               Optional<LivingEntity> target = ((NearestVisibleLivingEntities)i.get(nearestEntities)).findClosest(predicate.and((mob) -> mob.distanceToSqr(body) <= (double)maxDistSqr));
                if (target.isEmpty()) {
                   return false;
                } else if (!ticker.tickDownAndCheck(level.getRandom())) {

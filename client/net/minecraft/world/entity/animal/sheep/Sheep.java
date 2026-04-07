@@ -12,7 +12,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.DifficultyInstance;
@@ -36,10 +35,9 @@ import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.PanicGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.TemptGoal;
-import net.minecraft.world.entity.ai.goal.TemptedByLivingBlockGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.livingblock.LivingBlock;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
@@ -72,12 +70,11 @@ public class Sheep extends Animal implements Shearable {
       this.goalSelector.addGoal(1, new PanicGoal(this, 1.25));
       this.goalSelector.addGoal(2, new BreedGoal(this, 1.0));
       this.goalSelector.addGoal(3, new TemptGoal(this, 1.1, (i) -> i.is(ItemTags.SHEEP_FOOD), false));
-      this.goalSelector.addGoal(4, new TemptedByLivingBlockGoal(this, 1.1, BlockTags.SHEEP_FOOD, false));
-      this.goalSelector.addGoal(5, new FollowParentGoal(this, 1.1));
-      this.goalSelector.addGoal(6, this.eatBlockGoal);
-      this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 1.0));
-      this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 6.0F));
-      this.goalSelector.addGoal(9, new RandomLookAroundGoal(this));
+      this.goalSelector.addGoal(4, new FollowParentGoal(this, 1.1));
+      this.goalSelector.addGoal(5, this.eatBlockGoal);
+      this.goalSelector.addGoal(6, new WaterAvoidingRandomStrollGoal(this, 1.0));
+      this.goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 6.0F));
+      this.goalSelector.addGoal(8, new RandomLookAroundGoal(this));
    }
 
    public boolean isFood(final ItemStack itemStack) {
@@ -158,8 +155,9 @@ public class Sheep extends Animal implements Shearable {
       level.playSound((Entity)null, this, SoundEvents.SHEEP_SHEAR, soundSource, 1.0F, 1.0F);
       this.dropFromShearingLootTable(level, BuiltInLootTables.SHEAR_SHEEP, tool, (l, drop) -> {
          for(int i = 0; i < drop.getCount(); ++i) {
-            for(LivingBlock block : this.spawnAtLocation(l, drop.copyWithCount(1), 1.0F)) {
-               block.setDeltaMovement(block.getDeltaMovement().add((double)((this.random.nextFloat() - this.random.nextFloat()) * 0.1F), (double)(this.random.nextFloat() * 0.05F), (double)((this.random.nextFloat() - this.random.nextFloat()) * 0.1F)));
+            ItemEntity entity = this.spawnAtLocation(l, drop.copyWithCount(1), 1.0F);
+            if (entity != null) {
+               entity.setDeltaMovement(entity.getDeltaMovement().add((double)((this.random.nextFloat() - this.random.nextFloat()) * 0.1F), (double)(this.random.nextFloat() * 0.05F), (double)((this.random.nextFloat() - this.random.nextFloat()) * 0.1F)));
             }
          }
 
@@ -168,7 +166,7 @@ public class Sheep extends Animal implements Shearable {
    }
 
    public boolean readyForShearing() {
-      return this.isAlive() && !this.isSheared() && !this.isBaby();
+      return !this.isSheared() && !this.isBaby();
    }
 
    protected void addAdditionalSaveData(final ValueOutput output) {

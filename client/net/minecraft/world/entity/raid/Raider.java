@@ -29,7 +29,7 @@ import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiTypes;
-import net.minecraft.world.entity.livingblock.LivingBlock;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.PatrollingMonster;
 import net.minecraft.world.entity.monster.illager.AbstractIllager;
 import net.minecraft.world.item.ItemStack;
@@ -43,7 +43,7 @@ import org.jspecify.annotations.Nullable;
 
 public abstract class Raider extends PatrollingMonster {
    protected static final EntityDataAccessor<Boolean> IS_CELEBRATING;
-   private static final Predicate<LivingBlock> ALLOWED_ITEMS;
+   private static final Predicate<ItemEntity> ALLOWED_ITEMS;
    private static final int DEFAULT_WAVE = 0;
    private static final boolean DEFAULT_CAN_JOIN_RAID = false;
    protected @Nullable Raid raid;
@@ -92,7 +92,7 @@ public abstract class Raider extends PatrollingMonster {
                      }
                   }
                } else {
-                  Entity target = this.getTarget();
+                  LivingEntity target = this.getTarget();
                   if (target != null && (target.is(EntityType.PLAYER) || target.is(EntityType.IRON_GOLEM))) {
                      this.noActionTime = 0;
                   }
@@ -211,8 +211,8 @@ public abstract class Raider extends PatrollingMonster {
 
    }
 
-   protected void pickUpItem(final ServerLevel level, final LivingBlock entity) {
-      ItemStack itemStack = entity.getItemStack();
+   protected void pickUpItem(final ServerLevel level, final ItemEntity entity) {
+      ItemStack itemStack = entity.getItem();
       boolean hasRaidLeader = this.hasActiveRaid() && this.getCurrentRaid().getLeader(this.getWave()) != null;
       if (this.hasActiveRaid() && !hasRaidLeader && ItemStack.matches(itemStack, Raid.getOminousBannerInstance(this.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN)))) {
          EquipmentSlot slot = EquipmentSlot.HEAD;
@@ -267,14 +267,14 @@ public abstract class Raider extends PatrollingMonster {
 
    static {
       IS_CELEBRATING = SynchedEntityData.<Boolean>defineId(Raider.class, EntityDataSerializers.BOOLEAN);
-      ALLOWED_ITEMS = (e) -> e.isAlive() && ItemStack.matches(e.getItemStack(), Raid.getOminousBannerInstance(e.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN)));
+      ALLOWED_ITEMS = (e) -> !e.hasPickUpDelay() && e.isAlive() && ItemStack.matches(e.getItem(), Raid.getOminousBannerInstance(e.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN)));
    }
 
    public class ObtainRaidLeaderBannerGoal<T extends Raider> extends Goal {
       private final T mob;
       private Int2LongOpenHashMap unreachableBannerCache;
       private @Nullable Path pathToBanner;
-      private @Nullable LivingBlock pursuedBannerItemEntity;
+      private @Nullable ItemEntity pursuedBannerItemEntity;
 
       public ObtainRaidLeaderBannerGoal(final T mob) {
          Objects.requireNonNull(Raider.this);
@@ -291,7 +291,7 @@ public abstract class Raider extends PatrollingMonster {
             Int2LongOpenHashMap tempCache = new Int2LongOpenHashMap();
             double followRange = Raider.this.getAttributeValue(Attributes.FOLLOW_RANGE);
 
-            for(LivingBlock banner : this.mob.level().getEntitiesOfClass(LivingBlock.class, this.mob.getBoundingBox().inflate(followRange, 8.0, followRange), Raider.ALLOWED_ITEMS)) {
+            for(ItemEntity banner : this.mob.level().getEntitiesOfClass(ItemEntity.class, this.mob.getBoundingBox().inflate(followRange, 8.0, followRange), Raider.ALLOWED_ITEMS)) {
                long unreachableUntilTime = this.unreachableBannerCache.getOrDefault(banner.getId(), -9223372036854775808L);
                if (Raider.this.level().getGameTime() < unreachableUntilTime) {
                   tempCache.put(banner.getId(), unreachableUntilTime);
@@ -425,7 +425,7 @@ public abstract class Raider extends PatrollingMonster {
 
       public void stop() {
          super.stop();
-         Entity target = this.mob.getTarget();
+         LivingEntity target = this.mob.getTarget();
          if (target != null) {
             for(Raider entity : getServerLevel(this.mob).getNearbyEntities(Raider.class, this.shoutTargeting, this.mob, this.mob.getBoundingBox().inflate(8.0, 8.0, 8.0))) {
                entity.setTarget(target);
@@ -442,7 +442,7 @@ public abstract class Raider extends PatrollingMonster {
       }
 
       public void tick() {
-         Entity target = this.mob.getTarget();
+         LivingEntity target = this.mob.getTarget();
          if (target != null) {
             if (this.mob.distanceToSqr(target) > (double)this.hostileRadiusSqr) {
                this.mob.getLookControl().setLookAt(target, 30.0F, 30.0F);

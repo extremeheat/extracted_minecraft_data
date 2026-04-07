@@ -3,6 +3,7 @@ package com.mojang.blaze3d.opengl;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.systems.GpuQueryPool;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderPassBackend;
 import com.mojang.blaze3d.systems.ScissorState;
@@ -139,16 +140,8 @@ class GlRenderPass implements RenderPassBackend {
       this.encoder.executeDraw(this, firstVertex, 0, vertexCount, (VertexFormat.IndexType)null, 1);
    }
 
-   public void close() {
-      if (!this.closed) {
-         this.closed = true;
-         this.encoder.finishRenderPass();
-      }
-
-   }
-
-   public boolean isClosed() {
-      return this.closed;
+   public void writeTimestamp(final GpuQueryPool pool, final int index) {
+      ((GlQueryPool)pool).writeTimestamp(index);
    }
 
    static {

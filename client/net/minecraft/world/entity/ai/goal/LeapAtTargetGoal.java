@@ -1,13 +1,13 @@
 package net.minecraft.world.entity.ai.goal;
 
 import java.util.EnumSet;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.phys.Vec3;
 
 public class LeapAtTargetGoal extends Goal {
    private final Mob mob;
-   private Entity target;
+   private LivingEntity target;
    private final float yd;
 
    public LeapAtTargetGoal(final Mob mob, final float yd) {

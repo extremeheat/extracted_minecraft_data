@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Optional;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.ActivityData;
@@ -88,13 +87,13 @@ public class PiglinBruteAi {
       body.setAggressive(brain.hasMemoryValue(MemoryModuleType.ATTACK_TARGET));
    }
 
-   private static boolean isNearestValidAttackTarget(final ServerLevel level, final AbstractPiglin body, final Entity target) {
+   private static boolean isNearestValidAttackTarget(final ServerLevel level, final AbstractPiglin body, final LivingEntity target) {
       return findNearestValidAttackTarget(level, body).filter((nearestValidTarget) -> nearestValidTarget == target).isPresent();
    }
 
-   private static Optional<? extends Entity> findNearestValidAttackTarget(final ServerLevel level, final AbstractPiglin body) {
-      Optional<Entity> angryAt = BehaviorUtils.getLivingEntityFromUUIDMemory(body, MemoryModuleType.ANGRY_AT);
-      if (angryAt.isPresent() && Sensor.isEntityAttackableIgnoringLineOfSight(level, body, (Entity)angryAt.get())) {
+   private static Optional<? extends LivingEntity> findNearestValidAttackTarget(final ServerLevel level, final AbstractPiglin body) {
+      Optional<LivingEntity> angryAt = BehaviorUtils.getLivingEntityFromUUIDMemory(body, MemoryModuleType.ANGRY_AT);
+      if (angryAt.isPresent() && Sensor.isEntityAttackableIgnoringLineOfSight(level, body, (LivingEntity)angryAt.get())) {
          return angryAt;
       } else {
          Optional<? extends LivingEntity> player = body.getBrain().<LivingEntity>getMemory(MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER);
@@ -102,7 +101,7 @@ public class PiglinBruteAi {
       }
    }
 
-   protected static void wasHurtBy(final ServerLevel level, final PiglinBrute body, final Entity attacker) {
+   protected static void wasHurtBy(final ServerLevel level, final PiglinBrute body, final LivingEntity attacker) {
       if (!(attacker instanceof AbstractPiglin)) {
          PiglinAi.maybeRetaliate(level, body, attacker);
       }

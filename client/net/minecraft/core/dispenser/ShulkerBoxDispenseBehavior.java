@@ -7,6 +7,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.DirectionalPlaceContext;
+import net.minecraft.world.level.block.DispenserBlock;
 import org.slf4j.Logger;
 
 public class ShulkerBoxDispenseBehavior extends OptionalDispenseItemBehavior {
@@ -16,11 +17,11 @@ public class ShulkerBoxDispenseBehavior extends OptionalDispenseItemBehavior {
       super();
    }
 
-   protected ItemStack execute(final DispenseSource source, final ItemStack dispensed) {
+   protected ItemStack execute(final BlockSource source, final ItemStack dispensed) {
       this.setSuccess(false);
       Item item = dispensed.getItem();
       if (item instanceof BlockItem) {
-         Direction facing = source.direction();
+         Direction facing = (Direction)source.state().getValue(DispenserBlock.FACING);
          BlockPos relativePos = source.pos().relative(facing);
          Direction clickedFace = source.level().isEmptyBlock(relativePos.below()) ? facing : Direction.UP;
 

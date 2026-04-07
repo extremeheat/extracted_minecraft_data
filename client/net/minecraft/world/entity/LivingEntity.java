@@ -84,20 +84,17 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.attributes.DefaultAttributes;
-import net.minecraft.world.entity.animal.FlyingAnimal;
 import net.minecraft.world.entity.animal.wolf.Wolf;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
-import net.minecraft.world.entity.livingblock.LivingBlock;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
-import net.minecraft.world.item.ActionItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemInstance;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.component.AttackRange;
 import net.minecraft.world.item.component.BlocksAttacks;
 import net.minecraft.world.item.component.DeathProtection;
@@ -140,7 +137,7 @@ import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-public abstract class LivingEntity extends Entity implements Attackable, WaypointTransmitter, Targetable {
+public abstract class LivingEntity extends Entity implements Attackable, WaypointTransmitter {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final String TAG_ACTIVE_EFFECTS = "active_effects";
    public static final String TAG_ATTRIBUTES = "attributes";
@@ -169,7 +166,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    private static final int FREE_FALL_EVENTS_PER_ELYTRA_BREAK = 2;
    public static final float BASE_JUMP_POWER = 0.42F;
    protected static final float DEFAULT_KNOCKBACK = 0.4F;
-   public static final int INVULNERABLE_DURATION = 20;
+   protected static final int INVULNERABLE_DURATION = 20;
    private static final double MAX_LINE_OF_SIGHT_TEST_RANGE = 128.0;
    protected static final int LIVING_ENTITY_FLAG_IS_USING = 1;
    protected static final int LIVING_ENTITY_FLAG_OFF_HAND = 2;
@@ -185,9 +182,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    protected static final EntityDimensions SLEEPING_DIMENSIONS;
    public static final float EXTRA_RENDER_CULLING_SIZE_WITH_BIG_HAT = 0.5F;
    public static final float DEFAULT_BABY_SCALE = 0.5F;
-   private static final float WATER_FLOAT_IMPULSE = 0.04F;
+   protected static final float LIQUID_FLOAT_IMPULSE = 0.04F;
    private static final int CURRENT_IMPULSE_CONTEXT_RESET_GRACE_TIME_TICKS = 40;
    private static final int DEFAULT_CURRENT_IMPULSE_CONTEXT_RESET_GRACE_TIME = 0;
+   public static final float BASE_AIR_DRAG = 0.91F;
+   public static final float BASE_VERTICAL_DRAG_FOR_NON_FLYERS = 0.98F;
    private int currentImpulseContextResetGraceTime = 0;
    public static final Predicate<LivingEntity> PLAYER_NOT_WEARING_DISGUISE_ITEM;
    private final AttributeMap attributes;
@@ -306,7 +305,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    }
 
    public static AttributeSupplier.Builder createLivingAttributes() {
-      return AttributeSupplier.builder().add(Attributes.MAX_HEALTH).add(Attributes.KNOCKBACK_RESISTANCE).add(Attributes.MOVEMENT_SPEED).add(Attributes.ARMOR).add(Attributes.ARMOR_TOUGHNESS).add(Attributes.MAX_ABSORPTION).add(Attributes.STEP_HEIGHT).add(Attributes.SCALE).add(Attributes.GRAVITY).add(Attributes.SAFE_FALL_DISTANCE).add(Attributes.FALL_DAMAGE_MULTIPLIER).add(Attributes.JUMP_STRENGTH).add(Attributes.ENTITY_INTERACTION_RANGE).add(Attributes.OXYGEN_BONUS).add(Attributes.BURNING_TIME).add(Attributes.EXPLOSION_KNOCKBACK_RESISTANCE).add(Attributes.WATER_MOVEMENT_EFFICIENCY).add(Attributes.MOVEMENT_EFFICIENCY).add(Attributes.ATTACK_KNOCKBACK).add(Attributes.CAMERA_DISTANCE).add(Attributes.WAYPOINT_TRANSMIT_RANGE);
+      return AttributeSupplier.builder().add(Attributes.MAX_HEALTH).add(Attributes.KNOCKBACK_RESISTANCE).add(Attributes.MOVEMENT_SPEED).add(Attributes.ARMOR).add(Attributes.ARMOR_TOUGHNESS).add(Attributes.MAX_ABSORPTION).add(Attributes.STEP_HEIGHT).add(Attributes.SCALE).add(Attributes.GRAVITY).add(Attributes.SAFE_FALL_DISTANCE).add(Attributes.FALL_DAMAGE_MULTIPLIER).add(Attributes.JUMP_STRENGTH).add(Attributes.ENTITY_INTERACTION_RANGE).add(Attributes.OXYGEN_BONUS).add(Attributes.BURNING_TIME).add(Attributes.EXPLOSION_KNOCKBACK_RESISTANCE).add(Attributes.WATER_MOVEMENT_EFFICIENCY).add(Attributes.MOVEMENT_EFFICIENCY).add(Attributes.ATTACK_KNOCKBACK).add(Attributes.CAMERA_DISTANCE).add(Attributes.WAYPOINT_TRANSMIT_RANGE).add(Attributes.BOUNCINESS).add(Attributes.AIR_DRAG_MODIFIER).add(Attributes.FRICTION_MODIFIER);
    }
 
    protected void checkFallDamage(final double ya, final boolean onGround, final BlockState onState, final BlockPos pos) {
@@ -462,6 +461,10 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
    protected float getBlockSpeedFactor() {
       return Mth.lerp((float)this.getAttributeValue(Attributes.MOVEMENT_EFFICIENCY), super.getBlockSpeedFactor(), 1.0F);
+   }
+
+   private static float computeModifiedFriction(final float friction, final float modifier) {
+      return Mth.clamp(1.0F - (1.0F - friction) * modifier, 0.0F, 1.0F);
    }
 
    public float getLuck() {
@@ -722,40 +725,19 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
    }
 
-   public void drop(final ItemStack itemStack, final boolean thrownFromHand) {
-      if (!itemStack.isEmpty() && !(itemStack.getItem() instanceof ActionItem)) {
-         if (this.level().isClientSide()) {
-            this.swing(InteractionHand.MAIN_HAND);
-         } else {
-            Level var4 = this.level();
-            if (var4 instanceof ServerLevel) {
-               ServerLevel serverLevel = (ServerLevel)var4;
-               if (SpawnEggItem.getType(itemStack) != null) {
-                  SpawnEggItem.spawnMob(this, itemStack, this.level(), this.blockPosition(), true, false);
-                  return;
-               }
-
-               BlockPos var10001 = this.blockPosition();
-               ServerPlayer var10002;
-               if (thrownFromHand && this instanceof ServerPlayer) {
-                  ServerPlayer p = (ServerPlayer)this;
-                  var10002 = p;
-               } else {
-                  var10002 = null;
-               }
-
-               Collection<LivingBlock> stack = LivingBlock.createStack(serverLevel, var10001, var10002, itemStack);
-               if (thrownFromHand && this instanceof ServerPlayer) {
-                  ServerPlayer serverPlayer = (ServerPlayer)this;
-
-                  for(LivingBlock livingBlock : stack) {
-                     livingBlock.setOwner(serverPlayer);
-                     livingBlock.setSelected(true);
-                  }
-               }
-            }
-
+   public @Nullable ItemEntity drop(final ItemStack itemStack, final boolean randomly, final boolean thrownFromHand) {
+      if (itemStack.isEmpty()) {
+         return null;
+      } else if (this.level().isClientSide()) {
+         this.swing(InteractionHand.MAIN_HAND);
+         return null;
+      } else {
+         ItemEntity entity = this.createItemStackToDrop(itemStack, randomly, thrownFromHand);
+         if (entity != null) {
+            this.level().addFreshEntity(entity);
          }
+
+         return entity;
       }
    }
 
@@ -908,15 +890,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       return visibilityPercent;
    }
 
-   public boolean canAttack(final Entity target) {
-      if (target instanceof Player && this.level().getDifficulty() == Difficulty.PEACEFUL) {
-         return false;
-      } else if (target instanceof Targetable) {
-         Targetable targetable = (Targetable)target;
-         return targetable.canBeSeenAsEnemy();
-      } else {
-         return false;
-      }
+   public boolean canAttack(final LivingEntity target) {
+      return target instanceof Player && this.level().getDifficulty() == Difficulty.PEACEFUL ? false : target.canBeSeenAsEnemy();
    }
 
    public boolean canBeSeenAsEnemy() {
@@ -1149,7 +1124,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    }
 
    public boolean isDeadOrDying() {
-      return this.getHealth() <= 0.0F;
+      return this.getHealth() <= 0.0F || this.dead;
    }
 
    public boolean hurtServer(final ServerLevel level, final DamageSource source, float damage) {
@@ -1372,7 +1347,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       defender.knockback(0.5, defender.getX() - this.getX(), defender.getZ() - this.getZ());
    }
 
-   protected boolean checkTotemDeathProtection(final DamageSource killingDamage) {
+   private boolean checkTotemDeathProtection(final DamageSource killingDamage) {
       if (killingDamage.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
          return false;
       } else {
@@ -1454,7 +1429,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
             LOGGER.info("Named entity {} died: {}", this, this.getCombatTracker().getDeathMessage().getString());
          }
 
-         this.dead = true;
+         this.handleKillingBlow();
          this.getCombatTracker().recheckStatus();
          Level var5 = this.level();
          if (var5 instanceof ServerLevel) {
@@ -1472,13 +1447,17 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       }
    }
 
+   protected void handleKillingBlow() {
+      this.dead = true;
+   }
+
    protected void createWitherRose(final @Nullable LivingEntity killer) {
       Level var3 = this.level();
       if (var3 instanceof ServerLevel serverLevel) {
          boolean var6 = false;
          if (killer instanceof WitherBoss) {
-            BlockPos pos = this.blockPosition();
             if ((Boolean)serverLevel.getGameRules().get(GameRules.MOB_GRIEFING)) {
+               BlockPos pos = this.blockPosition();
                BlockState state = Blocks.WITHER_ROSE.defaultBlockState();
                if (this.level().getBlockState(pos).isAir() && state.canSurvive(this.level(), pos)) {
                   this.level().setBlock(pos, state, 3);
@@ -1487,7 +1466,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
             }
 
             if (!var6) {
-               LivingBlock.createAt(this.level(), pos, new ItemStack(Items.WITHER_ROSE));
+               ItemEntity itemEntity = new ItemEntity(this.level(), this.getX(), this.getY(), this.getZ(), new ItemStack(Items.WITHER_ROSE));
+               this.level().addFreshEntity(itemEntity);
             }
          }
 
@@ -1621,7 +1601,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       return 0.0F;
    }
 
-   public AABB getHitbox() {
+   protected AABB getHitbox() {
       AABB aabb = this.getBoundingBox();
       Entity vehicle = this.getVehicle();
       if (vehicle != null) {
@@ -1785,18 +1765,14 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    }
 
    protected void playBlockFallSound() {
-      playBlockFallSoundForEntity(this);
-   }
-
-   public static void playBlockFallSoundForEntity(final Entity entity) {
-      if (!entity.isSilent()) {
-         int xx = Mth.floor(entity.getX());
-         int yy = Mth.floor(entity.getY() - 0.20000000298023224);
-         int zz = Mth.floor(entity.getZ());
-         BlockState state = entity.level().getBlockState(new BlockPos(xx, yy, zz));
+      if (!this.isSilent()) {
+         int xx = Mth.floor(this.getX());
+         int yy = Mth.floor(this.getY() - 0.20000000298023224);
+         int zz = Mth.floor(this.getZ());
+         BlockState state = this.level().getBlockState(new BlockPos(xx, yy, zz));
          if (!state.isAir()) {
             SoundType soundType = state.getSoundType();
-            entity.playSound(soundType.getFallSound(), soundType.getVolume() * 0.5F, soundType.getPitch() * 0.75F);
+            this.playSound(soundType.getFallSound(), soundType.getVolume() * 0.5F, soundType.getPitch() * 0.75F);
          }
 
       }
@@ -2126,6 +2102,10 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       this.attackAnim = (float)this.swingTime / (float)currentSwingDuration;
    }
 
+   protected double getEntityBounciness() {
+      return this.getAttributeValue(Attributes.BOUNCINESS);
+   }
+
    public @Nullable AttributeInstance getAttribute(final Holder<Attribute> attribute) {
       return this.getAttributes().getInstance(attribute);
    }
@@ -2384,8 +2364,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
    private void travelInAir(final Vec3 input) {
       BlockPos posBelow = this.getBlockPosBelowThatAffectsMyMovement();
-      float blockFriction = this.onGround() ? this.level().getBlockState(posBelow).getBlock().getFriction() : 1.0F;
-      float friction = blockFriction * 0.91F;
+      float blockFriction = this.onGround() ? computeModifiedFriction(this.level().getBlockState(posBelow).getBlock().getFriction(), (float)this.getAttributeValue(Attributes.FRICTION_MODIFIER)) : 1.0F;
       Vec3 movement = this.handleRelativeFrictionAndCalculateMovement(input, blockFriction);
       double movementY = movement.y;
       MobEffectInstance levitationEffect = this.getEffect(MobEffects.LEVITATION);
@@ -2404,13 +2383,16 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       if (this.shouldDiscardFriction()) {
          this.setDeltaMovement(movement.x, movementY, movement.z);
       } else {
-         float verticalFriction = this instanceof FlyingAnimal ? friction : 0.98F;
+         float entityAirDragModifier = (float)this.getAttributeValue(Attributes.AIR_DRAG_MODIFIER);
+         float airDrag = computeModifiedFriction(0.91F, entityAirDragModifier);
+         float friction = blockFriction * airDrag;
+         float verticalFriction = this.omnidirectionalAirMover() ? friction : computeModifiedFriction(0.98F, entityAirDragModifier);
          this.setDeltaMovement(movement.x * (double)friction, movementY * (double)verticalFriction, movement.z * (double)friction);
       }
 
    }
 
-   private void travelInFluid(final Vec3 input) {
+   protected void travelInFluid(final Vec3 input) {
       boolean isFalling = this.getDeltaMovement().y <= 0.0;
       double oldY = this.getY();
       double baseGravity = this.getEffectiveGravity();
@@ -2840,7 +2822,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    }
 
    private void detectEquipmentUpdates() {
-      Map<EquipmentSlot, ItemStack> changedItems = this.collectEquipmentChanges();
+      Map<EquipmentSlot, ItemStack> changedItems = this.collectEquipmentChanges(this.lastEquipmentItems);
       if (changedItems != null) {
          this.handleHandSwap(changedItems);
          if (!changedItems.isEmpty()) {
@@ -2850,11 +2832,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
    }
 
-   private @Nullable Map<EquipmentSlot, ItemStack> collectEquipmentChanges() {
+   protected @Nullable Map<EquipmentSlot, ItemStack> collectEquipmentChanges(final Map<EquipmentSlot, ItemStack> lastEquipmentItems) {
       Map<EquipmentSlot, ItemStack> changedItems = null;
 
       for(EquipmentSlot slot : EquipmentSlot.VALUES) {
-         ItemStack previous = (ItemStack)this.lastEquipmentItems.get(slot);
+         ItemStack previous = (ItemStack)lastEquipmentItems.get(slot);
          ItemStack current = this.getItemBySlot(slot);
          if (this.equipmentHasChanged(previous, current)) {
             if (changedItems == null) {
@@ -2882,9 +2864,9 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
                   }
 
                }));
-               Level var7 = this.level();
-               if (var7 instanceof ServerLevel) {
-                  ServerLevel serverLevel = (ServerLevel)var7;
+               Level var8 = this.level();
+               if (var8 instanceof ServerLevel) {
+                  ServerLevel serverLevel = (ServerLevel)var8;
                   EnchantmentHelper.runLocationChangedEffects(serverLevel, current, this, slot);
                }
             }
@@ -3049,7 +3031,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       }
 
       if (this.level().isClientSide()) {
-         this.calculateEntityAnimation(this instanceof FlyingAnimal);
+         this.calculateEntityAnimation(this.omnidirectionalAirMover());
       }
 
       profiler.pop();
@@ -3230,16 +3212,16 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       this.jumping = jump;
    }
 
-   public void onItemPickup(final LivingBlock entity) {
-      Entity thrower = entity.getCommander();
+   public void onItemPickup(final ItemEntity entity) {
+      Entity thrower = entity.getOwner();
       if (thrower instanceof ServerPlayer) {
-         CriteriaTriggers.THROWN_ITEM_PICKED_UP_BY_ENTITY.trigger((ServerPlayer)thrower, entity.getItemStack(), this);
+         CriteriaTriggers.THROWN_ITEM_PICKED_UP_BY_ENTITY.trigger((ServerPlayer)thrower, entity.getItem(), this);
       }
 
    }
 
    public void take(final Entity entity, final int orgCount) {
-      if (!entity.isRemoved() && !this.level().isClientSide() && (entity instanceof LivingBlock || entity instanceof AbstractArrow || entity instanceof ExperienceOrb)) {
+      if (!entity.isRemoved() && !this.level().isClientSide() && (entity instanceof ItemEntity || entity instanceof AbstractArrow || entity instanceof ExperienceOrb)) {
          ((ServerLevel)this.level()).getChunkSource().sendToTrackingPlayers(entity, new ClientboundTakeItemEntityPacket(entity.getId(), this.getId(), orgCount));
       }
 
@@ -3346,6 +3328,36 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          }
       }
 
+   }
+
+   private @Nullable ItemEntity createItemStackToDrop(final ItemStack itemStack, final boolean randomly, final boolean thrownFromHand) {
+      if (itemStack.isEmpty()) {
+         return null;
+      } else {
+         double yHandPos = this.getEyeY() - 0.30000001192092896;
+         ItemEntity entity = new ItemEntity(this.level(), this.getX(), yHandPos, this.getZ(), itemStack);
+         entity.setPickUpDelay(40);
+         if (thrownFromHand) {
+            entity.setThrower(this);
+         }
+
+         if (randomly) {
+            float pow = this.random.nextFloat() * 0.5F;
+            float dir = this.random.nextFloat() * 6.2831855F;
+            entity.setDeltaMovement((double)(-Mth.sin((double)dir) * pow), 0.20000000298023224, (double)(Mth.cos((double)dir) * pow));
+         } else {
+            float pow = 0.3F;
+            float sinX = Mth.sin((double)(this.getXRot() * 0.017453292F));
+            float cosX = Mth.cos((double)(this.getXRot() * 0.017453292F));
+            float sinY = Mth.sin((double)(this.getYRot() * 0.017453292F));
+            float cosY = Mth.cos((double)(this.getYRot() * 0.017453292F));
+            float dir = this.random.nextFloat() * 6.2831855F;
+            float pow2 = 0.02F * this.random.nextFloat();
+            entity.setDeltaMovement((double)(-sinY * cosX * 0.3F) + Math.cos((double)dir) * (double)pow2, (double)(-sinX * 0.3F + 0.1F + (this.random.nextFloat() - this.random.nextFloat()) * 0.1F), (double)(cosY * cosX * 0.3F) + Math.sin((double)dir) * (double)pow2);
+         }
+
+         return entity;
+      }
    }
 
    protected void updateUsingItem(final ItemStack useItem) {
@@ -3670,7 +3682,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       this.setPos((double)bedPosition.getX() + 0.5, (double)bedPosition.getY() + 0.6875, (double)bedPosition.getZ() + 0.5);
    }
 
-   public boolean checkBedExists() {
+   private boolean checkBedExists() {
       return (Boolean)this.getSleepingPos().map((bedPosition) -> this.level().getBlockState(bedPosition).getBlock() instanceof BedBlock).orElse(false);
    }
 

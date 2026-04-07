@@ -2,7 +2,6 @@ package net.minecraft.advancements;
 
 import com.mojang.serialization.Codec;
 import net.minecraft.advancements.criterion.AnyBlockInteractionTrigger;
-import net.minecraft.advancements.criterion.BarrelRollTrigger;
 import net.minecraft.advancements.criterion.BeeNestDestroyedTrigger;
 import net.minecraft.advancements.criterion.BredAnimalsTrigger;
 import net.minecraft.advancements.criterion.BrewedPotionTrigger;
@@ -43,7 +42,6 @@ import net.minecraft.advancements.criterion.SummonedEntityTrigger;
 import net.minecraft.advancements.criterion.TameAnimalTrigger;
 import net.minecraft.advancements.criterion.TargetBlockTrigger;
 import net.minecraft.advancements.criterion.TradeTrigger;
-import net.minecraft.advancements.criterion.UseItemTrigger;
 import net.minecraft.advancements.criterion.UsedEnderEyeTrigger;
 import net.minecraft.advancements.criterion.UsedTotemTrigger;
 import net.minecraft.advancements.criterion.UsingItemTrigger;
@@ -78,7 +76,6 @@ public class CriteriaTriggers {
    public static final TameAnimalTrigger TAME_ANIMAL;
    public static final ItemUsedOnLocationTrigger PLACED_BLOCK;
    public static final ConsumeItemTrigger CONSUME_ITEM;
-   public static final UseItemTrigger USE_ITEM;
    public static final EffectsChangedTrigger EFFECTS_CHANGED;
    public static final UsedTotemTrigger USED_TOTEM;
    public static final DistanceTrigger NETHER_TRAVEL;
@@ -106,17 +103,11 @@ public class CriteriaTriggers {
    public static final DistanceTrigger FALL_FROM_HEIGHT;
    public static final DistanceTrigger RIDE_ENTITY_IN_LAVA_TRIGGER;
    public static final KilledTrigger KILL_MOB_NEAR_SCULK_CATALYST;
-   public static final PlayerTrigger NETHER_PORTAL_CRAFTED;
-   public static final PlayerTrigger END_PORTAL_CRAFTED;
    public static final ItemUsedOnLocationTrigger ALLAY_DROP_ITEM_ON_BLOCK;
    public static final PlayerTrigger AVOID_VIBRATION;
    public static final RecipeCraftedTrigger RECIPE_CRAFTED;
    public static final RecipeCraftedTrigger CRAFTER_RECIPE_CRAFTED;
    public static final FallAfterExplosionTrigger FALL_AFTER_EXPLOSION;
-   public static final BarrelRollTrigger BARREL_ROLL;
-   public static final PlayerTrigger HOUSE_BUILT;
-   public static final PlayerTrigger EYE_FRAME_COMBINATION;
-   public static final PlayerTrigger TRAP_BUILT;
 
    public CriteriaTriggers() {
       super();
@@ -158,7 +149,6 @@ public class CriteriaTriggers {
       TAME_ANIMAL = (TameAnimalTrigger)register("tame_animal", new TameAnimalTrigger());
       PLACED_BLOCK = (ItemUsedOnLocationTrigger)register("placed_block", new ItemUsedOnLocationTrigger());
       CONSUME_ITEM = (ConsumeItemTrigger)register("consume_item", new ConsumeItemTrigger());
-      USE_ITEM = (UseItemTrigger)register("use_item", new UseItemTrigger());
       EFFECTS_CHANGED = (EffectsChangedTrigger)register("effects_changed", new EffectsChangedTrigger());
       USED_TOTEM = (UsedTotemTrigger)register("used_totem", new UsedTotemTrigger());
       NETHER_TRAVEL = (DistanceTrigger)register("nether_travel", new DistanceTrigger());
@@ -186,16 +176,10 @@ public class CriteriaTriggers {
       FALL_FROM_HEIGHT = (DistanceTrigger)register("fall_from_height", new DistanceTrigger());
       RIDE_ENTITY_IN_LAVA_TRIGGER = (DistanceTrigger)register("ride_entity_in_lava", new DistanceTrigger());
       KILL_MOB_NEAR_SCULK_CATALYST = (KilledTrigger)register("kill_mob_near_sculk_catalyst", new KilledTrigger());
-      NETHER_PORTAL_CRAFTED = (PlayerTrigger)register("nether_portal_crafted", new PlayerTrigger());
-      END_PORTAL_CRAFTED = (PlayerTrigger)register("end_portal_crafted", new PlayerTrigger());
       ALLAY_DROP_ITEM_ON_BLOCK = (ItemUsedOnLocationTrigger)register("allay_drop_item_on_block", new ItemUsedOnLocationTrigger());
       AVOID_VIBRATION = (PlayerTrigger)register("avoid_vibration", new PlayerTrigger());
       RECIPE_CRAFTED = (RecipeCraftedTrigger)register("recipe_crafted", new RecipeCraftedTrigger());
       CRAFTER_RECIPE_CRAFTED = (RecipeCraftedTrigger)register("crafter_recipe_crafted", new RecipeCraftedTrigger());
       FALL_AFTER_EXPLOSION = (FallAfterExplosionTrigger)register("fall_after_explosion", new FallAfterExplosionTrigger());
-      BARREL_ROLL = (BarrelRollTrigger)register("barrel_roll", new BarrelRollTrigger());
-      HOUSE_BUILT = (PlayerTrigger)register("built_house", new PlayerTrigger());
-      EYE_FRAME_COMBINATION = (PlayerTrigger)register("eye_frame_combination", new PlayerTrigger());
-      TRAP_BUILT = (PlayerTrigger)register("built_trap", new PlayerTrigger());
    }
 }

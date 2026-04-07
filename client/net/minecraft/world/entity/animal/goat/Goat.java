@@ -34,7 +34,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.livingblock.LivingBlock;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Instrument;
 import net.minecraft.world.item.InstrumentItem;
@@ -48,6 +48,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class Goat extends Animal {
@@ -292,15 +293,13 @@ public class Goat extends Animal {
             }
 
             this.entityData.set(hornToDrop, false);
+            Vec3 bodyPosition = this.position();
             ItemStack item = this.createHorn();
             double deltaX = (double)Mth.randomBetween(this.random, -0.2F, 0.2F);
             double deltaY = (double)Mth.randomBetween(this.random, 0.3F, 0.7F);
             double deltaZ = (double)Mth.randomBetween(this.random, -0.2F, 0.2F);
-            LivingBlock block = LivingBlock.createAt(this.level(), this.blockPosition(), item);
-            if (block != null) {
-               block.setDeltaMovement(deltaX, deltaY, deltaZ);
-            }
-
+            ItemEntity itemEntity = new ItemEntity(this.level(), bodyPosition.x(), bodyPosition.y(), bodyPosition.z(), item, deltaX, deltaY, deltaZ);
+            this.level().addFreshEntity(itemEntity);
             return true;
          }
       }

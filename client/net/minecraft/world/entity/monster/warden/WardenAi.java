@@ -11,7 +11,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Unit;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.ActivityData;
 import net.minecraft.world.entity.ai.Brain;
@@ -110,7 +109,7 @@ public class WardenAi {
       return body.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).filter((e) -> e == living).isPresent();
    }
 
-   private static void onTargetInvalid(final ServerLevel level, final Warden body, final Entity attackTarget) {
+   private static void onTargetInvalid(final ServerLevel level, final Warden body, final LivingEntity attackTarget) {
       if (!body.canTargetEntity(attackTarget)) {
          body.clearAnger(attackTarget);
       }

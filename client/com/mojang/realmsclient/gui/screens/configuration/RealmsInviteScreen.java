@@ -70,7 +70,7 @@ public class RealmsInviteScreen extends RealmsScreen {
             this.showMessage(INVITING_PLAYER_TEXT);
             CompletableFuture.supplyAsync(() -> this.configureScreen.invitePlayer(serverId, name), Util.ioPool()).thenAcceptAsync((success) -> {
                if (success) {
-                  this.minecraft.setScreen(this.configureScreen);
+                  this.minecraft.gui.setScreen(this.configureScreen);
                } else {
                   this.showMessage(NO_SUCH_PLAYER_ERROR_TEXT);
                }
@@ -88,7 +88,7 @@ public class RealmsInviteScreen extends RealmsScreen {
    }
 
    public void onClose() {
-      this.minecraft.setScreen(this.configureScreen);
+      this.minecraft.gui.setScreen(this.configureScreen);
    }
 
    public void extractRenderState(final GuiGraphicsExtractor graphics, final int xm, final int ym, final float a) {

@@ -7,8 +7,11 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DiodeBlock;
 import net.minecraft.world.level.block.Mirror;
@@ -107,6 +110,13 @@ public abstract class HangingEntity extends BlockAttachedEntity {
    }
 
    public abstract void playPlacementSound();
+
+   public ItemEntity spawnAtLocation(final ServerLevel level, final ItemStack itemStack, final float yOffs) {
+      ItemEntity entity = new ItemEntity(this.level(), this.getX() + (double)((float)this.getDirection().getStepX() * 0.15F), this.getY() + (double)yOffs, this.getZ() + (double)((float)this.getDirection().getStepZ() * 0.15F), itemStack);
+      entity.setDefaultPickUpDelay();
+      this.level().addFreshEntity(entity);
+      return entity;
+   }
 
    public float rotate(final Rotation rotation) {
       Direction direction = this.getDirection();

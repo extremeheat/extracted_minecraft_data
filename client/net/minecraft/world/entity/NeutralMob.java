@@ -23,9 +23,9 @@ public interface NeutralMob {
 
    void setPersistentAngerEndTime(long endTime);
 
-   @Nullable EntityReference<Entity> getPersistentAngerTarget();
+   @Nullable EntityReference<LivingEntity> getPersistentAngerTarget();
 
-   void setPersistentAngerTarget(final @Nullable EntityReference<Entity> persistentAngerTarget);
+   void setPersistentAngerTarget(final @Nullable EntityReference<LivingEntity> persistentAngerTarget);
 
    void startPersistentAngerTimer();
 
@@ -51,46 +51,44 @@ public interface NeutralMob {
 
       if (level instanceof ServerLevel) {
          this.setPersistentAngerTarget(EntityReference.read(input, "angry_at"));
-         this.setTarget(EntityReference.getEntity(this.getPersistentAngerTarget(), level));
+         this.setTarget(EntityReference.getLivingEntity(this.getPersistentAngerTarget(), level));
       }
    }
 
    default void updatePersistentAnger(final ServerLevel level, final boolean stayAngryIfTargetPresent) {
-      Entity previousTarget = this.getTargetUnchecked();
-      EntityReference<Entity> persistentAngerTarget = this.getPersistentAngerTarget();
-      if (previousTarget instanceof Targetable targetable) {
-         if (targetable.isDeadOrDying() && persistentAngerTarget != null && persistentAngerTarget.matches(previousTarget) && previousTarget instanceof Mob) {
-            this.stopBeingAngry();
-            return;
-         }
-      }
-
-      Entity target = this.getTarget();
-      if (target != null) {
-         boolean newTarget = persistentAngerTarget == null || !persistentAngerTarget.matches(target);
-         if (newTarget) {
-            this.setPersistentAngerTarget(EntityReference.of(target));
-         }
-
-         if (newTarget || stayAngryIfTargetPresent) {
-            this.startPersistentAngerTimer();
-         }
-      }
-
-      if (persistentAngerTarget != null && !this.isAngry() && (target == null || !isValidPlayerTarget(target) || !stayAngryIfTargetPresent)) {
+      LivingEntity previousTarget = this.getTargetUnchecked();
+      EntityReference<LivingEntity> persistentAngerTarget = this.getPersistentAngerTarget();
+      if (previousTarget != null && previousTarget.isDeadOrDying() && persistentAngerTarget != null && persistentAngerTarget.matches(previousTarget) && previousTarget instanceof Mob) {
          this.stopBeingAngry();
-      }
+      } else {
+         LivingEntity target = this.getTarget();
+         if (target != null) {
+            boolean newTarget = persistentAngerTarget == null || !persistentAngerTarget.matches(target);
+            if (newTarget) {
+               this.setPersistentAngerTarget(EntityReference.of(target));
+            }
 
-      Entity persistentTarget = EntityReference.getEntity(persistentAngerTarget, level);
-      if (persistentTarget instanceof Player player) {
-         if (player.isCreative() || player.isSpectator() || level.getDifficulty() == Difficulty.PEACEFUL) {
+            if (newTarget || stayAngryIfTargetPresent) {
+               this.startPersistentAngerTimer();
+            }
+         }
+
+         if (persistentAngerTarget != null && !this.isAngry() && (target == null || !isValidPlayerTarget(target) || !stayAngryIfTargetPresent)) {
             this.stopBeingAngry();
          }
-      }
 
+         LivingEntity persistentTarget = EntityReference.getLivingEntity(persistentAngerTarget, level);
+         if (persistentTarget instanceof Player) {
+            Player player = (Player)persistentTarget;
+            if (player.isCreative() || player.isSpectator() || level.getDifficulty() == Difficulty.PEACEFUL) {
+               this.stopBeingAngry();
+            }
+         }
+
+      }
    }
 
-   private static boolean isValidPlayerTarget(final Entity target) {
+   private static boolean isValidPlayerTarget(final LivingEntity target) {
       boolean var10000;
       if (target instanceof Player player) {
          if (!player.isCreative() && !player.isSpectator() && player.level().getDifficulty() != Difficulty.PEACEFUL) {
@@ -103,13 +101,13 @@ public interface NeutralMob {
       return var10000;
    }
 
-   default boolean isAngryAt(final Entity entity, final ServerLevel level) {
+   default boolean isAngryAt(final LivingEntity entity, final ServerLevel level) {
       if (!this.canAttack(entity)) {
          return false;
       } else if (isValidPlayerTarget(entity) && this.isAngryAtAllPlayers(level)) {
          return true;
       } else {
-         EntityReference<Entity> persistentAngerTarget = this.getPersistentAngerTarget();
+         EntityReference<LivingEntity> persistentAngerTarget = this.getPersistentAngerTarget();
          return persistentAngerTarget != null && persistentAngerTarget.matches(entity);
       }
    }
@@ -130,7 +128,7 @@ public interface NeutralMob {
 
    default void playerDied(final ServerLevel level, final Player player) {
       if ((Boolean)level.getGameRules().get(GameRules.FORGIVE_DEAD_PLAYERS)) {
-         EntityReference<Entity> persistentAngerTarget = this.getPersistentAngerTarget();
+         EntityReference<LivingEntity> persistentAngerTarget = this.getPersistentAngerTarget();
          if (persistentAngerTarget != null && persistentAngerTarget.matches(player)) {
             this.stopBeingAngry();
          }
@@ -145,7 +143,7 @@ public interface NeutralMob {
    default void stopBeingAngry() {
       this.setLastHurtByMob((LivingEntity)null);
       this.setPersistentAngerTarget((EntityReference)null);
-      this.setTarget((Entity)null);
+      this.setTarget((LivingEntity)null);
       this.setPersistentAngerEndTime(-1L);
    }
 
@@ -153,11 +151,11 @@ public interface NeutralMob {
 
    void setLastHurtByMob(final @Nullable LivingEntity hurtBy);
 
-   void setTarget(final @Nullable Entity target);
+   void setTarget(final @Nullable LivingEntity target);
 
-   boolean canAttack(final Entity target);
+   boolean canAttack(final LivingEntity target);
 
-   @Nullable Entity getTarget();
+   @Nullable LivingEntity getTarget();
 
-   @Nullable Entity getTargetUnchecked();
+   @Nullable LivingEntity getTargetUnchecked();
 }

@@ -72,10 +72,10 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
          boolean canPlay = slot != this.serverData.activeSlot || this.serverData.isMinigameActive();
          Button playOrDownloadButton;
          if (canPlay) {
-            playOrDownloadButton = Button.builder(Component.translatable("mco.brokenworld.play"), (button) -> this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(this.lastScreen, new LongRunningTask[]{new SwitchSlotTask(this.serverData.id, slot, this::doSwitchOrReset)}))).bounds(this.getFramePositionX(slot), row(8), 80, 20).build();
+            playOrDownloadButton = Button.builder(Component.translatable("mco.brokenworld.play"), (var2) -> this.minecraft.gui.setScreen(new RealmsLongRunningMcoTaskScreen(this.lastScreen, new LongRunningTask[]{new SwitchSlotTask(this.serverData.id, slot, this::doSwitchOrReset)}))).bounds(this.getFramePositionX(slot), row(8), 80, 20).build();
             playOrDownloadButton.active = !((RealmsSlot)this.serverData.slots.get(slot)).options.empty;
          } else {
-            playOrDownloadButton = Button.builder(Component.translatable("mco.brokenworld.download"), (button) -> this.minecraft.setScreen(RealmsPopups.infoPopupScreen(this, Component.translatable("mco.configure.world.restore.download.question.line1"), (popupScreen) -> this.downloadWorld(slot)))).bounds(this.getFramePositionX(slot), row(8), 80, 20).build();
+            playOrDownloadButton = Button.builder(Component.translatable("mco.brokenworld.download"), (button) -> this.minecraft.gui.setScreen(RealmsPopups.infoPopupScreen(this, Component.translatable("mco.configure.world.restore.download.question.line1"), (var2) -> this.downloadWorld(slot)))).bounds(this.getFramePositionX(slot), row(8), 80, 20).build();
          }
 
          if (this.slotsThatHasBeenDownloaded.contains(slot)) {
@@ -131,14 +131,14 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
       (new Thread(() -> {
          RealmsClient client = RealmsClient.getOrCreate();
          if (this.serverData.state == RealmsServer.State.CLOSED) {
-            this.minecraft.execute(() -> this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(this, new LongRunningTask[]{new OpenServerTask(this.serverData, this, true, this.minecraft)})));
+            this.minecraft.execute(() -> this.minecraft.gui.setScreen(new RealmsLongRunningMcoTaskScreen(this, new LongRunningTask[]{new OpenServerTask(this.serverData, this, true, this.minecraft)})));
          } else {
             try {
                RealmsServer ownRealm = client.getOwnRealm(this.serverId);
                this.minecraft.execute(() -> RealmsMainScreen.play(ownRealm, this));
             } catch (RealmsServiceException e) {
                LOGGER.error("Couldn't get own world", e);
-               this.minecraft.execute(() -> this.minecraft.setScreen(this.createErrorScreen(e)));
+               this.minecraft.execute(() -> this.minecraft.gui.setScreen(this.createErrorScreen(e)));
             }
          }
 
@@ -156,20 +156,20 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
                this.clearWidgets();
                this.addButtons();
             } else {
-               this.minecraft.setScreen(this);
+               this.minecraft.gui.setScreen(this);
             }
 
          });
-         this.minecraft.setScreen(downloadScreen);
+         this.minecraft.gui.setScreen(downloadScreen);
       } catch (RealmsServiceException e) {
          LOGGER.error("Couldn't download world data", e);
-         this.minecraft.setScreen(new RealmsGenericErrorScreen(e, this));
+         this.minecraft.gui.setScreen(new RealmsGenericErrorScreen(e, this));
       }
 
    }
 
    public void onClose() {
-      this.minecraft.setScreen(this.lastScreen);
+      this.minecraft.gui.setScreen(this.lastScreen);
    }
 
    private boolean isMinigame() {

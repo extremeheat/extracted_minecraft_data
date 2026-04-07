@@ -21,13 +21,13 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.hurtingprojectile.LargeFireball;
 import net.minecraft.world.level.BlockGetter;
@@ -58,7 +58,6 @@ public class Ghast extends Mob implements Enemy {
       this.goalSelector.addGoal(7, new GhastLookGoal(this));
       this.goalSelector.addGoal(7, new GhastShootFireballGoal(this));
       this.targetSelector.addGoal(1, new NearestAttackableTargetGoal(this, Player.class, 10, true, false, (target, level) -> Math.abs(target.getY() - this.getY()) <= 4.0));
-      this.targetSelector.addGoal(1, new NearestAttackableTargetGoal(this, LivingBlock.class, 10, true, false, (target, level) -> Math.abs(target.getY() - this.getY()) <= 4.0));
    }
 
    public boolean isCharging() {
@@ -166,9 +165,9 @@ public class Ghast extends Mob implements Enemy {
          ghast.setYRot(-((float)Mth.atan2(movement.x, movement.z)) * 57.295776F);
          ghast.yBodyRot = ghast.getYRot();
       } else {
-         Entity target = ghast.getTarget();
+         LivingEntity target = ghast.getTarget();
          double maxDist = 64.0;
-         if (target.distanceToSqr((Entity)ghast) < 4096.0) {
+         if (target.distanceToSqr(ghast) < 4096.0) {
             double xdd = target.getX() - ghast.getX();
             double zdd = target.getZ() - ghast.getZ();
             ghast.setYRot(-((float)Mth.atan2(xdd, zdd)) * 57.295776F);
@@ -182,15 +181,13 @@ public class Ghast extends Mob implements Enemy {
       DATA_IS_CHARGING = SynchedEntityData.<Boolean>defineId(Ghast.class, EntityDataSerializers.BOOLEAN);
    }
 
-   public static class GhastMoveControl extends MoveControl {
-      private final Mob ghast;
+   public static class GhastMoveControl<T extends Mob> extends MoveControl<T> {
       private int floatDuration;
       private final boolean careful;
       private final BooleanSupplier shouldBeStopped;
 
-      public GhastMoveControl(final Mob ghast, final boolean careful, final BooleanSupplier shouldBeStopped) {
+      public GhastMoveControl(final T ghast, final boolean careful, final BooleanSupplier shouldBeStopped) {
          super(ghast);
-         this.ghast = ghast;
          this.careful = careful;
          this.shouldBeStopped = shouldBeStopped;
       }
@@ -198,15 +195,15 @@ public class Ghast extends Mob implements Enemy {
       public void tick() {
          if (this.shouldBeStopped.getAsBoolean()) {
             this.operation = MoveControl.Operation.WAIT;
-            this.ghast.stopInPlace();
+            this.mob.stopInPlace();
          }
 
          if (this.operation == MoveControl.Operation.MOVE_TO) {
             if (this.floatDuration-- <= 0) {
-               this.floatDuration += this.ghast.getRandom().nextInt(5) + 2;
-               Vec3 travel = new Vec3(this.wantedX - this.ghast.getX(), this.wantedY - this.ghast.getY(), this.wantedZ - this.ghast.getZ());
+               this.floatDuration += this.mob.getRandom().nextInt(5) + 2;
+               Vec3 travel = new Vec3(this.wantedX - this.mob.getX(), this.wantedY - this.mob.getY(), this.wantedZ - this.mob.getZ());
                if (this.canReach(travel)) {
-                  this.ghast.setDeltaMovement(this.ghast.getDeltaMovement().add(travel.normalize().scale(this.ghast.getAttributeValue(Attributes.FLYING_SPEED) * 5.0 / 3.0)));
+                  this.mob.setDeltaMovement(this.mob.getDeltaMovement().add(travel.normalize().scale(this.mob.getAttributeValue(Attributes.FLYING_SPEED) * 5.0 / 3.0)));
                } else {
                   this.operation = MoveControl.Operation.WAIT;
                }
@@ -216,21 +213,21 @@ public class Ghast extends Mob implements Enemy {
       }
 
       private boolean canReach(final Vec3 travel) {
-         AABB aabb = this.ghast.getBoundingBox();
+         AABB aabb = this.mob.getBoundingBox();
          AABB aabbAtDestination = aabb.move(travel);
          if (this.careful) {
             for(BlockPos pos : BlockPos.betweenClosed(aabbAtDestination.inflate(1.0))) {
-               if (!this.blockTraversalPossible(this.ghast.level(), (Vec3)null, (Vec3)null, pos, false, false)) {
+               if (!this.blockTraversalPossible(this.mob.level(), (Vec3)null, (Vec3)null, pos, false, false)) {
                   return false;
                }
             }
          }
 
-         boolean isInWater = this.ghast.isInWater();
-         boolean isInLava = this.ghast.isInLava();
-         Vec3 start = this.ghast.position();
+         boolean isInWater = this.mob.isInWater();
+         boolean isInLava = this.mob.isInLava();
+         Vec3 start = this.mob.position();
          Vec3 end = start.add(travel);
-         return BlockGetter.forEachBlockIntersectedBetween(start, end, aabbAtDestination, (blockPos, i) -> aabb.intersects(blockPos) ? true : this.blockTraversalPossible(this.ghast.level(), start, end, blockPos, isInWater, isInLava));
+         return BlockGetter.forEachBlockIntersectedBetween(start, end, aabbAtDestination, (blockPos, i) -> aabb.intersects(blockPos) ? true : this.blockTraversalPossible(this.mob.level(), start, end, blockPos, isInWater, isInLava));
       }
 
       private boolean blockTraversalPossible(final BlockGetter level, final @Nullable Vec3 start, final @Nullable Vec3 end, final BlockPos pos, final boolean canPathThroughWater, final boolean canPathThroughLava) {
@@ -239,14 +236,14 @@ public class Ghast extends Mob implements Enemy {
             return true;
          } else {
             boolean preciseBlockCollisions = start != null && end != null;
-            boolean pathNoCollisions = preciseBlockCollisions ? !this.ghast.collidedWithShapeMovingFrom(start, end, state.getCollisionShape(level, pos).move(new Vec3(pos)).toAabbs()) : state.getCollisionShape(level, pos).isEmpty();
+            boolean pathNoCollisions = preciseBlockCollisions ? !this.mob.collidedWithShapeMovingFrom(start, end, state.getCollisionShape(level, pos).move(new Vec3(pos)).toAabbs()) : state.getCollisionShape(level, pos).isEmpty();
             if (!this.careful) {
                return pathNoCollisions;
             } else if (state.is(BlockTags.HAPPY_GHAST_AVOIDS)) {
                return false;
             } else {
                FluidState fluidState = level.getFluidState(pos);
-               if (!fluidState.isEmpty() && (!preciseBlockCollisions || this.ghast.collidedWithFluid(fluidState, pos, start, end))) {
+               if (!fluidState.isEmpty() && (!preciseBlockCollisions || this.mob.collidedWithFluid(fluidState, pos, start, end))) {
                   if (fluidState.is(FluidTags.WATER)) {
                      return canPathThroughWater;
                   }
@@ -409,10 +406,10 @@ public class Ghast extends Mob implements Enemy {
       }
 
       public void tick() {
-         Entity target = this.ghast.getTarget();
+         LivingEntity target = this.ghast.getTarget();
          if (target != null) {
             double maxDist = 64.0;
-            if (target.distanceToSqr((Entity)this.ghast) < 4096.0 && this.ghast.hasLineOfSight(target)) {
+            if (target.distanceToSqr(this.ghast) < 4096.0 && this.ghast.hasLineOfSight(target)) {
                Level level = this.ghast.level();
                ++this.chargeTime;
                if (this.chargeTime == 10 && !this.ghast.isSilent()) {

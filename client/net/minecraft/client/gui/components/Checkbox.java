@@ -11,6 +11,7 @@ import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.Style;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import org.jspecify.annotations.Nullable;
@@ -21,6 +22,7 @@ public class Checkbox extends AbstractButton {
    private static final Identifier CHECKBOX_HIGHLIGHTED_SPRITE = Identifier.withDefaultNamespace("widget/checkbox_highlighted");
    private static final Identifier CHECKBOX_SPRITE = Identifier.withDefaultNamespace("widget/checkbox");
    private static final int SPACING = 4;
+   private static final int ROWS = 2;
    private static final int BOX_PADDING = 8;
    private boolean selected;
    private final OnValueChange onValueChange;
@@ -52,6 +54,10 @@ public class Checkbox extends AbstractButton {
 
    private static int getDefaultWidth(final Component message, final Font font) {
       return getBoxSize(font) + 4 + font.width((FormattedText)message);
+   }
+
+   private boolean overflowsRowLimit(final Font font) {
+      return font.getSplitter().splitLines((FormattedText)this.textWidget.getMessage(), this.width, Style.EMPTY).size() > 2;
    }
 
    public static Builder builder(final Component message, final Font font) {
@@ -170,7 +176,10 @@ public class Checkbox extends AbstractButton {
             this.onValueChange.onValueChange(checkbox, value);
          };
          Checkbox box = new Checkbox(this.x, this.y, this.maxWidth, this.message, this.font, this.selected, onChange);
-         box.setTooltip(this.tooltip);
+         if (box.overflowsRowLimit(this.font)) {
+            box.setTooltip(this.tooltip);
+         }
+
          return box;
       }
    }

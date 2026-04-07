@@ -6,7 +6,7 @@ import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Unit;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.Behavior;
@@ -61,7 +61,7 @@ public class Shoot extends Behavior<Breeze> {
 
    protected void tick(final ServerLevel level, final Breeze breeze, final long timestamp) {
       Brain<Breeze> brain = breeze.getBrain();
-      Entity target = (Entity)brain.getMemory(MemoryModuleType.ATTACK_TARGET).orElse((Object)null);
+      LivingEntity target = (LivingEntity)brain.getMemory(MemoryModuleType.ATTACK_TARGET).orElse((Object)null);
       if (target != null) {
          breeze.lookAt(EntityAnchorArgument.Anchor.EYES, target.position());
          if (!brain.getMemory(MemoryModuleType.BREEZE_SHOOT_CHARGING).isPresent() && !brain.getMemory(MemoryModuleType.BREEZE_SHOOT_RECOVERING).isPresent()) {
@@ -75,7 +75,7 @@ public class Shoot extends Behavior<Breeze> {
       }
    }
 
-   private static boolean isTargetWithinRange(final Breeze body, final Entity target) {
+   private static boolean isTargetWithinRange(final Breeze body, final LivingEntity target) {
       double distanceSqrt = body.position().distanceToSqr(target.position());
       return distanceSqrt < 256.0;
    }

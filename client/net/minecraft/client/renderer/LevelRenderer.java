@@ -19,7 +19,6 @@ import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -45,6 +44,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.PrioritizeChunkUpdates;
 import net.minecraft.client.TextureFilteringMethod;
+import net.minecraft.client.gui.components.debug.DebugScreenEntries;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
@@ -63,15 +63,13 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.debug.DebugRenderer;
 import net.minecraft.client.renderer.debug.GameTestBlockHighlightRenderer;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
-import net.minecraft.client.renderer.entity.LivingBlockRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.LivingBlockRenderState;
 import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.gizmos.DrawableGizmoPrimitives;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.GameRenderState;
-import net.minecraft.client.renderer.state.LivingBlockBreakingRenderState;
 import net.minecraft.client.renderer.state.OptionsRenderState;
 import net.minecraft.client.renderer.state.WindowRenderState;
 import net.minecraft.client.renderer.state.level.BlockBreakingRenderState;
@@ -103,9 +101,7 @@ import net.minecraft.util.profiling.Zone;
 import net.minecraft.world.TickRateManager;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.level.BlockAndLightGetter;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
@@ -117,7 +113,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.material.FogType;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -203,6 +198,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          this.chunkLayerSampler.close();
       }
 
+      this.worldBorderRenderer.close();
       this.cloudRenderer.close();
    }
 
@@ -481,7 +477,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       this.targets.main = clearPass.<RenderTarget>readsAndWrites(this.targets.main);
       clearPass.executes(() -> {
          RenderTarget mainRenderTarget = this.minecraft.getMainRenderTarget();
-         RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(mainRenderTarget.getColorTexture(), ARGB.colorFromFloat(0.0F, fogColor.x, fogColor.y, fogColor.z), mainRenderTarget.getDepthTexture(), 1.0);
+         RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(mainRenderTarget.getColorTexture(), ARGB.colorFromFloat(0.0F, fogColor.x, fogColor.y, fogColor.z), mainRenderTarget.getDepthTexture(), 0.0);
       });
       if (shouldRenderSky) {
          this.addSkyPass(frame, cameraState, terrainFog);
@@ -543,7 +539,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       profiler.popPush("blockOutline");
       this.extractBlockOutline(camera, this.levelRenderState);
       profiler.popPush("blockBreaking");
-      this.extractBlockDestroyAnimation(camera, this.levelRenderState, deltaPartialTick);
+      this.extractBlockDestroyAnimation(camera, this.levelRenderState);
       profiler.popPush("weather");
       this.weatherEffectRenderer.extractRenderState(this.level, this.ticks, deltaPartialTick, cameraPos, this.levelRenderState.weatherRenderState);
       profiler.popPush("sky");
@@ -561,6 +557,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       profiler.popPush("debug");
       this.debugRenderer.emitGizmos(cullFrustum, cameraPos.x, cameraPos.y, cameraPos.z, deltaTracker.getGameTimeDeltaPartialTick(false));
       this.gameTestBlockHighlightRenderer.emitGizmos();
+      this.levelRenderState.render3dCrosshair = this.minecraft.debugEntries.isCurrentlyEnabled(DebugScreenEntries.THREE_DIMENSIONAL_CROSSHAIR);
       profiler.pop();
       profiler.pop();
    }
@@ -609,7 +606,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          this.minecraft.gameRenderer.getLighting().setupFor(Lighting.Entry.LEVEL);
          if (this.shouldShowEntityOutlines() && entityOutlineTarget != null) {
             RenderTarget outlineTarget = entityOutlineTarget.get();
-            RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(outlineTarget.getColorTexture(), 0, outlineTarget.getDepthTexture(), 1.0);
+            RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(outlineTarget.getColorTexture(), 0, outlineTarget.getDepthTexture(), 0.0);
          }
 
          PoseStack poseStack = new PoseStack();
@@ -620,6 +617,10 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          this.submitBlockEntities(poseStack, levelRenderState, this.submitNodeStorage);
          levelRenderState.particlesRenderState.submit(this.submitNodeStorage, levelRenderState.cameraRenderState);
          this.submitBlockDestroyAnimation(poseStack, this.submitNodeStorage, levelRenderState);
+         if (renderOutline) {
+            this.submitBlockOutline(poseStack, this.submitNodeStorage, levelRenderState);
+         }
+
          profiler.popPush("renderSolidFeatures");
          this.featureRenderDispatcher.renderSolidFeatures();
          bufferSource.endBatch();
@@ -643,24 +644,14 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          crumblingBufferSource.endBatch();
          profiler.pop();
          this.renderBuffers.outlineBufferSource().endOutlineBatch();
-         if (renderOutline) {
-            this.renderBlockOutline(bufferSource, poseStack, false, levelRenderState);
-            bufferSource.endBatch();
-         }
-
          this.finalizeGizmoCollection();
          this.finalizedGizmos.standardPrimitives().render(poseStack, bufferSource, levelRenderState.cameraRenderState, modelViewMatrix);
          bufferSource.endBatch();
          this.checkPoseStack(poseStack);
          profiler.push("translucentTerrain");
          chunkSectionsToRender.renderGroup(ChunkSectionLayerGroup.TRANSLUCENT, this.chunkLayerSampler);
-         if (renderOutline) {
-            this.renderBlockOutline(bufferSource, poseStack, true, levelRenderState);
-         }
-
-         bufferSource.endBatch();
          profiler.pop();
-         this.featureRenderDispatcher.renderTranslucentParticles();
+         this.featureRenderDispatcher.renderTranslucentAfterTerrain();
          bufferSource.endBatch();
          this.featureRenderDispatcher.clearSubmitNodes();
          levelRenderState.particlesRenderState.reset();
@@ -711,7 +702,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          RenderSystem.outputDepthTextureOverride = ((RenderTarget)mainTarget.get()).getDepthTextureView();
          if (!this.finalizedGizmos.alwaysOnTopPrimitives().isEmpty()) {
             RenderTarget mainRenderTarget = Minecraft.getInstance().getMainRenderTarget();
-            RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(mainRenderTarget.getDepthTexture(), 1.0);
+            RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(mainRenderTarget.getDepthTexture(), 0.0);
             this.finalizedGizmos.alwaysOnTopPrimitives().render(poseStack, bufferSource, camera, modelViewMatrix);
             bufferSource.endLastBatch();
          }
@@ -835,47 +826,22 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
    }
 
-   private void extractBlockDestroyAnimation(final Camera camera, final LevelRenderState levelRenderState, final float partialTicks) {
+   private void extractBlockDestroyAnimation(final Camera camera, final LevelRenderState levelRenderState) {
       Vec3 cameraPos = camera.position();
       double camX = cameraPos.x();
       double camY = cameraPos.y();
       double camZ = cameraPos.z();
       levelRenderState.blockBreakingRenderStates.clear();
-      ObjectIterator var11 = this.destructionProgress.long2ObjectEntrySet().iterator();
+      ObjectIterator var10 = this.destructionProgress.long2ObjectEntrySet().iterator();
 
-      while(var11.hasNext()) {
-         Long2ObjectMap.Entry<SortedSet<BlockDestructionProgress>> entry = (Long2ObjectMap.Entry)var11.next();
+      while(var10.hasNext()) {
+         Long2ObjectMap.Entry<SortedSet<BlockDestructionProgress>> entry = (Long2ObjectMap.Entry)var10.next();
          BlockPos pos = BlockPos.of(entry.getLongKey());
          if (!(pos.distToCenterSqr(camX, camY, camZ) > 1024.0)) {
             SortedSet<BlockDestructionProgress> progresses = (SortedSet)entry.getValue();
             if (progresses != null && !progresses.isEmpty()) {
                int progress = ((BlockDestructionProgress)progresses.last()).getProgress();
-               levelRenderState.blockBreakingRenderStates.add(new BlockBreakingRenderState(Vec3.atLowerCornerOf(pos), this.level.getBlockState(pos), progress));
-            }
-         }
-      }
-
-      List<LivingBlock> entities = this.level.getEntities(EntityType.LIVING_BLOCK, AABB.unitCubeFromLowerCorner(cameraPos).inflate(32.0), (var0) -> true);
-      LivingBlockRenderState livingBlockRenderState = new LivingBlockRenderState();
-
-      for(LivingBlock livingBlock : entities) {
-         BlockState blockState = livingBlock.getBlockState();
-         if (!blockState.isAir() && !(livingBlock.blockPosition().distToCenterSqr(camX, camY, camZ) > 1024.0)) {
-            float health = livingBlock.getHealth();
-            float maxHealth = livingBlock.getMaxHealth();
-            if (health < maxHealth) {
-               float cappedHealth = Math.min(health, maxHealth);
-               float healthPercentage = cappedHealth / maxHealth;
-               int maxIndex = 9;
-               float stage = healthPercentage * 9.0F;
-               int result = 9 - Mth.ceil(stage);
-               livingBlockRenderState.ageInTicks = (float)livingBlock.tickCount + partialTicks;
-               livingBlockRenderState.x = Mth.lerp((double)partialTicks, livingBlock.xOld, livingBlock.getX());
-               livingBlockRenderState.y = Mth.lerp((double)partialTicks, livingBlock.yOld, livingBlock.getY());
-               livingBlockRenderState.z = Mth.lerp((double)partialTicks, livingBlock.zOld, livingBlock.getZ());
-               LivingBlockRenderer.extractRotation(livingBlock, livingBlockRenderState, partialTicks);
-               Vec3 position = new Vec3(livingBlockRenderState.x, livingBlockRenderState.y, livingBlockRenderState.z);
-               levelRenderState.blockBreakingRenderStates.add(new LivingBlockBreakingRenderState(position, result, blockState, livingBlockRenderState));
+               levelRenderState.blockBreakingRenderStates.add(new BlockBreakingRenderState(pos, this.level.getBlockState(pos), progress));
             }
          }
       }
@@ -890,12 +856,11 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
 
       for(BlockBreakingRenderState state : levelRenderState.blockBreakingRenderStates) {
          if (state.blockState().getRenderShape() == RenderShape.MODEL) {
-            Vec3 pos = state.pos();
+            BlockPos pos = state.blockPos();
             poseStack.pushPose();
-            poseStack.translate(pos.x - camX, pos.y - camY, pos.z - camZ);
-            state.applyRotation(poseStack);
+            poseStack.translate((double)pos.getX() - camX, (double)pos.getY() - camY, (double)pos.getZ() - camZ);
             BlockStateModel model = this.minecraft.getModelManager().getBlockStateModelSet().get(state.blockState());
-            submitNodeCollector.submitBreakingBlockModel(poseStack, model, state.blockState().getSeed(BlockPos.containing(pos)), state.progress());
+            submitNodeCollector.submitBreakingBlockModel(poseStack, model, state.blockState().getSeed(pos), state.progress());
             poseStack.popPose();
          }
       }
@@ -929,22 +894,41 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       }
    }
 
-   private void renderBlockOutline(final MultiBufferSource.BufferSource bufferSource, final PoseStack poseStack, final boolean onlyTranslucentBlocks, final LevelRenderState levelRenderState) {
+   private void submitBlockOutline(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final LevelRenderState levelRenderState) {
       BlockOutlineRenderState state = levelRenderState.blockOutlineRenderState;
       if (state != null) {
-         if (state.isTranslucent() == onlyTranslucentBlocks) {
-            Vec3 cameraPos = levelRenderState.cameraRenderState.pos;
-            if (state.highContrast()) {
-               VertexConsumer buffer = bufferSource.getBuffer(RenderTypes.secondaryBlockOutline());
-               this.renderHitOutline(poseStack, buffer, cameraPos.x, cameraPos.y, cameraPos.z, state, -16777216, 7.0F);
-            }
-
-            VertexConsumer buffer = bufferSource.getBuffer(RenderTypes.lines());
-            int outlineColor = state.highContrast() ? -11010079 : ARGB.black(102);
-            this.renderHitOutline(poseStack, buffer, cameraPos.x, cameraPos.y, cameraPos.z, state, outlineColor, this.minecraft.gameRenderer.getGameRenderState().windowRenderState.appropriateLineWidth);
-            bufferSource.endLastBatch();
+         Vec3 cameraPos = levelRenderState.cameraRenderState.pos;
+         BlockPos pos = state.pos();
+         poseStack.pushPose();
+         poseStack.translate((double)pos.getX() - cameraPos.x, (double)pos.getY() - cameraPos.y, (double)pos.getZ() - cameraPos.z);
+         if (state.highContrast()) {
+            this.submitHitOutline(poseStack, submitNodeCollector, RenderTypes.secondaryBlockOutline(), state, -16777216, 7.0F, state.isTranslucent());
          }
+
+         int outlineColor = state.highContrast() ? -11010079 : ARGB.black(102);
+         this.submitHitOutline(poseStack, submitNodeCollector, RenderTypes.lines(), state, outlineColor, this.minecraft.gameRenderer.getGameRenderState().windowRenderState.appropriateLineWidth, state.isTranslucent());
+         poseStack.popPose();
       }
+   }
+
+   private void submitHitOutline(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final RenderType renderType, final BlockOutlineRenderState state, final int color, final float width, final boolean afterTerrain) {
+      if (SharedConstants.DEBUG_SHAPES) {
+         submitNodeCollector.submitShapeOutline(poseStack, state.shape(), renderType, -1, width, afterTerrain);
+         if (state.collisionShape() != null) {
+            submitNodeCollector.submitShapeOutline(poseStack, state.collisionShape(), renderType, ARGB.colorFromFloat(0.4F, 0.0F, 0.0F, 0.0F), width, afterTerrain);
+         }
+
+         if (state.occlusionShape() != null) {
+            submitNodeCollector.submitShapeOutline(poseStack, state.occlusionShape(), renderType, ARGB.colorFromFloat(0.4F, 0.0F, 1.0F, 0.0F), width, afterTerrain);
+         }
+
+         if (state.interactionShape() != null) {
+            submitNodeCollector.submitShapeOutline(poseStack, state.interactionShape(), renderType, ARGB.colorFromFloat(0.4F, 0.0F, 0.0F, 1.0F), width, afterTerrain);
+         }
+      } else {
+         submitNodeCollector.submitShapeOutline(poseStack, state.shape(), renderType, color, width, afterTerrain);
+      }
+
    }
 
    private void checkPoseStack(final PoseStack poseStack) {
@@ -1210,27 +1194,6 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       profiler.popPush("scheduleTranslucentResort");
       this.scheduleTranslucentSectionResort(camera.position());
       profiler.pop();
-   }
-
-   private void renderHitOutline(final PoseStack poseStack, final VertexConsumer builder, final double camX, final double camY, final double camZ, final BlockOutlineRenderState state, final int color, final float width) {
-      BlockPos pos = state.pos();
-      if (SharedConstants.DEBUG_SHAPES) {
-         ShapeRenderer.renderShape(poseStack, builder, state.shape(), (double)pos.getX() - camX, (double)pos.getY() - camY, (double)pos.getZ() - camZ, ARGB.colorFromFloat(1.0F, 1.0F, 1.0F, 1.0F), width);
-         if (state.collisionShape() != null) {
-            ShapeRenderer.renderShape(poseStack, builder, state.collisionShape(), (double)pos.getX() - camX, (double)pos.getY() - camY, (double)pos.getZ() - camZ, ARGB.colorFromFloat(0.4F, 0.0F, 0.0F, 0.0F), width);
-         }
-
-         if (state.occlusionShape() != null) {
-            ShapeRenderer.renderShape(poseStack, builder, state.occlusionShape(), (double)pos.getX() - camX, (double)pos.getY() - camY, (double)pos.getZ() - camZ, ARGB.colorFromFloat(0.4F, 0.0F, 1.0F, 0.0F), width);
-         }
-
-         if (state.interactionShape() != null) {
-            ShapeRenderer.renderShape(poseStack, builder, state.interactionShape(), (double)pos.getX() - camX, (double)pos.getY() - camY, (double)pos.getZ() - camZ, ARGB.colorFromFloat(0.4F, 0.0F, 0.0F, 1.0F), width);
-         }
-      } else {
-         ShapeRenderer.renderShape(poseStack, builder, state.shape(), (double)pos.getX() - camX, (double)pos.getY() - camY, (double)pos.getZ() - camZ, color, width);
-      }
-
    }
 
    public void blockChanged(final BlockGetter level, final BlockPos pos, final BlockState old, final BlockState current, final @Block.UpdateFlags int updateFlags) {

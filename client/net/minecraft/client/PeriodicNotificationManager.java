@@ -159,7 +159,7 @@ public class PeriodicNotificationManager extends SimplePreparableReloadListener<
                long elapsedPeriods = currentMinute / notification.period;
                long currentPeriods = nextMinute / notification.period;
                if (elapsedPeriods != currentPeriods) {
-                  this.minecraft.execute(() -> SystemToast.add(Minecraft.getInstance().getToastManager(), SystemToast.SystemToastId.PERIODIC_NOTIFICATION, Component.translatable(notification.title, elapsedPeriods), Component.translatable(notification.message, elapsedPeriods)));
+                  this.minecraft.execute(() -> SystemToast.add(Minecraft.getInstance().gui.toastManager(), SystemToast.SystemToastId.PERIODIC_NOTIFICATION, Component.translatable(notification.title, elapsedPeriods), Component.translatable(notification.message, elapsedPeriods)));
                   return;
                }
             }

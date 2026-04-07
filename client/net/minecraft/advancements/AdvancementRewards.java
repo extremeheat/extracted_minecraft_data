@@ -16,6 +16,7 @@ import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.storage.loot.LootParams;
@@ -47,7 +48,11 @@ public record AdvancementRewards(int experience, List<ResourceKey<LootTable>> lo
                level.playSound((Entity)null, player.getX(), player.getY(), player.getZ(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F, ((player.getRandom().nextFloat() - player.getRandom().nextFloat()) * 0.7F + 1.0F) * 2.0F);
                changes = true;
             } else {
-               player.drop(itemStack, false);
+               ItemEntity drop = player.drop(itemStack, false);
+               if (drop != null) {
+                  drop.setNoPickUpDelay();
+                  drop.setTarget(player.getUUID());
+               }
             }
          }
       }

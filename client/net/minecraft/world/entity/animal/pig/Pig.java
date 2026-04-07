@@ -16,7 +16,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
@@ -43,7 +42,6 @@ import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.PanicGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.TemptGoal;
-import net.minecraft.world.entity.ai.goal.TemptedByLivingBlockGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.monster.zombie.ZombifiedPiglin;
@@ -78,11 +76,10 @@ public class Pig extends Animal implements ItemSteerable {
       this.goalSelector.addGoal(3, new BreedGoal(this, 1.0));
       this.goalSelector.addGoal(4, new TemptGoal(this, 1.2, (i) -> i.is(Items.CARROT_ON_A_STICK), false));
       this.goalSelector.addGoal(4, new TemptGoal(this, 1.2, (i) -> i.is(ItemTags.PIG_FOOD), false));
-      this.goalSelector.addGoal(5, new TemptedByLivingBlockGoal(this, 1.2, BlockTags.PIG_FOOD, false));
-      this.goalSelector.addGoal(6, new FollowParentGoal(this, 1.1));
-      this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 1.0));
-      this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 6.0F));
-      this.goalSelector.addGoal(9, new RandomLookAroundGoal(this));
+      this.goalSelector.addGoal(5, new FollowParentGoal(this, 1.1));
+      this.goalSelector.addGoal(6, new WaterAvoidingRandomStrollGoal(this, 1.0));
+      this.goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 6.0F));
+      this.goalSelector.addGoal(8, new RandomLookAroundGoal(this));
    }
 
    public static AttributeSupplier.Builder createAttributes() {

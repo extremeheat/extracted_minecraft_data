@@ -15,6 +15,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntries;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntry;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
+import net.minecraft.world.level.storage.loot.entries.LootPoolSingletonContainer;
 import net.minecraft.world.level.storage.loot.functions.FunctionUserBuilder;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctions;
@@ -132,6 +133,14 @@ public class LootPool implements Validatable {
 
       public Builder add(final LootPoolEntryContainer.Builder<?> entry) {
          this.entries.add(entry.build());
+         return this;
+      }
+
+      public Builder addAll(final List<? extends LootPoolSingletonContainer.Builder<?>> entries) {
+         for(LootPoolEntryContainer.Builder<?> entry : entries) {
+            this.add(entry);
+         }
+
          return this;
       }
 

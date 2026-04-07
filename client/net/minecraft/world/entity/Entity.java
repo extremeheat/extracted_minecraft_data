@@ -21,7 +21,6 @@ import java.lang.annotation.Target;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -102,7 +101,7 @@ import net.minecraft.world.Nameable;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageSources;
-import net.minecraft.world.entity.livingblock.LivingBlock;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ProjectileDeflection;
@@ -110,9 +109,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
-import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ClipContext;
@@ -296,16 +292,6 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    private final LongSet visitedBlocks;
    private final InsideBlockEffectApplier.StepBasedCollector insideEffectCollector;
    private CustomData customData;
-
-   public void onEquippedItemBroken(final Item item, final EquipmentSlot inSlot) {
-   }
-
-   public ItemStack getItemBySlot(final EquipmentSlot slot) {
-      return ItemStack.EMPTY;
-   }
-
-   public void knockback(final double knockback, final double x, final double z) {
-   }
 
    public Entity(final EntityType<?> type, final Level level) {
       super();
@@ -817,16 +803,8 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
          if (this.isRemoved()) {
             profiler.pop();
          } else {
-            if (this.horizontalCollision) {
-               Vec3 vec3 = this.getDeltaMovement();
-               this.setDeltaMovement(xCollision ? 0.0 : vec3.x, vec3.y, zCollision ? 0.0 : vec3.z);
-            }
-
-            if (this.canSimulateMovement()) {
-               Block onBlock = effectState.getBlock();
-               if (delta.y != movement.y) {
-                  onBlock.updateEntityMovementAfterFallOn(this.level(), this);
-               }
+            if (this.canSimulateMovement() && (this.verticalCollision || this.horizontalCollision)) {
+               this.restituteMovementAfterCollisions(effectState, xCollision, zCollision, movement);
             }
 
             if (!this.level().isClientSide() || this.isLocalInstanceAuthoritative()) {
@@ -843,6 +821,64 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
       }
    }
 
+   private void restituteMovementAfterCollisions(final BlockState effectState, final boolean xCollision, final boolean zCollision, final Vec3 movement) {
+      double restitution = this.isSuppressingBounce() ? 0.0 : this.getEntityBounciness();
+      Vec3 currentMovement = this.getDeltaMovement();
+      Vec3 movementAfterBounce = currentMovement;
+      if (xCollision) {
+         movementAfterBounce = currentMovement.with(Direction.Axis.X, -currentMovement.x * restitution);
+      }
+
+      if (zCollision) {
+         movementAfterBounce = movementAfterBounce.with(Direction.Axis.Z, -currentMovement.z * restitution);
+      }
+
+      boolean bounced = restitution > 0.0 && (xCollision || zCollision);
+      if (this.verticalCollision) {
+         if (this.verticalCollisionBelow) {
+            restitution = !(-currentMovement.y < this.getEffectiveGravity()) && !this.isSuppressingBounce() && !effectState.is(BlockTags.SUPPRESSES_BOUNCE) ? Math.max(restitution, this.getBlockBounciness(effectState.getBlock())) : 0.0;
+         }
+
+         double gravityCompensation;
+         if (restitution > 0.0) {
+            double portionWithMovement = movement.y / currentMovement.y;
+            gravityCompensation = portionWithMovement * this.getEffectiveGravity();
+            bounced = true;
+         } else {
+            gravityCompensation = 0.0;
+         }
+
+         movementAfterBounce = movementAfterBounce.with(Direction.Axis.Y, (gravityCompensation - currentMovement.y) * restitution);
+      }
+
+      if (bounced) {
+         this.gameEvent(GameEvent.BOUNCE);
+      }
+
+      this.setDeltaMovement(movementAfterBounce);
+   }
+
+   private double getBlockBounciness(final Block onBlock) {
+      float blockBounciness = onBlock.getBounceRestitution();
+      if (!(this instanceof LivingEntity)) {
+         blockBounciness *= 0.8F;
+      }
+
+      return (double)blockBounciness;
+   }
+
+   protected double getEntityBounciness() {
+      return 0.0;
+   }
+
+   protected double getEffectiveGravity() {
+      return this.getGravity();
+   }
+
+   protected boolean omnidirectionalAirMover() {
+      return false;
+   }
+
    private void applyMovementEmissionAndPlaySound(final MovementEmission emission, final Vec3 clippedMovement, final BlockPos effectPos, final BlockState effectState) {
       float moveDistScale = 0.6F;
       float movedDistance = (float)(clippedMovement.length() * 0.6000000238418579);
@@ -854,9 +890,9 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
       this.flyDist += movedDistance;
       if (this.moveDist > this.nextStep && !supportingState.isAir()) {
          boolean onlyEffectStateEmittions = supportingPos.equals(effectPos);
-         boolean producedSideEffects = this.vibrationAndSoundEffectsFromBlock(effectPos, effectState, emission.emitsSounds() && this.normalStepSounds(), onlyEffectStateEmittions && this.normalStepSounds(), clippedMovement);
+         boolean producedSideEffects = this.vibrationAndSoundEffectsFromBlock(effectPos, effectState, emission.emitsSounds(), onlyEffectStateEmittions, clippedMovement);
          if (!onlyEffectStateEmittions) {
-            producedSideEffects |= this.vibrationAndSoundEffectsFromBlock(supportingPos, supportingState, false, emission.emitsEvents() && this.normalStepSounds(), clippedMovement);
+            producedSideEffects |= this.vibrationAndSoundEffectsFromBlock(supportingPos, supportingState, false, emission.emitsEvents(), clippedMovement);
          }
 
          if (producedSideEffects) {
@@ -980,10 +1016,6 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
             return false;
          }
       }
-   }
-
-   protected boolean normalStepSounds() {
-      return true;
    }
 
    protected boolean isHorizontalCollisionMinor(final Vec3 movement) {
@@ -1116,8 +1148,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
       boolean onGroundAfterCollision = yCollision && movement.y < 0.0;
       if (this.maxUpStep() > 0.0F && (onGroundAfterCollision || this.onGround()) && (xCollision || zCollision)) {
          AABB groundedAABB = onGroundAfterCollision ? aabb.move(0.0, movementStep.y, 0.0) : aabb;
-         Vec3 stepUpMovement = this.adjustStepUpMovement(movement);
-         AABB stepUpAABB = groundedAABB.expandTowards(stepUpMovement.x, (double)this.maxUpStep(), stepUpMovement.z);
+         AABB stepUpAABB = groundedAABB.expandTowards(movement.x, (double)this.maxUpStep(), movement.z);
          if (!onGroundAfterCollision) {
             stepUpAABB = stepUpAABB.expandTowards(0.0, -9.999999747378752E-6, 0.0);
          }
@@ -1127,7 +1158,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
          float[] candidateStepUpHeights = collectCandidateStepUpHeights(groundedAABB, colliders, this.maxUpStep(), stepHeightToSkip);
 
          for(float candidateStepUpHeight : candidateStepUpHeights) {
-            Vec3 stepFromGround = collideWithShapes(new Vec3(stepUpMovement.x, (double)candidateStepUpHeight, stepUpMovement.z), groundedAABB, colliders);
+            Vec3 stepFromGround = collideWithShapes(new Vec3(movement.x, (double)candidateStepUpHeight, movement.z), groundedAABB, colliders);
             if (stepFromGround.horizontalDistanceSqr() > movementStep.horizontalDistanceSqr()) {
                double distanceToGround = aabb.minY - groundedAABB.minY;
                return stepFromGround.subtract(0.0, distanceToGround, 0.0);
@@ -1136,10 +1167,6 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
       }
 
       return movementStep;
-   }
-
-   protected Vec3 adjustStepUpMovement(final Vec3 movement) {
-      return movement;
    }
 
    private static float[] collectCandidateStepUpHeights(final AABB boundingBox, final List<VoxelShape> colliders, final float maxStepHeight, final float stepHeightToSkip) {
@@ -1378,7 +1405,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
       this.gameEvent(event, this);
    }
 
-   protected void walkingStepSound(final BlockPos onPos, final BlockState onState) {
+   private void walkingStepSound(final BlockPos onPos, final BlockState onState) {
       this.playStepSound(onPos, onState);
       if (this.shouldPlayAmethystStepSound(onState)) {
          this.playAmethystStepSound();
@@ -2172,19 +2199,26 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
 
    protected abstract void addAdditionalSaveData(ValueOutput output);
 
-   public Collection<LivingBlock> spawnAtLocation(final ServerLevel level, final ItemLike resource) {
+   public @Nullable ItemEntity spawnAtLocation(final ServerLevel level, final ItemLike resource) {
       return this.spawnAtLocation(level, new ItemStack(resource), 0.0F);
    }
 
-   public Collection<LivingBlock> spawnAtLocation(final ServerLevel level, final ItemStack itemStack) {
+   public @Nullable ItemEntity spawnAtLocation(final ServerLevel level, final ItemStack itemStack) {
       return this.spawnAtLocation(level, itemStack, 0.0F);
    }
 
-   public Collection<LivingBlock> spawnAtLocation(final ServerLevel level, final ItemStack itemStack, final Vec3 offset) {
-      return (Collection<LivingBlock>)(itemStack.isEmpty() ? List.of() : LivingBlock.createStack(this.level(), BlockPos.containing(this.position().add(offset)), this, itemStack));
+   public @Nullable ItemEntity spawnAtLocation(final ServerLevel level, final ItemStack itemStack, final Vec3 offset) {
+      if (itemStack.isEmpty()) {
+         return null;
+      } else {
+         ItemEntity entity = new ItemEntity(level, this.getX() + offset.x, this.getY() + offset.y, this.getZ() + offset.z, itemStack);
+         entity.setDefaultPickUpDelay();
+         level.addFreshEntity(entity);
+         return entity;
+      }
    }
 
-   public Collection<LivingBlock> spawnAtLocation(final ServerLevel level, final ItemStack itemStack, final float offset) {
+   public @Nullable ItemEntity spawnAtLocation(final ServerLevel level, final ItemStack itemStack, final float offset) {
       return this.spawnAtLocation(level, itemStack, new Vec3(0.0, (double)offset, 0.0));
    }
 
@@ -2208,11 +2242,11 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    public InteractionResult interact(final Player player, final InteractionHand hand, final Vec3 location) {
       if (!this.level().isClientSide() && player.isSecondaryUseActive() && this instanceof Leashable leashable) {
          if (leashable.canBeLeashed() && this.isAlive()) {
-            label78: {
+            label83: {
                if (this instanceof LivingEntity) {
                   LivingEntity le = (LivingEntity)this;
                   if (le.isBaby()) {
-                     break label78;
+                     break label83;
                   }
                }
 
@@ -2244,17 +2278,21 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
       } else {
          if (this instanceof Mob) {
             Mob target = (Mob)this;
-            if (heldItem.is(Items.SHEARS) && target.canShearEquipment(player) && !player.isSecondaryUseActive() && this.attemptToShearEquipment(player, hand, heldItem, target)) {
+            if (heldItem.is(Items.SHEARS) && target.canShearEquipment(player) && !player.isSecondaryUseActive() && target.attemptToShearEquipment(player, hand, heldItem)) {
                return InteractionResult.SUCCESS;
             }
          }
 
          if (this.isAlive() && this instanceof Leashable) {
             Leashable leashable = (Leashable)this;
-            ItemStack itemStack = player.getItemInHand(hand);
             if (leashable.getLeashHolder() == player) {
                if (!this.level().isClientSide()) {
-                  leashable.removeLeash();
+                  if (player.hasInfiniteMaterials()) {
+                     leashable.removeLeash();
+                  } else {
+                     leashable.dropLeash();
+                  }
+
                   this.gameEvent(GameEvent.ENTITY_INTERACT, player);
                   this.playSound(SoundEvents.LEAD_UNTIED);
                }
@@ -2262,6 +2300,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
                return InteractionResult.SUCCESS.withoutItem();
             }
 
+            ItemStack itemStack = player.getItemInHand(hand);
             if (itemStack.is(Items.LEAD) && !(leashable.getLeashHolder() instanceof Player)) {
                if (this.level().isClientSide()) {
                   return InteractionResult.CONSUME;
@@ -2269,11 +2308,12 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
 
                if (leashable.canHaveALeashAttachedTo(player)) {
                   if (leashable.isLeashed()) {
-                     leashable.removeLeash();
+                     leashable.dropLeash();
                   }
 
                   leashable.setLeashedTo(player, true);
                   this.playSound(SoundEvents.LEAD_TIED);
+                  itemStack.shrink(1);
                   return InteractionResult.SUCCESS_SERVER;
                }
             }
@@ -2316,30 +2356,6 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
       } else {
          return false;
       }
-   }
-
-   private boolean attemptToShearEquipment(final Player player, final InteractionHand hand, final ItemStack heldItem, final Mob target) {
-      for(EquipmentSlot slot : EquipmentSlot.VALUES) {
-         ItemStack itemStack = target.getItemBySlot(slot);
-         Equippable equippable = (Equippable)itemStack.get(DataComponents.EQUIPPABLE);
-         if (equippable != null && equippable.canBeSheared() && (!EnchantmentHelper.has(itemStack, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE) || player.isCreative())) {
-            heldItem.hurtAndBreak(1, player, (EquipmentSlot)hand.asEquipmentSlot());
-            Vec3 equipmentSpawnOffset = this.dimensions.attachments().getAverage(EntityAttachment.PASSENGER);
-            target.setItemSlotAndDropWhenKilled(slot, ItemStack.EMPTY);
-            this.gameEvent(GameEvent.SHEAR, player);
-            this.playSound((SoundEvent)equippable.shearingSound().value());
-            Level var11 = this.level();
-            if (var11 instanceof ServerLevel) {
-               ServerLevel serverLevel = (ServerLevel)var11;
-               this.spawnAtLocation(serverLevel, itemStack, equipmentSpawnOffset);
-               CriteriaTriggers.PLAYER_SHEARED_EQUIPMENT.trigger((ServerPlayer)player, itemStack, target);
-            }
-
-            return true;
-         }
-      }
-
-      return false;
    }
 
    public boolean canCollideWith(final Entity entity) {

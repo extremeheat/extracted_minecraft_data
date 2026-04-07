@@ -88,9 +88,9 @@ public class BookEditScreen extends Screen {
       this.numberOfPages = this.getPageNumberMessage();
       this.backButton = (PageButton)this.addRenderableWidget(new PageButton(left + 43, top + 157, false, (button) -> this.pageBack(), true));
       this.forwardButton = (PageButton)this.addRenderableWidget(new PageButton(left + 116, top + 157, true, (button) -> this.pageForward(), true));
-      this.addRenderableWidget(Button.builder(SIGN_BOOK_LABEL, (button) -> this.minecraft.setScreen(this.signScreen)).pos(this.width / 2 - 98 - 2, this.menuControlsTop()).width(98).build());
+      this.addRenderableWidget(Button.builder(SIGN_BOOK_LABEL, (button) -> this.minecraft.gui.setScreen(this.signScreen)).pos(this.width / 2 - 98 - 2, this.menuControlsTop()).width(98).build());
       this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (button) -> {
-         this.minecraft.setScreen((Screen)null);
+         this.minecraft.gui.setScreen((Screen)null);
          this.saveChanges();
       }).pos(this.width / 2 + 2, this.menuControlsTop()).width(98).build());
       this.updateButtonVisibility();

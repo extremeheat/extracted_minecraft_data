@@ -56,7 +56,7 @@ public class ChatScreen extends Screen {
    }
 
    protected void init() {
-      this.historyPos = this.minecraft.gui.getChat().getRecentChat().size();
+      this.historyPos = this.minecraft.gui.hud.getChat().getRecentChat().size();
       this.input = new EditBox(this.minecraft.fontFilterFishy, 4, this.height - 12, this.width - 4, 12, Component.translatable("chat.editBox")) {
          {
             Objects.requireNonNull(ChatScreen.this);
@@ -97,14 +97,14 @@ public class ChatScreen extends Screen {
    }
 
    public void removed() {
-      this.minecraft.gui.getChat().resetChatScroll();
+      this.minecraft.gui.hud.getChat().resetChatScroll();
       this.initial = this.input.getValue();
       if (!this.shouldDiscardDraft() && !StringUtils.isBlank(this.initial)) {
          if (!this.isDraft) {
-            this.minecraft.gui.getChat().saveAsDraft(this.initial);
+            this.minecraft.gui.hud.getChat().saveAsDraft(this.initial);
          }
       } else {
-         this.minecraft.gui.getChat().discardDraft();
+         this.minecraft.gui.hud.getChat().discardDraft();
       }
 
    }
@@ -135,10 +135,10 @@ public class ChatScreen extends Screen {
             this.handleChatInput(this.input.getValue(), true);
             if (this.closeOnSubmit) {
                this.exitReason = ChatScreen.ExitReason.DONE;
-               this.minecraft.setScreen((Screen)null);
+               this.minecraft.gui.setScreen((Screen)null);
             } else {
                this.input.setValue("");
-               this.minecraft.gui.getChat().resetChatScroll();
+               this.minecraft.gui.hud.getChat().resetChatScroll();
             }
 
             return true;
@@ -147,8 +147,8 @@ public class ChatScreen extends Screen {
          switch (event.key()) {
             case 264 -> this.moveInHistory(1);
             case 265 -> this.moveInHistory(-1);
-            case 266 -> this.minecraft.gui.getChat().scrollChat(this.minecraft.gui.getChat().getLinesPerPage() - 1);
-            case 267 -> this.minecraft.gui.getChat().scrollChat(-this.minecraft.gui.getChat().getLinesPerPage() + 1);
+            case 266 -> this.minecraft.gui.hud.getChat().scrollChat(this.minecraft.gui.hud.getChat().getLinesPerPage() - 1);
+            case 267 -> this.minecraft.gui.hud.getChat().scrollChat(-this.minecraft.gui.hud.getChat().getLinesPerPage() + 1);
             default -> {
                return false;
             }
@@ -167,7 +167,7 @@ public class ChatScreen extends Screen {
             scrollY *= 7.0;
          }
 
-         this.minecraft.gui.getChat().scrollChat((int)scrollY);
+         this.minecraft.gui.hud.getChat().scrollChat((int)scrollY);
          return true;
       }
    }
@@ -179,7 +179,7 @@ public class ChatScreen extends Screen {
          if (event.button() == 0) {
             int screenHeight = this.minecraft.getWindow().getGuiScaledHeight();
             ActiveTextCollector.ClickableStyleFinder finder = (new ActiveTextCollector.ClickableStyleFinder(this.getFont(), (int)event.x(), (int)event.y())).includeInsertions(this.insertionClickMode());
-            this.minecraft.gui.getChat().captureClickableText(finder, screenHeight, this.minecraft.gui.getGuiTicks(), this.displayMode);
+            this.minecraft.gui.hud.getChat().captureClickableText(finder, screenHeight, this.minecraft.gui.hud.getGuiTicks(), this.displayMode);
             Style clicked = finder.result();
             if (clicked != null && this.handleComponentClicked(clicked, this.insertionClickMode())) {
                this.initial = this.input.getValue();
@@ -218,7 +218,7 @@ public class ChatScreen extends Screen {
                      break;
                   }
 
-                  ChatListener chatListener = this.minecraft.getChatListener();
+                  ChatListener chatListener = this.minecraft.gui.chatListener();
                   if (chatListener.queueSize() != 0L) {
                      chatListener.acceptNextDelayedMessage();
                   }
@@ -231,7 +231,7 @@ public class ChatScreen extends Screen {
                      break;
                   }
 
-                  this.minecraft.setScreen(new RestrictionsScreen(this, this.minecraft.player.chatAbilities()));
+                  this.minecraft.gui.setScreen(new RestrictionsScreen(this, this.minecraft.player.chatAbilities()));
                   return true;
                default:
                   defaultHandleGameClickEvent(event, this.minecraft, this);
@@ -254,7 +254,7 @@ public class ChatScreen extends Screen {
 
    public void moveInHistory(final int dir) {
       int newPos = this.historyPos + dir;
-      int max = this.minecraft.gui.getChat().getRecentChat().size();
+      int max = this.minecraft.gui.hud.getChat().getRecentChat().size();
       newPos = Mth.clamp(newPos, 0, max);
       if (newPos != this.historyPos) {
          if (newPos == max) {
@@ -265,7 +265,7 @@ public class ChatScreen extends Screen {
                this.historyBuffer = this.input.getValue();
             }
 
-            this.input.setValue((String)this.minecraft.gui.getChat().getRecentChat().get(newPos));
+            this.input.setValue((String)this.minecraft.gui.hud.getChat().getRecentChat().get(newPos));
             this.commandSuggestions.setAllowSuggestions(false);
             this.historyPos = newPos;
          }
@@ -278,7 +278,7 @@ public class ChatScreen extends Screen {
 
    public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       graphics.fill(2, this.height - 14, this.width - 2, this.height - 2, this.minecraft.options.getBackgroundColor(-2147483648));
-      this.minecraft.gui.getChat().extractRenderState(graphics, this.font, this.minecraft.gui.getGuiTicks(), mouseX, mouseY, this.displayMode, this.insertionClickMode());
+      this.minecraft.gui.hud.getChat().extractRenderState(graphics, this.font, this.minecraft.gui.hud.getGuiTicks(), mouseX, mouseY, this.displayMode, this.insertionClickMode());
       super.extractRenderState(graphics, mouseX, mouseY, a);
       this.commandSuggestions.extractRenderState(graphics, mouseX, mouseY);
    }
@@ -313,7 +313,7 @@ public class ChatScreen extends Screen {
       msg = this.normalizeChatMessage(msg);
       if (!msg.isEmpty()) {
          if (addToRecent) {
-            this.minecraft.gui.getChat().addRecentChat(msg);
+            this.minecraft.gui.hud.getChat().addRecentChat(msg);
          }
 
          if (msg.startsWith("/")) {

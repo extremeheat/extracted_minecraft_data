@@ -247,7 +247,7 @@ public class PackSelectionScreen extends Screen {
 
    public void onFilesDrop(final List<Path> files) {
       String names = (String)extractPackNames(files).collect(Collectors.joining(", "));
-      this.minecraft.setScreen(new ConfirmScreen((result) -> {
+      this.minecraft.gui.setScreen(new ConfirmScreen((result) -> {
          if (result) {
             List<Path> packCandidates = new ArrayList(files.size());
             Set<Path> leftoverPacks = new HashSet(files);
@@ -281,7 +281,7 @@ public class PackSelectionScreen extends Screen {
             }
 
             if (!issues.isEmpty()) {
-               this.minecraft.setScreen(NoticeWithLinkScreen.createPackSymlinkWarningScreen(() -> this.minecraft.setScreen(this)));
+               this.minecraft.gui.setScreen(NoticeWithLinkScreen.createPackSymlinkWarningScreen(() -> this.minecraft.gui.setScreen(this)));
                return;
             }
 
@@ -292,12 +292,12 @@ public class PackSelectionScreen extends Screen {
 
             if (!leftoverPacks.isEmpty()) {
                String leftoverNames = (String)extractPackNames(leftoverPacks).collect(Collectors.joining(", "));
-               this.minecraft.setScreen(new AlertScreen(() -> this.minecraft.setScreen(this), Component.translatable("pack.dropRejected.title"), Component.translatable("pack.dropRejected.message", leftoverNames)));
+               this.minecraft.gui.setScreen(new AlertScreen(() -> this.minecraft.gui.setScreen(this), Component.translatable("pack.dropRejected.title"), Component.translatable("pack.dropRejected.message", leftoverNames)));
                return;
             }
          }
 
-         this.minecraft.setScreen(this);
+         this.minecraft.gui.setScreen(this);
       }, Component.translatable("pack.dropConfirm"), Component.literal(names)));
    }
 

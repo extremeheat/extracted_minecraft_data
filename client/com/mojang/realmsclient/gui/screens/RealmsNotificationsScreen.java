@@ -105,7 +105,7 @@ public class RealmsNotificationsScreen extends RealmsScreen {
    }
 
    private boolean inTitleScreen() {
-      return this.minecraft.screen instanceof TitleScreen;
+      return this.minecraft.gui.screen() instanceof TitleScreen;
    }
 
    public void extractRenderState(final GuiGraphicsExtractor graphics, final int xm, final int ym, final float a) {

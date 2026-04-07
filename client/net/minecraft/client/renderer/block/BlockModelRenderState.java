@@ -58,7 +58,7 @@ public class BlockModelRenderState {
 
    public List<BlockStateModelPart> setupModel(final Matrix4fc transformation, final boolean hasTranslucency) {
       this.transformation = identityToNull(transformation);
-      this.renderType = hasTranslucency ? Sheets.translucentBlockSheet() : Sheets.cutoutBlockSheet();
+      this.renderType = hasTranslucency ? Sheets.translucentBlockItemSheet() : Sheets.cutoutBlockItemSheet();
       if (this.modelParts == null) {
          this.modelParts = new ObjectArrayList();
       } else {

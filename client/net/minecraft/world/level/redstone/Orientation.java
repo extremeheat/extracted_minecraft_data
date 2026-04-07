@@ -39,7 +39,7 @@ public class Orientation {
       this.sideBias = sideBias;
       this.index = generateIndex(up, front, sideBias);
       Vec3i rightVector = front.getUnitVec3i().cross(up.getUnitVec3i());
-      Direction side = Direction.getNearest((Vec3i)rightVector, (Direction)null);
+      Direction side = Direction.getNearest(rightVector, (Direction)null);
       Objects.requireNonNull(side);
       if (this.sideBias == Orientation.SideBias.RIGHT) {
          this.side = side;

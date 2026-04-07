@@ -5,7 +5,6 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.inventory.tooltip.BundleTooltip;
-import net.minecraft.world.inventory.tooltip.RecipeTooltip;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 
 public interface ClientTooltipComponent {
@@ -20,7 +19,6 @@ public interface ClientTooltipComponent {
       //$FF: var2->value
       //0->net/minecraft/world/inventory/tooltip/BundleTooltip
       //1->net/minecraft/client/gui/screens/inventory/tooltip/ClientActivePlayersTooltip$ActivePlayersTooltip
-      //2->net/minecraft/world/inventory/tooltip/RecipeTooltip
       switch (component.typeSwitch<invokedynamic>(component, var2)) {
          case 0:
             BundleTooltip bundleTooltip = (BundleTooltip)component;
@@ -29,10 +27,6 @@ public interface ClientTooltipComponent {
          case 1:
             ClientActivePlayersTooltip.ActivePlayersTooltip activePlayersTooltip = (ClientActivePlayersTooltip.ActivePlayersTooltip)component;
             var10000 = new ClientActivePlayersTooltip(activePlayersTooltip);
-            break;
-         case 2:
-            RecipeTooltip recipeTooltip = (RecipeTooltip)component;
-            var10000 = new ClientRecipeTooltip(recipeTooltip.ingredients());
             break;
          default:
             throw new IllegalArgumentException("Unknown TooltipComponent");

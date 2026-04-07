@@ -3,20 +3,19 @@ package net.minecraft.world.entity.ai.goal.target;
 import java.util.EnumSet;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.Targetable;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import org.jspecify.annotations.Nullable;
 
-public class NearestAttackableTargetGoal<T extends Entity & Targetable> extends TargetGoal {
+public class NearestAttackableTargetGoal<T extends LivingEntity> extends TargetGoal {
    private static final int DEFAULT_RANDOM_INTERVAL = 10;
    protected final Class<T> targetType;
    protected final int randomInterval;
-   protected @Nullable T target;
+   protected @Nullable LivingEntity target;
    protected final TargetingConditions targetConditions;
 
    public NearestAttackableTargetGoal(final Mob mob, final Class<T> targetType, final boolean mustSee) {
@@ -67,7 +66,7 @@ public class NearestAttackableTargetGoal<T extends Entity & Targetable> extends 
       super.start();
    }
 
-   public void setTarget(final @Nullable T target) {
+   public void setTarget(final @Nullable LivingEntity target) {
       this.target = target;
    }
 

@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
+import com.mojang.blaze3d.systems.DeviceInfo;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.logging.LogUtils;
@@ -161,18 +162,19 @@ public class GpuWarnlistManager extends SimplePreparableReloadListener<Preparati
       private ImmutableMap<String, String> apply() {
          ImmutableMap.Builder<String, String> map = new ImmutableMap.Builder();
          GpuDevice device = RenderSystem.getDevice();
-         if (device.getBackendName().equals("OpenGL")) {
-            String rendererFails = matchAny(this.rendererPatterns, device.getRenderer());
+         DeviceInfo deviceInfo = device.getDeviceInfo();
+         if (deviceInfo.backendName().equals("OpenGL")) {
+            String rendererFails = matchAny(this.rendererPatterns, deviceInfo.name());
             if (!rendererFails.isEmpty()) {
                map.put("renderer", rendererFails);
             }
 
-            String versionFails = matchAny(this.versionPatterns, device.getVersion());
+            String versionFails = matchAny(this.versionPatterns, deviceInfo.driverInfo());
             if (!versionFails.isEmpty()) {
                map.put("version", versionFails);
             }
 
-            String vendorFails = matchAny(this.vendorPatterns, device.getVendor());
+            String vendorFails = matchAny(this.vendorPatterns, deviceInfo.vendorName());
             if (!vendorFails.isEmpty()) {
                map.put("vendor", vendorFails);
             }

@@ -3,7 +3,6 @@ package net.minecraft.world.level;
 import com.mojang.logging.LogUtils;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -21,10 +20,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.SpawnPlacements;
-import net.minecraft.world.entity.livingblock.LivingBlock;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.EndPortalFrameBlock;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.TagValueInput;
@@ -138,12 +133,7 @@ public abstract class BaseSpawner {
                         return;
                      }
 
-                     Predicate<? super Entity> selector = EntitySelector.NO_SPECTATORS;
-                     if (entity instanceof LivingBlock) {
-                        selector = (e) -> e instanceof LivingBlock && ((LivingBlock)e).getBlockState().is(Blocks.END_PORTAL_FRAME);
-                     }
-
-                     int nearBy = level.getEntities(EntityTypeTest.forExactClass(entity.getClass()), (new AABB((double)pos.getX(), (double)pos.getY(), (double)pos.getZ(), (double)(pos.getX() + 1), (double)(pos.getY() + 1), (double)(pos.getZ() + 1))).inflate((double)this.spawnRange), selector).size();
+                     int nearBy = level.getEntities(EntityTypeTest.forExactClass(entity.getClass()), (new AABB((double)pos.getX(), (double)pos.getY(), (double)pos.getZ(), (double)(pos.getX() + 1), (double)(pos.getY() + 1), (double)(pos.getZ() + 1))).inflate((double)this.spawnRange), EntitySelector.NO_SPECTATORS).size();
                      if (nearBy >= this.maxNearbyEntities) {
                         this.delay(level, pos);
                         return;
@@ -158,20 +148,12 @@ public abstract class BaseSpawner {
 
                         boolean hasNoConfiguration = nextSpawnData.getEntityToSpawn().size() == 1 && nextSpawnData.getEntityToSpawn().getString("id").isPresent();
                         if (hasNoConfiguration) {
-                           mob.finalizeSpawn(level, level.getCurrentDifficultyAt(entity.blockPosition()), EntitySpawnReason.SPAWNER, (SpawnGroupData)null);
+                           ((Mob)entity).finalizeSpawn(level, level.getCurrentDifficultyAt(entity.blockPosition()), EntitySpawnReason.SPAWNER, (SpawnGroupData)null);
                         }
 
                         Optional var10000 = nextSpawnData.getEquipment();
                         Objects.requireNonNull(mob);
                         var10000.ifPresent(mob::equip);
-                     } else if (entity instanceof LivingBlock) {
-                        LivingBlock livingBlock = (LivingBlock)entity;
-                        BlockState blockState = Blocks.END_PORTAL_FRAME.defaultBlockState();
-                        if (random.nextFloat() > 0.9F) {
-                           blockState = (BlockState)blockState.setValue(EndPortalFrameBlock.HAS_EYE, true);
-                        }
-
-                        livingBlock.setBlockState(blockState);
                      }
 
                      if (!level.tryAddFreshEntityWithPassengers(entity)) {
@@ -264,10 +246,6 @@ public abstract class BaseSpawner {
 
    protected void setNextSpawnData(final @Nullable Level level, final BlockPos pos, final SpawnData nextSpawnData) {
       this.nextSpawnData = nextSpawnData;
-   }
-
-   public void setMaxNearbyEntities(final int maxNearbyEntities) {
-      this.maxNearbyEntities = maxNearbyEntities;
    }
 
    private SpawnData getOrCreateNextSpawnData(final @Nullable Level level, final RandomSource random, final BlockPos pos) {

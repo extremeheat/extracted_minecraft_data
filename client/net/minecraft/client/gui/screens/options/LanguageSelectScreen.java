@@ -78,7 +78,7 @@ public class LanguageSelectScreen extends OptionsSubScreen {
       footer.defaultCellSetting().alignHorizontallyCenter();
       footer.addChild(new StringWidget(WARNING_LABEL, this.font));
       LinearLayout bottomButtons = (LinearLayout)footer.addChild(LinearLayout.horizontal().spacing(8));
-      bottomButtons.addChild(Button.builder(Component.translatable("options.font"), (button) -> this.minecraft.setScreen(new FontOptionsScreen(this, this.options))).build());
+      bottomButtons.addChild(Button.builder(Component.translatable("options.font"), (var1) -> this.minecraft.gui.setScreen(new FontOptionsScreen(this, this.options))).build());
       bottomButtons.addChild(Button.builder(CommonComponents.GUI_DONE, (button) -> this.onDone()).build());
    }
 
@@ -103,7 +103,7 @@ public class LanguageSelectScreen extends OptionsSubScreen {
          }
       }
 
-      this.minecraft.setScreen(this.lastScreen);
+      this.minecraft.gui.setScreen(this.lastScreen);
    }
 
    protected boolean panoramaShouldSpin() {

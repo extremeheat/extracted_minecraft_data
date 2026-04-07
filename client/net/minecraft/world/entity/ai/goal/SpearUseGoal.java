@@ -5,6 +5,7 @@ import java.util.Optional;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.util.LandRandomPos;
 import net.minecraft.world.entity.monster.Monster;
@@ -68,7 +69,7 @@ public class SpearUseGoal<T extends Monster> extends Goal {
 
    public void tick() {
       if (this.state != null) {
-         Entity target = this.mob.getTarget();
+         LivingEntity target = this.mob.getTarget();
          double targetDistSqr = this.mob.distanceToSqr(target.getX(), target.getY(), target.getZ());
          Entity mount = this.mob.getRootVehicle();
          float speedModifier = 1.0F;
@@ -82,7 +83,7 @@ public class SpearUseGoal<T extends Monster> extends Goal {
          this.mob.getLookControl().setLookAt(target, 30.0F, 30.0F);
          if (this.state.notEngagedYet()) {
             if (targetDistSqr > (double)this.approachDistanceSq) {
-               this.mob.getNavigation().moveTo(target, (double)speedModifier * this.speedModifierWhenRepositioning);
+               this.mob.getNavigation().moveTo((Entity)target, (double)speedModifier * this.speedModifierWhenRepositioning);
                return;
             }
 
@@ -109,7 +110,7 @@ public class SpearUseGoal<T extends Monster> extends Goal {
                   this.state.awayPos = null;
                }
             } else {
-               this.mob.getNavigation().moveTo(target, (double)speedModifier * this.speedModifierWhenCharging);
+               this.mob.getNavigation().moveTo((Entity)target, (double)speedModifier * this.speedModifierWhenCharging);
                if (targetDistSqr < (double)this.targetInRangeRadiusSq || this.mob.getNavigation().isDone()) {
                   double distance = Math.sqrt(targetDistSqr);
                   this.state.awayPos = LandRandomPos.getPosAway(this.mob, (double)(6 + mountDistance) - distance, (double)(7 + mountDistance) - distance, 7, target.position());

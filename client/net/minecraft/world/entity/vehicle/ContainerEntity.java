@@ -91,6 +91,7 @@ public interface ContainerEntity extends Container, MenuProvider {
    }
 
    default InteractionResult interactWithContainerVehicle(final Player player) {
+      player.openMenu(this);
       return InteractionResult.SUCCESS;
    }
 

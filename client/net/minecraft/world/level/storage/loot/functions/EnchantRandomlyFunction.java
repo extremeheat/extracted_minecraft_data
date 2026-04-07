@@ -111,8 +111,8 @@ public class EnchantRandomlyFunction extends LootItemConditionalFunction {
          return this;
       }
 
-      public Builder withOptions(final Optional<HolderSet<Enchantment>> enchantments) {
-         this.options = enchantments;
+      public Builder withOptions(final HolderSet<Enchantment> enchantments) {
+         this.options = Optional.of(enchantments);
          return this;
       }
 

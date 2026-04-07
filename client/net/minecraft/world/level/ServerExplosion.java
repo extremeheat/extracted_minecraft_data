@@ -20,6 +20,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
@@ -321,8 +322,8 @@ public class ServerExplosion implements Explosion {
       }
 
       public void tryMerge(final ItemStack input) {
-         if (ItemStack.areMergable(this.stack, input)) {
-            this.stack = ItemStack.merge(this.stack, input, 16);
+         if (ItemEntity.areMergable(this.stack, input)) {
+            this.stack = ItemEntity.merge(this.stack, input, 16);
          }
 
       }

@@ -8,7 +8,7 @@ import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
@@ -32,7 +32,7 @@ public class HoglinSpecificSensor extends Sensor<Hoglin> {
       List<Hoglin> adultHoglins = Lists.newArrayList();
       NearestVisibleLivingEntities visibleLivingEntities = (NearestVisibleLivingEntities)brain.getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).orElse(NearestVisibleLivingEntities.empty());
 
-      for(Entity entity : visibleLivingEntities.findAllEntitiesMatchingLivingEntityPredicate((entityx) -> !entityx.isBaby() && (entityx instanceof Piglin || entityx instanceof Hoglin))) {
+      for(LivingEntity entity : visibleLivingEntities.findAll((entityx) -> !entityx.isBaby() && (entityx instanceof Piglin || entityx instanceof Hoglin))) {
          if (entity instanceof Piglin piglin) {
             ++adultPiglinCount;
             if (adultPiglin.isEmpty()) {

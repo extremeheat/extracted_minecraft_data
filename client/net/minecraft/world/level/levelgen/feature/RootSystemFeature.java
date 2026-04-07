@@ -38,10 +38,10 @@ public class RootSystemFeature extends Feature<RootSystemConfiguration> {
    private static boolean spaceForTree(final WorldGenLevel level, final RootSystemConfiguration config, final BlockPos pos) {
       BlockPos.MutableBlockPos columnUpPos = pos.mutable();
 
-      for(int i = 1; i <= config.requiredVerticalSpaceForTree; ++i) {
+      for(int i = 1; i <= config.requiredVerticalSpaceForTree(); ++i) {
          columnUpPos.move(Direction.UP);
          BlockState state = level.getBlockState(columnUpPos);
-         if (!isAllowedTreeSpace(state, i, config.allowedVerticalWaterForTree)) {
+         if (!isAllowedTreeSpace(state, i, config.allowedVerticalWaterForTree())) {
             return false;
          }
       }
@@ -59,15 +59,15 @@ public class RootSystemFeature extends Feature<RootSystemConfiguration> {
    }
 
    private static boolean placeDirtAndTree(final WorldGenLevel level, final ChunkGenerator generator, final RootSystemConfiguration config, final RandomSource random, final BlockPos.MutableBlockPos workingPos, final BlockPos pos) {
-      for(int y = 0; y < config.rootColumnMaxHeight; ++y) {
+      for(int y = 0; y < config.rootColumnMaxHeight(); ++y) {
          workingPos.move(Direction.UP);
-         if (config.allowedTreePosition.test(level, workingPos) && spaceForTree(level, config, workingPos)) {
+         if (config.allowedTreePosition().test(level, workingPos) && spaceForTree(level, config, workingPos)) {
             BlockPos belowPos = workingPos.below();
             if (level.getFluidState(belowPos).is(FluidTags.LAVA) || !level.getBlockState(belowPos).isSolid()) {
                return false;
             }
 
-            if (((PlacedFeature)config.treeFeature.value()).place(level, generator, random, workingPos)) {
+            if (((PlacedFeature)config.treeFeature().value()).place(level, generator, random, workingPos)) {
                placeDirt(pos, pos.getY() + y, level, config, random);
                return true;
             }
@@ -89,13 +89,13 @@ public class RootSystemFeature extends Feature<RootSystemConfiguration> {
    }
 
    private static void placeRootedDirt(final WorldGenLevel level, final RootSystemConfiguration config, final RandomSource random, final int originX, final int originZ, final BlockPos.MutableBlockPos workingPos) {
-      int rootRadius = config.rootRadius;
-      Predicate<BlockState> stateTest = (s) -> s.is(config.rootReplaceable);
+      int rootRadius = config.rootRadius();
+      Predicate<BlockState> stateTest = (s) -> s.is(config.rootReplaceable());
 
-      for(int i = 0; i < config.rootPlacementAttempts; ++i) {
+      for(int i = 0; i < config.rootPlacementAttempts(); ++i) {
          workingPos.setWithOffset(workingPos, random.nextInt(rootRadius) - random.nextInt(rootRadius), 0, random.nextInt(rootRadius) - random.nextInt(rootRadius));
          if (stateTest.test(level.getBlockState(workingPos))) {
-            level.setBlock(workingPos, config.rootStateProvider.getState(level, random, workingPos), 2);
+            level.setBlock(workingPos, config.rootStateProvider().getState(level, random, workingPos), 2);
          }
 
          workingPos.setX(originX);
@@ -105,13 +105,13 @@ public class RootSystemFeature extends Feature<RootSystemConfiguration> {
    }
 
    private static void placeRoots(final WorldGenLevel level, final RootSystemConfiguration config, final RandomSource random, final BlockPos pos, final BlockPos.MutableBlockPos workingPos) {
-      int rootRadius = config.hangingRootRadius;
-      int verticalSpan = config.hangingRootsVerticalSpan;
+      int rootRadius = config.hangingRootRadius();
+      int verticalSpan = config.hangingRootsVerticalSpan();
 
-      for(int i = 0; i < config.hangingRootPlacementAttempts; ++i) {
+      for(int i = 0; i < config.hangingRootPlacementAttempts(); ++i) {
          workingPos.setWithOffset(pos, random.nextInt(rootRadius) - random.nextInt(rootRadius), random.nextInt(verticalSpan) - random.nextInt(verticalSpan), random.nextInt(rootRadius) - random.nextInt(rootRadius));
          if (level.isEmptyBlock(workingPos)) {
-            BlockState targetState = config.hangingRootStateProvider.getState(level, random, workingPos);
+            BlockState targetState = config.hangingRootStateProvider().getState(level, random, workingPos);
             if (targetState.canSurvive(level, workingPos) && level.getBlockState(workingPos.above()).isFaceSturdy(level, workingPos, Direction.DOWN)) {
                level.setBlock(workingPos, targetState, 2);
             }

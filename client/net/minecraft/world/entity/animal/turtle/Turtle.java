@@ -11,7 +11,6 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
@@ -27,7 +26,6 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LightningBolt;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
@@ -42,7 +40,6 @@ import net.minecraft.world.entity.ai.goal.MoveToBlockGoal;
 import net.minecraft.world.entity.ai.goal.PanicGoal;
 import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.TemptGoal;
-import net.minecraft.world.entity.ai.goal.TemptedByLivingBlockGoal;
 import net.minecraft.world.entity.ai.navigation.AmphibiousPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
@@ -91,6 +88,10 @@ public class Turtle extends Animal {
 
    public void setHomePos(final BlockPos pos) {
       this.homePos = pos;
+   }
+
+   public BlockPos getHomePos() {
+      return this.homePos;
    }
 
    public boolean hasEgg() {
@@ -142,7 +143,6 @@ public class Turtle extends Animal {
       this.goalSelector.addGoal(1, new TurtleBreedGoal(this, 1.0));
       this.goalSelector.addGoal(1, new TurtleLayEggGoal(this, 1.0));
       this.goalSelector.addGoal(2, new TemptGoal(this, 1.1, (i) -> i.is(ItemTags.TURTLE_FOOD), false));
-      this.goalSelector.addGoal(2, new TemptedByLivingBlockGoal(this, 1.1, BlockTags.TURTLE_FOOD, false));
       this.goalSelector.addGoal(3, new TurtleGoToWaterGoal(this, 1.0));
       this.goalSelector.addGoal(4, new TurtleGoHomeGoal(this, 1.0));
       this.goalSelector.addGoal(7, new TurtleTravelGoal(this, 1.0));
@@ -271,18 +271,7 @@ public class Turtle extends Animal {
       HAS_EGG = SynchedEntityData.<Boolean>defineId(Turtle.class, EntityDataSerializers.BOOLEAN);
       LAYING_EGG = SynchedEntityData.<Boolean>defineId(Turtle.class, EntityDataSerializers.BOOLEAN);
       BABY_DIMENSIONS = EntityType.TURTLE.getDimensions().withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, EntityType.TURTLE.getHeight(), -0.25F)).scale(0.3F);
-      BABY_ON_LAND_SELECTOR = (target, level) -> {
-         boolean var10000;
-         if (target instanceof LivingEntity livingEntity) {
-            if (livingEntity.isBaby() && !target.isInWater()) {
-               var10000 = true;
-               return var10000;
-            }
-         }
-
-         var10000 = false;
-         return var10000;
-      };
+      BABY_ON_LAND_SELECTOR = (target, level) -> target.isBaby() && !target.isInWater();
    }
 
    private static class TurtlePanicGoal extends PanicGoal {
@@ -572,50 +561,47 @@ public class Turtle extends Animal {
       }
    }
 
-   private static class TurtleMoveControl extends MoveControl {
-      private final Turtle turtle;
-
-      TurtleMoveControl(final Turtle turtle) {
+   private static class TurtleMoveControl<T extends Turtle> extends MoveControl<T> {
+      TurtleMoveControl(final T turtle) {
          super(turtle);
-         this.turtle = turtle;
       }
 
       private void updateSpeed() {
-         if (this.turtle.isInWater()) {
-            this.turtle.setDeltaMovement(this.turtle.getDeltaMovement().add(0.0, 0.005, 0.0));
-            if (!this.turtle.homePos.closerToCenterThan(this.turtle.position(), 16.0)) {
-               this.turtle.setSpeed(Math.max(this.turtle.getSpeed() / 2.0F, 0.08F));
+         if (((Turtle)this.mob).isInWater()) {
+            ((Turtle)this.mob).setDeltaMovement(((Turtle)this.mob).getDeltaMovement().add(0.0, 0.005, 0.0));
+            if (!((Turtle)this.mob).getHomePos().closerToCenterThan(((Turtle)this.mob).position(), 16.0)) {
+               ((Turtle)this.mob).setSpeed(Math.max(((Turtle)this.mob).getSpeed() / 2.0F, 0.08F));
             }
 
-            if (this.turtle.isBaby()) {
-               this.turtle.setSpeed(Math.max(this.turtle.getSpeed() / 3.0F, 0.06F));
+            if (((Turtle)this.mob).isBaby()) {
+               ((Turtle)this.mob).setSpeed(Math.max(((Turtle)this.mob).getSpeed() / 3.0F, 0.06F));
             }
-         } else if (this.turtle.onGround()) {
-            this.turtle.setSpeed(Math.max(this.turtle.getSpeed() / 2.0F, 0.06F));
+         } else if (((Turtle)this.mob).onGround()) {
+            ((Turtle)this.mob).setSpeed(Math.max(((Turtle)this.mob).getSpeed() / 2.0F, 0.06F));
          }
 
       }
 
       public void tick() {
          this.updateSpeed();
-         if (this.operation == MoveControl.Operation.MOVE_TO && !this.turtle.getNavigation().isDone()) {
-            double xd = this.wantedX - this.turtle.getX();
-            double yd = this.wantedY - this.turtle.getY();
-            double zd = this.wantedZ - this.turtle.getZ();
+         if (this.operation == MoveControl.Operation.MOVE_TO && !((Turtle)this.mob).getNavigation().isDone()) {
+            double xd = this.wantedX - ((Turtle)this.mob).getX();
+            double yd = this.wantedY - ((Turtle)this.mob).getY();
+            double zd = this.wantedZ - ((Turtle)this.mob).getZ();
             double dd = Math.sqrt(xd * xd + yd * yd + zd * zd);
             if (dd < 9.999999747378752E-6) {
-               this.mob.setSpeed(0.0F);
+               ((Turtle)this.mob).setSpeed(0.0F);
             } else {
                yd /= dd;
                float yRotD = (float)(Mth.atan2(zd, xd) * 57.2957763671875) - 90.0F;
-               this.turtle.setYRot(this.rotlerp(this.turtle.getYRot(), yRotD, 90.0F));
-               this.turtle.yBodyRot = this.turtle.getYRot();
-               float targetSpeed = (float)(this.speedModifier * this.turtle.getAttributeValue(Attributes.MOVEMENT_SPEED));
-               this.turtle.setSpeed(Mth.lerp(0.125F, this.turtle.getSpeed(), targetSpeed));
-               this.turtle.setDeltaMovement(this.turtle.getDeltaMovement().add(0.0, (double)this.turtle.getSpeed() * yd * 0.1, 0.0));
+               ((Turtle)this.mob).setYRot(this.rotlerp(((Turtle)this.mob).getYRot(), yRotD, 90.0F));
+               (this.mob).yBodyRot = ((Turtle)this.mob).getYRot();
+               float targetSpeed = (float)(this.speedModifier * ((Turtle)this.mob).getAttributeValue(Attributes.MOVEMENT_SPEED));
+               ((Turtle)this.mob).setSpeed(Mth.lerp(0.125F, ((Turtle)this.mob).getSpeed(), targetSpeed));
+               ((Turtle)this.mob).setDeltaMovement(((Turtle)this.mob).getDeltaMovement().add(0.0, (double)((Turtle)this.mob).getSpeed() * yd * 0.1, 0.0));
             }
          } else {
-            this.turtle.setSpeed(0.0F);
+            ((Turtle)this.mob).setSpeed(0.0F);
          }
       }
    }

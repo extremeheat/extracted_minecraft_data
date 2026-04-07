@@ -16,7 +16,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.DifficultyInstance;
@@ -38,7 +37,6 @@ import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.PanicGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.TemptGoal;
-import net.minecraft.world.entity.ai.goal.TemptedByLivingBlockGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
@@ -81,11 +79,10 @@ public class Chicken extends Animal {
       this.goalSelector.addGoal(1, new PanicGoal(this, 1.4));
       this.goalSelector.addGoal(2, new BreedGoal(this, 1.0));
       this.goalSelector.addGoal(3, new TemptGoal(this, 1.0, (i) -> i.is(ItemTags.CHICKEN_FOOD), false));
-      this.goalSelector.addGoal(4, new TemptedByLivingBlockGoal(this, 1.0, BlockTags.CHICKEN_FOOD, false));
-      this.goalSelector.addGoal(5, new FollowParentGoal(this, 1.1));
-      this.goalSelector.addGoal(6, new WaterAvoidingRandomStrollGoal(this, 1.0));
-      this.goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 6.0F));
-      this.goalSelector.addGoal(8, new RandomLookAroundGoal(this));
+      this.goalSelector.addGoal(4, new FollowParentGoal(this, 1.1));
+      this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 1.0));
+      this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 6.0F));
+      this.goalSelector.addGoal(7, new RandomLookAroundGoal(this));
    }
 
    private Holder<ChickenSoundVariant> getSoundVariant() {

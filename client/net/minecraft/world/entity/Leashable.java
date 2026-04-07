@@ -132,6 +132,10 @@ public interface Leashable {
          Level var5 = entity.level();
          if (var5 instanceof ServerLevel) {
             ServerLevel level = (ServerLevel)var5;
+            if (dropLead) {
+               entity.spawnAtLocation(level, (ItemLike)Items.LEAD);
+            }
+
             if (sendPacket) {
                level.getChunkSource().sendToTrackingPlayers(entity, new ClientboundSetEntityLinkPacket(entity, (Entity)null));
             }

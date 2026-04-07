@@ -68,7 +68,6 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
          poseStack.pushPose();
          poseStack.translate(0.0F, -1.0F, -2.0F);
          submitRays(poseStack, deathTime, submitNodeCollector, RenderTypes.dragonRays());
-         submitRays(poseStack, deathTime, submitNodeCollector, RenderTypes.dragonRaysDepth());
          poseStack.popPose();
       }
 

@@ -9,6 +9,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.behavior.BehaviorUtils;
@@ -39,7 +40,7 @@ public class ShootTongue extends Behavior<Frog> {
    }
 
    protected boolean checkExtraStartConditions(final ServerLevel level, final Frog body) {
-      Entity target = (Entity)body.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).get();
+      LivingEntity target = (LivingEntity)body.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).get();
       boolean canPathfindToTarget = this.canPathfindToTarget(body, target);
       if (!canPathfindToTarget) {
          body.getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
@@ -54,7 +55,7 @@ public class ShootTongue extends Behavior<Frog> {
    }
 
    protected void start(final ServerLevel level, final Frog body, final long timestamp) {
-      Entity target = (Entity)body.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).get();
+      LivingEntity target = (LivingEntity)body.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).get();
       BehaviorUtils.lookAtEntity(body, target);
       body.setTongueTarget(target);
       body.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(target.position(), 2.0F, 0));
@@ -84,7 +85,7 @@ public class ShootTongue extends Behavior<Frog> {
    }
 
    protected void tick(final ServerLevel level, final Frog body, final long timestamp) {
-      Entity target = (Entity)body.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).get();
+      LivingEntity target = (LivingEntity)body.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).get();
       body.setTongueTarget(target);
       switch (this.state.ordinal()) {
          case 0:
@@ -118,12 +119,12 @@ public class ShootTongue extends Behavior<Frog> {
 
    }
 
-   private boolean canPathfindToTarget(final Frog body, final Entity target) {
+   private boolean canPathfindToTarget(final Frog body, final LivingEntity target) {
       Path path = body.getNavigation().createPath(target, 0);
       return path != null && path.getDistToTarget() < 1.75F;
    }
 
-   private void addUnreachableTargetToMemory(final Frog body, final Entity entity) {
+   private void addUnreachableTargetToMemory(final Frog body, final LivingEntity entity) {
       List<UUID> unreachableTargets = (List)body.getBrain().getMemory(MemoryModuleType.UNREACHABLE_TONGUE_TARGETS).orElseGet(ArrayList::new);
       boolean shouldAddUnreachableTarget = !unreachableTargets.contains(entity.getUUID());
       if (unreachableTargets.size() == 5 && shouldAddUnreachableTarget) {

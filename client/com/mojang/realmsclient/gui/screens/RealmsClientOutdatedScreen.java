@@ -35,7 +35,7 @@ public class RealmsClientOutdatedScreen extends RealmsScreen {
    }
 
    public void onClose() {
-      this.minecraft.setScreen(this.lastScreen);
+      this.minecraft.gui.setScreen(this.lastScreen);
    }
 
    private Component getErrorMessage() {

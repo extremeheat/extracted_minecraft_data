@@ -83,7 +83,7 @@ public class SelectWorldScreen extends Screen {
       this.editButton = (Button)rowHelper.addChild(Button.builder(Component.translatable("selectWorld.edit"), (button) -> list.getSelectedOpt().ifPresent(WorldSelectionList.WorldListEntry::editWorld)).width(71).build());
       this.deleteButton = (Button)rowHelper.addChild(Button.builder(Component.translatable("selectWorld.delete"), (button) -> list.getSelectedOpt().ifPresent(WorldSelectionList.WorldListEntry::deleteWorld)).width(71).build());
       this.recreateButton = (Button)rowHelper.addChild(Button.builder(Component.translatable("selectWorld.recreate"), (button) -> list.getSelectedOpt().ifPresent(WorldSelectionList.WorldListEntry::recreateWorld)).width(71).build());
-      rowHelper.addChild(Button.builder(CommonComponents.GUI_BACK, (button) -> this.minecraft.setScreen(this.lastScreen)).width(71).build());
+      rowHelper.addChild(Button.builder(CommonComponents.GUI_BACK, (button) -> this.minecraft.gui.setScreen(this.lastScreen)).width(71).build());
    }
 
    private Button createDebugWorldRecreateButton() {
@@ -126,7 +126,7 @@ public class SelectWorldScreen extends Screen {
    }
 
    public void onClose() {
-      this.minecraft.setScreen(this.lastScreen);
+      this.minecraft.gui.setScreen(this.lastScreen);
    }
 
    public void updateButtonStatus(final @Nullable LevelSummary summary) {

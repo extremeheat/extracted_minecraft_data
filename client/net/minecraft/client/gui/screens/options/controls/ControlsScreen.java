@@ -20,7 +20,7 @@ public class ControlsScreen extends OptionsSubScreen {
    }
 
    protected void addOptions() {
-      this.list.addSmall(Button.builder(Component.translatable("options.mouse_settings"), (button) -> this.minecraft.setScreen(new MouseSettingsScreen(this, this.options))).build(), Button.builder(Component.translatable("controls.keybinds"), (button) -> this.minecraft.setScreen(new KeyBindsScreen(this, this.options))).build());
+      this.list.addSmall(Button.builder(Component.translatable("options.mouse_settings"), (var1) -> this.minecraft.gui.setScreen(new MouseSettingsScreen(this, this.options))).build(), Button.builder(Component.translatable("controls.keybinds"), (var1) -> this.minecraft.gui.setScreen(new KeyBindsScreen(this, this.options))).build());
       this.list.addSmall(options(this.options));
    }
 }

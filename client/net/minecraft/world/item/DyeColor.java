@@ -28,22 +28,22 @@ import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.Nullable;
 
 public enum DyeColor implements StringRepresentable {
-   WHITE(0, "white", 16383998, MapColor.SNOW, 15790320, 16777215),
-   ORANGE(1, "orange", 16351261, MapColor.COLOR_ORANGE, 15435844, 16738335),
-   MAGENTA(2, "magenta", 13061821, MapColor.COLOR_MAGENTA, 12801229, 16711935),
-   LIGHT_BLUE(3, "light_blue", 3847130, MapColor.COLOR_LIGHT_BLUE, 6719955, 10141901),
-   YELLOW(4, "yellow", 16701501, MapColor.COLOR_YELLOW, 14602026, 16776960),
-   LIME(5, "lime", 8439583, MapColor.COLOR_LIGHT_GREEN, 4312372, 12582656),
-   PINK(6, "pink", 15961002, MapColor.COLOR_PINK, 14188952, 16738740),
-   GRAY(7, "gray", 4673362, MapColor.COLOR_GRAY, 4408131, 8421504),
-   LIGHT_GRAY(8, "light_gray", 10329495, MapColor.COLOR_LIGHT_GRAY, 11250603, 13882323),
-   CYAN(9, "cyan", 1481884, MapColor.COLOR_CYAN, 2651799, 65535),
-   PURPLE(10, "purple", 8991416, MapColor.COLOR_PURPLE, 8073150, 10494192),
-   BLUE(11, "blue", 3949738, MapColor.COLOR_BLUE, 2437522, 255),
-   BROWN(12, "brown", 8606770, MapColor.COLOR_BROWN, 5320730, 9127187),
-   GREEN(13, "green", 6192150, MapColor.COLOR_GREEN, 3887386, 65280),
-   RED(14, "red", 11546150, MapColor.COLOR_RED, 11743532, 16711680),
-   BLACK(15, "black", 1908001, MapColor.COLOR_BLACK, 1973019, 0);
+   WHITE(0, "white", 16383998, MapColor.SNOW, MapColor.TERRACOTTA_WHITE, 15790320, 16777215),
+   ORANGE(1, "orange", 16351261, MapColor.COLOR_ORANGE, MapColor.TERRACOTTA_ORANGE, 15435844, 16738335),
+   MAGENTA(2, "magenta", 13061821, MapColor.COLOR_MAGENTA, MapColor.TERRACOTTA_MAGENTA, 12801229, 16711935),
+   LIGHT_BLUE(3, "light_blue", 3847130, MapColor.COLOR_LIGHT_BLUE, MapColor.TERRACOTTA_LIGHT_BLUE, 6719955, 10141901),
+   YELLOW(4, "yellow", 16701501, MapColor.COLOR_YELLOW, MapColor.TERRACOTTA_YELLOW, 14602026, 16776960),
+   LIME(5, "lime", 8439583, MapColor.COLOR_LIGHT_GREEN, MapColor.TERRACOTTA_LIGHT_GREEN, 4312372, 12582656),
+   PINK(6, "pink", 15961002, MapColor.COLOR_PINK, MapColor.TERRACOTTA_PINK, 14188952, 16738740),
+   GRAY(7, "gray", 4673362, MapColor.COLOR_GRAY, MapColor.TERRACOTTA_GRAY, 4408131, 8421504),
+   LIGHT_GRAY(8, "light_gray", 10329495, MapColor.COLOR_LIGHT_GRAY, MapColor.TERRACOTTA_LIGHT_GRAY, 11250603, 13882323),
+   CYAN(9, "cyan", 1481884, MapColor.COLOR_CYAN, MapColor.TERRACOTTA_CYAN, 2651799, 65535),
+   PURPLE(10, "purple", 8991416, MapColor.COLOR_PURPLE, MapColor.TERRACOTTA_PURPLE, 8073150, 10494192),
+   BLUE(11, "blue", 3949738, MapColor.COLOR_BLUE, MapColor.TERRACOTTA_BLUE, 2437522, 255),
+   BROWN(12, "brown", 8606770, MapColor.COLOR_BROWN, MapColor.TERRACOTTA_BROWN, 5320730, 9127187),
+   GREEN(13, "green", 6192150, MapColor.COLOR_GREEN, MapColor.TERRACOTTA_GREEN, 3887386, 65280),
+   RED(14, "red", 11546150, MapColor.COLOR_RED, MapColor.TERRACOTTA_RED, 11743532, 16711680),
+   BLACK(15, "black", 1908001, MapColor.COLOR_BLACK, MapColor.TERRACOTTA_BLACK, 1973019, 0);
 
    public static final List<DyeColor> VALUES = List.of(values());
    private static final IntFunction<DyeColor> BY_ID = ByIdMap.<DyeColor>continuous(DyeColor::getId, (DyeColor[])VALUES.toArray((x$0) -> new DyeColor[x$0]), ByIdMap.OutOfBoundsStrategy.ZERO);
@@ -56,14 +56,16 @@ public enum DyeColor implements StringRepresentable {
    private final int id;
    private final String name;
    private final MapColor mapColor;
+   private final MapColor terracottaColor;
    private final int textureDiffuseColor;
    private final int fireworkColor;
    private final int textColor;
 
-   private DyeColor(final int id, final String name, final int textureDiffuseColor, final MapColor mapColor, final int fireworkColor, final int textColor) {
+   private DyeColor(final int id, final String name, final int textureDiffuseColor, final MapColor mapColor, final MapColor terracottaColor, final int fireworkColor, final int textColor) {
       this.id = id;
       this.name = name;
       this.mapColor = mapColor;
+      this.terracottaColor = terracottaColor;
       this.textColor = ARGB.opaque(textColor);
       this.textureDiffuseColor = ARGB.opaque(textureDiffuseColor);
       this.fireworkColor = fireworkColor;
@@ -83,6 +85,10 @@ public enum DyeColor implements StringRepresentable {
 
    public MapColor getMapColor() {
       return this.mapColor;
+   }
+
+   public MapColor getTerracottaColor() {
+      return this.terracottaColor;
    }
 
    public int getFireworkColor() {

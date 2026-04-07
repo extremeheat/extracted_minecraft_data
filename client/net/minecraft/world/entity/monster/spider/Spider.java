@@ -203,7 +203,7 @@ public class Spider extends Monster {
       public boolean canContinueToUse() {
          float br = this.mob.getLightLevelDependentMagicValue();
          if (br >= 0.5F && this.mob.getRandom().nextInt(100) == 0) {
-            this.mob.setTarget((Entity)null);
+            this.mob.setTarget((LivingEntity)null);
             return false;
          } else {
             return super.canContinueToUse();

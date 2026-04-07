@@ -63,7 +63,7 @@ public class CamelHusk extends Camel {
       return false;
    }
 
-   public boolean isBaby() {
+   public boolean canBeABaby() {
       return false;
    }
 

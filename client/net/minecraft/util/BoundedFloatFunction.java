@@ -1,11 +1,22 @@
 package net.minecraft.util;
 
-import it.unimi.dsi.fastutil.floats.Float2FloatFunction;
 import java.util.Objects;
 import java.util.function.Function;
 
 public interface BoundedFloatFunction<C> {
-   BoundedFloatFunction<Float> IDENTITY = createUnlimited((input) -> input);
+   BoundedFloatFunction<Float> IDENTITY = new BoundedFloatFunction<Float>() {
+      public float apply(final Float value) {
+         return value;
+      }
+
+      public float minValue() {
+         return -1.0F / 0.0F;
+      }
+
+      public float maxValue() {
+         return 1.0F / 0.0F;
+      }
+   };
 
    float apply(final C c);
 
@@ -13,18 +24,18 @@ public interface BoundedFloatFunction<C> {
 
    float maxValue();
 
-   static BoundedFloatFunction<Float> createUnlimited(final Float2FloatFunction function) {
-      return new BoundedFloatFunction<Float>() {
-         public float apply(final Float aFloat) {
-            return (Float)function.apply(aFloat);
+   static <C> BoundedFloatFunction<C> constant(final float value) {
+      return new BoundedFloatFunction<C>() {
+         public float apply(final C c) {
+            return value;
          }
 
          public float minValue() {
-            return -1.0F / 0.0F;
+            return value;
          }
 
          public float maxValue() {
-            return 1.0F / 0.0F;
+            return value;
          }
       };
    }

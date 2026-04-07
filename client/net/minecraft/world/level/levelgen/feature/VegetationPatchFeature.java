@@ -24,9 +24,9 @@ public class VegetationPatchFeature extends Feature<VegetationPatchConfiguration
       VegetationPatchConfiguration config = context.config();
       RandomSource random = context.random();
       BlockPos origin = context.origin();
-      Predicate<BlockState> replaceable = (s) -> s.is(config.replaceable);
-      int xRadius = config.xzRadius.sample(random) + 1;
-      int zRadius = config.xzRadius.sample(random) + 1;
+      Predicate<BlockState> replaceable = (s) -> s.is(config.replaceable());
+      int xRadius = config.xzRadius().sample(random) + 1;
+      int zRadius = config.xzRadius().sample(random) + 1;
       Set<BlockPos> surface = this.placeGroundPatch(level, config, random, origin, replaceable, xRadius, zRadius);
       this.distributeVegetation(context, level, config, random, surface, xRadius, zRadius);
       return !surface.isEmpty();
@@ -35,7 +35,7 @@ public class VegetationPatchFeature extends Feature<VegetationPatchConfiguration
    protected Set<BlockPos> placeGroundPatch(final WorldGenLevel level, final VegetationPatchConfiguration config, final RandomSource random, final BlockPos origin, final Predicate<BlockState> replaceable, final int xRadius, final int zRadius) {
       BlockPos.MutableBlockPos pos = origin.mutable();
       BlockPos.MutableBlockPos belowPos = pos.mutable();
-      Direction inwards = config.surface.getDirection();
+      Direction inwards = config.surface().getDirection();
       Direction outwards = inwards.getOpposite();
       Set<BlockPos> surface = new HashSet();
 
@@ -47,21 +47,21 @@ public class VegetationPatchFeature extends Feature<VegetationPatchConfiguration
             boolean isEdge = isXEdge || isZEdge;
             boolean isCorner = isXEdge && isZEdge;
             boolean isEdgeButNotCorner = isEdge && !isCorner;
-            if (!isCorner && (!isEdgeButNotCorner || config.extraEdgeColumnChance != 0.0F && !(random.nextFloat() > config.extraEdgeColumnChance))) {
+            if (!isCorner && (!isEdgeButNotCorner || config.extraEdgeColumnChance() != 0.0F && !(random.nextFloat() > config.extraEdgeColumnChance()))) {
                pos.setWithOffset(origin, dx, 0, dz);
 
-               for(int offset = 0; level.isStateAtPosition(pos, BlockBehaviour.BlockStateBase::isAir) && offset < config.verticalRange; ++offset) {
+               for(int offset = 0; level.isStateAtPosition(pos, BlockBehaviour.BlockStateBase::isAir) && offset < config.verticalRange(); ++offset) {
                   pos.move(inwards);
                }
 
-               for(int var25 = 0; level.isStateAtPosition(pos, (s) -> !s.isAir()) && var25 < config.verticalRange; ++var25) {
+               for(int var25 = 0; level.isStateAtPosition(pos, (s) -> !s.isAir()) && var25 < config.verticalRange(); ++var25) {
                   pos.move(outwards);
                }
 
-               belowPos.setWithOffset(pos, (Direction)config.surface.getDirection());
+               belowPos.setWithOffset(pos, (Direction)config.surface().getDirection());
                BlockState belowState = level.getBlockState(belowPos);
-               if (level.isEmptyBlock(pos) && belowState.isFaceSturdy(level, belowPos, config.surface.getDirection().getOpposite())) {
-                  int depth = config.depth.sample(random) + (config.extraBottomBlockChance > 0.0F && random.nextFloat() < config.extraBottomBlockChance ? 1 : 0);
+               if (level.isEmptyBlock(pos) && belowState.isFaceSturdy(level, belowPos, config.surface().getDirection().getOpposite())) {
+                  int depth = config.depth().sample(random) + (config.extraBottomBlockChance() > 0.0F && random.nextFloat() < config.extraBottomBlockChance() ? 1 : 0);
                   BlockPos groundPos = belowPos.immutable();
                   boolean groundPlaced = this.placeGround(level, config, replaceable, random, belowPos, depth);
                   if (groundPlaced) {
@@ -77,7 +77,7 @@ public class VegetationPatchFeature extends Feature<VegetationPatchConfiguration
 
    protected void distributeVegetation(final FeaturePlaceContext<VegetationPatchConfiguration> context, final WorldGenLevel level, final VegetationPatchConfiguration config, final RandomSource random, final Set<BlockPos> surface, final int xRadius, final int zRadius) {
       for(BlockPos surfacePos : surface) {
-         if (config.vegetationChance > 0.0F && random.nextFloat() < config.vegetationChance) {
+         if (config.vegetationChance() > 0.0F && random.nextFloat() < config.vegetationChance()) {
             this.placeVegetation(level, config, context.chunkGenerator(), random, surfacePos);
          }
       }
@@ -85,12 +85,12 @@ public class VegetationPatchFeature extends Feature<VegetationPatchConfiguration
    }
 
    protected boolean placeVegetation(final WorldGenLevel level, final VegetationPatchConfiguration config, final ChunkGenerator generator, final RandomSource random, final BlockPos vegetationPos) {
-      return ((PlacedFeature)config.vegetationFeature.value()).place(level, generator, random, vegetationPos.relative(config.surface.getDirection().getOpposite()));
+      return ((PlacedFeature)config.vegetationFeature().value()).place(level, generator, random, vegetationPos.relative(config.surface().getDirection().getOpposite()));
    }
 
    protected boolean placeGround(final WorldGenLevel level, final VegetationPatchConfiguration config, final Predicate<BlockState> replaceable, final RandomSource random, final BlockPos.MutableBlockPos belowPos, final int depth) {
       for(int i = 0; i < depth; ++i) {
-         BlockState stateToPlace = config.groundState.getState(level, random, belowPos);
+         BlockState stateToPlace = config.groundState().getState(level, random, belowPos);
          BlockState belowState = level.getBlockState(belowPos);
          if (!stateToPlace.is(belowState.getBlock())) {
             if (!replaceable.test(belowState)) {
@@ -98,7 +98,7 @@ public class VegetationPatchFeature extends Feature<VegetationPatchConfiguration
             }
 
             level.setBlock(belowPos, stateToPlace, 2);
-            belowPos.move(config.surface.getDirection());
+            belowPos.move(config.surface().getDirection());
          }
       }
 

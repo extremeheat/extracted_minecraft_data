@@ -53,7 +53,7 @@ public abstract class FaceAttachedHorizontalDirectionalBlock extends HorizontalD
       return getConnectedDirection(state).getOpposite() == directionToNeighbour && !state.canSurvive(level, pos) ? Blocks.AIR.defaultBlockState() : super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   public static Direction getConnectedDirection(final BlockState state) {
+   protected static Direction getConnectedDirection(final BlockState state) {
       switch ((AttachFace)state.getValue(FACE)) {
          case CEILING -> {
             return Direction.DOWN;

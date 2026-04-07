@@ -38,6 +38,7 @@ public class MiscOverworldPlacements {
    public static final ResourceKey<PlacedFeature> BLUE_ICE = PlacementUtils.createKey("blue_ice");
    public static final ResourceKey<PlacedFeature> LAKE_LAVA_UNDERGROUND = PlacementUtils.createKey("lake_lava_underground");
    public static final ResourceKey<PlacedFeature> LAKE_LAVA_SURFACE = PlacementUtils.createKey("lake_lava_surface");
+   public static final ResourceKey<PlacedFeature> SULFUR_POOL = PlacementUtils.createKey("sulfur_pool");
    public static final ResourceKey<PlacedFeature> DISK_CLAY = PlacementUtils.createKey("disk_clay");
    public static final ResourceKey<PlacedFeature> DISK_GRAVEL = PlacementUtils.createKey("disk_gravel");
    public static final ResourceKey<PlacedFeature> DISK_SAND = PlacementUtils.createKey("disk_sand");
@@ -62,6 +63,7 @@ public class MiscOverworldPlacements {
       Holder<ConfiguredFeature<?, ?>> icebergBlue = configuredFeatures.getOrThrow(MiscOverworldFeatures.ICEBERG_BLUE);
       Holder<ConfiguredFeature<?, ?>> blueIce = configuredFeatures.getOrThrow(MiscOverworldFeatures.BLUE_ICE);
       Holder<ConfiguredFeature<?, ?>> lakeLava = configuredFeatures.getOrThrow(MiscOverworldFeatures.LAKE_LAVA);
+      Holder<ConfiguredFeature<?, ?>> sulfurPool = configuredFeatures.getOrThrow(MiscOverworldFeatures.SULFUR_POOL);
       Holder<ConfiguredFeature<?, ?>> diskClay = configuredFeatures.getOrThrow(MiscOverworldFeatures.DISK_CLAY);
       Holder<ConfiguredFeature<?, ?>> diskGravel = configuredFeatures.getOrThrow(MiscOverworldFeatures.DISK_GRAVEL);
       Holder<ConfiguredFeature<?, ?>> diskSand = configuredFeatures.getOrThrow(MiscOverworldFeatures.DISK_SAND);
@@ -80,6 +82,7 @@ public class MiscOverworldPlacements {
       PlacementUtils.register(context, BLUE_ICE, blueIce, CountPlacement.of(UniformInt.of(0, 19)), InSquarePlacement.spread(), HeightRangePlacement.uniform(VerticalAnchor.absolute(30), VerticalAnchor.absolute(61)), BiomeFilter.biome());
       PlacementUtils.register(context, LAKE_LAVA_UNDERGROUND, lakeLava, RarityFilter.onAverageOnceEvery(9), InSquarePlacement.spread(), HeightRangePlacement.of(UniformHeight.of(VerticalAnchor.absolute(0), VerticalAnchor.top())), EnvironmentScanPlacement.scanningFor(Direction.DOWN, BlockPredicate.allOf(BlockPredicate.not(BlockPredicate.ONLY_IN_AIR_PREDICATE), BlockPredicate.insideWorld(new BlockPos(0, -5, 0))), 32), SurfaceRelativeThresholdFilter.of(Heightmap.Types.OCEAN_FLOOR_WG, -2147483648, -5), BiomeFilter.biome());
       PlacementUtils.register(context, LAKE_LAVA_SURFACE, lakeLava, RarityFilter.onAverageOnceEvery(200), InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP_WORLD_SURFACE, BiomeFilter.biome());
+      PlacementUtils.register(context, SULFUR_POOL, sulfurPool, CountPlacement.of(256), InSquarePlacement.spread(), PlacementUtils.RANGE_BOTTOM_TO_MAX_TERRAIN_HEIGHT, BlockPredicateFilter.forPredicate(BlockPredicate.solid()), EnvironmentScanPlacement.scanningFor(Direction.UP, BlockPredicate.ONLY_IN_AIR_PREDICATE, 32), RandomOffsetPlacement.vertical(ConstantInt.of(-1)), BlockPredicateFilter.forPredicate(BlockPredicate.matchesBlocks(Blocks.SULFUR)), BiomeFilter.biome());
       PlacementUtils.register(context, DISK_CLAY, diskClay, InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP_TOP_SOLID, BlockPredicateFilter.forPredicate(BlockPredicate.matchesFluids(Fluids.WATER)), BiomeFilter.biome());
       PlacementUtils.register(context, DISK_GRAVEL, diskGravel, InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP_TOP_SOLID, BlockPredicateFilter.forPredicate(BlockPredicate.matchesFluids(Fluids.WATER)), BiomeFilter.biome());
       PlacementUtils.register(context, DISK_SAND, diskSand, CountPlacement.of(3), InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP_TOP_SOLID, BlockPredicateFilter.forPredicate(BlockPredicate.matchesFluids(Fluids.WATER)), BiomeFilter.biome());

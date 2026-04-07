@@ -41,7 +41,7 @@ public abstract class StriderModel extends EntityModel<StriderRenderState> {
 
    protected abstract void customAnimations(final float animationPos, final float animationSpeed, final float ageInTicks);
 
-   public void animateBristle(float ageInTicks, float bristleFlow, final ModelPart firstBristle, final ModelPart secondBristle, final ModelPart thirdBristle, final BiConsumer<ModelPart, Float> addRotationFunction) {
+   public void animateBristle(final float ageInTicks, final float bristleFlow, final ModelPart firstBristle, final ModelPart secondBristle, final ModelPart thirdBristle, final BiConsumer<ModelPart, Float> addRotationFunction) {
       addRotationFunction.accept(firstBristle, bristleFlow * 0.6F);
       addRotationFunction.accept(secondBristle, bristleFlow * 1.2F);
       addRotationFunction.accept(thirdBristle, bristleFlow * 1.3F);

@@ -45,7 +45,7 @@ public class AccessibilityOptionsScreen extends OptionsSubScreen {
 
    protected void addOptions() {
       OptionInstance<?>[] optionsInstances = options(this.options);
-      Button controlsLink = Button.builder(OptionsScreen.CONTROLS, (button) -> this.minecraft.setScreen(new ControlsScreen(this, this.options))).build();
+      Button controlsLink = Button.builder(OptionsScreen.CONTROLS, (var1) -> this.minecraft.gui.setScreen(new ControlsScreen(this, this.options))).build();
       OptionInstance<?> firstOptionInstance = optionsInstances[0];
       this.list.addSmall(firstOptionInstance.createButton(this.options), this.options.narrator(), controlsLink);
       this.list.addSmall((OptionInstance[])Arrays.stream(optionsInstances).filter((instance) -> instance != firstOptionInstance).toArray((x$0) -> new OptionInstance[x$0]));
@@ -54,7 +54,7 @@ public class AccessibilityOptionsScreen extends OptionsSubScreen {
    protected void addFooter() {
       LinearLayout footer = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
       footer.addChild(Button.builder(Component.translatable("options.accessibility.link"), ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.ACCESSIBILITY_HELP)).build());
-      footer.addChild(Button.builder(CommonComponents.GUI_DONE, (button) -> this.minecraft.setScreen(this.lastScreen)).build());
+      footer.addChild(Button.builder(CommonComponents.GUI_DONE, (button) -> this.minecraft.gui.setScreen(this.lastScreen)).build());
    }
 
    protected boolean panoramaShouldSpin() {

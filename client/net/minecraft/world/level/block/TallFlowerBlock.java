@@ -30,6 +30,6 @@ public class TallFlowerBlock extends DoublePlantBlock implements BonemealableBlo
    }
 
    public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state) {
-      popResource(level, pos, new ItemStack(this), state);
+      popResource(level, pos, new ItemStack(this));
    }
 }

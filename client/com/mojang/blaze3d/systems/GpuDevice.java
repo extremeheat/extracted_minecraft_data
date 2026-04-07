@@ -1,5 +1,6 @@
 package com.mojang.blaze3d.systems;
 
+import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.pipeline.CompiledRenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
@@ -9,7 +10,7 @@ import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
-import com.mojang.blaze3d.textures.TextureFormat;
+import com.mojang.jtracy.TracyClient;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.OptionalDouble;
@@ -19,31 +20,42 @@ import org.jspecify.annotations.Nullable;
 
 public class GpuDevice {
    private final GpuDeviceBackend backend;
+   private final @Nullable TracyGpuProfiler profiler;
 
    public GpuDevice(final GpuDeviceBackend backend) {
       super();
       this.backend = backend;
+      if (TracyClient.isAvailable()) {
+         this.profiler = new TracyGpuProfiler(this);
+      } else {
+         this.profiler = null;
+      }
+
+   }
+
+   public GpuSurface createSurface(final long windowHandle) {
+      return new GpuSurface(this.backend.createSurface(windowHandle));
    }
 
    public CommandEncoder createCommandEncoder() {
-      return new CommandEncoder(this.backend, this.backend.createCommandEncoder());
+      return new CommandEncoder(this.profiler, this.backend, this.backend.createCommandEncoder());
    }
 
    public GpuSampler createSampler(final AddressMode addressModeU, final AddressMode addressModeV, final FilterMode minFilter, final FilterMode magFilter, final int maxAnisotropy, final OptionalDouble maxLod) {
-      if (maxAnisotropy >= 1 && maxAnisotropy <= this.backend.getMaxSupportedAnisotropy()) {
+      int maxSupportedAnisotropy = this.getDeviceInfo().limits().maxAnisotropy();
+      if (maxAnisotropy >= 1 && maxAnisotropy <= maxSupportedAnisotropy) {
          return this.backend.createSampler(addressModeU, addressModeV, minFilter, magFilter, maxAnisotropy, maxLod);
       } else {
-         int var10002 = this.getMaxSupportedAnisotropy();
-         throw new IllegalArgumentException("maxAnisotropy out of range; must be >= 1 and <= " + var10002 + ", but was " + maxAnisotropy);
+         throw new IllegalArgumentException("maxAnisotropy out of range; must be >= 1 and <= " + maxSupportedAnisotropy + ", but was " + maxAnisotropy);
       }
    }
 
-   public GpuTexture createTexture(final @Nullable Supplier<String> label, final @GpuTexture.Usage int usage, final TextureFormat format, final int width, final int height, final int depthOrLayers, final int mipLevels) {
+   public GpuTexture createTexture(final @Nullable Supplier<String> label, final @GpuTexture.Usage int usage, final GpuFormat format, final int width, final int height, final int depthOrLayers, final int mipLevels) {
       this.verifyTextureCreationArgs(usage, width, height, depthOrLayers, mipLevels);
       return this.backend.createTexture(label, usage, format, width, height, depthOrLayers, mipLevels);
    }
 
-   public GpuTexture createTexture(final @Nullable String label, final @GpuTexture.Usage int usage, final TextureFormat format, final int width, final int height, final int depthOrLayers, final int mipLevels) {
+   public GpuTexture createTexture(final @Nullable String label, final @GpuTexture.Usage int usage, final GpuFormat format, final int width, final int height, final int depthOrLayers, final int mipLevels) {
       this.verifyTextureCreationArgs(usage, width, height, depthOrLayers, mipLevels);
       return this.backend.createTexture(label, usage, format, width, height, depthOrLayers, mipLevels);
    }
@@ -114,40 +126,12 @@ public class GpuDevice {
       }
    }
 
-   public String getImplementationInformation() {
-      return this.backend.getImplementationInformation();
-   }
-
    public List<String> getLastDebugMessages() {
       return this.backend.getLastDebugMessages();
    }
 
    public boolean isDebuggingEnabled() {
       return this.backend.isDebuggingEnabled();
-   }
-
-   public String getVendor() {
-      return this.backend.getVendor();
-   }
-
-   public String getBackendName() {
-      return this.backend.getBackendName();
-   }
-
-   public String getVersion() {
-      return this.backend.getVersion();
-   }
-
-   public String getRenderer() {
-      return this.backend.getRenderer();
-   }
-
-   public int getMaxTextureSize() {
-      return this.backend.getMaxTextureSize();
-   }
-
-   public int getUniformOffsetAlignment() {
-      return this.backend.getUniformOffsetAlignment();
    }
 
    public CompiledRenderPipeline precompilePipeline(final RenderPipeline pipeline) {
@@ -162,27 +146,19 @@ public class GpuDevice {
       this.backend.clearPipelineCache();
    }
 
-   public List<String> getEnabledExtensions() {
-      return this.backend.getEnabledExtensions();
-   }
-
-   public int getMaxSupportedAnisotropy() {
-      return this.backend.getMaxSupportedAnisotropy();
-   }
-
    public void close() {
       this.backend.close();
    }
 
-   public void setVsync(final boolean enabled) {
-      this.backend.setVsync(enabled);
+   public GpuQueryPool createTimestampQueryPool(final int size) {
+      return this.backend.createTimestampQueryPool(size);
    }
 
-   public void presentFrame() {
-      this.backend.presentFrame();
+   protected long getTimestampNow() {
+      return this.backend.getTimestampNow();
    }
 
-   public boolean isZZeroToOne() {
-      return this.backend.isZZeroToOne();
+   public DeviceInfo getDeviceInfo() {
+      return this.backend.getDeviceInfo();
    }
 }

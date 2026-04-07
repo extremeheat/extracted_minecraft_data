@@ -193,39 +193,11 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
 
    }
 
-   public void fromItemWithSlotList(final ValueInput.TypedInputList<ItemStackWithSlot> items) {
-      this.clearContent();
-
-      for(ItemStackWithSlot stack : items) {
-         this.addItem(stack.stack());
-      }
-
-   }
-
-   public void fromItemList(final NonNullList<ItemStack> items) {
-      this.clearContent();
-
-      for(ItemStack stack : items) {
-         this.addItem(stack);
-      }
-
-   }
-
    public void storeAsItemList(final ValueOutput.TypedOutputList<ItemStack> output) {
       for(int i = 0; i < this.getContainerSize(); ++i) {
          ItemStack itemStack = this.getItem(i);
          if (!itemStack.isEmpty()) {
             output.add(itemStack);
-         }
-      }
-
-   }
-
-   public void storeAsItemWithSlotList(final ValueOutput.TypedOutputList<ItemStackWithSlot> output) {
-      for(int i = 0; i < this.getContainerSize(); ++i) {
-         ItemStack itemStack = this.getItem(i);
-         if (!itemStack.isEmpty()) {
-            output.add(new ItemStackWithSlot(i, itemStack));
          }
       }
 

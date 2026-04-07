@@ -2,6 +2,7 @@ package net.minecraft.world.entity.ai.goal;
 
 import java.util.EnumSet;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.RangedAttackMob;
@@ -63,7 +64,7 @@ public class RangedBowAttackGoal<T extends Monster & RangedAttackMob> extends Go
    }
 
    public void tick() {
-      Entity target = this.mob.getTarget();
+      LivingEntity target = this.mob.getTarget();
       if (target != null) {
          double targetDistSqr = this.mob.distanceToSqr(target.getX(), target.getY(), target.getZ());
          boolean hasLineOfSight = this.mob.getSensing().hasLineOfSight(target);
@@ -82,7 +83,7 @@ public class RangedBowAttackGoal<T extends Monster & RangedAttackMob> extends Go
             this.mob.getNavigation().stop();
             ++this.strafingTime;
          } else {
-            this.mob.getNavigation().moveTo(target, this.speedModifier);
+            this.mob.getNavigation().moveTo((Entity)target, this.speedModifier);
             this.strafingTime = -1;
          }
 

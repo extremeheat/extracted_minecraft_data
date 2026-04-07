@@ -5,14 +5,12 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.model.Model;
-import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.block.MovingBlockRenderState;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.feature.CustomFeatureRenderer;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.renderer.feature.ModelPartFeatureRenderer;
 import net.minecraft.client.renderer.feature.NameTagFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -23,6 +21,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.jspecify.annotations.Nullable;
@@ -36,10 +35,10 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
    private final List<SubmitNodeStorage.MovingBlockSubmit> movingBlockSubmits = new ArrayList();
    private final List<SubmitNodeStorage.BlockModelSubmit> blockModelSubmits = new ArrayList();
    private final List<SubmitNodeStorage.BreakingBlockModelSubmit> breakingBlockModelSubmits = new ArrayList();
+   private final List<SubmitNodeStorage.ShapeOutlineSubmit> shapeOutlineSubmits = new ArrayList();
    private final List<SubmitNodeStorage.ItemSubmit> itemSubmits = new ArrayList();
    private final List<SubmitNodeCollector.ParticleGroupRenderer> particleGroupRenderers = new ArrayList();
    private final ModelFeatureRenderer.Storage modelSubmits = new ModelFeatureRenderer.Storage();
-   private final ModelPartFeatureRenderer.Storage modelPartSubmits = new ModelPartFeatureRenderer.Storage();
    private final CustomFeatureRenderer.Storage customGeometrySubmits = new CustomFeatureRenderer.Storage();
    private final SubmitNodeStorage submitNodeStorage;
    private boolean wasUsed = false;
@@ -81,11 +80,6 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
       this.modelSubmits.add(renderType, modelSubmit);
    }
 
-   public void submitModelPart(final ModelPart modelPart, final PoseStack poseStack, final RenderType renderType, final int lightCoords, final int overlayCoords, final @Nullable TextureAtlasSprite sprite, final boolean sheeted, final boolean hasFoil, final int tintedColor, final ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay, final int outlineColor) {
-      this.wasUsed = true;
-      this.modelPartSubmits.add(renderType, new SubmitNodeStorage.ModelPartSubmit(poseStack.last().copy(), modelPart, lightCoords, overlayCoords, sprite, sheeted, hasFoil, tintedColor, crumblingOverlay, outlineColor));
-   }
-
    public void submitMovingBlock(final PoseStack poseStack, final MovingBlockRenderState movingBlockRenderState) {
       this.wasUsed = true;
       this.movingBlockSubmits.add(new SubmitNodeStorage.MovingBlockSubmit(new Matrix4f(poseStack.last().pose()), movingBlockRenderState));
@@ -99,6 +93,11 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
    public void submitBreakingBlockModel(final PoseStack poseStack, final BlockStateModel model, final long seed, final int progress) {
       this.wasUsed = true;
       this.breakingBlockModelSubmits.add(new SubmitNodeStorage.BreakingBlockModelSubmit(poseStack.last().copy(), model, seed, progress));
+   }
+
+   public void submitShapeOutline(final PoseStack poseStack, final VoxelShape shape, final RenderType renderType, final int color, final float width, final boolean afterTerrain) {
+      this.wasUsed = true;
+      this.shapeOutlineSubmits.add(new SubmitNodeStorage.ShapeOutlineSubmit(poseStack.last().copy(), shape, renderType, color, width, afterTerrain));
    }
 
    public void submitItem(final PoseStack poseStack, final ItemDisplayContext displayContext, final int lightCoords, final int overlayCoords, final int outlineColor, final int[] tintLayers, final List<BakedQuad> quads, final ItemStackRenderState.FoilType foilType) {
@@ -148,10 +147,6 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
       return this.breakingBlockModelSubmits;
    }
 
-   public ModelPartFeatureRenderer.Storage getModelPartSubmits() {
-      return this.modelPartSubmits;
-   }
-
    public List<SubmitNodeStorage.ItemSubmit> getItemSubmits() {
       return this.itemSubmits;
    }
@@ -166,6 +161,10 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
 
    public CustomFeatureRenderer.Storage getCustomGeometrySubmits() {
       return this.customGeometrySubmits;
+   }
+
+   public List<SubmitNodeStorage.ShapeOutlineSubmit> getShapeOutlineSubmits() {
+      return this.shapeOutlineSubmits;
    }
 
    public boolean wasUsed() {
@@ -185,12 +184,11 @@ public class SubmitNodeCollection implements OrderedSubmitNodeCollector {
       this.particleGroupRenderers.clear();
       this.modelSubmits.clear();
       this.customGeometrySubmits.clear();
-      this.modelPartSubmits.clear();
+      this.shapeOutlineSubmits.clear();
    }
 
    public void endFrame() {
       this.modelSubmits.endFrame();
-      this.modelPartSubmits.endFrame();
       this.customGeometrySubmits.endFrame();
       this.wasUsed = false;
    }

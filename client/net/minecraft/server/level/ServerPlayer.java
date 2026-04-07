@@ -142,8 +142,7 @@ import net.minecraft.world.entity.animal.happyghast.HappyGhast;
 import net.minecraft.world.entity.animal.nautilus.AbstractNautilus;
 import net.minecraft.world.entity.animal.parrot.Parrot;
 import net.minecraft.world.entity.animal.pig.Pig;
-import net.minecraft.world.entity.livingblock.LivingBlock;
-import net.minecraft.world.entity.livingblock.LivingBlockGroup;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.Strider;
 import net.minecraft.world.entity.monster.warden.WardenSpawnTracker;
@@ -223,7 +222,6 @@ public class ServerPlayer extends Player {
    private static final AttributeModifier WAYPOINT_TRANSMIT_RANGE_CROUCH_MODIFIER;
    private static final boolean DEFAULT_SEEN_CREDITS = false;
    private static final boolean DEFAULT_SPAWN_EXTRA_PARTICLES_ON_FALL = false;
-   private static final String TAG_SELECTED_GROUP = "selected_group";
    public ServerGamePacketListenerImpl connection;
    private final MinecraftServer server;
    public final ServerPlayerGameMode gameMode;
@@ -425,7 +423,6 @@ public class ServerPlayer extends Player {
       this.gameMode.setGameModeForPlayer(this.calculateGameModeForNewPlayer(readPlayerMode(input, "playerGameType")), readPlayerMode(input, "previousPlayerGameType"));
       this.setShoulderEntityLeft((CompoundTag)input.read("ShoulderEntityLeft", CompoundTag.CODEC).orElseGet(CompoundTag::new));
       this.setShoulderEntityRight((CompoundTag)input.read("ShoulderEntityRight", CompoundTag.CODEC).orElseGet(CompoundTag::new));
-      this.setSelectedGroup((LivingBlockGroup)input.read("selected_group", LivingBlockGroup.CODEC).orElse(LivingBlockGroup.NONE));
    }
 
    protected void addAdditionalSaveData(final ValueOutput output) {
@@ -449,7 +446,6 @@ public class ServerPlayer extends Player {
          output.store("ShoulderEntityRight", CompoundTag.CODEC, this.getShoulderEntityRight());
       }
 
-      output.store("selected_group", LivingBlockGroup.CODEC, this.getSelectedGroup());
    }
 
    private void saveParentVehicle(final ValueOutput playerOutput) {
@@ -1465,10 +1461,8 @@ public class ServerPlayer extends Player {
    }
 
    public void resetStat(final Stat<?> stat) {
-      if (!stat.equals(Stats.CUSTOM.get(Stats.TOTAL_WORLD_TIME))) {
-         this.stats.setValue(this, stat, 0);
-         this.level().getScoreboard().forAllObjectives(stat, this, ScoreAccess::reset);
-      }
+      this.stats.setValue(this, stat, 0);
+      this.level().getScoreboard().forAllObjectives(stat, this, ScoreAccess::reset);
    }
 
    public int awardRecipes(final Collection<RecipeHolder<?>> recipes) {
@@ -1913,13 +1907,17 @@ public class ServerPlayer extends Player {
       this.chunkTrackingView = chunkTrackingView;
    }
 
-   public void drop(final ItemStack itemStack, final boolean thrownFromHand) {
-      super.drop(itemStack, thrownFromHand);
-      if (thrownFromHand && !itemStack.isEmpty()) {
-         this.awardStat(Stats.ITEM_DROPPED.get(itemStack.getItem()), itemStack.getCount());
-         this.awardStat(Stats.DROP);
+   public ItemEntity drop(final ItemStack itemStack, final boolean randomly, final boolean thrownFromHand) {
+      ItemEntity entity = super.drop(itemStack, randomly, thrownFromHand);
+      if (thrownFromHand) {
+         ItemStack droppedItemStack = entity != null ? entity.getItem() : ItemStack.EMPTY;
+         if (!droppedItemStack.isEmpty()) {
+            this.awardStat(Stats.ITEM_DROPPED.get(droppedItemStack.getItem()), itemStack.getCount());
+            this.awardStat(Stats.DROP);
+         }
       }
 
+      return entity;
    }
 
    public TextFilter getTextFilter() {
@@ -1979,7 +1977,7 @@ public class ServerPlayer extends Player {
          this.stopUsingItem();
       }
 
-      this.drop(removed, true);
+      this.drop(removed, false, true);
    }
 
    public void handleExtraItemsCreatedOnUse(final ItemStack extraItems) {
@@ -2001,11 +1999,11 @@ public class ServerPlayer extends Player {
       this.spawnExtraParticlesOnFall = toggle;
    }
 
-   public void onItemPickup(final LivingBlock entity) {
+   public void onItemPickup(final ItemEntity entity) {
       super.onItemPickup(entity);
-      Entity thrower = entity.getCommander();
+      Entity thrower = entity.getOwner();
       if (thrower != null) {
-         CriteriaTriggers.THROWN_ITEM_PICKED_UP_BY_PLAYER.trigger(this, entity.getItemStack(), thrower);
+         CriteriaTriggers.THROWN_ITEM_PICKED_UP_BY_PLAYER.trigger(this, entity.getItem(), thrower);
       }
 
    }

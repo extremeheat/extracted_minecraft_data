@@ -15,7 +15,7 @@ public abstract class NeedleDirectionHelper {
       this.wobble = wobble;
    }
 
-   public float get(final ItemStack itemStack, @Nullable ClientLevel clientLevel, @Nullable ItemOwner owner, final int seed) {
+   public float get(final ItemStack itemStack, @Nullable ClientLevel clientLevel, final @Nullable ItemOwner owner, final int seed) {
       if (owner == null) {
          return 0.0F;
       } else {

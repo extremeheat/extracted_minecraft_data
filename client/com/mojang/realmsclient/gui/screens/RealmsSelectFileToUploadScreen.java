@@ -56,7 +56,7 @@ public class RealmsSelectFileToUploadScreen extends RealmsScreen {
          this.list = (WorldSelectionList)this.layout.addToContents((new WorldSelectionList.Builder(this.minecraft, this)).width(this.width).height(this.layout.getContentHeight()).filter(this.searchBox.getValue()).oldList(this.list).uploadWorld().onEntrySelect(this::updateButtonState).onEntryInteract(this::upload).build());
       } catch (Exception e) {
          LOGGER.error("Couldn't load level list", e);
-         this.minecraft.setScreen(new RealmsGenericErrorScreen(UNABLE_TO_LOAD_WORLD, Component.nullToEmpty(e.getMessage()), this.lastScreen));
+         this.minecraft.gui.setScreen(new RealmsGenericErrorScreen(UNABLE_TO_LOAD_WORLD, Component.nullToEmpty(e.getMessage()), this.lastScreen));
          return;
       }
 
@@ -89,10 +89,10 @@ public class RealmsSelectFileToUploadScreen extends RealmsScreen {
    }
 
    private void upload(final WorldSelectionList.WorldListEntry worldListEntry) {
-      this.minecraft.setScreen(new RealmsUploadScreen(this.realmCreationTask, this.realmId, this.slotId, this.lastScreen, worldListEntry.getLevelSummary()));
+      this.minecraft.gui.setScreen(new RealmsUploadScreen(this.realmCreationTask, this.realmId, this.slotId, this.lastScreen, worldListEntry.getLevelSummary()));
    }
 
    public void onClose() {
-      this.minecraft.setScreen(this.lastScreen);
+      this.minecraft.gui.setScreen(this.lastScreen);
    }
 }

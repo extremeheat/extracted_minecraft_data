@@ -1,10 +1,9 @@
 package net.minecraft.core.dispenser;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Position;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.livingblock.LivingBlock;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DispenserBlock;
@@ -16,15 +15,15 @@ public class DefaultDispenseItemBehavior implements DispenseItemBehavior {
       super();
    }
 
-   public final ItemStack dispense(final DispenseSource source, final ItemStack dispensed) {
+   public final ItemStack dispense(final BlockSource source, final ItemStack dispensed) {
       ItemStack result = this.execute(source, dispensed);
       this.playSound(source);
-      this.playAnimation(source, source.direction());
+      this.playAnimation(source, (Direction)source.state().getValue(DispenserBlock.FACING));
       return result;
    }
 
-   protected ItemStack execute(final DispenseSource source, final ItemStack dispensed) {
-      Direction direction = source.direction();
+   protected ItemStack execute(final BlockSource source, final ItemStack dispensed) {
+      Direction direction = (Direction)source.state().getValue(DispenserBlock.FACING);
       Position position = DispenserBlock.getDispensePosition(source);
       ItemStack itemStack = dispensed.split(1);
       spawnItem(source.level(), itemStack, 6, direction, position);
@@ -32,31 +31,39 @@ public class DefaultDispenseItemBehavior implements DispenseItemBehavior {
    }
 
    public static void spawnItem(final Level level, final ItemStack itemStack, final int accuracy, final Direction direction, final Position position) {
-      LivingBlock itemEntity = LivingBlock.createAt(level, BlockPos.containing(position), itemStack);
-      if (itemEntity != null) {
-         RandomSource random = level.getRandom();
-         double pow = random.nextDouble() * 0.1 + 0.2;
-         itemEntity.setDeltaMovement(random.triangle((double)direction.getStepX() * pow, 0.0172275 * (double)accuracy), random.triangle(0.2, 0.0172275 * (double)accuracy), random.triangle((double)direction.getStepZ() * pow, 0.0172275 * (double)accuracy));
+      double spawnX = position.x();
+      double spawnY = position.y();
+      double spawnZ = position.z();
+      if (direction.getAxis() == Direction.Axis.Y) {
+         spawnY -= 0.125;
+      } else {
+         spawnY -= 0.15625;
       }
+
+      ItemEntity itemEntity = new ItemEntity(level, spawnX, spawnY, spawnZ, itemStack);
+      RandomSource random = level.getRandom();
+      double pow = random.nextDouble() * 0.1 + 0.2;
+      itemEntity.setDeltaMovement(random.triangle((double)direction.getStepX() * pow, 0.0172275 * (double)accuracy), random.triangle(0.2, 0.0172275 * (double)accuracy), random.triangle((double)direction.getStepZ() * pow, 0.0172275 * (double)accuracy));
+      level.addFreshEntity(itemEntity);
    }
 
-   protected void playSound(final DispenseSource source) {
-      playDefaultSound(source.level(), source.pos());
+   protected void playSound(final BlockSource source) {
+      playDefaultSound(source);
    }
 
-   protected void playAnimation(final DispenseSource source, final Direction direction) {
-      playDefaultAnimation(source.level(), source.pos(), direction);
+   protected void playAnimation(final BlockSource source, final Direction direction) {
+      playDefaultAnimation(source, direction);
    }
 
-   public static void playDefaultSound(final Level level, final BlockPos pos) {
-      level.levelEvent(1000, pos, 0);
+   private static void playDefaultSound(final BlockSource source) {
+      source.level().levelEvent(1000, source.pos(), 0);
    }
 
-   public static void playDefaultAnimation(final Level level, final BlockPos pos, final Direction direction) {
-      level.levelEvent(2000, pos, direction.get3DDataValue());
+   private static void playDefaultAnimation(final BlockSource source, final Direction direction) {
+      source.level().levelEvent(2000, source.pos(), direction.get3DDataValue());
    }
 
-   protected ItemStack consumeWithRemainder(final DispenseSource source, final ItemStack dispensed, final ItemStack remainder) {
+   protected ItemStack consumeWithRemainder(final BlockSource source, final ItemStack dispensed, final ItemStack remainder) {
       dispensed.shrink(1);
       if (dispensed.isEmpty()) {
          return remainder;
@@ -66,13 +73,13 @@ public class DefaultDispenseItemBehavior implements DispenseItemBehavior {
       }
    }
 
-   private void addToInventoryOrDispense(final DispenseSource source, final ItemStack itemStack) {
-      ItemStack remainder = source.insertItem(itemStack);
+   private void addToInventoryOrDispense(final BlockSource source, final ItemStack itemStack) {
+      ItemStack remainder = source.blockEntity().insertItem(itemStack);
       if (!remainder.isEmpty()) {
-         Direction direction = source.direction();
+         Direction direction = (Direction)source.state().getValue(DispenserBlock.FACING);
          spawnItem(source.level(), remainder, 6, direction, DispenserBlock.getDispensePosition(source));
-         playDefaultSound(source.level(), source.pos());
-         playDefaultAnimation(source.level(), source.pos(), direction);
+         playDefaultSound(source);
+         playDefaultAnimation(source, direction);
       }
    }
 }

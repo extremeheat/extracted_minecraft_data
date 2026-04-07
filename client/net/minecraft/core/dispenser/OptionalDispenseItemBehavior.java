@@ -15,7 +15,7 @@ public abstract class OptionalDispenseItemBehavior extends DefaultDispenseItemBe
       this.success = success;
    }
 
-   protected void playSound(final DispenseSource source) {
+   protected void playSound(final BlockSource source) {
       source.level().levelEvent(this.isSuccess() ? 1000 : 1001, source.pos(), 0);
    }
 }

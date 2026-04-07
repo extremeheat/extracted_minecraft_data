@@ -6,7 +6,6 @@ import com.google.common.collect.Lists;
 import com.google.common.math.IntMath;
 import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Either;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -14,7 +13,6 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
-import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
@@ -75,7 +73,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SlotAccess;
-import net.minecraft.world.entity.Targetable;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
@@ -83,8 +80,7 @@ import net.minecraft.world.entity.animal.nautilus.AbstractNautilus;
 import net.minecraft.world.entity.animal.parrot.Parrot;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
 import net.minecraft.world.entity.decoration.ArmorStand;
-import net.minecraft.world.entity.livingblock.LivingBlock;
-import net.minecraft.world.entity.livingblock.LivingBlockGroup;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.warden.WardenSpawnTracker;
 import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.entity.projectile.Projectile;
@@ -95,14 +91,12 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.PlayerEnderChestContainer;
-import net.minecraft.world.item.ActionItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemCooldowns;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ProjectileWeaponItem;
 import net.minecraft.world.item.component.BlocksAttacks;
-import net.minecraft.world.item.component.DeathProtection;
 import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -112,7 +106,6 @@ import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.entity.CommandBlockEntity;
 import net.minecraft.world.level.block.entity.ContainerOpenersCounter;
 import net.minecraft.world.level.block.entity.JigsawBlockEntity;
@@ -122,18 +115,14 @@ import net.minecraft.world.level.block.entity.TestBlockEntity;
 import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
-import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.gamerules.GameRules;
-import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Team;
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
 import org.jspecify.annotations.Nullable;
 
 public abstract class Player extends Avatar implements ContainerUser {
@@ -147,7 +136,6 @@ public abstract class Player extends Avatar implements ContainerUser {
    public static final float DEFAULT_ENTITY_INTERACTION_RANGE = 3.0F;
    private static final EntityDataAccessor<Float> DATA_PLAYER_ABSORPTION_ID;
    private static final EntityDataAccessor<Integer> DATA_SCORE_ID;
-   private static final EntityDataAccessor<Integer> DATA_SELECTED_GROUP;
    private static final EntityDataAccessor<OptionalInt> DATA_SHOULDER_PARROT_LEFT;
    private static final EntityDataAccessor<OptionalInt> DATA_SHOULDER_PARROT_RIGHT;
    private static final short DEFAULT_SLEEP_TIMER = 0;
@@ -181,52 +169,17 @@ public abstract class Player extends Avatar implements ContainerUser {
    private Optional<GlobalPos> lastDeathLocation;
    public @Nullable FishingHook fishing;
    protected float hurtDir;
-   private @Nullable LivingBlock sleepingOnEntity;
-   private final Quaternionf sleepingCameraRotation;
-   private static final List<ActionItem> ACTIONS;
 
    public Player(final Level level, final GameProfile gameProfile) {
       super(EntityType.PLAYER, level);
       this.lastItemInMainHand = ItemStack.EMPTY;
       this.cooldowns = this.createItemCooldowns();
       this.lastDeathLocation = Optional.empty();
-      this.sleepingOnEntity = null;
-      this.sleepingCameraRotation = new Quaternionf();
       this.setUUID(gameProfile.id());
       this.gameProfile = gameProfile;
       this.inventory = new Inventory(this, this.equipment);
-
-      for(Item item : ACTIONS) {
-         this.inventory.add(item.getDefaultInstance());
-      }
-
       this.inventoryMenu = new InventoryMenu(this.inventory, !level.isClientSide(), this);
       this.containerMenu = this.inventoryMenu;
-   }
-
-   public List<LivingBlock> getCommandedBlocks() {
-      AABB commandArea = this.getBoundingBox().inflate(50.0);
-      List<LivingBlock> commandedBlocks = this.level().getEntities((EntityTypeTest)EntityType.LIVING_BLOCK, commandArea, (livingBlock) -> livingBlock.isOwnedBy(this));
-      List<LivingBlock> inActiveGroup = new ArrayList();
-      LivingBlockGroup activeGroup = this.getSelectedGroup();
-      List<LivingBlock> selected = new ArrayList();
-
-      for(LivingBlock block : commandedBlocks) {
-         if (block.isSelected()) {
-            selected.add(block);
-         } else if (activeGroup != LivingBlockGroup.NONE && (block.getGroup() == activeGroup || activeGroup == LivingBlockGroup.ALL)) {
-            inActiveGroup.add(block);
-         }
-      }
-
-      if (!selected.isEmpty()) {
-         return selected;
-      } else if (!inActiveGroup.isEmpty()) {
-         return inActiveGroup;
-      } else {
-         this.sendOverlayMessage(Component.literal("Selected group contains no blocks in the area"));
-         return List.of();
-      }
    }
 
    protected EntityEquipment createEquipment() {
@@ -256,108 +209,6 @@ public abstract class Player extends Avatar implements ContainerUser {
       entityData.define(DATA_SCORE_ID, 0);
       entityData.define(DATA_SHOULDER_PARROT_LEFT, OptionalInt.empty());
       entityData.define(DATA_SHOULDER_PARROT_RIGHT, OptionalInt.empty());
-      entityData.define(DATA_SELECTED_GROUP, LivingBlockGroup.NONE.id());
-   }
-
-   public boolean startRiding(final Entity entityToRide, final boolean force, final boolean sendEventAndTriggers) {
-      boolean mounted = super.startRiding(entityToRide, force, sendEventAndTriggers);
-      if (mounted && entityToRide instanceof LivingBlock livingBlock) {
-         BlockState blockState = livingBlock.getBlockState();
-         if (blockState.is(BlockTags.BEDS)) {
-            this.startSleepOnEntity(livingBlock);
-         }
-      }
-
-      return mounted;
-   }
-
-   public void startSleepOnEntity(final LivingBlock bedEntity) {
-      this.sleepCounter = 0;
-      this.sleepingOnEntity = bedEntity;
-      this.setPose(Pose.SLEEPING);
-      this.setDeltaMovement(Vec3.ZERO);
-      this.needsSync = true;
-      Level var3 = this.level();
-      if (var3 instanceof ServerLevel serverLevel) {
-         serverLevel.updateSleepingPlayerList();
-         ServerPlayer serverPlayer = (ServerPlayer)this;
-         serverPlayer.setRespawnPosition(new ServerPlayer.RespawnConfig(LevelData.RespawnData.of(serverLevel.dimension(), bedEntity.blockPosition(), serverPlayer.getYRot(), serverPlayer.getXRot()), true), true);
-      }
-
-   }
-
-   public void stopSleepOnEntity() {
-      if (this.sleepingOnEntity != null) {
-         LivingBlock bedEntity = this.sleepingOnEntity;
-         this.sleepingOnEntity = null;
-         this.stopRiding();
-         this.setPose(Pose.STANDING);
-         this.sleepCounter = 0;
-         this.sleepingCameraRotation.identity();
-         this.needsSync = true;
-         BlockPos bedPos = bedEntity.blockPosition();
-         BlockState bedState = bedEntity.getBlockState();
-         Direction facing;
-         if (bedState.hasProperty(BedBlock.FACING)) {
-            facing = (Direction)bedState.getValue(BedBlock.FACING);
-         } else {
-            facing = Direction.NORTH;
-         }
-
-         Optional<Vec3> safePos = BedBlock.findStandUpPosition(this.getType(), this.level(), bedPos, facing, this.getYRot());
-         if (safePos.isPresent()) {
-            Vec3 standPos = (Vec3)safePos.get();
-            this.snapTo(standPos.x, standPos.y, standPos.z, this.getYRot(), 0.0F);
-         }
-
-         Level var7 = this.level();
-         if (var7 instanceof ServerLevel) {
-            ServerLevel serverLevel = (ServerLevel)var7;
-            serverLevel.updateSleepingPlayerList();
-         }
-
-      }
-   }
-
-   public boolean isSleepingOnEntity() {
-      return this.sleepingOnEntity != null;
-   }
-
-   public @Nullable LivingBlock getSleepingOnEntity() {
-      return this.sleepingOnEntity;
-   }
-
-   public Quaternionf getSleepingCameraRotation(final float partialTick) {
-      if (this.sleepingOnEntity != null && this.sleepingOnEntity.isAlive()) {
-         this.sleepingOnEntity.getRotation(this.sleepingCameraRotation, partialTick);
-      } else {
-         this.sleepingCameraRotation.identity();
-      }
-
-      return this.sleepingCameraRotation;
-   }
-
-   public float getSleepingCameraYaw(final float partialTick) {
-      return this.getSleepingCameraEulerComponent(partialTick, 1);
-   }
-
-   public float getSleepingCameraPitch(final float partialTick) {
-      return this.getSleepingCameraEulerComponent(partialTick, 0);
-   }
-
-   public float getSleepingCameraRoll(final float partialTick) {
-      return this.getSleepingCameraEulerComponent(partialTick, 2);
-   }
-
-   private float getSleepingCameraEulerComponent(final float partialTick, final int component) {
-      if (this.sleepingOnEntity == null) {
-         return 0.0F;
-      } else {
-         Quaternionf rotation = this.getSleepingCameraRotation(partialTick);
-         Vector3f euler = new Vector3f();
-         rotation.getEulerAnglesYXZ(euler);
-         return euler.get(component) * 57.295776F;
-      }
    }
 
    public void tick() {
@@ -370,13 +221,6 @@ public abstract class Player extends Avatar implements ContainerUser {
          --this.takeXpDelay;
       }
 
-      if (this.isSleepingOnEntity()) {
-         LivingBlock bedEntity = this.sleepingOnEntity;
-         if (bedEntity == null || !bedEntity.isAlive() || !this.isPassenger()) {
-            this.stopSleepOnEntity();
-         }
-      }
-
       if (this.isSleeping()) {
          ++this.sleepCounter;
          if (this.sleepCounter > 100) {
@@ -385,7 +229,6 @@ public abstract class Player extends Avatar implements ContainerUser {
 
          if (!this.level().isClientSide() && !((BedRule)this.level().environmentAttributes().getValue(EnvironmentAttributes.BED_RULE, this.position())).canSleep(this.level())) {
             this.stopSleepInBed(false, true);
-            this.stopSleepOnEntity();
          }
       } else if (this.sleepCounter > 0) {
          ++this.sleepCounter;
@@ -496,18 +339,16 @@ public abstract class Player extends Avatar implements ContainerUser {
    }
 
    private Pose getDesiredPose() {
-      if (!this.isSleeping() && !this.isSleepingOnEntity()) {
-         if (this.isSwimming()) {
-            return Pose.SWIMMING;
-         } else if (this.isFallFlying()) {
-            return Pose.FALL_FLYING;
-         } else if (this.isAutoSpinAttack()) {
-            return Pose.SPIN_ATTACK;
-         } else {
-            return this.isShiftKeyDown() && !this.abilities.flying ? Pose.CROUCHING : Pose.STANDING;
-         }
-      } else {
+      if (this.isSleeping()) {
          return Pose.SLEEPING;
+      } else if (this.isSwimming()) {
+         return Pose.SWIMMING;
+      } else if (this.isFallFlying()) {
+         return Pose.FALL_FLYING;
+      } else if (this.isAutoSpinAttack()) {
+         return Pose.SPIN_ATTACK;
+      } else {
+         return this.isShiftKeyDown() && !this.abilities.flying ? Pose.CROUCHING : Pose.STANDING;
       }
    }
 
@@ -565,12 +406,7 @@ public abstract class Player extends Avatar implements ContainerUser {
 
    public void rideTick() {
       if (!this.level().isClientSide() && this.wantsToStopRiding() && this.isPassenger()) {
-         if (this.isSleepingOnEntity()) {
-            this.stopSleepOnEntity();
-         } else {
-            this.stopRiding();
-         }
-
+         this.stopRiding();
          this.setShiftKeyDown(false);
       } else {
          super.rideTick();
@@ -628,12 +464,6 @@ public abstract class Player extends Avatar implements ContainerUser {
    protected void removeEntitiesOnShoulder() {
    }
 
-   public void turn(final double xo, final double yo) {
-      if (!this.isSleepingOnEntity()) {
-         super.turn(xo, yo);
-      }
-   }
-
    private void touch(final Entity entity) {
       entity.playerTouch(this);
    }
@@ -649,14 +479,6 @@ public abstract class Player extends Avatar implements ContainerUser {
    public void increaseScore(final int amount) {
       int score = this.getScore();
       this.entityData.set(DATA_SCORE_ID, score + amount);
-   }
-
-   public LivingBlockGroup getSelectedGroup() {
-      return (LivingBlockGroup)LivingBlockGroup.BY_ID.apply((Integer)this.entityData.get(DATA_SELECTED_GROUP));
-   }
-
-   public void setSelectedGroup(final LivingBlockGroup group) {
-      this.entityData.set(DATA_SELECTED_GROUP, group.id());
    }
 
    public void startAutoSpinAttack(final int activationTicks, final float dmg, final ItemStack itemStackUsed) {
@@ -727,6 +549,10 @@ public abstract class Player extends Avatar implements ContainerUser {
    }
 
    public void handleCreativeModeItemDrop(final ItemStack stack) {
+   }
+
+   public @Nullable ItemEntity drop(final ItemStack itemStack, final boolean thrownFromHand) {
+      return this.drop(itemStack, false, thrownFromHand);
    }
 
    public float getDestroySpeed(final BlockState state) {
@@ -960,6 +786,10 @@ public abstract class Player extends Avatar implements ContainerUser {
 
    public InteractionResult interactOn(final Entity entity, final InteractionHand hand, final Vec3 location) {
       if (this.isSpectator()) {
+         if (entity instanceof MenuProvider) {
+            this.openMenu((MenuProvider)entity);
+         }
+
          return InteractionResult.PASS;
       } else {
          ItemStack itemStack = this.getItemInHand(hand);
@@ -972,12 +802,12 @@ public abstract class Player extends Avatar implements ContainerUser {
 
             return interact;
          } else {
-            if (!itemStack.isEmpty() && entity instanceof Targetable) {
+            if (!itemStack.isEmpty() && entity instanceof LivingEntity) {
                if (this.hasInfiniteMaterials()) {
                   itemStack = itemStackClone;
                }
 
-               InteractionResult interactionResult = itemStack.interactLivingEntity(this, (Targetable)entity, hand);
+               InteractionResult interactionResult = itemStack.interactLivingEntity(this, (LivingEntity)entity, hand);
                if (interactionResult.consumesAction()) {
                   this.level().gameEvent(GameEvent.ENTITY_INTERACT, entity.position(), GameEvent.Context.of((Entity)this));
                   if (itemStack.isEmpty() && !this.hasInfiniteMaterials()) {
@@ -999,7 +829,7 @@ public abstract class Player extends Avatar implements ContainerUser {
    }
 
    protected boolean isImmobile() {
-      return super.isImmobile() || this.isSleeping() || this.isSleepingOnEntity();
+      return super.isImmobile() || this.isSleeping();
    }
 
    public boolean isAffectedByFluids() {
@@ -1064,19 +894,6 @@ public abstract class Player extends Avatar implements ContainerUser {
       if (!this.cannotAttack(entity)) {
          float baseDamage = this.isAutoSpinAttack() ? this.autoSpinAttackDmg : (float)this.getAttributeValue(Attributes.ATTACK_DAMAGE);
          ItemStack attackingItemStack = this.getWeaponItem();
-         if (entity instanceof LivingBlock) {
-            LivingBlock block = (LivingBlock)entity;
-            Item var6 = attackingItemStack.getItem();
-            if (var6 instanceof ActionItem) {
-               ActionItem action = (ActionItem)var6;
-               if (!action.attackBlock(this, block)) {
-                  return;
-               }
-            }
-
-            block.setAttackedBy(this);
-         }
-
          DamageSource damageSource = this.createAttackSource(attackingItemStack);
          float attackStrengthScale = this.getAttackStrengthScale(0.5F);
          float magicBoost = attackStrengthScale * (this.getEnchantedDamage(entity, baseDamage, damageSource) - baseDamage);
@@ -1176,24 +993,13 @@ public abstract class Player extends Avatar implements ContainerUser {
       }
 
       if (!criticalAttack && !sweepAttack && !stabAttack) {
-         this.playServerSideSound(fullStrengthAttack ? this.getStrongAttackSound(entity) : SoundEvents.PLAYER_ATTACK_WEAK);
+         this.playServerSideSound(fullStrengthAttack ? SoundEvents.PLAYER_ATTACK_STRONG : SoundEvents.PLAYER_ATTACK_WEAK);
       }
 
       if (magicBoost > 0.0F) {
          this.magicCrit(entity);
       }
 
-   }
-
-   private SoundEvent getStrongAttackSound(final Entity entity) {
-      if (entity instanceof LivingBlock livingBlock) {
-         BlockState state = livingBlock.getBlockState();
-         if (!state.isAir()) {
-            return state.getSoundType().getHitSound();
-         }
-      }
-
-      return SoundEvents.PLAYER_ATTACK_STRONG;
    }
 
    private void damageStatsAndHearts(final Entity entity, final float oldLivingEntityHealth) {
@@ -1365,33 +1171,6 @@ public abstract class Player extends Avatar implements ContainerUser {
    public void magicCrit(final Entity entity) {
    }
 
-   protected boolean checkTotemDeathProtection(final DamageSource killingDamage) {
-      if (killingDamage.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
-         return false;
-      } else {
-         List<LivingBlock> deathProtection = this.level().getEntitiesOfClass(LivingBlock.class, this.getBoundingBox().inflate(7.0), (block) -> block.getItemStack().has(DataComponents.DEATH_PROTECTION));
-         if (deathProtection.isEmpty()) {
-            return false;
-         } else {
-            LivingBlock protector = (LivingBlock)deathProtection.getFirst();
-            ItemStack protectionItem = protector.getItemStack();
-            DeathProtection protection = (DeathProtection)protectionItem.get(DataComponents.DEATH_PROTECTION);
-            protector.discard();
-            if (this instanceof ServerPlayer) {
-               ServerPlayer player = (ServerPlayer)this;
-               player.awardStat(Stats.ITEM_USED.get(protectionItem.getItem()));
-               CriteriaTriggers.USED_TOTEM.trigger(player, protectionItem);
-               protectionItem.causeUseVibration(this, GameEvent.ITEM_INTERACT_FINISH);
-            }
-
-            this.setHealth(1.0F);
-            protection.applyEffects(protectionItem, this);
-            this.level().broadcastEntityEvent(this, (byte)35);
-            return true;
-         }
-      }
-   }
-
    public void remove(final Entity.RemovalReason reason) {
       super.remove(reason);
       this.inventoryMenu.removed(this);
@@ -1473,15 +1252,6 @@ public abstract class Player extends Avatar implements ContainerUser {
 
    public void stopSleeping() {
       this.stopSleepInBed(true, true);
-      this.stopSleepOnEntity();
-   }
-
-   public boolean isSleeping() {
-      return this.getSleepingPos().isPresent() || this.isSleepingOnEntity();
-   }
-
-   public boolean checkBedExists() {
-      return this.isSleepingOnEntity() && this.sleepingOnEntity.isAlive() || super.checkBedExists();
    }
 
    public boolean isSleepingLongEnough() {
@@ -2143,10 +1913,8 @@ public abstract class Player extends Avatar implements ContainerUser {
    static {
       DATA_PLAYER_ABSORPTION_ID = SynchedEntityData.<Float>defineId(Player.class, EntityDataSerializers.FLOAT);
       DATA_SCORE_ID = SynchedEntityData.<Integer>defineId(Player.class, EntityDataSerializers.INT);
-      DATA_SELECTED_GROUP = SynchedEntityData.<Integer>defineId(Player.class, EntityDataSerializers.INT);
       DATA_SHOULDER_PARROT_LEFT = SynchedEntityData.<OptionalInt>defineId(Player.class, EntityDataSerializers.OPTIONAL_UNSIGNED_INT);
       DATA_SHOULDER_PARROT_RIGHT = SynchedEntityData.<OptionalInt>defineId(Player.class, EntityDataSerializers.OPTIONAL_UNSIGNED_INT);
-      ACTIONS = List.of(Items.PUNCH_ACTION, Items.FOLLOW_ACTION, Items.MOVE_ACTION, Items.ATTACK_ACTION, Items.CRAFTING_ACTION, Items.BUILD_ACTION, Items.GROUP_ACTION, Items.HIGHLIGHT_ACTION);
    }
 
    public static record BedSleepingProblem(@Nullable Component message) {

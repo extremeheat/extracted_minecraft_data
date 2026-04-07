@@ -88,7 +88,7 @@ public class PandaModel extends QuadrupedModel<PandaRenderState> {
 
    }
 
-   protected void animateSitting(PandaRenderState state) {
+   protected void animateSitting(final PandaRenderState state) {
       this.body.xRot = Mth.rotLerpRad(state.sitAmount, this.body.xRot, 1.7407963F);
       this.head.xRot = Mth.rotLerpRad(state.sitAmount, this.head.xRot, 1.5707964F);
       this.rightFrontLeg.zRot = -0.27079642F;

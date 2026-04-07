@@ -63,7 +63,6 @@ public abstract class AbstractArrow extends Projectile {
    private static final boolean DEFAULT_IN_GROUND = false;
    private static final boolean DEFAULT_CRIT = false;
    private static final byte DEFAULT_PIERCE_LEVEL = 0;
-   public static final int LIFETIME = 1200;
    private static final EntityDataAccessor<Byte> ID_FLAGS;
    private static final EntityDataAccessor<Byte> PIERCE_LEVEL;
    private static final EntityDataAccessor<Boolean> IN_GROUND;
@@ -288,10 +287,6 @@ public abstract class AbstractArrow extends Projectile {
 
          return;
       }
-   }
-
-   public void setLife(final int life) {
-      this.life = life;
    }
 
    private ProjectileDeflection hitTargetsOrDeflectSelf(final Collection<EntityHitResult> entityHitResults) {

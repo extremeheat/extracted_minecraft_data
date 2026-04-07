@@ -9,7 +9,6 @@ public class EntitySubPredicates {
    public static final MapCodec<FishingHookPredicate> FISHING_HOOK;
    public static final MapCodec<PlayerPredicate> PLAYER;
    public static final MapCodec<SlimePredicate> SLIME;
-   public static final MapCodec<LivingBlockPredicate> LIVING_BLOCK;
    public static final MapCodec<RaiderPredicate> RAIDER;
    public static final MapCodec<SheepPredicate> SHEEP;
 
@@ -30,7 +29,6 @@ public class EntitySubPredicates {
       FISHING_HOOK = register("fishing_hook", FishingHookPredicate.CODEC);
       PLAYER = register("player", PlayerPredicate.CODEC);
       SLIME = register("slime", SlimePredicate.CODEC);
-      LIVING_BLOCK = register("living_block", LivingBlockPredicate.CODEC);
       RAIDER = register("raider", RaiderPredicate.CODEC);
       SHEEP = register("sheep", SheepPredicate.CODEC);
    }

@@ -117,6 +117,7 @@ public final class Window implements AutoCloseable {
       long windowHandle;
       try (GLFWErrorScope var9 = new GLFWErrorScope(glfwErrors)) {
          backend.setWindowHints();
+         GLFW.glfwWindowHint(131076, 0);
          windowHandle = GLFW.glfwCreateWindow(width, height, title, monitor, 0L);
          if (windowHandle == 0L) {
             backend.handleWindowCreationErrors(glfwErrors.firstError());
@@ -291,19 +292,12 @@ public final class Window implements AutoCloseable {
 
    }
 
-   public void updateVsync(final boolean enableVsync) {
-      RenderSystem.assertOnRenderThread();
-      this.vsync = enableVsync;
-      RenderSystem.getDevice().setVsync(enableVsync);
-   }
-
    public void close() {
       RenderSystem.assertOnRenderThread();
       this.screenManager.shutdown();
       Callbacks.glfwFreeCallbacks(this.handle);
       this.defaultErrorCallback.close();
       GLFW.glfwDestroyWindow(this.handle);
-      GLFW.glfwTerminate();
    }
 
    private void onMove(final long handle, final int x, final int y) {
@@ -316,14 +310,14 @@ public final class Window implements AutoCloseable {
          int oldWidth = this.getWidth();
          int oldHeight = this.getHeight();
          if (newWidth != 0 && newHeight != 0) {
-            this.minimized = false;
-            if (newWidth != oldWidth || newHeight != oldHeight) {
+            if (newWidth != oldWidth || newHeight != oldHeight || this.minimized) {
+               this.minimized = false;
                this.framebufferWidth = newWidth;
                this.framebufferHeight = newHeight;
                this.isResized = true;
 
                try {
-                  this.eventHandler.resizeGui();
+                  this.eventHandler.framebufferSizeChanged();
                } catch (Exception e) {
                   CrashReport report = CrashReport.forThrowable(e, "Window resize");
                   CrashReportCategory windowSizeDetails = report.addCategory("Window Dimensions");
@@ -372,7 +366,13 @@ public final class Window implements AutoCloseable {
    public void updateFullscreenIfChanged() {
       if (this.fullscreen != this.actuallyFullscreen) {
          this.actuallyFullscreen = this.fullscreen;
-         this.updateFullscreen(this.vsync);
+
+         try {
+            this.setMode();
+            this.eventHandler.framebufferSizeChanged();
+         } catch (Exception e) {
+            LOGGER.error("Couldn't toggle fullscreen", e);
+         }
       }
 
    }
@@ -394,7 +394,7 @@ public final class Window implements AutoCloseable {
       if (this.fullscreen && this.dirty) {
          this.dirty = false;
          this.setMode();
-         this.eventHandler.resizeGui();
+         this.eventHandler.framebufferSizeChanged();
       }
 
    }
@@ -449,17 +449,6 @@ public final class Window implements AutoCloseable {
       this.windowedHeight = allowedWindowMinSize(height);
       this.fullscreen = false;
       this.setMode();
-   }
-
-   private void updateFullscreen(final boolean enableVsync) {
-      try {
-         this.setMode();
-         this.eventHandler.resizeGui();
-         this.updateVsync(enableVsync);
-      } catch (Exception e) {
-         LOGGER.error("Couldn't toggle fullscreen", e);
-      }
-
    }
 
    public int calculateScale(final int maxScale, final boolean enforceUnicode) {

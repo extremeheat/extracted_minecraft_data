@@ -18,7 +18,6 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.vehicle.minecart.Minecart;
 import net.minecraft.world.entity.vehicle.minecart.MinecartBehavior;
 import net.minecraft.world.entity.vehicle.minecart.NewMinecartBehavior;
@@ -41,9 +40,9 @@ import org.jspecify.annotations.Nullable;
 public class Camera implements TrackedWaypoint.Camera {
    public static final float PROJECTION_Z_NEAR = 0.05F;
    private static final float DEFAULT_CAMERA_DISTANCE = 4.0F;
-   private static final Vector3f FORWARDS = new Vector3f(0.0F, 0.0F, -1.0F);
-   private static final Vector3f UP = new Vector3f(0.0F, 1.0F, 0.0F);
-   private static final Vector3f LEFT = new Vector3f(-1.0F, 0.0F, 0.0F);
+   private static final Vector3fc FORWARDS = new Vector3f(0.0F, 0.0F, -1.0F);
+   private static final Vector3fc UP = new Vector3f(0.0F, 1.0F, 0.0F);
+   private static final Vector3fc LEFT = new Vector3f(-1.0F, 0.0F, 0.0F);
    public static final float BASE_HUD_FOV = 70.0F;
    private boolean initialized;
    private @Nullable Level level;
@@ -194,7 +193,7 @@ public class Camera implements TrackedWaypoint.Camera {
    private Matrix4f createProjectionMatrixForCulling() {
       float fovForCulling = Math.max(this.fov, (float)(Integer)this.minecraft.options.fov().get());
       Matrix4f projection = new Matrix4f();
-      return projection.perspective(fovForCulling * 0.017453292F, (float)this.minecraft.getWindow().getWidth() / (float)this.minecraft.getWindow().getHeight(), 0.05F, this.depthFar, RenderSystem.getDevice().isZZeroToOne());
+      return projection.perspective(fovForCulling * 0.017453292F, (float)this.minecraft.getWindow().getWidth() / (float)this.minecraft.getWindow().getHeight(), 0.05F, this.depthFar, RenderSystem.getDevice().getDeviceInfo().isZZeroToOne());
    }
 
    public Frustum getCullFrustum() {
@@ -260,43 +259,19 @@ public class Camera implements TrackedWaypoint.Camera {
    }
 
    private void alignWithEntity(final float partialTicks) {
-      if (!this.isPanoramicMode) {
-         Entity var3 = this.entity;
-         if (var3 instanceof LocalPlayer) {
-            LocalPlayer player = (LocalPlayer)var3;
-            if (player.isSleepingOnEntity()) {
-               LivingBlock bedEntity = player.getSleepingOnEntity();
-               if (bedEntity != null) {
-                  double bedX = Mth.lerp((double)partialTicks, bedEntity.xo, bedEntity.getX());
-                  double bedY = Mth.lerp((double)partialTicks, bedEntity.yo, bedEntity.getY());
-                  double bedZ = Mth.lerp((double)partialTicks, bedEntity.zo, bedEntity.getZ());
-                  this.setPosition(bedX, bedY + 0.5625 + 0.1, bedZ);
-                  Quaternionf bedRotation = player.getSleepingCameraRotation(partialTicks);
-                  this.rotation.set(bedRotation.x(), -bedRotation.y(), bedRotation.z(), bedRotation.w());
-                  FORWARDS.rotate(this.rotation, this.forwards);
-                  UP.rotate(this.rotation, this.up);
-                  LEFT.rotate(this.rotation, this.left);
-                  this.matrixPropertiesDirty |= 3;
-                  this.detached = false;
-                  return;
-               }
-            }
-         }
-      }
-
-      label58: {
+      label49: {
          if (this.entity.isPassenger()) {
-            Entity bedX = this.entity.getVehicle();
-            if (bedX instanceof Minecart) {
-               Minecart minecart = (Minecart)bedX;
-               MinecartBehavior positionOffset = minecart.getBehavior();
-               if (positionOffset instanceof NewMinecartBehavior) {
-                  NewMinecartBehavior behavior = (NewMinecartBehavior)positionOffset;
+            Entity var4 = this.entity.getVehicle();
+            if (var4 instanceof Minecart) {
+               Minecart minecart = (Minecart)var4;
+               MinecartBehavior var11 = minecart.getBehavior();
+               if (var11 instanceof NewMinecartBehavior) {
+                  NewMinecartBehavior behavior = (NewMinecartBehavior)var11;
                   if (behavior.cartHasPosRotLerp()) {
                      Vec3 positionOffset = minecart.getPassengerRidingPosition(this.entity).subtract(minecart.position()).subtract(this.entity.getVehicleAttachmentPoint(minecart)).add(new Vec3(0.0, (double)Mth.lerp(partialTicks, this.eyeHeightOld, this.eyeHeight), 0.0));
                      this.setRotation(this.entity.getViewYRot(partialTicks), this.entity.getViewXRot(partialTicks));
                      this.setPosition(behavior.getCartLerpPosition(partialTicks).add(positionOffset));
-                     break label58;
+                     break label49;
                   }
                }
             }

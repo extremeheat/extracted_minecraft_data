@@ -34,6 +34,7 @@ import net.minecraft.world.entity.animal.frog.FrogVariant;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.level.block.ColorCollection;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -67,11 +68,11 @@ public abstract class EntityLootSubProvider implements LootTableSubProvider {
       this.registries = registries;
    }
 
-   public static LootPool.Builder createSheepDispatchPool(final Map<DyeColor, ResourceKey<LootTable>> tableNames) {
+   public static LootPool.Builder createSheepDispatchPool(final ColorCollection<ResourceKey<LootTable>> tableNames) {
       AlternativesEntry.Builder variants = AlternativesEntry.alternatives();
 
-      for(Map.Entry<DyeColor, ResourceKey<LootTable>> e : tableNames.entrySet()) {
-         variants = variants.otherwise(NestedLootTable.lootTableReference((ResourceKey)e.getValue()).when(LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, EntityPredicate.Builder.entity().components(DataComponentMatchers.Builder.components().exact(DataComponentExactPredicate.expect(DataComponents.SHEEP_COLOR, (DyeColor)e.getKey())).build()).subPredicate(SheepPredicate.hasWool()))));
+      for(DyeColor color : DyeColor.VALUES) {
+         variants = variants.otherwise(NestedLootTable.lootTableReference(tableNames.pick(color)).when(LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, EntityPredicate.Builder.entity().components(DataComponentMatchers.Builder.components().exact(DataComponentExactPredicate.expect(DataComponents.SHEEP_COLOR, color)).build()).subPredicate(SheepPredicate.hasWool()))));
       }
 
       return LootPool.lootPool().add(variants);

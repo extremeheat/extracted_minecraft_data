@@ -1,6 +1,6 @@
 package net.minecraft.world.entity.ai.goal.target;
 
-import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -20,7 +20,7 @@ public abstract class TargetGoal extends Goal {
    private int reachCache;
    private int reachCacheTime;
    private int unseenTicks;
-   protected @Nullable Entity targetMob;
+   protected @Nullable LivingEntity targetMob;
    protected int unseenMemoryTicks;
 
    public TargetGoal(final Mob mob, final boolean mustSee) {
@@ -36,7 +36,7 @@ public abstract class TargetGoal extends Goal {
    }
 
    public boolean canContinueToUse() {
-      Entity target = this.mob.getTarget();
+      LivingEntity target = this.mob.getTarget();
       if (target == null) {
          target = this.targetMob;
       }
@@ -81,11 +81,11 @@ public abstract class TargetGoal extends Goal {
    }
 
    public void stop() {
-      this.mob.setTarget((Entity)null);
+      this.mob.setTarget((LivingEntity)null);
       this.targetMob = null;
    }
 
-   protected boolean canAttack(final @Nullable Entity target, final TargetingConditions targetConditions) {
+   protected boolean canAttack(final @Nullable LivingEntity target, final TargetingConditions targetConditions) {
       if (target == null) {
          return false;
       } else if (!targetConditions.test(getServerLevel(this.mob), this.mob, target)) {
@@ -111,7 +111,7 @@ public abstract class TargetGoal extends Goal {
       }
    }
 
-   private boolean canReach(final Entity target) {
+   private boolean canReach(final LivingEntity target) {
       this.reachCacheTime = reducedTickDelay(10 + this.mob.getRandom().nextInt(5));
       Path path = this.mob.getNavigation().createPath(target, 0);
       if (path == null) {

@@ -218,6 +218,7 @@ public class LecternBlock extends BaseEntityBlock {
    private void openScreen(final Level level, final BlockPos pos, final Player player) {
       BlockEntity blockEntity = level.getBlockEntity(pos);
       if (blockEntity instanceof LecternBlockEntity) {
+         player.openMenu((LecternBlockEntity)blockEntity);
          player.awardStat(Stats.INTERACT_WITH_LECTERN);
       }
 

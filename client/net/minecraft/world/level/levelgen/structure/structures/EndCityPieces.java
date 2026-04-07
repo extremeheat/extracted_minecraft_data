@@ -1,13 +1,13 @@
 package net.minecraft.world.level.levelgen.structure.structures;
 
-import com.google.common.collect.Lists;
+import com.mojang.datafixers.util.Pair;
+import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.RandomizableContainer;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -58,10 +58,10 @@ public class EndCityPieces {
          }
       }
    };
-   private static final List<Tuple<Rotation, BlockPos>> TOWER_BRIDGES;
+   private static final List<Pair<Rotation, BlockPos>> TOWER_BRIDGES;
    private static final SectionGenerator TOWER_GENERATOR;
    private static final SectionGenerator TOWER_BRIDGE_GENERATOR;
-   private static final List<Tuple<Rotation, BlockPos>> FAT_TOWER_BRIDGES;
+   private static final List<Pair<Rotation, BlockPos>> FAT_TOWER_BRIDGES;
    private static final SectionGenerator FAT_TOWER_GENERATOR;
 
    public EndCityPieces() {
@@ -96,7 +96,7 @@ public class EndCityPieces {
       if (genDepth > 8) {
          return false;
       } else {
-         List<StructurePiece> childPieces = Lists.newArrayList();
+         List<StructurePiece> childPieces = new ArrayList();
          if (generator.generate(structureTemplateManager, genDepth, parent, offset, childPieces, random)) {
             boolean collision = false;
             int childTag = random.nextInt();
@@ -121,7 +121,7 @@ public class EndCityPieces {
    }
 
    static {
-      TOWER_BRIDGES = Lists.newArrayList(new Tuple[]{new Tuple(Rotation.NONE, new BlockPos(1, -1, 0)), new Tuple(Rotation.CLOCKWISE_90, new BlockPos(6, -1, 1)), new Tuple(Rotation.COUNTERCLOCKWISE_90, new BlockPos(0, -1, 5)), new Tuple(Rotation.CLOCKWISE_180, new BlockPos(5, -1, 6))});
+      TOWER_BRIDGES = List.of(Pair.of(Rotation.NONE, new BlockPos(1, -1, 0)), Pair.of(Rotation.CLOCKWISE_90, new BlockPos(6, -1, 1)), Pair.of(Rotation.COUNTERCLOCKWISE_90, new BlockPos(0, -1, 5)), Pair.of(Rotation.CLOCKWISE_180, new BlockPos(5, -1, 6)));
       TOWER_GENERATOR = new SectionGenerator() {
          public void init() {
          }
@@ -141,9 +141,9 @@ public class EndCityPieces {
             }
 
             if (bridgePiece != null) {
-               for(Tuple<Rotation, BlockPos> bridge : EndCityPieces.TOWER_BRIDGES) {
+               for(Pair<Rotation, BlockPos> bridge : EndCityPieces.TOWER_BRIDGES) {
                   if (random.nextBoolean()) {
-                     EndCityPiece bridgeStart = EndCityPieces.addHelper(pieces, EndCityPieces.addPiece(structureTemplateManager, bridgePiece, bridge.getB(), "bridge_end", rotation.getRotated(bridge.getA()), true));
+                     EndCityPiece bridgeStart = EndCityPieces.addHelper(pieces, EndCityPieces.addPiece(structureTemplateManager, bridgePiece, (BlockPos)bridge.getSecond(), "bridge_end", rotation.getRotated((Rotation)bridge.getFirst()), true));
                      EndCityPieces.recursiveChildren(structureTemplateManager, EndCityPieces.TOWER_BRIDGE_GENERATOR, genDepth + 1, bridgeStart, (BlockPos)null, pieces, random);
                   }
                }
@@ -201,7 +201,7 @@ public class EndCityPieces {
             return true;
          }
       };
-      FAT_TOWER_BRIDGES = Lists.newArrayList(new Tuple[]{new Tuple(Rotation.NONE, new BlockPos(4, -1, 0)), new Tuple(Rotation.CLOCKWISE_90, new BlockPos(12, -1, 4)), new Tuple(Rotation.COUNTERCLOCKWISE_90, new BlockPos(0, -1, 8)), new Tuple(Rotation.CLOCKWISE_180, new BlockPos(8, -1, 12))});
+      FAT_TOWER_BRIDGES = List.of(Pair.of(Rotation.NONE, new BlockPos(4, -1, 0)), Pair.of(Rotation.CLOCKWISE_90, new BlockPos(12, -1, 4)), Pair.of(Rotation.COUNTERCLOCKWISE_90, new BlockPos(0, -1, 8)), Pair.of(Rotation.CLOCKWISE_180, new BlockPos(8, -1, 12)));
       FAT_TOWER_GENERATOR = new SectionGenerator() {
          public void init() {
          }
@@ -214,9 +214,9 @@ public class EndCityPieces {
             for(int i = 0; i < 2 && random.nextInt(3) != 0; ++i) {
                lastPiece = EndCityPieces.addHelper(pieces, EndCityPieces.addPiece(structureTemplateManager, lastPiece, new BlockPos(0, 8, 0), "fat_tower_middle", rotation, true));
 
-               for(Tuple<Rotation, BlockPos> bridge : EndCityPieces.FAT_TOWER_BRIDGES) {
+               for(Pair<Rotation, BlockPos> bridge : EndCityPieces.FAT_TOWER_BRIDGES) {
                   if (random.nextBoolean()) {
-                     EndCityPiece bridgeStart = EndCityPieces.addHelper(pieces, EndCityPieces.addPiece(structureTemplateManager, lastPiece, bridge.getB(), "bridge_end", rotation.getRotated(bridge.getA()), true));
+                     EndCityPiece bridgeStart = EndCityPieces.addHelper(pieces, EndCityPieces.addPiece(structureTemplateManager, lastPiece, (BlockPos)bridge.getSecond(), "bridge_end", rotation.getRotated((Rotation)bridge.getFirst()), true));
                      EndCityPieces.recursiveChildren(structureTemplateManager, EndCityPieces.TOWER_BRIDGE_GENERATOR, genDepth + 1, bridgeStart, (BlockPos)null, pieces, random);
                   }
                }

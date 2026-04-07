@@ -15,7 +15,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SlotAccess;
-import net.minecraft.world.entity.livingblock.LivingBlock;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickAction;
@@ -251,10 +251,10 @@ public class BundleItem extends Item {
       return !display.shows(DataComponents.BUNDLE_CONTENTS) ? Optional.empty() : Optional.ofNullable((BundleContents)bundle.get(DataComponents.BUNDLE_CONTENTS)).map(BundleTooltip::new);
    }
 
-   public void onDestroyed(final LivingBlock entity) {
-      BundleContents contents = (BundleContents)entity.getItemStack().get(DataComponents.BUNDLE_CONTENTS);
+   public void onDestroyed(final ItemEntity entity) {
+      BundleContents contents = (BundleContents)entity.getItem().get(DataComponents.BUNDLE_CONTENTS);
       if (contents != null) {
-         entity.getItemStack().set(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY);
+         entity.getItem().set(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY);
          ItemUtils.onContainerDestroyed(entity, contents.itemCopyStream());
       }
    }

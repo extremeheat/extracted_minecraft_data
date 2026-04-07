@@ -87,12 +87,12 @@ public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
       level.gameEvent(player, (Boolean)state.getValue(POWERED) ? GameEvent.BLOCK_ACTIVATE : GameEvent.BLOCK_DEACTIVATE, pos);
    }
 
-   public static void playSound(final @Nullable Player player, final LevelAccessor level, final BlockPos pos, final BlockState stateAfter) {
+   protected static void playSound(final @Nullable Player player, final LevelAccessor level, final BlockPos pos, final BlockState stateAfter) {
       float pitch = (Boolean)stateAfter.getValue(POWERED) ? 0.6F : 0.5F;
       level.playSound(player, pos, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.3F, pitch);
    }
 
-   public static void makeParticle(final BlockState state, final LevelAccessor level, final BlockPos pos, final float scale) {
+   private static void makeParticle(final BlockState state, final LevelAccessor level, final BlockPos pos, final float scale) {
       Direction opposite = ((Direction)state.getValue(FACING)).getOpposite();
       Direction oppositeConnect = getConnectedDirection(state).getOpposite();
       double x = (double)pos.getX() + 0.5 + 0.1 * (double)opposite.getStepX() + 0.2 * (double)oppositeConnect.getStepX();

@@ -22,7 +22,7 @@ import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.entity.SignText;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import org.joml.Vector2f;
-import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractSignEditScreen extends Screen {
@@ -122,7 +122,7 @@ public abstract class AbstractSignEditScreen extends Screen {
 
    protected abstract void extractSignBackground(GuiGraphicsExtractor graphics);
 
-   protected abstract Vector3f getSignTextScale();
+   protected abstract Vector3fc getSignTextScale();
 
    protected abstract float getSignYOffset();
 
@@ -134,7 +134,7 @@ public abstract class AbstractSignEditScreen extends Screen {
       graphics.pose().pushMatrix();
       this.extractSignBackground(graphics);
       graphics.pose().popMatrix();
-      Vector3f textScale = this.getSignTextScale();
+      Vector3fc textScale = this.getSignTextScale();
       graphics.pose().scale(textScale.x(), textScale.y());
       this.cursorPosScratch.zero();
       this.extractSignText(graphics, this.cursorPosScratch);
@@ -213,6 +213,6 @@ public abstract class AbstractSignEditScreen extends Screen {
    }
 
    private void onDone() {
-      this.minecraft.setScreen((Screen)null);
+      this.minecraft.gui.setScreen((Screen)null);
    }
 }

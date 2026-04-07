@@ -40,7 +40,7 @@ public class BowItem extends ProjectileWeaponItem {
                if (level instanceof ServerLevel) {
                   ServerLevel serverLevel = (ServerLevel)level;
                   if (!firedProjectiles.isEmpty()) {
-                     this.shoot(serverLevel, player, player.getUsedItemHand(), itemStack, firedProjectiles, pow * 3.0F, 1.0F, pow == 1.0F, (Entity)null);
+                     this.shoot(serverLevel, player, player.getUsedItemHand(), itemStack, firedProjectiles, pow * 3.0F, 1.0F, pow == 1.0F, (LivingEntity)null);
                   }
                }
 
@@ -52,7 +52,7 @@ public class BowItem extends ProjectileWeaponItem {
       }
    }
 
-   protected void shootProjectile(final LivingEntity shooter, final Projectile projectileEntity, final int index, final float power, final float uncertainty, final float angle, final @Nullable Entity targetOverrride) {
+   protected void shootProjectile(final LivingEntity shooter, final Projectile projectileEntity, final int index, final float power, final float uncertainty, final float angle, final @Nullable LivingEntity targetOverrride) {
       projectileEntity.shootFromRotation(shooter, shooter.getXRot(), shooter.getYRot() + angle, 0.0F, power, uncertainty);
    }
 

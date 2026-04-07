@@ -133,12 +133,12 @@ public class RealmsResetWorldScreen extends RealmsScreen {
       GridLayout.RowHelper helper = grid.createRowHelper(3);
       helper.defaultCellSetting().paddingHorizontal(16);
       helper.addChild(new FrameButton(this.minecraft.font, GENERATE_NEW_WORLD, NEW_WORLD_LOCATION, (button) -> RealmsCreateWorldFlow.createWorld(this.minecraft, this.lastScreen, this, this.slot, this.serverData, this.realmCreationTask)));
-      helper.addChild(new FrameButton(this.minecraft.font, RealmsSelectFileToUploadScreen.TITLE, UPLOAD_LOCATION, (button) -> this.minecraft.setScreen(new RealmsSelectFileToUploadScreen(this.realmCreationTask, this.serverData.id, this.slot, this))));
-      helper.addChild(new FrameButton(this.minecraft.font, WORLD_TEMPLATES_TITLE, SURVIVAL_SPAWN_LOCATION, (button) -> this.minecraft.setScreen(new RealmsSelectWorldTemplateScreen(WORLD_TEMPLATES_TITLE, this::templateSelectionCallback, RealmsServer.WorldType.NORMAL, this.templates))));
+      helper.addChild(new FrameButton(this.minecraft.font, RealmsSelectFileToUploadScreen.TITLE, UPLOAD_LOCATION, (var1) -> this.minecraft.gui.setScreen(new RealmsSelectFileToUploadScreen(this.realmCreationTask, this.serverData.id, this.slot, this))));
+      helper.addChild(new FrameButton(this.minecraft.font, WORLD_TEMPLATES_TITLE, SURVIVAL_SPAWN_LOCATION, (var1) -> this.minecraft.gui.setScreen(new RealmsSelectWorldTemplateScreen(WORLD_TEMPLATES_TITLE, this::templateSelectionCallback, RealmsServer.WorldType.NORMAL, this.templates))));
       helper.addChild(SpacerElement.height(16), 3);
-      helper.addChild(new FrameButton(this.minecraft.font, ADVENTURES_TITLE, ADVENTURE_MAP_LOCATION, (button) -> this.minecraft.setScreen(new RealmsSelectWorldTemplateScreen(ADVENTURES_TITLE, this::templateSelectionCallback, RealmsServer.WorldType.ADVENTUREMAP, this.adventuremaps))));
-      helper.addChild(new FrameButton(this.minecraft.font, EXPERIENCES_TITLE, EXPERIENCE_LOCATION, (button) -> this.minecraft.setScreen(new RealmsSelectWorldTemplateScreen(EXPERIENCES_TITLE, this::templateSelectionCallback, RealmsServer.WorldType.EXPERIENCE, this.experiences))));
-      helper.addChild(new FrameButton(this.minecraft.font, INSPIRATION_TITLE, INSPIRATION_LOCATION, (button) -> this.minecraft.setScreen(new RealmsSelectWorldTemplateScreen(INSPIRATION_TITLE, this::templateSelectionCallback, RealmsServer.WorldType.INSPIRATION, this.inspirations))));
+      helper.addChild(new FrameButton(this.minecraft.font, ADVENTURES_TITLE, ADVENTURE_MAP_LOCATION, (var1) -> this.minecraft.gui.setScreen(new RealmsSelectWorldTemplateScreen(ADVENTURES_TITLE, this::templateSelectionCallback, RealmsServer.WorldType.ADVENTUREMAP, this.adventuremaps))));
+      helper.addChild(new FrameButton(this.minecraft.font, EXPERIENCES_TITLE, EXPERIENCE_LOCATION, (var1) -> this.minecraft.gui.setScreen(new RealmsSelectWorldTemplateScreen(EXPERIENCES_TITLE, this::templateSelectionCallback, RealmsServer.WorldType.EXPERIENCE, this.experiences))));
+      helper.addChild(new FrameButton(this.minecraft.font, INSPIRATION_TITLE, INSPIRATION_LOCATION, (var1) -> this.minecraft.gui.setScreen(new RealmsSelectWorldTemplateScreen(INSPIRATION_TITLE, this::templateSelectionCallback, RealmsServer.WorldType.INSPIRATION, this.inspirations))));
       this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, (button) -> this.onClose()).build());
       this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
       this.repositionElements();
@@ -153,11 +153,11 @@ public class RealmsResetWorldScreen extends RealmsScreen {
    }
 
    public void onClose() {
-      this.minecraft.setScreen(this.lastScreen);
+      this.minecraft.gui.setScreen(this.lastScreen);
    }
 
    private void templateSelectionCallback(final @Nullable WorldTemplate template) {
-      this.minecraft.setScreen(this);
+      this.minecraft.gui.setScreen(this);
       if (template != null) {
          this.runResetTasks(new ResettingTemplateWorldTask(template, this.serverData.id, this.resetTaskTitle, this.resetWorldRunnable));
       }
@@ -177,7 +177,7 @@ public class RealmsResetWorldScreen extends RealmsScreen {
       }
 
       tasks.add(resetTask);
-      this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(this.lastScreen, (LongRunningTask[])tasks.toArray(new LongRunningTask[0])));
+      this.minecraft.gui.setScreen(new RealmsLongRunningMcoTaskScreen(this.lastScreen, (LongRunningTask[])tasks.toArray(new LongRunningTask[0])));
    }
 
    private class FrameButton extends Button {

@@ -3,7 +3,6 @@ package net.minecraft.world.entity.ai.sensing;
 import java.util.Optional;
 import java.util.Set;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
@@ -13,9 +12,9 @@ public abstract class NearestVisibleLivingEntitySensor extends Sensor<LivingEnti
       super();
    }
 
-   protected abstract boolean isMatchingEntity(final ServerLevel level, LivingEntity body, Entity mob);
+   protected abstract boolean isMatchingEntity(final ServerLevel level, LivingEntity body, LivingEntity mob);
 
-   protected abstract MemoryModuleType<Entity> getMemoryToSet();
+   protected abstract MemoryModuleType<LivingEntity> getMemoryToSet();
 
    public Set<MemoryModuleType<?>> requires() {
       return Set.of(this.getMemoryToSet(), MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES);
@@ -25,7 +24,7 @@ public abstract class NearestVisibleLivingEntitySensor extends Sensor<LivingEnti
       body.getBrain().setMemory(this.getMemoryToSet(), this.getNearestEntity(level, body));
    }
 
-   private Optional<Entity> getNearestEntity(final ServerLevel level, final LivingEntity body) {
+   private Optional<LivingEntity> getNearestEntity(final ServerLevel level, final LivingEntity body) {
       return this.getVisibleEntities(body).flatMap((livingEntities) -> livingEntities.findClosest((mob) -> this.isMatchingEntity(level, body, mob)));
    }
 

@@ -21,7 +21,7 @@ public class UseOnContext {
       this(player.level(), player, hand, player.getItemInHand(hand), hitResult);
    }
 
-   public UseOnContext(final Level level, final @Nullable Player player, final InteractionHand hand, final ItemStack itemStack, final BlockHitResult hitResult) {
+   protected UseOnContext(final Level level, final @Nullable Player player, final InteractionHand hand, final ItemStack itemStack, final BlockHitResult hitResult) {
       super();
       this.player = player;
       this.hand = hand;

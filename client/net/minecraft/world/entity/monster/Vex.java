@@ -17,6 +17,7 @@ import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -31,7 +32,6 @@ import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.TargetGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
-import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.raid.Raider;
 import net.minecraft.world.item.ItemStack;
@@ -89,7 +89,6 @@ public class Vex extends Monster implements TraceableEntity {
       this.targetSelector.addGoal(1, (new HurtByTargetGoal(this, new Class[]{Raider.class})).setAlertOthers());
       this.targetSelector.addGoal(2, new VexCopyOwnerTargetGoal(this));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, Player.class, true));
-      this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, LivingBlock.class, true));
    }
 
    public static AttributeSupplier.Builder createAttributes() {
@@ -203,8 +202,8 @@ public class Vex extends Monster implements TraceableEntity {
       DATA_FLAGS_ID = SynchedEntityData.<Byte>defineId(Vex.class, EntityDataSerializers.BYTE);
    }
 
-   private class VexMoveControl extends MoveControl {
-      public VexMoveControl(final Vex vex) {
+   private class VexMoveControl<T extends Mob> extends MoveControl<T> {
+      public VexMoveControl(final T vex) {
          Objects.requireNonNull(Vex.this);
          super(vex);
       }
@@ -242,7 +241,7 @@ public class Vex extends Monster implements TraceableEntity {
       }
 
       public boolean canUse() {
-         Entity target = Vex.this.getTarget();
+         LivingEntity target = Vex.this.getTarget();
          if (target != null && target.isAlive() && !Vex.this.getMoveControl().hasWanted() && Vex.this.random.nextInt(reducedTickDelay(7)) == 0) {
             return Vex.this.distanceToSqr(target) > 4.0;
          } else {
@@ -255,7 +254,7 @@ public class Vex extends Monster implements TraceableEntity {
       }
 
       public void start() {
-         Entity attackTarget = Vex.this.getTarget();
+         LivingEntity attackTarget = Vex.this.getTarget();
          if (attackTarget != null) {
             Vec3 eyePosition = attackTarget.getEyePosition();
             Vex.this.moveControl.setWantedPosition(eyePosition.x, eyePosition.y, eyePosition.z, 1.0);
@@ -274,7 +273,7 @@ public class Vex extends Monster implements TraceableEntity {
       }
 
       public void tick() {
-         Entity attackTarget = Vex.this.getTarget();
+         LivingEntity attackTarget = Vex.this.getTarget();
          if (attackTarget != null) {
             if (Vex.this.getBoundingBox().intersects(attackTarget.getBoundingBox())) {
                Vex.this.doHurtTarget(getServerLevel(Vex.this.level()), attackTarget);

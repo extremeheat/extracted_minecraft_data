@@ -7,6 +7,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.gameevent.GameEvent;
 
 public class SpawnEggItemBehavior extends DefaultDispenseItemBehavior {
@@ -16,8 +17,8 @@ public class SpawnEggItemBehavior extends DefaultDispenseItemBehavior {
       super();
    }
 
-   public ItemStack execute(final DispenseSource source, final ItemStack dispensed) {
-      Direction direction = source.direction();
+   public ItemStack execute(final BlockSource source, final ItemStack dispensed) {
+      Direction direction = (Direction)source.state().getValue(DispenserBlock.FACING);
       EntityType<?> type = SpawnEggItem.getType(dispensed);
       if (type == null) {
          return dispensed;

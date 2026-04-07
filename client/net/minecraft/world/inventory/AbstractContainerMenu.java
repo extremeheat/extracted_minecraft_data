@@ -25,11 +25,11 @@ import net.minecraft.network.HashedStack;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
-import net.minecraft.world.item.ActionItem;
 import net.minecraft.world.item.BundleItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
@@ -484,10 +484,6 @@ public abstract class AbstractContainerMenu {
       } else if (containerInput == ContainerInput.SWAP && (buttonNum >= 0 && buttonNum < 9 || buttonNum == 40)) {
          ItemStack source = inventory.getItem(buttonNum);
          Slot target = this.slots.get(slotIndex);
-         if (!source.isEmpty() && source.getItem() instanceof ActionItem) {
-            return;
-         }
-
          ItemStack targetItemStack = target.getItem();
          if (!source.isEmpty() || !targetItemStack.isEmpty()) {
             if (source.isEmpty()) {
@@ -615,7 +611,29 @@ public abstract class AbstractContainerMenu {
    }
 
    private static void dropOrPlaceInInventory(final Player player, final ItemStack carried) {
-      player.drop(carried, true);
+      boolean playerRemovedNotChangingDimension;
+      boolean var10000;
+      label27: {
+         playerRemovedNotChangingDimension = player.isRemoved() && player.getRemovalReason() != Entity.RemovalReason.CHANGED_DIMENSION;
+         if (player instanceof ServerPlayer serverPlayer) {
+            if (serverPlayer.hasDisconnected()) {
+               var10000 = true;
+               break label27;
+            }
+         }
+
+         var10000 = false;
+      }
+
+      boolean serverPlayerHasDisconnected = var10000;
+      if (!playerRemovedNotChangingDimension && !serverPlayerHasDisconnected) {
+         if (player instanceof ServerPlayer) {
+            player.getInventory().placeItemBackInInventory(carried);
+         }
+      } else {
+         player.drop(carried, false);
+      }
+
    }
 
    protected void clearContainer(final Player player, final Container container) {

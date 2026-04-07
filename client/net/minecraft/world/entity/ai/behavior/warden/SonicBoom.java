@@ -65,17 +65,8 @@ public class SonicBoom extends Behavior<Warden> {
 
             body.playSound(SoundEvents.WARDEN_SONIC_BOOM, 3.0F, 1.0F);
             if (target.hurtServer(level, level.damageSources().sonicBoom(body), 10.0F)) {
-               double var10000;
-               if (target instanceof LivingEntity) {
-                  LivingEntity livingEntity = (LivingEntity)target;
-                  var10000 = livingEntity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
-               } else {
-                  var10000 = 1.0;
-               }
-
-               double knockbackResistance = var10000;
-               double knockbackVertical = 0.5 * (1.0 - knockbackResistance);
-               double knockbackHorizontal = 2.5 * (1.0 - knockbackResistance);
+               double knockbackVertical = 0.5 * (1.0 - target.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
+               double knockbackHorizontal = 2.5 * (1.0 - target.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
                target.push(normalize.x() * knockbackHorizontal, normalize.y() * knockbackVertical, normalize.z() * knockbackHorizontal);
             }
 

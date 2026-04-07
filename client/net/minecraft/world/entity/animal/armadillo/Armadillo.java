@@ -41,7 +41,6 @@ import net.minecraft.world.entity.ai.control.BodyRotationControl;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -218,7 +217,7 @@ public class Armadillo extends Animal {
       return level.getBlockState(pos.below()).is(BlockTags.ARMADILLO_SPAWNABLE_ON) && isBrightEnoughToSpawn(level, pos);
    }
 
-   public boolean isScaredBy(final Entity livingEntity) {
+   public boolean isScaredBy(final LivingEntity livingEntity) {
       if (!this.getBoundingBox().inflate(7.0, 2.0, 7.0).intersects(livingEntity.getBoundingBox())) {
          return false;
       } else if (livingEntity.is(EntityTypeTags.UNDEAD)) {
@@ -278,15 +277,13 @@ public class Armadillo extends Animal {
    protected void actuallyHurt(final ServerLevel level, final DamageSource source, final float dmg) {
       super.actuallyHurt(level, source, dmg);
       if (!this.isNoAi() && !this.isDeadOrDying()) {
-         if (!(source.getEntity() instanceof LivingEntity) && !(source.getEntity() instanceof LivingBlock)) {
-            if (source.is(DamageTypeTags.PANIC_ENVIRONMENTAL_CAUSES)) {
-               this.rollOut();
-            }
-         } else {
+         if (source.getEntity() instanceof LivingEntity) {
             this.getBrain().setMemoryWithExpiry(MemoryModuleType.DANGER_DETECTED_RECENTLY, true, 80L);
             if (this.canStayRolledUp()) {
                this.rollUp();
             }
+         } else if (source.is(DamageTypeTags.PANIC_ENVIRONMENTAL_CAUSES)) {
+            this.rollOut();
          }
 
       }

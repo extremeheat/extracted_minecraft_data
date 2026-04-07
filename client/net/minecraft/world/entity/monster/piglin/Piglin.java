@@ -39,7 +39,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.sensing.SensorType;
-import net.minecraft.world.entity.livingblock.LivingBlock;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.CrossbowAttackMob;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.npc.InventoryCarrier;
@@ -299,15 +299,18 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
 
    public boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {
       boolean wasHurt = super.hurtServer(level, source, damage);
-      Entity attacker = source.getEntity();
-      if (wasHurt && (attacker instanceof LivingEntity || attacker instanceof LivingBlock)) {
-         PiglinAi.wasHurtBy(level, this, attacker);
+      if (wasHurt) {
+         Entity var6 = source.getEntity();
+         if (var6 instanceof LivingEntity) {
+            LivingEntity sourceEntity = (LivingEntity)var6;
+            PiglinAi.wasHurtBy(level, this, sourceEntity);
+         }
       }
 
       return wasHurt;
    }
 
-   public void performRangedAttack(final Entity target, final float power) {
+   public void performRangedAttack(final LivingEntity target, final float power) {
       this.performCrossbowAttack(this, 1.6F);
    }
 
@@ -317,14 +320,13 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
 
    protected void holdInMainHand(final ItemStack itemStack) {
       this.setItemSlotAndDropWhenKilled(EquipmentSlot.MAINHAND, itemStack);
+      this.setPersistenceRequired();
    }
 
    protected void holdInOffHand(final ItemStack itemStack) {
-      if (itemStack.is(PiglinAi.BARTERING_ITEM)) {
-         this.setItemSlot(EquipmentSlot.OFFHAND, itemStack);
-         this.setGuaranteedDrop(EquipmentSlot.OFFHAND);
-      } else {
-         this.setItemSlotAndDropWhenKilled(EquipmentSlot.OFFHAND, itemStack);
+      this.setItemSlotAndDropWhenKilled(EquipmentSlot.OFFHAND, itemStack);
+      if (!itemStack.is(PiglinAi.BARTERING_ITEM)) {
+         this.setPersistenceRequired();
       }
 
    }
@@ -354,7 +356,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
       }
    }
 
-   protected void pickUpItem(final ServerLevel level, final LivingBlock entity) {
+   protected void pickUpItem(final ServerLevel level, final ItemEntity entity) {
       this.onItemPickup(entity);
       PiglinAi.pickUpItem(level, this, entity);
    }

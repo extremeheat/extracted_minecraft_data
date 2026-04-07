@@ -55,7 +55,7 @@ public class LongJump extends Behavior<Breeze> {
       } else if (breeze.getBrain().checkMemory(MemoryModuleType.BREEZE_JUMP_TARGET, MemoryStatus.VALUE_PRESENT)) {
          return true;
       } else {
-         Entity attackTarget = (Entity)breeze.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse((Object)null);
+         LivingEntity attackTarget = (LivingEntity)breeze.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse((Object)null);
          if (attackTarget == null) {
             return false;
          } else if (outOfAggroRange(breeze, attackTarget)) {
@@ -168,11 +168,11 @@ public class LongJump extends Behavior<Breeze> {
       }
    }
 
-   private static boolean outOfAggroRange(final Breeze breeze, final Entity attackTarget) {
+   private static boolean outOfAggroRange(final Breeze breeze, final LivingEntity attackTarget) {
       return !attackTarget.closerThan(breeze, breeze.getAttributeValue(Attributes.FOLLOW_RANGE));
    }
 
-   private static boolean tooCloseForJump(final Breeze breeze, final Entity attackTarget) {
+   private static boolean tooCloseForJump(final Breeze breeze, final LivingEntity attackTarget) {
       return attackTarget.distanceTo(breeze) - 4.0F <= 0.0F;
    }
 

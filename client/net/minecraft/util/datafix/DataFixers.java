@@ -389,7 +389,7 @@ import net.minecraft.util.datafix.schemas.V4543;
 import net.minecraft.util.datafix.schemas.V4648;
 import net.minecraft.util.datafix.schemas.V4656;
 import net.minecraft.util.datafix.schemas.V4771;
-import net.minecraft.util.datafix.schemas.V5000;
+import net.minecraft.util.datafix.schemas.V4881;
 import net.minecraft.util.datafix.schemas.V501;
 import net.minecraft.util.datafix.schemas.V700;
 import net.minecraft.util.datafix.schemas.V701;
@@ -413,7 +413,7 @@ public class DataFixers {
    private static final BiFunction<Integer, Schema, Schema> SAME_NAMESPACED = NamespacedSchema::new;
    private static final DataFixerBuilder.Result DATA_FIXER;
    private static final FileFixerUpper FILE_FIXER;
-   public static final int BLENDING_VERSION = 4295;
+   public static final int BLENDING_VERSION = 4882;
 
    private DataFixers() {
       super();
@@ -1092,8 +1092,6 @@ public class DataFixers {
       fixerUpper.addFixer(new DropChancesFormatFix(v4293));
       Schema v4294 = fixerUpper.addSchema(4294, SAME_NAMESPACED);
       fixerUpper.addFixer(new BlockPropertyRenameAndFix(v4294, "CreakingHeartBlockStateFix", "minecraft:creaking_heart", "active", "creaking_heart_state", (value) -> value.equals("true") ? "awake" : "uprooted"));
-      Schema blendingSchema = fixerUpper.addSchema(4295, SAME_NAMESPACED);
-      fixerUpper.addFixer(new BlendingDataFix(blendingSchema));
       Schema v4296 = fixerUpper.addSchema(4296, SAME_NAMESPACED);
       fixerUpper.addFixer(new AreaEffectCloudDurationScaleFix(v4296));
       Schema v4297 = fixerUpper.addSchema(4297, SAME_NAMESPACED);
@@ -1192,8 +1190,11 @@ public class DataFixers {
       fileFixerUpper.addFixer(new RemoveObsoleteFilesFileFix(v4772));
       Schema v4773 = fileFixerUpper.addSchema(fixerUpper, 4773, SAME_NAMESPACED);
       fileFixerUpper.addFixer(new GeneratedStructuresRenameFileFix(v4773));
-      Schema v5000 = fixerUpper.addSchema(5000, V5000::new);
-      fixerUpper.addFixer(new AddNewChoices(v5000, "Added Crafting Grid", References.ENTITY));
+      Schema v4881 = fixerUpper.addSchema(4881, V4881::new);
+      fixerUpper.addFixer(new AddNewChoices(v4881, "Added Sulfur Cube", References.ENTITY));
+      fixerUpper.addFixer(new AddNewChoices(v4881, "Added Potent Sulfur", References.BLOCK_ENTITY));
+      Schema blendingSchema = fixerUpper.addSchema(4882, SAME_NAMESPACED);
+      fixerUpper.addFixer(new BlendingDataFix(blendingSchema));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(final Map<String, String> map) {

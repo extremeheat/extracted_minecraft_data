@@ -33,10 +33,6 @@ public abstract class Model<S> {
       this.root().render(poseStack, buffer, lightCoords, overlayCoords, color);
    }
 
-   public final void renderToBuffer(final PoseStack poseStack, final VertexConsumer buffer, final int lightCoords, final int overlayCoords) {
-      this.renderToBuffer(poseStack, buffer, lightCoords, overlayCoords, -1);
-   }
-
    public final ModelPart root() {
       return this.root;
    }

@@ -8,7 +8,7 @@ import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
-import net.minecraft.world.entity.livingblock.LivingBlock;
+import net.minecraft.world.entity.item.ItemEntity;
 
 public class GoToWantedItem {
    public GoToWantedItem() {
@@ -23,7 +23,7 @@ public class GoToWantedItem {
       return BehaviorBuilder.create((Function)((i) -> {
          BehaviorBuilder<E, ? extends MemoryAccessor<? extends K1, WalkTarget>> walkCondition = interruptOngoingWalk ? i.registered(MemoryModuleType.WALK_TARGET) : i.absent(MemoryModuleType.WALK_TARGET);
          return i.group(i.registered(MemoryModuleType.LOOK_TARGET), walkCondition, i.present(MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM), i.registered(MemoryModuleType.ITEM_PICKUP_COOLDOWN_TICKS)).apply(i, (lookTarget, walkTarget, wantedItem, cooldown) -> (level, body, timestamp) -> {
-               LivingBlock item = (LivingBlock)i.get(wantedItem);
+               ItemEntity item = (ItemEntity)i.get(wantedItem);
                if (i.tryGet(cooldown).isEmpty() && predicate.test(body) && item.closerThan(body, (double)maxDistToWalk) && body.level().getWorldBorder().isWithinBounds(item.blockPosition()) && body.canPickUpLoot()) {
                   WalkTarget target = new WalkTarget(new EntityTracker(item, false), speedModifier, 0);
                   lookTarget.set(new EntityTracker(item, true));

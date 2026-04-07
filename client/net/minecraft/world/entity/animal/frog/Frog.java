@@ -35,6 +35,7 @@ import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
@@ -49,7 +50,7 @@ import net.minecraft.world.entity.ai.navigation.AmphibiousPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.monster.Slime;
+import net.minecraft.world.entity.monster.cubemob.Slime;
 import net.minecraft.world.entity.variant.SpawnContext;
 import net.minecraft.world.entity.variant.VariantUtils;
 import net.minecraft.world.item.ItemStack;
@@ -228,11 +229,8 @@ public class Frog extends Animal {
       return frog;
    }
 
-   public boolean isBaby() {
+   protected boolean canBeABaby() {
       return false;
-   }
-
-   public void setBaby(final boolean baby) {
    }
 
    public void spawnChildFromBreeding(final ServerLevel level, final Animal partner) {
@@ -280,7 +278,7 @@ public class Frog extends Animal {
       this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
    }
 
-   public static boolean canEat(final Entity entity) {
+   public static boolean canEat(final LivingEntity entity) {
       if (entity instanceof Slime slime) {
          if (slime.getSize() != 1) {
             return false;
@@ -294,7 +292,7 @@ public class Frog extends Animal {
       return new FrogPathNavigation(this, level);
    }
 
-   public @Nullable Entity getTarget() {
+   public @Nullable LivingEntity getTarget() {
       return this.getTargetFromBrain();
    }
 

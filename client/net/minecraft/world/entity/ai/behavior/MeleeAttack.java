@@ -4,7 +4,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -21,7 +21,7 @@ public class MeleeAttack {
 
    public static <T extends Mob> OneShot<T> create(final Predicate<T> canAttackPredicate, final int cooldownBetweenAttacks) {
       return BehaviorBuilder.create((Function)((i) -> i.group(i.registered(MemoryModuleType.LOOK_TARGET), i.present(MemoryModuleType.ATTACK_TARGET), i.absent(MemoryModuleType.ATTACK_COOLING_DOWN), i.present(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)).apply(i, (lookTarget, attackTarget, attackCoolingDown, nearestEntities) -> (level, body, timestamp) -> {
-               Entity target = (Entity)i.get(attackTarget);
+               LivingEntity target = (LivingEntity)i.get(attackTarget);
                if (canAttackPredicate.test(body) && !isHoldingUsableNonMeleeWeapon(body) && body.isWithinMeleeAttackRange(target) && ((NearestVisibleLivingEntities)i.get(nearestEntities)).contains(target)) {
                   lookTarget.set(new EntityTracker(target, true));
                   body.swing(InteractionHand.MAIN_HAND);

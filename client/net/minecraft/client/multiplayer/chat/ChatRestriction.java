@@ -70,7 +70,7 @@ public enum ChatRestriction {
 
    public static record Action(Component title, BiConsumer<Minecraft, Screen> runnable) {
       public static final Action GO_TO_ACCOUNT = new Action(Component.translatable("chat_restriction.disabled_by_profile.action"), (minecraft, screen) -> ConfirmLinkScreen.confirmLinkNow(screen, CommonLinks.ACCOUNT_SETTINGS, true));
-      public static final Action GO_TO_CHAT_SETTINGS = new Action(Component.translatable("chat_restriction.chat_disabled_by_options.action"), (minecraft, screen) -> minecraft.setScreen(new ChatOptionsScreen(screen, minecraft.options)));
+      public static final Action GO_TO_CHAT_SETTINGS = new Action(Component.translatable("chat_restriction.chat_disabled_by_options.action"), (minecraft, screen) -> minecraft.gui.setScreen(new ChatOptionsScreen(screen, minecraft.options)));
 
       public Action {
          super();

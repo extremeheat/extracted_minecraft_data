@@ -55,13 +55,11 @@ import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.MoveToBlockGoal;
 import net.minecraft.world.entity.ai.goal.PanicGoal;
 import net.minecraft.world.entity.ai.goal.TemptGoal;
-import net.minecraft.world.entity.ai.goal.TemptedByLivingBlockGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.wolf.Wolf;
-import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -127,13 +125,12 @@ public class Rabbit extends Animal {
       this.goalSelector.addGoal(1, new RabbitPanicGoal(this, 2.2));
       this.goalSelector.addGoal(2, new BreedGoal(this, 0.8));
       this.goalSelector.addGoal(3, new TemptGoal(this, 1.0, (i) -> i.is(ItemTags.RABBIT_FOOD), false));
-      this.goalSelector.addGoal(4, new TemptedByLivingBlockGoal(this, 1.0, BlockTags.RABBIT_FOOD, false));
-      this.goalSelector.addGoal(5, new RabbitAvoidEntityGoal(this, Player.class, 8.0F, 2.2, 2.2));
-      this.goalSelector.addGoal(5, new RabbitAvoidEntityGoal(this, Wolf.class, 10.0F, 2.2, 2.2));
-      this.goalSelector.addGoal(5, new RabbitAvoidEntityGoal(this, Monster.class, 4.0F, 2.2, 2.2));
-      this.goalSelector.addGoal(6, new RaidGardenGoal(this));
-      this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 0.6));
-      this.goalSelector.addGoal(12, new LookAtPlayerGoal(this, Player.class, 10.0F));
+      this.goalSelector.addGoal(4, new RabbitAvoidEntityGoal(this, Player.class, 8.0F, 2.2, 2.2));
+      this.goalSelector.addGoal(4, new RabbitAvoidEntityGoal(this, Wolf.class, 10.0F, 2.2, 2.2));
+      this.goalSelector.addGoal(4, new RabbitAvoidEntityGoal(this, Monster.class, 4.0F, 2.2, 2.2));
+      this.goalSelector.addGoal(5, new RaidGardenGoal(this));
+      this.goalSelector.addGoal(6, new WaterAvoidingRandomStrollGoal(this, 0.6));
+      this.goalSelector.addGoal(11, new LookAtPlayerGoal(this, Player.class, 10.0F));
    }
 
    protected EntityDimensions getDefaultDimensions(final Pose pose) {
@@ -224,7 +221,7 @@ public class Rabbit extends Animal {
          }
 
          if (this.getVariant() == Rabbit.Variant.EVIL && this.jumpDelayTicks == 0) {
-            Entity target = this.getTarget();
+            LivingEntity target = this.getTarget();
             if (target != null && this.distanceToSqr(target) < 16.0) {
                this.facePoint(target.getX(), target.getZ());
                this.moveControl.setWantedPosition(target.getX(), target.getY(), target.getZ(), this.moveControl.getSpeedModifier());
@@ -371,7 +368,6 @@ public class Rabbit extends Animal {
          this.goalSelector.addGoal(4, new MeleeAttackGoal(this, 1.4, true));
          this.targetSelector.addGoal(1, (new HurtByTargetGoal(this, new Class[0])).setAlertOthers());
          this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, Player.class, true));
-         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, LivingBlock.class, true));
          this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, Wolf.class, true));
          this.getAttribute(Attributes.ATTACK_DAMAGE).addOrUpdateTransientModifier(new AttributeModifier(EVIL_ATTACK_POWER_MODIFIER, 5.0, AttributeModifier.Operation.ADD_VALUE));
          if (!this.hasCustomName()) {
@@ -575,27 +571,25 @@ public class Rabbit extends Animal {
       }
    }
 
-   private static class RabbitMoveControl extends MoveControl {
-      private final Rabbit rabbit;
+   private static class RabbitMoveControl<T extends Rabbit> extends MoveControl<T> {
       private double nextJumpSpeed;
 
-      public RabbitMoveControl(final Rabbit rabbit) {
+      public RabbitMoveControl(final T rabbit) {
          super(rabbit);
-         this.rabbit = rabbit;
       }
 
       public void tick() {
-         if (this.rabbit.onGround() && !this.rabbit.jumping && !((RabbitJumpControl)this.rabbit.jumpControl).wantJump()) {
-            this.rabbit.setSpeedModifier(0.0);
+         if (((Rabbit)this.mob).onGround() && !(this.mob).jumping && !((RabbitJumpControl)(this.mob).jumpControl).wantJump()) {
+            ((Rabbit)this.mob).setSpeedModifier(0.0);
          } else if (this.hasWanted() || this.operation == MoveControl.Operation.JUMPING) {
-            this.rabbit.setSpeedModifier(this.nextJumpSpeed);
+            ((Rabbit)this.mob).setSpeedModifier(this.nextJumpSpeed);
          }
 
          super.tick();
       }
 
       public void setWantedPosition(final double x, final double y, final double z, double speedModifier) {
-         if (this.rabbit.isInWater()) {
+         if (((Rabbit)this.mob).isInWater()) {
             speedModifier = 1.5;
          }
 

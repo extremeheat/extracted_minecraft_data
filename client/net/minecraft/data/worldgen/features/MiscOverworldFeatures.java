@@ -4,8 +4,11 @@ import java.util.List;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderSet;
 import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.data.worldgen.placement.PlacementUtils;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -15,11 +18,15 @@ import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.LakeFeature;
 import net.minecraft.world.level.levelgen.feature.configurations.BlockBlobConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.BlockStateConfiguration;
+import net.minecraft.world.level.levelgen.feature.configurations.CompositeFeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.DiskConfiguration;
+import net.minecraft.world.level.levelgen.feature.configurations.SimpleBlockConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.SpikeConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.SpringConfiguration;
+import net.minecraft.world.level.levelgen.feature.configurations.TemplateFeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 import net.minecraft.world.level.levelgen.feature.stateproviders.RuleBasedStateProvider;
+import net.minecraft.world.level.levelgen.placement.EnvironmentScanPlacement;
 import net.minecraft.world.level.material.Fluids;
 
 public class MiscOverworldFeatures {
@@ -30,6 +37,8 @@ public class MiscOverworldFeatures {
    public static final ResourceKey<ConfiguredFeature<?, ?>> ICEBERG_BLUE = FeatureUtils.createKey("iceberg_blue");
    public static final ResourceKey<ConfiguredFeature<?, ?>> BLUE_ICE = FeatureUtils.createKey("blue_ice");
    public static final ResourceKey<ConfiguredFeature<?, ?>> LAKE_LAVA = FeatureUtils.createKey("lake_lava");
+   public static final ResourceKey<ConfiguredFeature<?, ?>> SULFUR_POOL = FeatureUtils.createKey("sulfur_pool");
+   public static final ResourceKey<ConfiguredFeature<?, ?>> SULFUR_SPRING = FeatureUtils.createKey("sulfur_spring");
    public static final ResourceKey<ConfiguredFeature<?, ?>> DISK_CLAY = FeatureUtils.createKey("disk_clay");
    public static final ResourceKey<ConfiguredFeature<?, ?>> DISK_GRAVEL = FeatureUtils.createKey("disk_gravel");
    public static final ResourceKey<ConfiguredFeature<?, ?>> DISK_SAND = FeatureUtils.createKey("disk_sand");
@@ -54,6 +63,8 @@ public class MiscOverworldFeatures {
       FeatureUtils.register(context, ICEBERG_BLUE, Feature.ICEBERG, new BlockStateConfiguration(Blocks.BLUE_ICE.defaultBlockState()));
       FeatureUtils.register(context, BLUE_ICE, Feature.BLUE_ICE);
       FeatureUtils.register(context, LAKE_LAVA, Feature.LAKE, new LakeFeature.Configuration(BlockStateProvider.simple(Blocks.LAVA.defaultBlockState()), BlockStateProvider.simple(Blocks.STONE.defaultBlockState())));
+      FeatureUtils.register(context, SULFUR_POOL, Feature.SEQUENCE, new CompositeFeatureConfiguration(HolderSet.direct(PlacementUtils.inlinePlaced(Feature.LAKE, new LakeFeature.Configuration(BlockStateProvider.simple(Blocks.WATER.defaultBlockState()), BlockStateProvider.simple(Blocks.SULFUR.defaultBlockState()))), PlacementUtils.inlinePlaced(Feature.SIMPLE_BLOCK, new SimpleBlockConfiguration(BlockStateProvider.simple(Blocks.POTENT_SULFUR)), EnvironmentScanPlacement.scanningFor(Direction.DOWN, BlockPredicate.solid(), 4)))));
+      FeatureUtils.register(context, SULFUR_SPRING, Feature.TEMPLATE, new TemplateFeatureConfiguration(WeightedList.builder().add(TemplateFeatureConfiguration.TemplateEntry.of(Identifier.withDefaultNamespace("spring/sulfur_spring_small_1")), 5000).add(TemplateFeatureConfiguration.TemplateEntry.of(Identifier.withDefaultNamespace("spring/sulfur_spring_small_2")), 5000).add(TemplateFeatureConfiguration.TemplateEntry.of(Identifier.withDefaultNamespace("spring/sulfur_spring_small_3")), 5000).add(TemplateFeatureConfiguration.TemplateEntry.of(Identifier.withDefaultNamespace("spring/sulfur_spring_small_4")), 5000).add(TemplateFeatureConfiguration.TemplateEntry.of(Identifier.withDefaultNamespace("spring/sulfur_spring_medium_1")), 3000).add(TemplateFeatureConfiguration.TemplateEntry.of(Identifier.withDefaultNamespace("spring/sulfur_spring_medium_2")), 3000).add(TemplateFeatureConfiguration.TemplateEntry.of(Identifier.withDefaultNamespace("spring/sulfur_spring_medium_3")), 3000).add(TemplateFeatureConfiguration.TemplateEntry.of(Identifier.withDefaultNamespace("spring/sulfur_spring_large_1")), 1000).add(TemplateFeatureConfiguration.TemplateEntry.of(Identifier.withDefaultNamespace("spring/sulfur_spring_large_2")), 1000).add(TemplateFeatureConfiguration.TemplateEntry.of(Identifier.withDefaultNamespace("spring/sulfur_spring_extra_large_1")), 500).build()));
       FeatureUtils.register(context, DISK_CLAY, Feature.DISK, new DiskConfiguration(BlockStateProvider.simple(Blocks.CLAY), BlockPredicate.matchesBlocks(List.of(Blocks.DIRT, Blocks.CLAY)), UniformInt.of(2, 3), 1));
       FeatureUtils.register(context, DISK_GRAVEL, Feature.DISK, new DiskConfiguration(BlockStateProvider.simple(Blocks.GRAVEL), BlockPredicate.matchesBlocks(List.of(Blocks.DIRT, Blocks.GRASS_BLOCK)), UniformInt.of(2, 5), 2));
       FeatureUtils.register(context, DISK_SAND, Feature.DISK, new DiskConfiguration(new RuleBasedStateProvider(BlockStateProvider.simple(Blocks.SAND), List.of(new RuleBasedStateProvider.Rule(BlockPredicate.matchesBlocks(Direction.DOWN.getUnitVec3i(), Blocks.AIR), BlockStateProvider.simple(Blocks.SANDSTONE)))), BlockPredicate.matchesBlocks(List.of(Blocks.DIRT, Blocks.GRASS_BLOCK)), UniformInt.of(2, 6), 2));

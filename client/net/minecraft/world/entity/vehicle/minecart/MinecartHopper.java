@@ -4,7 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.livingblock.LivingBlock;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.HopperMenu;
@@ -97,7 +97,7 @@ public class MinecartHopper extends AbstractMinecartContainer implements Hopper 
       if (HopperBlockEntity.suckInItems(this.level(), this)) {
          return true;
       } else {
-         for(LivingBlock entity : this.level().getEntitiesOfClass(LivingBlock.class, this.getBoundingBox().inflate(0.25, 0.0, 0.25), EntitySelector.ENTITY_STILL_ALIVE)) {
+         for(ItemEntity entity : this.level().getEntitiesOfClass(ItemEntity.class, this.getBoundingBox().inflate(0.25, 0.0, 0.25), EntitySelector.ENTITY_STILL_ALIVE)) {
             if (HopperBlockEntity.addItem(this, entity)) {
                return true;
             }

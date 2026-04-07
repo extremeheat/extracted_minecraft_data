@@ -31,7 +31,6 @@ import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableWitchTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestHealableRaiderTargetGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
-import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownSplashPotion;
@@ -52,7 +51,6 @@ public class Witch extends Raider implements RangedAttackMob {
    private int usingTime;
    private NearestHealableRaiderTargetGoal<Raider> healRaidersGoal;
    private NearestAttackableWitchTargetGoal<Player> attackPlayersGoal;
-   private NearestAttackableWitchTargetGoal<LivingBlock> attackLivingBlocksGoal;
 
    public Witch(final EntityType<? extends Witch> type, final Level level) {
       super(type, level);
@@ -62,7 +60,6 @@ public class Witch extends Raider implements RangedAttackMob {
       super.registerGoals();
       this.healRaidersGoal = new NearestHealableRaiderTargetGoal<Raider>(this, Raider.class, true, (target, level) -> this.hasActiveRaid() && !target.is(EntityType.WITCH));
       this.attackPlayersGoal = new NearestAttackableWitchTargetGoal<Player>(this, Player.class, 10, true, false, (TargetingConditions.Selector)null);
-      this.attackLivingBlocksGoal = new NearestAttackableWitchTargetGoal<LivingBlock>(this, LivingBlock.class, 10, true, false, (TargetingConditions.Selector)null);
       this.goalSelector.addGoal(1, new FloatGoal(this));
       this.goalSelector.addGoal(2, new RangedAttackGoal(this, 1.0, 60, 10.0F));
       this.goalSelector.addGoal(2, new WaterAvoidingRandomStrollGoal(this, 1.0));
@@ -71,7 +68,6 @@ public class Witch extends Raider implements RangedAttackMob {
       this.targetSelector.addGoal(1, new HurtByTargetGoal(this, new Class[]{Raider.class}));
       this.targetSelector.addGoal(2, this.healRaidersGoal);
       this.targetSelector.addGoal(3, this.attackPlayersGoal);
-      this.targetSelector.addGoal(4, this.attackLivingBlocksGoal);
    }
 
    protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
@@ -133,7 +129,7 @@ public class Witch extends Raider implements RangedAttackMob {
                potion = Potions.FIRE_RESISTANCE;
             } else if (this.random.nextFloat() < 0.05F && this.getHealth() < this.getMaxHealth()) {
                potion = Potions.HEALING;
-            } else if (this.random.nextFloat() < 0.5F && this.getTarget() != null && !this.hasEffect(MobEffects.SPEED) && this.getTarget().distanceToSqr((Entity)this) > 121.0) {
+            } else if (this.random.nextFloat() < 0.5F && this.getTarget() != null && !this.hasEffect(MobEffects.SPEED) && this.getTarget().distanceToSqr(this) > 121.0) {
                potion = Potions.SWIFTNESS;
             }
 
@@ -187,7 +183,7 @@ public class Witch extends Raider implements RangedAttackMob {
       return damage;
    }
 
-   public void performRangedAttack(final Entity target, final float power) {
+   public void performRangedAttack(final LivingEntity target, final float power) {
       if (!this.isDrinkingPotion()) {
          Vec3 targetMovement = target.getDeltaMovement();
          double xd = target.getX() + targetMovement.x - this.getX();
@@ -196,28 +192,24 @@ public class Witch extends Raider implements RangedAttackMob {
          double dist = Math.sqrt(xd * xd + zd * zd);
          Holder<Potion> potion = Potions.HARMING;
          if (target instanceof Raider) {
-            Raider raider = (Raider)target;
-            if (raider.getHealth() <= 4.0F) {
+            if (target.getHealth() <= 4.0F) {
                potion = Potions.HEALING;
             } else {
                potion = Potions.REGENERATION;
             }
 
-            this.setTarget((Entity)null);
-         } else if (target instanceof LivingEntity) {
-            LivingEntity livingEntity = (LivingEntity)target;
-            if (dist >= 8.0 && !livingEntity.hasEffect(MobEffects.SLOWNESS)) {
-               potion = Potions.SLOWNESS;
-            } else if (livingEntity.getHealth() >= 8.0F && !livingEntity.hasEffect(MobEffects.POISON)) {
-               potion = Potions.POISON;
-            } else if (dist <= 3.0 && !livingEntity.hasEffect(MobEffects.WEAKNESS) && this.random.nextFloat() < 0.25F) {
-               potion = Potions.WEAKNESS;
-            }
+            this.setTarget((LivingEntity)null);
+         } else if (dist >= 8.0 && !target.hasEffect(MobEffects.SLOWNESS)) {
+            potion = Potions.SLOWNESS;
+         } else if (target.getHealth() >= 8.0F && !target.hasEffect(MobEffects.POISON)) {
+            potion = Potions.POISON;
+         } else if (dist <= 3.0 && !target.hasEffect(MobEffects.WEAKNESS) && this.random.nextFloat() < 0.25F) {
+            potion = Potions.WEAKNESS;
          }
 
-         Level itemStack = this.level();
-         if (itemStack instanceof ServerLevel) {
-            ServerLevel serverLevel = (ServerLevel)itemStack;
+         Level var14 = this.level();
+         if (var14 instanceof ServerLevel) {
+            ServerLevel serverLevel = (ServerLevel)var14;
             ItemStack itemStack = PotionContents.createItemStack(Items.SPLASH_POTION, potion);
             Projectile.spawnProjectileUsingShoot(ThrownSplashPotion::new, serverLevel, itemStack, this, xd, yd + dist * 0.2, zd, dist <= 2.0 ? 0.45F : 0.75F, 8.0F);
          }

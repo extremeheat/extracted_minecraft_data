@@ -47,14 +47,13 @@ import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.OcelotAttackGoal;
 import net.minecraft.world.entity.ai.goal.SitWhenOrderedToGoal;
 import net.minecraft.world.entity.ai.goal.TemptGoal;
-import net.minecraft.world.entity.ai.goal.TemptedByLivingBlockGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.NonTameRandomTargetGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.rabbit.Rabbit;
 import net.minecraft.world.entity.animal.turtle.Turtle;
-import net.minecraft.world.entity.livingblock.LivingBlock;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.variant.SpawnContext;
 import net.minecraft.world.entity.variant.VariantUtils;
@@ -103,15 +102,14 @@ public class Cat extends TamableAnimal {
       this.goalSelector.addGoal(2, new SitWhenOrderedToGoal(this));
       this.goalSelector.addGoal(3, new CatRelaxOnOwnerGoal(this));
       this.goalSelector.addGoal(4, this.temptGoal);
-      this.goalSelector.addGoal(5, new TemptedByLivingBlockGoal(this, 1.0, BlockTags.CAT_FOOD, false));
-      this.goalSelector.addGoal(6, new CatLieOnBedGoal(this, 1.1, 8));
-      this.goalSelector.addGoal(7, new FollowOwnerGoal(this, 1.0, 10.0F, 5.0F));
-      this.goalSelector.addGoal(8, new CatSitOnBlockGoal(this, 0.8));
-      this.goalSelector.addGoal(9, new LeapAtTargetGoal(this, 0.3F));
-      this.goalSelector.addGoal(10, new OcelotAttackGoal(this));
-      this.goalSelector.addGoal(11, new BreedGoal(this, 0.8));
-      this.goalSelector.addGoal(12, new WaterAvoidingRandomStrollGoal(this, 0.8, 1.0000001E-5F));
-      this.goalSelector.addGoal(13, new LookAtPlayerGoal(this, Player.class, 10.0F));
+      this.goalSelector.addGoal(5, new CatLieOnBedGoal(this, 1.1, 8));
+      this.goalSelector.addGoal(6, new FollowOwnerGoal(this, 1.0, 10.0F, 5.0F));
+      this.goalSelector.addGoal(7, new CatSitOnBlockGoal(this, 0.8));
+      this.goalSelector.addGoal(8, new LeapAtTargetGoal(this, 0.3F));
+      this.goalSelector.addGoal(9, new OcelotAttackGoal(this));
+      this.goalSelector.addGoal(10, new BreedGoal(this, 0.8));
+      this.goalSelector.addGoal(11, new WaterAvoidingRandomStrollGoal(this, 0.8, 1.0000001E-5F));
+      this.goalSelector.addGoal(12, new LookAtPlayerGoal(this, Player.class, 10.0F));
       this.targetSelector.addGoal(1, new NonTameRandomTargetGoal(this, Rabbit.class, false, (TargetingConditions.Selector)null));
       this.targetSelector.addGoal(1, new NonTameRandomTargetGoal(this, Turtle.class, false, Turtle.BABY_ON_LAND_SELECTOR));
    }
@@ -608,7 +606,7 @@ public class Cat extends TamableAnimal {
          catPos.set(this.cat.isLeashed() ? this.cat.getLeashHolder().blockPosition() : this.cat.blockPosition());
          this.cat.randomTeleport((double)(catPos.getX() + random.nextInt(11) - 5), (double)(catPos.getY() + random.nextInt(5) - 2), (double)(catPos.getZ() + random.nextInt(11) - 5), false);
          catPos.set(this.cat.blockPosition());
-         this.cat.dropFromGiftLootTable(getServerLevel(this.cat), BuiltInLootTables.CAT_MORNING_GIFT, (level, itemStack) -> LivingBlock.createStack(level, BlockPos.containing((double)catPos.getX() - (double)Mth.sin((double)(this.cat.yBodyRot * 0.017453292F)), (double)catPos.getY(), (double)catPos.getZ() + (double)Mth.cos((double)(this.cat.yBodyRot * 0.017453292F))), this.cat, itemStack));
+         this.cat.dropFromGiftLootTable(getServerLevel(this.cat), BuiltInLootTables.CAT_MORNING_GIFT, (level, itemStack) -> level.addFreshEntity(new ItemEntity(level, (double)catPos.getX() - (double)Mth.sin((double)(this.cat.yBodyRot * 0.017453292F)), (double)catPos.getY(), (double)catPos.getZ() + (double)Mth.cos((double)(this.cat.yBodyRot * 0.017453292F)), itemStack)));
       }
 
       public void tick() {

@@ -45,10 +45,9 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.sensing.SensorType;
-import net.minecraft.world.entity.livingblock.LivingBlock;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.npc.InventoryCarrier;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ActionItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
@@ -251,9 +250,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    protected InteractionResult mobInteract(final Player player, final InteractionHand hand) {
       ItemStack interactionItem = player.getItemInHand(hand);
       ItemStack itemInHand = this.getItemInHand(InteractionHand.MAIN_HAND);
-      if (interactionItem.getItem() instanceof ActionItem) {
-         return InteractionResult.PASS;
-      } else if (this.isDancing() && interactionItem.is(ItemTags.DUPLICATES_ALLAYS) && this.canDuplicate()) {
+      if (this.isDancing() && interactionItem.is(ItemTags.DUPLICATES_ALLAYS) && this.canDuplicate()) {
          this.duplicateAllay();
          this.level().broadcastEntityEvent(this, (byte)18);
          this.level().playSound(player, (Entity)this, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.NEUTRAL, 2.0F, 1.0F);
@@ -319,7 +316,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
       return !Objects.equals(potionInHand, potionInPickupItem);
    }
 
-   protected void pickUpItem(final ServerLevel level, final LivingBlock entity) {
+   protected void pickUpItem(final ServerLevel level, final ItemEntity entity) {
       InventoryCarrier.pickUpItem(level, this, this, entity);
    }
 

@@ -6,7 +6,10 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.stats.Stats;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlastFurnaceBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -33,6 +36,15 @@ public class BlastFurnaceBlock extends AbstractFurnaceBlock {
 
    public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(final Level level, final BlockState blockState, final BlockEntityType<T> type) {
       return createFurnaceTicker(level, type, BlockEntityType.BLAST_FURNACE);
+   }
+
+   protected void openContainer(final Level level, final BlockPos pos, final Player player) {
+      BlockEntity blockEntity = level.getBlockEntity(pos);
+      if (blockEntity instanceof BlastFurnaceBlockEntity) {
+         player.openMenu((MenuProvider)blockEntity);
+         player.awardStat(Stats.INTERACT_WITH_BLAST_FURNACE);
+      }
+
    }
 
    public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {

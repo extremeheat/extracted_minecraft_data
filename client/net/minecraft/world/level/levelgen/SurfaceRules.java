@@ -8,6 +8,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -19,6 +20,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -125,6 +127,10 @@ public class SurfaceRules {
 
    public static RuleSource bandlands() {
       return SurfaceRules.Bandlands.INSTANCE;
+   }
+
+   public static RuleSource noiseGradient(final ResourceKey<NormalNoise.NoiseParameters> noise, final List<Optional<BlockState>> gradient) {
+      return new NoiseGradientRuleSource(noise, gradient);
    }
 
    private static <A> MapCodec<? extends A> register(final Registry<MapCodec<? extends A>> registry, final String name, final KeyDispatchDataCodec<? extends A> codec) {
@@ -401,6 +407,19 @@ public class SurfaceRules {
       }
    }
 
+   private static record NoiseGradientRule(NormalNoise noise, List<@Nullable BlockState> gradient) implements SurfaceRule {
+      private NoiseGradientRule {
+         super();
+      }
+
+      public @Nullable BlockState tryApply(final int blockX, final int blockY, final int blockZ) {
+         double noiseValue = this.noise.getValue((double)blockX, (double)blockY, (double)blockZ);
+         double normalizedNoiseValue = (noiseValue + 1.0) / 2.0;
+         int index = Mth.floor(normalizedNoiseValue * (double)this.gradient.size());
+         return (BlockState)this.gradient.get(Mth.clamp(index, 0, this.gradient.size() - 1));
+      }
+   }
+
    public interface ConditionSource extends Function<Context, Condition> {
       Codec<ConditionSource> CODEC = BuiltInRegistries.MATERIAL_CONDITION.byNameCodec().dispatch((source) -> source.codec().codec(), Function.identity());
 
@@ -426,6 +445,7 @@ public class SurfaceRules {
 
       static MapCodec<? extends RuleSource> bootstrap(final Registry<MapCodec<? extends RuleSource>> registry) {
          SurfaceRules.register(registry, "bandlands", SurfaceRules.Bandlands.CODEC);
+         SurfaceRules.register(registry, "noise_gradient", SurfaceRules.NoiseGradientRuleSource.CODEC);
          SurfaceRules.register(registry, "block", SurfaceRules.BlockRuleSource.CODEC);
          SurfaceRules.register(registry, "sequence", SurfaceRules.SequenceRuleSource.CODEC);
          return SurfaceRules.<RuleSource>register(registry, "condition", SurfaceRules.TestRuleSource.CODEC);
@@ -845,6 +865,31 @@ public class SurfaceRules {
       // $FF: synthetic method
       private static Bandlands[] $values() {
          return new Bandlands[]{INSTANCE};
+      }
+   }
+
+   private static record NoiseGradientRuleSource(ResourceKey<NormalNoise.NoiseParameters> noise, List<Optional<BlockState>> gradient) implements RuleSource {
+      private static final Codec<Optional<BlockState>> OPTIONAL_STATE_CODEC;
+      public static final MapCodec<NoiseGradientRuleSource> MAP_CODEC;
+      private static final KeyDispatchDataCodec<NoiseGradientRuleSource> CODEC;
+
+      private NoiseGradientRuleSource {
+         super();
+      }
+
+      public KeyDispatchDataCodec<? extends RuleSource> codec() {
+         return CODEC;
+      }
+
+      public SurfaceRule apply(final Context context) {
+         NormalNoise noise = context.randomState.getOrCreateNoise(this.noise);
+         return new NoiseGradientRule(noise, this.gradient.stream().map((s) -> (BlockState)s.orElse((Object)null)).toList());
+      }
+
+      static {
+         OPTIONAL_STATE_CODEC = BlockState.CODEC.optionalFieldOf("state").codec();
+         MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ResourceKey.codec(Registries.NOISE).fieldOf("noise").forGetter(NoiseGradientRuleSource::noise), ExtraCodecs.nonEmptyList(OPTIONAL_STATE_CODEC.listOf()).fieldOf("gradient").forGetter(NoiseGradientRuleSource::gradient)).apply(i, NoiseGradientRuleSource::new));
+         CODEC = KeyDispatchDataCodec.<NoiseGradientRuleSource>of(MAP_CODEC);
       }
    }
 

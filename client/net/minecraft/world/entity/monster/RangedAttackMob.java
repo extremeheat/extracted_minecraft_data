@@ -1,7 +1,7 @@
 package net.minecraft.world.entity.monster;
 
-import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 
 public interface RangedAttackMob {
-   void performRangedAttack(Entity target, float power);
+   void performRangedAttack(LivingEntity target, float power);
 }

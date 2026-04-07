@@ -2,32 +2,27 @@ package net.minecraft.client.gui.screens.inventory;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.SpriteIconButton;
 import net.minecraft.client.gui.navigation.ScreenPosition;
-import net.minecraft.client.gui.screens.advancements.AdvancementsScreen;
 import net.minecraft.client.gui.screens.recipebook.CraftingRecipeBookComponent;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import org.jspecify.annotations.Nullable;
 
 public class InventoryScreen extends AbstractRecipeBookScreen<InventoryMenu> {
    private float xMouse;
    private float yMouse;
    private boolean buttonClicked;
    private final EffectsInInventory effects;
-   private @Nullable SpriteIconButton advancements;
 
    public InventoryScreen(final Player player) {
       super(player.inventoryMenu, new CraftingRecipeBookComponent(player.inventoryMenu), player.getInventory(), Component.translatable("container.crafting"));
@@ -35,29 +30,24 @@ public class InventoryScreen extends AbstractRecipeBookScreen<InventoryMenu> {
       this.effects = new EffectsInInventory(this);
    }
 
-   private void openAdvancementsScreen(final Button button) {
-      this.minecraft.setScreen(new AdvancementsScreen(this.minecraft.player.connection.getAdvancements(), this));
-   }
-
    public void containerTick() {
       super.containerTick();
       if (this.minecraft.player.hasInfiniteMaterials()) {
-         this.minecraft.setScreen(new CreativeModeInventoryScreen(this.minecraft.player, this.minecraft.player.connection.enabledFeatures(), (Boolean)this.minecraft.options.operatorItemsTab().get()));
+         this.minecraft.gui.setScreen(new CreativeModeInventoryScreen(this.minecraft.player, this.minecraft.player.connection.enabledFeatures(), (Boolean)this.minecraft.options.operatorItemsTab().get()));
       }
 
    }
 
    protected void init() {
       if (this.minecraft.player.hasInfiniteMaterials()) {
-         this.minecraft.setScreen(new CreativeModeInventoryScreen(this.minecraft.player, this.minecraft.player.connection.enabledFeatures(), (Boolean)this.minecraft.options.operatorItemsTab().get()));
+         this.minecraft.gui.setScreen(new CreativeModeInventoryScreen(this.minecraft.player, this.minecraft.player.connection.enabledFeatures(), (Boolean)this.minecraft.options.operatorItemsTab().get()));
       } else {
          super.init();
-         this.advancements = (SpriteIconButton)this.addRenderableWidget(SpriteIconButton.builder(Component.translatable("gui.advancements"), this::openAdvancementsScreen, true).sprite((Identifier)Identifier.withDefaultNamespace("icon/info"), 24, 24).size(24, 24).build());
       }
    }
 
    protected ScreenPosition getRecipeBookButtonPosition() {
-      return new ScreenPosition(this.leftPos + 77, this.topPos + 7);
+      return new ScreenPosition(this.leftPos + 104, this.height / 2 - 22);
    }
 
    protected void onRecipeBookButtonClick() {
@@ -73,11 +63,6 @@ public class InventoryScreen extends AbstractRecipeBookScreen<InventoryMenu> {
       super.extractRenderState(graphics, mouseX, mouseY, a);
       this.xMouse = (float)mouseX;
       this.yMouse = (float)mouseY;
-      if (this.advancements != null) {
-         this.advancements.setPosition(this.leftPos, this.topPos - 68);
-         this.advancements.extractRenderState(graphics, mouseX, mouseY, a);
-      }
-
    }
 
    public boolean showsActiveEffects() {
@@ -86,6 +71,14 @@ public class InventoryScreen extends AbstractRecipeBookScreen<InventoryMenu> {
 
    protected boolean isBiggerResultSlot() {
       return false;
+   }
+
+   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractBackground(graphics, mouseX, mouseY, a);
+      int xo = this.leftPos;
+      int yo = this.topPos;
+      graphics.blit(RenderPipelines.GUI_TEXTURED, INVENTORY_LOCATION, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+      extractEntityInInventoryFollowsMouse(graphics, xo + 26, yo + 8, xo + 75, yo + 78, 30, 0.0625F, this.xMouse, this.yMouse, this.minecraft.player);
    }
 
    public static void extractEntityInInventoryFollowsMouse(final GuiGraphicsExtractor graphics, final int x0, final int y0, final int x1, final int y1, final int size, final float offsetY, final float mouseX, final float mouseY, final LivingEntity entity) {

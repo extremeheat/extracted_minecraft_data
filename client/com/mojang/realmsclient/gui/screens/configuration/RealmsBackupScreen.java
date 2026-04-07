@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.util.function.Supplier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -129,12 +130,12 @@ public class RealmsBackupScreen extends RealmsScreen {
    }
 
    public void onClose() {
-      this.minecraft.setScreen(this.lastScreen);
+      this.minecraft.gui.setScreen(this.lastScreen);
    }
 
    private void downloadClicked() {
-      this.minecraft.setScreen(RealmsPopups.infoPopupScreen(this, Component.translatable("mco.configure.world.restore.download.question.line1"), (popup) -> {
-         Minecraft var10000 = this.minecraft;
+      this.minecraft.gui.setScreen(RealmsPopups.infoPopupScreen(this, Component.translatable("mco.configure.world.restore.download.question.line1"), (var1) -> {
+         Gui var10000 = this.minecraft.gui;
          RealmsConfigureWorldScreen var10003 = this.lastScreen.getNewScreen();
          LongRunningTask[] var10004 = new LongRunningTask[1];
          long var10009 = this.serverData.id;
@@ -176,7 +177,7 @@ public class RealmsBackupScreen extends RealmsScreen {
          this.backup = backup;
          this.populateChangeList(backup);
          if (!backup.changeList.isEmpty()) {
-            this.changesButton = Button.builder(RealmsBackupScreen.HAS_CHANGES_TOOLTIP, (button) -> RealmsBackupScreen.this.minecraft.setScreen(new RealmsBackupInfoScreen(RealmsBackupScreen.this, this.backup))).width(8 + RealmsBackupScreen.this.font.width((FormattedText)RealmsBackupScreen.HAS_CHANGES_TOOLTIP)).createNarration(this::narrationForBackupEntry).build();
+            this.changesButton = Button.builder(RealmsBackupScreen.HAS_CHANGES_TOOLTIP, (var2) -> RealmsBackupScreen.this.minecraft.gui.setScreen(new RealmsBackupInfoScreen(RealmsBackupScreen.this, this.backup))).width(8 + RealmsBackupScreen.this.font.width((FormattedText)RealmsBackupScreen.HAS_CHANGES_TOOLTIP)).createNarration(this::narrationForBackupEntry).build();
             this.children.add(this.changesButton);
          }
 
@@ -224,9 +225,9 @@ public class RealmsBackupScreen extends RealmsScreen {
          Component age = RealmsUtil.convertToAgePresentationFromInstant(this.backup.lastModified);
          String lastModifiedDate = RealmsBackupScreen.SHORT_DATE_FORMAT.format(this.backup.lastModifiedDate());
          Component popupMessage = Component.translatable("mco.configure.world.restore.question.line1", lastModifiedDate, age);
-         RealmsBackupScreen.this.minecraft.setScreen(RealmsPopups.warningPopupScreen(RealmsBackupScreen.this, popupMessage, (popup) -> {
+         RealmsBackupScreen.this.minecraft.gui.setScreen(RealmsPopups.warningPopupScreen(RealmsBackupScreen.this, popupMessage, (var1) -> {
             RealmsConfigureWorldScreen newScreen = RealmsBackupScreen.this.lastScreen.getNewScreen();
-            RealmsBackupScreen.this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(newScreen, new LongRunningTask[]{new RestoreTask(this.backup, RealmsBackupScreen.this.serverData.id, newScreen)}));
+            RealmsBackupScreen.this.minecraft.gui.setScreen(new RealmsLongRunningMcoTaskScreen(newScreen, new LongRunningTask[]{new RestoreTask(this.backup, RealmsBackupScreen.this.serverData.id, newScreen)}));
          }));
       }
 

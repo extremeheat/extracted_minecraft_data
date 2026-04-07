@@ -78,7 +78,7 @@ public class DebugOptionsScreen extends Screen {
    }
 
    public void extractBlurredBackground(final GuiGraphicsExtractor graphics) {
-      this.minecraft.gui.extractDebugOverlay(graphics);
+      this.minecraft.gui.hud.extractDebugOverlay(graphics);
       super.extractBlurredBackground(graphics);
    }
 

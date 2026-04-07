@@ -122,7 +122,7 @@ public class RealmsSlotOptionsScreen extends RealmsScreen {
    }
 
    public void onClose() {
-      this.minecraft.setScreen(this.parentScreen);
+      this.minecraft.gui.setScreen(this.parentScreen);
    }
 
    private static <T> T findByIndex(final List<T> values, final int index, final int defaultIndex) {

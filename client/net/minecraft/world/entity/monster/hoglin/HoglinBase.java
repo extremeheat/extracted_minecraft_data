@@ -3,7 +3,6 @@ package net.minecraft.world.entity.monster.hoglin;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -15,7 +14,7 @@ public interface HoglinBase {
 
    int getAttackAnimationRemainingTicks();
 
-   static boolean hurtAndThrowTarget(final ServerLevel level, final LivingEntity body, final Entity target) {
+   static boolean hurtAndThrowTarget(final ServerLevel level, final LivingEntity body, final LivingEntity target) {
       float attackDamage = (float)body.getAttributeValue(Attributes.ATTACK_DAMAGE);
       float actualDamage;
       if (!body.isBaby() && (int)attackDamage > 0) {
@@ -36,16 +35,9 @@ public interface HoglinBase {
       return wasHurt;
    }
 
-   static void throwTarget(final LivingEntity body, final Entity target) {
+   static void throwTarget(final LivingEntity body, final LivingEntity target) {
       double knockbackPower = body.getAttributeValue(Attributes.ATTACK_KNOCKBACK);
-      double var10000;
-      if (target instanceof LivingEntity livingEntity) {
-         var10000 = livingEntity.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
-      } else {
-         var10000 = 1.0;
-      }
-
-      double knockbackResistance = var10000;
+      double knockbackResistance = target.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
       double effectiveKnockbackPower = knockbackPower - knockbackResistance;
       if (!(effectiveKnockbackPower <= 0.0)) {
          double xd = target.getX() - body.getX();

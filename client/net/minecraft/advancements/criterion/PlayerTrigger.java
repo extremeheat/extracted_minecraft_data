@@ -54,28 +54,8 @@ public class PlayerTrigger extends SimpleCriterionTrigger<TriggerInstance> {
          return CriteriaTriggers.AVOID_VIBRATION.createCriterion(new TriggerInstance(Optional.empty()));
       }
 
-      public static Criterion<TriggerInstance> netherPortalCrafted() {
-         return CriteriaTriggers.NETHER_PORTAL_CRAFTED.createCriterion(new TriggerInstance(Optional.empty()));
-      }
-
-      public static Criterion<TriggerInstance> endPortalCrafted() {
-         return CriteriaTriggers.END_PORTAL_CRAFTED.createCriterion(new TriggerInstance(Optional.empty()));
-      }
-
       public static Criterion<TriggerInstance> tick() {
          return CriteriaTriggers.TICK.createCriterion(new TriggerInstance(Optional.empty()));
-      }
-
-      public static Criterion<TriggerInstance> houseBuilt() {
-         return CriteriaTriggers.HOUSE_BUILT.createCriterion(new TriggerInstance(Optional.empty()));
-      }
-
-      public static Criterion<TriggerInstance> trapBuilt() {
-         return CriteriaTriggers.TRAP_BUILT.createCriterion(new TriggerInstance(Optional.empty()));
-      }
-
-      public static Criterion<TriggerInstance> inputOutput() {
-         return CriteriaTriggers.EYE_FRAME_COMBINATION.createCriterion(new TriggerInstance(Optional.empty()));
       }
 
       public static Criterion<TriggerInstance> walkOnBlockWithEquipment(final HolderGetter<Block> blocks, final HolderGetter<Item> items, final Block stepOnBlock, final Item requiredEquipment) {

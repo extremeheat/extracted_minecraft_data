@@ -1836,6 +1836,35 @@ public class SoundEvents {
    public static final Holder.Reference<SoundEvent> SADDLE_UNEQUIP = registerForHolder("item.saddle.unequip");
    public static final Holder.Reference<SoundEvent> NAUTILUS_SADDLE_UNDERWATER_EQUIP = registerForHolder("item.nautilus_saddle_underwater_equip");
    public static final Holder.Reference<SoundEvent> NAUTILUS_SADDLE_EQUIP = registerForHolder("item.nautilus_saddle_equip");
+   public static final SoundEvent SULFUR_BREAK = register("block.sulfur.break");
+   public static final SoundEvent SULFUR_STEP = register("block.sulfur.step");
+   public static final SoundEvent SULFUR_PLACE = register("block.sulfur.place");
+   public static final SoundEvent SULFUR_HIT = register("block.sulfur.hit");
+   public static final SoundEvent SULFUR_FALL = register("block.sulfur.fall");
+   public static final SoundEvent POTENT_SULFUR_BREAK = register("block.potent_sulfur.break");
+   public static final SoundEvent POTENT_SULFUR_STEP = register("block.potent_sulfur.step");
+   public static final SoundEvent POTENT_SULFUR_PLACE = register("block.potent_sulfur.place");
+   public static final SoundEvent POTENT_SULFUR_HIT = register("block.potent_sulfur.hit");
+   public static final SoundEvent POTENT_SULFUR_FALL = register("block.potent_sulfur.fall");
+   public static final SoundEvent CINNABAR_BREAK = register("block.cinnabar.break");
+   public static final SoundEvent CINNABAR_STEP = register("block.cinnabar.step");
+   public static final SoundEvent CINNABAR_PLACE = register("block.cinnabar.place");
+   public static final SoundEvent CINNABAR_HIT = register("block.cinnabar.hit");
+   public static final SoundEvent CINNABAR_FALL = register("block.cinnabar.fall");
+   public static final SoundEvent SULFUR_CUBE_ABSORB = register("entity.sulfur_cube.absorb");
+   public static final SoundEvent SULFUR_CUBE_BOUNCE = register("entity.sulfur_cube.bounce");
+   public static final SoundEvent SULFUR_CUBE_DEATH = register("entity.sulfur_cube.death");
+   public static final SoundEvent SULFUR_CUBE_EJECT = register("entity.sulfur_cube.eject");
+   public static final SoundEvent SULFUR_CUBE_HIT = register("entity.sulfur_cube.hit");
+   public static final SoundEvent SULFUR_CUBE_HURT = register("entity.sulfur_cube.hurt");
+   public static final SoundEvent SULFUR_CUBE_JUMP = register("entity.sulfur_cube.jump");
+   public static final SoundEvent SULFUR_CUBE_PUSH = register("entity.sulfur_cube.push");
+   public static final SoundEvent SULFUR_CUBE_SQUISH = register("entity.sulfur_cube.squish");
+   public static final SoundEvent NOXIOUS_GAS = register("block.potent_sulfur.noxious_gas");
+   public static final SoundEvent SULFUR_CUBE_SMALL_DEATH = register("entity.small_sulfur_cube.death");
+   public static final SoundEvent SULFUR_CUBE_SMALL_HURT = register("entity.small_sulfur_cube.hurt");
+   public static final SoundEvent SULFUR_CUBE_SMALL_JUMP = register("entity.small_sulfur_cube.jump");
+   public static final SoundEvent SULFUR_CUBE_SMALL_SQUISH = register("entity.small_sulfur_cube.squish");
 
    public SoundEvents() {
       super();

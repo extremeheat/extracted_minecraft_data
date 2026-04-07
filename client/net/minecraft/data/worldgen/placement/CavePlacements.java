@@ -36,6 +36,7 @@ public class CavePlacements {
    public static final ResourceKey<PlacedFeature> UNDERWATER_MAGMA = PlacementUtils.createKey("underwater_magma");
    public static final ResourceKey<PlacedFeature> GLOW_LICHEN = PlacementUtils.createKey("glow_lichen");
    public static final ResourceKey<PlacedFeature> ROOTED_AZALEA_TREE = PlacementUtils.createKey("rooted_azalea_tree");
+   public static final ResourceKey<PlacedFeature> ROOTED_SULFUR_SPRING = PlacementUtils.createKey("rooted_sulfur_spring");
    public static final ResourceKey<PlacedFeature> CAVE_VINES = PlacementUtils.createKey("cave_vines");
    public static final ResourceKey<PlacedFeature> LUSH_CAVES_VEGETATION = PlacementUtils.createKey("lush_caves_vegetation");
    public static final ResourceKey<PlacedFeature> LUSH_CAVES_CLAY = PlacementUtils.createKey("lush_caves_clay");
@@ -62,6 +63,7 @@ public class CavePlacements {
       Holder<ConfiguredFeature<?, ?>> underwaterMagma = configuredFeatures.getOrThrow(CaveFeatures.UNDERWATER_MAGMA);
       Holder<ConfiguredFeature<?, ?>> glowLichen = configuredFeatures.getOrThrow(CaveFeatures.GLOW_LICHEN);
       Holder<ConfiguredFeature<?, ?>> rootedAzaleaTree = configuredFeatures.getOrThrow(CaveFeatures.ROOTED_AZALEA_TREE);
+      Holder<ConfiguredFeature<?, ?>> rootedSulfurSpring = configuredFeatures.getOrThrow(CaveFeatures.ROOTED_SULFUR_SPRING);
       Holder<ConfiguredFeature<?, ?>> caveVine = configuredFeatures.getOrThrow(CaveFeatures.CAVE_VINE);
       Holder<ConfiguredFeature<?, ?>> mossPatch = configuredFeatures.getOrThrow(CaveFeatures.MOSS_PATCH);
       Holder<ConfiguredFeature<?, ?>> lushCavesClay = configuredFeatures.getOrThrow(CaveFeatures.LUSH_CAVES_CLAY);
@@ -82,6 +84,7 @@ public class CavePlacements {
       PlacementUtils.register(context, UNDERWATER_MAGMA, underwaterMagma, CountPlacement.of(UniformInt.of(44, 52)), InSquarePlacement.spread(), PlacementUtils.RANGE_BOTTOM_TO_MAX_TERRAIN_HEIGHT, SurfaceRelativeThresholdFilter.of(Heightmap.Types.OCEAN_FLOOR_WG, -2147483648, -2), BiomeFilter.biome());
       PlacementUtils.register(context, GLOW_LICHEN, glowLichen, CountPlacement.of(UniformInt.of(104, 157)), PlacementUtils.RANGE_BOTTOM_TO_MAX_TERRAIN_HEIGHT, InSquarePlacement.spread(), SurfaceRelativeThresholdFilter.of(Heightmap.Types.OCEAN_FLOOR_WG, -2147483648, -13), BiomeFilter.biome());
       PlacementUtils.register(context, ROOTED_AZALEA_TREE, rootedAzaleaTree, CountPlacement.of(UniformInt.of(1, 2)), InSquarePlacement.spread(), PlacementUtils.RANGE_BOTTOM_TO_MAX_TERRAIN_HEIGHT, EnvironmentScanPlacement.scanningFor(Direction.UP, BlockPredicate.solid(), BlockPredicate.ONLY_IN_AIR_PREDICATE, 12), RandomOffsetPlacement.vertical(ConstantInt.of(-1)), BiomeFilter.biome());
+      PlacementUtils.register(context, ROOTED_SULFUR_SPRING, rootedSulfurSpring, CountPlacement.of(UniformInt.of(1, 2)), InSquarePlacement.spread(), PlacementUtils.RANGE_BOTTOM_TO_MAX_TERRAIN_HEIGHT, EnvironmentScanPlacement.scanningFor(Direction.UP, BlockPredicate.solid(), BlockPredicate.ONLY_IN_AIR_PREDICATE, 12), RandomOffsetPlacement.vertical(ConstantInt.of(-1)), BiomeFilter.biome());
       PlacementUtils.register(context, CAVE_VINES, caveVine, CountPlacement.of(188), InSquarePlacement.spread(), PlacementUtils.RANGE_BOTTOM_TO_MAX_TERRAIN_HEIGHT, EnvironmentScanPlacement.scanningFor(Direction.UP, BlockPredicate.hasSturdyFace(Direction.DOWN), BlockPredicate.ONLY_IN_AIR_PREDICATE, 12), RandomOffsetPlacement.vertical(ConstantInt.of(-1)), BiomeFilter.biome());
       PlacementUtils.register(context, LUSH_CAVES_VEGETATION, mossPatch, CountPlacement.of(125), InSquarePlacement.spread(), PlacementUtils.RANGE_BOTTOM_TO_MAX_TERRAIN_HEIGHT, EnvironmentScanPlacement.scanningFor(Direction.DOWN, BlockPredicate.solid(), BlockPredicate.ONLY_IN_AIR_PREDICATE, 12), RandomOffsetPlacement.vertical(ConstantInt.of(1)), BiomeFilter.biome());
       PlacementUtils.register(context, LUSH_CAVES_CLAY, lushCavesClay, CountPlacement.of(62), InSquarePlacement.spread(), PlacementUtils.RANGE_BOTTOM_TO_MAX_TERRAIN_HEIGHT, EnvironmentScanPlacement.scanningFor(Direction.DOWN, BlockPredicate.solid(), BlockPredicate.ONLY_IN_AIR_PREDICATE, 12), RandomOffsetPlacement.vertical(ConstantInt.of(1)), BiomeFilter.biome());

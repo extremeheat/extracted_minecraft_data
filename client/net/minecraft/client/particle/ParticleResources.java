@@ -61,6 +61,9 @@ public class ParticleResources implements PreparableReloadListener {
       this.register(ParticleTypes.BUBBLE, BubbleParticle.Provider::new);
       this.register(ParticleTypes.BUBBLE_COLUMN_UP, BubbleColumnUpParticle.Provider::new);
       this.register(ParticleTypes.BUBBLE_POP, BubblePopParticle.Provider::new);
+      this.register(ParticleTypes.SULFUR_BUBBLES, SulfurBubbleParticle.Provider::new);
+      this.register(ParticleTypes.NOXIOUS_GAS, NoxiousGasParticle.Provider::new);
+      this.register(ParticleTypes.NOXIOUS_GAS_CLOUD, new NoxiousGasCloudParticle.Provider());
       this.register(ParticleTypes.CAMPFIRE_COSY_SMOKE, CampfireSmokeParticle.CosyProvider::new);
       this.register(ParticleTypes.CAMPFIRE_SIGNAL_SMOKE, CampfireSmokeParticle.SignalProvider::new);
       this.register(ParticleTypes.CLOUD, PlayerCloudParticle.Provider::new);
@@ -172,6 +175,7 @@ public class ParticleResources implements PreparableReloadListener {
       this.register(ParticleTypes.OMINOUS_SPAWNING, FlyStraightTowardsParticle.OminousSpawnProvider::new);
       this.register(ParticleTypes.BLOCK_CRUMBLE, new TerrainParticle.CrumblingProvider());
       this.register(ParticleTypes.FIREFLY, FireflyParticle.FireflyProvider::new);
+      this.register(ParticleTypes.SULFUR_CUBE_GOO, BreakingItemParticle.SulfurCubeProvider::new);
    }
 
    private <T extends ParticleOptions> void register(final ParticleType<T> type, final ParticleProvider<T> provider) {

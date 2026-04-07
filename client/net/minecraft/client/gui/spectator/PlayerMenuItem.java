@@ -7,6 +7,7 @@ import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundTeleportToEntityPacket;
 import net.minecraft.util.ARGB;
+import net.minecraft.world.level.GameType;
 
 public class PlayerMenuItem implements SpectatorMenuItem {
    private final PlayerInfo playerInfo;
@@ -19,7 +20,10 @@ public class PlayerMenuItem implements SpectatorMenuItem {
    }
 
    public void selectItem(final SpectatorMenu menu) {
-      Minecraft.getInstance().getConnection().send(new ServerboundTeleportToEntityPacket(this.playerInfo.getProfile().id()));
+      if (this.isEnabled()) {
+         Minecraft.getInstance().getConnection().send(new ServerboundTeleportToEntityPacket(this.playerInfo.getProfile().id()));
+      }
+
    }
 
    public Component getName() {
@@ -31,6 +35,6 @@ public class PlayerMenuItem implements SpectatorMenuItem {
    }
 
    public boolean isEnabled() {
-      return true;
+      return this.playerInfo.getGameMode() != GameType.SPECTATOR;
    }
 }

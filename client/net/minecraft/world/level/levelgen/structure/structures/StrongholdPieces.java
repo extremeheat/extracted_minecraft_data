@@ -15,6 +15,7 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ButtonBlock;
 import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.EndPortalFrameBlock;
 import net.minecraft.world.level.block.FenceBlock;
 import net.minecraft.world.level.block.IronBarsBlock;
 import net.minecraft.world.level.block.LadderBlock;
@@ -1269,6 +1270,43 @@ public class StrongholdPieces {
             this.placeBlock(level, blockState, x, 3, 6, chunkBB);
          }
 
+         BlockState northFrame = (BlockState)Blocks.END_PORTAL_FRAME.defaultBlockState().setValue(EndPortalFrameBlock.FACING, Direction.NORTH);
+         BlockState southFrame = (BlockState)Blocks.END_PORTAL_FRAME.defaultBlockState().setValue(EndPortalFrameBlock.FACING, Direction.SOUTH);
+         BlockState eastFrame = (BlockState)Blocks.END_PORTAL_FRAME.defaultBlockState().setValue(EndPortalFrameBlock.FACING, Direction.EAST);
+         BlockState westFrame = (BlockState)Blocks.END_PORTAL_FRAME.defaultBlockState().setValue(EndPortalFrameBlock.FACING, Direction.WEST);
+         boolean allEyes = true;
+         boolean[] eyes = new boolean[12];
+
+         for(int i = 0; i < eyes.length; ++i) {
+            eyes[i] = random.nextFloat() > 0.9F;
+            allEyes &= eyes[i];
+         }
+
+         this.placeBlock(level, (BlockState)northFrame.setValue(EndPortalFrameBlock.HAS_EYE, eyes[0]), 4, 3, 8, chunkBB);
+         this.placeBlock(level, (BlockState)northFrame.setValue(EndPortalFrameBlock.HAS_EYE, eyes[1]), 5, 3, 8, chunkBB);
+         this.placeBlock(level, (BlockState)northFrame.setValue(EndPortalFrameBlock.HAS_EYE, eyes[2]), 6, 3, 8, chunkBB);
+         this.placeBlock(level, (BlockState)southFrame.setValue(EndPortalFrameBlock.HAS_EYE, eyes[3]), 4, 3, 12, chunkBB);
+         this.placeBlock(level, (BlockState)southFrame.setValue(EndPortalFrameBlock.HAS_EYE, eyes[4]), 5, 3, 12, chunkBB);
+         this.placeBlock(level, (BlockState)southFrame.setValue(EndPortalFrameBlock.HAS_EYE, eyes[5]), 6, 3, 12, chunkBB);
+         this.placeBlock(level, (BlockState)eastFrame.setValue(EndPortalFrameBlock.HAS_EYE, eyes[6]), 3, 3, 9, chunkBB);
+         this.placeBlock(level, (BlockState)eastFrame.setValue(EndPortalFrameBlock.HAS_EYE, eyes[7]), 3, 3, 10, chunkBB);
+         this.placeBlock(level, (BlockState)eastFrame.setValue(EndPortalFrameBlock.HAS_EYE, eyes[8]), 3, 3, 11, chunkBB);
+         this.placeBlock(level, (BlockState)westFrame.setValue(EndPortalFrameBlock.HAS_EYE, eyes[9]), 7, 3, 9, chunkBB);
+         this.placeBlock(level, (BlockState)westFrame.setValue(EndPortalFrameBlock.HAS_EYE, eyes[10]), 7, 3, 10, chunkBB);
+         this.placeBlock(level, (BlockState)westFrame.setValue(EndPortalFrameBlock.HAS_EYE, eyes[11]), 7, 3, 11, chunkBB);
+         if (allEyes) {
+            BlockState portal = Blocks.END_PORTAL.defaultBlockState();
+            this.placeBlock(level, portal, 4, 3, 9, chunkBB);
+            this.placeBlock(level, portal, 5, 3, 9, chunkBB);
+            this.placeBlock(level, portal, 6, 3, 9, chunkBB);
+            this.placeBlock(level, portal, 4, 3, 10, chunkBB);
+            this.placeBlock(level, portal, 5, 3, 10, chunkBB);
+            this.placeBlock(level, portal, 6, 3, 10, chunkBB);
+            this.placeBlock(level, portal, 4, 3, 11, chunkBB);
+            this.placeBlock(level, portal, 5, 3, 11, chunkBB);
+            this.placeBlock(level, portal, 6, 3, 11, chunkBB);
+         }
+
          if (!this.hasPlacedSpawner) {
             BlockPos pos = this.getWorldPos(5, 3, 6);
             if (chunkBB.isInside(pos)) {
@@ -1277,8 +1315,7 @@ public class StrongholdPieces {
                BlockEntity blockEntity = level.getBlockEntity(pos);
                if (blockEntity instanceof SpawnerBlockEntity) {
                   SpawnerBlockEntity spawner = (SpawnerBlockEntity)blockEntity;
-                  spawner.setEntityId(EntityType.LIVING_BLOCK, random);
-                  spawner.setMaxNearbyEntities(12);
+                  spawner.setEntityId(EntityType.SILVERFISH, random);
                }
             }
          }

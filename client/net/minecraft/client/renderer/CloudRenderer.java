@@ -28,9 +28,6 @@ import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -207,7 +204,7 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
                Std140Builder.intoBuffer(view.data()).putVec4(ARGB.vector4fFromARGB32(color)).putVec3(-xInCell, relativeBottomY, -zInCell).putVec3(12.0F, 4.0F, 12.0F);
             }
 
-            GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f());
+            GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrixCopy());
             RenderTarget mainRenderTarget = Minecraft.getInstance().getMainRenderTarget();
             RenderTarget cloudTarget = Minecraft.getInstance().levelRenderer.getCloudsTarget();
             RenderSystem.AutoStorageIndexBuffer indices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.QUADS);

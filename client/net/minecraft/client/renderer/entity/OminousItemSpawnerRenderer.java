@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.blockentity.VaultRenderer;
 import net.minecraft.client.renderer.entity.state.ItemClusterRenderState;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
@@ -44,7 +43,7 @@ public class OminousItemSpawnerRenderer extends EntityRenderer<OminousItemSpawne
 
          float currentSpin = Mth.wrapDegrees(state.ageInTicks * 40.0F);
          poseStack.mulPose((Quaternionfc)Axis.YP.rotationDegrees(currentSpin));
-         VaultRenderer.submitMultipleFromCount(poseStack, submitNodeCollector, 15728880, state, this.random);
+         ItemEntityRenderer.submitMultipleFromCount(poseStack, submitNodeCollector, 15728880, state, this.random);
          poseStack.popPose();
       }
    }

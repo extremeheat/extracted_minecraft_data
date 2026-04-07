@@ -10,9 +10,11 @@ import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -85,8 +87,12 @@ public class PiglinBrute extends AbstractPiglin {
 
    public boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {
       boolean wasHurt = super.hurtServer(level, source, damage);
-      if (wasHurt && source.getEntity() != null) {
-         PiglinBruteAi.wasHurtBy(level, this, source.getEntity());
+      if (wasHurt) {
+         Entity var6 = source.getEntity();
+         if (var6 instanceof LivingEntity) {
+            LivingEntity sourceEntity = (LivingEntity)var6;
+            PiglinBruteAi.wasHurtBy(level, this, sourceEntity);
+         }
       }
 
       return wasHurt;

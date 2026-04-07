@@ -277,7 +277,7 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
 
       if (this.endFlashState != null) {
          this.endFlashState.tick(this.getDefaultClockTime());
-         if (this.endFlashState.flashStartedThisTick() && !(this.minecraft.screen instanceof WinScreen)) {
+         if (this.endFlashState.flashStartedThisTick() && !(this.minecraft.gui.screen() instanceof WinScreen)) {
             this.minecraft.getSoundManager().playDelayed(new DirectionalSoundInstance(SoundEvents.WEATHER_END_FLASH, SoundSource.WEATHER, this.random, this.minecraft.gameRenderer.getMainCamera(), this.endFlashState.getXAngle(), this.endFlashState.getYAngle()), 30);
          }
       }
@@ -293,7 +293,9 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
    }
 
    private void tickTime() {
-      this.clientLevelData.setGameTime(this.clientLevelData.getGameTime() + 1L);
+      long gameTime = this.clientLevelData.getGameTime() + 1L;
+      this.clientLevelData.setGameTime(gameTime);
+      this.clockManager().tick(gameTime);
    }
 
    public void setTimeFromServer(final long gameTime) {

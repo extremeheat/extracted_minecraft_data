@@ -78,7 +78,7 @@ public class EnderMan extends Monster implements NeutralMob {
    private int targetChangeTime;
    private static final UniformInt PERSISTENT_ANGER_TIME;
    private long persistentAngerEndTime;
-   private @Nullable EntityReference<Entity> persistentAngerTarget;
+   private @Nullable EntityReference<LivingEntity> persistentAngerTarget;
 
    public EnderMan(final EntityType<? extends EnderMan> type, final Level level) {
       super(type, level);
@@ -108,7 +108,7 @@ public class EnderMan extends Monster implements NeutralMob {
       return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 40.0).add(Attributes.MOVEMENT_SPEED, 0.30000001192092896).add(Attributes.ATTACK_DAMAGE, 7.0).add(Attributes.FOLLOW_RANGE, 64.0).add(Attributes.STEP_HEIGHT, 1.0);
    }
 
-   public void setTarget(final @Nullable Entity target) {
+   public void setTarget(final @Nullable LivingEntity target) {
       super.setTarget(target);
       AttributeInstance movementSpeed = this.getAttribute(Attributes.MOVEMENT_SPEED);
       if (target == null) {
@@ -145,11 +145,11 @@ public class EnderMan extends Monster implements NeutralMob {
       return this.persistentAngerEndTime;
    }
 
-   public void setPersistentAngerTarget(final @Nullable EntityReference<Entity> persistentAngerTarget) {
+   public void setPersistentAngerTarget(final @Nullable EntityReference<LivingEntity> persistentAngerTarget) {
       this.persistentAngerTarget = persistentAngerTarget;
    }
 
-   public @Nullable EntityReference<Entity> getPersistentAngerTarget() {
+   public @Nullable EntityReference<LivingEntity> getPersistentAngerTarget() {
       return this.persistentAngerTarget;
    }
 
@@ -214,7 +214,7 @@ public class EnderMan extends Monster implements NeutralMob {
       if (level.isBrightOutside() && this.tickCount >= this.targetChangeTime + 600) {
          float br = this.getLightLevelDependentMagicValue();
          if (br > 0.5F && level.canSeeSky(this.blockPosition()) && this.random.nextFloat() * 30.0F < (br - 0.4F) * 2.0F) {
-            this.setTarget((Entity)null);
+            this.setTarget((LivingEntity)null);
             this.teleport();
          }
       }
@@ -427,7 +427,7 @@ public class EnderMan extends Monster implements NeutralMob {
 
       public void tick() {
          if (this.enderman.getTarget() == null) {
-            super.setTarget((Entity)null);
+            super.setTarget((LivingEntity)null);
          }
 
          if (this.pendingTarget != null) {
@@ -438,13 +438,13 @@ public class EnderMan extends Monster implements NeutralMob {
             }
          } else {
             if (this.target != null && !this.enderman.isPassenger()) {
-               if (this.enderman.isBeingStaredBy(this.target)) {
-                  if (((Player)this.target).distanceToSqr(this.enderman) < 16.0) {
+               if (this.enderman.isBeingStaredBy((Player)this.target)) {
+                  if (this.target.distanceToSqr(this.enderman) < 16.0) {
                      this.enderman.teleport();
                   }
 
                   this.teleportTime = 0;
-               } else if (((Player)this.target).distanceToSqr(this.enderman) > 256.0 && this.teleportTime++ >= this.adjustedTickDelay(30) && this.enderman.teleportTowards(this.target)) {
+               } else if (this.target.distanceToSqr(this.enderman) > 256.0 && this.teleportTime++ >= this.adjustedTickDelay(30) && this.enderman.teleportTowards(this.target)) {
                   this.teleportTime = 0;
                }
             }
@@ -457,7 +457,7 @@ public class EnderMan extends Monster implements NeutralMob {
 
    private static class EndermanFreezeWhenLookedAt extends Goal {
       private final EnderMan enderman;
-      private @Nullable Entity target;
+      private @Nullable LivingEntity target;
 
       public EndermanFreezeWhenLookedAt(final EnderMan enderman) {
          super();
@@ -467,9 +467,9 @@ public class EnderMan extends Monster implements NeutralMob {
 
       public boolean canUse() {
          this.target = this.enderman.getTarget();
-         Entity var2 = this.target;
+         LivingEntity var2 = this.target;
          if (var2 instanceof Player playerTarget) {
-            double dist = this.target.distanceToSqr((Entity)this.enderman);
+            double dist = this.target.distanceToSqr(this.enderman);
             return dist > 256.0 ? false : this.enderman.isBeingStaredBy(playerTarget);
          } else {
             return false;

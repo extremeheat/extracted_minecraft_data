@@ -33,7 +33,7 @@ import net.minecraft.world.phys.HitResult;
 import org.jspecify.annotations.Nullable;
 
 public class BucketItem extends Item implements DispensibleContainerItem {
-   private final Fluid content;
+   protected final Fluid content;
 
    public BucketItem(final Fluid content, final Item.Properties properties) {
       super(properties);
@@ -52,41 +52,39 @@ public class BucketItem extends Item implements DispensibleContainerItem {
          Direction direction = hitResult.getDirection();
          BlockPos directionOffsetPos = pos.relative(direction);
          if (level.mayInteract(player, pos) && player.mayUseItemAt(directionOffsetPos, direction, itemStack)) {
-            if (this.content == Fluids.EMPTY) {
-               BlockState blockState = level.getBlockState(pos);
-               Block var15 = blockState.getBlock();
-               if (var15 instanceof BucketPickup) {
-                  BucketPickup bucketPickupBlock = (BucketPickup)var15;
-                  ItemStack taken = bucketPickupBlock.pickupBlock(player, level, pos, blockState);
-                  if (!taken.isEmpty()) {
-                     player.awardStat(Stats.ITEM_USED.get(this));
-                     bucketPickupBlock.getPickupSound().ifPresent((soundEvent) -> player.playSound(soundEvent, 1.0F, 1.0F));
-                     level.gameEvent(player, GameEvent.FLUID_PICKUP, pos);
-                     ItemStack result = ItemUtils.createFilledResult(itemStack, player, taken);
-                     if (!level.isClientSide()) {
-                        CriteriaTriggers.FILLED_BUCKET.trigger((ServerPlayer)player, taken);
-                     }
+            BlockState clicked = level.getBlockState(pos);
+            BlockPos placePos = clicked.getBlock() instanceof LiquidBlockContainer && this.content == Fluids.WATER ? pos : directionOffsetPos;
+            if (this.emptyContents(player, level, placePos, hitResult)) {
+               this.checkExtraContent(player, level, itemStack, placePos);
+               if (player instanceof ServerPlayer && this.content != Fluids.EMPTY) {
+                  CriteriaTriggers.PLACED_BLOCK.trigger((ServerPlayer)player, placePos, itemStack);
+               }
 
-                     return InteractionResult.SUCCESS.heldItemTransformedTo(result);
+               player.awardStat(Stats.ITEM_USED.get(this));
+               ItemStack emptyResult = ItemUtils.createFilledResult(itemStack, player, getEmptySuccessItem(itemStack, player));
+               return InteractionResult.SUCCESS.heldItemTransformedTo(emptyResult);
+            } else {
+               if (this.content == Fluids.EMPTY) {
+                  BlockState blockState = level.getBlockState(pos);
+                  Block var13 = blockState.getBlock();
+                  if (var13 instanceof BucketPickup) {
+                     BucketPickup bucketPickupBlock = (BucketPickup)var13;
+                     ItemStack taken = bucketPickupBlock.pickupBlock(player, level, pos, blockState);
+                     if (!taken.isEmpty()) {
+                        player.awardStat(Stats.ITEM_USED.get(this));
+                        bucketPickupBlock.getPickupSound().ifPresent((soundEvent) -> player.playSound(soundEvent, 1.0F, 1.0F));
+                        level.gameEvent(player, GameEvent.FLUID_PICKUP, pos);
+                        ItemStack result = ItemUtils.createFilledResult(itemStack, player, taken);
+                        if (!level.isClientSide()) {
+                           CriteriaTriggers.FILLED_BUCKET.trigger((ServerPlayer)player, taken);
+                        }
+
+                        return InteractionResult.SUCCESS.heldItemTransformedTo(result);
+                     }
                   }
                }
 
                return InteractionResult.FAIL;
-            } else {
-               BlockState clicked = level.getBlockState(pos);
-               BlockPos placePos = clicked.getBlock() instanceof LiquidBlockContainer && this.content == Fluids.WATER ? pos : directionOffsetPos;
-               if (this.emptyContents(player, level, placePos, hitResult)) {
-                  this.checkExtraContent(player, level, itemStack, placePos);
-                  if (player instanceof ServerPlayer) {
-                     CriteriaTriggers.PLACED_BLOCK.trigger((ServerPlayer)player, placePos, itemStack);
-                  }
-
-                  player.awardStat(Stats.ITEM_USED.get(this));
-                  ItemStack emptyResult = ItemUtils.createFilledResult(itemStack, player, getEmptySuccessItem(itemStack, player));
-                  return InteractionResult.SUCCESS.heldItemTransformedTo(emptyResult);
-               } else {
-                  return InteractionResult.FAIL;
-               }
             }
          } else {
             return InteractionResult.FAIL;

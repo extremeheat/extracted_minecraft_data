@@ -4,6 +4,7 @@ import java.util.Map;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -23,8 +24,8 @@ public class SpearRetreat extends Behavior<PathfinderMob> {
       this.speedModifierWhenRepositioning = speedModifierWhenRepositioning;
    }
 
-   private @Nullable Entity getTarget(final PathfinderMob mob) {
-      return (Entity)mob.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse((Object)null);
+   private @Nullable LivingEntity getTarget(final PathfinderMob mob) {
+      return (LivingEntity)mob.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse((Object)null);
    }
 
    private boolean ableToAttack(final PathfinderMob mob) {
@@ -36,7 +37,7 @@ public class SpearRetreat extends Behavior<PathfinderMob> {
          if (body.getBrain().getMemory(MemoryModuleType.SPEAR_STATUS).orElse(SpearAttack.SpearStatus.APPROACH) != SpearAttack.SpearStatus.RETREAT) {
             return false;
          } else {
-            Entity target = this.getTarget(body);
+            LivingEntity target = this.getTarget(body);
             double targetDistSqr = body.distanceToSqr(target.getX(), target.getY(), target.getZ());
             int mountDistance = body.isPassenger() ? 2 : 0;
             double distance = Math.sqrt(targetDistSqr);
@@ -64,7 +65,7 @@ public class SpearRetreat extends Behavior<PathfinderMob> {
    }
 
    protected void tick(final ServerLevel level, final PathfinderMob mob, final long timestamp) {
-      Entity target = this.getTarget(mob);
+      LivingEntity target = this.getTarget(mob);
       Entity mount = mob.getRootVehicle();
       float var10000;
       if (mount instanceof Mob vehicleMob) {

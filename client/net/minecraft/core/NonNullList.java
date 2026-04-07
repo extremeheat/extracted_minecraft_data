@@ -31,7 +31,7 @@ public class NonNullList<E> extends AbstractList<E> {
       return new NonNullList<E>(Arrays.asList(values), defaultValue);
    }
 
-   public NonNullList(final List<E> list, final @Nullable E defaultValue) {
+   protected NonNullList(final List<E> list, final @Nullable E defaultValue) {
       super();
       this.list = list;
       this.defaultValue = defaultValue;

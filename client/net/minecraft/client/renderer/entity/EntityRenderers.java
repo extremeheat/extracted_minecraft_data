@@ -78,7 +78,6 @@ public class EntityRenderers {
       register(EntityType.BIRCH_CHEST_BOAT, (context) -> new BoatRenderer(context, ModelLayers.BIRCH_CHEST_BOAT));
       register(EntityType.BLAZE, BlazeRenderer::new);
       register(EntityType.BLOCK_DISPLAY, DisplayRenderer.BlockDisplayRenderer::new);
-      register(EntityType.LIVING_BLOCK, LivingBlockRenderer::new);
       register(EntityType.BOGGED, BoggedRenderer::new);
       register(EntityType.BREEZE, BreezeRenderer::new);
       register(EntityType.BREEZE_WIND_CHARGE, WindChargeRenderer::new);
@@ -94,7 +93,6 @@ public class EntityRenderers {
       register(EntityType.COMMAND_BLOCK_MINECART, (context) -> new MinecartRenderer(context, ModelLayers.COMMAND_BLOCK_MINECART));
       register(EntityType.COPPER_GOLEM, CopperGolemRenderer::new);
       register(EntityType.COW, CowRenderer::new);
-      register(EntityType.CRAFTING_GRID, CraftingGridRenderer::new);
       register(EntityType.CREAKING, CreakingRenderer::new);
       register(EntityType.CREEPER, CreeperRenderer::new);
       register(EntityType.DARK_OAK_BOAT, (context) -> new BoatRenderer(context, ModelLayers.DARK_OAK_BOAT));
@@ -132,11 +130,11 @@ public class EntityRenderers {
       register(EntityType.HOGLIN, HoglinRenderer::new);
       register(EntityType.HOPPER_MINECART, (context) -> new MinecartRenderer(context, ModelLayers.HOPPER_MINECART));
       register(EntityType.HORSE, HorseRenderer::new);
-      register(EntityType.HOVERING_ITEM, HoveringItemRenderer::new);
       register(EntityType.HUSK, HuskRenderer::new);
       register(EntityType.ILLUSIONER, IllusionerRenderer::new);
       register(EntityType.INTERACTION, NoopRenderer::new);
       register(EntityType.IRON_GOLEM, IronGolemRenderer::new);
+      register(EntityType.ITEM, ItemEntityRenderer::new);
       register(EntityType.ITEM_DISPLAY, DisplayRenderer.ItemDisplayRenderer::new);
       register(EntityType.ITEM_FRAME, ItemFrameRenderer::new);
       register(EntityType.JUNGLE_BOAT, (context) -> new BoatRenderer(context, ModelLayers.JUNGLE_BOAT));
@@ -144,7 +142,6 @@ public class EntityRenderers {
       register(EntityType.LEASH_KNOT, LeashKnotRenderer::new);
       register(EntityType.LIGHTNING_BOLT, LightningBoltRenderer::new);
       register(EntityType.LINGERING_POTION, ThrownItemRenderer::new);
-      register(EntityType.LIVING_BLOCK_COMMAND, LivingBlockCommandRenderer::new);
       register(EntityType.LLAMA, (context) -> new LlamaRenderer(context, ModelLayers.LLAMA, ModelLayers.LLAMA_BABY));
       register(EntityType.LLAMA_SPIT, LlamaSpitRenderer::new);
       register(EntityType.MAGMA_CUBE, MagmaCubeRenderer::new);
@@ -195,6 +192,7 @@ public class EntityRenderers {
       register(EntityType.SQUID, (context) -> new SquidRenderer(context, new SquidModel(context.bakeLayer(ModelLayers.SQUID)), new SquidModel(context.bakeLayer(ModelLayers.SQUID_BABY))));
       register(EntityType.STRAY, StrayRenderer::new);
       register(EntityType.STRIDER, StriderRenderer::new);
+      register(EntityType.SULFUR_CUBE, SulfurCubeRenderer::new);
       register(EntityType.TADPOLE, TadpoleRenderer::new);
       register(EntityType.TEXT_DISPLAY, DisplayRenderer.TextDisplayRenderer::new);
       register(EntityType.TNT, TntRenderer::new);

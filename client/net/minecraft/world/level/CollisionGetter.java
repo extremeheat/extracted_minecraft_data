@@ -53,20 +53,6 @@ public interface CollisionGetter extends BlockGetter {
       return this.noBlockCollision(entity, aabb, alwaysCollideWithFluids) && this.noEntityCollision(entity, aabb) && this.noBorderCollision(entity, aabb);
    }
 
-   default CollisionSource getCollisionSource(final @Nullable Entity entity, final AABB aabb) {
-      return this.getCollisionSource(entity, aabb, false);
-   }
-
-   default CollisionSource getCollisionSource(final @Nullable Entity entity, final AABB aabb, final boolean alwaysCollideWithFluids) {
-      if (!this.noBlockCollision(entity, aabb, alwaysCollideWithFluids)) {
-         return CollisionGetter.CollisionSource.BLOCK;
-      } else if (!this.noEntityCollision(entity, aabb)) {
-         return CollisionGetter.CollisionSource.ENTITY;
-      } else {
-         return !this.noBorderCollision(entity, aabb) ? CollisionGetter.CollisionSource.BORDER : CollisionGetter.CollisionSource.NONE;
-      }
-   }
-
    default boolean noBlockCollision(final @Nullable Entity entity, final AABB aabb) {
       return this.noBlockCollision(entity, aabb, false);
    }
@@ -175,21 +161,6 @@ public interface CollisionGetter extends BlockGetter {
          VoxelShape expandedCollisions = (VoxelShape)StreamSupport.stream(this.getBlockCollisions(source, searchArea).spliterator(), false).filter((shape) -> this.getWorldBorder() == null || this.getWorldBorder().isWithinBounds(shape.bounds())).flatMap((shape) -> shape.toAabbs().stream()).map((aabb) -> aabb.inflate(sizeX / 2.0, sizeY / 2.0, sizeZ / 2.0)).map(Shapes::create).reduce(Shapes.empty(), Shapes::or);
          VoxelShape freeSpots = Shapes.join(allowedCenters, expandedCollisions, BooleanOp.ONLY_FIRST);
          return freeSpots.closestPointTo(preferredCenter);
-      }
-   }
-
-   public static enum CollisionSource {
-      NONE,
-      BLOCK,
-      ENTITY,
-      BORDER;
-
-      private CollisionSource() {
-      }
-
-      // $FF: synthetic method
-      private static CollisionSource[] $values() {
-         return new CollisionSource[]{NONE, BLOCK, ENTITY, BORDER};
       }
    }
 }

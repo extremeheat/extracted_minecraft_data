@@ -51,7 +51,7 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
       helper.addChild(new StringWidget(this.title, this.font), 2, centered);
       MultiLineTextWidget messageLabel = (MultiLineTextWidget)helper.addChild((new MultiLineTextWidget(MESSAGE, this.font)).setCentered(true), 2, centered);
       messageLabel.setMaxWidth(310);
-      helper.addChild(Button.builder(DETAILS_BUTTON, (button) -> this.minecraft.setScreen(new DetailsScreen())).width(100).build(), 2, centered);
+      helper.addChild(Button.builder(DETAILS_BUTTON, (var1) -> this.minecraft.gui.setScreen(new DetailsScreen())).width(100).build(), 2, centered);
       helper.addChild(Button.builder(CommonComponents.GUI_PROCEED, (button) -> this.callback.accept(true)).build());
       helper.addChild(Button.builder(CommonComponents.GUI_BACK, (button) -> this.callback.accept(false)).build());
       this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
@@ -95,7 +95,7 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
       }
 
       public void onClose() {
-         this.minecraft.setScreen(ConfirmExperimentalFeaturesScreen.this);
+         this.minecraft.gui.setScreen(ConfirmExperimentalFeaturesScreen.this);
       }
 
       private class PackList extends ObjectSelectionList<PackListEntry> {

@@ -185,9 +185,9 @@ public class PresetFlatWorldScreen extends Screen {
       this.selectButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("createWorld.customize.presets.select"), (button) -> {
          FlatLevelGeneratorSettings generator = fromString(blocks, biomes, structureSets, placedFeatures, this.export.getValue(), this.settings);
          this.parent.setConfig(generator);
-         this.minecraft.setScreen(this.parent);
+         this.minecraft.gui.setScreen(this.parent);
       }).bounds(this.width / 2 - 155, this.height - 28, 150, 20).build());
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (button) -> this.minecraft.setScreen(this.parent)).bounds(this.width / 2 + 5, this.height - 28, 150, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (button) -> this.minecraft.gui.setScreen(this.parent)).bounds(this.width / 2 + 5, this.height - 28, 150, 20).build());
       this.updateButtonValidity(this.list.getSelected() != null);
    }
 
@@ -202,7 +202,7 @@ public class PresetFlatWorldScreen extends Screen {
    }
 
    public void onClose() {
-      this.minecraft.setScreen(this.parent);
+      this.minecraft.gui.setScreen(this.parent);
    }
 
    public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {

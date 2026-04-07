@@ -9,6 +9,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.phys.Vec3;
 
 public class BoatDispenseItemBehavior extends DefaultDispenseItemBehavior {
@@ -20,8 +21,8 @@ public class BoatDispenseItemBehavior extends DefaultDispenseItemBehavior {
       this.type = type;
    }
 
-   public ItemStack execute(final DispenseSource source, final ItemStack dispensed) {
-      Direction direction = source.direction();
+   public ItemStack execute(final BlockSource source, final ItemStack dispensed) {
+      Direction direction = (Direction)source.state().getValue(DispenserBlock.FACING);
       ServerLevel level = source.level();
       Vec3 center = source.center();
       double justOutsideDispenser = 0.5625 + (double)this.type.getWidth() / 2.0;
@@ -52,7 +53,7 @@ public class BoatDispenseItemBehavior extends DefaultDispenseItemBehavior {
       return dispensed;
    }
 
-   protected void playSound(final DispenseSource source) {
+   protected void playSound(final BlockSource source) {
       source.level().levelEvent(1000, source.pos(), 0);
    }
 }

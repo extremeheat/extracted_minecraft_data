@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -30,7 +29,7 @@ public class GolemSensor extends Sensor<LivingEntity> {
    }
 
    public static void checkForNearbyGolem(final LivingEntity body) {
-      Optional<List<Entity>> livingEntitiesMemory = body.getBrain().<List<Entity>>getMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES);
+      Optional<List<LivingEntity>> livingEntitiesMemory = body.getBrain().<List<LivingEntity>>getMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES);
       if (!livingEntitiesMemory.isEmpty()) {
          boolean golemPresent = ((List)livingEntitiesMemory.get()).stream().anyMatch((entity) -> entity.is(EntityType.IRON_GOLEM));
          if (golemPresent) {

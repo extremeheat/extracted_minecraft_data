@@ -46,11 +46,6 @@ public interface SlotDisplay {
       return true;
    }
 
-   default boolean matches(final ContextMap context, final ItemStack stack) {
-      List<ItemStack> possibilities = this.resolveForStacks(context);
-      return possibilities.isEmpty() && stack.isEmpty() ? true : possibilities.stream().anyMatch((i) -> ItemStack.isSameItem(i, stack));
-   }
-
    default List<ItemStack> resolveForStacks(final ContextMap context) {
       return this.resolve(context, SlotDisplay.ItemStackContentsFactory.INSTANCE).toList();
    }

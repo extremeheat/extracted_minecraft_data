@@ -12,7 +12,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
@@ -80,7 +79,7 @@ public class InteractWithDoor {
             })));
    }
 
-   public static void closeDoorsThatIHaveOpenedOrPassedThrough(final ServerLevel level, final LivingEntity body, final @Nullable Node movingFromNode, final @Nullable Node movingToNode, final Set<GlobalPos> doors, final Optional<List<Entity>> nearestEntities) {
+   public static void closeDoorsThatIHaveOpenedOrPassedThrough(final ServerLevel level, final LivingEntity body, final @Nullable Node movingFromNode, final @Nullable Node movingToNode, final Set<GlobalPos> doors, final Optional<List<LivingEntity>> nearestEntities) {
       Iterator<GlobalPos> iterator = doors.iterator();
 
       while(iterator.hasNext()) {
@@ -110,8 +109,8 @@ public class InteractWithDoor {
 
    }
 
-   private static boolean areOtherMobsComingThroughDoor(final LivingEntity body, final BlockPos doorPos, final Optional<List<Entity>> nearestEntities) {
-      return nearestEntities.isEmpty() ? false : ((List)nearestEntities.get()).stream().filter((otherMob) -> otherMob.getType() == body.getType()).filter((otherMob) -> doorPos.closerToCenterThan(otherMob.position(), 2.0)).filter((otherMob) -> otherMob instanceof LivingEntity).anyMatch((otherMob) -> isMobComingThroughDoor(((LivingEntity)otherMob).getBrain(), doorPos));
+   private static boolean areOtherMobsComingThroughDoor(final LivingEntity body, final BlockPos doorPos, final Optional<List<LivingEntity>> nearestEntities) {
+      return nearestEntities.isEmpty() ? false : ((List)nearestEntities.get()).stream().filter((otherMob) -> otherMob.getType() == body.getType()).filter((otherMob) -> doorPos.closerToCenterThan(otherMob.position(), 2.0)).anyMatch((otherMob) -> isMobComingThroughDoor(otherMob.getBrain(), doorPos));
    }
 
    private static boolean isMobComingThroughDoor(final Brain<?> otherBrain, final BlockPos doorPos) {

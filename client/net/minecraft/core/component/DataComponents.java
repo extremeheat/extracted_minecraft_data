@@ -79,6 +79,7 @@ import net.minecraft.world.item.component.OminousBottleAmplifier;
 import net.minecraft.world.item.component.PiercingWeapon;
 import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.item.component.SeededContainerLoot;
+import net.minecraft.world.item.component.SulfurCubeContent;
 import net.minecraft.world.item.component.SuspiciousStewEffects;
 import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.item.component.Tool;
@@ -127,7 +128,6 @@ public class DataComponents {
    public static final DataComponentType<Integer> REPAIR_COST = register("repair_cost", (b) -> b.persistent(ExtraCodecs.NON_NEGATIVE_INT).networkSynchronized(ByteBufCodecs.VAR_INT));
    public static final DataComponentType<Unit> CREATIVE_SLOT_LOCK = register("creative_slot_lock", (b) -> b.networkSynchronized(Unit.STREAM_CODEC));
    public static final DataComponentType<Boolean> ENCHANTMENT_GLINT_OVERRIDE = register("enchantment_glint_override", (b) -> b.persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL));
-   public static final DataComponentType<Boolean> FOLLOW = register("follow", (b) -> b.persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL));
    public static final DataComponentType<Unit> INTANGIBLE_PROJECTILE = register("intangible_projectile", (b) -> b.persistent(Unit.CODEC));
    public static final DataComponentType<FoodProperties> FOOD = register("food", (b) -> b.persistent(FoodProperties.DIRECT_CODEC).networkSynchronized(FoodProperties.DIRECT_STREAM_CODEC).cacheEncoding());
    public static final DataComponentType<Consumable> CONSUMABLE = register("consumable", (b) -> b.persistent(Consumable.CODEC).networkSynchronized(Consumable.STREAM_CODEC).cacheEncoding());
@@ -184,6 +184,7 @@ public class DataComponents {
    public static final DataComponentType<ItemContainerContents> CONTAINER = register("container", (b) -> b.persistent(ItemContainerContents.CODEC).networkSynchronized(ItemContainerContents.STREAM_CODEC).cacheEncoding());
    public static final DataComponentType<BlockItemStateProperties> BLOCK_STATE = register("block_state", (b) -> b.persistent(BlockItemStateProperties.CODEC).networkSynchronized(BlockItemStateProperties.STREAM_CODEC).cacheEncoding());
    public static final DataComponentType<Bees> BEES = register("bees", (b) -> b.persistent(Bees.CODEC).networkSynchronized(Bees.STREAM_CODEC).cacheEncoding());
+   public static final DataComponentType<SulfurCubeContent> SULFUR_CUBE_CONTENT = register("sulfur_cube_content", (b) -> b.persistent(SulfurCubeContent.CODEC).networkSynchronized(SulfurCubeContent.STREAM_CODEC).cacheEncoding());
    public static final DataComponentType<LockCode> LOCK = register("lock", (b) -> b.persistent(LockCode.CODEC));
    public static final DataComponentType<SeededContainerLoot> CONTAINER_LOOT = register("container_loot", (b) -> b.persistent(SeededContainerLoot.CODEC));
    public static final DataComponentType<Holder<SoundEvent>> BREAK_SOUND = register("break_sound", (b) -> b.persistent(SoundEvent.CODEC).networkSynchronized(SoundEvent.STREAM_CODEC).cacheEncoding());

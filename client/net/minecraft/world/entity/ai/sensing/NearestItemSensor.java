@@ -11,7 +11,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.livingblock.LivingBlock;
+import net.minecraft.world.entity.item.ItemEntity;
 
 public class NearestItemSensor extends Sensor<Mob> {
    private static final long XZ_RANGE = 32L;
@@ -28,12 +28,12 @@ public class NearestItemSensor extends Sensor<Mob> {
 
    protected void doTick(final ServerLevel level, final Mob body) {
       Brain<?> brain = body.getBrain();
-      List<LivingBlock> items = level.getEntitiesOfClass(LivingBlock.class, body.getBoundingBox().inflate(32.0, 16.0, 32.0), (item) -> true);
+      List<ItemEntity> items = level.getEntitiesOfClass(ItemEntity.class, body.getBoundingBox().inflate(32.0, 16.0, 32.0), (item) -> true);
       Objects.requireNonNull(body);
       items.sort(Comparator.comparingDouble(body::distanceToSqr));
-      Stream var10000 = items.stream().filter((itemEntity) -> body.wantsToPickUp(level, itemEntity.getItemStack())).filter((itemEntity) -> itemEntity.closerThan(body, 32.0));
+      Stream var10000 = items.stream().filter((itemEntity) -> body.wantsToPickUp(level, itemEntity.getItem())).filter((itemEntity) -> itemEntity.closerThan(body, 32.0));
       Objects.requireNonNull(body);
-      Optional<LivingBlock> nearestVisibleLovedItem = var10000.filter(body::hasLineOfSight).findFirst();
+      Optional<ItemEntity> nearestVisibleLovedItem = var10000.filter(body::hasLineOfSight).findFirst();
       brain.setMemory(MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM, nearestVisibleLovedItem);
    }
 }

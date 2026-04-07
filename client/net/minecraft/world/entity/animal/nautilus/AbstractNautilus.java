@@ -411,8 +411,9 @@ public abstract class AbstractNautilus extends TamableAnimal implements PlayerRi
    public boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {
       boolean wasHurt = super.hurtServer(level, source, damage);
       if (wasHurt) {
-         Entity sourceEntity = source.getEntity();
-         if (sourceEntity instanceof Entity) {
+         Entity var6 = source.getEntity();
+         if (var6 instanceof LivingEntity) {
+            LivingEntity sourceEntity = (LivingEntity)var6;
             NautilusAi.setAngerTarget(level, this, sourceEntity);
          }
       }

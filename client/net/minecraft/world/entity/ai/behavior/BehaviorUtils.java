@@ -19,7 +19,7 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.util.DefaultRandomPos;
-import net.minecraft.world.entity.livingblock.LivingBlock;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ProjectileWeaponItem;
@@ -55,7 +55,7 @@ public class BehaviorUtils {
       lookAtEntity(entity2, entity1);
    }
 
-   public static void lookAtEntity(final LivingEntity looker, final Entity targetEntity) {
+   public static void lookAtEntity(final LivingEntity looker, final LivingEntity targetEntity) {
       looker.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(targetEntity, true));
    }
 
@@ -85,10 +85,12 @@ public class BehaviorUtils {
 
    public static void throwItem(final LivingEntity thrower, final ItemStack item, final Vec3 targetPos, final Vec3 throwVelocity, final float handYDistanceFromEye) {
       double yHandPos = thrower.getEyeY() - (double)handYDistanceFromEye;
-      LivingBlock itemEntity = LivingBlock.createAt(thrower.level(), BlockPos.containing(thrower.getX(), yHandPos, thrower.getZ()), item);
+      ItemEntity itemEntity = new ItemEntity(thrower.level(), thrower.getX(), yHandPos, thrower.getZ(), item);
+      itemEntity.setThrower(thrower);
       Vec3 throwVector = targetPos.subtract(thrower.position());
       throwVector = throwVector.normalize().multiply(throwVelocity.x, throwVelocity.y, throwVelocity.z);
       itemEntity.setDeltaMovement(throwVector);
+      itemEntity.setDefaultPickUpDelay();
       thrower.level().addFreshEntity(itemEntity);
    }
 
@@ -99,7 +101,7 @@ public class BehaviorUtils {
       return (SectionPos)var10000.min(Comparator.comparingInt(level::sectionsToVillage)).orElse(center);
    }
 
-   public static boolean isWithinAttackRange(final Mob body, final Entity target, final int projectileAttackRangeMargin) {
+   public static boolean isWithinAttackRange(final Mob body, final LivingEntity target, final int projectileAttackRangeMargin) {
       Item var4 = body.getMainHandItem().getItem();
       if (var4 instanceof ProjectileWeaponItem weapon) {
          if (body.canUseNonMeleeWeapon(body.getMainHandItem())) {
@@ -111,35 +113,44 @@ public class BehaviorUtils {
       return body.isWithinMeleeAttackRange(target);
    }
 
-   public static boolean isOtherTargetMuchFurtherAwayThanCurrentAttackTarget(final LivingEntity body, final Entity otherTarget, final double howMuchFurtherAway) {
-      Optional<Entity> currentTarget = body.getBrain().<Entity>getMemory(MemoryModuleType.ATTACK_TARGET);
+   public static boolean isOtherTargetMuchFurtherAwayThanCurrentAttackTarget(final LivingEntity body, final LivingEntity otherTarget, final double howMuchFurtherAway) {
+      Optional<LivingEntity> currentTarget = body.getBrain().<LivingEntity>getMemory(MemoryModuleType.ATTACK_TARGET);
       if (currentTarget.isEmpty()) {
          return false;
       } else {
-         double distSqrToCurrentTarget = body.distanceToSqr(((Entity)currentTarget.get()).position());
+         double distSqrToCurrentTarget = body.distanceToSqr(((LivingEntity)currentTarget.get()).position());
          double distSqrToOtherTarget = body.distanceToSqr(otherTarget.position());
          return distSqrToOtherTarget > distSqrToCurrentTarget + howMuchFurtherAway * howMuchFurtherAway;
       }
    }
 
-   public static boolean canSee(final LivingEntity body, final Entity target) {
+   public static boolean canSee(final LivingEntity body, final LivingEntity target) {
       Brain<?> brain = body.getBrain();
       return !brain.hasMemoryValue(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES) ? false : ((NearestVisibleLivingEntities)brain.getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).get()).contains(target);
    }
 
-   public static Entity getNearestTarget(final LivingEntity body, final Optional<Entity> target1, final Entity target2) {
-      return target1.isEmpty() ? target2 : getTargetNearestMe(body, (Entity)target1.get(), target2);
+   public static LivingEntity getNearestTarget(final LivingEntity body, final Optional<LivingEntity> target1, final LivingEntity target2) {
+      return target1.isEmpty() ? target2 : getTargetNearestMe(body, (LivingEntity)target1.get(), target2);
    }
 
-   public static Entity getTargetNearestMe(final LivingEntity body, final Entity target1, final Entity target2) {
+   public static LivingEntity getTargetNearestMe(final LivingEntity body, final LivingEntity target1, final LivingEntity target2) {
       Vec3 pos1 = target1.position();
       Vec3 pos2 = target2.position();
       return body.distanceToSqr(pos1) < body.distanceToSqr(pos2) ? target1 : target2;
    }
 
-   public static Optional<Entity> getLivingEntityFromUUIDMemory(final LivingEntity body, final MemoryModuleType<UUID> memoryType) {
+   public static Optional<LivingEntity> getLivingEntityFromUUIDMemory(final LivingEntity body, final MemoryModuleType<UUID> memoryType) {
       Optional<UUID> uuidMemory = body.getBrain().<UUID>getMemory(memoryType);
-      return uuidMemory.map((uuid) -> body.level().getEntity(uuid));
+      return uuidMemory.map((uuid) -> body.level().getEntity(uuid)).map((entity) -> {
+         LivingEntity var10000;
+         if (entity instanceof LivingEntity livingEntity) {
+            var10000 = livingEntity;
+         } else {
+            var10000 = null;
+         }
+
+         return var10000;
+      });
    }
 
    public static @Nullable Vec3 getRandomSwimmablePos(final PathfinderMob body, final int maxHorizontalDistance, final int maxVerticalDistance) {

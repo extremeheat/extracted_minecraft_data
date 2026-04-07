@@ -3,7 +3,6 @@ package net.minecraft.world.entity.ai.behavior;
 import java.util.Optional;
 import java.util.function.Function;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
@@ -32,7 +31,7 @@ public class StopAttackingIfTargetInvalid {
 
    public static <E extends Mob> BehaviorControl<E> create(final StopAttackCondition stopAttackingWhen, final TargetErasedCallback<E> onTargetErased, final boolean canGrowTiredOfTryingToReachTarget) {
       return BehaviorBuilder.create((Function)((i) -> i.group(i.present(MemoryModuleType.ATTACK_TARGET), i.registered(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE)).apply(i, (attackTarget, cantReachSince) -> (level, body, timestamp) -> {
-               Entity target = (Entity)i.get(attackTarget);
+               LivingEntity target = (LivingEntity)i.get(attackTarget);
                if (body.canAttack(target) && (!canGrowTiredOfTryingToReachTarget || !isTiredOfTryingToReachTarget(body, i.tryGet(cantReachSince))) && target.isAlive() && target.level() == body.level() && !stopAttackingWhen.test(level, target)) {
                   return true;
                } else {
@@ -49,11 +48,11 @@ public class StopAttackingIfTargetInvalid {
 
    @FunctionalInterface
    public interface StopAttackCondition {
-      boolean test(ServerLevel level, Entity target);
+      boolean test(ServerLevel level, LivingEntity target);
    }
 
    @FunctionalInterface
    public interface TargetErasedCallback<E> {
-      void accept(ServerLevel level, E body, Entity target);
+      void accept(ServerLevel level, E body, LivingEntity target);
    }
 }

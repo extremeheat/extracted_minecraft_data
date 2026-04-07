@@ -46,7 +46,7 @@ public class RealmsGenericErrorScreen extends RealmsScreen {
    }
 
    public void onClose() {
-      this.minecraft.setScreen(this.nextScreen);
+      this.minecraft.gui.setScreen(this.nextScreen);
    }
 
    public Component getNarrationMessage() {

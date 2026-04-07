@@ -83,7 +83,6 @@ public class LevelEvent {
    public static final int PARTICLES_TRIAL_SPAWNER_DETECT_PLAYER_OMINOUS = 3019;
    public static final int PARTICLES_TRIAL_SPAWNER_BECOME_OMINOUS = 3020;
    public static final int PARTICLES_TRIAL_SPAWNER_SPAWN_ITEM = 3021;
-   public static final int PARTICLES_GLUE_LIVING_BLOCK = 4000;
 
    public LevelEvent() {
       super();

@@ -86,14 +86,14 @@ public class NoiseRouterData {
       context.register(BASE_3D_NOISE_OVERWORLD, BlendedNoise.createUnseeded(0.25, 0.125, 80.0, 160.0, 8.0));
       context.register(BASE_3D_NOISE_NETHER, BlendedNoise.createUnseeded(0.25, 0.375, 80.0, 60.0, 8.0));
       context.register(BASE_3D_NOISE_END, BlendedNoise.createUnseeded(0.25, 0.25, 80.0, 160.0, 4.0));
-      Holder<DensityFunction> continents = context.register(CONTINENTS, DensityFunctions.flatCache(DensityFunctions.shiftedNoise2d(shiftX, shiftZ, 0.25, noises.getOrThrow(Noises.CONTINENTALNESS))));
-      Holder<DensityFunction> erosion = context.register(EROSION, DensityFunctions.flatCache(DensityFunctions.shiftedNoise2d(shiftX, shiftZ, 0.25, noises.getOrThrow(Noises.EROSION))));
+      DensityFunction continents = registerAndWrap(context, CONTINENTS, DensityFunctions.flatCache(DensityFunctions.shiftedNoise2d(shiftX, shiftZ, 0.25, noises.getOrThrow(Noises.CONTINENTALNESS))));
+      DensityFunction erosion = registerAndWrap(context, EROSION, DensityFunctions.flatCache(DensityFunctions.shiftedNoise2d(shiftX, shiftZ, 0.25, noises.getOrThrow(Noises.EROSION))));
       DensityFunction ridge = registerAndWrap(context, RIDGES, DensityFunctions.flatCache(DensityFunctions.shiftedNoise2d(shiftX, shiftZ, 0.25, noises.getOrThrow(Noises.RIDGE))));
       context.register(RIDGES_FOLDED, peaksAndValleys(ridge));
       DensityFunction jaggedNoise = DensityFunctions.noise(noises.getOrThrow(Noises.JAGGED), 1500.0, 0.0);
       registerTerrainNoises(context, functions, jaggedNoise, continents, erosion, OFFSET, FACTOR, JAGGEDNESS, DEPTH, SLOPED_CHEESE, false);
-      Holder<DensityFunction> continentsLarge = context.register(CONTINENTS_LARGE, DensityFunctions.flatCache(DensityFunctions.shiftedNoise2d(shiftX, shiftZ, 0.25, noises.getOrThrow(Noises.CONTINENTALNESS_LARGE))));
-      Holder<DensityFunction> erosionLarge = context.register(EROSION_LARGE, DensityFunctions.flatCache(DensityFunctions.shiftedNoise2d(shiftX, shiftZ, 0.25, noises.getOrThrow(Noises.EROSION_LARGE))));
+      DensityFunction continentsLarge = registerAndWrap(context, CONTINENTS_LARGE, DensityFunctions.flatCache(DensityFunctions.shiftedNoise2d(shiftX, shiftZ, 0.25, noises.getOrThrow(Noises.CONTINENTALNESS_LARGE))));
+      DensityFunction erosionLarge = registerAndWrap(context, EROSION_LARGE, DensityFunctions.flatCache(DensityFunctions.shiftedNoise2d(shiftX, shiftZ, 0.25, noises.getOrThrow(Noises.EROSION_LARGE))));
       registerTerrainNoises(context, functions, jaggedNoise, continentsLarge, erosionLarge, OFFSET_LARGE, FACTOR_LARGE, JAGGEDNESS_LARGE, DEPTH_LARGE, SLOPED_CHEESE_LARGE, false);
       registerTerrainNoises(context, functions, jaggedNoise, continents, erosion, OFFSET_AMPLIFIED, FACTOR_AMPLIFIED, JAGGEDNESS_AMPLIFIED, DEPTH_AMPLIFIED, SLOPED_CHEESE_AMPLIFIED, true);
       context.register(SLOPED_CHEESE_END, DensityFunctions.add(DensityFunctions.endIslands(0L), getFunction(functions, BASE_3D_NOISE_END)));
@@ -105,11 +105,11 @@ public class NoiseRouterData {
       return context.register(PILLARS, pillars(noises));
    }
 
-   private static void registerTerrainNoises(final BootstrapContext<DensityFunction> context, final HolderGetter<DensityFunction> functions, final DensityFunction jaggedNoise, final Holder<DensityFunction> continentsFunction, final Holder<DensityFunction> erosionFunction, final ResourceKey<DensityFunction> offsetName, final ResourceKey<DensityFunction> factorName, final ResourceKey<DensityFunction> jaggednessName, final ResourceKey<DensityFunction> depthName, final ResourceKey<DensityFunction> slopedCheeseName, final boolean amplified) {
+   private static void registerTerrainNoises(final BootstrapContext<DensityFunction> context, final HolderGetter<DensityFunction> functions, final DensityFunction jaggedNoise, final DensityFunction continentsFunction, final DensityFunction erosionFunction, final ResourceKey<DensityFunction> offsetName, final ResourceKey<DensityFunction> factorName, final ResourceKey<DensityFunction> jaggednessName, final ResourceKey<DensityFunction> depthName, final ResourceKey<DensityFunction> slopedCheeseName, final boolean amplified) {
       DensityFunctions.Spline.Coordinate continents = new DensityFunctions.Spline.Coordinate(continentsFunction);
       DensityFunctions.Spline.Coordinate erosion = new DensityFunctions.Spline.Coordinate(erosionFunction);
-      DensityFunctions.Spline.Coordinate weirdness = new DensityFunctions.Spline.Coordinate(functions.getOrThrow(RIDGES));
-      DensityFunctions.Spline.Coordinate ridges = new DensityFunctions.Spline.Coordinate(functions.getOrThrow(RIDGES_FOLDED));
+      DensityFunctions.Spline.Coordinate weirdness = new DensityFunctions.Spline.Coordinate(getFunction(functions, RIDGES));
+      DensityFunctions.Spline.Coordinate ridges = new DensityFunctions.Spline.Coordinate(getFunction(functions, RIDGES_FOLDED));
       DensityFunction offset = registerAndWrap(context, offsetName, splineWithBlending(DensityFunctions.add(DensityFunctions.constant(-0.5037500262260437), DensityFunctions.spline(TerrainProvider.overworldOffset(continents, erosion, ridges, amplified))), DensityFunctions.blendOffset()));
       DensityFunction factor = registerAndWrap(context, factorName, splineWithBlending(DensityFunctions.spline(TerrainProvider.overworldFactor(continents, erosion, weirdness, ridges, amplified)), BLENDING_FACTOR));
       DensityFunction depth = registerAndWrap(context, depthName, offsetToDepth(offset));
@@ -136,7 +136,7 @@ public class NoiseRouterData {
    }
 
    public static float peaksAndValleys(final float weirdness) {
-      return -(Math.abs(Math.abs(weirdness) - 0.6666667F) - 0.33333334F) * 3.0F;
+      return TerrainProvider.peaksAndValleys(weirdness);
    }
 
    private static DensityFunction spaghettiRoughnessFunction(final HolderGetter<NormalNoise.NoiseParameters> noises) {

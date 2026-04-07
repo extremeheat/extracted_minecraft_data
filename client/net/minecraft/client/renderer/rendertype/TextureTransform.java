@@ -20,7 +20,7 @@ public class TextureTransform {
       this.supplier = matrix;
    }
 
-   public Matrix4f getMatrix() {
+   public Matrix4f createMatrix() {
       return (Matrix4f)this.supplier.get();
    }
 

@@ -23,6 +23,7 @@ import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.Pose;
@@ -44,7 +45,6 @@ import net.minecraft.world.entity.animal.axolotl.Axolotl;
 import net.minecraft.world.entity.animal.golem.IronGolem;
 import net.minecraft.world.entity.animal.nautilus.ZombieNautilus;
 import net.minecraft.world.entity.animal.turtle.Turtle;
-import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.world.entity.npc.villager.AbstractVillager;
 import net.minecraft.world.entity.player.Player;
@@ -93,7 +93,6 @@ public class Drowned extends Zombie implements RangedAttackMob {
       this.goalSelector.addGoal(7, new RandomStrollGoal(this, 1.0));
       this.targetSelector.addGoal(1, (new HurtByTargetGoal(this, new Class[]{Drowned.class})).setAlertOthers(ZombifiedPiglin.class));
       this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, Player.class, 10, true, false, (target, level) -> this.okTarget(target)));
-      this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, LivingBlock.class, 10, true, false, (target, level) -> this.okTarget(target)));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, AbstractVillager.class, false));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, IronGolem.class, true));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, Axolotl.class, true, false));
@@ -198,7 +197,7 @@ public class Drowned extends Zombie implements RangedAttackMob {
       return level.isUnobstructed(this);
    }
 
-   public boolean okTarget(final @Nullable Entity target) {
+   public boolean okTarget(final @Nullable LivingEntity target) {
       if (target != null) {
          return !this.level().isBrightOutside() || target.isInWater();
       } else {
@@ -210,11 +209,11 @@ public class Drowned extends Zombie implements RangedAttackMob {
       return !this.isSwimming();
    }
 
-   private boolean wantsToSwim() {
+   public boolean wantsToSwim() {
       if (this.searchingForLand) {
          return true;
       } else {
-         Entity target = this.getTarget();
+         LivingEntity target = this.getTarget();
          return target != null && target.isInWater();
       }
    }
@@ -256,7 +255,7 @@ public class Drowned extends Zombie implements RangedAttackMob {
       return false;
    }
 
-   public void performRangedAttack(final Entity target, final float power) {
+   public void performRangedAttack(final LivingEntity target, final float power) {
       ItemStack mainHandItem = this.getMainHandItem();
       ItemStack tridentItemStack = mainHandItem.is(Items.TRIDENT) ? mainHandItem : new ItemStack(Items.TRIDENT);
       ThrownTrident trident = new ThrownTrident(this.level(), this, tridentItemStack);
@@ -278,6 +277,10 @@ public class Drowned extends Zombie implements RangedAttackMob {
 
    public void setSearchingForLand(final boolean searchingForLand) {
       this.searchingForLand = searchingForLand;
+   }
+
+   public boolean isSearchingForLand() {
+      return this.searchingForLand;
    }
 
    public void rideTick() {
@@ -471,41 +474,38 @@ public class Drowned extends Zombie implements RangedAttackMob {
       }
    }
 
-   private static class DrownedMoveControl extends MoveControl {
-      private final Drowned drowned;
-
-      public DrownedMoveControl(final Drowned drowned) {
+   private static class DrownedMoveControl<T extends Drowned> extends MoveControl<T> {
+      public DrownedMoveControl(final T drowned) {
          super(drowned);
-         this.drowned = drowned;
       }
 
       public void tick() {
-         Entity target = this.drowned.getTarget();
-         if (this.drowned.wantsToSwim() && this.drowned.isInWater()) {
-            if (target != null && target.getY() > this.drowned.getY() || this.drowned.searchingForLand) {
-               this.drowned.setDeltaMovement(this.drowned.getDeltaMovement().add(0.0, 0.002, 0.0));
+         LivingEntity target = ((Drowned)this.mob).getTarget();
+         if (((Drowned)this.mob).wantsToSwim() && ((Drowned)this.mob).isInWater()) {
+            if (target != null && target.getY() > ((Drowned)this.mob).getY() || ((Drowned)this.mob).isSearchingForLand()) {
+               ((Drowned)this.mob).setDeltaMovement(((Drowned)this.mob).getDeltaMovement().add(0.0, 0.002, 0.0));
             }
 
-            if (this.operation != MoveControl.Operation.MOVE_TO || this.drowned.getNavigation().isDone()) {
-               this.drowned.setSpeed(0.0F);
+            if (this.operation != MoveControl.Operation.MOVE_TO || ((Drowned)this.mob).getNavigation().isDone()) {
+               ((Drowned)this.mob).setSpeed(0.0F);
                return;
             }
 
-            double xd = this.wantedX - this.drowned.getX();
-            double yd = this.wantedY - this.drowned.getY();
-            double zd = this.wantedZ - this.drowned.getZ();
+            double xd = this.wantedX - ((Drowned)this.mob).getX();
+            double yd = this.wantedY - ((Drowned)this.mob).getY();
+            double zd = this.wantedZ - ((Drowned)this.mob).getZ();
             double dd = Math.sqrt(xd * xd + yd * yd + zd * zd);
             yd /= dd;
             float yRotD = (float)(Mth.atan2(zd, xd) * 57.2957763671875) - 90.0F;
-            this.drowned.setYRot(this.rotlerp(this.drowned.getYRot(), yRotD, 90.0F));
-            this.drowned.yBodyRot = this.drowned.getYRot();
-            float targetSpeed = (float)(this.speedModifier * this.drowned.getAttributeValue(Attributes.MOVEMENT_SPEED));
-            float newSpeed = Mth.lerp(0.125F, this.drowned.getSpeed(), targetSpeed);
-            this.drowned.setSpeed(newSpeed);
-            this.drowned.setDeltaMovement(this.drowned.getDeltaMovement().add((double)newSpeed * xd * 0.005, (double)newSpeed * yd * 0.1, (double)newSpeed * zd * 0.005));
+            ((Drowned)this.mob).setYRot(this.rotlerp(((Drowned)this.mob).getYRot(), yRotD, 90.0F));
+            (this.mob).yBodyRot = ((Drowned)this.mob).getYRot();
+            float targetSpeed = (float)(this.speedModifier * ((Drowned)this.mob).getAttributeValue(Attributes.MOVEMENT_SPEED));
+            float newSpeed = Mth.lerp(0.125F, ((Drowned)this.mob).getSpeed(), targetSpeed);
+            ((Drowned)this.mob).setSpeed(newSpeed);
+            ((Drowned)this.mob).setDeltaMovement(((Drowned)this.mob).getDeltaMovement().add((double)newSpeed * xd * 0.005, (double)newSpeed * yd * 0.1, (double)newSpeed * zd * 0.005));
          } else {
-            if (!this.drowned.onGround()) {
-               this.drowned.setDeltaMovement(this.drowned.getDeltaMovement().add(0.0, -0.008, 0.0));
+            if (!((Drowned)this.mob).onGround()) {
+               ((Drowned)this.mob).setDeltaMovement(((Drowned)this.mob).getDeltaMovement().add(0.0, -0.008, 0.0));
             }
 
             super.tick();

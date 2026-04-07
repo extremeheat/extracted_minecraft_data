@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
+import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Vec3i;
@@ -21,11 +22,13 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.VisibleForDebug;
 import net.minecraft.util.debug.DebugBrainDump;
 import net.minecraft.util.debug.DebugGoalInfo;
 import net.minecraft.util.debug.DebugPathInfo;
@@ -56,7 +59,7 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.sensing.Sensing;
-import net.minecraft.world.entity.livingblock.LivingBlock;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
@@ -72,6 +75,7 @@ import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.item.enchantment.providers.VanillaEnchantmentProviders;
+import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -126,7 +130,7 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
    protected PathNavigation navigation;
    protected final GoalSelector goalSelector;
    protected final GoalSelector targetSelector;
-   private @Nullable Entity target;
+   private @Nullable LivingEntity target;
    private final Sensing sensing;
    private DropChances dropChances;
    private boolean canPickUpLoot;
@@ -252,15 +256,15 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
       return this.sensing;
    }
 
-   public @Nullable Entity getTarget() {
+   public @Nullable LivingEntity getTarget() {
       return this.asValidTarget(this.target);
    }
 
-   public @Nullable Entity getTargetUnchecked() {
+   public @Nullable LivingEntity getTargetUnchecked() {
       return this.target;
    }
 
-   protected @Nullable Entity asValidTarget(final @Nullable Entity target) {
+   protected @Nullable LivingEntity asValidTarget(final @Nullable LivingEntity target) {
       if (target instanceof Player player) {
          if (player.isCreative() || player.isSpectator()) {
             return null;
@@ -274,15 +278,15 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
       }
    }
 
-   protected final @Nullable Entity getTargetFromBrain() {
-      return this.asValidTarget((Entity)this.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse((Object)null));
+   protected final @Nullable LivingEntity getTargetFromBrain() {
+      return this.asValidTarget((LivingEntity)this.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse((Object)null));
    }
 
-   public void setTarget(final @Nullable Entity target) {
+   public void setTarget(final @Nullable LivingEntity target) {
       this.target = this.asValidTarget(target);
    }
 
-   public boolean canAttack(final Entity target) {
+   public boolean canAttack(final LivingEntity target) {
       return !target.is(EntityType.GHAST) && super.canAttack(target);
    }
 
@@ -484,8 +488,8 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
          if (this.canPickUpLoot() && this.isAlive() && !this.dead && (Boolean)serverLevel.getGameRules().get(GameRules.MOB_GRIEFING)) {
             Vec3i pickupReach = this.getPickupReach();
 
-            for(LivingBlock entity : this.level().getEntitiesOfClass(LivingBlock.class, this.getBoundingBox().inflate((double)pickupReach.getX(), (double)pickupReach.getY(), (double)pickupReach.getZ()))) {
-               if (!entity.isRemoved() && !entity.isDeadOrDying() && !entity.getItemStack().isEmpty() && this.wantsToPickUp(serverLevel, entity.getItemStack())) {
+            for(ItemEntity entity : this.level().getEntitiesOfClass(ItemEntity.class, this.getBoundingBox().inflate((double)pickupReach.getX(), (double)pickupReach.getY(), (double)pickupReach.getZ()))) {
+               if (!entity.isRemoved() && !entity.getItem().isEmpty() && !entity.hasPickUpDelay() && this.wantsToPickUp(serverLevel, entity.getItem())) {
                   this.pickUpItem(serverLevel, entity);
                }
             }
@@ -536,8 +540,8 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
       return ITEM_PICKUP_REACH;
    }
 
-   protected void pickUpItem(final ServerLevel level, final LivingBlock entity) {
-      ItemStack itemStack = entity.getItemStack();
+   protected void pickUpItem(final ServerLevel level, final ItemEntity entity) {
+      ItemStack itemStack = entity.getItem();
       ItemStack equippedWithStack = this.equipItemIfPossible(level, itemStack.copy());
       if (!equippedWithStack.isEmpty()) {
          this.onItemPickup(entity);
@@ -571,6 +575,7 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
 
             ItemStack toEquip = slot.limit(itemStack);
             this.setItemSlotAndDropWhenKilled(slot, toEquip);
+            this.persistenceRequired = true;
             return toEquip;
          } else {
             return ItemStack.EMPTY;
@@ -581,11 +586,37 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
    protected void setItemSlotAndDropWhenKilled(final EquipmentSlot slot, final ItemStack itemStack) {
       this.setItemSlot(slot, itemStack);
       this.setGuaranteedDrop(slot);
-      this.persistenceRequired = true;
    }
 
    protected boolean canShearEquipment(final Player player) {
       return !this.isVehicle();
+   }
+
+   protected boolean attemptToShearEquipment(final Player player, final InteractionHand hand, final ItemStack heldItem) {
+      for(EquipmentSlot slot : EquipmentSlot.VALUES) {
+         ItemStack itemStack = this.getItemBySlot(slot);
+         Equippable equippable = (Equippable)itemStack.get(DataComponents.EQUIPPABLE);
+         if (equippable != null && equippable.canBeSheared() && (!EnchantmentHelper.has(itemStack, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE) || player.isCreative())) {
+            this.shearItem(player, hand, heldItem, slot, itemStack);
+            this.playSound((SoundEvent)equippable.shearingSound().value());
+            return true;
+         }
+      }
+
+      return false;
+   }
+
+   protected void shearItem(final Player player, final InteractionHand hand, final ItemStack heldItem, final EquipmentSlot slot, final ItemStack itemStackToShear) {
+      heldItem.hurtAndBreak(1, player, (EquipmentSlot)hand.asEquipmentSlot());
+      Vec3 equipmentSpawnOffset = this.getAttachments().getAverage(EntityAttachment.PASSENGER);
+      this.setItemSlot(slot, ItemStack.EMPTY);
+      this.gameEvent(GameEvent.SHEAR, player);
+      Level var8 = this.level();
+      if (var8 instanceof ServerLevel serverLevel) {
+         this.spawnAtLocation(serverLevel, itemStackToShear, equipmentSpawnOffset);
+         CriteriaTriggers.PLAYER_SHEARED_EQUIPMENT.trigger((ServerPlayer)player, itemStackToShear, this);
+      }
+
    }
 
    public void setGuaranteedDrop(final EquipmentSlot slot) {
@@ -855,10 +886,6 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
       return this.hasItemInSlot(slot) && this.isEquippableInSlot(this.getItemBySlot(slot), slot);
    }
 
-   public void setBodyArmorItem(final ItemStack item) {
-      this.setItemSlotAndDropWhenKilled(EquipmentSlot.BODY, item);
-   }
-
    public Container createEquipmentSlotContainer(final EquipmentSlot slot) {
       return new ContainerSingleItem() {
          {
@@ -895,20 +922,12 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
          float dropChance = this.dropChances.byEquipment(slot);
          if (dropChance != 0.0F) {
             boolean preserve = this.dropChances.isPreserved(slot);
-            Level var10 = this.level();
-            if (var10 instanceof ServerLevel) {
-               ServerLevel serverLevel = (ServerLevel)var10;
-               Entity var11 = source.getEntity();
-               if (var11 instanceof LivingBlock) {
-                  LivingBlock livingBlock = (LivingBlock)var11;
-                  if (livingBlock.getCommander() != null) {
-                     dropChance = EnchantmentHelper.processEquipmentDropChance(serverLevel, livingBlock.getCommander(), source, dropChance);
-                  }
-               }
-
-               var11 = source.getEntity();
-               if (var11 instanceof LivingEntity) {
-                  LivingEntity livingSource = (LivingEntity)var11;
+            Entity var11 = source.getEntity();
+            if (var11 instanceof LivingEntity) {
+               LivingEntity livingSource = (LivingEntity)var11;
+               Level var12 = this.level();
+               if (var12 instanceof ServerLevel) {
+                  ServerLevel serverLevel = (ServerLevel)var12;
                   dropChance = EnchantmentHelper.processEquipmentDropChance(serverLevel, livingSource, source, dropChance);
                }
             }
@@ -1344,24 +1363,20 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
       return this.isLeftHanded() ? HumanoidArm.LEFT : HumanoidArm.RIGHT;
    }
 
-   public boolean isWithinMeleeAttackRange(final Entity target) {
-      if (target instanceof Targetable targetable) {
-         AttackRange attackRange = (AttackRange)this.getActiveItem().get(DataComponents.ATTACK_RANGE);
-         double maxRange;
-         double minRange;
-         if (attackRange == null) {
-            maxRange = DEFAULT_ATTACK_REACH;
-            minRange = 0.0;
-         } else {
-            maxRange = (double)attackRange.effectiveMaxRange(this);
-            minRange = (double)attackRange.effectiveMinRange(this);
-         }
-
-         AABB hitbox = targetable.getHitbox();
-         return this.getAttackBoundingBox(maxRange).intersects(hitbox) && (minRange <= 0.0 || !this.getAttackBoundingBox(minRange).intersects(hitbox));
+   public boolean isWithinMeleeAttackRange(final LivingEntity target) {
+      AttackRange attackRange = (AttackRange)this.getActiveItem().get(DataComponents.ATTACK_RANGE);
+      double maxRange;
+      double minRange;
+      if (attackRange == null) {
+         maxRange = DEFAULT_ATTACK_REACH;
+         minRange = 0.0;
       } else {
-         return false;
+         maxRange = (double)attackRange.effectiveMaxRange(this);
+         minRange = (double)attackRange.effectiveMinRange(this);
       }
+
+      AABB hitbox = target.getHitbox();
+      return this.getAttackBoundingBox(maxRange).intersects(hitbox) && (minRange <= 0.0 || !this.getAttackBoundingBox(minRange).intersects(hitbox));
    }
 
    protected AABB getAttackBoundingBox(final double horizontalExpansion) {
@@ -1415,6 +1430,12 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
    public void removeFreeWill() {
       this.removeAllGoals((goal) -> true);
       this.getBrain().removeAllBehaviors();
+   }
+
+   @VisibleForDebug
+   @VisibleForTesting
+   public GoalSelector getGoalSelector() {
+      return this.goalSelector;
    }
 
    public void removeAllGoals(final Predicate<Goal> predicate) {

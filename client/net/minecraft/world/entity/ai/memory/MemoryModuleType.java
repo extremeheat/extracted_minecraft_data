@@ -22,7 +22,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.behavior.PositionTracker;
 import net.minecraft.world.entity.ai.behavior.SpearAttack;
-import net.minecraft.world.entity.livingblock.LivingBlock;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.hoglin.Hoglin;
 import net.minecraft.world.entity.monster.piglin.AbstractPiglin;
 import net.minecraft.world.entity.player.Player;
@@ -36,7 +36,7 @@ public class MemoryModuleType<U> {
    public static final MemoryModuleType<GlobalPos> POTENTIAL_JOB_SITE;
    public static final MemoryModuleType<GlobalPos> MEETING_POINT;
    public static final MemoryModuleType<List<GlobalPos>> SECONDARY_JOB_SITE;
-   public static final MemoryModuleType<List<Entity>> NEAREST_LIVING_ENTITIES;
+   public static final MemoryModuleType<List<LivingEntity>> NEAREST_LIVING_ENTITIES;
    public static final MemoryModuleType<NearestVisibleLivingEntities> NEAREST_VISIBLE_LIVING_ENTITIES;
    public static final MemoryModuleType<List<LivingEntity>> VISIBLE_VILLAGER_BABIES;
    public static final MemoryModuleType<List<Player>> NEAREST_PLAYERS;
@@ -45,7 +45,7 @@ public class MemoryModuleType<U> {
    public static final MemoryModuleType<List<Player>> NEAREST_VISIBLE_ATTACKABLE_PLAYERS;
    public static final MemoryModuleType<WalkTarget> WALK_TARGET;
    public static final MemoryModuleType<PositionTracker> LOOK_TARGET;
-   public static final MemoryModuleType<Entity> ATTACK_TARGET;
+   public static final MemoryModuleType<LivingEntity> ATTACK_TARGET;
    public static final MemoryModuleType<Boolean> ATTACK_COOLING_DOWN;
    public static final MemoryModuleType<LivingEntity> INTERACTION_TARGET;
    public static final MemoryModuleType<AgeableMob> BREED_TARGET;
@@ -55,9 +55,9 @@ public class MemoryModuleType<U> {
    public static final MemoryModuleType<BlockPos> NEAREST_BED;
    public static final MemoryModuleType<DamageSource> HURT_BY;
    public static final MemoryModuleType<LivingEntity> HURT_BY_ENTITY;
-   public static final MemoryModuleType<Entity> AVOID_TARGET;
-   public static final MemoryModuleType<Entity> NEAREST_HOSTILE;
-   public static final MemoryModuleType<Entity> NEAREST_ATTACKABLE;
+   public static final MemoryModuleType<LivingEntity> AVOID_TARGET;
+   public static final MemoryModuleType<LivingEntity> NEAREST_HOSTILE;
+   public static final MemoryModuleType<LivingEntity> NEAREST_ATTACKABLE;
    public static final MemoryModuleType<GlobalPos> HIDING_PLACE;
    public static final MemoryModuleType<Long> HEARD_BELL_TIME;
    public static final MemoryModuleType<Long> CANT_REACH_WALK_TARGET_SINCE;
@@ -67,7 +67,7 @@ public class MemoryModuleType<U> {
    public static final MemoryModuleType<Long> LAST_WOKEN;
    public static final MemoryModuleType<Long> LAST_WORKED_AT_POI;
    public static final MemoryModuleType<LivingEntity> NEAREST_VISIBLE_ADULT;
-   public static final MemoryModuleType<LivingBlock> NEAREST_VISIBLE_WANTED_ITEM;
+   public static final MemoryModuleType<ItemEntity> NEAREST_VISIBLE_WANTED_ITEM;
    public static final MemoryModuleType<Mob> NEAREST_VISIBLE_NEMESIS;
    public static final MemoryModuleType<Integer> PLAY_DEAD_TICKS;
    public static final MemoryModuleType<Player> TEMPTING_PLAYER;
@@ -109,7 +109,7 @@ public class MemoryModuleType<U> {
    public static final MemoryModuleType<List<AbstractPiglin>> NEAREST_VISIBLE_ADULT_PIGLINS;
    public static final MemoryModuleType<List<Hoglin>> NEAREST_VISIBLE_ADULT_HOGLINS;
    public static final MemoryModuleType<AbstractPiglin> NEAREST_VISIBLE_ADULT_PIGLIN;
-   public static final MemoryModuleType<Entity> NEAREST_VISIBLE_ZOMBIFIED;
+   public static final MemoryModuleType<LivingEntity> NEAREST_VISIBLE_ZOMBIFIED;
    public static final MemoryModuleType<Integer> VISIBLE_ADULT_PIGLIN_COUNT;
    public static final MemoryModuleType<Integer> VISIBLE_ADULT_HOGLIN_COUNT;
    public static final MemoryModuleType<Player> NEAREST_PLAYER_HOLDING_WANTED_ITEM;

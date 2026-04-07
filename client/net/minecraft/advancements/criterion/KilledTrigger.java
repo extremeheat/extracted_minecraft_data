@@ -65,6 +65,34 @@ public class KilledTrigger extends SimpleCriterionTrigger<TriggerInstance> {
          return CriteriaTriggers.KILL_MOB_NEAR_SCULK_CATALYST.createCriterion(new TriggerInstance(Optional.empty(), Optional.empty(), Optional.empty()));
       }
 
+      public static Criterion<TriggerInstance> entityKilledPlayer(final Optional<EntityPredicate> entity) {
+         return CriteriaTriggers.ENTITY_KILLED_PLAYER.createCriterion(new TriggerInstance(Optional.empty(), EntityPredicate.wrap(entity), Optional.empty()));
+      }
+
+      public static Criterion<TriggerInstance> entityKilledPlayer(final EntityPredicate.Builder entity) {
+         return CriteriaTriggers.ENTITY_KILLED_PLAYER.createCriterion(new TriggerInstance(Optional.empty(), Optional.of(EntityPredicate.wrap(entity)), Optional.empty()));
+      }
+
+      public static Criterion<TriggerInstance> entityKilledPlayer() {
+         return CriteriaTriggers.ENTITY_KILLED_PLAYER.createCriterion(new TriggerInstance(Optional.empty(), Optional.empty(), Optional.empty()));
+      }
+
+      public static Criterion<TriggerInstance> entityKilledPlayer(final Optional<EntityPredicate> entity, final Optional<DamageSourcePredicate> killingBlow) {
+         return CriteriaTriggers.ENTITY_KILLED_PLAYER.createCriterion(new TriggerInstance(Optional.empty(), EntityPredicate.wrap(entity), killingBlow));
+      }
+
+      public static Criterion<TriggerInstance> entityKilledPlayer(final EntityPredicate.Builder entity, final Optional<DamageSourcePredicate> killingBlow) {
+         return CriteriaTriggers.ENTITY_KILLED_PLAYER.createCriterion(new TriggerInstance(Optional.empty(), Optional.of(EntityPredicate.wrap(entity)), killingBlow));
+      }
+
+      public static Criterion<TriggerInstance> entityKilledPlayer(final Optional<EntityPredicate> entity, final DamageSourcePredicate.Builder killingBlow) {
+         return CriteriaTriggers.ENTITY_KILLED_PLAYER.createCriterion(new TriggerInstance(Optional.empty(), EntityPredicate.wrap(entity), Optional.of(killingBlow.build())));
+      }
+
+      public static Criterion<TriggerInstance> entityKilledPlayer(final EntityPredicate.Builder entity, final DamageSourcePredicate.Builder killingBlow) {
+         return CriteriaTriggers.ENTITY_KILLED_PLAYER.createCriterion(new TriggerInstance(Optional.empty(), Optional.of(EntityPredicate.wrap(entity)), Optional.of(killingBlow.build())));
+      }
+
       public boolean matches(final ServerPlayer player, final LootContext entity, final DamageSource killingBlow) {
          if (this.killingBlow.isPresent() && !((DamageSourcePredicate)this.killingBlow.get()).matches(player, killingBlow)) {
             return false;

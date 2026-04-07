@@ -1,8 +1,5 @@
 package net.minecraft.world.level.levelgen.structure.structures;
 
-import com.google.common.collect.Lists;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -10,7 +7,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.Tuple;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -229,7 +225,7 @@ public class WoodlandMansionPieces {
 
             String wallPiece = floorNum == 0 ? "indoors_wall_1" : "indoors_wall_2";
             String doorPiece = floorNum == 0 ? "indoors_door_1" : "indoors_door_2";
-            List<Direction> doorDirs = Lists.newArrayList();
+            List<Direction> doorDirs = new ArrayList();
 
             for(int y = 0; y < grid.height; ++y) {
                for(int x = 0; x < grid.width; ++x) {
@@ -767,7 +763,7 @@ public class WoodlandMansionPieces {
       }
 
       private void setupThirdFloor() {
-         List<Tuple<Integer, Integer>> potentialRooms = Lists.newArrayList();
+         List<GridPos> potentialRooms = new ArrayList();
          SimpleGrid floor = this.floorRooms[1];
 
          for(int y = 0; y < this.thirdFloorGrid.height; ++y) {
@@ -775,7 +771,7 @@ public class WoodlandMansionPieces {
                int roomData = floor.get(x, y);
                int roomType = roomData & 983040;
                if (roomType == 131072 && (roomData & 2097152) == 2097152) {
-                  potentialRooms.add(new Tuple(x, y));
+                  potentialRooms.add(new GridPos(x, y));
                }
             }
          }
@@ -783,18 +779,18 @@ public class WoodlandMansionPieces {
          if (potentialRooms.isEmpty()) {
             this.thirdFloorGrid.set(0, 0, this.thirdFloorGrid.width, this.thirdFloorGrid.height, 5);
          } else {
-            Tuple<Integer, Integer> roomPos = (Tuple)potentialRooms.get(this.random.nextInt(potentialRooms.size()));
-            int roomData = floor.get((Integer)roomPos.getA(), (Integer)roomPos.getB());
-            floor.set((Integer)roomPos.getA(), (Integer)roomPos.getB(), roomData | 4194304);
-            Direction roomDir = this.get1x2RoomDirection(this.baseGrid, (Integer)roomPos.getA(), (Integer)roomPos.getB(), 1, roomData & '\uffff');
-            int roomEndX = (Integer)roomPos.getA() + roomDir.getStepX();
-            int roomEndY = (Integer)roomPos.getB() + roomDir.getStepZ();
+            GridPos roomPos = (GridPos)potentialRooms.get(this.random.nextInt(potentialRooms.size()));
+            int roomData = floor.get(roomPos.x(), roomPos.y());
+            floor.set(roomPos.x(), roomPos.y(), roomData | 4194304);
+            Direction roomDir = this.get1x2RoomDirection(this.baseGrid, roomPos.x(), roomPos.y(), 1, roomData & '\uffff');
+            int roomEndX = roomPos.x() + roomDir.getStepX();
+            int roomEndY = roomPos.y() + roomDir.getStepZ();
 
             for(int y = 0; y < this.thirdFloorGrid.height; ++y) {
                for(int x = 0; x < this.thirdFloorGrid.width; ++x) {
                   if (!isHouse(this.baseGrid, x, y)) {
                      this.thirdFloorGrid.set(x, y, 5);
-                  } else if (x == (Integer)roomPos.getA() && y == (Integer)roomPos.getB()) {
+                  } else if (x == roomPos.x() && y == roomPos.y()) {
                      this.thirdFloorGrid.set(x, y, 3);
                   } else if (x == roomEndX && y == roomEndY) {
                      this.thirdFloorGrid.set(x, y, 3);
@@ -803,7 +799,7 @@ public class WoodlandMansionPieces {
                }
             }
 
-            List<Direction> potentialCorridors = Lists.newArrayList();
+            List<Direction> potentialCorridors = new ArrayList();
 
             for(Direction direction : Direction.Plane.HORIZONTAL) {
                if (this.thirdFloorGrid.get(roomEndX + direction.getStepX(), roomEndY + direction.getStepZ()) == 0) {
@@ -813,7 +809,7 @@ public class WoodlandMansionPieces {
 
             if (potentialCorridors.isEmpty()) {
                this.thirdFloorGrid.set(0, 0, this.thirdFloorGrid.width, this.thirdFloorGrid.height, 5);
-               floor.set((Integer)roomPos.getA(), (Integer)roomPos.getB(), roomData);
+               floor.set(roomPos.x(), roomPos.y(), roomData);
             } else {
                Direction corridorDir = (Direction)potentialCorridors.get(this.random.nextInt(potentialCorridors.size()));
                this.recursiveCorridor(this.thirdFloorGrid, roomEndX + corridorDir.getStepX(), roomEndY + corridorDir.getStepZ(), corridorDir, 4);
@@ -826,24 +822,22 @@ public class WoodlandMansionPieces {
       }
 
       private void identifyRooms(final SimpleGrid fromGrid, final SimpleGrid roomGrid) {
-         ObjectArrayList<Tuple<Integer, Integer>> roomPos = new ObjectArrayList();
+         List<GridPos> roomPos = new ArrayList();
 
          for(int y = 0; y < fromGrid.height; ++y) {
             for(int x = 0; x < fromGrid.width; ++x) {
                if (fromGrid.get(x, y) == 2) {
-                  roomPos.add(new Tuple(x, y));
+                  roomPos.add(new GridPos(x, y));
                }
             }
          }
 
          Util.shuffle(roomPos, this.random);
          int roomId = 10;
-         ObjectListIterator var20 = roomPos.iterator();
 
-         while(var20.hasNext()) {
-            Tuple<Integer, Integer> pos = (Tuple)var20.next();
-            int x = (Integer)pos.getA();
-            int y = (Integer)pos.getB();
+         for(GridPos pos : roomPos) {
+            int x = pos.x();
+            int y = pos.y();
             if (roomGrid.get(x, y) == 0) {
                int x0 = x;
                int x1 = x;
@@ -910,6 +904,12 @@ public class WoodlandMansionPieces {
             }
          }
 
+      }
+
+      private static record GridPos(int x, int y) {
+         private GridPos {
+            super();
+         }
       }
    }
 

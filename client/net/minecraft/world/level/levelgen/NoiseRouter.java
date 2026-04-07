@@ -12,7 +12,7 @@ public record NoiseRouter(DensityFunction barrierNoise, DensityFunction fluidLev
    }
 
    private static RecordCodecBuilder<NoiseRouter, DensityFunction> field(final String name, final Function<NoiseRouter, DensityFunction> getter) {
-      return DensityFunction.HOLDER_HELPER_CODEC.fieldOf(name).forGetter(getter);
+      return DensityFunction.CODEC.fieldOf(name).forGetter(getter);
    }
 
    public NoiseRouter mapAll(final DensityFunction.Visitor visitor) {

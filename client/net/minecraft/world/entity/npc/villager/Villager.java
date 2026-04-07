@@ -72,7 +72,7 @@ import net.minecraft.world.entity.ai.village.ReputationEventType;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiType;
 import net.minecraft.world.entity.ai.village.poi.PoiTypes;
-import net.minecraft.world.entity.livingblock.LivingBlock;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Witch;
 import net.minecraft.world.entity.npc.InventoryCarrier;
 import net.minecraft.world.entity.player.Player;
@@ -707,7 +707,7 @@ public class Villager extends AbstractVillager implements VillagerDataHolder, Re
 
    }
 
-   protected void pickUpItem(final ServerLevel level, final LivingBlock entity) {
+   protected void pickUpItem(final ServerLevel level, final ItemEntity entity) {
       InventoryCarrier.pickUpItem(level, this, this, entity);
    }
 

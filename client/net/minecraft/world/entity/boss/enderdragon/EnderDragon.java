@@ -25,14 +25,12 @@ import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
-import net.minecraft.world.entity.Targetable;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.boss.enderdragon.phases.DragonPhaseInstance;
 import net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase;
 import net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhaseManager;
-import net.minecraft.world.entity.livingblock.LivingBlock;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -445,14 +443,9 @@ public class EnderDragon extends Mob implements Enemy {
          if (damage < 0.01F) {
             return false;
          } else {
-            if (source.getEntity() instanceof Player || source.getEntity() instanceof LivingBlock || source.is(DamageTypeTags.ALWAYS_HURTS_ENDER_DRAGONS)) {
+            if (source.getEntity() instanceof Player || source.is(DamageTypeTags.ALWAYS_HURTS_ENDER_DRAGONS)) {
                float healthBefore = this.getHealth();
                this.reallyHurt(level, source, damage);
-               if (this.isDeadOrDying() && !this.phaseManager.getCurrentPhase().isSitting()) {
-                  this.setHealth(1.0F);
-                  this.phaseManager.setPhase(EnderDragonPhase.DYING);
-               }
-
                if (this.phaseManager.getCurrentPhase().isSitting()) {
                   this.sittingDamageReceived = this.sittingDamageReceived + healthBefore - this.getHealth();
                   if (this.sittingDamageReceived > 0.25F * this.getMaxHealth()) {
@@ -473,6 +466,14 @@ public class EnderDragon extends Mob implements Enemy {
 
    protected void reallyHurt(final ServerLevel level, final DamageSource source, final float damage) {
       super.hurtServer(level, source, damage);
+   }
+
+   protected void handleKillingBlow() {
+      if (!this.phaseManager.getCurrentPhase().isSitting()) {
+         this.setHealth(1.0F);
+         this.phaseManager.setPhase(EnderDragonPhase.DYING);
+      }
+
    }
 
    public void knockback(final double power, final double xd, final double zd) {
@@ -839,12 +840,8 @@ public class EnderDragon extends Mob implements Enemy {
 
    }
 
-   public boolean canAttack(final Entity target) {
-      if (target instanceof Targetable targetable) {
-         return targetable.canBeSeenAsEnemy();
-      } else {
-         return false;
-      }
+   public boolean canAttack(final LivingEntity target) {
+      return target.canBeSeenAsEnemy();
    }
 
    protected float sanitizeScale(final float scale) {

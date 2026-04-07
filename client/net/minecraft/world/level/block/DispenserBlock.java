@@ -11,12 +11,13 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.dispenser.BlockSource;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
-import net.minecraft.core.dispenser.DispenseSource;
 import net.minecraft.core.dispenser.EquipmentDispenseItemBehavior;
 import net.minecraft.core.dispenser.ProjectileDispenseBehavior;
 import net.minecraft.core.dispenser.SpawnEggItemBehavior;
+import net.minecraft.core.dispenser.SulfurCubeBlockDispenseItemBehavior;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResult;
@@ -76,6 +77,7 @@ public class DispenserBlock extends BaseEntityBlock {
          BlockEntity var7 = level.getBlockEntity(pos);
          if (var7 instanceof DispenserBlockEntity) {
             DispenserBlockEntity dispenser = (DispenserBlockEntity)var7;
+            player.openMenu(dispenser);
             player.awardStat(dispenser instanceof DropperBlockEntity ? Stats.INSPECT_DROPPER : Stats.INSPECT_DISPENSER);
          }
       }
@@ -88,7 +90,7 @@ public class DispenserBlock extends BaseEntityBlock {
       if (blockEntity == null) {
          LOGGER.warn("Ignoring dispensing attempt for Dispenser without matching block entity at {}", pos);
       } else {
-         DispenseSource source = new BlockSource(level, pos, state, blockEntity);
+         BlockSource source = new BlockSource(level, pos, state, blockEntity);
          int slot = blockEntity.getRandomSlot(level.getRandom());
          if (slot < 0) {
             level.levelEvent(1001, pos, 0);
@@ -105,10 +107,6 @@ public class DispenserBlock extends BaseEntityBlock {
    }
 
    protected DispenseItemBehavior getDispenseMethod(final Level level, final ItemStack itemStack) {
-      return getDispenseItemBehavior(level, itemStack);
-   }
-
-   public static DispenseItemBehavior getDispenseItemBehavior(final Level level, final ItemStack itemStack) {
       if (!itemStack.isItemEnabled(level.enabledFeatures())) {
          return DEFAULT_BEHAVIOR;
       } else {
@@ -120,6 +118,8 @@ public class DispenserBlock extends BaseEntityBlock {
    private static DispenseItemBehavior getDefaultDispenseMethod(final ItemStack itemStack) {
       if (itemStack.has(DataComponents.EQUIPPABLE)) {
          return EquipmentDispenseItemBehavior.INSTANCE;
+      } else if (itemStack.is(ItemTags.SULFUR_CUBE_SWALLOWABLE)) {
+         return SulfurCubeBlockDispenseItemBehavior.INSTANCE;
       } else {
          return (DispenseItemBehavior)(itemStack.getItem() instanceof SpawnEggItem && itemStack.has(DataComponents.ENTITY_DATA) ? SpawnEggItemBehavior.INSTANCE : DEFAULT_BEHAVIOR);
       }
@@ -153,12 +153,12 @@ public class DispenserBlock extends BaseEntityBlock {
       Containers.updateNeighboursAfterDestroy(state, level, pos);
    }
 
-   public static Position getDispensePosition(final DispenseSource source) {
+   public static Position getDispensePosition(final BlockSource source) {
       return getDispensePosition(source, 0.7, Vec3.ZERO);
    }
 
-   public static Position getDispensePosition(final DispenseSource source, final double scale, final Vec3 offset) {
-      Direction direction = source.direction();
+   public static Position getDispensePosition(final BlockSource source, final double scale, final Vec3 offset) {
+      Direction direction = (Direction)source.state().getValue(FACING);
       return source.center().add(scale * (double)direction.getStepX() + offset.x(), scale * (double)direction.getStepY() + offset.y(), scale * (double)direction.getStepZ() + offset.z());
    }
 

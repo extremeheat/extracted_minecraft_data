@@ -41,7 +41,7 @@ public class RealmsPreferredRegionSelectionScreen extends Screen {
    }
 
    public void onClose() {
-      this.minecraft.setScreen(this.parent);
+      this.minecraft.gui.setScreen(this.parent);
    }
 
    protected void init() {

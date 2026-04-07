@@ -98,7 +98,7 @@ public class RealmsLongRunningMcoTaskScreen extends RealmsScreen {
          queuedTask.abortTask();
       }
 
-      this.minecraft.setScreen(this.lastScreen);
+      this.minecraft.gui.setScreen(this.lastScreen);
    }
 
    public void setTitle(final Component title) {

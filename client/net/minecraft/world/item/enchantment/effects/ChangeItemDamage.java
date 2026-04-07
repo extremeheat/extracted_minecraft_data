@@ -6,6 +6,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantedItemInUse;
 import net.minecraft.world.item.enchantment.LevelBasedValue;
@@ -21,7 +22,7 @@ public record ChangeItemDamage(LevelBasedValue amount) implements EnchantmentEnt
    public void apply(final ServerLevel serverLevel, final int enchantmentLevel, final EnchantedItemInUse item, final Entity entity, final Vec3 position) {
       ItemStack itemStack = item.itemStack();
       if (itemStack.has(DataComponents.MAX_DAMAGE) && itemStack.has(DataComponents.DAMAGE)) {
-         Entity var9 = item.owner();
+         LivingEntity var9 = item.owner();
          ServerPlayer var10000;
          if (var9 instanceof ServerPlayer) {
             ServerPlayer sp = (ServerPlayer)var9;

@@ -15,7 +15,7 @@ public record RenderTargetDescriptor(int width, int height, boolean useDepth, in
 
    public void prepare(final RenderTarget resource) {
       if (this.useDepth) {
-         RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(resource.getColorTexture(), this.clearColor, resource.getDepthTexture(), 1.0);
+         RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(resource.getColorTexture(), this.clearColor, resource.getDepthTexture(), 0.0);
       } else {
          RenderSystem.getDevice().createCommandEncoder().clearColorTexture(resource.getColorTexture(), this.clearColor);
       }

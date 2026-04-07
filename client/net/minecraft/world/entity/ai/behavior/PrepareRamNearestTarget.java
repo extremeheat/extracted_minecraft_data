@@ -16,6 +16,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.Brain;
@@ -104,7 +105,7 @@ public class PrepareRamNearestTarget<E extends PathfinderMob> extends Behavior<E
       return Vec3.atBottomCenterOf(targetPos).add(xOffset, 0.0, zOffset);
    }
 
-   private Optional<BlockPos> calculateRammingStartPosition(final PathfinderMob body, final Entity ramableTarget) {
+   private Optional<BlockPos> calculateRammingStartPosition(final PathfinderMob body, final LivingEntity ramableTarget) {
       BlockPos targetPos = ramableTarget.blockPosition();
       if (!this.isWalkableBlock(body, targetPos)) {
          return Optional.empty();
@@ -142,7 +143,7 @@ public class PrepareRamNearestTarget<E extends PathfinderMob> extends Behavior<E
       return body.getNavigation().isStableDestination(targetPos) && body.getPathfindingMalus(WalkNodeEvaluator.getPathTypeStatic((Mob)body, (BlockPos)targetPos)) == 0.0F;
    }
 
-   private void chooseRamPosition(final PathfinderMob body, final Entity ramableTarget) {
+   private void chooseRamPosition(final PathfinderMob body, final LivingEntity ramableTarget) {
       this.reachedRamPositionTimestamp = Optional.empty();
       this.ramCandidate = this.calculateRammingStartPosition(body, ramableTarget).map((pos) -> new RamCandidate(pos, ramableTarget.blockPosition(), ramableTarget));
    }
@@ -150,9 +151,9 @@ public class PrepareRamNearestTarget<E extends PathfinderMob> extends Behavior<E
    public static class RamCandidate {
       private final BlockPos startPosition;
       private final BlockPos targetPosition;
-      private final Entity target;
+      private final LivingEntity target;
 
-      public RamCandidate(final BlockPos startPosition, final BlockPos targetPosition, final Entity target) {
+      public RamCandidate(final BlockPos startPosition, final BlockPos targetPosition, final LivingEntity target) {
          super();
          this.startPosition = startPosition;
          this.targetPosition = targetPosition;
@@ -167,7 +168,7 @@ public class PrepareRamNearestTarget<E extends PathfinderMob> extends Behavior<E
          return this.targetPosition;
       }
 
-      public Entity getTarget() {
+      public LivingEntity getTarget() {
          return this.target;
       }
    }

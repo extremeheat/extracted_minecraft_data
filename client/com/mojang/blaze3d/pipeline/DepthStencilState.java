@@ -14,6 +14,6 @@ public record DepthStencilState(CompareOp depthTest, boolean writeDepth, float d
    }
 
    static {
-      DEFAULT = new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, true);
+      DEFAULT = new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, true);
    }
 }

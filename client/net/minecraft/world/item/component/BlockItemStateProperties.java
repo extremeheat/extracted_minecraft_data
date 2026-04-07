@@ -5,7 +5,6 @@ import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.network.chat.Component;
@@ -39,24 +38,9 @@ public record BlockItemStateProperties(Map<String, String> properties) implement
       return this.with(property, state.getValue(property));
    }
 
-   public static BlockItemStateProperties from(final BlockState state) {
-      Map<String, String> properties = (Map)state.getProperties().stream().collect(Collectors.toMap(Property::getName, (property) -> getName(state, property)));
-      return new BlockItemStateProperties(properties);
-   }
-
-   private static <T extends Comparable<T>> String getName(final BlockState state, final Property<T> property) {
-      T value = state.getValue(property);
-      return property.getName(value);
-   }
-
    public <T extends Comparable<T>> @Nullable T get(final Property<T> property) {
       String value = (String)this.properties.get(property.getName());
       return (T)(value == null ? null : (Comparable)property.getValue(value).orElse((Object)null));
-   }
-
-   public <T extends Comparable<T>> T getOrDefault(final Property<T> property, final T defaultValue) {
-      T value = this.get(property);
-      return (T)(value != null ? value : defaultValue);
    }
 
    public BlockState apply(BlockState state) {

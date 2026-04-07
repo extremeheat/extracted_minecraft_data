@@ -2,11 +2,11 @@ package net.minecraft.client.renderer.chunk;
 
 import com.mojang.blaze3d.GraphicsWorkarounds;
 import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
+import com.mojang.blaze3d.vertex.StagingBuffer;
 import com.mojang.blaze3d.vertex.TlsfAllocator;
 import com.mojang.blaze3d.vertex.UberGpuBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -49,6 +49,7 @@ public class SectionRenderDispatcher {
    private final LevelRenderer renderer;
    private final AtomicReference<Vec3> cameraPosition;
    private SectionCompiler sectionCompiler;
+   private final StagingBuffer stagingBuffer;
    private final Map<ChunkSectionLayer, SectionUberBuffers> chunkUberBuffers;
    private final ReentrantLock copyLock;
 
@@ -64,14 +65,14 @@ public class SectionRenderDispatcher {
       this.sectionCompiler = sectionCompiler;
       int vertexBufferHeapSize = 134217728;
       int indexBufferHeapSize = 33554432;
-      int vertexStagingBufferSize = 33554432;
-      int indexStagingBufferSize = 2097152;
+      int stagingBufferSize = 102760448;
       GpuDevice gpuDevice = RenderSystem.getDevice();
       GraphicsWorkarounds workarounds = GraphicsWorkarounds.get(gpuDevice);
+      this.stagingBuffer = StagingBuffer.create("Chunk", gpuDevice, 102760448, workarounds);
       this.chunkUberBuffers = Util.<ChunkSectionLayer, SectionUberBuffers>makeEnumMap(ChunkSectionLayer.class, (layer) -> {
          VertexFormat vertexFormat = layer.pipeline().getVertexFormat();
-         UberGpuBuffer<SectionMesh> vertexUberBuffer = new UberGpuBuffer<SectionMesh>(layer.label(), 32, 134217728, vertexFormat.getVertexSize(), gpuDevice, 33554432, workarounds);
-         UberGpuBuffer<SectionMesh> indexUberBuffer = layer == ChunkSectionLayer.TRANSLUCENT ? new UberGpuBuffer(layer.label(), 64, 33554432, 8, gpuDevice, 2097152, workarounds) : null;
+         UberGpuBuffer<SectionMesh> vertexUberBuffer = new UberGpuBuffer<SectionMesh>(layer.label(), 32, 134217728, vertexFormat.getVertexSize(), this.stagingBuffer);
+         UberGpuBuffer<SectionMesh> indexUberBuffer = new UberGpuBuffer<SectionMesh>(layer.label(), 64, 33554432, 8, this.stagingBuffer);
          return new SectionUberBuffers(vertexUberBuffer, indexUberBuffer);
       });
    }
@@ -117,7 +118,7 @@ public class SectionRenderDispatcher {
          return null;
       } else {
          long vertexBufferOffset = vertexSlice.getOffsetFromHeap();
-         TlsfAllocator.Allocation indexSlice = uberBuffers.indexBuffer != null ? uberBuffers.indexBuffer.getAllocation(sectionMesh) : null;
+         TlsfAllocator.Allocation indexSlice = uberBuffers.indexBuffer.getAllocation(sectionMesh);
          long indexBufferOffset = 0L;
          GpuBuffer indexBuffer = null;
          if (indexSlice != null) {
@@ -138,19 +139,15 @@ public class SectionRenderDispatcher {
    }
 
    public void uploadGlobalGeomBuffersToGPU() {
-      CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
-      boolean performedBufferResize = false;
+      GpuDevice device = RenderSystem.getDevice();
 
-      for(SectionUberBuffers buffers : this.chunkUberBuffers.values()) {
-         UberGpuBuffer<SectionMesh> vertexBuffer = buffers.vertexBuffer;
-         if (performedBufferResize) {
-            break;
-         }
-
-         performedBufferResize = vertexBuffer.uploadStagedAllocations(RenderSystem.getDevice(), commandEncoder);
-         UberGpuBuffer<SectionMesh> indexBuffer = buffers.indexBuffer;
-         if (indexBuffer != null) {
-            indexBuffer.uploadStagedAllocations(RenderSystem.getDevice(), commandEncoder);
+      try (StagingBuffer.Uploader uploader = this.stagingBuffer.startUploading(device.createCommandEncoder())) {
+         for(SectionUberBuffers buffers : this.chunkUberBuffers.values()) {
+            boolean performedBufferResize = buffers.vertexBuffer.uploadStagedAllocations(device, uploader);
+            buffers.indexBuffer.uploadStagedAllocations(device, uploader);
+            if (performedBufferResize) {
+               break;
+            }
          }
       }
 
@@ -183,10 +180,10 @@ public class SectionRenderDispatcher {
       try {
          for(SectionUberBuffers buffers : this.chunkUberBuffers.values()) {
             buffers.vertexBuffer.close();
-            if (buffers.indexBuffer != null) {
-               buffers.indexBuffer.close();
-            }
+            buffers.indexBuffer.close();
          }
+
+         this.stagingBuffer.close();
       } finally {
          this.copyLock.unlock();
       }
@@ -393,12 +390,8 @@ public class SectionRenderDispatcher {
          oldMesh.close();
 
          for(SectionUberBuffers buffers : SectionRenderDispatcher.this.chunkUberBuffers.values()) {
-            UberGpuBuffer<SectionMesh> vertexBuffer = buffers.vertexBuffer;
-            vertexBuffer.removeAllocation(oldMesh);
-            UberGpuBuffer<SectionMesh> indexBuffer = buffers.indexBuffer;
-            if (indexBuffer != null) {
-               indexBuffer.removeAllocation(oldMesh);
-            }
+            buffers.vertexBuffer.removeAllocation(oldMesh);
+            buffers.indexBuffer.removeAllocation(oldMesh);
          }
 
       }
@@ -425,20 +418,15 @@ public class SectionRenderDispatcher {
 
       }
 
-      void vertexBufferUploadCallback(final SectionMesh sectionMesh, final ChunkSectionLayer layer) {
-         if (sectionMesh instanceof CompiledSectionMesh compiledSectionMesh) {
-            compiledSectionMesh.setVertexBufferUploaded(layer);
-            this.checkSectionMesh(compiledSectionMesh);
-         }
-
+      void vertexBufferUploadCallback(final CompiledSectionMesh sectionMesh, final ChunkSectionLayer layer) {
+         sectionMesh.setVertexBufferUploaded(layer);
+         this.checkSectionMesh(sectionMesh);
       }
 
-      void indexBufferUploadCallback(final SectionMesh sectionMesh, final ChunkSectionLayer layer, final boolean sortedIndexBuffer) {
-         if (sectionMesh instanceof CompiledSectionMesh compiledSectionMesh) {
-            compiledSectionMesh.setIndexBufferUploaded(layer);
-            if (!sortedIndexBuffer) {
-               this.checkSectionMesh(compiledSectionMesh);
-            }
+      void indexBufferUploadCallback(final CompiledSectionMesh sectionMesh, final ChunkSectionLayer layer, final boolean sortedIndexBuffer) {
+         sectionMesh.setIndexBufferUploaded(layer);
+         if (!sortedIndexBuffer) {
+            this.checkSectionMesh(sectionMesh);
          }
 
       }
@@ -455,13 +443,13 @@ public class SectionRenderDispatcher {
                assert sectionBuffers != null;
 
                if (vertexBuffer != null) {
-                  UberGpuBuffer.UploadCallback<SectionMesh> callback = (mesh) -> this.vertexBufferUploadCallback(mesh, layer);
+                  UberGpuBuffer.UploadCallback<CompiledSectionMesh> callback = (mesh) -> this.vertexBufferUploadCallback(mesh, layer);
                   success &= sectionBuffers.vertexBuffer.addAllocation(key, callback, vertexBuffer);
                }
 
                if (indexBuffer != null) {
                   boolean sortedIndexBuffer = vertexBuffer == null;
-                  UberGpuBuffer.UploadCallback<SectionMesh> callback = (mesh) -> this.indexBufferUploadCallback(mesh, layer, sortedIndexBuffer);
+                  UberGpuBuffer.UploadCallback<CompiledSectionMesh> callback = (mesh) -> this.indexBufferUploadCallback(mesh, layer, sortedIndexBuffer);
                   success &= sectionBuffers.indexBuffer.addAllocation(key, callback, indexBuffer);
                } else {
                   key.setIndexBufferUploaded(layer);
@@ -664,7 +652,7 @@ public class SectionRenderDispatcher {
       }
    }
 
-   private static record SectionUberBuffers(UberGpuBuffer<SectionMesh> vertexBuffer, @Nullable UberGpuBuffer<SectionMesh> indexBuffer) {
+   private static record SectionUberBuffers(UberGpuBuffer<SectionMesh> vertexBuffer, UberGpuBuffer<SectionMesh> indexBuffer) {
       private SectionUberBuffers {
          super();
       }

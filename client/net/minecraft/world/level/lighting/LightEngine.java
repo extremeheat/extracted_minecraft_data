@@ -47,7 +47,7 @@ public abstract class LightEngine<M extends DataLayerStorageMap<M>, S extends La
       }
    }
 
-   public static int getLightBlockInto(final BlockState fromState, final BlockState toState, final Direction direction, final int simpleOpacity) {
+   public static int getLightDampeningInto(final BlockState fromState, final BlockState toState, final Direction direction, final int simpleOpacity) {
       boolean fromEmpty = isEmptyShape(fromState);
       boolean toEmpty = isEmptyShape(toState);
       if (fromEmpty && toEmpty) {
@@ -71,7 +71,7 @@ public abstract class LightEngine<M extends DataLayerStorageMap<M>, S extends La
       int chunkX = SectionPos.blockToSectionCoord(pos.getX());
       int chunkZ = SectionPos.blockToSectionCoord(pos.getZ());
       LightChunk chunk = this.getChunk(chunkX, chunkZ);
-      return chunk == null ? Blocks.BEDROCK.defaultBlockState() : chunk.getBlockStateForLight(pos);
+      return chunk == null ? Blocks.BEDROCK.defaultBlockState() : chunk.getBlockState(pos);
    }
 
    protected int getOpacity(final BlockState state) {

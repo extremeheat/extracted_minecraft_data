@@ -9,7 +9,7 @@ import net.minecraft.server.permissions.Permissions;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.livingblock.LivingBlock;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.item.component.ItemContainerContents;
@@ -185,8 +185,8 @@ public class BlockItem extends Item {
       return !(this.getBlock() instanceof ShulkerBoxBlock);
    }
 
-   public void onDestroyed(final LivingBlock entity) {
-      ItemContainerContents container = (ItemContainerContents)entity.getItemStack().set(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
+   public void onDestroyed(final ItemEntity entity) {
+      ItemContainerContents container = (ItemContainerContents)entity.getItem().set(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
       if (container != null) {
          ItemUtils.onContainerDestroyed(entity, container.nonEmptyItemCopyStream());
       }

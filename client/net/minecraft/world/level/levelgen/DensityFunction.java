@@ -1,6 +1,7 @@
 package net.minecraft.world.level.levelgen;
 
 import com.mojang.serialization.Codec;
+import java.util.Objects;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryFileCodec;
@@ -10,14 +11,52 @@ import net.minecraft.world.level.levelgen.synth.NormalNoise;
 import org.jspecify.annotations.Nullable;
 
 public interface DensityFunction {
-   Codec<DensityFunction> DIRECT_CODEC = DensityFunctions.DIRECT_CODEC;
-   Codec<Holder<DensityFunction>> CODEC = RegistryFileCodec.<Holder<DensityFunction>>create(Registries.DENSITY_FUNCTION, DIRECT_CODEC);
-   Codec<DensityFunction> HOLDER_HELPER_CODEC = CODEC.xmap(DensityFunctions.HolderHolder::new, (value) -> {
-      if (value instanceof DensityFunctions.HolderHolder holder) {
-         return holder.function();
-      } else {
-         return Holder.direct(value);
+   Codec<DensityFunction> CODEC = RegistryFileCodec.create(Registries.DENSITY_FUNCTION, DensityFunctions.DIRECT_CODEC).xmap((holder) -> {
+      Objects.requireNonNull(holder);
+      int index$1 = 0;
+      Object var10000;
+      //$FF: index$1->value
+      //0->net/minecraft/core/Holder$Direct
+      //1->net/minecraft/core/Holder$Reference
+      switch (holder.typeSwitch<invokedynamic>(holder, index$1)) {
+         case 0:
+            Holder.Direct<DensityFunction> direct = (Holder.Direct)holder;
+            var10000 = direct.value();
+            break;
+         case 1:
+            Holder.Reference<DensityFunction> reference = (Holder.Reference)holder;
+            var10000 = new DensityFunctions.HolderHolder(reference);
+            break;
+         default:
+            throw new MatchException((String)null, (Throwable)null);
       }
+
+      return (DensityFunction)var10000;
+   }, (value) -> {
+      Objects.requireNonNull(value);
+      int index$2 = 0;
+      Holder var8;
+      //$FF: index$2->value
+      //0->net/minecraft/world/level/levelgen/DensityFunctions$HolderHolder
+      switch (value.typeSwitch<invokedynamic>(value, index$2)) {
+         case 0:
+            DensityFunctions.HolderHolder $b$0 = (DensityFunctions.HolderHolder)value;
+            DensityFunctions.HolderHolder var10000 = $b$0;
+
+            try {
+               var7 = var10000.function();
+            } catch (Throwable var6) {
+               throw new MatchException(var6.toString(), var6);
+            }
+
+            Holder patt3$temp = var7;
+            var8 = patt3$temp;
+            break;
+         default:
+            var8 = Holder.direct(value);
+      }
+
+      return var8;
    });
 
    double compute(final FunctionContext context);

@@ -9,8 +9,8 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.levelgen.Heightmap;
 import org.jspecify.annotations.Nullable;
 
-public class GravityProcessor extends StructureProcessor {
-   public static final MapCodec<GravityProcessor> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Heightmap.Types.CODEC.fieldOf("heightmap").orElse(Heightmap.Types.WORLD_SURFACE_WG).forGetter((p) -> p.heightmap), Codec.INT.fieldOf("offset").orElse(0).forGetter((p) -> p.offset)).apply(i, GravityProcessor::new));
+public class GravityProcessor implements StructureProcessor {
+   public static final MapCodec<GravityProcessor> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Heightmap.Types.CODEC.fieldOf("heightmap").orElse(Heightmap.Types.WORLD_SURFACE_WG).forGetter((p) -> p.heightmap), Codec.INT.fieldOf("offset").orElse(0).forGetter((p) -> p.offset)).apply(i, GravityProcessor::new));
    private final Heightmap.Types heightmap;
    private final int offset;
 
@@ -40,7 +40,7 @@ public class GravityProcessor extends StructureProcessor {
       return new StructureTemplate.StructureBlockInfo(new BlockPos(pos.getX(), height + delta, pos.getZ()), processedBlockInfo.state(), processedBlockInfo.nbt());
    }
 
-   protected StructureProcessorType<?> getType() {
-      return StructureProcessorType.GRAVITY;
+   public MapCodec<GravityProcessor> codec() {
+      return MAP_CODEC;
    }
 }

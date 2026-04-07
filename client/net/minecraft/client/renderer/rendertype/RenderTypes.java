@@ -45,15 +45,14 @@ public class RenderTypes {
    private static final Function<Identifier, RenderType> CRUMBLING;
    private static final Function<Identifier, RenderType> TEXT;
    private static final RenderType TEXT_BACKGROUND;
-   private static final Function<Identifier, RenderType> TEXT_INTENSITY;
+   private static final Function<Identifier, RenderType> TEXT_GRAYSCALE;
    private static final Function<Identifier, RenderType> TEXT_POLYGON_OFFSET;
-   private static final Function<Identifier, RenderType> TEXT_INTENSITY_POLYGON_OFFSET;
+   private static final Function<Identifier, RenderType> TEXT_GRAYSCALE_POLYGON_OFFSET;
    private static final Function<Identifier, RenderType> TEXT_SEE_THROUGH;
    private static final RenderType TEXT_BACKGROUND_SEE_THROUGH;
-   private static final Function<Identifier, RenderType> TEXT_INTENSITY_SEE_THROUGH;
+   private static final Function<Identifier, RenderType> TEXT_GRAYSCALE_SEE_THROUGH;
    private static final RenderType LIGHTNING;
    private static final RenderType DRAGON_RAYS;
-   private static final RenderType DRAGON_RAYS_DEPTH;
    private static final RenderType END_PORTAL;
    private static final RenderType END_GATEWAY;
    public static final RenderType LINES;
@@ -237,16 +236,16 @@ public class RenderTypes {
       return TEXT_BACKGROUND;
    }
 
-   public static RenderType textIntensity(final Identifier texture) {
-      return (RenderType)TEXT_INTENSITY.apply(texture);
+   public static RenderType textGrayscale(final Identifier texture) {
+      return (RenderType)TEXT_GRAYSCALE.apply(texture);
    }
 
    public static RenderType textPolygonOffset(final Identifier texture) {
       return (RenderType)TEXT_POLYGON_OFFSET.apply(texture);
    }
 
-   public static RenderType textIntensityPolygonOffset(final Identifier texture) {
-      return (RenderType)TEXT_INTENSITY_POLYGON_OFFSET.apply(texture);
+   public static RenderType textGrayscalePolygonOffset(final Identifier texture) {
+      return (RenderType)TEXT_GRAYSCALE_POLYGON_OFFSET.apply(texture);
    }
 
    public static RenderType textSeeThrough(final Identifier texture) {
@@ -257,8 +256,8 @@ public class RenderTypes {
       return TEXT_BACKGROUND_SEE_THROUGH;
    }
 
-   public static RenderType textIntensitySeeThrough(final Identifier texture) {
-      return (RenderType)TEXT_INTENSITY_SEE_THROUGH.apply(texture);
+   public static RenderType textGrayscaleSeeThrough(final Identifier texture) {
+      return (RenderType)TEXT_GRAYSCALE_SEE_THROUGH.apply(texture);
    }
 
    public static RenderType lightning() {
@@ -267,10 +266,6 @@ public class RenderTypes {
 
    public static RenderType dragonRays() {
       return DRAGON_RAYS;
-   }
-
-   public static RenderType dragonRaysDepth() {
-      return DRAGON_RAYS_DEPTH;
    }
 
    public static RenderType endPortal() {
@@ -358,11 +353,11 @@ public class RenderTypes {
          return RenderType.create("entity_translucent_cull_item_target", state);
       }));
       ITEM_CUTOUT = Util.memoize((Function)((texture) -> {
-         RenderSetup state = RenderSetup.builder(RenderPipelines.ITEM_CUTOUT).withTexture("Sampler0", texture).useOverlay().useLightmap().affectsCrumbling().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup();
+         RenderSetup state = RenderSetup.builder(RenderPipelines.ITEM_CUTOUT).withTexture("Sampler0", texture).useLightmap().useOverlay().affectsCrumbling().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup();
          return RenderType.create("item_cutout", state);
       }));
       ITEM_TRANSLUCENT = Util.memoize((Function)((texture) -> {
-         RenderSetup state = RenderSetup.builder(RenderPipelines.ITEM_TRANSLUCENT).withTexture("Sampler0", texture).useOverlay().setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET).useLightmap().affectsCrumbling().sortOnUpload().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup();
+         RenderSetup state = RenderSetup.builder(RenderPipelines.ITEM_TRANSLUCENT).withTexture("Sampler0", texture).setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET).useLightmap().useOverlay().affectsCrumbling().sortOnUpload().setOutline(RenderSetup.OutlineProperty.AFFECTS_OUTLINE).createRenderSetup();
          return RenderType.create("item_translucent", state);
       }));
       ENTITY_TRANSLUCENT = Util.memoize((BiFunction)((texture, affectsOutline) -> {
@@ -399,15 +394,14 @@ public class RenderTypes {
       CRUMBLING = Util.memoize((Function)((texture) -> RenderType.create("crumbling", RenderSetup.builder(RenderPipelines.CRUMBLING).withTexture("Sampler0", texture).sortOnUpload().createRenderSetup())));
       TEXT = Util.memoize((Function)((texture) -> RenderType.create("text", RenderSetup.builder(RenderPipelines.TEXT).withTexture("Sampler0", texture).useLightmap().bufferSize(786432).createRenderSetup())));
       TEXT_BACKGROUND = RenderType.create("text_background", RenderSetup.builder(RenderPipelines.TEXT_BACKGROUND).useLightmap().sortOnUpload().createRenderSetup());
-      TEXT_INTENSITY = Util.memoize((Function)((texture) -> RenderType.create("text_intensity", RenderSetup.builder(RenderPipelines.TEXT_INTENSITY).withTexture("Sampler0", texture).useLightmap().bufferSize(786432).createRenderSetup())));
+      TEXT_GRAYSCALE = Util.memoize((Function)((texture) -> RenderType.create("text_grayscale", RenderSetup.builder(RenderPipelines.TEXT_GRAYSCALE).withTexture("Sampler0", texture).useLightmap().bufferSize(786432).createRenderSetup())));
       TEXT_POLYGON_OFFSET = Util.memoize((Function)((texture) -> RenderType.create("text_polygon_offset", RenderSetup.builder(RenderPipelines.TEXT_POLYGON_OFFSET).withTexture("Sampler0", texture).useLightmap().sortOnUpload().createRenderSetup())));
-      TEXT_INTENSITY_POLYGON_OFFSET = Util.memoize((Function)((texture) -> RenderType.create("text_intensity_polygon_offset", RenderSetup.builder(RenderPipelines.TEXT_INTENSITY).withTexture("Sampler0", texture).useLightmap().sortOnUpload().createRenderSetup())));
+      TEXT_GRAYSCALE_POLYGON_OFFSET = Util.memoize((Function)((texture) -> RenderType.create("text_grayscale_polygon_offset", RenderSetup.builder(RenderPipelines.TEXT_GRAYSCALE).withTexture("Sampler0", texture).useLightmap().sortOnUpload().createRenderSetup())));
       TEXT_SEE_THROUGH = Util.memoize((Function)((texture) -> RenderType.create("text_see_through", RenderSetup.builder(RenderPipelines.TEXT_SEE_THROUGH).withTexture("Sampler0", texture).useLightmap().createRenderSetup())));
       TEXT_BACKGROUND_SEE_THROUGH = RenderType.create("text_background_see_through", RenderSetup.builder(RenderPipelines.TEXT_BACKGROUND_SEE_THROUGH).useLightmap().sortOnUpload().createRenderSetup());
-      TEXT_INTENSITY_SEE_THROUGH = Util.memoize((Function)((texture) -> RenderType.create("text_intensity_see_through", RenderSetup.builder(RenderPipelines.TEXT_INTENSITY_SEE_THROUGH).withTexture("Sampler0", texture).useLightmap().sortOnUpload().createRenderSetup())));
+      TEXT_GRAYSCALE_SEE_THROUGH = Util.memoize((Function)((texture) -> RenderType.create("text_grayscale_see_through", RenderSetup.builder(RenderPipelines.TEXT_GRAYSCALE_SEE_THROUGH).withTexture("Sampler0", texture).useLightmap().sortOnUpload().createRenderSetup())));
       LIGHTNING = RenderType.create("lightning", RenderSetup.builder(RenderPipelines.LIGHTNING).setOutputTarget(OutputTarget.WEATHER_TARGET).sortOnUpload().createRenderSetup());
       DRAGON_RAYS = RenderType.create("dragon_rays", RenderSetup.builder(RenderPipelines.DRAGON_RAYS).createRenderSetup());
-      DRAGON_RAYS_DEPTH = RenderType.create("dragon_rays_depth", RenderSetup.builder(RenderPipelines.DRAGON_RAYS_DEPTH).createRenderSetup());
       END_PORTAL = RenderType.create("end_portal", RenderSetup.builder(RenderPipelines.END_PORTAL).withTexture("Sampler0", AbstractEndPortalRenderer.END_SKY_LOCATION).withTexture("Sampler1", AbstractEndPortalRenderer.END_PORTAL_LOCATION).createRenderSetup());
       END_GATEWAY = RenderType.create("end_gateway", RenderSetup.builder(RenderPipelines.END_GATEWAY).withTexture("Sampler0", AbstractEndPortalRenderer.END_SKY_LOCATION).withTexture("Sampler1", AbstractEndPortalRenderer.END_PORTAL_LOCATION).createRenderSetup());
       LINES = RenderType.create("lines", RenderSetup.builder(RenderPipelines.LINES).setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING).setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET).createRenderSetup());

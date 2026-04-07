@@ -99,7 +99,7 @@ public class Guardian extends Monster {
       return (Boolean)this.entityData.get(DATA_ID_MOVING);
    }
 
-   private void setMoving(final boolean value) {
+   public void setMoving(final boolean value) {
       this.entityData.set(DATA_ID_MOVING, value);
    }
 
@@ -115,7 +115,7 @@ public class Guardian extends Monster {
       return (Integer)this.entityData.get(DATA_ID_ATTACK_TARGET) != 0;
    }
 
-   public @Nullable Entity getActiveAttackTarget() {
+   public @Nullable LivingEntity getActiveAttackTarget() {
       if (!this.hasActiveAttackTarget()) {
          return null;
       } else if (this.level().isClientSide()) {
@@ -213,7 +213,7 @@ public class Guardian extends Monster {
                   ++this.clientSideAttackTime;
                }
 
-               Entity attackTarget = this.getActiveAttackTarget();
+               LivingEntity attackTarget = this.getActiveAttackTarget();
                if (attackTarget != null) {
                   this.getLookControl().setLookAt(attackTarget, 90.0F, 90.0F);
                   this.getLookControl().tick();
@@ -323,8 +323,8 @@ public class Guardian extends Monster {
          this.guardian = guardian;
       }
 
-      public boolean test(final @Nullable Entity target, final ServerLevel level) {
-         return (target instanceof Player || target instanceof Squid || target instanceof Axolotl) && target.distanceToSqr((Entity)this.guardian) > 9.0;
+      public boolean test(final @Nullable LivingEntity target, final ServerLevel level) {
+         return (target instanceof Player || target instanceof Squid || target instanceof Axolotl) && target.distanceToSqr(this.guardian) > 9.0;
       }
    }
 
@@ -341,7 +341,7 @@ public class Guardian extends Monster {
       }
 
       public boolean canUse() {
-         Entity target = this.guardian.getTarget();
+         LivingEntity target = this.guardian.getTarget();
          return target != null && target.isAlive();
       }
 
@@ -352,7 +352,7 @@ public class Guardian extends Monster {
       public void start() {
          this.attackTime = -10;
          this.guardian.getNavigation().stop();
-         Entity target = this.guardian.getTarget();
+         LivingEntity target = this.guardian.getTarget();
          if (target != null) {
             this.guardian.getLookControl().setLookAt(target, 90.0F, 90.0F);
          }
@@ -362,7 +362,7 @@ public class Guardian extends Monster {
 
       public void stop() {
          this.guardian.setActiveAttackTarget(0);
-         this.guardian.setTarget((Entity)null);
+         this.guardian.setTarget((LivingEntity)null);
          this.guardian.randomStrollGoal.trigger();
       }
 
@@ -371,12 +371,12 @@ public class Guardian extends Monster {
       }
 
       public void tick() {
-         Entity target = this.guardian.getTarget();
+         LivingEntity target = this.guardian.getTarget();
          if (target != null) {
             this.guardian.getNavigation().stop();
             this.guardian.getLookControl().setLookAt(target, 90.0F, 90.0F);
             if (!this.guardian.hasLineOfSight(target)) {
-               this.guardian.setTarget((Entity)null);
+               this.guardian.setTarget((LivingEntity)null);
             } else {
                ++this.attackTime;
                if (this.attackTime == 0) {
@@ -397,7 +397,7 @@ public class Guardian extends Monster {
                   ServerLevel serverLevel = getServerLevel(this.guardian);
                   target.hurtServer(serverLevel, this.guardian.damageSources().indirectMagic(this.guardian, this.guardian), magicDamage);
                   this.guardian.doHurtTarget(serverLevel, target);
-                  this.guardian.setTarget((Entity)null);
+                  this.guardian.setTarget((LivingEntity)null);
                }
 
                super.tick();
@@ -406,36 +406,33 @@ public class Guardian extends Monster {
       }
    }
 
-   private static class GuardianMoveControl extends MoveControl {
-      private final Guardian guardian;
-
-      public GuardianMoveControl(final Guardian guardian) {
+   private static class GuardianMoveControl<T extends Guardian> extends MoveControl<T> {
+      public GuardianMoveControl(final T guardian) {
          super(guardian);
-         this.guardian = guardian;
       }
 
       public void tick() {
-         if (this.operation == MoveControl.Operation.MOVE_TO && !this.guardian.getNavigation().isDone()) {
-            Vec3 delta = new Vec3(this.wantedX - this.guardian.getX(), this.wantedY - this.guardian.getY(), this.wantedZ - this.guardian.getZ());
+         if (this.operation == MoveControl.Operation.MOVE_TO && !((Guardian)this.mob).getNavigation().isDone()) {
+            Vec3 delta = new Vec3(this.wantedX - ((Guardian)this.mob).getX(), this.wantedY - ((Guardian)this.mob).getY(), this.wantedZ - ((Guardian)this.mob).getZ());
             double length = delta.length();
             double xd = delta.x / length;
             double yd = delta.y / length;
             double zd = delta.z / length;
             float yRotD = (float)(Mth.atan2(delta.z, delta.x) * 57.2957763671875) - 90.0F;
-            this.guardian.setYRot(this.rotlerp(this.guardian.getYRot(), yRotD, 90.0F));
-            this.guardian.yBodyRot = this.guardian.getYRot();
-            float targetSpeed = (float)(this.speedModifier * this.guardian.getAttributeValue(Attributes.MOVEMENT_SPEED));
-            float newSpeed = Mth.lerp(0.125F, this.guardian.getSpeed(), targetSpeed);
-            this.guardian.setSpeed(newSpeed);
-            double push = Math.sin((double)(this.guardian.tickCount + this.guardian.getId()) * 0.5) * 0.05;
-            double cos = Math.cos((double)(this.guardian.getYRot() * 0.017453292F));
-            double sin = Math.sin((double)(this.guardian.getYRot() * 0.017453292F));
-            double yPush = Math.sin((double)(this.guardian.tickCount + this.guardian.getId()) * 0.75) * 0.05;
-            this.guardian.setDeltaMovement(this.guardian.getDeltaMovement().add(push * cos, yPush * (sin + cos) * 0.25 + (double)newSpeed * yd * 0.1, push * sin));
-            LookControl control = this.guardian.getLookControl();
-            double newLookX = this.guardian.getX() + xd * 2.0;
-            double newLookY = this.guardian.getEyeY() + yd / length;
-            double newLookZ = this.guardian.getZ() + zd * 2.0;
+            ((Guardian)this.mob).setYRot(this.rotlerp(((Guardian)this.mob).getYRot(), yRotD, 90.0F));
+            (this.mob).yBodyRot = ((Guardian)this.mob).getYRot();
+            float targetSpeed = (float)(this.speedModifier * ((Guardian)this.mob).getAttributeValue(Attributes.MOVEMENT_SPEED));
+            float newSpeed = Mth.lerp(0.125F, ((Guardian)this.mob).getSpeed(), targetSpeed);
+            ((Guardian)this.mob).setSpeed(newSpeed);
+            double push = Math.sin((double)((this.mob).tickCount + ((Guardian)this.mob).getId()) * 0.5) * 0.05;
+            double cos = Math.cos((double)(((Guardian)this.mob).getYRot() * 0.017453292F));
+            double sin = Math.sin((double)(((Guardian)this.mob).getYRot() * 0.017453292F));
+            double yPush = Math.sin((double)((this.mob).tickCount + ((Guardian)this.mob).getId()) * 0.75) * 0.05;
+            ((Guardian)this.mob).setDeltaMovement(((Guardian)this.mob).getDeltaMovement().add(push * cos, yPush * (sin + cos) * 0.25 + (double)newSpeed * yd * 0.1, push * sin));
+            LookControl control = ((Guardian)this.mob).getLookControl();
+            double newLookX = ((Guardian)this.mob).getX() + xd * 2.0;
+            double newLookY = ((Guardian)this.mob).getEyeY() + yd / length;
+            double newLookZ = ((Guardian)this.mob).getZ() + zd * 2.0;
             double oldLookX = control.getWantedX();
             double oldLookY = control.getWantedY();
             double oldLookZ = control.getWantedZ();
@@ -445,11 +442,11 @@ public class Guardian extends Monster {
                oldLookZ = newLookZ;
             }
 
-            this.guardian.getLookControl().setLookAt(Mth.lerp(0.125, oldLookX, newLookX), Mth.lerp(0.125, oldLookY, newLookY), Mth.lerp(0.125, oldLookZ, newLookZ), 10.0F, 40.0F);
-            this.guardian.setMoving(true);
+            ((Guardian)this.mob).getLookControl().setLookAt(Mth.lerp(0.125, oldLookX, newLookX), Mth.lerp(0.125, oldLookY, newLookY), Mth.lerp(0.125, oldLookZ, newLookZ), 10.0F, 40.0F);
+            ((Guardian)this.mob).setMoving(true);
          } else {
-            this.guardian.setSpeed(0.0F);
-            this.guardian.setMoving(false);
+            ((Guardian)this.mob).setSpeed(0.0F);
+            ((Guardian)this.mob).setMoving(false);
          }
       }
    }

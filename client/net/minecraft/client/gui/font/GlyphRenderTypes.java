@@ -12,8 +12,8 @@ public record GlyphRenderTypes(RenderType normal, RenderType seeThrough, RenderT
       super();
    }
 
-   public static GlyphRenderTypes createForIntensityTexture(final Identifier name) {
-      return new GlyphRenderTypes(RenderTypes.textIntensity(name), RenderTypes.textIntensitySeeThrough(name), RenderTypes.textIntensityPolygonOffset(name), RenderPipelines.GUI_TEXT_INTENSITY);
+   public static GlyphRenderTypes createForGrayscaleTexture(final Identifier name) {
+      return new GlyphRenderTypes(RenderTypes.textGrayscale(name), RenderTypes.textGrayscaleSeeThrough(name), RenderTypes.textGrayscalePolygonOffset(name), RenderPipelines.GUI_TEXT_GRAYSCALE);
    }
 
    public static GlyphRenderTypes createForColorTexture(final Identifier name) {
